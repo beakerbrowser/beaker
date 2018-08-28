@@ -533,16 +533,6 @@ function renderMenu () {
                 Compare files
               </div>*/}
 
-              ${isOwner
-                ? !syncPath
-                  ? yo`
-                    <div class="dropdown-item ${!isSaved ? 'disabled' : ''}" onclick=${isSaved ? onChangeSyncDirectory : undefined}>
-                      <i class="fa fa-folder-open-o"></i>
-                      Set a local folder
-                    </div>`
-                  : ''
-                : ''}
-
               <div class="dropdown-item" onclick=${onMakeCopy}>
                 <i class="fa fa-clone"></i>
                 Make ${isOwner ? 'a' : 'an editable'} copy
