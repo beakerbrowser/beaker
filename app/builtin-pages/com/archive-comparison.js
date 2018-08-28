@@ -32,6 +32,7 @@ export default function renderArchiveComparison (opts = {}) {
       copyAll: 'Publish all revisions',
       copy: 'Publish',
       revert: 'Revert',
+      things: 'revisions',
       count: 'unpublished revision'
     },
     labels
@@ -68,15 +69,30 @@ export default function renderArchiveComparison (opts = {}) {
               : renderArchive(target))
           ]}
 
-        ${numRevisions > 0
-          ? yo`
-            <div class="actions">
-              <button class="btn success publish" onclick=${onCopyAll}>
+        <div class="actions">
+          ${target && isLocalSyncPath
+            ? yo`<a
+              class="btn primary nofocus tooltip-container"
+              href=${target.url}
+              data-tooltip="Preview the unpublished version of the site"
+              target="_blank"
+            >
+              Preview
+            </a>`
+            : ''}
+
+          ${numRevisions > 0
+            ? yo`
+              <button
+                class="btn success nofocus publish tooltip-container"
+                onclick=${onCopyAll}
+                data-tooltip="${labels.copyAll} ${labels.things}"
+              >
                 ${labels.copyAll}
-              </button>
-            </div>`
-          : ''
-        }
+              </button>`
+            : ''
+          }
+        </div>
       </div>
 
       ${renderRevisions({base, target, isLocalSyncPath, labels, revisions, isRevOpen, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
@@ -95,8 +111,6 @@ export default function renderArchiveComparison (opts = {}) {
           ${base ? yo`<a href=${base.url} target="_blank">View ${labels.base}</a>` : ''}
           ${base && target ? yo`<span class="separator">|</span>` : ''}
           ${target ? yo`<a href=${target.url} target="_blank">View ${labels.target}</a>` : ''}
-          ${isLocalSyncPath ? yo`<span class="separator">|</span>` : ''}
-          ${isLocalSyncPath ? yo`<a class="link" onmousedown=${onOpenPreview} target="_blank">View preview</a>` : ''}
         </div>
       </div>
     </div>`
@@ -141,7 +155,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
         <div class="empty">
           <div class="empty-header">
             <i class="fa fa-check"></i>
-            <div class="label">You${"'"}re all set!</div>
+            <div class="label">No unpublished changes</div>
           </div>
 
           <p>
