@@ -39,10 +39,10 @@ const LOCAL_DIFF_POLL_INTERVAL = 10e3 // ms
 
 var activeView // will default to 'files'
 var archive
+var workingCheckout
 var archiveFsRoot
 var filesBrowser
 var rehostSlider
-var archiveVersion = false
 
 // used in the compare views
 var libraryViewCompare
@@ -74,8 +74,21 @@ var faviconCacheBuster
 // -prf
 window.OS_CAN_IMPORT_FOLDERS_AND_FILES = true
 
+// capture the throttled version (onFilesChanged's declaration is hoisted from later in the file)
+const onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
+
 // main
 // =
+
+function setupWorkingCheckout () {
+  if (_get(archive, 'info.userSettings.previewMode')) {
+    // use +preview checkout
+    workingCheckout = new LibraryDatArchive(archive.checkout('preview').url)
+  } else {
+    // use latest checkout
+    workingCheckout = new LibraryDatArchive(archive.checkout().url)
+  }
+}
 
 setup()
 async function setup () {
@@ -91,10 +104,7 @@ async function setup () {
     let url = await parseLibraryUrl()
     archive = new LibraryDatArchive(url)
     await archive.setup()
-
-    // version
-    let vi = archive.url.indexOf('+')
-    archiveVersion = (vi !== -1) ? archive.url.slice(vi + 1) : false
+    setupWorkingCheckout()
 
     // go to raw key if we have a shortname
     // (archive.info.url is always the raw url, while archive.url will reflect the given url)
@@ -106,7 +116,7 @@ async function setup () {
     document.title = `Library - ${_get(archive, 'info.title', 'Untitled')}`
 
     // construct ui elements
-    archiveFsRoot = new FSArchive(null, archive, archive.info)
+    archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
     filesBrowser = new FilesBrowser(archiveFsRoot)
     filesBrowser.onSetCurrentSource = onSetCurrentSource
     rehostSlider = new RehostSlider(archive.info)
@@ -156,10 +166,14 @@ async function setup () {
     setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
     window.addEventListener('focus', loadDiffSummary)
 
-    let onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
     var fileActStream = archive.watch()
     fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
     fileActStream.addEventListener('changed', onFilesChangedThrottled)
+    if (_get(archive, 'info.userSettings.previewMode')) {
+      fileActStream = workingCheckout.watch()
+      fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
+      fileActStream.addEventListener('changed', onFilesChangedThrottled)
+    }
   } catch (e) {
     console.error('Load error', e)
     toplevelError = createToplevelError(e)
@@ -208,7 +222,7 @@ async function loadReadme () {
     const readmeMdNode = node.children.find(n => (n._name || '').toLowerCase() === 'readme.md')
     if (readmeMdNode) {
       // render the element
-      const readmeMd = await archive.readFile(readmeMdNode._path, 'utf8')
+      const readmeMd = await workingCheckout.readFile(readmeMdNode._path, 'utf8')
       readmeContent = yo`<div class="readme markdown"></div>`
       readmeContent.innerHTML = markdownRenderer.render(readmeMd)
       readmeHeader = yo`
@@ -220,7 +234,7 @@ async function loadReadme () {
       const readmeNode = node.children.find(n => (n._name || '').toLowerCase() === 'readme')
       if (readmeNode) {
         // render the element
-        const readme = await archive.readFile(readmeNode._path, 'utf8')
+        const readme = await workingCheckout.readFile(readmeNode._path, 'utf8')
         readmeContent = yo`<div class="readme plaintext">${readme}</div>`
         readmeHeader = yo`
           <div class="file-view-header">
@@ -724,9 +738,9 @@ function renderReadmeHint () {
 function renderSettingsView () {
   const isOwner = _get(archive, 'info.isOwner')
 
-  const title = archive.info.title || ''
-  const description = archive.info.description || ''
-  const paymentLink = archive.info.links.payment ? archive.info.links.payment[0].href : ''
+  const title = _get(archive, 'info.title', '')
+  const description = _get(archive, 'info.description', '')
+  const paymentLink = _get(archive, 'info.links.payment') ? archive.info.links.payment[0].href : ''
   const baseUrl = `beaker://library/${archive.url}`
 
   var syncPath = _get(archive, 'info.userSettings.localSyncPath')
@@ -1203,7 +1217,7 @@ async function onMakeCopy () {
 
 async function addReadme () {
   const readme = `# ${archive.info.title || 'Untitled'}\n\n${archive.info.description || ''}`
-  await archive.writeFile('/README.md', readme)
+  await workingCheckout.writeFile('/README.md', readme)
   await loadReadme()
   render()
 }
@@ -1343,8 +1357,7 @@ function onFinishPublish () {
 
 async function onOpenPreviewDat (e) {
   if (e) e.preventDefault()
-  var previewDat = archive.checkout('preview')
-  window.open(previewDat.url)
+  window.open(archive.checkout('preview').url)
 }
 
 async function onSetCurrentSource (node) {
@@ -1499,10 +1512,10 @@ async function onCreateFile (e) {
   if (filePath) {
     if (createFolder) {
       // create new folder
-      await archive.mkdir(filePath)
+      await workingCheckout.mkdir(filePath)
     } else {
       // create new file (empty)
-      await archive.writeFile(filePath, '', 'utf8')
+      await workingCheckout.writeFile(filePath, '', 'utf8')
     }
     // go to the new path
     window.history.pushState('', {}, `beaker://library/${archive.url + filePath}`)
@@ -1524,7 +1537,7 @@ async function onRenameFile (e) {
     const {path, newName} = e.detail
     const to = setTimeout(() => toast.create('Renaming...'), 500) // if it takes a while, toast
     const newPath = path.split('/').slice(0, -1).concat(newName).join('/')
-    await archive.rename(path, newPath)
+    await workingCheckout.rename(path, newPath)
     clearTimeout(to)
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
@@ -1537,9 +1550,9 @@ async function onDeleteFile (e) {
     const to = setTimeout(() => toast.create('Deleting...'), 500) // if it takes a while, toast
 
     if (isFolder) {
-      await archive.rmdir(path, {recursive: true})
+      await workingCheckout.rmdir(path, {recursive: true})
     } else {
-      await archive.unlink(path)
+      await workingCheckout.unlink(path)
     }
 
     clearTimeout(to)
@@ -1582,7 +1595,7 @@ async function onSaveFileEditorContent (e) {
     if (!filePath.startsWith('/')) {
       filePath = '/' + filePath
     }
-    await archive.writeFile(filePath, fileContent, 'utf8')
+    await workingCheckout.writeFile(filePath, fileContent, 'utf8')
 
     if (filePath !== currentNode._path) {
       // go to the new path
@@ -1590,7 +1603,7 @@ async function onSaveFileEditorContent (e) {
       readViewStateFromUrl()
 
       // delete the old file
-      await archive.unlink(currentNode._path)
+      await workingCheckout.unlink(currentNode._path)
     }
     toast.create('Saved')
   } catch (e) {
@@ -1720,6 +1733,14 @@ function onScrollMain (e) {
 
 async function onArchiveUpdated (e) {
   if (e.details.url === archive.url) {
+    // HACK
+    // if preview mode has changed, we need to reload so that the page can be constructed correctly
+    // this totally sucks and is 100% technical debt
+    // -prf
+    if ('previewMode' in e.details && e.details.previewMode !== _get(archive, 'info.userSettings.previewMode')) {
+      window.location.reload()
+      return
+    }
     await archive.setup()
     render()
   }
@@ -1832,14 +1853,13 @@ async function readViewStateFromUrl () {
 async function setManifestValue (attr, value) {
   try {
     value = value || ''
-    let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
     if (attr === 'paymentLink') {
       archive.info.links.payment = [{href: value, type: 'text/html'}]
-      await archive2.configure({links: archive.info.links})
+      await workingCheckout.configure({links: archive.info.links})
     } else {
       Object.assign(archive.info, {[attr]: value})
       Object.assign(archive.info.manifest, {[attr]: value})
-      await archive2.configure({[attr]: value})
+      await workingCheckout.configure({[attr]: value})
     }
     document.title = `Library - ${_get(archive, 'info.title', 'Untitled')}`
     render()

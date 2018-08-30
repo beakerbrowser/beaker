@@ -88,6 +88,10 @@ export default class FilesBrowser {
 
   async setCurrentSource (node, {suppressEvent} = {}) {
     await this.unselectAll()
+    if (this.currentSource.preview) {
+      // trigger a reload of the preview
+      this.currentSource.preview = undefined
+    }
     if (this.currentSource !== node) {
       // leave edit mode
       this.isEditMode = false

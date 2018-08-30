@@ -53,12 +53,10 @@ function rVersion (filesBrowser, currentSource) {
   let archive = filesBrowser.root._archive
   if (!archive) return ''
   let vi = archive.url.indexOf('+')
-  if (vi === -1) {
-    // showing latest
-    return ''
-  }
+  if (vi === -1) return '' // showing latest
   let urlUnversioned = archive.url.slice(0, vi)
   let version = archive.url.slice(vi + 1)
+  if (version === 'preview') return '' // showing preview
   return [
     yo`<div class="version-badge badge green">v${version}</div>`,
     yo`<a class="jump-to-latest" href=${`beaker://library/${urlUnversioned}`}>Jump to latest</a>`
