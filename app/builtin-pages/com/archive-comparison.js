@@ -51,6 +51,8 @@ export default function renderArchiveComparison (opts = {}) {
   return yo`
     <div class="archive-comparison">
       <div class="compare-selection">
+        ${isLocalSyncPath ? yo`<a href="#" class="link"><i class="fa fa-angle-left"></i> back</a>` : ''}
+
         <span>${labels.desc}</span>
 
         ${isLocalSyncPath
@@ -107,11 +109,14 @@ export default function renderArchiveComparison (opts = {}) {
           : ''
         }
 
-        <div class="links">
-          ${base ? yo`<a href=${base.url} target="_blank">View ${labels.base}</a>` : ''}
-          ${base && target ? yo`<span class="separator">|</span>` : ''}
-          ${target ? yo`<a href=${target.url} target="_blank">View ${labels.target}</a>` : ''}
-        </div>
+        ${!isLocalSyncPath
+          ? yo`
+            <div class="links">
+              ${base ? yo`<a href=${base.url} target="_blank">View ${labels.base}</a>` : ''}
+              ${base && target ? yo`<span class="separator">|</span>` : ''}
+              ${target ? yo`<a href=${target.url} target="_blank">View ${labels.target}</a>` : ''}
+            </div>`
+          : ''}
       </div>
     </div>`
 }
