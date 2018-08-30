@@ -195,7 +195,7 @@ function rActions (filesBrowser, currentSource) {
                       yo`<hr>`
                     ] : ''}
 
-                    <div class="dropdown-item" onclick=${e => onClickDownloadZip(e, filesBrowser)}>
+                    <div class="dropdown-item" onclick=${e => onClickDownloadZip(e, currentSource)}>
                       Download as .zip
                     </div>
                 </div>
@@ -421,9 +421,9 @@ function onClickSaveEdit (e) {
   emit('custom-close-file-editor')
 }
 
-function onClickDownloadZip (e, filesBrowser) {
+function onClickDownloadZip (e, currentSource) {
   e.preventDefault()
-  beaker.browser.downloadURL(`${filesBrowser.root.url}?download_as=zip`)
+  beaker.browser.downloadURL(`${currentSource.url}?download_as=zip`)
 }
 
 function onClickCancelEdit (e) {
