@@ -97,7 +97,7 @@ export default class FilesBrowser {
       this.isEditMode = false
     }
     this.currentSource = node
-
+    
     // special handling for files
     if (node.type === 'file') {
       // emit and render, to allow 'loading...' to show

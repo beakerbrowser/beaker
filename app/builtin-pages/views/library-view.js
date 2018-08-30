@@ -66,6 +66,7 @@ var arePeersCollapsed = true
 var wasJustSaved = false // used to make the save button act more nicely
 var oldLocalSyncPath = ''
 var faviconCacheBuster
+var suppressFileChangeEvents = false
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -1595,12 +1596,13 @@ async function onSaveFileEditorContent (e) {
     if (!filePath.startsWith('/')) {
       filePath = '/' + filePath
     }
+    suppressFileChangeEvents = (filePath !== currentNode._path)
     await workingCheckout.writeFile(filePath, fileContent, 'utf8')
 
     if (filePath !== currentNode._path) {
       // go to the new path
       window.history.pushState('', {}, `beaker://library/${archive.url + filePath}`)
-      readViewStateFromUrl()
+      await readViewStateFromUrl()
 
       // delete the old file
       await workingCheckout.unlink(currentNode._path)
@@ -1609,6 +1611,7 @@ async function onSaveFileEditorContent (e) {
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
+  suppressFileChangeEvents = false
 }
 
 function onConfigFileEditor (e) {
@@ -1702,6 +1705,8 @@ function onDismissLocalPathPrompt (e) {
 }
 
 async function onFilesChanged () {
+  if (suppressFileChangeEvents) return
+
   // update files
   const currentNode = filesBrowser.getCurrentSource()
   try {
