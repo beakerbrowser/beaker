@@ -51,6 +51,14 @@
 
   .section-header {
     padding: 2px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.light {
+      color: @color-text--light;
+      font-weight: 500;
+    }
   }
 
   &.wide {

@@ -103,7 +103,7 @@ async function setup () {
       return
     }
 
-    document.title = `Library - ${archive.info.title || 'Untitled'}`
+    document.title = `Library - ${_get(archive, 'info.title', 'Untitled')}`
 
     // construct ui elements
     archiveFsRoot = new FSArchive(null, archive, archive.info)
@@ -179,7 +179,7 @@ async function loadDiffSummary () {
   if (isPublishingLocalDiff) {
     return // wait till publish finishes
   }
-  if (isUsingLocalManualPublishing()) {
+  if (_get(archive, 'info.userSettings.previewMode', false)) {
     try {
       let localDiff = await beaker.archives.diffLocalSyncPathListing(archive.url)
       if (libraryViewLocalCompare) {
@@ -302,7 +302,7 @@ function render () {
                     <div class="message info">
                       <span>
                         This project${"'"}s local folder
-                        ${archive.info.missingLocalSyncPath ? `(${archive.info.missingLocalSyncPath})` : ''}
+                        ${_get(archive, 'info.missingLocalSyncPath') ? `(${_get(archive, 'info.missingLocalSyncPath')})` : ''}
                         was moved or deleted.
                       </span>
 
@@ -312,12 +312,12 @@ function render () {
                 : ''
               }
 
-              ${archive.info.isOwner && !archive.info.userSettings.isSaved
+              ${_get(archive, 'info.isOwner') && !_get(archive, 'info.userSettings.isSaved')
                 ? yo`
                   <div class="container">
                     <div class="message error">
                       <span>
-                        "${archive.info.title ? archive.info.title : 'This archive'}"
+                        "${_get(archive, 'info.title', 'This archive')}"
                         is in the Trash.
                       </span>
                       <button class="btn" onclick=${onSave}>Restore from Trash</button>
@@ -539,29 +539,18 @@ function renderMenu () {
               </div>
 
               ${isOwner
-                ? yo`
-                  <div class="dropdown-item" onclick=${e => {onToggle(e); onChangeView(e, 'settings')}}>
-                    <i class="fa fa-cog"></i>
-                    Settings
-                  </div>`
+                ? isSaved
+                  ? yo`
+                    <div class="dropdown-item" onclick=${onMoveToTrash}>
+                      <i class="fa fa-trash-o"></i>
+                      Move to Trash
+                    </div>`
+                  : yo`
+                    <div class="dropdown-item" onclick=${onSave}>
+                      <i class="fa fa-undo"></i> Restore from Trash
+                    </div>`
                 : ''}
             </div>
-
-            ${isOwner
-              ? yo`
-                <div class="section buttons" onclick=${onToggle}>
-                  ${isSaved
-                    ? yo`
-                      <button class="btn full-width center" onclick=${onMoveToTrash}>
-                        <i class="fa fa-trash-o"></i>
-                        Move to Trash
-                      </button>`
-                    : yo`
-                      <button class="btn full-width center" onclick=${onSave}>
-                        <i class="fa fa-undo"></i> Restore from Trash
-                      </button>`}
-                </div>`
-              : ''}
           </div>
         </div>
       `
@@ -609,26 +598,26 @@ function renderFilesView () {
         ${renderLocalDiffSummary()}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
-        ${!archive.info.isOwner ? renderMakeCopyHint() : ''}
+        ${!_get(archive, 'info.isOwner') ? renderMakeCopyHint() : ''}
       </div>
     </div>
   `
 }
 
 function rerenderLocalDiffSummary () {
-  var el = document.getElementById('local-diff-summary')
+  var el = document.getElementById('local-path-and-preview-tools')
   if (!el) return
   yo.update(el, renderLocalDiffSummary())
 }
 
 function renderLocalDiffSummary () {
   const isSaved = _get(archive, 'info.userSettings.isSaved')
-  if (!archive.info.isOwner || !isSaved) {
-    return yo`<div id="local-diff-summary empty"></div>`
+  if (!_get(archive, 'info.isOwner') || !isSaved) {
+    return yo`<div id="local-path-and-preview-tools empty"></div>`
   }
 
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  const autoPublishLocal = _get(archive, 'info.userSettings.autoPublishLocal')
+  const previewMode = _get(archive, 'info.userSettings.previewMode')
   const total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
 
   function rRevisionIndicator (type) {
@@ -636,15 +625,15 @@ function renderLocalDiffSummary () {
     return yo`<div class="revision-indicator ${type}"></div>`
   }
 
-  if (!syncPath) {
+  if (!syncPath && !previewMode) {
     // DEBUG
-    return yo`<div id="local-diff-summary empty"></div>`
+    return yo`<div id="local-path-and-preview-tools empty"></div>`
 
     if (isLocalPathPromptDismissed()) {
-      return yo`<div id="local-diff-summary empty"></div>`
+      return yo`<div id="local-path-and-preview-tools empty"></div>`
     }
     return yo`
-      <div id="local-diff-summary" class="setup-tip">
+      <div id="local-path-and-preview-tools" class="setup-tip">
         <div>
           <i class="fa fa-lightbulb-o"></i>
           <strong>Tip:</strong>
@@ -655,16 +644,30 @@ function renderLocalDiffSummary () {
       </div>`
   }
 
-  var ctrls
-  if (!autoPublishLocal) {
-    ctrls = [
+  var pathCtrls
+  if (syncPath) {
+    pathCtrls = yo`
+      <div class="path">
+        <button class="link sync-path-link" onclick=${onSyncPathContextMenu}>${syncPath} <i class="fa fa-angle-down"></i></button>
+      </div>`
+  } else {
+    pathCtrls = yo`<div class="path">Preview mode</div>`    
+  }
+
+  var previewCtrls
+  if (previewMode) {
+    previewCtrls = [
+      rRevisionIndicator('add'),
+      rRevisionIndicator('mod'),
+      rRevisionIndicator('del'),
+      yo`<span class="summary">${total} ${pluralize(total, 'change')}</span>`,
       yo`<a
-        class="link summary tooltip-container"
+        class="btn tooltip-container"
         href=${`beaker://library/${archive.url}#local-compare`}
         data-tooltip="Review changes and publish"
         onclick=${e => onChangeView(e, 'local-compare')}
       >
-        Review ${total} ${pluralize(total, 'change')}
+        Review changes
       </a>`,
       yo`<a
         class="btn primary tooltip-container"
@@ -672,18 +675,18 @@ function renderLocalDiffSummary () {
         data-tooltip="Preview the unpublished version of the site"
         onclick=${onOpenPreviewDat}
       >
-        Preview
+        <i class="fa fa-external-link"></i> Open preview
       </a>`
     ]
+  } else {
+    previewCtrls = yo`
+      <span class="summary">Synchronizing</span>`
   }
 
   return yo`
-    <div id="local-diff-summary">
-      <div class="path">
-        <span class="label">Local folder:</span>
-        <button class="link sync-path-link" onclick=${onSyncPathContextMenu}>${syncPath} <i class="fa fa-angle-down"></i></button>
-      </div>
-      ${ctrls}
+    <div id="local-path-and-preview-tools">
+      ${pathCtrls}
+      ${previewCtrls}
     </div>`
 }
 
@@ -698,7 +701,7 @@ function renderMakeCopyHint () {
 }
 
 function renderReadmeHint () {
-  if (!archive.info.isOwner) return ''
+  if (!_get(archive, 'info.isOwner')) return ''
   if (filesBrowser.getCurrentSource().parent) return '' // only at root
 
   return yo`
@@ -727,7 +730,7 @@ function renderSettingsView () {
   const baseUrl = `beaker://library/${archive.url}`
 
   var syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  var autoPublishLocal = syncPath && _get(archive, 'info.userSettings.autoPublishLocal')
+  var previewMode = _get(archive, 'info.userSettings.previewMode')
   var localDirectorySettings = ''
   if (syncPath || oldLocalSyncPath) {
     let p = syncPath || oldLocalSyncPath
@@ -751,10 +754,6 @@ function renderSettingsView () {
 
             <button type="button" class="btn desktop" onclick=${onChangeSyncDirectory}>
               Choose directory
-            </button>
-
-            <button class="btn copy-path plain tooltip-container" data-tooltip="${copySuccess ? 'Copied' : 'Copy path'}" onclick=${e => {e.preventDefault(); onCopy(p, '', true)}}>
-              <i class="fa fa-clipboard"></i>
             </button>
           </div>
         </form>
@@ -794,9 +793,50 @@ function renderSettingsView () {
 
   return yo`
     <div class="container">
-      <div class="settings view">
-        <h1>${isOwner ? 'Settings for ' : 'About '} "${getSafeTitle()}"</h1>
+      ${isOwner
+        ? yo`
+          <div class="settings view">
+            <div class="section">
+              <h2 class="section-heading">
+                Preview mode
+              </h2>
 
+              <div class="section-content">
+                <div class="input-group radiolist sub-item">
+                  <label class="toggle">
+                    <span class="text">Preview changes before publishing to the network</span>
+                    <input
+                      type="checkbox"
+                      name="autoPublish"
+                      value="autoPublish"
+                      ${previewMode ? 'checked' : ''}
+                      onclick=${onTogglePreviewMode}
+                    >
+                    <div class="switch"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>`
+        : ''}
+
+      ${isOwner
+        ? yo`
+          <div class="settings view">
+            <div class="section">
+              <h2 class="section-heading">
+                Local folder
+              </h2>
+
+              <div class="section-content">
+                ${localDirectorySettings}
+              </div>
+            </div>
+          </div>`
+        : ''
+      }
+
+      <div class="settings view">
         <div class="section">
           <h2 class="section-heading">
             General
@@ -847,50 +887,6 @@ function renderSettingsView () {
           </div>
         </div>
       </div>
-
-      ${isOwner
-        ? yo`
-          <div class="settings view">
-            <div class="section">
-              <h2 class="section-heading">
-                Local folder
-              </h2>
-
-              <div class="section-content">
-                ${localDirectorySettings}
-              </div>
-
-              ${syncPath
-                ? yo`
-                  <div>
-                    <hr />
-
-                    <h2 class="section-heading">
-                      Preview mode
-                    </h2>
-
-                    <div class="section-content">
-                      <div class="input-group radiolist sub-item">
-                        <label class="toggle ${syncPath ? '' : 'disabled'}">
-                          <span class="text">Preview changes before publishing to the network</span>
-                          <input
-                            type="checkbox"
-                            name="autoPublish"
-                            value="autoPublish"
-                            ${autoPublishLocal ? '' : 'checked'}
-                            ${syncPath ? '' : 'disabled'}
-                            onclick=${onToggleAutoPublish}
-                          >
-                          <div class="switch"></div>
-                        </label>
-                      </div>
-                    </div>
-                  </div>`
-                : ''}
-            </div>
-          </div>`
-        : ''
-      }
 
       <div class="settings view">
         <div class="section">
@@ -1056,7 +1052,7 @@ function renderNetworkView () {
         </div>
       </div>
 
-      ${!archive.info.isOwner && !isSaved
+      ${!_get(archive, 'info.isOwner') && !isSaved
         ? yo`
           <div class="view network">
             <div class="section">
@@ -1077,7 +1073,7 @@ function renderNetworkView () {
         : ''
       }
 
-      ${archive.info.isOwner
+      ${_get(archive, 'info.isOwner')
         ? yo`
           <div class="view network">
             <div class="section">
@@ -1454,12 +1450,12 @@ async function onChangeSyncDirectory () {
   render()
 }
 
-async function onToggleAutoPublish (e) {
+async function onTogglePreviewMode (e) {
   e.preventDefault()
   if (!archive.info.isOwner) return
 
-  var autoPublishLocal = _get(archive, 'info.userSettings.autoPublishLocal')
-  if (!autoPublishLocal) {
+  var previewMode = _get(archive, 'info.userSettings.previewMode')
+  if (previewMode) {
     // prompt to revert changes if needed
     await loadDiffSummary()
     if (localDiffSummary && (localDiffSummary.add || localDiffSummary.mod || localDiffSummary.del)) {
@@ -1469,9 +1465,9 @@ async function onToggleAutoPublish (e) {
   }
 
   try {
-    autoPublishLocal = !autoPublishLocal
-    await beaker.archives.setUserSettings(archive.url, {autoPublishLocal})
-    Object.assign(archive.info.userSettings, {autoPublishLocal})
+    previewMode = !previewMode
+    await beaker.archives.setUserSettings(archive.url, {previewMode})
+    Object.assign(archive.info.userSettings, {previewMode})
   } catch (e) {
     toplevelError = createToplevelError(e)
   }
@@ -1686,7 +1682,7 @@ function onDismissLocalPathPrompt (e) {
   setLocalPathPromptDismissed()
 
   // trigger a dismiss animation
-  var el = document.getElementById('local-diff-summary')
+  var el = document.getElementById('local-path-and-preview-tools')
   if (!el) return
   el.style.opacity = 0
   setTimeout(() => el.remove(), 200)
@@ -1845,7 +1841,7 @@ async function setManifestValue (attr, value) {
       Object.assign(archive.info.manifest, {[attr]: value})
       await archive2.configure({[attr]: value})
     }
-    document.title = `Library - ${archive.info.title || 'Untitled'}`
+    document.title = `Library - ${_get(archive, 'info.title', 'Untitled')}`
     render()
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
@@ -1862,12 +1858,6 @@ function isNavCollapsed ({ignoreScrollPosition} = {}) {
     }
   }
   return false
-}
-
-function isUsingLocalManualPublishing () {
-  let isOwner = _get(archive, 'info.isOwner')
-  let userSettings = _get(archive, 'info.userSettings', {})
-  return isOwner && userSettings.localSyncPath && !userSettings.autoPublishLocal
 }
 
 function getSafeTitle () {

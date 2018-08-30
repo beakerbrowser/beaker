@@ -192,7 +192,7 @@ body.drag {
 
   .view {
     background: #f7f7f7;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
   }
 
   .view-wrapper {
@@ -462,7 +462,7 @@ body.drag {
     .toggle .switch {
       margin-right: 10px;
     }
-    
+
     .input-group.sync-path {
       position: relative;
       flex-wrap: wrap;
@@ -487,7 +487,6 @@ body.drag {
         border-left: 0;
         border-radius: 0 4px 4px 0;
 
-        &.copy-path,
         &.desktop {
           display: none;
 
@@ -507,13 +506,6 @@ body.drag {
           @media (min-width: 800px) {
             display: none;
           }
-        }
-
-        &.copy-path {
-          width: auto;
-          position: absolute;
-          right: 195px;
-          top: -1px
         }
       }
     }
@@ -606,6 +598,8 @@ body.drag {
         }
 
         .btn {
+          min-width: 30px;
+
           &:focus {
             box-shadow: none;
           }
@@ -881,10 +875,11 @@ body.drag {
     }
   }
 
-  #local-diff-summary {
+  #local-path-and-preview-tools {
     &:extend(.flex);
     flex-wrap: nowrap;
     align-items: center;
+    height: 52px;
     margin: 0 0 15px;
     padding: 10px 15px;
     background: #fff;
@@ -898,21 +893,17 @@ body.drag {
       margin-left: 5px;
     }
 
-    .summary {
-      margin-right: 10px;
+    & > .revision-indicator {
+      margin-left: 2px;
     }
 
-    .revision-indicator {
-      border-radius: 50%;
+    .summary {
+      margin-right: 5px;
     }
 
     .path {
       margin-left: 0;
       margin-right: auto;
-
-      .label {
-        font-weight: 500;
-      }
 
       .sync-path-link {
         color: rgba(0,0,0,.7);

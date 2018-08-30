@@ -98,13 +98,13 @@ function rVersionPicker (filesBrowser) {
     id: 'version-picker',
     closed: ({onToggle}) => yo`
       <div class="dropdown toggleable-container version-picker">
-        <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="View history">
+        <button class="btn transparent nofocus tooltip-container" onclick=${onToggle} data-tooltip="View history">
           <span class="fa fa-history"></span>
         </button>
       </div>`,
     open: ({onToggle}) => yo`
       <div class="dropdown toggleable-container version-picker">
-        <button class="btn plain nofocus" onclick=${onToggle}>
+        <button class="btn transparent nofocus" onclick=${onToggle}>
           <span class="fa fa-history"></span>
         </button>
 
@@ -147,17 +147,21 @@ function rActions (filesBrowser, currentSource) {
             id: 'folder-actions-dropdown',
             closed: ({onToggle}) => yo`
               <div class="dropdown toggleable-container new-dropdown">
-                <button class="btn plain toggleable" onclick=${onToggle}>
+                <button class="btn transparent toggleable tooltip-container" onclick=${onToggle} data-tooltip="More actions">
                   <span class="fa fa-angle-down"></span>
                 </button>
               </div>`,
             open: ({onToggle}) => yo`
               <div class="dropdown toggleable-container new-dropdown">
-                <button class="btn plain toggleable" onclick=${onToggle}>
+                <button class="btn transparent toggleable tooltip-container" onclick=${onToggle} data-tooltip="More actions">
                   <span class="fa fa-angle-down"></span>
                 </button>
 
                 <div class="dropdown-items compact right" onclick=${onToggle}>
+                  <div class="section-header light">
+                    ${currentSource.name}
+                  </div>
+
                   ${currentSource.isEditable
                     ? [
                       yo`<div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
