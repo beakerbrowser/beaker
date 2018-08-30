@@ -56,7 +56,7 @@ export default function renderArchiveComparison (opts = {}) {
         <span>${labels.desc}</span>
 
         ${isLocalSyncPath
-          ? (target && target.info ? target.info.userSettings.localSyncPath : '')
+          ? (_get(target, 'info.userSettings.localSyncPath', ''))
           : [
             (onChangeCompareBase
               ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
@@ -75,7 +75,7 @@ export default function renderArchiveComparison (opts = {}) {
           ${target && isLocalSyncPath
             ? yo`<a
               class="btn primary nofocus tooltip-container"
-              href=${target.url}
+              href=${target.url + '+preview'}
               data-tooltip="Preview the unpublished version of the site"
               target="_blank"
             >
