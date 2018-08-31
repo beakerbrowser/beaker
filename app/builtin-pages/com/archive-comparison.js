@@ -195,19 +195,21 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
 
   const onCopy = (e, rev) => {
     e.stopPropagation()
-    const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
+    var path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
     if (confirm(`${labels.copy} the changes in ${path} to "${getSafeTitle(target)}"?`)) {
-      onMerge(base, target, {paths: [rev.path], shallow: false})
+      var paths = [rev.path + (rev.type === 'dir' ? '/' : '')] // trailing slash indicates directory
+      onMerge(base, target, {paths, shallow: false})
     }
   }
 
   const onRevertRevision = (e, rev) => {
     e.stopPropagation()
-    const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
+    var path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
     if (confirm(`${labels.revert} the changes to ${path}?`)) {
-      onMerge(target, base, {paths: [rev.path], shallow: false})
+      var paths = [rev.path + (rev.type === 'dir' ? '/' : '')] // trailing slash indicates directory
+      onMerge(target, base, {paths, shallow: false})
     }
   }
 
