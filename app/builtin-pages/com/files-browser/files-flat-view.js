@@ -148,7 +148,7 @@ function rActions (filesBrowser, currentSource) {
 
       ${currentSource.type === 'archive' ? rVersionPicker(filesBrowser) : ''}
 
-      ${(currentSource.type !== 'file')
+      ${currentSource.isEditable && (currentSource.type !== 'file')
         ?
           toggleable2({
             id: 'folder-actions-dropdown',
@@ -165,38 +165,35 @@ function rActions (filesBrowser, currentSource) {
                 </button>
 
                 <div class="dropdown-items compact right" onclick=${onToggle}>
-                  ${currentSource.isEditable
-                    ? [
-                      yo`<div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
-                        Create file
-                      </div>`,
+                  <div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
+                    Create file
+                  </div>
 
-                      yo`<div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
-                        Create folder
-                      </div>`,
+                  <div class="dropdown-item" onclick=${e => emit('custom-create-file', {createFolder: true})}>
+                    Create folder
+                  </div>
 
-                      yo`<hr>`,
+                  <hr>
 
-                      (window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-                        ? yo`
-                          <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, false)}>
+                  ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+                    ? yo`
+                      <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, false)}>
+                        Import files
+                      </div>`
+                    :
+                      [
+                        yo`
+                          <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
+                            <i class="fa fa-files-o"></i>
                             Import files
+                          </div>`,
+                        yo`
+                          <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
+                            <i class="fa fa-folder-open-o"></i>
+                            Import folder
                           </div>`
-                        :
-                          [
-                            yo`
-                              <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
-                                <i class="fa fa-files-o"></i>
-                                Import files
-                              </div>`,
-                            yo`
-                              <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
-                                <i class="fa fa-folder-open-o"></i>
-                                Import folder
-                              </div>`
-                          ]
-                      )
-                    ] : ''}
+                      ]
+                    }
                 </div>
               </div>`
             })
@@ -225,7 +222,7 @@ function rBreadcrumbs (filesBrowser, currentSource) {
   return yo`
     <div class="breadcrumbs ${isCramped ? 'cramped' : ''}">
       <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
-        ${path.length > 0 ? shorten(filesBrowser.root.name, 15) : filesBrowser.root.name}
+        ${path.length > 0 ? shorten(filesBrowser.root.name, 30) : filesBrowser.root.name}
       </div>
 
       ${path.map((node, i) => rBreadcrumb(filesBrowser, node, i, path.length, isCramped))}
@@ -243,7 +240,7 @@ function rBreadcrumb (filesBrowser, node, i, len, isCramped) {
         <input type="text" class="editor-filename" value=${node.name} />
       </div>`
   }
-  var label = isLast ? node.name : shorten(node.name, 15)
+  var label = isLast ? node.name : shorten(node.name, 30)
   if (isCramped && isSecondToLast) label = '..'
   return yo`
     <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)} title=${node.name}>
