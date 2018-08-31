@@ -12,7 +12,7 @@ import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
 import {render as renderFileEditor} from '../file-editor'
-import {pluralize} from '../../../lib/strings'
+import {shorten, pluralize} from '../../../lib/strings'
 
 // exported api
 // =
@@ -222,18 +222,21 @@ function rActions (filesBrowser, currentSource) {
 
 function rBreadcrumbs (filesBrowser, currentSource) {
   const path = filesBrowser.getCurrentSourcePath()
+  const isCramped = guessBreadcrumbWidthInPixels(path) > 500
   return yo`
-    <div class="breadcrumbs">
+    <div class="breadcrumbs ${isCramped ? 'cramped' : ''}">
       <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
-        .
+        ${path.length > 0 ? shorten(filesBrowser.root.name, 15) : filesBrowser.root.name}
       </div>
 
-      ${path.map((node, i) => rBreadcrumb(filesBrowser, node, (i === path.length - 1)))}
+      ${path.map((node, i) => rBreadcrumb(filesBrowser, node, i, path.length, isCramped))}
     </div>`
 }
 
-function rBreadcrumb (filesBrowser, node, isLast = false) {
+function rBreadcrumb (filesBrowser, node, i, len, isCramped) {
   if (!node) return ''
+  var isSecondToLast = (i === len - 2)
+  var isLast = (i === len - 1)
   var isEditing = filesBrowser.isEditMode && isLast
   if (isEditing) {
     return yo`
@@ -241,9 +244,11 @@ function rBreadcrumb (filesBrowser, node, isLast = false) {
         <input type="text" class="editor-filename" value=${node.name} />
       </div>`
   }
+  var label = isLast ? node.name : shorten(node.name, 15)
+  if (isCramped && isSecondToLast) label = '..'
   return yo`
     <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)} title=${node.name}>
-      ${node.name}
+      ${label}
     </div>`
 }
 
@@ -383,6 +388,18 @@ function niceMtime (ts) {
     return 'Today, ' + ts.format('h:mma')
   }
   return ts.format('ll, h:mma')
+}
+
+// this method tries to guess how wide the breadcrumbs will be based on character count
+// it just needs to be a rough approximation
+const BC_SPACER_WIDTH = 21
+const BC_CHARACTER_WIDTH = 6
+function guessBreadcrumbWidthInPixels (path) {
+  var width = path.length * BC_SPACER_WIDTH
+  for (let node of path) {
+    width += node.name.length * BC_CHARACTER_WIDTH
+  }
+  return width
 }
 
 // event handlers
