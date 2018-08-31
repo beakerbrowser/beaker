@@ -96,13 +96,13 @@ function rVersionPicker (filesBrowser) {
     id: 'version-picker',
     closed: ({onToggle}) => yo`
       <div class="dropdown toggleable-container version-picker">
-        <button class="btn transparent nofocus tooltip-container" onclick=${onToggle} data-tooltip="View history">
+        <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="View history">
           <span class="fa fa-history"></span>
         </button>
       </div>`,
     open: ({onToggle}) => yo`
       <div class="dropdown toggleable-container version-picker">
-        <button class="btn transparent nofocus" onclick=${onToggle}>
+        <button class="btn plain nofocus" onclick=${onToggle}>
           <span class="fa fa-history"></span>
         </button>
 
@@ -138,28 +138,33 @@ function rActions (filesBrowser, currentSource) {
 
   return yo`
     <div class="actions">
+      <a 
+        class="action btn plain tooltip-container"
+        onclick=${e => onClickDownload(e, currentSource)}
+        data-tooltip="Download ${currentSource.type}${currentSource.type !== 'file' ? ' as .zip' : ''}"
+      >
+        <i class="fa fa-download"></i>
+      </a>
+
       ${currentSource.type === 'archive' ? rVersionPicker(filesBrowser) : ''}
+
       ${(currentSource.type !== 'file')
         ?
           toggleable2({
             id: 'folder-actions-dropdown',
             closed: ({onToggle}) => yo`
               <div class="dropdown toggleable-container new-dropdown">
-                <button class="btn transparent toggleable tooltip-container" onclick=${onToggle} data-tooltip="More actions">
-                  <span class="fa fa-angle-down"></span>
+                <button class="btn toggleable" onclick=${onToggle}>
+                  <span class="fa fa-plus"></span>
                 </button>
               </div>`,
             open: ({onToggle}) => yo`
               <div class="dropdown toggleable-container new-dropdown">
-                <button class="btn transparent toggleable tooltip-container" onclick=${onToggle} data-tooltip="More actions">
-                  <span class="fa fa-angle-down"></span>
+                <button class="btn toggleable" onclick=${onToggle}>
+                  <span class="fa fa-plus"></span>
                 </button>
 
                 <div class="dropdown-items compact right" onclick=${onToggle}>
-                  <div class="section-header light">
-                    ${currentSource.name}
-                  </div>
-
                   ${currentSource.isEditable
                     ? [
                       yo`<div class="dropdown-item" onclick=${e => emit('custom-create-file')}>
@@ -190,14 +195,8 @@ function rActions (filesBrowser, currentSource) {
                                 Import folder
                               </div>`
                           ]
-                      ),
-
-                      yo`<hr>`
+                      )
                     ] : ''}
-
-                    <div class="dropdown-item" onclick=${e => onClickDownloadZip(e, currentSource)}>
-                      Download as .zip
-                    </div>
                 </div>
               </div>`
             })
@@ -438,9 +437,9 @@ function onClickSaveEdit (e) {
   emit('custom-close-file-editor')
 }
 
-function onClickDownloadZip (e, currentSource) {
+function onClickDownload (e, currentSource) {
   e.preventDefault()
-  beaker.browser.downloadURL(`${currentSource.url}?download_as=zip`)
+  beaker.browser.downloadURL(`${currentSource.url}${currentSource.type !== 'file' ? '?download_as=zip' : ''}`)
 }
 
 function onClickCancelEdit (e) {
