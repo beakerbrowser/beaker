@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
+import moment from 'moment'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import parseDatURL from 'parse-dat-url'
@@ -30,9 +31,9 @@ import {pluralize, shortenHash} from '@beaker/core/lib/strings'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
 
-const DEFAULT_PEERS_LIMIT = 10
 const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 90/*with description*/] // px
 const LOCAL_DIFF_POLL_INTERVAL = 10e3 // ms
+const NETWORK_STATS_POLL_INTERVAL = 2e3 // ms
 
 // globals
 // =
@@ -62,7 +63,6 @@ var headerEditValues = {
 var toplevelError
 var copySuccess = false
 var isFaviconSet = true
-var arePeersCollapsed = true
 var wasJustSaved = false // used to make the save button act more nicely
 var oldLocalSyncPath = ''
 var faviconCacheBuster
@@ -164,6 +164,7 @@ async function setup () {
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
+    setInterval(updateNetworkStats, NETWORK_STATS_POLL_INTERVAL)
     setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
     window.addEventListener('focus', loadDiffSummary)
 
@@ -188,6 +189,14 @@ async function setup () {
       'lastLibraryAccessTime'
     ).catch(console.error)
   }
+}
+
+async function updateNetworkStats () {
+  if (activeView !== 'network') return
+  var info = await archive.getInfo()
+  Object.assign(archive.info, info)
+  yo.update(document.querySelector('.big-stats'), renderNetworkBigStats())
+  yo.update(document.querySelector('.small-stats'), renderNetworkSmallStats())
 }
 
 async function loadDiffSummary () {
@@ -932,50 +941,74 @@ function renderSettingsView () {
   `
 }
 
+function renderNetworkBigStats () {
+  return yo`
+    <div class="big-stats">
+      <div><span>up</span> ${prettyBytes(archive.info.networkStats.uploadSpeed)}/s</div>
+      <div><span>down</span> ${prettyBytes(archive.info.networkStats.downloadSpeed)}/s</div>
+    </div>`
+}
+
+function renderNetworkSmallStats () {
+  const {downloadTotal, uploadTotal} = archive.info.networkStats
+  return yo`
+    <div class="small-stats">
+      <div>${archive.info.peers} <span>${pluralize(archive.info.peers, 'peer')}</span></div>
+      <div>${prettyBytes(downloadTotal)} <span>downloaded</span></div>
+      <div>${prettyBytes(uploadTotal)} <span>uploaded</span></div>
+      ${downloadTotal > 0 ? yo`<div>${(uploadTotal / downloadTotal).toFixed(2)}x <span>ratio</span></div>`: ''}
+    </div>`
+}
+
 function renderNetworkView () {
-  let progressLabel = ''
-  let progressCls = ''
-  let seedingIcon = ''
-  let seedingLabel = ''
-  let clearCacheBtn = ''
-  let peersLimit = arePeersCollapsed ? DEFAULT_PEERS_LIMIT : Infinity
+  var progressLabel = ''
+  var progressCls = ''
 
   const baseUrl = `beaker://library/${archive.url}`
-  const {isSaved} = archive.info.userSettings
+  const {isSaved, expiresAt} = archive.info.userSettings
   const {progress} = archive
   const progressPercentage = `${progress.current}%`
-  let downloadedBytes = _get(archive, 'info.isOwner')
+  var downloadedBytes = _get(archive, 'info.isOwner')
     ? archive.info.size
     : (archive.info.size / progress.blocks) * progress.downloaded
 
-  if (isSaved) {
-    if (progress.isComplete) {
-      progressLabel = 'Seeding files'
-      progressCls = 'green'
+  if (!archive.info.isOwner) {
+    if (isSaved) {
+      if (progress.isComplete) {
+        progressLabel = 'Seeding files'
+        progressCls = 'green'
+      } else {
+        progressLabel = 'Downloading and seeding files'
+        progressCls = 'green active'
+      }
+    } else if (progress.isComplete) {
+      progressLabel = 'All files downloaded'
     } else {
-      progressLabel = 'Downloading and seeding files'
-      progressCls = 'green active'
+      progressLabel = 'Idle'
     }
-  } else if (progress.isComplete) {
-    progressLabel = 'All files downloaded'
-  } else {
-    progressLabel = 'Idle'
   }
 
-  if (!archive.info.isOwner) {
-    clearCacheBtn = yo`
-      <span>
-        |
-        <button class="link" onclick=${onDeleteDownloadedFiles}>
-        Delete downloaded files
-      </span>`
-    if (isSaved) {
-      seedingIcon = 'pause'
-      seedingLabel = 'Stop seeding these files'
+  var expiresAtSliderValue
+  var expiresAtLabel
+  var expiresAtCircleColor
+  const timeRemaining = (isSaved && expiresAt) ? moment.duration(expiresAt - Date.now()) : null
+  if (timeRemaining) {
+    expiresAtCircleColor = 'yellow'
+    if (timeRemaining.asMonths() > 0.5) {
+      expiresAtSliderValue = 2
+      expiresAtLabel = '1 month'
+    } else if (timeRemaining.asWeeks() > 0.5) {
+      expiresAtSliderValue = 1
+      expiresAtLabel = '1 week'
     } else {
-      seedingIcon = 'arrow-up'
-      seedingLabel = 'Seed these files'
+      expiresAtSliderValue = 0
+      expiresAtLabel = '1 day'
     }
+    expiresAtLabel += ` (${timeRemaining.humanize()} remaining)`
+  } else {
+    expiresAtSliderValue = 3
+    expiresAtCircleColor = 'green'
+    expiresAtLabel = 'Forever'
   }
 
   return yo`
@@ -984,12 +1017,72 @@ function renderNetworkView () {
 
         <h1>Network activity</h1>
 
-        <div class="section">
-          <h2 class="section-heading">Overview</h2>
+        <div class="section">${renderNetworkBigStats()}</div>
+      </div>
 
-          ${_get(archive, 'info.isOwner')
-            ? ''
-            : yo`<div>
+      ${_get(archive, 'info.isOwner')
+        ? ''
+        : yo`
+          <div class="view network">
+            <div class="section">
+              <div class="seed-controls">
+                <div class="seed-toggle">
+                  <label class="toggle">
+                    <span class="text">Seed this site${"'"}s files</span>
+                    <input
+                      type="checkbox"
+                      name="seed"
+                      value="seed"
+                      ${isSaved ? 'checked' : ''}
+                      onclick=${onToggleSeeding}
+                    >
+                    <div class="switch"></div>
+                  </label>
+                </div>
+
+                ${isSaved
+                  ? [
+                    yo`
+                      <div class="seed-slider">
+                        <input
+                          name="seed-period"
+                          type="range"
+                          min="0"
+                          max="3"
+                          step="1"
+                          list="steplist"
+                          value=${expiresAtSliderValue}
+                          oninput=${onChangeExpiresAt} />
+                        <datalist id="steplist">
+                            <option>0</option>
+                            <option>1</option>
+                            <option>2</option>
+                            <option>3</option>
+                        </datalist>
+                      </div>`,
+                    yo`
+                      <div class="seed-time-label">
+                        <span class="fa fa-circle ${expiresAtCircleColor}"></span>
+                        ${expiresAtLabel}
+                      </div>`
+                  ] : yo`
+                    <div class="hint">
+                      <i class="fa fa-heart-o"></i>
+                      <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
+                      <a href="https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites#keeping-a-peer-to-peer-website-online" target="_blank" class="learn-more-link">Learn more</a>
+                    </div>`
+                  }
+              </div>
+            </div>
+          </div>
+        </div>`
+      }
+
+      ${_get(archive, 'info.isOwner')
+        ? ''
+        : yo`
+          <div class="view network">
+            <div class="section">
               <h3 class="subtitle-heading">Download status</h3>
 
               <progress value=${progress.current} max="100">
@@ -1001,92 +1094,41 @@ function renderNetworkView () {
                   <div style="width: ${progressPercentage}" class="completed">
                     ${progressPercentage}
                   </div>
-                  <div class="label">${progressLabel}${clearCacheBtn}</div>
+                  <div class="label">
+                    ${progressLabel} | <button class="link" onclick=${onDeleteDownloadedFiles}>Delete downloaded files</button>
+                  </div>
                 </div>
 
-                ${!archive.info.isOwner
+                ${''/* TODO we need more precise control over downloads before we can support this -prf
+                  !archive.info.isOwner && !progress.isComplete
                   ? yo`
-                    <button class="btn transparent" data-tooltip=${seedingLabel} onclick=${onToggleSeeding}>
-                      <i class="fa fa-${seedingIcon}"></i>
+                    <button class="btn transparent" data-tooltip="Download all files" onclick=${onDownloadAllFiles}>
+                      <i class="fa fa-arrow-down"></i>
                     </button>`
                   : ''
-                }
+                */}
               </div>
-            </div>`
-          }
-
-          <h3 class="subtitle-heading">Peers</h3>
-          ${!_get(archive, 'info.peers')
-            ? yo`<em>No active peers</em>`
-            : yo`
-              <table>
-                <tr>
-                  <th>
-                    IP address
-                    <i class="fa fa-question-circle-o"></i>
-                  </th>
-                </tr>
-
-                ${_get(archive, 'info.peerInfo', []).slice(0, peersLimit).map(peer => {
-                  return yo`
-                    <tr class="ip-address">
-                      <td>
-                        ${peer.host}:${peer.port}
-                      </td>
-                    </tr>`
-                })}
-              </table>`
-          }
-
-          ${Number(_get(archive, 'info.peers')) > DEFAULT_PEERS_LIMIT
-            ? yo`
-              <span class="link" onclick=${onTogglePeersCollapsed}>
-                ${arePeersCollapsed ? 'Show all' : 'Show fewer'} peers
-                <i class="fa fa-angle-${arePeersCollapsed ? 'down' : 'up'}"></i>
-              </span>`
-            : ''
-          }
-
-          <p class="hint">
-            <i class="fa fa-share-alt"></i>
-            Peers help keep this project online by seeding its files.
-          </p>
-        </div>
-      </div>
-
+            </div>
+          </div>
+        </div>`
+      }
 
       <div class="view network">
         <div class="section">
           <h3 class="subtitle-heading">Network activity (last hour)</h3>
           ${renderPeerHistoryGraph(archive.info)}
+          ${renderNetworkSmallStats()}
+        </div>
+      </div>
 
+      <div class="view network">
+        <div class="section">
           <h3 class="subtitle-heading">Advanced</h3>
-          <a href="beaker://swarm-debugger/${archive.key}">
+          <a href="beaker://swarm-debugger/${archive.key}" target="_blank">
             Open network debugger
           </a>
         </div>
       </div>
-
-      ${!_get(archive, 'info.isOwner') && !isSaved
-        ? yo`
-          <div class="view network">
-            <div class="section">
-              <div class="hint">
-                <p>
-                  <i class="fa fa-heart-o"></i>
-                  <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
-                </p>
-
-                <button class="btn" onclick=${onToggleSeeding}>
-                  Seed files
-                </button>
-
-                <a href="https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites#keeping-a-peer-to-peer-website-online" target="_blank" class="learn-more-link">Learn more</a>
-              </div>
-            </div>
-          </div>`
-        : ''
-      }
 
       ${_get(archive, 'info.isOwner')
         ? yo`
@@ -1205,11 +1247,6 @@ function renderNav () {
 // events
 // =
 
-function onTogglePeersCollapsed () {
-  arePeersCollapsed = !arePeersCollapsed
-  render()
-}
-
 async function onMakeCopy () {
   let {title} = await copyDatPopup.create({archive})
   const fork = await DatArchive.fork(archive.url, {title, prompt: false}).catch(() => {})
@@ -1303,10 +1340,22 @@ async function onToggleSeeding () {
       await beaker.archives.add(archive.url)
       archive.info.userSettings.isSaved = true
     }
+    await beaker.archives.setUserSettings(archive.key, {expiresAt: 0})
   } catch (e) {
     console.error(e)
     toast.create(`Could not update ${nickname}`, 'error')
   }
+  render()
+}
+
+async function onChangeExpiresAt (e) {
+  var sliderState = e.target.value
+  var expiresAt = 0
+  if (sliderState == 0) expiresAt = +(moment().add(1, 'day'))
+  if (sliderState == 1) expiresAt = +(moment().add(1, 'week'))
+  if (sliderState == 2) expiresAt = +(moment().add(1, 'month'))
+  await beaker.archives.setUserSettings(archive.key, {expiresAt})
+  Object.assign(archive.userSettings, {expiresAt})
   render()
 }
 
@@ -1390,6 +1439,12 @@ function onDropFiles (files) {
 
 function onOpenFolder (path) {
   beaker.browser.openFolder(path)
+}
+
+function onDownloadAllFiles () {
+  // TODO
+  // we need more precise control over downloads before we can support this
+  // -prf
 }
 
 async function onDeleteDownloadedFiles () {
@@ -1742,7 +1797,8 @@ async function onArchiveUpdated (e) {
     // if preview mode has changed, we need to reload so that the page can be constructed correctly
     // this totally sucks and is 100% technical debt
     // -prf
-    if ('previewMode' in e.details && e.details.previewMode !== _get(archive, 'info.userSettings.previewMode')) {
+    if (_get(archive, 'info.isOwner') && 'previewMode' in e.details && e.details.previewMode !== _get(archive, 'info.userSettings.previewMode')) {
+      console.log('reloading', e.details)
       window.location.reload()
       return
     }

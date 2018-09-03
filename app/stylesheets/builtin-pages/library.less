@@ -385,15 +385,48 @@ body.drag {
 
   .view.network {
 
-    .ip-address {
-      &:extend(.code-font);
+    .toggle {
+      display: inline-flex;
+      .text {
+        margin: 0 10px;
+      }
+    }
+
+    .big-stats {
+      display: flex;
+      margin: 0 auto 10px;
+      max-width: 450px;
+
+      & > div {    
+        flex: 1;
+        text-align: center;
+        font-size: 27px;
+
+        span {
+          font-size: 15px;
+        }
+      }
+    }
+
+    .small-stats {
+      display: flex;
+
+      & > div {
+        margin-right: 20px;
+
+        span {
+          font-size: 11px;
+          text-transform: uppercase;
+          color: rgba(0,0,0,0.5);
+        }
+      }
     }
 
     .download-status {
       &:extend(.flex);
       align-items: center;
       flex-wrap: nowrap;
-      margin-bottom: 50px;
+      margin-bottom: 20px;
 
       .btn {
         margin-left: 2px;
@@ -403,32 +436,64 @@ body.drag {
           box-shadow: none;
         }
       }
-
-      .blocks {
-        margin-left: 10px;
-        color: @color-text--muted;
-        font-size: .8rem;
-
-        .downloaded {
-          position: relative;
-
-          &:after {
-            content: '/';
-            display: inline-block;
-            margin: 0 5px;
-          }
-        }
-      }
     }
 
     svg.peer-history-graph {
       position: relative;
-      margin-top: 5px;
+      margin: 5px 0;
 
       text {
         fill: @color-text--muted;
         font-size: .8rem;
         font-weight: 500;
+      }
+    }
+
+    .seed-controls {
+      display: flex;
+      height: 20px;
+
+      .seed-toggle {
+        height: 20px;
+
+        .toggle {
+          margin-bottom: 0;
+        }
+      }
+
+      .seed-slider {
+        margin-left: 10px;
+        padding-left: 24px;
+        border-left: 1px solid #ccc;
+
+        input {
+          height: 24px;
+        }
+      }
+
+      .seed-time-label {
+        margin-left: 15px;
+
+        .fa-circle {
+          margin-right: 3px;
+          font-size: 12px;
+
+          &.green {
+            color: @green;
+          }
+          &.yellow {
+            color: @yellow;
+          }
+          &.red {
+            color: @red;
+          }
+        }
+      }
+
+      .hint {
+        padding-left: 20px;
+        border-left: 1px solid #ccc;
+        margin: 0 10px;
       }
     }
   }
