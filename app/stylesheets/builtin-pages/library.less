@@ -739,19 +739,28 @@ body.drag {
       }
 
       h1 {
+        position: relative;
+        top: -2px;
+        left: -2px;
         white-space: pre;
+        width: 100%;
         max-width: 500px;
         text-overflow: ellipsis;
         overflow: hidden;
-        height: 28px;
+        height: 38px;
+        padding: 6px 8px;
+        border: 1px solid transparent;
       }
 
       input {
         position: relative;
         cursor: auto;
+        left: -1px;
         top: -2px;
-        left: -8px;
         height: 34px;
+        width: 100%;
+        max-width: 500px;   
+        border-radius: 0;     
       }
 
       .favicon {
@@ -770,11 +779,15 @@ body.drag {
       }
 
       &.editable {
-        h1:hover,
+
+        h1:hover {
+          cursor: text;
+          border-color: #ccc;
+        }
+
         .favicon:hover {
           cursor: pointer;
-          background: #f5f5f5;
-          border-radius: 2px;
+          background: #eee;
         }
       }
     }

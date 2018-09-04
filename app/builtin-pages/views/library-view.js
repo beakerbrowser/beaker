@@ -1938,11 +1938,11 @@ async function setManifestValue (attr, value) {
     value = value || ''
     if (attr === 'paymentLink') {
       archive.info.links.payment = [{href: value, type: 'text/html'}]
-      await workingCheckout.configure({links: archive.info.links})
+      await archive.configure({links: archive.info.links})
     } else {
       Object.assign(archive.info, {[attr]: value})
       Object.assign(archive.info.manifest, {[attr]: value})
-      await workingCheckout.configure({[attr]: value})
+      await archive.configure({[attr]: value})
     }
     document.title = `Library - ${_get(archive, 'info.title', 'Untitled')}`
     render()
