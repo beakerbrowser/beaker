@@ -210,7 +210,7 @@ async function loadDiffSummary () {
         libraryViewLocalCompare.setCompareDiff(localDiff)
       }
 
-      localDiffSummary = {add: 0, mod: 0, del: 0}
+      localDiffSummary = {add: 0, mod: 0, del: 0, hasChange: localDiff.length > 0}
       for (let d of localDiff) {
         localDiffSummary[d.change]++
       }
@@ -1501,15 +1501,27 @@ async function onChangeSyncDirectory () {
   if (!archive.info.isOwner) return
 
   // get an available path for a folder
-  let defaultPath = _get(archive, 'info.userSettings.localSyncPath')
-  if (!defaultPath) {
+  var currentPath = _get(archive, 'info.userSettings.localSyncPath')
+  var defaultPath = ''
+  if (!currentPath) {
     let basePath = await beaker.browser.getSetting('workspace_default_path')
     defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
+  }
+
+  var hasUnpublishedChanges = false
+  var previewMode = _get(archive, 'info.userSettings.previewMode')
+  if (previewMode) {
+    // prompt to resolve changes
+    await loadDiffSummary()
+    hasUnpublishedChanges = (localDiffSummary && localDiffSummary.hasChange)
   }
 
   // open the create folder-picker popup
   let res = await localSyncPathPopup.create({
     defaultPath,
+    currentPath,
+    checkConflicts: !previewMode,
+    hasUnpublishedChanges,
     archiveKey: archive.info.key,
     title: archive.info.title
   })
@@ -1535,9 +1547,9 @@ async function onTogglePreviewMode (e) {
 
   var previewMode = _get(archive, 'info.userSettings.previewMode')
   if (previewMode) {
-    // prompt to revert changes if needed
+    // prompt to resolve changes
     await loadDiffSummary()
-    if (localDiffSummary && (localDiffSummary.add || localDiffSummary.mod || localDiffSummary.del)) {
+    if (localDiffSummary && localDiffSummary.hasChange) {
       alert('You have unpublished changes. Please publish or revert them before disabling preview mode.')
       return
     }
