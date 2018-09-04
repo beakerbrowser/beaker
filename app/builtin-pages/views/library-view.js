@@ -223,9 +223,10 @@ async function loadDiffSummary () {
 
 async function loadReadme () {
   readmeElement = null
-  let readmeContent = null
-  let readmeHeader = null
+  var readmeContent = null
+  var readmeHeader = null
 
+  const {isOwner} = archive.info
   const node = filesBrowser.getCurrentSource()
   if (node && node.hasChildren) {
     // try to find the readme.md file
@@ -238,6 +239,7 @@ async function loadReadme () {
       readmeHeader = yo`
         <div class="file-view-header">
           <span class="path">${readmeMdNode.name}</span>
+          ${isOwner ? yo`<span class="actions"><a class="btn plain" onclick=${e => gotoFileEditor(readmeMdNode.name)}><span class="fa fa-pencil"></a></span>` : ''}
         </div>`
     } else {
       // try to find the readme file
@@ -249,6 +251,7 @@ async function loadReadme () {
         readmeHeader = yo`
           <div class="file-view-header">
             <span class="path">${readmeNode.name}</span>
+            ${isOwner ? yo`<span class="actions"><a class="btn plain" onclick=${e => gotoFileEditor(readmeNode.name)}><span class="fa fa-pencil"></a></span>` : ''}
           </div>`
       }
     }
@@ -277,6 +280,13 @@ async function loadReadme () {
   }
 
   render()
+}
+
+async function gotoFileEditor (filePath) {
+  // go to the new path
+  window.history.pushState('', {}, `beaker://library/${archive.url}/${filePath}`)
+  await readViewStateFromUrl()
+  onOpenFileEditor()
 }
 
 // rendering
