@@ -399,14 +399,7 @@ function renderHeader () {
                           <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
 
                           <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
-                            ${renderFaviconPicker({
-                              async onSelect (imageData) {
-                                let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
-                                await archive2.writeFile('/favicon.ico', imageData)
-                                faviconCacheBuster = Date.now()
-                                isFaviconSet = true
-                              }
-                            })}
+                            ${renderFaviconPicker({onSelect: onSelectFavicon})}
                           </div>
                         </div>`
                     })}
@@ -907,14 +900,7 @@ function renderSettingsView () {
                         <img class="favicon-picker-btn pressed" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
 
                         <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
-                          ${renderFaviconPicker({
-                            async onSelect (imageData) {
-                              let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
-                              await archive2.writeFile('/favicon.ico', imageData)
-                              faviconCacheBuster = Date.now()
-                              isFaviconSet = true
-                            }
-                          })}
+                          ${renderFaviconPicker({onSelect: onSelectFavicon})}
                         </div>
                       </div>`
                   })}
@@ -1369,6 +1355,19 @@ async function onChangeExpiresAt (e) {
   if (sliderState == 2) expiresAt = +(moment().add(1, 'month'))
   await beaker.archives.setUserSettings(archive.key, {expiresAt})
   Object.assign(archive.userSettings, {expiresAt})
+  render()
+}
+
+async function onSelectFavicon (imageData) {
+  let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+  if (imageData) {
+    await archive2.writeFile('/favicon.ico', imageData)
+  } else {
+    await archive2.unlink('/favicon.ico').catch(e => null)
+    await beaker.sitedata.set(archive.url, 'favicon', '') // clear cache
+  }
+  faviconCacheBuster = Date.now()
+  isFaviconSet = true
   render()
 }
 
