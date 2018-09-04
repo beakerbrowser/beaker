@@ -81,7 +81,7 @@ function onClickNewSiteButton (e) {
             <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
               <div class="label">
                 <i class="fa fa-folder-o"></i>
-                Import folder
+                From folder
               </div>
               <p class="description">
                 Create a new project from a folder on your computer
@@ -105,7 +105,7 @@ async function onCreateSiteFromFolder () {
 
   // create a new archive
   const archive = await DatArchive.create({prompt: false})
-  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
+  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
   window.location = 'beaker://library/' + archive.url + '#setup'
 }
 
