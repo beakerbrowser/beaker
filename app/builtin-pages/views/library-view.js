@@ -82,7 +82,10 @@ const onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
 // =
 
 function setupWorkingCheckout () {
-  if (_get(archive, 'info.userSettings.previewMode')) {
+  if (archive.url.indexOf('+') !== -1) {
+    // use given version
+    workingCheckout = archive
+  } else if (_get(archive, 'info.userSettings.previewMode')) {
     // use +preview checkout
     workingCheckout = new LibraryDatArchive(archive.checkout('preview').url)
   } else {
