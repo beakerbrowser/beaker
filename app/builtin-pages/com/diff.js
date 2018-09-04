@@ -48,7 +48,7 @@ export default function render (diff, path = '') {
     <pre class="diff ${lineEls.length >= 100 ? 'digits4' : ''}">
       <div class="linenos">${lineEls}</div>
       <div class="linenos linenos2">${lineEls2}</div>
-      ${diff.map(d => yo`<div class=${d.removed ? 'del' : d.added ? 'add' : ''}>${d.value}</div>`).map(el => highlight(el, pathExt))}
+      ${diff.map(d => yo`<div class="content ${d.removed ? 'del' : d.added ? 'add' : ''}">${d.value}</div>`).map(el => highlight(el, pathExt))}
     </pre>
   `
 }
