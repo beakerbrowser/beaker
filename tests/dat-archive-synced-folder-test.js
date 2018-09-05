@@ -50,7 +50,7 @@ test('setLocalSyncPath', async t => {
 
   // sync occurred
   const dir = jetpack.cwd(createdFilePath)
-  t.truthy(await dir.existsAsync('dat.json'))
+  t.truthy(dir.exists('dat.json'))
 
   // check info
   var res = await mainTab.executeJavascript(`
@@ -83,7 +83,7 @@ test('sync archive->folder on change', async t => {
   t.deepEqual(await dir.readAsync('archive-foo.txt'), 'bar')
 
   // old files were synced
-  t.truthy(await dir.existsAsync('dat.json'))
+  t.truthy(dir.exists('dat.json'))
 
   // modify the file
   var syncPromise = waitForSync(mainTab, createdDatUrl, 'folder')
@@ -110,7 +110,7 @@ test('sync archive->folder on change', async t => {
   await syncPromise
 
   // removed file was synced
-  t.falsy(await dir.existsAsync('archive-foo.txt'))
+  t.falsy(dir.exists('archive-foo.txt'))
 })
 
 test('sync folder->archive on change', async t => {
@@ -181,8 +181,8 @@ test('simultaneous writes result in == state', async t => {
   `)
 
   // check ==
-  t.deepEqual(await dir.existsAsync('local-foo.txt'), await existsArchive('/local-foo.txt'))
-  t.deepEqual(await dir.existsAsync('archive-foo.txt'), await existsArchive('/archive-foo.txt'))
+  t.deepEqual(dir.exists('local-foo.txt'), await existsArchive('/local-foo.txt'))
+  t.deepEqual(dir.exists('archive-foo.txt'), await existsArchive('/archive-foo.txt'))
 })
 
 test('setLocalSyncPath() doesnt allow bad values', async t => {
