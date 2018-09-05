@@ -10,7 +10,8 @@ const FETCH_COUNT = 200
 var counter = 0
 var history
 var baseUrl
-export default function render (archive, {includePreview} = {}) {
+export default function render (archive, {path, includePreview} = {}) {
+  path = path || ''
   var el = renderHistory()
   el.isSameNode = (other) => (other && other.classList && other.classList.contains('archive-history'))
 
@@ -35,11 +36,11 @@ export default function render (archive, {includePreview} = {}) {
         <div class="archive-history-body">
           ${includePreview
             ? yo`
-              <div onclick=${onGoto} class="archive-history-item" title="View local preview" href="beaker://library/${baseUrl}+preview">
+              <div onclick=${onGoto} class="archive-history-item" title="View local preview" href="beaker://library/${baseUrl}+preview${path}">
                 <span class="fa fa-fw fa-laptop"></span> View local preview
               </div>`
             : ''}
-          <div onclick=${onGoto} class="archive-history-item no-border" title="View latest published" href="beaker://library/${baseUrl}">
+          <div onclick=${onGoto} class="archive-history-item no-border" title="View latest published" href="beaker://library/${baseUrl}${path}">
             <span class="fa fa-fw fa-globe"></span> View latest published
           </div>
           <hr />
@@ -60,7 +61,7 @@ export default function render (archive, {includePreview} = {}) {
         onclick=${onGoto}
         class="archive-history-item"
         title="View version ${c.version}"
-        href="beaker://library/${baseUrl}+${c.version}"
+        href="beaker://library/${baseUrl}+${c.version}${path}"
       >
         ${c.type === 'put' ? 'Updated' : 'Deleted'}
 

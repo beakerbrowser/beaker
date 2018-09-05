@@ -54,6 +54,7 @@ function rVersion (filesBrowser, currentSource) {
   var archive = filesBrowser.root._archive
   if (!archive) return ''
 
+  var previewMode = _get(archive, 'info.userSettings.previewMode', false)
   var version = 'latest'
   var vi = archive.url.indexOf('+')
   if (vi !== -1) version = archive.url.slice(vi + 1)
@@ -61,7 +62,19 @@ function rVersion (filesBrowser, currentSource) {
     version = `v${version}`
   }
 
-  var includePreview = _get(archive, 'info.userSettings.previewMode', false)
+  if (filesBrowser.isEditMode) {
+    if (previewMode && version !== 'preview') {
+      return yo`
+        <div class="warning">
+          Warning: you are editing the live version of the site.
+          <a class="link" href="beaker://library/${archive.checkout('preview').url}${currentSource._path}">
+            Goto preview
+          </a>
+        </div>`
+    }
+    return ''
+  }
+
   const button = (onToggle) => yo`
     <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="Select version">
       <span class="fa fa-history"></span> ${version}
@@ -76,7 +89,7 @@ function rVersion (filesBrowser, currentSource) {
       <div class="dropdown toggleable-container version-picker">
         ${button(onToggle)}
         <div class="dropdown-items left">
-          ${renderArchiveHistory(filesBrowser.root._archive, {includePreview})}
+          ${renderArchiveHistory(filesBrowser.root._archive, {includePreview: previewMode, path: currentSource._path})}
         </div>
       </div>`
   })
@@ -111,6 +124,10 @@ function rMetadata (filesBrowser, node) {
 }
 
 function rActions (filesBrowser, currentSource) {
+  if (filesBrowser.isEditMode) {
+    return ''
+  }
+
   var isTextual = typeof currentSource.preview === 'string' // preview is only set for text items
   var isEditing = filesBrowser.isEditMode
   var buttonGroup = []
