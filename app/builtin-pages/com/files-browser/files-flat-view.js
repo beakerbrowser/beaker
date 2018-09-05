@@ -3,6 +3,7 @@
 import yo from 'yo-yo'
 import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
+import _get from 'lodash.get'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
@@ -50,17 +51,35 @@ function rHeader (filesBrowser, currentSource) {
 }
 
 function rVersion (filesBrowser, currentSource) {
-  let archive = filesBrowser.root._archive
+  var archive = filesBrowser.root._archive
   if (!archive) return ''
-  let vi = archive.url.indexOf('+')
-  if (vi === -1) return '' // showing latest
-  let urlUnversioned = archive.url.slice(0, vi)
-  let version = archive.url.slice(vi + 1)
-  if (version === 'preview') return '' // showing preview
-  return [
-    yo`<div class="version-badge badge green">v${version}</div>`,
-    yo`<a class="jump-to-latest" href=${`beaker://library/${urlUnversioned}`}>Jump to latest</a>`
-  ]
+
+  var version = 'latest'
+  var vi = archive.url.indexOf('+')
+  if (vi !== -1) version = archive.url.slice(vi + 1)
+  if (version == +version) {
+    version = `v${version}`
+  }
+
+  var includePreview = _get(archive, 'info.userSettings.previewMode', false)
+  const button = (onToggle) => yo`
+    <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="Select version">
+      <span class="fa fa-history"></span> ${version}
+    </button>`
+  return toggleable2({
+    id: 'version-picker',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker">
+        ${button(onToggle)}
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker">
+        ${button(onToggle)}
+        <div class="dropdown-items left">
+          ${renderArchiveHistory(filesBrowser.root._archive, {includePreview})}
+        </div>
+      </div>`
+  })
 }
 
 function rMetadata (filesBrowser, node) {
@@ -89,28 +108,6 @@ function rMetadata (filesBrowser, node) {
       }
       <span class="file-info">${prettyBytes(node.size)}</span>
     </div>`
-}
-
-function rVersionPicker (filesBrowser) {
-  return toggleable2({
-    id: 'version-picker',
-    closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker">
-        <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="View history">
-          <span class="fa fa-history"></span>
-        </button>
-      </div>`,
-    open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker">
-        <button class="btn plain nofocus" onclick=${onToggle}>
-          <span class="fa fa-history"></span>
-        </button>
-
-        <div class="dropdown-items right">
-          ${renderArchiveHistory(filesBrowser.root._archive)}
-        </div>
-      </div>`
-  })
 }
 
 function rActions (filesBrowser, currentSource) {
@@ -145,8 +142,6 @@ function rActions (filesBrowser, currentSource) {
       >
         <i class="fa fa-download"></i>
       </a>
-
-      ${currentSource.type === 'archive' ? rVersionPicker(filesBrowser) : ''}
 
       ${currentSource.isEditable && (currentSource.type !== 'file')
         ?

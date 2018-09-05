@@ -82,16 +82,20 @@ const onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
 // =
 
 function setupWorkingCheckout () {
-  if (archive.url.indexOf('+') !== -1) {
+  // TODO this was disabled in favor of using the version picker
+  // we may need to just remove the workingCheckout and use archive directly
+  // -prf
+  workingCheckout = archive
+  /*if (archive.url.indexOf('+') !== -1) {
     // use given version
     workingCheckout = archive
-  } else if (_get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
+  } else if (false && _get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
     // use +preview checkout
     workingCheckout = new LibraryDatArchive(archive.checkout('preview').url)
   } else {
     // use latest checkout
     workingCheckout = new LibraryDatArchive(archive.checkout().url)
-  }
+  }*/
 }
 
 setup()
@@ -1806,7 +1810,7 @@ function onScrollMain (e) {
 }
 
 async function onArchiveUpdated (e) {
-  if (e.details.url === archive.url) {
+  if (e.details.url === archive.checkout().url) {
     const isOwner = _get(archive, 'info.isOwner')
     const isSavedChanged = ('isSaved' in e.details && e.details.isSaved !== _get(archive, 'info.userSettings.isSaved'))
     const previewModeChanged = ('previewMode' in e.details && e.details.previewMode !== _get(archive, 'info.userSettings.previewMode'))
@@ -1816,8 +1820,13 @@ async function onArchiveUpdated (e) {
     // this totally sucks and is 100% technical debt
     // -prf
     if (isOwner && (isSavedChanged || previewModeChanged)) {
-      console.log('HACK - reloading', e.details)
-      window.location.reload()
+      if (archive.url.indexOf('+') !== -1) {
+        // go to latest
+        window.location = `beaker://library/${archive.checkout().url}#${activeView}`
+      } else {
+        // just reload
+        window.location.reload()
+      }
       return
     }
     await archive.setup()
@@ -1826,7 +1835,7 @@ async function onArchiveUpdated (e) {
 }
 
 function onNetworkChanged (e) {
-  if (e.details.url === archive.url) {
+  if (e.details.url === archive.checkout().url) {
     var now = Date.now()
     archive.info.peerInfo = e.details.peers
     archive.info.peers = e.details.connections
