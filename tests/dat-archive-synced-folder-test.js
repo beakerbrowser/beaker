@@ -539,14 +539,17 @@ test('previewMode=true with a local folder', async t => {
   // turn off preview mode
   // =
 
-  var syncPromise = waitForSync(mainTab, datUrl, 'folder')
+  var syncPromise1 = waitForSync(mainTab, datUrl, 'folder')
+  var syncPromise2 = waitForSync(mainTab, datUrl, 'archive')
   var res = await mainTab.executeJavascript(`
     beaker.archives.setUserSettings("${datUrl}", {previewMode: false})
   `)
   t.deepEqual(res.previewMode, false)
 
   // wait for sync to occur
-  await syncPromise
+  await syncPromise1
+  await syncPromise2
+  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
 
   // check local folder
   t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'archive-file.txt', 'local-folder'].sort())
@@ -558,6 +561,7 @@ test('previewMode=true with a local folder', async t => {
   var syncPromise = waitForSync(mainTab, datUrl, 'folder')
   await dir.write('local-file.txt', 'local2')
   await syncPromise
+  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
 
   // check local and archive
   t.deepEqual(await dir.readAsync('local-file.txt'), 'local2')
