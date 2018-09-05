@@ -85,7 +85,7 @@ function setupWorkingCheckout () {
   if (archive.url.indexOf('+') !== -1) {
     // use given version
     workingCheckout = archive
-  } else if (_get(archive, 'info.userSettings.previewMode')) {
+  } else if (_get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
     // use +preview checkout
     workingCheckout = new LibraryDatArchive(archive.checkout('preview').url)
   } else {
@@ -358,6 +358,7 @@ function render () {
                         is in the Trash.
                       </span>
                       <button class="btn" onclick=${onSave}>Restore from Trash</button>
+                      <button class="btn" onclick=${onDeletePermanently} style="margin-left: 5px">Delete permanently</button>
                     </div>
                   </div>`
                 : ''
@@ -575,10 +576,16 @@ function renderMenu () {
                       <i class="fa fa-trash-o"></i>
                       Move to Trash
                     </div>`
-                  : yo`
-                    <div class="dropdown-item" onclick=${onSave}>
-                      <i class="fa fa-undo"></i> Restore from Trash
-                    </div>`
+                  : [
+                    yo`
+                      <div class="dropdown-item" onclick=${onSave}>
+                        <i class="fa fa-undo"></i> Restore from Trash
+                      </div>`,
+                    yo`
+                      <div class="dropdown-item" onclick=${onDeletePermanently}>
+                        <i class="fa fa-times-circle"></i> Delete permanently
+                      </div>`
+                  ]
                 : ''}
             </div>
           </div>
@@ -1817,12 +1824,16 @@ function onScrollMain (e) {
 
 async function onArchiveUpdated (e) {
   if (e.details.url === archive.url) {
+    const isOwner = _get(archive, 'info.isOwner')
+    const isSavedChanged = ('isSaved' in e.details && e.details.isSaved !== _get(archive, 'info.userSettings.isSaved'))
+    const previewModeChanged = ('previewMode' in e.details && e.details.previewMode !== _get(archive, 'info.userSettings.previewMode'))
+
     // HACK
-    // if preview mode has changed, we need to reload so that the page can be constructed correctly
+    // if previewMode or isSaved has changed, we need to reload so that the page can be constructed correctly
     // this totally sucks and is 100% technical debt
     // -prf
-    if (_get(archive, 'info.isOwner') && 'previewMode' in e.details && e.details.previewMode !== _get(archive, 'info.userSettings.previewMode')) {
-      console.log('reloading', e.details)
+    if (isOwner && (isSavedChanged || previewModeChanged)) {
+      console.log('HACK - reloading', e.details)
       window.location.reload()
       return
     }
