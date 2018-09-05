@@ -802,7 +802,7 @@ test('diff files and listings with previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -832,7 +832,7 @@ test('diff files and listings with previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'add',
@@ -846,7 +846,7 @@ test('diff files and listings with previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'add',
@@ -868,7 +868,7 @@ test('diff files and listings with previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'del',
@@ -940,7 +940,7 @@ test('read/write the preview version when previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -975,7 +975,7 @@ test('read/write the preview version when previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -1086,3 +1086,8 @@ test.skip('build tool test', async t => {
   t.deepEqual(await readArchiveFile('foo.txt'), 'test')
   t.deepEqual(await readArchiveFile('bar.txt'), 'test')
 })
+
+function normalizeDiff (diff) {
+  diff.path = toUnixPath(diff.path)
+  return diff
+}
