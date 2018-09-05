@@ -50,7 +50,7 @@ test('setLocalSyncPath', async t => {
 
   // sync occurred
   const dir = jetpack.cwd(createdFilePath)
-  t.truthy(await dir.existsAsync('dat.json'))
+  t.truthy(dir.exists('dat.json'))
 
   // check info
   var res = await mainTab.executeJavascript(`
@@ -83,7 +83,7 @@ test('sync archive->folder on change', async t => {
   t.deepEqual(await dir.readAsync('archive-foo.txt'), 'bar')
 
   // old files were synced
-  t.truthy(await dir.existsAsync('dat.json'))
+  t.truthy(dir.exists('dat.json'))
 
   // modify the file
   var syncPromise = waitForSync(mainTab, createdDatUrl, 'folder')
@@ -110,7 +110,7 @@ test('sync archive->folder on change', async t => {
   await syncPromise
 
   // removed file was synced
-  t.falsy(await dir.existsAsync('archive-foo.txt'))
+  t.falsy(dir.exists('archive-foo.txt'))
 })
 
 test('sync folder->archive on change', async t => {
@@ -181,8 +181,8 @@ test('simultaneous writes result in == state', async t => {
   `)
 
   // check ==
-  t.deepEqual(await dir.existsAsync('local-foo.txt'), await existsArchive('/local-foo.txt'))
-  t.deepEqual(await dir.existsAsync('archive-foo.txt'), await existsArchive('/archive-foo.txt'))
+  t.deepEqual(dir.exists('local-foo.txt'), await existsArchive('/local-foo.txt'))
+  t.deepEqual(dir.exists('archive-foo.txt'), await existsArchive('/archive-foo.txt'))
 })
 
 test('setLocalSyncPath() doesnt allow bad values', async t => {
@@ -802,7 +802,7 @@ test('diff files and listings with previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -832,7 +832,7 @@ test('diff files and listings with previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'add',
@@ -846,7 +846,7 @@ test('diff files and listings with previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'add',
@@ -868,7 +868,7 @@ test('diff files and listings with previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'del',
@@ -940,7 +940,7 @@ test('read/write the preview version when previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -975,7 +975,7 @@ test('read/write the preview version when previewMode=true', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -1086,3 +1086,8 @@ test.skip('build tool test', async t => {
   t.deepEqual(await readArchiveFile('foo.txt'), 'test')
   t.deepEqual(await readArchiveFile('bar.txt'), 'test')
 })
+
+function normalizeDiff (diff) {
+  diff.path = toUnixPath(diff.path)
+  return diff
+}
