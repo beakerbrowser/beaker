@@ -34,15 +34,15 @@ export default function render (archive, {path, includePreview} = {}) {
     return yo`
       <div class="archive-history ${history ? '' : 'loading'}">
         <div class="archive-history-body">
+          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="beaker://library/${baseUrl}${path}">
+            <span class="fa fa-fw fa-globe"></span> View latest published
+          </div>
           ${includePreview
             ? yo`
-              <div onclick=${onGoto} class="archive-history-item" title="View local preview" href="beaker://library/${baseUrl}+preview${path}">
+              <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="beaker://library/${baseUrl}+preview${path}">
                 <span class="fa fa-fw fa-laptop"></span> View local preview
               </div>`
             : ''}
-          <div onclick=${onGoto} class="archive-history-item no-border" title="View latest published" href="beaker://library/${baseUrl}${path}">
-            <span class="fa fa-fw fa-globe"></span> View latest published
-          </div>
           <hr />
           ${history ? history.map(renderRow) : 'Loading...'}
           ${(!history || history[history.length - 1].version === 1)
