@@ -8,15 +8,11 @@ import {EventEmitter} from 'events'
 import ArchiveProgressMonitor from './archive-progress-monitor'
 import ProgressPieSVG from './progress-pie-svg'
 
-const NOT = 0
-const WHILE_VISITING = 1
-const ONEDAY = 2
-const ONEWEEK = 3
-const ONEMONTH = 4
-const FOREVER = 5
+const ONEDAY = 0
+const ONEWEEK = 1
+const ONEMONTH = 2
+const FOREVER = 3
 const TIMELENS = [
-  () => yo`<span>Offline mode (do not sync)</span>`,
-  () => yo`<span>While visiting</span>`,
   () => yo`<span>1 day</span>`,
   () => yo`<span>1 week</span>`,
   () => yo`<span>1 month</span>`,
@@ -62,15 +58,12 @@ export class RehostSlider extends EventEmitter {
     }
 
     // calculate the current state
-    const networked = _get(this, 'siteInfo.userSettings.networked', true)
     const isSaved = _get(this, 'siteInfo.userSettings.isSaved', false)
     const expiresAt = _get(this, 'siteInfo.userSettings.expiresAt', undefined)
     const now = Date.now()
-    const timeRemaining = (networked && isSaved && expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
+    const timeRemaining = (isSaved && expiresAt && expiresAt > now) ? moment.duration(expiresAt - now) : null
     var currentSetting
-    if (!networked) currentSetting = NOT
-    else if (!isSaved) currentSetting = WHILE_VISITING
-    else if (!expiresAt) currentSetting = FOREVER
+    if (!expiresAt) currentSetting = FOREVER
     else if (timeRemaining && timeRemaining.asMonths() > 0.5) currentSetting = ONEMONTH
     else if (timeRemaining && timeRemaining.asWeeks() > 0.5) currentSetting = ONEWEEK
     else currentSetting = ONEDAY
@@ -79,12 +72,7 @@ export class RehostSlider extends EventEmitter {
     const sliderState = typeof this.sliderState === 'undefined'
       ? currentSetting
       : this.sliderState
-    const statusClass =
-      (sliderState == NOT ?
-        'red' :
-        (sliderState == WHILE_VISITING ?
-          'yellow' :
-          'green'))
+    const statusClass = sliderState == FOREVER ? 'green' : 'yellow'
     const statusLabel = timeRemaining && typeof this.sliderState === 'undefined'
       ? yo`<span>Seeding (${timeRemaining.humanize()} remaining)</span>`
       : TIMELENS[sliderState]()
@@ -93,54 +81,77 @@ export class RehostSlider extends EventEmitter {
     // render the dropdown if open
     return yo`
       <div id=${this.id} class="rehost-slider">
-        <div>
-          <label for="rehost-period">Seed these files</label>
+        <label class="toggle">
           <input
-            name="rehost-period"
-            type="range"
-            min="0"
-            max="5"
-            step="1"
-            list="steplist"
-            value=${sliderState}
-            oninput=${e => this.onChangeTimelen(e)} />
-          <datalist id="steplist">
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-              <option>5</option>
-          </datalist>
-        </div>
+            type="checkbox"
+            name="seed"
+            value="seed"
+            ${isSaved ? 'checked' : ''}
+            onclick=${e => this.onToggleSeeding(e)}
+          >
+          <div class="switch"></div>
+          <span class="text">Seed this site${"'"}s files</span>
+        </label>
+        ${isSaved
+          ? yo`
+            <div class="slider">
+              <div>
+                <input
+                  name="rehost-period"
+                  type="range"
+                  min="0"
+                  max="3"
+                  step="1"
+                  list="steplist"
+                  value=${sliderState}
+                  oninput=${e => this.onChangeTimelen(e)} />
+                <datalist id="steplist">
+                    <option>0</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                </datalist>
+              </div>
 
-        <div class="labels">
-          <div class="policy">
-            <i class=${'fa fa-circle ' + statusClass}></i>
-            ${statusLabel}
-          </div>
-          <div class="size">
-            ${size}
-            ${this.progressMonitor.current < 100
-              ? ProgressPieSVG(this.progressMonitor.current, {size: '10px', color1: '#ccc', color2: '#3579ff'})
-              : ''}
-          </div>
-        </div>
+              <div class="labels">
+                <div class="policy">
+                  <i class=${'fa fa-circle ' + statusClass}></i>
+                  ${statusLabel}
+                </div>
+                <div class="size">
+                  ${size}
+                  ${this.progressMonitor.current < 100
+                    ? ProgressPieSVG(this.progressMonitor.current, {size: '10px', color1: '#ccc', color2: '#3579ff'})
+                    : ''}
+                </div>
+              </div>
+            </div>`
+          : ''}
       </div>`
+  }
+
+  async onToggleSeeding (e) {
+    this.sliderState = FOREVER
+
+    // update the archive settings
+    var expiresAt = 0
+    var isSaved = !this.siteInfo.userSettings.isSaved
+    await beaker.archives.setUserSettings(this.siteInfo.key, {isSaved, expiresAt})
+    Object.assign(this.siteInfo.userSettings, {isSaved, expiresAt})
+
+    this.rerender()
   }
 
   async onChangeTimelen (e) {
     this.sliderState = e.target.value
 
     // update the archive settings
-    var networked = (this.sliderState != NOT)
-    var isSaved = (this.sliderState > WHILE_VISITING)
     var expiresAt = 0
     if (this.sliderState == ONEDAY) expiresAt = +(moment().add(1, 'day'))
     if (this.sliderState == ONEWEEK) expiresAt = +(moment().add(1, 'week'))
     if (this.sliderState == ONEMONTH) expiresAt = +(moment().add(1, 'month'))
-    await beaker.archives.setUserSettings(this.siteInfo.key, {networked, isSaved, expiresAt})
-    Object.assign(this.siteInfo.userSettings, {networked, isSaved, expiresAt})
+    await beaker.archives.setUserSettings(this.siteInfo.key, {expiresAt})
+    Object.assign(this.siteInfo.userSettings, {expiresAt})
 
     this.rerender()
   }

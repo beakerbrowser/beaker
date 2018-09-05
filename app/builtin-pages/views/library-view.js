@@ -434,35 +434,14 @@ function renderHeader () {
 }
 
 function renderSeedMenu () {
-  return undefined
-
-  /*const isOwner = _get(archive, 'info.isOwner')
-  const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const networked = _get(archive, 'info.userSettings.networked', true)
-  if (isOwner) return undefined
-  return yo`
-    <button class="btn" onclick=${onToggleSeeding}>
-      <i class="fa fa-${isSaved ? 'pause' : 'upload'}" style="position: relative; top: -1px"></i>
-      ${isSaved ? 'Stop seeding' : 'Seed'}
-    </button>`*/
-
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const networked = _get(archive, 'info.userSettings.networked', true)
-
-  const state = isOwner
-    ? (networked ? 'Online' : 'Offline')
-    : (networked ? (isSaved ? 'Seeding' : 'Seeding (temporarily)') : 'Offline')
-  const color = isOwner
-    ? (networked ? 'green' : 'red')
-    : (networked ? (isSaved ? 'green' : 'green') : 'red')
-  const icon = (isSaved ? 'check' : 'check')
+  if (isOwner) return undefined
 
   const button = onToggle => yo`
-    <button class="btn transparent" onclick=${onToggle}>
-      <i class="fa fa-${icon} ${color}"></i>
-      ${state}
-      <i class="fa fa-angle-down"></i>
+    <button class="btn" onclick=${onToggle}>
+      <span class="fa fa-arrow-circle-up"></span>
+      Seed${isSaved ? 'ing' : ''}
     </button>`
   return toggleable2({
     id: 'nav-item-seed-menu',
@@ -484,7 +463,11 @@ function renderSeedMenu () {
         </div>
       `
     },
-    afterOpen () {
+    async afterOpen () {
+      if (!isSaved) {
+        // start seeding after open
+        await onToggleSeeding()
+      }
       rehostSlider.refreshState()
     }
   })
@@ -1361,7 +1344,7 @@ async function onChangeExpiresAt (e) {
   if (sliderState == 1) expiresAt = +(moment().add(1, 'week'))
   if (sliderState == 2) expiresAt = +(moment().add(1, 'month'))
   await beaker.archives.setUserSettings(archive.key, {expiresAt})
-  Object.assign(archive.userSettings, {expiresAt})
+  Object.assign(archive.info.userSettings, {expiresAt})
   render()
 }
 
