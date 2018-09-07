@@ -58,13 +58,6 @@ export class DatsiteMenuNavbarBtn {
           </div>
 
           ${this.rehostSlider.render()}
-
-          <div class="network-url">
-            <a onclick=${e => this.onOpenPage('beaker://settings#dat-network-activity')}>
-              <i class="fa fa-gear"></i>
-              Manage all network activity
-            </a>
-          </div>
         </div>
       `
   }

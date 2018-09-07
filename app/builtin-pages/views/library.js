@@ -369,7 +369,7 @@ function renderHeader () {
               <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
                 <div class="label">
                   <i class="fa fa-folder-o"></i>
-                  Import folder
+                  From folder
                 </div>
                 <p class="description">
                   Create a new project from a folder on your computer
@@ -502,7 +502,7 @@ async function onCreateSiteFromFolder () {
 
   // create a new archive
   const archive = await DatArchive.create({prompt: false})
-  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
+  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
   window.location += archive.url + '#setup'
 }
 
@@ -659,7 +659,8 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
   let items = [
     {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
-    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive) }
+    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive) },
+    {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`) }
   ]
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})

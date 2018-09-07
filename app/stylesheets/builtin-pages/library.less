@@ -192,6 +192,7 @@ body.drag {
 
   .view {
     background: #f7f7f7;
+    margin-bottom: 20px;
   }
 
   .view-wrapper {
@@ -235,6 +236,10 @@ body.drag {
         text-align: center;
         font-size: 1rem;
         font-weight: 500;
+      }
+
+      hr {
+        margin: 20px 0;
       }
     }
 
@@ -380,15 +385,48 @@ body.drag {
 
   .view.network {
 
-    .ip-address {
-      &:extend(.code-font);
+    .toggle {
+      display: inline-flex;
+      .text {
+        margin: 0 10px;
+      }
+    }
+
+    .big-stats {
+      display: flex;
+      margin: 0 auto 10px;
+      max-width: 450px;
+
+      & > div {    
+        flex: 1;
+        text-align: center;
+        font-size: 27px;
+
+        span {
+          font-size: 15px;
+        }
+      }
+    }
+
+    .small-stats {
+      display: flex;
+
+      & > div {
+        margin-right: 20px;
+
+        span {
+          font-size: 11px;
+          text-transform: uppercase;
+          color: rgba(0,0,0,0.5);
+        }
+      }
     }
 
     .download-status {
       &:extend(.flex);
       align-items: center;
       flex-wrap: nowrap;
-      margin-bottom: 50px;
+      margin-bottom: 20px;
 
       .btn {
         margin-left: 2px;
@@ -398,32 +436,64 @@ body.drag {
           box-shadow: none;
         }
       }
-
-      .blocks {
-        margin-left: 10px;
-        color: @color-text--muted;
-        font-size: .8rem;
-
-        .downloaded {
-          position: relative;
-
-          &:after {
-            content: '/';
-            display: inline-block;
-            margin: 0 5px;
-          }
-        }
-      }
     }
 
     svg.peer-history-graph {
       position: relative;
-      margin-top: 5px;
+      margin: 5px 0;
 
       text {
         fill: @color-text--muted;
         font-size: .8rem;
         font-weight: 500;
+      }
+    }
+
+    .seed-controls {
+      display: flex;
+      height: 20px;
+
+      .seed-toggle {
+        height: 20px;
+
+        .toggle {
+          margin-bottom: 0;
+        }
+      }
+
+      .seed-slider {
+        margin-left: 10px;
+        padding-left: 24px;
+        border-left: 1px solid #ccc;
+
+        input {
+          height: 24px;
+        }
+      }
+
+      .seed-time-label {
+        margin-left: 15px;
+
+        .fa-circle {
+          margin-right: 3px;
+          font-size: 12px;
+
+          &.green {
+            color: @green;
+          }
+          &.yellow {
+            color: @yellow;
+          }
+          &.red {
+            color: @red;
+          }
+        }
+      }
+
+      .hint {
+        padding-left: 20px;
+        border-left: 1px solid #ccc;
+        margin: 0 10px;
       }
     }
   }
@@ -454,6 +524,10 @@ body.drag {
       padding: 10px;
     }
 
+    .toggle .switch {
+      margin-right: 10px;
+    }
+
     .input-group.sync-path {
       position: relative;
       flex-wrap: wrap;
@@ -478,7 +552,6 @@ body.drag {
         border-left: 0;
         border-radius: 0 4px 4px 0;
 
-        &.copy-path,
         &.desktop {
           display: none;
 
@@ -498,13 +571,6 @@ body.drag {
           @media (min-width: 800px) {
             display: none;
           }
-        }
-
-        &.copy-path {
-          width: auto;
-          position: absolute;
-          right: 195px;
-          top: -1px
         }
       }
     }
@@ -544,7 +610,7 @@ body.drag {
       top: -54px;
 
       &.has-description {
-        top: -103px;
+        top: -90px;
       }
     }
 
@@ -579,7 +645,7 @@ body.drag {
 
       .description {
         height: 23px;
-        margin: 13px 0;
+        margin: 13px 0 0;
         white-space: pre;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -592,15 +658,69 @@ body.drag {
         top: 20px;
         display: flex;
 
-        .btn {
+        & > * {
           margin-left: 5px;
+        }
+
+        .btn {
+          min-width: 30px;
+
           &:focus {
             box-shadow: none;
           }
         }
 
-        .btn.save {
-          width: 80px; // fix the width so that hover-swaps dont rearrange things
+        .fa {
+          &.green {
+            color: @green;
+          }
+          &.yellow {
+            color: @yellow;
+          }
+          &.red {
+            color: @red;
+          }
+        }
+
+        .dropdown.seed {
+          .dropdown-items {
+            width: 300px;
+          }
+        }
+
+        .dropdown.share {
+          .dropdown-items {
+            width: 350px;
+          }
+
+          .dropdown-item {
+            background: #fff;
+            cursor: default;
+            padding: 15px;
+
+            p {
+              margin-left: 0;
+              color: @color-text;
+            }
+          }
+
+          p.copy-url {
+            &:extend(.flex);
+            margin-top: 5px;
+            margin-bottom: 0;
+
+            input {
+              flex: 1;
+              font-size: 12px;
+              border-color: #eee;
+              background: #eee;
+              margin-right: 5px;
+            }
+
+            .btn.full-width {
+              margin-top: 10px;
+            }
+          }
         }
       }
     }
@@ -619,45 +739,51 @@ body.drag {
       }
 
       h1 {
-        white-space: pre;
+        position: relative;
+        top: -2px;
+        left: -2px;
+        white-space: nowrap;
         max-width: 500px;
         text-overflow: ellipsis;
         overflow: hidden;
-        height: 28px;
+        height: 38px;
+        padding: 6px 8px;
+        border: 1px solid transparent;
       }
 
       input {
         position: relative;
         cursor: auto;
+        left: -1px;
         top: -2px;
-        left: -8px;
         height: 34px;
+        width: 100%;
+        max-width: 500px;   
+        border-radius: 0;     
       }
 
-      .fa-pencil {
-        margin-left: 5px;
-      }
-
-      &.editable {
-        h1,
-        .fa-pencil {
-          cursor: pointer;
-        }
-
-        &.editing .fa-pencil {
-          margin-left: 0;
-        }
-      }
-
-      img {
+      .favicon {
         height: 32px;
         width: 32px;
         margin-left: -2px;
         margin-right: 6px;
       }
 
-      .badge {
-        margin-left: 10px;
+      .favicon-picker {
+        padding: 10px;
+      }
+
+      &.editable {
+
+        h1:hover {
+          cursor: text;
+          border-color: #ccc;
+        }
+
+        .favicon:hover {
+          cursor: pointer;
+          background: #eee;
+        }
       }
     }
   }
@@ -695,45 +821,23 @@ body.drag {
       }
     }
 
-    .dropdown.share {
-
-      .dropdown-items {
-        width: 350px;
-      }
-
-      .dropdown-item {
-        background: #fff;
-        cursor: default;
-
-        .description {
-          margin-left: 0;
-          color: @color-text;
-        }
-      }
-
-      p.copy-url {
-        &:extend(.flex);
-        margin-top: 5px;
-        margin-bottom: 10px;
-
-        input {
-          flex: 1;
-          font-size: 12px;
-          border-color: #eee;
-          background: #eee;
-          margin-right: 5px;
-        }
-
-        .btn.full-width {
-          margin-top: 10px;
-        }
-      }
-    }
-
     .favicon {
       width: 16px;
       height: 16px;
       margin-right: 10px;
+    }
+
+    .middot {
+      margin: 0 6px;
+    }
+
+    .peer-count {
+      font-size: 0.8rem;
+    }
+
+    .peer-count,
+    .middot {
+      color: gray;
     }
   }
 
@@ -788,53 +892,47 @@ body.drag {
     }
 
     .dropdown-items {
-      width: 275px;
+      width: 250px;
       background: #fff;
       font-size: 13px;
-    }
-
-    &.seed {
-      .dropdown-items {
-        width: 290px;
-      }
     }
 
     .dropdown-item {
       .fa {
         color: @color-text;
       }
+
+      &.disabled {
+        cursor: default;
+        color: @color-text--light;
+
+        * {
+          color: @color-text--light;
+        }
+
+        &:hover {
+          background: none;
+        }
+      }
     }
 
     .section.menu-items {
       border-bottom: 0;
       padding-bottom: 0;
-    }
 
-    .section.action {
-      background: #f5f5f5;
-      padding: 10px;
+      &:last-of-type {
+        padding-bottom: 5px;
 
-      a {
-        color: #555;
-        &:hover {
-          cursor: pointer;
-          text-decoration: underline;
+        .dropdown-item:last-of-type {
+          border-bottom: 0;
         }
       }
-
-      .fa {
-        margin-right: 2px;
-      }
-    }
-
-    .rehost-slider {
-      margin: 0 14px;
     }
 
     .buttons {
       &:extend(.flex);
       flex-wrap: nowrap;
-      padding: 5px 10px;
+      padding: 8px 10px;
 
       .btn {
         flex: 50%;
@@ -842,14 +940,19 @@ body.drag {
         &:last-of-type {
           margin-left: 5px;
         }
+
+        &.full-width {
+          margin: 0;
+        }
       }
     }
   }
 
-  #local-diff-summary {
+  #local-path-and-preview-tools {
     &:extend(.flex);
     flex-wrap: nowrap;
     align-items: center;
+    height: 52px;
     margin: 0 0 15px;
     padding: 10px 15px;
     background: #fff;
@@ -863,17 +966,17 @@ body.drag {
       margin-left: 5px;
     }
 
+    & > .revision-indicator {
+      margin-left: 2px;
+    }
+
     .summary {
-      margin: 0 8px;
+      margin-right: 5px;
     }
 
     .path {
       margin-left: 0;
       margin-right: auto;
-
-      .label {
-        font-weight: 500;
-      }
 
       .sync-path-link {
         color: rgba(0,0,0,.7);

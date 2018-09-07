@@ -159,6 +159,14 @@ label[disabled] {
     cursor: pointer;
   }
 
+  &.disabled {
+    cursor: default;
+
+    * {
+      cursor: default;
+    }
+  }
+
   input {
     display: none;
   }
@@ -200,7 +208,7 @@ label[disabled] {
     }
   }
 
-  input:checked {
+  input:checked:not(:disabled) {
 
     + .switch:before {
       background: shade(@green, 15%);
@@ -209,6 +217,10 @@ label[disabled] {
     + .switch:after {
       transform: translateX(15px);
     }
+  }
+
+  &.disabled {
+    color: @color-text--light;
   }
 }
 

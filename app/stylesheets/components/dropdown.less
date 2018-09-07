@@ -40,7 +40,7 @@
   position: absolute;
   right: 0px;
   z-index: 3000;
-  background: #fafafa;
+  background: #fff;
   border: 1px solid #dadada;
   border-radius: 4px;
 
@@ -51,6 +51,14 @@
 
   .section-header {
     padding: 2px 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.light {
+      color: @color-text--light;
+      font-weight: 500;
+    }
   }
 
   &.wide {

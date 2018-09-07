@@ -39,9 +39,11 @@ export default class DatNetworkActivity {
     if (this.currentFilter === 'seeding') {
       this.archives = await beaker.archives.list({isSaved: true, isOwner: false})
     } else if (this.currentFilter === 'owned') {
-      this.archives = await beaker.archives.list({isOwner: true})
+      this.archives = await beaker.archives.list({isSaved: true, isOwner: true})
+    } else if (this.currentFilter === 'trash') {
+      this.archives = await beaker.archives.list({isSaved: false, isOwner: true})
     } else if (this.currentFilter === 'cache') {
-      this.archives = await beaker.archives.list({isSaved: false, inMemory: true})
+      this.archives = await beaker.archives.list({isSaved: false, isOwner: false})
     } else {
       this.archives = await beaker.archives.list()
     }
@@ -66,6 +68,9 @@ export default class DatNetworkActivity {
       return yo`<div id=${'dat-network-activity-' + this.id} class="dat-network-activity loading">Loading...</div>`
     }
 
+    const isCache = this.currentFilter === 'cache'
+    const isTrash = this.currentFilter === 'trash'
+
     const f = (id, label) => yo`
       <button
         class="plain ${this.currentFilter === id ? 'active' : ''}"
@@ -76,13 +81,21 @@ export default class DatNetworkActivity {
     return yo`
       <div id=${'dat-network-activity-' + this.id} class="dat-network-activity">
         <div class="archives">
-          ${this.isClearingCache
-            ? yo`<button class="link clear-cache disabled"><span class="spinner"></span> Clearing cache</span>`
-            : yo`<button class="link clear-cache" onclick=${() => this.onClearCache()}>Clear cache</button>`}
+          ${isCache
+            ? this.isClearingCache
+              ? yo`<button class="link clear-cache disabled"><span class="spinner"></span> Clearing cache</span>`
+              : yo`<button class="link clear-cache" onclick=${() => this.onClearCache({isOwner: false})}>Clear cache</button>`
+            : ''}
+          ${isTrash
+            ? this.isClearingCache
+              ? yo`<button class="link clear-cache disabled"><span class="spinner"></span> Clearing trash</span>`
+              : yo`<button class="link clear-cache" onclick=${() => this.onClearCache({isOwner: true})}>Clear trash</button>`
+            : ''}
           <div class="filters">
             ${f('owned', 'Your archives')}
             ${f('seeding', 'Seeding')}
             ${f('cache', 'Cache')}
+            ${f('trash', 'Trash')}
           </div>
           <div class="heading">
             ${this.renderHeading('title', 'Title')}
@@ -132,7 +145,7 @@ export default class DatNetworkActivity {
         </a>
 
         <div class="peers">
-          ${archive.userSettings.networked
+          ${archive.isSwarmed
             ? `${archive.peers} ${pluralize(archive.peers, 'peer')}`
             : yo`<span><i class="fa fa-plug"></i> Offline</span>`}
         </div>
@@ -170,12 +183,9 @@ export default class DatNetworkActivity {
 
     const items = [
       {icon: 'link', label: 'Copy URL', click: () => this.onCopyURL(archive)},
-      {icon: 'book', label: 'Open in Library', click: () => this.onOpenInLibrary(archive)},
+      {icon: 'files-o', label: 'View source', click: () => this.onOpenInLibrary(archive)},
       {icon: 'bug', label: 'Network debugger', click: () => this.onOpenInSwarmDebugger(archive)},
-      archive.userSettings.networked
-        ? {icon: 'plug', label: 'Disconnect from the swarm', click: () => this.onToggleNetworked(archive)}
-        : {icon: 'exchange', label: 'Connect to the swarm', click: () => this.onToggleNetworked(archive)},
-      {icon: 'times-circle', label: 'Purge archive and files', click: () => this.onDeleteFiles(archive)}
+      {icon: 'times-circle', label: 'Purge from my computer', click: () => this.onDeleteFiles(archive)}
     ]
     await contextMenu.create({x: e.clientX, y: e.clientY, items})
 
@@ -199,19 +209,6 @@ export default class DatNetworkActivity {
 
   onOpenInSwarmDebugger (archive) {
     window.open('beaker://swarm-debugger/' + archive.url)
-  }
-
-  async onToggleNetworked (archive) {
-    try {
-      const networked = !archive.userSettings.networked
-      await (new DatArchive(archive.key)).configure({networked})
-      archive.userSettings.networked = networked
-      this.rerender()
-    } catch (e) {
-      console.error(e)
-      toast.create('Something went wrong', 'error')
-      return
-    }
   }
 
   async onDeleteFiles (archive) {
@@ -241,12 +238,12 @@ export default class DatNetworkActivity {
     }
   }
 
-  async onClearCache () {
+  async onClearCache ({isOwner} = {isOwner: false}) {
     this.isClearingCache = true
     this.rerender()
 
     try {
-      const results = await beaker.archives.clearGarbage({isOwner: false})
+      const results = await beaker.archives.clearGarbage({isOwner})
       await beaker.archives.clearDnsCache()
       console.debug('Dat cache cleared', results)
       toast.create(`Cache cleared (${prettyBytes(results.totalBytes)} freed from ${results.totalArchives} archives)`, '', 5e3)

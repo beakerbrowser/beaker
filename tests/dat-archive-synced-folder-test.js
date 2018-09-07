@@ -41,7 +41,7 @@ test('setLocalSyncPath', async t => {
   // set
   var syncPromise = waitForSync(mainTab, createdDatUrl, 'folder')
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}", {autoPublishLocal: true})
+    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}")
   `)
   t.falsy(res)
 
@@ -50,7 +50,7 @@ test('setLocalSyncPath', async t => {
 
   // sync occurred
   const dir = jetpack.cwd(createdFilePath)
-  t.truthy(await dir.existsAsync('dat.json'))
+  t.truthy(dir.exists('dat.json'))
 
   // check info
   var res = await mainTab.executeJavascript(`
@@ -83,7 +83,7 @@ test('sync archive->folder on change', async t => {
   t.deepEqual(await dir.readAsync('archive-foo.txt'), 'bar')
 
   // old files were synced
-  t.truthy(await dir.existsAsync('dat.json'))
+  t.truthy(dir.exists('dat.json'))
 
   // modify the file
   var syncPromise = waitForSync(mainTab, createdDatUrl, 'folder')
@@ -110,7 +110,7 @@ test('sync archive->folder on change', async t => {
   await syncPromise
 
   // removed file was synced
-  t.falsy(await dir.existsAsync('archive-foo.txt'))
+  t.falsy(dir.exists('archive-foo.txt'))
 })
 
 test('sync folder->archive on change', async t => {
@@ -181,8 +181,8 @@ test('simultaneous writes result in == state', async t => {
   `)
 
   // check ==
-  t.deepEqual(await dir.existsAsync('local-foo.txt'), await existsArchive('/local-foo.txt'))
-  t.deepEqual(await dir.existsAsync('archive-foo.txt'), await existsArchive('/archive-foo.txt'))
+  t.deepEqual(dir.exists('local-foo.txt'), await existsArchive('/local-foo.txt'))
+  t.deepEqual(dir.exists('archive-foo.txt'), await existsArchive('/archive-foo.txt'))
 })
 
 test('setLocalSyncPath() doesnt allow bad values', async t => {
@@ -214,11 +214,11 @@ test('setLocalSyncPath() allows multiple dats to use the same path', async t => 
 
   // set both to the same dir
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}", {autoPublishLocal: true})
+    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(createdFilePath)}")
   `)
   t.falsy(res)
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${createdDatUrl2}", "${escapeWindowsSlashes(createdFilePath)}", {autoPublishLocal: true})
+    beaker.archives.setLocalSyncPath("${createdDatUrl2}", "${escapeWindowsSlashes(createdFilePath)}")
   `)
   t.falsy(res)
 })
@@ -321,7 +321,7 @@ test('additional sync correctness checks', async t => {
   // set
   var syncPromise = waitForSync(mainTab, createdDatUrl, 'archive')
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(localFilePath)}", {autoPublishLocal: true})
+    beaker.archives.setLocalSyncPath("${createdDatUrl}", "${escapeWindowsSlashes(localFilePath)}")
   `)
   t.falsy(res)
 
@@ -441,7 +441,7 @@ test('dat.json merges effectively with local sync path', async t => {
 
   // set path
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {autoPublishLocal: true})
+    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}")
   `)
   t.falsy(res)
 
@@ -465,7 +465,7 @@ test('dat.json merges effectively with local sync path', async t => {
   t.deepEqual(res.description, 'Local Description')
 })
 
-test('autoPublishLocal=false', async t => {
+test('previewMode=true with a local folder', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
@@ -484,11 +484,15 @@ test('autoPublishLocal=false', async t => {
   var filePath = tempy.directory()
   var dir = jetpack.cwd(filePath)
 
-  // set path
+  // configure
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {autoPublishLocal: false})
+    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}")
   `)
   t.falsy(res)
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setUserSettings("${datUrl}", {previewMode: true})
+  `)
+  t.deepEqual(res.previewMode, true)
 
   // write files locally
   await dir.write('local-file.txt', 'local')
@@ -532,17 +536,20 @@ test('autoPublishLocal=false', async t => {
   ].sort())
   t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive')
 
-  // turn on autopublish
+  // turn off preview mode
   // =
 
-  var syncPromise = waitForSync(mainTab, datUrl, 'folder')
+  var syncPromise1 = waitForSync(mainTab, datUrl, 'folder')
+  var syncPromise2 = waitForSync(mainTab, datUrl, 'archive')
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {autoPublishLocal: true})
+    beaker.archives.setUserSettings("${datUrl}", {previewMode: false})
   `)
-  t.falsy(res)
+  t.deepEqual(res.previewMode, false)
 
   // wait for sync to occur
-  await syncPromise
+  await syncPromise1
+  await syncPromise2
+  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
 
   // check local folder
   t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'archive-file.txt', 'local-folder'].sort())
@@ -554,6 +561,7 @@ test('autoPublishLocal=false', async t => {
   var syncPromise = waitForSync(mainTab, datUrl, 'folder')
   await dir.write('local-file.txt', 'local2')
   await syncPromise
+  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
 
   // check local and archive
   t.deepEqual(await dir.readAsync('local-file.txt'), 'local2')
@@ -571,13 +579,14 @@ test('autoPublishLocal=false', async t => {
   t.deepEqual(await dir.readAsync('archive-file.txt'), 'archive2')
   t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive2')
 
-  // turn off autopublish
+  // turn on preview model
   // =
 
   await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {autoPublishLocal: false})
+    beaker.archives.setUserSettings("${datUrl}", {previewMode: true})
   `)
+  t.deepEqual(res.previewMode, true)
 
   // write locally
   await dir.write('local-file.txt', 'local2b')
@@ -611,7 +620,159 @@ test('autoPublishLocal=false', async t => {
   t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive2archive')
 })
 
-test('diff files and listings with autoPublishLocal=false', async t => {
+test('previewMode=true without a local folder', async t => {
+  // create a dat
+  var res = await mainTab.executeJavascript(`
+    DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
+  `)
+  var datUrl = res.url
+  t.truthy(datUrl.startsWith('dat://'))
+  var previewDatUrl = res.url + '+preview'
+
+  const readArchiveFile = path => (
+    mainTab.executeJavascript(`
+      var archive = new DatArchive("${datUrl}")
+      archive.readFile("${path}", 'utf8')
+    `)
+  )
+  const readPreviewFile = path => (
+    mainTab.executeJavascript(`
+      var archive = new DatArchive("${previewDatUrl}")
+      archive.readFile("${path}", 'utf8')
+    `)
+  )
+  const readPreviewDir = path => (
+    mainTab.executeJavascript(`
+      var archive = new DatArchive("${previewDatUrl}")
+      archive.readdir("${path}")
+    `)
+  )
+
+  // configure
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setUserSettings("${datUrl}", {previewMode: true})
+  `)
+  t.deepEqual(res.previewMode, true)
+
+
+  // write files in the preview
+  await mainTab.executeJavascript(`
+    var archive = new DatArchive("${previewDatUrl}")
+    Promise.all([
+      archive.writeFile('/local-file.txt', 'local'),
+      archive.mkdir('/local-folder')
+    ]).then(res => {
+      return Promise.all([
+        archive.writeFile('/local-folder/file1.txt', 'local'),
+        archive.writeFile('/local-folder/file2.txt', 'local')
+      ])
+    })
+  `)
+
+  // wait a sec
+  await new Promise(resolve => setTimeout(resolve, 1e3))
+
+
+  // make sure no sync has occurred
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${datUrl}")
+    archive.readdir('/', {recursive: true})
+  `)
+  t.deepEqual(res.map(toUnixPath).sort(), ['.datignore', 'dat.json'].sort())
+
+
+  // write to the archive
+  var syncPromise = waitForSync(mainTab, datUrl, 'folder')
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${datUrl}")
+    archive.writeFile('/archive-file.txt', 'archive')
+  `)
+
+
+  // wait for sync to occur
+  await syncPromise
+
+
+  // check local folder
+  t.deepEqual((await readPreviewDir('/')).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'archive-file.txt', 'local-folder'].sort())
+  t.deepEqual((await readPreviewDir('local-folder')).sort(), ['file1.txt', 'file2.txt'].sort())
+  t.deepEqual(await readPreviewFile('local-file.txt'), 'local')
+  t.deepEqual(await readPreviewFile('archive-file.txt'), 'archive')
+
+  // check the archive
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${datUrl}")
+    archive.readdir('/', {recursive: true})
+  `)
+  t.deepEqual(res.map(toUnixPath).sort(), [
+    '.datignore', 'dat.json', 'archive-file.txt',
+  ].sort())
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive')
+
+
+  // turn off preview mode
+  // =
+
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setUserSettings("${datUrl}", {previewMode: false})
+  `)
+  t.deepEqual(res.previewMode, false)
+
+  // write to archive
+  await mainTab.executeJavascript(`
+    var archive = new DatArchive("${datUrl}")
+    archive.writeFile('/archive-file.txt', 'archive2')
+  `)
+
+  // check archive
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive2')
+
+  // turn on preview mode
+  // =
+
+  var res = await mainTab.executeJavascript(`
+    beaker.archives.setUserSettings("${datUrl}", {previewMode: true})
+  `)
+  t.deepEqual(res.previewMode, true)
+
+  // check local and archive
+  t.deepEqual(await readPreviewFile('archive-file.txt'), 'archive2') // NOTE- updated on sync
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive2') 
+
+  // write to preview
+  await mainTab.executeJavascript(`
+    (new DatArchive("${previewDatUrl}")).writeFile('/archive-file.txt', 'local')
+  `)
+
+  // check local and archive
+  t.deepEqual(await readPreviewFile('archive-file.txt'), 'local')
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive2') // NOTE- no update
+
+  // write to archive
+  await mainTab.executeJavascript(`
+    (new DatArchive("${datUrl}")).writeFile('/archive-file.txt', 'archive2b')
+  `)
+  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
+
+  // check local and archive
+  t.deepEqual(await readPreviewFile('archive-file.txt'), 'archive2b') // NOTE- is updated
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive2b')
+
+  // write to both simultaneously
+  await mainTab.executeJavascript(`
+    (new DatArchive("${previewDatUrl}")).writeFile('/archive-file.txt', 'local3')
+  `)
+  await mainTab.executeJavascript(`
+    (new DatArchive("${datUrl}")).writeFile('/archive-file.txt', 'archive3')
+  `)
+  await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
+
+  // check local and archive
+  t.deepEqual(await readPreviewFile('archive-file.txt'), 'archive3') // NOTE- archive won
+  t.deepEqual(await readArchiveFile('archive-file.txt'), 'archive3')
+})
+
+test('diff files and listings with previewMode=true', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
@@ -634,14 +795,14 @@ test('diff files and listings with autoPublishLocal=false', async t => {
 
   // set path
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {autoPublishLocal: false})
+    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {previewMode: true})
   `)
   t.falsy(res)
   await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -671,7 +832,7 @@ test('diff files and listings with autoPublishLocal=false', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'add',
@@ -685,7 +846,7 @@ test('diff files and listings with autoPublishLocal=false', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'add',
@@ -707,7 +868,7 @@ test('diff files and listings with autoPublishLocal=false', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/local-file.txt', type: 'file' },
     { change: 'add', path: '/local-folder', type: 'dir' },
     { change: 'del',
@@ -741,7 +902,7 @@ test('diff files and listings with autoPublishLocal=false', async t => {
   t.deepEqual(res, [])
 })
 
-test('read/write the preview version when autoPublishLocal=false', async t => {
+test('read/write the preview version when previewMode=true', async t => {
   // create a dat
   var res = await mainTab.executeJavascript(`
     DatArchive.create({title: 'Dat Title', description: 'Dat Description', prompt: false})
@@ -772,14 +933,14 @@ test('read/write the preview version when autoPublishLocal=false', async t => {
 
   // set path
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {autoPublishLocal: false})
+    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {previewMode: true})
   `)
   t.falsy(res)
   await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -814,7 +975,7 @@ test('read/write the preview version when autoPublishLocal=false', async t => {
 
   // run diffs
   var res = await mainTab.executeJavascript(`beaker.archives.diffLocalSyncPathListing("${datUrl}")`)
-  t.deepEqual(res, [
+  t.deepEqual(res.map(normalizeDiff), [
     { change: 'add', path: '/conflict-file.txt', type: 'file' },
     { change: 'add', path: '/conflict-folder', type: 'dir' },
     { change: 'add', path: '/local-file.txt', type: 'file' },
@@ -831,7 +992,7 @@ test('read/write the preview version when autoPublishLocal=false', async t => {
     waitForSync(mainTab, datUrl, 'folder')
   ]
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {autoPublishLocal: true})
+    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {previewMode: false})
   `)
   t.falsy(res)
   await Promise.all(syncPromises)
@@ -925,3 +1086,8 @@ test.skip('build tool test', async t => {
   t.deepEqual(await readArchiveFile('foo.txt'), 'test')
   t.deepEqual(await readArchiveFile('bar.txt'), 'test')
 })
+
+function normalizeDiff (diff) {
+  diff.path = toUnixPath(diff.path)
+  return diff
+}

@@ -32,6 +32,8 @@ export class ForkArchiveModal extends BaseModal {
     this.progress = new ArchiveProgressMonitor(archive)
     this.progress.fetchAllStats().then(() => this.rerender())
     this.progress.on('changed', () => this.rerender())
+    this.progress.startListening()
+    this.on('close', () => this.progress.stopListening())
 
     // render
     this.rerender()

@@ -32,6 +32,7 @@ export default function renderArchiveComparison (opts = {}) {
       copyAll: 'Publish all revisions',
       copy: 'Publish',
       revert: 'Revert',
+      things: 'revisions',
       count: 'unpublished revision'
     },
     labels
@@ -50,10 +51,12 @@ export default function renderArchiveComparison (opts = {}) {
   return yo`
     <div class="archive-comparison">
       <div class="compare-selection">
+        ${isLocalSyncPath ? yo`<a href="#" class="link"><i class="fa fa-angle-left"></i> back</a>` : ''}
+
         <span>${labels.desc}</span>
 
         ${isLocalSyncPath
-          ? (target && target.info ? target.info.userSettings.localSyncPath : '')
+          ? (_get(target, 'info.userSettings.localSyncPath', ''))
           : [
             (onChangeCompareBase
               ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
@@ -68,15 +71,30 @@ export default function renderArchiveComparison (opts = {}) {
               : renderArchive(target))
           ]}
 
-        ${numRevisions > 0
-          ? yo`
-            <div class="actions">
-              <button class="btn success publish" onclick=${onCopyAll}>
+        <div class="actions">
+          ${target && isLocalSyncPath
+            ? yo`<a
+              class="btn primary nofocus tooltip-container"
+              href=${target.url + '+preview'}
+              data-tooltip="Preview the unpublished version of the site"
+              target="_blank"
+            >
+              Preview
+            </a>`
+            : ''}
+
+          ${numRevisions > 0
+            ? yo`
+              <button
+                class="btn success nofocus publish tooltip-container"
+                onclick=${onCopyAll}
+                data-tooltip="${labels.copyAll} ${labels.things}"
+              >
                 ${labels.copyAll}
-              </button>
-            </div>`
-          : ''
-        }
+              </button>`
+            : ''
+          }
+        </div>
       </div>
 
       ${renderRevisions({base, target, isLocalSyncPath, labels, revisions, isRevOpen, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
@@ -91,13 +109,14 @@ export default function renderArchiveComparison (opts = {}) {
           : ''
         }
 
-        <div class="links">
-          ${base ? yo`<a href=${base.url} target="_blank">View ${labels.base}</a>` : ''}
-          ${base && target ? yo`<span class="separator">|</span>` : ''}
-          ${target ? yo`<a href=${target.url} target="_blank">View ${labels.target}</a>` : ''}
-          ${isLocalSyncPath ? yo`<span class="separator">|</span>` : ''}
-          ${isLocalSyncPath ? yo`<a class="link" onmousedown=${onOpenPreview} target="_blank">View preview</a>` : ''}
-        </div>
+        ${!isLocalSyncPath
+          ? yo`
+            <div class="links">
+              ${base ? yo`<a href=${base.url} target="_blank">View ${labels.base}</a>` : ''}
+              ${base && target ? yo`<span class="separator">|</span>` : ''}
+              ${target ? yo`<a href=${target.url} target="_blank">View ${labels.target}</a>` : ''}
+            </div>`
+          : ''}
       </div>
     </div>`
 }
@@ -141,7 +160,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
         <div class="empty">
           <div class="empty-header">
             <i class="fa fa-check"></i>
-            <div class="label">You${"'"}re all set!</div>
+            <div class="label">No unpublished changes</div>
           </div>
 
           <p>
@@ -176,19 +195,21 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
 
   const onCopy = (e, rev) => {
     e.stopPropagation()
-    const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
+    var path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
     if (confirm(`${labels.copy} the changes in ${path} to "${getSafeTitle(target)}"?`)) {
-      onMerge(base, target, {paths: [rev.path], shallow: false})
+      var paths = [rev.path + (rev.type === 'dir' ? '/' : '')] // trailing slash indicates directory
+      onMerge(base, target, {paths, shallow: false})
     }
   }
 
   const onRevertRevision = (e, rev) => {
     e.stopPropagation()
-    const path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
+    var path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
     if (confirm(`${labels.revert} the changes to ${path}?`)) {
-      onMerge(target, base, {paths: [rev.path], shallow: false})
+      var paths = [rev.path + (rev.type === 'dir' ? '/' : '')] // trailing slash indicates directory
+      onMerge(target, base, {paths, shallow: false})
     }
   }
 

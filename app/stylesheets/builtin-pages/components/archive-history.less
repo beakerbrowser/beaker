@@ -27,6 +27,10 @@
     padding: 10px;
   }
 
+  hr {
+    margin: 0 0 5px;
+  }
+
   .archive-history-item {
     &:extend(.flex);
     flex-wrap: nowrap;
@@ -35,6 +39,14 @@
     padding: 0 10px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
+
+    &.no-border {
+      border-color: transparent;
+    }
+
+    .fa {
+      margin-right: 5px;
+    }
 
     .version {
       &:extend(.code-font);
