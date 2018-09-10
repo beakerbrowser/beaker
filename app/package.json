@@ -3,12 +3,12 @@
   "productName": "Beaker Browser",
   "description": "An Experimental Peer-to-Peer Web Browser.",
   "homepage": "https://beakerbrowser.com/",
-  "version": "0.8.0-prerelease.7",
+  "version": "0.8.0-prerelease.9",
   "author": "Paul Frazee <pfrazee@gmail.com>",
   "copyright": "© 2018, Blue Link Labs",
   "main": "background-process.build.js",
   "dependencies": {
-    "@beaker/core": "^2.6.3",
+    "@beaker/core": "^2.9.3",
     "@beaker/dat-archive-file-diff": "^1.0.0",
     "anymatch": "^1.3.2",
     "await-lock": "^1.1.3",
@@ -86,7 +86,7 @@
     "textextensions": "^2.2.0",
     "through2": "^2.0.1",
     "unused-filename": "^0.1.0",
-    "utp-native": "^1.7.2",
+    "utp-native": "^2.0.0",
     "yo-yo": "^1.4.0",
     "zerr": "^1.0.4"
   },

@@ -55,6 +55,9 @@ function render () {
           </div>
         `)}
       </div>
+      <div class="remove">
+        <a class="btn plain" onclick=${() => onClickRemove()}><span class="fa fa-times"></span> remove favicon</a>
+      </div>
     </div>
   `
 }
@@ -71,4 +74,10 @@ async function onClickIcon (v) {
   selectedFavicon = v
   onSelect(await beaker.browser.getBuiltinFavicon(selectedFavicon))
   rerender()
+}
+
+async function onClickRemove () {
+  selectedFavicon = null
+  onSelect(null)
+  rerender()  
 }

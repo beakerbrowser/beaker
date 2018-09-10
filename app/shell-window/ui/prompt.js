@@ -54,6 +54,10 @@ export function remove (page, prompt) {
   if (i !== -1) {
     page.prompts.splice(i, 1)
     update(page)
+    if (page.webviewEl) {
+      // return focus to the page content
+      page.webviewEl.focus()
+    }
   }
 }
 
@@ -64,6 +68,10 @@ export function forceRemoveAll (page) {
   page.prompts.forEach(p => {
     if (typeof p.onForceClose == 'function') { p.onForceClose() }
   })
+  if (page.prompts.length && page.webviewEl) {
+    // return focus to the page content
+    page.webviewEl.focus()
+  }
   page.prompts = []
   update(page)
 }

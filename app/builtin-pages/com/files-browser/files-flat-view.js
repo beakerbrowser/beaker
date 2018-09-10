@@ -3,6 +3,7 @@
 import yo from 'yo-yo'
 import moment from 'moment'
 import prettyBytes from 'pretty-bytes'
+import _get from 'lodash.get'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
@@ -12,7 +13,7 @@ import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
 import {render as renderFileEditor} from '../file-editor'
-import {pluralize} from '../../../lib/strings'
+import {shorten, pluralize} from '../../../lib/strings'
 
 // exported api
 // =
@@ -50,19 +51,48 @@ function rHeader (filesBrowser, currentSource) {
 }
 
 function rVersion (filesBrowser, currentSource) {
-  let archive = filesBrowser.root._archive
+  var archive = filesBrowser.root._archive
   if (!archive) return ''
-  let vi = archive.url.indexOf('+')
-  if (vi === -1) {
-    // showing latest
+
+  var previewMode = _get(archive, 'info.userSettings.previewMode', false)
+  var version = 'latest'
+  var vi = archive.url.indexOf('+')
+  if (vi !== -1) version = archive.url.slice(vi + 1)
+  if (version == +version) {
+    version = `v${version}`
+  }
+
+  if (filesBrowser.isEditMode) {
+    if (previewMode && version !== 'preview') {
+      return yo`
+        <div class="warning">
+          Warning: you are editing the live version of the site.
+          <a class="link" href="beaker://library/${archive.checkout('preview').url}${currentSource._path}">
+            Goto preview
+          </a>
+        </div>`
+    }
     return ''
   }
-  let urlUnversioned = archive.url.slice(0, vi)
-  let version = archive.url.slice(vi + 1)
-  return [
-    yo`<div class="version-badge badge green">v${version}</div>`,
-    yo`<a class="jump-to-latest" href=${`beaker://library/${urlUnversioned}`}>Jump to latest</a>`
-  ]
+
+  const button = (onToggle) => yo`
+    <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="Select version">
+      <span class="fa fa-history"></span> ${version}
+    </button>`
+  return toggleable2({
+    id: 'version-picker',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker">
+        ${button(onToggle)}
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker">
+        ${button(onToggle)}
+        <div class="dropdown-items left">
+          ${renderArchiveHistory(filesBrowser.root._archive, {includePreview: previewMode, path: currentSource._path})}
+        </div>
+      </div>`
+  })
 }
 
 function rMetadata (filesBrowser, node) {
@@ -93,29 +123,11 @@ function rMetadata (filesBrowser, node) {
     </div>`
 }
 
-function rVersionPicker (filesBrowser) {
-  return toggleable2({
-    id: 'version-picker',
-    closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker">
-        <button class="btn plain nofocus" onclick=${onToggle}>
-          <span class="fa fa-history"></span>
-        </button>
-      </div>`,
-    open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker">
-        <button class="btn plain nofocus" onclick=${onToggle}>
-          <span class="fa fa-history"></span>
-        </button>
-
-        <div class="dropdown-items right">
-          ${renderArchiveHistory(filesBrowser.root._archive)}
-        </div>
-      </div>`
-  })
-}
-
 function rActions (filesBrowser, currentSource) {
+  if (filesBrowser.isEditMode) {
+    return ''
+  }
+
   var isTextual = typeof currentSource.preview === 'string' // preview is only set for text items
   var isEditing = filesBrowser.isEditMode
   var buttonGroup = []
@@ -140,11 +152,18 @@ function rActions (filesBrowser, currentSource) {
 
   return yo`
     <div class="actions">
-      ${currentSource.type === 'archive' ? rVersionPicker(filesBrowser) : ''}
-      ${(currentSource.isEditable && currentSource.type !== 'file')
+      <a 
+        class="action btn plain tooltip-container"
+        onclick=${e => onClickDownload(e, currentSource)}
+        data-tooltip="Download ${currentSource.type}${currentSource.type !== 'file' ? ' as .zip' : ''}"
+      >
+        <i class="fa fa-download"></i>
+      </a>
+
+      ${currentSource.isEditable && (currentSource.type !== 'file')
         ?
           toggleable2({
-            id: 'add-file-dropdown',
+            id: 'folder-actions-dropdown',
             closed: ({onToggle}) => yo`
               <div class="dropdown toggleable-container new-dropdown">
                 <button class="btn toggleable" onclick=${onToggle}>
@@ -183,10 +202,10 @@ function rActions (filesBrowser, currentSource) {
                         yo`
                           <div class="dropdown-item" onclick=${e => onAddFolder(e, currentSource)}>
                             <i class="fa fa-folder-open-o"></i>
-                            Import folder (TODO this used to say choose folder is this right?)
+                            Import folder
                           </div>`
                       ]
-                  }
+                    }
                 </div>
               </div>`
             })
@@ -211,18 +230,21 @@ function rActions (filesBrowser, currentSource) {
 
 function rBreadcrumbs (filesBrowser, currentSource) {
   const path = filesBrowser.getCurrentSourcePath()
+  const isCramped = guessBreadcrumbWidthInPixels(path) > 500
   return yo`
-    <div class="breadcrumbs">
+    <div class="breadcrumbs ${isCramped ? 'cramped' : ''}">
       <div class="breadcrumb root" onclick=${e => onClickNode(e, filesBrowser, filesBrowser.root)}>
-        .
+        ${path.length > 0 ? shorten(filesBrowser.root.name, 30) : filesBrowser.root.name}
       </div>
 
-      ${path.map((node, i) => rBreadcrumb(filesBrowser, node, (i === path.length - 1)))}
+      ${path.map((node, i) => rBreadcrumb(filesBrowser, node, i, path.length, isCramped))}
     </div>`
 }
 
-function rBreadcrumb (filesBrowser, node, isLast = false) {
+function rBreadcrumb (filesBrowser, node, i, len, isCramped) {
   if (!node) return ''
+  var isSecondToLast = (i === len - 2)
+  var isLast = (i === len - 1)
   var isEditing = filesBrowser.isEditMode && isLast
   if (isEditing) {
     return yo`
@@ -230,9 +252,11 @@ function rBreadcrumb (filesBrowser, node, isLast = false) {
         <input type="text" class="editor-filename" value=${node.name} />
       </div>`
   }
+  var label = isLast ? node.name : shorten(node.name, 30)
+  if (isCramped && isSecondToLast) label = '..'
   return yo`
     <div class="breadcrumb" onclick=${e => onClickNode(e, filesBrowser, node)} title=${node.name}>
-      ${node.name}
+      ${label}
     </div>`
 }
 
@@ -374,6 +398,18 @@ function niceMtime (ts) {
   return ts.format('ll, h:mma')
 }
 
+// this method tries to guess how wide the breadcrumbs will be based on character count
+// it just needs to be a rough approximation
+const BC_SPACER_WIDTH = 21
+const BC_CHARACTER_WIDTH = 6
+function guessBreadcrumbWidthInPixels (path) {
+  var width = path.length * BC_SPACER_WIDTH
+  for (let node of path) {
+    width += node.name.length * BC_CHARACTER_WIDTH
+  }
+  return width
+}
+
 // event handlers
 // =
 
@@ -408,6 +444,11 @@ function onClickSaveEdit (e) {
   }
   emit('custom-save-file-editor-content', {fileName})
   emit('custom-close-file-editor')
+}
+
+function onClickDownload (e, currentSource) {
+  e.preventDefault()
+  beaker.browser.downloadURL(`${currentSource.url}${currentSource.type !== 'file' ? '?download_as=zip' : ''}`)
 }
 
 function onClickCancelEdit (e) {

@@ -13,6 +13,8 @@ let reject
 let title
 let archiveKey
 let localSyncPath
+let hasUnpublishedChanges
+let checkConflicts
 
 let hasConflicts
 let conflicts
@@ -23,10 +25,12 @@ let conflicts
 export async function create (opts = {}) {
   title = opts.title || 'Untitled'
   archiveKey = opts.archiveKey || ''
-  localSyncPath = opts.defaultPath || ''
+  localSyncPath = opts.currentPath || opts.defaultPath || ''
+  hasUnpublishedChanges = opts.hasUnpublishedChanges || false
+  checkConflicts = opts.checkConflicts || false
   hasConflicts = false
 
-  if (localSyncPath) {
+  if (localSyncPath && localSyncPath !== opts.currentPath) {
     await checkForConflicts()
   }
 
@@ -86,10 +90,17 @@ function render () {
               </button>
             </div>
 
+            ${hasUnpublishedChanges && !hasConflicts
+              ? yo`
+                <div class="message">
+                  Note: You have changes in your current preview which will not be published if you change directories.
+                </div>`
+              : ''}
+
             ${hasConflicts
               ? yo`
-                <div class="message error">
-                  Some files in dat://${shortenHash(archiveKey)} will be overwritten by files in this folder:
+                <div class="message">
+                  Note: Some files in the site will be overwritten by files in this folder.
                   <ul>
                     ${conflicts.map(conflict => yo`<li>${conflict}</li>`)}
                   </ul>
@@ -161,6 +172,7 @@ function onSubmit (e) {
 // =
 
 async function checkForConflicts () {
+  if (!checkConflicts) return
   let res = await beaker.archives.validateLocalSyncPath(archiveKey, localSyncPath)
   hasConflicts = res.hasConflicts
   conflicts = res.conflicts

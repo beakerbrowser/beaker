@@ -64,6 +64,10 @@ export function remove (page, modalInst) {
   if (i !== -1) {
     page.modals.splice(i, 1)
     update(page)
+    if (page.webviewEl) {
+      // return focus to the page content
+      page.webviewEl.focus()
+    }
   }
 }
 
@@ -74,6 +78,10 @@ export function forceRemoveAll (page) {
   page.modals.forEach(m => {
     m.close(new Error('Closed'))
   })
+  if (page.modals.length && page.webviewEl) {
+    // return focus to the page content
+    page.webviewEl.focus()
+  }
   page.modals = []
   update(page)
 }

@@ -347,7 +347,7 @@ export class BrowserMenuNavbarBtn {
 
     // create a new archive
     const archive = await DatArchive.create({prompt: false})
-    await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})
+    await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
     pages.setActive(pages.create('beaker://library/' + archive.url + '#setup'))
   }
 

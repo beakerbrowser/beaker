@@ -88,10 +88,11 @@ export default class LibraryViewLocalCompare {
           target: this.target,
           revisions: this.compareDiff,
           labels: {
-            desc: 'Reviewing',
+            desc: 'Reviewing changes',
             target: 'published',
             copyAll: 'Publish all',
             copy: 'Publish',
+            things: 'changes',
             count: 'unpublished change'
           },
           isRevOpen: this.isRevOpen.bind(this),

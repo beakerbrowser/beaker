@@ -9,44 +9,64 @@ const FETCH_COUNT = 200
 
 var counter = 0
 var history
-export default function render (archive) {
-  var el = yo`
-    <div class="archive-history loading">
-      <div class="archive-history-body">
-        ${history ? history.map(renderRow) : 'Loading history...'}
-        ${(!history || history[history.length - 1].version === 1)
-          ? ''
-          : yo`
-            <div class="archive-history-item" onclick=${fetchMore}>
-              <button class="link">Load more</button>
-            </div>`}
-      </div>
-    </div>
-  `
+var baseUrl
+export default function render (archive, {path, includePreview} = {}) {
+  path = path || ''
+  var el = renderHistory()
   el.isSameNode = (other) => (other && other.classList && other.classList.contains('archive-history'))
 
   // lazy-load history
   if (archive && !history) {
     // read from latest
     archive = archive.checkout()
+    baseUrl = archive.url
     history = []
     fetchMore()
   }
 
   return el
 
+  function onGoto (e) {
+    window.location = e.currentTarget.getAttribute('href')
+  }
+
+  function renderHistory () {
+    return yo`
+      <div class="archive-history ${history ? '' : 'loading'}">
+        <div class="archive-history-body">
+          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="beaker://library/${baseUrl}+latest${path}">
+            <span class="fa fa-fw fa-globe"></span> View latest published
+          </div>
+          ${includePreview
+            ? yo`
+              <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="beaker://library/${baseUrl}+preview${path}">
+                <span class="fa fa-fw fa-laptop"></span> View local preview
+              </div>`
+            : ''}
+          <hr />
+          ${history ? history.map(renderRow) : 'Loading...'}
+          ${(!history || history[history.length - 1].version === 1)
+            ? ''
+            : yo`
+              <div class="archive-history-item" onclick=${fetchMore}>
+                <button class="link">Load more</button>
+              </div>`}
+        </div>
+      </div>`
+  }
+
   function renderRow (c) {
     return yo`
       <div
-        onclick=${() => window.location = `beaker://library/${archive.url}+${c.version}`}
+        onclick=${onGoto}
         class="archive-history-item"
         title="View version ${c.version}"
-        href="beaker://library/${archive.url}+${c.version}"
+        href="beaker://library/${baseUrl}+${c.version}${path}"
       >
         ${c.type === 'put' ? 'Updated' : 'Deleted'}
 
         <div class="path">
-          <a href="${archive.url}+${c.version}${c.path}" target="_blank">
+          <a href="${baseUrl}+${c.version}${c.path}" target="_blank">
             ${c.path.slice(1)}
           </a>
         </div>
@@ -63,21 +83,7 @@ export default function render (archive) {
       history = history.concat(h)
 
       // render
-      var rowEls = history.map(renderRow)
-
-      yo.update(el, yo`
-        <div class="archive-history">
-          <div class="archive-history-body">
-            ${rowEls}
-            ${(history[history.length - 1].version === 1)
-              ? ''
-              : yo`
-                <div class="archive-history-item" onclick=${fetchMore}>
-                  <button class="link">Load more</button>
-                </div>`}
-          </div>
-        </div>`
-      )
+      yo.update(el, renderHistory())
     } catch (err) {
       console.error('Error loading history', err)
       yo.update(el, yo`

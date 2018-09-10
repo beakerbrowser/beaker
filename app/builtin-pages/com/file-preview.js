@@ -21,7 +21,7 @@ export default function render (fileNode) {
 
   // now check for media formats
   const mimetype = mime.lookup((fileNode.name || '').toLowerCase())
-  const url = fileNode.url + '?cache-buster=' + Date.now() + '&disable_web_root=1'
+  const url = fileNode._archive.url + fileNode._path + '?cache-buster=' + Date.now() + '&disable_web_root=1'
   var isBinary = false
 
   var el
