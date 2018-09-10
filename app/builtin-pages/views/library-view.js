@@ -679,7 +679,9 @@ function renderLocalDiffSummary () {
   if (syncPath) {
     pathCtrls = yo`
       <div class="path">
-        <button class="link sync-path-link" onclick=${onSyncPathContextMenu}>${syncPath} <i class="fa fa-angle-down"></i></button>
+        <button class="btn sync-path-link" onclick=${onSyncPathContextMenu}>
+          ${syncPath} <i class="fa fa-angle-down"></i>
+        </button>
       </div>`
   } else {
     pathCtrls = yo`<div class="path">Preview mode</div>`    
