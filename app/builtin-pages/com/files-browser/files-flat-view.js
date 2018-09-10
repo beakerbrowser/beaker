@@ -19,6 +19,18 @@ import {shorten, pluralize} from '../../../lib/strings'
 // =
 
 export default function render (filesBrowser, currentSource) {
+  if (!currentSource) {
+    // file not found
+    return yo`
+      <div class="files-tree-view empty">
+        ${rHeader(filesBrowser, currentSource)}
+
+        <div class="message notfound">
+          <i class="fa fa-exclamation-circle"></i>
+          File not found
+        </div>
+      </div>`
+  }
   return yo`
     <div class="files-tree-view ${currentSource.isEmpty ? 'empty' : ''}">
 
@@ -75,6 +87,7 @@ function rVersion (filesBrowser, currentSource) {
     return ''
   }
 
+  var path = currentSource ? currentSource._path : ('/' + getNotfoundPathnameFromUrl())
   const button = (onToggle) => yo`
     <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="Select version">
       <span class="fa fa-history"></span> ${version}
@@ -89,14 +102,14 @@ function rVersion (filesBrowser, currentSource) {
       <div class="dropdown toggleable-container version-picker">
         ${button(onToggle)}
         <div class="dropdown-items left">
-          ${renderArchiveHistory(filesBrowser.root._archive, {includePreview: previewMode, path: currentSource._path})}
+          ${renderArchiveHistory(filesBrowser.root._archive, {includePreview: previewMode, path})}
         </div>
       </div>`
   })
 }
 
 function rMetadata (filesBrowser, node) {
-  if (filesBrowser.isEditMode) {
+  if (!node || filesBrowser.isEditMode) {
     return ''
   }
 
@@ -124,7 +137,7 @@ function rMetadata (filesBrowser, node) {
 }
 
 function rActions (filesBrowser, currentSource) {
-  if (filesBrowser.isEditMode) {
+  if (!currentSource || filesBrowser.isEditMode) {
     return ''
   }
 
@@ -238,6 +251,7 @@ function rBreadcrumbs (filesBrowser, currentSource) {
       </div>
 
       ${path.map((node, i) => rBreadcrumb(filesBrowser, node, i, path.length, isCramped))}
+      ${!currentSource ? rBreadcrumb(filesBrowser, {name: getNotfoundPathnameFromUrl()}, 1, 1, false) : ''}
     </div>`
 }
 
@@ -554,4 +568,8 @@ async function onAddFolder (e, node) {
   if (files) {
     files.forEach(src => emitAddFile(src, node.url))
   }
+}
+
+function getNotfoundPathnameFromUrl () {
+  return window.location.pathname.split('/').slice(4).join('/')
 }

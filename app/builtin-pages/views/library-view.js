@@ -733,7 +733,8 @@ function renderMakeCopyHint () {
 
 function renderReadmeHint () {
   if (!_get(archive, 'info.isOwner')) return ''
-  if (filesBrowser.getCurrentSource().parent) return '' // only at root
+  var currentNode = filesBrowser.getCurrentSource()
+  if (currentNode && currentNode.parent) return '' // only at root
 
   return yo`
     <div class="hint">
@@ -1433,7 +1434,7 @@ async function onSetCurrentSource (node) {
 
   // update the URL & history
   let path = archive.url
-  if (node._path) {
+  if (node && node._path) {
     path += node._path
   }
   window.history.pushState('', {}, `beaker://library/${path}`)
@@ -1443,7 +1444,8 @@ function onDropFiles (files) {
   if (!archive.info.isOwner) {
     return
   }
-  const dst = filesBrowser.getCurrentSource().url
+  const dst = filesBrowser.getCurrentSource() ? filesBrowser.getCurrentSource().url : null
+  if (!dst) return
   files.forEach(f => {
     const src = f.path
     onAddFile({detail: {src, dst}})
@@ -1585,7 +1587,7 @@ async function onRemoveSyncDirectory () {
 async function onCreateFile (e) {
   var {createFolder} = (e.detail || {})
   var currentNode = filesBrowser.getCurrentSource()
-  if (!currentNode.isContainer) return // must be a folder
+  if (!currentNode || !currentNode.isContainer) return // must be a folder
   var basePath = currentNode._path
 
   // get the name of the new file
@@ -1660,14 +1662,17 @@ function onCloseFileEditor (e) {
 
   // restore the editor to non-edit mode
   var currentNode = filesBrowser.getCurrentSource()
-  setAceValue(currentNode.preview)
-  configureAce({readOnly: true})
+  if (currentNode) {
+    setAceValue(currentNode.preview)
+    configureAce({readOnly: true})
+  }
 }
 
 async function onSaveFileEditorContent (e) {
   try {
     var fileContent = getAceValue()
     var currentNode = filesBrowser.getCurrentSource()
+    if (!currentNode) return
     currentNode.preview = fileContent
 
     // write to the target filename
@@ -1791,6 +1796,7 @@ async function onFilesChanged () {
 
   // update files
   const currentNode = filesBrowser.getCurrentSource()
+  if (!currentNode) return
   try {
     currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
@@ -1927,6 +1933,7 @@ async function readViewStateFromUrl () {
     let pathPart
     while ((pathPart = pathParts.shift())) {
       node = node.children.find(node => node.name === pathPart)
+      if (!node) break
       if (node.type !== 'file') {
         // dont read for files, just folders
         // (that way we dont get stalled loading the preview)

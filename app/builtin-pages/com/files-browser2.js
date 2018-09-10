@@ -27,7 +27,7 @@ export default class FilesBrowser {
 
     return yo`
       <div class="files-browser">
-        ${this.getCurrentSource() ? renderFilesFlatView(this, this.getCurrentSource(), this.workspaceInfo) : null}
+        ${renderFilesFlatView(this, this.getCurrentSource(), this.workspaceInfo)}
       </div>
     `
   }
@@ -88,16 +88,23 @@ export default class FilesBrowser {
 
   async setCurrentSource (node, {suppressEvent} = {}) {
     await this.unselectAll()
-    if (this.currentSource.preview) {
-      // trigger a reload of the preview
-      this.currentSource.preview = undefined
+    if (this.currentSource) {
+      if (this.currentSource.preview) {
+        // trigger a reload of the preview
+        this.currentSource.preview = undefined
+      }
+      if (this.currentSource !== node) {
+        // leave edit mode
+        this.isEditMode = false
+      }
     }
-    if (this.currentSource !== node) {
-      // leave edit mode
-      this.isEditMode = false
-    }
+
     this.currentSource = node
-    
+    if (!node) {
+      this.rerender()
+      return
+    }    
+
     // special handling for files
     if (node.type === 'file') {
       // emit and render, to allow 'loading...' to show
@@ -138,7 +145,9 @@ export default class FilesBrowser {
   }
 
   resortTree () {
-    this.currentSource.sort(...this.currentSort)
+    if (this.currentSource) {
+      this.currentSource.sort(...this.currentSort)
+    }
   }
 
   // expand api
