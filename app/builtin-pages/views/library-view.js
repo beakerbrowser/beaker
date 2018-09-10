@@ -687,29 +687,37 @@ function renderLocalDiffSummary () {
     pathCtrls = yo`<div class="path">Preview mode</div>`    
   }
 
-  var previewCtrls
+  var previewCtrls = ''
   if (previewMode) {
     previewCtrls = [
       rRevisionIndicator('add'),
       rRevisionIndicator('mod'),
       rRevisionIndicator('del'),
-      yo`<span class="summary">${total} ${pluralize(total, 'change')}</span>`,
-      yo`<a
-        class="btn tooltip-container"
-        href=${`beaker://library/${archive.url}#local-compare`}
-        data-tooltip="Review changes and publish"
-        onclick=${e => onChangeView(e, 'local-compare')}
-      >
-        Review changes
-      </a>`,
-      yo`<a
-        class="btn primary tooltip-container"
-        href=${archive.url + '+preview'}
-        data-tooltip="Preview the unpublished version of the site"
-        onclick=${onOpenPreviewDat}
-      >
-        <i class="fa fa-external-link"></i> Open preview
-      </a>`
+      total
+        ? [
+          yo`
+            <span class="summary">
+              ${total} ${pluralize(total, 'change')}
+            </span>`,
+          yo`
+            <a
+              class="btn tooltip-container"
+              href=${`beaker://library/${archive.url}#local-compare`}
+              data-tooltip="Review changes and publish"
+              onclick=${e => onChangeView(e, 'local-compare')}>
+                Review changes
+            </a>`
+          ]
+        : '',
+      yo`
+        <a
+          class="btn primary tooltip-container"
+          href=${archive.url + '+preview'}
+          data-tooltip="Preview unpublished changes"
+          onclick=${onOpenPreviewDat}>
+            <i class="fa fa-external-link"></i>
+            Open preview
+        </a>`
     ]
   } else {
     previewCtrls = yo`
