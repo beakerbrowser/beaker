@@ -1839,6 +1839,11 @@ async function onArchiveUpdated (e) {
       return
     }
     await archive.setup()
+    if (workingCheckout && workingCheckout !== archive) {
+      // copy over updates
+      Object.assign(workingCheckout.info, archive.info)
+      Object.assign(filesBrowser.root._archiveInfo, archive.info)
+    }
     render()
   }
 }
