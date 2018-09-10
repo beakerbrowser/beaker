@@ -1829,13 +1829,8 @@ async function onArchiveUpdated (e) {
     // this totally sucks and is 100% technical debt
     // -prf
     if (isOwner && (isSavedChanged || previewModeChanged)) {
-      if (archive.url.indexOf('+') !== -1) {
-        // go to latest
-        window.location = `beaker://library/${archive.checkout().url}#${activeView}`
-      } else {
-        // just reload
-        window.location.reload()
-      }
+      // go to the files view, for now
+      window.location = `beaker://library/${archive.checkout().url}`
       return
     }
     await archive.setup()
