@@ -67,6 +67,7 @@ var wasJustSaved = false // used to make the save button act more nicely
 var oldLocalSyncPath = ''
 var faviconCacheBuster
 var suppressFileChangeEvents = false
+var shouldAlwaysShowPreviewToggle = false // a hack to keep the preview toggle in the files view after click
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -135,6 +136,14 @@ async function setup () {
     filesBrowser.onSetCurrentSource = onSetCurrentSource
     rehostSlider = new RehostSlider(archive.info)
     rehostSlider.setup()
+
+    // HACK
+    // preview mode changes currently refresh the page
+    // we want it to keep the toggle visible after click
+    // at load, capture the preview mode state and use that to override default rendering -tbv
+    if (!_get(archive, 'info.userSettings.previewMode')) {
+      shouldAlwaysShowPreviewToggle = true
+    }
 
     // set up download progress
     if (!_get(archive, 'info.isOwner')) {
@@ -684,11 +693,11 @@ function renderLocalDiffSummary () {
         </button>
       </div>`
   } else {
-    pathCtrls = yo`<div class="path">Preview mode</div>`    
+    pathCtrls = yo`<div class="path">Preview mode</div>`
   }
 
   var previewCtrls = ''
-  if (previewMode) {
+  if (previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
       rRevisionIndicator('add'),
       rRevisionIndicator('mod'),
@@ -721,7 +730,22 @@ function renderLocalDiffSummary () {
     ]
   } else {
     previewCtrls = yo`
-      <span class="summary">Synchronizing</span>`
+      <div class="input-group radiolist sub-item">
+        <label class="toggle">
+          <input
+            type="checkbox"
+            name="autoPublish"
+            value="autoPublish"
+            ${previewMode ? 'checked' : ''}
+            onclick=${onTogglePreviewMode}
+          >
+          <div class="switch"></div>
+          <span class="text">
+            Preview mode
+          </span>
+        </label>
+      </div>
+    `
   }
 
   return yo`
@@ -1338,7 +1362,7 @@ async function onToggleNetworked () {
     console.error(e)
     toast.create(`Could not update ${nickname}`, 'error')
   }
-  render()  
+  render()
 }
 
 async function onToggleSeeding () {
