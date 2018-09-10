@@ -81,21 +81,27 @@ const onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
 // main
 // =
 
-function setupWorkingCheckout () {
-  // TODO this was disabled in favor of using the version picker
-  // we may need to just remove the workingCheckout and use archive directly
-  // -prf
-  workingCheckout = archive
-  /*if (archive.url.indexOf('+') !== -1) {
-    // use given version
-    workingCheckout = archive
-  } else if (false && _get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
-    // use +preview checkout
+async function setupWorkingCheckout () {
+  if (archive.url.indexOf('+') !== -1) {
+    if (archive.url.endsWith('+latest')) {
+      // HACK
+      // use +latest to show latest
+      // -prf
+      workingCheckout = new LibraryDatArchive(archive.checkout().url)
+    } else {
+      // use given version
+      workingCheckout = archive
+    }
+  } else if (_get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
+    // HACK
+    // default to showing the preview when previewMode is on, even if +preview isnt set
+    // -prf
     workingCheckout = new LibraryDatArchive(archive.checkout('preview').url)
   } else {
     // use latest checkout
     workingCheckout = new LibraryDatArchive(archive.checkout().url)
-  }*/
+  }
+  await workingCheckout.setup()
 }
 
 setup()
@@ -112,7 +118,7 @@ async function setup () {
     let url = await parseLibraryUrl()
     archive = new LibraryDatArchive(url)
     await archive.setup()
-    setupWorkingCheckout()
+    await setupWorkingCheckout()
 
     // go to raw key if we have a shortname
     // (archive.info.url is always the raw url, while archive.url will reflect the given url)
@@ -478,6 +484,7 @@ function renderSeedMenu () {
 }
 
 function renderShareMenu () {
+  var url = archive.checkout().url
   return toggleable2({
     id: 'nav-item-share-tool',
     closed: ({onToggle}) => yo`
@@ -503,13 +510,13 @@ function renderShareMenu () {
             </p>
 
             <p class="copy-url">
-              <input type="text" disabled value="${archive.url}"/>
+              <input type="text" disabled value="${url}"/>
 
-              <button class="btn" onclick=${() => onCopy(archive.url, 'URL copied to clipboard')}>
+              <button class="btn" onclick=${() => onCopy(url, 'URL copied to clipboard')}>
                 Copy
               </button>
 
-              <a href=${archive.url} target="_blank" class="btn primary full-width center">
+              <a href=${url} target="_blank" class="btn primary full-width center">
                 Open
                 <span class="fa fa-external-link"></span>
               </a>
@@ -1201,8 +1208,8 @@ function renderToolbar () {
 
           ${middot}
 
-          <a href=${archive.url} class="link" target="_blank">
-            ${shortenHash(archive.url)}
+          <a href=${archive.checkout().url} class="link" target="_blank">
+            ${shortenHash(archive.checkout().url)}
           </a>
         </div>
       </div>
