@@ -1739,8 +1739,10 @@ function onChangeHeaderEditor (e, name) {
 }
 
 function onBlurHeaderEditor (e, name) {
-  // headerEditValues[name] = false
-  // render()
+  // save if it changed
+  if (headerEditValues[name] !== false && headerEditValues[name] != archive.info.manifest[name]) {
+    setManifestValue(name, headerEditValues[name])
+  }
 }
 
 function onSyncPathContextMenu (e) {
