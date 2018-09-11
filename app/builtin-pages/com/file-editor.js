@@ -87,6 +87,11 @@ export function setValue (v) {
   }
 }
 
+export function isSetup () {
+  var el = document.getElementById('ace-editor')
+  return el && el.env // .env is set by the ace editor on create
+}
+
 // internal methods
 // =
 

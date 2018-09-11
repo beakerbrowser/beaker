@@ -26,7 +26,7 @@ import {RehostSlider} from '../../lib/fg/rehost-slider'
 import LibraryViewCompare from '../com/library-view-compare'
 import LibraryViewLocalCompare from '../com/library-view-local-compare'
 import renderSettingsField from '../com/settings-field'
-import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
+import {setup as setupAce, isSetup as isAceSetup, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
 import {pluralize, shortenHash} from '@beaker/core/lib/strings'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
@@ -1800,10 +1800,18 @@ async function onFilesChanged () {
   try {
     currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
-    if (!filesBrowser.isEditMode && !!currentNode.preview) {
-      setAceValue(currentNode.preview) // update the editor if not in edit mode
-    }
     filesBrowser.rerender()
+    if (!!currentNode.preview) {
+      if (!isAceSetup()) {
+        // make sure the editor is setup
+        // (sometimes there is a race condition that necessitates this)
+        setupAce({readOnly: !filesBrowser.isEditMode})
+      }
+      if (!filesBrowser.isEditMode) {
+        // update the editor if not in edit mode
+        setAceValue(currentNode.preview)
+      }
+    }
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
   }
