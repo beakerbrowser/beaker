@@ -19,7 +19,7 @@ export class PageMenuNavbarBtn {
 
   render () {
     const page = pages.getActive()
-    if (!page || !page.protocolInfo || ['dat:'].includes(page.protocolInfo.scheme) === false) {
+    if (!page || !page.protocolInfo || page.protocolInfo.scheme !== 'dat:' || !page.siteInfo) {
       return ''
     }
     const isSaved = _get(page, 'siteInfo.userSettings.isSaved', false)
@@ -147,7 +147,7 @@ export class PageMenuNavbarBtn {
     this.isDropdownOpen = !this.isDropdownOpen
     if (this.isDropdownOpen) {
       let page = pages.getActive()
-      if (!!page.getViewedDatOrigin()) {
+      if (!!page.getViewedDatOrigin() && page.siteInfo) {
         page.siteInfo = await (new DatArchive(page.siteInfo.key)).getInfo()
       }
     } else {
