@@ -61,32 +61,52 @@ export default function renderArchiveComparison (opts = {}) {
                 ${numRevisions} ${pluralize(numRevisions, labels.count)}
               </span>
 
-          ${numRevisions > 0
-            ? yo`
-              <button
-                class="btn success nofocus publish tooltip-container"
-                onclick=${onCopyAll}
-                data-tooltip="${labels.copyAll} ${labels.things}"
-              >
-                ${labels.copyAll}
-              </button>`
-            : ''
-          }
-        </div>
-      </div>
+              ${isLocalSyncPath
+                ? (_get(target, 'info.userSettings.localSyncPath', ''))
+                : [
+                  (onChangeCompareBase
+                    ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
+                    : renderArchive(base)),
+                  yo`
+                    <span>
+                      to
+                      <i class="fa fa-arrow-right"></i>
+                    </span>`,
+                  (onChangeCompareTarget
+                    ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
+                    : renderArchive(target))
+                ]
+              }
+
+              <div class="actions">
+                ${target && isLocalSyncPath
+                  ? yo`<a
+                    class="btn primary nofocus tooltip-container"
+                    href=${target.url + '+preview'}
+                    data-tooltip="Preview unpublished changes"
+                    target="_blank"
+                  >
+                    <span class="fa fa-external-link"></span>
+                    Open preview
+                  </a>`
+                  : ''
+                }
+
+                <button
+                  class="btn success nofocus publish tooltip-container"
+                  onclick=${onCopyAll}
+                  data-tooltip="${labels.copyAll} ${labels.things}">
+                    ${labels.copyAll}
+                </button>
+              </div>
+            </div>
+          </div>`
+        : ''
+      }
 
       ${renderRevisions({base, target, isLocalSyncPath, labels, revisions, isRevOpen, onMerge, onToggleRevisionCollapsed, onDeleteDraft})}
 
       <div class="compare-footer">
-        ${numRevisions > 0
-          ? yo`
-              <span class="revisions-count">
-                ${numRevisions} ${pluralize(numRevisions, labels.count)}
-              </span>
-            `
-          : ''
-        }
-
         ${!isLocalSyncPath
           ? yo`
             <div class="links">
