@@ -53,36 +53,13 @@ export default function renderArchiveComparison (opts = {}) {
     <div class="archive-comparison">
       ${isLocalSyncPath ? renderBackLink() : ''}
 
-      <div class="compare-selection">
-        <span>${labels.desc}</span>
-
-        ${isLocalSyncPath
-          ? (_get(target, 'info.userSettings.localSyncPath', ''))
-          : [
-            (onChangeCompareBase
-              ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
-              : renderArchive(base)),
-            yo`
-              <span>
-                to
-                <i class="fa fa-arrow-right"></i>
-              </span>`,
-            (onChangeCompareTarget
-              ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
-              : renderArchive(target))
-          ]}
-
-        <div class="actions">
-          ${target && isLocalSyncPath
-            ? yo`<a
-              class="btn primary nofocus tooltip-container"
-              href=${target.url + '+preview'}
-              data-tooltip="Preview the unpublished version of the site"
-              target="_blank"
-            >
-              Preview
-            </a>`
-            : ''}
+      ${numRevisions > 0
+        ? yo`
+          <div class="compare-selection-wrapper">
+            <div class="compare-selection">
+              <span class="revisions-count">
+                ${numRevisions} ${pluralize(numRevisions, labels.count)}
+              </span>
 
           ${numRevisions > 0
             ? yo`
@@ -164,11 +141,23 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
             <div class="label">No unpublished changes</div>
           </div>
 
-          <p>
-            The files in <a href="beaker://library/${target.url}" onclick=${gotoHomeView}>${getSafeTitleHTML(target)}</a>
-            are in sync with the files in
-            <span>${target.info.userSettings.localSyncPath}</span>.
-          </p>
+          ${target.info.userSettings.localSyncPath
+            ? yo`
+                <p>
+                  The files in <a href="beaker://library/${target.url}" onclick=${gotoHomeView}>${getSafeTitleHTML(target)}</a>
+                  are in sync with the files in
+                  <span onclick=${() => onOpenFolder(target.info.userSettings.localSyncPath)} class="link">${target.info.userSettings.localSyncPath}</span>.
+                </p>`
+            : yo`
+                <p>
+                  All the files in <a href="beaker://library/${target.url}" onclick=${gotoHomeView}>${getSafeTitleHTML(target)}</a> have been published to the network.
+                </p>`
+          }
+
+          <a href="${target.url}" target="_blank" class="btn open-link primary">
+            <span class="fa fa-external-link"></span>
+            Open ${getSafeTitleHTML(target)}
+          </a>
         </div>`
     } else {
       return yo`
@@ -181,7 +170,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
           <p>
             The files in <a href="beaker://library/${base.url}" target="_blank">${getSafeTitleHTML(base)}</a>
             are in sync with the files in
-            <a href="beaker://library/${target.url}" target="_blank">${getSafeTitleHTML(target)}</a>.
+            <a class="link" href="beaker://library/${target.url}" target="_blank">${getSafeTitleHTML(target)}</a>.
           </p>
 
           ${onDeleteDraft
@@ -367,6 +356,15 @@ function onOpenPreview (e) {
     // left or middle
     document.body.dispatchEvent(new CustomEvent('custom-open-preview-dat'))
   }
+}
+
+function onOpenFolder (path) {
+  document.body.dispatchEvent(
+    new CustomEvent(
+      'custom-open-local-folder',
+      {'detail': {path}}
+    )
+  )
 }
 
 function gotoHomeView (e) {

@@ -183,6 +183,12 @@ async function setup () {
     document.body.addEventListener('custom-finish-publish', onFinishPublish)
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     document.body.addEventListener('custom-open-preview-dat', onOpenPreviewDat)
+    document.body.addEventListener(
+      'custom-open-local-folder',
+      function (e) {
+        onOpenFolder(e.detail.path)
+      }
+    )
     beaker.archives.addEventListener('updated', onArchiveUpdated)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
