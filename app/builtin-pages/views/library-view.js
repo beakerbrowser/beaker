@@ -22,6 +22,7 @@ import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import renderFaviconPicker from '../com/favicon-picker'
+import renderBackLink from '../com/back-link'
 import {RehostSlider} from '../../lib/fg/rehost-slider'
 import LibraryViewCompare from '../com/library-view-compare'
 import LibraryViewLocalCompare from '../com/library-view-local-compare'
@@ -859,6 +860,8 @@ function renderSettingsView () {
 
   return yo`
     <div class="container">
+      ${renderBackLink()}
+
       ${isOwner
         ? yo`
           <div class="settings view">
@@ -1048,8 +1051,9 @@ function renderNetworkView () {
 
   return yo`
     <div class="container">
-      <div class="view network">
+      ${renderBackLink()}
 
+      <div class="view network">
         <h1>Network activity</h1>
 
         <div class="section">${renderNetworkBigStats()}</div>
