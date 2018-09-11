@@ -2,6 +2,7 @@ import _get from 'lodash.get'
 import yo from 'yo-yo'
 import renderDiff from './diff'
 import renderArchiveSelectBtn from './archive-select-btn'
+import renderBackLink from './back-link'
 import {pluralize, shortenHash} from '../../lib/strings'
 
 // exported api
@@ -50,9 +51,9 @@ export default function renderArchiveComparison (opts = {}) {
 
   return yo`
     <div class="archive-comparison">
-      <div class="compare-selection">
-        ${isLocalSyncPath ? yo`<a href="#" class="link"><i class="fa fa-angle-left"></i> back</a>` : ''}
+      ${isLocalSyncPath ? renderBackLink() : ''}
 
+      <div class="compare-selection">
         <span>${labels.desc}</span>
 
         ${isLocalSyncPath

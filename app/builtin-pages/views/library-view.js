@@ -22,6 +22,7 @@ import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import renderFaviconPicker from '../com/favicon-picker'
+import renderBackLink from '../com/back-link'
 import {RehostSlider} from '../../lib/fg/rehost-slider'
 import LibraryViewCompare from '../com/library-view-compare'
 import LibraryViewLocalCompare from '../com/library-view-local-compare'
@@ -67,6 +68,7 @@ var wasJustSaved = false // used to make the save button act more nicely
 var oldLocalSyncPath = ''
 var faviconCacheBuster
 var suppressFileChangeEvents = false
+var shouldAlwaysShowPreviewToggle = false // a hack to keep the preview toggle in the files view after click
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -135,6 +137,14 @@ async function setup () {
     filesBrowser.onSetCurrentSource = onSetCurrentSource
     rehostSlider = new RehostSlider(archive.info)
     rehostSlider.setup()
+
+    // HACK
+    // preview mode changes currently refresh the page
+    // we want it to keep the toggle visible after click
+    // at load, capture the preview mode state and use that to override default rendering -tbv
+    if (!_get(archive, 'info.userSettings.previewMode')) {
+      shouldAlwaysShowPreviewToggle = true
+    }
 
     // set up download progress
     if (!_get(archive, 'info.isOwner')) {
@@ -679,39 +689,64 @@ function renderLocalDiffSummary () {
   if (syncPath) {
     pathCtrls = yo`
       <div class="path">
-        <button class="link sync-path-link" onclick=${onSyncPathContextMenu}>${syncPath} <i class="fa fa-angle-down"></i></button>
+        <button class="btn sync-path-link" onclick=${onSyncPathContextMenu}>
+          ${syncPath} <i class="fa fa-angle-down"></i>
+        </button>
       </div>`
   } else {
-    pathCtrls = yo`<div class="path">Preview mode</div>`    
+    pathCtrls = yo`<div class="path">Preview mode</div>`
   }
 
-  var previewCtrls
-  if (previewMode) {
+  var previewCtrls = ''
+  if (previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
       rRevisionIndicator('add'),
       rRevisionIndicator('mod'),
       rRevisionIndicator('del'),
-      yo`<span class="summary">${total} ${pluralize(total, 'change')}</span>`,
-      yo`<a
-        class="btn tooltip-container"
-        href=${`beaker://library/${archive.url}#local-compare`}
-        data-tooltip="Review changes and publish"
-        onclick=${e => onChangeView(e, 'local-compare')}
-      >
-        Review changes
-      </a>`,
-      yo`<a
-        class="btn primary tooltip-container"
-        href=${archive.url + '+preview'}
-        data-tooltip="Preview the unpublished version of the site"
-        onclick=${onOpenPreviewDat}
-      >
-        <i class="fa fa-external-link"></i> Open preview
-      </a>`
+      total
+        ? [
+          yo`
+            <span class="summary">
+              ${total} ${pluralize(total, 'change')}
+            </span>`,
+          yo`
+            <a
+              class="btn tooltip-container"
+              href=${`beaker://library/${archive.url}#local-compare`}
+              data-tooltip="Review changes and publish"
+              onclick=${e => onChangeView(e, 'local-compare')}>
+                Review changes
+            </a>`
+          ]
+        : '',
+      yo`
+        <a
+          class="btn primary tooltip-container"
+          href=${archive.url + '+preview'}
+          data-tooltip="Preview unpublished changes"
+          onclick=${onOpenPreviewDat}>
+            <i class="fa fa-external-link"></i>
+            Open preview
+        </a>`
     ]
   } else {
     previewCtrls = yo`
-      <span class="summary">Synchronizing</span>`
+      <div class="input-group radiolist sub-item">
+        <label class="toggle">
+          <input
+            type="checkbox"
+            name="autoPublish"
+            value="autoPublish"
+            ${previewMode ? 'checked' : ''}
+            onclick=${onTogglePreviewMode}
+          >
+          <div class="switch"></div>
+          <span class="text">
+            Preview mode
+          </span>
+        </label>
+      </div>
+    `
   }
 
   return yo`
@@ -825,6 +860,8 @@ function renderSettingsView () {
 
   return yo`
     <div class="container">
+      ${renderBackLink()}
+
       ${isOwner
         ? yo`
           <div class="settings view">
@@ -1014,8 +1051,9 @@ function renderNetworkView () {
 
   return yo`
     <div class="container">
-      <div class="view network">
+      ${renderBackLink()}
 
+      <div class="view network">
         <h1>Network activity</h1>
 
         <div class="section">${renderNetworkBigStats()}</div>
@@ -1328,7 +1366,7 @@ async function onToggleNetworked () {
     console.error(e)
     toast.create(`Could not update ${nickname}`, 'error')
   }
-  render()  
+  render()
 }
 
 async function onToggleSeeding () {

@@ -165,7 +165,7 @@ function rActions (filesBrowser, currentSource) {
 
   return yo`
     <div class="actions">
-      <a 
+      <a
         class="action btn plain tooltip-container"
         onclick=${e => onClickDownload(e, currentSource)}
         data-tooltip="Download ${currentSource.type}${currentSource.type !== 'file' ? ' as .zip' : ''}"

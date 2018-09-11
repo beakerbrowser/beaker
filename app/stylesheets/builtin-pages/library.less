@@ -197,7 +197,7 @@ body.drag {
 
   .view-wrapper {
     width: 100%;
-    padding: 40px 0;
+    padding: 20px 0;
     margin-bottom: 0;
   }
 
@@ -249,6 +249,10 @@ body.drag {
         margin-bottom: 40px;
       }
     }
+  }
+
+  .back-link {
+    margin: 0 0 10px 0;
   }
 
   .file-view-header {
@@ -397,7 +401,7 @@ body.drag {
       margin: 0 auto 10px;
       max-width: 450px;
 
-      & > div {    
+      & > div {
         flex: 1;
         text-align: center;
         font-size: 27px;
@@ -758,8 +762,8 @@ body.drag {
         top: -2px;
         height: 34px;
         width: 100%;
-        max-width: 500px;   
-        border-radius: 0;     
+        max-width: 500px;
+        border-radius: 0;
       }
 
       .favicon {
@@ -958,6 +962,14 @@ body.drag {
     background: #fff;
     border: 1px solid #ddd;
 
+    label.toggle {
+      margin: 0;
+
+      .switch {
+        margin: 0 0 0 10px;
+      }
+    }
+
     &.empty {
       display: none;
     }
@@ -977,10 +989,6 @@ body.drag {
     .path {
       margin-left: 0;
       margin-right: auto;
-
-      .sync-path-link {
-        color: rgba(0,0,0,.7);
-      }
     }
 
     strong {
