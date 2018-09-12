@@ -611,7 +611,7 @@ body.drag {
     margin: 0;
 
     &.expanded {
-      top: -54px;
+      top: -60px;
 
       &.has-description {
         top: -90px;
@@ -644,14 +644,17 @@ body.drag {
     }
 
     .info {
+      &:extend(.flex);
+      align-items: center;
+      height: 60px;
       position: relative;
       padding: 20px 0 10px 0;
 
       .primary-action {
+        &:extend(.flex);
         position: absolute;
-        right: 0;
         top: 20px;
-        display: flex;
+        right: 0;
 
         & > * {
           margin-left: 5px;
@@ -720,44 +723,41 @@ body.drag {
       &:extend(.flex);
       flex-wrap: nowrap;
       align-items: center;
-      height: 25px;
+      height: 32px;
 
       h1,
       input {
         font-size: 1.6rem;
         font-weight: 600;
-        line-height: 1;
+        line-height: 30px;
       }
 
       h1 {
         position: relative;
-        top: -2px;
-        left: -2px;
-        white-space: nowrap;
+        height: 32px;
         max-width: 500px;
+        padding: 0 8px;
         text-overflow: ellipsis;
         overflow: hidden;
-        height: 38px;
-        padding: 6px 8px;
+        white-space: nowrap;
+        text-align: center;
         border: 1px solid transparent;
       }
 
       input {
         position: relative;
-        cursor: auto;
-        left: -1px;
-        top: -2px;
-        height: 34px;
+        z-index: 3; // on small screens this hides the primary action buttons
         width: 100%;
+        height: 32px;
         max-width: 500px;
         border-radius: 0;
+        cursor: auto;
       }
 
       .favicon {
         height: 32px;
         width: 32px;
-        margin-left: -2px;
-        margin-right: 6px;
+        margin: 4px 2px 0 -2px;
       }
 
       .favicon-picker {
