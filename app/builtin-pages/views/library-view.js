@@ -721,7 +721,7 @@ function renderLocalDiffSummary () {
                 </span>
             </a>`
           ]
-        : '',
+        : yo`<em class="no-revisions">No unpublished changes</em>`,
       yo`
         <a
           class="btn primary tooltip-container"
