@@ -706,22 +706,19 @@ function renderLocalDiffSummary () {
   var previewCtrls = ''
   if (previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
-      rRevisionIndicator('add'),
-      rRevisionIndicator('mod'),
-      rRevisionIndicator('del'),
       total
         ? [
           yo`
-            <span class="summary">
-              ${total} ${pluralize(total, 'change')}
-            </span>`,
-          yo`
             <a
-              class="btn tooltip-container"
+              class="btn revisions-btn tooltip-container"
               href=${`beaker://library/${archive.url}#local-compare`}
-              data-tooltip="Review changes and publish"
               onclick=${e => onChangeView(e, 'local-compare')}>
-                Review changes
+                ${rRevisionIndicator('add')}
+                ${rRevisionIndicator('mod')}
+                ${rRevisionIndicator('del')}
+                <span class="text">
+                  Review ${total} ${pluralize(total, 'change')}
+                </span>
             </a>`
           ]
         : '',
@@ -879,7 +876,9 @@ function renderSettingsView () {
               <div class="section-content">
                 <div class="input-group radiolist sub-item">
                   <label class="toggle">
-                    <span class="text">Preview changes before publishing to the network</span>
+                    <span class="text">
+                      Preview changes before publishing to the network
+                    </span>
                     <input
                       type="checkbox"
                       name="autoPublish"
