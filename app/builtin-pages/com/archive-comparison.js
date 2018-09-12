@@ -30,9 +30,10 @@ export default function renderArchiveComparison (opts = {}) {
       desc: 'Publish',
       base: 'draft',
       target: 'published',
-      copyAll: 'Publish all revisions',
+      copyAll: 'Publish all',
       copy: 'Publish',
       revert: 'Revert',
+      revertAll: 'Revert all',
       things: 'revisions',
       count: 'unpublished revision'
     },
@@ -44,8 +45,15 @@ export default function renderArchiveComparison (opts = {}) {
 
   const onCopyAll = (e) => {
     e.preventDefault()
-    if (confirm(`${labels.copyAll} to "${getSafeTitle(target)}"?`)) {
+    if (confirm(`${labels.copyAll} ${labels.things} to "${getSafeTitle(target)}"?`)) {
       onMerge(base, target, {shallow: false})
+    }
+  }
+
+  const onRevertAll = (e) => {
+    e.preventDefault()
+    if (confirm(`${labels.revertAll} ${labels.things} "${getSafeTitle(target)}"?`)) {
+      onMerge(target, base, {shallow: false})
     }
   }
 
@@ -55,50 +63,42 @@ export default function renderArchiveComparison (opts = {}) {
 
       ${numRevisions > 0
         ? yo`
-          <div class="compare-selection-wrapper">
-            <div class="compare-selection">
-              <span class="revisions-count">
-                ${numRevisions} ${pluralize(numRevisions, labels.count)}
-              </span>
+          <div class="compare-selection">
+            <span class="revisions-count">
+              ${numRevisions} ${pluralize(numRevisions, labels.count)}
+            </span>
 
-              ${isLocalSyncPath
-                ? (_get(target, 'info.userSettings.localSyncPath', ''))
-                : [
-                  (onChangeCompareBase
-                    ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
-                    : renderArchive(base)),
-                  yo`
-                    <span>
-                      to
-                      <i class="fa fa-arrow-right"></i>
-                    </span>`,
-                  (onChangeCompareTarget
-                    ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
-                    : renderArchive(target))
-                ]
-              }
+            ${isLocalSyncPath
+              ? (_get(target, 'info.userSettings.localSyncPath', ''))
+              : [
+                (onChangeCompareBase
+                  ? renderArchiveSelectBtn(base, {archiveOptions, onSelect: onChangeCompareBase, toggleId: 'archive-comparison-base'})
+                  : renderArchive(base)),
+                yo`
+                  <span>
+                    to
+                    <i class="fa fa-arrow-right"></i>
+                  </span>`,
+                (onChangeCompareTarget
+                  ? renderArchiveSelectBtn(target, {archiveOptions, onSelect: onChangeCompareTarget, toggleId: 'archive-comparison-target'})
+                  : renderArchive(target))
+              ]
+            }
 
-              <div class="actions">
-                ${target && isLocalSyncPath
-                  ? yo`<a
-                    class="btn primary nofocus tooltip-container"
-                    href=${target.url + '+preview'}
-                    data-tooltip="Preview unpublished changes"
-                    target="_blank"
-                  >
-                    <span class="fa fa-external-link"></span>
-                    Open preview
-                  </a>`
-                  : ''
-                }
+            <div class="actions">
+              <button
+                class="btn revert tooltip-container"
+                onclick=${onRevertAll}
+                data-tooltip="Revert all changes">
+                  ${labels.revertAll}
+              </button>
 
-                <button
-                  class="btn success nofocus publish tooltip-container"
-                  onclick=${onCopyAll}
-                  data-tooltip="${labels.copyAll} ${labels.things}">
-                    ${labels.copyAll}
-                </button>
-              </div>
+              <button
+                class="btn success publish tooltip-container"
+                onclick=${onCopyAll}
+                data-tooltip="${labels.copyAll} ${labels.things}">
+                  ${labels.copyAll}
+              </button>
             </div>
           </div>`
         : ''
@@ -114,7 +114,25 @@ export default function renderArchiveComparison (opts = {}) {
               ${base && target ? yo`<span class="separator">|</span>` : ''}
               ${target ? yo`<a href=${target.url} target="_blank">View ${labels.target}</a>` : ''}
             </div>`
-          : ''}
+          : numRevisions > 0
+            ?
+              yo`
+                <div class="links">
+                  <a
+                    href="${target.checkout().url}"
+                    target="_blank">
+                    Published version
+                  </a>
+                  <span class="separator">|</span>
+                  <a
+                    href="${target.checkout('preview').url}"
+                    target="_blank">
+                    Local preview
+                  </a>
+                </div>
+              `
+            : ''
+          }
       </div>
     </div>`
 }
@@ -163,13 +181,13 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
 
           ${target.info.userSettings.localSyncPath
             ? yo`
-                <p>
+                <p class="empty-description">
                   The files in <a href="beaker://library/${target.url}" onclick=${gotoHomeView}>${getSafeTitleHTML(target)}</a>
                   are in sync with the files in
                   <span onclick=${() => onOpenFolder(target.info.userSettings.localSyncPath)} class="link">${target.info.userSettings.localSyncPath}</span>.
                 </p>`
             : yo`
-                <p>
+                <p class="empty-description">
                   All the files in <a href="beaker://library/${target.url}" onclick=${gotoHomeView}>${getSafeTitleHTML(target)}</a> have been published to the network.
                 </p>`
           }
@@ -207,7 +225,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
     e.stopPropagation()
     var path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
-    if (confirm(`${labels.copy} the changes in ${path} to "${getSafeTitle(target)}"?`)) {
+    if (confirm(`${labels.copy} the ${labels.things} in ${path} to "${getSafeTitle(target)}"?`)) {
       var paths = [rev.path + (rev.type === 'dir' ? '/' : '')] // trailing slash indicates directory
       onMerge(base, target, {paths, shallow: false})
     }
@@ -217,7 +235,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
     e.stopPropagation()
     var path = rev.path.startsWith('/') ? rev.path.slice(1, rev.path.length) : rev.path
 
-    if (confirm(`${labels.revert} the changes to ${path}?`)) {
+    if (confirm(`${labels.revert} the ${labels.things} to ${path}?`)) {
       var paths = [rev.path + (rev.type === 'dir' ? '/' : '')] // trailing slash indicates directory
       onMerge(target, base, {paths, shallow: false})
     }

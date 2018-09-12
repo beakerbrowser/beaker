@@ -5,15 +5,15 @@
   align-items: center;
 
   position: sticky;
-  top: 0;
+  top: 55px;
   z-index: 1000;
 
   // for the sticky state, we need a solid background
   // and padding around the controls
   background: #f7f7f7;
+  border-bottom: 1px solid #ddd;
   padding: 10px 0;
-  margin-bottom: 5px;
-  margin-top: -10px; // offset the added top padding
+  margin: -10px 0 -1px 0;
 
   .actions {
     margin-left: auto;
@@ -48,15 +48,22 @@
   &:extend(.flex);
   align-items: center;
   justify-content: space-between;
-  height: 50px;
   position: sticky;
   bottom: 0;
   background: #f7f7f7;
+  border-top: 1px solid #ddd;
+  margin-top: -1px;
+  padding: 10px 0;
 
   .links {
     margin-left: auto;
-  }
 
+    .separator {
+      margin: 0 3px;
+      color: @color-text--muted;
+      color: rgba(0,0,0,.5);
+    }
+  }
 
   .separator {
     margin: 0 5px;
@@ -128,9 +135,11 @@
       font-weight: 500;
     }
 
-    p {
+    .empty-description {
       color: @color-text;
       font-size: .85rem;
+      max-width: ~"calc(100% - 220px)";
+      margin: 0 0 0 35px;
 
       &:last-child {
         margin-bottom: 0;
