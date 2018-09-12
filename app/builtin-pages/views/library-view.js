@@ -778,12 +778,12 @@ function renderReadmeHint () {
     <div class="hint">
       <p>
         <i class="fa fa-book"></i>
-        Add a README to help others learn about this project.
+        Add a README file to help others learn about this project.
       </p>
 
       <div>
         <button class="btn" onclick=${addReadme}>
-          Add
+          Add README.md
         </button>
 
         <a class="learn-more-link" href="https://en.wikipedia.org/wiki/README" target="_blank">What${"'"}s a README?</a>
