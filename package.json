@@ -30,13 +30,16 @@
     "appId": "com.pfrazee.beaker-browser",
     "files": [
       "**/*",
-      "!node_modules/**/sodium-native/prebuilds/**/*",
-      "node_modules/**/sodium-native/prebuilds/${platform}-${arch}/libsodium.*",
-      "node_modules/**/sodium-native/prebuilds/${platform}-${arch}/node-*"
+      "!**/node_modules/sodium-native/libsodium",
+      "!**/node_modules/sodium-native/prebuilds/!(${platform}-${arch})",
+      "!**/node_modules/sodium-native/prebuilds/${platform}-${arch}/!(node*|libsodium*)",
+      "!**/node_modules/utp-native/deps",
+      "!**/node_modules/utp-native/prebuilds/!(${platform}-${arch})",
+      "!**/node_modules/utp-native/prebuilds/${platform}-${arch}/!(node*)"
     ],
     "asar": true,
     "asarUnpack": [
-      "./node_modules/sodium-native/**"
+      "./node_modules/sodium-native"
     ],
     "copyright": "© 2018, Blue Link Labs",
     "npmRebuild": false,
