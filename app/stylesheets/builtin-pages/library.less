@@ -794,7 +794,12 @@ body.drag {
     .buttons {
       &:extend(.flex);
       align-items: center;
+      display: none;
       margin-left: auto;
+
+      @media (min-width: 550px) {
+        display: flex;
+      }
 
       > .btn {
         color: @color-text;
@@ -802,13 +807,8 @@ body.drag {
       }
 
       .link {
-        display: none;
         font-size: .8rem;
         margin-right: 5px;
-
-        @media (min-width: 600px) {
-          display: inline;
-        }
       }
     }
 
