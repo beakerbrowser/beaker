@@ -962,6 +962,10 @@ body.drag {
     background: #fff;
     border: 1px solid #ddd;
 
+    strong {
+      font-weight: 600;
+    }
+
     .revisions-btn {
 
       .text {
@@ -991,21 +995,12 @@ body.drag {
       display: none;
     }
 
-    & > * {
-      margin-left: 5px;
-    }
-
     & > .revision-indicator {
       margin-left: 2px;
     }
 
     .summary {
       margin-right: 5px;
-    }
-
-    .path {
-      margin-left: 0;
-      margin-right: auto;
     }
 
     strong {
@@ -1020,7 +1015,8 @@ body.drag {
       }
     }
 
-    .path {
+    .path-ctrls {
+      margin-right: 10px;
       flex-basis: 100%;
     }
 
@@ -1044,7 +1040,12 @@ body.drag {
         margin-top: 0;
       }
 
-      .path {
+      .revisions-btn,
+      .no-revisions {
+        margin-left: auto;
+      }
+
+      .path-ctrls {
         flex-basis: initial;
       }
     }

@@ -23,6 +23,7 @@ import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import renderFaviconPicker from '../com/favicon-picker'
 import renderBackLink from '../com/back-link'
+import renderArchiveHistory from '../com/archive-history'
 import {RehostSlider} from '../../lib/fg/rehost-slider'
 import LibraryViewCompare from '../com/library-view-compare'
 import LibraryViewLocalCompare from '../com/library-view-local-compare'
@@ -707,18 +708,66 @@ function renderLocalDiffSummary () {
 
   var pathCtrls
   if (syncPath) {
-    pathCtrls = yo`
-      <div class="path">
-        <button class="btn sync-path-link" onclick=${onSyncPathContextMenu}>
-          ${syncPath} <i class="fa fa-angle-down"></i>
-        </button>
-      </div>`
+      var version = 'latest'
+      var link = ''
+      var vi = archive.url.indexOf('+')
+      if (vi !== -1) {
+        version = archive.url.slice(vi + 1)
+      }
+      // is the version a number?
+      if (version == +version) {
+        link = yo`
+          <a href="beaker://library/${archive.checkout('latest').url}">
+            View latest
+          </a>`
+        version = `v${version}`
+      }
+
+      // TODO
+      // var path = currentSource ? currentSource._path : ('/' + getNotfoundPathnameFromUrl())
+
+      var label = version
+      if (version === 'preview') {
+        label = syncPath
+      } else {
+        label = yo`
+          <div>
+            Version:
+            <strong>${version}</strong>
+          </div>
+        `
+      }
+
+      const button = (onToggle) =>
+        yo`
+          <button
+            class="btn sync-path-link"
+            onclick=${onToggle}>
+            ${label}
+            <span class="fa fa-angle-down"></span>
+          </button>
+        `
+
+      pathCtrls = toggleable2({
+        id: 'version-picker',
+        closed: ({onToggle}) => yo`
+          <div class="dropdown toggleable-container path-ctrls">
+            ${button(onToggle)}
+          </div>`,
+        open: ({onToggle}) => yo`
+          <div class="dropdown toggleable-container path-ctrls">
+            ${button(onToggle)}
+            <div class="dropdown-items left">
+              ${renderArchiveHistory(filesBrowser.root._archive, {includePreview: previewMode, syncPath})}
+            </div>
+          </div>`
+      })
   } else {
-    pathCtrls = yo`<div class="path">Preview mode</div>`
+    pathCtrls = yo`<div class="path-ctrls">Preview mode</div>`
   }
 
   var previewCtrls = ''
-  if (previewMode && !shouldAlwaysShowPreviewToggle) {
+  if (version === 'preview' && previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
       total
         ? [
@@ -746,7 +795,7 @@ function renderLocalDiffSummary () {
             Open preview
         </a>`
     ]
-  } else {
+  } else if (version === 'preview') {
     previewCtrls = yo`
       <div class="input-group radiolist sub-item">
         <label class="toggle">
@@ -769,6 +818,7 @@ function renderLocalDiffSummary () {
   return yo`
     <div id="local-path-and-preview-tools">
       ${pathCtrls}
+      ${link}
       ${previewCtrls}
     </div>`
 }

@@ -49,16 +49,20 @@
     }
 
     .version {
-      &:extend(.code-font);
       min-width: 32px;
       margin-left: auto;
-      text-transform: lowercase;
     }
 
     .path {
       &:extend(.overflow-ellipsis);
       max-width: 145px;
       margin-left: 3px;
+    }
+
+    .sync-path {
+      &:extend(.overflow-ellipsis);
+      max-width: 123px;
+      margin-left: 5px;
     }
 
     &:hover {

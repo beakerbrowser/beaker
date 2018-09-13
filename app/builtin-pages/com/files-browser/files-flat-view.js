@@ -8,7 +8,6 @@ import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
 import toggleable2 from '../toggleable2'
-import renderArchiveHistory from '../archive-history'
 import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import renderFilePreview from '../file-preview'
@@ -89,26 +88,6 @@ function rVersion (filesBrowser, currentSource) {
     }
     return ''
   }
-
-  var path = currentSource ? currentSource._path : ('/' + getNotfoundPathnameFromUrl())
-  const button = (onToggle) => yo`
-    <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="Select version">
-      <span class="fa fa-history"></span> ${version}
-    </button>`
-  return toggleable2({
-    id: 'version-picker',
-    closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker">
-        ${button(onToggle)}
-      </div>`,
-    open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker">
-        ${button(onToggle)}
-        <div class="dropdown-items left">
-          ${renderArchiveHistory(filesBrowser.root._archive, {includePreview: previewMode, path})}
-        </div>
-      </div>`
-  })
 }
 
 function rMetadata (filesBrowser, node) {
