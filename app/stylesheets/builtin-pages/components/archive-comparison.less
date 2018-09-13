@@ -5,20 +5,20 @@
   align-items: center;
 
   position: sticky;
-  top: 0;
+  top: 55px;
   z-index: 1000;
 
   // for the sticky state, we need a solid background
   // and padding around the controls
   background: #f7f7f7;
+  border-bottom: 1px solid #ddd;
   padding: 10px 0;
-  margin-bottom: 5px;
-  margin-top: -10px; // offset the added top padding
+  margin: -10px 0 -1px 0;
 
   .actions {
     margin-left: auto;
     margin-right: 0;
-    
+
     a {
       position: relative;
       top: -1px; // not sure why the <a> are showing up lower but they are -prf
@@ -48,23 +48,31 @@
   &:extend(.flex);
   align-items: center;
   justify-content: space-between;
-  height: 50px;
   position: sticky;
   bottom: 0;
   background: #f7f7f7;
+  border-top: 1px solid #ddd;
+  margin-top: -1px;
+  padding: 10px 0;
 
   .links {
     margin-left: auto;
-  }
 
-  .revisions-count {
-    font-weight: 500;
+    .separator {
+      margin: 0 3px;
+      color: @color-text--muted;
+      color: rgba(0,0,0,.5);
+    }
   }
 
   .separator {
     margin: 0 5px;
     color: rgba(0,0,0,.3);
   }
+}
+
+.revisions-count {
+  font-weight: 500;
 }
 
 .archive-comparison {
@@ -99,15 +107,24 @@
 
     .empty-header {
       &:extend(.flex);
+      align-items: center;
       margin-bottom: 5px;
+    }
+
+    .open-link {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
     }
 
     i {
       font-size: 70px;
 
       &.fa {
+        width: 25px;
         margin-right: 10px;
-        font-size: 24px;
+        font-size: 22px;
         color: shade(@green, 15%);
         -webkit-text-stroke: 1px #fff;
       }
@@ -118,10 +135,11 @@
       font-weight: 500;
     }
 
-    p {
+    .empty-description {
       color: @color-text;
-      margin: 0 0 0 35px;
       font-size: .85rem;
+      max-width: ~"calc(100% - 220px)";
+      margin: 0 0 0 35px;
 
       &:last-child {
         margin-bottom: 0;

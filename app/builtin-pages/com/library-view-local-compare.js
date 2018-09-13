@@ -90,8 +90,6 @@ export default class LibraryViewLocalCompare {
           labels: {
             desc: 'Reviewing changes',
             target: 'published',
-            copyAll: 'Publish all',
-            copy: 'Publish',
             things: 'changes',
             count: 'unpublished change'
           },

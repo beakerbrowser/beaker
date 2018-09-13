@@ -1078,8 +1078,7 @@ export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://' + path.join(APP_PATH, 'webview-preload.build.js'))
-  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8')
-  // TODO add scrollBounce^ after https://github.com/electron/electron/issues/9233 is fixed
+  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce')
   // TODO re-enable nativeWindowOpen when https://github.com/electron/electron/issues/9558 lands
   el.setAttribute('src', url || DEFAULT_URL)
   return el

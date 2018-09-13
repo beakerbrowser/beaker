@@ -22,11 +22,12 @@ import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
 import * as copyDatPopup from '../com/library-copydat-popup'
 import * as createFilePopup from '../com/library-createfile-popup'
 import renderFaviconPicker from '../com/favicon-picker'
+import renderBackLink from '../com/back-link'
 import {RehostSlider} from '../../lib/fg/rehost-slider'
 import LibraryViewCompare from '../com/library-view-compare'
 import LibraryViewLocalCompare from '../com/library-view-local-compare'
 import renderSettingsField from '../com/settings-field'
-import {setup as setupAce, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
+import {setup as setupAce, isSetup as isAceSetup, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
 import {pluralize, shortenHash} from '@beaker/core/lib/strings'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
@@ -67,6 +68,7 @@ var wasJustSaved = false // used to make the save button act more nicely
 var oldLocalSyncPath = ''
 var faviconCacheBuster
 var suppressFileChangeEvents = false
+var shouldAlwaysShowPreviewToggle = false // a hack to keep the preview toggle in the files view after click
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -136,6 +138,14 @@ async function setup () {
     rehostSlider = new RehostSlider(archive.info)
     rehostSlider.setup()
 
+    // HACK
+    // preview mode changes currently refresh the page
+    // we want it to keep the toggle visible after click
+    // at load, capture the preview mode state and use that to override default rendering -tbv
+    if (!_get(archive, 'info.userSettings.previewMode')) {
+      shouldAlwaysShowPreviewToggle = true
+    }
+
     // set up download progress
     if (!_get(archive, 'info.isOwner')) {
       await archive.startMonitoringDownloadProgress()
@@ -173,6 +183,12 @@ async function setup () {
     document.body.addEventListener('custom-finish-publish', onFinishPublish)
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     document.body.addEventListener('custom-open-preview-dat', onOpenPreviewDat)
+    document.body.addEventListener(
+      'custom-open-local-folder',
+      function (e) {
+        onOpenFolder(e.detail.path)
+      }
+    )
     beaker.archives.addEventListener('updated', onArchiveUpdated)
     beaker.archives.addEventListener('network-changed', onNetworkChanged)
     beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
@@ -679,39 +695,61 @@ function renderLocalDiffSummary () {
   if (syncPath) {
     pathCtrls = yo`
       <div class="path">
-        <button class="link sync-path-link" onclick=${onSyncPathContextMenu}>${syncPath} <i class="fa fa-angle-down"></i></button>
+        <button class="btn sync-path-link" onclick=${onSyncPathContextMenu}>
+          ${syncPath} <i class="fa fa-angle-down"></i>
+        </button>
       </div>`
   } else {
-    pathCtrls = yo`<div class="path">Preview mode</div>`    
+    pathCtrls = yo`<div class="path">Preview mode</div>`
   }
 
-  var previewCtrls
-  if (previewMode) {
+  var previewCtrls = ''
+  if (previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
-      rRevisionIndicator('add'),
-      rRevisionIndicator('mod'),
-      rRevisionIndicator('del'),
-      yo`<span class="summary">${total} ${pluralize(total, 'change')}</span>`,
-      yo`<a
-        class="btn tooltip-container"
-        href=${`beaker://library/${archive.url}#local-compare`}
-        data-tooltip="Review changes and publish"
-        onclick=${e => onChangeView(e, 'local-compare')}
-      >
-        Review changes
-      </a>`,
-      yo`<a
-        class="btn primary tooltip-container"
-        href=${archive.url + '+preview'}
-        data-tooltip="Preview the unpublished version of the site"
-        onclick=${onOpenPreviewDat}
-      >
-        <i class="fa fa-external-link"></i> Open preview
-      </a>`
+      total
+        ? [
+          yo`
+            <a
+              class="btn revisions-btn tooltip-container"
+              href=${`beaker://library/${archive.url}#local-compare`}
+              onclick=${e => onChangeView(e, 'local-compare')}>
+                ${rRevisionIndicator('add')}
+                ${rRevisionIndicator('mod')}
+                ${rRevisionIndicator('del')}
+                <span class="text">
+                  Review ${total} ${pluralize(total, 'change')}
+                </span>
+            </a>`
+          ]
+        : yo`<em class="no-revisions">No unpublished changes</em>`,
+      yo`
+        <a
+          class="btn primary tooltip-container"
+          href=${archive.url + '+preview'}
+          data-tooltip="Preview unpublished changes"
+          onclick=${onOpenPreviewDat}>
+            <i class="fa fa-external-link"></i>
+            Open preview
+        </a>`
     ]
   } else {
     previewCtrls = yo`
-      <span class="summary">Synchronizing</span>`
+      <div class="input-group radiolist sub-item">
+        <label class="toggle">
+          <input
+            type="checkbox"
+            name="autoPublish"
+            value="autoPublish"
+            ${previewMode ? 'checked' : ''}
+            onclick=${onTogglePreviewMode}
+          >
+          <div class="switch"></div>
+          <span class="text">
+            Preview mode
+          </span>
+        </label>
+      </div>
+    `
   }
 
   return yo`
@@ -733,18 +771,19 @@ function renderMakeCopyHint () {
 
 function renderReadmeHint () {
   if (!_get(archive, 'info.isOwner')) return ''
-  if (filesBrowser.getCurrentSource().parent) return '' // only at root
+  var currentNode = filesBrowser.getCurrentSource()
+  if (currentNode && currentNode.parent) return '' // only at root
 
   return yo`
     <div class="hint">
       <p>
         <i class="fa fa-book"></i>
-        Add a README to help others learn about this project.
+        Add a README file to help others learn about this project.
       </p>
 
       <div>
         <button class="btn" onclick=${addReadme}>
-          Add
+          Add README.md
         </button>
 
         <a class="learn-more-link" href="https://en.wikipedia.org/wiki/README" target="_blank">What${"'"}s a README?</a>
@@ -824,6 +863,8 @@ function renderSettingsView () {
 
   return yo`
     <div class="container">
+      ${renderBackLink()}
+
       ${isOwner
         ? yo`
           <div class="settings view">
@@ -835,7 +876,9 @@ function renderSettingsView () {
               <div class="section-content">
                 <div class="input-group radiolist sub-item">
                   <label class="toggle">
-                    <span class="text">Preview changes before publishing to the network</span>
+                    <span class="text">
+                      Preview changes before publishing to the network
+                    </span>
                     <input
                       type="checkbox"
                       name="autoPublish"
@@ -1013,8 +1056,9 @@ function renderNetworkView () {
 
   return yo`
     <div class="container">
-      <div class="view network">
+      ${renderBackLink()}
 
+      <div class="view network">
         <h1>Network activity</h1>
 
         <div class="section">${renderNetworkBigStats()}</div>
@@ -1327,7 +1371,7 @@ async function onToggleNetworked () {
     console.error(e)
     toast.create(`Could not update ${nickname}`, 'error')
   }
-  render()  
+  render()
 }
 
 async function onToggleSeeding () {
@@ -1433,7 +1477,7 @@ async function onSetCurrentSource (node) {
 
   // update the URL & history
   let path = archive.url
-  if (node._path) {
+  if (node && node._path) {
     path += node._path
   }
   window.history.pushState('', {}, `beaker://library/${path}`)
@@ -1443,7 +1487,8 @@ function onDropFiles (files) {
   if (!archive.info.isOwner) {
     return
   }
-  const dst = filesBrowser.getCurrentSource().url
+  const dst = filesBrowser.getCurrentSource() ? filesBrowser.getCurrentSource().url : null
+  if (!dst) return
   files.forEach(f => {
     const src = f.path
     onAddFile({detail: {src, dst}})
@@ -1585,7 +1630,7 @@ async function onRemoveSyncDirectory () {
 async function onCreateFile (e) {
   var {createFolder} = (e.detail || {})
   var currentNode = filesBrowser.getCurrentSource()
-  if (!currentNode.isContainer) return // must be a folder
+  if (!currentNode || !currentNode.isContainer) return // must be a folder
   var basePath = currentNode._path
 
   // get the name of the new file
@@ -1660,14 +1705,17 @@ function onCloseFileEditor (e) {
 
   // restore the editor to non-edit mode
   var currentNode = filesBrowser.getCurrentSource()
-  setAceValue(currentNode.preview)
-  configureAce({readOnly: true})
+  if (currentNode) {
+    setAceValue(currentNode.preview)
+    configureAce({readOnly: true})
+  }
 }
 
 async function onSaveFileEditorContent (e) {
   try {
     var fileContent = getAceValue()
     var currentNode = filesBrowser.getCurrentSource()
+    if (!currentNode) return
     currentNode.preview = fileContent
 
     // write to the target filename
@@ -1739,8 +1787,10 @@ function onChangeHeaderEditor (e, name) {
 }
 
 function onBlurHeaderEditor (e, name) {
-  // headerEditValues[name] = false
-  // render()
+  // save if it changed
+  if (headerEditValues[name] !== false && headerEditValues[name] != archive.info.manifest[name]) {
+    setManifestValue(name, headerEditValues[name])
+  }
 }
 
 function onSyncPathContextMenu (e) {
@@ -1789,13 +1839,22 @@ async function onFilesChanged () {
 
   // update files
   const currentNode = filesBrowser.getCurrentSource()
+  if (!currentNode) return
   try {
     currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
-    if (!filesBrowser.isEditMode && !!currentNode.preview) {
-      setAceValue(currentNode.preview) // update the editor if not in edit mode
-    }
     filesBrowser.rerender()
+    if (!!currentNode.preview) {
+      if (!isAceSetup()) {
+        // make sure the editor is setup
+        // (sometimes there is a race condition that necessitates this)
+        setupAce({readOnly: !filesBrowser.isEditMode})
+      }
+      if (!filesBrowser.isEditMode) {
+        // update the editor if not in edit mode
+        setAceValue(currentNode.preview)
+      }
+    }
   } catch (e) {
     console.debug('Failed to rerender files on change, likely because the present node was deleted', e)
   }
@@ -1827,16 +1886,16 @@ async function onArchiveUpdated (e) {
     // this totally sucks and is 100% technical debt
     // -prf
     if (isOwner && (isSavedChanged || previewModeChanged)) {
-      if (archive.url.indexOf('+') !== -1) {
-        // go to latest
-        window.location = `beaker://library/${archive.checkout().url}#${activeView}`
-      } else {
-        // just reload
-        window.location.reload()
-      }
+      // go to the files view, for now
+      window.location = `beaker://library/${archive.checkout().url}`
       return
     }
     await archive.setup()
+    if (workingCheckout && workingCheckout !== archive) {
+      // copy over updates
+      Object.assign(workingCheckout.info, archive.info)
+      Object.assign(filesBrowser.root._archiveInfo, archive.info)
+    }
     render()
   }
 }
@@ -1925,6 +1984,7 @@ async function readViewStateFromUrl () {
     let pathPart
     while ((pathPart = pathParts.shift())) {
       node = node.children.find(node => node.name === pathPart)
+      if (!node) break
       if (node.type !== 'file') {
         // dont read for files, just folders
         // (that way we dont get stalled loading the preview)
