@@ -621,16 +621,22 @@ body.drag {
     .back-link {
       position: absolute;
       left: 10px;
-      top: 12px;
+      top: 15px;
       width: 27px;
       text-align: center;
       font-size: 1.2rem;
       color: rgba(0,0,0,.2);
       cursor: pointer;
       border-radius: 4px;
+      display: none;
+      margin: 0;
 
       * {
         cursor: pointer;
+      }
+
+      @media (min-width: 1050px) {
+        display: block;
       }
 
       &:hover {
