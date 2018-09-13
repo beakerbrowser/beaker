@@ -59,7 +59,7 @@ export default function renderArchiveComparison (opts = {}) {
 
   return yo`
     <div class="archive-comparison">
-      ${isLocalSyncPath ? renderBackLink() : ''}
+      ${isLocalSyncPath ? renderBackLink('#', 'Back') : ''}
 
       ${numRevisions > 0
         ? yo`

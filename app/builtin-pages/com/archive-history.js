@@ -74,7 +74,7 @@ export default function render (archive, {path, includePreview} = {}) {
         <div class="version badge green">v${c.version}</div>
       </div>`
   }
-  
+
   async function fetchMore () {
     try {
       // fetch
