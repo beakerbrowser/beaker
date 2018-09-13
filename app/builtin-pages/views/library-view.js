@@ -36,6 +36,9 @@ const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 90/*with description*/
 const LOCAL_DIFF_POLL_INTERVAL = 10e3 // ms
 const NETWORK_STATS_POLL_INTERVAL = 2e3 // ms
 
+// for developers who want to work in devtools
+const DEBUG_DISABLE_LIVE_UI_UPDATES = ('DEBUG_DISABLE_LIVE_UI_UPDATES' in sessionStorage)
+
 // globals
 // =
 
@@ -189,21 +192,24 @@ async function setup () {
         onOpenFolder(e.detail.path)
       }
     )
-    beaker.archives.addEventListener('updated', onArchiveUpdated)
-    beaker.archives.addEventListener('network-changed', onNetworkChanged)
-    beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
+    
+    if (!DEBUG_DISABLE_LIVE_UI_UPDATES) {
+      beaker.archives.addEventListener('updated', onArchiveUpdated)
+      beaker.archives.addEventListener('network-changed', onNetworkChanged)
+      beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
-    setInterval(updateNetworkStats, NETWORK_STATS_POLL_INTERVAL)
-    setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
-    window.addEventListener('focus', loadDiffSummary)
+      setInterval(updateNetworkStats, NETWORK_STATS_POLL_INTERVAL)
+      setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
+      window.addEventListener('focus', loadDiffSummary)
 
-    var fileActStream = archive.watch()
-    fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
-    fileActStream.addEventListener('changed', onFilesChangedThrottled)
-    if (_get(archive, 'info.userSettings.previewMode')) {
-      fileActStream = workingCheckout.watch()
+      var fileActStream = archive.watch()
       fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
       fileActStream.addEventListener('changed', onFilesChangedThrottled)
+      if (_get(archive, 'info.userSettings.previewMode')) {
+        fileActStream = workingCheckout.watch()
+        fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
+        fileActStream.addEventListener('changed', onFilesChangedThrottled)
+      }
     }
   } catch (e) {
     console.error('Load error', e)
