@@ -50,7 +50,7 @@ export default class LibraryViewLocalCompare {
     // automatically & iteratively load the file diffs
     const loadNextFileDiff = async () => {
       // find the next empty diff
-      var d = compareDiff.find(d => !d.diff)
+      var d = compareDiff.find(d => !d.diff && this.revIsOpenMap[d.path])
       if (!d) return resolve() // done!
 
       // run the diff
@@ -134,6 +134,7 @@ export default class LibraryViewLocalCompare {
   onToggleRevisionCollapsed (rev) {
     this.revIsOpenMap[rev.path] = !this.revIsOpenMap[rev.path]
     this.updatePage()
+    this.loadFileDiffs(this.compareDiff)
   }
 }
 
