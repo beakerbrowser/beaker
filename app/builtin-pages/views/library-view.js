@@ -738,7 +738,7 @@ function renderLocalDiffSummary () {
         : yo`<em class="no-revisions">No unpublished changes</em>`,
       yo`
         <a
-          class="btn primary tooltip-container"
+          class="btn primary tooltip-container open-preview-btn"
           href=${archive.url + '+preview'}
           data-tooltip="Preview unpublished changes"
           onclick=${onOpenPreviewDat}>

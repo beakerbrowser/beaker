@@ -956,9 +956,7 @@ body.drag {
 
   #local-path-and-preview-tools {
     &:extend(.flex);
-    flex-wrap: nowrap;
     align-items: center;
-    height: 52px;
     margin: 0 0 15px;
     padding: 10px 15px;
     background: #fff;
@@ -974,7 +972,7 @@ body.drag {
     .no-revisions {
       display: none;
       color: rgba(0,0,0,.75);
-      margin-right: 7px;
+      margin-right: 10px;
 
       @media (min-width: 670px) {
         display: block;
@@ -1019,6 +1017,35 @@ body.drag {
 
       & > * {
         margin: 0 auto;
+      }
+    }
+
+    .path {
+      flex-basis: 100%;
+    }
+
+    .open-preview-btn,
+    .revisions-btn {
+      flex: 1;
+      margin-top: 10px;
+      margin-left: 0;
+      text-align: center;
+    }
+
+    .revisions-btn {
+      margin-right: 5px;
+    }
+
+    @media (min-width: 700px) {
+
+      .open-preview-btn,
+      .revisions-btn {
+        flex: initial;
+        margin-top: 0;
+      }
+
+      .path {
+        flex-basis: initial;
       }
     }
   }
