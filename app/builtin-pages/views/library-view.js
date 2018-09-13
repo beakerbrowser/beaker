@@ -1253,6 +1253,10 @@ function renderToolbar () {
   return yo`
     <div class="library-toolbar">
       <div class="container">
+        <a href="beaker://library" class="back-link">
+          <i class="fa fa-angle-double-left"></i>
+        </a>
+
         ${renderNav()}
 
         <div class="buttons">
