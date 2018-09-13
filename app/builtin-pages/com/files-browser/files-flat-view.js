@@ -69,7 +69,10 @@ function rVersion (filesBrowser, currentSource) {
   var previewMode = _get(archive, 'info.userSettings.previewMode', false)
   var version = 'latest'
   var vi = archive.url.indexOf('+')
-  if (vi !== -1) version = archive.url.slice(vi + 1)
+  if (vi !== -1) {
+    version = archive.url.slice(vi + 1)
+  }
+  // is the version a number?
   if (version == +version) {
     version = `v${version}`
   }
