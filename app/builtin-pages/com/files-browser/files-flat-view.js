@@ -81,9 +81,9 @@ function rVersion (filesBrowser, currentSource) {
     if (previewMode && version !== 'preview') {
       return yo`
         <div class="warning">
-          Warning: you are editing the live version of the site.
+          * You are editing the live version of this file.
           <a class="link" href="beaker://library/${archive.checkout('preview').url}${currentSource._path}">
-            Goto preview
+            Edit preview
           </a>
         </div>`
     }
