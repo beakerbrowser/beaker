@@ -148,7 +148,23 @@ function rActions (filesBrowser, currentSource) {
   var isEditing = filesBrowser.isEditMode
   var buttonGroup = []
 
-  if (currentSource.isEditable && !isEditing && currentSource.type === 'file') {
+  var isHistoricalVersion = false
+  var version
+  var vi = currentSource._archive.url.indexOf('+')
+  if (vi !== -1) {
+    version = currentSource._archive.url.slice(vi + 1)
+  }
+  // is the version a number?
+  if (version == +version) {
+    isHistoricalVersion = true
+  }
+
+  if (
+    currentSource.isEditable &&
+    !isHistoricalVersion &&
+    !isEditing &&
+    currentSource.type === 'file'
+  ) {
     buttonGroup.push(
       yo`
         <button class="action btn trash nofocus tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, currentSource)}>
@@ -176,7 +192,7 @@ function rActions (filesBrowser, currentSource) {
         <i class="fa fa-download"></i>
       </a>
 
-      ${currentSource.isEditable && (currentSource.type !== 'file')
+      ${currentSource.isEditable && !isHistoricalVersion && currentSource.type !== 'file'
         ?
           toggleable2({
             id: 'folder-actions-dropdown',

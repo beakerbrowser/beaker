@@ -72,6 +72,7 @@ var oldLocalSyncPath = ''
 var faviconCacheBuster
 var suppressFileChangeEvents = false
 var shouldAlwaysShowPreviewToggle = false // a hack to keep the preview toggle in the files view after click
+var isHistoricalVersion = false
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -87,7 +88,8 @@ const onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
 // =
 
 async function setupWorkingCheckout () {
-  if (archive.url.indexOf('+') !== -1) {
+  var vi = archive.url.indexOf('+')
+  if (vi !== -1) {
     if (archive.url.endsWith('+latest')) {
       // HACK
       // use +latest to show latest
@@ -96,6 +98,12 @@ async function setupWorkingCheckout () {
     } else {
       // use given version
       workingCheckout = archive
+    }
+
+    var version = archive.url.slice(vi + 1)
+    // is the version a number?
+    if (version == +version) {
+      isHistoricalVersion = true
     }
   } else if (_get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
     // HACK
@@ -776,6 +784,7 @@ function renderMakeCopyHint () {
 }
 
 function renderReadmeHint () {
+  if (isHistoricalVersion) return ''
   if (!_get(archive, 'info.isOwner')) return ''
   var currentNode = filesBrowser.getCurrentSource()
   if (currentNode && currentNode.parent) return '' // only at root
