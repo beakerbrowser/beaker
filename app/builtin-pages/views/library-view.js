@@ -447,17 +447,17 @@ function renderHeader () {
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
               </div>
 
-              ${hasDescription
-                ? yo`<p class="description">${archive.info.description}</p>`
-                : ''
-              }
-
               <div class="primary-action">
                 ${renderSeedMenu()}
                 ${renderShareMenu()}
                 ${renderMenu()}
               </div>
             </div>
+
+            ${hasDescription
+              ? yo`<p class="description">${archive.info.description}</p>`
+              : ''
+            }
           </div>`
         : ''
       }
