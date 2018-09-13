@@ -27,6 +27,7 @@ export async function create (opts = {}) {
   basePath = opts.basePath || '/'
   createFolder = opts.createFolder
   fileName = ''
+  hasConflict = false
 
   // render interface
   var popup = render()
