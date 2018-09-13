@@ -192,7 +192,7 @@ async function setup () {
         onOpenFolder(e.detail.path)
       }
     )
-    
+
     if (!DEBUG_DISABLE_LIVE_UI_UPDATES) {
       beaker.archives.addEventListener('updated', onArchiveUpdated)
       beaker.archives.addEventListener('network-changed', onNetworkChanged)
@@ -869,7 +869,7 @@ function renderSettingsView () {
 
   return yo`
     <div class="container">
-      ${renderBackLink()}
+      ${renderBackLink('#', 'Back')}
 
       ${isOwner
         ? yo`
@@ -1062,7 +1062,7 @@ function renderNetworkView () {
 
   return yo`
     <div class="container">
-      ${renderBackLink()}
+      ${renderBackLink('#', 'Back')}
 
       <div class="view network">
         <h1>Network activity</h1>
@@ -1244,10 +1244,6 @@ function renderToolbar () {
   return yo`
     <div class="library-toolbar">
       <div class="container">
-        <a href="beaker://library" class="back-link">
-          <i class="fa fa-angle-double-left"></i>
-        </a>
-
         ${renderNav()}
 
         <div class="buttons">
