@@ -261,7 +261,7 @@ async function loadDiffSummary () {
     } catch (e) {
       console.warn('Failed to load local diff', e)
     }
-    rerenderLocalDiffSummary()
+    rerenderVersionPicker()
   }
 }
 
@@ -657,7 +657,7 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
-        ${renderLocalDiffSummary()}
+        ${renderVersionPicker()}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
         ${!_get(archive, 'info.isOwner') ? renderMakeCopyHint() : ''}
@@ -666,18 +666,14 @@ function renderFilesView () {
   `
 }
 
-function rerenderLocalDiffSummary () {
+function rerenderVersionPicker () {
   var el = document.getElementById('local-path-and-preview-tools')
   if (!el) return
-  yo.update(el, renderLocalDiffSummary())
+  yo.update(el, renderVersionPicker())
 }
 
-function renderLocalDiffSummary () {
-  const isSaved = _get(archive, 'info.userSettings.isSaved')
-  if (!_get(archive, 'info.isOwner') || !isSaved) {
-    return yo`<div id="local-path-and-preview-tools empty"></div>`
-  }
-
+function renderVersionPicker () {
+  const isOwner = _get(archive, 'info.isOwner')
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const previewMode = _get(archive, 'info.userSettings.previewMode')
   const total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
