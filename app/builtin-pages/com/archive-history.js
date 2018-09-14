@@ -42,7 +42,13 @@ export default function render (archive, {filePath, includePreview, syncPath} = 
             ? yo`
               <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="beaker://library/${baseUrl}+preview${filePath}">
                 <span class="fa fa-fw fa-laptop"></span>
-                View preview <span class="sync-path">(${syncPath}</span>)
+                ${syncPath
+                  ? yo`
+                    <span>
+                      View preview <span class="sync-path">(${syncPath}</span>)
+                    </span>`
+                  : 'View local preview'
+                }
               </div>`
             : ''}
           <hr />
