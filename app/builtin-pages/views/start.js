@@ -23,7 +23,6 @@ var activeSearchResult = 0
 var isSearchFocused = false
 var settings
 var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
-var hasDismissedBetaInfo = localStorage.hasDismissedBetaInfo ? true : false
 
 update()
 setup()
@@ -362,25 +361,25 @@ function renderDock () {
   return yo`
     <div class="dock-wrapper">
       <div class="dock">
-        <a class="dock-item subtitle-heading" href="beaker://settings">
+        <a class="dock-item" href="beaker://settings">
           Settings
         </a>
 
-        <a class="dock-item subtitle-heading" href="beaker://history">
+        <a class="dock-item" href="beaker://history">
           History
         </a>
 
-        <a class="dock-item subtitle-heading" href="beaker://bookmarks">
+        <a class="dock-item" href="beaker://bookmarks">
           Bookmarks
         </a>
 
-        <a class="dock-item subtitle-heading" href="beaker://library">
+        <a class="dock-item" href="beaker://library">
           Library
         </a>
 
-        <span class="dock-separator subtitle-heading">|</span>
+        <span class="dock-separator">|</span>
 
-        <a class="dock-item subtitle-heading" onclick=${onClickNewSiteButton}>
+        <a class="dock-item" onclick=${onClickNewSiteButton}>
           New +
         </a>
       </div>

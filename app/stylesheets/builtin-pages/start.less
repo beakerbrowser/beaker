@@ -28,10 +28,12 @@
 
   .beta-info {
     &:extend(.flex);
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
     align-items: center;
-    max-width: 600px;
-    margin: auto;
-    margin-top: 70px;
+    width: 600px;
     background: #8257cf;
     color: #fff;
     -webkit-font-smoothing: antialiased;
@@ -164,6 +166,11 @@
       cursor: pointer;
       margin-bottom: 0;
       padding: 3px 7px;
+      font-weight: 400;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .15px;
+      color: rgba(0,0,0,.75);
 
       &:not(:last-child) {
         margin-right: 25px;
