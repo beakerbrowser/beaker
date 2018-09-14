@@ -34,7 +34,7 @@ export default function render (archive, {filePath, includePreview, syncPath} = 
     return yo`
       <div class="archive-history ${history ? '' : 'loading'}">
         <div class="archive-history-body">
-          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="beaker://library/${baseUrl}+latest${filePath}">
+          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="beaker://library/${baseUrl}${filePath}">
             <span class="fa fa-fw fa-globe"></span>
             View latest published
           </div>
