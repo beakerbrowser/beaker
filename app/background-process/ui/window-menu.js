@@ -218,6 +218,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Zoom In',
         accelerator: 'CmdOrCtrl+Plus',
+        reserved: true,
         click: function (item, win) {
           if (win) win.webContents.send('command', 'view:zoom-in')
         }
@@ -225,6 +226,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Zoom Out',
         accelerator: 'CmdOrCtrl+-',
+        reserved: true,
         click: function (item, win) {
           if (win) win.webContents.send('command', 'view:zoom-out')
         }

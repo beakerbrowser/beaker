@@ -42,6 +42,9 @@ function convertAcceleratorToBinding (accel) {
       case 'shift':
         binding.shift = true
         break
+      case 'plus':
+        binding.key = '+'
+        break
       default:
         binding.key = part.toLowerCase()
     }
@@ -52,10 +55,12 @@ function convertAcceleratorToBinding (accel) {
 // event handler, manually run any events that match our keybindings
 export function createBeforeInputEventHandler (win) {
   return (e, input) => {
-    const key = input.key === 'Dead' ? 'i' : input.key // not... really sure what 'Dead' is about -prf
+    var key = input.key
+    if (key === 'Dead') key = 'i' // not... really sure what 'Dead' is about -prf
+    if (key === '=') key = '+' // let's not differentiate the shift (see #1155) -prf
     for (var kb of KEYBINDINGS) {
       if (key === kb.binding.key) {
-        if (kb.binding.cmdOrCtrl && !(input.ctrl || input.meta)) {
+        if (kb.binding.cmdOrCtrl && !(input.control || input.meta)) {
           continue
         }
         if (kb.binding.shift && !input.shift) {
