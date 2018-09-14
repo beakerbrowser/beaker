@@ -723,9 +723,6 @@ function renderLocalDiffSummary () {
         version = `v${version}`
       }
 
-      // TODO
-      // var path = currentSource ? currentSource._path : ('/' + getNotfoundPathnameFromUrl())
-
       var label = version
       if (version === 'preview') {
         label = syncPath
@@ -748,6 +745,7 @@ function renderLocalDiffSummary () {
           </button>
         `
 
+      let filePath = '/' + window.location.pathname.split('/').slice(4).join('/')
       pathCtrls = toggleable2({
         id: 'version-picker',
         closed: ({onToggle}) => yo`
@@ -758,7 +756,7 @@ function renderLocalDiffSummary () {
           <div class="dropdown toggleable-container path-ctrls">
             ${button(onToggle)}
             <div class="dropdown-items left">
-              ${renderArchiveHistory(filesBrowser.root._archive, {includePreview: previewMode, syncPath})}
+              ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode, syncPath})}
             </div>
           </div>`
       })
