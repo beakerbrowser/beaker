@@ -683,85 +683,73 @@ function renderVersionPicker () {
     return yo`<div class="revision-indicator ${type}"></div>`
   }
 
-  if (!syncPath && !previewMode) {
-    // DEBUG
-    return yo`<div id="local-path-and-preview-tools empty"></div>`
+  var versionPicker
+  var version = 'latest'
+  var link = ''
+  var vi = workingCheckout.url.indexOf('+')
+  if (vi !== -1) {
+    version = workingCheckout.url.slice(vi + 1)
+  }
+  // is the version a number?
+  if (version == +version) {
+    link = yo`
+      <a href="beaker://library/${archive.checkout('latest').url}">
+        View latest
+      </a>`
+    version = `v${version}`
+  }
 
-    if (isLocalPathPromptDismissed()) {
-      return yo`<div id="local-path-and-preview-tools empty"></div>`
-    }
-    return yo`
-      <div id="local-path-and-preview-tools" class="setup-tip">
+  var label = version
+  if (version === 'preview') {
+    if (syncPath) {
+      label = syncPath
+    } else {
+      label = yo`
         <div>
-          <i class="fa fa-lightbulb-o"></i>
-          <strong>Tip:</strong>
-          Set a local folder to access this site${"'"}s files from outside of the browser.
+          Version:
+          <strong>local preview</strong>
         </div>
-        <button class="btn primary" onclick=${onChangeSyncDirectory}>Set a local folder</button>
-        <button class="btn transparent" onclick=${onDismissLocalPathPrompt}>Dismiss</button>
-      </div>`
-  }
-
-  var pathCtrls
-  if (syncPath) {
-      var version = 'latest'
-      var link = ''
-      var vi = archive.url.indexOf('+')
-      if (vi !== -1) {
-        version = archive.url.slice(vi + 1)
-      }
-      // is the version a number?
-      if (version == +version) {
-        link = yo`
-          <a href="beaker://library/${archive.checkout('latest').url}">
-            View latest
-          </a>`
-        version = `v${version}`
-      }
-
-      var label = version
-      if (version === 'preview') {
-        label = syncPath
-      } else {
-        label = yo`
-          <div>
-            Version:
-            <strong>${version}</strong>
-          </div>
-        `
-      }
-
-      const button = (onToggle) =>
-        yo`
-          <button
-            class="btn sync-path-link"
-            onclick=${onToggle}>
-            ${label}
-            <span class="fa fa-angle-down"></span>
-          </button>
-        `
-
-      let filePath = '/' + window.location.pathname.split('/').slice(4).join('/')
-      pathCtrls = toggleable2({
-        id: 'version-picker',
-        closed: ({onToggle}) => yo`
-          <div class="dropdown toggleable-container path-ctrls">
-            ${button(onToggle)}
-          </div>`,
-        open: ({onToggle}) => yo`
-          <div class="dropdown toggleable-container path-ctrls">
-            ${button(onToggle)}
-            <div class="dropdown-items left">
-              ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode, syncPath})}
-            </div>
-          </div>`
-      })
+      `
+    }
   } else {
-    pathCtrls = yo`<div class="path-ctrls">Preview mode</div>`
+    label = yo`
+      <div>
+        Version:
+        <strong>${version}</strong>
+      </div>
+    `
   }
 
-  var previewCtrls = ''
-  if (version === 'preview' && previewMode && !shouldAlwaysShowPreviewToggle) {
+  const button = (onToggle) =>
+    yo`
+      <button
+        class="btn sync-path-link"
+        onclick=${onToggle}>
+        ${label}
+        <span class="fa fa-angle-down"></span>
+      </button>
+    `
+
+  let filePath = '/' + window.location.pathname.split('/').slice(4).join('/')
+  versionPicker = toggleable2({
+    id: 'version-picker',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container path-ctrls">
+        ${button(onToggle)}
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container path-ctrls">
+        ${button(onToggle)}
+        <div class="dropdown-items left">
+          ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode, syncPath})}
+        </div>
+      </div>`
+  })
+
+  var previewCtrls
+  if (!isOwner) {
+    previewCtrls = ''
+  } else if (previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
       total
         ? [
@@ -789,9 +777,9 @@ function renderVersionPicker () {
             Open preview
         </a>`
     ]
-  } else if (version === 'preview') {
+  } else if (version === 'preview' || version === 'latest') {
     previewCtrls = yo`
-      <div class="input-group radiolist sub-item">
+      <div class="input-group radiolist sub-item preview-mode-toggle">
         <label class="toggle">
           <input
             type="checkbox"
@@ -811,7 +799,7 @@ function renderVersionPicker () {
 
   return yo`
     <div id="local-path-and-preview-tools">
-      ${pathCtrls}
+      ${versionPicker}
       ${link}
       ${previewCtrls}
     </div>`
