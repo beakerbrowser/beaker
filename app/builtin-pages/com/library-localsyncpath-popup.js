@@ -92,8 +92,13 @@ function render () {
 
             ${hasUnpublishedChanges && !hasConflicts
               ? yo`
-                <div class="message">
-                  Note: You have changes in your current preview which will not be published if you change directories.
+                <div class="message info">
+                  <p>
+                    There are unpublished changes in the current local folder. Updating the local folder will cause these changes to be lost.
+                  </p>
+                  <p>
+                    <a onclick=${destroy} href="beaker://library/dat://${archiveKey}#local-compare">Review unpublished changes</a>
+                  </p>
                 </div>`
               : ''}
 
