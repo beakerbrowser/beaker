@@ -868,24 +868,6 @@ function onDidStopLoading (e) {
   }
 }
 
-function onDidGetRedirectRequest (e) {
-  // HACK
-  // electron has a problem handling redirects correctly, so we need to handle it for them
-  // see https://github.com/electron/electron/issues/3471
-  // thanks github.com/sokcuri and github.com/alexstrat for this fix
-  // -prf
-  if (e.isMainFrame) {
-    var page = getByWebview(e.target)
-    if (page) {
-      e.preventDefault()
-      setTimeout(() => {
-        console.log('Using redirect workaround for electron #3471; redirecting to', e.newURL)
-        e.target.getWebContents().send('redirect-hackfix', e.newURL)
-      }, 100)
-    }
-  }
-}
-
 function onDidGetResponseDetails (e) {
   if (e.resourceType != 'mainFrame') {
     return
