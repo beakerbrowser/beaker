@@ -137,7 +137,6 @@ export function create (opts) {
     retainedScrollY: 0, // what was the scroll position of the page before navigating away?
 
     // current page's info
-    contentType: null, // what is the content-type of the page?
     favicons: null, // what are the favicons of the page?
     bookmark: null, // this page's bookmark object, if it's bookmarked
 
@@ -344,8 +343,6 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('load-commit', onLoadCommit)
-  page.webviewEl.addEventListener('did-get-redirect-request', onDidGetRedirectRequest)
-  page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
   page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
@@ -607,6 +604,17 @@ function onWillNavigate (e) {
 function onDidNavigate (e) {
   var page = getByWebview(e.target)
   if (page) {  
+    // we're goin
+    page.isReceivingAssets = true
+    // set URL in navbar
+    page.loadingURL = e.url
+    page.siteInfoOverride = null
+    navbar.updateLocation(page)
+    // if it's a failed dat discovery...
+    if (e.httpResponseCode === 504 && e.url.startsWith('dat://')) {
+      page.siteWasADatTimeout = true
+    }
+
     // close any prompts and modals
     prompt.forceRemoveAll(page)
     modal.forceRemoveAll(page)
@@ -732,17 +740,13 @@ function onDidStopLoading (e) {
       statusBar.setIsLoading(false)
     }
 
-    // fallback content type
-    let contentType = page.contentType
-    if (!contentType) {
-
-      if (page.getURL().endsWith('.md')) {
-        contentType = 'text/markdown'
-      }
-
-      if (page.getURL().endsWith('.json')) {
-        contentType = 'application/json'
-      }
+    // determine content type
+    let contentType 
+    if (page.getURL().endsWith('.md')) {
+      contentType = 'text/markdown'
+    }
+    if (page.getURL().endsWith('.json')) {
+      contentType = 'application/json'
     }
 
     // markdown rendering
@@ -864,31 +868,6 @@ function onDidStopLoading (e) {
         window.scroll(0, ${page.retainedScrollY})
       `)
       page.retainedScrollY = 0
-    }
-  }
-}
-
-function onDidGetResponseDetails (e) {
-  if (e.resourceType != 'mainFrame') {
-    return
-  }
-
-  var page = getByWebview(e.target)
-  if (page) {
-    // we're goin
-    page.isReceivingAssets = true
-    try {
-      page.contentType = e.headers['content-type'][0] || null
-    } catch (e) {
-      page.contentType = null
-    }
-    // set URL in navbar
-    page.loadingURL = e.newURL
-    page.siteInfoOverride = null
-    navbar.updateLocation(page)
-    // if it's a failed dat discovery...
-    if (e.httpResponseCode === 504 && e.newURL.startsWith('dat://')) {
-      page.siteWasADatTimeout = true
     }
   }
 }
