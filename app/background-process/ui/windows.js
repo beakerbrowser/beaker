@@ -22,6 +22,7 @@ let sessionWatcher = null
 let focusedDevtoolsHost
 const BROWSING_SESSION_PATH = './shell-window-state.json'
 const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
+const PRELOAD_PATH = path.join(__dirname, 'shell-window.build.js')
 
 // exported methods
 // =
@@ -133,6 +134,8 @@ export function createShellWindow (windowState) {
     backgroundColor: '#ddd',
     defaultEncoding: 'UTF-8',
     webPreferences: {
+      sandbox: true,
+      preload: PRELOAD_PATH,
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false,
       nativeWindowOpen: true

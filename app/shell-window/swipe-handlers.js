@@ -2,7 +2,7 @@ import { ipcRenderer } from 'electron'
 import * as pages from './pages'
 import * as zoom from './pages/zoom'
 
-const isDarwin = window.process.platform === 'darwin'
+const isDarwin = true// TODO window.process.platform === 'darwin'
 
 const SWIPE_TRIGGER_DIST = 400 // how far do you need to travel to trigger the navigation
 const ARROW_OFF_DIST = 80 // how far off-screen are the arrows

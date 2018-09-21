@@ -18,7 +18,7 @@ import ICO from 'icojs'
 const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: beaker: data: dat: http: https;
-  script-src 'self' beaker:;
+  script-src 'self' beaker: 'unsafe-eval';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
   child-src 'self';

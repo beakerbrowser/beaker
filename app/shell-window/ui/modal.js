@@ -6,12 +6,13 @@ import ModalClasses from './modals/index'
 // globals
 // =
 
-var modalsDiv = document.querySelector('#modals')
+var modalsDiv
 
 // exported functions
 // =
 
 export function setup () {
+  modalsDiv = document.querySelector('#modals')
   document.body.addEventListener('keydown', onGlobalKeydown)
 }
 
