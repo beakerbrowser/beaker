@@ -1319,9 +1319,9 @@ test('archive types', async t => {
 
   // get info gives type
   var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive1URL}")).getInfo()`)
-  t.deepEqual(res.type, ['foo', 'bar'])
+  t.deepEqual(res.type.sort(), ['foo', 'bar'].sort())
   var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
-  t.deepEqual(res.type, ['foo', 'baz'])
+  t.deepEqual(res.type.sort(), ['foo', 'baz'].sort())
 
   // selectArchive applies type filter
   mainTab.executeJavascript(`
@@ -1348,7 +1348,7 @@ test('archive types', async t => {
   // configure can change types
   await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).configure({type: 'foo baz blah'})`)
   var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
-  t.deepEqual(res.type, ['foo', 'baz', 'blah'])
+  t.deepEqual(res.type.sort(), ['foo', 'baz', 'blah'].sort())
 
   // forks preserve type if none is specified
   var typedArchive3URLPromise = mainTab.executeJavascript(`
@@ -1358,7 +1358,7 @@ test('archive types', async t => {
   await app.click('.prompt-accept')
   var typedArchive3URL = await typedArchive3URLPromise
   var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive3URL}")).getInfo()`)
-  t.deepEqual(res.type, ['foo', 'bar'])
+  t.deepEqual(res.type.sort(), ['foo', 'bar'].sort())
 
   // forks overwrite type if type is specified
   var typedArchive4URLPromise = mainTab.executeJavascript(`
