@@ -112,17 +112,18 @@ app.on('ready', async function () {
 })
 
 // only run one instance
-const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
-  handleArgv(argv)
-
-  // focus/create a window
-  windows.ensureOneWindowExists()
-  windows.getActiveWindow().focus()
-})
-if (isSecondInstance) {
+const isFirstInstance = app.requestSingleInstanceLock()
+if (!isFirstInstance) {
   app.exit()
 } else {
   handleArgv(process.argv)
+  app.on('second-instance', (argv, workingDirectory) => {
+    handleArgv(argv)
+
+    // focus/create a window
+    windows.ensureOneWindowExists()
+    windows.getActiveWindow().focus()
+  })
 }
 function handleArgv (argv) {
   if (process.platform !== 'darwin') {
