@@ -1,7 +1,3 @@
-// TODO - this is a hack to get things working, remove
-import os from 'os' // removeme
-window.process = {platform: os.platform()} // removeme
-
 import * as rpcAPI from 'pauls-electron-rpc'
 const beakerCoreWebview = require ('@beaker/core/webview')
 import { ipcRenderer } from 'electron'

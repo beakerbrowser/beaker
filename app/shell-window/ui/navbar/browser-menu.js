@@ -13,7 +13,7 @@ import * as pages from '../../pages'
 
 export class BrowserMenuNavbarBtn {
   constructor () {
-    const isDarwin = os.platform() === 'darwin'
+    const isDarwin = beaker.browser.getInfo().platform === 'darwin'
     const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
     this.accelerators = {
       newWindow: cmdOrCtrlChar + 'N',
