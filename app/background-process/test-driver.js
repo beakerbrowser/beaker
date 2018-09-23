@@ -49,11 +49,11 @@ const METHODS = {
       page.navbarEl.querySelector('.nav-location-input').blur()
 
       var loadPromise = new Promise(resolve => {
-        function onDidStopLoading () {
-          page.webviewEl.removeEventListener('did-stop-loading', onDidStopLoading)
+        function onDomReady () {
+          page.webviewEl.removeEventListener('dom-ready', onDomReady)
           resolve()
         }
-        page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
+        page.webviewEl.addEventListener('dom-ready', onDomReady)
       })
       page.loadURL("${url}")
       loadPromise
