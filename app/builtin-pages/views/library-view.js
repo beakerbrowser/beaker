@@ -125,7 +125,7 @@ async function setup () {
 
   try {
     // load platform info
-    let browserInfo = await beaker.browser.getInfo()
+    let browserInfo = beaker.browser.getInfo()
     window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
 
     // load data

@@ -242,7 +242,7 @@ export function removeAsDefaultProtocolClient (protocol) {
 }
 
 export function getInfo () {
-  return Promise.resolve({
+  return {
     version: app.getVersion(),
     electronVersion: process.versions.electron,
     chromiumVersion: process.versions.chrome,
@@ -256,7 +256,7 @@ export function getInfo () {
     paths: {
       userData: app.getPath('userData')
     }
-  })
+  }
 }
 
 export function checkForUpdates (opts = {}) {

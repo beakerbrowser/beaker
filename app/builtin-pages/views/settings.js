@@ -29,7 +29,7 @@ async function setup () {
   window.addEventListener('popstate', onPopState)
 
   // fetch data
-  browserInfo = await beaker.browser.getInfo()
+  browserInfo = beaker.browser.getInfo()
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
   // applications = await beaker.apps.list(0) TODO(apps) restore when we bring back apps -prf

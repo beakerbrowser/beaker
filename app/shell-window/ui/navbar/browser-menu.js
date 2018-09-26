@@ -28,15 +28,11 @@ export class BrowserMenuNavbarBtn {
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
     this.shouldPersistDownloadsIndicator = false
+    this.browserInfo = beaker.browser.getInfo()
 
     // fetch current downloads
     beaker.downloads.getDownloads().then(ds => {
       this.downloads = ds
-      this.updateActives()
-    })
-
-    beaker.browser.getInfo().then(info => {
-      this.browserInfo = info
       this.updateActives()
     })
 
@@ -357,8 +353,7 @@ export class BrowserMenuNavbarBtn {
     this.updateActives()
 
     // ask user for files
-    const browserInfo = await beaker.browser.getInfo()
-    const filesOnly = browserInfo.platform === 'linux'
+    const filesOnly = this.browserInfo.platform === 'linux'
     const files = await beaker.browser.showOpenDialog({
       title: 'Select files to share',
       buttonLabel: 'Share files',
