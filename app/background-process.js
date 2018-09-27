@@ -117,7 +117,7 @@ if (!isFirstInstance) {
   app.exit()
 } else {
   handleArgv(process.argv)
-  app.on('second-instance', (argv, workingDirectory) => {
+  app.on('second-instance', (event, argv, workingDirectory) => {
     handleArgv(argv)
 
     // focus/create a window
