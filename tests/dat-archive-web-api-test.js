@@ -28,6 +28,7 @@ var beakerPng = fs.readFileSync(__dirname + '/scaffold/test-static-dat/beaker.pn
 var tmpDirPath1 = tempy.directory()
 
 test.before(async t => {
+  console.log('starting dat-archive-web-api-test')
   await app.isReady
   mainTab = app.getTab(0)
 

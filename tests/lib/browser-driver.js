@@ -1,9 +1,6 @@
 const childProcess = require('child_process')
 const dgram = require('dgram')
 
-const TEST_PORT = 5555
-const BROWSER_PORT = 5556
-
 exports.start = function (opts) {
   return new BrowserDriver(opts)
 }
@@ -13,32 +10,38 @@ UDP wire format
 request: {msgId: Number, cmd, args: Array<string>}
 response: {msgId: Number, resolve: any?, reject: any?}
 special message:
-isReady: {isReady: true}
+isReady: {isReady: true, port: Number}
 */
 
 class BrowserDriver {
   constructor ({path, args, env}) {
     this.rpcCalls = []
+    this.testPort = null
+    this.browserPort = null
 
-    // start child process
-    env = Object.assign({}, env, process.env)
-    env.BEAKER_TEST_DRIVER = 1
-    this.process = childProcess.spawn(path, args, {stdio: ['inherit', 'inherit', 'inherit'], env})
+    this.isReady = new Promise(async (resolve) => {
+      // setup udp socket
+      this.sock = dgram.createSocket('udp4')
+      this.sock.on('error', err => {
+        console.error('UDP socket error in browser-driver', err)
+      })
+      await new Promise(r => this.sock.bind(0, '127.0.0.1', r))
+      this.testPort = this.sock.address().port
 
-    // setup udp socket
-    this.sock = dgram.createSocket('udp4')
-    this.sock.on('error', err => {
-      console.error('UDP socket error in browser-driver', err)
-    })
-    this.sock.bind(TEST_PORT, '127.0.0.1')
+      // start child process
+      env = Object.assign({}, env, process.env)
+      env.BEAKER_TEST_DRIVER = this.testPort
+      this.process = childProcess.spawn(path, args, {stdio: ['inherit', 'inherit', 'inherit'], env})
 
-    // handle rpc responses
-    this.isReady = new Promise(resolve => {
+      // handle rpc responses
       this.sock.on('message', (message) => {
         message = JSON.parse(message.toString('utf8'))
 
         // special handling for isReady message
-        if (message.isReady) return resolve()
+        if (message.isReady) {
+          this.browserPort = message.port
+          return resolve()
+        }
 
         // pop the handler
         var rpcCall = this.rpcCalls[message.msgId]
@@ -55,7 +58,7 @@ class BrowserDriver {
     // send rpc request
     var msgId = this.rpcCalls.length
     var msg = Buffer.from(JSON.stringify({msgId, cmd, args}), 'utf8')
-    this.sock.send(msg, 0, msg.length, BROWSER_PORT, '127.0.0.1', err => {
+    this.sock.send(msg, 0, msg.length, this.browserPort, '127.0.0.1', err => {
       if (err) console.error('UDP socket error in browser-driver', err)
     })
     return new Promise((resolve, reject) => this.rpcCalls.push({resolve, reject}))
@@ -112,8 +115,11 @@ class BrowserDriver {
     `)
   }
 
-  stop () {
+  async stop () {
     this.process.kill()
+    await new Promise(resolve => {
+      this.sock.close(resolve)
+    })
   }
 }
 

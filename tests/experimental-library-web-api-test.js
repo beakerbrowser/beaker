@@ -23,6 +23,7 @@ var outsideDatUrl
 var mainTab
 
 test.before(async t => {
+  console.log('starting experimental-library-web-api-test')
   await app.isReady
 
   // create the test archive

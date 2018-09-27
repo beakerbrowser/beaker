@@ -1,10 +1,9 @@
 import dgram from 'dgram'
 import {ipcMain} from 'electron'
+import * as beakerCore from '@beaker/core'
 import * as windows from './ui/windows'
 
-const TEST_PORT = 5555
-const BROWSER_PORT = 5556
-
+var testPort = +beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
 var sock
 
 // exported api
@@ -13,10 +12,10 @@ var sock
 export function setup () {
   // setup socket
   sock = dgram.createSocket('udp4')
-  sock.bind(BROWSER_PORT, '127.0.0.1')
+  sock.bind(0, '127.0.0.1')
   sock.on('message', onMessage)
   sock.on('listening', () => {
-    console.log('Test driver enabled, listening for messages on port', BROWSER_PORT)
+    console.log('Test driver enabled, listening for messages on port', sock.address().port)
   })
 
   // emit ready when ready
@@ -24,7 +23,7 @@ export function setup () {
   sock.on('listening', hit)
   ipcMain.once('shell-window:ready', hit)
   function hit () {
-    if (!(--todos)) send({isReady: true})
+    if (!(--todos)) send({isReady: true, port: sock.address().port})
   }
 }
 
@@ -33,7 +32,7 @@ export function setup () {
 
 function send (obj) {
   obj = Buffer.from(JSON.stringify(obj), 'utf8')
-  sock.send(obj, 0, obj.length, TEST_PORT, '127.0.0.1', err => {
+  sock.send(obj, 0, obj.length, testPort, '127.0.0.1', err => {
     if (err) console.log('Error communicating with the test driver', err)
   })
 }

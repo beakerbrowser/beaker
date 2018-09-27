@@ -23,6 +23,7 @@ const app = browserdriver.start({
   }
 })
 test.before(async t => {
+  console.log('starting dat-archive-synced-folder-test')
   await app.isReady
   mainTab = app.getTab(0)
 })

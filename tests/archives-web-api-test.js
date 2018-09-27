@@ -24,6 +24,7 @@ var draft1URL
 var draft2URL
 
 test.before(async t => {
+  console.log('starting archives-web-api-test')
   await app.isReady
 
   // share the test static dat

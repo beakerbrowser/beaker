@@ -29,6 +29,7 @@ var mainTab1
 var mainTab2
 
 test.before(async t => {
+  console.log('starting experimental-dat-peers-web-api-test')
   await app1.isReady
   await app2.isReady
 

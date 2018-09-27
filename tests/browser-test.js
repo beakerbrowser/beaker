@@ -17,9 +17,10 @@ const app = browserdriver.start({
   }
 })
 test.before(async t => {
+  console.log('starting browser-test')
   await app.isReady
 })
-test.after.always('cleanup', async t => app.stop())
+test.after.always('cleanup', async t => await app.stop())
 
 test('can open http pages', async t => {
   var tab = await app.newTab()
