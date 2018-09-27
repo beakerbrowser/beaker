@@ -1,38 +1,61 @@
+import dgram from 'dgram'
 import {ipcMain} from 'electron'
 import * as windows from './ui/windows'
+
+const TEST_PORT = 5555
+const BROWSER_PORT = 5556
+
+var sock
 
 // exported api
 // =
 
 export function setup () {
-  console.log('Test driver enabled, listening for messages')
-  process.on('message', onMessage)
+  // setup socket
+  sock = dgram.createSocket('udp4')
+  sock.bind(BROWSER_PORT, '127.0.0.1')
+  sock.on('message', onMessage)
+  sock.on('listening', () => {
+    console.log('Test driver enabled, listening for messages on port', BROWSER_PORT)
+  })
+
+  // emit ready when ready
+  var todos = 2
+  sock.on('listening', hit)
+  ipcMain.once('shell-window:ready', hit)
+  function hit () {
+    if (!(--todos)) send({isReady: true})
+  }
 }
 
 // internal methods
 // =
 
-async function onMessage ({msgId, cmd, args}) {
+function send (obj) {
+  obj = Buffer.from(JSON.stringify(obj), 'utf8')
+  sock.send(obj, 0, obj.length, TEST_PORT, '127.0.0.1', err => {
+    if (err) console.log('Error communicating with the test driver', err)
+  })
+}
+
+async function onMessage (message) {
+  const {msgId, cmd, args} = JSON.parse(message.toString('utf8'))
   var method = METHODS[cmd]
   if (!method) method = () => new Error('Invalid method: ' + cmd)
   try {
     var resolve = await method(...args)
-    process.send({msgId, resolve})
+    send({msgId, resolve})
   } catch (err) {
     var reject = {
       message: err.message,
       stack: err.stack,
       name: err.name
     }
-    process.send({msgId, reject})
+    send({msgId, reject})
   }
 }
 
 const METHODS = {
-  isReady () {
-    return new Promise(resolve => ipcMain.once('shell-window:ready', () => resolve()))
-  },
-
   newTab () {
     return execute(`
       var index = pages.getAll().length

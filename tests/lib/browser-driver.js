@@ -1,13 +1,19 @@
-var childProcess = require('child_process')
+const childProcess = require('child_process')
+const dgram = require('dgram')
+
+const TEST_PORT = 5555
+const BROWSER_PORT = 5556
 
 exports.start = function (opts) {
   return new BrowserDriver(opts)
 }
 
 /*
-IPC wire format
+UDP wire format
 request: {msgId: Number, cmd, args: Array<string>}
 response: {msgId: Number, resolve: any?, reject: any?}
+special message:
+isReady: {isReady: true}
 */
 
 class BrowserDriver {
@@ -17,31 +23,41 @@ class BrowserDriver {
     // start child process
     env = Object.assign({}, env, process.env)
     env.BEAKER_TEST_DRIVER = 1
-    this.process = childProcess.spawn(path, args, {stdio: ['inherit', 'inherit', 'inherit', 'ipc'], env})
+    this.process = childProcess.spawn(path, args, {stdio: ['inherit', 'inherit', 'inherit'], env})
+
+    // setup udp socket
+    this.sock = dgram.createSocket('udp4')
+    this.sock.on('error', err => {
+      console.error('UDP socket error in browser-driver', err)
+    })
+    this.sock.bind(TEST_PORT, '127.0.0.1')
 
     // handle rpc responses
-    this.process.on('message', (message) => {
-      // pop the handler
-      var rpcCall = this.rpcCalls[message.msgId]
-      if (!rpcCall) return
-      this.rpcCalls[message.msgId] = null
-      // reject/resolve
-      if (message.reject) rpcCall.reject(message.reject)
-      else rpcCall.resolve(message.resolve)
-    })
+    this.isReady = new Promise(resolve => {
+      this.sock.on('message', (message) => {
+        message = JSON.parse(message.toString('utf8'))
 
-    // wait for ready
-    this.isReady = this.rpc('isReady').catch((err) => {
-      console.error('Beaker failed to setup', err)
-      this.stop()
-      process.exit(1)
+        // special handling for isReady message
+        if (message.isReady) return resolve()
+
+        // pop the handler
+        var rpcCall = this.rpcCalls[message.msgId]
+        if (!rpcCall) return
+        this.rpcCalls[message.msgId] = null
+        // reject/resolve
+        if (message.reject) rpcCall.reject(message.reject)
+        else rpcCall.resolve(message.resolve)
+      })
     })
   }
 
   async rpc (cmd, ...args) {
     // send rpc request
     var msgId = this.rpcCalls.length
-    this.process.send({msgId, cmd, args})
+    var msg = Buffer.from(JSON.stringify({msgId, cmd, args}), 'utf8')
+    this.sock.send(msg, 0, msg.length, BROWSER_PORT, '127.0.0.1', err => {
+      if (err) console.error('UDP socket error in browser-driver', err)
+    })
     return new Promise((resolve, reject) => this.rpcCalls.push({resolve, reject}))
   }
 
