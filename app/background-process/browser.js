@@ -213,8 +213,8 @@ export async function getDefaultProtocolSettings () {
     if (httpHandler && httpHandler.stdout) httpHandler = httpHandler.stdout
     if (datHandler && datHandler.stdout) datHandler = datHandler.stdout
     return {
-      http: (httpHandler || '').trim() === DOT_DESKTOP_FILENAME,
-      dat: (datHandler || '').trim() === DOT_DESKTOP_FILENAME
+      http: (httpHandler || '').toString().trim() === DOT_DESKTOP_FILENAME,
+      dat: (datHandler || '').toString().trim() === DOT_DESKTOP_FILENAME
     }
   }
 
