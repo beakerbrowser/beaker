@@ -7,6 +7,7 @@ To avoid that, we listen to the window webContents' 'before-input-event' and han
 import _flattenDeep from 'lodash.flattendeep'
 import {buildWindowMenu} from './window-menu'
 
+const IS_DARWIN = process.platform === 'darwin'
 const KEYBINDINGS = extractKeybindings(buildWindowMenu())
 
 // recurse the window menu and extract all 'accelerator' values with reserved=true
@@ -32,9 +33,14 @@ function convertAcceleratorToBinding (accel) {
     switch (part.toLowerCase()) {
       case 'command':
       case 'cmd':
-      case 'cmdorctrl':
+        binding.cmd = true
+        break
       case 'ctrl':
-        binding.cmdOrCtrl = true
+        binding.control = true
+        break
+      case 'cmdorctrl':
+        if (IS_DARWIN) binding.cmd = true
+        else binding.control = true
         break
       case 'alt':
         binding.alt = true
@@ -60,15 +66,10 @@ export function createBeforeInputEventHandler (win) {
     if (key === '=') key = '+' // let's not differentiate the shift (see #1155) -prf
     for (var kb of KEYBINDINGS) {
       if (key === kb.binding.key) {
-        if (kb.binding.cmdOrCtrl && !(input.control || input.meta)) {
-          continue
-        }
-        if (kb.binding.shift && !input.shift) {
-          continue
-        }
-        if (kb.binding.alt && !input.alt) {
-          continue
-        }
+        if (kb.binding.control && !input.control) continue
+        if (kb.binding.cmd && !input.meta) continue
+        if (kb.binding.shift && !input.shift) continue
+        if (kb.binding.alt && !input.alt) continue
 
         // match, run
         e.preventDefault()
