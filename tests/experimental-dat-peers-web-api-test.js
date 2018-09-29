@@ -166,6 +166,9 @@ test('datPeers.broadcast() and datPeers.send()', async t => {
   await mainTab1.executeJavascript(sendCode('left'))
   await mainTab2.executeJavascript(sendCode('right'))
 
+  // give a moment for all messages to arrive
+  await new Promise(r => setTimeout(r, 100))
+
   // check messages
   var messages1 = await mainTab1.executeJavascript(getMessagesCode)
   var messages2 = await mainTab2.executeJavascript(getMessagesCode)
