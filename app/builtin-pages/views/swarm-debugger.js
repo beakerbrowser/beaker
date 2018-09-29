@@ -135,7 +135,7 @@ function tabulateStat (logEntry) {
     case 'connect-failed':
       stats.currentlyConnecting--
       break
-    case 'connection-established':
+    case 'handshaking':
       stats.currentlyConnecting--
       stats.currentlyConnected++
       break
@@ -319,7 +319,6 @@ function renderPeers () {
   return yo`
     <div class="peers">
       ${peers.map(peer => yo`<div>${peer.host}:${peer.port}</div>`)}
-      ${peers.length === 0 ? yo`<p>No peers are currently connected for this archive.</p>` : ''}
     </div>`
 }
 
