@@ -15,7 +15,8 @@ const EVENT_SETS = {
 }
 const STAT_SETS = {
   peer: ['peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped'],
-  archive: ['peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped', 'swarming']
+  archive: ['peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped', 'swarming'],
+  time: ['swarming', 'peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped']
 }
 
 // globals
@@ -26,7 +27,8 @@ var peers = []
 var logEntries = []
 var stats = {
   eventsByPeer: {},
-  eventsByArchive: {}
+  eventsByArchive: {},
+  eventsByTime: {}
 }
 var activeView
 var activeColumns
@@ -132,6 +134,19 @@ function tabulateStat (logEntry) {
     stats.eventsByArchive[archiveKey][event]++
     if (!STAT_SETS.archive.includes(event)) console.error('Event not tabulated for archive:', event)
   }
+
+  var timeSegment = getTimeSegment()
+  var isNewTimeSegment = !(timeSegment in stats.eventsByTime)
+  if (isNewTimeSegment && activeView === 'events') {
+    render()
+  }
+  stats.eventsByTime[timeSegment] = stats.eventsByTime[timeSegment] || {}
+  stats.eventsByTime[timeSegment][event] = stats.eventsByTime[timeSegment][event] || 0
+  stats.eventsByTime[timeSegment][event]++
+}
+
+function getTimeSegment () {
+  return Math.floor(Date.now() / 5e3) * 5e3
 }
 
 // rendering
@@ -150,6 +165,7 @@ function render () {
         </div>
         <nav>
           ${renderNavItem('stats', 'Stats')}
+          ${renderNavItem('events', 'Events')}
           ${renderNavItem('connections', 'Connection log')}
           ${renderNavItem('discovery', 'Discovery log')}
           ${renderNavItem('errors', 'Error log')}
@@ -174,13 +190,19 @@ function render () {
               ${renderEventsByArchive()}
             </section>
           </div>`
-        : yo`
+        : ''}
+      ${activeView === 'events'
+        ? yo`<div class="view">${renderEventsByTime()}</div>`
+        : ''}
+      ${activeView !== 'stats' && activeView !== 'events'
+        ? yo`
           <div class="view">
             <table class="log">
               <thead>${renderActiveColumns()}</thead>
               <tbody class="log-entries" onclick=${onClickLogEntry}>${renderLog()}</tbody>
             </table>
-          </div>`}
+          </div>`
+        : ''}
     </main>
   `)
 }
@@ -243,6 +265,24 @@ function renderEventsByArchive () {
         ${Object.entries(stats.eventsByArchive).map(([archiveKey, eventStats]) => {
           var columns = STAT_SETS.archive.map(event => yo`<td class="${eventStats[event] ? '' : 'gray'}">${eventStats[event] || 0}</td>`)
           return yo`<tr><td>${archiveKey}</td>${columns}</tr>`
+        })}
+      </tbody>
+    </table>`
+}
+
+function renderEventsByTime () {
+  return yo`
+    <table class="event-stats">
+      <thead>
+        <tr>
+          <td>time segment</td>
+          ${STAT_SETS.time.map(event => yo`<td>${event}</td>`)}
+        </tr>
+      </thead>
+      <tbody>
+        ${Object.entries(stats.eventsByTime).map(([time, eventStats]) => {
+          var columns = STAT_SETS.time.map(event => yo`<td class="${eventStats[event] ? '' : 'gray'}">${eventStats[event] || 0}</td>`)
+          return yo`<tr><td>${(new Date(+time)).toLocaleTimeString()}</td>${columns}</tr>`
         })}
       </tbody>
     </table>`
