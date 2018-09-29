@@ -26,6 +26,8 @@ var archiveKey = false
 var peers = []
 var logEntries = []
 var stats = {
+  currentlyConnecting: 0,
+  currentlyConnected: 0,
   eventsByPeer: {},
   eventsByArchive: {},
   eventsByTime: {}
@@ -35,6 +37,7 @@ var activeColumns
 var activeEvents
 var filterStr = ''
 var filter = false
+var renderInterval
 
 setup()
 async function setup () {
@@ -68,11 +71,15 @@ async function setup () {
 }
 
 function setView (view) {
+  if (renderInterval) clearInterval(renderInterval)
   filter = false
   filterStr = ''
   activeView = view
   activeColumns = COLUMN_SETS[view]
   activeEvents = EVENT_SETS[view]
+  if (view === 'stats') {
+    renderInterval = setInterval(render, 5e3)
+  }
 }
 
 async function parseURL () {
@@ -120,6 +127,22 @@ function tabulateStat (logEntry) {
   var {peer, archiveKey, event} = logEntry
 
   if (event === 'traffic') return // ignore
+
+  switch (event) {
+    case 'connecting':
+      stats.currentlyConnecting++
+      break
+    case 'connect-failed':
+      stats.currentlyConnecting--
+      break
+    case 'connection-established':
+      stats.currentlyConnecting--
+      stats.currentlyConnected++
+      break
+    case 'connection-closed':
+      stats.currentlyConnected--
+      break
+  }
 
   if (peer) {
     stats.eventsByPeer[peer] = stats.eventsByPeer[peer] || {}
@@ -174,13 +197,17 @@ function render () {
       ${activeView === 'stats'
         ? yo`
           <div class="view">
-            ${archiveKey
-              ? yo`
-                <section>
-                  <h3>Peers</h3>
-                  ${renderPeers()}
-                </section>`
-              : ''}
+            <section class="columns">
+              <div><h3>Connected</h3><div>${stats.currentlyConnected}</div></div>
+              <div><h3>Connecting</h3><div>${stats.currentlyConnecting}</div></div>
+              ${archiveKey
+                ? yo`
+                  <div>
+                    <h3>Peers</h3>
+                    ${renderPeers()}
+                  </div>`
+                : ''}
+            </section>
             <section>
               <h3>Events (grouped by peer)</h3>
               ${renderEventsByPeer()}
