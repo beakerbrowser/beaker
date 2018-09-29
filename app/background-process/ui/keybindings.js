@@ -61,6 +61,7 @@ function convertAcceleratorToBinding (accel) {
 // event handler, manually run any events that match our keybindings
 export function createBeforeInputEventHandler (win) {
   return (e, input) => {
+    if (input.type !== 'keyDown') return
     var key = input.key
     if (key === 'Dead') key = 'i' // not... really sure what 'Dead' is about -prf
     if (key === '=') key = '+' // let's not differentiate the shift (see #1155) -prf
