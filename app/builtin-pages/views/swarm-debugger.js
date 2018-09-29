@@ -11,12 +11,12 @@ const COLUMN_SETS = {
 const EVENT_SETS = {
   discovery: ['traffic', 'peer-found', 'peer-rejected', 'peer-dropped', 'peer-banned'],
   connections: ['connecting', 'connect-timeout', 'connect-failed', 'handshaking', 'handshake-timeout', 'connection-established', 'replicating', 'connection-error', 'connection-closed', 'redundant-connection'],
-  errors: ['connection-error']
+  errors: ['swarm-error', 'archive-error', 'connection-error', 'error']
 }
 const STAT_SETS = {
   peer: ['peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped'],
   archive: ['peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped', 'swarming'],
-  time: ['swarming', 'peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped']
+  time: ['swarming', 'peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connect-failed', 'peer-dropped', 'connection-error', 'swarm-error', 'archive-error']
 }
 
 // globals
