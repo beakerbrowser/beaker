@@ -1,22 +1,33 @@
 /* globals DatArchive beaker */
 
 import * as yo from 'yo-yo'
+import {shortenHash} from '../../lib/strings'
 
 const COLUMN_SETS = {
-  discovery: ['event', 'peer', 'trafficType', 'messageId', 'message'],
-  connections: ['event', 'peer', 'connectionId', 'connectionType', 'ts', 'message']
+  discovery: ['archiveKey', 'event', 'peer', 'trafficType', 'messageId', 'message'],
+  connections: ['archiveKey', 'event', 'peer', 'connectionId', 'connectionType', 'ts', 'message'],
+  errors: ['archiveKey', 'event', 'peer', 'message']
 }
 const EVENT_SETS = {
   discovery: ['traffic', 'peer-found', 'peer-rejected', 'peer-dropped', 'peer-banned'],
-  connections: ['connecting', 'connect-timeout', 'connect-failed', 'handshaking', 'handshake-timeout', 'connection-established', 'replicating', 'connection-error', 'connection-closed', 'redundant-connection']
+  connections: ['connecting', 'connect-timeout', 'connect-failed', 'handshaking', 'handshake-timeout', 'connection-established', 'replicating', 'connection-error', 'connection-closed', 'redundant-connection'],
+  errors: ['connection-error']
+}
+const STAT_SETS = {
+  peer: ['peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped'],
+  archive: ['peer-found', 'connecting', 'handshaking', 'connection-established', 'connection-closed', 'handshake-timeout', 'connection-error', 'connect-failed', 'peer-dropped', 'swarming']
 }
 
 // globals
 // =
 
-var archiveKey = ''
+var archiveKey = false
 var peers = []
 var logEntries = []
+var stats = {
+  eventsByPeer: {},
+  eventsByArchive: {}
+}
 var activeView
 var activeColumns
 var activeEvents
@@ -31,24 +42,26 @@ async function setup () {
     renderUsage(e.message)
     return
   }
-  setView('connections')
+  setView('stats')
   render()
 
-  var archive = new DatArchive(archiveKey)
-  var info = await archive.getInfo()
-  peers = info.peerInfo
-  updatePeers()
+  if (archiveKey) {
+    // archive-specific data
+    var archive = new DatArchive(archiveKey)
+    peers = (await archive.getInfo()).peerInfo
+    updatePeers()
+    beaker.archives.addEventListener('network-changed', ({details}) => {
+      if (details.url.slice('dat://'.length) === archiveKey) {
+        peers = details.peers
+        updatePeers()
+      }
+    })
+  }
 
-  // wire up events
-  beaker.archives.addEventListener('network-changed', ({details}) => {
-    if (details.url.slice('dat://'.length) === archiveKey) {
-      peers = details.peers
-      updatePeers()
-    }
-  })
   var debugEvents = beaker.archives.createDebugStream()
-  debugEvents.addEventListener(archiveKey, onLog)
+  debugEvents.addEventListener(archiveKey || 'all', onLog)
   logEntries = (await beaker.archives.getDebugLog(archiveKey)).split('\n').map(parseJSON).filter(Boolean)
+  logEntries.forEach(tabulateStat)
   render()
 }
 
@@ -63,7 +76,7 @@ function setView (view) {
 async function parseURL () {
   var path = window.location.pathname
   if (path === '/' || !path) {
-    throw new Error('Invalid dat URL')
+    return false
   }
   try {
     // extract key from url
@@ -101,30 +114,64 @@ function shouldRender (logEntry) {
   return true
 }
 
+function tabulateStat (logEntry) {
+  var {peer, archiveKey, event} = logEntry
+
+  if (event === 'traffic') return // ignore
+
+  if (peer) {
+    stats.eventsByPeer[peer] = stats.eventsByPeer[peer] || {}
+    stats.eventsByPeer[peer][event] = stats.eventsByPeer[peer][event] || 0
+    stats.eventsByPeer[peer][event]++
+    if (!STAT_SETS.peer.includes(event)) console.error('Event not tabulated for peer:', event)
+  }
+
+  if (archiveKey) {
+    stats.eventsByArchive[archiveKey] = stats.eventsByArchive[archiveKey] || {}
+    stats.eventsByArchive[archiveKey][event] = stats.eventsByArchive[archiveKey][event] || 0
+    stats.eventsByArchive[archiveKey][event]++
+    if (!STAT_SETS.archive.includes(event)) console.error('Event not tabulated for archive:', event)
+  }
+}
+
 // rendering
 // =
 
 function render () {
   yo.update(document.querySelector('main'), yo`
     <main>
-      <h1><i class="fa fa-bug"></i> Swarm debugger</h1>
-      <div id="filter">
-        ${filter
-          ? yo`<button class="btn" onclick=${onClearFilter}>Clear</button>`
-          : ''}
-        <input type="text" placeholder="Filter" onchange=${onChangeFilter} value=${filterStr} />
+      <div class="header">
+        <h1><i class="fa fa-bug"></i> Swarm debugger (${archiveKey ? shortenHash(archiveKey) : 'all archives'})</h1>
+        <div id="filter">
+          ${filter
+            ? yo`<button class="btn" onclick=${onClearFilter}>Clear</button>`
+            : ''}
+          <input type="text" placeholder="Filter" onchange=${onChangeFilter} value=${filterStr} />
+        </div>
+        <nav>
+          ${renderNavItem('stats', 'Stats')}
+          ${renderNavItem('connections', 'Connection log')}
+          ${renderNavItem('discovery', 'Discovery log')}
+          ${renderNavItem('errors', 'Error log')}
+        </nav>
       </div>
-      <nav>
-        ${renderNavItem('connections', 'Connection log')}
-        ${renderNavItem('discovery', 'Discovery log')}
-        ${renderNavItem('stats', 'Stats')}
-      </nav>
       ${activeView === 'stats'
         ? yo`
           <div class="view">
+            ${archiveKey
+              ? yo`
+                <section>
+                  <h3>Peers</h3>
+                  ${renderPeers()}
+                </section>`
+              : ''}
             <section>
-              <h3>Peers</h3>
-              ${renderPeers()}
+              <h3>Events (grouped by peer)</h3>
+              ${renderEventsByPeer()}
+            </section>
+            <section>
+              <h3>Events (grouped by archive)</h3>
+              ${renderEventsByArchive()}
             </section>
           </div>`
         : yo`
@@ -162,7 +209,43 @@ function renderLogEntry (data) {
 }
 
 function renderLog () {
-  return logEntries.filter(shouldRender).map(renderLogEntry)
+  return logEntries.filter(shouldRender).slice(-500).map(renderLogEntry)
+}
+
+function renderEventsByPeer () {
+  return yo`
+    <table class="event-stats">
+      <thead>
+        <tr>
+          <td>peer</td>
+          ${STAT_SETS.peer.map(event => yo`<td>${event}</td>`)}
+        </tr>
+      </thead>
+      <tbody>
+        ${Object.entries(stats.eventsByPeer).map(([peer, eventStats]) => {
+          var columns = STAT_SETS.peer.map(event => yo`<td class="${eventStats[event] ? '' : 'gray'}">${eventStats[event] || 0}</td>`)
+          return yo`<tr><td>${peer}</td>${columns}</tr>`
+        })}
+      </tbody>
+    </div>`
+}
+
+function renderEventsByArchive () {
+  return yo`
+    <table class="event-stats">
+      <thead>
+        <tr>
+          <td>archive</td>
+          ${STAT_SETS.archive.map(event => yo`<td>${event}</td>`)}
+        </tr>
+      </thead>
+      <tbody>
+        ${Object.entries(stats.eventsByArchive).map(([archiveKey, eventStats]) => {
+          var columns = STAT_SETS.archive.map(event => yo`<td class="${eventStats[event] ? '' : 'gray'}">${eventStats[event] || 0}</td>`)
+          return yo`<tr><td>${archiveKey}</td>${columns}</tr>`
+        })}
+      </tbody>
+    </table>`
 }
 
 function renderPeers () {
@@ -231,7 +314,7 @@ function onClickLogEntry (e) {
 }
 
 function onLog (data) {
-  console.debug(data)
+  tabulateStat(data)
   logEntries.push(data)
   if (shouldRender(data)) {
     document.querySelector('.log-entries').appendChild(renderLogEntry(data))
