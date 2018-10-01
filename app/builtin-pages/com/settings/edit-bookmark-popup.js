@@ -1,5 +1,5 @@
 import yo from 'yo-yo'
-import closeIcon from '../icon/close'
+import closeIcon from '../../icon/close'
 
 // globals
 // =

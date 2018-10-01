@@ -2,8 +2,8 @@ import _get from 'lodash.get'
 import yo from 'yo-yo'
 import renderDiff from './diff'
 import renderArchiveSelectBtn from './archive-select-btn'
-import renderBackLink from './back-link'
-import {pluralize, shortenHash} from '../../lib/strings'
+import renderBackLink from '../back-link'
+import {pluralize, shortenHash} from '../../../lib/strings'
 
 // exported api
 // =

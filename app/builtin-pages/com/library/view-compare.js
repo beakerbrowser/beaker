@@ -3,8 +3,8 @@
 import yo from 'yo-yo'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import {diffLines} from '@beaker/dat-archive-file-diff'
-import renderArchiveComparison from './archive-comparison'
-import * as toast from './toast'
+import renderArchiveComparison from '../archive/archive-comparison'
+import * as toast from '../toast'
 
 export default class LibraryViewCompare {
   constructor (opts) {

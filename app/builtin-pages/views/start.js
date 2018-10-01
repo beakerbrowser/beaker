@@ -2,8 +2,8 @@
 
 import * as yo from 'yo-yo'
 import Sortable from 'sortablejs'
-import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
-import * as editBookmarkPopup from '../com/edit-bookmark-popup'
+import * as addPinnedBookmarkPopup from '../com/settings/add-pinned-bookmark-popup'
+import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
 import renderHelpTip from '../com/help-tip'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
