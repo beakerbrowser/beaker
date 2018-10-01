@@ -954,8 +954,8 @@ body.drag {
     }
   }
 
-  #local-path-and-preview-tools {
-    &:extend(.flex);
+  #library-version-picker {
+    display: flex;
     align-items: center;
     margin: 0 0 15px;
     padding: 10px 15px;
@@ -991,8 +991,8 @@ body.drag {
       }
     }
 
-    &.empty {
-      display: none;
+    & > * {
+      white-space: nowrap;
     }
 
     & > .revision-indicator {
@@ -1007,17 +1007,16 @@ body.drag {
       margin-right: 5px;
     }
 
-    &.setup-tip {
-      transition: opacity 0.2s;
-
-      & > * {
-        margin: 0 auto;
-      }
-    }
-
-    .path-ctrls {
+    .version-picker-ctrls {
       margin-right: 10px;
       flex-basis: 100%;
+    }
+
+    .sync-path-btn {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-left: 5px;
+      margin-right: 20px;
     }
 
     .open-preview-btn,

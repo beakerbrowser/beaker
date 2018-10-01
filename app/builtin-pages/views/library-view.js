@@ -666,15 +666,15 @@ function renderFilesView () {
 }
 
 function rerenderVersionPicker () {
-  var el = document.getElementById('local-path-and-preview-tools')
+  var el = document.getElementById('library-version-picker')
   if (!el) return
   yo.update(el, renderVersionPicker())
 }
 
 function renderVersionPicker () {
   const isOwner = _get(archive, 'info.isOwner')
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const previewMode = _get(archive, 'info.userSettings.previewMode')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
 
   function rRevisionIndicator (type) {
@@ -685,38 +685,33 @@ function renderVersionPicker () {
   var versionPicker
   var version = 'latest'
   var link = ''
+  var syncPathCtrl = ''
   var vi = workingCheckout.url.indexOf('+')
   if (vi !== -1) {
     version = workingCheckout.url.slice(vi + 1)
   }
+
   // is the version a number?
   if (version == +version) {
-    link = yo`
-      <a href="beaker://library/${archive.checkout('latest').url}">
-        View latest
-      </a>`
+    link = yo`<a href="beaker://library/${archive.checkout('latest').url}">View latest</a>`
     version = `v${version}`
+  } else if (syncPath) {
+    syncPathCtrl = yo`<button class="btn plain sync-path-btn" onclick=${onSyncPathContextMenu}>${syncPath}</button>`
   }
 
   var label = version
   if (version === 'preview') {
-    if (syncPath) {
-      label = syncPath
-    } else {
-      label = yo`
-        <div>
-          Version:
-          <strong>local preview</strong>
-        </div>
-      `
-    }
+    label = yo`
+      <div>
+        Version:
+        <strong>preview</strong>
+      </div>`
   } else {
     label = yo`
       <div>
         Version:
         <strong>${version}</strong>
-      </div>
-    `
+      </div>`
   }
 
   const button = (onToggle) =>
@@ -733,14 +728,14 @@ function renderVersionPicker () {
   versionPicker = toggleable2({
     id: 'version-picker',
     closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container path-ctrls">
+      <div class="dropdown toggleable-container version-picker-ctrl">
         ${button(onToggle)}
       </div>`,
     open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container path-ctrls">
+      <div class="dropdown toggleable-container version-picker-ctrl">
         ${button(onToggle)}
         <div class="dropdown-items left">
-          ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode, syncPath})}
+          ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode})}
         </div>
       </div>`
   })
@@ -797,9 +792,10 @@ function renderVersionPicker () {
   }
 
   return yo`
-    <div id="local-path-and-preview-tools">
+    <div id="library-version-picker">
       ${versionPicker}
       ${link}
+      ${syncPathCtrl}
       ${previewCtrls}
     </div>`
 }
@@ -1481,7 +1477,8 @@ async function onChangeView (e, view) {
     window.history.pushState('', {}, e.detail.href)
   } else {
     activeView = view
-    window.history.pushState('', {}, e ? e.currentTarget.getAttribute('href') : view)
+    let url = e ? e.currentTarget.getAttribute('href') : `${location.origin}${location.pathname}#${view}`
+    window.history.pushState('', {}, url)
   }
 
   if (activeView === 'files' && archiveFsRoot) {
@@ -1629,7 +1626,6 @@ async function onChangeSyncDirectory () {
     return
   }
 
-  setLocalPathPromptDismissed()
   await setup()
   onOpenFolder(localSyncPath)
   render()
@@ -1859,25 +1855,6 @@ function onSyncPathContextMenu (e) {
       {icon: 'wrench', label: 'Configure', click: () => onChangeView(null, 'settings') }
     ]
   })
-}
-
-function isLocalPathPromptDismissed () {
-  return localStorage['local-path-prompt-dismissed:' + archive.key] === '1'
-}
-
-function setLocalPathPromptDismissed () {
-  localStorage['local-path-prompt-dismissed:' + archive.key] = '1'
-}
-
-function onDismissLocalPathPrompt (e) {
-  e.preventDefault()
-  setLocalPathPromptDismissed()
-
-  // trigger a dismiss animation
-  var el = document.getElementById('local-path-and-preview-tools')
-  if (!el) return
-  el.style.opacity = 0
-  setTimeout(() => el.remove(), 200)
 }
 
 async function onFilesChanged () {
