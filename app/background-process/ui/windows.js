@@ -148,9 +148,20 @@ export function createShellWindow (windowState) {
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
 
+  let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
   function handlePagesReady ({ sender }) {
     if (win && !win.isDestroyed() && sender === win.webContents) {
       win.webContents.send('command', 'initialize', state.pages)
+      if (isTestDriverActive) {
+        // HACK
+        // For some reason, when the sandbox is enabled, executeJavaScript doesnt work in the browser window until the devtools are opened.
+        // Since it's kind of handy to have the devtools open anyway, open them automatically when tests are running.
+        // No, I am not above this.
+        // -prf
+        setTimeout(() => {
+          win.webContents.openDevTools()
+        }, 1e3)
+      }
     }
   }
 
