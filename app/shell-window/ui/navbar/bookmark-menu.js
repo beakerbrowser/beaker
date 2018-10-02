@@ -317,9 +317,17 @@ export class BookmarkMenuNavbarBtn {
     this.updateActives()
   }
 
-  onChangePinned (e) {
+  async onChangePinned (e) {
     this.values.pinned = e.target.checked
     this.updateActives()
+
+    // go ahead and update the bookmark
+    var page = pages.getActive()
+    if (!page.bookmark) {
+      return this.close() // bookmark mustve gotten deleted by another tab
+    }
+    await beaker.bookmarks.setBookmarkPinned(page.bookmark.href, this.values.pinned)
+    page.bookmark.pinned = this.values.pinned
   }
 
   onChangeSeeding (e) {
