@@ -12,6 +12,6 @@
     "tempy": "^0.2.0"
   },
   "scripts": {
-    "test": "ava ./*-test.js -s -T15000"
+    "test": "set -e; for i in *-test.js; do ava -s \"$i\"; sleep 3; done"
   }
 }
