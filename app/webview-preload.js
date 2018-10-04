@@ -1,4 +1,4 @@
-import {webFrame} from 'electron'
+import { webFrame } from 'electron'
 import * as rpcAPI from 'pauls-electron-rpc'
 import * as beakerCoreWebview from '@beaker/core/webview'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
@@ -11,12 +11,13 @@ import setupExitFullScreenHackfix from './webview-preload/exit-full-screen-hackf
  - Allowing Service Workers 
  - Supporting Fetch API 
  - CORS Enabled 
-*/  
+*/
 webFrame.registerURLSchemeAsPrivileged('dat', { bypassCSP: false })
+webFrame.setSpellCheckProvider('en-US', true, beakerCoreWebview.createSpellChecker(rpcAPI))
 
 // HACKS
 setupExitFullScreenHackfix()
 
-beakerCoreWebview.setup({rpcAPI})
+beakerCoreWebview.setup({ rpcAPI })
 setupLocationbar()
 setupPrompt()
