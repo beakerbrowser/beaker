@@ -120,7 +120,6 @@ function renderRows () {
         yo`
           <div class="subtitle-heading ll-sticky-heading">
             ${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}
-            ${renderClearHistoryButton()}
           </div>`
       )
     }
@@ -155,7 +154,7 @@ function renderClearHistoryButton () {
   if (query && query.length) return ''
 
   return yo`
-    <div>
+    <div class="actions">
       <button class="link" onclick=${onClickDeleteBulk.bind(window)}>
         Clear history
       </button>
@@ -182,7 +181,6 @@ function renderAndAppendRows (v) {
         yo`
           <div class="subtitle-heading ll-sticky-heading">
             ${ucfirst(niceDate(lastRenderedDate, { noTime: true }))}
-            ${renderClearHistoryButton()}
           </div>`
       )
     }
@@ -221,6 +219,8 @@ function renderHeader () {
         </span>
         <i class="fa fa-search"></i>
       </div>
+
+      ${renderClearHistoryButton()}
     </div>`
 }
 

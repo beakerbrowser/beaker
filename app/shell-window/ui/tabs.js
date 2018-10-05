@@ -129,8 +129,8 @@ function repositionTabs (e) {
   var numUnpinnedTabs = 0
   var availableWidth = window.innerWidth
   // correct for traffic lights
-  if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen')) { availableWidth -= 80 }
-  if (window.process.platform == 'win32') { availableWidth -= 200 }
+  if (getPlatform() === 'darwin' && !document.body.classList.contains('fullscreen')) { availableWidth -= 80 }
+  if (getPlatform() === 'win32') { availableWidth -= 200 }
   // correct for new-tab and dropdown btns
   availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
   // count the unpinned-tabs, and correct for the spacing and pinned-tabs
@@ -486,6 +486,12 @@ function getNiceTitle (page) {
   } catch (e) {
     return title
   }
+}
+
+var _platform
+function getPlatform () {
+  if (!_platform) _platform = beaker.browser.getInfo().platform
+  return _platform
 }
 
 function getBuiltinPageIcon (url) {

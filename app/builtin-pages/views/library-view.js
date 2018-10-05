@@ -672,6 +672,10 @@ function rerenderVersionPicker () {
 }
 
 function renderVersionPicker () {
+  if (!_get(archive, 'info.userSettings.isSaved')) {
+    return ''
+  }
+  
   const isOwner = _get(archive, 'info.isOwner')
   const previewMode = _get(archive, 'info.userSettings.previewMode')
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
@@ -699,27 +703,15 @@ function renderVersionPicker () {
     syncPathCtrl = yo`<button class="btn plain sync-path-btn" onclick=${onSyncPathContextMenu}>${syncPath}</button>`
   }
 
-  var label = version
-  if (version === 'preview') {
-    label = yo`
-      <div>
-        Version:
-        <strong>preview</strong>
-      </div>`
-  } else {
-    label = yo`
-      <div>
-        Version:
-        <strong>${version}</strong>
-      </div>`
-  }
-
   const button = (onToggle) =>
     yo`
       <button
         class="btn sync-path-link"
         onclick=${onToggle}>
-        ${label}
+        <div>
+          Version:
+          <strong>${version}</strong>
+        </div>
         <span class="fa fa-angle-down"></span>
       </button>
     `
@@ -746,21 +738,19 @@ function renderVersionPicker () {
   } else if (previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
       total
-        ? [
-          yo`
-            <a
-              class="btn revisions-btn tooltip-container"
-              href=${`beaker://library/${archive.url}#local-compare`}
-              onclick=${e => onChangeView(e, 'local-compare')}>
-                ${rRevisionIndicator('add')}
-                ${rRevisionIndicator('mod')}
-                ${rRevisionIndicator('del')}
-                <span class="text">
-                  Review ${total} ${pluralize(total, 'change')}
-                </span>
-            </a>`
-          ]
-        : yo`<em class="no-revisions">No unpublished changes</em>`,
+        ? yo`
+          <a
+            class="btn revisions-btn tooltip-container"
+            href=${`beaker://library/${archive.url}#local-compare`}
+            onclick=${e => onChangeView(e, 'local-compare')}>
+              ${rRevisionIndicator('add')}
+              ${rRevisionIndicator('mod')}
+              ${rRevisionIndicator('del')}
+              <span class="text">
+                Review ${total} ${pluralize(total, 'change')}
+              </span>
+          </a>`
+        : '',
       yo`
         <a
           class="btn primary tooltip-container open-preview-btn"
@@ -796,6 +786,7 @@ function renderVersionPicker () {
       ${versionPicker}
       ${link}
       ${syncPathCtrl}
+      <div class="spacer"></div>
       ${previewCtrls}
     </div>`
 }

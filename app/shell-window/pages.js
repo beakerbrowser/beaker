@@ -38,7 +38,7 @@ export const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 var pages = []
 var activePage = null
 var events = new EventEmitter()
-var webviewsDiv = document.getElementById('webviews')
+var webviewsDiv
 var closedURLs = []
 var cachedMarkdownRendererScript
 var cachedJSONRendererScript
@@ -63,6 +63,8 @@ export function getPinned () {
 }
 
 export function setup () {
+  webviewsDiv = document.getElementById('webviews')
+  
   beaker.archives.addEventListener('network-changed', ({details}) => {
     // check if any of the active pages matches this url
     pages.forEach(page => {
@@ -1039,7 +1041,7 @@ export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://' + path.join(APP_PATH, 'webview-preload.build.js'))
-  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce')
+  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce,nativeWindowOpen=yes')
   // TODO re-enable nativeWindowOpen when https://github.com/electron/electron/issues/9558 lands
   el.setAttribute('src', url || DEFAULT_URL)
   return el

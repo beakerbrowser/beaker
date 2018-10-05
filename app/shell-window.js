@@ -11,6 +11,8 @@ window.navbar = navbar
 
 // setup
 beakerCoreWebview.setup({rpcAPI})
-setupUI(() => {
-  ipcRenderer.send('shell-window:ready')
+document.addEventListener('DOMContentLoaded', () => {
+  setupUI(() => {
+    ipcRenderer.send('shell-window:ready')
+  })
 })
