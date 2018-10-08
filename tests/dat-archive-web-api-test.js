@@ -1990,7 +1990,8 @@ test.skip('DatArchive can resolve and read dats with shortnames', async t => {
   t.truthy(Array.isArray(res))
 })
 
-test('network events', async t => {
+// TODO re-enable when its more consistent
+test.skip('network events', async t => {
   // share the test static dat
   var testStaticDat2 = await createDat()
   var testStaticDat2URL = 'dat://' + testStaticDat2.archive.key.toString('hex')
