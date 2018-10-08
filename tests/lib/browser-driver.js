@@ -109,9 +109,11 @@ class BrowserDriver {
 
   async setValue (sel, value) {
     this.executeJavascript(`
-      let el = document.querySelector('input[name="title"]')
-      el.value = 'The Title'
-      el.dispatchEvent(new Event('change'))
+      (function () {
+        let el = document.querySelector('input[name="title"]')
+        el.value = 'The Title'
+        el.dispatchEvent(new Event('change'))
+      })()
     `)
   }
 
@@ -173,9 +175,11 @@ class BrowserDriverTab {
 
   async setValue (sel, value) {
     this.executeJavascript(`
-      let el = document.querySelector('input[name="title"]')
-      el.value = 'The Title'
-      el.dispatchEvent(new Event('change'))
+      (function () {
+        let el = document.querySelector('input[name="title"]')
+        el.value = 'The Title'
+        el.dispatchEvent(new Event('change'))
+      })()
     `)
   }
 }
