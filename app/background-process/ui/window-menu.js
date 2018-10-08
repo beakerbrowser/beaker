@@ -1,7 +1,7 @@
 import * as beakerCore from '@beaker/core'
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import { createShellWindow, getFocusedDevToolsHost } from './windows'
-import download from './downloads'
+import {download} from './downloads'
 
 // exported APIs
 // =
