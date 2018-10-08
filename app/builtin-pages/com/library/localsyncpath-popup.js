@@ -1,8 +1,8 @@
 /* globals beaker */
 
 import yo from 'yo-yo'
-import {shortenHash} from '../../lib/strings'
-import closeIcon from '../icon/close'
+import {shortenHash} from '../../../lib/strings'
+import closeIcon from '../../icon/close'
 
 // globals
 // =

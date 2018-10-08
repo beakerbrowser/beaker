@@ -1,18 +1,13 @@
 import * as yo from 'yo-yo'
 import * as pages from '../pages'
 
-// globals
-// =
-
-var promptsDiv = document.querySelector('#prompts')
-
 // exported functions
 // =
 
 export function createContainer (id) {
   // render
   var el = render(id, null)
-  promptsDiv.append(el)
+  document.querySelector('#prompts').append(el)
   return el
 }
 

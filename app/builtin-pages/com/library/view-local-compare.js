@@ -1,9 +1,9 @@
-/* globals beaker */
+/* globals beaker CustomEvent */
 
 import yo from 'yo-yo'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
-import renderArchiveComparison from './archive-comparison'
-import * as toast from './toast'
+import renderArchiveComparison from '../archive/archive-comparison'
+import * as toast from '../toast'
 
 export default class LibraryViewLocalCompare {
   constructor (opts) {
@@ -44,9 +44,9 @@ export default class LibraryViewLocalCompare {
     this.updatePage()
   }
 
-  async loadFileDiffs(compareDiff) {
+  async loadFileDiffs (compareDiff) {
     var resolve
-    var p = new Promise(r => {resolve = r})
+    var p = new Promise(r => { resolve = r })
     // automatically & iteratively load the file diffs
     const loadNextFileDiff = async () => {
       // find the next empty diff

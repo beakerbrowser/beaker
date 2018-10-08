@@ -1,4 +1,4 @@
-/* globals DatArchive beaker hljs confirm */
+/* globals DatArchive beaker hljs confirm sessionStorage location alert history */
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
@@ -7,33 +7,35 @@ import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import parseDatURL from 'parse-dat-url'
 import {diffLines} from '@beaker/dat-archive-file-diff'
+import {pluralize, shortenHash} from '@beaker/core/lib/strings'
 import _get from 'lodash.get'
 import throttle from 'lodash.throttle'
 import dragDrop from 'drag-drop'
 import {join as joinPaths} from 'path'
-import FilesBrowser from '../com/files-browser2'
-import toggleable from '../com/toggleable'
+import FilesBrowser from '../com/files-browser/files-browser'
+import {setup as setupAce, isSetup as isAceSetup, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/files-browser/file-editor'
 import toggleable2, {closeAllToggleables} from '../com/toggleable2'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import * as noticeBanner from '../com/notice-banner'
-import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
-import * as copyDatPopup from '../com/library-copydat-popup'
-import * as createFilePopup from '../com/library-createfile-popup'
-import renderFaviconPicker from '../com/favicon-picker'
+import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
+import * as copyDatPopup from '../com/library/copydat-popup'
+import * as createFilePopup from '../com/library/createfile-popup'
 import renderBackLink from '../com/back-link'
-import renderArchiveHistory from '../com/archive-history'
+import renderArchiveHistory from '../com/archive/archive-history'
 import {RehostSlider} from '../../lib/fg/rehost-slider'
-import LibraryViewCompare from '../com/library-view-compare'
-import LibraryViewLocalCompare from '../com/library-view-local-compare'
-import renderSettingsField from '../com/settings-field'
-import {setup as setupAce, isSetup as isAceSetup, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
-import {pluralize, shortenHash} from '@beaker/core/lib/strings'
+import LibraryViewCompare from '../com/library/view-compare'
+import LibraryViewLocalCompare from '../com/library/view-local-compare'
+import renderSettingsField from '../com/settings/settings-field'
+import renderFaviconPicker from '../com/settings/favicon-picker'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
 
-const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 90/*with description*/] // px
+const MIN_SHOW_NAV_ARCHIVE_TITLE = [
+  52, // px, no description
+  90 // px, with description
+]
 const LOCAL_DIFF_POLL_INTERVAL = 10e3 // ms
 const NETWORK_STATS_POLL_INTERVAL = 2e3 // ms
 
@@ -667,15 +669,19 @@ function renderFilesView () {
 }
 
 function rerenderVersionPicker () {
-  var el = document.getElementById('local-path-and-preview-tools')
+  var el = document.getElementById('library-version-picker')
   if (!el) return
   yo.update(el, renderVersionPicker())
 }
 
 function renderVersionPicker () {
+  if (!_get(archive, 'info.userSettings.isSaved')) {
+    return ''
+  }
+
   const isOwner = _get(archive, 'info.isOwner')
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const previewMode = _get(archive, 'info.userSettings.previewMode')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
 
   function rRevisionIndicator (type) {
@@ -686,38 +692,18 @@ function renderVersionPicker () {
   var versionPicker
   var version = 'latest'
   var link = ''
+  var syncPathCtrl = ''
   var vi = workingCheckout.url.indexOf('+')
   if (vi !== -1) {
     version = workingCheckout.url.slice(vi + 1)
   }
+
   // is the version a number?
   if (version == +version) {
-    link = yo`
-      <a href="beaker://library/${archive.checkout('latest').url}">
-        View latest
-      </a>`
+    link = yo`<a href="beaker://library/${archive.checkout('latest').url}">View latest</a>`
     version = `v${version}`
-  }
-
-  var label = version
-  if (version === 'preview') {
-    if (syncPath) {
-      label = syncPath
-    } else {
-      label = yo`
-        <div>
-          Version:
-          <strong>local preview</strong>
-        </div>
-      `
-    }
-  } else {
-    label = yo`
-      <div>
-        Version:
-        <strong>${version}</strong>
-      </div>
-    `
+  } else if (syncPath) {
+    syncPathCtrl = yo`<button class="btn plain sync-path-btn" onclick=${onSyncPathContextMenu}>${syncPath}</button>`
   }
 
   const button = (onToggle) =>
@@ -725,7 +711,10 @@ function renderVersionPicker () {
       <button
         class="btn sync-path-link"
         onclick=${onToggle}>
-        ${label}
+        <div>
+          Version:
+          <strong>${version}</strong>
+        </div>
         <span class="fa fa-angle-down"></span>
       </button>
     `
@@ -734,14 +723,14 @@ function renderVersionPicker () {
   versionPicker = toggleable2({
     id: 'version-picker',
     closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container path-ctrls">
+      <div class="dropdown toggleable-container version-picker-ctrl">
         ${button(onToggle)}
       </div>`,
     open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container path-ctrls">
+      <div class="dropdown toggleable-container version-picker-ctrl">
         ${button(onToggle)}
         <div class="dropdown-items left">
-          ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode, syncPath})}
+          ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode})}
         </div>
       </div>`
   })
@@ -752,21 +741,19 @@ function renderVersionPicker () {
   } else if (previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
       total
-        ? [
-          yo`
-            <a
-              class="btn revisions-btn tooltip-container"
-              href=${`beaker://library/${archive.url}#local-compare`}
-              onclick=${e => onChangeView(e, 'local-compare')}>
-                ${rRevisionIndicator('add')}
-                ${rRevisionIndicator('mod')}
-                ${rRevisionIndicator('del')}
-                <span class="text">
-                  Review ${total} ${pluralize(total, 'change')}
-                </span>
-            </a>`
-          ]
-        : yo`<em class="no-revisions">No unpublished changes</em>`,
+        ? yo`
+          <a
+            class="btn revisions-btn tooltip-container"
+            href=${`beaker://library/${archive.url}#local-compare`}
+            onclick=${e => onChangeView(e, 'local-compare')}>
+              ${rRevisionIndicator('add')}
+              ${rRevisionIndicator('mod')}
+              ${rRevisionIndicator('del')}
+              <span class="text">
+                Review ${total} ${pluralize(total, 'change')}
+              </span>
+          </a>`
+        : '',
       yo`
         <a
           class="btn primary tooltip-container open-preview-btn"
@@ -798,9 +785,11 @@ function renderVersionPicker () {
   }
 
   return yo`
-    <div id="local-path-and-preview-tools">
+    <div id="library-version-picker">
       ${versionPicker}
       ${link}
+      ${syncPathCtrl}
+      <div class="spacer"></div>
       ${previewCtrls}
     </div>`
 }
@@ -1275,7 +1264,6 @@ function renderLocalCompareView () {
     </div>`
 }
 
-
 function renderToolbar () {
   var peerCount = _get(archive, 'info.peers', 0)
 
@@ -1482,7 +1470,8 @@ async function onChangeView (e, view) {
     window.history.pushState('', {}, e.detail.href)
   } else {
     activeView = view
-    window.history.pushState('', {}, e ? e.currentTarget.getAttribute('href') : view)
+    let url = e ? e.currentTarget.getAttribute('href') : `${location.origin}${location.pathname}#${view}`
+    window.history.pushState('', {}, url)
   }
 
   if (activeView === 'files' && archiveFsRoot) {
@@ -1630,7 +1619,6 @@ async function onChangeSyncDirectory () {
     return
   }
 
-  setLocalPathPromptDismissed()
   await setup()
   onOpenFolder(localSyncPath)
   render()
@@ -1853,32 +1841,17 @@ function onSyncPathContextMenu (e) {
     withTriangle: true,
     items: [
       {icon: 'folder-o', label: 'Open folder', click: () => onOpenFolder(syncPath)},
-      {icon: 'clipboard', label: 'Copy path', click: () => {
-        writeToClipboard(syncPath)
-        toast.create('Path copied to clipboard')
-      }},
-      {icon: 'wrench', label: 'Configure', click: () => onChangeView(null, 'settings') }
+      {
+        icon: 'clipboard',
+        label: 'Copy path',
+        click: () => {
+          writeToClipboard(syncPath)
+          toast.create('Path copied to clipboard')
+        }
+      },
+      {icon: 'wrench', label: 'Configure', click: () => onChangeView(null, 'settings')}
     ]
   })
-}
-
-function isLocalPathPromptDismissed () {
-  return localStorage['local-path-prompt-dismissed:' + archive.key] === '1'
-}
-
-function setLocalPathPromptDismissed () {
-  localStorage['local-path-prompt-dismissed:' + archive.key] = '1'
-}
-
-function onDismissLocalPathPrompt (e) {
-  e.preventDefault()
-  setLocalPathPromptDismissed()
-
-  // trigger a dismiss animation
-  var el = document.getElementById('local-path-and-preview-tools')
-  if (!el) return
-  el.style.opacity = 0
-  setTimeout(() => el.remove(), 200)
 }
 
 async function onFilesChanged () {
@@ -1891,7 +1864,7 @@ async function onFilesChanged () {
     currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
     filesBrowser.rerender()
-    if (!!currentNode.preview) {
+    if (currentNode.preview) {
       if (!isAceSetup()) {
         // make sure the editor is setup
         // (sometimes there is a race condition that necessitates this)
@@ -2074,7 +2047,7 @@ async function setManifestValue (attr, value) {
 function isNavCollapsed ({ignoreScrollPosition} = {}) {
   if (!ignoreScrollPosition) {
     var main = document.body.querySelector('.builtin-main')
-    var hasDescription = (!!_get(archive, 'info.description')) ? 1 : 0
+    var hasDescription = (_get(archive, 'info.description')) ? 1 : 0
     if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
       // certain distance scrolled
       return true

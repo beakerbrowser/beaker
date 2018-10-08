@@ -79,5 +79,5 @@ async function onClickIcon (v) {
 async function onClickRemove () {
   selectedFavicon = null
   onSelect(null)
-  rerender()  
+  rerender()
 }

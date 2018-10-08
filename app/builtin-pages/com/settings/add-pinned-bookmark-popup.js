@@ -1,8 +1,8 @@
 /* globals beaker */
 
 import yo from 'yo-yo'
-import {findParent} from '../../lib/fg/event-handlers'
-import closeIcon from '../icon/close'
+import {findParent} from '../../../lib/fg/event-handlers'
+import closeIcon from '../../icon/close'
 
 // globals
 // =

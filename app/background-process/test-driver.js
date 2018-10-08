@@ -1,38 +1,60 @@
+import dgram from 'dgram'
 import {ipcMain} from 'electron'
+import * as beakerCore from '@beaker/core'
 import * as windows from './ui/windows'
+
+var testPort = +beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
+var sock
 
 // exported api
 // =
 
 export function setup () {
-  console.log('Test driver enabled, listening for messages')
-  process.on('message', onMessage)
+  // setup socket
+  sock = dgram.createSocket('udp4')
+  sock.bind(0, '127.0.0.1')
+  sock.on('message', onMessage)
+  sock.on('listening', () => {
+    console.log('Test driver enabled, listening for messages on port', sock.address().port)
+  })
+
+  // emit ready when ready
+  var todos = 2
+  sock.on('listening', hit)
+  ipcMain.once('shell-window:ready', hit)
+  function hit () {
+    if (!(--todos)) send({isReady: true, port: sock.address().port})
+  }
 }
 
 // internal methods
 // =
 
-async function onMessage ({msgId, cmd, args}) {
+function send (obj) {
+  obj = Buffer.from(JSON.stringify(obj), 'utf8')
+  sock.send(obj, 0, obj.length, testPort, '127.0.0.1', err => {
+    if (err) console.log('Error communicating with the test driver', err)
+  })
+}
+
+async function onMessage (message) {
+  const {msgId, cmd, args} = JSON.parse(message.toString('utf8'))
   var method = METHODS[cmd]
   if (!method) method = () => new Error('Invalid method: ' + cmd)
   try {
     var resolve = await method(...args)
-    process.send({msgId, resolve})
+    send({msgId, resolve})
   } catch (err) {
     var reject = {
       message: err.message,
       stack: err.stack,
       name: err.name
     }
-    process.send({msgId, reject})
+    send({msgId, reject})
   }
 }
 
 const METHODS = {
-  isReady () {
-    return new Promise(resolve => ipcMain.once('shell-window:ready', () => resolve()))
-  },
-
   newTab () {
     return execute(`
       var index = pages.getAll().length
@@ -49,11 +71,11 @@ const METHODS = {
       page.navbarEl.querySelector('.nav-location-input').blur()
 
       var loadPromise = new Promise(resolve => {
-        function onDidStopLoading () {
-          page.webviewEl.removeEventListener('did-stop-loading', onDidStopLoading)
+        function onDomReady () {
+          page.webviewEl.removeEventListener('dom-ready', onDomReady)
           resolve()
         }
-        page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
+        page.webviewEl.addEventListener('dom-ready', onDomReady)
       })
       page.loadURL("${url}")
       loadPromise

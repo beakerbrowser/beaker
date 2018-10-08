@@ -63,6 +63,14 @@ app.on('open-url', (e, url) => {
   else app.on('ready', () => openURL.open(url))
 })
 
+// handle OS event to open files
+app.on('open-file', (e, filepath) => {
+  e.preventDefault() // we are handling it
+  // wait for ready (not waiting can trigger errors)
+  if (app.isReady()) openURL.open(`file://${filepath}`)
+  else app.on('ready', () => openURL.open(`file://${filepath}`))
+})
+
 app.on('ready', async function () {
   // setup core
   await beakerCore.setup({
@@ -112,17 +120,18 @@ app.on('ready', async function () {
 })
 
 // only run one instance
-const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
-  handleArgv(argv)
-
-  // focus/create a window
-  windows.ensureOneWindowExists()
-  windows.getActiveWindow().focus()
-})
-if (isSecondInstance) {
+const isFirstInstance = app.requestSingleInstanceLock()
+if (!isFirstInstance) {
   app.exit()
 } else {
   handleArgv(process.argv)
+  app.on('second-instance', (event, argv, workingDirectory) => {
+    handleArgv(argv)
+
+    // focus/create a window
+    windows.ensureOneWindowExists()
+    windows.getActiveWindow().focus()
+  })
 }
 function handleArgv (argv) {
   if (process.platform !== 'darwin') {

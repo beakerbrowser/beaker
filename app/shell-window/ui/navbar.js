@@ -31,7 +31,7 @@ const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 // globals
 // =
 
-var toolbarNavDiv = document.getElementById('toolbar-nav')
+var toolbarNavDiv
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
 var bookmarkMenuNavbarBtn = null
@@ -51,6 +51,8 @@ var autocompleteResults = null // if set to an array, will render dropdown
 // =
 
 export function setup () {
+  toolbarNavDiv = document.getElementById('toolbar-nav')
+
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
   // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
@@ -103,7 +105,7 @@ export function showInpageFind (page) {
   el.select()
 }
 
-export function findNext(page, forward) {
+export function findNext (page, forward) {
   onClickFindNext(forward)
 }
 

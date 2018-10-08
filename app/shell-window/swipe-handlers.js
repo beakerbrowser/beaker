@@ -1,8 +1,8 @@
+/* globals beaker */
+
 import { ipcRenderer } from 'electron'
 import * as pages from './pages'
 import * as zoom from './pages/zoom'
-
-const isDarwin = window.process.platform === 'darwin'
 
 const SWIPE_TRIGGER_DIST = 400 // how far do you need to travel to trigger the navigation
 const ARROW_OFF_DIST = 80 // how far off-screen are the arrows
@@ -44,6 +44,7 @@ export function setup () {
     rightSwipeArrowEl.style.right = (-1 * ARROW_OFF_DIST) + 'px'
   }
 
+  const isDarwin = beaker.browser.getInfo().platform === 'darwin'
   window.addEventListener('mousewheel', e => {
     if (!isDarwin && e.ctrlKey === true) {
       var page = pages.getActive()
@@ -76,7 +77,7 @@ export function setup () {
         rightSwipeArrowEl.style.right = ((-1 * ARROW_OFF_DIST) + (hnorm * ARROW_OFF_DIST)) + 'px'
       }
 
-      // highlight 
+      // highlight
       if (shouldGoBack()) leftSwipeArrowEl.classList.add('highlight')
       else leftSwipeArrowEl.classList.remove('highlight')
       if (shouldGoForward()) rightSwipeArrowEl.classList.add('highlight')

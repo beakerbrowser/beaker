@@ -2,7 +2,7 @@
 
 import yo from 'yo-yo'
 import * as toast from '../com/toast'
-import DatNetworkActivity from '../com/dat-network-activity'
+import DatNetworkActivity from '../com/settings/dat-network-activity'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
@@ -204,7 +204,6 @@ function renderDatSettings () {
       </div>
     </div>
   `
-
 }
 
 function renderDefaultDatIgnoreSettings () {

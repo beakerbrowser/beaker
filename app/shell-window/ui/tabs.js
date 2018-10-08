@@ -1,4 +1,4 @@
-/* globals URL */
+/* globals URL beaker */
 
 import * as yo from 'yo-yo'
 import debounce from 'lodash.debounce'
@@ -22,7 +22,7 @@ var tabsContainerEl
 // tab-width and max showable is adjusted based on window width and # of tabs
 var currentTabWidth = MAX_TAB_WIDTH
 var numPinnedTabs = 0
-var numTabsWeCanFit = Infinity // we start out fairly optimistic 
+var numTabsWeCanFit = Infinity // we start out fairly optimistic
 
 // exported methods
 // ==
@@ -129,8 +129,8 @@ function repositionTabs (e) {
   var numUnpinnedTabs = 0
   var availableWidth = window.innerWidth
   // correct for traffic lights
-  if (window.process.platform == 'darwin' && !document.body.classList.contains('fullscreen')) { availableWidth -= 80 }
-  if (window.process.platform == 'win32') { availableWidth -= 200 }
+  if (getPlatform() === 'darwin' && !document.body.classList.contains('fullscreen')) { availableWidth -= 80 }
+  if (getPlatform() === 'win32') { availableWidth -= 200 }
   // correct for new-tab and dropdown btns
   availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
   // count the unpinned-tabs, and correct for the spacing and pinned-tabs
@@ -414,7 +414,9 @@ function getPageStyle (page) {
 
   // `page` is sometimes an index and sometimes a page object (gross, I know)
   // we need both
-  var pageIndex, pageObject, smallMode = false
+  var pageIndex
+  var pageObject
+  var smallMode = false
   if (typeof page === 'object') {
     pageObject = page
     pageIndex = allPages.indexOf(page)
@@ -486,6 +488,12 @@ function getNiceTitle (page) {
   } catch (e) {
     return title
   }
+}
+
+var _platform
+function getPlatform () {
+  if (!_platform) _platform = beaker.browser.getInfo().platform
+  return _platform
 }
 
 function getBuiltinPageIcon (url) {

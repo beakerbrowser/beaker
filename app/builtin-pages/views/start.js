@@ -1,10 +1,10 @@
-/* globals beaker localStorage */
+/* globals beaker localStorage DatArchive */
 
 import * as yo from 'yo-yo'
 import Sortable from 'sortablejs'
-import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
-import * as editBookmarkPopup from '../com/edit-bookmark-popup'
-import renderHelpTip from '../com/help-tip'
+import * as addPinnedBookmarkPopup from '../com/settings/add-pinned-bookmark-popup'
+import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
+import * as helpTip from '../com/help-tip'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
@@ -42,6 +42,7 @@ async function setup () {
   // }
 
   await loadBookmarks()
+  helpTip.load()
   update()
 }
 
@@ -271,10 +272,10 @@ async function onContextmenuPinnedBookmark (e, bookmark) {
   e.preventDefault()
   var url = e.currentTarget.getAttribute('href')
   const items = [
-    {icon: 'external-link', label: 'Open Link in New Tab', click: () => window.open(url) },
-    {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url) },
-    {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark) },
-    {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark) }
+    {icon: 'external-link', label: 'Open Link in New Tab', click: () => window.open(url)},
+    {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url)},
+    {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark)},
+    {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark)}
   ]
   await contextMenu.create({x: e.clientX, y: e.clientY, items})
 }
@@ -292,7 +293,7 @@ function update () {
         <div class="header-actions">
           ${renderHelpButton()}
         </div>
-        ${renderHelpTip()}
+        ${helpTip.render()}
         <div class="autocomplete-container search-container">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>

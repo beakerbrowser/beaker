@@ -28,6 +28,7 @@ var beakerPng = fs.readFileSync(__dirname + '/scaffold/test-static-dat/beaker.pn
 var tmpDirPath1 = tempy.directory()
 
 test.before(async t => {
+  console.log('starting dat-archive-web-api-test')
   await app.isReady
   mainTab = app.getTab(0)
 
@@ -1319,9 +1320,9 @@ test('archive types', async t => {
 
   // get info gives type
   var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive1URL}")).getInfo()`)
-  t.deepEqual(res.type, ['foo', 'bar'])
+  t.deepEqual(res.type.sort(), ['foo', 'bar'].sort())
   var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
-  t.deepEqual(res.type, ['foo', 'baz'])
+  t.deepEqual(res.type.sort(), ['foo', 'baz'].sort())
 
   // selectArchive applies type filter
   mainTab.executeJavascript(`
@@ -1348,7 +1349,7 @@ test('archive types', async t => {
   // configure can change types
   await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).configure({type: 'foo baz blah'})`)
   var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
-  t.deepEqual(res.type, ['foo', 'baz', 'blah'])
+  t.deepEqual(res.type.sort(), ['foo', 'baz', 'blah'].sort())
 
   // forks preserve type if none is specified
   var typedArchive3URLPromise = mainTab.executeJavascript(`
@@ -1358,7 +1359,7 @@ test('archive types', async t => {
   await app.click('.prompt-accept')
   var typedArchive3URL = await typedArchive3URLPromise
   var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive3URL}")).getInfo()`)
-  t.deepEqual(res.type, ['foo', 'bar'])
+  t.deepEqual(res.type.sort(), ['foo', 'bar'].sort())
 
   // forks overwrite type if type is specified
   var typedArchive4URLPromise = mainTab.executeJavascript(`
@@ -1989,7 +1990,8 @@ test.skip('DatArchive can resolve and read dats with shortnames', async t => {
   t.truthy(Array.isArray(res))
 })
 
-test('network events', async t => {
+// TODO re-enable when its more consistent
+test.skip('network events', async t => {
   // share the test static dat
   var testStaticDat2 = await createDat()
   var testStaticDat2URL = 'dat://' + testStaticDat2.archive.key.toString('hex')

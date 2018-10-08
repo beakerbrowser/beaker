@@ -1,3 +1,5 @@
+/* globals beaker */
+
 import { webFrame, ipcRenderer } from 'electron'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
@@ -9,10 +11,11 @@ import * as commandHandlers from './command-handlers'
 import * as swipeHandlers from './swipe-handlers'
 
 export function setup (cb) {
-  if (window.process.platform == 'darwin') {
+  var {platform} = beaker.browser.getInfo()
+  if (platform === 'darwin') {
     document.body.classList.add('darwin')
   }
-  if (window.process.platform == 'win32') {
+  if (platform === 'win32') {
     document.body.classList.add('win32')
   }
 
@@ -36,7 +39,7 @@ export function setup (cb) {
   tabs.setup()
   navbar.setup()
   statusbar.setup()
-  if (window.process.platform == 'win32') {
+  if (platform === 'win32') {
     win32Titlebar.setup()
   }
   commandHandlers.setup()
@@ -46,7 +49,6 @@ export function setup (cb) {
   ipcRenderer.send('shell-window:pages-ready')
   pages.on('first-page', cb)
 }
-
 
 function onWindowEvent (event, type) {
   switch (type) {

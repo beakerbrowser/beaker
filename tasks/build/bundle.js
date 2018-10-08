@@ -42,9 +42,8 @@ module.exports = function (src, dest, opts) {
       // Browserify the code
       var b = browserify(intoStream(result.code), { basedir: opts.basedir, builtins: opts.browserifyBuiltins });
       b.exclude('electron');
-      if (opts.excludeNodeModules) {
-        nodeBuiltInModules.forEach(function (module) { b.exclude(module); });
-      }
+      if (opts.excludeNodeModules) nodeBuiltInModules.forEach(m => b.exclude(m))
+      if (opts.browserifyExclude) opts.browserifyExclude.forEach(m => b.exclude(m))
       var deferred2 = Q.defer();
       b.bundle(function (err, bundledCode) {
         if (err) deferred2.reject(err)

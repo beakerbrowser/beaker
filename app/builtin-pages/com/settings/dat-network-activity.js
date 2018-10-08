@@ -3,11 +3,11 @@
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import throttle from 'lodash.throttle'
-import * as toast from './toast'
-import * as contextMenu from './context-menu'
-import {pluralize} from '../../lib/strings'
-import {niceDate} from '../../lib/time'
-import {writeToClipboard} from '../../lib/fg/event-handlers'
+import * as toast from '../toast'
+import * as contextMenu from '../context-menu'
+import {pluralize} from '../../../lib/strings'
+import {niceDate} from '../../../lib/time'
+import {writeToClipboard} from '../../../lib/fg/event-handlers'
 
 // globals
 // =
@@ -250,7 +250,7 @@ export default class DatNetworkActivity {
     } finally {
       this.isClearingCache = false
     }
-    
+
     this.fetchArchives()
   }
 

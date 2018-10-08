@@ -29,6 +29,7 @@ var mainTab1
 var mainTab2
 
 test.before(async t => {
+  console.log('starting experimental-dat-peers-web-api-test')
   await app1.isReady
   await app2.isReady
 
@@ -164,6 +165,9 @@ test('datPeers.broadcast() and datPeers.send()', async t => {
   await mainTab2.executeJavascript(broadcastCode('right'))
   await mainTab1.executeJavascript(sendCode('left'))
   await mainTab2.executeJavascript(sendCode('right'))
+
+  // give a moment for all messages to arrive
+  await new Promise(r => setTimeout(r, 100))
 
   // check messages
   var messages1 = await mainTab1.executeJavascript(getMessagesCode)

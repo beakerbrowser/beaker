@@ -13,7 +13,6 @@
 html,
 body,
 main {
-  height: 100%;
   background: #fff;
 }
 
@@ -22,9 +21,17 @@ body {
   font-size: 14px;
 }
 
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
 h1 {
-  padding: 0.3rem;
-  background: @background-message;
+  padding: 0.3rem 0.5rem;
+  background: #8bc34a;
+  color: #204a10;
+  font-weight: normal;
   height: 40px;
 }
 
@@ -35,12 +42,13 @@ h1 {
 
   input {
     width: 400px;
+    border-color: #33691e;
   }
 }
 
 nav {
-  border-bottom: 1px solid #ccc;
-  background: @background-message;
+  border-bottom: 1px solid #33691e;
+  background: #8bc34a;
   padding: 0.2rem 0.4rem 0;
   height: 28px;
 
@@ -54,13 +62,13 @@ nav {
     cursor: pointer;
 
     &:hover {
-      background: #ddd;
+      background: rgba(255,255,255,0.25);
     }
   }
 
   a.active {
     background: #fff;
-    border-color: #ccc;
+    border-color: #33691e;
     position: relative;
 
     &:after {
@@ -77,49 +85,56 @@ nav {
 }
 
 main {
-
-  .view {
-    overflow-y: scroll;
-    height: ~"calc(100vh - 68px)";
+  .gray {
+    color: #bbb;
   }
 
-  .log {
-    padding: 0.5rem;
-    width: 100%;
-
+  table {
     thead {
       font-weight: bold;
+
+      td {
+        position: sticky;
+        top: 68px;
+        background: #fff;
+        border-bottom: 1px solid #ddd;
+      }
     }
 
-    tr:hover {
-      background: #eee;
+    tbody {
+      tr:hover {
+        background: #eee;
+      }
+      td:hover {
+        background: #ddd;
+      }
     }
 
     td {
-      cursor: pointer;
-
-      &:hover {
-        background: #ddd;
-      }
+      padding: 10px;
+      border-right: 1px solid #ddd;
     }
   }
 
   section {
-    display: inline-block;
-    width: 300px;
     padding: 1rem;
-  }
 
-  .peers {
-    height: 200px;
-    overflow: auto;
-    border: 1px solid #ccc;
+    &.columns {
+      display: flex;
+
+      & > div {
+        margin-right: 1rem;
+      }
+    }
   }
 
   .peers > div {
-    border-bottom: 1px solid #eee;
-    padding: 0.5rem;
+    padding: 0.1rem 0;
     font-family: Consolas, 'Lucida Console', Monaco, monospace;
+  }
+
+  .log tbody td {
+    cursor: pointer;
   }
 }
 

@@ -954,8 +954,8 @@ body.drag {
     }
   }
 
-  #local-path-and-preview-tools {
-    &:extend(.flex);
+  #library-version-picker {
+    display: flex;
     align-items: center;
     margin: 0 0 15px;
     padding: 10px 15px;
@@ -991,39 +991,26 @@ body.drag {
       }
     }
 
-    &.empty {
-      display: none;
+    & > * {
+      white-space: nowrap;
     }
 
     & > .revision-indicator {
       margin-left: 2px;
     }
 
-    .summary {
-      margin-right: 5px;
-    }
-
-    strong {
-      margin-right: 5px;
-    }
-
-    &.setup-tip {
-      transition: opacity 0.2s;
-
-      & > * {
-        margin: 0 auto;
-      }
-    }
-
-    .path-ctrls {
+    .version-picker-ctrl {
       margin-right: 10px;
-      flex-basis: 100%;
+    }
+
+    .sync-path-btn {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 20px;
     }
 
     .open-preview-btn,
     .revisions-btn {
-      flex: 1;
-      margin-top: 10px;
       margin-left: 0;
       text-align: center;
     }
@@ -1032,23 +1019,9 @@ body.drag {
       margin-right: 5px;
     }
 
-    @media (min-width: 700px) {
-
-      .open-preview-btn,
-      .revisions-btn {
-        flex: initial;
-        margin-top: 0;
-      }
-
-      .preview-mode-toggle,
-      .revisions-btn,
-      .no-revisions {
-        margin-left: auto;
-      }
-
-      .path-ctrls {
-        flex-basis: initial;
-      }
+    .spacer {
+      display: block;
+      flex: 1;
     }
   }
 

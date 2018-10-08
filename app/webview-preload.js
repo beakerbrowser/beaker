@@ -1,14 +1,10 @@
+import { webFrame } from 'electron'
 import * as rpcAPI from 'pauls-electron-rpc'
 import * as beakerCoreWebview from '@beaker/core/webview'
-import { webFrame } from 'electron'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
 import { setup as setupPrompt } from './webview-preload/prompt'
-import setupRedirectHackfix from './webview-preload/redirect-hackfix'
 import setupExitFullScreenHackfix from './webview-preload/exit-full-screen-hackfix'
-
-// HACKS
-setupRedirectHackfix()
-setupExitFullScreenHackfix()
+import readableStreamAsyncIteratorPolyfill from './webview-preload/readable-stream-async-iterator-polyfill'
 
 // register protocol behaviors
 /* This marks the scheme as:
@@ -18,7 +14,12 @@ setupExitFullScreenHackfix()
  - CORS Enabled
 */
 webFrame.registerURLSchemeAsPrivileged('dat', { bypassCSP: false })
+webFrame.setSpellCheckProvider('en-US', true, beakerCoreWebview.createSpellChecker(rpcAPI))
 
-beakerCoreWebview.setup({rpcAPI})
+// HACKS
+setupExitFullScreenHackfix()
+readableStreamAsyncIteratorPolyfill()
+
+beakerCoreWebview.setup({ rpcAPI })
 setupLocationbar()
 setupPrompt()

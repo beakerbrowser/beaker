@@ -38,7 +38,7 @@ export const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 var pages = []
 var activePage = null
 var events = new EventEmitter()
-var webviewsDiv = document.getElementById('webviews')
+var webviewsDiv
 var closedURLs = []
 var cachedMarkdownRendererScript
 var cachedJSONRendererScript
@@ -63,6 +63,8 @@ export function getPinned () {
 }
 
 export function setup () {
+  webviewsDiv = document.getElementById('webviews')
+
   beaker.archives.addEventListener('network-changed', ({details}) => {
     // check if any of the active pages matches this url
     pages.forEach(page => {
@@ -137,7 +139,6 @@ export function create (opts) {
     retainedScrollY: 0, // what was the scroll position of the page before navigating away?
 
     // current page's info
-    contentType: null, // what is the content-type of the page?
     favicons: null, // what are the favicons of the page?
     bookmark: null, // this page's bookmark object, if it's bookmarked
 
@@ -344,8 +345,6 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('load-commit', onLoadCommit)
-  page.webviewEl.addEventListener('did-get-redirect-request', onDidGetRedirectRequest)
-  page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
   page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
@@ -574,7 +573,7 @@ function onDomReady (e) {
       page.wcID = e.target.getWebContents().id // NOTE: this is a sync op
     }
     if (!navbar.isLocationFocused(page) && page.isActive) {
-      page.webviewEl.shadowRoot.querySelector('object').focus()
+      page.webviewEl.shadowRoot.querySelector('iframe').focus()
     }
   }
 }
@@ -606,7 +605,18 @@ function onWillNavigate (e) {
 
 function onDidNavigate (e) {
   var page = getByWebview(e.target)
-  if (page) {  
+  if (page) {
+    // we're goin
+    page.isReceivingAssets = true
+    // set URL in navbar
+    page.loadingURL = e.url
+    page.siteInfoOverride = null
+    navbar.updateLocation(page)
+    // if it's a failed dat discovery...
+    if (e.httpResponseCode === 504 && e.url.startsWith('dat://')) {
+      page.siteWasADatTimeout = true
+    }
+
     // close any prompts and modals
     prompt.forceRemoveAll(page)
     modal.forceRemoveAll(page)
@@ -732,17 +742,13 @@ function onDidStopLoading (e) {
       statusBar.setIsLoading(false)
     }
 
-    // fallback content type
-    let contentType = page.contentType
-    if (!contentType) {
-
-      if (page.getURL().endsWith('.md')) {
-        contentType = 'text/markdown'
-      }
-
-      if (page.getURL().endsWith('.json')) {
-        contentType = 'application/json'
-      }
+    // determine content type
+    let contentType
+    if (page.getURL().endsWith('.md')) {
+      contentType = 'text/markdown'
+    }
+    if (page.getURL().endsWith('.json')) {
+      contentType = 'application/json'
     }
 
     // markdown rendering
@@ -794,7 +800,6 @@ function onDidStopLoading (e) {
     // json rendering
     // inject the json render script
     if (contentType && (contentType.startsWith('application/json') || contentType.startsWith('application/javascript'))) {
-      
       page.webviewEl.insertCSS(`
         .hidden { display: none !important; }
         .json-formatter-row {
@@ -826,7 +831,7 @@ function onDidStopLoading (e) {
         cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
       }
 
-      page.webviewEl.executeJavaScript(cachedJSONRendererScript);
+      page.webviewEl.executeJavaScript(cachedJSONRendererScript)
     }
 
     // HACK
@@ -864,49 +869,6 @@ function onDidStopLoading (e) {
         window.scroll(0, ${page.retainedScrollY})
       `)
       page.retainedScrollY = 0
-    }
-  }
-}
-
-function onDidGetRedirectRequest (e) {
-  // HACK
-  // electron has a problem handling redirects correctly, so we need to handle it for them
-  // see https://github.com/electron/electron/issues/3471
-  // thanks github.com/sokcuri and github.com/alexstrat for this fix
-  // -prf
-  if (e.isMainFrame) {
-    var page = getByWebview(e.target)
-    if (page) {
-      e.preventDefault()
-      setTimeout(() => {
-        console.log('Using redirect workaround for electron #3471; redirecting to', e.newURL)
-        e.target.getWebContents().send('redirect-hackfix', e.newURL)
-      }, 100)
-    }
-  }
-}
-
-function onDidGetResponseDetails (e) {
-  if (e.resourceType != 'mainFrame') {
-    return
-  }
-
-  var page = getByWebview(e.target)
-  if (page) {
-    // we're goin
-    page.isReceivingAssets = true
-    try {
-      page.contentType = e.headers['content-type'][0] || null
-    } catch (e) {
-      page.contentType = null
-    }
-    // set URL in navbar
-    page.loadingURL = e.newURL
-    page.siteInfoOverride = null
-    navbar.updateLocation(page)
-    // if it's a failed dat discovery...
-    if (e.httpResponseCode === 504 && e.newURL.startsWith('dat://')) {
-      page.siteWasADatTimeout = true
     }
   }
 }
@@ -1078,7 +1040,7 @@ export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://' + path.join(APP_PATH, 'webview-preload.build.js'))
-  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce')
+  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce,nativeWindowOpen=yes')
   // TODO re-enable nativeWindowOpen when https://github.com/electron/electron/issues/9558 lands
   el.setAttribute('src', url || DEFAULT_URL)
   return el

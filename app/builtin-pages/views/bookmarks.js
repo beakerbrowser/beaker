@@ -3,7 +3,7 @@
 const yo = require('yo-yo')
 import {getHostname} from '../../lib/strings'
 import * as toast from '../com/toast'
-import * as editBookmarkPopup from '../com/edit-bookmark-popup'
+import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import toggleable from '../com/toggleable'
 import renderCloseIcon from '../icon/close'
@@ -502,11 +502,13 @@ function onClickEdit (i) {
       // }
 
       // set the bookmark
-      if (b.private || true /* TODO(profiles) private only -prf */) {
+      await beaker.bookmarks.bookmarkPrivate(b.href, b)
+      /* TODO(profiles) private only -prf
+      if (b.private) {
         await beaker.bookmarks.bookmarkPrivate(b.href, b)
       } else {
         beaker.bookmarks.bookmarkPublic(b.href, b)
-      }
+      }*/
 
       // set the pinned status of the bookmark
       await beaker.bookmarks.setBookmarkPinned(b.href, b.pinned)

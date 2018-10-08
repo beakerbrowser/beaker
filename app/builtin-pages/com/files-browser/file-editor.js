@@ -83,7 +83,7 @@ export function setValue (v) {
 
   // re-disable edits
   if (orgApplyDeltaFn) {
-    editor.session.getDocument().applyDelta = function () {/* noop */}
+    editor.session.getDocument().applyDelta = function () { /* noop */ }
   }
 }
 
@@ -113,7 +113,7 @@ function setReadOnly (editor, readOnly) {
   // manually disable edits
   if (readOnly) {
     orgApplyDeltaFn = orgApplyDeltaFn || editor.session.getDocument().applyDelta
-    editor.session.getDocument().applyDelta = function () {/* noop */}
+    editor.session.getDocument().applyDelta = function () { /* noop */ }
   } else if (orgApplyDeltaFn) {
     editor.session.getDocument().applyDelta = orgApplyDeltaFn
   }

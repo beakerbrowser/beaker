@@ -10,7 +10,7 @@ const FETCH_COUNT = 200
 var counter = 0
 var history
 var baseUrl
-export default function render (archive, {filePath, includePreview, syncPath} = {}) {
+export default function render (archive, {filePath, includePreview} = {}) {
   filePath = filePath || ''
   var el = renderHistory()
   //el.isSameNode = (other) => (other && other.classList && other.classList.contains('archive-history'))
@@ -42,13 +42,7 @@ export default function render (archive, {filePath, includePreview, syncPath} = 
             ? yo`
               <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="beaker://library/${baseUrl}+preview${filePath}">
                 <span class="fa fa-fw fa-laptop"></span>
-                ${syncPath
-                  ? yo`
-                    <span>
-                      View preview <span class="sync-path">(${syncPath}</span>)
-                    </span>`
-                  : 'View local preview'
-                }
+                View local preview
               </div>`
             : ''}
           <hr />
