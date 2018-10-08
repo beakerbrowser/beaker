@@ -18,6 +18,7 @@
     "gulp-util": "^3.0.6",
     "gulp-watch": "^4.3.5",
     "into-stream": "^2.0.1",
+    "pre-commit": "^1.2.2",
     "q": "^1.4.1",
     "rollup": "^0.41.0",
     "yargs": "^4.2.0"
@@ -78,6 +79,9 @@
     "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
   },
+  "pre-commit": [
+    "lint"
+  ],
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/beaker",
