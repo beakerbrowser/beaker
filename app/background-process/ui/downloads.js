@@ -61,9 +61,7 @@ export function registerListener (win, opts = {}) {
     }
 
     downloads.push(item)
-
-    if(!item.name.includes(".html"))
-      downloadsEvents.emit('new-download', toJSON(item))
+    downloadsEvents.emit('new-download', toJSON(item))
 
     // update dock-icon progress bar
     var lastBytes = 0
