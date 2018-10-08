@@ -1,4 +1,4 @@
-/* globals URL */
+/* globals URL beaker */
 
 import * as yo from 'yo-yo'
 import debounce from 'lodash.debounce'
@@ -22,7 +22,7 @@ var tabsContainerEl
 // tab-width and max showable is adjusted based on window width and # of tabs
 var currentTabWidth = MAX_TAB_WIDTH
 var numPinnedTabs = 0
-var numTabsWeCanFit = Infinity // we start out fairly optimistic 
+var numTabsWeCanFit = Infinity // we start out fairly optimistic
 
 // exported methods
 // ==
@@ -414,7 +414,9 @@ function getPageStyle (page) {
 
   // `page` is sometimes an index and sometimes a page object (gross, I know)
   // we need both
-  var pageIndex, pageObject, smallMode = false
+  var pageIndex
+  var pageObject
+  var smallMode = false
   if (typeof page === 'object') {
     pageObject = page
     pageIndex = allPages.indexOf(page)

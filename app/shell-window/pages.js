@@ -64,7 +64,7 @@ export function getPinned () {
 
 export function setup () {
   webviewsDiv = document.getElementById('webviews')
-  
+
   beaker.archives.addEventListener('network-changed', ({details}) => {
     // check if any of the active pages matches this url
     pages.forEach(page => {
@@ -605,7 +605,7 @@ function onWillNavigate (e) {
 
 function onDidNavigate (e) {
   var page = getByWebview(e.target)
-  if (page) {  
+  if (page) {
     // we're goin
     page.isReceivingAssets = true
     // set URL in navbar
@@ -743,7 +743,7 @@ function onDidStopLoading (e) {
     }
 
     // determine content type
-    let contentType 
+    let contentType
     if (page.getURL().endsWith('.md')) {
       contentType = 'text/markdown'
     }
@@ -800,7 +800,6 @@ function onDidStopLoading (e) {
     // json rendering
     // inject the json render script
     if (contentType && (contentType.startsWith('application/json') || contentType.startsWith('application/javascript'))) {
-      
       page.webviewEl.insertCSS(`
         .hidden { display: none !important; }
         .json-formatter-row {
@@ -832,7 +831,7 @@ function onDidStopLoading (e) {
         cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
       }
 
-      page.webviewEl.executeJavaScript(cachedJSONRendererScript);
+      page.webviewEl.executeJavaScript(cachedJSONRendererScript)
     }
 
     // HACK

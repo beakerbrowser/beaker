@@ -1,3 +1,5 @@
+/* globals beaker */
+
 import { ipcRenderer } from 'electron'
 import * as pages from './pages'
 import * as zoom from './pages/zoom'
@@ -75,7 +77,7 @@ export function setup () {
         rightSwipeArrowEl.style.right = ((-1 * ARROW_OFF_DIST) + (hnorm * ARROW_OFF_DIST)) + 'px'
       }
 
-      // highlight 
+      // highlight
       if (shouldGoBack()) leftSwipeArrowEl.classList.add('highlight')
       else leftSwipeArrowEl.classList.remove('highlight')
       if (shouldGoForward()) rightSwipeArrowEl.classList.add('highlight')

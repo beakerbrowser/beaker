@@ -204,7 +204,6 @@ function renderDatSettings () {
       </div>
     </div>
   `
-
 }
 
 function renderDefaultDatIgnoreSettings () {

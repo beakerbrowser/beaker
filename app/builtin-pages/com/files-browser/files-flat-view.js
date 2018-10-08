@@ -487,39 +487,51 @@ function onContextmenuNode (e, filesBrowser, node) {
 
   var items = [
     {icon: 'external-link', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
-    {icon: 'link', label: 'Copy URL', click: () => {
-      writeToClipboard(encodeURI(node.url))
-      toast.create('URL copied to clipboard')
-    }}
+    {
+      icon: 'link',
+      label: 'Copy URL',
+      click: () => {
+        writeToClipboard(encodeURI(node.url))
+        toast.create('URL copied to clipboard')
+      }
+    }
   ]
 
   if (node.isEditable) {
     items = items.concat([
-      {icon: 'i-cursor', label: 'Rename', click: async () => {
-        let newName = await contextInput.create({
-          x: e.clientX,
-          y: e.clientY,
-          label: 'Name',
-          value: node.name,
-          action: 'Rename',
-          postRender () {
-            const i = node.name.lastIndexOf('.')
-            if (i !== 0 && i !== -1) {
-              // select up to the file-extension
-              const input = document.querySelector('.context-input input')
-              input.setSelectionRange(0, node.name.lastIndexOf('.'))
+      {
+        icon: 'i-cursor',
+        label: 'Rename',
+        click: async () => {
+          let newName = await contextInput.create({
+            x: e.clientX,
+            y: e.clientY,
+            label: 'Name',
+            value: node.name,
+            action: 'Rename',
+            postRender () {
+              const i = node.name.lastIndexOf('.')
+              if (i !== 0 && i !== -1) {
+                // select up to the file-extension
+                const input = document.querySelector('.context-input input')
+                input.setSelectionRange(0, node.name.lastIndexOf('.'))
+              }
             }
+          })
+          if (newName) {
+            emitRenameFile(node._path, newName)
           }
-        })
-        if (newName) {
-          emitRenameFile(node._path, newName)
         }
-      }},
-      {icon: 'trash', label: 'Delete', click: () => {
-        if (confirm(`Are you sure you want to delete ${node.name}?`)) {
-          emitDeleteFile(node._path, node.isContainer)
+      },
+      {
+        icon: 'trash',
+        label: 'Delete',
+        click: () => {
+          if (confirm(`Are you sure you want to delete ${node.name}?`)) {
+            emitDeleteFile(node._path, node.isContainer)
+          }
         }
-      }}
+      }
     ])
   }
 

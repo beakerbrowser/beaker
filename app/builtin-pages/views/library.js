@@ -1,4 +1,4 @@
-/* globals DatArchive beaker confirm */
+/* globals DatArchive beaker confirm localStorage */
 
 import yo from 'yo-yo'
 import bytes from 'bytes'
@@ -602,7 +602,6 @@ async function onDeleteSelectedPermanently () {
 
   await loadArchives()
   render()
-
 }
 
 async function onRestoreSelected () {
@@ -657,10 +656,10 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
 
   // construct and show popup
   let items = [
-    {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
-    {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
-    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive) },
-    {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`) }
+    {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url)},
+    {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url)},
+    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
+    {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
   ]
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})

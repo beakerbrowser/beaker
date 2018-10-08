@@ -103,7 +103,7 @@ export default class FilesBrowser {
     if (!node) {
       this.rerender()
       return
-    }    
+    }
 
     // special handling for files
     if (node.type === 'file') {

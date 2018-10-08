@@ -3,7 +3,7 @@ import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import { download } from './downloads'
 
-export default function registerContextMenu() {
+export default function registerContextMenu () {
   // register the context menu on every created webContents
   app.on('web-contents-created', (e, webContents) => {
     webContents.on('context-menu', async (e, props) => {
@@ -147,7 +147,7 @@ export default function registerContextMenu() {
       // spell check
       if (props.isMisspelled !== '' && props.isEditable) {
         for (let i in spellingSuggestions) {
-          menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label)})
+          menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label) })
         }
         menuItems.push({ type: 'separator' })
       }
@@ -169,12 +169,12 @@ export default function registerContextMenu() {
         searchPreviewStr = searchPreviewStr.replace(/\s/gi, ' ') // Replace whitespace chars with space
         searchPreviewStr = searchPreviewStr.replace(/[\u061c\u200E\u200f\u202A-\u202E]+/g, '') // Remove directional text control chars
         if (searchPreviewStr.length < props.selectionText.length) { // Add ellipsis if search preview was trimmed
-          searchPreviewStr += '...\"'
+          searchPreviewStr += '..."'
         } else {
-          searchPreviewStr += '\"'
+          searchPreviewStr += '"'
         }
         var query = 'https://duckduckgo.com/?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
-        menuItems.push({ label: 'Search DuckDuckGo for \"' + searchPreviewStr, click: (item, win) => win.webContents.send('command', 'file:new-tab', query) })
+        menuItems.push({ label: 'Search DuckDuckGo for "' + searchPreviewStr, click: (item, win) => win.webContents.send('command', 'file:new-tab', query) })
         menuItems.push({ type: 'separator' })
       }
 

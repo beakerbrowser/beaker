@@ -1,4 +1,4 @@
-/* globals beaker localStorage */
+/* globals beaker localStorage DatArchive */
 
 import * as yo from 'yo-yo'
 import Sortable from 'sortablejs'
@@ -272,10 +272,10 @@ async function onContextmenuPinnedBookmark (e, bookmark) {
   e.preventDefault()
   var url = e.currentTarget.getAttribute('href')
   const items = [
-    {icon: 'external-link', label: 'Open Link in New Tab', click: () => window.open(url) },
-    {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url) },
-    {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark) },
-    {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark) }
+    {icon: 'external-link', label: 'Open Link in New Tab', click: () => window.open(url)},
+    {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url)},
+    {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark)},
+    {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark)}
   ]
   await contextMenu.create({x: e.clientX, y: e.clientY, items})
 }

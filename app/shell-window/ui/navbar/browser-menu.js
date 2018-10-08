@@ -23,7 +23,7 @@ export class BrowserMenuNavbarBtn {
       openFile: cmdOrCtrlChar + 'O'
     }
 
-    this.submenu
+    this.submenu = ''
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
@@ -99,7 +99,6 @@ export class BrowserMenuNavbarBtn {
             </div>
           </div>
         </div>`
-
     } else if (this.isDropdownOpen) {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
@@ -226,7 +225,7 @@ export class BrowserMenuNavbarBtn {
     )
   }
 
-  onShowSubmenu(submenu) {
+  onShowSubmenu (submenu) {
     this.submenu = submenu
     this.updateActives()
   }
@@ -363,7 +362,7 @@ export class BrowserMenuNavbarBtn {
 
     // create the dat and import the files
     const archive = await DatArchive.create({
-      title: `Shared files (${moment().format("M/DD/YYYY h:mm:ssa")})`,
+      title: `Shared files (${moment().format('M/DD/YYYY h:mm:ssa')})`,
       description: `Files shared with Beaker`,
       prompt: false
     })

@@ -1,4 +1,4 @@
-/* globals localStorage */
+/* globals localStorage DatArchive */
 
 import * as yo from 'yo-yo'
 
