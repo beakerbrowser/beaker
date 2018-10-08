@@ -1,11 +1,13 @@
 import * as beakerCore from '@beaker/core'
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import { createShellWindow, getFocusedDevToolsHost } from './windows'
+import path from 'path'
+import { download } from './downloads'
 
 // exported APIs
 // =
 
-export function setup () {
+export function setup() {
   setApplicationMenu()
 
   // watch for changes to the window's
@@ -18,7 +20,7 @@ export function setup () {
 
     // rebuild as needed
     if (requiresRebuild(url)) {
-      setApplicationMenu({url})
+      setApplicationMenu({ url })
     }
   })
 
@@ -30,7 +32,7 @@ export function setup () {
 
       // rebuild as needed
       if (requiresRebuild(url)) {
-        setApplicationMenu({url})
+        setApplicationMenu({ url })
       }
     } catch (e) {
       // `pages` not set yet
@@ -38,11 +40,11 @@ export function setup () {
   })
 }
 
-export function setApplicationMenu (opts = {}) {
+export function setApplicationMenu(opts = {}) {
   Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(opts)))
 }
 
-export function buildWindowMenu (opts = {}) {
+export function buildWindowMenu(opts = {}) {
   const isDat = opts.url && opts.url.startsWith('dat://')
 
   var darwinMenu = {
@@ -51,7 +53,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Preferences',
         accelerator: 'Command+,',
-        click (item, win) {
+        click(item, win) {
           if (win) win.webContents.send('command', 'file:new-tab', 'beaker://settings')
         }
       },
@@ -62,7 +64,7 @@ export function buildWindowMenu (opts = {}) {
       { label: 'Hide Others', accelerator: 'Command+Alt+H', role: 'hideothers' },
       { label: 'Show All', role: 'unhide' },
       { type: 'separator' },
-      { label: 'Quit', accelerator: 'Command+Q', click () { app.quit() }, reserved: true }
+      { label: 'Quit', accelerator: 'Command+Q', click() { app.quit() }, reserved: true }
     ]
   }
 
@@ -116,7 +118,11 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+S',
         click: async (item, win) => {
           const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
-          win.webContents.downloadURL(url, true)
+          const title = await win.webContents.executeJavaScript(`pages.getActive().title`)
+          const defaultPath = path.join(app.getPath('downloads'), path.basename(title))
+          dialog.showSaveDialog({ title: `Save ${title} as...`, defaultPath: defaultPath }, filepath => {
+            if (filepath) download(win, win.webContents, url, { saveAs: filepath })
+          })
         }
       },
       {
@@ -199,103 +205,103 @@ export function buildWindowMenu (opts = {}) {
       },
       reserved: true
     },
-      {
-        label: 'Hard Reload (Clear Cache)',
-        accelerator: 'CmdOrCtrl+Shift+R',
-        click: function (item, win) {
-          // HACK
-          // this is *super* lazy but it works
-          // clear all dat-dns cache on hard reload, to make sure the next
-          // load is fresh
-          // -prf
-          beakerCore.dat.dns.flushCache()
+    {
+      label: 'Hard Reload (Clear Cache)',
+      accelerator: 'CmdOrCtrl+Shift+R',
+      click: function (item, win) {
+        // HACK
+        // this is *super* lazy but it works
+        // clear all dat-dns cache on hard reload, to make sure the next
+        // load is fresh
+        // -prf
+        beakerCore.dat.dns.flushCache()
 
-          if (win) win.webContents.send('command', 'view:hard-reload')
-        },
-        reserved: true
+        if (win) win.webContents.send('command', 'view:hard-reload')
       },
+      reserved: true
+    },
     { type: 'separator' },
-      {
-        label: 'Zoom In',
-        accelerator: 'CmdOrCtrl+Plus',
-        reserved: true,
-        click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:zoom-in')
-        }
-      },
-      {
-        label: 'Zoom Out',
-        accelerator: 'CmdOrCtrl+-',
-        reserved: true,
-        click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:zoom-out')
-        }
-      },
-      {
-        label: 'Actual Size',
-        accelerator: 'CmdOrCtrl+0',
-        click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:zoom-reset')
-        }
-      },
+    {
+      label: 'Zoom In',
+      accelerator: 'CmdOrCtrl+Plus',
+      reserved: true,
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'view:zoom-in')
+      }
+    },
+    {
+      label: 'Zoom Out',
+      accelerator: 'CmdOrCtrl+-',
+      reserved: true,
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'view:zoom-out')
+      }
+    },
+    {
+      label: 'Actual Size',
+      accelerator: 'CmdOrCtrl+0',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'view:zoom-reset')
+      }
+    },
     { type: 'separator' },
-      {
-        type: 'submenu',
-        label: 'Advanced Tools',
-        submenu: [{
-          label: 'Reload Shell-Window',
-          accelerator: 'CmdOrCtrl+alt+shift+R',
-          click: function () {
-            BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
-          }
-        }, {
-          label: 'Toggle Shell-Window DevTools',
-          accelerator: 'CmdOrCtrl+alt+shift+I',
-          click: function () {
-            BrowserWindow.getFocusedWindow().toggleDevTools()
-          }
-        },
+    {
+      type: 'submenu',
+      label: 'Advanced Tools',
+      submenu: [{
+        label: 'Reload Shell-Window',
+        accelerator: 'CmdOrCtrl+alt+shift+R',
+        click: function () {
+          BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
+        }
+      }, {
+        label: 'Toggle Shell-Window DevTools',
+        accelerator: 'CmdOrCtrl+alt+shift+I',
+        click: function () {
+          BrowserWindow.getFocusedWindow().toggleDevTools()
+        }
+      },
       { type: 'separator' },
-          {
-            label: 'Open Archives Debug Page',
-            click: function (item, win) {
-              if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
-            }
-          }, {
-            label: 'Open Dat-DNS Cache Page',
-            click: function (item, win) {
-              if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
-            }
-          }, {
-            label: 'Open Debug Log Page',
-            click: function (item, win) {
-              if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
-            }
-          }]
-      },
       {
-        label: 'Toggle DevTools',
-        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
+        label: 'Open Archives Debug Page',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:toggle-dev-tools')
-        },
-        reserved: true
-      },
-      {
-        label: 'Toggle Javascript Console',
-        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
+          if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
+        }
+      }, {
+        label: 'Open Dat-DNS Cache Page',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:toggle-javascript-console')
-        },
-        reserved: true
-      },
-      {
-        label: 'Toggle Live Reloading',
-        enabled: !!isDat,
+          if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
+        }
+      }, {
+        label: 'Open Debug Log Page',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:toggle-live-reloading')
+          if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
         }
       }]
+    },
+    {
+      label: 'Toggle DevTools',
+      accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'view:toggle-dev-tools')
+      },
+      reserved: true
+    },
+    {
+      label: 'Toggle Javascript Console',
+      accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'view:toggle-javascript-console')
+      },
+      reserved: true
+    },
+    {
+      label: 'Toggle Live Reloading',
+      enabled: !!isDat,
+      click: function (item, win) {
+        if (win) win.webContents.send('command', 'view:toggle-live-reloading')
+      }
+    }]
   }
 
   var showHistoryAccelerator = 'Ctrl+h'
@@ -421,7 +427,7 @@ export function buildWindowMenu (opts = {}) {
 // =
 
 var lastURLProtocol = false
-function requiresRebuild (url) {
+function requiresRebuild(url) {
   const urlProtocol = url ? url.split(':')[0] : false
   // check if this is a change of protocol
   const b = (lastURLProtocol !== urlProtocol)
