@@ -4,7 +4,7 @@ import * as yo from 'yo-yo'
 import Sortable from 'sortablejs'
 import * as addPinnedBookmarkPopup from '../com/settings/add-pinned-bookmark-popup'
 import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
-import * as helpTip from '../com/help-tip'
+import * as MOTD from '../com/motd'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
@@ -42,7 +42,7 @@ async function setup () {
   // }
 
   await loadBookmarks()
-  helpTip.load()
+  MOTD.load()
   update()
 }
 
@@ -293,7 +293,7 @@ function update () {
         <div class="header-actions">
           ${renderHelpButton()}
         </div>
-        ${helpTip.render()}
+        ${MOTD.render()}
         <div class="autocomplete-container search-container">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
@@ -308,24 +308,6 @@ function update () {
         </div>
 
         ${renderPinnedBookmarks()}
-
-        ${!localStorage.hasDismissedBetaInfo
-          ? yo`
-            <div class="beta-info">
-              <i class="fa fa-bolt"></i>
-              <p>
-                You${"'"}re using a beta version of Beaker.
-                <a href="https://www.surveymonkey.com/r/NK9LGQ3">Share feedback</a>
-                or
-                <a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=issue_template_0.8_beta.md">Report an issue</a>.
-              </p>
-
-              <button class="btn plain" onclick=${() => { localStorage.hasDismissedBetaInfo = true; update() }}>
-                <i class="fa fa-times"></i>
-              </button>
-            </div>`
-          : ''
-        }
 
         ${renderDock()}
 
