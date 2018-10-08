@@ -1,6 +1,6 @@
 import yo from 'yo-yo'
-import toggleable, {closeAllToggleables} from './toggleable'
-import {shortenHash} from '../../lib/strings'
+import toggleable, {closeAllToggleables} from '../toggleable'
+import {shortenHash} from '../../../lib/strings'
 
 // globals
 // =

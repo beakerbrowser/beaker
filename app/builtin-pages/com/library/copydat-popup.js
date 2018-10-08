@@ -1,6 +1,6 @@
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
-import closeIcon from '../icon/close'
+import closeIcon from '../../icon/close'
 
 // globals
 // =

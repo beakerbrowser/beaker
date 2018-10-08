@@ -2,8 +2,8 @@
 
 import yo from 'yo-yo'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
-import renderArchiveComparison from './archive-comparison'
-import * as toast from './toast'
+import renderArchiveComparison from '../archive/archive-comparison'
+import * as toast from '../toast'
 
 export default class LibraryViewLocalCompare {
   constructor (opts) {

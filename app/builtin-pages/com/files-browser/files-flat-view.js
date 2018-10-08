@@ -10,8 +10,8 @@ import * as toast from '../toast'
 import toggleable2 from '../toggleable2'
 import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
-import renderFilePreview from '../file-preview'
-import {render as renderFileEditor} from '../file-editor'
+import renderFilePreview from './file-preview'
+import {render as renderFileEditor} from './file-editor'
 import {shorten, pluralize} from '../../../lib/strings'
 
 // exported api

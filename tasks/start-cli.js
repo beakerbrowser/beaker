@@ -13,7 +13,7 @@ module.exports = function () {
     electron = process.env.ELECTRON_PATH
   }
   console.log('Spawning electron', electron)
-  childProcess.spawn(electron, [NODE_FLAGS, app], {
+  childProcess.spawn(electron, [/*'--inspect',*/ NODE_FLAGS, '--enable-sandbox', app], {
     stdio: 'inherit',
     env: process.env // inherit
   })

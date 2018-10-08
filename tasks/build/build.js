@@ -48,8 +48,8 @@ var bundleApplication = function () {
   var bpBuildDir = srcDir.cwd('builtin-pages/build')
   return Q.all([
     bundle(srcDir.path('background-process.js'),       srcDir.path('background-process.build.js')),
-    bundle(srcDir.path('webview-preload.js'),          srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: false }),
-    bundle(srcDir.path('shell-window.js'),             srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true, browserifyBuiltins: false }),
+    bundle(srcDir.path('webview-preload.js'),          srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(srcDir.path('shell-window.js'),             srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true, browserifyExclude: ['fs'] }),
     bundle(srcDir.path('json-renderer.js'),            srcDir.path('json-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(srcDir.path('markdown-renderer.js'),        srcDir.path('markdown-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),

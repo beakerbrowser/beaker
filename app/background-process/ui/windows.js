@@ -22,6 +22,7 @@ let sessionWatcher = null
 let focusedDevtoolsHost
 const BROWSING_SESSION_PATH = './shell-window-state.json'
 const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
+const PRELOAD_PATH = path.join(__dirname, 'shell-window.build.js')
 
 // exported methods
 // =
@@ -133,6 +134,8 @@ export function createShellWindow (windowState) {
     backgroundColor: '#ddd',
     defaultEncoding: 'UTF-8',
     webPreferences: {
+      sandbox: true,
+      preload: PRELOAD_PATH,
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false,
       nativeWindowOpen: true
@@ -145,9 +148,20 @@ export function createShellWindow (windowState) {
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
 
+  let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
   function handlePagesReady ({ sender }) {
     if (win && !win.isDestroyed() && sender === win.webContents) {
       win.webContents.send('command', 'initialize', state.pages)
+      if (isTestDriverActive) {
+        // HACK
+        // For some reason, when the sandbox is enabled, executeJavaScript doesnt work in the browser window until the devtools are opened.
+        // Since it's kind of handy to have the devtools open anyway, open them automatically when tests are running.
+        // No, I am not above this.
+        // -prf
+        setTimeout(() => {
+          win.webContents.openDevTools()
+        }, 1e3)
+      }
     }
   }
 

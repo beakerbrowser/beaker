@@ -1,6 +1,6 @@
 import yo from 'yo-yo'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
-import renderFilesFlatView from './files-browser/files-flat-view'
+import renderFilesFlatView from './files-flat-view'
 import {setup as setupAce} from './file-editor'
 
 // exported api
