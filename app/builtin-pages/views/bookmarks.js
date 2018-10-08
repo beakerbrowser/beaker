@@ -502,11 +502,13 @@ function onClickEdit (i) {
       // }
 
       // set the bookmark
-      if (b.private || true /* TODO(profiles) private only -prf */) {
+      await beaker.bookmarks.bookmarkPrivate(b.href, b)
+      /* TODO(profiles) private only -prf
+      if (b.private) {
         await beaker.bookmarks.bookmarkPrivate(b.href, b)
       } else {
         beaker.bookmarks.bookmarkPublic(b.href, b)
-      }
+      }*/
 
       // set the pinned status of the bookmark
       await beaker.bookmarks.setBookmarkPinned(b.href, b.pinned)

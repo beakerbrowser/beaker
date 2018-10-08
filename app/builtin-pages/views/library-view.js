@@ -1,4 +1,4 @@
-/* globals DatArchive beaker hljs confirm */
+/* globals DatArchive beaker hljs confirm sessionStorage location alert history */
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
@@ -32,7 +32,10 @@ import renderFaviconPicker from '../com/settings/favicon-picker'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
 
-const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 90/*with description*/] // px
+const MIN_SHOW_NAV_ARCHIVE_TITLE = [
+  52, // px, no description
+  90 // px, with description
+]
 const LOCAL_DIFF_POLL_INTERVAL = 10e3 // ms
 const NETWORK_STATS_POLL_INTERVAL = 2e3 // ms
 
@@ -675,7 +678,7 @@ function renderVersionPicker () {
   if (!_get(archive, 'info.userSettings.isSaved')) {
     return ''
   }
-  
+
   const isOwner = _get(archive, 'info.isOwner')
   const previewMode = _get(archive, 'info.userSettings.previewMode')
   const syncPath = _get(archive, 'info.userSettings.localSyncPath')
@@ -1261,7 +1264,6 @@ function renderLocalCompareView () {
     </div>`
 }
 
-
 function renderToolbar () {
   var peerCount = _get(archive, 'info.peers', 0)
 
@@ -1839,11 +1841,15 @@ function onSyncPathContextMenu (e) {
     withTriangle: true,
     items: [
       {icon: 'folder-o', label: 'Open folder', click: () => onOpenFolder(syncPath)},
-      {icon: 'clipboard', label: 'Copy path', click: () => {
-        writeToClipboard(syncPath)
-        toast.create('Path copied to clipboard')
-      }},
-      {icon: 'wrench', label: 'Configure', click: () => onChangeView(null, 'settings') }
+      {
+        icon: 'clipboard',
+        label: 'Copy path',
+        click: () => {
+          writeToClipboard(syncPath)
+          toast.create('Path copied to clipboard')
+        }
+      },
+      {icon: 'wrench', label: 'Configure', click: () => onChangeView(null, 'settings')}
     ]
   })
 }
@@ -1858,7 +1864,7 @@ async function onFilesChanged () {
     currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
     filesBrowser.rerender()
-    if (!!currentNode.preview) {
+    if (currentNode.preview) {
       if (!isAceSetup()) {
         // make sure the editor is setup
         // (sometimes there is a race condition that necessitates this)
@@ -2041,7 +2047,7 @@ async function setManifestValue (attr, value) {
 function isNavCollapsed ({ignoreScrollPosition} = {}) {
   if (!ignoreScrollPosition) {
     var main = document.body.querySelector('.builtin-main')
-    var hasDescription = (!!_get(archive, 'info.description')) ? 1 : 0
+    var hasDescription = (_get(archive, 'info.description')) ? 1 : 0
     if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
       // certain distance scrolled
       return true

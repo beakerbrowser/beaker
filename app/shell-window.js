@@ -1,5 +1,5 @@
 import * as rpcAPI from 'pauls-electron-rpc'
-const beakerCoreWebview = require ('@beaker/core/webview')
+const beakerCoreWebview = require('@beaker/core/webview')
 import { ipcRenderer } from 'electron'
 import * as pages from './shell-window/pages'
 import * as navbar from './shell-window/ui/navbar'

@@ -1,3 +1,5 @@
+/* globals confirm CustomEvent */
+
 import _get from 'lodash.get'
 import yo from 'yo-yo'
 import renderDiff from './diff'
