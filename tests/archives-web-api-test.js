@@ -91,12 +91,16 @@ test('archives.add, archives.remove', async t => {
 test('archives.setUserSettings', async t => {
   // by url
   var res = await app.executeJavascript(`
-    window.beaker.archives.setUserSettings("${createdDatURL}", {expiresAt: 1000})
+    window.beaker.archives.setUserSettings("${createdDatURL}", {hidden: false})
   `)
-  t.deepEqual(res.expiresAt, 1000)
+  t.deepEqual(res.hidden, false)
 })
 
 test('archives.list', async t => {
+  var res = await app.executeJavascript(`
+    window.beaker.archives.list({isSaved: true})
+  `)
+
   // add the owned and unowned dats
   var res = await app.executeJavascript(`
     window.beaker.archives.add("${createdDatURL}")
@@ -109,7 +113,7 @@ test('archives.list', async t => {
 
   // list all
   var res = await app.executeJavascript(`
-    window.beaker.archives.list()
+    window.beaker.archives.list({isSaved: true})
   `)
   var items = res
   t.deepEqual(items.length, 2)
@@ -162,7 +166,7 @@ test('hidden archives', async t => {
 
   // list doesn't show hidden by default
   var res = await app.executeJavascript(`
-    window.beaker.archives.list()
+    window.beaker.archives.list({isSaved: true})
   `)
   var items = res
   t.deepEqual(items.length, 2)
@@ -170,7 +174,7 @@ test('hidden archives', async t => {
 
   // list shows hidden when specified
   var res = await app.executeJavascript(`
-    window.beaker.archives.list({showHidden: true})
+    window.beaker.archives.list({isSaved: true, showHidden: true})
   `)
   var items = res
   t.deepEqual(items.length, 4)
