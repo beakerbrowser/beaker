@@ -1,4 +1,4 @@
-/* globals beaker */
+/* globals beaker DatArchive */
 
 import yo from 'yo-yo'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'

@@ -1,4 +1,4 @@
-/* globals Event */
+/* globals Event beaker */
 
 import * as yo from 'yo-yo'
 

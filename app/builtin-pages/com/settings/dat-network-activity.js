@@ -250,7 +250,7 @@ export default class DatNetworkActivity {
     } finally {
       this.isClearingCache = false
     }
-    
+
     this.fetchArchives()
   }
 

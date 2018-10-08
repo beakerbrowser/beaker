@@ -1,3 +1,5 @@
+/* globals beaker */
+
 import { webFrame, ipcRenderer } from 'electron'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
@@ -47,7 +49,6 @@ export function setup (cb) {
   ipcRenderer.send('shell-window:pages-ready')
   pages.on('first-page', cb)
 }
-
 
 function onWindowEvent (event, type) {
   switch (type) {

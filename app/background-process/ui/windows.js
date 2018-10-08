@@ -93,7 +93,7 @@ export async function setup () {
   let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
   let isOpenUrlEnvVar = !!beakerCore.getEnvVar('BEAKER_OPEN_URL')
 
-  if (!isTestDriverActive && !isOpenUrlEnvVar && (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession())) {
+  if (!isTestDriverActive && !isOpenUrlEnvVar && (customStartPage === 'previous' || (!previousSessionState.cleanExit && userWantsToRestoreSession()))) {
     // restore old window
     restoreBrowsingSession(previousSessionState)
   } else {

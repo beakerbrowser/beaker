@@ -328,7 +328,7 @@ export async function capturePage (url, opts) {
       webSecurity: true,
       allowRunningInsecureContent: false,
       nativeWindowOpen: true
-    },
+    }
   })
   win.loadURL(url)
 

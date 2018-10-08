@@ -1,4 +1,4 @@
-/* globals beaker */
+/* globals beaker confirm DatArchive */
 
 import yo from 'yo-yo'
 import closeIcon from '../icon/close'
@@ -131,7 +131,7 @@ function onClickWrapper (e) {
 async function onContextmenuTemplate (e, template) {
   e.preventDefault()
   var {url} = template
-  
+
   // select the template
   currentTemplate = url
   update()
@@ -139,7 +139,7 @@ async function onContextmenuTemplate (e, template) {
   if (url !== 'blank' && url !== 'website') {
     // show the context menu
     const items = [
-      {icon: 'trash', label: 'Delete template', click: () => onClickDeleteTemplate(template) }
+      { icon: 'trash', label: 'Delete template', click: () => onClickDeleteTemplate(template) }
     ]
     await contextMenu.create({x: e.clientX, y: e.clientY, items})
   }
@@ -178,7 +178,7 @@ async function onSubmit (e) {
 async function onImportFolder (e) {
   e.preventDefault()
   e.stopPropagation()
- 
+
   // ask user for folder
   const folder = await beaker.browser.showOpenDialog({
     title: 'Select folder',
@@ -186,7 +186,7 @@ async function onImportFolder (e) {
     properties: ['openDirectory']
   })
   if (!folder || !folder.length) return
- 
+
   // create the dat
   const archive = await DatArchive.create({prompt: false})
   await beaker.archives.setLocalSyncPath(archive.url, folder[0], {syncFolderToArchive: true})

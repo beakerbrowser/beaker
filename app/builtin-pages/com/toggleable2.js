@@ -41,7 +41,6 @@ function render () {
 }
 */
 export default function toggleable2 ({id, closed, open, afterOpen}) {
-
   function onToggle (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -59,7 +58,7 @@ export default function toggleable2 ({id, closed, open, afterOpen}) {
       if (afterOpen && !isRestore) afterOpen(container)
     } else {
       yo.update(container, closed(callArgs))
-      container.classList.remove('open')      
+      container.classList.remove('open')
     }
     if (id) {
       // persist state
@@ -82,7 +81,6 @@ export function closeAllToggleables () {
   Array.from(document.querySelectorAll('.toggleable-container')).forEach(el => el.classList.remove('open'))
   toggleState = {}
 }
-
 
 // event listeners
 document.addEventListener('click', function (e) {

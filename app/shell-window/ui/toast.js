@@ -8,7 +8,7 @@ export function create (message, howLong=2500) {
   // remove any existing toast
   Array.from(document.querySelectorAll('#toasts .toast'), el => {
     el.parentNode.removeChild(el)
-  })  
+  })
 
   // render toast
   document.getElementById('toasts').appendChild(render(message))
