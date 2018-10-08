@@ -61,7 +61,12 @@ export function registerListener (win, opts = {}) {
     }
 
     downloads.push(item)
-    downloadsEvents.emit('new-download', toJSON(item))
+
+    // This is to prevent the browser-dropdown-menu from opening
+    // For now it is being used when downloading `.html` pages
+    if (!opts.suppressNewDownloadEvent) {
+      downloadsEvents.emit('new-download', toJSON(item))
+    }
 
     // update dock-icon progress bar
     var lastBytes = 0
