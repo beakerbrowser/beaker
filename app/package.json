@@ -33,7 +33,7 @@
     "dns-txt": "^2.0.2",
     "drag-drop": "^2.14.0",
     "du": "git://github.com/beakerbrowser/node-du.git#8db9ed862712a964289d2d07e58f2d7ec543a56e",
-    "electron-localshortcut": "^0.6.0",
+    "electron-localshortcut": "^3.1.0",
     "electron-updater": "^2.21.11",
     "emit-stream": "^0.1.2",
     "from2": "^2.3.0",

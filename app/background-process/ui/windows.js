@@ -1,6 +1,6 @@
 import * as beakerCore from '@beaker/core'
 import {app, BrowserWindow, ipcMain, webContents, dialog} from 'electron'
-import {register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts} from 'electron-localshortcut'
+import {register as registerShortcut, unregister as unregisterShortcut} from 'electron-localshortcut'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
 import jetpack from 'fs-jetpack'
@@ -313,9 +313,6 @@ function onClosed (win) {
 
     // deny any outstanding permission requests
     permissions.denyAllRequests(win)
-
-    // unregister shortcuts
-    unregisterAllShortcuts(win)
   }
 }
 
