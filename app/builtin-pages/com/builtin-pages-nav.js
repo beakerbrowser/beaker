@@ -13,6 +13,8 @@ function getIcon (page) {
       return yo`<i class="fa fa-download"></i>`
     case 'Settings':
       return yo`<i class="fa fa-gear"></i>`
+    case 'Watchlist':
+      return yo`<i class="fa fa-eye"></i>`
     default:
       return ''
   }
@@ -34,6 +36,15 @@ export default function render (currentPage = '') {
       </button>
 
       <div class="dropdown-items subtle-shadow left">
+        ${currentPage !== 'Watchlist'
+          ? yo`
+            <a href="beaker://watchlist" class="dropdown-item">
+              <i class="fa fa-eye"></i>
+              <span>Watchlist</span>
+            </a>`
+          : ''
+        }
+
         ${currentPage !== 'Library'
           ? yo`
             <a href="beaker://library" class="dropdown-item">
