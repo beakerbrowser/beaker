@@ -288,6 +288,15 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://settings/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/settings.build.js'))
   }
+  if (requestUrl === 'beaker://watchlist/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/watchlist.css'))
+  }
+  if (requestUrl === 'beaker://watchlist/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/watchlist.build.js'))
+  }
+  if (requestUrl === 'beaker://watchlist/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/watchlist.html'))
+  }
 
   // modals
   if (requestUrl === 'beaker://basic-auth-modal/') {
