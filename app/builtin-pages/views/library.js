@@ -255,15 +255,11 @@ function render () {
 
             ${renderRows()}
 
-            ${!query
-              ? yo`
-                <p class="builtin-hint">
-                  Your Library contains websites and archives you've created,
-                  along with websites that you're seeding.
-                  <i class="fa fa-question-circle-o"></i>
-                </p>`
-              : ''
-            }
+            <p class="builtin-hint">
+              <i class="fa fa-info-circle"></i>
+              Your Library contains websites and archives you've created,
+              along with websites that you're seeding.
+            </p>
           </div>
         </div>
       </div>
