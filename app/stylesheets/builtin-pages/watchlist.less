@@ -105,6 +105,10 @@ body.drag {
     }
   }
 
+  .group {
+    margin-bottom: 10px;
+  }
+
   // column sizings
   .ll-row.archive,
   .ll-column-headings {
@@ -112,15 +116,6 @@ body.drag {
     .description {
       flex: 3;
       max-width: none;
-    }
-
-    .seed {
-      min-width: 60px;
-      flex: 0.75;
-
-      label {
-        font-weight: normal;
-      }
     }
 
     .date {
@@ -159,16 +154,10 @@ body.drag {
       }
     }
 
-    .peers,
-    .date,
-    .seed {
+    .date {
       font-weight: 300;
       font-size: 12.5px;
       color: @color-text--muted;
-    }
-
-    .url {
-      margin-right: 0;
     }
 
     .buttons {
@@ -186,6 +175,28 @@ body.drag {
 
       label {
         margin: 0;
+      }
+    }
+
+    &.resolved {
+      background: shade(@green, 15%);
+      border-color: shade(@green, 45%);
+
+      .description {
+        font-weight: 600;
+        color: #fff;
+
+        .badge {
+          -webkit-font-smoothing: antialiased;
+        }
+      }
+
+      .date {
+        color: #fff;
+      }
+
+      .buttons .btn {
+        color: #fff;
       }
     }
   }

@@ -12,21 +12,15 @@ import renderCloseIcon from '../icon/close'
 
 // watchlist, cached in memory
 let watchlist = []
-let resolvedList = []
-let unresolvedList = []
-let selectedSites = []
+let selectedItems = []
 let query = ''
-let type = 'resolved'
-let currentSort = ['alpha', -1]
 let wlEvents = beaker.watchlist.createEventsStream()
-let seedWhenResolved = false
 
 // main
 // =
 
 setup()
 async function setup () {
-  loadSettings()
   await loadWatchlist()
   render()
 
@@ -40,65 +34,29 @@ async function setup () {
 // data
 // =
 
-function loadSettings () {
-  currentSort[0] = localStorage.currentSortValue || 'alpha'
-  currentSort[1] = (+localStorage.currentSortDir) || -1
-}
-
-function saveSettings () {
-  localStorage.currentSortValue = currentSort[0]
-  localStorage.currentSortDir = currentSort[1]
-}
-
 async function loadWatchlist () {
   watchlist = await beaker.watchlist.list()
-
-  // apply search query
-  filterWatchlist()
-  resolvedList = watchlist.filter(item => item.resolved == 1)
-  unresolvedList = watchlist.filter(item => item.resolved == 0)
-
-  // apply sort
   sortWatchlist()
 }
 
-function filterWatchlist () {
-  if (query && query.length) {
-    watchlist = watchlist.filter(a => {
-      if (a.description && a.description.toLowerCase().includes(query)) {
-        return a
-      }
-    })
-  }
-}
-
 function sortWatchlist () {
-  var list = type === 'resolved' ? resolvedList : unresolvedList
-  list.sort((a, b) => {
-    var v
-    switch (currentSort[0]) {
-      case 'recently-added': v = a.createdAt - b.createdAt; break
-      case 'alpha':
-      default:
-        v = (b.description || '').localeCompare(a.description || '')
-    }
-    return v * currentSort[1]
+  watchlist.sort((a, b) => {
+    // put resolved at top
+    if (a.resolved && !b.resolved) return -1
+    if (b.resolved && !a.resolved) return 1
+    // sort by creation time
+    return b.createdAt - a.createdAt
   })
 }
 
 // rendering
 // =
 
-function renderColumnHeading ({label, cls, sort, type}) {
-  const icon = currentSort[0] === sort
-    ? currentSort[1] > 0
-      ? yo`<span class="fa fa-angle-up"></span>`
-      : yo`<span class="fa fa-angle-down"></span>`
-    : ''
-
+function renderColumnHeading ({label, cls, type, icon}) {
+  icon = icon || ''
   return yo`
     <div class="column-heading ${cls}">
-      <button class="nofocus" onclick=${e => onUpdateSort(sort, type)}>
+      <button class="nofocus">
         ${label}
       </button>
       ${icon}
@@ -106,43 +64,18 @@ function renderColumnHeading ({label, cls, sort, type}) {
   `
 }
 
-function renderRows (type, sort = '') {
-  let a = []
-  // Check if rendering resolved table or unresolved, filter watchlist accordingly
-  if (type === 'resolved') a = Array.from(resolvedList)
-  if (type === 'unresolved') a = Array.from(unresolvedList)
+function renderRows ({resolved}) {
+  var list = watchlist.filter(a => a.resolved == resolved)
 
-  if (!a.length) {
-    return type === 'resolved' ? yo`
-      <div class="view empty">
-        ${query
-          ? yo`<i class="fa fa-search"></i>`
-          : yo`<i class="fa fa-frown"></i>`
-        }
-
-        <p>
-          ${query
-            ? `No results for "${query}"`
-            : `No archives from your watchlist are online!`
-          }
-        </p>
-      </div>` : yo`
-      <div class="view empty">
-        ${query
-          ? yo`<i class="fa fa-search"></i>`
-          : yo`<i class="fa fa-eye"></i>`
-        }
-
-        <p>
-          ${query
-            ? `No results for "${query}"`
-            : `You aren't watching any archives!`
-          }
-        </p>
-      </div>
-      `
+  if (query && query.length) {
+    list = list.filter(a => {
+      if (a.description && a.description.toLowerCase().includes(query)) {
+        return a
+      }
+    })
   }
-  return a.map(renderRow)
+
+  return list.map(renderRow)
 }
 
 function renderRow (row, i) {
@@ -153,22 +86,17 @@ function renderRow (row, i) {
   return yo`
     <a
       href="${row.url}"
-      class="ll-row archive ${row.checked ? 'selected' : ''}"
+      class="ll-row archive ${row.checked ? 'selected' : ''} ${row.resolved ? 'resolved' : ''}"
+      target="_blank"
     >
       <span class="description">
         <img class="favicon" src="beaker-favicon:32,${row.url}" />
-        <span class="description">${row.description}</span>
+        ${row.description}
+        ${row.resolved ? yo`<span class="badge green">Site found!</span>` : ''}
       </span>
 
       <span class="date">
         ${date ? niceDate(date) : '--'}
-      </span>
-
-      <span class="seed">
-        <label class="toggle">
-          <input checked=${Boolean(row.seedWhenResolved)} type="checkbox" onchange=${(e) => onToggleSeed(e, row)} />
-          <div class="switch"></div>
-        </label>
       </span>
 
       <div class="buttons">
@@ -186,55 +114,53 @@ function renderRow (row, i) {
 }
 
 function render () {
+  var resolved = renderRows({resolved: true})
+  var unresolved = renderRows({resolved: false})
+
   yo.update(
     document.querySelector('.watchlist-wrapper'), yo`
       <div class="watchlist-wrapper watchlist builtin-wrapper">
         ${renderHeader()}
 
         <div class="builtin-main">
-          <h1>Resolved Pages</h1>
           <div>
-            ${resolvedList.length
+            ${watchlist.length
               ? yo`
                 <div class="ll-column-headings">
-                  ${renderColumnHeading({cls: 'description', sort: 'alpha', type: 'resolved', label: 'Description'})}
-                  ${renderColumnHeading({cls: 'date', sort: 'recently-added', label: `Added`})}
-                  <div class="column-heading seed">
-                    <label>Seed When Resolved</label>
-                  </div>
+                  ${renderColumnHeading({cls: 'description', type: 'resolved', label: 'Description'})}
+                  ${renderColumnHeading({cls: 'date', label: 'Added', icon: yo`<span class="fa fa-angle-down"></span>`})}
                   <span class="buttons"></span>
                 </div>`
               : ''
             }
 
-          ${renderRows('resolved')}
+            <div class="group">${resolved}</div>
+            <div class="group">${unresolved}</div>
 
-          <h1>Still Watching</h1>
-            <div>
-              ${unresolvedList.length
-                ? yo`
-                  <div class="ll-column-headings">
-                    ${renderColumnHeading({cls: 'description', sort: 'alpha', type: 'unresolved', label: 'Description'})}
-                    ${renderColumnHeading({cls: 'date', sort: `recently-added`, label: `Added`})}
-                    <div class="column-heading seed">
-                      <label>Seed When Resolved</label>
-                    </div>
-                    <span class="buttons"></span>
-                  </div>`
-                : ''
-              }
-
-            ${renderRows('unresolved')}
-
-            ${!query
+            ${resolved.length === 0 && unresolved.length === 0
               ? yo`
-                <p class="builtin-hint">
-                  Your Watchlist contains websites and archives 
-                  you've asked Beaker to keep an eye on for you.
-                  <i class="fa fa-question-circle-o"></i>
-                </p>`
+                <div class="view empty">
+                  ${query
+                    ? yo`<i class="fa fa-search"></i>`
+                    : yo`<i class="fa fa-eye"></i>`
+                  }
+
+                  <p>
+                    ${query
+                      ? `No results for "${query}"`
+                      : `You aren${"'"}t watching any archives!`
+                    }
+                  </p>
+                </div>`
               : ''
             }
+
+            <p class="builtin-hint">
+              <i class="fa fa-info-circle"></i>
+              Your Watchlist contains websites and archives 
+              you${"'"}ve asked Beaker to find for you. You${"'"}ll
+              be notified when a site is found.
+            </p>
           </div>
         </div>
       </div>
@@ -246,7 +172,7 @@ function renderHeader () {
   let actions = ''
   let searchContainer = ''
 
-  if (selectedSites && selectedSites.length) {
+  if (selectedItems && selectedItems.length) {
     actions = yo`
       <div class="actions">
         <button class="btn transparent" onclick=${onSelectAll}>
@@ -278,17 +204,10 @@ function renderHeader () {
                 <label class="validate" id="validateUrl">Error</label>
               </div>
               <div class="watchlist-input">
-                <input type="text" id="description" name="description" placeholder="Description of dat" maxlength=100 onkeyup=${characterCount}">
+                <input type="text" id="description" name="description" placeholder="Description of dat" maxlength=100 onkeyup=${characterCount}>
                 <label id="counter" for="description">180</label>
                 <label class="validate" id="validateDesc">Error</label>
               </div>
-              <label class="toggle">
-                <input checked="false" type="checkbox" onchange=${() => { seedWhenResolved = !seedWhenResolved }} />
-                <div class="switch"></div>
-                <span class="text">
-                  Seed When Resolved
-                </span>
-              </label>
               <button class="btn primary" onclick=${addToWatchlist}>
                 <span>Add to Watchlist</span>
                 <i class="fa fa-eye"></i>
@@ -307,39 +226,6 @@ function renderHeader () {
         </span>
 
         <i class="fa fa-search"></i>
-
-        <div class="filter-btn">
-          ${toggleable(yo`
-            <div class="dropdown toggleable-container">
-              <button class="btn transparent toggleable">
-                <i class="fa fa-filter"></i>
-              </button>
-
-              <div class="dropdown-items filters with-triangle compact subtle-shadow right">
-                <div class="section">
-                  <div class="section-header">Sort by:</div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'alpha' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('alpha')}
-                  >
-                    ${currentSort[0] === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Alphabetical</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'recently-added' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('recently-added')}
-                  >
-                    ${currentSort[0] === 'recently-added' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Recently added</span>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          `)}
-        </div>
       </div>`
   }
 
@@ -354,29 +240,22 @@ function renderHeader () {
 // events
 // =
 
-function onToggleSeed (e, row) {
-  e.stopPropagation()
-  row.seedWhenResolved = !row.seedWhenResolved
-
-  beaker.watchlist.update(row, {seedWhenResolved: row.seedWhenResolved})
-}
-
 function onToggleChecked (e, row) {
   e.stopPropagation()
   row.checked = !row.checked
-  selectedSites = watchlist.filter(a => !!a.checked)
+  selectedItems = watchlist.filter(a => !!a.checked)
   render()
 }
 
 function onSelectAll () {
-  selectedSites = watchlist.slice()
-  selectedSites.forEach(a => { a.checked = true })
+  selectedItems = watchlist.slice()
+  selectedItems.forEach(a => { a.checked = true })
   render()
 }
 
 function onDeselectAll () {
-  selectedSites.forEach(a => { a.checked = false })
-  selectedSites = []
+  selectedItems.forEach(a => { a.checked = false })
+  selectedItems = []
   render()
 }
 
@@ -386,7 +265,7 @@ async function addToWatchlist () {
 
   if (validate(url, description)) {
     try {
-      await beaker.watchlist.add(url, {description: description, seedWhenResolved: seedWhenResolved})
+      await beaker.watchlist.add(url, {description: description, seedWhenResolved: false})
       await loadWatchlist()
       render()
     } catch (e) {
@@ -415,7 +294,7 @@ async function onDelete (e, archive) {
 }
 
 async function onDeleteSelected () {
-  await Promise.all(selectedSites.map(async a => {
+  await Promise.all(selectedItems.map(async a => {
     a.checked = false
     try {
       await beaker.watchlist.remove(a.url)
@@ -423,7 +302,7 @@ async function onDeleteSelected () {
       toast.create(`Could not remove site from watchlist`, 'error')
     }
   }))
-  selectedSites = []
+  selectedItems = []
 
   await loadWatchlist()
   render()
@@ -433,7 +312,6 @@ async function onUpdateSearchQuery (e) {
   var newQuery = e.target.value.toLowerCase()
   if (newQuery !== query) {
     query = newQuery
-    await loadWatchlist()
     render()
   }
 }
@@ -458,29 +336,6 @@ function characterCount (e) {
   // get counter label and apply new count
   let counter = document.getElementById('counter')
   counter.textContent = count
-}
-
-function onUpdateSort (sort, type, direction = false, {noSave} = {}) {
-  if (!direction) {
-    // invert the direction if none is provided and the user toggled same sort
-    direction = (currentSort[0] === sort) ? (currentSort[1] * -1) : -1
-  }
-  currentSort[0] = sort
-  currentSort[1] = direction
-  if (!noSave) {
-    saveSettings()
-  }
-  sortWatchlist()
-  render()
-}
-
-// helper gets the offsetTop relative to the document
-function getTop (el) {
-  let top = 0
-  do {
-    top += el.offsetTop
-  } while ((el = el.offsetParent))
-  return top
 }
 
 function validate (url, description) {
