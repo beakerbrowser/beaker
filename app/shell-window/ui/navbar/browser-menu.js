@@ -29,7 +29,6 @@ export class BrowserMenuNavbarBtn {
     this.isDropdownOpen = false
     this.shouldPersistDownloadsIndicator = false
     this.browserInfo = beaker.browser.getInfo()
-    this.resolved = 0
 
     // fetch current downloads
     beaker.downloads.getDownloads().then(ds => {
@@ -44,9 +43,6 @@ export class BrowserMenuNavbarBtn {
     dlEvents.addEventListener('updated', this.onUpdate.bind(this))
     dlEvents.addEventListener('done', this.onDone.bind(this))
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
-
-    var wlEvents = beaker.watchlist.createEventsStream()
-    wlEvents.addEventListener('resolved', () => this.resolved++)
   }
 
   render () {
@@ -133,14 +129,14 @@ export class BrowserMenuNavbarBtn {
             </div>
 
             <div class="section">
-              <div class="menu-item" onclick=${e => this.onClickWatchlist(e)}>
-                <i class="fa fa-eye"></i>
-                <span class="label">Watchlist</span>
-                ${this.resolved > 0 ? yo`<span class="badge">${this.resolved}</span>` : ''}
-              </div>
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
                 <i class="fa fa-book"></i>
                 <span class="label">Library</span>
+              </div>
+              
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://watchlist')}>
+                <i class="fa fa-eye"></i>
+                <span class="label">Watchlist</span>
               </div>
 
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
@@ -255,11 +251,6 @@ export class BrowserMenuNavbarBtn {
     if (files && files[0]) {
       pages.setActive(pages.create('file://' + files[0]))
     }
-  }
-
-  onClickWatchlist (e) {
-    this.resolved = 0
-    this.onOpenPage(e, 'beaker://watchlist')
   }
 
   onClickBtn (e) {

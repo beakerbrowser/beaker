@@ -7,6 +7,7 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
+import {WatchlistNotificationBtn} from './navbar/watchlist-notification'
 // import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
 import {DonateMenuNavbarBtn} from './navbar/donate-menu'
@@ -34,6 +35,7 @@ const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 var toolbarNavDiv
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
+var watchlistNotificationBtn = null
 var bookmarkMenuNavbarBtn = null
 // var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
 var syncfolderMenuNavbarBtn = null
@@ -57,6 +59,7 @@ export function setup () {
   updatesNavbarBtn = new UpdatesNavbarBtn()
   // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
+  watchlistNotificationBtn = new WatchlistNotificationBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   syncfolderMenuNavbarBtn = new SyncfolderMenuNavbarBtn()
   donateMenuNavbarBtn = new DonateMenuNavbarBtn()
@@ -406,6 +409,7 @@ function render (id, page) {
       </div>
       <div class="toolbar-group">
         ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
+        ${watchlistNotificationBtn.render()}
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
