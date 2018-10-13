@@ -519,5 +519,8 @@ function getBuiltinPageIcon (url) {
   if (url.startsWith('beaker://swarm-debugger/')) {
     return yo`<i class="fa fa-bug"></i>`
   }
+  if (url.startsWith('beaker://watchlist/')) {
+    return yo`<i class="fa fa-eye"></i>`
+  }
   return yo`<i class="fa fa-window-maximize"></i>`
 }
