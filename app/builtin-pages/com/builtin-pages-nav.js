@@ -36,15 +36,6 @@ export default function render (currentPage = '') {
       </button>
 
       <div class="dropdown-items subtle-shadow left">
-        ${currentPage !== 'Watchlist'
-          ? yo`
-            <a href="beaker://watchlist" class="dropdown-item">
-              <i class="fa fa-eye"></i>
-              <span>Watchlist</span>
-            </a>`
-          : ''
-        }
-
         ${currentPage !== 'Library'
           ? yo`
             <a href="beaker://library" class="dropdown-item">
@@ -77,6 +68,15 @@ export default function render (currentPage = '') {
             <a href="beaker://downloads" class="dropdown-item">
               <i class="fa fa-download"></i>
               <span>Downloads</span>
+            </a>`
+          : ''
+        }
+        
+        ${currentPage !== 'Watchlist'
+          ? yo`
+            <a href="beaker://watchlist" class="dropdown-item">
+              <i class="fa fa-eye"></i>
+              <span>Watchlist</span>
             </a>`
           : ''
         }
