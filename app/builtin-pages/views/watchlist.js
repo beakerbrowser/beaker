@@ -4,7 +4,7 @@ import yo from 'yo-yo'
 import {niceDate} from '../../lib/time'
 import * as toast from '../com/toast'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
-import toggleable from '../com/toggleable'
+import * as addWatchlistItemPopup from '../com/add-watchlist-item-popup'
 import renderCloseIcon from '../icon/close'
 
 // globals
@@ -157,9 +157,8 @@ function render () {
 
             <p class="builtin-hint">
               <i class="fa fa-info-circle"></i>
-              Your Watchlist contains websites and archives 
-              you${"'"}ve asked Beaker to find for you. You${"'"}ll
-              be notified when a site is found.
+              Your Watchlist contains websites you${"'"}ve asked Beaker to find for you.
+              You${"'"}ll be notified when a site is found.
             </p>
           </div>
         </div>
@@ -192,29 +191,10 @@ function renderHeader () {
   } else {
     actions = yo`
       <div class="actions">
-        ${toggleable(yo`
-          <div class="watchlist-modal toggleable-container">
-            <button class="btn primary toggleable">
-              <span>Add</span>
-              <i class="fa fa-plus"></i>
-            </button>
-            <div class="modal-container subtle-shadow">
-              <div class="watchlist-input">
-                <input type="text" id="url" name="url" placeholder="dat:// url to watch">
-                <label class="validate" id="validateUrl">Error</label>
-              </div>
-              <div class="watchlist-input">
-                <input type="text" id="description" name="description" placeholder="Description of dat" maxlength=100 onkeyup=${characterCount}>
-                <label id="counter" for="description">180</label>
-                <label class="validate" id="validateDesc">Error</label>
-              </div>
-              <button class="btn primary" onclick=${addToWatchlist}>
-                <span>Add to Watchlist</span>
-                <i class="fa fa-eye"></i>
-              </button>
-            </div>
-          </div>
-        `)}
+        <button class="btn primary" onclick=${onAddToWatchlist}>
+          <span>Add</span>
+          <i class="fa fa-plus"></i>
+        </button>
       </div>`
 
     searchContainer = yo`
@@ -259,22 +239,17 @@ function onDeselectAll () {
   render()
 }
 
-async function addToWatchlist () {
-  let url = document.getElementById('url').value.toLowerCase()
-  let description = document.getElementById('description').value
-
-  if (validate(url, description)) {
-    try {
-      await beaker.watchlist.add(url, {description: description, seedWhenResolved: false})
-      await loadWatchlist()
-      render()
-    } catch (e) {
-      console.error(e)
-      toast.create(e, 'error')
-    }
-  } else {
+async function onAddToWatchlist () {
+  var {url, description} = await addWatchlistItemPopup.create()
+  try {
+    await beaker.watchlist.add(url, {description, seedWhenResolved: false})
+  } catch (e) {
+    console.error(e)
+    toast.create(e, 'error')
     return
   }
+  await loadWatchlist()
+  render()
 }
 
 async function onDelete (e, archive) {
@@ -326,51 +301,3 @@ async function onClearQuery () {
   render()
 }
 
-function characterCount (e) {
-  // get description value to calculate length
-  let textVal = document.getElementById('description').value
-
-  // take maxLength of src element so this will work by just changing maxLength attribute on element
-  let count = (e.srcElement.maxLength - (textVal.length))
-
-  // get counter label and apply new count
-  let counter = document.getElementById('counter')
-  counter.textContent = count
-}
-
-function validate (url, description) {
-  let urlError = document.getElementById('validateUrl')
-  let descError = document.getElementById('validateDesc')
-  let urlRegex = /dat?:\/\//
-  let descRegex = /^[ A-Za-z0-9_@./#&+-]*$/
-
-  urlError.style.opacity = 0
-  descError.style.opacity = 0
-
-  if (url !== '' && urlRegex.test(url) && description !== '' && descRegex.test(description)) {
-    urlError.style.opacity = 0
-    descError.style.opacity = 0
-    return true
-  }
-
-  if (url === '') {
-    urlError.textContent = 'Please enter a site.'
-    urlError.style.opacity = 1
-    return false
-  }
-  if (!urlRegex.test(url)) {
-    urlError.textContent = 'Please enter a valid dat:// url'
-    urlError.style.opacity = 1
-    return false
-  }
-  if (description === '') {
-    descError.textContent = 'Please enter a description.'
-    descError.style.opacity = 1
-    return false
-  }
-  if (!descRegex.test(description)) {
-    descError.textContent = 'Alphanumeric description only'
-    descError.style.opacity = 1
-    return false
-  }
-}
