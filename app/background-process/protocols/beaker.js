@@ -40,6 +40,7 @@ export function setup () {
 async function beakerProtocol (request, respond) {
   var cb = once((statusCode, status, contentType, path) => {
     const headers = {
+      'Cache-Control': 'no-cache',
       'Content-Type': (contentType || 'text/html; charset=utf-8'),
       'Content-Security-Policy': BEAKER_CSP,
       'Access-Control-Allow-Origin': '*'
