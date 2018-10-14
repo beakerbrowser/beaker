@@ -124,7 +124,6 @@ function onSubmit (e) {
   destroy()
 }
 
-
 function validate () {
   var success = true
   let urlError = document.querySelector('#add-watchlist-item-popup .url-error')

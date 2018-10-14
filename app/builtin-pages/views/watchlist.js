@@ -300,4 +300,3 @@ async function onClearQuery () {
   await loadWatchlist()
   render()
 }
-
