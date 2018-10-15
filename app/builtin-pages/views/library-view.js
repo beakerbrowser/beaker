@@ -13,7 +13,13 @@ import throttle from 'lodash.throttle'
 import dragDrop from 'drag-drop'
 import {join as joinPaths} from 'path'
 import FilesBrowser from '../com/files-browser/files-browser'
-import {setup as setupAce, isSetup as isAceSetup, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/files-browser/file-editor'
+import {
+  setup as setupAce,
+  isSetup as isAceSetup,
+  config as configureAce,
+  getValue as getAceValue,
+  setValue as setAceValue
+} from '../com/files-browser/file-editor'
 import toggleable2, {closeAllToggleables} from '../com/toggleable2'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as contextMenu from '../com/context-menu'
@@ -181,6 +187,7 @@ async function setup () {
 
     // wire up events
     window.addEventListener('popstate', onPopState)
+    window.addEventListener('beforeunload', onBeforeUnload)
     document.body.addEventListener('click', onClickAnywhere)
     archive.progress.addEventListener('changed', throttle(onProgressUpdate, 2e3))
     document.body.addEventListener('custom-create-file', onCreateFile)
@@ -197,12 +204,7 @@ async function setup () {
     document.body.addEventListener('custom-finish-publish', onFinishPublish)
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     document.body.addEventListener('custom-open-preview-dat', onOpenPreviewDat)
-    document.body.addEventListener(
-      'custom-open-local-folder',
-      function (e) {
-        onOpenFolder(e.detail.path)
-      }
-    )
+    document.body.addEventListener('custom-open-local-folder', e => onOpenFolder(e.detail.path))
 
     if (!DEBUG_DISABLE_LIVE_UI_UPDATES) {
       beaker.archives.addEventListener('updated', onArchiveUpdated)
@@ -1464,6 +1466,13 @@ async function onChangeView (e, view) {
     e.stopPropagation()
   }
 
+  // prompt on navigations away from the editor
+  if (isAceSetup() && filesBrowser.isEditMode) {
+    if (!confirm('You have unsaved changes. Are you sure you want to navigate away?')) {
+      return
+    }
+  }
+
   // update state
   if (!view) {
     activeView = e.detail.view
@@ -1960,8 +1969,23 @@ function onClickAnywhere (e) {
   }
 }
 
+var ignorePopCount = 0 // used to correctly ignore the .go(1)
 function onPopState (e) {
+  if (isAceSetup() && filesBrowser.isEditMode && ignorePopCount === 0) {
+    if (!confirm('You have unsaved changes. Are you sure you want to navigate away?')) {
+      ignorePopCount++
+      history.go(1)
+      return
+    }
+  }
+  ignorePopCount = Math.max(ignorePopCount - 1, 0)
   readViewStateFromUrl()
+}
+
+function onBeforeUnload (e) {
+  if (isAceSetup() && filesBrowser.isEditMode) {
+    e.returnValue = 'You have unsaved changes. Are you sure you want to navigate away?'
+  }
 }
 
 // helpers
