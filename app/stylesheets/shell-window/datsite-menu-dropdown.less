@@ -47,16 +47,41 @@
     margin-right: 5px;
   }
 
-  .peer-count {
+  .peer-count,
+  .net-stats {
     color: @color-text--muted;
-    margin-left: 21px; // width of favicon plus its right margin
     font-size: .725rem;
     font-weight: 300;
+  }
+
+  .peer-count {
+    margin-top: 5px;
+    margin-left: 2px;
+  }
+
+  .net-stats {
+    display: flex;
+    opacity: 0.9;
+    margin-top: 2px;
+
+    & > div {
+      margin-right: 14px;
+    }
+
+    .fa {
+      // thin out the arrows
+      -webkit-text-stroke: 1px #fff;
+    }
   }
 
   .network-url {
     background: #f5f5f5;
     padding: 10px;
+    cursor: pointer;
+
+    * {
+      cursor: pointer;
+    }
 
     i {
       color: @color-text--muted;
@@ -65,7 +90,6 @@
 
     &:hover {
       text-decoration: underline;
-      cursor: pointer;
     }
   }
 }

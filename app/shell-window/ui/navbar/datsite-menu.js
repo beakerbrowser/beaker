@@ -1,14 +1,23 @@
+/* globals DatArchive */
+
 import * as yo from 'yo-yo'
+import prettyBytes from 'pretty-bytes'
 import {findParent} from '../../../lib/fg/event-handlers'
 import {pluralize} from '../../../lib/strings'
 import {RehostSlider} from '../../../lib/fg/rehost-slider'
 import * as pages from '../../pages'
+
+const NETWORK_STATS_POLL_INTERVAL = 500 // ms
+const HELP_DOCS_URL = 'https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites'
 
 export class DatsiteMenuNavbarBtn {
   constructor (page) {
     this.page = page
     this.isDropdownOpen = false
     this.rehostSlider = null
+    this.networkStats = null
+    this.networkStatsPoll = null
+
     window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
   }
 
@@ -38,6 +47,8 @@ export class DatsiteMenuNavbarBtn {
 
   renderRehostDropdown (page) {
     const isOwner = page.siteInfo.isOwner
+    const {downloadSpeed, uploadSpeed, downloadTotal, uploadTotal} = this.networkStats
+
     return yo`
       <div class="dropdown datsite-menu-dropdown rehost-menu-dropdown">
         <div class="dropdown-items datsite-menu-dropdown-items rehost-menu-dropdown-items with-triangle">
@@ -53,11 +64,24 @@ export class DatsiteMenuNavbarBtn {
             </div>
 
             <div class="peer-count">
-              ${page.siteInfo.peers || '0'} ${pluralize(page.siteInfo.peers, 'peer')} seeding these files
+              ${page.siteInfo.peers || '0'} ${pluralize(page.siteInfo.peers, 'peer')} seeding these files.
+              <a class="link" onclick=${() => this.onOpenPage(HELP_DOCS_URL)}>Learn more.</a>
+            </div>
+
+            <div class="net-stats">
+              <div><span class="fa fa-arrow-down"></span> ${prettyBytes(downloadTotal)}</div>
+              <div><span class="fa fa-arrow-up"></span> ${prettyBytes(uploadTotal)}</div>
             </div>
           </div>
 
-          ${this.rehostSlider.render()}
+          ${this.rehostSlider ? this.rehostSlider.render() : ''}
+
+          <div class="network-url">
+            <a onclick=${e => this.onOpenPage(`beaker://library/${page.siteInfo.url}#network`)}>
+              <i class="fa fa-cog"></i>
+              View network activity
+            </a>
+          </div>
         </div>
       `
   }
@@ -70,13 +94,52 @@ export class DatsiteMenuNavbarBtn {
     yo.update(document.getElementById(this.elId), this.render())
   }
 
+  async open () {
+    const page = this.page
+    if (!page || !page.siteInfo) {
+      return
+    }
+    this.networkStats = Object.assign({}, page.siteInfo.networkStats)
+
+    // render dropdown
+    this.isDropdownOpen = true
+    this.updateActives()
+
+    // start tracking the site
+    this.rehostSlider = new RehostSlider(page.siteInfo)
+    await this.rehostSlider.setup()
+    await this.fetchNetworkStats()
+    this.networkStatsPoll = setInterval(() => this.fetchNetworkStats(), NETWORK_STATS_POLL_INTERVAL)
+
+    // rerender dropdown
+    this.updateActives()
+  }
+
   close () {
     if (this.isDropdownOpen) {
-      this.isDropdownOpen = false
+      clearInterval(this.networkStatsPoll)
       this.rehostSlider.teardown()
+      this.isDropdownOpen = false
       this.rehostSlider = null
+      this.networkStatsPoll = null
       this.updateActives()
     }
+  }
+
+  async fetchNetworkStats () {
+    const page = this.page
+    if (!page || !page.siteInfo) {
+      return
+    }
+    try {
+      var info = await (new DatArchive(page.siteInfo.key)).getInfo()
+    } catch (e) {
+      console.warn('Timed out getting dat info')
+      return
+    }
+    page.siteInfo.peers = info.peers
+    Object.assign(this.networkStats, info.networkStats)
+    this.updateActives()
   }
 
   onClickAnywhere (e) {
@@ -90,17 +153,7 @@ export class DatsiteMenuNavbarBtn {
     if (this.isDropdownOpen) {
       this.close()
     } else {
-      // create progress monitor
-      const page = this.page
-      if (!page || !page.siteInfo) {
-        return
-      }
-
-      // render dropdown
-      this.rehostSlider = new RehostSlider(page.siteInfo)
-      await this.rehostSlider.setup()
-      this.isDropdownOpen = true
-      this.updateActives()
+      this.open()
     }
   }
 
