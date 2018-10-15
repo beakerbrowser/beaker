@@ -166,6 +166,10 @@ export function create (opts) {
     isTabDragging: false, // being dragged?
     tabDragOffset: 0, // if being dragged, this is the current offset
 
+    // webview-preload execute-javascript state
+    executeJavascriptCalls: {},
+    executeJavascriptCallCounter: 0,
+
     // get the current URL
     getURL () {
       return this.url
@@ -216,7 +220,7 @@ export function create (opts) {
       // grab the current scroll-y
       page.retainedScrollY = 0
       try {
-        page.retainedScrollY = await page.webviewEl.getWebContents().executeJavaScript('window.scrollY')
+        page.retainedScrollY = await page.executeJavaScript('window.scrollY')
       } catch (e) {
         console.debug('Error while trying to fetch the page scrollY', e)
       }
@@ -315,6 +319,14 @@ export function create (opts) {
           })
         }
       }
+    },
+
+    executeJavaScript (code) {
+      return new Promise((resolve, reject) => {
+        var reqId = page.executeJavascriptCallCounter++
+        page.executeJavascriptCalls[reqId] = resolve
+        page.webviewEl.send('execute-javascript:call', reqId, code)
+      })
     }
   }
   page.siteInfoNavbarBtn = new SiteInfoNavbarBtn(page)
@@ -788,7 +800,7 @@ function onDidStopLoading (e) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }
 
-      page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
+      page.executeJavaScript(cachedMarkdownRendererScript)
     }
 
     // json rendering
@@ -825,7 +837,7 @@ function onDidStopLoading (e) {
         cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
       }
 
-      page.webviewEl.executeJavaScript(cachedJSONRendererScript)
+      page.executeJavaScript(cachedJSONRendererScript)
     }
 
     // HACK
@@ -859,7 +871,7 @@ function onDidStopLoading (e) {
 
     // if there is a retained scroll position, move the page
     if (page.retainedScrollY) {
-      page.webviewEl.executeJavaScript(`
+      page.executeJavaScript(`
         window.scroll(0, ${page.retainedScrollY})
       `)
       page.retainedScrollY = 0
@@ -916,7 +928,7 @@ function onDidFailLoad (e) {
 
     // render failure page
     var errorPageHTML = errorPage(e)
-    page.webviewEl.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'')
+    page.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'')
   }
 }
 
@@ -1007,6 +1019,11 @@ export function onIPCMessage (e) {
       if (activePage) {
         activePage.toggleLiveReloading()
       }
+      break
+    case 'execute-javascript:result':
+      let resolve = page.executeJavascriptCalls[e.args[0]]
+      delete page.executeJavascriptCalls[e.args[0]]
+      resolve(e.args[1])
       break
   }
 }
