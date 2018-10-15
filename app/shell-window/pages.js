@@ -743,13 +743,7 @@ function onDidStopLoading (e) {
     }
 
     // determine content type
-    let contentType
-    if (page.getURL().endsWith('.md')) {
-      contentType = 'text/markdown'
-    }
-    if (page.getURL().endsWith('.json')) {
-      contentType = 'application/json'
-    }
+    let contentType = beaker.browser.getResourceContentType(page.getURL())
 
     // markdown rendering
     // inject the renderer script if the page is markdown

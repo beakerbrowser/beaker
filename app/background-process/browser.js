@@ -1,5 +1,5 @@
 import * as beakerCore from '@beaker/core'
-import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen} from 'electron'
+import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen, session} from 'electron'
 import {autoUpdater} from 'electron-updater'
 import os from 'os'
 import path from 'path'
@@ -8,6 +8,7 @@ import slugify from 'slugify'
 import jetpack from 'fs-jetpack'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
+import LRU from 'lru'
 const exec = require('util').promisify(require('child_process').exec)
 const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
@@ -46,6 +47,9 @@ var updaterError = false // has there been an error?
 // where is the user in the setup flow?
 var userSetupStatus = false
 var userSetupStatusLookupPromise
+
+// content-type tracker
+var resourceContentTypes = new LRU(100) // URL -> Content-Type
 
 // events emitted to rpc clients
 var browserEvents = new EventEmitter()
@@ -95,6 +99,12 @@ export function setup () {
       e.returnValue = false
     }
   })
+
+  // HACK
+  // Electron doesn't give us a convenient way to check the content-types of responses
+  // so we track the last 100 responses' headers to accomplish this
+  // -prf
+  session.defaultSession.webRequest.onCompleted(onCompleted)
 }
 
 export const WEBAPI = {
@@ -116,6 +126,8 @@ export const WEBAPI = {
 
   fetchBody,
   downloadURL,
+
+  getResourceContentType,
 
   listBuiltinFavicons,
   getBuiltinFavicon,
@@ -145,6 +157,12 @@ export function fetchBody (url) {
 
 export async function downloadURL (url) {
   this.sender.downloadURL(url)
+}
+
+export function getResourceContentType (url) {
+  let i = url.indexOf('#')
+  if (i !== -1) url = url.slice(0, i) // strip the fragment
+  return resourceContentTypes.get(url)
 }
 
 export async function listBuiltinFavicons ({filter, offset, limit} = {}) {
@@ -528,5 +546,16 @@ function onWillPreventUnload (e) {
   var leave = (choice === 0)
   if (leave) {
     e.preventDefault()
+  }
+}
+
+function onCompleted (details) {
+  function set (v) {
+    resourceContentTypes.set(details.url, Array.isArray(v) ? v[0] : v)    
+  }
+  if ('Content-Type' in details.responseHeaders) {
+    set(details.responseHeaders['Content-Type'])
+  } else if ('content-type' in details.responseHeaders) {
+    set(details.responseHeaders['content-type'])
   }
 }
