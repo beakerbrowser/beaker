@@ -755,11 +755,14 @@ function onDidStopLoading (e) {
     }
 
     // determine content type
-    let contentType = beaker.browser.getResourceContentType(page.getURL())
+    let contentType = beaker.browser.getResourceContentType(page.getURL()) || ''
+    let isMD = contentType.startsWith('text/markdown') || contentType.startsWith('text/x-markdown')
+    let isJSON = contentType.startsWith('application/json')
+    let isPlainText = contentType.startsWith('text/plain')
 
     // markdown rendering
     // inject the renderer script if the page is markdown
-    if (contentType && (contentType.startsWith('text/markdown') || contentType.startsWith('text/x-markdown'))) {
+    if (isMD || (isPlainText && page.getURL().endsWith('.md'))) {
       // hide the unformatted text and provide some basic styles
       page.webviewEl.insertCSS(`
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
@@ -805,7 +808,7 @@ function onDidStopLoading (e) {
 
     // json rendering
     // inject the json render script
-    if (contentType && (contentType.startsWith('application/json') || contentType.startsWith('application/javascript'))) {
+    if (isJSON || (isPlainText && page.getURL().endsWith('.json'))) {
       page.webviewEl.insertCSS(`
         .hidden { display: none !important; }
         .json-formatter-row {
