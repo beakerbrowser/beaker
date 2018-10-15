@@ -551,7 +551,7 @@ function onWillPreventUnload (e) {
 
 function onCompleted (details) {
   function set (v) {
-    resourceContentTypes.set(details.url, Array.isArray(v) ? v[0] : v)    
+    resourceContentTypes.set(details.url, Array.isArray(v) ? v[0] : v)
   }
   if ('Content-Type' in details.responseHeaders) {
     set(details.responseHeaders['Content-Type'])
