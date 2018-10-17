@@ -1,6 +1,6 @@
 import * as beakerCore from '@beaker/core'
 import {app, BrowserWindow, ipcMain, webContents, dialog} from 'electron'
-import {register as registerShortcut, unregister as unregisterShortcut} from 'electron-localshortcut'
+import {register as registerShortcut, unregister as unregisterShortcut} from '@beaker/electron-localshortcut'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
 import jetpack from 'fs-jetpack'
@@ -185,7 +185,7 @@ export function createShellWindow (windowState) {
   registerShortcut(win, 'Ctrl+PageDown', onNextTab(win))
   registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
-  registerShortcut(win, 'alt+d', onFocusLocation(win))
+  registerShortcut(win, 'Alt+D', onFocusLocation(win))
 
   // register event handlers
   win.on('browser-backward', onGoBack(win))
