@@ -55,8 +55,9 @@ function render () {
           </div>
         `)}
       </div>
-      <div class="remove">
+      <div class="tools">
         <a class="btn plain" onclick=${() => onClickRemove()}><span class="fa fa-times"></span> remove favicon</a>
+        <a class="btn plain" onclick=${() => uploadFavicon()}><span class="fa fa-upload"></span> upload a favicon</a>
       </div>
     </div>
   `
@@ -79,5 +80,11 @@ async function onClickIcon (v) {
 async function onClickRemove () {
   selectedFavicon = null
   onSelect(null)
+  rerender()
+}
+
+async function uploadFavicon () {
+  let v = await beaker.browser.uploadFavicon()
+  if (v) onSelect(v)
   rerender()
 }

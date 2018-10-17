@@ -1,11 +1,13 @@
 import * as beakerCore from '@beaker/core'
-import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen, session} from 'electron'
+import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen, session, nativeImage} from 'electron'
 import {autoUpdater} from 'electron-updater'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
 import slugify from 'slugify'
 import jetpack from 'fs-jetpack'
+import ICO from 'icojs'
+import toIco from 'to-ico'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import LRU from 'lru'
@@ -131,6 +133,7 @@ export const WEBAPI = {
 
   listBuiltinFavicons,
   getBuiltinFavicon,
+  uploadFavicon,
 
   setWindowDimensions,
   showOpenDialog,
@@ -185,6 +188,34 @@ export async function listBuiltinFavicons ({filter, offset, limit} = {}) {
 export async function getBuiltinFavicon (name) {
   var dir = jetpack.cwd(__dirname).cwd('assets/favicons')
   return dir.readAsync(name, 'buffer')
+}
+
+export async function uploadFavicon () {
+  let favicon = dialog.showOpenDialog({
+    title: 'Upload Favicon...',
+    defaultPath: app.getPath('home'),
+    buttonLabel: 'Upload Favicon',
+    filters: [
+      { name: 'Images', extensions: ['png', 'ico', 'jpg'] }
+    ],
+    properties: ['openFile']
+  })
+
+  if (!favicon) return
+
+  let faviconBuffer = await jetpack.readAsync(favicon[0], 'buffer')
+  let extension = path.extname(favicon[0])
+
+  if (extension === '.png') {
+    return toIco(faviconBuffer, {resize: true})
+  }
+  if (extension === '.jpg') {
+    let imageToPng = nativeImage.createFromBuffer(faviconBuffer).toPNG()
+    return toIco(imageToPng, {resize: true})
+  }
+  if (extension === '.ico' && ICO.isICO(faviconBuffer)) {
+    return faviconBuffer
+  }
 }
 
 export async function setWindowDimensions ({width, height} = {}) {
