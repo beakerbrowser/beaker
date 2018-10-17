@@ -366,9 +366,10 @@ function rContainer (filesBrowser, node, depth) {
   let children = ''
 
   return [
-    yo`<div
+    yo`<a
       class="item folder"
       title=${node.name}
+      href=${node.url}
       onclick=${e => onClickNode(e, filesBrowser, node)}
       oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
     >
@@ -376,16 +377,17 @@ function rContainer (filesBrowser, node, depth) {
       <div class="name-container"><div class="name">${node.name}</div></div>
       <div class="updated">${niceMtime(node.mtime)}</div>
       <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
-    </div>`,
+    </a>`,
     children
   ]
 }
 
 function rFile (filesBrowser, node, depth) {
   return yo`
-    <div
+    <a
       class="item file"
       title=${node.name}
+      href=${node.url}
       onclick=${e => onClickNode(e, filesBrowser, node)}
       oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
     >
@@ -393,7 +395,7 @@ function rFile (filesBrowser, node, depth) {
       <div class="name-container"><div class="name">${node.name}</div></div>
       <div class="updated">${niceMtime(node.mtime)}</div>
       <div class="size">${typeof node.size === 'number' ? prettyBytes(node.size) : '--'}</div>
-    </div>
+    </a>
   `
 }
 
