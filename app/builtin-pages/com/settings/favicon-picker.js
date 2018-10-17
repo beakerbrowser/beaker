@@ -84,6 +84,7 @@ async function onClickRemove () {
 }
 
 async function uploadFavicon () {
-  onSelect(await beaker.browser.uploadFavicon())
+  let v = await beaker.browser.uploadFavicon()
+  if (v) onSelect(v)
   rerender()
 }

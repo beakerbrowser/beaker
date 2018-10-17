@@ -207,11 +207,11 @@ export async function uploadFavicon () {
   let extension = path.extname(favicon[0])
 
   if (extension === '.png') {
-    return toIco(faviconBuffer)
+    return toIco(faviconBuffer, {resize: true})
   }
   if (extension === '.jpg') {
     let imageToPng = nativeImage.createFromBuffer(faviconBuffer).toPNG()
-    return toIco(imageToPng)
+    return toIco(imageToPng, {resize: true})
   }
   if (extension === '.ico' && ICO.isICO(faviconBuffer)) {
     return faviconBuffer
