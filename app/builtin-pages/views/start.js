@@ -10,6 +10,8 @@ import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
+import {getSearchEngineOrDefault, getDefaultSearchEngine} from '../../lib/search-engines'
+
 const LATEST_VERSION = 7011 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-10/?updated=true'
 
@@ -202,15 +204,18 @@ async function onUpdateSearchQuery (q) {
     })
     searchResults = searchResults.concat(historyResults)
 
-    // add a DuckDuckGo search to the results
-    const ddgRes = {
+    var configuredSearchEngine = settings.search_engine;
+    var engine = getSearchEngineOrDefault(configuredSearchEngine);
+
+    // add a search result search to the results
+    const searchResult = {
       title: query,
-      targetUrl: `https://duckduckgo.com?q=${encodeURIComponent(query)}`,
+      targetUrl: engine.makeQueryUrl(query),
       icon: 'fa fa-search',
-      label: 'Search DuckDuckGo',
+      label: 'Search ' + engine.name,
       class: 'ddg'
     }
-    searchResults.push(ddgRes)
+    searchResults.push(searchResult)
   }
 
   update()

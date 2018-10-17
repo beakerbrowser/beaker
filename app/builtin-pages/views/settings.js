@@ -5,6 +5,8 @@ import * as toast from '../com/toast'
 import DatNetworkActivity from '../com/settings/dat-network-activity'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
+import {getAvailableSearchEngines} from '../../lib/search-engines'
+
 // globals
 // =
 
@@ -108,6 +110,7 @@ function renderGeneral () {
       ${renderAutoUpdater()}
       ${renderDefaultSyncPathSettings()}
       ${renderProtocolSettings()}
+      ${renderSearchEngineSettings()}
       ${renderOnStartupSettings()}
       ${renderDatSettings()}
       ${renderDefaultDatIgnoreSettings()}
@@ -317,6 +320,40 @@ function renderProtocolSettings () {
           </span>
         </label>`
       )}
+    </div>`
+}
+
+function renderSearchEngineSettings() {
+
+  function changeSearchEngine(engineName) {
+    beaker.browser.setSetting('search_engine', engineName)
+  }
+
+  // todo: default without hardcoding?
+  var currentSearchEngine = settings.search_engine || "DuckDuckGo";
+
+  var engines = getAvailableSearchEngines();
+
+  // todo: consider getting rid of that disgusting ternary :P
+  // also, style the select box?
+  return yo`
+    <div class="section default-browser">
+      <h2 id="search-section" class="subtitle-heading">Default Search Engine Settings</h2>
+
+      <p>
+        Use the following search engine to search
+      </p>
+
+      <select id="search-engine-chooser" onchange=${(event) => changeSearchEngine(event.target.value)}>
+        ${engines.map( engine => { return (engine == currentSearchEngine) ? yo`
+          <option selected>${engine}</option>
+        ` :
+        yo `<option>${engine}</option>`
+      }
+      )}
+      </select>
+
+
     </div>`
 }
 
