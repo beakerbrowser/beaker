@@ -3,10 +3,10 @@
 
 .toast-wrapper {
   position: fixed;
-  bottom: 20px;
-  width: 100%;
+  top: 20px;
+  right: 20px;
   z-index: 20000;
-  transition: opacity .1s ease;
+  transition: opacity 0.1s ease;
 
   &.hidden {
     opacity: 0;
@@ -14,32 +14,25 @@
 }
 
 .toast {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
+  position: relative;
   min-width: 350px;
   max-width: 450px;
-  transform: translateX(-50%);
-  text-align: center;
   background: #ddd;
+  margin: 0;
   padding: 10px 15px;
   border-radius: 4px;
-  box-shadow: 0 0 70px 50px #fff;
-
-  &.primary,
-  &.success,
-  &.error {
-    color: #fff;
-    -webkit-font-smoothing: antialiased;
-    font-weight: 600;
-  }
+  font-size: 16px;
+  color: #fff;
+  background: rgba(0,0,0,.75);
+  -webkit-font-smoothing: antialiased;
+  font-weight: 600;
 
   &.error {
-    padding-left: 30px;
+    padding-left: 38px;
   }
 
   &.success {
-    padding-left: 40px;
+    padding-left: 48px;
   }
 
   &.success,
@@ -47,11 +40,12 @@
 
     &:before {
       position: absolute;
-      left: 15px;
-      top: 8px;
+      left: 18px;
+      top: 5px;
       display: block;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
-      font-size: 16px;
+      font-size: 22px;
+      font-weight: bold;
     }
   }
 

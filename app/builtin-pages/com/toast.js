@@ -9,7 +9,10 @@ function render (message, type = '', button = null) {
   `
 }
 
-export function create (message, type = '', time = 1500, button = null) {
+export function create (message, type = '', time = 5000, button = null) {
+  // destroy existing
+  destroy()
+
   // render toast
   var toast = render(message, type, button)
   document.body.appendChild(toast)

@@ -1779,7 +1779,7 @@ async function onSaveFileEditorContent (e) {
       // delete the old file
       await workingCheckout.unlink(currentNode._path)
     }
-    toast.create('Saved')
+    toast.create('Saved', 'success')
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }

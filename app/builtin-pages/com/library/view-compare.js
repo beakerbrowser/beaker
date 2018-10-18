@@ -141,7 +141,7 @@ export default class LibraryViewCompare {
   async onMerge (base, target, opts) {
     try {
       await DatArchive.merge(base, target, opts)
-      toast.create('Files updated')
+      toast.create('Files updated', 'success')
     } catch (e) {
       console.error(e)
       toast.create(e.message || 'There was an issue writing the files', 'error')
