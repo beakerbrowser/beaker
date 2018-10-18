@@ -1,4 +1,4 @@
-/* globals beaker */
+/* globals beaker DatArchive */
 
 import yo from 'yo-yo'
 import closeIcon from '../icon/close'
