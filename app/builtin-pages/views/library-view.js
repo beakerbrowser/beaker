@@ -1733,7 +1733,13 @@ async function onDeleteFile (e) {
   }
 }
 
-function onOpenFileEditor (e) {
+async function onOpenFileEditor () {
+  var currentNode = filesBrowser.getCurrentSource()
+  if (currentNode) {
+    await currentNode.readData({ignoreCache: true})
+    setAceValue(currentNode.preview)
+  }
+
   // update the UI
   filesBrowser.isEditMode = true
   render()
