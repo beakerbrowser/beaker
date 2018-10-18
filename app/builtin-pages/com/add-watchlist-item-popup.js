@@ -112,13 +112,24 @@ function onClickWrapper (e) {
   }
 }
 
-function onSubmit (e) {
+async function onSubmit (e) {
   e.preventDefault()
 
   url = e.target.url.value.trim()
   description = e.target.description.value.trim()
   description = description || url // fallback to the url
   if (!validate()) return
+
+  // resolve DNS
+  var urlp = new URL(url)
+  try {
+    urlp.host = await DatArchive.resolveName(url)
+  } catch (e) {
+    let urlError = document.querySelector('#add-watchlist-item-popup .url-error')
+    urlError.textContent = 'No DNS record found for ' + urlp.host
+    urlError.style.opacity = 1
+    return
+  }
 
   resolve({url, description})
   destroy()
