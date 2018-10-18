@@ -87,14 +87,15 @@ test('library.list()', async t => {
   var listing = await listingP
   t.deepEqual(Object.keys(listing[0]).sort(), ['description', 'isOwner', 'mtime', 'peers', 'size', 'title', 'url', 'userSettings'].sort())
   t.deepEqual(Object.keys(listing[0].userSettings).sort(), ['expiresAt', 'isSaved'].sort())
-  t.is(listing[0].description, 'Foo')
-  t.is(listing[0].isOwner, true)
-  t.is(typeof listing[0].mtime, 'number')
-  t.is(typeof listing[0].peers, 'number')
-  t.is(typeof listing[0].size, 'number')
-  t.is(listing[0].title, 'Test Archive')
-  t.is(typeof listing[0].url, 'string')
-  t.deepEqual(listing[0].userSettings, {expiresAt: null, isSaved: true})
+  var item = listing.find(i => i.title === 'Test Archive')
+  t.is(item.description, 'Foo')
+  t.is(item.isOwner, true)
+  t.is(typeof item.mtime, 'number')
+  t.is(typeof item.peers, 'number')
+  t.is(typeof item.size, 'number')
+  t.is(item.title, 'Test Archive')
+  t.is(typeof item.url, 'string')
+  t.deepEqual(item.userSettings, {expiresAt: null, isSaved: true})
 })
 
 test('library.get()', async t => {
