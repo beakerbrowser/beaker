@@ -71,7 +71,7 @@ const STEPS = [
           </span>
         </div>
 
-        <a href="dat://taravancil.com/explore-the-p2p-web.md" class="module" target="_blank">
+        <a href="dat://explore.beakerbrowser.com" class="module" target="_blank">
           <img src="beaker://assets/img/onboarding/community.svg"/>
 
           <span>
@@ -109,7 +109,7 @@ const STEPS = [
 // =
 
 async function onCreateWebsite () {
-  var {archive} = await createArchivePopup.create()
+  var archive = await DatArchive.create({template: 'website', prompt: false})
   window.location = `beaker://library/${archive.url}#setup`
 }
 
