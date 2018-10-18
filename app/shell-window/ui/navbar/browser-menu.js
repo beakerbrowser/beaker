@@ -357,7 +357,7 @@ export class BrowserMenuNavbarBtn {
     this.updateActives()
 
     // ask user for files
-    const filesOnly = this.browserInfo.platform === 'linux'
+    const filesOnly = this.browserInfo.platform === 'linux' || this.browserInfo.platform === 'win32'
     const files = await beaker.browser.showOpenDialog({
       title: 'Select files to share',
       buttonLabel: 'Share files',
