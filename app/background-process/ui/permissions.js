@@ -107,6 +107,11 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
   }
   const url = webContents.getURL()
 
+  // always allow beaker:// origins
+  if (url.startsWith('beaker://')) {
+    return cb(true)
+  }
+
   // check if the perm is auto-allowed or auto-disallowed
   const PERM = PERMS[getPermId(permission)]
   if (PERM && PERM.alwaysAllow) return cb(true)
@@ -163,5 +168,5 @@ async function onPermissionResponseHandler (e, reqId, decision) {
 }
 
 function getContainingWindow (webContents) {
-  return BrowserWindow.fromWebContents(webContents.hostWebContents)
+  return BrowserWindow.fromWebContents(webContents.hostWebContents || webContents)
 }
