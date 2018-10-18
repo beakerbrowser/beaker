@@ -52,7 +52,7 @@ function sortWatchlist () {
 // rendering
 // =
 
-function renderColumnHeading ({label, cls, type, icon}) {
+function renderColumnHeading ({label, cls, icon}) {
   icon = icon || ''
   return yo`
     <div class="column-heading ${cls}">
@@ -86,13 +86,17 @@ function renderRow (row, i) {
   return yo`
     <a
       href="${row.url}"
-      class="ll-row archive ${row.checked ? 'selected' : ''} ${row.resolved ? 'resolved' : ''}"
+      class="ll-row watchlist-item ${row.checked ? 'selected' : ''} ${row.resolved ? 'resolved' : ''}"
+      onclick=${e => onOpenItem(e, row)}
       target="_blank"
     >
-      <span class="description">
+      <span class="watchlist-item-status">
+        ${row.resolved ? yo`<span class="badge blue">Found</span>` : yo`<span class="badge">Searching</span>`}
+      </span>
+
+      <span class="watchlist-item-title">
         <img class="favicon" src="beaker-favicon:32,${row.url}" />
-        ${row.description}
-        ${row.resolved ? yo`<span class="badge green">Site found!</span>` : ''}
+        <span class="description">${row.description}</span>
       </span>
 
       <span class="date">
@@ -127,7 +131,8 @@ function render () {
             ${watchlist.length
               ? yo`
                 <div class="ll-column-headings">
-                  ${renderColumnHeading({cls: 'description', type: 'resolved', label: 'Description'})}
+                  ${renderColumnHeading({cls: 'watchlist-item-status', label: ''})}
+                  ${renderColumnHeading({cls: 'watchlist-item-title', label: 'Description'})}
                   ${renderColumnHeading({cls: 'date', label: 'Added', icon: yo`<span class="fa fa-angle-down"></span>`})}
                   <span class="buttons"></span>
                 </div>`
@@ -241,25 +246,26 @@ function onDeselectAll () {
 
 async function onAddToWatchlist () {
   var {url, description} = await addWatchlistItemPopup.create()
-  try {
-    await beaker.watchlist.add(url, {description, seedWhenResolved: false})
-  } catch (e) {
-    console.error(e)
-    toast.create(e, 'error')
-    return
-  }
-  await loadWatchlist()
-  render()
+  addToWatchlist(url, description)
 }
 
-async function onDelete (e, archive) {
+function onOpenItem (e, item) {
+  if (item.resolved) {
+    // delete if opening a resolved item
+    onDelete(null, item)
+  } else {
+    e.preventDefault()
+  }
+}
+
+async function onDelete (e, item) {
   if (e) {
     e.stopPropagation()
     e.preventDefault()
   }
 
   try {
-    await beaker.watchlist.remove(archive.url)
+    await beaker.watchlist.remove(item.url)
   } catch (e) {
     console.error(e)
     toast.create(`Could not remove site from watchlist`, 'error')

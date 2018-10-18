@@ -110,10 +110,14 @@ body.drag {
   }
 
   // column sizings
-  .ll-row.archive,
+  .ll-row.watchlist-item,
   .ll-column-headings {
 
-    .description {
+    .watchlist-item-status {
+      width: 90px;
+    }
+
+    .watchlist-item-title {
       flex: 3;
       max-width: none;
     }
@@ -132,13 +136,12 @@ body.drag {
     padding: 0 20px 10px;
   }
 
-  .ll-row.archive {
+  .ll-row.watchlist-item {
     height: 50px;
     padding: 0 20px;
 
     &.menu-open,
     &:hover {
-
       .buttons,
       .btn,
       .btn.trash {
@@ -146,8 +149,24 @@ body.drag {
       }
     }
 
-    .description {
+    &:not(.resolved):hover {
+      cursor: default;
+      background: #fff;
+
+      span,
+      img {
+        cursor: default;
+      }
+    }
+
+    .watchlist-item-status {
+      text-align: right;
+      padding-right: 15px;
+    }
+
+    .watchlist-item-title {
       font-size: 13.5px;
+      color: gray;
 
       &.empty {
         overflow: initial;
@@ -179,24 +198,8 @@ body.drag {
     }
 
     &.resolved {
-      background: shade(@green, 15%);
-      border-color: shade(@green, 45%);
-
       .description {
-        font-weight: 600;
-        color: #fff;
-
-        .badge {
-          -webkit-font-smoothing: antialiased;
-        }
-      }
-
-      .date {
-        color: #fff;
-      }
-
-      .buttons .btn {
-        color: #fff;
+        color: @blue;
       }
     }
   }
