@@ -25,10 +25,17 @@ async function setup () {
   render()
 
   // watchlist events
-  wlEvents.addEventListener('updated', async () => {
+  wlEvents.addEventListener('resolved', async () => {
     await loadWatchlist()
     render()
   })
+
+  // handle query params
+  var location = new URL(window.location)
+  if (location.searchParams.get('url')) {
+    await addToWatchlist(location.searchParams.get('url'))
+    window.history.replaceState({}, null, 'beaker://watchlist/')
+  }
 }
 
 // data
@@ -37,6 +44,20 @@ async function setup () {
 async function loadWatchlist () {
   watchlist = await beaker.watchlist.list()
   sortWatchlist()
+}
+
+async function addToWatchlist (url, description) {
+  description = description || url
+  try {
+    await beaker.watchlist.add(url, {description, seedWhenResolved: false})
+    toast.create('Added to your watchlist', 'success')
+  } catch (e) {
+    console.error(e)
+    toast.create(e.toString(), 'error')
+    return
+  }
+  await loadWatchlist()
+  render()
 }
 
 function sortWatchlist () {
