@@ -134,7 +134,7 @@ function validate () {
     urlError.textContent = 'Please enter a site.'
     urlError.style.opacity = 1
     success = false
-  } else if (!/dat?:\/\//.test(url) && !/[0-9]{64}/.test(url)) {
+  } else if (!/dat?:\/\//.test(url) && !/[a-f0-9]{64}/.test(url)) {
     urlError.textContent = 'Please enter a valid dat:// url'
     urlError.style.opacity = 1
     success = false
