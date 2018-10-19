@@ -32,6 +32,8 @@ export const DEFAULT_URL = 'beaker://start'
 
 export const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 
+export var noRedirectOrigins = new Set()
+
 // globals
 // =
 
@@ -137,6 +139,7 @@ export function create (opts) {
     liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
     retainedScrollY: 0, // what was the scroll position of the page before navigating away?
+    autoRedirectToDat: null,
 
     // current page's info
     favicons: null, // what are the favicons of the page?
@@ -149,6 +152,7 @@ export function create (opts) {
     sitePerms: null, // saved permissions for the current page
     siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
     siteHasDatAlternative: false, // is there a dat:// version we can redirect to?
+    siteHttpAlternative: null,
     siteWasADatTimeout: false, // did we timeout trying to find this site on the dat network?
 
     // history
@@ -203,10 +207,24 @@ export function create (opts) {
     canGoForward () { return this._canGoForward },
 
     // wrap webview loadURL to set the `loadingURL`
-    loadURL (url, opts) {
+    async loadURL (url, opts) {
+      // setting up for auto redirect
+      let redirectToDat = await beaker.browser.getSetting('auto_redirect_to_dat')
+      let hasDatAlternative = false
+      if (!url.includes('dat://')) {
+        hasDatAlternative = await DatArchive.resolveName(url).catch(err => false).then(res => !!res)
+      }
+
       // reset some state
       page.isReceivingAssets = false
       page.siteInfoOverride = null
+      page.autoRedirectToDat = !!redirectToDat
+
+      if (page.autoRedirectToDat && hasDatAlternative && !noRedirectOrigins.has(url)) {
+        page.siteHttpAlternative = parseURL(url).protocol
+        console.log(page.siteHttpAlternative)
+        url = url.replace(parseURL(url).protocol, 'dat:')
+      }
 
       // set and go
       page.loadingURL = url
