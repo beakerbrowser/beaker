@@ -696,7 +696,7 @@ function onClickGotoHttpVersion (e) {
   if (!page || !page.protocolInfo) return
 
   const url = `https://${page.protocolInfo.hostname}${page.protocolInfo.pathname}`
-  pages.noRedirectOrigins.add(url)
+  pages.noRedirectOrigins.add(page.protocolInfo.hostname)
   if (e.metaKey || e.ctrlKey) { // popup
     pages.setActive(pages.create(url))
   } else {
