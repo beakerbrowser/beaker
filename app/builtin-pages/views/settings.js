@@ -331,7 +331,7 @@ function renderDefaultToDatSetting () {
 
         <div class="switch"></div>
         <span class="text">
-          Automatically redirect to dat:// when available:
+          Automatically redirect to dat:// when available
         </span>
       </label>
     </div>`

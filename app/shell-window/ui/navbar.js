@@ -312,10 +312,10 @@ function render (id, page) {
     datBtns.push(
       yo`<button
         class="callout"
-        title="Go to Http Version of this Site"
+        title="Go to HTTP/S Version of this Site"
         onclick=${onClickGotoHttpVersion}
       >
-        <span class="fa fa-share-alt"></span> ${page.siteHttpAlternative} version available
+        Go to HTTP/S version
       </button>`
     )
   }
