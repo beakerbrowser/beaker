@@ -1513,24 +1513,21 @@ function onFinishPublish () {
 }
 
 function onGlobalKeydown (e) {
+  if (!filesBrowser.isEditMode) return // only run when editing a file
   var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
-  if (filesBrowser.isEditMode) {
-    // cmd/ctrl + s
-    if (ctrlOrMeta && e.keyCode == 83) {
-      onSaveFileEditorContent(e) // save file
-      onCloseFileEditor(e) // close editor
-
-      // prevent saving the webpage from happening
-      e.preventDefault()
-      e.stopPropagation()
-    }
-    // escape
-    if (e.keyCode == 27) {
-      onCloseFileEditor(e)
-
-      e.preventDefault()
-      e.stopPropagation()
-    }
+  // cmd/ctrl + s
+  if (ctrlOrMeta && e.keyCode == 83) {
+    onSaveFileEditorContent(e) // save file
+    onCloseFileEditor(e) // close editor
+    // prevent saving the webpage from happening
+    e.preventDefault()
+    e.stopPropagation()
+  }
+  // escape
+  if (e.keyCode == 27) {
+    onCloseFileEditor(e)
+    e.preventDefault()
+    e.stopPropagation()
   }
 }
 
