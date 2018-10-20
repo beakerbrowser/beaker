@@ -90,6 +90,9 @@ var isHistoricalVersion = false
 // -prf
 window.OS_CAN_IMPORT_FOLDERS_AND_FILES = true
 
+// which should we use in keybindings?
+var osUsesMetaKey = false
+
 // capture the throttled version (onFilesChanged's declaration is hoisted from later in the file)
 const onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
 
@@ -135,6 +138,7 @@ async function setup () {
     // load platform info
     let browserInfo = beaker.browser.getInfo()
     window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
+    osUsesMetaKey = browserInfo.platform === 'darwin'
 
     // load data
     let url = await parseLibraryUrl()
@@ -1509,28 +1513,24 @@ function onFinishPublish () {
 }
 
 function onGlobalKeydown (e) {
-  // mac
-  if (e.metaKey && e.keyCode == 83 && filesBrowser.isEditMode) {
-    onSaveFileEditorContent(e) // save file
-    onCloseFileEditor(e) // close editor
+  var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
+  if (filesBrowser.isEditMode) {
+    // cmd/ctrl + s
+    if (ctrlOrMeta && e.keyCode == 83) {
+      onSaveFileEditorContent(e) // save file
+      onCloseFileEditor(e) // close editor
 
-    // prevent saving the webpage from happening
-    e.preventDefault()
-    e.stopPropagation()
-  }
-  // windows/linux
-  if (e.ctrlKey && e.keyCode == 83 && filesBrowser.isEditMode) {
-    onSaveFileEditorContent(e) // save file
-    onCloseFileEditor(e) // close editor
+      // prevent saving the webpage from happening
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    // escape
+    if (e.keyCode == 27) {
+      onCloseFileEditor(e)
 
-    e.preventDefault()
-    e.stopPropagation()
-  }
-  if (e.keyCode == 27 && filesBrowser.isEditMode) {
-    onCloseFileEditor(e)
-
-    e.preventDefault()
-    e.stopPropagation()
+      e.preventDefault()
+      e.stopPropagation()
+    }
   }
 }
 
