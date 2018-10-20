@@ -205,6 +205,7 @@ async function setup () {
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     document.body.addEventListener('custom-open-preview-dat', onOpenPreviewDat)
     document.body.addEventListener('custom-open-local-folder', e => onOpenFolder(e.detail.path))
+    document.body.addEventListener('keydown', onGlobalKeydown)
 
     if (!DEBUG_DISABLE_LIVE_UI_UPDATES) {
       beaker.archives.addEventListener('updated', onArchiveUpdated)
@@ -1505,6 +1506,32 @@ function onFinishPublish () {
   // now that publish finished, load the diff summary
   isPublishingLocalDiff = false
   loadDiffSummary()
+}
+
+function onGlobalKeydown (e) {
+  // mac
+  if (e.metaKey && e.keyCode == 83 && filesBrowser.isEditMode) {
+    onSaveFileEditorContent(e) // save file
+    onCloseFileEditor(e) // close editor
+
+    // prevent saving the webpage from happening
+    e.preventDefault()
+    e.stopPropagation()
+  }
+  // windows/linux
+  if (e.ctrlKey && e.keyCode == 83 && filesBrowser.isEditMode) {
+    onSaveFileEditorContent(e) // save file
+    onCloseFileEditor(e) // close editor
+
+    e.preventDefault()
+    e.stopPropagation()
+  }
+  if (e.keyCode == 27 && filesBrowser.isEditMode) {
+    onCloseFileEditor(e)
+
+    e.preventDefault()
+    e.stopPropagation()
+  }
 }
 
 async function onOpenPreviewDat (e) {
