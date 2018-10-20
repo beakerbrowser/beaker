@@ -175,6 +175,7 @@ function render (id, page) {
   const isLoading = page && page.isLoading()
   const isViewingDat = page && page.getURL().startsWith('dat:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
+  const siteHttpAlternative = page && page.siteHttpAlternative
   const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
   const siteLoadError = page && page.siteLoadError
   const isOwner = page && page.siteInfo && page.siteInfo.isOwner
@@ -296,7 +297,8 @@ function render (id, page) {
     //     )
     //   }
     // }
-  } else if (siteHasDatAlternative) {
+  } // TODO(apps) when we bring back apps, fix the logic here
+  if (siteHasDatAlternative) {
     datBtns.push(
       yo`<button
         class="callout"
@@ -304,6 +306,16 @@ function render (id, page) {
         onclick=${onClickGotoDatVersion}
       >
         <span class="fa fa-share-alt"></span> P2P version available
+      </button>`
+    )
+  } else if (siteHttpAlternative) {
+    datBtns.push(
+      yo`<button
+        class="callout"
+        title="Go to Http Version of this Site"
+        onclick=${onClickGotoHttpVersion}
+      >
+        <span class="fa fa-share-alt"></span> ${page.siteHttpAlternative} version available
       </button>`
     )
   }
@@ -672,6 +684,19 @@ function onClickGotoDatVersion (e) {
   if (!page || !page.protocolInfo) return
 
   const url = `dat://${page.protocolInfo.hostname}${page.protocolInfo.pathname}`
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create(url))
+  } else {
+    page.loadURL(url) // goto
+  }
+}
+
+function onClickGotoHttpVersion (e) {
+  const page = getEventPage(e)
+  if (!page || !page.protocolInfo) return
+
+  const url = `https://${page.protocolInfo.hostname}${page.protocolInfo.pathname}`
+  pages.noRedirectOrigins.add(page.protocolInfo.hostname)
   if (e.metaKey || e.ctrlKey) { // popup
     pages.setActive(pages.create(url))
   } else {
