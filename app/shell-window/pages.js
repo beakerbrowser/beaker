@@ -32,7 +32,7 @@ export const DEFAULT_URL = 'beaker://start'
 
 export const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 
-export var noRedirectOrigins = new Set() // Set of hostnames that won't redirect to their dat alternatives
+export var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
 
 // globals
 // =
@@ -139,7 +139,6 @@ export function create (opts) {
     liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
     retainedScrollY: 0, // what was the scroll position of the page before navigating away?
-    autoRedirectToDat: null, // if true will redirect http/s to its dat alternative if available
 
     // current page's info
     favicons: null, // what are the favicons of the page?
@@ -209,7 +208,7 @@ export function create (opts) {
     // wrap webview loadURL to set the `loadingURL`
     async loadURL (url, opts) {
       // setting up for auto redirect
-      page.autoRedirectToDat = !!await beaker.browser.getSetting('auto_redirect_to_dat') // get redirect setting and convert to bool
+      var autoRedirectToDat = !!await beaker.browser.getSetting('auto_redirect_to_dat') // get redirect setting and convert to bool
       let hasDatAlternative = false
       if (!url.includes('dat://')) {
         hasDatAlternative = await DatArchive.resolveName(url).catch(err => false).then(res => !!res)
@@ -219,7 +218,7 @@ export function create (opts) {
       page.isReceivingAssets = false
       page.siteInfoOverride = null
 
-      if (page.autoRedirectToDat && hasDatAlternative && !noRedirectOrigins.has(parseURL(url).hostname)) {
+      if (autoRedirectToDat && hasDatAlternative && !noRedirectHostnames.has(parseURL(url).hostname)) {
         page.siteHttpAlternative = parseURL(url).protocol
         url = url.replace(parseURL(url).protocol, 'dat:')
       }
@@ -319,17 +318,20 @@ export function create (opts) {
     },
 
     // helper to check if there's a dat version of the site available
-    async checkForDatAlternative (name) {
-      page.autoRedirectToDat = !!await beaker.browser.getSetting('auto_redirect_to_dat')
-      await DatArchive.resolveName(name).then(res => {
-        this.siteHasDatAlternative = !!res
-        navbar.update(page)
-      }).catch(err => console.log('Name does not have a Dat alternative', name))
-
-      if (page.autoRedirectToDat && this.siteHasDatAlternative && !noRedirectOrigins.has(name)) {
-        page.siteHttpAlternative = parseURL(url).protocol
-        page.url = url.replace(parseURL(url).protocol, 'dat:')
-        page.loadURL(page.url)
+    async checkForDatAlternative (url, name) {
+      var autoRedirectToDat = !!await beaker.browser.getSetting('auto_redirect_to_dat')
+      this.siteHasDatAlternative = await DatArchive.resolveName(name).then(
+        res => Boolean(res),
+        err => {
+          console.log('Name does not have a Dat alternative', name)
+          return false
+        }
+      )
+      navbar.update(page)
+      if (autoRedirectToDat && this.siteHasDatAlternative && !noRedirectHostnames.has(name)) {
+        var oldProto = parseURL(url).protocol
+        page.siteHttpAlternative = oldProto
+        page.loadURL(url.replace(oldProto, 'dat:'))
       }
     },
 
@@ -749,7 +751,7 @@ function onDidStopLoading (e) {
     page.siteHasDatAlternative = false
     page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase(), version}
     if (protocol === 'https:') {
-      page.checkForDatAlternative(hostname)
+      page.checkForDatAlternative(url, hostname)
     }
     if (protocol === 'dat:') {
       DatArchive.resolveName(hostname)
