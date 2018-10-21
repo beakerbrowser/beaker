@@ -52,6 +52,10 @@ if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
   testDriver.setup()
 }
 
+// enable the sandbox
+// TODO when electron@4.0.0 lands, change to enableSandbox
+app.enableMixedSandbox()
+
 // configure the protocols
 protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
 
