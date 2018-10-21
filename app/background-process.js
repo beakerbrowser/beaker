@@ -119,6 +119,11 @@ app.on('ready', async function () {
   protocol.registerServiceWorkerSchemes(['dat'])
 })
 
+app.on('custom-ready-to-show', () => {
+  // our first window is ready to show, do any additional setup
+  beakerCore.dat.library.loadSavedArchives()
+})
+
 // only run one instance
 const isFirstInstance = app.requestSingleInstanceLock()
 if (!isFirstInstance) {

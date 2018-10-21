@@ -20,6 +20,7 @@ let numActiveWindows = 0
 let firstWindow = null
 let sessionWatcher = null
 let focusedDevtoolsHost
+let hasFirstWindowLoaded = false
 const BROWSING_SESSION_PATH = './shell-window-state.json'
 const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
 const PRELOAD_PATH = path.join(__dirname, 'shell-window.build.js')
@@ -143,7 +144,13 @@ export function createShellWindow (windowState) {
     icon: ICON_PATH,
     show: false // will show when ready
   })
-  win.once('ready-to-show', () => win.show())
+  win.once('ready-to-show', () => {
+    win.show()
+    if (!hasFirstWindowLoaded) {
+      hasFirstWindowLoaded = true
+      app.emit('custom-ready-to-show')
+    }
+  })
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
