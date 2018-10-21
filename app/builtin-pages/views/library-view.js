@@ -1645,6 +1645,11 @@ async function onChangeSyncDirectory () {
   let localSyncPath = res.path
 
   try {
+    // always enable preview-mode
+    previewMode = true
+    await beaker.archives.setUserSettings(archive.url, {previewMode})
+    Object.assign(archive.info.userSettings, {previewMode})
+    // set folder
     await beaker.archives.setLocalSyncPath(archive.url, localSyncPath)
   } catch (e) {
     toplevelError = createToplevelError(e)
