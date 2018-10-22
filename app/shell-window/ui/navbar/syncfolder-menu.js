@@ -34,7 +34,7 @@ export class SyncfolderMenuNavbarBtn {
     // render btn
     return yo`
       <div class="toolbar-dropdown-menu syncfolder-dropdown-menu">
-        <button class="btn nofocus ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
+        <button class="callout light ${this.isDropdownOpen ? 'pressed' : ''}" onclick=${e => this.onClickBtn(e)} title="Menu">
           <span>${localSyncPath}</span>
           <span class="fa fa-caret-down"></span>
         </button>

@@ -410,10 +410,10 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${!isLocationHighlighted ? [
+          datBtns,
           syncfolderMenuNavbarBtn.render(),
           liveReloadBtn,
           donateBtn,
-          datBtns,
           page ? page.datsiteMenuNavbarBtn.render() : undefined,
           pageMenuNavbarBtn.render(),
           bookmarkMenuNavbarBtn.render()
