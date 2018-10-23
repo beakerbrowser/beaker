@@ -1,0 +1,106 @@
+.muted {
+  color: gray;
+}
+
+.thin {
+  font-weight: 300;
+}
+
+.icon-info {
+  color: transparent;
+  -webkit-text-stroke: 1px #333;
+}
+
+.header {
+  display: flex;
+  font-weight: 400;
+  border-bottom: 1px solid #ccc;
+  font-size: 13px;
+  height: 30px;
+
+  .site-info {
+    padding: 0.5rem;
+  }
+
+  .file-info {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .btn {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    background: #eee;
+  }
+}
+
+.layout-wrapper {
+  display: flex;
+  height: 100%;
+}
+.layout-nav {
+  width: 200px;
+  background: #f6f6f9;
+}
+#editor-container {
+  //position: relative;
+  flex: 1;
+  height: 100%;
+}
+
+.sitetitle {
+  font-size: 11px;
+  padding: 0.5rem;
+  background: #e0e0e6;
+  text-transform: uppercase;
+  font-weight: 500;
+  height: 35px;
+}
+
+.filetree {
+  font-size: 13px;
+  color: #444;
+  height: 100vh;
+  overflow: scroll;
+  padding: 10px;
+}
+.subtree {
+  padding-left: 1em;
+}
+.filetree .item {
+  padding: 5px 5px 5px 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+
+  i {
+    padding: 0;
+    margin: 0;
+    margin-right: 5px;
+  }
+
+  span {
+    margin-left: 5px;
+  }
+}
+.filetree .item:hover {
+  background: #ededf0;
+}
+.filetree .folder {
+  position: relative;
+}
+.filetree .folder > .icon-down-dir,
+.filetree .folder > .icon-right-dir {
+  font-size: 17px;
+  position: absolute;
+  left: 8px;
+  top: 3px;
+}
+.filetree .item.selected {
+  background: #4766ff;
+  color: #fff;
+}
