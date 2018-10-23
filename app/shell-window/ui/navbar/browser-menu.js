@@ -13,7 +13,7 @@ import * as pages from '../../pages'
 
 export class BrowserMenuNavbarBtn {
   constructor () {
-    const isDarwin = os.platform() === 'darwin'
+    const isDarwin = beaker.browser.getInfo().platform === 'darwin'
     const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
     this.accelerators = {
       newWindow: cmdOrCtrlChar + 'N',
@@ -23,20 +23,16 @@ export class BrowserMenuNavbarBtn {
       openFile: cmdOrCtrlChar + 'O'
     }
 
-    this.submenu
+    this.submenu = ''
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
     this.shouldPersistDownloadsIndicator = false
+    this.browserInfo = beaker.browser.getInfo()
 
     // fetch current downloads
     beaker.downloads.getDownloads().then(ds => {
       this.downloads = ds
-      this.updateActives()
-    })
-
-    beaker.browser.getInfo().then(info => {
-      this.browserInfo = info
       this.updateActives()
     })
 
@@ -103,7 +99,6 @@ export class BrowserMenuNavbarBtn {
             </div>
           </div>
         </div>`
-
     } else if (this.isDropdownOpen) {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
@@ -137,6 +132,11 @@ export class BrowserMenuNavbarBtn {
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
                 <i class="fa fa-book"></i>
                 <span class="label">Library</span>
+              </div>
+              
+              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://watchlist')}>
+                <i class="fa fa-eye"></i>
+                <span class="label">Watchlist</span>
               </div>
 
               <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
@@ -230,7 +230,7 @@ export class BrowserMenuNavbarBtn {
     )
   }
 
-  onShowSubmenu(submenu) {
+  onShowSubmenu (submenu) {
     this.submenu = submenu
     this.updateActives()
   }
@@ -357,8 +357,7 @@ export class BrowserMenuNavbarBtn {
     this.updateActives()
 
     // ask user for files
-    const browserInfo = await beaker.browser.getInfo()
-    const filesOnly = browserInfo.platform === 'linux'
+    const filesOnly = this.browserInfo.platform === 'linux' || this.browserInfo.platform === 'win32'
     const files = await beaker.browser.showOpenDialog({
       title: 'Select files to share',
       buttonLabel: 'Share files',
@@ -368,7 +367,7 @@ export class BrowserMenuNavbarBtn {
 
     // create the dat and import the files
     const archive = await DatArchive.create({
-      title: `Shared files (${moment().format("M/DD/YYYY h:mm:ssa")})`,
+      title: `Shared files (${moment().format('M/DD/YYYY h:mm:ssa')})`,
       description: `Files shared with Beaker`,
       prompt: false
     })

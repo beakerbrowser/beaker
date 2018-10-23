@@ -1,4 +1,4 @@
-/* globals DatArchive beaker hljs confirm */
+/* globals DatArchive beaker hljs confirm sessionStorage location alert history */
 
 import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
@@ -7,34 +7,46 @@ import {FSArchive} from 'beaker-virtual-fs'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import parseDatURL from 'parse-dat-url'
 import {diffLines} from '@beaker/dat-archive-file-diff'
+import {pluralize, shortenHash} from '@beaker/core/lib/strings'
 import _get from 'lodash.get'
 import throttle from 'lodash.throttle'
 import dragDrop from 'drag-drop'
 import {join as joinPaths} from 'path'
-import FilesBrowser from '../com/files-browser2'
-import toggleable from '../com/toggleable'
+import FilesBrowser from '../com/files-browser/files-browser'
+import {
+  setup as setupAce,
+  isSetup as isAceSetup,
+  config as configureAce,
+  getValue as getAceValue,
+  setValue as setAceValue
+} from '../com/files-browser/file-editor'
 import toggleable2, {closeAllToggleables} from '../com/toggleable2'
 import renderPeerHistoryGraph from '../com/peer-history-graph'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import * as noticeBanner from '../com/notice-banner'
-import * as localSyncPathPopup from '../com/library-localsyncpath-popup'
-import * as copyDatPopup from '../com/library-copydat-popup'
-import * as createFilePopup from '../com/library-createfile-popup'
-import renderFaviconPicker from '../com/favicon-picker'
+import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
+import * as copyDatPopup from '../com/library/copydat-popup'
+import * as createFilePopup from '../com/library/createfile-popup'
 import renderBackLink from '../com/back-link'
+import renderArchiveHistory from '../com/archive/archive-history'
 import {RehostSlider} from '../../lib/fg/rehost-slider'
-import LibraryViewCompare from '../com/library-view-compare'
-import LibraryViewLocalCompare from '../com/library-view-local-compare'
-import renderSettingsField from '../com/settings-field'
-import {setup as setupAce, isSetup as isAceSetup, config as configureAce, getValue as getAceValue, setValue as setAceValue} from '../com/file-editor'
-import {pluralize, shortenHash} from '@beaker/core/lib/strings'
+import LibraryViewCompare from '../com/library/view-compare'
+import LibraryViewLocalCompare from '../com/library/view-local-compare'
+import renderSettingsField from '../com/settings/settings-field'
+import renderFaviconPicker from '../com/settings/favicon-picker'
 import {writeToClipboard, findParent} from '../../lib/fg/event-handlers'
 import createMd from '../../lib/fg/markdown'
 
-const MIN_SHOW_NAV_ARCHIVE_TITLE = [52/*no description*/, 90/*with description*/] // px
+const MIN_SHOW_NAV_ARCHIVE_TITLE = [
+  52, // px, no description
+  90 // px, with description
+]
 const LOCAL_DIFF_POLL_INTERVAL = 10e3 // ms
 const NETWORK_STATS_POLL_INTERVAL = 2e3 // ms
+
+// for developers who want to work in devtools
+const DEBUG_DISABLE_LIVE_UI_UPDATES = ('DEBUG_DISABLE_LIVE_UI_UPDATES' in sessionStorage)
 
 // globals
 // =
@@ -69,6 +81,7 @@ var oldLocalSyncPath = ''
 var faviconCacheBuster
 var suppressFileChangeEvents = false
 var shouldAlwaysShowPreviewToggle = false // a hack to keep the preview toggle in the files view after click
+var isHistoricalVersion = false
 
 // HACK
 // Linux is not capable of importing folders and files in the same dialog
@@ -77,6 +90,9 @@ var shouldAlwaysShowPreviewToggle = false // a hack to keep the preview toggle i
 // -prf
 window.OS_CAN_IMPORT_FOLDERS_AND_FILES = true
 
+// which should we use in keybindings?
+var osUsesMetaKey = false
+
 // capture the throttled version (onFilesChanged's declaration is hoisted from later in the file)
 const onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
 
@@ -84,7 +100,8 @@ const onFilesChangedThrottled = throttle(onFilesChanged, 1e3)
 // =
 
 async function setupWorkingCheckout () {
-  if (archive.url.indexOf('+') !== -1) {
+  var vi = archive.url.indexOf('+')
+  if (vi !== -1) {
     if (archive.url.endsWith('+latest')) {
       // HACK
       // use +latest to show latest
@@ -93,6 +110,12 @@ async function setupWorkingCheckout () {
     } else {
       // use given version
       workingCheckout = archive
+    }
+
+    var version = archive.url.slice(vi + 1)
+    // is the version a number?
+    if (version == +version) {
+      isHistoricalVersion = true
     }
   } else if (_get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
     // HACK
@@ -113,8 +136,9 @@ async function setup () {
 
   try {
     // load platform info
-    let browserInfo = await beaker.browser.getInfo()
+    let browserInfo = beaker.browser.getInfo()
     window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
+    osUsesMetaKey = browserInfo.platform === 'darwin'
 
     // load data
     let url = await parseLibraryUrl()
@@ -167,6 +191,7 @@ async function setup () {
 
     // wire up events
     window.addEventListener('popstate', onPopState)
+    window.addEventListener('beforeunload', onBeforeUnload)
     document.body.addEventListener('click', onClickAnywhere)
     archive.progress.addEventListener('changed', throttle(onProgressUpdate, 2e3))
     document.body.addEventListener('custom-create-file', onCreateFile)
@@ -183,27 +208,26 @@ async function setup () {
     document.body.addEventListener('custom-finish-publish', onFinishPublish)
     document.body.addEventListener('custom-local-diff-changed', loadDiffSummary)
     document.body.addEventListener('custom-open-preview-dat', onOpenPreviewDat)
-    document.body.addEventListener(
-      'custom-open-local-folder',
-      function (e) {
-        onOpenFolder(e.detail.path)
-      }
-    )
-    beaker.archives.addEventListener('updated', onArchiveUpdated)
-    beaker.archives.addEventListener('network-changed', onNetworkChanged)
-    beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
+    document.body.addEventListener('custom-open-local-folder', e => onOpenFolder(e.detail.path))
+    document.body.addEventListener('keydown', onGlobalKeydown)
 
-    setInterval(updateNetworkStats, NETWORK_STATS_POLL_INTERVAL)
-    setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
-    window.addEventListener('focus', loadDiffSummary)
+    if (!DEBUG_DISABLE_LIVE_UI_UPDATES) {
+      beaker.archives.addEventListener('updated', onArchiveUpdated)
+      beaker.archives.addEventListener('network-changed', onNetworkChanged)
+      beaker.archives.addEventListener('folder-sync-error', onFolderSyncError)
 
-    var fileActStream = archive.watch()
-    fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
-    fileActStream.addEventListener('changed', onFilesChangedThrottled)
-    if (_get(archive, 'info.userSettings.previewMode')) {
-      fileActStream = workingCheckout.watch()
+      setInterval(updateNetworkStats, NETWORK_STATS_POLL_INTERVAL)
+      setInterval(loadDiffSummary, LOCAL_DIFF_POLL_INTERVAL)
+      window.addEventListener('focus', loadDiffSummary)
+
+      var fileActStream = archive.watch()
       fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
       fileActStream.addEventListener('changed', onFilesChangedThrottled)
+      if (_get(archive, 'info.userSettings.previewMode')) {
+        fileActStream = workingCheckout.watch()
+        fileActStream.addEventListener('invalidated', onFilesChangedThrottled)
+        fileActStream.addEventListener('changed', onFilesChangedThrottled)
+      }
     }
   } catch (e) {
     console.error('Load error', e)
@@ -246,7 +270,7 @@ async function loadDiffSummary () {
     } catch (e) {
       console.warn('Failed to load local diff', e)
     }
-    rerenderLocalDiffSummary()
+    rerenderVersionPicker()
   }
 }
 
@@ -441,17 +465,17 @@ function renderHeader () {
                 ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
               </div>
 
-              ${hasDescription
-                ? yo`<p class="description">${archive.info.description}</p>`
-                : ''
-              }
-
               <div class="primary-action">
                 ${renderSeedMenu()}
                 ${renderShareMenu()}
                 ${renderMenu()}
               </div>
             </div>
+
+            ${hasDescription
+              ? yo`<p class="description">${archive.info.description}</p>`
+              : ''
+            }
           </div>`
         : ''
       }
@@ -642,7 +666,7 @@ function renderFilesView () {
   return yo`
     <div class="container">
       <div class="view files">
-        ${renderLocalDiffSummary()}
+        ${renderVersionPicker()}
         ${filesBrowser ? filesBrowser.render() : ''}
         ${readmeElement ? readmeElement : renderReadmeHint()}
         ${!_get(archive, 'info.isOwner') ? renderMakeCopyHint() : ''}
@@ -651,20 +675,20 @@ function renderFilesView () {
   `
 }
 
-function rerenderLocalDiffSummary () {
-  var el = document.getElementById('local-path-and-preview-tools')
+function rerenderVersionPicker () {
+  var el = document.getElementById('library-version-picker')
   if (!el) return
-  yo.update(el, renderLocalDiffSummary())
+  yo.update(el, renderVersionPicker())
 }
 
-function renderLocalDiffSummary () {
-  const isSaved = _get(archive, 'info.userSettings.isSaved')
-  if (!_get(archive, 'info.isOwner') || !isSaved) {
-    return yo`<div id="local-path-and-preview-tools empty"></div>`
+function renderVersionPicker () {
+  if (!_get(archive, 'info.userSettings.isSaved')) {
+    return ''
   }
 
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
+  const isOwner = _get(archive, 'info.isOwner')
   const previewMode = _get(archive, 'info.userSettings.previewMode')
+  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
   const total = localDiffSummary ? (localDiffSummary.add + localDiffSummary.mod + localDiffSummary.del) : 0
 
   function rRevisionIndicator (type) {
@@ -672,59 +696,74 @@ function renderLocalDiffSummary () {
     return yo`<div class="revision-indicator ${type}"></div>`
   }
 
-  if (!syncPath && !previewMode) {
-    // DEBUG
-    return yo`<div id="local-path-and-preview-tools empty"></div>`
+  var versionPicker
+  var version = 'latest'
+  var link = ''
+  var syncPathCtrl = ''
+  var vi = workingCheckout.url.indexOf('+')
+  if (vi !== -1) {
+    version = workingCheckout.url.slice(vi + 1)
+  }
 
-    if (isLocalPathPromptDismissed()) {
-      return yo`<div id="local-path-and-preview-tools empty"></div>`
-    }
-    return yo`
-      <div id="local-path-and-preview-tools" class="setup-tip">
+  // is the version a number?
+  if (version == +version) {
+    link = yo`<a href="beaker://library/${archive.checkout('latest').url}">View latest</a>`
+    version = `v${version}`
+  } else if (syncPath) {
+    syncPathCtrl = yo`<button class="btn plain sync-path-btn" onclick=${onSyncPathContextMenu}>${syncPath}</button>`
+  }
+
+  const button = (onToggle) =>
+    yo`
+      <button
+        class="btn sync-path-link"
+        onclick=${onToggle}>
         <div>
-          <i class="fa fa-lightbulb-o"></i>
-          <strong>Tip:</strong>
-          Set a local folder to access this site${"'"}s files from outside of the browser.
+          Version:
+          <strong>${version}</strong>
         </div>
-        <button class="btn primary" onclick=${onChangeSyncDirectory}>Set a local folder</button>
-        <button class="btn transparent" onclick=${onDismissLocalPathPrompt}>Dismiss</button>
-      </div>`
-  }
+        <span class="fa fa-angle-down"></span>
+      </button>
+    `
 
-  var pathCtrls
-  if (syncPath) {
-    pathCtrls = yo`
-      <div class="path">
-        <button class="btn sync-path-link" onclick=${onSyncPathContextMenu}>
-          ${syncPath} <i class="fa fa-angle-down"></i>
-        </button>
+  let filePath = '/' + window.location.pathname.split('/').slice(4).join('/')
+  versionPicker = toggleable2({
+    id: 'version-picker',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker-ctrl">
+        ${button(onToggle)}
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker-ctrl">
+        ${button(onToggle)}
+        <div class="dropdown-items left">
+          ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode})}
+        </div>
       </div>`
-  } else {
-    pathCtrls = yo`<div class="path">Preview mode</div>`
-  }
+  })
 
-  var previewCtrls = ''
-  if (previewMode && !shouldAlwaysShowPreviewToggle) {
+  var previewCtrls
+  if (!isOwner) {
+    previewCtrls = ''
+  } else if (previewMode && !shouldAlwaysShowPreviewToggle) {
     previewCtrls = [
       total
-        ? [
-          yo`
-            <a
-              class="btn revisions-btn tooltip-container"
-              href=${`beaker://library/${archive.url}#local-compare`}
-              onclick=${e => onChangeView(e, 'local-compare')}>
-                ${rRevisionIndicator('add')}
-                ${rRevisionIndicator('mod')}
-                ${rRevisionIndicator('del')}
-                <span class="text">
-                  Review ${total} ${pluralize(total, 'change')}
-                </span>
-            </a>`
-          ]
-        : yo`<em class="no-revisions">No unpublished changes</em>`,
+        ? yo`
+          <a
+            class="btn revisions-btn tooltip-container"
+            href=${`beaker://library/${archive.url}#local-compare`}
+            onclick=${e => onChangeView(e, 'local-compare')}>
+              ${rRevisionIndicator('add')}
+              ${rRevisionIndicator('mod')}
+              ${rRevisionIndicator('del')}
+              <span class="text">
+                Review ${total} ${pluralize(total, 'change')}
+              </span>
+          </a>`
+        : '',
       yo`
         <a
-          class="btn primary tooltip-container"
+          class="btn primary tooltip-container open-preview-btn"
           href=${archive.url + '+preview'}
           data-tooltip="Preview unpublished changes"
           onclick=${onOpenPreviewDat}>
@@ -732,9 +771,9 @@ function renderLocalDiffSummary () {
             Open preview
         </a>`
     ]
-  } else {
+  } else if (version === 'preview' || version === 'latest') {
     previewCtrls = yo`
-      <div class="input-group radiolist sub-item">
+      <div class="input-group radiolist sub-item preview-mode-toggle">
         <label class="toggle">
           <input
             type="checkbox"
@@ -753,8 +792,11 @@ function renderLocalDiffSummary () {
   }
 
   return yo`
-    <div id="local-path-and-preview-tools">
-      ${pathCtrls}
+    <div id="library-version-picker">
+      ${versionPicker}
+      ${link}
+      ${syncPathCtrl}
+      <div class="spacer"></div>
       ${previewCtrls}
     </div>`
 }
@@ -770,6 +812,7 @@ function renderMakeCopyHint () {
 }
 
 function renderReadmeHint () {
+  if (isHistoricalVersion) return ''
   if (!_get(archive, 'info.isOwner')) return ''
   var currentNode = filesBrowser.getCurrentSource()
   if (currentNode && currentNode.parent) return '' // only at root
@@ -863,7 +906,7 @@ function renderSettingsView () {
 
   return yo`
     <div class="container">
-      ${renderBackLink()}
+      ${renderBackLink('#', 'Back')}
 
       ${isOwner
         ? yo`
@@ -1056,7 +1099,7 @@ function renderNetworkView () {
 
   return yo`
     <div class="container">
-      ${renderBackLink()}
+      ${renderBackLink('#', 'Back')}
 
       <div class="view network">
         <h1>Network activity</h1>
@@ -1227,7 +1270,6 @@ function renderLocalCompareView () {
       </div>
     </div>`
 }
-
 
 function renderToolbar () {
   var peerCount = _get(archive, 'info.peers', 0)
@@ -1429,13 +1471,21 @@ async function onChangeView (e, view) {
     e.stopPropagation()
   }
 
+  // prompt on navigations away from the editor
+  if (isAceSetup() && filesBrowser.isEditMode) {
+    if (!confirm('You have unsaved changes. Are you sure you want to navigate away?')) {
+      return
+    }
+  }
+
   // update state
   if (!view) {
     activeView = e.detail.view
     window.history.pushState('', {}, e.detail.href)
   } else {
     activeView = view
-    window.history.pushState('', {}, e ? e.currentTarget.getAttribute('href') : view)
+    let url = e ? e.currentTarget.getAttribute('href') : `${location.origin}${location.pathname}#${view}`
+    window.history.pushState('', {}, url)
   }
 
   if (activeView === 'files' && archiveFsRoot) {
@@ -1460,6 +1510,25 @@ function onFinishPublish () {
   // now that publish finished, load the diff summary
   isPublishingLocalDiff = false
   loadDiffSummary()
+}
+
+function onGlobalKeydown (e) {
+  if (!filesBrowser.isEditMode) return // only run when editing a file
+  var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
+  // cmd/ctrl + s
+  if (ctrlOrMeta && e.keyCode == 83) {
+    onSaveFileEditorContent(e) // save file
+    onCloseFileEditor(e) // close editor
+    // prevent saving the webpage from happening
+    e.preventDefault()
+    e.stopPropagation()
+  }
+  // escape
+  if (e.keyCode == 27) {
+    onCloseFileEditor(e)
+    e.preventDefault()
+    e.stopPropagation()
+  }
 }
 
 async function onOpenPreviewDat (e) {
@@ -1576,6 +1645,11 @@ async function onChangeSyncDirectory () {
   let localSyncPath = res.path
 
   try {
+    // always enable preview-mode
+    previewMode = true
+    await beaker.archives.setUserSettings(archive.url, {previewMode})
+    Object.assign(archive.info.userSettings, {previewMode})
+    // set folder
     await beaker.archives.setLocalSyncPath(archive.url, localSyncPath)
   } catch (e) {
     toplevelError = createToplevelError(e)
@@ -1583,7 +1657,6 @@ async function onChangeSyncDirectory () {
     return
   }
 
-  setLocalPathPromptDismissed()
   await setup()
   onOpenFolder(localSyncPath)
   render()
@@ -1689,7 +1762,13 @@ async function onDeleteFile (e) {
   }
 }
 
-function onOpenFileEditor (e) {
+async function onOpenFileEditor () {
+  var currentNode = filesBrowser.getCurrentSource()
+  if (currentNode) {
+    await currentNode.readData({ignoreCache: true})
+    setAceValue(currentNode.preview)
+  }
+
   // update the UI
   filesBrowser.isEditMode = true
   render()
@@ -1735,7 +1814,7 @@ async function onSaveFileEditorContent (e) {
       // delete the old file
       await workingCheckout.unlink(currentNode._path)
     }
-    toast.create('Saved')
+    toast.create('Saved', 'success')
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
@@ -1806,32 +1885,17 @@ function onSyncPathContextMenu (e) {
     withTriangle: true,
     items: [
       {icon: 'folder-o', label: 'Open folder', click: () => onOpenFolder(syncPath)},
-      {icon: 'clipboard', label: 'Copy path', click: () => {
-        writeToClipboard(syncPath)
-        toast.create('Path copied to clipboard')
-      }},
-      {icon: 'wrench', label: 'Configure', click: () => onChangeView(null, 'settings') }
+      {
+        icon: 'clipboard',
+        label: 'Copy path',
+        click: () => {
+          writeToClipboard(syncPath)
+          toast.create('Path copied to clipboard')
+        }
+      },
+      {icon: 'wrench', label: 'Configure', click: () => onChangeView(null, 'settings')}
     ]
   })
-}
-
-function isLocalPathPromptDismissed () {
-  return localStorage['local-path-prompt-dismissed:' + archive.key] === '1'
-}
-
-function setLocalPathPromptDismissed () {
-  localStorage['local-path-prompt-dismissed:' + archive.key] = '1'
-}
-
-function onDismissLocalPathPrompt (e) {
-  e.preventDefault()
-  setLocalPathPromptDismissed()
-
-  // trigger a dismiss animation
-  var el = document.getElementById('local-path-and-preview-tools')
-  if (!el) return
-  el.style.opacity = 0
-  setTimeout(() => el.remove(), 200)
 }
 
 async function onFilesChanged () {
@@ -1844,7 +1908,7 @@ async function onFilesChanged () {
     currentNode.preview = undefined // have the preview reload
     await currentNode.readData()
     filesBrowser.rerender()
-    if (!!currentNode.preview) {
+    if (currentNode.preview) {
       if (!isAceSetup()) {
         // make sure the editor is setup
         // (sometimes there is a race condition that necessitates this)
@@ -1940,8 +2004,23 @@ function onClickAnywhere (e) {
   }
 }
 
+var ignorePopCount = 0 // used to correctly ignore the .go(1)
 function onPopState (e) {
+  if (isAceSetup() && filesBrowser.isEditMode && ignorePopCount === 0) {
+    if (!confirm('You have unsaved changes. Are you sure you want to navigate away?')) {
+      ignorePopCount++
+      history.go(1)
+      return
+    }
+  }
+  ignorePopCount = Math.max(ignorePopCount - 1, 0)
   readViewStateFromUrl()
+}
+
+function onBeforeUnload (e) {
+  if (isAceSetup() && filesBrowser.isEditMode) {
+    e.returnValue = 'You have unsaved changes. Are you sure you want to navigate away?'
+  }
 }
 
 // helpers
@@ -2027,7 +2106,7 @@ async function setManifestValue (attr, value) {
 function isNavCollapsed ({ignoreScrollPosition} = {}) {
   if (!ignoreScrollPosition) {
     var main = document.body.querySelector('.builtin-main')
-    var hasDescription = (!!_get(archive, 'info.description')) ? 1 : 0
+    var hasDescription = (_get(archive, 'info.description')) ? 1 : 0
     if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
       // certain distance scrolled
       return true

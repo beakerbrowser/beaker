@@ -1,4 +1,4 @@
-/* globals DatArchive location */
+/* globals location fetch */
 
 import createMd from './lib/fg/markdown'
 
@@ -35,9 +35,8 @@ if (!document.querySelector('main')) {
   renderNav()
   async function renderNav () {
     var navHTML
-    var self = new DatArchive(location.toString())
     try {
-      var navMD = await self.readFile('/nav.md')
+      var navMD = await (await fetch('/nav.md')).text()
       navHTML = md.render(navMD)
       document.querySelector('nav').innerHTML = navHTML
     } catch (e) {

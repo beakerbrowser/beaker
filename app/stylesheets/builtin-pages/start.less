@@ -7,7 +7,6 @@
 @import "../components/link";
 @import "../components/messages";
 @import "./components/links-list";
-@import "./components/help-tips";
 @import "./components/onboarding-popup";
 
 .window-content.start {
@@ -26,18 +25,24 @@
   width: 100%;
   background: #f0f0f0;
 
-  .beta-info {
-    &:extend(.flex);
+  .motd {
+    display: flex;
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
     align-items: center;
-    max-width: 600px;
-    margin: auto;
-    margin-top: 70px;
     background: #8257cf;
     color: #fff;
     -webkit-font-smoothing: antialiased;
     font-weight: 600;
     border-radius: 2px;
     padding: 7px 15px;
+    white-space: nowrap;
+
+    &:empty {
+      display: none;
+    }
 
     > i {
       margin-right: 10px;
@@ -48,13 +53,18 @@
       margin: 0;
     }
 
-    a {
-      text-decoration: underline;
+    .icon {
+      margin-right: 12px;
     }
 
     .btn {
       color: inherit;
-      margin-left: auto;
+
+      &.cta {
+        border: 1px solid #fff;
+        margin: 0 12px;
+        font-weight: inherit;
+      }
     }
   }
 
@@ -164,6 +174,11 @@
       cursor: pointer;
       margin-bottom: 0;
       padding: 3px 7px;
+      font-weight: 400;
+      font-size: .7rem;
+      text-transform: uppercase;
+      letter-spacing: .15px;
+      color: rgba(0,0,0,.75);
 
       &:not(:last-child) {
         margin-right: 25px;

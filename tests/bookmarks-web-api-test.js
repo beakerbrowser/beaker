@@ -19,6 +19,7 @@ const app = browserdriver.start({
   }
 })
 test.before(async t => {
+  console.log('starting bookmarks-web-api-test')
   await app.isReady
 })
 test.after.always('cleanup', async t => {

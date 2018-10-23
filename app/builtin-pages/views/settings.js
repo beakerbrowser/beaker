@@ -2,7 +2,7 @@
 
 import yo from 'yo-yo'
 import * as toast from '../com/toast'
-import DatNetworkActivity from '../com/dat-network-activity'
+import DatNetworkActivity from '../com/settings/dat-network-activity'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
@@ -29,7 +29,7 @@ async function setup () {
   window.addEventListener('popstate', onPopState)
 
   // fetch data
-  browserInfo = await beaker.browser.getInfo()
+  browserInfo = beaker.browser.getInfo()
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
   // applications = await beaker.apps.list(0) TODO(apps) restore when we bring back apps -prf
@@ -108,6 +108,7 @@ function renderGeneral () {
       ${renderAutoUpdater()}
       ${renderDefaultSyncPathSettings()}
       ${renderProtocolSettings()}
+      ${renderDefaultToDatSetting()}
       ${renderOnStartupSettings()}
       ${renderDatSettings()}
       ${renderDefaultDatIgnoreSettings()}
@@ -204,7 +205,6 @@ function renderDatSettings () {
       </div>
     </div>
   `
-
 }
 
 function renderDefaultDatIgnoreSettings () {
@@ -318,6 +318,22 @@ function renderProtocolSettings () {
           </span>
         </label>`
       )}
+    </div>`
+}
+
+function renderDefaultToDatSetting () {
+  return yo`
+    <div class="section default-to-dat">
+      <h2 id="protocol" class="subtitle-heading">Default redirect to dat</h2>
+
+      <label class="toggle">
+        <input checked=${isAutoRedirectEnabled()} type="checkbox" onchange=${onToggleAutoRedirect} />
+
+        <div class="switch"></div>
+        <span class="text">
+          Automatically redirect to dat:// when available
+        </span>
+      </label>
     </div>`
 }
 
@@ -475,6 +491,12 @@ function onClickCheckPrereleases (e) {
   beaker.browser.checkForUpdates({prerelease: true})
 }
 
+function onToggleAutoRedirect () {
+  settings.auto_redirect_to_dat = isAutoRedirectEnabled() ? 0 : 1
+  renderToPage()
+  beaker.browser.setSetting('auto_redirect_to_dat', settings.auto_redirect_to_dat)
+}
+
 function onToggleAutoUpdate () {
   settings.auto_update_enabled = isAutoUpdateEnabled() ? 0 : 1
   renderToPage()
@@ -541,4 +563,8 @@ function setViewFromHash () {
 
 function isAutoUpdateEnabled () {
   return +settings.auto_update_enabled === 1
+}
+
+function isAutoRedirectEnabled () {
+  return +settings.auto_redirect_to_dat === 1
 }

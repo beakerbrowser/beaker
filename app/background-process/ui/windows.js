@@ -1,6 +1,6 @@
 import * as beakerCore from '@beaker/core'
 import {app, BrowserWindow, ipcMain, webContents, dialog} from 'electron'
-import {register as registerShortcut, unregister as unregisterShortcut, unregisterAll as unregisterAllShortcuts} from 'electron-localshortcut'
+import {register as registerShortcut, unregister as unregisterShortcut} from '@beaker/electron-localshortcut'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
 import jetpack from 'fs-jetpack'
@@ -20,8 +20,10 @@ let numActiveWindows = 0
 let firstWindow = null
 let sessionWatcher = null
 let focusedDevtoolsHost
+let hasFirstWindowLoaded = false
 const BROWSING_SESSION_PATH = './shell-window-state.json'
 const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
+const PRELOAD_PATH = path.join(__dirname, 'shell-window.build.js')
 
 // exported methods
 // =
@@ -92,7 +94,7 @@ export async function setup () {
   let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
   let isOpenUrlEnvVar = !!beakerCore.getEnvVar('BEAKER_OPEN_URL')
 
-  if (!isTestDriverActive && !isOpenUrlEnvVar && (customStartPage === 'previous' || !previousSessionState.cleanExit && userWantsToRestoreSession())) {
+  if (!isTestDriverActive && !isOpenUrlEnvVar && (customStartPage === 'previous' || (!previousSessionState.cleanExit && userWantsToRestoreSession()))) {
     // restore old window
     restoreBrowsingSession(previousSessionState)
   } else {
@@ -133,6 +135,8 @@ export function createShellWindow (windowState) {
     backgroundColor: '#ddd',
     defaultEncoding: 'UTF-8',
     webPreferences: {
+      sandbox: true,
+      preload: PRELOAD_PATH,
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       allowRunningInsecureContent: false,
       nativeWindowOpen: true
@@ -140,14 +144,31 @@ export function createShellWindow (windowState) {
     icon: ICON_PATH,
     show: false // will show when ready
   })
-  win.once('ready-to-show', () => win.show())
+  win.once('ready-to-show', () => {
+    win.show()
+    if (!hasFirstWindowLoaded) {
+      hasFirstWindowLoaded = true
+      app.emit('custom-ready-to-show')
+    }
+  })
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
 
+  let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
   function handlePagesReady ({ sender }) {
     if (win && !win.isDestroyed() && sender === win.webContents) {
       win.webContents.send('command', 'initialize', state.pages)
+      if (isTestDriverActive) {
+        // HACK
+        // For some reason, when the sandbox is enabled, executeJavaScript doesnt work in the browser window until the devtools are opened.
+        // Since it's kind of handy to have the devtools open anyway, open them automatically when tests are running.
+        // No, I am not above this.
+        // -prf
+        setTimeout(() => {
+          win.webContents.openDevTools()
+        }, 1e3)
+      }
     }
   }
 
@@ -171,7 +192,7 @@ export function createShellWindow (windowState) {
   registerShortcut(win, 'Ctrl+PageDown', onNextTab(win))
   registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
   registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
-  registerShortcut(win, 'alt+d', onFocusLocation(win))
+  registerShortcut(win, 'Alt+D', onFocusLocation(win))
 
   // register event handlers
   win.on('browser-backward', onGoBack(win))
@@ -299,9 +320,6 @@ function onClosed (win) {
 
     // deny any outstanding permission requests
     permissions.denyAllRequests(win)
-
-    // unregister shortcuts
-    unregisterAllShortcuts(win)
   }
 }
 

@@ -22,6 +22,7 @@ var createdDatUrl
 var mainTab
 
 test.before(async t => {
+  console.log('starting experimental-global-fetch-web-api-test')
   await app.isReady
 
   // create the test archive

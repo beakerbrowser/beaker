@@ -8,11 +8,10 @@ import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import * as toast from '../toast'
 import toggleable2 from '../toggleable2'
-import renderArchiveHistory from '../archive-history'
 import {DAT_VALID_PATH_REGEX} from '@beaker/core/lib/const'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
-import renderFilePreview from '../file-preview'
-import {render as renderFileEditor} from '../file-editor'
+import renderFilePreview from './file-preview'
+import {render as renderFileEditor} from './file-editor'
 import {shorten, pluralize} from '../../../lib/strings'
 
 // exported api
@@ -69,7 +68,10 @@ function rVersion (filesBrowser, currentSource) {
   var previewMode = _get(archive, 'info.userSettings.previewMode', false)
   var version = 'latest'
   var vi = archive.url.indexOf('+')
-  if (vi !== -1) version = archive.url.slice(vi + 1)
+  if (vi !== -1) {
+    version = archive.url.slice(vi + 1)
+  }
+  // is the version a number?
   if (version == +version) {
     version = `v${version}`
   }
@@ -78,34 +80,14 @@ function rVersion (filesBrowser, currentSource) {
     if (previewMode && version !== 'preview') {
       return yo`
         <div class="warning">
-          Warning: you are editing the live version of the site.
+          * You are editing the live version of this file.
           <a class="link" href="beaker://library/${archive.checkout('preview').url}${currentSource._path}">
-            Goto preview
+            Edit preview
           </a>
         </div>`
     }
     return ''
   }
-
-  var path = currentSource ? currentSource._path : ('/' + getNotfoundPathnameFromUrl())
-  const button = (onToggle) => yo`
-    <button class="btn plain nofocus tooltip-container" onclick=${onToggle} data-tooltip="Select version">
-      <span class="fa fa-history"></span> ${version}
-    </button>`
-  return toggleable2({
-    id: 'version-picker',
-    closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker">
-        ${button(onToggle)}
-      </div>`,
-    open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker">
-        ${button(onToggle)}
-        <div class="dropdown-items left">
-          ${renderArchiveHistory(filesBrowser.root._archive, {includePreview: previewMode, path})}
-        </div>
-      </div>`
-  })
 }
 
 function rMetadata (filesBrowser, node) {
@@ -145,7 +127,23 @@ function rActions (filesBrowser, currentSource) {
   var isEditing = filesBrowser.isEditMode
   var buttonGroup = []
 
-  if (currentSource.isEditable && !isEditing && currentSource.type === 'file') {
+  var isHistoricalVersion = false
+  var version
+  var vi = currentSource._archive.url.indexOf('+')
+  if (vi !== -1) {
+    version = currentSource._archive.url.slice(vi + 1)
+  }
+  // is the version a number?
+  if (version == +version) {
+    isHistoricalVersion = true
+  }
+
+  if (
+    currentSource.isEditable &&
+    !isHistoricalVersion &&
+    !isEditing &&
+    currentSource.type === 'file'
+  ) {
     buttonGroup.push(
       yo`
         <button class="action btn trash nofocus tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, currentSource)}>
@@ -173,7 +171,7 @@ function rActions (filesBrowser, currentSource) {
         <i class="fa fa-download"></i>
       </a>
 
-      ${currentSource.isEditable && (currentSource.type !== 'file')
+      ${currentSource.isEditable && !isHistoricalVersion && currentSource.type !== 'file'
         ?
           toggleable2({
             id: 'folder-actions-dropdown',
@@ -368,9 +366,10 @@ function rContainer (filesBrowser, node, depth) {
   let children = ''
 
   return [
-    yo`<div
+    yo`<a
       class="item folder"
       title=${node.name}
+      href=${node.url}
       onclick=${e => onClickNode(e, filesBrowser, node)}
       oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
     >
@@ -378,16 +377,17 @@ function rContainer (filesBrowser, node, depth) {
       <div class="name-container"><div class="name">${node.name}</div></div>
       <div class="updated">${niceMtime(node.mtime)}</div>
       <div class="size">${node.size ? prettyBytes(node.size) : '--'}</div>
-    </div>`,
+    </a>`,
     children
   ]
 }
 
 function rFile (filesBrowser, node, depth) {
   return yo`
-    <div
+    <a
       class="item file"
       title=${node.name}
+      href=${node.url}
       onclick=${e => onClickNode(e, filesBrowser, node)}
       oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
     >
@@ -395,7 +395,7 @@ function rFile (filesBrowser, node, depth) {
       <div class="name-container"><div class="name">${node.name}</div></div>
       <div class="updated">${niceMtime(node.mtime)}</div>
       <div class="size">${typeof node.size === 'number' ? prettyBytes(node.size) : '--'}</div>
-    </div>
+    </a>
   `
 }
 
@@ -489,39 +489,51 @@ function onContextmenuNode (e, filesBrowser, node) {
 
   var items = [
     {icon: 'external-link', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
-    {icon: 'link', label: 'Copy URL', click: () => {
-      writeToClipboard(encodeURI(node.url))
-      toast.create('URL copied to clipboard')
-    }}
+    {
+      icon: 'link',
+      label: 'Copy URL',
+      click: () => {
+        writeToClipboard(encodeURI(node.url))
+        toast.create('URL copied to clipboard')
+      }
+    }
   ]
 
   if (node.isEditable) {
     items = items.concat([
-      {icon: 'i-cursor', label: 'Rename', click: async () => {
-        let newName = await contextInput.create({
-          x: e.clientX,
-          y: e.clientY,
-          label: 'Name',
-          value: node.name,
-          action: 'Rename',
-          postRender () {
-            const i = node.name.lastIndexOf('.')
-            if (i !== 0 && i !== -1) {
-              // select up to the file-extension
-              const input = document.querySelector('.context-input input')
-              input.setSelectionRange(0, node.name.lastIndexOf('.'))
+      {
+        icon: 'i-cursor',
+        label: 'Rename',
+        click: async () => {
+          let newName = await contextInput.create({
+            x: e.clientX,
+            y: e.clientY,
+            label: 'Name',
+            value: node.name,
+            action: 'Rename',
+            postRender () {
+              const i = node.name.lastIndexOf('.')
+              if (i !== 0 && i !== -1) {
+                // select up to the file-extension
+                const input = document.querySelector('.context-input input')
+                input.setSelectionRange(0, node.name.lastIndexOf('.'))
+              }
             }
+          })
+          if (newName) {
+            emitRenameFile(node._path, newName)
           }
-        })
-        if (newName) {
-          emitRenameFile(node._path, newName)
         }
-      }},
-      {icon: 'trash', label: 'Delete', click: () => {
-        if (confirm(`Are you sure you want to delete ${node.name}?`)) {
-          emitDeleteFile(node._path, node.isContainer)
+      },
+      {
+        icon: 'trash',
+        label: 'Delete',
+        click: () => {
+          if (confirm(`Are you sure you want to delete ${node.name}?`)) {
+            emitDeleteFile(node._path, node.isContainer)
+          }
         }
-      }}
+      }
     ])
   }
 

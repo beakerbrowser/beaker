@@ -621,16 +621,22 @@ body.drag {
     .back-link {
       position: absolute;
       left: 10px;
-      top: 12px;
+      top: 15px;
       width: 27px;
       text-align: center;
       font-size: 1.2rem;
       color: rgba(0,0,0,.2);
       cursor: pointer;
       border-radius: 4px;
+      display: none;
+      margin: 0;
 
       * {
         cursor: pointer;
+      }
+
+      @media (min-width: 1050px) {
+        display: block;
       }
 
       &:hover {
@@ -649,15 +655,6 @@ body.drag {
       height: 60px;
       position: relative;
       padding: 20px 0 10px 0;
-
-      .description {
-        height: 23px;
-        margin: 13px 0 0;
-        white-space: pre;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: .9rem;
-      }
 
       .primary-action {
         &:extend(.flex);
@@ -786,6 +783,15 @@ body.drag {
         }
       }
     }
+
+    .description {
+      height: 23px;
+      margin: 7px 0 0;
+      white-space: pre;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: .9rem;
+    }
   }
 
   .library-toolbar {
@@ -806,7 +812,7 @@ body.drag {
       display: none;
       margin-left: auto;
 
-      @media (min-width: 550px) {
+      @media (min-width: 650px) {
         display: flex;
       }
 
@@ -948,15 +954,17 @@ body.drag {
     }
   }
 
-  #local-path-and-preview-tools {
-    &:extend(.flex);
-    flex-wrap: nowrap;
+  #library-version-picker {
+    display: flex;
     align-items: center;
-    height: 52px;
     margin: 0 0 15px;
     padding: 10px 15px;
     background: #fff;
     border: 1px solid #ddd;
+
+    strong {
+      font-weight: 600;
+    }
 
     .revisions-btn {
 
@@ -966,8 +974,13 @@ body.drag {
     }
 
     .no-revisions {
+      display: none;
       color: rgba(0,0,0,.75);
-      margin-right: 7px;
+      margin-right: 10px;
+
+      @media (min-width: 670px) {
+        display: block;
+      }
     }
 
     label.toggle {
@@ -978,37 +991,37 @@ body.drag {
       }
     }
 
-    &.empty {
-      display: none;
-    }
-
     & > * {
-      margin-left: 5px;
+      white-space: nowrap;
     }
 
     & > .revision-indicator {
       margin-left: 2px;
     }
 
-    .summary {
-      margin-right: 5px;
+    .version-picker-ctrl {
+      margin-right: 10px;
     }
 
-    .path {
+    .sync-path-btn {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-right: 20px;
+    }
+
+    .open-preview-btn,
+    .revisions-btn {
       margin-left: 0;
-      margin-right: auto;
+      text-align: center;
     }
 
-    strong {
+    .revisions-btn {
       margin-right: 5px;
     }
 
-    &.setup-tip {
-      transition: opacity 0.2s;
-
-      & > * {
-        margin: 0 auto;
-      }
+    .spacer {
+      display: block;
+      flex: 1;
     }
   }
 

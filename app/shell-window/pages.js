@@ -32,13 +32,15 @@ export const DEFAULT_URL = 'beaker://start'
 
 export const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 
+export var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
+
 // globals
 // =
 
 var pages = []
 var activePage = null
 var events = new EventEmitter()
-var webviewsDiv = document.getElementById('webviews')
+var webviewsDiv
 var closedURLs = []
 var cachedMarkdownRendererScript
 var cachedJSONRendererScript
@@ -63,6 +65,8 @@ export function getPinned () {
 }
 
 export function setup () {
+  webviewsDiv = document.getElementById('webviews')
+
   beaker.archives.addEventListener('network-changed', ({details}) => {
     // check if any of the active pages matches this url
     pages.forEach(page => {
@@ -137,7 +141,6 @@ export function create (opts) {
     retainedScrollY: 0, // what was the scroll position of the page before navigating away?
 
     // current page's info
-    contentType: null, // what is the content-type of the page?
     favicons: null, // what are the favicons of the page?
     bookmark: null, // this page's bookmark object, if it's bookmarked
 
@@ -148,6 +151,7 @@ export function create (opts) {
     sitePerms: null, // saved permissions for the current page
     siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
     siteHasDatAlternative: false, // is there a dat:// version we can redirect to?
+    siteHttpAlternative: null, // is there an http(s):// version we can redirect to?
     siteWasADatTimeout: false, // did we timeout trying to find this site on the dat network?
 
     // history
@@ -164,6 +168,13 @@ export function create (opts) {
     isPinned: opts.isPinned, // is this page pinned?
     isTabDragging: false, // being dragged?
     tabDragOffset: 0, // if being dragged, this is the current offset
+
+    // webview-preload execute-javascript state
+    executeJavascriptCalls: {},
+    executeJavascriptCallCounter: 0,
+
+    // hackfix reload failsafe
+    reloadHackfixCounter: 0,
 
     // get the current URL
     getURL () {
@@ -195,10 +206,22 @@ export function create (opts) {
     canGoForward () { return this._canGoForward },
 
     // wrap webview loadURL to set the `loadingURL`
-    loadURL (url, opts) {
+    async loadURL (url, opts) {
+      // setting up for auto redirect
+      var autoRedirectToDat = !!await beaker.browser.getSetting('auto_redirect_to_dat') // get redirect setting and convert to bool
+      let hasDatAlternative = false
+      if (!url.includes('dat://')) {
+        hasDatAlternative = await DatArchive.resolveName(url).catch(err => false).then(res => !!res)
+      }
+
       // reset some state
       page.isReceivingAssets = false
       page.siteInfoOverride = null
+
+      if (autoRedirectToDat && hasDatAlternative && !noRedirectHostnames.has(parseURL(url).hostname)) {
+        page.siteHttpAlternative = parseURL(url).protocol
+        url = url.replace(parseURL(url).protocol, 'dat:')
+      }
 
       // set and go
       page.loadingURL = url
@@ -215,7 +238,7 @@ export function create (opts) {
       // grab the current scroll-y
       page.retainedScrollY = 0
       try {
-        page.retainedScrollY = await page.webviewEl.getWebContents().executeJavaScript('window.scrollY')
+        page.retainedScrollY = await page.executeJavaScript('window.scrollY')
       } catch (e) {
         console.debug('Error while trying to fetch the page scrollY', e)
       }
@@ -295,11 +318,21 @@ export function create (opts) {
     },
 
     // helper to check if there's a dat version of the site available
-    checkForDatAlternative (name) {
-      DatArchive.resolveName(name).then(res => {
-        this.siteHasDatAlternative = !!res
-        navbar.update(page)
-      }).catch(err => console.log('Name does not have a Dat alternative', name))
+    async checkForDatAlternative (url, name) {
+      var autoRedirectToDat = !!await beaker.browser.getSetting('auto_redirect_to_dat')
+      this.siteHasDatAlternative = await DatArchive.resolveName(name).then(
+        res => Boolean(res),
+        err => {
+          console.log('Name does not have a Dat alternative', name)
+          return false
+        }
+      )
+      navbar.update(page)
+      if (autoRedirectToDat && this.siteHasDatAlternative && !noRedirectHostnames.has(name)) {
+        var oldProto = parseURL(url).protocol
+        page.siteHttpAlternative = oldProto
+        page.loadURL(url.replace(oldProto, 'dat:'))
+      }
     },
 
     async toggleDevTools (jsConsole) {
@@ -314,6 +347,14 @@ export function create (opts) {
           })
         }
       }
+    },
+
+    executeJavaScript (code) {
+      return new Promise((resolve, reject) => {
+        var reqId = page.executeJavascriptCallCounter++
+        page.executeJavascriptCalls[reqId] = resolve
+        page.webviewEl.send('execute-javascript:call', reqId, code)
+      })
     }
   }
   page.siteInfoNavbarBtn = new SiteInfoNavbarBtn(page)
@@ -344,8 +385,6 @@ export function create (opts) {
   page.webviewEl.addEventListener('did-start-loading', onDidStartLoading)
   page.webviewEl.addEventListener('did-stop-loading', onDidStopLoading)
   page.webviewEl.addEventListener('load-commit', onLoadCommit)
-  page.webviewEl.addEventListener('did-get-redirect-request', onDidGetRedirectRequest)
-  page.webviewEl.addEventListener('did-get-response-details', onDidGetResponseDetails)
   page.webviewEl.addEventListener('did-finish-load', onDidFinishLoad)
   page.webviewEl.addEventListener('did-fail-load', onDidFailLoad)
   page.webviewEl.addEventListener('page-favicon-updated', onPageFaviconUpdated)
@@ -574,7 +613,7 @@ function onDomReady (e) {
       page.wcID = e.target.getWebContents().id // NOTE: this is a sync op
     }
     if (!navbar.isLocationFocused(page) && page.isActive) {
-      page.webviewEl.shadowRoot.querySelector('object').focus()
+      page.webviewEl.shadowRoot.querySelector('iframe').focus()
     }
   }
 }
@@ -606,7 +645,18 @@ function onWillNavigate (e) {
 
 function onDidNavigate (e) {
   var page = getByWebview(e.target)
-  if (page) {  
+  if (page) {
+    // we're goin
+    page.isReceivingAssets = true
+    // set URL in navbar
+    page.loadingURL = e.url
+    page.siteInfoOverride = null
+    navbar.updateLocation(page)
+    // if it's a failed dat discovery...
+    if (e.httpResponseCode === 504 && e.url.startsWith('dat://')) {
+      page.siteWasADatTimeout = true
+    }
+
     // close any prompts and modals
     prompt.forceRemoveAll(page)
     modal.forceRemoveAll(page)
@@ -701,7 +751,7 @@ function onDidStopLoading (e) {
     page.siteHasDatAlternative = false
     page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase(), version}
     if (protocol === 'https:') {
-      page.checkForDatAlternative(hostname)
+      page.checkForDatAlternative(url, hostname)
     }
     if (protocol === 'dat:') {
       DatArchive.resolveName(hostname)
@@ -732,22 +782,30 @@ function onDidStopLoading (e) {
       statusBar.setIsLoading(false)
     }
 
-    // fallback content type
-    let contentType = page.contentType
-    if (!contentType) {
+    // HACK
+    // there is a race condition with Electron where the CSPs will sometimes prevent the preload from executing
+    // this can be detected by attempting to call executeJavaScript; if it takes longer than a second, that's too long
+    // reloading the page usually gets it to execute correctly
+    // -prf
+    let webviewCheckTO = setTimeout(() => {
+      if (page.reloadHackfixCounter > 5) return // stop, we're endlessly redirecting
+      page.reloadAsync()
+      page.reloadHackfixCounter++
+    }, 1000)
+    page.executeJavaScript('true').then(res => {
+      page.reloadHackfixCounter = 0
+      clearTimeout(webviewCheckTO)
+    })
 
-      if (page.getURL().endsWith('.md')) {
-        contentType = 'text/markdown'
-      }
-
-      if (page.getURL().endsWith('.json')) {
-        contentType = 'application/json'
-      }
-    }
+    // determine content type
+    let contentType = beaker.browser.getResourceContentType(page.getURL()) || ''
+    let isMD = contentType.startsWith('text/markdown') || contentType.startsWith('text/x-markdown')
+    let isJSON = contentType.startsWith('application/json')
+    let isPlainText = contentType.startsWith('text/plain')
 
     // markdown rendering
     // inject the renderer script if the page is markdown
-    if (contentType && (contentType.startsWith('text/markdown') || contentType.startsWith('text/x-markdown'))) {
+    if (isMD || (isPlainText && page.getURL().endsWith('.md'))) {
       // hide the unformatted text and provide some basic styles
       page.webviewEl.insertCSS(`
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
@@ -788,13 +846,13 @@ function onDidStopLoading (e) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }
 
+      // NOTE uses webviewEl.executeJavaScript because we dont want to run the markdown renderer in an isolated world
       page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
     }
 
     // json rendering
     // inject the json render script
-    if (contentType && (contentType.startsWith('application/json') || contentType.startsWith('application/javascript'))) {
-      
+    if (isJSON || (isPlainText && page.getURL().endsWith('.json'))) {
       page.webviewEl.insertCSS(`
         .hidden { display: none !important; }
         .json-formatter-row {
@@ -826,7 +884,7 @@ function onDidStopLoading (e) {
         cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
       }
 
-      page.webviewEl.executeJavaScript(cachedJSONRendererScript);
+      page.executeJavaScript(cachedJSONRendererScript)
     }
 
     // HACK
@@ -860,53 +918,10 @@ function onDidStopLoading (e) {
 
     // if there is a retained scroll position, move the page
     if (page.retainedScrollY) {
-      page.webviewEl.executeJavaScript(`
+      page.executeJavaScript(`
         window.scroll(0, ${page.retainedScrollY})
       `)
       page.retainedScrollY = 0
-    }
-  }
-}
-
-function onDidGetRedirectRequest (e) {
-  // HACK
-  // electron has a problem handling redirects correctly, so we need to handle it for them
-  // see https://github.com/electron/electron/issues/3471
-  // thanks github.com/sokcuri and github.com/alexstrat for this fix
-  // -prf
-  if (e.isMainFrame) {
-    var page = getByWebview(e.target)
-    if (page) {
-      e.preventDefault()
-      setTimeout(() => {
-        console.log('Using redirect workaround for electron #3471; redirecting to', e.newURL)
-        e.target.getWebContents().send('redirect-hackfix', e.newURL)
-      }, 100)
-    }
-  }
-}
-
-function onDidGetResponseDetails (e) {
-  if (e.resourceType != 'mainFrame') {
-    return
-  }
-
-  var page = getByWebview(e.target)
-  if (page) {
-    // we're goin
-    page.isReceivingAssets = true
-    try {
-      page.contentType = e.headers['content-type'][0] || null
-    } catch (e) {
-      page.contentType = null
-    }
-    // set URL in navbar
-    page.loadingURL = e.newURL
-    page.siteInfoOverride = null
-    navbar.updateLocation(page)
-    // if it's a failed dat discovery...
-    if (e.httpResponseCode === 504 && e.newURL.startsWith('dat://')) {
-      page.siteWasADatTimeout = true
     }
   }
 }
@@ -960,7 +975,7 @@ function onDidFailLoad (e) {
 
     // render failure page
     var errorPageHTML = errorPage(e)
-    page.webviewEl.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'')
+    page.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'')
   }
 }
 
@@ -1052,6 +1067,11 @@ export function onIPCMessage (e) {
         activePage.toggleLiveReloading()
       }
       break
+    case 'execute-javascript:result':
+      let resolve = page.executeJavascriptCalls[e.args[0]]
+      delete page.executeJavascriptCalls[e.args[0]]
+      resolve(e.args[1])
+      break
   }
 }
 
@@ -1078,7 +1098,7 @@ export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://' + path.join(APP_PATH, 'webview-preload.build.js'))
-  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce')
+  el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce,nativeWindowOpen=yes')
   // TODO re-enable nativeWindowOpen when https://github.com/electron/electron/issues/9558 lands
   el.setAttribute('src', url || DEFAULT_URL)
   return el

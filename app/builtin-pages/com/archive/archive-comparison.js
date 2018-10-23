@@ -1,9 +1,11 @@
+/* globals confirm CustomEvent */
+
 import _get from 'lodash.get'
 import yo from 'yo-yo'
 import renderDiff from './diff'
 import renderArchiveSelectBtn from './archive-select-btn'
-import renderBackLink from './back-link'
-import {pluralize, shortenHash} from '../../lib/strings'
+import renderBackLink from '../back-link'
+import {pluralize, shortenHash} from '../../../lib/strings'
 
 // exported api
 // =
@@ -59,7 +61,7 @@ export default function renderArchiveComparison (opts = {}) {
 
   return yo`
     <div class="archive-comparison">
-      ${isLocalSyncPath ? renderBackLink() : ''}
+      ${isLocalSyncPath ? renderBackLink('#', 'Back') : ''}
 
       ${numRevisions > 0
         ? yo`
@@ -264,12 +266,16 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
         <div class="source-too-large">
           <p>This diff is too large to display.</p>
         </div>`
+    } else if (!rev.diff) {
+      el = yo`
+        <div class="empty">
+          <p>Loading...</p>
+        </div>`
     } else if (!(rev.diffAdditions || rev.diffDeletions)) {
       el = yo`
         <div class="empty">
           <p>Empty file</p>
-        </div>
-      `
+        </div>`
     } else if (rev.diff) {
       el = renderDiff(rev.diff, rev.path)
     } else {
@@ -293,12 +299,12 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
             ${rev.type === 'file' ? rev.path.slice(1) : rev.path}
           </span>
 
-          ${rev.diffAdditions
+          ${isRevOpen(rev) && rev.diffAdditions
             ? yo`<div class="changes-count additions">+${rev.diffAdditions}</div>`
             : ''
           }
 
-          ${rev.diffDeletions
+          ${isRevOpen(rev) && rev.diffDeletions
             ? yo`<div class="changes-count deletions">-${rev.diffDeletions}</div>`
             : ''
           }

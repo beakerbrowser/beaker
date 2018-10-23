@@ -10,10 +10,10 @@ const FETCH_COUNT = 200
 var counter = 0
 var history
 var baseUrl
-export default function render (archive, {path, includePreview} = {}) {
-  path = path || ''
+export default function render (archive, {filePath, includePreview} = {}) {
+  filePath = filePath || ''
   var el = renderHistory()
-  el.isSameNode = (other) => (other && other.classList && other.classList.contains('archive-history'))
+  //el.isSameNode = (other) => (other && other.classList && other.classList.contains('archive-history'))
 
   // lazy-load history
   if (archive && !history) {
@@ -34,13 +34,15 @@ export default function render (archive, {path, includePreview} = {}) {
     return yo`
       <div class="archive-history ${history ? '' : 'loading'}">
         <div class="archive-history-body">
-          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="beaker://library/${baseUrl}+latest${path}">
-            <span class="fa fa-fw fa-globe"></span> View latest published
+          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="beaker://library/${baseUrl}+latest${filePath}">
+            <span class="fa fa-fw fa-globe"></span>
+            View latest published
           </div>
           ${includePreview
             ? yo`
-              <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="beaker://library/${baseUrl}+preview${path}">
-                <span class="fa fa-fw fa-laptop"></span> View local preview
+              <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="beaker://library/${baseUrl}+preview${filePath}">
+                <span class="fa fa-fw fa-laptop"></span>
+                View local preview
               </div>`
             : ''}
           <hr />
@@ -50,7 +52,8 @@ export default function render (archive, {path, includePreview} = {}) {
             : yo`
               <div class="archive-history-item" onclick=${fetchMore}>
                 <button class="link">Load more</button>
-              </div>`}
+              </div>`
+           }
         </div>
       </div>`
   }
@@ -61,7 +64,7 @@ export default function render (archive, {path, includePreview} = {}) {
         onclick=${onGoto}
         class="archive-history-item"
         title="View version ${c.version}"
-        href="beaker://library/${baseUrl}+${c.version}${path}"
+        href="beaker://library/${baseUrl}+${c.version}${filePath}"
       >
         ${c.type === 'put' ? 'Updated' : 'Deleted'}
 
@@ -71,10 +74,10 @@ export default function render (archive, {path, includePreview} = {}) {
           </a>
         </div>
 
-        <div class="version badge green">v${c.version}</div>
+        <div class="version badge">v${c.version}</div>
       </div>`
   }
-  
+
   async function fetchMore () {
     try {
       // fetch

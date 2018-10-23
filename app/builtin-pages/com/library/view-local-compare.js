@@ -1,9 +1,9 @@
-/* globals beaker */
+/* globals beaker CustomEvent */
 
 import yo from 'yo-yo'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
-import renderArchiveComparison from './archive-comparison'
-import * as toast from './toast'
+import renderArchiveComparison from '../archive/archive-comparison'
+import * as toast from '../toast'
 
 export default class LibraryViewLocalCompare {
   constructor (opts) {
@@ -44,13 +44,13 @@ export default class LibraryViewLocalCompare {
     this.updatePage()
   }
 
-  async loadFileDiffs(compareDiff) {
+  async loadFileDiffs (compareDiff) {
     var resolve
-    var p = new Promise(r => {resolve = r})
+    var p = new Promise(r => { resolve = r })
     // automatically & iteratively load the file diffs
     const loadNextFileDiff = async () => {
       // find the next empty diff
-      var d = compareDiff.find(d => !d.diff)
+      var d = compareDiff.find(d => !d.diff && this.revIsOpenMap[d.path])
       if (!d) return resolve() // done!
 
       // run the diff
@@ -121,7 +121,7 @@ export default class LibraryViewLocalCompare {
       } else {
         await beaker.archives.revertLocalSyncPathListing(this.target.url, opts)
       }
-      toast.create('Files updated')
+      toast.create('Files updated', 'success')
     } catch (e) {
       console.error(e)
       toast.create(e.message || 'There was an issue writing the files', 'error')
@@ -134,6 +134,7 @@ export default class LibraryViewLocalCompare {
   onToggleRevisionCollapsed (rev) {
     this.revIsOpenMap[rev.path] = !this.revIsOpenMap[rev.path]
     this.updatePage()
+    this.loadFileDiffs(this.compareDiff)
   }
 }
 

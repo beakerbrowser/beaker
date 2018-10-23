@@ -1,13 +1,16 @@
 import * as beakerCore from '@beaker/core'
-import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen} from 'electron'
+import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen, session, nativeImage} from 'electron'
 import {autoUpdater} from 'electron-updater'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
 import slugify from 'slugify'
 import jetpack from 'fs-jetpack'
+import ICO from 'icojs'
+import toIco from 'to-ico'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
+import LRU from 'lru'
 const exec = require('util').promisify(require('child_process').exec)
 const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
@@ -46,6 +49,9 @@ var updaterError = false // has there been an error?
 // where is the user in the setup flow?
 var userSetupStatus = false
 var userSetupStatusLookupPromise
+
+// content-type tracker
+var resourceContentTypes = new LRU(100) // URL -> Content-Type
 
 // events emitted to rpc clients
 var browserEvents = new EventEmitter()
@@ -95,6 +101,12 @@ export function setup () {
       e.returnValue = false
     }
   })
+
+  // HACK
+  // Electron doesn't give us a convenient way to check the content-types of responses
+  // so we track the last 100 responses' headers to accomplish this
+  // -prf
+  session.defaultSession.webRequest.onCompleted(onCompleted)
 }
 
 export const WEBAPI = {
@@ -117,8 +129,11 @@ export const WEBAPI = {
   fetchBody,
   downloadURL,
 
+  getResourceContentType,
+
   listBuiltinFavicons,
   getBuiltinFavicon,
+  uploadFavicon,
 
   setWindowDimensions,
   showOpenDialog,
@@ -147,6 +162,12 @@ export async function downloadURL (url) {
   this.sender.downloadURL(url)
 }
 
+export function getResourceContentType (url) {
+  let i = url.indexOf('#')
+  if (i !== -1) url = url.slice(0, i) // strip the fragment
+  return resourceContentTypes.get(url)
+}
+
 export async function listBuiltinFavicons ({filter, offset, limit} = {}) {
   if (filter) {
     filter = new RegExp(filter, 'i')
@@ -167,6 +188,34 @@ export async function listBuiltinFavicons ({filter, offset, limit} = {}) {
 export async function getBuiltinFavicon (name) {
   var dir = jetpack.cwd(__dirname).cwd('assets/favicons')
   return dir.readAsync(name, 'buffer')
+}
+
+export async function uploadFavicon () {
+  let favicon = dialog.showOpenDialog({
+    title: 'Upload Favicon...',
+    defaultPath: app.getPath('home'),
+    buttonLabel: 'Upload Favicon',
+    filters: [
+      { name: 'Images', extensions: ['png', 'ico', 'jpg'] }
+    ],
+    properties: ['openFile']
+  })
+
+  if (!favicon) return
+
+  let faviconBuffer = await jetpack.readAsync(favicon[0], 'buffer')
+  let extension = path.extname(favicon[0])
+
+  if (extension === '.png') {
+    return toIco(faviconBuffer, {resize: true})
+  }
+  if (extension === '.jpg') {
+    let imageToPng = nativeImage.createFromBuffer(faviconBuffer).toPNG()
+    return toIco(imageToPng, {resize: true})
+  }
+  if (extension === '.ico' && ICO.isICO(faviconBuffer)) {
+    return faviconBuffer
+  }
 }
 
 export async function setWindowDimensions ({width, height} = {}) {
@@ -213,8 +262,8 @@ export async function getDefaultProtocolSettings () {
     if (httpHandler && httpHandler.stdout) httpHandler = httpHandler.stdout
     if (datHandler && datHandler.stdout) datHandler = datHandler.stdout
     return {
-      http: (httpHandler || '').trim() === DOT_DESKTOP_FILENAME,
-      dat: (datHandler || '').trim() === DOT_DESKTOP_FILENAME
+      http: (httpHandler || '').toString().trim() === DOT_DESKTOP_FILENAME,
+      dat: (datHandler || '').toString().trim() === DOT_DESKTOP_FILENAME
     }
   }
 
@@ -242,7 +291,7 @@ export function removeAsDefaultProtocolClient (protocol) {
 }
 
 export function getInfo () {
-  return Promise.resolve({
+  return {
     version: app.getVersion(),
     electronVersion: process.versions.electron,
     chromiumVersion: process.versions.chrome,
@@ -256,7 +305,7 @@ export function getInfo () {
     paths: {
       userData: app.getPath('userData')
     }
-  })
+  }
 }
 
 export function checkForUpdates (opts = {}) {
@@ -328,7 +377,7 @@ export async function capturePage (url, opts) {
       webSecurity: true,
       allowRunningInsecureContent: false,
       nativeWindowOpen: true
-    },
+    }
   })
   win.loadURL(url)
 
@@ -528,5 +577,16 @@ function onWillPreventUnload (e) {
   var leave = (choice === 0)
   if (leave) {
     e.preventDefault()
+  }
+}
+
+function onCompleted (details) {
+  function set (v) {
+    resourceContentTypes.set(details.url, Array.isArray(v) ? v[0] : v)
+  }
+  if ('Content-Type' in details.responseHeaders) {
+    set(details.responseHeaders['Content-Type'])
+  } else if ('content-type' in details.responseHeaders) {
+    set(details.responseHeaders['content-type'])
   }
 }

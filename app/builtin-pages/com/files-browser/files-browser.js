@@ -1,6 +1,8 @@
+/* globals confirm */
+
 import yo from 'yo-yo'
 import {FSArchiveFolder_BeingCreated} from 'beaker-virtual-fs'
-import renderFilesFlatView from './files-browser/files-flat-view'
+import renderFilesFlatView from './files-flat-view'
 import {setup as setupAce} from './file-editor'
 
 // exported api
@@ -87,6 +89,13 @@ export default class FilesBrowser {
   }
 
   async setCurrentSource (node, {suppressEvent} = {}) {
+    // prompt on navigations away from the editor
+    if (this.isEditMode) {
+      if (!confirm('You have unsaved changes. Are you sure you want to navigate away?')) {
+        return
+      }
+    }
+
     await this.unselectAll()
     if (this.currentSource) {
       if (this.currentSource.preview) {
@@ -103,7 +112,7 @@ export default class FilesBrowser {
     if (!node) {
       this.rerender()
       return
-    }    
+    }
 
     // special handling for files
     if (node.type === 'file') {

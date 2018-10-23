@@ -1,3 +1,4 @@
+import * as beakerCore from '@beaker/core'
 import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import { download } from './downloads'
@@ -11,6 +12,8 @@ export default function registerContextMenu () {
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
       const isDat = props.pageURL.startsWith('dat://')
+      const isMisspelled = props.selectionText && beakerCore.spellChecker.isMisspelled(props.selectionText)
+      const spellingSuggestions = isMisspelled && beakerCore.spellChecker.getSuggestions(props.selectionText).slice(0, 5)
 
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
@@ -25,72 +28,6 @@ export default function registerContextMenu () {
         var el = document.elementFromPoint(${props.x}, ${props.y})
         new Promise(resolve => { ${js} })
       `)
-
-      // fetch custom menu information
-      try {
-        var customMenu = await callOnElement(`
-          if (!el) {
-            return resolve(null)
-          }
-
-          // check for a context menu setting
-          var contextMenuId
-          while (el && el.getAttribute) {
-            contextMenuId = el.getAttribute('contextmenu')
-            if (contextMenuId) break
-            el = el.parentNode
-          }
-          if (!contextMenuId) {
-            return resolve(null)
-          }
-
-          // lookup the context menu el
-          var contextMenuEl = document.querySelector('menu#' + contextMenuId)
-          if (!contextMenuEl) {
-            return resolve(null)
-          }
-
-          // extract the menu items that are commands
-          var menuItemEls = contextMenuEl.querySelectorAll('menuitem, hr')
-          resolve(Array.from(menuItemEls)
-            .filter(el => {
-              if (el.tagName === 'HR') return true
-              var type = el.getAttribute('type')
-              return !type || type.toLowerCase() === 'command'
-            })
-            .map(el => {
-              if (el.tagName === 'HR') return { type: 'separator' }
-              return {
-                menuId: contextMenuId,
-                type: 'command',
-                disabled: el.getAttribute('disabled'),
-                label: el.getAttribute('label')
-              }
-            })
-          )
-        `)
-      } catch (e) {
-        console.error('Error checking for a custom context menu', e)
-      }
-      if (customMenu && customMenu.length) {
-        // add to the menu, with a 10 item limit
-        customMenu.slice(0, 10).forEach(customItem => {
-          if (customItem.type === 'separator') {
-            menuItems.push({ type: 'separator' })
-          } else if (customItem.label.trim()) {
-            menuItems.push({
-              label: customItem.label,
-              click: () => webContents.executeJavaScript(`
-                var el = document.querySelector('#${customItem.menuId} menuitem[label="${customItem.label}"]')
-                var evt = new MouseEvent('click', {bubbles: true, cancelable: true, view: window})
-                el.dispatchEvent(evt)
-              `),
-              enabled: customItem.disabled === null
-            })
-          }
-        })
-        menuItems.push({ type: 'separator' })
-      }
 
       // helper to run a download prompt for media
       const downloadPrompt = (field, ext) => (item, win) => {
@@ -141,6 +78,14 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })
       }
 
+      // spell check
+      if (props.isMisspelled !== '' && props.isEditable) {
+        for (let i in spellingSuggestions) {
+          menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label) })
+        }
+        menuItems.push({ type: 'separator' })
+      }
+
       // clipboard
       if (props.isEditable) {
         menuItems.push({ label: 'Cut', role: 'cut', enabled: can('Cut') })
@@ -158,12 +103,12 @@ export default function registerContextMenu () {
         searchPreviewStr = searchPreviewStr.replace(/\s/gi, ' ') // Replace whitespace chars with space
         searchPreviewStr = searchPreviewStr.replace(/[\u061c\u200E\u200f\u202A-\u202E]+/g, '') // Remove directional text control chars
         if (searchPreviewStr.length < props.selectionText.length) { // Add ellipsis if search preview was trimmed
-          searchPreviewStr += '...\"'
+          searchPreviewStr += '..."'
         } else {
-          searchPreviewStr += '\"'
+          searchPreviewStr += '"'
         }
         var query = 'https://duckduckgo.com/?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
-        menuItems.push({ label: 'Search DuckDuckGo for \"' + searchPreviewStr, click: (item, win) => win.webContents.send('command', 'file:new-tab', query) })
+        menuItems.push({ label: 'Search DuckDuckGo for "' + searchPreviewStr, click: (item, win) => win.webContents.send('command', 'file:new-tab', query) })
         menuItems.push({ type: 'separator' })
       }
 
@@ -183,7 +128,7 @@ export default function registerContextMenu () {
           click: () => webContents.reload()
         })
         menuItems.push({ type: 'separator' })
-          menuItems.push({
+        menuItems.push({
           label: 'Save Page As...',
           click: downloadPrompt('pageURL', '.html')
         })
@@ -220,7 +165,7 @@ export default function registerContextMenu () {
 
       // show menu
       var menu = Menu.buildFromTemplate(menuItems)
-      menu.popup({window: targetWindow})
+      menu.popup({ window: targetWindow })
     })
   })
 }

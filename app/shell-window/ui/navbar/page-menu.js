@@ -79,29 +79,20 @@ export class PageMenuNavbarBtn {
                     <i class="fa fa-files-o"></i>
                     View Source
                   </div>
-
-                  <hr />
+                  
+                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
+                    <i class="fa fa-clone"></i>
+                    Make editable copy
+                  </div>
 
                   <div class="dropdown-item" onclick=${() => this.onToggleLiveReloading()}>
                     <i class="fa fa-bolt"></i>
                     Toggle live reloading
                   </div>
 
-                  <div class="dropdown-item" onclick=${() => this.onClickNetworkDebugger()}>
-                    <i class="fa fa-bug"></i>
-                    Network debugger
-                  </div>
-
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
                     <i class="fa fa-file-archive-o"></i>
                     Download as .zip
-                  </div>
-
-                  <hr />
-                  
-                  <div class="dropdown-item" onclick=${() => this.onClickFork()}>
-                    <i class="fa fa-clone"></i>
-                    Make editable copy
                   </div>
                 </div>`
               : ''

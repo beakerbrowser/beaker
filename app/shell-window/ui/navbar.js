@@ -7,6 +7,7 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
+import {WatchlistNotificationBtn} from './navbar/watchlist-notification'
 // import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
 import {DonateMenuNavbarBtn} from './navbar/donate-menu'
@@ -31,9 +32,10 @@ const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 // globals
 // =
 
-var toolbarNavDiv = document.getElementById('toolbar-nav')
+var toolbarNavDiv
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
+var watchlistNotificationBtn = null
 var bookmarkMenuNavbarBtn = null
 // var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
 var syncfolderMenuNavbarBtn = null
@@ -51,10 +53,13 @@ var autocompleteResults = null // if set to an array, will render dropdown
 // =
 
 export function setup () {
+  toolbarNavDiv = document.getElementById('toolbar-nav')
+
   // create the button managers
   updatesNavbarBtn = new UpdatesNavbarBtn()
   // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
+  watchlistNotificationBtn = new WatchlistNotificationBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   syncfolderMenuNavbarBtn = new SyncfolderMenuNavbarBtn()
   donateMenuNavbarBtn = new DonateMenuNavbarBtn()
@@ -103,7 +108,7 @@ export function showInpageFind (page) {
   el.select()
 }
 
-export function findNext(page, forward) {
+export function findNext (page, forward) {
   onClickFindNext(forward)
 }
 
@@ -170,6 +175,7 @@ function render (id, page) {
   const isLoading = page && page.isLoading()
   const isViewingDat = page && page.getURL().startsWith('dat:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
+  const siteHttpAlternative = page && page.siteHttpAlternative
   const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
   const siteLoadError = page && page.siteLoadError
   const isOwner = page && page.siteInfo && page.siteInfo.isOwner
@@ -291,7 +297,8 @@ function render (id, page) {
     //     )
     //   }
     // }
-  } else if (siteHasDatAlternative) {
+  } // TODO(apps) when we bring back apps, fix the logic here
+  if (siteHasDatAlternative) {
     datBtns.push(
       yo`<button
         class="callout"
@@ -299,6 +306,16 @@ function render (id, page) {
         onclick=${onClickGotoDatVersion}
       >
         <span class="fa fa-share-alt"></span> P2P version available
+      </button>`
+    )
+  } else if (siteHttpAlternative) {
+    datBtns.push(
+      yo`<button
+        class="callout"
+        title="Go to HTTP/S Version of this Site"
+        onclick=${onClickGotoHttpVersion}
+      >
+        Go to HTTP/S version
       </button>`
     )
   }
@@ -393,10 +410,10 @@ function render (id, page) {
         ${inpageFinder}
         ${zoomBtn}
         ${!isLocationHighlighted ? [
+          datBtns,
           syncfolderMenuNavbarBtn.render(),
           liveReloadBtn,
           donateBtn,
-          datBtns,
           page ? page.datsiteMenuNavbarBtn.render() : undefined,
           pageMenuNavbarBtn.render(),
           bookmarkMenuNavbarBtn.render()
@@ -404,6 +421,7 @@ function render (id, page) {
       </div>
       <div class="toolbar-group">
         ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
+        ${watchlistNotificationBtn.render()}
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>
@@ -666,6 +684,19 @@ function onClickGotoDatVersion (e) {
   if (!page || !page.protocolInfo) return
 
   const url = `dat://${page.protocolInfo.hostname}${page.protocolInfo.pathname}`
+  if (e.metaKey || e.ctrlKey) { // popup
+    pages.setActive(pages.create(url))
+  } else {
+    page.loadURL(url) // goto
+  }
+}
+
+function onClickGotoHttpVersion (e) {
+  const page = getEventPage(e)
+  if (!page || !page.protocolInfo) return
+
+  const url = `https://${page.protocolInfo.hostname}${page.protocolInfo.pathname}`
+  pages.noRedirectHostnames.add(page.protocolInfo.hostname)
   if (e.metaKey || e.ctrlKey) { // popup
     pages.setActive(pages.create(url))
   } else {

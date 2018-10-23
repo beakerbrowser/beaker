@@ -1,10 +1,10 @@
-/* globals beaker */
+/* globals beaker DatArchive */
 
 import yo from 'yo-yo'
 import {Archive as LibraryDatArchive} from 'builtin-pages-lib'
 import {diffLines} from '@beaker/dat-archive-file-diff'
-import renderArchiveComparison from './archive-comparison'
-import * as toast from './toast'
+import renderArchiveComparison from '../archive/archive-comparison'
+import * as toast from '../toast'
 
 export default class LibraryViewCompare {
   constructor (opts) {
@@ -141,7 +141,7 @@ export default class LibraryViewCompare {
   async onMerge (base, target, opts) {
     try {
       await DatArchive.merge(base, target, opts)
-      toast.create('Files updated')
+      toast.create('Files updated', 'success')
     } catch (e) {
       console.error(e)
       toast.create(e.message || 'There was an issue writing the files', 'error')

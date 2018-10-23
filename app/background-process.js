@@ -52,6 +52,10 @@ if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
   testDriver.setup()
 }
 
+// enable the sandbox
+// TODO when electron@4.0.0 lands, change to enableSandbox
+app.enableMixedSandbox()
+
 // configure the protocols
 protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
 
@@ -61,6 +65,14 @@ app.on('open-url', (e, url) => {
   // wait for ready (not waiting can trigger errors)
   if (app.isReady()) openURL.open(url)
   else app.on('ready', () => openURL.open(url))
+})
+
+// handle OS event to open files
+app.on('open-file', (e, filepath) => {
+  e.preventDefault() // we are handling it
+  // wait for ready (not waiting can trigger errors)
+  if (app.isReady()) openURL.open(`file://${filepath}`)
+  else app.on('ready', () => openURL.open(`file://${filepath}`))
 })
 
 app.on('ready', async function () {
@@ -111,18 +123,24 @@ app.on('ready', async function () {
   protocol.registerServiceWorkerSchemes(['dat'])
 })
 
-// only run one instance
-const isSecondInstance = app.makeSingleInstance((argv, workingDirectory) => {
-  handleArgv(argv)
-
-  // focus/create a window
-  windows.ensureOneWindowExists()
-  windows.getActiveWindow().focus()
+app.on('custom-ready-to-show', () => {
+  // our first window is ready to show, do any additional setup
+  beakerCore.dat.library.loadSavedArchives()
 })
-if (isSecondInstance) {
+
+// only run one instance
+const isFirstInstance = app.requestSingleInstanceLock()
+if (!isFirstInstance) {
   app.exit()
 } else {
   handleArgv(process.argv)
+  app.on('second-instance', (event, argv, workingDirectory) => {
+    handleArgv(argv)
+
+    // focus/create a window
+    windows.ensureOneWindowExists()
+    windows.getActiveWindow().focus()
+  })
 }
 function handleArgv (argv) {
   if (process.platform !== 'darwin') {

@@ -1,6 +1,7 @@
 import * as beakerCore from '@beaker/core'
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import { createShellWindow, getFocusedDevToolsHost } from './windows'
+import {download} from './downloads'
 
 // exported APIs
 // =
@@ -116,7 +117,10 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+S',
         click: async (item, win) => {
           const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
-          win.webContents.downloadURL(url, true)
+          const title = await win.webContents.executeJavaScript(`pages.getActive().title`)
+          dialog.showSaveDialog({ title: `Save ${title} as...`, defaultPath: app.getPath('downloads') }, filepath => {
+            if (filepath) download(win, win.webContents, url, { saveAs: filepath, suppressNewDownloadEvent: true })
+          })
         }
       },
       {
@@ -218,6 +222,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Zoom In',
         accelerator: 'CmdOrCtrl+Plus',
+        reserved: true,
         click: function (item, win) {
           if (win) win.webContents.send('command', 'view:zoom-in')
         }
@@ -225,6 +230,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Zoom Out',
         accelerator: 'CmdOrCtrl+-',
+        reserved: true,
         click: function (item, win) {
           if (win) win.webContents.send('command', 'view:zoom-out')
         }

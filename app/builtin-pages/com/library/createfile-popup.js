@@ -1,7 +1,7 @@
 /* globals beaker */
 
 import yo from 'yo-yo'
-import closeIcon from '../icon/close'
+import closeIcon from '../../icon/close'
 import {join as joinPaths} from 'path'
 import BINARY_EXTENSIONS from 'binary-extensions'
 
@@ -27,6 +27,7 @@ export async function create (opts = {}) {
   basePath = opts.basePath || '/'
   createFolder = opts.createFolder
   fileName = ''
+  hasConflict = false
 
   // render interface
   var popup = render()

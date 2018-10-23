@@ -1,10 +1,10 @@
-/* globals beaker localStorage */
+/* globals beaker localStorage DatArchive */
 
 import * as yo from 'yo-yo'
 import Sortable from 'sortablejs'
-import * as addPinnedBookmarkPopup from '../com/add-pinned-bookmark-popup'
-import * as editBookmarkPopup from '../com/edit-bookmark-popup'
-import renderHelpTip from '../com/help-tip'
+import * as addPinnedBookmarkPopup from '../com/settings/add-pinned-bookmark-popup'
+import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
+import * as MOTD from '../com/motd'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
@@ -23,7 +23,6 @@ var activeSearchResult = 0
 var isSearchFocused = false
 var settings
 var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
-var hasDismissedBetaInfo = localStorage.hasDismissedBetaInfo ? true : false
 
 update()
 setup()
@@ -43,6 +42,7 @@ async function setup () {
   // }
 
   await loadBookmarks()
+  MOTD.load()
   update()
 }
 
@@ -272,10 +272,10 @@ async function onContextmenuPinnedBookmark (e, bookmark) {
   e.preventDefault()
   var url = e.currentTarget.getAttribute('href')
   const items = [
-    {icon: 'external-link', label: 'Open Link in New Tab', click: () => window.open(url) },
-    {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url) },
-    {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark) },
-    {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark) }
+    {icon: 'external-link', label: 'Open Link in New Tab', click: () => window.open(url)},
+    {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url)},
+    {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark)},
+    {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark)}
   ]
   await contextMenu.create({x: e.clientX, y: e.clientY, items})
 }
@@ -293,7 +293,7 @@ function update () {
         <div class="header-actions">
           ${renderHelpButton()}
         </div>
-        ${renderHelpTip()}
+        ${MOTD.render()}
         <div class="autocomplete-container search-container">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
@@ -308,24 +308,6 @@ function update () {
         </div>
 
         ${renderPinnedBookmarks()}
-
-        ${!localStorage.hasDismissedBetaInfo
-          ? yo`
-            <div class="beta-info">
-              <i class="fa fa-bolt"></i>
-              <p>
-                You${"'"}re using a beta version of Beaker.
-                <a href="https://www.surveymonkey.com/r/NK9LGQ3">Share feedback</a>
-                or
-                <a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=issue_template_0.8_beta.md">Report an issue</a>.
-              </p>
-
-              <button class="btn plain" onclick=${() => { localStorage.hasDismissedBetaInfo = true; update() }}>
-                <i class="fa fa-times"></i>
-              </button>
-            </div>`
-          : ''
-        }
 
         ${renderDock()}
 
@@ -362,25 +344,25 @@ function renderDock () {
   return yo`
     <div class="dock-wrapper">
       <div class="dock">
-        <a class="dock-item subtitle-heading" href="beaker://settings">
+        <a class="dock-item" href="beaker://settings">
           Settings
         </a>
 
-        <a class="dock-item subtitle-heading" href="beaker://history">
+        <a class="dock-item" href="beaker://history">
           History
         </a>
 
-        <a class="dock-item subtitle-heading" href="beaker://bookmarks">
+        <a class="dock-item" href="beaker://bookmarks">
           Bookmarks
         </a>
 
-        <a class="dock-item subtitle-heading" href="beaker://library">
+        <a class="dock-item" href="beaker://library">
           Library
         </a>
 
-        <span class="dock-separator subtitle-heading">|</span>
+        <span class="dock-separator">|</span>
 
-        <a class="dock-item subtitle-heading" onclick=${onClickNewSiteButton}>
+        <a class="dock-item" onclick=${onClickNewSiteButton}>
           New +
         </a>
       </div>

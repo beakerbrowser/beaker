@@ -18,7 +18,7 @@ import ICO from 'icojs'
 const BEAKER_CSP = `
   default-src 'self' beaker:;
   img-src beaker-favicon: beaker: data: dat: http: https;
-  script-src 'self' beaker:;
+  script-src 'self' beaker: 'unsafe-eval';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;
   child-src 'self';
@@ -40,6 +40,7 @@ export function setup () {
 async function beakerProtocol (request, respond) {
   var cb = once((statusCode, status, contentType, path) => {
     const headers = {
+      'Cache-Control': 'no-cache',
       'Content-Type': (contentType || 'text/html; charset=utf-8'),
       'Content-Security-Policy': BEAKER_CSP,
       'Access-Control-Allow-Origin': '*'
@@ -286,6 +287,15 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl === 'beaker://settings/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/settings.build.js'))
+  }
+  if (requestUrl === 'beaker://watchlist/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/watchlist.css'))
+  }
+  if (requestUrl === 'beaker://watchlist/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/watchlist.build.js'))
+  }
+  if (requestUrl === 'beaker://watchlist/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/watchlist.html'))
   }
 
   // modals

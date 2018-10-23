@@ -1,4 +1,4 @@
-/* globals DatArchive beaker confirm */
+/* globals DatArchive beaker confirm localStorage */
 
 import yo from 'yo-yo'
 import bytes from 'bytes'
@@ -255,15 +255,11 @@ function render () {
 
             ${renderRows()}
 
-            ${!query
-              ? yo`
-                <p class="builtin-hint">
-                  Your Library contains websites and archives you've created,
-                  along with websites that you're seeding.
-                  <i class="fa fa-question-circle-o"></i>
-                </p>`
-              : ''
-            }
+            <p class="builtin-hint">
+              <i class="fa fa-info-circle"></i>
+              Your Library contains websites and archives you've created,
+              along with websites that you're seeding.
+            </p>
           </div>
         </div>
       </div>
@@ -602,7 +598,6 @@ async function onDeleteSelectedPermanently () {
 
   await loadArchives()
   render()
-
 }
 
 async function onRestoreSelected () {
@@ -657,10 +652,10 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
 
   // construct and show popup
   let items = [
-    {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url) },
-    {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url) },
-    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive) },
-    {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`) }
+    {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url)},
+    {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url)},
+    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
+    {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
   ]
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})

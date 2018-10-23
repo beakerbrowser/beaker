@@ -44,7 +44,24 @@ export class ForkArchiveModal extends BaseModal {
 
   render () {
     if (!this.archive || !this.archiveInfo) {
-      return '' // loading
+      // loading
+      return yo`
+        <div class="fork-archive-modal loading">
+          <h1 class="title">Make a copy</h1>
+          <p class="help-text">Loading...</p>
+          <form>
+            <label for="title">Title</label>
+            <input name="title" tabindex="2" placeholder="Title" disabled />
+
+            <label for="desc">Description</label>
+            <textarea name="desc" tabindex="3" placeholder="Description (optional)" disabled></textarea>
+
+            <div class="form-actions">
+              <button type="button" class="btn cancel" disabled>Cancel</button>
+              <button type="submit" class="btn" tabindex="5" disabled>Create copy</button>
+            </div>
+          </form>
+        </div>`
     }
 
     var archive = this.archive
