@@ -846,7 +846,8 @@ function onDidStopLoading (e) {
         cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
       }
 
-      page.executeJavaScript(cachedMarkdownRendererScript)
+      // NOTE uses webviewEl.executeJavaScript because we dont want to run the markdown renderer in an isolated world
+      page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
     }
 
     // json rendering
