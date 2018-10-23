@@ -315,6 +315,26 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://watchlist/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/watchlist.html'))
   }
+  if (requestUrl === 'beaker://editor/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/editor.css'))
+  }
+  if (requestUrl === 'beaker://editor/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/editor.build.js'))
+  }
+  if (requestUrl === 'beaker://editor/monaco.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/editor/monaco.js'))
+  }
+  if (requestUrl.startsWith('beaker://editor/vs/') && requestUrl.endsWith('.js')) {
+    let filePath = requestUrl.slice('beaker://editor/vs/'.length)
+    return cb(200, 'OK', 'application/javascript', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
+  }
+  if (requestUrl.startsWith('beaker://editor/vs/') && requestUrl.endsWith('.css')) {
+    let filePath = requestUrl.slice('beaker://editor/vs/'.length)
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
+  }
+  if (requestUrl === 'beaker://editor/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/editor.html'))
+  }
 
   // modals
   if (requestUrl === 'beaker://basic-auth-modal/') {
