@@ -103,103 +103,105 @@ export class BrowserMenuNavbarBtn {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle">
-            ${autoUpdaterEl}
+            <div class="dropdown-wrapper">
+              ${autoUpdaterEl}
 
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onOpenNewWindow()}>
-                <i class="fa fa-window-maximize"></i>
-                <span class="label">New Window</span>
-                <span class="shortcut">${this.accelerators.newWindow}</span>
+              <div class="section">
+                <div class="menu-item" onclick=${e => this.onOpenNewWindow()}>
+                  <i class="fa fa-window-maximize"></i>
+                  <span class="label">New Window</span>
+                  <span class="shortcut">${this.accelerators.newWindow}</span>
+                </div>
+
+                <div class="menu-item" onclick=${e => this.onOpenNewTab()}>
+
+                  <i class="fa fa-file-o"></i>
+                  <span class="label">New Tab</span>
+                  <span class="shortcut">${this.accelerators.newTab}</span>
+                </div>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onOpenNewTab()}>
-
-                <i class="fa fa-file-o"></i>
-                <span class="label">New Tab</span>
-                <span class="shortcut">${this.accelerators.newTab}</span>
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onFindInPage(e)}>
-                <i class="fa fa-search"></i>
-                <span class="label">Find in Page</span>
-                <span class="shortcut">${this.accelerators.findInPage}</span>
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
-                <i class="fa fa-book"></i>
-                <span class="label">Library</span>
-              </div>
-              
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://watchlist')}>
-                <i class="fa fa-eye"></i>
-                <span class="label">Watchlist</span>
+              <div class="section">
+                <div class="menu-item" onclick=${e => this.onFindInPage(e)}>
+                  <i class="fa fa-search"></i>
+                  <span class="label">Find in Page</span>
+                  <span class="shortcut">${this.accelerators.findInPage}</span>
+                </div>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
-                <i class="fa fa-star-o"></i>
-                <span class="label">Bookmarks</span>
+              <div class="section">
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
+                  <i class="fa fa-book"></i>
+                  <span class="label">Library</span>
+                </div>
+
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://watchlist')}>
+                  <i class="fa fa-eye"></i>
+                  <span class="label">Watchlist</span>
+                </div>
+
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+                  <i class="fa fa-star-o"></i>
+                  <span class="label">Bookmarks</span>
+                </div>
+
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
+                  <i class="fa fa-history"></i>
+                  <span class="label">History</span>
+                  <span class="shortcut">${this.accelerators.history}</span>
+                </div>
+
+                <div class="menu-item downloads" style=${progressEl ? 'height: 41px' : ''} onclick=${e => this.onClickDownloads(e)}>
+                  <i class="fa fa-download"></i>
+                  <span class="label">Downloads</span>
+                  ${this.shouldPersistDownloadsIndicator ? yo`<i class="fa fa-circle"></i>` : ''}
+                  ${progressEl}
+                </div>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>
-                <i class="fa fa-history"></i>
-                <span class="label">History</span>
-                <span class="shortcut">${this.accelerators.history}</span>
+              <div class="section">
+                <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
+                  <i class="fa fa-plus-square-o"></i>
+                  <span class="label">Create New</span>
+                  <i class="more fa fa-angle-right"></i>
+                </div>
+
+                <div class="menu-item" onclick=${e => this.onShareFiles(e)}>
+                  <i class="fa fa-upload"></i>
+                  <span class="label">Share Files</span>
+                </div>
               </div>
 
-              <div class="menu-item downloads" style=${progressEl ? 'height: 41px' : ''} onclick=${e => this.onClickDownloads(e)}>
-                <i class="fa fa-download"></i>
-                <span class="label">Downloads</span>
-                ${this.shouldPersistDownloadsIndicator ? yo`<i class="fa fa-circle"></i>` : ''}
-                ${progressEl}
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
-                <i class="fa fa-plus-square-o"></i>
-                <span class="label">Create New</span>
-                <i class="more fa fa-angle-right"></i>
+              <div class="section">
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
+                  <i class="fa fa-gear"></i>
+                  <span class="label">Settings</span>
+                </div>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onShareFiles(e)}>
-                <i class="fa fa-upload"></i>
-                <span class="label">Share Files</span>
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
-                <i class="fa fa-gear"></i>
-                <span class="label">Settings</span>
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onOpenFile()}>
-                <i></i>
-                <span class="label">Open File...</span>
-                <span class="shortcut">${this.accelerators.openFile}</span>
-              </div>
-            </div>
-
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
-                <i class="fa fa-question-circle-o"></i>
-                <span class="label">Help</span>
+              <div class="section">
+                <div class="menu-item" onclick=${e => this.onOpenFile()}>
+                  <i></i>
+                  <span class="label">Open File...</span>
+                  <span class="shortcut">${this.accelerators.openFile}</span>
+                </div>
               </div>
 
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md')}>
-                <i class="fa fa-flag-o"></i>
-                <span class="label">Report an Issue</span>
-              </div>
+              <div class="section">
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
+                  <i class="fa fa-question-circle-o"></i>
+                  <span class="label">Help</span>
+                </div>
 
-              <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://opencollective.com/beaker')}>
-                <i class="fa fa-heart-o"></i>
-                <span class="label">Support Beaker</span>
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md')}>
+                  <i class="fa fa-flag-o"></i>
+                  <span class="label">Report an Issue</span>
+                </div>
+
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://opencollective.com/beaker')}>
+                  <i class="fa fa-heart-o"></i>
+                  <span class="label">Support Beaker</span>
+                </div>
               </div>
             </div>
           </div>
