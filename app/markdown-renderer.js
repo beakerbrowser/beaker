@@ -36,7 +36,9 @@ if (!document.querySelector('main')) {
   async function renderNav () {
     var navHTML
     try {
-      var navMD = await (await fetch('/nav.md')).text()
+      var navReq = await fetch('/nav.md')
+      if (!navReq.ok) return
+      var navMD = await navReq.text()
       navHTML = md.render(navMD)
       document.querySelector('nav').innerHTML = navHTML
     } catch (e) {
