@@ -1,7 +1,7 @@
-import Remarkable from 'remarkable'
+import MarkdownIt from 'markdown-it'
 
 export default function create ({allowHTML, useHeadingAnchors, hrefMassager} = {}) {
-  var md = new Remarkable('full', {
+  var md = MarkdownIt({
     html: allowHTML, // Enable HTML tags in source
     xhtmlOut: false, // Use '/' to close single tags (<br />)
     breaks: true, // Convert '\n' in paragraphs into <br>
@@ -23,19 +23,22 @@ export default function create ({allowHTML, useHeadingAnchors, hrefMassager} = {
   if (useHeadingAnchors) {
     // heading anchor rendering
     md.renderer.rules.heading_open = function (tokens, idx /*, options, env */) {
-      return '<h' + tokens[idx].hLevel + ' id="' + slugify(tokens[idx + 1].content || '') + '">'
+      return '<' + tokens[idx].tag + ' id="' + slugify(tokens[idx + 1].content || '') + '">'
     }
     md.renderer.rules.heading_close = function (tokens, idx /*, options, env */) {
-      return '<a class="anchor-link" href="#' + slugify(tokens[idx - 1].content || '') + '">#</a></h' + tokens[idx].hLevel + '>\n'
+      return '<a class="anchor-link" href="#' + slugify(tokens[idx - 1].content || '') + '">#</a></' + tokens[idx].tag + '>\n'
     }
   }
 
   if (hrefMassager) {
     // link modifier
     let org = md.renderer.rules.link_open
+    console.log(md, org)
     md.renderer.rules.link_open = function (tokens, idx, options /* env */) {
-      tokens[idx].href = hrefMassager(tokens[idx].href)
-      return org.apply(null, arguments)
+      var i = tokens[idx].attrs.findIndex(attr => attr[0] === 'href')
+      tokens[idx].attrs[i][1] = hrefMassager(tokens[idx].attrs[i][1])
+      if (org) return org.apply(null, arguments)
+      return md.renderer.renderToken.apply(md.renderer, arguments)
     }
   }
 
