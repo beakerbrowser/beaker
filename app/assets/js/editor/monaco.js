@@ -1,6 +1,6 @@
 require.config({ baseUrl: { 'vs': 'beaker://editor/vs' }});
 require(['vs/editor/editor.main'], function() {
-  window.editor = monaco.editor.create(document.getElementById('editor-container'), {
+  window.editor = monaco.editor.create(document.getElementById('editor'), {
     lineNumbersMinChars: 4,
     automaticLayout: true,
     fixedOverflowWidgets: true,
