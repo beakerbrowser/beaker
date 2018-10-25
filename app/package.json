@@ -63,6 +63,7 @@
     "mime": "^1.4.0",
     "mkdirp": "^0.5.1",
     "moment": "^2.22.2",
+    "monaco-editor": "^0.14.3",
     "ms": "^2.0.0",
     "multicb": "^1.2.2",
     "normalize-url": "^1.9.1",

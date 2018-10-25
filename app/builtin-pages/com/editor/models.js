@@ -1,4 +1,4 @@
-/* globals Event monaco */
+/* globals Event monaco editor */
 
 const yo = require('yo-yo')
 
@@ -59,6 +59,10 @@ export function getActive () {
   return active
 }
 
+export function getModels () {
+  return models
+}
+
 // internal methods
 // =
 
@@ -99,7 +103,7 @@ const setEditableActive = async function setEditableActive (archive, file) {
   if (!(file.name in models)) {
     await load(archive, file)
   }
-  monaco.editor.setModel(models[file.name])
+  editor.setModel(models[file.name])
 }
 
 const setUneditableActive = async function (archive, path) {

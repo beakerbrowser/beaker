@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
+import toggleable from '../com/toggleable'
 import FileTree from '../com/editor/file-tree'
 import * as models from '../com/editor/models'
 
@@ -59,24 +60,56 @@ async function setup () {
 
   //archive.on('changed', onArchiveChanged)
 
-  renderNav()
+  render()
 
   // debug
   window.models = models
   window.archive = archive
 }
 
-function renderNav () {
+function render () {
+  // toolbar
+  /*yo.update(
+    document.querySelector('.editor-toolbar'), yo`
+      <div class="editor-toolbar">
+        ${renderToolbar()}
+      </div>
+    `
+  )*/
+
+  console.log(archive)
+
   // nav
   yo.update(
-    document.querySelector('.layout-nav'),
-    yo`<div class="layout-nav">
-      <div class="sitetitle">${archive.info.title}</div>
-      ${fileTree ? fileTree.render() : ''}
-    </div>`
+    document.querySelector('.editor-explorer'),
+    yo`
+      <div class="editor-explorer">
+        <div class="explorer-title">Explorer</div>
+        <div class="explorer-section">
+          <span class="section-title">
+            <i class="fa fa-caret-right"></i>
+            beakerbrowser.com
+          </span>
+          ${fileTree ? fileTree.render() : ''}
+        </div>
+      </div>
+    `
   )
 
+  // tabs
   yo.update(
+    document.querySelector('.editor-tabs'),
+    yo`
+      <div class="editor-tabs">
+        <div class="tab active">
+          untitled
+          <i class="fa fa-times"></i>
+        </div>
+      </div>
+    `
+  )
+
+  /*yo.update(
     document.querySelector('.header'),
     yo`<div class="header">
       <div class="btn" onclick=${onSave}><span class="icon icon-floppy"></span> Save</div>
@@ -95,8 +128,47 @@ function renderNav () {
       <div class="sep"></div>
       <div class="btn" onclick=${onOpenInNewWindow}><span class="icon icon-popup"></span> Open</div>
     </div>`
-  )
+  )*/
 }
+
+/*function renderToolbar() {
+  return yo`
+    ${toggleable(yo`
+      <div class="toolbar-item toggleable-container">
+        <span class="toggleable" data-toggle-on="mouseover">File</span>
+        <div class="toolbar-items subtle-shadow left">
+          <div class="item" onclick=${() => onCreateSite()}>
+            <div class="label">
+              New File
+            </div>
+          </div>
+          <div class="item" onclick=${() => onCreateSite()}>
+            <div class="label">
+              New Editor Window
+            </div>
+          </div>
+        </div>
+      </div>
+    `)}
+    ${toggleable(yo`
+      <div class="toolbar-item toggleable-container">
+        <span class="toggleable" data-toggle-on="mouseover">Edit</span>
+        <div class="toolbar-items subtle-shadow left">
+          <div class="item" onclick=${() => onCreateSite()}>
+            <div class="label">
+              New File
+            </div>
+          </div>
+          <div class="item" onclick=${() => onCreateSite()}>
+            <div class="label">
+              New Editor Window
+            </div>
+          </div>
+        </div>
+      </div>
+    `)}
+  `
+}*/
 
 /*window.addEventListener('editor-created', () => {
   models.setActive(fileTree.getCurrentSource(), 'index.html')
@@ -113,9 +185,9 @@ window.addEventListener('keydown', e => {
   }
 })
 
-window.addEventListener('set-active-model', renderNav)
-window.addEventListener('model-dirtied', renderNav)
-window.addEventListener('model-cleaned', renderNav)
+window.addEventListener('set-active-model', render)
+window.addEventListener('model-dirtied', render)
+window.addEventListener('model-cleaned', render)
 
 function onSave () {
   models.save(archive, archive.files.currentNode.entry.path)
@@ -139,5 +211,5 @@ function onArchiveChanged () {
   const activeModel = models.getActive()
   if (!activeModel) return
   archive.files.setCurrentNodeByPath(activeModel.path, {allowFiles: true})
-  renderNav()
+  render()
 }
