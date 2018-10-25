@@ -11,96 +11,170 @@
   -webkit-text-stroke: 1px #333;
 }
 
-.header {
-  display: flex;
-  font-weight: 400;
-  border-bottom: 1px solid #ccc;
-  font-size: 13px;
-  height: 30px;
-
-  .site-info {
-    padding: 0.5rem;
-  }
-
-  .file-info {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .btn {
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-  }
-
-  .btn:hover {
-    background: #eee;
-  }
-}
-
-.layout-wrapper {
+.editor-wrapper {
   display: flex;
   height: 100%;
-}
-.layout-nav {
-  width: 200px;
-  background: #f6f6f9;
-}
-#editor-container {
-  //position: relative;
-  flex: 1;
-  height: 100%;
+  flex-flow: row nowrap;
 }
 
-.sitetitle {
-  font-size: 11px;
-  padding: 0.5rem;
-  background: #e0e0e6;
-  text-transform: uppercase;
-  font-weight: 500;
-  height: 35px;
-}
-
-.filetree {
-  font-size: 13px;
-  color: #444;
-  height: 100vh;
-  overflow: scroll;
-  padding: 10px;
-}
-.subtree {
-  padding-left: 1em;
-}
-.filetree .item {
-  padding: 5px 5px 5px 5px;
-  cursor: pointer;
-  white-space: nowrap;
-  -webkit-user-select: none;
+/*.editor-toolbar {
+  flex: 0 0 100%;
+  height: 20px;
+  background-color: #fbfbfb;
   display: flex;
   align-items: center;
 
-  i {
-    padding: 0;
-    margin: 0;
-    margin-right: 5px;
+  .toolbar-item {
+    color: black;
+    padding: 0 5px;
+    transition: background-color 0.2s;
+    position: relative;
+  }
+  .toolbar-item:hover {
+    background-color: #4766ff;
   }
 
-  span {
-    margin-left: 5px;
+  .toggleable-container .toolbar-items {
+    display: none;
+  }
+
+  .toggleable-container.open {
+    .toolbar-items.subtle-shadow {
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+    }
+    .toolbar-items {
+      border-radius: 0 0 5px 5px;
+      display: flex;
+      flex-flow: column;
+      position: absolute;
+      left: 0;
+      width: 150px;
+      background: #e0e0e0;
+      z-index: 1000;
+  
+      .item {
+        flex: 1;
+        padding: 2px;
+      }
+      .item:hover {
+        background-color: #4766ff;
+      }
+    }
+  }
+}*/
+
+.editor-explorer {
+  flex: 0 0;
+  width: 250px;
+  background: #f6f6f9;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+
+  .explorer-title {
+    font-size: 11px;
+    padding: 0.5rem;
+    padding-left: 10px;
+    background: #e0e0e6;
+    text-transform: uppercase;
+    font-weight: 500;
+    height: 35px;
+  }
+
+  .section-title {
+    background-color: #e0e0e6;
+  }
+  
+  .filetree {
+    font-size: 13px;
+    color: #444;
+    overflow-y: scroll;
+    flex: 1;
+  }
+  .subtree {
+    padding-left: 1em;
+  }
+
+  .filetree * {
+    cursor: pointer;
+  }
+
+  .filetree .item {
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+  
+    i {
+      padding: 0;
+      margin: 0;
+      margin-right: 5px;
+    }
+  
+    span {
+      margin-left: 5px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+  .filetree .item:hover {
+    background: #ededf0;
+  }
+  .filetree .folder {
+    position: relative;
+  }
+  .filetree .folder > .icon-down-dir,
+  .filetree .folder > .icon-right-dir {
+    font-size: 17px;
+    position: absolute;
+    left: 8px;
+    top: 3px;
+  }
+  .filetree .item.selected {
+    background: #4766ff;
+    color: #fff;
   }
 }
-.filetree .item:hover {
-  background: #ededf0;
-}
-.filetree .folder {
-  position: relative;
-}
-.filetree .folder > .icon-down-dir,
-.filetree .folder > .icon-right-dir {
-  font-size: 17px;
-  position: absolute;
-  left: 8px;
-  top: 3px;
-}
-.filetree .item.selected {
-  background: #4766ff;
-  color: #fff;
+
+.editor-container {
+  flex: 1;
+  width: calc(100vh - 250px); // allows monaco to resize properly
+
+  .editor-tabs {
+    height: 35px;
+    background: rgb(235, 235, 235);
+    display: flex;
+    overflow-x: scroll;
+    
+    scrollbar { 
+      display: none; 
+    }
+
+    .tab {
+      background-color: #e6e6e6;
+      height: 100%;
+      padding: 0 10px;
+      line-height: 35px;
+    }
+    .tab.active {
+      background-color: white;
+    }
+
+    .tab.active i {
+      opacity: 0;
+      cursor: pointer;
+      padding-left: 5px;
+      transition: opacity 0.3s;
+    }
+    .tab.active:hover i {
+      opacity: 1;
+    }
+  }
+  
+  #editor {
+    height: 100%;
+  }
 }

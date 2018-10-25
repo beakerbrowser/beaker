@@ -199,7 +199,7 @@ async function onClickNode (e, fileTree, node) {
   e.preventDefault()
   e.stopPropagation()
 
-  if (node.isEditable) {
+  if (node.isEditable && !node.isContainer) {
     models.setActive(fileTree, node)
   }
 
