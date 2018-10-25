@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
+import toggleable from '../com/toggleable'
 import FileTree from '../com/editor/file-tree'
 import * as models from '../com/editor/models'
 
