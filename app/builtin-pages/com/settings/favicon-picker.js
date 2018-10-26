@@ -1,6 +1,7 @@
 /* globals beaker */
 
 import * as yo from 'yo-yo'
+import * as faviconMakerPopup from './favicon-maker'
 
 // globals
 // =
@@ -58,6 +59,7 @@ function render () {
       <div class="tools">
         <a class="btn plain" onclick=${() => onClickRemove()}><span class="fa fa-times"></span> remove favicon</a>
         <a class="btn plain" onclick=${() => uploadFavicon()}><span class="fa fa-upload"></span> upload a favicon</a>
+        <a class="btn plain" onclick=${onCreateFavicon}><span class="fa fa-edit"></span> create your own</a>
       </div>
     </div>
   `
@@ -81,6 +83,14 @@ async function onClickRemove () {
   selectedFavicon = null
   onSelect(null)
   rerender()
+}
+
+async function onCreateFavicon (e) {
+  e.stopPropagation()
+
+  var customFavicon = await faviconMakerPopup.create()
+  let v = await beaker.browser.imageToIco(customFavicon)
+  if (v) onSelect(v)
 }
 
 async function uploadFavicon () {

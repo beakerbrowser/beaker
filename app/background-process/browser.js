@@ -134,6 +134,7 @@ export const WEBAPI = {
   listBuiltinFavicons,
   getBuiltinFavicon,
   uploadFavicon,
+  imageToIco,
 
   setWindowDimensions,
   showOpenDialog,
@@ -216,6 +217,12 @@ export async function uploadFavicon () {
   if (extension === '.ico' && ICO.isICO(faviconBuffer)) {
     return faviconBuffer
   }
+}
+
+export async function imageToIco (image) {
+  // TODO expand on this function to be png/jpg to ico
+  let imageToPng = nativeImage.createFromDataURL(image).toPNG()
+  return toIco(imageToPng, {resize: true})
 }
 
 export async function setWindowDimensions ({width, height} = {}) {
