@@ -51,6 +51,9 @@ export async function create () {
   // get the canvas 2d context
   ctx = canvas.getContext('2d')
 
+  // render initial preview (should be empty)
+  renderPreview()
+
   canvas.addEventListener('click', onCanvasClick)
   canvas.addEventListener('mousedown', () => { drawing = true })
   canvas.addEventListener('mouseup', () => { drawing = false })
@@ -90,7 +93,7 @@ function render () {
 
         <div class="body">
           <div class="design-container">
-            <img id="grid" src=${grid16} />
+            <img id="grid" src=${grid8} />
             <canvas id="favicon-maker"></canvas>
           </div>
 
@@ -137,6 +140,7 @@ function getPixel (e) {
 function fillPixel (x, y) {
   ctx.fillStyle = color
   ctx.fillRect(x, y, step, step)
+  renderPreview()
 }
 
 // event handlers
@@ -174,9 +178,19 @@ function changeColor (code) {
   document.querySelector('.currentColor').style.backgroundColor = code
 }
 
+function renderPreview () {
+  let preview = canvas.toDataURL() // get data url for current state of drawing
+  let imagePreview = document.getElementById('imagePreview') // get the image element
+  // downsize element and set src to data url
+  imagePreview.style.height = gridSize + 'px'
+  imagePreview.style.width = gridSize + 'px'
+  imagePreview.setAttribute('src', preview)
+}
+
 // clear the canvas
 function clearCanvas () {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
+  renderPreview()
 }
 
 // allow users to hold down mouse and draw inside canvas
@@ -184,23 +198,11 @@ function onDrawing (e) {
   if (!drawing) return
   let mousePos = getPixel(e)
   fillPixel(mousePos.x, mousePos.y)
-
-  clearTimeout(timeoutID) // only draw preview if user isn't drawing for more than 2 seconds
 }
 
 function onCanvasClick (e) {
   let mousePos = getPixel(e)
   fillPixel(mousePos.x, mousePos.y)
-
-  clearTimeout(timeoutID) // only draw preview if user isn't drawing for more than 2 seconds
-  timeoutID = setTimeout(() => {
-    let preview = canvas.toDataURL() // get data url for current state of drawing
-    let imagePreview = document.getElementById('imagePreview') // get the image element
-    // downsize element and set src to data url
-    imagePreview.style.height = gridSize + 'px'
-    imagePreview.style.width = gridSize + 'px'
-    imagePreview.setAttribute('src', preview)
-  }, 2000)
 }
 
 async function onSubmit (e) {
@@ -222,8 +224,6 @@ async function onSubmit (e) {
   resolve(favicon)
   destroy()
 }
-
-
 
 /*
 // the function used to render the grid
