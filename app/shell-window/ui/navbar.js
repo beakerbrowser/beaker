@@ -683,11 +683,20 @@ function onClickGotoDatVersion (e) {
   const page = getEventPage(e)
   if (!page || !page.protocolInfo) return
 
-  const url = `dat://${page.protocolInfo.hostname}${page.protocolInfo.pathname}`
+  var intendedUrl
+  try {
+    intendedUrl = new URL(page.getIntendedURL())
+  } catch (e) {
+    // log and abort
+    console.warn('Failed to parse intended URL', page.getIntendedURL(), e)
+    return
+  }
+
+  intendedUrl.protocol = 'dat:'
   if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create(url))
+    pages.setActive(pages.create(intendedUrl.toString()))
   } else {
-    page.loadURL(url) // goto
+    page.loadURL(intendedUrl.toString()) // goto
   }
 }
 
@@ -695,12 +704,21 @@ function onClickGotoHttpVersion (e) {
   const page = getEventPage(e)
   if (!page || !page.protocolInfo) return
 
-  const url = `https://${page.protocolInfo.hostname}${page.protocolInfo.pathname}`
-  pages.noRedirectHostnames.add(page.protocolInfo.hostname)
+  var intendedUrl
+  try {
+    intendedUrl = new URL(page.getIntendedURL())
+  } catch (e) {
+    // log and abort
+    console.warn('Failed to parse intended URL', page.getIntendedURL(), e)
+    return
+  }
+
+  intendedUrl.protocol = 'https:'
+  pages.noRedirectHostnames.add(intendedUrl.hostname)
   if (e.metaKey || e.ctrlKey) { // popup
-    pages.setActive(pages.create(url))
+    pages.setActive(pages.create(intendedUrl.toString()))
   } else {
-    page.loadURL(url) // goto
+    page.loadURL(intendedUrl.toString()) // goto
   }
 }
 
