@@ -10,12 +10,14 @@ var builtinFaviconsList
 var selectedFavicon
 var loadError
 var onSelect
+var currentFaviconUrl
 
 // exported
 // =
 
 export default function (opts) {
   onSelect = opts.onSelect
+  currentFaviconUrl = opts.currentFaviconUrl
 
   // load the favicons if neded
   if (!builtinFaviconsList) {
@@ -58,7 +60,7 @@ function render () {
       </div>
       <div class="tools">
         <a class="btn" onclick=${() => uploadFavicon()}><span class="fa fa-folder-open-o"></span> Open</a>
-        <a class="btn" onclick=${onCreateFavicon}><span class="fa fa-edit"></span> Create</a>
+        <a class="btn" onclick=${onCreateFavicon}><span class="fa fa-edit"></span> Edit</a>
         <a class="btn" onclick=${() => onClickRemove()}><span class="fa fa-times"></span> Remove</a>
       </div>
     </div>
@@ -88,13 +90,18 @@ async function onClickRemove () {
 async function onCreateFavicon (e) {
   e.stopPropagation()
 
-  var customFavicon = await faviconMakerPopup.create()
+  var customFavicon = await faviconMakerPopup.create({currentFaviconUrl})
   let v = await beaker.browser.imageToIco(customFavicon)
-  if (v) onSelect(v)
+  if (v) {
+    onSelect(v)
+    rerender()
+  }
 }
 
 async function uploadFavicon () {
   let v = await beaker.browser.uploadFavicon()
-  if (v) onSelect(v)
-  rerender()
+  if (v) {
+    onSelect(v)
+    rerender()
+  }
 }

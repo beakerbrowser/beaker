@@ -1,4 +1,4 @@
-/* globals beaker */
+/* globals beaker Image */
 
 import yo from 'yo-yo'
 import closeIcon from '../../icon/close'
@@ -8,7 +8,7 @@ import closeIcon from '../../icon/close'
 
 let canvas
 let ctx
-let gridSize = 8
+let gridSize = 16
 let step
 let color = '#438cc4'
 let drawing = false
@@ -37,7 +37,7 @@ let colorCodes = [
 // exported api
 // =
 
-export async function create () {
+export async function create (opts = {}) {
   // render interface
   var popup = render()
   document.body.appendChild(popup)
@@ -49,20 +49,30 @@ export async function create () {
   canvas.height = 256
 
   // set the grid step
-  gridSize = 8
+  gridSize = 16
   step = canvas.width / gridSize
 
   // get the canvas 2d context
   ctx = canvas.getContext('2d')
 
+  // load the current favicon, if provided
+  if (opts.currentFaviconUrl) {
+    let img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, 256, 256)
+      renderPreview()
+    }
+    img.src = opts.currentFaviconUrl
+  }
+
   // create a new canvas to downscale from 256x256
   resize = document.createElement('canvas')
   resizeCtx = resize.getContext('2d')
-
   resize.width = 32
   resize.height = 32
 
-  // render initial preview (should be empty)
+  // render initial preview
   renderPreview()
 
   canvas.addEventListener('click', onCanvasClick)
@@ -104,7 +114,7 @@ function render () {
 
         <div class="body">
           <div class="design-container">
-            <img id="grid" src=${grid8} />
+            <img id="grid" src=${grid16} />
             <canvas id="favicon-maker"></canvas>
           </div>
 
@@ -130,7 +140,7 @@ function render () {
           <img id="imagePreview" src="data:," />
           <button type="button" class="btn" onclick=${destroy}>Cancel</button>
           <button type="button" class="btn primary" onclick=${(e) => onSubmit(e)}>
-            Create Favicon
+            Save
           </button>
         </div>
       </form>
@@ -191,6 +201,7 @@ function changeColor (code) {
 
 function renderPreview () {
   // draw current canvas onto resize canvas to downscale
+  resizeCtx.clearRect(0, 0, 32, 32)
   resizeCtx.drawImage(canvas, 0, 0, 32, 32)
 
   favicon = resize.toDataURL() // get data url for current state of drawing
@@ -222,7 +233,7 @@ async function onSubmit (e) {
   e.preventDefault()
 
   // send custom favicon back to process into .ico and save
-  resolve(favicon)
+  resolve(canvas.toDataURL())
   destroy()
 }
 

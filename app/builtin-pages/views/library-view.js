@@ -429,6 +429,7 @@ function renderHeader () {
   const hasDescription = !!_get(archive, 'info.description')
   const isExpanded = !isNavCollapsed({ignoreScrollPosition: true})
   const isEditingTitle = headerEditValues.title !== false
+  const currentFaviconUrl = `beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}`
 
   return yo`
     <div class="library-view-header ${isExpanded ? 'expanded' : ''} ${hasDescription ? 'has-description' : ''}">
@@ -438,19 +439,19 @@ function renderHeader () {
             <div class="info">
               <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
                 ${!isOwner
-                    ? yo`<img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />`
+                    ? yo`<img class="favicon" src=${currentFaviconUrl} />`
                     : toggleable2({
                       id: 'favicon-picker2',
                       closed: ({onToggle}) => yo`
                         <div class="dropdown toggleable-container">
-                          <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
+                          <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
                         </div>`,
                       open: ({onToggle}) => yo`
                         <div class="dropdown toggleable-container">
-                          <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
+                          <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
 
                           <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
-                            ${renderFaviconPicker({onSelect: onSelectFavicon})}
+                            ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl})}
                           </div>
                         </div>`
                     })}
@@ -841,6 +842,7 @@ function renderSettingsView () {
   const description = _get(archive, 'info.description', '')
   const paymentLink = _get(archive, 'info.links.payment') ? archive.info.links.payment[0].href : ''
   const baseUrl = `beaker://library/${archive.url}`
+  const currentFaviconUrl = `beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}`
 
   var syncPath = _get(archive, 'info.userSettings.localSyncPath')
   var previewMode = _get(archive, 'info.userSettings.previewMode')
@@ -980,14 +982,14 @@ function renderSettingsView () {
                     id: 'favicon-picker',
                     closed: ({onToggle}) => yo`
                       <div class="dropdown toggleable-container">
-                        <img class="favicon-picker-btn" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
+                        <img class="favicon-picker-btn" src=${currentFaviconUrl} onclick=${onToggle} />
                       </div>`,
                     open: ({onToggle}) => yo`
                       <div class="dropdown toggleable-container">
-                        <img class="favicon-picker-btn pressed" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" onclick=${onToggle} />
+                        <img class="favicon-picker-btn pressed" src=${currentFaviconUrl} onclick=${onToggle} />
 
                         <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
-                          ${renderFaviconPicker({onSelect: onSelectFavicon})}
+                          ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl})}
                         </div>
                       </div>`
                   })}
@@ -1455,6 +1457,7 @@ async function onSelectFavicon (imageData) {
   }
   faviconCacheBuster = Date.now()
   isFaviconSet = true
+  closeAllToggleables()
   render()
 }
 

@@ -23,6 +23,7 @@ let query = ''
 let currentView = 'your archives'
 let currentSort = ['alpha', -1]
 let currentDateType = 'accessed'
+let faviconCacheBuster = Date.now()
 
 // main
 // =
@@ -183,7 +184,7 @@ function renderRow (row, i) {
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
       <span class="title">
-        <img class="favicon" src="beaker-favicon:32,${row.url}" />
+        <img class="favicon" src="beaker-favicon:32,${row.url}?cache=${faviconCacheBuster}" />
 
         ${row.title
           ? yo`<span class="title">${row.title}</span>`
