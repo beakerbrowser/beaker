@@ -171,6 +171,11 @@
     .dropdown-wrapper {
       max-height: calc(95vh - 74px);
       overflow-y: scroll;
+      
+      &::-webkit-scrollbar { 
+        // hide the scroll bar
+        display: none; 
+      }
     }
   }
 }
