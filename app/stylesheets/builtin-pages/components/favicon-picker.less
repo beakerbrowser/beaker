@@ -36,17 +36,22 @@
     }
   }
 
-  .tools {  
-    border-top: 1px solid #ddd;
-    height: 24px;
-    margin-top: 6px;
-    padding-top: 2px;
+  .tools {
+    margin-top: 5px;
     font-size: 12px;
     display: flex;
-    justify-content: space-between;
 
     a {
       font-size: 11px;
+      margin-right: 5px;
+      flex: 1;
+      height: 24px;
+      line-height: 21px;
+      text-align: center;
+
+      &:last-child {
+        margin-right: 0;
+      }
     }
   }
 }
