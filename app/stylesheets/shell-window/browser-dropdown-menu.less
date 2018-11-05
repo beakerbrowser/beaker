@@ -166,5 +166,11 @@
   .dropdown-items {
     width: 230px;
     border-radius: 4px;
+
+    // overflow scroll on parent remove triangle ::before affect
+    .dropdown-wrapper {
+      max-height: calc(95vh - 74px);
+      overflow-y: scroll;
+    }
   }
 }
