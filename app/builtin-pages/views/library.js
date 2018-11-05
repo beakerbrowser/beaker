@@ -101,6 +101,8 @@ function filterArchives () {
         return a
       } else if (a.description && a.description.toLowerCase().includes(query)) {
         return a
+      } else if (a.key && a.key.toLowerCase().includes(query)) {
+        return a
       }
     })
   }
