@@ -49,6 +49,7 @@ export async function create () {
   canvas.height = 256
 
   // set the grid step
+  gridSize = 8
   step = canvas.width / gridSize
 
   // get the canvas 2d context
