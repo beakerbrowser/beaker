@@ -12,6 +12,9 @@ let gridSize = 8
 let step
 let color = '#438cc4'
 let drawing = false
+let favicon
+let resize
+let resizeCtx
 
 let resolve
 let reject
@@ -50,6 +53,13 @@ export async function create () {
 
   // get the canvas 2d context
   ctx = canvas.getContext('2d')
+
+  // create a new canvas to downscale from 256x256
+  resize = document.createElement('canvas')
+  resizeCtx = resize.getContext('2d')
+
+  resize.width = 32
+  resize.height = 32
 
   // render initial preview (should be empty)
   renderPreview()
@@ -179,12 +189,14 @@ function changeColor (code) {
 }
 
 function renderPreview () {
-  let preview = canvas.toDataURL() // get data url for current state of drawing
+  // draw current canvas onto resize canvas to downscale
+  resizeCtx.drawImage(canvas, 0, 0, 32, 32)
+
+  favicon = resize.toDataURL() // get data url for current state of drawing
+
   let imagePreview = document.getElementById('imagePreview') // get the image element
   // downsize element and set src to data url
-  imagePreview.style.height = gridSize + 'px'
-  imagePreview.style.width = gridSize + 'px'
-  imagePreview.setAttribute('src', preview)
+  imagePreview.setAttribute('src', favicon)
 }
 
 // clear the canvas
@@ -207,18 +219,6 @@ function onCanvasClick (e) {
 
 async function onSubmit (e) {
   e.preventDefault()
-
-  // create a new canvas to downscale from 256x256
-  let resize = document.createElement('canvas')
-  let resizeCtx = resize.getContext('2d')
-
-  // set new canvas to 8x8, 16x16, or 32x32
-  resize.width = gridSize
-  resize.height = gridSize
-
-  // draw current canvas onto new canvas to downscale
-  resizeCtx.drawImage(canvas, 0, 0, gridSize, gridSize)
-  let favicon = resize.toDataURL() // get dataURL for image
 
   // send custom favicon back to process into .ico and save
   resolve(favicon)
