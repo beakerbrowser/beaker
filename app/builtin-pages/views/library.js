@@ -657,6 +657,7 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
   let items = [
     {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url)},
     {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url)},
+    {icon: 'code', label: 'Open in editor', click: () => window.open(`beaker://editor/${archive.url}`)},
     {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
     {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
   ]

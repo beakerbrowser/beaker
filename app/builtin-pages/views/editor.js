@@ -1,15 +1,14 @@
-/* globals DatArchive beaker hljs confirm sessionStorage location alert history */
+/* globals DatArchive beaker localStorage hljs confirm sessionStorage location alert history */
 
 import yo from 'yo-yo'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
-import toggleable from '../com/toggleable'
 import FileTree from '../com/editor/file-tree'
 import * as models from '../com/editor/models'
 
-const DAT_KEY = 'da47297fc3b933f6241ba82ddd1800ad210484010cd8179bbfa8963de95ad6c5'
 var archive
+var lastUrl
 var workingCheckout
 var archiveFsRoot
 var fileTree
@@ -47,48 +46,61 @@ async function setupWorkingCheckout () {
 
 setup()
 async function setup () {
-  // load the archive
-  console.log('Loading', DAT_KEY)
-  archive = new Archive(DAT_KEY)
-  await archive.setup()
-  await setupWorkingCheckout()
+  // load data
+  let url = await parseLibraryUrl()
 
-  // load the archiveFS
-  archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
-  fileTree = new FileTree(archiveFsRoot)
-  await fileTree.setCurrentSource(archiveFsRoot)
+  // if opening
+  loadState()
+  if (lastUrl === url) {
+    archive = new Archive(lastUrl)
+    await archive.setup()
+    await setupWorkingCheckout()
 
-  //archive.on('changed', onArchiveChanged)
+    models.loadModels(archive, JSON.parse(localStorage.getItem('models')))
+  } else if (url) {
+    archive = new Archive(url)
+    await archive.setup()
+    await setupWorkingCheckout()
+  }
+
+  if (archive) {
+    // load the archiveFS
+    archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
+    fileTree = new FileTree(archiveFsRoot)
+    await fileTree.setCurrentSource(archiveFsRoot)
+
+    saveState()
+  }
+
+  document.title = `Editor - ${_get(archive, 'info.title', 'Untitled')}`
 
   render()
+}
 
-  // debug
-  window.models = models
-  window.archive = archive
+function loadState () {
+  lastUrl = localStorage.getItem('lastUrl') || null
+}
+
+function saveState () {
+  localStorage.setItem('lastUrl', archive.url)
 }
 
 function render () {
-  // toolbar
-  /*yo.update(
-    document.querySelector('.editor-toolbar'), yo`
-      <div class="editor-toolbar">
-        ${renderToolbar()}
-      </div>
-    `
-  )*/
-
-  console.log(archive)
-
-  // nav
+  // explorer/file tree
   yo.update(
     document.querySelector('.editor-explorer'),
     yo`
       <div class="editor-explorer">
         <div class="explorer-title">Explorer</div>
         <div class="explorer-section">
-          <span class="section-title">
-            <i class="fa fa-caret-right"></i>
-            beakerbrowser.com
+          <span class="section-title" onclick=${toggleFileTree}>
+            <i class="fa fa-caret-down"></i>
+            <span>${_get(archive, 'info.title', 'Untitled')}</span>
+            <div class="archive-fs-options">
+              <i class="fa fa-sync-alt"></i>
+              <i class="fa fa-plus-square"></i>
+              <i class="fa fa-folder-plus"></i>
+            </div>
           </span>
           ${fileTree ? fileTree.render() : ''}
         </div>
@@ -101,81 +113,23 @@ function render () {
     document.querySelector('.editor-tabs'),
     yo`
       <div class="editor-tabs">
-        <div class="tab active">
-          untitled
-          <i class="fa fa-times"></i>
-        </div>
+        ${models.getModels().map(model => renderTabs(model))}
       </div>
     `
   )
-
-  /*yo.update(
-    document.querySelector('.header'),
-    yo`<div class="header">
-      <div class="btn" onclick=${onSave}><span class="icon icon-floppy"></span> Save</div>
-      <div class="sep"></div>
-      <div class="file-info">
-        index.html
-        ${models.getActive()
-          ? yo`<span class="muted thin">${models.getActive().lang}</span>`
-          : ''}
-      </div>
-      <div class="flex-fill"></div>
-      <div class="sep"></div>
-      <div class="btn" onclick=${onFork}><span class="icon icon-flow-branch"></span> Fork</div>
-      <div class="sep"></div>
-      <div class="btn" onclick=${onAboutSite}><span class="icon icon-info"></span> About Site</div>
-      <div class="sep"></div>
-      <div class="btn" onclick=${onOpenInNewWindow}><span class="icon icon-popup"></span> Open</div>
-    </div>`
-  )*/
 }
 
-/*function renderToolbar() {
-  return yo`
-    ${toggleable(yo`
-      <div class="toolbar-item toggleable-container">
-        <span class="toggleable" data-toggle-on="mouseover">File</span>
-        <div class="toolbar-items subtle-shadow left">
-          <div class="item" onclick=${() => onCreateSite()}>
-            <div class="label">
-              New File
-            </div>
-          </div>
-          <div class="item" onclick=${() => onCreateSite()}>
-            <div class="label">
-              New Editor Window
-            </div>
-          </div>
-        </div>
-      </div>
-    `)}
-    ${toggleable(yo`
-      <div class="toolbar-item toggleable-container">
-        <span class="toggleable" data-toggle-on="mouseover">Edit</span>
-        <div class="toolbar-items subtle-shadow left">
-          <div class="item" onclick=${() => onCreateSite()}>
-            <div class="label">
-              New File
-            </div>
-          </div>
-          <div class="item" onclick=${() => onCreateSite()}>
-            <div class="label">
-              New Editor Window
-            </div>
-          </div>
-        </div>
-      </div>
-    `)}
-  `
-}*/
-
-/*window.addEventListener('editor-created', () => {
-  models.setActive(fileTree.getCurrentSource(), 'index.html')
-})*/
+window.addEventListener('editor-created', () => {
+  if (archive) {
+    let showDefaultFile = archiveFsRoot._files.find(v => {
+      return v.name === 'index.html'
+    })
+    models.setActive(showDefaultFile)
+  }
+})
 
 window.addEventListener('open-file', e => {
-  models.setActive(archive, e.detail.path)
+  models.setActive(e.detail.path)
 })
 
 window.addEventListener('keydown', e => {
@@ -185,31 +139,35 @@ window.addEventListener('keydown', e => {
   }
 })
 
-window.addEventListener('set-active-model', render)
+window.addEventListener('update-editor', updateEditor)
 window.addEventListener('model-dirtied', render)
 window.addEventListener('model-cleaned', render)
 
+function renderTabs (model) {
+  let cls = models.getActive() === model ? 'active' : ''
+  return yo`
+    <div class="tab ${cls}" onclick=${() => models.setActive(model)}>
+      ${model.name}
+      <i class="fa fa-times" onclick=${(e) => models.unload(e, model)}></i>
+    </div>
+  `
+}
+async function parseLibraryUrl () {
+  return window.location.pathname.slice(1)
+}
+
+function updateEditor () {
+  saveState()
+  render()
+}
+
+function toggleFileTree () {
+  let fileTree = document.querySelector('.filetree')
+  let icon = document.querySelector('.section-title i')
+  icon.classList.contains('fa-caret-down') ? icon.classList.replace('fa-caret-down', 'fa-caret-right') : icon.classList.replace('fa-caret-right', 'fa-caret-down')
+  fileTree.classList.toggle('hidden')
+}
+
 function onSave () {
   models.save(archive, archive.files.currentNode.entry.path)
-}
-
-function onFork () {
-  beaker.openUrl(`beaker:library/${DAT_KEY}#fork`)
-}
-
-function onAboutSite () {
-  beaker.openUrl(`beaker:library/${DAT_KEY}`)
-}
-
-function onOpenInNewWindow () {
-  const active = models.getActive()
-  if (!active) return
-  beaker.openUrl(`dat://${DAT_KEY}/${active.path}`)
-}
-
-function onArchiveChanged () {
-  const activeModel = models.getActive()
-  if (!activeModel) return
-  archive.files.setCurrentNodeByPath(activeModel.path, {allowFiles: true})
-  render()
 }
