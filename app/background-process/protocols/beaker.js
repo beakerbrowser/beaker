@@ -303,18 +303,18 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://editor/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/editor.build.js'))
   }
-  if (requestUrl === 'beaker://editor/monaco.js') {
+  if (requestUrl === 'beaker://assets/monaco.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/editor/monaco.js'))
   }
-  if (requestUrl.startsWith('beaker://editor/vs/') && requestUrl.endsWith('.js')) {
-    let filePath = requestUrl.slice('beaker://editor/vs/'.length)
+  if (requestUrl.startsWith('beaker://assets/vs/') && requestUrl.endsWith('.js')) {
+    let filePath = requestUrl.slice('beaker://assets/vs/'.length)
     return cb(200, 'OK', 'application/javascript', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
   }
-  if (requestUrl.startsWith('beaker://editor/vs/') && requestUrl.endsWith('.css')) {
-    let filePath = requestUrl.slice('beaker://editor/vs/'.length)
+  if (requestUrl.startsWith('beaker://assets/vs/') && requestUrl.endsWith('.css')) {
+    let filePath = requestUrl.slice('beaker://assets/vs/'.length)
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
   }
-  if (requestUrl === 'beaker://editor/') {
+  if (requestUrl.startsWith('beaker://editor/')) {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/editor.html'))
   }
 
