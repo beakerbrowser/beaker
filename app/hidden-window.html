@@ -1,0 +1,11 @@
+<html>
+  <script>
+    var url = new URL(window.location)
+    try {
+      console.log('Loading: ' + url.searchParams.get('module'))
+      require(url.searchParams.get('module'))
+    } catch (e) {
+      console.error('Failed to load the module:' + e.toString())
+    }
+  </script>
+</html>

@@ -22,9 +22,11 @@ import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
 import * as basicAuth from './background-process/ui/basic-auth'
+import * as hiddenWindows from './background-process/hidden-windows'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
+import * as beakerHiddenWindowProtocol from './background-process/protocols/beaker-hidden-window'
 
 import * as testDriver from './background-process/test-driver'
 import * as openURL from './background-process/open-url'
@@ -57,7 +59,7 @@ if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
 app.enableMixedSandbox()
 
 // configure the protocols
-protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
+protocol.registerStandardSchemes(['dat', 'beaker', 'beaker-hidden-window'], { secure: true })
 
 // handle OS event to open URLs
 app.on('open-url', (e, url) => {
@@ -112,6 +114,7 @@ app.on('ready', async function () {
   // protocols
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
+  beakerHiddenWindowProtocol.setup()
   protocol.registerStreamProtocol('dat', beakerCore.dat.protocol.electronHandler, err => {
     if (err) {
       console.error(err)
@@ -121,6 +124,9 @@ app.on('ready', async function () {
 
   // configure chromium's permissions for the protocols
   protocol.registerServiceWorkerSchemes(['dat'])
+
+  // DEBUG
+  hiddenWindows.spawn('./test-hidden-process.js')
 })
 
 app.on('custom-ready-to-show', () => {
