@@ -106,16 +106,34 @@ async function beakerProtocol (request, respond) {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/icons.css'))
   }
   if (requestUrl === 'beaker://assets/font-awesome.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/fonts/font-awesome/css/font-awesome.min.css'))
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/fonts/font-awesome/css/all.min.css'))
   }
-  if (requestUrl === 'beaker://assets/fontawesome-webfont.woff2') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fontawesome-webfont.woff2'))
+  if (requestUrl === 'beaker://assets/fa-regular-400.woff2') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-regular-400.woff2'))
   }
-  if (requestUrl === 'beaker://assets/fontawesome-webfont.woff') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fontawesome-webfont.woff'))
+  if (requestUrl === 'beaker://assets/fa-regular-400.woff') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-regular-400.woff'))
   }
-  if (requestUrl === 'beaker://assets/fontawesome-webfont.svg') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fontawesome-webfont.svg'))
+  if (requestUrl === 'beaker://assets/fa-regular-400.svg') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-regular-400.svg'))
+  }
+  if (requestUrl === 'beaker://assets/fa-solid-900.woff2') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-solid-900.woff2'))
+  }
+  if (requestUrl === 'beaker://assets/fa-solid-900.woff') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-solid-900.woff'))
+  }
+  if (requestUrl === 'beaker://assets/fa-solid-900.svg') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-solid-900.svg'))
+  }
+  if (requestUrl === 'beaker://assets/fa-brands-400.woff2') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-brands-400.woff2'))
+  }
+  if (requestUrl === 'beaker://assets/fa-brands-400.woff') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-brands-400.woff'))
+  }
+  if (requestUrl === 'beaker://assets/fa-brands-400.svg') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/fonts/fa-brands-400.svg'))
   }
   if (requestUrl === 'beaker://assets/font-photon-entypo') {
     return cb(200, 'OK', 'application/font-woff', path.join(__dirname, 'assets/fonts/photon-entypo.woff'))
