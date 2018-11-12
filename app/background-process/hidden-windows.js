@@ -11,10 +11,13 @@ var hiddenWindows = {}
 export async function spawn (modulePath) {
   var fullModulePath = require.resolve(modulePath)
   var win = new BrowserWindow({show: false})
-  console.log('Hidden windows attempting to spawn', modulePath)
+  console.log('Spawn', modulePath)
   win.loadURL('beaker-hidden-window://loader/?module='+encodeURIComponent(fullModulePath))
   win.webContents.on('console-message', (e, level, msg) => {
     console.log(modulePath, 'says', msg)
+  })
+  await new Promise((resolve, reject) => {
+    win.webContents.on('did-finish-load', resolve)
   })
   hiddenWindows[modulePath] = win
   return win

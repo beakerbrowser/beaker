@@ -126,7 +126,16 @@ app.on('ready', async function () {
   protocol.registerServiceWorkerSchemes(['dat'])
 
   // DEBUG
-  hiddenWindows.spawn('./test-hidden-process.js')
+  var hw = await hiddenWindows.spawn('./test-hidden-process.js')
+  console.log('did-finish-load')
+  var api = rpc.importAPI('test-hidden-process', {
+    foo1: 'promise',
+    foo2: 'promise',
+    stream: 'readable'
+  }, { wc: hw.webContents })
+  console.log('calling')
+  api.foo1().then(console.log, console.log)
+  api.foo2().then(console.log, console.log)
 })
 
 app.on('custom-ready-to-show', () => {
