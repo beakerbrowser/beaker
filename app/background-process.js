@@ -78,6 +78,10 @@ app.on('open-file', (e, filepath) => {
 })
 
 app.on('ready', async function () {
+  // start the daemon process
+  beakerHiddenWindowProtocol.setup()
+  var datDaemonWindow = await hiddenWindows.spawn('./dat-daemon.js')
+
   // setup core
   await beakerCore.setup({
     // paths
@@ -94,7 +98,8 @@ app.on('ready', async function () {
     },
     rpcAPI: rpc,
     downloadsWebAPI: downloads.WEBAPI,
-    browserWebAPI: beakerBrowser.WEBAPI
+    browserWebAPI: beakerBrowser.WEBAPI,
+    datDaemonWc: datDaemonWindow.webContents
   })
 
   // base
@@ -114,7 +119,6 @@ app.on('ready', async function () {
   // protocols
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
-  beakerHiddenWindowProtocol.setup()
   protocol.registerStreamProtocol('dat', beakerCore.dat.protocol.electronHandler, err => {
     if (err) {
       console.error(err)
@@ -124,18 +128,6 @@ app.on('ready', async function () {
 
   // configure chromium's permissions for the protocols
   protocol.registerServiceWorkerSchemes(['dat'])
-
-  // DEBUG
-  var hw = await hiddenWindows.spawn('./test-hidden-process.js')
-  console.log('did-finish-load')
-  var api = rpc.importAPI('test-hidden-process', {
-    foo1: 'promise',
-    foo2: 'promise',
-    stream: 'readable'
-  }, { wc: hw.webContents })
-  console.log('calling')
-  api.foo1().then(console.log, console.log)
-  api.foo2().then(console.log, console.log)
 })
 
 app.on('custom-ready-to-show', () => {

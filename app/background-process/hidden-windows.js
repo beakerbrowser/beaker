@@ -1,4 +1,4 @@
-import {BrowserWindow} from 'electron'
+import {app, BrowserWindow} from 'electron'
 
 // globals
 // =
@@ -11,8 +11,9 @@ var hiddenWindows = {}
 export async function spawn (modulePath) {
   var fullModulePath = require.resolve(modulePath)
   var win = new BrowserWindow({show: false})
+  win.webContents.toggleDevTools()
   console.log('Spawn', modulePath)
-  win.loadURL('beaker-hidden-window://loader/?module='+encodeURIComponent(fullModulePath))
+  win.loadURL(`beaker-hidden-window://loader/?module=${encodeURIComponent(fullModulePath)}&userDataPath=${encodeURIComponent(app.getPath('userData'))}`)
   win.webContents.on('console-message', (e, level, msg) => {
     console.log(modulePath, 'says', msg)
   })

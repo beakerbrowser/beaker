@@ -2,11 +2,8 @@
   <h1>Hidden Window</h1>
   <script>
     var url = new URL(window.location)
-    try {
-      console.log('Loading: ' + url.searchParams.get('module'))
-      require(url.searchParams.get('module'))
-    } catch (e) {
-      console.error('Failed to load the module:' + e.toString())
-    }
+    console.log('Loading: ' + url.searchParams.get('module'))
+    window.userDataPath = url.searchParams.get('userDataPath')
+    require(url.searchParams.get('module'))
   </script>
 </html>
