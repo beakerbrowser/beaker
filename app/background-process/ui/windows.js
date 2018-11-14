@@ -39,7 +39,7 @@ export async function setup () {
     else app.on('ready', ensureOneWindowExists)
   })
   ipcMain.on('new-window', () => createShellWindow())
-  app.on('window-all-closed', () => {
+  app.on('custom-window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
   })
 
@@ -317,6 +317,11 @@ function ensureVisibleOnSomeDisplay (windowState) {
 function onClosed (win) {
   return e => {
     numActiveWindows--
+    if (numActiveWindows === 0) {
+      // emit a custom 'window-all-closed'
+      // we need to do this because we have hidden windows running additional behaviors
+      app.emit('custom-window-all-closed')
+    }
 
     // deny any outstanding permission requests
     permissions.denyAllRequests(win)
