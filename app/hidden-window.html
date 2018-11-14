@@ -1,6 +1,22 @@
 <html>
   <h1>Hidden Window</h1>
   <script>
+    // patch console methods to properly give us full content to stdout
+    function patchConsole (name) {
+      var org = console[name]
+      console[name] = (...args) => {
+        org(args.map(v => {
+          if (typeof v === 'string') return v
+          return JSON.stringify(v)
+        }).join(' '))
+      }
+    }
+    patchConsole('log')
+    patchConsole('debug')
+    patchConsole('warn')
+    patchConsole('error')
+
+    // load module
     var url = new URL(window.location)
     console.log('Loading: ' + url.searchParams.get('module'))
     window.userDataPath = url.searchParams.get('userDataPath')

@@ -80,7 +80,7 @@ app.on('open-file', (e, filepath) => {
 app.on('ready', async function () {
   // start the daemon process
   beakerHiddenWindowProtocol.setup()
-  var datDaemonWindow = await hiddenWindows.spawn('./dat-daemon.js')
+  var datDaemonWindow = await hiddenWindows.spawn('dat-daemon', './dat-daemon.js')
 
   // setup core
   await beakerCore.setup({
