@@ -218,8 +218,8 @@ export function createShellWindow (windowState) {
 export function getActiveWindow () {
   // try to pull the focused window; if there isnt one, fallback to the last created
   var win = BrowserWindow.getFocusedWindow()
-  if (!win) {
-    win = BrowserWindow.getAllWindows().pop()
+  if (!win || win.webContents.getURL() !== 'beaker://shell-window/') {
+    win = BrowserWindow.getAllWindows().filter(win => win.webContents.getURL() === 'beaker://shell-window/').pop()
   }
   return win
 }
