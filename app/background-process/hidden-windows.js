@@ -11,7 +11,7 @@ var hiddenWindows = {}
 export async function spawn (id, modulePath) {
   var fullModulePath = require.resolve(modulePath)
   var win = new BrowserWindow({show: false})
-  win.webContents.toggleDevTools()
+  // win.webContents.toggleDevTools()
   console.log('[', id, '] Starting...')
   win.loadURL(`beaker-hidden-window://loader/?module=${encodeURIComponent(fullModulePath)}&userDataPath=${encodeURIComponent(app.getPath('userData'))}`)
   win.webContents.on('console-message', (e, level, msg) => {
