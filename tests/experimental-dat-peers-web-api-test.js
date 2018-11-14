@@ -80,7 +80,7 @@ test('experiment must be opted into', async t => {
   `)
 
   // make sure the change has made it to browser 2
-  // await new Promise(resolve => setTimeout(resolve, 1e3))
+  await new Promise(resolve => setTimeout(resolve, 1e3))
   var manifest = await app2.executeJavascript(`
     (async function () {
       var archive = new DatArchive("${createdDatUrl}")

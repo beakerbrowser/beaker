@@ -22,9 +22,11 @@ import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
 import * as basicAuth from './background-process/ui/basic-auth'
+import * as hiddenWindows from './background-process/hidden-windows'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
+import * as beakerHiddenWindowProtocol from './background-process/protocols/beaker-hidden-window'
 
 import * as testDriver from './background-process/test-driver'
 import * as openURL from './background-process/open-url'
@@ -57,7 +59,7 @@ if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
 app.enableMixedSandbox()
 
 // configure the protocols
-protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
+protocol.registerStandardSchemes(['dat', 'beaker', 'beaker-hidden-window'], { secure: true })
 
 // handle OS event to open URLs
 app.on('open-url', (e, url) => {
@@ -76,6 +78,10 @@ app.on('open-file', (e, filepath) => {
 })
 
 app.on('ready', async function () {
+  // start the daemon process
+  beakerHiddenWindowProtocol.setup()
+  var datDaemonWindow = await hiddenWindows.spawn('dat-daemon', './dat-daemon.js')
+
   // setup core
   await beakerCore.setup({
     // paths
@@ -92,7 +98,8 @@ app.on('ready', async function () {
     },
     rpcAPI: rpc,
     downloadsWebAPI: downloads.WEBAPI,
-    browserWebAPI: beakerBrowser.WEBAPI
+    browserWebAPI: beakerBrowser.WEBAPI,
+    datDaemonWc: datDaemonWindow.webContents
   })
 
   // base

@@ -8,7 +8,7 @@
   "copyright": "© 2018, Blue Link Labs",
   "main": "background-process.build.js",
   "dependencies": {
-    "@beaker/core": "2.19.0",
+    "@beaker/core": "3.0.0",
     "@beaker/dat-archive-file-diff": "^1.0.0",
     "@beaker/electron-localshortcut": "^1.0.0",
     "anymatch": "^1.3.2",
@@ -70,7 +70,7 @@
     "os-name": "^2.0.1",
     "parse-dat-url": "^3.0.1",
     "pauls-dat-api": "^8.0.1",
-    "pauls-electron-rpc": "^4.1.3",
+    "pauls-electron-rpc": "^4.3.0",
     "pauls-word-boundary": "^1.0.0",
     "pify": "^2.3.0",
     "pretty-bytes": "^3.0.1",

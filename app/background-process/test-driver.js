@@ -3,6 +3,8 @@ import {ipcMain} from 'electron'
 import * as beakerCore from '@beaker/core'
 import * as windows from './ui/windows'
 
+const LOG_MESSAGES = false
+
 var testPort = +beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
 var sock
 
@@ -23,7 +25,15 @@ export function setup () {
   sock.on('listening', hit)
   ipcMain.once('shell-window:ready', hit)
   function hit () {
-    if (!(--todos)) send({isReady: true, port: sock.address().port})
+    if (!(--todos)) {
+      // HACK
+      // there's some kind of race which causes `executeJavaScript` to not run in the shell window during tests
+      // this timeout is intended to solve that
+      // -prf
+      setTimeout(() => {
+        send({isReady: true, port: sock.address().port})
+      }, 1e3)
+    }
   }
 }
 
@@ -31,6 +41,7 @@ export function setup () {
 // =
 
 function send (obj) {
+  if (LOG_MESSAGES) console.log('driverserver sent', JSON.stringify(obj))
   obj = Buffer.from(JSON.stringify(obj), 'utf8')
   sock.send(obj, 0, obj.length, testPort, '127.0.0.1', err => {
     if (err) console.log('Error communicating with the test driver', err)
@@ -38,6 +49,7 @@ function send (obj) {
 }
 
 async function onMessage (message) {
+  if (LOG_MESSAGES) console.log('driverserver got', message.toString('utf8'))
   const {msgId, cmd, args} = JSON.parse(message.toString('utf8'))
   var method = METHODS[cmd]
   if (!method) method = () => new Error('Invalid method: ' + cmd)

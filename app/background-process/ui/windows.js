@@ -39,7 +39,7 @@ export async function setup () {
     else app.on('ready', ensureOneWindowExists)
   })
   ipcMain.on('new-window', () => createShellWindow())
-  app.on('window-all-closed', () => {
+  app.on('custom-window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
   })
 
@@ -218,8 +218,8 @@ export function createShellWindow (windowState) {
 export function getActiveWindow () {
   // try to pull the focused window; if there isnt one, fallback to the last created
   var win = BrowserWindow.getFocusedWindow()
-  if (!win) {
-    win = BrowserWindow.getAllWindows().pop()
+  if (!win || win.webContents.getURL() !== 'beaker://shell-window/') {
+    win = BrowserWindow.getAllWindows().filter(win => win.webContents.getURL() === 'beaker://shell-window/').pop()
   }
   return win
 }
@@ -317,6 +317,11 @@ function ensureVisibleOnSomeDisplay (windowState) {
 function onClosed (win) {
   return e => {
     numActiveWindows--
+    if (numActiveWindows === 0) {
+      // emit a custom 'window-all-closed'
+      // we need to do this because we have hidden windows running additional behaviors
+      app.emit('custom-window-all-closed')
+    }
 
     // deny any outstanding permission requests
     permissions.denyAllRequests(win)

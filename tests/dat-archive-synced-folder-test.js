@@ -474,6 +474,7 @@ test('previewMode=true with a local folder', async t => {
   var datUrl = res.url
   t.truthy(datUrl.startsWith('dat://'))
 
+
   const readArchiveFile = path => (
     mainTab.executeJavascript(`
       var archive = new DatArchive("${datUrl}")
@@ -487,13 +488,9 @@ test('previewMode=true with a local folder', async t => {
 
   // configure
   var res = await mainTab.executeJavascript(`
-    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}")
+    beaker.archives.setLocalSyncPath("${datUrl}", "${escapeWindowsSlashes(filePath)}", {previewMode: true})
   `)
   t.falsy(res)
-  var res = await mainTab.executeJavascript(`
-    beaker.archives.setUserSettings("${datUrl}", {previewMode: true})
-  `)
-  t.deepEqual(res.previewMode, true)
 
   // write files locally
   await dir.write('local-file.txt', 'local')
@@ -504,12 +501,15 @@ test('previewMode=true with a local folder', async t => {
   // wait a sec
   await new Promise(resolve => setTimeout(resolve, 1e3))
 
+
   // make sure no sync has occurred
   var res = await mainTab.executeJavascript(`
     var archive = new DatArchive("${datUrl}")
     archive.readdir('/', {recursive: true})
   `)
   t.deepEqual(res.map(toUnixPath).sort(), ['.datignore', 'dat.json'].sort())
+
+
 
   // write to the archive
   var syncPromise = waitForSync(mainTab, datUrl, 'folder')
@@ -520,6 +520,7 @@ test('previewMode=true with a local folder', async t => {
 
   // wait for sync to occur
   await syncPromise
+
 
   // check local folder
   t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'archive-file.txt', 'local-folder'].sort())
@@ -551,6 +552,7 @@ test('previewMode=true with a local folder', async t => {
   await syncPromise1
   await syncPromise2
   await mainTab.executeJavascript(`beaker.archives.ensureLocalSyncFinished("${datUrl}")`)
+
 
   // check local folder
   t.deepEqual((await dir.listAsync()).sort(), ['.datignore', 'dat.json', 'local-file.txt', 'archive-file.txt', 'local-folder'].sort())
