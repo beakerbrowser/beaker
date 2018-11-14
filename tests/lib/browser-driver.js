@@ -1,6 +1,8 @@
 const childProcess = require('child_process')
 const dgram = require('dgram')
 
+const LOG_MESSAGES = false
+
 exports.start = function (opts) {
   return new BrowserDriver(opts)
 }
@@ -36,6 +38,7 @@ class BrowserDriver {
       // handle rpc responses
       this.sock.on('message', (message) => {
         message = JSON.parse(message.toString('utf8'))
+        if (LOG_MESSAGES) console.log('driverclient got', message)
 
         // special handling for isReady message
         if (message.isReady) {
@@ -56,6 +59,7 @@ class BrowserDriver {
 
   async rpc (cmd, ...args) {
     // send rpc request
+    if (LOG_MESSAGES) console.log('driverclient sent', {msgId, cmd, args})
     var msgId = this.rpcCalls.length
     var msg = Buffer.from(JSON.stringify({msgId, cmd, args}), 'utf8')
     this.sock.send(msg, 0, msg.length, this.browserPort, '127.0.0.1', err => {

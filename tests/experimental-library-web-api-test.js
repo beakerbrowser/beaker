@@ -74,6 +74,9 @@ test('experiment must be opted into', async t => {
 })
 
 test('library.list()', async t => {
+  // give time for the mtime to be read
+  await new Promise(r => setTimeout(r, 1e3))
+
   // list (no options)
   var listingP = mainTab.executeJavascript(`
     experimental.library.list()

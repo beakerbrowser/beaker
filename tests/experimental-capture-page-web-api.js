@@ -71,7 +71,7 @@ test('experiment must be opted into', async t => {
 test('capturePage()', async t => {
   // capture https://example.com
   var png = mainTab.executeJavascript(`
-    experimental.capturePage('https://example.com').then(png => ({byteLength: png.byteLength, isArrayBuffer: png instanceof ArrayBuffer}))
+    experimental.capturePage('https://example.com').then(png => ({byteLength: png.byteLength}))
   `)
 
   // accept the permission prompt
@@ -80,6 +80,5 @@ test('capturePage()', async t => {
   png = await png
 
   // check results
-  t.truthy(png.isArrayBuffer)
   t.truthy(png.byteLength > 0)
 })

@@ -856,6 +856,28 @@ test('versioned reads and writes', async t => {
     console.log('Weird history', history)
   }
   t.deepEqual(history.length, 5)
+  var history2 = await app.executeJavascript(`
+    var archive = new DatArchive("${newTestDatURL}")
+    archive.history({reverse: true})
+  `)
+  t.deepEqual(history2[0].version, history[4].version)
+  var history2 = await app.executeJavascript(`
+    var archive = new DatArchive("${newTestDatURL}")
+    archive.history({start: 0, end: 5, reverse: true})
+  `)
+  t.deepEqual(history2[0].version, history[4].version)
+  var history2 = await app.executeJavascript(`
+    var archive = new DatArchive("${newTestDatURL}")
+    archive.history({start: 2, end: 4})
+  `)
+  t.deepEqual(history2[0].version, history[1].version)
+  t.deepEqual(history2[1].version, history[2].version)
+  var history2 = await app.executeJavascript(`
+    var archive = new DatArchive("${newTestDatURL}")
+    archive.history({start: 2, end: 4, reverse: true})
+  `)
+  t.deepEqual(history2[0].version, history[2].version)
+  t.deepEqual(history2[1].version, history[1].version)
 
   // read back versions
   t.deepEqual((await readdir(newTestDatURL + '+1', '/')).length, 1)
