@@ -10,8 +10,8 @@ import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
-const LATEST_VERSION = 7011 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
-const RELEASE_NOTES_URL = 'https://beakerbrowser.com/releases/0-7-10/?updated=true'
+const LATEST_VERSION = 8001 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/0.8.0'
 
 // globals
 // =
@@ -33,13 +33,13 @@ async function setup () {
   if (!hasDismissedOnboarding) onboardingPopup.create()
 
   // open update info if appropriate
-  // if (!settings.no_welcome_tab) {
-  //   let latestVersion = await beaker.sitedata.get('beaker://start', 'latest-version')
-  //   if (+latestVersion && +latestVersion < LATEST_VERSION) {
-  //     await beaker.sitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
-  //     window.open(RELEASE_NOTES_URL)
-  //   }
-  // }
+  if (!settings.no_welcome_tab) {
+    let latestVersion = await beaker.sitedata.get('beaker://start', 'latest-version')
+    if (+latestVersion && +latestVersion < LATEST_VERSION) {
+      await beaker.sitedata.set('beaker://start', 'latest-version', LATEST_VERSION)
+      window.open(RELEASE_NOTES_URL)
+    }
+  }
 
   await loadBookmarks()
   MOTD.load()
