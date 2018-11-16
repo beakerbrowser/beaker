@@ -3,7 +3,7 @@
   "name": "beakerbrowser",
   "devDependencies": {
     "browserify": "^13.0.1",
-    "electron": "3.0.4",
+    "electron": "3.0.9",
     "electron-builder": "~20.8.0",
     "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
