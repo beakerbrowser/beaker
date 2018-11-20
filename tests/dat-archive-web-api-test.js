@@ -360,11 +360,22 @@ test('DatArchive.create prompt=true', async t => {
 })
 
 test('DatArchive.fork prompt=false', async t => {
+  // create a dat
+  var res = await app.executeJavascript(`
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
+  `)
+  var datUrl = res.url
+  t.truthy(datUrl.startsWith('dat://'))
+  await app.executeJavascript(`
+    var archive = new DatArchive("${datUrl}")
+    archive.writeFile('foo.txt', 'bar', 'utf8')
+  `)
+
   // start the permission prompt
   mainTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.fork("${createdDatURL}", { description: 'The Description 2', prompt: false }).then(
+    DatArchive.fork("${datUrl}", { description: 'The Description 2', prompt: false }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -379,6 +390,13 @@ test('DatArchive.fork prompt=false', async t => {
   var res = await mainTab.executeJavascript(`window.res`)
   var forkedDatURL = res.url
   t.truthy(forkedDatURL.startsWith('dat://'))
+
+  // check the content
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${forkedDatURL}")
+    archive.readFile('foo.txt')
+  `)
+  t.deepEqual(res, 'bar')
 
   // check the dat.json
   var res = await mainTab.executeJavascript(`
@@ -396,11 +414,22 @@ test('DatArchive.fork prompt=false', async t => {
 })
 
 test('DatArchive.fork prompt=true', async t => {
+  // create a dat
+  var res = await app.executeJavascript(`
+    DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
+  `)
+  var datUrl = res.url
+  t.truthy(datUrl.startsWith('dat://'))
+  await app.executeJavascript(`
+    var archive = new DatArchive("${datUrl}")
+    archive.writeFile('foo.txt', 'bar', 'utf8')
+  `)
+
   // start the prompt
   mainTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
-    DatArchive.fork("${createdDatURL}", { description: 'The Description 2', prompt: true }).then(
+    DatArchive.fork("${datUrl}", { description: 'The Description 2', prompt: true }).then(
       res => window.res = res,
       err => window.res = err
     )
@@ -415,6 +444,13 @@ test('DatArchive.fork prompt=true', async t => {
   var res = await mainTab.executeJavascript(`window.res`)
   var forkedDatURL = res.url
   t.truthy(forkedDatURL.startsWith('dat://'))
+
+  // check the content
+  var res = await mainTab.executeJavascript(`
+    var archive = new DatArchive("${forkedDatURL}")
+    archive.readFile('foo.txt')
+  `)
+  t.deepEqual(res, 'bar')
 
   // check the dat.json
   var res = await mainTab.executeJavascript(`
