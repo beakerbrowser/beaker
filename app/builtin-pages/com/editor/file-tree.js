@@ -110,7 +110,7 @@ function rChildren (fileTree, children) {
     ((path.length < 1)
       ? ''
       : yo`
-        <div class="item ascend" onclick=${e => onClickNode(e, parentNode)}>
+        <div class="item ascend" onclick=${e => onClickNode(e, fileTree, parentNode)}>
           ..
         </div>`),
     ((children.length === 0)
@@ -171,24 +171,35 @@ function rFile (fileTree, node) {
 function getIcon (name) {
   let extention = name.split('.').pop()
   switch (extention) {
-    case 'js':
-      return yo`<i class="mf js-icon"></i>`
     case 'json':
-      return yo`<i class="fi jsonld-icon"></i>`
+    case 'js':
+      return yo`<i class="fab fa-js"></i>`
     case 'html':
-      return yo`<i class="fa fa-html5"></i>`
-    case 'eslintrc':
-      return yo`<i class="fi eslint-icon"></i>`
-    case 'gitignore':
-      return yo`<i class="devicons git-icon"></i>`
-    case 'sh':
-      return yo`<i class="fi powershell-icon"></i>`
-    case 'lock':
-      return yo`<i class="fa lock-icon"></i>`
+      return yo`<i class="fab fa-html5"></i>`
     case 'md':
-      return yo`<i class="octicons markdown-icon"></i>`
+      return yo`<i class="fab fa-markdown"></i>`
+    case 'gitignore':
+      return yo`<i class="fab fa-git"></i>`
+    case 'lock':
+      return yo`<i class="fas fa-unlock-alt"></i>`
+    case 'css':
+      return yo`<i class="fab fa-css3-alt"></i>`
+    case 'less':
+      return yo`<i class="fab fa-less"></i>`
+    case 'scss':
+    case 'sass':
+      return yo`<i class="fab fa-sass"></i>`
+    case 'svg':
+    case 'png':
+    case 'jpg':
+      return yo`<i class="far fa-image"></i>`
+    case 'eot':
+    case 'ttf':
+    case 'woff2':
+    case 'woff':
+      return yo`<i class="fas fa-font"></i>`
     default:
-      return yo`<i class="fa fa-file"></i>`
+      return yo`<i class="fas fa-code"></i>`
   }
 }
 
@@ -200,7 +211,7 @@ async function onClickNode (e, fileTree, node) {
   e.stopPropagation()
 
   if (node.isEditable && !node.isContainer) {
-    models.setActive(fileTree, node)
+    models.setActive(node)
   }
 
   if (node.isContainer) {
