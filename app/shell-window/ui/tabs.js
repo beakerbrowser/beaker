@@ -505,7 +505,7 @@ function getBuiltinPageIcon (url) {
     return yo`<i class="fa fa-book"></i>`
   }
   if (url.startsWith('beaker://bookmarks/')) {
-    return yo`<i class="fa fa-star-o"></i>`
+    return yo`<i class="far fa-star"></i>`
   }
   if (url.startsWith('beaker://history/')) {
     return yo`<i class="fa fa-history"></i>`
@@ -514,7 +514,7 @@ function getBuiltinPageIcon (url) {
     return yo`<i class="fa fa-download"></i>`
   }
   if (url.startsWith('beaker://settings/')) {
-    return yo`<i class="fa fa-gear"></i>`
+    return yo`<i class="fas fa-cog"></i>`
   }
   if (url.startsWith('beaker://swarm-debugger/')) {
     return yo`<i class="fa fa-bug"></i>`
@@ -522,5 +522,5 @@ function getBuiltinPageIcon (url) {
   if (url.startsWith('beaker://watchlist/')) {
     return yo`<i class="fa fa-eye"></i>`
   }
-  return yo`<i class="fa fa-window-maximize"></i>`
+  return yo`<i class="fas fa-window-maximize"></i>`
 }

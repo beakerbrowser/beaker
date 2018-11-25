@@ -1156,7 +1156,7 @@ function renderNetworkView () {
                       </div>`
                   ] : yo`
                     <div class="hint">
-                      <i class="fa fa-heart-o"></i>
+                      <i class="far fa-heart"></i>
                       <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
                       <a href="https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites#keeping-a-peer-to-peer-website-online" target="_blank" class="learn-more-link">Learn more</a>
                     </div>`

@@ -321,7 +321,7 @@ function update () {
 function renderHelpButton () {
   return yo`
     <button class="btn plain help" onclick=${onClickHelpButton}>
-      <i class="fa fa-question-circle-o"></i>
+      <i class="far fa-question-circle"></i>
     </button>`
 }
 
