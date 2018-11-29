@@ -10,8 +10,8 @@ import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
-const LATEST_VERSION = 8001 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
-const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/0.8.1'
+const LATEST_VERSION = 8002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
+const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/0.8.2'
 
 // globals
 // =
