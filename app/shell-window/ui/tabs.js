@@ -507,6 +507,9 @@ function getBuiltinPageIcon (url) {
   if (url.startsWith('beaker://bookmarks/')) {
     return yo`<i class="far fa-star"></i>`
   }
+  if (url.startsWith('beaker://editor/')) {
+    return yo`<i class="fas fa-code"></i>`
+  }
   if (url.startsWith('beaker://history/')) {
     return yo`<i class="fa fa-history"></i>`
   }
