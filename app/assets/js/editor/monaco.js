@@ -7,5 +7,12 @@ require(['vs/editor/editor.main'], function() {
     roundedSelection: false,
     model: null
   })
+  window.diffEditor = monaco.editor.createDiffEditor(document.getElementById('diffEditor'), {
+    lineNumbersMinChars: 4,
+    automaticLayout: true,
+    fixedOverflowWidgets: true,
+    roundedSelection: false,
+    model: null
+  })
   window.dispatchEvent(new Event('editor-created'))
 })

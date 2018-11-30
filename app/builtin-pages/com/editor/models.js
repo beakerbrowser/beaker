@@ -1,62 +1,70 @@
 /* globals Event monaco editor */
 
-const yo = require('yo-yo')
-
 // globals
 // =
 
-var models = {}
-var active
+var models = []
 
 // exported api
 // =
 
-export const load = async function load (archive, file) {
+export const load = async function load (file) {
   try {
-    console.log(file)
-
     // load the file content
     await file.readData()
-    console.log(file)
 
     // setup the model
-    models[file.name] = monaco.editor.createModel(file.preview, null, monaco.Uri.parse(file.url))
-    models[file.name].name = file.name
-    models[file.name].isEditable = true
-    models[file.name].lang = models[file.name].getModeId()
-    models[file.name].onDidChangeContent(onDidChange(archive, file))
+    let model = monaco.editor.createModel(file.preview, null, monaco.Uri.parse(file.url))
+    model.name = file.name
+    model.isEditable = true
+    model.lang = model.getModeId()
+
+    models.push(model)
   } catch (e) {
     console.error(e)
     throw e
   }
+}
+
+export function unload (e, file) {
+  e.stopPropagation()
+  // TODO
+  // if unloaded file is currently active
+  // set previously active file to currently active
+  let model = monaco.editor.getModel(file.uri)
+  models.splice(models.findIndex(v => v.name === model.name), 1)
+  model.dispose()
+
+  window.dispatchEvent(new Event('update-editor'))
 }
 
 export const save = async function save (archive, path) {
 
 }
 
-export const setActive = async function setActive (archive, file) {
+export const setActive = async function setActive (file) {
   try {
-    console.log(file)
     // load according to editability
     let canEdit = canEditWithMonaco(file.name)
     if (canEdit) {
-      await setEditableActive(archive, file)
+      await setEditableActive(file)
     } else {
-      await setUneditableActive(archive, file)
+      await setUneditableActive(file)
     }
 
-    // set active
-    active = models[file.name]
-    window.dispatchEvent(new Event('set-active-model'))
+    window.dispatchEvent(new Event('update-editor'))
   } catch (e) {
     console.error(e)
     throw e
   }
 }
 
+export const findModel = function findModel (fileName) {
+  return models.find(v => v.name === fileName)
+}
+
 export function getActive () {
-  return active
+  return editor.getModel()
 }
 
 export function getModels () {
@@ -66,26 +74,15 @@ export function getModels () {
 // internal methods
 // =
 
-function onDidChange (archive, path) {
-  return e => {
-    console.log(e, path)
-  }
-}
-
-function normalizePath (path) {
-  if (path.startsWith('/')) return path.slice(1)
-  return path
-}
-
-function getUrl (archive, path) {
-  return `dat://${archive.info.key}/${path}`
-}
-
 function canEditWithMonaco (name) {
   // no extension?
   if (name.split('/').pop().indexOf('.') === -1) {
     return true // assume plaintext
   }
+
+  // support ignore files
+  if (name === '.gitignore' || name === '.datignore') return true
+
   // do we have this language?
   const l = monaco.languages.getLanguages()
   for (var i=0; i < l.length; i++) {
@@ -98,19 +95,16 @@ function canEditWithMonaco (name) {
   return false
 }
 
-const setEditableActive = async function setEditableActive (archive, file) {
+const setEditableActive = async function setEditableActive (file) {
   // load if not yet loaded
-  if (!(file.name in models)) {
-    await load(archive, file)
+  if (!findModel(file.name)) {
+    await load(file)
   }
-  editor.setModel(models[file.name])
+  document.querySelector('#diffEditor').style.display = 'none'
+  document.querySelector('#editor').style.display = 'block'
+  editor.setModel(findModel(file.name))
 }
 
-const setUneditableActive = async function (archive, path) {
-  // set the entry info
-  models[path] = {
-    path,
-    isEditable: false,
-    lang: ''
-  }
+const setUneditableActive = async function (file) {
+  // TODO
 }
