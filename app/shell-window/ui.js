@@ -6,6 +6,7 @@ import * as navbar from './ui/navbar'
 import * as statusbar from './ui/statusbar'
 import * as win32Titlebar from './ui/win32-titlebar'
 import * as pages from './pages'
+import * as sidebar from './ui/sidebar'
 import * as modal from './ui/modal'
 import * as commandHandlers from './command-handlers'
 import * as swipeHandlers from './swipe-handlers'
@@ -46,6 +47,7 @@ export function setup (cb) {
   swipeHandlers.setup()
   pages.setup()
   modal.setup()
+  sidebar.setup()
   ipcRenderer.send('shell-window:pages-ready')
   pages.on('first-page', cb)
 }

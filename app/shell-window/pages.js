@@ -11,6 +11,7 @@ import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as prompt from './ui/prompt'
 import * as modal from './ui/modal'
+import * as sidebar from './ui/sidebar'
 import * as statusBar from './ui/statusbar'
 import * as toast from './ui/toast.js'
 import { SiteInfoNavbarBtn } from './ui/navbar/site-info'
@@ -117,6 +118,7 @@ export function create (opts) {
     navbarEl: navbar.createEl(id),
     promptEl: prompt.createContainer(id),
     modalEl: modal.createContainer(id),
+    sidebarEl: sidebar.createContainer(id),
     siteInfoNavbarBtn: null, // set after object is created
     datsiteMenuNavbarBtn: null, // set after object is created
 
@@ -435,6 +437,7 @@ export async function remove (page) {
   navbar.destroyEl(page.id)
   prompt.destroyContainer(page.id)
   modal.destroyContainer(page.id)
+  sidebar.destroyContainer(page.id)
 
   // persist pins w/o this one, if that was
   if (page.isPinned) { savePinnedToDB() }
@@ -476,6 +479,7 @@ export function setActive (page) {
   navbar.update()
   prompt.update()
   modal.update()
+  sidebar.update()
 
   events.emit('set-active', page)
   ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
@@ -660,6 +664,7 @@ function onDidNavigate (e) {
     // close any prompts and modals
     prompt.forceRemoveAll(page)
     modal.forceRemoveAll(page)
+    sidebar.onDidNavigate(page)
   }
 }
 
@@ -1083,6 +1088,7 @@ function show (page) {
   page.navbarEl.classList.remove('hidden')
   page.promptEl.classList.remove('hidden')
   page.modalEl.classList.remove('hidden')
+  page.sidebarEl.classList.remove('hidden')
   events.emit('show', page)
 }
 
@@ -1091,6 +1097,7 @@ function hide (page) {
   page.navbarEl.classList.add('hidden')
   page.promptEl.classList.add('hidden')
   page.modalEl.classList.add('hidden')
+  page.sidebarEl.classList.add('hidden')
   events.emit('hide', page)
 }
 
