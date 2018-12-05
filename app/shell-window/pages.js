@@ -765,6 +765,7 @@ function onDidStopLoading (e) {
         .then(info => {
           page.siteInfo = info
           navbar.update(page)
+          sidebar.onDidNavigate(page)
           console.log('dat site info', info)
 
           // fallback the tab title to the site title, if needed

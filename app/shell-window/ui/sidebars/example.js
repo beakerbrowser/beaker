@@ -11,12 +11,12 @@ export class ExampleSidebar extends BaseSidebar {
     return url.hostname === 'example.com'
   }
 
-  constructor () {
-    super()
+  constructor (page) {
+    super(page)
     this.i = 0
   }
 
-  render (page) {
+  render () {
     return yo`
       <div style="padding: 10px 20px 6px">
         <h3>Example Sidebar</h3>

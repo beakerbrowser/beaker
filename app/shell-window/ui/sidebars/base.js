@@ -6,6 +6,11 @@ export class BaseSidebar extends EventEmitter {
     return false
   }
 
+  constructor (page) {
+    super()
+    this.page = page
+  }
+
   render () {
     // override this method
     return 'BaseSidebar'
