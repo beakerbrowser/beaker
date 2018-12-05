@@ -120,6 +120,7 @@ async function onClickHelpButton () {
 }
 
 function onFocusSearch () {
+  return // TEMP
   isSearchFocused = true
   update()
 
@@ -170,6 +171,7 @@ function onInputSearch (e) {
 }
 
 async function onUpdateSearchQuery (q) {
+  return // TEMP
   searchResults = []
   activeSearchResult = 0
   query = q.length ? q.toLowerCase() : ''
@@ -290,10 +292,24 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
       <div class="builtin-wrapper start-wrapper">
-        <div class="header-actions">
+        <div class="start-header">
+          <div class="nav">
+            <a href="#" class="active"><span class="fa fa-star-o"></span> Pinned</a>
+            <a href="#"><span class="fa fa-list-ul"></span> Feed</a>
+            <a href="beaker://library"><span class="fa fa-book"></span> Library</a>
+          </div>
+          <div class="flex-spacer"></div>
           ${renderHelpButton()}
+          ${''/* TODO <div class="notifications" data-count="0">
+            <span class="fa fa-bell-o"></span>
+          </div>*/}
+          <div class="profile">
+            <img src="dat://df8e4093a28292b94ff8d873f812dfac4170eb4d3cadd85c723329d6bf86ea6e/thumb.jpg">
+          </div>
         </div>
         ${MOTD.render()}
+
+        ${''/*
         <div class="autocomplete-container search-container">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
@@ -305,11 +321,11 @@ function update () {
           ${query.length && isSearchFocused ? yo`
             <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
           : ''}
-        </div>
+        </div>*/}
 
         ${renderPinnedBookmarks()}
 
-        ${renderDock()}
+        ${''/*renderDock()*/}
 
       </div>
     </div>
@@ -373,15 +389,6 @@ function renderDock () {
 function renderPinnedBookmarks () {
   return yo`
     <div class="pinned-bookmarks-container">
-      ${pinnedBookmarks.length ? yo`
-        <h2 class="subtitle-heading">
-          <span>Pinned bookmarks</span>
-          <button class="btn transparent add-pinned-btn" data-tooltip="Add pinned bookmark" onclick=${onClickAddBookmark}>
-            <i class="fa fa-plus"></i>
-          </button>
-        </h2>`
-      : ''}
-
       <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
       </div>
@@ -394,7 +401,7 @@ function renderPinnedBookmark (bookmark) {
 
   return yo`
     <a class="pinned-bookmark" href=${href} oncontextmenu=${e => onContextmenuPinnedBookmark(e, bookmark)}>
-      <img src=${'beaker-favicon:32,' + href} class="favicon"/>
+      <img src=${'beaker-favicon:64,' + href} class="favicon"/>
       <div class="title">${title}</div>
     </a>
   `
