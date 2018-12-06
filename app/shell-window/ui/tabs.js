@@ -35,58 +35,9 @@ export function setup () {
       <span class="plus">+</span>
     </div>
   </div>`
-  const style = `
-    display: inline-block;
-    position: absolute;
-    right: 3px;
-    top: 3px;
-    border: 1px solid #ccc;
-    height: 30px;
-    line-height: 30px;
-    padding: 0 10px;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 2px;
-    font-weight: bold;
-    font-size: 12px;
-    color: #555;
-  `
   yo.update(document.getElementById('toolbar-tabs'), yo`<div id="toolbar-tabs" class="chrome-tabs-shell">
     ${tabsContainerEl}
-    <div style="${style}">
-      <span class="fa fa-user" style="font-size: 13px"></span>
-      Paul Frazee
-    </div>
   </div>`)
-
-  /*
-  <div style="
-    display: inline-block;
-    position: absolute;
-    right: 2px;
-    top: 3px;
-    border: 1px solid #ccc;
-    height: 30px;
-    line-height: 29px;
-    padding: 0 10px;
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 2px;
-    font-weight: bold;
-    font-size: 12px;
-    color: #555;
-    padding-left: 35px;
-  "><img src="dat://df8e4093a28292b94ff8d873f812dfac4170eb4d3cadd85c723329d6bf86ea6e/thumb.jpg" style="
-    width: 28px;
-    height: 28px;
-    position: absolute;
-    left: 0px;
-    top: 0px;
-    border-top-left-radius: 2px;
-    border-bottom-left-radius: 2px;
-">
-    
-      Paul Frazee
-    </div>
-    */
 
   // wire up listeners
   pages.on('add', onAddTab)
