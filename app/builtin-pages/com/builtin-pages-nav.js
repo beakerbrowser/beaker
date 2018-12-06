@@ -36,59 +36,45 @@ export default function render (currentPage = '') {
       </button>
 
       <div class="dropdown-items subtle-shadow left">
-        ${currentPage !== 'Library'
-          ? yo`
-            <a href="beaker://library" class="dropdown-item">
-              <i class="fa fa-book"></i>
-              <span>Library</span>
-            </a>`
-          : ''
-        }
+        <a href="beaker://start" class="dropdown-item">
+          <span class="fa fa-home"></span>
+          <span>Home</span>
+        </a>
 
-        ${currentPage !== 'Bookmarks'
-          ? yo`
-            <a href="beaker://bookmarks" class="dropdown-item">
-              <i class="far fa-star"></i>
-              <span>Bookmarks</span>
-            </a>`
-          : ''
-        }
+        <a href="beaker://feed" class="dropdown-item">
+          <i class="fa fa-list-ul"></i>
+          <span>Feed</span>
+        </a>
 
-        ${currentPage !== 'History'
-          ? yo`
-            <a href="beaker://history" class="dropdown-item">
-              <i class="fa fa-history"></i>
-              <span>History</span>
-            </a>`
-          : ''
-        }
+        <a href="beaker://bookmarks" class="dropdown-item">
+          <i class="fa fa-star-o"></i>
+          <span>Bookmarks</span>
+        </a>
 
-        ${currentPage !== 'Downloads'
-          ? yo`
-            <a href="beaker://downloads" class="dropdown-item">
-              <i class="fa fa-download"></i>
-              <span>Downloads</span>
-            </a>`
-          : ''
-        }
-        
-        ${currentPage !== 'Watchlist'
-          ? yo`
-            <a href="beaker://watchlist" class="dropdown-item">
-              <i class="fa fa-eye"></i>
-              <span>Watchlist</span>
-            </a>`
-          : ''
-        }
+        <a href="beaker://library" class="dropdown-item">
+          <i class="fa fa-book"></i>
+          <span>Library</span>
+        </a>
 
-        ${currentPage !== 'Settings'
-          ? yo`
-            <a href="beaker://settings" class="dropdown-item ${currentPage === 'settings' ? 'active' : ''}">
-              <i class="fas fa-cog"></i>
-              <span>Settings</span>
-            </a>`
-          : ''
-        }
+        <a href="beaker://history" class="dropdown-item">
+          <i class="fa fa-history"></i>
+          <span>History</span>
+        </a>
+
+        <a href="beaker://downloads" class="dropdown-item">
+          <i class="fa fa-download"></i>
+          <span>Downloads</span>
+        </a>
+
+        <a href="beaker://watchlist" class="dropdown-item">
+          <i class="fa fa-eye"></i>
+          <span>Watchlist</span>
+        </a>
+
+        <a href="beaker://settings" class="dropdown-item ${currentPage === 'settings' ? 'active' : ''}">
+          <i class="fa fa-gear"></i>
+          <span>Settings</span>
+        </a>
       </div>
     </div>
   `)

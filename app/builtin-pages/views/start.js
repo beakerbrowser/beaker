@@ -294,8 +294,9 @@ function update () {
       <div class="builtin-wrapper start-wrapper">
         <div class="start-header">
           <div class="nav">
-            <a href="#" class="active"><span class="fa fa-star-o"></span> Pinned</a>
+            <a href="#" class="active"><span class="fa fa-home"></span> Home</a>
             <a href="#"><span class="fa fa-list-ul"></span> Feed</a>
+            <a href="beaker://bookmarks"><span class="fa fa-star-o"></span> Bookmarks</a>
             <a href="beaker://library"><span class="fa fa-book"></span> Library</a>
           </div>
           <div class="flex-spacer"></div>
