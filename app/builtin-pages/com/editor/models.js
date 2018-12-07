@@ -1,9 +1,11 @@
-/* globals Event monaco editor */
+/* globals Event monaco diffEditor editor */
 
 // globals
 // =
 
 var models = []
+var modelHistory = []
+var active
 
 // exported api
 // =
@@ -18,6 +20,8 @@ export const load = async function load (file) {
     model.name = file.name
     model.isEditable = true
     model.lang = model.getModeId()
+    // TODO
+    // model.onDidChangeContent(onDidChange(file))
 
     models.push(model)
   } catch (e) {
@@ -28,22 +32,39 @@ export const load = async function load (file) {
 
 export function unload (e, file) {
   e.stopPropagation()
-  // TODO
+
   // if unloaded file is currently active
   // set previously active file to currently active
-  let model = monaco.editor.getModel(file.uri)
-  models.splice(models.findIndex(v => v.name === model.name), 1)
-  model.dispose()
+  // otherwise just remove it from the model history
+  let newActive = null
+  modelHistory = modelHistory.filter(v => v.name !== file.name)
 
+  if (getActive() === file) newActive = modelHistory.pop()
+
+  // handle diff
+  if (file.diff) {
+    let model = findModel(file.name)
+    models.splice(models.findIndex(v => v.name === model.name), 1)
+    model.original.dispose()
+    model.modified.dispose()
+  } else {
+    let model = monaco.editor.getModel(file.uri)
+    models.splice(models.findIndex(v => v.name === model.name), 1)
+    model.dispose()
+  }
+
+  if (newActive) setActive(newActive)
   window.dispatchEvent(new Event('update-editor'))
-}
-
-export const save = async function save (archive, path) {
-
 }
 
 export const setActive = async function setActive (file) {
   try {
+    // this is a diff
+    if (file.change || file.diff) {
+      setActiveDiff(file)
+      return
+    }
+
     // load according to editability
     let canEdit = canEditWithMonaco(file.name)
     if (canEdit) {
@@ -59,12 +80,46 @@ export const setActive = async function setActive (file) {
   }
 }
 
+export const setActiveDiff = async function setActiveDiff (diff) {
+  try {
+    editor.domElement.hidden = true
+
+    // load if not yet loaded
+    if (!findModel(diff.name)) {
+      diffEditor.setModel({
+        original: monaco.editor.createModel(diff.original),
+        modified: monaco.editor.createModel(diff.modified)
+      })
+
+      // create diff model for tabs
+      let diffModel = diffEditor.getModel()
+      diffModel.name = diff.name
+      diffModel.diff = diff
+
+      models.push(diffModel)
+    }
+
+    let model = findModel(diff.name)
+    diffEditor.setModel({
+      original: model.original,
+      modified: model.modified
+    })
+
+    modelHistory.push(diff)
+    active = findModel(diff.name)
+    window.dispatchEvent(new Event('update-editor'))
+  } catch (e) {
+    console.error(e)
+    throw e
+  }
+}
+
 export const findModel = function findModel (fileName) {
   return models.find(v => v.name === fileName)
 }
 
 export function getActive () {
-  return editor.getModel()
+  return active
 }
 
 export function getModels () {
@@ -95,16 +150,24 @@ function canEditWithMonaco (name) {
   return false
 }
 
-const setEditableActive = async function setEditableActive (file) {
+async function setEditableActive (file) {
   // load if not yet loaded
   if (!findModel(file.name)) {
     await load(file)
   }
-  document.querySelector('#diffEditor').style.display = 'none'
-  document.querySelector('#editor').style.display = 'block'
+
+  editor.domElement.hidden = false
+  active = findModel(file.name)
   editor.setModel(findModel(file.name))
+  modelHistory.push(file)
 }
 
 const setUneditableActive = async function (file) {
   // TODO
+}
+
+function onDidChange (file) {
+  return e => {
+    console.log(file)
+  }
 }
