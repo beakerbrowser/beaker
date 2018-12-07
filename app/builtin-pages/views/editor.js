@@ -6,6 +6,7 @@ import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
 import FileTree from '../com/editor/file-tree'
 import * as models from '../com/editor/models'
+import * as toast from '../com/toast'
 
 var archive
 var workingCheckout
@@ -63,13 +64,19 @@ async function setup () {
     fileTree = new FileTree(archiveFsRoot)
     await fileTree.setCurrentSource(archiveFsRoot)
 
-    // ready archive diff
-    await localCompare()
+    // set preview mode for file tree
+    fileTree.previewMode = archive.info.userSettings.previewMode
+
+    let fileActStream = archive.watch()
+    fileActStream.addEventListener('changed', onFilesChanged)
+    if (_get(archive, 'info.userSettings.previewMode')) {
+      fileActStream = workingCheckout.watch()
+      fileActStream.addEventListener('changed', onFilesChanged)
+    }
 
     let showDefaultFile = archiveFsRoot._files.find(v => {
       return v.name === 'index.html'
     })
-    console.log(showDefaultFile)
     models.setActive(showDefaultFile)
 
     document.title = `Editor - ${_get(archive, 'info.title', 'Untitled')}`
@@ -80,66 +87,30 @@ async function setup () {
     editor.setModel(untitled)
   }
 
+  // ready archive diff
+  if (workingCheckout.info.userSettings.previewMode) await localCompare()
+
   render()
 }
 
 function render () {
   // explorer/file tree
-  if (archive && workingCheckout.info.userSettings.previewMode) {
+  // workingCheckout.info.userSettings.previewMode
+  if (archive) {
     yo.update(
       document.querySelector('.editor-explorer'),
       yo`
         <div class="editor-explorer">
           <div class="explorer-title">Explorer</div>
-          <div class="explorer-section">
-            <span class="section-title" id="filetree" onclick=${() => toggleFileTree('filetree')}>
-              <i class="fa fa-caret-down"></i>
-              <span>${_get(archive, 'info.title', 'Untitled')}</span>
-              <div class="archive-fs-options">
-                <i class="fa fa-sync-alt"></i>
-                <i class="fa fa-plus-square"></i>
-                <i class="fa fa-folder-plus"></i>
-              </div>
-            </span>
-            ${fileTree ? fileTree.render() : ''}
-            <span class="section-title" id="difftree" onclick=${() => toggleFileTree('difftree')}>
-              <i class="fa fa-caret-down"></i>
-              <span>Preview Changes</span>
-              <div class="archive-fs-options">
-                <i class="fa fa-sync-alt"></i>
-                <i class="fa fa-plus-square"></i>
-                <i class="fa fa-folder-plus"></i>
-              </div>
-            </span>
-            ${renderDiffTree()}
-          </div>
+          ${fileTree ? fileTree.render() : ''}
         </div>
       `)
-  } else if (archive) {
-    yo.update(
-      document.querySelector('.editor-explorer'),
-      yo`
-        <div class="editor-explorer">
-          <div class="explorer-title">Explorer</div>
-          <div class="explorer-section">
-            <span class="section-title" id="filetree" onclick=${() => toggleFileTree('filetree')}>
-              <i class="fa fa-caret-down"></i>
-              <span>${_get(archive, 'info.title', 'Untitled')}</span>
-              <div class="archive-fs-options">
-                <i class="fa fa-sync-alt"></i>
-                <i class="fa fa-plus-square"></i>
-                <i class="fa fa-folder-plus"></i>
-              </div>
-            </span>
-            ${fileTree ? fileTree.render() : ''}
-        `
-      )
   } else {
     yo.update(
       document.querySelector('.editor-explorer'),
       yo`
         <div class="editor-explorer">
-          <button>Open dat archive</button>
+          <button class="btn primary">Open dat archive</button>
         </div>
       `
     )
@@ -161,8 +132,10 @@ window.addEventListener('keydown', e => {
   var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
   // cmd/ctrl + s
   if (ctrlOrMeta && e.keyCode == 83) {
-    onSave()
     e.preventDefault()
+    e.stopPropagation()
+
+    onSave()
   }
 })
 
@@ -180,38 +153,14 @@ function renderTabs (model) {
   `
 }
 
-function renderDiffTree () {
-  if (!workingCheckout.info.userSettings.previewMode) return
-
-  return yo`
-    <div class="difftree">
-      ${fileDiffs.map(v => render(v))}
-    </div>
-  `
-
-  function render (v) {
-    console.log(v)
-    return yo`
-      <div
-        class="item file"
-        title=${v.name}
-        onclick=${e => onClickDiff(e, v)}
-      >
-        <i class="fas fa-code-branch"></i>
-        <span>${v.name}</span>
-      </div>
-    `
-  }
-}
-
 async function localCompare () {
   let compareDiff = await beaker.archives.diffLocalSyncPathListing(archive.url, {compareContent: true, shallow: true})
   let archiveFS = new FSArchive(null, archive, archive.info)
   await archiveFS.readData()
 
-  compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
+  fileTree.fileDiffs = []
 
-  fileDiffs = []
+  compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
 
   for (let diff of compareDiff) {
     let name = diff.path.match(/[^/]+$/).pop()
@@ -223,36 +172,36 @@ async function localCompare () {
     await modified.readData()
 
     // set diff
-    diff.name = name
-    diff.diff = await beaker.archives.diffLocalSyncPathFile(archive.url, diff.path)
-    diff.original = monaco.editor.createModel(original.preview)
-    diff.modified = monaco.editor.createModel(modified.preview)
-    fileDiffs.push(diff)
+    diff.name = name + ' (Working Checkout)'
+    diff.original = original.preview
+    diff.modified = modified.preview
+    fileTree.fileDiffs.push(diff)
   }
-  console.log(fileDiffs)
 }
 
 async function parseLibraryUrl () {
   return window.location.pathname.slice(1)
 }
 
-function toggleFileTree (tree) {
-  let fileTree = document.querySelector('.' + tree)
-  let icon = document.querySelector('#' + tree + ' i')
-  icon.classList.contains('fa-caret-down') ? icon.classList.replace('fa-caret-down', 'fa-caret-right') : icon.classList.replace('fa-caret-right', 'fa-caret-down')
-  fileTree.classList.toggle('hidden')
+async function onFilesChanged () {
+  await localCompare()
+  fileTree.rerender()
 }
 
-function onClickDiff (e, diff) {
-  document.querySelector('#diffEditor').style.display = 'block'
-  document.querySelector('#editor').style.display = 'none'
+async function onSave () {
+  try {
+    let model = models.getActive()
+    let fileContent = model.getValue()
+    let fileName = model.name
+    let filePath = model.uri.path
+    if (!filePath.startsWith('/')) {
+      filePath = '/' + filePath
+    }
 
-  diffEditor.setModel({
-    original: diff.original,
-    modified: diff.modified
-  })
-}
+    await workingCheckout.writeFile(filePath, fileContent, 'utf8')
 
-function onSave () {
-  models.save(archive, archive.files.currentNode.entry.path)
+    toast.create('Saved', 'success')
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
 }

@@ -27,12 +27,17 @@
   overflow-y: scroll;
   text-overflow: ellipsis;
 
-  &:hover .section-title .archive-fs-options {
-    opacity: 1;
-  }
+  // .section-title:hover .archive-fs-options {
+  //   opacity: 1;
+  // }
 
   &::-webkit-scrollbar { 
     display: none;
+  }
+
+  button {
+    align-self: center;
+    margin: auto 0;
   }
 
   .explorer-title {
@@ -177,10 +182,6 @@
   #editor, #diffEditor {
     height: 100%;
     background-color: white;
-  }
-
-  #diffEditor {
-    display: none;
   }
 }
 

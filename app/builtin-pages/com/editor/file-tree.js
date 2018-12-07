@@ -1,5 +1,6 @@
 const yo = require('yo-yo')
 import * as models from './models'
+import _get from 'lodash.get'
 
 // exported api
 // =
@@ -11,6 +12,8 @@ export default class FileTree {
     this.currentSort = ['name', 'desc']
     this.selectedNodes = new Set() // set of nodes
     this.currentDragNode = null
+    this.previewMode = false
+    this.fileDiffs = []
     this.onSetCurrentSource = () => {} // v simple events solution
   }
 
@@ -22,14 +25,23 @@ export default class FileTree {
     }
 
     return yo`
-      <div class="filetree">
-        ${rChildren(this, this.getCurrentSource().children)}
+      <div class="explorer-section">
+        ${rSection(this, 'fileTree')}
+        <div class="fileTree">
+          ${rChildren(this, this.getCurrentSource().children)}
+        </div>
+        ${this.previewMode ? rSection(this, 'diffTree') : ''}
+        ${this.previewMode ? yo`
+          <div class="diffTree">
+            ${rDiffTree(this, this.fileDiffs)}
+          </div>`
+        : ''}
       </div>
     `
   }
 
   rerender () {
-    let el = document.querySelector('.filetree')
+    let el = document.querySelector('.explorer-section')
     if (el) {
       yo.update(el, this.render())
     }
@@ -102,6 +114,30 @@ export default class FileTree {
 // renderers
 // =
 
+function rSection (fileTree, tree) {
+  return tree === 'fileTree' ? yo`
+    <div class="section-title" id="fileTree" onclick=${() => toggleFileTree('fileTree')}>
+      <i class="fa fa-caret-down"></i>
+      <span>${_get(fileTree.root, 'name', 'Untitled')}</span>
+      <div class="archive-fs-options">
+        <i class="fa fa-sync-alt"></i>
+        <i class="fa fa-plus-square"></i>
+        <i class="fa fa-folder-plus"></i>
+      </div>
+    </div>
+  ` : yo`
+    <div class="section-title" id="diffTree" onclick=${() => toggleFileTree('diffTree')}>
+      <i class="fa fa-caret-down"></i>
+      <span>Preview Changes</span>
+      <div class="archive-fs-options">
+        <i class="fa fa-sync-alt"></i>
+        <i class="fa fa-plus-square"></i>
+        <i class="fa fa-folder-plus"></i>
+      </div>
+    </div>
+  `
+}
+
 function rChildren (fileTree, children) {
   const path = fileTree.getCurrentSourcePath()
   const parentNode = (path.length >= 2) ? path[path.length - 2] : fileTree.root
@@ -117,6 +153,12 @@ function rChildren (fileTree, children) {
       ? yo`<div class="item empty"><em>No files</em></div>`
       : children.map(childNode => rNode(fileTree, childNode)))
   ]
+}
+
+function rDiffTree (fileTree, fileDiffs) {
+  return fileDiffs.length === 0
+    ? yo`<div class="item empty"><em>No Changes</em></div>`
+    : fileDiffs.map(diff => rNode(fileTree, diff))
 }
 
 function rNode (fileTree, node) {
@@ -163,7 +205,7 @@ function rFile (fileTree, node) {
       oncontextmenu=${e => onContextmenuNode(e, fileTree, node)}
     >
       ${getIcon(node.name)}
-      <span>${node.name}</span>
+      <span>${node.change ? node.name.replace(' (Working Checkout)', '') : node.name}</span>
     </div>
   `
 }
@@ -206,12 +248,23 @@ function getIcon (name) {
 // event handlers
 // =
 
+function toggleFileTree (tree) {
+  let fileTree = document.querySelector('.' + tree)
+  let icon = document.querySelector('#' + tree + ' i')
+  icon.classList.contains('fa-caret-down') ? icon.classList.replace('fa-caret-down', 'fa-caret-right') : icon.classList.replace('fa-caret-right', 'fa-caret-down')
+  fileTree.classList.toggle('hidden')
+}
+
 async function onClickNode (e, fileTree, node) {
   e.preventDefault()
   e.stopPropagation()
 
   if (node.isEditable && !node.isContainer) {
     models.setActive(node)
+  }
+
+  if (node.change) {
+    models.setActiveDiff(node)
   }
 
   if (node.isContainer) {
