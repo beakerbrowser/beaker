@@ -37,7 +37,7 @@ export default function render (currentPage = '') {
 
       <div class="dropdown-items subtle-shadow left">
         <a href="beaker://start" class="dropdown-item">
-          <span class="fa fa-home"></span>
+          <i class="fa fa-home"></i>
           <span>Home</span>
         </a>
 
