@@ -19,6 +19,7 @@ var bookmarks = []
 var tags = []
 var filteredTags = []
 var tagsQuery = ''
+var currentUserSession = null
 var userProfile = {_origin: null} // null TODO(profiles) disabled -prf
 // var followedUserProfiles = null TODO(profiles) disabled -prf
 
@@ -33,6 +34,7 @@ setup()
 async function setup () {
   // load and render bookmarks
   // userProfile = await beaker.profiles.getCurrentUserProfile() TODO(profiles) disabled -prf
+  currentUserSession = await beaker.browser.getUserSession()
   await loadBookmarks()
   renderToPage()
 
@@ -217,7 +219,7 @@ function renderBookmarksListToPage () {
 }
 
 function renderHeader () {
-  return renderBuiltinPagesHeader('Bookmarks', null)
+  return renderBuiltinPagesHeader('Bookmarks', currentUserSession)
 
   // TODO replace
   var searchPlaceholder = 'Search your bookmarks'

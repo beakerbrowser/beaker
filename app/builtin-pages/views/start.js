@@ -292,6 +292,11 @@ function update () {
     <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
       <div class="builtin-wrapper start-wrapper">
         ${renderBuiltinPagesHeader('Home', currentUserSession)}
+
+        <div style="position: absolute; bottom: 10px; right: 20px; font-size: 22px; text-align: right; font-weight: 300">
+          <span style="color: #2864dc; font-size: 38px; line-height: 1">BLUE</span><br>beta release1
+        </div>
+
         ${MOTD.render()}
 
         ${''/*

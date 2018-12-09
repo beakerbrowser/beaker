@@ -237,6 +237,18 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://bookmarks/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/bookmarks.build.js'))
   }
+  if (requestUrl === 'beaker://feed/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/feed.html'))
+  }
+  if (requestUrl === 'beaker://feed/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/feed.build.js'))
+  }
+  if (requestUrl === 'beaker://search/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/search.html'))
+  }
+  if (requestUrl === 'beaker://search/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/search.build.js'))
+  }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/history.html'))
   }

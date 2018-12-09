@@ -24,6 +24,7 @@ let currentView = 'your archives'
 let currentSort = ['alpha', -1]
 let currentDateType = 'accessed'
 let faviconCacheBuster = Date.now()
+let currentUserSession = null
 
 // main
 // =
@@ -31,6 +32,7 @@ let faviconCacheBuster = Date.now()
 setup()
 async function setup () {
   loadSettings()
+  currentUserSession = await beaker.browser.getUserSession()
   await loadArchives()
   render()
 }
@@ -447,7 +449,7 @@ function renderHeader () {
       </div>`
   }
 
-  return renderBuiltinPagesHeader('Library')
+  return renderBuiltinPagesHeader('Library', currentUserSession)
   // TODO replace fully
   // return yo`
   //   <div class="builtin-header fixed">
