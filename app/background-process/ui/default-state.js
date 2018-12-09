@@ -24,7 +24,8 @@ export function defaultWindowState () {
     height,
     minWidth,
     minHeight,
-    pages: defaultPageState()
+    pages: defaultPageState(),
+    userSession: null
   }
 }
 

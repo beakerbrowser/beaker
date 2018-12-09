@@ -8,6 +8,7 @@ import * as MOTD from '../com/motd'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
+import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
 const LATEST_VERSION = 8002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
@@ -16,6 +17,7 @@ const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/
 // globals
 // =
 
+var currentUserSession
 var pinnedBookmarks = []
 var searchResults = []
 var query = ''
@@ -27,6 +29,7 @@ var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
 update()
 setup()
 async function setup () {
+  currentUserSession = await beaker.browser.getUserSession()
   settings = await beaker.browser.getSettings()
 
   // open onboarding popup if this is the first render
@@ -113,10 +116,6 @@ async function onCreateSite (template) {
   // create a new archive
   const archive = await DatArchive.create({template, prompt: false})
   window.location = 'beaker://library/' + archive.url + '#setup'
-}
-
-async function onClickHelpButton () {
-  await onboardingPopup.create({showHelpOnly: true})
 }
 
 function onFocusSearch () {
@@ -292,22 +291,7 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
       <div class="builtin-wrapper start-wrapper">
-        <div class="start-header">
-          <div class="nav">
-            <a href="#" class="active"><span class="fa fa-home"></span> Home</a>
-            <a href="#"><span class="fa fa-list-ul"></span> Feed</a>
-            <a href="beaker://bookmarks"><span class="fa fa-star-o"></span> Bookmarks</a>
-            <a href="beaker://library"><span class="fa fa-book"></span> Library</a>
-          </div>
-          <div class="flex-spacer"></div>
-          ${renderHelpButton()}
-          ${''/* TODO <div class="notifications" data-count="0">
-            <span class="fa fa-bell-o"></span>
-          </div>*/}
-          <div class="profile">
-            <img src="dat://df8e4093a28292b94ff8d873f812dfac4170eb4d3cadd85c723329d6bf86ea6e/thumb.jpg">
-          </div>
-        </div>
+        ${renderBuiltinPagesHeader('Home', currentUserSession)}
         ${MOTD.render()}
 
         ${''/*
@@ -333,13 +317,6 @@ function update () {
   `)
 
   addSorting()
-}
-
-function renderHelpButton () {
-  return yo`
-    <button class="btn plain help" onclick=${onClickHelpButton}>
-      <i class="far fa-question-circle"></i>
-    </button>`
 }
 
 function renderSearchResult (res, i) {

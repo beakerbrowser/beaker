@@ -23,6 +23,7 @@ export default class SessionWatcher {
     this.userDataDir = userDataDir
     this.snapshot = SessionWatcher.emptySnapshot
     this.recording = true
+    this.watchers = {}
   }
 
   startRecording () { this.recording = true }
@@ -32,6 +33,7 @@ export default class SessionWatcher {
     let state = initialState
     this.snapshot.windows.push(state)
     let watcher = new WindowWatcher(win, initialState)
+    this.watchers[win.id] = watcher
 
     watcher.on('change', (nextState) => {
       if (this.recording) {
@@ -49,6 +51,7 @@ export default class SessionWatcher {
         this.snapshot.windows = windows.splice(1, i)
         this.writeSnapshot()
       }
+      delete this.watchers[win.id]
       watcher.removeAllListeners()
     })
   }
@@ -60,6 +63,22 @@ export default class SessionWatcher {
 
   writeSnapshot () {
     this.userDataDir.write(SNAPSHOT_PATH, this.snapshot, { atomic: true })
+  }
+
+  getState (winId) {
+    if (winId && typeof winId === 'object') {
+      // window object
+      winId = winId.id
+    }
+    return this.watchers[winId].snapshot
+  }
+
+  updateState (winId, state) {
+    if (winId && typeof winId === 'object') {
+      // window object
+      winId = winId.id
+    }
+    return this.watchers[winId].update(state)
   }
 }
 
@@ -84,6 +103,13 @@ class WindowWatcher extends EventEmitter {
 
   getWindow () {
     return BrowserWindow.fromId(this.winId)
+  }
+
+  update (state) {
+    for (let k in state) {
+      this.snapshot[k] = state[k]
+    }
+    this.emit('change', this.snapshot)
   }
 
   // handlers

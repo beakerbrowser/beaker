@@ -299,10 +299,94 @@
   align-items: center;
   justify-content: flex-start;
   position: relative;
-  height: 55px;
-  padding: 0 20px;
+  padding: 0px 5px;
   background: #fff;
 
+
+//    border-bottom: 1px solid #d2d2d5;
+//    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.025);
+
+  .nav {
+    font-size: 14px;
+    font-weight: 100;
+    height: 50px;
+
+    a {
+      padding: 0 20px;
+      display: inline-block;
+      line-height: 49px;
+
+      &.active {
+        color: @blue;
+        font-weight: bold;
+        border-bottom: 1px solid;
+      }
+
+      &:hover {
+        background: #eee;
+      }
+    }
+  }
+
+  .notifications {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    font-size: 21px;
+    border-radius: 4px;
+    margin-left: 5px;
+
+    cursor: pointer;
+    * {
+      cursor: pointer;
+    }
+
+    &:hover {
+      background: #eee;
+    }
+
+    &:before {
+      content: attr(data-count);
+      position: absolute;
+      background: blue;
+      height: 15px;
+      padding: 0 5px;
+      line-height: 15px;
+      font-size: 10px;
+      color: #fff;
+      border-radius: 7px;
+      right: 2px;
+      bottom: 7px;
+    }
+  }
+
+  .profile {
+    margin-left: 10px;
+
+    cursor: pointer;
+    * {
+      cursor: pointer;
+    }
+
+    img {
+      display: block;
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+    }
+  }
+
+  .btn.help {
+    font-size: 15px;
+
+    &:hover {
+      color: @blue;
+    }
+  }
+
+  // TODO remove this
   .builtin-pages-nav {
     position: absolute;
     left: 20px;
@@ -326,6 +410,7 @@
     }
   }
 
+  // TODO remove this
   .actions {
     position: absolute;
     right: 20px;
@@ -348,6 +433,7 @@
     }
   }
 
+  // TODO remove this?
   label {
     color: @color-text--muted;
     margin-right: 10px;

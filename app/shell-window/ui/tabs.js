@@ -502,7 +502,7 @@ function getBuiltinPageIcon (url) {
     return yo`<img src="beaker-favicon:${url}?cache=${Date.now()}">`
   }
   if (url.startsWith('beaker://library/')) {
-    return yo`<i class="fa fa-book"></i>`
+    return yo`<i class="fa fa-hdd-o"></i>`
   }
   if (url.startsWith('beaker://bookmarks/')) {
     return yo`<i class="far fa-star"></i>`

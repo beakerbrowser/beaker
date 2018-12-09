@@ -7,7 +7,7 @@ import {pluralize, shortenHash} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
-import renderBuiltinPagesNav from '../com/builtin-pages-nav'
+import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import toggleable from '../com/toggleable'
 import * as createArchivePopup from '../com/create-archive-popup'
 import * as contextMenu from '../com/context-menu'
@@ -447,12 +447,14 @@ function renderHeader () {
       </div>`
   }
 
-  return yo`
-    <div class="builtin-header fixed">
-      ${renderBuiltinPagesNav('Library')}
-      ${searchContainer}
-      ${actions}
-    </div>`
+  return renderBuiltinPagesHeader('Library')
+  // TODO replace fully
+  // return yo`
+  //   <div class="builtin-header fixed">
+  //     ${renderBuiltinPagesHeader('Library')}
+  //     ${searchContainer}
+  //     ${actions}
+  //   </div>`
 }
 
 function removeFromLibraryLabel (archive) {

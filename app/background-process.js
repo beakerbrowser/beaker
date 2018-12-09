@@ -96,6 +96,9 @@ app.on('ready', async function () {
       showModal: modals.showShellModal,
       capturePage: beakerBrowser.capturePage
     },
+    userSessionAPI: {
+      getFor: windows.getUserSessionFor
+    },
     rpcAPI: rpc,
     downloadsWebAPI: downloads.WEBAPI,
     browserWebAPI: beakerBrowser.WEBAPI,
@@ -103,7 +106,7 @@ app.on('ready', async function () {
   })
 
   // base
-  beakerBrowser.setup()
+  await beakerBrowser.setup()
   adblocker.setup()
   analytics.setup()
 

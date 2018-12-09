@@ -251,6 +251,22 @@ export function ensureOneWindowExists () {
   }
 }
 
+export function getUserSessionFor (wc) {
+  while (wc.hostWebContents) {
+    wc = wc.hostWebContents
+  }
+  var win = BrowserWindow.fromWebContents(wc)
+  return sessionWatcher.getState(win).userSession
+}
+
+export function setUserSessionFor (wc, userSession) {
+  while (wc.hostWebContents) {
+    wc = wc.hostWebContents
+  }
+  var win = BrowserWindow.fromWebContents(wc)
+  return sessionWatcher.updateState(win, {userSession})
+}
+
 // internal methods
 // =
 

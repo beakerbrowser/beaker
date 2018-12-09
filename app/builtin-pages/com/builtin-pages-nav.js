@@ -52,7 +52,7 @@ export default function render (currentPage = '') {
         </a>
 
         <a href="beaker://library" class="dropdown-item">
-          <i class="fa fa-book"></i>
+          <i class="fa fa-hdd-o"></i>
           <span>Library</span>
         </a>
 
