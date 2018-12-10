@@ -61,7 +61,7 @@ function renderFeed () {
       ${posts.length === 0
         ? yo`
           <div class="empty">
-            Your feed is empty, what the fuck.
+            Your feed is empty.
           </div>`
         : ''}
       ${posts.map(post => yo`
@@ -104,6 +104,7 @@ function onNewPostKeyup (e) {
 }
 
 async function onSubmitNewPostForm (e) {
+  e.preventDefault()
   if (!newPostText.trim()) return
 
   try {
