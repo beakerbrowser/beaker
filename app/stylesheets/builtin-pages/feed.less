@@ -1,0 +1,294 @@
+@import "../base/colors.less";
+
+.avatar-container {
+  width: 48px;
+  height: 48px;
+
+  &.small {
+    width: 32px;
+    height: 32px;
+  }
+
+  &.tiny {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.avatar {
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 48px;
+  height: 48px;
+
+  &.small {
+    width: 32px;
+    height: 32px;
+  }
+
+  &.tiny {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.new-post-form {
+  background: #fff;
+  padding: 10px 20px 10px 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+
+  .inputs {
+    display: flex;
+    flex-wrap: nowrap;
+    position: relative;
+  }
+
+  .char-count {
+    margin-right: 5px;
+    opacity: .55;
+    font-size: .8rem;
+    font-weight: 600;
+    vertical-align: middle;
+
+    &.danger {
+      color: @red;
+    }
+  }
+
+  .actions {
+    text-align: right;
+    margin-top: 10px;
+    display: none;
+
+    &.editing {
+      display: block;
+    }
+  }
+
+  textarea {
+    width: 100%;
+    height: 4rem;
+    padding: 4px 7px;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+  }
+
+  .avatar-container {
+    vertical-align: top;
+    margin-right: 10px;
+  }
+}
+
+.feed {
+  border: 1px solid #ddd;
+
+  & > :last-child {
+    border-bottom: 0 !important;
+  }
+
+  .empty {
+    background: #fff;
+    padding: 20px;
+    color: gray;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+.feed-item {
+  display: flex;
+
+  .avatar-container {
+    margin-right: 10px;
+  }
+
+  &.post,
+  &.like {
+    position: relative;
+    background: #fff;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e5e5e5;
+
+    &.unread {
+      background: #f5f8fa;
+    }
+
+    .name {
+      font-weight: 500;
+    }
+
+    .name,
+    .timestamp,
+    .text {
+      font-size: .85rem;
+    }
+
+    .name,
+    .bullet,
+    .timestamp {
+      line-height: 1;
+    }
+
+    .bullet,
+    .timestamp {
+      color: gray;
+    }
+
+    .name,
+    .timestamp a {
+      color: inherit;
+      &:hover {
+        color: @blue;
+        text-decoration: underline;
+      }
+    }
+
+    .text {
+      margin: 5px 0;
+    }
+
+    .bullet {
+      font-size: .6rem;
+    }
+  }
+
+  &.post {
+    .reply-info {
+      font-size: 0.8rem;
+      margin: 10px 0;
+      color: rgba(0, 0, 0, .6);
+      cursor: pointer;
+
+      .url .name {
+        color: inherit;
+        font-weight: normal;
+        font-size: inherit;
+      }
+    }
+
+    .text {
+      white-space: pre-line;
+      line-height: 1.4;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .post-content {
+      line-height: 1;
+    }
+
+    .post-quote {
+      padding: 8px 10px;
+      margin-top: 8px;
+      border: 1px solid #eee;
+      border-radius: 2px;
+
+      .text {
+        margin: 0;
+      }
+    }
+  }
+
+  &.like {
+
+    .icon {
+      position: absolute;
+      left: 46px;
+      top: 20px;
+      height: 16px;
+      width: 16px;
+      * {
+        fill: crimson;
+        stroke: crimson;
+      }
+    }
+
+    .reply-info {
+      font-size: 0.8rem;
+      margin: 10px 0;
+      color: rgba(0, 0, 0, .6);
+      cursor: pointer;
+
+      .url .name {
+        color: inherit;
+        font-weight: normal;
+        font-size: inherit;
+      }
+    }
+
+    .text {
+      line-height: 1.4;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: pre-line;
+      margin-top: 8px;
+    }
+
+    .like-header {
+      font-size: 0.85rem;
+    }
+
+    .like-content {
+      margin-left: 55px;
+      line-height: 1;
+    }
+
+    .post-quote {
+      padding: 8px 10px;
+      margin-top: 8px;
+      border: 1px solid #eee;
+      border-radius: 2px;
+
+      .text {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &.grandchild {
+    position: relative;
+
+    &:before {
+      display: block;
+      content: '';
+      position: absolute;
+      left: 36px;
+      top: -30px;
+      width: 4px;
+      height: 35px;
+      background: var(--theme-color-border);
+      border-radius: 4px;
+    }
+  }
+
+  &.profile {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 10px 15px;
+    position: relative;
+
+    .avatar-container {
+      margin-right: 10px;
+    }
+
+    .follow-btn {
+      margin-left: auto;
+    }
+  }
+
+  &.reply {
+
+    .text {
+      margin-top: 8px;
+    }
+  }
+}
+
+.notifications .feed-item.post {
+
+  .text {
+    margin-top: 8px;
+  }
+}

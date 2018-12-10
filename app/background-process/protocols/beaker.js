@@ -243,6 +243,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://feed/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/feed.build.js'))
   }
+  if (requestUrl === 'beaker://feed/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/feed.css'))
+  }
   if (requestUrl === 'beaker://search/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/search.html'))
   }

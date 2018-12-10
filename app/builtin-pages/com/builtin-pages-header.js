@@ -33,7 +33,6 @@ export default function render (currentPage, currentUserSession) {
 // internal methods
 // =
 
-
 function renderHelpButton () {
   return yo`
     <button class="btn plain help" onclick=${onClickHelpButton}>
