@@ -128,6 +128,7 @@ export const WEBAPI = {
 
   getUserSession,
   setUserSession,
+  showEditProfileModal,
 
   getSetting,
   getSettings,
@@ -142,6 +143,7 @@ export const WEBAPI = {
 
   fetchBody,
   downloadURL,
+  readFile,
 
   getResourceContentType,
 
@@ -175,6 +177,15 @@ export function fetchBody (url) {
 
 export async function downloadURL (url) {
   this.sender.downloadURL(url)
+}
+
+function readFile (pathname, opts) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(pathname, opts, (err, res) => {
+      if (err) reject(err)
+      else resolve(res)
+    })
+  })
 }
 
 export function getResourceContentType (url) {
@@ -389,6 +400,11 @@ async function setUserSession (url) {
   // set the session
   var userSession = {url: user.url}
   setUserSessionFor(this.sender, userSession)
+}
+
+async function showEditProfileModal () {
+  var sess = await getUserSession.call(this)
+  return showShellModal(this.sender, 'edit-profile', sess)
 }
 
 export function getSetting (key) {

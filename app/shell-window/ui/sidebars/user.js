@@ -1,4 +1,4 @@
-/* globals DatArchive */
+/* globals DatArchive beaker */
 
 import * as yo from 'yo-yo'
 import {BaseSidebar} from './base'
@@ -29,23 +29,26 @@ export class UserSidebar extends BaseSidebar {
     return yo`
       <div class="user-sidebar">
         <div class="card">
-          <img src="${this.url.origin}/thumb.jpg">
+          <img src="${this.url.origin}/thumb.jpg?cache_buster=${Date.now()}">
           <div class="title">${this.info.title}</div>
           <div class="description">${this.info.description}</div>
           ${this.isCurrentUser
             ? yo`<div class="isyou sepbottom"><span>This is you!</span></div>`
             : this.renderFollowers()}
           ${this.isCurrentUser
-            ? ''
+            ? yo`
+              <div class="sepbottom">
+                <div class="btn" onclick=${() => this.editProfile()}><span class="fa fa-pencil-square-o"></span> Edit profile</div>
+              </div>`
             : yo`
               <div class="sepbottom">
                 ${this.isCurrentUserFollowing
                   ? yo`<div class="btn" onclick=${() => this.unfollow()}><span class="fa fa-minus"></span> Unfollow</div>`
                   : yo`<div class="btn" onclick=${() => this.follow()}><span class="fa fa-plus"></span> Follow</div>`}
               </div>`}
-          <div>
+          ${''/* TODO<div>
             <div><a class="link" onclick=${() => this.open('feed')}>View Feed</a></div>
-          </div>
+          </div>*/}
         </div>
       </div>`
   }
@@ -133,6 +136,12 @@ export class UserSidebar extends BaseSidebar {
       toast.create('Failed to unfollow: ' + e.toString())
       return
     }
+    this.rerender()
+  }
+
+  async editProfile () {
+    await beaker.browser.showEditProfileModal()
+    this.info = JSON.parse(await (new DatArchive(this.url.toString())).readFile('/dat.json'))
     this.rerender()
   }
 
