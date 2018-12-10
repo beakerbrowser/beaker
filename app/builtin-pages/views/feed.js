@@ -3,6 +3,7 @@
 const yo = require('yo-yo')
 import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import {niceDate} from '../../lib/time'
+import * as toast from '../com/toast'
 
 // globals
 //
@@ -62,7 +63,7 @@ function renderFeed () {
           <div class="empty">
             Your feed is empty, what the fuck.
           </div>`
-        : '' }
+        : ''}
       ${posts.map(post => yo`
         <div class="feed-item post">
           <a href="${post.author.url}" class="avatar-container">
@@ -75,6 +76,13 @@ function renderFeed () {
                 <span class="bullet">•</span>
                 <a href="${post.author.url}${post.pathname}" class="value">${niceDate(post.createdAt)}</a>
               </span>
+              ${post.author.url === currentUserSession.url
+                ? yo`
+                  <span class="timestamp">
+                    <span class="bullet">•</span>
+                    <a href="#" onclick=${e => onClickDelete(e, post.pathname)}>delete</a>
+                  </span>`
+                : ''}
             </div>
             <p class="text">${post.content}</p>
           </div>
@@ -104,5 +112,15 @@ async function onSubmitNewPostForm (e) {
   } catch (e) {
     console.error(e)
     toast.create(`Could not create post: ${e.toString()}`, 'error')
+  }
+}
+
+async function onClickDelete (e, postPathname) {
+  try {
+    await beaker.posts.delete(postPathname)
+    window.location.reload()
+  } catch (e) {
+    console.error(e)
+    toast.create(`Could not delete post: ${e.toString()}`, 'error')
   }
 }
