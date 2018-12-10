@@ -9,6 +9,7 @@ import * as toast from '../com/toast'
 //
 
 var currentUserSession = null
+var followedUsers
 var newPostText = ''
 var posts = []
 
@@ -18,9 +19,14 @@ var posts = []
 setup()
 async function setup () {
   currentUserSession = await beaker.browser.getUserSession()
-  posts = await beaker.posts.list({reverse: true})
+  followedUsers = await beaker.followgraph.listFollows(currentUserSession.url)
+  posts = await beaker.posts.list({reverse: true, authors: getFeedAuthors()})
   console.log({posts})
   update()
+}
+
+function getFeedAuthors () {
+  return followedUsers.concat(currentUserSession.url)
 }
 
 // rendering
