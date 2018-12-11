@@ -164,7 +164,7 @@ function renderActions (row, i) {
     return yo`
       <div class="actions bookmark__actions">
         <button class="btn plain action tooltip-container" onclick=${onClickEdit(i)} data-tooltip="Edit bookmark">
-          <i class="fa fa-pencil icon"></i>
+          <i class="fas fa-pencil-alt icon"></i>
         </button>
 
         <button class="btn plain action bookmark tooltip-container" onclick=${onClickDelete(i)} data-tooltip="Unbookmark">

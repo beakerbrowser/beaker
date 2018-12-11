@@ -64,7 +64,7 @@ export class PageMenuNavbarBtn {
                 ${isInstalledApp ?
                   yo`
                     <div class="list-item" onclick=${() => this.onClickUninstall()}>
-                      <i class="fa fa-trash-o"></i>
+                      <i class="fas fa-trash"></i>
                       Uninstall this app
                     </div>
                   `
@@ -76,12 +76,12 @@ export class PageMenuNavbarBtn {
               ? yo`
                 <div class="dropdown-items compact with-triangle">
                   <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
-                    <i class="fa fa-files-o"></i>
+                    <i class="fas fa-copy"></i>
                     View Source
                   </div>
                   
                   <div class="dropdown-item" onclick=${() => this.onClickFork()}>
-                    <i class="fa fa-clone"></i>
+                    <i class="far fa-clone"></i>
                     Make editable copy
                   </div>
 
@@ -91,7 +91,7 @@ export class PageMenuNavbarBtn {
                   </div>
 
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
-                    <i class="fa fa-file-archive-o"></i>
+                    <i class="fas fa-file-archive"></i>
                     Download as .zip
                   </div>
                 </div>`

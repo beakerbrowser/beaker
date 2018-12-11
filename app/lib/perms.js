@@ -158,7 +158,7 @@ export default {
   },
   openExternal: {
     desc: 'Open this URL in another program: ',
-    icon: 'external-link',
+    icon: 'external-link-alt',
     persist: false,
     idempotent: false,
     alwaysDisallow: false,

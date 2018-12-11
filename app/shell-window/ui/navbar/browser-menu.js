@@ -83,7 +83,7 @@ export class BrowserMenuNavbarBtn {
 
             <div class="section">
               <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
-                <i class="fa fa-clone"></i>
+                <i class="far fa-clone"></i>
                 <span class="label">Empty project</span>
               </div>
 
@@ -93,7 +93,7 @@ export class BrowserMenuNavbarBtn {
               </div>
 
               <div class="menu-item" onclick=${e => this.onCreateSiteFromFolder(e)}>
-                <i class="fa fa-folder-o"></i>
+                <i class="far fa-folder"></i>
                 <span class="label">From folder</span>
               </div>
             </div>
