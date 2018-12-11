@@ -1,4 +1,4 @@
-/* globals DatArchive */
+/* globals DatArchive beaker */
 
 import * as yo from 'yo-yo'
 import {BaseModal} from './base'
