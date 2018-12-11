@@ -1,5 +1,8 @@
+/* globals beaker DatArchive */
+
 import yo from 'yo-yo'
 import * as onboardingPopup from '../com/onboarding-popup'
+import toggleable from '../com/toggleable'
 
 // exported api
 // =
@@ -27,6 +30,7 @@ export default function render (currentPage, currentUserSession) {
           <a href="${currentUserSession.url}"><img src="${currentUserSession.url}/thumb.jpg"></a>
         </div>`
         : ''}
+      ${renderNewButton()}
     </div>`
 }
 
@@ -40,6 +44,68 @@ function renderHelpButton () {
     </button>`
 }
 
+function renderNewButton () {
+  return toggleable(yo`
+    <div class="dropdown toggleable-container create-new-dropdown">
+      <button class="btn primary toggleable">
+        <span>New</span>
+        <i class="fa fa-plus"></i>
+      </button>
+      <div class="dropdown-items create-new filters subtle-shadow right">
+        <div class="dropdown-item" onclick=${() => onCreateSite()}>
+          <div class="label">
+            <i class="fa fa-clone"></i>
+            Empty project
+          </div>
+          <p class="description">
+            Create a new project
+          </p>
+        </div>
+        <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
+          <div class="label">
+            <i class="fa fa-code"></i>
+            Website
+          </div>
+          <p class="description">
+            Create a new website from a basic template
+          </p>
+        </div>
+        <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
+          <div class="label">
+            <i class="fa fa-folder-o"></i>
+            From folder
+          </div>
+          <p class="description">
+            Create a new project from a folder on your computer
+          </p>
+        </div>
+      </div>
+    </div>
+  `)
+}
+
 async function onClickHelpButton () {
   await onboardingPopup.create({showHelpOnly: true})
 }
+
+async function onCreateSiteFromFolder () {
+  // ask user for folder
+  const folder = await beaker.browser.showOpenDialog({
+    title: 'Select folder',
+    buttonLabel: 'Use folder',
+    properties: ['openDirectory']
+  })
+  if (!folder || !folder.length) return
+
+  // create a new archive
+  const archive = await DatArchive.create({prompt: false})
+  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
+  window.location = 'beaker://library/' + archive.url + '#setup'
+}
+
+async function onCreateSite (template) {
+  // create a new archive
+  const archive = await DatArchive.create({template, prompt: false})
+  window.location = 'beaker://library/' + archive.url + '#setup'
+}
+
