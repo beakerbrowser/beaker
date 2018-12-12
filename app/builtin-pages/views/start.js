@@ -272,10 +272,10 @@ async function onContextmenuPinnedBookmark (e, bookmark) {
   e.preventDefault()
   var url = e.currentTarget.getAttribute('href')
   const items = [
-    {icon: 'external-link-alt', label: 'Open Link in New Tab', click: () => window.open(url)},
-    {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url)},
-    {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark)},
-    {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark)}
+    {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(url)},
+    {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(url)},
+    {icon: 'fa fa-pencil-alt', label: 'Edit', click: () => onClickEditBookmark(bookmark)},
+    {icon: 'fa fa-trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark)}
   ]
   await contextMenu.create({x: e.clientX, y: e.clientY, items})
 }
