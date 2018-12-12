@@ -76,7 +76,7 @@ export class PageMenuNavbarBtn {
               ? yo`
                 <div class="dropdown-items compact with-triangle">
                   <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
-                    <i class="fas fa-copy"></i>
+                    <i class="fas fa-code"></i>
                     View Source
                   </div>
                   
@@ -91,7 +91,7 @@ export class PageMenuNavbarBtn {
                   </div>
 
                   <div class="dropdown-item" onclick=${() => this.onClickDownloadZip()}>
-                    <i class="fas fa-file-archive"></i>
+                    <i class="far fa-file-archive"></i>
                     Download as .zip
                   </div>
                 </div>`
