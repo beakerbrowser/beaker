@@ -54,6 +54,8 @@ export function update (page) {
 
   // render
   yo.update(page.sidebarEl, render(page.id, page))
+  if (page.sidebar) document.body.classList.add('sidebar-visible')
+  else document.body.classList.remove('sidebar-visible')
 }
 
 // internal methods
