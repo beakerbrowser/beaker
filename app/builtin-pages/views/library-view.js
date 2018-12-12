@@ -531,13 +531,13 @@ function renderShareMenu () {
     closed: ({onToggle}) => yo`
       <div class="dropdown share toggleable-container">
         <button class="btn nofocus toggleable" onclick=${onToggle}>
-          <span class="fa fa-share-square-o"></span> Share
+          <span class="fa fa-share-square"></span> Share
         </button>
       </div>`,
     open: ({onToggle}) => yo`
       <div class="dropdown share toggleable-container">
         <button class="btn nofocus toggleable" onclick=${onToggle}>
-          <span class="fa fa-share-square-o"></span> Share
+          <span class="fa fa-share-square"></span> Share
         </button>
 
         <div class="dropdown-items subtle-shadow">
