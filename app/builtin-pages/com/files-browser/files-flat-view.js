@@ -488,9 +488,9 @@ function onContextmenuNode (e, filesBrowser, node) {
   e.stopPropagation()
 
   var items = [
-    {icon: 'external-link-alt', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
+    {icon: 'fa fa-external-link-alt', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
     {
-      icon: 'link',
+      icon: 'fa fa-link',
       label: 'Copy URL',
       click: () => {
         writeToClipboard(encodeURI(node.url))
@@ -502,7 +502,7 @@ function onContextmenuNode (e, filesBrowser, node) {
   if (node.isEditable) {
     items = items.concat([
       {
-        icon: 'i-cursor',
+        icon: 'fa fa-i-cursor',
         label: 'Rename',
         click: async () => {
           let newName = await contextInput.create({
@@ -526,7 +526,7 @@ function onContextmenuNode (e, filesBrowser, node) {
         }
       },
       {
-        icon: 'trash',
+        icon: 'fa fa-trash',
         label: 'Delete',
         click: () => {
           if (confirm(`Are you sure you want to delete ${node.name}?`)) {
