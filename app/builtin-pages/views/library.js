@@ -460,7 +460,7 @@ function removeFromLibraryLabel (archive) {
 }
 
 function removeFromLibraryIcon (archive) {
-  return (archive.isOwner) ? 'trash' : 'pause'
+  return (archive.isOwner) ? 'fa fa-trash' : 'fa fa-pause'
 }
 
 // events
@@ -655,16 +655,16 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
 
   // construct and show popup
   let items = [
-    {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url)},
-    {icon: 'external-link-alt', label: 'Open in new tab', click: () => window.open(archive.url)},
-    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
-    {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
+    {icon: 'fa fa-link', label: 'Copy URL', click: () => onCopy(archive.url)},
+    {icon: 'fa fa-external-link-alt', label: 'Open in new tab', click: () => window.open(archive.url)},
+    {icon: 'far fa-clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
+    {icon: 'fa fa-cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
   ]
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
-    items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
-    items.push({icon: 'times-circle', label: 'Delete permanently', click: () => onDeletePermanently(null, archive)})
+    items.push({icon: 'fa fa-undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
+    items.push({icon: 'fa fa-times-circle', label: 'Delete permanently', click: () => onDeletePermanently(null, archive)})
   }
   await contextMenu.create({x, y, items, parent, right: !isContext, withTriangle: !isContext})
 

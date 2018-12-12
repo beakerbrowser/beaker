@@ -93,9 +93,13 @@ function render () {
           if (item === '-') {
             return yo`<hr />`
           }
+          var icon = item.icon
+          if (icon && !icon.includes(' ')) {
+            icon = 'fa fa-' + icon
+          }
           return yo`
             <div class="dropdown-item" onclick=${() => { destroy(); item.click() }}>
-              <i class="fa fa-${item.icon}"></i>
+              <i class="${icon}"></i>
               ${item.label}
             </div>
           `
