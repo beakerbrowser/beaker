@@ -92,7 +92,12 @@ export async function setup () {
   if (!defaultUser) {
     let newUserUrl = await beakerCore.dat.library.createNewArchive({title: 'Anonymous', type: ['user', 'unwalled.garden/user']})
     let newUserArchive = await beakerCore.dat.library.getArchive(newUserUrl)
-    await newUserArchive.pda.writeFile('/thumb.jpg', await jetpack.readAsync(path.join(__dirname, 'assets/img/default-user-thumb.jpg'), 'buffer'))
+    await beakerCore.dat.library.getDaemon().exportFilesystemToArchive({
+      srcPath: path.join(__dirname, 'assets/templates/default-profile'),
+      dstArchive: newUserArchive,
+      inplaceImport: true,
+      ignore: ['/dat.json']
+    })
     await beakerCore.users.add(newUserUrl)
     console.log('new user added')
   }

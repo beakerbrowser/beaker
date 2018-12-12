@@ -1,0 +1,10 @@
+@import "./vendor/bulma.min.css";
+@import "./vendor/font-awesome.min.css";
+
+html {
+  overflow-y: auto;
+}
+
+body {
+  height: 100%;
+}

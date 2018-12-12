@@ -1,0 +1,5 @@
+{
+  "title": "Anonymous",
+  "type": ["user", "unwalled.garden/user"],
+  "fallback_page": "/index.html"
+}
