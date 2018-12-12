@@ -108,7 +108,7 @@ export class BrowserMenuNavbarBtn {
 
               <div class="section">
                 <div class="menu-item" onclick=${e => this.onOpenNewWindow()}>
-                  <i class="fas fa-window-maximize"></i>
+                  <i class="far fa-window-maximize"></i>
                   <span class="label">New Window</span>
                   <span class="shortcut">${this.accelerators.newWindow}</span>
                 </div>

@@ -522,5 +522,5 @@ function getBuiltinPageIcon (url) {
   if (url.startsWith('beaker://watchlist/')) {
     return yo`<i class="fa fa-eye"></i>`
   }
-  return yo`<i class="fas fa-window-maximize"></i>`
+  return yo`<i class="far fa-window-maximize"></i>`
 }
