@@ -83,7 +83,7 @@ export class BrowserMenuNavbarBtn {
 
             <div class="section">
               <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
-                <i class="fa fa-clone"></i>
+                <i class="far fa-clone"></i>
                 <span class="label">Empty project</span>
               </div>
 
@@ -93,7 +93,7 @@ export class BrowserMenuNavbarBtn {
               </div>
 
               <div class="menu-item" onclick=${e => this.onCreateSiteFromFolder(e)}>
-                <i class="fa fa-folder-o"></i>
+                <i class="far fa-folder"></i>
                 <span class="label">From folder</span>
               </div>
             </div>
@@ -108,14 +108,13 @@ export class BrowserMenuNavbarBtn {
 
               <div class="section">
                 <div class="menu-item" onclick=${e => this.onOpenNewWindow()}>
-                  <i class="fa fa-window-maximize"></i>
+                  <i class="far fa-window-maximize"></i>
                   <span class="label">New Window</span>
                   <span class="shortcut">${this.accelerators.newWindow}</span>
                 </div>
 
                 <div class="menu-item" onclick=${e => this.onOpenNewTab()}>
-
-                  <i class="fa fa-file-o"></i>
+                  <i class="far fa-file"></i>
                   <span class="label">New Tab</span>
                   <span class="shortcut">${this.accelerators.newTab}</span>
                 </div>
@@ -141,7 +140,7 @@ export class BrowserMenuNavbarBtn {
                 </div>
 
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
-                  <i class="fa fa-star-o"></i>
+                  <i class="far fa-star"></i>
                   <span class="label">Bookmarks</span>
                 </div>
 
@@ -161,7 +160,7 @@ export class BrowserMenuNavbarBtn {
 
               <div class="section">
                 <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
-                  <i class="fa fa-plus-square-o"></i>
+                  <i class="far fa-plus-square"></i>
                   <span class="label">Create New</span>
                   <i class="more fa fa-angle-right"></i>
                 </div>
@@ -174,7 +173,7 @@ export class BrowserMenuNavbarBtn {
 
               <div class="section">
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
-                  <i class="fa fa-gear"></i>
+                  <i class="fas fa-cog"></i>
                   <span class="label">Settings</span>
                 </div>
               </div>
@@ -189,17 +188,17 @@ export class BrowserMenuNavbarBtn {
 
               <div class="section">
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
-                  <i class="fa fa-question-circle-o"></i>
+                  <i class="far fa-question-circle"></i>
                   <span class="label">Help</span>
                 </div>
 
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md')}>
-                  <i class="fa fa-flag-o"></i>
+                  <i class="far fa-flag"></i>
                   <span class="label">Report an Issue</span>
                 </div>
 
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://opencollective.com/beaker')}>
-                  <i class="fa fa-heart-o"></i>
+                  <i class="far fa-heart"></i>
                   <span class="label">Support Beaker</span>
                 </div>
               </div>

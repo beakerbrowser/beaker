@@ -157,7 +157,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
     return yo`
       <div class="empty">
         <div class="empty-header">
-          <i class="fa fa-files-o"></i>
+          <i class="fas fa-copy"></i>
           <div class="label">Compare archives</div>
         </div>
         <p>
@@ -195,7 +195,7 @@ function renderRevisions ({base, target, isLocalSyncPath, labels, revisions, isR
           }
 
           <a href="${target.url}" target="_blank" class="btn open-link primary">
-            <span class="fa fa-external-link"></span>
+            <span class="fas fa-external-link-alt"></span>
             Open ${getSafeTitleHTML(target)}
           </a>
         </div>`

@@ -30,7 +30,7 @@ export class DonateMenuNavbarBtn {
     return yo`
       <div class="donate-navbar-menu">
         <button class="nav-donate-btn" title="Donate to this site" onclick=${e => this.onClickBtn(e)}>
-          <i class="fa fa-heart-o"></i>
+          <i class="far fa-heart"></i>
         </button>
         ${dropdownEl}
       </div>
@@ -51,7 +51,7 @@ export class DonateMenuNavbarBtn {
         <div class="dropdown-items datsite-menu-dropdown-items donate-menu-dropdown-items with-triangle">
           <div class="header">
             <div class="header-info">
-              <span class="fa fa-heart-o"></span>
+              <span class="far fa-heart"></span>
               <h1>
                 Contribute to
                 ${page.siteInfo.title && page.siteInfo.title.length

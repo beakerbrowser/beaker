@@ -147,7 +147,7 @@ function rActions (filesBrowser, currentSource) {
     buttonGroup.push(
       yo`
         <button class="action btn trash nofocus tooltip-container delete" data-tooltip="Delete file" onclick=${e => onClickDeleteFile(e, filesBrowser, currentSource)}>
-          <i class="fa fa-trash-o"></i>
+          <i class="fas fa-trash"></i>
         </button>`
     )
 
@@ -155,7 +155,7 @@ function rActions (filesBrowser, currentSource) {
       buttonGroup.push(
         yo`
           <button class="action btn nofocus tooltip-container" data-tooltip="Edit file" onclick=${onClickEditFile}>
-            <i class="fa fa-pencil"></i>
+            <i class="fas fa-pencil-alt"></i>
           </button>`
       )
     }
@@ -207,7 +207,7 @@ function rActions (filesBrowser, currentSource) {
                       [
                         yo`
                           <div class="dropdown-item" onclick=${e => onAddFiles(e, currentSource, true)}>
-                            <i class="fa fa-files-o"></i>
+                            <i class="fas fa-copy"></i>
                             Import files
                           </div>`,
                         yo`
@@ -226,7 +226,7 @@ function rActions (filesBrowser, currentSource) {
       ${!isEditing && currentSource.type === 'file'
         ? yo`
           <a  class="action btn plain tooltip-container" href=${currentSource.url} target="_blank" data-tooltip="Open file">
-            <i class="fa fa-external-link"></i>
+            <i class="fas fa-external-link-alt"></i>
           </a>`
         : ''
       }
@@ -391,7 +391,7 @@ function rFile (filesBrowser, node, depth) {
       onclick=${e => onClickNode(e, filesBrowser, node)}
       oncontextmenu=${e => onContextmenuNode(e, filesBrowser, node)}
     >
-      <i class="fa fa-file-text-o"></i>
+      <i class="far fa-file"></i>
       <div class="name-container"><div class="name">${node.name}</div></div>
       <div class="updated">${niceMtime(node.mtime)}</div>
       <div class="size">${typeof node.size === 'number' ? prettyBytes(node.size) : '--'}</div>
@@ -488,9 +488,9 @@ function onContextmenuNode (e, filesBrowser, node) {
   e.stopPropagation()
 
   var items = [
-    {icon: 'external-link', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
+    {icon: 'fa fa-external-link-alt', label: `Open ${node.isContainer ? 'folder' : 'file'} in new tab`, click: () => window.open(node.url)},
     {
-      icon: 'link',
+      icon: 'fa fa-link',
       label: 'Copy URL',
       click: () => {
         writeToClipboard(encodeURI(node.url))
@@ -502,7 +502,7 @@ function onContextmenuNode (e, filesBrowser, node) {
   if (node.isEditable) {
     items = items.concat([
       {
-        icon: 'i-cursor',
+        icon: 'fa fa-i-cursor',
         label: 'Rename',
         click: async () => {
           let newName = await contextInput.create({
@@ -526,7 +526,7 @@ function onContextmenuNode (e, filesBrowser, node) {
         }
       },
       {
-        icon: 'trash',
+        icon: 'fa fa-trash',
         label: 'Delete',
         click: () => {
           if (confirm(`Are you sure you want to delete ${node.name}?`)) {

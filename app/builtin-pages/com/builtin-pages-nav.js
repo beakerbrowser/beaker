@@ -6,13 +6,13 @@ function getIcon (page) {
     case 'Library':
       return yo`<i class="fa fa-book"></i>`
     case 'Bookmarks':
-      return yo`<i class="fa fa-star-o"></i>`
+      return yo`<i class="far fa-star"></i>`
     case 'History':
       return yo`<i class="fa fa-history"></i>`
     case 'Downloads':
       return yo`<i class="fa fa-download"></i>`
     case 'Settings':
-      return yo`<i class="fa fa-gear"></i>`
+      return yo`<i class="fas fa-cog"></i>`
     case 'Watchlist':
       return yo`<i class="fa fa-eye"></i>`
     default:
@@ -48,7 +48,7 @@ export default function render (currentPage = '') {
         ${currentPage !== 'Bookmarks'
           ? yo`
             <a href="beaker://bookmarks" class="dropdown-item">
-              <i class="fa fa-star-o"></i>
+              <i class="far fa-star"></i>
               <span>Bookmarks</span>
             </a>`
           : ''
@@ -84,7 +84,7 @@ export default function render (currentPage = '') {
         ${currentPage !== 'Settings'
           ? yo`
             <a href="beaker://settings" class="dropdown-item ${currentPage === 'settings' ? 'active' : ''}">
-              <i class="fa fa-gear"></i>
+              <i class="fas fa-cog"></i>
               <span>Settings</span>
             </a>`
           : ''

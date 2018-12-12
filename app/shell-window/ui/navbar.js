@@ -350,7 +350,7 @@ function render (id, page) {
           // result row
           return yo`
             <div class=${rowCls} data-result-index=${i}>
-              ${r.bookmarked ? yo`<i class="fa fa-star-o"></i>` : ''}
+              ${r.bookmarked ? yo`<i class="far fa-star"></i>` : ''}
               ${r.search
                 ? yo`<i class="icon icon-search"></i>`
                 : yo`<img class="icon" src=${'beaker-favicon:' + r.url}/>`

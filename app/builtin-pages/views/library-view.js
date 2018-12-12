@@ -292,7 +292,7 @@ async function loadReadme () {
       readmeHeader = yo`
         <div class="file-view-header">
           <span class="path">${readmeMdNode.name}</span>
-          ${isOwner ? yo`<span class="actions"><a class="btn plain" onclick=${e => gotoFileEditor(readmeMdNode.name)}><span class="fa fa-pencil"></a></span>` : ''}
+          ${isOwner ? yo`<span class="actions"><a class="btn plain" onclick=${e => gotoFileEditor(readmeMdNode.name)}><span class="fas fa-pencil-alt"></a></span>` : ''}
         </div>`
     } else {
       // try to find the readme file
@@ -304,7 +304,7 @@ async function loadReadme () {
         readmeHeader = yo`
           <div class="file-view-header">
             <span class="path">${readmeNode.name}</span>
-            ${isOwner ? yo`<span class="actions"><a class="btn plain" onclick=${e => gotoFileEditor(readmeNode.name)}><span class="fa fa-pencil"></a></span>` : ''}
+            ${isOwner ? yo`<span class="actions"><a class="btn plain" onclick=${e => gotoFileEditor(readmeNode.name)}><span class="fas fa-pencil-alt"></a></span>` : ''}
           </div>`
       }
     }
@@ -367,8 +367,8 @@ function render () {
               <i class="fa fa-file-video-o"></i>
               <i class="fa fa-file-image-o"></i>
               <i class="fa fa-file-code-o"></i>
-              <i class="fa fa-file-text-o"></i>
-              <i class="fa fa-file-archive-o"></i>
+              <i class="far fa-file"></i>
+              <i class="fas fa-file-archive"></i>
             </div>
 
             <h1>Drop to add files</h1>
@@ -531,13 +531,13 @@ function renderShareMenu () {
     closed: ({onToggle}) => yo`
       <div class="dropdown share toggleable-container">
         <button class="btn nofocus toggleable" onclick=${onToggle}>
-          <span class="fa fa-share-square-o"></span> Share
+          <span class="fa fa-share-square"></span> Share
         </button>
       </div>`,
     open: ({onToggle}) => yo`
       <div class="dropdown share toggleable-container">
         <button class="btn nofocus toggleable" onclick=${onToggle}>
-          <span class="fa fa-share-square-o"></span> Share
+          <span class="fa fa-share-square"></span> Share
         </button>
 
         <div class="dropdown-items subtle-shadow">
@@ -559,7 +559,7 @@ function renderShareMenu () {
 
               <a href=${url} target="_blank" class="btn primary full-width center">
                 Open
-                <span class="fa fa-external-link"></span>
+                <span class="fas fa-external-link-alt"></span>
               </a>
             </p>
           </div>
@@ -595,12 +595,12 @@ function renderMenu () {
           <div class="dropdown-items right">
             <div class="section menu-items" onclick=${onToggle}>
               ${''/*<div class="dropdown-item" onclick=${e => {onChangeView(e, 'compare'); onToggle(e)}}>
-                <i class="fa fa-files-o"></i>
+                <i class="fas fa-copy"></i>
                 Compare files
               </div>*/}
 
               <div class="dropdown-item" onclick=${onMakeCopy}>
-                <i class="fa fa-clone"></i>
+                <i class="far fa-clone"></i>
                 Make ${isOwner ? 'a' : 'an editable'} copy
               </div>
 
@@ -608,7 +608,7 @@ function renderMenu () {
                 ? isSaved
                   ? yo`
                     <div class="dropdown-item" onclick=${onMoveToTrash}>
-                      <i class="fa fa-trash-o"></i>
+                      <i class="fas fa-trash"></i>
                       Move to Trash
                     </div>`
                   : [
@@ -768,7 +768,7 @@ function renderVersionPicker () {
           href=${archive.url + '+preview'}
           data-tooltip="Preview unpublished changes"
           onclick=${onOpenPreviewDat}>
-            <i class="fa fa-external-link"></i>
+            <i class="fas fa-external-link-alt"></i>
             Open preview
         </a>`
     ]
@@ -1156,7 +1156,7 @@ function renderNetworkView () {
                       </div>`
                   ] : yo`
                     <div class="hint">
-                      <i class="fa fa-heart-o"></i>
+                      <i class="far fa-heart"></i>
                       <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
                       <a href="https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites#keeping-a-peer-to-peer-website-online" target="_blank" class="learn-more-link">Learn more</a>
                     </div>`

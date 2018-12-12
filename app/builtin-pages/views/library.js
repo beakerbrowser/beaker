@@ -213,7 +213,7 @@ function renderRow (row, i) {
         ${row.userSettings.isSaved
           ? yo`
             <button class="btn plain trash" onclick=${e => onDelete(e, row)} title=${removeFromLibraryLabel(row)}>
-              <i class="fa fa-trash-o"></i>
+              <i class="fas fa-trash"></i>
             </button>`
           : yo`
             <button class="btn plain restore" onclick=${e => onRestore(e, row)} title="Restore from trash">
@@ -349,7 +349,7 @@ function renderHeader () {
             <div class="dropdown-items create-new filters subtle-shadow right">
               <div class="dropdown-item" onclick=${() => onCreateSite()}>
                 <div class="label">
-                  <i class="fa fa-clone"></i>
+                  <i class="far fa-clone"></i>
                   Empty project
                 </div>
                 <p class="description">
@@ -367,7 +367,7 @@ function renderHeader () {
               </div>
               <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
                 <div class="label">
-                  <i class="fa fa-folder-o"></i>
+                  <i class="far fa-folder"></i>
                   From folder
                 </div>
                 <p class="description">
@@ -460,7 +460,7 @@ function removeFromLibraryLabel (archive) {
 }
 
 function removeFromLibraryIcon (archive) {
-  return (archive.isOwner) ? 'trash' : 'pause'
+  return (archive.isOwner) ? 'fa fa-trash' : 'fa fa-pause'
 }
 
 // events
@@ -655,16 +655,16 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
 
   // construct and show popup
   let items = [
-    {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url)},
-    {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url)},
-    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
-    {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
+    {icon: 'fa fa-link', label: 'Copy URL', click: () => onCopy(archive.url)},
+    {icon: 'fa fa-external-link-alt', label: 'Open in new tab', click: () => window.open(archive.url)},
+    {icon: 'far fa-clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
+    {icon: 'fa fa-cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
   ]
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
-    items.push({icon: 'undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
-    items.push({icon: 'times-circle', label: 'Delete permanently', click: () => onDeletePermanently(null, archive)})
+    items.push({icon: 'fa fa-undo', label: 'Restore from trash', click: () => onRestore(null, archive)})
+    items.push({icon: 'fa fa-times-circle', label: 'Delete permanently', click: () => onDeletePermanently(null, archive)})
   }
   await contextMenu.create({x, y, items, parent, right: !isContext, withTriangle: !isContext})
 
