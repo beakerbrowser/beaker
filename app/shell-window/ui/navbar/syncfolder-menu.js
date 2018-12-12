@@ -49,7 +49,7 @@ export class SyncfolderMenuNavbarBtn {
       <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
         <div class="dropdown-items compact with-triangle">
           <div class="dropdown-item" onclick=${() => this.onClickOpenFolder()}>
-            <i class="fa fa-folder-open-o"></i>
+            <i class="far fa-folder-open"></i>
             Open folder
           </div>
           <div class="dropdown-item" onclick=${() => this.onClickCopyPath()}>
