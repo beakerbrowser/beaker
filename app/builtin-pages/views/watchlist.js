@@ -126,7 +126,7 @@ function renderRow (row, i) {
 
       <div class="buttons">
         <button class="btn plain trash" onclick=${e => onDelete(e, row)} title="Remove from Watchlist">
-          <i class="fa fa-trash-o"></i>
+          <i class="fas fa-trash"></i>
         </button>
       </div>
 

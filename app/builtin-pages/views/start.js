@@ -62,7 +62,7 @@ function onClickNewSiteButton (e) {
           <div class="dropdown-items custom create-new filters subtle-shadow center top">
             <div class="dropdown-item" onclick=${() => onCreateSite()}>
               <div class="label">
-                <i class="fa fa-clone"></i>
+                <i class="far fa-clone"></i>
                 Empty project
               </div>
               <p class="description">
@@ -80,7 +80,7 @@ function onClickNewSiteButton (e) {
             </div>
             <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
               <div class="label">
-                <i class="fa fa-folder-o"></i>
+                <i class="far fa-folder"></i>
                 From folder
               </div>
               <p class="description">
@@ -272,7 +272,7 @@ async function onContextmenuPinnedBookmark (e, bookmark) {
   e.preventDefault()
   var url = e.currentTarget.getAttribute('href')
   const items = [
-    {icon: 'external-link', label: 'Open Link in New Tab', click: () => window.open(url)},
+    {icon: 'external-link-alt', label: 'Open Link in New Tab', click: () => window.open(url)},
     {icon: 'link', label: 'Copy Link Address', click: () => writeToClipboard(url)},
     {icon: 'pencil', label: 'Edit', click: () => onClickEditBookmark(bookmark)},
     {icon: 'trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark)}
@@ -321,7 +321,7 @@ function update () {
 function renderHelpButton () {
   return yo`
     <button class="btn plain help" onclick=${onClickHelpButton}>
-      <i class="fa fa-question-circle-o"></i>
+      <i class="far fa-question-circle"></i>
     </button>`
 }
 

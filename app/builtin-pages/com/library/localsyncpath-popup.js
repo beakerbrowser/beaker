@@ -86,7 +86,7 @@ function render () {
               <input class="path nofocus" name="path" value=${path} onchange=${onChangeDirectory} />
 
               <button onclick=${onSelectDirectory} class="btn nofocus tooltip-container" data-tooltip="Choose different directory">
-                <i class="fa fa-pencil"></i>
+                <i class="fas fa-pencil-alt"></i>
               </button>
             </div>
 

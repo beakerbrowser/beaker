@@ -32,7 +32,7 @@ const STEPS = [
             </span>
 
             <button type="button" class="btn hint-btn plain link" onclick=${onShowHint}>
-              <i class="fa fa-question-circle-o"></i>
+              <i class="far fa-question-circle"></i>
             </button>
           </label>
 

@@ -164,11 +164,11 @@ function renderActions (row, i) {
     return yo`
       <div class="actions bookmark__actions">
         <button class="btn plain action tooltip-container" onclick=${onClickEdit(i)} data-tooltip="Edit bookmark">
-          <i class="fa fa-pencil icon"></i>
+          <i class="fas fa-pencil-alt icon"></i>
         </button>
 
         <button class="btn plain action bookmark tooltip-container" onclick=${onClickDelete(i)} data-tooltip="Unbookmark">
-          <i class="fa fa-star icon"></i>
+          <i class="fas fa-star icon"></i>
         </button>
 
         <button class="btn plain action pin ${row.pinned ? 'pinned' : 'unpinned'}" onclick=${() => onTogglePinned(i)} data-tooltip="${row.pinned ? 'Unpin from' : 'Pin to'} start page">
@@ -327,7 +327,7 @@ function renderSidebar () {
       <div class="section">
         <h2 class="subtitle-heading">Your bookmarks</h2>
         <div class="nav-item ${currentView === 'mine' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('mine')}>
-          <i class="fa fa-star icon"></i>
+          <i class="fas fa-star icon"></i>
           Your bookmarks
         </div>
         <div class="nav-item ${currentView === 'pinned' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('pinned')}>

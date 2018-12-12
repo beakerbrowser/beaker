@@ -213,7 +213,7 @@ function renderRow (row, i) {
         ${row.userSettings.isSaved
           ? yo`
             <button class="btn plain trash" onclick=${e => onDelete(e, row)} title=${removeFromLibraryLabel(row)}>
-              <i class="fa fa-trash-o"></i>
+              <i class="fas fa-trash"></i>
             </button>`
           : yo`
             <button class="btn plain restore" onclick=${e => onRestore(e, row)} title="Restore from trash">
@@ -349,7 +349,7 @@ function renderHeader () {
             <div class="dropdown-items create-new filters subtle-shadow right">
               <div class="dropdown-item" onclick=${() => onCreateSite()}>
                 <div class="label">
-                  <i class="fa fa-clone"></i>
+                  <i class="far fa-clone"></i>
                   Empty project
                 </div>
                 <p class="description">
@@ -367,7 +367,7 @@ function renderHeader () {
               </div>
               <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
                 <div class="label">
-                  <i class="fa fa-folder-o"></i>
+                  <i class="far fa-folder"></i>
                   From folder
                 </div>
                 <p class="description">
@@ -656,7 +656,7 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
   // construct and show popup
   let items = [
     {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url)},
-    {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url)},
+    {icon: 'external-link-alt', label: 'Open in new tab', click: () => window.open(archive.url)},
     {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
     {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
   ]

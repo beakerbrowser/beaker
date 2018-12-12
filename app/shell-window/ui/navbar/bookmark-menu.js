@@ -35,7 +35,7 @@ export class BookmarkMenuNavbarBtn {
         <div class="dropdown bookmark-menu-dropdown">
           <div class="dropdown-items bookmark-menu-dropdown-items with-triangle">
             <div class="header">
-              <i class="fa fa-star"></i>
+              <i class="fas fa-star"></i>
               Edit this bookmark
             </div>
 
@@ -115,7 +115,7 @@ export class BookmarkMenuNavbarBtn {
     // render btn
     return yo`<div class="bookmark-navbar-menu">
       <button class="star ${bookmarkBtnClass}" title="Bookmark this page" onclick=${e => this.onClickBookmark(e)}>
-        <span class="star ${page && page.bookmark ? 'fa fa-star' : 'fa fa-star-o'}"></span>
+        <span class="star ${page && page.bookmark ? 'fas fa-star' : 'far fa-star'}"></span>
       </button>
       ${dropdownEl}
     </div>`
