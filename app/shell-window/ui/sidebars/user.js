@@ -20,7 +20,6 @@ export class UserSidebar extends BaseSidebar {
     this.currentUserSession = null
     this.isCurrentUser = false
     this.followers = []
-    this.userProfiles = {}
     this.load()
   }
 
@@ -58,7 +57,7 @@ export class UserSidebar extends BaseSidebar {
     if (nFollowers === 0) {
       return yo`<div class="followers sepbottom"><span class="nobody"><span class="fa fa-user"></span> Not followed by anybody you follow</span></div>`
     }
-    var followers = this.followers.map((url, i) => {
+    var followers = this.followers.map((follower, i) => {
       var sep = ''
       if (nFollowers > 2) {
         if (i === nFollowers - 2) {
@@ -69,8 +68,8 @@ export class UserSidebar extends BaseSidebar {
       } else if (nFollowers === 2 && i === 0) {
         sep = ' and '
       }
-      if (url === this.currentUserSession.url) return yo`<span>You${sep}</span>`
-      return yo`<span><a class="link" onclick=${() => this.open(url)}>${this.renderUserTitle(url)}</a>${sep}</span>`
+      if (follower.url === this.currentUserSession.url) return yo`<span>You${sep}</span>`
+      return yo`<span><a class="link" onclick=${() => this.open(follower.url)}>${this.renderUserTitle(follower)}</a>${sep}</span>`
     })
     return yo`
       <div class="followers sepbottom">
@@ -79,13 +78,10 @@ export class UserSidebar extends BaseSidebar {
       </div>`
   }
 
-  renderUserTitle (url) {
-    var title
-    if (url in this.userProfiles) {
-      title = this.userProfiles[url].title
-    }
+  renderUserTitle (follower) {
+    var title = follower.title
     if (!title) {
-      var urlp = new URL(url)
+      var urlp = new URL(follower.url)
       title = urlp.hostname
       if (title.length === 64) {
         title = title.slice(0, 6) + '..' + title.slice(-2)
@@ -101,23 +97,16 @@ export class UserSidebar extends BaseSidebar {
     this.currentUserSession = await beaker.browser.getUserSession()
     this.isCurrentUser = this.url.origin === this.currentUserSession.url
     this.info = JSON.parse(await dat.readFile('/dat.json'))
-    this.followers = await beaker.followgraph.listFollowers(this.url.origin)
-    this.isCurrentUserFollowing = !this.isCurrentUser && this.followers.indexOf(this.currentUserSession.url) !== -1
+    this.followers = await beaker.followgraph.listFollowers(this.url.origin, {includeDesc: true})
+    this.isCurrentUserFollowing = !this.isCurrentUser && Boolean(this.followers.find(f => f.url === this.currentUserSession.url))
     this.rerender()
-
-    // second pass
-    this.userProfiles = {}
-    await Promise.all(this.followers.map(async (url) => {
-      this.userProfiles[url] = await (new DatArchive(url)).getInfo()
-      this.rerender()
-    }))
   }
 
   async follow () {
     try {
       await beaker.followgraph.follow(this.url.origin)
       this.isCurrentUserFollowing = true
-      this.followers.push(this.currentUserSession.url)
+      this.followers.push({url: this.currentUserSession.url})
     } catch (e) {
       console.error('Failed to follow', e)
       toast.create('Failed to follow: ' + e.toString())
@@ -130,7 +119,7 @@ export class UserSidebar extends BaseSidebar {
     try {
       await beaker.followgraph.unfollow(this.url.origin)
       this.isCurrentUserFollowing = false
-      this.followers.splice(this.followers.indexOf(this.currentUserSession.url), 1)
+      this.followers.splice(this.followers.findIndex(f => f.url === this.currentUserSession.url), 1)
     } catch (e) {
       console.error('Failed to unfollow', e)
       toast.create('Failed to unfollow: ' + e.toString())

@@ -95,8 +95,7 @@ export async function setup () {
     await beakerCore.dat.library.getDaemon().exportFilesystemToArchive({
       srcPath: path.join(__dirname, 'assets/templates/default-profile'),
       dstArchive: newUserArchive,
-      inplaceImport: true,
-      ignore: ['/dat.json']
+      inplaceImport: true
     })
     await beakerCore.users.add(newUserUrl)
     console.log('new user added')
