@@ -108,4 +108,3 @@ async function onCreateSite (template) {
   const archive = await DatArchive.create({template, prompt: false})
   window.location = 'beaker://library/' + archive.url + '#setup'
 }
-
