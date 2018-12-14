@@ -37,13 +37,14 @@ export class UserSidebar extends BaseSidebar {
           ${this.isCurrentUser
             ? yo`<div class="isyou sepbottom"><span>This is you!</span></div>`
             : this.renderFollowers()}
+          ${this.followsUser ? yo`<div><div class="follows-you">Follows you</div></div>` : ''}
           ${this.isCurrentUser
             ? yo`
-              <div class="sepbottom">
+              <div class="septop sepbottom">
                 <div class="btn" onclick=${() => this.editProfile()}><span class="fa fa-pencil-square-o"></span> Edit profile</div>
               </div>`
             : yo`
-              <div class="sepbottom">
+              <div class="septop sepbottom">
                 ${this.isCurrentUserFollowing
                   ? yo`<div class="btn" onclick=${() => this.unfollow()}><span class="fa fa-minus"></span> Unfollow</div>`
                   : yo`<div class="btn" onclick=${() => this.follow()}><span class="fa fa-plus"></span> Follow</div>`}
@@ -58,7 +59,7 @@ export class UserSidebar extends BaseSidebar {
   renderFollowers () {
     var nFollowers = this.followers.length
     if (nFollowers === 0) {
-      return yo`<div class="followers sepbottom"><span class="nobody"><span class="fa fa-user"></span> Not followed by anybody you follow</span></div>`
+      return yo`<div class="followers"><span class="nobody"><span class="fa fa-user"></span> Not followed by anybody you follow</span></div>`
     }
     var followers = this.followers.map((follower, i) => {
       var sep = ''
@@ -71,11 +72,11 @@ export class UserSidebar extends BaseSidebar {
       } else if (nFollowers === 2 && i === 0) {
         sep = ' and '
       }
-      if (follower.url === this.currentUserSession.url) return yo`<span>You${sep}</span>`
+      if (follower.url === this.currentUserSession.url) return yo`<span>you${sep}</span>`
       return yo`<span><a class="link" onclick=${() => this.open(follower.url)}>${this.renderUserTitle(follower)}</a>${sep}</span>`
     })
     return yo`
-      <div class="followers sepbottom">
+      <div class="followers">
         <span class="fa fa-user"></span>Followed by
         ${followers}
       </div>`
@@ -100,6 +101,7 @@ export class UserSidebar extends BaseSidebar {
     this.isCurrentUser = this.url.origin === this.currentUserSession.url
     this.info = JSON.parse(await dat.readFile('/dat.json'))
     this.followers = await beaker.followgraph.listFollowers(this.url.origin, {includeDesc: true})
+    this.followsUser = !this.isCurrentUser && await beaker.followgraph.isAFollowingB(this.url.origin, this.currentUserSession.url)
     this.isCurrentUserFollowing = !this.isCurrentUser && Boolean(this.followers.find(f => f.url === this.currentUserSession.url))
     this.rerender()
   }

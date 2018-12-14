@@ -1,10 +1,12 @@
 .user-card {
   display: inline-block;
   width: 250px;
+  min-height: 285px;
   background: #fff;
   margin: 10px;
   padding: 30px 10px;
   border: 1px solid #ddd;
+  vertical-align: top;
   text-align: center;
 
   cursor: pointer;
@@ -32,7 +34,18 @@
   .followed-by {
     font-size: 12px;
     color: rgba(0,0,0,.5);
-    margin-top: 20px;
+  }
+
+  .follows-user {
+    display: inline-block;
+    padding: 0px 8px 1px;
+    margin-top: 6px;
+    border-radius: 10px;
+    color: #fff;
+    background: #797979;
+    font-weight: 500;
+    font-size: 11px;
+    -webkit-font-smoothing: antialiased;
   }
 
   &:hover {

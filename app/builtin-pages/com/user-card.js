@@ -12,6 +12,7 @@ export default function render (userInfo, currentUserSession) {
       <div class="title">${userInfo.title || 'Anonymous'}</div>
       ${userInfo.description ? yo`<div class="description">${userInfo.description}</div>` : ''}
       ${renderFollowers(userInfo.followedBy, currentUserSession)}
+      ${userInfo.followsUser ? yo`<div class="follows-user">Follows you</div>` : ''}
     </a>`
 }
 
@@ -31,7 +32,7 @@ function renderFollowers (followers, currentUserSession) {
     } else if (nFollowers === 2 && i === 0) {
       sep = ' and '
     }
-    if (follower.url === currentUserSession.url) return yo`<span>You${sep}</span>`
+    if (follower.url === currentUserSession.url) return yo`<span>you${sep}</span>`
     return yo`<span><a class="link" href=${follower.url} title=${follower.title}>${follower.title}</a>${sep}</span>`
   })
 
