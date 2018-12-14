@@ -35,7 +35,7 @@ export class UserSidebar extends BaseSidebar {
           <div class="title">${this.info.title}</div>
           <div class="description">${this.info.description}</div>
           ${this.isCurrentUser
-            ? yo`<div class="isyou sepbottom"><span>This is you!</span></div>`
+            ? yo`<div class="isyou"><span>This is you!</span></div>`
             : this.renderFollowers()}
           ${this.followsUser ? yo`<div><div class="follows-you">Follows you</div></div>` : ''}
           ${this.isCurrentUser

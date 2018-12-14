@@ -15,29 +15,6 @@ var currentUserArchive
 // exported api
 // =
 
-/*- get current user session
-  - if none, get default user
-  - if exists, set user session to default user
-- load session's user info
-- display user info
-  - no user:
-    - Anonymous (name, pic)
-    - Controls offer to create user
-    - Create user flow ...
-    - newUser(name, bio, thumb)
-    - setUserSession()
-    - refresh visual
-  - yes user:
-    - Name, thumb
-    - Controls offer to edit user info
-- on user change:
-  - get current user session
-  - display user info
-- future
-  - controls to list other users
-  - controls to new user
-  - controls to delete user
-  - controls to switch user*/
 export async function setup () {
   // fetch user information
   await readCurrentUserSession()
@@ -71,16 +48,19 @@ function render () {
           <div class="dropdown-wrapper">
             <div class="user-profile">
               <div class="title">${getUserTitle()}</div>
-              <div class="description">${getUserDescription()}</div>
             </div>
             <div class="menu">
-              <div class="menu-item" onclick=${onViewProfile}>
-                <i class="fa fa-external-link"></i>
-                <span class="label">View Your Website</span>
+              <div class="menu-item" onclick=${onEditProfile}>
+                <i class="fa fa-pencil-square-o"></i>
+                <span class="label">Edit Your Profile</span>
               </div>
               <div class="menu-item" onclick=${onCopyUrl}>
                 <i class="fa fa-clipboard"></i>
                 <span class="label">Copy Link</span>
+              </div>
+              <div class="menu-item" onclick=${onViewProfile}>
+                <i class="fa fa-external-link"></i>
+                <span class="label">View Your Website</span>
               </div>
             </div>
           </div>
@@ -125,6 +105,11 @@ function onViewProfile (e) {
   closeDropdown()
 }
 
+function onEditProfile (e) {
+  beaker.browser.showEditProfileModal()
+  closeDropdown()
+}
+
 function onCopyUrl (e) {
   writeToClipboard(currentUserSession.url)
   toast.create('URL copied to your clipboard')
@@ -140,8 +125,4 @@ async function readCurrentUserSession () {
 
 function getUserTitle () {
   return currentUserSession && currentUserSession.title ? currentUserSession.title : 'Anonymous'
-}
-
-function getUserDescription () {
-  return currentUserSession && currentUserSession.description ? currentUserSession.description : ''
 }
