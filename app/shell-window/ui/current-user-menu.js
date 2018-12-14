@@ -18,9 +18,12 @@ var currentUserArchive
 export async function setup () {
   // fetch user information
   await readCurrentUserSession()
-  console.log({currentUserSession})
   currentUserArchive = new DatArchive(currentUserSession.url)
-  currentUserArchive.watch('/dat.json', readCurrentUserSession) // reload user info any time dat.json changes
+  currentUserArchive.watch('/dat.json', async () => {
+    // reload user info any time dat.json changes
+    await readCurrentUserSession()
+    update()
+  })
 
   // render
   document.getElementById('toolbar-tabs').appendChild(yo`<div class="current-user-dropdown-menu"></div>`)
@@ -121,7 +124,14 @@ function onCopyUrl (e) {
 // =
 
 async function readCurrentUserSession () {
-  currentUserSession = await beaker.browser.getUserSession()
+  if (!currentUserSession) {
+    currentUserSession = await beaker.browser.getUserSession()
+  } else {
+    var dat = new DatArchive(currentUserSession.url)
+    var info = JSON.parse(await dat.readFile('/dat.json'))
+    currentUserSession.title = info.title
+    currentUserSession.description = info.description
+  }
 }
 
 function getUserTitle () {
