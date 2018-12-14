@@ -12,6 +12,10 @@ export class BaseSidebar extends EventEmitter {
     this.url = new URL(page.url)
   }
 
+  reload () {
+    // override this method
+  }
+
   render () {
     // override this method
     return 'BaseSidebar'

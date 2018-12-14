@@ -22,6 +22,10 @@ export class UserSidebar extends BaseSidebar {
     this.load()
   }
 
+  reload () {
+    this.load()
+  }
+
   render () {
     if (!this.info) return ''
     return yo`
