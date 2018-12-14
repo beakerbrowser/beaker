@@ -9,6 +9,7 @@ export class BaseSidebar extends EventEmitter {
   constructor (page) {
     super()
     this.page = page
+    this.url = new URL(page.url)
   }
 
   render () {

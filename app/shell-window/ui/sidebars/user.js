@@ -15,7 +15,6 @@ export class UserSidebar extends BaseSidebar {
 
   constructor (page) {
     super(page)
-    this.url = null
     this.info = null
     this.currentUserSession = null
     this.isCurrentUser = false
@@ -93,7 +92,6 @@ export class UserSidebar extends BaseSidebar {
   async load () {
     // first pass
     var dat = new DatArchive(this.page.url)
-    this.url = new URL(this.page.url)
     this.currentUserSession = await beaker.browser.getUserSession()
     this.isCurrentUser = this.url.origin === this.currentUserSession.url
     this.info = JSON.parse(await dat.readFile('/dat.json'))

@@ -664,7 +664,6 @@ function onDidNavigate (e) {
     // close any prompts and modals
     prompt.forceRemoveAll(page)
     modal.forceRemoveAll(page)
-    sidebar.onDidNavigate(page)
   }
 }
 
@@ -774,6 +773,8 @@ function onDidStopLoading (e) {
             events.emit('page-title-updated', page)
           }
         })
+    } else {
+      sidebar.onDidNavigate(page)
     }
     if (protocol !== 'beaker:') {
       page.fetchSitePerms()
