@@ -47,20 +47,21 @@ function render () {
         <div class="dropdown-items with-triangle">
           <div class="dropdown-wrapper">
             <div class="user-profile">
-              <div class="title">${getUserTitle()}</div>
+              <div class="title">
+                ${getUserTitle()}
+                <a onclick=${onEditProfile}>
+                  <i class="fa fa-pencil"></i>
+                </a>
+              </div>
             </div>
             <div class="menu">
-              <div class="menu-item" onclick=${onEditProfile}>
-                <i class="fa fa-pencil-square-o"></i>
-                <span class="label">Edit Your Profile</span>
-              </div>
               <div class="menu-item" onclick=${onCopyUrl}>
                 <i class="fa fa-clipboard"></i>
-                <span class="label">Copy Link</span>
+                <span class="label">Copy link</span>
               </div>
               <div class="menu-item" onclick=${onViewProfile}>
                 <i class="fa fa-external-link"></i>
-                <span class="label">View Your Website</span>
+                <span class="label">View profile</span>
               </div>
             </div>
           </div>
