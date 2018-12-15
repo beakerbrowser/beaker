@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 // =
 
 export default function render (userInfo, currentUserSession) {
+  if (!userInfo.author) return '' // must have information about the user (as of writing, all info about followed users has an author)
   return yo`
     <a class="user-card" href=${userInfo.url} title=${userInfo.title}>
       <div class="thumb">
