@@ -159,6 +159,9 @@ export const WEBAPI = {
   setWindowDimensions,
   showOpenDialog,
   showContextMenu,
+  async showShellModal (name, opts) {
+    return showShellModal(this.sender, name, opts)
+  },
   openUrl: url => { openUrl(url) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
@@ -575,6 +578,9 @@ async function doWebcontentsCmd (method, wcId, ...args) {
 async function doTest (test) {
   if (test === 'modal') {
     return showShellModal(this.sender, 'example', {i: 5})
+  }
+  if (test === 'tutorial') {
+    return showShellModal(this.sender, 'tutorial')    
   }
 }
 

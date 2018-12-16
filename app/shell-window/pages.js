@@ -7,6 +7,7 @@ import fs from 'fs'
 import throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
 import errorPage from '@beaker/core/lib/error-page'
+import * as tutorial from './tutorial'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as prompt from './ui/prompt'
@@ -51,6 +52,14 @@ var cachedJSONRendererScript
 
 export function on (...args) {
   events.on.apply(events, args)
+}
+
+export function once (...args) {
+  events.once.apply(events, args)
+}
+
+export function removeListener (...args) {
+  events.removeListener.apply(events, args)
 }
 
 export function getAll () {
@@ -1078,6 +1087,9 @@ export function onIPCMessage (e) {
       let resolve = page.executeJavascriptCalls[e.args[0]]
       delete page.executeJavascriptCalls[e.args[0]]
       resolve(e.args[1])
+      break
+    case 'tutorial:start':
+      tutorial.start()
       break
   }
 }

@@ -85,7 +85,8 @@ function renderNewButton () {
 }
 
 async function onClickHelpButton () {
-  await onboardingPopup.create({showHelpOnly: true})
+  beakerStartTutorial()
+  // await onboardingPopup.create({showHelpOnly: true})
 }
 
 async function onCreateSiteFromFolder () {

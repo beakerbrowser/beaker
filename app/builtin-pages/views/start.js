@@ -33,7 +33,12 @@ async function setup () {
   settings = await beaker.browser.getSettings()
 
   // open onboarding popup if this is the first render
-  if (!hasDismissedOnboarding) onboardingPopup.create()
+  // if (!hasDismissedOnboarding) onboardingPopup.create()
+  if (!localStorage.hasRunTutorial) {
+    localStorage.hasRunTutorial = 1
+    beakerStartTutorial()
+  }
+
 
   // open update info if appropriate
   if (!settings.no_welcome_tab) {
