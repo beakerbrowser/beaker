@@ -3,6 +3,7 @@
 import yo from 'yo-yo'
 import * as toast from '../com/toast'
 import DatNetworkActivity from '../com/settings/dat-network-activity'
+import CrawlerStatus from '../com/settings/crawler-status'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
@@ -14,6 +15,7 @@ var browserEvents
 var defaultProtocolSettings
 var activeView = 'general'
 var datNetworkActivity = new DatNetworkActivity()
+var crawlerStatus = new CrawlerStatus()
 
 // main
 // =
@@ -79,6 +81,11 @@ function renderSidebar () {
         General
       </div>
 
+      <div class="nav-item ${activeView === 'crawler-status' ? 'active' : ''}" onclick=${() => onUpdateView('crawler-status')}>
+        <i class="fa fa-angle-right"></i>
+        Crawler status
+      </div>
+
       <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
         <i class="fa fa-angle-right"></i>
         Dat network activity
@@ -97,6 +104,8 @@ function renderView () {
       return renderGeneral()
     case 'dat-network-activity':
       return renderDatNetworkActivity()
+    case 'crawler-status':
+      return renderCrawler()
     case 'information':
       return renderInformation()
   }
@@ -260,6 +269,17 @@ function renderDatNetworkActivity () {
       <div class="section">
         <h2 id="dat-network-activity" class="subtitle-heading">Dat Network Activity</h2>
         ${datNetworkActivity.render()}
+      </div>
+    </div>
+  `
+}
+
+function renderCrawler () {
+  return yo`
+    <div class="view">
+      <div class="section">
+        <h2 id="crawler-status" class="subtitle-heading">Crawler Status</h2>
+        ${crawlerStatus.render()}
       </div>
     </div>
   `

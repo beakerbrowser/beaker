@@ -1,0 +1,53 @@
+.crawler-status {
+  margin: 0 -15px;
+
+  &.loading {
+    margin: 0;
+  }
+
+  .heading {
+    &:extend(.flex);
+    align-items: center;
+    padding: 6px 15px;
+    color: @color-text;
+    font-size: 11px;
+
+    .title {
+      flex: 1;
+    }
+
+    .crawl-state {
+      width: 100px;
+    }
+
+    a {
+      color: @color-text !important;
+      cursor: pointer;
+    }
+  }
+
+  .ll-row.archive {
+    border-right: 0;
+    border-left: 0;
+
+    &:hover {
+      text-decoration: none !important;
+    }
+
+    .title {
+      flex: 1;
+      max-width: none;
+    }
+
+    .crawl-state {
+      color: rgba(0,0,0,0.5);
+      flex: 0 0 100px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .error {
+      color: @red;
+    }
+  }
+}
