@@ -3,17 +3,17 @@
 import yo from 'yo-yo'
 import {niceDate} from '../../lib/time'
 import * as toast from '../com/toast'
-import renderBuiltinPagesNav from '../com/builtin-pages-nav'
+import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import * as addWatchlistItemPopup from '../com/add-watchlist-item-popup'
 import renderCloseIcon from '../icon/close'
 
 // globals
 // =
 
+var currentUserSession = null
 // watchlist, cached in memory
 let watchlist = []
 let selectedItems = []
-let query = ''
 let wlEvents = beaker.watchlist.createEventsStream()
 
 // main
@@ -21,6 +21,7 @@ let wlEvents = beaker.watchlist.createEventsStream()
 
 setup()
 async function setup () {
+  currentUserSession = await beaker.browser.getUserSession()
   await loadWatchlist()
   render()
 
@@ -87,15 +88,6 @@ function renderColumnHeading ({label, cls, icon}) {
 
 function renderRows ({resolved}) {
   var list = watchlist.filter(a => a.resolved == resolved)
-
-  if (query && query.length) {
-    list = list.filter(a => {
-      if (a.description && a.description.toLowerCase().includes(query)) {
-        return a
-      }
-    })
-  }
-
   return list.map(renderRow)
 }
 
@@ -145,7 +137,7 @@ function render () {
   yo.update(
     document.querySelector('.watchlist-wrapper'), yo`
       <div class="watchlist-wrapper watchlist builtin-wrapper">
-        ${renderHeader()}
+        ${renderBuiltinPagesHeader('Watchlist', currentUserSession)}
 
         <div class="builtin-main">
           <div>
@@ -166,16 +158,9 @@ function render () {
             ${resolved.length === 0 && unresolved.length === 0
               ? yo`
                 <div class="view empty">
-                  ${query
-                    ? yo`<i class="fa fa-search"></i>`
-                    : yo`<i class="fa fa-eye"></i>`
-                  }
-
+                  <i class="fa fa-eye"></i>
                   <p>
-                    ${query
-                      ? `No results for "${query}"`
-                      : `You aren${"'"}t watching any archives!`
-                    }
+                    You aren${"'"}t watching for any dat sites!
                   </p>
                 </div>`
               : ''
@@ -184,63 +169,13 @@ function render () {
             <p class="builtin-hint">
               <i class="fa fa-info-circle"></i>
               Your Watchlist contains websites you${"'"}ve asked Beaker to find for you.
-              You${"'"}ll be notified when a site is found.
+              You${"'"}ll be notified when a site is found. <button class="link" onclick=${onAddToWatchlist}>Add site</button>.
             </p>
           </div>
         </div>
       </div>
     `
   )
-}
-
-function renderHeader () {
-  let actions = ''
-  let searchContainer = ''
-
-  if (selectedItems && selectedItems.length) {
-    actions = yo`
-      <div class="actions">
-        <button class="btn transparent" onclick=${onSelectAll}>
-          Select all
-        </button>
-        |
-        <button class="btn transparent" onclick=${onDeselectAll}>
-          Deselect all
-        </button>
-
-        <button class="btn warning" onclick=${onDeleteSelected}>
-          Stop Watching
-        </button>
-      </div>`
-
-    searchContainer = ''
-  } else {
-    actions = yo`
-      <div class="actions">
-        <button class="btn primary" onclick=${onAddToWatchlist}>
-          <span>Add</span>
-          <i class="fa fa-plus"></i>
-        </button>
-      </div>`
-
-    searchContainer = yo`
-      <div class="search-container">
-        <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your Watchlist" type="text" class="search"/>
-
-        <span onclick=${onClearQuery} class="close-btn">
-          ${renderCloseIcon()}
-        </span>
-
-        <i class="fa fa-search"></i>
-      </div>`
-  }
-
-  return yo`
-    <div class="builtin-header fixed">
-      ${renderBuiltinPagesNav('Watchlist')}
-      ${searchContainer}
-      ${actions}
-    </div>`
 }
 
 // events
@@ -310,20 +245,3 @@ async function onDeleteSelected () {
   render()
 }
 
-async function onUpdateSearchQuery (e) {
-  var newQuery = e.target.value.toLowerCase()
-  if (newQuery !== query) {
-    query = newQuery
-    render()
-  }
-}
-
-async function onClearQuery () {
-  try {
-    document.querySelector('input.search').value = ''
-  } catch (_) {}
-
-  query = ''
-  await loadWatchlist()
-  render()
-}

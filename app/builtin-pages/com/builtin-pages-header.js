@@ -1,8 +1,9 @@
 /* globals beaker DatArchive */
 
 import yo from 'yo-yo'
-import * as onboardingPopup from '../com/onboarding-popup'
-import toggleable from '../com/toggleable'
+import toggleable, {closeAllToggleables} from './toggleable'
+import * as toast from './toast'
+import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 // exported api
 // =
@@ -19,18 +20,13 @@ export default function render (currentPage, currentUserSession) {
       </div>
       <div class="flex-spacer"></div>
       <div class="nav">
+        ${renderNewButton()}
         ${navItem('beaker://library', 'fa-hdd-o', 'Library')}
+        ${renderDropdownNav(currentUserSession)}
       </div>
-      ${renderHelpButton()}
       ${''/* TODO <div class="notifications" data-count="0">
         <span class="fa fa-bell-o"></span>
       </div>*/}
-      ${currentUserSession ? yo`
-        <div class="profile">
-          <a href="${currentUserSession.url}"><img src="${currentUserSession.url}/thumb.jpg"></a>
-        </div>`
-        : ''}
-      ${renderNewButton()}
     </div>`
 }
 
@@ -44,13 +40,63 @@ function renderHelpButton () {
     </button>`
 }
 
+function renderDropdownNav (currentUserSession) {
+  if (!currentUserSession) return ''
+  return toggleable(yo`
+    <div
+      class="dropdown toggleable-container builtin-pages-nav"
+      data-toggle-id="builtin-pages-nav-menu"
+    >
+      <a class="toggleable">
+        <img src="${currentUserSession.url}/thumb.jpg">
+        <i class="fa fa-caret-down"></i>
+      </a>
+
+      <div class="dropdown-items dropdown-items-split subtle-shadow right">
+        <div class="dropdown-items-left">
+          <a href=${currentUserSession.url}><img src="${currentUserSession.url}/thumb.jpg"></a>
+          <div class="title">${currentUserSession.title}</div>
+          <div class="links">
+            [ <a class="link" href=${currentUserSession.url}>View site</a> | <a class="link" onclick=${() => onCopyLink(currentUserSession.url)}>Copy link</a> ]
+          </div>
+        </div>
+        <div class="dropdown-items-right">
+          <a href="beaker://history" class="dropdown-item">
+            <i class="fa fa-history"></i>
+            <span>History</span>
+          </a>
+
+          <a href="beaker://downloads" class="dropdown-item">
+            <i class="fa fa-download"></i>
+            <span>Downloads</span>
+          </a>
+
+          <a href="beaker://watchlist" class="dropdown-item">
+            <i class="fa fa-eye"></i>
+            <span>Watchlist</span>
+          </a>
+
+          <a href="beaker://settings" class="dropdown-item">
+            <i class="fa fa-gear"></i>
+            <span>Settings</span>
+          </a>
+
+          <a class="dropdown-item" onclick=${onClickTourButton}>
+            <i class="fa fa-life-ring"></i>
+            <span>Tour</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  `)
+}
+
 function renderNewButton () {
   return toggleable(yo`
     <div class="dropdown toggleable-container create-new-dropdown">
-      <button class="btn primary toggleable">
-        <span>New</span>
-        <i class="fa fa-plus"></i>
-      </button>
+      <a class="toggleable">
+        <span>+ New</span>
+      </a>
       <div class="dropdown-items create-new filters subtle-shadow right">
         <div class="dropdown-item" onclick=${() => onCreateSite()}>
           <div class="label">
@@ -84,9 +130,14 @@ function renderNewButton () {
   `)
 }
 
-async function onClickHelpButton () {
+async function onClickTourButton () {
+  closeAllToggleables()
   beakerStartTutorial()
-  // await onboardingPopup.create({showHelpOnly: true})
+}
+
+function onCopyLink (url) {
+  writeToClipboard(url)
+  toast.create('Link copied to clipboard')
 }
 
 async function onCreateSiteFromFolder () {

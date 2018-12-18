@@ -4,7 +4,7 @@ const yo = require('yo-yo')
 const moment = require('moment')
 import {getHostname} from '../../lib/strings'
 import debounce from 'lodash.debounce'
-import renderBuiltinPagesNav from '../com/builtin-pages-nav'
+import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import renderCloseIcon from '../icon/close'
 
 // globals
@@ -16,6 +16,7 @@ const BEGIN_LOAD_OFFSET = 500
 const BATCH_SIZE = 20
 const onUpdateSearchQueryDebounced = debounce(onUpdateSearchQuery, 500)
 
+var currentUserSession = null
 // visits, cached in memory
 var visits = []
 var isAtEnd = false
@@ -26,9 +27,15 @@ var lastRenderedDate
 // main
 // =
 
-render()
-fillPage()
-document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
+setup()
+
+async function setup () {
+  render()
+  currentUserSession = await beaker.browser.getUserSession()
+  fillPage()
+  document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
+  render()
+}
 
 // data
 // =
@@ -206,11 +213,9 @@ function renderRow (row, i) {
     </div>`
 }
 
-function renderHeader () {
+function renderSubheader () {
   return yo`
-    <div class="builtin-header fixed">
-      ${renderBuiltinPagesNav('History')}
-
+    <div class="builtin-subheader">
       <div class="search-container">
         <input required autofocus onkeyup=${onUpdateSearchQueryDebounced} placeholder="Search your browsing history" type="text" class="search"/>
         <div class="spinner hidden"></div>
@@ -228,8 +233,7 @@ function render () {
   yo.update(
     document.querySelector('.history-wrapper'), yo`
       <div class="history-wrapper builtin-wrapper">
-        ${renderHeader()}
-
+        ${renderBuiltinPagesHeader('History', currentUserSession)}
         <div class="builtin-main">
           <div class="builtin-sidebar">
             <div class="section">
@@ -251,6 +255,7 @@ function render () {
           </div>
 
           <div>
+            ${renderSubheader()}
             <div class="links-list history">${renderRows()}</div>
           </div>
         </div>
