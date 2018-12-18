@@ -52,13 +52,15 @@ export default class CrawlerStatus {
 
     return yo`
       <div id=${'crawler-status-' + this.id} class="crawler-status">
-        <div class="archives">
-          <div class="heading">
-            ${this.renderHeading('title', 'Site')}
-            ${this.renderHeading('crawl-state', 'Status')}
-          </div>
-          ${this.crawlStates.map(row => this.renderStatusRow(row))}
+        <div class="crawler-actions">
+          <button class="btn small" onclick=${() => this.onClickCrawlAll()}>Crawl all sites</button>
+          <button class="btn small" onclick=${() => this.onClickResetAll()}>Rebuild all indexes</button>
         </div>
+        <div class="heading">
+          ${this.renderHeading('title', 'Site')}
+          ${this.renderHeading('crawl-state', 'Status')}
+        </div>
+        ${this.crawlStates.map(row => this.renderStatusRow(row))}
       </div>
     `
   }
@@ -107,6 +109,23 @@ export default class CrawlerStatus {
   // events
   // =
 
+  onClickCrawlAll () {
+    this.crawlStates.forEach(row => beaker.crawler.crawlSite(row.url))
+    toast.create('Crawl triggered')
+  }
+
+  async onClickResetAll () {
+    if (!confirm('This will delete and redownload all crawled data. Are you sure?')) {
+      return
+    }
+    await Promise.all(this.crawlStates.map(async (row) => {
+      await beaker.crawler.resetSite(row.url)
+      Object.assign(row, initialState(row.url, row.title, null))
+    }))
+    toast.create('Index was deleted and will now rebuild')
+    this.rerender()
+  }
+
   onClickHeading (id) {
     if (this.currentSort[0] === id) {
       this.currentSort[1] = this.currentSort[1] * -1
@@ -132,20 +151,18 @@ export default class CrawlerStatus {
         }
       },
       {
-        icon: 'download',
-        label: 'Crawl',
+        label: 'Crawl site',
         click: () => {
           beaker.crawler.crawlSite(row.url)
           toast.create('Crawl triggered')
         }
       },
       {
-        icon: 'eraser',
-        label: 'Reset state',
+        label: 'Rebuild index',
         click: () => {
           beaker.crawler.resetSite(row.url)
           Object.assign(row, initialState(row.url, row.title, null))
-          toast.create('Crawled data cleared')
+          toast.create('Index was deleted and will now rebuild')
           this.rerender()
         }
       },
