@@ -81,9 +81,9 @@ function renderSidebar () {
         General
       </div>
 
-      <div class="nav-item ${activeView === 'crawler-status' ? 'active' : ''}" onclick=${() => onUpdateView('crawler-status')}>
+      <div class="nav-item ${activeView === 'crawler' ? 'active' : ''}" onclick=${() => onUpdateView('crawler')}>
         <i class="fa fa-angle-right"></i>
-        Crawler status
+        Crawler
       </div>
 
       <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
@@ -104,7 +104,7 @@ function renderView () {
       return renderGeneral()
     case 'dat-network-activity':
       return renderDatNetworkActivity()
-    case 'crawler-status':
+    case 'crawler':
       return renderCrawler()
     case 'information':
       return renderInformation()
@@ -278,7 +278,7 @@ function renderCrawler () {
   return yo`
     <div class="view">
       <div class="section">
-        <h2 id="crawler-status" class="subtitle-heading">Crawler Status</h2>
+        <h2 id="crawler" class="subtitle-heading">Crawler</h2>
         ${crawlerStatus.render()}
       </div>
     </div>

@@ -13,11 +13,11 @@
     font-size: 11px;
 
     .title {
-      flex: 1;
+      width: 155px;
     }
 
     .crawl-state {
-      width: 100px;
+      flex: 1;
     }
 
     a {
@@ -33,17 +33,23 @@
     &:hover {
       text-decoration: none !important;
     }
+    :not(a) {
+      cursor: auto;
+    }
+
+    .title,
+    .crawl-state {
+      white-space: nowrap;
+      overflow: hidden;
+    }
 
     .title {
-      flex: 1;
-      max-width: none;
+      width: 120px;
     }
 
     .crawl-state {
       color: rgba(0,0,0,0.5);
-      flex: 0 0 100px;
-      white-space: nowrap;
-      overflow: hidden;
+      flex: 1;
     }
 
     .error {

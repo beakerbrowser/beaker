@@ -26,7 +26,7 @@ export async function start () {
   await gotoSite('dat://beakerbrowser.com')
   await showTutorialModal('followSomeone', 'Follow beakerbrowser.com')
 
-  await gotoSite('beaker://settings/#crawler-status')
+  await gotoSite('beaker://settings/#crawler')
   await showTutorialModal('crawler')
 
   await gotoSite('beaker://feed')
