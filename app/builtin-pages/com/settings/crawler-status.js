@@ -24,7 +24,6 @@ export default class CrawlerStatus {
 
     var crawlerEvents = beaker.crawler.createEventsStream()
     crawlerEvents.addEventListener('crawl-start', this.onCrawlStart.bind(this))
-    crawlerEvents.addEventListener('crawl-dataset-start', this.onCrawlDatasetStart.bind(this))
     crawlerEvents.addEventListener('crawl-dataset-progress', this.onCrawlDatasetProgress.bind(this))
     crawlerEvents.addEventListener('crawl-dataset-finish', this.onCrawlDatasetFinish.bind(this))
     crawlerEvents.addEventListener('crawl-error', this.onCrawlError.bind(this))
@@ -94,7 +93,10 @@ export default class CrawlerStatus {
           ${row.error
             ? yo`<span class="error">Error!</span>`
             : row.isCrawling
-              ? 'Crawling...'
+              ? yo`
+                  <div class="progress-ui blue small">
+                    <div style="width: ${getProgress(row)}%" class="completed"></div>
+                  </div>`
               : row.updatedAt
                 ? `Last crawled ${niceDate(row.updatedAt)}. ${earliestVersion(row)} updates processed.`
                 : '--'}
@@ -163,14 +165,11 @@ export default class CrawlerStatus {
     this.rerender()
   }
 
-  onCrawlDatasetStart ({sourceUrl}) {
+  onCrawlDatasetProgress ({sourceUrl, crawlDataset, progress, numUpdates}) {
     var s = this.getState(sourceUrl)
-    // TODO show user?
-  }
-
-  onCrawlDatasetProgress ({sourceUrl}) {
-    var s = this.getState(sourceUrl)
-    // TODO show user?
+    s.datasetProgress = s.datasetProgress || {}
+    s.datasetProgress[crawlDataset] = {progress, numUpdates}
+    this.rerender()
   }
 
   onCrawlDatasetFinish ({sourceUrl, crawlDataset, crawlRange}) {
@@ -224,6 +223,18 @@ function initialState (url, title, updatedAt) {
     },
     updatedAt
   }
+}
+
+function getProgress (s) {
+  if (!s.datasetProgress) return 1
+
+  var progress = 0
+  var numUpdates = 0
+  for (var k in s.datasetProgress) {
+    progress += s.datasetProgress[k].progress
+    numUpdates += s.datasetProgress[k].numUpdates
+  }
+  return ((numUpdates === 0) ? 0 : (progress / numUpdates)) * 100
 }
 
 function earliestVersion (s) {
