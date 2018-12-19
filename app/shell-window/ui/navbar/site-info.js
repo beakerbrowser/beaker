@@ -6,18 +6,24 @@ import renderPadlockIcon from '../icon/padlock'
 import { findParent } from '../../../lib/fg/event-handlers'
 import PERMS from '../../../lib/perms'
 import { ucfirst, getPermId, getPermParam, shortenHash } from '../../../lib/strings'
+import SiteInfoClasses from './site-infos/index'
+import {DefaultSiteInfo} from './site-infos/default'
 
 export class SiteInfoNavbarBtn {
   constructor (page) {
     this.isDropdownOpen = false
     this.page = page
+    this.dropdownUI = false
     window.addEventListener('click', e => this.onClickAnywhere(e)) // close dropdown on click outside
     pages.on('set-active', e => this.closeDropdown()) // close dropdown on tab change
   }
 
+  // rendering
+  // =
+
   render () {
     // pull details
-    var iconEl = ''
+    var titleEl = ''
     var protocolCls = 'insecure'
     const gotInsecureResponse = this.page.siteLoadError && this.page.siteLoadError.isInsecureResponse
     const isLoading = this.page.isLoading()
@@ -27,23 +33,20 @@ export class SiteInfoNavbarBtn {
       const isHttps = scheme === 'https:'
       if (isHttps && !gotInsecureResponse && !this.page.siteLoadError) {
         protocolCls = 'secure'
-        iconEl = renderPadlockIcon()
-      } else if (scheme === 'http:') {
-        iconEl = yo`<i class="fa fa-info-circle"></i>`
-      } else if (isHttps && gotInsecureResponse) {
-        iconEl = yo`<i class="fa fa-exclamation-circle"></i>`
       } else if (scheme === 'dat:') {
         protocolCls = 'p2p'
-        iconEl = yo`<i class="fa fa-share-alt"></i>`
       } else if (scheme === 'beaker:') {
         protocolCls = 'beaker'
-        iconEl = ''
       }
+    }
+
+    if (this.page.siteInfo && this.page.siteInfo.title) {
+      titleEl = yo`<span class="title">${this.page.siteInfo.title}</span>`
     }
 
     return yo`
       <div class="toolbar-site-info ${protocolCls}" id="${this.elId}">
-        <button onclick=${isLoading ? undefined : e => this.toggleDropdown(e)}>${iconEl}</button>
+        <button onclick=${isLoading ? undefined : e => this.onToggleDropdown(e)}>${this.renderIcon()}${titleEl}</button>
         ${this.renderDropdown()}
       </div>
     `
@@ -52,31 +55,6 @@ export class SiteInfoNavbarBtn {
   renderDropdown () {
     if (!this.isDropdownOpen) {
       return ''
-    }
-
-    // pull details
-    var protocolDesc = ''
-    if (this.page.protocolInfo) {
-      if (this.page.protocolInfo.scheme === 'https:') {
-        protocolDesc = 'Your connection to this site is secure.'
-      } else if (this.page.protocolInfo.scheme === 'http:') {
-        protocolDesc = yo`
-          <div>
-            <p>
-              Your connection to this site is not secure.
-            </p>
-            <small>
-              You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
-            </small>
-          </div>
-        `
-      } else if (this.page.protocolInfo.scheme === 'dat:') {
-        protocolDesc = yo`
-          <div>
-            This site was downloaded from a secure peer-to-peer network.
-            <a onclick=${e => this.learnMore()}>Learn More</a>
-          </div>`
-      }
     }
 
     // site permissions
@@ -104,12 +82,7 @@ export class SiteInfoNavbarBtn {
       <div class="dropdown toolbar-dropdown toolbar-site-info-dropdown">
         <div class="dropdown-items with-triangle left">
           <div class="details">
-            <div class="details-title">
-              ${this.getTitle() || this.getHostname() || this.getUrl()}
-            </div>
-            <p class="details-desc">
-              ${protocolDesc}
-            </p>
+            ${this.dropdownUI ? this.dropdownUI.render() : ''}
           </div>
           ${permsEls.length ? yo`<h2 class="perms-heading">Permissions</h2>` : ''}
           <div class="perms">${permsEls}</div>
@@ -117,24 +90,47 @@ export class SiteInfoNavbarBtn {
       </div>`
   }
 
-  getTitle () {
-    var title = ''
-    if (this.page.siteInfoOverride && this.page.siteInfoOverride.title) {
-      title = this.page.siteInfoOverride.title
-    } else if (this.page.siteInfo && this.page.siteInfo.title) {
-      title = this.page.siteInfo.title
-    } else if (this.page.protocolInfo && this.page.protocolInfo.scheme === 'dat:') {
-      title = 'Untitled'
+  renderPerm (perm, value) {
+    const permId = getPermId(perm)
+    const permParam = getPermParam(perm)
+    var icon = PERMS[permId] ? PERMS[permId].icon : ''
+    var desc = PERMS[permId] ? PERMS[permId].desc : ''
+    if (typeof desc === 'function') desc = desc(permParam, pages, { capitalize: true })
+    if (typeof desc === 'string') desc = ucfirst(desc)
+    if (!desc) return ''
+    return yo`
+      <div class="perm">
+        <label class=${value ? 'checked' : ''} onclick=${e => this.onTogglePerm(perm)}>
+          <i class="fa fa-${icon}"></i>
+          ${desc}
+          <input type="checkbox" value="${perm}" ${value ? 'checked' : ''} />
+        </label>
+      </div>`
+  }
+
+  renderIcon () {
+    var iconEl = ''
+    const gotInsecureResponse = this.page.siteLoadError && this.page.siteLoadError.isInsecureResponse
+    const isLoading = this.page.isLoading()
+    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : this.page.protocolInfo.scheme
+    const type = this.page.siteInfo && this.page.siteInfo.type ? this.page.siteInfo.type : null
+    if (scheme) {
+      const isHttps = scheme === 'https:'
+      if (isHttps && !gotInsecureResponse && !this.page.siteLoadError) {
+        return renderPadlockIcon()
+      } else if (scheme === 'http:') {
+        return yo`<i class="fa fa-info-circle"></i>`
+      } else if (isHttps && gotInsecureResponse) {
+        return yo`<i class="fa fa-exclamation-circle"></i>`
+      } else if (scheme === 'dat:') {
+        if (type && type.includes('unwalled.garden/user')) {
+          return yo`<i class="fa fa-user"></i>`
+        } else {
+          return yo`<i class="fa fa-share-alt"></i>`
+        }
+      }
     }
-    return title
-  }
-
-  getUrl () {
-    return (this.page.protocolInfo) ? this.page.protocolInfo.url : ''
-  }
-
-  getHostname () {
-    return (this.page.protocolInfo) ? this.page.protocolInfo.hostname : ''
+    return ''
   }
 
   get elId () {
@@ -144,6 +140,40 @@ export class SiteInfoNavbarBtn {
   updateActives () {
     yo.update(document.getElementById(this.elId), this.render())
   }
+
+  openDropdown () {
+    if (!this.isDropdownOpen) {
+      this.isDropdownOpen = true
+      this.dropdownUI = this.spawnDropdownUI()
+      this.dropdownUI.on('rerender', () => this.updateActives())
+      this.updateActives()
+    }    
+  }
+
+  closeDropdown () {
+    if (this.isDropdownOpen) {
+      this.isDropdownOpen = false
+      this.dropdownUI = false
+      this.updateActives()
+    }
+  }
+
+  spawnDropdownUI () {
+    // find a site-info ui
+    var SiteInfoClass
+    for (let SIC of Object.values(SiteInfoClasses)) {
+      if (SIC.shouldRender(this.page)) {
+        SiteInfoClass = SIC
+        break
+      }
+    }
+
+    // instantiate
+    return SiteInfoClass ? new SiteInfoClass(this.page) : new DefaultSiteInfo(this.page)
+  }
+
+  // event handlers
+  // ==
 
   onClickAnywhere (e) {
     if (!this.isDropdownOpen) return
@@ -157,42 +187,17 @@ export class SiteInfoNavbarBtn {
     this.closeDropdown()
   }
 
-  closeDropdown () {
-    if (this.isDropdownOpen) {
-      this.isDropdownOpen = false
-      this.updateActives()
-    }
-  }
-
-  toggleDropdown (e) {
+  onToggleDropdown (e) {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
     }
 
-    this.isDropdownOpen = !this.isDropdownOpen
-    this.updateActives()
+    if (this.isDropdownOpen) this.closeDropdown()
+    else this.openDropdown()
   }
 
-  renderPerm (perm, value) {
-    const permId = getPermId(perm)
-    const permParam = getPermParam(perm)
-    var icon = PERMS[permId] ? PERMS[permId].icon : ''
-    var desc = PERMS[permId] ? PERMS[permId].desc : ''
-    if (typeof desc === 'function') desc = desc(permParam, pages, { capitalize: true })
-    if (typeof desc === 'string') desc = ucfirst(desc)
-    if (!desc) return ''
-    return yo`
-      <div class="perm">
-        <label class=${value ? 'checked' : ''} onclick=${e => this.togglePerm(perm)}>
-          <i class="fa fa-${icon}"></i>
-          ${desc}
-          <input type="checkbox" value="${perm}" ${value ? 'checked' : ''} />
-        </label>
-      </div>`
-  }
-
-  togglePerm (perm) {
+  onTogglePerm (perm) {
     // update perm
     var newValue = (this.page.sitePerms[perm] === 1) ? 0 : 1
     beaker.sitedata.setPermission(this.page.protocolInfo.url, perm, newValue).then(() => {
@@ -207,13 +212,7 @@ export class SiteInfoNavbarBtn {
     })
   }
 
-  openLink (e) {
-    e.preventDefault()
-    pages.setActive(pages.create(e.target.getAttribute('href')))
-    this.closeDropdown()
-  }
-
-  learnMore () {
+  onLearnMore () {
     pages.setActive(pages.create('https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22'))
   }
 }
