@@ -19,6 +19,7 @@ export class UserSiteInfo extends BaseSiteInfo {
     this.currentUserSession = null
     this.isCurrentUser = false
     this.followers = []
+    this.didThumbLoadFail = false
     this.load()
   }
 
@@ -29,13 +30,11 @@ export class UserSiteInfo extends BaseSiteInfo {
   render () {
     if (!this.info) return ''
     return yo`
-      <div class="user-site-info">
-        <img src="${this.url.origin}/thumb.jpg?cache_buster=${Date.now()}">
+      <div class="site-info-details user-site-info">
+        ${this.didThumbLoadFail ? '' : yo`<img src="${this.url.origin}/thumb.jpg?cache_buster=${Date.now()}" onerror=${() => this.onThumbError()}>`}
         <div class="title">${this.info.title}</div>
         <div class="description">${this.info.description}</div>
-        ${this.isCurrentUser
-          ? yo`<div class="isyou"><span>This is you!</span></div>`
-          : this.renderFollowers()}
+        ${this.renderTrustInfo()}
         ${this.followsUser ? yo`<div><div class="follows-you">Follows you</div></div>` : ''}
         ${this.isCurrentUser
           ? yo`
@@ -54,10 +53,26 @@ export class UserSiteInfo extends BaseSiteInfo {
       </div>`
   }
 
+  renderTrustInfo () {
+    if (this.isCurrentUser) {
+      return yo`<div class="trust-info"><span class="label trusted">This is you!</span></div>`
+    }
+    if (this.info.isOwner) {
+      return yo`<div class="trust-info"><span class="label trusted">You created this site.</span></div>`      
+    }
+    if (this.page.siteTrust && this.page.siteTrust.isDomainVerified) {
+      return yo`<div class="trust-info"><span class="label trusted">This domain has been verified.</span></div>`
+    }
+    return this.renderFollowers()
+  }
+
   renderFollowers () {
+    if (this.isCurrentUser) {
+      return ''
+    }
     var nFollowers = this.followers.length
     if (nFollowers === 0) {
-      return yo`<div class="followers"><span class="nobody"><span class="fa fa-user"></span> Not followed by anybody you follow</span></div>`
+      return yo`<div class="followers"><span class="fa fa-user"></span>Not followed by anybody you follow.</div>`
     }
     var followers = this.followers.map((follower, i) => {
       var sep = ''
@@ -71,12 +86,11 @@ export class UserSiteInfo extends BaseSiteInfo {
         sep = ' and '
       }
       if (follower.url === this.currentUserSession.url) return yo`<span>you${sep}</span>`
-      return yo`<span><a class="link" onclick=${() => this.open(follower.url)}>${this.renderUserTitle(follower)}</a>${sep}</span>`
+      return yo`<span><a onclick=${() => this.open(follower.url)}>${this.renderUserTitle(follower)}</a>${sep}</span>`
     })
     return yo`
       <div class="followers">
-        <span class="fa fa-user"></span>Followed by
-        ${followers}
+        <span class="fa fa-user"></span>Followed by ${followers}.
       </div>`
   }
 
@@ -97,7 +111,7 @@ export class UserSiteInfo extends BaseSiteInfo {
     var dat = new DatArchive(this.page.url)
     this.currentUserSession = await beaker.browser.getUserSession()
     this.isCurrentUser = this.url.origin === this.currentUserSession.url
-    this.info = JSON.parse(await dat.readFile('/dat.json'))
+    this.info = await dat.getInfo()
     this.followers = await beaker.followgraph.listFollowers(this.url.origin, {includeDesc: true})
     this.followsUser = !this.isCurrentUser && await beaker.followgraph.isAFollowingB(this.url.origin, this.currentUserSession.url)
     this.isCurrentUserFollowing = !this.isCurrentUser && Boolean(this.followers.find(f => f.url === this.currentUserSession.url))
@@ -142,5 +156,10 @@ export class UserSiteInfo extends BaseSiteInfo {
     } else {
       pages.setActive(pages.create(view))
     }
+  }
+
+  onThumbError () {
+    this.didThumbLoadFail = true
+    this.rerender()
   }
 }

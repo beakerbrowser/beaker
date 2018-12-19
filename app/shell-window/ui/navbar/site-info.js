@@ -24,28 +24,28 @@ export class SiteInfoNavbarBtn {
   render () {
     // pull details
     var titleEl = ''
-    var protocolCls = 'insecure'
+    var trustCls = 'not-trusted'
     const gotInsecureResponse = this.page.siteLoadError && this.page.siteLoadError.isInsecureResponse
     const isLoading = this.page.isLoading()
+    const {siteInfo, siteTrust, protocolInfo} = this.page
+    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : protocolInfo.scheme
 
-    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : this.page.protocolInfo.scheme
-    if (scheme) {
-      const isHttps = scheme === 'https:'
-      if (isHttps && !gotInsecureResponse && !this.page.siteLoadError) {
-        protocolCls = 'secure'
-      } else if (scheme === 'dat:') {
-        protocolCls = 'p2p'
-      } else if (scheme === 'beaker:') {
-        protocolCls = 'beaker'
+    if (gotInsecureResponse) {
+      trustCls = 'distrusted'
+    } else if (siteTrust && (siteTrust.isDomainVerified || siteTrust.isTitleVerified)) {
+      trustCls = 'trusted'
+    }
+
+    if (siteTrust) {
+      if (siteTrust.isTitleVerified && siteInfo && siteInfo.title) {
+        titleEl = yo`<span class="title">${siteInfo.title}</span>`
+      } else if (siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
+        titleEl = yo`<span class="title">${protocolInfo.hostname}</span>`
       }
     }
 
-    if (this.page.siteInfo && this.page.siteInfo.title) {
-      titleEl = yo`<span class="title">${this.page.siteInfo.title}</span>`
-    }
-
     return yo`
-      <div class="toolbar-site-info ${protocolCls}" id="${this.elId}">
+      <div class="toolbar-site-info ${trustCls} ${!!titleEl ? 'has-title' : ''}" id="${this.elId}">
         <button onclick=${isLoading ? undefined : e => this.onToggleDropdown(e)}>${this.renderIcon()}${titleEl}</button>
         ${this.renderDropdown()}
       </div>
@@ -81,9 +81,7 @@ export class SiteInfoNavbarBtn {
     return yo`
       <div class="dropdown toolbar-dropdown toolbar-site-info-dropdown">
         <div class="dropdown-items with-triangle left">
-          <div class="details">
-            ${this.dropdownUI ? this.dropdownUI.render() : ''}
-          </div>
+          ${this.dropdownUI ? this.dropdownUI.render() : ''}
           ${permsEls.length ? yo`<h2 class="perms-heading">Permissions</h2>` : ''}
           <div class="perms">${permsEls}</div>
         </div>

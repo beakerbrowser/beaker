@@ -1,0 +1,93 @@
+.toolbar-site-info-dropdown .site-info-details {
+  line-height: 16px;
+  text-align: center;
+  padding: 10px 20px;
+
+  &.default-site-info {
+    padding: 20px;
+  }
+
+  & > :first-child {
+    margin-top: 0 !important;
+  }
+
+  & > :last-child {
+    margin-bottom: 0 !important;
+  }
+
+  .label {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    background: gray;
+    color: #fff;
+    text-shadow: 0px 1px 1px rgba(0,0,0,.5);
+    white-space: nowrap;
+
+    &.trusted {
+      background: #15b915;
+    }
+
+    &.not-trusted {
+
+    }
+
+    &.distrusted {
+      background: #dc1616;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+  }
+
+  .septop {
+    padding-top: 14px;
+    border-top: 1px solid #ddd;
+    margin-top: 14px;
+  }
+
+  .sepbottom {
+    padding-bottom: 14px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 14px;
+  }
+
+  .title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    line-height: 1.2;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.small {
+      font-size: 18px;
+    }
+    &.smaller {
+      font-size: 15px;
+    }
+  }
+
+  .trust-info {
+    margin-bottom: 8px;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .btn {
+    background: #fff;
+
+    &:hover {
+      background: #fdfdfd;
+    }
+  }
+}

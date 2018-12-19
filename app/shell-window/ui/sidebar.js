@@ -28,6 +28,10 @@ export function destroyContainer (id) {
 }
 
 export async function onDidNavigate (page) {
+  // DISABLED
+  // -prf
+  return
+
   // do nothing if the page already has a sidebar
   var url = new URL(page.url)
   if (page.sidebar && page.sidebar.url.origin === url.origin) {

@@ -177,7 +177,7 @@ function render (id, page) {
   const siteHasDatAlternative = page && page.siteHasDatAlternative
   const siteHttpAlternative = page && page.siteHttpAlternative
   const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
-  const siteLoadError = page && page.siteLoadError
+  const siteTrust = page && page.siteTrust
   const isOwner = page && page.siteInfo && page.siteInfo.isOwner
 
   // back/forward should be disabled if its not possible go back/forward
@@ -385,7 +385,7 @@ function render (id, page) {
   `
 
   // a prettified rendering of the main URL input
-  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, gotInsecureResponse, siteLoadError)
+  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, gotInsecureResponse, siteTrust)
 
   // render
   return yo`
@@ -430,7 +430,7 @@ function render (id, page) {
   </div>`
 }
 
-function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadError) {
+function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteTrust) {
   var valueRendered = value
   if (/^(dat|http|https):\/\//.test(value)) {
     try {
@@ -447,10 +447,11 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadErr
         }
       }
       var cls = 'protocol'
-      if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
-      if (['https:'].includes(protocol) && !siteLoadError && !gotInsecureResponse) cls += ' protocol-secure'
-      if (['https:'].includes(protocol) && gotInsecureResponse) cls += ' protocol-insecure'
-      if (['dat:'].includes(protocol)) cls += ' protocol-p2p'
+      if (gotInsecureResponse) {
+        cls += ' protocol-distrusted'
+      } else if (siteTrust && (siteTrust.isDomainVerified || siteTrust.isTitleVerified)) {
+        cls += ' protocol-trusted'
+      }
       valueRendered = [
         yo`<span class=${cls}>${protocol.slice(0, -1)}</span>`,
         yo`<span class="syntax">://</span>`,

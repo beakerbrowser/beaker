@@ -10,39 +10,51 @@ export class DefaultSiteInfo extends BaseSiteInfo {
   }
 
   render () {
-    var protocolDesc = ''
-    if (this.page.protocolInfo) {
-      if (this.page.protocolInfo.scheme === 'https:') {
-        protocolDesc = `Your connection to this site is secure.`
-      } else if (this.page.protocolInfo.scheme === 'http:') {
-        protocolDesc = yo`
-          <div>
-            <p>
-              Your connection to this site is not secure.
-            </p>
-            <small>
-              You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
-            </small>
-          </div>
-        `
-      } else if (this.page.protocolInfo.scheme === 'dat:') {
-        protocolDesc = yo`
-          <div>
-            This site was downloaded from a secure peer-to-peer network.
-            <a onclick=${e => this.onLearnMore()}>Learn More</a>
-          </div>`
+    var titleEl = ''
+    var descEl = ''
+    const {protocolInfo, siteInfo, siteTrust} = this.page
+
+    if (siteTrust) {
+      if (siteTrust.isTitleVerified && siteInfo && siteInfo.title) {
+        titleEl = yo`<div class="title">${this.renderTitle()}</div>`
+      } else if (siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
+        titleEl = yo`<div class="title">${this.renderHostname()}</div>`
       }
     }
 
+    if (titleEl) {
+      if (titleEl.textContent.length > 30) {
+        titleEl.classList.add('smaller')
+      } else if (titleEl.textContent.length > 20) {
+        titleEl.classList.add('small')
+      }
+    }
 
-    return yo`
-      <div>
-        <div class="details-title">
-          ${this.renderTitle() || this.renderHostname() || this.renderUrl()}
-        </div>
-        <p class="details-desc">
-          ${protocolDesc}
-        </p>
-      </div>`
+    if (protocolInfo) {
+      if (protocolInfo.scheme === 'https:') {
+        descEl = yo`<div class="trust-info"><span class="label trusted">Your connection to this site is secure.</span></div>`
+      } else if (protocolInfo.scheme === 'http:') {
+        descEl = [
+          yo`<div class="trust-info">
+            <span class="label not-trusted">Your connection to this site is NOT secure.</span>
+          </div>`,
+          yo`<div class="description">
+            <small>
+              You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
+            </small>
+          </div>`
+        ]
+      } else if (protocolInfo.scheme === 'dat:') {
+        if (siteInfo.isOwner) {
+          descEl = yo`<div class="trust-info"><span class="label trusted">You created this site.</span></div>`
+        } else if (siteTrust && siteTrust.isDomainVerified) {
+          descEl = yo`<div class="trust-info"><span class="label trusted">This domain has been verified.</span></div>`
+        } else {
+          descEl = yo`<div class="trust-info"><span class="label not-trusted">The identity of this site can not be verified.</span></div>`
+        }
+      }
+    }
+
+    return yo`<div class="site-info-details default-site-info">${titleEl}${descEl}</div>`
   }
 }

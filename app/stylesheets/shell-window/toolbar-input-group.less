@@ -1,5 +1,6 @@
 @import "../base/colors";
 @import "../utils/decorators";
+@import "./site-infos/base";
 @import "./site-infos/user";
 
 .toolbar-input-group {
@@ -168,7 +169,6 @@
       color: #555;
       border-radius: 3px 0 0 3px;
       border-right: 1px solid #ddd;
-      padding-right: 2px;
 
       &:empty {
         display: none;
@@ -186,35 +186,34 @@
         font-size: 13.5px;
         line-height: 1;
         padding-right: 12px;
-      }
-
-      i {
-        margin-left: 10px;
-        margin-right: 6px;
-
-        &.fa-window-maximize {
-          padding-right: 8px;
-        }
+        letter-spacing: -0.5px;
       }
 
       i,
       .icon {
         display: block;
         height: 12.25px;
+        margin-left: 10px;
+        margin-right: 6px;
+
+        &.fa-user {
+          margin-right: 5px;
+          font-size: 13px;
+        }
 
         &.padlock {
+          width: 12.25px;
 
           #top {
-            stroke: #3c943c;
+            stroke: #0cbb0c;
           }
 
           #bottom {
-            fill: #3c943c;
+            fill: #0cbb0c;
           }
         }
 
         &.fa-share-alt {
-          color: @blue;
           font-size: 14.5px;
         }
 
@@ -228,51 +227,27 @@
       }
     }
 
-    &.secure {
-
+    &.trusted {
       button {
-        color: #3c943c !important;
-      }
-
-      .details-summary {
-        color: #3c943c;
+        color: #0cbb0c !important;
       }
     }
 
-    &.insecure {
+    &.distrusted {
       button {
-        color: #555;
-      }
-
-      .title {
-        color: mix(@color-text, @red, 20%);
-      }
-
-      i {
-        &.https-error {
-          color: mix(@color-text, @red, 20%);
-        }
-      }
-
-      .details-summary {
-        color: mix(@color-text, @red, 20%);
+        color: mix(@color-text, @red, 20%) !important;
       }
     }
 
-    &.p2p {
-
-      button {
-        color: @blue;
+    &:not(.has-title) button {
+      .fa-share-alt {
+        margin-right: 12px;
       }
 
-      .details-summary {
-        color: #3c943c;
-      }
-    }
-
-    &.app {
-      button {
-        color: #555;
+      .padlock,
+      .fa-info-circle,
+      .fa-user {
+        margin-right: 10px;
       }
     }
   }
@@ -322,16 +297,12 @@
       color: @color-text--light;
     }
 
-    .protocol-secure {
-      color: #3c943c;
+    .protocol-trusted {
+      color: #0cbb0c;
     }
 
-    .protocol-insecure {
+    .protocol-distrusted {
       color: mix(@color-text, @red, 20%);
-    }
-
-    .protocol-p2p {
-      color: @blue;
     }
 
     .host-version,

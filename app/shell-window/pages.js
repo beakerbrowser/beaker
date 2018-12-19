@@ -23,6 +23,8 @@ import addAsyncAlternatives from './webview-async'
 // constants
 // =
 
+const isDatHashRegex = /^[a-z0-9]{64}/i
+
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
 const ERR_INSECURE_RESPONSE = -501
@@ -159,6 +161,7 @@ export function create (opts) {
     protocolInfo: null, // info about the current page's delivery protocol
     siteLoadError: null, // info about the current page's last load's error (null if no error)
     siteInfo: null, // metadata about the current page, derived from protocol knowledge
+    siteTrust: null, // metadata about our trust in the page
     sitePerms: null, // saved permissions for the current page
     siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
     siteHasDatAlternative: false, // is there a dat:// version we can redirect to?
@@ -759,6 +762,7 @@ function onDidStopLoading (e) {
 
     // capture old data
     var oldSiteInfo = page.siteInfo
+    var oldSiteTrust = page.siteTrust
     var oldProtocolInfo = page.protocolInfo
 
     // fetch protocol and page info
@@ -767,29 +771,45 @@ function onDidStopLoading (e) {
     page.sitePerms = null
     page.siteHasDatAlternative = false
     page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase(), version}
+    page.siteTrust = {
+      isDomainVerified: (
+        protocol === 'https:' || // https cert
+        (protocol === 'dat:' && !isDatHashRegex.test(hostname)) // https cert or dns-over-https
+      ),
+      isTitleVerified: false // will need to lookup
+    }
     if (oldProtocolInfo && oldProtocolInfo.scheme === protocol && oldProtocolInfo.hostname === hostname) {
-      // same site, reuse the siteInfo
+      // same site, reuse old info
       page.siteInfo = oldSiteInfo
+      page.siteTrust = oldSiteTrust
     }
     if (protocol === 'https:') {
       page.checkForDatAlternative(url, hostname)
     }
     if (protocol === 'dat:') {
-      DatArchive.resolveName(hostname)
-        .catch(err => hostname) // try the hostname as-is, might be a hash
-        .then(key => (new DatArchive(key)).getInfo())
-        .then(info => {
-          page.siteInfo = info
-          navbar.update(page)
-          sidebar.onDidNavigate(page)
-          console.log('dat site info', info)
+      ;(async function () {
+        var info = await (new DatArchive(hostname)).getInfo()
+        console.log('dat site info', info)
+        page.siteInfo = info
 
-          // fallback the tab title to the site title, if needed
-          if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
-            page.title = info.title
-            events.emit('page-title-updated', page)
-          }
-        })
+        // determine trust in the title
+        if (info.isOwner) {
+          page.siteTrust.isTitleVerified = true // trust our own titles
+        } else {
+          // TODO
+          page.siteTrust.isTitleVerified = false
+        }
+
+        // update UIs
+        navbar.update(page)
+        sidebar.onDidNavigate(page)
+
+        // fallback the tab title to the site title, if needed
+        if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
+          page.title = info.title
+          events.emit('page-title-updated', page)
+        }
+      })()
     } else {
       sidebar.onDidNavigate(page)
     }
