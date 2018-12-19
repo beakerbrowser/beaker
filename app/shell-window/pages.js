@@ -757,12 +757,20 @@ function onDidStopLoading (e) {
     // update history and UI
     updateHistory(page)
 
+    // capture old data
+    var oldSiteInfo = page.siteInfo
+    var oldProtocolInfo = page.protocolInfo
+
     // fetch protocol and page info
     var { protocol, hostname, pathname, version } = url.startsWith('dat://') ? parseDatURL(url) : parseURL(url)
     page.siteInfo = null
     page.sitePerms = null
     page.siteHasDatAlternative = false
     page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase(), version}
+    if (oldProtocolInfo && oldProtocolInfo.scheme === protocol && oldProtocolInfo.hostname === hostname) {
+      // same site, reuse the siteInfo
+      page.siteInfo = oldSiteInfo
+    }
     if (protocol === 'https:') {
       page.checkForDatAlternative(url, hostname)
     }
