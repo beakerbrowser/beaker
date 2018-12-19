@@ -35,6 +35,7 @@ export class UserSiteInfo extends BaseSiteInfo {
         <div class="title">${this.info.title}</div>
         <div class="description">${this.info.description}</div>
         ${this.renderTrustInfo()}
+        ${this.renderFollowers()}
         ${this.followsUser ? yo`<div><div class="follows-you">Follows you</div></div>` : ''}
         ${this.isCurrentUser
           ? yo`
@@ -60,10 +61,13 @@ export class UserSiteInfo extends BaseSiteInfo {
     if (this.info.isOwner) {
       return yo`<div class="trust-info"><span class="label trusted">You created this site.</span></div>`      
     }
+    if (this.page.siteTrust && this.page.siteTrust.isTitleVerified) {
+      return yo`<div class="trust-info"><span class="label trusted">This user${"'"}s identity has been verified.</span></div>`
+    }
     if (this.page.siteTrust && this.page.siteTrust.isDomainVerified) {
       return yo`<div class="trust-info"><span class="label trusted">This domain has been verified.</span></div>`
     }
-    return this.renderFollowers()
+    return yo`<div class="trust-info"><span class="label not-trusted">The identity of this user can not be verified.</span></div>`
   }
 
   renderFollowers () {

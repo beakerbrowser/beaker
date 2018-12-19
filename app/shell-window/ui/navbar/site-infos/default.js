@@ -15,11 +15,14 @@ export class DefaultSiteInfo extends BaseSiteInfo {
     const {protocolInfo, siteInfo, siteTrust} = this.page
 
     if (siteTrust) {
-      if (siteTrust.isTitleVerified && siteInfo && siteInfo.title) {
-        titleEl = yo`<div class="title">${this.renderTitle()}</div>`
-      } else if (siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
+      if (siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
         titleEl = yo`<div class="title">${this.renderHostname()}</div>`
       }
+    }
+    if (!titleEl && siteInfo && siteInfo.title) {
+      // even if the title isn't trusted, show it here
+      // there will be a "not trusted" indicator
+      titleEl = yo`<div class="title">${this.renderTitle()}</div>`
     }
 
     if (titleEl) {
