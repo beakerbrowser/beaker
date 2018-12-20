@@ -176,7 +176,6 @@ function render (id, page) {
   const isViewingDat = page && page.getURL().startsWith('dat:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
   const siteHttpAlternative = page && page.siteHttpAlternative
-  const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
   const siteTrust = page && page.siteTrust
   const isOwner = page && page.siteInfo && page.siteInfo.isOwner
 
@@ -385,7 +384,7 @@ function render (id, page) {
   `
 
   // a prettified rendering of the main URL input
-  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, gotInsecureResponse, siteTrust)
+  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, siteTrust)
 
   // render
   return yo`
@@ -430,7 +429,7 @@ function render (id, page) {
   </div>`
 }
 
-function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteTrust) {
+function renderPrettyLocation (value, isHidden, siteTrust) {
   var valueRendered = value
   if (/^(dat|http|https):\/\//.test(value)) {
     try {
@@ -447,11 +446,7 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteTrust) 
         }
       }
       var cls = 'protocol'
-      if (gotInsecureResponse) {
-        cls += ' protocol-distrusted'
-      } else if (siteTrust && (siteTrust.isDomainVerified || siteTrust.isTitleVerified)) {
-        cls += ' protocol-trusted'
-      }
+      if (siteTrust) cls += ' protocol-' + siteTrust.getRating()
       valueRendered = [
         yo`<span class=${cls}>${protocol.slice(0, -1)}</span>`,
         yo`<span class="syntax">://</span>`,

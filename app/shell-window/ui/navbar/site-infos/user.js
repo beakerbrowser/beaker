@@ -61,13 +61,18 @@ export class UserSiteInfo extends BaseSiteInfo {
     if (this.info.isOwner) {
       return yo`<div class="trust-info"><span class="label trusted">You created this site.</span></div>`      
     }
-    if (this.page.siteTrust && this.page.siteTrust.isTitleVerified) {
-      return yo`<div class="trust-info"><span class="label trusted">This user${"'"}s identity has been verified.</span></div>`
+    var siteTrust = this.page.siteTrust
+    if (siteTrust) {
+      if (siteTrust.getRating() !== 'trusted') {
+        return yo`<div class="trust-info"><span class="label not-trusted">The identity of this user can not be verified.</span></div>`
+      }
+      if (siteTrust.isTitleVerified) {
+        return yo`<div class="trust-info"><span class="label trusted">This user${"'"}s identity has been verified.</span></div>`
+      }
+      if (siteTrust.isDomainVerified) {
+        return yo`<div class="trust-info"><span class="label trusted">This domain has been verified.</span></div>`
+      }
     }
-    if (this.page.siteTrust && this.page.siteTrust.isDomainVerified) {
-      return yo`<div class="trust-info"><span class="label trusted">This domain has been verified.</span></div>`
-    }
-    return yo`<div class="trust-info"><span class="label not-trusted">The identity of this user can not be verified.</span></div>`
   }
 
   renderFollowers () {

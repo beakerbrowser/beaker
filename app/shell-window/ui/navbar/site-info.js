@@ -25,23 +25,22 @@ export class SiteInfoNavbarBtn {
     // pull details
     var titleEl = ''
     var trustCls = 'not-trusted'
-    const gotInsecureResponse = this.page.siteLoadError && this.page.siteLoadError.isInsecureResponse
     const isLoading = this.page.isLoading()
     const {siteInfo, siteTrust, protocolInfo} = this.page
     const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : protocolInfo.scheme
-
-    if (gotInsecureResponse) {
-      trustCls = 'distrusted'
-    } else if (siteTrust && (siteTrust.isDomainVerified || siteTrust.isTitleVerified)) {
-      trustCls = 'trusted'
-    }
+    var trustCls = siteTrust ? siteTrust.getRating() : 'not-trusted'
 
     if (siteTrust) {
-      if (siteTrust.isTitleVerified && siteInfo && siteInfo.title) {
-        titleEl = yo`<span class="title">${siteInfo.title}</span>`
+      if (siteTrust.hasTrustedFollower) {
+        titleEl = yo`<div class="title">${siteInfo.title}</div>`
       } else if (siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
         titleEl = yo`<span class="title">${protocolInfo.hostname}</span>`
       }
+    }
+    if (!titleEl && siteInfo && siteInfo.title) {
+      // even if the title isn't trusted, show it here
+      // there will be a "not trusted" indicator
+      titleEl = yo`<div class="title">${siteInfo.title}</div>`
     }
 
     return yo`
@@ -108,20 +107,22 @@ export class SiteInfoNavbarBtn {
 
   renderIcon () {
     var iconEl = ''
-    const gotInsecureResponse = this.page.siteLoadError && this.page.siteLoadError.isInsecureResponse
     const isLoading = this.page.isLoading()
-    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : this.page.protocolInfo.scheme
-    const type = this.page.siteInfo && this.page.siteInfo.type ? this.page.siteInfo.type : null
+    const {siteInfo, siteTrust, protocolInfo} = this.page    
+    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : protocolInfo.scheme
+    const type = siteInfo && siteInfo.type ? siteInfo.type : null
+    const trustRating = siteTrust ? siteTrust.getRating() : 'not-trusted'
     if (scheme) {
-      const isHttps = scheme === 'https:'
-      if (isHttps && !gotInsecureResponse && !this.page.siteLoadError) {
+      if (scheme === 'beaker:') {
+        return '' // TODO
+      } else if (scheme === 'https:' && trustRating !== 'distrusted') {
         return renderPadlockIcon()
-      } else if (scheme === 'http:') {
-        return yo`<i class="fa fa-info-circle"></i>`
-      } else if (isHttps && gotInsecureResponse) {
+      } else if (scheme === 'http:' || trustRating === 'distrusted') {
         return yo`<i class="fa fa-exclamation-circle"></i>`
       } else if (scheme === 'dat:') {
-        if (type && type.includes('unwalled.garden/user')) {
+        if (trustRating !== 'trusted') {
+          return yo`<i class="fa fa-question-circle"></i>`
+        } else if (type && type.includes('unwalled.garden/user')) {
           return yo`<i class="fa fa-user"></i>`
         } else {
           return yo`<i class="fa fa-share-alt"></i>`

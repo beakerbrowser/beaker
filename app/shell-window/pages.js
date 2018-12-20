@@ -772,11 +772,22 @@ function onDidStopLoading (e) {
     page.siteHasDatAlternative = false
     page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase(), version}
     page.siteTrust = {
+      getRating () {
+        const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
+        if (this.isDomainVerified || this.hasTrustedFollower) {
+          return 'trusted'
+        }
+        if (gotInsecureResponse) {
+          return 'distrusted'
+        }
+        return 'not-trusted'
+      },
       isDomainVerified: (
         protocol === 'https:' || // https cert
         (protocol === 'dat:' && !isDatHashRegex.test(hostname)) // https cert or dns-over-https
       ),
-      isTitleVerified: false // will need to lookup
+      isTitleVerified: false, // no mechanism for this yet
+      hasTrustedFollower: false
     }
     if (oldProtocolInfo && oldProtocolInfo.scheme === protocol && oldProtocolInfo.hostname === hostname) {
       // same site, reuse old info
@@ -792,12 +803,15 @@ function onDidStopLoading (e) {
         console.log('dat site info', info)
         page.siteInfo = info
 
-        // determine trust in the title
+        // determine trust in the site
         if (info.isOwner) {
-          page.siteTrust.isTitleVerified = true // trust our own titles
-        } else {
-          // TODO
-          page.siteTrust.isTitleVerified = false
+          // trust our own stuff
+          page.siteTrust.hasTrustedFollower = true
+        } else if (info.type.includes('unwalled.garden/user')) {
+          // trust titles of user-sites we or a followed-user follows
+          let currentUserSession = await beaker.browser.getUserSession()
+          let follows = await beaker.followgraph.listFollowers(info.url, {followedBy: currentUserSession.url})
+          page.siteTrust.hasTrustedFollower = follows.length >= 1
         }
 
         // update UIs

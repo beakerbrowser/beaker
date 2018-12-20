@@ -196,6 +196,8 @@
         margin-left: 10px;
         margin-right: 6px;
 
+        &.fa-question-circle,
+        &.fa-exclamation-circle,
         &.fa-user {
           margin-right: 5px;
           font-size: 13px;
@@ -220,16 +222,16 @@
         &.fa-folder-open-o {
           padding-right: 7px;
         }
-
-        &.fa-exclamation-circle {
-          color: shade(@red, 20%) !important;
-        }
       }
     }
 
     &.trusted {
       button {
         color: #0cbb0c !important;
+
+        .fa {
+          color: rgb(60, 148, 60) !important;
+        }
       }
     }
 
@@ -246,7 +248,8 @@
 
       .padlock,
       .fa-info-circle,
-      .fa-user {
+      .fa-user,
+      .fa-exclamation-circle {
         margin-right: 10px;
       }
     }
