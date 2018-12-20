@@ -54,6 +54,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'Command+,',
         click (item, win) {
           if (win) win.webContents.send('command', 'file:new-tab', 'beaker://settings')
+          else createShellWindow({ pages: ['beaker://settings'] })
         }
       },
       { type: 'separator' },
@@ -89,7 +90,9 @@ export function buildWindowMenu (opts = {}) {
         label: 'Reopen Closed Tab',
         accelerator: 'CmdOrCtrl+Shift+T',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'file:reopen-closed-tab')
+          createWindowIfNone(win, (win) => {
+            win.webContents.send('command', 'file:reopen-closed-tab')
+          })
         },
         reserved: true
       },
@@ -97,18 +100,20 @@ export function buildWindowMenu (opts = {}) {
         label: 'Open File',
         accelerator: 'CmdOrCtrl+O',
         click: function (item, win) {
-          if (win) {
+          createWindowIfNone(win, (win) => {
             dialog.showOpenDialog({ title: 'Open file...', properties: ['openFile', 'createDirectory'] }, files => {
               if (files && files[0]) { win.webContents.send('command', 'file:new-tab', 'file://' + files[0]) }
             })
-          }
+          })
         }
       },
       {
         label: 'Open Location',
         accelerator: 'CmdOrCtrl+L',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'file:open-location')
+          createWindowIfNone(win, (win) => {
+            win.webContents.send('command', 'file:open-location')
+          })
         }
       },
       { type: 'separator' },
@@ -331,6 +336,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: showHistoryAccelerator,
         click: function (item, win) {
           if (win) win.webContents.send('command', 'file:new-tab', 'beaker://history')
+          else createShellWindow({ pages: ['beaker://history'] })
         }
       },
       { type: 'separator' },
@@ -431,4 +437,10 @@ function requiresRebuild (url) {
   const b = (lastURLProtocol !== urlProtocol)
   lastURLProtocol = urlProtocol
   return b
+}
+
+function createWindowIfNone (win, onShow) {
+  if (win) return onShow(win)
+  win = createShellWindow()
+  win.once('show', onShow.bind(null, win))
 }
