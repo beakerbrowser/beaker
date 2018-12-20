@@ -7,7 +7,7 @@ import {download} from './downloads'
 // =
 
 export function setup () {
-  setApplicationMenu()
+  setApplicationMenu({ noWindows: true })
 
   // watch for changes to the window's
   ipcMain.on('shell-window:set-current-location', (e, url) => {
@@ -37,6 +37,16 @@ export function setup () {
       // `pages` not set yet
     }
   })
+
+  // watch for all windows to be closed
+  app.on('custom-window-all-closed', () => {
+    setApplicationMenu({ noWindows: true })
+  })
+
+  // watch for any window to be opened
+  app.on('browser-window-created', () => {
+    setApplicationMenu()
+  })
 }
 
 export function setApplicationMenu (opts = {}) {
@@ -45,6 +55,7 @@ export function setApplicationMenu (opts = {}) {
 
 export function buildWindowMenu (opts = {}) {
   const isDat = opts.url && opts.url.startsWith('dat://')
+  const noWindows = opts.noWindows === true
 
   var darwinMenu = {
     label: 'Beaker',
@@ -119,6 +130,7 @@ export function buildWindowMenu (opts = {}) {
       { type: 'separator' },
       {
         label: 'Save Page As...',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+S',
         click: async (item, win) => {
           const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
@@ -130,6 +142,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Print...',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+P',
         click: (item, win) => {
           win.webContents.executeJavaScript(`pages.getActive().webviewEl.getWebContents().print()`)
@@ -138,6 +151,7 @@ export function buildWindowMenu (opts = {}) {
       { type: 'separator' },
       {
         label: 'Close Window',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Shift+W',
         click: function (item, win) {
           if (win) win.close()
@@ -146,6 +160,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Close Tab',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+W',
         click: function (item, win) {
           if (win) {
@@ -167,15 +182,16 @@ export function buildWindowMenu (opts = {}) {
   var editMenu = {
     label: 'Edit',
     submenu: [
-      { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:', reserved: true },
-      { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:', reserved: true },
+      { label: 'Undo', enabled: !noWindows, accelerator: 'CmdOrCtrl+Z', selector: 'undo:', reserved: true },
+      { label: 'Redo', enabled: !noWindows, accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:', reserved: true },
       { type: 'separator' },
-      { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:', reserved: true },
-      { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:', reserved: true },
-      { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:', reserved: true },
-      { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
+      { label: 'Cut', enabled: !noWindows, accelerator: 'CmdOrCtrl+X', selector: 'cut:', reserved: true },
+      { label: 'Copy', enabled: !noWindows, accelerator: 'CmdOrCtrl+C', selector: 'copy:', reserved: true },
+      { label: 'Paste', enabled: !noWindows, accelerator: 'CmdOrCtrl+V', selector: 'paste:', reserved: true },
+      { label: 'Select All', enabled: !noWindows, accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
       {
         label: 'Find in Page',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+F',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'edit:find')
@@ -183,6 +199,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Find Next',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+G',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'edit:find-next')
@@ -190,6 +207,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Find Previous',
+        enabled: !noWindows,
         accelerator: 'Shift+CmdOrCtrl+G',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'edit:find-previous')
@@ -202,6 +220,7 @@ export function buildWindowMenu (opts = {}) {
     label: 'View',
     submenu: [{
       label: 'Reload',
+      enabled: !noWindows,
       accelerator: 'CmdOrCtrl+R',
       click: function (item, win) {
         if (win) win.webContents.send('command', 'view:reload')
@@ -226,6 +245,7 @@ export function buildWindowMenu (opts = {}) {
     { type: 'separator' },
       {
         label: 'Zoom In',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Plus',
         reserved: true,
         click: function (item, win) {
@@ -234,6 +254,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Zoom Out',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+-',
         reserved: true,
         click: function (item, win) {
@@ -242,6 +263,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Actual Size',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+0',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'view:zoom-reset')
@@ -253,12 +275,14 @@ export function buildWindowMenu (opts = {}) {
         label: 'Advanced Tools',
         submenu: [{
           label: 'Reload Shell-Window',
+          enabled: !noWindows,
           accelerator: 'CmdOrCtrl+alt+shift+R',
           click: function () {
             BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
           }
         }, {
           label: 'Toggle Shell-Window DevTools',
+          enabled: !noWindows,
           accelerator: 'CmdOrCtrl+alt+shift+I',
           click: function () {
             BrowserWindow.getFocusedWindow().toggleDevTools()
@@ -267,16 +291,19 @@ export function buildWindowMenu (opts = {}) {
       { type: 'separator' },
           {
             label: 'Open Archives Debug Page',
+            enabled: !noWindows,
             click: function (item, win) {
               if (win) win.webContents.send('command', 'file:new-tab', 'beaker://internal-archives/')
             }
           }, {
             label: 'Open Dat-DNS Cache Page',
+            enabled: !noWindows,
             click: function (item, win) {
               if (win) win.webContents.send('command', 'file:new-tab', 'beaker://dat-dns-cache/')
             }
           }, {
             label: 'Open Debug Log Page',
+            enabled: !noWindows,
             click: function (item, win) {
               if (win) win.webContents.send('command', 'file:new-tab', 'beaker://debug-log/')
             }
@@ -284,6 +311,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Toggle DevTools',
+        enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'view:toggle-dev-tools')
@@ -292,6 +320,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Toggle Javascript Console',
+        enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'view:toggle-javascript-console')
@@ -319,6 +348,7 @@ export function buildWindowMenu (opts = {}) {
     submenu: [
       {
         label: 'Back',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Left',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'history:back')
@@ -326,6 +356,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Forward',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Right',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'history:forward')
@@ -342,6 +373,7 @@ export function buildWindowMenu (opts = {}) {
       { type: 'separator' },
       {
         label: 'Bookmark this Page',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+D',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'bookmark:create')
@@ -361,6 +393,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Next Tab',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+}',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'window:next-tab')
@@ -368,6 +401,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Previous Tab',
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+{',
         click: function (item, win) {
           if (win) win.webContents.send('command', 'window:prev-tab')
