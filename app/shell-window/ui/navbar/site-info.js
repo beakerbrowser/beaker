@@ -31,11 +31,11 @@ export class SiteInfoNavbarBtn {
     var trustCls = siteTrust ? siteTrust.getRating() : 'not-trusted'
 
     if (siteInfo && siteInfo.isOwner) {
-      titleEl = yo`<div class="title">${siteInfo.title}<i class="fa fa-check-circle"></i></div>`      
+      titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}<i class="fa fa-check-circle"></i></div>`      
     } else if (siteTrust && siteTrust.isTitleVerified) {
-        titleEl = yo`<div class="title">${siteInfo.title}<i class="fa fa-check"></i></div>`
+        titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}<i class="fa fa-check"></i></div>`
     } else if (siteTrust && siteTrust.hasTrustedFollower) {
-      titleEl = yo`<div class="title">${siteInfo.title}</div>`
+      titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}</div>`
     } else if (siteTrust && siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
       titleEl = yo`<span class="title">${protocolInfo.hostname}</span>`
     }
