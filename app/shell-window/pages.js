@@ -774,19 +774,28 @@ function onDidStopLoading (e) {
     page.siteTrust = {
       getRating () {
         const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
-        if (this.isDomainVerified || this.hasTrustedFollower) {
+        if (this.isDomainVerified || this.isTitleVerified) {
+          // these signals indicate strong trust
+          // why: domain must be verified via PKI and
+          //      title must be verified by a trusted WoT authority
+          return 'trusted'
+        }
+        if (this.hasTrustedFollower) {
+          // this is a weak signal but we're going to let it indicate trust for now
           return 'trusted'
         }
         if (gotInsecureResponse) {
+          // TLS failure
           return 'distrusted'
         }
+        // no usable signals
         return 'not-trusted'
       },
       isDomainVerified: (
         protocol === 'https:' || // https cert
         (protocol === 'dat:' && !isDatHashRegex.test(hostname)) // https cert or dns-over-https
       ),
-      isTitleVerified: false, // no mechanism for this yet
+      isTitleVerified: false, // NOTE: no mechanism for this being set `true` yet yet
       hasTrustedFollower: false
     }
     if (oldProtocolInfo && oldProtocolInfo.scheme === protocol && oldProtocolInfo.hostname === hostname) {

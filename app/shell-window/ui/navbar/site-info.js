@@ -30,17 +30,14 @@ export class SiteInfoNavbarBtn {
     const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : protocolInfo.scheme
     var trustCls = siteTrust ? siteTrust.getRating() : 'not-trusted'
 
-    if (siteTrust) {
-      if (siteTrust.hasTrustedFollower) {
-        titleEl = yo`<div class="title">${siteInfo.title}</div>`
-      } else if (siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
-        titleEl = yo`<span class="title">${protocolInfo.hostname}</span>`
-      }
-    }
-    if (!titleEl && siteInfo && siteInfo.title) {
-      // even if the title isn't trusted, show it here
-      // there will be a "not trusted" indicator
+    if (siteInfo && siteInfo.isOwner) {
+      titleEl = yo`<div class="title">${siteInfo.title}<i class="fa fa-check-circle"></i></div>`      
+    } else if (siteTrust && siteTrust.isTitleVerified) {
+        titleEl = yo`<div class="title">${siteInfo.title}<i class="fa fa-check"></i></div>`
+    } else if (siteTrust && siteTrust.hasTrustedFollower) {
       titleEl = yo`<div class="title">${siteInfo.title}</div>`
+    } else if (siteTrust && siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
+      titleEl = yo`<span class="title">${protocolInfo.hostname}</span>`
     }
 
     return yo`
@@ -120,9 +117,7 @@ export class SiteInfoNavbarBtn {
       } else if (scheme === 'http:' || trustRating === 'distrusted') {
         return yo`<i class="fa fa-exclamation-circle"></i>`
       } else if (scheme === 'dat:') {
-        if (trustRating !== 'trusted') {
-          return yo`<i class="fa fa-question-circle"></i>`
-        } else if (type && type.includes('unwalled.garden/user')) {
+        if (type && type.includes('unwalled.garden/user')) {
           return yo`<i class="fa fa-user"></i>`
         } else {
           return yo`<i class="fa fa-share-alt"></i>`

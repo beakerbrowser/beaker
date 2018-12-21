@@ -49,7 +49,7 @@ export class DefaultSiteInfo extends BaseSiteInfo {
         ]
       } else if (protocolInfo.scheme === 'dat:') {
         if (siteInfo.isOwner) {
-          descEl = yo`<div class="trust-info"><span class="label trusted">You created this site.</span></div>`
+          descEl = yo`<div class="trust-info"><span class="label trusted"><span class="fa fa-check-circle"></span> You created this site.</span></div>`
         } else if (siteTrust && siteTrust.isDomainVerified) {
           descEl = yo`<div class="trust-info"><span class="label trusted">This domain has been verified.</span></div>`
         } else {
