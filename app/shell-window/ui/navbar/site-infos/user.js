@@ -63,7 +63,7 @@ export class UserSiteInfo extends BaseSiteInfo {
     }
     var siteTrust = this.page.siteTrust
     if (siteTrust) {
-      if (siteTrust.getRating() !== 'trusted') {
+      if (siteTrust.getRating() !== 'trusted' && !siteTrust.hasTrustedFollower) {
         return yo`<div class="trust-info"><span class="label not-trusted">The identity of this user can not be verified.</span></div>`
       }
       if (siteTrust.isTitleVerified) {
