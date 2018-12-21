@@ -775,7 +775,7 @@ function onDidStopLoading (e) {
       getRating () {
         const isOwner = page && page.siteInfo && page.siteInfo.isOwner
         const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
-        if (isOwner || this.isDomainVerified || this.isTitleVerified || this.hasLocalUserFollower) {
+        if (isOwner || this.isIdentityVerified || this.isDomainVerified || this.isFollowed) {
           // these signals indicate strong trust
           // why: always trust own sites
           //      domain must be verified via PKI
@@ -790,13 +790,16 @@ function onDidStopLoading (e) {
         // no usable signals
         return 'not-trusted'
       },
+      getCanSemiTrustIdentity () {
+        return this.rating === 'trusted' || this.isFoaF
+      },
+      isIdentityVerified: false, // NOTE: no mechanism for this being set `true` yet yet
       isDomainVerified: (
         protocol === 'https:' || // https cert
         (protocol === 'dat:' && !isDatHashRegex.test(hostname)) // https cert or dns-over-https
       ),
-      isTitleVerified: false, // NOTE: no mechanism for this being set `true` yet yet
-      hasLocalUserFollower: false,
-      hasTrustedFollower: false
+      isFollowed: false,
+      isFoaF: false
     }
     if (oldProtocolInfo && oldProtocolInfo.scheme === protocol && oldProtocolInfo.hostname === hostname) {
       // same site, reuse old info
@@ -815,13 +818,13 @@ function onDidStopLoading (e) {
         // determine trust in the site
         if (info.isOwner) {
           // trust our own stuff
-          page.siteTrust.hasTrustedFollower = true
+          page.siteTrust.isFoaF = true
         } else if (info.type.includes('unwalled.garden/user')) {
           // trust titles of user-sites we or a followed-user follows
           let currentUserSession = await beaker.browser.getUserSession()
           let follows = await beaker.followgraph.listFollowers(info.url, {followedBy: currentUserSession.url})
-          page.siteTrust.hasLocalUserFollower = !!follows.find(v => v === currentUserSession.url)
-          page.siteTrust.hasTrustedFollower = follows.length >= 1
+          page.siteTrust.isFollowed = !!follows.find(v => v === currentUserSession.url)
+          page.siteTrust.isFoaF = follows.length >= 1
         }
 
         // update UIs

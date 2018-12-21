@@ -32,9 +32,9 @@ export class SiteInfoNavbarBtn {
 
     if (siteInfo && siteInfo.isOwner) {
       titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}<i class="fa fa-check-circle"></i></div>`      
-    } else if (siteTrust && siteTrust.isTitleVerified) {
+    } else if (siteInfo && siteTrust && siteTrust.isIdentityVerified) {
         titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}<i class="fa fa-check"></i></div>`
-    } else if (siteTrust && siteTrust.hasTrustedFollower) {
+    } else if (siteInfo && siteTrust && siteTrust.getCanSemiTrustIdentity()) {
       titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}</div>`
     } else if (siteTrust && siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
       titleEl = yo`<span class="title">${protocolInfo.hostname}</span>`
