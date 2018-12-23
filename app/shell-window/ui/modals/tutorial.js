@@ -15,9 +15,13 @@ export class TutorialModal extends BaseModal {
     return yo`
       <div style="padding: 10px 20px 6px; width: 500px; text-align: center; line-height: 2">
         ${SCREENS[this.screen].call(this)}
-        <p style="text-align: right">
+        <div style="display: flex">
+          ${(this.screen !== 'goodbye' && this.screen !== 'canceled')
+            ? yo`<a class="btn" onclick=${() => this.close(new Error('Canceled'))}>End tour</a>`
+            : ''}
+          <div class="flex-spacer"></div>
           <a class="btn primary" onclick=${() => this.close()}>${this.button}</a>
-        </p>
+        </div>
       </div>`
   }
 }
@@ -108,6 +112,15 @@ const SCREENS = {
         <h3>Search results</h3>
         <p>
           Your searches will have results from the sites you follow. This is a good way to find people and information.
+        </p>
+      </div>`
+  },
+  canceled () {
+    return yo`
+      <div>
+        <h3>Enjoy!</h3>
+        <p>
+          You can start the tour again by clicking the "Tour" button.
         </p>
       </div>`
   },

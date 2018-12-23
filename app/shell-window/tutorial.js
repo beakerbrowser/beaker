@@ -4,39 +4,45 @@ import * as pages from './pages'
 // =
 
 export async function start () {
-  await showTutorialModal('intro', 'Start tour')
-
-  await gotoUserSite()
-  await showTutorialModal('userSite')
-
   try {
-    await beaker.browser.showEditProfileModal()
+    await showTutorialModal('intro', 'Start tour')
+
+    await gotoUserSite()
+    await showTutorialModal('userSite')
+
+    try {
+      await beaker.browser.showEditProfileModal()
+    } catch (e) {
+      // ignore     
+    }
+    await refreshPage()
+    await showTutorialModal('userSiteCanBeChanged')
+
+    await viewSource()
+    await showTutorialModal('userSiteSource')
+
+    await gotoSite('beaker://feed')
+    await showTutorialModal('feed')
+
+    await gotoSite('dat://beakerbrowser.com')
+    await showTutorialModal('followSomeone', 'Follow beakerbrowser.com')
+
+    await gotoSite('beaker://settings/#crawler')
+    await showTutorialModal('crawler')
+
+    await gotoSite('beaker://feed')
+    await showTutorialModal('populatedFeed')
+
+    await gotoSite('beaker://search')
+    await showTutorialModal('populatedSearch')
+
+    await gotoSite('beaker://start')
+    await showTutorialModal('goodbye', 'End tour')
   } catch (e) {
-    // ignore     
+    if (e.message === 'Canceled') {
+      await showTutorialModal('canceled', 'Close')
+    }
   }
-  await refreshPage()
-  await showTutorialModal('userSiteCanBeChanged')
-
-  await viewSource()
-  await showTutorialModal('userSiteSource')
-
-  await gotoSite('beaker://feed')
-  await showTutorialModal('feed')
-
-  await gotoSite('dat://beakerbrowser.com')
-  await showTutorialModal('followSomeone', 'Follow beakerbrowser.com')
-
-  await gotoSite('beaker://settings/#crawler')
-  await showTutorialModal('crawler')
-
-  await gotoSite('beaker://feed')
-  await showTutorialModal('populatedFeed')
-
-  await gotoSite('beaker://search')
-  await showTutorialModal('populatedSearch')
-
-  await gotoSite('beaker://start')
-  await showTutorialModal('goodbye', 'End tour')
 }
 
 // internal methods
