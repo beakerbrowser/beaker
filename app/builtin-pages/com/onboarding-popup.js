@@ -1,7 +1,6 @@
 /* globals beaker DatArchive localStorage */
 
 import * as yo from 'yo-yo'
-import * as createArchivePopup from './create-archive-popup'
 
 // globals
 // =

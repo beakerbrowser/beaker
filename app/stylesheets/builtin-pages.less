@@ -8,6 +8,7 @@
 @import "./com/toolbar.less";
 @import "./com/spinner.less";
 @import "./components/modal.less";
+@import "./components/template-selector.less";
 @import "./builtin-pages/components/toast";
 
 // TODO: shouldn't import each of these on all builtin pages
@@ -354,6 +355,10 @@
 
   .create-new-dropdown {
     display: inline-block;
+
+    .dropdown-items.create-new {
+      width: auto;
+    }
   }
 
   .builtin-pages-nav {

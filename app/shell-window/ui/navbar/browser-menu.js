@@ -192,7 +192,7 @@ export class BrowserMenuNavbarBtn {
                   <span class="label">Help</span>
                 </div>
 
-                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md')}>
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new')}>
                   <i class="far fa-flag"></i>
                   <span class="label">Report an Issue</span>
                 </div>

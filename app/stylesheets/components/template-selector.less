@@ -1,0 +1,75 @@
+.template-selector {
+  .template-selector-title {
+    padding: 5px 10px 15px;
+    font-weight: 500;
+    font-size: 11px;
+  }
+
+  .template-selector-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-gap: 20px;
+    padding: 20px;
+
+    .template-item {
+      cursor: pointer;
+      * {
+        cursor: pointer;
+      }
+
+      img {
+        display: block;
+        max-width: 160px;
+        max-height: 120px;
+        background: #fff;
+        border: 1px solid #ccc;
+      }
+
+      .label {
+        text-align: center;
+        padding: 5px 0;
+      }
+
+      &:hover {
+        color: @blue;
+        text-decoration: underline;
+
+        img {
+          border-color: @blue;
+        }
+      }
+    }
+  }
+
+  .template-configuration {
+    min-width: 400px;
+    padding: 0 20px;
+
+    .template-form-field {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+
+      label {
+        flex: 0 0 100px;
+      }
+      input {
+        flex: 1;
+      }
+    }
+  }
+
+  .template-selector-actions {
+    display: flex;
+    padding: 10px;
+
+    .btn {
+      margin-left: 10px;
+
+      &.left {
+        margin-left: 0;
+        margin-right: auto;
+      }
+    }
+  }
+}

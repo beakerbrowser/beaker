@@ -295,7 +295,7 @@ function renderInformation () {
         <ul>
           <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
           <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
-          <li><a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md">Report an issue</a></li>
+          <li><a href="https://github.com/beakerbrowser/beaker/issues/new">Report an issue</a></li>
         </ul>
       </div>
     </div>

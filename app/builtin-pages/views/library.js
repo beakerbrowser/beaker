@@ -9,7 +9,6 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
 import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import toggleable from '../com/toggleable'
-import * as createArchivePopup from '../com/create-archive-popup'
 import * as contextMenu from '../com/context-menu'
 import renderCloseIcon from '../icon/close'
 

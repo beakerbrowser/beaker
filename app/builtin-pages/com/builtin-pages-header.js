@@ -4,6 +4,16 @@ import yo from 'yo-yo'
 import toggleable, {closeAllToggleables} from './toggleable'
 import * as toast from './toast'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
+import {TemplateSelector} from '../../lib/fg/template-selector'
+
+// globals
+// =
+
+var templateSelector = new TemplateSelector()
+templateSelector.setup()
+templateSelector.on('created', ({redirectUrl}) => {
+  window.location = redirectUrl
+})
 
 // exported api
 // =
@@ -97,34 +107,8 @@ function renderNewButton () {
       <a class="toggleable">
         <span>+ New</span>
       </a>
-      <div class="dropdown-items create-new filters subtle-shadow right">
-        <div class="dropdown-item" onclick=${() => onCreateSite()}>
-          <div class="label">
-            <i class="fa fa-clone"></i>
-            Empty project
-          </div>
-          <p class="description">
-            Create a new project
-          </p>
-        </div>
-        <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
-          <div class="label">
-            <i class="fa fa-code"></i>
-            Website
-          </div>
-          <p class="description">
-            Create a new website from a basic template
-          </p>
-        </div>
-        <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
-          <div class="label">
-            <i class="fa fa-folder-o"></i>
-            From folder
-          </div>
-          <p class="description">
-            Create a new project from a folder on your computer
-          </p>
-        </div>
+      <div class="dropdown-items create-new subtle-shadow right">
+        ${templateSelector.render()}
       </div>
     </div>
   `)
