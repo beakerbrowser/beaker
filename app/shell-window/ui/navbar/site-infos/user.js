@@ -4,6 +4,7 @@ import * as yo from 'yo-yo'
 import {BaseSiteInfo} from './base'
 import * as pages from '../../../pages'
 import * as toast from '../../toast'
+import {imgWithFallbacks} from '../../../../lib/fg/img-with-fallbacks'
 
 // exported api
 // =
@@ -19,7 +20,6 @@ export class UserSiteInfo extends BaseSiteInfo {
     this.currentUserSession = null
     this.isCurrentUser = false
     this.followers = []
-    this.didThumbLoadFail = false
     this.load()
   }
 
@@ -31,7 +31,10 @@ export class UserSiteInfo extends BaseSiteInfo {
     if (!this.info) return ''
     return yo`
       <div class="site-info-details user-site-info">
-        ${this.didThumbLoadFail ? '' : yo`<img src="${this.url.origin}/thumb.jpg?cache_buster=${Date.now()}" onerror=${() => this.onThumbError()}>`}
+        ${imgWithFallbacks([
+          `${this.url.origin}/thumb.jpg?cache_buster=${Date.now()}`,
+          'beaker://assets/default-user-thumb.jpg'
+        ])}
         <div class="title">${this.info.title}</div>
         <div class="description">${this.info.description}</div>
         ${this.renderTrustInfo()}
@@ -165,10 +168,5 @@ export class UserSiteInfo extends BaseSiteInfo {
     } else {
       pages.setActive(pages.create(view))
     }
-  }
-
-  onThumbError () {
-    this.didThumbLoadFail = true
-    this.rerender()
   }
 }

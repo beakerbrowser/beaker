@@ -150,6 +150,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
+  if (requestUrl.startsWith('beaker://assets/default-user-thumb')) {
+    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
+  }
   if (requestUrl.startsWith('beaker://assets/favicons/')) {
     return serveICO(path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
   }
