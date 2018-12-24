@@ -36,7 +36,7 @@ if (!document.querySelector('main')) {
   async function renderNav () {
     var navHTML
     try {
-      var navReq = await fetch('/nav.md')
+      var navReq = await fetch('/nav.md?disable_fallback_page=1')
       if (!navReq.ok) return
       var navMD = await navReq.text()
       navHTML = md.render(navMD)
