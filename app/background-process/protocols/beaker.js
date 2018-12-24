@@ -225,12 +225,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/start.build.js'))
   }
-  if (requestUrl === 'beaker://profile/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/profile.build.js'))
-  }
-  if (requestUrl === 'beaker://profile/' || requestUrl.startsWith('beaker://profile/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/profile.html'))
-  }
   if (requestUrl === 'beaker://bookmarks/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/bookmarks.html'))
   }
