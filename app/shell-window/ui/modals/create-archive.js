@@ -38,7 +38,7 @@ export class CreateArchiveModal extends BaseModal {
 
           <div class="form-actions">
             <button type="button" onclick=${e => this.onClickCancel(e)} class="btn cancel" tabindex="4">Cancel</button>
-            <button type="submit" class="btn success" tabindex="5">Create archive</button>
+            <button type="submit" class="btn primary" tabindex="5">Create archive</button>
           </div>
         </form>
       </div>`

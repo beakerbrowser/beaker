@@ -104,7 +104,7 @@ export class ForkArchiveModal extends BaseModal {
           ${progressEl}
           <div class="form-actions">
             <button type="button" class="btn cancel" onclick=${e => this.onClickCancel(e)} tabindex="4" disabled=${this.isProcessing}>Cancel</button>
-            <button type="submit" class="btn ${isComplete ? 'success' : ''}" tabindex="5" disabled=${this.isProcessing}>
+            <button type="submit" class="btn ${isComplete ? 'primary' : ''}" tabindex="5" disabled=${this.isProcessing}>
               ${this.isProcessing
                 ? yo`<span><span class="spinner"></span> Copying...</span>`
                 : `Create copy ${!isComplete ? ' anyway' : ''}`}

@@ -35,14 +35,15 @@ export class EditProfileModal extends BaseModal {
 
         <form onsubmit=${e => this.onSubmit(e)}>
           <label for="title">Your name</label>
-          <input autofocus name="title" tabindex="2" value=${this.title || ''} placeholder="Name" onchange=${e => this.onChangeTitle(e)} />
+          <input autofocus name="title" tabindex="1" value=${this.title || ''} placeholder="Name" onchange=${e => this.onChangeTitle(e)} />
 
           <label for="desc">Your bio</label>
-          <textarea name="desc" tabindex="3" placeholder="Bio (optional)" onchange=${e => this.onChangeDescription(e)}>${this.description || ''}></textarea>
+          <textarea name="desc" tabindex="2" placeholder="Bio (optional)" onchange=${e => this.onChangeDescription(e)}>${this.description || ''}></textarea>
 
           <div class="form-actions">
-            <button type="button" onclick=${e => this.onClickCancel(e)} class="btn cancel" tabindex="4">Cancel</button>
-            <button type="submit" class="btn success" tabindex="5">Save</button>
+            <button type="button" onclick=${e => this.onClickThumb(e)} class="btn left" tabindex="3"><span class="fa fa-picture-o"></span> Select picture</button>
+            <button type="button" onclick=${e => this.onClickCancel(e)} class="btn cancel" tabindex="5">Cancel</button>
+            <button type="submit" class="btn primary" tabindex="4">Save</button>
           </div>
         </form>
       </div>`
@@ -85,7 +86,7 @@ export class EditProfileModal extends BaseModal {
       filters: [{name: 'Images', extensions: ['jpg', 'jpeg', 'png']}],
       properties: ['openFile']
     })
-    if (filenames[0]) {
+    if (filenames && filenames[0]) {
       var base64buf = await beaker.browser.readFile(filenames[0], 'base64')
       var ext = filenames[0].split('.').pop()
       this.loadImg(`data:image/${ext};base64,${base64buf}`)
