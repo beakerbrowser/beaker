@@ -20,7 +20,7 @@ setup()
 async function setup () {
   currentUserSession = await beaker.browser.getUserSession()
   followedUsers = await beaker.followgraph.listFollows(currentUserSession.url)
-  posts = await beaker.posts.list({reverse: true, authors: getFeedAuthors()})
+  posts = await beaker.posts.list({reverse: true, authors: getFeedAuthors(), limit: 40})
   console.log({posts})
   update()
 }
@@ -42,6 +42,10 @@ function update () {
         ${renderFeed()}
     </div>`
   )
+}
+
+function updateNewPostForm () {
+  yo.update(document.querySelector('.new-post-form'), renderNewPostForm())
 }
 
 function renderNewPostForm () {
@@ -70,32 +74,37 @@ function renderFeed () {
             Your feed is empty.
           </div>`
         : ''}
-      ${posts.map(post => yo`
-        <div class="feed-item post">
-          <a href="${post.author.url}" class="avatar-container">
-            <img src="${post.author.url}/thumb.jpg" class="avatar ">
-          </a>
-          <div class="post-content">
-            <div class="post-header">
-              <a href="${post.author.url}" class="name">${post.author.title}</a>
-              <span class="timestamp">
-                <span class="bullet">•</span>
-                <a href="${post.author.url}${post.pathname}" class="value">${niceDate(post.createdAt)}</a>
-              </span>
-              ${post.author.url === currentUserSession.url
-                ? yo`
-                  <span class="timestamp">
-                    <span class="bullet">•</span>
-                    <a href="#" onclick=${e => onClickDelete(e, post.pathname)}>delete</a>
-                  </span>`
-                : ''}
-            </div>
-            <p class="text">${post.content}</p>
-          </div>
-        </div>
-      `)}
+      ${posts.map(renderFeedItem)}
     </div>
   </div>`
+}
+
+function renderFeedItem (post) {
+  var el = yo`
+    <div class="feed-item post" id="post-${post.author.url}${post.pathname}">
+      <a href="${post.author.url}" class="avatar-container">
+        <img src="${post.author.url}/thumb.jpg" class="avatar ">
+      </a>
+      <div class="post-content">
+        <div class="post-header">
+          <a href="${post.author.url}" class="name">${post.author.title}</a>
+          <span class="timestamp">
+            <span class="bullet">•</span>
+            <a href="${post.author.url}${post.pathname}" class="value">${niceDate(post.createdAt)}</a>
+          </span>
+          ${post.author.url === currentUserSession.url
+            ? yo`
+              <span class="timestamp">
+                <span class="bullet">•</span>
+                <a href="#" onclick=${e => onClickDelete(e, post.pathname)}>delete</a>
+              </span>`
+            : ''}
+        </div>
+        <p class="text">${post.content}</p>
+      </div>
+    </div>`
+  el.isSameNode = other => el.id === other.id
+  return el
 }
 
 // event handlers
@@ -106,7 +115,7 @@ function onNewPostKeyup (e) {
   if (newPostText.length > 280) {
     newPostText = newPostText.slice(0, 280)
   }
-  update()
+  updateNewPostForm()
 }
 
 async function onSubmitNewPostForm (e) {
@@ -124,6 +133,7 @@ async function onSubmitNewPostForm (e) {
 
 async function onClickDelete (e, postPathname) {
   try {
+    if (!confirm('Delete this post?')) return
     await beaker.posts.delete(postPathname)
     window.location.reload()
   } catch (e) {
