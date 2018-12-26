@@ -1,68 +1,68 @@
 /* globals Event beaker */
 
-import * as yo from 'yo-yo'
+import * as yo from 'yo-yo';
 
 export function pushUrl (e) {
   // ignore ctrl/cmd+click
-  if (e.metaKey) { return }
+  if (e.metaKey) { return; }
 
-  var el = findParent(e.target, el => el.tagName === 'A')
-  var url = el.getAttribute('href') || el.dataset.href
+  let el = findParent(e.target, el => el.tagName === 'A');
+  let url = el.getAttribute('href') || el.dataset.href;
 
   if (url) {
-    e.preventDefault()
-    e.stopPropagation()
-    window.history.pushState(null, '', url)
+    e.preventDefault();
+    e.stopPropagation();
+    window.history.pushState(null, '', url);
   }
 }
 
 export function findParent (node, test) {
   if (typeof test === 'string') {
     // classname default
-    var cls = test
-    test = el => el.classList && el.classList.contains(cls)
+    const cls = test;
+    test = el => el.classList && el.classList.contains(cls);
   }
 
   while (node) {
     if (test(node)) {
-      return node
+      return node;
     }
-    node = node.parentNode
+    node = node.parentNode;
   }
 }
 
 export function writeToClipboard (str) {
-  var textarea = yo`<textarea>${str}</textarea>`
-  document.body.appendChild(textarea)
-  textarea.select()
-  document.execCommand('copy')
-  document.body.removeChild(textarea)
+  const textarea = yo`<textarea>${str}</textarea>`;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
 }
 
 export function polyfillHistoryEvents () {
   // HACK FIX
   // the good folk of whatwg didnt think to include an event for pushState(), so let's add one
   // -prf
-  var _wr = function (type) {
-    var orig = window.history[type]
+  let _wr = (type) => {
+    let orig = window.history[type];
     return function () {
-      var rv = orig.apply(this, arguments)
-      var e = new Event(type.toLowerCase())
-      e.arguments = arguments
-      window.dispatchEvent(e)
-      return rv
+      const rv = orig.apply(this, arguments);
+      let e = new Event(type.toLowerCase());
+      e.arguments = arguments;
+      window.dispatchEvent(e);
+      return rv;
     }
   }
-  window.history.pushState = _wr('pushState')
-  window.history.replaceState = _wr('replaceState')
+  window.history.pushState = _wr('pushState');
+  window.history.replaceState = _wr('replaceState');
 }
 
 export function adjustWindowHeight (sel) {
-  var el = sel ? document.querySelector(sel) : document.body
-  var height = el.getClientRects()[0].height
+  const el = sel ? document.querySelector(sel) : document.body;
+  let height = el.getClientRects()[0].height;
   if (window.process.platform !== 'darwin') {
     // windows and linux need added height for their title bars
-    height += 39
+    height += 39;
   }
-  beaker.browser.setWindowDimensions({height})
+  beaker.browser.setWindowDimensions({height});
 }
