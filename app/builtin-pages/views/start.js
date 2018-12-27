@@ -296,7 +296,7 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
       <div class="builtin-wrapper start-wrapper">
-        ${renderBuiltinPagesHeader('Home', currentUserSession)}
+        ${renderBuiltinPagesHeader('Start', currentUserSession)}
 
         <div style="position: absolute; bottom: 10px; right: 20px; font-size: 22px; text-align: right; font-weight: 300">
           <span style="color: #2864dc; font-size: 38px; line-height: 1">Blue r1</span><br>

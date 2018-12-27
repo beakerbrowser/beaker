@@ -3,6 +3,7 @@
 import yo from 'yo-yo'
 import toggleable, {closeAllToggleables} from './toggleable'
 import * as toast from './toast'
+import * as contextMenu from './context-menu'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import {TemplateSelector} from '../../lib/fg/template-selector'
 
@@ -19,11 +20,14 @@ templateSelector.on('created', ({redirectUrl}) => {
 // =
 
 export default function render (currentPage, currentUserSession) {
-  const navItem = (url, icon, label) => yo`<a href="${url}" class="${label === currentPage ? 'active': ''}"><span class="${icon}"></span> ${label}</a>`
+  const iconsOnly = false // TODO do we want this? -prf localStorage.builtinPagesHeaderIconsOnlySetting == 1
+  const navItem = iconsOnly
+    ? (url, icon, label) => yo`<a href="${url}" class="${label === currentPage ? 'active': ''}"><span class="${icon}"></span></a>`
+    : (url, icon, label) => yo`<a href="${url}" class="${label === currentPage ? 'active': ''}"><span class="${icon}"></span> ${label}</a>`
   return yo`
-    <div class="builtin-header fixed">
+    <div class="builtin-header fixed" oncontextmenu=${undefined /* TODO do we want this? -prf e => onContextMenu(e, currentPage, currentUserSession) */}>
       <div class="nav">
-        ${navItem('beaker://start', 'fa fa-home', 'Home')}
+        ${navItem('beaker://start', 'fas fa-th', 'Start')}
         ${navItem('beaker://feed', 'fa fa-list-ul', 'Feed')}
         ${navItem('beaker://library', 'far fa-hdd', 'Library')}
         ${navItem('beaker://search', 'fa fa-search', 'Search')}
@@ -41,6 +45,10 @@ export default function render (currentPage, currentUserSession) {
 
 // internal methods
 // =
+
+function rerender (currentPage, currentUserSession) {
+  yo.update(document.querySelector('.builtin-header'), render(currentPage, currentUserSession))
+}
 
 function renderHelpButton () {
   return yo`
@@ -112,6 +120,31 @@ function renderNewButton () {
       </div>
     </div>
   `)
+}
+
+function onContextMenu (e, currentPage, currentUserSession) {
+  if (!e.target.classList.contains('builtin-header')) {
+    // only handle when clicking on the bg of the header
+    return
+  }
+  e.preventDefault()
+  e.stopPropagation()
+
+  var x = e.clientX
+  var y = e.clientY
+  var iconsOnly = localStorage.builtinPagesHeaderIconsOnlySetting == 1
+
+  const setIconsOnly = v => () => {
+    localStorage.builtinPagesHeaderIconsOnlySetting = v ? 1 : 0
+    rerender(currentPage, currentUserSession)
+  }
+
+  // construct and show popup
+  let items = [
+    {icon: !iconsOnly ? 'fas fa-check' : false, label: 'Icons and labels', click: setIconsOnly(false)},
+    {icon: iconsOnly ? 'fas fa-check' : false, label: 'Icons only', click: setIconsOnly(true)}
+  ]
+  contextMenu.create({x, y, items})
 }
 
 async function onClickTourButton () {
