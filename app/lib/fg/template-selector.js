@@ -49,7 +49,7 @@ export class TemplateSelector extends EventEmitter {
     var el = yo`
       <div class="template-selector">
         <div class="template-selector-grid">
-          ${BUILTIN_TEMPLATES.map(t => this.renderTemplateItem(t))}
+          ${BUILTIN_TEMPLATES.filter(t => !t.disabled).map(t => this.renderTemplateItem(t))}
           ${this.userTemplates.map(t => this.renderTemplateItem(t, true))}
         </div>
       </div>`

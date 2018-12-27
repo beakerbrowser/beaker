@@ -24,14 +24,13 @@ export default function render (currentPage, currentUserSession) {
     <div class="builtin-header fixed">
       <div class="nav">
         ${navItem('beaker://start', 'fa-home', 'Home')}
-        ${navItem('beaker://bookmarks', 'fa-star-o', 'Bookmarks')}
         ${navItem('beaker://feed', 'fa-list-ul', 'Feed')}
+        ${navItem('beaker://library', 'fa-hdd-o', 'Library')}
         ${navItem('beaker://search', 'fa-search', 'Search')}
       </div>
       <div class="flex-spacer"></div>
       <div class="nav">
         ${renderNewButton()}
-        ${navItem('beaker://library', 'fa-hdd-o', 'Library')}
         ${renderDropdownNav(currentUserSession)}
       </div>
       ${''/* TODO <div class="notifications" data-count="0">
@@ -66,6 +65,11 @@ function renderDropdownNav (currentUserSession) {
         <a href=${currentUserSession.url} class="dropdown-item userlink">
           <img src="${currentUserSession.url}/thumb.jpg">
           <span>${currentUserSession.title}</span>
+        </a>
+
+        <a href="beaker://bookmarks" class="dropdown-item">
+          <i class="fa fa-star-o"></i>
+          <span>Bookmarks</span>
         </a>
 
         <a href="beaker://history" class="dropdown-item">
