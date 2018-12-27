@@ -12,6 +12,7 @@ import _get from 'lodash.get'
 import throttle from 'lodash.throttle'
 import dragDrop from 'drag-drop'
 import {join as joinPaths} from 'path'
+import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import FilesBrowser from '../com/files-browser/files-browser'
 import {
   setup as setupAce,
@@ -28,7 +29,6 @@ import * as noticeBanner from '../com/notice-banner'
 import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
 import * as copyDatPopup from '../com/library/copydat-popup'
 import * as createFilePopup from '../com/library/createfile-popup'
-import renderBackLink from '../com/back-link'
 import renderArchiveHistory from '../com/archive/archive-history'
 import {RehostSlider} from '../../lib/fg/rehost-slider'
 import LibraryViewCompare from '../com/library/view-compare'
@@ -57,6 +57,7 @@ var workingCheckout
 var archiveFsRoot
 var filesBrowser
 var rehostSlider
+var currentUserSession = null
 
 // used in the compare views
 var libraryViewCompare
@@ -139,6 +140,7 @@ async function setup () {
     let browserInfo = beaker.browser.getInfo()
     window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
     osUsesMetaKey = browserInfo.platform === 'darwin'
+    currentUserSession = await beaker.browser.getUserSession()
 
     // load data
     let url = await parseLibraryUrl()
@@ -350,7 +352,9 @@ function render () {
     yo.update(
       document.querySelector('.library-wrapper'), yo`
         <div class="library-wrapper library-view builtin-wrapper">
-          <div class="builtin-main" style="margin-left: 0; width: 100%" onscroll=${onScrollMain}>
+          ${renderBuiltinPagesHeader(false, currentUserSession)}
+
+          <div class="builtin-main" style="margin-left: 0; width: 100%">
             <div class="view-wrapper">
               ${renderView()}
             </div>
@@ -362,6 +366,8 @@ function render () {
     yo.update(
       document.querySelector('.library-wrapper'), yo`
         <div class="library-wrapper library-view builtin-wrapper ${isReadOnly ? 'readonly' : ''}">
+          ${renderBuiltinPagesHeader(false, currentUserSession)}
+
           <div class="drag-hint">
             <div class="icons">
               <i class="fa fa-file-video-o"></i>
@@ -379,7 +385,7 @@ function render () {
             </p>
           </div>
 
-          <div class="builtin-main" style="margin-left: 0; width: 100%" onscroll=${onScrollMain}>
+          <div class="builtin-main" style="margin-left: 0; width: 100%">
             ${renderHeader()}
 
             <div class="view-wrapper">
@@ -427,60 +433,56 @@ function renderHeader () {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
   const hasDescription = !!_get(archive, 'info.description')
-  const isExpanded = !isNavCollapsed({ignoreScrollPosition: true})
   const isEditingTitle = headerEditValues.title !== false
   const currentFaviconUrl = `beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}`
 
   return yo`
-    <div class="library-view-header ${isExpanded ? 'expanded' : ''} ${hasDescription ? 'has-description' : ''}">
-      ${isExpanded
-        ? yo`
-          <div class="container">
-            <div class="info">
-              <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
-                ${!isOwner
-                    ? yo`<img class="favicon" src=${currentFaviconUrl} />`
-                    : toggleable2({
-                      id: 'favicon-picker2',
-                      closed: ({onToggle}) => yo`
-                        <div class="dropdown toggleable-container">
-                          <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
-                        </div>`,
-                      open: ({onToggle}) => yo`
-                        <div class="dropdown toggleable-container">
-                          <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
+    <div class="library-view-header">
+      <div class="container">
+        <div class="info">
+          <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
+            ${!isOwner
+                ? yo`<img class="favicon" src=${currentFaviconUrl} />`
+                : toggleable2({
+                  id: 'favicon-picker2',
+                  closed: ({onToggle}) => yo`
+                    <div class="dropdown toggleable-container">
+                      <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
+                    </div>`,
+                  open: ({onToggle}) => yo`
+                    <div class="dropdown toggleable-container">
+                      <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
 
-                          <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
-                            ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl})}
-                          </div>
-                        </div>`
-                    })}
-                ${isEditingTitle
-                  ? yo`
-                    <input
-                      class="header-title-input"
-                      value=${headerEditValues.title || ''}
-                      onblur=${e => onBlurHeaderEditor(e, 'title')}
-                      onkeyup=${e => onChangeHeaderEditor(e, 'title')} />`
-                  : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
-                ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
-              </div>
+                      <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
+                        ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl})}
+                      </div>
+                    </div>`
+                })}
+            ${isEditingTitle
+              ? yo`
+                <input
+                  class="header-title-input"
+                  value=${headerEditValues.title || ''}
+                  onblur=${e => onBlurHeaderEditor(e, 'title')}
+                  onkeyup=${e => onChangeHeaderEditor(e, 'title')} />`
+              : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
+            ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
+          </div>
 
-              <div class="primary-action">
-                ${renderSeedMenu()}
-                ${renderShareMenu()}
-                ${renderMenu()}
-              </div>
-            </div>
+          <div class="primary-action">
+            ${renderSeedMenu()}
+            ${renderShareMenu()}
+            ${renderMenu()}
+          </div>
+        </div>
 
-            ${hasDescription
-              ? yo`<p class="description">${archive.info.description}</p>`
-              : ''
-            }
-          </div>`
-        : ''
-      }
-      ${renderToolbar()}
+        ${hasDescription
+          ? yo`<p class="description">${archive.info.description}</p>`
+          : ''
+        }
+
+        ${renderToolbar()}
+      </div>
     </div>`
 }
 
@@ -908,8 +910,6 @@ function renderSettingsView () {
 
   return yo`
     <div class="container">
-      ${renderBackLink('#', 'Back')}
-
       ${isOwner
         ? yo`
           <div class="settings view">
@@ -1101,8 +1101,6 @@ function renderNetworkView () {
 
   return yo`
     <div class="container">
-      ${renderBackLink('#', 'Back')}
-
       <div class="view network">
         <h1>Network activity</h1>
 
@@ -1308,15 +1306,9 @@ function renderToolbar () {
 function renderNav () {
   const isOwner = _get(archive, 'info.isOwner')
   const baseUrl = `beaker://library/${archive.url}`
-  const collapsed = isNavCollapsed()
 
   return yo`
     <div class="nav-items">
-      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item nav-archive-title ${collapsed ? 'visible' : ''}">
-        <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
-        ${getSafeTitle()}
-      </a>
-
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">
         Files
       </a>
@@ -1933,15 +1925,6 @@ async function onFilesChanged () {
   loadReadme()
 }
 
-function onScrollMain (e) {
-  var el = document.querySelector('.nav-archive-title')
-  if (isNavCollapsed()) {
-    el.classList.add('visible')
-  } else {
-    el.classList.remove('visible')
-  }
-}
-
 async function onArchiveUpdated (e) {
   if (e.details.url === archive.checkout().url) {
     const isOwner = _get(archive, 'info.isOwner')
@@ -2104,18 +2087,6 @@ async function setManifestValue (attr, value) {
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
-}
-
-function isNavCollapsed ({ignoreScrollPosition} = {}) {
-  if (!ignoreScrollPosition) {
-    var main = document.body.querySelector('.builtin-main')
-    var hasDescription = (_get(archive, 'info.description')) ? 1 : 0
-    if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
-      // certain distance scrolled
-      return true
-    }
-  }
-  return false
 }
 
 function getSafeTitle () {
