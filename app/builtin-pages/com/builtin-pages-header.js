@@ -19,14 +19,14 @@ templateSelector.on('created', ({redirectUrl}) => {
 // =
 
 export default function render (currentPage, currentUserSession) {
-  const navItem = (url, icon, label) => yo`<a href="${url}" class="${label === currentPage ? 'active': ''}"><span class="fa ${icon}"></span> ${label}</a>`
+  const navItem = (url, icon, label) => yo`<a href="${url}" class="${label === currentPage ? 'active': ''}"><span class="${icon}"></span> ${label}</a>`
   return yo`
     <div class="builtin-header fixed">
       <div class="nav">
-        ${navItem('beaker://start', 'fa-home', 'Home')}
-        ${navItem('beaker://feed', 'fa-list-ul', 'Feed')}
-        ${navItem('beaker://library', 'fa-hdd-o', 'Library')}
-        ${navItem('beaker://search', 'fa-search', 'Search')}
+        ${navItem('beaker://start', 'fa fa-home', 'Home')}
+        ${navItem('beaker://feed', 'fa fa-list-ul', 'Feed')}
+        ${navItem('beaker://library', 'far fa-hdd', 'Library')}
+        ${navItem('beaker://search', 'fa fa-search', 'Search')}
       </div>
       <div class="flex-spacer"></div>
       <div class="nav">
@@ -68,7 +68,7 @@ function renderDropdownNav (currentUserSession) {
         </a>
 
         <a href="beaker://bookmarks" class="dropdown-item">
-          <i class="fa fa-star-o"></i>
+          <i class="far fa-star"></i>
           <span>Bookmarks</span>
         </a>
 
@@ -88,7 +88,7 @@ function renderDropdownNav (currentUserSession) {
         </a>
 
         <a href="beaker://settings" class="dropdown-item">
-          <i class="fa fa-gear"></i>
+          <i class="fas fa-cog"></i>
           <span>Settings</span>
         </a>
 

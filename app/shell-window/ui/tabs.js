@@ -519,8 +519,14 @@ function getBuiltinPageIcon (url) {
     // use the protocol, it will try to load the favicon of the dat
     return yo`<img src="beaker-favicon:${url}?cache=${Date.now()}">`
   }
+  if (url.startsWith('beaker://feed/')) {
+    return yo`<i class="fa fa-list-ul"></i>`
+  }
   if (url.startsWith('beaker://library/')) {
-    return yo`<i class="fa fa-hdd-o"></i>`
+    return yo`<i class="far fa-hdd"></i>`
+  }
+  if (url.startsWith('beaker://search/')) {
+    return yo`<i class="fa fa-search"></i>`
   }
   if (url.startsWith('beaker://bookmarks/')) {
     return yo`<i class="far fa-star"></i>`

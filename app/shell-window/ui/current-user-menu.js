@@ -59,11 +59,11 @@ function render () {
             </div>
             <div class="menu">
               <div class="menu-item" onclick=${onCopyUrl}>
-                <i class="fa fa-clipboard"></i>
+                <i class="fas fa-clipboard"></i>
                 <span class="label">Copy link</span>
               </div>
               <div class="menu-item" onclick=${onViewProfile}>
-                <i class="fa fa-external-link"></i>
+                <i class="fas fa-external-link-alt"></i>
                 <span class="label">View profile</span>
               </div>
             </div>
