@@ -239,12 +239,14 @@ function render () {
   yo.update(
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper library builtin-wrapper">
-        ${renderHeader()}
+        ${renderBuiltinPagesHeader('Library', currentUserSession)}
 
         <div class="builtin-main">
           ${renderSidebar()}
 
           <div>
+            ${renderSubheader()}
+
             ${archives.length
               ? yo`
                 <div class="ll-column-headings">
@@ -303,9 +305,8 @@ function renderSidebar () {
     </div>`
 }
 
-function renderHeader () {
+function renderSubheader () {
   let actions = ''
-  let searchContainer = ''
 
   if (selectedArchives && selectedArchives.length) {
     actions = yo`
@@ -336,51 +337,10 @@ function renderHeader () {
             </button>`
         }
       </div>`
+  }
 
-    searchContainer = ''
-  } else {
-    actions = yo`
-      <div class="actions">
-        ${toggleable(yo`
-          <div class="dropdown toggleable-container">
-            <button class="btn primary toggleable">
-              <span>New</span>
-              <i class="fa fa-plus"></i>
-            </button>
-            <div class="dropdown-items create-new filters subtle-shadow right">
-              <div class="dropdown-item" onclick=${() => onCreateSite()}>
-                <div class="label">
-                  <i class="far fa-clone"></i>
-                  Empty project
-                </div>
-                <p class="description">
-                  Create a new project
-                </p>
-              </div>
-              <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
-                <div class="label">
-                  <i class="fa fa-code"></i>
-                  Website
-                </div>
-                <p class="description">
-                  Create a new website from a basic template
-                </p>
-              </div>
-              <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
-                <div class="label">
-                  <i class="far fa-folder"></i>
-                  From folder
-                </div>
-                <p class="description">
-                  Create a new project from a folder on your computer
-                </p>
-              </div>
-            </div>
-          </div>
-        `)}
-      </div>`
-
-    searchContainer = yo`
+  return yo`
+    <div class="builtin-subheader">
       <div class="search-container">
         <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your Library" type="text" class="search"/>
 
@@ -445,17 +405,9 @@ function renderHeader () {
             </div>
           `)}
         </div>
-      </div>`
-  }
-
-  return renderBuiltinPagesHeader('Library', currentUserSession)
-  // TODO replace fully
-  // return yo`
-  //   <div class="builtin-header fixed">
-  //     ${renderBuiltinPagesHeader('Library')}
-  //     ${searchContainer}
-  //     ${actions}
-  //   </div>`
+      </div>
+      ${actions}
+    </div>`
 }
 
 function removeFromLibraryLabel (archive) {
