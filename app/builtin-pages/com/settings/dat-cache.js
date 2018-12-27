@@ -17,14 +17,13 @@ var idCounter = 0
 // exports
 // =
 
-export default class DatNetworkActivity {
-  constructor (filter = 'owned') {
+export default class DatCache {
+  constructor () {
     this.id = (++idCounter)
     this.slideState = undefined
     this.archives = undefined
     this.totalBytesHosting = 0
     this.totalArchivesHosting = 0
-    this.currentFilter = filter
     this.currentSort = ['title', -1]
     this.currentlyHighlightedKey = undefined
     this.isClearingCache = false
@@ -36,17 +35,7 @@ export default class DatNetworkActivity {
   // =
 
   async fetchArchives () {
-    if (this.currentFilter === 'seeding') {
-      this.archives = await beaker.archives.list({isSaved: true, isOwner: false})
-    } else if (this.currentFilter === 'owned') {
-      this.archives = await beaker.archives.list({isSaved: true, isOwner: true})
-    } else if (this.currentFilter === 'trash') {
-      this.archives = await beaker.archives.list({isSaved: false, isOwner: true})
-    } else if (this.currentFilter === 'cache') {
-      this.archives = await beaker.archives.list({isSaved: false, isOwner: false})
-    } else {
-      this.archives = await beaker.archives.list()
-    }
+    this.archives = await beaker.archives.list({isSaved: false, isOwner: false})
     this.sortArchives()
 
     this.totalArchivesHosting = this.archives.length
@@ -65,38 +54,17 @@ export default class DatNetworkActivity {
   render () {
     if (!this.archives) {
       this.fetchArchives() // trigger load
-      return yo`<div id=${'dat-network-activity-' + this.id} class="dat-network-activity loading">Loading...</div>`
+      return yo`<div id=${'dat-cache-' + this.id} class="dat-cache loading">Loading...</div>`
     }
 
-    const isCache = this.currentFilter === 'cache'
-    const isTrash = this.currentFilter === 'trash'
-
-    const f = (id, label) => yo`
-      <button
-        class="plain ${this.currentFilter === id ? 'active' : ''}"
-        onclick=${e => this.onClickFilter(id)}>
-        ${label}
-      </button>`
-
     return yo`
-      <div id=${'dat-network-activity-' + this.id} class="dat-network-activity">
+      <div id=${'dat-cache-' + this.id} class="dat-cache">
+        <div class="dat-cache-actions">
+          ${this.isClearingCache
+            ? yo`<button class="btn small disabled"><span class="spinner"></span> Clearing cache</span>`
+            : yo`<button class="btn small" onclick=${() => this.onClearCache({isOwner: false})}>Clear cache</button>`}
+        </div>
         <div class="archives">
-          ${isCache
-            ? this.isClearingCache
-              ? yo`<button class="link clear-cache disabled"><span class="spinner"></span> Clearing cache</span>`
-              : yo`<button class="link clear-cache" onclick=${() => this.onClearCache({isOwner: false})}>Clear cache</button>`
-            : ''}
-          ${isTrash
-            ? this.isClearingCache
-              ? yo`<button class="link clear-cache disabled"><span class="spinner"></span> Clearing trash</span>`
-              : yo`<button class="link clear-cache" onclick=${() => this.onClearCache({isOwner: true})}>Clear trash</button>`
-            : ''}
-          <div class="filters">
-            ${f('owned', 'Your archives')}
-            ${f('seeding', 'Seeding')}
-            ${f('cache', 'Cache')}
-            ${f('trash', 'Trash')}
-          </div>
           <div class="heading">
             ${this.renderHeading('title', 'Title')}
             ${this.renderHeading('peers', 'Peers')}
@@ -112,7 +80,7 @@ export default class DatNetworkActivity {
   // method to re-render in place
   // eg myFilesBrowser.rerender()
   rerender () {
-    let el = document.querySelector('#dat-network-activity-' + this.id)
+    let el = document.querySelector('#dat-cache-' + this.id)
     if (el) yo.update(el, this.render())
   }
 
@@ -191,11 +159,6 @@ export default class DatNetworkActivity {
 
     this.currentlyHighlightedKey = undefined
     this.rerender()
-  }
-
-  onClickFilter (filter) {
-    this.currentFilter = filter
-    this.fetchArchives()
   }
 
   onCopyURL (archive) {

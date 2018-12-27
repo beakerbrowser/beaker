@@ -2,7 +2,7 @@
 
 import yo from 'yo-yo'
 import * as toast from '../com/toast'
-import DatNetworkActivity from '../com/settings/dat-network-activity'
+import DatCache from '../com/settings/dat-cache'
 import CrawlerStatus from '../com/settings/crawler-status'
 import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 
@@ -15,7 +15,7 @@ var browserInfo
 var browserEvents
 var defaultProtocolSettings
 var activeView = 'general'
-var datNetworkActivity = new DatNetworkActivity()
+var datCache = new DatCache()
 var crawlerStatus = new CrawlerStatus()
 
 // main
@@ -81,9 +81,9 @@ function renderSidebar () {
         Crawler
       </div>
 
-      <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
+      <div class="nav-item ${activeView === 'dat-cache' ? 'active' : ''}" onclick=${() => onUpdateView('dat-cache')}>
         <i class="fa fa-angle-right"></i>
-        Dat network activity
+        Dat cache
       </div>
 
       <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
@@ -97,7 +97,7 @@ function renderView () {
   switch (activeView) {
     case 'general':
       return renderGeneral()
-    case 'dat-network-activity':
+    case 'dat-cache':
       return renderDatNetworkActivity()
     case 'crawler':
       return renderCrawler()
@@ -262,8 +262,8 @@ function renderDatNetworkActivity () {
   return yo`
     <div class="view">
       <div class="section">
-        <h2 id="dat-network-activity" class="subtitle-heading">Dat Network Activity</h2>
-        ${datNetworkActivity.render()}
+        <h2 id="dat-cache" class="subtitle-heading">Dat cache</h2>
+        ${datCache.render()}
       </div>
     </div>
   `

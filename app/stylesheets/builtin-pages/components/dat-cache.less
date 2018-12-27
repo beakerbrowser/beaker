@@ -1,8 +1,12 @@
-.dat-network-activity {
+.dat-cache {
   margin: 0 -15px;
 
   &.loading {
     margin: 0;
+  }
+
+  .dat-cache-actions {
+    padding: 0 10px 10px;
   }
 
   .heading {
@@ -29,33 +33,6 @@
     a {
       color: @color-text !important;
       cursor: pointer;
-    }
-  }
-
-  .clear-cache {
-    float: right;
-    margin-right: 15px;
-  }
-
-  .filters {
-    display: flex;
-    padding: 4px 15px;
-
-    button {
-      margin-right: 5px;
-      color: #555;
-      outline: 0;
-      padding: 0 8px;
-      border-radius: 2px;
-
-      &:hover {
-        background: #ddd;
-      }
-
-      &.active {
-        color: #fff;
-        background: @blue;
-      }
     }
   }
 
