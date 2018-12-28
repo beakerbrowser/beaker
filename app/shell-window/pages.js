@@ -3,7 +3,6 @@
 import { ipcRenderer, remote } from 'electron'
 import EventEmitter from 'events'
 import path from 'path'
-import fs from 'fs'
 import throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
 import errorPage from '@beaker/core/lib/error-page'
@@ -843,7 +842,7 @@ function onDidStopLoading (e) {
         .markdown pre > code { display: block; }
       `)
       if (!cachedMarkdownRendererScript) {
-        cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
+        cachedMarkdownRendererScript = ipcRenderer.sendSync('get-markdown-renderer-script')
       }
 
       // NOTE uses webviewEl.executeJavaScript because we dont want to run the markdown renderer in an isolated world
@@ -881,7 +880,7 @@ function onDidStopLoading (e) {
       `)
 
       if (!cachedJSONRendererScript) {
-        cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
+        cachedJSONRendererScript = ipcRenderer.sendSync('get-json-renderer-script')
       }
 
       page.executeJavaScript(cachedJSONRendererScript)
@@ -1098,6 +1097,7 @@ export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://' + path.join(APP_PATH, 'webview-preload.build.js'))
+  el.setAttribute('enableremotemodule', 'false')
   el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce,nativeWindowOpen=yes')
   // TODO re-enable nativeWindowOpen when https://github.com/electron/electron/issues/9558 lands
   el.setAttribute('src', url || DEFAULT_URL)
