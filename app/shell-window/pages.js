@@ -172,9 +172,6 @@ export function create (opts) {
     executeJavascriptCalls: {},
     executeJavascriptCallCounter: 0,
 
-    // hackfix reload failsafe
-    reloadHackfixCounter: 0,
-
     // get the current URL
     getURL () {
       return this.url
@@ -788,21 +785,6 @@ function onDidStopLoading (e) {
       navbar.update(page)
       statusBar.setIsLoading(false)
     }
-
-    // HACK
-    // there is a race condition with Electron where the CSPs will sometimes prevent the preload from executing
-    // this can be detected by attempting to call executeJavaScript; if it takes longer than a second, that's too long
-    // reloading the page usually gets it to execute correctly
-    // -prf
-    let webviewCheckTO = setTimeout(() => {
-      if (page.reloadHackfixCounter > 5) return // stop, we're endlessly redirecting
-      page.reloadAsync()
-      page.reloadHackfixCounter++
-    }, 1000)
-    page.executeJavaScript('true').then(res => {
-      page.reloadHackfixCounter = 0
-      clearTimeout(webviewCheckTO)
-    })
 
     // determine content type
     let contentType = beaker.browser.getResourceContentType(page.getURL()) || ''
