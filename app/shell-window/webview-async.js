@@ -38,6 +38,7 @@ const methods = [
   'inspectElement',
   'setAudioMuted',
   'isAudioMuted',
+  'isCurrentlyAudible',
   'undo',
   'redo',
   'cut',
