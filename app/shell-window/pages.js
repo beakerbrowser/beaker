@@ -134,6 +134,8 @@ export function create (opts) {
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
+    isCurrentlyAudible: false, // is the page currently playing music?
+    isAudioMuted: false, // is the page muted?
     inpageFindInfo: null, // any info available on the inpage find {activeMatchOrdinal, matches}
     liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
@@ -389,6 +391,8 @@ export function create (opts) {
   page.webviewEl.addEventListener('found-in-page', onFoundInPage)
   page.webviewEl.addEventListener('enter-html-full-screen', onEnterHtmlFullScreen)
   page.webviewEl.addEventListener('leave-html-full-screen', onLeaveHtmlFullScreen)
+  page.webviewEl.addEventListener('media-started-playing', onMediaChange)
+  page.webviewEl.addEventListener('media-paused', onMediaChange)
   page.webviewEl.addEventListener('close', onClose)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
@@ -999,6 +1003,13 @@ function onEnterHtmlFullScreen (e) {
 
 function onLeaveHtmlFullScreen (e) {
   document.body.classList.remove('page-fullscreen')
+}
+
+async function onMediaChange (e) {
+  var page = getByWebview(e.target)
+  await new Promise(r => setTimeout(r, 1e3)) // the event consistently precedes the audible check by at most 1s
+  page.isCurrentlyAudible = await page.isCurrentlyAudibleAsync()
+  events.emit('media-change', page)
 }
 
 function onClose (e) {
