@@ -591,6 +591,7 @@ function onCompleted (details) {
   function set (v) {
     resourceContentTypes.set(details.url, Array.isArray(v) ? v[0] : v)
   }
+  if (!details.responseHeaders) return
   if ('Content-Type' in details.responseHeaders) {
     set(details.responseHeaders['Content-Type'])
   } else if ('content-type' in details.responseHeaders) {
