@@ -144,6 +144,10 @@
   border-bottom: 1px solid #eee;
   cursor: pointer;
 
+  &.disabled {
+    opacity: 0.25;
+  }
+
   .fa-check-square {
     color: @blue;
   }
@@ -171,9 +175,14 @@
     .description {
       color: @color-text;
     }
+
+    &.disabled {
+      background: inherit;
+      cursor: default;
+    }
   }
 
-  .fa, i {
+  .fa, i, img {
     display: inline-block;
     width: 20px;
     color: rgba(0,0,0,.65);
@@ -183,6 +192,12 @@
       margin-left: 2px;
       margin-right: -2px;
     }
+  }
+
+  img {
+    position: relative;
+    top: 4px;
+    margin-right: 10px;
   }
 
   .btn .fa {
