@@ -5,16 +5,17 @@ import toggleable, {closeAllToggleables} from './toggleable'
 import * as toast from './toast'
 import * as contextMenu from './context-menu'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-import {TemplateSelector} from '../../lib/fg/template-selector'
 
-// globals
-// =
-
-var templateSelector = new TemplateSelector()
-templateSelector.setup()
-templateSelector.on('created', ({redirectUrl}) => {
-  window.location = redirectUrl
-})
+const SITE_TEMPLATES = [
+  {id: 'web-page', title: 'Web page'},
+  {id: 'file-share', title: 'File share'},
+  {id: 'image-collection', title: 'Image collection'},
+  {id: 'music-album', title: 'Album', disabled: true},
+  {id: 'video', title: 'Video', disabled: true},
+  {id: 'podcast', title: 'Podcast', disabled: true},
+  {id: 'module', title: 'Code Module', disabled: true},
+  {id: 'blank', title: 'Create a website...'}
+]
 
 // exported api
 // =
@@ -116,7 +117,15 @@ function renderNewButton () {
         <span>+ New</span>
       </a>
       <div class="dropdown-items create-new subtle-shadow right">
-        ${templateSelector.render()}
+        ${SITE_TEMPLATES.map(t => yo`
+          <div
+            class="dropdown-item${t.disabled ? ' disabled' : ''}"
+            onclick=${t.disabled ? undefined : e => onClickSiteTemplate(e, t.id)}
+          >
+            <img src="beaker://assets/img/templates/${t.id}.png" />
+            <span>${t.title}</span>
+          </div>
+        `)}
       </div>
     </div>
   `)
@@ -157,6 +166,24 @@ function onCopyLink (url) {
   toast.create('Link copied to clipboard')
 }
 
+async function onClickSiteTemplate (e, template) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  // create the dat
+  template = template === 'blank' ? false : template
+  var archive = await DatArchive.create({template, prompt: false})
+  
+  if (!template) {
+    // for the blank template, go to the source view
+    // TODO should go to the editor
+    window.location = `beaker://library/${archive.url}#setup`
+  } else {
+    // go to the site
+    window.location = archive.url
+  }
+}
+
 async function onCreateSiteFromFolder () {
   // ask user for folder
   const folder = await beaker.browser.showOpenDialog({
@@ -172,8 +199,3 @@ async function onCreateSiteFromFolder () {
   window.location = 'beaker://library/' + archive.url + '#setup'
 }
 
-async function onCreateSite (template) {
-  // create a new archive
-  const archive = await DatArchive.create({template, prompt: false})
-  window.location = 'beaker://library/' + archive.url + '#setup'
-}

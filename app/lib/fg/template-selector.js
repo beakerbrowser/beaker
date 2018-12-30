@@ -3,26 +3,7 @@
 import * as yo from 'yo-yo'
 import {EventEmitter} from 'events'
 
-const BUILTIN_TEMPLATES = [
-  // {url: 'blank', title: 'Empty Project'},
-  {url: 'website', title: 'Website'},
-  {url: 'shared-files', title: 'File share', disabled: true},
-  {url: 'event', title: 'Event', disabled: true},
-  {url: 'photo-album', title: 'Photo Album', disabled: true},
-  {url: 'music-album', title: 'Music Album', disabled: true},
-  {url: 'video', title: 'Video', disabled: true},
-  {url: 'podcast', title: 'Podcast', disabled: true},
-  // {url: 'ebook', title: 'E-book', disabled: true},
-  // {url: 'presentation', title: 'Presentation', disabled: true},
-  // {url: 'spreadsheet', title: 'Spreadsheet', disabled: true},
-  // {url: 'list', title: 'List', disabled: true},
-  // {url: 'todo-list', title: 'Todos', disabled: true},
-  // {url: 'address-book', title: 'Address Book', disabled: true},
-  // {url: 'app', title: 'Application', disabled: true},
-  // {url: 'module', title: 'Code Module', disabled: true},
-  // {url: 'plugin', title: 'Plugin', disabled: true},
-  // {url: 'template', title: 'Template', disabled: true}
-]
+// TODO this is incomplete
 
 export class TemplateSelector extends EventEmitter {
   constructor (siteInfo) {
@@ -47,36 +28,17 @@ export class TemplateSelector extends EventEmitter {
 
   render () {
     var el = yo`
-      <div>
-        ${BUILTIN_TEMPLATES.map(t => this.renderTemplateItem(t))}
-        ${this.userTemplates.map(t => this.renderTemplateItem(t, true))}
+      <div class="template-selector">
+        <div class="template-selector-grid">
+          ${this.userTemplates.map(t => this.renderTemplateItem(t, true))}
+        </div>
       </div>`
-    // var el = yo`
-    //   <div class="template-selector">
-    //     <div class="template-selector-grid">
-    //       ${BUILTIN_TEMPLATES.filter(t => !t.disabled).map(t => this.renderTemplateItem(t))}
-    //       ${this.userTemplates.map(t => this.renderTemplateItem(t, true))}
-    //     </div>
-    //   </div>`
     this.el = this.el || el
     return el
   }
 
-  renderTemplateItem ({url, title, disabled}, isUserTemplate) {
-    var screenshotUrl = isUserTemplate
-      ? `beaker://templates/screenshot/${url}`
-      : `beaker://assets/img/templates/${url}.png`
-
-
-    return yo`
-      <div
-        class="dropdown-item${disabled ? ' disabled' : ''}"
-        onclick=${disabled ? undefined : e => this.onSelectTemplate(e, url)}
-        oncontextmenu=${disabled ? undefined : e => this.onContextmenuTemplate(e, {url, title})}        
-      >
-        <img src=${screenshotUrl} />
-        <span>${title}</span>
-      </div>`
+  renderTemplateItem ({url, title, disabled}) {
+    var screenshotUrl = `beaker://templates/screenshot/${url}`
 
     return yo`
       <div
