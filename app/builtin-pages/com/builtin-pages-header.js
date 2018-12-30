@@ -8,13 +8,14 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 const SITE_TEMPLATES = [
   {id: 'web-page', title: 'Web page'},
+  {id: 'markdown-page', title: 'Markdown page'},
   {id: 'file-share', title: 'File share'},
   {id: 'image-collection', title: 'Image collection'},
   {id: 'music-album', title: 'Album', disabled: true},
   {id: 'video', title: 'Video', disabled: true},
   {id: 'podcast', title: 'Podcast', disabled: true},
   {id: 'module', title: 'Code Module', disabled: true},
-  {id: 'blank', title: 'Create a website...'}
+  {id: 'blank', title: 'New project'}
 ]
 
 // exported api
