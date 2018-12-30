@@ -28,4 +28,16 @@ if (!document.querySelector('main')) {
       // do nothing
     }
   }
+
+  // execute scripts
+  var scriptEls = Array.from(document.querySelectorAll('script'))
+  for (let scriptEl of scriptEls) {
+    let clone = document.createElement('script')
+    for (let i = 0; i < scriptEl.attributes.length; i++) {
+      let attr = scriptEl.attributes[i]
+      clone.setAttribute(attr.name, attr.value)
+    }
+    clone.textContent = scriptEl.textContent
+    document.body.append(clone)
+  }
 }
