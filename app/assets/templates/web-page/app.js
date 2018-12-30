@@ -152,17 +152,20 @@ class OwnerControls extends HTMLElement {
     siteInfo.title = title
 
     // write the content
-    await site.writeFile('index.html', `
-      <html>
-        <head>
-          <script type="module" src="/app.js"></script>
-        </head>
-        <body>
-          <h1 id="page-title">${escapeQuotes(title)}</h1>
-          <main id="page-content">${content}</main>
-        </body>
-      </html>
-    `)
+    await site.writeFile('index.html', `<html>
+  <head>
+    <script type="module" src="/app.js"></script>
+    <style>
+      #page-content {
+        max-width: 800px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 id="page-title">${escapeQuotes(title)}</h1>
+    <main id="page-content">${content}</main>
+  </body>
+</html>`)
 
     // update UI
     els.title.textContent = title
