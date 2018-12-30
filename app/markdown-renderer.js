@@ -12,24 +12,7 @@ if (!document.querySelector('main')) {
   var formattedEl = document.createElement('main')
   formattedEl.innerHTML = `<nav></nav><div class="markdown">${md.render(unformattedEl.textContent)}</div>`
   document.body.appendChild(formattedEl)
-
-  // give ui to switch
-  var a = document.createElement('a')
-  a.className = 'switcher'
-  a.textContent = 'Raw'
-  a.onclick = (e) => {
-    e.preventDefault()
-    if (formattedEl.style.display !== 'none') {
-      formattedEl.style.display = 'none'
-      unformattedEl.style.display = 'block'
-      a.textContent = 'Formatted'
-    } else {
-      formattedEl.style.display = 'flex'
-      unformattedEl.style.display = 'none'
-      a.textContent = 'Raw'
-    }
-  }
-  document.body.appendChild(a)
+  unformattedEl.remove()
 
   // render the nav
   renderNav()

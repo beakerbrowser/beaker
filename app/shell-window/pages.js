@@ -880,7 +880,6 @@ function onDidStopLoading (e) {
       // hide the unformatted text and provide some basic styles
       page.webviewEl.insertCSS(`
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
-        body > pre { display: none; }
         main { display: flex; }
         nav { max-width: 200px; padding-right: 2em; }
         nav .link { white-space: pre; overflow: hidden; text-overflow: ellipsis; margin: 0.5em 0 }
@@ -893,7 +892,6 @@ function onDidStopLoading (e) {
         td, th { padding: 0.5em 1em; }
         tbody tr:nth-child(odd) { background: #fafafa; }
         tbody td { border-top: 1px solid #bbb; }
-        .switcher { position: absolute; top: 5px; right: 5px; font-family: Consolas, 'Lucida Console', Monaco, monospace; cursor: pointer; font-size: 13px; background: #fafafa; padding: 2px 5px; }
         main code { font-size: 1.3em; background: #fafafa; }
         main pre { background: #fafafa; padding: 1em }
       `)
