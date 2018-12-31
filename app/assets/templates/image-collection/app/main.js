@@ -97,7 +97,7 @@ class AppSiteInfo extends BaseAppElement {
         <input data-key="title" class="title" type="text" placeholder="Title (required)" value="${escapeQuotes(siteInfo.title)}">
       `
     }
-    return `<h1>${siteInfo.title || 'Untitled fileshare'}</h1>`
+    return `<h1>${siteInfo.title || 'Untitled images collection'}</h1>`
   }
 
   get descriptionCtrl () {
@@ -131,17 +131,17 @@ class AppControls extends BaseAppElement {
           visibility: hidden;
         }
       </style>
-      ${isOwner ? `<button class="add-btn">Add files</button>` : ''}
-      <a href="/files?download_as=zip">Download as .zip</a>
-      <input class="file-input" type="file" multiple>
+      ${isOwner ? `<button class="add-btn">Add images</button>` : ''}
+      <a href="/images?download_as=zip">Download as .zip</a>
+      <input class="file-input" type="file" multiple accept="image/*">
     `
 
     // attach events
-    this.on('.add-btn', 'click', this.onClickAddFile)
+    this.on('.add-btn', 'click', this.onClickAddImage)
     this.on('.file-input', 'change', this.onFileChange)
   }
 
-  onClickAddFile (e) {
+  onClickAddImage (e) {
     e.preventDefault()
     this.$('.file-input').click()
   }
@@ -150,8 +150,8 @@ class AppControls extends BaseAppElement {
     for (let f of e.target.files) {
       var r = new FileReader()
       r.onload = async (e) => {
-        await site.writeFile(`/files/${f.name}`, e.target.result)
-        emit('files-changed')
+        await site.writeFile(`/images/${f.name}`, e.target.result)
+        emit('images-changed')
       }
       r.readAsArrayBuffer(f)
     }
@@ -159,44 +159,11 @@ class AppControls extends BaseAppElement {
 }
 customElements.define('app-controls', AppControls)
 
-class AppFilesGridItem extends BaseAppElement {
+class AppImgGridItem extends BaseAppElement {
   constructor () {
     super()
     this.attachShadow({mode: 'open'})
     this.render()
-  }
-
-  get fileType () {
-    var path = this.getAttribute('path')
-    if (/(zip|tar|tar.gz|rar)$/.test(path)) {
-      return 'archive'
-    }
-    if (/(jpe?g|bmp|gif|png|tiff)$/.test(path)) {
-      return 'image'
-    }
-    if (/(mp4|avi|mpeg)$/.test(path)) {
-      return 'media'
-    }
-    if (/(mpa|mp3|ogg|wav)$/.test(path)) {
-      return 'media'
-    }
-    if (/(txt|doc|docx|ppt|xls|md)$/.test(path)) {
-      return 'document'
-    }
-    if (/(pdf)$/.test(path)) {
-      return 'pdf'
-    }
-    if (/(html?|css|less|sass|js|jsx|wasm|mjs)$/.test(path)) {
-      return 'code'
-    }
-  }
-
-  get imgName () {
-    if (this.hasAttribute('folder')) {
-      return 'folder'
-    }
-    var type = this.fileType
-    return type ? `file-${type}` : 'file'
   }
 
   render () {
@@ -205,74 +172,77 @@ class AppFilesGridItem extends BaseAppElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          display: flex;
-          align-items: center;
-          font-family: sans-serif;    
-          border: 1px solid #ddd;
-          margin-bottom: 10px;
+          font-family: sans-serif;
+          text-align: center;
         }
-        a {
-          text-decoration: none;          
-        }
-        .a:hover {
-          text-decoration: underline;
-        }
-        :host > a {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          color: #333;
-          padding: 5px;
-        }
-        :host > a:hover {
+        .container:hover {
           background: #eee;
         }
-        img {
-          margin-right: 10px;
+        a {
+          text-decoration: none;
         }
-        .title {
-          flex: 1;
+        a:hover {
+          text-decoration: underline;
+        }
+        .main-link {
+          display: flex;
+          height: calc(25vh + 16px);
+          justify-content: space-between;
+          flex-direction: column;
+        }
+        img {
+          display: block;
+          margin: 0 auto;
+          max-width: 100%;
+          max-height: 25vh;
         }
         .controls {
           font-size: 13px;
           padding: 0 10px;
-          border-left: 1px solid #eee;
         }
         .controls a {
           margin-left: 5px;
+          color: #444;
+        }
+        .controls a:first-child {
+          margin-left: 0;
         }
       </style>
-      <a href="${path}" target="_blank">
-        <img src="/app/img/${this.imgName}-40.png">
-        <span class="title">${filename}</span>
-      </a>
-      <span class="controls">
-        <a href="${path}" download="${filename}">download</a>
-        ${isOwner ? `<a href="#" class="remove-btn">delete</a>` : ''}
-      </span>
+      <div class="container">
+        <a class="main-link" href="${path}" target="_blank">
+          <span><!-- this empty span causes the img to vertically center thanks to the space-between justify --></span>
+          <img src="${path}">
+          <span class="title">${filename}</span>
+        </a>
+        <span class="controls">
+          <a href="${path}" download="${filename}">download</a>
+          ${isOwner ? `<a href="#" class="remove-btn">delete</a>` : ''}
+        </span>
+      </div>
     `
     this.on('.remove-btn', 'click', async (e) => {
       e.preventDefault()
-      if (!confirm('Delete this file?')) return
+      if (!confirm('Delete this image?')) return
       await site.unlink(path)
-      emit('files-changed')
+      emit('images-changed')
     })
   }
 }
-customElements.define('files-grid-item', AppFilesGridItem)
+customElements.define('img-grid-item', AppImgGridItem)
 
-class AppFilesGrid extends BaseAppElement {
+class AppImgGrid extends BaseAppElement {
   constructor () {
     super()
     this.attachShadow({mode: 'open'})
 
     this.files = []
     this.readFiles()
-    document.body.addEventListener('files-changed', () => this.readFiles())
+    document.body.addEventListener('images-changed', () => this.readFiles())
   }
 
   async readFiles () {
-    this.files = await site.readdir('/files', {stat: true})
+    this.files = await site.readdir('/images', {stat: true})
+    this.files = this.files.filter(f => /(png|jpe?g|gif|svg)$/i.test(f.name)) // images only
     this.render()
   }
 
@@ -280,13 +250,15 @@ class AppFilesGrid extends BaseAppElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host {
-          display: block;
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          grid-gap: 40px;
           font-family: sans-serif;
         }
         .empty {
           text-align: center;
           padding: 40px;
-          background: #eee;
+          background: #fafafa;
           color: rgba(0,0,0,.5);
           font-size: 12px;
         }
@@ -298,9 +270,9 @@ class AppFilesGrid extends BaseAppElement {
         }
       </style>
       
-      ${this.files.map(f => `<files-grid-item path="/files/${f.name}"></files-grid-item>`).join('')}
+      ${this.files.map(f => `<img-grid-item path="/images/${f.name}"></img-grid-item>`).join('')}
       ${this.files.length === 0
-        ? `<div class="empty">${isOwner ? 'Add a file' : 'No files'}</div>`
+        ? `<div class="empty">${isOwner ? 'Add an image' : 'No images'}</div>`
         : ''}
     `
     if (isOwner && this.files.length === 0) {
@@ -311,7 +283,7 @@ class AppFilesGrid extends BaseAppElement {
     }
   }
 }
-customElements.define('files-grid', AppFilesGrid)
+customElements.define('img-grid', AppImgGrid)
 
 class AppMain extends BaseAppElement {
   constructor () {
@@ -331,12 +303,12 @@ class AppMain extends BaseAppElement {
       <style>
         :host {
           display: block;
-          max-width: 800px;
+          max-width: 100%;
         }
       </style>
       <app-site-info></app-site-info>
       <app-controls></app-controls>
-      <files-grid></files-grid>
+      <img-grid></img-grid>
     `
   }
 }
