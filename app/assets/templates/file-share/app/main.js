@@ -240,7 +240,7 @@ class AppFilesGridItem extends BaseAppElement {
           display: flex;
           align-items: center;
           font-family: sans-serif;    
-          border: 1px solid #eee;
+          border: 1px solid #ddd;
           margin-bottom: 10px;
         }
         a {
@@ -257,7 +257,7 @@ class AppFilesGridItem extends BaseAppElement {
           padding: 5px;
         }
         :host > a:hover {
-          background: #fafafa;
+          background: #eee;
         }
         img {
           margin-right: 10px;
@@ -318,7 +318,7 @@ class AppFilesGrid extends BaseAppElement {
         .empty {
           text-align: center;
           padding: 40px;
-          background: #fafafa;
+          background: #eee;
           color: rgba(0,0,0,.5);
           font-size: 12px;
         }
