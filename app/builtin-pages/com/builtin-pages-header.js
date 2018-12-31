@@ -15,7 +15,7 @@ const SITE_TEMPLATES = [
   {id: 'video', title: 'Video', disabled: true},
   {id: 'podcast', title: 'Podcast', disabled: true},
   {id: 'module', title: 'Code Module', disabled: true},
-  {id: 'blank', title: 'New project'}
+  {id: 'blank', title: 'Empty project'}
 ]
 
 // exported api
