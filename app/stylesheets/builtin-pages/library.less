@@ -134,6 +134,11 @@ body.drag {
       flex: 0.75;
     }
 
+    .type {
+      min-width: 120px;
+      flex: 0.75;
+    }
+
     .date {
       min-width: 120px;
       flex: 0.9;
@@ -146,6 +151,10 @@ body.drag {
 
   .ll-column-headings {
     padding: 0 20px 10px;
+
+    .column-heading button {
+      padding: 0;
+    }
   }
 
   .ll-row.archive {
@@ -172,6 +181,7 @@ body.drag {
     }
 
     .url,
+    .type,
     .peers,
     .date,
     .size {
@@ -192,6 +202,14 @@ body.drag {
         margin-right: 4px;
         opacity: 0;
       }
+    }
+
+    .type-icon {
+      display: inline;
+      flex-basis: 20px;
+      width: 16px;
+      height: 16px;
+      margin-right: 10px;
     }
 
     .dropdown-items {

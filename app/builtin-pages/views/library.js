@@ -125,6 +125,7 @@ function sortArchives () {
       case 'peers': v = a.peers - b.peers; break
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
+      case 'type': v = getBasicType(b.type).localeCompare(getBasicType(a.type)); break
       case 'alpha':
       default:
         v = (b.title || '').localeCompare(a.title || '')
@@ -184,6 +185,7 @@ function renderRow (row, i) {
   const date = currentDateType === 'accessed'
     ? row.lastLibraryAccessTime
     : row.mtime
+  const basicType = getBasicType(row.type)
 
   return yo`
     <a
@@ -192,7 +194,7 @@ function renderRow (row, i) {
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
       <span class="title">
-        <img class="favicon" src="beaker-favicon:32,${row.url}?cache=${faviconCacheBuster}" />
+        <img class="type-icon" src="beaker://assets/img/templates/${basicType}.png" />
 
         ${row.title
           ? yo`<span class="title">${row.title}</span>`
@@ -203,6 +205,10 @@ function renderRow (row, i) {
           ? yo`<span class="badge read-only">Read-only</span>`
           : ''
         }
+      </span>
+
+      <span class="type">
+        ${basicType}
       </span>
 
       <span class="peers">
@@ -258,6 +264,7 @@ function render () {
               ? yo`
                 <div class="ll-column-headings">
                   ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
+                  ${renderColumnHeading({cls: 'type', sort: 'type', label: 'Type'})}
                   ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
                   ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
                   ${renderColumnHeading({cls: 'size', sort: 'size', label: 'Size'})}
@@ -452,6 +459,16 @@ function removeFromLibraryLabel (archive) {
 
 function removeFromLibraryIcon (archive) {
   return (archive.isOwner) ? 'fa fa-trash' : 'fa fa-pause'
+}
+
+function getBasicType (type) {
+  if (type) {
+    if (type.includes('user')) return 'user'
+    if (type.includes('web-page')) return 'web-page'
+    if (type.includes('file-share')) return 'file-share'
+    if (type.includes('image-collection')) return 'image-collection'
+  }
+  return 'other'
 }
 
 // events
