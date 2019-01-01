@@ -739,8 +739,7 @@ function onDidStartLoading (e) {
     }
 
     // decorate the webview based on whether it's a builtin page
-    const url = page.loadingURL || page.url
-    if (url.startsWith('beaker://')) {
+    if (page.getIntendedURL().startsWith('beaker://')) {
       page.webviewEl.classList.add('builtin')
     } else {
       page.webviewEl.classList.remove('builtin')
@@ -759,6 +758,11 @@ function onDidStopLoading (e) {
 
     // update history and UI
     updateHistory(page)
+    if (url.startsWith('beaker://')) {
+      page.webviewEl.classList.add('builtin')
+    } else {
+      page.webviewEl.classList.remove('builtin')
+    }
 
     // capture old data
     var oldSiteInfo = page.siteInfo
