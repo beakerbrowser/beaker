@@ -186,13 +186,13 @@ class AppImgGridItem extends BaseAppElement {
         }
         .main-link {
           display: flex;
-          height: calc(25vh + 16px);
+          min-height: calc(25vh + 24px);
           justify-content: space-between;
           flex-direction: column;
         }
         img {
           display: block;
-          margin: 0 auto;
+          margin: 0 auto 10px;
           max-width: 100%;
           max-height: 25vh;
         }
