@@ -186,7 +186,7 @@ class AppImgGridItem extends BaseAppElement {
         }
         .main-link {
           display: flex;
-          min-height: calc(25vh + 24px);
+          min-height: 275px;
           justify-content: space-between;
           flex-direction: column;
         }
@@ -194,7 +194,7 @@ class AppImgGridItem extends BaseAppElement {
           display: block;
           margin: 0 auto 10px;
           max-width: 100%;
-          max-height: 25vh;
+          max-height: 250px;
         }
         .controls {
           font-size: 13px;
@@ -258,7 +258,7 @@ class AppImgGrid extends BaseAppElement {
         .empty {
           text-align: center;
           padding: 40px;
-          background: #fafafa;
+          background: #eee;
           color: rgba(0,0,0,.5);
           font-size: 12px;
         }
