@@ -19,7 +19,8 @@ import renderCloseIcon from '../icon/close'
 let archives = []
 let selectedArchives = []
 let query = ''
-let currentView = 'your archives'
+let currentView = 'all'
+let currentTypeFilter = undefined
 let currentSort = ['alpha', -1]
 let currentDateType = 'accessed'
 let faviconCacheBuster = Date.now()
@@ -34,6 +35,23 @@ async function setup () {
   currentUserSession = await beaker.browser.getUserSession()
   await loadArchives()
   render()
+}
+
+async function resetup () {
+  // reset the search query
+  query = ''
+  try {
+    document.querySelector('input.search').value = ''
+  } catch (_) {}
+
+  // reset selectedArchives
+  selectedArchives = []
+  loadSettings() // load settings to restore from any temporary settings
+  await loadArchives()
+  render()
+
+  // focus the search input
+  document.querySelector('input.search').focus()
 }
 
 // data
@@ -58,33 +76,22 @@ async function loadArchives () {
       archives = await beaker.archives.list({
         isOwner: true,
         isSaved: true,
-        search: query ? query : false
+        search: query ? query : false,
+        type: currentTypeFilter
       })
-      break
-    case 'seeding':
-      archives = await beaker.archives.list({
-        isOwner: false,
-        isSaved: true,
-        search: query ? query : false
-      })
-      break
-    case 'recent':
-      archives = await beaker.archives.list({
-        search: query ? query : false
-      })
-      // only archives that have been recently visited in the library
-      archives = archives.filter(a => !!a.lastLibraryAccessTime)
       break
     case 'trash':
       archives = await beaker.archives.list({
         isOwner: true,
-        isSaved: false
+        isSaved: false,
+        type: currentTypeFilter
       })
       break
     default:
       archives = await beaker.archives.list({
         isSaved: true,
-        search: query ? query : false
+        search: query ? query : false,
+        type: currentTypeFilter
       })
       break
   }
@@ -158,12 +165,12 @@ function renderRows (sort = '', max = undefined) {
     ? null
     : yo`
       <div class="view empty">
-        <i class="fa fa-search"></i>
+        <i class="${query ? 'fa fa-search' : 'far fa-folder-open'}"></i>
 
         <p>
           ${query
             ? `No results for "${query}"`
-            : `No archives in ${currentView}`
+            : `No items found`
           }
         </p>
       </div>`
@@ -263,8 +270,8 @@ function render () {
 
             <p class="builtin-hint">
               <i class="fa fa-info-circle"></i>
-              Your Library contains websites and archives you've created,
-              along with websites that you're seeding.
+              Your Library contains websites and archives you${"'"}ve created,
+              along with websites that you${"'"}re seeding.
             </p>
           </div>
         </div>
@@ -274,33 +281,62 @@ function render () {
 }
 
 function renderSidebar () {
+  const navItem = ({onclick, isActive, label, icon}) => yo`
+    <div onclick=${onclick} class="nav-item ${isActive ? 'active' : ''}">
+      <i class="fa fa-angle-right"></i>
+      ${icon ? yo`<img src="beaker://assets/img/templates/${icon}.png">` : ''}
+      ${label}
+    </div>`
+
   return yo`
     <div class="builtin-sidebar">
       <div class="section nav">
-        <div onclick=${() => onUpdateView('all')} class="nav-item ${currentView === 'all' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          All
-        </div>
-
-        <div onclick=${() => onUpdateView('your archives')} class="nav-item ${currentView === 'your archives' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          Your archives
-        </div>
-
-        <div onclick=${() => onUpdateView('seeding')} class="nav-item ${currentView === 'seeding' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          Currently seeding
-        </div>
-
-        <div onclick=${() => onUpdateView('recent')} class="nav-item ${currentView === 'recent' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          Recent
-        </div>
-
-        <div onclick=${() => onUpdateView('trash')} class="nav-item ${currentView === 'trash' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          Trash
-        </div>
+        ${navItem({
+          onclick: () => onUpdateView('all'),
+          isActive: currentView === 'all',
+          label: 'All'
+        })}
+        ${navItem({
+          onclick: () => onUpdateView('your archives'),
+          isActive: currentView === 'your archives',
+          label: 'Created by you'
+        })}
+        ${navItem({
+          onclick: () => onUpdateView('trash'),
+          isActive: currentView === 'trash',
+          label: 'Trash'
+        })}
+      </div>
+      <div class="section nav">
+        ${navItem({
+          onclick: () => onUpdateTypeFilter(undefined),
+          isActive: currentTypeFilter === undefined,
+          label: 'Any type'
+        })}
+        ${navItem({
+          onclick: () => onUpdateTypeFilter('web-page'),
+          isActive: currentTypeFilter === 'web-page',
+          icon: 'web-page',
+          label: 'Web pages'
+        })}
+        ${navItem({
+          onclick: () => onUpdateTypeFilter('file-share'),
+          isActive: currentTypeFilter === 'file-share',
+          icon: 'file-share',
+          label: 'File shares'
+        })}
+        ${navItem({
+          onclick: () => onUpdateTypeFilter('image-collection'),
+          isActive: currentTypeFilter === 'image-collection',
+          icon: 'image-collection',
+          label: 'Image collections'
+        })}
+        ${navItem({
+          onclick: () => onUpdateTypeFilter('user'),
+          isActive: currentTypeFilter === 'user',
+          icon: 'user',
+          label: 'Users'
+        })}
       </div>
     </div>`
 }
@@ -333,7 +369,7 @@ function renderSubheader () {
             ]
           : yo`
             <button class="btn warning" onclick=${onDeleteSelected}>
-              ${currentView === 'seeding' ? 'Stop seeding' : 'Move to Trash'}
+              Move to Trash
             </button>`
         }
       </div>`
@@ -499,9 +535,7 @@ async function onDelete (e, archive) {
 }
 
 async function onDeleteSelected () {
-  const msg = currentView === 'seeding'
-    ? `Stop seeding ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')}?`
-    : `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`
+  const msg = `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'item')} to Trash?`
   if (!confirm(msg)) {
     return
   }
@@ -676,28 +710,14 @@ async function onClearDatTrash () {
   render()
 }
 
-async function onUpdateView (view) {
-  // reset the search query
-  query = ''
-  try {
-    document.querySelector('input.search').value = ''
-  } catch (_) {}
+function onUpdateTypeFilter (filter) {
+  currentTypeFilter = filter
+  resetup()
+}
 
-  // reset selectedArchives
-  selectedArchives = []
-
+function onUpdateView (view) {
   currentView = view
-  loadSettings() // load settings to restore from any temporary settings
-  await loadArchives()
-  render()
-
-  if (view === 'recent') {
-    // sort by recently viewed, dont save (temporary for this view)
-    onUpdateSort('recently-accessed', -1, {noSave: true})
-  }
-
-  // focus the search input
-  document.querySelector('input.search').focus()
+  resetup()
 }
 
 // helper gets the offsetTop relative to the document

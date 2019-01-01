@@ -473,6 +473,12 @@
     display: inline-block;
     margin-bottom: 20px;
 
+    img {
+      position: relative;
+      top: 3px;
+      margin-right: 5px;
+    }
+
     .fa {
       display: none;
     }
@@ -494,14 +500,19 @@
       padding: 7px 0;
       margin-bottom: 0;
 
+      img {
+        top: 0;
+      }
+
       .fa {
         display: none;
         width: 12px;
         margin-left: -12px;
+        position: relative;
+        top: 1px;
       }
 
       &:hover {
-
         .icon {
           color: inherit;
         }
@@ -526,7 +537,7 @@
     width: 200px;
 
     .section {
-      margin-bottom: 40px;
+      margin-bottom: 20px;
 
       > div {
         padding: 0 20px;
