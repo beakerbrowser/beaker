@@ -20,7 +20,6 @@ let archives = []
 let selectedArchives = []
 let query = ''
 let currentView = 'all'
-let currentTypeFilter = undefined
 let currentSort = ['alpha', -1]
 let currentDateType = 'accessed'
 let faviconCacheBuster = Date.now()
@@ -31,27 +30,17 @@ let currentUserSession = null
 
 setup()
 async function setup () {
-  loadSettings()
   currentUserSession = await beaker.browser.getUserSession()
+  loadSettings()
   await loadArchives()
   render()
 }
 
 async function resetup () {
-  // reset the search query
-  query = ''
-  try {
-    document.querySelector('input.search').value = ''
-  } catch (_) {}
-
-  // reset selectedArchives
   selectedArchives = []
   loadSettings() // load settings to restore from any temporary settings
   await loadArchives()
   render()
-
-  // focus the search input
-  document.querySelector('input.search').focus()
 }
 
 // data
@@ -76,22 +65,20 @@ async function loadArchives () {
       archives = await beaker.archives.list({
         isOwner: true,
         isSaved: true,
-        search: query ? query : false,
-        type: currentTypeFilter
+        search: query ? query : false
       })
       break
     case 'trash':
       archives = await beaker.archives.list({
         isOwner: true,
         isSaved: false,
-        type: currentTypeFilter
       })
       break
     default:
       archives = await beaker.archives.list({
         isSaved: true,
         search: query ? query : false,
-        type: currentTypeFilter
+        type: currentView !== 'all' ? currentView : undefined // unless view == all, intrepret view as a type filter
       })
       break
   }
@@ -313,34 +300,28 @@ function renderSidebar () {
           isActive: currentView === 'trash',
           label: 'Trash'
         })}
-      </div>
-      <div class="section nav">
+        <hr>
         ${navItem({
-          onclick: () => onUpdateTypeFilter(undefined),
-          isActive: currentTypeFilter === undefined,
-          label: 'Any type'
-        })}
-        ${navItem({
-          onclick: () => onUpdateTypeFilter('web-page'),
-          isActive: currentTypeFilter === 'web-page',
+          onclick: () => onUpdateView('web-page'),
+          isActive: currentView === 'web-page',
           icon: 'web-page',
           label: 'Web pages'
         })}
         ${navItem({
-          onclick: () => onUpdateTypeFilter('file-share'),
-          isActive: currentTypeFilter === 'file-share',
+          onclick: () => onUpdateView('file-share'),
+          isActive: currentView === 'file-share',
           icon: 'file-share',
           label: 'File shares'
         })}
         ${navItem({
-          onclick: () => onUpdateTypeFilter('image-collection'),
-          isActive: currentTypeFilter === 'image-collection',
+          onclick: () => onUpdateView('image-collection'),
+          isActive: currentView === 'image-collection',
           icon: 'image-collection',
           label: 'Image collections'
         })}
         ${navItem({
-          onclick: () => onUpdateTypeFilter('user'),
-          isActive: currentTypeFilter === 'user',
+          onclick: () => onUpdateView('user'),
+          isActive: currentView === 'user',
           icon: 'user',
           label: 'Users'
         })}
@@ -725,11 +706,6 @@ async function onClearDatTrash () {
   toast.create(`Trash emptied (${bytes(results.totalBytes)} freed from ${results.totalArchives} archives)`, '', 5e3)
   await loadArchives()
   render()
-}
-
-function onUpdateTypeFilter (filter) {
-  currentTypeFilter = filter
-  resetup()
 }
 
 function onUpdateView (view) {
