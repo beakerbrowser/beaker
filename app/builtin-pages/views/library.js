@@ -106,20 +106,16 @@ function filterArchives () {
 
 function sortArchives () {
   archives.sort((a, b) => {
-    var v
+    var v = 0
     switch (currentSort[0]) {
       case 'size': v = a.size - b.size; break
       case 'peers': v = a.peers - b.peers; break
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
-      case 'type':
-        v = getBasicType(b.type).localeCompare(getBasicType(a.type))
-        if (v === 0) v = (b.title || '').localeCompare(a.title || '') // use title to tie-break
-        break
-      case 'alpha':
-      default:
-        v = (b.title || '').localeCompare(a.title || '')
+      case 'type': v = getBasicType(b.type).localeCompare(getBasicType(a.type)); break
+      case 'author': v = getAuthor(b).localeCompare(getAuthor(a)); break
     }
+    if (v === 0) v = (b.title || '').localeCompare(a.title || '') // use title to tie-break
     return v * currentSort[1]
   })
 }
@@ -190,11 +186,10 @@ function renderRow (row, i) {
           ? yo`<span class="title">${row.title}</span>`
           : yo`<span class="title empty"><em>Untitled</em></span>`
         }
+      </span>
 
-        ${!isOwner
-          ? yo`<span class="badge read-only">Read-only</span>`
-          : ''
-        }
+      <span class="author">
+        ${getAuthor(row)}
       </span>
 
       <span class="type">
@@ -254,6 +249,7 @@ function render () {
               ? yo`
                 <div class="ll-column-headings">
                   ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
+                  ${renderColumnHeading({cls: 'author', sort: 'author', label: 'Author'})}
                   ${renderColumnHeading({cls: 'type', sort: 'type', label: 'Type'})}
                   ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
                   ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
@@ -453,6 +449,10 @@ function getBasicType (type) {
     if (type.includes('image-collection')) return 'image-collection'
   }
   return 'other'
+}
+
+function getAuthor (archive) {
+  return archive.isOwner ? 'You' : 'Anonymous' // TODO
 }
 
 // events
