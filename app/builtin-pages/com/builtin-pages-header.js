@@ -66,16 +66,10 @@ function renderDropdownNav (currentUserSession) {
       data-toggle-id="builtin-pages-nav-menu"
     >
       <a class="toggleable">
-        <img src="${currentUserSession.url}/thumb.jpg">
         <i class="fa fa-caret-down"></i>
       </a>
 
       <div class="dropdown-items subtle-shadow right">
-        <a href=${currentUserSession.url} class="dropdown-item userlink">
-          <img src="${currentUserSession.url}/thumb.jpg">
-          <span>${currentUserSession.title}</span>
-        </a>
-
         <a href="beaker://bookmarks" class="dropdown-item">
           <i class="far fa-star"></i>
           <span>Bookmarks</span>
