@@ -12,7 +12,6 @@ import _get from 'lodash.get'
 import throttle from 'lodash.throttle'
 import dragDrop from 'drag-drop'
 import {join as joinPaths} from 'path'
-import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import FilesBrowser from '../com/files-browser/files-browser'
 import {
   setup as setupAce,
@@ -57,7 +56,6 @@ var workingCheckout
 var archiveFsRoot
 var filesBrowser
 var rehostSlider
-var currentUserSession = null
 
 // used in the compare views
 var libraryViewCompare
@@ -140,7 +138,6 @@ async function setup () {
     let browserInfo = beaker.browser.getInfo()
     window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
     osUsesMetaKey = browserInfo.platform === 'darwin'
-    currentUserSession = await beaker.browser.getUserSession()
 
     // load data
     let url = await parseLibraryUrl()
@@ -352,8 +349,6 @@ function render () {
     yo.update(
       document.querySelector('.library-wrapper'), yo`
         <div class="library-wrapper library-view builtin-wrapper">
-          ${renderBuiltinPagesHeader(false, currentUserSession)}
-
           <div class="builtin-main" style="margin-left: 0; width: 100%">
             <div class="view-wrapper">
               ${renderView()}
@@ -366,8 +361,6 @@ function render () {
     yo.update(
       document.querySelector('.library-wrapper'), yo`
         <div class="library-wrapper library-view builtin-wrapper ${isReadOnly ? 'readonly' : ''}">
-          ${renderBuiltinPagesHeader(false, currentUserSession)}
-
           <div class="drag-hint">
             <div class="icons">
               <i class="fa fa-file-video-o"></i>
