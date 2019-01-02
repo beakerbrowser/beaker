@@ -20,7 +20,7 @@ let archives = []
 let selectedArchives = []
 let query = ''
 let currentView = 'all'
-let currentSort = ['alpha', -1]
+let currentSort = ['type', -1]
 let currentDateType = 'accessed'
 let faviconCacheBuster = Date.now()
 let currentUserSession = null
@@ -47,7 +47,7 @@ async function resetup () {
 // =
 
 function loadSettings () {
-  currentSort[0] = localStorage.currentSortValue || 'alpha'
+  currentSort[0] = localStorage.currentSortValue || 'type'
   currentSort[1] = (+localStorage.currentSortDir) || -1
   currentDateType = localStorage.currentDateType || 'accessed'
 }
@@ -112,7 +112,10 @@ function sortArchives () {
       case 'peers': v = a.peers - b.peers; break
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
-      case 'type': v = getBasicType(b.type).localeCompare(getBasicType(a.type)); break
+      case 'type':
+        v = getBasicType(b.type).localeCompare(getBasicType(a.type))
+        if (v === 0) v = (b.title || '').localeCompare(a.title || '') // use title to tie-break
+        break
       case 'alpha':
       default:
         v = (b.title || '').localeCompare(a.title || '')
