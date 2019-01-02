@@ -53,77 +53,84 @@ async function setup () {
   update()
 }
 
+// rendering
+// =
+
+function update () {
+  yo.update(document.querySelector('.window-content.start'), yo`
+    <div class="window-content builtin start">
+      <div class="builtin-wrapper start-wrapper">
+        <div style="position: absolute; bottom: 10px; right: 20px; font-size: 22px; text-align: right; font-weight: 300">
+          <span style="color: #2864dc; font-size: 38px; line-height: 1">Blue r1</span><br>
+          Beta pre-release
+        </div>
+
+        ${MOTD.render()}
+
+        <div class="autocomplete-container search-container">
+          <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
+          <i class="fa fa-search"></i>
+
+          <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
+            <i class="fa fa-arrow-right"></i>
+          </button>
+
+          ${query.length && isSearchFocused ? yo`
+            <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
+          : ''}
+        </div>
+
+        ${renderPinnedBookmarks()}
+      </div>
+    </div>
+  `)
+
+  addSorting()
+}
+
+function renderSearchResult (res, i) {
+  return yo`
+    <a href=${res.targetUrl} class="autocomplete-result search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
+      ${res.faviconUrl
+        ? yo`<img class="icon favicon" src="beaker-favicon:32,${res.faviconUrl}"/>`
+        : yo`<i class="icon ${res.icon}"></i>`
+      }
+
+      <span class="title">${res.title}</span>
+
+      ${res.label ? yo`<span class="label">— ${res.label || ''}</span>` : ''}
+    </a>
+  `
+}
+
+function renderPinnedBookmarks () {
+  return yo`
+    <div class="pinned-bookmarks-container">
+      <div class="pinned-bookmarks">
+        ${pinnedBookmarks.map(renderPinnedBookmark)}
+        <a class="pinned-bookmark add-pinned-bookmark" href="#" onclick=${onClickAddBookmark}>
+          <i class="fa fa-plus"></i>
+        </a>
+      </div>
+    </div>
+  `
+}
+
+function renderPinnedBookmark (bookmark) {
+  const {href, title} = bookmark
+
+  return yo`
+    <a class="pinned-bookmark" href=${href} oncontextmenu=${e => onContextmenuPinnedBookmark(e, bookmark)}>
+      <img src=${'beaker-favicon:64,' + href} class="favicon"/>
+      <div class="title">${title}</div>
+    </a>
+  `
+}
+
 // events
 // =
 
-function onClickNewSiteButton (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  contextMenu.create({
-    x: e.clientX,
-    y: e.clientY - 20,
-    render ({x, y}) {
-      return yo`
-        <div class="context-menu dropdown" style="left: ${x}px; top: ${y}px">
-          <div class="dropdown-items custom create-new filters subtle-shadow center top">
-            <div class="dropdown-item" onclick=${() => onCreateSite()}>
-              <div class="label">
-                <i class="far fa-clone"></i>
-                Empty project
-              </div>
-              <p class="description">
-                Create a new project
-              </p>
-            </div>
-            <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
-              <div class="label">
-                <i class="fa fa-code"></i>
-                Website
-              </div>
-              <p class="description">
-                Create a new website from a basic template
-              </p>
-            </div>
-            <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
-              <div class="label">
-                <i class="far fa-folder"></i>
-                From folder
-              </div>
-              <p class="description">
-                Create a new project from a folder on your computer
-              </p>
-            </div>
-          </div>
-        </div>
-      `
-    }
-  })
-}
-
-async function onCreateSiteFromFolder () {
-  // ask user for folder
-  const folder = await beaker.browser.showOpenDialog({
-    title: 'Select folder',
-    buttonLabel: 'Use folder',
-    properties: ['openDirectory']
-  })
-  if (!folder || !folder.length) return
-
-  // create a new archive
-  const archive = await DatArchive.create({prompt: false})
-  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
-  window.location = 'beaker://library/' + archive.url + '#setup'
-}
-
-async function onCreateSite (template) {
-  // create a new archive
-  const archive = await DatArchive.create({template, prompt: false})
-  window.location = 'beaker://library/' + archive.url + '#setup'
-}
-
 function onFocusSearch () {
-  return // TEMP
   isSearchFocused = true
   update()
 
@@ -174,7 +181,6 @@ function onInputSearch (e) {
 }
 
 async function onUpdateSearchQuery (q) {
-  return // TEMP
   searchResults = []
   activeSearchResult = 0
   query = q.length ? q.toLowerCase() : ''
@@ -222,6 +228,7 @@ async function onUpdateSearchQuery (q) {
 }
 
 async function onClickAddBookmark (e) {
+  e.preventDefault()
   try {
     var b = await addPinnedBookmarkPopup.create()
     if (!(await beaker.bookmarks.isBookmarked(b.url))) {
@@ -285,114 +292,6 @@ async function onContextmenuPinnedBookmark (e, bookmark) {
   await contextMenu.create({x: e.clientX, y: e.clientY, items})
 }
 
-// rendering
-// =
-
-function update () {
-  // TODO(bgimg) restore when background images are restored -prf
-  // var theme = settings.start_page_background_image
-
-  yo.update(document.querySelector('.window-content.start'), yo`
-    <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
-      <div class="builtin-wrapper start-wrapper">
-        <div style="position: absolute; bottom: 10px; right: 20px; font-size: 22px; text-align: right; font-weight: 300">
-          <span style="color: #2864dc; font-size: 38px; line-height: 1">Blue r1</span><br>
-          Beta pre-release
-        </div>
-
-        ${MOTD.render()}
-
-        ${''/*
-        <div class="autocomplete-container search-container">
-          <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
-          <i class="fa fa-search"></i>
-
-          <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
-            <i class="fa fa-arrow-right"></i>
-          </button>
-
-          ${query.length && isSearchFocused ? yo`
-            <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
-          : ''}
-        </div>*/}
-
-        ${renderPinnedBookmarks()}
-
-        ${''/*renderDock()*/}
-
-      </div>
-    </div>
-  `)
-
-  addSorting()
-}
-
-function renderSearchResult (res, i) {
-  return yo`
-    <a href=${res.targetUrl} class="autocomplete-result search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
-      ${res.faviconUrl
-        ? yo`<img class="icon favicon" src="beaker-favicon:32,${res.faviconUrl}"/>`
-        : yo`<i class="icon ${res.icon}"></i>`
-      }
-
-      <span class="title">${res.title}</span>
-
-      ${res.label ? yo`<span class="label">— ${res.label || ''}</span>` : ''}
-    </a>
-  `
-}
-
-function renderDock () {
-  return yo`
-    <div class="dock-wrapper">
-      <div class="dock">
-        <a class="dock-item" href="beaker://settings">
-          Settings
-        </a>
-
-        <a class="dock-item" href="beaker://history">
-          History
-        </a>
-
-        <a class="dock-item" href="beaker://bookmarks">
-          Bookmarks
-        </a>
-
-        <a class="dock-item" href="beaker://library">
-          Library
-        </a>
-
-        <span class="dock-separator">|</span>
-
-        <a class="dock-item" onclick=${onClickNewSiteButton}>
-          New +
-        </a>
-      </div>
-    </div>
-  `
-}
-
-function renderPinnedBookmarks () {
-  return yo`
-    <div class="pinned-bookmarks-container">
-      <div class="pinned-bookmarks">
-        ${pinnedBookmarks.map(renderPinnedBookmark)}
-      </div>
-    </div>
-  `
-}
-
-function renderPinnedBookmark (bookmark) {
-  const {href, title} = bookmark
-
-  return yo`
-    <a class="pinned-bookmark" href=${href} oncontextmenu=${e => onContextmenuPinnedBookmark(e, bookmark)}>
-      <img src=${'beaker-favicon:64,' + href} class="favicon"/>
-      <div class="title">${title}</div>
-    </a>
-  `
-}
-
 // helpers
 // =
 
@@ -413,7 +312,7 @@ function addSorting () {
     forceFallback: true,
     store: {
       get () {
-        return pinnedBookmarks.map(b => b.href)
+        return pinnedBookmarks.map(b => b.href).concat('#')
       },
       async set (sortable) {
         var order = sortable.toArray()

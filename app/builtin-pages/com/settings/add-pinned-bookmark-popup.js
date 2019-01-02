@@ -4,80 +4,42 @@ import yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
 import closeIcon from '../../icon/close'
 
+const BUILTIN_PAGES = [
+  {title: 'Feed', url: 'beaker://feed'},
+  {title: 'Library', url: 'beaker://library'},
+  {title: 'Search', url: 'beaker://search'},
+  {title: 'Bookmarks', url: 'beaker://bookmarks'},
+  {title: 'History', url: 'beaker://history'},
+  {title: 'Watchlist', url: 'beaker://watchlist'},
+  {title: 'Downloads', url: 'beaker://downloads'},
+  {title: 'Settings', url: 'beaker://settings'},
+]
+
 // globals
 // =
 
 var resolve
 var reject
 
-let isURLFocused = false
-let autocompleteResults = []
-let tmpURL = ''
+var isURLFocused = false
+var suggestions = []
+var tmpURL = ''
 
 // exported api
 // =
 
-export function render (url) {
-  return yo`
-    <div id="add-pinned-bookmark-popup" class="popup-wrapper" onclick=${onClickWrapper}>
-      <form class="popup-inner" onsubmit=${onSubmit}>
-        <div class="head">
-          <span class="title">Add pinned bookmark</span>
-
-          <span title="Cancel" onclick=${destroy} class="close-btn square">
-            ${closeIcon()}
-          </span>
-        </div>
-
-        <div class="body">
-          <div>
-            <label for="url-input" class="url-input">URL</label>
-            <div class="autocomplete-container">
-              <input type="text" id="url-input" name="url" oninput=${onFocusURL} onkeyup=${(e) => delay(onChangeURL, e)} required />
-
-              ${tmpURL && tmpURL.length && isURLFocused ? yo`
-                <div class="autocomplete-results">${autocompleteResults.map(renderAutocompleteResult)}</div>`
-              : ''}
-            </div>
-
-            <label for="title-input">Title</label>
-            <input type="text" id="title-input" name="title" required />
-          </div>
-
-          <div class="actions">
-            <button type="button" class="btn" onclick=${destroy}>Cancel</button>
-            <button type="submit" class="btn primary">Save</button>
-          </div>
-        </div>
-      </form>
-    </div>
-  `
-}
-
-function update () {
-  yo.update(document.getElementById('add-pinned-bookmark-popup'), render())
-}
-
-function renderAutocompleteResult (res, i) {
-  return yo`
-    <div onclick=${() => onClickURL(res.targetUrl, res.title)} class="autocomplete-result ${res.class || ''}">
-      ${res.faviconUrl
-        ? yo`<img class="icon favicon" src="beaker-favicon:${res.faviconUrl}"/>`
-        : yo`<i class="icon ${res.icon}"></i>`
-      }
-
-      <span class="title">${res.title}</span>
-
-      ${res.label ? yo`<span class="label">— ${res.label || ''}</span>` : ''}
-    </div>
-  `
-}
-
 export function create (url) {
+  // reset
+  suggestions = []
+  tmpURL = ''
+
   // render interface
   var popup = render(url)
   document.body.appendChild(popup)
   document.addEventListener('keyup', onKeyUp)
+
+  // trigger suggestions load
+  loadSuggestions()
 
   // select input
   var input = popup.querySelector('input')
@@ -98,6 +60,137 @@ export function destroy () {
   reject()
 }
 
+// data
+// =
+
+async function loadSuggestions () {
+  var query = tmpURL
+  suggestions = []
+
+  const filterFn = a => ((a.url || a.href).includes(query) || (a.title && a.title.toLowerCase().includes(query)))
+
+  // builtin pages
+  var builtinResults = BUILTIN_PAGES
+  builtinResults = builtinResults.filter(filterFn)
+  builtinResults = builtinResults.slice(0, 4)
+  builtinResults = builtinResults.map(a => {
+    return {
+      title: a.title,
+      url: a.url,
+      label: 'Application'
+    }
+  })
+  suggestions = suggestions.concat(builtinResults)
+
+  // bookmarks
+  var bookmarkResults = await beaker.bookmarks.listPublicBookmarks()
+  bookmarkResults = bookmarkResults.concat((await beaker.bookmarks.listPrivateBookmarks()))
+  bookmarkResults = bookmarkResults.filter(b => !b.pinned && filterFn(b))
+  bookmarkResults = bookmarkResults.slice(0, 6)
+  bookmarkResults = bookmarkResults.map(b => {
+    return {
+      title: b.title,
+      url: b.href,
+      label: 'Bookmark'
+    }
+  })
+  suggestions = suggestions.concat(bookmarkResults)
+
+  // library
+  var libraryResults = await beaker.archives.list()
+  libraryResults = libraryResults.filter(filterFn)
+  libraryResults = libraryResults.slice(0, 6)
+  libraryResults = libraryResults.map(a => {
+    return {
+      title: a.title,
+      url: a.url,
+      label: 'Saved to Library'
+    }
+  })
+  suggestions = suggestions.concat(libraryResults)
+
+  // fetch history
+  if (query) {
+    var historyResults = await beaker.history.search(query)
+    historyResults = historyResults.slice(0, 6)
+    historyResults = historyResults.map(r => {
+      return {
+        title: r.title,
+        url: r.url,
+        label: r.url
+      }
+    })
+    suggestions = suggestions.concat(historyResults)
+  }
+
+  // if a query has been used, sort to favor the shorter URLs
+  // (this causes the root domains to go higher than their subresources, like beaker.com above beaker.com/foo)
+  if (query) {
+    suggestions.sort((a, b) => a.title.length - b.title.length)
+  }
+
+  // render
+  update()
+}
+
+// rendering
+// =
+
+function render (url) {
+  return yo`
+    <div id="add-pinned-bookmark-popup" class="popup-wrapper" onclick=${onClickWrapper}>
+      <form class="popup-inner" onsubmit=${onSubmit}>
+        <div class="head">
+          <span class="title">Add pinned bookmark</span>
+
+          <span title="Cancel" onclick=${destroy} class="close-btn square">
+            ${closeIcon()}
+          </span>
+        </div>
+
+        <div class="add-pinned-bookmark-body">
+          <div class="form">
+            <div>
+              <label for="url-input" class="url-input">URL</label>
+              <input type="text" id="url-input" name="url" oninput=${onFocusURL} onkeyup=${(e) => delay(onChangeURL, e)} required />
+
+              <label for="title-input">Title</label>
+              <input type="text" id="title-input" name="title" required />
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn" onclick=${destroy}>Cancel</button>
+              <button type="submit" class="btn primary">Save</button>
+            </div>
+          </div>
+          <div class="suggestions">
+            ${suggestions.map(renderSuggestion)}
+          </div>
+        </div>
+      </form>
+    </div>
+  `
+}
+
+function update () {
+  yo.update(document.getElementById('add-pinned-bookmark-popup'), render())
+}
+
+function renderSuggestion (row) {
+  return yo`
+    <a onclick=${e => onClickURL(e, row.url, row.title)} href=${row.url} class="autocomplete-result search-result ${row.class}">
+      ${row.icon
+        ? yo`<i class="icon ${row.icon}"></i>`
+        : yo`<img class="icon favicon" src="beaker-favicon:32,${row.url}"/>`
+      }
+
+      <span class="title">${row.title}</span>
+
+      ${row.label ? yo`<span class="label">— ${row.label || ''}</span>` : ''}
+    </a>
+  `
+}
+
 // event handlers
 // =
 
@@ -110,7 +203,8 @@ function onFocusURL () {
   }
 }
 
-function onClickURL (url, title = '') {
+function onClickURL (e, url, title = '') {
+  e.preventDefault()
   tmpURL = url
 
   document.querySelector('input[name="url"]').value = url
@@ -120,51 +214,8 @@ function onClickURL (url, title = '') {
 }
 
 async function onChangeURL (e) {
-  autocompleteResults = []
   tmpURL = e.target.value ? e.target.value.toLowerCase() : ''
-
-  if (tmpURL.length) {
-    let bookmarkResults = await beaker.bookmarks.listPublicBookmarks()
-    bookmarkResults = bookmarkResults.concat((await beaker.bookmarks.listPrivateBookmarks()))
-    bookmarkResults = bookmarkResults.filter(b => !b.pinned && b.title.toLowerCase().includes(tmpURL)).slice(0, 6)
-    bookmarkResults = bookmarkResults.map(b => {
-      return {
-        title: b.title,
-        faviconUrl: b.href,
-        targetUrl: b.href,
-        label: b.href
-      }
-    })
-    autocompleteResults = autocompleteResults.concat(bookmarkResults)
-
-    let historyResults = await beaker.history.search(tmpURL.toLowerCase())
-    historyResults = historyResults.slice(0, 3)
-    historyResults = historyResults.map(r => {
-      return {
-        title: r.title,
-        faviconUrl: r.url,
-        targetUrl: r.url,
-        label: r.url
-      }
-    })
-    autocompleteResults = autocompleteResults.concat(historyResults)
-  }
-
-  // create a suggested URL
-  let suggestedURL = tmpURL
-  if (tmpURL.split('.').length < 2) {
-    suggestedURL += '.com'
-  }
-  if (!(tmpURL.startsWith('http://') || tmpURL.startsWith('https://'))) {
-    suggestedURL = 'https://' + suggestedURL
-  }
-
-  autocompleteResults.push({
-    icon: 'fa fa-link',
-    title: suggestedURL,
-    targetUrl: suggestedURL
-  })
-  update()
+  loadSuggestions()
 }
 
 function onKeyUp (e) {
@@ -179,16 +230,6 @@ function onKeyUp (e) {
 function onClickWrapper (e) {
   if (e.target.id === 'add-pinned-bookmark-popup') {
     destroy()
-  }
-}
-
-function onClickWhileURLFocused (e) {
-  if (findParent(e.target, 'autocomplete-results') || findParent(e.target, 'url-input')) {
-    return
-  } else {
-    isURLFocused = false
-    window.removeEventListener('click', onClickWhileURLFocused)
-    update()
   }
 }
 

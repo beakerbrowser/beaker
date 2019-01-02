@@ -250,12 +250,24 @@
 #add-pinned-bookmark-popup {
 
   .popup-inner {
-    // allow the suggested bookmark results to overflow the element
-    overflow: visible;
+    overflow: visible; // allow the suggested bookmark results to overflow the element
   }
 
   .autocomplete-results {
     top: 33px;
+  }
+
+  .add-pinned-bookmark-body {
+    .form {
+      padding: 12px;
+    }
+
+    .suggestions {
+      background: #f5f5f5;
+      border-top: 1px solid #ddd;
+      overflow-y: auto;
+      max-height: calc(100vh - 400px);
+    }
   }
 }
 

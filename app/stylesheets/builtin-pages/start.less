@@ -121,88 +121,6 @@
       }
     }
   }
-
-  .dock-wrapper {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    background: #f0f0f0;
-  }
-
-  .dock {
-    padding: 30px 15px;
-
-    .dock-separator {
-      width: auto;
-      padding: 3px 7px;
-      margin-right: 25px;
-      color: #bbb;
-    }
-
-    .dock-item {
-      display: inline-block;
-      width: auto;
-      cursor: pointer;
-      margin-bottom: 0;
-      padding: 3px 7px;
-      font-weight: 400;
-      font-size: .7rem;
-      text-transform: uppercase;
-      letter-spacing: .15px;
-      color: rgba(0,0,0,.75);
-
-      &:not(:last-child) {
-        margin-right: 25px;
-      }
-
-      &:hover {
-        color: @color-text;
-        background: rgba(0,0,0,.075);
-        border-radius: 2px;
-      }
-    }
-  }
-}
-
-.beaker-welcome {
-  width: 410px;
-  text-align: center;
-  padding: 7px 26px 7px 13px;
-  margin-left: auto;
-  margin-right: auto;
-  border: 1px solid @blue;
-  color: @blue;
-  border-radius: 4px;
-  font-size: 13.5px;
-  margin-top: 100px;
-  margin-bottom: -100px;
-  position: relative;
-
-  p {
-    margin: 0;
-  }
-
-  i {
-    position: absolute;
-    right: 8px;
-    top: 10px;
-    font-weight: 300;
-    padding: 2px;
-    cursor: pointer;
-
-    &:hover {
-      background: @blue;
-      color: #fff;
-    }
-  }
-
-  a {
-    text-decoration: none !important;
-    border-bottom: 1px dotted;
-    cursor: pointer;
-  }
 }
 
 .pinned-bookmarks-container {
@@ -250,13 +168,6 @@
   @media (min-width: 1100px) {
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
   }
-
-  .add-pinned-btn {
-
-    .tooltip {
-      top: 25px;
-    }
-  }
 }
 
 .pinned-bookmark {
@@ -297,14 +208,21 @@
     margin-top: 10px;
     color: fadeout(@color-text, 10%);
     font-size: .675rem;
+  }
 
-    /*
-    TODO(bgimg) restore with background images -prf
-    color: #fff;
-    text-shadow: 0 0 4px fadeout(black, 50%);
-    -webkit-font-smoothing: antialiased;
-    font-weight: 600;
-    */
+  &.add-pinned-bookmark {
+    outline: 0;
+    background: none;
+
+    &:hover {
+      background: #eee;
+    }
+
+    i {
+      color: rgba(0,0,0,.15);
+      font-size: 45px;
+      margin-top: 38px;
+    }
   }
 }
 
