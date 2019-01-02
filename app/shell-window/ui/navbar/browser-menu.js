@@ -130,18 +130,18 @@ export class BrowserMenuNavbarBtn {
 
               <div class="section">
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
-                  <i class="fa fa-book"></i>
+                  <i class="fa fa-hdd"></i>
                   <span class="label">Library</span>
+                </div>
+                
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+                  <i class="far fa-star"></i>
+                  <span class="label">Bookmarks</span>
                 </div>
 
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://watchlist')}>
                   <i class="fa fa-eye"></i>
                   <span class="label">Watchlist</span>
-                </div>
-
-                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
-                  <i class="far fa-star"></i>
-                  <span class="label">Bookmarks</span>
                 </div>
 
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://history')}>

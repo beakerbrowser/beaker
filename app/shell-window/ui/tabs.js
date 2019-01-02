@@ -69,9 +69,6 @@ function drawTab (page) {
     if (page.favicons && page.favicons[0]) {
       favicon = yo`<img src=${page.favicons[page.favicons.length - 1]}>`
       favicon.onerror = onFaviconError(page)
-    } else if (page.getURL().startsWith('beaker:')) {
-      // favicon = yo`<img src="beaker-favicon:beaker">`
-      favicon = getBuiltinPageIcon(page.getURL())
     } else {
       // (check for cached icon)
       favicon = yo`<img src="beaker-favicon:${page.getURL()}?cache=${Date.now()}">`
@@ -512,39 +509,4 @@ var _platform
 function getPlatform () {
   if (!_platform) _platform = beaker.browser.getInfo().platform
   return _platform
-}
-
-function getBuiltinPageIcon (url) {
-  if (url.startsWith('beaker://library/dat://')) {
-    // use the protocol, it will try to load the favicon of the dat
-    return yo`<img src="beaker-favicon:${url}?cache=${Date.now()}">`
-  }
-  if (url.startsWith('beaker://feed/')) {
-    return yo`<i class="fa fa-list-ul"></i>`
-  }
-  if (url.startsWith('beaker://library/')) {
-    return yo`<i class="far fa-hdd"></i>`
-  }
-  if (url.startsWith('beaker://search/')) {
-    return yo`<i class="fa fa-search"></i>`
-  }
-  if (url.startsWith('beaker://bookmarks/')) {
-    return yo`<i class="far fa-star"></i>`
-  }
-  if (url.startsWith('beaker://history/')) {
-    return yo`<i class="fa fa-history"></i>`
-  }
-  if (url.startsWith('beaker://downloads/')) {
-    return yo`<i class="fa fa-download"></i>`
-  }
-  if (url.startsWith('beaker://settings/')) {
-    return yo`<i class="fas fa-cog"></i>`
-  }
-  if (url.startsWith('beaker://swarm-debugger/')) {
-    return yo`<i class="fa fa-bug"></i>`
-  }
-  if (url.startsWith('beaker://watchlist/')) {
-    return yo`<i class="fa fa-eye"></i>`
-  }
-  return yo`<i class="far fa-window-maximize"></i>`
 }

@@ -33,6 +33,14 @@ export function setup () {
       faviconSize *= 2
     }
 
+    // if beaker://, pull from assets
+    if (url.startsWith('beaker://')) {
+      let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
+      return fs.readFile(path.join(__dirname, `./assets/img/favicons/${name}.png`), (err, buf) => {
+        cb({mimeType: 'image/png', data: buf || defaultFaviconBuffer})
+      })
+    }
+
     // if a dat, see if there's a favicon.ico or .png
     try {
       let data, fs
