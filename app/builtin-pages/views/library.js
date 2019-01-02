@@ -175,7 +175,7 @@ function renderRow (row, i) {
 
   return yo`
     <a
-      href="beaker://library/${row.url}"
+      href="${row.url}"
       class="ll-row archive ${row.checked ? 'selected' : ''} ${isMenuOpen ? 'menu-open' : ''}"
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
@@ -645,10 +645,9 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
 
   // construct and show popup
   let items = [
-    {icon: 'fa fa-link', label: 'Copy URL', click: () => onCopy(archive.url)},
     {icon: 'fa fa-external-link-alt', label: 'Open in new tab', click: () => window.open(archive.url)},
-    {icon: 'far fa-clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
-    {icon: 'fa fa-cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
+    {icon: 'fa fa-link', label: 'Copy URL', click: () => onCopy(archive.url)},
+    {icon: 'fas fa-code', label: 'View Source', click: () => window.open(`beaker://library/${archive.url}`)}
   ]
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
