@@ -8,7 +8,6 @@ import {writeToClipboard} from '../../lib/fg/event-handlers'
 
 const SITE_TEMPLATES = [
   {id: 'web-page', title: 'Web page'},
-  {id: 'markdown-page', title: 'Markdown page'},
   {id: 'file-share', title: 'File share'},
   {id: 'image-collection', title: 'Image collection'},
   {id: 'music-album', title: 'Album', disabled: true},
