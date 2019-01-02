@@ -24,6 +24,7 @@ var activeSearchResult = 0
 var isSearchFocused = false
 var settings
 var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
+var pinGridMode = localStorage.pinGridMode || 'square-mode'
 
 update()
 setup()
@@ -67,7 +68,7 @@ function update () {
 
         ${MOTD.render()}
 
-        <div class="autocomplete-container search-container">
+        <div class="autocomplete-container search-container" style="display: none">
           <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
           <i class="fa fa-search"></i>
 
@@ -105,7 +106,13 @@ function renderSearchResult (res, i) {
 
 function renderPinnedBookmarks () {
   return yo`
-    <div class="pinned-bookmarks-container">
+    <div class="pinned-bookmarks-container ${pinGridMode}">
+      <div class="pinned-bookmarks-config">
+        <div class="mode">
+          ${renderPinGridMode('fas fa-th', 'square-mode')}
+          ${renderPinGridMode('fas fa-th-large', 'horz-mode')}
+        </div>
+      </div>
       <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
         <a class="pinned-bookmark add-pinned-bookmark" href="#" onclick=${onClickAddBookmark}>
@@ -114,6 +121,10 @@ function renderPinnedBookmarks () {
       </div>
     </div>
   `
+}
+
+function renderPinGridMode (icon, mode) {
+  return yo`<span class="${mode === pinGridMode ? 'active' : ''} ${icon}" onclick=${() => onSetPinGridMode(mode)}></span>`
 }
 
 function renderPinnedBookmark (bookmark) {
@@ -290,6 +301,11 @@ async function onContextmenuPinnedBookmark (e, bookmark) {
     {icon: 'fa fa-trash', label: 'Delete', click: () => onClickDeleteBookmark(bookmark)}
   ]
   await contextMenu.create({x: e.clientX, y: e.clientY, items})
+}
+
+function onSetPinGridMode (mode) {
+  localStorage.pinGridMode = pinGridMode = mode
+  update()
 }
 
 // helpers

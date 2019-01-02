@@ -145,6 +145,25 @@
   @media (min-width: 1100px) {
     width: 950px;
   }
+
+  .pinned-bookmarks-config {
+    text-align: right;
+    margin-bottom: 10px;
+
+    .mode {
+      span {
+        color: rgba(0, 0, 0, 0.2);
+        cursor: pointer;
+        margin-left: 2px;
+        -webkit-font-smoothing: unset;
+        font-size: 15px;
+
+        &.active {
+          color: rgba(0,0,0,0.6);
+        }
+      }
+    }
+  }
 }
 
 .pinned-bookmarks {
@@ -152,27 +171,9 @@
   grid-template-columns: 1fr 1fr 1fr;
   grid-gap: 20px;
   width: 100%;
-
-  @media (min-width: 640px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
-
-  @media (min-width: 740px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  }
-
-  @media (min-width: 900px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
-  }
-
-  @media (min-width: 1100px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  }
 }
 
 .pinned-bookmark {
-  width: 120px;
-  height: 120px;
   background: #fff;
   text-align: center;
   font-size: .8rem;
@@ -198,16 +199,11 @@
   .favicon {
     width: 32px;
     height: 32px;
-    margin-top: 30px;
   }
 
   .title {
     &:extend(.overflow-ellipsis);
-    max-width: 100px;
-    margin: auto;
-    margin-top: 10px;
     color: fadeout(@color-text, 10%);
-    font-size: .675rem;
   }
 
   &.add-pinned-bookmark {
@@ -220,8 +216,77 @@
 
     i {
       color: rgba(0,0,0,.15);
-      font-size: 45px;
-      margin-top: 38px;
+    }
+  }
+}
+
+.pinned-bookmarks-container.square-mode {
+  .pinned-bookmarks {
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    @media (min-width: 740px) {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    @media (min-width: 900px) {
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    @media (min-width: 1100px) {
+      grid-template-columns: repeat(7, 1fr);
+    }
+  }
+
+  .pinned-bookmark {
+    width: 120px;
+    height: 120px;
+
+    .favicon {
+      margin-top: 30px;
+    }
+
+    .title {
+      font-size: .675rem;
+      max-width: 100px;
+      margin: auto;
+      margin-top: 10px;
+    }
+
+    &.add-pinned-bookmark {
+      i {
+        font-size: 45px;
+        margin-top: 38px;
+      }
+    }
+  }
+}
+
+.pinned-bookmarks-container.horz-mode {
+  .pinned-bookmarks {
+    @media (min-width: 780px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .pinned-bookmark {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+
+    .favicon {
+      margin-right: 10px;
+    }
+
+    .title {
+      font-size: .8rem;
+    }
+
+    &.add-pinned-bookmark {
+      i {
+        font-size: 27px;
+      }
     }
   }
 }
