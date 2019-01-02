@@ -4,7 +4,6 @@ const yo = require('yo-yo')
 const moment = require('moment')
 import {getHostname} from '../../lib/strings'
 import debounce from 'lodash.debounce'
-import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import renderCloseIcon from '../icon/close'
 
 // globals
@@ -16,7 +15,6 @@ const BEGIN_LOAD_OFFSET = 500
 const BATCH_SIZE = 20
 const onUpdateSearchQueryDebounced = debounce(onUpdateSearchQuery, 500)
 
-var currentUserSession = null
 // visits, cached in memory
 var visits = []
 var isAtEnd = false
@@ -31,7 +29,6 @@ setup()
 
 async function setup () {
   render()
-  currentUserSession = await beaker.browser.getUserSession()
   fillPage()
   document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
   render()
@@ -233,7 +230,6 @@ function render () {
   yo.update(
     document.querySelector('.history-wrapper'), yo`
       <div class="history-wrapper builtin-wrapper">
-        ${renderBuiltinPagesHeader('History', currentUserSession)}
         <div class="builtin-main">
           <div class="builtin-sidebar">
             <div class="section">

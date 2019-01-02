@@ -4,7 +4,6 @@ const yo = require('yo-yo')
 import {getHostname} from '../../lib/strings'
 import * as toast from '../com/toast'
 import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
-import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import toggleable from '../com/toggleable'
 import renderCloseIcon from '../icon/close'
 
@@ -219,7 +218,7 @@ function renderBookmarksListToPage () {
 }
 
 function renderHeader () {
-  return renderBuiltinPagesHeader('Bookmarks', currentUserSession)
+  return ''
 
   // TODO replace
   var searchPlaceholder = 'Search your bookmarks'

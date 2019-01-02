@@ -3,14 +3,12 @@
 import yo from 'yo-yo'
 import {niceDate} from '../../lib/time'
 import * as toast from '../com/toast'
-import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import * as addWatchlistItemPopup from '../com/add-watchlist-item-popup'
 import renderCloseIcon from '../icon/close'
 
 // globals
 // =
 
-var currentUserSession = null
 // watchlist, cached in memory
 let watchlist = []
 let selectedItems = []
@@ -21,7 +19,6 @@ let wlEvents = beaker.watchlist.createEventsStream()
 
 setup()
 async function setup () {
-  currentUserSession = await beaker.browser.getUserSession()
   await loadWatchlist()
   render()
 
@@ -137,8 +134,6 @@ function render () {
   yo.update(
     document.querySelector('.watchlist-wrapper'), yo`
       <div class="watchlist-wrapper watchlist builtin-wrapper">
-        ${renderBuiltinPagesHeader('Watchlist', currentUserSession)}
-
         <div class="builtin-main">
           <div>
             ${watchlist.length

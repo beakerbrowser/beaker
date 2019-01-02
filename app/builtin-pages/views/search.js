@@ -1,7 +1,6 @@
 /* globals beaker */
 
 import yo from 'yo-yo'
-import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import renderUserCard from '../com/user-card'
 
 // globals
@@ -30,8 +29,6 @@ async function setup () {
 function update () {
   yo.update(document.querySelector('.search-wrapper'), yo`
     <div class="search-wrapper builtin-wrapper">
-      ${renderBuiltinPagesHeader('Search', currentUserSession)}
-
       <div class="builtin-main">
         <h3 class="subtitle-heading">Users</h3>
         <div class="user-cards">

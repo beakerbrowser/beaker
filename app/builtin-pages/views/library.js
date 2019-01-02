@@ -7,7 +7,6 @@ import {pluralize, shortenHash} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
-import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import toggleable from '../com/toggleable'
 import * as contextMenu from '../com/context-menu'
 import renderCloseIcon from '../icon/close'
@@ -237,8 +236,6 @@ function render () {
   yo.update(
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper library builtin-wrapper">
-        ${renderBuiltinPagesHeader('Library', currentUserSession)}
-
         <div class="builtin-main">
           ${renderSidebar()}
 

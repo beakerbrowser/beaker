@@ -4,12 +4,10 @@ import yo from 'yo-yo'
 import * as toast from '../com/toast'
 import DatCache from '../com/settings/dat-cache'
 import CrawlerStatus from '../com/settings/crawler-status'
-import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 
 // globals
 // =
 
-var currentUserSession = null
 var settings
 var browserInfo
 var browserEvents
@@ -32,7 +30,6 @@ async function setup () {
   window.addEventListener('popstate', onPopState)
 
   // fetch data
-  currentUserSession = await beaker.browser.getUserSession()
   browserInfo = beaker.browser.getInfo()
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
@@ -58,8 +55,6 @@ function renderToPage () {
 
   yo.update(document.querySelector('.settings-wrapper'), yo`
     <div id="el-content" class="settings-wrapper builtin-wrapper">
-      ${renderBuiltinPagesHeader('Settings', currentUserSession)}
-
       <div class="builtin-main">
         ${renderSidebar()}
         ${renderView()}

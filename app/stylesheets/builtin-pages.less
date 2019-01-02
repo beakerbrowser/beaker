@@ -286,135 +286,6 @@
   }
 }
 
-.builtin-header {
-  &:extend(.flex);
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  padding: 0px 5px;
-  background: #fff;
-
-  .nav {
-    font-size: 14px;
-    font-weight: 100;
-    height: 50px;
-
-    & > a span {
-      margin-right: 5px;
-
-      &.fa-th {
-       -webkit-font-smoothing: auto;
-      }
-    }
-
-    & > a,
-    & > .dropdown > a {
-      padding: 0 20px;
-      display: inline-block;
-      line-height: 49px;
-      cursor: pointer;
-
-      &.active {
-        color: @blue;
-        font-weight: bold;
-        border-bottom: 1px solid;
-      }
-
-      &:hover {
-        background: #eee;
-      }
-    }
-  }
-
-  .notifications {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
-    text-align: center;
-    font-size: 21px;
-    border-radius: 4px;
-    margin-left: 5px;
-
-    cursor: pointer;
-    * {
-      cursor: pointer;
-    }
-
-    &:hover {
-      background: #eee;
-    }
-
-    &:before {
-      content: attr(data-count);
-      position: absolute;
-      background: blue;
-      height: 15px;
-      padding: 0 5px;
-      line-height: 15px;
-      font-size: 10px;
-      color: #fff;
-      border-radius: 7px;
-      right: 2px;
-      bottom: 7px;
-    }
-  }
-
-  .create-new-dropdown {
-    display: inline-block;
-
-    .dropdown-items.create-new {
-      width: 230px;
-    }
-  }
-
-  .builtin-pages-nav,
-  .create-new-dropdown {
-    display: inline-block;
-
-    .toggleable {
-      padding: 0 10px !important;
-
-      .fa-caret-down {
-        margin: 0 6px;
-      }
-    }
-
-    .dropdown-items {
-      .dropdown-item {
-        display: inline-block;
-        padding: 0 20px;
-        line-height: 49px;
-      }
-    }
-
-    h1 {
-      font-size: .95rem;
-      font-weight: 500;
-    }
-
-    i {
-      margin-right: 3px;
-    }
-  }
-
-  &.fixed {
-    &:extend(.flex);
-    flex-wrap: nowrap;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 5000;
-    border-bottom: 1px solid rgb(210, 210, 213);
-    box-shadow: 0 2px 0 rgba(0,0,0,.025);
-
-    > * {
-      margin-bottom: 0;
-    }
-  }
-}
-
 .builtin-subheader {
   margin-bottom: 10px;
 
@@ -507,7 +378,7 @@
 
   @media (min-width: 1050px) {
     position: fixed;
-    top: 75px;
+    top: 25px;
     left: 15px;
     width: 200px;
 
@@ -564,11 +435,11 @@
 .builtin-main {
   width: 100%;
   max-width: 700px;
-  padding: 75px 5px;
+  padding: 25px 5px;
   height: 100%;
 
   @media (min-width: 725px) {
-    padding: 75px 0;
+    padding: 25px 0;
   }
 
   > div:not(.builtin-sidebar) {

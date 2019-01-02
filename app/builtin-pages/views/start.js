@@ -8,7 +8,6 @@ import * as MOTD from '../com/motd'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
-import renderBuiltinPagesHeader from '../com/builtin-pages-header'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 
 const LATEST_VERSION = 8002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
@@ -296,8 +295,6 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
       <div class="builtin-wrapper start-wrapper">
-        ${renderBuiltinPagesHeader('Start', currentUserSession)}
-
         <div style="position: absolute; bottom: 10px; right: 20px; font-size: 22px; text-align: right; font-weight: 300">
           <span style="color: #2864dc; font-size: 38px; line-height: 1">Blue r1</span><br>
           Beta pre-release
