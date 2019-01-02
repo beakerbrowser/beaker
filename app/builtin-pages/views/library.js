@@ -113,7 +113,7 @@ function sortArchives () {
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
       case 'type': v = getBasicType(b.type).localeCompare(getBasicType(a.type)); break
-      case 'author': v = getAuthor(b).localeCompare(getAuthor(a)); break
+      case 'owner': v = getOwner(b).localeCompare(getOwner(a)); break
     }
     if (v === 0) v = (b.title || '').localeCompare(a.title || '') // use title to tie-break
     return v * currentSort[1]
@@ -188,8 +188,8 @@ function renderRow (row, i) {
         }
       </span>
 
-      <span class="author">
-        ${getAuthor(row)}
+      <span class="owner">
+        ${getOwner(row)}
       </span>
 
       <span class="type">
@@ -249,7 +249,7 @@ function render () {
               ? yo`
                 <div class="ll-column-headings">
                   ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
-                  ${renderColumnHeading({cls: 'author', sort: 'author', label: 'Author'})}
+                  ${renderColumnHeading({cls: 'owner', sort: 'owner', label: 'Owner'})}
                   ${renderColumnHeading({cls: 'type', sort: 'type', label: 'Type'})}
                   ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
                   ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
@@ -451,8 +451,8 @@ function getBasicType (type) {
   return 'other'
 }
 
-function getAuthor (archive) {
-  return archive.isOwner ? 'You' : 'Anonymous' // TODO
+function getOwner (archive) {
+  return archive.isOwner ? 'me' : ''
 }
 
 // events
