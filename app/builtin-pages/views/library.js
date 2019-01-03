@@ -7,6 +7,7 @@ import {pluralize, shortenHash} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import {getBasicType} from '../../lib/dat'
+import {SITE_TEMPLATES, createSiteFromTemplate} from '../../lib/templates'
 import * as toast from '../com/toast'
 import toggleable from '../com/toggleable'
 import * as contextMenu from '../com/context-menu'
@@ -358,6 +359,26 @@ function renderSubheader () {
             </button>`
         }
       </div>`
+  } else {
+    actions = yo`    
+      <div class="actions">
+        ${toggleable(yo`
+          <div class="dropdown toggleable-container">
+            <button class="btn primary toggleable">
+              New +
+            </button>
+
+            <div class="dropdown-items with-triangle create-new subtle-shadow right">
+              ${SITE_TEMPLATES.filter(t => !t.disabled).map(t => yo`
+                <div class="dropdown-item" onclick=${e => onCreateSite(e, t.id)}>
+                  <img src="beaker://assets/img/templates/${t.id}.png" />
+                  ${t.title}
+                </div>
+              `)}
+            </div>
+          </div>
+        `)}
+      </div>`
   }
 
   return yo`
@@ -370,62 +391,6 @@ function renderSubheader () {
         </span>
 
         <i class="fa fa-search"></i>
-
-        <div class="filter-btn">
-          ${toggleable(yo`
-            <div class="dropdown toggleable-container">
-              <button class="btn transparent toggleable">
-                <i class="fa fa-filter"></i>
-              </button>
-
-              <div class="dropdown-items filters with-triangle compact subtle-shadow right">
-                <div class="section">
-                  <div class="section-header">Sort by:</div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'alpha' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('alpha')}
-                  >
-                    ${currentSort[0] === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Alphabetical</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'recently-accessed' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('recently-accessed')}
-                  >
-                    ${currentSort[0] === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Recently accessed</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'recently-updated' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('recently-updated')}
-                  >
-                    ${currentSort[0] === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Recently updated</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'size' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('size')}
-                  >
-                    ${currentSort[0] === 'size' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Archive size</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'peers' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('peers')}
-                  >
-                    ${currentSort[0] === 'peers' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Peer count</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `)}
-        </div>
       </div>
       ${actions}
     </div>`
@@ -470,35 +435,9 @@ function onCopy (str, successMessage = 'URL copied to clipboard') {
   toast.create(successMessage)
 }
 
-async function onCreateSiteFromFolder () {
-  // ask user for folder
-  const folder = await beaker.browser.showOpenDialog({
-    title: 'Select folder',
-    buttonLabel: 'Use folder',
-    properties: ['openDirectory']
-  })
-  if (!folder || !folder.length) return
-
+async function onCreateSite (e, template) {
   // create a new archive
-  const archive = await DatArchive.create({prompt: false})
-  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
-  window.location += archive.url + '#setup'
-}
-
-async function onCreateSite (template) {
-  // create a new archive
-  const archive = await DatArchive.create({template, prompt: false})
-  window.location += archive.url + '#setup'
-}
-
-async function onMakeCopy (e, archive) {
-  if (e) {
-    e.stopPropagation()
-    e.preventDefault()
-  }
-
-  const fork = await DatArchive.fork(archive.url, {prompt: true}).catch(() => {})
-  window.location = `beaker://library/${fork.url}#setup`
+  window.location = await createSiteFromTemplate(template)
 }
 
 async function onDelete (e, archive) {

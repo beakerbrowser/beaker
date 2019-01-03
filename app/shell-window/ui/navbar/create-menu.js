@@ -2,18 +2,8 @@
 
 import * as yo from 'yo-yo'
 import { findParent } from '../../../lib/fg/event-handlers'
+import { SITE_TEMPLATES, createSiteFromTemplate } from '../../../lib/templates'
 import * as pages from '../../pages'
-
-const SITE_TEMPLATES = [
-  {id: 'web-page', title: 'Web page'},
-  {id: 'file-share', title: 'File share'},
-  {id: 'image-collection', title: 'Image collection'},
-  {id: 'music-album', title: 'Album', disabled: true},
-  {id: 'video', title: 'Video', disabled: true},
-  {id: 'podcast', title: 'Podcast', disabled: true},
-  {id: 'module', title: 'Code Module', disabled: true},
-  {id: 'blank', title: 'Empty project'}
-]
 
 // there can be many drop menu btns rendered at once, but they are all showing the same information
 // the CreateMenuNavbarBtn manages all instances, and you should only create one
@@ -85,16 +75,7 @@ export class CreateMenuNavbarBtn {
     this.updateActives()
 
     // create site
-    template = template === 'blank' ? false : template
-    var archive = await DatArchive.create({template, prompt: false})
-    
-    if (!template) {
-      // for the blank template, go to the source view
-      // TODO should go to the editor
-      pages.setActive(pages.create(`beaker://library/${archive.url}#setup`))
-    } else {
-      // go to the site
-      pages.setActive(pages.create(archive.url))
-    }
+    var url = await createSiteFromTemplate(template)
+    pages.setActive(pages.create(url))
   }
 }
