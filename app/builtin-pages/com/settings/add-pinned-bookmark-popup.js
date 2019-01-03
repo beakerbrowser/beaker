@@ -22,7 +22,7 @@ var resolve
 var reject
 
 var isURLFocused = false
-var suggestions = []
+var suggestions = {}
 var tmpURL = ''
 
 // exported api
@@ -30,7 +30,7 @@ var tmpURL = ''
 
 export function create (url) {
   // reset
-  suggestions = []
+  suggestions = {}
   tmpURL = ''
 
   // render interface
@@ -65,67 +65,30 @@ export function destroy () {
 
 async function loadSuggestions () {
   var query = tmpURL
-  suggestions = []
+  suggestions = {}
 
   const filterFn = a => a.title && ((a.url || a.href).includes(query) || a.title.toLowerCase().includes(query))
 
   // builtin pages
-  var builtinResults = BUILTIN_PAGES
-  builtinResults = builtinResults.filter(filterFn)
-  builtinResults = builtinResults.map(a => {
-    return {
-      title: a.title,
-      url: a.url,
-      label: 'Application'
-    }
-  })
-  suggestions = suggestions.concat(builtinResults)
+  suggestions.apps = BUILTIN_PAGES.filter(filterFn)
 
   // bookmarks
   var bookmarkResults = await beaker.bookmarks.listPublicBookmarks()
   bookmarkResults = bookmarkResults.concat((await beaker.bookmarks.listPrivateBookmarks()))
   bookmarkResults = bookmarkResults.filter(b => !b.pinned && filterFn(b))
-  bookmarkResults = bookmarkResults.slice(0, 6)
-  bookmarkResults = bookmarkResults.map(b => {
-    return {
-      title: b.title,
-      url: b.href,
-      label: 'Bookmark'
-    }
-  })
-  suggestions = suggestions.concat(bookmarkResults)
+  bookmarkResults = bookmarkResults.slice(0, 12)
+  suggestions.bookmarks = bookmarkResults.map(b => ({title: b.title, url: b.href}))
 
   // library
   var libraryResults = await beaker.archives.list({isSaved: true})
   libraryResults = libraryResults.filter(filterFn)
-  libraryResults = libraryResults.slice(0, 6)
-  libraryResults = libraryResults.map(a => {
-    return {
-      title: a.title,
-      url: a.url,
-      label: 'Saved to Library'
-    }
-  })
-  suggestions = suggestions.concat(libraryResults)
+  suggestions.library = libraryResults.slice(0, 12)
 
   // fetch history
   if (query) {
     var historyResults = await beaker.history.search(query)
-    historyResults = historyResults.slice(0, 6)
-    historyResults = historyResults.map(r => {
-      return {
-        title: r.title,
-        url: r.url,
-        label: r.url
-      }
-    })
-    suggestions = suggestions.concat(historyResults)
-  }
-
-  // if a query has been used, sort to favor the shorter URLs
-  // (this causes the root domains to go higher than their subresources, like beaker.com above beaker.com/foo)
-  if (query) {
-    suggestions.sort((a, b) => a.title.length - b.title.length)
+    suggestions.history = historyResults.slice(0, 12)
+    suggestions.history.sort((a, b) => a.url.length - b.url.length)
   }
 
   // render
@@ -163,7 +126,10 @@ function render (url) {
             </div>
           </div>
           <div class="suggestions">
-            ${suggestions.map(renderSuggestion)}
+            ${renderSuggestionGroup('history', 'History')}
+            ${renderSuggestionGroup('apps', 'Applications')}
+            ${renderSuggestionGroup('bookmarks', 'Bookmarks')}
+            ${renderSuggestionGroup('library', 'Saved to your Library')}
           </div>
         </div>
       </form>
@@ -175,17 +141,25 @@ function update () {
   yo.update(document.getElementById('add-pinned-bookmark-popup'), render())
 }
 
+function renderSuggestionGroup (key, label) {
+  var group = suggestions[key]
+  if (!group || !group.length) return ''
+  return yo`
+    <div class="group">
+      <div class="group-title">${label}</div>
+      <div class="group-items">${group.map(renderSuggestion)}</div>
+    </div>`
+}
+
 function renderSuggestion (row) {
   return yo`
-    <a onclick=${e => onClickURL(e, row.url, row.title)} href=${row.url} class="autocomplete-result search-result ${row.class}">
+    <a onclick=${e => onClickURL(e, row.url, row.title)} href=${row.url} class="suggestion" title=${row.title}>
       ${row.icon
         ? yo`<i class="icon ${row.icon}"></i>`
         : yo`<img class="icon favicon" src="beaker-favicon:32,${row.url}"/>`
       }
 
-      <span class="title">${row.title}</span>
-
-      ${row.label ? yo`<span class="label">— ${row.label || ''}</span>` : ''}
+      <span class="title">${trunc(row.title, 15)}</span>
     </a>
   `
 }
@@ -243,6 +217,13 @@ function onSubmit (e) {
 
 // helpers
 // =
+
+function trunc (str, n) {
+  if (str && str.length > n) {
+    str = str.slice(0, n - 3) + '...'
+  }
+  return str
+}
 
 function delay (cb, param) {
   window.clearTimeout(cb)

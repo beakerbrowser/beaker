@@ -250,24 +250,68 @@
 #add-pinned-bookmark-popup {
 
   .popup-inner {
-    width: 800px;
-    overflow: visible; // allow the suggested bookmark results to overflow the element
+    width: 80vw;
   }
 
   .add-pinned-bookmark-body {
     display: flex;
-    
+
     .form {
-      width: 350px;
+      width: 300px;
       padding: 12px;
+
+      @media (min-width: 1100px) {
+        width: 350px;
+        padding-right: 20px;
+      }
     }
 
     .suggestions {
       flex: 1;
-      background: #f5f5f5;
       border-left: 1px solid #eee;
-      overflow-y: scroll;
-      max-height: calc(100vh - 400px);
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+
+      @media (min-width: 1100px) {
+        padding-left: 10px;
+      }
+
+      .group {
+        padding: 10px;
+
+        .group-title {
+          border-bottom: 1px solid rgba(0,0,0,.1);
+          color: rgba(0,0,0,.65);
+          margin-bottom: 10px;
+        }
+
+        .group-items {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+
+          @media (min-width: 1300px) {
+            grid-template-columns: repeat(6, 1fr);
+          }
+
+          .suggestion {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+
+            .favicon {
+              width: 32px;
+              height: 32px;
+              margin-bottom: 6px;
+            }
+
+            .title {
+              white-space: nowrap;
+            }
+          }
+        }
+      }
     }
   }
 }
