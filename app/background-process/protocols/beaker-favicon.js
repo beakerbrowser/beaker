@@ -10,8 +10,8 @@ const {dat} = beakerCore
 const {sitedata} = beakerCore.dbs
 import fs from 'fs'
 import path from 'path'
-import pda from 'pauls-dat-api'
 import ICO from 'icojs'
+import {getBasicType} from '../../lib/dat'
 
 export function setup () {
   // load default favicon
@@ -43,17 +43,17 @@ export function setup () {
 
     // if a dat, see if there's a favicon.ico or .png
     try {
-      let data, fs
+      let data, datfs
       // pick the filesystem
       let datResolvedUrl = url
       if (url.startsWith('dat://')) {
         datResolvedUrl = await dat.dns.resolveName(url)
-        fs = dat.library.getArchive(datResolvedUrl) // (only try if the dat is loaded)
+        datfs = dat.library.getArchive(datResolvedUrl) // (only try if the dat is loaded)
       }
-      if (fs) {
+      if (datfs) {
         // try .ico
         try {
-          data = await pda.readFile(fs, '/favicon.ico', 'binary')
+          data = await datfs.pda.readFile('/favicon.ico', 'binary')
           if (data) {
             // select the best-fitting size
             let images = await ICO.parse(data, 'image/png')
@@ -72,15 +72,32 @@ export function setup () {
           data = null
         }
 
-        // try .png
-        data = await pda.readFile(fs, '/favicon.png', 'binary')
-        if (data) {
-          sitedata.set(url, 'favicon', `data:image/png;base64,${data.toString('base64')}`) // cache
-          return cb({mimeType: 'image/png', data})
+        try {
+          // try .png
+          data = await datfs.pda.readFile('/favicon.png', 'binary')
+          if (data) {
+            sitedata.set(url, 'favicon', `data:image/png;base64,${data.toString('base64')}`) // cache
+            return cb({mimeType: 'image/png', data})
+          }
+        } catch (e) {
+          // .png not found, ignore
+        }
+
+        // see if there's a basic type we can use
+        console.log('trying manifest')
+        let manifest = await datfs.pda.readManifest()
+        let basicType = getBasicType(manifest.type)
+        console.log({basicType})
+        if (basicType && basicType !== 'other') {
+          return fs.readFile(path.join(__dirname, `./assets/img/templates/${basicType}.png`), (err, buf) => {
+            console.log(err, !!buf)
+            cb({mimeType: 'image/png', data: buf || defaultFaviconBuffer})
+          })
         }
       }
     } catch (e) {
       // ignore
+      console.error(e)
     }
 
     try {

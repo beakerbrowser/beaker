@@ -6,6 +6,7 @@ import moment from 'moment'
 import {pluralize, shortenHash} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
+import {getBasicType} from '../../lib/dat'
 import * as toast from '../com/toast'
 import toggleable from '../com/toggleable'
 import * as contextMenu from '../com/context-menu'
@@ -179,7 +180,7 @@ function renderRow (row, i) {
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
       <span class="title">
-        <img class="type-icon" src="beaker://assets/img/templates/${basicType}.png" />
+        <img class="favicon" src="beaker-favicon:32,${row.url}" />
 
         ${row.title
           ? yo`<span class="title">${row.title}</span>`
@@ -436,16 +437,6 @@ function removeFromLibraryLabel (archive) {
 
 function removeFromLibraryIcon (archive) {
   return (archive.isOwner) ? 'fa fa-trash' : 'fa fa-pause'
-}
-
-function getBasicType (type) {
-  if (type) {
-    if (type.includes('user')) return 'user'
-    if (type.includes('web-page')) return 'web-page'
-    if (type.includes('file-share')) return 'file-share'
-    if (type.includes('image-collection')) return 'image-collection'
-  }
-  return 'other'
 }
 
 function getOwner (archive) {

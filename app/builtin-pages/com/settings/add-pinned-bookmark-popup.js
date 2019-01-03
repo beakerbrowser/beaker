@@ -67,7 +67,7 @@ async function loadSuggestions () {
   var query = tmpURL
   suggestions = {}
 
-  const filterFn = a => a.title && ((a.url || a.href).includes(query) || a.title.toLowerCase().includes(query))
+  const filterFn = a => ((a.url || a.href).includes(query) || a.title.toLowerCase().includes(query))
 
   // builtin pages
   suggestions.apps = BUILTIN_PAGES.filter(filterFn)
@@ -152,14 +152,15 @@ function renderSuggestionGroup (key, label) {
 }
 
 function renderSuggestion (row) {
+  var title = row.title || 'Untitled'
   return yo`
-    <a onclick=${e => onClickURL(e, row.url, row.title)} href=${row.url} class="suggestion" title=${row.title}>
+    <a onclick=${e => onClickURL(e, row.url, title)} href=${row.url} class="suggestion" title=${title}>
       ${row.icon
         ? yo`<i class="icon ${row.icon}"></i>`
         : yo`<img class="icon favicon" src="beaker-favicon:32,${row.url}"/>`
       }
 
-      <span class="title">${tmpURL ? row.title : trunc(row.title, 15)}</span>
+      <span class="title">${tmpURL ? title : trunc(title, 15)}</span>
     </a>
   `
 }
