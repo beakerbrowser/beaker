@@ -67,12 +67,11 @@ async function loadSuggestions () {
   var query = tmpURL
   suggestions = []
 
-  const filterFn = a => ((a.url || a.href).includes(query) || (a.title && a.title.toLowerCase().includes(query)))
+  const filterFn = a => a.title && ((a.url || a.href).includes(query) || a.title.toLowerCase().includes(query))
 
   // builtin pages
   var builtinResults = BUILTIN_PAGES
   builtinResults = builtinResults.filter(filterFn)
-  builtinResults = builtinResults.slice(0, 4)
   builtinResults = builtinResults.map(a => {
     return {
       title: a.title,
@@ -97,7 +96,7 @@ async function loadSuggestions () {
   suggestions = suggestions.concat(bookmarkResults)
 
   // library
-  var libraryResults = await beaker.archives.list()
+  var libraryResults = await beaker.archives.list({isSaved: true})
   libraryResults = libraryResults.filter(filterFn)
   libraryResults = libraryResults.slice(0, 6)
   libraryResults = libraryResults.map(a => {
