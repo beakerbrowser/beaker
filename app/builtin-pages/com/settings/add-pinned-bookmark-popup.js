@@ -4,17 +4,6 @@ import yo from 'yo-yo'
 import {findParent} from '../../../lib/fg/event-handlers'
 import closeIcon from '../../icon/close'
 
-const BUILTIN_PAGES = [
-  {title: 'Feed', url: 'beaker://feed'},
-  {title: 'Library', url: 'beaker://library'},
-  {title: 'Search', url: 'beaker://search'},
-  {title: 'Bookmarks', url: 'beaker://bookmarks'},
-  {title: 'History', url: 'beaker://history'},
-  {title: 'Watchlist', url: 'beaker://watchlist'},
-  {title: 'Downloads', url: 'beaker://downloads'},
-  {title: 'Settings', url: 'beaker://settings'},
-]
-
 // globals
 // =
 
@@ -66,34 +55,7 @@ export function destroy () {
 // =
 
 async function loadSuggestions () {
-  var query = tmpURL
-  suggestions = {}
-
-  const filterFn = a => ((a.url || a.href).includes(query) || a.title.toLowerCase().includes(query))
-
-  // builtin pages
-  suggestions.apps = BUILTIN_PAGES.filter(filterFn)
-
-  // bookmarks
-  var bookmarkResults = await beaker.bookmarks.listPublicBookmarks()
-  bookmarkResults = bookmarkResults.concat((await beaker.bookmarks.listPrivateBookmarks()))
-  bookmarkResults = bookmarkResults.filter(b => !b.pinned && filterFn(b))
-  bookmarkResults = bookmarkResults.slice(0, 12)
-  suggestions.bookmarks = bookmarkResults.map(b => ({title: b.title, url: b.href}))
-
-  // library
-  var libraryResults = await beaker.archives.list({isSaved: true})
-  libraryResults = libraryResults.filter(filterFn)
-  suggestions.library = libraryResults.slice(0, 12)
-
-  // fetch history
-  if (query) {
-    var historyResults = await beaker.history.search(query)
-    suggestions.history = historyResults.slice(0, 12)
-    suggestions.history.sort((a, b) => a.url.length - b.url.length)
-  }
-
-  // render
+  suggestions = await beaker.crawler.listSuggestions(tmpURL, {filterPins: true})
   update()
 }
 
@@ -157,11 +119,7 @@ function renderSuggestion (row) {
   var title = row.title || 'Untitled'
   return yo`
     <a onclick=${e => onClickURL(e, row.url, title)} href=${row.url} class="suggestion ${selectedSuggestion === row.url ? 'selected' : ''}" title=${title}>
-      ${row.icon
-        ? yo`<i class="icon ${row.icon}"></i>`
-        : yo`<img class="icon favicon" src="beaker-favicon:32,${row.url}"/>`
-      }
-
+      <img class="icon favicon" src="beaker-favicon:32,${row.url}"/>
       <span class="title">${tmpURL ? title : trunc(title, 15)}</span>
     </a>
   `

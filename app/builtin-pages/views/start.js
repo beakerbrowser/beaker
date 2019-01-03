@@ -13,14 +13,21 @@ import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
 const LATEST_VERSION = 8002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/0.8.2'
 
+const SEARCH_GROUPS = [
+  {key: 'apps', label: 'Applications'},
+  {key: 'bookmarks', label: 'Bookmarks'},
+  {key: 'library', label: 'Saved to your Library'},
+  {key: 'history', label: 'Your browsing history'}
+]
+
 // globals
 // =
 
 var currentUserSession
 var pinnedBookmarks = []
-var searchResults = []
+var searchResults = {}
 var query = ''
-var activeSearchResult = 0
+var activeSearchResult = null
 var isSearchFocused = false
 var settings
 var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
@@ -69,19 +76,7 @@ function update () {
         ${MOTD.render()}
 
         <div class="start-content-container">
-          <div class="autocomplete-container search-container">
-            <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
-            <i class="fa fa-search"></i>
-
-            <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
-              <i class="fa fa-arrow-right"></i>
-            </button>
-
-            ${query.length && isSearchFocused ? yo`
-              <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
-            : ''}
-          </div>
-
+          ${renderSearch()}
           ${renderPinnedBookmarks()}
         </div>
       </div>
@@ -91,17 +86,40 @@ function update () {
   addSorting()
 }
 
-function renderSearchResult (res, i) {
+function renderSearch () {
   return yo`
-    <a href=${res.targetUrl} class="autocomplete-result search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
-      ${res.faviconUrl
-        ? yo`<img class="icon favicon" src="beaker-favicon:32,${res.faviconUrl}"/>`
-        : yo`<i class="icon ${res.icon}"></i>`
-      }
+    <div class="autocomplete-container search-container">
+      <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
+      <i class="fa fa-search"></i>
 
+      <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
+        <i class="fa fa-arrow-right"></i>
+      </button>
+
+      ${query.length && isSearchFocused
+        ? yo`<div class="search-results autocomplete-results">
+          ${SEARCH_GROUPS.map(({key, label}) => renderSearchResultGroup(searchResults[key], label))}
+        </div>`
+        : ''}
+    </div>`
+}
+
+function renderSearchResultGroup (group, label) {
+  if (!group || !group.length) return ''
+  return yo`
+    <div class="autocomplete-result-group">
+      <div class="autocomplete-result-group-title">${label}</div>
+      ${group.map(renderSearchResult)}
+    </div>
+  `
+}
+
+function renderSearchResult (res) {
+  return yo`
+    <a href=${res.url} class="autocomplete-result search-result ${res === activeSearchResult ? 'active' : ''}">
+      <img class="icon favicon" src="beaker-favicon:32,${res.url}"/>
       <span class="title">${res.title}</span>
-
-      ${res.label ? yo`<span class="label">— ${res.label || ''}</span>` : ''}
+      <span class="label">— ${res.url}</span>
     </a>
   `
 }
@@ -161,32 +179,22 @@ function onClickWhileSearchFocused (e) {
 }
 
 function onClickSubmitActiveSearch () {
-  if (!query || !searchResults) return
-  window.location = searchResults[activeSearchResult].targetUrl
+  if (!activeSearchResult) return
+  window.location = activeSearchResult.url
 }
 
 function onInputSearch (e) {
   // enter
   if (e.keyCode === 13) {
     // ENTER
-    window.location = searchResults[activeSearchResult].targetUrl
+    window.location = activeSearchResult.url
   } else if (e.keyCode === 40) {
     // DOWN
-    activeSearchResult += 1
-
-    // make sure we don't go out of bounds
-    if (activeSearchResult > searchResults.length - 1) {
-      activeSearchResult = searchResults.length - 1
-    }
+    moveActiveSearchResult(1)
     update()
   } else if (e.keyCode === 38) {
     // UP
-    activeSearchResult -= 1
-
-    // make sure we don't go out of bounds
-    if (activeSearchResult < 0) {
-      activeSearchResult = 0
-    }
+    moveActiveSearchResult(-1)
     update()
   } else {
     onUpdateSearchQuery(e.target.value)
@@ -199,42 +207,19 @@ async function onUpdateSearchQuery (q) {
   query = q.length ? q.toLowerCase() : ''
 
   if (query.length) {
-    // fetch library archives
-    // filter by title, URL
-    let libraryResults = await beaker.archives.list({isNetworked: true})
-    libraryResults = libraryResults.filter(a => (a.url.includes(query) || (a.title && a.title.toLowerCase().includes(query)))).slice(0, 3)
-    libraryResults = libraryResults.map(a => {
-      return {
-        title: a.title,
-        faviconUrl: a.url,
-        targetUrl: a.url,
-        label: 'Saved to Library'
-      }
-    })
-    searchResults = searchResults.concat(libraryResults)
-
-    // fetch history
-    let historyResults = await beaker.history.search(query)
-    historyResults = historyResults.slice(0, 6)
-    historyResults = historyResults.map(r => {
-      return {
-        title: r.title,
-        faviconUrl: r.url,
-        targetUrl: r.url,
-        label: r.url
-      }
-    })
-    searchResults = searchResults.concat(historyResults)
+    searchResults = await beaker.crawler.listSuggestions(query)
+    console.log(searchResults)
 
     // add a DuckDuckGo search to the results
-    const ddgRes = {
-      title: query,
-      targetUrl: `https://duckduckgo.com?q=${encodeURIComponent(query)}`,
-      icon: 'fa fa-search',
-      label: 'Search DuckDuckGo',
-      class: 'ddg'
-    }
-    searchResults.push(ddgRes)
+    // TODO
+    // const ddgRes = {
+    //   title: query,
+    //   targetUrl: `https://duckduckgo.com?q=${encodeURIComponent(query)}`,
+    //   icon: 'fa fa-search',
+    //   label: 'Search DuckDuckGo',
+    //   class: 'ddg'
+    // }
+    // searchResults.push(ddgRes)
   }
 
   update()
@@ -320,6 +305,34 @@ function delay (cb, param) {
 
 async function loadBookmarks () {
   pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
+}
+
+function getMergedSearchResults () {
+  var list = []
+  for (let group of SEARCH_GROUPS) {
+    list = list.concat(searchResults[group.key])
+  }
+  return list
+}
+
+function moveActiveSearchResult (dir) {
+  var i
+  var mergedResults = getMergedSearchResults()
+
+  if (!activeSearchResult) {
+    i = 0
+  } else {
+    // find current entry and then move
+    let i = mergedResults.indexOf(activeSearchResult)
+    if (i === -1) i = 0
+    else i += dir
+
+    // make sure we don't go out of bounds
+    if (i < 0) i = 0
+    if (i > mergedResults.length - 1) i = mergedResults.length - 1
+  }
+
+  activeSearchResult = mergedResults[i]
 }
 
 function addSorting () {

@@ -16,6 +16,21 @@
   box-shadow: 0 6px 20px rgba(0,0,0,.05);
 }
 
+.autocomplete-result-group {
+  border-bottom: 1px solid #ddd;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.autocomplete-result-group-title {
+  padding: 4px 10px;
+  background: #eee;
+  border-bottom: 1px solid #ddd;
+  color: rgba(0,0,0,.5);
+}
+
 .autocomplete-result {
   &:extend(.flex);
   align-items: center;

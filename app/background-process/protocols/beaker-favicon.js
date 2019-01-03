@@ -84,13 +84,10 @@ export function setup () {
         }
 
         // see if there's a basic type we can use
-        console.log('trying manifest')
         let manifest = await datfs.pda.readManifest()
         let basicType = getBasicType(manifest.type)
-        console.log({basicType})
         if (basicType && basicType !== 'other') {
           return fs.readFile(path.join(__dirname, `./assets/img/templates/${basicType}.png`), (err, buf) => {
-            console.log(err, !!buf)
             cb({mimeType: 'image/png', data: buf || defaultFaviconBuffer})
           })
         }
