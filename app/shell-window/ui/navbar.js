@@ -7,6 +7,7 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
+import {CreateMenuNavbarBtn} from './navbar/create-menu'
 import {WatchlistNotificationBtn} from './navbar/watchlist-notification'
 // import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
@@ -35,6 +36,7 @@ const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 var toolbarNavDiv
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
+var createMenuNavbarBtn = null
 var watchlistNotificationBtn = null
 var bookmarkMenuNavbarBtn = null
 // var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
@@ -59,6 +61,7 @@ export function setup () {
   updatesNavbarBtn = new UpdatesNavbarBtn()
   // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
+  createMenuNavbarBtn = new CreateMenuNavbarBtn()
   watchlistNotificationBtn = new WatchlistNotificationBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   syncfolderMenuNavbarBtn = new SyncfolderMenuNavbarBtn()
@@ -161,6 +164,7 @@ export function bookmarkAndOpenMenu () {
 export function closeMenus () {
   browserMenuNavbarBtn.isDropdownOpen = false
   browserMenuNavbarBtn.updateActives()
+  createMenuNavbarBtn.close()
   // appsMenuNavbarBtn.close() TODO(apps) restore when we bring back apps -prf
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
@@ -421,6 +425,7 @@ function render (id, page) {
       <div class="toolbar-group">
         ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
         ${watchlistNotificationBtn.render()}
+        ${createMenuNavbarBtn.render()}
         ${browserMenuNavbarBtn.render()}
         ${updatesNavbarBtn.render()}
       </div>

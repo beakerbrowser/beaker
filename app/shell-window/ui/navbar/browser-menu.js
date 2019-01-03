@@ -23,7 +23,6 @@ export class BrowserMenuNavbarBtn {
       openFile: cmdOrCtrlChar + 'O'
     }
 
-    this.submenu = ''
     this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.isDropdownOpen = false
@@ -70,36 +69,7 @@ export class BrowserMenuNavbarBtn {
 
     // render the dropdown if open
     var dropdownEl = ''
-    if (this.isDropdownOpen && this.submenu === 'create-new') {
-      dropdownEl = yo`
-        <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
-          <div class="dropdown-items submenu with-triangle">
-            <div class="header">
-              <button class="btn transparent" onclick=${e => this.onShowSubmenu('')} title="Go back">
-                <i class="fa fa-angle-left"></i>
-              </button>
-              <h2>Create New</h2>
-            </div>
-
-            <div class="section">
-              <div class="menu-item" onclick=${e => this.onCreateSite(e)}>
-                <i class="far fa-clone"></i>
-                <span class="label">Empty project</span>
-              </div>
-
-              <div class="menu-item" onclick=${e => this.onCreateSite(e, 'website')}>
-                <i class="fa fa-sitemap"></i>
-                <span class="label">Website</span>
-              </div>
-
-              <div class="menu-item" onclick=${e => this.onCreateSiteFromFolder(e)}>
-                <i class="far fa-folder"></i>
-                <span class="label">From folder</span>
-              </div>
-            </div>
-          </div>
-        </div>`
-    } else if (this.isDropdownOpen) {
+    if (this.isDropdownOpen) {
       dropdownEl = yo`
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items with-triangle">
@@ -156,22 +126,7 @@ export class BrowserMenuNavbarBtn {
                   ${this.shouldPersistDownloadsIndicator ? yo`<i class="fa fa-circle"></i>` : ''}
                   ${progressEl}
                 </div>
-              </div>
 
-              <div class="section">
-                <div class="menu-item" onclick=${e => this.onShowSubmenu('create-new')}>
-                  <i class="far fa-plus-square"></i>
-                  <span class="label">Create New</span>
-                  <i class="more fa fa-angle-right"></i>
-                </div>
-
-                <div class="menu-item" onclick=${e => this.onShareFiles(e)}>
-                  <i class="fa fa-upload"></i>
-                  <span class="label">Share Files</span>
-                </div>
-              </div>
-
-              <div class="section">
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://settings')}>
                   <i class="fas fa-cog"></i>
                   <span class="label">Settings</span>
@@ -231,11 +186,6 @@ export class BrowserMenuNavbarBtn {
     )
   }
 
-  onShowSubmenu (submenu) {
-    this.submenu = submenu
-    this.updateActives()
-  }
-
   onOpenNewWindow () {
     ipcRenderer.send('new-window')
   }
@@ -256,7 +206,6 @@ export class BrowserMenuNavbarBtn {
 
   onClickBtn (e) {
     this.isDropdownOpen = !this.isDropdownOpen
-    this.submenu = ''
     this.updateActives()
   }
 
@@ -265,7 +214,6 @@ export class BrowserMenuNavbarBtn {
     if (parent) return // abort - this was a click on us!
     if (this.isDropdownOpen) {
       this.isDropdownOpen = false
-      this.submenu = ''
       this.updateActives()
     }
   }
@@ -324,7 +272,6 @@ export class BrowserMenuNavbarBtn {
   async onCreateSite (e, template) {
     // close dropdown
     this.isDropdownOpen = false
-    this.submenu = ''
     this.updateActives()
 
     // create a new archive
@@ -335,7 +282,6 @@ export class BrowserMenuNavbarBtn {
   async onCreateSiteFromFolder (e) {
     // close dropdown
     this.isDropdownOpen = false
-    this.submenu = ''
     this.updateActives()
 
     // ask user for folder
