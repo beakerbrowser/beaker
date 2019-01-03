@@ -262,6 +262,7 @@
 
       @media (min-width: 1100px) {
         width: 350px;
+        padding-left: 20px;
         padding-right: 20px;
       }
     }
@@ -271,9 +272,11 @@
       border-left: 1px solid #eee;
       overflow-y: auto;
       max-height: calc(100vh - 200px);
+      padding-bottom: 10px;
 
       @media (min-width: 1100px) {
         padding-left: 10px;
+        padding-right: 10px;
       }
 
       .group {
@@ -301,6 +304,10 @@
 
             .title {
               white-space: nowrap;
+            }
+
+            &.selected {
+              background: #eee;
             }
           }
         }

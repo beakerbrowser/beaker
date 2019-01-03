@@ -24,6 +24,7 @@ var reject
 var isURLFocused = false
 var suggestions = {}
 var tmpURL = ''
+var selectedSuggestion
 
 // exported api
 // =
@@ -32,6 +33,7 @@ export function create (url) {
   // reset
   suggestions = {}
   tmpURL = ''
+  selectedSuggestion = false
 
   // render interface
   var popup = render(url)
@@ -154,7 +156,7 @@ function renderSuggestionGroup (key, label) {
 function renderSuggestion (row) {
   var title = row.title || 'Untitled'
   return yo`
-    <a onclick=${e => onClickURL(e, row.url, title)} href=${row.url} class="suggestion" title=${title}>
+    <a onclick=${e => onClickURL(e, row.url, title)} href=${row.url} class="suggestion ${selectedSuggestion === row.url ? 'selected' : ''}" title=${title}>
       ${row.icon
         ? yo`<i class="icon ${row.icon}"></i>`
         : yo`<img class="icon favicon" src="beaker-favicon:32,${row.url}"/>`
@@ -179,8 +181,8 @@ function onFocusURL () {
 
 function onClickURL (e, url, title = '') {
   e.preventDefault()
-  tmpURL = url
 
+  selectedSuggestion = url
   document.querySelector('input[name="url"]').value = url
   document.querySelector('input[name="title"]').value = title
   isURLFocused = false
@@ -189,6 +191,7 @@ function onClickURL (e, url, title = '') {
 
 async function onChangeURL (e) {
   tmpURL = e.target.value ? e.target.value.toLowerCase() : ''
+  selectedSuggestion = false
   loadSuggestions()
 }
 
