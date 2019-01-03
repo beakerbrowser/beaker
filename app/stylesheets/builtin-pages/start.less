@@ -14,9 +14,6 @@
   height: 100vh;
   padding: 0;
   position: initial;
-  // background-image: url("beaker://start/background-image");
-  // background-size: cover;
-  // background-position: center;
 }
 
 .builtin-wrapper.start-wrapper {
@@ -70,7 +67,7 @@
   .search-container {
     width: 100%;
     max-width: 600px;
-    margin: 100px auto 70px auto;
+    margin: 0 auto 20px;
     padding: 15px;
 
     input.search {
@@ -123,7 +120,7 @@
   }
 }
 
-.pinned-bookmarks-container {
+.start-content-container {
   width: 460px;
   position: absolute;
   top: 45%;
@@ -145,22 +142,22 @@
   @media (min-width: 1100px) {
     width: 950px;
   }
+}
 
-  .pinned-bookmarks-config {
-    text-align: right;
-    margin-bottom: 10px;
+.pinned-bookmarks-config {
+  text-align: right;
+  margin-bottom: 10px;
 
-    .mode {
-      span {
-        color: rgba(0, 0, 0, 0.2);
-        cursor: pointer;
-        margin-left: 2px;
-        -webkit-font-smoothing: unset;
-        font-size: 15px;
+  .mode {
+    span {
+      color: rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      margin-left: 2px;
+      -webkit-font-smoothing: unset;
+      font-size: 15px;
 
-        &.active {
-          color: rgba(0,0,0,0.6);
-        }
+      &.active {
+        color: rgba(0,0,0,0.6);
       }
     }
   }

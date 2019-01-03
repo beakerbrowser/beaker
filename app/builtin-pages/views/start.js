@@ -68,20 +68,22 @@ function update () {
 
         ${MOTD.render()}
 
-        <div class="autocomplete-container search-container" style="display: none">
-          <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
-          <i class="fa fa-search"></i>
+        <div class="start-content-container">
+          <div class="autocomplete-container search-container">
+            <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
+            <i class="fa fa-search"></i>
 
-          <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
-            <i class="fa fa-arrow-right"></i>
-          </button>
+            <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
+              <i class="fa fa-arrow-right"></i>
+            </button>
 
-          ${query.length && isSearchFocused ? yo`
-            <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
-          : ''}
+            ${query.length && isSearchFocused ? yo`
+              <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
+            : ''}
+          </div>
+
+          ${renderPinnedBookmarks()}
         </div>
-
-        ${renderPinnedBookmarks()}
       </div>
     </div>
   `)
