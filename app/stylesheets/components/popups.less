@@ -286,16 +286,8 @@
         }
 
         .group-items {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-
-          @media (min-width: 1300px) {
-            grid-template-columns: repeat(6, 1fr);
-          }
-
           .suggestion {
             display: flex;
-            flex-direction: column;
             align-items: center;
             padding: 10px;
             overflow: hidden;
@@ -303,11 +295,43 @@
             .favicon {
               width: 32px;
               height: 32px;
-              margin-bottom: 6px;
             }
 
             .title {
               white-space: nowrap;
+            }
+          }
+        }
+      }
+
+      &.defaults {
+        .group {
+          .group-items {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+
+            @media (min-width: 1300px) {
+              grid-template-columns: repeat(6, 1fr);
+            }
+
+            .suggestion {
+              flex-direction: column;
+
+              .favicon {
+                margin-bottom: 6px;
+              }
+            }
+          }
+        }
+      }
+
+      &.query-results {
+        .group {
+          .group-items {
+            .suggestion {
+              .favicon {
+                margin-right: 10px;
+              }
             }
           }
         }

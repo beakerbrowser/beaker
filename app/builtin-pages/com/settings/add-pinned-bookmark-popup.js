@@ -125,7 +125,7 @@ function render (url) {
               <button type="submit" class="btn primary">Save</button>
             </div>
           </div>
-          <div class="suggestions">
+          <div class="suggestions ${tmpURL ? 'query-results' : 'defaults'}">
             ${renderSuggestionGroup('history', 'History')}
             ${renderSuggestionGroup('apps', 'Applications')}
             ${renderSuggestionGroup('bookmarks', 'Bookmarks')}
@@ -159,7 +159,7 @@ function renderSuggestion (row) {
         : yo`<img class="icon favicon" src="beaker-favicon:32,${row.url}"/>`
       }
 
-      <span class="title">${trunc(row.title, 15)}</span>
+      <span class="title">${tmpURL ? row.title : trunc(row.title, 15)}</span>
     </a>
   `
 }
