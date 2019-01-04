@@ -1,6 +1,7 @@
 /* globals beaker */
 
 import yo from 'yo-yo'
+import {getBasicType} from '../../../lib/dat'
 import {findParent} from '../../../lib/fg/event-handlers'
 import closeIcon from '../../icon/close'
 
@@ -119,10 +120,17 @@ function renderSuggestion (row) {
   var title = row.title || 'Untitled'
   return yo`
     <a onclick=${e => onClickURL(e, row.url, title)} href=${row.url} class="suggestion ${selectedSuggestion === row.url ? 'selected' : ''}" title=${title}>
-      <img class="icon favicon" src="beaker-favicon:32,${row.url}"/>
+      ${renderIcon(row)}
       <span class="title">${tmpURL ? title : trunc(title, 15)}</span>
     </a>
   `
+}
+
+function renderIcon (row) {
+  if (getBasicType(row.type) === 'user') {
+    return yo`<img class="favicon rounded" src="${row.url}/thumb" />`
+  }
+  return yo`<img class="favicon" src="beaker-favicon:32,${row.url}"/>`
 }
 
 // event handlers
@@ -132,8 +140,6 @@ function onFocusURL () {
   if (!isURLFocused) {
     isURLFocused = true
     update()
-
-    window.addEventListener('click', onClickWhileURLFocused)
   }
 }
 

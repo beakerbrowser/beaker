@@ -17,16 +17,11 @@
 }
 
 .autocomplete-result-group {
-  border-bottom: 1px solid #ddd;
-
-  &:last-child {
-    border-bottom: 0;
-  }
+  margin-bottom: 6px;
 }
 
 .autocomplete-result-group-title {
   padding: 4px 10px;
-  background: #eee;
   border-bottom: 1px solid #ddd;
   color: rgba(0,0,0,.5);
 }
@@ -47,6 +42,10 @@
     width: 24px;
     text-align: center;
     margin-right: 10px;
+    
+    &.rounded {
+      border-radius: 50%;
+    }
   }
 
   .favicon {

@@ -9,11 +9,13 @@ import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
+import {getBasicType} from '../../lib/dat'
 
 const LATEST_VERSION = 8002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/0.8.2'
 
 const SEARCH_GROUPS = [
+  {key: 'fixed'},
   {key: 'apps', label: 'Applications'},
   {key: 'bookmarks', label: 'Bookmarks'},
   {key: 'library', label: 'Saved to your Library'},
@@ -27,7 +29,8 @@ var currentUserSession
 var pinnedBookmarks = []
 var searchResults = {}
 var query = ''
-var activeSearchResult = null
+var lastQuery
+var activeSearchResultIndex = 0
 var isSearchFocused = false
 var settings
 var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
@@ -87,6 +90,32 @@ function update () {
 }
 
 function renderSearch () {
+  function renderSearchResultGroup (group, label) {
+    if (!group || !group.length) return ''
+    return yo`
+      <div class="autocomplete-result-group">
+        ${label ? yo`<div class="autocomplete-result-group-title">${label}</div>` : ''}
+        ${group.map(renderSearchResult)}
+      </div>
+    `
+  }
+
+  var i = 0
+  function renderSearchResult (res) {
+    return yo`
+      <a href=${res.url} class="autocomplete-result search-result ${i++ === activeSearchResultIndex ? 'active' : ''}">
+        ${res.icon
+            ? yo`<i class="icon ${res.icon}"></i>`
+            : getBasicType(res.type) === 'user'
+              ? yo`<img class="icon favicon rounded" src="${res.url}/thumb"/>`
+              : yo`<img class="icon favicon" src="beaker-favicon:32,${res.url}"/>`
+          }
+        <span class="title">${res.title}</span>
+        <span class="label">— ${res.url}</span>
+      </a>
+    `
+  }
+
   return yo`
     <div class="autocomplete-container search-container">
       <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
@@ -102,26 +131,6 @@ function renderSearch () {
         </div>`
         : ''}
     </div>`
-}
-
-function renderSearchResultGroup (group, label) {
-  if (!group || !group.length) return ''
-  return yo`
-    <div class="autocomplete-result-group">
-      <div class="autocomplete-result-group-title">${label}</div>
-      ${group.map(renderSearchResult)}
-    </div>
-  `
-}
-
-function renderSearchResult (res) {
-  return yo`
-    <a href=${res.url} class="autocomplete-result search-result ${res === activeSearchResult ? 'active' : ''}">
-      <img class="icon favicon" src="beaker-favicon:32,${res.url}"/>
-      <span class="title">${res.title}</span>
-      <span class="label">— ${res.url}</span>
-    </a>
-  `
 }
 
 function renderPinnedBookmarks () {
@@ -179,15 +188,16 @@ function onClickWhileSearchFocused (e) {
 }
 
 function onClickSubmitActiveSearch () {
-  if (!activeSearchResult) return
-  window.location = activeSearchResult.url
+  var res = getActiveSearchResult()
+  if (!res) return
+  window.location = res.url
 }
 
 function onInputSearch (e) {
   // enter
   if (e.keyCode === 13) {
     // ENTER
-    window.location = activeSearchResult.url
+    window.location = getActiveSearchResult().url
   } else if (e.keyCode === 40) {
     // DOWN
     moveActiveSearchResult(1)
@@ -203,23 +213,21 @@ function onInputSearch (e) {
 
 async function onUpdateSearchQuery (q) {
   searchResults = []
-  activeSearchResult = 0
   query = q.length ? q.toLowerCase() : ''
+
+  // reset selection if query changed
+  if (lastQuery !== query) {
+    activeSearchResultIndex = 0
+  }
+  lastQuery = query
 
   if (query.length) {
     searchResults = await beaker.crawler.listSuggestions(query)
-    console.log(searchResults)
-
-    // add a DuckDuckGo search to the results
-    // TODO
-    // const ddgRes = {
-    //   title: query,
-    //   targetUrl: `https://duckduckgo.com?q=${encodeURIComponent(query)}`,
-    //   icon: 'fa fa-search',
-    //   label: 'Search DuckDuckGo',
-    //   class: 'ddg'
-    // }
-    // searchResults.push(ddgRes)
+    searchResults.fixed = [{
+      url: `https://duckduckgo.com?q=${encodeURIComponent(query)}`,
+      icon: 'fa fa-search',
+      title: `Search "${query}"`
+    }]
   }
 
   update()
@@ -315,24 +323,19 @@ function getMergedSearchResults () {
   return list
 }
 
-function moveActiveSearchResult (dir) {
-  var i
+function getActiveSearchResult () {
   var mergedResults = getMergedSearchResults()
+  return mergedResults[activeSearchResultIndex || 0]
+}
 
-  if (!activeSearchResult) {
-    i = 0
-  } else {
-    // find current entry and then move
-    let i = mergedResults.indexOf(activeSearchResult)
-    if (i === -1) i = 0
-    else i += dir
-
-    // make sure we don't go out of bounds
-    if (i < 0) i = 0
-    if (i > mergedResults.length - 1) i = mergedResults.length - 1
-  }
-
-  activeSearchResult = mergedResults[i]
+function moveActiveSearchResult (dir) {
+  var mergedResults = getMergedSearchResults()
+  var i = activeSearchResultIndex || 0
+  i += dir
+  // make sure we don't go out of bounds
+  if (i < 0) i = 0
+  if (i > mergedResults.length - 1) i = mergedResults.length - 1
+  activeSearchResultIndex = i
 }
 
 function addSorting () {

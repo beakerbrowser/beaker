@@ -181,8 +181,7 @@ function renderRow (row, i) {
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
       <span class="title">
-        <img class="favicon" src="beaker-favicon:32,${row.url}" />
-
+        ${renderIcon(row, basicType)}
         ${row.title
           ? yo`<span class="title">${row.title}</span>`
           : yo`<span class="title empty"><em>Untitled</em></span>`
@@ -394,6 +393,13 @@ function renderSubheader () {
       </div>
       ${actions}
     </div>`
+}
+
+function renderIcon (archive, basicType) {
+  if (basicType === 'user') {
+    return yo`<img class="favicon rounded" src="${archive.url}/thumb" />`
+  }
+  return yo`<img class="favicon" src="beaker-favicon:32,${archive.url}" />`
 }
 
 function removeFromLibraryLabel (archive) {
