@@ -19,12 +19,12 @@ setup()
 async function setup () {
   currentUserSession = await beaker.browser.getUserSession()
   followedUsers = await beaker.followgraph.listFollows(currentUserSession.url)
-  posts = await beaker.posts.list({reverse: true, authors: getFeedAuthors(), limit: 40})
+  posts = await beaker.posts.list({reverse: true, authors: getTimelineAuthors(), limit: 40})
   console.log({posts})
   update()
 }
 
-function getFeedAuthors () {
+function getTimelineAuthors () {
   return followedUsers.concat(currentUserSession.url)
 }
 
@@ -32,11 +32,11 @@ function getFeedAuthors () {
 // =
 
 function update () {
-  yo.update(document.querySelector('.feed-wrapper'), yo`
-    <div class="feed-wrapper builtin-wrapper">
+  yo.update(document.querySelector('.timeline-wrapper'), yo`
+    <div class="timeline-wrapper builtin-wrapper">
       <div class="builtin-main">
         ${renderNewPostForm()}
-        ${renderFeed()}
+        ${renderTimeline()}
     </div>`
   )
 }
@@ -62,13 +62,13 @@ function renderNewPostForm () {
     </form>`
 }
 
-function renderFeed () {
+function renderTimeline () {
   return yo`
-    <div class="feed">
+    <div class="timeline">
       ${posts.length === 0
         ? yo`
           <div class="empty">
-            Your feed is empty.
+            Your timeline is empty.
           </div>`
         : ''}
       ${posts.map(renderFeedItem)}
@@ -78,7 +78,7 @@ function renderFeed () {
 
 function renderFeedItem (post) {
   var el = yo`
-    <div class="feed-item post" id="post-${post.author.url}${post.pathname}">
+    <div class="timeline-item post" id="post-${post.author.url}${post.pathname}">
       <a href="${post.author.url}" class="avatar-container">
         <img src="${post.author.url}/thumb.jpg" class="avatar ">
       </a>
