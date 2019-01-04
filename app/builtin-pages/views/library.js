@@ -299,6 +299,12 @@ function renderSidebar () {
         })}
         <hr>
         ${navItem({
+          onclick: () => onUpdateView('user'),
+          isActive: currentView === 'user',
+          icon: 'user',
+          label: 'People'
+        })}
+        ${navItem({
           onclick: () => onUpdateView('web-page'),
           isActive: currentView === 'web-page',
           icon: 'web-page',
@@ -315,12 +321,6 @@ function renderSidebar () {
           isActive: currentView === 'image-collection',
           icon: 'image-collection',
           label: 'Image collections'
-        })}
-        ${navItem({
-          onclick: () => onUpdateView('user'),
-          isActive: currentView === 'user',
-          icon: 'user',
-          label: 'Users'
         })}
       </div>
     </div>`

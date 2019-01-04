@@ -93,6 +93,10 @@ function render (url) {
           <div class="suggestions ${tmpURL ? 'query-results' : 'defaults'}">
             ${renderSuggestionGroup('history', 'History')}
             ${renderSuggestionGroup('apps', 'Applications')}
+            ${renderSuggestionGroup('user', 'People')}
+            ${renderSuggestionGroup('web-page', 'Web pages')}
+            ${renderSuggestionGroup('image-collection', 'Image collections')}
+            ${renderSuggestionGroup('file-share', 'File shares')}
             ${renderSuggestionGroup('bookmarks', 'Bookmarks')}
             ${renderSuggestionGroup('library', 'Saved to your Library')}
           </div>
