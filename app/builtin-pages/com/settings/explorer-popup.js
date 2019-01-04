@@ -2,8 +2,10 @@
 
 import yo from 'yo-yo'
 import {getBasicType} from '../../../lib/dat'
-import {findParent} from '../../../lib/fg/event-handlers'
+import {findParent, writeToClipboard} from '../../../lib/fg/event-handlers'
 import closeIcon from '../../icon/close'
+import * as contextMenu from '../context-menu'
+import * as toast from '../toast'
 
 // globals
 // =
@@ -13,8 +15,7 @@ var reject
 
 var isURLFocused = false
 var suggestions = {}
-var tmpURL = ''
-var selectedSuggestion
+var query = ''
 
 // exported api
 // =
@@ -22,8 +23,7 @@ var selectedSuggestion
 export function create (url) {
   // reset
   suggestions = {}
-  tmpURL = ''
-  selectedSuggestion = false
+  query = ''
 
   // render interface
   var popup = render(url)
@@ -46,7 +46,7 @@ export function create (url) {
 }
 
 export function destroy () {
-  var popup = document.getElementById('add-pinned-bookmark-popup')
+  var popup = document.getElementById('explorer-popup')
   document.body.removeChild(popup)
   document.removeEventListener('keyup', onKeyUp)
   reject()
@@ -56,7 +56,7 @@ export function destroy () {
 // =
 
 async function loadSuggestions () {
-  suggestions = await beaker.crawler.listSuggestions(tmpURL, {filterPins: true})
+  suggestions = await beaker.crawler.listSuggestions(query)
   update()
 }
 
@@ -64,34 +64,22 @@ async function loadSuggestions () {
 // =
 
 function render (url) {
+  var hasResults = !query || (Object.values(suggestions).filter(arr => arr.length > 0).length > 0)
   return yo`
-    <div id="add-pinned-bookmark-popup" class="popup-wrapper" onclick=${onClickWrapper}>
+    <div id="explorer-popup" class="popup-wrapper" onclick=${onClickWrapper}>
       <form class="popup-inner" onsubmit=${onSubmit}>
         <div class="head">
-          <span class="title">Add pinned bookmark</span>
-
+          <div class="filter-control">
+            <input type="text" id="search-input" name="url" placeholder="Search" oninput=${onFocusSearch} onkeyup=${(e) => delay(onChangeQuery, e)} />
+          </div>
           <span title="Cancel" onclick=${destroy} class="close-btn square">
             ${closeIcon()}
           </span>
         </div>
 
-        <div class="add-pinned-bookmark-body">
-          <div class="form">
-            <div>
-              <label for="url-input" class="url-input">URL</label>
-              <input type="text" id="url-input" name="url" oninput=${onFocusURL} onkeyup=${(e) => delay(onChangeURL, e)} required />
-
-              <label for="title-input">Title</label>
-              <input type="text" id="title-input" name="title" required />
-            </div>
-
-            <div class="actions">
-              <button type="button" class="btn" onclick=${destroy}>Cancel</button>
-              <button type="submit" class="btn primary">Save</button>
-            </div>
-          </div>
-          <div class="suggestions ${tmpURL ? 'query-results' : 'defaults'}">
-            ${renderSuggestionGroup('history', 'History')}
+        <div class="explorer-body">
+          <div class="suggestions ${query ? 'query-results' : 'defaults'}">
+            ${hasResults ? '' : yo`<div class="empty">No results</div>`}
             ${renderSuggestionGroup('apps', 'Applications')}
             ${renderSuggestionGroup('user', 'People')}
             ${renderSuggestionGroup('web-page', 'Web pages')}
@@ -99,6 +87,7 @@ function render (url) {
             ${renderSuggestionGroup('file-share', 'File shares')}
             ${renderSuggestionGroup('bookmarks', 'Bookmarks')}
             ${renderSuggestionGroup('library', 'Saved to your Library')}
+            ${renderSuggestionGroup('history', 'History')}
           </div>
         </div>
       </form>
@@ -107,7 +96,7 @@ function render (url) {
 }
 
 function update () {
-  yo.update(document.getElementById('add-pinned-bookmark-popup'), render())
+  yo.update(document.getElementById('explorer-popup'), render())
 }
 
 function renderSuggestionGroup (key, label) {
@@ -123,9 +112,9 @@ function renderSuggestionGroup (key, label) {
 function renderSuggestion (row) {
   var title = row.title || 'Untitled'
   return yo`
-    <a onclick=${e => onClickURL(e, row.url, title)} href=${row.url} class="suggestion ${selectedSuggestion === row.url ? 'selected' : ''}" title=${title}>
+    <a href=${row.url} class="suggestion" title=${title} oncontextmenu=${onContextMenu}>
       ${renderIcon(row)}
-      <span class="title">${tmpURL ? title : trunc(title, 15)}</span>
+      <span class="title">${query ? title : trunc(title, 15)}</span>
     </a>
   `
 }
@@ -140,26 +129,15 @@ function renderIcon (row) {
 // event handlers
 // =
 
-function onFocusURL () {
+function onFocusSearch () {
   if (!isURLFocused) {
     isURLFocused = true
     update()
   }
 }
 
-function onClickURL (e, url, title = '') {
-  e.preventDefault()
-
-  selectedSuggestion = url
-  document.querySelector('input[name="url"]').value = url
-  document.querySelector('input[name="title"]').value = title
-  isURLFocused = false
-  update()
-}
-
-async function onChangeURL (e) {
-  tmpURL = e.target.value ? e.target.value.toLowerCase() : ''
-  selectedSuggestion = false
+async function onChangeQuery (e) {
+  query = e.target.value ? e.target.value.toLowerCase() : ''
   loadSuggestions()
 }
 
@@ -172,8 +150,28 @@ function onKeyUp (e) {
   }
 }
 
+function onContextMenu (e) {
+  e.preventDefault()
+  var url = e.currentTarget.getAttribute('href')
+  var title = e.currentTarget.getAttribute('title')
+  const items = [
+    {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(url)},
+    {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(url)},
+    {icon: 'fas fa-thumbtack', label: 'Pin to Start Page', click: pin},
+  ]
+  contextMenu.create({x: e.clientX, y: e.clientY, items})
+
+  async function pin () {
+    if (!(await beaker.bookmarks.isBookmarked(url))) {
+      await beaker.bookmarks.bookmarkPrivate(url, {title: title})
+    }
+    await beaker.bookmarks.setBookmarkPinned(url, true)
+    toast.create('Pinned to your start page')
+  }
+}
+
 function onClickWrapper (e) {
-  if (e.target.id === 'add-pinned-bookmark-popup') {
+  if (e.target.id === 'explorer-popup') {
     destroy()
   }
 }

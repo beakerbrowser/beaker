@@ -2,7 +2,7 @@
 
 import * as yo from 'yo-yo'
 import Sortable from 'sortablejs'
-import * as addPinnedBookmarkPopup from '../com/settings/add-pinned-bookmark-popup'
+import * as explorerPopup from '../com/settings/explorer-popup'
 import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
 import * as MOTD from '../com/motd'
 import * as onboardingPopup from '../com/onboarding-popup'
@@ -148,8 +148,8 @@ function renderPinnedBookmarks () {
       </div>
       <div class="pinned-bookmarks">
         ${pinnedBookmarks.map(renderPinnedBookmark)}
-        <a class="pinned-bookmark add-pinned-bookmark" href="#" onclick=${onClickAddBookmark}>
-          <i class="fa fa-plus"></i>
+        <a class="pinned-bookmark explorer-pin" href="#" onclick=${onClickExplorer}>
+          <i class="fa fa-ellipsis-h"></i>
         </a>
       </div>
     </div>
@@ -237,20 +237,14 @@ async function onUpdateSearchQuery (q) {
   update()
 }
 
-async function onClickAddBookmark (e) {
+async function onClickExplorer (e) {
   e.preventDefault()
-  try {
-    var b = await addPinnedBookmarkPopup.create()
-    if (!(await beaker.bookmarks.isBookmarked(b.url))) {
-      await beaker.bookmarks.bookmarkPrivate(b.url, {title: b.title})
-    }
-    await beaker.bookmarks.setBookmarkPinned(b.url, true)
-    await loadBookmarks()
-    update()
-  } catch (e) {
-    // ignore
-    console.log(e)
-  }
+  try { await explorerPopup.create() }
+  catch (e) {/*ignore*/}
+
+  // reload bookmarks in case any pins were added
+  await loadBookmarks()
+  update()
 }
 
 async function onClickEditBookmark (bOriginal) {
