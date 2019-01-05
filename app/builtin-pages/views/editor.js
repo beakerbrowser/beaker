@@ -120,7 +120,7 @@ function render () {
     document.querySelector('.editor-tabs'),
     yo`
       <div class="editor-tabs">
-        ${models.getModels().map(model => renderTabs(model))}
+        ${models.getModels().map(model => renderTab(model))}
       </div>
     `
   )
@@ -143,7 +143,7 @@ window.addEventListener('update-editor', render)
 window.addEventListener('model-dirtied', render)
 window.addEventListener('model-cleaned', render)
 
-function renderTabs (model) {
+function renderTab (model) {
   let cls = models.getActive() === model ? 'active' : ''
   return yo`
     <div draggable="true" class="tab ${cls}" onclick=${() => models.setActive(model)}>

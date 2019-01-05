@@ -269,9 +269,10 @@ async function onClickNode (e, fileTree, node) {
 
   if (node.isContainer) {
     node.isExpanded = !node.isExpanded
-    await node.readData()
-    fileTree.rerender()
   }
+  
+  await node.readData({ignoreCache: true})
+  fileTree.rerender()
 }
 
 function onContextmenuNode (e, fileTree, node) {

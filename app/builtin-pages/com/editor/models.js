@@ -13,7 +13,7 @@ var active
 export const load = async function load (file) {
   try {
     // load the file content
-    await file.readData()
+    await file.readData({ignoreCache: true})
 
     // setup the model
     let model = monaco.editor.createModel(file.preview, null, monaco.Uri.parse(file.url))
