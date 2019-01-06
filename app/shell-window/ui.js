@@ -2,7 +2,6 @@
 
 import { webFrame, ipcRenderer } from 'electron'
 import * as tabs from './ui/tabs'
-import * as currentUserMenu from './ui/current-user-menu'
 import * as navbar from './ui/navbar'
 import * as statusbar from './ui/statusbar'
 import * as win32Titlebar from './ui/win32-titlebar'
@@ -39,7 +38,6 @@ export function setup (cb) {
 
   // setup subsystems
   tabs.setup()
-  currentUserMenu.setup()
   navbar.setup()
   statusbar.setup()
   if (platform === 'win32') {

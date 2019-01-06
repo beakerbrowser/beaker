@@ -129,7 +129,7 @@ function repositionTabs (e) {
   if (getPlatform() === 'darwin' && !document.body.classList.contains('fullscreen')) { availableWidth -= 80 }
   if (getPlatform() === 'win32') { availableWidth -= 200 }
   // correct for new-tab, user button, and dropdown btns
-  availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING + getUserButtonWidth())
+  availableWidth -= (MIN_TAB_WIDTH + TAB_SPACING)
   // count the unpinned-tabs, and correct for the spacing and pinned-tabs
   allPages.forEach(p => {
     availableWidth -= TAB_SPACING
@@ -454,24 +454,6 @@ function getAddBtnStyle () {
     transform: translateX(${getTabX(numPinnedTabs + numTabsWeCanFit)}px);
     z-index: 0;
   `
-}
-
-var _lastTextContent
-var _lastWidth
-const USER_BTN_CUSHION = 30
-function getUserButtonWidth () {
-  try {
-    var btn = document.querySelector('.current-user-dropdown-menu-btn')
-    if (_lastWidth && _lastTextContent === btn.textContent) {
-      return _lastWidth + USER_BTN_CUSHION // use cached to avoid layout calculations when possible
-    }
-    _lastTextContent = btn.textContent
-    _lastWidth = btn.getClientRects()[0].width
-    return _lastWidth + USER_BTN_CUSHION
-  } catch (e) {
-    console.error('Failed to get user button width', e)
-    return 125 // safe default
-  }
 }
 
 // returns 0 for no, -1 or 1 for yes (the offset)
