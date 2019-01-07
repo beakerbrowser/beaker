@@ -2,125 +2,139 @@ const yo = require('yo-yo')
 import * as models from './models'
 import _get from 'lodash.get'
 
+// globals
+// =
+
+var currentSource
+var currentSort = ['name', 'desc']
+var selectedNodes = new Set() // set of nodes
+var currentDragNode = null
+var previewMode = false
+var fileDiffs = []
+var onSetCurrentSource = () => {} // v simple events solution
+
+
 // exported api
 // =
 
-export default class FileTree {
-  constructor (root) {
-    this.root = root
-    this.currentSource = root
-    this.currentSort = ['name', 'desc']
-    this.selectedNodes = new Set() // set of nodes
-    this.currentDragNode = null
-    this.previewMode = false
-    this.fileDiffs = []
-    this.onSetCurrentSource = () => {} // v simple events solution
+// method to render at a place in the page
+// eg yo`<div>${myFileTree.render()}</div>`
+export function render () {
+  if (!currentSource) {
+    return yo`<div class="filetree"></div>`
   }
 
-  // method to render at a place in the page
-  // eg yo`<div>${myFileTree.render()}</div>`
-  render () {
-    if (!this.root) {
-      return yo`<div class="filetree"></div>`
-    }
-
-    return yo`
-      <div class="explorer-section">
-        ${rSection(this, 'fileTree')}
-        <div class="fileTree">
-          ${rChildren(this, this.getCurrentSource().children)}
-        </div>
-        ${this.previewMode ? rSection(this, 'diffTree') : ''}
-        ${this.previewMode ? yo`
-          <div class="diffTree">
-            ${rDiffTree(this, this.fileDiffs)}
-          </div>`
-        : ''}
+  return yo`
+    <div class="explorer-section">
+      ${rSection('fileTree')}
+      <div class="fileTree">
+        ${rChildren(getCurrentSource().children)}
       </div>
-    `
+      ${previewMode ? rSection('diffTree') : ''}
+      ${previewMode ? yo`
+        <div class="diffTree">
+          ${rDiffTree()}
+        </div>`
+      : ''}
+    </div>
+  `
+}
+
+export function rerender () {
+  let el = document.querySelector('.explorer-section')
+  if (el) {
+    yo.update(el, render())
+  }
+}
+
+// current source api (what drives the nav sidebar)
+export function isCurrentSource (node) {
+  return node === currentSource
+}
+
+export function getCurrentSource () {
+  return currentSource
+}
+
+// helper for breadcrumbs
+// turns the current source into a path of nodes
+export function getCurrentSourcePath () {
+  var path = []
+  var node = currentSource
+  while (node && node !== currentSource) {
+    path.unshift(node)
+    node = node.parent
+  }
+  return path
+}
+
+export function setPreviewMode(value) {
+  previewMode = value
+}
+
+export function getFileDiffs() {
+  return fileDiffs
+}
+
+export function setFileDiffs(diff) {
+  fileDiffs.push(diff)
+}
+
+export function clearFileDiffs() {
+  fileDiffs = []
+}
+
+export async function setCurrentSource (node, {suppressEvent} = {}) {
+  currentSource = node
+  if (!node) {
+    rerender()
+    return
   }
 
-  rerender () {
-    let el = document.querySelector('.explorer-section')
-    if (el) {
-      yo.update(el, this.render())
+  // special handling for files
+  if (node.type === 'file') {
+    // emit and render, to allow 'loading...' to show
+    if (!suppressEvent) {
+      onSetCurrentSource(node)
     }
-  }
-
-  // current source api (what drives the nav sidebar)
-
-  isCurrentSource (node) {
-    return node === this.currentSource
-  }
-
-  getCurrentSource () {
-    return this.currentSource
-  }
-
-  // helper for breadcrumbs
-  // turns the current source into a path of nodes
-  getCurrentSourcePath () {
-    var path = []
-    var node = this.currentSource
-    while (node && node !== this.root) {
-      path.unshift(node)
-      node = node.parent
+    let to = setTimeout(() => { // only show if it's taking time to load
+      node.isLoadingPreview = true
+      rerender()
+    }, 500)
+    // then load
+    await currentSource.readData({maxPreviewLength: 1e5})
+    clearTimeout(to)
+    // then render again
+    node.isLoadingPreview = false
+    rerender()
+  } else {
+    // load
+    await currentSource.readData()
+    if (!suppressEvent) {
+      onSetCurrentSource(node)
     }
-    return path
+    resortTree()
+    // then render
+    rerender()
   }
+}
 
-  async setCurrentSource (node, {suppressEvent} = {}) {
-    this.currentSource = node
-    if (!node) {
-      this.rerender()
-      return
-    }
-
-    // special handling for files
-    if (node.type === 'file') {
-      // emit and render, to allow 'loading...' to show
-      if (!suppressEvent) {
-        this.onSetCurrentSource(node)
-      }
-      let to = setTimeout(() => { // only show if it's taking time to load
-        node.isLoadingPreview = true
-        this.rerender()
-      }, 500)
-      // then load
-      await this.currentSource.readData({maxPreviewLength: 1e5})
-      clearTimeout(to)
-      // then render again
-      node.isLoadingPreview = false
-      this.rerender()
-    } else {
-      // load
-      await this.currentSource.readData()
-      if (!suppressEvent) {
-        this.onSetCurrentSource(node)
-      }
-      this.resortTree()
-      // then render
-      this.rerender()
-    }
-  }
-
-  resortTree () {
-    if (this.currentSource) {
-      this.currentSource.sort(...this.currentSort)
-    }
+export function resortTree () {
+  if (currentSource) {
+    currentSource.sort(...currentSort)
   }
 }
 
 // renderers
 // =
 
-function rSection (fileTree, tree) {
+function rSection (tree) {
   return tree === 'fileTree' ? yo`
     <div class="section-title" id="fileTree" onclick=${() => toggleFileTree('fileTree')}>
       <i class="fa fa-caret-down"></i>
-      <span>${_get(fileTree.root, 'name', 'Untitled')}</span>
+      <span>${_get(currentSource, 'name', 'Untitled')}</span>
       <div class="archive-fs-options">
-        <i class="fa fa-sync-alt"></i>
+        <i class="fa fa-sync-alt" onclick=${(e) => syncFileTree(e)}></i>
         <i class="fa fa-plus-square"></i>
         <i class="fa fa-folder-plus"></i>
       </div>
@@ -138,43 +152,43 @@ function rSection (fileTree, tree) {
   `
 }
 
-function rChildren (fileTree, children) {
-  const path = fileTree.getCurrentSourcePath()
-  const parentNode = (path.length >= 2) ? path[path.length - 2] : fileTree.root
+function rChildren (children) {
+  const path = getCurrentSourcePath()
+  const parentNode = (path.length >= 2) ? path[path.length - 2] : currentSource
 
   return [
     ((path.length < 1)
       ? ''
       : yo`
-        <div class="item ascend" onclick=${e => onClickNode(e, fileTree, parentNode)}>
+        <div class="item ascend" onclick=${e => onClickNode(e, parentNode)}>
           ..
         </div>`),
     ((children.length === 0)
       ? yo`<div class="item empty"><em>No files</em></div>`
-      : children.map(childNode => rNode(fileTree, childNode)))
+      : children.map(childNode => rNode(childNode)))
   ]
 }
 
-function rDiffTree (fileTree, fileDiffs) {
+function rDiffTree () {
   return fileDiffs.length === 0
     ? yo`<div class="item empty"><em>No Changes</em></div>`
-    : fileDiffs.map(diff => rNode(fileTree, diff))
+    : fileDiffs.map(diff => rNode(diff))
 }
 
-function rNode (fileTree, node) {
+function rNode (node) {
   if (node.isContainer) {
-    return rDirectory(fileTree, node)
+    return rDirectory(node)
   } else {
-    return rFile(fileTree, node)
+    return rFile(node)
   }
 }
 
-function rDirectory (fileTree, node) {
+function rDirectory (node) {
   let children = ''
   let cls = 'right'
 
   if (node.isExpanded) {
-    children = yo`<div class="subtree">${rChildren(fileTree, node.children)}</div>`
+    children = yo`<div class="subtree">${rChildren(node.children)}</div>`
     cls = 'down'
   }
 
@@ -184,8 +198,8 @@ function rDirectory (fileTree, node) {
       <div
         class="item folder"
         title=${node.name}
-        onclick=${e => onClickNode(e, fileTree, node)}
-        oncontextmenu=${e => onContextmenuNode(e, fileTree, node)}
+        onclick=${e => onClickNode(e, node)}
+        oncontextmenu=${e => onContextmenuNode(e, node)}
       >
         <i class="fa fa-caret-${cls}"></i>
         <i class="fa fa-folder"></i>
@@ -196,13 +210,13 @@ function rDirectory (fileTree, node) {
   ]
 }
 
-function rFile (fileTree, node) {
+function rFile (node) {
   return yo`
     <div
       class="item file"
       title=${node.name}
-      onclick=${e => onClickNode(e, fileTree, node)}
-      oncontextmenu=${e => onContextmenuNode(e, fileTree, node)}
+      onclick=${e => onClickNode(e, node)}
+      oncontextmenu=${e => onContextmenuNode(e, node)}
     >
       ${getIcon(node.name)}
       <span>${node.change ? node.name.replace(' (Working Checkout)', '') : node.name}</span>
@@ -248,6 +262,13 @@ function getIcon (name) {
 // event handlers
 // =
 
+function syncFileTree (e) {
+  e.stopPropagation()
+  e.preventDefault()
+
+  rerender()
+}
+
 function toggleFileTree (tree) {
   let fileTree = document.querySelector('.' + tree)
   let icon = document.querySelector('#' + tree + ' i')
@@ -255,7 +276,7 @@ function toggleFileTree (tree) {
   fileTree.classList.toggle('hidden')
 }
 
-async function onClickNode (e, fileTree, node) {
+async function onClickNode (e, node) {
   e.preventDefault()
   e.stopPropagation()
 
@@ -267,13 +288,14 @@ async function onClickNode (e, fileTree, node) {
     models.setActiveDiff(node)
   }
 
-  if (node.isContainer) {
+  if (node.isContaziner) {
     node.isExpanded = !node.isExpanded
-    await node.readData()
-    fileTree.rerender()
   }
+  
+  await node.readData({ignoreCache: true})
+  rerender()
 }
 
-function onContextmenuNode (e, fileTree, node) {
+function onContextmenuNode (e, node) {
 
 }

@@ -4,15 +4,13 @@ import yo from 'yo-yo'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
-import FileTree from '../com/editor/file-tree'
+import * as fileTree from '../com/editor/file-tree'
 import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
 
 var archive
 var workingCheckout
 var archiveFsRoot
-var fileTree
-var fileDiffs
 var isHistoricalVersion = false
 
 // which should we use in keybindings?
@@ -61,11 +59,10 @@ async function setup () {
 
     // load the archiveFS
     archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
-    fileTree = new FileTree(archiveFsRoot)
     await fileTree.setCurrentSource(archiveFsRoot)
 
     // set preview mode for file tree
-    fileTree.previewMode = archive.info.userSettings.previewMode
+    fileTree.setPreviewMode(archive.info.userSettings.previewMode)
 
     let fileActStream = archive.watch()
     fileActStream.addEventListener('changed', onFilesChanged)
@@ -102,7 +99,7 @@ function render () {
       yo`
         <div class="editor-explorer">
           <div class="explorer-title">Explorer</div>
-          ${fileTree ? fileTree.render() : ''}
+          ${fileTree.render()}
         </div>
       `)
   } else {
@@ -158,16 +155,16 @@ async function localCompare () {
   let archiveFS = new FSArchive(null, archive, archive.info)
   await archiveFS.readData()
 
-  fileTree.fileDiffs = []
+  fileTree.clearFileDiffs()
 
   compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
 
   for (let diff of compareDiff) {
-    let name = diff.path.match(/[^/]+$/).pop()
+    let name = diff.path.match(/[^/]+$/).pop().replace("\\", "")
     let original = archiveFS._files.find(v => v.name == name)
     let modified = archiveFsRoot._files.find(v => v.name == name)
 
-    if (!original && !modified) return
+    if (!original || !modified) return
     await original.readData()
     await modified.readData()
 
@@ -175,7 +172,7 @@ async function localCompare () {
     diff.name = name + ' (Working Checkout)'
     diff.original = original.preview
     diff.modified = modified.preview
-    fileTree.fileDiffs.push(diff)
+    fileTree.setFileDiffs(diff)
   }
 }
 
