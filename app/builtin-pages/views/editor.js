@@ -7,6 +7,8 @@ import _get from 'lodash.get'
 import * as fileTree from '../com/editor/file-tree'
 import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
+import toggleable2, {closeAllToggleables}  from '../com/toggleable2'
+import renderFaviconPicker from '../com/settings/favicon-picker'
 
 var archive
 var workingCheckout
@@ -91,6 +93,9 @@ async function setup () {
 }
 
 function render () {
+  const isOwner = _get(archive, 'info.isOwner')
+  const currentFaviconUrl = `beaker-favicon:32,${archive.url}`
+
   // explorer/file tree
   // workingCheckout.info.userSettings.previewMode
   if (archive) {
@@ -118,6 +123,36 @@ function render () {
     yo`
       <div class="editor-tabs">
         ${models.getModels().map(model => renderTab(model))}
+      </div>
+    `
+  )
+
+  // toolbar
+  yo.update(
+    document.querySelector('.editor-toolbar'),
+    yo`
+      <div class="editor-toolbar">
+        <span class="version-selector">Version: preview</span>
+        ${isOwner
+          ? yo`
+            <p>
+              ${toggleable2({
+                id: 'favicon-picker',
+                closed: ({onToggle}) => yo`
+                  <div class="dropdown toggleable-container">
+                    <span class="favicon-picker-btn" onclick=${onToggle}>Favicons</span>
+                  </div>`,
+                open: ({onToggle}) => yo`
+                  <div class="dropdown toggleable-container">
+                    <span class="favicon-picker-btn pressed" onclick=${onToggle}>Favicons</span>
+                    <div class="dropdown-items subtle-shadow right" onclick=${onToggle}>
+                      ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl})}
+                    </div>
+                  </div>`
+              })}
+            </p>`
+            : yo``
+        }
       </div>
     `
   )
@@ -181,8 +216,22 @@ async function parseLibraryUrl () {
 }
 
 async function onFilesChanged () {
+  await fileTree.setCurrentSource(archiveFsRoot)
   await localCompare()
   fileTree.rerender()
+}
+
+async function onSelectFavicon (imageData) {
+  let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+  if (imageData) {
+    await archive2.writeFile('/favicon.ico', imageData)
+  } else {
+    await archive2.unlink('/favicon.ico').catch(e => null)
+    await beaker.sitedata.set(archive.url, 'favicon', '') // clear cache
+  }
+  isFaviconSet = true
+  closeAllToggleables()
+  //render() will need to call this once we get the archive change issues fixed. That way the favicon will be updated whenever you open it.
 }
 
 async function onSave () {

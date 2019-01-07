@@ -27,9 +27,9 @@
   overflow-y: scroll;
   text-overflow: ellipsis;
 
-  // .section-title:hover .archive-fs-options {
-  //   opacity: 1;
-  // }
+  .section-title:hover .archive-fs-options {
+    opacity: 1;
+  }
 
   &::-webkit-scrollbar { 
     display: none;
@@ -179,9 +179,22 @@
     }
   }
   
-  #editor, #diffEditor {
+  #editor, #diffEditor, #imageViewer {
     height: 100%;
     background-color: white;
+  }
+
+  #imageViewer {
+    box-shadow: inset 0px 0px 3px 0px rgba(0, 0, 0, 0.65);
+    position: relative;
+
+    img {
+      max-width: 100%;
+      height: auto;
+      position: absolute;
+      top: 25px;
+      left: 25px;
+    }
   }
 }
 
@@ -192,4 +205,18 @@
   left: 0;
   right: 0;
   height: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  
+  .favicon-picker-btn {
+    cursor: pointer;
+  }
+
+  .dropdown-items {
+    bottom: 35px;
+    right: 5px;
+    padding: 10px;
+  }
 }
