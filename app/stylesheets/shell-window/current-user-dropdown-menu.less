@@ -8,29 +8,25 @@
   }
 
   .user-profile {
-    padding: 10px 20px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      background: #eee;
+    }
+
+    img {
+      width: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
 
     .title {
       font-size: 18px;
       text-align: center;
-
-      a {    
-        position: absolute;
-        left: 2px;
-        top: 2px;
-        font-size: 11px;
-        padding: 4px 6px;
-        line-height: 1;
-        border-radius: 4px;
-        color: #777;
-
-        &:hover {
-          color: #555;
-          background: #eee;
-        }
-      }
     }
-}
+  }
 
   .menu-item {
     &:extend(.flex);

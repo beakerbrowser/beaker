@@ -41,13 +41,9 @@ export class CurrentUserMenuNavbarBtn {
         <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
           <div class="dropdown-items submenu with-triangle">
             <div class="dropdown-wrapper">
-              <div class="user-profile">
-                <div class="title">
-                  ${this.userTitle}
-                  <a onclick=${e => this.onEditProfile(e)}>
-                    <i class="fas fa-pencil-alt"></i>
-                  </a>
-                </div>
+              <div class="user-profile" onclick=${e => this.onViewProfile(e)}>
+                <img src=${this.userThumbUrl}>
+                <div class="title">${this.userTitle}</div>
               </div>
               <div class="section">
                 <div class="menu-item" onclick=${e => this.onViewProfile(e)}>
@@ -57,6 +53,10 @@ export class CurrentUserMenuNavbarBtn {
                 <div class="menu-item" onclick=${e => this.onCopyUrl(e)}>
                   <i class="fas fa-clipboard"></i>
                   <span class="label">Copy link</span>
+                </div>
+                <div class="menu-item" onclick=${e => this.onEditProfile(e)}>
+                  <i class="fas fa-pencil-alt"></i>
+                  <span class="label">Edit</span>
                 </div>
               </div>
             </div>
