@@ -228,9 +228,9 @@ async function onUpdateSearchQuery (q) {
   if (query.length) {
     searchResults = await beaker.crawler.listSuggestions(query)
     searchResults.fixed = [{
-      url: `https://duckduckgo.com?q=${encodeURIComponent(query)}`,
+      url: `beaker://search?q=${encodeURIComponent(query)}`,
       icon: 'fa fa-search',
-      title: `Search "${query}"`
+      title: `Privately search for "${query}"`
     }]
   }
 

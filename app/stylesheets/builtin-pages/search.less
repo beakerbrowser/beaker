@@ -1,6 +1,149 @@
 @import "../base/colors.less";
+@import "./components/tabs.less";
 @import "./components/user-card.less";
 
 .search .builtin-main {  
-  max-width: 1200px;
+  max-width: 1020px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.search-header {
+  background: #fff;
+  padding: 16px;
+  border: 1px solid #ddd;
+  margin-bottom: 10px !important;
+
+  .brand {
+    text-align: center;
+    margin-bottom: 10px;
+
+    img {
+      width: 100px;
+      height: 100px;
+    }
+  }
+
+  .search-container {
+    height: 40px;
+
+    input.search {
+      padding-left: 40px;
+      border-radius: 30px;
+    }
+
+    i.fa-search {
+      left: 20px;
+      top: 13.75px;
+    }
+
+    .close-btn {
+      right: 12px;
+      top: 11px;
+    }
+  }
+
+  .search-actions {
+    margin: 20px 0 14px;
+    text-align: center;
+  }
+
+  .browse-links {
+    text-align: center;
+    color: rgba(0,0,0,.65);
+  }
+
+  &.noquery {
+    position: fixed;
+    width: 100%;
+    max-width: 800px;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: none;
+    border: 0;
+  }
+}
+
+.showing-results-for {
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 12px;
+  margin: 10px 5px;
+}
+
+.search-body {
+  display: flex;
+
+  .search-results-col {
+    flex: 1;
+    background: #fff;
+    border: 1px solid #ddd;
+    margin-right: 10px;
+    padding: 10px 14px;
+  }
+
+  .search-controls-col {
+    width: 200px;
+  }
+}
+
+.search-sidecontrol {
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
+
+  h3 {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  .radio {
+    li {
+      color: rgba(0,0,0,.5);
+      cursor: pointer;
+
+      &.active,
+      &:hover {
+        color: rgba(0,0,0,.75);
+      }
+    }
+
+    .fa-check {
+      margin: 0 6px;
+      visibility: hidden;
+    }
+
+    .active .fa-check {
+      visibility: visible;
+    }
+  }
+}
+
+.alternative-engines {
+  padding: 5px;
+  color: rgba(0,0,0,.65);
+  line-height: 1.8;
+
+  a.link {
+    color: inherit;
+
+    span {
+      margin-right: 3px;
+      margin-left: 4px;
+    }
+  }
+}
+
+.pagination {
+  .current {
+    padding: 0 10px;
+  }
+  .btn {
+    min-width: 32px;
+    text-align: center;
+  }
+  .disabled {
+    cursor: default;
+  }
 }
