@@ -47,10 +47,10 @@ export function unload (e, file) {
     models.splice(models.findIndex(v => v.name === model.name), 1)
     model.original.dispose()
     model.modified.dispose()
-  } else if (file.type === "image") {
+  } else if (file.type === 'image') {
     let model = findModel(file.name)
     models.splice(models.findIndex(v => v.name === model.name), 1)
-    document.getElementById('imageViewer').classList.add("hidden")
+    document.getElementById('imageViewer').classList.add('hidden')
   } else {
     let model = monaco.editor.getModel(file.uri)
     models.splice(models.findIndex(v => v.name === model.name), 1)
@@ -87,7 +87,7 @@ export const setActive = async function setActive (file) {
 export const setActiveDiff = async function setActiveDiff (diff) {
   try {
     editor.domElement.hidden = true
-    document.getElementById('imageViewer').classList.add("hidden")
+    document.getElementById('imageViewer').classList.add('hidden')
 
     // load if not yet loaded
     if (!findModel(diff.name)) {
@@ -162,7 +162,7 @@ async function setEditableActive (file) {
   }
 
   editor.domElement.hidden = false
-  document.getElementById('imageViewer').classList.add("hidden")
+  document.getElementById('imageViewer').classList.add('hidden')
   active = findModel(file.name)
   editor.setModel(findModel(file.name))
   modelHistory.push(file)
@@ -177,18 +177,18 @@ const setUneditableActive = async function (file) {
   if (!findModel(file.name)) {
     model.name = file.name
     model.isEditable = file.isEditable
-    model.type = "image"
+    model.type = 'image'
     models.push(model)
   }
 
   let container = document.getElementById('imageViewer')
-  container.innerHTML = ""
+  container.innerHTML = ''
   let img = new Image()
   img.crossOrigin = 'anonymous'
   img.src = file.url
   img.onload = () => {
     container.append(img)
-    container.classList.remove("hidden")
+    container.classList.remove('hidden')
   }
 
   active = findModel(file.name)

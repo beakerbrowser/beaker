@@ -9,6 +9,7 @@ import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
 import toggleable2, {closeAllToggleables}  from '../com/toggleable2'
 import renderFaviconPicker from '../com/settings/favicon-picker'
+import renderArchiveHistory from '../com/archive/archive-history'
 
 var archive
 var workingCheckout
@@ -94,7 +95,18 @@ async function setup () {
 
 function render () {
   const isOwner = _get(archive, 'info.isOwner')
+  const previewMode = _get(archive, 'info.userSettings.previewMode')
   const currentFaviconUrl = `beaker-favicon:32,${archive.url}`
+  var version = 'latest'
+  var filePath = '/' + window.location.pathname.split('/').slice(4).join('/')
+
+  var vi = workingCheckout.url.indexOf('+')
+  if (vi !== -1) {
+    version = workingCheckout.url.slice(vi + 1)
+  }
+
+  // is the version a number?
+  if (version == +version) version = `v${version}`
 
   // explorer/file tree
   // workingCheckout.info.userSettings.previewMode
@@ -132,7 +144,26 @@ function render () {
     document.querySelector('.editor-toolbar'),
     yo`
       <div class="editor-toolbar">
-        <span class="version-selector">Version: preview</span>
+        ${isOwner
+          ? yo`
+            <p>
+              ${toggleable2({
+                id: 'favicon-picker',
+                closed: ({onToggle}) => yo`
+                  <div class="dropdown toggleable-container">
+                    <span class="version-picker-btn" onclick=${onToggle}>Version: ${version}</span>
+                  </div>`,
+                open: ({onToggle}) => yo`
+                  <div class="dropdown toggleable-container">
+                    <span class="version-picker-btn pressed" onclick=${onToggle}>Version: ${version}</span>
+                    <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
+                      ${renderArchiveHistory(workingCheckout, {filePath, includePreview: previewMode})}
+                    </div>
+                  </div>`
+              })}
+            </p>`
+            : yo``
+        }
         ${isOwner
           ? yo`
             <p>
@@ -195,7 +226,7 @@ async function localCompare () {
   compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
 
   for (let diff of compareDiff) {
-    let name = diff.path.match(/[^/]+$/).pop().replace("\\", "")
+    let name = diff.path.match(/[^/]+$/).pop().replace('\\', '')
     let original = archiveFS._files.find(v => v.name == name)
     let modified = archiveFsRoot._files.find(v => v.name == name)
 

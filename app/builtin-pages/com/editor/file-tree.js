@@ -13,7 +13,6 @@ var previewMode = false
 var fileDiffs = []
 var onSetCurrentSource = () => {} // v simple events solution
 
-
 // exported api
 // =
 
@@ -68,19 +67,19 @@ export function getCurrentSourcePath () {
   return path
 }
 
-export function setPreviewMode(value) {
+export function setPreviewMode (value) {
   previewMode = value
 }
 
-export function getFileDiffs() {
+export function getFileDiffs () {
   return fileDiffs
 }
 
-export function setFileDiffs(diff) {
+export function setFileDiffs (diff) {
   fileDiffs.push(diff)
 }
 
-export function clearFileDiffs() {
+export function clearFileDiffs () {
   fileDiffs = []
 }
 
@@ -291,7 +290,7 @@ async function onClickNode (e, node) {
   if (node.isContaziner) {
     node.isExpanded = !node.isExpanded
   }
-  
+
   await node.readData({ignoreCache: true})
   rerender()
 }
