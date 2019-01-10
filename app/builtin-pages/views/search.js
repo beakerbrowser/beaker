@@ -45,7 +45,7 @@ async function readStateFromURL () {
   })
 
   // detect hasMore
-  hasMore = results[category].length > LIMIT
+  hasMore = results[category] && results[category].length > LIMIT
   if (hasMore) results[category].pop() // discard extra
 
   console.log('results', results)
@@ -106,9 +106,13 @@ function renderSearchPrompt () {
           <a class="btn thick" onclick=${onClickSearch}>Search Beaker</a>
         </div>
         <div class="browse-links">
-          Browse:
-          <a href="beaker://search?category=people" class="link">People</a>,
-          <a href="beaker://search?category=posts" class="link">Posts</a>
+          [
+          <a href="beaker://search?category=people" class="link">People</a> |
+          <a href="beaker://search?category=posts" class="link">Posts</a> |
+          <a href="beaker://search?category=pages" class="link">Pages</a> |
+          <a href="beaker://search?category=images" class="link">Images</a> |
+          <a href="beaker://search?category=files" class="link">Files</a>
+          ]
         </div>
       </div>
     </div>`
@@ -132,6 +136,9 @@ function renderSearchResults () {
           <div class="tabs">
             ${renderTab('people', 'People')}
             ${renderTab('posts', 'Posts')}
+            ${renderTab('pages', 'Pages')}
+            ${renderTab('images', 'Images')}
+            ${renderTab('files', 'Files')}
           </div>
           ${query
             ? yo`
@@ -155,12 +162,11 @@ function renderSearchResults () {
           <div class="alternative-engines">
             <div>Try other search engines:</div>
             <ul>
-              <li><a class="link" href="https://google.com/search?q=${encodeURIComponent(query)}" target="_blank"><span class="fab fa-google"></span> Google</a></li>
-              <li><a class="link" href="https://duckduckgo.com?q=${encodeURIComponent(query)}" target="_blank"><span class="fas fa-search"></span> DuckDuckGo</a></li>
-              <li><a class="link" href="https://bing.com/search?q=${encodeURIComponent(query)}" target="_blank"><span class="fas fa-search"></span> Bing</a></li>
-              <li><a class="link" href="https://twitter.com/search?q=${encodeURIComponent(query)}" target="_blank"><span class="fab fa-twitter"></span> Twitter</a></li>
-              <li><a class="link" href="https://reddit.com/search?q=${encodeURIComponent(query)}" target="_blank"><span class="fab fa-reddit-alien"></span> Reddit</a></li>
-              <li><a class="link" href="https://github.com/search?q=${encodeURIComponent(query)}" target="_blank"><span class="fab fa-github-alt"></span> GitHub</a></li>
+              <li><a class="link" href="https://duckduckgo.com${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fas fa-search"></span> DuckDuckGo</a></li>
+              <li><a class="link" href="https://google.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-google"></span> Google</a></li>
+              <li><a class="link" href="https://twitter.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-twitter"></span> Twitter</a></li>
+              <li><a class="link" href="https://reddit.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-reddit-alien"></span> Reddit</a></li>
+              <li><a class="link" href="https://github.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-github-alt"></span> GitHub</a></li>
             </ul>
           </div>
         </div>
