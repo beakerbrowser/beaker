@@ -1,5 +1,5 @@
 import yo from 'yo-yo'
-import {makeSafe, highlight} from '../../lib/strings'
+import {makeSafe, highlight} from '../../../lib/strings'
 
 // exported api
 // =
@@ -7,7 +7,7 @@ import {makeSafe, highlight} from '../../lib/strings'
 export default function render (userInfo, currentUserSession, highlightNonce) {
   if (!userInfo.author) return '' // must have information about the user (as of writing, all info about followed users has an author)
   return yo`
-    <div class="user-card">
+    <div class="search-result user">
       <div class="thumb">
         <img src=${getThumbUrl(userInfo)}>
       </div>

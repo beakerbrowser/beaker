@@ -1,7 +1,9 @@
 /* globals beaker window */
 
 import yo from 'yo-yo'
-import renderUserCard from '../com/user-card'
+import moment from 'moment'
+import renderUserResult from '../com/search/user-result'
+import renderPostResult from '../com/search/post-result'
 import renderCloseIcon from '../icon/close'
 import {polyfillHistoryEvents} from '../../lib/fg/event-handlers'
 
@@ -35,8 +37,9 @@ async function readStateFromURL () {
   results = await beaker.crawler.listSearchResults({
     user: currentUserSession.url, 
     query: getParam('q'),
-    type: {[category]: true},
+    types: {[category]: true},
     hops: getHops(),
+    since: getSinceTS(),
     offset: (page - 1) * LIMIT,
     limit: LIMIT + 1 // get 1 more than needed to detect if more results exist
   })
@@ -55,6 +58,12 @@ function getPage () {
 
 function getHops () {
   return +(getParam('hops') || 2)
+}
+
+function getSinceTS () {
+  var since = getParam('since')
+  if (!since || since === 'all') return undefined
+  return moment().subtract(1, since).valueOf()
 }
 
 function getParam (k) {
@@ -109,6 +118,9 @@ function renderSearchResults () {
   var query = getParam('q') || ''
   var category = getParam('category')
   var page = getPage()
+
+  const renderTab = (id, label) => yo`<div class="tab ${category === id ? 'active' : ''}" onclick=${() => onClickTab(id)}>${label}</div>`
+
   return  yo`
     <div class="builtin-main">
       <div class="search-header">
@@ -118,18 +130,19 @@ function renderSearchResults () {
       <div class="search-body">
         <div class="search-results-col">
           <div class="tabs">
-            <div class="tab active">People</div>
-            <div class="tab">Posts</div>
+            ${renderTab('people', 'People')}
+            ${renderTab('posts', 'Posts')}
           </div>
           ${query
-            ? yo`<div>
+            ? yo`
               <div class="showing-results-for">
                 Showing results for "${query}".
                 <a class="link" href="https://duckduckgo.com?q=${encodeURIComponent(query)}">Try your search on DuckDuckGo <span class="fa fa-angle-double-right"></span></a>
               </div>`
             : ''}
-          <div class="user-cards">
-            ${results.people.map(f => renderUserCard(f, currentUserSession, results.highlightNonce))}
+          <div class="search-results">
+            ${results.people ? results.people.map(user => renderUserResult(user, currentUserSession, results.highlightNonce)) : ''}
+            ${results.posts ? results.posts.map(post => renderPostResult(post, currentUserSession, results.highlightNonce)) : ''}
           </div>
           <div class="pagination">
             <a class="btn ${page > 1 ? '' : 'disabled'}" onclick=${onClickPrevPage}><span class="fa fa-angle-left"></span></a>
@@ -138,7 +151,7 @@ function renderSearchResults () {
           </div>
         </div>
         <div class="search-controls-col">
-          ${renderSideControls()}
+          ${renderSideControls(category)}
           <div class="alternative-engines">
             <div>Try other search engines:</div>
             <ul>
@@ -156,45 +169,62 @@ function renderSearchResults () {
 }
 
 function renderSearchControl () {
+  var query = getParam('q') || ''
   return yo`
     <div class="search-container">
-      <input autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your network privately" class="search" value=${getParam('q') || ''} />
+      <input autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your network privately" class="search" value=${query} />
       <i class="fa fa-search"></i>
+      ${query
+        ? yo`
+          <span onclick=${onClearQuery} class="close-btn">
+            ${renderCloseIcon()}
+          </span>`
+        : ''}
     </div>`
 }
 
 function renderSideControls (category) {
+  const hops = getHops()
+  const since = getParam('since') || 'all'
   var ctrls = []
 
   if (category === 'posts') {
     ctrls.push(yo`
       <div class="search-sidecontrol">
-        <ul class="radio">
-          <li class="active"><span class="fas fa-check"></span> All time</li>
-          <li><span class="fas fa-check"></span> Past day</li>
-          <li><span class="fas fa-check"></span> Past week</li>
-          <li><span class="fas fa-check"></span> Past month</li>
-          <li><span class="fas fa-check"></span> Past year</li>
-        </ul>
+        ${renderRadio({
+          onclick ({id}) {
+            setParams({since: id})
+          },
+          current: since,
+          items: [
+            {id: 'all', label: 'All time'},
+            {id: 'day', label: 'Past day'},
+            {id: 'week', label: 'Past week'},
+            {id: 'month', label: 'Past month'},
+            {id: 'year', label: 'Past year'}
+          ]
+        })}
       </div>`
     )    
   }
 
-  var hops = getHops()
-  ctrls.push(yo`
-    <div class="search-sidecontrol">
-      ${renderRadio({
-        onclick ({id}) {
-          setParams({hops: id})
-        },
-        current: hops,
-        items: [
-          {id: 2, label: 'All of your network'},
-          {id: 1, label: 'Followed users'}
-        ]
-      })}
-    </div>`
-  )
+  if (category === 'people') {
+    // TODO support this param in posts
+    ctrls.push(yo`
+      <div class="search-sidecontrol">
+        ${renderRadio({
+          onclick ({id}) {
+            setParams({hops: id})
+          },
+          current: hops,
+          items: [
+            {id: 2, label: 'All of your network'},
+            {id: 1, label: 'Followed users'}
+          ]
+        })}
+      </div>`
+    )
+  }
 
   return ctrls
 }
@@ -229,6 +259,10 @@ function onUpdateSearchQuery (e) {
       category: getParam('category') || 'people'
     })
   }
+}
+
+function onClickTab (category) {
+  setParams({category})
 }
 
 function onClickSearch () {

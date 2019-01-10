@@ -1,6 +1,7 @@
 @import "../base/colors.less";
 @import "./components/tabs.less";
-@import "./components/user-card.less";
+@import "./components/search/user-result.less";
+@import "./components/search/post-result.less";
 
 .search .builtin-main {  
   max-width: 1020px;
@@ -68,7 +69,7 @@
 .showing-results-for {
   color: rgba(0, 0, 0, 0.65);
   font-size: 12px;
-  margin: 10px 5px;
+  margin: 10px 5px -10px;
 }
 
 .search-body {
@@ -82,7 +83,7 @@
     margin-right: 10px;
     padding: 10px 14px;
 
-    .user-cards {
+    .search-results {
       padding: 10px 0;
     }
   }
