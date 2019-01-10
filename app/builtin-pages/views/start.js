@@ -17,13 +17,13 @@ const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/
 const SEARCH_GROUPS = [
   {key: 'fixed'},
   {key: 'apps', label: 'Applications'},
-  {key: 'user', label: 'People'},
-  {key: 'web-page', label: 'Web pages'},
-  {key: 'image-collection', label: 'Image collections'},
-  {key: 'file-share', label: 'File shares'},
+  {key: 'people', label: 'People'},
+  {key: 'webPages', label: 'Web pages'},
+  {key: 'imageCollections', label: 'Image collections'},
+  {key: 'fileShares', label: 'File shares'},
   {key: 'bookmarks', label: 'Bookmarks'},
   {key: 'history', label: 'Your browsing history'},
-  {key: 'other', label: 'Saved to your Library'},
+  {key: 'others', label: 'Saved to your Library'},
 ]
 
 // globals

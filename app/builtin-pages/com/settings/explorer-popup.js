@@ -81,10 +81,10 @@ function render (url) {
           <div class="suggestions ${query ? 'query-results' : 'defaults'}">
             ${hasResults ? '' : yo`<div class="empty">No results</div>`}
             ${renderSuggestionGroup('apps', 'Applications')}
-            ${renderSuggestionGroup('user', 'People')}
-            ${renderSuggestionGroup('web-page', 'Web pages')}
-            ${renderSuggestionGroup('image-collection', 'Image collections')}
-            ${renderSuggestionGroup('file-share', 'File shares')}
+            ${renderSuggestionGroup('people', 'People')}
+            ${renderSuggestionGroup('webPages', 'Web pages')}
+            ${renderSuggestionGroup('imageCollections', 'Image collections')}
+            ${renderSuggestionGroup('fileShares', 'File shares')}
             ${renderSuggestionGroup('bookmarks', 'Bookmarks')}
             ${renderSuggestionGroup('library', 'Saved to your Library')}
             ${renderSuggestionGroup('history', 'History')}
