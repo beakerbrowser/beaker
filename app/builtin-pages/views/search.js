@@ -119,9 +119,10 @@ function renderSearchPrompt () {
 }
 
 function renderSearchResults () {
-  var query = getParam('q') || ''
-  var category = getParam('category')
-  var page = getPage()
+  const query = getParam('q') || ''
+  const category = getParam('category')
+  const page = getPage()
+  const isEmpty = !results[category] || !results[category].length
 
   const renderTab = (id, label) => yo`<div class="tab ${category === id ? 'active' : ''}" onclick=${() => onClickTab(id)}>${label}</div>`
 
@@ -140,7 +141,7 @@ function renderSearchResults () {
             ${renderTab('images', 'Images')}
             ${renderTab('files', 'Files')}
           </div>
-          ${query
+          ${query && !isEmpty
             ? yo`
               <div class="showing-results-for">
                 Showing results for "${query}".
@@ -148,6 +149,13 @@ function renderSearchResults () {
               </div>`
             : ''}
           <div class="search-results">
+            ${isEmpty
+              ? yo`
+                <div class="empty">
+                  No results${query ? ` for "${query}"` : ''}.
+                  <a class="link" href="https://duckduckgo.com${query ? ('?q=' + encodeURIComponent(query)) : ''}">Try your search on DuckDuckGo <span class="fa fa-angle-double-right"></span></a>
+                </div>`
+              : ''}
             ${results.people ? results.people.map(user => renderUserResult(user, currentUserSession, results.highlightNonce)) : ''}
             ${results.posts ? results.posts.map(post => renderPostResult(post, currentUserSession, results.highlightNonce)) : ''}
           </div>

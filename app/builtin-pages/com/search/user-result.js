@@ -105,13 +105,10 @@ async function onToggleFollowing (e, userInfo, currentUserSession, highlightNonc
   var resultEl = findParent(e.currentTarget, 'search-result')
   var isCurrentlyFollowing = getIsUserFollowing(userInfo, currentUserSession)
   if (isCurrentlyFollowing) {
-    console.log('unfollowing')
     await beaker.followgraph.unfollow(userInfo.url)
   } else {
-    console.log('following')
     await beaker.followgraph.follow(userInfo.url)
   }
   userInfo.followedBy = await beaker.followgraph.listFollowers(userInfo.url, {includeDesc: true})
-  console.log(userInfo.followedBy)
   yo.update(resultEl, render(userInfo, currentUserSession, highlightNonce))
 }
