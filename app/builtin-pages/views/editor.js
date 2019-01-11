@@ -260,7 +260,6 @@ async function onSelectFavicon (imageData) {
     await archive2.unlink('/favicon.ico').catch(e => null)
     await beaker.sitedata.set(archive.url, 'favicon', '') // clear cache
   }
-  isFaviconSet = true
   closeAllToggleables()
   //render() will need to call this once we get the archive change issues fixed. That way the favicon will be updated whenever you open it.
 }

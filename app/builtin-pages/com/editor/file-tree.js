@@ -11,7 +11,6 @@ var selectedNodes = new Set() // set of nodes
 var currentDragNode = null
 var previewMode = false
 var fileDiffs = []
-var onSetCurrentSource = () => {} // v simple events solution
 
 // exported api
 // =
@@ -92,26 +91,19 @@ export async function setCurrentSource (node, {suppressEvent} = {}) {
 
   // special handling for files
   if (node.type === 'file') {
-    // emit and render, to allow 'loading...' to show
-    if (!suppressEvent) {
-      onSetCurrentSource(node)
-    }
     let to = setTimeout(() => { // only show if it's taking time to load
       node.isLoadingPreview = true
       rerender()
     }, 500)
     // then load
-    await currentSource.readData({maxPreviewLength: 1e5})
+    await currentSource.readData({maxPreviewLength: 1e5, ignoreCache: true})
     clearTimeout(to)
     // then render again
     node.isLoadingPreview = false
     rerender()
   } else {
     // load
-    await currentSource.readData()
-    if (!suppressEvent) {
-      onSetCurrentSource(node)
-    }
+    await currentSource.readData({ignoreCache: true})
     resortTree()
     // then render
     rerender()
@@ -143,7 +135,6 @@ function rSection (tree) {
       <i class="fa fa-caret-down"></i>
       <span>Preview Changes</span>
       <div class="archive-fs-options">
-        <i class="fa fa-sync-alt"></i>
         <i class="fa fa-plus-square"></i>
         <i class="fa fa-folder-plus"></i>
       </div>
@@ -261,9 +252,11 @@ function getIcon (name) {
 // event handlers
 // =
 
-function syncFileTree (e) {
+function  syncFileTree (e) {
   e.stopPropagation()
   e.preventDefault()
+
+  getCurrentSource()
 
   rerender()
 }
