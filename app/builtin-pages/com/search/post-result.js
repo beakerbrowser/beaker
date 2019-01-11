@@ -13,7 +13,7 @@ export default function render (postInfo, currentUserSession, highlightNonce) {
         <div class="author">
           by
           <a class="link" href=${postInfo.author.url} title=${getAuthorTitle(postInfo)}>
-            ${renderAuthorThumb(postInfo)}
+            <img src="${postInfo.author.thumbUrl}">
             ${getAuthorTitle(postInfo)}
           </a>
         </div>
@@ -28,11 +28,6 @@ function renderContent (postInfo, highlightNonce) {
   var el = yo`<span></span>`
   el.innerHTML = highlight(makeSafe(postInfo.content), highlightNonce)
   return el
-}
-
-function renderAuthorThumb (postInfo) {
-  // TODO
-  return yo`<img src="dat://39548c10e50aed4eeb80543e91c758f00dc5d0d15f5ebb56b87b89462ba4bbf1/thumb">`
 }
 
 function getAuthorTitle (postInfo) {

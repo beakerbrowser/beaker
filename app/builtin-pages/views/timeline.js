@@ -51,7 +51,7 @@ function renderNewPostForm () {
     <form class="new-post-form" onsubmit=${onSubmitNewPostForm}>
       <div class="inputs">
         <a href="${currentUserSession.url}" class="avatar-container">
-          <img src="${currentUserSession.url}/thumb.jpg" class="avatar">
+          <img src="${currentUserSession.url}/thumb" class="avatar">
         </a>
         <textarea placeholder="Write a post" onkeydown=${onNewPostKeyup} onkeyup=${onNewPostKeyup} onchange=${onNewPostKeyup}>${newPostText}</textarea>
       </div>
@@ -80,7 +80,7 @@ function renderFeedItem (post) {
   var el = yo`
     <div class="timeline-item post" id="post-${post.author.url}${post.pathname}">
       <a href="${post.author.url}" class="avatar-container">
-        <img src="${post.author.url}/thumb.jpg" class="avatar ">
+        <img src="${post.author.thumbUrl}" class="avatar">
       </a>
       <div class="post-content">
         <div class="post-header">

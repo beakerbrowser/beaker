@@ -6,12 +6,11 @@ import {findParent} from '../../../lib/fg/event-handlers'
 // =
 
 export default function render (userInfo, currentUserSession, highlightNonce) {
-  if (!userInfo.author) return '' // must have information about the user (as of writing, all info about followed users has an author)
   const isFollowing = getIsUserFollowing(userInfo, currentUserSession)
   return yo`
     <div class="search-result user">
       <div class="thumb">
-        <img src=${getThumbUrl(userInfo)}>
+        <img src=${userInfo.thumbUrl}>
       </div>
       <div class="details">
         <a class="link title" href=${userInfo.url} title=${getTitle(userInfo)}>${renderTitle(userInfo, highlightNonce)}${renderFollowsYou(userInfo)}</a>
@@ -74,15 +73,6 @@ function renderFollowers (followers, currentUserSession) {
       Followed by
       ${followers}
     </div>`
-}
-
-function getThumbUrl (userInfo) {
-  try {
-    return userInfo.author.url + '/data/known_sites/' + getHostname(userInfo.url) + '.jpg'
-  } catch (e) {
-    console.error('Failed to construct thumb url', e)
-    return ''
-  }
 }
 
 function getTitle (userInfo) {
