@@ -42,8 +42,8 @@ export function unload (e, file) {
   if (getActive() === file) newActive = modelHistory.pop()
 
   // handle diff
-  if (file.diff) {
-    let model = findModel(file.name)
+  if (file.isDiff) {
+    let model = findDiffModel(file.name)
     models.splice(models.findIndex(v => v.name === model.name), 1)
     model.original.dispose()
     model.modified.dispose()
@@ -63,8 +63,9 @@ export function unload (e, file) {
 
 export const setActive = async function setActive (file) {
   try {
+    console.log(file)
     // this is a diff
-    if (file.change || file.diff) {
+    if (file.isDiff) {
       setActiveDiff(file)
       return
     }
@@ -90,28 +91,31 @@ export const setActiveDiff = async function setActiveDiff (diff) {
     document.getElementById('imageViewer').classList.add('hidden')
 
     // load if not yet loaded
-    if (!findModel(diff.name)) {
+    if (!findDiffModel(diff.name)) {
+      await diff.readData()
+      await diff.original.readData()
       diffEditor.setModel({
-        original: monaco.editor.createModel(diff.original),
-        modified: monaco.editor.createModel(diff.modified)
+        original: monaco.editor.createModel(diff.original.preview),
+        modified: monaco.editor.createModel(diff.preview)
       })
 
       // create diff model for tabs
       let diffModel = diffEditor.getModel()
       diffModel.name = diff.name
       diffModel.diff = diff
+      diffModel.isDiff = true
 
       models.push(diffModel)
     }
 
-    let model = findModel(diff.name)
+    let model = findDiffModel(diff.name)
     diffEditor.setModel({
       original: model.original,
       modified: model.modified
     })
 
     modelHistory.push(diff)
-    active = findModel(diff.name)
+    active = findDiffModel(diff.name)
     window.dispatchEvent(new Event('update-editor'))
   } catch (e) {
     console.error(e)
@@ -120,7 +124,17 @@ export const setActiveDiff = async function setActiveDiff (diff) {
 }
 
 export const findModel = function findModel (fileName) {
-  return models.find(v => v.name === fileName)
+  return models.find(v => {
+    if (v.name === fileName && !v.isDiff) return true
+    return false
+  })
+}
+
+export const findDiffModel = function findDiffModel (fileName) {
+  return models.find(v => {
+    if (v.name === fileName && v.isDiff) return true
+    return false
+  })
 }
 
 export function getActive () {

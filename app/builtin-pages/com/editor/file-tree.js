@@ -74,12 +74,8 @@ export function getFileDiffs () {
   return fileDiffs
 }
 
-export function setFileDiffs (diff) {
-  fileDiffs.push(diff)
-}
-
-export function clearFileDiffs () {
-  fileDiffs = []
+export function setFileDiffs (diffs) {
+  fileDiffs = diffs
 }
 
 export async function setCurrentSource (node, {suppressEvent} = {}) {
@@ -177,7 +173,7 @@ function rDirectory (node) {
   let children = ''
   let cls = 'right'
 
-  if (node.isExpanded) {
+  if (node.isExpanded && !node.isDiff) {
     children = yo`<div class="subtree">${rChildren(node.children)}</div>`
     cls = 'down'
   }
@@ -209,7 +205,8 @@ function rFile (node) {
       oncontextmenu=${e => onContextmenuNode(e, node)}
     >
       ${getIcon(node.name)}
-      <span>${node.change ? node.name.replace(' (Working Checkout)', '') : node.name}</span>
+      <span>${node.name}</span>
+      <span id="diff-path-listing">${node.isDiff ? node._path : ''}</span>
     </div>
   `
 }
@@ -272,19 +269,19 @@ async function onClickNode (e, node) {
   e.preventDefault()
   e.stopPropagation()
 
-  if (node.isEditable && !node.isContainer) {
+  if (node.isEditable && !node.isContainer && !node.isDiff) {
     models.setActive(node)
   }
 
-  if (node.change) {
+  if (node.isDiff && !node.isContainer) {
     models.setActiveDiff(node)
   }
 
-  if (node.isContaziner) {
+  if (node.isContainer) {
     node.isExpanded = !node.isExpanded
+    await node.readData({ignoreCache: true})
   }
 
-  await node.readData({ignoreCache: true})
   rerender()
 }
 

@@ -210,7 +210,7 @@ function renderTab (model) {
   let cls = models.getActive() === model ? 'active' : ''
   return yo`
     <div draggable="true" class="tab ${cls}" onclick=${() => models.setActive(model)}>
-      ${model.name}
+      ${model.isDiff ? model.name + " (Working Tree)" : model.name}
       <i class="fa fa-times" onclick=${(e) => models.unload(e, model)}></i>
     </div>
   `
@@ -221,25 +221,27 @@ async function localCompare () {
   let archiveFS = new FSArchive(null, archive, archive.info)
   await archiveFS.readData()
 
-  fileTree.clearFileDiffs()
-
   compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
+  let fileDiffs = await Promise.all(compareDiff.map(async (diff) => {
+    let node = await findArchiveNode(archiveFsRoot, diff.path)
+    let obj = Object.create(node)
+    obj.original = await findArchiveNode(archiveFS, diff.path)
+    obj.isDiff = true
+    return obj
+  }))
 
-  for (let diff of compareDiff) {
-    let name = diff.path.match(/[^/]+$/).pop().replace('\\', '')
-    let original = archiveFS._files.find(v => v.name == name)
-    let modified = archiveFsRoot._files.find(v => v.name == name)
+  fileTree.setFileDiffs(fileDiffs)
+}
 
-    if (!original || !modified) return
-    await original.readData()
-    await modified.readData()
-
-    // set diff
-    diff.name = name + ' (Working Checkout)'
-    diff.original = original.preview
-    diff.modified = modified.preview
-    fileTree.setFileDiffs(diff)
+async function findArchiveNode (node, path) {
+  var pathParts = path.split(/[\\\/]/g)
+  for (let filename of pathParts) {
+    if (filename.length === 0) continue // first item in array might be empty
+    if (!node.isContainer) return null // node not found (we ran into a file prematurely)
+    if (node._files.length === 0) await node.readData() // read the directory as needed
+    node = node._files.find(n => n.name === filename) // move to next child in the tree
   }
+  return node
 }
 
 async function parseLibraryUrl () {
