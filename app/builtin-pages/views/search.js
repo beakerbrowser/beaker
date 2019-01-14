@@ -4,8 +4,10 @@ import yo from 'yo-yo'
 import moment from 'moment'
 import renderUserResult from '../com/search/user-result'
 import renderPostResult from '../com/search/post-result'
+import renderPageResult from '../com/search/page-result'
 import renderCloseIcon from '../icon/close'
 import {polyfillHistoryEvents} from '../../lib/fg/event-handlers'
+import { highlight } from '../../lib/strings';
 
 const LIMIT = 20
 
@@ -158,6 +160,7 @@ function renderSearchResults () {
               : ''}
             ${results.people ? results.people.map(user => renderUserResult(user, currentUserSession, results.highlightNonce)) : ''}
             ${results.posts ? results.posts.map(post => renderPostResult(post, currentUserSession, results.highlightNonce)) : ''}
+            ${results.pages ? results.pages.map(page => renderPageResult(page, currentUserSession, results.highlightNonce)) : ''}
           </div>
           <div class="pagination">
             <a class="btn ${page > 1 ? '' : 'disabled'}" onclick=${onClickPrevPage}><span class="fa fa-angle-left"></span></a>
@@ -202,6 +205,21 @@ function renderSideControls (category) {
   const since = getParam('since') || 'all'
   var ctrls = []
 
+  ctrls.push(yo`
+    <div class="search-sidecontrol">
+      ${renderRadio({
+        onclick ({id}) {
+          setParams({hops: id})
+        },
+        current: hops,
+        items: [
+          {id: 2, label: 'All of your network'},
+          {id: 1, label: 'Followed users'}
+        ]
+      })}
+    </div>`
+  )
+
   if (category === 'posts') {
     ctrls.push(yo`
       <div class="search-sidecontrol">
@@ -220,24 +238,6 @@ function renderSideControls (category) {
         })}
       </div>`
     )    
-  }
-
-  if (category === 'people') {
-    // TODO support this param in posts
-    ctrls.push(yo`
-      <div class="search-sidecontrol">
-        ${renderRadio({
-          onclick ({id}) {
-            setParams({hops: id})
-          },
-          current: hops,
-          items: [
-            {id: 2, label: 'All of your network'},
-            {id: 1, label: 'Followed users'}
-          ]
-        })}
-      </div>`
-    )
   }
 
   return ctrls
