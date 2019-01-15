@@ -464,6 +464,7 @@ function renderHeader () {
 
           <div class="primary-action">
             ${renderSeedMenu()}
+            ${renderPublishMenu()}
             ${renderShareMenu()}
             ${renderMenu()}
           </div>
@@ -519,6 +520,26 @@ function renderSeedMenu () {
   })
 }
 
+function renderPublishMenu () {
+  const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  if (!isOwner || !isSaved) return undefined
+
+  const isPublished = _get(archive, 'info.isPublished')
+  if (isPublished) {
+    return yo`
+      <button class="tag nohover disabled">
+        <span class="fas fa-bullhorn"></span>
+        Published
+      </button>`
+  }
+  return yo`
+    <button class="btn" onclick=${onPublishArchive}>
+      <span class="fas fa-bullhorn"></span>
+      Publish
+    </button>`
+}
+
 function renderShareMenu () {
   var url = archive.checkout().url
   return toggleable2({
@@ -566,10 +587,7 @@ function renderShareMenu () {
 function renderMenu () {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  const title = getSafeTitle()
-  const description = _get(archive, 'info.description', '').trim()
-  const networked = _get(archive, 'info.userSettings.networked', true)
+  const isPublished = _get(archive, 'info.isPublished')
 
   return toggleable2({
     id: 'nav-item-main-menu',
@@ -593,7 +611,13 @@ function renderMenu () {
                 <i class="fas fa-copy"></i>
                 Compare files
               </div>*/}
-
+              ${isOwner && isSaved
+                ? yo`
+                  <div class="dropdown-item" onclick=${isPublished ? onUnpublishArchive : onPublishArchive}>
+                    <i class="fas fa-${isPublished ? 'eraser' : 'bullhorn'}"></i>
+                    ${isPublished ? 'Unpublish' : 'Publish'}
+                  </div>`
+                : ''}
               <div class="dropdown-item" onclick=${onMakeCopy}>
                 <i class="far fa-clone"></i>
                 Make ${isOwner ? 'a' : 'an editable'} copy
@@ -1333,12 +1357,34 @@ async function addReadme () {
   render()
 }
 
-function onToggleSaved () {
-  if (_get(archive, 'info.userSettings.isSaved')) {
-    return onMoveToTrash()
-  } else {
-    return onSave()
+async function onPublishArchive () {
+  try {
+    var details = await beaker.browser.showShellModal('publish-archive', {url: archive.url, title: archive.info.title, description: archive.info.description})
+    toast.create(`Published ${archive.info.title || archive.url}`, 'success')
+    archive.info.title = details.title
+    archive.info.description = details.description
+    archive.info.isPublished = true
+  } catch (err) {
+    if (err.message === 'Canceled') return
+    console.error(err)
+    toast.create(err.toString(), 'error')
   }
+  render()
+}
+
+async function onUnpublishArchive () {
+  if (!confirm('Are you sure you want to unpublish this?')) {
+    return
+  }
+  try {
+    await beaker.archives.unpublish(archive.url)
+    toast.create(`Unpublished ${archive.info.title || archive.url}`)
+    archive.info.isPublished = false
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+  }
+  render()
 }
 
 async function onMoveToTrash () {
