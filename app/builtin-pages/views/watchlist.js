@@ -4,7 +4,7 @@ import yo from 'yo-yo'
 import {niceDate} from '../../lib/time'
 import * as toast from '../com/toast'
 import * as addWatchlistItemPopup from '../com/add-watchlist-item-popup'
-import renderCloseIcon from '../icon/close'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
 // =
@@ -135,6 +135,10 @@ function render () {
     document.querySelector('.watchlist-wrapper'), yo`
       <div class="watchlist-wrapper watchlist builtin-wrapper">
         <div class="builtin-main">
+          <div class="builtin-sidebar">
+            ${renderBuiltinPagesNav('beaker://watchlist/', 'Watchlist')}
+          </div>
+          
           <div>
             ${watchlist.length
               ? yo`

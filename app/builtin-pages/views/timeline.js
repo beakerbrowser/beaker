@@ -3,6 +3,7 @@
 const yo = require('yo-yo')
 import {niceDate} from '../../lib/time'
 import * as toast from '../com/toast'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
 //
@@ -35,6 +36,9 @@ function update () {
   yo.update(document.querySelector('.timeline-wrapper'), yo`
     <div class="timeline-wrapper builtin-wrapper">
       <div class="builtin-main">
+        <div class="builtin-sidebar">
+          ${renderBuiltinPagesNav('beaker://timeline/', 'Timeline')}
+        </div>
         ${renderNewPostForm()}
         ${renderTimeline()}
     </div>`

@@ -7,6 +7,7 @@ import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import {getBasicType} from '../../lib/dat'
 import {SITE_TEMPLATES, createSiteFromTemplate} from '../../lib/templates'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import * as toast from '../com/toast'
 import toggleable from '../com/toggleable'
 import * as contextMenu from '../com/context-menu'
@@ -289,6 +290,7 @@ function renderSidebar () {
 
   return yo`
     <div class="builtin-sidebar">
+      ${renderBuiltinPagesNav('beaker://library/', 'Your Library')}
       <div class="section nav">
         ${navItem({
           onclick: () => onUpdateView('all'),

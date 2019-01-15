@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import * as toast from '../com/toast'
 import DatCache from '../com/settings/dat-cache'
 import CrawlerStatus from '../com/settings/crawler-status'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
 // =
@@ -66,6 +67,8 @@ function renderToPage () {
 function renderSidebar () {
   return yo`
     <div class="builtin-sidebar">
+      ${renderBuiltinPagesNav('beaker://settings/', 'Settings')}
+
       <div class="nav-item ${activeView === 'general' ? 'active' : ''}" onclick=${() => onUpdateView('general')}>
         <i class="fa fa-angle-right"></i>
         General

@@ -6,6 +6,7 @@ import renderUserResult from '../com/search/user-result'
 import renderPostResult from '../com/search/post-result'
 import renderPageResult from '../com/search/page-result'
 import renderCloseIcon from '../icon/close'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import {polyfillHistoryEvents} from '../../lib/fg/event-handlers'
 
 const LIMIT = 20
@@ -129,6 +130,10 @@ function renderSearchResults () {
 
   return  yo`
     <div class="builtin-main">
+      <div class="builtin-sidebar">
+        ${renderBuiltinPagesNav('beaker://search/', 'Search')}
+      </div>
+
       <div class="search-header">
         ${renderSearchControl()}
       </div>

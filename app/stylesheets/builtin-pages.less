@@ -245,6 +245,38 @@
 }
 
 .builtin-sidebar {
+  .builtin-pages-nav {
+    margin-bottom: 10px;
+    user-select: none;
+
+    .toggleable {
+      display: inline-block;
+      padding: 5px 15px 2px 5px;
+      margin-top: -5px;
+      margin-left: -5px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(0,0,0,.05);
+      }
+
+      img {
+        display: inline-block;
+        position: relative;
+        top: -2px;
+        width: 32px;
+        margin-right: 5px;
+        vertical-align: middle;
+      }
+    }
+
+    &.open .toggleable {
+      background: rgba(0,0,0,.05);
+      box-shadow: none;
+    }
+  }
 
   .nav-item {
     display: inline-block;
@@ -322,6 +354,7 @@
     top: 25px;
     left: 15px;
     width: 200px;
+    z-index: 1;
 
     .section {
       margin-bottom: 20px;

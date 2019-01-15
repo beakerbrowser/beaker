@@ -5,6 +5,7 @@ const moment = require('moment')
 import {getHostname} from '../../lib/strings'
 import debounce from 'lodash.debounce'
 import renderCloseIcon from '../icon/close'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
 // =
@@ -232,6 +233,8 @@ function render () {
       <div class="history-wrapper builtin-wrapper">
         <div class="builtin-main">
           <div class="builtin-sidebar">
+            ${renderBuiltinPagesNav('beaker://history/', 'History')}
+
             <div class="section">
               <div onclick=${onUpdatePeriodFilter} data-period="all" class="nav-item ${currentPeriodFilter === 'all' ? 'active' : ''}">
                 <i class="fa fa-angle-right"></i>

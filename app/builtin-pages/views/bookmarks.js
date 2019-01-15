@@ -6,6 +6,7 @@ import * as toast from '../com/toast'
 import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
 import toggleable from '../com/toggleable'
 import renderCloseIcon from '../icon/close'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
 //
@@ -314,6 +315,8 @@ function renderTagCloud () {
 function renderSidebar () {
   return yo`
     <div class="builtin-sidebar">
+      ${renderBuiltinPagesNav('beaker://bookmarks/', 'Bookmarks')}
+      
       <div class="section">
         <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
           <i class="fa fa-angle-right"></i>
