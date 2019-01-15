@@ -10,7 +10,7 @@ const CANVAS_SIZE = 125
 
 export class EditProfileModal extends BaseModal {
   constructor (opts) {
-    super(opts)
+    super()
 
     this.archive = new DatArchive(opts.url)
     this.title = opts.title || ''

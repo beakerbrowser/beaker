@@ -2,6 +2,7 @@ import {ExampleModal} from './example'
 import {CreateArchiveModal} from './create-archive'
 import {ForkArchiveModal} from './fork-archive'
 import {SelectArchiveModal} from './select-archive'
+import {PublishArchiveModal} from './publish-archive'
 import {EditProfileModal} from './edit-profile'
 import {TutorialModal} from './tutorial'
 
@@ -11,6 +12,7 @@ export default {
   'create-archive': CreateArchiveModal,
   'fork-archive': ForkArchiveModal,
   'select-archive': SelectArchiveModal,
+  'publish-archive': PublishArchiveModal,
   'edit-profile': EditProfileModal,
   'tutorial': TutorialModal
 }

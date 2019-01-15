@@ -2,8 +2,7 @@
 
 import yo from 'yo-yo'
 import bytes from 'bytes'
-import moment from 'moment'
-import {pluralize, shortenHash} from '../../lib/strings'
+import {pluralize} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import {getBasicType} from '../../lib/dat'
@@ -115,7 +114,7 @@ function sortArchives () {
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
       case 'type': v = getBasicType(b.type).localeCompare(getBasicType(a.type)); break
-      case 'published': v = Number(b.isPublished) - Number(a.isPublished); break
+      case 'published': v = Number(a.isPublished) - Number(b.isPublished); break
       case 'owner': v = getOwner(b).localeCompare(getOwner(a)); break
     }
     if (v === 0) v = (b.title || '').localeCompare(a.title || '') // use title to tie-break
@@ -420,6 +419,7 @@ function removeFromLibraryIcon (archive) {
 }
 
 function getPublished (archive) {
+  if (getBasicType(archive.type) === 'user') return yo`<span class="fas fa-minus"></span>`
   return archive.isPublished ? yo`<span class="fas fa-check"></span>` : ''
 }
 
@@ -461,10 +461,13 @@ async function onCreateSite (e, template) {
 
 async function onPublish (archive) {
   try {
-    await beaker.archives.publish(archive.url)
+    var details = await beaker.browser.showShellModal('publish-archive', {url: archive.url, title: archive.title, description: archive.description})
     toast.create(`Published ${archive.title || archive.url}`, 'success')
+    archive.title = details.title
+    archive.description = details.description
     archive.isPublished = true
   } catch (err) {
+    if (err.message === 'Canceled') return
     console.error(err)
     toast.create(err.toString(), 'error')
   }
@@ -622,9 +625,10 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
     {icon: 'fa fa-link', label: 'Copy URL', click: () => onCopy(archive.url)},
     {icon: 'fas fa-code', label: 'View Source', click: () => window.open(`beaker://library/${archive.url}`)}
   ]
-  if (archive.isOwner) {
+  if (archive.isOwner && getBasicType(archive.type) !== 'user') {
     if (archive.isPublished) {
-      items.unshift({icon: 'fa fa-eraser', label: 'Unpublish', click: () => onUnpublish(archive)})
+      items.unshift({icon: 'fa fa-bullhorn', label: 'Published', click: ()=>{}, disabled: true})
+      items.push({icon: 'fa fa-eraser', label: 'Unpublish', click: () => onUnpublish(archive)})
     } else {
       items.unshift({icon: 'fa fa-bullhorn', label: 'Publish', click: () => onPublish(archive)})
     }

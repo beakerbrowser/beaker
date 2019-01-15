@@ -1,6 +1,7 @@
 @import "../../utils/flex";
 
 .links-list {
+  user-select: none;
 
   .link:not(button) {
     overflow: hidden;
@@ -64,6 +65,7 @@
 
 .ll-row {
   &:extend(.flex);
+  user-select: none;
   flex-wrap: nowrap;
   position: relative;
   height: 33px;

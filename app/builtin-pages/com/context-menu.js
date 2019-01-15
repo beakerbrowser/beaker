@@ -97,6 +97,14 @@ function render () {
           if (icon && !icon.includes(' ')) {
             icon = 'fa fa-' + icon
           }
+          if (item.disabled) {
+            return yo`
+              <div class="dropdown-item disabled">
+                <i class="${icon}"></i>
+                ${item.label}
+              </div>
+            `
+          }
           return yo`
             <div class="dropdown-item" onclick=${() => { destroy(); item.click() }}>
               <i class="${icon}"></i>
