@@ -7,7 +7,6 @@ import renderPostResult from '../com/search/post-result'
 import renderPageResult from '../com/search/page-result'
 import renderCloseIcon from '../icon/close'
 import {polyfillHistoryEvents} from '../../lib/fg/event-handlers'
-import { highlight } from '../../lib/strings';
 
 const LIMIT = 20
 
@@ -161,6 +160,8 @@ function renderSearchResults () {
             ${results.people ? results.people.map(user => renderUserResult(user, currentUserSession, results.highlightNonce)) : ''}
             ${results.posts ? results.posts.map(post => renderPostResult(post, currentUserSession, results.highlightNonce)) : ''}
             ${results.pages ? results.pages.map(page => renderPageResult(page, currentUserSession, results.highlightNonce)) : ''}
+            ${results.images ? results.images.map(page => renderPageResult(page, currentUserSession, results.highlightNonce)) : ''}
+            ${results.files ? results.files.map(page => renderPageResult(page, currentUserSession, results.highlightNonce)) : ''}
           </div>
           <div class="pagination">
             <a class="btn ${page > 1 ? '' : 'disabled'}" onclick=${onClickPrevPage}><span class="fa fa-angle-left"></span></a>

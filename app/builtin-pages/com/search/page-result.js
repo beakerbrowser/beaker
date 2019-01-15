@@ -1,5 +1,6 @@
 import yo from 'yo-yo'
 import {makeSafe, highlight} from '../../../lib/strings'
+import _get from 'lodash.get'
 
 // exported api
 // =
@@ -7,11 +8,15 @@ import {makeSafe, highlight} from '../../../lib/strings'
 export default function render (pageInfo, currentUserSession, highlightNonce) {
   return yo`
     <div class="search-result page">
-      <div class="thumb">
-        <img src=${pageInfo.thumbUrl} alt="">
-      </div>
       <div class="details">
         <a class="link title" href=${pageInfo.url} title=${getTitle(pageInfo)}>${renderTitle(pageInfo, highlightNonce)}</a>
+        <div class="author">
+          by
+          <a class="link" href=${pageInfo.author.url} title=${getAuthorTitle(pageInfo)}>
+            <img src="${pageInfo.author.thumbUrl}">
+            ${getAuthorTitle(pageInfo)}
+          </a>
+        </div>
         <div class="hostname">${getHostname(pageInfo.url)}</div>
         ${renderDescription(pageInfo, highlightNonce)}
       </div>
@@ -37,10 +42,13 @@ function renderDescription (pageInfo, highlightNonce) {
 }
 
 function getTitle (pageInfo) {
-  if (pageInfo.title) return pageInfo.title
-  return 'Anonymous'
+  return _get(pageInfo, 'title') || 'Untitled'
 }
 
 function getHostname (url) {
   return (new URL(url)).hostname
+}
+
+function getAuthorTitle (pageInfo) {
+  return _get(pageInfo, 'author.title') || 'Anonymous'
 }

@@ -5,13 +5,6 @@
   margin: 20px 20px 30px;
   align-items: end;
 
-  .thumb img {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    margin-right: 24px;
-  }
-
   .details {
     flex: 1;
   }
@@ -28,6 +21,16 @@
 
   .hostname {
     color: shade(@green, 18%);
+  }
+
+  .author {
+    img {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      vertical-align: sub;
+    }
   }
 
   .description {
