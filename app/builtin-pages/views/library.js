@@ -23,8 +23,7 @@ let query = ''
 let currentView = 'all'
 let currentSort = ['type', -1]
 let currentDateType = 'accessed'
-let faviconCacheBuster = Date.now()
-let currentUserSession = null
+var currentUserSession
 
 // main
 // =
@@ -89,6 +88,8 @@ async function loadArchives () {
 
   // apply sort
   sortArchives()
+
+  console.log(archives)
 }
 
 function filterArchives () {
@@ -114,6 +115,7 @@ function sortArchives () {
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
       case 'type': v = getBasicType(b.type).localeCompare(getBasicType(a.type)); break
+      case 'published': v = Number(b.isPublished) - Number(a.isPublished); break
       case 'owner': v = getOwner(b).localeCompare(getOwner(a)); break
     }
     if (v === 0) v = (b.title || '').localeCompare(a.title || '') // use title to tie-break
@@ -167,7 +169,6 @@ function renderRows (sort = '', max = undefined) {
 }
 
 function renderRow (row, i) {
-  const isOwner = row.isOwner
   const isMenuOpen = row.menuIsOpenIn === 'row'
   const date = currentDateType === 'accessed'
     ? row.lastLibraryAccessTime
@@ -206,6 +207,10 @@ function renderRow (row, i) {
 
       <span class="size">
         ${bytes(row.size)}
+      </span>
+
+      <span class="published">
+        ${getPublished(row)}
       </span>
 
       <div class="buttons">
@@ -252,6 +257,7 @@ function render () {
                   ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
                   ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
                   ${renderColumnHeading({cls: 'size', sort: 'size', label: 'Size'})}
+                  ${renderColumnHeading({cls: 'published', sort: 'published', label: 'Published?'})}
                   <span class="buttons"></span>
                 </div>`
               : ''
@@ -272,6 +278,9 @@ function render () {
 }
 
 function renderSidebar () {
+  /**
+   * @param {opts} [opts]
+   */
   const navItem = ({onclick, isActive, label, icon}) => yo`
     <div onclick=${onclick} class="nav-item ${isActive ? 'active' : ''}">
       <i class="fa fa-angle-right"></i>
@@ -410,6 +419,10 @@ function removeFromLibraryIcon (archive) {
   return (archive.isOwner) ? 'fa fa-trash' : 'fa fa-pause'
 }
 
+function getPublished (archive) {
+  return archive.isPublished ? yo`<span class="fas fa-check"></span>` : ''
+}
+
 function getOwner (archive) {
   return archive.isOwner ? 'me' : ''
 }
@@ -444,6 +457,33 @@ function onCopy (str, successMessage = 'URL copied to clipboard') {
 async function onCreateSite (e, template) {
   // create a new archive
   window.location = await createSiteFromTemplate(template)
+}
+
+async function onPublish (archive) {
+  try {
+    await beaker.archives.publish(archive.url)
+    toast.create(`Published ${archive.title || archive.url}`, 'success')
+    archive.isPublished = true
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+  }
+  render()
+}
+
+async function onUnpublish (archive) {
+  if (!confirm('Are you sure you want to unpublish this?')) {
+    return
+  }
+  try {
+    await beaker.archives.unpublish(archive.url)
+    toast.create(`Unpublished ${archive.title || archive.url}`)
+    archive.isPublished = false
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+  }
+  render()
 }
 
 async function onDelete (e, archive) {
@@ -582,6 +622,13 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
     {icon: 'fa fa-link', label: 'Copy URL', click: () => onCopy(archive.url)},
     {icon: 'fas fa-code', label: 'View Source', click: () => window.open(`beaker://library/${archive.url}`)}
   ]
+  if (archive.isOwner) {
+    if (archive.isPublished) {
+      items.unshift({icon: 'fa fa-eraser', label: 'Unpublish', click: () => onUnpublish(archive)})
+    } else {
+      items.unshift({icon: 'fa fa-bullhorn', label: 'Publish', click: () => onPublish(archive)})
+    }
+  }
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
