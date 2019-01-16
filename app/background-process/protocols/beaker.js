@@ -153,6 +153,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/default-user-thumb')) {
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
   }
+  if (requestUrl.startsWith('beaker://assets/search-icon-large')) {
+    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/search-icon-large.png'))
+  }
   if (requestUrl.startsWith('beaker://assets/favicons/')) {
     return serveICO(path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
   }

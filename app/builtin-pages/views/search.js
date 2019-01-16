@@ -102,7 +102,7 @@ function renderSearchPrompt () {
   return yo`
     <div class="builtin-main">
       <div class="search-header noquery">
-        <div class="brand"><img src="beaker://assets/logo.png"></div>
+        <div class="brand"><img src="beaker://assets/search-icon-large.png"></div>
         ${renderSearchControl()}
         <div class="search-actions">
           <a class="btn thick" onclick=${onClickSearch}>Search Beaker</a>
