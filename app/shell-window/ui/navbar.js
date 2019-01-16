@@ -15,7 +15,6 @@ import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
 import {DonateMenuNavbarBtn} from './navbar/donate-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
-import {findParent} from '../../lib/fg/event-handlers'
 import {findWordBoundary} from 'pauls-word-boundary'
 import renderNavArrowIcon from './icon/nav-arrow'
 import renderRefreshIcon from './icon/refresh'
@@ -491,7 +490,7 @@ async function handleAutocompleteSearch (results) {
   var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
   var searchResult = {
     search: v,
-    title: 'DuckDuckGo Search',
+    title: 'Search your network privately',
     url: vSearch
   }
   if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
@@ -538,7 +537,8 @@ function examineLocationInput (v) {
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
     }
   }
-  var vSearch = 'https://duckduckgo.com/?q=' + v.split(' ').map(encodeURIComponent).join('+')
+  var q = v.split(' ').map(encodeURIComponent).join('+')
+  var vSearch = 'beaker://search/?q=' + q
   return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
 }
 
