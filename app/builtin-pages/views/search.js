@@ -34,12 +34,12 @@ async function setup () {
 async function readStateFromURL () {
   console.log('running query', getParam('q'))
 
-  var category = getParam('category') || 'people'
+  var category = getCategory()
   var page = getPage()
   results = await beaker.crawler.listSearchResults({
     user: currentUserSession.url, 
     query: getParam('q'),
-    types: {[category]: true},
+    types: category === 'all' ? undefined : {[category]: true},
     hops: getHops(),
     since: getSinceTS(),
     offset: (page - 1) * LIMIT,
@@ -52,6 +52,10 @@ async function readStateFromURL () {
 
   console.log('results', results)
   update()
+}
+
+function getCategory () {
+  return getParam('category') || 'all'
 }
 
 function getPage () {
@@ -122,9 +126,16 @@ function renderSearchPrompt () {
 
 function renderSearchResults () {
   const query = getParam('q') || ''
-  const category = getParam('category')
+  const category = getCategory()
   const page = getPage()
-  const isEmpty = !results[category] || !results[category].length
+
+  var isEmpty = true
+  for (let cat in results) {
+    if (results[cat] && results[cat].length) {
+      isEmpty = false
+      break
+    }
+  }
 
   const renderTab = (id, label) => yo`<div class="tab ${category === id ? 'active' : ''}" onclick=${() => onClickTab(id)}>${label}</div>`
 
@@ -141,6 +152,7 @@ function renderSearchResults () {
       <div class="search-body">
         <div class="search-results-col">
           <div class="tabs">
+            ${renderTab('all', 'All')}
             ${renderTab('people', 'People')}
             ${renderTab('posts', 'Posts')}
             ${renderTab('pages', 'Pages')}
@@ -276,7 +288,7 @@ function onUpdateSearchQuery (e) {
   if (e.key === 'Enter') {
     setParams({
       q: e.target.value.toLowerCase(),
-      category: getParam('category') || 'people'
+      category: getCategory()
     })
   }
 }
@@ -288,7 +300,7 @@ function onClickTab (category) {
 function onClickSearch () {
   setParams({
     q: document.querySelector('.search-container .search').value.toLowerCase(),
-    category: getParam('category') || 'people'
+    category: getCategory()
   })
 }
 
