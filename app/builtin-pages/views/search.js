@@ -109,7 +109,7 @@ function renderSearchPrompt () {
         <div class="brand"><img src="beaker://assets/search-icon-large.png"></div>
         ${renderSearchControl()}
         <div class="search-actions">
-          <a class="btn thick" onclick=${onClickSearch}>Search Beaker</a>
+          <a class="btn thick" onclick=${onClickSearch}>Private Search</a>
         </div>
         <div class="browse-links">
           [

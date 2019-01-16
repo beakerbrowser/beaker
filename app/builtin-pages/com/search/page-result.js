@@ -17,7 +17,6 @@ export default function render (pageInfo, currentUserSession, highlightNonce) {
             ${getAuthorTitle(pageInfo)}
           </a>
         </div>
-        <div class="hostname">${getHostname(pageInfo.url)}</div>
         ${renderDescription(pageInfo, highlightNonce)}
       </div>
     </div>`
@@ -43,10 +42,6 @@ function renderDescription (pageInfo, highlightNonce) {
 
 function getTitle (pageInfo) {
   return _get(pageInfo, 'title') || 'Untitled'
-}
-
-function getHostname (url) {
-  return (new URL(url)).hostname
 }
 
 function getAuthorTitle (pageInfo) {
