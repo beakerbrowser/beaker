@@ -63,7 +63,6 @@ export function unload (e, file) {
 
 export const setActive = async function setActive (file) {
   try {
-    console.log(file)
     // this is a diff
     if (file.isDiff) {
       setActiveDiff(file)
@@ -94,6 +93,7 @@ export const setActiveDiff = async function setActiveDiff (diff) {
     if (!findDiffModel(diff.name)) {
       await diff.readData()
       await diff.original.readData()
+
       diffEditor.setModel({
         original: monaco.editor.createModel(diff.original.preview),
         modified: monaco.editor.createModel(diff.preview)
@@ -108,14 +108,24 @@ export const setActiveDiff = async function setActiveDiff (diff) {
       models.push(diffModel)
     }
 
+    // before changing active, get viewstate of currently active file
+  if (active) active.viewState = diffEditor.saveViewState()
+
+
     let model = findDiffModel(diff.name)
+    active = findDiffModel(diff.name)
     diffEditor.setModel({
       original: model.original,
       modified: model.modified
     })
 
+    // if model has a view state, get that viewstate and apply it
+    if (active.viewState) diffEditor.restoreViewState(active.viewState)
+
+    // after everything is set bring focus to editor
+    diffEditor.focus()
+
     modelHistory.push(diff)
-    active = findDiffModel(diff.name)
     window.dispatchEvent(new Event('update-editor'))
   } catch (e) {
     console.error(e)
@@ -177,8 +187,19 @@ async function setEditableActive (file) {
 
   editor.domElement.hidden = false
   document.getElementById('imageViewer').classList.add('hidden')
+
+  // before changing active, get viewstate of currently active file
+  if (active) active.viewState = editor.saveViewState()
+
   active = findModel(file.name)
   editor.setModel(findModel(file.name))
+
+  // if model has a view state, get that viewstate and apply it
+  if (active.viewState) editor.restoreViewState(active.viewState)
+
+  // after everything is set bring focus to editor
+  editor.focus()
+
   modelHistory.push(file)
 }
 
