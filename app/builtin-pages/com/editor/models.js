@@ -43,8 +43,10 @@ export function unload (e, file) {
 
   // handle diff
   if (file.isDiff) {
-    let model = findDiffModel(file.name)
-    models.splice(models.findIndex(v => v.name === model.name), 1)
+    let model = findModel(file.name, true)
+    models.splice(models.findIndex(v => {
+      if (v.name === model.name && v.isDiff) return true
+    }), 1)
     model.original.dispose()
     model.modified.dispose()
   } else if (file.type === 'image') {
@@ -90,7 +92,7 @@ export const setActiveDiff = async function setActiveDiff (diff) {
     document.getElementById('imageViewer').classList.add('hidden')
 
     // load if not yet loaded
-    if (!findDiffModel(diff.name)) {
+    if (!findModel(diff.name, true)) {
       await diff.readData()
       await diff.original.readData()
 
@@ -112,8 +114,8 @@ export const setActiveDiff = async function setActiveDiff (diff) {
   if (active) active.viewState = diffEditor.saveViewState()
 
 
-    let model = findDiffModel(diff.name)
-    active = findDiffModel(diff.name)
+    let model = findModel(diff.name, true)
+    active = findModel(diff.name, true)
     diffEditor.setModel({
       original: model.original,
       modified: model.modified
@@ -133,17 +135,11 @@ export const setActiveDiff = async function setActiveDiff (diff) {
   }
 }
 
-export const findModel = function findModel (fileName) {
-  return models.find(v => {
+export const findModel = function findModel (fileName, isDiff = false) {
+  let results = models.filter(v => v.name === fileName)
+  if (isDiff) return results.find(v => v.isDiff)
+  else return results.find(v => {
     if (v.name === fileName && !v.isDiff) return true
-    return false
-  })
-}
-
-export const findDiffModel = function findDiffModel (fileName) {
-  return models.find(v => {
-    if (v.name === fileName && v.isDiff) return true
-    return false
   })
 }
 
