@@ -492,3 +492,4 @@ function getPlatform () {
   if (!_platform) _platform = beaker.browser.getInfo().platform
   return _platform
 }
+

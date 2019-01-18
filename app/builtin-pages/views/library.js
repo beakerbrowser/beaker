@@ -625,7 +625,8 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
   let items = [
     {icon: 'fa fa-external-link-alt', label: 'Open in new tab', click: () => window.open(archive.url)},
     {icon: 'fa fa-link', label: 'Copy URL', click: () => onCopy(archive.url)},
-    {icon: 'fas fa-code', label: 'View Source', click: () => window.open(`beaker://library/${archive.url}`)}
+    {icon: 'code', label: 'View source', click: () => window.open(`beaker://editor/${archive.url}`)},
+    {icon: 'fas fa-code', label: 'View site files', click: () => window.open(`beaker://library/${archive.url}`)}
   ]
   if (archive.isOwner && getBasicType(archive.type) !== 'user') {
     if (archive.isPublished) {
