@@ -1,11 +1,13 @@
 /* globals beaker */
 
 import * as yo from 'yo-yo'
+import _get from 'lodash.get'
+import {getBasicType, basicTypeToLabel} from '../../../lib/dat'
 import * as pages from '../../pages'
 import renderPadlockIcon from '../icon/padlock'
 import { findParent } from '../../../lib/fg/event-handlers'
 import PERMS from '../../../lib/perms'
-import { ucfirst, getPermId, getPermParam, shortenHash } from '../../../lib/strings'
+import { ucfirst, getPermId, getPermParam, shortenHash, pluralize } from '../../../lib/strings'
 import SiteInfoClasses from './site-infos/index'
 import {DefaultSiteInfo} from './site-infos/default'
 
@@ -23,23 +25,9 @@ export class SiteInfoNavbarBtn {
 
   render () {
     // pull details
-    var titleEl = ''
-    var trustCls = 'not-trusted'
+    var titleEl = this.renderTitle()
     const isLoading = this.page.isLoading()
-    const {siteInfo, siteTrust, protocolInfo} = this.page
-    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : protocolInfo.scheme
-    var trustCls = siteTrust ? siteTrust.getRating() : 'not-trusted'
-
-    if (siteInfo && siteInfo.isOwner) {
-      titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}<i class="fa fa-check-circle"></i></div>`      
-    } else if (siteInfo && siteTrust && siteTrust.isIdentityVerified) {
-        titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}<i class="fa fa-check"></i></div>`
-    } else if (siteInfo && siteTrust && siteTrust.getCanSemiTrustIdentity()) {
-      titleEl = yo`<div class="title">${siteInfo.title || 'Untitled'}</div>`
-    } else if (siteTrust && siteTrust.isDomainVerified && protocolInfo && protocolInfo.hostname) {
-      titleEl = yo`<span class="title">${protocolInfo.hostname}</span>`
-    }
-
+    const trustCls = this.page.siteTrust ? this.page.siteTrust.getRating() : 'not-trusted'
     return yo`
       <div class="toolbar-site-info ${trustCls} ${!!titleEl ? 'has-title' : ''}" id="${this.elId}">
         <button onclick=${isLoading ? undefined : e => this.onToggleDropdown(e)}>${this.renderIcon()}${titleEl}</button>
@@ -103,28 +91,49 @@ export class SiteInfoNavbarBtn {
   }
 
   renderIcon () {
-    var iconEl = ''
     const isLoading = this.page.isLoading()
-    const {siteInfo, siteTrust, protocolInfo} = this.page    
-    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : protocolInfo.scheme
-    const type = siteInfo && siteInfo.type ? siteInfo.type : null
-    const trustRating = siteTrust ? siteTrust.getRating() : 'not-trusted'
-    if (scheme) {
-      if (scheme === 'beaker:') {
-        return '' // TODO
-      } else if (scheme === 'https:' && trustRating !== 'distrusted') {
-        return renderPadlockIcon()
-      } else if (scheme === 'http:' || trustRating === 'distrusted') {
-        return yo`<i class="fa fa-exclamation-circle"></i>`
-      } else if (scheme === 'dat:') {
-        if (type && type.includes('unwalled.garden/user')) {
-          return yo`<i class="fa fa-user"></i>`
-        } else {
-          return yo`<i class="fa fa-share-alt"></i>`
-        }
+    const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : _get(this, 'page.protocolInfo.scheme')
+    const isOwner = _get(this, 'page.siteInfo.isOwner')
+    const basicType = getBasicType(_get(this, 'page.siteInfo.type', []))
+    const trustRating = this.page.siteTrust ? this.page.siteTrust.getRating() : 'not-trusted'
+    if (!scheme || scheme === 'beaker:') {
+      return ''
+    }
+    if (scheme === 'https:' && trustRating !== 'distrusted') {
+      return renderPadlockIcon()
+    }
+    if (scheme === 'http:' || trustRating === 'distrusted') {
+      return yo`<i class="fa fa-exclamation-circle"></i>`
+    }
+    if (scheme === 'dat:') {
+      if (isOwner) {
+        return yo`<i class="fa fa-check-circle"></i>`
+      } else if (basicType === 'user') {
+        return yo`<i class="fa fa-user"></i>`
+      } else {
+        return yo`<i class="fa fa-share-alt"></i>`
       }
     }
     return ''
+  }
+
+  renderTitle () {
+    const isUser = _get(this, 'page.siteTrust.isUser')
+    const isOwner = _get(this, 'page.siteInfo.isOwner')
+    const basicType = getBasicType(_get(this.page, 'siteInfo.type', []))
+    const followers = _get(this.page, 'siteTrust.followers', [])
+    const isDomainVerified = _get(this, 'page.siteTrust.isDomainVerified')
+    const hostname = _get(this, 'page.protocolInfo.hostname')
+
+    if (isUser) {
+      return yo`<div class="title">This is you</div>`
+    } else if (isOwner) {
+      return yo`<div class="title">Your ${basicTypeToLabel(basicType)}</div>`
+    } else if (basicType === 'user') {
+      return yo`<div class="title">${followers.length}</div>`
+    } else if (isDomainVerified && hostname) {
+      return yo`<span class="title">${hostname}</span>`
+    }
   }
 
   get elId () {

@@ -7,6 +7,7 @@ import fs from 'fs'
 import throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
 import errorPage from '@beaker/core/lib/error-page'
+import * as globals from './globals'
 import * as tutorial from './tutorial'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
@@ -779,12 +780,11 @@ function onDidStopLoading (e) {
       getRating () {
         const isOwner = page && page.siteInfo && page.siteInfo.isOwner
         const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
-        if (isOwner || this.isIdentityVerified || this.isDomainVerified || this.isFollowed) {
+        if (isOwner || this.isIdentityVerified || this.isDomainVerified) {
           // these signals indicate strong trust
           // why: always trust own sites
           //      domain must be verified via PKI
           //      title must be verified by a trusted WoT authority
-          //      local user follow is trusted (for now)
           return 'trusted'
         }
         if (gotInsecureResponse) {
@@ -802,6 +802,8 @@ function onDidStopLoading (e) {
         protocol === 'https:' || // https cert
         (protocol === 'dat:' && !isDatHashRegex.test(hostname)) // https cert or dns-over-https
       ),
+      isUser: false,
+      followers: [],
       isFollowed: false,
       isFoaF: false
     }
@@ -823,12 +825,14 @@ function onDidStopLoading (e) {
         if (info.isOwner) {
           // trust our own stuff
           page.siteTrust.isFoaF = true
+          // is this the user?
+          page.siteTrust.isUser = isEqualURL(url, globals.getCurrentUserSession().url)
         } else if (info.type.includes('unwalled.garden/user')) {
           // trust titles of user-sites we or a followed-user follows
-          let currentUserSession = await beaker.browser.getUserSession()
-          let follows = await beaker.followgraph.listFollowers(info.url, {followedBy: currentUserSession.url})
-          page.siteTrust.isFollowed = !!follows.find(v => v === currentUserSession.url)
-          page.siteTrust.isFoaF = follows.length >= 1
+          let currentUserSession = globals.getCurrentUserSession()
+          page.siteTrust.followers = await beaker.followgraph.listFollowers(info.url, {followedBy: currentUserSession.url})
+          page.siteTrust.isFollowed = !!page.siteTrust.followers.find(v => v === currentUserSession.url)
+          page.siteTrust.isFoaF = page.siteTrust.followers.length >= 1
         }
 
         // update UIs

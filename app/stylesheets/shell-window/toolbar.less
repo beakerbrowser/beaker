@@ -4,13 +4,49 @@
 
 #toolbar {
   &:extend(.system-font);
-  height: 73px;
   background: #e8e8e8;
 
   .toolbar-group {
     padding: 0 4px;
     display: flex;
     height: 29px;
+    line-height: 25px;
+  }
+
+  .toolbar-sep {
+    height: 25px;
+    display: inline-block;
+    width: 1px;
+    border-right: 1px solid #ddd;
+    margin-right: 10px;
+  }
+
+  .toolbar-info-card {
+    margin-right: 10px;
+    color: rgba(0,0,0,.75);
+
+    strong {
+      font-weight: 500;
+    }
+
+    img {
+      max-height: 22px;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+
+    &.dark {
+      background: rgba(0, 0, 0, 0.55);
+      color: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      text-shadow: 0px 1px 1px rgba(0, 0, 0, 0.6);
+      height: 18px;
+      line-height: 18px;
+      padding: 0 10px;
+      margin-top: 3px;
+      font-size: 9px;
+    }
   }
 }
 

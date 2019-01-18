@@ -2,6 +2,7 @@
 
 import * as yo from 'yo-yo'
 import {BaseSidebar} from './base'
+import * as globals from '../../globals'
 import * as pages from '../../pages'
 import * as toast from '../toast'
 
@@ -16,7 +17,6 @@ export class UserSidebar extends BaseSidebar {
   constructor (page) {
     super(page)
     this.info = null
-    this.currentUserSession = null
     this.isCurrentUser = false
     this.followers = []
     this.load()
@@ -72,7 +72,7 @@ export class UserSidebar extends BaseSidebar {
       } else if (nFollowers === 2 && i === 0) {
         sep = ' and '
       }
-      if (follower.url === this.currentUserSession.url) return yo`<span>you${sep}</span>`
+      if (follower.url === globals.getCurrentUserSession().url) return yo`<span>you${sep}</span>`
       return yo`<span><a class="link" onclick=${() => this.open(follower.url)}>${this.renderUserTitle(follower)}</a>${sep}</span>`
     })
     return yo`
@@ -97,12 +97,12 @@ export class UserSidebar extends BaseSidebar {
   async load () {
     // first pass
     var dat = new DatArchive(this.page.url)
-    this.currentUserSession = await beaker.browser.getUserSession()
-    this.isCurrentUser = this.url.origin === this.currentUserSession.url
+    var currentUserSession = globals.getCurrentUserSession()
+    this.isCurrentUser = this.url.origin === currentUserSession.url
     this.info = JSON.parse(await dat.readFile('/dat.json'))
     this.followers = await beaker.followgraph.listFollowers(this.url.origin, {includeDesc: true})
-    this.followsUser = !this.isCurrentUser && await beaker.followgraph.isAFollowingB(this.url.origin, this.currentUserSession.url)
-    this.isCurrentUserFollowing = !this.isCurrentUser && Boolean(this.followers.find(f => f.url === this.currentUserSession.url))
+    this.followsUser = !this.isCurrentUser && await beaker.followgraph.isAFollowingB(this.url.origin, currentUserSession.url)
+    this.isCurrentUserFollowing = !this.isCurrentUser && Boolean(this.followers.find(f => f.url === currentUserSession.url))
     this.rerender()
   }
 
@@ -110,7 +110,7 @@ export class UserSidebar extends BaseSidebar {
     try {
       await beaker.followgraph.follow(this.url.origin)
       this.isCurrentUserFollowing = true
-      this.followers.push({url: this.currentUserSession.url})
+      this.followers.push({url: globals.getCurrentUserSession().url})
     } catch (e) {
       console.error('Failed to follow', e)
       toast.create('Failed to follow: ' + e.toString())
@@ -123,7 +123,7 @@ export class UserSidebar extends BaseSidebar {
     try {
       await beaker.followgraph.unfollow(this.url.origin)
       this.isCurrentUserFollowing = false
-      this.followers.splice(this.followers.findIndex(f => f.url === this.currentUserSession.url), 1)
+      this.followers.splice(this.followers.findIndex(f => f.url === globals.getCurrentUserSession().url), 1)
     } catch (e) {
       console.error('Failed to unfollow', e)
       toast.create('Failed to unfollow: ' + e.toString())

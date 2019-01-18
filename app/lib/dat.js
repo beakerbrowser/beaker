@@ -7,3 +7,13 @@ export function getBasicType (type) {
   }
   return 'other'
 }
+
+export function basicTypeToLabel (basicType) {
+  switch (basicType) {
+    case 'user': return 'user'
+    case 'web-page': return 'web page'
+    case 'image-collection': return 'image collection'
+    case 'file-share': return 'file-share'
+    default: return 'site'
+  }
+}

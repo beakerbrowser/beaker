@@ -14,3 +14,24 @@ code {
 body {
   &:extend(.system-font);
 }
+
+.red-x {
+  position: relative;
+
+  &:after {
+    content: 'x';
+    display: block;
+    position: absolute;
+    top: -4px;
+    left: 1px;
+    font-family: sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    color: red;
+    -webkit-text-stroke: 1px #fff;
+  }
+
+  &.fa-rss:after {
+    width: 14px;
+  }
+}

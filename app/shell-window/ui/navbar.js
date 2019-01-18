@@ -15,6 +15,7 @@ import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
 import {DonateMenuNavbarBtn} from './navbar/donate-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
+import * as contextbar from './contextbar'
 import {findWordBoundary} from 'pauls-word-boundary'
 import renderNavArrowIcon from './icon/nav-arrow'
 import renderRefreshIcon from './icon/refresh'
@@ -82,7 +83,7 @@ export function createEl (id) {
 }
 
 export function destroyEl (id) {
-  var el = document.querySelector(`.toolbar-actions[data-id="${id}"]`)
+  var el = document.querySelector(`.toolbar[data-id="${id}"]`)
   if (el) {
     toolbarNavDiv.removeChild(el)
   }
@@ -184,7 +185,6 @@ function render (id, page) {
   const siteHasDatAlternative = page && page.siteHasDatAlternative
   const siteHttpAlternative = page && page.siteHttpAlternative
   const siteTrust = page && page.siteTrust
-  const isOwner = page && page.siteInfo && page.siteInfo.isOwner
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -395,47 +395,49 @@ function render (id, page) {
 
   // render
   return yo`
-    <div data-id=${id} class="toolbar-actions${toolbarHidden}">
-      <div class="toolbar-group">
-        <button style="transform: scaleX(-1);" class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-          ${renderNavArrowIcon()}
-        </button>
+    <div data-id=${id} class="toolbar ${toolbarHidden}">
+      <div class="toolbar-actions">
+        <div class="toolbar-group">
+          <button style="transform: scaleX(-1);" class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
+            ${renderNavArrowIcon()}
+          </button>
 
-        <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-          ${renderNavArrowIcon()}
-        </button>
-        ${reloadBtn}
-      </div>
-
-      <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
-        ${page && (!isLocationHighlighted) ? page.siteInfoNavbarBtn.render() : ''}
-        <div class="nav-location-container">
-          ${locationPrettyView}
-          ${locationInput}
+          <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
+            ${renderNavArrowIcon()}
+          </button>
+          ${reloadBtn}
         </div>
-        ${inpageFinder}
-        ${zoomBtn}
-        ${!isLocationHighlighted ? [
-          datBtns,
-          syncfolderMenuNavbarBtn.render(),
-          liveReloadBtn,
-          donateBtn,
-          page ? page.datsiteMenuNavbarBtn.render() : undefined,
-          pageMenuNavbarBtn.render(),
-          bookmarkMenuNavbarBtn.render()
-        ] : ''}
+
+        <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
+          ${page && (!isLocationHighlighted) ? page.siteInfoNavbarBtn.render() : ''}
+          <div class="nav-location-container">
+            ${locationPrettyView}
+            ${locationInput}
+          </div>
+          ${inpageFinder}
+          ${zoomBtn}
+          ${!isLocationHighlighted ? [
+            datBtns,
+            syncfolderMenuNavbarBtn.render(),
+            liveReloadBtn,
+            donateBtn,
+            page ? page.datsiteMenuNavbarBtn.render() : undefined,
+            pageMenuNavbarBtn.render(),
+            bookmarkMenuNavbarBtn.render()
+          ] : ''}
+        </div>
+        <div class="toolbar-group">
+          ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
+          ${watchlistNotificationBtn.render()}
+          ${createMenuNavbarBtn.render()}
+          ${currentUserMenuNavbarBtn.render()}
+          ${browserMenuNavbarBtn.render()}
+          ${updatesNavbarBtn.render()}
+        </div>
+        ${autocompleteDropdown}
       </div>
-      <div class="toolbar-group">
-        ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
-        ${watchlistNotificationBtn.render()}
-        ${createMenuNavbarBtn.render()}
-        ${currentUserMenuNavbarBtn.render()}
-        ${browserMenuNavbarBtn.render()}
-        ${updatesNavbarBtn.render()}
-      </div>
-      ${autocompleteDropdown}
-    </div>
-  </div>`
+      ${contextbar.render(id, page)}
+    </div>`
 }
 
 function renderPrettyLocation (value, isHidden, siteTrust) {

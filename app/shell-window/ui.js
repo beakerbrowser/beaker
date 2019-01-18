@@ -1,6 +1,7 @@
 /* globals beaker */
 
 import { webFrame, ipcRenderer } from 'electron'
+import * as globals from './globals'
 import * as tabs from './ui/tabs'
 import * as navbar from './ui/navbar'
 import * as statusbar from './ui/statusbar'
@@ -11,7 +12,7 @@ import * as modal from './ui/modal'
 import * as commandHandlers from './command-handlers'
 import * as swipeHandlers from './swipe-handlers'
 
-export function setup (cb) {
+export async function setup (cb) {
   var {platform} = beaker.browser.getInfo()
   if (platform === 'darwin') {
     document.body.classList.add('darwin')
@@ -37,6 +38,7 @@ export function setup (cb) {
   webFrame.setLayoutZoomLevelLimits(0, 0)
 
   // setup subsystems
+  await globals.setup()
   tabs.setup()
   navbar.setup()
   statusbar.setup()

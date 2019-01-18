@@ -11,7 +11,6 @@ import * as toast from '../toast'
 export class CurrentUserMenuNavbarBtn {
   constructor () {
     this.isDropdownOpen = false
-    this.currentUserSession = null
     this.setup()
 
     // wire up events

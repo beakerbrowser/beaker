@@ -1,5 +1,7 @@
 import yo from 'yo-yo'
 import * as pages from './pages'
+import * as globals from './globals'
+
 // exported api
 // =
 
@@ -76,6 +78,5 @@ async function gotoSite (url) {
 }
 
 async function gotoUserSite () {
-  var sess = await beaker.browser.getUserSession()
-  await gotoSite(sess.url)
+  await gotoSite(globals.getCurrentUserSession().url)
 }
