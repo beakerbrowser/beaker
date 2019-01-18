@@ -19,7 +19,6 @@
 @import "./components/archive-comparison";
 @import "./components/revision-indicator.less";
 @import "./components/file-editor.less";
-@import "./components/create-archive-popup.less";
 @import "./components/opaque-binary.less";
 @import "./components/favicon-maker-popup.less";
 
@@ -106,6 +105,26 @@ body.drag {
     }
   }
 
+  .builtin-subheader {
+    display: flex;
+    margin-bottom: 20px;
+
+    .search-container {
+      width: auto;
+      flex: 1;
+    }
+
+    .actions {
+      margin: 0 0 0 30px;
+
+      .create-new.dropdown-items {
+        text-align: left;
+        width: 200px;
+        top: 36px;
+      }
+    }
+  }
+
   // column sizings
   .ll-row.archive,
   .ll-column-headings {
@@ -116,8 +135,19 @@ body.drag {
     }
 
     .peers,
-    .size {
+    .size,
+    .owner {
       min-width: 60px;
+      flex: 0.75;
+    }
+    
+    .published {
+      min-width: 60px;
+      flex: 0.5;
+    }
+
+    .type {
+      min-width: 120px;
       flex: 0.75;
     }
 
@@ -133,6 +163,10 @@ body.drag {
 
   .ll-column-headings {
     padding: 0 20px 10px;
+
+    .column-heading button {
+      padding: 0;
+    }
   }
 
   .ll-row.archive {
@@ -159,6 +193,8 @@ body.drag {
     }
 
     .url,
+    .owner,
+    .type,
     .peers,
     .date,
     .size {
@@ -198,13 +234,12 @@ body.drag {
 
   .view-wrapper {
     width: 100%;
-    padding: 20px 0;
+    padding: 5px 0;
     margin-bottom: 0;
   }
 
   .builtin-main {
     max-width: 100%;
-    padding: 0;
     height: 100vh;
     overflow-y: auto;
   }
@@ -605,24 +640,12 @@ body.drag {
   }
 
   .library-view-header {
-    position: sticky;
-    top: 0;
-    z-index: 5000;
-    background: #fff;
     margin: 0;
-
-    &.expanded {
-      top: -60px;
-
-      &.has-description {
-        top: -90px;
-      }
-    }
 
     .back-link {
       position: absolute;
       left: 10px;
-      top: 15px;
+      top: 10px;
       width: 27px;
       text-align: center;
       font-size: 1.2rem;
@@ -653,14 +676,14 @@ body.drag {
     .info {
       &:extend(.flex);
       align-items: center;
-      height: 60px;
+      height: 40px;
       position: relative;
-      padding: 20px 0 10px 0;
+      padding: 0 0 10px 0;
 
       .primary-action {
         &:extend(.flex);
         position: absolute;
-        top: 20px;
+        top: 0;
         right: 0;
 
         & > * {
@@ -669,6 +692,11 @@ body.drag {
 
         .btn {
           min-width: 30px;
+        }
+
+        .tag {
+          height: 26px;
+          margin: 2px 8px 0 0;
         }
 
         .fa {
@@ -798,7 +826,6 @@ body.drag {
   .library-toolbar {
     width: 100%;
     height: 55px;
-    border-bottom: 1px solid #ddd;
     font-size: .9rem;
 
     .nav-items,
@@ -1128,18 +1155,6 @@ body.drag {
     h3 {
       font-size: inherit;
     }
-  }
-}
-
-.create-new .dropdown-item {
-
-  .description {
-    color: rgba(0,0,0,.55);
-    margin-left: 24px;
-  }
-
-  &:hover .description {
-    color: @color-text;
   }
 }
 

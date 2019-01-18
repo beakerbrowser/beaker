@@ -1,7 +1,6 @@
 .toolbar-actions {
   display: flex;
   background: @background-shell-window;
-  border-bottom: 1px solid @border-shell-window;
   padding: 5px 4px 3px 2px;
   margin: 0;
 
@@ -9,17 +8,85 @@
     display: none;
   }
 
-  button.toolbar-btn {
+  &:not(.hidden) + .toolbar-actions:not(.hidden) {
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 11px;
+
+    button.toolbar-labeled-btn {
+      height: 24px;
+      line-height: 22px;
+    }
+    .toolbar-dropdown-menu {
+      line-height: 22px;
+    }
+  }
+
+  .spacer {
+    flex: 1;
+  }
+
+  button.toolbar-btn,
+  button.toolbar-labeled-btn {
     background: none;
     border: 0;
     margin: 0;
     padding: 0;
+    border-radius: 2px;
+
+    &.hidden { display: none; }
+    &:disabled { cursor: default; }
+    &:focus { outline: 0; }
+
+    &.raised {
+      border: 1px solid #ccc;
+      margin-right: 3px;
+      padding: 0 10px;
+      background: #fff;
+    }
+
+    &:not(:disabled) {
+      &:hover {
+        text-shadow: none;
+        background: @background-toolbar-btn--hover;
+      }
+      &.pressed {
+        box-shadow: inset 0px 2px 2px rgba(0,0,0,0.1);
+        background: linear-gradient(to top, #d0d0d0, #ccc);
+      }
+    }
+  }
+
+  .toolbar-btn-group {
+    button.toolbar-labeled-btn:not(:first-child) {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    button.toolbar-labeled-btn:not(:last-child) {
+      margin-right: 0;
+      border-right: 0;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  button.toolbar-labeled-btn {
+    padding: 0 5px;
+
+    img {
+      max-height: 20px;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+  }
+
+  button.toolbar-btn {
     font-size: 17px;
     line-height: 1.1;
     color: @color-toolbar-btn;
     width: 26px;
     height: 25px;
-    border-radius: 2px;
     border: 1px solid transparent;
 
     .icon {
@@ -38,40 +105,8 @@
       fill: #666;
     }
 
-    &.raised {
-      border: 1px solid #bbb;
-      border-radius: 2px;
-      background: #fdfdfd;
-    }
-
-    &.hidden {
-      display: none;
-    }
-
-    &:hover:not(:disabled) {
-      text-shadow: none;
-      background: @background-toolbar-btn--hover;
-    }
-
-    &:disabled {
-      cursor: default;
-
-      .icon {
-        cursor: default;
-
-        * {
-          stroke: #ccc !important;
-        }
-      }
-    }
-
-    &:focus {
-      outline: 0;
-    }
-
-    &.pressed:not(:disabled) {
-      box-shadow: inset 0px 2px 2px rgba(0,0,0,0.1);
-      background: linear-gradient(to top, #d0d0d0, #ccc);
+    &:disabled .icon * {
+      stroke: #ccc !important;
     }
 
     &.nav-cancel-btn {
@@ -116,10 +151,6 @@
         position: relative;
         top: 1px;
       }
-    }
-
-    .fa-code-fork {
-      font-weight: bold;
     }
   }
 

@@ -1,0 +1,38 @@
+
+#share-popup {
+
+  .popup-inner {
+
+    div {
+      margin: @padding-component--tight 0;
+      line-height: 1;
+    }
+
+    input {
+      &:extend(.code-font);
+      &:extend(input.roomy);
+      color: @color-text;
+      width: 100%;
+      margin-top: @padding-component--tight;
+      font-size: .85rem;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    .btn {
+      float: right;
+    }
+
+    .info {
+      margin: @padding-component--tight 0;
+      color: @color-text--muted;
+      font-size: .8rem;
+
+      i {
+        margin-right: 3px;
+      }
+    }
+  }
+}

@@ -2,7 +2,8 @@
 
 import yo from 'yo-yo'
 import * as toast from '../com/toast'
-import DatNetworkActivity from '../com/settings/dat-network-activity'
+import DatCache from '../com/settings/dat-cache'
+import CrawlerStatus from '../com/settings/crawler-status'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
@@ -13,7 +14,8 @@ var browserInfo
 var browserEvents
 var defaultProtocolSettings
 var activeView = 'general'
-var datNetworkActivity = new DatNetworkActivity()
+var datCache = new DatCache()
+var crawlerStatus = new CrawlerStatus()
 
 // main
 // =
@@ -54,8 +56,6 @@ function renderToPage () {
 
   yo.update(document.querySelector('.settings-wrapper'), yo`
     <div id="el-content" class="settings-wrapper builtin-wrapper">
-      ${renderHeader()}
-
       <div class="builtin-main">
         ${renderSidebar()}
         ${renderView()}
@@ -64,24 +64,24 @@ function renderToPage () {
   )
 }
 
-function renderHeader () {
-  return yo`
-    <div class="builtin-header fixed">
-      ${renderBuiltinPagesNav('Settings')}
-    </div>`
-}
-
 function renderSidebar () {
   return yo`
     <div class="builtin-sidebar">
+      ${renderBuiltinPagesNav('beaker://settings/', 'Settings')}
+
       <div class="nav-item ${activeView === 'general' ? 'active' : ''}" onclick=${() => onUpdateView('general')}>
         <i class="fa fa-angle-right"></i>
         General
       </div>
 
-      <div class="nav-item ${activeView === 'dat-network-activity' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network-activity')}>
+      <div class="nav-item ${activeView === 'crawler' ? 'active' : ''}" onclick=${() => onUpdateView('crawler')}>
         <i class="fa fa-angle-right"></i>
-        Dat network activity
+        Crawler
+      </div>
+
+      <div class="nav-item ${activeView === 'dat-cache' ? 'active' : ''}" onclick=${() => onUpdateView('dat-cache')}>
+        <i class="fa fa-angle-right"></i>
+        Dat cache
       </div>
 
       <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
@@ -95,8 +95,10 @@ function renderView () {
   switch (activeView) {
     case 'general':
       return renderGeneral()
-    case 'dat-network-activity':
+    case 'dat-cache':
       return renderDatNetworkActivity()
+    case 'crawler':
+      return renderCrawler()
     case 'information':
       return renderInformation()
   }
@@ -258,8 +260,19 @@ function renderDatNetworkActivity () {
   return yo`
     <div class="view">
       <div class="section">
-        <h2 id="dat-network-activity" class="subtitle-heading">Dat Network Activity</h2>
-        ${datNetworkActivity.render()}
+        <h2 id="dat-cache" class="subtitle-heading">Dat cache</h2>
+        ${datCache.render()}
+      </div>
+    </div>
+  `
+}
+
+function renderCrawler () {
+  return yo`
+    <div class="view">
+      <div class="section">
+        <h2 id="crawler" class="subtitle-heading">Crawler</h2>
+        ${crawlerStatus.render()}
       </div>
     </div>
   `
@@ -280,7 +293,7 @@ function renderInformation () {
         <ul>
           <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
           <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
-          <li><a href="https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md">Report an issue</a></li>
+          <li><a href="https://github.com/beakerbrowser/beaker/issues/new">Report an issue</a></li>
         </ul>
       </div>
     </div>

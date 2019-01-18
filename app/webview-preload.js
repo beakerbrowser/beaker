@@ -1,6 +1,7 @@
 import { webFrame } from 'electron'
 import * as rpcAPI from 'pauls-electron-rpc'
 import * as beakerCoreWebview from '@beaker/core/webview'
+import { setup as setupTutorial } from './webview-preload/tutorial'
 import { setup as setupLocationbar } from './webview-preload/locationbar'
 import { setup as setupPrompt } from './webview-preload/prompt'
 import { setup as setupExecuteJavascript } from './webview-preload/execute-javascript'
@@ -22,6 +23,7 @@ setupExitFullScreenHackfix()
 readableStreamAsyncIteratorPolyfill()
 
 beakerCoreWebview.setup({ rpcAPI })
+setupTutorial()
 setupLocationbar()
 setupPrompt()
 setupExecuteJavascript()

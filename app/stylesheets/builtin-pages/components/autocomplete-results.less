@@ -16,8 +16,19 @@
   box-shadow: 0 6px 20px rgba(0,0,0,.05);
 }
 
+.autocomplete-result-group {
+  margin-bottom: 6px;
+}
+
+.autocomplete-result-group-title {
+  padding: 4px 10px;
+  border-bottom: 1px solid #ddd;
+  color: rgba(0,0,0,.5);
+}
+
 .autocomplete-result {
   &:extend(.flex);
+  flex-wrap: nowrap;
   align-items: center;
   height: 40px;
   padding: 0 10px;
@@ -32,6 +43,10 @@
     width: 24px;
     text-align: center;
     margin-right: 10px;
+    
+    &.rounded {
+      border-radius: 50%;
+    }
   }
 
   .favicon {
@@ -41,7 +56,6 @@
   .title,
   .label {
     &:extend(.overflow-ellipsis);
-    max-width: 45%;
   }
 
   .title {

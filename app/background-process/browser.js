@@ -16,7 +16,7 @@ const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {showModal, showShellModal, closeModal} from './ui/modals'
-import {getActiveWindow} from './ui/windows'
+import {getActiveWindow, getUserSessionFor, setUserSessionFor} from './ui/windows'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
@@ -68,7 +68,7 @@ process.on('uncaughtException', (err) => {
 // exported methods
 // =
 
-export function setup () {
+export async function setup () {
   // setup auto-updater
   if (isBrowserUpdatesSupported) {
     try {
@@ -85,6 +85,21 @@ export function setup () {
 
   // fetch user setup status
   userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
+
+  // create a new user if none exists
+  console.log('getting default user')
+  var defaultUser = await beakerCore.users.getDefault()
+  if (!defaultUser) {
+    let newUserUrl = await beakerCore.dat.library.createNewArchive({title: 'Anonymous', type: ['user', 'unwalled.garden/user']})
+    let newUserArchive = await beakerCore.dat.library.getArchive(newUserUrl)
+    await beakerCore.dat.library.getDaemon().exportFilesystemToArchive({
+      srcPath: path.join(__dirname, 'assets/templates/default-profile'),
+      dstArchive: newUserArchive,
+      inplaceImport: true
+    })
+    await beakerCore.users.add(newUserUrl)
+    console.log('new user added')
+  }
 
   // wire up events
   app.on('web-contents-created', onWebContentsCreated)
@@ -115,6 +130,10 @@ export const WEBAPI = {
   checkForUpdates,
   restartBrowser,
 
+  getUserSession,
+  setUserSession,
+  showEditProfileModal,
+
   getSetting,
   getSettings,
   setSetting,
@@ -128,6 +147,7 @@ export const WEBAPI = {
 
   fetchBody,
   downloadURL,
+  readFile,
 
   getResourceContentType,
 
@@ -139,6 +159,9 @@ export const WEBAPI = {
   setWindowDimensions,
   showOpenDialog,
   showContextMenu,
+  async showShellModal (name, opts) {
+    return showShellModal(this.sender, name, opts)
+  },
   openUrl: url => { openUrl(url) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
@@ -161,6 +184,15 @@ export function fetchBody (url) {
 
 export async function downloadURL (url) {
   this.sender.downloadURL(url)
+}
+
+function readFile (pathname, opts) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(pathname, opts, (err, res) => {
+      if (err) reject(err)
+      else resolve(res)
+    })
+  })
 }
 
 export function getResourceContentType (url) {
@@ -346,6 +378,42 @@ export function restartBrowser () {
   }
 }
 
+async function getUserSession () {
+  var sess = getUserSessionFor(this.sender)
+  if (!sess) {
+    // fallback to the default user
+    var defaultUser = await beakerCore.users.getDefault()
+    console.log('getting default user', defaultUser)
+    if (defaultUser) {
+      sess = {url: defaultUser.url}
+      setUserSessionFor(this.sender, sess)
+    }
+  }
+
+  // get session user info
+  if (!sess) return null
+  return beakerCore.users.get(sess.url)
+}
+
+async function setUserSession (url) {
+  // normalize the url
+  var urlp = new URL(url)
+  url = urlp.origin
+
+  // lookup the user
+  var user = await beakerCore.get(url)
+  if (!user) throw new Error('Invalid user URL')
+
+  // set the session
+  var userSession = {url: user.url}
+  setUserSessionFor(this.sender, userSession)
+}
+
+async function showEditProfileModal () {
+  var sess = await getUserSession.call(this)
+  return showShellModal(this.sender, 'edit-profile', sess)
+}
+
 export function getSetting (key) {
   return settingsDb.get(key)
 }
@@ -510,6 +578,9 @@ async function doWebcontentsCmd (method, wcId, ...args) {
 async function doTest (test) {
   if (test === 'modal') {
     return showShellModal(this.sender, 'example', {i: 5})
+  }
+  if (test === 'tutorial') {
+    return showShellModal(this.sender, 'tutorial')    
   }
 }
 

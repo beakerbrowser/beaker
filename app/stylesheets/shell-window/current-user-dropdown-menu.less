@@ -1,0 +1,56 @@
+.current-user-dropdown-menu {
+  margin-right: 5px;
+
+  .toolbar-dropdown-menu-btn img {
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+  }
+
+  .user-profile {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      background: #eee;
+    }
+
+    img {
+      width: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .title {
+      font-size: 18px;
+      text-align: center;
+    }
+  }
+
+  .menu-item {
+    &:extend(.flex);
+    align-items: center;
+    height: 25px;
+    padding: 0 15px;
+    cursor: default;
+
+    &:hover {
+      background: #eee;
+    }
+
+    i {
+      color: fadeout(@color-text, 3%);
+      width: 28px;
+      font-size: 14px;
+      padding-right: 5px;
+      text-align: center;
+      margin-left: -5px;
+    }
+  }
+
+  .dropdown-items {
+    width: 230px;
+    border-radius: 4px;
+  }
+}

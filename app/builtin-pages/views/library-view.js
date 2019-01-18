@@ -28,7 +28,6 @@ import * as noticeBanner from '../com/notice-banner'
 import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
 import * as copyDatPopup from '../com/library/copydat-popup'
 import * as createFilePopup from '../com/library/createfile-popup'
-import renderBackLink from '../com/back-link'
 import renderArchiveHistory from '../com/archive/archive-history'
 import {RehostSlider} from '../../lib/fg/rehost-slider'
 import LibraryViewCompare from '../com/library/view-compare'
@@ -350,7 +349,7 @@ function render () {
     yo.update(
       document.querySelector('.library-wrapper'), yo`
         <div class="library-wrapper library-view builtin-wrapper">
-          <div class="builtin-main" style="margin-left: 0; width: 100%" onscroll=${onScrollMain}>
+          <div class="builtin-main" style="margin-left: 0; width: 100%">
             <div class="view-wrapper">
               ${renderView()}
             </div>
@@ -379,7 +378,7 @@ function render () {
             </p>
           </div>
 
-          <div class="builtin-main" style="margin-left: 0; width: 100%" onscroll=${onScrollMain}>
+          <div class="builtin-main" style="margin-left: 0; width: 100%">
             ${renderHeader()}
 
             <div class="view-wrapper">
@@ -427,60 +426,57 @@ function renderHeader () {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
   const hasDescription = !!_get(archive, 'info.description')
-  const isExpanded = !isNavCollapsed({ignoreScrollPosition: true})
   const isEditingTitle = headerEditValues.title !== false
   const currentFaviconUrl = `beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}`
 
   return yo`
-    <div class="library-view-header ${isExpanded ? 'expanded' : ''} ${hasDescription ? 'has-description' : ''}">
-      ${isExpanded
-        ? yo`
-          <div class="container">
-            <div class="info">
-              <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
-                ${!isOwner
-                    ? yo`<img class="favicon" src=${currentFaviconUrl} />`
-                    : toggleable2({
-                      id: 'favicon-picker2',
-                      closed: ({onToggle}) => yo`
-                        <div class="dropdown toggleable-container">
-                          <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
-                        </div>`,
-                      open: ({onToggle}) => yo`
-                        <div class="dropdown toggleable-container">
-                          <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
+    <div class="library-view-header">
+      <div class="container">
+        <div class="info">
+          <div class="title ${isOwner ? 'editable' : ''} ${isEditingTitle ? 'editing' : ''}">
+            ${!isOwner
+                ? yo`<img class="favicon" src=${currentFaviconUrl} />`
+                : toggleable2({
+                  id: 'favicon-picker2',
+                  closed: ({onToggle}) => yo`
+                    <div class="dropdown toggleable-container">
+                      <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
+                    </div>`,
+                  open: ({onToggle}) => yo`
+                    <div class="dropdown toggleable-container">
+                      <img class="favicon" src=${currentFaviconUrl} onclick=${onToggle} />
 
-                          <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
-                            ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl})}
-                          </div>
-                        </div>`
-                    })}
-                ${isEditingTitle
-                  ? yo`
-                    <input
-                      class="header-title-input"
-                      value=${headerEditValues.title || ''}
-                      onblur=${e => onBlurHeaderEditor(e, 'title')}
-                      onkeyup=${e => onChangeHeaderEditor(e, 'title')} />`
-                  : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
-                ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
-              </div>
+                      <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
+                        ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl})}
+                      </div>
+                    </div>`
+                })}
+            ${isEditingTitle
+              ? yo`
+                <input
+                  class="header-title-input"
+                  value=${headerEditValues.title || ''}
+                  onblur=${e => onBlurHeaderEditor(e, 'title')}
+                  onkeyup=${e => onChangeHeaderEditor(e, 'title')} />`
+              : yo`<h1 onclick=${onClickHeaderTitle}>${getSafeTitle()}</h1>`}
+            ${!isOwner ? yo`<span class="badge">READ-ONLY</span>` : ''}
+          </div>
 
-              <div class="primary-action">
-                ${renderSeedMenu()}
-                ${renderShareMenu()}
-                ${renderMenu()}
-              </div>
-            </div>
+          <div class="primary-action">
+            ${renderSeedMenu()}
+            ${renderPublishMenu()}
+            ${renderShareMenu()}
+            ${renderMenu()}
+          </div>
+        </div>
 
-            ${hasDescription
-              ? yo`<p class="description">${archive.info.description}</p>`
-              : ''
-            }
-          </div>`
-        : ''
-      }
-      ${renderToolbar()}
+        ${hasDescription
+          ? yo`<p class="description">${archive.info.description}</p>`
+          : ''
+        }
+
+        ${renderToolbar()}
+      </div>
     </div>`
 }
 
@@ -522,6 +518,26 @@ function renderSeedMenu () {
       rehostSlider.refreshState()
     }
   })
+}
+
+function renderPublishMenu () {
+  const isOwner = _get(archive, 'info.isOwner')
+  const isSaved = _get(archive, 'info.userSettings.isSaved')
+  if (!isOwner || !isSaved) return undefined
+
+  const isPublished = _get(archive, 'info.isPublished')
+  if (isPublished) {
+    return yo`
+      <button class="tag nohover disabled">
+        <span class="fas fa-bullhorn"></span>
+        Published
+      </button>`
+  }
+  return yo`
+    <button class="btn" onclick=${onPublishArchive}>
+      <span class="fas fa-bullhorn"></span>
+      Publish
+    </button>`
 }
 
 function renderShareMenu () {
@@ -571,10 +587,7 @@ function renderShareMenu () {
 function renderMenu () {
   const isOwner = _get(archive, 'info.isOwner')
   const isSaved = _get(archive, 'info.userSettings.isSaved')
-  const syncPath = _get(archive, 'info.userSettings.localSyncPath')
-  const title = getSafeTitle()
-  const description = _get(archive, 'info.description', '').trim()
-  const networked = _get(archive, 'info.userSettings.networked', true)
+  const isPublished = _get(archive, 'info.isPublished')
 
   return toggleable2({
     id: 'nav-item-main-menu',
@@ -598,7 +611,13 @@ function renderMenu () {
                 <i class="fas fa-copy"></i>
                 Compare files
               </div>*/}
-
+              ${isOwner && isSaved
+                ? yo`
+                  <div class="dropdown-item" onclick=${isPublished ? onUnpublishArchive : onPublishArchive}>
+                    <i class="fas fa-${isPublished ? 'eraser' : 'bullhorn'}"></i>
+                    ${isPublished ? 'Unpublish' : 'Publish'}
+                  </div>`
+                : ''}
               <div class="dropdown-item" onclick=${onMakeCopy}>
                 <i class="far fa-clone"></i>
                 Make ${isOwner ? 'a' : 'an editable'} copy
@@ -908,8 +927,6 @@ function renderSettingsView () {
 
   return yo`
     <div class="container">
-      ${renderBackLink('#', 'Back')}
-
       ${isOwner
         ? yo`
           <div class="settings view">
@@ -1101,8 +1118,6 @@ function renderNetworkView () {
 
   return yo`
     <div class="container">
-      ${renderBackLink('#', 'Back')}
-
       <div class="view network">
         <h1>Network activity</h1>
 
@@ -1308,15 +1323,9 @@ function renderToolbar () {
 function renderNav () {
   const isOwner = _get(archive, 'info.isOwner')
   const baseUrl = `beaker://library/${archive.url}`
-  const collapsed = isNavCollapsed()
 
   return yo`
     <div class="nav-items">
-      <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item nav-archive-title ${collapsed ? 'visible' : ''}">
-        <img class="favicon" src="beaker-favicon:32,${archive.url}?cache=${faviconCacheBuster}" />
-        ${getSafeTitle()}
-      </a>
-
       <a href=${baseUrl} onclick=${e => onChangeView(e, 'files')} class="nav-item ${activeView === 'files' ? 'active' : ''}">
         Files
       </a>
@@ -1348,12 +1357,34 @@ async function addReadme () {
   render()
 }
 
-function onToggleSaved () {
-  if (_get(archive, 'info.userSettings.isSaved')) {
-    return onMoveToTrash()
-  } else {
-    return onSave()
+async function onPublishArchive () {
+  try {
+    var details = await beaker.browser.showShellModal('publish-archive', {url: archive.url, title: archive.info.title, description: archive.info.description})
+    toast.create(`Published ${archive.info.title || archive.url}`, 'success')
+    archive.info.title = details.title
+    archive.info.description = details.description
+    archive.info.isPublished = true
+  } catch (err) {
+    if (err.message === 'Canceled') return
+    console.error(err)
+    toast.create(err.toString(), 'error')
   }
+  render()
+}
+
+async function onUnpublishArchive () {
+  if (!confirm('Are you sure you want to unpublish this?')) {
+    return
+  }
+  try {
+    await beaker.archives.unpublish(archive.url)
+    toast.create(`Unpublished ${archive.info.title || archive.url}`)
+    archive.info.isPublished = false
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+  }
+  render()
 }
 
 async function onMoveToTrash () {
@@ -1933,15 +1964,6 @@ async function onFilesChanged () {
   loadReadme()
 }
 
-function onScrollMain (e) {
-  var el = document.querySelector('.nav-archive-title')
-  if (isNavCollapsed()) {
-    el.classList.add('visible')
-  } else {
-    el.classList.remove('visible')
-  }
-}
-
 async function onArchiveUpdated (e) {
   if (e.details.url === archive.checkout().url) {
     const isOwner = _get(archive, 'info.isOwner')
@@ -2104,18 +2126,6 @@ async function setManifestValue (attr, value) {
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
-}
-
-function isNavCollapsed ({ignoreScrollPosition} = {}) {
-  if (!ignoreScrollPosition) {
-    var main = document.body.querySelector('.builtin-main')
-    var hasDescription = (_get(archive, 'info.description')) ? 1 : 0
-    if (main && main.scrollTop >= MIN_SHOW_NAV_ARCHIVE_TITLE[hasDescription]) {
-      // certain distance scrolled
-      return true
-    }
-  }
-  return false
 }
 
 function getSafeTitle () {

@@ -7,13 +7,15 @@ import * as yo from 'yo-yo'
 import prettyHash from 'pretty-hash'
 import {UpdatesNavbarBtn} from './navbar/updates'
 import {BrowserMenuNavbarBtn} from './navbar/browser-menu'
+import {CurrentUserMenuNavbarBtn} from './navbar/current-user-menu'
+import {CreateMenuNavbarBtn} from './navbar/create-menu'
 import {WatchlistNotificationBtn} from './navbar/watchlist-notification'
 // import {AppsMenuNavbarBtn} from './navbar/apps-menu' TODO(apps) restore when we bring back apps -prf
 import {SyncfolderMenuNavbarBtn} from './navbar/syncfolder-menu'
 import {DonateMenuNavbarBtn} from './navbar/donate-menu'
 import {BookmarkMenuNavbarBtn} from './navbar/bookmark-menu'
 import {PageMenuNavbarBtn} from './navbar/page-menu'
-import {findParent} from '../../lib/fg/event-handlers'
+import * as contextbar from './contextbar'
 import {findWordBoundary} from 'pauls-word-boundary'
 import renderNavArrowIcon from './icon/nav-arrow'
 import renderRefreshIcon from './icon/refresh'
@@ -35,6 +37,8 @@ const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 var toolbarNavDiv
 var updatesNavbarBtn = null
 var browserMenuNavbarBtn = null
+var currentUserMenuNavbarBtn = null
+var createMenuNavbarBtn = null
 var watchlistNotificationBtn = null
 var bookmarkMenuNavbarBtn = null
 // var appsMenuNavbarBtn = null TODO(apps) restore when we bring back apps -prf
@@ -59,6 +63,8 @@ export function setup () {
   updatesNavbarBtn = new UpdatesNavbarBtn()
   // appsMenuNavbarBtn = new AppsMenuNavbarBtn() TODO(apps) restore when we bring back apps -prf
   browserMenuNavbarBtn = new BrowserMenuNavbarBtn()
+  currentUserMenuNavbarBtn = new CurrentUserMenuNavbarBtn()
+  createMenuNavbarBtn = new CreateMenuNavbarBtn()
   watchlistNotificationBtn = new WatchlistNotificationBtn()
   bookmarkMenuNavbarBtn = new BookmarkMenuNavbarBtn()
   syncfolderMenuNavbarBtn = new SyncfolderMenuNavbarBtn()
@@ -77,7 +83,7 @@ export function createEl (id) {
 }
 
 export function destroyEl (id) {
-  var el = document.querySelector(`.toolbar-actions[data-id="${id}"]`)
+  var el = document.querySelector(`.toolbar[data-id="${id}"]`)
   if (el) {
     toolbarNavDiv.removeChild(el)
   }
@@ -161,6 +167,8 @@ export function bookmarkAndOpenMenu () {
 export function closeMenus () {
   browserMenuNavbarBtn.isDropdownOpen = false
   browserMenuNavbarBtn.updateActives()
+  currentUserMenuNavbarBtn.close()
+  createMenuNavbarBtn.close()
   // appsMenuNavbarBtn.close() TODO(apps) restore when we bring back apps -prf
   pageMenuNavbarBtn.close()
   bookmarkMenuNavbarBtn.close()
@@ -176,9 +184,7 @@ function render (id, page) {
   const isViewingDat = page && page.getURL().startsWith('dat:')
   const siteHasDatAlternative = page && page.siteHasDatAlternative
   const siteHttpAlternative = page && page.siteHttpAlternative
-  const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
-  const siteLoadError = page && page.siteLoadError
-  const isOwner = page && page.siteInfo && page.siteInfo.isOwner
+  const siteTrust = page && page.siteTrust
 
   // back/forward should be disabled if its not possible go back/forward
   var backDisabled = (page && page.canGoBack()) ? '' : 'disabled'
@@ -385,52 +391,56 @@ function render (id, page) {
   `
 
   // a prettified rendering of the main URL input
-  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, gotInsecureResponse, siteLoadError)
+  var locationPrettyView = renderPrettyLocation(addrValue, isAddrElFocused, siteTrust)
 
   // render
   return yo`
-    <div data-id=${id} class="toolbar-actions${toolbarHidden}">
-      <div class="toolbar-group">
-        <button style="transform: scaleX(-1);" class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
-          ${renderNavArrowIcon()}
-        </button>
+    <div data-id=${id} class="toolbar ${toolbarHidden}">
+      <div class="toolbar-actions">
+        <div class="toolbar-group">
+          <button style="transform: scaleX(-1);" class="toolbar-btn nav-back-btn" ${backDisabled} onclick=${onClickBack}>
+            ${renderNavArrowIcon()}
+          </button>
 
-        <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
-          ${renderNavArrowIcon()}
-        </button>
-        ${reloadBtn}
-      </div>
-
-      <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
-        ${page && (!isLocationHighlighted) ? page.siteInfoNavbarBtn.render() : ''}
-        <div class="nav-location-container">
-          ${locationPrettyView}
-          ${locationInput}
+          <button class="toolbar-btn nav-forward-btn" ${forwardDisabled} onclick=${onClickForward}>
+            ${renderNavArrowIcon()}
+          </button>
+          ${reloadBtn}
         </div>
-        ${inpageFinder}
-        ${zoomBtn}
-        ${!isLocationHighlighted ? [
-          datBtns,
-          syncfolderMenuNavbarBtn.render(),
-          liveReloadBtn,
-          donateBtn,
-          page ? page.datsiteMenuNavbarBtn.render() : undefined,
-          pageMenuNavbarBtn.render(),
-          bookmarkMenuNavbarBtn.render()
-        ] : ''}
+
+        <div class="toolbar-input-group${isLocationHighlighted ? ' input-focused' : ''}${autocompleteResults ? ' autocomplete' : ''}">
+          ${page && (!isLocationHighlighted) ? page.siteInfoNavbarBtn.render() : ''}
+          <div class="nav-location-container">
+            ${locationPrettyView}
+            ${locationInput}
+          </div>
+          ${inpageFinder}
+          ${zoomBtn}
+          ${!isLocationHighlighted ? [
+            datBtns,
+            syncfolderMenuNavbarBtn.render(),
+            liveReloadBtn,
+            donateBtn,
+            page ? page.datsiteMenuNavbarBtn.render() : undefined,
+            pageMenuNavbarBtn.render(),
+            bookmarkMenuNavbarBtn.render()
+          ] : ''}
+        </div>
+        <div class="toolbar-group">
+          ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
+          ${watchlistNotificationBtn.render()}
+          ${createMenuNavbarBtn.render()}
+          ${currentUserMenuNavbarBtn.render()}
+          ${browserMenuNavbarBtn.render()}
+          ${updatesNavbarBtn.render()}
+        </div>
+        ${autocompleteDropdown}
       </div>
-      <div class="toolbar-group">
-        ${''/*appsMenuNavbarBtn.render() TODO(apps) restore when we bring back apps -prf*/}
-        ${watchlistNotificationBtn.render()}
-        ${browserMenuNavbarBtn.render()}
-        ${updatesNavbarBtn.render()}
-      </div>
-      ${autocompleteDropdown}
-    </div>
-  </div>`
+      ${contextbar.render(id, page)}
+    </div>`
 }
 
-function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadError) {
+function renderPrettyLocation (value, isHidden, siteTrust) {
   var valueRendered = value
   if (/^(dat|http|https):\/\//.test(value)) {
     try {
@@ -447,10 +457,7 @@ function renderPrettyLocation (value, isHidden, gotInsecureResponse, siteLoadErr
         }
       }
       var cls = 'protocol'
-      if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
-      if (['https:'].includes(protocol) && !siteLoadError && !gotInsecureResponse) cls += ' protocol-secure'
-      if (['https:'].includes(protocol) && gotInsecureResponse) cls += ' protocol-insecure'
-      if (['dat:'].includes(protocol)) cls += ' protocol-p2p'
+      if (siteTrust) cls += ' protocol-' + siteTrust.getRating()
       valueRendered = [
         yo`<span class=${cls}>${protocol.slice(0, -1)}</span>`,
         yo`<span class="syntax">://</span>`,
@@ -485,7 +492,7 @@ async function handleAutocompleteSearch (results) {
   var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
   var searchResult = {
     search: v,
-    title: 'DuckDuckGo Search',
+    title: 'Search your network privately',
     url: vSearch
   }
   if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]
@@ -532,7 +539,8 @@ function examineLocationInput (v) {
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
     }
   }
-  var vSearch = 'https://duckduckgo.com/?q=' + v.split(' ').map(encodeURIComponent).join('+')
+  var q = v.split(' ').map(encodeURIComponent).join('+')
+  var vSearch = 'beaker://search/?q=' + q
   return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
 }
 

@@ -4,9 +4,9 @@ const yo = require('yo-yo')
 import {getHostname} from '../../lib/strings'
 import * as toast from '../com/toast'
 import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
-import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import toggleable from '../com/toggleable'
 import renderCloseIcon from '../icon/close'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
 //
@@ -19,6 +19,7 @@ var bookmarks = []
 var tags = []
 var filteredTags = []
 var tagsQuery = ''
+var currentUserSession = null
 var userProfile = {_origin: null} // null TODO(profiles) disabled -prf
 // var followedUserProfiles = null TODO(profiles) disabled -prf
 
@@ -33,6 +34,7 @@ setup()
 async function setup () {
   // load and render bookmarks
   // userProfile = await beaker.profiles.getCurrentUserProfile() TODO(profiles) disabled -prf
+  currentUserSession = await beaker.browser.getUserSession()
   await loadBookmarks()
   renderToPage()
 
@@ -217,6 +219,9 @@ function renderBookmarksListToPage () {
 }
 
 function renderHeader () {
+  return ''
+
+  // TODO replace
   var searchPlaceholder = 'Search your bookmarks'
   if (currentView === 'pinned' || currentView === 'public' || currentView === 'private') {
     searchPlaceholder = `Search ${currentView} bookmarks`
@@ -310,6 +315,8 @@ function renderTagCloud () {
 function renderSidebar () {
   return yo`
     <div class="builtin-sidebar">
+      ${renderBuiltinPagesNav('beaker://bookmarks/', 'Bookmarks')}
+      
       <div class="section">
         <div class="nav-item ${currentView === 'all' ? 'active' : ''}" onclick=${() => onUpdateViewFilter('all')}>
           <i class="fa fa-angle-right"></i>

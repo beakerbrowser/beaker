@@ -7,10 +7,13 @@ import fs from 'fs'
 import throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
 import errorPage from '@beaker/core/lib/error-page'
+import * as globals from './globals'
+import * as tutorial from './tutorial'
 import * as zoom from './pages/zoom'
 import * as navbar from './ui/navbar'
 import * as prompt from './ui/prompt'
 import * as modal from './ui/modal'
+import * as sidebar from './ui/sidebar'
 import * as statusBar from './ui/statusbar'
 import * as toast from './ui/toast.js'
 import { SiteInfoNavbarBtn } from './ui/navbar/site-info'
@@ -20,6 +23,8 @@ import addAsyncAlternatives from './webview-async'
 
 // constants
 // =
+
+const isDatHashRegex = /^[a-z0-9]{64}/i
 
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
@@ -50,6 +55,14 @@ var cachedJSONRendererScript
 
 export function on (...args) {
   events.on.apply(events, args)
+}
+
+export function once (...args) {
+  events.once.apply(events, args)
+}
+
+export function removeListener (...args) {
+  events.removeListener.apply(events, args)
 }
 
 export function getAll () {
@@ -117,6 +130,7 @@ export function create (opts) {
     navbarEl: navbar.createEl(id),
     promptEl: prompt.createContainer(id),
     modalEl: modal.createContainer(id),
+    sidebarEl: sidebar.createContainer(id),
     siteInfoNavbarBtn: null, // set after object is created
     datsiteMenuNavbarBtn: null, // set after object is created
 
@@ -148,6 +162,7 @@ export function create (opts) {
     protocolInfo: null, // info about the current page's delivery protocol
     siteLoadError: null, // info about the current page's last load's error (null if no error)
     siteInfo: null, // metadata about the current page, derived from protocol knowledge
+    siteTrust: null, // metadata about our trust in the page
     sitePerms: null, // saved permissions for the current page
     siteInfoOverride: null, // explicit overrides on the siteinfo, used by beaker: pages
     siteHasDatAlternative: false, // is there a dat:// version we can redirect to?
@@ -435,6 +450,7 @@ export async function remove (page) {
   navbar.destroyEl(page.id)
   prompt.destroyContainer(page.id)
   modal.destroyContainer(page.id)
+  sidebar.destroyContainer(page.id)
 
   // persist pins w/o this one, if that was
   if (page.isPinned) { savePinnedToDB() }
@@ -476,6 +492,7 @@ export function setActive (page) {
   navbar.update()
   prompt.update()
   modal.update()
+  sidebar.update()
 
   events.emit('set-active', page)
   ipcRenderer.send('shell-window:set-current-location', page.getIntendedURL())
@@ -723,8 +740,7 @@ function onDidStartLoading (e) {
     }
 
     // decorate the webview based on whether it's a builtin page
-    const url = page.loadingURL || page.url
-    if (url.startsWith('beaker://')) {
+    if (page.getIntendedURL().startsWith('beaker://')) {
       page.webviewEl.classList.add('builtin')
     } else {
       page.webviewEl.classList.remove('builtin')
@@ -743,6 +759,16 @@ function onDidStopLoading (e) {
 
     // update history and UI
     updateHistory(page)
+    if (url.startsWith('beaker://')) {
+      page.webviewEl.classList.add('builtin')
+    } else {
+      page.webviewEl.classList.remove('builtin')
+    }
+
+    // capture old data
+    var oldSiteInfo = page.siteInfo
+    var oldSiteTrust = page.siteTrust
+    var oldProtocolInfo = page.protocolInfo
 
     // fetch protocol and page info
     var { protocol, hostname, pathname, version } = url.startsWith('dat://') ? parseDatURL(url) : parseURL(url)
@@ -750,24 +776,77 @@ function onDidStopLoading (e) {
     page.sitePerms = null
     page.siteHasDatAlternative = false
     page.protocolInfo = {url, hostname, pathname, scheme: protocol, label: protocol.slice(0, -1).toUpperCase(), version}
+    page.siteTrust = {
+      getRating () {
+        const isOwner = page && page.siteInfo && page.siteInfo.isOwner
+        const gotInsecureResponse = page && page.siteLoadError && page.siteLoadError.isInsecureResponse
+        if (isOwner || this.isIdentityVerified || this.isDomainVerified) {
+          // these signals indicate strong trust
+          // why: always trust own sites
+          //      domain must be verified via PKI
+          //      title must be verified by a trusted WoT authority
+          return 'trusted'
+        }
+        if (gotInsecureResponse) {
+          // TLS failure
+          return 'distrusted'
+        }
+        // no usable signals
+        return 'not-trusted'
+      },
+      getCanSemiTrustIdentity () {
+        return this.rating === 'trusted' || this.isFoaF
+      },
+      isIdentityVerified: false, // NOTE: no mechanism for this being set `true` yet yet
+      isDomainVerified: (
+        protocol === 'https:' || // https cert
+        (protocol === 'dat:' && !isDatHashRegex.test(hostname)) // https cert or dns-over-https
+      ),
+      isUser: false,
+      followers: [],
+      isFollowed: false,
+      isFoaF: false
+    }
+    if (oldProtocolInfo && oldProtocolInfo.scheme === protocol && oldProtocolInfo.hostname === hostname) {
+      // same site, reuse old info
+      page.siteInfo = oldSiteInfo
+      page.siteTrust = oldSiteTrust
+    }
     if (protocol === 'https:') {
       page.checkForDatAlternative(url, hostname)
     }
     if (protocol === 'dat:') {
-      DatArchive.resolveName(hostname)
-        .catch(err => hostname) // try the hostname as-is, might be a hash
-        .then(key => (new DatArchive(key)).getInfo())
-        .then(info => {
-          page.siteInfo = info
-          navbar.update(page)
-          console.log('dat site info', info)
+      ;(async function () {
+        var info = await (new DatArchive(hostname)).getInfo()
+        console.log('dat site info', info)
+        page.siteInfo = info
 
-          // fallback the tab title to the site title, if needed
-          if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
-            page.title = info.title
-            events.emit('page-title-updated', page)
-          }
-        })
+        // determine trust in the site
+        if (info.isOwner) {
+          // trust our own stuff
+          page.siteTrust.isFoaF = true
+          // is this the user?
+          page.siteTrust.isUser = isEqualURL(url, globals.getCurrentUserSession().url)
+        } else if (info.type.includes('unwalled.garden/user')) {
+          // trust titles of user-sites we or a followed-user follows
+          let currentUserSession = globals.getCurrentUserSession()
+          page.siteTrust.followers = await beaker.followgraph.listFollowers(info.url, {followedBy: currentUserSession.url})
+          page.siteTrust.isFollowed = !!page.siteTrust.followers.find(v => v === currentUserSession.url)
+          page.siteTrust.isFoaF = page.siteTrust.followers.length >= 1
+        }
+
+        // update UIs
+        navbar.update(page)
+        sidebar.onDidNavigate(page)
+
+        // fallback the tab title to the site title, if needed
+        if (isEqualURL(page.getTitle(), page.getURL()) && info.title) {
+          page.title = info.title
+          events.emit('page-title-updated', page)
+        }
+      })()
+    } else {
+      sidebar.onDidNavigate(page)
     }
     if (protocol !== 'beaker:') {
       page.fetchSitePerms()
@@ -809,7 +888,6 @@ function onDidStopLoading (e) {
       // hide the unformatted text and provide some basic styles
       page.webviewEl.insertCSS(`
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
-        body > pre { display: none; }
         main { display: flex; }
         nav { max-width: 200px; padding-right: 2em; }
         nav .link { white-space: pre; overflow: hidden; text-overflow: ellipsis; margin: 0.5em 0 }
@@ -822,7 +900,6 @@ function onDidStopLoading (e) {
         td, th { padding: 0.5em 1em; }
         tbody tr:nth-child(odd) { background: #fafafa; }
         tbody td { border-top: 1px solid #bbb; }
-        .switcher { position: absolute; top: 5px; right: 5px; font-family: Consolas, 'Lucida Console', Monaco, monospace; cursor: pointer; font-size: 13px; background: #fafafa; padding: 2px 5px; }
         main code { font-size: 1.3em; background: #fafafa; }
         main pre { background: #fafafa; padding: 1em }
       `)
@@ -1072,6 +1149,9 @@ export function onIPCMessage (e) {
       delete page.executeJavascriptCalls[e.args[0]]
       resolve(e.args[1])
       break
+    case 'tutorial:start':
+      tutorial.start()
+      break
   }
 }
 
@@ -1083,6 +1163,7 @@ function show (page) {
   page.navbarEl.classList.remove('hidden')
   page.promptEl.classList.remove('hidden')
   page.modalEl.classList.remove('hidden')
+  page.sidebarEl.classList.remove('hidden')
   events.emit('show', page)
 }
 
@@ -1091,6 +1172,7 @@ function hide (page) {
   page.navbarEl.classList.add('hidden')
   page.promptEl.classList.add('hidden')
   page.modalEl.classList.add('hidden')
+  page.sidebarEl.classList.add('hidden')
   events.emit('hide', page)
 }
 

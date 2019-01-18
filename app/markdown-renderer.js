@@ -12,31 +12,14 @@ if (!document.querySelector('main')) {
   var formattedEl = document.createElement('main')
   formattedEl.innerHTML = `<nav></nav><div class="markdown">${md.render(unformattedEl.textContent)}</div>`
   document.body.appendChild(formattedEl)
-
-  // give ui to switch
-  var a = document.createElement('a')
-  a.className = 'switcher'
-  a.textContent = 'Raw'
-  a.onclick = (e) => {
-    e.preventDefault()
-    if (formattedEl.style.display !== 'none') {
-      formattedEl.style.display = 'none'
-      unformattedEl.style.display = 'block'
-      a.textContent = 'Formatted'
-    } else {
-      formattedEl.style.display = 'flex'
-      unformattedEl.style.display = 'none'
-      a.textContent = 'Raw'
-    }
-  }
-  document.body.appendChild(a)
+  unformattedEl.remove()
 
   // render the nav
   renderNav()
   async function renderNav () {
     var navHTML
     try {
-      var navReq = await fetch('/nav.md')
+      var navReq = await fetch('/nav.md?disable_fallback_page=1')
       if (!navReq.ok) return
       var navMD = await navReq.text()
       navHTML = md.render(navMD)
@@ -44,5 +27,17 @@ if (!document.querySelector('main')) {
     } catch (e) {
       // do nothing
     }
+  }
+
+  // execute scripts
+  var scriptEls = Array.from(document.querySelectorAll('script'))
+  for (let scriptEl of scriptEls) {
+    let clone = document.createElement('script')
+    for (let i = 0; i < scriptEl.attributes.length; i++) {
+      let attr = scriptEl.attributes[i]
+      clone.setAttribute(attr.name, attr.value)
+    }
+    clone.textContent = scriptEl.textContent
+    document.body.append(clone)
   }
 }

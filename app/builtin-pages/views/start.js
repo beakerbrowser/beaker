@@ -2,35 +2,57 @@
 
 import * as yo from 'yo-yo'
 import Sortable from 'sortablejs'
-import * as addPinnedBookmarkPopup from '../com/settings/add-pinned-bookmark-popup'
+import * as explorerPopup from '../com/settings/explorer-popup'
 import * as editBookmarkPopup from '../com/settings/edit-bookmark-popup'
 import * as MOTD from '../com/motd'
 import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
+import {getBasicType} from '../../lib/dat'
 
 const LATEST_VERSION = 8002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/0.8.2'
 
+const SEARCH_GROUPS = [
+  {key: 'fixed'},
+  {key: 'apps', label: 'Applications'},
+  {key: 'people', label: 'People'},
+  {key: 'webPages', label: 'Web pages'},
+  {key: 'imageCollections', label: 'Image collections'},
+  {key: 'fileShares', label: 'File shares'},
+  {key: 'bookmarks', label: 'Bookmarks'},
+  {key: 'history', label: 'Your browsing history'},
+  {key: 'others', label: 'Saved to your Library'},
+]
+
 // globals
 // =
 
+var currentUserSession
 var pinnedBookmarks = []
-var searchResults = []
+var searchResults = {}
 var query = ''
-var activeSearchResult = 0
+var lastQuery
+var activeSearchResultIndex = 0
 var isSearchFocused = false
 var settings
 var hasDismissedOnboarding = localStorage.hasDismissedOnboarding ? true : false
+var pinGridMode = localStorage.pinGridMode || 'square-mode'
 
 update()
 setup()
 async function setup () {
+  currentUserSession = await beaker.browser.getUserSession()
   settings = await beaker.browser.getSettings()
 
   // open onboarding popup if this is the first render
-  if (!hasDismissedOnboarding) onboardingPopup.create()
+  // if (!hasDismissedOnboarding) onboardingPopup.create()
+  if (!localStorage.hasRunTutorial) {
+    localStorage.hasRunTutorial = 1
+    beakerStartTutorial()
+  }
+
 
   // open update info if appropriate
   if (!settings.no_welcome_tab) {
@@ -46,78 +68,111 @@ async function setup () {
   update()
 }
 
-// events
+// rendering
 // =
 
-function onClickNewSiteButton (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  contextMenu.create({
-    x: e.clientX,
-    y: e.clientY - 20,
-    render ({x, y}) {
-      return yo`
-        <div class="context-menu dropdown" style="left: ${x}px; top: ${y}px">
-          <div class="dropdown-items custom create-new filters subtle-shadow center top">
-            <div class="dropdown-item" onclick=${() => onCreateSite()}>
-              <div class="label">
-                <i class="far fa-clone"></i>
-                Empty project
-              </div>
-              <p class="description">
-                Create a new project
-              </p>
-            </div>
-            <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
-              <div class="label">
-                <i class="fa fa-code"></i>
-                Website
-              </div>
-              <p class="description">
-                Create a new website from a basic template
-              </p>
-            </div>
-            <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
-              <div class="label">
-                <i class="far fa-folder"></i>
-                From folder
-              </div>
-              <p class="description">
-                Create a new project from a folder on your computer
-              </p>
-            </div>
-          </div>
+function update () {
+  yo.update(document.querySelector('.window-content.start'), yo`
+    <div class="window-content builtin start">
+      <div class="builtin-wrapper start-wrapper">
+        <div style="position: absolute; bottom: 10px; right: 20px; font-size: 22px; text-align: right; font-weight: 300">
+          <span style="color: #2864dc; font-size: 38px; line-height: 1">Blue r1</span><br>
+          Beta pre-release
         </div>
-      `
-    }
-  })
+
+        ${MOTD.render()}
+
+        <div class="start-content-container">
+          ${renderSearch()}
+          ${renderPinnedBookmarks()}
+        </div>
+      </div>
+    </div>
+  `)
+
+  addSorting()
 }
 
-async function onCreateSiteFromFolder () {
-  // ask user for folder
-  const folder = await beaker.browser.showOpenDialog({
-    title: 'Select folder',
-    buttonLabel: 'Use folder',
-    properties: ['openDirectory']
-  })
-  if (!folder || !folder.length) return
+function renderSearch () {
+  function renderSearchResultGroup (group, label) {
+    if (!group || !group.length) return ''
+    return yo`
+      <div class="autocomplete-result-group">
+        ${label ? yo`<div class="autocomplete-result-group-title">${label}</div>` : ''}
+        ${group.map(renderSearchResult)}
+      </div>
+    `
+  }
 
-  // create a new archive
-  const archive = await DatArchive.create({prompt: false})
-  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
-  window.location = 'beaker://library/' + archive.url + '#setup'
+  var i = 0
+  function renderSearchResult (res) {
+    return yo`
+      <a href=${res.url} class="autocomplete-result search-result ${i++ === activeSearchResultIndex ? 'active' : ''}">
+        ${res.icon
+            ? yo`<i class="icon ${res.icon}"></i>`
+            : getBasicType(res.type) === 'user'
+              ? yo`<img class="icon favicon rounded" src="${res.url}/thumb"/>`
+              : yo`<img class="icon favicon" src="beaker-favicon:32,${res.url}"/>`
+          }
+        <span class="title">${res.title}</span>
+        <span class="label">— ${res.url}</span>
+      </a>
+    `
+  }
+
+  return yo`
+    <div class="autocomplete-container search-container">
+      <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
+      <i class="fa fa-search"></i>
+
+      <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
+        <i class="fa fa-arrow-right"></i>
+      </button>
+
+      ${query.length && isSearchFocused
+        ? yo`<div class="search-results autocomplete-results">
+          ${SEARCH_GROUPS.map(({key, label}) => renderSearchResultGroup(searchResults[key], label))}
+        </div>`
+        : ''}
+    </div>`
 }
 
-async function onCreateSite (template) {
-  // create a new archive
-  const archive = await DatArchive.create({template, prompt: false})
-  window.location = 'beaker://library/' + archive.url + '#setup'
+function renderPinnedBookmarks () {
+  return yo`
+    <div class="pinned-bookmarks-container ${pinGridMode}">
+      <div class="pinned-bookmarks-config">
+        <div class="mode">
+          ${renderPinGridMode('fas fa-th', 'square-mode')}
+          ${renderPinGridMode('fas fa-th-large', 'horz-mode')}
+        </div>
+      </div>
+      <div class="pinned-bookmarks">
+        ${pinnedBookmarks.map(renderPinnedBookmark)}
+        <a class="pinned-bookmark explorer-pin" href="#" onclick=${onClickExplorer}>
+          <i class="fa fa-ellipsis-h"></i>
+        </a>
+      </div>
+    </div>
+  `
 }
 
-async function onClickHelpButton () {
-  await onboardingPopup.create({showHelpOnly: true})
+function renderPinGridMode (icon, mode) {
+  return yo`<span class="${mode === pinGridMode ? 'active' : ''} ${icon}" onclick=${() => onSetPinGridMode(mode)}></span>`
 }
+
+function renderPinnedBookmark (bookmark) {
+  const {href, title} = bookmark
+
+  return yo`
+    <a class="pinned-bookmark" href=${href} oncontextmenu=${e => onContextmenuPinnedBookmark(e, bookmark)}>
+      <img src=${'beaker-favicon:64,' + href} class="favicon"/>
+      <div class="title">${title}</div>
+    </a>
+  `
+}
+
+// events
+// =
 
 function onFocusSearch () {
   isSearchFocused = true
@@ -137,32 +192,23 @@ function onClickWhileSearchFocused (e) {
 }
 
 function onClickSubmitActiveSearch () {
-  if (!query || !searchResults) return
-  window.location = searchResults[activeSearchResult].targetUrl
+  var res = getActiveSearchResult()
+  if (!res) return
+  window.location = res.url
 }
 
 function onInputSearch (e) {
   // enter
   if (e.keyCode === 13) {
     // ENTER
-    window.location = searchResults[activeSearchResult].targetUrl
+    window.location = getActiveSearchResult().url
   } else if (e.keyCode === 40) {
     // DOWN
-    activeSearchResult += 1
-
-    // make sure we don't go out of bounds
-    if (activeSearchResult > searchResults.length - 1) {
-      activeSearchResult = searchResults.length - 1
-    }
+    moveActiveSearchResult(1)
     update()
   } else if (e.keyCode === 38) {
     // UP
-    activeSearchResult -= 1
-
-    // make sure we don't go out of bounds
-    if (activeSearchResult < 0) {
-      activeSearchResult = 0
-    }
+    moveActiveSearchResult(-1)
     update()
   } else {
     onUpdateSearchQuery(e.target.value)
@@ -171,64 +217,34 @@ function onInputSearch (e) {
 
 async function onUpdateSearchQuery (q) {
   searchResults = []
-  activeSearchResult = 0
   query = q.length ? q.toLowerCase() : ''
 
+  // reset selection if query changed
+  if (lastQuery !== query) {
+    activeSearchResultIndex = 0
+  }
+  lastQuery = query
+
   if (query.length) {
-    // fetch library archives
-    // filter by title, URL
-    let libraryResults = await beaker.archives.list({isNetworked: true})
-    libraryResults = libraryResults.filter(a => (a.url.includes(query) || (a.title && a.title.toLowerCase().includes(query)))).slice(0, 3)
-    libraryResults = libraryResults.map(a => {
-      return {
-        title: a.title,
-        faviconUrl: a.url,
-        targetUrl: a.url,
-        label: 'Saved to Library'
-      }
-    })
-    searchResults = searchResults.concat(libraryResults)
-
-    // fetch history
-    let historyResults = await beaker.history.search(query)
-    historyResults = historyResults.slice(0, 6)
-    historyResults = historyResults.map(r => {
-      return {
-        title: r.title,
-        faviconUrl: r.url,
-        targetUrl: r.url,
-        label: r.url
-      }
-    })
-    searchResults = searchResults.concat(historyResults)
-
-    // add a DuckDuckGo search to the results
-    const ddgRes = {
-      title: query,
-      targetUrl: `https://duckduckgo.com?q=${encodeURIComponent(query)}`,
+    searchResults = await beaker.crawler.listSuggestions(query)
+    searchResults.fixed = [{
+      url: `beaker://search?q=${encodeURIComponent(query)}`,
       icon: 'fa fa-search',
-      label: 'Search DuckDuckGo',
-      class: 'ddg'
-    }
-    searchResults.push(ddgRes)
+      title: `Privately search for "${query}"`
+    }]
   }
 
   update()
 }
 
-async function onClickAddBookmark (e) {
-  try {
-    var b = await addPinnedBookmarkPopup.create()
-    if (!(await beaker.bookmarks.isBookmarked(b.url))) {
-      await beaker.bookmarks.bookmarkPrivate(b.url, {title: b.title})
-    }
-    await beaker.bookmarks.setBookmarkPinned(b.url, true)
-    await loadBookmarks()
-    update()
-  } catch (e) {
-    // ignore
-    console.log(e)
-  }
+async function onClickExplorer (e) {
+  e.preventDefault()
+  try { await explorerPopup.create() }
+  catch (e) {/*ignore*/}
+
+  // reload bookmarks in case any pins were added
+  await loadBookmarks()
+  update()
 }
 
 async function onClickEditBookmark (bOriginal) {
@@ -280,124 +296,9 @@ async function onContextmenuPinnedBookmark (e, bookmark) {
   await contextMenu.create({x: e.clientX, y: e.clientY, items})
 }
 
-// rendering
-// =
-
-function update () {
-  // TODO(bgimg) restore when background images are restored -prf
-  // var theme = settings.start_page_background_image
-
-  yo.update(document.querySelector('.window-content.start'), yo`
-    <div class="window-content builtin start ${''/* TODO(bgimg) theme */}">
-      <div class="builtin-wrapper start-wrapper">
-        <div class="header-actions">
-          ${renderHelpButton()}
-        </div>
-        ${MOTD.render()}
-        <div class="autocomplete-container search-container">
-          <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search the Web, your Library, bookmarks, and more" onkeyup=${(e) => delay(onInputSearch, e)}/>
-          <i class="fa fa-search"></i>
-
-          <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
-            <i class="fa fa-arrow-right"></i>
-          </button>
-
-          ${query.length && isSearchFocused ? yo`
-            <div class="search-results autocomplete-results">${searchResults.map(renderSearchResult)}</div>`
-          : ''}
-        </div>
-
-        ${renderPinnedBookmarks()}
-
-        ${renderDock()}
-
-      </div>
-    </div>
-  `)
-
-  addSorting()
-}
-
-function renderHelpButton () {
-  return yo`
-    <button class="btn plain help" onclick=${onClickHelpButton}>
-      <i class="far fa-question-circle"></i>
-    </button>`
-}
-
-function renderSearchResult (res, i) {
-  return yo`
-    <a href=${res.targetUrl} class="autocomplete-result search-result ${i === activeSearchResult ? 'active' : ''} ${res.class}">
-      ${res.faviconUrl
-        ? yo`<img class="icon favicon" src="beaker-favicon:32,${res.faviconUrl}"/>`
-        : yo`<i class="icon ${res.icon}"></i>`
-      }
-
-      <span class="title">${res.title}</span>
-
-      ${res.label ? yo`<span class="label">— ${res.label || ''}</span>` : ''}
-    </a>
-  `
-}
-
-function renderDock () {
-  return yo`
-    <div class="dock-wrapper">
-      <div class="dock">
-        <a class="dock-item" href="beaker://settings">
-          Settings
-        </a>
-
-        <a class="dock-item" href="beaker://history">
-          History
-        </a>
-
-        <a class="dock-item" href="beaker://bookmarks">
-          Bookmarks
-        </a>
-
-        <a class="dock-item" href="beaker://library">
-          Library
-        </a>
-
-        <span class="dock-separator">|</span>
-
-        <a class="dock-item" onclick=${onClickNewSiteButton}>
-          New +
-        </a>
-      </div>
-    </div>
-  `
-}
-
-function renderPinnedBookmarks () {
-  return yo`
-    <div class="pinned-bookmarks-container">
-      ${pinnedBookmarks.length ? yo`
-        <h2 class="subtitle-heading">
-          <span>Pinned bookmarks</span>
-          <button class="btn transparent add-pinned-btn" data-tooltip="Add pinned bookmark" onclick=${onClickAddBookmark}>
-            <i class="fa fa-plus"></i>
-          </button>
-        </h2>`
-      : ''}
-
-      <div class="pinned-bookmarks">
-        ${pinnedBookmarks.map(renderPinnedBookmark)}
-      </div>
-    </div>
-  `
-}
-
-function renderPinnedBookmark (bookmark) {
-  const {href, title} = bookmark
-
-  return yo`
-    <a class="pinned-bookmark" href=${href} oncontextmenu=${e => onContextmenuPinnedBookmark(e, bookmark)}>
-      <img src=${'beaker-favicon:32,' + href} class="favicon"/>
-      <div class="title">${title}</div>
-    </a>
-  `
+function onSetPinGridMode (mode) {
+  localStorage.pinGridMode = pinGridMode = mode
+  update()
 }
 
 // helpers
@@ -412,6 +313,29 @@ async function loadBookmarks () {
   pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
 }
 
+function getMergedSearchResults () {
+  var list = []
+  for (let group of SEARCH_GROUPS) {
+    list = list.concat(searchResults[group.key])
+  }
+  return list
+}
+
+function getActiveSearchResult () {
+  var mergedResults = getMergedSearchResults()
+  return mergedResults[activeSearchResultIndex || 0]
+}
+
+function moveActiveSearchResult (dir) {
+  var mergedResults = getMergedSearchResults()
+  var i = activeSearchResultIndex || 0
+  i += dir
+  // make sure we don't go out of bounds
+  if (i < 0) i = 0
+  if (i > mergedResults.length - 1) i = mergedResults.length - 1
+  activeSearchResultIndex = i
+}
+
 function addSorting () {
   new Sortable(document.querySelector('.pinned-bookmarks'), {
     group: 'pinned-bookmarks',
@@ -420,7 +344,7 @@ function addSorting () {
     forceFallback: true,
     store: {
       get () {
-        return pinnedBookmarks.map(b => b.href)
+        return pinnedBookmarks.map(b => b.href).concat('#')
       },
       async set (sortable) {
         var order = sortable.toArray()

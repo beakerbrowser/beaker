@@ -1,5 +1,7 @@
 @import "../base/colors";
 @import "../utils/decorators";
+@import "./site-infos/base";
+@import "./site-infos/user";
 
 .toolbar-input-group {
   flex: 1;
@@ -161,20 +163,18 @@
     button {
       display: flex;
       min-width: 0;
-      max-width: 30px;
       height: ~"calc(100% - 2px)";
       margin: 1px;
       padding: 0;
       color: #555;
       border-radius: 3px 0 0 3px;
-      border: 0;
+      border-right: 1px solid #ddd;
 
       &:empty {
         display: none;
       }
 
       .fa {
-        margin-right: 5px;
         font-size: 14px;
 
         &.fa-share {
@@ -183,42 +183,38 @@
       }
 
       .title {
-        font-size: 13px;
-        padding-right: 7px;
-        border: 0;
-        border-right: 1px solid #ddd;
-        letter-spacing: -.2px;
-      }
-
-      i {
-        margin-left: 10px;
-        margin-right: 0;
-        padding-right: 10px;
-
-        &.fa-window-maximize {
-          padding-right: 8px;
-        }
+        font-size: 13.5px;
+        line-height: 1;
+        padding-right: 12px;
+        letter-spacing: -0.5px;
       }
 
       i,
       .icon {
-        border-right: 1px solid #ddd;
         display: block;
         height: 12.25px;
+        margin-left: 10px;
+        margin-right: 6px;
+
+        &.fa-exclamation-circle,
+        &.fa-user {
+          margin-right: 5px;
+          font-size: 13px;
+        }
 
         &.padlock {
+          width: 12.25px;
 
           #top {
-            stroke: #3c943c;
+            stroke: #0cbb0c;
           }
 
           #bottom {
-            fill: #3c943c;
+            fill: #0cbb0c;
           }
         }
 
         &.fa-share-alt {
-          color: @blue;
           font-size: 14.5px;
         }
 
@@ -226,57 +222,40 @@
           padding-right: 7px;
         }
 
-        &.fa-exclamation-circle {
-          color: shade(@red, 20%) !important;
+        &.fa-check,
+        &.fa-check-circle,
+        &.fa-question {
+          font-size: 13px;
         }
       }
     }
 
-    &.secure {
-
+    &.trusted {
       button {
-        color: #3c943c !important;
-      }
+        color: #0cbb0c !important;
 
-      .details-summary {
-        color: #3c943c;
-      }
-    }
-
-    &.insecure {
-      button {
-        color: #555;
-      }
-
-      .title {
-        color: mix(@color-text, @red, 20%);
-      }
-
-      i {
-        &.https-error {
-          color: mix(@color-text, @red, 20%);
+        .fa {
+          color: rgb(60, 148, 60) !important;
         }
       }
+    }
 
-      .details-summary {
-        color: mix(@color-text, @red, 20%);
+    &.distrusted {
+      button {
+        color: mix(@color-text, @red, 20%) !important;
       }
     }
 
-    &.p2p {
-
-      button {
-        color: @blue;
+    &:not(.has-title) button {
+      .fa-share-alt {
+        margin-right: 12px;
       }
 
-      .details-summary {
-        color: #3c943c;
-      }
-    }
-
-    &.app {
-      button {
-        color: #555;
+      .padlock,
+      .fa-info-circle,
+      .fa-user,
+      .fa-exclamation-circle {
+        margin-right: 10px;
       }
     }
   }
@@ -326,16 +305,12 @@
       color: @color-text--light;
     }
 
-    .protocol-secure {
-      color: #3c943c;
+    .protocol-trusted {
+      color: #0cbb0c;
     }
 
-    .protocol-insecure {
+    .protocol-distrusted {
       color: mix(@color-text, @red, 20%);
-    }
-
-    .protocol-p2p {
-      color: @blue;
     }
 
     .host-version,

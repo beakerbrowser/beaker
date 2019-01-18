@@ -4,8 +4,8 @@ const yo = require('yo-yo')
 const moment = require('moment')
 import {getHostname} from '../../lib/strings'
 import debounce from 'lodash.debounce'
-import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import renderCloseIcon from '../icon/close'
+import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
 // globals
 // =
@@ -26,9 +26,14 @@ var lastRenderedDate
 // main
 // =
 
-render()
-fillPage()
-document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
+setup()
+
+async function setup () {
+  render()
+  fillPage()
+  document.body.querySelector('.window-content').addEventListener('scroll', onScrollContent)
+  render()
+}
 
 // data
 // =
@@ -206,11 +211,9 @@ function renderRow (row, i) {
     </div>`
 }
 
-function renderHeader () {
+function renderSubheader () {
   return yo`
-    <div class="builtin-header fixed">
-      ${renderBuiltinPagesNav('History')}
-
+    <div class="builtin-subheader">
       <div class="search-container">
         <input required autofocus onkeyup=${onUpdateSearchQueryDebounced} placeholder="Search your browsing history" type="text" class="search"/>
         <div class="spinner hidden"></div>
@@ -228,10 +231,10 @@ function render () {
   yo.update(
     document.querySelector('.history-wrapper'), yo`
       <div class="history-wrapper builtin-wrapper">
-        ${renderHeader()}
-
         <div class="builtin-main">
           <div class="builtin-sidebar">
+            ${renderBuiltinPagesNav('beaker://history/', 'History')}
+
             <div class="section">
               <div onclick=${onUpdatePeriodFilter} data-period="all" class="nav-item ${currentPeriodFilter === 'all' ? 'active' : ''}">
                 <i class="fa fa-angle-right"></i>
@@ -251,6 +254,7 @@ function render () {
           </div>
 
           <div>
+            ${renderSubheader()}
             <div class="links-list history">${renderRows()}</div>
           </div>
         </div>

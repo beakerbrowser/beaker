@@ -1,12 +1,11 @@
 #webviews {
-  height: ~"calc(100vh - 74px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
-  position: relative;
+  flex: 1;
+  border-top: 1px solid #ccc;
 
   webview {
     height: 100%;
     width: 100%;
     outline: none;
-    position: absolute;
     transform: translateX(0); // put the webview in another compositing layer, to reduce layout render times
     background: #fff; // so that something is painted during load
 
@@ -20,6 +19,6 @@
   }
 }
 
-body.page-fullscreen #webviews {
-  height: 100%;
+body.sidebar-visible #webviews {
+  border-left: 1px solid #ccc;  
 }

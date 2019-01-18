@@ -38,8 +38,14 @@ export function shortenHash (str, n = 6) {
   return str
 }
 
-export function makeSafe (str) {
+export function makeSafe (str = '') {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '')
+}
+
+export function highlight (str = '', nonce = 0) {
+  var start = new RegExp(`\\{${nonce}\\}`, 'g') // eg {500}
+  var end = new RegExp(`\\{/${nonce}\\}`, 'g') // eg {/500}
+  return str.replace(start, '<strong>').replace(end, '</strong>')
 }
 
 export function getHostname (str) {

@@ -150,6 +150,12 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/logo')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo.png'))
   }
+  if (requestUrl.startsWith('beaker://assets/default-user-thumb')) {
+    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
+  }
+  if (requestUrl.startsWith('beaker://assets/search-icon-large')) {
+    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/search-icon-large.png'))
+  }
   if (requestUrl.startsWith('beaker://assets/favicons/')) {
     return serveICO(path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
   }
@@ -225,17 +231,29 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/start.build.js'))
   }
-  if (requestUrl === 'beaker://profile/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/profile.build.js'))
-  }
-  if (requestUrl === 'beaker://profile/' || requestUrl.startsWith('beaker://profile/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/profile.html'))
-  }
   if (requestUrl === 'beaker://bookmarks/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/bookmarks.html'))
   }
   if (requestUrl === 'beaker://bookmarks/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/bookmarks.build.js'))
+  }
+  if (requestUrl === 'beaker://timeline/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/timeline.html'))
+  }
+  if (requestUrl === 'beaker://timeline/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/timeline.build.js'))
+  }
+  if (requestUrl === 'beaker://timeline/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/timeline.css'))
+  }
+  if (requestUrl === 'beaker://search/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/search.html'))
+  }
+  if (requestUrl === 'beaker://search/main.js') {
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/search.build.js'))
+  }
+  if (requestUrl === 'beaker://search/main.css') {
+    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/search.css'))
   }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/history.html'))

@@ -12,9 +12,12 @@
 @import "./shell-window/toolbar-dropdown.less";
 @import "./shell-window/toolbar-input-group.less";
 @import "./shell-window/browser-dropdown-menu.less";
+@import "./shell-window/current-user-dropdown-menu.less";
+@import "./shell-window/create-dropdown-menu.less";
 @import "./shell-window/prompt.less";
 @import "./shell-window/toast.less";
 @import "./shell-window/modal.less";
+@import "./shell-window/sidebar.less";
 @import "./shell-window/win32-titlebar.less";
 @import "./shell-window/swipe-arrows.less";
 @import "./shell-window/statusbar.less";
@@ -29,6 +32,15 @@ body {
   margin: 0;
   padding: 0;
   background: #f7f7f7;
+}
+
+#pages-contents {
+  height: ~"calc(100vh - 73px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  display: flex;
+}
+
+body.page-fullscreen #pages-contents {
+  height: 100%;
 }
 
 // general styles

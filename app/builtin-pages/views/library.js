@@ -2,14 +2,14 @@
 
 import yo from 'yo-yo'
 import bytes from 'bytes'
-import moment from 'moment'
-import {pluralize, shortenHash} from '../../lib/strings'
+import {pluralize} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-import * as toast from '../com/toast'
+import {getBasicType} from '../../lib/dat'
+import {SITE_TEMPLATES, createSiteFromTemplate} from '../../lib/templates'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
+import * as toast from '../com/toast'
 import toggleable from '../com/toggleable'
-import * as createArchivePopup from '../com/create-archive-popup'
 import * as contextMenu from '../com/context-menu'
 import renderCloseIcon from '../icon/close'
 
@@ -20,17 +20,25 @@ import renderCloseIcon from '../icon/close'
 let archives = []
 let selectedArchives = []
 let query = ''
-let currentView = 'your archives'
-let currentSort = ['alpha', -1]
+let currentView = 'all'
+let currentSort = ['type', -1]
 let currentDateType = 'accessed'
-let faviconCacheBuster = Date.now()
+var currentUserSession
 
 // main
 // =
 
 setup()
 async function setup () {
+  currentUserSession = await beaker.browser.getUserSession()
   loadSettings()
+  await loadArchives()
+  render()
+}
+
+async function resetup () {
+  selectedArchives = []
+  loadSettings() // load settings to restore from any temporary settings
   await loadArchives()
   render()
 }
@@ -39,7 +47,7 @@ async function setup () {
 // =
 
 function loadSettings () {
-  currentSort[0] = localStorage.currentSortValue || 'alpha'
+  currentSort[0] = localStorage.currentSortValue || 'type'
   currentSort[1] = (+localStorage.currentSortDir) || -1
   currentDateType = localStorage.currentDateType || 'accessed'
 }
@@ -60,30 +68,17 @@ async function loadArchives () {
         search: query ? query : false
       })
       break
-    case 'seeding':
-      archives = await beaker.archives.list({
-        isOwner: false,
-        isSaved: true,
-        search: query ? query : false
-      })
-      break
-    case 'recent':
-      archives = await beaker.archives.list({
-        search: query ? query : false
-      })
-      // only archives that have been recently visited in the library
-      archives = archives.filter(a => !!a.lastLibraryAccessTime)
-      break
     case 'trash':
       archives = await beaker.archives.list({
         isOwner: true,
-        isSaved: false
+        isSaved: false,
       })
       break
     default:
       archives = await beaker.archives.list({
         isSaved: true,
-        search: query ? query : false
+        search: query ? query : false,
+        type: currentView !== 'all' ? currentView : undefined // unless view == all, intrepret view as a type filter
       })
       break
   }
@@ -93,6 +88,8 @@ async function loadArchives () {
 
   // apply sort
   sortArchives()
+
+  console.log(archives)
 }
 
 function filterArchives () {
@@ -111,16 +108,17 @@ function filterArchives () {
 
 function sortArchives () {
   archives.sort((a, b) => {
-    var v
+    var v = 0
     switch (currentSort[0]) {
       case 'size': v = a.size - b.size; break
       case 'peers': v = a.peers - b.peers; break
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
-      case 'alpha':
-      default:
-        v = (b.title || '').localeCompare(a.title || '')
+      case 'type': v = getBasicType(b.type).localeCompare(getBasicType(a.type)); break
+      case 'published': v = Number(a.isPublished) - Number(b.isPublished); break
+      case 'owner': v = getOwner(b).localeCompare(getOwner(a)); break
     }
+    if (v === 0) v = (b.title || '').localeCompare(a.title || '') // use title to tie-break
     return v * currentSort[1]
   })
 }
@@ -157,12 +155,12 @@ function renderRows (sort = '', max = undefined) {
     ? null
     : yo`
       <div class="view empty">
-        <i class="fa fa-search"></i>
+        <i class="${query ? 'fa fa-search' : 'far fa-folder-open'}"></i>
 
         <p>
           ${query
             ? `No results for "${query}"`
-            : `No archives in ${currentView}`
+            : `No items found`
           }
         </p>
       </div>`
@@ -171,30 +169,32 @@ function renderRows (sort = '', max = undefined) {
 }
 
 function renderRow (row, i) {
-  const isOwner = row.isOwner
   const isMenuOpen = row.menuIsOpenIn === 'row'
   const date = currentDateType === 'accessed'
     ? row.lastLibraryAccessTime
     : row.mtime
+  const basicType = getBasicType(row.type)
 
   return yo`
     <a
-      href="beaker://library/${row.url}"
+      href="${row.url}"
       class="ll-row archive ${row.checked ? 'selected' : ''} ${isMenuOpen ? 'menu-open' : ''}"
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
       <span class="title">
-        <img class="favicon" src="beaker-favicon:32,${row.url}?cache=${faviconCacheBuster}" />
-
+        ${renderIcon(row, basicType)}
         ${row.title
           ? yo`<span class="title">${row.title}</span>`
           : yo`<span class="title empty"><em>Untitled</em></span>`
         }
+      </span>
 
-        ${!isOwner
-          ? yo`<span class="badge read-only">Read-only</span>`
-          : ''
-        }
+      <span class="owner">
+        ${getOwner(row)}
+      </span>
+
+      <span class="type">
+        ${basicType}
       </span>
 
       <span class="peers">
@@ -207,6 +207,10 @@ function renderRow (row, i) {
 
       <span class="size">
         ${bytes(row.size)}
+      </span>
+
+      <span class="published">
+        ${getPublished(row)}
       </span>
 
       <div class="buttons">
@@ -238,19 +242,22 @@ function render () {
   yo.update(
     document.querySelector('.library-wrapper'), yo`
       <div class="library-wrapper library builtin-wrapper">
-        ${renderHeader()}
-
         <div class="builtin-main">
           ${renderSidebar()}
 
           <div>
+            ${renderSubheader()}
+
             ${archives.length
               ? yo`
                 <div class="ll-column-headings">
                   ${renderColumnHeading({cls: 'title', sort: 'alpha', label: 'Title'})}
+                  ${renderColumnHeading({cls: 'owner', sort: 'owner', label: 'Owner'})}
+                  ${renderColumnHeading({cls: 'type', sort: 'type', label: 'Type'})}
                   ${renderColumnHeading({cls: 'peers', sort: 'peers', label: 'Peers'})}
                   ${renderColumnHeading({cls: 'date', sort: `recently-${currentDateType}`, label: `Last ${currentDateType}`})}
                   ${renderColumnHeading({cls: 'size', sort: 'size', label: 'Size'})}
+                  ${renderColumnHeading({cls: 'published', sort: 'published', label: 'Published?'})}
                   <span class="buttons"></span>
                 </div>`
               : ''
@@ -260,8 +267,8 @@ function render () {
 
             <p class="builtin-hint">
               <i class="fa fa-info-circle"></i>
-              Your Library contains websites and archives you've created,
-              along with websites that you're seeding.
+              Your Library contains websites and archives you${"'"}ve created,
+              along with websites that you${"'"}re seeding.
             </p>
           </div>
         </div>
@@ -271,40 +278,66 @@ function render () {
 }
 
 function renderSidebar () {
+  /**
+   * @param {opts} [opts]
+   */
+  const navItem = ({onclick, isActive, label, icon}) => yo`
+    <div onclick=${onclick} class="nav-item ${isActive ? 'active' : ''}">
+      <i class="fa fa-angle-right"></i>
+      ${icon ? yo`<img src="beaker://assets/img/templates/${icon}.png">` : ''}
+      ${label}
+    </div>`
+
   return yo`
     <div class="builtin-sidebar">
+      ${renderBuiltinPagesNav('beaker://library/', 'Your Library')}
       <div class="section nav">
-        <div onclick=${() => onUpdateView('all')} class="nav-item ${currentView === 'all' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          All
-        </div>
-
-        <div onclick=${() => onUpdateView('your archives')} class="nav-item ${currentView === 'your archives' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          Your archives
-        </div>
-
-        <div onclick=${() => onUpdateView('seeding')} class="nav-item ${currentView === 'seeding' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          Currently seeding
-        </div>
-
-        <div onclick=${() => onUpdateView('recent')} class="nav-item ${currentView === 'recent' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          Recent
-        </div>
-
-        <div onclick=${() => onUpdateView('trash')} class="nav-item ${currentView === 'trash' ? 'active' : ''}">
-          <i class="fa fa-angle-right"></i>
-          Trash
-        </div>
+        ${navItem({
+          onclick: () => onUpdateView('all'),
+          isActive: currentView === 'all',
+          label: 'All'
+        })}
+        ${navItem({
+          onclick: () => onUpdateView('your archives'),
+          isActive: currentView === 'your archives',
+          label: 'Created by you'
+        })}
+        ${navItem({
+          onclick: () => onUpdateView('trash'),
+          isActive: currentView === 'trash',
+          label: 'Trash'
+        })}
+        <hr>
+        ${navItem({
+          onclick: () => onUpdateView('user'),
+          isActive: currentView === 'user',
+          icon: 'user',
+          label: 'People'
+        })}
+        ${navItem({
+          onclick: () => onUpdateView('web-page'),
+          isActive: currentView === 'web-page',
+          icon: 'web-page',
+          label: 'Web pages'
+        })}
+        ${navItem({
+          onclick: () => onUpdateView('file-share'),
+          isActive: currentView === 'file-share',
+          icon: 'file-share',
+          label: 'File shares'
+        })}
+        ${navItem({
+          onclick: () => onUpdateView('image-collection'),
+          isActive: currentView === 'image-collection',
+          icon: 'image-collection',
+          label: 'Image collections'
+        })}
       </div>
     </div>`
 }
 
-function renderHeader () {
+function renderSubheader () {
   let actions = ''
-  let searchContainer = ''
 
   if (selectedArchives && selectedArchives.length) {
     actions = yo`
@@ -331,55 +364,34 @@ function renderHeader () {
             ]
           : yo`
             <button class="btn warning" onclick=${onDeleteSelected}>
-              ${currentView === 'seeding' ? 'Stop seeding' : 'Move to Trash'}
+              Move to Trash
             </button>`
         }
       </div>`
-
-    searchContainer = ''
   } else {
-    actions = yo`
+    actions = yo`    
       <div class="actions">
         ${toggleable(yo`
           <div class="dropdown toggleable-container">
             <button class="btn primary toggleable">
-              <span>New</span>
-              <i class="fa fa-plus"></i>
+              New +
             </button>
-            <div class="dropdown-items create-new filters subtle-shadow right">
-              <div class="dropdown-item" onclick=${() => onCreateSite()}>
-                <div class="label">
-                  <i class="far fa-clone"></i>
-                  Empty project
+
+            <div class="dropdown-items with-triangle create-new subtle-shadow right">
+              ${SITE_TEMPLATES.filter(t => !t.disabled).map(t => yo`
+                <div class="dropdown-item" onclick=${e => onCreateSite(e, t.id)}>
+                  <img src="beaker://assets/img/templates/${t.id}.png" />
+                  ${t.title}
                 </div>
-                <p class="description">
-                  Create a new project
-                </p>
-              </div>
-              <div class="dropdown-item" onclick=${() => onCreateSite('website')}>
-                <div class="label">
-                  <i class="fa fa-code"></i>
-                  Website
-                </div>
-                <p class="description">
-                  Create a new website from a basic template
-                </p>
-              </div>
-              <div class="dropdown-item" onclick=${onCreateSiteFromFolder}>
-                <div class="label">
-                  <i class="far fa-folder"></i>
-                  From folder
-                </div>
-                <p class="description">
-                  Create a new project from a folder on your computer
-                </p>
-              </div>
+              `)}
             </div>
           </div>
         `)}
       </div>`
+  }
 
-    searchContainer = yo`
+  return yo`
+    <div class="builtin-subheader">
       <div class="search-container">
         <input required autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your Library" type="text" class="search"/>
 
@@ -388,71 +400,16 @@ function renderHeader () {
         </span>
 
         <i class="fa fa-search"></i>
-
-        <div class="filter-btn">
-          ${toggleable(yo`
-            <div class="dropdown toggleable-container">
-              <button class="btn transparent toggleable">
-                <i class="fa fa-filter"></i>
-              </button>
-
-              <div class="dropdown-items filters with-triangle compact subtle-shadow right">
-                <div class="section">
-                  <div class="section-header">Sort by:</div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'alpha' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('alpha')}
-                  >
-                    ${currentSort[0] === 'alpha' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Alphabetical</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'recently-accessed' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('recently-accessed')}
-                  >
-                    ${currentSort[0] === 'recently-accessed' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Recently accessed</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'recently-updated' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('recently-updated')}
-                  >
-                    ${currentSort[0] === 'recently-updated' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Recently updated</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'size' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('size')}
-                  >
-                    ${currentSort[0] === 'size' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Archive size</span>
-                  </div>
-
-                  <div
-                    class="dropdown-item ${currentSort[0] === 'peers' ? 'active' : ''}"
-                    onclick=${() => onUpdateSort('peers')}
-                  >
-                    ${currentSort[0] === 'peers' ? yo`<i class="fa fa-check"></i>` : yo`<i></i>`}
-                    <span class="description">Peer count</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `)}
-        </div>
-      </div>`
-  }
-
-  return yo`
-    <div class="builtin-header fixed">
-      ${renderBuiltinPagesNav('Library')}
-      ${searchContainer}
+      </div>
       ${actions}
     </div>`
+}
+
+function renderIcon (archive, basicType) {
+  if (basicType === 'user') {
+    return yo`<img class="favicon rounded" src="${archive.url}/thumb" />`
+  }
+  return yo`<img class="favicon" src="beaker-favicon:32,${archive.url}" />`
 }
 
 function removeFromLibraryLabel (archive) {
@@ -461,6 +418,15 @@ function removeFromLibraryLabel (archive) {
 
 function removeFromLibraryIcon (archive) {
   return (archive.isOwner) ? 'fa fa-trash' : 'fa fa-pause'
+}
+
+function getPublished (archive) {
+  if (getBasicType(archive.type) === 'user') return yo`<span class="fas fa-minus"></span>`
+  return archive.isPublished ? yo`<span class="fas fa-check"></span>` : ''
+}
+
+function getOwner (archive) {
+  return archive.isOwner ? 'me' : ''
 }
 
 // events
@@ -490,35 +456,39 @@ function onCopy (str, successMessage = 'URL copied to clipboard') {
   toast.create(successMessage)
 }
 
-async function onCreateSiteFromFolder () {
-  // ask user for folder
-  const folder = await beaker.browser.showOpenDialog({
-    title: 'Select folder',
-    buttonLabel: 'Use folder',
-    properties: ['openDirectory']
-  })
-  if (!folder || !folder.length) return
-
+async function onCreateSite (e, template) {
   // create a new archive
-  const archive = await DatArchive.create({prompt: false})
-  await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
-  window.location += archive.url + '#setup'
+  window.location = await createSiteFromTemplate(template)
 }
 
-async function onCreateSite (template) {
-  // create a new archive
-  const archive = await DatArchive.create({template, prompt: false})
-  window.location += archive.url + '#setup'
-}
-
-async function onMakeCopy (e, archive) {
-  if (e) {
-    e.stopPropagation()
-    e.preventDefault()
+async function onPublish (archive) {
+  try {
+    var details = await beaker.browser.showShellModal('publish-archive', {url: archive.url, title: archive.title, description: archive.description})
+    toast.create(`Published ${archive.title || archive.url}`, 'success')
+    archive.title = details.title
+    archive.description = details.description
+    archive.isPublished = true
+  } catch (err) {
+    if (err.message === 'Canceled') return
+    console.error(err)
+    toast.create(err.toString(), 'error')
   }
+  render()
+}
 
-  const fork = await DatArchive.fork(archive.url, {prompt: true}).catch(() => {})
-  window.location = `beaker://library/${fork.url}#setup`
+async function onUnpublish (archive) {
+  if (!confirm('Are you sure you want to unpublish this?')) {
+    return
+  }
+  try {
+    await beaker.archives.unpublish(archive.url)
+    toast.create(`Unpublished ${archive.title || archive.url}`)
+    archive.isPublished = false
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+  }
+  render()
 }
 
 async function onDelete (e, archive) {
@@ -544,9 +514,7 @@ async function onDelete (e, archive) {
 }
 
 async function onDeleteSelected () {
-  const msg = currentView === 'seeding'
-    ? `Stop seeding ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')}?`
-    : `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'archive')} to Trash?`
+  const msg = `Move ${selectedArchives.length} ${pluralize(selectedArchives.length, 'item')} to Trash?`
   if (!confirm(msg)) {
     return
   }
@@ -655,12 +623,19 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
 
   // construct and show popup
   let items = [
-    {icon: 'link', label: 'Copy URL', click: () => onCopy(archive.url)},
-    {icon: 'external-link', label: 'Open in new tab', click: () => window.open(archive.url)},
-    {icon: 'code', label: 'Open in editor', click: () => window.open(`beaker://editor/${archive.url}`)},
-    {icon: 'clone', label: 'Make a copy', click: () => onMakeCopy(null, archive)},
-    {icon: 'cog', label: 'Settings', click: () => window.open(`beaker://library/${archive.url}#settings`)}
+    {icon: 'fa fa-external-link-alt', label: 'Open in new tab', click: () => window.open(archive.url)},
+    {icon: 'fa fa-link', label: 'Copy URL', click: () => onCopy(archive.url)},
+    {icon: 'code', label: 'View source', click: () => window.open(`beaker://editor/${archive.url}`)},
+    {icon: 'fas fa-code', label: 'View site files', click: () => window.open(`beaker://library/${archive.url}`)}
   ]
+  if (archive.isOwner && getBasicType(archive.type) !== 'user') {
+    if (archive.isPublished) {
+      items.unshift({icon: 'fa fa-bullhorn', label: 'Published', click: ()=>{}, disabled: true})
+      items.push({icon: 'fa fa-eraser', label: 'Unpublish', click: () => onUnpublish(archive)})
+    } else {
+      items.unshift({icon: 'fa fa-bullhorn', label: 'Publish', click: () => onPublish(archive)})
+    }
+  }
   if (archive.userSettings.isSaved) {
     items.push({icon: removeFromLibraryIcon(archive), label: removeFromLibraryLabel(archive), click: () => onDelete(null, archive)})
   } else {
@@ -722,28 +697,9 @@ async function onClearDatTrash () {
   render()
 }
 
-async function onUpdateView (view) {
-  // reset the search query
-  query = ''
-  try {
-    document.querySelector('input.search').value = ''
-  } catch (_) {}
-
-  // reset selectedArchives
-  selectedArchives = []
-
+function onUpdateView (view) {
   currentView = view
-  loadSettings() // load settings to restore from any temporary settings
-  await loadArchives()
-  render()
-
-  if (view === 'recent') {
-    // sort by recently viewed, dont save (temporary for this view)
-    onUpdateSort('recently-accessed', -1, {noSave: true})
-  }
-
-  // focus the search input
-  document.querySelector('input.search').focus()
+  resetup()
 }
 
 // helper gets the offsetTop relative to the document

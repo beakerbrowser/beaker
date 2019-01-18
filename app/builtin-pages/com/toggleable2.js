@@ -40,6 +40,15 @@ function render () {
   `)
 }
 */
+
+/**
+ * 
+ * @param {Object} opts
+ * @param {string} opts.id
+ * @param {Function} opts.closed
+ * @param {Function} opts.open
+ * @param {Function} [opts.afterOpen]
+ */
 export default function toggleable2 ({id, closed, open, afterOpen}) {
   function onToggle (e) {
     e.preventDefault()

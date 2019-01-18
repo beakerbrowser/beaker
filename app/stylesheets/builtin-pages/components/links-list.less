@@ -1,6 +1,7 @@
 @import "../../utils/flex";
 
 .links-list {
+  user-select: none;
 
   .link:not(button) {
     overflow: hidden;
@@ -53,7 +54,7 @@
 
 .ll-sticky-heading {
   position: sticky;
-  top: 55px;
+  top: 0px;
   z-index: 1;
   padding: 5px 0;
   margin: 0;
@@ -64,6 +65,7 @@
 
 .ll-row {
   &:extend(.flex);
+  user-select: none;
   flex-wrap: nowrap;
   position: relative;
   height: 33px;
@@ -86,6 +88,10 @@
     width: 20px;
     height: 20px;
     margin-right: 10px;
+
+    &.rounded {
+      border-radius: 50%;
+    }
   }
 
   i.favicon {

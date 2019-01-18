@@ -8,6 +8,7 @@
 @import "./com/toolbar.less";
 @import "./com/spinner.less";
 @import "./components/modal.less";
+@import "./components/template-selector.less";
 @import "./builtin-pages/components/toast";
 
 // TODO: shouldn't import each of these on all builtin pages
@@ -17,15 +18,13 @@
 @import "./builtin-pages/library";
 @import "./builtin-pages/downloads";
 @import "./builtin-pages/settings";
-@import "./builtin-pages/profile";
 @import "./builtin-pages/watchlist";
 @import "./builtin-pages/editor";
 @import "./builtin-pages/components/links-list";
 @import "./builtin-pages/components/close-btn";
-@import "./builtin-pages/components/avatar";
-@import "./builtin-pages/components/post-popup";
+@import "./builtin-pages/components/search-input";
 @import "./builtin-pages/components/autocomplete-results";
-@import "./builtin-pages/components/dat-network-activity";
+@import "./builtin-pages/components/crawler-status";
 
 .window {
   position: initial;
@@ -226,135 +225,14 @@
       right: 10px;
     }
   }
-
-  .search-container {
-    position: relative;
-    width: 100%;
-    height: 32px;
-    max-width: ~"calc(100% - 100px)";
-    z-index: 3;
-
-    @media (min-width: 950px) {
-      margin: 0 auto;
-      max-width: 700px;
-    }
-
-    .filter-btn {
-      position: absolute;
-      left: ~"calc(100% + 3px)";
-      top: 1px;
-
-      .dropdown-items {
-        right: -3px;
-      }
-    }
-
-    .dropdown-items.filters {
-      width: 200px;
-    }
-
-    .spinner,
-    .close-btn,
-    .search {
-      position: absolute;
-    }
-
-    i.fa-search {
-      position: absolute;
-      left: 10px;
-      top: 8.75px;
-      color: rgba(0,0,0,.5);
-    }
-
-    .spinner {
-      left: 8px;
-      top: 8px;
-
-      &.hidden {
-        display: none;
-      }
-    }
-
-    .close-btn {
-      right: 7px;
-      top: 7px;
-    }
-
-    input.search {
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      padding: 0 10px;
-      padding-left: 27px;
-
-      &:invalid + .close-btn {
-        opacity: 0;
-      }
-    }
-  }
 }
 
-.builtin-header {
-  &:extend(.flex);
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  height: 55px;
-  padding: 0 20px;
-  background: #fff;
-
-  .builtin-pages-nav {
-    position: absolute;
-    left: 20px;
-    visibility: hidden;
-
-    @media (min-width: 965px) {
-      visibility: visible;
-    }
-
-    .dropdown-items {
-      width: 165px;
-    }
-
-    h1 {
-      font-size: .95rem;
-      font-weight: 500;
-    }
-
-    i {
-      margin-right: 3px;
-    }
-  }
+.builtin-subheader {
+  margin-bottom: 10px;
 
   .actions {
-    position: absolute;
-    right: 20px;
-    z-index: 0;
-  }
-
-  &.fixed {
-    &:extend(.flex);
-    flex-wrap: nowrap;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 5000;
-    border-bottom: 1px solid rgb(210, 210, 213);
-    box-shadow: 0 2px 0 rgba(0,0,0,.025);
-
-    > * {
-      margin-bottom: 0;
-    }
-  }
-
-  label {
-    color: @color-text--muted;
-    margin-right: 10px;
-    margin-bottom: 0;
-    font-weight: 400;
-    line-height: 26px;
+    text-align: right;
+    margin-top: 10px;
   }
 }
 
@@ -368,6 +246,38 @@
 }
 
 .builtin-sidebar {
+  .builtin-pages-nav {
+    margin-bottom: 10px;
+    user-select: none;
+
+    .toggleable {
+      display: inline-block;
+      padding: 5px 15px 2px 5px;
+      margin-top: -5px;
+      margin-left: -5px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover {
+        background: rgba(0,0,0,.05);
+      }
+
+      img {
+        display: inline-block;
+        position: relative;
+        top: -2px;
+        width: 32px;
+        margin-right: 5px;
+        vertical-align: middle;
+      }
+    }
+
+    &.open .toggleable {
+      background: rgba(0,0,0,.05);
+      box-shadow: none;
+    }
+  }
 
   .nav-item {
     display: inline-block;
@@ -377,6 +287,13 @@
     border-radius: 2px;
     display: inline-block;
     margin-bottom: 20px;
+
+    img {
+      position: relative;
+      top: 3px;
+      margin-right: 5px;
+      width: 16px;
+    }
 
     .fa {
       display: none;
@@ -399,14 +316,19 @@
       padding: 7px 0;
       margin-bottom: 0;
 
+      img {
+        top: 0;
+      }
+
       .fa {
         display: none;
         width: 12px;
         margin-left: -12px;
+        position: relative;
+        top: 1px;
       }
 
       &:hover {
-
         .icon {
           color: inherit;
         }
@@ -424,14 +346,19 @@
     }
   }
 
+  hr {
+    margin-top: 0;
+  }
+
   @media (min-width: 1050px) {
     position: fixed;
-    top: 75px;
+    top: 25px;
     left: 15px;
     width: 200px;
+    z-index: 1;
 
     .section {
-      margin-bottom: 40px;
+      margin-bottom: 20px;
 
       > div {
         padding: 0 20px;
@@ -462,6 +389,11 @@
           }
         }
       }
+
+      hr {
+        max-width: 10px;
+        margin: 10px 20px;
+      }
     }
   }
 
@@ -478,11 +410,11 @@
 .builtin-main {
   width: 100%;
   max-width: 700px;
-  padding: 75px 5px;
+  padding: 25px 5px;
   height: 100%;
 
   @media (min-width: 725px) {
-    padding: 75px 0;
+    padding: 25px 0;
   }
 
   > div:not(.builtin-sidebar) {
