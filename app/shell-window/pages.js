@@ -614,6 +614,12 @@ function onDomReady (e) {
     }
     if (!navbar.isLocationFocused(page) && page.isActive) {
       page.webviewEl.shadowRoot.querySelector('iframe').focus()
+
+      // HACKFIX
+      // make sure the page retains focus and the cursor doesnt go invisibl
+      // PR: https://github.com/beakerbrowser/beaker/pull/1285
+      // See: https://github.com/electron/electron/issues/14474
+      // -prf
       page.webviewEl.blur()
       page.webviewEl.focus()
     }
