@@ -59,10 +59,10 @@ Backers support this project by contributing $2 to $99 a month. [Become a backer
 
 Requires node 6 or higher. On Windows, you may need to use npm version 4, due to a bug in npm 5.
 
-In Linux (and in some cases macOS) you need libtool, m4, and automake:
+In Linux (and in some cases macOS) you need libtool, m4, autoconf, and automake:
 
 ```bash
-sudo apt-get install libtool m4 make g++  # debian/ubuntu
+sudo apt-get install libtool m4 make g++ autoconf # debian/ubuntu
 sudo dnf install libtool m4 make gcc-c++ libXScrnSaver  # fedora
 ```
 
