@@ -62,12 +62,12 @@ export function render (id, page) {
         ${cond(isUser === true, () => [
           yo`<span class="toolbar-sep" style="margin: 0 3px 0 6px"></span>`,
           yo` 
-            <button class="toolbar-labeled-btn" onclick=${() => onOpenPage(`beaker://timeline/?user=${page.getURLOrigin()}`)}>
+            <button class="toolbar-labeled-btn" onclick=${() => onOpenPage(id, page, `beaker://timeline/?user=${page.getURLOrigin()}`)}>
               <img src="beaker-favicon:32,beaker://timeline"> Feed
             </button>`,
             yo` 
-              <button class="toolbar-labeled-btn" onclick=${() => onOpenPage(`beaker://search/?source=${page.getURLOrigin()}`)}>
-                <img src="beaker-favicon:32,beaker://search"> Search here
+              <button class="toolbar-labeled-btn" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
+                <img src="beaker-favicon:32,beaker://search"> Explore
               </button>`
         ])}
       </div>
@@ -114,7 +114,7 @@ export function render (id, page) {
 
                     <hr>
                   
-                    <div class="dropdown-item" onclick=${() => onOpenPage(`beaker://library/${page.getURLOrigin()}#settings`)}>
+                    <div class="dropdown-item" onclick=${() => onOpenPage(id, page, `beaker://library/${page.getURLOrigin()}#settings`)}>
                       <i class="fas fa-cog"></i> Settings
                     </div>
                   </div>
@@ -142,18 +142,22 @@ export function render (id, page) {
                   <div class="dropdown-items compact right with-triangle">
                     ${cond(isUser, () => [
                       yo`
-                        <div class="dropdown-item" onclick=${() => onOpenPage(`beaker://timeline/?user=${page.getURLOrigin()}`)}>
+                        <div class="dropdown-item" onclick=${() => onOpenPage(id, page, `beaker://timeline/?user=${page.getURLOrigin()}`)}>
                           <i class="fas fa-list-ul"></i> Feed
+                        </div>`,
+                      yo`
+                        <div class="dropdown-item" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
+                          <i class="fas fa-search"></i> Explore
                         </div>`,
                       yo`<hr>`
                     ])}
 
-                    <div class="dropdown-item" onclick=${() => onOpenPage(`beaker://editor/${page.getURLOrigin()}`)}>
+                    <div class="dropdown-item" onclick=${() => onOpenPage(id, page, `beaker://editor/${page.getURLOrigin()}`)}>
                       <i class="fas fa-code"></i> Source code
                     </div>
 
-                    <div class="dropdown-item"  onclick=${() => onOpenPage(`beaker://library/${page.getURLOrigin()}`)}>
-                      <i class="far fa-file"></i> Site source files
+                    <div class="dropdown-item"  onclick=${() => onOpenPage(id, page, `beaker://library/${page.getURLOrigin()}`)}>
+                      <i class="fas fa-sitemap"></i> Site files
                     </div>
                   </div>
                 </div>
@@ -251,9 +255,9 @@ async function onToggleFollow (id, page) {
   }
 }
 
-async function onOpenPage (url) {
+async function onOpenPage (id, page, url) {
   closeAllToggleables()
-  pages.setActive(pages.create(url))
+  page.loadURL(url)
 }
 
 async function onAddToLibrary (id, page) {
