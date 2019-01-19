@@ -50,6 +50,22 @@ test.after.always('cleanup', async t => {
   await app2.stop()
 })
 
+function enableExperimentalDatPeersInDatJson (app, createdDatUrl) {
+  return app.executeJavascript(`
+    (async function () {
+      try {
+        var archive = new DatArchive("${createdDatUrl}")
+        var manifest = JSON.parse(await archive.readFile('dat.json', 'utf8'))
+        manifest.experimental = {apis: ['datPeers']}
+        await archive.writeFile('dat.json', JSON.stringify(manifest), 'utf8')
+      } catch (e) {
+        return e
+      }
+      return archive.readFile('dat.json', 'utf8')
+    })()
+  `)
+}
+
 // tests
 //
 
@@ -64,20 +80,7 @@ test('experiment must be opted into', async t => {
     t.is(e.name, 'PermissionsError')
   }
 
-  // update manifest to include experiment
-  await app1.executeJavascript(`
-    (async function () {
-      try {
-        var archive = new DatArchive("${createdDatUrl}")
-        var manifest = JSON.parse(await archive.readFile('dat.json', 'utf8'))
-        manifest.experimental = {apis: ['datPeers']}
-        await archive.writeFile('dat.json', JSON.stringify(manifest), 'utf8')
-      } catch (e) {
-        return e
-      }
-      return archive.readFile('dat.json', 'utf8')
-    })()
-  `)
+  await enableExperimentalDatPeersInDatJson(app1, createdDatUrl)
 
   // make sure the change has made it to browser 2
   await new Promise(resolve => setTimeout(resolve, 1e3))
@@ -132,6 +135,26 @@ test('datPeers.list() and datPeers.get()', async t => {
   t.is(peer2.id, peers2[0].id)
   t.is(typeof peer2.userData, 'undefined')
   t.is(peer2.send, 'function')
+})
+
+test('datPeers.getOwnPeerId()', async t => {
+  const listPeersCode = `
+    (async function () {
+      var peers = await experimental.datPeers.list()
+      return peers
+        .map(p => ({id: p.id, userData: p.userData, send: typeof p.send}))
+        .filter(p => !!p.id)
+    })()
+  `
+  const getOwnPeerIdCode = `
+    (function () {
+      return experimental.datPeers.getOwnPeerId()
+    })()
+  `
+  await enableExperimentalDatPeersInDatJson(app1, createdDatUrl)
+  const peersList = await mainTab1.executeJavascript(listPeersCode)
+  const ownId = await mainTab2.executeJavascript(getOwnPeerIdCode)
+  t.is(peersList[0].id, ownId)
 })
 
 test('datPeers.broadcast() and datPeers.send()', async t => {
