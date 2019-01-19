@@ -163,7 +163,6 @@ function renderSearchResults () {
             ? yo`
               <div class="showing-results-for">
                 Showing results for "${query}".
-                <a class="link" href="https://duckduckgo.com?q=${encodeURIComponent(query)}">Try your search on DuckDuckGo <span class="fa fa-angle-double-right"></span></a>
               </div>`
             : ''}
           <div class="search-results">
