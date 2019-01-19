@@ -614,6 +614,8 @@ function onDomReady (e) {
     }
     if (!navbar.isLocationFocused(page) && page.isActive) {
       page.webviewEl.shadowRoot.querySelector('iframe').focus()
+      page.webviewEl.blur()
+      page.webviewEl.focus()
     }
   }
 }
