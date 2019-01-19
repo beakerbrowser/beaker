@@ -75,6 +75,10 @@ function update () {
   yo.update(document.querySelector('.window-content.start'), yo`
     <div class="window-content builtin start">
       <div class="builtin-wrapper start-wrapper">
+        <div class="start-top-right-controls">
+          <a href="beaker://settings"><span class="fas fa-cog"></span></a>
+        </div>
+
         <div style="position: absolute; bottom: 10px; right: 20px; font-size: 22px; text-align: right; font-weight: 300">
           <span style="color: #2864dc; font-size: 38px; line-height: 1">Blue r1</span><br>
           Beta pre-release
