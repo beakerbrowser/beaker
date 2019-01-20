@@ -2,7 +2,7 @@ import yo from 'yo-yo'
 import toggleable from './toggleable'
 
 const PAGES = [
-  ['beaker://timeline/', 'Timeline'],
+  // ['beaker://timeline/', 'Timeline'], DISABLED -prf
   ['beaker://library/', 'Your Library'],
   ['beaker://search/', 'Search'],
   ['beaker://bookmarks/', 'Bookmarks'],

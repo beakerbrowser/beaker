@@ -62,13 +62,9 @@ export function render (id, page) {
         ${cond(isUser === true, () => [
           yo`<span class="toolbar-sep" style="margin: 0 3px 0 6px"></span>`,
           yo` 
-            <button class="toolbar-labeled-btn" onclick=${() => onOpenPage(id, page, `beaker://timeline/?user=${page.getURLOrigin()}`)}>
-              <img src="beaker-favicon:32,beaker://timeline"> Feed
-            </button>`,
-            yo` 
-              <button class="toolbar-labeled-btn" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
-                <img src="beaker-favicon:32,beaker://search"> Explore
-              </button>`
+            <button class="toolbar-labeled-btn" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
+              <img src="beaker-favicon:32,beaker://search"> Explore
+            </button>`
         ])}
       </div>
       <div class="spacer"></div>
@@ -141,10 +137,6 @@ export function render (id, page) {
                 <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
                   <div class="dropdown-items compact right with-triangle">
                     ${cond(isUser, () => [
-                      yo`
-                        <div class="dropdown-item" onclick=${() => onOpenPage(id, page, `beaker://timeline/?user=${page.getURLOrigin()}`)}>
-                          <i class="fas fa-list-ul"></i> Feed
-                        </div>`,
                       yo`
                         <div class="dropdown-item" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
                           <i class="fas fa-search"></i> Explore
