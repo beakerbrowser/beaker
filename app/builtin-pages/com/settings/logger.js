@@ -23,25 +23,29 @@ export default class Logger {
     this.rows = null
     this.readStream = null
     this.filter = {
-      level: AVAILABLE_LEVELS//.slice(0, -1)
+      level: AVAILABLE_LEVELS.slice(0, -1)
     }
+    this.isPaused = false
+    this.pauseTime = undefined
   }
 
   // loading
   // =
 
   async load () {
-    console.log('filter', this.filter)
-    this.rows = await beaker.logger.query({limit: 1e5, filter: this.filter, sort: 'desc'})
+    this.rows = await beaker.logger.query({limit: 1e5, filter: this.filter, until: this.pauseTime, sort: 'desc'})
     console.log(this.rows)
 
-    const rerenderDebounced = _debounce(() => this.rerender(), 500)
     if (this.readStream) this.readStream.close()
-    this.readStream = beaker.logger.stream({since: Date.now(), filter: this.filter})
-    this.readStream.addEventListener('data', row => {
-      this.rows.unshift(row)
-      rerenderDebounced()
-    })
+    if (!this.isPaused) {
+      const rerenderDebounced = _debounce(() => this.rerender(), 500)
+      this.readStream = beaker.logger.stream({since: Date.now(), filter: this.filter})
+      this.readStream.addEventListener('data', row => {
+        this.rows.unshift(row)
+        rerenderDebounced()
+      })
+    }
+
     this.rerender()
   }
 
@@ -58,7 +62,7 @@ export default class Logger {
 
     return yo`
       <div id=${'logger-' + this.id} class="logger">
-        ${this.renderLevelsFilter()}
+        ${this.renderControls()}
         ${this.rows.map(row => this.renderRow(row))}
       </div>
     `
@@ -71,10 +75,17 @@ export default class Logger {
     if (el) yo.update(el, this.render())
   }
 
-  renderLevelsFilter () {
+  renderControls () {
     return yo`
-      <div class="levels-filter">
+      <div class="controls">
         ${AVAILABLE_LEVELS.map(level => this.renderLevelFilter(level))}
+        <span class="spacer"></span>
+        <span>
+          <button class="btn" onclick=${() => this.onTogglePaused()}>
+            <i class="fa fa-${this.isPaused ? 'play' : 'pause'}"></i>
+            ${this.isPaused ? 'Resume' : 'Pause'}
+          </button>
+        </span>
       </div>`
   }
 
@@ -90,11 +101,11 @@ export default class Logger {
 
   renderRow (row) {
     return yo`
-      <div class="logger-row" oncontextmenu=${e => this.onContextmenuRow(e, row)}>
+      <div class="logger-row level-${row.level}" oncontextmenu=${e => this.onContextmenuRow(e, row)}>
         <span class="level ${row.level}">${row.level}</span>
         <span class="category">${row.category}</span>
         <span class="subcategory">${row.subcategory || row.dataset}</span>
-        <span class="msg">${row.message}</span>
+        <span class="msg">${row.message} ${row.details ? renderDetails(row.details) : ''}</span>
         <span class="timestamp">${row.timestamp}</span>
       </div>`
   }
@@ -111,9 +122,15 @@ export default class Logger {
     }
 
     // rerender the filters now so that the UI feels responsive
-    yo.update(document.querySelector(`#logger-${this.id} .levels-filter`), this.renderLevelsFilter())
+    yo.update(document.querySelector(`#logger-${this.id} .controls`), this.renderControls())
 
     // reload
+    this.load()
+  }
+
+  onTogglePaused () {
+    this.isPaused = !this.isPaused
+    this.pauseTime = (this.isPaused) ? Date.now() : undefined
     this.load()
   }
 
@@ -151,5 +168,15 @@ export default class Logger {
     ]
     await contextMenu.create({x: e.clientX, y: e.clientY, items})
   }
+}
 
+function renderDetails (obj) {
+  var items = []
+  for (let k in obj) {
+    var v = obj[k]
+    if (Array.isArray(v)) v = `[${v.join(',')}]`
+    if (typeof v === 'object') v = JSON.stringify(v)
+    items.push(`${k}=${v}`)
+  }
+  return yo`<small>(${items.join(' ')})</small>`
 }
