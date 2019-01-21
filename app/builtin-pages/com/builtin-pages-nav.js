@@ -3,8 +3,8 @@ import toggleable from './toggleable'
 
 const PAGES = [
   // ['beaker://timeline/', 'Timeline'], DISABLED -prf
-  ['beaker://library/', 'Your Library'],
   ['beaker://search/', 'Search'],
+  ['beaker://library/', 'Your Library'],
   ['beaker://bookmarks/', 'Bookmarks'],
   ['beaker://history/', 'History'],
   ['beaker://watchlist/', 'Watchlist'],

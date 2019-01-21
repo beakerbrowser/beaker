@@ -21,19 +21,22 @@ export default class CrawlerStatus {
     this.id = (++idCounter)
     this.crawlStates = null
     this.currentSort = ['title', -1]
-
-    var crawlerEvents = beaker.crawler.createEventsStream()
-    crawlerEvents.addEventListener('crawl-start', this.onCrawlStart.bind(this))
-    crawlerEvents.addEventListener('crawl-dataset-progress', this.onCrawlDatasetProgress.bind(this))
-    crawlerEvents.addEventListener('crawl-dataset-finish', this.onCrawlDatasetFinish.bind(this))
-    crawlerEvents.addEventListener('crawl-error', this.onCrawlError.bind(this))
-    crawlerEvents.addEventListener('crawl-finish', this.onCrawlFinish.bind(this))
   }
 
   // loading
   // =
 
   async load () {
+    if (!this.crawlStates) {
+      // first load, bind events
+      let crawlerEvents = beaker.crawler.createEventsStream()
+      crawlerEvents.addEventListener('crawl-start', this.onCrawlStart.bind(this))
+      crawlerEvents.addEventListener('crawl-dataset-progress', this.onCrawlDatasetProgress.bind(this))
+      crawlerEvents.addEventListener('crawl-dataset-finish', this.onCrawlDatasetFinish.bind(this))
+      crawlerEvents.addEventListener('crawl-error', this.onCrawlError.bind(this))
+      crawlerEvents.addEventListener('crawl-finish', this.onCrawlFinish.bind(this))
+    }
+
     this.crawlStates = await beaker.crawler.getCrawlStates()
     this.sort()
     this.rerender()

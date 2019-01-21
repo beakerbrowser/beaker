@@ -87,7 +87,6 @@ export async function setup () {
   userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
 
   // create a new user if none exists
-  console.log('getting default user')
   var defaultUser = await beakerCore.users.getDefault()
   if (!defaultUser) {
     let newUserUrl = await beakerCore.dat.library.createNewArchive({title: 'Anonymous', type: ['user', 'unwalled.garden/user']})
@@ -98,7 +97,6 @@ export async function setup () {
       inplaceImport: true
     })
     await beakerCore.users.add(newUserUrl)
-    console.log('new user added')
   }
 
   // wire up events
@@ -383,7 +381,6 @@ async function getUserSession () {
   if (!sess) {
     // fallback to the default user
     var defaultUser = await beakerCore.users.getDefault()
-    console.log('getting default user', defaultUser)
     if (defaultUser) {
       sess = {url: defaultUser.url}
       setUserSessionFor(this.sender, sess)
