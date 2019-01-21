@@ -2,6 +2,7 @@
 
 import yo from 'yo-yo'
 import * as toast from '../com/toast'
+import Logger from '../com/settings/logger'
 import DatCache from '../com/settings/dat-cache'
 import CrawlerStatus from '../com/settings/crawler-status'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
@@ -14,6 +15,7 @@ var browserInfo
 var browserEvents
 var defaultProtocolSettings
 var activeView = 'general'
+var logger = new Logger()
 var datCache = new DatCache()
 var crawlerStatus = new CrawlerStatus()
 
@@ -56,7 +58,7 @@ function renderToPage () {
 
   yo.update(document.querySelector('.settings-wrapper'), yo`
     <div id="el-content" class="settings-wrapper builtin-wrapper">
-      <div class="builtin-main">
+      <div class="builtin-main fullwidth">
         ${renderSidebar()}
         ${renderView()}
       </div>
@@ -72,6 +74,11 @@ function renderSidebar () {
       <div class="nav-item ${activeView === 'general' ? 'active' : ''}" onclick=${() => onUpdateView('general')}>
         <i class="fa fa-angle-right"></i>
         General
+      </div>
+
+      <div class="nav-item ${activeView === 'logger' ? 'active' : ''}" onclick=${() => onUpdateView('logger')}>
+        <i class="fa fa-angle-right"></i>
+        View logs
       </div>
 
       <div class="nav-item ${activeView === 'crawler' ? 'active' : ''}" onclick=${() => onUpdateView('crawler')}>
@@ -95,8 +102,10 @@ function renderView () {
   switch (activeView) {
     case 'general':
       return renderGeneral()
+    case 'logger':
+      return renderLogger()
     case 'dat-cache':
-      return renderDatNetworkActivity()
+      return renderDatCache()
     case 'crawler':
       return renderCrawler()
     case 'information':
@@ -106,7 +115,7 @@ function renderView () {
 
 function renderGeneral () {
   return yo`
-    <div class="view">
+    <div class="view not-fullwidth">
       ${renderAutoUpdater()}
       ${renderDefaultSyncPathSettings()}
       ${renderProtocolSettings()}
@@ -256,7 +265,17 @@ function renderAnalyticsSettings () {
     </div>`
 }
 
-function renderDatNetworkActivity () {
+function renderLogger () {
+  return yo`
+    <div class="view">
+      <div class="section">
+        ${logger.render()}
+      </div>
+    </div>
+  `
+}
+
+function renderDatCache () {
   return yo`
     <div class="view">
       <div class="section">
@@ -280,7 +299,7 @@ function renderCrawler () {
 
 function renderInformation () {
   return yo`
-    <div class="view">
+    <div class="view not-fullwidth">
       <div class="section">
         <h2 id="information" class="subtitle-heading">About Beaker</h2>
         <ul>

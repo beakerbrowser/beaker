@@ -1,0 +1,54 @@
+.logger {
+  .levels-filter {
+    margin-bottom: 10px;
+
+    input {
+      display: none; // because of a rendering error in Electron 3, we're using icons to manually present the checkbox
+    }
+
+    label {
+      margin-right: 15px;
+      font-weight: normal;
+    }
+  }
+
+  .logger-row {
+    display: flex;
+    align-items: center;
+
+    .msg {
+      flex: 1;
+    }
+
+    .level,
+    .category,
+    .subcategory,
+    .timestamp {
+      color: rgba(0,0,0,0.5);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .level,
+    .category {
+      flex: 0 0 70px;
+    }
+
+    .subcategory {
+      flex: 0 0 120px;
+    }
+
+    .timestamp {
+      flex: 0 0 170px;
+    }
+
+    .level {
+      &.silly { color: #9C27B0; }
+      &.debug { color: #2196F3; }
+      &.verbose { color: #00BCD4; }
+      &.info { color: #4CAF50; }
+      &.warn { color: #FFC107; }
+      &.error { color: #E91E63; }
+    }
+  }
+}

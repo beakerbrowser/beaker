@@ -786,3 +786,40 @@
     font-size: 12.75px;
   }
 }
+
+.builtin-main.fullwidth {
+  max-width: none;
+  display: flex !important;
+
+  .builtin-sidebar {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 240px;
+    padding: 0 40px;
+  }
+
+  .view {
+    flex: 1;
+    margin-right: 10px;
+
+    &.not-fullwidth {
+      max-width: 700px;
+    }
+  }
+
+  @media (max-width: 1050px) {
+    flex-direction: column;
+
+    .builtin-sidebar {
+      width: 100%;
+    }
+    .view {
+      margin-left: 10px;
+
+      &.not-fullwidth {
+        margin: 0 auto;
+      }
+    }
+  }
+}
