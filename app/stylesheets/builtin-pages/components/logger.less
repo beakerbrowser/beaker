@@ -7,13 +7,13 @@
 
 .logger {
   .controls {
-    position: sticky;
     display: flex;
+    align-items: center;
+    position: sticky;
     top: 0;
     background: #fff;
-    padding: 10px;
-    border-bottom: 1px solid;
-    margin-bottom: 10px;
+    color: #555;
+    padding: 6px 0;
 
     input {
       display: none; // because of a rendering error in Electron 3, we're using icons to manually present the checkbox
@@ -24,7 +24,7 @@
     }
 
     label {
-      margin-right: 15px;
+      margin-left: 15px;
       margin-bottom: 0;
       font-weight: normal;
     }

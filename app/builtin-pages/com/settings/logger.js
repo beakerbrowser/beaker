@@ -20,6 +20,7 @@ var idCounter = 0
 export default class Logger {
   constructor () {
     this.id = (++idCounter)
+    this.generation = 0 // used to track when the node list has changed, should be incremented any time the filters change
     this.rows = null
     this.readStream = null
     this.filter = {
@@ -34,7 +35,6 @@ export default class Logger {
 
   async load () {
     this.rows = await beaker.logger.query({limit: 1e5, filter: this.filter, until: this.pauseTime, sort: 'desc'})
-    console.log(this.rows)
 
     if (this.readStream) this.readStream.close()
     if (!this.isPaused) {
@@ -63,7 +63,7 @@ export default class Logger {
     return yo`
       <div id=${'logger-' + this.id} class="logger">
         ${this.renderControls()}
-        ${this.rows.map(row => this.renderRow(row))}
+        ${this.rows.map((row, i) => this.renderRow(row, i))}
       </div>
     `
   }
@@ -78,14 +78,13 @@ export default class Logger {
   renderControls () {
     return yo`
       <div class="controls">
-        ${AVAILABLE_LEVELS.map(level => this.renderLevelFilter(level))}
-        <span class="spacer"></span>
         <span>
-          <button class="btn" onclick=${() => this.onTogglePaused()}>
+          <button class="btn transparent" onclick=${() => this.onTogglePaused()}>
             <i class="fa fa-${this.isPaused ? 'play' : 'pause'}"></i>
             ${this.isPaused ? 'Resume' : 'Pause'}
           </button>
         </span>
+        ${AVAILABLE_LEVELS.map(level => this.renderLevelFilter(level))}
       </div>`
   }
 
@@ -99,15 +98,18 @@ export default class Logger {
     `
   }
 
-  renderRow (row) {
-    return yo`
-      <div class="logger-row level-${row.level}" oncontextmenu=${e => this.onContextmenuRow(e, row)}>
+  renderRow (row, i) {
+    var id = `${this.generation}-${this.rows.length - i}`
+    var rowEl = yo`
+      <div id=${id} class="logger-row level-${row.level}" oncontextmenu=${e => this.onContextmenuRow(e, row)}>
         <span class="level ${row.level}">${row.level}</span>
         <span class="category">${row.category}</span>
         <span class="subcategory">${row.subcategory || row.dataset}</span>
         <span class="msg">${row.message} ${row.details ? renderDetails(row.details) : ''}</span>
         <span class="timestamp">${row.timestamp}</span>
       </div>`
+    rowEl.isSameNode = other => other.id === id
+    return rowEl
   }
 
   // events
@@ -120,6 +122,7 @@ export default class Logger {
     } else {
       this.filter.level.push(level)
     }
+    this.generation++
 
     // rerender the filters now so that the UI feels responsive
     yo.update(document.querySelector(`#logger-${this.id} .controls`), this.renderControls())
