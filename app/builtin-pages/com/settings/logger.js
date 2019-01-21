@@ -20,7 +20,7 @@ var idCounter = 0
 export default class Logger {
   constructor () {
     this.id = (++idCounter)
-    this.generation = 0 // used to track when the node list has changed, should be incremented any time the filters change
+    this.isLoading = false
     this.rows = null
     this.readStream = null
     this.filter = {
@@ -34,18 +34,20 @@ export default class Logger {
   // =
 
   async load () {
-    this.rows = await beaker.logger.query({limit: 1e5, filter: this.filter, until: this.pauseTime, sort: 'desc'})
+    this.isLoading = true
+    this.rerenderControls()
+    this.rows = await beaker.logger.query({limit: 5e3, filter: this.filter, until: this.pauseTime, sort: 'desc'})
 
     if (this.readStream) this.readStream.close()
     if (!this.isPaused) {
-      const rerenderDebounced = _debounce(() => this.rerender(), 500)
       this.readStream = beaker.logger.stream({since: Date.now(), filter: this.filter})
       this.readStream.addEventListener('data', row => {
         this.rows.unshift(row)
-        rerenderDebounced()
+        this.prependRowEl(this.renderRow(row, this.rows.length))
       })
     }
 
+    this.isLoading = false
     this.rerender()
   }
 
@@ -63,16 +65,32 @@ export default class Logger {
     return yo`
       <div id=${'logger-' + this.id} class="logger">
         ${this.renderControls()}
-        ${this.rows.map((row, i) => this.renderRow(row, i))}
+        <table class="rows">
+          <tbody>${this.rows.map((row, i) => this.renderRow(row, i))}</tbody>
+        </table>
       </div>
     `
+  }
+
+  get el () {
+    return document.querySelector('#logger-' + this.id)
   }
 
   // method to re-render in place
   // eg inst.rerender()
   rerender () {
-    let el = document.querySelector('#logger-' + this.id)
+    let el = this.el
     if (el) yo.update(el, this.render())
+  }
+
+  rerenderControls () {
+    try {
+      yo.update(this.el.querySelector(`.controls`), this.renderControls())
+    } catch (e) {}
+  }
+
+  prependRowEl (rowEl) {
+    this.el.querySelector('.rows tbody').prepend(rowEl)
   }
 
   renderControls () {
@@ -84,7 +102,16 @@ export default class Logger {
             ${this.isPaused ? 'Resume' : 'Pause'}
           </button>
         </span>
+        <span class="divider thin"></span>
         ${AVAILABLE_LEVELS.map(level => this.renderLevelFilter(level))}
+        <span class="divider"></span>
+        <span class="status">
+          ${this.isLoading
+            ? 'Loading...'
+            : this.isPaused
+              ? 'Paused'
+              : 'Streaming'}
+        </span>
       </div>`
   }
 
@@ -99,17 +126,14 @@ export default class Logger {
   }
 
   renderRow (row, i) {
-    var id = `${this.generation}-${this.rows.length - i}`
-    var rowEl = yo`
-      <div id=${id} class="logger-row level-${row.level}" oncontextmenu=${e => this.onContextmenuRow(e, row)}>
-        <span class="level ${row.level}">${row.level}</span>
-        <span class="category">${row.category}</span>
-        <span class="subcategory">${row.subcategory || row.dataset}</span>
-        <span class="msg">${row.message} ${row.details ? renderDetails(row.details) : ''}</span>
-        <span class="timestamp">${row.timestamp}</span>
-      </div>`
-    rowEl.isSameNode = other => other.id === id
-    return rowEl
+    return yo`
+      <tr class="logger-row level-${row.level}" oncontextmenu=${e => this.onContextmenuRow(e, row)}>
+        <td class="level ${row.level}">${row.level}</td>
+        <td class="category">${row.category}</td>
+        <td class="subcategory">${row.subcategory || row.dataset}</td>
+        <td class="msg">${row.message} ${row.details ? renderDetails(row.details) : ''}</td>
+        <td class="timestamp">${row.timestamp}</td>
+      </tr>`
   }
 
   // events
@@ -122,19 +146,22 @@ export default class Logger {
     } else {
       this.filter.level.push(level)
     }
-    this.generation++
-
-    // rerender the filters now so that the UI feels responsive
-    yo.update(document.querySelector(`#logger-${this.id} .controls`), this.renderControls())
 
     // reload
+    this.rerenderControls()
     this.load()
   }
 
   onTogglePaused () {
     this.isPaused = !this.isPaused
     this.pauseTime = (this.isPaused) ? Date.now() : undefined
-    this.load()
+    this.rerenderControls()
+    if (this.isPaused) {
+      this.readStream.close()
+      this.readStream = null
+    } else {
+      this.load()
+    }
   }
 
   async onContextmenuRow (e, row) {
