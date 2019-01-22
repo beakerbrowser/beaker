@@ -16,10 +16,12 @@ export function render (id, page) {
     return '' // for now, dont render anything unless a dat
   }
 
+  const title = _get(page, 'siteInfo.title')
   const description = _get(page, 'siteInfo.description')
   const isSaved = _get(page, 'siteInfo.userSettings.isSaved', false)
   const isOwner = _get(page, 'siteInfo.isOwner', undefined)
   const isPublished = _get(page, 'siteInfo.isPublished', undefined)
+  const isNetworked = true // TODO
   const basicType = getBasicType(_get(page, 'siteInfo.type', []))
   const isUser = basicType === 'user'
   const isCurrentUser = _get(page, 'siteTrust.isUser', false)
@@ -28,42 +30,81 @@ export function render (id, page) {
   return yo`
     <div class="toolbar-actions" data-id="contextbar-${id}">
       <div class="toolbar-group">
-        ${renderBasicType(_get(page, 'siteInfo.title'), basicType)}
-        ${cond(description, () => [
-          yo`<span class="toolbar-sep"></span>`,
-          yo`<span class="toolbar-info-card">${description}</span>`
-        ])}
-        ${cond(isOwner === true && isUser === true, () => yo`
-          <button class="toolbar-labeled-btn raised" onclick=${() => onEditProfile(id, page)}>
-            <i class="fas fa-pencil-alt"></i> Edit profile
-          </button>`
-        )}
-        ${cond(isOwner === true && isUser === false, () => yo`
-          <button class="toolbar-labeled-btn raised" onclick=${() => onEditDetails(id, page)}>
-            <i class="fas fa-pencil-alt"></i> Edit details
-          </button>`
-        )}
-        ${cond(isOwner === true && isUser === false && isPublished === false, () => yo`
-          <button class="toolbar-labeled-btn raised" onclick=${() => onPublish(id, page)}>
-            <span class="far fa-paper-plane"></span> Publish
-          </button>`
-        )}
-        ${cond(isOwner === true && isUser === false && isPublished === true, () => yo`
-          <button class="toolbar-labeled-btn raised" onclick=${() => onUnpublish(id, page)}>
-            <span class="far fa-paper-plane red-x"></span> Unpublish
-          </button>`
-        )}
-        ${cond(isOwner === false && isUser === true, () => yo`
+        <span class="toolbar-info-card">
+          <img src="beaker://assets/img/templates/${basicType}.png">
+          <strong>${title || basicTypeToLabel(basicType)}</strong>
+          ${cond(description, () => yo`<span>${description}</span>`)}
+          ${cond(isOwner === true, () => yo`
+            <button class="toolbar-labeled-btn" onclick=${() => isUser ? onEditProfile(id, page) : onEditDetails(id, page)}>
+              <i class="fas fa-pencil-alt"></i>
+            </button>`
+          )}
+        </span>
+        ${cond(isOwner === true && isUser === false, () => toggleable2({
+          id: (id + '-visibility-toggle'),
+          closed ({onToggle}) {
+            return yo`
+              <div class="toolbar-dropdown-menu toggleable-container">
+                <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn" onclick=${onToggle}>
+                  <span class="${getVisibilityIcon({isPublished, isNetworked})}"></span> ${getVisibilityLabel({isPublished, isNetworked})} <span class="fas fa-caret-down"></span>
+                </button>
+              </div>`
+          },
+          open ({onToggle}) {
+            return yo`
+              <div class="toolbar-dropdown-menu contextbar-dropdown-menu wider toggleable-container">
+                <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn" onclick=${onToggle}>
+                  <span class="${getVisibilityIcon({isPublished, isNetworked})}"></span> ${getVisibilityLabel({isPublished, isNetworked})} <span class="fas fa-caret-down"></span>
+                </button>
+                <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
+                  <div class="dropdown-items center with-triangle">
+                    <div class="dropdown-title">Who can see this?</div>
+                    <div class="dropdown-item" onclick=${() => onSetVisibility(id, page, 'published')}>
+                      <div class="label">
+                        <i class="${getVisibilityIcon({isPublished: true, isNetworked: true})}"></i>
+                        ${getVisibilityLabel({isPublished: true, isNetworked: true})}
+                        ${cond(isPublished && isNetworked, () => yo`<i class="fas fa-check"></i>`)}
+                      </div>
+                      <p class="description">
+                        The site is publicly listed on your personal site.
+                      </p>
+                    </div>
+                    <div class="dropdown-item" onclick=${() => onSetVisibility(id, page, 'unlisted')}>
+                      <div class="label">
+                        <i class="${getVisibilityIcon({isPublished: false, isNetworked: true})}"></i>
+                        ${getVisibilityLabel({isPublished: false, isNetworked: true})}
+                        ${cond(!isPublished && isNetworked, () => yo`<i class="fas fa-check"></i>`)}
+                      </div>
+                      <p class="description">
+                        Anybody can visit this site if they know the URL.
+                      </p>
+                    </div>
+                    <div class="dropdown-item disabled">
+                      <div class="label">
+                        <i class="${getVisibilityIcon({isPublished: false, isNetworked: false})}"></i>
+                        ${getVisibilityLabel({isPublished: false, isNetworked: false})}
+                        (TODO)
+                        ${cond(!isNetworked, () => yo`<i class="fas fa-check"></i>`)}
+                      </div>
+                      <p class="description">
+                        The site is offline and only you can visit it.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>`
+          }
+        }))}
+        ${cond(isCurrentUser === false && isUser === true, () => yo`
           <button class="toolbar-labeled-btn raised" onclick=${() => onToggleFollow(id, page)}>
             <span class="fas fa-rss ${isFollowed ? 'red-x' : ''}"></span>
             ${isFollowed ? 'Unfollow' : 'Follow'}
           </button>`
         )}
         ${cond(isUser === true, () => [
-          yo`<span class="toolbar-sep" style="margin: 0 3px 0 6px"></span>`,
           yo` 
-            <button class="toolbar-labeled-btn" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
-              <img src="beaker-favicon:32,beaker://search"> Explore
+            <button class="toolbar-labeled-btn raised" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
+            <i class="fas fa-search"></i> Explore
             </button>`
         ])}
       </div>
@@ -74,7 +115,7 @@ export function render (id, page) {
           closed ({onToggle}) {
             return yo`
               <div class="toolbar-dropdown-menu toggleable-container">
-                <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn" onclick=${onToggle}>
+                <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn" onclick=${onToggle}>
                   <span class="far fa-hdd"></span> Library <span class="fas fa-caret-down"></span>
                 </button>
               </div>`
@@ -82,7 +123,7 @@ export function render (id, page) {
           open ({onToggle}) {
             return yo`
               <div class="toolbar-dropdown-menu contextbar-dropdown-menu toggleable-container">
-                <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn" onclick=${onToggle}>
+                <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn" onclick=${onToggle}>
                   <span class="far fa-hdd"></span> Library <span class="fas fa-caret-down"></span>
                 </button>
                 <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
@@ -119,20 +160,20 @@ export function render (id, page) {
           }
         })}
         ${toggleable2({
-          id: (id + '-open-toggle'),
+          id: (id + '-more-toggle'),
           closed ({onToggle}) {
             return yo`
               <div class="toolbar-dropdown-menu toggleable-container">
-                <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn" onclick=${onToggle}>
-                  <span class="fas fa-external-link-square-alt"></span> View <span class="fas fa-caret-down"></span>
+                <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn" onclick=${onToggle}>
+                  More <span class="fas fa-caret-down"></span>
                 </button>
               </div>`
           },
           open ({onToggle}) {
             return yo`
               <div class="toolbar-dropdown-menu contextbar-dropdown-menu toggleable-container">
-                <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn" onclick=${onToggle}>
-                  <span class="fas fa-external-link-square-alt"></span> View <span class="fas fa-caret-down"></span>
+                <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn" onclick=${onToggle}>
+                  More <span class="fas fa-caret-down"></span>
                 </button>
                 <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
                   <div class="dropdown-items compact right with-triangle">
@@ -145,11 +186,11 @@ export function render (id, page) {
                     ])}
 
                     <div class="dropdown-item" onclick=${() => onOpenPage(id, page, `beaker://editor/${page.getURLOrigin()}`)}>
-                      <i class="fas fa-code"></i> Source code
+                      <i class="fas fa-code"></i> View source code
                     </div>
 
                     <div class="dropdown-item"  onclick=${() => onOpenPage(id, page, `beaker://library/${page.getURLOrigin()}`)}>
-                      <i class="fas fa-sitemap"></i> Site files
+                      <i class="fas fa-sitemap"></i> View site files
                     </div>
                   </div>
                 </div>
@@ -166,14 +207,6 @@ export function render (id, page) {
 function cond (b, fn) {
   if (!b) return ''
   return fn()
-}
-
-function renderBasicType (title, basicType) {
-  return yo`
-    <span class="toolbar-info-card">
-      <img src="beaker://assets/img/templates/${basicType}.png">
-      <strong>${title || basicTypeToLabel(basicType)}</strong>
-    </span>`
 }
 
 function update (id, page) {
@@ -197,35 +230,31 @@ function onEditDetails (id, page) {
   alert('todo')
 }
 
-async function onPublish (id, page) {
+async function onSetVisibility (id, page, visibility) {
+  closeAllToggleables()
   try {
-    var details = {
-      url: page.getURLOrigin(),
-      title: _get(page, 'siteInfo.title'),
-      description: _get(page, 'siteInfo.description')
+    if (visibility === 'published') {
+      if (page.siteInfo.isPublished) return
+      var details = {
+        url: page.getURLOrigin(),
+        title: _get(page, 'siteInfo.title'),
+        description: _get(page, 'siteInfo.description')
+      }
+      details = await beaker.browser.showShellModal('publish-archive', details)
+      toast.create(`Published ${details.title || details.url}`, 'success')
+      page.siteInfo.title = details.title
+      page.siteInfo.description = details.description
+      page.siteInfo.isPublished = true
+    } else if (visibility === 'unlisted') {
+      if (!page.siteInfo.isPublished) return
+      await beaker.archives.unpublish(page.getURLOrigin())
+      toast.create(`Unpublished ${_get(page, 'siteInfo.title') || page.getURLOrigin()}`)
+      page.siteInfo.isPublished = false
+    } else if (visibility === 'offline') {
+      // TODO
     }
-    details = await beaker.browser.showShellModal('publish-archive', details)
-    toast.create(`Published ${details.title || details.url}`, 'success')
-    page.siteInfo.title = details.title
-    page.siteInfo.archive.description = details.description
-    page.siteInfo.isPublished = true
   } catch (err) {
     if (err.message === 'Canceled') return
-    console.error(err)
-    toast.create(err.toString())
-  }
-  update(id, page)
-}
-
-async function onUnpublish (id, page) {
-  if (!confirm('Are you sure you want to unpublish this?')) {
-    return
-  }
-  try {
-    await beaker.archives.unpublish(page.getURLOrigin())
-    toast.create(`Unpublished ${_get(page, 'siteInfo.title') || page.getURLOrigin()}`)
-    page.siteInfo.isPublished = false
-  } catch (err) {
     console.error(err)
     toast.create(err.toString())
   }
@@ -291,4 +320,16 @@ async function onFork (id, page) {
 async function onDownloadZip (id, page) {
   closeAllToggleables()
   beaker.browser.downloadURL(`${page.getURLOrigin()}?download_as=zip`)
+}
+
+function getVisibilityIcon ({isPublished, isNetworked}) {
+  if (isPublished) return 'fas fa-globe-americas'
+  if (isNetworked) return 'fas fa-eye'
+  return 'fas fa-lock'
+}
+
+function getVisibilityLabel ({isPublished, isNetworked}) {
+  if (isPublished) return 'Published'
+  if (isNetworked) return 'Unlisted'
+  return 'Only me'
 }
