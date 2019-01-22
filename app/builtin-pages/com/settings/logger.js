@@ -186,7 +186,7 @@ export default class Logger {
           ? yo`
             <div>
               <button class="btn transparent" onclick=${() => this.onAddCustomRule()}>
-                <i class="fas fa-plus"></i> Add filter
+                <i class="fas fa-plus"></i> Add rule
               </button>
             </div>`
           : ''}
