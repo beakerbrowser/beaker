@@ -187,7 +187,7 @@ function rDirectory (node) {
         onclick=${e => onClickNode(e, node)}
         oncontextmenu=${e => onContextmenuNode(e, node)}
       >
-        <i class="fa fa-caret-${cls}"></i>
+        <i class="fa fa-caret-${cls}" style="flex-basis: 0;"></i>
         <i class="fa fa-folder"></i>
         <span>${node.name}</span>
       </div>
