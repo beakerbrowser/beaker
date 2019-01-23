@@ -209,6 +209,7 @@ const setUneditableActive = async function (file) {
     model.name = file.name
     model.isEditable = file.isEditable
     model.type = 'image'
+    model.url = file.url
     models.push(model)
   }
 
