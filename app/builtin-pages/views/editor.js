@@ -211,7 +211,7 @@ document.body.addEventListener('custom-delete-file', onDeleteFile)
 function renderTab (model) {
   let cls = models.getActive() === model ? 'active' : ''
   return yo`
-    <div draggable="true" class="tab ${cls}" onclick=${() => models.setActive(model)}>
+    <div draggable="true" class="tab ${cls}" onmousedown=${(e) => onMiddleClickTab(e, model)} onclick=${() => models.setActive(model)}>
       ${model.isDiff ? model.name + " (Working Tree)" : model.name}
       <i class="fa fa-times" onclick=${(e) => models.unload(e, model)}></i>
     </div>
@@ -257,6 +257,11 @@ async function findArchiveNode (node, path) {
 
 async function parseLibraryUrl () {
   return window.location.pathname.slice(1)
+}
+
+function onMiddleClickTab (e, model) {
+  e.preventDefault()
+  if (e.which == 2) models.unload(e, model)
 }
 
 async function onFilesChanged () {
