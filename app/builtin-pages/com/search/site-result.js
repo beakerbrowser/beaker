@@ -1,9 +1,7 @@
 import yo from 'yo-yo'
 import {makeSafe, highlight} from '../../../lib/strings'
 import {niceDate} from '../../../lib/time'
-import {getBasicType} from '../../../lib/dat'
 import _get from 'lodash.get'
-import {renderType} from './util'
 
 // exported api
 // =
@@ -24,7 +22,6 @@ export default function render (site, currentUserSession, highlightNonce) {
           <span class="timestamp">
             Crawled ${niceDate(site.crawledAt)}
           </span>
-          ${renderType(getBasicType(site.type))}
         </div>
       </div>
     </div>`

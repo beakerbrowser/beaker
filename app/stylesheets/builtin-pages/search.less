@@ -11,6 +11,12 @@
   .builtin-sidebar {
     top: 18px;
   }
+
+  h2 {
+    font-size: 27px;
+    margin-bottom: 10px;
+    font-weight: normal;
+  }
 }
 
 .search-header {
@@ -93,63 +99,39 @@
     flex: 1;
     align-self: flex-start;
     margin-right: 10px;
+  }
 
-    .search-results {
+  .new-post-col {
+    flex: 1;
+    margin-right: 10px;
+
+    form {
+      padding: 10px 20px;
+      background: #fff;
+      border: 1px solid #ddd;
       margin-bottom: 10px;
-
-      .empty {
-        background: #eee;
-        color: rgba(0,0,0,.5);
-        padding: 50px 0;
-        text-align: center;
-      }
     }
 
-    .search-result {
-      background: #fff;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-bottom-width: 0;
+    .input {
+      margin-bottom: 10px;
+    }
+    
+    input {
+      display: block;
+      width: 100%;
+    }
 
-      &:last-child {
-        border-bottom-width: 1px;
-      }
+    .has-error input {
+      border-color: red;
+    }
 
-      &:hover {
-        border-color: #ccc;
-      }
-      &:hover + .search-result {
-        border-top-color: #ccc;
-      }
+    .error {
+      color: maroon;
+    }
 
-      .title {
-        display: inline-block;
-        font-size: 18px;
-        font-weight: 500;
-      }
-
-      .type {
-        font-size: 11px;
-        color: rgba(0,0,0,.5);
-        cursor: pointer;
-
-        &:hover span {
-          text-decoration: underline;
-        }
-
-        &:before {
-          content: '|';
-        }
-      }
-
-      .timestamp {
-        font-size: 11px;
-        color: rgba(0,0,0,.5);
-
-        &:before {
-          content: '|';
-        }
-      }
+    .form-actions {
+      margin-top: 20px;
+      margin-bottom: 10px;
     }
   }
 
@@ -158,6 +140,50 @@
 
     & > * {
       margin-bottom: 10px;
+    }
+  }
+}
+
+.search-results {
+  margin-bottom: 10px;
+
+  .empty {
+    background: #eee;
+    color: rgba(0,0,0,.5);
+    padding: 50px 0;
+    text-align: center;
+  }
+}
+
+.search-result {
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-bottom-width: 0;
+
+  &:last-child {
+    border-bottom-width: 1px;
+  }
+
+  &:hover {
+    border-color: #ccc;
+  }
+  &:hover + .search-result {
+    border-top-color: #ccc;
+  }
+
+  .title {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .timestamp {
+    font-size: 11px;
+    color: rgba(0,0,0,.5);
+
+    &:before {
+      content: '|';
     }
   }
 }

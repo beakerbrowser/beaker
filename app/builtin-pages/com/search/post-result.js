@@ -1,9 +1,7 @@
 import yo from 'yo-yo'
 import {makeSafe, highlight} from '../../../lib/strings'
 import {niceDate} from '../../../lib/time'
-import {getBasicType} from '../../../lib/dat'
 import _get from 'lodash.get'
-import {renderType} from './util'
 
 // exported api
 // =
@@ -27,7 +25,6 @@ export default function render (post, currentUserSession, highlightNonce) {
           <span class="timestamp">
             Crawled ${niceDate(post.crawledAt)}
           </span>
-          ${renderType(getBasicType(post.type))}
         </div>
       </div>
     </div>`
@@ -43,9 +40,10 @@ function renderTitle (post, highlightNonce) {
 }
 
 function renderDescription (post, highlightNonce) {
-  if (post.description) {
+  var description = _get(post, 'content.description')
+  if (description) {
     var el = yo`<span class="description"></span>`
-    el.innerHTML = highlight(makeSafe(_get(post, 'content.description', '')), highlightNonce)
+    el.innerHTML = highlight(makeSafe(description), highlightNonce)
     return el
   }
   return ''
