@@ -205,6 +205,8 @@ window.addEventListener('keydown', e => {
 window.addEventListener('update-editor', render)
 window.addEventListener('model-dirtied', render)
 window.addEventListener('model-cleaned', render)
+document.body.addEventListener('custom-rename-file', onRenameFile)
+document.body.addEventListener('custom-delete-file', onDeleteFile)
 
 function renderTab (model) {
   let cls = models.getActive() === model ? 'active' : ''
@@ -223,10 +225,19 @@ async function localCompare () {
 
   compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
   let fileDiffs = await Promise.all(compareDiff.map(async (diff) => {
-    let node = await findArchiveNode(archiveFsRoot, diff.path)
-    let obj = Object.create(node)
-    obj.original = await findArchiveNode(archiveFS, diff.path)
-    obj.isDiff = true
+    let node, obj
+    if (diff.change !== 'del') {
+      node = await findArchiveNode(archiveFsRoot, diff.path)
+      obj = Object.create(node)
+      obj.original = await findArchiveNode(archiveFS, diff.path)
+      obj.isDiff = true
+      obj.change = diff.change
+    } else if (diff.change == 'del') {
+      node = await findArchiveNode(archiveFS, diff.path)
+      obj = Object.create(node)
+      obj.isDiff = true
+      obj.change = diff.change
+    }
     return obj
   }))
 
@@ -264,6 +275,37 @@ async function onSelectFavicon (imageData) {
   }
   closeAllToggleables()
   //render() will need to call this once we get the archive change issues fixed. That way the favicon will be updated whenever you open it.
+}
+
+async function onRenameFile (e) {
+  try {
+    const {path, newName} = e.detail
+    const to = setTimeout(() => toast.create('Renaming...'), 500) // if it takes a while, toast
+    const newPath = path.split('/').slice(0, -1).concat(newName).join('/')
+    await workingCheckout.rename(path, newPath)
+    clearTimeout(to)
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
+}
+
+async function onDeleteFile (e) {
+  try {
+    const {path, isFolder} = e.detail
+    const to = setTimeout(() => toast.create('Deleting...'), 500) // if it takes a while, toast
+
+    if (isFolder) {
+      await workingCheckout.rmdir(path, {recursive: true})
+    } else {
+      await workingCheckout.unlink(path)
+    }
+
+    clearTimeout(to)
+    toast.create(`Deleted ${path}`)
+    render()
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
 }
 
 async function onSave () {
