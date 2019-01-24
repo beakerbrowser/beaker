@@ -14,7 +14,6 @@ export default function render (userInfo, currentUserSession, highlightNonce) {
       </div>
       <div class="details">
         <a class="link title" href=${userInfo.url} title=${getTitle(userInfo)}>${renderTitle(userInfo, highlightNonce)}${renderFollowsYou(userInfo)}</a>
-        <div class="hostname">${getHostname(userInfo.url)}</div>
         ${renderDescription(userInfo, highlightNonce)}
         ${renderFollowers(userInfo.followedBy, currentUserSession)}
       </div>
@@ -78,10 +77,6 @@ function renderFollowers (followers, currentUserSession) {
 function getTitle (userInfo) {
   if (userInfo.title) return userInfo.title
   return 'Anonymous'
-}
-
-function getHostname (url) {
-  return (new URL(url)).hostname
 }
 
 function getIsUserFollowing (userInfo, currentUserSession) {

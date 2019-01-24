@@ -332,7 +332,7 @@ function renderObject (obj) {
   var items = []
   for (let k in obj) {
     var v = obj[k]
-    if (Array.isArray(v)) v = `[${v.join(',')}]`
+    if (Array.isArray(v)) v = `[${v.join(', ')}]`
     if (typeof v === 'object') v = `{${renderObject(v)}}`
     items.push(`${k}=${v}`)
   }
