@@ -191,6 +191,9 @@ function render () {
 }
 
 window.addEventListener('editor-created', setup)
+window.addEventListener("beforeunload", e => {
+  if (models.checkForDirtyFiles()) e.returnValue = 'You have unsaved changes, are you sure you want to leave?'
+})
 
 window.addEventListener('keydown', e => {
   var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
@@ -372,6 +375,7 @@ async function onSave () {
       filePath = '/' + filePath
     }
 
+    models.setVersionIdOnSave(model)
     await workingCheckout.writeFile(filePath, fileContent, 'utf8')
 
     toast.create('Saved', 'success')

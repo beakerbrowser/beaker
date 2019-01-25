@@ -6,6 +6,8 @@
 var models = []
 var modelHistory = []
 var active
+var lastSavedVersionId
+var isDirtyFiles = false
 
 // exported api
 // =
@@ -20,8 +22,9 @@ export const load = async function load (file) {
     model.name = file.name
     model.isEditable = true
     model.lang = model.getModeId()
-    // TODO
-    // model.onDidChangeContent(onDidChange(file))
+    model.onDidChangeContent(e => onDidChange(e, model))
+
+    lastSavedVersionId = model.getAlternativeVersionId()
 
     models.push(model)
   } catch (e) {
@@ -175,6 +178,15 @@ export function getModels () {
   return models
 }
 
+export function setVersionIdOnSave (model) {
+  lastSavedVersionId = model.getAlternativeVersionId()
+  isDirtyFiles = false
+}
+
+export function checkForDirtyFiles () {
+  return isDirtyFiles
+}
+
 // internal methods
 // =
 
@@ -251,8 +263,6 @@ const setUneditableActive = async function (file) {
   modelHistory.push(file)
 }
 
-function onDidChange (file) {
-  return e => {
-    console.log(file)
-  }
+function onDidChange (e, model) {
+  if (lastSavedVersionId !== model.getAlternativeVersionId()) isDirtyFiles = true
 }
