@@ -10,6 +10,7 @@ import * as toast from '../com/toast'
 import toggleable2, {closeAllToggleables}  from '../com/toggleable2'
 import renderFaviconPicker from '../com/settings/favicon-picker'
 import renderArchiveHistory from '../com/archive/archive-history'
+import * as contextMenu from '../com/context-menu'
 
 var archive
 var workingCheckout
@@ -211,9 +212,18 @@ document.body.addEventListener('custom-delete-file', onDeleteFile)
 function renderTab (model) {
   let cls = models.getActive() === model ? 'active' : ''
   return yo`
-    <div draggable="true" class="tab ${cls}" onmousedown=${(e) => onMiddleClickTab(e, model)} onclick=${() => models.setActive(model)}>
+    <div
+    draggable="true"
+    class="tab ${cls}"
+    oncontextmenu=${(e) => onContextmenuTab(e, model)}
+    onmouseup=${(e) => onClickTab(e, model)}
+    ondragstart=${(e) => onTabDragStart(e, model)}
+    ondragend=${(e) => onTabDragEnd(e, model)}
+    ondragover=${(e) => onTabDragOver(e, model)}
+    ondrop=${(e) => onTabDragDrop(e, model)}
+    >
       ${model.isDiff ? model.name + " (Working Tree)" : model.name}
-      <i class="fa fa-times" onclick=${(e) => models.unload(e, model)}></i>
+      <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
     </div>
   `
 }
@@ -259,9 +269,48 @@ async function parseLibraryUrl () {
   return window.location.pathname.slice(1)
 }
 
-function onMiddleClickTab (e, model) {
+function onCloseTab (e, model) {
   e.preventDefault()
-  if (e.which == 2) models.unload(e, model)
+  e.stopPropagation()
+
+  models.unload(model)
+}
+
+function onClickTab (e, model) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  if (e.which == 2) models.unload(model)
+  else if (e.which == 1) models.setActive(model)
+}
+
+let dragSrcModel = null
+
+function onTabDragStart (e, model) {
+  if (models.getActive !== model) models.setActive(model)
+  dragSrcModel = model
+
+  e.dataTransfer.effectAllowed = 'move'
+}
+
+function onTabDragEnd () {
+  render()
+}
+
+function onTabDragOver (e) {
+  e.preventDefault()
+
+  e.dataTransfer.dropEffect = 'move'
+  return false
+}
+
+async function onTabDragDrop (e, model) {
+  e.stopPropagation()
+
+  if (dragSrcModel != model) {
+    await models.reorderModels(dragSrcModel, model)
+  }
+  return false
 }
 
 async function onFilesChanged () {
@@ -329,4 +378,40 @@ async function onSave () {
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
+}
+
+async function onContextmenuTab (e, model) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  var items = []
+
+  if (model.isEditable) {
+    items = items.concat([
+      {
+        label: 'Close',
+        click: async () => {
+          models.unload(model)
+        }
+      },
+      {
+        label: 'Close Others',
+        click: () => {
+          models.unloadOthers(model)
+        }
+      },
+      {
+        label: 'Close All',
+        click: () => {
+          models.unloadAllModels()
+        }
+      }
+    ])
+  }
+
+  contextMenu.create({
+    x: e.clientX,
+    y: e.clientY,
+    items
+  })
 }
