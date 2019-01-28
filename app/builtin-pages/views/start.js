@@ -9,7 +9,7 @@ import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
-import {getBasicType} from '../../lib/dat'
+import {getBasicType} from '@beaker/core/lib/dat'
 
 const LATEST_VERSION = 8002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/0.8.2'

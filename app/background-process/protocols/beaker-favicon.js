@@ -11,7 +11,7 @@ const {sitedata} = beakerCore.dbs
 import fs from 'fs'
 import path from 'path'
 import ICO from 'icojs'
-import {getBasicType} from '../../lib/dat'
+import {getShortenedUnwalledGardenType} from '@beaker/core/lib/dat'
 
 export function setup () {
   // load default favicon
@@ -85,8 +85,8 @@ export function setup () {
 
         // see if there's a basic type we can use
         let manifest = await datfs.pda.readManifest()
-        let basicType = getBasicType(manifest.type)
-        if (basicType && basicType !== 'other') {
+        let type = getShortenedUnwalledGardenType(manifest.type)
+        if (type) {
           return fs.readFile(path.join(__dirname, `./assets/img/templates/${basicType}.png`), (err, buf) => {
             cb({mimeType: 'image/png', data: buf || defaultFaviconBuffer})
           })

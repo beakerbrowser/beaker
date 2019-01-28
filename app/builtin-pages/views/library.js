@@ -5,7 +5,7 @@ import bytes from 'bytes'
 import {pluralize} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-import {getBasicType} from '../../lib/dat'
+import {getBasicType, getTypeLabel, getShortenedUnwalledGardenType} from '@beaker/core/lib/dat'
 import {SITE_TEMPLATES, createSiteFromTemplate} from '../../lib/templates'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import * as toast from '../com/toast'
@@ -114,7 +114,7 @@ function sortArchives () {
       case 'peers': v = a.peers - b.peers; break
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
-      case 'type': v = getBasicType(b.type).localeCompare(getBasicType(a.type)); break
+      case 'type': v = getShortenedUnwalledGardenType(b.type).localeCompare(getShortenedUnwalledGardenType(a.type)); break
       case 'published': v = Number(a.isPublished) - Number(b.isPublished); break
       case 'owner': v = getOwner(b).localeCompare(getOwner(a)); break
     }
@@ -194,7 +194,7 @@ function renderRow (row, i) {
       </span>
 
       <span class="type">
-        ${basicType}
+        ${getTypeLabel(row.type)}
       </span>
 
       <span class="peers">

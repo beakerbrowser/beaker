@@ -5,15 +5,33 @@ import moment from 'moment'
 import renderUserResult from '../com/search/user-result'
 import renderPostResult from '../com/search/post-result'
 import renderSiteResult from '../com/search/site-result'
-import {polyfillHistoryEvents} from '../../lib/fg/event-handlers'
+import {polyfillHistoryEvents, pushUrl} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
+import { renderFollowedBy } from '../com/user/followers';
 
 const LIMIT = 20
+
+function C(id, label, datasets, siteTypes) {
+  if (siteTypes) siteTypes = siteTypes.map(t => `unwalled.garden${t}`)
+  return {id, label, datasets, siteTypes}
+}
+const CATEGORIES = [
+  C('all', 'All', ['followgraph', 'link_posts', 'published_sites']),
+  C('users', 'Users', ['followgraph']),
+  C('articles', 'Articles', ['link_posts', 'published_sites'], ['/media/article', '/channel/blog']),
+  C('photos', 'Photos', ['link_posts', 'published_sites'], ['/channel/photo', '/media/photo-album', '/media/photo']),
+  C('video', 'Videos', ['link_posts', 'published_sites'], ['/channel/video', '/media/video-playlist', '/media/video']),
+  C('music', 'Music', ['link_posts', 'published_sites'], ['/channel/music', '/media/music-playlist', '/media/music-album', '/media/song']),
+  C('podcasts', 'Podcasts', ['link_posts', 'published_sites'], ['/channel/podcast', '/media/podcast-episode']),
+  C('files', 'Files', ['link_posts', 'published_sites'], ['/media/file-set', '/media/file']),
+  C('templates', 'Templates', ['link_posts', 'published_sites'], ['/template'])
+]
 
 // globals
 //
 
 var currentUserSession = null
+var sourceInfo = null
 var results = []
 var highlightNonce
 var hasMore
@@ -43,17 +61,37 @@ async function setup () {
 
 async function readStateFromURL () {
   var view = getView()
+  var source = getParam('source')
   
   try {
-    if (!view) {
+    if (view === 'new-post') {
+      results = []
+      sourceInfo = null
+    } else {
+      if (source && (!sourceInfo || sourceInfo.url !== source)) {
+        // get source info
+        let archive = new DatArchive(source)
+        sourceInfo = await archive.getInfo()
+        if (source !== sourceInfo.url) {
+          // adjust source param if not exactly ==
+          setParams({source: sourceInfo.url})
+          return
+        }
+      } else if (!source && sourceInfo) {
+        // clear out
+        sourceInfo = null
+      }
+
       // run query
       console.log('running query', getParam('q'))
-      let type = getType()
+      var category = CATEGORIES.find(c => c.id === getCategory()) || CATEGORIES[0]
       let page = getPage()
       let res = await beaker.crawler.listSearchResults({
         user: currentUserSession.url, 
         query: getParam('q'),
-        type,
+        datasets: category.datasets,
+        siteTypes: category.siteTypes,
+        source,
         hops: getHops(),
         since: getSinceTS(),
         offset: (page - 1) * LIMIT,
@@ -66,8 +104,6 @@ async function readStateFromURL () {
       hasMore = results.length > LIMIT
       if (hasMore) results.pop() // discard extra
       console.log('results', results)
-    } else if (view === 'new-post') {
-      results = []
     }
   } catch (err) {
     console.error(err)
@@ -105,8 +141,8 @@ function getView () {
   return getParam('view')
 }
 
-function getType () {
-  var cat = getParam('type')
+function getCategory () {
+  var cat = getParam('category')
   if (!cat) cat = 'all'
   return cat
 }
@@ -131,16 +167,22 @@ function getSinceTS () {
 function update () {
   const view = getView()
   const query = getParam('q') || ''
-  const type = getType()
+  const category = getCategory()
 
-  const renderTab = (id, label) => yo`<div class="tab ${type === id ? 'active' : ''}" onclick=${() => onClickTab(id)}>${label}</div>`
+  const renderTab = ({id, label}) => yo`<div class="tab ${category === id ? 'active' : ''}" onclick=${() => onClickTab(id)}>${label}</div>`
 
   yo.update(document.querySelector('.search-wrapper'), yo`
     <div class="search-wrapper builtin-wrapper">
       <div class="builtin-main">
-        <div class="search-header">
-          ${renderSearchControl()}
-        </div>
+        ${sourceInfo
+          ? [
+            yo`<a href="/" onclick=${pushUrl}><i class="fas fa-angle-double-left"></i> Back</a>`,
+            renderSourceBanner()
+          ] : yo`
+            <div class="search-header">
+              ${renderSearchControl()}
+            </div>`
+        }
 
         ${query
           ? yo`
@@ -151,21 +193,34 @@ function update () {
 
         <div class="search-body">
           <div class="tabs">
-            ${[
-              renderTab('all', 'All'),
-              renderTab('user', 'Users')
-            ]}
+            ${CATEGORIES.map(renderTab)}
           </div>
           ${view === 'new-post'
             ? renderNewPostColumn()
             : renderSearchResultsColumn({query})}
           <div class="search-controls-col">
-            ${renderSideControls({type, query})}
+            ${renderSideControls()}
           </div>
         </div>
       </div>
     </div>`
   )
+}
+
+function renderSourceBanner () {
+  return yo`
+    <div class="source-banner">
+      <div class="thumb"><img src="${sourceInfo.url}/thumb"></div>
+      <div class="details">
+        <div class="title">${sourceInfo.title}</div>
+        <div class="description">${sourceInfo.description}</div>
+        ${renderFollowedBy([], currentUserSession)}
+      </div>
+      <div class="actions">
+        <button class="btn thick"><i class="fas fa-rss"></i> Follow</button>
+        <a class="btn thick" href=${sourceInfo.url} target="_blank"><i class="fas fa-external-link-alt"></i> Visit website</a>
+      </div>
+    </div>`
 }
 
 function renderSearchResultsColumn ({query}) {
@@ -193,6 +248,16 @@ function renderSearchResultsColumn ({query}) {
         <span class="current">${page}</span>
         <a class="btn ${hasMore ? '' : 'disabled'}" onclick=${onClickNextPage}>Next page <span class="fa fa-angle-right"></span></a>
       </div>
+      <div class="alternative-engines">
+        <ul>
+          <li>Try other search engines:</li>
+          <li><a class="link" href="https://duckduckgo.com${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fas fa-search"></span> DuckDuckGo</a></li>
+          <li><a class="link" href="https://google.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-google"></span> Google</a></li>
+          <li><a class="link" href="https://twitter.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-twitter"></span> Twitter</a></li>
+          <li><a class="link" href="https://reddit.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-reddit-alien"></span> Reddit</a></li>
+          <li><a class="link" href="https://github.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-github-alt"></span> GitHub</a></li>
+        </ul>
+      </div>
     </div>`
 }
 
@@ -217,12 +282,12 @@ function renderNewPostColumn () {
   return yo`
     <div class="new-post-col">
       <form onsubmit=${onSubmitPost}>
-        <h2>Post a new link</h2>
+        <h2>Post a link</h2>
         ${input('url', 'URL')}
         ${input('title', 'Title')}
         ${input('description', 'Description (optional)')}
         <div class="form-actions">
-          <button class="btn primary thick">Post</button>
+          <button class="btn primary thick">Publish</button>
           <button class="btn transparent thick" onclick=${onClickNewPostCancel}>Cancel</button>
         </div>
       </form>
@@ -248,62 +313,70 @@ function renderSearchControl () {
     </div>`
 }
 
-function renderSideControls ({type, query}) {
+function renderSideControls () {
   const hops = getHops()
   const since = getParam('since') || 'all'
   var ctrls = []
 
-  ctrls.push(yo`
-    <button class="btn primary thick full-width" onclick=${onClickCreatePost}>
-      Create a post
-    </button>`
-  )
-
-  ctrls.push(yo`
-    <div class="search-sidecontrol">
-      <h3>Filters</h3>
-      ${renderRadio({
-        onclick ({id}) {
-          setParams({view: '', hops: id})
-        },
-        current: hops,
-        items: [
-          {id: 2, label: 'All of your network'},
-          {id: 1, label: 'Followed users'}
-        ]
-      })}
-    </div>`
-  )
-
-  ctrls.push(yo`
-    <div class="search-sidecontrol">
-      ${renderRadio({
-        onclick ({id}) {
-          setParams({view: '', since: id})
-        },
-        current: since,
-        items: [
-          {id: 'all', label: 'All time'},
-          {id: 'day', label: 'Past day'},
-          {id: 'week', label: 'Past week'},
-          {id: 'month', label: 'Past month'},
-          {id: 'year', label: 'Past year'}
-        ]
-      })}
-    </div>`
-  )
-
-  if (query) {
+  if (sourceInfo) {
+    // source-specific controls
     ctrls.push(yo`
-      <div class="alternative-engines">
-        <div>Try other search engines:</div>
-        <ul>
-          <li><a class="link" href="https://duckduckgo.com${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fas fa-search"></span> DuckDuckGo</a></li>
-          <li><a class="link" href="https://google.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-google"></span> Google</a></li>
-          <li><a class="link" href="https://twitter.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-twitter"></span> Twitter</a></li>
-          <li><a class="link" href="https://reddit.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-reddit-alien"></span> Reddit</a></li>
-          <li><a class="link" href="https://github.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-github-alt"></span> GitHub</a></li>
-        </ul>
+      <div class="search-sidecontrol">
+        <h3>Filters</h3>
+        ${renderRadio({
+          onclick ({id}) {
+            setParams({source: getParam('source'), since: id})
+          },
+          current: since,
+          items: [
+            {id: 'all', label: 'All time'},
+            {id: 'day', label: 'Past day'},
+            {id: 'week', label: 'Past week'},
+            {id: 'month', label: 'Past month'},
+            {id: 'year', label: 'Past year'}
+          ]
+        })}
+      </div>`
+    )
+  } else {
+    // general controls
+    ctrls.push(yo`
+      <button class="btn primary thick full-width" onclick=${onClickCreatePost}>
+        Create a post
+      </button>`
+    )
+
+    ctrls.push(yo`
+      <div class="search-sidecontrol">
+        <h3>Filters</h3>
+        ${renderRadio({
+          onclick ({id}) {
+            setParams({view: '', hops: id})
+          },
+          current: hops,
+          items: [
+            {id: 2, label: 'All of your network'},
+            {id: 1, label: 'Followed users'}
+          ]
+        })}
+      </div>`
+    )
+
+    ctrls.push(yo`
+      <div class="search-sidecontrol">
+        ${renderRadio({
+          onclick ({id}) {
+            setParams({view: '', since: id})
+          },
+          current: since,
+          items: [
+            {id: 'all', label: 'All time'},
+            {id: 'day', label: 'Past day'},
+            {id: 'week', label: 'Past week'},
+            {id: 'month', label: 'Past month'},
+            {id: 'year', label: 'Past year'}
+          ]
+        })}
       </div>`
     )
   }
@@ -361,7 +434,7 @@ async function onSubmitPost (e) {
 
   try {
     // create
-    await beaker.posts.create(newPostValues)
+    await beaker.linkFeed.create(newPostValues)
     toast.create('Posted')
   } catch (err) {
     console.error(err)
@@ -405,13 +478,18 @@ function onUpdateSearchQuery (e) {
     setParams({
       view: '',
       q: e.target.value.toLowerCase(),
-      type: getType()
+      category: getCategory()
     })
   }
 }
 
-function onClickTab (type) {
-  setParams({view: '', type})
+function onClickTab (category) {
+  var params = {category}
+  var view = getView()
+  if (view === 'new-post') params.view = '' // reset view if it's set
+  var source = getParam('source')
+  if (source) params.source = source // preserve source
+  setParams(params)
 }
 
 function onClearQuery () {

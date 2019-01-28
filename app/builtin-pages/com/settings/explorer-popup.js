@@ -1,8 +1,8 @@
 /* globals beaker */
 
 import yo from 'yo-yo'
-import {getBasicType} from '../../../lib/dat'
-import {findParent, writeToClipboard} from '../../../lib/fg/event-handlers'
+import {getBasicType} from '@beaker/core/lib/dat'
+import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import closeIcon from '../../icon/close'
 import * as contextMenu from '../context-menu'
 import * as toast from '../toast'

@@ -3,7 +3,7 @@ import _get from 'lodash.get'
 import * as toast from './toast'
 import * as pages from '../pages'
 import * as globals from '../globals'
-import {getBasicType, basicTypeToLabel} from '../../lib/dat'
+import {getBasicType, getTypeLabel} from '@beaker/core/lib/dat'
 import toggleable2, {closeAllToggleables} from '../../builtin-pages/com/toggleable2'
 
 // exported api
@@ -22,7 +22,8 @@ export function render (id, page) {
   const isOwner = _get(page, 'siteInfo.isOwner', undefined)
   const isPublished = _get(page, 'siteInfo.isPublished', undefined)
   const isNetworked = true // TODO
-  const basicType = getBasicType(_get(page, 'siteInfo.type', []))
+  const type = _get(page, 'siteInfo.type', [])
+  const basicType = getBasicType(type)
   const isUser = basicType === 'user'
   const isCurrentUser = _get(page, 'siteTrust.isUser', false)
   const isFollowed = _get(page, 'siteTrust.isFollowed', false)
@@ -32,7 +33,7 @@ export function render (id, page) {
       <div class="toolbar-group">
         <span class="toolbar-info-card">
           <img src="beaker://assets/img/templates/${basicType}.png">
-          <strong>${title || basicTypeToLabel(basicType)}</strong>
+          <strong>${title || getTypeLabel(type)}</strong>
           ${cond(description, () => yo`<span>${description}</span>`)}
           ${cond(isOwner === true, () => yo`
             <button class="toolbar-labeled-btn" onclick=${() => isUser ? onEditProfile(id, page) : onEditDetails(id, page)}>
