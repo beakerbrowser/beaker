@@ -2,6 +2,7 @@ import yo from 'yo-yo'
 import {makeSafe, highlight} from '../../../lib/strings'
 import {niceDate} from '../../../lib/time'
 import {pushUrl} from '../../../lib/fg/event-handlers'
+import {getTypeLabel} from '@beaker/core/lib/dat'
 import _get from 'lodash.get'
 
 // exported api
@@ -14,7 +15,7 @@ export default function render (post, currentUserSession, highlightNonce) {
         <a class="link title" href=${post.content.url} title=${getTitle(post)}>${renderTitle(post, highlightNonce)}</a>
         <div>${renderDescription(post, highlightNonce)}</div>
         <div class="meta">
-          link
+          ${getTypeLabel(post.content.type, 'link')}
           <a class="author link" href="/?source=${encodeURIComponent(post.author.url)}" onclick=${pushUrl} title=${getAuthorTitle(post)}>
             <img src="${post.author.thumbUrl}">
             ${getAuthorTitle(post)}

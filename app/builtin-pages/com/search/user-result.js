@@ -8,6 +8,7 @@ import {findParent, pushUrl} from '../../../lib/fg/event-handlers'
 
 export default function render (userInfo, currentUserSession, highlightNonce) {
   const targetUrl = `/?source=${encodeURIComponent(userInfo.url)}`
+  const isSelf = userInfo.url === currentUserSession.url
   const isFollowing = getIsUserFollowing(userInfo, currentUserSession)
   return yo`
     <div class="search-result user">
@@ -19,11 +20,16 @@ export default function render (userInfo, currentUserSession, highlightNonce) {
           ${renderTitle(userInfo, highlightNonce)}${renderFollowsYou(userInfo)}
         </a>
         ${renderDescription(userInfo, highlightNonce)}
-        ${renderFollowedBy(userInfo.followedBy, currentUserSession)}
+        ${isSelf
+          ? yo`<div><span class="isyou">This is you!</span></div>`
+          : renderFollowedBy(userInfo.followedBy, currentUserSession)}
       </div>
-      <div class="ctrls">
-        <a class="btn small" onclick=${e => onToggleFollowing(e, userInfo, currentUserSession, highlightNonce)}>${isFollowing ? 'Unfollow' : 'Follow'}</a>
-      </div>
+      ${isSelf
+        ? ''
+        : yo`
+          <div class="ctrls">
+            <a class="btn small" onclick=${e => onToggleFollowing(e, userInfo, currentUserSession, highlightNonce)}>${isFollowing ? 'Unfollow' : 'Follow'}</a>
+          </div>`}
     </div>`
 }
 

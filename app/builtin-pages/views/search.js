@@ -5,9 +5,9 @@ import moment from 'moment'
 import renderUserResult from '../com/search/user-result'
 import renderPostResult from '../com/search/post-result'
 import renderSiteResult from '../com/search/site-result'
+import {renderSourceBanner} from '../com/search/source-banner'
 import {polyfillHistoryEvents, pushUrl} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
-import { renderFollowedBy } from '../com/user/followers';
 
 const LIMIT = 20
 
@@ -177,7 +177,7 @@ function update () {
         ${sourceInfo
           ? [
             yo`<a href="/" onclick=${pushUrl}><i class="fas fa-angle-double-left"></i> Back</a>`,
-            renderSourceBanner()
+            renderSourceBanner(sourceInfo, currentUserSession)
           ] : yo`
             <div class="search-header">
               ${renderSearchControl()}
@@ -207,22 +207,6 @@ function update () {
   )
 }
 
-function renderSourceBanner () {
-  return yo`
-    <div class="source-banner">
-      <div class="thumb"><img src="${sourceInfo.url}/thumb"></div>
-      <div class="details">
-        <div class="title">${sourceInfo.title}</div>
-        <div class="description">${sourceInfo.description}</div>
-        ${renderFollowedBy([], currentUserSession)}
-      </div>
-      <div class="actions">
-        <button class="btn thick"><i class="fas fa-rss"></i> Follow</button>
-        <a class="btn thick" href=${sourceInfo.url} target="_blank"><i class="fas fa-external-link-alt"></i> Visit website</a>
-      </div>
-    </div>`
-}
-
 function renderSearchResultsColumn ({query}) {
   const page = getPage()
   const isEmpty = !results || results.length === 0
@@ -248,16 +232,19 @@ function renderSearchResultsColumn ({query}) {
         <span class="current">${page}</span>
         <a class="btn ${hasMore ? '' : 'disabled'}" onclick=${onClickNextPage}>Next page <span class="fa fa-angle-right"></span></a>
       </div>
-      <div class="alternative-engines">
-        <ul>
-          <li>Try other search engines:</li>
-          <li><a class="link" href="https://duckduckgo.com${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fas fa-search"></span> DuckDuckGo</a></li>
-          <li><a class="link" href="https://google.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-google"></span> Google</a></li>
-          <li><a class="link" href="https://twitter.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-twitter"></span> Twitter</a></li>
-          <li><a class="link" href="https://reddit.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-reddit-alien"></span> Reddit</a></li>
-          <li><a class="link" href="https://github.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-github-alt"></span> GitHub</a></li>
-        </ul>
-      </div>
+      ${query
+        ? yo`
+          <div class="alternative-engines">
+            <ul>
+              <li>Try other search engines:</li>
+              <li><a class="link" href="https://duckduckgo.com${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fas fa-search"></span> DuckDuckGo</a></li>
+              <li><a class="link" href="https://google.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-google"></span> Google</a></li>
+              <li><a class="link" href="https://twitter.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-twitter"></span> Twitter</a></li>
+              <li><a class="link" href="https://reddit.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-reddit-alien"></span> Reddit</a></li>
+              <li><a class="link" href="https://github.com/search${query ? '?q=' + encodeURIComponent(query) : ''}" target="_blank"><span class="fab fa-github-alt"></span> GitHub</a></li>
+            </ul>
+          </div>`
+        : ''}
     </div>`
 }
 
