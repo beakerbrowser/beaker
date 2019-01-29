@@ -492,7 +492,7 @@ async function handleAutocompleteSearch (results) {
   var gotoResult = { url: vWithProtocol, title: 'Go to ' + v, isGuessingTheScheme }
   var searchResult = {
     search: v,
-    title: 'Search your network privately',
+    title: 'Search your Web',
     url: vSearch
   }
   if (isProbablyUrl) autocompleteResults = [gotoResult, searchResult]

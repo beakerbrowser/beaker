@@ -126,7 +126,7 @@ function renderSearch () {
 
   return yo`
     <div class="autocomplete-container search-container">
-      <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your library and the Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
+      <input type="text" autofocus onfocus=${onFocusSearch} class="search" placeholder="Search your Web" onkeyup=${(e) => delay(onInputSearch, e)}/>
       <i class="fa fa-search"></i>
 
       <button class="btn primary search-btn" title="Submit search query" onclick=${onClickSubmitActiveSearch}>
@@ -234,7 +234,7 @@ async function onUpdateSearchQuery (q) {
     searchResults.fixed = [{
       url: `beaker://search?q=${encodeURIComponent(query)}`,
       icon: 'fa fa-search',
-      title: `Privately search for "${query}"`
+      title: `Search your Web for "${query}"`
     }]
   }
 

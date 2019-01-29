@@ -5,7 +5,7 @@ import moment from 'moment'
 import renderUserResult from '../com/search/user-result'
 import renderPostResult from '../com/search/post-result'
 import renderSiteResult from '../com/search/site-result'
-import {renderSourceBanner} from '../com/search/source-banner'
+import {renderSourceBanner, renderSourceSubnav} from '../com/search/source-view'
 import {polyfillHistoryEvents, pushUrl} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
 
@@ -147,6 +147,10 @@ function getCategory () {
   return cat
 }
 
+function getSourceView () {
+  return getParam('sourceView') || 'profile'
+}
+
 function getPage () {
   return +(getParam('page') || 1)
 }
@@ -161,6 +165,14 @@ function getSinceTS () {
   return moment().subtract(1, since).valueOf()
 }
 
+function filterTabByView (category) {
+  if (getParam('source')) {
+    // dont show users tab when viewing a user
+    if (category.id === 'users') return false
+  }
+  return true
+}
+
 // rendering
 // =
 
@@ -168,6 +180,7 @@ function update () {
   const view = getView()
   const query = getParam('q') || ''
   const category = getCategory()
+  const sourceView = getSourceView()
 
   const renderTab = ({id, label}) => yo`<div class="tab ${category === id ? 'active' : ''}" onclick=${() => onClickTab(id)}>${label}</div>`
 
@@ -177,7 +190,8 @@ function update () {
         ${sourceInfo
           ? [
             yo`<a href="/" onclick=${pushUrl}><i class="fas fa-angle-double-left"></i> Back</a>`,
-            renderSourceBanner(sourceInfo, currentUserSession)
+            renderSourceBanner({sourceInfo, currentUserSession}),
+            renderSourceSubnav({sourceView, onChangeSourceView})
           ] : yo`
             <div class="search-header">
               ${renderSearchControl()}
@@ -193,7 +207,7 @@ function update () {
 
         <div class="search-body">
           <div class="tabs">
-            ${CATEGORIES.map(renderTab)}
+            ${CATEGORIES.filter(filterTabByView).map(renderTab)}
           </div>
           ${view === 'new-post'
             ? renderNewPostColumn()
@@ -289,7 +303,7 @@ function renderSearchControl () {
   var query = getParam('q') || ''
   return yo`
     <div class="search-container">
-      <input autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your network privately" class="search" value=${query} />
+      <input autofocus onkeyup=${onUpdateSearchQuery} placeholder="Search your Web" class="search" value=${query} />
       <i class="fa fa-search"></i>
       ${query
         ? yo`
@@ -387,6 +401,10 @@ function renderTimes () {
 
 function onClickCreatePost (e) {
   setParams({view: 'new-post'})
+}
+
+function onChangeSourceView (sourceView) {
+  setParams({sourceView})
 }
 
 function onKeyupNewPostInput (e, key) {

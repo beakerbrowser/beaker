@@ -1,11 +1,12 @@
 @import "../base/colors.less";
 @import "./components/tabs.less";
+@import "./components/search/source-view.less";
 @import "./components/search/user-result.less";
 @import "./components/search/post-result.less";
 @import "./components/search/site-result.less";
 
 .search .builtin-main {  
-  max-width: 1000px;
+  max-width: 920px;
   padding: 15px 10px;
 
   .builtin-sidebar {
@@ -75,48 +76,6 @@
   margin: -3px 41px 15px !important;
 }
 
-.source-banner {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  padding: 20px;
-  border: 1px solid #ddd;
-  margin-right: 24px;
-  margin-bottom: 10px !important;
-
-  .thumb {
-    margin-right: 30px;
-
-    img {
-      border-radius: 50%;
-      width: 130px;
-      height: 130px;
-    }
-  }
-
-  .details {
-    flex: 1;
-
-    .title {
-      font-size: 32px;
-      line-height: 32px;
-    }
-
-    .description {
-      font-size: 15px;
-      line-height: 32px;
-    }
-
-    .followed-by {
-      color: rgba(0,0,0,0.5);
-    }
-  }
-
-  .actions {
-    margin-right: 30px;
-  }
-}
-
 .search-body {
   display: flex;
   padding-right: 24px;
@@ -132,7 +91,7 @@
 
       &.active {
         border-bottom: 0;
-        border-right-color: @blue;
+        background: #eee;
       }
     }
   }

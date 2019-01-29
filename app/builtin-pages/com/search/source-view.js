@@ -4,7 +4,7 @@ import {renderFollowedBy} from '../user/followers'
 // exported api
 // =
 
-export function renderSourceBanner (sourceInfo, currentUserSession) {
+export function renderSourceBanner ({sourceInfo, currentUserSession}) {
   const isSelf = sourceInfo.url === currentUserSession.url
   return yo`
     <div class="source-banner">
@@ -22,5 +22,20 @@ export function renderSourceBanner (sourceInfo, currentUserSession) {
           : yo`<button class="btn thick"><i class="fas fa-rss"></i> Follow</button>`}
         <a class="btn thick" href=${sourceInfo.url} target="_blank"><i class="fas fa-external-link-alt"></i> Visit website</a>
       </div>
+    </div>`
+}
+
+export function renderSourceSubnav ({sourceView, onChangeSourceView}) {
+  const item = (id, label) => (
+    yo`<a
+        class=${id === sourceView ? `active` : ''}
+        onclick=${() => onChangeSourceView(id)}
+      >${label}</a>`
+  )
+  return yo`
+    <div class="source-subnav">
+      ${item('profile', 'Profile')}
+      ${item('followers', 'Followers')}
+      ${item('following', 'Following')}
     </div>`
 }
