@@ -9,7 +9,7 @@ import jetpack from 'fs-jetpack'
 import concat from 'concat-stream'
 import osName from 'os-name'
 const settingsDb = beakerCore.dbs.settings
-import {ANALYTICS_DATA_FILE, ANALYTICS_SERVER, ANALYTICS_CHECKIN_INTERVAL} from '@beaker/core/lib/const'
+import {ANALYTICS_DATA_FILE, ANALYTICS_SERVER, ANALYTICS_CHECKIN_INTERVAL, DAT_SWARM_PORT} from '@beaker/core/lib/const'
 const debug = beakerCore.debugLogger('beaker-analytics')
 
 // exported methods
@@ -34,18 +34,28 @@ async function checkin () {
       pingData.lastPingTime = Date.now()
       await writePingData(pingData)
     } catch (e) {
-      // failed, we'll reschedule another ping in 24 hours
+      // failed, we'll reschedule another ping in 10 hours
     }
   }
 
-  // schedule another ping check in 24 hours
-  var to = setTimeout(checkin, ms('1d'))
+  // schedule another ping check in 10 hours
+  var to = setTimeout(checkin, ms('10h'))
   to.unref()
 }
 
 function sendPing (pingData) {
-  return new Promise((resolve, reject) => {
-    var qs = querystring.stringify({userId: pingData.id, os: osName(), beakerVersion: app.getVersion()})
+  return new Promise(async (resolve, reject) => {
+    var qs = querystring.stringify({
+      userId: pingData.id,
+      beakerVersion: app.getVersion(),
+      os: osName(),
+      netReachablePort: await portCheck(),
+      datWatchlist: (await beakerCore.dbs.watchlist.getSites(0)).length,
+      datArchivesOwned: (await beakerCore.dbs.archives.query(0, {isSaved: true, isOwner: true})).length,
+      datArchivesSeed: (await beakerCore.dbs.archives.query(0, {isSaved: true, isOwner: false})).length,
+      datArchivesCache: (await beakerCore.dbs.archives.query(0, {isSaved: false, isOwner: false})).length
+    })
+
     debug('Sending ping to %s: %s', ANALYTICS_SERVER, qs)
 
     var req = https.request({
@@ -77,4 +87,20 @@ async function readPingData () {
 
 async function writePingData (data) {
   return jetpack.writeAsync(path.join(app.getPath('userData'), ANALYTICS_DATA_FILE), data)
+}
+
+async function portCheck () {
+  return new Promise((resolve, reject) => {
+    // TODO: move this to ANALYTICS_SERVER
+    https.get('https://portcheck.transmissionbt.com/' + DAT_SWARM_PORT, (res) => {
+      let body = ''
+      res.on('data', (chunk) => { body += chunk })
+      res.on('end', () => {
+        if (body === '1') {
+          resolve('1')
+        }
+        resolve('0')
+      })
+    })
+  })
 }
