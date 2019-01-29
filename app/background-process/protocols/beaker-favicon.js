@@ -87,7 +87,7 @@ export function setup () {
         let manifest = await datfs.pda.readManifest()
         let type = getShortenedUnwalledGardenType(manifest.type)
         if (type) {
-          return fs.readFile(path.join(__dirname, `./assets/img/templates/${basicType}.png`), (err, buf) => {
+          return fs.readFile(path.join(__dirname, `./assets/img/templates/${type}.png`), (err, buf) => {
             cb({mimeType: 'image/png', data: buf || defaultFaviconBuffer})
           })
         }

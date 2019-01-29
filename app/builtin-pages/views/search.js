@@ -15,9 +15,19 @@ function C(id, label, datasets, siteTypes) {
   if (siteTypes) siteTypes = siteTypes.map(t => `unwalled.garden${t}`)
   return {id, label, datasets, siteTypes}
 }
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   C('all', 'All', ['followgraph', 'link_posts', 'published_sites']),
   C('users', 'Users', ['followgraph']),
+  C('articles', 'Articles', ['link_posts', 'published_sites'], ['/media/article', '/channel/blog']),
+  C('photos', 'Photos', ['link_posts', 'published_sites'], ['/channel/photo', '/media/photo-album', '/media/photo']),
+  C('video', 'Videos', ['link_posts', 'published_sites'], ['/channel/video', '/media/video-playlist', '/media/video']),
+  C('music', 'Music', ['link_posts', 'published_sites'], ['/channel/music', '/media/music-playlist', '/media/music-album', '/media/song']),
+  C('podcasts', 'Podcasts', ['link_posts', 'published_sites'], ['/channel/podcast', '/media/podcast-episode']),
+  C('files', 'Files', ['link_posts', 'published_sites'], ['/media/file-set', '/media/file']),
+  C('templates', 'Templates', ['link_posts', 'published_sites'], ['/template'])
+]
+const SOURCE_CATEGORIES = [
+  C('all', 'All', ['link_posts', 'published_sites']),
   C('articles', 'Articles', ['link_posts', 'published_sites'], ['/media/article', '/channel/blog']),
   C('photos', 'Photos', ['link_posts', 'published_sites'], ['/channel/photo', '/media/photo-album', '/media/photo']),
   C('video', 'Videos', ['link_posts', 'published_sites'], ['/channel/video', '/media/video-playlist', '/media/video']),
@@ -60,8 +70,9 @@ async function setup () {
 }
 
 async function readStateFromURL () {
-  var view = getView()
-  var source = getParam('source')
+  const view = getView()
+  const source = getParam('source')
+  const sourceView = getSourceView()
   
   try {
     if (view === 'new-post') {
@@ -82,27 +93,39 @@ async function readStateFromURL () {
         sourceInfo = null
       }
 
-      // run query
-      console.log('running query', getParam('q'))
-      var category = CATEGORIES.find(c => c.id === getCategory()) || CATEGORIES[0]
-      let page = getPage()
-      let res = await beaker.crawler.listSearchResults({
-        user: currentUserSession.url, 
-        query: getParam('q'),
-        datasets: category.datasets,
-        siteTypes: category.siteTypes,
-        source,
-        hops: getHops(),
-        since: getSinceTS(),
-        offset: (page - 1) * LIMIT,
-        limit: LIMIT + 1 // get 1 more than needed to detect if more results exist
-      })
-      results = res.results
-      highlightNonce = res.highlightNonce
+      if (sourceView === 'following') {
+        // get following
+        results = await beaker.followgraph.listFollows(source, {includeDesc: true, includeFollowers: true})
+        results.forEach(r => {r.resultType = 'user'})
+      } else if (sourceView === 'followers') {
+        // get followers
+        results = await beaker.followgraph.listFollowers(source, {includeDesc: true, includeFollowers: true})
+        results.forEach(r => {r.resultType = 'user'})
+      } else {
+        // general query
+        console.log('running query', getParam('q'))
+        let CATEGORIES = (source) ? SOURCE_CATEGORIES : DEFAULT_CATEGORIES
+        let category = CATEGORIES.find(c => c.id === getCategory()) || CATEGORIES[0]
+        let page = getPage()
+        let res = await beaker.crawler.listSearchResults({
+          user: source || currentUserSession.url, 
+          query: getParam('q'),
+          datasets: category.datasets,
+          siteTypes: category.siteTypes,
+          followgraphReverse: sourceView === 'followers',
+          hops: getHops(),
+          since: getSinceTS(),
+          offset: (page - 1) * LIMIT,
+          limit: LIMIT + 1 // get 1 more than needed to detect if more results exist
+        })
+        results = res.results
+        highlightNonce = res.highlightNonce
+      }
 
       // detect hasMore
       hasMore = results.length > LIMIT
       if (hasMore) results.pop() // discard extra
+
       console.log('results', results)
     }
   } catch (err) {
@@ -156,6 +179,7 @@ function getPage () {
 }
 
 function getHops () {
+  if (getParam('source')) return 0
   return +(getParam('hops') || 2)
 }
 
@@ -163,14 +187,6 @@ function getSinceTS () {
   var since = getParam('since')
   if (!since || since === 'all') return undefined
   return moment().subtract(1, since).valueOf()
-}
-
-function filterTabByView (category) {
-  if (getParam('source')) {
-    // dont show users tab when viewing a user
-    if (category.id === 'users') return false
-  }
-  return true
 }
 
 // rendering
@@ -181,15 +197,17 @@ function update () {
   const query = getParam('q') || ''
   const category = getCategory()
   const sourceView = getSourceView()
+  const CATEGORIES = sourceInfo ? SOURCE_CATEGORIES : DEFAULT_CATEGORIES
 
   const renderTab = ({id, label}) => yo`<div class="tab ${category === id ? 'active' : ''}" onclick=${() => onClickTab(id)}>${label}</div>`
 
   yo.update(document.querySelector('.search-wrapper'), yo`
     <div class="search-wrapper builtin-wrapper">
       <div class="builtin-main">
+        ${renderBreadCrumbs()}
+
         ${sourceInfo
           ? [
-            yo`<a href="/" onclick=${pushUrl}><i class="fas fa-angle-double-left"></i> Back</a>`,
             renderSourceBanner({sourceInfo, currentUserSession}),
             renderSourceSubnav({sourceView, onChangeSourceView})
           ] : yo`
@@ -207,7 +225,7 @@ function update () {
 
         <div class="search-body">
           <div class="tabs">
-            ${CATEGORIES.filter(filterTabByView).map(renderTab)}
+            ${CATEGORIES.map(renderTab)}
           </div>
           ${view === 'new-post'
             ? renderNewPostColumn()
@@ -259,6 +277,21 @@ function renderSearchResultsColumn ({query}) {
             </ul>
           </div>`
         : ''}
+    </div>`
+}
+
+function renderBreadCrumbs () {
+  if (sourceInfo) {
+    return yo`
+      <div class="breadcrumbs">
+        <a href="/" class="link" onclick=${pushUrl}>Home</a>
+        <span class="fas fa-angle-right"></span>
+        <span>User</span>
+      </div>`
+  }
+  return yo`
+    <div class="breadcrumbs">
+      <span>Home</span>
     </div>`
 }
 
