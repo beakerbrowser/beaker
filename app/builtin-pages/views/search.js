@@ -100,11 +100,11 @@ async function readStateFromURL () {
       if (sourceView === 'following') {
         // get following
         results = await beaker.followgraph.listFollows(source, {includeDesc: true, includeFollowers: true})
-        results.forEach(r => {r.resultType = 'user'})
+        results.forEach(r => {r.recordType = 'user'})
       } else if (sourceView === 'followers') {
         // get followers
         results = await beaker.followgraph.listFollowers(source, {includeDesc: true, includeFollowers: true})
-        results.forEach(r => {r.resultType = 'user'})
+        results.forEach(r => {r.recordType = 'user'})
       } else {
         // general query
         console.log('running query', getParam('q'))
@@ -256,9 +256,9 @@ function renderSearchResultsColumn ({query}) {
               </div>`
           : ''}
         ${results.map(result => {
-          if (result.resultType === 'user') return renderUserResult(result, currentUserSession, highlightNonce)
-          if (result.resultType === 'post') return renderPostResult(result, currentUserSession, highlightNonce, onClickLinkType)
-          return renderSiteResult(result, currentUserSession, highlightNonce, onClickLinkType)
+          if (result.recordType === 'user') return renderUserResult(result, currentUserSession, highlightNonce)
+          if (result.recordType === 'link-post') return renderPostResult({post: result, currentUserSession, highlightNonce, onClickLinkType, onDeleteLinkPost})
+          return renderSiteResult({site: result, currentUserSession, highlightNonce, onClickLinkType, onUnpublishSite})
         })}
       </div>
       ${page > 1 || hasMore
@@ -331,7 +331,7 @@ function renderNewPostColumn () {
       </form>
       <div><small>Preview:</small></div>
       <div class="search-results">
-        ${renderPostResult(preview, currentUserSession, 0)}
+        ${renderPostResult({post: preview, currentUserSession})}
       </div>
     </div>`
 }
@@ -448,6 +448,30 @@ function onClickLinkType (type) {
   type = getUnwalledGardenType(type)
   var category = DEFAULT_CATEGORIES.find(c => c.siteTypes && c.siteTypes.includes(type))
   setParams({category: category ? category.id : 'all'})
+}
+
+async function onDeleteLinkPost (post) {
+  if (!confirm('Are you sure?')) return
+  try {
+    await beaker.linkFeed.delete(post.recordFilepath)
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+    return
+  }
+  readStateFromURL()
+}
+
+async function onUnpublishSite (site) {
+  if (!confirm('Are you sure?')) return
+  try {
+    await beaker.archives.unpublish(site.url)
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+    return
+  }
+  readStateFromURL()
 }
 
 async function onEditProfile () {

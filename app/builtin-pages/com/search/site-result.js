@@ -4,14 +4,17 @@ import {niceDate} from '../../../lib/time'
 import {pushUrl} from '../../../lib/fg/event-handlers'
 import {getTypeLabel} from '@beaker/core/lib/dat'
 import _get from 'lodash.get'
+import toggleable, {closeAllToggleables} from '../toggleable2'
 
 // exported api
 // =
 
-export default function render (site, currentUserSession, highlightNonce, onClickLinkType) {
+export default function render ({site, currentUserSession, highlightNonce, onClickLinkType, onUnpublishSite}) {
+  const isOwner = site.author.url === currentUserSession.url
   return yo`
     <div class="search-result site">
       <div class="details">
+        ${isOwner ? renderOwnerControls({site, onUnpublishSite}) : ''}
         <a class="link title" href=${site.url} title=${getTitle(site)}>${renderTitle(site, highlightNonce)}</a>
         <div>${renderDescription(site, highlightNonce)}</div>
         <div class="meta">
@@ -46,6 +49,34 @@ function renderDescription (site, highlightNonce) {
     return el
   }
   return ''
+}
+
+function renderOwnerControls ({site, onUnpublishSite}) {
+  return yo`
+    <div class="owner-controls">
+      ${toggleable({
+        id: 'owner-controls-menu',
+        closed ({onToggle}) {
+          return yo`
+            <div class="dropdown menu toggleable-container">
+              <button class="btn small transparent" onclick=${onToggle}><span class="fas fa-cog"></span></button>
+            </div>`
+        },
+        open ({onToggle}) {
+          return yo`
+            <div class="dropdown menu toggleable-container">
+              <button class="btn small transparent" onclick=${onToggle}><span class="fas fa-cog"></span></button>
+              <div class="dropdown-items thin roomy right">
+                <div class="dropdown-item" onclick=${e => {closeAllToggleables(); onUnpublishSite(site)}}>
+                  <i class="fas fa-times"></i>
+                  Unpublish site
+                </div>
+              </div>
+            </div>
+          `
+        }
+      })}
+    </div>`
 }
 
 function getTitle (site) {
