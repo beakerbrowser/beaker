@@ -1,3 +1,6 @@
+@import "./components/editor/explorer.less";
+@import "./components/editor/tabs.less";
+
 .muted {
   color: gray;
 }
@@ -17,182 +20,22 @@
   flex-flow: row nowrap;
 }
 
-.editor-explorer {
-  flex: 0 0;
-  min-width: 250px;
-  background: #f6f6f9;
-  display: flex;
-  flex-flow: column;
-  height: calc(100vh - 25px);
-  overflow-y: scroll;
-  text-overflow: ellipsis;
-
-  .section-title:hover .archive-fs-options {
-    opacity: 1;
-  }
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  button {
-    align-self: center;
-    margin: auto 0;
-  }
-
-  .explorer-title {
-    font-size: 11px;
-    padding: 0.5rem;
-    padding-left: 10px;
-    background: #e0e0e6;
-    text-transform: uppercase;
-    font-weight: 500;
-    min-height: 35px;
-  }
-
-  .section-title {
-    background-color: #C4C4C4;
-    padding: 0px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    user-select: none;
-    height: 25px;
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
-
-    .fa-caret-down, .fa-caret-right {
-      width: 7.5px;
-    }
-
-    span {
-      flex: 1;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      margin-left: 5px;
-    }
-
-    .archive-fs-options {
-      opacity: 0;
-      transition: opacity 0.3s;
-
-      i {
-        padding: 0 2px;
-      }
-    }
-  }
-
-  .filetree {
-    font-size: 13px;
-    color: #444;
-    flex: 1;
-  }
-
-  .subtree {
-    padding-left: 1em;
-  }
-
-  .filetree * {
-    cursor: pointer;
-  }
-
-  .item {
-    padding: 5px 10px;
-    cursor: pointer;
-    white-space: nowrap;
-    -webkit-user-select: none;
-    display: flex;
-    align-items: center;
-
-    i {
-      padding: 0;
-      margin: 0;
-      margin-right: 5px;
-      flex-basis: 16px;
-    }
-
-    span {
-      margin-left: 5px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-    &:hover {
-      background: #ededf0;
-    }
-
-    #diff-path-listing {
-      font-size: 12px;
-      color: #8e8e8e;
-    }
-  }
-
-  .filetree .folder {
-    position: relative;
-  }
-  .filetree .folder > .icon-down-dir,
-  .filetree .folder > .icon-right-dir {
-    font-size: 17px;
-    position: absolute;
-    left: 8px;
-    top: 3px;
-  }
-  .filetree .item.selected {
-    background: #4766ff;
-    color: #fff;
-  }
-}
-
 .editor-container {
   flex: 1;
   width: calc(100vw - 250px); // allows monaco to resize properly
-
-  .editor-tabs {
-    height: 35px;
-    background: #F3F3F3;
-    display: flex;
-    overflow-x: scroll;
-
-    &::-webkit-scrollbar {
-      display: none;
-    }
-
-    .tab {
-      background-color: #E9E9E9;
-      height: 100%;
-      padding: 0 10px;
-      line-height: 35px;
-      flex: 0 0 auto;
-      z-index: 1;
-      cursor: pointer;
-    }
-    .tab.active {
-      background-color: white;
-    }
-
-    .tab i {
-      opacity: 0;
-      padding-left: 5px;
-      transition: opacity 0.3s;
-      z-index: 100;
-      cursor: pointer;
-    }
-    .tab:hover i {
-      opacity: 1;
-    }
-    .tab.active i {
-      opacity: 1;
-    }
-  }
 
   #editor, #diffEditor, #imageViewer {
     height: 100%;
     background-color: white;
   }
 
+  #editor {
+    border-left: 1px solid #ddd;
+  }
+
   #imageViewer {
-    box-shadow: inset 0px 0px 3px 0px rgba(0, 0, 0, 0.65);
     position: relative;
+    border-left: 1px solid #ddd;
 
     img {
       max-width: 100%;
@@ -201,28 +44,5 @@
       top: 25px;
       left: 25px;
     }
-  }
-}
-
-.editor-toolbar {
-  background-color: #e0e0e6;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 25px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 15px;
-
-  .favicon-picker-btn {
-    cursor: pointer;
-  }
-
-  .dropdown-items {
-    bottom: 35px;
-    right: 5px;
-    padding: 10px;
   }
 }

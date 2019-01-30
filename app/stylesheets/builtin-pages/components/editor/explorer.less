@@ -1,0 +1,111 @@
+
+.editor-explorer {
+  flex: 0 0;
+  min-width: 250px;
+  background: #f6f6f9;
+  display: flex;
+  flex-flow: column;
+  overflow-y: scroll;
+  text-overflow: ellipsis;
+
+  .section-title:hover .archive-fs-options {
+    opacity: 1;
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  button {
+    align-self: center;
+    margin: auto 0;
+  }
+
+  .section-title {
+    background-color: #C4C4C4;
+    padding: 0px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    height: 25px;
+
+    .fa-caret-down, .fa-caret-right {
+      width: 7.5px;
+    }
+
+    span {
+      flex: 1;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .archive-fs-options {
+      opacity: 0;
+      transition: opacity 0.3s;
+
+      i {
+        padding: 0 2px;
+      }
+    }
+  }
+
+  .filetree {
+    font-size: 13px;
+    color: #444;
+    flex: 1;
+  }
+
+  .subtree {
+    padding-left: 1em;
+  }
+
+  .filetree * {
+    cursor: pointer;
+  }
+
+  .item {
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+
+    i {
+      color: #444;
+
+      &.fa-caret-right {
+        color: gray;
+      }
+    }
+
+    span {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    &:hover {
+      background: #ededf0;
+    }
+
+    #diff-path-listing {
+      font-size: 12px;
+      color: #8e8e8e;
+    }
+  }
+
+  .filetree .folder {
+    position: relative;
+  }
+  .filetree .folder > .icon-down-dir,
+  .filetree .folder > .icon-right-dir {
+    font-size: 17px;
+    position: absolute;
+    left: 8px;
+    top: 3px;
+  }
+  .filetree .item.selected {
+    background: #4766ff;
+    color: #fff;
+  }
+
+}

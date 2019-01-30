@@ -26,7 +26,6 @@ export function render () {
 
   return yo`
     <div class="explorer-section">
-      ${rSection('fileTree')}
       <div class="fileTree">
         ${rChildren(getCurrentSource().children)}
       </div>
@@ -189,8 +188,8 @@ function rDirectory (node) {
         onclick=${e => onClickNode(e, node)}
         oncontextmenu=${e => onContextmenuNode(e, node)}
       >
-        <i class="fa fa-caret-${cls}" style="flex-basis: 0;"></i>
-        <i class="fa fa-folder"></i>
+        <i class="fa fa-fw fa-caret-${cls}" style="flex-basis: 0;"></i>
+        <i class="fa fa-fw fa-folder"></i>
         <span>${node.name}</span>
       </div>
       ${children}
@@ -218,33 +217,32 @@ function getIcon (name) {
   switch (extention) {
     case 'json':
     case 'js':
-      return yo`<i class="fab fa-js"></i>`
+      return yo`<i class="fab fa-fw fa-js"></i>`
     case 'html':
-      return yo`<i class="fab fa-html5"></i>`
+      return yo`<i class="fab fa-fw fa-html5"></i>`
     case 'md':
-      return yo`<i class="fab fa-markdown"></i>`
+      return yo`<i class="fab fa-fw fa-markdown"></i>`
     case 'gitignore':
-      return yo`<i class="fab fa-git"></i>`
-    case 'lock':
-      return yo`<i class="fas fa-unlock-alt"></i>`
+      return yo`<i class="fab fa-fw fa-git"></i>`
     case 'css':
-      return yo`<i class="fab fa-css3-alt"></i>`
+      return yo`<i class="fab fa-fw fa-css3"></i>`
     case 'less':
-      return yo`<i class="fab fa-less"></i>`
+      return yo`<i class="fab fa-fw fa-less"></i>`
     case 'scss':
     case 'sass':
-      return yo`<i class="fab fa-sass"></i>`
+      return yo`<i class="fab fa-fw fa-sass"></i>`
     case 'svg':
     case 'png':
     case 'jpg':
-      return yo`<i class="far fa-image"></i>`
+    case 'gif':
+      return yo`<i class="far fa-fw fa-image"></i>`
     case 'eot':
     case 'ttf':
     case 'woff2':
     case 'woff':
-      return yo`<i class="fas fa-font"></i>`
+      return yo`<i class="fas fa-fw fa-font"></i>`
     default:
-      return yo`<i class="fas fa-code"></i>`
+      return yo`<i class="far fa-fw fa-file"></i>`
   }
 }
 
@@ -274,17 +272,15 @@ async function onClickNode (e, node) {
   e.preventDefault()
   e.stopPropagation()
 
-  if (node.isEditable && !node.isContainer && !node.isDiff) {
-    models.setActive(node)
-  }
-
-  if (node.isDiff && !node.isContainer) {
-    models.setActiveDiff(node)
-  }
-
   if (node.isContainer) {
     node.isExpanded = !node.isExpanded
     await node.readData({ignoreCache: true})
+  } else {
+    if (node.isDiff) {
+      models.setActiveDiff(node)
+    } else {
+      models.setActive(node)
+    }
   }
 
   rerender()

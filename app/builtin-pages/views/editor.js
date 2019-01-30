@@ -116,7 +116,6 @@ function render () {
       document.querySelector('.editor-explorer'),
       yo`
         <div class="editor-explorer">
-          <div class="explorer-title">Explorer</div>
           ${fileTree.render()}
         </div>
       `)
@@ -136,55 +135,7 @@ function render () {
     yo`
       <div class="editor-tabs">
         ${models.getModels().map(model => renderTab(model))}
-      </div>
-    `
-  )
-
-  // toolbar
-  yo.update(
-    document.querySelector('.editor-toolbar'),
-    yo`
-      <div class="editor-toolbar">
-        ${isOwner
-          ? yo`
-            <p>
-              ${toggleable2({
-                id: 'favicon-picker',
-                closed: ({onToggle}) => yo`
-                  <div class="dropdown toggleable-container">
-                    <span class="version-picker-btn" onclick=${onToggle}>Version: ${version}</span>
-                  </div>`,
-                open: ({onToggle}) => yo`
-                  <div class="dropdown toggleable-container">
-                    <span class="version-picker-btn pressed" onclick=${onToggle}>Version: ${version}</span>
-                    <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
-                      ${renderArchiveHistory(workingCheckout, {filePath, includePreview: previewMode})}
-                    </div>
-                  </div>`
-              })}
-            </p>`
-            : yo``
-        }
-        ${isOwner
-          ? yo`
-            <p>
-              ${toggleable2({
-                id: 'favicon-picker',
-                closed: ({onToggle}) => yo`
-                  <div class="dropdown toggleable-container">
-                    <span class="favicon-picker-btn" onclick=${onToggle}>Favicons</span>
-                  </div>`,
-                open: ({onToggle}) => yo`
-                  <div class="dropdown toggleable-container">
-                    <span class="favicon-picker-btn pressed" onclick=${onToggle}>Favicons</span>
-                    <div class="dropdown-items subtle-shadow right" onclick=${onToggle}>
-                      ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl})}
-                    </div>
-                  </div>`
-              })}
-            </p>`
-            : yo``
-        }
+        <div class="unused-space"></div>
       </div>
     `
   )

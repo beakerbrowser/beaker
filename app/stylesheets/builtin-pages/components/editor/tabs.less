@@ -1,0 +1,47 @@
+.editor-tabs {
+  display: flex;
+  height: 39px;
+  padding-top: 4px;
+  background: #f6f6f9;
+  overflow-x: scroll;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    height: 100%;
+    line-height: 35px;
+    flex: 0 0 auto;
+    z-index: 1;
+    cursor: pointer;
+
+    // border behaviors
+    border-bottom: 1px solid #ddd;
+    padding: 1px 11px 0 11px; // adjust spacing so that when top & side borders show, our content is in the same place
+
+    &.active {
+      padding: 0 10px; // normal padding, the border is visible
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-bottom-color: transparent;
+    }
+
+    i {
+      opacity: 0;
+      padding-left: 10px;
+      z-index: 100;
+      cursor: pointer;
+    }
+    &:hover i,
+    &.active i {
+      opacity: 1;
+    }
+  }
+
+  .unused-space {
+    flex: 1;
+    border: 1px solid transparent;
+    border-bottom-color: #ddd;
+  }
+}
