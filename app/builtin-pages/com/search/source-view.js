@@ -4,8 +4,9 @@ import {renderFollowedBy} from '../user/followers'
 // exported api
 // =
 
-export function renderSourceBanner ({sourceInfo, currentUserSession}) {
+export function renderSourceBanner ({sourceInfo, currentUserSession, onEditProfile, onToggleFollowSource}) {
   const isSelf = sourceInfo.url === currentUserSession.url
+  const isFollowed = sourceInfo.isFollowed
   return yo`
     <div class="source-banner">
       <div class="thumb"><img src="${sourceInfo.url}/thumb"></div>
@@ -14,13 +15,15 @@ export function renderSourceBanner ({sourceInfo, currentUserSession}) {
         <div class="description">${sourceInfo.description}</div>
         ${isSelf
           ? yo`<div><span class="isyou">This is you!</span></div>`
-          : renderFollowedBy([], currentUserSession)}
+          : renderFollowedBy(sourceInfo.followers, currentUserSession)}
       </div>
       <div class="actions">
         ${isSelf
-          ? yo`<button class="btn thick"><i class="fas fa-pencil-alt"></i> Edit profile</button>`
-          : yo`<button class="btn thick"><i class="fas fa-rss"></i> Follow</button>`}
-        <a class="btn thick" href=${sourceInfo.url} target="_blank"><i class="fas fa-external-link-alt"></i> Visit website</a>
+          ? yo`<button class="btn"><i class="fas fa-pencil-alt" onclick=${onEditProfile}></i> Edit profile</button>`
+          : isFollowed
+            ? yo`<button class="btn" onclick=${() => onToggleFollowSource(false)}><i class="fas fa-rss red-x"></i> Unfollow</button>`
+            : yo`<button class="btn" onclick=${() => onToggleFollowSource(true)}><i class="fas fa-rss"></i> Follow</button>`}
+        <a class="btn" href=${sourceInfo.url} target="_blank"><i class="fas fa-external-link-alt"></i> Visit website</a>
       </div>
     </div>`
 }

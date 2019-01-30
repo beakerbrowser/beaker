@@ -8,17 +8,19 @@ import _get from 'lodash.get'
 // exported api
 // =
 
-export default function render (post, currentUserSession, highlightNonce) {
+export default function render (post, currentUserSession, highlightNonce, onClickLinkType) {
   return yo`
     <div class="search-result post">
       <div class="details">
         <a class="link title" href=${post.content.url} title=${getTitle(post)}>${renderTitle(post, highlightNonce)}</a>
         <div>${renderDescription(post, highlightNonce)}</div>
         <div class="meta">
-          ${getTypeLabel(post.content.type, 'link')}
           <a class="author link" href="/?source=${encodeURIComponent(post.author.url)}" onclick=${pushUrl} title=${getAuthorTitle(post)}>
             <img src="${post.author.thumbUrl}">
             ${getAuthorTitle(post)}
+          </a>
+          <a class="type" onclick=${onClickLinkType ? e => onClickLinkType(post.content.type) : undefined}>
+            ${getTypeLabel(post.content.type, 'link')}
           </a>
           <span class="timestamp">
             Posted ${niceDate(post.createdAt)}

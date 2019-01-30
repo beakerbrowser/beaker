@@ -7,14 +7,14 @@
 
 .search .builtin-main {  
   max-width: 920px;
-  padding: 15px 10px;
+  padding: 5px 10px;
 
   .builtin-sidebar {
     top: 18px;
   }
 
   h2 {
-    font-size: 27px;
+    font-size: 16px;
     margin-bottom: 10px;
     font-weight: normal;
   }
@@ -22,6 +22,7 @@
 
 .breadcrumbs {
   margin-bottom: 5px !important;
+  color: #666;
 }
 
 .search-header {
@@ -77,12 +78,6 @@
   }
 }
 
-.showing-results-for {
-  color: rgba(0, 0, 0, 0.65);
-  font-size: 12px;
-  margin: -3px 41px 15px !important;
-}
-
 .search-body {
   display: flex;
 
@@ -113,7 +108,7 @@
     margin-right: 10px;
 
     form {
-      padding: 10px 20px;
+      padding: 14px 20px;
       background: #fff;
       border: 1px solid #ddd;
       margin-bottom: 10px;
@@ -137,8 +132,7 @@
     }
 
     .form-actions {
-      margin-top: 20px;
-      margin-bottom: 10px;
+      margin-top: 14px;
     }
   }
 
@@ -153,18 +147,24 @@
 
 .search-results {
   margin-bottom: 10px;
+  min-height: 400px;
+
+  // dots pattern
+  background: linear-gradient(90deg, #f7f7f7 4px, transparent 1%) center, linear-gradient(#f7f7f7 4px, transparent 1%) center, #e5e5e5;
+  background-size: 6px 6px;
 
   .empty {
-    background: #eee;
+    background: #fff;
+    border: 1px solid #ddd;
     color: rgba(0,0,0,.5);
-    padding: 50px 0;
+    padding: 20px 0;
     text-align: center;
   }
 }
 
 .search-result {
   background: #fff;
-  padding: 20px;
+  padding: 14px;
   border: 1px solid #ddd;
   border-bottom-width: 0;
 
@@ -181,7 +181,7 @@
 
   .title {
     display: inline-block;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 500;
   }
 
@@ -189,9 +189,16 @@
     color: rgba(0,0,0,.5);
   }
 
-  .timestamp {
-    font-size: 11px;
+  a.type {
+    display: inline-block;
+    cursor: pointer;
 
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .timestamp {
     &:before {
       content: '|';
     }

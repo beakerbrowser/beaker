@@ -8,6 +8,7 @@ import renderSiteResult from '../com/search/site-result'
 import {renderSourceBanner, renderSourceSubnav} from '../com/search/source-view'
 import {polyfillHistoryEvents, pushUrl} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
+import { getUnwalledGardenType } from '@beaker/core/lib/dat';
 
 const LIMIT = 20
 
@@ -79,7 +80,7 @@ async function readStateFromURL () {
       results = []
       sourceInfo = null
     } else {
-      if (source && (!sourceInfo || sourceInfo.url !== source)) {
+      if (source) {
         // get source info
         let archive = new DatArchive(source)
         sourceInfo = await archive.getInfo()
@@ -88,6 +89,9 @@ async function readStateFromURL () {
           setParams({source: sourceInfo.url})
           return
         }
+        sourceInfo.followers = await beaker.followgraph.listFollowers(sourceInfo.url, {followedBy: currentUserSession.url, includeDesc: true})
+        sourceInfo.isFollowed = !!sourceInfo.followers.find(v => v.url === currentUserSession.url)
+        console.log('viewing', sourceInfo)
       } else if (!source && sourceInfo) {
         // clear out
         sourceInfo = null
@@ -195,8 +199,8 @@ function getSinceTS () {
 function update () {
   const view = getView()
   const query = getParam('q') || ''
-  const category = getCategory()
   const sourceView = getSourceView()
+  const category = (!sourceView || sourceView === 'profile') ? getCategory() : false
   const CATEGORIES = sourceInfo ? SOURCE_CATEGORIES : DEFAULT_CATEGORIES
 
   const renderTab = ({id, label}) => yo`<div class="tab ${category === id ? 'active' : ''}" onclick=${() => onClickTab(id)}>${label}</div>`
@@ -204,24 +208,17 @@ function update () {
   yo.update(document.querySelector('.search-wrapper'), yo`
     <div class="search-wrapper builtin-wrapper">
       <div class="builtin-main">
-        ${renderBreadCrumbs()}
+        ${renderBreadCrumbs(query)}
 
         ${sourceInfo
           ? [
-            renderSourceBanner({sourceInfo, currentUserSession}),
+            renderSourceBanner({sourceInfo, currentUserSession, onEditProfile, onToggleFollowSource}),
             renderSourceSubnav({sourceView, onChangeSourceView})
           ] : yo`
             <div class="search-header">
               ${renderSearchControl()}
             </div>`
         }
-
-        ${query
-          ? yo`
-            <div class="showing-results-for">
-              Showing results for "${query}". <a class="link" onclick=${onClearQuery}>Clear query.</a>
-            </div>`
-          : ''}
 
         <div class="search-body">
           <div class="tabs">
@@ -247,23 +244,30 @@ function renderSearchResultsColumn ({query}) {
     <div class="search-results-col">
       <div class="search-results">
         ${isEmpty
-          ? yo`
-            <div class="empty">
-              No results${query ? ` for "${query}"` : ''}.
-              <a class="link" href="https://duckduckgo.com${query ? ('?q=' + encodeURIComponent(query)) : ''}">Try your search on DuckDuckGo <span class="fa fa-angle-double-right"></span></a>
-            </div>`
+          ? query
+            ? yo`
+              <div class="empty">
+                No results for "${query}".
+                <a class="link" href="https://duckduckgo.com${query ? ('?q=' + encodeURIComponent(query)) : ''}">Try your search on DuckDuckGo <span class="fa fa-angle-double-right"></span></a>
+              </div>`
+            : yo`
+              <div class="empty">
+                No results.
+              </div>`
           : ''}
         ${results.map(result => {
           if (result.resultType === 'user') return renderUserResult(result, currentUserSession, highlightNonce)
-          if (result.resultType === 'post') return renderPostResult(result, currentUserSession, highlightNonce)
-          return renderSiteResult(result, currentUserSession, highlightNonce)
+          if (result.resultType === 'post') return renderPostResult(result, currentUserSession, highlightNonce, onClickLinkType)
+          return renderSiteResult(result, currentUserSession, highlightNonce, onClickLinkType)
         })}
       </div>
-      <div class="pagination">
-        <a class="btn ${page > 1 ? '' : 'disabled'}" onclick=${onClickPrevPage}><span class="fa fa-angle-left"></span></a>
-        <span class="current">${page}</span>
-        <a class="btn ${hasMore ? '' : 'disabled'}" onclick=${onClickNextPage}>Next page <span class="fa fa-angle-right"></span></a>
-      </div>
+      ${page > 1 || hasMore
+        ? yo`<div class="pagination">
+            <a class="btn ${page > 1 ? '' : 'disabled'}" onclick=${onClickPrevPage}><span class="fa fa-angle-left"></span></a>
+            <span class="current">${page}</span>
+            <a class="btn ${hasMore ? '' : 'disabled'}" onclick=${onClickNextPage}>Next page <span class="fa fa-angle-right"></span></a>
+          </div>`
+        : ''}
       ${query
         ? yo`
           <div class="alternative-engines">
@@ -280,13 +284,13 @@ function renderSearchResultsColumn ({query}) {
     </div>`
 }
 
-function renderBreadCrumbs () {
-  if (sourceInfo) {
+function renderBreadCrumbs (query) {
+  if (sourceInfo || query) {
     return yo`
       <div class="breadcrumbs">
         <a href="/" class="link" onclick=${pushUrl}>Home</a>
         <span class="fas fa-angle-right"></span>
-        <span>User</span>
+        <span>${query ? 'Search' : 'User'}</span>
       </div>`
   }
   return yo`
@@ -321,8 +325,8 @@ function renderNewPostColumn () {
         ${input('title', 'Title')}
         ${input('description', 'Description (optional)')}
         <div class="form-actions">
-          <button class="btn primary thick">Publish</button>
-          <button class="btn transparent thick" onclick=${onClickNewPostCancel}>Cancel</button>
+          <button class="btn primary">Publish</button>
+          <button class="btn transparent" onclick=${onClickNewPostCancel}>Cancel</button>
         </div>
       </form>
       <div><small>Preview:</small></div>
@@ -375,7 +379,7 @@ function renderSideControls () {
   } else {
     // general controls
     ctrls.push(yo`
-      <button class="btn primary thick full-width" onclick=${onClickCreatePost}>
+      <button class="btn primary full-width" onclick=${onClickCreatePost}>
         Create a post
       </button>`
     )
@@ -438,6 +442,39 @@ function onClickCreatePost (e) {
 
 function onChangeSourceView (sourceView) {
   setParams({sourceView})
+}
+
+function onClickLinkType (type) {
+  type = getUnwalledGardenType(type)
+  var category = DEFAULT_CATEGORIES.find(c => c.siteTypes && c.siteTypes.includes(type))
+  setParams({category: category ? category.id : 'all'})
+}
+
+async function onEditProfile () {
+  try {
+    await beaker.browser.showEditProfileModal()
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+    return
+  }
+  readStateFromURL()
+}
+
+async function onToggleFollowSource (isFollowing) {
+  if (!sourceInfo) return
+  try {
+    if (isFollowing) {
+      await beaker.followgraph.follow(sourceInfo.url)
+    } else {
+      await beaker.followgraph.unfollow(sourceInfo.url)
+    }
+  } catch (err) {
+    console.error(err)
+    toast.create(err.toString(), 'error')
+    return
+  }
+  readStateFromURL()
 }
 
 function onKeyupNewPostInput (e, key) {
@@ -523,8 +560,8 @@ function onUpdateSearchQuery (e) {
 
 function onClickTab (category) {
   var params = {category}
-  var view = getView()
-  if (view === 'new-post') params.view = '' // reset view if it's set
+  if (getView() === 'new-post') params.view = '' // reset view if it's set
+  if (getParam('sourceView')) params.sourceView = '' // reset sourceView if it's set
   var source = getParam('source')
   if (source) params.source = source // preserve source
   setParams(params)
