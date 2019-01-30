@@ -10,6 +10,7 @@ import * as toast from '../com/toast'
 import toggleable2, {closeAllToggleables}  from '../com/toggleable2'
 import renderFaviconPicker from '../com/settings/favicon-picker'
 import renderArchiveHistory from '../com/archive/archive-history'
+import * as contextMenu from '../com/context-menu'
 
 var archive
 var workingCheckout
@@ -190,6 +191,9 @@ function render () {
 }
 
 window.addEventListener('editor-created', setup)
+window.addEventListener("beforeunload", e => {
+  if (models.checkForDirtyFiles()) e.returnValue = 'You have unsaved changes, are you sure you want to leave?'
+})
 
 window.addEventListener('keydown', e => {
   var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
@@ -205,13 +209,24 @@ window.addEventListener('keydown', e => {
 window.addEventListener('update-editor', render)
 window.addEventListener('model-dirtied', render)
 window.addEventListener('model-cleaned', render)
+document.body.addEventListener('custom-rename-file', onRenameFile)
+document.body.addEventListener('custom-delete-file', onDeleteFile)
 
 function renderTab (model) {
   let cls = models.getActive() === model ? 'active' : ''
   return yo`
-    <div draggable="true" class="tab ${cls}" onclick=${() => models.setActive(model)}>
+    <div
+    draggable="true"
+    class="tab ${cls}"
+    oncontextmenu=${(e) => onContextmenuTab(e, model)}
+    onmouseup=${(e) => onClickTab(e, model)}
+    ondragstart=${(e) => onTabDragStart(e, model)}
+    ondragend=${(e) => onTabDragEnd(e, model)}
+    ondragover=${(e) => onTabDragOver(e, model)}
+    ondrop=${(e) => onTabDragDrop(e, model)}
+    >
       ${model.isDiff ? model.name + " (Working Tree)" : model.name}
-      <i class="fa fa-times" onclick=${(e) => models.unload(e, model)}></i>
+      <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
     </div>
   `
 }
@@ -223,10 +238,19 @@ async function localCompare () {
 
   compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
   let fileDiffs = await Promise.all(compareDiff.map(async (diff) => {
-    let node = await findArchiveNode(archiveFsRoot, diff.path)
-    let obj = Object.create(node)
-    obj.original = await findArchiveNode(archiveFS, diff.path)
-    obj.isDiff = true
+    let node, obj
+    if (diff.change !== 'del') {
+      node = await findArchiveNode(archiveFsRoot, diff.path)
+      obj = Object.create(node)
+      obj.original = await findArchiveNode(archiveFS, diff.path)
+      obj.isDiff = true
+      obj.change = diff.change
+    } else if (diff.change == 'del') {
+      node = await findArchiveNode(archiveFS, diff.path)
+      obj = Object.create(node)
+      obj.isDiff = true
+      obj.change = diff.change
+    }
     return obj
   }))
 
@@ -248,6 +272,50 @@ async function parseLibraryUrl () {
   return window.location.pathname.slice(1)
 }
 
+function onCloseTab (e, model) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  models.unload(model)
+}
+
+function onClickTab (e, model) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  if (e.which == 2) models.unload(model)
+  else if (e.which == 1) models.setActive(model)
+}
+
+let dragSrcModel = null
+
+function onTabDragStart (e, model) {
+  if (models.getActive !== model) models.setActive(model)
+  dragSrcModel = model
+
+  e.dataTransfer.effectAllowed = 'move'
+}
+
+function onTabDragEnd () {
+  render()
+}
+
+function onTabDragOver (e) {
+  e.preventDefault()
+
+  e.dataTransfer.dropEffect = 'move'
+  return false
+}
+
+async function onTabDragDrop (e, model) {
+  e.stopPropagation()
+
+  if (dragSrcModel != model) {
+    await models.reorderModels(dragSrcModel, model)
+  }
+  return false
+}
+
 async function onFilesChanged () {
   await fileTree.setCurrentSource(archiveFsRoot)
   await localCompare()
@@ -266,6 +334,37 @@ async function onSelectFavicon (imageData) {
   //render() will need to call this once we get the archive change issues fixed. That way the favicon will be updated whenever you open it.
 }
 
+async function onRenameFile (e) {
+  try {
+    const {path, newName} = e.detail
+    const to = setTimeout(() => toast.create('Renaming...'), 500) // if it takes a while, toast
+    const newPath = path.split('/').slice(0, -1).concat(newName).join('/')
+    await workingCheckout.rename(path, newPath)
+    clearTimeout(to)
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
+}
+
+async function onDeleteFile (e) {
+  try {
+    const {path, isFolder} = e.detail
+    const to = setTimeout(() => toast.create('Deleting...'), 500) // if it takes a while, toast
+
+    if (isFolder) {
+      await workingCheckout.rmdir(path, {recursive: true})
+    } else {
+      await workingCheckout.unlink(path)
+    }
+
+    clearTimeout(to)
+    toast.create(`Deleted ${path}`)
+    render()
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
+}
+
 async function onSave () {
   try {
     let model = models.getActive()
@@ -276,10 +375,47 @@ async function onSave () {
       filePath = '/' + filePath
     }
 
+    models.setVersionIdOnSave(model)
     await workingCheckout.writeFile(filePath, fileContent, 'utf8')
 
     toast.create('Saved', 'success')
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
+}
+
+async function onContextmenuTab (e, model) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  var items = []
+
+  if (model.isEditable) {
+    items = items.concat([
+      {
+        label: 'Close',
+        click: async () => {
+          models.unload(model)
+        }
+      },
+      {
+        label: 'Close Others',
+        click: () => {
+          models.unloadOthers(model)
+        }
+      },
+      {
+        label: 'Close All',
+        click: () => {
+          models.unloadAllModels()
+        }
+      }
+    ])
+  }
+
+  contextMenu.create({
+    x: e.clientX,
+    y: e.clientY,
+    items
+  })
 }

@@ -1,6 +1,8 @@
 const yo = require('yo-yo')
 import * as models from './models'
 import _get from 'lodash.get'
+import * as contextMenu from '../context-menu'
+import * as contextInput from '../context-input'
 
 // globals
 // =
@@ -187,7 +189,7 @@ function rDirectory (node) {
         onclick=${e => onClickNode(e, node)}
         oncontextmenu=${e => onContextmenuNode(e, node)}
       >
-        <i class="fa fa-caret-${cls}"></i>
+        <i class="fa fa-caret-${cls}" style="flex-basis: 0;"></i>
         <i class="fa fa-folder"></i>
         <span>${node.name}</span>
       </div>
@@ -249,13 +251,16 @@ function getIcon (name) {
 // event handlers
 // =
 
-function  syncFileTree (e) {
-  e.stopPropagation()
-  e.preventDefault()
+function emit (name, detail = null) {
+  document.body.dispatchEvent(new CustomEvent(name, {detail}))
+}
 
-  getCurrentSource()
+function emitRenameFile (path, newName) {
+  emit('custom-rename-file', {path, newName})
+}
 
-  rerender()
+function emitDeleteFile (path, isFolder) {
+  emit('custom-delete-file', {path, isFolder})
 }
 
 function toggleFileTree (tree) {
@@ -286,5 +291,54 @@ async function onClickNode (e, node) {
 }
 
 function onContextmenuNode (e, node) {
+  e.preventDefault()
+  e.stopPropagation()
 
+  if (node.isDiff) return
+
+  var items = []
+
+  if (node.isEditable) {
+    items = items.concat([
+      {
+        icon: 'fa fa-i-cursor',
+        label: 'Rename',
+        click: async () => {
+          let newName = await contextInput.create({
+            x: e.clientX,
+            y: e.clientY,
+            label: 'Name',
+            value: node.name,
+            action: 'Rename',
+            postRender () {
+              const i = node.name.lastIndexOf('.')
+              if (i !== 0 && i !== -1) {
+                // select up to the file-extension
+                const input = document.querySelector('.context-input input')
+                input.setSelectionRange(0, node.name.lastIndexOf('.'))
+              }
+            }
+          })
+          if (newName) {
+            emitRenameFile(node._path, newName)
+          }
+        }
+      },
+      {
+        icon: 'fa fa-trash',
+        label: 'Delete',
+        click: () => {
+          if (confirm(`Are you sure you want to delete ${node.name}?`)) {
+            emitDeleteFile(node._path, node.isContainer)
+          }
+        }
+      }
+    ])
+  }
+
+  contextMenu.create({
+    x: e.clientX,
+    y: e.clientY,
+    items
+  })
 }

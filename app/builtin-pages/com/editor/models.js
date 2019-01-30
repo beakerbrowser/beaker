@@ -6,6 +6,8 @@
 var models = []
 var modelHistory = []
 var active
+var lastSavedVersionId
+var isDirtyFiles = false
 
 // exported api
 // =
@@ -20,8 +22,9 @@ export const load = async function load (file) {
     model.name = file.name
     model.isEditable = true
     model.lang = model.getModeId()
-    // TODO
-    // model.onDidChangeContent(onDidChange(file))
+    model.onDidChangeContent(e => onDidChange(e, model))
+
+    lastSavedVersionId = model.getAlternativeVersionId()
 
     models.push(model)
   } catch (e) {
@@ -30,9 +33,7 @@ export const load = async function load (file) {
   }
 }
 
-export function unload (e, file) {
-  e.stopPropagation()
-
+export async function unload (file) {
   // if unloaded file is currently active
   // set previously active file to currently active
   // otherwise just remove it from the model history
@@ -135,7 +136,33 @@ export const setActiveDiff = async function setActiveDiff (diff) {
   }
 }
 
-export const findModel = function findModel (fileName, isDiff = false) {
+export async function unloadOthers (model) {
+  let modelsRef = models.filter(v => {
+    if (v.id !== model.id) return true
+  })
+
+  for (let model of modelsRef) {
+    await unload(model)
+  }
+  window.dispatchEvent(new Event('update-editor'))
+}
+
+export async function unloadAllModels () {
+  let modelsRef = models.slice()
+  for (let model of modelsRef) {
+    await unload(model)
+  }
+  modelHistory = []
+  window.dispatchEvent(new Event('update-editor'))
+}
+
+export function reorderModels(from, to) {
+  let fromIndex = models.indexOf(from)
+  let toIndex = models.indexOf(to)
+  models.splice(toIndex, 0, models.splice(fromIndex, 1)[0])
+}
+
+export function findModel (fileName, isDiff = false) {
   let results = models.filter(v => v.name === fileName)
   if (isDiff) return results.find(v => v.isDiff)
   else return results.find(v => {
@@ -149,6 +176,15 @@ export function getActive () {
 
 export function getModels () {
   return models
+}
+
+export function setVersionIdOnSave (model) {
+  lastSavedVersionId = model.getAlternativeVersionId()
+  isDirtyFiles = false
+}
+
+export function checkForDirtyFiles () {
+  return isDirtyFiles
 }
 
 // internal methods
@@ -209,6 +245,7 @@ const setUneditableActive = async function (file) {
     model.name = file.name
     model.isEditable = file.isEditable
     model.type = 'image'
+    model.url = file.url
     models.push(model)
   }
 
@@ -226,8 +263,6 @@ const setUneditableActive = async function (file) {
   modelHistory.push(file)
 }
 
-function onDidChange (file) {
-  return e => {
-    console.log(file)
-  }
+function onDidChange (e, model) {
+  if (lastSavedVersionId !== model.getAlternativeVersionId()) isDirtyFiles = true
 }
