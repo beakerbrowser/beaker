@@ -17,8 +17,16 @@ var workingCheckout
 var archiveFsRoot
 var isHistoricalVersion = false
 
+var sidebarWidth
+var isDraggingSidebar = false
+
 // which should we use in keybindings?
 var osUsesMetaKey = false
+
+// setup
+// =
+
+window.addEventListener('editor-created', setup)
 
 async function setupWorkingCheckout () {
   var vi = archive.url.indexOf('+')
@@ -56,8 +64,24 @@ async function setup () {
   let browserInfo = beaker.browser.getInfo()
   osUsesMetaKey = browserInfo.platform === 'darwin'
 
+  // bind events
+  window.addEventListener('beforeunload', onBeforeUnload)
+  window.addEventListener('keydown', onGlobalKeydown)
+  window.addEventListener('update-editor', render)
+  window.addEventListener('model-dirtied', render)
+  window.addEventListener('model-cleaned', render)
+  document.body.addEventListener('custom-rename-file', onRenameFile)
+  document.body.addEventListener('custom-delete-file', onDeleteFile)
+
+  // setup the sidebar resizer
+  setSidebarWidth(250)
+  var sidebarDragHandleEl = document.querySelector('#editor-sidebar-drag-handle')
+  sidebarDragHandleEl.addEventListener('mousedown', onMousedownSidebarDragHandle)
+  document.addEventListener('mouseup', onGlobalMouseup)
+  document.addEventListener('mousemove', onGlobalMousemove)
+
   if (url) {
-    archive = new Archive(url)
+    ;archive = new Archive(url)
     await archive.setup()
     await setupWorkingCheckout()
 
@@ -92,94 +116,6 @@ async function setup () {
   if (workingCheckout.info.userSettings.previewMode) await localCompare()
 
   render()
-}
-
-function render () {
-  const isOwner = _get(archive, 'info.isOwner')
-  const previewMode = _get(archive, 'info.userSettings.previewMode')
-  const currentFaviconUrl = `beaker-favicon:32,${archive.url}`
-  var version = 'latest'
-  var filePath = '/' + window.location.pathname.split('/').slice(4).join('/')
-
-  var vi = workingCheckout.url.indexOf('+')
-  if (vi !== -1) {
-    version = workingCheckout.url.slice(vi + 1)
-  }
-
-  // is the version a number?
-  if (version == +version) version = `v${version}`
-
-  // explorer/file tree
-  // workingCheckout.info.userSettings.previewMode
-  if (archive) {
-    yo.update(
-      document.querySelector('.editor-explorer'),
-      yo`
-        <div class="editor-explorer">
-          ${fileTree.render()}
-        </div>
-      `)
-  } else {
-    yo.update(
-      document.querySelector('.editor-explorer'),
-      yo`
-        <div class="editor-explorer">
-          <button class="btn primary">Open dat archive</button>
-        </div>
-      `
-    )
-  }
-  // tabs
-  yo.update(
-    document.querySelector('.editor-tabs'),
-    yo`
-      <div class="editor-tabs">
-        ${models.getModels().map(model => renderTab(model))}
-        <div class="unused-space"></div>
-      </div>
-    `
-  )
-}
-
-window.addEventListener('editor-created', setup)
-window.addEventListener("beforeunload", e => {
-  if (models.checkForDirtyFiles()) e.returnValue = 'You have unsaved changes, are you sure you want to leave?'
-})
-
-window.addEventListener('keydown', e => {
-  var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
-  // cmd/ctrl + s
-  if (ctrlOrMeta && e.keyCode == 83) {
-    e.preventDefault()
-    e.stopPropagation()
-
-    onSave()
-  }
-})
-
-window.addEventListener('update-editor', render)
-window.addEventListener('model-dirtied', render)
-window.addEventListener('model-cleaned', render)
-document.body.addEventListener('custom-rename-file', onRenameFile)
-document.body.addEventListener('custom-delete-file', onDeleteFile)
-
-function renderTab (model) {
-  let cls = models.getActive() === model ? 'active' : ''
-  return yo`
-    <div
-    draggable="true"
-    class="tab ${cls}"
-    oncontextmenu=${(e) => onContextmenuTab(e, model)}
-    onmouseup=${(e) => onClickTab(e, model)}
-    ondragstart=${(e) => onTabDragStart(e, model)}
-    ondragend=${(e) => onTabDragEnd(e, model)}
-    ondragover=${(e) => onTabDragOver(e, model)}
-    ondrop=${(e) => onTabDragDrop(e, model)}
-    >
-      ${model.isDiff ? model.name + " (Working Tree)" : model.name}
-      <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
-    </div>
-  `
 }
 
 async function localCompare () {
@@ -221,6 +157,116 @@ async function findArchiveNode (node, path) {
 
 async function parseLibraryUrl () {
   return window.location.pathname.slice(1)
+}
+
+function setSidebarWidth (width) {
+  sidebarWidth = width
+  const setWidth = (sel, v) => {
+    /** @type HTMLElement */(document.querySelector(sel)).style.width = v
+  }
+  setWidth('.editor-sidebar', `${width}px`)
+  setWidth('.editor-container', `calc(100vw - ${width}px)`) // allows monaco to resize properly
+}
+
+// rendering
+// =
+
+function render () {
+  const isOwner = _get(archive, 'info.isOwner')
+  const previewMode = _get(archive, 'info.userSettings.previewMode')
+  const currentFaviconUrl = `beaker-favicon:32,${archive.url}`
+  var version = 'latest'
+  var filePath = '/' + window.location.pathname.split('/').slice(4).join('/')
+
+  var vi = workingCheckout.url.indexOf('+')
+  if (vi !== -1) {
+    version = workingCheckout.url.slice(vi + 1)
+  }
+
+  // is the version a number?
+  if (version == +version) version = `v${version}`
+
+  // sidebar
+  if (archive) {
+    yo.update(
+      document.querySelector('.editor-sidebar'),
+      yo`
+        <div class="editor-sidebar" style="width: ${sidebarWidth}px">
+          ${fileTree.render()}
+        </div>
+      `)
+  } else {
+    yo.update(
+      document.querySelector('.editor-sidebar'),
+      yo`
+        <div class="editor-sidebar" style="width: ${sidebarWidth}px">
+          <button class="btn primary">Open dat archive</button>
+        </div>
+      `
+    )
+  }
+  // tabs
+  yo.update(
+    document.querySelector('.editor-tabs'),
+    yo`
+      <div class="editor-tabs">
+        ${models.getModels().map(model => renderTab(model))}
+        <div class="unused-space"></div>
+      </div>
+    `
+  )
+}
+
+function renderTab (model) {
+  let cls = models.getActive() === model ? 'active' : ''
+  return yo`
+    <div
+    draggable="true"
+    class="tab ${cls}"
+    oncontextmenu=${(e) => onContextmenuTab(e, model)}
+    onmouseup=${(e) => onClickTab(e, model)}
+    ondragstart=${(e) => onTabDragStart(e, model)}
+    ondragend=${(e) => onTabDragEnd(e, model)}
+    ondragover=${(e) => onTabDragOver(e, model)}
+    ondrop=${(e) => onTabDragDrop(e, model)}
+    >
+      ${model.isDiff ? model.name + " (Working Tree)" : model.name}
+      <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
+    </div>
+  `
+}
+
+// event handlers
+// =
+
+function onMousedownSidebarDragHandle (e) {
+  isDraggingSidebar = true
+}
+
+function onGlobalMouseup (e) {
+  isDraggingSidebar = false
+}
+
+function onGlobalMousemove (e) {
+  if (!isDraggingSidebar) return
+  setSidebarWidth(e.clientX)
+}
+
+;function onBeforeUnload (e) {  
+  if (models.checkForDirtyFiles()) {
+    e.returnValue = 'You have unsaved changes, are you sure you want to leave?'
+  }
+}
+
+function onGlobalKeydown (e) {
+  var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
+  // cmd/ctrl + s
+  if (ctrlOrMeta && e.keyCode == 83) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    onSave()
+  }
 }
 
 function onCloseTab (e, model) {

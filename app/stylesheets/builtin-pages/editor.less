@@ -1,4 +1,4 @@
-@import "./components/editor/explorer.less";
+@import "./components/editor/sidebar.less";
 @import "./components/editor/tabs.less";
 
 .muted {
@@ -18,11 +18,11 @@
   display: flex;
   height: 100%;
   flex-flow: row nowrap;
+  background: #f6f6f9;
 }
 
 .editor-container {
   flex: 1;
-  width: calc(100vw - 250px); // allows monaco to resize properly
 
   #editor, #diffEditor, #imageViewer {
     height: 100%;
@@ -30,12 +30,12 @@
   }
 
   #editor {
-    border-left: 1px solid #ddd;
+    border-left: 1px solid #ccc;
   }
 
   #imageViewer {
     position: relative;
-    border-left: 1px solid #ddd;
+    border-left: 1px solid #ccc;
 
     img {
       max-width: 100%;
