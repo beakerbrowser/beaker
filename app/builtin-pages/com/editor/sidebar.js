@@ -3,83 +3,38 @@ import * as models from './models'
 import _get from 'lodash.get'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
+import toggleable2, {closeAllToggleables}  from '../toggleable2'
+import {findParent} from '../../../lib/fg/event-handlers'
 
 // globals
 // =
 
 var currentSource
 var currentSort = ['name', 'desc']
-var selectedNodes = new Set() // set of nodes
-var currentDragNode = null
-var previewMode = false
-var fileDiffs = []
 
 // exported api
 // =
 
-// method to render at a place in the page
-// eg yo`<div>${myFileTree.render()}</div>`
 export function render () {
   if (!currentSource) {
-    return yo`<div class="filetree"></div>`
+    return ''
   }
 
   return yo`
-    <div class="explorer-section">
-      <div class="fileTree">
-        ${rChildren(getCurrentSource().children)}
-      </div>
-      ${previewMode ? rSection('diffTree') : ''}
-      ${previewMode ? yo`
-        <div class="diffTree">
-          ${rDiffTree()}
-        </div>`
-      : ''}
+    <div class="file-tree-container">
+      ${renderRoot(currentSource)}
     </div>
   `
 }
 
 export function rerender () {
-  let el = document.querySelector('.explorer-section')
+  let el = document.querySelector('.file-tree-container')
   if (el) {
     yo.update(el, render())
   }
 }
 
-// current source api (what drives the nav sidebar)
-export function isCurrentSource (node) {
-  return node === currentSource
-}
-
-export function getCurrentSource () {
-  return currentSource
-}
-
-// helper for breadcrumbs
-// turns the current source into a path of nodes
-export function getCurrentSourcePath () {
-  var path = []
-  var node = currentSource
-  while (node && node !== currentSource) {
-    path.unshift(node)
-    node = node.parent
-  }
-  return path
-}
-
-export function setPreviewMode (value) {
-  previewMode = value
-}
-
-export function getFileDiffs () {
-  return fileDiffs
-}
-
-export function setFileDiffs (diffs) {
-  fileDiffs = diffs
-}
-
-export async function setCurrentSource (node, {suppressEvent} = {}) {
+export async function setCurrentSource (node) {
   currentSource = node
   if (!node) {
     rerender()
@@ -113,69 +68,84 @@ export function resortTree () {
   }
 }
 
-// renderers
+// rendering
 // =
 
-function rSection (tree) {
-  return tree === 'fileTree' ? yo`
-    <div class="section-title" id="fileTree" onclick=${() => toggleFileTree('fileTree')}>
-      <i class="fa fa-caret-down"></i>
-      <span>${_get(currentSource, 'name', 'Untitled')}</span>
-      <div class="archive-fs-options">
-        <i class="fa fa-sync-alt" onclick=${(e) => syncFileTree(e)}></i>
-        <i class="fa fa-plus-square"></i>
-        <i class="fa fa-folder-plus"></i>
+
+function renderChildren (children) {
+  return children.map(childNode => renderNode(childNode))
+}
+
+function renderRoot (node) {
+  return yo`
+    <div class="file-tree">
+      <div
+        class="item root"
+        title=${node.name}
+      >
+        <span class="name">${node.name}</span>
+        <span class="ctrls">
+          <button><i class="fas fa-wrench"></i></button>
+          ${toggleable2({
+            id: 'file-tree-new-node',
+            closed: ({onToggle}) => yo`
+              <div class="dropdown new-node toggleable-container">
+                <button class="nofocus" onclick=${onToggle}>
+                  <i class="fas fa-plus"></i>
+                </button>
+              </div>`,
+            open: ({onToggle}) => yo`
+              <div class="dropdown new-node toggleable-container">
+                <button class="nofocus" onclick=${onToggle}>
+                  <i class="fas fa-plus"></i>
+                </button>
+        
+                <div class="dropdown-items center with-triangle subtle-shadow">
+                  <div class="dropdown-item no-border no-hover">
+                    <div class="label">
+                      New file or folder
+                    </div>
+                
+                    <p><input type="text" placeholder="Enter the full path" /></p>
+
+                    <p>
+                      <a target="_blank" class="btn primary" onclick=${e => onClickNew(e, node, 'file')}>
+                        <i class="fas fa-file"></i> Create file
+                      </a>
+                      <a target="_blank" class="btn primary" onclick=${e => onClickNew(e, node, 'folder')}>
+                      <i class="fas fa-folder"></i> Create folder
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              </div>`,
+            afterOpen (el) {
+              el.querySelector('input').focus()
+            }
+          })}
+        </span>
       </div>
-    </div>
-  ` : yo`
-    <div class="section-title" id="diffTree" onclick=${() => toggleFileTree('diffTree')}>
-      <i class="fa fa-caret-down"></i>
-      <span>Preview Changes</span>
-      <div class="archive-fs-options">
-        <i class="fa fa-plus-square"></i>
-        <i class="fa fa-folder-plus"></i>
-      </div>
-    </div>
-  `
+      ${renderChildren(node.children)}
+    </div>`
 }
 
-function rChildren (children) {
-  const path = getCurrentSourcePath()
-  const parentNode = (path.length >= 2) ? path[path.length - 2] : currentSource
-
-  return [
-    ((path.length < 1)
-      ? ''
-      : yo`
-        <div class="item ascend" onclick=${e => onClickNode(e, parentNode)}>
-          ..
-        </div>`),
-    ((children.length === 0)
-      ? yo`<div class="item empty"><em>No files</em></div>`
-      : children.map(childNode => rNode(childNode)))
-  ]
-}
-
-function rDiffTree () {
-  return fileDiffs.length === 0
-    ? yo`<div class="item empty"><em>No Changes</em></div>`
-    : fileDiffs.map(diff => rNode(diff))
-}
-
-function rNode (node) {
+function renderNode (node) {
   if (node.isContainer) {
-    return rDirectory(node)
+    return renderDirectory(node)
   } else {
-    return rFile(node)
+    return renderFile(node)
   }
 }
 
-function rDirectory (node) {
+function renderDirectory (node) {
   let children = ''
   let cls = 'right'
 
-  if (node.isExpanded && !node.isDiff) {
-    children = yo`<div class="subtree">${rChildren(node.children)}</div>`
+  if (node.isExpanded) {
+    children = yo`
+      <div class="subtree">
+        ${renderChildren(node.children)}
+      </div>`
     cls = 'down'
   }
 
@@ -188,16 +158,17 @@ function rDirectory (node) {
         onclick=${e => onClickNode(e, node)}
         oncontextmenu=${e => onContextmenuNode(e, node)}
       >
-        <i class="fa fa-fw fa-caret-${cls}" style="flex-basis: 0;"></i>
+        <i class="fa fa-fw fa-caret-${cls}" style="margin-right: 3px;"></i>
         <i class="fa fa-fw fa-folder"></i>
-        <span>${node.name}</span>
+        <span class="name">${node.name}</span>
+        ${node.change ? yo`<div class="revision-indicator ${node.change}"></div>` : ''}
       </div>
       ${children}
     </div>`
   ]
 }
 
-function rFile (node) {
+function renderFile (node) {
   return yo`
     <div
       class="item file"
@@ -206,8 +177,8 @@ function rFile (node) {
       oncontextmenu=${e => onContextmenuNode(e, node)}
     >
       ${getIcon(node.name)}
-      <span>${node.name}</span>
-      <span id="diff-path-listing">${node.isDiff ? node._path : ''}</span>
+      <span class="name">${node.name}</span>
+      ${node.change ? yo`<div class="revision-indicator ${node.change}"></div>` : ''}
     </div>
   `
 }
@@ -250,22 +221,15 @@ function getIcon (name) {
 // =
 
 function emit (name, detail = null) {
-  document.body.dispatchEvent(new CustomEvent(name, {detail}))
+  document.dispatchEvent(new CustomEvent(name, {detail}))
 }
 
 function emitRenameFile (path, newName) {
-  emit('custom-rename-file', {path, newName})
+  emit('editor-rename-file', {path, newName})
 }
 
 function emitDeleteFile (path, isFolder) {
-  emit('custom-delete-file', {path, isFolder})
-}
-
-function toggleFileTree (tree) {
-  let fileTree = document.querySelector('.' + tree)
-  let icon = document.querySelector('#' + tree + ' i')
-  icon.classList.contains('fa-caret-down') ? icon.classList.replace('fa-caret-down', 'fa-caret-right') : icon.classList.replace('fa-caret-right', 'fa-caret-down')
-  fileTree.classList.toggle('hidden')
+  emit('editor-delete-file', {path, isFolder})
 }
 
 async function onClickNode (e, node) {
@@ -276,21 +240,29 @@ async function onClickNode (e, node) {
     node.isExpanded = !node.isExpanded
     await node.readData({ignoreCache: true})
   } else {
-    if (node.isDiff) {
-      models.setActiveDiff(node)
-    } else {
-      models.setActive(node)
-    }
+    models.setActive(node)
   }
 
   rerender()
 }
 
-function onContextmenuNode (e, node) {
+async function onClickNew (e, node, type) {
   e.preventDefault()
   e.stopPropagation()
 
-  if (node.isDiff) return
+  // get the name
+  var newName = findParent(e.currentTarget, 'dropdown-item').querySelector('input').value.trim()
+  if (newName.startsWith('/')) newName = newName.slice(1)
+  if (!newName) return // do nothing
+  
+  let path = node._path + '/' + newName
+  emit(`editor-create-${type}`, {path})
+  closeAllToggleables()
+}
+
+function onContextmenuNode (e, node) {
+  e.preventDefault()
+  e.stopPropagation()
 
   var items = []
 

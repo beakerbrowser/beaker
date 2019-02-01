@@ -19,17 +19,15 @@
   height: 100%;
   flex-flow: row nowrap;
   background: #f6f6f9;
+  user-select: none;
 }
 
 .editor-container {
   flex: 1;
 
   #editor, #diffEditor, #imageViewer {
-    height: 100%;
+    height: calc(100% - 100px);
     background-color: white;
-  }
-
-  #editor {
     border-left: 1px solid #ccc;
   }
 
@@ -44,5 +42,20 @@
       top: 25px;
       left: 25px;
     }
+  }
+}
+
+.editor-toolbar {
+  display: flex;
+  background: #fff;
+  border-left: 1px solid #ccc;
+  border-bottom: 1px solid #ddd;
+
+  .btn {
+    border-radius: 0;
+  }
+
+  .spacer {
+    flex: 1;
   }
 }

@@ -4,13 +4,15 @@ import yo from 'yo-yo'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
-import * as fileTree from '../com/editor/file-tree'
+import * as sidebar from '../com/editor/sidebar'
+import * as tabs from '../com/editor/tabs'
 import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
-import toggleable2, {closeAllToggleables}  from '../com/toggleable2'
+import {closeAllToggleables}  from '../com/toggleable2'
 import renderFaviconPicker from '../com/settings/favicon-picker'
-import renderArchiveHistory from '../com/archive/archive-history'
-import * as contextMenu from '../com/context-menu'
+
+const DEFAULT_SIDEBAR_WIDTH = 200
+const MIN_SIDEBAR_WIDTH = 100
 
 var archive
 var workingCheckout
@@ -67,14 +69,21 @@ async function setup () {
   // bind events
   window.addEventListener('beforeunload', onBeforeUnload)
   window.addEventListener('keydown', onGlobalKeydown)
-  window.addEventListener('update-editor', render)
-  window.addEventListener('model-dirtied', render)
-  window.addEventListener('model-cleaned', render)
-  document.body.addEventListener('custom-rename-file', onRenameFile)
-  document.body.addEventListener('custom-delete-file', onDeleteFile)
+  document.addEventListener('editor-rerender', update)
+  document.addEventListener('editor-model-dirtied', update)
+  document.addEventListener('editor-model-cleaned', update)
+  document.addEventListener('editor-set-active', onSetActive)
+  document.addEventListener('editor-unload-model', onUnloadModel)
+  document.addEventListener('editor-unload-all-models-except', onUnloadAllModelsExcept)
+  document.addEventListener('editor-unload-all-models', onUnloadAllModels)
+  document.addEventListener('editor-reorder-models', onReorderModels)
+  document.addEventListener('editor-create-folder', onCreateFolder)
+  document.addEventListener('editor-create-file', onCreateFile)
+  document.addEventListener('editor-rename-file', onRenameFile)
+  document.addEventListener('editor-delete-file', onDeleteFile)
 
   // setup the sidebar resizer
-  setSidebarWidth(250)
+  setSidebarWidth(DEFAULT_SIDEBAR_WIDTH)
   var sidebarDragHandleEl = document.querySelector('#editor-sidebar-drag-handle')
   sidebarDragHandleEl.addEventListener('mousedown', onMousedownSidebarDragHandle)
   document.addEventListener('mouseup', onGlobalMouseup)
@@ -87,10 +96,7 @@ async function setup () {
 
     // load the archiveFS
     archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
-    await fileTree.setCurrentSource(archiveFsRoot)
-
-    // set preview mode for file tree
-    fileTree.setPreviewMode(archive.info.userSettings.previewMode)
+    await sidebar.setCurrentSource(archiveFsRoot)
 
     let fileActStream = archive.watch()
     fileActStream.addEventListener('changed', onFilesChanged)
@@ -115,44 +121,26 @@ async function setup () {
   // ready archive diff
   if (workingCheckout.info.userSettings.previewMode) await localCompare()
 
-  render()
+  update()
 }
 
 async function localCompare () {
   let compareDiff = await beaker.archives.diffLocalSyncPathListing(archive.url, {compareContent: true, shallow: true})
-  let archiveFS = new FSArchive(null, archive, archive.info)
-  await archiveFS.readData()
 
-  compareDiff.sort((a, b) => (a.path || '').localeCompare(b.path || ''))
-  let fileDiffs = await Promise.all(compareDiff.map(async (diff) => {
-    let node, obj
-    if (diff.change !== 'del') {
-      node = await findArchiveNode(archiveFsRoot, diff.path)
-      obj = Object.create(node)
-      obj.original = await findArchiveNode(archiveFS, diff.path)
-      obj.isDiff = true
-      obj.change = diff.change
-    } else if (diff.change == 'del') {
-      node = await findArchiveNode(archiveFS, diff.path)
-      obj = Object.create(node)
-      obj.isDiff = true
-      obj.change = diff.change
+  const checkNode = async (node) => {
+    // check for diff
+    var diff = compareDiff.find(diff => diff.path === node._path)
+    node.change = diff ? diff.change : false
+
+    // recurse
+    if (node.isContainer) {
+      for (let c of node.children) {
+        await checkNode(c)
+      }
     }
-    return obj
-  }))
-
-  fileTree.setFileDiffs(fileDiffs)
-}
-
-async function findArchiveNode (node, path) {
-  var pathParts = path.split(/[\\\/]/g)
-  for (let filename of pathParts) {
-    if (filename.length === 0) continue // first item in array might be empty
-    if (!node.isContainer) return null // node not found (we ran into a file prematurely)
-    if (node._files.length === 0) await node.readData() // read the directory as needed
-    node = node._files.find(n => n.name === filename) // move to next child in the tree
   }
-  return node
+  await checkNode(archiveFsRoot)
+  await sidebar.rerender()
 }
 
 async function parseLibraryUrl () {
@@ -161,80 +149,53 @@ async function parseLibraryUrl () {
 
 function setSidebarWidth (width) {
   sidebarWidth = width
+
+  var actualWidth = getActualSidebarWidth()
+  if (actualWidth === 0) {
+    document.querySelector('#editor-sidebar-drag-handle').classList.add('wide')
+  } else {
+    document.querySelector('#editor-sidebar-drag-handle').classList.remove('wide')
+  }
+
   const setWidth = (sel, v) => {
     /** @type HTMLElement */(document.querySelector(sel)).style.width = v
   }
-  setWidth('.editor-sidebar', `${width}px`)
-  setWidth('.editor-container', `calc(100vw - ${width}px)`) // allows monaco to resize properly
+  setWidth('.editor-sidebar', `${actualWidth}px`)
+  setWidth('.editor-container', `calc(100vw - ${actualWidth}px)`) // allows monaco to resize properly
+}
+
+function getActualSidebarWidth () {
+  // if the width gets under the minimum, just hide
+  return (sidebarWidth > MIN_SIDEBAR_WIDTH) ? sidebarWidth : 0
 }
 
 // rendering
 // =
 
-function render () {
-  const isOwner = _get(archive, 'info.isOwner')
-  const previewMode = _get(archive, 'info.userSettings.previewMode')
-  const currentFaviconUrl = `beaker-favicon:32,${archive.url}`
-  var version = 'latest'
-  var filePath = '/' + window.location.pathname.split('/').slice(4).join('/')
-
-  var vi = workingCheckout.url.indexOf('+')
-  if (vi !== -1) {
-    version = workingCheckout.url.slice(vi + 1)
-  }
-
-  // is the version a number?
-  if (version == +version) version = `v${version}`
-
+function update () {
   // sidebar
   if (archive) {
     yo.update(
       document.querySelector('.editor-sidebar'),
       yo`
-        <div class="editor-sidebar" style="width: ${sidebarWidth}px">
-          ${fileTree.render()}
+        <div class="editor-sidebar" style="width: ${getActualSidebarWidth()}px">
+          ${sidebar.render()}
         </div>
       `)
   } else {
     yo.update(
       document.querySelector('.editor-sidebar'),
       yo`
-        <div class="editor-sidebar" style="width: ${sidebarWidth}px">
+        <div class="editor-sidebar" style="width: ${getActualSidebarWidth()}px">
           <button class="btn primary">Open dat archive</button>
         </div>
       `
     )
   }
   // tabs
-  yo.update(
-    document.querySelector('.editor-tabs'),
-    yo`
-      <div class="editor-tabs">
-        ${models.getModels().map(model => renderTab(model))}
-        <div class="unused-space"></div>
-      </div>
-    `
-  )
+  yo.update(document.querySelector('.editor-tabs'), tabs.render(models.getModels()))
 }
 
-function renderTab (model) {
-  let cls = models.getActive() === model ? 'active' : ''
-  return yo`
-    <div
-    draggable="true"
-    class="tab ${cls}"
-    oncontextmenu=${(e) => onContextmenuTab(e, model)}
-    onmouseup=${(e) => onClickTab(e, model)}
-    ondragstart=${(e) => onTabDragStart(e, model)}
-    ondragend=${(e) => onTabDragEnd(e, model)}
-    ondragover=${(e) => onTabDragOver(e, model)}
-    ondrop=${(e) => onTabDragDrop(e, model)}
-    >
-      ${model.isDiff ? model.name + " (Working Tree)" : model.name}
-      <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
-    </div>
-  `
-}
 
 // event handlers
 // =
@@ -252,7 +213,7 @@ function onGlobalMousemove (e) {
   setSidebarWidth(e.clientX)
 }
 
-;function onBeforeUnload (e) {  
+function onBeforeUnload (e) {
   if (models.checkForDirtyFiles()) {
     e.returnValue = 'You have unsaved changes, are you sure you want to leave?'
   }
@@ -269,54 +230,10 @@ function onGlobalKeydown (e) {
   }
 }
 
-function onCloseTab (e, model) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  models.unload(model)
-}
-
-function onClickTab (e, model) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  if (e.which == 2) models.unload(model)
-  else if (e.which == 1) models.setActive(model)
-}
-
-let dragSrcModel = null
-
-function onTabDragStart (e, model) {
-  if (models.getActive !== model) models.setActive(model)
-  dragSrcModel = model
-
-  e.dataTransfer.effectAllowed = 'move'
-}
-
-function onTabDragEnd () {
-  render()
-}
-
-function onTabDragOver (e) {
-  e.preventDefault()
-
-  e.dataTransfer.dropEffect = 'move'
-  return false
-}
-
-async function onTabDragDrop (e, model) {
-  e.stopPropagation()
-
-  if (dragSrcModel != model) {
-    await models.reorderModels(dragSrcModel, model)
-  }
-  return false
-}
-
 async function onFilesChanged () {
-  await fileTree.setCurrentSource(archiveFsRoot)
+  await sidebar.setCurrentSource(archiveFsRoot)
   await localCompare()
-  fileTree.rerender()
+  sidebar.rerender()
 }
 
 async function onSelectFavicon (imageData) {
@@ -329,6 +246,51 @@ async function onSelectFavicon (imageData) {
   }
   closeAllToggleables()
   //render() will need to call this once we get the archive change issues fixed. That way the favicon will be updated whenever you open it.
+}
+
+
+function onSetActive (e) {
+  models.setActive(e.detail.model)
+}
+
+function onUnloadModel (e) {
+  models.unload(e.detail.model)
+}
+
+function onUnloadAllModelsExcept (e) {
+  models.unloadOthers(e.detail.model)
+}
+
+function onUnloadAllModels (e) {
+  models.unloadAllModels()
+}
+
+function onReorderModels (e) {
+  models.reorderModels(e.detail.srcModel, e.detail.dstModel)
+}
+
+async function onCreateFile (e) {
+  try {
+    const {path} = e.detail
+    const to = setTimeout(() => toast.create('Saving...'), 500) // if it takes a while, toast
+    await workingCheckout.writeFile(path, '')
+    clearTimeout(to)
+
+    // TODO open the new file
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
+}
+
+async function onCreateFolder (e) {
+  try {
+    const {path} = e.detail
+    const to = setTimeout(() => toast.create('Saving...'), 500) // if it takes a while, toast
+    await workingCheckout.mkdir(path)
+    clearTimeout(to)
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+  }
 }
 
 async function onRenameFile (e) {
@@ -356,7 +318,7 @@ async function onDeleteFile (e) {
 
     clearTimeout(to)
     toast.create(`Deleted ${path}`)
-    render()
+    update()
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
@@ -381,38 +343,3 @@ async function onSave () {
   }
 }
 
-async function onContextmenuTab (e, model) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  var items = []
-
-  if (model.isEditable) {
-    items = items.concat([
-      {
-        label: 'Close',
-        click: async () => {
-          models.unload(model)
-        }
-      },
-      {
-        label: 'Close Others',
-        click: () => {
-          models.unloadOthers(model)
-        }
-      },
-      {
-        label: 'Close All',
-        click: () => {
-          models.unloadAllModels()
-        }
-      }
-    ])
-  }
-
-  contextMenu.create({
-    x: e.clientX,
-    y: e.clientY,
-    items
-  })
-}

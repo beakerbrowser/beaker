@@ -11,11 +11,60 @@ import toggleable2, {closeAllToggleables} from '../../builtin-pages/com/toggleab
 
 export function render (id, page) {
   const url = page ? page.getURL() : ''
-  const isViewingDat = url.startsWith('dat:')
-  if (!isViewingDat) {
-    return '' // for now, dont render anything unless a dat
+  if (url.startsWith('dat:')) {
+    return renderDatSite(id, page)
   }
+  if (url.startsWith('beaker://editor/')) {
+    return renderEditor(id, page)
+  }
+  return ''
+}
 
+function renderEditor (id, page) {
+  return yo`
+    <div class="toolbar-actions" data-id="contextbar-${id}">
+        <div class="toolbar-group">
+          <div class="toolbar-dropdown-menu toggleable-container">
+            <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn">
+              <span class="fas fa-external-link-alt"></span> Open site
+            </button>
+          </div>
+          <div class="toolbar-dropdown-menu toggleable-container" style="margin-right: 3px">
+            <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn">
+              Version: preview <span class="fas fa-caret-down"></span>
+            </button>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" name="autoPublish" value="autoPublish">
+            <div class="switch"></div>
+            <span class="text">
+              Preview mode
+            </span>
+          </label>
+        </div>
+        <div class="spacer"></div>
+        <div class="toolbar-group">
+          <div class="toolbar-dropdown-menu toggleable-container" style="margin-right: 3px">
+            <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn">
+              <span class="fas fa-globe-americas"></span> Published <span class="fas fa-caret-down"></span>
+            </button>
+          </div>
+          <div class="toolbar-dropdown-menu toggleable-container">
+            <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn">
+              <span class="far fa-hdd"></span> Library <span class="fas fa-caret-down"></span>
+            </button>
+          </div>
+          <div class="toolbar-dropdown-menu toggleable-container">
+            <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn">
+              More <span class="fas fa-caret-down"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`
+}
+
+function renderDatSite (id, page) {
   const title = _get(page, 'siteInfo.title')
   const description = _get(page, 'siteInfo.description')
   const isSaved = _get(page, 'siteInfo.userSettings.isSaved', false)
@@ -41,11 +90,26 @@ export function render (id, page) {
             </button>`
           )}
         </span>
+        ${cond(isCurrentUser === false && isUser === true, () => yo`
+          <button class="toolbar-labeled-btn raised" onclick=${() => onToggleFollow(id, page)}>
+            <span class="fas fa-rss ${isFollowed ? 'red-x' : ''}"></span>
+            ${isFollowed ? 'Unfollow' : 'Follow'}
+          </button>`
+        )}
+        ${cond(isUser === true, () => [
+          yo` 
+            <button class="toolbar-labeled-btn raised" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
+            <i class="fas fa-search"></i> Explore
+            </button>`
+        ])}
+      </div>
+      <div class="spacer"></div>
+      <div class="toolbar-group">
         ${cond(isOwner === true && isUser === false, () => toggleable2({
           id: (id + '-visibility-toggle'),
           closed ({onToggle}) {
             return yo`
-              <div class="toolbar-dropdown-menu toggleable-container">
+              <div class="toolbar-dropdown-menu toggleable-container" style="margin-right: 3px">
                 <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn" onclick=${onToggle}>
                   <span class="${getVisibilityIcon({isPublished, isNetworked})}"></span> ${getVisibilityLabel({isPublished, isNetworked})} <span class="fas fa-caret-down"></span>
                 </button>
@@ -53,7 +117,7 @@ export function render (id, page) {
           },
           open ({onToggle}) {
             return yo`
-              <div class="toolbar-dropdown-menu contextbar-dropdown-menu wider toggleable-container">
+              <div class="toolbar-dropdown-menu contextbar-dropdown-menu wider toggleable-container" style="margin-right: 3px">
                 <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn" onclick=${onToggle}>
                   <span class="${getVisibilityIcon({isPublished, isNetworked})}"></span> ${getVisibilityLabel({isPublished, isNetworked})} <span class="fas fa-caret-down"></span>
                 </button>
@@ -96,21 +160,6 @@ export function render (id, page) {
               </div>`
           }
         }))}
-        ${cond(isCurrentUser === false && isUser === true, () => yo`
-          <button class="toolbar-labeled-btn raised" onclick=${() => onToggleFollow(id, page)}>
-            <span class="fas fa-rss ${isFollowed ? 'red-x' : ''}"></span>
-            ${isFollowed ? 'Unfollow' : 'Follow'}
-          </button>`
-        )}
-        ${cond(isUser === true, () => [
-          yo` 
-            <button class="toolbar-labeled-btn raised" onclick=${() => onOpenPage(id, page, `beaker://search/?source=${page.getURLOrigin()}`)}>
-            <i class="fas fa-search"></i> Explore
-            </button>`
-        ])}
-      </div>
-      <div class="spacer"></div>
-      <div class="toolbar-group">
         ${toggleable2({
           id: (id + '-library-toggle'),
           closed ({onToggle}) {

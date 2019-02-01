@@ -9,12 +9,22 @@
 <body>
   <div class="editor-wrapper">
     <div class="editor-sidebar"></div>
-    <div id="editor-sidebar-drag-handle"></div>
+    <div id="editor-sidebar-drag-handle"><i class="fas fa-ellipsis-v"></i></div>
     <div class="editor-container">
-        <div class="editor-tabs"></div>
-        <div id="editor"></div>
-        <div id="diffEditor"></div>
-        <div class="hidden" id="imageViewer"></div>
+      <div class="editor-tabs"></div>
+      <div class="editor-toolbar">
+        <span class="btn transparent disabled"><i class="fas fa-save"></i> save</span>
+        <span class="btn transparent"><i class="fas fa-external-link-alt"></i> open file</span>
+        <span class="btn transparent"><i class="fas fa-i-cursor"></i> rename</span>
+        <span class="btn transparent"><i class="fas fa-trash"></i> delete</span>
+        <span class="spacer"></span>
+        <span class="btn transparent"><i class="fas fa-check"></i> commit</span>
+        <span class="btn transparent"><span class="revision-indicator mod"></span> review changes</span>
+        <span class="btn transparent"><i class="fa fa-undo"></i> revert</span>
+      </div>
+      <div id="editor"></div>
+      <div id="diffEditor"></div>
+      <div class="hidden" id="imageViewer"></div>
     </div>
   </div>
   <script src="beaker://assets/vs/loader.js"></script>

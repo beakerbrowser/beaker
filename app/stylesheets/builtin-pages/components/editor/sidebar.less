@@ -5,44 +5,42 @@
   overflow-y: scroll;
   text-overflow: ellipsis;
 
-  .section-title:hover .archive-fs-options {
-    opacity: 1;
-  }
-
   &::-webkit-scrollbar {
     display: none;
   }
 
-  button {
-    align-self: center;
-    margin: auto 0;
+  .section {
+    margin-bottom: 10px;
   }
 
-  .section-title {
-    background-color: #C4C4C4;
-    padding: 0px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    user-select: none;
-    height: 25px;
+  .file-tree-siteinfo {
+    & > .btn {
+      display: flex;
+      align-items: center;
+      width: calc(100% - 2px);
+      height: 40px;
+      margin: 2px 0 2px 2px;
 
-    .fa-caret-down, .fa-caret-right {
-      width: 7.5px;
-    }
-
-    span {
-      flex: 1;
-      text-overflow: ellipsis;
-      overflow: hidden;
-    }
-
-    .archive-fs-options {
-      opacity: 0;
-      transition: opacity 0.3s;
-
-      i {
-        padding: 0 2px;
+      .favicon {
+        width: 16px;
+        height: 16px;
+        margin-right: 5px;
       }
+    }
+  }
+
+  .subtree {
+    padding-left: 1em;
+  }
+
+  .file-tree-ctrls {
+    padding: 5px 10px;
+    white-space: nowrap;
+    font-size: 11px;
+    color: gray;
+
+    .link {
+      color: #444;
     }
   }
 
@@ -50,21 +48,18 @@
     font-size: 13px;
     color: #444;
     flex: 1;
-  }
 
-  .subtree {
-    padding-left: 1em;
-  }
-
-  .filetree * {
-    cursor: pointer;
+    * {
+      cursor: pointer;
+    }
   }
 
   .item {
-    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    padding: 4px 10px;
     cursor: pointer;
     white-space: nowrap;
-    user-select: none;
 
     i {
       color: #444;
@@ -72,41 +67,109 @@
       &.fa-caret-right {
         color: gray;
       }
+
+      &.fa-caret-down {
+        margin-right: 3px;
+        transform: rotate(-45deg);
+      }
     }
 
-    span {
+    i + .name {
+      margin-left: 5px;
+    }
+
+    .name {
+      flex: 1;
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+
+    .ctrls {
+      font-size: 10px;
+
+      i {
+        color: inherit;
+      }
+
+      .dropdown.new-node {
+        display: inline-block;
+        position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
+
+        .dropdown-items {
+          left: 192px;
+          top: 28px;
+        }
+
+        input {
+          width: 100%;
+        }
+      }
+
+      button {
+        padding: 0;
+        color: gray;
+        margin-left: 5px;
+
+        &:hover {
+          color: inherit;
+        }
+      }
     }
 
     &:hover {
       background: #ededf0;
     }
 
-    #diff-path-listing {
-      font-size: 12px;
-      color: #8e8e8e;
+    &.root {
+      background: #ddd;
+
+      .name {
+        text-transform: uppercase;
+        font-size: 10px;
+        font-weight: bold;
+      }
+
+      .hover-ctrls {
+        display: block; // always show the hover controls on the root
+      }
+    }
+
+    &.selected {
+      background: #4766ff;
+      color: #fff;
     }
   }
 
-  .filetree .folder {
-    position: relative;
-  }
-  .filetree .folder > .icon-down-dir,
-  .filetree .folder > .icon-right-dir {
-    font-size: 17px;
-    position: absolute;
-    left: 8px;
-    top: 3px;
-  }
-  .filetree .item.selected {
-    background: #4766ff;
-    color: #fff;
+  .revision-indicator {
+    margin-left: 4px;
+    margin-right: 4px;
+    border-radius: 50%;
   }
 }
 
 #editor-sidebar-drag-handle {
   width: 4px;
   cursor: col-resize;
+
+  &:hover {
+    background: rgba(0,0,0,.04);
+  }
+
+  i {
+    display: none;
+    position: relative;
+    top: 40vh;
+    font-size: 11px;
+    color: gray;
+    left: 2px;
+  }
+
+  &.wide {
+    width: 8px;
+
+    i {
+      display: inline;
+    }
+  }
 }

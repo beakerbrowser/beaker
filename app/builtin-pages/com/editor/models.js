@@ -21,6 +21,7 @@ export const load = async function load (file) {
     let model = monaco.editor.createModel(file.preview, null, monaco.Uri.parse(file.url))
     model.name = file.name
     model.isEditable = true
+    Object.defineProperty(model, 'isActive', {get: () => active === model})
     model.lang = model.getModeId()
     model.onDidChangeContent(e => onDidChange(e, model))
 
@@ -61,7 +62,7 @@ export async function unload (file) {
   }
 
   if (newActive) setActive(newActive)
-  window.dispatchEvent(new Event('update-editor'))
+  document.dispatchEvent(new Event('editor-rerender'))
 }
 
 export const setActive = async function setActive (file) {
@@ -80,7 +81,7 @@ export const setActive = async function setActive (file) {
       await setUneditableActive(file)
     }
 
-    window.dispatchEvent(new Event('update-editor'))
+    document.dispatchEvent(new Event('editor-rerender'))
   } catch (e) {
     console.error(e)
     throw e
@@ -129,7 +130,7 @@ export const setActiveDiff = async function setActiveDiff (diff) {
     diffEditor.focus()
 
     modelHistory.push(diff)
-    window.dispatchEvent(new Event('update-editor'))
+    document.dispatchEvent(new Event('editor-rerender'))
   } catch (e) {
     console.error(e)
     throw e
@@ -144,7 +145,7 @@ export async function unloadOthers (model) {
   for (let model of modelsRef) {
     await unload(model)
   }
-  window.dispatchEvent(new Event('update-editor'))
+  document.dispatchEvent(new Event('editor-rerender'))
 }
 
 export async function unloadAllModels () {
@@ -153,12 +154,12 @@ export async function unloadAllModels () {
     await unload(model)
   }
   modelHistory = []
-  window.dispatchEvent(new Event('update-editor'))
+  document.dispatchEvent(new Event('editor-rerender'))
 }
 
 export function reorderModels(from, to) {
   let fromIndex = models.indexOf(from)
-  let toIndex = models.indexOf(to)
+  let toIndex = to === null ? models.length : models.indexOf(to)
   models.splice(toIndex, 0, models.splice(fromIndex, 1)[0])
 }
 

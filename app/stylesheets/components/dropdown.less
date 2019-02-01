@@ -157,7 +157,6 @@
   width: 100%;
   padding: 5px 15px;
   border-bottom: 1px solid #eee;
-  cursor: pointer;
 
   &.disabled {
     opacity: 0.25;
@@ -176,8 +175,13 @@
     font-size: 11.5px;
   }
 
-  &:hover {
+  &.no-border {
+    border-bottom: 0;
+  }
+
+  &:hover:not(.no-hover) {
     background: #eee;
+    cursor: pointer;
 
     i:not(.fa-check-square) {
       color: @color-text;
