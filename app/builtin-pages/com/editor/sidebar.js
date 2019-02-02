@@ -224,8 +224,9 @@ function emit (name, detail = null) {
   document.dispatchEvent(new CustomEvent(name, {detail}))
 }
 
-function emitRenameFile (path, newName) {
-  emit('editor-rename-file', {path, newName})
+function emitRenameFile (oldPath, newName) {
+  var newPath = oldPath.split('/').slice(0, -1).concat(newName).join('/')
+  emit('editor-rename-file', {oldPath, newPath})
 }
 
 function emitDeleteFile (path, isFolder) {

@@ -6,6 +6,7 @@ import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
 import * as sidebar from '../com/editor/sidebar'
 import * as tabs from '../com/editor/tabs'
+import * as toolbar from '../com/editor/toolbar'
 import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
 import {closeAllToggleables}  from '../com/toggleable2'
@@ -58,6 +59,7 @@ async function setupWorkingCheckout () {
     workingCheckout = new Archive(archive.checkout().url)
   }
   await workingCheckout.setup()
+  console.log(workingCheckout)
 }
 
 async function setup () {
@@ -73,6 +75,7 @@ async function setup () {
   document.addEventListener('editor-model-dirtied', update)
   document.addEventListener('editor-model-cleaned', update)
   document.addEventListener('editor-set-active', onSetActive)
+  document.addEventListener('editor-save-active-model', onSaveActiveModel)
   document.addEventListener('editor-unload-model', onUnloadModel)
   document.addEventListener('editor-unload-all-models-except', onUnloadAllModelsExcept)
   document.addEventListener('editor-unload-all-models', onUnloadAllModels)
@@ -81,6 +84,10 @@ async function setup () {
   document.addEventListener('editor-create-file', onCreateFile)
   document.addEventListener('editor-rename-file', onRenameFile)
   document.addEventListener('editor-delete-file', onDeleteFile)
+  document.addEventListener('editor-open-file', onOpenFile)
+  document.addEventListener('editor-commit-file', onCommitFile)
+  document.addEventListener('editor-revert-file', onRevertFile)
+  document.addEventListener('editor-diff-active-model', onDiffActiveModel)
 
   // setup the sidebar resizer
   setSidebarWidth(DEFAULT_SIDEBAR_WIDTH)
@@ -119,7 +126,9 @@ async function setup () {
   }
 
   // ready archive diff
-  if (workingCheckout.info.userSettings.previewMode) await localCompare()
+  if (workingCheckout.info.userSettings.previewMode) {
+    await localCompare()
+  }
 
   update()
 }
@@ -141,6 +150,7 @@ async function localCompare () {
   }
   await checkNode(archiveFsRoot)
   await sidebar.rerender()
+  updateToolbar()
 }
 
 async function parseLibraryUrl () {
@@ -169,11 +179,26 @@ function getActualSidebarWidth () {
   return (sidebarWidth > MIN_SIDEBAR_WIDTH) ? sidebarWidth : 0
 }
 
+function getActiveFile () {
+  var activeModel = models.getActive()
+  return activeModel ? findArchiveFile(activeModel.uri.path.slice(1)) : null
+}
+
+function findArchiveFile (path) {
+  var node = archiveFsRoot
+  var pathParts = path.split(/[\\\/]/g)
+  for (let filename of pathParts) {
+    if (filename.length === 0) continue // first item in array might be empty
+    if (!node.isContainer) return null // node not found (we ran into a file prematurely)
+    node = node._files.find(n => n.name === filename) // move to next child in the tree
+  }
+  return node
+}
+
 // rendering
 // =
 
 function update () {
-  // sidebar
   if (archive) {
     yo.update(
       document.querySelector('.editor-sidebar'),
@@ -192,10 +217,19 @@ function update () {
       `
     )
   }
-  // tabs
   yo.update(document.querySelector('.editor-tabs'), tabs.render(models.getModels()))
+  updateToolbar()
 }
 
+function updateToolbar () {
+  var opts = {
+    previewMode: _get(archive, 'info.userSettings.previewMode')
+  }
+  yo.update(
+    document.querySelector('.editor-toolbar'),
+    toolbar.render(getActiveFile(), models.getActive(), opts)
+  )
+}
 
 // event handlers
 // =
@@ -225,15 +259,13 @@ function onGlobalKeydown (e) {
   if (ctrlOrMeta && e.keyCode == 83) {
     e.preventDefault()
     e.stopPropagation()
-
-    onSave()
+    onSaveActiveModel()
   }
 }
 
 async function onFilesChanged () {
   await sidebar.setCurrentSource(archiveFsRoot)
   await localCompare()
-  sidebar.rerender()
 }
 
 async function onSelectFavicon (imageData) {
@@ -270,65 +302,91 @@ function onReorderModels (e) {
 }
 
 async function onCreateFile (e) {
-  try {
+  await op('Saving...', async () => {
     const {path} = e.detail
-    const to = setTimeout(() => toast.create('Saving...'), 500) // if it takes a while, toast
     await workingCheckout.writeFile(path, '')
-    clearTimeout(to)
-
     // TODO open the new file
-  } catch (e) {
-    toast.create(e.toString(), 'error', 5e3)
-  }
+  })
 }
 
 async function onCreateFolder (e) {
-  try {
+  await op('Saving...', async () => {
     const {path} = e.detail
-    const to = setTimeout(() => toast.create('Saving...'), 500) // if it takes a while, toast
     await workingCheckout.mkdir(path)
-    clearTimeout(to)
-  } catch (e) {
-    toast.create(e.toString(), 'error', 5e3)
-  }
+  })
 }
 
 async function onRenameFile (e) {
-  try {
-    const {path, newName} = e.detail
-    const to = setTimeout(() => toast.create('Renaming...'), 500) // if it takes a while, toast
-    const newPath = path.split('/').slice(0, -1).concat(newName).join('/')
-    await workingCheckout.rename(path, newPath)
-    clearTimeout(to)
-  } catch (e) {
-    toast.create(e.toString(), 'error', 5e3)
-  }
+  await op('Renaming...', async () => {
+    const {oldPath, newPath} = e.detail
+    await workingCheckout.rename(oldPath, newPath)
+  })
 }
 
 async function onDeleteFile (e) {
-  try {
+  await op('Deleting...', async () => {
     const {path, isFolder} = e.detail
-    const to = setTimeout(() => toast.create('Deleting...'), 500) // if it takes a while, toast
-
     if (isFolder) {
       await workingCheckout.rmdir(path, {recursive: true})
     } else {
       await workingCheckout.unlink(path)
     }
-
-    clearTimeout(to)
-    toast.create(`Deleted ${path}`)
-    update()
-  } catch (e) {
-    toast.create(e.toString(), 'error', 5e3)
-  }
+    toast.create(`Deleted ${path}`, 1e3)
+  })
 }
 
-async function onSave () {
-  try {
+function onOpenFile (e) {
+  window.open(workingCheckout.url + e.detail.path)
+}
+
+async function onCommitFile (e) {
+  await op('Committing...', async () => {
+    const path = e.detail.path
+    await beaker.archives.publishLocalSyncPathListing(archive.url, {paths: [path]})
+    models.exitDiff()
+    toast.create(`Committed ${path}`, 'success', 1e3)
+  })
+}
+
+async function onRevertFile (e) {
+  await op('Reverting...', async () => {
+    const path = e.detail.path
+    await beaker.archives.revertLocalSyncPathListing(archive.url, {paths: [path]})
+    models.reload(findArchiveFile(path))
+    models.exitDiff()
+    toast.create(`Reverted ${path}`, 'success', 1e3)
+  })
+}
+
+async function onDiffActiveModel (e) {
+  await op('Diffing...', async () => {
+    if (models.isShowingDiff()) {
+      // toggle
+      models.setActive(models.getActive())
+      return
+    }
+
+    var active = models.getActive()
+    var rightContent = active.getValue()
+
+    // get left hand content
+    var leftContent = ''
+    if (workingCheckout.url.includes('+')) {
+      // left is preview or historic, right should be latest
+      leftContent = await workingCheckout.checkout().readFile(active.uri.path)
+    } else {
+      // left is latest, right should be preview
+      leftContent = await workingCheckout.checkout('preview').readFile(active.uri.path)
+    }
+
+    models.setActiveDiff(leftContent, rightContent)
+  })
+}
+
+async function onSaveActiveModel () {
+  await op('Saving...', async () => {
     let model = models.getActive()
     let fileContent = model.getValue()
-    let fileName = model.name
     let filePath = model.uri.path
     if (!filePath.startsWith('/')) {
       filePath = '/' + filePath
@@ -336,10 +394,19 @@ async function onSave () {
 
     models.setVersionIdOnSave(model)
     await workingCheckout.writeFile(filePath, fileContent, 'utf8')
+  })
+}
 
-    toast.create('Saved', 'success')
+// internal methods
+// =
+
+async function op (msg, fn) {
+  const to = setTimeout(() => toast.create(msg), 500) // if it takes a while, toast
+  try {
+    await fn()
+    update()
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
   }
+  clearTimeout(to)
 }
-

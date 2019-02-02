@@ -25,7 +25,7 @@ function renderTab (model) {
       ondragover=${(e) => onTabDragOver(e)}
       ondrop=${(e) => onTabDragDrop(e, model)}
     >
-      ${model.isDiff ? model.name + " (diff)" : model.name}
+      ${model.name}${model.isDirty ? '*' : ''}
       <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
     </div>
   `

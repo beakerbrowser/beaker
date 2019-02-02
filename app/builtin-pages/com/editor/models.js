@@ -6,13 +6,11 @@
 var models = []
 var modelHistory = []
 var active
-var lastSavedVersionId
-var isDirtyFiles = false
 
 // exported api
 // =
 
-export const load = async function load (file) {
+export async function load (file) {
   try {
     // load the file content
     await file.readData({ignoreCache: true})
@@ -21,16 +19,31 @@ export const load = async function load (file) {
     let model = monaco.editor.createModel(file.preview, null, monaco.Uri.parse(file.url))
     model.name = file.name
     model.isEditable = true
+    model.lastSavedVersionId = model.getAlternativeVersionId()
     Object.defineProperty(model, 'isActive', {get: () => active === model})
+    Object.defineProperty(model, 'isDirty', {get: () => model.getAlternativeVersionId() !== model.lastSavedVersionId})
     model.lang = model.getModeId()
-    model.onDidChangeContent(e => onDidChange(e, model))
-
-    lastSavedVersionId = model.getAlternativeVersionId()
+    model.onDidChangeContent(e => onDidChange(model))
 
     models.push(model)
   } catch (e) {
     console.error(e)
     throw e
+  }
+}
+
+export async function reload (file) {
+  var model = findModel(file)
+  if (!model) {
+    model = await load(file)
+  } else {
+    // load the file content
+    await file.readData({ignoreCache: true})
+
+    // update the content
+    model.setValue(file.preview)
+    model.lastSavedVersionId = model.getAlternativeVersionId()
+    onDidChange(model)
   }
 }
 
@@ -45,14 +58,14 @@ export async function unload (file) {
 
   // handle diff
   if (file.isDiff) {
-    let model = findModel(file.name, true)
+    let model = findModel(file)
     models.splice(models.findIndex(v => {
       if (v.name === model.name && v.isDiff) return true
     }), 1)
     model.original.dispose()
     model.modified.dispose()
   } else if (file.type === 'image') {
-    let model = findModel(file.name)
+    let model = findModel(file)
     models.splice(models.findIndex(v => v.name === model.name), 1)
     document.getElementById('imageViewer').classList.add('hidden')
   } else {
@@ -62,10 +75,10 @@ export async function unload (file) {
   }
 
   if (newActive) setActive(newActive)
-  document.dispatchEvent(new Event('editor-rerender'))
+  emit('editor-rerender')
 }
 
-export const setActive = async function setActive (file) {
+export async function setActive (file) {
   try {
     // this is a diff
     if (file.isDiff) {
@@ -81,60 +94,35 @@ export const setActive = async function setActive (file) {
       await setUneditableActive(file)
     }
 
-    document.dispatchEvent(new Event('editor-rerender'))
+    emit('editor-rerender')
   } catch (e) {
     console.error(e)
     throw e
   }
 }
 
-export const setActiveDiff = async function setActiveDiff (diff) {
+export async function setActiveDiff (leftContent, rightContent) {
   try {
     editor.domElement.hidden = true
+    diffEditor._domElement.hidden = false
     document.getElementById('imageViewer').classList.add('hidden')
 
-    // load if not yet loaded
-    if (!findModel(diff.name, true)) {
-      await diff.readData()
-      await diff.original.readData()
-
-      diffEditor.setModel({
-        original: monaco.editor.createModel(diff.original.preview),
-        modified: monaco.editor.createModel(diff.preview)
-      })
-
-      // create diff model for tabs
-      let diffModel = diffEditor.getModel()
-      diffModel.name = diff.name
-      diffModel.diff = diff
-      diffModel.isDiff = true
-
-      models.push(diffModel)
-    }
-
-    // before changing active, get viewstate of currently active file
-  if (active) active.viewState = diffEditor.saveViewState()
-
-
-    let model = findModel(diff.name, true)
-    active = findModel(diff.name, true)
     diffEditor.setModel({
-      original: model.original,
-      modified: model.modified
+      original: monaco.editor.createModel(leftContent),
+      modified: monaco.editor.createModel(rightContent)
     })
-
-    // if model has a view state, get that viewstate and apply it
-    if (active.viewState) diffEditor.restoreViewState(active.viewState)
-
-    // after everything is set bring focus to editor
     diffEditor.focus()
-
-    modelHistory.push(diff)
-    document.dispatchEvent(new Event('editor-rerender'))
+    emit('editor-rerender')
   } catch (e) {
     console.error(e)
     throw e
   }
+}
+
+export function exitDiff () {
+  editor.domElement.hidden = false
+  diffEditor._domElement.hidden = true
+  document.getElementById('imageViewer').classList.add('hidden')
 }
 
 export async function unloadOthers (model) {
@@ -145,7 +133,7 @@ export async function unloadOthers (model) {
   for (let model of modelsRef) {
     await unload(model)
   }
-  document.dispatchEvent(new Event('editor-rerender'))
+  emit('editor-rerender')
 }
 
 export async function unloadAllModels () {
@@ -154,7 +142,7 @@ export async function unloadAllModels () {
     await unload(model)
   }
   modelHistory = []
-  document.dispatchEvent(new Event('editor-rerender'))
+  emit('editor-rerender')
 }
 
 export function reorderModels(from, to) {
@@ -163,16 +151,17 @@ export function reorderModels(from, to) {
   models.splice(toIndex, 0, models.splice(fromIndex, 1)[0])
 }
 
-export function findModel (fileName, isDiff = false) {
-  let results = models.filter(v => v.name === fileName)
-  if (isDiff) return results.find(v => v.isDiff)
-  else return results.find(v => {
-    if (v.name === fileName && !v.isDiff) return true
-  })
+export function findModel (file) {
+  var path = file._path || file.uri.path // file-node or model
+  return models.find(model => model.uri.path === path)
 }
 
 export function getActive () {
   return active
+}
+
+export function isShowingDiff () {
+  return diffEditor._domElement.hidden !== true
 }
 
 export function getModels () {
@@ -180,16 +169,20 @@ export function getModels () {
 }
 
 export function setVersionIdOnSave (model) {
-  lastSavedVersionId = model.getAlternativeVersionId()
-  isDirtyFiles = false
+  model.lastSavedVersionId = model.getAlternativeVersionId()
+  emit('editor-model-cleaned', {model})
 }
 
 export function checkForDirtyFiles () {
-  return isDirtyFiles
+  return !!models.find(m => m.isDirty)
 }
 
 // internal methods
 // =
+
+function emit (name, detail = null) {
+  document.dispatchEvent(new CustomEvent(name, {detail}))
+}
 
 function canEditWithMonaco (name) {
   // no extension?
@@ -214,18 +207,19 @@ function canEditWithMonaco (name) {
 
 async function setEditableActive (file) {
   // load if not yet loaded
-  if (!findModel(file.name)) {
+  if (!findModel(file)) {
     await load(file)
   }
 
   editor.domElement.hidden = false
+  diffEditor._domElement.hidden = true
   document.getElementById('imageViewer').classList.add('hidden')
 
   // before changing active, get viewstate of currently active file
   if (active) active.viewState = editor.saveViewState()
 
-  active = findModel(file.name)
-  editor.setModel(findModel(file.name))
+  active = findModel(file)
+  editor.setModel(findModel(file))
 
   // if model has a view state, get that viewstate and apply it
   if (active.viewState) editor.restoreViewState(active.viewState)
@@ -236,13 +230,12 @@ async function setEditableActive (file) {
   modelHistory.push(file)
 }
 
-// images for now
-const setUneditableActive = async function (file) {
+async function setUneditableActive (file) {
   let model = {}
   editor.domElement.hidden = true
   diffEditor._domElement.hidden = true
 
-  if (!findModel(file.name)) {
+  if (!findModel(file)) {
     model.name = file.name
     model.isEditable = file.isEditable
     model.type = 'image'
@@ -260,10 +253,14 @@ const setUneditableActive = async function (file) {
     container.classList.remove('hidden')
   }
 
-  active = findModel(file.name)
+  active = findModel(file)
   modelHistory.push(file)
 }
 
-function onDidChange (e, model) {
-  if (lastSavedVersionId !== model.getAlternativeVersionId()) isDirtyFiles = true
+function onDidChange (model) {
+  if (model.lastSavedVersionId !== model.getAlternativeVersionId()) {
+    emit('editor-model-dirtied', {model})
+  } else {
+    emit('editor-model-cleaned', {model})
+  }
 }
