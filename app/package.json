@@ -91,8 +91,5 @@
     "utp-native": "^2.0.0",
     "yo-yo": "^1.4.0",
     "zerr": "^1.0.4"
-  },
-  "devDependencies": {
-    "devtron": "^1.4.0"
   }
 }

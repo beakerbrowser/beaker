@@ -3,7 +3,6 @@
 import { ipcRenderer, remote } from 'electron'
 import EventEmitter from 'events'
 import path from 'path'
-import fs from 'fs'
 import throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
 import errorPage from '@beaker/core/lib/error-page'
@@ -135,6 +134,8 @@ export function create (opts) {
     isReceivingAssets: false, // has the webview started receiving assets, in the current load-cycle?
     isActive: false, // is the active page?
     isInpageFinding: false, // showing the inpage find ctrl?
+    isCurrentlyAudible: false, // is the page currently playing music?
+    isAudioMuted: false, // is the page muted?
     inpageFindInfo: null, // any info available on the inpage find {activeMatchOrdinal, matches}
     liveReloadEvents: false, // live-reload event stream
     zoom: 0, // what's the current zoom level?
@@ -172,9 +173,6 @@ export function create (opts) {
     // webview-preload execute-javascript state
     executeJavascriptCalls: {},
     executeJavascriptCallCounter: 0,
-
-    // hackfix reload failsafe
-    reloadHackfixCounter: 0,
 
     // get the current URL
     getURL () {
@@ -393,6 +391,8 @@ export function create (opts) {
   page.webviewEl.addEventListener('found-in-page', onFoundInPage)
   page.webviewEl.addEventListener('enter-html-full-screen', onEnterHtmlFullScreen)
   page.webviewEl.addEventListener('leave-html-full-screen', onLeaveHtmlFullScreen)
+  page.webviewEl.addEventListener('media-started-playing', onMediaChange)
+  page.webviewEl.addEventListener('media-paused', onMediaChange)
   page.webviewEl.addEventListener('close', onClose)
   page.webviewEl.addEventListener('crashed', onCrashed)
   page.webviewEl.addEventListener('gpu-crashed', onCrashed)
@@ -790,21 +790,6 @@ function onDidStopLoading (e) {
       statusBar.setIsLoading(false)
     }
 
-    // HACK
-    // there is a race condition with Electron where the CSPs will sometimes prevent the preload from executing
-    // this can be detected by attempting to call executeJavaScript; if it takes longer than a second, that's too long
-    // reloading the page usually gets it to execute correctly
-    // -prf
-    let webviewCheckTO = setTimeout(() => {
-      if (page.reloadHackfixCounter > 5) return // stop, we're endlessly redirecting
-      page.reloadAsync()
-      page.reloadHackfixCounter++
-    }, 1000)
-    page.executeJavaScript('true').then(res => {
-      page.reloadHackfixCounter = 0
-      clearTimeout(webviewCheckTO)
-    })
-
     // determine content type
     let contentType = beaker.browser.getResourceContentType(page.getURL()) || ''
     let isMD = contentType.startsWith('text/markdown') || contentType.startsWith('text/x-markdown')
@@ -851,7 +836,7 @@ function onDidStopLoading (e) {
         .markdown pre > code { display: block; }
       `)
       if (!cachedMarkdownRendererScript) {
-        cachedMarkdownRendererScript = fs.readFileSync(path.join(APP_PATH, 'markdown-renderer.build.js'), 'utf8')
+        cachedMarkdownRendererScript = ipcRenderer.sendSync('get-markdown-renderer-script')
       }
 
       // NOTE uses webviewEl.executeJavaScript because we dont want to run the markdown renderer in an isolated world
@@ -889,7 +874,7 @@ function onDidStopLoading (e) {
       `)
 
       if (!cachedJSONRendererScript) {
-        cachedJSONRendererScript = fs.readFileSync(path.join(APP_PATH, 'json-renderer.build.js'), 'utf8')
+        cachedJSONRendererScript = ipcRenderer.sendSync('get-json-renderer-script')
       }
 
       page.executeJavaScript(cachedJSONRendererScript)
@@ -1020,6 +1005,13 @@ function onLeaveHtmlFullScreen (e) {
   document.body.classList.remove('page-fullscreen')
 }
 
+async function onMediaChange (e) {
+  var page = getByWebview(e.target)
+  await new Promise(r => setTimeout(r, 1e3)) // the event consistently precedes the audible check by at most 1s
+  page.isCurrentlyAudible = await page.isCurrentlyAudibleAsync()
+  events.emit('media-change', page)
+}
+
 function onClose (e) {
   var page = getByWebview(e.target)
   if (page) {
@@ -1106,6 +1098,7 @@ export function createWebviewEl (id, url) {
   var el = document.createElement('webview')
   el.dataset.id = id
   el.setAttribute('preload', 'file://' + path.join(APP_PATH, 'webview-preload.build.js'))
+  el.setAttribute('enableremotemodule', 'false')
   el.setAttribute('webpreferences', 'allowDisplayingInsecureContent,defaultEncoding=utf-8,scrollBounce,nativeWindowOpen=yes')
   // TODO re-enable nativeWindowOpen when https://github.com/electron/electron/issues/9558 lands
   el.setAttribute('src', url || DEFAULT_URL)
