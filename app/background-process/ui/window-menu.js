@@ -333,6 +333,13 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           if (win) win.webContents.send('command', 'view:toggle-live-reloading')
         }
+      },
+      { type: 'separator' },
+      {
+        label: 'Full Screen',
+        enabled: !noWindows,
+        accelerator: (process.platform === 'darwin') ? 'Ctrl+Cmd+F' : 'F11',
+        role: 'toggleFullScreen'
       }]
   }
 
