@@ -12,13 +12,16 @@ var active
 
 export async function load (file) {
   try {
-    // load the file content
-    await file.readData({ignoreCache: true})
+    var isEditable = canEditWithMonaco(file.name)
+    if (isEditable) {
+      // load the file content
+      await file.readData({ignoreCache: true})
+    }
 
     // setup the model
     let model = monaco.editor.createModel(file.preview, null, monaco.Uri.parse(file.url))
     model.name = file.name
-    model.isEditable = true
+    model.isEditable = isEditable
     model.lastSavedVersionId = model.getAlternativeVersionId()
     Object.defineProperty(model, 'isActive', {get: () => active === model})
     Object.defineProperty(model, 'isDirty', {get: () => model.getAlternativeVersionId() !== model.lastSavedVersionId})
@@ -56,15 +59,7 @@ export async function unload (file) {
 
   if (getActive() === file) newActive = modelHistory.pop()
 
-  // handle diff
-  if (file.isDiff) {
-    let model = findModel(file)
-    models.splice(models.findIndex(v => {
-      if (v.name === model.name && v.isDiff) return true
-    }), 1)
-    model.original.dispose()
-    model.modified.dispose()
-  } else if (file.type === 'image') {
+  if (file.type === 'image') {
     let model = findModel(file)
     models.splice(models.findIndex(v => v.name === model.name), 1)
     document.getElementById('imageViewer').classList.add('hidden')
@@ -80,18 +75,17 @@ export async function unload (file) {
 
 export async function setActive (file) {
   try {
-    // this is a diff
-    if (file.isDiff) {
-      setActiveDiff(file)
-      return
+    // load if not yet loaded
+    var model = findModel(file)
+    if (!model) {
+      model = await load(file)
     }
 
-    // load according to editability
-    let canEdit = canEditWithMonaco(file.name)
-    if (canEdit) {
-      await setEditableActive(file)
+    // render according to editability
+    if (canEditWithMonaco(file.name)) {
+      await setEditableActive(file, model)
     } else {
-      await setUneditableActive(file)
+      await setUneditableActive(file, model)
     }
 
     emit('editor-rerender')
@@ -205,12 +199,7 @@ function canEditWithMonaco (name) {
   return false
 }
 
-async function setEditableActive (file) {
-  // load if not yet loaded
-  if (!findModel(file)) {
-    await load(file)
-  }
-
+async function setEditableActive (file, model) {
   editor.domElement.hidden = false
   diffEditor._domElement.hidden = true
   document.getElementById('imageViewer').classList.add('hidden')
@@ -230,24 +219,16 @@ async function setEditableActive (file) {
   modelHistory.push(file)
 }
 
-async function setUneditableActive (file) {
-  let model = {}
+async function setUneditableActive (file, model) {
   editor.domElement.hidden = true
   diffEditor._domElement.hidden = true
-
-  if (!findModel(file)) {
-    model.name = file.name
-    model.isEditable = file.isEditable
-    model.type = 'image'
-    model.url = file.url
-    models.push(model)
-  }
+  document.getElementById('imageViewer').classList.remove('hidden')
 
   let container = document.getElementById('imageViewer')
   container.innerHTML = ''
   let img = new Image()
   img.crossOrigin = 'anonymous'
-  img.src = file.url
+  img.src = file.url || file.uri.toString()
   img.onload = () => {
     container.append(img)
     container.classList.remove('hidden')

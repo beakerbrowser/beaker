@@ -24,15 +24,24 @@ export function render (file, model, opts) {
               </span>`
             : '',
           yo`
-            <span class="btn transparent ${file.change ? '' : 'disabled'}" onclick=${e => onClickCommitFileChanges(e, model)}>
+            <span
+              class="btn transparent ${file.change ? '' : 'disabled'}"
+              onclick=${file.change ? e => onClickCommitFileChanges(e, model) : undefined}
+            >
               <i class="fas fa-check"></i> commit
             </span>`,
           yo`
-            <span class="btn transparent ${file.change ? '' : 'disabled'}" onclick=${e => onClickReviewFileChanges(e, model)}>
+            <span
+              class="btn transparent ${file.change && model.isEditable ? '' : 'disabled'}"
+              onclick=${file.change && model.isEditable ? e => onClickReviewFileChanges(e, model) : undefined}
+            >
               <i class="fas fa-columns"></i> diff
             </span>`,
           yo`
-            <span class="btn transparent ${file.change ? '' : 'disabled'}" onclick=${e => onClickRevertFileChanges(e, model)}>
+            <span
+              class="btn transparent ${file.change ? '' : 'disabled'}"
+              onclick=${file.change ? e => onClickRevertFileChanges(e, model) : undefined}
+            >
               <i class="fa fa-undo"></i> revert
             </span>`
         ] : ''}
