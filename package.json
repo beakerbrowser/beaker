@@ -33,7 +33,7 @@
     "asarUnpack": [
       "./node_modules/sodium-native/**"
     ],
-    "copyright": "© 2018, Blue Link Labs",
+    "copyright": "© 2019, Blue Link Labs",
     "npmRebuild": false,
     "protocols": [
       {
