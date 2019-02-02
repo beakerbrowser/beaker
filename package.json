@@ -4,7 +4,7 @@
   "devDependencies": {
     "browserify": "^13.0.1",
     "electron": "4.0.3",
-    "electron-builder": "~20.8.0",
+    "electron-builder": "~20.38.5",
     "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-node": "^5.1.1",
