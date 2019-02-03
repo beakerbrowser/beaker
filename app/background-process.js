@@ -55,8 +55,9 @@ if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
 }
 
 // enable the sandbox
-// TODO when electron@4.0.0 lands, change to enableSandbox
-app.enableMixedSandbox()
+// DISABLED - was getting random renderer freezes - prf
+// TODO after electron@4.0.0 lands, change to enableSandbox
+// app.enableMixedSandbox()
 
 // configure the protocols
 protocol.registerStandardSchemes(['dat', 'beaker', 'beaker-hidden-window'], { secure: true })
