@@ -1,4 +1,4 @@
-const yo = require('yo-yo')
+import yo from 'yo-yo'
 import * as models from './models'
 import _get from 'lodash.get'
 import * as contextMenu from '../context-menu'

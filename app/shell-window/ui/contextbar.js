@@ -84,7 +84,7 @@ function renderDatSite (id, page) {
                 </button>
                 <div class="toolbar-dropdown dropdown toolbar-dropdown-menu-dropdown">
                   <div class="dropdown-items center with-triangle">
-                    <div class="dropdown-title">Who can see this?</div>
+                    <div class="dropdown-title">Who can see this site?</div>
                     <div class="dropdown-item" onclick=${() => onSetVisibility(id, page, 'published')}>
                       <div class="label">
                         <i class="${getVisibilityIcon({isPublished: true, isNetworked: true})}"></i>

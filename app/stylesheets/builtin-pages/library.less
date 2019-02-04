@@ -21,6 +21,7 @@
 @import "./components/file-editor.less";
 @import "./components/opaque-binary.less";
 @import "./components/favicon-maker-popup.less";
+@import "./components/share-dropdown.less";
 
 .window-content.builtin.library {
   // position relative so that popups stay in place
@@ -714,41 +715,6 @@ body.drag {
         .dropdown.seed {
           .dropdown-items {
             width: 300px;
-          }
-        }
-
-        .dropdown.share {
-          .dropdown-items {
-            width: 350px;
-          }
-
-          .dropdown-item {
-            background: #fff;
-            cursor: default;
-            padding: 15px;
-
-            p {
-              margin-left: 0;
-              color: @color-text;
-            }
-          }
-
-          p.copy-url {
-            &:extend(.flex);
-            margin-top: 5px;
-            margin-bottom: 0;
-
-            input {
-              flex: 1;
-              font-size: 12px;
-              border-color: #eee;
-              background: #eee;
-              margin-right: 5px;
-            }
-
-            .btn.full-width {
-              margin-top: 10px;
-            }
           }
         }
       }

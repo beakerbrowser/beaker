@@ -40,7 +40,22 @@
 
   .unused-space {
     flex: 1;
-    border: 1px solid transparent;
-    border-bottom-color: #ccc;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .ctrls {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    & > * {
+      margin-right: 4px;
+    }
+
+    .dropdown {
+      position: initial; // due to overflow hidden, we do dropdowns in the tabs with absolute positioning
+
+      &.share .dropdown-items {
+        right: 4px;
+      }
+    }
   }
 }

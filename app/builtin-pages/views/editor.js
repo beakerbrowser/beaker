@@ -10,9 +10,8 @@ import * as toolbar from '../com/editor/toolbar'
 import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
 import {closeAllToggleables}  from '../com/toggleable2'
-import renderFaviconPicker from '../com/settings/favicon-picker'
 
-const DEFAULT_SIDEBAR_WIDTH = 200
+const DEFAULT_SIDEBAR_WIDTH = 250
 const MIN_SIDEBAR_WIDTH = 100
 
 var archive
@@ -232,7 +231,12 @@ function update () {
       `
     )
   }
-  yo.update(document.querySelector('.editor-tabs'), tabs.render(models.getModels()))
+  yo.update(
+    document.querySelector('.editor-tabs'),
+    tabs.render(workingCheckout, models.getModels(), {
+      openLinkVersion: workingCheckoutVersion
+    })
+  )
   updateToolbar()
 }
 
