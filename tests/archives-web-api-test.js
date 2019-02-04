@@ -133,6 +133,7 @@ test('archives.list', async t => {
   var res = await app.executeJavascript(`
     window.beaker.archives.list({ isOwner: false })
   `)
+  res = res.filter(r => !r.title.toLowerCase().includes('beaker')) // sometimes the MOTD will load the beakerbrowser dat
   t.deepEqual(res.length, 1)
 
   // list by type

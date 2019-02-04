@@ -22,11 +22,10 @@ import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
 import * as basicAuth from './background-process/ui/basic-auth'
-import * as hiddenWindows from './background-process/hidden-windows'
+import * as childProcesses from './background-process/child-processes'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
-import * as beakerHiddenWindowProtocol from './background-process/protocols/beaker-hidden-window'
 
 import * as testDriver from './background-process/test-driver'
 import * as openURL from './background-process/open-url'
@@ -55,12 +54,10 @@ if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
 }
 
 // enable the sandbox
-// DISABLED - was getting random renderer freezes - prf
-// TODO after electron@4.0.0 lands, change to enableSandbox
-// app.enableMixedSandbox()
+app.enableSandbox()
 
 // configure the protocols
-protocol.registerStandardSchemes(['dat', 'beaker', 'beaker-hidden-window'], { secure: true })
+protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
 
 // handle OS event to open URLs
 app.on('open-url', (e, url) => {
@@ -80,8 +77,7 @@ app.on('open-file', (e, filepath) => {
 
 app.on('ready', async function () {
   // start the daemon process
-  beakerHiddenWindowProtocol.setup()
-  var datDaemonWindow = await hiddenWindows.spawn('dat-daemon', './dat-daemon.js')
+  var datDaemonProcess = await childProcesses.spawn('dat-daemon', './dat-daemon.js')
 
   // setup core
   await beakerCore.setup({
@@ -100,7 +96,7 @@ app.on('ready', async function () {
     rpcAPI: rpc,
     downloadsWebAPI: downloads.WEBAPI,
     browserWebAPI: beakerBrowser.WEBAPI,
-    datDaemonWc: datDaemonWindow.webContents
+    datDaemonProcess
   })
 
   // base
@@ -129,6 +125,10 @@ app.on('ready', async function () {
 
   // configure chromium's permissions for the protocols
   protocol.registerServiceWorkerSchemes(['dat'])
+})
+
+app.on('quit', () => {
+  childProcesses.closeAll()
 })
 
 app.on('custom-ready-to-show', () => {
