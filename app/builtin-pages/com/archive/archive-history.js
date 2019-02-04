@@ -10,7 +10,8 @@ const FETCH_COUNT = 200
 var counter = 0
 var history
 var baseUrl
-export default function render (archive, {filePath, includePreview} = {}) {
+export default function render (archive, {viewerUrl, filePath, linkifyPaths, includePreview} = {}) {
+  viewerUrl = viewerUrl || 'beaker://library'
   filePath = filePath || ''
   var el = renderHistory()
   //el.isSameNode = (other) => (other && other.classList && other.classList.contains('archive-history'))
@@ -34,13 +35,13 @@ export default function render (archive, {filePath, includePreview} = {}) {
     return yo`
       <div class="archive-history ${history ? '' : 'loading'}">
         <div class="archive-history-body">
-          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="beaker://library/${baseUrl}+latest${filePath}">
+          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="${viewerUrl}/${baseUrl}+latest${filePath}">
             <span class="fa fa-fw fa-globe-americas"></span>
             View latest published
           </div>
           ${includePreview
             ? yo`
-              <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="beaker://library/${baseUrl}+preview${filePath}">
+              <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="${viewerUrl}/${baseUrl}+preview${filePath}">
                 <span class="fa fa-fw fa-laptop"></span>
                 View local preview
               </div>`
@@ -64,14 +65,17 @@ export default function render (archive, {filePath, includePreview} = {}) {
         onclick=${onGoto}
         class="archive-history-item"
         title="View version ${c.version}"
-        href="beaker://library/${baseUrl}+${c.version}${filePath}"
+        href="${viewerUrl}/${baseUrl}+${c.version}${filePath}"
       >
         ${c.type === 'put' ? 'Updated' : 'Deleted'}
 
         <div class="path">
-          <a href="${baseUrl}+${c.version}${c.path}" target="_blank">
-            ${c.path.slice(1)}
-          </a>
+          ${linkifyPaths
+            ? yo`
+              <a href="${baseUrl}+${c.version}${c.path}" target="_blank">
+                ${c.path.slice(1)}
+              </a>`
+            : yo`<span>${c.path.slice(1)}</span>`}
         </div>
 
         <div class="version badge">v${c.version}</div>

@@ -1,9 +1,12 @@
+@import "../../../base/colors.less";
 
 .editor-sidebar {
   display: flex;
   flex-flow: column;
   overflow-y: scroll;
   text-overflow: ellipsis;
+  padding-left: 4px;
+  padding-top: 4px;
 
   &::-webkit-scrollbar {
     display: none;
@@ -124,12 +127,12 @@
     &.root {
       background: transparent;
       padding: 5px 10px;
-      margin: 39px 0 4px 4px;
+      margin: 0 0 4px;
       border-bottom: 1px solid #ddd;
       cursor: default;
 
       .name {
-        font-weight: 500;
+        color: rgba(0,0,0,.75);
       }
 
       .hover-ctrls {
@@ -153,6 +156,29 @@
     margin-left: 4px;
     margin-right: 4px;
     border-radius: 50%;
+  }
+
+  .version-picker-ctrl {
+    margin: 0 0 5px;
+    position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
+
+    .dropdown-items {
+      left: 4px;
+      top: 38px;
+    }
+
+    .btn {
+      background: rgba(0, 0, 0, 0.075);
+
+      strong {
+        font-weight: 500;
+      }
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.1);
+        color: @blue;
+      }
+    }
   }
 }
 

@@ -16,6 +16,7 @@ const DEFAULT_SIDEBAR_WIDTH = 200
 const MIN_SIDEBAR_WIDTH = 100
 
 var archive
+var workingCheckoutVersion
 var workingCheckout
 var archiveFsRoot
 var isHistoricalVersion = false
@@ -39,14 +40,15 @@ async function setupWorkingCheckout () {
       // use +latest to show latest
       // -prf
       workingCheckout = new Archive(archive.checkout().url)
+      workingCheckoutVersion = 'latest'
     } else {
       // use given version
       workingCheckout = archive
     }
 
-    var version = archive.url.slice(vi + 1)
+    workingCheckoutVersion = archive.url.slice(vi + 1)
     // is the version a number?
-    if (version == +version) {
+    if (workingCheckoutVersion == +workingCheckoutVersion) {
       isHistoricalVersion = true
     }
   } else if (_get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
@@ -54,9 +56,11 @@ async function setupWorkingCheckout () {
     // default to showing the preview when previewMode is on, even if +preview isnt set
     // -prf
     workingCheckout = new Archive(archive.checkout('preview').url)
+    workingCheckoutVersion = 'preview'
   } else {
     // use latest checkout
     workingCheckout = new Archive(archive.checkout().url)
+    workingCheckoutVersion = 'latest'
   }
   await workingCheckout.setup()
   console.log(workingCheckout)
@@ -104,6 +108,10 @@ async function setup () {
     // load the archiveFS
     archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
     await sidebar.setArchiveFsRoot(archiveFsRoot)
+    sidebar.configure({
+      version: workingCheckoutVersion,
+      previewMode: _get(archive, 'info.userSettings.previewMode')
+    })
 
     let fileActStream = archive.watch()
     fileActStream.addEventListener('changed', onFilesChanged)

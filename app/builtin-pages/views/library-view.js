@@ -756,7 +756,7 @@ function renderVersionPicker () {
       <div class="dropdown toggleable-container version-picker-ctrl">
         ${button(onToggle)}
         <div class="dropdown-items left">
-          ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode})}
+          ${renderArchiveHistory(filesBrowser.root._archive, {filePath, includePreview: previewMode, linkifyPaths: true})}
         </div>
       </div>`
   })

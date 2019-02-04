@@ -3,6 +3,7 @@ import * as models from './models'
 import _get from 'lodash.get'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
+import renderArchiveHistory from '../archive/archive-history'
 import toggleable2, {closeAllToggleables}  from '../toggleable2'
 import {findParent} from '../../../lib/fg/event-handlers'
 
@@ -11,6 +12,10 @@ import {findParent} from '../../../lib/fg/event-handlers'
 
 var archiveFsRoot
 var currentDiff
+var config = {
+  version: 'latest',
+  previewMode: false
+}
 
 // exported api
 // =
@@ -22,6 +27,7 @@ export function render () {
 
   return yo`
     <div class="file-tree-container">
+      ${renderVersionPicker()}
       ${renderRoot(archiveFsRoot)}
     </div>
   `
@@ -49,8 +55,46 @@ export function setCurrentDiff (d) {
   currentDiff = d
 }
 
+export function configure (c) {
+  for (let k in c) {
+    config[k] = c[k]
+  }
+}
+
 // rendering
 // =
+
+function renderVersionPicker () {
+  const version = config.version
+  const includePreview = config.previewMode
+
+  const button = (onToggle) =>
+    yo`
+      <button
+        class="btn transparent full-width nofocus"
+        onclick=${onToggle}>
+        <div>
+          Version: <strong>${version}</strong>
+        </div>
+        <span class="fa fa-angle-down"></span>
+      </button>
+    `
+
+  return toggleable2({
+    id: 'version-picker',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker-ctrl">
+        ${button(onToggle)}
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker-ctrl">
+        ${button(onToggle)}
+        <div class="dropdown-items left">
+          ${renderArchiveHistory(archiveFsRoot._archive, {viewerUrl: 'beaker://editor', includePreview})}
+        </div>
+      </div>`
+  })
+}
 
 function renderChildren (node) {
   // render actual children
@@ -58,7 +102,6 @@ function renderChildren (node) {
 
   // add any deletes in this folder
   if (currentDiff) {
-    console.log('currentDiff', currentDiff)
     for (let d of currentDiff) {
       if (d.change !== 'del') continue
       if (isPathInFolder(node._path, d.path)) {
@@ -79,7 +122,7 @@ function renderRoot (node) {
       >
         <span class="name">${node.name}</span>
         <span class="ctrls">
-          <button><i class="fas fa-wrench"></i></button>
+          <button class="nofocus" onclick=${onClickConfigure}><i class="fas fa-wrench"></i></button>
           ${toggleable2({
             id: 'file-tree-new-node',
             closed: ({onToggle}) => yo`
@@ -326,6 +369,16 @@ function onContextmenuNode (e, node) {
     y: e.clientY,
     items
   })
+}
+
+function onClickConfigure (e) {
+  e.preventDefault()
+  e.stopPropagation()
+  // TEMP
+  // just open the library-view configure
+  // someday this should be a nice popup interface
+  // -prf
+  window.open(`beaker://library/${archiveFsRoot.url}#settings`)
 }
 
 // internal helpers
