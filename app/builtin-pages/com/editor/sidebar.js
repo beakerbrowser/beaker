@@ -6,6 +6,7 @@ import * as contextInput from '../context-input'
 import renderArchiveHistory from '../archive/archive-history'
 import toggleable2, {closeAllToggleables}  from '../toggleable2'
 import {findParent} from '../../../lib/fg/event-handlers'
+import {pluralize} from '../../../lib/strings'
 
 // globals
 // =
@@ -29,6 +30,7 @@ export function render () {
     <div class="file-tree-container">
       ${renderVersionPicker()}
       ${renderRoot(archiveFsRoot)}
+      ${renderReviewChanges()}
     </div>
   `
 }
@@ -94,6 +96,32 @@ function renderVersionPicker () {
         </div>
       </div>`
   })
+}
+
+function renderReviewChanges () {
+  if (!currentDiff || currentDiff.length === 0) return ''
+
+  function rRevisionIndicator (type) {
+    if (!currentDiff.find(d => d.change === type)) return ''
+    return yo`<span class="revision-indicator ${type}"></span>`
+  }
+  
+  const total = currentDiff.length
+  return yo`
+    <div class="uncommitted-changes">
+      <div class="title">
+        ${rRevisionIndicator('add')}
+        ${rRevisionIndicator('mod')}
+        ${rRevisionIndicator('del')}
+        ${total} uncommitted ${pluralize(total, 'change')}
+      </div>
+      <button class="btn transparent nofocus full-width" onclick=${onClickCommitAll}>
+        <span class="fas fa-check fa-fw"></span> Commit all
+      </button>
+      <button class="btn transparent nofocus full-width" onclick=${onClickRevertAll}>
+        <span class="fas fa-undo fa-fw"></span> Revert all
+      </button>
+    </div>`
 }
 
 function renderChildren (node) {
@@ -379,6 +407,22 @@ function onClickConfigure (e) {
   // someday this should be a nice popup interface
   // -prf
   window.open(`beaker://library/${archiveFsRoot.url}#settings`)
+}
+
+function onClickCommitAll (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  if (!confirm('Commit all changes?')) return
+  emit('editor-commit-all')
+}
+
+function onClickRevertAll (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  if (!confirm('Revert all changes?')) return
+  emit('editor-revert-all')
 }
 
 // internal helpers

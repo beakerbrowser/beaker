@@ -14,7 +14,7 @@ export function render (file, model, opts) {
       <span class="btn transparent" onclick=${e => onClickOpenFile(e, model)}><i class="fas fa-external-link-alt"></i> view file</span>
       <span class="btn transparent" onclick=${e => onClickRenameFile(e, model)}><i class="fas fa-i-cursor"></i> rename</span>
       <span class="btn transparent" onclick=${e => onClickDeleteFile(e, model)}><i class="fas fa-trash"></i> delete</span>
-      <span class="spacer"></span>
+      <span class="divider"></span>
       ${opts.previewMode
         ? [
           file.change
@@ -43,7 +43,8 @@ export function render (file, model, opts) {
               onclick=${file.change ? e => onClickRevertFileChanges(e, model) : undefined}
             >
               <i class="fa fa-undo"></i> revert
-            </span>`
+            </span>`,
+          yo`<span class="divider"></span>`
         ] : ''}
     </div>`
 }

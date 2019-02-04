@@ -12,24 +12,31 @@
     display: none;
   }
 
-  .section {
-    margin-bottom: 10px;
-  }
+  .version-picker-ctrl {
+    margin: 0 0 5px;
+    position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
 
-  .file-tree-siteinfo {
-    & > .btn {
-      display: flex;
-      align-items: center;
-      width: calc(100% - 2px);
-      height: 40px;
-      margin: 2px 0 2px 2px;
+    .dropdown-items {
+      left: 4px;
+      top: 38px;
+    }
 
-      .favicon {
-        width: 16px;
-        height: 16px;
-        margin-right: 5px;
+    .btn {
+      background: rgba(0, 0, 0, 0.075);
+
+      strong {
+        font-weight: 500;
+      }
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.1);
+        color: @blue;
       }
     }
+  }
+
+  .file-tree {
+    margin-bottom: 10px;
   }
 
   .subtree {
@@ -120,6 +127,12 @@
       }
     }
 
+    .revision-indicator {
+      margin-left: 4px;
+      margin-right: 4px;
+      border-radius: 50%;
+    }  
+
     &:hover {
       background: #ededf0;
     }
@@ -152,31 +165,21 @@
     }
   }
 
-  .revision-indicator {
-    margin-left: 4px;
-    margin-right: 4px;
-    border-radius: 50%;
-  }
-
-  .version-picker-ctrl {
-    margin: 0 0 5px;
-    position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
-
-    .dropdown-items {
-      left: 4px;
-      top: 38px;
+  .uncommitted-changes {
+    .title {
+      padding: 5px 10px;
+      margin: 0 0 4px;
+      border-bottom: 1px solid #ddd;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .btn {
-      background: rgba(0, 0, 0, 0.075);
-
-      strong {
-        font-weight: 500;
-      }
-
-      &:hover {
-        background: rgba(0, 0, 0, 0.1);
-        color: @blue;
+      text-align: left;
+      
+      .fas {
+        margin-right: 2px;
       }
     }
   }

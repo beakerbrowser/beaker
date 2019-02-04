@@ -19,6 +19,7 @@ var archive
 var workingCheckoutVersion
 var workingCheckout
 var archiveFsRoot
+var currentDiff
 var isHistoricalVersion = false
 
 var sidebarWidth
@@ -91,6 +92,8 @@ async function setup () {
   document.addEventListener('editor-open-file', onOpenFile)
   document.addEventListener('editor-commit-file', onCommitFile)
   document.addEventListener('editor-revert-file', onRevertFile)
+  document.addEventListener('editor-commit-all', onCommitAll)
+  document.addEventListener('editor-revert-all', onRevertAll)
   document.addEventListener('editor-diff-active-model', onDiffActiveModel)
 
   // setup the sidebar resizer
@@ -142,13 +145,13 @@ async function setup () {
 }
 
 async function localCompare () {
-  let compareDiff = await beaker.archives.diffLocalSyncPathListing(archive.url, {compareContent: true, shallow: true})
-  sidebar.setCurrentDiff(compareDiff)
+  currentDiff = await beaker.archives.diffLocalSyncPathListing(archive.url, {compareContent: true, shallow: true})
+  sidebar.setCurrentDiff(currentDiff)
 
   // attach add/mod changes to the existing tree
   const checkNode = async (node) => {
     // check for diff
-    var diff = compareDiff.find(diff => {
+    var diff = currentDiff.find(diff => {
       if (diff.path === node._path) return true
       if (node._path.startsWith(diff.path + '/')) return true // is a child of this item
       return false
@@ -371,6 +374,24 @@ async function onRevertFile (e) {
   })
 }
 
+async function onCommitAll (e) {
+  await op('Committing...', async () => {
+    var paths = fileDiffsToPaths(currentDiff)
+    await beaker.archives.publishLocalSyncPathListing(archive.url, {shallow: false, paths})
+    models.exitDiff()
+    toast.create(`Committed all changes`, 'success', 1e3)
+  })
+}
+
+async function onRevertAll (e) {
+  await op('Reverting...', async () => {
+    var paths = fileDiffsToPaths(currentDiff)
+    await beaker.archives.revertLocalSyncPathListing(archive.url, {shallow: false, paths})
+    models.exitDiff()
+    toast.create(`Reverted all changes`, 'success', 1e3)
+  })
+}
+
 async function onDiffActiveModel (e) {
   await op('Diffing...', async () => {
     if (models.isShowingDiff()) {
@@ -422,4 +443,11 @@ async function op (msg, fn) {
     toast.create(e.toString(), 'error', 5e3)
   }
   clearTimeout(to)
+}
+
+function fileDiffsToPaths (filediff) {
+  return filediff.map(d => {
+    if (d.type === 'dir') return d.path + '/' // indicate that this is a folder
+    return d.path
+  })
 }
