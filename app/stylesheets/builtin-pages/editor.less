@@ -25,7 +25,7 @@
 .editor-container {
   flex: 1;
 
-  #editor, #diffEditor, #imageViewer {
+  #editor, #diffEditor, #imageViewer, #genericViewer {
     height: calc(100% - 100px);
     background-color: white;
     border-left: 1px solid #ccc;
@@ -33,7 +33,6 @@
 
   #imageViewer {
     position: relative;
-    border-left: 1px solid #ccc;
 
     img {
       max-width: 100%;
@@ -43,6 +42,21 @@
       left: 25px;
     }
   }
+
+  #genericViewer {
+    .deleted-filediff {
+      padding: 20px 40px;
+
+      .path {
+        color: #c37b7b;
+        font-style: italic;
+
+        .revision-indicator {
+          margin: 0 4px 0 0;
+        }
+      }
+    }
+  }
 }
 
 .editor-toolbar {
@@ -50,9 +64,21 @@
   background: #fff;
   border-left: 1px solid #ccc;
   border-bottom: 1px solid #ddd;
+  padding: 0 4px;
+
+  &:empty {
+    display: none;
+  }
 
   .btn {
     border-radius: 0;
+    line-height: 28px;
+
+    i {
+      font-size: 11px;
+      position: relative;
+      top: -1px;
+    }
   }
 
   .spacer {

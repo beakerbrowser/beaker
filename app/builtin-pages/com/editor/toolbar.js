@@ -11,7 +11,7 @@ export function render (file, model, opts) {
   return yo`
     <div class="editor-toolbar">
       <span class="btn transparent ${model.isDirty? '' : 'disabled'}"  onclick=${e => onClickSaveFile(e, model)}><i class="fas fa-save"></i> save</span>
-      <span class="btn transparent" onclick=${e => onClickOpenFile(e, model)}><i class="fas fa-external-link-alt"></i> open file</span>
+      <span class="btn transparent" onclick=${e => onClickOpenFile(e, model)}><i class="fas fa-external-link-alt"></i> view file</span>
       <span class="btn transparent" onclick=${e => onClickRenameFile(e, model)}><i class="fas fa-i-cursor"></i> rename</span>
       <span class="btn transparent" onclick=${e => onClickDeleteFile(e, model)}><i class="fas fa-trash"></i> delete</span>
       <span class="spacer"></span>

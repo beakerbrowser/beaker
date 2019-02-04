@@ -1,4 +1,5 @@
 /* globals Event monaco diffEditor editor */
+import yo from 'yo-yo'
 
 // globals
 // =
@@ -95,11 +96,9 @@ export async function setActive (file) {
   }
 }
 
-export async function setActiveDiff (leftContent, rightContent) {
+export function setActiveDiff (leftContent, rightContent) {
   try {
-    editor.domElement.hidden = true
-    diffEditor._domElement.hidden = false
-    document.getElementById('imageViewer').classList.add('hidden')
+    setVisibleRegion('diff-editor')
 
     diffEditor.setModel({
       original: monaco.editor.createModel(leftContent),
@@ -113,10 +112,32 @@ export async function setActiveDiff (leftContent, rightContent) {
   }
 }
 
+export function setActiveDeletedFilediff (filediff) {
+  setVisibleRegion('generic-viewer')
+
+  // set no active model
+  active = null
+
+  // render the 'deleted file' interface
+  var viewerEl = document.getElementById('genericViewer')
+  yo.update(viewerEl, yo`
+    <div id="genericViewer">
+      <div class="deleted-filediff">
+        <p class="path"><span class="revision-indicator del"></span> ${filediff.path}</p>
+        <p>This file was deleted from the preview.</p>
+        <p>
+          <button class="btn" onclick=${e => emit('editor-commit-file', {path: filediff.path})}><i class="fas fa-check"></i> Commit</button>
+          <button class="btn" onclick=${e => emit('editor-revert-file', {path: filediff.path})}><i class="fa fa-undo"></i> Revert</button>
+        </p>
+      </div>
+    </div>`
+  )
+
+  emit('editor-rerender')
+}
+
 export function exitDiff () {
-  editor.domElement.hidden = false
-  diffEditor._domElement.hidden = true
-  document.getElementById('imageViewer').classList.add('hidden')
+  setVisibleRegion('editor')
 }
 
 export async function unloadOthers (model) {
@@ -154,10 +175,6 @@ export function getActive () {
   return active
 }
 
-export function isShowingDiff () {
-  return diffEditor._domElement.hidden !== true
-}
-
 export function getModels () {
   return models
 }
@@ -171,11 +188,30 @@ export function checkForDirtyFiles () {
   return !!models.find(m => m.isDirty)
 }
 
+export function isShowingDiff () {
+  return diffEditor._domElement.hidden !== true
+}
+
 // internal methods
 // =
 
 function emit (name, detail = null) {
   document.dispatchEvent(new CustomEvent(name, {detail}))
+}
+
+function setVisibleRegion (name) {
+  editor.domElement.hidden = name === 'editor' ? false : true
+  diffEditor._domElement.hidden = name === 'diff-editor' ? false : true
+  if (name === 'image-viewer') {
+    document.getElementById('imageViewer').classList.remove('hidden')
+  } else {
+    document.getElementById('imageViewer').classList.add('hidden')
+  }
+  if (name === 'generic-viewer') {
+    document.getElementById('genericViewer').classList.remove('hidden')
+  } else {
+    document.getElementById('genericViewer').classList.add('hidden')
+  }
 }
 
 function canEditWithMonaco (name) {
@@ -200,9 +236,7 @@ function canEditWithMonaco (name) {
 }
 
 async function setEditableActive (file, model) {
-  editor.domElement.hidden = false
-  diffEditor._domElement.hidden = true
-  document.getElementById('imageViewer').classList.add('hidden')
+  setVisibleRegion('editor')
 
   // before changing active, get viewstate of currently active file
   if (active) active.viewState = editor.saveViewState()
@@ -220,9 +254,7 @@ async function setEditableActive (file, model) {
 }
 
 async function setUneditableActive (file, model) {
-  editor.domElement.hidden = true
-  diffEditor._domElement.hidden = true
-  document.getElementById('imageViewer').classList.remove('hidden')
+  setVisibleRegion('image-viewer')
 
   let container = document.getElementById('imageViewer')
   container.innerHTML = ''

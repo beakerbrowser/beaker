@@ -123,18 +123,24 @@
 
     &.root {
       background: transparent;
-      margin: 45px 0 4px 4px;
+      padding: 5px 10px;
+      margin: 39px 0 4px 4px;
       border-bottom: 1px solid #ddd;
+      cursor: default;
 
       .name {
-        text-transform: uppercase;
-        font-size: 10px;
-        font-weight: bold;
+        font-weight: 500;
       }
 
       .hover-ctrls {
         display: block; // always show the hover controls on the root
       }
+    }
+
+    &.deleted {
+      color: #bf8989;
+      font-style: italic;
+      i { color: #bf8989; }
     }
 
     &.selected {

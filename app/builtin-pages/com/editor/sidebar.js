@@ -52,8 +52,22 @@ export function setCurrentDiff (d) {
 // rendering
 // =
 
-function renderChildren (children) {
-  return children.map(childNode => renderNode(childNode))
+function renderChildren (node) {
+  // render actual children
+  var els = node.children.map(renderNode)
+
+  // add any deletes in this folder
+  if (currentDiff) {
+    console.log('currentDiff', currentDiff)
+    for (let d of currentDiff) {
+      if (d.change !== 'del') continue
+      if (isPathInFolder(node._path, d.path)) {
+        els.push(renderDeletedNode(d))
+      }
+    }
+  }
+
+  return els
 }
 
 function renderRoot (node) {
@@ -105,7 +119,7 @@ function renderRoot (node) {
           })}
         </span>
       </div>
-      ${renderChildren(node.children)}
+      ${renderChildren(node)}
     </div>`
 }
 
@@ -124,7 +138,7 @@ function renderDirectory (node) {
   if (node.isExpanded) {
     children = yo`
       <div class="subtree">
-        ${renderChildren(node.children)}
+        ${renderChildren(node)}
       </div>`
     cls = 'down'
   }
@@ -159,6 +173,21 @@ function renderFile (node) {
       ${getIcon(node.name)}
       <span class="name">${node.name}</span>
       ${node.change ? yo`<div class="revision-indicator ${node.change}"></div>` : ''}
+    </div>
+  `
+}
+
+function renderDeletedNode (filediff) {
+  var name = filediff.path.split('/').pop()
+  return yo`
+    <div
+      class="item deleted file"
+      title=${name}
+      onclick=${e => onClickDeletedFilediff(e, filediff)}
+    >
+      ${getIcon(name)}
+      <span class="name">${name}</span>
+      <div class="revision-indicator del"></div>
     </div>
   `
 }
@@ -227,6 +256,13 @@ async function onClickNode (e, node) {
   rerender()
 }
 
+function onClickDeletedFilediff (e, filediff) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  models.setActiveDeletedFilediff(filediff)
+}
+
 async function onClickNew (e, node, type) {
   e.preventDefault()
   e.stopPropagation()
@@ -290,4 +326,16 @@ function onContextmenuNode (e, node) {
     y: e.clientY,
     items
   })
+}
+
+// internal helpers
+
+function isPathInFolder (folderPath, filePath) {
+  // a subpath of the folder?
+  if (!filePath.startsWith(folderPath)) return false
+  if (filePath.charAt(folderPath.length) !== '/') return false
+  // an immediate child?
+  var fileName = filePath.slice(folderPath.length + 1)
+  if (fileName.indexOf('/') !== -1) return false
+  return true
 }
