@@ -48,6 +48,7 @@ export function setup () {
   pages.on('did-stop-loading', onUpdateTab)
   pages.on('page-title-updated', onUpdateTab)
   pages.on('page-favicon-updated', onUpdateTab)
+  pages.on('media-change', onUpdateTab)
   window.addEventListener('resize', debounce(onWindowResize, 500))
 }
 
@@ -57,6 +58,8 @@ export function setup () {
 function drawTab (page) {
   const isActive = page.isActive
   const isTabDragging = page.isTabDragging && (page.tabDragOffset !== 0)
+  const isAudioMuted = page.isAudioMuted
+  const isCurrentlyAudible = page.isCurrentlyAudible
 
   // pick a favicon
   var favicon
@@ -99,7 +102,11 @@ function drawTab (page) {
   }
 
   // normal rendering:
-
+  const audioIcon = isAudioMuted
+    ? yo`<span class="fas fa-volume-mute"></span>`
+    : isCurrentlyAudible
+      ? yo`<span class="fas fa-volume-up"></span>`
+      : ''
   return yo`
   <div class=${'chrome-tab' + cls}
       data-id=${page.id}
@@ -110,7 +117,7 @@ function drawTab (page) {
       title=${getNiceTitle(page)}>
     <div class="chrome-tab-bg"></div>
     <div class="chrome-tab-favicon">${favicon}</div>
-    <div class="chrome-tab-title">${getNiceTitle(page) || 'New Tab'}</div>
+    <div class="chrome-tab-title">${audioIcon}${getNiceTitle(page) || 'New Tab'}</div>
     <div class="chrome-tab-close" title="Close tab" onclick=${onClickTabClose(page)}></div>
   </div>`
 }
@@ -216,8 +223,9 @@ function onToggleMuted (page) {
   return () => {
     if (page.webviewEl) {
       const wc = page.webviewEl.getWebContents()
-      const isMuted = wc.isAudioMuted()
-      wc.setAudioMuted(!isMuted)
+      page.isAudioMuted = !wc.isAudioMuted()
+      wc.setAudioMuted(page.isAudioMuted)
+      onUpdateTab(page)
     }
   }
 }
@@ -269,16 +277,12 @@ function onClickReopenClosedTab () {
 function onContextMenuTab (page) {
   return e => {
     const { Menu } = remote
-    var isMuted = false
-    if (page.webviewEl) {
-      isMuted = page.webviewEl.getWebContents().isAudioMuted()
-    }
     var menu = Menu.buildFromTemplate([
       { label: 'New Tab', click: onClickNew },
       { type: 'separator' },
       { label: 'Duplicate', click: onClickDuplicate(page) },
       { label: (page.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: onClickPin(page) },
-      { label: (isMuted) ? 'Unmute Tab' : 'Mute Tab', click: onToggleMuted(page) },
+      { label: (page.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: onToggleMuted(page) },
       { type: 'separator' },
       { label: 'Close Tab', click: onClickTabClose(page) },
       { label: 'Close Other Tabs', click: onClickCloseOtherTabs(page) },

@@ -3,9 +3,9 @@
   "productName": "Beaker Browser",
   "description": "An Experimental Peer-to-Peer Web Browser.",
   "homepage": "https://beakerbrowser.com/",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "author": "Paul Frazee <pfrazee@gmail.com>",
-  "copyright": "© 2018, Blue Link Labs",
+  "copyright": "© 2019, Blue Link Labs",
   "main": "background-process.build.js",
   "dependencies": {
     "@beaker/core": "beakerbrowser/beaker-core#blue",
@@ -34,7 +34,7 @@
     "dns-txt": "^2.0.2",
     "drag-drop": "^2.14.0",
     "du": "git://github.com/beakerbrowser/node-du.git#8db9ed862712a964289d2d07e58f2d7ec543a56e",
-    "electron-updater": "^2.21.11",
+    "electron-updater": "^4.0.0",
     "emit-stream": "^0.1.2",
     "from2": "^2.3.0",
     "from2-encoding": "^1.0.0",
@@ -71,7 +71,7 @@
     "os-name": "^2.0.1",
     "parse-dat-url": "^3.0.1",
     "pauls-dat-api": "^8.0.1",
-    "pauls-electron-rpc": "^4.3.0",
+    "pauls-electron-rpc": "^4.4.0",
     "pauls-word-boundary": "^1.0.0",
     "pify": "^2.3.0",
     "pretty-bytes": "^3.0.1",
@@ -92,8 +92,5 @@
     "utp-native": "^2.0.0",
     "yo-yo": "^1.4.0",
     "zerr": "^1.0.4"
-  },
-  "devDependencies": {
-    "devtron": "^1.4.0"
   }
 }
