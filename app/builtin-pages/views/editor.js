@@ -140,7 +140,11 @@ async function localCompare () {
   // attach add/mod changes to the existing tree
   const checkNode = async (node) => {
     // check for diff
-    var diff = compareDiff.find(diff => diff.path === node._path)
+    var diff = compareDiff.find(diff => {
+      if (diff.path === node._path) return true
+      if (node._path.startsWith(diff.path + '/')) return true // is a child of this item
+      return false
+    })
     node.change = diff ? diff.change : false
 
     // recurse
