@@ -71,7 +71,7 @@
     "os-name": "^2.0.1",
     "parse-dat-url": "^3.0.1",
     "pauls-dat-api": "^8.0.1",
-    "pauls-electron-rpc": "^4.4.0",
+    "pauls-electron-rpc": "^5.0.0",
     "pauls-word-boundary": "^1.0.0",
     "pify": "^2.3.0",
     "pretty-bytes": "^3.0.1",
