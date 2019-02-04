@@ -71,7 +71,7 @@ async function loadArchives () {
     case 'trash':
       archives = await beaker.archives.list({
         isOwner: true,
-        isSaved: false,
+        isSaved: false
       })
       break
     default:
@@ -107,6 +107,8 @@ function filterArchives () {
 }
 
 function sortArchives () {
+  const getType = archive => getShortenedUnwalledGardenType(archive.type) || 'other'
+
   archives.sort((a, b) => {
     var v = 0
     switch (currentSort[0]) {
@@ -114,7 +116,7 @@ function sortArchives () {
       case 'peers': v = a.peers - b.peers; break
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
-      case 'type': v = getShortenedUnwalledGardenType(b.type).localeCompare(getShortenedUnwalledGardenType(a.type)); break
+      case 'type': v = getType(b.type).localeCompare(getType(a.type)); break
       case 'published': v = Number(a.isPublished) - Number(b.isPublished); break
       case 'owner': v = getOwner(b).localeCompare(getOwner(a)); break
     }
@@ -630,7 +632,7 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
   ]
   if (archive.isOwner && getBasicType(archive.type) !== 'user') {
     if (archive.isPublished) {
-      items.unshift({icon: 'fa fa-bullhorn', label: 'Published', click: ()=>{}, disabled: true})
+      items.unshift({icon: 'fa fa-bullhorn', label: 'Published', click: () => {}, disabled: true})
       items.push({icon: 'fa fa-eraser', label: 'Unpublish', click: () => onUnpublish(archive)})
     } else {
       items.unshift({icon: 'fa fa-bullhorn', label: 'Publish', click: () => onPublish(archive)})

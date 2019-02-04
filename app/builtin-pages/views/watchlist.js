@@ -243,4 +243,3 @@ async function onDeleteSelected () {
   await loadWatchlist()
   render()
 }
-

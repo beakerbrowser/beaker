@@ -52,7 +52,7 @@ const SCREENS = {
         <p>
           You can change your details at any time. Just visit your site and click "Edit Profile" on the left.
         </p>
-      </div>`  
+      </div>`
   },
   userSiteSource () {
     return yo`

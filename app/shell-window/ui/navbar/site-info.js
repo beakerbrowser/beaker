@@ -29,7 +29,7 @@ export class SiteInfoNavbarBtn {
     const isLoading = this.page.isLoading()
     const trustCls = this.page.siteTrust ? this.page.siteTrust.getRating() : 'not-trusted'
     return yo`
-      <div class="toolbar-site-info ${trustCls} ${!!titleEl ? 'has-title' : ''}" id="${this.elId}">
+      <div class="toolbar-site-info ${trustCls} ${titleEl ? 'has-title' : ''}" id="${this.elId}">
         <button onclick=${isLoading ? undefined : e => this.onToggleDropdown(e)}>${this.renderIcon()}${titleEl}</button>
         ${this.renderDropdown()}
       </div>
@@ -151,7 +151,7 @@ export class SiteInfoNavbarBtn {
       this.dropdownUI = this.spawnDropdownUI()
       this.dropdownUI.on('rerender', () => this.updateActives())
       this.updateActives()
-    }    
+    }
   }
 
   closeDropdown () {

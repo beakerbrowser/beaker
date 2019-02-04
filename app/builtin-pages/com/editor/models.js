@@ -139,7 +139,7 @@ export async function unloadAllModels () {
   emit('editor-rerender')
 }
 
-export function reorderModels(from, to) {
+export function reorderModels (from, to) {
   let fromIndex = models.indexOf(from)
   let toIndex = to === null ? models.length : models.indexOf(to)
   models.splice(toIndex, 0, models.splice(fromIndex, 1)[0])

@@ -42,7 +42,7 @@ function render () {
 */
 
 /**
- * 
+ *
  * @param {Object} opts
  * @param {string} opts.id
  * @param {Function} opts.closed

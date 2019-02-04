@@ -104,7 +104,7 @@ function onClickDeleteFile (e, model) {
 function onClickCommitFileChanges (e, model) {
   e.preventDefault()
   e.stopPropagation()
-  
+
   if (confirm('Commit this file?')) {
     emit('editor-commit-file', {path: model.uri.path})
   }
@@ -119,7 +119,7 @@ function onClickReviewFileChanges (e, model) {
 function onClickRevertFileChanges (e, model) {
   e.preventDefault()
   e.stopPropagation()
-  
+
   if (confirm('Revert this file?')) {
     emit('editor-revert-file', {path: model.uri.path})
   }

@@ -103,7 +103,7 @@ async function setup () {
 
     // load the archiveFS
     archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
-    await sidebar.setCurrentSource(archiveFsRoot)
+    await sidebar.setArchiveFsRoot(archiveFsRoot)
 
     let fileActStream = archive.watch()
     fileActStream.addEventListener('changed', onFilesChanged)
@@ -135,7 +135,9 @@ async function setup () {
 
 async function localCompare () {
   let compareDiff = await beaker.archives.diffLocalSyncPathListing(archive.url, {compareContent: true, shallow: true})
+  sidebar.setCurrentDiff(compareDiff)
 
+  // attach add/mod changes to the existing tree
   const checkNode = async (node) => {
     // check for diff
     var diff = compareDiff.find(diff => diff.path === node._path)
@@ -149,8 +151,6 @@ async function localCompare () {
     }
   }
   await checkNode(archiveFsRoot)
-  await sidebar.rerender()
-  updateToolbar()
 }
 
 async function parseLibraryUrl () {
@@ -264,8 +264,10 @@ function onGlobalKeydown (e) {
 }
 
 async function onFilesChanged () {
-  await sidebar.setCurrentSource(archiveFsRoot)
+  await sidebar.reloadTree()
   await localCompare()
+  sidebar.rerender()
+  updateToolbar()
 }
 
 async function onSelectFavicon (imageData) {
@@ -279,7 +281,6 @@ async function onSelectFavicon (imageData) {
   closeAllToggleables()
   //render() will need to call this once we get the archive change issues fixed. That way the favicon will be updated whenever you open it.
 }
-
 
 function onSetActive (e) {
   models.setActive(e.detail.model)

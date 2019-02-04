@@ -585,7 +585,7 @@ async function doTest (test) {
     return showShellModal(this.sender, 'example', {i: 5})
   }
   if (test === 'tutorial') {
-    return showShellModal(this.sender, 'tutorial')    
+    return showShellModal(this.sender, 'tutorial')
   }
 }
 

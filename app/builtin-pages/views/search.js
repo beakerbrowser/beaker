@@ -8,11 +8,11 @@ import renderSiteResult from '../com/search/site-result'
 import {renderSourceBanner, renderSourceSubnav} from '../com/search/source-view'
 import {polyfillHistoryEvents, pushUrl} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
-import { getUnwalledGardenType } from '@beaker/core/lib/dat';
+import { getUnwalledGardenType } from '@beaker/core/lib/dat'
 
 const LIMIT = 20
 
-function C(id, label, datasets, siteTypes) {
+function C (id, label, datasets, siteTypes) {
   if (siteTypes) siteTypes = siteTypes.map(t => `unwalled.garden${t}`)
   return {id, label, datasets, siteTypes}
 }
@@ -74,7 +74,7 @@ async function readStateFromURL () {
   const view = getView()
   const source = getParam('source')
   const sourceView = getSourceView()
-  
+
   try {
     if (view === 'new-post') {
       results = []
@@ -100,11 +100,11 @@ async function readStateFromURL () {
       if (sourceView === 'following') {
         // get following
         results = await beaker.followgraph.listFollows(source, {includeDesc: true, includeFollowers: true})
-        results.forEach(r => {r.recordType = 'user'})
+        results.forEach(r => { r.recordType = 'user' })
       } else if (sourceView === 'followers') {
         // get followers
         results = await beaker.followgraph.listFollowers(source, {includeDesc: true, includeFollowers: true})
-        results.forEach(r => {r.recordType = 'user'})
+        results.forEach(r => { r.recordType = 'user' })
       } else {
         // general query
         console.log('running query', getParam('q'))
@@ -112,7 +112,7 @@ async function readStateFromURL () {
         let category = CATEGORIES.find(c => c.id === getCategory()) || CATEGORIES[0]
         let page = getPage()
         let res = await beaker.crawler.listSearchResults({
-          user: source || currentUserSession.url, 
+          user: source || currentUserSession.url,
           query: getParam('q'),
           datasets: category.datasets,
           siteTypes: category.siteTypes,

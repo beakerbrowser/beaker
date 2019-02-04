@@ -109,5 +109,4 @@ export class TemplateSelector extends EventEmitter {
     this.selectedTemplate = 'blank'
     this.setup()
   }
-
 }

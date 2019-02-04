@@ -71,7 +71,7 @@ function renderOwnerControls ({post, onDeleteLinkPost}) {
             <div class="dropdown menu toggleable-container">
               <button class="btn small transparent" onclick=${onToggle}><span class="fas fa-cog"></span></button>
               <div class="dropdown-items thin roomy right">
-                <div class="dropdown-item" onclick=${e => {closeAllToggleables(); onDeleteLinkPost(post)}}>
+                <div class="dropdown-item" onclick=${e => { closeAllToggleables(); onDeleteLinkPost(post) }}>
                   <i class="fas fa-times"></i>
                   Delete link post
                 </div>

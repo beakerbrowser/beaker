@@ -9,20 +9,20 @@ import {findParent} from '../../../lib/fg/event-handlers'
 // globals
 // =
 
-var currentSource
-var currentSort = ['name', 'desc']
+var archiveFsRoot
+var currentDiff
 
 // exported api
 // =
 
 export function render () {
-  if (!currentSource) {
+  if (!archiveFsRoot) {
     return ''
   }
 
   return yo`
     <div class="file-tree-container">
-      ${renderRoot(currentSource)}
+      ${renderRoot(archiveFsRoot)}
     </div>
   `
 }
@@ -34,43 +34,23 @@ export function rerender () {
   }
 }
 
-export async function setCurrentSource (node) {
-  currentSource = node
-  if (!node) {
-    rerender()
-    return
-  }
-
-  // special handling for files
-  if (node.type === 'file') {
-    let to = setTimeout(() => { // only show if it's taking time to load
-      node.isLoadingPreview = true
-      rerender()
-    }, 500)
-    // then load
-    await currentSource.readData({maxPreviewLength: 1e5, ignoreCache: true})
-    clearTimeout(to)
-    // then render again
-    node.isLoadingPreview = false
-    rerender()
-  } else {
-    // load
-    await currentSource.readData({ignoreCache: true})
-    resortTree()
-    // then render
-    rerender()
-  }
+export async function setArchiveFsRoot (node) {
+  archiveFsRoot = node
+  await reloadTree()
+  render()
 }
 
-export function resortTree () {
-  if (currentSource) {
-    currentSource.sort(...currentSort)
-  }
+export async function reloadTree () {
+  await archiveFsRoot.readData({ignoreCache: true})
+  archiveFsRoot.sort('name', 'desc')
+}
+
+export function setCurrentDiff (d) {
+  currentDiff = d
 }
 
 // rendering
 // =
-
 
 function renderChildren (children) {
   return children.map(childNode => renderNode(childNode))
@@ -255,7 +235,7 @@ async function onClickNew (e, node, type) {
   var newName = findParent(e.currentTarget, 'dropdown-item').querySelector('input').value.trim()
   if (newName.startsWith('/')) newName = newName.slice(1)
   if (!newName) return // do nothing
-  
+
   let path = node._path + '/' + newName
   emit(`editor-create-${type}`, {path})
   closeAllToggleables()

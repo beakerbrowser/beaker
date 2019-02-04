@@ -15,7 +15,7 @@ export async function start () {
     try {
       await beaker.browser.showEditProfileModal()
     } catch (e) {
-      // ignore     
+      // ignore
     }
     await refreshPage()
     await showTutorialModal('userSiteCanBeChanged')

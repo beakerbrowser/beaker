@@ -67,7 +67,7 @@ function renderOwnerControls ({site, onUnpublishSite}) {
             <div class="dropdown menu toggleable-container">
               <button class="btn small transparent" onclick=${onToggle}><span class="fas fa-cog"></span></button>
               <div class="dropdown-items thin roomy right">
-                <div class="dropdown-item" onclick=${e => {closeAllToggleables(); onUnpublishSite(site)}}>
+                <div class="dropdown-item" onclick=${e => { closeAllToggleables(); onUnpublishSite(site) }}>
                   <i class="fas fa-times"></i>
                   Unpublish site
                 </div>

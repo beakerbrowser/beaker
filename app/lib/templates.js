@@ -12,7 +12,7 @@ export const SITE_TEMPLATES = [
 export async function createSiteFromTemplate (template) {
   template = template === 'blank' ? false : template
   var archive = await DatArchive.create({template, prompt: false})
-  
+
   if (!template) {
     // for the blank template, go to the source view
     // TODO should go to the editor

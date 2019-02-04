@@ -23,7 +23,7 @@ const SEARCH_GROUPS = [
   {key: 'fileShares', label: 'File shares'},
   {key: 'bookmarks', label: 'Bookmarks'},
   {key: 'history', label: 'Your browsing history'},
-  {key: 'others', label: 'Saved to your Library'},
+  {key: 'others', label: 'Saved to your Library'}
 ]
 
 // globals
@@ -52,7 +52,6 @@ async function setup () {
     localStorage.hasRunTutorial = 1
     beakerStartTutorial()
   }
-
 
   // open update info if appropriate
   if (!settings.no_welcome_tab) {
@@ -244,7 +243,7 @@ async function onUpdateSearchQuery (q) {
 async function onClickExplorer (e) {
   e.preventDefault()
   try { await explorerPopup.create() }
-  catch (e) {/*ignore*/}
+  catch (e) { /*ignore*/ }
 
   // reload bookmarks in case any pins were added
   await loadBookmarks()

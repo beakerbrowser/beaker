@@ -27,7 +27,7 @@ export class BaseSiteInfo extends EventEmitter {
 
   // helpers
   // =
-  
+
   renderHostname () {
     return (this.page.protocolInfo) ? this.page.protocolInfo.hostname : ''
   }

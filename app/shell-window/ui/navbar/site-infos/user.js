@@ -62,7 +62,7 @@ export class UserSiteInfo extends BaseSiteInfo {
       return yo`<div class="trust-info"><span class="label trusted"><span class="fa fa-check-circle"></span> This is you!</span></div>`
     }
     if (this.info.isOwner) {
-      return yo`<div class="trust-info"><span class="label trusted"><span class="fa fa-check-circle"></span> You created this site.</span></div>`      
+      return yo`<div class="trust-info"><span class="label trusted"><span class="fa fa-check-circle"></span> You created this site.</span></div>`
     }
     var siteTrust = this.page.siteTrust
     if (siteTrust) {

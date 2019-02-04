@@ -157,7 +157,7 @@ function onContextMenu (e) {
   const items = [
     {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(url)},
     {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(url)},
-    {icon: 'fas fa-thumbtack', label: 'Pin to Start Page', click: pin},
+    {icon: 'fas fa-thumbtack', label: 'Pin to Start Page', click: pin}
   ]
   contextMenu.create({x: e.clientX, y: e.clientY, items})
 
