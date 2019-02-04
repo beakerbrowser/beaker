@@ -21,47 +21,8 @@ export function render (id, page) {
 }
 
 function renderEditor (id, page) {
-  return yo`
-    <div class="toolbar-actions" data-id="contextbar-${id}">
-        <div class="toolbar-group">
-          <div class="toolbar-dropdown-menu toggleable-container">
-            <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn">
-              <span class="fas fa-external-link-alt"></span> Open site
-            </button>
-          </div>
-          <div class="toolbar-dropdown-menu toggleable-container" style="margin-right: 3px">
-            <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn">
-              Version: preview <span class="fas fa-caret-down"></span>
-            </button>
-          </div>
-          <label class="toggle">
-            <input type="checkbox" name="autoPublish" value="autoPublish">
-            <div class="switch"></div>
-            <span class="text">
-              Preview mode
-            </span>
-          </label>
-        </div>
-        <div class="spacer"></div>
-        <div class="toolbar-group">
-          <div class="toolbar-dropdown-menu toggleable-container" style="margin-right: 3px">
-            <button class="toolbar-labeled-btn raised toolbar-dropdown-menu-btn">
-              <span class="fas fa-globe-americas"></span> Published <span class="fas fa-caret-down"></span>
-            </button>
-          </div>
-          <div class="toolbar-dropdown-menu toggleable-container">
-            <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn">
-              <span class="far fa-hdd"></span> Library <span class="fas fa-caret-down"></span>
-            </button>
-          </div>
-          <div class="toolbar-dropdown-menu toggleable-container">
-            <button class="toolbar-labeled-btn toolbar-dropdown-menu-btn">
-              More <span class="fas fa-caret-down"></span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>`
+  // TODO
+  return ''
 }
 
 function renderDatSite (id, page) {
