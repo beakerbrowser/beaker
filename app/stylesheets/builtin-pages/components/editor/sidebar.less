@@ -12,13 +12,35 @@
     display: none;
   }
 
-  .site-info-btn {
-    text-align: left;
-    padding: 0 5px;
-    background: transparent;
-    font-weight: 500;
+  .site-info {
+    display: flex;
+    padding: 0 3px;
 
-    img {
+    & > :last-child {
+      flex: 1;
+    }
+
+    .btn.transparent {
+      padding: 0 2px;
+    }
+
+    .dropdown {
+      position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
+    }
+
+    .dropdown-items {
+      padding: 10px;
+    }
+
+    & > :first-child .dropdown-items {
+      left: 4px;
+    }
+
+    & > :last-child .dropdown-items {
+      left: 28px;
+    }
+
+    .favicon {
       width: 16px;
       height: 16px;
       vertical-align: middle;
@@ -26,9 +48,21 @@
       top: -2px;
     }
 
-    &:hover {
-      color: @blue;
-      background: transparent;
+    .site-info-btn {
+      text-align: left;
+      font-weight: 500;
+      width: 100%;
+
+      &:hover {
+        color: @blue;
+      }
+    }
+
+    .site-info-form {
+      input {
+        width: 100%;
+        margin-bottom: 10px;
+      }
     }
   }
 

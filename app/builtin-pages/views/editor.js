@@ -97,6 +97,7 @@ async function setup () {
   document.addEventListener('editor-change-sync-path', onChangeSyncPath)
   document.addEventListener('editor-remove-sync-path', onRemoveSyncPath)
   document.addEventListener('editor-set-favicon', onSetFavicon)
+  document.addEventListener('editor-set-site-info', onSetSiteInfo)
   document.addEventListener('editor-fork', onFork)
   document.addEventListener('editor-move-to-trash', onMoveToTrash)
 
@@ -144,6 +145,12 @@ async function setup () {
   // resize the sidebar to match the title
   var titleBtnWidth = document.querySelector('.site-info-btn').clientWidth
   setSidebarWidth(Math.max(Math.min(titleBtnWidth + 20, 250), 150))
+
+  // trigger the site-info dropdown
+  if (location.hash === '#setup') {
+    document.body.querySelector('.site-info-btn').click()
+    history.replaceState('', document.title, location.pathname) // remove #setup in case the user reloads
+  }
 }
 
 async function localCompare () {
@@ -313,6 +320,11 @@ async function onSetFavicon (e) {
     await beaker.sitedata.set(archive.url, 'favicon', '') // clear cache
   }
   closeAllToggleables()
+}
+
+async function onSetSiteInfo (e) {
+  await workingCheckout.configure(e.detail)
+  location.reload()
 }
 
 async function onFork (e) {

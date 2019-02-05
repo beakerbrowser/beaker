@@ -6,6 +6,7 @@ import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import renderArchiveHistory from '../archive/archive-history'
 import toggleable2, {closeAllToggleables}  from '../toggleable2'
+import renderFaviconPicker from '../settings/favicon-picker'
 import {findParent} from '../../../lib/fg/event-handlers'
 import {pluralize} from '../../../lib/strings'
 
@@ -29,10 +30,10 @@ export function render () {
 
   return yo`
     <div class="file-tree-container">
-      <button class="btn site-info-btn transparent nofocus" onclick=${onClickSiteInfoBtn}>
-        <img src="beaker-favicon:16,${archiveFsRoot.url}?cache=${Date.now()}">
-        ${archiveFsRoot.name}
-      </button>
+      <div class="site-info">
+        ${renderFavicon()}
+        ${renderSiteTitle()}
+      </div>
       <div class="file-tree-header">
         ${renderVersionPicker()}
       </div>
@@ -78,6 +79,59 @@ export function configure (c) {
 
 // rendering
 // =
+
+function renderFavicon () {
+  const isOwner = archiveFsRoot.isEditable
+  const url = `beaker-favicon:16,${archiveFsRoot.url}?cache=${Date.now()}`
+  const onSelectFavicon = imageData => emit('editor-set-favicon', {imageData})
+
+  if (!isOwner) {
+    return yo`<img class="favicon" src="${url}">`
+  }
+
+  return toggleable2({
+    id: 'favicon-picker',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container">
+        <button class="btn transparent nofocus toggleable"><img class="favicon" src=${url} onclick=${onToggle} /></button>
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container">
+        <button class="btn transparent nofocus toggleable"><img class="favicon" src=${url} onclick=${onToggle} /></button>
+        <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
+          ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl: url})}
+        </div>
+      </div>`
+  })
+}
+
+function renderSiteTitle () {
+  const isOwner = archiveFsRoot.isEditable
+  const {title, description} = archiveFsRoot._archiveInfo
+
+  if (!isOwner) {
+    return yo`<div>${archiveFsRoot.name}</div>`
+  }
+
+  return toggleable2({
+    id: 'site-info-editor',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container">
+        <button class="btn site-info-btn transparent nofocus toggleable" onclick=${onToggle}>${archiveFsRoot.name}</button>
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container">
+        <button class="btn site-info-btn transparent nofocus toggleable" onclick=${onToggle}>${archiveFsRoot.name}</button>
+        <div class="dropdown-items subtle-shadow left">
+          <form class="site-info-form" onsubmit=${onSubmitSiteInfo}>
+            <input type="text" name="title" placeholder="Title" value=${title} autofocus>
+            <input type="text" name="description" placeholder="Description" value=${description}>
+            <div><button class="btn">Save</button></div>
+          </form>
+        </div>
+      </div>`
+  })
+}
 
 function renderVersionPicker () {
   const version = config.version
@@ -333,10 +387,6 @@ function emitDeleteFile (path, isFolder) {
   emit('editor-delete-file', {path, isFolder})
 }
 
-function onClickSiteInfoBtn (e) {
-  emit('editor-set-active-site-info')
-}
-
 async function onClickNode (e, node) {
   e.preventDefault()
   e.stopPropagation()
@@ -444,6 +494,17 @@ function onKeydownNewNode (e, node) {
   if (e.key === 'Enter') {
     emit('editor-create-' + node.type, {path: node.getPathForName(e.currentTarget.value)})
   }
+}
+
+function onSubmitSiteInfo (e) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  closeAllToggleables()
+  emit('editor-set-site-info', {
+    title: e.currentTarget.title.value,
+    description: e.currentTarget.description.value
+  })
 }
 
 // internal helpers
