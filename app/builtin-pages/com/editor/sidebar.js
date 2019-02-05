@@ -1,6 +1,7 @@
 import yo from 'yo-yo'
 import * as models from './models'
 import _get from 'lodash.get'
+import {FSArchiveFolder_BeingCreated, FSArchiveFile_BeingCreated} from 'beaker-virtual-fs'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
 import renderArchiveHistory from '../archive/archive-history'
@@ -28,13 +29,12 @@ export function render () {
 
   return yo`
     <div class="file-tree-container">
-      <button class="btn site-info-btn transparent full-width nofocus">
-        <img src="beaker-favicon:16,${archiveFsRoot.url}">
+      <button class="btn site-info-btn transparent nofocus" onclick=${onClickSiteInfoBtn}>
+        <img src="beaker-favicon:16,${archiveFsRoot.url}?cache=${Date.now()}">
         ${archiveFsRoot.name}
       </button>
       <div class="file-tree-header">
         ${renderVersionPicker()}
-        ${renderContainerCtrls(archiveFsRoot)}
       </div>
       <div class="file-tree">
         ${renderChildren(archiveFsRoot)}
@@ -86,7 +86,7 @@ function renderVersionPicker () {
   const button = (onToggle) =>
     yo`
       <button
-        class="btn plain nofocus"
+        class="btn nofocus"
         onclick=${onToggle}>
         <div>
           Version: ${version}
@@ -198,11 +198,29 @@ function renderChildren (node) {
 }
 
 function renderNode (node) {
-  if (node.isContainer) {
+  if (node instanceof FSArchiveFolder_BeingCreated) {
+    return renderNewDirectory(node)
+  } else if (node instanceof FSArchiveFile_BeingCreated) {
+    return renderNewFile(node)
+  } else if (node.isContainer) {
     return renderDirectory(node)
   } else {
     return renderFile(node)
   }
+}
+
+function renderNewDirectory (node) {
+  return yo`
+    <div class="new-node new-folder">
+      <input type="text" placeholder="New folder name" onkeydown=${e => onKeydownNewNode(e, node)} onblur=${e => cancelNewNode(node)}>
+    </div>`
+}
+
+function renderNewFile (node) {
+  return yo`
+    <div class="new-node new-file">
+      <input type="text" placeholder="New file name" onkeydown=${e => onKeydownNewNode(e, node)} onblur=${e => cancelNewNode(node)}>
+    </div>`
 }
 
 function renderDirectory (node) {
@@ -226,8 +244,7 @@ function renderDirectory (node) {
         onclick=${e => onClickNode(e, node)}
         oncontextmenu=${e => onContextmenuNode(e, node)}
       >
-        <i class="fa fa-fw fa-caret-${cls}" style="margin-right: 3px;"></i>
-        <i class="fa fa-fw fa-folder"></i>
+        <i class="fa fa-fw fa-caret-${cls}"></i>
         <span class="name">${node.name}</span>
         ${node.change ? yo`<div class="revision-indicator ${node.change}"></div>` : ''}
       </div>
@@ -314,6 +331,10 @@ function emitRenameFile (oldPath, newName) {
 
 function emitDeleteFile (path, isFolder) {
   emit('editor-delete-file', {path, isFolder})
+}
+
+function onClickSiteInfoBtn (e) {
+  emit('editor-set-active-site-info')
 }
 
 async function onClickNode (e, node) {
@@ -418,7 +439,21 @@ function onClickRevertAll (e) {
   emit('editor-revert-all')
 }
 
+function onKeydownNewNode (e, node) {
+  if (e.key === 'Escape') cancelNewNode(node)
+  if (e.key === 'Enter') {
+    emit('editor-create-' + node.type, {path: node.getPathForName(e.currentTarget.value)})
+  }
+}
+
 // internal helpers
+// =
+
+function cancelNewNode (node) {
+  // remove the new node
+  node.parent._files = node.parent._files.filter(f => f !== node)
+  rerender()
+}
 
 function isPathInFolder (folderPath, filePath) {
   // a subpath of the folder?

@@ -1,5 +1,6 @@
 /* globals Event monaco diffEditor editor */
 import yo from 'yo-yo'
+import {renderGeneralHelp} from './general-help'
 
 // globals
 // =
@@ -71,6 +72,10 @@ export async function unload (file) {
   }
 
   if (newActive) setActive(newActive)
+  if (models.length === 0) {
+    emit('editor-all-models-closed')
+    active = null
+  }
   emit('editor-rerender')
 }
 
@@ -95,6 +100,20 @@ export async function setActive (file) {
     throw e
   }
 }
+
+export function setActiveGeneralHelp (archiveInfo) {
+  setVisibleRegion('generic-viewer')
+
+  // set no active model
+  active = null
+
+  // render the 'site info' interface
+  var viewerEl = document.getElementById('genericViewer')
+  yo.update(viewerEl, yo`<div id="genericViewer">${renderGeneralHelp(archiveInfo)}</div>`)
+
+  emit('editor-rerender')
+}
+
 
 export function setActiveDiff (leftContent, rightContent) {
   try {

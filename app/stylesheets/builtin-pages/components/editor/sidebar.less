@@ -33,19 +33,21 @@
   }
 
   .file-tree-header {
-    display: flex;
-    justify-content: space-between;
-    margin: 3px 0 4px;
-    padding: 0px 3px 1px;
-    border-bottom: 1px solid #ddd;
-    border-top: 1px solid #ddd;
+    padding: 3px;
   }
 
   .version-picker-ctrl {
     position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
 
     button {
-      color: rgba(0,0,0,.5);
+      color: rgba(0, 0, 0, 0.75);
+      background: rgba(0,0,0,.05);
+      padding: 0 10px;
+      border-radius: 4px;
+      height: 24px;
+      line-height: 22px;
+      font-size: 13px;
+      border: 0;
 
       &:hover {
         color: @blue;
@@ -64,39 +66,6 @@
 
   .subtree {
     padding-left: 20px;
-  }
-
-  .container-ctrls {
-    font-size: 10px;
-
-    i {
-      color: inherit;
-    }
-
-    .dropdown.new-node {
-      display: inline-block;
-      position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
-
-      .dropdown-items {
-        left: 192px;
-        top: 28px;
-      }
-
-      input {
-        width: 100%;
-      }
-    }
-
-    button {
-      padding: 0;
-      color: gray;
-      margin-right: 5px;
-      height: 30px;
-
-      &:hover {
-        color: inherit;
-      }
-    }
   }
 
   .revision-indicator {
@@ -125,12 +94,7 @@
     i {
       color: #444;
 
-      &.fa-caret-right {
-        color: gray;
-      }
-
       &.fa-caret-down {
-        margin-right: 3px;
         transform: rotate(-45deg);
       }
     }
@@ -175,6 +139,12 @@
     &.selected {
       background: #4766ff;
       color: #fff;
+    }
+  }
+
+  .new-node {
+    input {
+      width: 98%;
     }
   }
 

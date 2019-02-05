@@ -12,7 +12,7 @@ import * as toast from '../com/toast'
 import {closeAllToggleables}  from '../com/toggleable2'
 import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
 
-const DEFAULT_SIDEBAR_WIDTH = 250
+const DEFAULT_SIDEBAR_WIDTH = 200
 const MIN_SIDEBAR_WIDTH = 100
 
 var archive
@@ -47,10 +47,6 @@ async function setupWorkingCheckout () {
     }
 
     workingCheckoutVersion = archive.url.slice(vi + 1)
-    // is the version a number?
-    if (workingCheckoutVersion == +workingCheckoutVersion) {
-      isHistoricalVersion = true
-    }
   } else if (_get(archive, 'info.userSettings.previewMode') && _get(archive, 'info.userSettings.isSaved')) {
     // HACK
     // default to showing the preview when previewMode is on, even if +preview isnt set
@@ -84,7 +80,10 @@ async function setup () {
   document.addEventListener('editor-unload-all-models-except', onUnloadAllModelsExcept)
   document.addEventListener('editor-unload-all-models', onUnloadAllModels)
   document.addEventListener('editor-reorder-models', onReorderModels)
+  document.addEventListener('editor-all-models-closed', onAllModelsClosed)
+  document.addEventListener('editor-new-folder', onNewFolder)
   document.addEventListener('editor-create-folder', onCreateFolder)
+  document.addEventListener('editor-new-file', onNewFile)
   document.addEventListener('editor-create-file', onCreateFile)
   document.addEventListener('editor-rename-file', onRenameFile)
   document.addEventListener('editor-delete-file', onDeleteFile)
@@ -97,6 +96,9 @@ async function setup () {
   document.addEventListener('editor-toggle-preview-mode', onTogglePreviewMode)
   document.addEventListener('editor-change-sync-path', onChangeSyncPath)
   document.addEventListener('editor-remove-sync-path', onRemoveSyncPath)
+  document.addEventListener('editor-set-favicon', onSetFavicon)
+  document.addEventListener('editor-fork', onFork)
+  document.addEventListener('editor-move-to-trash', onMoveToTrash)
 
   // setup the sidebar resizer
   setSidebarWidth(DEFAULT_SIDEBAR_WIDTH)
@@ -124,14 +126,8 @@ async function setup () {
       fileActStream = workingCheckout.watch()
       fileActStream.addEventListener('changed', onFilesChanged)
     }
-
-    let showDefaultFile = archiveFsRoot._files.find(v => {
-      return v.name === 'index.html'
-    })
-    if (showDefaultFile) {
-      models.setActive(showDefaultFile)
-    }
-
+    
+    models.setActiveGeneralHelp(archive.info)
     document.title = `Editor - ${_get(archive, 'info.title', 'Untitled')}`
   } else {
     let untitled = monaco.editor.createModel('')
@@ -141,14 +137,20 @@ async function setup () {
   }
 
   // ready archive diff
-  if (workingCheckout.info.userSettings.previewMode) {
-    await localCompare()
-  }
+  await localCompare()
 
   update()
+
+  // resize the sidebar to match the title
+  var titleBtnWidth = document.querySelector('.site-info-btn').clientWidth
+  setSidebarWidth(Math.max(Math.min(titleBtnWidth + 20, 250), 150))
 }
 
 async function localCompare () {
+  if (!_get(archive, 'info.userSettings.previewMode')) {
+    return
+  }
+
   try {
     currentDiff = await beaker.archives.diffLocalSyncPathListing(archive.url, {compareContent: true, shallow: true})
     sidebar.setCurrentDiff(currentDiff)
@@ -205,10 +207,10 @@ function getActualSidebarWidth () {
 
 function getActiveFile () {
   var activeModel = models.getActive()
-  return activeModel ? findArchiveFile(activeModel.uri.path.slice(1)) : null
+  return activeModel ? findArchiveNode(activeModel.uri.path.slice(1)) : null
 }
 
-function findArchiveFile (path) {
+function findArchiveNode (path) {
   var node = archiveFsRoot
   var pathParts = path.split(/[\\\/]/g)
   for (let filename of pathParts) {
@@ -302,16 +304,27 @@ async function onFilesChanged () {
   updateToolbar()
 }
 
-async function onSelectFavicon (imageData) {
-  let archive2 = await DatArchive.load('dat://' + archive.info.key) // instantiate a new archive with no version
+async function onSetFavicon (e) {
+  var {imageData} = e.detail
   if (imageData) {
-    await archive2.writeFile('/favicon.ico', imageData)
+    await workingCheckout.writeFile('/favicon.ico', imageData)
   } else {
-    await archive2.unlink('/favicon.ico').catch(e => null)
+    await workingCheckout.unlink('/favicon.ico').catch(e => null)
     await beaker.sitedata.set(archive.url, 'favicon', '') // clear cache
   }
   closeAllToggleables()
-  //render() will need to call this once we get the archive change issues fixed. That way the favicon will be updated whenever you open it.
+}
+
+async function onFork (e) {
+  var fork = await DatArchive.fork(archive.url)
+  window.location = `beaker://editor/${fork.url}`
+}
+
+function onMoveToTrash (e) {
+  if (!confirm('Move this site to the trash?')) {
+    return
+  }
+  alert('TODO')
 }
 
 function onSetActive (e) {
@@ -334,12 +347,36 @@ function onReorderModels (e) {
   models.reorderModels(e.detail.srcModel, e.detail.dstModel)
 }
 
+function onAllModelsClosed (e) {
+  models.setActiveGeneralHelp(archive.info)
+}
+
 async function onCreateFile (e) {
   await op('Saving...', async () => {
     const {path} = e.detail
-    await workingCheckout.writeFile(path, '')
+    var exists = false
+    try {
+      var st = await workingCheckout.stat(path)
+      if (st) exists = true
+    } catch (e) {
+      // not found
+    }
+    if (!exists) {
+      await workingCheckout.writeFile(path, '')
+    }
     // TODO open the new file
   })
+}
+
+function onNewFile (e) {
+  // add a 'new file' node to the tree and rerender
+  var parent = findArchiveNode(e.detail.path)
+  if (!parent) return
+  parent.newFile()
+
+  // render and focus the input
+  sidebar.rerender()
+  document.querySelector('.editor-sidebar input').focus()
 }
 
 async function onCreateFolder (e) {
@@ -347,6 +384,18 @@ async function onCreateFolder (e) {
     const {path} = e.detail
     await workingCheckout.mkdir(path)
   })
+}
+
+function onNewFolder (e) {
+  // add a 'new folder' node to the tree and rerender
+  var parent = findArchiveNode(e.detail.path)
+  if (!parent) return
+  parent.newFolder()
+  parent.sort()
+
+  // render and focus the input
+  sidebar.rerender()
+  document.querySelector('.editor-sidebar input').focus()
 }
 
 async function onRenameFile (e) {
@@ -385,7 +434,7 @@ async function onRevertFile (e) {
   await op('Reverting...', async () => {
     const path = e.detail.path
     await beaker.archives.revertLocalSyncPathListing(archive.url, {paths: [path]})
-    models.reload(findArchiveFile(path))
+    models.reload(findArchiveNode(path))
     models.exitDiff()
     toast.create(`Reverted ${path}`, 'success', 1e3)
   })
