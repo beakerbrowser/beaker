@@ -20,7 +20,6 @@ var workingCheckoutVersion
 var workingCheckout
 var archiveFsRoot
 var currentDiff
-var isHistoricalVersion = false
 
 var sidebarWidth
 var isDraggingSidebar = false

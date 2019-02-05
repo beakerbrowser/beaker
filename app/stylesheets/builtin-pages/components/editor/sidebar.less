@@ -12,26 +12,49 @@
     display: none;
   }
 
+  .site-info-btn {
+    text-align: left;
+    padding: 0 5px;
+    background: transparent;
+    font-weight: 500;
+
+    img {
+      width: 16px;
+      height: 16px;
+      vertical-align: middle;
+      position: relative;
+      top: -2px;
+    }
+
+    &:hover {
+      color: @blue;
+      background: transparent;
+    }
+  }
+
+  .file-tree-header {
+    display: flex;
+    justify-content: space-between;
+    margin: 3px 0 4px;
+    padding: 0px 3px 1px;
+    border-bottom: 1px solid #ddd;
+    border-top: 1px solid #ddd;
+  }
+
   .version-picker-ctrl {
-    margin: 0 0 5px;
     position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
+
+    button {
+      color: rgba(0,0,0,.5);
+
+      &:hover {
+        color: @blue;
+      }
+    }
 
     .dropdown-items {
       left: 4px;
       top: 38px;
-    }
-
-    .btn {
-      background: rgba(0, 0, 0, 0.075);
-
-      strong {
-        font-weight: 500;
-      }
-
-      &:hover {
-        background: rgba(0, 0, 0, 0.1);
-        color: @blue;
-      }
     }
   }
 
@@ -43,16 +66,44 @@
     padding-left: 20px;
   }
 
-  .file-tree-ctrls {
-    padding: 5px 10px;
-    white-space: nowrap;
-    font-size: 11px;
-    color: gray;
+  .container-ctrls {
+    font-size: 10px;
 
-    .link {
-      color: #444;
+    i {
+      color: inherit;
+    }
+
+    .dropdown.new-node {
+      display: inline-block;
+      position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
+
+      .dropdown-items {
+        left: 192px;
+        top: 28px;
+      }
+
+      input {
+        width: 100%;
+      }
+    }
+
+    button {
+      padding: 0;
+      color: gray;
+      margin-right: 5px;
+      height: 30px;
+
+      &:hover {
+        color: inherit;
+      }
     }
   }
+
+  .revision-indicator {
+    border-radius: 50%;
+    margin-left: 4px;
+    margin-right: 4px;
+  }  
 
   .filetree {
     font-size: 13px;
@@ -95,44 +146,6 @@
       text-overflow: ellipsis;
     }
 
-    .ctrls {
-      font-size: 10px;
-
-      i {
-        color: inherit;
-      }
-
-      .dropdown.new-node {
-        display: inline-block;
-        position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
-
-        .dropdown-items {
-          left: 192px;
-          top: 28px;
-        }
-
-        input {
-          width: 100%;
-        }
-      }
-
-      button {
-        padding: 0;
-        color: gray;
-        margin-left: 5px;
-
-        &:hover {
-          color: inherit;
-        }
-      }
-    }
-
-    .revision-indicator {
-      margin-left: 4px;
-      margin-right: 4px;
-      border-radius: 50%;
-    }  
-
     &:hover {
       background: #ededf0;
     }
@@ -166,14 +179,8 @@
   }
 
   .uncommitted-changes {
-    border: 1px solid #ccc;
-    background: #fff;
-    padding-bottom: 6px;
-
     .title {
       padding: 5px 10px;
-      margin: 0 0 4px;
-      border-bottom: 1px solid #ddd;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;

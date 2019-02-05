@@ -28,8 +28,17 @@ export function render () {
 
   return yo`
     <div class="file-tree-container">
-      ${renderVersionPicker()}
-      ${renderRoot(archiveFsRoot)}
+      <button class="btn site-info-btn transparent full-width nofocus">
+        <img src="beaker-favicon:16,${archiveFsRoot.url}">
+        ${archiveFsRoot.name}
+      </button>
+      <div class="file-tree-header">
+        ${renderVersionPicker()}
+        ${renderContainerCtrls(archiveFsRoot)}
+      </div>
+      <div class="file-tree">
+        ${renderChildren(archiveFsRoot)}
+      </div>
       ${renderReviewChanges()}
     </div>
   `
@@ -77,10 +86,10 @@ function renderVersionPicker () {
   const button = (onToggle) =>
     yo`
       <button
-        class="btn transparent full-width nofocus"
+        class="btn plain nofocus"
         onclick=${onToggle}>
         <div>
-          Version: <strong>${version}</strong>
+          Version: ${version}
         </div>
         <span class="fa fa-angle-down"></span>
       </button>
@@ -128,6 +137,49 @@ function renderReviewChanges () {
     </div>`
 }
 
+function renderContainerCtrls (node) {
+  return yo`
+    <span class="container-ctrls">
+      ${toggleable2({
+        id: 'file-tree-new-node',
+        closed: ({onToggle}) => yo`
+          <div class="dropdown new-node toggleable-container">
+            <button class="nofocus" onclick=${onToggle}>
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>`,
+        open: ({onToggle}) => yo`
+          <div class="dropdown new-node toggleable-container">
+            <button class="nofocus" onclick=${onToggle}>
+              <i class="fas fa-plus"></i>
+            </button>
+    
+            <div class="dropdown-items center with-triangle subtle-shadow">
+              <div class="dropdown-item no-border no-hover">
+                <div class="label">
+                  New file or folder
+                </div>
+            
+                <p><input type="text" placeholder="Enter the full path" /></p>
+
+                <p>
+                  <a target="_blank" class="btn primary" onclick=${e => onClickNew(e, node, 'file')}>
+                    <i class="fas fa-file"></i> Create file
+                  </a>
+                  <a target="_blank" class="btn primary" onclick=${e => onClickNew(e, node, 'folder')}>
+                  <i class="fas fa-folder"></i> Create folder
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>`,
+        afterOpen (el) {
+          el.querySelector('input').focus()
+        }
+      })}
+    </span>`
+}
+
 function renderChildren (node) {
   // render actual children
   var els = node.children.map(renderNode)
@@ -143,59 +195,6 @@ function renderChildren (node) {
   }
 
   return els
-}
-
-function renderRoot (node) {
-  return yo`
-    <div class="file-tree">
-      <div
-        class="item root"
-        title=${node.name}
-      >
-        <span class="name">${node.name}</span>
-        <span class="ctrls">
-          <button class="nofocus" onclick=${onClickConfigure}><i class="fas fa-wrench"></i></button>
-          ${toggleable2({
-            id: 'file-tree-new-node',
-            closed: ({onToggle}) => yo`
-              <div class="dropdown new-node toggleable-container">
-                <button class="nofocus" onclick=${onToggle}>
-                  <i class="fas fa-plus"></i>
-                </button>
-              </div>`,
-            open: ({onToggle}) => yo`
-              <div class="dropdown new-node toggleable-container">
-                <button class="nofocus" onclick=${onToggle}>
-                  <i class="fas fa-plus"></i>
-                </button>
-        
-                <div class="dropdown-items center with-triangle subtle-shadow">
-                  <div class="dropdown-item no-border no-hover">
-                    <div class="label">
-                      New file or folder
-                    </div>
-                
-                    <p><input type="text" placeholder="Enter the full path" /></p>
-
-                    <p>
-                      <a target="_blank" class="btn primary" onclick=${e => onClickNew(e, node, 'file')}>
-                        <i class="fas fa-file"></i> Create file
-                      </a>
-                      <a target="_blank" class="btn primary" onclick=${e => onClickNew(e, node, 'folder')}>
-                      <i class="fas fa-folder"></i> Create folder
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>`,
-            afterOpen (el) {
-              el.querySelector('input').focus()
-            }
-          })}
-        </span>
-      </div>
-      ${renderChildren(node)}
-    </div>`
 }
 
 function renderNode (node) {
@@ -401,16 +400,6 @@ function onContextmenuNode (e, node) {
     y: e.clientY,
     items
   })
-}
-
-function onClickConfigure (e) {
-  e.preventDefault()
-  e.stopPropagation()
-  // TEMP
-  // just open the library-view configure
-  // someday this should be a nice popup interface
-  // -prf
-  window.open(`beaker://library/${archiveFsRoot.url}#settings`)
 }
 
 function onClickCommitAll (e) {
