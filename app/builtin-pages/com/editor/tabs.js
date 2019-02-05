@@ -1,18 +1,20 @@
 import yo from 'yo-yo'
+import {renderOptionsDropdown} from './options-dropdown'
 import * as contextMenu from '../context-menu'
 import toggleable2 from '../toggleable2'
 import * as toast from '../toast'
-import {writeToClipboard} from '../../../lib/fg/event-handlers'
+import {writeToClipboard, emit} from '../../../lib/fg/event-handlers'
 
 // rendering
 // =
 
-export function render (archive, models, {openLinkVersion}) {
+export function render ({archive, models, openLinkVersion, archiveInfo}) {
   return yo`
     <div class="editor-tabs">
       ${models.map(model => renderTab(model))}
       <div class="unused-space" ondragover=${(e) => onTabDragOver(e)} ondrop=${(e) => onTabDragDrop(e, null)}></div>
       <div class="ctrls">
+        ${renderOptionsDropdown({archiveInfo})}
         <a class="btn primary" href=${archive.checkout(openLinkVersion).url} target="_blank">
           <i class="fas fa-external-link-alt"></i> Open ${openLinkVersion}
         </a>
@@ -43,7 +45,7 @@ function renderTab (model) {
 function renderShareMenu (archive) {
   var url = archive.checkout().url
   return toggleable2({
-    id: 'nav-item-share-tool',
+    id: 'share-tool',
     closed: ({onToggle}) => yo`
       <div class="dropdown share toggleable-container">
         <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
@@ -86,10 +88,6 @@ function renderShareMenu (archive) {
 
 // event handlers
 // =
-
-function emit (name, detail = null) {
-  document.dispatchEvent(new CustomEvent(name, {detail}))
-}
 
 function onCloseTab (e, model) {
   e.preventDefault()

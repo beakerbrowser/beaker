@@ -15,8 +15,7 @@ export async function createSiteFromTemplate (template) {
 
   if (!template) {
     // for the blank template, go to the source view
-    // TODO should go to the editor
-    return `beaker://library/${archive.url}#setup`
+    return `beaker://editor/${archive.url}#setup`
   } else {
     // go to the site
     return archive.url

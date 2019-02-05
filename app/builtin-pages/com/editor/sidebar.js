@@ -49,7 +49,11 @@ export async function setArchiveFsRoot (node) {
 }
 
 export async function reloadTree () {
-  await archiveFsRoot.readData({ignoreCache: true})
+  try {
+    await archiveFsRoot.readData({ignoreCache: true})
+  } catch (e) {
+    console.warn('Failed to read filetree', e)
+  }
   archiveFsRoot.sort('name', 'desc')
 }
 

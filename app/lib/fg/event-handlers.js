@@ -66,3 +66,7 @@ export function adjustWindowHeight (sel) {
   }
   beaker.browser.setWindowDimensions({height})
 }
+
+export function emit (name, detail = null) {
+  document.dispatchEvent(new CustomEvent(name, {detail}))
+}

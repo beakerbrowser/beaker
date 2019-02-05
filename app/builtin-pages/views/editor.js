@@ -10,6 +10,7 @@ import * as toolbar from '../com/editor/toolbar'
 import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
 import {closeAllToggleables}  from '../com/toggleable2'
+import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
 
 const DEFAULT_SIDEBAR_WIDTH = 250
 const MIN_SIDEBAR_WIDTH = 100
@@ -94,6 +95,9 @@ async function setup () {
   document.addEventListener('editor-commit-all', onCommitAll)
   document.addEventListener('editor-revert-all', onRevertAll)
   document.addEventListener('editor-diff-active-model', onDiffActiveModel)
+  document.addEventListener('editor-toggle-preview-mode', onTogglePreviewMode)
+  document.addEventListener('editor-change-sync-path', onChangeSyncPath)
+  document.addEventListener('editor-remove-sync-path', onRemoveSyncPath)
 
   // setup the sidebar resizer
   setSidebarWidth(DEFAULT_SIDEBAR_WIDTH)
@@ -125,7 +129,9 @@ async function setup () {
     let showDefaultFile = archiveFsRoot._files.find(v => {
       return v.name === 'index.html'
     })
-    models.setActive(showDefaultFile)
+    if (showDefaultFile) {
+      models.setActive(showDefaultFile)
+    }
 
     document.title = `Editor - ${_get(archive, 'info.title', 'Untitled')}`
   } else {
@@ -144,8 +150,13 @@ async function setup () {
 }
 
 async function localCompare () {
-  currentDiff = await beaker.archives.diffLocalSyncPathListing(archive.url, {compareContent: true, shallow: true})
-  sidebar.setCurrentDiff(currentDiff)
+  try {
+    currentDiff = await beaker.archives.diffLocalSyncPathListing(archive.url, {compareContent: true, shallow: true})
+    sidebar.setCurrentDiff(currentDiff)
+  } catch (e) {
+    console.warn('Failed to diff local file listing', e)
+    return
+  }
 
   // attach add/mod changes to the existing tree
   const checkNode = async (node) => {
@@ -233,7 +244,10 @@ function update () {
   }
   yo.update(
     document.querySelector('.editor-tabs'),
-    tabs.render(workingCheckout, models.getModels(), {
+    tabs.render({
+      archive: workingCheckout,
+      models: models.getModels(),
+      archiveInfo: archive.info,
       openLinkVersion: workingCheckoutVersion
     })
   )
@@ -433,6 +447,85 @@ async function onSaveActiveModel () {
     models.setVersionIdOnSave(model)
     await workingCheckout.writeFile(filePath, fileContent, 'utf8')
   })
+}
+
+async function onTogglePreviewMode () {
+  if (!archive.info.isOwner) return
+
+  var previewMode = _get(archive, 'info.userSettings.previewMode')
+  if (previewMode) {
+    // prompt to resolve changes
+    if (currentDiff && currentDiff.length) {
+      alert('You have unpublished changes. Please commit or revert them before disabling preview mode.')
+      return
+    }
+  }
+
+  try {
+    previewMode = !previewMode
+    await beaker.archives.setUserSettings(archive.url, {previewMode})
+    window.location.reload()
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+    console.error(e)
+  }
+}
+
+async function onChangeSyncPath () {
+  if (!archive.info.isOwner) return
+
+  // get an available path for a folder
+  var currentPath = _get(archive, 'info.userSettings.localSyncPath')
+  var defaultPath = ''
+  if (!currentPath) {
+    let basePath = await beaker.browser.getSetting('workspace_default_path')
+    defaultPath = await beaker.browser.getDefaultLocalPath(basePath, archive.info.title)
+  }
+
+  var hasUnpublishedChanges = false
+  var previewMode = _get(archive, 'info.userSettings.previewMode')
+  if (previewMode) {
+    // prompt to resolve changes
+    hasUnpublishedChanges = currentDiff && currentDiff.length > 0
+  }
+
+  // open the create folder-picker popup
+  let res = await localSyncPathPopup.create({
+    defaultPath,
+    currentPath,
+    checkConflicts: !previewMode,
+    hasUnpublishedChanges,
+    archiveKey: archive.info.key,
+    title: archive.info.title
+  })
+  let localSyncPath = res.path
+
+  try {
+    // always enable preview-mode
+    await beaker.archives.setUserSettings(archive.url, {previewMode: true})
+    
+    // set folder
+    await beaker.archives.setLocalSyncPath(archive.url, localSyncPath)
+
+    // open folder and reload page
+    beaker.browser.openFolder(localSyncPath)
+    window.location.reload()
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+    console.error(e)
+  }
+}
+
+async function onRemoveSyncPath (e) {
+  if (!archive.info.isOwner) return
+
+  try {
+    await beaker.archives.setLocalSyncPath(archive.url, null)
+    window.location.reload()
+  } catch (e) {
+    toast.create(e.toString(), 'error', 5e3)
+    console.error(e)
+  }
 }
 
 // internal methods

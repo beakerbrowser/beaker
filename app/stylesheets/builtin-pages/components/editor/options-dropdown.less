@@ -1,0 +1,46 @@
+.dropdown.options {
+  .dropdown-items {
+    width: 390px;
+  }
+
+  .dropdown-item {
+    background: #fff;
+    cursor: default;
+    padding: 0;
+
+    p {
+      margin-left: 0;
+      color: @color-text;
+    }
+
+    .option-group {
+      padding: 10px 20px;
+    }
+
+    hr {
+      margin: 0;
+    }
+  }
+
+  p.copy-path {
+    &:extend(.flex);
+    margin-top: 5px;
+    margin-bottom: 0;
+
+    input {
+      flex: 1;
+      font-size: 12px;
+      border-color: #eee;
+      background: #eee;
+      margin-right: 5px;
+    }
+
+    .btn.full-width {
+      margin-top: 10px;
+    }
+  }
+  
+  .message {
+    min-width: auto;
+  }
+}

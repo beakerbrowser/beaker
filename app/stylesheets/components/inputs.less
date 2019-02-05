@@ -155,6 +155,18 @@ label[disabled] {
   cursor: pointer;
   overflow: initial;
 
+  &.unweirded {
+    // TODO
+    // the default of row-reverse and space-between is weird
+    // we need to make them a modifier and make 'unweirded' the default behavior
+    flex-direction: row;
+    justify-content: initial;
+
+    .switch {
+      margin-right: 10px;
+    }
+  }
+
   * {
     cursor: pointer;
   }
