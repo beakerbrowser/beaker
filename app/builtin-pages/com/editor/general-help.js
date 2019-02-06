@@ -29,7 +29,12 @@ export function renderGeneralHelp (archiveInfo, readmeMd) {
                   <h3>Actions</h3>
                   <div><a class="link" onclick=${e => emit('editor-new-folder', {path: '/'})}>New folder</a></div>
                   <div><a class="link" onclick=${e => emit('editor-new-file', {path: '/'})}>New file</a></div>
-                  <div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import...</a></div>
+                  ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+                    ? yo`<div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import...</a></div>`
+                    : [
+                      yo`<div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import files...</a></div>`,
+                      yo`<div><a class="link" onclick=${e => emit('editor-import-folder', {path: '/'})}>Import folder...</a></div>`
+                    ]}
                 </div>`
               : ''}
           <div class="quick-link">

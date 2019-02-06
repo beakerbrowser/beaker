@@ -456,6 +456,34 @@ function onContextmenu (e, node) {
           }
         }
       ])
+      if (window.OS_CAN_IMPORT_FOLDERS_AND_FILES) {
+        items = items.concat([
+          {
+            icon: 'fas fa-upload',
+            label: 'Import...',
+            click () {
+              emit('editor-import-files', {path: node._path})
+            }          
+          }
+        ])
+      } else {
+        items = items.concat([
+          {
+            icon: 'fas fa-upload',
+            label: 'Import files...',
+            click () {
+              emit('editor-import-files', {path: node._path})
+            }          
+          },
+          {
+            icon: 'fas fa-upload',
+            label: 'Import folder...',
+            click () {
+              emit('editor-import-folder', {path: node._path})
+            }          
+          }
+        ])
+      }
     }
     if (!isSite) {
       items = items.concat([

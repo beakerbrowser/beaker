@@ -25,7 +25,14 @@ var sidebarWidth
 var isDraggingSidebar = false
 
 // which should we use in keybindings?
-var osUsesMetaKey = false
+var OS_USES_META_KEY = false
+
+// HACK
+// Linux/Windows are not capable of importing folders and files in the same dialog
+// unless we create our own import dialog (FFS!) we just need to change
+// behavior based on which platform we're on. This flag tracks that.
+// -prf
+window.OS_CAN_IMPORT_FOLDERS_AND_FILES = true
 
 // setup
 // =
@@ -66,7 +73,8 @@ async function setup () {
   // load data
   let url = await parseLibraryUrl()
   let browserInfo = beaker.browser.getInfo()
-  osUsesMetaKey = browserInfo.platform === 'darwin'
+  window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
+  OS_USES_META_KEY = browserInfo.platform === 'darwin'
 
   // bind events
   window.addEventListener('beforeunload', onBeforeUnload)
@@ -81,6 +89,8 @@ async function setup () {
   document.addEventListener('editor-unload-all-models', onUnloadAllModels)
   document.addEventListener('editor-reorder-models', onReorderModels)
   document.addEventListener('editor-all-models-closed', onAllModelsClosed)
+  document.addEventListener('editor-import-files', onImportFiles)
+  document.addEventListener('editor-import-folder', onImportFolder)
   document.addEventListener('editor-new-folder', onNewFolder)
   document.addEventListener('editor-create-folder', onCreateFolder)
   document.addEventListener('editor-new-file', onNewFile)
@@ -318,7 +328,7 @@ function onBeforeUnload (e) {
 }
 
 function onGlobalKeydown (e) {
-  var ctrlOrMeta = osUsesMetaKey ? e.metaKey : e.ctrlKey
+  var ctrlOrMeta = OS_USES_META_KEY ? e.metaKey : e.ctrlKey
   // cmd/ctrl + s
   if (ctrlOrMeta && e.keyCode == 83) {
     e.preventDefault()
@@ -424,6 +434,34 @@ async function onCreateFolder (e) {
     const {path} = e.detail
     await workingCheckout.mkdir(path)
   })
+}
+
+async function onImportFiles (e) {
+  var dst = archive.url + e.detail.path
+  var files = await beaker.browser.showOpenDialog({
+    title: 'Import files',
+    buttonLabel: 'Import',
+    properties: ['openFile', OS_CAN_IMPORT_FOLDERS_AND_FILES ? 'openDirectory' : false, 'multiSelections', 'createDirectory'].filter(Boolean)
+  })
+  if (files) {
+    for (let src of files) {
+      await DatArchive.importFromFilesystem({src, dst, ignore: ['dat.json'], inplaceImport: false})
+    }
+  }
+}
+
+async function onImportFolder (e) {
+  var dst = archive.url + e.detail.path
+  var folders = await beaker.browser.showOpenDialog({
+    title: 'Import folders',
+    buttonLabel: 'Import',
+    properties: ['openDirectory', 'createDirectory']
+  })
+  if (folders) {
+    for (let src of folders) {
+      await DatArchive.importFromFilesystem({src, dst, ignore: ['dat.json'], inplaceImport: false})
+    }
+  }
 }
 
 function onNewFolder (e) {
