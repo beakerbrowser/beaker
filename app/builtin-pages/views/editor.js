@@ -115,6 +115,7 @@ async function setup () {
 
     // load the archiveFS
     archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
+    await loadFileTree()
     await sidebar.setArchiveFsRoot(archiveFsRoot)
     sidebar.configure({
       version: workingCheckoutVersion,
@@ -210,6 +211,23 @@ function setSidebarWidth (width) {
 function getActualSidebarWidth () {
   // if the width gets under the minimum, just hide
   return (sidebarWidth > MIN_SIDEBAR_WIDTH) ? sidebarWidth : 0
+}
+
+async function loadFileTree () {
+  const reload = async (node) => {
+    if (node.isContainer && (node === archiveFsRoot || node.isExpanded)) {
+      for (let c of node.children) {
+        await reload(c)
+      }
+      await node.readData({ignoreCache: true})
+      node.sort()
+    }
+  }
+  try {
+    await reload(archiveFsRoot)
+  } catch (e) {
+    console.warn('Failed to read filetree', e)
+  }
 }
 
 function getActiveFile () {
@@ -310,7 +328,7 @@ function onGlobalKeydown (e) {
 }
 
 async function onFilesChanged () {
-  await sidebar.reloadTree()
+  await loadFileTree()
   await localCompare()
   sidebar.rerender()
   updateToolbar()
@@ -371,6 +389,8 @@ async function onAllModelsClosed (e) {
 async function onCreateFile (e) {
   await op('Saving...', async () => {
     const {path} = e.detail
+
+    // create the new file if needed
     var exists = false
     try {
       var st = await workingCheckout.stat(path)
@@ -381,7 +401,10 @@ async function onCreateFile (e) {
     if (!exists) {
       await workingCheckout.writeFile(path, '')
     }
-    // TODO open the new file
+
+    // open the new file
+    await loadFileTree()
+    models.setActive(findArchiveNode(path))
   })
 }
 

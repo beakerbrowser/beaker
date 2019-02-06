@@ -54,17 +54,7 @@ export function rerender () {
 
 export async function setArchiveFsRoot (node) {
   archiveFsRoot = node
-  await reloadTree()
   render()
-}
-
-export async function reloadTree () {
-  try {
-    await archiveFsRoot.readData({ignoreCache: true})
-  } catch (e) {
-    console.warn('Failed to read filetree', e)
-  }
-  archiveFsRoot.sort('name', 'desc')
 }
 
 export function setCurrentDiff (d) {
