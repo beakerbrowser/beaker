@@ -107,7 +107,7 @@ export function setActiveGeneralHelp (archiveInfo, readmeMd) {
   // set no active model
   active = null
 
-  // render the 'site info' interface
+  // render the interface
   var viewerEl = document.getElementById('genericViewer')
   yo.update(viewerEl, yo`<div id="genericViewer">${renderGeneralHelp(archiveInfo, readmeMd)}</div>`)
 
@@ -273,20 +273,31 @@ async function setEditableActive (file, model) {
 }
 
 async function setUneditableActive (file, model) {
-  setVisibleRegion('image-viewer')
-
-  let container = document.getElementById('imageViewer')
-  container.innerHTML = ''
-  let img = new Image()
-  img.crossOrigin = 'anonymous'
-  img.src = file.url || file.uri.toString()
-  img.onload = () => {
-    container.append(img)
-    container.classList.remove('hidden')
-  }
+  const url = file.url || file.uri.toString()
 
   active = findModel(file)
   modelHistory.push(file)
+
+  if (/(png|jpg|jpeg|gif|ico)$/.test(url)) {
+    setVisibleRegion('image-viewer')
+    let container = document.getElementById('imageViewer')
+    container.innerHTML = ''
+    let img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.src = url
+    img.onload = () => {
+      container.append(img)
+      container.classList.remove('hidden')
+    }
+  } else {
+    setVisibleRegion('generic-viewer')
+    var viewerEl = document.getElementById('genericViewer')
+    yo.update(viewerEl, yo`<div id="genericViewer"><div class="opaque-binary">
+<code>1010100111001100
+1110100101110100
+1001010100010111</code>
+        </div></div>`)
+  }
 }
 
 function onDidChange (model) {
