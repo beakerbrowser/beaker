@@ -375,9 +375,13 @@ async function onClickNew (e, node, type) {
   closeAllToggleables()
 }
 
-function onContextmenu (e, node) {
+async function onContextmenu (e, node) {
   e.preventDefault()
   e.stopPropagation()
+
+  // highlight the parent node
+  var parentEl = findParent(e.currentTarget, 'item')
+  if (parentEl) parentEl.classList.add('highlighted')
 
   const isSite = !node
   node = node || archiveFsRoot
@@ -487,11 +491,12 @@ function onContextmenu (e, node) {
     }
   }
 
-  contextMenu.create({
+  await contextMenu.create({
     x: e.clientX,
     y: e.clientY,
     items
   })
+  if (parentEl) parentEl.classList.remove('highlighted')
 }
 
 function onClickCommitAll (e) {
