@@ -643,7 +643,7 @@ async function onTogglePreviewMode () {
   try {
     previewMode = !previewMode
     await beaker.archives.setUserSettings(archive.url, {previewMode})
-    window.location.reload()
+    window.location = `beaker://editor/${archive.checkout().url}` // trigger reload at default version
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
     console.error(e)
