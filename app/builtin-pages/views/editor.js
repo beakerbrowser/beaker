@@ -310,6 +310,16 @@ function updateToolbar () {
   )
 }
 
+function confirmChangeOnLatest () {
+  var previewMode = _get(archive, 'info.userSettings.previewMode')
+  if (previewMode && workingCheckoutVersion === 'latest') {
+    if (!confirm('You are about to save directly to the published version instead of the preview. Continue?')) {
+      return false
+    }
+  }
+  return true
+}
+
 // event handlers
 // =
 
@@ -410,6 +420,7 @@ function onAllModelsClosed (e) {
 }
 
 async function onCreateFile (e) {
+  if (!confirmChangeOnLatest()) return
   await op('Saving...', async () => {
     const {path} = e.detail
 
@@ -450,6 +461,8 @@ async function onCreateFolder (e) {
 }
 
 async function onImportFiles (e) {
+  if (!confirmChangeOnLatest()) return
+
   var dst = archive.url + e.detail.path
   var files = await beaker.browser.showOpenDialog({
     title: 'Import files',
@@ -464,6 +477,8 @@ async function onImportFiles (e) {
 }
 
 async function onImportFolder (e) {
+  if (!confirmChangeOnLatest()) return
+
   var dst = archive.url + e.detail.path
   var folders = await beaker.browser.showOpenDialog({
     title: 'Import folders',
@@ -490,6 +505,7 @@ function onNewFolder (e) {
 }
 
 async function onRenameFile (e) {
+  if (!confirmChangeOnLatest()) return
   await op('Renaming...', async () => {
     const {oldPath, newPath} = e.detail
     await workingCheckout.rename(oldPath, newPath)
@@ -497,6 +513,7 @@ async function onRenameFile (e) {
 }
 
 async function onDeleteFile (e) {
+  if (!confirmChangeOnLatest()) return
   await op('Deleting...', async () => {
     const {path, isFolder} = e.detail
     if (isFolder) {
@@ -585,12 +602,7 @@ async function onDiffActiveModel (e) {
 }
 
 async function onSaveActiveModel () {
-  var previewMode = _get(archive, 'info.userSettings.previewMode')
-  if (previewMode && workingCheckoutVersion === 'latest') {
-    if (!confirm('You are about to save directly to the published version instead of the preview. Continue?')) {
-      return
-    }
-  }
+  if (!confirmChangeOnLatest()) return
 
   await op('Saving...', async () => {
     let model = models.getActive()
