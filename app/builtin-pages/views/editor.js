@@ -152,6 +152,7 @@ async function setup () {
   await localCompare()
 
   // show the general help view
+  update()
   showGeneralHelp()
 
   // resize the sidebar to match the title
