@@ -171,7 +171,7 @@ async function showGeneralHelp () {
 }
 
 async function localCompare () {
-  if (!_get(archive, 'info.userSettings.previewMode')) {
+  if (!_get(archive, 'info.userSettings.previewMode') || workingCheckoutVersion !== 'preview') {
     return
   }
 
