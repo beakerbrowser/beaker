@@ -165,20 +165,12 @@ function renderReviewChanges () {
   
   const total = currentDiff.length
   return yo`
-    <div class="uncommitted-changes">
-      <div class="title">
-        ${rRevisionIndicator('add')}
-        ${rRevisionIndicator('mod')}
-        ${rRevisionIndicator('del')}
-        ${total} uncommitted ${pluralize(total, 'change')}
-      </div>
-      <button class="btn transparent nofocus full-width" onclick=${onClickCommitAll}>
-        <span class="fas fa-check fa-fw"></span> Commit all
-      </button>
-      <button class="btn transparent nofocus full-width" onclick=${onClickRevertAll}>
-        <span class="fas fa-undo fa-fw"></span> Revert all
-      </button>
-    </div>`
+    <a class="btn transparent nofocus uncommitted-changes" onclick=${e => emit('editor-show-general-help')}>
+      ${rRevisionIndicator('add')}
+      ${rRevisionIndicator('mod')}
+      ${rRevisionIndicator('del')}
+      ${total} uncommitted ${pluralize(total, 'change')}
+    </a>`
 }
 
 function renderChildren (node) {
@@ -497,22 +489,6 @@ async function onContextmenu (e, node) {
     items
   })
   if (parentEl) parentEl.classList.remove('highlighted')
-}
-
-function onClickCommitAll (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  if (!confirm('Commit all changes?')) return
-  emit('editor-commit-all')
-}
-
-function onClickRevertAll (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  if (!confirm('Revert all changes?')) return
-  emit('editor-revert-all')
 }
 
 function onKeydownNewNode (e, node) {

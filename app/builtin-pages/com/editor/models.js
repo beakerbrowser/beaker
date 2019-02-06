@@ -101,7 +101,7 @@ export async function setActive (file) {
   }
 }
 
-export function setActiveGeneralHelp (archiveInfo, readmeMd) {
+export function setActiveGeneralHelp ({archiveInfo, currentDiff, readmeMd}) {
   setVisibleRegion('generic-viewer')
 
   // set no active model
@@ -109,7 +109,7 @@ export function setActiveGeneralHelp (archiveInfo, readmeMd) {
 
   // render the interface
   var viewerEl = document.getElementById('genericViewer')
-  yo.update(viewerEl, yo`<div id="genericViewer">${renderGeneralHelp(archiveInfo, readmeMd)}</div>`)
+  yo.update(viewerEl, yo`<div id="genericViewer">${renderGeneralHelp({archiveInfo, currentDiff, readmeMd})}</div>`)
 
   emit('editor-rerender')
 }

@@ -83,6 +83,7 @@ async function setup () {
   document.addEventListener('editor-model-dirtied', update)
   document.addEventListener('editor-model-cleaned', update)
   document.addEventListener('editor-set-active', onSetActive)
+  document.addEventListener('editor-show-general-help', onShowGeneralHelp)
   document.addEventListener('editor-save-active-model', onSaveActiveModel)
   document.addEventListener('editor-unload-model', onUnloadModel)
   document.addEventListener('editor-unload-all-models-except', onUnloadAllModelsExcept)
@@ -139,7 +140,6 @@ async function setup () {
       fileActStream.addEventListener('changed', onFilesChanged)
     }
     
-    models.setActiveGeneralHelp(archive.info, await loadReadme())
     document.title = `Editor - ${_get(archive, 'info.title', 'Untitled')}`
   } else {
     let untitled = monaco.editor.createModel('')
@@ -151,7 +151,8 @@ async function setup () {
   // ready archive diff
   await localCompare()
 
-  update()
+  // show the general help view
+  models.setActiveGeneralHelp({archiveInfo: archive.info, currentDiff, readmeMd: await loadReadme()})
 
   // resize the sidebar to match the title
   var titleBtnWidth = document.querySelector('.editor-sidebar .site-info').clientWidth
@@ -373,7 +374,15 @@ function onMoveToTrash (e) {
 }
 
 function onSetActive (e) {
-  models.setActive(e.detail.model)
+  if (e.detail.path) {
+    models.setActive(findArchiveNode(e.detail.path))
+  } else {
+    models.setActive(e.detail.model)
+  }
+}
+
+async function onShowGeneralHelp (e) {
+  models.setActiveGeneralHelp({archiveInfo: archive.info, currentDiff, readmeMd: await loadReadme()})
 }
 
 function onUnloadModel (e) {
@@ -393,7 +402,7 @@ function onReorderModels (e) {
 }
 
 async function onAllModelsClosed (e) {
-  models.setActiveGeneralHelp(archive.info, await loadReadme())
+  models.setActiveGeneralHelp({archiveInfo: archive.info, currentDiff, readmeMd: await loadReadme()})
 }
 
 async function onCreateFile (e) {

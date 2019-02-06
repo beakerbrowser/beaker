@@ -1,14 +1,16 @@
 import yo from 'yo-yo'
+import {pluralize} from '../../../lib/strings'
 import {emit} from '../../../lib/fg/event-handlers'
 import createMd from '../../../lib/fg/markdown'
 
 // exported api
 // =
 
-export function renderGeneralHelp (archiveInfo, readmeMd) {
+export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd}) {
   const isOwner = archiveInfo.isOwner
   return yo`
     <div class="editor-general-help">
+      ${renderDiff(currentDiff)}
       <div class="quick-links">
         <div class="col">
           ${isOwner
@@ -66,6 +68,28 @@ export function renderGeneralHelp (archiveInfo, readmeMd) {
     </div>`
 }
 
+function renderDiff (currentDiff) {
+  if (!currentDiff || !currentDiff.length) {
+    return ''
+  }
+
+  const total = currentDiff.length
+  return yo`
+    <div class="uncommitted-changes">
+      <h3>${total} uncommitted ${pluralize(total, 'change')}</h3>
+      <div class="btns">
+        <button class="btn primary" onclick=${onCommitAll}><span class="fas fa-check fa-fw"></span> Commit all changes</button>
+        <button class="btn transparent" onclick=${onRevertAll}><span class="fas fa-undo fa-fw"></span> Revert all</button>
+      </div>
+      ${currentDiff.map(filediff => yo`
+        <div>
+          <span class="revision-indicator ${filediff.change}"></span>
+          <a class=${filediff.change} onclick=${e => emit('editor-set-active', {path: filediff.path})}>${filediff.path}</a>
+        </div>
+      `)}
+    </div>`
+}
+
 function renderReadme (archiveInfo, readmeMd) {
   if (!readmeMd) return ''
 
@@ -102,4 +126,14 @@ function doClick (sel) {
     e.stopPropagation()
     document.querySelector(sel).click()
   }
+}
+
+function onCommitAll (e) {
+  if (!confirm('Commit all changes?')) return
+  emit('editor-commit-all')
+}
+
+function onRevertAll (e) {
+  if (!confirm('Rever all changes?')) return
+  emit('editor-revert-all')
 }

@@ -79,4 +79,34 @@
       }
     }
   }
+
+  .uncommitted-changes {
+    margin-bottom: 40px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+    padding: 30px;
+
+    .btns {
+      margin-bottom: 10px;
+    }
+
+    a {
+      cursor: pointer;
+      color: rgba(0,0,0,.65);
+
+      &.add { color: #116520; }
+      &.mod { color: #9a7c05; }
+      &.del { color: #86120c; }
+    }
+
+    .revision-indicator {
+      border-radius: 50%;
+      margin-left: 4px;
+      margin-right: 4px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  }
 }
