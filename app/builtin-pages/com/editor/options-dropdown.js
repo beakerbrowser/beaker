@@ -12,13 +12,13 @@ export function renderOptionsDropdown ({archiveInfo}) {
     id: 'options-tool',
     closed: ({onToggle}) => yo`
       <div class="dropdown options toggleable-container">
-        <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
+        <button class="btn transparent nofocus toggleable options-dropdown-btn" onclick=${onToggle}>
           <span class="fas fa-cog"></span> Options
         </button>
       </div>`,
     open: ({onToggle}) => yo`
       <div class="dropdown options toggleable-container">
-        <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
+        <button class="btn transparent nofocus toggleable options-dropdown-btn" onclick=${onToggle}>
           <span class="fas fa-cog"></span> Options
         </button>
 

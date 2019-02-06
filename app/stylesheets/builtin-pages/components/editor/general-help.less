@@ -1,5 +1,7 @@
 .editor-general-help {
   padding: 30px;
+  height: 100%;
+  overflow: auto;
 
   h3 {
     font-size: 1.2em;
@@ -23,6 +25,58 @@
 
     div {
       color: rgba(0,0,0,.65);
+    }
+  }
+
+  .readme {
+    border-top: 1px solid #ddd;
+    padding: 10px 0;
+    font-family: inherit;
+    line-height: 1.5;
+    color: rgba(0,0,0,.65);
+
+    h1,
+    h2,
+    h3 {
+      margin: 20px 0;
+      font-weight: 300;
+      color: indianred;
+    }
+
+    ul,
+    ol {
+      margin-bottom: 15px;
+      list-style: inherit;
+      margin-left: 30px;
+    }
+
+    pre,
+    code {
+      &:extend(.code-font);
+      font-size: 13.5px;
+      background: #f0f0f0;
+      border-radius: 2px;
+    }
+
+    pre {
+      padding: 15px;
+      border: 0;
+    }
+
+    code {
+      padding: 3px 5px;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    a {
+      &:extend(.link);
+
+      &:hover {
+        text-decoration: underline;
+      }
     }
   }
 }

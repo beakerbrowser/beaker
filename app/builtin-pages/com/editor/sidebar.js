@@ -93,11 +93,11 @@ function renderFavicon () {
     id: 'favicon-picker',
     closed: ({onToggle}) => yo`
       <div class="dropdown toggleable-container">
-        <button class="btn transparent nofocus toggleable"><img class="favicon" src=${url} onclick=${onToggle} /></button>
+        <button class="btn transparent nofocus toggleable favicon-picker-btn" onclick=${onToggle}><img class="favicon" src=${url} /></button>
       </div>`,
     open: ({onToggle}) => yo`
       <div class="dropdown toggleable-container">
-        <button class="btn transparent nofocus toggleable"><img class="favicon" src=${url} onclick=${onToggle} /></button>
+        <button class="btn transparent nofocus toggleable favicon-picker-btn" onclick=${onToggle}><img class="favicon" src=${url} /></button>
         <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
           ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl: url})}
         </div>

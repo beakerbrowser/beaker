@@ -1,10 +1,11 @@
 import yo from 'yo-yo'
 import {emit} from '../../../lib/fg/event-handlers'
+import createMd from '../../../lib/fg/markdown'
 
 // exported api
 // =
 
-export function renderGeneralHelp (archiveInfo) {
+export function renderGeneralHelp (archiveInfo, readmeMd) {
   const isOwner = archiveInfo.isOwner
   return yo`
     <div class="editor-general-help">
@@ -28,6 +29,7 @@ export function renderGeneralHelp (archiveInfo) {
                   <h3>Actions</h3>
                   <div><a class="link" onclick=${e => emit('editor-new-folder', {path: '/'})}>New folder</a></div>
                   <div><a class="link" onclick=${e => emit('editor-new-file', {path: '/'})}>New file</a></div>
+                  <div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import...</a></div>
                 </div>`
               : ''}
           <div class="quick-link">
@@ -40,12 +42,46 @@ export function renderGeneralHelp (archiveInfo) {
             <h3>Manage the site</h3>
             <div>Want to make a copy? <a class="link" onclick=${e => emit('editor-fork')}>Duplicate it</a>.</div>
             ${isOwner
-              ? yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-move-to-trash')}>Move to trash</a>.</div>`
-              : ''}
+              ? [
+                yo`<div>Want to preview changes? <a class="link" onclick=${doClick('.options-dropdown-btn')}>Enable preview mode</a>.</div>`,
+                yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-move-to-trash')}>Move to trash</a>.</div>`
+              ] : ''}
           </div>
+          ${isOwner
+            ? yo`
+              <div class="quick-link">
+                <h3>Metadata</h3>
+                <div>Want to change the title or description? <a class="link" onclick=${doClick('.site-info-btn')}>Edit details</a>.</div>
+                <div>Want to change the favicon? <a class="link" onclick=${doClick('.favicon-picker-btn')}>Edit icon</a>.</div>
+              </div>`
+            : ''}
         </div>
       </div>
+      ${renderReadme(archiveInfo, readmeMd)}
     </div>`
+}
+
+function renderReadme (archiveInfo, readmeMd) {
+  if (!readmeMd) return ''
+
+  var markdownRenderer = createMd({
+    hrefMassager (href) {
+      var isRelative = href.startsWith('/') || href.startsWith('./')
+      if (!isRelative && href.indexOf(':') === -1) {
+        isRelative = true
+      }
+      if (isRelative) {
+        if (href.startsWith('./')) href = href.slice(2)
+        if (href.startsWith('/')) href = href.slice(1)
+        return `${archiveInfo.url}/${href}`
+      }
+      return href
+    }
+  })
+
+  var readmeContent = yo`<div class="readme markdown"></div>`
+  readmeContent.innerHTML = markdownRenderer.render(readmeMd)
+  return readmeContent
 }
 
 // event handlers
@@ -53,4 +89,12 @@ export function renderGeneralHelp (archiveInfo) {
 
 function onCreateFile (e, path) {
   emit('editor-create-file', {path})
+}
+
+function doClick (sel) {
+  return e => {
+    e.preventDefault()
+    e.stopPropagation()
+    document.querySelector(sel).click()
+  }
 }

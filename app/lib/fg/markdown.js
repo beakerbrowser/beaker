@@ -33,7 +33,6 @@ export default function create ({allowHTML, useHeadingAnchors, hrefMassager} = {
   if (hrefMassager) {
     // link modifier
     let org = md.renderer.rules.link_open
-    console.log(md, org)
     md.renderer.rules.link_open = function (tokens, idx, options /* env */) {
       var i = tokens[idx].attrs.findIndex(attr => attr[0] === 'href')
       tokens[idx].attrs[i][1] = hrefMassager(tokens[idx].attrs[i][1])

@@ -128,7 +128,7 @@ async function setup () {
       fileActStream.addEventListener('changed', onFilesChanged)
     }
     
-    models.setActiveGeneralHelp(archive.info)
+    models.setActiveGeneralHelp(archive.info, await loadReadme())
     document.title = `Editor - ${_get(archive, 'info.title', 'Untitled')}`
   } else {
     let untitled = monaco.editor.createModel('')
@@ -143,7 +143,7 @@ async function setup () {
   update()
 
   // resize the sidebar to match the title
-  var titleBtnWidth = document.querySelector('.site-info-btn').clientWidth
+  var titleBtnWidth = document.querySelector('.editor-sidebar .site-info').clientWidth
   setSidebarWidth(Math.max(Math.min(titleBtnWidth + 20, 250), 150))
 
   // trigger the site-info dropdown
@@ -226,6 +226,11 @@ function findArchiveNode (path) {
     node = node._files.find(n => n.name === filename) // move to next child in the tree
   }
   return node
+}
+
+async function loadReadme () {
+  const readmeMdNode = archiveFsRoot.children.find(n => (n._name || '').toLowerCase() === 'readme.md')
+  return readmeMdNode ? await workingCheckout.readFile(readmeMdNode._path, 'utf8') : ''
 }
 
 // rendering
@@ -359,8 +364,8 @@ function onReorderModels (e) {
   models.reorderModels(e.detail.srcModel, e.detail.dstModel)
 }
 
-function onAllModelsClosed (e) {
-  models.setActiveGeneralHelp(archive.info)
+async function onAllModelsClosed (e) {
+  models.setActiveGeneralHelp(archive.info, await loadReadme())
 }
 
 async function onCreateFile (e) {

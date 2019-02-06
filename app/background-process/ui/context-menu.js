@@ -141,7 +141,7 @@ export default function registerContextMenu () {
           menuItems.push({
             label: 'View Source',
             click: (item, win) => {
-              win.webContents.send('command', 'file:new-tab', 'beaker://library/' + props.pageURL)
+              win.webContents.send('command', 'file:new-tab', 'beaker://editor/' + props.pageURL)
             }
           })
           menuItems.push({
