@@ -35,8 +35,9 @@ body {
 }
 
 #pages-contents {
-  height: ~"calc(100vh - 73px)"; // ~"" is an escaped string, it keeps less from running this calc in the preprocessing
+  height: 100%;
   display: flex;
+  flex-direction: column;
 }
 
 body.page-fullscreen #pages-contents {
