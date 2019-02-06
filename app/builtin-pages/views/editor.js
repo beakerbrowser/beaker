@@ -111,7 +111,9 @@ async function setup () {
   document.addEventListener('editor-set-favicon', onSetFavicon)
   document.addEventListener('editor-set-site-info', onSetSiteInfo)
   document.addEventListener('editor-fork', onFork)
-  document.addEventListener('editor-move-to-trash', onMoveToTrash)
+  document.addEventListener('editor-archive-save', onArchiveSave)
+  document.addEventListener('editor-archive-unsave', onArchiveUnsave)
+  document.addEventListener('editor-archive-delete-permanently', onArchiveDeletePermanently)
 
   // setup the sidebar resizer
   setSidebarWidth(DEFAULT_SIDEBAR_WIDTH)
@@ -124,7 +126,7 @@ async function setup () {
     ;archive = new Archive(url)
     await archive.setup()
     await setupWorkingCheckout()
-    isReadonly = !archive.info.isOwner || !Number.isNaN(+workingCheckoutVersion)
+    isReadonly = !_get(archive, 'info.userSettings.isSaved') || !archive.info.isOwner || !Number.isNaN(+workingCheckoutVersion)
     if (isReadonly) {
       window.editor.updateOptions({readOnly: true})
     }
@@ -139,11 +141,13 @@ async function setup () {
       previewMode: _get(archive, 'info.userSettings.previewMode')
     })
 
-    let fileActStream = archive.watch()
-    fileActStream.addEventListener('changed', onFilesChanged)
-    if (_get(archive, 'info.userSettings.previewMode')) {
-      fileActStream = workingCheckout.watch()
+    if (_get(archive, 'info.userSettings.isSaved')) {
+      let fileActStream = archive.watch()
       fileActStream.addEventListener('changed', onFilesChanged)
+      if (_get(archive, 'info.userSettings.previewMode')) {
+        fileActStream = workingCheckout.watch()
+        fileActStream.addEventListener('changed', onFilesChanged)
+      }
     }
     
     document.title = `Editor - ${_get(archive, 'info.title', 'Untitled')}`
@@ -176,7 +180,7 @@ async function showGeneralHelp () {
 }
 
 async function localCompare () {
-  if (!_get(archive, 'info.userSettings.previewMode') || workingCheckoutVersion !== 'preview') {
+  if (!_get(archive, 'info.userSettings.isSaved') || !_get(archive, 'info.userSettings.previewMode') || workingCheckoutVersion !== 'preview') {
     return
   }
 
@@ -405,11 +409,25 @@ async function onFork (e) {
   window.location = `beaker://editor/${fork.url}`
 }
 
-function onMoveToTrash (e) {
-  if (!confirm('Move this site to the trash?')) {
-    return
+async function onArchiveSave (e) {
+  await beaker.archives.add(archive.url)
+  location.reload()
+}
+
+async function onArchiveUnsave (e) {
+  await beaker.archives.remove(archive.url)
+  location.reload()
+}
+
+async function onArchiveDeletePermanently (e) {
+  if (!confirm('Delete permanently?')) return
+  try {
+    await beaker.archives.delete(archive.url)
+    window.location = 'beaker://library'
+  } catch (e) {
+    console.error(e)
+    toast.create(e.toString(), 'error')
   }
-  alert('TODO')
 }
 
 function onSetActive (e) {

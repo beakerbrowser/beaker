@@ -4,8 +4,9 @@ import _get from 'lodash.get'
 import {FSArchiveFolder_BeingCreated, FSArchiveFile_BeingCreated} from 'beaker-virtual-fs'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
+import {renderSiteinfoDropdown} from './siteinfo-dropdown'
 import renderArchiveHistory from '../archive/archive-history'
-import toggleable2, {closeAllToggleables}  from '../toggleable2'
+import toggleable2  from '../toggleable2'
 import renderFaviconPicker from '../settings/favicon-picker'
 import {findParent, writeToClipboard} from '../../../lib/fg/event-handlers'
 import {pluralize} from '../../../lib/strings'
@@ -33,7 +34,7 @@ export function render () {
     <div class="file-tree-container" oncontextmenu=${onContextmenu}>
       <div class="site-info">
         ${renderFavicon()}
-        ${renderSiteTitle()}
+        ${renderSiteinfoDropdown({archiveInfo: archiveFsRoot._archiveInfo})}
       </div>
       <div class="file-tree-header">
         ${renderVersionPicker()}
@@ -95,32 +96,6 @@ function renderFavicon () {
   })
 }
 
-function renderSiteTitle () {
-  const {title, description} = archiveFsRoot._archiveInfo
-
-  if (config.isReadonly) {
-    return yo`<div class="readonly-title">${archiveFsRoot.name}</div>`
-  }
-
-  return toggleable2({
-    id: 'site-info-editor',
-    closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container">
-        <button class="btn site-info-btn transparent nofocus toggleable" onclick=${onToggle}>${archiveFsRoot.name}</button>
-      </div>`,
-    open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container">
-        <button class="btn site-info-btn transparent nofocus toggleable" onclick=${onToggle}>${archiveFsRoot.name}</button>
-        <div class="dropdown-items subtle-shadow left">
-          <form class="site-info-form" onsubmit=${onSubmitSiteInfo}>
-            <input type="text" name="title" placeholder="Title" value=${title} autofocus>
-            <input type="text" name="description" placeholder="Description" value=${description}>
-            <div><button class="btn">Save</button></div>
-          </form>
-        </div>
-      </div>`
-  })
-}
 
 function renderVersionPicker () {
   const currentVersion = config.version
@@ -352,20 +327,6 @@ function onClickDeletedFilediff (e, filediff) {
   models.setActiveDeletedFilediff(filediff)
 }
 
-async function onClickNew (e, node, type) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  // get the name
-  var newName = findParent(e.currentTarget, 'dropdown-item').querySelector('input').value.trim()
-  if (newName.startsWith('/')) newName = newName.slice(1)
-  if (!newName) return // do nothing
-
-  let path = node._path + '/' + newName
-  emit(`editor-create-${type}`, {path})
-  closeAllToggleables()
-}
-
 async function onContextmenu (e, node) {
   e.preventDefault()
   e.stopPropagation()
@@ -495,17 +456,6 @@ function onKeydownNewNode (e, node) {
   if (e.key === 'Enter') {
     emit('editor-create-' + node.type, {path: node.getPathForName(e.currentTarget.value)})
   }
-}
-
-function onSubmitSiteInfo (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  closeAllToggleables()
-  emit('editor-set-site-info', {
-    title: e.currentTarget.title.value,
-    description: e.currentTarget.description.value
-  })
 }
 
 // internal helpers

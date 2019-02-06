@@ -18,11 +18,24 @@ export function renderGeneralHelp (opts) {
     hasIndexFile
   } = opts
   const isOwner = archiveInfo.isOwner
+  const isSaved = archiveInfo.userSettings.isSaved
   const isEditable = !isReadonly
   const versionLabel = (Number.isNaN(+workingCheckoutVersion)) ? workingCheckoutVersion : `v${workingCheckoutVersion}`
   const previewMode = archiveInfo.userSettings.previewMode
   return yo`
     <div class="editor-general-help">
+      ${isOwner && !isSaved
+        ? yo`
+          <div class="message error trashed-notice">
+            <span>
+              <i class="fas fa-trash"></i>
+              "${archiveInfo.title || 'This archive'}"
+              is in the Trash.
+            </span>
+            <button class="btn" onclick=${e => emit('editor-archive-save')}><i class="fas fa-undo"></i> Restore from Trash</button>
+            <button class="btn" onclick=${e => emit('editor-archive-delete-permanently')} style="margin-left: 5px">Delete permanently</button>
+          </div>`
+        : ''}
       ${!previewMode && workingCheckoutVersion !== 'latest'
         ? yo`
           <h3 class="viewing">
@@ -88,7 +101,7 @@ export function renderGeneralHelp (opts) {
                 previewMode
                   ? yo`<div>Want to preview changes? <strong><span class="fas fa-check"></span> Preview mode enabled</strong>.</div>`
                   : yo`<div>Want to preview changes? <a class="link" onclick=${doClick('.options-dropdown-btn')}>Enable preview mode</a>.</div>`,
-                yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-move-to-trash')}>Move to trash</a>.</div>`
+                yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-archive-unsave')}>Move to trash</a>.</div>`
               ] : ''}
           </div>
         </div>

@@ -6,6 +6,7 @@ import { findParent } from '../../lib/fg/event-handlers'
 
 // map of current state, for toggles that should persist state across renderings
 var toggleState = {}
+var afterCloses = {}
 
 // exports
 // =
@@ -17,6 +18,7 @@ var toggleState = {}
 // - closed: required, a function to render closed state. Takes ({onToggle}).
 // - open: required, a function to render open state. Takes ({onToggle}).
 // - afterOpen: optional, a function called after open-state is rendered. Takes (containerEl).
+// - afterClose: optional, a function called after close-state is rendered.
 /*
 import toggleable2 from 'toggleable2'
 
@@ -34,8 +36,11 @@ function render () {
           ...
         </div>
       </div>`,
-    afterOpen: (el) => {
+    afterOpen (el) {
       console.log('toggleable opened')
+    },
+    afterClose () {
+      console.log('toggleable closed')
     }
   `)
 }
@@ -48,8 +53,9 @@ function render () {
  * @param {Function} opts.closed
  * @param {Function} opts.open
  * @param {Function} [opts.afterOpen]
+ * @param {Function} [opts.afterClose]
  */
-export default function toggleable2 ({id, closed, open, afterOpen}) {
+export default function toggleable2 ({id, closed, open, afterOpen, afterClose}) {
   function onToggle (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -68,10 +74,12 @@ export default function toggleable2 ({id, closed, open, afterOpen}) {
     } else {
       yo.update(container, closed(callArgs))
       container.classList.remove('open')
+      if (afterClose) afterClose()
     }
     if (id) {
       // persist state
       toggleState[id] = newState
+      afterCloses[id] = afterClose
     }
   }
 
@@ -88,7 +96,13 @@ export default function toggleable2 ({id, closed, open, afterOpen}) {
 
 export function closeAllToggleables () {
   Array.from(document.querySelectorAll('.toggleable-container')).forEach(el => el.classList.remove('open'))
+  for (let k in toggleState) {
+    if (afterCloses[k]) {
+      afterCloses[k]()
+    }
+  }
   toggleState = {}
+  afterCloses = {}
 }
 
 // event listeners
