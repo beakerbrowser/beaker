@@ -152,7 +152,7 @@ async function setup () {
   await localCompare()
 
   // show the general help view
-  models.setActiveGeneralHelp({archiveInfo: archive.info, currentDiff, readmeMd: await loadReadme()})
+  showGeneralHelp()
 
   // resize the sidebar to match the title
   var titleBtnWidth = document.querySelector('.editor-sidebar .site-info').clientWidth
@@ -163,6 +163,10 @@ async function setup () {
     document.body.querySelector('.site-info-btn').click()
     history.replaceState('', document.title, location.pathname) // remove #setup in case the user reloads
   }
+}
+
+async function showGeneralHelp () {
+  models.setActiveGeneralHelp({archiveInfo: archive.info, currentDiff, readmeMd: await loadReadme()})
 }
 
 async function localCompare () {
@@ -381,8 +385,8 @@ function onSetActive (e) {
   }
 }
 
-async function onShowGeneralHelp (e) {
-  models.setActiveGeneralHelp({archiveInfo: archive.info, currentDiff, readmeMd: await loadReadme()})
+function onShowGeneralHelp (e) {
+  showGeneralHelp()
 }
 
 function onUnloadModel (e) {
@@ -401,8 +405,8 @@ function onReorderModels (e) {
   models.reorderModels(e.detail.srcModel, e.detail.dstModel)
 }
 
-async function onAllModelsClosed (e) {
-  models.setActiveGeneralHelp({archiveInfo: archive.info, currentDiff, readmeMd: await loadReadme()})
+function onAllModelsClosed (e) {
+  showGeneralHelp()
 }
 
 async function onCreateFile (e) {
@@ -529,20 +533,30 @@ async function onRevertFile (e) {
 
 async function onCommitAll (e) {
   await op('Committing...', async () => {
+    // commit
     var paths = fileDiffsToPaths(currentDiff)
     await beaker.archives.publishLocalSyncPathListing(archive.url, {shallow: false, paths})
-    models.exitDiff()
     toast.create(`Committed all changes`, 'success', 1e3)
   })
+
+  // update view
+  await loadFileTree()
+  await localCompare()
+  showGeneralHelp()
 }
 
 async function onRevertAll (e) {
   await op('Reverting...', async () => {
+    // revert
     var paths = fileDiffsToPaths(currentDiff)
     await beaker.archives.revertLocalSyncPathListing(archive.url, {shallow: false, paths})
-    models.exitDiff()
     toast.create(`Reverted all changes`, 'success', 1e3)
   })
+
+  // update view
+  await loadFileTree()
+  await localCompare()
+  showGeneralHelp()
 }
 
 async function onDiffActiveModel (e) {
