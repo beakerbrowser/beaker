@@ -11,10 +11,11 @@ import {writeToClipboard, emit} from '../../../lib/fg/event-handlers'
 export function render ({archive, models, openLinkVersion, archiveInfo, isReadonly}) {
   var isOwner = archive.info.isOwner
   var versionLabel = (Number.isNaN(+openLinkVersion)) ? openLinkVersion : `v${openLinkVersion}`
+  var activeModel = models.find(m => m.isActive)
   return yo`
     <div class="editor-tabs">
+      <div class="tab ${activeModel ? '' : 'active'}" onclick=${e => emit('editor-show-general-help')}>Welcome</div>
       ${models.map(model => renderTab(model))}
-      ${models.length === 0 ? yo`<div class="tab active">Welcome</div>  ` : ''}
       <div class="unused-space" ondragover=${(e) => onTabDragOver(e)} ondrop=${(e) => onTabDragDrop(e, null)}></div>
       <div class="ctrls">
         ${isOwner
