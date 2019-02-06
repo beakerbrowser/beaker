@@ -6,7 +6,6 @@ require(['vs/editor/editor.main'], function() {
     automaticLayout: true,
     fixedOverflowWidgets: true,
     roundedSelection: false,
-    contextmenu: false,
     model: null
   }
   window.editor = monaco.editor.create(document.getElementById('editor'), commonOpts)
