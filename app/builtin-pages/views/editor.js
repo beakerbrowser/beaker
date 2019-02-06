@@ -354,8 +354,18 @@ function onGlobalKeydown (e) {
 }
 
 async function onFilesChanged () {
+  // update data
   await loadFileTree()
   await localCompare()
+
+  // remove any models that have been unloaded
+  for (let m of models.getModels()) {
+    if (!findArchiveNode(m.uri.path)) {
+      models.unload(m)
+    }
+  }
+
+  // rerender
   sidebar.rerender()
   updateToolbar()
 }

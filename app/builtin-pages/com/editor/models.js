@@ -61,15 +61,9 @@ export async function unload (file) {
 
   if (getActive() === file) newActive = modelHistory.pop()
 
-  if (file.type === 'image') {
-    let model = findModel(file)
-    models.splice(models.findIndex(v => v.name === model.name), 1)
-    document.getElementById('imageViewer').classList.add('hidden')
-  } else {
-    let model = monaco.editor.getModel(file.uri)
-    models.splice(models.findIndex(v => v.name === model.name), 1)
-    model.dispose()
-  }
+  let model = monaco.editor.getModel(file.uri)
+  models.splice(models.findIndex(v => v.name === model.name), 1)
+  model.dispose()
 
   if (newActive) setActive(newActive)
   if (models.length === 0) {
