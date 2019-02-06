@@ -16,6 +16,7 @@ import {pluralize} from '../../../lib/strings'
 var archiveFsRoot
 var currentDiff
 var config = {
+  isReadonly: false,
   version: 'latest',
   previewMode: false
 }
@@ -71,12 +72,11 @@ export function configure (c) {
 // =
 
 function renderFavicon () {
-  const isOwner = archiveFsRoot.isEditable
   const url = `beaker-favicon:16,${archiveFsRoot.url}?cache=${Date.now()}`
   const onSelectFavicon = imageData => emit('editor-set-favicon', {imageData})
 
-  if (!isOwner) {
-    return yo`<img class="favicon" src="${url}">`
+  if (config.isReadonly) {
+    return yo`<div class="readonly-favicon"><img class="favicon" src="${url}"></div>`
   }
 
   return toggleable2({
@@ -96,11 +96,10 @@ function renderFavicon () {
 }
 
 function renderSiteTitle () {
-  const isOwner = archiveFsRoot.isEditable
   const {title, description} = archiveFsRoot._archiveInfo
 
-  if (!isOwner) {
-    return yo`<div>${archiveFsRoot.name}</div>`
+  if (config.isReadonly) {
+    return yo`<div class="readonly-title">${archiveFsRoot.name}</div>`
   }
 
   return toggleable2({
@@ -397,7 +396,7 @@ async function onContextmenu (e, node) {
     }
   ])
 
-  if (node.isEditable) {
+  if (!config.isReadonly) {
     if (node.isContainer) {
       items = items.concat([
         {

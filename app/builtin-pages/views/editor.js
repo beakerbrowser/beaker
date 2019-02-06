@@ -20,6 +20,7 @@ var workingCheckoutVersion
 var workingCheckout
 var archiveFsRoot
 var currentDiff
+var isReadonly
 
 var sidebarWidth
 var isDraggingSidebar = false
@@ -123,12 +124,17 @@ async function setup () {
     ;archive = new Archive(url)
     await archive.setup()
     await setupWorkingCheckout()
+    isReadonly = !archive.info.isOwner || !Number.isNaN(+workingCheckoutVersion)
+    if (isReadonly) {
+      window.editor.updateOptions({readOnly: true})
+    }
 
     // load the archiveFS
     archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
     await loadFileTree()
     await sidebar.setArchiveFsRoot(archiveFsRoot)
     sidebar.configure({
+      isReadonly,
       version: workingCheckoutVersion,
       previewMode: _get(archive, 'info.userSettings.previewMode')
     })
@@ -167,7 +173,13 @@ async function setup () {
 }
 
 async function showGeneralHelp () {
-  models.setActiveGeneralHelp({archiveInfo: archive.info, currentDiff, readmeMd: await loadReadme()})
+  models.setActiveGeneralHelp({
+    archiveInfo: archive.info,
+    currentDiff,
+    readmeMd: await loadReadme(),
+    workingCheckoutVersion,
+    isReadonly
+  })
 }
 
 async function localCompare () {
@@ -295,6 +307,7 @@ function update () {
       archive: workingCheckout,
       models: models.getModels(),
       archiveInfo: archive.info,
+      isReadonly,
       openLinkVersion: workingCheckoutVersion
     })
   )

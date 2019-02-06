@@ -6,14 +6,30 @@ import createMd from '../../../lib/fg/markdown'
 // exported api
 // =
 
-export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd}) {
+export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd, workingCheckoutVersion, isReadonly}) {
   const isOwner = archiveInfo.isOwner
+  const isEditable = !isReadonly
+  const versionLabel = (Number.isNaN(+workingCheckoutVersion)) ? workingCheckoutVersion : `v${workingCheckoutVersion}`
+  const previewMode = archiveInfo.userSettings.previewMode
   return yo`
     <div class="editor-general-help">
+      ${workingCheckoutVersion !== 'latest'
+        ? yo`
+          <h3 class="viewing">
+            Viewing <strong>${versionLabel}</strong>
+            <a class="link" href="beaker://editor/${archiveInfo.url}+latest"><span class="fas fa-arrow-right"></span> Go to latest</a>.
+          </h3>`
+        : previewMode && workingCheckoutVersion !== 'preview'
+          ? yo`
+            <h3 class="viewing">
+              Viewing <strong>${versionLabel}</strong>
+              <a class="link" href="beaker://editor/${archiveInfo.url}+preview"><span class="fas fa-arrow-right"></span> Go to preview</a>.
+            </h3>`
+          : ''}
       ${renderDiff(currentDiff)}
       <div class="quick-links">
         <div class="col">
-          ${isOwner
+          ${isEditable
             ? yo`
               <div class="quick-link">
                 <h3>Get started</h3>
@@ -25,7 +41,7 @@ export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd}) {
                 </div>
               </div>`
             : ''}
-            ${isOwner
+            ${isEditable
               ? yo`
                 <div class="quick-link">
                   <h3>Actions</h3>
@@ -48,13 +64,13 @@ export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd}) {
           <div class="quick-link">
             <h3>Manage the site</h3>
             <div>Want to make a copy? <a class="link" onclick=${e => emit('editor-fork')}>Duplicate it</a>.</div>
-            ${isOwner
+            ${isEditable
               ? [
                 yo`<div>Want to preview changes? <a class="link" onclick=${doClick('.options-dropdown-btn')}>Enable preview mode</a>.</div>`,
                 yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-move-to-trash')}>Move to trash</a>.</div>`
               ] : ''}
           </div>
-          ${isOwner
+          ${isEditable
             ? yo`
               <div class="quick-link">
                 <h3>Metadata</h3>

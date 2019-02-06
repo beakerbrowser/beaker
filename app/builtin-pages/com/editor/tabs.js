@@ -8,15 +8,24 @@ import {writeToClipboard, emit} from '../../../lib/fg/event-handlers'
 // rendering
 // =
 
-export function render ({archive, models, openLinkVersion, archiveInfo}) {
+export function render ({archive, models, openLinkVersion, archiveInfo, isReadonly}) {
+  var isOwner = archive.info.isOwner
+  var versionLabel = (Number.isNaN(+openLinkVersion)) ? openLinkVersion : `v${openLinkVersion}`
   return yo`
     <div class="editor-tabs">
       ${models.map(model => renderTab(model))}
       <div class="unused-space" ondragover=${(e) => onTabDragOver(e)} ondrop=${(e) => onTabDragDrop(e, null)}></div>
       <div class="ctrls">
-        ${renderOptionsDropdown({archiveInfo})}
+        ${isOwner
+          ? renderOptionsDropdown({archiveInfo})
+          : yo`<span>
+            Want to edit this site?
+            <a class="btn" style="margin-left: 5px" onclick=${e => emit('editor-fork')}>
+              <span class="far fa-clone"></span> Make a copy
+            </a>
+          </span>`}
         <a class="btn primary" href=${archive.checkout(openLinkVersion).url} target="_blank">
-          <i class="fas fa-external-link-alt"></i> Open ${openLinkVersion}
+          <i class="fas fa-external-link-alt"></i> Open ${versionLabel}
         </a>
         ${renderShareMenu(archive)}
       </div>
