@@ -296,7 +296,8 @@ async function setUneditableActive (file, model) {
 <code>1010100111001100
 1110100101110100
 1001010100010111</code>
-        </div></div>`)
+        </div></div>`
+    )
   }
 }
 

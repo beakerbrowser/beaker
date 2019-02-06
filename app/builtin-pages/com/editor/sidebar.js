@@ -124,7 +124,7 @@ function renderSiteTitle () {
 }
 
 function renderVersionPicker () {
-  const version = config.version
+  const currentVersion = config.version
   const includePreview = config.previewMode
 
   const button = (onToggle) =>
@@ -133,7 +133,7 @@ function renderVersionPicker () {
         class="btn nofocus"
         onclick=${onToggle}>
         <div>
-          Version: ${version}
+          Version: ${currentVersion}
         </div>
         <span class="fa fa-angle-down"></span>
       </button>
@@ -149,7 +149,7 @@ function renderVersionPicker () {
       <div class="dropdown toggleable-container version-picker-ctrl">
         ${button(onToggle)}
         <div class="dropdown-items left">
-          ${renderArchiveHistory(archiveFsRoot._archive, {viewerUrl: 'beaker://editor', includePreview})}
+          ${renderArchiveHistory(archiveFsRoot._archive, {currentVersion, viewerUrl: 'beaker://editor', includePreview})}
         </div>
       </div>`
   })

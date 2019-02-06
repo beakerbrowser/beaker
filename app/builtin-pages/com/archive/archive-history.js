@@ -10,7 +10,7 @@ const FETCH_COUNT = 200
 var counter = 0
 var history
 var baseUrl
-export default function render (archive, {viewerUrl, filePath, linkifyPaths, includePreview} = {}) {
+export default function render (archive, {currentVersion, viewerUrl, filePath, linkifyPaths, includePreview} = {}) {
   viewerUrl = viewerUrl || 'beaker://library'
   filePath = filePath || ''
   var el = renderHistory()
@@ -35,13 +35,21 @@ export default function render (archive, {viewerUrl, filePath, linkifyPaths, inc
     return yo`
       <div class="archive-history ${history ? '' : 'loading'}">
         <div class="archive-history-body">
-          <div onclick=${onGoto} class="archive-history-item ${includePreview ? '' : 'no-border'}" title="View latest published" href="${viewerUrl}/${baseUrl}+latest${filePath}">
+          <div
+            onclick=${onGoto}
+            class="archive-history-item ${currentVersion === 'latest' ? 'selected' : ''} ${includePreview ? '' : 'no-border'}"
+            title="View latest published" href="${viewerUrl}/${baseUrl}+latest${filePath}"
+          >
             <span class="fa fa-fw fa-globe-americas"></span>
             View latest published
           </div>
           ${includePreview
             ? yo`
-              <div onclick=${onGoto} class="archive-history-item no-border" title="View local preview" href="${viewerUrl}/${baseUrl}+preview${filePath}">
+              <div
+                onclick=${onGoto}
+                class="archive-history-item ${currentVersion === 'preview' ? 'selected' : ''} no-border"
+                title="View local preview" href="${viewerUrl}/${baseUrl}+preview${filePath}"
+              >
                 <span class="fa fa-fw fa-laptop"></span>
                 View local preview
               </div>`
@@ -63,7 +71,7 @@ export default function render (archive, {viewerUrl, filePath, linkifyPaths, inc
     return yo`
       <div
         onclick=${onGoto}
-        class="archive-history-item"
+        class="archive-history-item ${currentVersion == c.version ? 'selected' : ''}"
         title="View version ${c.version}"
         href="${viewerUrl}/${baseUrl}+${c.version}${filePath}"
       >
