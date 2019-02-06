@@ -7,7 +7,7 @@ import * as contextInput from '../context-input'
 import renderArchiveHistory from '../archive/archive-history'
 import toggleable2, {closeAllToggleables}  from '../toggleable2'
 import renderFaviconPicker from '../settings/favicon-picker'
-import {findParent} from '../../../lib/fg/event-handlers'
+import {findParent, writeToClipboard} from '../../../lib/fg/event-handlers'
 import {pluralize} from '../../../lib/strings'
 
 // globals
@@ -29,7 +29,7 @@ export function render () {
   }
 
   return yo`
-    <div class="file-tree-container">
+    <div class="file-tree-container" oncontextmenu=${onContextmenu}>
       <div class="site-info">
         ${renderFavicon()}
         ${renderSiteTitle()}
@@ -286,7 +286,7 @@ function renderDirectory (node) {
         class="item folder"
         title=${node.name}
         onclick=${e => onClickNode(e, node)}
-        oncontextmenu=${e => onContextmenuNode(e, node)}
+        oncontextmenu=${e => onContextmenu(e, node)}
       >
         <i class="fa fa-fw fa-caret-${cls}"></i>
         <span class="name">${node.name}</span>
@@ -303,7 +303,7 @@ function renderFile (node) {
       class="item file"
       title=${node.name}
       onclick=${e => onClickNode(e, node)}
-      oncontextmenu=${e => onContextmenuNode(e, node)}
+      oncontextmenu=${e => onContextmenu(e, node)}
     >
       ${getIcon(node.name)}
       <span class="name">${node.name}</span>
@@ -412,48 +412,88 @@ async function onClickNew (e, node, type) {
   closeAllToggleables()
 }
 
-function onContextmenuNode (e, node) {
+function onContextmenu (e, node) {
   e.preventDefault()
   e.stopPropagation()
 
+  const isSite = !node
+  node = node || archiveFsRoot
+  const nodeType = isSite ? 'site' : node.type
+
   var items = []
+  items = items.concat([
+    {
+      icon: 'fas fa-external-link-alt',
+      label: `Open ${nodeType}`,
+      click () {
+        window.open(node.url)
+      }
+    },
+    {
+      icon: 'fas fa-link',
+      label: `Copy URL`,
+      click () {
+        writeToClipboard(node.url)
+      }
+    }
+  ])
 
   if (node.isEditable) {
-    items = items.concat([
-      {
-        icon: 'fa fa-i-cursor',
-        label: 'Rename',
-        click: async () => {
-          let newName = await contextInput.create({
-            x: e.clientX,
-            y: e.clientY,
-            label: 'Name',
-            value: node.name,
-            action: 'Rename',
-            postRender () {
-              const i = node.name.lastIndexOf('.')
-              if (i !== 0 && i !== -1) {
-                // select up to the file-extension
-                const input = document.querySelector('.context-input input')
-                input.setSelectionRange(0, node.name.lastIndexOf('.'))
+    if (node.isContainer) {
+      items = items.concat([
+        {
+          icon: 'fas fa-file',
+          label: 'New file',
+          click () {
+            emit('editor-new-file', {path: node._path})
+          }
+        },
+        {
+          icon: 'fas fa-folder',
+          label: 'New folder',
+          click () {
+            emit('editor-new-folder', {path: node._path})
+          }
+        }
+      ])
+    }
+    if (!isSite) {
+      items = items.concat([
+        {
+          icon: 'fa fa-i-cursor',
+          label: 'Rename',
+          click: async () => {
+            let newName = await contextInput.create({
+              x: e.clientX,
+              y: e.clientY,
+              label: 'Name',
+              value: node.name,
+              action: 'Rename',
+              postRender () {
+                const i = node.name.lastIndexOf('.')
+                if (i !== 0 && i !== -1) {
+                  // select up to the file-extension
+                  const input = document.querySelector('.context-input input')
+                  input.setSelectionRange(0, node.name.lastIndexOf('.'))
+                }
               }
+            })
+            if (newName) {
+              emitRenameFile(node._path, newName)
             }
-          })
-          if (newName) {
-            emitRenameFile(node._path, newName)
+          }
+        },
+        {
+          icon: 'fa fa-trash',
+          label: 'Delete',
+          click: () => {
+            if (confirm(`Are you sure you want to delete ${node.name}?`)) {
+              emitDeleteFile(node._path, node.isContainer)
+            }
           }
         }
-      },
-      {
-        icon: 'fa fa-trash',
-        label: 'Delete',
-        click: () => {
-          if (confirm(`Are you sure you want to delete ${node.name}?`)) {
-            emitDeleteFile(node._path, node.isContainer)
-          }
-        }
-      }
-    ])
+      ])
+    }
   }
 
   contextMenu.create({
