@@ -13,7 +13,7 @@ export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd, workingC
   const previewMode = archiveInfo.userSettings.previewMode
   return yo`
     <div class="editor-general-help">
-      ${workingCheckoutVersion !== 'latest'
+      ${!previewMode && workingCheckoutVersion !== 'latest'
         ? yo`
           <h3 class="viewing">
             Viewing <strong>${versionLabel}</strong>
@@ -66,7 +66,9 @@ export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd, workingC
             <div>Want to make a copy? <a class="link" onclick=${e => emit('editor-fork')}>Duplicate it</a>.</div>
             ${isEditable
               ? [
-                yo`<div>Want to preview changes? <a class="link" onclick=${doClick('.options-dropdown-btn')}>Enable preview mode</a>.</div>`,
+                previewMode
+                  ? yo`<div>Want to preview changes? <strong><span class="fas fa-check"></span> Preview mode enabled</strong>.</div>`
+                  : yo`<div>Want to preview changes? <a class="link" onclick=${doClick('.options-dropdown-btn')}>Enable preview mode</a>.</div>`,
                 yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-move-to-trash')}>Move to trash</a>.</div>`
               ] : ''}
           </div>

@@ -12,7 +12,7 @@ import * as toast from '../com/toast'
 import {closeAllToggleables}  from '../com/toggleable2'
 import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
 
-const DEFAULT_SIDEBAR_WIDTH = 200
+const DEFAULT_SIDEBAR_WIDTH = 160
 const MIN_SIDEBAR_WIDTH = 100
 
 var archive
@@ -160,10 +160,6 @@ async function setup () {
   // show the general help view
   update()
   showGeneralHelp()
-
-  // resize the sidebar to match the title
-  var titleBtnWidth = document.querySelector('.editor-sidebar .site-info').clientWidth
-  setSidebarWidth(Math.max(Math.min(titleBtnWidth + 20, 250), 150))
 
   // trigger the site-info dropdown
   if (location.hash === '#setup') {

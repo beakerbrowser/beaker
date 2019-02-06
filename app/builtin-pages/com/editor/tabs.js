@@ -14,6 +14,7 @@ export function render ({archive, models, openLinkVersion, archiveInfo, isReadon
   return yo`
     <div class="editor-tabs">
       ${models.map(model => renderTab(model))}
+      ${models.length === 0 ? yo`<div class="tab active">Welcome</div>  ` : ''}
       <div class="unused-space" ondragover=${(e) => onTabDragOver(e)} ondrop=${(e) => onTabDragDrop(e, null)}></div>
       <div class="ctrls">
         ${isOwner
