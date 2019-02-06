@@ -181,49 +181,6 @@ function renderReviewChanges () {
     </div>`
 }
 
-function renderContainerCtrls (node) {
-  return yo`
-    <span class="container-ctrls">
-      ${toggleable2({
-        id: 'file-tree-new-node',
-        closed: ({onToggle}) => yo`
-          <div class="dropdown new-node toggleable-container">
-            <button class="nofocus" onclick=${onToggle}>
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>`,
-        open: ({onToggle}) => yo`
-          <div class="dropdown new-node toggleable-container">
-            <button class="nofocus" onclick=${onToggle}>
-              <i class="fas fa-plus"></i>
-            </button>
-    
-            <div class="dropdown-items center with-triangle subtle-shadow">
-              <div class="dropdown-item no-border no-hover">
-                <div class="label">
-                  New file or folder
-                </div>
-            
-                <p><input type="text" placeholder="Enter the full path" /></p>
-
-                <p>
-                  <a target="_blank" class="btn primary" onclick=${e => onClickNew(e, node, 'file')}>
-                    <i class="fas fa-file"></i> Create file
-                  </a>
-                  <a target="_blank" class="btn primary" onclick=${e => onClickNew(e, node, 'folder')}>
-                  <i class="fas fa-folder"></i> Create folder
-                  </a>
-                </p>
-              </div>
-            </div>
-          </div>`,
-        afterOpen (el) {
-          el.querySelector('input').focus()
-        }
-      })}
-    </span>`
-}
-
 function renderChildren (node) {
   // render actual children
   var els = node.children.map(renderNode)
@@ -300,7 +257,7 @@ function renderDirectory (node) {
 function renderFile (node) {
   return yo`
     <div
-      class="item file"
+      class="item file ${isNodeSelected(node) ? 'selected' : ''}"
       title=${node.name}
       onclick=${e => onClickNode(e, node)}
       oncontextmenu=${e => onContextmenu(e, node)}
@@ -325,6 +282,12 @@ function renderDeletedNode (filediff) {
       <div class="revision-indicator del"></div>
     </div>
   `
+}
+
+function isNodeSelected (node) {
+  const active = models.getActive()
+  const activePath = active ? active.uri.path : false
+  return node._path === activePath
 }
 
 function getIcon (name) {
