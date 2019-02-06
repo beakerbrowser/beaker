@@ -9,6 +9,6 @@ require(['vs/editor/editor.main'], function() {
     model: null
   }
   window.editor = monaco.editor.create(document.getElementById('editor'), commonOpts)
-  window.diffEditor = monaco.editor.createDiffEditor(document.getElementById('diffEditor'), commonOpts)
+  window.diffEditor = monaco.editor.createDiffEditor(document.getElementById('diffEditor'), Object.assign({}, commonOpts, {readOnly: true}))
   window.dispatchEvent(new Event('editor-created'))
 })
