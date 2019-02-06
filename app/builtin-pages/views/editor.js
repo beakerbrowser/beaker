@@ -160,12 +160,6 @@ async function setup () {
   // show the general help view
   update()
   showGeneralHelp()
-
-  // trigger the site-info dropdown
-  if (location.hash === '#setup') {
-    document.body.querySelector('.site-info-btn').click()
-    history.replaceState('', document.title, location.pathname) // remove #setup in case the user reloads
-  }
 }
 
 async function showGeneralHelp () {
@@ -174,7 +168,10 @@ async function showGeneralHelp () {
     currentDiff,
     readmeMd: await loadReadme(),
     workingCheckoutVersion,
-    isReadonly
+    isReadonly,
+    hasTitle: !!archive.info.title,
+    hasFavicon: !!(findArchiveNode('/favicon.ico') || findArchiveNode('/favicon.png')),
+    hasIndexFile: !!(findArchiveNode('/index.html') || findArchiveNode('/index.md'))
   })
 }
 
@@ -308,6 +305,9 @@ function update () {
     })
   )
   updateToolbar()
+  // if (models.getActive() === null) {
+  //   showGeneralHelp()
+  // }
 }
 
 function updateToolbar () {
@@ -386,6 +386,11 @@ async function onSetFavicon (e) {
   } else {
     await workingCheckout.unlink('/favicon.ico').catch(e => null)
     await beaker.sitedata.set(archive.url, 'favicon', '') // clear cache
+  }
+  if (!models.getActive()) {
+    // update general help view if it's active
+    await loadFileTree()
+    showGeneralHelp()
   }
   closeAllToggleables()
 }

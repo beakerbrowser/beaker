@@ -6,7 +6,17 @@ import createMd from '../../../lib/fg/markdown'
 // exported api
 // =
 
-export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd, workingCheckoutVersion, isReadonly}) {
+export function renderGeneralHelp (opts) {
+  const {
+    archiveInfo,
+    currentDiff,
+    readmeMd,
+    workingCheckoutVersion,
+    isReadonly,
+    hasTitle,
+    hasFavicon,
+    hasIndexFile
+  } = opts
   const isOwner = archiveInfo.isOwner
   const isEditable = !isReadonly
   const versionLabel = (Number.isNaN(+workingCheckoutVersion)) ? workingCheckoutVersion : `v${workingCheckoutVersion}`
@@ -34,6 +44,15 @@ export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd, workingC
               <div class="quick-link">
                 <h3>Get started</h3>
                 <div>
+                  <i class="fas fa-${hasTitle ? 'check' : 'arrow-right'}"></i>
+                  Set the site's <a class="link" onclick=${doClick('.site-info-btn')}>title and description</a>.
+                </div>
+                <div>
+                  <i class="fas fa-${hasFavicon ? 'check' : 'arrow-right'}"></i>
+                  Choose a <a class="link" onclick=${doClick('.favicon-picker-btn')}>favicon</a>.
+                </div>
+                <div>
+                  <i class="fas fa-${hasIndexFile ? 'check' : 'arrow-right'}"></i>
                   Create an
                   <a class="link" onclick=${e => onCreateFile(e, 'index.html')}>index.html</a>
                   or
@@ -41,26 +60,26 @@ export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd, workingC
                 </div>
               </div>`
             : ''}
-            ${isEditable
-              ? yo`
-                <div class="quick-link">
-                  <h3>Actions</h3>
-                  <div><a class="link" onclick=${e => emit('editor-new-folder', {path: '/'})}>New folder</a></div>
-                  <div><a class="link" onclick=${e => emit('editor-new-file', {path: '/'})}>New file</a></div>
-                  ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-                    ? yo`<div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import...</a></div>`
-                    : [
-                      yo`<div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import files...</a></div>`,
-                      yo`<div><a class="link" onclick=${e => emit('editor-import-folder', {path: '/'})}>Import folder...</a></div>`
-                    ]}
-                </div>`
-              : ''}
           <div class="quick-link">
             <h3>Find help</h3>
             <div>Read the <a class="link" href="https://beakerbrowser.com/docs" target="_blank">Beaker documentation</a>.</div>
           </div>
         </div>
         <div class="col">
+          ${isEditable
+            ? yo`
+              <div class="quick-link">
+                <h3>Actions</h3>
+                <div><a class="link" onclick=${e => emit('editor-new-folder', {path: '/'})}>New folder</a></div>
+                <div><a class="link" onclick=${e => emit('editor-new-file', {path: '/'})}>New file</a></div>
+                ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
+                  ? yo`<div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import...</a></div>`
+                  : [
+                    yo`<div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import files...</a></div>`,
+                    yo`<div><a class="link" onclick=${e => emit('editor-import-folder', {path: '/'})}>Import folder...</a></div>`
+                  ]}
+              </div>`
+            : ''}
           <div class="quick-link">
             <h3>Manage the site</h3>
             <div>Want to make a copy? <a class="link" onclick=${e => emit('editor-fork')}>Duplicate it</a>.</div>
@@ -72,14 +91,6 @@ export function renderGeneralHelp ({archiveInfo, currentDiff, readmeMd, workingC
                 yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-move-to-trash')}>Move to trash</a>.</div>`
               ] : ''}
           </div>
-          ${isEditable
-            ? yo`
-              <div class="quick-link">
-                <h3>Metadata</h3>
-                <div>Want to change the title or description? <a class="link" onclick=${doClick('.site-info-btn')}>Edit details</a>.</div>
-                <div>Want to change the favicon? <a class="link" onclick=${doClick('.favicon-picker-btn')}>Edit icon</a>.</div>
-              </div>`
-            : ''}
         </div>
       </div>
       ${renderReadme(archiveInfo, readmeMd)}
