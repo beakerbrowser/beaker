@@ -585,6 +585,13 @@ async function onDiffActiveModel (e) {
 }
 
 async function onSaveActiveModel () {
+  var previewMode = _get(archive, 'info.userSettings.previewMode')
+  if (previewMode && workingCheckoutVersion === 'latest') {
+    if (!confirm('You are about to save directly to the published version instead of the preview. Continue?')) {
+      return
+    }
+  }
+
   await op('Saving...', async () => {
     let model = models.getActive()
     let fileContent = model.getValue()
