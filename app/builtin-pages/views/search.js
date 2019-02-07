@@ -210,14 +210,15 @@ function update () {
       <div class="builtin-main">
         ${renderBreadCrumbs(query)}
 
+        <div class="search-header">
+          ${renderSearchControl()}
+        </div>
+      
         ${sourceInfo
           ? [
             renderSourceBanner({sourceInfo, currentUserSession, onEditProfile, onToggleFollowSource}),
             renderSourceSubnav({sourceView, onChangeSourceView})
-          ] : yo`
-            <div class="search-header">
-              ${renderSearchControl()}
-            </div>`
+          ] : ''
         }
 
         <div class="search-body">
