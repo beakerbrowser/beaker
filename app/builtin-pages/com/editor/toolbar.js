@@ -5,9 +5,10 @@ import * as contextInput from '../context-input'
 // =
 
 export function render (file, model, opts) {
-  if (!file || !model) {
+  if (!model) {
     return yo`<div class="editor-toolbar"></div>`
   }
+  var change = file && file.change
   return yo`
     <div class="editor-toolbar">
       <span class="btn transparent ${model.isDirty? '' : 'disabled'}"  onclick=${e => onClickSaveFile(e, model)}><i class="fas fa-save"></i> save</span>
@@ -17,30 +18,30 @@ export function render (file, model, opts) {
       <span class="divider"></span>
       ${opts.previewMode
         ? [
-          file.change
+          change
             ? yo`
               <span class="btn transparent disabled">
-                <span class="revision-indicator ${file.change}"></span>
+                <span class="revision-indicator ${change}"></span>
               </span>`
             : '',
           yo`
             <span
-              class="btn transparent ${file.change ? '' : 'disabled'}"
-              onclick=${file.change ? e => onClickCommitFileChanges(e, model) : undefined}
+              class="btn transparent ${change ? '' : 'disabled'}"
+              onclick=${change ? e => onClickCommitFileChanges(e, model) : undefined}
             >
               <i class="fas fa-check"></i> commit
             </span>`,
           yo`
             <span
-              class="btn transparent ${file.change === 'mod' && model.isEditable ? '' : 'disabled'} ${model.isDiffing ? 'pressed' : ''}"
-              onclick=${file.change && model.isEditable ? e => onClickReviewFileChanges(e, model) : undefined}
+              class="btn transparent ${change === 'mod' && model.isEditable ? '' : 'disabled'} ${model.isDiffing ? 'pressed' : ''}"
+              onclick=${change && model.isEditable ? e => onClickReviewFileChanges(e, model) : undefined}
             >
               <i class="fas fa-columns"></i> diff
             </span>`,
           yo`
             <span
-              class="btn transparent ${file.change ? '' : 'disabled'}"
-              onclick=${file.change ? e => onClickRevertFileChanges(e, model) : undefined}
+              class="btn transparent ${change ? '' : 'disabled'}"
+              onclick=${change ? e => onClickRevertFileChanges(e, model) : undefined}
             >
               <i class="fa fa-undo"></i> revert
             </span>`,

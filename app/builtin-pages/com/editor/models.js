@@ -8,9 +8,33 @@ import {renderGeneralHelp} from './general-help'
 var models = []
 var modelHistory = []
 var active
+var numUntitled = 0
 
 // exported api
 // =
+
+export function createModel (content, url) {
+  var model = monaco.editor.createModel(content, null, url ? monaco.Uri.parse(url) : undefined)
+  model.name = ''
+  model.isEditable = true
+  model.lang = ''
+  model.lastSavedVersionId = model.getAlternativeVersionId()
+  Object.defineProperty(model, 'isActive', {get: () => active === model})
+  Object.defineProperty(model, 'isDiffing', {get: () => active === model && isShowingDiff()})
+  Object.defineProperty(model, 'isDirty', {get: () => model.getAlternativeVersionId() !== model.lastSavedVersionId})
+  model.onDidChangeContent(e => onDidChange(model))
+  models.push(model)
+  return model
+}
+
+export function createNewModel () {
+  let model = createModel()
+  model.name = `Untitled-${++numUntitled}`
+  model.isEditable = true
+  model.lang = ''
+  model.isNewModel = true
+  return model
+}
 
 export async function load (file) {
   try {
@@ -21,17 +45,11 @@ export async function load (file) {
     }
 
     // setup the model
-    let model = monaco.editor.createModel(file.preview, null, monaco.Uri.parse(file.url))
+    let model = createModel(file.preview, file.url)
     model.name = file.name
     model.isEditable = isEditable
-    model.lastSavedVersionId = model.getAlternativeVersionId()
-    Object.defineProperty(model, 'isActive', {get: () => active === model})
-    Object.defineProperty(model, 'isDiffing', {get: () => active === model && isShowingDiff()})
-    Object.defineProperty(model, 'isDirty', {get: () => model.getAlternativeVersionId() !== model.lastSavedVersionId})
     model.lang = model.getModeId()
-    model.onDidChangeContent(e => onDidChange(model))
-
-    models.push(model)
+    model.isNewModel = false
   } catch (e) {
     console.error(e)
     throw e
@@ -180,9 +198,14 @@ export function reorderModels (from, to) {
   models.splice(toIndex, 0, models.splice(fromIndex, 1)[0])
 }
 
-export function findModel (file) {
-  var path = file._path || file.uri.path // file-node or model
-  return models.find(model => model.uri.path === path)
+export function findModel (fileOrNode) {
+  var path = fileOrNode._path || fileOrNode.uri.path
+  if (path) {
+    return models.find(model => model.uri.path === path)
+  }
+  if (fileOrNode.id) {
+    return models.find(model => model.id === fileOrNode.id)
+  }
 }
 
 export function getActive () {

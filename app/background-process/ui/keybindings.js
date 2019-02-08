@@ -59,8 +59,16 @@ function convertAcceleratorToBinding (accel) {
 }
 
 // event handler, manually run any events that match our keybindings
-export function createBeforeInputEventHandler (win) {
+export function createBeforeInputEventHandler (win, wc) {
   return (e, input) => {
+    // HACK
+    // the editor shouldn't be pre-empted
+    // we want the hotkeys like cmd+w to affect the open buffers
+    // -prf
+    if (wc.getURL().startsWith('beaker://editor/')) {
+      return
+    }
+
     if (input.type !== 'keyDown') return
     var key = input.key
     if (key === 'Dead') key = 'i' // not... really sure what 'Dead' is about -prf

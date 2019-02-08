@@ -54,7 +54,7 @@ export async function setup () {
     if (wc.hostWebContents) {
       // attach keybinding protections
       const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
-      wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
+      wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow, wc))
 
       // HACK
       // add link-click handling to page devtools

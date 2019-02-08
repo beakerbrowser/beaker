@@ -4,6 +4,7 @@ import yo from 'yo-yo'
 import {FSArchive} from 'beaker-virtual-fs'
 import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
+import * as hotkeys from '../com/editor/hotkeys'
 import * as sidebar from '../com/editor/sidebar'
 import * as tabs from '../com/editor/tabs'
 import * as toolbar from '../com/editor/toolbar'
@@ -25,7 +26,6 @@ var isReadonly
 var sidebarWidth
 var isDraggingSidebar = false
 
-// which should we use in keybindings?
 var OS_USES_META_KEY = false
 
 // HACK
@@ -74,23 +74,28 @@ async function setup () {
   // load data
   let url = await parseLibraryUrl()
   let browserInfo = beaker.browser.getInfo()
-  window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
   OS_USES_META_KEY = browserInfo.platform === 'darwin'
+  window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
+  hotkeys.configure({OS_USES_META_KEY})
 
   // bind events
   window.addEventListener('beforeunload', onBeforeUnload)
-  window.addEventListener('keydown', onGlobalKeydown)
+  window.addEventListener('keydown', hotkeys.onGlobalKeydown)
   document.addEventListener('editor-rerender', update)
   document.addEventListener('editor-model-dirtied', update)
   document.addEventListener('editor-model-cleaned', update)
   document.addEventListener('editor-set-active', onSetActive)
   document.addEventListener('editor-show-general-help', onShowGeneralHelp)
   document.addEventListener('editor-save-active-model', onSaveActiveModel)
+  document.addEventListener('editor-new-model', onNewModel)
+  document.addEventListener('editor-unload-active-model', onUnloadActiveModel)
   document.addEventListener('editor-unload-model', onUnloadModel)
   document.addEventListener('editor-unload-all-models-except', onUnloadAllModelsExcept)
   document.addEventListener('editor-unload-all-models', onUnloadAllModels)
   document.addEventListener('editor-reorder-models', onReorderModels)
   document.addEventListener('editor-all-models-closed', onAllModelsClosed)
+  document.addEventListener('editor-cycle-tabs', onCycleTabs)
+  document.addEventListener('editor-show-tab', onShowTab)
   document.addEventListener('editor-import-files', onImportFiles)
   document.addEventListener('editor-import-folder', onImportFolder)
   document.addEventListener('editor-new-folder', onNewFolder)
@@ -175,7 +180,8 @@ async function showGeneralHelp () {
     isReadonly,
     hasTitle: !!archive.info.title,
     hasFavicon: !!(findArchiveNode('/favicon.ico') || findArchiveNode('/favicon.png')),
-    hasIndexFile: !!(findArchiveNode('/index.html') || findArchiveNode('/index.md'))
+    hasIndexFile: !!(findArchiveNode('/index.html') || findArchiveNode('/index.md')),
+    OS_USES_META_KEY
   })
 }
 
@@ -271,6 +277,18 @@ function findArchiveNode (path) {
   return node
 }
 
+async function findArchiveNodeAsync (path) {
+  var node = archiveFsRoot
+  var pathParts = path.split(/[\\\/]/g)
+  for (let filename of pathParts) {
+    if (filename.length === 0) continue // first item in array might be empty
+    if (!node.isContainer) return null // node not found (we ran into a file prematurely)
+    await node.readData() // load latest filetree
+    node = node._files.find(n => n.name === filename) // move to next child in the tree
+  }
+  return node
+}
+
 async function loadReadme () {
   const readmeMdNode = archiveFsRoot.children.find(n => (n._name || '').toLowerCase() === 'readme.md')
   return readmeMdNode ? await workingCheckout.readFile(readmeMdNode._path, 'utf8') : ''
@@ -356,16 +374,6 @@ function onBeforeUnload (e) {
   }
 }
 
-function onGlobalKeydown (e) {
-  var ctrlOrMeta = OS_USES_META_KEY ? e.metaKey : e.ctrlKey
-  // cmd/ctrl + s
-  if (ctrlOrMeta && e.keyCode == 83) {
-    e.preventDefault()
-    e.stopPropagation()
-    onSaveActiveModel()
-  }
-}
-
 async function onFilesChanged () {
   // update data
   await loadFileTree()
@@ -445,6 +453,14 @@ function onShowGeneralHelp (e) {
   showGeneralHelp()
 }
 
+function onNewModel (e) {
+  models.setActive(models.createNewModel())
+}
+
+function onUnloadActiveModel (e) {
+  models.unload(models.getActive())
+}
+
 function onUnloadModel (e) {
   models.unload(e.detail.model)
 }
@@ -463,6 +479,29 @@ function onReorderModels (e) {
 
 function onAllModelsClosed (e) {
   showGeneralHelp()
+}
+
+function onCycleTabs (e) {
+  var allModels = models.getModels()
+  var active = models.getActive()
+  var index = active ? allModels.indexOf(active) : -1
+  index = e.detail && e.detail.reverse ? index - 1 : index + 1
+  if (index < -1) {
+    models.setActive(allModels[allModels.length - 1])
+  } else if (index >= allModels.length) {
+    showGeneralHelp()
+  } else {
+    models.setActive(allModels[index])
+  }
+}
+
+function onShowTab (e) {
+  if (e.detail.tab === 1) {
+    showGeneralHelp()
+  } else {
+    var model = models.getModels()[e.detail.tab - 2]
+    if (model) models.setActive(model)
+  }
 }
 
 async function onCreateFile (e) {
@@ -484,7 +523,7 @@ async function onCreateFile (e) {
 
     // open the new file
     await loadFileTree()
-    models.setActive(findArchiveNode(path))
+    models.setActive(await findArchiveNodeAsync(path))
   })
 }
 
@@ -650,17 +689,31 @@ async function onDiffActiveModel (e) {
 async function onSaveActiveModel () {
   if (!confirmChangeOnLatest()) return
 
-  await op('Saving...', async () => {
-    let model = models.getActive()
-    let fileContent = model.getValue()
-    let filePath = model.uri.path
-    if (!filePath.startsWith('/')) {
-      filePath = '/' + filePath
-    }
+  var model = models.getActive()
+  if (!model) return
 
+  // get the path
+  var path = model.uri.path
+  if (model.isNewModel) {
+    path = prompt('Enter the path for this file')
+    if (!path) return
+  }
+  if (!path.startsWith('/')) {
+    path = '/' + path
+  }
+
+  await op('Saving...', async () => {
+    // write the file
     models.setVersionIdOnSave(model)
-    await workingCheckout.writeFile(filePath, fileContent, 'utf8')
+    await workingCheckout.writeFile(path, model.getValue(), 'utf8')
   })
+  
+  // if it's a new file, close this buffer and reopen the new one
+  if (model.isNewModel) {
+    await loadFileTree()
+    models.unload(model)
+    models.setActive(await findArchiveNodeAsync(path))
+  }
 }
 
 async function onTogglePreviewMode () {

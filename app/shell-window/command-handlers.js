@@ -8,6 +8,17 @@ import permsPrompt from './ui/prompts/permission'
 export function setup () {
   ipcRenderer.on('command', function (event, type, arg1, arg2, arg3, arg4) {
     var page = pages.getActive()
+
+    // HACK
+    // the editor is going to take control over tab navigation hotkeys
+    // -prf
+    const isViewingEditor = page && page.getURL().startsWith('beaker://editor/')
+    if (isViewingEditor) {
+      if (type === 'window:next-tab' || type === 'window:prev-tab' || type === 'window:last-tab' || type === 'set-tab') {
+        return
+      }
+    }
+
     switch (type) {
       case 'initialize': return pages.initializeFromSnapshot(arg1)
       case 'file:new-tab':

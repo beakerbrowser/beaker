@@ -15,7 +15,8 @@ export function renderGeneralHelp (opts) {
     isReadonly,
     hasTitle,
     hasFavicon,
-    hasIndexFile
+    hasIndexFile,
+    OS_USES_META_KEY
   } = opts
   const isOwner = archiveInfo.isOwner
   const isSaved = archiveInfo.userSettings.isSaved
@@ -107,6 +108,7 @@ export function renderGeneralHelp (opts) {
         </div>
       </div>
       ${renderReadme(archiveInfo, readmeMd)}
+      ${renderHotkeyHelp({OS_USES_META_KEY})}
     </div>`
 }
 
@@ -156,6 +158,22 @@ function renderReadme (archiveInfo, readmeMd) {
   var readmeContent = yo`<div class="readme markdown"></div>`
   readmeContent.innerHTML = markdownRenderer.render(readmeMd)
   return readmeContent
+}
+
+function renderHotkeyHelp ({OS_USES_META_KEY}) {
+  const cmd = '⌘'
+  const cmdOrCtrl = OS_USES_META_KEY ? cmd : 'Ctrl'
+  const hotkey = (action, ...keys) => yo`<div><strong>${keys.join(' + ')}</strong> - ${action}</div>`
+  return yo`
+    <div class="hotkeys">
+      <h3>Hotkeys</h3>
+      ${hotkey('New file', cmdOrCtrl, 'N')}
+      ${hotkey('Save the current file', cmdOrCtrl, 'S')}
+      ${hotkey('Close the current file', cmdOrCtrl, 'W')}
+      ${hotkey('Cycle tabs', 'Ctrl', 'Tab')}
+      ${hotkey('Cycle tabs (reverse)', 'Ctrl', 'Shift', 'Tab')}
+      ${hotkey('Select tab N', cmdOrCtrl, 'Number')}
+    </div>`
 }
 
 // event handlers
