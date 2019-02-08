@@ -311,10 +311,9 @@ async function onClickNode (e, node) {
   e.stopPropagation()
 
   if (node.isContainer) {
-    node.isExpanded = !node.isExpanded
-    await node.readData({ignoreCache: true})
+    emit('editor-toggle-container-expanded', {path: node._path})
   } else {
-    models.setActive(node)
+    emit('editor-set-active', {path: node._path})
   }
 
   rerender()

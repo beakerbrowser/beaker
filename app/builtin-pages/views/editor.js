@@ -81,45 +81,48 @@ async function setup () {
   // bind events
   window.addEventListener('beforeunload', onBeforeUnload)
   window.addEventListener('keydown', hotkeys.onGlobalKeydown)
-  document.addEventListener('editor-rerender', update)
-  document.addEventListener('editor-model-dirtied', update)
-  document.addEventListener('editor-model-cleaned', update)
-  document.addEventListener('editor-set-active', onSetActive)
-  document.addEventListener('editor-set-active-deleted-filediff', onSetActiveDeletedFilediff)
-  document.addEventListener('editor-show-general-help', onShowGeneralHelp)
-  document.addEventListener('editor-save-active-model', onSaveActiveModel)
-  document.addEventListener('editor-new-model', onNewModel)
-  document.addEventListener('editor-unload-active-model', onUnloadActiveModel)
-  document.addEventListener('editor-unload-model', onUnloadModel)
-  document.addEventListener('editor-unload-all-models-except', onUnloadAllModelsExcept)
-  document.addEventListener('editor-unload-all-models', onUnloadAllModels)
-  document.addEventListener('editor-reorder-models', onReorderModels)
-  document.addEventListener('editor-all-models-closed', onAllModelsClosed)
-  document.addEventListener('editor-cycle-tabs', onCycleTabs)
-  document.addEventListener('editor-show-tab', onShowTab)
-  document.addEventListener('editor-import-files', onImportFiles)
-  document.addEventListener('editor-import-folder', onImportFolder)
-  document.addEventListener('editor-new-folder', onNewFolder)
-  document.addEventListener('editor-create-folder', onCreateFolder)
-  document.addEventListener('editor-new-file', onNewFile)
-  document.addEventListener('editor-create-file', onCreateFile)
-  document.addEventListener('editor-rename-file', onRenameFile)
-  document.addEventListener('editor-delete-file', onDeleteFile)
-  document.addEventListener('editor-open-file', onOpenFile)
-  document.addEventListener('editor-commit-file', onCommitFile)
-  document.addEventListener('editor-revert-file', onRevertFile)
-  document.addEventListener('editor-commit-all', onCommitAll)
-  document.addEventListener('editor-revert-all', onRevertAll)
-  document.addEventListener('editor-diff-active-model', onDiffActiveModel)
-  document.addEventListener('editor-toggle-preview-mode', onTogglePreviewMode)
-  document.addEventListener('editor-change-sync-path', onChangeSyncPath)
-  document.addEventListener('editor-remove-sync-path', onRemoveSyncPath)
-  document.addEventListener('editor-set-favicon', onSetFavicon)
-  document.addEventListener('editor-set-site-info', onSetSiteInfo)
-  document.addEventListener('editor-fork', onFork)
-  document.addEventListener('editor-archive-save', onArchiveSave)
-  document.addEventListener('editor-archive-unsave', onArchiveUnsave)
-  document.addEventListener('editor-archive-delete-permanently', onArchiveDeletePermanently)
+
+  const on = (evt, fn) => document.addEventListener(evt, fn)
+  on('editor-rerender', update)
+  on('editor-model-dirtied', update)
+  on('editor-model-cleaned', update)
+  on('editor-set-active', onSetActive)
+  on('editor-set-active-deleted-filediff', onSetActiveDeletedFilediff)
+  on('editor-toggle-container-expanded', onToggleContainerExpanded)
+  on('editor-show-general-help', onShowGeneralHelp)
+  on('editor-save-active-model', onSaveActiveModel)
+  on('editor-new-model', onNewModel)
+  on('editor-unload-active-model', onUnloadActiveModel)
+  on('editor-unload-model', onUnloadModel)
+  on('editor-unload-all-models-except', onUnloadAllModelsExcept)
+  on('editor-unload-all-models', onUnloadAllModels)
+  on('editor-reorder-models', onReorderModels)
+  on('editor-all-models-closed', onAllModelsClosed)
+  on('editor-cycle-tabs', onCycleTabs)
+  on('editor-show-tab', onShowTab)
+  on('editor-import-files', onImportFiles)
+  on('editor-import-folder', onImportFolder)
+  on('editor-new-folder', onNewFolder)
+  on('editor-create-folder', onCreateFolder)
+  on('editor-new-file', onNewFile)
+  on('editor-create-file', onCreateFile)
+  on('editor-rename-file', onRenameFile)
+  on('editor-delete-file', onDeleteFile)
+  on('editor-open-file', onOpenFile)
+  on('editor-commit-file', onCommitFile)
+  on('editor-revert-file', onRevertFile)
+  on('editor-commit-all', onCommitAll)
+  on('editor-revert-all', onRevertAll)
+  on('editor-diff-active-model', onDiffActiveModel)
+  on('editor-toggle-preview-mode', onTogglePreviewMode)
+  on('editor-change-sync-path', onChangeSyncPath)
+  on('editor-remove-sync-path', onRemoveSyncPath)
+  on('editor-set-favicon', onSetFavicon)
+  on('editor-set-site-info', onSetSiteInfo)
+  on('editor-fork', onFork)
+  on('editor-archive-save', onArchiveSave)
+  on('editor-archive-unsave', onArchiveUnsave)
+  on('editor-archive-delete-permanently', onArchiveDeletePermanently)
 
   // setup the sidebar resizer
   setSidebarWidth(DEFAULT_SIDEBAR_WIDTH)
@@ -456,6 +459,22 @@ async function onSetActive (e) {
 
 function onSetActiveDeletedFilediff (e) {
   models.setActiveDeletedFilediff(e.detail.filediff)
+}
+
+async function onToggleContainerExpanded (e) {
+  var node = findArchiveNode(e.detail.path)
+  node.isExpanded = !node.isExpanded
+  if (node.isExpanded) {
+    await node.readData({ignoreCache: true})
+
+    // pass on diff state
+    if (node.change === 'add') {
+      for (let c of node.children) {
+        c.change = 'add'
+      }
+    }
+  }
+  sidebar.rerender()
 }
 
 function onShowGeneralHelp (e) {
