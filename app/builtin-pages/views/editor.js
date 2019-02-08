@@ -145,6 +145,7 @@ async function setup () {
     await loadFileTree()
     await sidebar.setArchiveFsRoot(archiveFsRoot)
     sidebar.configure({
+      workingDatJson: await readWorkingDatJson(),
       isReadonly,
       version: workingCheckoutVersion,
       previewMode: _get(archive, 'info.userSettings.previewMode')
@@ -355,6 +356,14 @@ function confirmChangeOnLatest () {
     }
   }
   return true
+}
+
+async function readWorkingDatJson () {
+  try {
+    return JSON.parse(await workingCheckout.readFile('/dat.json'))
+  } catch (e) {
+    return {}
+  }
 }
 
 // event handlers

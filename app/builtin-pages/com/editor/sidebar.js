@@ -17,6 +17,7 @@ import {pluralize} from '../../../lib/strings'
 var archiveFsRoot
 var currentDiff
 var config = {
+  workingDatJson: {},
   isReadonly: false,
   version: 'latest',
   previewMode: false
@@ -34,7 +35,7 @@ export function render () {
     <div class="file-tree-container" oncontextmenu=${onContextmenu}>
       <div class="site-info">
         ${renderFavicon()}
-        ${renderSiteinfoDropdown({archiveInfo: archiveFsRoot._archiveInfo})}
+        ${renderSiteinfoDropdown({workingDatJson: config.workingDatJson, archiveInfo: archiveFsRoot._archiveInfo})}
       </div>
       <div class="file-tree-header">
         ${renderVersionPicker()}

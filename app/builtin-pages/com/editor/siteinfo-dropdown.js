@@ -11,15 +11,15 @@ var hasChanges = false
 // exported api
 // =
 
-export function renderSiteinfoDropdown ({archiveInfo}) {
+export function renderSiteinfoDropdown ({workingDatJson, archiveInfo}) {
   if (archiveInfo.isOwner) {
-    return renderSiteinfoDropdownOwner(archiveInfo)
+    return renderSiteinfoDropdownOwner(workingDatJson, archiveInfo)
   }
-  return renderSiteinfoDropdownNonowner(archiveInfo)
+  return renderSiteinfoDropdownNonowner(workingDatJson, archiveInfo)
 }
 
-export function renderSiteinfoDropdownOwner (archiveInfo) {
-  const {title, description} = archiveInfo
+export function renderSiteinfoDropdownOwner (workingDatJson, archiveInfo) {
+  const {title, description} = workingDatJson
   const {isSaved} = archiveInfo.userSettings
   const onChangeMade = e => {
     hasChanges = true
@@ -67,7 +67,7 @@ export function renderSiteinfoDropdownOwner (archiveInfo) {
   })
 }
 
-export function renderSiteinfoDropdownNonowner (archiveInfo) {
+export function renderSiteinfoDropdownNonowner (workingDatJson, archiveInfo) {
   const {title, description} = archiveInfo
   return toggleable2({
     id: 'site-info-editor',
