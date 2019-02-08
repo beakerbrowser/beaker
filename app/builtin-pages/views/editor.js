@@ -276,7 +276,7 @@ function findArchiveNode (path) {
   var pathParts = path.split(/[\\\/]/g)
   for (let filename of pathParts) {
     if (filename.length === 0) continue // first item in array might be empty
-    if (!node.isContainer) return null // node not found (we ran into a file prematurely)
+    if (!node || !node.isContainer) return null // node not found (we ran into a file prematurely)
     node = node._files.find(n => n.name === filename) // move to next child in the tree
   }
   return node
@@ -287,7 +287,7 @@ async function findArchiveNodeAsync (path) {
   var pathParts = path.split(/[\\\/]/g)
   for (let filename of pathParts) {
     if (filename.length === 0) continue // first item in array might be empty
-    if (!node.isContainer) return null // node not found (we ran into a file prematurely)
+    if (!node || !node.isContainer) return null // node not found (we ran into a file prematurely)
     await node.readData() // load latest filetree
     node = node._files.find(n => n.name === filename) // move to next child in the tree
   }
