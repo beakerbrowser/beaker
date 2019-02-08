@@ -72,6 +72,10 @@ export async function reload (file) {
 }
 
 export async function unload (file) {
+  if (file.isDirty && !confirm(`Close ${file.name} without saving changes?`)) {
+    return
+  }
+
   // if unloaded file is currently active
   // set previously active file to currently active
   // otherwise just remove it from the model history
