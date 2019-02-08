@@ -332,9 +332,6 @@ function update () {
     })
   )
   updateToolbar()
-  // if (models.getActive() === null) {
-  //   showGeneralHelp()
-  // }
 }
 
 function updateToolbar () {
@@ -394,6 +391,9 @@ async function onFilesChanged () {
   // rerender
   sidebar.rerender()
   updateToolbar()
+  if (models.getActive() === null) {
+    showGeneralHelp()
+  }
 }
 
 async function onSetFavicon (e) {
