@@ -13,4 +13,8 @@ export class BaseModal extends EventEmitter {
   close (err, res) {
     this.emit('close', err, res)
   }
+
+  postFirstRender () {
+    // override this method
+  }
 }

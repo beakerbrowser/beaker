@@ -43,6 +43,8 @@ export async function createFromBackgroundProcess (reqId, webContentsId, modalId
   var modalInst = new (ModalClass)(opts)
   modalInst.on('close', cb)
   add(page, modalInst)
+
+  modalInst.postFirstRender()
 }
 
 export function add (page, modalInst) {
