@@ -46,7 +46,6 @@ var activePage = null
 var events = new EventEmitter()
 var webviewsDiv
 var closedURLs = []
-var cachedMarkdownRendererScript
 var cachedJSONRendererScript
 
 // exported functions
@@ -871,54 +870,8 @@ function onDidStopLoading (e) {
 
     // determine content type
     let contentType = beaker.browser.getResourceContentType(page.getURL()) || ''
-    let isMD = contentType.startsWith('text/markdown') || contentType.startsWith('text/x-markdown')
     let isJSON = contentType.startsWith('application/json')
     let isPlainText = contentType.startsWith('text/plain')
-
-    // markdown rendering
-    // inject the renderer script if the page is markdown
-    if (isMD || (isPlainText && page.getURL().endsWith('.md'))) {
-      // hide the unformatted text and provide some basic styles
-      page.webviewEl.insertCSS(`
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif; }
-        main { display: flex; }
-        nav { max-width: 200px; padding-right: 2em; }
-        nav .link { white-space: pre; overflow: hidden; text-overflow: ellipsis; margin: 0.5em 0 }
-        main > div { max-width: 800px; }
-        hr { border: 0; border-top: 1px solid #ccc; margin: 1em 0; }
-        blockquote { margin: 0; padding: 0 1em; border-left: 1em solid #eee; }
-        .anchor-link { color: #aaa; margin-left: 5px; text-decoration: none; visibility: hidden; }
-        h1:hover .anchor-link, h2:hover .anchor-link, h3:hover .anchor-link, h4:hover .anchor-link, h5:hover .anchor-link { visibility: visible; }
-        table { border-collapse: collapse; }
-        td, th { padding: 0.5em 1em; }
-        tbody tr:nth-child(odd) { background: #fafafa; }
-        tbody td { border-top: 1px solid #bbb; }
-        main code { font-size: 1.3em; background: #fafafa; }
-        main pre { background: #fafafa; padding: 1em }
-      `)
-      page.webviewEl.insertCSS(`
-        .markdown { font-size: 14px; width: 100%; max-width: 750px; line-height: 22.5px; }
-        .markdown a { color: #2864dc; text-decoration: none; }
-        .markdown a:hover { text-decoration: underline; }
-        .markdown a.anchor-link { color: #ddd; }
-        .markdown h1, .markdown h2, .markdown  h3 { margin: 15px 0; font-weight: 600; }
-        .markdown h1, .markdown h2 { border-bottom: 1px solid #eee; line-height: 45px; }
-        .markdown h1 { font-size: 30px; }
-        .markdown h2 { font-size: 24px; }
-        .markdown h3 { font-size: 20px; }
-        .markdown ul, .markdown ol { margin-bottom: 15px; }
-        .markdown pre, .markdown code { font-family: Consolas, 'Lucida Console', Monaco, monospace; font-size: 13.5px; background: #f0f0f0; border-radius: 2px; }
-        .markdown pre { padding: 15px; border: 0; overflow-x: auto; }
-        .markdown code { padding: 3px 5px; }
-        .markdown pre > code { display: block; }
-      `)
-      if (!cachedMarkdownRendererScript) {
-        cachedMarkdownRendererScript = ipcRenderer.sendSync('get-markdown-renderer-script')
-      }
-
-      // NOTE uses webviewEl.executeJavaScript because we dont want to run the markdown renderer in an isolated world
-      page.webviewEl.executeJavaScript(cachedMarkdownRendererScript)
-    }
 
     // json rendering
     // inject the json render script

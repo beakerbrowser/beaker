@@ -22,9 +22,9 @@ export function render ({archive, models, openLinkVersion, archiveInfo, isReadon
         ${isOwner
           ? renderOptionsDropdown({archiveInfo})
           : yo`<span>
-            Want to edit this site?
+            Read-only
             <a class="btn" style="margin-left: 5px" onclick=${e => emit('editor-fork')}>
-              <span class="far fa-clone"></span> Make a copy
+              <span class="far fa-clone"></span> Make an editable copy
             </a>
           </span>`}
         <a class="btn primary" href=${archive.checkout(openLinkVersion).url} target="_blank">
