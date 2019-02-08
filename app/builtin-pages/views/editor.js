@@ -359,11 +359,15 @@ function confirmChangeOnLatest () {
 }
 
 async function readWorkingDatJson () {
+  var datJson
   try {
-    return JSON.parse(await workingCheckout.readFile('/dat.json'))
+    datJson = JSON.parse(await workingCheckout.readFile('/dat.json'))
   } catch (e) {
-    return {}
+    datJson = {}
   }
+  datJson.title = datJson.title || ''
+  datJson.description = datJson.description || ''
+  return datJson
 }
 
 // event handlers
