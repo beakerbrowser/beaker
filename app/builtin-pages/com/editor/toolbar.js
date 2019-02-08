@@ -32,7 +32,7 @@ export function render (file, model, opts) {
             </span>`,
           yo`
             <span
-              class="btn transparent ${file.change === 'mod' && model.isEditable ? '' : 'disabled'}"
+              class="btn transparent ${file.change === 'mod' && model.isEditable ? '' : 'disabled'} ${model.isDiffing ? 'pressed' : ''}"
               onclick=${file.change && model.isEditable ? e => onClickReviewFileChanges(e, model) : undefined}
             >
               <i class="fas fa-columns"></i> diff

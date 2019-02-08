@@ -116,6 +116,9 @@ function renderDiff (currentDiff) {
   }
 
   const total = currentDiff.length
+  const onShowDiff = filediff => e => {
+    emit('editor-set-active', {path: filediff.path, showDiff: true})
+  }
   return yo`
     <div class="uncommitted-changes">
       <h3>${total} uncommitted ${pluralize(total, 'change')}</h3>
@@ -126,7 +129,7 @@ function renderDiff (currentDiff) {
       ${currentDiff.map(filediff => yo`
         <div>
           <span class="revision-indicator ${filediff.change}"></span>
-          <a class=${filediff.change} onclick=${e => emit('editor-set-active', {path: filediff.path})}>${filediff.path}</a>
+          <a class=${filediff.change} onclick=${onShowDiff(filediff)}>${filediff.path}</a>
         </div>
       `)}
     </div>`

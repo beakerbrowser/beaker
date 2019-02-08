@@ -430,11 +430,14 @@ async function onArchiveDeletePermanently (e) {
   }
 }
 
-function onSetActive (e) {
+async function onSetActive (e) {
   if (e.detail.path) {
-    models.setActive(findArchiveNode(e.detail.path))
+    await models.setActive(findArchiveNode(e.detail.path))
   } else {
-    models.setActive(e.detail.model)
+    await models.setActive(e.detail.model)
+  }
+  if (e.detail.showDiff) {
+    onDiffActiveModel()
   }
 }
 

@@ -26,6 +26,7 @@ export async function load (file) {
     model.isEditable = isEditable
     model.lastSavedVersionId = model.getAlternativeVersionId()
     Object.defineProperty(model, 'isActive', {get: () => active === model})
+    Object.defineProperty(model, 'isDiffing', {get: () => active === model && isShowingDiff()})
     Object.defineProperty(model, 'isDirty', {get: () => model.getAlternativeVersionId() !== model.lastSavedVersionId})
     model.lang = model.getModeId()
     model.onDidChangeContent(e => onDidChange(model))
