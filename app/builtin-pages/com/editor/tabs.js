@@ -11,6 +11,7 @@ import {writeToClipboard, emit} from '../../../lib/fg/event-handlers'
 export function render ({archive, models, openLinkVersion, archiveInfo, isReadonly}) {
   var isOwner = archive.info.isOwner
   var versionLabel = (Number.isNaN(+openLinkVersion)) ? openLinkVersion : `v${openLinkVersion}`
+  if (versionLabel === 'latest') versionLabel = ''
   var activeModel = models.find(m => m.isActive)
   return yo`
     <div class="editor-tabs">

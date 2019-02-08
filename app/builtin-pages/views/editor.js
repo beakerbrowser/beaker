@@ -85,6 +85,7 @@ async function setup () {
   document.addEventListener('editor-model-dirtied', update)
   document.addEventListener('editor-model-cleaned', update)
   document.addEventListener('editor-set-active', onSetActive)
+  document.addEventListener('editor-set-active-deleted-filediff', onSetActiveDeletedFilediff)
   document.addEventListener('editor-show-general-help', onShowGeneralHelp)
   document.addEventListener('editor-save-active-model', onSaveActiveModel)
   document.addEventListener('editor-new-model', onNewModel)
@@ -155,7 +156,7 @@ async function setup () {
       }
     }
     
-    document.title = `Editor - ${_get(archive, 'info.title', 'Untitled')}`
+    document.title = `Editor - ${_get(archive, 'info.title') || 'Untitled'}`
   } else {
     let untitled = monaco.editor.createModel('')
     untitled.name = 'untitled'
@@ -449,6 +450,10 @@ async function onSetActive (e) {
   }
 }
 
+function onSetActiveDeletedFilediff (e) {
+  models.setActiveDeletedFilediff(e.detail.filediff)
+}
+
 function onShowGeneralHelp (e) {
   showGeneralHelp()
 }
@@ -668,18 +673,23 @@ async function onDiffActiveModel (e) {
       models.setActive(models.getActive())
       return
     }
+    
 
     var active = models.getActive()
     var rightContent = active.getValue()
+
+    var path = active.uri.path
+    var file = findArchiveNode(path)
+    if (!file || file.change !== 'mod') return
 
     // get left hand content
     var leftContent = ''
     if (workingCheckout.url.includes('+')) {
       // left is preview or historic, right should be latest
-      leftContent = await workingCheckout.checkout().readFile(active.uri.path)
+      leftContent = await workingCheckout.checkout().readFile(path)
     } else {
       // left is latest, right should be preview
-      leftContent = await workingCheckout.checkout('preview').readFile(active.uri.path)
+      leftContent = await workingCheckout.checkout('preview').readFile(path)
     }
 
     models.setActiveDiff(leftContent, rightContent)

@@ -119,7 +119,11 @@ function renderDiff (currentDiff) {
 
   const total = currentDiff.length
   const onShowDiff = filediff => e => {
-    emit('editor-set-active', {path: filediff.path, showDiff: true})
+    if (filediff.change === 'del') {
+      emit('editor-set-active-deleted-filediff', {filediff})
+    } else {
+      emit('editor-set-active', {path: filediff.path, showDiff: true})
+    }
   }
   return yo`
     <div class="uncommitted-changes">
