@@ -251,7 +251,11 @@ async function loadFileTree () {
       for (let c of node.children) {
         await reload(c)
       }
-      await node.readData({ignoreCache: true})
+      try {
+        await node.readData({ignoreCache: true})
+      } catch (e) {
+        // ignore
+      }
       node.sort()
     }
   }
