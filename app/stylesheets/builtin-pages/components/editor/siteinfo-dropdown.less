@@ -2,20 +2,35 @@
   .dropdown-items {
     border-color: #aaa;
     width: 360px;
+    padding: 16px 14px;
   }
 
   h1 {
     font-size: 1.2em;
   }
 
+  label {
+    display: block;
+    margin: 0;
+    font-size: 0.7em;
+  }
+
   input {
     width: 100%;
     margin-bottom: 10px;
+    border-color: transparent;
+    transition: border-color 0.1s;
+    background: #eee;
 
     &[name="title"] {
       font-size: 1.2em;
       height: 36px;
       font-weight: 500;
+    }
+  
+    &:focus {
+      border-color: #bbb;
+      box-shadow: none;
     }
   }
 }
