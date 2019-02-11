@@ -8,7 +8,7 @@
   "copyright": "© 2019, Blue Link Labs",
   "main": "background-process.build.js",
   "dependencies": {
-    "@beaker/core": "beakerbrowser/beaker-core#master",
+    "@beaker/core": "beakerbrowser/beaker-core#6d22ec3b93754073be917d5c568486911e51f4d2",
     "@beaker/dat-archive-file-diff": "^1.0.0",
     "@beaker/electron-localshortcut": "^1.0.0",
     "anymatch": "^1.3.2",
