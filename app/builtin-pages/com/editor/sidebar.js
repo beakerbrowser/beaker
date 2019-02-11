@@ -97,7 +97,6 @@ function renderFavicon () {
   })
 }
 
-
 function renderVersionPicker () {
   const currentVersion = config.version
   const includePreview = config.previewMode
@@ -137,7 +136,7 @@ function renderReviewChanges () {
     if (!currentDiff.find(d => d.change === type)) return ''
     return yo`<span class="revision-indicator ${type}"></span>`
   }
-  
+
   const total = currentDiff.length
   return yo`
     <a class="btn transparent nofocus uncommitted-changes" onclick=${e => emit('editor-show-general-help')}>
@@ -382,7 +381,7 @@ async function onContextmenu (e, node) {
             label: 'Import...',
             click () {
               emit('editor-import-files', {path: node._path})
-            }          
+            }
           }
         ])
       } else {
@@ -392,14 +391,14 @@ async function onContextmenu (e, node) {
             label: 'Import files...',
             click () {
               emit('editor-import-files', {path: node._path})
-            }          
+            }
           },
           {
             icon: 'fas fa-upload',
             label: 'Import folder...',
             click () {
               emit('editor-import-folder', {path: node._path})
-            }          
+            }
           }
         ])
       }

@@ -159,7 +159,7 @@ async function setup () {
         fileActStream.addEventListener('changed', onFilesChanged)
       }
     }
-    
+
     document.title = `Editor - ${_get(archive, 'info.title') || 'Untitled'}`
   } else {
     let untitled = monaco.editor.createModel('')
@@ -709,7 +709,6 @@ async function onDiffActiveModel (e) {
       models.setActive(models.getActive())
       return
     }
-    
 
     var active = models.getActive()
     var rightContent = active.getValue()
@@ -753,7 +752,7 @@ async function onSaveActiveModel () {
     models.setVersionIdOnSave(model)
     await workingCheckout.writeFile(path, model.getValue(), 'utf8')
   })
-  
+
   // if it's a new file, close this buffer and reopen the new one
   if (model.isNewModel) {
     await loadFileTree()
@@ -816,7 +815,7 @@ async function onChangeSyncPath () {
   try {
     // always enable preview-mode
     await beaker.archives.setUserSettings(archive.url, {previewMode: true})
-    
+
     // set folder
     await beaker.archives.setLocalSyncPath(archive.url, localSyncPath)
 

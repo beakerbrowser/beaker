@@ -131,7 +131,6 @@ export function setActiveGeneralHelp (opts) {
   emit('editor-rerender')
 }
 
-
 export function setActiveDiff (leftContent, rightContent) {
   try {
     setVisibleRegion('diff-editor')
