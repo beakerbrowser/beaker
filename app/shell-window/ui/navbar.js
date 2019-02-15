@@ -507,7 +507,7 @@ async function handleAutocompleteSearch (results) {
   await Promise.all(autocompleteResults.map(async r => {
     let bookmarked = false
     try {
-      bookmarked = await beaker.bookmarks.isBookmarked(r.url)
+      bookmarked = await beaker.bookmarks.has(r.url)
     } catch (_) {}
     Object.assign(r, {bookmarked})
   }))

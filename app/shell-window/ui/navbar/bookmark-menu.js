@@ -10,12 +10,8 @@ export class BookmarkMenuNavbarBtn {
     this.justCreatedBookmark = false // did we create the bookmark on open?
     this.values = {
       title: '',
-      notes: '',
       tags: '',
-      private: false,
-      pinned: false,
-      seeding: true,
-      saved: true
+      pinned: false
     }
     this.isDropdownOpen = false
     this.allTags = null
@@ -55,25 +51,6 @@ export class BookmarkMenuNavbarBtn {
                 ` : ''}
               </div>
 
-              ${''/*TODO(profiles) disabled -prf
-              <div class="input-group privacy">
-                <label>Privacy:</label>
-
-                <div class="privacy-wrapper">
-                  <input onclick=${e => this.onChangeVisibility(e, 'private')} type="radio" id="privacy-private" name="privacy" value="private" checked=${this.values.private}/>
-                  <label class="btn" for="privacy-private">
-                    <i class="fa fa-lock"></i>
-                    Private
-                  </label>
-
-                  <input onclick=${e => this.onChangeVisibility(e, 'public')} type="radio" id="privacy-public" name="privacy" value="public" checked=${!this.values.private}/>
-                  <label class="btn" for="privacy-public">
-                    <i class="fa fa-globe"></i>
-                    Public
-                  </label>
-                </div>
-              </div>*/}
-
               <div>
                 <h3>Other options</h3>
 
@@ -82,16 +59,6 @@ export class BookmarkMenuNavbarBtn {
                   <div class="switch"></div>
                   <span class="text">Pin to start page</span>
                 </label>
-
-                ${''/* TODO disabled for now -prf url.startsWith('dat://') && page.siteInfo && !page.siteInfo.isOwner
-                  ? yo`
-                    <label class="toggle">
-                      <input onchange=${(e) => this.onChangeSeeding(e)} checked=${this.values.seeding || false} type="checkbox" name="seeding" value="seeding">
-                      <div class="switch"></div>
-                      <span class="text">Help seed these files</span>
-                    </label>`
-                  : ''
-                */}
               </div>
 
               <div class="buttons">
@@ -135,11 +102,7 @@ export class BookmarkMenuNavbarBtn {
       this.justCreatedBookmark ||
       b.title !== this.values.title ||
       tagsToString(b.tags) !== this.values.tags ||
-      b.notes !== this.values.notes ||
-      b.private !== this.values.private ||
-      b.pinned !== this.values.pinned ||
-      b.saved !== this.values.seeding ||
-      b.seeding !== this.values.saved
+      b.pinned !== this.values.pinned
     )
   }
 
@@ -163,7 +126,7 @@ export class BookmarkMenuNavbarBtn {
     e.target.selectionStart = e.target.selectionEnd = e.target.value.length
   }
 
-  async onClickBookmark () {
+  async onClickBookmark (e) {
     // toggle the dropdown bookmark editor
     this.isDropdownOpen = !this.isDropdownOpen
 
@@ -171,9 +134,8 @@ export class BookmarkMenuNavbarBtn {
       var page = pages.getActive()
 
       if (!page.bookmark) {
-        // set the bookmark privately
-        await beaker.bookmarks.bookmarkPrivate(page.getIntendedURL(), {title: page.title || '', pinned: false})
-        page.bookmark = await beaker.bookmarks.getBookmark(page.getIntendedURL())
+        await beaker.bookmarks.add({href: page.getIntendedURL(), title: page.title || '', pinned: false})
+        page.bookmark = await beaker.bookmarks.get(page.getIntendedURL())
         this.justCreatedBookmark = true
         navbar.update()
       } else {
@@ -184,10 +146,7 @@ export class BookmarkMenuNavbarBtn {
       this.values.private = page.bookmark.private
       this.values.title = page.bookmark.title
       this.values.tags = tagsToString(page.bookmark.tags)
-      this.values.notes = page.bookmark.notes
       this.values.pinned = page.bookmark.pinned
-      this.values.saved = page.siteInfo && page.siteInfo.userSettings && page.siteInfo.userSettings.isSaved
-      this.values.seeding = this.values.saved && page.siteInfo && page.siteInfo.userSettings && page.siteInfo.userSettings.networked
     }
 
     this.updateActives()
@@ -210,29 +169,10 @@ export class BookmarkMenuNavbarBtn {
     var b = page.bookmark
     b.title = this.values.title
     b.tags = this.values.tags.split(' ').filter(Boolean)
-    b.notes = this.values.notes
+    b.pinned = this.values.pinned
+    await beaker.bookmarks.edit(b.href, b)
 
-    // delete old bookmark if privacy changed
-    if (this.values.private && !b.private) {
-      await beaker.bookmarks.unbookmarkPublic(b.href)
-    } else if (!this.values.private && b.private) {
-      await beaker.bookmarks.unbookmarkPrivate(b.href)
-    }
-
-    // create new bookmark
-    if (this.values.private) {
-      await beaker.bookmarks.bookmarkPrivate(b.href, b)
-    } else {
-      await beaker.bookmarks.bookmarkPublic(b.href, b)
-    }
-
-    // set the pinned status of the bookmark
-    await beaker.bookmarks.setBookmarkPinned(b.href, this.values.pinned)
-
-    // TODO
-    // set seeding/saved value
-
-    page.bookmark = await beaker.bookmarks.getBookmark(b.href)
+    page.bookmark = await beaker.bookmarks.get(b.href)
     navbar.update()
     this.close()
   }
@@ -241,11 +181,7 @@ export class BookmarkMenuNavbarBtn {
     var page = pages.getActive()
     var b = page.bookmark
     if (!b) return
-    if (b.private) {
-      await beaker.bookmarks.unbookmarkPrivate(page.getIntendedURL())
-    } else {
-      await beaker.bookmarks.unbookmarkPublic(page.getIntendedURL())
-    }
+    await beaker.bookmarks.remove(page.getIntendedURL())
     page.bookmark = null
     navbar.update()
     this.close()
@@ -284,7 +220,7 @@ export class BookmarkMenuNavbarBtn {
   async handleTagAutocompleteResults (tagStr) {
     // if this.allTags not set, fetch the user's bookmark tags
     if (!this.allTags) {
-      this.allTags = await beaker.bookmarks.listBookmarkTags(0)
+      this.allTags = await beaker.bookmarks.listTags()
     }
 
     // split the e.target.value to get the last "tag entry"
@@ -312,11 +248,6 @@ export class BookmarkMenuNavbarBtn {
     }
   }
 
-  onChangeNotes (e) {
-    this.values.notes = e.target.value
-    this.updateActives()
-  }
-
   async onChangePinned (e) {
     this.values.pinned = e.target.checked
     this.updateActives()
@@ -326,25 +257,8 @@ export class BookmarkMenuNavbarBtn {
     if (!page.bookmark) {
       return this.close() // bookmark mustve gotten deleted by another tab
     }
-    await beaker.bookmarks.setBookmarkPinned(page.bookmark.href, this.values.pinned)
+    await beaker.bookmarks.edit(page.bookmark.href, {pinned: this.values.pinned})
     page.bookmark.pinned = this.values.pinned
-  }
-
-  onChangeSeeding (e) {
-    this.values.seeding = e.target.checked
-    this.updateActives()
-  }
-
-  onChangeSaved (e) {
-    this.values.saved = e.target.checked
-    this.updateActives()
-  }
-
-  onChangeVisibility (e, v) {
-    e.stopPropagation()
-    this.values.private = v === 'private'
-    this.isPrivacyDropdownOpen = false
-    this.updateActives()
   }
 }
 

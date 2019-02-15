@@ -29,6 +29,7 @@ const SEARCH_GROUPS = [
 // globals
 // =
 
+const bookmarks = navigator.importSystemAPI('bookmarks')
 var currentUserSession
 var pinnedBookmarks = []
 var searchResults = {}
@@ -313,7 +314,7 @@ function delay (cb, param) {
 }
 
 async function loadBookmarks () {
-  pinnedBookmarks = (await beaker.bookmarks.listPinnedBookmarks()) || []
+  pinnedBookmarks = (await bookmarks.list({filters: {isPinned: true}})) || []
 }
 
 function getMergedSearchResults () {

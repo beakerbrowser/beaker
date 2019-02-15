@@ -12,6 +12,10 @@ window.navbar = navbar
 // setup
 beakerCoreWebview.setup({rpcAPI})
 document.addEventListener('DOMContentLoaded', () => {
+
+  // import additional APIs
+  beaker.bookmarks = navigator.importSystemAPI('bookmarks')
+
   setupUI(() => {
     ipcRenderer.send('shell-window:ready')
   })
