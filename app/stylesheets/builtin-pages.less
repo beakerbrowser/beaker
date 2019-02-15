@@ -250,19 +250,13 @@
     margin-bottom: 10px;
     user-select: none;
 
-    .toggleable {
+    div {
       display: inline-block;
       padding: 5px 15px 2px 5px;
       margin-top: -5px;
       margin-left: -5px;
       font-weight: 500;
-      border-radius: 4px;
-      cursor: pointer;
-
-      &:hover {
-        background: rgba(0,0,0,.05);
-      }
-
+      
       img {
         display: inline-block;
         position: relative;
@@ -271,11 +265,6 @@
         margin-right: 5px;
         vertical-align: middle;
       }
-    }
-
-    &.open .toggleable {
-      background: rgba(0,0,0,.05);
-      box-shadow: none;
     }
   }
 
@@ -344,10 +333,6 @@
         }
       }
     }
-  }
-
-  hr {
-    margin-top: 0;
   }
 
   @media (min-width: 1050px) {

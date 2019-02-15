@@ -7,6 +7,8 @@ import DatCache from '../com/settings/dat-cache'
 import CrawlerStatus from '../com/settings/crawler-status'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
+const DEFAULT_APP_NAMES = ['start', 'bookmarks', 'library', 'search', 'profile']
+
 // globals
 // =
 
@@ -14,6 +16,7 @@ var settings
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
+var defaultApplications
 var activeView = 'general'
 var logger = new Logger()
 var datCache = new DatCache()
@@ -36,10 +39,24 @@ async function setup () {
   browserInfo = beaker.browser.getInfo()
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
+  await readDefaultApplications()
   // applications = await beaker.apps.list(0) TODO(apps) restore when we bring back apps -prf
 
   // set the view and render
   setViewFromHash()
+}
+
+async function readDefaultApplications () {
+  defaultApplications = await Promise.all(DEFAULT_APP_NAMES.map(async (name) => {
+    let dnsRecord = await beaker.domainNames.get(name)
+    try {
+      let archiveInfo = await (new DatArchive(dnsRecord.value)).getInfo({timeout: 1e3})
+      dnsRecord.title = archiveInfo.title
+    } catch (e) {
+      dnsRecord.title = ''
+    }
+    return dnsRecord
+  }))
 }
 
 // rendering
@@ -76,9 +93,16 @@ function renderSidebar () {
         General
       </div>
 
+      <div class="nav-item ${activeView === 'default-applications' ? 'active' : ''}" onclick=${() => onUpdateView('default-applications')}>
+        <i class="fa fa-angle-right"></i>
+        Default Applications
+      </div>
+
+      <hr>
+
       <div class="nav-item ${activeView === 'logger' ? 'active' : ''}" onclick=${() => onUpdateView('logger')}>
         <i class="fa fa-angle-right"></i>
-        View logs
+        Log Viewer
       </div>
 
       <div class="nav-item ${activeView === 'crawler' ? 'active' : ''}" onclick=${() => onUpdateView('crawler')}>
@@ -88,8 +112,10 @@ function renderSidebar () {
 
       <div class="nav-item ${activeView === 'dat-cache' ? 'active' : ''}" onclick=${() => onUpdateView('dat-cache')}>
         <i class="fa fa-angle-right"></i>
-        Dat cache
+        Dat Cache
       </div>
+
+      <hr>
 
       <div class="nav-item ${activeView === 'information' ? 'active' : ''}" onclick=${() => onUpdateView('information')}>
         <i class="fa fa-angle-right"></i>
@@ -102,6 +128,8 @@ function renderView () {
   switch (activeView) {
     case 'general':
       return renderGeneral()
+    case 'default-applications':
+      return renderDefaultApplications()
     case 'logger':
       return renderLogger()
     case 'dat-cache':
@@ -261,6 +289,51 @@ function renderAnalyticsSettings () {
           <li>Your Beaker version, e.g. ${browserInfo.version}</li>
           <li>Your operating system, e.g. Windows 10</li>
         </ul>
+      </div>
+    </div>`
+}
+
+function renderDefaultApplications () {
+  const item = ({name, title, isDefault}) => yo`
+    <div class="default-application">
+      <div class="group">
+        <div class="domain">${name}</div>
+        <a class="value" href="dat://${name}" target="_blank">${title}</div>
+        <button class="btn">Browse</button>
+      </div>
+      ${!isDefault
+        ? yo`<button class="btn plain">Restore default</button>`
+        : ''}
+    </div>`
+  
+  return yo`
+    <div class="view not-fullwidth">
+      <div class="section default-applications">
+        <h2 class="subtitle-heading">Default Applications</h2>
+
+        <p>Choose your default applications.</p>
+
+        ${defaultApplications.map(item)}
+      </div>
+      <div class="more-info">
+        <i class="fa fa-info-circle"></i>
+        <div>
+          <h4>What is this?</h4>
+          <p>
+            Beaker has a collection of builtin applications which drive the core experience.
+            These are hosted as <code>dat://</code> apps at
+            <a href="https://en.wikipedia.org/wiki/Fully_qualified_domain_name#Partially_qualified_domain_name" target="_blank">relative domain names</a>
+            such as <a href="dat://start/" target="_blank">dat://start/</a> and <a href="dat://search/" target="_blank">dat://search/</a>.
+          </p>
+          <p>
+            You can override these applications with your own <code>dat://</code> apps in order 
+            to customize your experience!
+          </p>
+          <hr>
+          <p>
+            Tip: you can always restore the defaults later.
+          </p>
+        </div>
       </div>
     </div>`
 }

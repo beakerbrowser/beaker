@@ -15,11 +15,9 @@
   .builtin-sidebar {
     // slightly larger nav
     .builtin-pages-nav {
+      position: relative;
       left: -21px;
-
-      a.toggleable {
-        font-size: 16px;
-      }
+      font-size: 16px;
     }
     .nav-item {
       font-size: 15px;
@@ -176,10 +174,94 @@
     }
   }
 
+  .dat-cache {
+    .title {
+      max-width: none;
+    }
+  }
+
   &.help {
 
     a {
       text-decoration: none;
+    }
+  }
+
+  .default-application {
+    display: flex;
+    margin-bottom: 10px;
+
+    a,
+    .btn,
+    .domain {
+      height: 36px;
+      line-height: 34px;
+    }
+
+    .group {
+      display: flex;
+      margin-right: 10px;
+
+      & > * {
+        border-radius: 0;
+        border-right-width: 0;
+        padding: 0 10px;
+        height: 36px;
+      }
+
+      & > :first-child {
+        border-top-left-radius: 2px;
+        border-bottom-left-radius: 2px;
+      }
+
+      & > :last-child {
+        border-top-right-radius: 2px;
+        border-bottom-right-radius: 2px;
+        border-right-width: 1px;
+      }
+
+      & > input:focus {
+        border-right-width: 1px;
+        box-shadow: none;
+
+        & + * {
+          border-left-width: 0;
+        }
+      }
+
+      .domain {
+        border: 1px solid #d9d9d9;
+        border-right: 0;
+        width: 80px;
+        color: #666;
+      }
+
+      .value {
+        width: 280px;
+        text-overflow: ellipsis;
+        border: 1px solid #d9d9d9;
+        border-left: 0;
+        border-right: 0;
+      }
+    }
+  }
+
+  .more-info {
+    display: flex;
+    color: rgba(0,0,0,0.6);
+    margin: 30px 0;
+
+    i {
+      margin: 7px 16px;
+    }
+
+    & > div {
+      flex: 1;
+      max-width: 36em;
+    }
+
+    h4 {
+      margin-bottom: 10px;
     }
   }
 }
