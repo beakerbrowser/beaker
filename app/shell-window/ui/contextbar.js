@@ -10,6 +10,8 @@ import toggleable2, {closeAllToggleables} from '../../builtin-pages/com/toggleab
 // =
 
 export function render (id, page) {
+  // DISABLED for now -prf
+  return ''
   const url = page ? page.getURL() : ''
   if (url.startsWith('dat:')) {
     return renderDatSite(id, page)
