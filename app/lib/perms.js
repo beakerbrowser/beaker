@@ -156,6 +156,15 @@ export default {
     requiresRefresh: false,
     experimental: false
   },
+  dangerousAppControl: {
+    desc: 'Read and write your data, including bookmarks, archives, and files',
+    icon: 'flask',
+    persist: true,
+    idempotent: false,
+    alwaysAllow: false,
+    requiresRefresh: false,
+    experimental: false
+  },
   openExternal: {
     desc: 'Open this URL in another program: ',
     icon: 'external-link-alt',
