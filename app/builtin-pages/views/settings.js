@@ -294,17 +294,33 @@ function renderAnalyticsSettings () {
 }
 
 function renderDefaultApplications () {
-  const item = ({name, title, isDefault}) => yo`
+  const item = (record) => yo`
     <div class="default-application">
       <div class="group">
-        <div class="domain">${name}</div>
-        <a class="value" href="dat://${name}" target="_blank">${title}</div>
-        <button class="btn">Browse</button>
+        <div class="domain">${record.name}</div>
+        <a class="value" href="dat://${record.name}" target="_blank">${record.title}</div>
+        <button class="btn" onclick=${e => onClickBrowse(e, record)}>Browse</button>
       </div>
-      ${!isDefault
-        ? yo`<button class="btn plain">Restore default</button>`
+      ${!record.isDefault
+        ? yo`<button class="btn plain" onclick=${e => onClickDelete(e, record)}>Restore default</button>`
         : ''}
     </div>`
+
+  const onClickBrowse = async (e, record) => {
+    var choice = await DatArchive.selectArchive()
+    var key = choice.url.slice('dat://'.length)
+    if (key !== record.value) {
+      await beaker.domainNames.set(record.name, key)
+      await readDefaultApplications()
+      renderToPage()
+    }
+  }
+
+  const onClickDelete = async (e, record) => {
+    await beaker.domainNames.delete(record.name)
+    await readDefaultApplications()
+    renderToPage()
+  }
   
   return yo`
     <div class="view not-fullwidth">
