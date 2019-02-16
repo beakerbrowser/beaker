@@ -14,6 +14,7 @@ import * as rpc from 'pauls-electron-rpc'
 import * as beakerBrowser from './background-process/browser'
 import * as adblocker from './background-process/adblocker'
 import * as analytics from './background-process/analytics'
+import * as portForwarder from './background-process/nat-port-forwarder'
 
 import * as windows from './background-process/ui/windows'
 import * as modals from './background-process/ui/modals'
@@ -79,6 +80,8 @@ app.on('ready', async function () {
   // start the daemon process
   var datDaemonProcess = await childProcesses.spawn('dat-daemon', './dat-daemon.js')
 
+  portForwarder.setup()
+
   // setup core
   await beakerCore.setup({
     // paths
@@ -128,6 +131,7 @@ app.on('ready', async function () {
 })
 
 app.on('quit', () => {
+  portForwarder.closePort()
   childProcesses.closeAll()
 })
 
