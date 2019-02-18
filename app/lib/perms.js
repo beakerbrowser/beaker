@@ -141,7 +141,8 @@ export default {
     icon: 'arrows-alt',
     persist: true,
     idempotent: false,
-    alwaysAllow: true,
+    alwaysAllow: false,
+    alwaysDisallow: true, // TEMPORARY disabled due to broken fullscreen API, see #1339 -prf
     requiresRefresh: false,
     experimental: false
   },
