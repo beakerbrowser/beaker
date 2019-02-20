@@ -9,6 +9,7 @@ import path from 'path'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
+import {showShellModal} from './modals'
 const settingsDb = beakerCore.dbs.settings
 
 const IS_WIN = process.platform === 'win32'
@@ -269,6 +270,10 @@ export function setUserSessionFor (wc, userSession) {
   }
   var win = BrowserWindow.fromWebContents(wc)
   return sessionWatcher.updateState(win, {userSession})
+}
+
+export function openProfileEditor (wc, sess) {
+  return showShellModal(wc, 'edit-profile', sess)
 }
 
 // internal methods
