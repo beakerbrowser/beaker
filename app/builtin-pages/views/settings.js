@@ -7,7 +7,7 @@ import DatCache from '../com/settings/dat-cache'
 import CrawlerStatus from '../com/settings/crawler-status'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 
-const DEFAULT_APP_NAMES = ['start', 'bookmarks', 'library', 'search', 'profile']
+const DEFAULT_APP_NAMES = ['start', 'feed', 'profile', 'library', 'bookmarks', 'search']
 
 // globals
 // =
