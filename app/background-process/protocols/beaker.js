@@ -231,15 +231,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/start.build.js'))
   }
-  if (requestUrl === 'beaker://timeline/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/timeline.html'))
-  }
-  if (requestUrl === 'beaker://timeline/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/timeline.build.js'))
-  }
-  if (requestUrl === 'beaker://timeline/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/timeline.css'))
-  }
   if (requestUrl === 'beaker://search/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/search.html'))
   }
