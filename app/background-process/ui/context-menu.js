@@ -145,9 +145,9 @@ export default function registerContextMenu () {
             }
           })
           menuItems.push({
-            label: 'Network Debugger',
+            label: 'View Profile',
             click: (item, win) => {
-              win.webContents.send('command', 'file:new-tab', 'beaker://swarm-debugger/' + props.pageURL)
+              win.webContents.send('command', 'file:new-tab', 'dat://profile/' + props.pageURL.slice('dat://'.length))
             }
           })
           menuItems.push({ type: 'separator' })
