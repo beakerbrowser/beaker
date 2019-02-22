@@ -74,7 +74,7 @@ export class TemplateSelector extends EventEmitter {
     var redirectUrl = archive.url
     if (!template) {
       // for the blank template, go to the source view
-      redirectUrl = `beaker://library/${archive.url}#setup`
+      redirectUrl = `beaker://editor/${archive.url}#setup`
     }
     this.emit('created', {archive, redirectUrl})
   }

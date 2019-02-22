@@ -31,8 +31,8 @@ const ERR_INSECURE_RESPONSE = -501
 
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
-export const FIRST_TAB_URL = 'beaker://start'
-export const DEFAULT_URL = 'beaker://start'
+export const FIRST_TAB_URL = 'dat://start'
+export const DEFAULT_URL = 'dat://start'
 
 export const APP_PATH = remote.app.getAppPath() // NOTE: this is a sync op
 

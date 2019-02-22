@@ -23,7 +23,7 @@ export async function start () {
     await viewSource()
     await showTutorialModal('userSiteSource')
 
-    await gotoSite('beaker://feed')
+    await gotoSite('dat://feed')
     await showTutorialModal('feed')
 
     await gotoSite('dat://beakerbrowser.com')
@@ -32,13 +32,13 @@ export async function start () {
     await gotoSite('beaker://settings/#crawler')
     await showTutorialModal('crawler')
 
-    await gotoSite('beaker://feed')
+    await gotoSite('dat://feed')
     await showTutorialModal('populatedFeed')
 
-    await gotoSite('beaker://search')
+    await gotoSite('dat://search')
     await showTutorialModal('populatedSearch')
 
-    await gotoSite('beaker://start')
+    await gotoSite('dat://start')
     await showTutorialModal('goodbye', 'End tour')
   } catch (e) {
     if (e.message === 'Canceled') {
@@ -61,7 +61,7 @@ async function refreshPage () {
 
 async function viewSource () {
   var page = pages.getActive()
-  await gotoSite('beaker://library/' + page.url)
+  await gotoSite('beaker://editor/' + page.url)
 }
 
 async function gotoSite (url) {

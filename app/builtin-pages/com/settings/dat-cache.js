@@ -151,7 +151,7 @@ export default class DatCache {
 
     const items = [
       {icon: 'link', label: 'Copy URL', click: () => this.onCopyURL(archive)},
-      {icon: 'files-o', label: 'View source', click: () => this.onOpenInLibrary(archive)},
+      {icon: 'files-o', label: 'View source', click: () => this.onOpenViewSource(archive)},
       {icon: 'bug', label: 'Network debugger', click: () => this.onOpenInSwarmDebugger(archive)},
       {icon: 'times-circle', label: 'Purge from my computer', click: () => this.onDeleteFiles(archive)}
     ]
@@ -166,8 +166,8 @@ export default class DatCache {
     toast.create('URL copied to clipboard')
   }
 
-  onOpenInLibrary (archive) {
-    window.open('beaker://library/' + archive.url)
+  onOpenViewSource (archive) {
+    window.open('beaker://editor/' + archive.url)
   }
 
   onOpenInSwarmDebugger (archive) {

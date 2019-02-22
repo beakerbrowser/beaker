@@ -140,7 +140,7 @@ export class UserSidebar extends BaseSidebar {
 
   open (view) {
     if (view === 'feed') {
-      pages.setActive(pages.create('beaker://feed/#user/' + this.url.origin))
+      pages.setActive(pages.create('dat://profile/' + this.url.origin))
     } else {
       pages.setActive(pages.create(view))
     }

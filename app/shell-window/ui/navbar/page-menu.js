@@ -34,7 +34,7 @@ export class PageMenuNavbarBtn {
         openwithSublist = yo`
           <div class="dropdown-items sublist">
             <div class="list">
-              <div class="list-item" onclick=${() => this.onClickViewFiles()}>
+              <div class="list-item" onclick=${() => this.onClickViewSource()}>
                 Library
               </div>
             </div>
@@ -75,7 +75,7 @@ export class PageMenuNavbarBtn {
             ${isDat
               ? yo`
                 <div class="dropdown-items compact with-triangle">
-                  <div class="dropdown-item" onclick=${() => this.onClickViewFiles()}>
+                  <div class="dropdown-item" onclick=${() => this.onClickViewSource()}>
                     <i class="fas fa-code"></i>
                     View Source
                   </div>
@@ -199,14 +199,14 @@ export class PageMenuNavbarBtn {
   //   const name = page.protocolInfo.hostname
   //   await beaker.apps.unbind(0, name)
   //   const datUrl = page.getViewedDatOrigin()
-  //   page.loadURL(datUrl || 'beaker://start/')
+  //   page.loadURL(datUrl || 'dat://start/')
   // }
 
-  onClickViewFiles () {
+  onClickViewSource () {
     this.close()
     const page = pages.getActive()
     if (!page || !page.getViewedDatOrigin()) return
-    pages.setActive(pages.create(`beaker://library/dat://${page.siteInfo.key}`))
+    pages.setActive(pages.create(`beaker://editor/dat://${page.siteInfo.key}`))
   }
 
   onClickNetworkDebugger () {
@@ -250,7 +250,7 @@ export class PageMenuNavbarBtn {
     if (!datUrl) return
     const fork = await DatArchive.fork(datUrl, {prompt: true}).catch(() => {})
     if (fork) {
-      page.loadURL(`beaker://library/${fork.url}#setup`)
+      page.loadURL(`beaker://editor/${fork.url}#setup`)
     }
   }
 

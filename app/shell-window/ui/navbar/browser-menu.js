@@ -99,12 +99,12 @@ export class BrowserMenuNavbarBtn {
               </div>
 
               <div class="section">
-                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://library')}>
                   <i class="fa fa-hdd"></i>
                   <span class="label">Library</span>
                 </div>
                 
-                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://bookmarks')}>
                   <i class="far fa-star"></i>
                   <span class="label">Bookmarks</span>
                 </div>
@@ -191,7 +191,7 @@ export class BrowserMenuNavbarBtn {
   }
 
   onOpenNewTab () {
-    pages.setActive(pages.create('beaker://start'))
+    pages.setActive(pages.create('dat://start'))
   }
 
   async onOpenFile () {
@@ -276,7 +276,7 @@ export class BrowserMenuNavbarBtn {
 
     // create a new archive
     const archive = await DatArchive.create({template, prompt: false})
-    pages.setActive(pages.create('beaker://library/' + archive.url + '#setup'))
+    pages.setActive(pages.create('beaker://editor/' + archive.url + '#setup'))
   }
 
   async onCreateSiteFromFolder (e) {
@@ -295,7 +295,7 @@ export class BrowserMenuNavbarBtn {
     // create a new archive
     const archive = await DatArchive.create({prompt: false})
     await beaker.archives.setLocalSyncPath(archive.url, folder[0], {previewMode: true})
-    pages.setActive(pages.create('beaker://library/' + archive.url + '#setup'))
+    pages.setActive(pages.create('beaker://editor/' + archive.url + '#setup'))
   }
 
   async onShareFiles (e) {
@@ -320,8 +320,8 @@ export class BrowserMenuNavbarBtn {
     })
     await Promise.all(files.map(src => DatArchive.importFromFilesystem({src, dst: archive.url, inplaceImport: false})))
 
-    // open the new archive in the library
-    pages.setActive(pages.create('beaker://library/' + archive.url.slice('dat://'.length) + '#setup'))
+    // open the new archive in the editor
+    pages.setActive(pages.create('beaker://editor/' + archive.url.slice('dat://'.length) + '#setup'))
   }
 
   onOpenPage (e, url) {

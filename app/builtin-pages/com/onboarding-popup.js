@@ -109,7 +109,7 @@ const STEPS = [
 
 async function onCreateWebsite () {
   var archive = await DatArchive.create({template: 'website', prompt: false})
-  window.location = `beaker://library/${archive.url}#setup`
+  window.location = `beaker://editor/${archive.url}#setup`
 }
 
 // exported api

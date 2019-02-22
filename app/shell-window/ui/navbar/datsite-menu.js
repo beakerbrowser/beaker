@@ -77,7 +77,7 @@ export class DatsiteMenuNavbarBtn {
           ${this.rehostSlider ? this.rehostSlider.render() : ''}
 
           <div class="network-url">
-            <a onclick=${e => this.onOpenPage(`beaker://library/${page.siteInfo.url}#network`)}>
+            <a onclick=${e => this.onOpenPage(`beaker://editor/${page.siteInfo.url}#network`)}>
               <i class="fa fa-cog"></i>
               View network activity
             </a>
