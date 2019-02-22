@@ -231,15 +231,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://start/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/start.build.js'))
   }
-  if (requestUrl === 'beaker://search/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/search.html'))
-  }
-  if (requestUrl === 'beaker://search/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/search.build.js'))
-  }
-  if (requestUrl === 'beaker://search/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/search.css'))
-  }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/history.html'))
   }
