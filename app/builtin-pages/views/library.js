@@ -5,7 +5,6 @@ import bytes from 'bytes'
 import {pluralize} from '../../lib/strings'
 import {niceDate} from '../../lib/time'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-import {getBasicType, getTypeLabel, getShortenedUnwalledGardenType} from '@beaker/core/lib/dat'
 import {SITE_TEMPLATES, createSiteFromTemplate} from '../../lib/templates'
 import renderBuiltinPagesNav from '../com/builtin-pages-nav'
 import * as toast from '../com/toast'
@@ -107,7 +106,6 @@ function filterArchives () {
 }
 
 function sortArchives () {
-  const getType = archive => getShortenedUnwalledGardenType(archive.type) || 'other'
 
   archives.sort((a, b) => {
     var v = 0
@@ -116,7 +114,6 @@ function sortArchives () {
       case 'peers': v = a.peers - b.peers; break
       case 'recently-accessed': v = a.lastLibraryAccessTime - b.lastLibraryAccessTime; break
       case 'recently-updated': v = a.mtime - b.mtime; break
-      case 'type': v = getType(b.type).localeCompare(getType(a.type)); break
       case 'published': v = Number(a.isPublished) - Number(b.isPublished); break
       case 'owner': v = getOwner(b).localeCompare(getOwner(a)); break
     }
@@ -175,7 +172,6 @@ function renderRow (row, i) {
   const date = currentDateType === 'accessed'
     ? row.lastLibraryAccessTime
     : row.mtime
-  const basicType = getBasicType(row.type)
 
   return yo`
     <a
@@ -184,7 +180,7 @@ function renderRow (row, i) {
       oncontextmenu=${e => onArchivePopupMenu(e, row, {isContext: true})}
     >
       <span class="title">
-        ${renderIcon(row, basicType)}
+        ${renderIcon(row)}
         ${row.title
           ? yo`<span class="title">${row.title}</span>`
           : yo`<span class="title empty"><em>Untitled</em></span>`
@@ -196,7 +192,6 @@ function renderRow (row, i) {
       </span>
 
       <span class="type">
-        ${getTypeLabel(row.type)}
       </span>
 
       <span class="peers">
@@ -407,10 +402,7 @@ function renderSubheader () {
     </div>`
 }
 
-function renderIcon (archive, basicType) {
-  if (basicType === 'user') {
-    return yo`<img class="favicon rounded" src="${archive.url}/thumb" />`
-  }
+function renderIcon (archive) {
   return yo`<img class="favicon" src="beaker-favicon:32,${archive.url}" />`
 }
 
@@ -423,7 +415,6 @@ function removeFromLibraryIcon (archive) {
 }
 
 function getPublished (archive) {
-  if (getBasicType(archive.type) === 'user') return yo`<span class="fas fa-minus"></span>`
   return archive.isPublished ? yo`<span class="fas fa-check"></span>` : ''
 }
 
@@ -630,7 +621,7 @@ async function onArchivePopupMenu (e, archive, {isContext, xOffset} = {}) {
     {icon: 'code', label: 'View source', click: () => window.open(`beaker://editor/${archive.url}`)},
     {icon: 'fas fa-code', label: 'View site files', click: () => window.open(`beaker://library/${archive.url}`)}
   ]
-  if (archive.isOwner && getBasicType(archive.type) !== 'user') {
+  if (archive.isOwner) {
     if (archive.isPublished) {
       items.unshift({icon: 'fa fa-bullhorn', label: 'Published', click: () => {}, disabled: true})
       items.push({icon: 'fa fa-eraser', label: 'Unpublish', click: () => onUnpublish(archive)})

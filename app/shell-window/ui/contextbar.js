@@ -3,7 +3,6 @@ import _get from 'lodash.get'
 import * as toast from './toast'
 import * as pages from '../pages'
 import * as globals from '../globals'
-import {getBasicType, getTypeLabel} from '@beaker/core/lib/dat'
 import toggleable2, {closeAllToggleables} from '../../builtin-pages/com/toggleable2'
 
 // exported api
@@ -35,8 +34,8 @@ function renderDatSite (id, page) {
   const isPublished = _get(page, 'siteInfo.isPublished', undefined)
   const isNetworked = true // TODO
   const type = _get(page, 'siteInfo.type', [])
-  const basicType = getBasicType(type)
-  const isUser = basicType === 'user'
+  const basicType = undefined // getBasicType(type)
+  const isUser = false // basicType === 'user'
   const isCurrentUser = _get(page, 'siteTrust.isUser', false)
   const isFollowed = _get(page, 'siteTrust.isFollowed', false)
 
@@ -45,7 +44,7 @@ function renderDatSite (id, page) {
       <div class="toolbar-group">
         <span class="toolbar-info-card">
           <img src="beaker://assets/img/templates/${basicType}.png">
-          <strong>${title || getTypeLabel(type)}</strong>
+          <strong>${title || 'Untitled'}</strong>
           ${cond(description, () => yo`<span>${description}</span>`)}
           ${cond(isOwner === true, () => yo`
             <button class="toolbar-labeled-btn" onclick=${() => isUser ? onEditProfile(id, page) : onEditDetails(id, page)}>

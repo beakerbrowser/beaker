@@ -2,7 +2,6 @@ import yo from 'yo-yo'
 import {makeSafe, highlight} from '../../../lib/strings'
 import {niceDate} from '../../../lib/time'
 import {pushUrl} from '../../../lib/fg/event-handlers'
-import {getTypeLabel} from '@beaker/core/lib/dat'
 import _get from 'lodash.get'
 import toggleable, {closeAllToggleables} from '../toggleable2'
 
@@ -21,9 +20,6 @@ export default function render ({site, currentUserSession, highlightNonce, onCli
           <a class="author link" href="/?source=${encodeURIComponent(site.author.url)}" onclick=${pushUrl} title=${getAuthorTitle(site)}>
             <img src="${site.author.thumbUrl}">
             ${getAuthorTitle(site)}
-          </a>
-          <a class="type" onclick=${onClickLinkType ? e => onClickLinkType(site.type) : undefined}>
-            ${getTypeLabel(site.type)}
           </a>
           <span class="timestamp">
             Crawled ${niceDate(site.crawledAt)}

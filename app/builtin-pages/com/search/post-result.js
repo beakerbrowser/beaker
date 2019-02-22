@@ -2,7 +2,6 @@ import yo from 'yo-yo'
 import {makeSafe, highlight} from '../../../lib/strings'
 import {niceDate} from '../../../lib/time'
 import {pushUrl} from '../../../lib/fg/event-handlers'
-import {getTypeLabel} from '@beaker/core/lib/dat'
 import _get from 'lodash.get'
 import toggleable, {closeAllToggleables} from '../toggleable2'
 
@@ -21,9 +20,6 @@ export default function render ({post, currentUserSession, highlightNonce, onCli
           <a class="author link" href="/?source=${encodeURIComponent(post.author.url)}" onclick=${pushUrl} title=${getAuthorTitle(post)}>
             <img src="${post.author.thumbUrl}">
             ${getAuthorTitle(post)}
-          </a>
-          <a class="type" onclick=${onClickLinkType ? e => onClickLinkType(post.content.type) : undefined}>
-            ${getTypeLabel(post.content.type, 'link')}
           </a>
           <span class="timestamp">
             Posted ${niceDate(post.createdAt)}

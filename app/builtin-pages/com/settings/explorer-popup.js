@@ -1,7 +1,6 @@
 /* globals beaker */
 
 import yo from 'yo-yo'
-import {getBasicType} from '@beaker/core/lib/dat'
 import {writeToClipboard} from '../../../lib/fg/event-handlers'
 import closeIcon from '../../icon/close'
 import * as contextMenu from '../context-menu'
@@ -120,9 +119,6 @@ function renderSuggestion (row) {
 }
 
 function renderIcon (row) {
-  if (getBasicType(row.type) === 'user') {
-    return yo`<img class="favicon rounded" src="${row.url}/thumb" />`
-  }
   return yo`<img class="favicon" src="beaker-favicon:32,${row.url}"/>`
 }
 

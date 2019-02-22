@@ -9,7 +9,6 @@ import * as onboardingPopup from '../com/onboarding-popup'
 import * as contextMenu from '../com/context-menu'
 import * as toast from '../com/toast'
 import {findParent, writeToClipboard} from '../../lib/fg/event-handlers'
-import {getBasicType} from '@beaker/core/lib/dat'
 
 const LATEST_VERSION = 8002 // semver where major*1mm and minor*1k; thus 3.2.1 = 3002001
 const RELEASE_NOTES_URL = 'https://github.com/beakerbrowser/beaker/releases/tag/0.8.2'
@@ -114,9 +113,7 @@ function renderSearch () {
       <a href=${res.url} class="autocomplete-result search-result ${i++ === activeSearchResultIndex ? 'active' : ''}">
         ${res.icon
             ? yo`<i class="icon ${res.icon}"></i>`
-            : getBasicType(res.type) === 'user'
-              ? yo`<img class="icon favicon rounded" src="${res.url}/thumb"/>`
-              : yo`<img class="icon favicon" src="beaker-favicon:32,${res.url}"/>`
+            : yo`<img class="icon favicon" src="beaker-favicon:32,${res.url}"/>`
           }
         <span class="title">${res.title}</span>
         <span class="label">— ${res.url}</span>

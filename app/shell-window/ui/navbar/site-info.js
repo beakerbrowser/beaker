@@ -2,7 +2,6 @@
 
 import * as yo from 'yo-yo'
 import _get from 'lodash.get'
-import {getBasicType, getTypeLabel} from '@beaker/core/lib/dat'
 import * as pages from '../../pages'
 import renderPadlockIcon from '../icon/padlock'
 import { findParent } from '../../../lib/fg/event-handlers'
@@ -94,7 +93,7 @@ export class SiteInfoNavbarBtn {
     const isLoading = this.page.isLoading()
     const scheme = (isLoading) ? (this.page.getIntendedURL().split(':').shift() + ':') : _get(this, 'page.protocolInfo.scheme')
     const isOwner = _get(this, 'page.siteInfo.isOwner')
-    const basicType = getBasicType(_get(this, 'page.siteInfo.type', []))
+    const basicType = undefined // getBasicType(_get(this, 'page.siteInfo.type', []))
     const trustRating = this.page.siteTrust ? this.page.siteTrust.getRating() : 'not-trusted'
     if (!scheme || scheme === 'beaker:') {
       return ''
@@ -121,7 +120,7 @@ export class SiteInfoNavbarBtn {
     const type = _get(this.page, 'siteInfo.type', [])
     const isUser = _get(this, 'page.siteTrust.isUser')
     const isOwner = _get(this, 'page.siteInfo.isOwner')
-    const basicType = getBasicType(type)
+    const basicType = false //getBasicType(type)
     const followers = _get(this.page, 'siteTrust.followers', [])
     const isDomainVerified = _get(this, 'page.siteTrust.isDomainVerified')
     const hostname = _get(this, 'page.protocolInfo.hostname')
@@ -129,7 +128,7 @@ export class SiteInfoNavbarBtn {
     if (isUser) {
       return yo`<div class="title">This is you</div>`
     } else if (isOwner) {
-      return yo`<div class="title">Your ${getTypeLabel(type)}</div>`
+      return yo`<div class="title">Your site</div>`
     } else if (basicType === 'user') {
       return yo`<div class="title">${followers.length}</div>`
     } else if (isDomainVerified && hostname) {

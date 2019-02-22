@@ -8,7 +8,6 @@ import renderSiteResult from '../com/search/site-result'
 import {renderSourceBanner, renderSourceSubnav} from '../com/search/source-view'
 import {polyfillHistoryEvents, pushUrl} from '../../lib/fg/event-handlers'
 import * as toast from '../com/toast'
-import { getUnwalledGardenType } from '@beaker/core/lib/dat'
 
 const LIMIT = 20
 
@@ -446,9 +445,6 @@ function onChangeSourceView (sourceView) {
 }
 
 function onClickLinkType (type) {
-  type = getUnwalledGardenType(type)
-  var category = DEFAULT_CATEGORIES.find(c => c.siteTypes && c.siteTypes.includes(type))
-  setParams({category: category ? category.id : 'all'})
 }
 
 async function onDeleteLinkPost (post) {
