@@ -14,6 +14,7 @@ class ShellWindowTabs extends LitElement {
   constructor () {
     super()
     this.tabs = []
+    this.draggedTabIndex = null
 
     bg.views.createEventStream().on('data', evt => {
       switch (evt[0]) {
@@ -44,9 +45,9 @@ class ShellWindowTabs extends LitElement {
           ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
           <div
             class="unused-space"
-            @dragover=${e => this.onDragoverTab(e, -1)}
-            @dragleave=${e => this.onDragleaveTab(e, -1)}
-            @drop=${e => this.onDropTab(e, -1)}
+            @dragover=${e => this.onDragoverTab(e, this.tabs.length)}
+            @dragleave=${e => this.onDragleaveTab(e, this.tabs.length)}
+            @drop=${e => this.onDropTab(e, this.tabs.length)}
           >
             <div class="tab tab-add-btn" @click=${this.onClickNew} title="Open new tab">
               <span class="plus">+</span>
@@ -96,6 +97,7 @@ class ShellWindowTabs extends LitElement {
   }
 
   onDragstartTab (e, index) {
+    this.draggedTabIndex = index
     e.dataTransfer.effectAllowed = 'move'
   }
   
@@ -119,9 +121,10 @@ class ShellWindowTabs extends LitElement {
     e.stopPropagation()
     e.currentTarget.classList.remove('drag-hover')
 
-    if (index) {
+    if (this.draggedTabIndex !== null) {
       bg.views.reorderTab(this.draggedTabIndex, index)
     }
+    this.draggedTabIndex = null
     return false
   }
 }

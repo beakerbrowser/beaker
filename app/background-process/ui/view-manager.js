@@ -19,6 +19,8 @@ var windowEvents = {} // mapof {[win.id]: Events}
 // classes
 // =
 
+var DEBUG = 1
+
 class View {
   constructor (win, opts) {
     this.browserWindow = win
@@ -39,7 +41,7 @@ class View {
     // webview state
     // this.url = null // current URL
     this.loadingURL = null // URL being loaded, if any
-    this.title = '' // current page's title
+    this.title = 'TODO ' + (DEBUG++) // current page's title
 
     // browser state
     this.isActive = false // is this the active page in the window?
@@ -56,7 +58,7 @@ class View {
   get state () {
     return {
       url: this.url,
-      title: 'TODO',
+      title: this.title,
       isActive: this.isActive,
       isPinned: this.isPinned
     }
@@ -88,11 +90,11 @@ export function getAll (win) {
   return activeViews[win.id] || []
 }
 
-export function get (win, index) {
+export function getByIndex (win, index) {
   return getAll(win)[index]
 }
 
-export function getPinned (win) {
+export function getAllPinned (win) {
   return getAll(win).filter(p => p.isPinned)
 }
 
@@ -142,18 +144,11 @@ export function remove (win, view) {
   // view.stopLiveReloading() TODO
   views.splice(i, 1)
   view.destroy()
-  // TODO update UI
-  // webviewsDiv.removeChild(page.webviewEl)
-  // navbar.destroyEl(page.id)
-  // prompt.destroyContainer(page.id)
-  // modal.destroyContainer(page.id)
 
   // persist pins w/o this one, if that was
   // if (page.isPinned) { savePinnedToDB() } TODO
 
   // emit
-  // events.emit('remove', page) TODO
-  // events.emit('update')
   emitReplaceState(win)
 }
 
@@ -194,8 +189,19 @@ export function reopenLastRemoved (win) {
   }
 }
 
-export function reorder (win, view, offset) {
-  // TODO
+export function reorder (win, oldIndex, newIndex) {
+  console.log('reorder()', oldIndex, newIndex)
+  if (oldIndex === newIndex) {
+    return
+  }
+  if (oldIndex < newIndex) {
+    newIndex--
+  }
+  var views = getAll(win)
+  var view = getByIndex(win, oldIndex)
+  views.splice(oldIndex, 1)
+  views.splice(newIndex, 0, view)
+  emitReplaceState(win)
 }
 
 export function changeActiveBy (win, offset) {
@@ -249,12 +255,12 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   async setActiveTab (index) {
     console.log('setActiveTab()', index)
     var win = getWindow(this.sender)
-    setActive(win, get(win, index))
+    setActive(win, getByIndex(win, index))
   },
 
   async reorderTab (oldIndex, newIndex) {
     var win = getWindow(this.sender)
-    // TODO
+    reorder(win, oldIndex, newIndex)
   }
 })
 
@@ -293,6 +299,6 @@ function emitUpdateState (win, view) {
     console.warn('WARNING: attempted to update state of a view not on the window')
     return
   }
-  var state = get(win, index).state
+  var state = getByIndex(win, index).state
   emit(win, 'update-state', {index, state})
 }
