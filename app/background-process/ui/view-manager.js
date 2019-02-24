@@ -27,7 +27,6 @@ class View {
     this.browserView = new BrowserView({
       webPreferences: {
         preload: path.join(__dirname, 'webview-preload.build.js'),
-        allowDisplayingInsecureContent: true,
         contextIsolation: false,
         webviewTag: false,
         sandbox: true,
@@ -71,6 +70,7 @@ class View {
 
   activate () {
     this.isActive = true
+
     const win = this.browserWindow
     win.setBrowserView(this.browserView)
     var {width, height} = win.getBounds()
@@ -79,7 +79,16 @@ class View {
   }
 
   deactivate () {
+    if (this.isActive) {
+      this.browserWindow.setBrowserView(null)
+    }
+    
     this.isActive = false
+  }
+
+  destroy () {
+    this.deactivate()
+    this.browserView.destroy()
   }
 }
 
@@ -135,9 +144,8 @@ export function remove (win, view) {
   closedURLs[win.id].push(view.url)
 
   // set new active if that was
-  if (view.isActive) {
-    if (views.length == 1) { return win.close() }
-    setActive(views[i + 1] || views[i - 1])
+  if (view.isActive && views.length > 1) {
+    setActive(win, views[i + 1] || views[i - 1])
   }
 
   // remove
@@ -147,6 +155,11 @@ export function remove (win, view) {
 
   // persist pins w/o this one, if that was
   // if (page.isPinned) { savePinnedToDB() } TODO
+
+  // close the window if that was the last view
+  if (views.length === 0) {
+    return win.close()
+  }
 
   // emit
   emitReplaceState(win)
@@ -250,6 +263,12 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var win = getWindow(this.sender)
     var view = create(win)
     return getAll(win).indexOf(view)
+  },
+
+  async closeTab (index) {
+    console.log('closeTab()', index)
+    var win = getWindow(this.sender)
+    remove(win, getByIndex(win, index))
   },
 
   async setActiveTab (index) {

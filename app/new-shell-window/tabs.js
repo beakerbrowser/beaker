@@ -25,7 +25,10 @@ class ShellWindowTabs extends LitElement {
           break
         case 'update-state':
           console.log('update-state', evt[1])
-          Object.assign(this.tabs[evt[1].index], evt[1].state)
+          var {index, state} = evt[1]
+          if (this.tabs[index]) {
+            Object.assign(this.tabs[index], state)
+          }
           this.requestUpdate()
           break
       }
@@ -79,7 +82,7 @@ class ShellWindowTabs extends LitElement {
             : html`<img src="beaker-favicon:${tab.url}?cache=${Date.now()}">`}
         </div>
         <div class="tab-title">${tab.title}</div>
-        <div class="tab-close" title="Close tab"></div>
+        <div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>
       </div>
     `
   }
@@ -94,6 +97,12 @@ class ShellWindowTabs extends LitElement {
 
   onClickTab (e, index) {
     bg.views.setActiveTab(index)
+  }
+
+  onClickClose (e, index) {
+    e.preventDefault()
+    e.stopPropagation()
+    bg.views.closeTab(index)
   }
 
   onDragstartTab (e, index) {
