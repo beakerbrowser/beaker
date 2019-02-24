@@ -4,6 +4,7 @@ import {register as registerShortcut, unregister as unregisterShortcut} from '@b
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
 import jetpack from 'fs-jetpack'
+import * as viewManager from './view-manager'
 import * as keybindings from './keybindings'
 import path from 'path'
 import * as openURL from '../open-url'
@@ -82,10 +83,13 @@ export async function setup () {
   })
 
   ipcMain.on('shell-window:ready', ({ sender }) => {
-    if (sender.id === firstWindow) {
-      // if this is the first window opened (since app start or since all windows closing)
-      sender.send('command', 'load-pinned-tabs')
-    }
+    viewManager.create(BrowserWindow.fromWebContents(sender))
+
+    // TODO
+    // if (sender.id === firstWindow) {
+    //   // if this is the first window opened (since app start or since all windows closing)
+    //   sender.send('command', 'load-pinned-tabs')
+    // }
   })
 
   let previousSessionState = getPreviousBrowsingSession()
