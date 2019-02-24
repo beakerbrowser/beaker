@@ -1,7 +1,7 @@
 import path from 'path'
 import { app, BrowserView } from 'electron'
 
-const Y_POSITION = 70 // TODO
+const Y_POSITION = 78 // TODO
 const FIRST_TAB_URL = 'beaker://start'
 const DEFAULT_URL = 'beaker://start'
 
