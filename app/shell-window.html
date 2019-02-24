@@ -5,22 +5,29 @@
   <title>Beaker</title>
   <link rel="stylesheet" href="beaker://assets/icons.css">
   <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-  <link rel="stylesheet" href="beaker://shell-window/main.css">
+  <style>
+  body {
+    --color-border: #bbb;
+    --color-tab: #555;
+    --color-tab-close: #333;
+    --color-tab-add: #888;
+    --color-tab-add--hover: #333;
+    --bg-foreground: #f7f7f7;
+    --bg-background: #eee;
+    --bg-tab--current: var(--bg-foreground);
+    --bg-tab--hover: #e2e2e2;
+    --bg-tab-add--hover: #ccc;
+    --bg-tab-close--hover: #bbb;
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: var(--bg-background);
+  }
+  </style>
 </head>
 <body>
-  <header id="toolbar" class="toolbar toolbar-header">
-    <div id="toolbar-tabs"></div>
-    <div id="toolbar-nav"></div>
-  </header>
-  <div id="prompts"></div>
-  <div id="toasts"></div>
-  <div id="modals"></div>
-  <div id="win32-titlebar"></div>
-  <div id="left-swipe-arrow"><span class="icon icon-left-bold"></span></div>
-  <div id="right-swipe-arrow"><span class="icon icon-right-bold"></span></div>
-  <div id="webviews"></div>
-  <div id="hidden-webviews"></div>
-  <div id="statusbar"></div>
+  <shell-window></shell-window>
   <div id="svgs">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <defs>

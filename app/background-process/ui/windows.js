@@ -142,7 +142,7 @@ export function createShellWindow (windowState) {
       preload: PRELOAD_PATH,
       nodeIntegration: false,
       contextIsolation: false,
-      webviewTag: true,
+      webviewTag: false,
       sandbox: true,
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       // enableRemoteModule: false, TODO would prefer this were true, but shell window needs this to get the webviews' webContents IDs -prf
