@@ -1,26 +1,47 @@
 import {LitElement, html, css} from './lit-element/lit-element'
 import {classMap} from './lit-element/lit-html/directives/class-map'
 import {repeat} from './lit-element/lit-html/directives/repeat'
+import spinnerCSS from './spinner.css'
+import * as bg from './bg-process-rpc'
 
 class ShellWindowTabs extends LitElement {
   static get properties () {
     return {
-      tabs: {type: Array},
-      current: {type: Number}
+      tabs: {type: Array}
     }
   }
 
   constructor () {
     super()
-    this.tabs = ['a', 'b', 'c']
-    this.current = 0
+    this.tabs = []
+
+    bg.views.createEventStream().on('data', evt => {
+      switch (evt[0]) {
+        case 'replace-state':
+          console.log('repalce-state', evt[1])
+          this.tabs = evt[1]
+          this.requestUpdate()
+          break
+        case 'update-state':
+          console.log('update-state', evt[1])
+          Object.assign(this.tabs[evt[1].index], evt[1].state)
+          this.requestUpdate()
+          break
+      }
+    })
+
+    bg.views.getState().then(state => {
+      console.log('got state', state)
+      this.tabs = state
+      this.requestUpdate()
+    })
   }
 
   render () {
     return html`
       <div class="shell ${window.platform}">
         <div class="tabs">
-          ${repeat(this.tabs, (tab, index) => this.renderTab(index))}
+          ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
           <div
             class="unused-space"
             @dragover=${e => this.onDragoverTab(e, -1)}
@@ -36,8 +57,8 @@ class ShellWindowTabs extends LitElement {
     `
   }
 
-  renderTab (index) {
-    const cls = classMap({tab: true, current: this.current === index})
+  renderTab (tab, index) {
+    const cls = classMap({tab: true, current: tab.isActive})
     return html`
       <div
         class="${cls}"
@@ -49,8 +70,14 @@ class ShellWindowTabs extends LitElement {
         @dragleave=${e => this.onDragleaveTab(e, index)}
         @drop=${e => this.onDropTab(e, index)}
       >
-        <div class="tab-favicon"><img src="beaker-favicon:dat://beakerbrowser.com?cache=${Date.now()}"></div>
-        <div class="tab-title">${this.tabs[index]}</div>
+        <div class="tab-favicon">
+          ${tab.isLoading
+            ? tab.isReceivingAssets
+              ? html`<div class="spinner"></div>`
+              : html`<div class="spinner reverse"></div>`
+            : html`<img src="beaker-favicon:${tab.url}?cache=${Date.now()}">`}
+        </div>
+        <div class="tab-title">${tab.title}</div>
         <div class="tab-close" title="Close tab"></div>
       </div>
     `
@@ -59,13 +86,13 @@ class ShellWindowTabs extends LitElement {
   // events
   // =
 
-  onClickNew (e) {
-    this.tabs.push('d')
-    this.requestUpdate()
+  async onClickNew (e) {
+    var index = await bg.views.createTab()
+    bg.views.setActiveTab(index)
   }
 
   onClickTab (e, index) {
-    this.current = index
+    bg.views.setActiveTab(index)
   }
 
   onDragstartTab (e, index) {
@@ -93,12 +120,14 @@ class ShellWindowTabs extends LitElement {
     e.currentTarget.classList.remove('drag-hover')
 
     if (index) {
-      console.log('drop onto', this.tabs[index])
+      bg.views.reorderTab(this.draggedTabIndex, index)
     }
     return false
   }
 }
 ShellWindowTabs.styles = css`
+${spinnerCSS}
+
 .shell {
   position: relative;
   padding: 0 18px 0 0px;
@@ -167,6 +196,8 @@ ShellWindowTabs.styles = css`
   position: relative;
   left: 1px;
   top: 1px;
+  width: 10px;
+  height: 10px;
 }
 
 .tab-pinned .tab-favicon {

@@ -1,4 +1,5 @@
 import { LitElement, html } from './lit-element/lit-element'
+import {beakerBrowser} from './bg-process-rpc'
 import './tabs'
 import './navbar'
 
@@ -6,7 +7,7 @@ class ShellWindowUI extends LitElement {
   constructor () {
     super()
 
-    var {platform} = beaker.browser.getInfo()
+    var {platform} = beakerBrowser.getInfo()
     window.platform = platform
     if (platform === 'darwin') {
       document.body.classList.add('darwin')

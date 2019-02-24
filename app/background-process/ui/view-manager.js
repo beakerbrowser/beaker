@@ -1,5 +1,9 @@
 import path from 'path'
-import { app, BrowserView } from 'electron'
+import Events from 'events'
+import emitStream from 'emit-stream'
+import { app, BrowserView, BrowserWindow } from 'electron'
+import * as rpc from 'pauls-electron-rpc'
+import viewsRPCManifest from '../rpc-manifests/views'
 
 const Y_POSITION = 78 // TODO
 const FIRST_TAB_URL = 'beaker://start'
@@ -10,6 +14,7 @@ const DEFAULT_URL = 'beaker://start'
 
 var activeViews = {} // map of {[win.id]: Array<View>}
 var closedURLs = {} // map of {[win.id]: Array<string>}
+var windowEvents = {} // mapof {[win.id]: Events}
 
 // classes
 // =
@@ -48,12 +53,21 @@ class View {
     return this.browserView.webContents.getURL()
   }
 
+  get state () {
+    return {
+      url: this.url,
+      title: 'TODO',
+      isActive: this.isActive,
+      isPinned: this.isPinned
+    }
+  }
+
   loadURL (url) {
     // TODO manage url and loadingURL
     this.browserView.webContents.loadURL(url)
   }
 
-  setActive () {
+  activate () {
     this.isActive = true
     const win = this.browserWindow
     win.setBrowserView(this.browserView)
@@ -62,7 +76,7 @@ class View {
     this.browserView.setAutoResize({width: true, height: true})
   }
 
-  setInactive () {
+  deactivate () {
     this.isActive = false
   }
 }
@@ -71,7 +85,7 @@ class View {
 // =
 
 export function getAll (win) {
-  return activeViews[win] || []
+  return activeViews[win.id] || []
 }
 
 export function get (win, index) {
@@ -98,8 +112,12 @@ export function create (win, url) {
   // make active if none others are
   if (!getActive(win)) {
     // events.emit('first-page', page) TODO
+    console.log('setting active')
     setActive(win, view)
   }
+  emitReplaceState(win)
+
+  return view
 }
 
 export function remove (win, view) {
@@ -136,12 +154,19 @@ export function remove (win, view) {
   // emit
   // events.emit('remove', page) TODO
   // events.emit('update')
+  emitReplaceState(win)
 }
 
 export function setActive (win, view) {
   var active = getActive(win)
-  if (active) active.setInactive()
-  view.setActive()
+  if (active) {
+    active.deactivate()
+    emitUpdateState(win, active)
+  }
+  if (view) {
+    view.activate()
+    emitUpdateState(win, view)
+  }
 }
 
 export function initializeFromSnapshot (win, snapshot) {
@@ -200,5 +225,74 @@ export function changeActiveToLast (win) {
   setActive(win, views[views.length - 1])
 }
 
+// rpc api
+// =
+
+rpc.exportAPI('background-process-views', viewsRPCManifest, {
+  createEventStream () {
+    return emitStream(getEvents(getWindow(this.sender)))
+  },
+
+  async getState () {
+    console.log('getState()')
+    var win = getWindow(this.sender)
+    return getWindowTabState(win)
+  },
+
+  async createTab () {
+    console.log('createTab()')
+    var win = getWindow(this.sender)
+    var view = create(win)
+    return getAll(win).indexOf(view)
+  },
+
+  async setActiveTab (index) {
+    console.log('setActiveTab()', index)
+    var win = getWindow(this.sender)
+    setActive(win, get(win, index))
+  },
+
+  async reorderTab (oldIndex, newIndex) {
+    var win = getWindow(this.sender)
+    // TODO
+  }
+})
+
 // internal methods
 // =
+
+function getWindow (sender) {
+  return BrowserWindow.fromWebContents(sender)
+}
+
+function getEvents (win) {
+  if (!(win.id in windowEvents)) {
+    windowEvents[win.id] = new Events()
+  }
+  return windowEvents[win.id]
+}
+
+function emit (win, ...args) {
+  getEvents(win).emit(...args)
+}
+
+function getWindowTabState (win) {
+  return getAll(win).map(view => view.state)
+}
+
+function emitReplaceState (win) {
+  var state = getWindowTabState(win)
+  console.log('replacing state', state)
+  emit(win, 'replace-state', state)
+}
+
+function emitUpdateState (win, view) {
+  console.log('updating state')
+  var index = typeof view === 'number' ? index : getAll(win).indexOf(view)
+  if (index === -1) {
+    console.warn('WARNING: attempted to update state of a view not on the window')
+    return
+  }
+  var state = get(win, index).state
+  emit(win, 'update-state', {index, state})
+}

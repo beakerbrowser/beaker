@@ -130,6 +130,7 @@ input {
   border: 0;
   box-sizing: border-box;
   font-size: 13.5px;
+  font-weight: 500;
   line-height: 26px;
   width: 100%;
   height: 24px;
