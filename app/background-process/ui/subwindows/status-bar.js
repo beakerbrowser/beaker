@@ -27,6 +27,13 @@ export function setup (parent) {
   windows[parent.id].loadFile('status-bar.html')
 }
 
+export function destroy (parent) {
+  if (get(parent)) {
+    get(parent).close()
+    delete windows[parent.id]
+  }
+}
+
 export function get (parent) {
   return windows[parent.id]
 }
@@ -34,15 +41,8 @@ export function get (parent) {
 export function reposition (parent) {
   var win = get(parent)
   if (win) {
-    var {x, height} = parent.getBounds()
-    win.setBounds({x, y: height + 1})
-  }
-}
-
-export function destroy (parent) {
-  if (get(parent)) {
-    get(parent).close()
-    delete windows[parent.id]
+    var {x, y, height} = parent.getBounds()
+    win.setBounds({x, y: y + height - HEIGHT})
   }
 }
 
