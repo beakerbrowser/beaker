@@ -13,6 +13,7 @@ class ShellWindowUI extends LitElement {
   constructor () {
     super()
     this.tabs = []
+    this.activeTabIndex = -1
 
     var {platform} = bg.beakerBrowser.getInfo()
     window.platform = platform
@@ -28,7 +29,7 @@ class ShellWindowUI extends LitElement {
         case 'replace-state':
           console.log('replace-state', evt[1])
           this.tabs = evt[1]
-          this.requestChildUpdates()
+          this.stateHasChanged()
           break
         case 'update-state':
           console.log('update-state', evt[1])
@@ -36,7 +37,7 @@ class ShellWindowUI extends LitElement {
           if (this.tabs[index]) {
             Object.assign(this.tabs[index], state)
           }
-          this.requestChildUpdates()
+          this.stateHasChanged()
           break
       }
     })
@@ -44,15 +45,18 @@ class ShellWindowUI extends LitElement {
     bg.views.getState().then(state => {
       console.log('got state', state)
       this.tabs = state
-      this.requestChildUpdates()
+      this.stateHasChanged()
     })
   }
 
   get activeTab () {
-    return this.tabs.find(tab => tab.isActive)
+    return this.tabs[this.activeTabIndex]
   }
 
-  requestChildUpdates () {
+  stateHasChanged () {
+    // update active index
+    this.activeTabIndex = this.tabs.findIndex(tab => tab.isActive)
+
     this.requestUpdate()
     this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
     if (this.activeTab) {
@@ -63,7 +67,7 @@ class ShellWindowUI extends LitElement {
   render () {
     return html`
       <shell-window-tabs .tabs=${this.tabs}></shell-window-tabs>
-      <shell-window-navbar .activeTab=${this.activeTab}></shell-window-navbar>
+      <shell-window-navbar .activeTabIndex=${this.activeTabIndex} .activeTab=${this.activeTab}></shell-window-navbar>
     `
   }
 }

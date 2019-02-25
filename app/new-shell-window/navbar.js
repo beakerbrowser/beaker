@@ -1,11 +1,13 @@
 import {LitElement, html, css} from './lit-element/lit-element'
 import _get from 'lodash.get'
+import * as bg from './bg-process-rpc'
 import buttonResetCSS from './navbar/button-reset.css'
 import './navbar/location'
 
 class ShellWindowNavbar extends LitElement {
   static get properties () {
     return {
+      activeTabIndex: {type: Number},
       activeTab: {type: Object},
       hasUpdateAvailable: {type: Boolean}
     }
@@ -13,6 +15,7 @@ class ShellWindowNavbar extends LitElement {
 
   constructor () {
     super()
+    this.activeTabIndex = -1
     this.activeTab = null
   }
 
@@ -32,7 +35,6 @@ class ShellWindowNavbar extends LitElement {
   // =
 
   render () {
-    console.log(this.activeTab)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="buttons" style="padding-left: 6px;">
@@ -50,7 +52,7 @@ class ShellWindowNavbar extends LitElement {
 
   get backBtn () {
     return html`
-      <button class="nav-arrow-btn" ?disabled=${!this.canGoBack}>
+      <button class="nav-arrow-btn" ?disabled=${!this.canGoBack} @click=${this.onClickGoBack}>
         <svg
           class="icon nav-arrow"
           width="9" height="16"
@@ -68,7 +70,7 @@ class ShellWindowNavbar extends LitElement {
 
   get forwardBtn () {
     return html`
-      <button class="nav-arrow-btn" ?disabled=${!this.canGoForward}>
+      <button class="nav-arrow-btn" ?disabled=${!this.canGoForward} @click=${this.onClickGoForward}>
         <svg
           class="icon nav-arrow"
           width="9" height="16"
@@ -86,7 +88,7 @@ class ShellWindowNavbar extends LitElement {
   get reloadBtn () {
     if (this.isLoading) {
       return html`
-        <button>
+        <button @click=${this.onClickStop}>
           <svg
             class="icon close"
             width="12"
@@ -105,7 +107,7 @@ class ShellWindowNavbar extends LitElement {
       `
     }
     return html`
-      <button>
+      <button @click=${this.onClickReload}>
         <svg
           class="icon refresh"
           width="16"
@@ -135,6 +137,25 @@ class ShellWindowNavbar extends LitElement {
     return html`
       <button><span class="fa fa-bars"></span></button>
     `
+  }
+
+  // events
+  // =
+
+  onClickGoBack (e) {
+    bg.views.goBack(this.activeTabIndex)
+  }
+
+  onClickGoForward (e) {
+    bg.views.goForward(this.activeTabIndex)
+  }
+
+  onClickStop (e) {
+    bg.views.stop(this.activeTabIndex)
+  }
+
+  onClickReload (e) {
+    bg.views.reload(this.activeTabIndex)
   }
 }
 ShellWindowNavbar.styles = css`

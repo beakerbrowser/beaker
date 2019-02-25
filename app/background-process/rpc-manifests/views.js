@@ -4,5 +4,9 @@ export default {
   createTab: 'promise',
   closeTab: 'promise',
   setActiveTab: 'promise',
-  reorderTab: 'promise'
+  reorderTab: 'promise',
+  goBack: 'promise',
+  goForward: 'promise',
+  stop: 'promise',
+  reload: 'promise'
 }

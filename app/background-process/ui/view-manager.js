@@ -10,6 +10,17 @@ const Y_POSITION = 78 // TODO
 const FIRST_TAB_URL = 'beaker://start'
 const DEFAULT_URL = 'beaker://start'
 
+const STATE_VARS = [
+  'url',
+  'title',
+  'isActive',
+  'isPinned',
+  'isLoading',
+  'isReceivingAssets',
+  'canGoBack',
+  'canGoForward'
+]
+
 // globals
 // =
 
@@ -68,8 +79,16 @@ class View {
     return this.browserView.webContents.getTitle()
   }
 
+  get canGoBack () {
+    return this.browserView.webContents.canGoBack()
+  }
+
+  get canGoForward () {
+    return this.browserView.webContents.canGoForward()
+  }
+
   get state () {
-    return _pick(this, ['url', 'title', 'isActive', 'isPinned', 'isLoading', 'isReceivingAssets'])
+    return _pick(this, STATE_VARS)
   }
 
   // management
@@ -324,6 +343,22 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   async reorderTab (oldIndex, newIndex) {
     var win = getWindow(this.sender)
     reorder(win, oldIndex, newIndex)
+  },
+
+  async goBack (index) {
+    getByIndex(getWindow(this.sender), index).browserView.webContents.goBack()
+  },
+
+  async goForward (index) {
+    getByIndex(getWindow(this.sender), index).browserView.webContents.goForward()
+  },
+
+  async stop (index) {
+    getByIndex(getWindow(this.sender), index).browserView.webContents.stop()
+  },
+
+  async reload (index) {
+    getByIndex(getWindow(this.sender), index).browserView.webContents.reload()
   }
 })
 
