@@ -1,5 +1,7 @@
 import {LitElement, html, css} from '../../vendor/lit-element/lit-element'
+import {findWordBoundary} from 'pauls-word-boundary'
 import prettyHash from 'pretty-hash'
+import * as bg from '../bg-process-rpc'
 import buttonResetCSS from './button-reset.css'
 import './site-info'
 
@@ -9,6 +11,7 @@ class NavbarLocation extends LitElement {
   static get properties () {
     return {
       url: {type: String},
+      isLocationFocused: {type: Boolean},
       siteLoadError: {type: Object, attribute: 'site-load-error'},
       gotInsecureResponse: {type: Boolean, attribute: 'got-insecure-response'}
     }
@@ -17,6 +20,7 @@ class NavbarLocation extends LitElement {
   constructor () {
     super()
     this.url = ''
+    this.isLocationFocused = false
   }
 
   render () {
@@ -37,8 +41,19 @@ class NavbarLocation extends LitElement {
   renderLocation () {
     return html`
       <div class="input-container">
-        <input type="text" value="${this.url}">
-        ${this.renderInputPretty()}
+        <input
+          type="text"
+          value="${this.url}"
+          @contextmenu=${this.onContextMenuLocation}
+          @mousedown=${this.onMousedownLocation}
+          @mouseup=${this.onMouseupLocation}
+          @dblclick=${this.onDblclickLocation}
+          @focus=${this.onFocusLocation}
+          @blur=${this.onBlurLocation}
+          @keydown=${this.onKeydownLocation}
+          @input=${this.onInputLocation}
+        >
+        ${this.isLocationFocused ? '' : this.renderInputPretty()}
       </div>
     `
   }
@@ -93,6 +108,93 @@ class NavbarLocation extends LitElement {
       </button>
     `
   }
+
+  // events
+  // =
+
+  onContextMenuLocation (e) {
+    // TODO
+    // const { Menu, clipboard } = remote
+    // var clipboardContent = clipboard.readText()
+    // var clipInfo = examineLocationInput(clipboardContent)
+    // var menu = Menu.buildFromTemplate([
+    //   { label: 'Cut', role: 'cut' },
+    //   { label: 'Copy', role: 'copy' },
+    //   { label: 'Paste', role: 'paste' },
+    //   { label: `Paste and ${clipInfo.isProbablyUrl ? 'Go' : 'Search'}`, click: onPasteAndGo }
+    // ])
+    // menu.popup(remote.getCurrentWindow())
+  
+    // function onPasteAndGo () {
+    //   var url = clipInfo.isProbablyUrl ? clipInfo.vWithProtocol : clipInfo.vSearch
+    //   var page = pages.getActive()
+    //   page.navbarEl.querySelector('.nav-location-input').value = url
+    //   page.navbarEl.querySelector('.nav-location-input').blur()
+    //   page.loadURL(url)
+    // }
+  }
+
+  onMousedownLocation (e) {
+    // track if the user is clicking, doubleclicking, or dragging the location before its focused
+    // if a click, select all; if a doubleclick, select word under cursor; if a drag, do default behavior
+    if (!e.currentTarget.matches(':focus')) {
+      this.lastMousedownLocationTs = Date.now()
+    }
+  }
+  
+  onMouseupLocation (e) {
+    if (Date.now() - this.lastMousedownLocationTs <= 300) {
+      // was a fast click (probably not a drag) so select all
+      let inputEl = e.currentTarget
+      this.mouseupClickIndex = inputEl.selectionStart
+      inputEl.select()
+  
+      // setup double-click override
+      this.lastMousedownLocationTs = 0
+      this.lastMouseupLocationTs = Date.now()
+    }
+  }
+  
+  onDblclickLocation (e) {
+    if (Date.now() - this.lastMouseupLocationTs <= 300) {
+      e.preventDefault()
+  
+      // select the text under the cursor
+      // (we have to do this manually because we previously selected all on mouseup, which f's that default behavior up)
+      let inputEl = e.currentTarget
+      let {start, end} = findWordBoundary(inputEl.value, this.mouseupClickIndex)
+      inputEl.setSelectionRange(start, end)
+      this.lastMouseupLocationTs = 0
+    }
+  }
+
+  onFocusLocation (e) {
+    e.currentTarget.value = this.url
+    this.isLocationFocused = true
+  }
+  
+  onBlurLocation (e) {
+    // clear the selection range so that the next focusing doesnt carry it over
+    window.getSelection().empty()
+    this.isLocationFocused = false
+  }
+  
+  onInputLocation (e) {
+    var rect = this.getClientRects()[0]
+    bg.views.showMenu('location', {
+      bounds: {
+        x: rect.left|0,
+        y: rect.top|0,
+        width: rect.width|0
+      },
+      params: {value: e.currentTarget.value}
+    })
+    e.currentTarget.blur()
+  }
+  
+  onKeydownLocation (e) {
+    // TODO
+  }
 }
 NavbarLocation.styles = css`
 :host {
@@ -128,13 +230,20 @@ input {
   position: absolute;
   left: 0;
   top: 0;
-  border: 0;
+
   box-sizing: border-box;
-  font-size: 13.5px;
-  font-weight: 500;
+  border: 0;
+  padding: 0;
+
   line-height: 26px;
   width: 100%;
-  height: 24px;
+  height: 25px;
+
+  color: #222;
+  font-size: 13.5px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+  font-weight: 500;
+  letter-spacing: -.2px;
 }
 
 input:focus {
@@ -147,7 +256,6 @@ input:focus {
   color: #000;
   background: #fff;
   cursor: text;
-  letter-spacing: -.2px;
   pointer-events: none;
 }
 

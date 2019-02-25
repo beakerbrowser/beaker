@@ -32,7 +32,7 @@ export function setup (parent) {
     console.log('Shell-Menus window says:', message)
   })
   win.loadURL('beaker://shell-menus/')
-  win.on('blur', () => hide(parent))
+  // win.on('blur', () => hide(parent)) TODO restore
 }
 
 export function destroy (parent) {
@@ -59,31 +59,44 @@ export function reposition (parent) {
     // }
     // win.setBounds(b)
     var parentBounds = parent.getBounds()
-    win.setBounds({
-      x: parentBounds.x + parentBounds.width - 245,
-      y: parentBounds.y + 74,
-      width: 240,
-      height: 466
-    })
+    if (win.menuId === 'browser') {
+      win.setBounds({
+        x: parentBounds.x + parentBounds.width - 245,
+        y: parentBounds.y + 74,
+        width: 240,
+        height: 466
+      })
+    } else if (win.menuId === 'location') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.x,
+        y: parentBounds.y + win.boundsOpt.y,
+        width: win.boundsOpt.width,
+        height: 310
+      })
+    }
   }
 }
 
-export async function toggle (parent, menuId) {
+export async function toggle (parent, menuId, opts) {
   var win = get(parent)
   if (win) {
     if (win.isVisible()) {
       return hide(parent)
     } else {
-      return show(parent, menuId)
+      return show(parent, menuId, opts)
     }
   }
 }
 
-export async function show (parent, menuId) {
+export async function show (parent, menuId, opts) {
   var win = get(parent)
   if (win) {
+    win.menuId = menuId
+    win.boundsOpt = opts && opts.bounds
     reposition(parent)
-    await win.webContents.executeJavaScript(`openMenu('${menuId}')`)
+
+    var params = opts && opts.params ? opts.params : {}
+    await win.webContents.executeJavaScript(`openMenu('${menuId}', ${JSON.stringify(params)})`)
     win.show()
 
     // await till hidden
@@ -107,13 +120,21 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   async close () {
     hide(getParentWindow(this.sender))
   },
+
   async createWindow (url) {
     createShellWindow()
   },
+
   async createTab (url) {
     var win = getParentWindow(this.sender)
     viewManager.create(win, url, {setActive: true})
   },
+
+  async loadURL (url) {
+    var win = getParentWindow(this.sender)
+    viewManager.getActive(win).loadURL(url)
+  },
+
   async showInpageFind () {
     // TODO
   }

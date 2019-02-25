@@ -411,8 +411,12 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     getByIndex(getWindow(this.sender), index).browserView.webContents.reload()
   },
 
-  async toggleMenu (id) {
-    await shellMenus.toggle(getWindow(this.sender), id)
+  async showMenu (id, opts) {
+    await shellMenus.show(getWindow(this.sender), id, opts)
+  },
+
+  async toggleMenu (id, opts) {
+    await shellMenus.toggle(getWindow(this.sender), id, opts)
   }
 })
 

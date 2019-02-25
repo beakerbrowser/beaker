@@ -10,5 +10,6 @@ export default {
   goForward: 'promise',
   stop: 'promise',
   reload: 'promise',
+  showMenu: 'promise',
   toggleMenu: 'promise'
 }
