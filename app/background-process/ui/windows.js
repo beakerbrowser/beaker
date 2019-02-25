@@ -89,13 +89,13 @@ export async function setup () {
   })
 
   ipcMain.on('shell-window:ready', ({ sender }) => {
-    viewManager.create(BrowserWindow.fromWebContents(sender))
+    var win = BrowserWindow.fromWebContents(sender)
+    viewManager.create(win)
 
-    // TODO
-    // if (sender.id === firstWindow) {
-    //   // if this is the first window opened (since app start or since all windows closing)
-    //   sender.send('command', 'load-pinned-tabs')
-    // }
+    if (win.webContents.id === firstWindow) {
+      // if this is the first window opened (since app start or since all windows closing)
+      viewManager.loadPins(win)
+    }
   })
 
   let previousSessionState = getPreviousBrowsingSession()

@@ -38,7 +38,7 @@ class ShellWindowTabs extends LitElement {
   }
 
   renderTab (tab, index) {
-    const cls = classMap({tab: true, current: tab.isActive})
+    const cls = classMap({tab: true, current: tab.isActive, pinned: tab.isPinned})
     return html`
       <div
         class="${cls}"
@@ -59,8 +59,12 @@ class ShellWindowTabs extends LitElement {
               : html`<div class="spinner reverse"></div>`
             : html`<img src="beaker-favicon:${tab.url}?cache=${Date.now()}">`}
         </div>
-        <div class="tab-title">${tab.title}</div>
-        <div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>
+        ${tab.isPinned
+          ? ''
+          : html`
+            <div class="tab-title">${tab.title}</div>
+            <div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>
+          `}
       </div>
     `
   }
@@ -105,8 +109,12 @@ class ShellWindowTabs extends LitElement {
 
   onDragoverTab (e, index) {
     e.preventDefault()
-    e.currentTarget.classList.add('drag-hover')
 
+    if (!this.canDrop(index)) {
+      return false
+    }
+
+    e.currentTarget.classList.add('drag-hover')
     e.dataTransfer.dropEffect = 'move'
     return false
   }
@@ -119,11 +127,21 @@ class ShellWindowTabs extends LitElement {
     e.stopPropagation()
     e.currentTarget.classList.remove('drag-hover')
 
-    if (this.draggedTabIndex !== null) {
+    if (this.draggedTabIndex !== null && this.canDrop(index)) {
       bg.views.reorderTab(this.draggedTabIndex, index)
     }
     this.draggedTabIndex = null
     return false
+  }
+
+  canDrop (index) {
+    var draggingTab = this.tabs[this.draggedTabIndex]
+    var targetTab = this.tabs[index]
+    if (draggingTab.isPinned !== targetTab.isPinned) {
+      // only allow tabs to drag within their own pinned/unpinned groups
+      return false
+    }
+    return true
   }
 }
 ShellWindowTabs.styles = css`
@@ -178,6 +196,10 @@ ${spinnerCSS}
   border: 1px solid transparent;
 }
 
+.tab.pinned {
+  width: 45px;
+}
+
 .tab-favicon {
   width: 16px;
   height: 23px;
@@ -201,8 +223,8 @@ ${spinnerCSS}
   height: 10px;
 }
 
-.tab-pinned .tab-favicon {
-  left: 16px;
+.tab.pinned .tab-favicon {
+  left: 14px;
 }
 
 .tab-title {

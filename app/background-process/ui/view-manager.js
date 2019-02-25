@@ -1,12 +1,15 @@
+import { BrowserView, BrowserWindow, Menu } from 'electron'
+import * as beakerCore from '@beaker/core'
 import path from 'path'
 import Events from 'events'
 import emitStream from 'emit-stream'
 import _pick from 'lodash.pick'
-import { BrowserView, BrowserWindow, Menu } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import viewsRPCManifest from '../rpc-manifests/views'
 import * as shellMenus from './subwindows/shell-menus'
 import * as statusBar from './subwindows/status-bar'
+const settingsDb = beakerCore.dbs.settings
+const historyDb = beakerCore.dbs.history
 
 const Y_POSITION = 78 
 const DEFAULT_URL = 'beaker://start'
@@ -35,7 +38,7 @@ var windowEvents = {} // mapof {[win.id]: Events}
 var DEBUG = 1
 
 class View {
-  constructor (win, opts) {
+  constructor (win, opts = {isPinned: false}) {
     this.browserWindow = win
     this.browserView = new BrowserView({
       webPreferences: {
@@ -49,6 +52,7 @@ class View {
         scrollBounce: true
       }
     })
+    this.browserView.setBackgroundColor('#fff')
 
     // webview state
     this.loadingURL = null // URL being loaded, if any
@@ -57,7 +61,7 @@ class View {
 
     // browser state
     this.isActive = false // is this the active page in the window?
-    this.isPinned = false // is this page pinned?
+    this.isPinned = Boolean(opts.isPinned) // is this page pinned?
 
     // helper state
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
@@ -65,6 +69,7 @@ class View {
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
     this.webContents.on('did-navigate', this.onDidNavigate.bind(this))
+    this.webContents.on('did-navigate-in-page', this.onDidNavigateInPage.bind(this))
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
     this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
   }
@@ -127,6 +132,18 @@ class View {
     this.browserView.destroy()
   }
 
+  async updateHistory () {
+    var url = this.url
+    var title = this.title
+  
+    if (!/^beaker:\/\/(start|history)/i.test(url)) {
+      historyDb.addVisit(0, {url, title})
+      if (this.isPinned) {
+        savePins(this.browserWindow)
+      }
+    }
+  }
+
   // events
   // =
 
@@ -151,7 +168,13 @@ class View {
     this.emitUpdateState()
   }
 
+  onDidNavigateInPage (e) {
+    this.updateHistory()
+  }
+
   onDidStopLoading (e) {
+    this.updateHistory()
+    
     // update state
     this.isLoading = false
     this.isReceivingAssets = false
@@ -184,18 +207,21 @@ export function getActive (win) {
   return getAll(win).find(view => view.isActive)
 }
 
-export function create (win, url, opts = {setActive: false}) {
+export function create (win, url, opts = {setActive: false, isPinned: false}) {
   url = url || DEFAULT_URL
-  var view = new View(win, {})
+  var view = new View(win, {isPinned: opts.isPinned})
   
   activeViews[win.id] = activeViews[win.id] || []
-  activeViews[win.id].push(view)
+  if (opts.isPinned) {
+    activeViews[win.id].splice(indexOfLastPinnedView(win), 0, view)
+  } else {
+    activeViews[win.id].push(view)
+  }
 
   view.loadURL(url)
 
   // make active if requested, or if none others are
   if (opts.setActive || !getActive(win)) {
-    // events.emit('first-page', page) TODO
     setActive(win, view)
   }
   emitReplaceState(win)
@@ -226,7 +252,9 @@ export function remove (win, view) {
   view.destroy()
 
   // persist pins w/o this one, if that was
-  // if (page.isPinned) { savePinnedToDB() } TODO
+  if (view.isPinned) {
+    savePins(win)
+  }
 
   // close the window if that was the last view
   if (views.length === 0) {
@@ -256,7 +284,6 @@ export function removeAllToRightOf (win, view) {
 }
 
 export function setActive (win, view) {
-  console.log(view)
   if (typeof view === 'number') {
     view = getByIndex(win, view)
   }
@@ -284,7 +311,32 @@ export function takeSnapshot (win) {
 }
 
 export function togglePinned (win, view) {
-  // TODO
+  // move tab to the "end" of the pinned tabs
+  var views = getAll(win)
+  var oldIndex = views.indexOf(view)
+  var newIndex = indexOfLastPinnedView(win)
+  if (oldIndex < newIndex) newIndex--
+  views.splice(oldIndex, 1)
+  views.splice(newIndex, 0, view)
+
+  // update view state
+  view.isPinned = !view.isPinned
+  emitReplaceState(win)
+
+  // persist
+  savePins(win)
+}
+
+export function savePins (win) {
+  return settingsDb.set('pinned_tabs', JSON.stringify(getAllPinned(win).map(p => p.url)))
+}
+
+export async function loadPins (win) {
+  var json = await settingsDb.get('pinned_tabs')
+  try { JSON.parse(json).forEach(url => create(win, url, {isPinned: true})) }
+  catch (e) {
+    console.log('Failed to load pins', e)
+  }
 }
 
 export function reopenLastRemoved (win) {
@@ -297,12 +349,8 @@ export function reopenLastRemoved (win) {
 }
 
 export function reorder (win, oldIndex, newIndex) {
-  console.log('reorder()', oldIndex, newIndex)
   if (oldIndex === newIndex) {
     return
-  }
-  if (oldIndex < newIndex) {
-    newIndex--
   }
   var views = getAll(win)
   var view = getByIndex(win, oldIndex)
@@ -347,26 +395,22 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   },
 
   async getState () {
-    console.log('getState()')
     var win = getWindow(this.sender)
     return getWindowTabState(win)
   },
 
   async createTab (url, opts = {setActive: false}) {
-    console.log('createTab()')
     var win = getWindow(this.sender)
     var view = create(win, url, opts)
     return getAll(win).indexOf(view)
   },
 
   async closeTab (index) {
-    console.log('closeTab()', index)
     var win = getWindow(this.sender)
     remove(win, getByIndex(win, index))
   },
 
   async setActiveTab (index) {
-    console.log('setActiveTab()', index)
     var win = getWindow(this.sender)
     setActive(win, getByIndex(win, index))
   },
@@ -383,7 +427,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       { label: 'New Tab', click: () => create(win, null, {setActive: true}) },
       { type: 'separator' },
       { label: 'Duplicate', click: () => create(win, view.url) },
-      { label: (view.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => {/* TODO */} },
+      { label: (view.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => togglePinned(win, view) },
       { label: (view.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => {/* TODO */} },
       { type: 'separator' },
       { label: 'Close Tab', click: () => remove(win, view) },
@@ -442,14 +486,21 @@ function getWindowTabState (win) {
   return getAll(win).map(view => view.state)
 }
 
+function indexOfLastPinnedView (win) {
+  var views = getAll(win)
+  var index = 0
+  for (index; index < views.length; index++) {
+    if (!views[index].isPinned) break
+  }
+  return index
+}
+
 function emitReplaceState (win) {
   var state = getWindowTabState(win)
-  console.log('replacing state', state)
   emit(win, 'replace-state', state)
 }
 
 function emitUpdateState (win, view) {
-  console.log('updating state')
   var index = typeof view === 'number' ? index : getAll(win).indexOf(view)
   if (index === -1) {
     console.warn('WARNING: attempted to update state of a view not on the window')
