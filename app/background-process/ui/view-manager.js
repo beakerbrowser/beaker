@@ -1,7 +1,8 @@
 import path from 'path'
 import Events from 'events'
 import emitStream from 'emit-stream'
-import { app, BrowserView, BrowserWindow } from 'electron'
+import _pick from 'lodash.pick'
+import { BrowserView, BrowserWindow } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import viewsRPCManifest from '../rpc-manifests/views'
 
@@ -41,6 +42,8 @@ class View {
     // this.url = null // current URL
     this.loadingURL = null // URL being loaded, if any
     this.title = 'TODO ' + (DEBUG++) // current page's title
+    this.isLoading = false // is the tab loading?
+    this.isReceivingAssets = false // has the webview started receiving assets in the current load-cycle?
 
     // browser state
     this.isActive = false // is this the active page in the window?
@@ -48,6 +51,12 @@ class View {
 
     // helper state
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
+
+    // wire up events
+    const wc = this.browserView.webContents
+    wc.on('did-start-loading', e => this.onDidStartLoading(e))
+    wc.on('did-navigate', e => this.onDidNavigate(e))
+    wc.on('did-stop-loading', e => this.onDidStopLoading(e))
   }
 
   get url () {
@@ -55,13 +64,11 @@ class View {
   }
 
   get state () {
-    return {
-      url: this.url,
-      title: this.title,
-      isActive: this.isActive,
-      isPinned: this.isPinned
-    }
+    return _pick(this, ['url', 'title', 'isActive', 'isPinned', 'isLoading', 'isReceivingAssets'])
   }
+
+  // management
+  // =
 
   loadURL (url) {
     // TODO manage url and loadingURL
@@ -82,13 +89,46 @@ class View {
     if (this.isActive) {
       this.browserWindow.setBrowserView(null)
     }
-    
+
     this.isActive = false
   }
 
   destroy () {
     this.deactivate()
     this.browserView.destroy()
+  }
+
+  // events
+  // =
+
+  emitUpdateState () {
+    emitUpdateState(this.browserWindow, this)
+  }
+
+  onDidStartLoading (e) {
+    // update state
+    this.isLoading = true
+    this.isReceivingAssets = false
+
+    // emit
+    this.emitUpdateState()
+  }
+
+  onDidNavigate (e) {
+    // update state
+    this.isReceivingAssets = true
+
+    // emit
+    this.emitUpdateState()
+  }
+
+  onDidStopLoading (e) {
+    // update state
+    this.isLoading = false
+    this.isReceivingAssets = false
+
+    // emit
+    this.emitUpdateState()
   }
 }
 
