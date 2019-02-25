@@ -1,4 +1,5 @@
 import {LitElement, html, css} from '../../vendor/lit-element/lit-element'
+import {classMap} from '../../vendor/lit-element/lit-html/directives/class-map'
 import {findWordBoundary} from 'pauls-word-boundary'
 import prettyHash from 'pretty-hash'
 import * as bg from '../bg-process-rpc'
@@ -13,6 +14,7 @@ class NavbarLocation extends LitElement {
       activeTabIndex: {type: Number},
       url: {type: String},
       zoom: {type: Number},
+      isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean},
       siteLoadError: {type: Object, attribute: 'site-load-error'},
       gotInsecureResponse: {type: Boolean, attribute: 'got-insecure-response'}
@@ -24,6 +26,7 @@ class NavbarLocation extends LitElement {
     this.activeTabIndex = -1
     this.url = ''
     this.zoom = 0
+    this.isBookmarked = false
     this.isLocationFocused = false
   }
 
@@ -136,9 +139,14 @@ class NavbarLocation extends LitElement {
   }
 
   renderBookmarkBtn () {
+    const cls = classMap({
+      far: !this.isBookmarked,
+      fas: this.isBookmarked,
+      'fa-star': true
+    })
     return html`
       <button style="margin-right: 2px">
-        <span class="far fa-star"></span>
+        <span class="${cls}"></span>
       </button>
     `
   }
@@ -251,6 +259,15 @@ button .fa,
 button .far,
 button .fas {
   font-size: 15px;
+}
+
+button .fa-star {
+  font-size: 14px;
+}
+
+button .fas.fa-star {
+  color: #ffcc00;
+  -webkit-text-stroke: 1px #f7c600;
 }
 
 .input-container {

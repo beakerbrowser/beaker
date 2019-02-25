@@ -5,12 +5,14 @@ import Events from 'events'
 import emitStream from 'emit-stream'
 import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
+import normalizeURL from 'normalize-url'
 import viewsRPCManifest from '../rpc-manifests/views'
 import * as zoom from './views/zoom'
 import * as shellMenus from './subwindows/shell-menus'
 import * as statusBar from './subwindows/status-bar'
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
+const bookmarksDb = beakerCore.dbs.bookmarks
 
 const Y_POSITION = 78 
 const DEFAULT_URL = 'beaker://start'
@@ -21,6 +23,7 @@ const STATE_VARS = [
   'zoom',
   'isActive',
   'isPinned',
+  'isBookmarked',
   'isLoading',
   'isReceivingAssets',
   'canGoBack',
@@ -65,6 +68,7 @@ class View {
     // browser state
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
+    this.isBookmarked = false // is the active page bookmarked?
 
     // helper state
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
@@ -148,6 +152,17 @@ class View {
     }
   }
 
+  async fetchIsBookmarked () {
+    var bookmark = await bookmarksDb.getBookmark(0, normalizeURL(this.url, {
+      stripFragment: false,
+      stripWWW: false,
+      removeQueryParameters: false,
+      removeTrailingSlash: true
+    }))
+    this.isBookmarked = !!bookmark
+    this.emitUpdateState()
+  }
+
   // events
   // =
 
@@ -173,6 +188,7 @@ class View {
 
     // update state
     this.isReceivingAssets = true
+    this.fetchIsBookmarked()
 
     // emit
     this.emitUpdateState()
