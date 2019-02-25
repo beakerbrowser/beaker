@@ -10,7 +10,9 @@ const isDatHashRegex = /^[a-z0-9]{64}/i
 class NavbarLocation extends LitElement {
   static get properties () {
     return {
+      activeTabIndex: {type: Number},
       url: {type: String},
+      zoom: {type: Number},
       isLocationFocused: {type: Boolean},
       siteLoadError: {type: Object, attribute: 'site-load-error'},
       gotInsecureResponse: {type: Boolean, attribute: 'got-insecure-response'}
@@ -19,7 +21,9 @@ class NavbarLocation extends LitElement {
 
   constructor () {
     super()
+    this.activeTabIndex = -1
     this.url = ''
+    this.zoom = 0
     this.isLocationFocused = false
   }
 
@@ -28,11 +32,12 @@ class NavbarLocation extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <shell-window-navbar-site-info
         url=${this.url}
-        .site-load-error=${this.siteLoadError}
+        .siteLoadError=${this.siteLoadError}
         ?got-insecure-response=${this.gotInsecureResponse}
       >
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
+      ${this.renderZoom()}
       ${this.renderSiteMenuBtn()}
       ${this.renderBookmarkBtn()}
     `
@@ -91,6 +96,35 @@ class NavbarLocation extends LitElement {
         `
       }
     }
+  }
+
+  renderZoom () {
+    if (this.zoom === 0) return ''
+    var zoomPct = ({
+      '-0.5': 90,
+      '-1': 75,
+      '-1.5': 67,
+      '-2': 50,
+      '-2.5': 33,
+      '-3': 25,
+      '0': 100,
+      '0.5': 110,
+      '1': 125,
+      '1.5': 150,
+      '2': 175,
+      '2.5': 200,
+      '3': 250,
+      '3.5': 300,
+      '4': 400,
+      '4.5': 500
+    })[this.zoom]
+    var zoomIcon = zoomPct < 100 ? '-minus' : '-plus'
+    return html`
+      <button @click=${this.onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
+        <i class=${'fa fa-search' + zoomIcon}></i>
+        ${zoomPct}%
+      </button>
+    `
   }
 
   renderSiteMenuBtn () {
@@ -191,9 +225,9 @@ class NavbarLocation extends LitElement {
     })
     e.currentTarget.blur()
   }
-  
-  onKeydownLocation (e) {
-    // TODO
+
+  onClickZoom (e) {
+    bg.views.resetZoom(this.activeTabIndex)
   }
 }
 NavbarLocation.styles = css`
@@ -223,6 +257,20 @@ button .fas {
   position: relative;
   flex: 1;
   margin: 0 8px;
+}
+
+button.zoom {
+  width: auto;
+  font-size: 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  margin: 2px;
+  padding: 0 6px;
+  border: 1px solid #ccc;
+}
+
+button.zoom i {
+  font-size: 12px;
 }
 
 .input-pretty,

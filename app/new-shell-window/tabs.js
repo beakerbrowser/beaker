@@ -78,6 +78,12 @@ class ShellWindowTabs extends LitElement {
   }
 
   onClickTab (e, index) {
+    // optimistically update frontend (improves perceived performance)
+    this.tabs.find(t => t.isActive).isActive = false
+    this.tabs[index].isActive = true
+    this.requestUpdate()
+
+    // call to backend
     bg.views.setActiveTab(index)
   }
 

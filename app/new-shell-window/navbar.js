@@ -45,7 +45,11 @@ class ShellWindowNavbar extends LitElement {
         ${this.forwardBtn}
         ${this.reloadBtn}
       </div>
-      <shell-window-navbar-location url="${_get(this, 'activeTab.url', '')}"></shell-window-navbar-location>
+      <shell-window-navbar-location
+        .activeTabIndex="${this.activeTabIndex}"
+        url="${_get(this, 'activeTab.url', '')}"
+        zoom="${_get(this, 'activeTab.zoom', '')}"
+      ></shell-window-navbar-location>
       <div class="buttons">
         ${this.updateBtn}
         ${this.browserMenuBtn}

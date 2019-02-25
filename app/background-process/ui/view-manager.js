@@ -6,6 +6,7 @@ import emitStream from 'emit-stream'
 import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
 import viewsRPCManifest from '../rpc-manifests/views'
+import * as zoom from './views/zoom'
 import * as shellMenus from './subwindows/shell-menus'
 import * as statusBar from './subwindows/status-bar'
 const settingsDb = beakerCore.dbs.settings
@@ -17,6 +18,7 @@ const DEFAULT_URL = 'beaker://start'
 const STATE_VARS = [
   'url',
   'title',
+  'zoom',
   'isActive',
   'isPinned',
   'isLoading',
@@ -58,6 +60,7 @@ class View {
     this.loadingURL = null // URL being loaded, if any
     this.isLoading = false // is the tab loading?
     this.isReceivingAssets = false // has the webview started receiving assets in the current load-cycle?
+    this.zoom = 0 // what's the current zoom level?
 
     // browser state
     this.isActive = false // is this the active page in the window?
@@ -68,6 +71,7 @@ class View {
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
+    this.webContents.on('did-start-navigation', this.onDidStartNavigation.bind(this))
     this.webContents.on('did-navigate', this.onDidNavigate.bind(this))
     this.webContents.on('did-navigate-in-page', this.onDidNavigateInPage.bind(this))
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
@@ -160,7 +164,13 @@ class View {
     this.emitUpdateState()
   }
 
+  onDidStartNavigation (e, url) {
+  }
+
   onDidNavigate (e) {
+    // read zoom
+    zoom.setZoomFromSitedata(this)
+
     // update state
     this.isReceivingAssets = true
 
@@ -174,7 +184,7 @@ class View {
 
   onDidStopLoading (e) {
     this.updateHistory()
-    
+
     // update state
     this.isLoading = false
     this.isReceivingAssets = false
@@ -290,12 +300,12 @@ export function setActive (win, view) {
   if (!view) return
   var active = getActive(win)
   if (active) {
-    active.deactivate()
+    active.isActive = false
   }
   if (view) {
     view.activate()
-    emitReplaceState(win)
   }
+  emitReplaceState(win)
 }
 
 export function initializeFromSnapshot (win, snapshot) {
@@ -386,6 +396,21 @@ export function changeActiveToLast (win) {
   setActive(win, views[views.length - 1])
 }
 
+export function emitReplaceState (win) {
+  var state = getWindowTabState(win)
+  emit(win, 'replace-state', state)
+}
+
+export function emitUpdateState (win, view) {
+  var index = typeof view === 'number' ? index : getAll(win).indexOf(view)
+  if (index === -1) {
+    console.warn('WARNING: attempted to update state of a view not on the window')
+    return
+  }
+  var state = getByIndex(win, index).state
+  emit(win, 'update-state', {index, state})
+}
+
 // rpc api
 // =
 
@@ -455,6 +480,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     getByIndex(getWindow(this.sender), index).browserView.webContents.reload()
   },
 
+  async resetZoom (index) {
+    zoom.zoomReset(getByIndex(getWindow(this.sender), index))
+  },
+
   async showMenu (id, opts) {
     await shellMenus.show(getWindow(this.sender), id, opts)
   },
@@ -493,19 +522,4 @@ function indexOfLastPinnedView (win) {
     if (!views[index].isPinned) break
   }
   return index
-}
-
-function emitReplaceState (win) {
-  var state = getWindowTabState(win)
-  emit(win, 'replace-state', state)
-}
-
-function emitUpdateState (win, view) {
-  var index = typeof view === 'number' ? index : getAll(win).indexOf(view)
-  if (index === -1) {
-    console.warn('WARNING: attempted to update state of a view not on the window')
-    return
-  }
-  var state = getByIndex(win, index).state
-  emit(win, 'update-state', {index, state})
 }

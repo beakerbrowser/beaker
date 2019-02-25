@@ -2,6 +2,7 @@ import * as beakerCore from '@beaker/core'
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import { createShellWindow, getFocusedDevToolsHost } from './windows'
 import * as viewManager from './view-manager'
+import * as viewZoom from './views/zoom'
 import {download} from './downloads'
 
 // exported APIs
@@ -265,6 +266,9 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+Plus',
         reserved: true,
         click: function (item, win) {
+          if (win) {
+            viewZoom.zoomIn(viewManager.getActive(win))
+          }
           if (win) win.webContents.send('command', 'view:zoom-in')
         }
       },
@@ -274,6 +278,9 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+-',
         reserved: true,
         click: function (item, win) {
+          if (win) {
+            viewZoom.zoomOut(viewManager.getActive(win))
+          }
           if (win) win.webContents.send('command', 'view:zoom-out')
         }
       },
@@ -282,7 +289,9 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+0',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:zoom-reset')
+          if (win) {
+            viewZoom.zoomReset(viewManager.getActive(win))
+          }
         }
       },
     { type: 'separator' },
