@@ -1,4 +1,5 @@
 import {LitElement, html, css} from '../vendor/lit-element/lit-element'
+import {classMap} from '../vendor/lit-element/lit-html/directives/class-map'
 import _get from 'lodash.get'
 import * as bg from './bg-process-rpc'
 import buttonResetCSS from './navbar/button-reset.css'
@@ -9,6 +10,7 @@ class ShellWindowNavbar extends LitElement {
     return {
       activeTabIndex: {type: Number},
       activeTab: {type: Object},
+      isBrowserMenuOpen: {type: Boolean},
       hasUpdateAvailable: {type: Boolean}
     }
   }
@@ -17,6 +19,7 @@ class ShellWindowNavbar extends LitElement {
     super()
     this.activeTabIndex = -1
     this.activeTab = null
+    this.isBrowserMenuOpen = false
   }
 
   get canGoBack () {
@@ -134,8 +137,11 @@ class ShellWindowNavbar extends LitElement {
   }
 
   get browserMenuBtn () {
+    const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
-      <button @click=${this.onClickBrowserMenu}><span class="fa fa-bars"></span></button>
+      <button class=${cls} @click=${this.onClickBrowserMenu}>
+        <span class="fa fa-bars"></span>
+      </button>
     `
   }
 
@@ -158,8 +164,10 @@ class ShellWindowNavbar extends LitElement {
     bg.views.reload(this.activeTabIndex)
   }
 
-  onClickBrowserMenu (e) {
-    bg.views.showMenu('browser-menu')
+  async onClickBrowserMenu (e) {
+    this.isBrowserMenuOpen = true
+    await bg.views.toggleMenu('browser')
+    this.isBrowserMenuOpen = false
   }
 }
 ShellWindowNavbar.styles = css`

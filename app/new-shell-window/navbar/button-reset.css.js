@@ -19,4 +19,9 @@ button:not(:disabled):hover {
 button:disabled {
   opacity: 0.5;
 }
+
+button.pressed {
+  background: rgba(0,0,0,.1);
+  box-shadow: inset 0 2px 3px rgba(0,0,0,.2);
+}
 `

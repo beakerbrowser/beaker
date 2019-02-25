@@ -5,6 +5,7 @@ import _pick from 'lodash.pick'
 import { BrowserView, BrowserWindow } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import viewsRPCManifest from '../rpc-manifests/views'
+import * as shellMenus from './subwindows/shell-menus'
 import * as statusBar from './subwindows/status-bar'
 
 const Y_POSITION = 78 
@@ -183,7 +184,7 @@ export function getActive (win) {
   return getAll(win).find(view => view.isActive)
 }
 
-export function create (win, url) {
+export function create (win, url, opts = {setActive: false}) {
   url = url || DEFAULT_URL
   var view = new View(win, {})
   
@@ -192,10 +193,9 @@ export function create (win, url) {
 
   view.loadURL(url)
 
-  // make active if none others are
-  if (!getActive(win)) {
+  // make active if requested, or if none others are
+  if (opts.setActive || !getActive(win)) {
     // events.emit('first-page', page) TODO
-    console.log('setting active')
     setActive(win, view)
   }
   emitReplaceState(win)
@@ -334,10 +334,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     return getWindowTabState(win)
   },
 
-  async createTab () {
+  async createTab (url, opts = {setActive: false}) {
     console.log('createTab()')
     var win = getWindow(this.sender)
-    var view = create(win)
+    var view = create(win, url, opts)
     return getAll(win).indexOf(view)
   },
 
@@ -372,6 +372,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async reload (index) {
     getByIndex(getWindow(this.sender), index).browserView.webContents.reload()
+  },
+
+  async toggleMenu (id) {
+    await shellMenus.toggle(getWindow(this.sender), id)
   }
 })
 

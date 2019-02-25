@@ -10,10 +10,15 @@ import path from 'path'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
-import * as statusBar from './subwindows/status-bar'
+import * as statusBarSubwindow from './subwindows/status-bar'
+import * as shellMenusSubwindow from './subwindows/shell-menus'
 const settingsDb = beakerCore.dbs.settings
 
 const IS_WIN = process.platform === 'win32'
+const subwindows = {
+  statusBar: statusBarSubwindow,
+  menu: shellMenusSubwindow
+}
 
 // globals
 // =
@@ -140,6 +145,7 @@ export function createShellWindow (windowState) {
     backgroundColor: '#ddd',
     webPreferences: {
       preload: PRELOAD_PATH,
+      defaultEncoding: 'utf-8',
       nodeIntegration: false,
       contextIsolation: false,
       webviewTag: false,
@@ -159,7 +165,9 @@ export function createShellWindow (windowState) {
       app.emit('custom-ready-to-show')
     }
   })
-  statusBar.setup(win)
+  for (let k in subwindows) {
+    subwindows[k].setup(win)
+  }
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
@@ -190,7 +198,9 @@ export function createShellWindow (windowState) {
   ipcMain.on('shell-window:pages-ready', handlePagesReady)
   win.on('closed', () => {
     ipcMain.removeListener('shell-window:pages-ready', handlePagesReady)
-    statusBar.destroy(win)
+    for (let k in subwindows) {
+      subwindows[k].destroy(win)
+    }
   })
 
   // register shortcuts
@@ -221,10 +231,14 @@ export function createShellWindow (windowState) {
     sendToWebContents('leave-full-screen')(e)
   })
   win.on('resize', () => {
-    statusBar.reposition(win)
+    for (let k in subwindows) {
+      subwindows[k].reposition(win)
+    }
   })
   win.on('move', () => {
-    statusBar.reposition(win)
+    for (let k in subwindows) {
+      subwindows[k].reposition(win)
+    }
   })
   win.on('closed', onClosed(win))
 

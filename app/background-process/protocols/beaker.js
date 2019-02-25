@@ -96,6 +96,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://shell-window/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/shell-window.css'))
   }
+  if (requestUrl === 'beaker://shell-menus/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'shell-menus.html'))
+  }
   if (requestUrl === 'beaker://assets/syntax-highlight.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/syntax-highlight.js'))
   }

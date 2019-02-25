@@ -8,5 +8,6 @@ export default {
   goBack: 'promise',
   goForward: 'promise',
   stop: 'promise',
-  reload: 'promise'
+  reload: 'promise',
+  toggleMenu: 'promise'
 }

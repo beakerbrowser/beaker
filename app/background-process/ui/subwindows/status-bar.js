@@ -22,7 +22,10 @@ export function setup (parent) {
     maximizable: false,
     show: false,
     fullscreenable: false,
-    hasShadow: false
+    hasShadow: false,
+    webPreferences: {
+      defaultEncoding: 'utf-8'
+    }
   })
   windows[parent.id].loadFile('status-bar.html')
 }
