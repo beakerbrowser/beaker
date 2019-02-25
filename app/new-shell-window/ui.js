@@ -1,4 +1,4 @@
-import { LitElement, html } from './lit-element/lit-element'
+import { LitElement, html } from '../vendor//lit-element/lit-element'
 import * as bg from './bg-process-rpc'
 import './tabs'
 import './navbar'

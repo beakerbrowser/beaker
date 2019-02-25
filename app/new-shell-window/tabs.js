@@ -1,6 +1,6 @@
-import {LitElement, html, css} from './lit-element/lit-element'
-import {classMap} from './lit-element/lit-html/directives/class-map'
-import {repeat} from './lit-element/lit-html/directives/repeat'
+import {LitElement, html, css} from '../vendor/lit-element/lit-element'
+import {classMap} from '../vendor/lit-element/lit-html/directives/class-map'
+import {repeat} from '../vendor/lit-element/lit-html/directives/repeat'
 import spinnerCSS from './spinner.css'
 import * as bg from './bg-process-rpc'
 

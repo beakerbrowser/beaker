@@ -1,4 +1,4 @@
-import {LitElement, html, css} from './lit-element/lit-element'
+import {LitElement, html, css} from '../vendor/lit-element/lit-element'
 import _get from 'lodash.get'
 import * as bg from './bg-process-rpc'
 import buttonResetCSS from './navbar/button-reset.css'
@@ -135,7 +135,7 @@ class ShellWindowNavbar extends LitElement {
 
   get browserMenuBtn () {
     return html`
-      <button><span class="fa fa-bars"></span></button>
+      <button @click=${this.onClickBrowserMenu}><span class="fa fa-bars"></span></button>
     `
   }
 
@@ -156,6 +156,10 @@ class ShellWindowNavbar extends LitElement {
 
   onClickReload (e) {
     bg.views.reload(this.activeTabIndex)
+  }
+
+  onClickBrowserMenu (e) {
+    bg.views.showMenu('browser-menu')
   }
 }
 ShellWindowNavbar.styles = css`

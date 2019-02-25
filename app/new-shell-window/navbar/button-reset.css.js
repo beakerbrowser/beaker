@@ -1,4 +1,4 @@
-import {css} from '../lit-element/lit-element'
+import {css} from '../../vendor/lit-element/lit-element'
 
 export default css`
 button {

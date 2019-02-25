@@ -1,4 +1,4 @@
-import {LitElement, html, css} from '../lit-element/lit-element'
+import {LitElement, html, css} from '../../vendor/lit-element/lit-element'
 
 class NavbarSiteInfo extends LitElement {
   static get properties () {

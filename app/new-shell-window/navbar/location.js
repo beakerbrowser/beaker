@@ -1,4 +1,4 @@
-import {LitElement, html, css} from '../lit-element/lit-element'
+import {LitElement, html, css} from '../../vendor/lit-element/lit-element'
 import prettyHash from 'pretty-hash'
 import buttonResetCSS from './button-reset.css'
 import './site-info'
