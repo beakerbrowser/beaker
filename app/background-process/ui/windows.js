@@ -137,7 +137,6 @@ export function createShellWindow (windowState) {
     minWidth,
     minHeight,
     backgroundColor: '#ddd',
-    defaultEncoding: 'UTF-8',
     webPreferences: {
       preload: PRELOAD_PATH,
       nodeIntegration: false,
@@ -337,31 +336,31 @@ function onClosed (win) {
 }
 
 function onTabSelect (win, tabIndex) {
-  return () => win.webContents.send('command', 'set-tab', tabIndex)
+  return () => viewManager.setActive(win, tabIndex)
 }
 
 function onLastTab (win) {
-  return () => win.webContents.send('command', 'window:last-tab')
+  return () => viewManager.setActive(win, viewManager.getAll(win).slice(-1)[0])
 }
 
 function onNextTab (win) {
-  return () => win.webContents.send('command', 'window:next-tab')
+  return () => viewManager.changeActiveBy(win, 1)
 }
 
 function onPrevTab (win) {
-  return () => win.webContents.send('command', 'window:prev-tab')
+  return () => viewManager.changeActiveBy(win, -1)
 }
 
 function onGoBack (win) {
-  return () => win.webContents.send('command', 'history:back')
+  return () => viewManager.getActive(win).webContents.goBack()
 }
 
 function onGoForward (win) {
-  return () => win.webContents.send('command', 'history:forward')
+  return () => viewManager.getActive(win).webContents.goForward()
 }
 
 function onFocusLocation (win) {
-  return () => win.webContents.send('command', 'file:open-location')
+  return () => win.webContents.send('command', 'file:focus-location')
 }
 
 function onAppCommand (win, e, cmd) {
@@ -369,10 +368,10 @@ function onAppCommand (win, e, cmd) {
   // see https://electronjs.org/docs/all#event-app-command-windows
   switch (cmd) {
     case 'browser-backward':
-      win.webContents.send('command', 'history:back')
+      viewManager.getActive(win).webContents.goBack()
       break
     case 'browser-forward':
-      win.webContents.send('command', 'history:forward')
+      viewManager.getActive(win).webContents.goForward()
       break
     default:
       break

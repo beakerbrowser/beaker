@@ -62,29 +62,32 @@ class View {
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
 
     // wire up events
-    const wc = this.browserView.webContents
-    wc.on('did-start-loading', e => this.onDidStartLoading(e))
-    wc.on('did-navigate', e => this.onDidNavigate(e))
-    wc.on('did-stop-loading', e => this.onDidStopLoading(e))
+    this.webContents.on('did-start-loading', e => this.onDidStartLoading(e))
+    this.webContents.on('did-navigate', e => this.onDidNavigate(e))
+    this.webContents.on('did-stop-loading', e => this.onDidStopLoading(e))
+  }
+
+  get webContents () {
+    return this.browserView.webContents
   }
 
   get url () {
-    return this.browserView.webContents.getURL()
+    return this.webContents.getURL()
   }
 
   get title () {
     // TODO
     // this doesnt give us the best and quickest results
     // it'd be better to watch title-change events and to track the title manually
-    return this.browserView.webContents.getTitle()
+    return this.webContents.getTitle()
   }
 
   get canGoBack () {
-    return this.browserView.webContents.canGoBack()
+    return this.webContents.canGoBack()
   }
 
   get canGoForward () {
-    return this.browserView.webContents.canGoForward()
+    return this.webContents.canGoForward()
   }
 
   get state () {
@@ -230,6 +233,11 @@ export function remove (win, view) {
 }
 
 export function setActive (win, view) {
+  console.log(view)
+  if (typeof view === 'number') {
+    view = getByIndex(win, view)
+  }
+  if (!view) return
   var active = getActive(win)
   if (active) {
     active.deactivate()
