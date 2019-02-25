@@ -44,6 +44,7 @@ class ShellWindowTabs extends LitElement {
         class="${cls}"
         draggable="true"
         @click=${e => this.onClickTab(e, index)}
+        @contextmenu=${e => this.onContextmenuTab(e, index)}
         @dragstart=${e => this.onDragstartTab(e, index)}
         @dragend=${e => this.onDragendTab(e, index)}
         @dragover=${e => this.onDragoverTab(e, index)}
@@ -73,6 +74,10 @@ class ShellWindowTabs extends LitElement {
 
   onClickTab (e, index) {
     bg.views.setActiveTab(index)
+  }
+
+  onContextmenuTab (e, index) {
+    bg.views.showTabContextMenu(index)
   }
 
   onClickClose (e, index) {

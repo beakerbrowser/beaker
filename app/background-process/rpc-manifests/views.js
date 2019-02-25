@@ -5,6 +5,7 @@ export default {
   closeTab: 'promise',
   setActiveTab: 'promise',
   reorderTab: 'promise',
+  showTabContextMenu: 'promise',
   goBack: 'promise',
   goForward: 'promise',
   stop: 'promise',

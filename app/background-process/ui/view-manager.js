@@ -2,7 +2,7 @@ import path from 'path'
 import Events from 'events'
 import emitStream from 'emit-stream'
 import _pick from 'lodash.pick'
-import { BrowserView, BrowserWindow } from 'electron'
+import { BrowserView, BrowserWindow, Menu } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import viewsRPCManifest from '../rpc-manifests/views'
 import * as shellMenus from './subwindows/shell-menus'
@@ -237,6 +237,24 @@ export function remove (win, view) {
   emitReplaceState(win)
 }
 
+export function removeAllExcept (win, view) {
+  var views = getAll(win).slice() // .slice() to duplicate the list
+  for (let v of views) {
+    if (v !== view) {
+      remove(win, v)
+    }
+  }
+}
+
+export function removeAllToRightOf (win, view) {
+  while (true) {
+    let views = getAll(win)
+    let index = views.indexOf(view) + 1
+    if (index >= views.length) break
+    remove(win, getByIndex(win, index))
+  }
+}
+
 export function setActive (win, view) {
   console.log(view)
   if (typeof view === 'number') {
@@ -356,6 +374,25 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   async reorderTab (oldIndex, newIndex) {
     var win = getWindow(this.sender)
     reorder(win, oldIndex, newIndex)
+  },
+
+  async showTabContextMenu (index) {
+    var win = getWindow(this.sender)
+    var view = getByIndex(win, index)
+    var menu = Menu.buildFromTemplate([
+      { label: 'New Tab', click: () => create(win, null, {setActive: true}) },
+      { type: 'separator' },
+      { label: 'Duplicate', click: () => create(win, view.url) },
+      { label: (view.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => {/* TODO */} },
+      { label: (view.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => {/* TODO */} },
+      { type: 'separator' },
+      { label: 'Close Tab', click: () => remove(win, view) },
+      { label: 'Close Other Tabs', click: () => removeAllExcept(win, view) },
+      { label: 'Close Tabs to the Right', click: () => removeAllToRightOf(win, view) },
+      { type: 'separator' },
+      { label: 'Reopen Closed Tab', click: () => reopenLastRemoved(win) }
+    ])
+    menu.popup({window: win})
   },
 
   async goBack (index) {
