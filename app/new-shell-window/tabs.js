@@ -318,7 +318,7 @@ ${spinnerCSS}
   top: 0;
   height: 27px;
   width: 60px;
-  background: linear-gradient(to right, rgba(226,226,226,0), rgb(226, 226, 226));
+  background: linear-gradient(to right, #d2d2d200, #d2d2d2ff);
 }
 
 .tab:hover .tab-close {
@@ -328,6 +328,10 @@ ${spinnerCSS}
 
 .tab:hover .tab-close:hover {
   background: var(--bg-tab-close--hover);
+}
+
+.tab.current:hover .tab-close:hover {
+  background: var(--bg-tab-close--current--hover);
 }
 
 .tab:hover .tab-close:before {

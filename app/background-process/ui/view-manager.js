@@ -39,9 +39,7 @@ class View {
     })
 
     // webview state
-    // this.url = null // current URL
     this.loadingURL = null // URL being loaded, if any
-    this.title = 'TODO ' + (DEBUG++) // current page's title
     this.isLoading = false // is the tab loading?
     this.isReceivingAssets = false // has the webview started receiving assets in the current load-cycle?
 
@@ -61,6 +59,13 @@ class View {
 
   get url () {
     return this.browserView.webContents.getURL()
+  }
+
+  get title () {
+    // TODO
+    // this doesnt give us the best and quickest results
+    // it'd be better to watch title-change events and to track the title manually
+    return this.browserView.webContents.getTitle()
   }
 
   get state () {
