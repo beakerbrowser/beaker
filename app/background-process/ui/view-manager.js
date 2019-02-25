@@ -5,9 +5,9 @@ import _pick from 'lodash.pick'
 import { BrowserView, BrowserWindow } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import viewsRPCManifest from '../rpc-manifests/views'
+import * as statusBar from './subwindows/status-bar'
 
-const Y_POSITION = 78 // TODO
-const FIRST_TAB_URL = 'beaker://start'
+const Y_POSITION = 78 
 const DEFAULT_URL = 'beaker://start'
 
 const STATE_VARS = [
@@ -62,9 +62,10 @@ class View {
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
 
     // wire up events
-    this.webContents.on('did-start-loading', e => this.onDidStartLoading(e))
-    this.webContents.on('did-navigate', e => this.onDidNavigate(e))
-    this.webContents.on('did-stop-loading', e => this.onDidStopLoading(e))
+    this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
+    this.webContents.on('did-navigate', this.onDidNavigate.bind(this))
+    this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
+    this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
   }
 
   get webContents () {
@@ -156,6 +157,10 @@ class View {
 
     // emit
     this.emitUpdateState()
+  }
+
+  onUpdateTargetUrl (e, url) {
+    statusBar.set(this.browserWindow, url)
   }
 }
 

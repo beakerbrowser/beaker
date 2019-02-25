@@ -10,6 +10,7 @@ import path from 'path'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
+import * as statusBar from './subwindows/status-bar'
 const settingsDb = beakerCore.dbs.settings
 
 const IS_WIN = process.platform === 'win32'
@@ -158,6 +159,7 @@ export function createShellWindow (windowState) {
       app.emit('custom-ready-to-show')
     }
   })
+  statusBar.setup(win)
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
@@ -188,6 +190,7 @@ export function createShellWindow (windowState) {
   ipcMain.on('shell-window:pages-ready', handlePagesReady)
   win.on('closed', () => {
     ipcMain.removeListener('shell-window:pages-ready', handlePagesReady)
+    statusBar.destroy(win)
   })
 
   // register shortcuts
@@ -216,6 +219,12 @@ export function createShellWindow (windowState) {
   win.on('leave-full-screen', e => {
     unregisterShortcut(win, 'Esc')
     sendToWebContents('leave-full-screen')(e)
+  })
+  win.on('resize', () => {
+    statusBar.reposition(win)
+  })
+  win.on('move', () => {
+    statusBar.reposition(win)
   })
   win.on('closed', onClosed(win))
 
