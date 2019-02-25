@@ -15,30 +15,6 @@ class ShellWindowTabs extends LitElement {
     super()
     this.tabs = []
     this.draggedTabIndex = null
-
-    bg.views.createEventStream().on('data', evt => {
-      switch (evt[0]) {
-        case 'replace-state':
-          console.log('repalce-state', evt[1])
-          this.tabs = evt[1]
-          this.requestUpdate()
-          break
-        case 'update-state':
-          console.log('update-state', evt[1])
-          var {index, state} = evt[1]
-          if (this.tabs[index]) {
-            Object.assign(this.tabs[index], state)
-          }
-          this.requestUpdate()
-          break
-      }
-    })
-
-    bg.views.getState().then(state => {
-      console.log('got state', state)
-      this.tabs = state
-      this.requestUpdate()
-    })
   }
 
   render () {

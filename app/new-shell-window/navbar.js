@@ -1,24 +1,38 @@
 import {LitElement, html, css} from './lit-element/lit-element'
+import _get from 'lodash.get'
 import buttonResetCSS from './navbar/button-reset.css'
 import './navbar/location'
 
 class ShellWindowNavbar extends LitElement {
   static get properties () {
     return {
-      canGoBack: {type: Boolean},
-      canGoForward: {type: Boolean},
-      isLoading: {type: Boolean},
+      activeTab: {type: Object},
       hasUpdateAvailable: {type: Boolean}
     }
   }
 
   constructor () {
     super()
-    this.canGoBack = true // DEBUG
-    this.canGoForward = true // DEBUG
+    this.activeTab = null
   }
 
+  get canGoBack () {
+    return _get(this, 'activeTab.canGoBack')
+  }
+
+  get canGoForward () {
+    return _get(this, 'activeTab.canGoForward')
+  }
+
+  get isLoading () {
+    return _get(this, 'activeTab.isLoading')
+  }
+
+  // rendering
+  // =
+
   render () {
+    console.log(this.activeTab)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="buttons" style="padding-left: 6px;">
@@ -26,7 +40,7 @@ class ShellWindowNavbar extends LitElement {
         ${this.forwardBtn}
         ${this.reloadBtn}
       </div>
-      <shell-window-navbar-location></shell-window-navbar-location>
+      <shell-window-navbar-location url="${_get(this, 'activeTab.url', '')}"></shell-window-navbar-location>
       <div class="buttons">
         ${this.updateBtn}
         ${this.browserMenuBtn}

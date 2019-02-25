@@ -16,7 +16,7 @@ class NavbarLocation extends LitElement {
 
   constructor () {
     super()
-    this.url = 'https://github.com/beakerbrowser'
+    this.url = ''
   }
 
   render () {
@@ -44,7 +44,7 @@ class NavbarLocation extends LitElement {
   }
 
   renderInputPretty () {
-    if (/^(dat|http|https):\/\//.test(this.url)) {
+    if (/^(dat|http|https|beaker):\/\//.test(this.url)) {
       try {
         var { protocol, host, pathname, search, hash } = new URL(this.url)
         var hostVersion
@@ -62,7 +62,8 @@ class NavbarLocation extends LitElement {
         if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
         if (['https:'].includes(protocol) && !this.siteLoadError && !this.gotInsecureResponse) cls += ' protocol-secure'
         if (['https:'].includes(protocol) && this.gotInsecureResponse) cls += ' protocol-insecure'
-        if (['dat:'].includes(protocol)) cls += ' protocol-p2p'
+        if (['dat:'].includes(protocol)) cls += ' protocol-secure'
+        if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
         return html`
           <div class="input-pretty">
             <span class=${cls}>${protocol.slice(0, -1)}</span><span class="syntax">://</span><span class="host">${host}</span>${hostVersion ? html`<span class="host-version">${hostVersion}</span>` : ''}<span class="path">${pathname}${search}${hash}</span>

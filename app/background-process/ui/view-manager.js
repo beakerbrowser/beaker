@@ -214,11 +214,10 @@ export function setActive (win, view) {
   var active = getActive(win)
   if (active) {
     active.deactivate()
-    emitUpdateState(win, active)
   }
   if (view) {
     view.activate()
-    emitUpdateState(win, view)
+    emitReplaceState(win)
   }
 }
 

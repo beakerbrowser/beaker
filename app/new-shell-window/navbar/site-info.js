@@ -23,7 +23,7 @@ class NavbarSiteInfo extends LitElement {
     const scheme = this.scheme
     if (scheme) {
       const isHttps = scheme === 'https:'
-      if (isHttps && !this.gotInsecureResponse && !this.siteLoadError) {
+      if (isHttps && !this.gotInsecureResponse && !this.siteLoadError || scheme === 'beaker:') {
         cls = 'secure'
         icon = 'lock'
       } else if (scheme === 'http:') {
@@ -38,7 +38,7 @@ class NavbarSiteInfo extends LitElement {
     }
 
     if (!icon) {
-      return ''
+      return html`<div></div>`
     }
 
     return html`
@@ -50,6 +50,10 @@ class NavbarSiteInfo extends LitElement {
   }
 }
 NavbarSiteInfo.styles = css`
+:host {
+  display: block;
+}
+
 :host > div {
   border-right: 1px solid #ddd;
 }
