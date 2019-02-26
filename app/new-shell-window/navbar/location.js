@@ -15,6 +15,7 @@ class NavbarLocation extends LitElement {
       url: {type: String},
       title: {type: String},
       zoom: {type: Number},
+      isPageMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean},
       siteLoadError: {type: Object, attribute: 'site-load-error'},
@@ -28,8 +29,13 @@ class NavbarLocation extends LitElement {
     this.url = ''
     this.title = ''
     this.zoom = 0
+    this.isPageMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
+  }
+
+  get isDat () {
+    return this.url.startsWith('dat://')
   }
 
   render () {
@@ -43,7 +49,7 @@ class NavbarLocation extends LitElement {
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
       ${this.renderZoom()}
-      ${this.renderSiteMenuBtn()}
+      ${this.renderPageMenuBtn()}
       ${this.renderBookmarkBtn()}
     `
   }
@@ -60,7 +66,6 @@ class NavbarLocation extends LitElement {
           @dblclick=${this.onDblclickLocation}
           @focus=${this.onFocusLocation}
           @blur=${this.onBlurLocation}
-          @keydown=${this.onKeydownLocation}
           @input=${this.onInputLocation}
         >
         ${this.isLocationFocused ? '' : this.renderInputPretty()}
@@ -130,9 +135,13 @@ class NavbarLocation extends LitElement {
     `
   }
 
-  renderSiteMenuBtn () {
+  renderPageMenuBtn () {
+    if (!this.isDat) {
+      return ''
+    }
+    var cls = classMap({pressed: this.isPageMenuOpen})
     return html`
-      <button>
+      <button class="${cls}" @click=${this.onClickPageMenu}>
         <span class="fa fa-ellipsis-h"></span>
       </button>
     `
@@ -238,6 +247,20 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
+  async onClickPageMenu (e) {
+    var rect1 = this.getClientRects()[0]
+    var rect2 = e.currentTarget.getClientRects()[0]
+    this.isPageMenuOpen = true
+    await bg.views.showMenu('page', {
+      bounds: {
+        top: Number(rect1.bottom),
+        right: Number(rect2.right)
+      },
+      params: {url: this.url}
+    })
+    this.isPageMenuOpen = false
+  }
+
   async onClickBookmark (e) {
     var rect = e.currentTarget.getClientRects()[0]
 
@@ -257,7 +280,7 @@ class NavbarLocation extends LitElement {
     })
   }
 }
-NavbarLocation.styles = css`
+NavbarLocation.styles = [buttonResetCSS, css`
 :host {
   display: flex;
   flex: 1;
@@ -265,8 +288,6 @@ NavbarLocation.styles = css`
   border: 1px solid var(--color-border-input);
   border-radius: 4px;
 }
-
-${buttonResetCSS}
 
 button {
   width: 27px;
@@ -363,5 +384,5 @@ input:focus {
   color: var(--color-text--light);
   white-space: nowrap;
 }
-`
+`]
 customElements.define('shell-window-navbar-location', NavbarLocation)

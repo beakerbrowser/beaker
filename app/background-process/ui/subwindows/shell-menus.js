@@ -66,6 +66,13 @@ export function reposition (parent) {
         width: 240,
         height: 466
       })
+    } else if (win.menuId === 'page') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.right - 220,
+        y: parentBounds.y + win.boundsOpt.top,
+        width: 220,
+        height: 110
+      })
     } else if (win.menuId === 'location') {
       win.setBounds({
         x: parentBounds.x + win.boundsOpt.x,

@@ -1,6 +1,7 @@
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './shell-menus/bg-process-rpc'
 import './shell-menus/browser'
+import './shell-menus/page'
 import './shell-menus/location'
 import './shell-menus/bookmark'
 
@@ -53,6 +54,8 @@ class MenusWrapper extends LitElement {
     switch (this.currentMenu) {
       case 'browser':
         return html`<browser-menu></browser-menu>`
+      case 'page':
+        return html`<page-menu></page-menu>`
       case 'location':
         return html`<location-menu></location-menu>`
       case 'bookmark':
@@ -62,8 +65,7 @@ class MenusWrapper extends LitElement {
   }
 
   onContextMenu (e) {
-    // RESTOREME
-    // e.preventDefault() // disable context menu
+    e.preventDefault() // disable context menu
   }
 }
 
