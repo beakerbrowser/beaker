@@ -10,7 +10,7 @@ const ZOOM_STEP = 0.5
 
 export async function setZoomFromSitedata (view, origin) {
   // load zoom from sitedata
-  origin = origin || toOrigin(view.url)
+  origin = origin || view.origin
   if (!origin) return
 
   var v = await sitedataDb.get(origin, 'zoom')
@@ -30,13 +30,13 @@ export function setZoom (view, z) {
   view.emitUpdateState()
 
   // persist to sitedata
-  var origin = toOrigin(view.url)
+  var origin = view.origin
   if (!origin) return
   sitedataDb.set(view.url, 'zoom', view.zoom)
 
   // update all pages at the origin
   viewManager.getAll(view.browserWindow).forEach(v => {
-    if (v !== view && toOrigin(v.url) === origin) {
+    if (v !== view && v.origin === origin) {
       v.zoom = z
     }
   })
@@ -52,14 +52,4 @@ export function zoomOut (view) {
 
 export function zoomReset (view) {
   setZoom(view, 0)
-}
-
-// internal methods
-// =
-
-function toOrigin (str) {
-  try {
-    var u = (new URL(str))
-    return u.protocol + '//' + u.hostname
-  } catch (e) { return '' }
 }

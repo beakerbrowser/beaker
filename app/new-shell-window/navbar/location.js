@@ -14,7 +14,9 @@ class NavbarLocation extends LitElement {
       activeTabIndex: {type: Number},
       url: {type: String},
       title: {type: String},
+      peers: {type: Number},
       zoom: {type: Number},
+      isPeersMenuOpen: {type: Boolean},
       isPageMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean},
@@ -28,7 +30,9 @@ class NavbarLocation extends LitElement {
     this.activeTabIndex = -1
     this.url = ''
     this.title = ''
+    this.peers = 0
     this.zoom = 0
+    this.isPeersMenuOpen = false
     this.isPageMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
@@ -49,6 +53,7 @@ class NavbarLocation extends LitElement {
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
       ${this.renderZoom()}
+      ${this.renderPeersBtn()}
       ${this.renderPageMenuBtn()}
       ${this.renderBookmarkBtn()}
     `
@@ -131,6 +136,19 @@ class NavbarLocation extends LitElement {
     return html`
       <button @click=${this.onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
         ${zoomPct}%
+      </button>
+    `
+  }
+
+  renderPeersBtn () {
+    if (!this.isDat) {
+      return ''
+    }
+    var cls = classMap({peers: true, pressed: this.isPeersMenuOpen})
+    return html`
+      <button class="${cls}" @click=${this.onClickPeersMenu}>
+        <i class="fa fa-share-alt"></i>
+        ${this.peers || 0}
       </button>
     `
   }
@@ -247,6 +265,10 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
+  onClickPeersMenu (e) {
+    // TODO
+  }
+
   async onClickPageMenu (e) {
     var rect1 = this.getClientRects()[0]
     var rect2 = e.currentTarget.getClientRects()[0]
@@ -310,12 +332,6 @@ button .fas.fa-star {
   -webkit-text-stroke: 1px #f7c600;
 }
 
-.input-container {
-  position: relative;
-  flex: 1;
-  margin: 0 8px;
-}
-
 button.zoom {
   width: auto;
   font-size: 11px;
@@ -330,6 +346,23 @@ button.zoom {
 
 button.zoom:hover {
   background: #eaeaea;
+}
+
+button.peers {
+  width: auto;
+  font-size: 13px;
+  font-variant: tabular-nums;
+  padding: 0 6px;
+}
+
+button.peers .fa {
+  font-size: 13px;
+}
+
+.input-container {
+  position: relative;
+  flex: 1;
+  margin: 0 8px;
 }
 
 .input-pretty,

@@ -51,6 +51,7 @@ export async function setup () {
   })
 
   openURL.setup()
+  viewManager.setup()
 
   app.on('before-quit', async e => {
     sessionWatcher.exit()

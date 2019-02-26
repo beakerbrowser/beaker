@@ -20,6 +20,7 @@ const DEFAULT_URL = 'beaker://start'
 const STATE_VARS = [
   'url',
   'title',
+  'peers',
   'zoom',
   'isActive',
   'isPinned',
@@ -69,8 +70,10 @@ class View {
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
     this.isBookmarked = false // is the active page bookmarked?
+    this.peers = 0 // how many peers does the site have?
 
     // helper state
+    this.datInfo = null // metadata about the site if viewing a dat
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
 
     // wire up events
@@ -88,6 +91,13 @@ class View {
 
   get url () {
     return this.webContents.getURL()
+  }
+
+  get origin () {
+    try {
+      var u = new URL(this.url)
+      return u.protocol + '//' + u.hostname
+    } catch (e) { return '' }
   }
 
   get title () {
@@ -140,13 +150,6 @@ class View {
     this.browserView.destroy()
   }
 
-  // helper called by UIs to pull latest state if a change event has occurred
-  // eg called by the bookmark systems after the bookmark state has changed
-  async refreshState () {
-    await this.fetchIsBookmarked(true)
-    this.emitUpdateState()
-  }
-
   async updateHistory () {
     var url = this.url
     var title = this.title
@@ -159,6 +162,19 @@ class View {
     }
   }
 
+  // state fetching
+  // =
+
+  // helper called by UIs to pull latest state if a change event has occurred
+  // eg called by the bookmark systems after the bookmark state has changed
+  async refreshState () {
+    await Promise.all([
+      this.fetchIsBookmarked(true),
+      this.fetchDatInfo(true)
+    ])
+    this.emitUpdateState()
+  }
+
   async fetchIsBookmarked (noEmit = false) {
     var bookmark = await bookmarksDb.getBookmark(0, normalizeURL(this.url, {
       stripFragment: false,
@@ -167,6 +183,17 @@ class View {
       removeTrailingSlash: true
     }))
     this.isBookmarked = !!bookmark
+    if (!noEmit) {
+      this.emitUpdateState()
+    }
+  }
+
+  async fetchDatInfo (noEmit = false) {
+    if (!this.url.startsWith('dat://')) {
+      return
+    }
+    var key = await beakerCore.dat.dns.resolveName(this.url)
+    this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
     if (!noEmit) {
       this.emitUpdateState()
     }
@@ -198,6 +225,7 @@ class View {
     // update state
     this.isReceivingAssets = true
     this.fetchIsBookmarked()
+    this.fetchDatInfo()
 
     // emit
     this.emitUpdateState()
@@ -225,6 +253,21 @@ class View {
 
 // exported api
 // =
+
+export function setup () {
+  // track peer-counts
+  beakerCore.dat.library.createEventStream().on('data', ([evt, {details}]) => {
+    if (evt !== 'network-changed') return
+    for (let winId in activeViews) {
+      for (let view of activeViews[winId]) {
+        if (view.datInfo && view.datInfo.url === details.url) {
+          view.peers = details.connections
+          view.emitUpdateState()
+        }
+      }
+    }
+  })
+}
 
 export function getAll (win) {
   return activeViews[win.id] || []
