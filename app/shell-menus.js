@@ -21,18 +21,23 @@ class MenusWrapper extends LitElement {
       catch (e) { /* ignore */ }
     }
     const init = (name) => {
-      try { this.shadowRoot.querySelector(name).init(this.currentParams) }
-      catch (e) { /* ignore */ }
+      try { return this.shadowRoot.querySelector(name).init(this.currentParams) }
+      catch (e) { console.log(e) /* ignore */ }
     }
     window.openMenu = async (v, params) => {
       this.currentMenu = v
       this.currentParams = params
       reset(`${v}-menu`)
       await this.updateComplete
-      init(`${v}-menu`)
+      await init(`${v}-menu`)
     }
 
     // global event listeners
+    window.addEventListener('blur', e => {
+      // unset the menu so that we can unrender the current
+      // (this stops a FOUC issue)
+      this.currentMenu = null
+    })
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         bg.shellMenus.close()
@@ -57,6 +62,7 @@ class MenusWrapper extends LitElement {
   }
 
   onContextMenu (e) {
+    // RESTOREME
     // e.preventDefault() // disable context menu
   }
 }

@@ -48,6 +48,10 @@ class BrowserMenu extends LitElement {
     this.submenu = ''
   }
 
+  async init () {
+    await this.requestUpdate()
+  }
+
   render () {
     if (this.submenu === 'create-new') {
       return this.renderCreateNew()
