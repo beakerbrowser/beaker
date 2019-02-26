@@ -32,7 +32,7 @@ export function setup (parent) {
     console.log('Shell-Menus window says:', message)
   })
   win.loadURL('beaker://shell-menus/')
-  // win.on('blur', () => hide(parent)) TODO restore
+  win.on('blur', () => hide(parent))
 }
 
 export function destroy (parent) {
@@ -72,6 +72,13 @@ export function reposition (parent) {
         y: parentBounds.y + win.boundsOpt.y,
         width: win.boundsOpt.width,
         height: 310
+      })
+    } else if (win.menuId === 'bookmark') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.right - 300,
+        y: parentBounds.y + win.boundsOpt.top,
+        width: 300,
+        height: 250
       })
     }
   }

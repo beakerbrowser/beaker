@@ -48,6 +48,7 @@ class ShellWindowNavbar extends LitElement {
       <shell-window-navbar-location
         .activeTabIndex="${this.activeTabIndex}"
         url="${_get(this, 'activeTab.url', '')}"
+        title="${_get(this, 'activeTab.title', '')}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
         ?is-bookmarked=${_get(this, 'activeTab.isBookmarked', false)}
       ></shell-window-navbar-location>

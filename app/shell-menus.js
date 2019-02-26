@@ -2,6 +2,7 @@ import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './shell-menus/bg-process-rpc'
 import './shell-menus/browser'
 import './shell-menus/location'
+import './shell-menus/bookmark'
 
 class MenusWrapper extends LitElement {
   static get properties () {
@@ -49,6 +50,8 @@ class MenusWrapper extends LitElement {
         return html`<browser-menu></browser-menu>`
       case 'location':
         return html`<location-menu></location-menu>`
+      case 'bookmark':
+        return html`<bookmark-menu></bookmark-menu>`
     }
     return html`<div></div>`
   }

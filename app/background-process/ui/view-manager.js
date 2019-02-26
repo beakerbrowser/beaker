@@ -140,6 +140,13 @@ class View {
     this.browserView.destroy()
   }
 
+  // helper called by UIs to pull latest state if a change event has occurred
+  // eg called by the bookmark systems after the bookmark state has changed
+  async refreshState () {
+    await this.fetchIsBookmarked(true)
+    this.emitUpdateState()
+  }
+
   async updateHistory () {
     var url = this.url
     var title = this.title
@@ -152,7 +159,7 @@ class View {
     }
   }
 
-  async fetchIsBookmarked () {
+  async fetchIsBookmarked (noEmit = false) {
     var bookmark = await bookmarksDb.getBookmark(0, normalizeURL(this.url, {
       stripFragment: false,
       stripWWW: false,
@@ -160,7 +167,9 @@ class View {
       removeTrailingSlash: true
     }))
     this.isBookmarked = !!bookmark
-    this.emitUpdateState()
+    if (!noEmit) {
+      this.emitUpdateState()
+    }
   }
 
   // events
@@ -435,6 +444,14 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     return emitStream(getEvents(getWindow(this.sender)))
   },
 
+  async refreshState (tab) {
+    var win = getWindow(this.sender)
+    var view = tab.activeTab ? getActive(win) : getByIndex(win, tab)
+    if (view) {
+      view.refreshState()
+    }
+  },
+
   async getState () {
     var win = getWindow(this.sender)
     return getWindowTabState(win)
@@ -513,7 +530,12 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 // =
 
 function getWindow (sender) {
-  return BrowserWindow.fromWebContents(sender)
+  var win = BrowserWindow.fromWebContents(sender)
+  while (win.getParentWindow()) {
+    // if called from a subwindow (eg a shell-menu) find the parent
+    win = win.getParentWindow()
+  }
+  return win
 }
 
 function getEvents (win) {

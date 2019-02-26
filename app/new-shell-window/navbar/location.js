@@ -13,6 +13,7 @@ class NavbarLocation extends LitElement {
     return {
       activeTabIndex: {type: Number},
       url: {type: String},
+      title: {type: String},
       zoom: {type: Number},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean},
@@ -25,6 +26,7 @@ class NavbarLocation extends LitElement {
     super()
     this.activeTabIndex = -1
     this.url = ''
+    this.title = ''
     this.zoom = 0
     this.isBookmarked = false
     this.isLocationFocused = false
@@ -121,10 +123,8 @@ class NavbarLocation extends LitElement {
       '4': 400,
       '4.5': 500
     })[this.zoom]
-    var zoomIcon = zoomPct < 100 ? '-minus' : '-plus'
     return html`
       <button @click=${this.onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
-        <i class=${'fa fa-search' + zoomIcon}></i>
         ${zoomPct}%
       </button>
     `
@@ -145,7 +145,7 @@ class NavbarLocation extends LitElement {
       'fa-star': true
     })
     return html`
-      <button style="margin-right: 2px">
+      <button style="margin-right: 2px" @click=${this.onClickBookmark}>
         <span class="${cls}"></span>
       </button>
     `
@@ -237,6 +237,25 @@ class NavbarLocation extends LitElement {
   onClickZoom (e) {
     bg.views.resetZoom(this.activeTabIndex)
   }
+
+  async onClickBookmark (e) {
+    var rect = e.currentTarget.getClientRects()[0]
+
+    // create a bookmark if needed
+    if (!this.isBookmarked) {
+      await bg.bookmarks.bookmarkPrivate(this.url, {title: this.title})
+      bg.views.refreshState(this.activeTabIndex) // pull latest state
+    }
+    
+    // show menu
+    bg.views.toggleMenu('bookmark', {
+      bounds: {
+        top: Number(rect.bottom),
+        right: Number(rect.right)
+      },
+      params: {url: this.url}
+    })
+  }
 }
 NavbarLocation.styles = css`
 :host {
@@ -278,16 +297,18 @@ button .fas.fa-star {
 
 button.zoom {
   width: auto;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 10px;
   background: #f5f5f5;
-  border-radius: 4px;
-  margin: 2px;
-  padding: 0 6px;
+  border-radius: 10px;
+  margin: 4px;
+  padding: 0 9px;
   border: 1px solid #ccc;
+  font-weight: 500;
 }
 
-button.zoom i {
-  font-size: 12px;
+button.zoom:hover {
+  background: #eaeaea;
 }
 
 .input-pretty,
