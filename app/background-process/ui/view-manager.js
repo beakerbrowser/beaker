@@ -194,6 +194,7 @@ class View {
     }
     var key = await beakerCore.dat.dns.resolveName(this.url)
     this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
+    this.peers = this.datInfo.peers
     if (!noEmit) {
       this.emitUpdateState()
     }
@@ -489,7 +490,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async refreshState (tab) {
     var win = getWindow(this.sender)
-    var view = tab.activeTab ? getActive(win) : getByIndex(win, tab)
+    var view = tab === 'active' ? getActive(win) : getByIndex(win, tab)
     if (view) {
       view.refreshState()
     }
@@ -498,6 +499,19 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   async getState () {
     var win = getWindow(this.sender)
     return getWindowTabState(win)
+  },
+
+  async getTabState (tab, opts) {
+    var win = getWindow(this.sender)
+    var view = tab === 'active' ? getActive(win) : getByIndex(win, tab)
+    if (view) {
+      var state = Object.assign({}, view.state)
+      if (opts) {
+        if (opts.datInfo) state.datInfo = view.datInfo
+        if (opts.networkStats) state.networkStats = view.datInfo ? view.datInfo.networkStats : {}
+      }
+      return state
+    }
   },
 
   async createTab (url, opts = {setActive: false}) {

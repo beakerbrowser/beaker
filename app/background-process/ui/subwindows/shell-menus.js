@@ -87,6 +87,13 @@ export function reposition (parent) {
         width: 300,
         height: 250
       })
+    } else if (win.menuId === 'peers') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.right - 300,
+        y: parentBounds.y + win.boundsOpt.top,
+        width: 300,
+        height: 118
+      })
     }
   }
 }
@@ -147,6 +154,12 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   async loadURL (url) {
     var win = getParentWindow(this.sender)
     viewManager.getActive(win).loadURL(url)
+  },
+
+  async resizeSelf (dimensions) {
+    var win = BrowserWindow.fromWebContents(this.sender)
+    var [width, height] = win.getSize()
+    win.setSize(dimensions.width || width, dimensions.height || height)
   },
 
   async showInpageFind () {

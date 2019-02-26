@@ -4,6 +4,7 @@ import './shell-menus/browser'
 import './shell-menus/page'
 import './shell-menus/location'
 import './shell-menus/bookmark'
+import './shell-menus/peers'
 
 class MenusWrapper extends LitElement {
   static get properties () {
@@ -35,6 +36,9 @@ class MenusWrapper extends LitElement {
 
     // global event listeners
     window.addEventListener('blur', e => {
+      // reset any active state
+      reset(`${this.currentMenu}-menu`)
+
       // unset the menu so that we can unrender the current
       // (this stops a FOUC issue)
       this.currentMenu = null
@@ -60,12 +64,15 @@ class MenusWrapper extends LitElement {
         return html`<location-menu></location-menu>`
       case 'bookmark':
         return html`<bookmark-menu></bookmark-menu>`
+      case 'peers':
+        return html`<peers-menu></peers-menu>`
     }
     return html`<div></div>`
   }
 
   onContextMenu (e) {
-    e.preventDefault() // disable context menu
+    // RESTOREME
+    // e.preventDefault() // disable context menu
   }
 }
 

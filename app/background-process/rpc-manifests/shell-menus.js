@@ -3,5 +3,6 @@ export default {
   createWindow: 'promise',
   createTab: 'promise',
   loadURL: 'promise',
+  resizeSelf: 'promise',
   showInpageFind: 'promise'
 }

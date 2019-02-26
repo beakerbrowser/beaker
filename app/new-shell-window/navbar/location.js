@@ -265,8 +265,18 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
-  onClickPeersMenu (e) {
-    // TODO
+  async onClickPeersMenu (e) {
+    this.isPeersMenuOpen = true
+    var rect1 = this.getClientRects()[0]
+    var rect2 = e.currentTarget.getClientRects()[0]
+    await bg.views.toggleMenu('peers', {
+      bounds: {
+        top: Number(rect1.bottom),
+        right: Number(rect2.right)
+      },
+      params: {url: this.url}
+    })
+    this.isPeersMenuOpen = false
   }
 
   async onClickPageMenu (e) {

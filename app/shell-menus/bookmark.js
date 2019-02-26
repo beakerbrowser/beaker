@@ -110,7 +110,7 @@ class BookmarkMenu extends LitElement {
     b.title = this.title
     b.tags = this.tags.split(' ').filter(Boolean)
     await bg.bookmarks.bookmarkPrivate(b.href, b)
-    bg.views.refreshState({activeTab: true})
+    bg.views.refreshState('active')
 
     // set the pinned status of the bookmark
     await bg.bookmarks.setBookmarkPinned(b.href, this.pinned)
@@ -121,7 +121,7 @@ class BookmarkMenu extends LitElement {
     var b = this.bookmark
     if (!b) return
     await bg.bookmarks.unbookmarkPrivate(b.href)
-    bg.views.refreshState({activeTab: true})
+    bg.views.refreshState('active')
     bg.shellMenus.close()
   }
 

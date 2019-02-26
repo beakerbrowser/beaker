@@ -2,6 +2,7 @@ export default {
   createEventStream: 'readable',
   refreshState: 'promise',
   getState: 'promise',
+  getTabState: 'promise',
   createTab: 'promise',
   closeTab: 'promise',
   setActiveTab: 'promise',
