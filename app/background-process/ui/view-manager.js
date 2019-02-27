@@ -585,6 +585,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       if (opts) {
         if (opts.datInfo) state.datInfo = view.datInfo
         if (opts.networkStats) state.networkStats = view.datInfo ? view.datInfo.networkStats : {}
+        if (opts.sitePerms) state.sitePerms = await beakerCore.dbs.sitedata.getPermissions(view.url)
       }
       return state
     }

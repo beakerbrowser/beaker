@@ -2,32 +2,11 @@ import { LitElement, html, css } from './vendor/lit-element/lit-element'
 import prettyHash from 'pretty-hash'
 import * as bg from './perm-prompt/bg-process-rpc'
 import PERMS from './lib/perms'
-import { getPermId, getPermParam, shorten } from './lib/strings'
+import {PERM_ICONS, renderPermDesc} from './lib/fg/perms'
+import { getPermId, getPermParam } from './lib/strings'
 import buttonsCSS from './perm-prompt/buttons.css'
 
 const IS_DAT_KEY_REGEX = /^[0-9a-f]{64}$/i
-
-const PERM_ICONS = {
-  js: 'fas fa-code',
-  network: 'fas fa-cloud',
-  createDat: 'fas fa-folder-open',
-  modifyDat: 'fas fa-folder-open',
-  deleteDat: 'fas fa-folder-open',
-  media: 'fas fa-video',
-  geolocation: 'fas fa-map-marked',
-  notifications: 'fas fa-bell',
-  midiSysex: 'fas fa-headphones',
-  pointerLock: 'fas fa-mouse-pointer',
-  fullscreen: 'fas fa-arrows-alt',
-  download: 'fas fa-download',
-  openExternal: 'fas fa-external-link-alt',
-  experimentalLibrary: 'fas fa-book',
-  experimentalLibraryRequestAdd: 'fas fa-upload',
-  experimentalLibraryRequestRemove: 'fas fa-times',
-  experimentalGlobalFetch: 'fas fa-download',
-  experimentalDatPeers: 'fas fa-exchange-alt',
-  experimentalCapturePage: 'fas fa-camera'
-}
 
 class PermPrompt extends LitElement {
   constructor () {
@@ -82,7 +61,7 @@ class PermPrompt extends LitElement {
         <p>This site wants to:</p>
         <p class="perm">
           <i class="${PERM_ICONS[this.permId]}"></i>
-          ${this.renderPermDesc()}
+          ${renderPermDesc({bg, url: this.url, permId: this.permId, permParam: this.permParam, permOpts: this.permOpts})}
         </p>
 
         <div class="prompt-btns">
@@ -99,68 +78,6 @@ class PermPrompt extends LitElement {
           : ''}
       </div>
     `
-  }
-
-  renderPermDesc () {
-    switch (this.permId) {
-      case 'js': return 'Run Javascript'
-      case 'media': return 'Use your camera and microphone'
-      case 'geolocation': return 'Know your location'
-      case 'notifications': return 'Create desktop notifications'
-      case 'midiSysex': return 'Access your MIDI devices'
-      case 'pointerLock': return 'Lock your cursor'
-      case 'fullscreen': return 'Go fullscreen'
-      case 'openExternal': return `Open this URL in another program: ${shorten(this.url, 128)}`
-      case 'experimentalLibrary': return 'Read and modify your Library'
-      case 'experimentalDatPeers': return 'Send and receive messages with peers'
-
-      case 'network':
-        if (this.permParam === '*') return 'Access the network freely'
-        return 'contact ' + this.permParam
-        
-      case 'download':
-        return html`<span>Download ${this.permOpts.filename}</span>`
-
-      case 'createDat':
-        if (this.permOpts.title) return `Create a new Dat archive, "${this.permOpts.title}"`
-        return 'Create a new Dat archive'
-
-      case 'modifyDat':
-        {
-          let viewArchive = () => bg.permPrompt.createTab('beaker://library/' + this.permParam)
-          return html`<span>Write files to <a @click=${viewArchive}>${this.permOpts.title}</a></span>`
-        }
-
-      case 'deleteDat':
-        {
-          let viewArchive = () => bg.permPrompt.createTab('beaker://library/' + this.permParam)
-          return html`<span>Delete the archive <a @click=${viewArchive}>${this.permOpts.title}</a></span>`
-        }
-
-      case 'experimentalLibraryRequestAdd':
-        {
-          let viewArchive = () => bg.permPrompt.createTab('beaker://library/' + this.permParam)
-          return html`<span>Seed <a @click=${viewArchive}>${this.permOpts.title}</a></span>`
-        }
-
-      case 'experimentalLibraryRequestRemove':
-        {
-          let viewArchive = () => bg.permPrompt.createTab('beaker://library/' + this.permParam)
-          return html`<span>Stop seeding <a @click=${viewArchive}>${this.permOpts.title}</a></span>`
-        }
-
-      case 'experimentalGlobalFetch':
-        {
-          let viewPage = () => bg.permPrompt.createTab(this.permParam)
-          return html`<span>Fetch data from <a @click=${viewPage}>${this.permParam}</a></span>`
-        }
-
-      case 'experimentalCapturePage':
-        {
-          let viewPage = () => bg.permPrompt.createTab(this.permParam)
-          return html`<span>Take a screenshot of <a @click=${viewPage}>${this.permParam}</a></span>`
-        }
-    }
   }
 
   onContextMenu (e) {

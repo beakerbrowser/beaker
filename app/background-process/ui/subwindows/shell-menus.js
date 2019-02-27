@@ -109,6 +109,13 @@ export function reposition (parentWindow) {
         width: 160,
         height: 96
       })
+    } else if (win.menuId === 'site-info') {
+      win.setBounds({
+        x: parentBounds.x + 100,
+        y: parentBounds.y + 74,
+        width: 450,
+        height: 300
+      })
     }
   }
 }
@@ -163,11 +170,13 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
 
   async createTab (url) {
     var win = getParentWindow(this.sender)
+    hide(win) // always close the menu
     viewManager.create(win, url, {setActive: true})
   },
 
   async loadURL (url) {
     var win = getParentWindow(this.sender)
+    hide(win) // always close the menu
     viewManager.getActive(win).loadURL(url)
   },
 

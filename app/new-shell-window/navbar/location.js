@@ -5,7 +5,6 @@ import prettyHash from 'pretty-hash'
 import * as bg from '../bg-process-rpc'
 import buttonResetCSS from './button-reset.css'
 import './site-info'
-import { BrowserView } from 'electron';
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
 

@@ -1,12 +1,22 @@
 import {LitElement, html, css} from '../../vendor/lit-element/lit-element'
+import * as bg from '../bg-process-rpc'
+import {classMap} from '../../vendor/lit-element/lit-html/directives/class-map'
+import buttonResetCSS from './button-reset.css'
 
 class NavbarSiteInfo extends LitElement {
   static get properties () {
     return {
       url: {type: String},
+      isMenuOpen: {type: Boolean},
       siteLoadError: {type: Object, attribute: 'site-load-error'},
       gotInsecureResponse: {type: Boolean, attribute: 'got-insecure-response'}
     }
+  }
+
+  constructor () {
+    super()
+    this.isMenuOpen = false
+    this.url = ''
   }
 
   get scheme () {
@@ -16,6 +26,9 @@ class NavbarSiteInfo extends LitElement {
       return false
     }
   }
+
+  // rendering
+  // =
 
   render () {
     var icon
@@ -38,27 +51,42 @@ class NavbarSiteInfo extends LitElement {
     }
 
     if (!icon) {
-      return html`<div></div>`
+      return html`<button></button>`
     }
 
+    const buttonCls = classMap({pressed: this.isMenuOpen})
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div>
+      <button class=${buttonCls} @click=${this.onClickButton}>
         <span class="fa fa-${icon} ${cls}"></span>
-      </div>
+      </button>
     `
   }
+
+  // events
+  // =
+
+  async onClickButton () {
+    this.isMenuOpen = true
+    await bg.views.toggleMenu('site-info', {
+      params: {url: this.url}
+    })
+    this.isMenuOpen = false
+  }
 }
-NavbarSiteInfo.styles = css`
+NavbarSiteInfo.styles = [buttonResetCSS, css`
 :host {
   display: block;
 }
 
-:host > div {
+button {
   border-right: 1px solid #ddd;
+  border-radius: 0;
+  height: 26px;
+  line-height: 26px;
 }
 
-:host > div:hover {
+button:hover {
   background: #eee;
 }
 
@@ -76,5 +104,5 @@ NavbarSiteInfo.styles = css`
 .insecure {
   color: var(--color-insecure);
 }
-`
+`]
 customElements.define('shell-window-navbar-site-info', NavbarSiteInfo)
