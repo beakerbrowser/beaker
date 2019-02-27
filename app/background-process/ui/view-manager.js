@@ -88,6 +88,7 @@ class View {
     this.webContents.on('did-navigate-in-page', this.onDidNavigateInPage.bind(this))
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
     this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
+    this.webContents.on('new-window', this.onNewWindow.bind(this))
   }
 
   get webContents () {
@@ -256,6 +257,13 @@ class View {
 
   onUpdateTargetUrl (e, url) {
     statusBar.set(this.browserWindow, url)
+  }
+
+  onNewWindow (e, url, frameName, disposition) {
+    e.preventDefault()
+    if (!this.isActive) return // only open if coming from the active tab
+    var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
+    create(this.browserWindow, url, {setActive})
   }
 }
 
