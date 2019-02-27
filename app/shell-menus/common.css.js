@@ -1,6 +1,11 @@
 import {css} from '../vendor/lit-element/lit-element'
 
 export default css`
+hr {
+  border: 0;
+  border-bottom: 1px solid #ddd;
+}
+
 .section {
   padding: 6px 0;
   border-bottom: 1px solid #eee;

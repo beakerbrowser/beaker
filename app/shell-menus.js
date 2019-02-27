@@ -6,6 +6,7 @@ import './shell-menus/location'
 import './shell-menus/bookmark'
 import './shell-menus/peers'
 import './shell-menus/donate'
+import './shell-menus/local-path'
 
 class MenusWrapper extends LitElement {
   static get properties () {
@@ -69,6 +70,8 @@ class MenusWrapper extends LitElement {
         return html`<peers-menu></peers-menu>`
       case 'donate':
         return html`<donate-menu></donate-menu>`
+      case 'local-path':
+        return html`<local-path-menu></local-path-menu>`
     }
     return html`<div></div>`
   }

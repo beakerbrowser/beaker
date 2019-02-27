@@ -92,6 +92,13 @@ export function reposition (parent) {
         width: 320,
         height: 88
       })
+    } else if (win.menuId === 'local-path') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.right - 160,
+        y: parentBounds.y + win.boundsOpt.top,
+        width: 160,
+        height: 96
+      })
     }
   }
 }

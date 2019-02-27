@@ -34,19 +34,18 @@ class DonateMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-          <div class="header">
-            <div class="header-info">
-              <span class="far fa-heart"></span>
-              <h1>Contribute to ${title}</h1>
-            </div>
+        <div class="header">
+          <div class="header-info">
+            <span class="far fa-heart"></span>
+            <h1>Contribute to ${title}</h1>
           </div>
-          <div class="body">
-            <div>
-              Visit their donation page to show your appreciation!
-            </div>
-            <div>
-              <a href="#" class="link" @click=${e => this.onOpenPage(paymentUrl)}>${paymentUrl}</a>
-            </div>
+        </div>
+        <div class="body">
+          <div>
+            Visit their donation page to show your appreciation!
+          </div>
+          <div>
+            <a href="#" class="link" @click=${e => this.onOpenPage(paymentUrl)}>${paymentUrl}</a>
           </div>
         </div>
       </div>

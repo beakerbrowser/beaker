@@ -17,6 +17,8 @@ class NavbarLocation extends LitElement {
       peers: {type: Number},
       zoom: {type: Number},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
+      localPath: {type: String, attribute: 'local-path'},
+      isLocalPathMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
       isPageMenuOpen: {type: Boolean},
@@ -34,7 +36,9 @@ class NavbarLocation extends LitElement {
     this.title = ''
     this.peers = 0
     this.zoom = 0
-    this.donateLinkHref =  false
+    this.donateLinkHref = false
+    this.localPath = false
+    this.isLocalPathMenuOpen = false
     this.isDonateMenuOpen = false
     this.isPeersMenuOpen = false
     this.isPageMenuOpen = false
@@ -57,6 +61,7 @@ class NavbarLocation extends LitElement {
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
       ${this.renderZoom()}
+      ${this.renderLocalPathBtn()}
       ${this.renderDonateBtn()}
       ${this.renderPeersBtn()}
       ${this.renderPageMenuBtn()}
@@ -141,6 +146,19 @@ class NavbarLocation extends LitElement {
     return html`
       <button @click=${this.onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
         ${zoomPct}%
+      </button>
+    `
+  }
+
+  renderLocalPathBtn () {
+    if (!this.localPath) {
+      return ''
+    }
+    var cls = classMap({'local-path': true, pressed: this.isLocalPathMenuOpen})
+    return html`
+      <button class="${cls}" @click=${this.onClickLocalPathMenu}>
+        <span class="value">${this.localPath}</span>
+        <span class="fa fa-caret-down"></span>
       </button>
     `
   }
@@ -282,6 +300,20 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
+  async onClickLocalPathMenu (e) {
+    this.isLocalPathMenuOpen = true
+    var rect1 = this.getClientRects()[0]
+    var rect2 = e.currentTarget.getClientRects()[0]
+    await bg.views.toggleMenu('local-path', {
+      bounds: {
+        top: (rect1.bottom|0),
+        right: (rect2.right|0)
+      },
+      params: {url: this.url}
+    })
+    this.isLocalPathMenuOpen = false
+  }
+
   async onClickDonateMenu (e) {
     this.isDonateMenuOpen = true
     var rect1 = this.getClientRects()[0]
@@ -398,6 +430,23 @@ button.peers {
 
 button.peers .fa {
   font-size: 13px;
+}
+
+button.local-path {
+  width: auto;
+  display: flex;
+  align-items: center;
+  line-height: 26px;
+  padding: 0 6px;
+}
+
+button.local-path .value {
+  display: inline-block;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 5px;
 }
 
 .input-container {

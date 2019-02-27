@@ -30,7 +30,8 @@ const STATE_VARS = [
   'isReceivingAssets',
   'canGoBack',
   'canGoForward',
-  'donateLinkHref'
+  'donateLinkHref',
+  'localPath'
 ]
 
 // globals
@@ -78,6 +79,7 @@ class View {
     this.datInfo = null // metadata about the site if viewing a dat
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
+    this.localPath = null // the path of the local sync directory, if set
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -199,6 +201,7 @@ class View {
     this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
     this.peers = this.datInfo.peers
     this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
+    this.localPath = _get(this, 'datInfo.userSettings.localSyncPath')
     if (!noEmit) {
       this.emitUpdateState()
     }
