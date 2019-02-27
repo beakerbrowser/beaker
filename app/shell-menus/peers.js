@@ -32,7 +32,6 @@ class PeersMenu extends LitElement {
     this.url = params.url
     this.datInfo = (await bg.views.getTabState('active', {datInfo: true})).datInfo
     console.log(this.datInfo)
-    this.rehostSlider = null // TODO
     await this.requestUpdate()
 
     // periodically fetch updates

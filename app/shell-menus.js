@@ -5,6 +5,7 @@ import './shell-menus/page'
 import './shell-menus/location'
 import './shell-menus/bookmark'
 import './shell-menus/peers'
+import './shell-menus/donate'
 
 class MenusWrapper extends LitElement {
   static get properties () {
@@ -66,13 +67,14 @@ class MenusWrapper extends LitElement {
         return html`<bookmark-menu></bookmark-menu>`
       case 'peers':
         return html`<peers-menu></peers-menu>`
+      case 'donate':
+        return html`<donate-menu></donate-menu>`
     }
     return html`<div></div>`
   }
 
   onContextMenu (e) {
-    // RESTOREME
-    // e.preventDefault() // disable context menu
+    e.preventDefault() // disable context menu
   }
 }
 

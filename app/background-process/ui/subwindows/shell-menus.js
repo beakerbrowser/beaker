@@ -49,15 +49,6 @@ export function get (parent) {
 export function reposition (parent) {
   var win = get(parent)
   if (win) {
-    // TODO
-    // var parentBounds = parent.getBounds()
-    // var b = {}
-    // for (let k in b) {
-    //   if (k in win.offsets) {
-    //     b[k] = parentBounds[k] + win.offsets[k]
-    //   }
-    // }
-    // win.setBounds(b)
     var parentBounds = parent.getBounds()
     if (win.menuId === 'browser') {
       win.setBounds({
@@ -93,6 +84,13 @@ export function reposition (parent) {
         y: parentBounds.y + win.boundsOpt.top,
         width: 300,
         height: 118
+      })
+    } else if (win.menuId === 'donate') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.right - 320,
+        y: parentBounds.y + win.boundsOpt.top,
+        width: 320,
+        height: 88
       })
     }
   }

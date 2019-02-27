@@ -16,6 +16,8 @@ class NavbarLocation extends LitElement {
       title: {type: String},
       peers: {type: Number},
       zoom: {type: Number},
+      donateLinkHref: {type: String, attribute: 'donate-link-href'},
+      isDonateMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
       isPageMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
@@ -32,6 +34,8 @@ class NavbarLocation extends LitElement {
     this.title = ''
     this.peers = 0
     this.zoom = 0
+    this.donateLinkHref =  false
+    this.isDonateMenuOpen = false
     this.isPeersMenuOpen = false
     this.isPageMenuOpen = false
     this.isBookmarked = false
@@ -53,6 +57,7 @@ class NavbarLocation extends LitElement {
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
       ${this.renderZoom()}
+      ${this.renderDonateBtn()}
       ${this.renderPeersBtn()}
       ${this.renderPageMenuBtn()}
       ${this.renderBookmarkBtn()}
@@ -136,6 +141,18 @@ class NavbarLocation extends LitElement {
     return html`
       <button @click=${this.onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
         ${zoomPct}%
+      </button>
+    `
+  }
+
+  renderDonateBtn () {
+    if (!this.donateLinkHref) {
+      return ''
+    }
+    var cls = classMap({donate: true, pressed: this.isDonateMenuOpen})
+    return html`
+      <button class="${cls}" @click=${this.onClickDonateMenu}>
+        <i class="far fa-heart"></i>
       </button>
     `
   }
@@ -265,14 +282,28 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
+  async onClickDonateMenu (e) {
+    this.isDonateMenuOpen = true
+    var rect1 = this.getClientRects()[0]
+    var rect2 = e.currentTarget.getClientRects()[0]
+    await bg.views.toggleMenu('donate', {
+      bounds: {
+        top: (rect1.bottom|0),
+        right: (rect2.right|0)
+      },
+      params: {url: this.url}
+    })
+    this.isDonateMenuOpen = false
+  }
+
   async onClickPeersMenu (e) {
     this.isPeersMenuOpen = true
     var rect1 = this.getClientRects()[0]
     var rect2 = e.currentTarget.getClientRects()[0]
     await bg.views.toggleMenu('peers', {
       bounds: {
-        top: Number(rect1.bottom),
-        right: Number(rect2.right)
+        top: (rect1.bottom|0),
+        right: (rect2.right|0)
       },
       params: {url: this.url}
     })
@@ -285,8 +316,8 @@ class NavbarLocation extends LitElement {
     this.isPageMenuOpen = true
     await bg.views.showMenu('page', {
       bounds: {
-        top: Number(rect1.bottom),
-        right: Number(rect2.right)
+        top: (rect1.bottom|0),
+        right: (rect2.right|0)
       },
       params: {url: this.url}
     })

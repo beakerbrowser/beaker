@@ -3,6 +3,7 @@ import * as beakerCore from '@beaker/core'
 import path from 'path'
 import Events from 'events'
 import emitStream from 'emit-stream'
+import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
 import normalizeURL from 'normalize-url'
@@ -28,7 +29,8 @@ const STATE_VARS = [
   'isLoading',
   'isReceivingAssets',
   'canGoBack',
-  'canGoForward'
+  'canGoForward',
+  'donateLinkHref'
 ]
 
 // globals
@@ -75,6 +77,7 @@ class View {
     // helper state
     this.datInfo = null // metadata about the site if viewing a dat
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
+    this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -195,6 +198,7 @@ class View {
     var key = await beakerCore.dat.dns.resolveName(this.url)
     this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
     this.peers = this.datInfo.peers
+    this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
     if (!noEmit) {
       this.emitUpdateState()
     }

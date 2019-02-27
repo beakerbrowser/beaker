@@ -51,6 +51,7 @@ class ShellWindowNavbar extends LitElement {
         title="${_get(this, 'activeTab.title', '')}"
         peers="${_get(this, 'activeTab.peers', 0)}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
+        donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"
         ?is-bookmarked=${_get(this, 'activeTab.isBookmarked', false)}
       ></shell-window-navbar-location>
       <div class="buttons">
