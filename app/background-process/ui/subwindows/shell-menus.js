@@ -1,3 +1,13 @@
+/**
+ * Shell Menus
+ * 
+ * NOTES
+ * - There can only ever be one Shell Menu window for a given browser window
+ * - Shell Menu windows are created with each browser window and then shown/hidden as needed
+ * - The Shell Menu window contains the UIs for multiple menus and swaps between them as needed
+ * - When unfocused, the Shell Menu window is hidden (it's meant to act as a popup menu)
+ */
+
 import path from 'path'
 import Events from 'events'
 import {BrowserWindow} from 'electron'
@@ -10,14 +20,14 @@ import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 // =
 
 var events = new Events()
-var windows = {} // map of {[parent.id] => BrowserWindow}
+var windows = {} // map of {[parentWindow.id] => BrowserWindow}
 
 // exported api
 // =
 
-export function setup (parent) {
-  var win = windows[parent.id] = new BrowserWindow({
-    parent,
+export function setup (parentWindow) {
+  var win = windows[parentWindow.id] = new BrowserWindow({
+    parent: parentWindow,
     frame: false,
     resizable: false,
     maximizable: false,
@@ -32,24 +42,24 @@ export function setup (parent) {
     console.log('Shell-Menus window says:', message)
   })
   win.loadURL('beaker://shell-menus/')
-  win.on('blur', () => hide(parent))
+  win.on('blur', () => hide(parentWindow))
 }
 
-export function destroy (parent) {
-  if (get(parent)) {
-    get(parent).close()
-    delete windows[parent.id]
+export function destroy (parentWindow) {
+  if (get(parentWindow)) {
+    get(parentWindow).close()
+    delete windows[parentWindow.id]
   }
 }
 
-export function get (parent) {
-  return windows[parent.id]
+export function get (parentWindow) {
+  return windows[parentWindow.id]
 }
 
-export function reposition (parent) {
-  var win = get(parent)
+export function reposition (parentWindow) {
+  var win = get(parentWindow)
   if (win) {
-    var parentBounds = parent.getBounds()
+    var parentBounds = parentWindow.getBounds()
     if (win.menuId === 'browser') {
       win.setBounds({
         x: parentBounds.x + parentBounds.width - 245,
@@ -103,23 +113,23 @@ export function reposition (parent) {
   }
 }
 
-export async function toggle (parent, menuId, opts) {
-  var win = get(parent)
+export async function toggle (parentWindow, menuId, opts) {
+  var win = get(parentWindow)
   if (win) {
     if (win.isVisible()) {
-      return hide(parent)
+      return hide(parentWindow)
     } else {
-      return show(parent, menuId, opts)
+      return show(parentWindow, menuId, opts)
     }
   }
 }
 
-export async function show (parent, menuId, opts) {
-  var win = get(parent)
+export async function show (parentWindow, menuId, opts) {
+  var win = get(parentWindow)
   if (win) {
     win.menuId = menuId
     win.boundsOpt = opts && opts.bounds
-    reposition(parent)
+    reposition(parentWindow)
 
     var params = opts && opts.params ? opts.params : {}
     await win.webContents.executeJavaScript(`openMenu('${menuId}', ${JSON.stringify(params)})`)
@@ -132,9 +142,9 @@ export async function show (parent, menuId, opts) {
   }
 }
 
-export function hide (parent) {
-  if (get(parent)) {
-    get(parent).hide()
+export function hide (parentWindow) {
+  if (get(parentWindow)) {
+    get(parentWindow).hide()
     events.emit('hide')
   }
 }

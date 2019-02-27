@@ -12,12 +12,14 @@ import * as downloads from './downloads'
 import * as permissions from './permissions'
 import * as statusBarSubwindow from './subwindows/status-bar'
 import * as shellMenusSubwindow from './subwindows/shell-menus'
+import * as permPromptSubwindow from './subwindows/perm-prompt'
 const settingsDb = beakerCore.dbs.settings
 
 const IS_WIN = process.platform === 'win32'
 const subwindows = {
   statusBar: statusBarSubwindow,
-  menu: shellMenusSubwindow
+  menu: shellMenusSubwindow,
+  permPrompt: permPromptSubwindow
 }
 
 // globals

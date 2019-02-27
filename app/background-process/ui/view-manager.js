@@ -13,6 +13,7 @@ import viewsRPCManifest from '../rpc-manifests/views'
 import * as zoom from './views/zoom'
 import * as shellMenus from './subwindows/shell-menus'
 import * as statusBar from './subwindows/status-bar'
+import * as permPrompt from './subwindows/perm-prompt'
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
 const bookmarksDb = beakerCore.dbs.bookmarks
@@ -144,21 +145,24 @@ class View {
 
     const win = this.browserWindow
     win.setBrowserView(this.browserView)
+    permPrompt.show(this.browserView)
     var {width, height} = win.getBounds()
     this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
     this.browserView.setAutoResize({width: true, height: true})
   }
 
-  deactivate () {
-    if (this.isActive) {
+  deactivate (dontNullTheView = false) {
+    if (!dontNullTheView && this.isActive) {
       this.browserWindow.setBrowserView(null)
     }
 
+    permPrompt.hide(this.browserView)
     this.isActive = false
   }
 
   destroy () {
     this.deactivate()
+    permPrompt.close(this.browserView)
     this.browserView.destroy()
   }
 
@@ -348,6 +352,16 @@ export function getActive (win) {
   return getAll(win).find(view => view.isActive)
 }
 
+export function findContainingWindow (view) {
+  for (let winId in activeViews) {
+    for (let v of activeViews[winId]) {
+      if (v.browserView === view) {
+        return v.browserWindow
+      }
+    }
+  }
+}
+
 export function create (win, url, opts = {setActive: false, isPinned: false}) {
   url = url || DEFAULT_URL
   var view = new View(win, {isPinned: opts.isPinned})
@@ -431,7 +445,7 @@ export function setActive (win, view) {
   if (!view) return
   var active = getActive(win)
   if (active) {
-    active.isActive = false
+    active.deactivate(true)
   }
   if (view) {
     view.activate()

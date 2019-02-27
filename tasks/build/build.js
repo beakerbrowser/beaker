@@ -51,6 +51,7 @@ var bundleApplication = function () {
     bundle(srcDir.path('webview-preload.js'),          srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(srcDir.path('shell-window.js'),             srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true, browserifyExclude: ['fs'] }),
     bundle(srcDir.path('shell-menus.js'),              srcDir.path('shell-menus.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(srcDir.path('perm-prompt.js'),              srcDir.path('perm-prompt.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(srcDir.path('json-renderer.js'),            srcDir.path('json-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(srcDir.path('markdown-renderer.js'),        srcDir.path('markdown-renderer.build.js'), { browserify: true, basedir: srcDir.cwd() }),
     bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
