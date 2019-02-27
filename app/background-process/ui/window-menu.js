@@ -269,7 +269,6 @@ export function buildWindowMenu (opts = {}) {
           if (win) {
             viewZoom.zoomIn(viewManager.getActive(win))
           }
-          if (win) win.webContents.send('command', 'view:zoom-in')
         }
       },
       {
@@ -281,7 +280,6 @@ export function buildWindowMenu (opts = {}) {
           if (win) {
             viewZoom.zoomOut(viewManager.getActive(win))
           }
-          if (win) win.webContents.send('command', 'view:zoom-out')
         }
       },
       {

@@ -5,6 +5,7 @@ import prettyHash from 'pretty-hash'
 import * as bg from '../bg-process-rpc'
 import buttonResetCSS from './button-reset.css'
 import './site-info'
+import { BrowserView } from 'electron';
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
 
@@ -18,6 +19,7 @@ class NavbarLocation extends LitElement {
       zoom: {type: Number},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       localPath: {type: String, attribute: 'local-path'},
+      isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
       isLocalPathMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
@@ -62,6 +64,7 @@ class NavbarLocation extends LitElement {
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderLocalPathBtn()}
+      ${this.renderLiveReloadingBtn()}
       ${this.renderDonateBtn()}
       ${this.renderPeersBtn()}
       ${this.renderPageMenuBtn()}
@@ -159,6 +162,17 @@ class NavbarLocation extends LitElement {
       <button class="${cls}" @click=${this.onClickLocalPathMenu}>
         <span class="value">${this.localPath}</span>
         <span class="fa fa-caret-down"></span>
+      </button>
+    `
+  }
+
+  renderLiveReloadingBtn () {
+    if (!this.isLiveReloading) {
+      return ''
+    }
+    return html`
+      <button class="live-reload" @click=${this.onClickLiveReloadingBtn} title="Toggle live reloading">
+        <i class="fa fa-bolt"></i>
       </button>
     `
   }
@@ -314,6 +328,11 @@ class NavbarLocation extends LitElement {
     this.isLocalPathMenuOpen = false
   }
 
+  onClickLiveReloadingBtn (e) {
+    bg.views.toggleLiveReloading('active')
+    this.isLiveReloading = false
+  }
+
   async onClickDonateMenu (e) {
     this.isDonateMenuOpen = true
     var rect1 = this.getClientRects()[0]
@@ -447,6 +466,17 @@ button.local-path .value {
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-right: 5px;
+}
+
+button.live-reload {
+  width: 24px;
+}
+
+button.live-reload .fa {
+  position: relative;
+  top: -1px;
+  color: #f2f200;
+  -webkit-text-stroke: 1px #dabb15;
 }
 
 .input-container {

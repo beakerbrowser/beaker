@@ -69,7 +69,7 @@ class PageMenu extends LitElement {
 
   async onToggleLiveReloading () {
     bg.shellMenus.close()
-    // page.toggleLiveReloading() TODO
+    bg.views.toggleLiveReloading('active')
   }
 
   onClickDownloadZip () {

@@ -13,6 +13,7 @@ export default {
   stop: 'promise',
   reload: 'promise',
   resetZoom: 'promise',
+  toggleLiveReloading: 'promise',
   showMenu: 'promise',
   toggleMenu: 'promise'
 }

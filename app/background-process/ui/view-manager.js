@@ -2,6 +2,8 @@ import { BrowserView, BrowserWindow, Menu } from 'electron'
 import * as beakerCore from '@beaker/core'
 import path from 'path'
 import Events from 'events'
+import _throttle from 'lodash.throttle'
+import parseDatURL from 'parse-dat-url'
 import emitStream from 'emit-stream'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
@@ -17,6 +19,7 @@ const bookmarksDb = beakerCore.dbs.bookmarks
 
 const Y_POSITION = 78 
 const DEFAULT_URL = 'beaker://start'
+const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
 const STATE_VARS = [
   'url',
@@ -31,7 +34,8 @@ const STATE_VARS = [
   'canGoBack',
   'canGoForward',
   'donateLinkHref',
-  'localPath'
+  'localPath',
+  'isLiveReloading'
 ]
 
 // globals
@@ -80,6 +84,7 @@ class View {
     this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.localPath = null // the path of the local sync directory, if set
+    this.liveReloadEvents = null // live-reload event stream
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -100,10 +105,7 @@ class View {
   }
 
   get origin () {
-    try {
-      var u = new URL(this.url)
-      return u.protocol + '//' + u.hostname
-    } catch (e) { return '' }
+    return toOrigin(this.url)
   }
 
   get title () {
@@ -119,6 +121,10 @@ class View {
 
   get canGoForward () {
     return this.webContents.canGoForward()
+  }
+
+  get isLiveReloading () {
+    return !!this.liveReloadEvents
   }
 
   get state () {
@@ -165,6 +171,42 @@ class View {
       if (this.isPinned) {
         savePins(this.browserWindow)
       }
+    }
+  }
+
+  // live reloading
+  // =
+
+  toggleLiveReloading () {
+    if (this.liveReloadEvents) {
+      this.liveReloadEvents.close()
+      this.liveReloadEvents = false
+    } else if (this.datInfo) {
+      let archive = beakerCore.dat.library.getArchive(this.datInfo.key)
+      if (!archive) return
+
+      let {version} = parseDatURL(this.url)
+      let {checkoutFS} = beakerCore.dat.library.getArchiveCheckout(archive, version)
+      this.liveReloadEvents = checkoutFS.pda.watch()
+
+      let event = (this.datInfo.isOwner) ? 'changed' : 'invalidated'
+      const reload = _throttle(() => {
+        this.browserView.webContents.reload()
+      }, TRIGGER_LIVE_RELOAD_DEBOUNCE, {leading: false})
+      this.liveReloadEvents.on('data', ([evt]) => {
+        if (evt === event) reload()
+      })
+      // ^ note this throttle is run on the front edge.
+      // That means snappier reloads (no delay) but possible double reloads if multiple files change
+    }
+    this.emitUpdateState()
+  }
+
+  stopLiveReloading () {
+    if (this.liveReloadEvents) {
+      this.liveReloadEvents.close()
+      this.liveReloadEvents = false
+      this.emitUpdateState()
     }
   }
 
@@ -225,9 +267,13 @@ class View {
   }
 
   onDidStartNavigation (e, url) {
+    // turn off live reloading if we're leaving the domain
+    if (toOrigin(url) !== toOrigin(this.url)) {
+      this.stopLiveReloading()
+    }
   }
 
-  onDidNavigate (e) {
+  onDidNavigate (e, url) {
     // read zoom
     zoom.setZoomFromSitedata(this)
 
@@ -290,6 +336,7 @@ export function getAll (win) {
 }
 
 export function getByIndex (win, index) {
+  if (index === 'active') return getActive(win)
   return getAll(win)[index]
 }
 
@@ -341,7 +388,7 @@ export function remove (win, view) {
   }
 
   // remove
-  // view.stopLiveReloading() TODO
+  view.stopLiveReloading()
   views.splice(i, 1)
   view.destroy()
 
@@ -505,7 +552,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async refreshState (tab) {
     var win = getWindow(this.sender)
-    var view = tab === 'active' ? getActive(win) : getByIndex(win, tab)
+    var view = getByIndex(win, tab)
     if (view) {
       view.refreshState()
     }
@@ -518,7 +565,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async getTabState (tab, opts) {
     var win = getWindow(this.sender)
-    var view = tab === 'active' ? getActive(win) : getByIndex(win, tab)
+    var view = getByIndex(win, tab)
     if (view) {
       var state = Object.assign({}, view.state)
       if (opts) {
@@ -589,6 +636,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     zoom.zoomReset(getByIndex(getWindow(this.sender), index))
   },
 
+  async toggleLiveReloading (index) {
+    getByIndex(getWindow(this.sender), index).toggleLiveReloading()
+  },
+
   async showMenu (id, opts) {
     await shellMenus.show(getWindow(this.sender), id, opts)
   },
@@ -632,4 +683,11 @@ function indexOfLastPinnedView (win) {
     if (!views[index].isPinned) break
   }
   return index
+}
+
+function toOrigin (str) {
+  try {
+    var u = new URL(str)
+    return u.protocol + '//' + u.hostname
+  } catch (e) { return '' }
 }
