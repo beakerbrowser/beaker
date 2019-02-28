@@ -15,7 +15,8 @@ const exec = require('util').promisify(require('child_process').exec)
 const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
-import {showModal, showShellModal, closeModal} from './ui/modals'
+import {showShellModal, closeModal} from './ui/modals'
+import * as modals from './ui/subwindows/modals'
 import {getActiveWindow} from './ui/windows'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
@@ -93,9 +94,8 @@ export function setup () {
   //  - we have use ipc directly instead of using rpc, because we need custom
   //    response-lifecycle management in the main thread
   ipcMain.on('page-prompt-dialog', async (e, message, def) => {
-    var win = BrowserWindow.fromWebContents(e.sender.hostWebContents)
     try {
-      var res = await showModal(win, 'prompt', {message, default: def})
+      var res = await modals.create(e.sender, 'prompt', {message, default: def})
       e.returnValue = res && res.value ? res.value : false
     } catch (e) {
       e.returnValue = false

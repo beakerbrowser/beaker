@@ -335,15 +335,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://basic-auth-modal/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/basic-auth-modal.build.js'))
   }
-  if (requestUrl === 'beaker://prompt-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/prompt-modal.html'))
-  }
-  if (requestUrl === 'beaker://prompt-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/prompt-modal.css'))
-  }
-  if (requestUrl === 'beaker://prompt-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/prompt-modal.build.js'))
-  }
 
   // debugging
   if (requestUrl === 'beaker://internal-archives/') {
