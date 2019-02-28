@@ -1,6 +1,6 @@
 import { LitElement, html } from './vendor/lit-element/lit-element'
-import * as bg from './modals/bg-process-rpc'
 import './modals/create-archive'
+import './modals/fork-archive'
 
 class ModalsWrapper extends LitElement {
   static get properties () {
@@ -42,6 +42,8 @@ class ModalsWrapper extends LitElement {
     switch (this.currentModal) {
       case 'create-archive':
         return html`<create-archive-modal></create-archive-modal>`
+      case 'fork-archive':
+        return html`<fork-archive-modal></fork-archive-modal>`
     }
     return html`<div></div>`
   }

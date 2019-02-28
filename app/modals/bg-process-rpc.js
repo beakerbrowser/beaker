@@ -3,4 +3,4 @@ import datArchiveManifest from '@beaker/core/web-apis/manifests/external/dat-arc
 import modalsManifest from '../background-process/rpc-manifests/modals'
 
 export const datArchive = rpc.importAPI('dat-archive', datArchiveManifest)
-export const shellMenus = rpc.importAPI('background-process-modals', modalsManifest)
+export const modals = rpc.importAPI('background-process-modals', modalsManifest)
