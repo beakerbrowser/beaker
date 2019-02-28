@@ -1,6 +1,7 @@
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import './modals/create-archive'
 import './modals/fork-archive'
+import './modals/select-archive'
 
 class ModalsWrapper extends LitElement {
   static get properties () {
@@ -44,6 +45,8 @@ class ModalsWrapper extends LitElement {
         return html`<create-archive-modal></create-archive-modal>`
       case 'fork-archive':
         return html`<fork-archive-modal></fork-archive-modal>`
+      case 'select-archive':
+        return html`<select-archive-modal></select-archive-modal>`
     }
     return html`<div></div>`
   }
