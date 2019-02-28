@@ -1,17 +1,18 @@
 /**
- * Perm Prompt
+ * Modal
  * 
  * NOTES
- * - Perm Prompt windows are created as-needed, and desroyed when not in use
- * - Perm Prompt windows are attached to individual BrowserView instances
- * - Perm Prompt windows are shown and hidden based on whether its owning BrowserView is visible
+ * - Modal windows are created as-needed, and desroyed when not in use
+ * - Modal windows are attached to individual BrowserView instances
+ * - Modal windows are shown and hidden based on whether its owning BrowserView is visible
  */
 
 import path from 'path'
-import {BrowserWindow} from 'electron'
+import {BrowserWindow, BrowserView} from 'electron'
 import * as rpc from 'pauls-electron-rpc'
+import {ModalActiveError} from 'beaker-error-constants'
 import * as viewManager from '../view-manager'
-import permPromptRPCManifest from '../../rpc-manifests/perm-prompt'
+import modalsRPCManifest from '../../rpc-manifests/modals'
 
 // globals
 // =
@@ -43,10 +44,23 @@ export function reposition (parentWindow) {
   }
 }
 
-export async function create (parentWindow, parentView, params) {
+export async function create (webContents, modalName, params = {}) {
+  // find parent window
+  var parentWindow = BrowserWindow.fromWebContents(webContents)
+  var parentView = BrowserView.fromWebContents(webContents)
+  if (parentView && !parentWindow) {
+    // if there's no window, then a web page created the prompt
+    // use its containing window
+    parentWindow = viewManager.findContainingWindow(parentView)
+  } else if (!parentView) {
+    // if there's no view, then the shell window created the prompt
+    // attach it to the active view
+    parentView = viewManager.getActive(parentWindow)
+  }
+
   // make sure a prompt window doesnt already exist
   if (parentView.id in windows) {
-    return false // abort
+    throw new ModalActiveError()
   }
 
   // create the window
@@ -59,27 +73,31 @@ export async function create (parentWindow, parentView, params) {
     fullscreenable: false,
     webPreferences: {
       defaultEncoding: 'utf-8',
-      preload: path.join(__dirname, 'perm-prompt.build.js')
+      preload: path.join(__dirname, 'modals.build.js')
     }
   })
   setBounds(win, parentWindow)
   win.webContents.on('console-message', (e, level, message) => {
-    console.log('Perm-Prompt window says:', message)
+    console.log('Modals window says:', message)
   })
-  win.loadURL('beaker://perm-prompt/')
+  win.loadURL('beaker://modals/')
 
-  // run the prompt flow
-  var decision = false
+  // run the modal flow
+  var result
+  var err
   try {
-    decision = await win.webContents.executeJavaScript(`runPrompt(${JSON.stringify(params)})`)
+    result = await win.webContents.executeJavaScript(`runModal("${modalName}", ${JSON.stringify(params)})`)
   } catch (e) {
-    console.error('Failed to run permission prompt', e)
+    err = e
   }
 
   // destroy the window
   win.close()
   delete windows[parentView.id]
-  return decision
+
+  // return/throw
+  if (err) throw err
+  return result
 }
 
 export async function show (parentView) {
@@ -104,7 +122,7 @@ export async function close (parentView) {
 // rpc api
 // =
 
-rpc.exportAPI('background-process-perm-prompt', permPromptRPCManifest, {
+rpc.exportAPI('background-process-modals', modalsRPCManifest, {
   async createTab (url) {
     var win = getParentWindow(this.sender)
     viewManager.create(win, url, {setActive: true})
@@ -113,7 +131,15 @@ rpc.exportAPI('background-process-perm-prompt', permPromptRPCManifest, {
   async resizeSelf (dimensions) {
     var win = BrowserWindow.fromWebContents(this.sender)
     var [width, height] = win.getSize()
-    win.setSize(dimensions.width || width, dimensions.height || height)
+    width = dimensions.width || width
+    height = dimensions.height || height
+    var parentBounds = win.getParentWindow().getBounds()
+    win.setBounds({
+      x: parentBounds.x + Math.round(parentBounds.width / 2) - Math.round(width / 2), // centered
+      y: parentBounds.y + 74,
+      width,
+      height
+    })
   }
 })
 
@@ -123,10 +149,10 @@ rpc.exportAPI('background-process-perm-prompt', permPromptRPCManifest, {
 function setBounds (win, parentWindow) {
   var parentBounds = parentWindow.getBounds()
   win.setBounds({
-    x: parentBounds.x + 100,
+    x: parentBounds.x + Math.round(parentBounds.width / 2) - 250, // centered
     y: parentBounds.y + 74,
-    width: 300,
-    height: 118
+    width: 500,
+    height: 300
   })
 }
 

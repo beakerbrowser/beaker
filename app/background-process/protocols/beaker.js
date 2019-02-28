@@ -102,6 +102,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://perm-prompt/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'perm-prompt.html'))
   }
+  if (requestUrl === 'beaker://modals/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'modals.html'))
+  }
   if (requestUrl === 'beaker://assets/syntax-highlight.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/syntax-highlight.js'))
   }

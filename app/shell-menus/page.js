@@ -1,5 +1,4 @@
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import moment from 'moment'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 

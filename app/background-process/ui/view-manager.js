@@ -14,6 +14,7 @@ import * as zoom from './views/zoom'
 import * as shellMenus from './subwindows/shell-menus'
 import * as statusBar from './subwindows/status-bar'
 import * as permPrompt from './subwindows/perm-prompt'
+import * as modals from './subwindows/modals'
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
 const bookmarksDb = beakerCore.dbs.bookmarks
@@ -146,6 +147,7 @@ class View {
     const win = this.browserWindow
     win.setBrowserView(this.browserView)
     permPrompt.show(this.browserView)
+    modals.show(this.browserView)
     var {width, height} = win.getBounds()
     this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
     this.browserView.setAutoResize({width: true, height: true})
@@ -157,12 +159,14 @@ class View {
     }
 
     permPrompt.hide(this.browserView)
+    modals.hide(this.browserView)
     this.isActive = false
   }
 
   destroy () {
     this.deactivate()
     permPrompt.close(this.browserView)
+    modals.close(this.browserView)
     this.browserView.destroy()
   }
 
