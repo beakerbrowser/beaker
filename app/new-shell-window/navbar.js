@@ -54,6 +54,7 @@ class ShellWindowNavbar extends LitElement {
         zoom="${_get(this, 'activeTab.zoom', '')}"
         donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"
         local-path="${_get(this, 'activeTab.localPath') || ''}"
+        available-alternative="${_get(this, 'activeTab.availableAlternative') || ''}"
         ?is-live-reloading=${_get(this, 'activeTab.isLiveReloading')}
         ?is-bookmarked=${_get(this, 'activeTab.isBookmarked', false)}
       ></shell-window-navbar-location>

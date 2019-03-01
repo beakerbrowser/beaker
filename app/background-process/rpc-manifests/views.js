@@ -4,6 +4,7 @@ export default {
   getState: 'promise',
   getTabState: 'promise',
   createTab: 'promise',
+  loadURL: 'promise',
   closeTab: 'promise',
   setActiveTab: 'promise',
   reorderTab: 'promise',

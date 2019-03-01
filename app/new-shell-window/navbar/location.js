@@ -18,6 +18,7 @@ class NavbarLocation extends LitElement {
       zoom: {type: Number},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       localPath: {type: String, attribute: 'local-path'},
+      availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
       isLocalPathMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
@@ -39,6 +40,7 @@ class NavbarLocation extends LitElement {
     this.zoom = 0
     this.donateLinkHref = false
     this.localPath = false
+    this.availableAlternative = ''
     this.isLocalPathMenuOpen = false
     this.isDonateMenuOpen = false
     this.isPeersMenuOpen = false
@@ -63,6 +65,7 @@ class NavbarLocation extends LitElement {
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderLocalPathBtn()}
+      ${this.renderAvailableAlternativeBtn()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderDonateBtn()}
       ${this.renderPeersBtn()}
@@ -163,6 +166,25 @@ class NavbarLocation extends LitElement {
         <span class="fa fa-caret-down"></span>
       </button>
     `
+  }
+
+  renderAvailableAlternativeBtn () {
+    const aa = this.availableAlternative
+    if (aa === 'dat:') {
+      return html`
+        <button class="available-alternative" title="Go to Dat Version of this Site" @click=${this.onClickAvailableAlternative}>
+          P2P version available
+        </button>
+      `
+    }
+    if (aa === 'http:' || aa === 'https:') {
+      return html`
+        <button class="available-alternative" title="Go to HTTP/S Version of this Site" @click=${this.onClickAvailableAlternative}>
+          HTTP/S version available
+        </button>
+      `
+    }
+    return ''
   }
 
   renderLiveReloadingBtn () {
@@ -327,6 +349,17 @@ class NavbarLocation extends LitElement {
     this.isLocalPathMenuOpen = false
   }
 
+  onClickAvailableAlternative (e) {
+    var url = new URL(this.url)
+    url.protocol = this.availableAlternative
+
+    if (e.metaKey || e.ctrlKey) {
+      bg.views.createTab(url.toString(), {setActive: true, addToNoRedirects: true})
+    } else {
+      bg.views.loadURL(this.activeTabIndex, url.toString(), {addToNoRedirects: true})
+    }
+  }
+
   onClickLiveReloadingBtn (e) {
     bg.views.toggleLiveReloading('active')
     this.isLiveReloading = false
@@ -465,6 +498,12 @@ button.local-path .value {
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-right: 5px;
+}
+
+button.available-alternative {
+  width: auto;
+  line-height: 26px;
+  padding: 0 6px;
 }
 
 button.live-reload {

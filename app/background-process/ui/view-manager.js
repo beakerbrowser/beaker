@@ -41,6 +41,7 @@ const STATE_VARS = [
   'isInpageFindActive',
   'currentInpageFindString',
   'currentInpageFindResults',
+  'availableAlternative',
   'donateLinkHref',
   'localPath',
   'isLiveReloading'
@@ -52,6 +53,7 @@ const STATE_VARS = [
 var activeViews = {} // map of {[win.id]: Array<View>}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: Events}
+var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
 
 // classes
 // =
@@ -95,6 +97,7 @@ class View {
     this.datInfo = null // metadata about the site if viewing a dat
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.localPath = null // the path of the local sync directory, if set
+    this.availableAlternative = '' // tracks if there's alternative protocol available for the site
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -238,6 +241,32 @@ class View {
     this.webContents.findInPage(this.currentInpageFindString, {findNext: false, forward: dir !== -1})
   }
 
+  // alternative protocols
+  // =
+
+  async checkForDatAlternative (url) {
+    let u = (new URL(url))
+    // try to do a name lookup
+    var siteHasDatAlternative = await beakerCore.dat.dns.resolveName(u.hostname).then(
+      res => Boolean(res),
+      err => false
+    )
+    if (siteHasDatAlternative) {
+      var autoRedirectToDat = !!await beakerCore.dbs.settings.get('auto_redirect_to_dat')
+      if (autoRedirectToDat && !noRedirectHostnames.has(u.hostname)) {
+        // automatically redirect
+        let datUrl = url.replace(u.protocol, 'dat:')
+        this.loadURL(datUrl)
+      } else {
+        // track that dat is available
+        this.availableAlternative = 'dat:'
+      }
+    } else {
+      this.availableAlternative = ''
+    }
+    this.emitUpdateState()
+  }
+
   // live reloading
   // =
 
@@ -360,6 +389,13 @@ class View {
     // update state
     this.isLoading = false
     this.isReceivingAssets = false
+
+    // check for dat alternatives
+    if (this.url.startsWith('https://')) {
+      this.checkForDatAlternative(this.url)
+    } else {
+      this.availableAlternative = ''
+    }
 
     // emit
     this.emitUpdateState()
@@ -667,10 +703,22 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     }
   },
 
-  async createTab (url, opts = {setActive: false}) {
+  async createTab (url, opts = {setActive: false, addToNoRedirects: false}) {
+    if (opts.addToNoRedirects) {
+      addToNoRedirects(url)
+    }
+
     var win = getWindow(this.sender)
     var view = create(win, url, opts)
     return getAll(win).indexOf(view)
+  },
+
+  async loadURL (index, url, opts = {addToNoRedirects: false}) {
+    if (opts.addToNoRedirects) {
+      addToNoRedirects(url)
+    }
+
+    getByIndex(getWindow(this.sender), index).loadURL(url)
   },
 
   async closeTab (index) {
@@ -797,4 +845,13 @@ function toOrigin (str) {
     var u = new URL(str)
     return u.protocol + '//' + u.hostname
   } catch (e) { return '' }
+}
+
+function addToNoRedirects (url) {
+  try {
+    var u = new URL(url)
+    noRedirectHostnames.add(u.hostname)
+  } catch (e) {
+    console.log('Failed to add URL to noRedirectHostnames', url, e)
+  }
 }
