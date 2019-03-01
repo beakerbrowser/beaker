@@ -100,14 +100,6 @@ export function setup () {
     }
   })
 
-  // quick sync getters
-  ipcMain.on('get-markdown-renderer-script', e => {
-    e.returnValue = fs.readFileSync(path.join(app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
-  })
-  ipcMain.on('get-json-renderer-script', e => {
-    e.returnValue = fs.readFileSync(path.join(app.getAppPath(), 'json-renderer.build.js'), 'utf8')
-  })
-
   // HACK
   // Electron doesn't give us a convenient way to check the content-types of responses
   // so we track the last 100 responses' headers to accomplish this
