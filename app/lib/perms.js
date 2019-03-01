@@ -75,7 +75,7 @@ export default {
     persist: true,
     idempotent: false,
     alwaysAllow: false,
-    alwaysDisallow: true, // TEMPORARY disabled due to broken fullscreen API, see #1339 -prf
+    alwaysDisallow: false,
     requiresRefresh: false,
     experimental: false
   },
