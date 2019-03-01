@@ -8,7 +8,7 @@
  */
 
 import path from 'path'
-import {BrowserWindow, BrowserView} from 'electron'
+import {app, BrowserWindow, BrowserView} from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import {ModalActiveError} from 'beaker-error-constants'
 import * as viewManager from '../view-manager'
@@ -23,6 +23,12 @@ var windows = {} // map of {[parentView.id] => BrowserWindow}
 // =
 
 export function setup (parentWindow) {
+  // listen for the basic auth login event
+  app.on('login', async function (e, webContents, request, authInfo, cb) {
+    e.preventDefault() // default is to cancel the auth; prevent that
+    var res = await create(webContents, 'basic-auth', authInfo)
+    cb(res.username, res.password)
+  })
 }
 
 export function destroy (parentWindow) {

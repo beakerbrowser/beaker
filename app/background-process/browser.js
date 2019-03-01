@@ -15,9 +15,7 @@ const exec = require('util').promisify(require('child_process').exec)
 const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
-import {showShellModal, closeModal} from './ui/modals'
 import * as modals from './ui/subwindows/modals'
-import {getActiveWindow} from './ui/windows'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
@@ -151,7 +149,7 @@ export const WEBAPI = {
   openFolder,
   doWebcontentsCmd,
   doTest,
-  closeModal
+  closeModal: () => {} // DEPRECATED, probably safe to remove soon
 }
 
 export function fetchBody (url) {
@@ -516,9 +514,6 @@ async function doWebcontentsCmd (method, wcId, ...args) {
 }
 
 async function doTest (test) {
-  if (test === 'modal') {
-    return showShellModal(this.sender, 'example', {i: 5})
-  }
 }
 
 // internal methods
