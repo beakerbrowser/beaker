@@ -100,6 +100,7 @@ class View {
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.localPath = null // the path of the local sync directory, if set
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
+    this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -441,6 +442,7 @@ class View {
     // update state
     this.isLoading = true
     this.isReceivingAssets = false
+    this.wasDatTimeout = false
 
     // emit
     this.emitUpdateState()
@@ -453,7 +455,7 @@ class View {
     }
   }
 
-  onDidNavigate (e, url) {
+  onDidNavigate (e, url, httpResponseCode) {
     // read zoom
     zoom.setZoomFromSitedata(this)
 
@@ -461,6 +463,9 @@ class View {
     this.isReceivingAssets = true
     this.fetchIsBookmarked()
     this.fetchDatInfo()
+    if (httpResponseCode === 504 && url.startsWith('dat://')) {
+      this.wasDatTimeout = true
+    }
 
     // emit
     this.emitUpdateState()
@@ -529,8 +534,13 @@ export function setup () {
     for (let winId in activeViews) {
       for (let view of activeViews[winId]) {
         if (view.datInfo && view.datInfo.url === details.url) {
+          // update peer count
           view.peers = details.connections
           view.emitUpdateState()
+        }
+        if (view.wasDatTimeout && view.url.startsWith(details.url)) {
+          // refresh if this was a timed-out dat site (peers have been found)
+          view.webContents.reload()
         }
       }
     }
