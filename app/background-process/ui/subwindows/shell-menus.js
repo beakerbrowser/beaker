@@ -187,7 +187,9 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   },
 
   async showInpageFind () {
-    // TODO
+    var win = getParentWindow(this.sender)
+    var view = viewManager.getActive(win)
+    if (view) view.showInpageFind()
   }
 })
 

@@ -4,6 +4,7 @@ import _get from 'lodash.get'
 import * as bg from './bg-process-rpc'
 import buttonResetCSS from './navbar/button-reset.css'
 import './navbar/location'
+import './navbar/inpage-find'
 
 class ShellWindowNavbar extends LitElement {
   static get properties () {
@@ -56,6 +57,13 @@ class ShellWindowNavbar extends LitElement {
         ?is-live-reloading=${_get(this, 'activeTab.isLiveReloading')}
         ?is-bookmarked=${_get(this, 'activeTab.isBookmarked', false)}
       ></shell-window-navbar-location>
+      <shell-window-navbar-inpage-find
+        .activeTabIndex="${this.activeTabIndex}"
+        ?is-active=${_get(this, 'activeTab.isInpageFindActive', false)}
+        query="${_get(this, 'activeTab.currentInpageFindString', '')}"
+        active-match="${_get(this, 'activeTab.currentInpageFindResults.activeMatchOrdinal', '0')}"
+        num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
+      ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.updateBtn}
         ${this.browserMenuBtn}

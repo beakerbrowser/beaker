@@ -23,6 +23,7 @@ const Y_POSITION = 78
 const DEFAULT_URL = 'beaker://start'
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
+// the variables which are automatically sent to the shell-window for rendering
 const STATE_VARS = [
   'url',
   'title',
@@ -37,6 +38,9 @@ const STATE_VARS = [
   'canGoForward',
   'isAudioMuted',
   'isCurrentlyAudible',
+  'isInpageFindActive',
+  'currentInpageFindString',
+  'currentInpageFindResults',
   'donateLinkHref',
   'localPath',
   'isLiveReloading'
@@ -80,15 +84,17 @@ class View {
     // browser state
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
-    this.isBookmarked = false // is the active page bookmarked?
-    this.peers = 0 // how many peers does the site have?
-
+    this.liveReloadEvents = null // live-reload event stream
+    this.isInpageFindActive = false // is the inpage-finder UI active?
+    this.currentInpageFindString = undefined // what's the current inpage-finder query string?
+    this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
+    
     // helper state
+    this.peers = 0 // how many peers does the site have?
+    this.isBookmarked = false // is the active page bookmarked?
     this.datInfo = null // metadata about the site if viewing a dat
-    this.isGuessingTheURLScheme = false // did beaker guess at the url scheme? if so, a bad load may deserve a second try
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.localPath = null // the path of the local sync directory, if set
-    this.liveReloadEvents = null // live-reload event stream
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -100,6 +106,7 @@ class View {
     this.webContents.on('new-window', this.onNewWindow.bind(this))
     this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
     this.webContents.on('media-paused', this.onMediaChange.bind(this))
+    this.webContents.on('found-in-page', this.onFoundInPage.bind(this))
   }
 
   get webContents () {
@@ -197,6 +204,38 @@ class View {
   toggleMuted () {
     this.webContents.setAudioMuted(!this.isAudioMuted)
     this.emitUpdateState()
+  }
+
+  // inpage finder
+  // =
+
+  showInpageFind () {
+    if (this.isInpageFindActive) {
+      // go to next result on repeat "show" commands
+      this.moveInpageFind(1)
+    } else {
+      this.isInpageFindActive = true
+      this.currentInpageFindResults = {activeMatchOrdinal: 0, matches: 0}
+      this.emitUpdateState()
+    }
+    this.browserWindow.webContents.focus()
+  }
+
+  hideInpageFind () {
+    this.webContents.stopFindInPage('clearSelection')
+    this.isInpageFindActive = false
+    this.currentInpageFindString = undefined
+    this.currentInpageFindResults = undefined
+    this.emitUpdateState()
+  }
+
+  setInpageFindString (str, dir) {
+    this.currentInpageFindString = str
+    this.webContents.findInPage(this.currentInpageFindString, {findNext: false, forward: dir !== -1})
+  }
+
+  moveInpageFind (dir) {
+    this.webContents.findInPage(this.currentInpageFindString, {findNext: false, forward: dir !== -1})
   }
 
   // live reloading
@@ -343,6 +382,14 @@ class View {
     // for whatever reason, the event consistently precedes the "is audible" being set by at most 1s
     // so, we delay for 1s, then emit a state update
     setTimeout(() => this.emitUpdateState(), 1e3)
+  }
+
+  onFoundInPage (e, res) {
+    this.currentInpageFindResults = {
+      activeMatchOrdinal: res.activeMatchOrdinal,
+      matches: res.matches
+    }
+    this.emitUpdateState()
   }
 }
 
@@ -682,6 +729,22 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async toggleLiveReloading (index) {
     getByIndex(getWindow(this.sender), index).toggleLiveReloading()
+  },
+
+  async showInpageFind (index) {
+    getByIndex(getWindow(this.sender), index).showInpageFind()
+  },
+
+  async hideInpageFind (index) {
+    getByIndex(getWindow(this.sender), index).hideInpageFind()
+  },
+
+  async setInpageFindString (index, str, dir) {
+    getByIndex(getWindow(this.sender), index).setInpageFindString(str, dir)
+  },
+
+  async moveInpageFind (index, dir) {
+    getByIndex(getWindow(this.sender), index).moveInpageFind(dir)
   },
 
   async showMenu (id, opts) {

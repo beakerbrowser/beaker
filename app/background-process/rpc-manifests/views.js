@@ -14,6 +14,10 @@ export default {
   reload: 'promise',
   resetZoom: 'promise',
   toggleLiveReloading: 'promise',
+  showInpageFind: 'promise',
+  hideInpageFind: 'promise',
+  setInpageFindString: 'promise',
+  moveInpageFind: 'promise',
   showMenu: 'promise',
   toggleMenu: 'promise'
 }

@@ -201,7 +201,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+F',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'edit:find')
+          var view = viewManager.getActive(win)
+          if (view) view.showInpageFind()
         }
       },
       {
@@ -209,7 +210,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+G',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'edit:find-next')
+          var view = viewManager.getActive(win)
+          if (view) view.moveInpageFind(1)
         }
       },
       {
@@ -217,7 +219,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'Shift+CmdOrCtrl+G',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'edit:find-previous')
+          var view = viewManager.getActive(win)
+          if (view) view.moveInpageFind(-1)
         }
       }
     ]
