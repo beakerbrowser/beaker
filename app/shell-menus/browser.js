@@ -1,4 +1,5 @@
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
+import { fromEventStream } from '@beaker/core/web-apis/fg/event-target'
 import moment from 'moment'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
@@ -25,23 +26,12 @@ class BrowserMenu extends LitElement {
     }
 
     this.submenu = ''
-    this.downloads = []
     this.sumProgress = null // null means no active downloads
     this.shouldPersistDownloadsIndicator = false
 
-    // fetch current downloads // TODO
-    // beaker.downloads.getDownloads().then(ds => {
-    //   this.downloads = ds
-    //   this.updateActives()
-    // })
-
-    // wire up events TODO
-    // var dlEvents = beaker.downloads.createEventsStream()
-    // dlEvents.addEventListener('new-download', this.onNewDownload.bind(this))
-    // dlEvents.addEventListener('sum-progress', this.onSumProgress.bind(this))
-    // dlEvents.addEventListener('updated', this.onUpdate.bind(this))
-    // dlEvents.addEventListener('done', this.onDone.bind(this))
-    // window.addEventListener('mousedown', this.onClickAnywhere.bind(this), true)
+    // wire up events
+    var dlEvents = fromEventStream(bg.downloads.createEventsStream())
+    dlEvents.addEventListener('sum-progress', this.onDownloadsSumProgress.bind(this))
   }
 
   reset () {
@@ -56,7 +46,13 @@ class BrowserMenu extends LitElement {
     if (this.submenu === 'create-new') {
       return this.renderCreateNew()
     }
-    var progressEl = '' // TODO
+    
+    // render the progress bar if downloading anything
+    var progressEl = ''
+    if (this.shouldPersistDownloadsIndicator && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
+      progressEl = html`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
+    }
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -106,10 +102,9 @@ class BrowserMenu extends LitElement {
             <span class="shortcut">${this.accelerators.history}</span>
           </div>
 
-          <div class="menu-item downloads" style=${progressEl ? 'height: 41px' : ''} @click=${e => this.onClickDownloads(e)}>
+          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
             <i class="fa fa-download"></i>
             <span class="label">Downloads</span>
-            ${this.shouldPersistDownloadsIndicator ? html`<i class="fa fa-circle"></i>` : ''}
             ${progressEl}
           </div>
         </div>
@@ -226,18 +221,10 @@ class BrowserMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-  onUpdate (download) {
-    // patch data each time we get an update
-    var target = this.downloads.find(d => d.id == download.id)
-    if (target) {
-      // patch item
-      for (var k in download) { target[k] = download[k] }
-    } else { this.downloads.push(download) }
-  }
-
-  onDone (download) {
+  onDownloadsSumProgress (sumProgress) {
     this.shouldPersistDownloadsIndicator = true
-    this.onUpdate(download)
+    this.sumProgress = sumProgress
+    this.requestUpdate()
   }
 
   onFindInPage (e) {
@@ -350,14 +337,6 @@ BrowserMenu.styles = [commonCSS, css`
   text-align: right;
 }
 
-.menu-item i.fa-circle {
-  width: auto;
-  margin-left: auto;
-  margin-bottom: -2px;
-  color: #295fcb;
-  font-size: 11px;
-}
-
 .menu-item .more,
 .menu-item .shortcut {
   color: #777;
@@ -370,8 +349,8 @@ BrowserMenu.styles = [commonCSS, css`
 }
 
 .menu-item.downloads progress {
-  margin-left: 21px;
-  width: 100%;
+  margin-left: 20px;
+  flex: 1;
 }
 `]
 

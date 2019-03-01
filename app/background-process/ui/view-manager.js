@@ -753,6 +753,15 @@ export function changeActiveToLast (win) {
   setActive(win, views[views.length - 1])
 }
 
+export function openOrFocusDownloadsPage (win) {
+  var views = getAll(win)
+  var downloadsView = views.find(v => v.url.startsWith('beaker://downloads'))
+  if (!downloadsView) {
+    downloadsView = create(win, 'beaker://downloads')
+  }
+  setActive(win, downloadsView)
+}
+
 export function emitReplaceState (win) {
   var state = getWindowTabState(win)
   emit(win, 'replace-state', state)
