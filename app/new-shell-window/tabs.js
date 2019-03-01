@@ -19,6 +19,7 @@ class ShellWindowTabs extends LitElement {
 
   render () {
     return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="shell ${window.platform}">
         <div class="tabs">
           ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
@@ -63,6 +64,11 @@ class ShellWindowTabs extends LitElement {
           ? ''
           : html`
             <div class="tab-title">${tab.title}</div>
+            ${tab.isAudioMuted
+              ? html`<span class="fas fa-volume-mute"></span>`
+              : tab.isCurrentlyAudible
+                ? html`<span class="fas fa-volume-up"></span>`
+                : ''}
             <div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>
           `}
       </div>
@@ -250,7 +256,11 @@ ${spinnerCSS}
 
 .fa-volume-up,
 .fa-volume-mute {
-  margin-right: 4px;
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  font-size: 12px;
+  color: rgba(0,0,0,.6);
 }
 
 .tab-nofavicon .tab-title {

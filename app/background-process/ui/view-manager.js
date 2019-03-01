@@ -35,6 +35,8 @@ const STATE_VARS = [
   'isReceivingAssets',
   'canGoBack',
   'canGoForward',
+  'isAudioMuted',
+  'isCurrentlyAudible',
   'donateLinkHref',
   'localPath',
   'isLiveReloading'
@@ -96,6 +98,8 @@ class View {
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
     this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
     this.webContents.on('new-window', this.onNewWindow.bind(this))
+    this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
+    this.webContents.on('media-paused', this.onMediaChange.bind(this))
   }
 
   get webContents () {
@@ -123,6 +127,14 @@ class View {
 
   get canGoForward () {
     return this.webContents.canGoForward()
+  }
+
+  get isAudioMuted () {
+    return this.webContents.isAudioMuted()
+  }
+
+  get isCurrentlyAudible () {
+    return this.webContents.isCurrentlyAudible()
   }
 
   get isLiveReloading () {
@@ -180,6 +192,11 @@ class View {
         savePins(this.browserWindow)
       }
     }
+  }
+
+  toggleMuted () {
+    this.webContents.setAudioMuted(!this.isAudioMuted)
+    this.emitUpdateState()
   }
 
   // live reloading
@@ -318,6 +335,14 @@ class View {
     if (!this.isActive) return // only open if coming from the active tab
     var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
     create(this.browserWindow, url, {setActive})
+  }
+
+  onMediaChange (e) {
+    // our goal with this event handler is to detect that audio is playing
+    // this lets us then render an "audio playing" icon on the tab
+    // for whatever reason, the event consistently precedes the "is audible" being set by at most 1s
+    // so, we delay for 1s, then emit a state update
+    setTimeout(() => this.emitUpdateState(), 1e3)
   }
 }
 
@@ -624,7 +649,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       { type: 'separator' },
       { label: 'Duplicate', click: () => create(win, view.url) },
       { label: (view.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => togglePinned(win, view) },
-      { label: (view.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => {/* TODO */} },
+      { label: (view.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => view.toggleMuted() },
       { type: 'separator' },
       { label: 'Close Tab', click: () => remove(win, view) },
       { label: 'Close Other Tabs', click: () => removeAllExcept(win, view) },
