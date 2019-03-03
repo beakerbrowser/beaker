@@ -910,6 +910,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async toggleMenu (id, opts) {
     await shellMenus.toggle(getWindow(this.sender), id, opts)
+  },
+
+  async focusShellWindow () {
+    getWindow(this.sender).focus()
   }
 })
 

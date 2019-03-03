@@ -57,6 +57,7 @@ class NavbarLocation extends LitElement {
     var input = this.shadowRoot.querySelector('.input-container input')
     input.focus()
     input.setSelectionRange(0, input.value.length)
+    bg.views.focusShellWindow() // focus the shell-window UI
   }
 
   // rendering

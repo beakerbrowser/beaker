@@ -20,5 +20,6 @@ export default {
   setInpageFindString: 'promise',
   moveInpageFind: 'promise',
   showMenu: 'promise',
-  toggleMenu: 'promise'
+  toggleMenu: 'promise',
+  focusShellWindow: 'promise'
 }
