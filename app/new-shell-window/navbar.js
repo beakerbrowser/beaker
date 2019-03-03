@@ -11,8 +11,8 @@ class ShellWindowNavbar extends LitElement {
     return {
       activeTabIndex: {type: Number},
       activeTab: {type: Object},
-      isBrowserMenuOpen: {type: Boolean},
-      hasUpdateAvailable: {type: Boolean}
+      isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
+      isBrowserMenuOpen: {type: Boolean}
     }
   }
 
@@ -20,6 +20,7 @@ class ShellWindowNavbar extends LitElement {
     super()
     this.activeTabIndex = -1
     this.activeTab = null
+    this.isUpdateAvailable = false
     this.isBrowserMenuOpen = false
   }
 
@@ -66,7 +67,6 @@ class ShellWindowNavbar extends LitElement {
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
-        ${this.updateBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -146,20 +146,13 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get updateBtn () {
-    if (!this.hasUpdateAvailable) {
-      return ''
-    }
-    return html`
-      <button>update available</button>
-    `
-  }
-
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
       <button class=${cls} @click=${this.onClickBrowserMenu}>
-        <span class="fa fa-bars"></span>
+        ${this.isUpdateAvailable
+          ? html`<span class="fas fa-arrow-alt-circle-up"></span>`
+          : html`<span class="fa fa-bars"></span>`}
       </button>
     `
   }
@@ -223,6 +216,12 @@ svg.icon.refresh {
 .buttons {
   display: flex;
   padding: 0 8px;
+}
+
+.fa-arrow-alt-circle-up {
+  font-size: 20px;
+  color: #67bf6b;
+  -webkit-text-stroke: 1px #0eab0e;
 }
 `
 customElements.define('shell-window-navbar', ShellWindowNavbar)

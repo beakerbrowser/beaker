@@ -1,35 +1,30 @@
 import { ipcRenderer } from 'electron'
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './new-shell-window/bg-process-rpc'
+import { fromEventStream } from '@beaker/core/web-apis/fg/event-target'
 import './new-shell-window/tabs'
 import './new-shell-window/navbar'
-// import * as pages from './shell-window/pages'
-// import * as navbar from './shell-window/ui/navbar'
-// import { setup as setupUI } from './shell-window/ui'
-
-// attach some window globals
-// window.pages = pages
-// window.navbar = navbar
 
 // setup
 document.addEventListener('DOMContentLoaded', () => {
-  // setupUI(() => {
-    ipcRenderer.send('shell-window:ready')
-  // })
+  ipcRenderer.send('shell-window:ready')
 })
 
 class ShellWindowUI extends LitElement {
   static get properties () {
     return {
-      tabs: {type: Array}
+      tabs: {type: Array},
+      isUpdateAvailable: {type: Boolean}
     }
   }
 
   constructor () {
     super()
     this.tabs = []
+    this.isUpdateAvailable = false
     this.activeTabIndex = -1
 
+    // fetch platform information
     var {platform} = bg.beakerBrowser.getInfo()
     window.platform = platform
     if (platform === 'darwin') {
@@ -39,29 +34,28 @@ class ShellWindowUI extends LitElement {
       document.body.classList.add('win32')
     }
 
-    bg.views.createEventStream().on('data', evt => {
-      switch (evt[0]) {
-        case 'replace-state':
-          console.log('replace-state', evt[1])
-          this.tabs = evt[1]
-          this.stateHasChanged()
-          break
-        case 'update-state':
-          console.log('update-state', evt[1])
-          var {index, state} = evt[1]
-          if (this.tabs[index]) {
-            Object.assign(this.tabs[index], state)
-          }
-          this.stateHasChanged()
-          break
-      }
+    // listen to state updates to the window's tabs states
+    var viewEvents = fromEventStream(bg.views.createEventStream())
+    viewEvents.addEventListener('replace-state', (tabs) => {
+      this.tabs = tabs
+      this.stateHasChanged()
     })
+    viewEvents.addEventListener('update-state', ({index, state}) => {
+      if (this.tabs[index]) {
+        Object.assign(this.tabs[index], state)
+      }
+      this.stateHasChanged()
+    })
+    
+    var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())
+    browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))
 
+    // fetch initial tab state
     bg.views.getState().then(state => {
-      console.log('got state', state)
       this.tabs = state
       this.stateHasChanged()
     })
+    this.isUpdateAvailable = bg.beakerBrowser.getInfo().updater.state === 'downloaded'
   }
 
   get activeTab () {
@@ -79,10 +73,18 @@ class ShellWindowUI extends LitElement {
     }
   }
 
+  onUpdaterStateChange (e) {
+    this.isUpdateAvailable = (e && e.state === 'downloaded')
+  }
+
   render () {
     return html`
       <shell-window-tabs .tabs=${this.tabs}></shell-window-tabs>
-      <shell-window-navbar .activeTabIndex=${this.activeTabIndex} .activeTab=${this.activeTab}></shell-window-navbar>
+      <shell-window-navbar
+        .activeTabIndex=${this.activeTabIndex}
+        .activeTab=${this.activeTab}
+        ?is-update-available=${this.isUpdateAvailable}
+      ></shell-window-navbar>
     `
   }
 }

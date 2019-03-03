@@ -14,8 +14,8 @@ class BrowserMenu extends LitElement {
   constructor () {
     super()
 
-    this.platform = bg.beakerBrowser.getInfo().platform
-    const isDarwin = this.platform === 'darwin'
+    this.browserInfo = bg.beakerBrowser.getInfo()
+    const isDarwin = this.browserInfo.platform === 'darwin'
     const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
     this.accelerators = {
       newWindow: cmdOrCtrlChar + 'N',
@@ -40,6 +40,10 @@ class BrowserMenu extends LitElement {
 
   async init () {
     await this.requestUpdate()
+
+    // adjust height based on rendering
+    var height = this.shadowRoot.querySelector('div').clientHeight
+    bg.shellMenus.resizeSelf({height})
   }
 
   render () {
@@ -47,6 +51,19 @@ class BrowserMenu extends LitElement {
       return this.renderCreateNew()
     }
     
+    // auto-updater
+    var autoUpdaterEl = html``
+    if (this.browserInfo && this.browserInfo.updater.isBrowserUpdatesSupported && this.browserInfo.updater.state === 'downloaded') {
+      autoUpdaterEl = html`
+        <div class="section auto-updater">
+          <div class="menu-item auto-updater" @click=${this.onClickRestart}>
+            <i class="fa fa-arrow-circle-up"></i>
+            <span class="label">Restart to update Beaker</span>
+          </div>
+        </div>
+      `
+    }
+
     // render the progress bar if downloading anything
     var progressEl = ''
     if (this.shouldPersistDownloadsIndicator && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
@@ -56,7 +73,7 @@ class BrowserMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        ${''/*TODOautoUpdaterEl*/}
+        ${autoUpdaterEl}
 
         <div class="section">
           <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
@@ -269,7 +286,7 @@ class BrowserMenu extends LitElement {
     bg.shellMenus.close()
 
     // ask user for files
-    const filesOnly = this.platform === 'linux' || this.platform === 'win32'
+    const filesOnly = this.browserInfo.platform === 'linux' || this.browserInfo.platform === 'win32'
     const files = await bg.beakerBrowser.showOpenDialog({
       title: 'Select files to share',
       buttonLabel: 'Share files',
@@ -302,8 +319,6 @@ class BrowserMenu extends LitElement {
 }
 BrowserMenu.styles = [commonCSS, css`
 .wrapper {
-  height: 100vh;
-  overflow-y: scroll;
 }
 
 .wrapper::-webkit-scrollbar {
