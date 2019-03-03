@@ -12,6 +12,7 @@ class ShellWindowNavbar extends LitElement {
       activeTabIndex: {type: Number},
       activeTab: {type: Object},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
+      numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -21,6 +22,7 @@ class ShellWindowNavbar extends LitElement {
     this.activeTabIndex = -1
     this.activeTab = null
     this.isUpdateAvailable = false
+    this.numWatchlistNotifications = 0
     this.isBrowserMenuOpen = false
   }
 
@@ -67,6 +69,7 @@ class ShellWindowNavbar extends LitElement {
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
+        ${this.watchlistBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -146,6 +149,18 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get watchlistBtn () {
+    if (!this.numWatchlistNotifications) {
+      return html``
+    }
+    return html`
+      <button class="watchlist-btn" @click=${this.onClickWatchlistBtn}>
+        <span class="fas fa-eye"></span>
+        <span class="badge">${this.numWatchlistNotifications}</span>
+      </button>
+    `
+  }
+
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
@@ -174,6 +189,11 @@ class ShellWindowNavbar extends LitElement {
 
   onClickReload (e) {
     bg.views.reload(this.activeTabIndex)
+  }
+
+  onClickWatchlistBtn (e) {
+    this.numWatchlistNotifications = 0
+    bg.views.createTab('beaker://watchlist', {setActive: true})
   }
 
   async onClickBrowserMenu (e) {
@@ -222,6 +242,28 @@ svg.icon.refresh {
   font-size: 20px;
   color: #67bf6b;
   -webkit-text-stroke: 1px #0eab0e;
+}
+
+.watchlist-btn {
+  position: relative;
+}
+
+.watchlist-btn .fas {
+  font-size: 16px;
+}
+
+.watchlist-btn .badge {
+  position: absolute;
+  right: 0px;
+  top: 2px;
+  font-size: 8px;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  line-height: 12px;
+  background: #0090ff;
+  color: #fff;
+  font-weight: 600;
 }
 `
 customElements.define('shell-window-navbar', ShellWindowNavbar)

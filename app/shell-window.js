@@ -14,7 +14,8 @@ class ShellWindowUI extends LitElement {
   static get properties () {
     return {
       tabs: {type: Array},
-      isUpdateAvailable: {type: Boolean}
+      isUpdateAvailable: {type: Boolean},
+      numWatchlistNotifications: {type: Number}
     }
   }
 
@@ -22,6 +23,7 @@ class ShellWindowUI extends LitElement {
     super()
     this.tabs = []
     this.isUpdateAvailable = false
+    this.numWatchlistNotifications = 0
     this.activeTabIndex = -1
 
     // fetch platform information
@@ -47,8 +49,15 @@ class ShellWindowUI extends LitElement {
       this.stateHasChanged()
     })
     
+    // listen to state updates on the auto-updater
     var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())
     browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))
+
+    // listen to state updates on the watchlist
+    var wlEvents = fromEventStream(bg.watchlist.createEventsStream())
+    wlEvents.addEventListener('resolved', () => {
+      this.numWatchlistNotifications++
+    })
 
     // fetch initial tab state
     bg.views.getState().then(state => {
@@ -84,6 +93,7 @@ class ShellWindowUI extends LitElement {
         .activeTabIndex=${this.activeTabIndex}
         .activeTab=${this.activeTab}
         ?is-update-available=${this.isUpdateAvailable}
+        num-watchlist-notifications="${this.numWatchlistNotifications}"
       ></shell-window-navbar>
     `
   }
