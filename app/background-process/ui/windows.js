@@ -388,7 +388,7 @@ function onGoForward (win) {
 }
 
 function onFocusLocation (win) {
-  return () => win.webContents.send('command', 'file:focus-location')
+  return () => win.webContents.send('command', 'focus-location')
 }
 
 function onAppCommand (win, e, cmd) {

@@ -38,6 +38,10 @@ class ShellWindowNavbar extends LitElement {
     return _get(this, 'activeTab.isLoading')
   }
 
+  focusLocation () {
+    this.shadowRoot.querySelector('shell-window-navbar-location').focusLocation()
+  }
+
   // rendering
   // =
 

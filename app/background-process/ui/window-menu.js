@@ -125,7 +125,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+L',
         click: function (item, win) {
           createWindowIfNone(win, (win) => {
-            win.webContents.send('command', 'file:focus-location')
+            win.webContents.send('command', 'focus-location')
           })
         }
       },

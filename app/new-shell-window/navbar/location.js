@@ -53,6 +53,15 @@ class NavbarLocation extends LitElement {
     return this.url.startsWith('dat://')
   }
 
+  focusLocation () {
+    var input = this.shadowRoot.querySelector('.input-container input')
+    input.focus()
+    input.setSelectionRange(0, input.value.length)
+  }
+
+  // rendering
+  // =
+
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">

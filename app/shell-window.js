@@ -36,6 +36,9 @@ class ShellWindowUI extends LitElement {
       document.body.classList.add('win32')
     }
 
+    // listen for commands
+    ipcRenderer.on('command', this.onCommand.bind(this))
+
     // listen to state updates to the window's tabs states
     var viewEvents = fromEventStream(bg.views.createEventStream())
     viewEvents.addEventListener('replace-state', (tabs) => {
@@ -82,9 +85,8 @@ class ShellWindowUI extends LitElement {
     }
   }
 
-  onUpdaterStateChange (e) {
-    this.isUpdateAvailable = (e && e.state === 'downloaded')
-  }
+  // rendering
+  // =
 
   render () {
     return html`
@@ -96,6 +98,21 @@ class ShellWindowUI extends LitElement {
         num-watchlist-notifications="${this.numWatchlistNotifications}"
       ></shell-window-navbar>
     `
+  }
+
+  // event handlers
+  // =
+
+  onCommand (event, cmd, ...args) {
+    switch (cmd) {
+      case 'focus-location':
+        this.shadowRoot.querySelector('shell-window-navbar').focusLocation()
+        break
+    }
+  }
+
+  onUpdaterStateChange (e) {
+    this.isUpdateAvailable = (e && e.state === 'downloaded')
   }
 }
 
