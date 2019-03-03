@@ -1,11 +1,15 @@
 import * as beakerCore from '@beaker/core'
 import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'electron'
-import {register as registerShortcut, unregister as unregisterShortcut} from '@beaker/electron-localshortcut'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
 import jetpack from 'fs-jetpack'
 import * as viewManager from './view-manager'
-import * as keybindings from './keybindings'
+import {
+  createGlobalKeybindingsHandler,
+  createKeybindingProtectionsHandler,
+  registerGlobalKeybinding,
+  unregisterGlobalKeybinding
+} from './keybindings'
 import path from 'path'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
@@ -66,13 +70,24 @@ export async function setup () {
     // await setup
     await new Promise(resolve => wc.once('dom-ready', resolve))
 
+    // handle shell-window webcontents
+    const window = BrowserWindow.fromWebContents(wc)
+    if (window) {
+      // attach global keybindings
+      wc.on('before-input-event', createGlobalKeybindingsHandler(window))
+      return
+    }
+
+    // handle tab webcontents
     const parentView = BrowserView.fromWebContents(wc)
-    if (!parentView) return // handle only browser-views
+    if (!parentView) return
     const parentWindow = viewManager.findContainingWindow(parentView)
     if (!parentWindow) return
 
+    // attach global keybindings
+    wc.on('before-input-event', createGlobalKeybindingsHandler(parentWindow))
     // attach keybinding protections
-    wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
+    wc.on('before-input-event', createKeybindingProtectionsHandler(parentWindow))
 
     // HACK
     // add link-click handling to page devtools
@@ -214,15 +229,15 @@ export function createShellWindow (windowState) {
   })
 
   // register shortcuts
-  for (var i = 1; i <= 8; i++) { registerShortcut(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
-  registerShortcut(win, 'CmdOrCtrl+9', onLastTab(win))
-  registerShortcut(win, 'Ctrl+Tab', onNextTab(win))
-  registerShortcut(win, 'Ctrl+Shift+Tab', onPrevTab(win))
-  registerShortcut(win, 'Ctrl+PageUp', onPrevTab(win))
-  registerShortcut(win, 'Ctrl+PageDown', onNextTab(win))
-  registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
-  registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
-  registerShortcut(win, 'Alt+D', onFocusLocation(win))
+  for (var i = 1; i <= 8; i++) { registerGlobalKeybinding(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
+  registerGlobalKeybinding(win, 'CmdOrCtrl+9', onLastTab(win))
+  registerGlobalKeybinding(win, 'Ctrl+Tab', onNextTab(win))
+  registerGlobalKeybinding(win, 'Ctrl+Shift+Tab', onPrevTab(win))
+  registerGlobalKeybinding(win, 'Ctrl+PageUp', onPrevTab(win))
+  registerGlobalKeybinding(win, 'Ctrl+PageDown', onNextTab(win))
+  registerGlobalKeybinding(win, 'CmdOrCtrl+[', onGoBack(win))
+  registerGlobalKeybinding(win, 'CmdOrCtrl+]', onGoForward(win))
+  registerGlobalKeybinding(win, 'Alt+D', onFocusLocation(win))
 
   // register event handlers
   win.on('browser-backward', onGoBack(win))
@@ -233,12 +248,14 @@ export function createShellWindow (windowState) {
   win.on('blur', sendToWebContents('blur'))
   win.on('app-command', (e, cmd) => { onAppCommand(win, e, cmd) })
   win.on('enter-full-screen', e => {
-    registerShortcut(win, 'Esc', onEscape(win))
-    sendToWebContents('enter-full-screen')(e)
+    // TODO
+    // registerGlobalKeybinding(win, 'Esc', onEscape(win))
+    // sendToWebContents('enter-full-screen')(e)
   })
   win.on('leave-full-screen', e => {
-    unregisterShortcut(win, 'Esc')
-    sendToWebContents('leave-full-screen')(e)
+    // TODO
+    // unregisterGlobalKeybinding(win, 'Esc')
+    // sendToWebContents('leave-full-screen')(e)
   })
   win.on('resize', () => {
     for (let k in subwindows) {

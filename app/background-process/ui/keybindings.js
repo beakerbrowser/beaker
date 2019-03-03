@@ -5,10 +5,84 @@ To avoid that, we listen to the window webContents' 'before-input-event' and han
 */
 
 import _flattenDeep from 'lodash.flattendeep'
+import isAccelerator from 'electron-is-accelerator'
+import equals from 'keyboardevents-areequal'
+import {toKeyEvent} from 'keyboardevent-from-electron-accelerator'
 import {buildWindowMenu} from './window-menu'
 
 const IS_DARWIN = process.platform === 'darwin'
 const KEYBINDINGS = extractKeybindings(buildWindowMenu())
+const registeredKBs = {} // map of [window.id] => keybindings
+
+// exported api
+// =
+
+export function registerGlobalKeybinding (win, accelerator, callback) {
+  // sanity checks
+  checkAccelerator(accelerator)
+
+  // add the keybinding
+  registeredKBs[win.id] = registeredKBs[win.id] || []
+  registeredKBs[win.id].push({
+    eventStamp: toKeyEvent(accelerator),
+    callback,
+    enabled: true
+  })
+}
+
+export function unregisterGlobalKeybinding (win, accelerator, callback) {
+  // sanity checks
+  checkAccelerator(accelerator)
+
+  // remove the keybinding
+  var keyEvent = toKeyEvent(accelerator)
+  if (win.id in registeredKBs) {
+    var kbIdx = registeredKBs[win.id].findIndex(kb => equals(kb.eventStamp, keyEvent))
+    if (kbIdx !== -1) registeredKBs[win.id].splice(kbIdx, 1)
+  }
+}
+
+// event handler for global shortcuts
+export function createGlobalKeybindingsHandler (win) {
+  return (e, input) => {
+    if (input.type === 'keyUp') return
+    var event = normalizeEvent(input)
+    for (let {eventStamp, callback} of (registeredKBs[win.id] || [])) {
+      if (equals(eventStamp, event)) {
+        callback()
+        return
+      }
+    }
+  }
+}
+
+// event handler, manually run any events that match the window-menu's shortcuts and which are marked as 'reserved'
+// this is used, for instance, to reserve "Cmd/Ctrl + T" so that an app cannot pre-empt it
+// (the window-menu's accelerators are typically handled *after* the active view's input handlers)
+export function createKeybindingProtectionsHandler (win) {
+  return (e, input) => {
+    if (input.type !== 'keyDown') return
+    var key = input.key
+    if (key === 'Dead') key = 'i' // not... really sure what 'Dead' is about -prf
+    if (key === '=') key = '+' // let's not differentiate the shift (see #1155) -prf
+    for (var kb of KEYBINDINGS) {
+      if (key === kb.binding.key) {
+        if (kb.binding.control && !input.control) continue
+        if (kb.binding.cmd && !input.meta) continue
+        if (kb.binding.shift && !input.shift) continue
+        if (kb.binding.alt && !input.alt) continue
+
+        // match, run
+        e.preventDefault()
+        kb.cmd(null, win)
+        return
+      }
+    }
+  }
+}
+
+// internal
+// =
 
 // recurse the window menu and extract all 'accelerator' values with reserved=true
 function extractKeybindings (menuNode) {
@@ -58,25 +132,27 @@ function convertAcceleratorToBinding (accel) {
   return binding
 }
 
-// event handler, manually run any events that match our keybindings
-export function createBeforeInputEventHandler (win) {
-  return (e, input) => {
-    if (input.type !== 'keyDown') return
-    var key = input.key
-    if (key === 'Dead') key = 'i' // not... really sure what 'Dead' is about -prf
-    if (key === '=') key = '+' // let's not differentiate the shift (see #1155) -prf
-    for (var kb of KEYBINDINGS) {
-      if (key === kb.binding.key) {
-        if (kb.binding.control && !input.control) continue
-        if (kb.binding.cmd && !input.meta) continue
-        if (kb.binding.shift && !input.shift) continue
-        if (kb.binding.alt && !input.alt) continue
+function checkAccelerator (accelerator) {
+  if (!isAccelerator(accelerator)) {
+    throw new Error(`${accelerator} is not a valid accelerator`)
+  }
+}
 
-        // match, run
-        e.preventDefault()
-        kb.cmd(null, win)
-        return
-      }
+function normalizeEvent (input) {
+  var normalizedEvent = {
+    code: input.code,
+    key: input.key
+  }
+
+  for (let prop of ['alt', 'shift', 'meta']) {
+    if (typeof input[prop] !== 'undefined') {
+      normalizedEvent[`${prop}Key`] = input[prop]
     }
   }
+
+  if (typeof input.control !== 'undefined') {
+    normalizedEvent.ctrlKey = input.control
+  }
+
+  return normalizedEvent
 }
