@@ -173,9 +173,11 @@ class View {
     win.setBrowserView(this.browserView)
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
+
     var {width, height} = win.getBounds()
     this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
     this.browserView.setAutoResize({width: true, height: true})
+    
     this.webContents.focus()
   }
 

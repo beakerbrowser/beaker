@@ -1,6 +1,7 @@
-import {LitElement, html, css} from '../../vendor/lit-element/lit-element'
-import {classMap} from '../../vendor/lit-element/lit-html/directives/class-map'
-import {findWordBoundary} from 'pauls-word-boundary'
+import { ipcRenderer } from 'electron'
+import { LitElement, html, css } from '../../vendor/lit-element/lit-element'
+import { classMap } from '../../vendor/lit-element/lit-html/directives/class-map'
+import { findWordBoundary } from 'pauls-word-boundary'
 import prettyHash from 'pretty-hash'
 import * as bg from '../bg-process-rpc'
 import buttonResetCSS from './button-reset.css'
@@ -47,6 +48,9 @@ class NavbarLocation extends LitElement {
     this.isPageMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
+
+    // listen for commands from the main process
+    ipcRenderer.on('command', this.onCommand.bind(this))
   }
 
   get isDat () {
@@ -252,7 +256,7 @@ class NavbarLocation extends LitElement {
       'fa-star': true
     })
     return html`
-      <button style="margin-right: 2px" @click=${this.onClickBookmark}>
+      <button class="bookmark-btn" style="margin-right: 2px" @click=${this.onClickBookmark}>
         <span class="${cls}"></span>
       </button>
     `
@@ -260,6 +264,12 @@ class NavbarLocation extends LitElement {
 
   // events
   // =
+
+  onCommand (e, cmd) {
+    if (cmd === 'create-bookmark') {
+      this.onClickBookmark()
+    }
+  }
 
   onContextMenuLocation (e) {
     // TODO
@@ -417,8 +427,8 @@ class NavbarLocation extends LitElement {
     this.isPageMenuOpen = false
   }
 
-  async onClickBookmark (e) {
-    var rect = e.currentTarget.getClientRects()[0]
+  async onClickBookmark () {
+    var rect = this.shadowRoot.querySelector('.bookmark-btn').getClientRects()[0]
 
     // create a bookmark if needed
     if (!this.isBookmarked) {

@@ -428,7 +428,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+D',
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'bookmark:create')
+          if (win) win.webContents.send('command', 'create-bookmark')
         }
       }
     ]

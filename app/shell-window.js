@@ -36,7 +36,7 @@ class ShellWindowUI extends LitElement {
       document.body.classList.add('win32')
     }
 
-    // listen for commands
+    // listen for commands from the main process
     ipcRenderer.on('command', this.onCommand.bind(this))
 
     // listen to state updates to the window's tabs states
