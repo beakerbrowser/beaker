@@ -1,5 +1,5 @@
 import * as beakerCore from '@beaker/core'
-import {app, BrowserWindow, ipcMain, webContents, dialog} from 'electron'
+import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'electron'
 import {register as registerShortcut, unregister as unregisterShortcut} from '@beaker/electron-localshortcut'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
@@ -62,33 +62,38 @@ export async function setup () {
     sessionWatcher.stopRecording()
   })
 
-  app.on('web-contents-created', (e, wc) => {
-    if (wc.hostWebContents) {
-      // attach keybinding protections
-      const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
-      wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
+  app.on('web-contents-created', async (e, wc) => {
+    // await setup
+    await new Promise(resolve => wc.once('dom-ready', resolve))
 
-      // HACK
-      // add link-click handling to page devtools
-      // (it would be much better to update Electron to support this, rather than overriding like this)
-      // -prf
-      wc.on('devtools-opened', () => {
-        if (wc.devToolsWebContents) {
-          wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
-          wc.devToolsWebContents.on('new-window', (e, url) => {
-            wc.hostWebContents.send('command', 'file:new-tab', url)
-          })
-        }
-      })
+    const parentView = BrowserView.fromWebContents(wc)
+    if (!parentView) return // handle only browser-views
+    const parentWindow = viewManager.findContainingWindow(parentView)
+    if (!parentWindow) return
 
-      // track focused devtools host
-      wc.on('devtools-focused', () => { focusedDevtoolsHost = wc })
-      wc.on('devtools-closed', unfocusDevtoolsHost)
-      wc.on('destroyed', unfocusDevtoolsHost)
-      function unfocusDevtoolsHost () {
-        if (focusedDevtoolsHost === wc) {
-          focusedDevtoolsHost = undefined
-        }
+    // attach keybinding protections
+    wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow))
+
+    // HACK
+    // add link-click handling to page devtools
+    // (it would be much better to update Electron to support this, rather than overriding like this)
+    // -prf
+    wc.on('devtools-opened', () => {
+      if (wc.devToolsWebContents) {
+        wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
+        wc.devToolsWebContents.on('new-window', (e, url) => {
+          viewManager.create(parentWindow, url, {setActive: true})
+        })
+      }
+    })
+
+    // track focused devtools host
+    wc.on('devtools-focused', () => { focusedDevtoolsHost = wc })
+    wc.on('devtools-closed', unfocusDevtoolsHost)
+    wc.on('destroyed', unfocusDevtoolsHost)
+    function unfocusDevtoolsHost () {
+      if (focusedDevtoolsHost === wc) {
+        focusedDevtoolsHost = undefined
       }
     }
   })
