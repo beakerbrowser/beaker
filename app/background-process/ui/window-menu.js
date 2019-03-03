@@ -374,7 +374,10 @@ export function buildWindowMenu (opts = {}) {
         label: 'Toggle Live Reloading',
         enabled: !!isDat,
         click: function (item, win) {
-          if (win) win.webContents.send('command', 'view:toggle-live-reloading')
+          if (win) {
+            let active = viewManager.getActive(win)
+            if (active) active.toggleLiveReloading()
+          }
         }
       }]
   }
