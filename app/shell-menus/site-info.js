@@ -1,6 +1,7 @@
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import prettyHash from 'pretty-hash'
+import _get from 'lodash.get'
 import { PERM_ICONS, renderPermDesc } from '../lib/fg/perms'
 import { getPermId, getPermParam } from '../lib/strings'
 import * as bg from './bg-process-rpc'
@@ -10,11 +11,6 @@ import buttonsCSS from './buttons.css'
 const IS_DAT_KEY_REGEX = /^[0-9a-f]{64}$/i
 
 class SiteInfoMenu extends LitElement {
-  static get properties () {
-    return {
-    }
-  }
-
   constructor () {
     super()
     this.reset()
@@ -22,6 +18,7 @@ class SiteInfoMenu extends LitElement {
 
   reset () {
     this.url = null
+    this.loadError = null
     this.datInfo = null
     this.sitePerms = null
   }
@@ -30,6 +27,7 @@ class SiteInfoMenu extends LitElement {
     // fetch tab information
     var state = await bg.views.getTabState('active', {datInfo: true, sitePerms: true})
     this.url = state.url
+    this.loadError = state.loadError
     this.datInfo = state.datInfo
     this.sitePerms = state.sitePerms
 
@@ -47,7 +45,6 @@ class SiteInfoMenu extends LitElement {
     }))
     
     // render
-    console.log(this.sitePerms)
     await this.requestUpdate()
 
     // adjust height based on rendering
@@ -111,26 +108,31 @@ class SiteInfoMenu extends LitElement {
   }
 
   renderProtocolDescription () {
-    switch (this.protocol) {
-      case 'https:':
-        return 'Your connection to this site is secure.'
-      case 'http:':
-        return html`
-          <div>
-            <p>Your connection to this site is not secure.</p>
-            <small>
-              You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
-            </small>
-          </div>
-        `
-      case 'dat:':
-        return html`
-          <div>
-            This site was downloaded from a secure peer-to-peer network.
-            <a @click=${this.onClickLearnMore}>Learn More</a>
-          </div>`
-      case 'beaker:':
-        return 'This page is provided by Beaker. Your information on this page is secure.'
+    const protocol = this.protocol
+    const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
+    if (protocol === 'https:' && !isInsecureResponse) {
+      return 'Your connection to this site is secure.'
+    }
+    if (protocol === 'https:' && isInsecureResponse || protocol === 'http:') {
+      return html`
+        <div>
+          <p>Your connection to this site is not secure.</p>
+          <small>
+            You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
+          </small>
+        </div>
+      `
+    }
+    if (protocol === 'dat:') {
+      return html`
+        <div>
+          This site was downloaded from a secure peer-to-peer network.
+          <a @click=${this.onClickLearnMore}>Learn More</a>
+        </div>
+      `
+    }
+    if (protocol === 'beaker:') {
+      return 'This page is provided by Beaker. Your information on this page is secure.'
     }
     return ''
   }

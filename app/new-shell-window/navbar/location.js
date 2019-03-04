@@ -17,6 +17,7 @@ class NavbarLocation extends LitElement {
       title: {type: String},
       peers: {type: Number},
       zoom: {type: Number},
+      loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       localPath: {type: String, attribute: 'local-path'},
       availableAlternative: {type: String, attribute: 'available-alternative'},
@@ -26,9 +27,7 @@ class NavbarLocation extends LitElement {
       isPeersMenuOpen: {type: Boolean},
       isPageMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
-      isLocationFocused: {type: Boolean},
-      siteLoadError: {type: Object, attribute: 'site-load-error'},
-      gotInsecureResponse: {type: Boolean, attribute: 'got-insecure-response'}
+      isLocationFocused: {type: Boolean}
     }
   }
 
@@ -39,6 +38,7 @@ class NavbarLocation extends LitElement {
     this.title = ''
     this.peers = 0
     this.zoom = 0
+    this.loadError = null
     this.donateLinkHref = false
     this.localPath = false
     this.availableAlternative = ''
@@ -77,8 +77,7 @@ class NavbarLocation extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <shell-window-navbar-site-info
         url=${this.url}
-        .siteLoadError=${this.siteLoadError}
-        ?got-insecure-response=${this.gotInsecureResponse}
+        .loadError=${this.loadError}
       >
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
@@ -130,8 +129,8 @@ class NavbarLocation extends LitElement {
         }
         var cls = 'protocol'
         if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
-        if (['https:'].includes(protocol) && !this.siteLoadError && !this.gotInsecureResponse) cls += ' protocol-secure'
-        if (['https:'].includes(protocol) && this.gotInsecureResponse) cls += ' protocol-insecure'
+        if (['https:'].includes(protocol) && !this.loadError) cls += ' protocol-secure'
+        if (['https:'].includes(protocol) && this.loadError && this.loadError.isInsecureResponse) cls += ' protocol-insecure'
         if (['dat:'].includes(protocol)) cls += ' protocol-secure'
         if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
         return html`

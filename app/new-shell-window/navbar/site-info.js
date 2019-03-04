@@ -1,4 +1,5 @@
 import {LitElement, html, css} from '../../vendor/lit-element/lit-element'
+import _get from 'lodash.get'
 import * as bg from '../bg-process-rpc'
 import {classMap} from '../../vendor/lit-element/lit-html/directives/class-map'
 import buttonResetCSS from './button-reset.css'
@@ -6,10 +7,9 @@ import buttonResetCSS from './button-reset.css'
 class NavbarSiteInfo extends LitElement {
   static get properties () {
     return {
-      url: {type: String},
       isMenuOpen: {type: Boolean},
-      siteLoadError: {type: Object, attribute: 'site-load-error'},
-      gotInsecureResponse: {type: Boolean, attribute: 'got-insecure-response'}
+      url: {type: String},
+      loadError: {type: Object}
     }
   }
 
@@ -17,6 +17,7 @@ class NavbarSiteInfo extends LitElement {
     super()
     this.isMenuOpen = false
     this.url = ''
+    this.loadError = null
   }
 
   get scheme () {
@@ -36,12 +37,13 @@ class NavbarSiteInfo extends LitElement {
     const scheme = this.scheme
     if (scheme) {
       const isHttps = scheme === 'https:'
-      if (isHttps && !this.gotInsecureResponse && !this.siteLoadError || scheme === 'beaker:') {
+      const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
+      if ((isHttps && !isInsecureResponse) || scheme === 'beaker:') {
         cls = 'secure'
         icon = 'lock'
       } else if (scheme === 'http:') {
         icon = 'info-circle'
-      } else if (isHttps && this.gotInsecureResponse) {
+      } else if (isHttps && isInsecureResponse) {
         cls = 'insecure'
         icon = 'exclamation-circle'
       } else if (scheme === 'dat:') {

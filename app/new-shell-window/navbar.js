@@ -59,6 +59,7 @@ class ShellWindowNavbar extends LitElement {
         title="${_get(this, 'activeTab.title', '')}"
         peers="${_get(this, 'activeTab.peers', 0)}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
+        .loadError=${_get(this, 'activeTab.loadError', null)}
         donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"
         local-path="${_get(this, 'activeTab.localPath') || ''}"
         available-alternative="${_get(this, 'activeTab.availableAlternative') || ''}"

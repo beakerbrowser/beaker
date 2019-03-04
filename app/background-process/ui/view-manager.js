@@ -1,5 +1,6 @@
 import { app, BrowserView, BrowserWindow, Menu, clipboard } from 'electron'
 import * as beakerCore from '@beaker/core'
+import errorPage from '@beaker/core/lib/error-page'
 import path from 'path'
 import {promises as fs} from 'fs'
 import Events from 'events'
@@ -23,6 +24,38 @@ const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
 const bookmarksDb = beakerCore.dbs.bookmarks
 
+const ERR_ABORTED = -3
+const ERR_CONNECTION_REFUSED = -102
+const ERR_INSECURE_RESPONSE = -501
+const TLS_ERROR_CODES = Object.values({
+  ERR_NO_SSL_VERSIONS_ENABLED: -112,
+  ERR_SSL_VERSION_OR_CIPHER_MISMATCH: -113,
+  ERR_SSL_RENEGOTIATION_REQUESTED: -114,
+  ERR_PROXY_AUTH_UNSUPPORTED: -115,
+  ERR_CERT_ERROR_IN_SSL_RENEGOTIATION: -116,
+  ERR_BAD_SSL_CLIENT_AUTH_CERT: -117,
+  ERR_SSL_NO_RENEGOTIATION: -123,
+  ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY: -129,
+  ERR_PROXY_CERTIFICATE_INVALID: -136,
+  ERR_SSL_HANDSHAKE_NOT_COMPLETED: -148,
+  ERR_SSL_BAD_PEER_PUBLIC_KEY: -149,
+  ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN: -150,
+  ERR_CLIENT_AUTH_CERT_TYPE_UNSUPPORTED: -151,
+  ERR_SSL_DECRYPT_ERROR_ALERT: -153,
+  ERR_SSL_SERVER_CERT_CHANGED: -156,
+  ERR_SSL_UNRECOGNIZED_NAME_ALERT: -159,
+  ERR_SSL_SERVER_CERT_BAD_FORMAT: -167,
+  ERR_CT_STH_PARSING_FAILED: -168,
+  ERR_CT_STH_INCOMPLETE: -169,
+  ERR_CT_CONSISTENCY_PROOF_PARSING_FAILED: -171,
+  ERR_SSL_OBSOLETE_CIPHER: -172,
+  ERR_SSL_VERSION_INTERFERENCE: -175,
+  ERR_EARLY_DATA_REJECTED: -178,
+  ERR_WRONG_VERSION_ON_EARLY_DATA: -179,
+  ERR_TLS13_DOWNGRADE_DETECTED: -180
+})
+const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
+
 const Y_POSITION = 78 
 const DEFAULT_URL = 'beaker://start'
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
@@ -33,6 +66,7 @@ const STATE_VARS = [
   'title',
   'peers',
   'zoom',
+  'loadError',
   'isActive',
   'isPinned',
   'isBookmarked',
@@ -84,6 +118,7 @@ class View {
     this.isLoading = false // is the tab loading?
     this.isReceivingAssets = false // has the webview started receiving assets in the current load-cycle?
     this.zoom = 0 // what's the current zoom level?
+    this.loadError = null // page error state, if any
 
     // browser state
     this.isActive = false // is this the active page in the window?
@@ -108,6 +143,7 @@ class View {
     this.webContents.on('did-navigate', this.onDidNavigate.bind(this))
     this.webContents.on('did-navigate-in-page', this.onDidNavigateInPage.bind(this))
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
+    this.webContents.on('did-fail-load', this.onDidFailLoad.bind(this))
     this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
     this.webContents.on('new-window', this.onNewWindow.bind(this))
     this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
@@ -463,6 +499,7 @@ class View {
     zoom.setZoomFromSitedata(this)
 
     // update state
+    this.loadError = null
     this.isReceivingAssets = true
     this.fetchIsBookmarked()
     this.fetchDatInfo()
@@ -498,6 +535,28 @@ class View {
     // emit
     windowMenu.onSetCurrentLocation(this.browserWindow, this.url)
     this.emitUpdateState()
+  }
+
+  onDidFailLoad (e, errorCode, errorDescription, validatedURL, isMainFrame) {
+    // ignore if this is a subresource
+    if (!isMainFrame) return
+
+    // ignore aborts. why:
+    // - sometimes, aborts are caused by redirects. no biggy
+    // - if the user cancels, then we dont want to give an error screen
+    if (errorDescription == 'ERR_ABORTED' || errorCode == ERR_ABORTED) return
+
+    // also ignore non-errors
+    if (errorCode == 0) return
+
+    // update state
+    var isInsecureResponse = IS_CODE_INSECURE_RESPONSE(errorCode)
+    this.loadError = {isInsecureResponse, errorCode, errorDescription, validatedURL}
+    this.emitUpdateState()
+
+    // render failure page
+    var errorPageHTML = errorPage(this.loadError)
+    this.webContents.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'')
   }
 
   onUpdateTargetUrl (e, url) {
