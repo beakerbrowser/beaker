@@ -611,19 +611,23 @@ export function setup () {
 }
 
 export function getAll (win) {
+  win = getTopWindow(win)
   return activeViews[win.id] || []
 }
 
 export function getByIndex (win, index) {
+  win = getTopWindow(win)
   if (index === 'active') return getActive(win)
   return getAll(win)[index]
 }
 
 export function getAllPinned (win) {
+  win = getTopWindow(win)
   return getAll(win).filter(p => p.isPinned)
 }
 
 export function getActive (win) {
+  win = getTopWindow(win)
   return getAll(win).find(view => view.isActive)
 }
 
@@ -638,6 +642,7 @@ export function findContainingWindow (view) {
 }
 
 export function create (win, url, opts = {setActive: false, isPinned: false, focusLocationBar: false}) {
+  win = getTopWindow(win)
   url = url || DEFAULT_URL
   var view = new View(win, {isPinned: opts.isPinned})
   
@@ -664,6 +669,7 @@ export function create (win, url, opts = {setActive: false, isPinned: false, foc
 }
 
 export function remove (win, view) {
+  win = getTopWindow(win)
   // find
   var views = getAll(win)
   var i = views.indexOf(view)
@@ -700,6 +706,7 @@ export function remove (win, view) {
 }
 
 export function removeAllExcept (win, view) {
+  win = getTopWindow(win)
   var views = getAll(win).slice() // .slice() to duplicate the list
   for (let v of views) {
     if (v !== view) {
@@ -709,6 +716,7 @@ export function removeAllExcept (win, view) {
 }
 
 export function removeAllToRightOf (win, view) {
+  win = getTopWindow(win)
   while (true) {
     let views = getAll(win)
     let index = views.indexOf(view) + 1
@@ -718,6 +726,7 @@ export function removeAllToRightOf (win, view) {
 }
 
 export function setActive (win, view) {
+  win = getTopWindow(win)
   if (typeof view === 'number') {
     view = getByIndex(win, view)
   }
@@ -736,12 +745,14 @@ export function setActive (win, view) {
 }
 
 export function initializeFromSnapshot (win, snapshot) {
+  win = getTopWindow(win)
   for (let url of snapshot) {
     create(win, url)
   }
 }
 
 export function takeSnapshot (win) {
+  win = getTopWindow(win)
   return getAll(win)
     .filter(v => !v.isPinned)
     .map(v => v.url)
@@ -749,6 +760,7 @@ export function takeSnapshot (win) {
 }
 
 export function togglePinned (win, view) {
+  win = getTopWindow(win)
   // move tab to the "end" of the pinned tabs
   var views = getAll(win)
   var oldIndex = views.indexOf(view)
@@ -766,10 +778,12 @@ export function togglePinned (win, view) {
 }
 
 export function savePins (win) {
+  win = getTopWindow(win)
   return settingsDb.set('pinned_tabs', JSON.stringify(getAllPinned(win).map(p => p.url)))
 }
 
 export async function loadPins (win) {
+  win = getTopWindow(win)
   var json = await settingsDb.get('pinned_tabs')
   try { JSON.parse(json).forEach(url => create(win, url, {isPinned: true})) }
   catch (e) {
@@ -778,6 +792,7 @@ export async function loadPins (win) {
 }
 
 export function reopenLastRemoved (win) {
+  win = getTopWindow(win)
   var url = (closedURLs[win.id] || []).pop()
   if (url) {
     var view = create(win, url)
@@ -787,6 +802,7 @@ export function reopenLastRemoved (win) {
 }
 
 export function reorder (win, oldIndex, newIndex) {
+  win = getTopWindow(win)
   if (oldIndex === newIndex) {
     return
   }
@@ -798,6 +814,7 @@ export function reorder (win, oldIndex, newIndex) {
 }
 
 export function changeActiveBy (win, offset) {
+  win = getTopWindow(win)
   var views = getAll(win)
   var active = getActive(win)
   if (views.length > 1) {
@@ -813,6 +830,7 @@ export function changeActiveBy (win, offset) {
 }
 
 export function changeActiveTo (win, index) {
+  win = getTopWindow(win)
   var views = getAll(win)
   if (index >= 0 && index < views.length) {
     setActive(win, views[index])
@@ -820,11 +838,13 @@ export function changeActiveTo (win, index) {
 }
 
 export function changeActiveToLast (win) {
+  win = getTopWindow(win)
   var views = getAll(win)
   setActive(win, views[views.length - 1])
 }
 
 export function openOrFocusDownloadsPage (win) {
+  win = getTopWindow(win)
   var views = getAll(win)
   var downloadsView = views.find(v => v.url.startsWith('beaker://downloads'))
   if (!downloadsView) {
@@ -834,12 +854,14 @@ export function openOrFocusDownloadsPage (win) {
 }
 
 export function emitReplaceState (win) {
+  win = getTopWindow(win)
   var state = getWindowTabState(win)
   emit(win, 'replace-state', state)
   win.emit('custom-pages-updated', takeSnapshot(win))
 }
 
 export function emitUpdateState (win, view) {
+  win = getTopWindow(win)
   var index = typeof view === 'number' ? index : getAll(win).indexOf(view)
   if (index === -1) {
     console.warn('WARNING: attempted to update state of a view not on the window')
@@ -1018,9 +1040,12 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 // =
 
 function getWindow (sender) {
-  var win = BrowserWindow.fromWebContents(sender)
+  return getTopWindow(BrowserWindow.fromWebContents(sender))
+}
+
+// helper ensures that if a subwindow is called, we use the parent
+function getTopWindow (win) {
   while (win.getParentWindow()) {
-    // if called from a subwindow (eg a shell-menu) find the parent
     win = win.getParentWindow()
   }
   return win
