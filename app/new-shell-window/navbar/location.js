@@ -339,7 +339,10 @@ class NavbarLocation extends LitElement {
         y: rect.top|0,
         width: rect.width|0
       },
-      params: {value: e.currentTarget.value}
+      params: {
+        value: e.currentTarget.value,
+        selectionStart: e.currentTarget.selectionStart
+      }
     })
     e.currentTarget.blur()
   }

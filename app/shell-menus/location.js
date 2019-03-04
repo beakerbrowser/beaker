@@ -34,7 +34,11 @@ class LocationMenu extends LitElement {
     var input = this.shadowRoot.querySelector('input')
     input.value = this.inputValue = params.value
     input.focus()
-    input.setSelectionRange(input.value.length, input.value.length)
+    if (typeof params.selectionStart === 'number') {
+      input.setSelectionRange(params.selectionStart, params.selectionStart)
+    } else {
+      input.setSelectionRange(input.value.length, input.value.length)
+    }
 
     // run autocomplete
     this.queryAutocomplete()
