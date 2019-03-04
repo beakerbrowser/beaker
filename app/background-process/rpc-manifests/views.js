@@ -9,6 +9,7 @@ export default {
   setActiveTab: 'promise',
   reorderTab: 'promise',
   showTabContextMenu: 'promise',
+  showLocationBarContextMenu: 'promise',
   goBack: 'promise',
   goForward: 'promise',
   stop: 'promise',

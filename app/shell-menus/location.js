@@ -1,12 +1,10 @@
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import {repeat} from '../vendor/lit-element/lit-html/directives/repeat'
-import {classMap} from '../vendor/lit-element/lit-html/directives/class-map'
-import {unsafeHTML} from '../vendor/lit-element/lit-html/directives/unsafe-html'
+import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
+import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
+import { unsafeHTML } from '../vendor/lit-element/lit-html/directives/unsafe-html'
+import { examineLocationInput } from '../lib/urls'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
-
-const isDatHashRegex = /^[a-z0-9]{64}/i
-const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 
 class LocationMenu extends LitElement {
   static get properties () {
@@ -46,7 +44,13 @@ class LocationMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <input type="text" value="${this.inputValue}" @input=${this.onInputLocation} @keydown=${this.onKeydownLocation}>
+        <input
+          type="text"
+          value="${this.inputValue}"
+          @input=${this.onInputLocation}
+          @keydown=${this.onKeydownLocation}
+          @contextmenu=${this.onContextMenu}
+        >
         <div class="autocomplete-results">
           ${repeat(this.autocompleteResults, (r, i) => this.renderAutocompleteResult(r, i))}
         </div>
@@ -116,6 +120,10 @@ class LocationMenu extends LitElement {
       if (down && this.currentSelection < this.autocompleteResults.length - 1) { this.currentSelection = this.currentSelection + 1 }
       this.shadowRoot.querySelector('input').value = this.inputValue = this.autocompleteResults[this.currentSelection].url
     }
+  }
+
+  onContextMenu (e) {
+    bg.views.showLocationBarContextMenu('active')
   }
 
   async queryAutocomplete () {
@@ -324,29 +332,3 @@ function joinSegments (segments) {
   return str
 }
 
-function examineLocationInput (v) {
-  // does the value look like a url?
-  var isProbablyUrl = (!v.includes(' ') && (
-    /\.[A-z]/.test(v) ||
-    isIPAddressRegex.test(v) ||
-    isDatHashRegex.test(v) ||
-    v.startsWith('localhost') ||
-    v.includes('://') ||
-    v.startsWith('beaker:') ||
-    v.startsWith('data:')
-  ))
-  var vWithProtocol = v
-  var isGuessingTheScheme = false
-  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:'))) {
-    if (isDatHashRegex.test(v)) {
-      vWithProtocol = 'dat://' + v
-    } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {
-      vWithProtocol = 'http://' + v
-    } else {
-      vWithProtocol = 'https://' + v
-      isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
-    }
-  }
-  var vSearch = 'https://duckduckgo.com/?q=' + v.split(' ').map(encodeURIComponent).join('+')
-  return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
-}

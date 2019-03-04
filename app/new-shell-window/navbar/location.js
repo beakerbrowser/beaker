@@ -64,6 +64,11 @@ class NavbarLocation extends LitElement {
     bg.views.focusShellWindow() // focus the shell-window UI
   }
 
+  unfocusLocation () {
+    var input = this.shadowRoot.querySelector('.input-container input')
+    input.blur()
+  }
+
   // rendering
   // =
 
@@ -269,28 +274,16 @@ class NavbarLocation extends LitElement {
     if (cmd === 'create-bookmark') {
       this.onClickBookmark()
     }
+    if (cmd === 'focus-location') {
+      this.focusLocation()
+    }
+    if (cmd === 'unfocus-location') {
+      this.unfocusLocation()
+    }
   }
 
   onContextMenuLocation (e) {
-    // TODO
-    // const { Menu, clipboard } = remote
-    // var clipboardContent = clipboard.readText()
-    // var clipInfo = examineLocationInput(clipboardContent)
-    // var menu = Menu.buildFromTemplate([
-    //   { label: 'Cut', role: 'cut' },
-    //   { label: 'Copy', role: 'copy' },
-    //   { label: 'Paste', role: 'paste' },
-    //   { label: `Paste and ${clipInfo.isProbablyUrl ? 'Go' : 'Search'}`, click: onPasteAndGo }
-    // ])
-    // menu.popup(remote.getCurrentWindow())
-  
-    // function onPasteAndGo () {
-    //   var url = clipInfo.isProbablyUrl ? clipInfo.vWithProtocol : clipInfo.vSearch
-    //   var page = pages.getActive()
-    //   page.navbarEl.querySelector('.nav-location-input').value = url
-    //   page.navbarEl.querySelector('.nav-location-input').blur()
-    //   page.loadURL(url)
-    // }
+    bg.views.showLocationBarContextMenu('active')
   }
 
   onMousedownLocation (e) {

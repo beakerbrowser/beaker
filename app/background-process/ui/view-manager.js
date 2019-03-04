@@ -1,4 +1,4 @@
-import { app, BrowserView, BrowserWindow, Menu } from 'electron'
+import { app, BrowserView, BrowserWindow, Menu, clipboard } from 'electron'
 import * as beakerCore from '@beaker/core'
 import path from 'path'
 import {promises as fs} from 'fs'
@@ -17,6 +17,7 @@ import * as statusBar from './subwindows/status-bar'
 import * as permPrompt from './subwindows/perm-prompt'
 import * as modals from './subwindows/modals'
 import { getResourceContentType } from '../browser'
+import { examineLocationInput } from '../../lib/urls'
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
 const bookmarksDb = beakerCore.dbs.bookmarks
@@ -865,6 +866,30 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       { label: 'Reopen Closed Tab', click: () => reopenLastRemoved(win) }
     ])
     menu.popup({window: win})
+  },
+
+  async showLocationBarContextMenu (index) {
+    var win = getWindow(this.sender)
+    var view = getByIndex(win, index)
+    var clipboardContent = clipboard.readText()
+    var clipInfo = examineLocationInput(clipboardContent)
+    var menu = Menu.buildFromTemplate([
+      { label: 'Cut', role: 'cut' },
+      { label: 'Copy', role: 'copy' },
+      { label: 'Paste', role: 'paste' },
+      { label: `Paste and ${clipInfo.isProbablyUrl ? 'Go' : 'Search'}`, click: onPasteAndGo }
+    ])
+    menu.popup({window: win})
+
+    function onPasteAndGo () {
+      // close the menu
+      shellMenus.hide(win)
+      win.webContents.send('command', 'unfocus-location')
+
+      // load the URL
+      var url = clipInfo.isProbablyUrl ? clipInfo.vWithProtocol : clipInfo.vSearch
+      view.loadURL(url)
+    }
   },
 
   async goBack (index) {
