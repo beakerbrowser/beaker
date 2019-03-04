@@ -233,6 +233,9 @@ class View {
       this.browserWindow.setBrowserView(null)
     }
 
+    if (this.isActive) {
+      shellMenus.hide(this.browserWindow) // this will close the location menu if it's open
+    }
     permPrompt.hide(this.browserView)
     modals.hide(this.browserView)
     this.isActive = false
