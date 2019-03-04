@@ -16,6 +16,7 @@ import * as shellMenus from './subwindows/shell-menus'
 import * as statusBar from './subwindows/status-bar'
 import * as permPrompt from './subwindows/perm-prompt'
 import * as modals from './subwindows/modals'
+import * as windowMenu from './window-menu'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 const settingsDb = beakerCore.dbs.settings
@@ -60,8 +61,6 @@ var noRedirectHostnames = new Set() // set of hostnames which have dat-redirecti
 
 // classes
 // =
-
-var DEBUG = 1
 
 class View {
   constructor (win, opts = {isPinned: false}) {
@@ -497,6 +496,7 @@ class View {
     this.injectCustomRenderers()
 
     // emit
+    windowMenu.onSetCurrentLocation(this.browserWindow, this.url)
     this.emitUpdateState()
   }
 
@@ -663,13 +663,16 @@ export function setActive (win, view) {
     view = getByIndex(win, view)
   }
   if (!view) return
+
+  // deactivate the old view
   var active = getActive(win)
   if (active) {
     active.deactivate(true)
   }
-  if (view) {
-    view.activate()
-  }
+  
+  // activate the new view
+  view.activate()
+  windowMenu.onSetCurrentLocation(win, view.url) // give the window-menu a chance to handle the change
   emitReplaceState(win)
 }
 

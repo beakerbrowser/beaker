@@ -11,25 +11,11 @@ import {download} from './downloads'
 export function setup () {
   setApplicationMenu({ noWindows: true })
 
-  // watch for changes to the window's
-  ipcMain.on('shell-window:set-current-location', (e, url) => {
-    // check if this is the currently focused window
-    const fwin = BrowserWindow.getFocusedWindow()
-    if (!url || !fwin || e.sender !== fwin.webContents) {
-      return
-    }
-
-    // rebuild as needed
-    if (requiresRebuild(url)) {
-      setApplicationMenu({url})
-    }
-  })
-
   // watch for changes to the currently active window
   app.on('browser-window-focus', async (e, win) => {
     try {
-      // fetch the current url TODO
-      // const url = await win.webContents.executeJavaScript(`pages.getActive().getIntendedURL()`)
+      // fetch the current url
+      const url = viewManager.getActive(win).url
 
       // rebuild as needed
       if (requiresRebuild(url)) {
@@ -49,6 +35,18 @@ export function setup () {
   app.on('browser-window-created', () => {
     setApplicationMenu()
   })
+}
+
+export function onSetCurrentLocation (win, url) {
+  // check if this is the currently focused window
+  if (!url || win !== BrowserWindow.getFocusedWindow()) {
+    return
+  }
+
+  // rebuild as needed
+  if (requiresRebuild(url)) {
+    setApplicationMenu({url})
+  }
 }
 
 export function setApplicationMenu (opts = {}) {
