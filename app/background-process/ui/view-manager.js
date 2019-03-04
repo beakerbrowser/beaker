@@ -200,14 +200,15 @@ class View {
   }
 
   get state () {
-    return _pick(this, STATE_VARS)
+    var state = _pick(this, STATE_VARS)
+    if (this.loadingURL) state.url = this.loadingURL
+    return state
   }
 
   // management
   // =
 
   loadURL (url) {
-    // TODO manage url and loadingURL
     this.browserView.webContents.loadURL(url)
   }
 
@@ -489,6 +490,7 @@ class View {
   onDidStartLoading (e) {
     // update state
     this.isLoading = true
+    this.loadingURL = null
     this.isReceivingAssets = false
     this.wasDatTimeout = false
 
@@ -501,6 +503,10 @@ class View {
     if (toOrigin(url) !== toOrigin(this.url)) {
       this.stopLiveReloading()
     }
+
+    // update state
+    this.loadingURL = url
+    this.emitUpdateState()
   }
 
   onDidNavigate (e, url, httpResponseCode) {
@@ -509,6 +515,7 @@ class View {
 
     // update state
     this.loadError = null
+    this.loadingURL = null
     this.isReceivingAssets = true
     this.fetchIsBookmarked()
     this.fetchDatInfo()
@@ -529,6 +536,7 @@ class View {
 
     // update state
     this.isLoading = false
+    this.loadingURL = null
     this.isReceivingAssets = false
 
     // check for dat alternatives
