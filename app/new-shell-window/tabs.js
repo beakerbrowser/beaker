@@ -403,17 +403,6 @@ ${spinnerCSS}
   -webkit-app-region: drag;
 }
 
-/* make room for resizing on the top */
-.win32.shell {
-  padding-top: 4px;
-}
-.win32 .tabs {
-  height: 32px;
-} 
-.win32 .tab {
-  top: 2px;
-}
-
 /* make room for traffic lights */
 .darwin .tabs {
   padding-left: 75px;
