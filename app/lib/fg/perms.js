@@ -45,7 +45,7 @@ export function renderPermDesc ({bg, url, permId, permParam, permOpts}) {
     case 'network':
       if (permParam === '*') return 'Access the network freely'
       return 'contact ' + permParam
-      
+
     case 'download':
       return html`<span>Download ${permOpts.filename}</span>`
 

@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import './modals/create-archive'
 import './modals/fork-archive'

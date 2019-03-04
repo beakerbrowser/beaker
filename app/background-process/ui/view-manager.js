@@ -56,7 +56,7 @@ const TLS_ERROR_CODES = Object.values({
 })
 const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
 
-const Y_POSITION = 78 
+const Y_POSITION = 78
 const DEFAULT_URL = 'beaker://start'
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
@@ -127,7 +127,7 @@ class View {
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
-    
+
     // helper state
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
@@ -223,7 +223,7 @@ class View {
     var {width, height} = win.getBounds()
     this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
     this.browserView.setAutoResize({width: true, height: true})
-    
+
     this.webContents.focus()
   }
 
@@ -247,7 +247,7 @@ class View {
   async updateHistory () {
     var url = this.url
     var title = this.title
-  
+
     if (!/^beaker:\/\/(start|history)/i.test(url)) {
       historyDb.addVisit(0, {url, title})
       if (this.isPinned) {
@@ -662,7 +662,7 @@ export function create (win, url, opts = {setActive: false, isPinned: false, foc
   win = getTopWindow(win)
   url = url || DEFAULT_URL
   var view = new View(win, {isPinned: opts.isPinned})
-  
+
   activeViews[win.id] = activeViews[win.id] || []
   if (opts.isPinned) {
     activeViews[win.id].splice(indexOfLastPinnedView(win), 0, view)
@@ -754,7 +754,7 @@ export function setActive (win, view) {
   if (active) {
     active.deactivate(true)
   }
-  
+
   // activate the new view
   view.activate()
   windowMenu.onSetCurrentLocation(win, view.url) // give the window-menu a chance to handle the change
@@ -879,7 +879,7 @@ export function emitReplaceState (win) {
 
 export function emitUpdateState (win, view) {
   win = getTopWindow(win)
-  var index = typeof view === 'number' ? index : getAll(win).indexOf(view)
+  var index = typeof view === 'number' ? view : getAll(win).indexOf(view)
   if (index === -1) {
     console.warn('WARNING: attempted to update state of a view not on the window')
     return

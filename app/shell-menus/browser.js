@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { fromEventStream } from '@beaker/core/web-apis/fg/event-target'
 import moment from 'moment'
@@ -50,7 +51,7 @@ class BrowserMenu extends LitElement {
     if (this.submenu === 'create-new') {
       return this.renderCreateNew()
     }
-    
+
     // auto-updater
     var autoUpdaterEl = html``
     if (this.browserInfo && this.browserInfo.updater.isBrowserUpdatesSupported && this.browserInfo.updater.state === 'downloaded') {

@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
@@ -31,7 +32,7 @@ class SelectArchiveModal extends LitElement {
     this.description = ''
     this.selectedArchiveKey = ''
     this.archives = []
-    
+
     // params
     this.customTitle = ''
     this.buttonLabel = 'Select'
@@ -72,7 +73,7 @@ class SelectArchiveModal extends LitElement {
       <div class="wrapper">
         ${this.currentView === VIEWS.SELECT
           ? this.renderSelect()
-          : this.renderCreate() }
+          : this.renderCreate()}
       </div>
     `
   }
@@ -183,7 +184,7 @@ class SelectArchiveModal extends LitElement {
 
   // event handlers
   // =
-  
+
   onChangeTitle (e) {
     this.selectedArchiveKey = ''
     this.title = e.target.value
@@ -207,7 +208,7 @@ class SelectArchiveModal extends LitElement {
     this.selectedArchiveKey = e.currentTarget.dataset.key
     this.onSubmit()
   }
-  
+
   async onClickGotoCreateView (e) {
     this.currentView = VIEWS.CREATE
     await this.updateComplete

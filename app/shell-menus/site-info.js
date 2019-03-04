@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import prettyHash from 'pretty-hash'
@@ -38,12 +39,12 @@ class SiteInfoMenu extends LitElement {
       if (IS_DAT_KEY_REGEX.test(permParam)) {
         let archiveInfo
         try { archiveInfo = await bg.datArchive.getInfo(permParam) }
-        catch (e) {/* ignore */}
+        catch (e) { /* ignore */ }
         opts.title = archiveInfo && archiveInfo.title ? archiveInfo.title : prettyHash(permParam)
       }
       return {perm, value, opts}
     }))
-    
+
     // render
     await this.requestUpdate()
 
@@ -113,7 +114,7 @@ class SiteInfoMenu extends LitElement {
     if (protocol === 'https:' && !isInsecureResponse) {
       return 'Your connection to this site is secure.'
     }
-    if (protocol === 'https:' && isInsecureResponse || protocol === 'http:') {
+    if ((protocol === 'https:' && isInsecureResponse) || protocol === 'http:') {
       return html`
         <div>
           <p>Your connection to this site is not secure.</p>
@@ -166,7 +167,6 @@ class SiteInfoMenu extends LitElement {
   onClickLearnMore () {
     bg.shellMenus.createTab('https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22')
   }
-
 }
 SiteInfoMenu.styles = [inputsCSS, buttonsCSS, css`
 .wrapper {

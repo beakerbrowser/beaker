@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import prettyBytes from 'pretty-bytes'
 import _get from 'lodash.get'

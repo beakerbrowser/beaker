@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
@@ -8,7 +9,7 @@ class CreateArchiveModal extends LitElement {
   static get properties () {
     return {
       title: {type: String},
-      description: {type: String},
+      description: {type: String}
     }
   }
 

@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './shell-menus/bg-process-rpc'
 import './shell-menus/browser'

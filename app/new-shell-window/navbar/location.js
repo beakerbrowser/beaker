@@ -1,3 +1,4 @@
+/* globals customElements */
 import { ipcRenderer } from 'electron'
 import { LitElement, html, css } from '../../vendor/lit-element/lit-element'
 import { classMap } from '../../vendor/lit-element/lit-html/directives/class-map'
@@ -293,24 +294,24 @@ class NavbarLocation extends LitElement {
       this.lastMousedownLocationTs = Date.now()
     }
   }
-  
+
   onMouseupLocation (e) {
     if (Date.now() - this.lastMousedownLocationTs <= 300) {
       // was a fast click (probably not a drag) so select all
       let inputEl = e.currentTarget
       this.mouseupClickIndex = inputEl.selectionStart
       inputEl.select()
-  
+
       // setup double-click override
       this.lastMousedownLocationTs = 0
       this.lastMouseupLocationTs = Date.now()
     }
   }
-  
+
   onDblclickLocation (e) {
     if (Date.now() - this.lastMouseupLocationTs <= 300) {
       e.preventDefault()
-  
+
       // select the text under the cursor
       // (we have to do this manually because we previously selected all on mouseup, which f's that default behavior up)
       let inputEl = e.currentTarget
@@ -324,13 +325,13 @@ class NavbarLocation extends LitElement {
     e.currentTarget.value = this.url
     this.isLocationFocused = true
   }
-  
+
   onBlurLocation (e) {
     // clear the selection range so that the next focusing doesnt carry it over
     window.getSelection().empty()
     this.isLocationFocused = false
   }
-  
+
   onInputLocation (e) {
     var rect = this.getClientRects()[0]
     bg.views.showMenu('location', {
@@ -437,7 +438,7 @@ class NavbarLocation extends LitElement {
       await bg.bookmarks.bookmarkPrivate(this.url, {title: this.title})
       bg.views.refreshState(this.activeTabIndex) // pull latest state
     }
-    
+
     // show menu
     bg.views.toggleMenu('bookmark', {
       bounds: {

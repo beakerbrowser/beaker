@@ -1,6 +1,6 @@
 /**
  * Perm Prompt
- * 
+ *
  * NOTES
  * - Perm Prompt windows are created as-needed, and desroyed when not in use
  * - Perm Prompt windows are attached to individual BrowserView instances

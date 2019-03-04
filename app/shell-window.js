@@ -1,3 +1,5 @@
+/* globals customElements */
+
 import { ipcRenderer } from 'electron'
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './new-shell-window/bg-process-rpc'
@@ -48,7 +50,7 @@ class ShellWindowUI extends LitElement {
       }
       this.stateHasChanged()
     })
-    
+
     // listen to state updates on the auto-updater
     var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())
     browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))

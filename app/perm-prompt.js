@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html, css } from './vendor/lit-element/lit-element'
 import prettyHash from 'pretty-hash'
 import * as bg from './perm-prompt/bg-process-rpc'
@@ -37,7 +38,7 @@ class PermPrompt extends LitElement {
       let archiveKey = this.permParam
       let archiveInfo
       try { archiveInfo = await bg.datArchive.getInfo(archiveKey) }
-      catch (e) {/* ignore */}
+      catch (e) { /* ignore */ }
       this.permOpts.title = archiveInfo && archiveInfo.title ? archiveInfo.title : prettyHash(this.permParam)
     }
 
@@ -83,7 +84,7 @@ class PermPrompt extends LitElement {
   onContextMenu (e) {
     e.preventDefault() // disable context menu
   }
-  
+
   onClickDecision (v) {
     return e => this.resolve(v)
   }

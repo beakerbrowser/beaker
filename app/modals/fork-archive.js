@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import prettyHash from 'pretty-hash'
 import * as bg from './bg-process-rpc'
@@ -17,7 +18,7 @@ class ForkArchiveModal extends LitElement {
     return {
       state: {type: Number},
       title: {type: String},
-      description: {type: String},
+      description: {type: String}
     }
   }
 

@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
@@ -139,7 +140,7 @@ class LocationMenu extends LitElement {
   async queryAutocomplete () {
     var finalResults
     var searchResults = await bg.history.search(this.inputValue)
-    
+
     // decorate result with bolded regions
     // explicitly replace special characters to match sqlite fts tokenization
     var searchTerms = this.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
@@ -342,4 +343,3 @@ function joinSegments (segments) {
   }
   return str
 }
-

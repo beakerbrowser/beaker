@@ -1,6 +1,6 @@
 /**
  * Shell Menus
- * 
+ *
  * NOTES
  * - There can only ever be one Shell Menu window for a given browser window
  * - Shell Menu windows are created with each browser window and then shown/hidden as needed

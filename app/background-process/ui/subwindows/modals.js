@@ -1,6 +1,6 @@
 /**
  * Modal
- * 
+ *
  * NOTES
  * - Modal windows are created as-needed, and desroyed when not in use
  * - Modal windows are attached to individual BrowserView instances

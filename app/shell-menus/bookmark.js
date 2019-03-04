@@ -1,3 +1,4 @@
+/* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
@@ -38,7 +39,7 @@ class BookmarkMenu extends LitElement {
       this.href = params.url
     }
     await this.requestUpdate()
-    
+
     // focus and highlight input
     var input = this.shadowRoot.querySelector('input')
     input.focus()

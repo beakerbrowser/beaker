@@ -1,3 +1,4 @@
+/* globals customElements */
 import {LitElement, html, css} from '../vendor/lit-element/lit-element'
 import {classMap} from '../vendor/lit-element/lit-html/directives/class-map'
 import {repeat} from '../vendor/lit-element/lit-html/directives/repeat'
@@ -114,7 +115,7 @@ class ShellWindowTabs extends LitElement {
     this.draggedTabIndex = index
     e.dataTransfer.effectAllowed = 'move'
   }
-  
+
   onDragendTab (e, index) {
     // TODO needed?
   }
