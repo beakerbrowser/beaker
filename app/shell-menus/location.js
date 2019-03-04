@@ -76,7 +76,7 @@ class LocationMenu extends LitElement {
 
     // result row
     return html`
-      <div class=${rowCls} data-result-index=${i}>
+      <div class=${rowCls} data-result-index=${i} @click=${this.onClickResult}>
         ${r.bookmarked ? html`<i class="far fa-star"></i>` : ''}
         ${r.search
           ? html`<i class="icon fa fa-search"></i>`
@@ -124,6 +124,12 @@ class LocationMenu extends LitElement {
 
   onContextMenu (e) {
     bg.views.showLocationBarContextMenu('active')
+  }
+
+  onClickResult (e) {
+    let selection = this.autocompleteResults[e.currentTarget.dataset.resultIndex]
+    bg.shellMenus.loadURL(selection.url)
+    bg.shellMenus.close()
   }
 
   async queryAutocomplete () {
@@ -203,6 +209,7 @@ input:focus {
   align-items: center;
   height: 28px;
   font-size: 14px;
+  cursor: default;
 }
 
 .result .fa-star-o {
