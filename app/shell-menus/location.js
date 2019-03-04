@@ -137,6 +137,12 @@ class LocationMenu extends LitElement {
     bg.shellMenus.close()
   }
 
+  resize () {
+    // adjust height based on rendering
+    var height = this.shadowRoot.querySelector('div').clientHeight
+    bg.shellMenus.resizeSelf({height})
+  }
+
   async queryAutocomplete () {
     var finalResults
     var searchResults = await bg.history.search(this.inputValue)
@@ -178,12 +184,15 @@ class LocationMenu extends LitElement {
 
     // render
     this.autocompleteResults = finalResults
+
+    await this.updateComplete
+    this.resize()
   }
 }
 LocationMenu.styles = [commonCSS, css`
 .wrapper {
   background: #fff;
-  height: 100%;
+  padding-bottom: 4px; /* add a little breathing room to the bottom */
 }
 
 input {
