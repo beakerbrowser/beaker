@@ -58,6 +58,7 @@
     "lodash.flattendeep": "^4.4.0",
     "lodash.get": "^4.4.2",
     "lodash.groupby": "^4.6.0",
+    "lodash.isequal": "^4.5.0",
     "lodash.pick": "^4.4.0",
     "lodash.throttle": "^4.1.1",
     "lru": "^3.1.0",

@@ -743,8 +743,9 @@ export function initializeFromSnapshot (win, snapshot) {
 
 export function takeSnapshot (win) {
   return getAll(win)
-    .filter((p) => !p.isPinned)
-    .map((p) => p.getIntendedURL())
+    .filter(v => !v.isPinned)
+    .map(v => v.url)
+    .filter(Boolean)
 }
 
 export function togglePinned (win, view) {
@@ -835,6 +836,7 @@ export function openOrFocusDownloadsPage (win) {
 export function emitReplaceState (win) {
   var state = getWindowTabState(win)
   emit(win, 'replace-state', state)
+  win.emit('custom-pages-updated', takeSnapshot(win))
 }
 
 export function emitUpdateState (win, view) {
@@ -845,6 +847,7 @@ export function emitUpdateState (win, view) {
   }
   var state = getByIndex(win, index).state
   emit(win, 'update-state', {index, state})
+  win.emit('custom-pages-updated', takeSnapshot(win))
 }
 
 // rpc api

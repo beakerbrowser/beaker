@@ -1,6 +1,7 @@
 import {BrowserWindow, ipcMain} from 'electron'
 import EventEmitter from 'events'
 import debounce from 'lodash.debounce'
+import _isEqual from 'lodash.isequal'
 import {defaultPageState} from './default-state'
 
 const SNAPSHOT_PATH = 'shell-window-state.json'
@@ -79,7 +80,7 @@ class WindowWatcher extends EventEmitter {
     win.on('closed', this.handleClosed)
     win.on('resize', debounce(this.handlePositionChange, 1000))
     win.on('moved', this.handlePositionChange)
-    ipcMain.on('shell-window:pages-updated', this.handlePagesUpdated)
+    win.on('custom-pages-updated', this.handlePagesUpdated)
   }
 
   getWindow () {
@@ -89,15 +90,15 @@ class WindowWatcher extends EventEmitter {
   // handlers
 
   handleClosed () {
-    ipcMain.removeListener('shell-window:pages-updated', this.handlePagesUpdated)
+    var win = BrowserWindow.fromId(this.winId)
+    if (win) win.removeListener('custom-pages-updated', this.handlePagesUpdated)
     this.emit('remove')
   }
 
-  handlePagesUpdated ({ sender }, pages) {
-    if (sender === this.getWindow().webContents) {
-      this.snapshot.pages = (pages && pages.length) ? pages : defaultPageState()
-      this.emit('change', this.snapshot)
-    }
+  handlePagesUpdated (pages) {
+    if (_isEqual(pages, this.snapshot.pages)) return
+    this.snapshot.pages = (pages && pages.length) ? pages : defaultPageState()
+    this.emit('change', this.snapshot)
   }
 
   handlePositionChange () {

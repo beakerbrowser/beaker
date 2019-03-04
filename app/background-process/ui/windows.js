@@ -113,16 +113,6 @@ export async function setup () {
     }
   })
 
-  ipcMain.on('shell-window:ready', ({ sender }) => {
-    var win = BrowserWindow.fromWebContents(sender)
-    viewManager.create(win)
-
-    if (win.webContents.id === firstWindow) {
-      // if this is the first window opened (since app start or since all windows closing)
-      viewManager.loadPins(win)
-    }
-  })
-
   let previousSessionState = getPreviousBrowsingSession()
   sessionWatcher = new SessionWatcher(userDataDir)
   let customStartPage = await settingsDb.get('custom_start_page')
@@ -199,8 +189,14 @@ export function createShellWindow (windowState) {
 
   let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
   function handlePagesReady ({ sender }) {
-    if (win && !win.isDestroyed() && sender === win.webContents) {
-      win.webContents.send('command', 'initialize', state.pages)
+    if (!win || win.isDestroyed()) return
+
+    if (sender === win.webContents) {
+      if (win.webContents.id === firstWindow) {
+        // if this is the first window opened (since app start or since all windows closing)
+        viewManager.loadPins(win)
+      }
+      viewManager.initializeFromSnapshot(win, state.pages)
       if (isTestDriverActive) {
         // HACK
         // For some reason, when the sandbox is enabled, executeJavaScript doesnt work in the browser window until the devtools are opened.
@@ -220,9 +216,9 @@ export function createShellWindow (windowState) {
     firstWindow = win.webContents.id
   }
 
-  ipcMain.on('shell-window:pages-ready', handlePagesReady)
+  ipcMain.on('shell-window:ready', handlePagesReady)
   win.on('closed', () => {
-    ipcMain.removeListener('shell-window:pages-ready', handlePagesReady)
+    ipcMain.removeListener('shell-window:ready', handlePagesReady)
     for (let k in subwindows) {
       subwindows[k].destroy(win)
     }
