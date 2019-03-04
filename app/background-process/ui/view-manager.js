@@ -149,6 +149,15 @@ class View {
     this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
     this.webContents.on('media-paused', this.onMediaChange.bind(this))
     this.webContents.on('found-in-page', this.onFoundInPage.bind(this))
+
+    // security - deny these events
+    const deny = e => e.preventDefault()
+    this.webContents.on('remote-require', deny)
+    this.webContents.on('remote-get-global', deny)
+    this.webContents.on('remote-get-builtin', deny)
+    this.webContents.on('remote-get-current-window', deny)
+    this.webContents.on('remote-get-current-web-contents', deny)
+    this.webContents.on('remote-get-guest-web-contents', deny)
   }
 
   get webContents () {
