@@ -37,6 +37,10 @@ class ForkArchiveModal extends LitElement {
     this.type = null
     this.links = null
     this.networked = true
+
+    // export interface
+    window.forkArchiveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
+    window.forkArchiveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
   }
 
   async init (params, cbs) {

@@ -20,10 +20,15 @@ class PermPrompt extends LitElement {
     this.isPermExperimental = false
 
     // export interface
+    window.isPromptActive = false
     window.runPrompt = this.runPrompt.bind(this)
+    window.clickAccept = () => this.shadowRoot.querySelector('.prompt-accept').click()
+    window.clickReject = () => this.shadowRoot.querySelector('.prompt-reject').click()
   }
 
   async runPrompt ({permission, url, opts}) {
+    window.isPromptActive = true
+
     // lookup the perm description. auto-deny if it's not a known perm.
     this.url = url
     this.permId = getPermId(permission)
@@ -52,6 +57,9 @@ class PermPrompt extends LitElement {
     // setup promise
     return new Promise(resolve => {
       this.resolve = resolve
+    }).then(v => {
+      window.isPromptActive = false
+      return v
     })
   }
 

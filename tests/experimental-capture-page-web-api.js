@@ -19,20 +19,22 @@ const app = browserdriver.start({
   }
 })
 var createdDatUrl
+var startPageTab
 var mainTab
 
 test.before(async t => {
   console.log('starting experimental-capture-web-page-web-api-test')
   await app.isReady
+  startPageTab = app.getTab(0)
 
   // create the test archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({title: 'Test Archive', description: 'Foo', prompt: false})
   `)
   createdDatUrl = res.url
 
   // go to the site
-  mainTab = app.getTab(0)
+  mainTab = await app.newTab()
   await mainTab.navigateTo(createdDatUrl)
 })
 test.after.always('cleanup', async t => {
@@ -54,7 +56,7 @@ test('experiment must be opted into', async t => {
   }
 
   // update manifest to include experiment
-  await app.executeJavascript(`
+  await startPageTab.executeJavascript(`
     (async function () {
       try {
         var archive = new DatArchive("${createdDatUrl}")
@@ -75,8 +77,8 @@ test('capturePage()', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await mainTab.getPermPrompt().waitFor('window.isPromptActive')
+  await mainTab.getPermPrompt().executeJavascript('window.clickAccept()')
   png = await png
 
   // check results

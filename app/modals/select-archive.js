@@ -38,6 +38,28 @@ class SelectArchiveModal extends LitElement {
     this.buttonLabel = 'Select'
     this.type = null
     this.cbs = null
+
+    // export interface
+    window.selectArchiveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
+    window.selectArchiveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
+    window.window.selectArchiveClickNewArchive = () => {
+      this.shadowRoot.querySelector('.btn[data-content="newArchive"]').click()
+      return this.requestUpdate()
+    }
+    window.selectArchiveClickItem = (key) => {
+      this.shadowRoot.querySelector(`li[data-key="${key}"]`).click()
+      this.selectedArchiveKey = key
+      return this.requestUpdate()
+    }
+    window.selectArchiveClickAnyItem = () => {
+      this.shadowRoot.querySelector(`li[data-key]`).click()
+      this.selectedArchiveKey = this.archives[0].key
+      return this.requestUpdate()
+    }
+    window.window.selectArchiveSetValueTitle = (v) => {
+      this.shadowRoot.querySelector('input[name="title"]').value = v
+      this.title = v
+    }
   }
 
   async init (params, cbs) {

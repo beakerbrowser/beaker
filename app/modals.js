@@ -30,12 +30,16 @@ class ModalsWrapper extends LitElement {
   }
 
   async runModal (name, params) {
+    window.isModalActive = true
     this.currentModal = name
     await this.updateComplete
     return new Promise((resolve, reject) => {
       this.cbs = {resolve, reject}
       this.shadowRoot.querySelector(`${name}-modal`).init(params, {resolve, reject})
-    })
+    }).then(
+      v => { window.isModalActive = false; return v },
+      v => { window.isModalActive = false; throw v }
+    )
   }
 
   render () {

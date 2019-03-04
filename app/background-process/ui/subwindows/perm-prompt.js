@@ -82,19 +82,23 @@ export async function create (parentWindow, parentView, params) {
   return decision
 }
 
-export async function show (parentView) {
+export function get (parentView) {
+  return windows[parentView.id]
+}
+
+export function show (parentView) {
   if (parentView.id in windows) {
     windows[parentView.id].show()
   }
 }
 
-export async function hide (parentView) {
+export function hide (parentView) {
   if (parentView.id in windows) {
     windows[parentView.id].hide()
   }
 }
 
-export async function close (parentView) {
+export function close (parentView) {
   if (parentView.id in windows) {
     windows[parentView.id].close()
     delete windows[parentView.id]

@@ -197,16 +197,6 @@ export function createShellWindow (windowState) {
         viewManager.loadPins(win)
       }
       viewManager.initializeFromSnapshot(win, state.pages)
-      if (isTestDriverActive) {
-        // HACK
-        // For some reason, when the sandbox is enabled, executeJavaScript doesnt work in the browser window until the devtools are opened.
-        // Since it's kind of handy to have the devtools open anyway, open them automatically when tests are running.
-        // No, I am not above this.
-        // -prf
-        setTimeout(() => {
-          win.webContents.openDevTools()
-        }, 1e3)
-      }
     }
   }
 

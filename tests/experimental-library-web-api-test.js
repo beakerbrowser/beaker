@@ -20,14 +20,16 @@ const app = browserdriver.start({
 })
 var createdDatUrl
 var outsideDatUrl
+var startPageTab
 var mainTab
 
 test.before(async t => {
   console.log('starting experimental-library-web-api-test')
   await app.isReady
+  startPageTab = app.getTab(0)
 
   // create the test archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({title: 'Test Archive', description: 'Foo', prompt: false})
   `)
   createdDatUrl = res.url
@@ -37,7 +39,7 @@ test.before(async t => {
   outsideDatUrl = 'dat://' + outsideDat.archive.key.toString('hex') + '/'
 
   // go to the site
-  mainTab = app.getTab(0)
+  mainTab = await app.newTab()
   await mainTab.navigateTo(createdDatUrl)
 })
 test.after.always('cleanup', async t => {
@@ -59,7 +61,7 @@ test('experiment must be opted into', async t => {
   }
 
   // update manifest to include experiment
-  await app.executeJavascript(`
+  await startPageTab.executeJavascript(`
     (async function () {
       try {
         var archive = new DatArchive("${createdDatUrl}")
@@ -83,8 +85,8 @@ test('library.list()', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await mainTab.getPermPrompt().waitFor('window.isPromptActive')
+  await mainTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // check results
   var listing = await listingP
@@ -180,8 +182,8 @@ test('library.requestAdd()', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await mainTab.getPermPrompt().waitFor('window.isPromptActive')
+  await mainTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // check result
   t.deepEqual(await p, {
@@ -194,8 +196,8 @@ test('library.requestAdd()', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await mainTab.getPermPrompt().waitFor('window.isPromptActive')
+  await mainTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // check result
   t.deepEqual(await p, {
@@ -221,8 +223,8 @@ test('library.requestRemove()', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await mainTab.getPermPrompt().waitFor('window.isPromptActive')
+  await mainTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // check result
   t.deepEqual(await p, {
@@ -236,8 +238,8 @@ test('library.requestRemove()', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await mainTab.getPermPrompt().waitFor('window.isPromptActive')
+  await mainTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // check result
   t.deepEqual(await p, {

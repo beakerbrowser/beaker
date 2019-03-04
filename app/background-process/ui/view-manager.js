@@ -638,6 +638,11 @@ export function getByIndex (win, index) {
   return getAll(win)[index]
 }
 
+export function getIndexOfView (win, view) {
+  win = getTopWindow(win)
+  return getAll(win).indexOf(view)
+}
+
 export function getAllPinned (win) {
   win = getTopWindow(win)
   return getAll(win).filter(p => p.isPinned)

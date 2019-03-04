@@ -21,6 +21,10 @@ class CreateArchiveModal extends LitElement {
     this.type = null
     this.links = null
     this.networked = true
+
+    // export interface
+    window.createArchiveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
+    window.createArchiveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
   }
 
   async init (params, cbs) {
