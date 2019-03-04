@@ -106,6 +106,7 @@ class NavbarLocation extends LitElement {
           @focus=${this.onFocusLocation}
           @blur=${this.onBlurLocation}
           @input=${this.onInputLocation}
+          @keydown=${this.onKeydownLocation}
         >
         ${this.isLocationFocused ? '' : this.renderInputPretty()}
       </div>
@@ -342,6 +343,12 @@ class NavbarLocation extends LitElement {
       params: {value: e.currentTarget.value}
     })
     e.currentTarget.blur()
+  }
+
+  onKeydownLocation (e) {
+    if (e.key === 'Escape') {
+      this.unfocusLocation()
+    }
   }
 
   onClickZoom (e) {

@@ -88,8 +88,11 @@ export function buildWindowMenu (opts = {}) {
         label: 'New Tab',
         accelerator: 'CmdOrCtrl+T',
         click: function (item, win) {
-          if (win) viewManager.setActive(win, viewManager.create(win))
-          else createShellWindow()
+          if (win) {
+            viewManager.create(win, undefined, {setActive: true, focusLocationBar: true})
+          } else {
+            createShellWindow()
+          }
         },
         reserved: true
       },

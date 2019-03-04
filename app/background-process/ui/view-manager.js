@@ -578,7 +578,7 @@ export function findContainingWindow (view) {
   }
 }
 
-export function create (win, url, opts = {setActive: false, isPinned: false}) {
+export function create (win, url, opts = {setActive: false, isPinned: false, focusLocationBar: false}) {
   url = url || DEFAULT_URL
   var view = new View(win, {isPinned: opts.isPinned})
   
@@ -596,6 +596,10 @@ export function create (win, url, opts = {setActive: false, isPinned: false}) {
     setActive(win, view)
   }
   emitReplaceState(win)
+
+  if (opts.focusLocationBar) {
+    win.webContents.send('command', 'focus-location')
+  }
 
   return view
 }
@@ -941,7 +945,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   },
 
   async focusShellWindow () {
-    getWindow(this.sender).focus()
+    getWindow(this.sender).webContents.focus()
   }
 })
 
