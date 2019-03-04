@@ -108,7 +108,8 @@ class View {
         defaultEncoding: 'utf-8',
         nativeWindowOpen: true,
         nodeIntegration: false,
-        scrollBounce: true
+        scrollBounce: true,
+        navigateOnDragDrop: true
       }
     })
     this.browserView.setBackgroundColor('#fff')

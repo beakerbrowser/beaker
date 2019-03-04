@@ -38,6 +38,17 @@ class ShellWindowUI extends LitElement {
       document.body.classList.add('win32')
     }
 
+    // handle drag/drop of files
+    window.addEventListener('drop', onDragDrop, false)
+    function onDragDrop (event) {
+      var files = Array.from(event.dataTransfer.files).slice(0, 10)
+      var setActive = true
+      for (let file of files) {
+        bg.views.createTab(`file://${file.path}`, {setActive})
+        setActive = false
+      }
+    }
+
     // listen to state updates to the window's tabs states
     var viewEvents = fromEventStream(bg.views.createEventStream())
     viewEvents.addEventListener('replace-state', (tabs) => {

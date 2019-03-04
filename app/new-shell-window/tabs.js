@@ -121,6 +121,9 @@ class ShellWindowTabs extends LitElement {
   }
 
   onDragoverTab (e, index) {
+    if (e.dataTransfer.files.length) {
+      return // allow toplevel event-handler to handle
+    }
     e.preventDefault()
 
     if (!this.canDrop(index)) {
@@ -137,6 +140,9 @@ class ShellWindowTabs extends LitElement {
   }
 
   onDropTab (e, index) {
+    if (e.dataTransfer.files.length) {
+      return // allow toplevel event-handler to handle
+    }
     e.stopPropagation()
     e.currentTarget.classList.remove('drag-hover')
 
@@ -148,6 +154,7 @@ class ShellWindowTabs extends LitElement {
   }
 
   canDrop (index) {
+    if (this.draggedTabIndex === null) return false
     var draggingTab = this.tabs[this.draggedTabIndex]
     var targetTab = this.tabs[index]
     if (draggingTab.isPinned !== targetTab.isPinned) {

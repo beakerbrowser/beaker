@@ -187,7 +187,6 @@ export function createShellWindow (windowState) {
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
 
-  let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
   function handlePagesReady ({ sender }) {
     if (!win || win.isDestroyed()) return
 
