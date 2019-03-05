@@ -28,7 +28,7 @@ function intentProtocol (request, respond) {
   // DEBUG
   // we have temporarily hardcoded the intents
   // -prf
-  if (urlp.name === 'view-profile') {
+  if (urlp.name === 'view-social-profile') {
     return respond({
       statusCode: 303,
       headers: {Location: `dat://beaker.social/#/profile/${encodeURIComponent(urlp.qs.url)}`},
