@@ -540,7 +540,7 @@ function examineLocationInput (v) {
     }
   }
   var q = v.split(' ').map(encodeURIComponent).join('+')
-  var vSearch = 'dat://search/?q=' + q
+  var vSearch = 'beaker://search/?q=' + q
   return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
 }
 

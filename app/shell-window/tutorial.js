@@ -35,7 +35,7 @@ export async function start () {
     await gotoSite('dat://feed')
     await showTutorialModal('populatedFeed')
 
-    await gotoSite('dat://search')
+    await gotoSite('beaker://search')
     await showTutorialModal('populatedSearch')
 
     await gotoSite('beaker://start')

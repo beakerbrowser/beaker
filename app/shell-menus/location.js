@@ -159,7 +159,7 @@ class LocationMenu extends LitElement {
     var gotoResult = { url: vWithProtocol, title: 'Go to ' + this.inputValue, isGuessingTheScheme }
     var searchResult = {
       search: this.inputValue,
-      title: 'DuckDuckGo Search',
+      title: 'Beaker Search',
       url: vSearch
     }
     if (isProbablyUrl) finalResults = [gotoResult, searchResult]

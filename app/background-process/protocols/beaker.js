@@ -15,6 +15,7 @@ import ICO from 'icojs'
 const START_APP_PATH = path.dirname(require.resolve('@beaker/start-app'))
 const BOOKMARKS_APP_PATH = path.dirname(require.resolve('@beaker/bookmarks-app'))
 const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app'))
+const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app'))
 
 // constants
 // =
@@ -237,6 +238,9 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library')) {
     return serveAppAsset(requestUrl, LIBRARY_APP_PATH, cb)
+  }
+  if (requestUrl === 'beaker://search' || requestUrl.startsWith('beaker://search')) {
+    return serveAppAsset(requestUrl, SEARCH_APP_PATH, cb)
   }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/history.html'))
