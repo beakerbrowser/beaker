@@ -294,18 +294,12 @@ export function ensureOneWindowExists () {
 }
 
 export function getUserSessionFor (wc) {
-  while (wc.hostWebContents) {
-    wc = wc.hostWebContents
-  }
-  var win = BrowserWindow.fromWebContents(wc)
+  var win = findWebContentsParentWindow(wc)
   return sessionWatcher.getState(win).userSession
 }
 
 export function setUserSessionFor (wc, userSession) {
-  while (wc.hostWebContents) {
-    wc = wc.hostWebContents
-  }
-  var win = BrowserWindow.fromWebContents(wc)
+  var win = findWebContentsParentWindow(wc)
   return sessionWatcher.updateState(win, {userSession})
 }
 
@@ -315,6 +309,20 @@ export function openProfileEditor (wc, sess) {
 
 // internal methods
 // =
+
+function findWebContentsParentWindow (wc) {
+  var win
+  var view = BrowserView.fromWebContents(wc)
+  if (view) {
+    win = viewManager.findContainingWindow(view)
+  } else {
+    win = BrowserWindow.fromWebContents(wc)
+    while (win.getParentWindow()) {
+      win = win.getParentWindow()
+    }
+  }
+  return win
+}
 
 function windowWithinBounds (windowState, bounds) {
   return windowState.x >= bounds.x &&
