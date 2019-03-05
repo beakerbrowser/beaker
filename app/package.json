@@ -8,6 +8,7 @@
   "copyright": "© 2019, Blue Link Labs",
   "main": "background-process.build.js",
   "dependencies": {
+    "@beaker/bookmarks-app": "^1.0.0",
     "@beaker/core": "beakerbrowser/beaker-core#blue",
     "@beaker/dat-archive-file-diff": "^1.0.0",
     "@beaker/library-app": "^1.0.0",

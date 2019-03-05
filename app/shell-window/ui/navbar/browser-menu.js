@@ -104,7 +104,7 @@ export class BrowserMenuNavbarBtn {
                   <span class="label">Library</span>
                 </div>
                 
-                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://bookmarks')}>
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
                   <i class="far fa-star"></i>
                   <span class="label">Bookmarks</span>
                 </div>
