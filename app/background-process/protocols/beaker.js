@@ -254,15 +254,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://downloads/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/downloads.build.js'))
   }
-  if (requestUrl === 'beaker://view-source/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/view-source.css'))
-  }
-  if (requestUrl === 'beaker://view-source/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/view-source.build.js'))
-  }
-  if (requestUrl === 'beaker://view-source/' || requestUrl.startsWith('beaker://view-source/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/view-source.html'))
-  }
   if (requestUrl === 'beaker://swarm-debugger/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/swarm-debugger.css'))
   }
