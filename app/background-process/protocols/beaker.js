@@ -1,6 +1,7 @@
 import {app, protocol} from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
+import * as mime from '@beaker/core/lib/mime'
 const {templates} = beakerCore.dbs
 const {archivesDebugPage, datDnsCachePage, datDnsCacheJS} = beakerCore.dat.debug
 import path from 'path'
@@ -10,6 +11,8 @@ import fs from 'fs'
 import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
+
+const START_APP_PATH = path.dirname(require.resolve('@beaker/start-app'))
 
 // constants
 // =
@@ -224,21 +227,8 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://assets/icon/gear.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/gear.svg'))
   }
-  if (requestUrl === 'beaker://start/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/start.html'))
-  }
-  if (requestUrl.startsWith('beaker://start/background-image-default')) {
-    let imgPath = requestUrl.slice('beaker://start/background-image-default'.length)
-    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/start${imgPath}`))
-  }
-  if (requestUrl === 'beaker://start/background-image') {
-    return cb(200, 'OK', 'image/png', path.join(app.getPath('userData'), 'start-background-image'))
-  }
-  if (requestUrl === 'beaker://start/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/start.css'))
-  }
-  if (requestUrl === 'beaker://start/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/start.build.js'))
+  if (requestUrl === 'beaker://start' || requestUrl.startsWith('beaker://start')) {
+    return serveAppAsset(requestUrl, START_APP_PATH, cb)
   }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/history.html'))
@@ -370,4 +360,28 @@ async function beakerProtocol (request, respond) {
   }
 
   return cb(404, 'Not Found')
+}
+
+// helper to serve requests to app packages
+async function serveAppAsset (requestUrl, dirPath, cb) {
+  // resolve the file path
+  const urlp = new URL(requestUrl)
+  var pathname = urlp.pathname
+  if (pathname === '' || pathname === '/') {
+    pathname = '/index.html'
+  }
+  var filepath = path.join(dirPath, pathname)
+
+  // make sure the file exists
+  try {
+    await fs.promises.stat(filepath)
+  } catch (e) {
+    return cb(404, 'Not Found')
+  }
+
+  // identify the mime type
+  var contentType = mime.identify(filepath)
+
+  // serve
+  cb(200, 'OK', contentType, filepath)
 }

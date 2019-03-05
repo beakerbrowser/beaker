@@ -30,5 +30,5 @@ export function defaultWindowState () {
 }
 
 export function defaultPageState () {
-  return [ 'dat://start' ]
+  return [ 'beaker://start' ]
 }

@@ -199,7 +199,7 @@ export class PageMenuNavbarBtn {
   //   const name = page.protocolInfo.hostname
   //   await beaker.apps.unbind(0, name)
   //   const datUrl = page.getViewedDatOrigin()
-  //   page.loadURL(datUrl || 'dat://start/')
+  //   page.loadURL(datUrl || 'beaker://start/')
   // }
 
   onClickViewSource () {

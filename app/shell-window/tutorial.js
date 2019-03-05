@@ -38,7 +38,7 @@ export async function start () {
     await gotoSite('dat://search')
     await showTutorialModal('populatedSearch')
 
-    await gotoSite('dat://start')
+    await gotoSite('beaker://start')
     await showTutorialModal('goodbye', 'End tour')
   } catch (e) {
     if (e.message === 'Canceled') {

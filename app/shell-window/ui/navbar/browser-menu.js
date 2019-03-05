@@ -191,7 +191,7 @@ export class BrowserMenuNavbarBtn {
   }
 
   onOpenNewTab () {
-    pages.setActive(pages.create('dat://start'))
+    pages.setActive(pages.create('beaker://start'))
   }
 
   async onOpenFile () {

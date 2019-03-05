@@ -59,7 +59,6 @@ var bundleApplication = function () {
     bundle(bpViewsDir.path('library-view.js'),         bpBuildDir.path('library-view.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('history.js'),              bpBuildDir.path('history.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('settings.js'),             bpBuildDir.path('settings.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('start.js'),                bpBuildDir.path('start.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('view-source.js'),          bpBuildDir.path('view-source.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('swarm-debugger.js'),       bpBuildDir.path('swarm-debugger.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('watchlist.js'),            bpBuildDir.path('watchlist.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
