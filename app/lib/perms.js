@@ -87,8 +87,6 @@ export default {
     experimental: false
   },
   dangerousAppControl: {
-    desc: 'Read and write your data, including bookmarks, archives, and files',
-    icon: 'flask',
     persist: true,
     idempotent: false,
     alwaysAllow: false,

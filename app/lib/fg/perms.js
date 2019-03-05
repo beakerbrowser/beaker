@@ -20,7 +20,8 @@ export const PERM_ICONS = {
   experimentalLibraryRequestRemove: 'fas fa-times',
   experimentalGlobalFetch: 'fas fa-download',
   experimentalDatPeers: 'fas fa-exchange-alt',
-  experimentalCapturePage: 'fas fa-camera'
+  experimentalCapturePage: 'fas fa-camera',
+  dangerousAppControl: 'fas flask',
 }
 
 export function renderPermDesc ({bg, url, permId, permParam, permOpts}) {
@@ -41,6 +42,7 @@ export function renderPermDesc ({bg, url, permId, permParam, permOpts}) {
     case 'openExternal': return `Open this URL in another program: ${shorten(url, 128)}`
     case 'experimentalLibrary': return 'Read and modify your Library'
     case 'experimentalDatPeers': return 'Send and receive messages with peers'
+    case 'dangerousAppControl': return 'Read and write your data, including bookmarks, archives, and files'
 
     case 'network':
       if (permParam === '*') return 'Access the network freely'
