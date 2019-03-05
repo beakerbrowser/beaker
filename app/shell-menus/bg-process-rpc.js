@@ -1,7 +1,7 @@
 import * as rpc from 'pauls-electron-rpc'
 import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
 import archivesManifest from '@beaker/core/web-apis/manifests/internal/archives'
-import bookmarksManifest from '@beaker/core/web-apis/manifests/internal/bookmarks'
+import bookmarksManifest from '@beaker/core/web-apis/manifests/external/bookmarks'
 import historyManifest from '@beaker/core/web-apis/manifests/internal/history'
 import sitedataManifest from '@beaker/core/web-apis/manifests/internal/sitedata'
 import downloadsManifest from '@beaker/core/web-apis/manifests/internal/downloads'
