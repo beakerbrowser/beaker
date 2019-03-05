@@ -4,6 +4,7 @@ import { ipcRenderer } from 'electron'
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './new-shell-window/bg-process-rpc'
 import { fromEventStream } from '@beaker/core/web-apis/fg/event-target'
+import './new-shell-window/win32'
 import './new-shell-window/tabs'
 import './new-shell-window/navbar'
 
@@ -100,6 +101,7 @@ class ShellWindowUI extends LitElement {
 
   render () {
     return html`
+      <shell-window-win32></shell-window-win32>
       <shell-window-tabs .tabs=${this.tabs}></shell-window-tabs>
       <shell-window-navbar
         .activeTabIndex=${this.activeTabIndex}

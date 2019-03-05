@@ -175,6 +175,10 @@ ${spinnerCSS}
   border-bottom: 1px solid var(--color-border);
 }
 
+.shell.win32 {
+  padding-right: 150px;
+}
+
 .tabs {
   display: flex;
   padding-left: 10px;
