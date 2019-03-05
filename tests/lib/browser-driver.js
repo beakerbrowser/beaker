@@ -130,9 +130,18 @@ class BrowserDriver {
 }
 
 class BrowserDriverTab {
-  constructor (driver, page) {
+  constructor (driver, page, subwindow = null) {
     this.driver = driver
     this.page = page
+    this.subwindow = subwindow
+  }
+
+  getPermPrompt () {
+    return new BrowserDriverTab(this.driver, this.page, 'perm-prompt')
+  }
+  
+  getModal () {
+    return new BrowserDriverTab(this.driver, this.page, 'modal')
   }
 
   async navigateTo (url) {
@@ -144,7 +153,10 @@ class BrowserDriverTab {
   }
 
   async executeJavascript (js) {
-    return this.driver.rpc('executeJavascriptOnPage', this.page, js)
+    var cmd = 'executeJavascriptOnPage'
+    if (this.subwindow === 'perm-prompt') cmd = 'executeJavascriptInPermPrompt'
+    if (this.subwindow === 'modal') cmd = 'executeJavascriptInModal'
+    return this.driver.rpc(cmd, this.page, js)
   }
 
   waitFor (js) {

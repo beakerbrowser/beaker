@@ -1,18 +1,32 @@
 import * as beakerCore from '@beaker/core'
-import {app, BrowserWindow, ipcMain, webContents, dialog} from 'electron'
-import {register as registerShortcut, unregister as unregisterShortcut} from '@beaker/electron-localshortcut'
+import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'electron'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
 import jetpack from 'fs-jetpack'
-import * as keybindings from './keybindings'
+import * as viewManager from './view-manager'
+import {
+  createGlobalKeybindingsHandler,
+  createKeybindingProtectionsHandler,
+  registerGlobalKeybinding,
+  unregisterGlobalKeybinding
+} from './keybindings'
 import path from 'path'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
-import {showShellModal} from './modals'
+import * as statusBarSubwindow from './subwindows/status-bar'
+import * as shellMenusSubwindow from './subwindows/shell-menus'
+import * as permPromptSubwindow from './subwindows/perm-prompt'
+import * as modalsSubwindow from './subwindows/modals'
 const settingsDb = beakerCore.dbs.settings
 
 const IS_WIN = process.platform === 'win32'
+const subwindows = {
+  statusBar: statusBarSubwindow,
+  menu: shellMenusSubwindow,
+  permPrompt: permPromptSubwindow,
+  modals: modalsSubwindow
+}
 
 // globals
 // =
@@ -45,47 +59,57 @@ export async function setup () {
   })
 
   openURL.setup()
+  viewManager.setup()
 
   app.on('before-quit', async e => {
     sessionWatcher.exit()
     sessionWatcher.stopRecording()
   })
 
-  app.on('web-contents-created', (e, wc) => {
-    if (wc.hostWebContents) {
-      // attach keybinding protections
-      const parentWindow = BrowserWindow.fromWebContents(wc.hostWebContents)
-      wc.on('before-input-event', keybindings.createBeforeInputEventHandler(parentWindow, wc))
+  app.on('web-contents-created', async (e, wc) => {
+    // await setup
+    await new Promise(resolve => wc.once('dom-ready', resolve))
 
-      // HACK
-      // add link-click handling to page devtools
-      // (it would be much better to update Electron to support this, rather than overriding like this)
-      // -prf
-      wc.on('devtools-opened', () => {
-        if (wc.devToolsWebContents) {
-          wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
-          wc.devToolsWebContents.on('new-window', (e, url) => {
-            wc.hostWebContents.send('command', 'file:new-tab', url)
-          })
-        }
-      })
-
-      // track focused devtools host
-      wc.on('devtools-focused', () => { focusedDevtoolsHost = wc })
-      wc.on('devtools-closed', unfocusDevtoolsHost)
-      wc.on('destroyed', unfocusDevtoolsHost)
-      function unfocusDevtoolsHost () {
-        if (focusedDevtoolsHost === wc) {
-          focusedDevtoolsHost = undefined
-        }
-      }
+    // handle shell-window webcontents
+    const window = BrowserWindow.fromWebContents(wc)
+    if (window) {
+      // attach global keybindings
+      wc.on('before-input-event', createGlobalKeybindingsHandler(window))
+      return
     }
-  })
 
-  ipcMain.on('shell-window:ready', ({ sender }) => {
-    if (sender.id === firstWindow) {
-      // if this is the first window opened (since app start or since all windows closing)
-      sender.send('command', 'load-pinned-tabs')
+    // handle tab webcontents
+    const parentView = BrowserView.fromWebContents(wc)
+    if (!parentView) return
+    const parentWindow = viewManager.findContainingWindow(parentView)
+    if (!parentWindow) return
+
+    // attach global keybindings
+    wc.on('before-input-event', createGlobalKeybindingsHandler(parentWindow))
+    // attach keybinding protections
+    wc.on('before-input-event', createKeybindingProtectionsHandler(parentWindow))
+
+    // HACK
+    // add link-click handling to page devtools
+    // (it would be much better to update Electron to support this, rather than overriding like this)
+    // -prf
+    wc.on('devtools-opened', () => {
+      if (wc.devToolsWebContents) {
+        wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
+        wc.devToolsWebContents.on('new-window', (e, url) => {
+          viewManager.create(parentWindow, url, {setActive: true})
+        })
+      }
+    })
+
+    // track focused devtools host
+    wc.on('devtools-focused', () => { focusedDevtoolsHost = wc })
+    wc.on('devtools-closed', unfocusDevtoolsHost)
+    wc.on('destroyed', unfocusDevtoolsHost)
+    function unfocusDevtoolsHost () {
+      if (focusedDevtoolsHost === wc) {
+        focusedDevtoolsHost = undefined
+      }
     }
   })
 
@@ -134,12 +158,12 @@ export function createShellWindow (windowState) {
     minWidth,
     minHeight,
     backgroundColor: '#ddd',
-    defaultEncoding: 'UTF-8',
     webPreferences: {
       preload: PRELOAD_PATH,
+      defaultEncoding: 'utf-8',
       nodeIntegration: false,
       contextIsolation: false,
-      webviewTag: true,
+      webviewTag: false,
       sandbox: true,
       webSecurity: false, // disable same-origin-policy in the shell window, webviews have it restored
       // enableRemoteModule: false, TODO would prefer this were true, but shell window needs this to get the webviews' webContents IDs -prf
@@ -156,24 +180,22 @@ export function createShellWindow (windowState) {
       app.emit('custom-ready-to-show')
     }
   })
+  for (let k in subwindows) {
+    subwindows[k].setup(win)
+  }
   downloads.registerListener(win)
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
 
-  let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
   function handlePagesReady ({ sender }) {
-    if (win && !win.isDestroyed() && sender === win.webContents) {
-      win.webContents.send('command', 'initialize', state.pages)
-      if (isTestDriverActive) {
-        // HACK
-        // For some reason, when the sandbox is enabled, executeJavaScript doesnt work in the browser window until the devtools are opened.
-        // Since it's kind of handy to have the devtools open anyway, open them automatically when tests are running.
-        // No, I am not above this.
-        // -prf
-        setTimeout(() => {
-          win.webContents.openDevTools()
-        }, 1e3)
+    if (!win || win.isDestroyed()) return
+
+    if (sender === win.webContents) {
+      if (win.webContents.id === firstWindow) {
+        // if this is the first window opened (since app start or since all windows closing)
+        viewManager.loadPins(win)
       }
+      viewManager.initializeFromSnapshot(win, state.pages)
     }
   }
 
@@ -183,21 +205,24 @@ export function createShellWindow (windowState) {
     firstWindow = win.webContents.id
   }
 
-  ipcMain.on('shell-window:pages-ready', handlePagesReady)
+  ipcMain.on('shell-window:ready', handlePagesReady)
   win.on('closed', () => {
-    ipcMain.removeListener('shell-window:pages-ready', handlePagesReady)
+    ipcMain.removeListener('shell-window:ready', handlePagesReady)
+    for (let k in subwindows) {
+      subwindows[k].destroy(win)
+    }
   })
 
   // register shortcuts
-  for (var i = 1; i <= 8; i++) { registerShortcut(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
-  registerShortcut(win, 'CmdOrCtrl+9', onLastTab(win))
-  registerShortcut(win, 'Ctrl+Tab', onNextTab(win))
-  registerShortcut(win, 'Ctrl+Shift+Tab', onPrevTab(win))
-  registerShortcut(win, 'Ctrl+PageUp', onPrevTab(win))
-  registerShortcut(win, 'Ctrl+PageDown', onNextTab(win))
-  registerShortcut(win, 'CmdOrCtrl+[', onGoBack(win))
-  registerShortcut(win, 'CmdOrCtrl+]', onGoForward(win))
-  registerShortcut(win, 'Alt+D', onFocusLocation(win))
+  for (var i = 1; i <= 8; i++) { registerGlobalKeybinding(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
+  registerGlobalKeybinding(win, 'CmdOrCtrl+9', onLastTab(win))
+  registerGlobalKeybinding(win, 'Ctrl+Tab', onNextTab(win))
+  registerGlobalKeybinding(win, 'Ctrl+Shift+Tab', onPrevTab(win))
+  registerGlobalKeybinding(win, 'Ctrl+PageUp', onPrevTab(win))
+  registerGlobalKeybinding(win, 'Ctrl+PageDown', onNextTab(win))
+  registerGlobalKeybinding(win, 'CmdOrCtrl+[', onGoBack(win))
+  registerGlobalKeybinding(win, 'CmdOrCtrl+]', onGoForward(win))
+  registerGlobalKeybinding(win, 'Alt+D', onFocusLocation(win))
 
   // register event handlers
   win.on('browser-backward', onGoBack(win))
@@ -208,12 +233,24 @@ export function createShellWindow (windowState) {
   win.on('blur', sendToWebContents('blur'))
   win.on('app-command', (e, cmd) => { onAppCommand(win, e, cmd) })
   win.on('enter-full-screen', e => {
-    registerShortcut(win, 'Esc', onEscape(win))
-    sendToWebContents('enter-full-screen')(e)
+    // TODO
+    // registerGlobalKeybinding(win, 'Esc', onEscape(win))
+    // sendToWebContents('enter-full-screen')(e)
   })
   win.on('leave-full-screen', e => {
-    unregisterShortcut(win, 'Esc')
-    sendToWebContents('leave-full-screen')(e)
+    // TODO
+    // unregisterGlobalKeybinding(win, 'Esc')
+    // sendToWebContents('leave-full-screen')(e)
+  })
+  win.on('resize', () => {
+    for (let k in subwindows) {
+      subwindows[k].reposition(win)
+    }
+  })
+  win.on('move', () => {
+    for (let k in subwindows) {
+      subwindows[k].reposition(win)
+    }
   })
   win.on('closed', onClosed(win))
 
@@ -354,31 +391,31 @@ function onClosed (win) {
 }
 
 function onTabSelect (win, tabIndex) {
-  return () => win.webContents.send('command', 'set-tab', tabIndex)
+  return () => viewManager.setActive(win, tabIndex)
 }
 
 function onLastTab (win) {
-  return () => win.webContents.send('command', 'window:last-tab')
+  return () => viewManager.setActive(win, viewManager.getAll(win).slice(-1)[0])
 }
 
 function onNextTab (win) {
-  return () => win.webContents.send('command', 'window:next-tab')
+  return () => viewManager.changeActiveBy(win, 1)
 }
 
 function onPrevTab (win) {
-  return () => win.webContents.send('command', 'window:prev-tab')
+  return () => viewManager.changeActiveBy(win, -1)
 }
 
 function onGoBack (win) {
-  return () => win.webContents.send('command', 'history:back')
+  return () => viewManager.getActive(win).webContents.goBack()
 }
 
 function onGoForward (win) {
-  return () => win.webContents.send('command', 'history:forward')
+  return () => viewManager.getActive(win).webContents.goForward()
 }
 
 function onFocusLocation (win) {
-  return () => win.webContents.send('command', 'file:open-location')
+  return () => win.webContents.send('command', 'focus-location')
 }
 
 function onAppCommand (win, e, cmd) {
@@ -386,10 +423,10 @@ function onAppCommand (win, e, cmd) {
   // see https://electronjs.org/docs/all#event-app-command-windows
   switch (cmd) {
     case 'browser-backward':
-      win.webContents.send('command', 'history:back')
+      viewManager.getActive(win).webContents.goBack()
       break
     case 'browser-forward':
-      win.webContents.send('command', 'history:forward')
+      viewManager.getActive(win).webContents.goForward()
       break
     default:
       break

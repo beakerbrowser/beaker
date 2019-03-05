@@ -15,8 +15,8 @@ const exec = require('util').promisify(require('child_process').exec)
 const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
-import {showShellModal, closeModal} from './ui/modals'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
+import * as modals from './ui/subwindows/modals'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
@@ -107,16 +107,11 @@ export async function setup () {
   //    response-lifecycle management in the main thread
   ipcMain.on('page-prompt-dialog', async (e, message, def) => {
     try {
-      var res = await showShellModal(e.sender, 'prompt', {message, default: def})
+      var res = await modals.create(e.sender, 'prompt', {message, default: def})
       e.returnValue = res && res.value ? res.value : false
     } catch (e) {
       e.returnValue = false
     }
-  })
-
-  // quick sync getters
-  ipcMain.on('get-json-renderer-script', e => {
-    e.returnValue = fs.readFileSync(path.join(app.getAppPath(), 'json-renderer.build.js'), 'utf8')
   })
 
   // HACK
@@ -162,13 +157,13 @@ export const WEBAPI = {
   showOpenDialog,
   showContextMenu,
   async showShellModal (name, opts) {
-    return showShellModal(this.sender, name, opts)
+    // return showShellModal(this.sender, name, opts) DEPRECATED, probaby safe to remove soon
   },
   openUrl: url => { openUrl(url) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
   doTest,
-  closeModal
+  closeModal: () => {} // DEPRECATED, probably safe to remove soon
 }
 
 export function fetchBody (url) {
@@ -577,12 +572,6 @@ async function doWebcontentsCmd (method, wcId, ...args) {
 }
 
 async function doTest (test) {
-  if (test === 'modal') {
-    return showShellModal(this.sender, 'example', {i: 5})
-  }
-  if (test === 'tutorial') {
-    return showShellModal(this.sender, 'tutorial')
-  }
 }
 
 // internal methods

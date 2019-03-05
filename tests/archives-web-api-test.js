@@ -32,7 +32,7 @@ test.before(async t => {
   testStaticDatURL = 'dat://' + testStaticDat.archive.key.toString('hex')
 
   // create a owned archive
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     DatArchive.create({title: 'Test Archive', description: 'Is temporary', type: ['foo', 'bar'], prompt: false})
   `)
   createdDatURL = res.url
@@ -47,7 +47,7 @@ test.after.always('cleanup', async t => {
 
 test('archives.add, archives.remove', async t => {
   // register event listeners
-  await app.executeJavascript(`
+  await app.getTab(0).executeJavascript(`
     window.stats = {
       adds: 0,
       removes: 0
@@ -61,27 +61,27 @@ test('archives.add, archives.remove', async t => {
   `)
 
   // by url
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.add("${createdDatURL}")
   `)
   t.deepEqual(res.isSaved, true)
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.remove("${createdDatURL}", {noPrompt: true})
   `)
   t.deepEqual(res.isSaved, false)
 
   // by key
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.add("${createdDatKey}")
   `)
   t.deepEqual(res.isSaved, true)
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.remove("${createdDatKey}", {noPrompt: true})
   `)
   t.deepEqual(res.isSaved, false)
 
   // check stats
-  var stats = await app.executeJavascript(`window.stats`)
+  var stats = await app.getTab(0).executeJavascript(`window.stats`)
   t.deepEqual(stats, {
     adds: 2,
     removes: 2
@@ -90,29 +90,29 @@ test('archives.add, archives.remove', async t => {
 
 test('archives.setUserSettings', async t => {
   // by url
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.setUserSettings("${createdDatURL}", {hidden: false})
   `)
   t.deepEqual(res.hidden, false)
 })
 
 test('archives.list', async t => {
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({isSaved: true})
   `)
 
   // add the owned and unowned dats
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.add("${createdDatURL}")
   `)
   t.deepEqual(res.isSaved, true)
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.add("${testStaticDatURL}")
   `)
   t.deepEqual(res.isSaved, true)
 
   // list all
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({isSaved: true})
   `)
   var items = res
@@ -124,28 +124,28 @@ test('archives.list', async t => {
   t.deepEqual(items.filter(i => i.isOwner).length, 1)
 
   // list owned
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({ isOwner: true })
   `)
   t.deepEqual(res.length, 1)
 
   // list unowned
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({ isOwner: false })
   `)
   res = res.filter(r => !r.title.toLowerCase().includes('beaker')) // sometimes the MOTD will load the beakerbrowser dat
   t.deepEqual(res.length, 1)
 
   // list by type
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({ type: 'foo' })
   `)
   t.deepEqual(res.length, 1)
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({ type: 'bar' })
   `)
   t.deepEqual(res.length, 1)
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({ type: 'baz' })
   `)
   t.deepEqual(res.length, 0)
@@ -154,19 +154,19 @@ test('archives.list', async t => {
 
 test('hidden archives', async t => {
   // create a hidden archive
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     DatArchive.create({title: 'Test Archive (draft 1)', description: 'Is temporary', type: ['foo', 'bar'], hidden: true, prompt: false})
   `)
   draft1URL = res.url
 
   // fork a hidden archive
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     DatArchive.fork("${createdDatURL}", {hidden: true, prompt: false})
   `)
   draft2URL = res.url
 
   // list doesn't show hidden by default
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({isSaved: true})
   `)
   var items = res
@@ -174,7 +174,7 @@ test('hidden archives', async t => {
   t.deepEqual(items.map(item => item.url).sort(), [createdDatURL, testStaticDatURL].sort())
 
   // list shows hidden when specified
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.beaker.archives.list({isSaved: true, showHidden: true})
   `)
   var items = res
@@ -184,12 +184,12 @@ test('hidden archives', async t => {
 
 test.skip('draft APIs', async t => {
   // add draft 1
-  await app.executeJavascript(`
+  await app.getTab(0).executeJavascript(`
     beaker.archives.addDraft("${createdDatURL}", "${draft1URL}")
   `)
 
   // list
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     beaker.archives.listDrafts("${createdDatURL}")
   `)
   t.is(res.length, 1)
@@ -198,12 +198,12 @@ test.skip('draft APIs', async t => {
   t.is(res[0].isActiveDraft, false)
 
   // add draft 2
-  await app.executeJavascript(`
+  await app.getTab(0).executeJavascript(`
     beaker.archives.addDraft("${createdDatURL}", "${draft2URL}")
   `)
 
   // list
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     beaker.archives.listDrafts("${createdDatURL}")
   `)
   t.is(res.length, 2)
@@ -215,12 +215,12 @@ test.skip('draft APIs', async t => {
   t.is(res[1].isActiveDraft, false)
 
   // remove draft 2
-  await app.executeJavascript(`
+  await app.getTab(0).executeJavascript(`
     beaker.archives.removeDraft("${createdDatURL}", "${draft2URL}")
   `)
 
   // list
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     beaker.archives.listDrafts("${createdDatURL}")
   `)
   t.is(res.length, 1)
@@ -229,17 +229,17 @@ test.skip('draft APIs', async t => {
   t.is(res[0].isActiveDraft, false)
 
   // readd draft 2
-  await app.executeJavascript(`
+  await app.getTab(0).executeJavascript(`
     beaker.archives.addDraft("${createdDatURL}", "${draft2URL}")
   `)
 
   // set draft 1 active
-  await app.executeJavascript(`
+  await app.getTab(0).executeJavascript(`
     beaker.archives.setActiveDraft("${createdDatURL}", "${draft1URL}")
   `)
 
   // read active draft state
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     beaker.archives.listDrafts("${createdDatURL}")
   `)
   t.is(res.length, 2)
@@ -251,12 +251,12 @@ test.skip('draft APIs', async t => {
   t.is(res[1].isActiveDraft, false)
 
   // set draft 2 active
-  await app.executeJavascript(`
+  await app.getTab(0).executeJavascript(`
     beaker.archives.setActiveDraft("${createdDatURL}", "${draft2URL}")
   `)
 
   // read active draft state
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     beaker.archives.listDrafts("${createdDatURL}")
   `)
   t.is(res.length, 2)
@@ -268,17 +268,17 @@ test.skip('draft APIs', async t => {
   t.is(res[1].isActiveDraft, true)
 
   // dont allow delete on the active draft
-  await t.throws(app.executeJavascript(`
+  await t.throws(app.getTab(0).executeJavascript(`
     beaker.archives.removeDraft("${createdDatURL}", "${draft2URL}")
   `))
 
   // set master active
-  await app.executeJavascript(`
+  await app.getTab(0).executeJavascript(`
     beaker.archives.setActiveDraft("${createdDatURL}", "${createdDatURL}")
   `)
 
   // read active draft state
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     beaker.archives.listDrafts("${createdDatURL}")
   `)
   t.is(res.length, 2)
@@ -292,7 +292,7 @@ test.skip('draft APIs', async t => {
 
 test('library "updated" event', async t => {
   // register event listener
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     window.newTitle = false
     window.beaker.archives.addEventListener('updated', event => {
       window.newTitle = event.details.title
@@ -300,13 +300,13 @@ test('library "updated" event', async t => {
   `)
 
   // update manifest
-  var res = await app.executeJavascript(`
+  var res = await app.getTab(0).executeJavascript(`
     (new DatArchive("${createdDatURL}")).configure({ title: 'The New Title' })
   `)
 
   // check result
-  await app.waitFor(`!!window.newTitle`)
-  var res = await app.executeJavascript(`window.newTitle`)
+  await app.getTab(0).waitFor(`!!window.newTitle`)
+  var res = await app.getTab(0).executeJavascript(`window.newTitle`)
   t.deepEqual(res, 'The New Title')
 })
 

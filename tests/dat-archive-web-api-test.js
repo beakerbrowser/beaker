@@ -2,7 +2,6 @@ import test from 'ava'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
-import tempy from 'tempy'
 import electron from '../node_modules/electron'
 
 import * as browserdriver from './lib/browser-driver'
@@ -19,18 +18,18 @@ const app = browserdriver.start({
     beaker_dat_quota_default_bytes_allowed: '90kb'
   }
 })
-var mainTab
+var startPageTab
+var datRunnerTab
 var testStaticDat, testStaticDatURL
 var testRunnerDat, testRunnerDatURL
 var createdDatURL // url of the dat which is created by testRunnerDat, which gives it write access
 var createdDatKey
 var beakerPng = fs.readFileSync(__dirname + '/scaffold/test-static-dat/beaker.png')
-var tmpDirPath1 = tempy.directory()
 
 test.before(async t => {
   console.log('starting dat-archive-web-api-test')
   await app.isReady
-  mainTab = app.getTab(0)
+  startPageTab = app.getTab(0)
 
   // share the test static dat
   testStaticDat = await shareDat(__dirname + '/scaffold/test-static-dat')
@@ -41,13 +40,14 @@ test.before(async t => {
   testRunnerDatURL = 'dat://' + testRunnerDat.archive.key.toString('hex') + '/'
 
   // save the test-runner dat to the library
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     beaker.archives.add("${testRunnerDatURL}")
   `)
   t.deepEqual(res.isSaved, true)
 
   // open the test-runner dat
-  await app.getTab(0).navigateTo(testRunnerDatURL)
+  datRunnerTab = await app.newTab()
+  await datRunnerTab.navigateTo(testRunnerDatURL)
 })
 test.after.always('cleanup', async t => {
   await app.stop()
@@ -56,7 +56,7 @@ test.after.always('cleanup', async t => {
 // some custom wrappers around async calls
 // (the remove execution can be a little janky, these wrappers solve that)
 function stat (url, path, opts) {
-  return mainTab.executeJavascript(`
+  return datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${url}")
     archive.stat("${path}", ${JSON.stringify(opts)}).then(v => {
       v.isFile = v.isFile()
@@ -66,13 +66,13 @@ function stat (url, path, opts) {
   `)
 }
 function readdir (url, path, opts) {
-  return mainTab.executeJavascript(`
+  return datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${url}")
     archive.readdir("${path}", ${JSON.stringify(opts)})
   `)
 }
 function readFile (url, path, opts) {
-  return mainTab.executeJavascript(`
+  return datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${url}")
     archive.readFile("${path}", ${JSON.stringify(opts)}).then(v => {
       if (v instanceof ArrayBuffer) {
@@ -83,7 +83,7 @@ function readFile (url, path, opts) {
   `)
 }
 async function writeFile (url, path, content, opts, where) {
-  where = where || mainTab
+  where = where || datRunnerTab
   if (opts === 'binary' || opts.encoding === 'binary') {
     content = content.toString('base64')
     return where.executeJavascript(`
@@ -211,7 +211,7 @@ test('archive.stat', async t => {
 
 test('dat:// HEAD and GET', async t => {
   // GET
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     window.fetch("${testStaticDatURL + 'hello.txt'}").then(res => {
       return res.text().then(data => ({data, headers: Array.from(res.headers.entries())}))
     })
@@ -220,7 +220,7 @@ test('dat:// HEAD and GET', async t => {
   t.deepEqual((res.headers.filter(h => h[0] === 'content-type'))[0][1], 'text/plain; charset=utf8')
 
   // HEAD
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     window.fetch("${testStaticDatURL + 'hello.txt'}", {method: 'HEAD'}).then(res => {
       return res.text().then(data => ({data, headers: Array.from(res.headers.entries())}))
     })
@@ -232,7 +232,7 @@ test('dat:// HEAD and GET', async t => {
 test('DatArchive.load', async t => {
   // good url
 
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     DatArchive.load("${testStaticDatURL}").then(a => a.url)
   `)
   t.deepEqual(res, testStaticDatURL.slice(0, -1))
@@ -240,7 +240,7 @@ test('DatArchive.load', async t => {
   // bad url
 
   try {
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       DatArchive.load('dat://badurl')
     `)
     t.fail('Failed to throw')
@@ -251,7 +251,7 @@ test('DatArchive.load', async t => {
 
 test('DatArchive.create prompt=false', async t => {
   // start the permission prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.create({ title: 'The Title', description: 'The Description', links: {foo: 'https://bar.com'}, prompt: false }).then(
@@ -261,18 +261,18 @@ test('DatArchive.create prompt=false', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   var datUrl = res.url
   t.truthy(datUrl.startsWith('dat://'))
   var datKey = datUrl.slice('dat://'.length)
 
   // check the dat.json
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${datUrl}")
     archive.readFile('dat.json')
   `)
@@ -287,7 +287,7 @@ test('DatArchive.create prompt=false', async t => {
   t.deepEqual(manifest.links, {foo: [{href: 'https://bar.com'}]})
 
   // check the settings
-  var details = await app.executeJavascript(`
+  var details = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${datKey}")
     archive.getInfo()
   `)
@@ -296,7 +296,7 @@ test('DatArchive.create prompt=false', async t => {
 
 test('DatArchive.create prompt=true rejection', async t => {
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
@@ -305,19 +305,19 @@ test('DatArchive.create prompt=true rejection', async t => {
     )
   `)
 
-  // reject the prompt
-  await app.waitForElement('.cancel')
-  await app.click('.cancel')
+  // reject the modal
+  await datRunnerTab.getModal().waitFor('window.isModalActive')
+  await datRunnerTab.getModal().executeJavascript('window.createArchiveClickCancel()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.deepEqual(res.name, 'UserDeniedError')
 })
 
 test('DatArchive.create prompt=true', async t => {
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.create({ title: 'The Title', description: 'The Description', prompt: true }).then(
@@ -326,19 +326,19 @@ test('DatArchive.create prompt=true', async t => {
     )
   `)
 
-  // accept the prompt
-  await app.waitForElement('button[type="submit"]')
-  await app.click('button[type="submit"]')
+  // accept the modal
+  await datRunnerTab.getModal().waitFor('window.isModalActive')
+  await datRunnerTab.getModal().executeJavascript('window.createArchiveClickSubmit()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   createdDatURL = res.url
   t.truthy(createdDatURL.startsWith('dat://'))
   createdDatKey = createdDatURL.slice('dat://'.length)
 
   // check the dat.json
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.readFile('dat.json')
   `)
@@ -352,7 +352,7 @@ test('DatArchive.create prompt=true', async t => {
   t.deepEqual(manifest.description, 'The Description')
 
   // check the settings
-  var details = await app.executeJavascript(`
+  var details = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${createdDatKey}")
     archive.getInfo()
   `)
@@ -361,18 +361,18 @@ test('DatArchive.create prompt=true', async t => {
 
 test('DatArchive.fork prompt=false', async t => {
   // create a dat
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
   `)
   var datUrl = res.url
   t.truthy(datUrl.startsWith('dat://'))
-  await app.executeJavascript(`
+  await startPageTab.executeJavascript(`
     var archive = new DatArchive("${datUrl}")
     archive.writeFile('foo.txt', 'bar', 'utf8')
   `)
 
   // start the permission prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.fork("${datUrl}", { description: 'The Description 2', prompt: false }).then(
@@ -382,24 +382,24 @@ test('DatArchive.fork prompt=false', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   var forkedDatURL = res.url
   t.truthy(forkedDatURL.startsWith('dat://'))
 
   // check the content
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${forkedDatURL}")
     archive.readFile('foo.txt')
   `)
   t.deepEqual(res, 'bar')
 
   // check the dat.json
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${forkedDatURL}")
     archive.readFile('dat.json')
   `)
@@ -415,18 +415,18 @@ test('DatArchive.fork prompt=false', async t => {
 
 test('DatArchive.fork prompt=true', async t => {
   // create a dat
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
   `)
   var datUrl = res.url
   t.truthy(datUrl.startsWith('dat://'))
-  await app.executeJavascript(`
+  await startPageTab.executeJavascript(`
     var archive = new DatArchive("${datUrl}")
     archive.writeFile('foo.txt', 'bar', 'utf8')
   `)
 
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.fork("${datUrl}", { description: 'The Description 2', prompt: true }).then(
@@ -435,25 +435,25 @@ test('DatArchive.fork prompt=true', async t => {
     )
   `)
 
-  // accept the prompt
-  await app.waitForElement('button[type="submit"]')
-  await app.click('button[type="submit"]')
+  // accept the modal
+  await datRunnerTab.getModal().waitFor('window.isModalActive')
+  await datRunnerTab.getModal().executeJavascript('window.forkArchiveClickSubmit()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   var forkedDatURL = res.url
   t.truthy(forkedDatURL.startsWith('dat://'))
 
   // check the content
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${forkedDatURL}")
     archive.readFile('foo.txt')
   `)
   t.deepEqual(res, 'bar')
 
   // check the dat.json
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${forkedDatURL}")
     archive.readFile('dat.json')
   `)
@@ -471,7 +471,7 @@ test('DatArchive.unlink', async t => {
 
   // create a dat
 
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({ title: 'The Title', description: 'The Description', prompt: false })
   `)
   var datUrl = res.url
@@ -479,7 +479,7 @@ test('DatArchive.unlink', async t => {
   var datKey = datUrl.slice('dat://'.length)
 
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = 'unset'
     DatArchive.unlink("${datUrl}").then(
@@ -489,16 +489,16 @@ test('DatArchive.unlink', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // fetch & test the res
-  await mainTab.waitFor(`(window.res !== 'unset')`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`(window.res !== 'unset')`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.falsy(res)
 
   // check the settings
-  var details = await app.executeJavascript(`
+  var details = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${datKey}")
     archive.getInfo()
   `)
@@ -515,7 +515,7 @@ test('DatArchive.unlink', async t => {
 
 test('DatArchive.selectArchive rejection', async t => {
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.selectArchive({ message: 'Help message', buttonLabel: 'button' }).then(
@@ -524,19 +524,19 @@ test('DatArchive.selectArchive rejection', async t => {
     )
   `)
 
-  // reject the prompt
-  await app.waitForElement('.cancel')
-  await app.click('.cancel')
+  // reject the modal
+  await datRunnerTab.getModal().waitFor('window.isModalActive')
+  await datRunnerTab.getModal().executeJavascript('window.selectArchiveClickCancel()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.deepEqual(res.name, 'UserDeniedError')
 })
 
 test('DatArchive.selectArchive: create', async t => {
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.selectArchive({ message: 'Custom title', buttonLabel: 'button' }).then(
@@ -546,24 +546,23 @@ test('DatArchive.selectArchive: create', async t => {
   `)
 
   // open the create archive view
-  await app.waitForElement('.btn[data-content="newArchive"]')
-  await app.click('.btn[data-content="newArchive"]')
+  await datRunnerTab.getModal().waitFor('window.isModalActive')
+  await datRunnerTab.getModal().executeJavascript('window.selectArchiveClickNewArchive()')
 
   // input a title for a now archive
-  await app.waitForElement('input[name="title"]')
-  await app.setValue('input[name="title"]', 'The Title')
+  await datRunnerTab.getModal().executeJavascript('window.selectArchiveSetValueTitle("The Title")')
 
   // accept the prompt
-  await app.click('button[type="submit"]')
+  await datRunnerTab.getModal().executeJavascript('window.selectArchiveClickSubmit()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   var newArchiveURL = res
   t.truthy(res.startsWith('dat://'))
 
   // check the dat.json
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${newArchiveURL}")
     archive.readFile('dat.json')
   `)
@@ -576,7 +575,7 @@ test('DatArchive.selectArchive: create', async t => {
   t.deepEqual(manifest.title, 'The Title')
 
   // check the settings
-  var details = await app.executeJavascript(`
+  var details = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newArchiveURL}")
     archive.getInfo()
   `)
@@ -585,7 +584,7 @@ test('DatArchive.selectArchive: create', async t => {
 
 test('DatArchive.selectArchive: select', async t => {
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.selectArchive().then(
@@ -596,22 +595,22 @@ test('DatArchive.selectArchive: select', async t => {
 
   // click one of the archives
   var testRunnerDatKey = testRunnerDat.archive.key.toString('hex')
-  await app.waitForElement(`li[data-key="${testRunnerDatKey}"]`)
-  await app.click(`li[data-key="${testRunnerDatKey}"]`)
+  await datRunnerTab.getModal().waitFor('window.isModalActive')
+  await datRunnerTab.getModal().executeJavascript(`window.selectArchiveClickItem("${testRunnerDatKey}")`)
 
   // accept the prompt
-  await app.click('button[type="submit"]')
+  await datRunnerTab.getModal().executeJavascript(`window.selectArchiveClickSubmit()`)
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.truthy(res.startsWith('dat://'))
   t.is(res, testRunnerDatURL.slice(0, -1))
 })
 
 test('archive.configure', async t => {
   // write the manifest
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.configure({
       title: 'The Changed Title',
@@ -625,7 +624,7 @@ test('archive.configure', async t => {
   t.falsy(res)
 
   // read it back
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.getInfo()
   `)
@@ -639,7 +638,7 @@ test('archive.configure', async t => {
 
 test('offline archives', async t => {
   // create a dat (prompt=false)
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({ networked: false, prompt: false })
   `)
   var datUrl = res.url
@@ -647,28 +646,28 @@ test('offline archives', async t => {
   var datKey = datUrl.slice('dat://'.length)
 
   // check the settings
-  var details = await app.executeJavascript(`
+  var details = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${datKey}")
     archive.getInfo()
   `)
   t.deepEqual(details.userSettings.networked, false)
 
   // change the settings
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${datUrl}")
     archive.configure({networked: true})
   `)
   t.falsy(res)
 
   // check the settings
-  var details = await app.executeJavascript(`
+  var details = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${datKey}")
     archive.getInfo()
   `)
   t.deepEqual(details.userSettings.networked, true)
 
   // fork a dat (prompt=false)
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.fork("${datUrl}", { networked: false, prompt: false })
   `)
   var datUrl3 = res.url
@@ -676,7 +675,7 @@ test('offline archives', async t => {
   var datKey3 = datUrl3.slice('dat://'.length)
 
   // check the settings
-  var details = await app.executeJavascript(`
+  var details = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${datKey3}")
     archive.getInfo()
   `)
@@ -708,7 +707,7 @@ test('archive.writeFile', async t => {
 test('archive.writeFile does not write to nonexistent directories', async t => {
   try {
     // write to a subdir
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.writeFile('subdir/hello.txt', 'hello world', 'utf8')
     `)
@@ -721,7 +720,7 @@ test('archive.writeFile does not write to nonexistent directories', async t => {
 test('archive.writeFile gives an error for malformed names', async t => {
   try {
     // write to the root dir
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.writeFile('/', 'hello world', 'utf8')
     `)
@@ -732,7 +731,7 @@ test('archive.writeFile gives an error for malformed names', async t => {
 
   try {
     // write to a subdir
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.writeFile('/subdir/hello.txt/', 'hello world', 'utf8')
     `)
@@ -743,7 +742,7 @@ test('archive.writeFile gives an error for malformed names', async t => {
 
   try {
     // write with a bad char
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.writeFile('hello#.txt', 'hello world', 'utf8')
     `)
@@ -756,7 +755,7 @@ test('archive.writeFile gives an error for malformed names', async t => {
 test('archive.writeFile protects the manifest', async t => {
   try {
     // write to the manifest
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.writeFile('dat.json', 'hello world', 'utf8')
     `)
@@ -768,7 +767,7 @@ test('archive.writeFile protects the manifest', async t => {
 
 test('archive.mkdir', async t => {
   // create the directory
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.mkdir('subdir')
   `)
@@ -781,14 +780,14 @@ test('archive.mkdir', async t => {
 
 test('archive.writeFile writes to subdirectories', async t => {
   // write to a subdir
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.writeFile('subdir/hello.txt', 'hello world', 'utf8')
   `)
   t.falsy(res)
 
   // read it back
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.readFile('subdir/hello.txt', 'utf8')
   `)
@@ -798,7 +797,7 @@ test('archive.writeFile writes to subdirectories', async t => {
 test('archive.writeFile doesnt overwrite folders', async t => {
   try {
     // write to the subdir
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.writeFile('/subdir', 'hello world', 'utf8')
     `)
@@ -811,7 +810,7 @@ test('archive.writeFile doesnt overwrite folders', async t => {
 test('archive.mkdir doesnt overwrite files or folders', async t => {
   try {
     // write to the subdir
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.mkdir('/')
     `)
@@ -822,7 +821,7 @@ test('archive.mkdir doesnt overwrite files or folders', async t => {
 
   try {
     // write to the subdir
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.mkdir('/subdir')
     `)
@@ -833,7 +832,7 @@ test('archive.mkdir doesnt overwrite files or folders', async t => {
 
   try {
     // write to the file
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.mkdir('/hello.txt')
     `)
@@ -846,7 +845,7 @@ test('archive.mkdir doesnt overwrite files or folders', async t => {
 test('archive.mkdir gives an error for malformed names', async t => {
   try {
     // write with a bad char
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.mkdir('hello#world')
     `)
@@ -859,7 +858,7 @@ test('archive.mkdir gives an error for malformed names', async t => {
 test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
   try {
     // write a too-big file
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.writeFile('/denythis.txt', 'x'.repeat(1024 * 100), 'utf8')
     `)
@@ -871,20 +870,20 @@ test('archive.writeFile doesnt allow writes that exceed the quota', async t => {
 
 test('versioned reads and writes', async t => {
   // create a fresh dat
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({title: 'Another Test Dat', prompt: false})
   `)
   t.falsy(res.name, 'create didnt fail')
   var newTestDatURL = res.url
 
   // do some writes
-  await writeFile(newTestDatURL, '/one.txt', 'a', 'utf8', app)
-  await writeFile(newTestDatURL, '/two.txt', 'b', 'utf8', app)
+  await writeFile(newTestDatURL, '/one.txt', 'a', 'utf8', startPageTab)
+  await writeFile(newTestDatURL, '/two.txt', 'b', 'utf8', startPageTab)
   await sleep(1e3) // have to make sure 1s passes for the change to be detected
-  await writeFile(newTestDatURL, '/one.txt', 'c', 'utf8', app)
+  await writeFile(newTestDatURL, '/one.txt', 'c', 'utf8', startPageTab)
 
   // check history
-  var history = await app.executeJavascript(`
+  var history = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     archive.history()
   `)
@@ -892,23 +891,23 @@ test('versioned reads and writes', async t => {
     console.log('Weird history', history)
   }
   t.deepEqual(history.length, 5)
-  var history2 = await app.executeJavascript(`
+  var history2 = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     archive.history({reverse: true})
   `)
   t.deepEqual(history2[0].version, history[4].version)
-  var history2 = await app.executeJavascript(`
+  var history2 = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     archive.history({start: 0, end: 5, reverse: true})
   `)
   t.deepEqual(history2[0].version, history[4].version)
-  var history2 = await app.executeJavascript(`
+  var history2 = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     archive.history({start: 2, end: 4})
   `)
   t.deepEqual(history2[0].version, history[1].version)
   t.deepEqual(history2[1].version, history[2].version)
-  var history2 = await app.executeJavascript(`
+  var history2 = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     archive.history({start: 2, end: 4, reverse: true})
   `)
@@ -926,7 +925,7 @@ test('versioned reads and writes', async t => {
   t.truthy(statRev2.offset < statRev4.offset)
 
   // try again with checkout()
-  var reads = await mainTab.executeJavascript(`
+  var reads = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     Promise.all([
       archive.checkout(1).readdir('/'),
@@ -948,14 +947,14 @@ test('versioned reads and writes', async t => {
   // dont allow writes to old versions
   // writeFile
   try {
-    var res = await writeFile(newTestDatURL + '+1', '/three.txt', 'foo', 'utf8', app)
+    var res = await writeFile(newTestDatURL + '+1', '/three.txt', 'foo', 'utf8', startPageTab)
     t.fail('Failed to throw')
   } catch (e) {
     t.deepEqual(e.name, 'ArchiveNotWritableError')
   }
   // mkdir
   try {
-    var res = await app.executeJavascript(`
+    var res = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL + '+1'}")
       archive.mkdir('/foo')
     `)
@@ -965,7 +964,7 @@ test('versioned reads and writes', async t => {
   }
   // unlink
   try {
-    var res = await app.executeJavascript(`
+    var res = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL + '+1'}")
       archive.unlink('/one.txt')
     `)
@@ -975,7 +974,7 @@ test('versioned reads and writes', async t => {
   }
   // rmdir
   try {
-    var res = await app.executeJavascript(`
+    var res = await startPageTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL + '+1'}")
       archive.rmdir('/there-is-no-dir-but-it-doesnt-matter')
     `)
@@ -987,7 +986,7 @@ test('versioned reads and writes', async t => {
 
 test('archive.copy', async t => {
   // file 1
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.copy('/hello.txt', '/hello2.txt')
   `)
@@ -998,7 +997,7 @@ test('archive.copy', async t => {
   )
 
   // file 2
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.copy('/subdir/hello.txt', '/subdir/hello2.txt')
   `)
@@ -1009,7 +1008,7 @@ test('archive.copy', async t => {
   )
 
   // subdir
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.copy('/subdir', '/subdir2')
   `)
@@ -1026,7 +1025,7 @@ test('archive.copy', async t => {
 
 test('archive.rename', async t => {
   // file 1
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.rename('/hello2.txt', '/hello-two.txt')
   `)
@@ -1037,7 +1036,7 @@ test('archive.rename', async t => {
   )
 
   // file 2
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.rename('/subdir2/hello2.txt', '/subdir2/hello-two.txt')
   `)
@@ -1048,7 +1047,7 @@ test('archive.rename', async t => {
   )
 
   // subdir
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.rename('/subdir2', '/subdir-two')
   `)
@@ -1065,7 +1064,7 @@ test('archive.rename', async t => {
 
 test('archive.copy doesnt allow writes that exceed the quota', async t => {
   // start the permission prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.create({title: 'Too Big Dat', prompt: false}).then(
@@ -1075,19 +1074,19 @@ test('archive.copy doesnt allow writes that exceed the quota', async t => {
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.falsy(res.name, 'create didnt fail')
   var newTestDatURL = res.url
 
   let listing = await readdir(newTestDatURL, '/', {stat: true, recursive: true})
 
   // write an acceptable (but big) file
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     archive.writeFile('/bigfile.txt', 'x'.repeat(1024 * 70), 'utf8')
   `)
@@ -1095,7 +1094,7 @@ test('archive.copy doesnt allow writes that exceed the quota', async t => {
 
   // try to copy the file
   try {
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${newTestDatURL}")
       archive.copy('/bigfile.txt', '/bigfile2.txt')
     `)
@@ -1108,7 +1107,7 @@ test('archive.copy doesnt allow writes that exceed the quota', async t => {
 test('archive.rename protects the manifest', async t => {
   try {
     // rename the manifest to something else
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.rename('dat.json', 'dat2.json')
     `)
@@ -1119,7 +1118,7 @@ test('archive.rename protects the manifest', async t => {
 
   try {
     // rename over the manifest
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.rename('hello.txt', 'dat.json')
     `)
@@ -1132,7 +1131,7 @@ test('archive.rename protects the manifest', async t => {
 test('archive.copy protects the manifest', async t => {
   try {
     // copy over the manifest
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${createdDatURL}")
       archive.rename('hello.txt', 'dat.json')
     `)
@@ -1145,7 +1144,7 @@ test('archive.copy protects the manifest', async t => {
 test('Fail to write to unowned archives', async t => {
   try {
     // writeFile
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${testStaticDatURL}")
       archive.writeFile('/denythis.txt', 'hello world', 'utf8')
     `)
@@ -1156,7 +1155,7 @@ test('Fail to write to unowned archives', async t => {
 
   try {
     // mkdir
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${testStaticDatURL}")
       archive.mkdir('/denythis')
     `)
@@ -1167,7 +1166,7 @@ test('Fail to write to unowned archives', async t => {
 
   try {
     // rename
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${testStaticDatURL}")
       archive.rename('hello.txt', 'denythis.txt')
     `)
@@ -1178,7 +1177,7 @@ test('Fail to write to unowned archives', async t => {
 
   try {
     // copy
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${testStaticDatURL}")
       archive.copy('hello.txt', 'denythis.txt')
     `)
@@ -1193,7 +1192,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
   // create the target dat internally, so that it's writable but not owned by the test runner dat
   // =
 
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({title: 'Another Test Dat', prompt: false})
   `)
   t.falsy(res.name, 'create didnt fail')
@@ -1203,7 +1202,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
   //
 
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     var archive = new DatArchive("${newTestDatURL}")
@@ -1214,19 +1213,19 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
   `)
 
   // reject the prompt
-  await app.waitForElement('.prompt-reject')
-  await app.click('.prompt-reject')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickReject()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.deepEqual(res.name, 'UserDeniedError', 'write file denied')
 
   // mkdir deny
   //
 
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     var archive = new DatArchive("${newTestDatURL}")
@@ -1237,19 +1236,19 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
   `)
 
   // accept the prompt
-  await app.waitForElement('.prompt-reject')
-  await app.click('.prompt-reject')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickReject()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.deepEqual(res.name, 'UserDeniedError', 'create directory denied')
 
   // writeFile accept
   // =
 
   // start the prompt
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     var archive = new DatArchive("${newTestDatURL}")
@@ -1260,17 +1259,17 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
   `)
 
   // accept the permission prompt
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
 
   // fetch & test the res
-  var res = await mainTab.executeJavascript(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.falsy(res, 'write file accepted')
 
   // writeFile accept persisted perm
   // =
 
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     archive.writeFile('allowthis2.txt', 'hello world', 'utf8')
   `)
@@ -1279,7 +1278,7 @@ test('archive.writeFile & archive.mkdir doesnt allow writes to archives until wr
   // mkdir accept persisted perm
   // =
 
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${newTestDatURL}")
     archive.mkdir('allowthis')
   `)
@@ -1291,7 +1290,7 @@ test('archive.getInfo', async t => {
   // getInfo gives manifest info and stats
   // =
 
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${createdDatURL}")
     archive.getInfo()
   `)
@@ -1314,7 +1313,7 @@ test('archive.download', async t => {
   t.deepEqual(res.downloaded, 0)
 
   // download
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${testStaticDat2URL}")
     archive.download('/hello.txt')
   `)
@@ -1335,7 +1334,7 @@ test('archive.download', async t => {
   t.deepEqual(res.downloaded, 0)
 
   // download
-  var res = await mainTab.executeJavascript(`
+  var res = await datRunnerTab.executeJavascript(`
     var archive = new DatArchive("${testStaticDat3URL}")
     archive.download('/')
   `)
@@ -1350,7 +1349,7 @@ test('archive.download', async t => {
   // download
   var start = Date.now()
   try {
-    var res = await mainTab.executeJavascript(`
+    var res = await datRunnerTab.executeJavascript(`
       var archive = new DatArchive("${testStaticDat2URL}")
       archive.download('/does-not-exist', {timeout: 500})
     `)
@@ -1362,28 +1361,28 @@ test('archive.download', async t => {
 
 test('archive types', async t => {
   // create some dats with various types
-  var typedArchive1URLPromise = mainTab.executeJavascript(`
+  var typedArchive1URLPromise = datRunnerTab.executeJavascript(`
     DatArchive.create({title: 'Typed dat 1', type: ['foo', 'bar'], prompt: false}).then(archive => archive.url)
   `)
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
   var typedArchive1URL = await typedArchive1URLPromise
 
-  var typedArchive2URLPromise = mainTab.executeJavascript(`
+  var typedArchive2URLPromise = datRunnerTab.executeJavascript(`
     DatArchive.create({title: 'Typed dat 2', type: 'foo baz', prompt: false}).then(archive => archive.url)
   `)
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
   var typedArchive2URL = await typedArchive2URLPromise
 
   // get info gives type
-  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive1URL}")).getInfo()`)
+  var res = await datRunnerTab.executeJavascript(`(new DatArchive("${typedArchive1URL}")).getInfo()`)
   t.deepEqual(res.type.sort(), ['foo', 'bar'].sort())
-  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
+  var res = await datRunnerTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
   t.deepEqual(res.type.sort(), ['foo', 'baz'].sort())
 
   // selectArchive applies type filter
-  mainTab.executeJavascript(`
+  datRunnerTab.executeJavascript(`
     // put the result on the window, for checking later
     window.res = null
     DatArchive.selectArchive({filters: {type: 'baz'}}).then(
@@ -1393,53 +1392,52 @@ test('archive types', async t => {
   `)
 
   // click one of the archives
-  await app.waitForElement(`li[data-key]`)
-  await app.click(`li[data-key]`)
+  await datRunnerTab.getModal().waitFor('window.isModalActive')
+  await datRunnerTab.getModal().executeJavascript(`window.selectArchiveClickAnyItem()`)
 
   // accept the prompt
-  await app.click('button[type="submit"]')
+  await datRunnerTab.getModal().executeJavascript('window.selectArchiveClickSubmit()')
 
   // fetch & test the res
-  await mainTab.waitFor(`window.res`)
-  var res = await mainTab.executeJavascript(`window.res`)
+  await datRunnerTab.waitFor(`window.res`)
+  var res = await datRunnerTab.executeJavascript(`window.res`)
   t.is(res, typedArchive2URL)
 
   // configure can change types
-  await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).configure({type: 'foo baz blah'})`)
-  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
+  await datRunnerTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).configure({type: 'foo baz blah'})`)
+  var res = await datRunnerTab.executeJavascript(`(new DatArchive("${typedArchive2URL}")).getInfo()`)
   t.deepEqual(res.type.sort(), ['foo', 'baz', 'blah'].sort())
 
   // forks preserve type if none is specified
-  var typedArchive3URLPromise = mainTab.executeJavascript(`
+  var typedArchive3URLPromise = datRunnerTab.executeJavascript(`
     DatArchive.fork("${typedArchive1URL}", {prompt: false}).then(archive => archive.url)
   `)
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
   var typedArchive3URL = await typedArchive3URLPromise
-  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive3URL}")).getInfo()`)
+  var res = await datRunnerTab.executeJavascript(`(new DatArchive("${typedArchive3URL}")).getInfo()`)
   t.deepEqual(res.type.sort(), ['foo', 'bar'].sort())
 
   // forks overwrite type if type is specified
-  var typedArchive4URLPromise = mainTab.executeJavascript(`
+  var typedArchive4URLPromise = datRunnerTab.executeJavascript(`
     DatArchive.fork("${typedArchive1URL}", {type: ['other'], prompt: false}).then(archive => archive.url)
   `)
-  await app.waitForElement('.prompt-accept')
-  await app.click('.prompt-accept')
+  await datRunnerTab.getPermPrompt().waitFor('window.isPromptActive')
+  await datRunnerTab.getPermPrompt().executeJavascript('window.clickAccept()')
   var typedArchive4URL = await typedArchive4URLPromise
-  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive4URL}")).getInfo()`)
+  var res = await datRunnerTab.executeJavascript(`(new DatArchive("${typedArchive4URL}")).getInfo()`)
   t.deepEqual(res.type, ['other'])
 
   // select archive passes the type filter onto created archives
-  var typedArchive5URLPromise = mainTab.executeJavascript(`
+  var typedArchive5URLPromise = datRunnerTab.executeJavascript(`
     DatArchive.selectArchive({filters: {type: 'select-created'}}).then(archive => archive.url)
   `)
-  await app.waitForElement('.btn[data-content="newArchive"]')
-  await app.click('.btn[data-content="newArchive"]')
-  await app.waitForElement('input[name="title"]')
-  await app.setValue('input[name="title"]', 'The Title')
-  await app.click('button[type="submit"]')
+  await datRunnerTab.getModal().waitFor('window.isModalActive')
+  await datRunnerTab.getModal().executeJavascript('window.selectArchiveClickNewArchive()')
+  await datRunnerTab.getModal().executeJavascript('window.selectArchiveSetValueTitle("The Title")')
+  await datRunnerTab.getModal().executeJavascript('window.selectArchiveClickSubmit()')
   var typedArchive5URL = await typedArchive5URLPromise
-  var res = await mainTab.executeJavascript(`(new DatArchive("${typedArchive5URL}")).getInfo()`)
+  var res = await datRunnerTab.executeJavascript(`(new DatArchive("${typedArchive5URL}")).getInfo()`)
   t.deepEqual(res.type, ['select-created'])
 })
 
@@ -1448,14 +1446,14 @@ test('DatArchive.importFromFilesystem', async t => {
   // =
 
   // create a new archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
   t.truthy(archiveURL)
 
   // run import
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var src = "${escapeWindowsSlashes(path.join(__dirname, 'scaffold', 'test-static-dat'))}"
     var dst = "${archiveURL}"
     DatArchive.importFromFilesystem({src, dst})
@@ -1474,14 +1472,14 @@ test('DatArchive.importFromFilesystem', async t => {
   // =
 
   // create a new archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
   t.truthy(archiveURL)
 
   // run import
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var src = "${escapeWindowsSlashes(path.join(__dirname, 'scaffold', 'test-static-dat'))}"
     var dst = "${archiveURL}"
     DatArchive.importFromFilesystem({src, dst, inplaceImport: false})
@@ -1500,14 +1498,14 @@ test('DatArchive.importFromFilesystem', async t => {
   // =
 
   // create a new archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
   t.truthy(archiveURL)
 
   // run import
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var src = "${escapeWindowsSlashes(path.join(__dirname, 'scaffold', 'test-static-dat'))}"
     var dst = "${archiveURL + '/ignore-import'}"
     DatArchive.importFromFilesystem({src, dst, ignore: ['**/*.txt']})
@@ -1539,7 +1537,7 @@ test('DatArchive.exportToFilesystem', async t => {
   var testDirPath = fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-')
 
   // export files
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var src = "${testStaticDatURL}"
     var dst = "${escapeWindowsSlashes(testDirPath)}"
     DatArchive.exportToFilesystem({src, dst, skipUndownloadedFiles: false})
@@ -1558,7 +1556,7 @@ test('DatArchive.exportToFilesystem', async t => {
   var testDirPath = fs.mkdtempSync(os.tmpdir() + path.sep + 'beaker-test-')
 
   // export files
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var src = "${testStaticDatURL}"
     var dst = "${escapeWindowsSlashes(testDirPath)}"
     DatArchive.exportToFilesystem({src, dst, ignore:['**/*.txt'], skipUndownloadedFiles: false})
@@ -1574,14 +1572,14 @@ test('DatArchive.exportToArchive', async t => {
   // =
 
   // create a new archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
   t.truthy(archiveURL)
 
   // export files
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var src = "${testStaticDatURL}"
     var dst = "${archiveURL}"
     DatArchive.exportToArchive({src, dst, skipUndownloadedFiles: false})
@@ -1599,14 +1597,14 @@ test('DatArchive.exportToArchive', async t => {
   // =
 
   // create a new archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
   t.truthy(archiveURL)
 
   // export files
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var src = "${testStaticDatURL}"
     var dst = "${archiveURL}"
     DatArchive.exportToArchive({src, dst, ignore:['**/*.txt'], skipUndownloadedFiles: false})
@@ -1633,7 +1631,7 @@ test('DatArchive.diff', async t => {
   var changes
 
   // create a new archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
@@ -1642,7 +1640,7 @@ test('DatArchive.diff', async t => {
   // diff root against empty root, shallow=false, filter=none, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}")
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1657,7 +1655,7 @@ test('DatArchive.diff', async t => {
   ].sort(sortDiff))
 
   // also works with archive inputs
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     var a = new DatArchive("${testStaticDatURL}")
     var b = new DatArchive("${archiveURL}")
     DatArchive.diff(a, b)
@@ -1676,7 +1674,7 @@ test('DatArchive.diff', async t => {
   // diff root against empty root, shallow=true, filter=none, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {shallow: true})
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1689,7 +1687,7 @@ test('DatArchive.diff', async t => {
   // diff root against empty root, shallow=false, filter=yes, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {paths: ['/hello.txt', '/subdir']})
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1704,7 +1702,7 @@ test('DatArchive.diff', async t => {
   // diff root against empty root, shallow=false, filter=none, ops=del
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {ops: ['del']})
   `)
   t.deepEqual(changes.map(massageChangeObj), [
@@ -1714,7 +1712,7 @@ test('DatArchive.diff', async t => {
   // diff subdir against empty root, shallow=false, filter=none, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}subdir", "${archiveURL}")
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1726,14 +1724,14 @@ test('DatArchive.diff', async t => {
   // diff root against nonexistent empty subdir, shallow=false, filter=none, ops=all
   // =
 
-  await t.throws(app.executeJavascript(`
+  await t.throws(startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}/subdir")
   `))
 
   // populate the target archive
   // =
 
-  await app.executeJavascript(`
+  await startPageTab.executeJavascript(`
     var a = new DatArchive("${archiveURL}")
     Promise.all([
       a.writeFile('/hello.txt', 'asdfasdfasdf'),
@@ -1755,7 +1753,7 @@ test('DatArchive.diff', async t => {
   // diff root against populated root, shallow=false, filter=none, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}")
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1775,7 +1773,7 @@ test('DatArchive.diff', async t => {
   // diff root against populated root, shallow=true, filter=none, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {shallow: true})
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1794,7 +1792,7 @@ test('DatArchive.diff', async t => {
   // diff root against populated root, shallow=false, filter=yes, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {paths: ['/hello.txt', '/subdir']})
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1809,7 +1807,7 @@ test('DatArchive.diff', async t => {
   // diff root against populated root, shallow=false, filter=none, ops=mod
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}", {ops: ['del']})
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1823,7 +1821,7 @@ test('DatArchive.diff', async t => {
   // diff subdir against populated root, shallow=false, filter=none, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}subdir", "${archiveURL}")
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1841,7 +1839,7 @@ test('DatArchive.diff', async t => {
   // diff root against nonexistent populated subdir, shallow=false, filter=none, ops=all
   // =
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.diff("${testStaticDatURL}", "${archiveURL}/subdir")
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1862,13 +1860,13 @@ test('DatArchive.merge', async t => {
   // merge into empty
   // =
 
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
   t.truthy(archiveURL)
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.merge("${testStaticDatURL}", "${archiveURL}")
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1896,13 +1894,13 @@ test('DatArchive.merge', async t => {
   // merge into populated
   // =
 
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   archiveURL = res.url
   t.truthy(archiveURL)
 
-  await app.executeJavascript(`
+  await startPageTab.executeJavascript(`
     var a = new DatArchive("${archiveURL}")
     Promise.all([
       a.writeFile('/hello.txt', 'asdfasdfasdf'),
@@ -1921,7 +1919,7 @@ test('DatArchive.merge', async t => {
     ])
   `)
 
-  changes = await app.executeJavascript(`
+  changes = await startPageTab.executeJavascript(`
     DatArchive.merge("${testStaticDatURL}", "${archiveURL}")
   `)
   t.deepEqual(changes.map(massageChangeObj).sort(sortDiff), [
@@ -1952,21 +1950,21 @@ test('DatArchive.merge', async t => {
   // cant merge into unowned archive
   // =
 
-  await t.throws(app.executeJavascript(`
+  await t.throws(startPageTab.executeJavascript(`
     DatArchive.merge("${archiveURL}", "${testStaticDatURL}")
   `))
 })
 
 test('archive.watch', async t => {
   // create a new archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
   t.truthy(archiveURL)
 
   // start the stream
-  app.executeJavascript(`
+  startPageTab.executeJavascript(`
     window.res = []
     var archive = new DatArchive("${archiveURL}")
     var events = archive.watch()
@@ -1977,30 +1975,30 @@ test('archive.watch', async t => {
 
   // make changes
   await sleep(500) // give stream time to setup
-  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', app)
-  await writeFile(archiveURL, '/b.txt', 'one', 'utf8', app)
-  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', app)
-  await writeFile(archiveURL, '/a.txt', 'two', 'utf8', app)
-  await writeFile(archiveURL, '/b.txt', 'two', 'utf8', app)
-  await writeFile(archiveURL, '/c.txt', 'one', 'utf8', app)
-  var res = await app.executeJavascript(`window.res`)
+  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/b.txt', 'one', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/a.txt', 'two', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/b.txt', 'two', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/c.txt', 'one', 'utf8', startPageTab)
+  var res = await startPageTab.executeJavascript(`window.res`)
   t.truthy(Array.isArray(res))
 
-  await app.waitFor(`window.res.length == 6`)
-  var res = await app.executeJavascript(`window.res`)
+  await startPageTab.waitFor(`window.res.length == 6`)
+  var res = await startPageTab.executeJavascript(`window.res`)
   t.deepEqual(res, ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt'])
 })
 
 test('archive.watch with callback', async t => {
   // create a new archive
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     DatArchive.create({prompt: false})
   `)
   var archiveURL = res.url
   t.truthy(archiveURL)
 
   // start the stream
-  app.executeJavascript(`
+  startPageTab.executeJavascript(`
     window.res = []
     var archive = new DatArchive("${archiveURL}")
     var events = archive.watch(null, function ({path}) {
@@ -2010,17 +2008,17 @@ test('archive.watch with callback', async t => {
 
   // make changes
   await sleep(500) // give stream time to setup
-  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', app)
-  await writeFile(archiveURL, '/b.txt', 'one', 'utf8', app)
-  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', app)
-  await writeFile(archiveURL, '/a.txt', 'two', 'utf8', app)
-  await writeFile(archiveURL, '/b.txt', 'two', 'utf8', app)
-  await writeFile(archiveURL, '/c.txt', 'one', 'utf8', app)
-  var res = await app.executeJavascript(`window.res`)
+  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/b.txt', 'one', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/a.txt', 'one', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/a.txt', 'two', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/b.txt', 'two', 'utf8', startPageTab)
+  await writeFile(archiveURL, '/c.txt', 'one', 'utf8', startPageTab)
+  var res = await startPageTab.executeJavascript(`window.res`)
   t.truthy(Array.isArray(res))
 
-  await app.waitFor(`window.res.length == 6`)
-  var res = await app.executeJavascript(`window.res`)
+  await startPageTab.waitFor(`window.res.length == 6`)
+  var res = await startPageTab.executeJavascript(`window.res`)
   t.deepEqual(res, ['/a.txt', '/b.txt', '/a.txt', '/a.txt', '/b.txt', '/c.txt'])
 })
 
@@ -2041,7 +2039,7 @@ test('archive.writeFile does allow self-modification', async t => {
 
 // TODO why doesnt this work?
 test.skip('DatArchive can resolve and read dats with shortnames', async t => {
-  var res = await app.executeJavascript(`
+  var res = await startPageTab.executeJavascript(`
     var archive = new DatArchive('dat://beakerbrowser.com/')
     archive.readdir('/')
   `)
@@ -2055,7 +2053,7 @@ test.skip('network events', async t => {
   var testStaticDat2URL = 'dat://' + testStaticDat2.archive.key.toString('hex')
 
   // start the download & network stream
-  app.executeJavascript(`
+  startPageTab.executeJavascript(`
     window.res = {
       metadata: {
         down: 0,
@@ -2082,13 +2080,13 @@ test.skip('network events', async t => {
   })
 
   // download
-  app.executeJavascript(`
+  startPageTab.executeJavascript(`
     var archive = new DatArchive("${testStaticDat2URL}")
     archive.download()
   `)
 
-  await app.waitFor(`window.res.content.all`)
-  var res = await app.executeJavascript(`window.res`)
+  await startPageTab.waitFor(`window.res.content.all`)
+  var res = await startPageTab.executeJavascript(`window.res`)
   t.truthy(res.metadata.down > 0)
   t.truthy(res.content.down > 0)
   t.deepEqual(res.metadata.all, true)
