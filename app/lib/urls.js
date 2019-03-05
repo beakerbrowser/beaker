@@ -11,11 +11,12 @@ export function examineLocationInput (v) {
     v.startsWith('localhost') ||
     v.includes('://') ||
     v.startsWith('beaker:') ||
-    v.startsWith('data:')
+    v.startsWith('data:') ||
+    v.startsWith('intent:')
   ))
   var vWithProtocol = v
   var isGuessingTheScheme = false
-  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:'))) {
+  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:'))) {
     if (isDatHashRegex.test(v)) {
       vWithProtocol = 'dat://' + v
     } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {

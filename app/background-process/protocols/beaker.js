@@ -1,4 +1,4 @@
-import {app, protocol} from 'electron'
+import {protocol} from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
 import * as mime from '@beaker/core/lib/mime'

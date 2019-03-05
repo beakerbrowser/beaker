@@ -26,6 +26,7 @@ import * as childProcesses from './background-process/child-processes'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
+import * as intentProtocol from './background-process/protocols/intent'
 
 import * as testDriver from './background-process/test-driver'
 import * as openURL from './background-process/open-url'
@@ -120,6 +121,7 @@ app.on('ready', async function () {
   // protocols
   beakerProtocol.setup()
   beakerFaviconProtocol.setup()
+  intentProtocol.setup()
   protocol.registerStreamProtocol('dat', beakerCore.dat.protocol.electronHandler, err => {
     if (err) {
       console.error(err)

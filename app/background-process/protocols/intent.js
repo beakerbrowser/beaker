@@ -1,0 +1,53 @@
+import {protocol} from 'electron'
+import querystring from 'querystring'
+import errorPage from '@beaker/core/lib/error-page'
+import intoStream from 'into-stream'
+
+// exported api
+// =
+
+export function setup () {
+  // setup the protocol handler
+  protocol.registerStreamProtocol('intent', intentProtocol, err => {
+    if (err) throw new Error('Failed to create protocol: intent. ' + err)
+  })
+}
+
+// internal
+// =
+
+function intentProtocol (request, respond) {
+  var urlp = parseIntentUrl(request.url)
+  if (!urlp) {
+    respond({
+      statusCode: 404,
+      headers: {'Content-Type': 'text/html; charset=utf-8'},
+      data: intoStream(errorPage('400 Invalid Intent URL'))
+    })
+  }
+  // DEBUG
+  // we have temporarily hardcoded the intents
+  // -prf
+  if (urlp.name === 'view-profile') {
+    return respond({
+      statusCode: 303,
+      headers: {Location: `dat://beaker.social/#/profile/${encodeURIComponent(urlp.qs.url)}`},
+      data: intoStream('')
+    })
+  }
+  respond({
+    statusCode: 404,
+    headers: {'Content-Type': 'text/html; charset=utf-8'},
+    data: intoStream(errorPage('404 Intent Not Found: ' + urlp.name))
+  })
+}
+
+const intentUrlRegex = /^intent:([^?]+)\??(.*)$/i
+function parseIntentUrl (url) {
+  var match = intentUrlRegex.exec(url)
+  if (!match) return false
+  return {
+    name: match[1],
+    qs: querystring.parse(match[2])
+  }
+}
