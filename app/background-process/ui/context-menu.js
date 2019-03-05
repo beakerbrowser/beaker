@@ -145,13 +145,6 @@ export default function registerContextMenu () {
               viewManager.create(win, 'beaker://editor/' + props.pageURL)
             }
           })
-          menuItems.push({
-            label: 'View Profile',
-            click: (item, win) => {
-              viewManager.create(win, 'dat://profile/' + props.pageURL.slice('dat://'.length))
-            }
-          })
-          menuItems.push({ type: 'separator' })
         }
       }
 
