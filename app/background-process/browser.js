@@ -17,6 +17,7 @@ const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
 import * as modals from './ui/subwindows/modals'
+import { findWebContentsParentWindow } from '../lib/electron'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
@@ -255,9 +256,7 @@ export async function imageToIco (image) {
 }
 
 export async function setWindowDimensions ({width, height} = {}) {
-  var wc = this.sender
-  while (wc.hostWebContents) wc = wc.hostWebContents
-  var win = BrowserWindow.fromWebContents(wc)
+  var win = findWebContentsParentWindow(this.sender)
   var [currentWidth, currentHeight] = win.getSize()
   width = width || currentWidth
   height = height || currentHeight
@@ -479,10 +478,7 @@ function createEventsStream () {
 }
 
 function showOpenDialog (opts = {}) {
-  var wc = this.sender.webContents
-  if (wc.hostWebContents) {
-    wc = wc.hostWebContents
-  }
+  var wc = this.sender
   return new Promise((resolve) => {
     dialog.showOpenDialog({
       title: opts.title,
@@ -491,11 +487,7 @@ function showOpenDialog (opts = {}) {
       properties: opts.properties,
       defaultPath: opts.defaultPath
     }, filenames => {
-      // return focus back to the the webview
-      wc.executeJavaScript(`
-        var wv = document.querySelector('webview:not(.hidden)')
-        if (wv) wv.focus()
-      `)
+      wc.focus() // return focus back to the the page
       resolve(filenames)
     })
   })
@@ -536,9 +528,9 @@ function showContextMenu (menuDefinition) {
     }
 
     // show the menu
-    var win = BrowserWindow.fromWebContents(this.sender.hostWebContents)
+    var win = findWebContentsParentWindow(this.sender)
     var menu = Menu.buildFromTemplate(menuDefinition)
-    menu.popup(win)
+    menu.popup({window: win})
     resolve(selection)
   })
 }

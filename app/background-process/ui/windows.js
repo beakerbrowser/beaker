@@ -18,6 +18,7 @@ import * as statusBarSubwindow from './subwindows/status-bar'
 import * as shellMenusSubwindow from './subwindows/shell-menus'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
+import { findWebContentsParentWindow } from '../../lib/electron'
 const settingsDb = beakerCore.dbs.settings
 
 const IS_WIN = process.platform === 'win32'
@@ -309,20 +310,6 @@ export function openProfileEditor (wc, sess) {
 
 // internal methods
 // =
-
-function findWebContentsParentWindow (wc) {
-  var win
-  var view = BrowserView.fromWebContents(wc)
-  if (view) {
-    win = viewManager.findContainingWindow(view)
-  } else {
-    win = BrowserWindow.fromWebContents(wc)
-    while (win.getParentWindow()) {
-      win = win.getParentWindow()
-    }
-  }
-  return win
-}
 
 function windowWithinBounds (windowState, bounds) {
   return windowState.x >= bounds.x &&
