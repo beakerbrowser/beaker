@@ -168,6 +168,7 @@ ShellWindowTabs.styles = css`
 ${spinnerCSS}
 
 .shell {
+  background: var(--bg-background);
   position: relative;
   padding: 0 18px 0 0px;
   height: 36px;
