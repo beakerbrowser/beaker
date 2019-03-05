@@ -96,6 +96,15 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://shell-window/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/shell-window.css'))
   }
+  if (requestUrl === 'beaker://shell-menus/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'shell-menus.html'))
+  }
+  if (requestUrl === 'beaker://perm-prompt/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'perm-prompt.html'))
+  }
+  if (requestUrl === 'beaker://modals/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'modals.html'))
+  }
   if (requestUrl === 'beaker://assets/syntax-highlight.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/syntax-highlight.js'))
   }
@@ -314,26 +323,6 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl === 'beaker://watchlist/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/watchlist.html'))
-  }
-
-  // modals
-  if (requestUrl === 'beaker://basic-auth-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/basic-auth-modal.html'))
-  }
-  if (requestUrl === 'beaker://basic-auth-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/basic-auth-modal.css'))
-  }
-  if (requestUrl === 'beaker://basic-auth-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/basic-auth-modal.build.js'))
-  }
-  if (requestUrl === 'beaker://prompt-modal/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/prompt-modal.html'))
-  }
-  if (requestUrl === 'beaker://prompt-modal/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/prompt-modal.css'))
-  }
-  if (requestUrl === 'beaker://prompt-modal/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/prompt-modal.build.js'))
   }
 
   // debugging

@@ -15,8 +15,7 @@ const exec = require('util').promisify(require('child_process').exec)
 const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
-import {showModal, showShellModal, closeModal} from './ui/modals'
-import {getActiveWindow} from './ui/windows'
+import * as modals from './ui/subwindows/modals'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
@@ -93,21 +92,12 @@ export function setup () {
   //  - we have use ipc directly instead of using rpc, because we need custom
   //    response-lifecycle management in the main thread
   ipcMain.on('page-prompt-dialog', async (e, message, def) => {
-    var win = BrowserWindow.fromWebContents(e.sender.hostWebContents)
     try {
-      var res = await showModal(win, 'prompt', {message, default: def})
+      var res = await modals.create(e.sender, 'prompt', {message, default: def})
       e.returnValue = res && res.value ? res.value : false
     } catch (e) {
       e.returnValue = false
     }
-  })
-
-  // quick sync getters
-  ipcMain.on('get-markdown-renderer-script', e => {
-    e.returnValue = fs.readFileSync(path.join(app.getAppPath(), 'markdown-renderer.build.js'), 'utf8')
-  })
-  ipcMain.on('get-json-renderer-script', e => {
-    e.returnValue = fs.readFileSync(path.join(app.getAppPath(), 'json-renderer.build.js'), 'utf8')
   })
 
   // HACK
@@ -151,7 +141,7 @@ export const WEBAPI = {
   openFolder,
   doWebcontentsCmd,
   doTest,
-  closeModal
+  closeModal: () => {} // DEPRECATED, probably safe to remove soon
 }
 
 export function fetchBody (url) {
@@ -516,9 +506,6 @@ async function doWebcontentsCmd (method, wcId, ...args) {
 }
 
 async function doTest (test) {
-  if (test === 'modal') {
-    return showShellModal(this.sender, 'example', {i: 5})
-  }
 }
 
 // internal methods

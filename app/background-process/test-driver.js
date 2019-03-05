@@ -2,6 +2,9 @@ import dgram from 'dgram'
 import {ipcMain} from 'electron'
 import * as beakerCore from '@beaker/core'
 import * as windows from './ui/windows'
+import * as viewManager from './ui/view-manager'
+import * as permPrompt from './ui/subwindows/perm-prompt'
+import * as modals from './ui/subwindows/modals'
 
 const LOG_MESSAGES = false
 
@@ -68,59 +71,66 @@ async function onMessage (message) {
 
 const METHODS = {
   newTab () {
-    return execute(`
-      var index = pages.getAll().length
-      page = pages.create()
-      pages.setActive(page)
-      index
-    `)
+    var win = getActiveWindow()
+    var view = viewManager.create(win, undefined, {setActive: true})
+    return viewManager.getIndexOfView(win, view)
   },
 
   navigateTo (page, url) {
-    return execute(`
-      var page = pages.get(${page})
-      page.navbarEl.querySelector('.nav-location-input').value = "${url}"
-      page.navbarEl.querySelector('.nav-location-input').blur()
-
-      var loadPromise = new Promise(resolve => {
-        function onDomReady () {
-          page.webviewEl.removeEventListener('dom-ready', onDomReady)
-          resolve()
-        }
-        page.webviewEl.addEventListener('dom-ready', onDomReady)
-      })
-      page.loadURL("${url}")
-      loadPromise
-    `)
+    var view = viewManager.getByIndex(getActiveWindow(), page)
+    var loadPromise = new Promise(resolve => view.webContents.once('dom-ready', () => resolve()))
+    view.loadURL(url)
+    return loadPromise
   },
 
   getUrl (page) {
-    return execute(`
-      var page = pages.get(${page})
-      page.getURL()
-    `)
+    var view = viewManager.getByIndex(getActiveWindow(), page)
+    return view.url
   },
 
   async executeJavascriptInShell (js) {
-    var res = await execute(js)
+    var win = getActiveWindow()
+    var res = await win.webContents.executeJavaScript(js)
     return res
   },
 
   async executeJavascriptOnPage (page, js) {
-    try {
-      var res = await execute(`
-        var page = pages.get(${page})
-        page.webviewEl.getWebContents().executeJavaScript(\`` + js + `\`)
-      `)
-      return res
-    } catch (e) {
-      console.error('Failed to execute javascript on page', js, e)
-      throw e
-    }
+    var view = viewManager.getByIndex(getActiveWindow(), page)
+    var res = await view.webContents.executeJavaScript(js)
+    return res
+  },
+
+  async executeJavascriptInPermPrompt (page, js) {
+    var view = viewManager.getByIndex(getActiveWindow(), page).browserView
+    var prompt = await waitFor(() => permPrompt.get(view))
+    var res = await prompt.webContents.executeJavaScript(js)
+    return res
+  },
+
+  async executeJavascriptInModal (page, js) {
+    var view = viewManager.getByIndex(getActiveWindow(), page).browserView
+    var modal = await waitFor(() => modals.get(view))
+    var res = await modal.webContents.executeJavaScript(js)
+    return res
   }
 }
 
-function execute (js) {
+function getActiveWindow () {
   var win = windows.getActiveWindow()
-  return win.webContents.executeJavaScript(js)
+  while (win.getParentWindow()) {
+    win = win.getParentWindow()
+  }
+  return win
+}
+
+function waitFor (condFn) {
+  return new Promise(resolve => {
+    var i = setInterval(async () => {
+      var res = condFn()
+      if (!!res) {
+        clearInterval(i)
+        return resolve(res)
+      }
+    }, 100)
+  })
 }

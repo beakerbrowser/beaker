@@ -1,10 +1,12 @@
-import { ipcMain, session, BrowserWindow } from 'electron'
+import { ipcMain, session, BrowserWindow, BrowserView } from 'electron'
 import * as beakerCore from '@beaker/core'
 const dat = beakerCore.dat
 const sitedata = beakerCore.dbs.sitedata
 import _get from 'lodash.get'
 import pda from 'pauls-dat-api'
 import parseDatURL from 'parse-dat-url'
+import * as permPromptSubwindow from './subwindows/perm-prompt'
+import * as viewManager from './view-manager'
 import PERMS from '../../lib/perms'
 import {getPermId} from '@beaker/core/lib/strings'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
@@ -21,7 +23,6 @@ var activeRequests = []
 export function setup () {
   // wire up handlers
   session.defaultSession.setPermissionRequestHandler(onPermissionRequestHandler)
-  ipcMain.on('permission-response', onPermissionResponseHandler)
 }
 
 export function requestPermission (permission, webContents, opts) {
@@ -98,13 +99,7 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
 // event handlers
 // =
 
-function onPermissionRequestHandler (webContents, permission, cb, opts) {
-  // look up the containing window
-  var win = getContainingWindow(webContents)
-  if (!win) {
-    console.error('Warning: failed to find containing window of permission request, ' + permission)
-    return cb(false)
-  }
+async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   const url = webContents.getURL()
 
   // always allow beaker:// origins
@@ -112,43 +107,40 @@ function onPermissionRequestHandler (webContents, permission, cb, opts) {
     return cb(true)
   }
 
+  // look up the containing window
+  var {win, view} = getContaining(webContents)
+  if (!win || !view) {
+    console.error('Warning: failed to find containing window of permission request, ' + permission)
+    return cb(false)
+  }
+
   // check if the perm is auto-allowed or auto-disallowed
   const PERM = PERMS[getPermId(permission)]
+  if (!PERM) return cb(false)
   if (PERM && PERM.alwaysAllow) return cb(true)
   if (PERM && PERM.alwaysDisallow) return cb(false)
 
   // check the sitedatadb
-  sitedata.getPermission(url, permission).catch(err => undefined).then(res => {
-    if (res === 1) return cb(true)
-    if (res === 0) return cb(false)
+  var res = await sitedata.getPermission(url, permission).catch(err => undefined)
+  if (res === 1) return cb(true)
+  if (res === 0) return cb(false)
 
-    // if we're already tracking this kind of permission request, and the perm is idempotent, then bundle them
-    var req = PERM.idempotent ? activeRequests.find(req => req.win === win && req.permission === permission) : false
-    if (req) {
-      if (PERM.alwaysAsk) {
-        // deny now
-        return cb(false)
-      }
-      var oldCb = req.cb
-      req.cb = decision => { oldCb(decision); cb(decision) }
-    } else {
-      // track the new cb
-      req = { id: ++idCounter, win, url, permission, cb }
-      activeRequests.push(req)
-    }
+  // if we're already tracking this kind of permission request, and the perm is idempotent, then bundle them
+  var req = PERM.idempotent ? activeRequests.find(req => req.view === view && req.permission === permission) : false
+  if (req) {
+    var oldCb = req.cb
+    req.cb = decision => { oldCb(decision); cb(decision) }
+    return
+  } else {
+    // track the new cb
+    req = { id: ++idCounter, view, win, url, permission, cb }
+    activeRequests.push(req)
+  }
 
-    // send message to create the UI
-    win.webContents.send('command', 'perms:prompt', req.id, webContents.id, permission, opts)
-  })
-}
-
-async function onPermissionResponseHandler (e, reqId, decision) {
-  // lookup the cb
-  var req = activeRequests.find(req => req.id == reqId)
-  if (!req) { return console.error('Warning: failed to find permission request for response #' + reqId) }
+  // run the UI flow
+  var decision = await permPromptSubwindow.create(win, view, {permission, url, opts})
 
   // persist decisions
-  const PERM = PERMS[getPermId(req.permission)]
   if (PERM && PERM.persist) {
     if (PERM.persist === 'allow' && !decision) {
       // only persist allows
@@ -163,10 +155,14 @@ async function onPermissionResponseHandler (e, reqId, decision) {
   activeRequests.splice(activeRequests.indexOf(req), 1)
 
   // hand down the decision
-  var cb = req.cb
-  cb(decision)
+  req.cb(decision)
 }
 
-function getContainingWindow (webContents) {
-  return BrowserWindow.fromWebContents(webContents.hostWebContents || webContents)
+function getContaining (webContents) {
+  var view = BrowserView.fromWebContents(webContents)
+  if (view) {
+    var win = viewManager.findContainingWindow(view)
+    return {win, view}
+  }
+  return {}
 }

@@ -1,0 +1,24 @@
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+    font-size: 12px;
+    margin: 0;
+    overflow: hidden;
+  }
+  #text {
+    width: calc(100% - 18px);
+    white-space: pre;
+    margin-top: 1px;
+    padding: 3px 8px 6px;
+    background: #fff;
+    color: #666;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-top: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
+</style>
+<div id="text"></div>
+<script>
+  window.set = v => { text.textContent = v }
+</script>

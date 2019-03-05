@@ -1,13 +1,14 @@
 import path from 'path'
 import fs from 'fs'
-import { app, dialog, shell, webContents } from 'electron'
+import { app, dialog, shell } from 'electron'
 import mime from 'mime'
 import unusedFilename from 'unused-filename'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import parseDataURL from 'data-urls'
-import {requestPermission} from './permissions'
+import { requestPermission } from './permissions'
+import { openOrFocusDownloadsPage } from './view-manager'
 
 // globals
 // =
@@ -66,6 +67,7 @@ export function registerListener (win, opts = {}) {
     // For now it is being used when downloading `.html` pages
     if (!opts.suppressNewDownloadEvent) {
       downloadsEvents.emit('new-download', toJSON(item))
+      openOrFocusDownloadsPage(win)
     }
 
     // update dock-icon progress bar

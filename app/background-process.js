@@ -17,12 +17,11 @@ import * as analytics from './background-process/analytics'
 import * as portForwarder from './background-process/nat-port-forwarder'
 
 import * as windows from './background-process/ui/windows'
-import * as modals from './background-process/ui/modals'
+import * as modals from './background-process/ui/subwindows/modals'
 import * as windowMenu from './background-process/ui/window-menu'
 import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
-import * as basicAuth from './background-process/ui/basic-auth'
 import * as childProcesses from './background-process/child-processes'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
@@ -93,7 +92,7 @@ app.on('ready', async function () {
     // APIs
     permsAPI: permissions,
     uiAPI: {
-      showModal: modals.showShellModal,
+      showModal: modals.create,
       capturePage: beakerBrowser.capturePage
     },
     rpcAPI: rpc,
@@ -111,10 +110,8 @@ app.on('ready', async function () {
   windowMenu.setup()
   registerContextMenu()
   windows.setup()
-  modals.setup()
   downloads.setup()
   permissions.setup()
-  basicAuth.setup()
 
   // protocols
   beakerProtocol.setup()
