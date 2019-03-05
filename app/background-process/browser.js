@@ -376,15 +376,6 @@ export function restartBrowser () {
 
 async function getUserSession () {
   var sess = getUserSessionFor(this.sender)
-  if (!sess) {
-    // fallback to the default user
-    var defaultUser = await beakerCore.users.getDefault()
-    if (defaultUser) {
-      sess = {url: defaultUser.url}
-      setUserSessionFor(this.sender, sess)
-    }
-  }
-
   // get session user info
   if (!sess) return null
   return beakerCore.users.get(sess.url)

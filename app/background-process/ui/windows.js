@@ -188,20 +188,14 @@ export function createShellWindow (windowState) {
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
 
-  function handlePagesReady ({ sender }) {
-    if (!win || win.isDestroyed()) return
-
-    if (sender === win.webContents) {
-      if (win.webContents.id === firstWindow) {
-        // if this is the first window opened (since app start or since all windows closing)
-        viewManager.loadPins(win)
-      }
-      viewManager.initializeFromSnapshot(win, state.pages)
+  // load the user session
+  beakerCore.users.getDefault().then(defaultUser => {
+    if (defaultUser) {
+      setUserSessionFor(win.webContents, {url: defaultUser.url})
     }
-  }
+  })
 
   numActiveWindows++
-
   if (numActiveWindows === 1) {
     firstWindow = win.webContents.id
   }
@@ -213,6 +207,18 @@ export function createShellWindow (windowState) {
       subwindows[k].destroy(win)
     }
   })
+
+  function handlePagesReady ({ sender }) {
+    if (!win || win.isDestroyed()) return
+
+    if (sender === win.webContents) {
+      if (win.webContents.id === firstWindow) {
+        // if this is the first window opened (since app start or since all windows closing)
+        viewManager.loadPins(win)
+      }
+      viewManager.initializeFromSnapshot(win, state.pages)
+    }
+  }
 
   // register shortcuts
   for (var i = 1; i <= 8; i++) { registerGlobalKeybinding(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
