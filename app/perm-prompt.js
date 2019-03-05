@@ -24,6 +24,16 @@ class PermPrompt extends LitElement {
     window.runPrompt = this.runPrompt.bind(this)
     window.clickAccept = () => this.shadowRoot.querySelector('.prompt-accept').click()
     window.clickReject = () => this.shadowRoot.querySelector('.prompt-reject').click()
+
+    // fetch platform information
+    var {platform} = bg.beakerBrowser.getInfo()
+    window.platform = platform
+    if (platform === 'darwin') {
+      document.body.classList.add('darwin')
+    }
+    if (platform === 'win32') {
+      document.body.classList.add('win32')
+    }
   }
 
   async runPrompt ({permission, url, opts}) {

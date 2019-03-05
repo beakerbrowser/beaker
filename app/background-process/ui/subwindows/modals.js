@@ -143,6 +143,11 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
     var [width, height] = win.getSize()
     width = dimensions.width || width
     height = dimensions.height || height
+    if (process.platform === 'win32') {
+      // on windows, add space for the border
+      width += 2
+      height += 2
+    }
     var parentBounds = win.getParentWindow().getBounds()
     win.setBounds({
       x: parentBounds.x + Math.round(parentBounds.width / 2) - Math.round(width / 2), // centered

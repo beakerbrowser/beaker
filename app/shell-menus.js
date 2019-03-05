@@ -21,6 +21,16 @@ class MenusWrapper extends LitElement {
     super()
     this.currentParams = null
 
+    // fetch platform information
+    var {platform} = bg.beakerBrowser.getInfo()
+    window.platform = platform
+    if (platform === 'darwin') {
+      document.body.classList.add('darwin')
+    }
+    if (platform === 'win32') {
+      document.body.classList.add('win32')
+    }
+
     // export interface
     const reset = (name) => {
       try { this.shadowRoot.querySelector(name).reset() }

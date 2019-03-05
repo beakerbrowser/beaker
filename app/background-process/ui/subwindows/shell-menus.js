@@ -182,8 +182,12 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
 
   async resizeSelf (dimensions) {
     var win = BrowserWindow.fromWebContents(this.sender)
-    var [width, height] = win.getSize()
-    win.setSize(dimensions.width || width, dimensions.height || height)
+    if (process.platform === 'win32') {
+      // on windows, add space for the border
+      if (dimensions.width) dimensions.width += 2
+      if (dimensions.height) dimensions.height += 2
+    }
+    win.setBounds(dimensions)
   },
 
   async showInpageFind () {

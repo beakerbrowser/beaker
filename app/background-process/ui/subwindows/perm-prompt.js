@@ -126,11 +126,18 @@ rpc.exportAPI('background-process-perm-prompt', permPromptRPCManifest, {
 
 function setBounds (win, parentWindow) {
   var parentBounds = parentWindow.getBounds()
+  var width = 300
+  var height = 118
+  if (process.platform === 'win32') {
+    // on windows, add space for the border
+    width += 2
+    height += 3
+  }
   win.setBounds({
     x: parentBounds.x + 100,
     y: parentBounds.y + 74,
-    width: 300,
-    height: 118
+    width,
+    height
   })
 }
 

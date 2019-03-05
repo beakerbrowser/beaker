@@ -1,5 +1,6 @@
 /* globals customElements */
 import { LitElement, html } from './vendor/lit-element/lit-element'
+import * as bg from './modals/bg-process-rpc'
 import './modals/create-archive'
 import './modals/fork-archive'
 import './modals/select-archive'
@@ -20,6 +21,16 @@ class ModalsWrapper extends LitElement {
 
     // export interface
     window.runModal = this.runModal.bind(this)
+
+    // fetch platform information
+    var {platform} = bg.beakerBrowser.getInfo()
+    window.platform = platform
+    if (platform === 'darwin') {
+      document.body.classList.add('darwin')
+    }
+    if (platform === 'win32') {
+      document.body.classList.add('win32')
+    }
 
     // global event listeners
     window.addEventListener('keydown', e => {
