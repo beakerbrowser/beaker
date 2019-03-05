@@ -55,8 +55,6 @@ var bundleApplication = function () {
     bundle(srcDir.path('modals.js'),                   srcDir.path('modals.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(srcDir.path('json-renderer.js'),            srcDir.path('json-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('library.js'),              bpBuildDir.path('library.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('library-view.js'),         bpBuildDir.path('library-view.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('history.js'),              bpBuildDir.path('history.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('settings.js'),             bpBuildDir.path('settings.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('view-source.js'),          bpBuildDir.path('view-source.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),

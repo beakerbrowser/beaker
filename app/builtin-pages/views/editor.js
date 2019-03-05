@@ -452,7 +452,7 @@ async function onArchiveDeletePermanently (e) {
   if (!confirm('Delete permanently?')) return
   try {
     await beaker.archives.delete(archive.url)
-    window.location = 'dat://library'
+    window.location = 'beaker://library'
   } catch (e) {
     console.error(e)
     toast.create(e.toString(), 'error')

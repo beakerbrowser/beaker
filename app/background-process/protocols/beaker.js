@@ -13,6 +13,7 @@ import intoStream from 'into-stream'
 import ICO from 'icojs'
 
 const START_APP_PATH = path.dirname(require.resolve('@beaker/start-app'))
+const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app'))
 
 // constants
 // =
@@ -230,6 +231,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://start' || requestUrl.startsWith('beaker://start')) {
     return serveAppAsset(requestUrl, START_APP_PATH, cb)
   }
+  if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library')) {
+    return serveAppAsset(requestUrl, LIBRARY_APP_PATH, cb)
+  }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/history.html'))
   }
@@ -242,39 +246,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://downloads/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/downloads.build.js'))
   }
-  // if (requestUrl === 'beaker://filesystem/main.css') {
-  //   return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/filesystem.css'))
-  // }
-  // if (requestUrl === 'beaker://filesystem/main.js') {
-  //   return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/filesystem.build.js'))
-  // }
-  // if (requestUrl === 'beaker://filesystem/' || requestUrl.startsWith('beaker://filesystem/')) {
-  //   return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/filesystem.html'))
-  // }
-  if (requestUrl === 'beaker://library/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/library.css'))
-  }
-  if (requestUrl === 'beaker://library/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/library.build.js'))
-  }
-  if (requestUrl === 'beaker://library/view.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/library-view.build.js'))
-  }
-  if (requestUrl === 'beaker://library/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library.html'))
-  }
-  if (requestUrl.startsWith('beaker://library/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/library-view.html'))
-  }
-  // if (requestUrl === 'beaker://install-modal/main.css') {
-  //   return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/install-modal.css'))
-  // }
-  // if (requestUrl === 'beaker://install-modal/main.js') {
-  //   return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'builtin-pages/build/install-modal.build.js'))
-  // }
-  // if (requestUrl === 'beaker://install-modal/' || requestUrl.startsWith('beaker://install-modal/')) {
-  //   return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/install-modal.html'))
-  // }
   if (requestUrl === 'beaker://view-source/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/builtin-pages/view-source.css'))
   }
@@ -363,7 +334,7 @@ async function beakerProtocol (request, respond) {
 }
 
 // helper to serve requests to app packages
-async function serveAppAsset (requestUrl, dirPath, cb) {
+async function serveAppAsset (requestUrl, dirPath, cb, {fallbackToIndexHTML} = {fallbackToIndexHTML: false}) {
   // resolve the file path
   const urlp = new URL(requestUrl)
   var pathname = urlp.pathname
@@ -376,7 +347,11 @@ async function serveAppAsset (requestUrl, dirPath, cb) {
   try {
     await fs.promises.stat(filepath)
   } catch (e) {
-    return cb(404, 'Not Found')
+    if (fallbackToIndexHTML) {
+      filepath = '/index.html'
+    } else {
+      return cb(404, 'Not Found')
+    }
   }
 
   // identify the mime type

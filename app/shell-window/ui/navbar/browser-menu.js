@@ -99,7 +99,7 @@ export class BrowserMenuNavbarBtn {
               </div>
 
               <div class="section">
-                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'dat://library')}>
+                <div class="menu-item" onclick=${e => this.onOpenPage(e, 'beaker://library')}>
                   <i class="fa fa-hdd"></i>
                   <span class="label">Library</span>
                 </div>
