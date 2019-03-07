@@ -122,10 +122,11 @@ function renderGeneral () {
   return yo`
     <div class="view not-fullwidth">
       ${renderAutoUpdater()}
-      ${renderDefaultSyncPathSettings()}
+      ${renderStartPageSettings()}
+      ${renderOnStartupSettings()}
       ${renderProtocolSettings()}
       ${renderDefaultToDatSetting()}
-      ${renderOnStartupSettings()}
+      ${renderDefaultSyncPathSettings()}
       ${renderDatSettings()}
       ${renderDefaultDatIgnoreSettings()}
       ${renderAnalyticsSettings()}
@@ -148,6 +149,37 @@ function renderDefaultSyncPathSettings () {
           Choose directory
         </button>
       </p>
+    </div>
+  `
+}
+
+function renderStartPageSettings () {
+  const section = (setting, label) => yo`
+    <label class="toggle unweirded">
+      <input checked=${settings[setting] !== 1 ? 'true' : 'false'} type="checkbox" onchange=${() => toggleSection(setting, settings[setting] === 1 ? 0 : 1)} />
+
+      <div class="switch"></div>
+      <span class="text">${label}</span>
+    </label>
+  `
+
+  const toggleSection = (setting, value) => {
+    beaker.browser.setSetting(setting, value)
+    settings[setting] = value
+    renderToPage()
+  }
+
+  return yo`
+    <div class="section start-page">
+      <h2 id="start-page" class="subtitle-heading">Start page</h2>
+
+      <p>
+        Choose what content you want on your start page.
+      </p>
+
+      ${section('start_section_hide_pinned_bookmarks', 'Pinned bookmarks')}
+      ${section('start_section_hide_flyers', 'Flyers')}
+      ${section('start_section_hide_suggested_follows', 'Suggested follows')}
     </div>
   `
 }
@@ -385,7 +417,7 @@ function renderAutoUpdater () {
         </div>
 
         <p>
-          To get the most recent version of Beaker, you${"'"}ll need to <a href="https://github.com/beakerbrowser/beaker">
+          To get the most recent version of Beaker, you'll need to <a href="https://github.com/beakerbrowser/beaker">
           build Beaker from source</a>.
         </p>
       </div>`
