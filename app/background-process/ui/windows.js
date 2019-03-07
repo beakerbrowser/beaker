@@ -7,8 +7,7 @@ import * as viewManager from './view-manager'
 import {
   createGlobalKeybindingsHandler,
   createKeybindingProtectionsHandler,
-  registerGlobalKeybinding,
-  unregisterGlobalKeybinding
+  registerGlobalKeybinding
 } from './keybindings'
 import path from 'path'
 import * as openURL from '../open-url'
@@ -16,6 +15,7 @@ import * as downloads from './downloads'
 import * as permissions from './permissions'
 import * as statusBarSubwindow from './subwindows/status-bar'
 import * as shellMenusSubwindow from './subwindows/shell-menus'
+import * as locationBarSubwindow from './subwindows/location-bar'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
 import { findWebContentsParentWindow } from '../../lib/electron'
@@ -24,6 +24,7 @@ const settingsDb = beakerCore.dbs.settings
 const IS_WIN = process.platform === 'win32'
 const subwindows = {
   statusBar: statusBarSubwindow,
+  locationBar: locationBarSubwindow,
   menu: shellMenusSubwindow,
   permPrompt: permPromptSubwindow,
   modals: modalsSubwindow

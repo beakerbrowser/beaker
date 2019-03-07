@@ -329,28 +329,40 @@ class NavbarLocation extends LitElement {
   onBlurLocation (e) {
     // clear the selection range so that the next focusing doesnt carry it over
     window.getSelection().empty()
+    bg.views.hideLocationBar()
+    this.shadowRoot.querySelector('.input-container input').value = this.url // reset value
     this.isLocationFocused = false
   }
 
   onInputLocation (e) {
     var rect = this.getClientRects()[0]
-    bg.views.showMenu('location', {
+    bg.views.runLocationBarCmd('set-value', {
       bounds: {
         x: rect.left|0,
-        y: rect.top|0,
+        y: rect.bottom|0,
         width: rect.width|0
       },
-      params: {
-        value: e.currentTarget.value,
-        selectionStart: e.currentTarget.selectionStart
-      }
+      value: e.currentTarget.value
     })
-    e.currentTarget.blur()
   }
 
-  onKeydownLocation (e) {
+  async onKeydownLocation (e) {
     if (e.key === 'Escape') {
       this.unfocusLocation()
+      return
+    }
+    if (e.key === 'Enter') {
+      bg.views.runLocationBarCmd('choose-selection')
+      this.unfocusLocation()
+      return
+    }
+    var up = (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'p'))
+    var down = (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n'))
+    if (up || down) {
+      e.preventDefault()
+      var value = await bg.views.runLocationBarCmd('move-selection', {up, down})
+      this.shadowRoot.querySelector('.input-container input').value = value
+      return
     }
   }
 

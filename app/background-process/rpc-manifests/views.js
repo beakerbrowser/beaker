@@ -20,6 +20,9 @@ export default {
   hideInpageFind: 'promise',
   setInpageFindString: 'promise',
   moveInpageFind: 'promise',
+  showLocationBar: 'promise',
+  hideLocationBar: 'promise',
+  runLocationBarCmd: 'promise',
   showMenu: 'promise',
   toggleMenu: 'promise',
   focusShellWindow: 'promise'

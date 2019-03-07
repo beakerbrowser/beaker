@@ -192,18 +192,6 @@ ${spinnerCSS}
   height: 30px;
 }
 
-.drag-hover:before {
-  content: '';
-  position: absolute;
-  left: -4px;
-  top: -3px;
-  height: 0;
-  width: 0px;
-  border-top: 8px solid red;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-}
-
 .tabs * {
   -webkit-user-select: none;
   cursor: default;
@@ -255,6 +243,7 @@ ${spinnerCSS}
 .tab-title {
   color: var(--color-tab);
   padding: 9px 11px 5px 30px;
+  height: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -400,6 +389,18 @@ ${spinnerCSS}
 
 .tab.current .tab-close {
   background: var(--bg-tab--current);
+}
+
+.tab.drag-hover .tab-title {
+  background: #bbb;
+}
+
+.tab.current.drag-hover {
+  border-color: #888;
+}
+
+.tab.current.drag-hover .tab-title {
+  background: #eee;
 }
 
 /* draggable region for OSX and windows */

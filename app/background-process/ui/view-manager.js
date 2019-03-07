@@ -2,7 +2,7 @@ import { app, BrowserView, BrowserWindow, Menu, clipboard } from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
 import path from 'path'
-import {promises as fs} from 'fs'
+import { promises as fs } from 'fs'
 import Events from 'events'
 import _throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
@@ -14,6 +14,7 @@ import normalizeURL from 'normalize-url'
 import viewsRPCManifest from '../rpc-manifests/views'
 import * as zoom from './views/zoom'
 import * as shellMenus from './subwindows/shell-menus'
+import * as locationBar from './subwindows/location-bar'
 import * as statusBar from './subwindows/status-bar'
 import * as permPrompt from './subwindows/perm-prompt'
 import * as modals from './subwindows/modals'
@@ -1047,6 +1048,18 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async moveInpageFind (index, dir) {
     getByIndex(getWindow(this.sender), index).moveInpageFind(dir)
+  },
+
+  async showLocationBar (opts) {
+    await locationBar.show(getWindow(this.sender), opts)
+  },
+
+  async hideLocationBar () {
+    await locationBar.hide(getWindow(this.sender))
+  },
+
+  async runLocationBarCmd (cmd, opts) {
+    return locationBar.runCmd(getWindow(this.sender), cmd, opts)
   },
 
   async showMenu (id, opts) {

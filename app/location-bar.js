@@ -1,13 +1,25 @@
 /* globals customElements */
-import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
-import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
-import { unsafeHTML } from '../vendor/lit-element/lit-html/directives/unsafe-html'
-import { examineLocationInput } from '../lib/urls'
-import * as bg from './bg-process-rpc'
-import commonCSS from './common.css'
+import * as rpc from 'pauls-electron-rpc'
+import { LitElement, html, css } from './vendor/lit-element/lit-element'
+import { repeat } from './vendor/lit-element/lit-html/directives/repeat'
+import { classMap } from './vendor/lit-element/lit-html/directives/class-map'
+import { unsafeHTML } from './vendor/lit-element/lit-html/directives/unsafe-html'
+import { examineLocationInput } from './lib/urls'
+import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
+import bookmarksManifest from '@beaker/core/web-apis/manifests/internal/bookmarks'
+import historyManifest from '@beaker/core/web-apis/manifests/internal/history'
+import locationBarManifest from './background-process/rpc-manifests/location-bar'
+import viewsManifest from './background-process/rpc-manifests/views'
 
-class LocationMenu extends LitElement {
+const bg = {
+  beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
+  bookmarks: rpc.importAPI('bookmarks', bookmarksManifest),
+  history: rpc.importAPI('history', historyManifest),
+  locationBar: rpc.importAPI('background-process-location-bar', locationBarManifest),
+  views: rpc.importAPI('background-process-views', viewsManifest)
+}
+
+class LocationBar extends LitElement {
   static get properties () {
     return {
       inputValue: {type: String},
@@ -19,6 +31,20 @@ class LocationMenu extends LitElement {
   constructor () {
     super()
     this.reset()
+
+    // fetch platform information
+    var {platform} = bg.beakerBrowser.getInfo()
+    window.platform = platform
+    if (platform === 'darwin') {
+      document.body.classList.add('darwin')
+    }
+    if (platform === 'win32') {
+      document.body.classList.add('win32')
+    }
+
+    // export interface
+    window.setup = () => this.reset()
+    window.command = (command, opts) => this.onCommand(command, opts)
   }
 
   reset () {
@@ -27,35 +53,10 @@ class LocationMenu extends LitElement {
     this.currentSelection = 0
   }
 
-  async init (params) {
-    // render
-    await this.requestUpdate()
-
-    // update the input
-    var input = this.shadowRoot.querySelector('input')
-    input.value = this.inputValue = params.value
-    input.focus()
-    if (typeof params.selectionStart === 'number') {
-      input.setSelectionRange(params.selectionStart, params.selectionStart)
-    } else {
-      input.setSelectionRange(input.value.length, input.value.length)
-    }
-
-    // run autocomplete
-    this.queryAutocomplete()
-  }
-
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <input
-          type="text"
-          value="${this.inputValue}"
-          @input=${this.onInputLocation}
-          @keydown=${this.onKeydownLocation}
-          @contextmenu=${this.onContextMenu}
-        >
         <div class="autocomplete-results">
           ${repeat(this.autocompleteResults, (r, i) => this.renderAutocompleteResult(r, i))}
         </div>
@@ -96,34 +97,31 @@ class LocationMenu extends LitElement {
   // events
   // =
 
-  onInputLocation (e) {
-    var value = e.currentTarget.value.trim()
-    if (value && this.inputValue !== value) {
-      this.inputValue = value // update the current value
-      this.currentSelection = 0 // reset the selection
-      this.queryAutocomplete()
-    }
-  }
-
-  onKeydownLocation (e) {
-    // on enter
-    if (e.key === 'Enter') {
-      e.preventDefault()
-
-      let selection = this.autocompleteResults[this.currentSelection]
-      bg.shellMenus.loadURL(selection.url)
-      bg.shellMenus.close()
-      return
-    }
-
-    // on keycode navigations
-    var up = (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'p'))
-    var down = (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n'))
-    if (up || down) {
-      e.preventDefault()
-      if (up && this.currentSelection > 0) { this.currentSelection = this.currentSelection - 1 }
-      if (down && this.currentSelection < this.autocompleteResults.length - 1) { this.currentSelection = this.currentSelection + 1 }
-      this.shadowRoot.querySelector('input').value = this.inputValue = this.autocompleteResults[this.currentSelection].url
+  onCommand (cmd, opts) {
+    switch (cmd) {
+      case 'set-value':
+        if (opts.value && opts.value !== this.inputValue) {
+          this.inputValue = opts.value
+          this.currentSelection = 0
+          this.queryAutocomplete()
+        }
+        break
+      case 'choose-selection':
+        {
+          let selection = this.autocompleteResults[this.currentSelection]
+          bg.locationBar.loadURL(selection.url)
+          bg.locationBar.close()
+        }
+        break
+      case 'move-selection':
+        {
+          if (opts.up && this.currentSelection > 0) { this.currentSelection = this.currentSelection - 1 }
+          if (opts.down && this.currentSelection < this.autocompleteResults.length - 1) { this.currentSelection = this.currentSelection + 1 }
+          let res = this.autocompleteResults[this.currentSelection]
+          this.inputValue = res.url
+          return res.search || res.url
+        }
+        
     }
   }
 
@@ -133,14 +131,14 @@ class LocationMenu extends LitElement {
 
   onClickResult (e) {
     let selection = this.autocompleteResults[e.currentTarget.dataset.resultIndex]
-    bg.shellMenus.loadURL(selection.url)
-    bg.shellMenus.close()
+    bg.locationBar.loadURL(selection.url)
+    bg.locationBar.close()
   }
 
   resize () {
     // adjust height based on rendering
     var height = this.shadowRoot.querySelector('div').clientHeight
-    bg.shellMenus.resizeSelf({height})
+    bg.locationBar.resizeSelf({height})
   }
 
   async queryAutocomplete () {
@@ -189,31 +187,10 @@ class LocationMenu extends LitElement {
     this.resize()
   }
 }
-LocationMenu.styles = [commonCSS, css`
+LocationBar.styles = [css`
 .wrapper {
   background: #fff;
   padding-bottom: 4px; /* add a little breathing room to the bottom */
-}
-
-input {
-  border: 0;
-  padding: 0;
-
-  line-height: 26px;
-  height: 28px;
-  padding-left: 39px;
-  width: 100%;
-  border-bottom: 1px solid #ddd;
-
-  color: #222;
-  font-size: 13.5px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
-  font-weight: 500;
-  letter-spacing: -.2px;
-}
-
-input:focus {
-  outline: 0;
 }
 
 .result {
@@ -284,7 +261,7 @@ input:focus {
 
 `]
 
-customElements.define('location-menu', LocationMenu)
+customElements.define('location-bar', LocationBar)
 
 // internal methods
 // =
