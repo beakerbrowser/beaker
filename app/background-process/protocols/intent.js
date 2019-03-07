@@ -28,13 +28,21 @@ function intentProtocol (request, respond) {
   // DEBUG
   // we have temporarily hardcoded the intents
   // -prf
-  if (urlp.name === 'view-social-profile') {
-    return respond({
-      statusCode: 303,
-      headers: {Location: `dat://beaker.social/#/profile/${encodeURIComponent(urlp.qs.url)}`},
-      data: intoStream('')
-    })
+  switch (urlp.name) {
+    case 'unwalled.garden/view-profile':
+      return respond({
+        statusCode: 303,
+        headers: {Location: `dat://beaker.social/profile/${encodeURIComponent(urlp.qs.url)}`},
+        data: intoStream('')
+      })
+    case 'unwalled.garden/view-feed':
+      return respond({
+        statusCode: 303,
+        headers: {Location: `dat://beaker.social/`},
+        data: intoStream('')
+      })
   }
+
   respond({
     statusCode: 404,
     headers: {'Content-Type': 'text/html; charset=utf-8'},
