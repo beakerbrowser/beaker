@@ -1,4 +1,11 @@
-import {BrowserWindow} from 'electron'
+/**
+ * Status Bar
+ *
+ * NOTES
+ * - There can only ever be one Status Bar window for a given browser window
+ * - Status Bar windows are created with each browser window and then shown/hidden as needed
+ */
+import { BrowserWindow } from 'electron'
 
 const WIDTH = 400
 const HEIGHT = 24
@@ -6,16 +13,16 @@ const HEIGHT = 24
 // globals
 // =
 
-var windows = {} // map of {[parent.id] => BrowserWindow}
+var windows = {} // map of {[parentWindow.id] => BrowserWindow}
 
 // exported api
 // =
 
-export function setup (parent) {
-  windows[parent.id] = new BrowserWindow({
+export function setup (parentWindow) {
+  windows[parentWindow.id] = new BrowserWindow({
     width: WIDTH,
     height: HEIGHT,
-    parent,
+    parent: parentWindow,
     frame: false,
     transparent: true,
     resizable: false,
@@ -27,50 +34,50 @@ export function setup (parent) {
       defaultEncoding: 'utf-8'
     }
   })
-  windows[parent.id].loadFile('status-bar.html')
+  windows[parentWindow.id].loadFile('status-bar.html')
 }
 
-export function destroy (parent) {
-  if (get(parent)) {
-    get(parent).close()
-    delete windows[parent.id]
+export function destroy (parentWindow) {
+  if (get(parentWindow)) {
+    get(parentWindow).close()
+    delete windows[parentWindow.id]
   }
 }
 
-export function get (parent) {
-  return windows[parent.id]
+export function get (parentWindow) {
+  return windows[parentWindow.id]
 }
 
-export function reposition (parent) {
-  var win = get(parent)
+export function reposition (parentWindow) {
+  var win = get(parentWindow)
   if (win) {
-    var {x, y, height} = parent.getBounds()
+    var {x, y, height} = parentWindow.getBounds()
     win.setBounds({x, y: y + height - HEIGHT})
   }
 }
 
-export function show (parent) {
-  var win = get(parent)
+export function show (parentWindow) {
+  var win = get(parentWindow)
   if (win) {
-    reposition(parent)
+    reposition(parentWindow)
     win.showInactive()
   }
 }
 
-export function hide (parent) {
-  if (get(parent)) {
-    get(parent).hide()
+export function hide (parentWindow) {
+  if (get(parentWindow)) {
+    get(parentWindow).hide()
   }
 }
 
-export function set (parent, value) {
-  var win = get(parent)
+export function set (parentWindow, value) {
+  var win = get(parentWindow)
   if (win) {
     if (value) {
-      show(parent)
+      show(parentWindow)
       win.webContents.executeJavaScript(`set('${value}')`)
     } else {
-      hide(parent)
+      hide(parentWindow)
     }
   }
 }
