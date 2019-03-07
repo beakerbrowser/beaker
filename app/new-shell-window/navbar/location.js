@@ -330,6 +330,7 @@ class NavbarLocation extends LitElement {
     // clear the selection range so that the next focusing doesnt carry it over
     window.getSelection().empty()
     bg.views.hideLocationBar()
+    this.shadowRoot.querySelector('.input-container input').value = this.url // reset value
     this.isLocationFocused = false
   }
 
