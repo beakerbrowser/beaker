@@ -159,7 +159,7 @@ function renderStartPageSettings () {
       <input checked=${settings[setting] !== 1 ? 'true' : 'false'} type="checkbox" onchange=${() => toggleSection(setting, settings[setting] === 1 ? 0 : 1)} />
 
       <div class="switch"></div>
-      <span class="text"><span class="fas fa-fw fa-${icon}" style="color: rgba(0,0,0,.75); margin-right: 3px"></span> ${label}</span>
+      <span class="text"><span class="fa-fw ${icon}" style="color: rgba(0,0,0,.75); margin-right: 3px"></span> ${label}</span>
     </label>
   `
 
@@ -177,9 +177,10 @@ function renderStartPageSettings () {
         Choose what content you want on your start page.
       </p>
 
-      ${section('start_section_hide_pinned_bookmarks', 'thumbtack', 'Pinned bookmarks')}
-      ${section('start_section_hide_flyers', 'bullhorn', 'Flyers')}
-      ${section('start_section_hide_suggested_follows', 'user', 'Suggested follows')}
+      ${section('start_section_hide_pinned_bookmarks', 'fas fa-thumbtack', 'Pinned bookmarks')}
+      ${section('start_section_hide_flyers', 'fas fa-bullhorn', 'Flyers')}
+      ${section('start_section_hide_applications', 'far fa-window-maximize', 'Applications')}
+      ${section('start_section_hide_suggested_follows', 'fas fa-user', 'Suggested follows')}
     </div>
   `
 }
