@@ -90,6 +90,7 @@ const STATE_VARS = [
 // =
 
 var activeViews = {} // map of {[win.id]: Array<View>}
+var preloadedNewTabViews = {} // map of {[win.id]: View}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: Events}
 var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
@@ -98,7 +99,7 @@ var noRedirectHostnames = new Set() // set of hostnames which have dat-redirecti
 // =
 
 class View {
-  constructor (win, opts = {isPinned: false}) {
+  constructor (win, opts = {isPinned: false, isHidden: false}) {
     this.browserWindow = win
     this.browserView = new BrowserView({
       webPreferences: {
@@ -123,6 +124,7 @@ class View {
     this.loadError = null // page error state, if any
 
     // browser state
+    this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
     this.liveReloadEvents = null // live-reload event stream
@@ -489,6 +491,7 @@ class View {
   // =
 
   emitUpdateState () {
+    if (this.isHidden) return
     emitUpdateState(this.browserWindow, this)
   }
 
@@ -666,21 +669,37 @@ export function findContainingWindow (view) {
       }
     }
   }
+  for (let winId in preloadedNewTabViews) {
+    if (preloadedNewTabViews[winId].browserView === view) {
+      return preloadedNewTabViews[winId].browserWindow
+    }
+  }
 }
 
 export function create (win, url, opts = {setActive: false, isPinned: false, focusLocationBar: false}) {
-  win = getTopWindow(win)
   url = url || DEFAULT_URL
-  var view = new View(win, {isPinned: opts.isPinned})
-
-  activeViews[win.id] = activeViews[win.id] || []
-  if (opts.isPinned) {
-    activeViews[win.id].splice(indexOfLastPinnedView(win), 0, view)
+  win = getTopWindow(win)
+  var views = activeViews[win.id] = activeViews[win.id] || []
+  
+  var view
+  var preloadedNewTabView = preloadedNewTabViews[win.id]
+  if (url === DEFAULT_URL && !opts.isPinned && preloadedNewTabView) {
+    // use the preloaded new-tab view
+    view = preloadedNewTabView
+    view.isHidden = false // no longer hidden
+    preloadedNewTabView = preloadedNewTabViews[win.id] = null
   } else {
-    activeViews[win.id].push(view)
+    // create a new view
+    view = new View(win, {isPinned: opts.isPinned})
+    view.loadURL(url)
   }
 
-  view.loadURL(url)
+  // add to active views
+  if (opts.isPinned) {
+    views.splice(indexOfLastPinnedView(win), 0, view)
+  } else {
+    views.push(view)
+  }
 
   // make active if requested, or if none others are
   if (opts.setActive || !getActive(win)) {
@@ -690,6 +709,12 @@ export function create (win, url, opts = {setActive: false, isPinned: false, foc
 
   if (opts.focusLocationBar) {
     win.webContents.send('command', 'focus-location')
+  }
+
+  // create a new preloaded view if needed
+  if (!preloadedNewTabView) {
+    preloadedNewTabViews[win.id] = preloadedNewTabView = new View(win, {isHidden: true})
+    preloadedNewTabView.loadURL(DEFAULT_URL)
   }
 
   return view
