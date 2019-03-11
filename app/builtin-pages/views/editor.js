@@ -72,7 +72,7 @@ async function setupWorkingCheckout () {
 
 async function setup () {
   // load data
-  let url = await parseLibraryUrl()
+  let url = window.location.pathname.slice(1)
   let browserInfo = beaker.browser.getInfo()
   OS_USES_META_KEY = browserInfo.platform === 'darwin'
   window.OS_CAN_IMPORT_FOLDERS_AND_FILES = browserInfo.platform === 'darwin'
@@ -151,6 +151,7 @@ async function setup () {
       previewMode: _get(archive, 'info.userSettings.previewMode')
     })
 
+    // listen for changes
     if (_get(archive, 'info.userSettings.isSaved')) {
       let fileActStream = archive.watch()
       fileActStream.addEventListener('changed', onFilesChanged)
@@ -174,6 +175,16 @@ async function setup () {
   // show the general help view
   update()
   showGeneralHelp()
+
+  // load the given path
+  try {
+    let urlp = new URL(url)
+    if (urlp.pathname && !urlp.pathname.endsWith('/')) {
+      models.setActive(await findArchiveNodeAsync(urlp.pathname))
+    }
+  } catch (e) {
+    // ignore
+  }
 }
 
 async function showGeneralHelp () {
@@ -221,10 +232,6 @@ async function localCompare () {
     }
   }
   await checkNode(archiveFsRoot)
-}
-
-async function parseLibraryUrl () {
-  return window.location.pathname.slice(1)
 }
 
 function setSidebarWidth (width) {
