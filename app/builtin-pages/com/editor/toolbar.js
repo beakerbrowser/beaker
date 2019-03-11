@@ -11,13 +11,15 @@ export function render (file, model, opts) {
   var change = file && file.change
   return yo`
     <div class="editor-toolbar">
+      <span class="btn transparent" onclick=${e => onClickNewFile(e)}><i class="far fa-file"></i> new file</span>
+      <span class="divider"></span>
       <span class="btn transparent ${model.isDirty? '' : 'disabled'}"  onclick=${e => onClickSaveFile(e, model)}><i class="fas fa-save"></i> save</span>
       <span class="btn transparent" onclick=${e => onClickOpenFile(e, model)}><i class="fas fa-external-link-alt"></i> view file</span>
       <span class="btn transparent" onclick=${e => onClickRenameFile(e, model)}><i class="fas fa-i-cursor"></i> rename</span>
       <span class="btn transparent" onclick=${e => onClickDeleteFile(e, model)}><i class="fas fa-trash"></i> delete</span>
-      <span class="divider"></span>
       ${opts.previewMode
         ? [
+          yo`<span class="divider"></span>`,
           change
             ? yo`
               <span class="btn transparent disabled">
@@ -61,6 +63,12 @@ function onClickSaveFile (e, model) {
   if (model.isDirty) {
     emit('editor-save-active-model')
   }
+}
+
+function onClickNewFile (e) {
+  e.preventDefault()
+  e.stopPropagation()
+  emit('editor-new-model')
 }
 
 function onClickOpenFile (e, model) {
