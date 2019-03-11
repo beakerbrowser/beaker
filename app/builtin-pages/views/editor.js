@@ -300,6 +300,7 @@ async function findArchiveNodeAsync (path) {
     if (filename.length === 0) continue // first item in array might be empty
     if (!node || !node.isContainer) return null // node not found (we ran into a file prematurely)
     await node.readData() // load latest filetree
+    node.sort()
     node = node._files.find(n => n.name === filename) // move to next child in the tree
   }
   return node
@@ -486,6 +487,7 @@ async function onToggleContainerExpanded (e) {
   node.isExpanded = !node.isExpanded
   if (node.isExpanded) {
     await node.readData({ignoreCache: true})
+    node.sort()
 
     // pass on diff state
     if (node.change === 'add') {
