@@ -41,6 +41,12 @@ function intentProtocol (request, respond) {
         headers: {Location: `dat://beaker.social/`},
         data: intoStream('')
       })
+    case 'unwalled.garden/edit-source':
+      return respond({
+        statusCode: 303,
+        headers: {Location: `beaker://editor/${urlp.qs.url}`},
+        data: intoStream('')
+      })
   }
 
   respond({
