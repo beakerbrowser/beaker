@@ -469,7 +469,7 @@ async function onArchiveDeletePermanently (e) {
 
 async function onSetActive (e) {
   if (e.detail.path) {
-    await models.setActive(findArchiveNode(e.detail.path))
+    await models.setActive(await findArchiveNodeAsync(e.detail.path))
   } else {
     await models.setActive(e.detail.model)
   }
