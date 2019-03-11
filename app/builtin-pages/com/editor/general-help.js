@@ -173,10 +173,6 @@ function renderHotkeyHelp ({OS_USES_META_KEY}) {
       <h3>Hotkeys</h3>
       ${hotkey('New file', cmdOrCtrl, 'N')}
       ${hotkey('Save the current file', cmdOrCtrl, 'S')}
-      ${hotkey('Close the current file', cmdOrCtrl, 'W')}
-      ${hotkey('Cycle tabs', 'Ctrl', 'Tab')}
-      ${hotkey('Cycle tabs (reverse)', 'Ctrl', 'Shift', 'Tab')}
-      ${hotkey('Select tab N', cmdOrCtrl, 'Number')}
     </div>`
 }
 
