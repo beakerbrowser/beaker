@@ -15,6 +15,7 @@ var numUntitled = 0
 
 export function createModel (content, url) {
   var model = monaco.editor.createModel(content, null, url ? monaco.Uri.parse(url) : undefined)
+  model.updateOptions({tabSize: 2})
   model.name = ''
   model.isEditable = true
   model.lang = ''
