@@ -27,6 +27,7 @@ const IS_FROM_SOURCE = (process.defaultApp || /node_modules[\\/]electron[\\/]/.t
 const IS_LINUX = !(/^win/.test(process.platform)) && process.platform !== 'darwin'
 const DOT_DESKTOP_FILENAME = 'appimagekit-beaker-browser.desktop'
 const isBrowserUpdatesSupported = !(IS_LINUX || IS_FROM_SOURCE) // linux is temporarily not supported
+const USER_WEBSITE_TEMPLATE_PATH = path.dirname(require.resolve('@beaker/user-website-template'))
 
 // how long between scheduled auto updates?
 const SCHEDULED_AUTO_UPDATE_DELAY = 24 * 60 * 60 * 1e3 // once a day
@@ -90,10 +91,10 @@ export async function setup () {
   // create a new user if none exists
   var defaultUser = await beakerCore.users.getDefault()
   if (!defaultUser) {
-    let newUserUrl = await beakerCore.dat.library.createNewArchive({title: 'Anonymous', type: ['user', 'unwalled.garden/user']})
+    let newUserUrl = await beakerCore.dat.library.createNewArchive({title: 'Anonymous', type: ['unwalled.garden/person']})
     let newUserArchive = await beakerCore.dat.library.getArchive(newUserUrl)
     await beakerCore.dat.library.getDaemon().exportFilesystemToArchive({
-      srcPath: path.join(__dirname, 'assets/templates/default-profile'),
+      srcPath: USER_WEBSITE_TEMPLATE_PATH,
       dstArchive: newUserArchive,
       inplaceImport: true
     })
