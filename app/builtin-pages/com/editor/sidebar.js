@@ -259,26 +259,17 @@ function isNodeSelected (node) {
 function getIcon (name) {
   let extention = name.split('.').pop()
   switch (extention) {
-    case 'json':
     case 'js':
-      return yo`<i class="fab fa-fw fa-js"></i>`
-    case 'html':
-      return yo`<i class="fab fa-fw fa-html5"></i>`
-    case 'md':
-      return yo`<i class="fab fa-fw fa-markdown"></i>`
-    case 'gitignore':
-      return yo`<i class="fab fa-fw fa-git"></i>`
     case 'css':
-      return yo`<i class="fab fa-fw fa-css3"></i>`
     case 'less':
-      return yo`<i class="fab fa-fw fa-less"></i>`
     case 'scss':
     case 'sass':
-      return yo`<i class="fab fa-fw fa-sass"></i>`
+      return yo`<i class="fas fa-fw fa-code"></i>`
     case 'svg':
     case 'png':
     case 'jpg':
     case 'gif':
+    case 'ico':
       return yo`<i class="far fa-fw fa-image"></i>`
     case 'eot':
     case 'ttf':
