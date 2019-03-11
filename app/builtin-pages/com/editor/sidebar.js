@@ -339,23 +339,24 @@ async function onContextmenu (e, node) {
   const nodeType = isSite ? 'site' : node.type
 
   var items = []
-  items = items.concat([
-    {
-      icon: 'fas fa-external-link-alt',
-      label: `Open ${nodeType}`,
-      click () {
-        window.open(node.url)
+  if (!node.isContainer) {
+    items = items.concat([
+      {
+        icon: 'fas fa-external-link-alt',
+        label: `Open ${nodeType}`,
+        click () {
+          window.open(node.url)
+        }
+      },
+      {
+        icon: 'fas fa-link',
+        label: `Copy URL`,
+        click () {
+          writeToClipboard(node.url)
+        }
       }
-    },
-    {
-      icon: 'fas fa-link',
-      label: `Copy URL`,
-      click () {
-        writeToClipboard(node.url)
-      }
-    }
-  ])
-
+    ])
+  }
   if (!config.isReadonly) {
     if (node.isContainer) {
       items = items.concat([
