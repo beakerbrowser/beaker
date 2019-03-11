@@ -758,8 +758,19 @@ async function onSaveActiveModel () {
 
   await op('Saving...', async () => {
     // write the file
+    try {
+      await workingCheckout.writeFile(path, model.getValue(), 'utf8')
+    } catch (e) {
+      console.error('Failed to save', e)
+      if (e.name === 'ParentFolderDoesntExistError') {
+        throw 'Cannot save to that location: the parent directory does not exist'
+      } else if (e.name === 'InvalidPathError') {
+        throw `Invalid file name (${e.message})`
+      } else {
+        throw e
+      }
+    }
     models.setVersionIdOnSave(model)
-    await workingCheckout.writeFile(path, model.getValue(), 'utf8')
   })
 
   // if it's a new file, close this buffer and reopen the new one
@@ -859,8 +870,10 @@ async function op (msg, fn) {
     update()
   } catch (e) {
     toast.create(e.toString(), 'error', 5e3)
+    throw e
+  } finally {
+    clearTimeout(to)
   }
-  clearTimeout(to)
 }
 
 function fileDiffsToPaths (filediff) {
