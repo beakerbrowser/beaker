@@ -445,7 +445,9 @@ async function onContextmenu (e, node) {
 function onKeydownNewNode (e, node) {
   if (e.key === 'Escape') cancelNewNode(node)
   if (e.key === 'Enter') {
-    emit('editor-create-' + node.type, {path: node.getPathForName(e.currentTarget.value)})
+    var value = e.currentTarget.value
+    cancelNewNode(node)
+    emit('editor-create-' + node.type, {path: node.getPathForName(value)})
   }
 }
 
@@ -453,6 +455,9 @@ function onKeydownNewNode (e, node) {
 // =
 
 function cancelNewNode (node) {
+  if (node.isCanceled) return
+  node.isCanceled = true
+  
   // remove the new node
   node.parent._files = node.parent._files.filter(f => f !== node)
   rerender()

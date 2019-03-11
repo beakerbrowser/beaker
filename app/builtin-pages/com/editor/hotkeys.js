@@ -47,7 +47,6 @@ export function onGlobalKeydown (e) {
   })
 
   if (HOTKEY) {
-    console.log('preempting!')
     e.preventDefault()
     e.stopPropagation()
     HOTKEY.fn()
