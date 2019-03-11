@@ -10,6 +10,7 @@ import {writeToClipboard, emit} from '../../../lib/fg/event-handlers'
 
 export function render ({archive, models, openLinkVersion, archiveInfo, isReadonly}) {
   var isOwner = archive.info.isOwner
+  var url = archive.checkout(openLinkVersion).url
   var versionLabel = (Number.isNaN(+openLinkVersion)) ? openLinkVersion : `v${openLinkVersion}`
   if (versionLabel === 'latest') versionLabel = ''
   var activeModel = models.find(m => m.isActive)
@@ -27,10 +28,12 @@ export function render ({archive, models, openLinkVersion, archiveInfo, isReadon
               <span class="far fa-clone"></span> Make an editable copy
             </a>
           </span>`}
-        <a class="btn primary" href=${archive.checkout(openLinkVersion).url} target="_blank">
+        <a class="btn primary" href=${url} target="_blank">
           <i class="fas fa-external-link-alt"></i> Open ${versionLabel}
         </a>
-        ${renderShareMenu(archive)}
+        <button class="btn transparent nofocus" onclick=${() => onCopy(url, 'URL copied to clipboard')}>
+          <span class="fas fa-link"></span> Copy link
+        </button>
       </div>
     </div>`
 }
@@ -52,50 +55,6 @@ function renderTab (model) {
       <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
     </div>
   `
-}
-
-function renderShareMenu (archive) {
-  var url = archive.checkout().url
-  return toggleable2({
-    id: 'share-tool',
-    closed: ({onToggle}) => yo`
-      <div class="dropdown share toggleable-container">
-        <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
-          <span class="fa fa-share-square"></span> Share
-        </button>
-      </div>`,
-    open: ({onToggle}) => yo`
-      <div class="dropdown share toggleable-container">
-        <button class="btn transparent nofocus toggleable" onclick=${onToggle}>
-          <span class="fa fa-share-square"></span> Share
-        </button>
-
-        <div class="dropdown-items subtle-shadow">
-          <div class="dropdown-item no-border">
-            <div class="label">
-              Share
-            </div>
-
-            <p class="small">
-              Anyone with this link can visit this site.
-            </p>
-
-            <p class="copy-url">
-              <input type="text" disabled value="${url}"/>
-
-              <button class="btn" onclick=${() => onCopy(url, 'URL copied to clipboard')}>
-                Copy
-              </button>
-
-              <a href=${url} target="_blank" class="btn primary full-width center">
-                Open
-                <span class="fas fa-external-link-alt"></span>
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>`
-  })
 }
 
 // event handlers
