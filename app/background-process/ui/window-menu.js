@@ -64,7 +64,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Preferences',
         accelerator: 'Command+,',
         click (item, win) {
-          if (win) viewManager.create(win, 'beaker://settings')
+          if (win) viewManager.create(win, 'beaker://settings', {setActive: true})
           else createShellWindow({ pages: ['beaker://settings'] })
         }
       },
@@ -116,7 +116,7 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           createWindowIfNone(win, (win) => {
             dialog.showOpenDialog({ title: 'Open file...', properties: ['openFile', 'createDirectory'] }, files => {
-              if (files && files[0]) { viewManager.create(win, 'file://' + files[0]) }
+              if (files && files[0]) { viewManager.create(win, 'file://' + files[0], {setActive: true}) }
             })
           })
         }
@@ -320,19 +320,19 @@ export function buildWindowMenu (opts = {}) {
             label: 'Open Archives Debug Page',
             enabled: !noWindows,
             click: function (item, win) {
-              if (win) viewManager.create(win, 'beaker://internal-archives/')
+              if (win) viewManager.create(win, 'beaker://internal-archives/', {setActive: true})
             }
           }, {
             label: 'Open Dat-DNS Cache Page',
             enabled: !noWindows,
             click: function (item, win) {
-              if (win) viewManager.create(win, 'beaker://dat-dns-cache/')
+              if (win) viewManager.create(win, 'beaker://dat-dns-cache/', {setActive: true})
             }
           }, {
             label: 'Open Debug Log Page',
             enabled: !noWindows,
             click: function (item, win) {
-              if (win) viewManager.create(win, 'beaker://debug-log/')
+              if (win) viewManager.create(win, 'beaker://debug-log/', {setActive: true})
             }
           }]
       },
@@ -419,7 +419,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Show Full History',
         accelerator: showHistoryAccelerator,
         click: function (item, win) {
-          if (win) viewManager.create(win, 'beaker://history')
+          if (win) viewManager.create(win, 'beaker://history', {setActive: true})
           else createShellWindow({ pages: ['beaker://history'] })
         }
       },
@@ -480,19 +480,19 @@ export function buildWindowMenu (opts = {}) {
         label: 'Help',
         accelerator: 'F1',
         click: function (item, win) {
-          if (win) viewManager.create(win, 'https://beakerbrowser.com/docs/')
+          if (win) viewManager.create(win, 'https://beakerbrowser.com/docs/', {setActive: true})
         }
       },
       {
         label: 'Report Bug',
         click: function (item, win) {
-          if (win) viewManager.create(win, 'https://github.com/beakerbrowser/beaker/issues')
+          if (win) viewManager.create(win, 'https://github.com/beakerbrowser/beaker/issues', {setActive: true})
         }
       },
       {
         label: 'Mailing List',
         click: function (item, win) {
-          if (win) viewManager.create(win, 'https://groups.google.com/forum/#!forum/beaker-browser')
+          if (win) viewManager.create(win, 'https://groups.google.com/forum/#!forum/beaker-browser', {setActive: true})
         }
       }
     ]
@@ -503,7 +503,7 @@ export function buildWindowMenu (opts = {}) {
       label: 'About',
       role: 'about',
       click: function (item, win) {
-        if (win) viewManager.create(win, 'beaker://settings')
+        if (win) viewManager.create(win, 'beaker://settings', {setActive: true})
       }
     })
   }
