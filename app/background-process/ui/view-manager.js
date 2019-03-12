@@ -1,4 +1,4 @@
-import { app, BrowserView, BrowserWindow, Menu, clipboard } from 'electron'
+import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard } from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
 import path from 'path'
@@ -697,13 +697,28 @@ export function create (win, url, opts = {setActive: false, isPinned: false, foc
   return view
 }
 
-export function remove (win, view) {
+export async function remove (win, view) {
   win = getTopWindow(win)
   // find
   var views = getAll(win)
   var i = views.indexOf(view)
   if (i == -1) {
     return console.warn('view-manager remove() called for missing view', view)
+  }
+
+  // give the 'onbeforeunload' a chance to run
+  var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(view.webContents)
+  if (onBeforeUnloadReturnValue) {
+    var choice = dialog.showMessageBox({
+      type: 'question',
+      buttons: ['Leave', 'Stay'],
+      title: 'Do you want to leave this site?',
+      message: 'Changes you made may not be saved.',
+      defaultId: 0,
+      cancelId: 1
+    })
+    var leave = (choice === 0)
+    if (!leave) return
   }
 
   // save, in case the user wants to restore it
@@ -1130,4 +1145,14 @@ function addToNoRedirects (url) {
   } catch (e) {
     console.log('Failed to add URL to noRedirectHostnames', url, e)
   }
+}
+
+async function fireBeforeUnloadEvent (wc) {
+  return wc.executeJavaScript(`
+    (function () {
+      let unloadEvent = new Event('beforeunload', {bubbles: false, cancelable: true})
+      unloadEvent.returnValue = false
+      return window.dispatchEvent(unloadEvent)
+    })()
+  `)
 }
