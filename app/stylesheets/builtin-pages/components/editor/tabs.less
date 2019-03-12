@@ -11,9 +11,10 @@
   .tab {
     height: 100%;
     line-height: 35px;
-    flex: 0 0 auto;
     z-index: 1;
     cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
 
     // border behaviors
     border-bottom: 1px solid #ccc;
@@ -25,17 +26,6 @@
       border: 1px solid #ccc;
       border-bottom-color: transparent;
     }
-
-    i {
-      opacity: 0;
-      padding-left: 10px;
-      z-index: 100;
-      cursor: pointer;
-    }
-    &:hover i,
-    &.active i {
-      opacity: 1;
-    }
   }
 
   .unused-space {
@@ -45,6 +35,7 @@
 
   .ctrls {
     display: flex;
+    flex: 0 0 auto;
     border-bottom: 1px solid #ccc;
     & > * {
       margin-right: 4px;

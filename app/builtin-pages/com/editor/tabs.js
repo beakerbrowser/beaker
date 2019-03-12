@@ -52,20 +52,12 @@ function renderTab (model) {
       ondrop=${(e) => onTabDragDrop(e, model)}
     >
       ${model.name}${model.isDirty ? '*' : ''}
-      <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
     </div>
   `
 }
 
 // event handlers
 // =
-
-function onCloseTab (e, model) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  emit('editor-unload-model', {model})
-}
 
 function onClickTab (e, model) {
   e.preventDefault()
@@ -108,30 +100,29 @@ async function onContextmenuTab (e, model) {
   e.preventDefault()
   e.stopPropagation()
 
-  var items = []
-
-  if (model.isEditable) {
-    items = items.concat([
-      {
-        label: 'Close',
-        click: async () => {
-          emit('editor-unload-model', {model})
-        }
-      },
-      {
-        label: 'Close Others',
-        click: () => {
-          emit('editor-unload-all-models-except', {model})
-        }
-      },
-      {
-        label: 'Close All',
-        click: () => {
-          emit('editor-unload-all-models')
-        }
+  var items = [
+    {
+      icon: false,
+      label: 'Close',
+      click: async () => {
+        emit('editor-unload-model', {model})
       }
-    ])
-  }
+    },
+    {
+      icon: false,
+      label: 'Close Others',
+      click: () => {
+        emit('editor-unload-all-models-except', {model})
+      }
+    },
+    {
+      icon: false,
+      label: 'Close All',
+      click: () => {
+        emit('editor-unload-all-models')
+      }
+    }
+  ]
 
   contextMenu.create({
     x: e.clientX,
