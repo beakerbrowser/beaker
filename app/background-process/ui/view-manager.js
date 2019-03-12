@@ -177,10 +177,12 @@ class View {
   }
 
   get title () {
-    // TODO
-    // this doesnt give us the best and quickest results
-    // it'd be better to watch title-change events and to track the title manually
-    return this.webContents.getTitle()
+    var title = this.webContents.getTitle()
+    if (this.datInfo && this.datInfo.title && (!title || title.startsWith(this.origin))) {
+      // fallback to the dat.json title field if the page doesnt provide a title
+      title = this.datInfo.title
+    }
+    return title
   }
 
   get canGoBack () {
