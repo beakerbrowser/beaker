@@ -157,9 +157,10 @@ class SiteInfoMenu extends LitElement {
 
   onTogglePerm (perm) {
     // update perm
-    var newValue = (this.sitePerms[perm] === 1) ? 0 : 1
+    var permObj = this.sitePerms.find(o => o.perm === perm)
+    var newValue = (permObj.value == 1) ? 0 : 1
     bg.sitedata.setPermission(this.url, perm, newValue).then(() => {
-      this.sitePerms[perm] = newValue
+      permObj.value = newValue
       this.requestUpdate()
     })
   }
