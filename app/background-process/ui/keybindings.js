@@ -65,18 +65,19 @@ export function createKeybindingProtectionsHandler (win) {
     var key = input.key
     if (key === 'Dead') key = 'i' // not... really sure what 'Dead' is about -prf
     if (key === '=') key = '+' // let's not differentiate the shift (see #1155) -prf
+    var match
     for (var kb of KEYBINDINGS) {
       if (key === kb.binding.key) {
         if (kb.binding.control && !input.control) continue
         if (kb.binding.cmd && !input.meta) continue
         if (kb.binding.shift && !input.shift) continue
         if (kb.binding.alt && !input.alt) continue
-
-        // match, run
-        e.preventDefault()
-        kb.cmd(null, win)
-        return
+        match = kb
       }
+    }
+    if (match) {
+      e.preventDefault()
+      match.cmd(null, win)
     }
   }
 }
