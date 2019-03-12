@@ -21,7 +21,7 @@ export const PERM_ICONS = {
   experimentalGlobalFetch: 'fas fa-download',
   experimentalDatPeers: 'fas fa-exchange-alt',
   experimentalCapturePage: 'fas fa-camera',
-  dangerousAppControl: 'fas flask',
+  dangerousAppControl: 'fas fa-flask'
 }
 
 export function renderPermDesc ({bg, url, permId, permParam, permOpts}) {
