@@ -28,7 +28,7 @@ class PageMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <div class="menu-item" @click=${this.onClickViewFiles}>
+        <div class="menu-item" @click=${this.onClickViewSource}>
           <i class="fas fa-code"></i>
           View Source
         </div>
@@ -54,16 +54,16 @@ class PageMenu extends LitElement {
   // events
   // =
 
-  onClickViewFiles () {
+  onClickViewSource () {
     bg.shellMenus.close()
-    bg.shellMenus.createTab(`beaker://library/${this.url}`)
+    bg.shellMenus.createTab(`beaker://editor/${this.url}`)
   }
 
   async onClickFork () {
     bg.shellMenus.close()
     const forkUrl = await bg.datArchive.forkArchive(this.url, {prompt: true}).catch(() => false)
     if (forkUrl) {
-      bg.shellMenus.loadURL(`beaker://library/${forkUrl}#setup`)
+      bg.shellMenus.loadURL(`beaker://editor/${forkUrl}`)
     }
   }
 

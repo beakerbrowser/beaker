@@ -57,25 +57,25 @@ export function renderPermDesc ({bg, url, permId, permParam, permOpts}) {
 
     case 'modifyDat':
       {
-        let viewArchive = openUrl('beaker://library/' + permParam)
+        let viewArchive = openUrl(permParam)
         return html`<span>Write files to <a @click=${viewArchive}>${permOpts.title}</a></span>`
       }
 
     case 'deleteDat':
       {
-        let viewArchive = openUrl('beaker://library/' + permParam)
+        let viewArchive = openUrl(permParam)
         return html`<span>Delete the archive <a @click=${viewArchive}>${permOpts.title}</a></span>`
       }
 
     case 'experimentalLibraryRequestAdd':
       {
-        let viewArchive = openUrl('beaker://library/' + permParam)
+        let viewArchive = openUrl(permParam)
         return html`<span>Seed <a @click=${viewArchive}>${permOpts.title}</a></span>`
       }
 
     case 'experimentalLibraryRequestRemove':
       {
-        let viewArchive = openUrl('beaker://library/' + permParam)
+        let viewArchive = openUrl(permParam)
         return html`<span>Stop seeding <a @click=${viewArchive}>${permOpts.title}</a></span>`
       }
 

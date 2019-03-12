@@ -261,7 +261,7 @@ class BrowserMenu extends LitElement {
 
     // create a new archive
     const url = await bg.datArchive.createArchive({template, prompt: false})
-    bg.shellMenus.createTab('beaker://library/' + url + '#setup')
+    bg.shellMenus.createTab('beaker://editor/' + url)
     bg.shellMenus.close()
   }
 
@@ -279,7 +279,7 @@ class BrowserMenu extends LitElement {
     // create a new archive
     const url = await bg.datArchive.createArchive({prompt: false})
     await bg.archives.setLocalSyncPath(url, folder[0], {previewMode: true})
-    bg.shellMenus.createTab('beaker://library/' + url + '#setup')
+    bg.shellMenus.createTab('beaker://editor/' + url)
     bg.shellMenus.close()
   }
 
@@ -303,8 +303,8 @@ class BrowserMenu extends LitElement {
     })
     await Promise.all(files.map(src => bg.datArchive.importFromFilesystem({src, dst: url, inplaceImport: false})))
 
-    // open the new archive in the library
-    bg.shellMenus.createTab('beaker://library/' + url + '#setup')
+    // open the new archive in the editor
+    bg.shellMenus.createTab('beaker://editor/' + url)
     bg.shellMenus.close()
   }
 

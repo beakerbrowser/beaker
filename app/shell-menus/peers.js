@@ -94,7 +94,7 @@ class PeersMenu extends LitElement {
           `}
 
         <div class="network-url">
-          <a @click=${e => this.onOpenPage(`beaker://library/${this.url}#network`)}>
+          <a @click=${e => this.onOpenPage(`beaker://swarm-debugger/${this.url}`)}>
             <i class="fa fa-cog"></i>
             View network activity
           </a>

@@ -68,7 +68,7 @@ class LocalPathMenu extends LitElement {
   }
 
   onClickConfigure () {
-    bg.shellMenus.createTab(`beaker://library/dat://${this.datInfo.key}#settings`)
+    bg.shellMenus.createTab(`beaker://editor/dat://${this.datInfo.key}`)
     bg.shellMenus.close()
   }
 }
