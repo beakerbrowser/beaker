@@ -165,6 +165,8 @@ function renderReadme (archiveInfo, readmeMd) {
 }
 
 function renderHotkeyHelp ({OS_USES_META_KEY}) {
+  return
+  // TODO restoreme when hotkeys are actually implemented again
   const cmd = '⌘'
   const cmdOrCtrl = OS_USES_META_KEY ? cmd : 'Ctrl'
   const hotkey = (action, ...keys) => yo`<div><strong>${keys.join(' + ')}</strong> - ${action}</div>`

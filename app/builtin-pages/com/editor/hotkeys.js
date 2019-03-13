@@ -1,12 +1,12 @@
 import {emit} from '../../../lib/fg/event-handlers'
 
 const HOTKEYS = [
-  {modifiers: ['CmdOrCtrl'], key: 'n', fn: () => emit('editor-new-model')},
   {modifiers: ['CmdOrCtrl'], key: 's', fn: () => emit('editor-save-active-model')},
-
+  
   // DISABLED
   // these hotkeys require keyboard lock of some kind
   // -prf
+  // {modifiers: ['CmdOrCtrl'], key: 'n', fn: () => emit('editor-new-model')},
   // {modifiers: ['CmdOrCtrl'], key: 'w', fn: () => emit('editor-unload-active-model')},
   // {modifiers: ['Ctrl', 'Shift'], key: 'Tab', fn: () => emit('editor-cycle-tabs', {reverse: true})},
   // {modifiers: ['Ctrl'], key: 'Tab', fn: () => emit('editor-cycle-tabs')},
