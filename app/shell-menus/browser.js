@@ -128,16 +128,16 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onShowSubmenu('create-new')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/?new')/* TODO restore when there are more options this.onShowSubmenu('create-new')*/}>
             <i class="far fa-plus-square"></i>
-            <span class="label">Create New</span>
-            <i class="more fa fa-angle-right"></i>
+            <span class="label">Create New Website</span>
+            ${''/* TODO restoreme <i class="more fa fa-angle-right"></i>*/}
           </div>
 
-          <div class="menu-item" @click=${e => this.onShareFiles(e)}>
+          ${''/* TODO restoreme <div class="menu-item" @click=${e => this.onShareFiles(e)}>
             <i class="fa fa-upload"></i>
             <span class="label">Share Files</span>
-          </div>
+          </div>*/}
         </div>
 
         <div class="section">
