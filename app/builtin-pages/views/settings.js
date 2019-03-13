@@ -178,9 +178,7 @@ function renderStartPageSettings () {
       </p>
 
       ${section('start_section_hide_pinned_bookmarks', 'fas fa-thumbtack', 'Pinned bookmarks')}
-      ${section('start_section_hide_flyers', 'fas fa-bullhorn', 'Flyers')}
       ${section('start_section_hide_applications', 'far fa-window-maximize', 'Applications')}
-      ${section('start_section_hide_suggested_follows', 'fas fa-user', 'Suggested follows')}
     </div>
   `
 }
