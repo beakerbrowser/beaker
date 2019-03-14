@@ -136,9 +136,14 @@ class LocationBar extends LitElement {
   }
 
   resize () {
+    // DISABLED
+    // this was causing major performance costs
+    // maybe we should use transparent windows instead?
+    // -prf
+
     // adjust height based on rendering
-    var height = this.shadowRoot.querySelector('div').clientHeight
-    bg.locationBar.resizeSelf({height})
+    // var height = this.shadowRoot.querySelector('div').clientHeight
+    // bg.locationBar.resizeSelf({height})
   }
 
   async queryAutocomplete () {
@@ -169,7 +174,7 @@ class LocationBar extends LitElement {
     }
 
     // apply limit
-    finalResults = finalResults.slice(0, 10)
+    finalResults = finalResults.slice(0, 11)
 
     // read bookmark state
     await Promise.all(finalResults.map(async r => {
