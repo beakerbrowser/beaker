@@ -91,7 +91,7 @@ export async function setup () {
   // create a new user if none exists
   var defaultUser = await beakerCore.users.getDefault()
   if (!defaultUser) {
-    let newUserUrl = await beakerCore.dat.library.createNewArchive({title: 'Anonymous', type: ['unwalled.garden/person']})
+    let newUserUrl = await beakerCore.dat.library.createNewArchive({title: 'Anonymous'})
     let newUserArchive = await beakerCore.dat.library.getArchive(newUserUrl)
     await beakerCore.dat.library.getDaemon().exportFilesystemToArchive({
       srcPath: USER_WEBSITE_TEMPLATE_PATH,
