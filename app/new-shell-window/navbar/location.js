@@ -346,7 +346,7 @@ class NavbarLocation extends LitElement {
     })
   }
 
-  async onKeydownLocation (e) {
+  onKeydownLocation (e) {
     if (e.key === 'Escape') {
       this.unfocusLocation()
       return
@@ -360,8 +360,9 @@ class NavbarLocation extends LitElement {
     var down = (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n'))
     if (up || down) {
       e.preventDefault()
-      var value = await bg.views.runLocationBarCmd('move-selection', {up, down})
-      this.shadowRoot.querySelector('.input-container input').value = value
+      bg.views.runLocationBarCmd('move-selection', {up, down}).then(value => {
+        this.shadowRoot.querySelector('.input-container input').value = value
+      })
       return
     }
   }
