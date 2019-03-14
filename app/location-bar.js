@@ -162,7 +162,7 @@ class LocationBar extends LitElement {
     var gotoResult = { url: vWithProtocol, title: 'Go to ' + this.inputValue, isGuessingTheScheme }
     var searchResult = {
       search: this.inputValue,
-      title: 'Beaker Search',
+      title: `Search for "${this.inputValue}"`,
       url: vSearch
     }
     if (isProbablyUrl) finalResults = [gotoResult, searchResult]
