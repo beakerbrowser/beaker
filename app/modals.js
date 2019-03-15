@@ -1,6 +1,7 @@
 /* globals customElements */
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './modals/bg-process-rpc'
+import './modals/setup'
 import './modals/create-archive'
 import './modals/fork-archive'
 import './modals/select-archive'
@@ -59,6 +60,8 @@ class ModalsWrapper extends LitElement {
 
   renderMenu () {
     switch (this.currentModal) {
+      case 'setup':
+        return html`<setup-modal></setup-modal>`
       case 'create-archive':
         return html`<create-archive-modal></create-archive-modal>`
       case 'fork-archive':

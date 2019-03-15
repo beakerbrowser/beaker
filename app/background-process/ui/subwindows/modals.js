@@ -87,6 +87,7 @@ export async function create (webContents, modalName, params = {}) {
     console.log('Modals window says:', message)
   })
   win.loadURL('beaker://modals/')
+  win.focus()
 
   // run the modal flow
   var result
