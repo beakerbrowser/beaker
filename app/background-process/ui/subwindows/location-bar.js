@@ -61,7 +61,7 @@ export function get (parentWindow) {
 
 export function reposition (parentWindow) {
   var win = get(parentWindow)
-  if (win) {
+  if (win && win.boundsOpt) {
     var parentBounds = parentWindow.getBounds()
     win.setBounds({
       x: parentBounds.x + win.boundsOpt.x,
