@@ -219,16 +219,19 @@ export function createShellWindow (windowState) {
       }
       viewManager.initializeFromSnapshot(win, state.pages)
 
+      // DISABLED
+      // not sure whether we'll need this
+      // -prf
       // run setup modal
-      let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
-      let hasDoneSetup = Number(await beakerCore.dbs.sitedata.get('beaker://shell-window', 'has_done_setup')) === 1
-      if (!!beakerCore.getEnvVar('BEAKER_RUN_SETUP_FLOW')) {
-        hasDoneSetup = false
-      }
-      if (!isTestDriverActive && !hasDoneSetup) {
-        subwindows.modals.create(win.webContents, 'setup')
-        await beakerCore.dbs.sitedata.set('beaker://shell-window', 'has_done_setup', 1)
-      }
+      // let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
+      // let hasDoneSetup = Number(await beakerCore.dbs.sitedata.get('beaker://shell-window', 'has_done_setup')) === 1
+      // if (!!beakerCore.getEnvVar('BEAKER_RUN_SETUP_FLOW')) {
+      //   hasDoneSetup = false
+      // }
+      // if (!isTestDriverActive && !hasDoneSetup) {
+      //   subwindows.modals.create(win.webContents, 'setup')
+      //   await beakerCore.dbs.sitedata.set('beaker://shell-window', 'has_done_setup', 1)
+      // }
     }
   }
 
