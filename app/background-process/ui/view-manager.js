@@ -1173,11 +1173,18 @@ function addToNoRedirects (url) {
 }
 
 async function fireBeforeUnloadEvent (wc) {
-  return wc.executeJavaScript(`
-    (function () {
-      let unloadEvent = new Event('beforeunload', {bubbles: false, cancelable: true})
-      unloadEvent.returnValue = false
-      return window.dispatchEvent(unloadEvent)
-    })()
-  `)
+  try {
+    if (wc.isWaitingForResponse()) {
+      return // dont bother
+    }
+    return await wc.executeJavaScript(`
+      (function () {
+        let unloadEvent = new Event('beforeunload', {bubbles: false, cancelable: true})
+        unloadEvent.returnValue = false
+        return window.dispatchEvent(unloadEvent)
+      })()
+    `)
+    } catch (e) {
+      // ignore
+    }
 }
