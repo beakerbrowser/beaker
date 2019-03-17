@@ -52,6 +52,7 @@ function renderTab (model) {
       ondrop=${(e) => onTabDragDrop(e, model)}
     >
       ${model.name}${model.isDirty ? '*' : ''}
+      <i class="fa fa-times" onclick=${(e) => onCloseTab(e, model)}></i>
     </div>
   `
 }
@@ -65,6 +66,13 @@ function onClickTab (e, model) {
 
   if (e.which == 2) emit('editor-unload-model', {model})
   else if (e.which == 1) emit('editor-set-active', {model})
+}
+
+function onCloseTab (e, model) {
+  e.preventDefault()
+  e.stopPropagation()
+
+  emit('editor-unload-model', {model})
 }
 
 let dragSrcModel = null

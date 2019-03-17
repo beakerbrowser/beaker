@@ -26,6 +26,17 @@
       border: 1px solid #ccc;
       border-bottom-color: transparent;
     }
+
+    i {
+      opacity: 0;
+      padding-left: 10px;
+      z-index: 100;
+      cursor: pointer;
+    }
+    &:hover i,
+    &.active i {
+      opacity: 1;
+    }
   }
 
   .unused-space {
