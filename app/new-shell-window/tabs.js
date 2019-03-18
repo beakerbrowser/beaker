@@ -71,7 +71,7 @@ class ShellWindowTabs extends LitElement {
         ${tab.isPinned
           ? ''
           : html`
-            <div class="tab-title">${tab.title}</div>
+            <div class="tab-title">${tab.title || tab.url}</div>
             ${tab.isAudioMuted
               ? html`<span class="fas fa-volume-mute"></span>`
               : tab.isCurrentlyAudible
@@ -229,6 +229,7 @@ ${spinnerCSS}
   top: 6px;
   height: 30px;
   width: 235px;
+  min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
   -webkit-app-region: no-drag;
   border: 1px solid transparent;
 }

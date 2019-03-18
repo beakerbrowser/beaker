@@ -19,7 +19,7 @@ var windows = {} // map of {[parentWindow.id] => BrowserWindow}
 // =
 
 export function setup (parentWindow) {
-  windows[parentWindow.id] = new BrowserWindow({
+  var win = windows[parentWindow.id] = new BrowserWindow({
     width: WIDTH,
     height: HEIGHT,
     parent: parentWindow,
@@ -30,11 +30,15 @@ export function setup (parentWindow) {
     show: false,
     fullscreenable: false,
     hasShadow: false,
+    focusable: false,
+    backgroundColor: '#00000000', // transparent black
     webPreferences: {
       defaultEncoding: 'utf-8'
     }
   })
-  windows[parentWindow.id].loadFile('status-bar.html')
+  win.setIgnoreMouseEvents(true)
+  win.loadFile('status-bar.html')
+  win.showInactive()
 }
 
 export function destroy (parentWindow) {
@@ -60,24 +64,22 @@ export function show (parentWindow) {
   var win = get(parentWindow)
   if (win) {
     reposition(parentWindow)
-    win.showInactive()
+    win.setOpacity(1)
   }
 }
 
 export function hide (parentWindow) {
-  if (get(parentWindow)) {
-    get(parentWindow).hide()
+  var win = get(parentWindow)
+  if (win) {
+    win.setOpacity(0)
   }
 }
 
 export function set (parentWindow, value) {
   var win = get(parentWindow)
   if (win) {
-    if (value) {
-      show(parentWindow)
-      win.webContents.executeJavaScript(`set('${value}')`)
-    } else {
-      hide(parentWindow)
-    }
+    if (value) show(parentWindow)
+    win.webContents.executeJavaScript(`set(${JSON.stringify(value)})`)
+    if (!value) hide(parentWindow)
   }
 }

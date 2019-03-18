@@ -2,7 +2,6 @@ import path from 'path'
 import fs from 'fs'
 import { app, dialog, shell } from 'electron'
 import mime from 'mime'
-import unusedFilename from 'unused-filename'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
@@ -34,32 +33,11 @@ export function registerListener (win, opts = {}) {
     // - if `opts.saveAs` is being used, there may be multiple active event handlers
     if (item.isHandled) { return }
 
-    // build a path to an unused name in the downloads folder
-    let filePath = opts.saveAs ? opts.saveAs : unusedFilename.sync(path.join(app.getPath('downloads'), item.getFilename()))
-
     // track as an active download
-    item.id = ('' + Date.now()) + ('' + Math.random()) // pretty sure this is collision proof but replace if not -prf
-    item.name = path.basename(filePath)
-    if (item.name.split('.').length < 2 && item.getMimeType()) {
-      const ext = `.${mime.extension(item.getMimeType())}`
-      if (ext !== '.bin') {
-        item.name += ext
-        filePath += ext
-      }
-    }
-    item.setSavePath(filePath)
+    item.id = ('' + Date.now()) + ('' + Math.random())
+    if (opts.saveAs) item.setSavePath(opts.saveAs)
     item.isHandled = true
     item.downloadSpeed = speedometer()
-
-    if (!opts.trusted) {
-      item.pause()
-      var allowed = await requestPermission('download', wc, {url: item.getURL(), filename: item.name})
-      if (!allowed) {
-        item.cancel()
-        return
-      }
-      item.resume()
-    }
 
     downloads.push(item)
 
@@ -70,9 +48,13 @@ export function registerListener (win, opts = {}) {
       openOrFocusDownloadsPage(win)
     }
 
-    // update dock-icon progress bar
     var lastBytes = 0
     item.on('updated', () => {
+      // set name if not already done
+      if (!item.name) {
+        item.name = path.basename(item.getSavePath())
+      }
+
       var sumProgress = {
         receivedBytes: getSumReceivedBytes(),
         totalBytes: getSumTotalBytes()
@@ -97,7 +79,7 @@ export function registerListener (win, opts = {}) {
         if (item.getURL().startsWith('data:')) {
           let parsed = parseDataURL(item.getURL())
           if (parsed) {
-            fs.writeFileSync(filePath, parsed.body)
+            fs.writeFileSync(item.getSavePath(), parsed.body)
             overrides = {
               state: 'completed',
               receivedBytes: parsed.body.length,
@@ -123,7 +105,7 @@ export function registerListener (win, opts = {}) {
       if (state === 'completed') {
         // flash the dock on osx
         if (process.platform === 'darwin') {
-          app.dock.downloadFinished(filePath)
+          app.dock.downloadFinished(item.getSavePath())
         }
       }
 
