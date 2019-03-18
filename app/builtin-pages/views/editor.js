@@ -397,8 +397,6 @@ function onGlobalMousemove (e) {
 function onBeforeUnload (e) {
   if (models.checkForDirtyFiles()) {
     e.returnValue = 'You have unsaved changes, are you sure you want to leave?'
-  } else if (models.getModels().length) {
-    e.returnValue = 'Leave the editor?'
   }
 }
 
