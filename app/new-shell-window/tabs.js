@@ -71,7 +71,7 @@ class ShellWindowTabs extends LitElement {
         ${tab.isPinned
           ? ''
           : html`
-            <div class="tab-title">${tab.title}</div>
+            <div class="tab-title">${tab.title || tab.url}</div>
             ${tab.isAudioMuted
               ? html`<span class="fas fa-volume-mute"></span>`
               : tab.isCurrentlyAudible
