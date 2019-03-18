@@ -212,6 +212,7 @@ ${spinnerCSS}
   top: 6px;
   height: 30px;
   width: 235px;
+  min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
   -webkit-app-region: no-drag;
   border: 1px solid transparent;
 }
