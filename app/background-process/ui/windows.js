@@ -255,11 +255,17 @@ export function createShellWindow (windowState) {
   win.on('blur', sendToWebContents('blur'))
   win.on('app-command', (e, cmd) => { onAppCommand(win, e, cmd) })
   win.on('enter-full-screen', e => {
+    // update UI
+    viewManager.emitReplaceState(win)
+
     // TODO
     // registerGlobalKeybinding(win, 'Esc', onEscape(win))
     // sendToWebContents('enter-full-screen')(e)
   })
   win.on('leave-full-screen', e => {
+    // update UI
+    viewManager.emitReplaceState(win)
+    
     // TODO
     // unregisterGlobalKeybinding(win, 'Esc')
     // sendToWebContents('leave-full-screen')(e)

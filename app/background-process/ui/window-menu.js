@@ -380,7 +380,15 @@ export function buildWindowMenu (opts = {}) {
             if (active) active.toggleLiveReloading()
           }
         }
-      }]
+      },
+      { type: 'separator' },
+      {
+        label: 'Full Screen',
+        enabled: !noWindows,
+        accelerator: (process.platform === 'darwin') ? 'Ctrl+Cmd+F' : 'F11',
+        role: 'toggleFullScreen'
+      }
+    ]
   }
 
   var showHistoryAccelerator = 'Ctrl+h'
