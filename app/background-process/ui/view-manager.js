@@ -899,7 +899,7 @@ export function openOrFocusDownloadsPage (win) {
 
 export function emitReplaceState (win) {
   win = getTopWindow(win)
-  var state = getWindowTabState(win)
+  var state = {tabs: getWindowTabState(win), isFullscreen: win.isFullScreen()}
   emit(win, 'replace-state', state)
   win.emit('custom-pages-updated', takeSnapshot(win))
 }

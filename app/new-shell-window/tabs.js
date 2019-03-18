@@ -8,20 +8,27 @@ import * as bg from './bg-process-rpc'
 class ShellWindowTabs extends LitElement {
   static get properties () {
     return {
-      tabs: {type: Array}
+      tabs: {type: Array},
+      isFullscreen: {type: Boolean, attribute: 'is-fullscreen'}
     }
   }
 
   constructor () {
     super()
     this.tabs = []
+    this.isFullscreen = false
     this.draggedTabIndex = null
   }
 
   render () {
+    const shellCls = classMap({
+      shell: true,
+      [window.platform]: true,
+      fullscreen: this.isFullscreen
+    })
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="shell ${window.platform}">
+      <div class="${shellCls}">
         <div class="tabs">
           ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
           <div
@@ -412,6 +419,9 @@ ${spinnerCSS}
 /* make room for traffic lights */
 .darwin .tabs {
   padding-left: 75px;
+}
+.darwin.fullscreen .tabs {
+  padding-left: 10px; /* not during fullscreen */
 }
 `
 customElements.define('shell-window-tabs', ShellWindowTabs)
