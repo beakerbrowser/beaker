@@ -22,7 +22,6 @@
     "circular-append-file": "^1.0.1",
     "co": "^4.6.0",
     "concat-stream": "^1.6.2",
-    "dat-dns": "^3.0.0",
     "dat-encoding": "^4.0.2",
     "data-urls": "^1.0.0",
     "debug": "git://github.com/beakerbrowser/debug.git#8d79a96e2c5f79527d7580960be3da9ae246ed8e",
