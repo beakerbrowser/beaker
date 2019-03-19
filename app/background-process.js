@@ -97,8 +97,7 @@ app.on('ready', async function () {
       capturePage: beakerBrowser.capturePage
     },
     userSessionAPI: {
-      getFor: windows.getUserSessionFor,
-      openProfileEditor: windows.openProfileEditor
+      getFor: windows.getUserSessionFor
     },
     rpcAPI: rpc,
     downloadsWebAPI: downloads.WEBAPI,
