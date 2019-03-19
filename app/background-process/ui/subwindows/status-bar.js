@@ -9,6 +9,7 @@ import { BrowserWindow } from 'electron'
 
 const WIDTH = 400
 const HEIGHT = 24
+const IS_DARWIN = process.platform === 'darwin'
 
 // globals
 // =
@@ -31,13 +32,14 @@ export function setup (parentWindow) {
     fullscreenable: false,
     hasShadow: false,
     focusable: false,
-    backgroundColor: '#00000000', // transparent black
     webPreferences: {
       defaultEncoding: 'utf-8'
     }
   })
   win.setIgnoreMouseEvents(true)
   win.loadFile('status-bar.html')
+  if (IS_DARWIN) win.setOpacity(0)
+  win.webContents.executeJavaScript(`set(false)`)
   win.showInactive()
 }
 
@@ -64,14 +66,14 @@ export function show (parentWindow) {
   var win = get(parentWindow)
   if (win) {
     reposition(parentWindow)
-    win.setOpacity(1)
+    if (IS_DARWIN) win.setOpacity(1)
   }
 }
 
 export function hide (parentWindow) {
   var win = get(parentWindow)
   if (win) {
-    win.setOpacity(0)
+    if (IS_DARWIN) win.setOpacity(0)
   }
 }
 
