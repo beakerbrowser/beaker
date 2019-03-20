@@ -259,6 +259,8 @@ export function createShellWindow (windowState) {
       subwindows[k].reposition(win)
     }
   })
+  win.on('maximize', sendToWebContents('maximize'))
+  win.on('unmaximize', sendToWebContents('unmaximize'))
   win.on('closed', onClosed(win))
 
   return win

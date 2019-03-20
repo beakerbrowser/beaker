@@ -62,3 +62,14 @@
 body.win32 #win32-titlebar {
   display: flex;
 }
+
+// Ensure that the controls are properly sized when maximized.
+body.maximized.win32 {
+  #win32-titlebar {
+    height: 30px;
+  }
+  
+  #win32-titlebar .win32-titlebar-close:after {
+    line-height: 30px;
+  }
+}

@@ -59,6 +59,8 @@ function onWindowEvent (event, type) {
       break
     case 'enter-full-screen': return document.body.classList.add('fullscreen')
     case 'leave-full-screen': return document.body.classList.remove('fullscreen')
+    case 'maximize': return document.body.classList.add('maximized')
+    case 'unmaximize': return document.body.classList.remove('maximized')    
     case 'leave-page-full-screen': pages.leavePageFullScreen()
   }
 }
