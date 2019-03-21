@@ -489,6 +489,16 @@ class View {
     }
   }
 
+  async getPageMetadata () {
+    var metadata
+    try {
+      metadata = this.webContents.executeJavaScript(`window.__beakerGetPageMetadata()`)
+    } catch (e) {
+      // ignore
+    }
+    return metadata || {}
+  }
+
   // events
   // =
 
@@ -974,6 +984,13 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       }
       return state
     }
+  },
+
+  async getPageMetadata (tab) {
+    var win = getWindow(this.sender)
+    var view = getByIndex(win, tab)
+    if (view) return view.getPageMetadata()
+    return {}
   },
 
   async createTab (url, opts = {setActive: false, addToNoRedirects: false}) {

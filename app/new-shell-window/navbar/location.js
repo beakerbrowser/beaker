@@ -448,7 +448,13 @@ class NavbarLocation extends LitElement {
 
     // create a bookmark if needed
     if (!this.isBookmarked) {
-      await bg.bookmarks.bookmarkPrivate(this.url, {title: this.title})
+      var metadata = await bg.views.getPageMetadata(this.activeTabIndex)
+      await bg.bookmarks.add({
+        href: this.url,
+        title: metadata.title || this.title || '',
+        description: metadata.description || '',
+        tags: metadata.keywords
+      })
       bg.views.refreshState(this.activeTabIndex) // pull latest state
     }
 

@@ -3,6 +3,7 @@ export default {
   refreshState: 'promise',
   getState: 'promise',
   getTabState: 'promise',
+  getPageMetadata: 'promise',
   createTab: 'promise',
   loadURL: 'promise',
   closeTab: 'promise',

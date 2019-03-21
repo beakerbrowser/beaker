@@ -86,7 +86,7 @@ export function reposition (parentWindow) {
         x: parentBounds.x + win.boundsOpt.right - 300,
         y: parentBounds.y + win.boundsOpt.top,
         width: 300,
-        height: 250
+        height: 400
       })
     } else if (win.menuId === 'peers') {
       win.setBounds({

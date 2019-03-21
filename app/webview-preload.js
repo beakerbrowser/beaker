@@ -7,6 +7,7 @@ import { setup as setupPrompt } from './webview-preload/prompt'
 import { setup as setupExecuteJavascript } from './webview-preload/execute-javascript'
 import setupExitFullScreenHackfix from './webview-preload/exit-full-screen-hackfix'
 import readableStreamAsyncIteratorPolyfill from './webview-preload/readable-stream-async-iterator-polyfill'
+import './webview-preload/read-page-metadata'
 
 // register protocol behaviors
 /* This marks the scheme as:
