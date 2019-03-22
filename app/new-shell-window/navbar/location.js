@@ -447,7 +447,9 @@ class NavbarLocation extends LitElement {
     var rect = this.shadowRoot.querySelector('.bookmark-btn').getClientRects()[0]
 
     // create a bookmark if needed
+    var bookmarkIsNew = false
     if (!this.isBookmarked) {
+      bookmarkIsNew = true
       var metadata = await bg.views.getPageMetadata(this.activeTabIndex)
       await bg.bookmarks.add({
         href: this.url,
@@ -464,7 +466,7 @@ class NavbarLocation extends LitElement {
         top: Number(rect.bottom),
         right: Number(rect.right)
       },
-      params: {url: this.url}
+      params: {url: this.url, bookmarkIsNew}
     })
   }
 }

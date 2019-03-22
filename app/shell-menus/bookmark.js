@@ -4,6 +4,8 @@ import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
+import _pick from 'lodash.pick'
+import _isEqual from 'lodash.isequal'
 
 class BookmarkMenu extends LitElement {
   static get properties () {
@@ -24,6 +26,7 @@ class BookmarkMenu extends LitElement {
 
   reset () {
     this.bookmark = null
+    this.bookmarkIsNew = false
     this.href = ''
     this.title = ''
     this.description = ''
@@ -33,12 +36,14 @@ class BookmarkMenu extends LitElement {
   }
 
   async init (params) {
+    this.bookmarkIsNew = params.bookmarkIsNew
     const b = this.bookmark = await bg.bookmarks.get(params.url)
+    if (b && b.tags) b.tags = tagsToString(b.tags)
     if (b) {
       this.href = b.href
       this.title = b.title
       this.description = b.description
-      this.tags = tagsToString(b.tags)
+      this.tags = b.tags
       this.pinned = b.pinned
       this.public = b.public
     } else {
@@ -50,6 +55,16 @@ class BookmarkMenu extends LitElement {
     var input = this.shadowRoot.querySelector('input')
     input.focus()
     input.setSelectionRange(0, input.value.length)
+  }
+
+  get canSave () {
+    if (this.bookmarkIsNew) {
+      return true
+    }
+    return !_isEqual(
+      _pick(this, ['href', 'title', 'description', 'tags', 'pinned', 'public']),
+      _pick(this.bookmark, ['href', 'title', 'description', 'tags', 'pinned', 'public']),
+    )
   }
 
   // rendering
@@ -116,7 +131,7 @@ class BookmarkMenu extends LitElement {
               Remove bookmark
             </button>
 
-            <button class="btn primary" type="submit">
+            <button class="btn primary" ?disabled=${!this.canSave} type="submit">
               Save
             </button>
           </div>
@@ -130,6 +145,9 @@ class BookmarkMenu extends LitElement {
 
   async onSaveBookmark (e) {
     e.preventDefault()
+    if (!this.canSave) {
+      return
+    }
 
     // update bookmark
     var b = this.bookmark
