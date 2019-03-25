@@ -572,6 +572,7 @@ input {
   line-height: 26px;
   width: 100%;
   height: 25px;
+  overflow: hidden;
 
   color: #222;
   font-size: 13.5px;
