@@ -7,15 +7,7 @@ import { setup as setupExecuteJavascript } from './webview-preload/execute-javas
 import setupExitFullScreenHackfix from './webview-preload/exit-full-screen-hackfix'
 import readableStreamAsyncIteratorPolyfill from './webview-preload/readable-stream-async-iterator-polyfill'
 
-// register protocol behaviors
-/* This marks the scheme as:
- - Secure
- - Allowing Service Workers
- - Supporting Fetch API
- - CORS Enabled
-*/
-webFrame.registerURLSchemeAsPrivileged('dat', { bypassCSP: false })
-webFrame.setSpellCheckProvider('en-US', true, beakerCoreWebview.createSpellChecker(rpcAPI))
+webFrame.setSpellCheckProvider('en-US', beakerCoreWebview.createSpellChecker(rpcAPI))
 
 // HACKS
 setupExitFullScreenHackfix()
