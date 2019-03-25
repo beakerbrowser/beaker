@@ -510,7 +510,7 @@ class View {
 
   onDidStartNavigation (e, url, isInPlace, isMainFrame) {
     if (!isMainFrame) return
-    
+
     // turn off live reloading if we're leaving the domain
     if (toOrigin(url) !== toOrigin(this.url)) {
       this.stopLiveReloading()

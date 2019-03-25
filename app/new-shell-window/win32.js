@@ -26,7 +26,7 @@ class ShellWindowWin32 extends LitElement {
   onClickMinimize () {
     remote.getCurrentWindow().minimize()
   }
-  
+
   onClickMaximize () {
     var win = remote.getCurrentWindow()
     if (win.isMaximized()) {
@@ -35,7 +35,7 @@ class ShellWindowWin32 extends LitElement {
       win.maximize()
     }
   }
-  
+
   onClickClose () {
     remote.getCurrentWindow().close()
   }

@@ -244,7 +244,7 @@ export function createShellWindow (windowState) {
   win.on('leave-full-screen', e => {
     // update UI
     viewManager.emitReplaceState(win)
-    
+
     // TODO
     // unregisterGlobalKeybinding(win, 'Esc')
     // sendToWebContents('leave-full-screen')(e)
