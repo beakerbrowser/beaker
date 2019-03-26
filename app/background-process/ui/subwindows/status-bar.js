@@ -40,7 +40,6 @@ export function setup (parentWindow) {
   win.loadFile('status-bar.html')
   if (IS_DARWIN) win.setOpacity(0)
   win.webContents.executeJavaScript(`set(false)`)
-  win.showInactive()
 }
 
 export function destroy (parentWindow) {
@@ -66,6 +65,7 @@ export function show (parentWindow) {
   var win = get(parentWindow)
   if (win) {
     reposition(parentWindow)
+    if (!win.isVisible()) win.showInactive()
     if (IS_DARWIN) win.setOpacity(1)
   }
 }
