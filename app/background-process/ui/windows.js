@@ -259,7 +259,7 @@ export function createShellWindow (windowState) {
       subwindows[k].reposition(win)
     }
   })
-  win.on('closed', onClosed(win))
+  win.on('close', onClose(win))
 
   return win
 }
@@ -363,7 +363,7 @@ function ensureVisibleOnSomeDisplay (windowState) {
 // shortcut event handlers
 // =
 
-function onClosed (win) {
+function onClose (win) {
   return e => {
     numActiveWindows--
     if (numActiveWindows === 0) {
