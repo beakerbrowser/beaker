@@ -99,6 +99,7 @@ export async function setup () {
       if (wc.devToolsWebContents) {
         wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
         wc.devToolsWebContents.on('new-window', (e, url) => {
+          if (url.startsWith('chrome-devtools://')) return // ignore
           viewManager.create(parentWindow, url, {setActive: true})
         })
       }
@@ -265,7 +266,7 @@ export function createShellWindow (windowState) {
   win.on('leave-full-screen', e => {
     // update UI
     viewManager.emitReplaceState(win)
-    
+
     // TODO
     // unregisterGlobalKeybinding(win, 'Esc')
     // sendToWebContents('leave-full-screen')(e)
@@ -280,7 +281,7 @@ export function createShellWindow (windowState) {
       subwindows[k].reposition(win)
     }
   })
-  win.on('closed', onClosed(win))
+  win.on('close', onClose(win))
 
   return win
 }
@@ -398,7 +399,7 @@ function ensureVisibleOnSomeDisplay (windowState) {
 // shortcut event handlers
 // =
 
-function onClosed (win) {
+function onClose (win) {
   return e => {
     numActiveWindows--
     if (numActiveWindows === 0) {

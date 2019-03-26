@@ -26,5 +26,7 @@ export default {
   runLocationBarCmd: 'promise',
   showMenu: 'promise',
   toggleMenu: 'promise',
-  focusShellWindow: 'promise'
+  focusShellWindow: 'promise',
+  onFaviconLoadSuccess: 'promise',
+  onFaviconLoadError: 'promise'
 }

@@ -121,7 +121,6 @@ class LocationBar extends LitElement {
           this.inputValue = res.url
           return res.search || res.url
         }
-        
     }
   }
 

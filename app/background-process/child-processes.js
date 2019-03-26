@@ -5,6 +5,7 @@ import * as childProcess from 'child_process'
 // =
 
 var processes = {}
+process.on('exit', closeAll)
 
 // exported api
 // =

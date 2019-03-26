@@ -127,7 +127,7 @@ function waitFor (condFn) {
   return new Promise(resolve => {
     var i = setInterval(async () => {
       var res = condFn()
-      if (!!res) {
+      if (res) {
         clearInterval(i)
         return resolve(res)
       }

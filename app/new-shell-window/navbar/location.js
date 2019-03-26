@@ -329,7 +329,7 @@ class NavbarLocation extends LitElement {
   onBlurLocation (e) {
     // clear the selection range so that the next focusing doesnt carry it over
     window.getSelection().empty()
-    bg.views.hideLocationBar()
+    setTimeout(() => bg.views.hideLocationBar(), 100) // hide after a 100ms delay (which gives clicks into the location bar time to process)
     this.shadowRoot.querySelector('.input-container input').value = this.url // reset value
     this.isLocationFocused = false
   }
@@ -580,6 +580,7 @@ input {
   line-height: 26px;
   width: 100%;
   height: 25px;
+  overflow: hidden;
 
   color: #222;
   font-size: 13.5px;

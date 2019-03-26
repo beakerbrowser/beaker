@@ -1,7 +1,8 @@
 /* globals customElements */
-import {LitElement, html, css} from '../vendor/lit-element/lit-element'
-import {classMap} from '../vendor/lit-element/lit-html/directives/class-map'
-import {repeat} from '../vendor/lit-element/lit-html/directives/repeat'
+import { LitElement, html, css } from '../vendor/lit-element/lit-element'
+import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
+import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
+import { urlsToData } from '../lib/fg/img.js'
 import spinnerCSS from './spinner.css'
 import * as bg from './bg-process-rpc'
 
@@ -66,7 +67,15 @@ class ShellWindowTabs extends LitElement {
             ? tab.isReceivingAssets
               ? html`<div class="spinner"></div>`
               : html`<div class="spinner reverse"></div>`
-            : html`<img src="beaker-favicon:${tab.url}?cache=${Date.now()}">`}
+            : tab.favicons && tab.favicons[0]
+              ? html`
+                <img
+                  src="${tab.favicons[tab.favicons.length - 1]}"
+                  @load=${e => this.onFaviconLoad(e, index)}
+                  @error=${e => this.onFaviconError(e, index)}
+                >
+              `
+              : html`<img src="beaker-favicon:${tab.url}?cache=${Date.now()}">`}
         </div>
         ${tab.isPinned
           ? ''
@@ -133,6 +142,19 @@ class ShellWindowTabs extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     bg.views.closeTab(index)
+  }
+
+  async onFaviconLoad (e, index) {
+    // favicon loaded successfuly, capture for cache
+    var tab = this.tabs[index]
+    var {dataUrl} = await urlsToData(tab.favicons)
+    bg.views.onFaviconLoadSuccess(index, dataUrl)
+  }
+
+  onFaviconError (e, index) {
+    this.tabs[index].favicons = null
+    bg.views.onFaviconLoadError(index)
+    this.requestUpdate()
   }
 
   onDragstartTab (e, index) {
