@@ -514,6 +514,7 @@ class View {
     // update state
     this.isLoading = true
     this.loadingURL = null
+    this.favicons = null
     this.isReceivingAssets = false
     this.wasDatTimeout = false
 

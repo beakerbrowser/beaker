@@ -6,6 +6,10 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err)
 })
 
+process.on('disconnect', () => {
+  process.exit()
+})
+
 process.once('message', firstMsg => {
   beakerCoreDatDaemon.setup({
     rpcAPI,
