@@ -12,10 +12,12 @@ import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
 import {closeAllToggleables}  from '../com/toggleable2'
 import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
+const profiles = navigator.importSystemAPI('profiles')
 
 const DEFAULT_SIDEBAR_WIDTH = 160
 const MIN_SIDEBAR_WIDTH = 100
 
+var userProfile
 var archive
 var workingCheckoutVersion
 var workingCheckout
@@ -72,6 +74,7 @@ async function setupWorkingCheckout () {
 
 async function setup () {
   // load data
+  userProfile = await profiles.getCurrentUser()
   let url = window.location.pathname.slice(1)
   let browserInfo = beaker.browser.getInfo()
   OS_USES_META_KEY = browserInfo.platform === 'darwin'
@@ -189,6 +192,7 @@ async function setup () {
 
 async function showGeneralHelp () {
   models.setActiveGeneralHelp({
+    userProfile,
     archiveInfo: archive.info,
     currentDiff,
     readmeMd: await loadReadme(),

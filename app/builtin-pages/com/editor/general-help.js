@@ -8,6 +8,7 @@ import createMd from '../../../lib/fg/markdown'
 
 export function renderGeneralHelp (opts) {
   const {
+    userProfile,
     archiveInfo,
     currentDiff,
     readmeMd,
@@ -21,6 +22,7 @@ export function renderGeneralHelp (opts) {
   const isOwner = archiveInfo.isOwner
   const isSaved = archiveInfo.userSettings.isSaved
   const isEditable = !isReadonly
+  const isDeleteable = isEditable && archiveInfo.url !== userProfile.url
   const versionLabel = (Number.isNaN(+workingCheckoutVersion)) ? workingCheckoutVersion : `v${workingCheckoutVersion}`
   const previewMode = archiveInfo.userSettings.previewMode
   return yo`
@@ -102,7 +104,9 @@ export function renderGeneralHelp (opts) {
                 previewMode
                   ? yo`<div>Want to preview changes? <strong><span class="fas fa-check"></span> Preview mode enabled</strong>.</div>`
                   : yo`<div>Want to preview changes? <a class="link" onclick=${doClick('.options-dropdown-btn')}>Enable preview mode</a>.</div>`,
-                yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-archive-unsave')}>Move to trash</a>.</div>`
+                isDeleteable
+                  ? yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-archive-unsave')}>Move to trash</a>.</div>`
+                  : ''
               ] : ''}
           </div>
         </div>
