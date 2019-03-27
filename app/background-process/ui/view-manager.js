@@ -702,7 +702,7 @@ export function create (win, url, opts = {setActive: false, isPinned: false, foc
   url = url || DEFAULT_URL
   win = getTopWindow(win)
   var views = activeViews[win.id] = activeViews[win.id] || []
-  
+
   var view
   var preloadedNewTabView = preloadedNewTabViews[win.id]
   if (url === DEFAULT_URL && !opts.isPinned && preloadedNewTabView) {

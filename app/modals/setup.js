@@ -103,7 +103,6 @@ class SetupModal extends LitElement {
     `
   }
 
-
   // events
   // =
 

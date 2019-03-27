@@ -1,8 +1,8 @@
 import {emit} from '../../../lib/fg/event-handlers'
 
 const HOTKEYS = [
-  {modifiers: ['CmdOrCtrl'], key: 's', fn: () => emit('editor-save-active-model')},
-  
+  {modifiers: ['CmdOrCtrl'], key: 's', fn: () => emit('editor-save-active-model')}
+
   // DISABLED
   // these hotkeys require keyboard lock of some kind
   // -prf

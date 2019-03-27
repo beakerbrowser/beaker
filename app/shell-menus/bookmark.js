@@ -63,7 +63,7 @@ class BookmarkMenu extends LitElement {
     }
     return !_isEqual(
       _pick(this, ['href', 'title', 'description', 'tags', 'pinned', 'public']),
-      _pick(this.bookmark, ['href', 'title', 'description', 'tags', 'pinned', 'public']),
+      _pick(this.bookmark, ['href', 'title', 'description', 'tags', 'pinned', 'public'])
     )
   }
 

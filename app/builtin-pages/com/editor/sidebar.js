@@ -457,7 +457,7 @@ function onKeydownNewNode (e, node) {
 function cancelNewNode (node) {
   if (node.isCanceled) return
   node.isCanceled = true
-  
+
   // remove the new node
   node.parent._files = node.parent._files.filter(f => f !== node)
   rerender()
