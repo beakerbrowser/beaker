@@ -66,6 +66,7 @@ const STATE_VARS = [
   'url',
   'title',
   'peers',
+  'favicons',
   'zoom',
   'loadError',
   'isActive',
@@ -119,6 +120,7 @@ class View {
     this.loadingURL = null // URL being loaded, if any
     this.isLoading = false // is the tab loading?
     this.isReceivingAssets = false // has the webview started receiving assets in the current load-cycle?
+    this.favicons = null // array of favicon URLs
     this.zoom = 0 // what's the current zoom level?
     this.loadError = null // page error state, if any
 
@@ -147,6 +149,7 @@ class View {
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
     this.webContents.on('did-fail-load', this.onDidFailLoad.bind(this))
     this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
+    this.webContents.on('page-favicon-updated', this.onPageFaviconUpdated.bind(this))
     this.webContents.on('new-window', this.onNewWindow.bind(this))
     this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
     this.webContents.on('media-paused', this.onMediaChange.bind(this))
@@ -505,7 +508,9 @@ class View {
     this.emitUpdateState()
   }
 
-  onDidStartNavigation (e, url) {
+  onDidStartNavigation (e, url, isInPlace, isMainFrame) {
+    if (!isMainFrame) return
+
     // turn off live reloading if we're leaving the domain
     if (toOrigin(url) !== toOrigin(this.url)) {
       this.stopLiveReloading()
@@ -585,6 +590,11 @@ class View {
 
   onUpdateTargetUrl (e, url) {
     statusBar.set(this.browserWindow, url)
+  }
+
+  onPageFaviconUpdated (e, favicons) {
+    this.favicons = favicons && favicons[0] ? favicons : null
+    this.emitUpdateState()
   }
 
   onNewWindow (e, url, frameName, disposition) {
@@ -1089,6 +1099,21 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async focusShellWindow () {
     getWindow(this.sender).webContents.focus()
+  },
+
+  async onFaviconLoadSuccess (index, dataUrl) {
+    var view = getByIndex(getWindow(this.sender), index)
+    if (view) {
+      beakerCore.dbs.sitedata.set(view.url, 'favicon', dataUrl)
+    }
+  },
+
+  async onFaviconLoadError (index) {
+    var view = getByIndex(getWindow(this.sender), index)
+    if (view) {
+      view.favicons = null
+      view.emitUpdateState()
+    }
   }
 })
 
