@@ -18,6 +18,7 @@ const profiles = navigator.importSystemAPI('profiles')
 const DEFAULT_SIDEBAR_WIDTH = 160
 const MIN_SIDEBAR_WIDTH = 100
 
+var isLoading = true
 var userProfile
 var archive
 var workingCheckoutVersion
@@ -74,6 +75,10 @@ async function setupWorkingCheckout () {
 }
 
 async function setup () {
+  // render loading screen
+  isLoading = true
+  update()
+
   // load data
   userProfile = await profiles.getCurrentUser()
   let url = window.location.pathname.slice(1)
@@ -178,6 +183,7 @@ async function setup () {
   await localCompare()
 
   // show the general help view
+  isLoading = false
   update()
   showGeneralHelp()
 
@@ -332,6 +338,13 @@ async function loadReadme () {
 // =
 
 function update () {
+  if (isLoading) {
+    document.querySelector('.loading-screen').classList.remove('hidden')
+    return
+  } else {
+    document.querySelector('.loading-screen').classList.add('hidden')
+  }
+
   if (archive) {
     yo.update(
       document.querySelector('.editor-sidebar'),
