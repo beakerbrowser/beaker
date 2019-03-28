@@ -55,7 +55,7 @@ export default class FilesBrowser {
     }
 
     // recursively read data of the currently-expanded tree
-    await node.readData({maxPreviewLength: 1e5})
+    await node.readData({maxLength: 1e5})
     if (node.hasChildren) {
       const children = node.children
       for (var k in children) {
@@ -98,9 +98,9 @@ export default class FilesBrowser {
 
     await this.unselectAll()
     if (this.currentSource) {
-      if (this.currentSource.preview) {
-        // trigger a reload of the preview
-        this.currentSource.preview = undefined
+      if (this.currentSource.fileData) {
+        // trigger a reload of the file data
+        this.currentSource.fileData = undefined
       }
       if (this.currentSource !== node) {
         // leave edit mode
@@ -125,7 +125,7 @@ export default class FilesBrowser {
         this.rerender()
       }, 500)
       // then load
-      await this.currentSource.readData({maxPreviewLength: 1e5})
+      await this.currentSource.readData({maxLength: 1e5})
       clearTimeout(to)
       // then render again
       node.isLoadingPreview = false

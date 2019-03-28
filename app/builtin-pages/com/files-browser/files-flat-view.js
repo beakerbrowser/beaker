@@ -96,10 +96,10 @@ function rMetadata (filesBrowser, node) {
   }
 
   var numLines
-  var isTextual = typeof node.preview === 'string' // preview is only set for text items
+  var isTextual = typeof node.fileData === 'string' // fileData is only set for text items
 
-  if (node.preview) {
-    numLines = node.preview.split('\n').length
+  if (node.fileData) {
+    numLines = node.fileData.split('\n').length
   }
 
   return yo`
@@ -123,7 +123,7 @@ function rActions (filesBrowser, currentSource) {
     return ''
   }
 
-  var isTextual = typeof currentSource.preview === 'string' // preview is only set for text items
+  var isTextual = typeof currentSource.fileData === 'string' // fileData is only set for text items
   var isEditing = filesBrowser.isEditMode
   var buttonGroup = []
 
@@ -274,10 +274,10 @@ function rBreadcrumb (filesBrowser, node, i, len, isCramped) {
 
 function rFilePreview (filesBrowser, node) {
   var numLines
-  var isTextual = typeof node.preview === 'string' // preview is only set for text items
+  var isTextual = typeof node.fileData === 'string' // fileData is only set for text items
 
-  if (node.preview) {
-    numLines = node.preview.split('\n').length
+  if (node.fileData) {
+    numLines = node.fileData.split('\n').length
   }
 
   return yo`

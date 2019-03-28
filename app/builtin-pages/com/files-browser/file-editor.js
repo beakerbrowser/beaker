@@ -8,7 +8,7 @@ var orgApplyDeltaFn
 // =
 
 export function render (fileNode) {
-  var el = yo`<div id="ace-editor" class="ace-editor" data-filename=${fileNode.name}>${fileNode.preview}</div>`
+  var el = yo`<div id="ace-editor" class="ace-editor" data-filename=${fileNode.name}>${fileNode.fileData}</div>`
   el.isSameNode = (other) => {
     // dont let yo (morphdom) redraw this element
     var isSameNode = other && other.classList && other.classList.contains('ace-editor')

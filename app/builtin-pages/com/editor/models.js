@@ -39,18 +39,20 @@ export function createNewModel () {
 
 export async function load (file) {
   try {
-    var isEditable = canEditWithMonaco(file.name)
-    if (isEditable) {
-      // load the file content
-      await file.readData({ignoreCache: true})
-    }
-
     // setup the model
-    let model = createModel(file.preview, file.url)
+    let model = createModel('', file.url)
     model.name = file.name
     model.isEditable = isEditable
     model.lang = model.getModeId()
     model.isNewModel = false
+
+    var isEditable = canEditWithMonaco(file.name)
+    if (isEditable) {
+      // load the file content
+      doLoad(model, file)
+    }
+
+    return model
   } catch (e) {
     console.error(e)
     throw e
@@ -60,15 +62,33 @@ export async function load (file) {
 export async function reload (file) {
   var model = findModel(file)
   if (!model) {
-    model = await load(file)
+    model = load(file)
   } else {
-    // load the file content
-    await file.readData({ignoreCache: true})
+    doLoad(model, file)
+  }
+}
 
-    // update the content
-    model.setValue(file.preview)
+async function doLoad (model, file) {
+  // start load
+  model.loadError = null
+  model.isLoading = true
+  try {
+    await file.readData({ignoreCache: true, timeout: 15e3})
+    model.isLoading = false
+    model.setValue(file.fileData)
     model.lastSavedVersionId = model.getAlternativeVersionId()
     onDidChange(model)
+  } catch (err) {
+    if (err.name === 'TimeoutError') {
+      model.loadError = 'Unable to find the file on the network. Make sure the site is online and your connection is working.'
+    } else {
+      model.loadError = err
+    }
+  }
+  
+  // rerender if still active
+  if (model.isActive) {
+    setActive(file)
   }
 }
 
@@ -105,8 +125,12 @@ export async function setActive (file) {
       model = await load(file)
     }
 
-    // render according to editability
-    if (canEditWithMonaco(file.name)) {
+    // render according to editability and state
+    if (model.loadError) {
+      await setLoadErrorActive(file, model)
+    } else if (model.isLoading) {
+      await setLoadingActive(file, model)
+    } else if (canEditWithMonaco(file.name)) {
       await setEditableActive(file, model)
     } else {
       await setUneditableActive(file, model)
@@ -274,6 +298,31 @@ function canEditWithMonaco (name) {
     }
   }
   return false
+}
+
+async function setLoadErrorActive (file, model) {
+  setVisibleRegion('generic-viewer')
+  active = model
+  var viewerEl = document.getElementById('genericViewer')
+  yo.update(viewerEl, yo`
+    <div id="genericViewer">
+      <div class="error-notice">
+        <span class="fas fa-exclamation-triangle"></span>
+        ${model.loadError.toString()}
+      </div>
+    </div>
+  `)
+}
+
+async function setLoadingActive (file, model) {
+  setVisibleRegion('generic-viewer')
+  active = model
+  var viewerEl = document.getElementById('genericViewer')
+  yo.update(viewerEl, yo`
+    <div id="genericViewer">
+      <div class="loading-notice"><span class="spinner"></span> Loading...</div>
+    </div>
+  `)
 }
 
 async function setEditableActive (file, model) {

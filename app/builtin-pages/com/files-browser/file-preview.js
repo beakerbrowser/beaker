@@ -15,7 +15,7 @@ export default function render (fileNode) {
   }
 
   // handle textual files
-  if (typeof fileNode.preview === 'string') {
+  if (typeof fileNode.fileData === 'string') {
     return renderFileEditor(fileNode)
   }
 
