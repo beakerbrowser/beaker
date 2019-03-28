@@ -8,29 +8,38 @@ import createMd from '../../../lib/fg/markdown'
 
 export function renderGeneralHelp (opts) {
   const {
-    userProfile,
     archiveInfo,
     currentDiff,
     readmeMd,
     workingCheckoutVersion,
     isReadonly,
-    hasTitle,
-    hasFavicon,
-    hasIndexFile,
     OS_USES_META_KEY
   } = opts
-  const isOwner = archiveInfo.isOwner
+  const {
+    isOwner,
+    localSyncPathIsMissing,
+    missingLocalSyncPath
+   } = archiveInfo
   const isSaved = archiveInfo.userSettings.isSaved
   const isTrashed = isOwner && !isSaved
-  const isEditable = !isReadonly
-  const isDeleteable = isEditable && archiveInfo.url !== userProfile.url
   const versionLabel = (Number.isNaN(+workingCheckoutVersion)) ? workingCheckoutVersion : `v${workingCheckoutVersion}`
   const previewMode = archiveInfo.userSettings.previewMode
   return yo`
     <div class="editor-general-help">
+      ${localSyncPathIsMissing && !isTrashed
+        ? yo`
+          <div class="message error error-notice">
+            <span>
+              <i class="fas fa-exclamation-triangle"></i>
+              The local folder was deleted or moved.
+              (${missingLocalSyncPath})
+            </span>
+            <button class="btn" onclick=${doClick('.options-dropdown-btn')}>Resolve</button>
+          </div>`
+        : ''}
       ${isTrashed
         ? yo`
-          <div class="message error trashed-notice">
+          <div class="message error error-notice">
             <span>
               <i class="fas fa-trash"></i>
               "${archiveInfo.title || 'This archive'}"
@@ -134,18 +143,6 @@ function renderHotkeyHelp ({OS_USES_META_KEY}) {
 // event handlers
 // =
 
-function onCreateFile (e, path) {
-  emit('editor-create-file', {path})
-}
-
-function doClick (sel) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
-    document.querySelector(sel).click()
-  }
-}
-
 function onCommitAll (e) {
   if (!confirm('Commit all changes?')) return
   emit('editor-commit-all')
@@ -154,4 +151,12 @@ function onCommitAll (e) {
 function onRevertAll (e) {
   if (!confirm('Revert all changes?')) return
   emit('editor-revert-all')
+}
+
+function doClick (sel) {
+  return e => {
+    e.preventDefault()
+    e.stopPropagation()
+    document.querySelector(sel).click()
+  }
 }

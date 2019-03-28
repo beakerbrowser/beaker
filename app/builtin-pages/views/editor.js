@@ -240,6 +240,17 @@ async function localCompare () {
   await checkNode(archiveFsRoot)
 }
 
+// helper called in certain error conditions to check if the local path has disappeared on us
+async function checkForMissingLocalPath () {
+  let info = await archive.getInfo()
+  if (info.localSyncPathIsMissing) {
+    archive.info.localSyncPathIsMissing = true
+    archive.info.missingLocalSyncPath = info.missingLocalSyncPath
+    return true
+  }
+  return false
+}
+
 function setSidebarWidth (width) {
   sidebarWidth = width
 
@@ -483,10 +494,21 @@ async function onArchiveDeletePermanently (e) {
 }
 
 async function onSetActive (e) {
-  if (e.detail.path) {
-    await models.setActive(await findArchiveNodeAsync(e.detail.path))
-  } else {
-    await models.setActive(e.detail.model)
+  try {
+    if (e.detail.path) {
+      await models.setActive(await findArchiveNodeAsync(e.detail.path))
+    } else {
+      await models.setActive(e.detail.model)
+    }
+  } catch (err) {
+    if (await checkForMissingLocalPath()) {
+      toast.create('The local folder has been deleted or moved', 'error')
+      showGeneralHelp() // switch to general help to show alert
+    } else {
+      console.error('Failed to set active', e.detail, err)
+      toast.create(err.toString(), 'error')
+    }
+    return
   }
   if (e.detail.showDiff) {
     onDiffActiveModel()

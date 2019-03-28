@@ -72,10 +72,6 @@ function renderHotkeyHelp ({OS_USES_META_KEY}) {
 // event handlers
 // =
 
-function onCreateFile (e, path) {
-  emit('editor-create-file', {path})
-}
-
 function doClick (sel) {
   return e => {
     e.preventDefault()
