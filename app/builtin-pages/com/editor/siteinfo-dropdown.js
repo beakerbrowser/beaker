@@ -20,6 +20,7 @@ export function renderSiteinfoDropdown ({workingDatJson, archiveInfo}) {
 
 export function renderSiteinfoDropdownOwner (workingDatJson, archiveInfo) {
   const {title, description} = workingDatJson
+  const {canDelete} = archiveInfo
   const {isSaved} = archiveInfo.userSettings
   const onChangeMade = e => {
     hasChanges = true
@@ -44,15 +45,20 @@ export function renderSiteinfoDropdownOwner (workingDatJson, archiveInfo) {
           </form>
           <hr>
           <div>
-            ${isSaved
-              ? yo`
-                <button class="btn transparent" onclick=${e => emit('editor-archive-unsave')}>
-                  <i class="fas fa-trash"></i> Move to trash
-                </button>`
-              : yo`
-                <button class="btn transparent" onclick=${e => emit('editor-archive-save')}>
-                  <i class="fas fa-undo"></i> Restore from trash
-                </button>`}
+            <button class="btn transparent" onclick=${e => emit('editor-fork')}>
+              <i class="fas fa-code-branch"></i> Fork this site
+            </button>
+            ${canDelete
+              ? isSaved
+                ? yo`
+                  <button class="btn transparent" onclick=${e => emit('editor-archive-unsave')}>
+                    <i class="fas fa-trash"></i> Move to trash
+                  </button>`
+                : yo`
+                  <button class="btn transparent" onclick=${e => emit('editor-archive-save')}>
+                    <i class="fas fa-undo"></i> Restore from trash
+                  </button>`
+              : ''}
           </div>
         </div>
       </div>`,
@@ -83,6 +89,12 @@ export function renderSiteinfoDropdownNonowner (workingDatJson, archiveInfo) {
           <input type="text" name="title" placeholder="Untitled" value=${title} readonly>
           <label>Description</label>
           <input type="text" placeholder="No description" value=${description} readonly>
+          <hr>
+          <div>
+            <button class="btn transparent" onclick=${e => emit('editor-fork')}>
+              <i class="fas fa-code-branch"></i> Fork this site
+            </button>
+          </div>
         </div>
       </div>`,
     afterOpen (el) {

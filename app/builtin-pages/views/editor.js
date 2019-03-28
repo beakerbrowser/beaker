@@ -139,6 +139,7 @@ async function setup () {
     ;archive = new Archive(url)
     await archive.setup()
     await setupWorkingCheckout()
+    archive.info.canDelete = archive.info.isOwner && archive.info.url !== userProfile.url
     isReadonly = !_get(archive, 'info.userSettings.isSaved') || !archive.info.isOwner || !Number.isNaN(+workingCheckoutVersion)
     if (isReadonly) {
       window.editor.updateOptions({readOnly: true})
@@ -341,7 +342,6 @@ function update () {
   yo.update(
     document.querySelector('.editor-help-sidebar'),
     helpSidebar.render({
-      userProfile,
       archiveInfo: archive.info,
       isReadonly,
       OS_USES_META_KEY

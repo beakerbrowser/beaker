@@ -7,13 +7,11 @@ import {emit} from '../../../lib/fg/event-handlers'
 
 export function render (opts) {
   const {
-    userProfile,
     archiveInfo,
     isReadonly,
     OS_USES_META_KEY
   } = opts
   const isEditable = !isReadonly
-  const isDeleteable = isEditable && archiveInfo.url !== userProfile.url
   const previewMode = archiveInfo.userSettings.previewMode
   return yo`
     <div class="editor-help-sidebar">
@@ -37,7 +35,7 @@ export function render (opts) {
               yo`<div style="height: 10px"></div>`
             ] : ''}
           <div><a class="link" onclick=${e => emit('editor-fork')}>Fork this site</a></div>
-          ${isDeleteable
+          ${archiveInfo.canDelete
             ? yo`<div><a class="link" onclick=${e => emit('editor-archive-unsave')}>Move to trash</a></div>`
             : ''}
         </div>
