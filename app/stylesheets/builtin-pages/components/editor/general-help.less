@@ -3,17 +3,10 @@
   height: 100%;
   overflow: auto;
 
-  h3 {
-    font-size: 1.2em;
-    font-weight: 300;
-    margin-bottom: 10px;
-    line-height: 1;
-
-    &.viewing {
-      margin-bottom: 30px;
-      background: #fafafa;
-      padding: 10px;
-    }
+  h3.viewing {
+    margin-bottom: 30px;
+    background: #fafafa;
+    padding: 10px;
   }
 
   .quick-links {
@@ -26,17 +19,8 @@
     }
   }
 
-  .quick-link {
-    margin-bottom: 30px;
-
-    div {
-      color: rgba(0,0,0,.65);
-    }
-  }
 
   .readme {
-    border-top: 1px solid #ddd;
-    padding: 10px 0;
     font-family: inherit;
     line-height: 1.5;
     color: rgba(0,0,0,.65);
@@ -86,7 +70,7 @@
     }
 
     & > :first-child {
-      margin-top: 20px;
+      margin-top: 0;
     }
     & > :last-child {
       margin-bottom: 0;

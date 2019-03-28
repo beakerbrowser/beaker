@@ -11,7 +11,7 @@ import {writeToClipboard, emit} from '../../../lib/fg/event-handlers'
 export function render ({archive, models, openLinkVersion, archiveInfo, isReadonly}) {
   var isOwner = archive.info.isOwner
   var versionLabel = (Number.isNaN(+openLinkVersion)) ? openLinkVersion : `v${openLinkVersion}`
-  if (versionLabel === 'latest') versionLabel = ''
+  if (versionLabel === 'latest' || versionLabel === 'preview') versionLabel = ''
   var url = openLinkVersion === 'latest' ? archive.checkout().url : archive.checkout(openLinkVersion).url
   var activeModel = models.find(m => m.isActive)
   return yo`
@@ -22,18 +22,10 @@ export function render ({archive, models, openLinkVersion, archiveInfo, isReadon
       <div class="ctrls">
         ${isOwner
           ? renderOptionsDropdown({archiveInfo})
-          : yo`<span>
-            Read-only
-            <a class="btn" style="margin-left: 5px" onclick=${e => emit('editor-fork')}>
-              <span class="far fa-clone"></span> Make an editable copy
-            </a>
-          </span>`}
-        <a class="btn primary" href=${url} target="_blank">
+          : yo`<span class="readonly">Read-only</span>`}
+        <a class="btn" href=${url} target="_blank">
           <i class="fas fa-external-link-alt"></i> Open ${versionLabel}
         </a>
-        <button class="btn transparent nofocus" onclick=${() => onCopy(url, 'URL copied to clipboard')}>
-          <span class="fas fa-link"></span> Copy link
-        </button>
       </div>
     </div>`
 }
@@ -137,9 +129,4 @@ async function onContextmenuTab (e, model) {
     y: e.clientY,
     items
   })
-}
-
-function onCopy (str, successMessage = 'Copied to clipboard') {
-  writeToClipboard(str)
-  toast.create(successMessage)
 }

@@ -21,13 +21,14 @@ export function renderGeneralHelp (opts) {
   } = opts
   const isOwner = archiveInfo.isOwner
   const isSaved = archiveInfo.userSettings.isSaved
+  const isTrashed = isOwner && !isSaved
   const isEditable = !isReadonly
   const isDeleteable = isEditable && archiveInfo.url !== userProfile.url
   const versionLabel = (Number.isNaN(+workingCheckoutVersion)) ? workingCheckoutVersion : `v${workingCheckoutVersion}`
   const previewMode = archiveInfo.userSettings.previewMode
   return yo`
     <div class="editor-general-help">
-      ${isOwner && !isSaved
+      ${isTrashed
         ? yo`
           <div class="message error trashed-notice">
             <span>
@@ -38,79 +39,20 @@ export function renderGeneralHelp (opts) {
             <button class="btn" onclick=${e => emit('editor-archive-save')}><i class="fas fa-undo"></i> Restore from Trash</button>
             <button class="btn" onclick=${e => emit('editor-archive-delete-permanently')} style="margin-left: 5px">Delete permanently</button>
           </div>`
-        : ''}
-      ${!previewMode && workingCheckoutVersion !== 'latest'
-        ? yo`
-          <h3 class="viewing">
-            Viewing <strong>${versionLabel}</strong>
-            <a class="link" href="beaker://editor/${archiveInfo.url}+latest"><span class="fas fa-arrow-right"></span> Go to latest</a>.
-          </h3>`
-        : previewMode && workingCheckoutVersion !== 'preview'
+        : !previewMode && workingCheckoutVersion !== 'latest'
           ? yo`
             <h3 class="viewing">
               Viewing <strong>${versionLabel}</strong>
-              <a class="link" href="beaker://editor/${archiveInfo.url}+preview"><span class="fas fa-arrow-right"></span> Go to preview</a>.
+              <a class="link" href="beaker://editor/${archiveInfo.url}+latest"><span class="fas fa-arrow-right"></span> Go to latest</a>.
             </h3>`
-          : ''}
+          : previewMode && workingCheckoutVersion !== 'preview'
+            ? yo`
+              <h3 class="viewing">
+                Viewing <strong>${versionLabel}</strong>
+                <a class="link" href="beaker://editor/${archiveInfo.url}+preview"><span class="fas fa-arrow-right"></span> Go to preview</a>.
+              </h3>`
+            : ''}
       ${renderDiff(currentDiff)}
-      <div class="quick-links">
-        <div class="col">
-          ${isEditable
-            ? yo`
-              <div class="quick-link">
-                <h3>Get started</h3>
-                <div>
-                  <i class="fas fa-${hasTitle ? 'check' : 'arrow-right'}"></i>
-                  Set the site's <a class="link" onclick=${doClick('.site-info-btn')}>title and description</a>.
-                </div>
-                <div>
-                  <i class="fas fa-${hasFavicon ? 'check' : 'arrow-right'}"></i>
-                  Choose a <a class="link" onclick=${doClick('.favicon-picker-btn')}>favicon</a>.
-                </div>
-                <div>
-                  <i class="fas fa-${hasIndexFile ? 'check' : 'arrow-right'}"></i>
-                  Create an
-                  <a class="link" onclick=${e => onCreateFile(e, 'index.html')}>index.html</a>
-                  or
-                  <a class="link" onclick=${e => onCreateFile(e, 'index.md')}>index.md</a>.
-                </div>
-              </div>`
-            : ''}
-          <div class="quick-link">
-            <h3>Find help</h3>
-            <div>Read the <a class="link" href="https://beakerbrowser.com/docs" target="_blank">Beaker documentation</a>.</div>
-          </div>
-        </div>
-        <div class="col">
-          ${isEditable
-            ? yo`
-              <div class="quick-link">
-                <h3>Actions</h3>
-                <div><a class="link" onclick=${e => emit('editor-new-folder', {path: '/'})}>New folder</a></div>
-                <div><a class="link" onclick=${e => emit('editor-new-file', {path: '/'})}>New file</a></div>
-                ${window.OS_CAN_IMPORT_FOLDERS_AND_FILES
-                  ? yo`<div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import...</a></div>`
-                  : [
-                    yo`<div><a class="link" onclick=${e => emit('editor-import-files', {path: '/'})}>Import files...</a></div>`,
-                    yo`<div><a class="link" onclick=${e => emit('editor-import-folder', {path: '/'})}>Import folder...</a></div>`
-                  ]}
-              </div>`
-            : ''}
-          <div class="quick-link">
-            <h3>Manage the site</h3>
-            <div>Want to make a copy? <a class="link" onclick=${e => emit('editor-fork')}>Duplicate it</a>.</div>
-            ${isEditable
-              ? [
-                previewMode
-                  ? yo`<div>Want to preview changes? <strong><span class="fas fa-check"></span> Preview mode enabled</strong>.</div>`
-                  : yo`<div>Want to preview changes? <a class="link" onclick=${doClick('.options-dropdown-btn')}>Enable preview mode</a>.</div>`,
-                isDeleteable
-                  ? yo`<div>Not useful anymore? <a class="link" onclick=${e => emit('editor-archive-unsave')}>Move to trash</a>.</div>`
-                  : ''
-              ] : ''}
-          </div>
-        </div>
-      </div>
       ${renderReadme(archiveInfo, readmeMd)}
       ${renderHotkeyHelp({OS_USES_META_KEY})}
     </div>`
@@ -146,7 +88,14 @@ function renderDiff (currentDiff) {
 }
 
 function renderReadme (archiveInfo, readmeMd) {
-  if (!readmeMd) return ''
+  if (!readmeMd) {
+    return yo`
+      <div class="readme markdown">
+        <h1>${archiveInfo.title || 'Untitled'}</h1>
+        <p>${archiveInfo.description || ''}</p>
+      </div>
+    `
+  }
 
   var markdownRenderer = createMd({
     hrefMassager (href) {
@@ -203,6 +152,6 @@ function onCommitAll (e) {
 }
 
 function onRevertAll (e) {
-  if (!confirm('Rever all changes?')) return
+  if (!confirm('Revert all changes?')) return
   emit('editor-revert-all')
 }

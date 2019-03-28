@@ -1,4 +1,5 @@
 @import "./components/editor/sidebar.less";
+@import "./components/editor/help-sidebar.less";
 @import "./components/editor/tabs.less";
 @import "./components/editor/siteinfo-dropdown.less";
 @import "./components/editor/options-dropdown.less";
@@ -34,6 +35,7 @@
     height: calc(100% - 39px);
     background-color: white;
     border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
   }
 
   #imageViewer {
@@ -73,6 +75,7 @@
   display: flex;
   background: #fff;
   border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
   border-bottom: 1px solid #ddd;
   padding: 0 4px;
 
@@ -99,5 +102,20 @@
 
   .spacer {
     flex: 1;
+  }
+}
+
+h3 {
+  font-size: 1.2em;
+  font-weight: 300;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.quick-link {
+  margin-bottom: 30px;
+
+  div {
+    color: rgba(0,0,0,.65);
   }
 }

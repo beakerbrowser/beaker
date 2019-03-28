@@ -5,17 +5,16 @@ import * as contextInput from '../context-input'
 // =
 
 export function render (file, model, opts) {
-  if (!model) {
-    return yo`<div class="editor-toolbar"></div>`
-  }
+  if (!model) model = {}
+  if (!file) file = {doesNotExist: true}
   var isEditable = file && file.isEditable
   var change = file && file.change
   return yo`
     <div class="editor-toolbar">
-      <span class="btn transparent ${isEditable ? '' : 'disabled'}" onclick=${isEditable ? e => onClickNewFile(e) : undefined}><i class="far fa-file"></i> new file</span>
+      <span class="btn transparent ${opts.isSiteEditable ? '' : 'disabled'}" onclick=${opts.isSiteEditable ? e => onClickNewFile(e) : undefined}><i class="far fa-file"></i> new file</span>
       <span class="divider"></span>
       <span class="btn transparent ${model.isDirty ? '' : 'disabled'}"  onclick=${e => onClickSaveFile(e, model)}><i class="fas fa-save"></i> save</span>
-      <span class="btn transparent" onclick=${e => onClickOpenFile(e, model)}><i class="fas fa-external-link-alt"></i> view file</span>
+      <span class="btn transparent ${file.doesNotExist ? 'disabled' : ''}" onclick=${e => onClickOpenFile(e, model)}><i class="fas fa-external-link-alt"></i> view file</span>
       <span class="btn transparent ${isEditable ? '' : 'disabled'}" onclick=${isEditable ? e => onClickRenameFile(e, model) : undefined}><i class="fas fa-i-cursor"></i> rename</span>
       <span class="btn transparent ${isEditable ? '' : 'disabled'}" onclick=${isEditable ? e => onClickDeleteFile(e, model) : undefined}><i class="fas fa-trash"></i> delete</span>
       ${opts.previewMode

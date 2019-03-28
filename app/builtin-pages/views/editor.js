@@ -6,6 +6,7 @@ import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
 import * as hotkeys from '../com/editor/hotkeys'
 import * as sidebar from '../com/editor/sidebar'
+import * as helpSidebar from '../com/editor/help-sidebar'
 import * as tabs from '../com/editor/tabs'
 import * as toolbar from '../com/editor/toolbar'
 import * as models from '../com/editor/models'
@@ -338,6 +339,15 @@ function update () {
     )
   }
   yo.update(
+    document.querySelector('.editor-help-sidebar'),
+    helpSidebar.render({
+      userProfile,
+      archiveInfo: archive.info,
+      isReadonly,
+      OS_USES_META_KEY
+    })
+  )
+  yo.update(
     document.querySelector('.editor-tabs'),
     tabs.render({
       archive: workingCheckout,
@@ -352,6 +362,7 @@ function update () {
 
 function updateToolbar () {
   var opts = {
+    isSiteEditable: !isReadonly,
     previewMode: _get(archive, 'info.userSettings.previewMode')
   }
   yo.update(
