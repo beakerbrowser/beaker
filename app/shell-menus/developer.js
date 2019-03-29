@@ -5,13 +5,7 @@ import * as bg from './bg-process-rpc'
 import {writeToClipboard} from '../lib/fg/event-handlers'
 import commonCSS from './common.css'
 
-class LocalPathMenu extends LitElement {
-  static get properties () {
-    return {
-      url: {type: String}
-    }
-  }
-
+class DeveloperMenu extends LitElement {
   constructor () {
     super()
     this.reset()
@@ -33,6 +27,20 @@ class LocalPathMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
+        <div class="menu-item" @click=${this.onClickViewSource}>
+          <i class="fas fa-code"></i>
+          View source
+        </div>
+        <div class="menu-item" @click=${this.onClickFork}>
+          <i class="fas fa-code-branch"></i>
+          Fork this site
+        </div>
+        <hr>
+        <div class="menu-item" @click=${this.onToggleLiveReloading}>
+          <i class="fa fa-bolt"></i>
+          Toggle live reloading
+        </div>
+        <hr>
         <div class="menu-item" @click=${this.onClickOpenFolder}>
           <i class="far fa-folder-open"></i>
           Open folder
@@ -40,11 +48,6 @@ class LocalPathMenu extends LitElement {
         <div class="menu-item" @click=${this.onClickCopyPath}>
           <i class="fa fa-clipboard"></i>
           Copy path
-        </div>
-        <hr />
-        <div class="menu-item" @click=${this.onClickConfigure}>
-          <i class="fa fa-wrench"></i>
-          Configure
         </div>
       </div>
     `
@@ -67,15 +70,28 @@ class LocalPathMenu extends LitElement {
     writeToClipboard(localSyncPath)
   }
 
-  onClickConfigure () {
+  onClickViewSource () {
     bg.shellMenus.createTab(`beaker://editor/dat://${this.datInfo.key}`)
     bg.shellMenus.close()
   }
+
+  async onClickFork () {
+    bg.shellMenus.close()
+    const forkUrl = await bg.datArchive.forkArchive(this.datInfo.key, {prompt: true}).catch(() => false)
+    if (forkUrl) {
+      bg.shellMenus.loadURL(`beaker://editor/${forkUrl}`)
+    }
+  }
+
+  onToggleLiveReloading () {
+    bg.shellMenus.close()
+    bg.views.toggleLiveReloading('active')
+  }
 }
-LocalPathMenu.styles = [commonCSS, css`
+DeveloperMenu.styles = [commonCSS, css`
 .wrapper {
   padding: 4px 0;
 }
 `]
 
-customElements.define('local-path-menu', LocalPathMenu)
+customElements.define('developer-menu', DeveloperMenu)

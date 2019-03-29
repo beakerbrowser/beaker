@@ -20,13 +20,11 @@ class NavbarLocation extends LitElement {
       zoom: {type: Number},
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
-      localPath: {type: String, attribute: 'local-path'},
       availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
-      isLocalPathMenuOpen: {type: Boolean},
+      isDeveloperMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
-      isPageMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean}
     }
@@ -41,12 +39,11 @@ class NavbarLocation extends LitElement {
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
-    this.localPath = false
+    this.previewMode = false
     this.availableAlternative = ''
-    this.isLocalPathMenuOpen = false
+    this.isDeveloperMenuOpen = false
     this.isDonateMenuOpen = false
     this.isPeersMenuOpen = false
-    this.isPageMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
 
@@ -83,12 +80,11 @@ class NavbarLocation extends LitElement {
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
       ${this.renderZoom()}
-      ${this.renderLocalPathBtn()}
-      ${this.renderAvailableAlternativeBtn()}
       ${this.renderLiveReloadingBtn()}
+      ${this.renderDeveloperBtn()}
+      ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
       ${this.renderPeersBtn()}
-      ${this.renderPageMenuBtn()}
       ${this.renderBookmarkBtn()}
     `
   }
@@ -175,15 +171,14 @@ class NavbarLocation extends LitElement {
     `
   }
 
-  renderLocalPathBtn () {
-    if (!this.localPath) {
+  renderDeveloperBtn () {
+    if (!this.isDat) {
       return ''
     }
-    var cls = classMap({'local-path': true, pressed: this.isLocalPathMenuOpen})
+    var cls = classMap({'developer': true, pressed: this.isDeveloperMenuOpen})
     return html`
-      <button class="${cls}" @click=${this.onClickLocalPathMenu}>
-        <span class="value">${this.localPath}</span>
-        <span class="fa fa-caret-down"></span>
+      <button class="${cls}" @click=${this.onClickDeveloperBtn}>
+        Developer <span class="fa fa-caret-down"></span>
       </button>
     `
   }
@@ -239,18 +234,6 @@ class NavbarLocation extends LitElement {
       <button class="${cls}" @click=${this.onClickPeersMenu}>
         <i class="fa fa-share-alt"></i>
         ${this.peers || 0}
-      </button>
-    `
-  }
-
-  renderPageMenuBtn () {
-    if (!this.isDat) {
-      return ''
-    }
-    var cls = classMap({pressed: this.isPageMenuOpen})
-    return html`
-      <button class="${cls}" @click=${this.onClickPageMenu}>
-        <span class="fa fa-ellipsis-h"></span>
       </button>
     `
   }
@@ -371,18 +354,18 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
-  async onClickLocalPathMenu (e) {
-    this.isLocalPathMenuOpen = true
+  async onClickDeveloperBtn (e) {
+    this.isDeveloperMenuOpen = true
     var rect1 = this.getClientRects()[0]
     var rect2 = e.currentTarget.getClientRects()[0]
-    await bg.views.toggleMenu('local-path', {
+    await bg.views.toggleMenu('developer', {
       bounds: {
         top: (rect1.bottom|0),
         right: (rect2.right|0)
       },
       params: {url: this.url}
     })
-    this.isLocalPathMenuOpen = false
+    this.isDeveloperMenuOpen = false
   }
 
   onClickAvailableAlternative (e) {
@@ -427,20 +410,6 @@ class NavbarLocation extends LitElement {
       params: {url: this.url}
     })
     this.isPeersMenuOpen = false
-  }
-
-  async onClickPageMenu (e) {
-    var rect1 = this.getClientRects()[0]
-    var rect2 = e.currentTarget.getClientRects()[0]
-    this.isPageMenuOpen = true
-    await bg.views.showMenu('page', {
-      bounds: {
-        top: (rect1.bottom|0),
-        right: (rect2.right|0)
-      },
-      params: {url: this.url}
-    })
-    this.isPageMenuOpen = false
   }
 
   async onClickBookmark () {
@@ -527,21 +496,20 @@ button.peers .fa {
   font-size: 13px;
 }
 
-button.local-path {
+button.developer {
   width: auto;
   display: flex;
   align-items: center;
   line-height: 26px;
-  padding: 0 6px;
+  padding: 0 10px;
+  margin-right: 5px;
+  border: 1px solid #ddd;
+  border-top: 0;
+  border-bottom: 0;
 }
 
-button.local-path .value {
-  display: inline-block;
-  max-width: 300px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-right: 5px;
+button.developer .fa-caret-down {
+  margin-left: 5px;
 }
 
 button.available-alternative {
@@ -552,13 +520,12 @@ button.available-alternative {
 
 button.live-reload {
   width: 24px;
+  margin-right: 2px;
 }
 
 button.live-reload .fa {
-  position: relative;
-  top: -1px;
-  color: #f2f200;
-  -webkit-text-stroke: 1px #dabb15;
+  color: #ffff91;
+  -webkit-text-stroke: 1px #daba47;
 }
 
 .input-container {
@@ -620,5 +587,6 @@ input:focus {
   color: var(--color-text--light);
   white-space: nowrap;
 }
+
 `]
 customElements.define('shell-window-navbar-location', NavbarLocation)

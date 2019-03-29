@@ -83,7 +83,6 @@ const STATE_VARS = [
   'currentInpageFindResults',
   'availableAlternative',
   'donateLinkHref',
-  'localPath',
   'isLiveReloading'
 ]
 
@@ -139,7 +138,6 @@ class View {
     this.isBookmarked = false // is the active page bookmarked?
     this.datInfo = null // metadata about the site if viewing a dat
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
-    this.localPath = null // the path of the local sync directory, if set
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
 
@@ -486,7 +484,6 @@ class View {
     this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
     this.peers = this.datInfo.peers
     this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
-    this.localPath = _get(this, 'datInfo.userSettings.localSyncPath')
     if (!noEmit) {
       this.emitUpdateState()
     }

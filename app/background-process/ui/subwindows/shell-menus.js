@@ -67,13 +67,6 @@ export function reposition (parentWindow) {
         width: 240,
         height: 466
       })
-    } else if (win.menuId === 'page') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 220,
-        y: parentBounds.y + win.boundsOpt.top,
-        width: 220,
-        height: 110
-      })
     } else if (win.menuId === 'location') {
       win.setBounds({
         x: parentBounds.x + win.boundsOpt.x,
@@ -102,12 +95,12 @@ export function reposition (parentWindow) {
         width: 320,
         height: 88
       })
-    } else if (win.menuId === 'local-path') {
+    } else if (win.menuId === 'developer') {
       win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 160,
+        x: parentBounds.x + win.boundsOpt.right - 220,
         y: parentBounds.y + win.boundsOpt.top,
-        width: 160,
-        height: 96
+        width: 220,
+        height: 160
       })
     } else if (win.menuId === 'site-info') {
       win.setBounds({

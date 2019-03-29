@@ -2,11 +2,10 @@
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './shell-menus/bg-process-rpc'
 import './shell-menus/browser'
-import './shell-menus/page'
 import './shell-menus/bookmark'
 import './shell-menus/peers'
 import './shell-menus/donate'
-import './shell-menus/local-path'
+import './shell-menus/developer'
 import './shell-menus/site-info'
 
 class MenusWrapper extends LitElement {
@@ -71,8 +70,6 @@ class MenusWrapper extends LitElement {
     switch (this.currentMenu) {
       case 'browser':
         return html`<browser-menu></browser-menu>`
-      case 'page':
-        return html`<page-menu></page-menu>`
       case 'location':
         return html`<location-menu></location-menu>`
       case 'bookmark':
@@ -81,8 +78,8 @@ class MenusWrapper extends LitElement {
         return html`<peers-menu></peers-menu>`
       case 'donate':
         return html`<donate-menu></donate-menu>`
-      case 'local-path':
-        return html`<local-path-menu></local-path-menu>`
+      case 'developer':
+        return html`<developer-menu></developer-menu>`
       case 'site-info':
         return html`<site-info-menu></site-info-menu>`
     }
