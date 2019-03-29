@@ -18,6 +18,7 @@ const profiles = navigator.importSystemAPI('profiles')
 
 const DEFAULT_SIDEBAR_WIDTH = 160
 const MIN_SIDEBAR_WIDTH = 100
+const HELP_SIDEBAR_WIDTH = 200
 
 var isLoading = true
 var userProfile
@@ -272,7 +273,7 @@ function setSidebarWidth (width) {
     /** @type HTMLElement */(document.querySelector(sel)).style.width = v
   }
   setWidth('.editor-sidebar', `${actualWidth}px`)
-  setWidth('.editor-container', `calc(100vw - ${actualWidth}px)`) // allows monaco to resize properly
+  setWidth('.editor-container', `calc(100vw - ${actualWidth + HELP_SIDEBAR_WIDTH}px)`) // allows monaco to resize properly
 }
 
 function getActualSidebarWidth () {
