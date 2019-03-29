@@ -339,30 +339,46 @@ async function loadReadme () {
 
 function update () {
   if (isLoading) {
-    document.querySelector('.loading-screen').classList.remove('hidden')
-    return
-  } else {
-    document.querySelector('.loading-screen').classList.add('hidden')
-  }
-
-  if (archive) {
+    // loading screen
     yo.update(
-      document.querySelector('.editor-sidebar'),
+      document.querySelector('.cover-screen'),
       yo`
-        <div class="editor-sidebar" style="width: ${getActualSidebarWidth()}px">
-          ${sidebar.render()}
-        </div>
-      `)
-  } else {
-    yo.update(
-      document.querySelector('.editor-sidebar'),
-      yo`
-        <div class="editor-sidebar" style="width: ${getActualSidebarWidth()}px">
-          <button class="btn primary">Open dat archive</button>
+        <div class="cover-screen">
+          <div class="cover-screen-centered">
+            <span class="spinner"></span> Loading...
+          </div>
         </div>
       `
     )
+    return
   }
+
+  if (!archive) {
+    // select archive screen
+    yo.update(
+      document.querySelector('.cover-screen'),
+      yo`
+        <div class="cover-screen gray">
+          <div class="cover-screen-leftpane">
+            <h1>Beaker Editor</h1>
+            <button class="btn primary thick" onclick=${onOpenSite}>Open site</button>
+          </div>
+        </div>
+      `
+    )
+    return
+  }
+
+  // active editor
+  yo.update(document.querySelector('.cover-screen'), yo`<div class="cover-screen hidden"></div>`)
+  yo.update(
+    document.querySelector('.editor-sidebar'),
+    yo`
+      <div class="editor-sidebar" style="width: ${getActualSidebarWidth()}px">
+        ${sidebar.render()}
+      </div>
+    `
+  )
   yo.update(
     document.querySelector('.editor-help-sidebar'),
     helpSidebar.render({
@@ -437,6 +453,11 @@ function onBeforeUnload (e) {
   if (models.checkForDirtyFiles()) {
     e.returnValue = 'You have unsaved changes, are you sure you want to leave?'
   }
+}
+
+async function onOpenSite (e) {
+  var archive = await DatArchive.selectArchive()
+  window.location = `beaker://editor/${archive.url}`
 }
 
 async function onFilesChanged () {

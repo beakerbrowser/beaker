@@ -120,7 +120,7 @@ h3 {
   }
 }
 
-.loading-screen {
+.cover-screen {
   position: fixed;
   top: 0;
   left: 0;
@@ -128,15 +128,26 @@ h3 {
   height: 100%;
   z-index: 1000;
   background: #fff;
+  font-size: 18px;
+  font-weight: 300;
+  color: #333;
 
-  .loading-screen-inner {
+  &.gray {
+    background: #fafafa;
+  }
+
+  .cover-screen-centered {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 18px;
-    font-weight: 300;
-    color: #333;
+  }
+
+  .cover-screen-leftpane {
+    position: absolute;
+    background: #fff;
+    padding: 30px 80px 20px 70px;
+    height: 100%;
   }
 }
 
