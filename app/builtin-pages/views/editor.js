@@ -8,6 +8,7 @@ import * as hotkeys from '../com/editor/hotkeys'
 import * as sidebar from '../com/editor/sidebar'
 import * as helpSidebar from '../com/editor/help-sidebar'
 import * as tabs from '../com/editor/tabs'
+import * as importPopup from '../com/editor/import-popup'
 import * as toolbar from '../com/editor/toolbar'
 import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
@@ -676,9 +677,7 @@ async function onImportFiles (e) {
     properties: ['openFile', OS_CAN_IMPORT_FOLDERS_AND_FILES ? 'openDirectory' : false, 'multiSelections', 'createDirectory'].filter(Boolean)
   })
   if (files) {
-    for (let src of files) {
-      await DatArchive.importFromFilesystem({src, dst, ignore: ['dat.json'], inplaceImport: false})
-    }
+    importPopup.create({dst, srcs: files})
   }
 }
 
@@ -692,9 +691,7 @@ async function onImportFolder (e) {
     properties: ['openDirectory', 'createDirectory']
   })
   if (folders) {
-    for (let src of folders) {
-      await DatArchive.importFromFilesystem({src, dst, ignore: ['dat.json'], inplaceImport: false})
-    }
+    importPopup.create({dst, srcs: folders})
   }
 }
 

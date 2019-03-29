@@ -1,0 +1,61 @@
+#editor-import-popup {
+  .popup-inner {
+    width: 90vw;
+    max-width: 800px;
+  }
+
+  .changes {
+    &:extend(.code-font);
+    max-height: 50vh;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    margin-top: 0;
+
+    & > * {
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      padding: 1px 3px;
+    }
+
+    .added {
+      background: #efffef;
+      color: #013e01;
+
+      .fas {
+        color: green;
+      }
+    }
+
+    .updated {
+      background: #ffffd5;
+      color: #5f5f1e;
+      
+      .fas {
+        color: #b99814;
+      }
+    }
+
+    .removed {
+      background: #ffd5d5;
+      color: maroon;
+
+      .fas {
+        color: maroon;
+      }
+    }
+  }
+
+  .loading {
+    display: flex;
+    align-items: center;
+    padding: 30px;
+    font-size: 14px;
+    background: #fafafa;
+
+    .spinner {
+      margin-right: 5px;
+    }
+  }
+}
