@@ -670,7 +670,7 @@ async function onCreateFolder (e) {
 async function onImportFiles (e) {
   if (!confirmChangeOnLatest()) return
 
-  var dst = archive.url + e.detail.path
+  var dst = workingCheckout.url + e.detail.path
   var files = await beaker.browser.showOpenDialog({
     title: 'Import files',
     buttonLabel: 'Import',
@@ -684,7 +684,7 @@ async function onImportFiles (e) {
 async function onImportFolder (e) {
   if (!confirmChangeOnLatest()) return
 
-  var dst = archive.url + e.detail.path
+  var dst = workingCheckout.url + e.detail.path
   var folders = await beaker.browser.showOpenDialog({
     title: 'Import folders',
     buttonLabel: 'Import',
