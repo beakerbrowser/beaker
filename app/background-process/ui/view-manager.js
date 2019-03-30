@@ -1175,7 +1175,7 @@ function addToNoRedirects (url) {
 
 async function fireBeforeUnloadEvent (wc) {
   try {
-    if (wc.isWaitingForResponse()) {
+    if (wc.isLoading() || wc.isWaitingForResponse()) {
       return // dont bother
     }
     return await wc.executeJavaScript(`
