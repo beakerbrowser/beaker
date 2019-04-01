@@ -15,7 +15,7 @@ class BookmarkMenu extends LitElement {
       description: {type: String},
       tags: {type: String},
       pinned: {type: Boolean},
-      public: {type: Boolean}
+      isPublic: {type: Boolean}
     }
   }
 
@@ -32,7 +32,7 @@ class BookmarkMenu extends LitElement {
     this.description = ''
     this.tags = ''
     this.pinned = false
-    this.public = false
+    this.isPublic = false
   }
 
   async init (params) {
@@ -45,7 +45,7 @@ class BookmarkMenu extends LitElement {
       this.description = b.description
       this.tags = b.tags
       this.pinned = b.pinned
-      this.public = b.public
+      this.isPublic = b.isPublic
     } else {
       this.href = params.url
     }
@@ -62,8 +62,8 @@ class BookmarkMenu extends LitElement {
       return true
     }
     return !_isEqual(
-      _pick(this, ['href', 'title', 'description', 'tags', 'pinned', 'public']),
-      _pick(this.bookmark, ['href', 'title', 'description', 'tags', 'pinned', 'public'])
+      _pick(this, ['href', 'title', 'description', 'tags', 'pinned', 'isPublic']),
+      _pick(this.bookmark, ['href', 'title', 'description', 'tags', 'pinned', 'isPublic'])
     )
   }
 
@@ -106,12 +106,12 @@ class BookmarkMenu extends LitElement {
             <div class="input-group">
               <label>Visibility</label>
               <div class="privacy">
-                <input @click=${e => this.onSetPublic(e, false)} type="radio" id="privacy-private" name="privacy" value="private" ?checked=${!this['public']}>
+                <input @click=${e => this.onSetPublic(e, false)} type="radio" id="privacy-private" name="privacy" value="private" ?checked=${!this.isPublic}>
                 <label class="btn" for="privacy-private">
                   <i class="fa fa-lock"></i>
                   Private
                 </label>
-                <input @click=${e => this.onSetPublic(e, true)} type="radio" id="privacy-public" name="privacy" value="public" ?checked=${this['public']}>
+                <input @click=${e => this.onSetPublic(e, true)} type="radio" id="privacy-public" name="privacy" value="public" ?checked=${this.isPublic}>
                 <label class="btn" for="privacy-public">
                   <i class="fa fa-globe"></i>
                   Public
@@ -155,7 +155,7 @@ class BookmarkMenu extends LitElement {
     b.title = this.title
     b.description = this.description
     b.tags = this.tags.split(' ').filter(Boolean)
-    b.public = this.public
+    b.isPublic = this.isPublic
     b.pinned = this.pinned
     await bg.bookmarks.add(b)
     bg.views.refreshState('active')
@@ -187,7 +187,7 @@ class BookmarkMenu extends LitElement {
   }
 
   onSetPublic (e, v) {
-    this.public = v
+    this.isPublic = v
   }
 }
 BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`
