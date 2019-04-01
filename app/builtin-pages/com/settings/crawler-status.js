@@ -237,8 +237,8 @@ function initialState (url, title, updatedAt) {
     url,
     title,
     datasetVersions: {
-      crawl_link_posts: 0,
-      crawl_followgraph: 0,
+      crawl_posts: 0,
+      crawl_graph: 0,
       crawl_site_descriptions: 0
     },
     updatedAt
