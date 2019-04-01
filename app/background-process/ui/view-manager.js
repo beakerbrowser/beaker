@@ -845,9 +845,7 @@ export async function loadPins (win) {
   win = getTopWindow(win)
   var json = await settingsDb.get('pinned_tabs')
   try { JSON.parse(json).forEach(url => create(win, url, {isPinned: true})) }
-  catch (e) {
-    console.log('Failed to load pins', e)
-  }
+  catch (e) {}
 }
 
 export function reopenLastRemoved (win) {
