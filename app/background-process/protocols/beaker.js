@@ -13,7 +13,6 @@ import intoStream from 'into-stream'
 import ICO from 'icojs'
 
 const START_APP_PATH = path.dirname(require.resolve('@beaker/start-app'))
-const BOOKMARKS_APP_PATH = path.dirname(require.resolve('@beaker/bookmarks-app'))
 const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app'))
 const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app'))
 
@@ -235,9 +234,6 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl === 'beaker://start' || requestUrl.startsWith('beaker://start')) {
     return serveAppAsset(requestUrl, START_APP_PATH, cb)
-  }
-  if (requestUrl === 'beaker://bookmarks' || requestUrl.startsWith('beaker://bookmarks')) {
-    return serveAppAsset(requestUrl, BOOKMARKS_APP_PATH, cb)
   }
   if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library')) {
     return serveAppAsset(requestUrl, LIBRARY_APP_PATH, cb)
