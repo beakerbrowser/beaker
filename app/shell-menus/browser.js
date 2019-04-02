@@ -99,21 +99,23 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-            <i class="fa fa-book"></i>
-            <span class="label">Library</span>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library?view=addressbook')}>
+            <i class="fas fa-address-book"></i>
+            <span class="label">Your address book</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://watchlist')}>
-            <i class="fa fa-eye"></i>
-            <span class="label">Watchlist</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library?view=bookmarks')}>
             <i class="far fa-star"></i>
-            <span class="label">Bookmarks</span>
+            <span class="label">Your bookmarks</span>
           </div>
 
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library?view=websites')}>
+            <i class="fas fa-sitemap"></i>
+            <span class="label">Your websites</span>
+          </div>
+        </div>
+
+        <div class="section">
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
             <i class="fa fa-history"></i>
             <span class="label">History</span>
@@ -125,22 +127,12 @@ class BrowserMenu extends LitElement {
             <span class="label">Downloads</span>
             ${progressEl}
           </div>
-        </div>
 
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/?new')/* TODO restore when there are more options this.onShowSubmenu('create-new')*/}>
-            <i class="far fa-plus-square"></i>
-            <span class="label">Create New Website</span>
-            ${''/* TODO restoreme <i class="more fa fa-angle-right"></i>*/}
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://watchlist')}>
+            <i class="fa fa-eye"></i>
+            <span class="label">Watchlist</span>
           </div>
 
-          ${''/* TODO restoreme <div class="menu-item" @click=${e => this.onShareFiles(e)}>
-            <i class="fa fa-upload"></i>
-            <span class="label">Share Files</span>
-          </div>*/}
-        </div>
-
-        <div class="section">
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
             <i class="fas fa-cog"></i>
             <span class="label">Settings</span>
