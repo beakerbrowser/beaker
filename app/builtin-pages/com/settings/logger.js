@@ -32,7 +32,7 @@ export default class Logger {
       this.settings = JSON.parse(localStorage.settings)
     } catch (e) {
       this.settings = {
-        level: AVAILABLE_LEVELS.slice(0, -2),
+        level: AVAILABLE_LEVELS.slice(0, -1),
         category: 'all',
         customRules: []
       }
@@ -50,7 +50,7 @@ export default class Logger {
     this.rerenderControls()
     var filter = {level: this.settings.level}
     if (this.settings.category !== 'all') filter.category = this.settings.category
-    this.rows = await beaker.logger.query({limit: 5e5, filter, until: this.pauseTime, sort: 'desc'})
+    this.rows = await beaker.logger.query({limit: 5e2, filter, until: this.pauseTime, sort: 'desc'})
     this.rows = this.rows.filter(row => this.applyCustomRules(row))
 
     if (this.readStream) this.readStream.close()
