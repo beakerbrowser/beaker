@@ -264,6 +264,69 @@
       margin-bottom: 10px;
     }
   }
+
+  .profile-settings {
+    display: flex;
+    padding: 20px 30px 30px;
+
+    .thumb {
+      padding: 0 60px 0 30px;
+
+      img {
+        border-radius: 50%;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+      }
+
+      a {
+        position: relative;
+        cursor: pointer;
+
+        .change {
+          visibility: hidden;
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 100;
+          top: -70px;
+          color: #fff;
+          white-space: pre;
+          background: rgba(0,0,0,.75);
+          padding: 2px 5px;
+          text-shadow: 0 1px 1px rgba(0,0,0,.9);
+          border-radius: 4px;
+        }
+
+        &:hover {
+          img {
+            filter: grayscale(100%);
+          }
+          .change {
+            visibility: visible;
+          }
+        }
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+    }
+
+    .input-control {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+    }
+
+    textarea {
+      width: 330px;
+      height: 80px;
+      padding: 4px 7px;
+    }
+  }
 }
 
 ul.settings-section {

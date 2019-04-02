@@ -13,6 +13,7 @@ const DEFAULT_APP_NAMES = ['start', 'feed', 'profile', 'library', 'bookmarks', '
 // =
 
 var settings
+var user
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
@@ -20,6 +21,11 @@ var activeView = 'general'
 var logger = new Logger()
 var datCache = new DatCache()
 var crawlerStatus = new CrawlerStatus()
+
+var newTitle
+var newDescription
+var newThumb
+var newThumbExt
 
 // main
 // =
@@ -36,6 +42,7 @@ async function setup () {
 
   // fetch data
   browserInfo = beaker.browser.getInfo()
+  user = await (navigator.importSystemAPI('profiles')).getCurrentUser()
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
 
@@ -77,6 +84,16 @@ function renderSidebar () {
         General
       </div>
 
+      <div class="nav-item ${activeView === 'profile' ? 'active' : ''}" onclick=${() => onUpdateView('profile')}>
+        <i class="fa fa-angle-right"></i>
+        Your Profile
+      </div>
+
+      <div class="nav-item ${activeView === 'dat-network' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network')}>
+        <i class="fa fa-angle-right"></i>
+        Dat Network
+      </div>
+
       <hr>
 
       <div class="nav-item ${activeView === 'logger' ? 'active' : ''}" onclick=${() => onUpdateView('logger')}>
@@ -107,6 +124,10 @@ function renderView () {
   switch (activeView) {
     case 'general':
       return renderGeneral()
+    case 'profile':
+      return renderProfile()
+    case 'dat-network':
+      return renderDatNetwork()
     case 'logger':
       return renderLogger()
     case 'dat-cache':
@@ -122,14 +143,107 @@ function renderGeneral () {
   return yo`
     <div class="view not-fullwidth">
       ${renderAutoUpdater()}
-      ${renderStartPageSettings()}
       ${renderOnStartupSettings()}
       ${renderProtocolSettings()}
+      ${renderAnalyticsSettings()}
+    </div>
+  `
+}
+
+function renderProfile () {
+  var hasChange = newTitle || newDescription || newThumb
+
+  function onInputTitle (e) {
+    newTitle = e.currentTarget.value
+    renderToPage()
+  }
+
+  function onInputDescription (e) {
+    newDescription = e.currentTarget.value
+    renderToPage()
+  }
+
+  var fileInput = yo`<input type="file" accept=".jpg,.jpeg,.png" onchange=${onChooseThumbFile}>`
+  function onClickAvatar () {
+    fileInput.click()
+  }
+
+  function onChooseThumbFile (e) {
+    var file = e.currentTarget.files[0]
+    if (!file) return
+    var fr = new FileReader()
+    fr.onload = () => {
+      newThumbExt = file.name.split('.').pop()
+      newThumb = fr.result
+      renderToPage()
+    }
+    fr.readAsDataURL(file)
+  }
+
+  async function onSubmit (e) {
+    e.preventDefault()
+
+    var site = new DatArchive(user.url)
+    if (newTitle || newDescription) {
+      await site.configure({
+        title: newTitle || user.title,
+        description: newDescription || user.description
+      })
+    }
+    if (newThumb) {
+      let base64buf = newThumb.split(',').pop()
+      await site.unlink('/thumb.jpg').catch(e => undefined)
+      await site.unlink('/thumb.jpeg').catch(e => undefined)
+      await site.unlink('/thumb.png').catch(e => undefined)
+      await site.writeFile(`/thumb.${newThumbExt}`, base64buf, 'base64')
+    }
+    location.reload()
+  }
+  
+  return yo`
+    <div class="view not-fullwidth">
+      <div class="section">
+        <h2 class="subtitle-heading">Your Profile</h2>
+        
+        <p>
+          Your profile represents you on the Web.
+        </p>
+
+        <form class="profile-settings" onsubmit=${onSubmit}>
+          <div class="thumb">
+            <a onclick=${onClickAvatar}>
+              <img src="${newThumb || (user.url + '/thumb')}">
+              <span class="change">Change photo</span>
+            </a>
+            ${fileInput}
+          </div>
+          <div class="details">
+            <div class="input-control">
+              <label for="profile-title">Name</label>
+              <input id="profile-title" placeholder="Anonymous" value="${newTitle || user.title}" oninput=${onInputTitle}>
+            </div>
+            <div class="input-control">
+              <label for="profile-description">Bio</label>
+              <textarea id="profile-description" placeholder="A short description of who you are." oninput=${onInputDescription}>${newDescription || user.description}</textarea>
+            </div>
+            <div>
+              <button class="btn primary" ${hasChange ? '' : 'disabled'} style="margin-right: 10px">Save changes</button>
+              <a href="${user.url}" target="_blank"><span class="fas fa-external-link-alt"></span> View your site</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  `
+}
+
+function renderDatNetwork () {
+  return yo`
+    <div class="view not-fullwidth">
       ${renderDefaultToDatSetting()}
       ${renderDefaultSyncPathSettings()}
       ${renderDatSettings()}
       ${renderDefaultDatIgnoreSettings()}
-      ${renderAnalyticsSettings()}
     </div>
   `
 }
@@ -149,36 +263,6 @@ function renderDefaultSyncPathSettings () {
           Choose directory
         </button>
       </p>
-    </div>
-  `
-}
-
-function renderStartPageSettings () {
-  const section = (setting, icon, label) => yo`
-    <label class="toggle unweirded">
-      <input checked=${settings[setting] !== 1 ? 'true' : 'false'} type="checkbox" onchange=${() => toggleSection(setting, settings[setting] === 1 ? 0 : 1)} />
-
-      <div class="switch"></div>
-      <span class="text"><span class="fa-fw ${icon}" style="color: rgba(0,0,0,.75); margin-right: 3px"></span> ${label}</span>
-    </label>
-  `
-
-  const toggleSection = (setting, value) => {
-    beaker.browser.setSetting(setting, value)
-    settings[setting] = value
-    renderToPage()
-  }
-
-  return yo`
-    <div class="section start-page">
-      <h2 id="start-page" class="subtitle-heading">Start page</h2>
-
-      <p>
-        Choose what content you want on your start page.
-      </p>
-
-      ${section('start_section_hide_pinned_bookmarks', 'fas fa-thumbtack', 'Pinned bookmarks')}
-      ${section('start_section_hide_applications', 'far fa-window-maximize', 'Applications')}
     </div>
   `
 }
