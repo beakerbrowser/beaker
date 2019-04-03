@@ -342,6 +342,14 @@ async function gotoFileEditor (filePath) {
   onOpenFileEditor()
 }
 
+function resolvePaymentLink (archiveUrl, paymentLink) {
+  if (paymentLink.indexOf('://') === -1) {
+    const shouldAddSlash = !archiveUrl.endsWith('/') && !paymentLink.startsWith('/')
+    return `${archiveUrl}${shouldAddSlash ? '/' : ''}${paymentLink}`
+  }
+  return paymentLink
+}
+
 // rendering
 // =
 
@@ -835,6 +843,11 @@ function renderReadmeHint () {
     </div>`
 }
 
+function renderDonationLink (archiveUrl, paymentLink) {
+  const url = resolvePaymentLink(archiveUrl, paymentLink)
+  return yo`<a href=${url}>${url}</a>`
+}
+
 function renderSettingsView () {
   const isOwner = _get(archive, 'info.isOwner')
 
@@ -1019,7 +1032,7 @@ function renderSettingsView () {
                   </p>
                 `
               : paymentLink
-                ? yo`<p><a href=${paymentLink}>${paymentLink}</a></p>`
+                ? yo`<p>${renderDonationLink(archive.url, paymentLink)}</p>`
                 : yo`<p><em>No link provided.</em></p>`
             }
           </div>
