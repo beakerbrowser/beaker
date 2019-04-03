@@ -193,7 +193,7 @@ function renderProfile () {
     }
     location.reload()
   }
-  
+
   return yo`
     <div class="section">
       <h2 class="subtitle-heading">Your Profile</h2>

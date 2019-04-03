@@ -85,7 +85,7 @@ async function doLoad (model, file) {
       model.loadError = err
     }
   }
-  
+
   // rerender if still active
   if (model.isActive) {
     setActive(file)

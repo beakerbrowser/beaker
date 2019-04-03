@@ -32,7 +32,7 @@ function intentProtocol (request, respond) {
     case 'unwalled.garden/view-profile':
       return respond({
         statusCode: 303,
-        headers: {Location: `dat://beaker.social/profile/${encodeURIComponent(urlp.qs.url)}`},
+        headers: {Location: `beaker://library/?view=addressbook&site=${encodeURIComponent(urlp.qs.url)}`},
         data: intoStream('')
       })
     case 'unwalled.garden/view-feed':
