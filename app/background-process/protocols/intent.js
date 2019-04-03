@@ -29,16 +29,10 @@ function intentProtocol (request, respond) {
   // we have temporarily hardcoded the intents
   // -prf
   switch (urlp.name) {
-    case 'unwalled.garden/view-profile':
+    case 'unwalled.garden/view-address-book':
       return respond({
         statusCode: 303,
         headers: {Location: `beaker://library/?view=addressbook&site=${encodeURIComponent(urlp.qs.url)}`},
-        data: intoStream('')
-      })
-    case 'unwalled.garden/view-feed':
-      return respond({
-        statusCode: 303,
-        headers: {Location: `dat://beaker.social/`},
         data: intoStream('')
       })
     case 'unwalled.garden/edit-source':
