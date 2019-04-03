@@ -84,11 +84,6 @@ function renderSidebar () {
         General
       </div>
 
-      <div class="nav-item ${activeView === 'profile' ? 'active' : ''}" onclick=${() => onUpdateView('profile')}>
-        <i class="fa fa-angle-right"></i>
-        Your Profile
-      </div>
-
       <div class="nav-item ${activeView === 'dat-network' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network')}>
         <i class="fa fa-angle-right"></i>
         Dat Network
@@ -124,8 +119,6 @@ function renderView () {
   switch (activeView) {
     case 'general':
       return renderGeneral()
-    case 'profile':
-      return renderProfile()
     case 'dat-network':
       return renderDatNetwork()
     case 'logger':
@@ -142,6 +135,7 @@ function renderView () {
 function renderGeneral () {
   return yo`
     <div class="view not-fullwidth">
+      ${renderProfile()}
       ${renderAutoUpdater()}
       ${renderOnStartupSettings()}
       ${renderProtocolSettings()}
@@ -201,38 +195,36 @@ function renderProfile () {
   }
   
   return yo`
-    <div class="view not-fullwidth">
-      <div class="section">
-        <h2 class="subtitle-heading">Your Profile</h2>
-        
-        <p>
-          Your profile represents you on the Web.
-        </p>
+    <div class="section">
+      <h2 class="subtitle-heading">Your Profile</h2>
+      
+      <p>
+        Your profile represents you on the Web.
+      </p>
 
-        <form class="profile-settings" onsubmit=${onSubmit}>
-          <div class="thumb">
-            <a onclick=${onClickAvatar}>
-              <img src="${newThumb || (user.url + '/thumb')}">
-              <span class="change">Change photo</span>
-            </a>
-            ${fileInput}
+      <form class="profile-settings" onsubmit=${onSubmit}>
+        <div class="thumb">
+          <a onclick=${onClickAvatar}>
+            <img src="${newThumb || (user.url + '/thumb')}">
+            <span class="change">Change photo</span>
+          </a>
+          ${fileInput}
+        </div>
+        <div class="details">
+          <div class="input-control">
+            <label for="profile-title">Name</label>
+            <input id="profile-title" placeholder="Anonymous" value="${newTitle || user.title}" oninput=${onInputTitle}>
           </div>
-          <div class="details">
-            <div class="input-control">
-              <label for="profile-title">Name</label>
-              <input id="profile-title" placeholder="Anonymous" value="${newTitle || user.title}" oninput=${onInputTitle}>
-            </div>
-            <div class="input-control">
-              <label for="profile-description">Bio</label>
-              <textarea id="profile-description" placeholder="A short description of who you are." oninput=${onInputDescription}>${newDescription || user.description}</textarea>
-            </div>
-            <div>
-              <button class="btn primary" ${hasChange ? '' : 'disabled'} style="margin-right: 10px">Save changes</button>
-              <a href="${user.url}" target="_blank"><span class="fas fa-external-link-alt"></span> View your site</a>
-            </div>
+          <div class="input-control">
+            <label for="profile-description">Bio</label>
+            <textarea id="profile-description" placeholder="A short description of who you are." oninput=${onInputDescription}>${newDescription || user.description}</textarea>
           </div>
-        </form>
-      </div>
+          <div>
+            <button class="btn primary" ${hasChange ? '' : 'disabled'} style="margin-right: 10px">Save changes</button>
+            <a href="${user.url}" target="_blank"><span class="fas fa-external-link-alt"></span> View your site</a>
+          </div>
+        </div>
+      </form>
     </div>
   `
 }
