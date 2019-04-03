@@ -35,6 +35,9 @@ export function setup () {
     // if beaker://, pull from assets
     if (url.startsWith('beaker://')) {
       let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
+      if (url.startsWith('beaker://library/?view=addressbook')) name = 'addressbook'
+      if (url.startsWith('beaker://library/?view=bookmarks')) name = 'bookmarks'
+      if (url.startsWith('beaker://library/?view=websites')) name = 'websites'
       return fs.readFile(path.join(__dirname, `./assets/img/favicons/${name}.png`), (err, buf) => {
         cb({mimeType: 'image/png', data: buf || defaultFaviconBuffer})
       })
