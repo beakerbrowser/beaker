@@ -5,7 +5,7 @@ import './shell-menus/browser'
 import './shell-menus/bookmark'
 import './shell-menus/peers'
 import './shell-menus/donate'
-import './shell-menus/developer'
+import './shell-menus/site-tools'
 import './shell-menus/site-info'
 
 class MenusWrapper extends LitElement {
@@ -78,8 +78,8 @@ class MenusWrapper extends LitElement {
         return html`<peers-menu></peers-menu>`
       case 'donate':
         return html`<donate-menu></donate-menu>`
-      case 'developer':
-        return html`<developer-menu></developer-menu>`
+      case 'site-tools':
+        return html`<site-tools-menu></site-tools-menu>`
       case 'site-info':
         return html`<site-info-menu></site-info-menu>`
     }

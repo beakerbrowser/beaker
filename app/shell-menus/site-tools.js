@@ -5,7 +5,7 @@ import * as bg from './bg-process-rpc'
 import {writeToClipboard} from '../lib/fg/event-handlers'
 import commonCSS from './common.css'
 
-class DeveloperMenu extends LitElement {
+class SiteToolsMenu extends LitElement {
   constructor () {
     super()
     this.reset()
@@ -88,10 +88,10 @@ class DeveloperMenu extends LitElement {
     bg.views.toggleLiveReloading('active')
   }
 }
-DeveloperMenu.styles = [commonCSS, css`
+SiteToolsMenu.styles = [commonCSS, css`
 .wrapper {
   padding: 4px 0;
 }
 `]
 
-customElements.define('developer-menu', DeveloperMenu)
+customElements.define('site-tools-menu', SiteToolsMenu)

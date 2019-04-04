@@ -95,7 +95,7 @@ export function reposition (parentWindow) {
         width: 320,
         height: 88
       })
-    } else if (win.menuId === 'developer') {
+    } else if (win.menuId === 'site-tools') {
       win.setBounds({
         x: parentBounds.x + win.boundsOpt.right - 220,
         y: parentBounds.y + win.boundsOpt.top,

@@ -22,7 +22,7 @@ class NavbarLocation extends LitElement {
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
-      isDeveloperMenuOpen: {type: Boolean},
+      isSiteToolsMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
@@ -41,7 +41,7 @@ class NavbarLocation extends LitElement {
     this.donateLinkHref = false
     this.previewMode = false
     this.availableAlternative = ''
-    this.isDeveloperMenuOpen = false
+    this.isSiteToolsMenuOpen = false
     this.isDonateMenuOpen = false
     this.isPeersMenuOpen = false
     this.isBookmarked = false
@@ -81,7 +81,7 @@ class NavbarLocation extends LitElement {
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
-      ${this.renderDeveloperBtn()}
+      ${this.renderSiteToolsBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
       ${this.renderPeersBtn()}
@@ -171,14 +171,14 @@ class NavbarLocation extends LitElement {
     `
   }
 
-  renderDeveloperBtn () {
+  renderSiteToolsBtn () {
     if (!this.isDat) {
       return ''
     }
-    var cls = classMap({'developer': true, pressed: this.isDeveloperMenuOpen})
+    var cls = classMap({'site-tools': true, pressed: this.isSiteToolsMenuOpen})
     return html`
-      <button class="${cls}" @click=${this.onClickDeveloperBtn}>
-        Developer <span class="fa fa-caret-down"></span>
+      <button class="${cls}" @click=${this.onClickSiteToolsBtn}>
+        <span class="fa fa-ellipsis-h"></span>
       </button>
     `
   }
@@ -354,18 +354,18 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
-  async onClickDeveloperBtn (e) {
-    this.isDeveloperMenuOpen = true
+  async onClickSiteToolsBtn (e) {
+    this.isSiteToolsMenuOpen = true
     var rect1 = this.getClientRects()[0]
     var rect2 = e.currentTarget.getClientRects()[0]
-    await bg.views.toggleMenu('developer', {
+    await bg.views.toggleMenu('site-tools', {
       bounds: {
         top: (rect1.bottom|0),
         right: (rect2.right|0)
       },
       params: {url: this.url}
     })
-    this.isDeveloperMenuOpen = false
+    this.isSiteToolsMenuOpen = false
   }
 
   onClickAvailableAlternative (e) {
@@ -494,22 +494,6 @@ button.peers {
 
 button.peers .fa {
   font-size: 13px;
-}
-
-button.developer {
-  width: auto;
-  display: flex;
-  align-items: center;
-  line-height: 26px;
-  padding: 0 10px;
-  margin-right: 5px;
-  border: 1px solid #ddd;
-  border-top: 0;
-  border-bottom: 0;
-}
-
-button.developer .fa-caret-down {
-  margin-left: 5px;
 }
 
 button.available-alternative {
