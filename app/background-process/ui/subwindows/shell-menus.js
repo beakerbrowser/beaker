@@ -102,6 +102,13 @@ export function reposition (parentWindow) {
         width: 220,
         height: 160
       })
+    } else if (win.menuId === 'preview-mode-tools') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.right - 220,
+        y: parentBounds.y + win.boundsOpt.top,
+        width: 220,
+        height: 122
+      })
     } else if (win.menuId === 'site-info') {
       win.setBounds({
         x: parentBounds.x + 100,

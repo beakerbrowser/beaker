@@ -35,6 +35,14 @@ hr {
   margin-left: -5px;
 }
 
+.menu-item.disabled {
+  opacity: 0.5;
+}
+
+.menu-item.disabled:hover {
+  background: none;
+}
+
 .header {
   position: relative;
   border-bottom: 1px solid #eee;

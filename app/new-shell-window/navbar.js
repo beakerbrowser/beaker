@@ -64,6 +64,8 @@ class ShellWindowNavbar extends LitElement {
         donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"
         available-alternative="${_get(this, 'activeTab.availableAlternative') || ''}"
         ?is-live-reloading=${_get(this, 'activeTab.isLiveReloading')}
+        ?preview-mode=${_get(this, 'activeTab.previewMode')}
+        uncommitted-changes=${_get(this, 'activeTab.uncommittedChanges', 0)}
         ?is-bookmarked=${_get(this, 'activeTab.isBookmarked', false)}
       ></shell-window-navbar-location>
       <shell-window-navbar-inpage-find

@@ -22,7 +22,10 @@ class NavbarLocation extends LitElement {
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
+      previewMode: {type: Boolean, attribute: 'preview-mode'},
+      uncommittedChanges: {type: Number, attribute: 'uncommitted-changes'},
       isSiteToolsMenuOpen: {type: Boolean},
+      isPreviewModeToolsMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
@@ -39,9 +42,11 @@ class NavbarLocation extends LitElement {
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
-    this.previewMode = false
     this.availableAlternative = ''
+    this.previewMode = false
+    this.uncommittedChanges = 0
     this.isSiteToolsMenuOpen = false
+    this.isPreviewModeToolsMenuOpen = false
     this.isDonateMenuOpen = false
     this.isPeersMenuOpen = false
     this.isBookmarked = false
@@ -81,6 +86,7 @@ class NavbarLocation extends LitElement {
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
+      ${this.renderPreviewModeToolsBtn()}
       ${this.renderSiteToolsBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
@@ -167,6 +173,20 @@ class NavbarLocation extends LitElement {
     return html`
       <button @click=${this.onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
         ${zoomPct}%
+      </button>
+    `
+  }
+
+  renderPreviewModeToolsBtn () {
+    if (!this.isDat || !this.previewMode) {
+      return ''
+    }
+    var hasChanges = (+this.uncommittedChanges !== 0)
+    var n = hasChanges ? html`${this.uncommittedChanges} uncommitted` : 'No'
+    var cls = classMap({'preview-mode-tools': true, 'has-changes': hasChanges, pressed: this.isPreviewModeToolsMenuOpen})
+    return html`
+      <button class="${cls}" @click=${this.onClickPreviewModeToolsBtn}>
+        <i class="fas fa-circle"></i> ${n} changes
       </button>
     `
   }
@@ -354,6 +374,20 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
+  async onClickPreviewModeToolsBtn (e) {
+    this.isPreviewModeToolsMenuOpen = true
+    var rect1 = this.getClientRects()[0]
+    var rect2 = e.currentTarget.getClientRects()[0]
+    await bg.views.toggleMenu('preview-mode-tools', {
+      bounds: {
+        top: (rect1.bottom|0),
+        right: (rect2.right|0)
+      },
+      params: {url: this.url}
+    })
+    this.isPreviewModeToolsMenuOpen = false
+  }
+
   async onClickSiteToolsBtn (e) {
     this.isSiteToolsMenuOpen = true
     var rect1 = this.getClientRects()[0]
@@ -483,6 +517,29 @@ button.zoom {
 
 button.zoom:hover {
   background: #eaeaea;
+}
+
+button.preview-mode-tools {
+  width: auto;
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 12px;
+}
+
+button.preview-mode-tools .fas {
+  font-size: 7px;
+  position: relative;
+  top: -1px;
+  margin-right: 2px;
+  color: #8BC34A;
+}
+
+button.preview-mode-tools.has-changes {
+  color: #444;
+}
+
+button.preview-mode-tools.has-changes .fas {
+  color: #FFC107;
 }
 
 button.peers {
