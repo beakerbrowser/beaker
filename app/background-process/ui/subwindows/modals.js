@@ -62,6 +62,7 @@ export async function create (webContents, modalName, params = {}) {
     // if there's no view, then the shell window created the prompt
     // attach it to the active view
     parentView = viewManager.getActive(parentWindow)
+    parentWindow = parentView.browserWindow
   }
 
   // make sure a prompt window doesnt already exist

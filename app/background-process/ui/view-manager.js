@@ -1098,19 +1098,19 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   },
 
   async goBack (index) {
-    getByIndex(getWindow(this.sender), index).browserView.webContents.goBack()
+    getByIndex(getWindow(this.sender), index).webContents.goBack()
   },
 
   async goForward (index) {
-    getByIndex(getWindow(this.sender), index).browserView.webContents.goForward()
+    getByIndex(getWindow(this.sender), index).webContents.goForward()
   },
 
   async stop (index) {
-    getByIndex(getWindow(this.sender), index).browserView.webContents.stop()
+    getByIndex(getWindow(this.sender), index).webContents.stop()
   },
 
   async reload (index) {
-    getByIndex(getWindow(this.sender), index).browserView.webContents.reload()
+    getByIndex(getWindow(this.sender), index).webContents.reload()
   },
 
   async resetZoom (index) {
@@ -1119,6 +1119,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async toggleLiveReloading (index) {
     getByIndex(getWindow(this.sender), index).toggleLiveReloading()
+  },
+
+  async toggleDevTools (index) {
+    getByIndex(getWindow(this.sender), index).webContents.toggleDevTools()
   },
 
   async showInpageFind (index) {

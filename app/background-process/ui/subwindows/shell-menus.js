@@ -100,7 +100,7 @@ export function reposition (parentWindow) {
         x: parentBounds.x + win.boundsOpt.right - 220,
         y: parentBounds.y + win.boundsOpt.top,
         width: 220,
-        height: 160
+        height: 122
       })
     } else if (win.menuId === 'preview-mode-tools') {
       win.setBounds({

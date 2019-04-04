@@ -40,14 +40,9 @@ class SiteToolsMenu extends LitElement {
           <i class="fa fa-bolt"></i>
           Toggle live reloading
         </div>
-        <hr>
-        <div class="menu-item" @click=${this.onClickOpenFolder}>
-          <i class="far fa-folder-open"></i>
-          Open folder
-        </div>
-        <div class="menu-item" @click=${this.onClickCopyPath}>
-          <i class="fa fa-clipboard"></i>
-          Copy path
+        <div class="menu-item" @click=${this.onToggleDevTools}>
+          <i class="fa fa-screwdriver"></i>
+          Toggle DevTools
         </div>
       </div>
     `
@@ -55,20 +50,6 @@ class SiteToolsMenu extends LitElement {
 
   // events
   // =
-
-  onClickOpenFolder () {
-    bg.shellMenus.close()
-    const localSyncPath = _get(this, 'datInfo.userSettings.localSyncPath')
-    if (!localSyncPath) return
-    bg.beakerBrowser.openFolder(localSyncPath)
-  }
-
-  onClickCopyPath () {
-    bg.shellMenus.close()
-    const localSyncPath = _get(this, 'datInfo.userSettings.localSyncPath')
-    if (!localSyncPath) return
-    writeToClipboard(localSyncPath)
-  }
 
   onClickViewSource () {
     bg.shellMenus.createTab(`beaker://editor/dat://${this.datInfo.key}`)
@@ -86,6 +67,11 @@ class SiteToolsMenu extends LitElement {
   onToggleLiveReloading () {
     bg.shellMenus.close()
     bg.views.toggleLiveReloading('active')
+  }
+
+  onToggleDevTools () {
+    bg.shellMenus.close()
+    bg.views.toggleDevTools('active')
   }
 }
 SiteToolsMenu.styles = [commonCSS, css`
