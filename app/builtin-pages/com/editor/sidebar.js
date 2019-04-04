@@ -259,12 +259,6 @@ function isNodeSelected (node) {
 function getIcon (name) {
   let extention = name.split('.').pop()
   switch (extention) {
-    case 'js':
-    case 'css':
-    case 'less':
-    case 'scss':
-    case 'sass':
-      return yo`<i class="fas fa-fw fa-code"></i>`
     case 'svg':
     case 'png':
     case 'jpg':
