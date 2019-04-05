@@ -12,12 +12,14 @@ class PreviewModeToolsMenu extends LitElement {
   }
 
   reset () {
-    this.datInfo = null
+    this.url = null
+    this.datKey = null
   }
 
   async init (params) {
-    this.datInfo = (await bg.views.getTabState('active', {datInfo: true})).datInfo
-    this.hasChanges = (await bg.archives.diffLocalSyncPathListing(this.datInfo.key, {compareContent: true, shallow: true})).length > 0
+    this.url = params.url
+    this.datKey = await bg.datArchive.resolveName(this.url)
+    this.hasChanges = (await bg.archives.diffLocalSyncPathListing(this.datKey, {compareContent: true, shallow: true})).length > 0
     await this.requestUpdate()
   }
 
@@ -32,13 +34,13 @@ class PreviewModeToolsMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <div class="menu-item" @click=${this.onClickGotoPreview}>
-          <i class="fas fa-laptop-code"></i>
-          Go to preview version
-        </div>
         <div class="menu-item" @click=${this.onClickGotoLive}>
           <i class="fas fa-broadcast-tower"></i>
-          Go to live version
+          Go to latest published
+        </div>
+        <div class="menu-item" @click=${this.onClickGotoPreview}>
+          <i class="fas fa-laptop-code"></i>
+          Go to preview
         </div>
         <hr>
         <div class="${changesCls}" @click=${this.onClickGotoReview}>
@@ -57,29 +59,34 @@ class PreviewModeToolsMenu extends LitElement {
   // =
 
   onClickGotoPreview () {
-    bg.views.loadURL('active', `dat://${this.datInfo.key}+preview/`)
+    bg.views.loadURL('active', changeHostname(this.url, `${this.datKey}+preview`))
     bg.shellMenus.close()
   }
 
   onClickGotoLive () {
-    bg.views.loadURL('active', `dat://${this.datInfo.key}/`)
+    bg.views.loadURL('active', changeHostname(this.url, `${this.datKey}`))
     bg.shellMenus.close()
   }
 
   onClickGotoReview () {
-    bg.views.loadURL('active', `beaker://editor/dat://${this.datInfo.key}`)
+    bg.views.loadURL('active', `beaker://editor/dat://${this.datKey}`)
     bg.shellMenus.close()
   }
 
   async onClickCommit () {
+    var url = this.url
+    var datKey = this.datKey
+    bg.shellMenus.close()
+
     if (!confirm('Commit all changes?')) {
       return
     }
-    var currentDiff = await bg.archives.diffLocalSyncPathListing(this.datInfo.key, {compareContent: true, shallow: true})
+
+    var currentDiff = await bg.archives.diffLocalSyncPathListing(datKey, {compareContent: true, shallow: true})
     var paths = fileDiffsToPaths(currentDiff)
-    await bg.archives.publishLocalSyncPathListing(this.datInfo.key, {shallow: false, paths})
-    bg.views.loadURL('active', `dat://${this.datInfo.key}/`)
-    bg.shellMenus.close()
+    await bg.archives.publishLocalSyncPathListing(datKey, {shallow: false, paths})
+
+    bg.views.loadURL('active', url) // reload the page
   }
 }
 PreviewModeToolsMenu.styles = [commonCSS, css`
@@ -95,4 +102,14 @@ function fileDiffsToPaths (filediff) {
     if (d.type === 'dir') return d.path + '/' // indicate that this is a folder
     return d.path
   })
+}
+
+function changeHostname (url, newHostname) {
+  try {
+    var urlp = new URL(url)
+    urlp.hostname = newHostname
+    return urlp.toString()
+  } catch (e) {
+    return url
+  }
 }

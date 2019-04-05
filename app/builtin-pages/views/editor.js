@@ -16,7 +16,7 @@ import {closeAllToggleables}  from '../com/toggleable2'
 import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
 const profiles = navigator.importSystemAPI('profiles')
 
-const DEFAULT_SIDEBAR_WIDTH = 160
+const DEFAULT_SIDEBAR_WIDTH = 190
 const MIN_SIDEBAR_WIDTH = 100
 const HELP_SIDEBAR_WIDTH = 200
 

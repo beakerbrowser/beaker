@@ -2,6 +2,7 @@
 import { ipcRenderer } from 'electron'
 import { LitElement, html, css } from '../../vendor/lit-element/lit-element'
 import { classMap } from '../../vendor/lit-element/lit-html/directives/class-map'
+import { pluralize } from '../../lib/strings'
 import { findWordBoundary } from 'pauls-word-boundary'
 import prettyHash from 'pretty-hash'
 import * as bg from '../bg-process-rpc'
@@ -58,6 +59,14 @@ class NavbarLocation extends LitElement {
 
   get isDat () {
     return this.url.startsWith('dat://')
+  }
+
+  get isViewingPreview () {
+    try {
+      return (new URL(this.url)).hostname.includes('+preview')
+    } catch (e) {
+      return false
+    }
   }
 
   focusLocation () {
@@ -181,12 +190,14 @@ class NavbarLocation extends LitElement {
     if (!this.isDat || !this.previewMode) {
       return ''
     }
+    var isViewingPreview = this.isViewingPreview
+    var versionLabel = isViewingPreview ? 'Preview' : 'Latest'
     var hasChanges = (+this.uncommittedChanges !== 0)
-    var n = hasChanges ? html`${this.uncommittedChanges} uncommitted` : 'No'
+    var changeLabel = hasChanges ? `(${this.uncommittedChanges} ${pluralize(+this.uncommittedChanges, 'change')}${isViewingPreview ? '' : ' in preview'})` : ''
     var cls = classMap({'preview-mode-tools': true, 'has-changes': hasChanges, pressed: this.isPreviewModeToolsMenuOpen})
     return html`
       <button class="${cls}" @click=${this.onClickPreviewModeToolsBtn}>
-        <i class="fas fa-circle"></i> ${n} changes
+        <i class="fas fa-circle"></i> Viewing: ${versionLabel} ${changeLabel}
       </button>
     `
   }
