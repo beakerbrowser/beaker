@@ -327,14 +327,14 @@ async function onContextmenu (e, node) {
   if (!node.isContainer) {
     items = items.concat([
       {
-        icon: 'fas fa-external-link-alt',
+        icon: 'fas fa-fw fa-external-link-alt',
         label: `Open ${nodeType}`,
         click () {
           window.open(node.url)
         }
       },
       {
-        icon: 'fas fa-link',
+        icon: 'fas fa-fw fa-link',
         label: `Copy URL`,
         click () {
           writeToClipboard(node.url)
@@ -346,14 +346,14 @@ async function onContextmenu (e, node) {
     if (node.isContainer) {
       items = items.concat([
         {
-          icon: 'fas fa-file',
+          icon: 'far fa-fw fa-file',
           label: 'New file',
           click () {
             emit('editor-new-file', {path: node._path})
           }
         },
         {
-          icon: 'fas fa-folder',
+          icon: 'far fa-fw fa-folder',
           label: 'New folder',
           click () {
             emit('editor-new-folder', {path: node._path})
@@ -363,7 +363,7 @@ async function onContextmenu (e, node) {
       if (window.OS_CAN_IMPORT_FOLDERS_AND_FILES) {
         items = items.concat([
           {
-            icon: 'fas fa-upload',
+            icon: 'fas fa-fw fa-upload',
             label: 'Import...',
             click () {
               emit('editor-import-files', {path: node._path})
@@ -373,14 +373,14 @@ async function onContextmenu (e, node) {
       } else {
         items = items.concat([
           {
-            icon: 'fas fa-upload',
+            icon: 'fas fa-fw fa-upload',
             label: 'Import files...',
             click () {
               emit('editor-import-files', {path: node._path})
             }
           },
           {
-            icon: 'fas fa-upload',
+            icon: 'fas fa-fw fa-upload',
             label: 'Import folder...',
             click () {
               emit('editor-import-folder', {path: node._path})
@@ -392,7 +392,7 @@ async function onContextmenu (e, node) {
     if (!isSite) {
       items = items.concat([
         {
-          icon: 'fa fa-i-cursor',
+          icon: 'fa fa-fw fa-i-cursor',
           label: 'Rename',
           click: async () => {
             let newName = await contextInput.create({
@@ -416,7 +416,7 @@ async function onContextmenu (e, node) {
           }
         },
         {
-          icon: 'fa fa-trash',
+          icon: 'fa fa-fw fa-trash',
           label: 'Delete',
           click: () => {
             if (confirm(`Are you sure you want to delete ${node.name}?`)) {
