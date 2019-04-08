@@ -42,12 +42,11 @@ export async function load (file) {
     // setup the model
     let model = createModel('', file.url)
     model.name = file.name
-    model.isEditable = isEditable
+    model.isEditable = canEditWithMonaco(file.name)
     model.lang = model.getModeId()
     model.isNewModel = false
 
-    var isEditable = canEditWithMonaco(file.name)
-    if (isEditable) {
+    if (model.isEditable) {
       // load the file content
       doLoad(model, file)
     }
