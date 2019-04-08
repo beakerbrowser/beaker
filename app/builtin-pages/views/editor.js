@@ -229,23 +229,25 @@ async function localCompare () {
   }
 
   // attach add/mod changes to the existing tree
-  const checkNode = async (node) => {
-    // check for diff
-    var diff = currentDiff.find(diff => {
-      if (diff.path === node._path) return true
-      if (node._path.startsWith(diff.path + '/')) return true // is a child of this item
-      return false
-    })
-    node.change = diff ? diff.change : false
+  attachDiffToTree(archiveFsRoot)
+}
 
-    // recurse
-    if (node.isContainer) {
-      for (let c of node.children) {
-        await checkNode(c)
-      }
+function attachDiffToTree (node) {
+  if (!currentDiff) return
+  // check for diff
+  var diff = currentDiff.find(diff => {
+    if (diff.path === node._path) return true
+    if (node._path.startsWith(diff.path + '/')) return true // is a child of this item
+    return false
+  })
+  node.change = diff ? diff.change : false
+
+  // recurse
+  if (node.isContainer) {
+    for (let c of node.children) {
+      attachDiffToTree(c)
     }
   }
-  await checkNode(archiveFsRoot)
 }
 
 // helper called in certain error conditions to check if the local path has disappeared on us
@@ -328,6 +330,7 @@ async function findArchiveNodeAsync (path) {
     node.sort()
     node = node._files.find(n => n.name === filename) // move to next child in the tree
   }
+  attachDiffToTree(node)
   return node
 }
 
@@ -567,6 +570,8 @@ async function onToggleContainerExpanded (e) {
       for (let c of node.children) {
         c.change = 'add'
       }
+    } else {
+      attachDiffToTree(node)
     }
   }
   sidebar.rerender()
@@ -789,22 +794,14 @@ async function onDiffActiveModel (e) {
     }
 
     var active = models.getActive()
-    var rightContent = active.getValue()
 
     var path = active.uri.path
     var file = findArchiveNode(path)
     if (!file || file.change !== 'mod') return
 
-    // get left hand content
-    var leftContent = ''
-    if (workingCheckout.url.includes('+')) {
-      // left is preview or historic, right should be latest
-      leftContent = await workingCheckout.checkout().readFile(path)
-    } else {
-      // left is latest, right should be preview
-      leftContent = await workingCheckout.checkout('preview').readFile(path)
-    }
-
+    // get content and render
+    var leftContent = await workingCheckout.checkout().readFile(path)
+    var rightContent = await workingCheckout.checkout('preview').readFile(path)
     models.setActiveDiff(leftContent, rightContent)
   })
 }
