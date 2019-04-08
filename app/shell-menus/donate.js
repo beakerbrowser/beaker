@@ -26,12 +26,26 @@ class DonateMenu extends LitElement {
     await this.requestUpdate()
   }
 
+  resolvePaymentLink (paymentLink) {
+    if (paymentLink.indexOf('://') === -1) {
+      const shouldAddSlash = !this.url.endsWith('/') && !paymentLink.startsWith('/')
+      return `${this.url}${shouldAddSlash ? '/' : ''}${paymentLink}`
+    }
+    return paymentLink
+  }
+
   // rendering
   // =
 
+  renderDonationLink (paymentLink) {
+    const url = this.resolvePaymentLink(paymentLink)
+    return html`<a href="#" class="link" @click=${e => this.onOpenPage(url)}>${url}</a>`
+  }
+
   render () {
     var title = _get(this, 'datInfo.title', 'this site')
-    var paymentUrl = _get(this, 'datInfo.links.payment.0.href')
+    const paymentLink = String(_get(this, 'datInfo.links.payment.0.href'))
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -46,7 +60,7 @@ class DonateMenu extends LitElement {
             Visit their donation page to show your appreciation!
           </div>
           <div>
-            <a href="#" class="link" @click=${e => this.onOpenPage(paymentUrl)}>${paymentUrl}</a>
+            ${this.renderDonationLink(paymentLink)}
           </div>
         </div>
       </div>

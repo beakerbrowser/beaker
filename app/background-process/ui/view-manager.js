@@ -421,7 +421,9 @@ class View {
         .markdown code { padding: 3px 5px; }
         .markdown pre > code { display: block; }
       `)
-      this.webContents.executeJavaScript(await fs.readFile(path.join(app.getAppPath(), 'markdown-renderer.build.js'), 'utf8'))
+      let mdpath = path.join(app.getAppPath(), 'markdown-renderer.build.js')
+      mdpath = mdpath.replace('app.asar', 'app.asar.unpacked') // fetch from unpacked dir
+      this.webContents.executeJavaScript(await fs.readFile(mdpath, 'utf8'))
     }
 
     // json rendering
@@ -453,7 +455,9 @@ class View {
           background: #ddd;
         }
       `)
-      this.webContents.executeJavaScript(await fs.readFile(path.join(app.getAppPath(), 'json-renderer.build.js'), 'utf8'))
+      let jsonpath = path.join(app.getAppPath(), 'json-renderer.build.js')
+      jsonpath = jsonpath.replace('app.asar', 'app.asar.unpacked') // fetch from unpacked dir
+      this.webContents.executeJavaScript(await fs.readFile(jsonpath, 'utf8'))
     }
   }
 
@@ -893,9 +897,7 @@ export async function loadPins (win) {
   win = getTopWindow(win)
   var json = await settingsDb.get('pinned_tabs')
   try { JSON.parse(json).forEach(url => create(win, url, {isPinned: true})) }
-  catch (e) {
-    console.log('Failed to load pins', e)
-  }
+  catch (e) {}
 }
 
 export function reopenLastRemoved (win) {
