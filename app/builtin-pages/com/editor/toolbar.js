@@ -5,7 +5,7 @@ import * as contextInput from '../context-input'
 // =
 
 export function render (file, model, opts) {
-  if (!model) model = {}
+  if (!model) return yo`<div class="editor-toolbar"></div>`
   if (!file) file = {doesNotExist: true}
   var isEditable = file && file.isEditable
   var change = file && file.change
