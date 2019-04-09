@@ -15,6 +15,12 @@ export default function registerContextMenu () {
       const isDat = props.pageURL.startsWith('dat://')
       const isMisspelled = props.selectionText && beakerCore.spellChecker.isMisspelled(props.selectionText)
       const spellingSuggestions = isMisspelled && beakerCore.spellChecker.getSuggestions(props.selectionText).slice(0, 5)
+      var isOwner = false
+      if (isDat) {
+        let key = await beakerCore.dat.dns.resolveName(props.pageURL)
+        let archive = beakerCore.dat.library.getArchive(key)
+        isOwner = archive && archive.writable
+      }
 
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
@@ -140,9 +146,9 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })
         if (isDat) {
           menuItems.push({
-            label: 'View Source',
+            label: isOwner ? 'Edit Source' : 'View Source',
             click: (item, win) => {
-              viewManager.create(win, 'beaker://editor/' + props.pageURL)
+              viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
             }
           })
         }
