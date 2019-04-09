@@ -53,6 +53,7 @@ class ShellWindowNavbar extends LitElement {
         ${this.backBtn}
         ${this.forwardBtn}
         ${this.reloadBtn}
+        ${this.homeBtn}
       </div>
       <shell-window-navbar-location
         .activeTabIndex="${this.activeTabIndex}"
@@ -156,6 +157,23 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get homeBtn () {
+    return html`
+      <button @click=${this.onClickHome} style="margin-left: 2px">
+        <svg 
+          class="icon home"
+          width="18"
+          height="16"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+        >
+          <g transform="scale(1.1)">
+            <polygon points="14.914017677307129,6.044170146938143 7.885869026184082,0.6999996918813238 0.8569998145103455,6.044170146938143 0.8569998145103455,7.225672989226808 1.943206787109375,7.224034711395461 1.943206787109375,13.954948968341853 6.253426551818848,13.954948968341853 6.253426551818848,10.16683982488263 9.516998291015625,10.16683982488263 9.516998291015625,13.954948968341853 13.827303886413574,13.954948968341853 13.827303886413574,7.224034711395461 14.914017677307129,7.225672989226808 " fill="none" stroke="#555" stroke-width="1.3px"/>
+          </g>
+        </svg>
+      </button>
+    `
+  }
+
   get watchlistBtn () {
     if (!this.numWatchlistNotifications) {
       return html``
@@ -196,6 +214,10 @@ class ShellWindowNavbar extends LitElement {
 
   onClickReload (e) {
     bg.views.reload(this.activeTabIndex)
+  }
+
+  onClickHome (e) {
+    bg.views.loadURL('active', 'beaker://start/')
   }
 
   onClickWatchlistBtn (e) {
