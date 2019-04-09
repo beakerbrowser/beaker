@@ -22,8 +22,8 @@ export function render ({archive, models, openLinkVersion, archiveInfo, isReadon
         ${isOwner
           ? renderOptionsDropdown({archiveInfo})
           : yo`<span class="readonly">Read-only</span>`}
-        <a class="btn" href=${url} target="_blank">
-          <i class="fas fa-external-link-alt"></i> Open ${versionLabel}
+        <a class="btn primary" href=${url} target="_blank">
+          <i class="fas fa-external-link-alt"></i> View site ${versionLabel}
         </a>
       </div>
     </div>`
