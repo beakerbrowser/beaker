@@ -535,22 +535,38 @@ button.preview-mode-tools {
   padding: 0 5px;
   font-size: 11px;
   line-height: 12px;
+  margin: 2px 6px;
+  border-radius: 2px;
+  border: 1px solid #bbdefb;
+  color: #2471af;
+  background: linear-gradient(#e3f2fd, #e2eef7);
+}
+
+button.preview-mode-tools:hover {
+  background: #d7e7f5;
+}
+
+button.preview-mode-tools.has-changes {
+  border-color: #f3de4a;
+  color: #695116;
+  background: linear-gradient(#fff9c4, #fff5c4);
+}
+
+button.preview-mode-tools.has-changes:hover {
+  background: #fbefb5;
 }
 
 button.preview-mode-tools .fas {
+  display: none;
   font-size: 7px;
   position: relative;
   top: -1px;
   margin-right: 2px;
-  color: #8BC34A;
-}
-
-button.preview-mode-tools.has-changes {
-  color: #444;
+  color: #FFC107;
 }
 
 button.preview-mode-tools.has-changes .fas {
-  color: #FFC107;
+  display: inline;
 }
 
 button.peers {
