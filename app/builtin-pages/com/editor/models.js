@@ -87,7 +87,8 @@ async function doLoad (model, file) {
 
   // rerender if still active
   if (model.isActive) {
-    setActive(file)
+    await setActive(file)
+    editor.setScrollTop(0)
   }
 }
 
