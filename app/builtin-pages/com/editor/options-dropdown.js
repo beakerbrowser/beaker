@@ -13,13 +13,13 @@ export function renderOptionsDropdown ({archiveInfo}) {
     closed: ({onToggle}) => yo`
       <div class="dropdown options toggleable-container">
         <button class="btn nofocus toggleable options-dropdown-btn" onclick=${onToggle}>
-          <span class="fas fa-cog"></span> Options
+          <span class="fas fa-cog"></span> Configure
         </button>
       </div>`,
     open: ({onToggle}) => yo`
       <div class="dropdown options toggleable-container">
         <button class="btn nofocus toggleable options-dropdown-btn" onclick=${onToggle}>
-          <span class="fas fa-cog"></span> Options
+          <span class="fas fa-cog"></span> Configure
         </button>
 
         <div class="dropdown-items subtle-shadow right">
