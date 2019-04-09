@@ -221,6 +221,8 @@ function renderDirectory (node) {
 }
 
 function renderFile (node) {
+  var model = models.findModel(node)
+  var isDirty = model && model.isDirty
   return yo`
     <div
       class="item file ${isNodeSelected(node) ? 'selected' : ''}"
@@ -229,7 +231,7 @@ function renderFile (node) {
       oncontextmenu=${e => onContextmenu(e, node)}
     >
       ${getIcon(node.name)}
-      <span class="name">${node.name}</span>
+      <span class="name">${node.name}${isDirty ? '*' : ''}</span>
       ${node.change ? yo`<div class="revision-indicator ${node.change}"></div>` : ''}
     </div>
   `
