@@ -149,6 +149,7 @@ class View {
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
     this.webContents.on('did-fail-load', this.onDidFailLoad.bind(this))
     this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
+    this.webContents.on('page-title-updated', this.onPageTitleUpdated.bind(this)) // NOTE page-title-updated isn't documented on webContents but it is supported
     this.webContents.on('page-favicon-updated', this.onPageFaviconUpdated.bind(this))
     this.webContents.on('new-window', this.onNewWindow.bind(this))
     this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
@@ -595,6 +596,10 @@ class View {
 
   onUpdateTargetUrl (e, url) {
     statusBar.set(this.browserWindow, url)
+  }
+
+  onPageTitleUpdated (e, title) {
+    this.emitUpdateState()
   }
 
   onPageFaviconUpdated (e, favicons) {
