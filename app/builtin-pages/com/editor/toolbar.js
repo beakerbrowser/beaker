@@ -11,8 +11,6 @@ export function render (file, model, opts) {
   var change = file && file.change
   return yo`
     <div class="editor-toolbar">
-      <span class="btn transparent ${opts.isSiteEditable ? '' : 'disabled'}" onclick=${opts.isSiteEditable ? e => onClickNewFile(e) : undefined}><i class="far fa-file"></i> new file</span>
-      <span class="divider"></span>
       <span class="btn transparent ${model.isDirty ? '' : 'disabled'}"  onclick=${e => onClickSaveFile(e, model)}><i class="fas fa-save"></i> save</span>
       <span class="btn transparent ${file.doesNotExist ? 'disabled' : ''}" onclick=${e => onClickOpenFile(e, model)}><i class="fas fa-external-link-alt"></i> view file</span>
       <span class="btn transparent ${isEditable ? '' : 'disabled'}" onclick=${isEditable ? e => onClickRenameFile(e, model) : undefined}><i class="fas fa-i-cursor"></i> rename</span>
