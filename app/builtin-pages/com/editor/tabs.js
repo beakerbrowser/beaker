@@ -13,10 +13,8 @@ export function render ({archive, models, openLinkVersion, archiveInfo, isReadon
   var versionLabel = (Number.isNaN(+openLinkVersion)) ? openLinkVersion : `v${openLinkVersion}`
   if (versionLabel === 'latest' || versionLabel === 'preview') versionLabel = ''
   var url = openLinkVersion === 'latest' ? archive.checkout().url : archive.checkout(openLinkVersion).url
-  var activeModel = models.find(m => m.isActive)
   return yo`
     <div class="editor-tabs">
-      <div class="tab ${activeModel ? '' : 'active'}" onclick=${e => emit('editor-show-general-help')}>Welcome</div>
       ${models.map(model => renderTab(model))}
       <div class="unused-space" ondragover=${(e) => onTabDragOver(e)} ondrop=${(e) => onTabDragDrop(e, null)}></div>
       <div class="ctrls">
