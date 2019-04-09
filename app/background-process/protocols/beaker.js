@@ -12,9 +12,9 @@ import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
 
-const START_APP_PATH = path.dirname(require.resolve('@beaker/start-app'))
-const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app'))
-const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app'))
+const START_APP_PATH = path.dirname(require.resolve('@beaker/start-app')).replace('app.asar', 'app.asar.unpacked')
+const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app')).replace('app.asar', 'app.asar.unpacked')
+const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).replace('app.asar', 'app.asar.unpacked')
 
 // constants
 // =
