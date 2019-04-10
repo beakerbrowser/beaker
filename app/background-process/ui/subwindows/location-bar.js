@@ -67,7 +67,7 @@ export function reposition (parentWindow) {
       x: parentBounds.x + win.boundsOpt.x,
       y: parentBounds.y + win.boundsOpt.y,
       width: win.boundsOpt.width,
-      height: 310
+      height: 410
     })
   }
 }
@@ -78,7 +78,8 @@ export async function show (parentWindow, opts) {
     win.boundsOpt = opts && opts.bounds
     reposition(parentWindow)
     win.webContents.executeJavaScript(`setup()`)
-    win.showInactive()
+    win.show()
+    win.focus()
 
     // await till hidden
     await new Promise(resolve => {

@@ -117,7 +117,6 @@ class NavbarLocation extends LitElement {
           @focus=${this.onFocusLocation}
           @blur=${this.onBlurLocation}
           @input=${this.onInputLocation}
-          @keydown=${this.onKeydownLocation}
         >
         ${this.isLocationFocused ? '' : this.renderInputPretty()}
       </div>
@@ -343,7 +342,6 @@ class NavbarLocation extends LitElement {
   onBlurLocation (e) {
     // clear the selection range so that the next focusing doesnt carry it over
     window.getSelection().empty()
-    setTimeout(() => bg.views.hideLocationBar(), 100) // hide after a 100ms delay (which gives clicks into the location bar time to process)
     this.shadowRoot.querySelector('.input-container input').value = this.url // reset value
     this.isLocationFocused = false
   }
@@ -353,32 +351,13 @@ class NavbarLocation extends LitElement {
     bg.views.runLocationBarCmd('set-value', {
       bounds: {
         x: rect.left|0,
-        y: rect.bottom|0,
+        y: (rect.top|0) - 2,
         width: rect.width|0
       },
-      value: e.currentTarget.value
+      value: e.currentTarget.value,
+      selectionStart: e.currentTarget.selectionStart
     })
-  }
-
-  onKeydownLocation (e) {
-    if (e.key === 'Escape') {
-      this.unfocusLocation()
-      return
-    }
-    if (e.key === 'Enter') {
-      bg.views.runLocationBarCmd('choose-selection')
-      this.unfocusLocation()
-      return
-    }
-    var up = (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'p'))
-    var down = (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n'))
-    if (up || down) {
-      e.preventDefault()
-      bg.views.runLocationBarCmd('move-selection', {up, down}).then(value => {
-        this.shadowRoot.querySelector('.input-container input').value = value
-      })
-      return
-    }
+    e.currentTarget.blur()
   }
 
   onClickZoom (e) {

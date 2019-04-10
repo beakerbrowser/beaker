@@ -74,6 +74,13 @@ class LocationBar extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
+        <input
+          type="text"
+          value=${this.inputValue}
+          @input=${this.onInputLocation}
+          @keydown=${this.onKeydownLocation}
+          @contextmenu=${this.onContextMenu}
+        >
         <div class="autocomplete-results">
           ${repeat(this.autocompleteResults, (r, i) => this.renderAutocompleteResult(r, i))}
         </div>
@@ -138,6 +145,17 @@ class LocationBar extends LitElement {
         if (opts.value && opts.value !== this.inputValue) {
           this.inputQuery = this.inputValue = opts.value
           this.currentSelection = 0
+
+          // update the input
+          var input = this.shadowRoot.querySelector('input')
+          input.value = this.inputValue
+          input.focus()
+          if (typeof opts.selectionStart === 'number') {
+            input.setSelectionRange(opts.selectionStart, opts.selectionStart)
+          } else {
+            input.setSelectionRange(input.value.length, input.value.length)
+          }
+
           this.queryAutocomplete()
         }
         break
@@ -159,7 +177,46 @@ class LocationBar extends LitElement {
     }
   }
 
+  onInputLocation (e) {
+    var value = e.currentTarget.value.trim()
+    if (value && this.inputValue !== value) {
+      this.inputQuery = this.inputValue = value // update the current value
+      this.currentSelection = 0 // reset the selection
+      this.queryAutocomplete()
+    }
+  }
+
+  onKeydownLocation (e) {
+    // on enter
+    if (e.key === 'Enter') {
+      e.preventDefault()
+
+      let selection = this.autocompleteResults[this.currentSelection]
+      bg.locationBar.loadURL(selection.url)
+      bg.locationBar.close()
+      return
+    }
+
+    // on escape
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      bg.locationBar.close()
+      return
+    }
+
+    // on keycode navigations
+    var up = (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'p'))
+    var down = (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n'))
+    if (up || down) {
+      e.preventDefault()
+      if (up && this.currentSelection > 0) { this.currentSelection = this.currentSelection - 1 }
+      if (down && this.currentSelection < this.autocompleteResults.length - 1) { this.currentSelection = this.currentSelection + 1 }
+      this.shadowRoot.querySelector('input').value = this.inputValue = this.autocompleteResults[this.currentSelection].url
+    }
+  }
+
   onContextMenu (e) {
+    e.preventDefault()
     bg.views.showLocationBarContextMenu('active')
   }
 
@@ -244,6 +301,31 @@ LocationBar.styles = [css`
 .wrapper {
   background: #fff;
   padding-bottom: 4px; /* add a little breathing room to the bottom */
+}
+
+input {
+  box-sizing: border-box;
+  border: 0;
+  padding: 0 38px;
+
+  line-height: 26px;
+  width: 100%;
+  height: 32px;
+  overflow: hidden;
+
+  color: #222;
+  font-size: 13.5px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+  font-weight: 500;
+  letter-spacing: -.2px;
+}
+
+input:focus {
+  outline: 0;
+}
+
+.autocomplete-results {
+  height: calc(100vh - 98px);
 }
 
 .result {
