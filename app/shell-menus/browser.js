@@ -167,7 +167,7 @@ class BrowserMenu extends LitElement {
           </div>
 
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://opencollective.com/beaker')}>
-            <i class="far fa-heart"></i>
+            <i class="fa fa-donate"></i>
             <span class="label">Support Beaker</span>
           </div>
         </div>
