@@ -24,7 +24,8 @@ class LocationBar extends LitElement {
     return {
       inputValue: {type: String},
       autocompleteResults: {type: Array},
-      currentSelection: {type: Number}
+      currentSelection: {type: Number},
+      hoveredSearch: {type: String}
     }
   }
 
@@ -49,16 +50,50 @@ class LocationBar extends LitElement {
 
   reset () {
     this.inputValue = ''
+    this.inputQuery = ''
     this.autocompleteResults = []
     this.currentSelection = 0
+    this.hoveredSearch = ''
   }
 
   render () {
+    const searchLink = (label, url) => {
+      return html`
+        <a
+          title=${label}
+          data-href=${url}
+          @mouseenter=${this.onMouseenterSearch}
+          @mouseleave=${this.onMouseleaveSearch}
+          @click=${this.onClickSearch}
+        >
+          <img src="beaker://assets/search-engines/${label.toLowerCase()}.png">
+        </a>
+      `
+    }
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <div class="autocomplete-results">
           ${repeat(this.autocompleteResults, (r, i) => this.renderAutocompleteResult(r, i))}
+        </div>
+        <div class="search-engines">
+          <div class="label">
+            ${this.hoveredSearch
+              ? html`Search <strong>${this.hoveredSearch}</strong>`
+              : html`Search for <strong>${this.inputQuery}</strong> with:`
+            }
+          </div>
+          <div class="list">
+            ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.inputQuery)}`)}
+            ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.inputQuery)}`)}
+            ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.inputQuery)}`)}
+            ${searchLink('DuckDuckGo', `https://duckduckgo.com?q=${encodeURIComponent(this.inputQuery)}`)}
+            ${searchLink('Google', `https://google.com/search?q=${encodeURIComponent(this.inputQuery)}`)}
+            ${searchLink('YouTube', `https://www.youtube.com/results?search_query=?q=${encodeURIComponent(this.inputQuery)}`)}
+            ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.inputQuery)}`)}
+            ${searchLink('Beaker', `beaker://search/?q=${encodeURIComponent(this.inputQuery)}`)}
+          </div>
         </div>
       </div>
     `
@@ -101,7 +136,7 @@ class LocationBar extends LitElement {
     switch (cmd) {
       case 'set-value':
         if (opts.value && opts.value !== this.inputValue) {
-          this.inputValue = opts.value
+          this.inputQuery = this.inputValue = opts.value
           this.currentSelection = 0
           this.queryAutocomplete()
         }
@@ -190,6 +225,20 @@ class LocationBar extends LitElement {
     await this.updateComplete
     this.resize()
   }
+
+  onMouseenterSearch (e) {
+    this.hoveredSearch = e.currentTarget.getAttribute('title')
+  }
+
+  onMouseleaveSearch () {
+    this.hoveredSearch = ''
+  }
+
+  onClickSearch (e) {
+    e.preventDefault()
+    bg.locationBar.loadURL(e.currentTarget.dataset.href)
+    bg.locationBar.close()
+  }
 }
 LocationBar.styles = [css`
 .wrapper {
@@ -263,6 +312,38 @@ LocationBar.styles = [css`
   background: #eee;
 }
 
+.search-engines {
+  border-top: 1px solid #ddd;
+  background: #f7f7f7;
+}
+
+.search-engines .label {
+  padding: 6px 8px;
+  border-bottom: 1px solid #ddd;
+  font-size: 11px;
+}
+
+.search-engines .list {
+  display: flex;
+  align-items: center;
+}
+
+.search-engines .list a {
+  flex: 0 0 60px;
+  text-align: center;
+  border-right: 1px solid #ddd;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.search-engines .list a:hover {
+  background: #eee;
+}
+
+.search-engines .list a img {
+  width: 24px;
+  height: 24px;
+}
 `]
 
 customElements.define('location-bar', LocationBar)

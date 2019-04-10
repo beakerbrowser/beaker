@@ -176,6 +176,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/favicons/')) {
     return serveICO(path.join(__dirname, 'assets/favicons', requestUrl.slice('beaker://assets/favicons/'.length)))
   }
+  if (requestUrl.startsWith('beaker://assets/search-engines/')) {
+    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/search-engines', requestUrl.slice('beaker://assets/search-engines/'.length)))
+  }
 
   // template screenshots
   if (requestUrl.startsWith('beaker://templates/screenshot/')) {

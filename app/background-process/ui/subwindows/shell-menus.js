@@ -67,13 +67,6 @@ export function reposition (parentWindow) {
         width: 240,
         height: 466
       })
-    } else if (win.menuId === 'location') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.x,
-        y: parentBounds.y + win.boundsOpt.y,
-        width: win.boundsOpt.width,
-        height: 310
-      })
     } else if (win.menuId === 'bookmark') {
       win.setBounds({
         x: parentBounds.x + win.boundsOpt.right - 300,
