@@ -196,7 +196,7 @@ class LocationBar extends LitElement {
     var gotoResult = { url: vWithProtocol, title: 'Go to ' + this.inputValue, isGuessingTheScheme }
     var searchResult = {
       search: this.inputValue,
-      title: `Search for "${this.inputValue}"`,
+      title: `Search DuckDuckGo for "${this.inputValue}"`,
       url: vSearch
     }
     if (isProbablyUrl) finalResults = [gotoResult, searchResult]

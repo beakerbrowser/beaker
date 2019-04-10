@@ -540,7 +540,7 @@ function examineLocationInput (v) {
     }
   }
   var q = v.split(' ').map(encodeURIComponent).join('+')
-  var vSearch = 'beaker://search/?q=' + q
+  var vSearch = 'https://duckduckgo.com/?q=' + q
   return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
 }
 
