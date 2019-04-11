@@ -5,9 +5,11 @@ import { repeat } from './vendor/lit-element/lit-html/directives/repeat'
 import { classMap } from './vendor/lit-element/lit-html/directives/class-map'
 import { unsafeHTML } from './vendor/lit-element/lit-html/directives/unsafe-html'
 import { examineLocationInput } from './lib/urls'
+import _uniqWith from 'lodash.uniqwith'
 import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
 import bookmarksManifest from '@beaker/core/web-apis/manifests/external/bookmarks'
 import historyManifest from '@beaker/core/web-apis/manifests/internal/history'
+import searchManifest from '@beaker/core/web-apis/manifests/external/search'
 import locationBarManifest from './background-process/rpc-manifests/location-bar'
 import viewsManifest from './background-process/rpc-manifests/views'
 
@@ -15,6 +17,7 @@ const bg = {
   beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
   bookmarks: rpc.importAPI('bookmarks', bookmarksManifest),
   history: rpc.importAPI('history', historyManifest),
+  search: rpc.importAPI('search', searchManifest),
   locationBar: rpc.importAPI('background-process-location-bar', locationBarManifest),
   views: rpc.importAPI('background-process-views', viewsManifest)
 }
@@ -109,12 +112,18 @@ class LocationBar extends LitElement {
   renderAutocompleteResult (r, i) {
     // content
     var contentColumn
+    var urlColumn = ''
     if (r.search) {
-      contentColumn = html`<span class="result-search">${r.search}</span>`
+      contentColumn = html`<span class="search-column">${r.search} - ${r.title}</span>`
     } else {
-      contentColumn = html`<span class="result-url">${r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url}</span>`
+      contentColumn = html`
+        <span class="content-column">
+          <span class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>
+          ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
+        </span>
+      `
+      urlColumn = html`<span class="url-column">${toNiceUrl(r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url)}</span>`
     }
-    var titleColumn = html`<span class="result-title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>`
 
     // selection
     var rowCls = classMap({
@@ -128,10 +137,12 @@ class LocationBar extends LitElement {
         ${r.bookmarked ? html`<i class="far fa-star"></i>` : ''}
         ${r.search
           ? html`<i class="icon fa fa-search"></i>`
-          : html`<img class="icon" src=${'beaker-favicon:' + r.url}/>`
+          : r.isGoto
+            ? html`<i class="icon fas fa-arrow-right"></i>`
+            : html`<img class="icon" src=${'beaker-favicon:' + r.url}/>`
         }
         ${contentColumn}
-        ${titleColumn}
+        ${urlColumn}
       </div>
     `
   }
@@ -239,18 +250,26 @@ class LocationBar extends LitElement {
 
   async queryAutocomplete () {
     var finalResults
-    var searchResults = await bg.history.search(this.inputValue)
+    var [crawlerResults, historyResults] = await Promise.all([
+      bg.search.query({query: this.inputValue, filters: {datasets: ['sites', 'unwalled.garden/bookmark']}}),
+      bg.history.search(this.inputValue)
+    ])
 
-    // decorate result with bolded regions
-    // explicitly replace special characters to match sqlite fts tokenization
+    console.log({
+      historyResults,
+      crawlerResults
+    })
+
+    // decorate results with bolded regions
     var searchTerms = this.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
-    searchResults.forEach(r => decorateResultMatches(searchTerms, r))
+    crawlerResults.results.forEach(r => highlightSearchResult(searchTerms, crawlerResults.highlightNonce, r))
+    historyResults.forEach(r => highlightHistoryResult(searchTerms, r))
 
     // figure out what we're looking at
     var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue)
 
     // set the top results accordingly
-    var gotoResult = { url: vWithProtocol, title: 'Go to ' + this.inputValue, isGuessingTheScheme }
+    var gotoResult = { url: vWithProtocol, title: 'Go to ' + this.inputValue, isGuessingTheScheme, isGoto: true }
     var searchResult = {
       search: this.inputValue,
       title: `Search DuckDuckGo for "${this.inputValue}"`,
@@ -259,10 +278,17 @@ class LocationBar extends LitElement {
     if (isProbablyUrl) finalResults = [gotoResult, searchResult]
     else finalResults = [searchResult, gotoResult]
 
-    // add search results
-    if (searchResults) {
-      finalResults = finalResults.concat(searchResults)
+    // apply limit on crawl results to avoid history being crowded out
+    if (crawlerResults.results.length + historyResults.length > 10) {
+      crawlerResults.results = crawlerResults.results.slice(0, 5)
     }
+
+    // add search results
+    finalResults = finalResults.concat(crawlerResults.results)
+    finalResults = finalResults.concat(historyResults)
+
+    // remove duplicates
+    finalResults = _uniqWith(finalResults, (a, b) => stripTrailingSlash(a.url) === stripTrailingSlash(b.url)) // remove duplicates
 
     // apply limit
     finalResults = finalResults.slice(0, 11)
@@ -352,34 +378,48 @@ input:focus {
   text-align: center;
 }
 
-.result .fa-search {
+.result .fa,
+.result .fas {
   font-size: 13px;
   color: #707070;
 }
 
-.result .result-url,
-.result .result-title,
-.result .result-search{
+.result .url-column,
+.result .content-column,
+.result .search-column {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.result .result-url {
-  color: #1f55c1;
+.result .content-column,
+.result .url-column {
   display: inline-block;
-  max-width: 35%;
+  max-width: 50%;
   vertical-align: top;
 }
 
-.result .result-title {
-  margin-left: 2px;
+.result .url-column {
+  margin-left: 5px;
   color: #707070;
 }
 
-.result .result-title:before {
+.result .url-column:before {
   content: '-';
   margin-right: 5px;
+}
+
+.result .title,
+.result .description {
+  color: #1f55c1;
+}
+
+.result .description {
+  margin-left: 2px;
+}
+
+.result .tags {
+  margin-left: 5px;
 }
 
 .result.selected {
@@ -433,11 +473,58 @@ customElements.define('location-bar', LocationBar)
 // internal methods
 // =
 
-// helper for autocomplete
+const TRAILING_SLASH_REGEX = /(\/$)/
+function stripTrailingSlash (str = '') {
+  return str.replace(TRAILING_SLASH_REGEX, '')
+}
+
+function makeSafe (str = '') {
+  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+}
+
+const DAT_KEY_REGEX = /[0-9a-f]{64}/i
+function toNiceUrl (str) {
+  if (!str) return ''
+  try {
+    var urlParsed = new URL(str)
+    if (DAT_KEY_REGEX.test(urlParsed.hostname)) {
+      urlParsed.hostname = `${urlParsed.hostname.slice(0, 4)}..${urlParsed.hostname.slice(-2)}`
+    }
+    return urlParsed.toString()
+  } catch (e) {
+    // ignore, not a url
+  }
+  return str
+}
+
+// helper for crawler search results
+// - search results are returned from beaker's search APIs with nonces wrapping the highlighted sections
+// - e.g. a search for "test" might return "the {500}test{/500} result"
+// - in this case, we want to highlight at a more fine grain (the search terms)
+// - so we strip the nonces and use the search terms for highlighting
+function highlightSearchResult (searchTerms, nonce, result) {
+  var start = new RegExp(`\\{${nonce}\\}`, 'g') // eg {500}
+  var end = new RegExp(`\\{/${nonce}\\}`, 'g') // eg {/500}
+  var termRe = new RegExp(`(${searchTerms.join('|')})`, 'gi') // eg '(beaker|browser)'
+  const highlight = str => makeSafe(str).replace(start, '').replace(end, '').replace(termRe, (_, term) => `<strong>${term}</strong>`)
+
+  if (result.record.type === 'site') {
+    result.titleDecorated = highlight(result.title)
+    result.descriptionDecorated = highlight(result.description)
+  } else if (result.record.type === 'unwalled.garden/bookmark') {
+    result.url = result.content.href
+    result.titleDecorated = highlight(result.content.title)
+    result.descriptionDecorated = ''
+    if (result.content.description) result.descriptionDecorated += highlight(result.content.description)
+    if (result.content.tags && result.content.tags.filter(Boolean).length) result.descriptionDecorated += `<span class="tags">(${highlight(result.content.tags.join(' '))})</span>`
+  }
+}
+
+// helper for history search results
 // - takes in the current search (tokenized) and a result object
 // - mutates `result` so that matching text is bold
 var offsetsRegex = /([\d]+ [\d]+ [\d]+ [\d]+)/g
-function decorateResultMatches (searchTerms, result) {
+function highlightHistoryResult (searchTerms, result) {
   // extract offsets
   var tuples = (result.offsets || '').match(offsetsRegex)
   if (!tuples) { return }
@@ -477,17 +564,15 @@ function decorateResultMatches (searchTerms, result) {
   result.titleDecorated = joinSegments(segments.title)
 }
 
-// helper for decorateResultMatches()
+// helper for highlightHistoryResult()
 // - takes an array of string segments (extracted from the result columns)
 // - outputs a single escaped string with every other element wrapped in <strong>
-var ltRegex = /</g
-var gtRegex = />/g
 function joinSegments (segments) {
   var str = ''
   var isBold = false
   for (var segment of segments) {
     // escape for safety
-    segment = segment.replace(ltRegex, '&lt;').replace(gtRegex, '&gt;')
+    segment = makeSafe(segment)
 
     // decorate with the strong tag
     if (isBold) str += '<strong>' + segment + '</strong>'
