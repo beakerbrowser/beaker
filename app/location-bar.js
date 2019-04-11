@@ -45,6 +45,9 @@ class LocationBar extends LitElement {
     if (platform === 'win32') {
       document.body.classList.add('win32')
     }
+    
+    // disallow right click
+    window.addEventListener('contextmenu', e => e.preventDefault())
 
     // export interface
     window.setup = () => this.reset()
