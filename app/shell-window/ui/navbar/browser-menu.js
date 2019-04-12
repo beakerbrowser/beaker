@@ -198,7 +198,7 @@ export class BrowserMenuNavbarBtn {
                 </div>
 
                 <div class="menu-item" onclick=${e => this.onOpenPage(e, 'https://opencollective.com/beaker')}>
-                  <i class="far fa-heart"></i>
+                  <i class="fa fa-donate"></i>
                   <span class="label">Support Beaker</span>
                 </div>
               </div>
