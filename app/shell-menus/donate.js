@@ -76,6 +76,10 @@ class DonateMenu extends LitElement {
   }
 }
 DonateMenu.styles = [commonCSS, css`
+.wrapper {
+  overflow: hidden;
+}
+
 .header {
   height: auto;
   line-height: inherit;
@@ -88,7 +92,7 @@ DonateMenu.styles = [commonCSS, css`
   margin: 0;
 }
 
-.header-info .far {
+.header-info .fa {
   font-size: 14px;
   margin: 0 7px 0 4px;
 }
