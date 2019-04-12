@@ -1,4 +1,4 @@
-import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard } from 'electron'
+import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain } from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
 import path from 'path'
@@ -94,6 +94,7 @@ var activeViews = {} // map of {[win.id]: Array<View>}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: Events}
 var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
+var nextViewIsScriptCloseable = false // will the next view created be "script closable"?
 
 // classes
 // =
@@ -131,6 +132,7 @@ class View {
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
+    this.isScriptClosable = takeIsScriptClosable() // can this view be closed by `window.close` ?
 
     // helper state
     this.peers = 0 // how many peers does the site have?
@@ -635,6 +637,24 @@ class View {
 // =
 
 export function setup () {
+  // listen for webContents messages
+  ipcMain.on('BEAKER_MARK_NEXT_VIEW_SCRIPTCLOSEABLE', e => {
+    nextViewIsScriptCloseable = true
+    e.returnValue = true
+  })
+  ipcMain.on('BEAKER_SCRIPTCLOSE_SELF', e => {
+    var browserView = BrowserView.fromWebContents(e.sender)
+    if (browserView) {
+      var view = findView(browserView)
+      if (view && view.isScriptClosable) {
+        remove(view.browserWindow, view)
+        e.returnValue = true
+        return
+      }
+    }
+    e.returnValue = false
+  })
+
   // track peer-counts
   beakerCore.dat.library.createEventStream().on('data', ([evt, {details}]) => {
     if (evt !== 'network-changed') return
@@ -680,10 +700,20 @@ export function getActive (win) {
   return getAll(win).find(view => view.isActive)
 }
 
-export function findContainingWindow (view) {
+export function findView (browserView) {
   for (let winId in activeViews) {
     for (let v of activeViews[winId]) {
-      if (v.browserView === view) {
+      if (v.browserView === browserView) {
+        return v
+      }
+    }
+  }
+}
+
+export function findContainingWindow (browserView) {
+  for (let winId in activeViews) {
+    for (let v of activeViews[winId]) {
+      if (v.browserView === browserView) {
         return v.browserWindow
       }
     }
@@ -1195,4 +1225,12 @@ async function fireBeforeUnloadEvent (wc) {
     } catch (e) {
       // ignore
     }
+}
+
+// `nextViewIsScriptCloseable` is set by a message received prior to window.open() being called
+// we capture the state of the flag on the next created view, then reset it
+function takeIsScriptClosable () {
+  var b = nextViewIsScriptCloseable
+  nextViewIsScriptCloseable = false
+  return b
 }
