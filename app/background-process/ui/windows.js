@@ -232,7 +232,10 @@ export function createShellWindow (windowState) {
   win.on('scroll-touch-begin', sendScrollTouchBegin)
   win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
   win.on('focus', sendToWebContents('focus'))
-  win.on('blur', sendToWebContents('blur'))
+  win.on('blur', e => {
+    statusBarSubwindow.set(win, false) // hide the statusbar on blur
+    sendToWebContents('blur')(e)
+  })
   win.on('app-command', (e, cmd) => { onAppCommand(win, e, cmd) })
   win.on('enter-full-screen', e => {
     // update UI
