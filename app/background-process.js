@@ -26,6 +26,7 @@ import * as childProcesses from './background-process/child-processes'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
+import * as assetProtocol from './background-process/protocols/asset'
 import * as intentProtocol from './background-process/protocols/intent'
 
 import * as testDriver from './background-process/test-driver'
@@ -119,7 +120,8 @@ app.on('ready', async function () {
 
   // protocols
   beakerProtocol.setup()
-  beakerFaviconProtocol.setup()
+  beakerFaviconProtocol.setup() // TODO deprecateme
+  assetProtocol.setup()
   intentProtocol.setup()
   protocol.registerStreamProtocol('dat', beakerCore.dat.protocol.electronHandler, err => {
     if (err) {

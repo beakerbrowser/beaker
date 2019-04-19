@@ -22,7 +22,7 @@ const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).repl
 // content security policies
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src beaker-favicon: beaker: data: dat: http: https;
+  img-src beaker-favicon: beaker: asset: data: dat: http: https;
   script-src 'self' beaker: 'unsafe-eval';
   media-src 'self' beaker: dat:;
   style-src 'self' 'unsafe-inline' beaker:;

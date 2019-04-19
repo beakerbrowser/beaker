@@ -152,7 +152,7 @@ class LocationBar extends LitElement {
     }
     if (r.record && r.record.type === 'site') {
       return html`
-        <div class="icon"><img src=${'beaker-favicon:64,' + r.url}></div>
+        <div class="icon"><img class="avatar" src=${'asset:thumb:' + r.url}></div>
         <div class="info">
           <div class="row">
             <span class="content-column">
@@ -172,7 +172,7 @@ class LocationBar extends LitElement {
       let isAuthorYou = r.record.author.url === this.userUrl
       let authorTitle = isAuthorYou ? html`<span class="is-you">you</span>`: (r.record.author.title || 'Anonymous')
       return html`
-        <div class="icon"><img src=${'beaker-favicon:64,' + r.url}></div>
+        <div class="icon"><img src=${'asset:favicon-32:' + r.url}></div>
         <div class="info">
           <div class="row">
             <span class="content-column">
@@ -189,7 +189,7 @@ class LocationBar extends LitElement {
       `
     }
     return html`
-      <div class="icon"><img src=${'beaker-favicon:64,' + r.url}></div>
+      <div class="icon"><img src=${'asset:favicon-32:' + r.url}></div>
       <div class="info">
         <div class="row">
           <span class="content-column">
@@ -413,6 +413,11 @@ input:focus {
 .result .icon img {
   width: 32px;
   height: 32px;
+}
+
+.result .icon .avatar {
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .result .icon .fa,
