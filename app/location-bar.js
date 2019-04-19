@@ -55,11 +55,21 @@ class LocationBar extends LitElement {
   }
 
   reset () {
+    this.userUrl = null
     this.inputValue = ''
     this.inputQuery = ''
     this.autocompleteResults = []
     this.currentSelection = 0
     this.hoveredSearch = ''
+  }
+
+  selectResult (result) {
+    if (result.record && result.record.type === 'site') {
+      bg.locationBar.loadURL(`intent:unwalled.garden/view-profile?url=${encodeURIComponent(result.url)}`)
+    } else {
+      bg.locationBar.loadURL(result.url)
+    }
+    bg.locationBar.close()
   }
 
   render () {
@@ -113,21 +123,6 @@ class LocationBar extends LitElement {
   }
 
   renderAutocompleteResult (r, i) {
-    // content
-    var contentColumn
-    var urlColumn = ''
-    if (r.search) {
-      contentColumn = html`<span class="search-column">${r.search} - ${r.title}</span>`
-    } else {
-      contentColumn = html`
-        <span class="content-column">
-          <span class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>
-          ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
-        </span>
-      `
-      urlColumn = html`<span class="url-column">${toNiceUrl(r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url)}</span>`
-    }
-
     // selection
     var rowCls = classMap({
       result: true,
@@ -137,15 +132,72 @@ class LocationBar extends LitElement {
     // result row
     return html`
       <div class=${rowCls} data-result-index=${i} @click=${this.onClickResult}>
-        ${r.bookmarked ? html`<i class="far fa-star"></i>` : ''}
-        ${r.search
-          ? html`<i class="icon fa fa-search"></i>`
-          : r.isGoto
-            ? html`<i class="icon fas fa-arrow-right"></i>`
-            : html`<img class="icon" src=${'beaker-favicon:' + r.url}/>`
-        }
-        ${contentColumn}
-        ${urlColumn}
+        ${this.renderResult(r)}
+      </div>
+    `
+  }
+
+  renderResult (r) {
+    if (r.search) {
+      return html`
+        <div class="icon"><i class="fa fa-search"></i></div>
+        <div class="info"><div class="row"><span class="search-column">${r.search} - ${r.title}</span></div></div>
+      `
+    }
+    if (r.isGoto) {
+      return html`
+        <div class="icon"><i class="fas fa-arrow-right"></i></div>
+        <div class="info"><div class="row"><span class="content-column"><span class="title">${r.title}</span></span></div></div>
+      `
+    }
+    if (r.record && r.record.type === 'site') {
+      return html`
+        <div class="icon"><img src=${'beaker-favicon:64,' + r.url}></div>
+        <div class="info">
+          <div class="row">
+            <span class="content-column">
+              <span class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>
+              ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
+            </span>
+          </div>
+          <div class="row provenance">
+            <span class="fas fa-fw fa-user"></span>
+            ${r.url === this.userUrl ? html`This is <span class="is-you">you</span>` : 'Followed by you'}
+            <span class="url">${toNiceUrl(r.url)}</span>
+          </div>
+        </div>
+      `
+    }
+    if (r.record && r.record.type === 'unwalled.garden/bookmark') {
+      let isAuthorYou = r.record.author.url === this.userUrl
+      let authorTitle = isAuthorYou ? html`<span class="is-you">you</span>`: (r.record.author.title || 'Anonymous')
+      return html`
+        <div class="icon"><img src=${'beaker-favicon:64,' + r.url}></div>
+        <div class="info">
+          <div class="row">
+            <span class="content-column">
+              <span class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>
+              ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
+            </span>
+          </div>
+          <div class="row provenance">
+            <span class="fas fa-fw fa-star"></span>
+            Bookmarked by ${authorTitle}
+            <span class="url">${toNiceUrl(r.url)}</span>
+          </div>
+        </div>
+      `
+    }
+    return html`
+      <div class="icon"><img src=${'beaker-favicon:64,' + r.url}></div>
+      <div class="info">
+        <div class="row">
+          <span class="content-column">
+            <span class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>
+            ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
+          </span>
+        </div>
+        <div class="row provenance"><span class="url-column">${toNiceUrl(r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url)}</span></div>
       </div>
     `
   }
@@ -174,11 +226,7 @@ class LocationBar extends LitElement {
         }
         break
       case 'choose-selection':
-        {
-          let selection = this.autocompleteResults[this.currentSelection]
-          bg.locationBar.loadURL(selection.url)
-          bg.locationBar.close()
-        }
+        this.selectResult(this.autocompleteResults[this.currentSelection])
         break
       case 'move-selection':
         {
@@ -205,9 +253,7 @@ class LocationBar extends LitElement {
     if (e.key === 'Enter') {
       e.preventDefault()
 
-      let selection = this.autocompleteResults[this.currentSelection]
-      bg.locationBar.loadURL(selection.url)
-      bg.locationBar.close()
+      this.selectResult(this.autocompleteResults[this.currentSelection])
       return
     }
 
@@ -235,9 +281,7 @@ class LocationBar extends LitElement {
   }
 
   onClickResult (e) {
-    let selection = this.autocompleteResults[e.currentTarget.dataset.resultIndex]
-    bg.locationBar.loadURL(selection.url)
-    bg.locationBar.close()
+    this.selectResult(this.autocompleteResults[e.currentTarget.dataset.resultIndex])
   }
 
   resize () {
@@ -252,16 +296,21 @@ class LocationBar extends LitElement {
   }
 
   async queryAutocomplete () {
+    if (!this.userUrl) {
+      let userSession = await bg.beakerBrowser.getUserSession().catch(err => null)
+      this.userUrl = userSession ? userSession.url : null
+    }
+
     var finalResults
     var [crawlerResults, historyResults] = await Promise.all([
-      bg.search.query({query: this.inputValue, filters: {datasets: ['sites', 'unwalled.garden/bookmark']}}),
+      bg.search.query({query: this.inputValue, filters: {datasets: ['sites', 'unwalled.garden/bookmark']}, limit: 10}),
       bg.history.search(this.inputValue)
     ])
 
-    console.log({
-      historyResults,
-      crawlerResults
-    })
+    // console.log({
+    //   historyResults,
+    //   crawlerResults
+    // })
 
     // decorate results with bolded regions
     var searchTerms = this.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
@@ -281,29 +330,15 @@ class LocationBar extends LitElement {
     if (isProbablyUrl) finalResults = [gotoResult, searchResult]
     else finalResults = [searchResult, gotoResult]
 
-    // apply limit on crawl results to avoid history being crowded out
-    if (crawlerResults.results.length + historyResults.length > 10) {
-      crawlerResults.results = crawlerResults.results.slice(0, 5)
-    }
-
     // add search results
     finalResults = finalResults.concat(crawlerResults.results)
     finalResults = finalResults.concat(historyResults)
 
     // remove duplicates
-    finalResults = _uniqWith(finalResults, (a, b) => stripTrailingSlash(a.url) === stripTrailingSlash(b.url)) // remove duplicates
+    finalResults = _uniqWith(finalResults, (a, b) => normalizeURL(a.url) === normalizeURL(b.url)) // remove duplicates
 
     // apply limit
-    finalResults = finalResults.slice(0, 11)
-
-    // read bookmark state
-    await Promise.all(finalResults.map(async r => {
-      let bookmarked = false
-      try {
-        bookmarked = await bg.bookmarks.isBookmarked(r.url)
-      } catch (_) {}
-      Object.assign(r, {bookmarked})
-    }))
+    finalResults = finalResults.slice(0, 10)
 
     // render
     this.autocompleteResults = finalResults
@@ -335,7 +370,7 @@ LocationBar.styles = [css`
 input {
   box-sizing: border-box;
   border: 0;
-  padding: 0 38px;
+  padding: 0 54px;
 
   line-height: 26px;
   width: 100%;
@@ -355,36 +390,41 @@ input:focus {
 
 .autocomplete-results {
   height: calc(100vh - 98px);
+  overflow-y: auto;
 }
 
 .result {
-  position: relative;
-  padding: 0 10px 0 14px;
   display: flex;
   align-items: center;
-  height: 28px;
-  font-size: 14px;
-  cursor: default;
-}
-
-.result .fa-star-o {
-  position: absolute;
-  left: 90px;
-  color: #707070;
-  font-size: 16px;
+  padding: 6px 12px;
+  line-height: 20px;
+  width: calc(100vw - 24px);
+  overflow: hidden;
 }
 
 .result .icon {
-  margin-right: 10px;
-  width: 15px;
-  display: inline-block;
-  text-align: center;
+  flex: 0 0 42px;
 }
 
-.result .fa,
-.result .fas {
+.result .info {
+  flex: 1;
+}
+
+.result .icon img {
+  width: 32px;
+  height: 32px;
+}
+
+.result .icon .fa,
+.result .icon .fas {
   font-size: 13px;
   color: #707070;
+  margin-left: 9px;
+}
+
+.result .content-column,
+.result .search-column {
+  font-size: 15px;
 }
 
 .result .url-column,
@@ -393,23 +433,11 @@ input:focus {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.result .content-column,
-.result .url-column {
-  display: inline-block;
-  max-width: 50%;
-  vertical-align: top;
+  max-width: 100%;
 }
 
 .result .url-column {
-  margin-left: 5px;
   color: #707070;
-}
-
-.result .url-column:before {
-  content: '-';
-  margin-right: 5px;
 }
 
 .result .title,
@@ -423,6 +451,28 @@ input:focus {
 
 .result .tags {
   margin-left: 5px;
+}
+
+.provenance {
+  font-size: 13px;
+  color: #555;
+}
+
+.provenance .fas {
+  font-size: 11px;
+  position: relative;
+  top: -1px;
+  margin-right: 2px;
+  color: gray;
+}
+
+.provenance .url {
+  margin-left: 5px;
+}
+
+.is-you {
+  color: #3a3d4e;
+  font-weight: 500;
 }
 
 .result.selected {
@@ -477,27 +527,19 @@ customElements.define('location-bar', LocationBar)
 // =
 
 const TRAILING_SLASH_REGEX = /(\/$)/
-function stripTrailingSlash (str = '') {
-  return str.replace(TRAILING_SLASH_REGEX, '')
+const PREVIEW_REGEX = /(\+preview)/
+function normalizeURL (str = '') {
+  return str.replace(TRAILING_SLASH_REGEX, '').replace(PREVIEW_REGEX, '')
 }
 
 function makeSafe (str = '') {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
-const DAT_KEY_REGEX = /[0-9a-f]{64}/i
+const DAT_KEY_REGEX = /([0-9a-f]{64})/ig
 function toNiceUrl (str) {
-  if (!str) return ''
-  try {
-    var urlParsed = new URL(str)
-    if (DAT_KEY_REGEX.test(urlParsed.hostname)) {
-      urlParsed.hostname = `${urlParsed.hostname.slice(0, 4)}..${urlParsed.hostname.slice(-2)}`
-    }
-    return urlParsed.toString()
-  } catch (e) {
-    // ignore, not a url
-  }
-  return str
+  if (typeof str !== 'string') return str
+  return str.replace(DAT_KEY_REGEX, (_, m) => `${m.slice(0, 6)}..${m.slice(-2)}`)
 }
 
 // helper for crawler search results
@@ -563,7 +605,7 @@ function highlightHistoryResult (searchTerms, result) {
   segments.title.push(result.title.slice(lastOffset.title))
 
   // join the segments with <strong> tags
-  result.urlDecorated = joinSegments(segments.url)
+  result.urlDecorated = toNiceUrl(joinSegments(segments.url))
   result.titleDecorated = joinSegments(segments.title)
 }
 
