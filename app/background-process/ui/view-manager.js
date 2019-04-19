@@ -1175,7 +1175,11 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   async onFaviconLoadSuccess (index, dataUrl) {
     var view = getByIndex(getWindow(this.sender), index)
     if (view) {
-      beakerCore.dbs.sitedata.set(view.url, 'favicon', dataUrl)
+      // if not a dat site, store the favicon
+      // (dat caches favicons through the dat/assets.js process in beaker-core)
+      if (!view.url.startsWith('dat:')) {
+        beakerCore.dbs.sitedata.set(view.url, 'favicon', dataUrl)
+      }
     }
   },
 

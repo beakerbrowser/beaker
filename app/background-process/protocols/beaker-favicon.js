@@ -66,7 +66,6 @@ export function setup () {
               }
             }
             let buf = Buffer.from(image.buffer)
-            sitedata.set(url, 'favicon', `data:image/png;base64,${buf.toString('base64')}`) // cache
             return cb({mimeType: 'image/png', data: buf})
           }
         } catch (e) {
@@ -78,7 +77,6 @@ export function setup () {
           // try .png
           data = await datfs.pda.readFile('/favicon.png', 'binary')
           if (data) {
-            sitedata.set(url, 'favicon', `data:image/png;base64,${data.toString('base64')}`) // cache
             return cb({mimeType: 'image/png', data})
           }
         } catch (e) {
