@@ -29,7 +29,7 @@ class SiteToolsMenu extends LitElement {
       <div class="wrapper">
         <div class="menu-item" @click=${this.onClickViewSource}>
           <i class="fas fa-code"></i>
-          View source
+          ${this.datInfo && this.datInfo.isOwner ? 'Edit' : 'View'} source
         </div>
         <div class="menu-item" @click=${this.onClickFork}>
           <i class="fas fa-code-branch"></i>
