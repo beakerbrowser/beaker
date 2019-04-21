@@ -144,14 +144,16 @@ export default function registerContextMenu () {
           click: () => webContents.print()
         })
         menuItems.push({ type: 'separator' })
-        if (isDat) {
-          menuItems.push({
-            label: isOwner ? 'Edit Source' : 'View Source',
-            click: (item, win) => {
-              viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
-            }
-          })
-        }
+      }
+
+      // view/edit source
+      if (isDat) {
+        menuItems.push({
+          label: isOwner ? 'Edit Source' : 'View Source',
+          click: (item, win) => {
+            viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
+          }
+        })
       }
 
       // inspector
