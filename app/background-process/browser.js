@@ -106,6 +106,7 @@ export async function setup () {
 
   // wire up events
   app.on('web-contents-created', onWebContentsCreated)
+  beakerCore.users.on('user-thumb-changed', onUserThumbChanged)
 
   // window.prompt handling
   //  - we have use ipc directly instead of using rpc, because we need custom
@@ -626,6 +627,10 @@ function onWebContentsCreated (e, webContents) {
     // do not allow
     e.preventDefault()
   })
+}
+
+function onUserThumbChanged (user) {
+  browserEvents.emit('user-thumb-changed', user)
 }
 
 function onWillPreventUnload (e) {

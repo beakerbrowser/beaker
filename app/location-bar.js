@@ -113,9 +113,9 @@ class LocationBar extends LitElement {
             ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.inputQuery)}`)}
             ${searchLink('DuckDuckGo', `https://duckduckgo.com?q=${encodeURIComponent(this.inputQuery)}`)}
             ${searchLink('Google', `https://google.com/search?q=${encodeURIComponent(this.inputQuery)}`)}
-            ${searchLink('YouTube', `https://www.youtube.com/results?search_query=?q=${encodeURIComponent(this.inputQuery)}`)}
+            ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.inputQuery)}`)}
             ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.inputQuery)}`)}
-            ${searchLink('Beaker', `beaker://search/?q=${encodeURIComponent(this.inputQuery)}`)}
+            ${''/* TODO restore at some point esearchLink('Beaker', `beaker://search/?q=${encodeURIComponent(this.inputQuery)}`) */}
           </div>
         </div>
       </div>

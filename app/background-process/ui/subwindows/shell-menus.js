@@ -65,7 +65,21 @@ export function reposition (parentWindow) {
         x: parentBounds.x + parentBounds.width - 245,
         y: parentBounds.y + 74,
         width: 240,
-        height: 466
+        height: 277
+      })
+    } else if (win.menuId === 'profile') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.right - 260,
+        y: parentBounds.y + win.boundsOpt.top,
+        width: 260,
+        height: 110
+      })
+    } else if (win.menuId === 'create') {
+      win.setBounds({
+        x: parentBounds.x + win.boundsOpt.right - 200,
+        y: parentBounds.y + win.boundsOpt.top,
+        width: 200,
+        height: 95
       })
     } else if (win.menuId === 'bookmark') {
       win.setBounds({

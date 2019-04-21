@@ -14,6 +14,9 @@ class ShellWindowNavbar extends LitElement {
       activeTab: {type: Object},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
+      userThumbUrl: {type: String, attribute: 'user-thumb-url'},
+      isCreateMenuOpen: {type: Boolean},
+      isProfileMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -24,6 +27,8 @@ class ShellWindowNavbar extends LitElement {
     this.activeTab = null
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
+    this.isCreateMenuOpen = false
+    this.isProfileMenuOpen = false
     this.isBrowserMenuOpen = false
   }
 
@@ -78,6 +83,8 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
+        ${this.createMenuBtn}
+        ${this.profileMenuBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -186,6 +193,15 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get createMenuBtn () {
+    const cls = classMap({pressed: this.isCreateMenuOpen})
+    return html`
+      <button class=${cls} @click=${this.onClickCreateMenu}>
+        <span class="fas fa-plus"></span>
+      </button>
+    `
+  }
+
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
@@ -193,6 +209,15 @@ class ShellWindowNavbar extends LitElement {
         ${this.isUpdateAvailable
           ? html`<span class="fas fa-arrow-alt-circle-up"></span>`
           : html`<span class="fa fa-bars"></span>`}
+      </button>
+    `
+  }
+
+  get profileMenuBtn () {
+    const cls = classMap({'profile-btn': true, pressed: this.isProfileMenuOpen})
+    return html`
+      <button class=${cls} @click=${this.onClickProfileMenu}>
+        <img src="${this.userThumbUrl}">
       </button>
     `
   }
@@ -225,6 +250,30 @@ class ShellWindowNavbar extends LitElement {
     bg.views.createTab('beaker://watchlist', {setActive: true})
   }
 
+  async onClickCreateMenu (e) {
+    this.isCreateMenuOpen = true
+    var rect = e.currentTarget.getClientRects()[0]
+    await bg.views.toggleMenu('create', {
+      bounds: {
+        top: (rect.bottom|0),
+        right: (rect.right|0)
+      }
+    })
+    this.isCreateMenuOpen = false
+  }
+
+  async onClickProfileMenu (e) {
+    this.isProfileMenuOpen = true
+    var rect = e.currentTarget.getClientRects()[0]
+    await bg.views.toggleMenu('profile', {
+      bounds: {
+        top: (rect.bottom|0),
+        right: (rect.right|0)
+      }
+    })
+    this.isProfileMenuOpen = false    
+  }
+
   async onClickBrowserMenu (e) {
     this.isBrowserMenuOpen = true
     await bg.views.toggleMenu('browser')
@@ -244,14 +293,22 @@ ${buttonResetCSS}
 
 button {
   width: 30px;
+  position: relative;
 }
 
 button.nav-arrow-btn {
   width: 28px;
 }
 
-button .fa {
+button .fa,
+button .far,
+button .fas {
   font-size: 16px;
+  color: #333;
+}
+
+button .fas.fa-plus {
+  -webkit-text-stroke: 0.8px #eee;
 }
 
 svg.icon * {
@@ -273,26 +330,32 @@ svg.icon.refresh {
   -webkit-text-stroke: 1px #0eab0e;
 }
 
-.watchlist-btn {
-  position: relative;
-}
-
-.watchlist-btn .fas {
-  font-size: 16px;
-}
-
-.watchlist-btn .badge {
+.badge {
   position: absolute;
-  right: 0px;
+  left: 0px;
   top: 2px;
-  font-size: 8px;
-  border-radius: 50%;
-  width: 12px;
-  height: 12px;
-  line-height: 12px;
+  font-size: 10px;
+  border-radius: 8px;
+  height: 15px;
+  min-width: 10px;
+  line-height: 14px;
   background: #0090ff;
   color: #fff;
-  font-weight: 600;
+  font-weight: bold;
+  padding: 0 3px;
+}
+
+.profile-btn {
+  margin: 0 2px;
+}
+
+.profile-btn img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: relative;
+  top: 1px;
 }
 `
 customElements.define('shell-window-navbar', ShellWindowNavbar)

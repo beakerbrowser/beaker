@@ -41,10 +41,6 @@ class BrowserMenu extends LitElement {
 
   async init () {
     await this.requestUpdate()
-
-    // adjust height based on rendering
-    var height = this.shadowRoot.querySelector('div').clientHeight
-    bg.shellMenus.resizeSelf({height})
   }
 
   render () {
@@ -91,46 +87,21 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onFindInPage(e)}>
-            <i class="fa fa-search"></i>
-            <span class="label">Find in Page</span>
-            <span class="shortcut">${this.accelerators.findInPage}</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library?view=addressbook')}>
-            <i class="fas fa-address-book"></i>
-            <span class="label">Your address book</span>
+          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
+            <i class="fas fa-arrow-down"></i>
+            <span class="label">Downloads</span>
+            ${progressEl}
           </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library?view=bookmarks')}>
-            <i class="far fa-star"></i>
-            <span class="label">Your bookmarks</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library?view=websites')}>
-            <i class="fas fa-sitemap"></i>
-            <span class="label">Your websites</span>
-          </div>
-        </div>
-
-        <div class="section">
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
             <i class="fa fa-history"></i>
             <span class="label">History</span>
             <span class="shortcut">${this.accelerators.history}</span>
           </div>
-
-          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
-            <i class="fa fa-download"></i>
-            <span class="label">Downloads</span>
-            ${progressEl}
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://watchlist')}>
-            <i class="fa fa-eye"></i>
-            <span class="label">Watchlist</span>
+          
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/')}>
+            <i class="far fa-hdd"></i>
+            <span class="label">Library</span>
           </div>
 
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
@@ -153,14 +124,9 @@ class BrowserMenu extends LitElement {
             <span class="label">Help</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new?labels=0.8-beta-feedback&template=ISSUE_TEMPLATE_0.8_BETA.md')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new')}>
             <i class="far fa-flag"></i>
             <span class="label">Report an Issue</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://opencollective.com/beaker')}>
-            <i class="far fa-heart"></i>
-            <span class="label">Support Beaker</span>
           </div>
         </div>
       </div>
@@ -235,17 +201,6 @@ class BrowserMenu extends LitElement {
     this.shouldPersistDownloadsIndicator = true
     this.sumProgress = sumProgress
     this.requestUpdate()
-  }
-
-  onFindInPage (e) {
-    bg.shellMenus.close()
-    bg.shellMenus.showInpageFind()
-  }
-
-  onClearDownloads (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    this.downloads = []
   }
 
   async onCreateSite (e, template) {
