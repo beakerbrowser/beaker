@@ -225,6 +225,8 @@ export function createShellWindow (windowState) {
   registerGlobalKeybinding(win, 'CmdOrCtrl+[', onGoBack(win))
   registerGlobalKeybinding(win, 'CmdOrCtrl+]', onGoForward(win))
   registerGlobalKeybinding(win, 'Alt+D', onFocusLocation(win))
+  registerGlobalKeybinding(win, 'F5', onReload(win))
+  registerGlobalKeybinding(win, 'F6', onFocusLocation(win))
 
   // register event handlers
   win.on('browser-backward', onGoBack(win))
@@ -400,6 +402,10 @@ function onGoBack (win) {
 
 function onGoForward (win) {
   return () => viewManager.getActive(win).webContents.goForward()
+}
+
+function onReload (win) {
+  return () => viewManager.getActive(win).webContents.reload()
 }
 
 function onFocusLocation (win) {
