@@ -342,6 +342,14 @@ async function gotoFileEditor (filePath) {
   onOpenFileEditor()
 }
 
+function resolvePaymentLink (archiveUrl, paymentLink) {
+  if (paymentLink.indexOf('://') === -1) {
+    const shouldAddSlash = !archiveUrl.endsWith('/') && !paymentLink.startsWith('/')
+    return `${archiveUrl}${shouldAddSlash ? '/' : ''}${paymentLink}`
+  }
+  return paymentLink
+}
+
 // rendering
 // =
 
@@ -835,6 +843,11 @@ function renderReadmeHint () {
     </div>`
 }
 
+function renderDonationLink (archiveUrl, paymentLink) {
+  const url = resolvePaymentLink(archiveUrl, paymentLink)
+  return yo`<a href=${url}>${url}</a>`
+}
+
 function renderSettingsView () {
   const isOwner = _get(archive, 'info.isOwner')
 
@@ -1013,13 +1026,13 @@ function renderSettingsView () {
               ? yo`
                   <p>
                     Enter a link to your donation page and Beaker will show
-                    a <span class="fa fa-heart"></span> icon in your page's URL bar.
+                    a <span class="fa fa-donate"></span> icon in your page's URL bar.
 
                     ${renderSettingsField({key: 'paymentLink', value: paymentLink, placeholder: 'Example: https://opencollective.com/beaker', onUpdate: setManifestValue})}
                   </p>
                 `
               : paymentLink
-                ? yo`<p><a href=${paymentLink}>${paymentLink}</a></p>`
+                ? yo`<p>${renderDonationLink(archive.url, paymentLink)}</p>`
                 : yo`<p><em>No link provided.</em></p>`
             }
           </div>
@@ -1156,7 +1169,7 @@ function renderNetworkView () {
                       </div>`
                   ] : yo`
                     <div class="hint">
-                      <i class="far fa-heart"></i>
+                      <i class="fa fa-hand-holding-heart"></i>
                       <strong>Give back!</strong> Seed this project${"'"}s files to help keep them online.
                       <a href="https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites#keeping-a-peer-to-peer-website-online" target="_blank" class="learn-more-link">Learn more</a>
                     </div>`

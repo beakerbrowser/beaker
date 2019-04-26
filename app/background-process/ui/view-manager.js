@@ -1,4 +1,4 @@
-import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard } from 'electron'
+import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain } from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
 import path from 'path'
@@ -94,6 +94,7 @@ var activeViews = {} // map of {[win.id]: Array<View>}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: Events}
 var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
+var nextViewIsScriptCloseable = false // will the next view created be "script closable"?
 
 // classes
 // =
@@ -131,6 +132,7 @@ class View {
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
+    this.isScriptClosable = takeIsScriptClosable() // can this view be closed by `window.close` ?
 
     // helper state
     this.peers = 0 // how many peers does the site have?
@@ -149,6 +151,7 @@ class View {
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
     this.webContents.on('did-fail-load', this.onDidFailLoad.bind(this))
     this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
+    this.webContents.on('page-title-updated', this.onPageTitleUpdated.bind(this)) // NOTE page-title-updated isn't documented on webContents but it is supported
     this.webContents.on('page-favicon-updated', this.onPageFaviconUpdated.bind(this))
     this.webContents.on('new-window', this.onNewWindow.bind(this))
     this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
@@ -219,6 +222,13 @@ class View {
     this.browserView.webContents.loadURL(url)
   }
 
+  resize () {
+    const win = this.browserWindow
+    var {width, height} = win.getContentBounds()
+    this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
+    this.browserView.setAutoResize({width: true, height: true})
+  }
+
   activate () {
     this.isActive = true
 
@@ -227,10 +237,7 @@ class View {
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
 
-    var {width, height} = win.getBounds()
-    this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
-    this.browserView.setAutoResize({width: true, height: true})
-
+    this.resize()
     this.webContents.focus()
   }
 
@@ -414,7 +421,9 @@ class View {
         .markdown code { padding: 3px 5px; }
         .markdown pre > code { display: block; }
       `)
-      this.webContents.executeJavaScript(await fs.readFile(path.join(app.getAppPath(), 'markdown-renderer.build.js'), 'utf8'))
+      let mdpath = path.join(app.getAppPath(), 'markdown-renderer.build.js')
+      mdpath = mdpath.replace('app.asar', 'app.asar.unpacked') // fetch from unpacked dir
+      this.webContents.executeJavaScript(await fs.readFile(mdpath, 'utf8'))
     }
 
     // json rendering
@@ -446,7 +455,9 @@ class View {
           background: #ddd;
         }
       `)
-      this.webContents.executeJavaScript(await fs.readFile(path.join(app.getAppPath(), 'json-renderer.build.js'), 'utf8'))
+      let jsonpath = path.join(app.getAppPath(), 'json-renderer.build.js')
+      jsonpath = jsonpath.replace('app.asar', 'app.asar.unpacked') // fetch from unpacked dir
+      this.webContents.executeJavaScript(await fs.readFile(jsonpath, 'utf8'))
     }
   }
 
@@ -501,6 +512,7 @@ class View {
     // update state
     this.isLoading = true
     this.loadingURL = null
+    this.favicons = null
     this.isReceivingAssets = false
     this.wasDatTimeout = false
 
@@ -592,6 +604,10 @@ class View {
     statusBar.set(this.browserWindow, url)
   }
 
+  onPageTitleUpdated (e, title) {
+    this.emitUpdateState()
+  }
+
   onPageFaviconUpdated (e, favicons) {
     this.favicons = favicons && favicons[0] ? favicons : null
     this.emitUpdateState()
@@ -625,6 +641,24 @@ class View {
 // =
 
 export function setup () {
+  // listen for webContents messages
+  ipcMain.on('BEAKER_MARK_NEXT_VIEW_SCRIPTCLOSEABLE', e => {
+    nextViewIsScriptCloseable = true
+    e.returnValue = true
+  })
+  ipcMain.on('BEAKER_SCRIPTCLOSE_SELF', e => {
+    var browserView = BrowserView.fromWebContents(e.sender)
+    if (browserView) {
+      var view = findView(browserView)
+      if (view && view.isScriptClosable) {
+        remove(view.browserWindow, view)
+        e.returnValue = true
+        return
+      }
+    }
+    e.returnValue = false
+  })
+
   // track peer-counts
   beakerCore.dat.library.createEventStream().on('data', ([evt, {details}]) => {
     if (evt !== 'network-changed') return
@@ -670,10 +704,20 @@ export function getActive (win) {
   return getAll(win).find(view => view.isActive)
 }
 
-export function findContainingWindow (view) {
+export function findView (browserView) {
   for (let winId in activeViews) {
     for (let v of activeViews[winId]) {
-      if (v.browserView === view) {
+      if (v.browserView === browserView) {
+        return v
+      }
+    }
+  }
+}
+
+export function findContainingWindow (browserView) {
+  for (let winId in activeViews) {
+    for (let v of activeViews[winId]) {
+      if (v.browserView === browserView) {
         return v.browserWindow
       }
     }
@@ -798,6 +842,11 @@ export function setActive (win, view) {
   emitReplaceState(win)
 }
 
+export function resize (win) {
+  var active = getActive(win)
+  if (active) active.resize()
+}
+
 export function initializeFromSnapshot (win, snapshot) {
   win = getTopWindow(win)
   for (let url of snapshot) {
@@ -840,9 +889,7 @@ export async function loadPins (win) {
   win = getTopWindow(win)
   var json = await settingsDb.get('pinned_tabs')
   try { JSON.parse(json).forEach(url => create(win, url, {isPinned: true})) }
-  catch (e) {
-    console.log('Failed to load pins', e)
-  }
+  catch (e) {}
 }
 
 export function reopenLastRemoved (win) {
@@ -1174,7 +1221,7 @@ function addToNoRedirects (url) {
 
 async function fireBeforeUnloadEvent (wc) {
   try {
-    if (wc.isWaitingForResponse()) {
+    if (wc.isLoading() || wc.isWaitingForResponse()) {
       return // dont bother
     }
     return await wc.executeJavaScript(`
@@ -1187,4 +1234,12 @@ async function fireBeforeUnloadEvent (wc) {
     } catch (e) {
       // ignore
     }
+}
+
+// `nextViewIsScriptCloseable` is set by a message received prior to window.open() being called
+// we capture the state of the flag on the next created view, then reset it
+function takeIsScriptClosable () {
+  var b = nextViewIsScriptCloseable
+  nextViewIsScriptCloseable = false
+  return b
 }

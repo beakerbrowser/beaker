@@ -240,7 +240,7 @@ ${spinnerCSS}
 }
 
 .tab.pinned {
-  width: 45px;
+  flex: 0 0 45px;
 }
 
 .tab-favicon {
