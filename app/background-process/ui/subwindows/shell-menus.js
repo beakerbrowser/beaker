@@ -99,8 +99,8 @@ export function reposition (parentWindow) {
       win.setBounds({
         x: parentBounds.x + win.boundsOpt.right - 320,
         y: parentBounds.y + win.boundsOpt.top,
-        width: 320,
-        height: 88
+        width: 350,
+        height: 90
       })
     } else if (win.menuId === 'site-tools') {
       win.setBounds({

@@ -250,7 +250,7 @@ class NavbarLocation extends LitElement {
     var cls = classMap({donate: true, pressed: this.isDonateMenuOpen})
     return html`
       <button class="${cls}" @click=${this.onClickDonateMenu}>
-        <i class="far fa-heart"></i>
+        <i class="fa fa-donate"></i>
       </button>
     `
   }

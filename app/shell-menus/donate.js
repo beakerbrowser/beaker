@@ -51,7 +51,7 @@ class DonateMenu extends LitElement {
       <div class="wrapper">
         <div class="header">
           <div class="header-info">
-            <span class="far fa-heart"></span>
+            <span class="fa fa-hand-holding-usd"></span>
             <h1>Contribute to ${title}</h1>
           </div>
         </div>
@@ -76,6 +76,10 @@ class DonateMenu extends LitElement {
   }
 }
 DonateMenu.styles = [commonCSS, css`
+.wrapper {
+  overflow: hidden;
+}
+
 .header {
   height: auto;
   line-height: inherit;
@@ -88,7 +92,7 @@ DonateMenu.styles = [commonCSS, css`
   margin: 0;
 }
 
-.header-info .far {
+.header-info .fa {
   font-size: 14px;
   margin: 0 7px 0 4px;
 }
