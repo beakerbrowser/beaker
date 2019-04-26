@@ -57,7 +57,10 @@ if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
 app.enableSandbox()
 
 // configure the protocols
-protocol.registerStandardSchemes(['dat', 'beaker'], { secure: true })
+protocol.registerSchemesAsPrivileged([
+  {scheme: 'dat', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
+  {scheme: 'beaker', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}}
+])
 
 // handle OS event to open URLs
 app.on('open-url', (e, url) => {
@@ -122,9 +125,6 @@ app.on('ready', async function () {
       throw new Error('Failed to create protocol: dat')
     }
   })
-
-  // configure chromium's permissions for the protocols
-  protocol.registerServiceWorkerSchemes(['dat'])
 })
 
 app.on('quit', () => {
