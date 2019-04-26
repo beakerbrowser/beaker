@@ -39,6 +39,9 @@ if (!document.querySelector('main')) {
       var navReq = await fetch('/nav.md')
       if (!navReq.ok) return
       var navMD = await navReq.text()
+      if (navMD.includes('<!doctype') || navMD.includes('<html')) {
+        return // dont render if we get HTML - this can indicate a 404 page
+      }
       navHTML = md.render(navMD)
       document.querySelector('nav').innerHTML = navHTML
     } catch (e) {
