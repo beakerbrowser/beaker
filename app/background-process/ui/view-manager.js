@@ -222,6 +222,13 @@ class View {
     this.browserView.webContents.loadURL(url)
   }
 
+  resize () {
+    const win = this.browserWindow
+    var {width, height} = win.getContentBounds()
+    this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
+    this.browserView.setAutoResize({width: true, height: true})
+  }
+
   activate () {
     this.isActive = true
 
@@ -230,10 +237,7 @@ class View {
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
 
-    var {width, height} = win.getBounds()
-    this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
-    this.browserView.setAutoResize({width: true, height: true})
-
+    this.resize()
     this.webContents.focus()
   }
 
@@ -836,6 +840,11 @@ export function setActive (win, view) {
   view.activate()
   windowMenu.onSetCurrentLocation(win, view.url) // give the window-menu a chance to handle the change
   emitReplaceState(win)
+}
+
+export function resize (win) {
+  var active = getActive(win)
+  if (active) active.resize()
 }
 
 export function initializeFromSnapshot (win, snapshot) {

@@ -256,6 +256,7 @@ export function createShellWindow (windowState) {
     // sendToWebContents('leave-full-screen')(e)
   })
   win.on('resize', () => {
+    viewManager.resize(win)
     for (let k in subwindows) {
       subwindows[k].reposition(win)
     }
