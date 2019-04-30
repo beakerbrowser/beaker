@@ -15,7 +15,6 @@ class ShellWindowNavbar extends LitElement {
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       userThumbUrl: {type: String, attribute: 'user-thumb-url'},
-      isCreateMenuOpen: {type: Boolean},
       isProfileMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
@@ -27,7 +26,6 @@ class ShellWindowNavbar extends LitElement {
     this.activeTab = null
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
-    this.isCreateMenuOpen = false
     this.isProfileMenuOpen = false
     this.isBrowserMenuOpen = false
   }
@@ -83,7 +81,7 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
-        ${this.createMenuBtn}
+        ${this.createBtn}
         ${this.profileMenuBtn}
         ${this.browserMenuBtn}
       </div>
@@ -193,10 +191,9 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get createMenuBtn () {
-    const cls = classMap({pressed: this.isCreateMenuOpen})
+  get createBtn () {
     return html`
-      <button class=${cls} @click=${this.onClickCreateMenu}>
+      <button @click=${this.onClickCreate}>
         <span class="fas fa-plus"></span>
       </button>
     `
@@ -250,16 +247,8 @@ class ShellWindowNavbar extends LitElement {
     bg.views.createTab('beaker://watchlist', {setActive: true})
   }
 
-  async onClickCreateMenu (e) {
-    this.isCreateMenuOpen = true
-    var rect = e.currentTarget.getClientRects()[0]
-    await bg.views.toggleMenu('create', {
-      bounds: {
-        top: (rect.bottom|0),
-        right: (rect.right|0)
-      }
-    })
-    this.isCreateMenuOpen = false
+  async onClickCreate (e) {
+    bg.views.createTab('beaker://library/?view=new-website', {setActive: true})
   }
 
   async onClickProfileMenu (e) {
