@@ -303,14 +303,12 @@ export function buildWindowMenu (opts = {}) {
         submenu: [{
           label: 'Reload Shell-Window',
           enabled: !noWindows,
-          accelerator: 'CmdOrCtrl+alt+shift+R',
           click: function () {
             BrowserWindow.getFocusedWindow().webContents.reloadIgnoringCache()
           }
         }, {
           label: 'Toggle Shell-Window DevTools',
           enabled: !noWindows,
-          accelerator: 'CmdOrCtrl+alt+shift+I',
           click: function () {
             BrowserWindow.getFocusedWindow().toggleDevTools()
           }
