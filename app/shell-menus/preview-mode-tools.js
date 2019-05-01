@@ -76,9 +76,9 @@ class PreviewModeToolsMenu extends LitElement {
   async onClickCommit () {
     var url = this.url
     var datKey = this.datKey
-    bg.shellMenus.close()
 
     if (!confirm('Commit all changes?')) {
+      bg.shellMenus.close()
       return
     }
 
@@ -86,6 +86,7 @@ class PreviewModeToolsMenu extends LitElement {
     var paths = fileDiffsToPaths(currentDiff)
     await bg.archives.publishLocalSyncPathListing(datKey, {shallow: false, paths})
 
+    bg.shellMenus.close()
     bg.views.loadURL('active', url) // reload the page
   }
 }
