@@ -81,7 +81,6 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
-        ${this.createBtn}
         ${this.profileMenuBtn}
         ${this.browserMenuBtn}
       </div>
@@ -191,14 +190,6 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get createBtn () {
-    return html`
-      <button @click=${this.onClickCreate}>
-        <span class="fas fa-plus"></span>
-      </button>
-    `
-  }
-
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
@@ -245,10 +236,6 @@ class ShellWindowNavbar extends LitElement {
   onClickWatchlistBtn (e) {
     this.numWatchlistNotifications = 0
     bg.views.createTab('beaker://watchlist', {setActive: true})
-  }
-
-  async onClickCreate (e) {
-    bg.views.createTab('beaker://library/?view=new-website', {setActive: true})
   }
 
   async onClickProfileMenu (e) {
