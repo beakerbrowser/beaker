@@ -72,7 +72,7 @@ export function reposition (parentWindow) {
         x: parentBounds.x + win.boundsOpt.right - 260,
         y: parentBounds.y + win.boundsOpt.top,
         width: 260,
-        height: 110
+        height: 72
       })
     } else if (win.menuId === 'create') {
       win.setBounds({

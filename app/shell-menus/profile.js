@@ -25,14 +25,11 @@ class ProfileMenu extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="menu-item user-info"  @click=${e => this.onOpenPage(e, `intent:unwalled.garden/view-profile?url=${encodeURIComponent(this.profile.url)}`)}>
+      <div class="menu-item user-info"  @click=${e => this.onOpenPage(e, this.profile.url)}>
         <div class="thumb"><img src="asset:thumb:${_get(this.profile, 'url')}"></div>
         <div class="details">
           <h2 class="title">${_get(this.profile, 'title') || 'Anonymous'}</h2>
         </div>
-      </div>
-      <div class="menu-item" @click=${e => this.onOpenPage(e, this.profile.url)}>
-        <i class="far fa-id-card"></i> Your personal website
       </div>
     `
   }
@@ -55,8 +52,8 @@ ProfileMenu.styles = [commonCSS, css`
   align-items: center;
   height: auto;
   padding: 10px 0;
-  border-bottom: 1px solid #d4d7dc;
-  margin-bottom: 5px;
+  /*border-bottom: 1px solid #d4d7dc;
+  margin-bottom: 5px;*/
 }
 
 .thumb {
