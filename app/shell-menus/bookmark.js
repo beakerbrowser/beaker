@@ -101,26 +101,14 @@ class BookmarkMenu extends LitElement {
             >
           </div>
           <div class="other-options">
-            <h3>Other options</h3>
-
-            <div class="input-group">
-              <label>Visibility</label>
-              <div class="privacy">
-                <input @click=${e => this.onSetPublic(e, false)} type="radio" id="privacy-private" name="privacy" value="private" ?checked=${!this.isPublic}>
-                <label class="btn" for="privacy-private">
-                  <i class="fa fa-lock"></i>
-                  Private
-                </label>
-                <input @click=${e => this.onSetPublic(e, true)} type="radio" id="privacy-public" name="privacy" value="public" ?checked=${this.isPublic}>
-                <label class="btn" for="privacy-public">
-                  <i class="fa fa-globe"></i>
-                  Public
-                </label>
-              </div>
-            </div>
+            <label class="toggle">
+              <span class="text"><i class="fas fa-fw fa-broadcast-tower"></i> Share publicly</span>
+              <input @change=${this.onChangePublic} ?checked=${this.isPublic || false} type="checkbox" name="isPublic" value="isPublic">
+              <div class="switch"></div>
+            </label>
 
             <label class="toggle">
-              <span class="text">Pin to start page</span>
+              <span class="text"><i class="fas fa-fw fa-thumbtack"></i> Pin to start page</span>
               <input @change=${this.onChangePinned} ?checked=${this.pinned || false} type="checkbox" name="pinned" value="pinned">
               <div class="switch"></div>
             </label>
@@ -186,8 +174,8 @@ class BookmarkMenu extends LitElement {
     this.pinned = e.target.checked
   }
 
-  onSetPublic (e, v) {
-    this.isPublic = v
+  onChangePublic (e, v) {
+    this.isPublic = e.target.checked
   }
 }
 BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`
@@ -244,6 +232,10 @@ form {
   margin-bottom: 2px;
 }
 
+.other-options {
+  margin-top: 20px;
+}
+
 .other-options .input-group {
   flex-direction: row;
   align-items: center;
@@ -254,6 +246,17 @@ form {
   margin-right: auto;
   font-weight: normal;
   font-size: 13px;
+}
+
+.other-options .toggle {
+  border-top: 1px solid #ddd;
+  margin: 0 -20px;
+  padding: 12px 20px;
+  line-height: 1;
+}
+
+.other-options .toggle:hover {
+  background: #fafafa;
 }
 
 .input-group input,
@@ -273,58 +276,11 @@ form {
   color: rgba(0, 0, 0, 0.75);
 }
 
-.privacy {
-  display: flex;
-  width: 150px;
-}
-
-.privacy input {
-  opacity: 0;
-  width: 0;
-  margin: 0;
-  padding: 0;
-}
-
-.privacy label.btn {
-  display: inline-block;
-  width: 100%;
-  border-radius: 4px 0 0 4px;
-  margin-right: 0;
-  text-align: center;
-  height: 24px;
-  line-height: 24px;
-  font-size: 11px;
-  color: #777;
-}
-
-.privacy input:checked + label {
-  background: #e8e8e8;
-  border-color: #cecece;
-  -webkit-font-smoothing: antialiased;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.1);
-  color: #333;
-}
-
-.privacy label.btn i {
-  margin-right: 2px;
-  font-size: 9px;
-  line-height: inherit;
-}
-
-.privacy label.btn:not(:last-child) {
-  border-right: 0;
-}
-
-.privacy label.btn:last-child {
-  border-left: 0;
-  border-radius: 0 4px 4px 0;
-}
-
 .buttons {
   display: flex;
   justify-content: flex-end;
-  padding-top: 10px;
-  margin-top: 15px;
+  padding: 12px 20px;
+  margin: 0 -20px;
   border-top: 1px solid #ddd;
   text-align: right;
 }
