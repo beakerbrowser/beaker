@@ -193,7 +193,7 @@ async function setup () {
   try {
     let urlp = new URL(url)
     if (urlp.pathname && !urlp.pathname.endsWith('/')) {
-      models.setActive(await findArchiveNodeAsync(urlp.pathname))
+      models.setActive(await findArchiveNodeAsync(urlp.pathname, true))
     }
   } catch (e) {
     // ignore
@@ -320,13 +320,14 @@ function findArchiveNode (path) {
   return node
 }
 
-async function findArchiveNodeAsync (path) {
+async function findArchiveNodeAsync (path, expandToPath = false) {
   var node = archiveFsRoot
   var pathParts = path.split(/[\\\/]/g)
   for (let filename of pathParts) {
     if (filename.length === 0) continue // first item in array might be empty
     if (!node || !node.isContainer) return null // node not found (we ran into a file prematurely)
     await node.readData() // load latest filetree
+    if (expandToPath) node.isExpanded = true
     node.sort()
     node = node._files.find(n => n.name === filename) // move to next child in the tree
   }
