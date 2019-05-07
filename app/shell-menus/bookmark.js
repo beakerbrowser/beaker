@@ -250,13 +250,14 @@ form {
 
 .other-options .toggle {
   border-top: 1px solid #ddd;
+  background: #fafafa;
   margin: 0 -20px;
   padding: 12px 20px;
   line-height: 1;
 }
 
 .other-options .toggle:hover {
-  background: #fafafa;
+  background: #eee;
 }
 
 .input-group input,
