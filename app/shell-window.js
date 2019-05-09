@@ -19,6 +19,7 @@ class ShellWindowUI extends LitElement {
       tabs: {type: Array},
       isUpdateAvailable: {type: Boolean},
       numWatchlistNotifications: {type: Number},
+      userUrl: {type: String},
       userThumbUrl: {type: String},
       isFullscreen: {type: Boolean}
     }
@@ -29,6 +30,7 @@ class ShellWindowUI extends LitElement {
     this.tabs = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
+    this.userUrl = ''
     this.userThumbUrl = 'asset:thumb:default'
     this.isFullscreen = false
     this.activeTabIndex = -1
@@ -85,7 +87,10 @@ class ShellWindowUI extends LitElement {
       this.stateHasChanged()
     })
     this.isUpdateAvailable = bg.beakerBrowser.getInfo().updater.state === 'downloaded'
-    bg.beakerBrowser.getUserSession().then(user => { this.userThumbUrl = `asset:thumb:${user.url}` })
+    bg.beakerBrowser.getUserSession().then(user => {
+      this.userUrl = user.url
+      this.userThumbUrl = `asset:thumb:${user.url}`
+    })
   }
 
   get activeTab () {
@@ -115,6 +120,7 @@ class ShellWindowUI extends LitElement {
         .activeTab=${this.activeTab}
         ?is-update-available=${this.isUpdateAvailable}
         num-watchlist-notifications="${this.numWatchlistNotifications}"
+        user-url="${this.userUrl}"
         user-thumb-url="${this.userThumbUrl}"
       ></shell-window-navbar>
     `

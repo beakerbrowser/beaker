@@ -14,6 +14,7 @@ class ShellWindowNavbar extends LitElement {
       activeTab: {type: Object},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
+      userUrl: {type: String, attribute: 'user-url'},
       userThumbUrl: {type: String, attribute: 'user-thumb-url'},
       isProfileMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
@@ -239,15 +240,16 @@ class ShellWindowNavbar extends LitElement {
   }
 
   async onClickProfileMenu (e) {
-    this.isProfileMenuOpen = true
-    var rect = e.currentTarget.getClientRects()[0]
-    await bg.views.toggleMenu('profile', {
-      bounds: {
-        top: (rect.bottom|0),
-        right: (rect.right|0)
-      }
-    })
-    this.isProfileMenuOpen = false    
+    bg.views.createTab(this.userUrl, {setActive: true})
+    // this.isProfileMenuOpen = true
+    // var rect = e.currentTarget.getClientRects()[0]
+    // await bg.views.toggleMenu('profile', {
+    //   bounds: {
+    //     top: (rect.bottom|0),
+    //     right: (rect.right|0)
+    //   }
+    // })
+    // this.isProfileMenuOpen = false    
   }
 
   async onClickBrowserMenu (e) {
