@@ -15,12 +15,12 @@ export default function registerContextMenu () {
       const isDat = props.pageURL.startsWith('dat://')
       const isMisspelled = props.selectionText && beakerCore.spellChecker.isMisspelled(props.selectionText)
       const spellingSuggestions = isMisspelled && beakerCore.spellChecker.getSuggestions(props.selectionText).slice(0, 5)
-      var isOwner = false
-      if (isDat) {
-        let key = await beakerCore.dat.dns.resolveName(props.pageURL)
-        let archive = beakerCore.dat.library.getArchive(key)
-        isOwner = archive && archive.writable
-      }
+      // var isOwner = false
+      // if (isDat) {
+      //   let key = await beakerCore.dat.dns.resolveName(props.pageURL)
+      //   let archive = beakerCore.dat.library.getArchive(key)
+      //   isOwner = archive && archive.writable
+      // }
 
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
@@ -47,8 +47,11 @@ export default function registerContextMenu () {
 
       // links
       if (props.linkURL && props.mediaType === 'none') {
-        menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => viewManager.create(win, props.linkURL) })
+        menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => viewManager.create(win, props.linkURL, {setActive: true}) })
         menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
+        if (isDat) {
+          menuItems.push({ label: 'Explore Link Files', click: (item, win) => viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.linkURL)}`, {setActive: true}) })
+        }
         menuItems.push({ type: 'separator' })
       }
 
@@ -149,7 +152,13 @@ export default function registerContextMenu () {
       // view/edit source
       if (isDat) {
         menuItems.push({
-          label: isOwner ? 'Edit Source' : 'View Source',
+          label: 'Explore Site Files',
+          click: (item, win) => {
+            viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.pageURL)}`, {setActive: true})
+          }
+        })
+        menuItems.push({
+          label: 'View Site Source',
           click: (item, win) => {
             viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
           }
