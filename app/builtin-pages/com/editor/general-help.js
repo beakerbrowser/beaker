@@ -107,7 +107,7 @@ function renderReadme (archiveInfo, readmeMd) {
   }
 
   var markdownRenderer = createMd({
-    hrefMassager (href) {
+    hrefMassager (href, context) {
       var isRelative = href.startsWith('/') || href.startsWith('./')
       if (!isRelative && href.indexOf(':') === -1) {
         isRelative = true
@@ -116,6 +116,12 @@ function renderReadme (archiveInfo, readmeMd) {
         if (href.startsWith('./')) href = href.slice(2)
         if (href.startsWith('/')) href = href.slice(1)
         return `${archiveInfo.url}/${href}`
+      }
+      if (context === 'img') {
+        if (!href.startsWith(archiveInfo.url)) {
+          // disable remote embeds
+          return null
+        }
       }
       return href
     }

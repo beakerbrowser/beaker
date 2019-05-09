@@ -35,14 +35,18 @@ export default function create ({allowHTML, useHeadingAnchors, hrefMassager} = {
     let orgLinkOpen = md.renderer.rules.link_open
     md.renderer.rules.link_open = function (tokens, idx, options /* env */) {
       var i = tokens[idx].attrs.findIndex(attr => attr[0] === 'href')
-      tokens[idx].attrs[i][1] = hrefMassager(tokens[idx].attrs[i][1])
+      let href = hrefMassager(tokens[idx].attrs[i][1], 'a')
+      if (!href) return ''
+      tokens[idx].attrs[i][1] = href
       if (orgLinkOpen) return orgLinkOpen.apply(null, arguments)
       return md.renderer.renderToken.apply(md.renderer, arguments)
     }
     let orgImage = md.renderer.rules.image
     md.renderer.rules.image = function (tokens, idx, options /* env */) {
       var i = tokens[idx].attrs.findIndex(attr => attr[0] === 'src')
-      tokens[idx].attrs[i][1] = hrefMassager(tokens[idx].attrs[i][1])
+      let src = hrefMassager(tokens[idx].attrs[i][1], 'img')
+      if (!src) return ''
+      tokens[idx].attrs[i][1] = src
       if (orgImage) return orgImage.apply(null, arguments)
       return md.renderer.renderToken.apply(md.renderer, arguments)
     }
