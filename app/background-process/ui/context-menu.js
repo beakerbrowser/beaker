@@ -158,7 +158,7 @@ export default function registerContextMenu () {
           }
         })
         menuItems.push({
-          label: 'View Site Source',
+          label: 'Edit Site Source',
           click: (item, win) => {
             viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
           }
