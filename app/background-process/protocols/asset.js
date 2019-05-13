@@ -30,8 +30,8 @@ export function setup () {
     if (err) { console.error('Failed to load default favicon', path.join(__dirname, './assets/img/default-favicon.png'), err) }
     if (buf) { DEFAULTS.favicon.data = buf }
   })
-  fs.readFile(path.join(__dirname, './assets/img/default-user-thumb.jpg'), (err, buf) => {
-    if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-user-thumb.jpg'), err) }
+  fs.readFile(path.join(__dirname, './assets/img/default-thumb.jpg'), (err, buf) => {
+    if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-thumb.jpg'), err) }
     if (buf) { DEFAULTS.thumb.data = buf }
   })
   fs.readFile(path.join(__dirname, './assets/img/default-cover.jpg'), (err, buf) => {
@@ -59,9 +59,6 @@ export function setup () {
     // if beaker://, pull from hard-coded assets
     if (url.startsWith('beaker://')) {
       let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
-      if (url.startsWith('beaker://library/?view=addressbook')) name = 'addressbook'
-      if (url.startsWith('beaker://library/?view=bookmarks')) name = 'bookmarks'
-      if (url.startsWith('beaker://library/?view=websites')) name = 'websites'
       return fs.readFile(path.join(__dirname, `./assets/img/favicons/${name}.png`), (err, buf) => {
         if (buf) cb({mimeType: 'image/png', data: buf})
         else cb(DEFAULTS[asset])

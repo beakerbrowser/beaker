@@ -152,13 +152,13 @@ export default function registerContextMenu () {
       // view/edit source
       if (isDat) {
         menuItems.push({
-          label: 'Explore Site Files',
+          label: 'Explore Files',
           click: (item, win) => {
             viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.pageURL)}`, {setActive: true})
           }
         })
         menuItems.push({
-          label: 'Edit Site Source',
+          label: 'Edit Source',
           click: (item, win) => {
             viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
           }
