@@ -753,7 +753,7 @@ export function findContainingWindow (browserView) {
     }
   }
   for (let winId in preloadedNewTabViews) {
-    if (preloadedNewTabViews[winId].browserView === view) {
+    if (preloadedNewTabViews[winId].browserView === browserView) {
       return preloadedNewTabViews[winId].browserWindow
     }
   }
