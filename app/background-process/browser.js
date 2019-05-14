@@ -94,6 +94,8 @@ export async function setup () {
       title: 'Anonymous',
       type: 'unwalled.garden/person'
     })
+    let archive = beakerCore.dat.library.getArchive(newUserUrl)
+    await archive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
     await beakerCore.users.add(newUserUrl)
   }
 
