@@ -2,102 +2,90 @@
  * Location Bar
  *
  * NOTES
- * - There can only ever be one Location Bar window for a given browser window
- * - Location Bar windows are created with each browser window and then shown/hidden as needed
- * - When unfocused, the Location Bar window is hidden (it's meant to act as a popup menu)
+ * - There can only ever be one Location Bar view for a given browser window
+ * - Location Bar views are created with each browser window and then shown/hidden as needed
+ * - When unfocused, the Location Bar view is hidden (it's meant to act as a popup menu)
  */
 import path from 'path'
 import Events from 'events'
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import locationBarRPCManifest from '../../rpc-manifests/location-bar'
 import * as viewManager from '../view-manager'
-
-const WIDTH = 800
-const HEIGHT = 310
 
 // globals
 // =
 
 var events = new Events()
-var windows = {} // map of {[parentWindow.id] => BrowserWindow}
+var views = {} // map of {[parentWindow.id] => BrowserView}
 
 // exported api
 // =
 
 export function setup (parentWindow) {
-  var win = windows[parentWindow.id] = new BrowserWindow({
-    width: WIDTH,
-    height: HEIGHT,
-    parent: parentWindow,
-    frame: false,
-    resizable: false,
-    maximizable: false,
-    show: false,
-    fullscreenable: false,
-    acceptFirstMouse: true,
+  var view = views[parentWindow.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
       preload: path.join(__dirname, 'location-bar.build.js')
     }
   })
-  win.webContents.on('console-message', (e, level, message) => {
+  view.setAutoResize({width: true, height: false})
+  view.webContents.on('console-message', (e, level, message) => {
     console.log('Location-Bar window says:', message)
   })
-  win.loadURL('beaker://location-bar/')
-  win.on('blur', () => hide(parentWindow))
+  view.webContents.loadURL('beaker://location-bar/')
 }
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
     get(parentWindow).close()
-    delete windows[parentWindow.id]
+    delete views[parentWindow.id]
   }
 }
 
 export function get (parentWindow) {
-  return windows[parentWindow.id]
+  return views[parentWindow.id]
 }
 
 export function reposition (parentWindow) {
-  var win = get(parentWindow)
-  if (win && win.boundsOpt) {
-    var parentBounds = parentWindow.getBounds()
-    win.setBounds({
-      x: parentBounds.x + win.boundsOpt.x,
-      y: parentBounds.y + win.boundsOpt.y,
-      width: win.boundsOpt.width,
-      height: 588
-    })
-  }
+  // noop
 }
 
 export async function show (parentWindow, opts) {
-  var win = get(parentWindow)
-  if (win) {
-    win.boundsOpt = opts && opts.bounds
-    reposition(parentWindow)
-    win.webContents.executeJavaScript(`setup()`)
-    win.show()
-    win.focus()
+  var view = get(parentWindow)
+  if (view) {
+    view.webContents.executeJavaScript(`setup()`)
+    parentWindow.addBrowserView(view)
+    view.setBounds({
+      x: opts.bounds.x,
+      y: opts.bounds.y,
+      width: opts.bounds.width,
+      height: 588
+    })
+    view.isVisible = true
+    view.webContents.focus()
 
     // await till hidden
     await new Promise(resolve => {
+      // TODO confirm this works
       events.once('hide', resolve)
     })
   }
 }
 
 export function hide (parentWindow) {
-  if (get(parentWindow)) {
-    get(parentWindow).hide()
+  var view = get(parentWindow)
+  if (view) {
+    parentWindow.removeBrowserView(view)
+    view.isVisible = false
+    events.emit('hide') // TODO confirm this works
   }
 }
 
 export async function runCmd (parentWindow, cmd, opts) {
-  var win = get(parentWindow)
-  if (win) {
-    if (!win.isVisible()) {
+  var view = get(parentWindow)
+  if (view) {
+    if (!view.isVisible) {
       if (cmd === 'set-value') {
         // show first
         show(parentWindow, opts)
@@ -105,7 +93,7 @@ export async function runCmd (parentWindow, cmd, opts) {
         return
       }
     }
-    return win.webContents.executeJavaScript(`command("${cmd}", ${JSON.stringify(opts)})`)
+    return view.webContents.executeJavaScript(`command("${cmd}", ${JSON.stringify(opts)})`)
   }
 }
 
@@ -127,17 +115,17 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
     var win = getParentWindow(this.sender)
     hide(win) // always close the location bar
     viewManager.getActive(win).loadURL(url)
-    win.webContents.send('command', 'unfocus-location') // we have to manually unfocus the location bar
+    get(win).webContents.send('command', 'unfocus-location') // we have to manually unfocus the location bar
   },
 
   async resizeSelf (dimensions) {
-    var win = BrowserWindow.fromWebContents(this.sender)
+    var view = BrowserWindow.fromWebContents(this.sender)
     if (process.platform === 'win32') {
       // on windows, add space for the border
       if (dimensions.width) dimensions.width += 2
       if (dimensions.height) dimensions.height += 2
     }
-    win.setBounds(dimensions)
+    view.setBounds(dimensions)
   }
 })
 
@@ -145,5 +133,11 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
 // =
 
 function getParentWindow (sender) {
-  return BrowserWindow.fromWebContents(sender).getParentWindow()
+  var view = BrowserView.fromWebContents(sender)
+  for (let id in views) {
+    if (views[id] === view) {
+      return BrowserWindow.fromId(+id)
+    }
+  }
+  throw new Error('Parent window not found')
 }

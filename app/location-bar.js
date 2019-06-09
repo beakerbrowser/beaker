@@ -96,6 +96,7 @@ class LocationBar extends LitElement {
           @input=${this.onInputLocation}
           @keydown=${this.onKeydownLocation}
           @contextmenu=${this.onContextMenu}
+          @blur=${this.onInputBlur}
         >
         <div class="autocomplete-results">
           ${repeat(this.autocompleteResults, (r, i) => this.renderAutocompleteResult(r, i))}
@@ -280,6 +281,10 @@ class LocationBar extends LitElement {
     bg.views.showLocationBarContextMenu('active')
   }
 
+  onInputBlur (e) {
+    setTimeout(() => bg.locationBar.close(), 100)
+  }
+
   onClickResult (e) {
     this.selectResult(this.autocompleteResults[e.currentTarget.dataset.resultIndex])
   }
@@ -364,7 +369,7 @@ class LocationBar extends LitElement {
 LocationBar.styles = [css`
 .wrapper {
   background: #fff;
-  padding-bottom: 4px; /* add a little breathing room to the bottom */
+  border: 1px solid #ccc;
 }
 
 input {
@@ -389,7 +394,7 @@ input:focus {
 }
 
 .autocomplete-results {
-  height: calc(100vh - 98px);
+  height: calc(100vh - 104px);
   overflow-y: auto;
 }
 
@@ -398,7 +403,7 @@ input:focus {
   align-items: center;
   padding: 6px 12px;
   line-height: 20px;
-  width: calc(100vw - 24px);
+  width: calc(100vw - 26px);
   overflow: hidden;
 }
 
