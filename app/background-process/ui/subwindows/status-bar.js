@@ -3,85 +3,71 @@
  *
  * NOTES
  * - There can only ever be one Status Bar window for a given browser window
- * - Status Bar windows are created with each browser window and then shown/hidden as needed
+ * - Status Bar views are created with each browser window and then shown/hidden as needed
  */
-import { BrowserWindow } from 'electron'
+import { BrowserView } from 'electron'
 
 const WIDTH = 400
 const HEIGHT = 24
-const IS_DARWIN = process.platform === 'darwin'
 
 // globals
 // =
 
-var windows = {} // map of {[parentWindow.id] => BrowserWindow}
+var views = {} // map of {[parentWindow.id] => BrowserView}
 
 // exported api
 // =
 
 export function setup (parentWindow) {
-  var win = windows[parentWindow.id] = new BrowserWindow({
-    width: WIDTH,
-    height: HEIGHT,
-    parent: parentWindow,
-    frame: false,
-    transparent: true,
-    resizable: false,
-    maximizable: false,
-    show: false,
-    fullscreenable: false,
-    hasShadow: false,
-    focusable: false,
+  var view = views[parentWindow.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8'
     }
   })
-  win.setIgnoreMouseEvents(true)
-  win.loadFile('status-bar.html')
-  if (IS_DARWIN) win.setOpacity(0)
-  win.webContents.executeJavaScript(`set(false)`)
+  view.webContents.loadFile('status-bar.html')
+  view.webContents.executeJavaScript(`set(false)`)
+  show(parentWindow)
 }
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).close()
-    delete windows[parentWindow.id]
+    get(parentWindow).destroy()
+    delete views[parentWindow.id]
   }
 }
 
 export function get (parentWindow) {
-  return windows[parentWindow.id]
+  return views[parentWindow.id]
 }
 
 export function reposition (parentWindow) {
-  var win = get(parentWindow)
-  if (win) {
-    var {x, y, height} = parentWindow.getBounds()
-    win.setBounds({x, y: y + height - HEIGHT})
+  var view = get(parentWindow)
+  if (view) {
+    var {height} = parentWindow.getContentBounds()
+    view.setBounds({x: 0, y: height - HEIGHT, width: WIDTH, height: HEIGHT})
   }
 }
 
 export function show (parentWindow) {
-  var win = get(parentWindow)
-  if (win) {
+  var view = get(parentWindow)
+  if (view) {
+    parentWindow.addBrowserView(view)
     reposition(parentWindow)
-    if (!win.isVisible()) win.showInactive()
-    if (IS_DARWIN) win.setOpacity(1)
   }
 }
 
 export function hide (parentWindow) {
-  var win = get(parentWindow)
-  if (win) {
-    if (IS_DARWIN) win.setOpacity(0)
+  var view = get(parentWindow)
+  if (view) {
+    parentWindow.removeBrowserView(view)
   }
 }
 
 export function set (parentWindow, value) {
-  var win = get(parentWindow)
-  if (win) {
+  var view = get(parentWindow)
+  if (view) {
     if (value) show(parentWindow)
-    win.webContents.executeJavaScript(`set(${JSON.stringify(value)})`)
+    view.webContents.executeJavaScript(`set(${JSON.stringify(value)})`)
     if (!value) hide(parentWindow)
   }
 }

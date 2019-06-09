@@ -240,7 +240,7 @@ class View {
     this.isActive = true
 
     const win = this.browserWindow
-    win.setBrowserView(this.browserView)
+    win.addBrowserView(this.browserView)
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
 
@@ -248,11 +248,8 @@ class View {
     this.webContents.focus()
   }
 
-  deactivate (dontNullTheView = false) {
-    if (!dontNullTheView && this.isActive) {
-      this.browserWindow.setBrowserView(null)
-    }
-
+  deactivate () {
+    this.browserWindow.removeBrowserView(this.browserView)
     if (this.isActive) {
       shellMenus.hide(this.browserWindow) // this will close the location menu if it's open
     }
@@ -885,7 +882,7 @@ export function setActive (win, view) {
   // deactivate the old view
   var active = getActive(win)
   if (active) {
-    active.deactivate(true)
+    active.deactivate()
   }
 
   // activate the new view
