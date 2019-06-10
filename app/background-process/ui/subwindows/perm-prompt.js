@@ -2,21 +2,23 @@
  * Perm Prompt
  *
  * NOTES
- * - Perm Prompt windows are created as-needed, and desroyed when not in use
- * - Perm Prompt windows are attached to individual BrowserView instances
- * - Perm Prompt windows are shown and hidden based on whether its owning BrowserView is visible
+ * - Perm Prompt views are created as-needed, and desroyed when not in use
+ * - Perm Prompt views are attached to individual BrowserView instances
+ * - Perm Prompt views are shown and hidden based on whether its owning BrowserView is visible
  */
 
 import path from 'path'
-import {BrowserWindow} from 'electron'
+import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import * as viewManager from '../view-manager'
 import permPromptRPCManifest from '../../rpc-manifests/perm-prompt'
+import { findWebContentsParentWindow } from '../../../lib/electron'
 
 // globals
 // =
 
-var windows = {} // map of {[parentView.id] => BrowserWindow}
+const MARGIN_SIZE = 10
+var views = {} // map of {[parentView.id] => BrowserView}
 
 // exported api
 // =
@@ -27,9 +29,9 @@ export function setup (parentWindow) {
 export function destroy (parentWindow) {
   // destroy all under this window
   for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in windows) {
-      windows[view.id].close()
-      delete windows[view.id]
+    if (view.id in views) {
+      views[view.id].destroy()
+      delete views[view.id]
     }
   }
 }
@@ -37,71 +39,72 @@ export function destroy (parentWindow) {
 export function reposition (parentWindow) {
   // reposition all under this window
   for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in windows) {
-      setBounds(windows[view.id], parentWindow)
+    if (view.id in views) {
+      setBounds(views[view.id], parentWindow)
     }
   }
 }
 
 export async function create (parentWindow, parentView, params) {
   // make sure a prompt window doesnt already exist
-  if (parentView.id in windows) {
+  if (parentView.id in views) {
     return false // abort
   }
 
   // create the window
-  var win = windows[parentView.id] = new BrowserWindow({
-    parent: parentWindow,
-    frame: false,
-    resizable: false,
-    maximizable: false,
-    show: true,
-    fullscreenable: false,
+  var view = views[parentView.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
       preload: path.join(__dirname, 'perm-prompt.build.js')
     }
   })
-  setBounds(win, parentWindow)
-  win.webContents.on('console-message', (e, level, message) => {
+  parentWindow.addBrowserView(view)
+  setBounds(view, parentWindow)
+  view.webContents.on('console-message', (e, level, message) => {
     console.log('Perm-Prompt window says:', message)
   })
-  win.loadURL('beaker://perm-prompt/')
+  view.webContents.loadURL('beaker://perm-prompt/')
+  view.webContents.focus()
 
   // run the prompt flow
   var decision = false
   try {
-    decision = await win.webContents.executeJavaScript(`runPrompt(${JSON.stringify(params)})`)
+    decision = await view.webContents.executeJavaScript(`runPrompt(${JSON.stringify(params)})`)
   } catch (e) {
     console.error('Failed to run permission prompt', e)
   }
 
   // destroy the window
-  win.close()
-  delete windows[parentView.id]
+  parentWindow.removeBrowserView(view)
+  view.destroy()
+  delete views[parentView.id]
   return decision
 }
 
 export function get (parentView) {
-  return windows[parentView.id]
+  return views[parentView.id]
 }
 
 export function show (parentView) {
-  if (parentView.id in windows) {
-    windows[parentView.id].show()
+  if (parentView.id in views) {
+    var win = viewManager.findContainingWindow(parentView)
+    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
+    if (win) win.addBrowserView(views[parentView.id])
   }
 }
 
 export function hide (parentView) {
-  if (parentView.id in windows) {
-    windows[parentView.id].hide()
+  if (parentView.id in views) {
+    var win = viewManager.findContainingWindow(parentView)
+    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
+    if (win) win.removeBrowserView(views[parentView.id])
   }
 }
 
 export function close (parentView) {
-  if (parentView.id in windows) {
-    windows[parentView.id].close()
-    delete windows[parentView.id]
+  if (parentView.id in views) {
+    views[parentView.id].destroy()
+    delete views[parentView.id]
   }
 }
 
@@ -110,37 +113,30 @@ export function close (parentView) {
 
 rpc.exportAPI('background-process-perm-prompt', permPromptRPCManifest, {
   async createTab (url) {
-    var win = getParentWindow(this.sender)
+    var win = findWebContentsParentWindow(this.sender)
     viewManager.create(win, url, {setActive: true})
   },
 
   async resizeSelf (dimensions) {
-    var win = BrowserWindow.fromWebContents(this.sender)
-    var [width, height] = win.getSize()
-    win.setSize(dimensions.width || width, dimensions.height || height)
+    var view = BrowserView.fromWebContents(this.sender)
+    var parentWindow = findWebContentsParentWindow(this.sender)
+    setBounds(view, parentWindow, dimensions)
+    // var win = BrowserWindow.fromWebContents(this.sender)
+    // var [width, height] = win.getSize()
+    // win.setSize(dimensions.width || width, dimensions.height || height)
   }
 })
 
 // internal methods
 // =
 
-function setBounds (win, parentWindow) {
-  var parentBounds = parentWindow.getBounds()
-  var width = 300
-  var height = 118
-  if (process.platform === 'win32') {
-    // on windows, add space for the border
-    width += 2
-    height += 3
-  }
-  win.setBounds({
-    x: parentBounds.x + 100,
-    y: parentBounds.y + 74,
-    width,
-    height
+function setBounds (view, parentWindow, {width, height} = {}) {
+  width = width || 300
+  height = height || 118
+  view.setBounds({
+    x: 100 - MARGIN_SIZE,
+    y: 74,
+    width: width + (MARGIN_SIZE * 2),
+    height: height + MARGIN_SIZE
   })
-}
-
-function getParentWindow (sender) {
-  return BrowserWindow.fromWebContents(sender).getParentWindow()
 }

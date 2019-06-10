@@ -146,14 +146,6 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
     var view = BrowserView.fromWebContents(this.sender)
     var parentWindow = findWebContentsParentWindow(this.sender)
     setBounds(view, parentWindow, dimensions)
-    // var {width, height} = dimensions
-    // var parentBounds = parentWindow.getContentBounds()
-    // view.setBounds({
-    //   x: Math.round(parentBounds.width / 2) - Math.round(width / 2), // centered
-    //   y: 74,
-    //   width,
-    //   height
-    // })
   }
 })
 
