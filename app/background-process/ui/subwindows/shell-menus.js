@@ -19,6 +19,7 @@ import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 // globals
 // =
 
+const MARGIN_SIZE = 10
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -55,9 +56,8 @@ export function reposition (parentWindow) {
     var parentBounds = parentWindow.getContentBounds()
     const setBounds = (b) => {
       // HACK workaround the lack of view.getBounds() -prf
-      b.height += 2 // add 2px for the border
       view.currentBounds = b
-      view.setBounds(b)
+      view.setBounds(adjustBoundsForMargin(b))
     }
     if (view.menuId === 'browser') {
       setBounds({
@@ -181,8 +181,7 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
     var view = BrowserView.fromWebContents(this.sender)
     // HACK view.currentBounds is set in reposition() -prf
     dimensions = Object.assign({}, view.currentBounds || {}, dimensions)
-    dimensions.height += 2 // add 2px for the border
-    view.setBounds(dimensions)
+    view.setBounds(adjustBoundsForMargin(dimensions))
     view.currentBounds = dimensions
   },
 
@@ -195,6 +194,15 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
 
 // internal methods
 // =
+
+function adjustBoundsForMargin (bounds) {
+  return {
+    x: bounds.x - MARGIN_SIZE,
+    y: bounds.y,
+    width: bounds.width + (MARGIN_SIZE * 2),
+    height: bounds.height + MARGIN_SIZE
+  }
+}
 
 function getParentWindow (sender) {
   var view = BrowserView.fromWebContents(sender)
