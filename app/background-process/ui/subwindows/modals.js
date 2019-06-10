@@ -2,22 +2,24 @@
  * Modal
  *
  * NOTES
- * - Modal windows are created as-needed, and desroyed when not in use
- * - Modal windows are attached to individual BrowserView instances
- * - Modal windows are shown and hidden based on whether its owning BrowserView is visible
+ * - Modal views are created as-needed, and desroyed when not in use
+ * - Modal views are attached to individual BrowserView instances
+ * - Modal views are shown and hidden based on whether its owning BrowserView is visible
  */
 
 import path from 'path'
-import {app, BrowserWindow, BrowserView} from 'electron'
+import { app, BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
-import {ModalActiveError} from 'beaker-error-constants'
+import { ModalActiveError } from 'beaker-error-constants'
 import * as viewManager from '../view-manager'
 import modalsRPCManifest from '../../rpc-manifests/modals'
+import { findWebContentsParentWindow } from '../../../lib/electron'
 
 // globals
 // =
 
-var windows = {} // map of {[parentView.id] => BrowserWindow}
+const MARGIN_SIZE = 10
+var views = {} // map of {[parentView.id] => BrowserView}
 
 // exported api
 // =
@@ -34,9 +36,9 @@ export function setup (parentWindow) {
 export function destroy (parentWindow) {
   // destroy all under this window
   for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in windows) {
-      windows[view.id].close()
-      delete windows[view.id]
+    if (view.id in views) {
+      views[view.id].destroy()
+      delete views[view.id]
     }
   }
 }
@@ -44,8 +46,8 @@ export function destroy (parentWindow) {
 export function reposition (parentWindow) {
   // reposition all under this window
   for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in windows) {
-      setBounds(windows[view.id], parentWindow)
+    if (view.id in views) {
+      setBounds(views[view.id], parentWindow)
     }
   }
 }
@@ -55,9 +57,9 @@ export async function create (webContents, modalName, params = {}) {
   var parentWindow = BrowserWindow.fromWebContents(webContents)
   var parentView = BrowserView.fromWebContents(webContents)
   if (parentView && !parentWindow) {
-    // if there's no window, then a web page created the prompt
+    // if there's no window, then a web page or "sub-window" created the prompt
     // use its containing window
-    parentWindow = viewManager.findContainingWindow(parentView)
+    parentWindow = findWebContentsParentWindow(parentView.webContents)
   } else if (!parentView) {
     // if there's no view, then the shell window created the prompt
     // attach it to the active view
@@ -66,42 +68,38 @@ export async function create (webContents, modalName, params = {}) {
   }
 
   // make sure a prompt window doesnt already exist
-  if (parentView.id in windows) {
+  if (parentView.id in views) {
     throw new ModalActiveError()
   }
 
-  // create the window
-  var win = windows[parentView.id] = new BrowserWindow({
-    parent: parentWindow,
-    frame: false,
-    resizable: false,
-    maximizable: false,
-    show: true,
-    fullscreenable: false,
+  // create the view
+  var view = views[parentView.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
       preload: path.join(__dirname, 'modals.build.js')
     }
   })
-  setBounds(win, parentWindow)
-  win.webContents.on('console-message', (e, level, message) => {
+  parentWindow.addBrowserView(view)
+  setBounds(view, parentWindow)
+  view.webContents.on('console-message', (e, level, message) => {
     console.log('Modals window says:', message)
   })
-  win.loadURL('beaker://modals/')
-  win.focus()
+  view.webContents.loadURL('beaker://modals/')
+  view.webContents.focus()
 
   // run the modal flow
   var result
   var err
   try {
-    result = await win.webContents.executeJavaScript(`runModal("${modalName}", ${JSON.stringify(params)})`)
+    result = await view.webContents.executeJavaScript(`runModal("${modalName}", ${JSON.stringify(params)})`)
   } catch (e) {
     err = e
   }
 
   // destroy the window
-  win.close()
-  delete windows[parentView.id]
+  parentWindow.removeBrowserView(view)
+  view.destroy()
+  delete views[parentView.id]
 
   // return/throw
   if (err) throw err
@@ -109,25 +107,29 @@ export async function create (webContents, modalName, params = {}) {
 }
 
 export function get (parentView) {
-  return windows[parentView.id]
+  return views[parentView.id]
 }
 
 export function show (parentView) {
-  if (parentView.id in windows) {
-    windows[parentView.id].show()
+  if (parentView.id in views) {
+    var win = viewManager.findContainingWindow(parentView)
+    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
+    if (win) win.addBrowserView(views[parentView.id])
   }
 }
 
 export function hide (parentView) {
-  if (parentView.id in windows) {
-    windows[parentView.id].hide()
+  if (parentView.id in views) {
+    var win = viewManager.findContainingWindow(parentView)
+    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
+    if (win) win.removeBrowserView(views[parentView.id])
   }
 }
 
 export function close (parentView) {
-  if (parentView.id in windows) {
-    windows[parentView.id].close()
-    delete windows[parentView.id]
+  if (parentView.id in views) {
+    views[parentView.id].destroy()
+    delete views[parentView.id]
   }
 }
 
@@ -136,43 +138,36 @@ export function close (parentView) {
 
 rpc.exportAPI('background-process-modals', modalsRPCManifest, {
   async createTab (url) {
-    var win = getParentWindow(this.sender)
+    var win = findWebContentsParentWindow(this.sender)
     viewManager.create(win, url, {setActive: true})
   },
 
   async resizeSelf (dimensions) {
-    var win = BrowserWindow.fromWebContents(this.sender)
-    var [width, height] = win.getSize()
-    width = dimensions.width || width
-    height = dimensions.height || height
-    if (process.platform === 'win32') {
-      // on windows, add space for the border
-      width += 2
-      height += 2
-    }
-    var parentBounds = win.getParentWindow().getBounds()
-    win.setBounds({
-      x: parentBounds.x + Math.round(parentBounds.width / 2) - Math.round(width / 2), // centered
-      y: parentBounds.y + 74,
-      width,
-      height
-    })
+    var view = BrowserView.fromWebContents(this.sender)
+    var parentWindow = findWebContentsParentWindow(this.sender)
+    setBounds(view, parentWindow, dimensions)
+    // var {width, height} = dimensions
+    // var parentBounds = parentWindow.getContentBounds()
+    // view.setBounds({
+    //   x: Math.round(parentBounds.width / 2) - Math.round(width / 2), // centered
+    //   y: 74,
+    //   width,
+    //   height
+    // })
   }
 })
 
 // internal methods
 // =
 
-function setBounds (win, parentWindow) {
-  var parentBounds = parentWindow.getBounds()
-  win.setBounds({
-    x: parentBounds.x + Math.round(parentBounds.width / 2) - 250, // centered
-    y: parentBounds.y + 74,
-    width: 500,
-    height: 300
+function setBounds (view, parentWindow, {width, height} = {}) {
+  width = width || 500
+  height = height || 300
+  var parentBounds = parentWindow.getContentBounds()
+  view.setBounds({
+    x: Math.round(parentBounds.width / 2) - Math.round(width / 2) - MARGIN_SIZE, // centered
+    y: 74,
+    width: width + (MARGIN_SIZE * 2),
+    height: height + MARGIN_SIZE
   })
-}
-
-function getParentWindow (sender) {
-  return BrowserWindow.fromWebContents(sender).getParentWindow()
 }

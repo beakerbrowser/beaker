@@ -26,6 +26,7 @@ class BasicAuthModal extends LitElement {
   // =
 
   render () {
+    if (!this.authInfo) return html`<div class="wrapper"></div>`
     return html`
       <div class="wrapper">
         <h1 class="title">Login required</h1>
