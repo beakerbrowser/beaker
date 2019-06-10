@@ -50,7 +50,7 @@ class SiteInfoMenu extends LitElement {
 
     // adjust height based on rendering
     var height = this.shadowRoot.querySelector('div').clientHeight
-    bg.shellMenus.resizeSelf({height})
+    await bg.shellMenus.resizeSelf({height})
   }
 
   get protocol () {

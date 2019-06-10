@@ -34,6 +34,7 @@ class MenusWrapper extends LitElement {
 
     // export interface
     const reset = (name) => {
+      if (!name.endsWith('-menu')) name += '-menu'
       try { this.shadowRoot.querySelector(name).reset() }
       catch (e) { /* ignore */ }
     }
@@ -48,9 +49,12 @@ class MenusWrapper extends LitElement {
       await this.updateComplete
       await init(`${v}-menu`)
     }
+    window.reset = reset
 
     // global event listeners
     window.addEventListener('blur', e => {
+      bg.shellMenus.close()
+
       // reset any active state
       reset(`${this.currentMenu}-menu`)
 

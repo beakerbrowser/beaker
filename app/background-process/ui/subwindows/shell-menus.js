@@ -2,17 +2,17 @@
  * Shell Menus
  *
  * NOTES
- * - There can only ever be one Shell Menu window for a given browser window
- * - Shell Menu windows are created with each browser window and then shown/hidden as needed
- * - The Shell Menu window contains the UIs for multiple menus and swaps between them as needed
- * - When unfocused, the Shell Menu window is hidden (it's meant to act as a popup menu)
+ * - There can only ever be one Shell Menu view for a given browser window
+ * - Shell Menu views are created with each browser window and then shown/hidden as needed
+ * - The Shell Menu view contains the UIs for multiple menus and swaps between them as needed
+ * - When unfocused, the Shell Menu view is hidden (it's meant to act as a popup menu)
  */
 
 import path from 'path'
 import Events from 'events'
-import {BrowserWindow} from 'electron'
+import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
-import {createShellWindow} from '../windows'
+import { createShellWindow } from '../windows'
 import * as viewManager from '../view-manager'
 import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 
@@ -20,106 +20,91 @@ import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 // =
 
 var events = new Events()
-var windows = {} // map of {[parentWindow.id] => BrowserWindow}
+var views = {} // map of {[parentWindow.id] => BrowserView}
 
 // exported api
 // =
 
 export function setup (parentWindow) {
-  var win = windows[parentWindow.id] = new BrowserWindow({
-    parent: parentWindow,
-    frame: false,
-    resizable: false,
-    maximizable: false,
-    show: false,
-    fullscreenable: false,
+  var view = views[parentWindow.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
       preload: path.join(__dirname, 'shell-menus.build.js')
     }
   })
-  win.webContents.on('console-message', (e, level, message) => {
+  view.webContents.on('console-message', (e, level, message) => {
     console.log('Shell-Menus window says:', message)
   })
-  win.loadURL('beaker://shell-menus/')
-  win.on('blur', () => hide(parentWindow))
+  view.webContents.loadURL('beaker://shell-menus/')
 }
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).close()
-    delete windows[parentWindow.id]
+    get(parentWindow).destroy()
+    delete views[parentWindow.id]
   }
 }
 
 export function get (parentWindow) {
-  return windows[parentWindow.id]
+  return views[parentWindow.id]
 }
 
 export function reposition (parentWindow) {
-  var win = get(parentWindow)
-  if (win) {
-    var parentBounds = parentWindow.getBounds()
-    if (win.menuId === 'browser') {
-      win.setBounds({
-        x: parentBounds.x + parentBounds.width - 245,
-        y: parentBounds.y + 74,
+  var view = get(parentWindow)
+  if (view) {
+    var parentBounds = parentWindow.getContentBounds()
+    const setBounds = (b) => {
+      // HACK workaround the lack of view.getBounds() -prf
+      b.height += 2 // add 2px for the border
+      view.currentBounds = b
+      view.setBounds(b)
+    }
+    if (view.menuId === 'browser') {
+      setBounds({
+        x: parentBounds.width - 245,
+        y: 74,
         width: 240,
         height: 277
       })
-    } else if (win.menuId === 'profile') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 260,
-        y: parentBounds.y + win.boundsOpt.top,
-        width: 260,
-        height: 72
-      })
-    } else if (win.menuId === 'create') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 200,
-        y: parentBounds.y + win.boundsOpt.top,
-        width: 200,
-        height: 95
-      })
-    } else if (win.menuId === 'bookmark') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 300,
-        y: parentBounds.y + win.boundsOpt.top,
+    } else if (view.menuId === 'bookmark') {
+      setBounds({
+        x: view.boundsOpt.right - 300,
+        y: view.boundsOpt.top,
         width: 300,
         height: 400
       })
-    } else if (win.menuId === 'peers') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 300,
-        y: parentBounds.y + win.boundsOpt.top,
+    } else if (view.menuId === 'peers') {
+      setBounds({
+        x: view.boundsOpt.right - 300,
+        y: view.boundsOpt.top,
         width: 300,
         height: 118
       })
-    } else if (win.menuId === 'donate') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 320,
-        y: parentBounds.y + win.boundsOpt.top,
+    } else if (view.menuId === 'donate') {
+      setBounds({
+        x: view.boundsOpt.right - 320,
+        y: view.boundsOpt.top,
         width: 350,
         height: 90
       })
-    } else if (win.menuId === 'site-tools') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 220,
-        y: parentBounds.y + win.boundsOpt.top,
+    } else if (view.menuId === 'site-tools') {
+      setBounds({
+        x: view.boundsOpt.right - 220,
+        y: view.boundsOpt.top,
         width: 220,
         height: 122
       })
-    } else if (win.menuId === 'preview-mode-tools') {
-      win.setBounds({
-        x: parentBounds.x + win.boundsOpt.right - 220,
-        y: parentBounds.y + win.boundsOpt.top,
+    } else if (view.menuId === 'preview-mode-tools') {
+      setBounds({
+        x: view.boundsOpt.right - 220,
+        y: view.boundsOpt.top,
         width: 220,
         height: 122
       })
-    } else if (win.menuId === 'site-info') {
-      win.setBounds({
-        x: parentBounds.x + 100,
-        y: parentBounds.y + 74,
+    } else if (view.menuId === 'site-info') {
+      setBounds({
+        x: 100,
+        y: 74,
         width: 450,
         height: 300
       })
@@ -128,9 +113,9 @@ export function reposition (parentWindow) {
 }
 
 export async function toggle (parentWindow, menuId, opts) {
-  var win = get(parentWindow)
-  if (win) {
-    if (win.isVisible()) {
+  var view = get(parentWindow)
+  if (view) {
+    if (view.isVisible) {
       return hide(parentWindow)
     } else {
       return show(parentWindow, menuId, opts)
@@ -139,15 +124,17 @@ export async function toggle (parentWindow, menuId, opts) {
 }
 
 export async function show (parentWindow, menuId, opts) {
-  var win = get(parentWindow)
-  if (win) {
-    win.menuId = menuId
-    win.boundsOpt = opts && opts.bounds
+  var view = get(parentWindow)
+  if (view) {
+    view.menuId = menuId
+    view.boundsOpt = opts && opts.bounds
+    parentWindow.addBrowserView(view)
     reposition(parentWindow)
+    view.isVisible = true
 
     var params = opts && opts.params ? opts.params : {}
-    await win.webContents.executeJavaScript(`openMenu('${menuId}', ${JSON.stringify(params)})`)
-    win.show()
+    await view.webContents.executeJavaScript(`openMenu('${menuId}', ${JSON.stringify(params)})`)
+    view.webContents.focus()
 
     // await till hidden
     await new Promise(resolve => {
@@ -157,8 +144,11 @@ export async function show (parentWindow, menuId, opts) {
 }
 
 export function hide (parentWindow) {
-  if (get(parentWindow)) {
-    get(parentWindow).hide()
+  var view = get(parentWindow)
+  if (view) {
+    view.webContents.executeJavaScript(`reset('${view.menuId}')`)
+    parentWindow.removeBrowserView(view)
+    view.isVisible = false
     events.emit('hide')
   }
 }
@@ -188,13 +178,12 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   },
 
   async resizeSelf (dimensions) {
-    var win = BrowserWindow.fromWebContents(this.sender)
-    if (process.platform === 'win32') {
-      // on windows, add space for the border
-      if (dimensions.width) dimensions.width += 2
-      if (dimensions.height) dimensions.height += 2
-    }
-    win.setBounds(dimensions)
+    var view = BrowserView.fromWebContents(this.sender)
+    // HACK view.currentBounds is set in reposition() -prf
+    dimensions = Object.assign({}, view.currentBounds || {}, dimensions)
+    dimensions.height += 2 // add 2px for the border
+    view.setBounds(dimensions)
+    view.currentBounds = dimensions
   },
 
   async showInpageFind () {
@@ -208,5 +197,11 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
 // =
 
 function getParentWindow (sender) {
-  return BrowserWindow.fromWebContents(sender).getParentWindow()
+  var view = BrowserView.fromWebContents(sender)
+  for (let id in views) {
+    if (views[id] === view) {
+      return BrowserWindow.fromId(+id)
+    }
+  }
+  throw new Error('Parent window not found')
 }

@@ -51,27 +51,27 @@ class SiteToolsMenu extends LitElement {
   // events
   // =
 
-  onClickViewSource () {
-    bg.shellMenus.createTab(`beaker://editor/dat://${this.datInfo.key}`)
+  async onClickViewSource () {
+    await bg.shellMenus.createTab(`beaker://editor/dat://${this.datInfo.key}`)
     bg.shellMenus.close()
   }
 
   async onClickFork () {
-    bg.shellMenus.close()
     const forkUrl = await bg.datArchive.forkArchive(this.datInfo.key, {prompt: true}).catch(() => false)
     if (forkUrl) {
       bg.shellMenus.loadURL(`beaker://editor/${forkUrl}`)
     }
+    bg.shellMenus.close()
   }
 
-  onToggleLiveReloading () {
+  async onToggleLiveReloading () {
+    await bg.views.toggleLiveReloading('active')
     bg.shellMenus.close()
-    bg.views.toggleLiveReloading('active')
   }
 
-  onToggleDevTools () {
+  async onToggleDevTools () {
+    await bg.views.toggleDevTools('active')
     bg.shellMenus.close()
-    bg.views.toggleDevTools('active')
   }
 }
 SiteToolsMenu.styles = [commonCSS, css`

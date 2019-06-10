@@ -21,6 +21,7 @@ import * as modals from './subwindows/modals'
 import * as windowMenu from './window-menu'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
+import { findWebContentsParentWindow } from '../../lib/electron'
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
 const bookmarksDb = beakerCore.dbs.bookmarks
@@ -1232,11 +1233,14 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 // =
 
 function getWindow (sender) {
-  return getTopWindow(BrowserWindow.fromWebContents(sender))
+  return findWebContentsParentWindow(sender)
 }
 
 // helper ensures that if a subwindow is called, we use the parent
 function getTopWindow (win) {
+  if (!(win instanceof BrowserWindow)) {
+    return findWebContentsParentWindow(win)
+  }
   while (win.getParentWindow()) {
     win = win.getParentWindow()
   }
