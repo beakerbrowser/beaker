@@ -121,9 +121,6 @@ rpc.exportAPI('background-process-perm-prompt', permPromptRPCManifest, {
     var view = BrowserView.fromWebContents(this.sender)
     var parentWindow = findWebContentsParentWindow(this.sender)
     setBounds(view, parentWindow, dimensions)
-    // var win = BrowserWindow.fromWebContents(this.sender)
-    // var [width, height] = win.getSize()
-    // win.setSize(dimensions.width || width, dimensions.height || height)
   }
 })
 
