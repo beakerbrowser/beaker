@@ -16,6 +16,7 @@ import * as viewManager from '../view-manager'
 // globals
 // =
 
+const MARGIN_SIZE = 10
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -57,10 +58,10 @@ export async function show (parentWindow, opts) {
     view.webContents.executeJavaScript(`setup()`)
     parentWindow.addBrowserView(view)
     view.setBounds({
-      x: opts.bounds.x,
+      x: opts.bounds.x - MARGIN_SIZE,
       y: opts.bounds.y,
-      width: opts.bounds.width,
-      height: 588
+      width: opts.bounds.width + (MARGIN_SIZE*2),
+      height: 588 + MARGIN_SIZE
     })
     view.isVisible = true
     view.webContents.focus()
@@ -119,13 +120,14 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
   },
 
   async resizeSelf (dimensions) {
-    var view = BrowserWindow.fromWebContents(this.sender)
-    if (process.platform === 'win32') {
-      // on windows, add space for the border
-      if (dimensions.width) dimensions.width += 2
-      if (dimensions.height) dimensions.height += 2
-    }
-    view.setBounds(dimensions)
+    // TODO readd?
+    // var view = BrowserWindow.fromWebContents(this.sender)
+    // if (process.platform === 'win32') {
+    //   // on windows, add space for the border
+    //   if (dimensions.width) dimensions.width += 2
+    //   if (dimensions.height) dimensions.height += 2
+    // }
+    // view.setBounds(dimensions)
   }
 })
 

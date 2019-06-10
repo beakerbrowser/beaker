@@ -369,12 +369,13 @@ class LocationBar extends LitElement {
 LocationBar.styles = [css`
 .wrapper {
   background: #fff;
-  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 input {
   box-sizing: border-box;
   border: 0;
+  border-radius: 4px;
   padding: 0 54px;
 
   line-height: 26px;
@@ -394,7 +395,7 @@ input:focus {
 }
 
 .autocomplete-results {
-  height: calc(100vh - 104px);
+  height: calc(100vh - 106px);
   overflow-y: auto;
 }
 
@@ -403,7 +404,7 @@ input:focus {
   align-items: center;
   padding: 6px 12px;
   line-height: 20px;
-  width: calc(100vw - 26px);
+  width: calc(100vw - 46px);
   overflow: hidden;
 }
 
@@ -500,6 +501,8 @@ input:focus {
 .search-engines {
   border-top: 1px solid #ddd;
   background: #f7f7f7;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 .search-engines .label {
