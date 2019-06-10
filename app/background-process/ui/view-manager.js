@@ -1292,13 +1292,18 @@ async function fireBeforeUnloadEvent (wc) {
     if (wc.isLoading() || wc.isWaitingForResponse()) {
       return // dont bother
     }
-    return await wc.executeJavaScript(`
-      (function () {
-        let unloadEvent = new Event('beforeunload', {bubbles: false, cancelable: true})
-        unloadEvent.returnValue = false
-        return window.dispatchEvent(unloadEvent)
-      })()
-    `)
+    return await Promise.race([
+      wc.executeJavaScript(`
+        (function () {
+          let unloadEvent = new Event('beforeunload', {bubbles: false, cancelable: true})
+          unloadEvent.returnValue = false
+          return window.dispatchEvent(unloadEvent)
+        })()
+      `),
+      new Promise(r => {
+        setTimeout(r, 500) // thread may be locked, so abort after 500ms
+      })
+    ])
     } catch (e) {
       // ignore
     }
