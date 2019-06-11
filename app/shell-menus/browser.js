@@ -40,10 +40,15 @@ class BrowserMenu extends LitElement {
   }
 
   async init () {
+    this.profile = await bg.beakerBrowser.getUserSession().catch(err => undefined)
     await this.requestUpdate()
   }
 
   render () {
+    if (!this.profile) {
+      return html`<div></div>`
+    }
+
     if (this.submenu === 'create-new') {
       return this.renderCreateNew()
     }
@@ -70,63 +75,104 @@ class BrowserMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        ${autoUpdaterEl}
+        <div class="column">
+          <div class="section">
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+              <i class="fas fa-home"></i>
+              <span class="label">Home</span>
+            </div>
 
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
-            <i class="far fa-window-maximize"></i>
-            <span class="label">New Window</span>
-            <span class="shortcut">${this.accelerators.newWindow}</span>
-          </div>
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+              <i class="far fa-window-restore"></i>
+              <span class="label">Applications</span>
+            </div>
 
-          <div class="menu-item" @click=${e => this.onOpenNewTab()}>
-            <i class="far fa-file"></i>
-            <span class="label">New Tab</span>
-            <span class="shortcut">${this.accelerators.newTab}</span>
-          </div>
-        </div>
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+              <i class="far fa-copy"></i>
+              <span class="label">Documents</span>
+            </div>
 
-        <div class="section">
-          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
-            <i class="fas fa-arrow-down"></i>
-            <span class="label">Downloads</span>
-            ${progressEl}
-          </div>
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+              <i class="fas fa-music"></i>
+              <span class="label">Music</span>
+            </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
-            <i class="fa fa-history"></i>
-            <span class="label">History</span>
-            <span class="shortcut">${this.accelerators.history}</span>
-          </div>
-          
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/')}>
-            <i class="far fa-hdd"></i>
-            <span class="label">Library</span>
-          </div>
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+              <i class="fas fa-image"></i>
+              <span class="label">Photos</span>
+            </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-            <i class="fas fa-cog"></i>
-            <span class="label">Settings</span>
-          </div>
-        </div>
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+              <i class="fas fa-film"></i>
+              <span class="label">Videos</span>
+            </div>
 
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenFile()}>
-            <i></i>
-            <span class="label">Open File...</span>
-            <span class="shortcut">${this.accelerators.openFile}</span>
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+              <i class="fas fa-sitemap"></i>
+              <span class="label">Websites</span>
+            </div>
           </div>
         </div>
+        <div class="column">
+          <div class="section">
+            <div class="menu-item profile" @click=${e => this.onOpenPage(e, this.profile.url)}>
+              <img src="asset:thumb:${this.profile.url}">
+              <span>${this.profile.title}</span>
+            </div>
+          </div>
+          ${autoUpdaterEl}
 
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
-            <i class="far fa-question-circle"></i>
-            <span class="label">Help</span>
+          <div class="section">
+            <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
+              <i class="far fa-window-maximize"></i>
+              <span class="label">New Window</span>
+              <span class="shortcut">${this.accelerators.newWindow}</span>
+            </div>
+
+            <div class="menu-item" @click=${e => this.onOpenNewTab()}>
+              <i class="far fa-file"></i>
+              <span class="label">New Tab</span>
+              <span class="shortcut">${this.accelerators.newTab}</span>
+            </div>
           </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new')}>
-            <i class="far fa-flag"></i>
-            <span class="label">Report an Issue</span>
+          <div class="section">
+            <div class="menu-item" @click=${e => this.onOpenFile()}>
+              <i></i>
+              <span class="label">Open File...</span>
+              <span class="shortcut">${this.accelerators.openFile}</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
+              <i class="fas fa-arrow-down"></i>
+              <span class="label">Downloads</span>
+              ${progressEl}
+            </div>
+
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
+              <i class="fa fa-history"></i>
+              <span class="label">History</span>
+              <span class="shortcut">${this.accelerators.history}</span>
+            </div>
+            
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+              <i class="fas fa-cog"></i>
+              <span class="label">Settings</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
+              <i class="far fa-question-circle"></i>
+              <span class="label">Help</span>
+            </div>
+
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new')}>
+              <i class="far fa-flag"></i>
+              <span class="label">Report an Issue</span>
+            </div>
           </div>
         </div>
       </div>
@@ -267,10 +313,40 @@ class BrowserMenu extends LitElement {
 }
 BrowserMenu.styles = [commonCSS, css`
 .wrapper {
+  display: flex;
+}
+
+.column {
+  flex: 1;
+}
+
+.column:first-child {
+  flex: 0 0 160px;
+  background: #fafafa;
+  border-right: 1px solid #ddd;
 }
 
 .wrapper::-webkit-scrollbar {
   display: none;
+}
+
+.section:last-child {
+  border-bottom: 0;
+}
+
+.menu-item.profile {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 300;
+  height: 60px;
+}
+
+.menu-item.profile img {
+  margin-right: 14px;
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
 }
 
 .section.auto-updater {

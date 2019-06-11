@@ -61,10 +61,10 @@ export function reposition (parentWindow) {
     }
     if (view.menuId === 'browser') {
       setBounds({
-        x: parentBounds.width - 245,
+        x: parentBounds.width - 405,
         y: 74,
-        width: 240,
-        height: 277
+        width: 400,
+        height: 324
       })
     } else if (view.menuId === 'bookmark') {
       setBounds({

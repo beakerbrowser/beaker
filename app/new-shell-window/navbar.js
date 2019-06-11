@@ -82,7 +82,6 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
-        ${this.profileMenuBtn}
         ${this.browserMenuBtn}
       </div>
     `
