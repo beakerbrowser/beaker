@@ -330,6 +330,7 @@ export function ensureOneWindowExists () {
 
 export function getUserSessionFor (wc) {
   var win = findWebContentsParentWindow(wc)
+  if (!win) win = viewManager.findContainingWindow(BrowserView.fromWebContents(wc))
   return sessionWatcher.getState(win).userSession
 }
 
