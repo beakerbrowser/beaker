@@ -64,7 +64,7 @@ export function reposition (parentWindow) {
         x: parentBounds.width - 405,
         y: 74,
         width: 400,
-        height: 324
+        height: 350
       })
     } else if (view.menuId === 'bookmark') {
       setBounds({

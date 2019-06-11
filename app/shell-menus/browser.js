@@ -114,13 +114,14 @@ class BrowserMenu extends LitElement {
           </div>
         </div>
         <div class="column">
+          ${autoUpdaterEl}
+
           <div class="section">
             <div class="menu-item profile" @click=${e => this.onOpenPage(e, this.profile.url)}>
               <img src="asset:thumb:${this.profile.url}">
               <span>${this.profile.title}</span>
             </div>
           </div>
-          ${autoUpdaterEl}
 
           <div class="section">
             <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
@@ -145,6 +146,11 @@ class BrowserMenu extends LitElement {
           </div>
 
           <div class="section">
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library?view=bookmarks')}>
+              <i class="far fa-star"></i>
+              <span class="label">Bookmarks</span>
+            </div>
+
             <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
               <i class="fas fa-arrow-down"></i>
               <span class="label">Downloads</span>
@@ -211,6 +217,12 @@ class BrowserMenu extends LitElement {
 
   // events
   // =
+
+  updated () {
+    // adjust height based on rendering
+    var height = this.shadowRoot.querySelector('div').clientHeight
+    bg.shellMenus.resizeSelf({height})
+  }
 
   onShowSubmenu (v) {
     this.submenu = v
@@ -389,7 +401,7 @@ BrowserMenu.styles = [commonCSS, css`
 
 .menu-item.downloads progress {
   margin-left: 20px;
-  flex: 1;
+  width: 100px;
 }
 `]
 
