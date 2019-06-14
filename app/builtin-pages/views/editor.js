@@ -84,7 +84,7 @@ async function setup () {
   update()
 
   // load data
-  userProfile = await profiles.getCurrentUser()
+  userProfile = await profiles.me()
   let url = window.location.pathname.slice(1)
   let browserInfo = beaker.browser.getInfo()
   OS_USES_META_KEY = browserInfo.platform === 'darwin'

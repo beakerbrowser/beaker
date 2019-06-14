@@ -42,7 +42,7 @@ async function setup () {
 
   // fetch data
   browserInfo = beaker.browser.getInfo()
-  user = await (navigator.importSystemAPI('profiles')).getCurrentUser()
+  user = await (navigator.importSystemAPI('profiles')).me()
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
 
