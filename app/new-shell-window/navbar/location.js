@@ -202,9 +202,6 @@ class NavbarLocation extends LitElement {
   }
 
   renderSiteToolsBtn () {
-    if (!this.isDat) {
-      return ''
-    }
     var cls = classMap({'site-tools': true, pressed: this.isSiteToolsMenuOpen})
     return html`
       <button class="${cls}" @click=${this.onClickSiteToolsBtn}>

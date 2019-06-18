@@ -49,9 +49,6 @@ export default function registerContextMenu () {
       if (props.linkURL && props.mediaType === 'none') {
         menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => viewManager.create(win, props.linkURL, {setActive: true}) })
         menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
-        if (isDat) {
-          menuItems.push({ label: 'Explore Link Files', click: (item, win) => viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.linkURL)}`, {setActive: true}) })
-        }
         menuItems.push({ type: 'separator' })
       }
 
@@ -123,6 +120,24 @@ export default function registerContextMenu () {
       }
 
       if (!props.linkURL && props.mediaType === 'none' && !hasText) {
+        // view/edit source
+        if (isDat) {
+          menuItems.push({
+            label: 'Open with',
+            submenu: [{
+              label: 'Editor',
+              click: (item, win) => {
+                viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
+              }
+            }, {
+              label: 'Files Explorer',
+              click: (item, win) => {
+                viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.pageURL)}`, {setActive: true})
+              }
+            }]
+          })
+          menuItems.push({ type: 'separator' })
+        }
         menuItems.push({
           label: 'Back',
           enabled: webContents.canGoBack(),
@@ -149,23 +164,38 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })
       }
 
-      // view/edit source
-      if (isDat) {
-        menuItems.push({
-          label: 'Explore Files',
-          click: (item, win) => {
-            viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.pageURL)}`, {setActive: true})
-          }
-        })
-        menuItems.push({
-          label: 'Edit Source',
-          click: (item, win) => {
-            viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
-          }
-        })
-      }
+      // devtools
 
-      // inspector
+      let devTools = [{
+        label: 'Toggle JS Console',
+        click: (item, win) => {
+          webContents.toggleDevTools()
+        }
+      }]
+      if (isDat) {
+        devTools = [{
+          label: 'Toggle Live Reloading',
+          click: (item, win) => {
+            viewManager.getActive(win).toggleLiveReloading()
+          }
+        }, {
+          label: 'Fork This Site',
+          click: async (item, win) => {
+            let forkUrl = await webContents.executeJavaScript(`
+              DatArchive.fork("${props.pageURL}", {prompt: true})
+                .then(fork => fork.url)
+                .catch(err => null)
+            `)
+            if (forkUrl) {
+              webContents.loadURL(`beaker://editor/${forkUrl}`)
+            }
+          }
+        }].concat(devTools)
+      }
+      menuItems.push({
+        label: 'Developer Tools',
+        submenu: devTools
+      })
       menuItems.push({
         label: 'Inspect Element',
         click: item => {

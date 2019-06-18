@@ -6,17 +6,33 @@ import {writeToClipboard} from '../lib/fg/event-handlers'
 import commonCSS from './common.css'
 
 class SiteToolsMenu extends LitElement {
+  static get properties () {
+    return {
+      submenu: {type: String}
+    }
+  }
+
   constructor () {
     super()
     this.reset()
   }
 
   reset () {
-    this.datInfo = null
+    this.tabState = null
+    this.submenu = ''
+  }
+
+  get datInfo () {
+    if (!this.tabState) return null
+    return this.tabState.datInfo
+  }
+
+  get isDat () {
+    return !!this.datInfo
   }
 
   async init (params) {
-    this.datInfo = (await bg.views.getTabState('active', {datInfo: true})).datInfo
+    this.tabState = await bg.views.getTabState('active', {datInfo: true})
     await this.requestUpdate()
   }
 
@@ -24,25 +40,83 @@ class SiteToolsMenu extends LitElement {
   // =
 
   render () {
+    if (this.submenu === 'open-with') {
+      return html`
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <div class="wrapper">
+          <div class="header">
+            <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+              <i class="fa fa-angle-left"></i>
+            </button>
+            <h2>Open with</h2>
+          </div>
+          <div class="menu-item" @click=${this.onClickViewSource}>
+            <i class="far fa-edit"></i>
+            Editor
+          </div>
+          <div class="menu-item" @click=${this.onClickViewFiles}>
+            <i class="far fa-folder-open"></i>
+            Files Explorer
+          </div>
+        </div>
+      `
+    }
+    if (this.submenu === 'devtools') {
+      return html`
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <div class="wrapper">
+          <div class="header">
+            <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+              <i class="fa fa-angle-left"></i>
+            </button>
+            <h2>Developer tools</h2>
+          </div>
+          ${this.isDat ? html`
+            <div class="menu-item" @click=${this.onToggleLiveReloading}>
+              <i class="fa fa-bolt"></i>
+              Toggle live reloading
+            </div>
+          ` : ''}
+          ${this.isDat ? html`
+            <div class="menu-item" @click=${this.onClickFork}>
+              <i class="fas fa-code-branch"></i>
+              Fork this site
+            </div>
+          ` :''}
+          <div class="menu-item" @click=${this.onToggleDevtools}>
+            <i class="fas fa-terminal"></i>
+            Toggle JS console
+          </div>
+        </div>
+      `
+    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <div class="menu-item" @click=${this.onClickViewSource}>
-          <i class="fas fa-code"></i>
-          ${this.datInfo && this.datInfo.isOwner ? 'Edit' : 'View'} source
-        </div>
-        <div class="menu-item" @click=${this.onClickFork}>
-          <i class="fas fa-code-branch"></i>
-          Fork this site
+        ${this.isDat ? html`
+          <div class="menu-item" @click=${e => this.onShowSubmenu('open-with')}>
+            Open with
+            <i class="more fa fa-angle-right"></i>
+          </div>
+        ` : ''}
+        <div class="menu-item" @click=${e => this.onShowSubmenu('devtools')}>
+          Developer tools
+          <i class="more fa fa-angle-right"></i>
         </div>
         <hr>
-        <div class="menu-item" @click=${this.onToggleLiveReloading}>
-          <i class="fa fa-bolt"></i>
-          Toggle live reloading
+        ${this.isDat ? html`
+          <div class="menu-item" @click=${this.onClickDownloadZip}>
+            <i class="far fa-file-archive"></i>
+            Download site as .zip
+          </div>
+        ` : ''}
+        <div class="menu-item" @click=${this.onClickSavePage}>
+          <i class="far fa-file-image"></i>
+          Save page as file
         </div>
-        <div class="menu-item" @click=${this.onToggleDevTools}>
-          <i class="fa fa-screwdriver"></i>
-          Toggle DevTools
+        <div class="menu-item" @click=${this.onClickPrint}>
+          <i class="fas fa-print"></i>
+          Print page
         </div>
       </div>
     `
@@ -50,6 +124,15 @@ class SiteToolsMenu extends LitElement {
 
   // events
   // =
+
+  onShowSubmenu (v) {
+    this.submenu = v
+  }
+
+  async onClickViewFiles () {
+    await bg.shellMenus.createTab(`beaker://library/?view=files&dat=${encodeURIComponent(`dat://${this.datInfo.key}`)}`)
+    bg.shellMenus.close()
+  }
 
   async onClickViewSource () {
     await bg.shellMenus.createTab(`beaker://editor/dat://${this.datInfo.key}`)
@@ -69,8 +152,23 @@ class SiteToolsMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-  async onToggleDevTools () {
+  async onClickDownloadZip () {
+    bg.beakerBrowser.downloadURL(`dat://${this.datInfo.key}?download_as=zip`)
+    bg.shellMenus.close()
+  }
+
+  async onToggleDevtools () {
     await bg.views.toggleDevTools('active')
+    bg.shellMenus.close()
+  }
+
+  async onClickSavePage () {
+    bg.beakerBrowser.downloadURL(this.tabState.url)
+    bg.shellMenus.close()
+  }
+
+  async onClickPrint () {
+    bg.views.print('active')
     bg.shellMenus.close()
   }
 }

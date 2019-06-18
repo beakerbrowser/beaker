@@ -43,6 +43,13 @@ hr {
   background: none;
 }
 
+.menu-item i.more {
+  margin-left: auto;
+  padding-right: 0;
+  text-align: right;
+  color: #777;
+}
+
 .header {
   position: relative;
   border-bottom: 1px solid #eee;
@@ -50,6 +57,7 @@ hr {
   height: 35px;
   line-height: 35px;
   text-align: center;
+  margin-bottom: 6px;
 }
 
 .header h2 {

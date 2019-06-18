@@ -1169,6 +1169,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     getByIndex(getWindow(this.sender), index).webContents.toggleDevTools()
   },
 
+  async print (index) {
+    getByIndex(getWindow(this.sender), index).webContents.print()
+  },
+
   async showInpageFind (index) {
     getByIndex(getWindow(this.sender), index).showInpageFind()
   },

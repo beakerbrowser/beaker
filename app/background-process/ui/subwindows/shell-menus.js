@@ -92,7 +92,7 @@ export function reposition (parentWindow) {
         x: view.boundsOpt.right - 220,
         y: view.boundsOpt.top,
         width: 220,
-        height: 122
+        height: 152
       })
     } else if (view.menuId === 'preview-mode-tools') {
       setBounds({

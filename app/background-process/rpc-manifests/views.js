@@ -18,6 +18,7 @@ export default {
   resetZoom: 'promise',
   toggleLiveReloading: 'promise',
   toggleDevTools: 'promise',
+  print: 'promise',
   showInpageFind: 'promise',
   hideInpageFind: 'promise',
   setInpageFindString: 'promise',
