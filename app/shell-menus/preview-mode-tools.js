@@ -86,8 +86,8 @@ class PreviewModeToolsMenu extends LitElement {
     var paths = fileDiffsToPaths(currentDiff)
     await bg.archives.publishLocalSyncPathListing(datKey, {shallow: false, paths})
 
-    bg.shellMenus.close()
     bg.views.loadURL('active', url) // reload the page
+    bg.shellMenus.close()
   }
 }
 PreviewModeToolsMenu.styles = [commonCSS, css`
