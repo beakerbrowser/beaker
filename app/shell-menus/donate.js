@@ -27,6 +27,7 @@ class DonateMenu extends LitElement {
   }
 
   resolvePaymentLink (paymentLink) {
+    if (!this.url) return paymentLink
     if (paymentLink.indexOf('://') === -1) {
       const shouldAddSlash = !this.url.endsWith('/') && !paymentLink.startsWith('/')
       return `${this.url}${shouldAddSlash ? '/' : ''}${paymentLink}`
