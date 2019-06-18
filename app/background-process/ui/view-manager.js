@@ -270,7 +270,7 @@ class View {
     var url = this.url
     var title = this.title
 
-    if (!/^(http|https|dat)/i.test(url)) {
+    if (/^(http|https|dat)/i.test(url)) {
       historyDb.addVisit(0, {url, title})
       if (this.isPinned) {
         savePins(this.browserWindow)
