@@ -66,6 +66,7 @@ class NavbarSiteInfo extends LitElement {
       <button class=${buttonCls} @click=${this.onClickButton}>
         <span class="fa fa-${icon} ${cls}"></span>
         ${isDat ? html`<span class="label ${cls}">${this.peers}</span>` : ''}
+        ${isDat ? html`<span class="fas fa-caret-down"></span>` : ''}
       </button>
     `
   }
@@ -102,6 +103,11 @@ button:hover {
   font-size: 11px;
   line-height: 25px;
   color: gray;
+}
+
+.fa-caret-down {
+  color: #adadad;
+  margin-left: 2px;
 }
 
 .label {

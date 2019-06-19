@@ -7,7 +7,8 @@ import { PERM_ICONS, renderPermDesc } from '../lib/fg/perms'
 import { getPermId, getPermParam } from '../lib/strings'
 import * as bg from './bg-process-rpc'
 import inputsCSS from './inputs.css'
-import buttonsCSS from './buttons.css'
+import buttonsCSS from './buttons2.css'
+import './hoverable.js'
 
 const IS_DAT_KEY_REGEX = /^[0-9a-f]{64}$/i
 
@@ -22,6 +23,9 @@ class SiteInfoMenu extends LitElement {
     this.loadError = null
     this.datInfo = null
     this.sitePerms = null
+    this.me = null
+    this.followers = null
+    this.follows = null
   }
 
   async init (params) {
@@ -31,6 +35,17 @@ class SiteInfoMenu extends LitElement {
     this.loadError = state.loadError
     this.datInfo = state.datInfo
     this.sitePerms = state.sitePerms
+    if (this.datInfo) {
+      this.me = await bg.profiles.me()
+      this.followers = (await bg.follows.list({filters: {topics: this.datInfo.url}})).map(({author}) => author)
+      this.follows = (await bg.follows.list({filters: {authors: this.datInfo.url}})).map(({topic}) => topic)
+
+      // filter down to users followed by the local user
+      if (!this.isMe) {
+        let userFollows = (await bg.follows.list({filters: {authors: this.me.url}})).map(({topic}) => topic).concat([this.me])
+        this.followers = this.followers.filter(f1 => userFollows.find(f2 => f2.url === f1.url))
+      }
+    }
 
     // update site perms
     this.sitePerms = await Promise.all(Object.entries(state.sitePerms).map(async ([perm, value]) => {
@@ -71,6 +86,45 @@ class SiteInfoMenu extends LitElement {
     }
   }
 
+  get isDat () {
+    return !!this.datInfo
+  }
+
+  get isMe () {
+    return this.datInfo && this.me && this.me.url === this.datInfo.url
+  }
+
+  get amIFollowing () {
+    if (!this.me || !this.followers) return false
+    return !!this.followers.find(f => f.url === this.me.url)
+  }
+
+  get connectedSites () {
+    if (!this.followers) return []
+    return this.followers.filter(f1 => this.follows.find(f2 => f2.url === f1.url))
+  }
+
+  get followingSites () {
+    if (!this.followers) return []
+    return this.followers.filter(f1 => !this.follows.find(f2 => f2.url === f1.url))
+  }
+
+  get siteTitle () {
+    if (this.datInfo && this.datInfo.title) {
+      return this.datInfo.title
+    } else if (this.protocol === 'dat:') {
+      return 'Untitled'
+    }
+    return this.hostname
+  }
+
+  get siteDescription () {
+    if (this.datInfo && this.datInfo.description) {
+      return this.datInfo.description
+    }
+    return false
+  }
+
   // rendering
   // =
 
@@ -86,26 +140,99 @@ class SiteInfoMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <div class="details">
-          <div class="details-title">
-            ${this.renderTitle()}
-          </div>
-          <p class="details-desc">
-            ${this.renderProtocolDescription()}
-          </p>
+          ${this.renderActions()}
+          ${this.renderSiteTitle()}
+          ${this.renderSiteDescription()}
+          ${this.renderSiteSocialgraph()}
         </div>
         ${permsEls.length ? html`<h2 class="perms-heading">Permissions</h2>` : ''}
         <div class="perms">${permsEls}</div>
+        <div class="details-protocol-description">
+          ${this.renderProtocolDescription()}
+        </div>
       </div>
     `
   }
 
-  renderTitle () {
-    if (this.datInfo && this.datInfo.title) {
-      return this.datInfo.title
-    } else if (this.protocol === 'dat:') {
-      return 'Untitled'
+  renderSiteTitle () {
+    return html`
+      <div class="details-site-title">
+        ${this.siteTitle}
+      </div>
+    `
+  }
+
+  renderSiteDescription () {
+    var siteDescription = this.siteDescription
+    if (!siteDescription) return ''
+    return html`
+      <div class="details-site-description">
+        ${this.siteDescription}
+      </div>
+    `
+  }
+
+  renderSiteSocialgraph () {
+    if (!this.isDat) return ''
+    var connectedSites = this.connectedSites
+    var followingSites = this.followingSites
+    const list = arr => {
+      if (arr.length <= 1) return arr
+      if (arr.length === 2) return [arr[0], ' and ', arr[1]]
+      var arr2 = []
+      for (let i = 0; i < arr.length; i++) {
+        arr2.push(arr[i])
+        if (i <= arr.length - 3) arr2.push(', ')
+        if (i === arr.length - 2) arr2.push(', and ')
+      }
+      return arr2
     }
-    return this.hostname
+    return html`
+      <div class="details-site-socialgraph">
+        <span class="far fa-user"></span>
+        ${connectedSites.length
+          ? html`
+            Connected with ${list(connectedSites.map(site => this.renderFollow(site)))}.
+          ` : ''}
+        ${followingSites.length
+          ? html`
+            Followed by ${list(followingSites.map(site => this.renderFollow(site)))}.
+          ` : ''}
+        ${!connectedSites.length && !followingSites.length
+          ? 'Not followed by anyone you follow.'
+          : ''}
+      </div>
+    `
+  }
+
+  renderFollow (site) {
+    return html`<a href="#" @click=${e => this.onOpenUrl(e, site.url)} title="${site.title}">${site.title}</a>`
+  }
+
+  renderActions () {
+    if (this.isMe) {
+      return html`
+        <div class="details-actions">
+          <span class="label">This is you!</span>
+          <button @click=${e => this.onOpenUrl(e, 'beaker://settings')}><span class="fas fa-pencil-alt"></span> Edit profile</button>
+        </div>
+      `
+    }
+    if (this.isDat) {
+      return html`
+        <div class="details-actions">
+          ${this.amIFollowing
+            ? html`
+              <beaker-hoverable @click=${this.onToggleFollow}>
+                <button slot="default" style="width: 86px"><span class="fa fa-check"></span> Following</button>
+                <button class="warning" slot="hover" style="width: 86px"><span class="fa fa-times"></span> Unfollow</button>
+              </beaker-hoverable>
+            `
+            : html`<button @click=${this.onToggleFollow}><span class="fas fa-rss"></span> Follow</button>`}
+        </div>
+      `
+    }
+    return ''
   }
 
   renderProtocolDescription () {
@@ -165,8 +292,25 @@ class SiteInfoMenu extends LitElement {
     })
   }
 
+  async onToggleFollow () {
+    if (this.amIFollowing) {
+      await bg.follows.remove(this.datInfo.url)
+    } else {
+      await bg.follows.add(this.datInfo.url)
+    }
+    this.init()
+  }
+
+  onOpenUrl (e, url) {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    bg.shellMenus.createTab(url)
+  }
+
   onClickLearnMore () {
-    bg.shellMenus.createTab('https://github.com/beakerbrowser/beaker/wiki/Is-Dat-%22Secure-P2P%3F%22')
+    bg.shellMenus.createTab('https://dat.foundation')
   }
 }
 SiteInfoMenu.styles = [inputsCSS, buttonsCSS, css`
@@ -185,8 +329,27 @@ a:hover {
   text-decoration: underline;
 }
 
+button {
+  cursor: pointer;
+}
+
+.label {
+  position: relative;
+  top: -1px;
+  display: inline-block;
+  color: rgb(59, 62, 66);
+  font-weight: 500;
+  margin-right: 4px;
+  padding: 4px 6px 5px;
+  border-radius: 4px;
+  background: rgb(210, 219, 228);
+  font-size: 10px;
+  line-height: 1;
+}
+
 .details {
-  padding: 15px;
+  position: relative;
+  padding: 15px 15px 0;
 }
 
 .details small {
@@ -194,14 +357,33 @@ a:hover {
   color: #707070;
 }
 
-.details-title {
-  font-size: 14px;
+.details-site-title {
+  font-size: 19px;
   font-weight: 500;
+  margin-bottom: 0.5rem;
 }
 
-.details-desc {
-  margin-bottom: 0;
+.details-site-description {
+  margin-bottom: 1rem;
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+.details-site-socialgraph {
+  margin-bottom: 1rem;
+}
+
+.details-protocol-description {
+  border-top: 1px solid #ddd;
+  padding: 0.5rem;
+  background: rgb(243, 241, 241);
   line-height: 1.3;
+}
+
+.details-actions {
+  position: absolute;
+  top: 15px;
+  right: 15px;
 }
 
 .perms-heading {
@@ -210,11 +392,10 @@ a:hover {
   color: #707070;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  margin: 5px 0 5px 15px;
+  margin: 25px 0 5px 15px;
 }
 
 .perms {
-  background: #fafafa;
   border-radius: 0 0 4px 4px;
   overflow-x: hidden;
 }
