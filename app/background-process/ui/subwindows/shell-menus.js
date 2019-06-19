@@ -62,7 +62,7 @@ export function reposition (parentWindow) {
     if (view.menuId === 'browser') {
       setBounds({
         x: parentBounds.width - 405,
-        y: 74,
+        y: 68,
         width: 400,
         height: 350
       })
@@ -104,7 +104,7 @@ export function reposition (parentWindow) {
     } else if (view.menuId === 'site-info') {
       setBounds({
         x: 100,
-        y: 74,
+        y: 68,
         width: 450,
         height: 300
       })

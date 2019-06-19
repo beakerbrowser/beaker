@@ -435,7 +435,7 @@ NavbarLocation.styles = [buttonResetCSS, css`
 :host {
   display: flex;
   flex: 1;
-  background: #fff;
+  background: var(--bg-input);
   border: 1px solid var(--color-border-input);
   border-radius: 4px;
 }
@@ -553,7 +553,8 @@ input {
   height: 25px;
   overflow: hidden;
 
-  color: #222;
+  color: var(--color-input);
+  background: var(--bg-input);
   font-size: 13.5px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
   font-weight: 500;
@@ -567,8 +568,6 @@ input:focus {
 .input-pretty {
   z-index: 1;
   text-overflow: ellipsis;
-  color: #000;
-  background: #fff;
   cursor: text;
   pointer-events: none;
 }
