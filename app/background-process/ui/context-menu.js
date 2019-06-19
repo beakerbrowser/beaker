@@ -120,24 +120,6 @@ export default function registerContextMenu () {
       }
 
       if (!props.linkURL && props.mediaType === 'none' && !hasText) {
-        // view/edit source
-        if (isDat) {
-          menuItems.push({
-            label: 'Open with',
-            submenu: [{
-              label: 'Editor',
-              click: (item, win) => {
-                viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
-              }
-            }, {
-              label: 'Files Explorer',
-              click: (item, win) => {
-                viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.pageURL)}`, {setActive: true})
-              }
-            }]
-          })
-          menuItems.push({ type: 'separator' })
-        }
         menuItems.push({
           label: 'Back',
           enabled: webContents.canGoBack(),
@@ -163,9 +145,26 @@ export default function registerContextMenu () {
         })
         menuItems.push({ type: 'separator' })
       }
+      
+      // open with
+      if (isDat) {
+        menuItems.push({
+          label: 'Open with',
+          submenu: [{
+            label: 'Editor',
+            click: (item, win) => {
+              viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
+            }
+          }, {
+            label: 'Files Explorer',
+            click: (item, win) => {
+              viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.pageURL)}`, {setActive: true})
+            }
+          }]
+        })
+      }
 
       // devtools
-
       let devTools = [{
         label: 'Toggle JS Console',
         click: (item, win) => {
