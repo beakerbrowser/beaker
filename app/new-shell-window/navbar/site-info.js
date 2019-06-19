@@ -10,6 +10,7 @@ class NavbarSiteInfo extends LitElement {
     return {
       isMenuOpen: {type: Boolean},
       url: {type: String},
+      peers: {type: Number},
       loadError: {type: Object}
     }
   }
@@ -18,6 +19,7 @@ class NavbarSiteInfo extends LitElement {
     super()
     this.isMenuOpen = false
     this.url = ''
+    this.peers = 0
     this.loadError = null
   }
 
@@ -36,6 +38,7 @@ class NavbarSiteInfo extends LitElement {
     var icon
     var cls = ''
     const scheme = this.scheme
+    const isDat = scheme === 'dat:'
     if (scheme) {
       const isHttps = scheme === 'https:'
       const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
@@ -62,6 +65,7 @@ class NavbarSiteInfo extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <button class=${buttonCls} @click=${this.onClickButton}>
         <span class="fa fa-${icon} ${cls}"></span>
+        ${isDat ? html`<span class="label ${cls}">${this.peers}</span>` : ''}
       </button>
     `
   }
@@ -83,10 +87,11 @@ NavbarSiteInfo.styles = [buttonResetCSS, css`
 }
 
 button {
-  border-right: 1px solid #ddd;
+  border-right: 1px solid #ccc;
   border-radius: 0;
   height: 26px;
   line-height: 26px;
+  padding: 0 10px;
 }
 
 button:hover {
@@ -96,8 +101,13 @@ button:hover {
 .fa {
   font-size: 11px;
   line-height: 25px;
-  margin: 0 10px;
   color: gray;
+}
+
+.label {
+  margin-left: 2px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
 }
 
 .secure {

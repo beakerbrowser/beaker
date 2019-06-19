@@ -28,7 +28,6 @@ class NavbarLocation extends LitElement {
       isSiteToolsMenuOpen: {type: Boolean},
       isPreviewModeToolsMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
-      isPeersMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean}
     }
@@ -49,7 +48,6 @@ class NavbarLocation extends LitElement {
     this.isSiteToolsMenuOpen = false
     this.isPreviewModeToolsMenuOpen = false
     this.isDonateMenuOpen = false
-    this.isPeersMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
 
@@ -89,6 +87,7 @@ class NavbarLocation extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <shell-window-navbar-site-info
         url=${this.url}
+        peers=${this.peers}
         .loadError=${this.loadError}
       >
       </shell-window-navbar-site-info>
@@ -99,7 +98,6 @@ class NavbarLocation extends LitElement {
       ${this.renderSiteToolsBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
-      ${this.renderPeersBtn()}
       ${this.renderBookmarkBtn()}
     `
   }
@@ -248,19 +246,6 @@ class NavbarLocation extends LitElement {
     return html`
       <button class="${cls}" @click=${this.onClickDonateMenu}>
         <i class="fa fa-donate"></i>
-      </button>
-    `
-  }
-
-  renderPeersBtn () {
-    if (!this.isDat) {
-      return ''
-    }
-    var cls = classMap({peers: true, pressed: this.isPeersMenuOpen})
-    return html`
-      <button class="${cls}" @click=${this.onClickPeersMenu}>
-        <i class="fa fa-share-alt"></i>
-        ${this.peers || 0}
       </button>
     `
   }
@@ -419,20 +404,6 @@ class NavbarLocation extends LitElement {
     this.isDonateMenuOpen = false
   }
 
-  async onClickPeersMenu (e) {
-    this.isPeersMenuOpen = true
-    var rect1 = this.getClientRects()[0]
-    var rect2 = e.currentTarget.getClientRects()[0]
-    await bg.views.toggleMenu('peers', {
-      bounds: {
-        top: (rect1.bottom|0),
-        right: (rect2.right|0)
-      },
-      params: {url: this.url}
-    })
-    this.isPeersMenuOpen = false
-  }
-
   async onClickBookmark () {
     var rect = this.shadowRoot.querySelector('.bookmark-btn').getClientRects()[0]
 
@@ -543,17 +514,6 @@ button.preview-mode-tools .fas {
 
 button.preview-mode-tools.has-changes .fas {
   display: inline;
-}
-
-button.peers {
-  width: auto;
-  font-size: 13px;
-  font-variant: tabular-nums;
-  padding: 0 6px;
-}
-
-button.peers .fa {
-  font-size: 13px;
 }
 
 button.available-alternative {
