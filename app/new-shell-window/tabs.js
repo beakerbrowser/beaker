@@ -217,7 +217,7 @@ ${spinnerCSS}
   background: var(--bg-background);
   position: relative;
   padding: 0 18px 0 0px;
-  height: 30px;
+  height: 34px;
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -228,14 +228,15 @@ ${spinnerCSS}
 .tabs {
   display: flex;
   padding-left: 10px;
-  height: 30px;
+  height: 34px;
 }
 
 .unused-space {
   flex: 1;
   position: relative;
   top: 0px;
-  height: 30px;
+  height: 34px;
+  border-left: 1px solid var(--color-border);
 }
 
 .tabs * {
@@ -249,7 +250,7 @@ ${spinnerCSS}
   display: inline-block;
   position: relative;
   top: 0px;
-  height: 30px;
+  height: 34px;
   width: 235px;
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
   -webkit-app-region: no-drag;
@@ -266,7 +267,7 @@ ${spinnerCSS}
   text-align: center;
   position: absolute;
   left: 10px;
-  top: 8px;
+  top: 9px;
   z-index: 3;
 }
 
@@ -289,7 +290,7 @@ ${spinnerCSS}
 
 .tab-title {
   color: var(--color-tab);
-  padding: 9px 11px 5px 30px;
+  padding: 11px 11px 9px 30px;
   height: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -297,7 +298,6 @@ ${spinnerCSS}
   border-left: 1px solid var(--color-border);
 }
 
-.tab:first-child .tab-title,
 .tab.current .tab-title,
 .tab.current + .tab .tab-title {
   border-left-color: transparent;
@@ -320,7 +320,7 @@ ${spinnerCSS}
   display: none;
   position: absolute;
   right: 8px;
-  top: 7px;
+  top: 8px;
   width: 16px;
   height: 16px;
   z-index: 2;
@@ -350,19 +350,19 @@ ${spinnerCSS}
 
 .tab.tab-add-btn {
   top: 0;
-  width: 36px;
+  width: 40px;
 }
 
 .tab-add-btn .plus {
   position: absolute;
   top: 0;
   display: block;
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 300;
   color: var(--color-tab-add);
   margin: 4px 7px;
-  width: 22px;
-  height: 21px;
+  width: 26px;
+  height: 25px;
   text-align: center;
   line-height: 100%;
   border-radius: 2px;
@@ -422,14 +422,6 @@ ${spinnerCSS}
   top: 1px;
 }
 
-.tab.current .tab-favicon {
-  top: 8px;
-}
-
-.tab.current .tab-title {
-  padding-top: 9px;
-}
-
 .tab.current .tab-title:after {
   /* adjust color */
   background: linear-gradient(to right, rgba(247,247,247,0), rgb(247, 247, 247));
@@ -449,6 +441,10 @@ ${spinnerCSS}
 
 .tab.current.drag-hover .tab-title {
   background: #eee;
+}
+
+.tab.current + .unused-space {
+  border-left-color: transparent;
 }
 
 /* draggable region for OSX and windows */
