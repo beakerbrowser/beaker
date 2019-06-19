@@ -418,7 +418,6 @@ ${spinnerCSS}
   background: var(--bg-tab--current);
   border: 1px solid var(--color-border);
   border-bottom: 0;
-  border-radius: 3px 3px 0 0;
 }
 
 .tab.current .tab-favicon {
