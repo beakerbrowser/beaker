@@ -350,6 +350,7 @@ button {
 .details {
   position: relative;
   padding: 15px 15px 0;
+  min-height: 30px;
 }
 
 .details small {

@@ -17,7 +17,9 @@ class NavbarLocation extends LitElement {
       activeTabIndex: {type: Number},
       url: {type: String},
       title: {type: String},
+      siteTitle: {type: String},
       peers: {type: Number},
+      numFollowers: {type: Number},
       zoom: {type: Number},
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
@@ -38,7 +40,9 @@ class NavbarLocation extends LitElement {
     this.activeTabIndex = -1
     this.url = ''
     this.title = ''
+    this.siteTitle = ''
     this.peers = 0
+    this.numFollowers = 0
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
@@ -87,7 +91,9 @@ class NavbarLocation extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <shell-window-navbar-site-info
         url=${this.url}
+        siteTitle=${this.siteTitle}
         peers=${this.peers}
+        numFollowers=${this.numFollowers}
         .loadError=${this.loadError}
       >
       </shell-window-navbar-site-info>

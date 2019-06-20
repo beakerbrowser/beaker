@@ -19,6 +19,7 @@ import * as statusBar from './subwindows/status-bar'
 import * as permPrompt from './subwindows/perm-prompt'
 import * as modals from './subwindows/modals'
 import * as windowMenu from './window-menu'
+import { getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
@@ -66,6 +67,8 @@ const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by thi
 const STATE_VARS = [
   'url',
   'title',
+  'siteTitle',
+  'numFollowers',
   'peers',
   'favicons',
   'zoom',
@@ -142,6 +145,7 @@ class View {
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
     this.datInfo = null // metadata about the site if viewing a dat
+    this.numFollowers = 0 // how many sites are following this site? (unwalled garden)
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
@@ -191,6 +195,17 @@ class View {
       title = this.datInfo.title
     }
     return title
+  }
+
+  get siteTitle () {
+    if (this.datInfo && this.datInfo.title) {
+      return this.datInfo.title
+    }
+    try {
+      return (new URL(this.url)).hostname
+    } catch (e) {
+      return ''
+    }
   }
 
   get canGoBack () {
@@ -496,6 +511,7 @@ class View {
     // clear existing state
     this.datInfo = null
     this.peers = 0
+    this.numFollowers = 0
     this.donateLinkHref = null
     this.uncommittedChanges = false
 
@@ -513,6 +529,12 @@ class View {
       let diff = await beakerCore.dat.library.getDaemon().fs_diffListing(archive, {compareContent: true, shallow: true})
       this.uncommittedChanges = diff ? diff.length : 0
     }
+    let userSession = getUserSessionFor(this.browserWindow.webContents)
+    let [siteFollowers, userFollows] = await Promise.all([
+      beakerCore.crawler.follows.list({filters: {topics: this.datInfo.url}}),
+      beakerCore.crawler.follows.list({filters: {authors: userSession.url}})
+    ])
+    this.numFollowers = siteFollowers.filter(f1 => userFollows.find(f2 => f1.author.url === f2.topic.url || f1.author.url === userSession.url)).length
     if (!noEmit) {
       this.emitUpdateState()
     }

@@ -10,7 +10,9 @@ class NavbarSiteInfo extends LitElement {
     return {
       isMenuOpen: {type: Boolean},
       url: {type: String},
+      siteTitle: {type: String},
       peers: {type: Number},
+      numFollowers: {type: Number},
       loadError: {type: Object}
     }
   }
@@ -19,7 +21,9 @@ class NavbarSiteInfo extends LitElement {
     super()
     this.isMenuOpen = false
     this.url = ''
+    this.siteTitle = ''
     this.peers = 0
+    this.numFollowers = 0
     this.loadError = null
   }
 
@@ -39,24 +43,36 @@ class NavbarSiteInfo extends LitElement {
     var cls = ''
     const scheme = this.scheme
     const isDat = scheme === 'dat:'
+    var innerHTML
     if (scheme) {
       const isHttps = scheme === 'https:'
       const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
       if ((isHttps && !isInsecureResponse) || scheme === 'beaker:') {
-        cls = 'secure'
-        icon = 'lock'
+        innerHTML = html`
+          <span class="label">${this.siteTitle}</span>
+        `
       } else if (scheme === 'http:') {
-        icon = 'info-circle'
+        innerHTML = html`
+          <span class="fas insecure fa-lock-open"></span>
+          <span class="label">${this.siteTitle}</span>
+        `
       } else if (isHttps && isInsecureResponse) {
-        cls = 'insecure'
-        icon = 'exclamation-circle'
+        innerHTML = html`
+          <span class="fas insecure fa-exclamation-circle"></span>
+          <span class="label">${this.siteTitle}</span>
+        `
       } else if (scheme === 'dat:') {
-        cls = 'secure'
-        icon = 'share-alt'
+        innerHTML = html`
+          ${''/*<span class="fas secure fa-share-alt"></span>
+          <span class="label secure ${cls}">${this.peers}</span>*/}
+          <span class="label">${this.siteTitle}</span>
+          <span class="far fa-user" style="color: gray;"></span>
+          <span class="label ${cls}" style="color: gray; margin-left: 0">${this.numFollowers}</span>
+        `
       }
     }
 
-    if (!icon) {
+    if (!innerHTML) {
       return html`<button></button>`
     }
 
@@ -64,9 +80,8 @@ class NavbarSiteInfo extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <button class=${buttonCls} @click=${this.onClickButton}>
-        <span class="fa fa-${icon} ${cls}"></span>
-        ${isDat ? html`<span class="label ${cls}">${this.peers}</span>` : ''}
-        ${isDat ? html`<span class="fas fa-caret-down"></span>` : ''}
+        ${innerHTML}
+        <span class="fas fa-caret-down"></span>
       </button>
     `
   }
@@ -105,6 +120,12 @@ button:hover {
   color: gray;
 }
 
+.fa-user {
+  font-size: 9px;
+  position: relative;
+  top: -1px;
+}
+
 .fa-caret-down {
   color: #adadad;
   margin-left: 2px;
@@ -112,6 +133,7 @@ button:hover {
 
 .label {
   margin-left: 2px;
+  margin-right: 2px;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
 }
