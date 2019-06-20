@@ -236,7 +236,7 @@ async function beakerProtocol (request, respond) {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/gear.svg'))
   }
   if (requestUrl === 'beaker://start' || requestUrl.startsWith('beaker://start')) {
-    return serveAppAsset(requestUrl, START_APP_PATH, cb)
+    return serveAppAsset(requestUrl, START_APP_PATH, cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library')) {
     return serveAppAsset(requestUrl, LIBRARY_APP_PATH, cb)
@@ -349,7 +349,7 @@ async function serveAppAsset (requestUrl, dirPath, cb, {fallbackToIndexHTML} = {
     await fs.promises.stat(filepath)
   } catch (e) {
     if (fallbackToIndexHTML) {
-      filepath = '/index.html'
+      filepath = path.join(dirPath, '/index.html')
     } else {
       return cb(404, 'Not Found')
     }
