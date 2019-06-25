@@ -27,10 +27,12 @@ class SelectFileModal extends LitElement {
     this.archiveInfo = null
 
     // params
+    this.saveMode = false
     this.archive = null
     this.defaultPath = '/'
+    this.defaultFilename = ''
     this.title = ''
-    this.buttonLabel = 'Select'
+    this.buttonLabel = ''
     this.select = ['file', 'folder', 'archive']
     this.filters = {
       extensions: undefined,
@@ -44,10 +46,12 @@ class SelectFileModal extends LitElement {
 
   async init (params, cbs) {
     this.cbs = cbs
+    this.saveMode = params.saveMode
     this.archive = params.archive
     this.path = params.defaultPath || '/'
+    this.defaultFilename = params.defaultFilename || ''
     this.title = params.title || ''
-    this.buttonLabel = params.buttonLabel || 'Select'
+    this.buttonLabel = params.buttonLabel || (this.saveMode ? 'Save' : 'Select')
     if (params.select) this.select = params.select
     if (params.filters) {
       if ('extensions' in params.filters) {
@@ -60,25 +64,36 @@ class SelectFileModal extends LitElement {
         this.filters.networked = params.filters.networked
       }
     }
-    this.allowMultiple = params.allowMultiple
+    this.allowMultiple = !this.saveMode && params.allowMultiple
     this.disallowCreate = params.disallowCreate
     if (!this.title) {
-      let canSelect = v => this.select.includes(v)
-      let [file, folder, mount] = [canSelect('file'), canSelect('folder'), canSelect('mount')]
-      if (file && (folder || mount)) {
-        this.title = 'Select files or folders'
-      } else if (file && !(folder || mount)) {
-        this.title = 'Select files'
-      } else if (folder) {
-        this.title = 'Select folders'
-      } else if (mount) {
-        this.title = 'Select dat archives'
+      if (this.saveMode) {
+        this.title = 'Save file...'
+      } else {
+        let canSelect = v => this.select.includes(v)
+        let [file, folder, mount] = [canSelect('file'), canSelect('folder'), canSelect('mount')]
+        if (file && (folder || mount)) {
+          this.title = 'Select files or folders'
+        } else if (file && !(folder || mount)) {
+          this.title = 'Select files'
+        } else if (folder) {
+          this.title = 'Select folders'
+        } else if (mount) {
+          this.title = 'Select dat archives'
+        }
       }
     }
 
     this.archiveInfo = await bg.datArchive.getInfo(this.archive)
     await this.readdir()
-    this.updateComplete.then(_ => this.adjustHeight())
+    this.updateComplete.then(_ => {
+      this.adjustHeight()
+      if (this.saveMode) {
+        this.filenameInput.value = this.defaultFilename
+        this.focusInput()
+        this.requestUpdate()
+      }
+    })
   }
 
   adjustHeight () {
@@ -87,9 +102,20 @@ class SelectFileModal extends LitElement {
     bg.modals.resizeSelf({height})
   }
 
+  focusInput () {
+    var el = this.filenameInput
+    el.focus()
+    el.selectionStart = el.selectionEnd = 0
+  }
+
   async goto (path) {
     this.path = path
     await this.readdir()
+    this.selectedPaths = []
+    if (this.saveMode) {
+      this.filenameInput.value = this.defaultFilename
+      this.focusInput()
+    }
   }
 
   async readdir () {
@@ -113,6 +139,9 @@ class SelectFileModal extends LitElement {
     if (defined(this.filters.writable) && this.filters.writable !== this.archiveInfo.isOwner) { // TODO change isOwner to writable
       return false
     }
+    if (this.saveMode && !this.archiveInfo.isOwner) { // TODO change isOwner to writable
+      return false
+    }
     if (file.stat.isFile()) {
       if (!this.select.includes('file')) {
         return false
@@ -129,33 +158,66 @@ class SelectFileModal extends LitElement {
     }
   }
 
+  get filenameInput () {
+    return this.shadowRoot.querySelector('input')
+  }
+
+  get hasValidSelection () {
+    if (this.saveMode) {
+      let inputValue = this.filenameInput && this.filenameInput.value
+      if (!inputValue) return false
+      let file = this.getFile(joinPath(this.path, inputValue))
+      if (file && file.stat.isDirectory()) return false
+      return true
+    } else {
+      if (this.selectedPaths.length === 0) return false
+      if (this.filters.extensions) {
+        // if there's an extensions requirement,
+        // folders can still be selected but they're not valid targets
+        return this.selectedPaths.every(path => this.filters.extensions.some(ext => path.endsWith(ext)))
+      }
+      return true
+    }
+  }
+
   // rendering
   // =
 
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
-        <form @submit=${this.onSubmit}>
-          <h1 class="title">${this.title}</h1>
+      <div>
+        <div class="title">${this.title}</div>
+        <div class="wrapper">
+          <form @submit=${this.onSubmit}>
+            ${this.saveMode
+              ? html`
+                <div class="filename">
+                  <label>Save as:</label>
+                  <input type="text" name="filename" @keyup=${e => this.requestUpdate()}>
+                </div>
+              `
+              : ''}
 
-          <div class="path">
-            ${this.renderPath()}
-          </div>
-
-          <div class="view">
-            ${this.renderFilesList()}
-          </div>
-
-          <div class="form-actions">
-            <div class="right">
-              <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-              <button ?disabled=${this.selectedPaths.length === 0} type="submit" class="btn primary" tabindex="5">
-                ${this.buttonLabel}
-              </button>
+            <div class="path">
+              ${this.renderPath()}
             </div>
-          </div>
-        </form>
+
+            <div class="view">
+              ${this.renderFilesList()}
+            </div>
+
+            <div class="form-actions">
+              <div class="left"></div>
+              <div class="right">
+                <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+                <button ?disabled=${!this.hasValidSelection} type="submit" class="btn primary" tabindex="5">
+                  ${this.buttonLabel}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     `
   }
@@ -203,7 +265,7 @@ class SelectFileModal extends LitElement {
         data-path=${file.path}
       >
         <div class="info">
-          <span class="fa-fw far fa-${file.stat.isFile() ? 'file' : 'folder'}"></span>
+          <span class="fa-fw ${file.stat.isFile() ? 'far fa-file' : 'fas fa-folder'}"></span>
           <span class="name" title="${file.name}">${file.name}</span>
         </div>
       </div>
@@ -219,10 +281,14 @@ class SelectFileModal extends LitElement {
   }
 
   onSelectFile (e) {
+    var path = e.currentTarget.dataset.path
     if (this.allowMultiple && (e.ctrlKey || e.metaKey)) {
-      this.selectedPaths = this.selectedPaths.concat([e.currentTarget.dataset.path])
+      this.selectedPaths = this.selectedPaths.concat([path])
     } else {
-      this.selectedPaths = [e.currentTarget.dataset.path]
+      this.selectedPaths = [path]
+    }
+    if (this.saveMode) {
+      this.filenameInput.value = path.split('/').pop()
     }
   }
 
@@ -244,10 +310,38 @@ class SelectFileModal extends LitElement {
 
   async onSubmit (e) {
     if (e) e.preventDefault()
-    this.cbs.resolve({paths: this.selectedPaths})
+    if (this.saveMode) {
+      let path = joinPath(this.path, this.filenameInput.value)
+      if (this.getFile(path)) {
+        if (!confirm('Overwrite this file?')) {
+          return
+        }
+      }
+      this.cbs.resolve({path})
+    } else {
+      this.cbs.resolve({paths: this.selectedPaths})
+    }
   }
 }
 SelectFileModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
+.title {
+  background: #fff;
+  border: 0;
+  padding: 10px 10px 0;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.wrapper {
+  padding: 15px;
+}
+
+form {
+  padding: 0;
+  margin: 0;
+}
+
 .form-actions {
   display: flex;
   text-align: left;
@@ -261,17 +355,13 @@ SelectFileModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
   margin-right: 5px;
 }
 
-h1.title {
-  border: 0;
-  margin: 10px 0;
-}
-
 .path {
   display: flex;
   align-items: center;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   border-bottom: 0;
   padding: 4px 6px;
+  background: #eee;
 }
 
 .path .fa-fw {
@@ -293,28 +383,42 @@ h1.title {
 
 .view {
   overflow: hidden;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
+}
+
+.filename {
+  display: flex;
+  align-items: center;
+  margin: 0 0 10px;
+}
+
+.filename label {
+  margin-right: 10px;
+  font-weight: normal;
+}
+
+.filename input {
+  flex: 1;
+  margin: 0;
+  font-size: 13px;
 }
 
 .files-list {
   height: 350px;
   overflow-y: scroll;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   user-select: none;
   cursor: default;
+  padding: 2px 0;
 }
 
 .files-list .item {
-  padding: 4px 10px;
-}
-
-.files-list .item:nth-child(even) {
-  background: #f7f7f7;
+  padding: 6px 10px;
 }
 
 .files-list .item.disabled {
   font-style: italic;
-  color: gray;
+  color: #aaa;
 }
 
 .files-list .item .info {
@@ -332,10 +436,6 @@ h1.title {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.files-list .item:hover {
-  background: #f0f0f0;
 }
 
 .files-list .item.selected {
