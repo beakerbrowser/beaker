@@ -5,6 +5,7 @@ import './modals/setup'
 import './modals/create-archive'
 import './modals/fork-archive'
 import './modals/select-archive'
+import './modals/select-file'
 import './modals/prompt'
 import './modals/basic-auth'
 
@@ -68,6 +69,8 @@ class ModalsWrapper extends LitElement {
         return html`<fork-archive-modal></fork-archive-modal>`
       case 'select-archive':
         return html`<select-archive-modal></select-archive-modal>`
+      case 'select-file':
+        return html`<select-file-modal></select-file-modal>`
       case 'prompt':
         return html`<prompt-modal></prompt-modal>`
       case 'basic-auth':
