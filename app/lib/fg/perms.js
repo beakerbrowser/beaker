@@ -1,5 +1,6 @@
 import { html } from '../../vendor/lit-element/lit-element'
 import { shorten } from '../strings'
+import { isDatHashRegex } from '../urls'
 
 export const PERM_ICONS = {
   js: 'fas fa-code',
@@ -29,6 +30,7 @@ export function renderPermDesc ({bg, url, permId, permParam, permOpts}) {
   const openUrl = url => e => {
     e.preventDefault()
     e.stopPropagation()
+    url = isDatHashRegex.test(url) ? `dat://${url}` : url
     api.createTab(url)
   }
   switch (permId) {

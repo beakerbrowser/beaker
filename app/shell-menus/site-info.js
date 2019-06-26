@@ -2,14 +2,16 @@
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import prettyHash from 'pretty-hash'
+import prettyBytes from 'pretty-bytes'
 import _get from 'lodash.get'
 import { PERM_ICONS, renderPermDesc } from '../lib/fg/perms'
-import { getPermId, getPermParam } from '../lib/strings'
+import { getPermId, getPermParam, pluralize } from '../lib/strings'
 import * as bg from './bg-process-rpc'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import './hoverable.js'
 
+const POLL_INTERVAL = 500 // ms
 const IS_DAT_KEY_REGEX = /^[0-9a-f]{64}$/i
 
 class SiteInfoMenu extends LitElement {
@@ -19,6 +21,7 @@ class SiteInfoMenu extends LitElement {
   }
 
   reset () {
+    this.view = ''
     this.url = null
     this.loadError = null
     this.datInfo = null
@@ -26,15 +29,28 @@ class SiteInfoMenu extends LitElement {
     this.me = null
     this.followers = null
     this.follows = null
+    if (this.poll) {
+      clearInterval(this.poll)
+    }
+    this.poll = 0
   }
 
   async init (params) {
     // fetch tab information
+    this.view = ''
     var state = await bg.views.getTabState('active', {datInfo: true, sitePerms: true})
     this.url = state.url
     this.loadError = state.loadError
     this.datInfo = state.datInfo
     this.sitePerms = state.sitePerms
+
+    if (this.isDat) {
+      this.poll = setInterval(this.doPoll.bind(this), POLL_INTERVAL)
+    }
+
+    // render
+    this.requestUpdate()
+
     if (this.datInfo) {
       this.me = await bg.profiles.me()
       this.followers = (await bg.follows.list({filters: {topics: this.datInfo.url}})).map(({author}) => author)
@@ -61,11 +77,24 @@ class SiteInfoMenu extends LitElement {
     }))
 
     // render
-    await this.requestUpdate()
+    this.requestUpdate()
+  }
 
+  async doPoll () {
+    var stats = await bg.views.getNetworkState('active')
+    Object.assign(this.datInfo, stats)
+    this.requestUpdate()
+  }
+
+  afterUpdate () {
     // adjust height based on rendering
     var height = this.shadowRoot.querySelector('div').clientHeight
-    await bg.shellMenus.resizeSelf({height})
+    bg.shellMenus.resizeSelf({height})
+  }
+
+  setView (v) {
+    this.view = v
+    this.requestUpdate()
   }
 
   get protocol () {
@@ -94,9 +123,18 @@ class SiteInfoMenu extends LitElement {
     return this.datInfo && this.me && this.me.url === this.datInfo.url
   }
 
+  get isMySite () {
+    return this.datInfo && this.datInfo.isOwner
+  }
+
   get amIFollowing () {
     if (!this.me || !this.followers) return false
     return !!this.followers.find(f => f.url === this.me.url)
+  }
+
+  get followsMe () {
+    if (!this.me || !this.follows) return false
+    return !!this.follows.find(f => f.url === this.me.url)
   }
 
   get connectedSites () {
@@ -129,35 +167,167 @@ class SiteInfoMenu extends LitElement {
   // =
 
   render () {
+    if (this.view === 'settings') {
+      return this.renderSettingsView()
+    } else if (this.view === 'socialgraph') {
+      return this.renderSocialgraphView()
+    } else if (this.view === 'network') {
+      return this.renderNetworkView()
+    } else {
+      return this.renderMainView()
+    }
+  }
+
+  renderMainView () {
+    var numFollowers = this.followers && this.followers.length || 0
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="details">
+          ${this.renderActions()}
+          <div class="heading">
+            <h2>${this.siteTitle}</h2>
+          </div>
+          ${this.renderSiteDescription()}
+        </div>
+        <div class="menu ${this.isDat ? 'centered' : ''}">
+          ${this.isDat ? html`
+            <div class="menu-item" @click=${e => this.setView('socialgraph')}>
+              <span class="fa-fw far fa-user"></span>
+              <span>${numFollowers} ${pluralize(numFollowers, 'follower')}</span>
+            </div>
+          ` : ''}
+          ${this.isDat ? html`
+            <div class="menu-item" @click=${e => this.setView('network')}>
+              <span class="fa-fw fas fa-share-alt"></span>
+              <span>${this.datInfo.peers} ${pluralize(this.datInfo.peers, 'peer')}</span>
+            </div>
+          ` : ''}
+          <div class="menu-item" @click=${e => this.setView('settings')}>
+            <span class="fa-fw fas fa-cog"></span>
+            <span>Settings</span>
+          </div>
+        </div>
+        ${this.renderProtocolDescription()}
+      </div>
+    `
+  }
+
+  renderSocialgraphView () {
+    var connectedSites = this.connectedSites
+    var followingSites = this.followingSites
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="heading">
+          <button class="back" @click=${e => this.setView('')}>
+            <span class="fas fa-caret-left"></span>
+          </button>
+          <h2>Social graph</h2>
+        </div>
+        <div class="content followers">
+          ${connectedSites.length === 0 && followingSites.length === 0
+            ? html`
+              <h3>Followers</h3>
+              <div class="empty">Not followed by anyone you know.</div>
+            `
+            : ''}
+          ${connectedSites.length > 0
+            ? html`
+              <h3>Connected with</h3>
+              ${connectedSites.map(f => html`
+                <div class="follower" @click=${e => this.onOpenUrl(e, f.url)}>
+                  <img src="asset:thumb:${f.url}">
+                  <div class="title">${f.title}</div>
+                </div>
+              `)}
+            ` : ''}
+          ${followingSites.length > 0
+            ? html`
+              <h3>Followed by</h3>
+              ${followingSites.map(f => html`
+                <div class="follower" @click=${e => this.onOpenUrl(e, f.url)}>
+                  <img src="asset:thumb:${f.url}">
+                  <div class="title">${f.title}</div>
+                </div>
+              `)}
+            ` : ''}
+        </div>
+      </div>
+    `
+  }
+
+  renderNetworkView () {
+    var stats = this.datInfo.networkStats
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="heading">
+          <button class="back" @click=${e => this.setView('')}>
+            <span class="fas fa-caret-left"></span>
+          </button>
+          <h2>Dat network</h2>
+        </div>
+        <div class="content" style="padding: 14px 13px">
+          <div class="network-stats">
+            <div>${this.datInfo.peers} <small>${pluralize(this.datInfo.peers, 'peer')}</small></div>
+            <div>${prettyBytes(stats.uploadTotal)} <small>uploaded</small></div>
+            <div>${prettyBytes(stats.downloadTotal)} <small>downloaded</small></div>
+          </div>
+          <div>
+            <button
+              @click=${e => this.onOpenUrl(e, `beaker://swarm-debugger/${this.datInfo.url}`)}
+              style="margin-right: 5px"
+            >Network Debugger</button>
+            <span class="fas fa-fw fa-arrow-up"></span> ${prettyBytes(stats.uploadSpeed)}/s
+            <span class="fas fa-fw fa-arrow-down"></span> ${prettyBytes(stats.downloadSpeed)}/s
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  renderSettingsView () {
     var permsEls = []
     if (this.sitePerms) {
       for (var perm of this.sitePerms) {
         permsEls.push(this.renderPerm(perm))
       }
     }
-
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <div class="details">
-          ${this.renderActions()}
-          ${this.renderSiteTitle()}
-          ${this.renderSiteDescription()}
-          ${this.renderSiteSocialgraph()}
+        <div class="heading">
+          <button class="back" @click=${e => this.setView('')}>
+            <span class="fas fa-caret-left"></span>
+          </button>
+          <h2>Settings</h2>
         </div>
-        ${permsEls.length ? html`<h2 class="perms-heading">Permissions</h2>` : ''}
-        <div class="perms">${permsEls}</div>
-        <div class="details-protocol-description">
-          ${this.renderProtocolDescription()}
+        <div class="content">
+          ${this.isMySite ? html`
+            <h3>Site information</h3>
+            <form @submit=${this.onSubmitSiteInformation}>
+              <div class="field">
+                <label>Title</label>
+                <input name="title" type="text" placeholder="Title" value=${this.datInfo.title}>
+              </div>
+              <div class="field">
+                <label>Description</label>
+                <input name="description" type="text" placeholder="Description" value=${this.datInfo.description}>
+              </div>
+              <div class="field">
+                <label></label>
+                <div>
+                  <button type="submit">Save</button>
+                </div>
+              </div>
+            </form>
+          ` : ''}
+          ${permsEls.length ? html`
+            <h3>Permissions</h3>
+            <div class="perms">${permsEls}</div>
+          ` : ''}
         </div>
-      </div>
-    `
-  }
-
-  renderSiteTitle () {
-    return html`
-      <div class="details-site-title">
-        ${this.siteTitle}
       </div>
     `
   }
@@ -214,13 +384,13 @@ class SiteInfoMenu extends LitElement {
       return html`
         <div class="details-actions">
           <span class="label">This is you!</span>
-          <button @click=${e => this.onOpenUrl(e, 'beaker://settings')}><span class="fas fa-pencil-alt"></span> Edit profile</button>
         </div>
       `
-    }
-    if (this.isDat) {
+    } else if (this.isDat) {
       return html`
         <div class="details-actions">
+          ${this.isMySite ? html`<span class="label">Your site</span>` : ''}
+          ${this.followsMe ? html`<span class="label">Follows you</span>` : ''}
           ${this.amIFollowing
             ? html`
               <beaker-hoverable @click=${this.onToggleFollow}>
@@ -238,29 +408,15 @@ class SiteInfoMenu extends LitElement {
   renderProtocolDescription () {
     const protocol = this.protocol
     const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
-    if (protocol === 'https:' && !isInsecureResponse) {
-      return 'Your connection to this site is secure.'
-    }
     if ((protocol === 'https:' && isInsecureResponse) || protocol === 'http:') {
       return html`
-        <div>
-          <p>Your connection to this site is not secure.</p>
-          <small>
+        <div class="details-protocol-description">
+          <p><span class="fas fa-exclamation-triangle"></span> Your connection to this site is not secure.</p>
+          <p>
             You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
-          </small>
+          </p>
         </div>
       `
-    }
-    if (protocol === 'dat:') {
-      return html`
-        <div>
-          This site was downloaded from a secure peer-to-peer network.
-          <a @click=${this.onClickLearnMore}>Learn More</a>
-        </div>
-      `
-    }
-    if (protocol === 'beaker:') {
-      return 'This page is provided by Beaker. Your information on this page is secure.'
     }
     return ''
   }
@@ -282,16 +438,6 @@ class SiteInfoMenu extends LitElement {
   // events
   // =
 
-  onTogglePerm (perm) {
-    // update perm
-    var permObj = this.sitePerms.find(o => o.perm === perm)
-    var newValue = (permObj.value == 1) ? 0 : 1
-    bg.sitedata.setPermission(this.url, perm, newValue).then(() => {
-      permObj.value = newValue
-      this.requestUpdate()
-    })
-  }
-
   async onToggleFollow () {
     if (this.amIFollowing) {
       await bg.follows.remove(this.datInfo.url)
@@ -309,8 +455,27 @@ class SiteInfoMenu extends LitElement {
     bg.shellMenus.createTab(url)
   }
 
-  onClickLearnMore () {
-    bg.shellMenus.createTab('https://dat.foundation')
+  onSubmitSiteInformation (e) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    var updates = {
+      title: e.currentTarget.title.value,
+      description: e.currentTarget.description.value
+    }
+    bg.datArchive.configure(this.datInfo.url, updates)
+    Object.assign(this.datInfo, updates)
+    bg.shellMenus.loadURL(this.datInfo.url) // reload the page
+  }
+
+  onTogglePerm (perm) {
+    // update perm
+    var permObj = this.sitePerms.find(o => o.perm === perm)
+    var newValue = (permObj.value == 1) ? 0 : 1
+    bg.sitedata.setPermission(this.url, perm, newValue).then(() => {
+      permObj.value = newValue
+      this.requestUpdate()
+    })
   }
 }
 SiteInfoMenu.styles = [inputsCSS, buttonsCSS, css`
@@ -318,6 +483,26 @@ SiteInfoMenu.styles = [inputsCSS, buttonsCSS, css`
   box-sizing: border-box;
   color: #333;
   background: #fff;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+}
+
+.back {
+  margin: 10px;
+  font-size: 18px;
+  border: 0;
+  box-shadow: none;
+}
+
+.back:hover {
+  background: #eee;
+}
+
+h3 {
+  margin: 0px 18px 12px;
 }
 
 a {
@@ -347,9 +532,14 @@ button {
   line-height: 1;
 }
 
+.content {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
 .details {
   position: relative;
-  padding: 15px 15px 0;
+  padding: 0 15px;
   min-height: 30px;
 }
 
@@ -358,27 +548,25 @@ button {
   color: #707070;
 }
 
-.details-site-title {
-  font-size: 19px;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
-
 .details-site-description {
   margin-bottom: 1rem;
   line-height: 1.4;
-  font-size: 14px;
-}
-
-.details-site-socialgraph {
-  margin-bottom: 1rem;
+  font-size: 15px;
 }
 
 .details-protocol-description {
   border-top: 1px solid #ddd;
-  padding: 0.5rem;
+  padding: 15px;
   background: rgb(243, 241, 241);
   line-height: 1.3;
+}
+
+.details-protocol-description > :first-child {
+  margin-top: 0;
+}
+
+.details-protocol-description > :last-child {
+  margin-bottom: 0;
 }
 
 .details-actions {
@@ -387,17 +575,115 @@ button {
   right: 15px;
 }
 
-.perms-heading {
-  font-size: 11px;
-  font-weight: 500;
-  color: #707070;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  margin: 25px 0 5px 15px;
+.menu {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  cursor: pointer;
+  border-top: 1px solid #ddd;
+}
+
+.menu.centered {
+  text-align: center;
+  font-size: 13px;
+}
+
+.menu-item {
+  flex: 1;
+  padding: 10px 13px;
+  border-right: 1px solid #ddd;
+  font-variant-numeric: tabular-nums;
+}
+
+.menu.centered .menu-item .fa-fw {
+  margin-left: -5px;
+}
+
+.menu-item:last-child {
+  border-right: 0;
+}
+
+.menu-item:hover {
+  background: rgb(243, 241, 241);
+}
+
+.content {
+  border-top: 1px solid #ddd;
+  padding-bottom: 6px;
+}
+
+.content h3 {
+  margin: 13px 13px 6px;
+}
+
+.empty {
+  padding: 2px 13px 13px;
+  font-size: 14px;
+}
+
+.follower {
+  display: flex;
+  align-items: center;
+  padding: 10px 13px;
+  cursor: default;
+}
+
+.follower:hover {
+  background: #f5f5f5;
+}
+
+.follower img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 13px;
+}
+
+.follower .title {
+  font-size: 15px;
+}
+
+.network-stats {
+  display: flex;
+  font-size: 16px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 0 0 10px;
+  white-space: nowrap;
+}
+
+.network-stats > div {
+  flex: 1;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.network-stats > div:last-child {
+  border-right: 0;
+}
+
+
+form {
+  padding: 4px 0;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  padding: 4px 13px;
+}
+
+.field label {
+  flex: 0 0 80px;
+}
+
+.field input {
+  flex: 1;
 }
 
 .perms {
-  border-radius: 0 0 4px 4px;
   overflow-x: hidden;
 }
 
@@ -406,14 +692,11 @@ button {
   margin-right: 7px;
 }
 
-.perms .perm {
-  border-top: 1px solid #eee;
-}
-
 .perms label {
   display: flex;
   align-items: center;
-  padding: 8px 15px;
+  padding: 10px 15px;
+  font-size: 14px;
   margin: 0;
   font-weight: 400;
 }

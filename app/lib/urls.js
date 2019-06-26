@@ -1,4 +1,4 @@
-const isDatHashRegex = /^[a-z0-9]{64}/i
+export const isDatHashRegex = /^[a-z0-9]{64}/i
 const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 
 // helper to determine what the user may be inputting into the locaiton bar

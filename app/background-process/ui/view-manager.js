@@ -1080,6 +1080,18 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     }
   },
 
+  async getNetworkState (tab) {
+    var win = getWindow(this.sender)
+    var view = getByIndex(win, tab)
+    if (view && view.datInfo) {
+      var networkStats = await beakerCore.dat.library.getArchiveNetworkStats(view.datInfo.key)
+      return {
+        peers: view.peers,
+        networkStats
+      }
+    }
+  },
+
   async getPageMetadata (tab) {
     var win = getWindow(this.sender)
     var view = getByIndex(win, tab)
