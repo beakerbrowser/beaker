@@ -310,7 +310,7 @@ export function buildWindowMenu (opts = {}) {
           label: 'Toggle Shell-Window DevTools',
           enabled: !noWindows,
           click: function () {
-            BrowserWindow.getFocusedWindow().toggleDevTools()
+            BrowserWindow.getFocusedWindow().webContents.openDevTools({mode: 'detach'})
           }
         },
       { type: 'separator' },
