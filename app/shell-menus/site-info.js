@@ -86,7 +86,7 @@ class SiteInfoMenu extends LitElement {
     this.requestUpdate()
   }
 
-  afterUpdate () {
+  updated () {
     // adjust height based on rendering
     var height = this.shadowRoot.querySelector('div').clientHeight
     bg.shellMenus.resizeSelf({height})
@@ -323,10 +323,10 @@ class SiteInfoMenu extends LitElement {
               </div>
             </form>
           ` : ''}
-          ${permsEls.length ? html`
-            <h3>Permissions</h3>
-            <div class="perms">${permsEls}</div>
-          ` : ''}
+          <h3>Permissions</h3>
+          ${permsEls.length > 0
+            ? html`<div class="perms">${permsEls}</div>`
+            : html`<div class="empty">No permissions assigned.</div>`}
         </div>
       </div>
     `
