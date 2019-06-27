@@ -1099,7 +1099,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     return {}
   },
 
-  async createTab (url, opts = {setActive: false, addToNoRedirects: false}) {
+  async createTab (url, opts = {focusLocationBar: false, setActive: false, addToNoRedirects: false}) {
     if (opts.addToNoRedirects) {
       addToNoRedirects(url)
     }

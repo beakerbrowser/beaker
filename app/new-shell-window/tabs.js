@@ -112,9 +112,8 @@ class ShellWindowTabs extends LitElement {
   // events
   // =
 
-  async onClickNew (e) {
-    var index = await bg.views.createTab()
-    bg.views.setActiveTab(index)
+  onClickNew (e) {
+    bg.views.createTab(undefined, {focusLocationBar: true, setActive: true})
   }
 
   onClickTab (e, index) {
