@@ -359,7 +359,7 @@ class NavbarLocation extends LitElement {
     await bg.views.toggleMenu('preview-mode-tools', {
       bounds: {
         top: (rect1.bottom|0),
-        right: (rect2.right|0)
+        left: (rect2.right|0)
       },
       params: {url: this.url}
     })
@@ -373,7 +373,7 @@ class NavbarLocation extends LitElement {
     await bg.views.toggleMenu('site-tools', {
       bounds: {
         top: (rect1.bottom|0),
-        right: (rect2.right|0)
+        left: (rect2.right|0)
       },
       params: {url: this.url}
     })
@@ -403,7 +403,7 @@ class NavbarLocation extends LitElement {
     await bg.views.toggleMenu('donate', {
       bounds: {
         top: (rect1.bottom|0),
-        right: (rect2.right|0)
+        left: (rect2.right|0)
       },
       params: {url: this.url}
     })
@@ -431,7 +431,7 @@ class NavbarLocation extends LitElement {
     bg.views.toggleMenu('bookmark', {
       bounds: {
         top: Number(rect.bottom),
-        right: Number(rect.right)
+        left: Number(rect.right)
       },
       params: {url: this.url, bookmarkIsNew}
     })

@@ -20,6 +20,7 @@ import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 // =
 
 const MARGIN_SIZE = 10
+const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'donate', 'site-tools', 'preview-mode-tools']
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -53,50 +54,46 @@ export function get (parentWindow) {
 export function reposition (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    var parentBounds = parentWindow.getContentBounds()
+    let parentBounds = parentWindow.getContentBounds()
     const setBounds = (b) => {
       // HACK workaround the lack of view.getBounds() -prf
-      view.currentBounds = b
-      view.setBounds(adjustBoundsForMargin(b))
+      if (view.currentBounds) {
+        b = view.currentBounds // use existing bounds
+      }
+      view.currentBounds = b // store new bounds
+      view.setBounds(adjustBounds(view, parentWindow, b))
     }
     if (view.menuId === 'browser') {
       setBounds({
-        x: parentBounds.width - 405,
+        x: 5,
         y: 72,
         width: 400,
         height: 350
       })
     } else if (view.menuId === 'bookmark') {
       setBounds({
-        x: view.boundsOpt.right - 300,
+        x: parentBounds.width - view.boundsOpt.left,
         y: view.boundsOpt.top,
         width: 300,
         height: 400
       })
-    } else if (view.menuId === 'peers') {
-      setBounds({
-        x: view.boundsOpt.right - 300,
-        y: view.boundsOpt.top,
-        width: 300,
-        height: 118
-      })
     } else if (view.menuId === 'donate') {
       setBounds({
-        x: view.boundsOpt.right - 320,
+        x: parentBounds.width - view.boundsOpt.left,
         y: view.boundsOpt.top,
         width: 350,
         height: 90
       })
     } else if (view.menuId === 'site-tools') {
       setBounds({
-        x: view.boundsOpt.right - 220,
+        x: parentBounds.width - view.boundsOpt.left,
         y: view.boundsOpt.top,
         width: 220,
         height: 152
       })
     } else if (view.menuId === 'preview-mode-tools') {
       setBounds({
-        x: view.boundsOpt.right - 220,
+        x: parentBounds.width - view.boundsOpt.left,
         y: view.boundsOpt.top,
         width: 220,
         height: 122
@@ -148,6 +145,7 @@ export function hide (parentWindow) {
   if (view) {
     view.webContents.executeJavaScript(`reset('${view.menuId}')`)
     parentWindow.removeBrowserView(view)
+    view.currentBounds = null
     view.isVisible = false
     events.emit('hide')
   }
@@ -181,7 +179,7 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
     var view = BrowserView.fromWebContents(this.sender)
     // HACK view.currentBounds is set in reposition() -prf
     dimensions = Object.assign({}, view.currentBounds || {}, dimensions)
-    view.setBounds(adjustBoundsForMargin(dimensions))
+    view.setBounds(adjustBounds(view, getParentWindow(this.sender), dimensions))
     view.currentBounds = dimensions
   },
 
@@ -195,9 +193,17 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
 // internal methods
 // =
 
-function adjustBoundsForMargin (bounds) {
+/**
+ * @description
+ * Ajust the bounds for margin and for right-alignment (as needed)
+ */
+function adjustBounds (view, parentWindow, bounds) {
+  let parentBounds = parentWindow.getContentBounds()
+  var isRightAligned = IS_RIGHT_ALIGNED.includes(view.menuId)
   return {
-    x: bounds.x - MARGIN_SIZE,
+    x: isRightAligned
+      ? (parentBounds.width - bounds.width - bounds.x - MARGIN_SIZE)
+      : (bounds.x - MARGIN_SIZE),
     y: bounds.y,
     width: bounds.width + (MARGIN_SIZE * 2),
     height: bounds.height + MARGIN_SIZE
