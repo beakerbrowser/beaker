@@ -16,7 +16,7 @@ import * as contextMenu from '../com/context-menu'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
 import {closeAllToggleables}  from '../com/toggleable2'
 import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
-const profiles = navigator.importSystemAPI('profiles')
+const profiles = navigator.importSystemAPI('unwalled-garden-profiles')
 
 const DEFAULT_SIDEBAR_WIDTH = 190
 const MIN_SIDEBAR_WIDTH = 100
