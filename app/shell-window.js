@@ -134,7 +134,9 @@ class ShellWindowUI extends LitElement {
   }
 
   onUserThumbChanged (e) {
-    this.userThumbUrl = `asset:thumb:${e.url}?cache=${Date.now()}`
+    if (e.url === this.userUrl) {
+      this.userThumbUrl = `asset:thumb:${e.url}?cache=${Date.now()}`
+    }
   }
 }
 

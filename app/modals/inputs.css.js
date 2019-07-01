@@ -17,6 +17,17 @@ textarea:focus {
   box-shadow: 0 0 0 2px rgba(41, 95, 203, 0.2);
 }
 
+input.has-error,
+textarea.has-error {
+  border-color: red;
+  margin-bottom: 0;
+}
+
+.error {
+  color: red;
+  margin-bottom: 15px;
+}
+
 label {
   font-weight: 500;
 }
@@ -38,6 +49,10 @@ label[disabled][data-tooltip] * {
   margin-bottom: 10px;
   cursor: pointer;
   overflow: initial;
+}
+
+.toggle.non-fullwidth {
+  justify-content: initial;
 }
 
 .toggle * {

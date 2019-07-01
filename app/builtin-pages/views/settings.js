@@ -13,7 +13,7 @@ const DEFAULT_APP_NAMES = ['start', 'feed', 'profile', 'library', 'bookmarks', '
 // =
 
 var settings
-var user
+var users
 var browserInfo
 var browserEvents
 var defaultProtocolSettings
@@ -22,10 +22,6 @@ var logger = new Logger()
 var datCache = new DatCache()
 var crawlerStatus = new CrawlerStatus()
 
-var newTitle
-var newDescription
-var newThumb
-var newThumbExt
 
 // main
 // =
@@ -42,9 +38,9 @@ async function setup () {
 
   // fetch data
   browserInfo = beaker.browser.getInfo()
-  user = await (navigator.importSystemAPI('unwalled-garden-profiles')).me()
   settings = await beaker.browser.getSettings()
   defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
+  users = await beaker.users.list()
 
   // set the view and render
   setViewFromHash()
@@ -84,6 +80,11 @@ function renderSidebar () {
         General
       </div>
 
+      <div class="nav-item ${activeView === 'users' ? 'active' : ''}" onclick=${() => onUpdateView('users')}>
+        <i class="fa fa-angle-right"></i>
+        Users
+      </div>
+
       <div class="nav-item ${activeView === 'dat-network' ? 'active' : ''}" onclick=${() => onUpdateView('dat-network')}>
         <i class="fa fa-angle-right"></i>
         Dat Network
@@ -119,6 +120,8 @@ function renderView () {
   switch (activeView) {
     case 'general':
       return renderGeneral()
+    case 'users':
+      return renderUsers()
     case 'dat-network':
       return renderDatNetwork()
     case 'logger':
@@ -135,7 +138,6 @@ function renderView () {
 function renderGeneral () {
   return yo`
     <div class="view not-fullwidth">
-      ${renderProfile()}
       ${renderAutoUpdater()}
       ${renderOnStartupSettings()}
       ${renderProtocolSettings()}
@@ -144,87 +146,48 @@ function renderGeneral () {
   `
 }
 
-function renderProfile () {
-  var hasChange = newTitle || newDescription || newThumb
-
-  function onInputTitle (e) {
-    newTitle = e.currentTarget.value
-    renderToPage()
-  }
-
-  function onInputDescription (e) {
-    newDescription = e.currentTarget.value
-    renderToPage()
-  }
-
-  var fileInput = yo`<input type="file" accept=".jpg,.jpeg,.png" onchange=${onChooseThumbFile}>`
-  function onClickAvatar () {
-    fileInput.click()
-  }
-
-  function onChooseThumbFile (e) {
-    var file = e.currentTarget.files[0]
-    if (!file) return
-    var fr = new FileReader()
-    fr.onload = () => {
-      newThumbExt = file.name.split('.').pop()
-      newThumb = fr.result
-      renderToPage()
-    }
-    fr.readAsDataURL(file)
-  }
-
-  async function onSubmit (e) {
+function renderUsers () {
+  const onEdit = async (e, user) => {
     e.preventDefault()
+    e.stopPropagation()
 
-    var site = new DatArchive(user.url)
-    if (newTitle || newDescription) {
-      await site.configure({
-        title: newTitle || user.title,
-        description: newDescription || user.description
-      })
+    var opts = await beaker.browser.showModal('user', user)
+    await beaker.users.edit(user.url, opts)
+    Object.assign(user, opts)
+    renderToPage()
+  }
+
+  const onDelete = async (e, user) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (confirm('Are you sure?')) {
+      await beaker.users.remove(user.url)
+      location.reload()
     }
-    if (newThumb) {
-      let base64buf = newThumb.split(',').pop()
-      await site.unlink('/thumb.jpg').catch(e => undefined)
-      await site.unlink('/thumb.jpeg').catch(e => undefined)
-      await site.unlink('/thumb.png').catch(e => undefined)
-      await site.writeFile(`/thumb.${newThumbExt}`, base64buf, 'base64')
-    }
-    location.reload()
   }
 
   return yo`
-    <div class="section">
-      <h2 class="subtitle-heading">Your Profile</h2>
-      
-      <p>
-        Your profile represents you on the Web.
-      </p>
-
-      <form class="profile-settings" onsubmit=${onSubmit}>
-        <div class="thumb">
-          <a onclick=${onClickAvatar}>
-            <img src="${newThumb || (user.url + '/thumb')}">
-            <span class="change">Change photo</span>
-          </a>
-          ${fileInput}
-        </div>
-        <div class="details">
-          <div class="input-control">
-            <label for="profile-title">Name</label>
-            <input id="profile-title" placeholder="Anonymous" value="${newTitle || user.title}" oninput=${onInputTitle}>
+    <div class="view not-fullwidth">
+      <div class="section">
+        <h2 class="subtitle-heading">Users</h2>
+        ${users.map(user => yo`
+          <div class="user">
+            <div class="user-thumb"><img src="asset:thumb:${user.url}?cache_buster=${Date.now()}"></div>
+            <div class="user-info">
+              <div class="user-title">${user.title || 'Anonymous'} <small>${user.label}</small></div>
+              <div class="user-description">${user.description || yo`<em>No description</em>`}</div>
+              <div class="user-ctrls">
+                [
+                <a href="${user.url}" target="_blank">View website</a> |
+                <a href="#" onclick=${e => onEdit(e, user)}>Edit</a> |
+                <a href="#" onclick=${e => onDelete(e, user)}>Delete</a>
+                ]
+                ${user.isDefault ? 'Default user' : ''}
+              </div>
+            </div>
           </div>
-          <div class="input-control">
-            <label for="profile-description">Bio</label>
-            <textarea id="profile-description" placeholder="A short description of who you are." oninput=${onInputDescription}>${newDescription || user.description}</textarea>
-          </div>
-          <div>
-            <button class="btn primary" ${hasChange ? '' : 'disabled'} style="margin-right: 10px">Save changes</button>
-            <a href="${user.url}" target="_blank"><span class="fas fa-external-link-alt"></span> View your site</a>
-          </div>
-        </div>
-      </form>
+        `)}
+      </div>
     </div>
   `
 }
@@ -233,28 +196,8 @@ function renderDatNetwork () {
   return yo`
     <div class="view not-fullwidth">
       ${renderDefaultToDatSetting()}
-      ${renderDefaultSyncPathSettings()}
       ${renderDatSettings()}
       ${renderDefaultDatIgnoreSettings()}
-    </div>
-  `
-}
-
-function renderDefaultSyncPathSettings () {
-  return yo`
-    <div class="section">
-      <h2 class="subtitle-heading">Default working directory</h2>
-
-      <p>
-        Choose the default directory where your projects will be saved.
-      </p>
-
-      <p>
-        <code>${settings.workspace_default_path}</code>
-        <button class="btn" onclick=${onUpdateWorkspaceDefaultPath}>
-          Choose directory
-        </button>
-      </p>
     </div>
   `
 }

@@ -3,12 +3,12 @@ import {css} from '../vendor/lit-element/lit-element'
 export default css`
 hr {
   border: 0;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ccc;
 }
 
 .section {
   padding: 6px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #ccc;
 }
 
 .menu-item {
@@ -29,7 +29,7 @@ hr {
 .menu-item i {
   color: rgba(51, 51, 51, 0.97);
   width: 28px;
-  font-size: 14px;
+  font-size: 13px;
   padding-right: 5px;
   text-align: center;
   margin-left: -5px;
@@ -52,12 +52,10 @@ hr {
 
 .header {
   position: relative;
-  border-bottom: 1px solid #eee;
   width: 100%;
   height: 35px;
   line-height: 35px;
   text-align: center;
-  margin-bottom: 6px;
 }
 
 .header h2 {

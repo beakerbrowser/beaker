@@ -191,11 +191,13 @@ export function createShellWindow (windowState) {
   sessionWatcher.watchWindow(win, state)
 
   // load the user session
-  beakerCore.users.getDefault().then(defaultUser => {
-    if (defaultUser) {
-      setUserSessionFor(win.webContents, {url: defaultUser.url})
-    }
-  })
+  if (!isValidUserSession(state.userSession)) {
+    beakerCore.users.getDefault().then(defaultUser => {
+      if (defaultUser) {
+        setUserSessionFor(win.webContents, {url: defaultUser.url})
+      }
+    })
+  }
 
   numActiveWindows++
   if (numActiveWindows === 1) {
@@ -370,7 +372,13 @@ function restoreBrowsingSession (previousSessionState) {
   let { windows } = previousSessionState
   if (windows.length) {
     for (let windowState of windows) {
-      if (windowState) createShellWindow(windowState)
+      if (windowState) {
+        if (windowState.userSession && windowState.userSession.isTemporary) {
+          // dont recreate temporary user sessions
+          continue
+        }
+        createShellWindow(windowState)
+      }
     }
   } else {
     createShellWindow()
@@ -497,4 +505,8 @@ function sendScrollTouchBegin (e) {
 
 function getScreenAPI () {
   return require('electron').screen
+}
+
+function isValidUserSession (userSession) {
+  return userSession && typeof userSession === 'object'
 }

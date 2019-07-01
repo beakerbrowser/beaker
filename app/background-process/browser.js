@@ -157,8 +157,8 @@ export const WEBAPI = {
   setWindowDimensions,
   showOpenDialog,
   showContextMenu,
-  async showShellModal (name, opts) {
-    // return showShellModal(this.sender, name, opts) DEPRECATED, probaby safe to remove soon
+  async showModal (name, opts) {
+    return modals.create(this.sender, name, opts)
   },
   openUrl: url => { openUrl(url) }, // dont return anything
   openFolder,

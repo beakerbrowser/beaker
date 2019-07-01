@@ -16,7 +16,7 @@ class ShellWindowNavbar extends LitElement {
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       userUrl: {type: String, attribute: 'user-url'},
       userThumbUrl: {type: String, attribute: 'user-thumb-url'},
-      isProfileMenuOpen: {type: Boolean},
+      isUsersMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -27,7 +27,7 @@ class ShellWindowNavbar extends LitElement {
     this.activeTab = null
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
-    this.isProfileMenuOpen = false
+    this.isUsersMenuOpen = false
     this.isBrowserMenuOpen = false
   }
 
@@ -84,6 +84,7 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
+        ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -203,11 +204,11 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get profileMenuBtn () {
-    const cls = classMap({'profile-btn': true, pressed: this.isProfileMenuOpen})
+  get usersMenuBtn () {
+    const cls = classMap({'users-btn': true, pressed: this.isUsersMenuOpen})
     return html`
-      <button class=${cls} @click=${this.onClickProfileMenu}>
-        <img src="${this.userThumbUrl}">
+      <button class=${cls} @click=${this.onClickUsersMenu}>
+        <img src="${this.userThumbUrl}?cache-buster=${Date.now()}">
       </button>
     `
   }
@@ -240,17 +241,16 @@ class ShellWindowNavbar extends LitElement {
     bg.views.createTab('beaker://watchlist', {setActive: true})
   }
 
-  async onClickProfileMenu (e) {
-    bg.views.createTab(this.userUrl, {setActive: true})
-    // this.isProfileMenuOpen = true
-    // var rect = e.currentTarget.getClientRects()[0]
-    // await bg.views.toggleMenu('profile', {
-    //   bounds: {
-    //     top: (rect.bottom|0),
-    //     right: (rect.right|0)
-    //   }
-    // })
-    // this.isProfileMenuOpen = false    
+  async onClickUsersMenu (e) {
+    this.isUsersMenuOpen = true
+    var rect = e.currentTarget.getClientRects()[0]
+    await bg.views.toggleMenu('users', {
+      bounds: {
+        top: (rect.bottom|0),
+        right: (rect.right|0)
+      }
+    })
+    this.isUsersMenuOpen = false    
   }
 
   async onClickBrowserMenu (e) {
@@ -324,11 +324,11 @@ svg.icon.refresh {
   padding: 0 3px;
 }
 
-.profile-btn {
+.users-btn {
   margin: 0 2px;
 }
 
-.profile-btn img {
+.users-btn img {
   width: 24px;
   height: 24px;
   border-radius: 50%;

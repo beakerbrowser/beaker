@@ -8,6 +8,7 @@ import './modals/select-archive'
 import './modals/select-file'
 import './modals/prompt'
 import './modals/basic-auth'
+import './modals/user'
 
 class ModalsWrapper extends LitElement {
   static get properties () {
@@ -75,6 +76,8 @@ class ModalsWrapper extends LitElement {
         return html`<prompt-modal></prompt-modal>`
       case 'basic-auth':
         return html`<basic-auth-modal></basic-auth-modal>`
+      case 'user':
+        return html`<user-modal></user-modal>`
     }
     return html`<div></div>`
   }

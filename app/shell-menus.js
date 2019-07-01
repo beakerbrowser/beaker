@@ -2,10 +2,8 @@
 import { LitElement, html } from './vendor/lit-element/lit-element'
 import * as bg from './shell-menus/bg-process-rpc'
 import './shell-menus/browser'
-import './shell-menus/profile'
-import './shell-menus/create'
+import './shell-menus/users'
 import './shell-menus/bookmark'
-import './shell-menus/peers'
 import './shell-menus/donate'
 import './shell-menus/site-tools'
 import './shell-menus/preview-mode-tools'
@@ -77,16 +75,12 @@ class MenusWrapper extends LitElement {
     switch (this.currentMenu) {
       case 'browser':
         return html`<browser-menu></browser-menu>`
-      case 'profile':
-        return html`<profile-menu></profile-menu>`
-      case 'create':
-        return html`<create-menu></create-menu>`
+      case 'users':
+        return html`<users-menu></users-menu>`
       case 'location':
         return html`<location-menu></location-menu>`
       case 'bookmark':
         return html`<bookmark-menu></bookmark-menu>`
-      case 'peers':
-        return html`<peers-menu></peers-menu>`
       case 'donate':
         return html`<donate-menu></donate-menu>`
       case 'site-tools':

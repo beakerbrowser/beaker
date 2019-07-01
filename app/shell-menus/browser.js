@@ -74,7 +74,7 @@ class BrowserMenu extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
+      <div class="wrapper twocol">
         <div class="column">
           <div class="section">
             <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
@@ -115,13 +115,6 @@ class BrowserMenu extends LitElement {
         </div>
         <div class="column">
           ${autoUpdaterEl}
-
-          <div class="section">
-            <div class="menu-item profile" @click=${e => this.onOpenPage(e, this.profile.url)}>
-              <img src="asset:thumb:${this.profile.url}">
-              <span>${this.profile.title}</span>
-            </div>
-          </div>
 
           <div class="section">
             <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
@@ -219,9 +212,10 @@ class BrowserMenu extends LitElement {
   // =
 
   updated () {
-    // adjust height based on rendering
+    // adjust dimensions based on rendering
+    var width = this.shadowRoot.querySelector('div').clientWidth
     var height = this.shadowRoot.querySelector('div').clientHeight
-    bg.shellMenus.resizeSelf({height})
+    bg.shellMenus.resizeSelf({width, height})
   }
 
   onShowSubmenu (v) {
@@ -325,7 +319,12 @@ class BrowserMenu extends LitElement {
 }
 BrowserMenu.styles = [commonCSS, css`
 .wrapper {
+  width: 280px;
+}
+
+.wrapper.twocol {
   display: flex;
+  width: 400px;
 }
 
 .column {
@@ -344,21 +343,6 @@ BrowserMenu.styles = [commonCSS, css`
 
 .section:last-child {
   border-bottom: 0;
-}
-
-.menu-item.profile {
-  display: flex;
-  align-items: center;
-  font-size: 18px;
-  font-weight: 300;
-  height: 60px;
-}
-
-.menu-item.profile img {
-  margin-right: 14px;
-  height: 48px;
-  width: 48px;
-  border-radius: 50%;
 }
 
 .section.auto-updater {

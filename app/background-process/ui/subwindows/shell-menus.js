@@ -14,13 +14,14 @@ import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { createShellWindow } from '../windows'
 import * as viewManager from '../view-manager'
+import * as modals from './modals'
 import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 
 // globals
 // =
 
 const MARGIN_SIZE = 10
-const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'donate', 'site-tools', 'preview-mode-tools']
+const IS_RIGHT_ALIGNED = ['browser', 'users', 'bookmark', 'donate', 'site-tools', 'preview-mode-tools']
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -68,6 +69,13 @@ export function reposition (parentWindow) {
         x: 5,
         y: 72,
         width: 400,
+        height: 350
+      })
+    } else if (view.menuId === 'users') {
+      setBounds({
+        x: parentBounds.width - view.boundsOpt.right,
+        y: 72,
+        width: 250,
         height: 350
       })
     } else if (view.menuId === 'bookmark') {
@@ -159,14 +167,18 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
     hide(getParentWindow(this.sender))
   },
 
-  async createWindow (url) {
-    createShellWindow()
+  async createWindow (opts) {
+    createShellWindow(opts)
   },
 
   async createTab (url) {
     var win = getParentWindow(this.sender)
     hide(win) // always close the menu
     viewManager.create(win, url, {setActive: true})
+  },
+
+  async createModal (name, opts) {
+    return modals.create(this.sender, name, opts)
   },
 
   async loadURL (url) {

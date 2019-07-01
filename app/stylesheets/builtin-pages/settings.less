@@ -265,66 +265,36 @@
     }
   }
 
-  .profile-settings {
+  .user {
     display: flex;
     padding: 10px;
+    border-top: 1px solid #ddd;
+    align-items: center;
 
-    .thumb {
-      padding: 0 60px 0 30px;
+    &:last-child {
+      border-bottom: 1px solid #ddd;
+    }
+
+    .user-thumb {
+      width: 90px;
 
       img {
         border-radius: 50%;
-        width: 150px;
-        height: 150px;
+        width: 70px;
+        height: 70px;
         object-fit: cover;
       }
+    }
 
-      a {
-        position: relative;
-        cursor: pointer;
+    .user-title {
+      font-size: 16px;
 
-        .change {
-          visibility: hidden;
-          position: absolute;
-          left: 50%;
-          transform: translateX(-50%);
-          z-index: 100;
-          top: -70px;
-          color: #fff;
-          white-space: pre;
-          background: rgba(0,0,0,.75);
-          padding: 2px 5px;
-          text-shadow: 0 1px 1px rgba(0,0,0,.9);
-          border-radius: 4px;
-        }
-
-        &:hover {
-          img {
-            filter: grayscale(100%);
-          }
-          .change {
-            visibility: visible;
-          }
-        }
-      }
-
-      input[type="file"] {
-        display: none;
+      small {
+        color: gray;
       }
     }
 
-    .input-control {
-      margin-bottom: 10px;
-    }
-
-    label {
-      display: block;
-    }
-
-    textarea {
-      width: 330px;
-      height: 80px;
-      padding: 4px 7px;
+    .user-ctrls {
     }
   }
 }
