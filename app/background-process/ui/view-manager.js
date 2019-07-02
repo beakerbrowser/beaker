@@ -178,6 +178,10 @@ class View {
     this.webContents.on('remote-get-guest-web-contents', deny)
   }
 
+  get id () {
+    return this.browserView.id
+  }
+
   get webContents () {
     return this.browserView.webContents
   }

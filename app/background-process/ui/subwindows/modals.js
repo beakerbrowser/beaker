@@ -79,6 +79,7 @@ export async function create (webContents, modalName, params = {}) {
       preload: path.join(__dirname, 'modals.build.js')
     }
   })
+  view.modalName = modalName
   parentWindow.addBrowserView(view)
   setBounds(view, parentWindow)
   view.webContents.on('console-message', (e, level, message) => {
@@ -152,10 +153,24 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
 // internal methods
 // =
 
+function getDefaultWidth (view) {
+  if (view.modalName === 'create-archive') {
+    return 960
+  }
+  return 500
+}
+
+function getDefaultHeight (view) {
+  if (view.modalName === 'create-archive') {
+    return 600
+  }
+  return 300
+}
+
 function setBounds (view, parentWindow, {width, height} = {}) {
-  width = width || 500
-  height = height || 300
   var parentBounds = parentWindow.getContentBounds()
+  width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
+  height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
   view.setBounds({
     x: Math.round(parentBounds.width / 2) - Math.round(width / 2) - MARGIN_SIZE, // centered
     y: 74,
