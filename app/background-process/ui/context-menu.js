@@ -145,56 +145,38 @@ export default function registerContextMenu () {
         })
         menuItems.push({ type: 'separator' })
       }
-      
-      // open with
+
+      // devtools
       if (isDat) {
         menuItems.push({
-          label: 'Open with',
+          label: 'Developer Tools',
           submenu: [{
-            label: 'Editor',
+            label: 'Open With Site Editor',
             click: (item, win) => {
               viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
             }
           }, {
-            label: 'Files Explorer',
+            label: 'Toggle Live Reloading',
             click: (item, win) => {
-              viewManager.create(win, `beaker://library/?view=files&dat=${encodeURIComponent(props.pageURL)}`, {setActive: true})
+              viewManager.getActive(win).toggleLiveReloading()
+            }
+          },
+          { type: 'separator' },
+          {
+            label: 'Fork This Site',
+            click: async (item, win) => {
+              let forkUrl = await webContents.executeJavaScript(`
+                DatArchive.fork("${props.pageURL}", {prompt: true})
+                  .then(fork => fork.url)
+                  .catch(err => null)
+              `)
+              if (forkUrl) {
+                webContents.loadURL(`beaker://editor/${forkUrl}`)
+              }
             }
           }]
         })
       }
-
-      // devtools
-      let devTools = [{
-        label: 'Toggle JS Console',
-        click: (item, win) => {
-          webContents.toggleDevTools()
-        }
-      }]
-      if (isDat) {
-        devTools = [{
-          label: 'Toggle Live Reloading',
-          click: (item, win) => {
-            viewManager.getActive(win).toggleLiveReloading()
-          }
-        }, {
-          label: 'Fork This Site',
-          click: async (item, win) => {
-            let forkUrl = await webContents.executeJavaScript(`
-              DatArchive.fork("${props.pageURL}", {prompt: true})
-                .then(fork => fork.url)
-                .catch(err => null)
-            `)
-            if (forkUrl) {
-              webContents.loadURL(`beaker://editor/${forkUrl}`)
-            }
-          }
-        }].concat(devTools)
-      }
-      menuItems.push({
-        label: 'Developer Tools',
-        submenu: devTools
-      })
       menuItems.push({
         label: 'Inspect Element',
         click: item => {

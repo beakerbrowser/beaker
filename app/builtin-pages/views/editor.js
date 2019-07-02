@@ -136,7 +136,7 @@ async function setup () {
   on('editor-archive-save', onArchiveSave)
   on('editor-archive-unsave', onArchiveUnsave)
   on('editor-archive-delete-permanently', onArchiveDeletePermanently)
-  on('contextmenu', onContextMenu)
+
 
   // setup the sidebar resizer
   setSidebarWidth(DEFAULT_SIDEBAR_WIDTH)
@@ -928,42 +928,6 @@ async function onRemoveSyncPath (e) {
     toast.create(e.toString(), 'error', 5e3)
     console.error(e)
   }
-}
-
-async function onContextMenu (e) {
-  e.preventDefault()
-  e.stopPropagation()
-
-  var items = [
-    {
-      icon: 'fas fa-fw fa-external-link-alt',
-      label: `View site`,
-      click () {
-        window.open(archiveFsRoot.url)
-      }
-    },
-    {
-      icon: 'fas fa-fw fa-link',
-      label: `Copy URL`,
-      click () {
-        writeToClipboard(archiveFsRoot.url)
-        toast.create('URL copied to your clipboard')
-      }
-    },
-    {
-      icon: 'far fa-fw fa-folder-open',
-      label: `Explore files`,
-      click () {
-        window.open(`beaker://library/?view=files&dat=${archiveFsRoot.url}`)
-      }
-    }
-  ]
-
-  await contextMenu.create({
-    x: e.clientX,
-    y: e.clientY,
-    items
-  })
 }
 
 // internal methods

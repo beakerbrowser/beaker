@@ -40,27 +40,6 @@ class SiteToolsMenu extends LitElement {
   // =
 
   render () {
-    if (this.submenu === 'open-with') {
-      return html`
-        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-        <div class="wrapper">
-          <div class="header">
-            <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
-              <i class="fa fa-angle-left"></i>
-            </button>
-            <h2>Open with</h2>
-          </div>
-          <div class="menu-item" @click=${this.onClickViewSource}>
-            <i class="far fa-edit"></i>
-            Editor
-          </div>
-          <div class="menu-item" @click=${this.onClickViewFiles}>
-            <i class="far fa-folder-open"></i>
-            Files Explorer
-          </div>
-        </div>
-      `
-    }
     if (this.submenu === 'devtools') {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -71,21 +50,19 @@ class SiteToolsMenu extends LitElement {
             </button>
             <h2>Developer tools</h2>
           </div>
-          ${this.isDat ? html`
-            <div class="menu-item" @click=${this.onToggleLiveReloading}>
-              <i class="fa fa-bolt"></i>
-              Toggle live reloading
-            </div>
-          ` : ''}
-          ${this.isDat ? html`
-            <div class="menu-item" @click=${this.onClickFork}>
-              <i class="fas fa-code-branch"></i>
-              Fork this site
-            </div>
-          ` :''}
-          <div class="menu-item" @click=${this.onToggleDevtools}>
-            <i class="fas fa-terminal"></i>
-            Toggle JS console
+          <hr>
+          <div class="menu-item" @click=${this.onClickViewSource}>
+            <i class="far fa-edit"></i>
+            Open with site editor
+          </div>
+          <div class="menu-item" @click=${this.onToggleLiveReloading}>
+            <i class="fa fa-bolt"></i>
+            Toggle live reloading
+          </div>
+          <hr>
+          <div class="menu-item" @click=${this.onClickFork}>
+            <i class="fas fa-code-branch"></i>
+            Fork this site
           </div>
         </div>
       `
@@ -94,17 +71,11 @@ class SiteToolsMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         ${this.isDat ? html`
-          <div class="menu-item" @click=${e => this.onShowSubmenu('open-with')}>
-            Open with
+          <div class="menu-item" @click=${e => this.onShowSubmenu('devtools')}>
+            Developer tools
             <i class="more fa fa-angle-right"></i>
           </div>
-        ` : ''}
-        <div class="menu-item" @click=${e => this.onShowSubmenu('devtools')}>
-          Developer tools
-          <i class="more fa fa-angle-right"></i>
-        </div>
-        <hr>
-        ${this.isDat ? html`
+          <hr>
           <div class="menu-item" @click=${this.onClickDownloadZip}>
             <i class="far fa-file-archive"></i>
             Download site as .zip

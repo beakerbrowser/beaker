@@ -32,6 +32,7 @@ class UserModal extends LitElement {
     this.title = ''
     this.description = ''
     this.setDefault = false
+    this.isTemporary = false
     this.errors = {}
   }
 
@@ -42,6 +43,7 @@ class UserModal extends LitElement {
     this.title = params.title || ''
     this.description = params.description || ''
     this.setDefault = params.isDefault
+    this.isTemporary = params.isTemporary
     if (!this.userUrl) {
       // use default thumb
       this.thumbDataURL = defaultUserThumbJpg
@@ -81,19 +83,21 @@ class UserModal extends LitElement {
           <hr>
 
           <div class="form-actions">
-            <label class="toggle non-fullwidth">
-              <input
-                type="checkbox"
-                name="setDefault"
-                value="setDefault"
-                ?checked=${this.setDefault}
-                @click=${this.onToggleSetDefault}
-              >
-              <div class="switch"></div>
-              <span class="text">
-                Set as default user
-              </span>
-            </label>
+            ${this.isTemporary ? html`<div></div>` : html`
+              <label class="toggle non-fullwidth">
+                <input
+                  type="checkbox"
+                  name="setDefault"
+                  value="setDefault"
+                  ?checked=${this.setDefault}
+                  @click=${this.onToggleSetDefault}
+                >
+                <div class="switch"></div>
+                <span class="text">
+                  Set as default user
+                </span>
+              </label>
+            `}
             <div>
               <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
               <button type="submit" class="btn primary" tabindex="5">Save</button>
