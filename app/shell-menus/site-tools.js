@@ -53,7 +53,7 @@ class SiteToolsMenu extends LitElement {
           <hr>
           <div class="menu-item" @click=${this.onClickViewSource}>
             <i class="far fa-edit"></i>
-            Open with site editor
+            Site editor
           </div>
           <div class="menu-item" @click=${this.onToggleLiveReloading}>
             <i class="fa fa-bolt"></i>

@@ -38,27 +38,15 @@ class CreateArchiveModal extends LitElement {
     this.cbs = cbs
     this.title = params.title || ''
     this.description = params.description || ''
-    this.type = params.type || []
+    this.type = params.type ? Array.isArray(params.type) ? params.type[0] : params.type : ''
     this.links = params.links
     this.networked = ('networked' in params) ? params.networked : true
-    this.templates = [{url: 'blank', title: `Empty ${ucfirst(this.simpleType)}`}]
-    if (this.simpleType === 'website') {
-      // TODO templates for non-websites
-      this.templates = this.templates.concat(await bg.archives.list({type: 'unwalled.garden/template'}))
-    }
+    this.templates = [{url: 'blank', title: 'Empty Website'}].concat(
+      await bg.archives.list({type: 'unwalled.garden/template', isSaved: true})
+    )
     await this.requestUpdate()
   }
 
-  get simpleType () {
-    if (this.type) {
-      if (this.type.includes('unwalled.garden/person')) return 'person'
-      if (this.type.includes('unwalled.garden/application')) return 'application'
-      if (this.type.includes('unwalled.garden/module')) return 'module'
-      if (this.type.includes('unwalled.garden/template')) return 'template'
-      if (this.type.includes('unwalled.garden/theme')) return 'theme'
-    }
-    return 'website'
-  }
   // rendering
   // =
 
@@ -73,9 +61,13 @@ class CreateArchiveModal extends LitElement {
       `
     }
 
+    const typeOption = (value, label) => {
+      return html`<option value="${value}" ?selected=${this.type === value}>${label}</option>`
+    }
+
     return html`
       <div class="wrapper">
-        <h1 class="title">New ${this.simpleType}</h1>
+        <h1 class="title">New Website</h1>
 
         <form @submit=${this.onSubmit}>
           <div class="layout">
@@ -92,10 +84,21 @@ class CreateArchiveModal extends LitElement {
 
               <label for="desc">Description</label>
               <textarea name="desc" tabindex="3" placeholder="Description (optional)" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
+              
+              <div style="margin-bottom: 20px">
+                <label for="desc">Type</label>
+                <select name="type" tabindex="4" @change=${this.onChangeType}>
+                  ${typeOption('', 'Website')}
+                  ${typeOption('unwalled.garden/application', 'Application')}
+                  ${typeOption('unwalled.garden/module', 'Module')}
+                  ${typeOption('unwalled.garden/template', 'Template')}
+                  ${typeOption('unwalled.garden/theme', 'Theme')}
+                </select>
+              </div>
 
               <div class="form-actions">
-                <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-                <button type="submit" class="btn primary" tabindex="5">Create ${this.simpleType}</button>
+                <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="5">Cancel</button>
+                <button type="submit" class="btn primary" tabindex="6">Create Website</button>
               </div>
             </div>
           </div>
@@ -119,6 +122,10 @@ class CreateArchiveModal extends LitElement {
 
   onChangeDescription (e) {
     this.description = e.target.value.trim()
+  }
+
+  onChangeType (e) {
+    this.type = e.target.value.trim()
   }
 
   onClickCancel (e) {

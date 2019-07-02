@@ -151,7 +151,7 @@ export default function registerContextMenu () {
         menuItems.push({
           label: 'Developer Tools',
           submenu: [{
-            label: 'Open With Site Editor',
+            label: 'Site Editor',
             click: (item, win) => {
               viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
             }
