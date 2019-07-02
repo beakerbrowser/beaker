@@ -23,6 +23,7 @@ import { getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
+const sitedataDb = beakerCore.dbs.sitedata
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
 const bookmarksDb = beakerCore.dbs.bookmarks
@@ -157,6 +158,7 @@ class View {
     this.webContents.on('did-navigate', this.onDidNavigate.bind(this))
     this.webContents.on('did-navigate-in-page', this.onDidNavigateInPage.bind(this))
     this.webContents.on('did-stop-loading', this.onDidStopLoading.bind(this))
+    this.webContents.on('dom-ready', this.onDomReady.bind(this))
     this.webContents.on('did-fail-load', this.onDidFailLoad.bind(this))
     this.webContents.on('update-target-url', this.onUpdateTargetUrl.bind(this))
     this.webContents.on('page-title-updated', this.onPageTitleUpdated.bind(this)) // NOTE page-title-updated isn't documented on webContents but it is supported
@@ -245,10 +247,14 @@ class View {
     this.browserView.webContents.loadURL(url)
   }
 
-  resize () {
+  getBounds () {
     const win = this.browserWindow
     var {width, height} = win.getContentBounds()
-    this.browserView.setBounds({x: 0, y: Y_POSITION, width, height: height - Y_POSITION})
+    return {x: 0, y: Y_POSITION, width, height: height - Y_POSITION}
+  }
+
+  resize () {
+    this.browserView.setBounds(this.getBounds())
     this.browserView.setAutoResize({width: true, height: true})
   }
 
@@ -296,6 +302,28 @@ class View {
   toggleMuted () {
     this.webContents.setAudioMuted(!this.isAudioMuted)
     this.emitUpdateState()
+  }
+
+  async captureScreenshot () {
+    // capture screenshot on the root page of dat & http sites
+    var urlp = parseDatURL(this.url)
+    if (['dat:', 'http:', 'https:'].includes(urlp.protocol) && urlp.pathname === '/') { 
+      // wait a sec to allow loading to finish
+      await new Promise(r => setTimeout(r, 1e3))
+
+      // capture the page
+      let bounds = this.getBounds()
+      var image = await this.browserView.webContents.capturePage(bounds)
+      image = image
+        .crop({
+          x: (bounds.width / 5)|0,
+          y: 0,
+          width: (bounds.width * 3 / 5)|0,
+          height: ((bounds.width * 3 / 5) / 100 * 80)|0
+        })
+        .resize({width: 100, height: 80})
+      await sitedataDb.set(this.url, 'screenshot', image.toDataURL())
+    }
   }
 
   // inpage finder
@@ -626,6 +654,11 @@ class View {
     // emit
     windowMenu.onSetCurrentLocation(this.browserWindow, this.url)
     this.emitUpdateState()
+  }
+
+  onDomReady (e) {
+    // capture screenshot
+    this.captureScreenshot()
   }
 
   onDidFailLoad (e, errorCode, errorDescription, validatedURL, isMainFrame) {

@@ -68,6 +68,10 @@ export function setup () {
     try {
       // look up in db
       let data = await sitedata.get(url, asset)
+      if (!data && asset === 'thumb') {
+        // try fallback to screenshot
+        data = await sitedata.get(url, 'screenshot')
+      }
       if (data) {
         // `data` is a data url ('data:image/png;base64,...')
         // so, skip the beginning and pull out the data
