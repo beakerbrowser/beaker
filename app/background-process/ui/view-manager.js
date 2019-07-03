@@ -23,6 +23,7 @@ import { getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
+import { findImageBounds } from '../../lib/bg/image'
 const sitedataDb = beakerCore.dbs.sitedata
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
@@ -316,16 +317,28 @@ class View {
       await new Promise(r => setTimeout(r, 1e3))
 
       // capture the page
-      let bounds = this.getBounds()
-      var image = await this.browserView.webContents.capturePage(bounds)
+      var image = await this.browserView.webContents.capturePage()
+      var orgsize = image.getSize()
+      var bounds = findImageBounds(image.toBitmap(), orgsize)
+
+      // adjust the bounds to match the 100x80 aspect ratio
+      if (bounds.width < bounds.height) {
+        // adjust width
+        bounds.right = bounds.left + (bounds.height / .8)|0
+      } else {
+        // adjust height
+        bounds.bottom = bounds.top + (bounds.width * .8)|0
+      }
+
+      // give some margin
+      bounds.left = Math.max(0, bounds.left - 20)
+      bounds.right = Math.min(orgsize.width, bounds.right + 20)
+      bounds.top = Math.max(0, bounds.top - 20)
+      bounds.bottom = Math.min(orgsize.height, bounds.bottom + 20)
+
       image = image
-        .crop({
-          x: (bounds.width / 5)|0,
-          y: 0,
-          width: (bounds.width * 3 / 5)|0,
-          height: ((bounds.width * 3 / 5) / 100 * 80)|0
-        })
-        .resize({width: 100, height: 80})
+        .crop(bounds)
+        .resize({width: 200, height: 160})
       await sitedataDb.set(this.url, 'screenshot', image.toDataURL())
     }
   }
