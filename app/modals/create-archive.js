@@ -5,7 +5,7 @@ import { ucfirst } from '../lib/strings'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
-import buttonsCSS from './buttons.css'
+import buttonsCSS from './buttons2.css'
 
 class CreateArchiveModal extends LitElement {
   static get properties () {
@@ -96,9 +96,11 @@ class CreateArchiveModal extends LitElement {
                 </select>
               </div>
 
+              <hr>
+
               <div class="form-actions">
-                <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="5">Cancel</button>
-                <button type="submit" class="btn primary" tabindex="6">Create Website</button>
+                <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="5">Cancel</button>
+                <button type="submit" class="primary" tabindex="6">Create Website</button>
               </div>
             </div>
           </div>
@@ -170,20 +172,40 @@ class CreateArchiveModal extends LitElement {
   }
 }
 CreateArchiveModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
+.wrapper {
+  padding: 0;
+}
+
+h1.title {
+  padding: 14px 20px;
+  margin: 0;
+  border-color: #ddd;
+}
+
+form {
+  padding: 0;
+  margin: 0;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+}
+
 .layout {
   display: flex;
-  margin-bottom: 10px;
   user-select: none;
 }
 
 .layout .templates {
   width: 624px;
-  margin-right: 20px;
 }
 
 .layout .inputs {
   min-width: 200px;
   flex: 1;
+  padding: 20px;
 }
 
 .templates-selector {
@@ -192,12 +214,10 @@ CreateArchiveModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
   padding: 20px;
   grid-template-columns: repeat(4, 1fr);
   align-items: baseline;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  height: 478px;
+  height: 468px;
   overflow-y: auto;
   background: #fafafa;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,.1);
+  border-right: 1px solid #eee;
 }
 
 .template {
@@ -214,26 +234,25 @@ CreateArchiveModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
   margin-bottom: 10px;
   object-fit: cover;
   background: #fff;
-  border: 1px solid #bbb;
-  box-shadow: 0 1px 2px rgba(0,0,0,.1);
+  border: 1px solid #ddd;
 }
 
 .template .title {
   text-align: center;
-  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .template.selected {
-  background: #2864dc;
-  color: #fff;
+  background: #eee;
+  font-weight: 500;
 }
 
-.template.selected .title {
-  text-shadow: 0 1px 2px rgba(0,0,0,.5);
+.template.selected img {
+  border: 1px solid #bbb;
 }
+
 `]
 
 customElements.define('create-archive-modal', CreateArchiveModal)
