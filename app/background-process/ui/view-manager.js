@@ -554,13 +554,13 @@ class View {
 
   async fetchDatInfo (noEmit = false) {
     // clear existing state
-    this.datInfo = null
     this.peers = 0
     this.numFollowers = 0
     this.donateLinkHref = null
     this.uncommittedChanges = false
 
     if (!this.url.startsWith('dat://')) {
+      this.datInfo = null
       return
     }
 
@@ -760,10 +760,23 @@ export function setup () {
   })
 
   // track peer-counts
-  beakerCore.dat.library.createEventStream().on('data', ([evt, {details}]) => {
-    if (evt !== 'network-changed') return
+  function iterateViews (cb) {
     for (let winId in activeViews) {
       for (let view of activeViews[winId]) {
+        cb(view)
+      }
+    }
+  }
+  beakerCore.dat.library.createEventStream().on('data', ([evt, {details}]) => {
+    if (evt === 'updated') {
+      iterateViews(view => {
+        if (view.datInfo && view.datInfo.url === details.url) {
+          view.refreshState()
+        }
+      })
+    }
+    if (evt === 'network-changed') {
+      iterateViews(view => {
         if (view.datInfo && view.datInfo.url === details.url) {
           // update peer count
           view.peers = details.connections
@@ -773,7 +786,7 @@ export function setup () {
           // refresh if this was a timed-out dat site (peers have been found)
           view.webContents.reload()
         }
-      }
+      })
     }
   })
 }

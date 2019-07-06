@@ -81,9 +81,13 @@ class SiteInfoMenu extends LitElement {
   }
 
   async doPoll () {
-    var stats = await bg.views.getNetworkState('active')
-    Object.assign(this.datInfo, stats)
-    this.requestUpdate()
+    try {
+      var stats = await bg.views.getNetworkState('active')
+      Object.assign(this.datInfo, stats)
+      this.requestUpdate()
+    } catch (e) {
+      clearInterval(this.poll)
+    }
   }
 
   updated () {
@@ -117,6 +121,10 @@ class SiteInfoMenu extends LitElement {
 
   get isDat () {
     return !!this.datInfo
+  }
+
+  get isSaved () {
+    return this.datInfo && this.datInfo.userSettings && this.datInfo.userSettings.isSaved
   }
 
   get isMe () {
@@ -391,12 +399,22 @@ class SiteInfoMenu extends LitElement {
         <div class="details-actions">
           ${this.isMySite ? html`<span class="label">Your site</span>` : ''}
           ${this.followsMe ? html`<span class="label">Follows you</span>` : ''}
+          ${!this.isMySite
+            ? this.isSaved
+              ? html`
+                <beaker-hoverable @click=${this.onToggleSaved}>
+                  <button slot="default" style="width: 76px"><span class="fas fa-save"></span> Saved</button>
+                  <button class="warning" slot="hover" style="width: 76px"><span class="fas fa-times"></span> Unsave</button>
+                </beaker-hoverable>
+              `
+              : html`<button @click=${this.onToggleSaved}><span class="fas fa-save"></span> Save</button>`
+            : ''}
           ${this.amIFollowing
             ? html`
               <beaker-hoverable @click=${this.onToggleFollow}>
                 <button slot="default" style="width: 86px"><span class="fa fa-check"></span> Following</button>
                 <button class="warning" slot="hover" style="width: 86px"><span class="fa fa-times"></span> Unfollow</button>
-              </beaker-hoverable>
+              </beaker-hoverable> 
             `
             : html`<button @click=${this.onToggleFollow}><span class="fas fa-rss"></span> Follow</button>`}
         </div>
@@ -437,6 +455,18 @@ class SiteInfoMenu extends LitElement {
 
   // events
   // =
+
+  async onToggleSaved () {
+    this.datInfo.userSettings = this.datInfo.userSettings || {}
+    if (this.isSaved) {
+      await bg.archives.remove(this.datInfo.url)
+      this.datInfo.userSettings.isSaved = false
+    } else {
+      await bg.archives.add(this.datInfo.url)
+      this.datInfo.userSettings.isSaved = true
+    }
+    this.requestUpdate()
+  }
 
   async onToggleFollow () {
     if (this.amIFollowing) {
