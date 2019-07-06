@@ -80,8 +80,13 @@ class InstallApplicationModal extends LitElement {
   }
 }
 InstallApplicationModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
+.wrapper {
+  padding: 10px 20px 16px;
+}
+
 form {
   padding: 0;
+  margin: 0;
 }
 
 h3 {

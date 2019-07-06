@@ -213,7 +213,7 @@ class SiteInfoMenu extends LitElement {
               <span><i class="fas fa-check"></i> This application is installed</span>
               <span>
                 <label @click=${this.onToggleAppEnabled}><input type="checkbox" ?checked=${this.appInfo.enabled}> Enabled</label>
-                <button @click=${this.onClickUninstall}><i class="fas fa-ban"></i> Uninstall</button>
+                <button @click=${this.onClickUninstall}>Uninstall</button>
               </span>
             ` : html`
               <span><strong>Install ${this.siteTitle}</strong> to get the most out of it!</span>
@@ -320,10 +320,11 @@ class SiteInfoMenu extends LitElement {
 
   renderSettingsView () {
     var permsEls = []
+    if (this.appInfo && this.appInfo.installed && this.appInfo.enabled && this.appInfo.permissions.length) {
+      permsEls = permsEls.concat(this.appInfo.permissions.map(this.renderAppPerm.bind(this)))
+    }
     if (this.sitePerms) {
-      for (var perm of this.sitePerms) {
-        permsEls.push(this.renderPerm(perm))
-      }
+      permsEls = permsEls.concat(this.sitePerms.map(this.renderPerm.bind(this)).filter(Boolean))
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -462,7 +463,16 @@ class SiteInfoMenu extends LitElement {
     return ''
   }
 
+  renderAppPerm ({id, caps, description}) {
+    return html`
+      <div class="perm">
+        <label><i class="far fa-window-restore"></i> Application: ${description}</label>
+      </div>
+    `
+  }
+
   renderPerm ({perm, value, opts}) {
+    if (perm.startsWith('app:')) return false // handle separately
     const permId = getPermId(perm)
     const permParam = getPermParam(perm)
     const cls = classMap({checked: value})
@@ -473,7 +483,8 @@ class SiteInfoMenu extends LitElement {
           ${renderPermDesc({bg, url: this.url, permId, permParam, permOpts: opts})}
           <input type="checkbox" value="${perm}" ?checked=${value}>
         </label>
-      </div>`
+      </div>
+    `
   }
 
   // events
@@ -610,7 +621,7 @@ button {
 }
 
 .content {
-  max-height: 240px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
