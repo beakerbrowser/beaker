@@ -32,6 +32,10 @@ class SiteToolsMenu extends LitElement {
     return !!this.datInfo
   }
 
+  get isSaved () {
+    return this.datInfo && this.datInfo.userSettings && this.datInfo.userSettings.isSaved
+  }
+
   get isApplication () {
     return this.isDat && Array.isArray(this.datInfo.type) && this.datInfo.type.includes('unwalled.garden/application')
   }
@@ -91,8 +95,19 @@ class SiteToolsMenu extends LitElement {
                 Install <span class="appname">${this.datInfo.title || 'this application'}</span>
               </div>
             `}
-            <hr>
           ` : ''}
+          ${this.isSaved ? html`
+            <div class="menu-item" @click=${this.onToggleSaved}>
+              <i class="fas fa-trash"></i>
+              Remove from my websites
+            </div>
+          ` : html`
+            <div class="menu-item" @click=${this.onToggleSaved}>
+              <i class="fas fa-save"></i>
+              Save to my websites
+            </div>
+          `}
+          <hr>
           <div class="menu-item" @click=${e => this.onShowSubmenu('devtools')}>
             <i class="fas fa-code"></i>
             Developer tools
@@ -140,6 +155,16 @@ class SiteToolsMenu extends LitElement {
   async onClickUninstall () {
     bg.applications.uninstall(this.datInfo.url)
     bg.shellMenus.loadURL(this.datInfo.url) // refresh page
+    bg.shellMenus.close()
+  }
+
+
+  async onToggleSaved () {
+    if (this.isSaved) {
+      await bg.archives.remove(this.datInfo.url)
+    } else {
+      await bg.archives.add(this.datInfo.url)
+    }
     bg.shellMenus.close()
   }
 
