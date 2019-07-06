@@ -211,10 +211,7 @@ class SiteInfoMenu extends LitElement {
           <div class="application-state">
             ${this.appInfo.installed ? html`
               <span><i class="fas fa-check"></i> This application is installed</span>
-              <span>
-                <label @click=${this.onToggleAppEnabled}><input type="checkbox" ?checked=${this.appInfo.enabled}> Enabled</label>
-                <button @click=${this.onClickUninstall}>Uninstall</button>
-              </span>
+              <button class="primary" @click=${this.onClickUninstall}>Uninstall</button>
             ` : html`
               <span><strong>Install ${this.siteTitle}</strong> to get the most out of it!</span>
               <button class="primary" @click=${this.onClickInstall}><i class="fas fa-download"></i> Install</button>
@@ -516,16 +513,6 @@ class SiteInfoMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-  async onToggleAppEnabled () {
-    if (this.appInfo.enabled) {
-      bg.applications.disable(this.datInfo.url)
-    } else {
-      bg.applications.enable(this.datInfo.url)
-    }
-    bg.shellMenus.loadURL(this.datInfo.url) // refresh page
-    bg.shellMenus.close()
-  }
-
   async onToggleFollow () {
     if (this.amIFollowing) {
       await bg.follows.remove(this.datInfo.url)
@@ -667,17 +654,10 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f5f5f5;
+  background: #d2e6ff;
   padding: 10px 14px;
-  border-top: 1px solid #ddd;
-}
-
-.application-state button {
-  margin-left: 5px;
-}
-
-.application-state input {
-  height: auto;
+  border-top: 1px solid #6a96f9;
+  border-bottom: 1px solid #6a96f9;
 }
 
 .menu {
@@ -686,6 +666,10 @@ button {
   font-size: 14px;
   cursor: pointer;
   border-top: 1px solid #ddd;
+}
+
+.application-state + .menu {
+  border-top: 0;
 }
 
 .menu.centered {
