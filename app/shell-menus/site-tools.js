@@ -158,7 +158,6 @@ class SiteToolsMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-
   async onToggleSaved () {
     if (this.isSaved) {
       await bg.archives.remove(this.datInfo.url)

@@ -25,6 +25,7 @@ class SiteInfoMenu extends LitElement {
     this.url = null
     this.loadError = null
     this.datInfo = null
+    this.appInfo = null
     this.sitePerms = null
     this.me = null
     this.followers = null
@@ -43,6 +44,10 @@ class SiteInfoMenu extends LitElement {
     this.loadError = state.loadError
     this.datInfo = state.datInfo
     this.sitePerms = state.sitePerms
+
+    if (this.isApplication) {
+      this.appInfo = await bg.applications.getInfo(this.datInfo.url)
+    }
 
     if (this.isDat) {
       this.poll = setInterval(this.doPoll.bind(this), POLL_INTERVAL)
@@ -127,6 +132,10 @@ class SiteInfoMenu extends LitElement {
     return this.datInfo && this.datInfo.userSettings && this.datInfo.userSettings.isSaved
   }
 
+  get isApplication () {
+    return this.isDat && Array.isArray(this.datInfo.type) && this.datInfo.type.includes('unwalled.garden/application')
+  }
+
   get isMe () {
     return this.datInfo && this.me && this.me.url === this.datInfo.url
   }
@@ -198,6 +207,20 @@ class SiteInfoMenu extends LitElement {
           </div>
           ${this.renderSiteDescription()}
         </div>
+        ${this.isApplication ? html`
+          <div class="application-state">
+            ${this.appInfo.installed ? html`
+              <span><i class="fas fa-check"></i> This application is installed</span>
+              <span>
+                <label @click=${this.onToggleAppEnabled}><input type="checkbox" ?checked=${this.appInfo.enabled}> Enabled</label>
+                <button @click=${this.onClickUninstall}><i class="fas fa-ban"></i> Uninstall</button>
+              </span>
+            ` : html`
+              <span><strong>Install ${this.siteTitle}</strong> to get the most out of it!</span>
+              <button class="primary" @click=${this.onClickInstall}><i class="fas fa-download"></i> Install</button>
+            `}
+          </div>
+        ` : ''}
         <div class="menu ${this.isDat ? 'centered' : ''}">
           ${this.isDat ? html`
             <div class="menu-item" @click=${e => this.setView('socialgraph')}>
@@ -468,6 +491,30 @@ class SiteInfoMenu extends LitElement {
     this.requestUpdate()
   }
 
+  async onClickInstall () {
+    var url = this.datInfo.url
+    bg.shellMenus.close()
+    if (await bg.applications.requestInstall(url)) {
+      bg.shellMenus.loadURL(url) // refresh page
+    }
+  }
+
+  async onClickUninstall () {
+    bg.applications.uninstall(this.datInfo.url)
+    bg.shellMenus.loadURL(this.datInfo.url) // refresh page
+    bg.shellMenus.close()
+  }
+
+  async onToggleAppEnabled () {
+    if (this.appInfo.enabled) {
+      bg.applications.disable(this.datInfo.url)
+    } else {
+      bg.applications.enable(this.datInfo.url)
+    }
+    bg.shellMenus.loadURL(this.datInfo.url) // refresh page
+    bg.shellMenus.close()
+  }
+
   async onToggleFollow () {
     if (this.amIFollowing) {
       await bg.follows.remove(this.datInfo.url)
@@ -603,6 +650,23 @@ button {
   position: absolute;
   top: 15px;
   right: 15px;
+}
+
+.application-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f5f5f5;
+  padding: 10px 14px;
+  border-top: 1px solid #ddd;
+}
+
+.application-state button {
+  margin-left: 5px;
+}
+
+.application-state input {
+  height: auto;
 }
 
 .menu {
