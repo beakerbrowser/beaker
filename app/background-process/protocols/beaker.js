@@ -179,20 +179,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/search-engines/')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/search-engines', requestUrl.slice('beaker://assets/search-engines/'.length)))
   }
-
-  // template screenshots
-  if (requestUrl.startsWith('beaker://templates/screenshot/')) {
-    let templateUrl = requestUrl.slice('beaker://templates/screenshot/'.length)
-    templates.getScreenshot(0, templateUrl)
-      .then(({screenshot}) => {
-        screenshot = screenshot.split(',')[1]
-        cb(200, 'OK', 'image/png', () => Buffer.from(screenshot, 'base64'))
-      })
-      .catch(err => {
-        console.error('Failed to load template screenshot', templateUrl, err)
-        return cb(404, 'Not Found')
-      })
-    return
+  if (requestUrl.startsWith('beaker://assets/img/templates/')) {
+    let imgPath = requestUrl.slice('beaker://assets/img/templates/'.length)
+    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/templates/${imgPath}`))
   }
 
   // builtin pages
@@ -202,38 +191,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
-  }
-  if (requestUrl.startsWith('beaker://assets/img/templates/')) {
-    let imgPath = requestUrl.slice('beaker://assets/img/templates/'.length)
-    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/templates/${imgPath}`))
-  }
-  if (requestUrl.startsWith('beaker://assets/ace/') && requestUrl.endsWith('.js')) {
-    let filePath = requestUrl.slice('beaker://assets/ace/'.length)
-    return cb(200, 'OK', 'application/javascript', path.join(__dirname, `assets/js/ace-1.3.3/${filePath}`))
-  }
-  if (requestUrl === 'beaker://assets/icon/photos.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/icon/photos.png'))
-  }
-  if (requestUrl === 'beaker://assets/icon/avatar.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/avatar.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/folder-color.png') {
-    return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/icon/folder-color.png'))
-  }
-  if (requestUrl === 'beaker://assets/icon/grid.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/grid.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/star.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/star.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/filesystem.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/filesystem.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/history.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/history.svg'))
-  }
-  if (requestUrl === 'beaker://assets/icon/gear.svg') {
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/icon/gear.svg'))
   }
   if (requestUrl === 'beaker://start' || requestUrl.startsWith('beaker://start')) {
     return serveAppAsset(requestUrl, START_APP_PATH, cb, {fallbackToIndexHTML: true})

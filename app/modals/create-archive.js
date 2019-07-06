@@ -7,12 +7,27 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 
+const TEMPLATE_TYPES = {
+  blank: '',
+  application: 'unwalled.garden/application',
+  module: 'unwalled.garden/module',
+  template: 'unwalled.garden/template',
+  theme: 'unwalled.garden/theme'
+}
+
+const ADVANCED_TEMPLATES = [
+  {url: 'application', title: 'Application', thumb: 'beaker://assets/img/templates/application.png'},
+  {url: 'module', title: 'Module', thumb: 'beaker://assets/img/templates/module.png'},
+  {url: 'template', title: 'Template', thumb: 'beaker://assets/img/templates/template.png'},
+  {url: 'theme', title: 'Theme', thumb: 'beaker://assets/img/templates/theme.png'}
+]
+
 class CreateArchiveModal extends LitElement {
   static get properties () {
     return {
       title: {type: String},
       description: {type: String},
-      currentTemplateUrl: {type: String},
+      currentTemplate: {type: String},
       errors: {type: Object}
     }
   }
@@ -26,7 +41,7 @@ class CreateArchiveModal extends LitElement {
     this.links = null
     this.networked = true
     this.templates = []
-    this.currentTemplateUrl = 'blank'
+    this.currentTemplate = 'blank'
     this.errors = {}
 
     // export interface
@@ -41,7 +56,7 @@ class CreateArchiveModal extends LitElement {
     this.type = params.type ? Array.isArray(params.type) ? params.type[0] : params.type : ''
     this.links = params.links
     this.networked = ('networked' in params) ? params.networked : true
-    this.templates = [{url: 'blank', title: 'Empty Website'}].concat(
+    this.templates = [{url: 'blank', title: 'Empty Website', thumb: 'beaker://assets/img/templates/website.png'}].concat(
       await bg.archives.list({type: 'unwalled.garden/template', isSaved: true})
     )
     await this.requestUpdate()
@@ -51,18 +66,14 @@ class CreateArchiveModal extends LitElement {
   // =
 
   render () {
-    const template = (url, title) => {
-      const cls = classMap({template: true, selected: url === this.currentTemplateUrl})
+    const template = (url, title, thumb) => {
+      const cls = classMap({template: true, selected: url === this.currentTemplate})
       return html`
         <div class="${cls}" @click=${e => this.onClickTemplate(e, url)}>
-          <img src="asset:thumb:${url}">
+          <img src="${thumb ? thumb : `asset:thumb:${url}`}">
           <div class="title">${title}</div>
         </div>
       `
-    }
-
-    const typeOption = (value, label) => {
-      return html`<option value="${value}" ?selected=${this.type === value}>${label}</option>`
     }
 
     return html`
@@ -72,35 +83,27 @@ class CreateArchiveModal extends LitElement {
         <form @submit=${this.onSubmit}>
           <div class="layout">
             <div class="templates">
+              <div class="templates-heading">Websites</div>
               <div class="templates-selector">
-                ${this.templates.map(t => template(t.url, t.title))}
+                ${this.templates.map(t => template(t.url, t.title, t.thumb))}
+              </div>
+              <div class="templates-heading">Advanced</div>
+              <div class="templates-selector">
+                ${ADVANCED_TEMPLATES.map(t => template(t.url, t.title, t.thumb))}
               </div>
             </div>
 
             <div class="inputs">
               <label for="title">${ucfirst(this.simpleType)} Title</label>
-              <input autofocus name="title" tabindex="2" value=${this.title || ''} placeholder="Title" @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
+              <input autofocus name="title" tabindex="1" value=${this.title || ''} placeholder="Title" @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
               ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
               <label for="desc">Description</label>
-              <textarea name="desc" tabindex="3" placeholder="Description (optional)" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
+              <textarea name="desc" tabindex="2" placeholder="Description (optional)" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
               
-              <div style="margin-bottom: 20px">
-                <label for="desc">Type</label>
-                <select name="type" tabindex="4" @change=${this.onChangeType}>
-                  ${typeOption('', 'Website')}
-                  ${typeOption('unwalled.garden/application', 'Application')}
-                  ${typeOption('unwalled.garden/module', 'Module')}
-                  ${typeOption('unwalled.garden/template', 'Template')}
-                  ${typeOption('unwalled.garden/theme', 'Theme')}
-                </select>
-              </div>
-
-              <hr>
-
               <div class="form-actions">
-                <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="5">Cancel</button>
-                <button type="submit" class="primary" tabindex="6">Create Website</button>
+                <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="4">Cancel</button>
+                <button type="submit" class="primary" tabindex="3">Create Website</button>
               </div>
             </div>
           </div>
@@ -113,7 +116,7 @@ class CreateArchiveModal extends LitElement {
   // =
 
   async onClickTemplate (e, url) {
-    this.currentTemplateUrl = url
+    this.currentTemplate = url
     await this.updateComplete
     this.shadowRoot.querySelector('input').focus() // focus the title input
   }
@@ -145,21 +148,21 @@ class CreateArchiveModal extends LitElement {
 
     try {
       var url
-      if (this.currentTemplateUrl === 'blank') {
+      if (!this.currentTemplate.startsWith('dat:')) {
         url = await bg.datArchive.createArchive({
           title: this.title,
           description: this.description,
-          type: this.type,
+          type: TEMPLATE_TYPES[this.currentTemplate],
           networked: this.networked,
           links: this.links,
           prompt: false
         })
       } else {
-        await bg.datArchive.download(this.currentTemplateUrl)
-        url = await bg.datArchive.forkArchive(this.currentTemplateUrl, {
+        await bg.datArchive.download(this.currentTemplate)
+        url = await bg.datArchive.forkArchive(this.currentTemplate, {
           title: this.title,
           description: this.description,
-          type: this.type,
+          type: '',
           networked: this.networked,
           links: this.links,
           prompt: false
@@ -208,16 +211,27 @@ hr {
   padding: 20px;
 }
 
-.templates-selector {
-  display: grid;
-  grid-gap: 20px;
-  padding: 20px;
-  grid-template-columns: repeat(4, 1fr);
-  align-items: baseline;
+.templates {
   height: 468px;
   overflow-y: auto;
   background: #fafafa;
   border-right: 1px solid #eee;
+}
+
+.templates-heading {
+  margin: 20px 20px 0px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+  color: gray;
+  font-size: 11px;
+}
+
+.templates-selector {
+  display: grid;
+  grid-gap: 20px;
+  padding: 10px 20px;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: baseline;
 }
 
 .template {
@@ -234,7 +248,7 @@ hr {
   margin-bottom: 10px;
   object-fit: cover;
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
 }
 
 .template .title {
@@ -244,13 +258,20 @@ hr {
   text-overflow: ellipsis;
 }
 
-.template.selected {
+.template:hover {
   background: #eee;
+}
+
+.template.selected {
+  background: rgb(63, 119, 232);
+  color: #fff;
   font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
 }
 
 .template.selected img {
-  border: 1px solid #bbb;
+  border: 1px solid #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
 }
 
 `]

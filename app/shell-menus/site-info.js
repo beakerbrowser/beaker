@@ -660,6 +660,10 @@ button {
   border-bottom: 1px solid #6a96f9;
 }
 
+.application-state span {
+  color: #093869;
+}
+
 .menu {
   display: flex;
   align-items: center;
