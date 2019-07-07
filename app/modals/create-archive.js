@@ -17,6 +17,7 @@ const TEMPLATE_TYPES = {
 
 const BASIC_TEMPLATES = [
   {url: 'blank', title: 'Empty Website', thumb: 'beaker://assets/img/templates/website.png'},
+  {url: 'simple', title: 'Simple Starter', thumb: 'beaker://assets/img/templates/simple.png'},
   {url: 'litelement', title: 'LitElement Starter', thumb: 'beaker://assets/img/templates/litelement.png'}
 ]
 
