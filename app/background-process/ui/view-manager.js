@@ -18,6 +18,7 @@ import * as locationBar from './subwindows/location-bar'
 import * as statusBar from './subwindows/status-bar'
 import * as permPrompt from './subwindows/perm-prompt'
 import * as modals from './subwindows/modals'
+import * as sidebars from './subwindows/sidebars'
 import * as windowMenu from './window-menu'
 import { getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
@@ -84,6 +85,7 @@ const STATE_VARS = [
   'canGoForward',
   'isAudioMuted',
   'isCurrentlyAudible',
+  'isSidebarActive',
   'isInpageFindActive',
   'currentInpageFindString',
   'currentInpageFindResults',
@@ -137,6 +139,7 @@ class View {
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
+    this.isSidebarActive = false // is the sidebar open?
     this.liveReloadEvents = null // live-reload event stream
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
@@ -255,6 +258,9 @@ class View {
   getBounds () {
     const win = this.browserWindow
     var {width, height} = win.getContentBounds()
+    if (this.isSidebarActive) {
+      width -= sidebars.SIDEBAR_WIDTH
+    }
     return {x: 0, y: Y_POSITION, width, height: height - Y_POSITION}
   }
 
@@ -270,6 +276,7 @@ class View {
     win.addBrowserView(this.browserView)
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
+    sidebars.show(this.browserView)
 
     this.resize()
     this.webContents.focus()
@@ -282,6 +289,7 @@ class View {
     }
     permPrompt.hide(this.browserView)
     modals.hide(this.browserView)
+    sidebars.hide(this.browserView)
     this.isActive = false
   }
 
@@ -307,6 +315,32 @@ class View {
   toggleMuted () {
     this.webContents.setAudioMuted(!this.isAudioMuted)
     this.emitUpdateState()
+  }
+
+  toggleSidebar () {
+    this.isSidebarActive = !this.isSidebarActive
+    this.resize()
+    if (this.isSidebarActive) {
+      let v = sidebars.create(this.browserView)
+      if (this.isActive) sidebars.show(this.browserView)
+      v.webContents.on('did-finish-load', () => this.updateSidebar())
+    } else {
+      sidebars.close(this.browserView)
+    }
+    
+    // emit
+    this.emitUpdateState()
+  }
+
+  updateSidebar () {
+    var sidebarView = sidebars.get(this)
+    if (sidebarView) {
+      sidebarView.webContents.executeJavaScript(`
+        window.sidebarLoad("${this.url}")
+      `).catch(err => {
+        console.log('Failed to load sidebar', err)
+      })
+    }
   }
 
   async captureScreenshot () {
@@ -628,7 +662,7 @@ class View {
     this.emitUpdateState()
   }
 
-  onDidNavigate (e, url, httpResponseCode) {
+  async onDidNavigate (e, url, httpResponseCode) {
     // read zoom
     zoom.setZoomFromSitedata(this)
 
@@ -636,10 +670,13 @@ class View {
     this.loadError = null
     this.loadingURL = null
     this.isReceivingAssets = true
-    this.fetchIsBookmarked()
-    this.fetchDatInfo()
+    await this.fetchIsBookmarked()
+    await this.fetchDatInfo()
     if (httpResponseCode === 504 && url.startsWith('dat://')) {
       this.wasDatTimeout = true
+    }
+    if (this.isSidebarActive) {
+      this.updateSidebar()
     }
 
     // emit
@@ -648,6 +685,9 @@ class View {
 
   onDidNavigateInPage (e) {
     this.updateHistory()
+    if (this.isSidebarActive) {
+      this.updateSidebar()
+    }
   }
 
   onDidStopLoading (e) {
@@ -717,7 +757,7 @@ class View {
     e.preventDefault()
     if (!this.isActive) return // only open if coming from the active tab
     var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
-    create(this.browserWindow, url, {setActive})
+    create(this.browserWindow, url, {setActive, isSidebarActive: this.isSidebarActive})
   }
 
   onMediaChange (e) {
@@ -842,7 +882,7 @@ export function findContainingWindow (browserView) {
   }
 }
 
-export function create (win, url, opts = {setActive: false, isPinned: false, focusLocationBar: false}) {
+export function create (win, url, opts = {setActive: false, isPinned: false, focusLocationBar: false, isSidebarActive: false}) {
   url = url || DEFAULT_URL
   win = getTopWindow(win)
   var views = activeViews[win.id] = activeViews[win.id] || []
@@ -875,6 +915,9 @@ export function create (win, url, opts = {setActive: false, isPinned: false, foc
 
   if (opts.focusLocationBar) {
     win.webContents.send('command', 'focus-location')
+  }
+  if (opts.isSidebarActive) {
+    view.toggleSidebar()
   }
 
   // create a new preloaded view if needed
@@ -1260,6 +1303,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async toggleLiveReloading (index) {
     getByIndex(getWindow(this.sender), index).toggleLiveReloading()
+  },
+
+  async toggleSidebar (index) {
+    getByIndex(getWindow(this.sender), index).toggleSidebar()
   },
 
   async toggleDevTools (index) {

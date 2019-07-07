@@ -18,6 +18,7 @@ import * as shellMenusSubwindow from './subwindows/shell-menus'
 import * as locationBarSubwindow from './subwindows/location-bar'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
+import * as sidebarsSubwindow from './subwindows/sidebars'
 import { findWebContentsParentWindow } from '../../lib/electron'
 const settingsDb = beakerCore.dbs.settings
 
@@ -27,7 +28,8 @@ const subwindows = {
   locationBar: locationBarSubwindow,
   menu: shellMenusSubwindow,
   permPrompt: permPromptSubwindow,
-  modals: modalsSubwindow
+  modals: modalsSubwindow,
+  sidebars: sidebarsSubwindow
 }
 
 // globals

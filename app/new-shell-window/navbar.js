@@ -85,6 +85,7 @@ class ShellWindowNavbar extends LitElement {
       <div class="buttons">
         ${this.watchlistBtn}
         ${this.usersMenuBtn}
+        ${this.sidebarBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -193,6 +194,15 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get sidebarBtn () {
+    const cls = classMap({'sidebar-btn': true, pressed: this.activeTab && this.activeTab.isSidebarActive})
+    return html`
+      <button class=${cls} @click=${this.onClickSidebar}>
+        <span class="fas fa-columns"></span>
+      </button>
+    `
+  }
+
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
@@ -251,6 +261,10 @@ class ShellWindowNavbar extends LitElement {
       }
     })
     this.isUsersMenuOpen = false    
+  }
+
+  onClickSidebar (e) {
+    bg.views.toggleSidebar('active')
   }
 
   async onClickBrowserMenu (e) {
@@ -322,6 +336,10 @@ svg.icon.refresh {
   color: #fff;
   font-weight: bold;
   padding: 0 3px;
+}
+
+.sidebar-btn span {
+  color: #555;
 }
 
 .users-btn {

@@ -215,7 +215,7 @@ hr {
   height: 468px;
   overflow-y: auto;
   background: #fafafa;
-  border-right: 1px solid #eee;
+  border-right: 1px solid #ddd;
 }
 
 .templates-heading {

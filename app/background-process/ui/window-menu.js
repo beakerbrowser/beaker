@@ -335,6 +335,17 @@ export function buildWindowMenu (opts = {}) {
           }]
       },
       {
+        label: 'Toggle Sidebar',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+B',
+        click: function (item, win) {
+          if (win) {
+            let active = viewManager.getActive(win)
+            if (active) active.toggleSidebar()
+          }
+        }
+      },
+      {
         label: 'Toggle DevTools',
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',

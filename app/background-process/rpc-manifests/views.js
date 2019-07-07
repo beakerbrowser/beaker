@@ -18,6 +18,7 @@ export default {
   reload: 'promise',
   resetZoom: 'promise',
   toggleLiveReloading: 'promise',
+  toggleSidebar: 'promise',
   toggleDevTools: 'promise',
   print: 'promise',
   showInpageFind: 'promise',

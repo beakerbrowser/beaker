@@ -415,11 +415,22 @@ ${spinnerCSS}
 }
 
 .tab.current {
+  position: relative;
   background: var(--bg-tab--current);
   border: 1px solid var(--color-border);
   border-top: 0;
   border-bottom: 0;
   top: 1px;
+}
+
+.tab.current:before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  right: -1px;
+  height: 2px;
+  background: #0f8aea;
 }
 
 .tab.current .tab-title:after {

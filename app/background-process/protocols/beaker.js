@@ -15,6 +15,7 @@ import ICO from 'icojs'
 const START_APP_PATH = path.dirname(require.resolve('@beaker/start-app')).replace('app.asar', 'app.asar.unpacked')
 const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app')).replace('app.asar', 'app.asar.unpacked')
 const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).replace('app.asar', 'app.asar.unpacked')
+const SIDEBAR_APP_PATH = path.dirname(require.resolve('@beaker/sidebar-app')).replace('app.asar', 'app.asar.unpacked')
 
 // constants
 // =
@@ -192,13 +193,16 @@ async function beakerProtocol (request, respond) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
   }
-  if (requestUrl === 'beaker://start' || requestUrl.startsWith('beaker://start')) {
+  if (requestUrl === 'beaker://start' || requestUrl.startsWith('beaker://start/')) {
     return serveAppAsset(requestUrl, START_APP_PATH, cb, {fallbackToIndexHTML: true})
   }
-  if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library')) {
+  if (requestUrl === 'beaker://sidebar' || requestUrl.startsWith('beaker://sidebar/')) {
+    return serveAppAsset(requestUrl, SIDEBAR_APP_PATH, cb, {fallbackToIndexHTML: true})
+  }
+  if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library/')) {
     return serveAppAsset(requestUrl, LIBRARY_APP_PATH, cb)
   }
-  if (requestUrl === 'beaker://search' || requestUrl.startsWith('beaker://search')) {
+  if (requestUrl === 'beaker://search' || requestUrl.startsWith('beaker://search/')) {
     return serveAppAsset(requestUrl, SEARCH_APP_PATH, cb)
   }
   if (requestUrl === 'beaker://history/') {
