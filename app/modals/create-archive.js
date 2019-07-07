@@ -15,6 +15,11 @@ const TEMPLATE_TYPES = {
   theme: 'unwalled.garden/theme'
 }
 
+const BASIC_TEMPLATES = [
+  {url: 'blank', title: 'Empty Website', thumb: 'beaker://assets/img/templates/website.png'},
+  {url: 'litelement', title: 'LitElement Starter', thumb: 'beaker://assets/img/templates/litelement.png'}
+]
+
 const ADVANCED_TEMPLATES = [
   {url: 'application', title: 'Application', thumb: 'beaker://assets/img/templates/application.png'},
   {url: 'module', title: 'Module', thumb: 'beaker://assets/img/templates/module.png'},
@@ -56,7 +61,7 @@ class CreateArchiveModal extends LitElement {
     this.type = params.type ? Array.isArray(params.type) ? params.type[0] : params.type : ''
     this.links = params.links
     this.networked = ('networked' in params) ? params.networked : true
-    this.templates = [{url: 'blank', title: 'Empty Website', thumb: 'beaker://assets/img/templates/website.png'}].concat(
+    this.templates = BASIC_TEMPLATES.concat(
       await bg.archives.list({type: 'unwalled.garden/template', isSaved: true})
     )
     await this.requestUpdate()
@@ -149,15 +154,30 @@ class CreateArchiveModal extends LitElement {
     try {
       var url
       if (!this.currentTemplate.startsWith('dat:')) {
-        url = await bg.datArchive.createArchive({
-          title: this.title,
-          description: this.description,
-          type: TEMPLATE_TYPES[this.currentTemplate],
-          networked: this.networked,
-          links: this.links,
-          prompt: false
-        })
+        if (BASIC_TEMPLATES.find(t => t.url === this.currentTemplate) && this.currentTemplate !== 'blank') {
+          // basic website using builtin template
+          url = await bg.datArchive.createArchive({
+            template: this.currentTemplate,
+            title: this.title,
+            description: this.description,
+            type: '',
+            networked: this.networked,
+            links: this.links,
+            prompt: false
+          })
+        } else {
+          // builtin site type
+          url = await bg.datArchive.createArchive({
+            title: this.title,
+            description: this.description,
+            type: TEMPLATE_TYPES[this.currentTemplate],
+            networked: this.networked,
+            links: this.links,
+            prompt: false
+          })
+        }
       } else {
+        // template forking from saved dat
         await bg.datArchive.download(this.currentTemplate)
         url = await bg.datArchive.forkArchive(this.currentTemplate, {
           title: this.title,
