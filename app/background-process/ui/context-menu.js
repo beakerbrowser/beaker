@@ -149,19 +149,19 @@ export default function registerContextMenu () {
       // devtools
       if (isDat) {
         menuItems.push({
+          label: 'Site Editor',
+          click: (item, win) => {
+            viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
+          }
+        })
+        menuItems.push({
           label: 'Developer Tools',
           submenu: [{
-            label: 'Site Editor',
-            click: (item, win) => {
-              viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
-            }
-          }, {
             label: 'Toggle Live Reloading',
             click: (item, win) => {
               viewManager.getActive(win).toggleLiveReloading()
             }
           },
-          { type: 'separator' },
           {
             label: 'Fork This Site',
             click: async (item, win) => {
