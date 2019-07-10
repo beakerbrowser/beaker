@@ -595,6 +595,7 @@ input:focus {
 .input-pretty .path {
   color: var(--color-text--light);
   white-space: nowrap;
+  font-weight: 400;
 }
 
 `]
