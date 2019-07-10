@@ -96,7 +96,7 @@ export async function setup () {
     })
     let archive = beakerCore.dat.library.getArchive(newUserUrl)
     await archive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
-    await beakerCore.users.add(newUserUrl)
+    await beakerCore.users.add('anonymous', newUserUrl, true)
   }
 
   // wire up events
