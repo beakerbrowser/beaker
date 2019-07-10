@@ -23,7 +23,6 @@
 
     &.active {
       padding: 0 10px; // normal padding, the border is visible
-      background-color: #fff;
       border: 1px solid #ccc;
       border-bottom-color: transparent;
     }
@@ -52,28 +51,5 @@
   .unused-space {
     flex: 1;
     border-bottom: 1px solid #ccc;
-  }
-
-  .ctrls {
-    display: flex;
-    flex: 0 0 auto;
-    border-bottom: 1px solid #ccc;
-    & > * {
-      margin-left: 4px;
-    }
-
-    .readonly {
-      height: 30px;
-      line-height: 30px;
-      padding: 0 10px;
-    }
-
-    .dropdown {
-      position: initial; // due to overflow hidden, we do dropdowns in the tabs with absolute positioning
-
-      &.share .dropdown-items {
-        right: 4px;
-      }
-    }
   }
 }

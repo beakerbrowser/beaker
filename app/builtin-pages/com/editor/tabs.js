@@ -1,5 +1,4 @@
 import yo from 'yo-yo'
-import {renderOptionsDropdown} from './options-dropdown'
 import * as contextMenu from '../context-menu'
 import toggleable2 from '../toggleable2'
 import * as toast from '../toast'
@@ -8,24 +7,12 @@ import {writeToClipboard, emit} from '../../../lib/fg/event-handlers'
 // rendering
 // =
 
-export function render ({archive, models, openLinkVersion, archiveInfo, isReadonly}) {
-  var isOwner = archive.info.isOwner
-  var versionLabel = (Number.isNaN(+openLinkVersion)) ? openLinkVersion : `v${openLinkVersion}`
-  if (versionLabel === 'latest' || versionLabel === 'preview') versionLabel = ''
-  var url = openLinkVersion === 'latest' ? archive.checkout().url : archive.checkout(openLinkVersion).url
+export function render ({models}) {
   return yo`
     <div class="editor-tabs">
       ${models.map(model => renderTab(model))}
       <div class="tab new-file" onclick=${e => emit('editor-new-model')}><span class="fas fa-plus"></span></div>
       <div class="unused-space" ondragover=${(e) => onTabDragOver(e)} ondrop=${(e) => onTabDragDrop(e, null)}></div>
-      <div class="ctrls">
-        ${isOwner
-          ? renderOptionsDropdown({archiveInfo})
-          : yo`<span class="readonly">Read-only</span>`}
-        <a class="btn primary" href=${url} target="_blank">
-          <i class="fas fa-external-link-alt"></i> View site ${versionLabel}
-        </a>
-      </div>
     </div>`
 }
 

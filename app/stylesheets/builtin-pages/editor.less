@@ -1,11 +1,11 @@
-@import "./components/editor/sidebar.less";
-@import "./components/editor/help-sidebar.less";
-@import "./components/editor/tabs.less";
-@import "./components/editor/siteinfo-dropdown.less";
-@import "./components/editor/options-dropdown.less";
-@import "./components/editor/general-help.less";
-@import "./components/share-dropdown.less";
-@import "../com/markdown.less";
+@import "../components/editor/sidebar.less";
+@import "../components/editor/tabs.less";
+@import "../components/editor/home.less";
+@import "../components/editor/settings-form.less";
+@import "../components/archive-history.less";
+@import "../components/revision-indicator.less";
+@import "../components/share-dropdown.less";
+@import "../components/markdown.less";
 
 .muted {
   color: gray;
@@ -24,12 +24,12 @@
   display: flex;
   height: 100%;
   flex-flow: row nowrap;
-  background: #f6f6f9;
   user-select: none;
 }
 
 .editor-container {
   flex: 1;
+  margin-right: 5px;
 
   #editor, #diffEditor, #imageViewer, #genericViewer {
     height: calc(100% - 70px);
@@ -73,9 +73,47 @@
   }
 }
 
+.editor-settings-sidebar {
+  flex: 0 0 340px;
+  margin-right: 5px;
+  margin-top: 34px;
+
+  .ctrls {
+    margin: 4px 0;
+    display: flex;
+    flex: 0 0 auto;
+    
+    & > * {
+      margin-right: 4px;
+    }
+
+    .readonly {
+      height: 30px;
+      line-height: 30px;
+      padding: 0 10px;
+    }
+  }
+
+  &.collapsed {
+    flex: 0 0 34px;
+
+    .ctrls {
+      flex-direction: column;
+
+      .btn {
+        width: 34px;
+      }
+
+      & > * {
+        margin-right: 0;
+        margin-bottom: 4px;
+      }
+    }
+  }
+}
+
 .editor-toolbar {
   display: flex;
-  background: #fff;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
   border-bottom: 1px solid #ddd;
@@ -140,7 +178,7 @@ h3 {
 
   .cover-screen-centered {
     position: absolute;
-    top: 50%;
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
   }
@@ -150,6 +188,27 @@ h3 {
     background: #fff;
     padding: 30px 80px 20px 70px;
     height: 100%;
+  }
+
+  .loading {
+    font-size: 20px;
+    
+    .spinner {
+      margin-right: 5px;
+    }
+  }
+
+  .load-error {
+    width: 550px;
+
+    & > div {
+      margin-bottom: 16px;
+    }
+
+    small {
+      font-size: 14px;
+      color: #999;
+    }
   }
 }
 

@@ -6,12 +6,13 @@ import createMd from '../../../lib/fg/markdown'
 // exported api
 // =
 
-export function renderGeneralHelp (opts) {
+export function renderHome (opts) {
   const {
     archiveInfo,
     currentDiff,
     readmeMd,
     workingCheckoutVersion,
+    workingDatJson,
     isReadonly,
     OS_USES_META_KEY
   } = opts
@@ -25,7 +26,7 @@ export function renderGeneralHelp (opts) {
   const versionLabel = (Number.isNaN(+workingCheckoutVersion)) ? workingCheckoutVersion : `v${workingCheckoutVersion}`
   const previewMode = archiveInfo.userSettings.previewMode
   return yo`
-    <div class="editor-general-help">
+    <div class="editor-home">
       ${localSyncPathIsMissing && !isTrashed
         ? yo`
           <div class="message error error-notice">
@@ -34,7 +35,7 @@ export function renderGeneralHelp (opts) {
               The local folder was deleted or moved.
               (${missingLocalSyncPath})
             </span>
-            <button class="btn" onclick=${doClick('.options-dropdown-btn')}>Resolve</button>
+            <button class="btn" onclick=${e => emit('editor-change-sync-path')}>Resolve</button>
           </div>`
         : ''}
       ${isTrashed
@@ -51,19 +52,22 @@ export function renderGeneralHelp (opts) {
         : !previewMode && workingCheckoutVersion !== 'latest'
           ? yo`
             <h3 class="viewing">
-              Viewing <strong>${versionLabel}</strong>
-              <a class="link" href="beaker://editor/${archiveInfo.url}+latest"><span class="fas fa-arrow-right"></span> Go to latest</a>.
+              Viewing <strong>${versionLabel}</strong>.
+              <a class="link" href="beaker://editor/${archiveInfo.url}+latest">Go to latest</a>.
             </h3>`
           : previewMode && workingCheckoutVersion !== 'preview'
             ? yo`
               <h3 class="viewing">
-                Viewing <strong>${versionLabel}</strong>
-                <a class="link" href="beaker://editor/${archiveInfo.url}+preview"><span class="fas fa-arrow-right"></span> Go to preview</a>.
+                Viewing <strong>${versionLabel}</strong>.
+                <a class="link" href="beaker://editor/${archiveInfo.url}+preview">Go to preview</a>.
               </h3>`
             : ''}
       ${renderDiff(currentDiff)}
-      ${renderReadme(archiveInfo, readmeMd)}
-      ${renderHotkeyHelp({OS_USES_META_KEY})}
+      <div style="text-align: center; padding-top: 15vh">
+        <span class="fas fa-code" style="font-size: 50vh; color: #eee; margin-left: -5vw"></span>
+      </div>
+      ${''/*TODO do we want? renderReadme(archiveInfo, readmeMd)*/}
+      ${''/*renderHotkeyHelp({OS_USES_META_KEY})*/}
     </div>`
 }
 
@@ -157,12 +161,4 @@ function onCommitAll (e) {
 function onRevertAll (e) {
   if (!confirm('Revert all changes?')) return
   emit('editor-revert-all')
-}
-
-function doClick (sel) {
-  return e => {
-    e.preventDefault()
-    e.stopPropagation()
-    document.querySelector(sel).click()
-  }
 }

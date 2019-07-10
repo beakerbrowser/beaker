@@ -78,11 +78,11 @@ export function renderSiteinfoDropdownNonowner (workingDatJson, archiveInfo) {
   return toggleable2({
     id: 'site-info-editor',
     closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container">
-        <button class="btn site-info-btn transparent toggleable nofocus" onclick=${onToggle}>${title || 'Untitled'}</button>
+      <div class="">
+        ${title || 'Untitled'}
       </div>`,
     open: ({onToggle}) => yo`
-      <div class="dropdown siteinfo toggleable-container">
+      <div class="siteinfo toggleable-container">
         <button class="btn site-info-btn transparent toggleable nofocus" onclick=${onToggle}>${title || 'Untitled'}</button>
         <div class="dropdown-items left">
           <label>Title</label>

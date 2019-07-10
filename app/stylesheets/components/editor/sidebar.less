@@ -1,4 +1,4 @@
-@import "../../../base/colors.less";
+@import "../../base/colors.less";
 
 .editor-sidebar {
   display: flex;
@@ -16,91 +16,32 @@
     height: 100%;
   }
 
-  .site-info {
+  .title {
+    button {
+      font-weight: 500;
+    }
+  }
+
+  .file-controls {
     display: flex;
-    padding: 0 3px;
+    padding: 0 2px;
+    font-size: 11px;
 
-    & > :last-child {
+    .label {
+      background: #f5f5f5;
+      padding: 3px 13px;
+      border-radius: 3px;
+      margin: 0 0 4px;
       flex: 1;
-      overflow: hidden;
     }
 
-    .btn.toggleable {
-      padding: 0 2px;
-    }
-
-    .dropdown {
-      position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
-    }
-
-    .dropdown-items {
-      padding: 10px;
-    }
-
-    & > :first-child .dropdown-items {
-      left: 4px;
-    }
-
-    & > :last-child .dropdown-items {
-      left: 28px;
-    }
-
-    .readonly-favicon,
-    .readonly-title {
-      height: 30px;
-      padding: 5px 3px;
-      font-weight: 500;
-    }
-
-    .favicon {
-      width: 16px;
-      height: 16px;
-      vertical-align: middle;
-      position: relative;
-      top: -2px;
-    }
-
-    .site-info-btn {
-      text-align: left;
-      font-weight: 500;
-      width: 100%;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-
-      &:hover {
-        color: @blue;
-      }
+    button {
+      padding: 5px 7px;
     }
   }
 
   .file-tree-header {
     padding: 3px;
-  }
-
-  .version-picker-ctrl {
-    position: initial; // due to overflow hidden, we do dropdowns in the sidebar with absolute positioning
-
-    button {
-      color: rgba(0, 0, 0, 0.75);
-      background: rgba(0,0,0,.05);
-      padding: 0 10px;
-      border-radius: 4px;
-      height: 24px;
-      line-height: 22px;
-      font-size: 13px;
-      border: 0;
-      white-space: nowrap;
-
-      &:hover {
-        color: @blue;
-      }
-    }
-
-    .dropdown-items {
-      left: 6px;
-      top: 64px;
-    }
   }
 
   .file-tree {

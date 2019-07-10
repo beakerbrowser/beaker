@@ -4,10 +4,6 @@ import _get from 'lodash.get'
 import {FSArchiveFolder_BeingCreated, FSArchiveFile_BeingCreated} from 'beaker-virtual-fs'
 import * as contextMenu from '../context-menu'
 import * as contextInput from '../context-input'
-import {renderSiteinfoDropdown} from './siteinfo-dropdown'
-import renderArchiveHistory from '../archive/archive-history'
-import toggleable2  from '../toggleable2'
-import renderFaviconPicker from '../settings/favicon-picker'
 import {findParent, writeToClipboard} from '../../../lib/fg/event-handlers'
 import {pluralize} from '../../../lib/strings'
 
@@ -18,9 +14,7 @@ var archiveFsRoot
 var currentDiff
 var config = {
   workingDatJson: {},
-  isReadonly: false,
-  version: 'latest',
-  previewMode: false
+  isReadonly: false
 }
 
 // exported api
@@ -30,16 +24,24 @@ export function render () {
   if (!archiveFsRoot) {
     return ''
   }
-
+  var archiveInfo = archiveFsRoot._archiveInfo
+  var title = archiveInfo.isOwner ? config.workingDatJson.title : archiveInfo.title
   return yo`
     <div class="file-tree-container" oncontextmenu=${onContextmenu}>
-      <div class="site-info">
-        ${renderFavicon()}
-        ${renderSiteinfoDropdown({workingDatJson: config.workingDatJson, archiveInfo: archiveFsRoot._archiveInfo})}
+      <div class="title">
+        <button class="btn transparent nofocus" onclick=${onOpenHome}>${title || 'Untitled'}</button>
       </div>
-      <div class="file-tree-header">
-        ${renderVersionPicker()}
-      </div>
+      ${config.isReadonly ? yo`
+        <div class="file-controls">
+          <span class="label">Readonly</span>
+        </div>
+      ` : yo`
+        <div class="file-controls">
+          <button class="btn transparent" onclick=${e => emit('editor-new-file', {path: '/'})}><span class="far fa-fw fa-file"></span></button>
+          <button class="btn transparent" onclick=${e => emit('editor-new-folder', {path: '/'})}><span class="far fa-fw fa-folder"></span></button>
+          <button class="btn transparent" onclick=${e => emit('editor-import-files', {path: '/'})}><span class="fas fa-fw fa-upload"></span></button>
+        </div>
+      `}
       <div class="file-tree">
         ${renderChildren(archiveFsRoot)}
       </div>
@@ -73,62 +75,6 @@ export function configure (c) {
 // rendering
 // =
 
-function renderFavicon () {
-  const url = `beaker-favicon:16,${archiveFsRoot.url}?cache=${Date.now()}`
-  const onSelectFavicon = imageData => emit('editor-set-favicon', {imageData})
-
-  if (config.isReadonly) {
-    return yo`<div class="readonly-favicon"><img class="favicon" src="${url}"></div>`
-  }
-
-  return toggleable2({
-    id: 'favicon-picker',
-    closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container">
-        <button class="btn transparent nofocus toggleable favicon-picker-btn" onclick=${onToggle}><img class="favicon" src=${url} /></button>
-      </div>`,
-    open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container">
-        <button class="btn transparent nofocus toggleable favicon-picker-btn" onclick=${onToggle}><img class="favicon" src=${url} /></button>
-        <div class="dropdown-items subtle-shadow left" onclick=${onToggle}>
-          ${renderFaviconPicker({onSelect: onSelectFavicon, currentFaviconUrl: url})}
-        </div>
-      </div>`
-  })
-}
-
-function renderVersionPicker () {
-  const currentVersion = config.version
-  const includePreview = config.previewMode
-
-  const button = (onToggle) =>
-    yo`
-      <button
-        class="btn nofocus"
-        onclick=${onToggle}>
-        <div>
-          Version: ${currentVersion}
-        </div>
-        <span class="fa fa-angle-down"></span>
-      </button>
-    `
-
-  return toggleable2({
-    id: 'version-picker',
-    closed: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker-ctrl">
-        ${button(onToggle)}
-      </div>`,
-    open: ({onToggle}) => yo`
-      <div class="dropdown toggleable-container version-picker-ctrl">
-        ${button(onToggle)}
-        <div class="dropdown-items left">
-          ${renderArchiveHistory(archiveFsRoot._archive, {currentVersion, viewerUrl: 'beaker://editor', includePreview})}
-        </div>
-      </div>`
-  })
-}
-
 function renderReviewChanges () {
   if (!currentDiff || currentDiff.length === 0) return ''
 
@@ -139,7 +85,7 @@ function renderReviewChanges () {
 
   const total = currentDiff.length
   return yo`
-    <a class="btn transparent nofocus uncommitted-changes" onclick=${e => emit('editor-show-general-help')}>
+    <a class="btn transparent nofocus uncommitted-changes" onclick=${onOpenHome}>
       ${rRevisionIndicator('add')}
       ${rRevisionIndicator('mod')}
       ${rRevisionIndicator('del')}
@@ -311,6 +257,12 @@ function onClickDeletedFilediff (e, filediff) {
   e.stopPropagation()
 
   models.setActiveDeletedFilediff(filediff)
+}
+
+function onOpenHome (e) {
+  e.preventDefault()
+  e.stopPropagation()
+  emit('editor-show-home')
 }
 
 async function onContextmenu (e, node) {

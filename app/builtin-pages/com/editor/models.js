@@ -1,6 +1,6 @@
 /* globals Event monaco diffEditor editor */
 import yo from 'yo-yo'
-import {renderGeneralHelp} from './general-help'
+import {renderHome} from './home'
 
 // globals
 // =
@@ -143,7 +143,7 @@ export async function setActive (file) {
   }
 }
 
-export function setActiveGeneralHelp (opts) {
+export function setActiveHome (opts) {
   setVisibleRegion('generic-viewer')
 
   // set no active model
@@ -151,7 +151,7 @@ export function setActiveGeneralHelp (opts) {
 
   // render the interface
   var viewerEl = document.getElementById('genericViewer')
-  yo.update(viewerEl, yo`<div id="genericViewer">${renderGeneralHelp(opts)}</div>`)
+  yo.update(viewerEl, yo`<div id="genericViewer">${renderHome(opts)}</div>`)
 
   emit('editor-rerender')
 }

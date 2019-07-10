@@ -6,33 +6,38 @@ import {Archive} from 'builtin-pages-lib'
 import _get from 'lodash.get'
 import * as hotkeys from '../com/editor/hotkeys'
 import * as sidebar from '../com/editor/sidebar'
-import * as helpSidebar from '../com/editor/help-sidebar'
+import * as settingsForm from '../com/editor/settings-form'
 import * as tabs from '../com/editor/tabs'
 import * as importPopup from '../com/editor/import-popup'
 import * as toolbar from '../com/editor/toolbar'
 import * as models from '../com/editor/models'
 import * as toast from '../com/toast'
+import renderArchiveHistory from '../com/archive/archive-history'
 import * as contextMenu from '../com/context-menu'
 import {writeToClipboard} from '../../lib/fg/event-handlers'
-import {closeAllToggleables}  from '../com/toggleable2'
+import toggleable2, {closeAllToggleables}  from '../com/toggleable2'
 import * as localSyncPathPopup from '../com/library/localsyncpath-popup'
 const profiles = navigator.importSystemAPI('unwalled-garden-profiles')
 
 const DEFAULT_SIDEBAR_WIDTH = 190
 const MIN_SIDEBAR_WIDTH = 100
-const HELP_SIDEBAR_WIDTH = 200
+const RIGHT_SIDEBAR_COLLAPSED_WIDTH = 34
+const RIGHT_SIDEBAR_EXPANDED_WIDTH = 340
 
 var isLoading = true
+var loadError = ''
 var userProfile
 var archive
 var workingCheckoutVersion
 var workingCheckout
+var workingDatJson
 var archiveFsRoot
 var currentDiff
 var isReadonly
 
 var sidebarWidth
 var isDraggingSidebar = false
+var isRightSidebarOpen = localStorage.isRightSidebarClosed != 1
 
 var OS_USES_META_KEY = false
 
@@ -102,7 +107,7 @@ async function setup () {
   on('editor-set-active', onSetActive)
   on('editor-set-active-deleted-filediff', onSetActiveDeletedFilediff)
   on('editor-toggle-container-expanded', onToggleContainerExpanded)
-  on('editor-show-general-help', onShowGeneralHelp)
+  on('editor-show-home', onShowHome)
   on('editor-save-active-model', onSaveActiveModel)
   on('editor-new-model', onNewModel)
   on('editor-unload-active-model', onUnloadActiveModel)
@@ -137,7 +142,6 @@ async function setup () {
   on('editor-archive-unsave', onArchiveUnsave)
   on('editor-archive-delete-permanently', onArchiveDeletePermanently)
 
-
   // setup the sidebar resizer
   setSidebarWidth(DEFAULT_SIDEBAR_WIDTH)
   var sidebarDragHandleEl = document.querySelector('#editor-sidebar-drag-handle')
@@ -145,52 +149,61 @@ async function setup () {
   document.addEventListener('mouseup', onGlobalMouseup)
   document.addEventListener('mousemove', onGlobalMousemove)
 
-  if (url) {
-    ;archive = new Archive(url)
-    await archive.setup()
-    await setupWorkingCheckout()
-    archive.info.canDelete = archive.info.isOwner && archive.info.url !== userProfile.url
-    isReadonly = !_get(archive, 'info.userSettings.isSaved') || !archive.info.isOwner || !Number.isNaN(+workingCheckoutVersion)
-    if (isReadonly) {
-      window.editor.updateOptions({readOnly: true})
-    }
-
-    // load the archiveFS
-    archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
-    await loadFileTree()
-    await sidebar.setArchiveFsRoot(archiveFsRoot)
-    sidebar.configure({
-      workingDatJson: await readWorkingDatJson(),
-      isReadonly,
-      version: workingCheckoutVersion,
-      previewMode: _get(archive, 'info.userSettings.previewMode')
-    })
-
-    // listen for changes
-    if (_get(archive, 'info.userSettings.isSaved')) {
-      let fileActStream = archive.watch()
-      fileActStream.addEventListener('changed', onFilesChanged)
-      if (_get(archive, 'info.userSettings.previewMode')) {
-        fileActStream = workingCheckout.watch()
-        fileActStream.addEventListener('changed', onFilesChanged)
+  try {
+    if (url) {
+      ;archive = new Archive(url)
+      await archive.setup()
+      await setupWorkingCheckout()
+      archive.info.canDelete = archive.info.isOwner && archive.info.url !== userProfile.url
+      isReadonly = !_get(archive, 'info.userSettings.isSaved') || !archive.info.isOwner || !Number.isNaN(+workingCheckoutVersion)
+      if (isReadonly) {
+        window.editor.updateOptions({readOnly: true})
       }
+
+      // load the archiveFS
+      archiveFsRoot = new FSArchive(null, workingCheckout, archive.info)
+      await loadFileTree()
+      await sidebar.setArchiveFsRoot(archiveFsRoot)
+      workingDatJson = await readWorkingDatJson()
+      sidebar.configure({
+        workingDatJson,
+        isReadonly
+      })
+
+      // listen for changes
+      if (_get(archive, 'info.userSettings.isSaved')) {
+        let fileActStream = archive.watch()
+        fileActStream.addEventListener('changed', onFilesChanged)
+        if (_get(archive, 'info.userSettings.previewMode')) {
+          fileActStream = workingCheckout.watch()
+          fileActStream.addEventListener('changed', onFilesChanged)
+        }
+      }
+
+      document.title = `Editor - ${_get(archive, 'info.title') || 'Untitled'}`
+    } else {
+      let untitled = monaco.editor.createModel('')
+      untitled.name = 'untitled'
+      untitled.isEditable = true
+      editor.setModel(untitled)
     }
 
-    document.title = `Editor - ${_get(archive, 'info.title') || 'Untitled'}`
-  } else {
-    let untitled = monaco.editor.createModel('')
-    untitled.name = 'untitled'
-    untitled.isEditable = true
-    editor.setModel(untitled)
+    // ready archive diff
+    await localCompare()
+  } catch (e) {
+    if (e.name === 'TimeoutError') {
+      loadError = 'The dat site could not be found on the network. Make sure it is online and that you are connected to the Internet.'
+    } else {
+      loadError = e.toString()
+    }
+    update()
+    return
   }
-
-  // ready archive diff
-  await localCompare()
 
   // show the general help view
   isLoading = false
   update()
-  showGeneralHelp()
+  showHome()
 
   // load the given path
   try {
@@ -203,13 +216,14 @@ async function setup () {
   }
 }
 
-async function showGeneralHelp () {
-  models.setActiveGeneralHelp({
+async function showHome () {
+  models.setActiveHome({
     userProfile,
     archiveInfo: archive.info,
     currentDiff,
     readmeMd: await loadReadme(),
     workingCheckoutVersion,
+    workingDatJson,
     isReadonly,
     hasTitle: !!archive.info.title,
     hasFavicon: !!(findArchiveNode('/favicon.ico') || findArchiveNode('/favicon.png')),
@@ -265,7 +279,9 @@ async function checkForMissingLocalPath () {
 }
 
 function setSidebarWidth (width) {
-  sidebarWidth = width
+  if (typeof width !== 'undefined') {
+    sidebarWidth = width
+  }
 
   var actualWidth = getActualSidebarWidth()
   if (actualWidth === 0) {
@@ -277,8 +293,9 @@ function setSidebarWidth (width) {
   const setWidth = (sel, v) => {
     /** @type HTMLElement */(document.querySelector(sel)).style.width = v
   }
+  var rightSidebarWidth = isRightSidebarOpen ? RIGHT_SIDEBAR_EXPANDED_WIDTH : RIGHT_SIDEBAR_COLLAPSED_WIDTH
   setWidth('.editor-sidebar', `${actualWidth}px`)
-  setWidth('.editor-container', `calc(100vw - ${actualWidth + HELP_SIDEBAR_WIDTH}px)`) // allows monaco to resize properly
+  setWidth('.editor-container', `calc(100vw - ${actualWidth + rightSidebarWidth}px)`) // allows monaco to resize properly
 }
 
 function getActualSidebarWidth () {
@@ -347,6 +364,31 @@ async function loadReadme () {
 // =
 
 function update () {
+  if (loadError) {
+    // loading error
+    let url = window.location.pathname.slice(1)
+    yo.update(
+      document.querySelector('.cover-screen'),
+      yo`
+        <div class="cover-screen">
+          <div class="cover-screen-centered">
+            <div class="load-error">
+              <div>
+                <small>
+                  <span class="fas fa-exclamation-triangle"></span>
+                  We encountered an issue
+                </small>
+              </div>
+              <div>${loadError}</div>
+              <div><small>Address: <a class="link" href="${url}">${url}</a></small></div>
+            </div>
+          </div>
+        </div>
+      `
+    )
+    return
+  }
+
   if (isLoading) {
     // loading screen
     yo.update(
@@ -354,7 +396,7 @@ function update () {
       yo`
         <div class="cover-screen">
           <div class="cover-screen-centered">
-            <span class="spinner"></span> Loading...
+            <div class="loading-notice"><span class="spinner"></span> Fetching from the network...</div>
           </div>
         </div>
       `
@@ -388,25 +430,87 @@ function update () {
       </div>
     `
   )
-  yo.update(
-    document.querySelector('.editor-help-sidebar'),
-    helpSidebar.render({
-      archiveInfo: archive.info,
-      isReadonly,
-      OS_USES_META_KEY
-    })
-  )
+  let viewSiteUrl = workingCheckoutVersion === 'latest' ? archive.checkout().url : archive.checkout(workingCheckoutVersion).url
+  if (isRightSidebarOpen) {
+    yo.update(
+      document.querySelector('.editor-settings-sidebar'),
+      yo`<div class="editor-settings-sidebar">
+        <div class="ctrls">
+          <a class="btn primary" href=${viewSiteUrl} target="_blank">
+            <i class="fas fa-external-link-alt"></i> View site
+          </a>
+          ${renderVersionPicker(false)}
+          <button class="btn white nofocus" onclick=${onClickArchiveMenu}>
+            <span class="fas fa-ellipsis-h"></span>
+          </button>
+          <button class="btn transparent nofocus" style="margin-left: auto; margin-right: 0" onclick=${onToggleRightSidebar}>
+            <i class="far fa-fw fa-caret-square-right"></i>
+          </button>
+        </div>
+        ${settingsForm.render(workingCheckout, isReadonly, archive.info, workingDatJson)}
+      </div>`,
+    )
+  } else {
+    yo.update(
+      document.querySelector('.editor-settings-sidebar'),
+      yo`<div class="editor-settings-sidebar collapsed">
+        <div class="ctrls">
+          <a class="btn primary" href=${viewSiteUrl} target="_blank">
+            <i class="fas fa-external-link-alt"></i>
+          </a>
+          ${renderVersionPicker(true)}
+          <button class="btn white nofocus" onclick=${onClickArchiveMenu}>
+            <span class="fas fa-ellipsis-h"></span>
+          </button>
+          <button class="btn transparent nofocus" onclick=${onToggleRightSidebar}>
+            <i class="far fa-caret-square-left"></i>
+          </button>
+        </div>
+      </div>`,
+    )
+  }
   yo.update(
     document.querySelector('.editor-tabs'),
-    tabs.render({
-      archive: workingCheckout,
-      models: models.getModels(),
-      archiveInfo: archive.info,
-      isReadonly,
-      openLinkVersion: workingCheckoutVersion
-    })
+    tabs.render({models: models.getModels()})
   )
   updateToolbar()
+}
+
+function renderVersionPicker (isSmallBtn) {
+  const currentVersion = workingCheckoutVersion
+  const includePreview = _get(archive, 'info.userSettings.previewMode')
+
+  const button = (onToggle) =>
+    yo`
+      <button
+        class="btn white nofocus"
+        onclick=${onToggle}>
+        ${isSmallBtn ? yo`
+          <span class="fas fa-history"></span>
+        ` : yo`
+          <div>
+            <span class="fas fa-history"></span>
+            Version: ${currentVersion}
+            <span class="fa fa-angle-down"></span>
+          </div>
+        `}
+      </button>
+    `
+
+  return toggleable2({
+    id: 'version-picker',
+    closed: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker-ctrl">
+        ${button(onToggle)}
+      </div>`,
+    open: ({onToggle}) => yo`
+      <div class="dropdown toggleable-container version-picker-ctrl">
+        ${button(onToggle)}
+        <div class="dropdown-items">
+          ${renderArchiveHistory(archiveFsRoot._archive, {currentVersion, viewerUrl: 'beaker://editor', includePreview})}
+        </div>
+      </div>`
+  })
 }
 
 function updateToolbar () {
@@ -485,7 +589,7 @@ async function onFilesChanged () {
   sidebar.rerender()
   updateToolbar()
   if (models.getActive() === null) {
-    showGeneralHelp()
+    showHome()
   }
 }
 
@@ -500,7 +604,7 @@ async function onSetFavicon (e) {
   if (!models.getActive()) {
     // update general help view if it's active
     await loadFileTree()
-    showGeneralHelp()
+    showHome()
   }
   closeAllToggleables()
 }
@@ -546,7 +650,7 @@ async function onSetActive (e) {
   } catch (err) {
     if (await checkForMissingLocalPath()) {
       toast.create('The local folder has been deleted or moved', 'error')
-      showGeneralHelp() // switch to general help to show alert
+      showHome() // switch to general help to show alert
     } else {
       console.error('Failed to set active', e.detail, err)
       toast.create(err.toString(), 'error')
@@ -581,8 +685,8 @@ async function onToggleContainerExpanded (e) {
   sidebar.rerender()
 }
 
-function onShowGeneralHelp (e) {
-  showGeneralHelp()
+function onShowHome (e) {
+  showHome()
 }
 
 function onNewModel (e) {
@@ -610,7 +714,7 @@ function onReorderModels (e) {
 }
 
 function onAllModelsClosed (e) {
-  showGeneralHelp()
+  showHome()
 }
 
 function onCycleTabs (e) {
@@ -621,7 +725,7 @@ function onCycleTabs (e) {
   if (index < -1) {
     models.setActive(allModels[allModels.length - 1])
   } else if (index >= allModels.length) {
-    showGeneralHelp()
+    showHome()
   } else {
     models.setActive(allModels[index])
   }
@@ -629,7 +733,7 @@ function onCycleTabs (e) {
 
 function onShowTab (e) {
   if (e.detail.tab === 1) {
-    showGeneralHelp()
+    showHome()
   } else {
     var model = models.getModels()[e.detail.tab - 2]
     if (model) models.setActive(model)
@@ -772,7 +876,7 @@ async function onCommitAll (e) {
   // update view
   await loadFileTree()
   await localCompare()
-  showGeneralHelp()
+  showHome()
 }
 
 async function onRevertAll (e) {
@@ -786,7 +890,7 @@ async function onRevertAll (e) {
   // update view
   await loadFileTree()
   await localCompare()
-  showGeneralHelp()
+  showHome()
 }
 
 async function onDiffActiveModel (e) {
@@ -928,6 +1032,33 @@ async function onRemoveSyncPath (e) {
     toast.create(e.toString(), 'error', 5e3)
     console.error(e)
   }
+}
+
+function onToggleRightSidebar (e) {
+  e.preventDefault()
+  isRightSidebarOpen = !isRightSidebarOpen
+  localStorage.isRightSidebarClosed = Number(!isRightSidebarOpen)
+  update()
+  setSidebarWidth()
+}
+
+function onClickArchiveMenu (e) {
+  e.preventDefault()
+  e.stopPropagation()
+  var rect = e.currentTarget.getClientRects()[0]
+  contextMenu.create({
+    x: rect.right,
+    y: rect.bottom,
+    right: true,
+    withTriangle: true,
+    items: [
+      _get(archive, 'info.userSettings.isSaved')
+        ? {icon: 'fas fa-trash', label: 'Remove from my websites', click: onArchiveUnsave}
+        : {icon: 'fas fa-save', label: 'Add to my websites', click: onArchiveSave},
+      {icon: 'link', label: 'Copy link', click: () => {writeToClipboard(archive.url); toast.create('Link copied to clipboard')}},
+      {icon: 'far fa-clone', label: 'Duplicate this site', click: onFork}
+    ]
+  })
 }
 
 // internal methods
