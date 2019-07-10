@@ -489,11 +489,12 @@ class View {
   // live reloading
   // =
 
-  toggleLiveReloading (enable) {
+
+  async toggleLiveReloading (enable) {
     if (typeof enable === 'undefined') {
       enable = !this.liveReloadEvents
     }
-    if (!enable) {
+    if (this.liveReloadEvents) {
       this.liveReloadEvents.close()
       this.liveReloadEvents = false
     } else if (this.datInfo) {
@@ -501,7 +502,7 @@ class View {
       if (!archive) return
 
       let {version} = parseDatURL(this.url)
-      let {checkoutFS} = beakerCore.dat.library.getArchiveCheckout(archive, version)
+      let {checkoutFS} = await beakerCore.dat.library.getArchiveCheckout(archive, version)
       this.liveReloadEvents = checkoutFS.pda.watch()
 
       let event = (this.datInfo.isOwner) ? 'changed' : 'invalidated'

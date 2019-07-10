@@ -85,9 +85,6 @@ app.on('open-file', (e, filepath) => {
 })
 
 app.on('ready', async function () {
-  // start the daemon process
-  var datDaemonProcess = await childProcesses.spawn('dat-daemon', './dat-daemon.js')
-
   portForwarder.setup()
 
   // setup core
@@ -109,8 +106,7 @@ app.on('ready', async function () {
     },
     rpcAPI: rpc,
     downloadsWebAPI: downloads.WEBAPI,
-    browserWebAPI: beakerBrowser.WEBAPI,
-    datDaemonProcess
+    browserWebAPI: beakerBrowser.WEBAPI
   })
 
   // base
