@@ -9,8 +9,7 @@ import buttonsCSS from './buttons2.css'
 
 const TEMPLATE_TYPES = {
   blank: '',
-  application: 'unwalled.garden/application',
-  module: 'unwalled.garden/module',
+  application: 'application',
   template: 'unwalled.garden/template',
   theme: 'unwalled.garden/theme'
 }
@@ -23,7 +22,6 @@ const BASIC_TEMPLATES = [
 
 const ADVANCED_TEMPLATES = [
   {url: 'application', title: 'Application', thumb: 'beaker://assets/img/templates/application.png'},
-  {url: 'module', title: 'Module', thumb: 'beaker://assets/img/templates/module.png'},
   {url: 'template', title: 'Template', thumb: 'beaker://assets/img/templates/template.png'},
   {url: 'theme', title: 'Theme', thumb: 'beaker://assets/img/templates/theme.png'}
 ]

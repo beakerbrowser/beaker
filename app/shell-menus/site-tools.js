@@ -37,7 +37,7 @@ class SiteToolsMenu extends LitElement {
   }
 
   get isApplication () {
-    return this.isDat && Array.isArray(this.datInfo.type) && this.datInfo.type.includes('unwalled.garden/application')
+    return this.isDat && Array.isArray(this.datInfo.type) && this.datInfo.type.includes('application')
   }
 
   async init (params) {
