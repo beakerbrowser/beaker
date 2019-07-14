@@ -3,6 +3,12 @@ import { writeToClipboard, emit } from '../../../lib/fg/event-handlers'
 import _get from 'lodash.get'
 import * as toast from '../toast'
 
+const DOMAIN_NAME_HELP = yo`<span>
+  You can set a human-readable domain name using DNS.
+  <a class="link" href="https://beakerbrowser.com/docs/guides/use-a-domain-name-with-dat" target="_blank">Follow this guide to setup your DNS record</a>,
+  then confirm the domain name here.
+</span>`
+
 const FALLBACK_PAGE_HELP = yo`<span>
   The fallback page is displayed any time a visitor goes to a file that doesn't exist.
   A good example might be <code>/404.html</code>.
@@ -29,7 +35,7 @@ const DONATE_LINK_HELP = yo`<span>
 // globals
 // =
 
-var expandedSection = sessionStorage.expandedSection || 'info'
+var expandedSection = sessionStorage.expandedSection || ''
 var canSave = false
 var changedValues = {}
 
@@ -41,20 +47,26 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
   return yo`
     <form class="settings-form" onsubmit=${isReadonly ? undefined : e => onSubmitSettings(e, workingCheckout, workingDatJson)}>
       <div class="settings-form-inner">
-        ${section('workingDatJson', 'Site Information', yo`
+        ${section('info', 'Information', yo`
           <div class="controls">
             ${inputControl(workingDatJson, {isReadonly, label: 'Title', name: 'title'})}
             ${textareaControl(workingDatJson, {isReadonly, label: 'Description', name: 'description'})}
             ${thumbControl(archiveInfo.url, {isReadonly})}
+            ${linkControl(workingDatJson, {isReadonly, label: 'Donation Link', name: 'payment', placeholder: 'e.g. http://opencollective.com/beaker', help: DONATE_LINK_HELP})}
           </div>
         `)}
-        ${!isReadonly ? section('dev', 'Development Settings', yo`
+        ${section('publish', 'Publishing', yo`
+          <div class="controls">
+            ${dnsNameControl(workingCheckout, archiveInfo, workingDatJson, {isReadonly})}
+          </div>
+        `)}
+        ${!isReadonly ? section('dev', 'Development', yo`
           <div class="controls">
             ${previewModeControl(archiveInfo)}
             ${syncPathControl(archiveInfo)}
           </div>
         `) : ''}
-        ${isApp ? section('app-perms', 'App Permissions', yo`
+        ${isApp ? section('perms', 'Permissions', yo`
           <div class="controls perms-grid">
             ${permissionControl(workingDatJson, {
               isReadonly,
@@ -118,19 +130,10 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
             })}
           </div>
         `) : ''}
-        ${section('metadata', 'Site Metadata', yo`
-          <div class="controls">    
-            ${linkControl(workingDatJson, {isReadonly, label: 'Donation Link', name: 'payment', placeholder: 'e.g. http://opencollective.com/beaker', help: DONATE_LINK_HELP})}
-          </div>
-        `)}
-        ${section('visiting-behaviors', 'Visiting Behaviors', yo`
-          <div class="controls">    
+        ${section('advanced', 'Advanced', yo`
+          <div class="controls">
             ${inputControl(workingDatJson, {isReadonly, label: 'Fallback Page', name: 'fallback_page', help: FALLBACK_PAGE_HELP})}
             ${inputControl(workingDatJson, {isReadonly, label: 'Web Root', name: 'web_root', help: WEB_ROOT_HELP})}
-          </div>
-        `)}
-        ${section('security', 'Security', yo`
-          <div class="controls">
             ${textareaControl(workingDatJson, {isReadonly, label: 'Content Security Policy', name: 'content_security_policy', help: CONTENT_SECURITY_POLICY_HELP})}
           </div>
         `)}
@@ -237,6 +240,105 @@ function thumbControl (url, opts) {
       ${opts.isReadonly ? '' : yo`
         <input type="file" accept=".jpg,.jpeg,.png" onchange=${onChooseFile}>
       `}
+    </div>
+  `
+}
+
+function dnsNameControl (workingCheckout, archiveInfo, manifest, opts) {
+  const resolveName = async (v) => DatArchive.resolveName(v).catch(err => {})
+
+  async function doSave (value) {
+    // update dat.json
+    var m = JSON.parse(await workingCheckout.readFile('/dat.json'))
+    m.dns_name = value
+    await workingCheckout.writeFile('/dat.json', JSON.stringify(m, null, 2))
+
+    // trigger confirmation
+    if (value) {
+      await resolveName(value)
+    }
+
+    // reload page
+    location.reload()
+  }
+
+  async function onCheckAgain (e) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    await resolveName(manifest.dns_name)
+    location.reload()
+  }
+
+  function onUseCurrent (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    doSave(archiveInfo.dnsName)
+  }
+
+  function onChooseNew (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    var value = prompt('Enter the domain name of your site')
+    if (value) doSave(value)
+  }
+
+  function onRemove (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    doSave(undefined)
+  }
+
+  const isReadonly = opts.isReadonly
+  const isWrong = manifest.dns_name && manifest.dns_name !== archiveInfo.dnsName
+  return yo`
+    <div class="control">
+      <label>Primary Domain Name</label>
+      ${isReadonly
+        ? yo`
+          <div class="dns-control">
+            <div class="dns-control-msg readonly">
+              ${archiveInfo.dnsName ? yo`
+                <a href="dat://${archiveInfo.dnsName}" class="link" target="_blank">${archiveInfo.dnsName}</a>
+              ` : 'No domain name confirmed'}
+            </div>
+          </div>
+        `
+        : manifest.dns_name
+          ? yo`
+            <div class="dns-control">
+              <div class="dns-control-msg">
+                ${isWrong ? yo`<span class="fas fa-fw fa-exclamation-triangle"></span>` : ''}
+                <a href="dat://${manifest.dns_name}" class="link" target="_blank">${manifest.dns_name}</a>
+                ${isWrong ? 'is not confirmed' : ''}
+              </div>
+              <div>
+                ${isWrong ? yo`<button class="btn" onclick=${onCheckAgain}>Check again</button>` : ''}
+                <button class="btn" onclick=${onChooseNew}>Choose other</button>
+                <button class="btn" onclick=${onRemove}>Remove</button>
+              </div>
+            </div>
+          `
+          : archiveInfo.dnsName
+            ? yo`
+              <div class="dns-control">
+                <div class="dns-control-msg">
+                  Use <a href="dat://${archiveInfo.dnsName}" class="link" target="_blank">${archiveInfo.dnsName}</a>?
+                </div>
+                <div>
+                  <button class="btn success" onclick=${onUseCurrent}><span class="fas fa-check"></span> Yes</button>
+                  <button class="btn" onclick=${onChooseNew}>Choose other</button>
+                </div>
+              </div>
+            ` : yo`
+            <div class="dns-control">
+              <div>
+                <button class="btn" onclick=${onChooseNew}>Confirm a domain</button>
+              </div>
+            </div>
+          `
+      }
+      <div class="help"><span class="fa fa-fw fa-info"></span> ${DOMAIN_NAME_HELP}</div>
     </div>
   `
 }

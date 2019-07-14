@@ -431,6 +431,7 @@ function update () {
     `
   )
   let viewSiteUrl = workingCheckoutVersion === 'latest' ? archive.checkout().url : archive.checkout(workingCheckoutVersion).url
+  if (archive.info.dnsName) viewSiteUrl = viewSiteUrl.replace(archive.key, archive.info.dnsName)
   if (isRightSidebarOpen) {
     yo.update(
       document.querySelector('.editor-settings-sidebar'),
