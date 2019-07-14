@@ -18,6 +18,7 @@ class PreviewModeToolsMenu extends LitElement {
 
   async init (params) {
     this.url = params.url
+    this.origin = toOrigin(this.url)
     this.datKey = await bg.datArchive.resolveName(this.url)
     this.hasChanges = (await bg.archives.diffLocalSyncPathListing(this.datKey, {compareContent: true, shallow: true})).length > 0
     await this.requestUpdate()
@@ -59,17 +60,17 @@ class PreviewModeToolsMenu extends LitElement {
   // =
 
   onClickGotoPreview () {
-    bg.views.loadURL('active', changeHostname(this.url, `${this.datKey}+preview`))
+    bg.views.loadURL('active', `${this.origin}+preview`)
     bg.shellMenus.close()
   }
 
   onClickGotoLive () {
-    bg.views.loadURL('active', changeHostname(this.url, `${this.datKey}`))
+    bg.views.loadURL('active', `${this.origin}`)
     bg.shellMenus.close()
   }
 
   onClickGotoReview () {
-    bg.views.loadURL('active', `beaker://editor/dat://${this.datKey}`)
+    bg.views.loadURL('active', `beaker://editor/${this.origin}`)
     bg.shellMenus.close()
   }
 
@@ -98,19 +99,19 @@ PreviewModeToolsMenu.styles = [commonCSS, css`
 
 customElements.define('preview-mode-tools-menu', PreviewModeToolsMenu)
 
+function toOrigin (url) {
+  try {
+    let urlp = new URL(url)
+    return `${urlp.protocol}//${urlp.hostname}`.replace('+preview', '')
+  } catch (e) {
+    return url
+  }
+}
+
+
 function fileDiffsToPaths (filediff) {
   return filediff.map(d => {
     if (d.type === 'dir') return d.path + '/' // indicate that this is a folder
     return d.path
   })
-}
-
-function changeHostname (url, newHostname) {
-  try {
-    var urlp = new URL(url)
-    urlp.hostname = newHostname
-    return urlp.toString()
-  } catch (e) {
-    return url
-  }
 }

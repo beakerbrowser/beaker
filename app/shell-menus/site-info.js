@@ -14,6 +14,15 @@ import './hoverable.js'
 const POLL_INTERVAL = 500 // ms
 const IS_DAT_KEY_REGEX = /^[0-9a-f]{64}$/i
 
+function toOrigin (url) {
+  try {
+    let urlp = new URL(url)
+    return `${urlp.protocol}//${urlp.hostname}`
+  } catch (e) {
+    return url
+  }
+}
+
 class SiteInfoMenu extends LitElement {
   constructor () {
     super()
@@ -41,12 +50,13 @@ class SiteInfoMenu extends LitElement {
     this.view = ''
     var state = await bg.views.getTabState('active', {datInfo: true, sitePerms: true})
     this.url = state.url
+    this.origin = toOrigin(state.url)
     this.loadError = state.loadError
     this.datInfo = state.datInfo
     this.sitePerms = state.sitePerms
 
     if (this.isApplication) {
-      this.appInfo = await bg.applications.getInfo(this.datInfo.url)
+      this.appInfo = await bg.applications.getInfo(this.origin)
     }
 
     if (this.isDat) {
@@ -58,8 +68,8 @@ class SiteInfoMenu extends LitElement {
 
     if (this.datInfo) {
       this.me = await bg.profiles.me()
-      this.followers = (await bg.follows.list({filters: {topics: this.datInfo.url}})).map(({author}) => author)
-      this.follows = (await bg.follows.list({filters: {authors: this.datInfo.url}})).map(({topic}) => topic)
+      this.followers = (await bg.follows.list({filters: {topics: this.origin}})).map(({author}) => author)
+      this.follows = (await bg.follows.list({filters: {authors: this.origin}})).map(({topic}) => topic)
 
       // filter down to users followed by the local user
       if (!this.isMe) {
@@ -137,7 +147,7 @@ class SiteInfoMenu extends LitElement {
   }
 
   get isMe () {
-    return this.datInfo && this.me && this.me.url === this.datInfo.url
+    return this.datInfo && this.me && this.me.url === this.origin
   }
 
   get isMySite () {
@@ -304,7 +314,7 @@ class SiteInfoMenu extends LitElement {
           </div>
           <div>
             <button
-              @click=${e => this.onOpenUrl(e, `beaker://swarm-debugger/${this.datInfo.url}`)}
+              @click=${e => this.onOpenUrl(e, `beaker://swarm-debugger/${this.origin}`)}
               style="margin-right: 5px"
             >Network Debugger</button>
             <span class="fas fa-fw fa-arrow-up"></span> ${prettyBytes(stats.uploadSpeed)}/s
@@ -490,17 +500,17 @@ class SiteInfoMenu extends LitElement {
   async onToggleSaved () {
     this.datInfo.userSettings = this.datInfo.userSettings || {}
     if (this.isSaved) {
-      await bg.archives.remove(this.datInfo.url)
+      await bg.archives.remove(this.origin)
       this.datInfo.userSettings.isSaved = false
     } else {
-      await bg.archives.add(this.datInfo.url)
+      await bg.archives.add(this.origin)
       this.datInfo.userSettings.isSaved = true
     }
     this.requestUpdate()
   }
 
   async onClickInstall () {
-    var url = this.datInfo.url
+    var url = this.origin
     bg.shellMenus.close()
     if (await bg.applications.requestInstall(url)) {
       bg.shellMenus.loadURL(url) // refresh page
@@ -508,16 +518,16 @@ class SiteInfoMenu extends LitElement {
   }
 
   async onClickUninstall () {
-    bg.applications.uninstall(this.datInfo.url)
-    bg.shellMenus.loadURL(this.datInfo.url) // refresh page
+    bg.applications.uninstall(this.origin)
+    bg.shellMenus.loadURL(this.origin) // refresh page
     bg.shellMenus.close()
   }
 
   async onToggleFollow () {
     if (this.amIFollowing) {
-      await bg.follows.remove(this.datInfo.url)
+      await bg.follows.remove(this.origin)
     } else {
-      await bg.follows.add(this.datInfo.url)
+      await bg.follows.add(this.origin)
     }
     this.init()
   }
@@ -538,9 +548,9 @@ class SiteInfoMenu extends LitElement {
       title: e.currentTarget.title.value,
       description: e.currentTarget.description.value
     }
-    bg.datArchive.configure(this.datInfo.url, updates)
+    bg.datArchive.configure(this.origin, updates)
     Object.assign(this.datInfo, updates)
-    bg.shellMenus.loadURL(this.datInfo.url) // reload the page
+    bg.shellMenus.loadURL(this.origin) // reload the page
   }
 
   onTogglePerm (perm) {
