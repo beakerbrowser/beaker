@@ -50,17 +50,19 @@ class SiteInfoMenu extends LitElement {
     this.view = ''
     var state = await bg.views.getTabState('active', {datInfo: true, sitePerms: true})
     this.url = state.url
-    this.origin = toOrigin(state.url)
     this.loadError = state.loadError
     this.datInfo = state.datInfo
     this.sitePerms = state.sitePerms
 
-    if (this.isApplication) {
-      this.appInfo = await bg.applications.getInfo(this.origin)
+    if (this.isDat) {
+      this.origin = this.datInfo.url // use the primary URL tracked internally
+      this.poll = setInterval(this.doPoll.bind(this), POLL_INTERVAL)
+    } else {
+      this.origin = toOrigin(state.url)
     }
 
-    if (this.isDat) {
-      this.poll = setInterval(this.doPoll.bind(this), POLL_INTERVAL)
+    if (this.isApplication) {
+      this.appInfo = await bg.applications.getInfo(this.origin)
     }
 
     // render
