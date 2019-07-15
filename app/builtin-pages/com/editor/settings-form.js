@@ -57,7 +57,7 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
         `)}
         ${section('publish', 'Publishing', yo`
           <div class="controls">
-            ${dnsNameControl(workingCheckout, archiveInfo, workingDatJson, {isReadonly})}
+            ${domainNameControl(workingCheckout, archiveInfo, workingDatJson, {isReadonly})}
           </div>
         `)}
         ${!isReadonly ? section('dev', 'Development', yo`
@@ -244,13 +244,16 @@ function thumbControl (url, opts) {
   `
 }
 
-function dnsNameControl (workingCheckout, archiveInfo, manifest, opts) {
+function domainNameControl (workingCheckout, archiveInfo, manifest, opts) {
   const resolveName = async (v) => DatArchive.resolveName(v).catch(err => {})
+  const possibleDomain = getPossibleDomain(workingCheckout.url)
+  const isReadonly = opts.isReadonly
+  const isWrong = manifest.domain && manifest.domain !== archiveInfo.domain
 
   async function doSave (value) {
     // update dat.json
     var m = JSON.parse(await workingCheckout.readFile('/dat.json'))
-    m.dns_name = value
+    m.domain = value
     await workingCheckout.writeFile('/dat.json', JSON.stringify(m, null, 2))
 
     // trigger confirmation
@@ -266,14 +269,14 @@ function dnsNameControl (workingCheckout, archiveInfo, manifest, opts) {
     e.preventDefault()
     e.stopPropagation()
 
-    await resolveName(manifest.dns_name)
+    await resolveName(manifest.domain)
     location.reload()
   }
 
-  function onUseCurrent (e) {
+  function onUsePossible (e) {
     e.preventDefault()
     e.stopPropagation()
-    doSave(archiveInfo.dnsName)
+    doSave(possibleDomain)
   }
 
   function onChooseNew (e) {
@@ -289,8 +292,6 @@ function dnsNameControl (workingCheckout, archiveInfo, manifest, opts) {
     doSave(undefined)
   }
 
-  const isReadonly = opts.isReadonly
-  const isWrong = manifest.dns_name && manifest.dns_name !== archiveInfo.dnsName
   return yo`
     <div class="control">
       <label>Primary Domain Name</label>
@@ -298,18 +299,18 @@ function dnsNameControl (workingCheckout, archiveInfo, manifest, opts) {
         ? yo`
           <div class="dns-control">
             <div class="dns-control-msg readonly">
-              ${archiveInfo.dnsName ? yo`
-                <a href="dat://${archiveInfo.dnsName}" class="link" target="_blank">${archiveInfo.dnsName}</a>
+              ${archiveInfo.domain ? yo`
+                <a href="dat://${archiveInfo.domain}" class="link" target="_blank">${archiveInfo.domain}</a>
               ` : 'No domain name confirmed'}
             </div>
           </div>
         `
-        : manifest.dns_name
+        : manifest.domain
           ? yo`
             <div class="dns-control">
               <div class="dns-control-msg">
                 ${isWrong ? yo`<span class="fas fa-fw fa-exclamation-triangle"></span>` : ''}
-                <a href="dat://${manifest.dns_name}" class="link" target="_blank">${manifest.dns_name}</a>
+                <a href="dat://${manifest.domain}" class="link" target="_blank">${manifest.domain}</a>
                 ${isWrong ? 'is not confirmed' : ''}
               </div>
               <div>
@@ -319,14 +320,14 @@ function dnsNameControl (workingCheckout, archiveInfo, manifest, opts) {
               </div>
             </div>
           `
-          : archiveInfo.dnsName
+          : possibleDomain
             ? yo`
               <div class="dns-control">
                 <div class="dns-control-msg">
-                  Use <a href="dat://${archiveInfo.dnsName}" class="link" target="_blank">${archiveInfo.dnsName}</a>?
+                  Use <a href="dat://${possibleDomain}" class="link" target="_blank">${possibleDomain}</a>?
                 </div>
                 <div>
-                  <button class="btn success" onclick=${onUseCurrent}><span class="fas fa-check"></span> Yes</button>
+                  <button class="btn success" onclick=${onUsePossible}><span class="fas fa-check"></span> Yes</button>
                   <button class="btn" onclick=${onChooseNew}>Choose other</button>
                 </div>
               </div>
@@ -599,4 +600,14 @@ function isPermSet (manifest, perm, cap) {
 function setChangesMade () {
   canSave = true
   document.querySelector('#save-settings-form button').classList.remove('disabled')
+}
+
+function getPossibleDomain (url) {
+  try {
+    var urlp = new URL(url)
+    var domain = urlp.hostname.replace(/\+(.+)$/, '')
+    return domain.length !== 64 ? domain : false
+  } catch (e) {
+    return false
+  }
 }
