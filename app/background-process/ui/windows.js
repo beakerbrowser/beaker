@@ -333,9 +333,27 @@ export function ensureOneWindowExists () {
 }
 
 export function getUserSessionFor (wc) {
+  // fetch current session
   var win = findWebContentsParentWindow(wc)
   if (!win) win = viewManager.findContainingWindow(BrowserView.fromWebContents(wc))
-  return sessionWatcher.getState(win).userSession
+  var sess = sessionWatcher.getState(win).userSession
+
+  // return if good
+  if (sess && beakerCore.users.isUser(sess.url)) {
+    return sess
+  }
+
+  // fallback to default
+  let defUserUrl = beakerCore.users.getDefaultUrl()
+  if (defUserUrl) {
+    sess = {url: defUserUrl}
+    setUserSessionFor(wc, sess)
+    console.log('Window had to fallback to default user:', sess.url)
+    return sess
+  }
+
+  console.error('No user session available for window')
+  return null
 }
 
 export function setUserSessionFor (wc, userSession) {
