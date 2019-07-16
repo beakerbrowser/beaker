@@ -30,12 +30,6 @@ You can get the current pURL of a site by using `DatArchive#getInfo()`. The retu
 
 When a pURL points to a DNS shortname, Beaker will watch for reassignments to new dat keys via the DNS record. Reassignments are automatically accepted and processed. In most cases, this means updating internal dat-key records. Unwalled Garden's crawler will automatically reindex the site in order to properly process any changes.
 
-## How manifest `domain` changes are handled
-
-A manifest `domain` change is more difficult to address, as it changes the Primary URL of the site. In addition to internal re-assignments as when the pURL DNS-record changes (see above) Beaker will update published the Unwalled Garden follows records to point to the new pURL. Any other URLs will not be changed, however, and so records such as comments on your posts will point to the old pURL.
-
-You should try not to change your pURL often, as it will cause content to go out-of-sync with your identity.
-
 ## Expected behaviors based on these rules
 
 ### No pURL
