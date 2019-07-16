@@ -70,14 +70,9 @@ class SiteInfoMenu extends LitElement {
 
     if (this.datInfo) {
       this.me = await bg.profiles.me()
-      this.followers = (await bg.follows.list({filters: {topics: this.origin}})).map(({author}) => author)
+      let authors = (await bg.follows.list({filters: {authors: this.me.url}})).map(({topic}) => topic.url).concat([this.me.url])
+      this.followers = (await bg.follows.list({filters: {authors, topics: this.origin}})).map(({author}) => author)
       this.follows = (await bg.follows.list({filters: {authors: this.origin}})).map(({topic}) => topic)
-
-      // filter down to users followed by the local user
-      if (!this.isMe) {
-        let userFollows = (await bg.follows.list({filters: {authors: this.me.url}})).map(({topic}) => topic).concat([this.me])
-        this.followers = this.followers.filter(f1 => userFollows.find(f2 => f2.url === f1.url))
-      }
     }
 
     // update site perms
