@@ -249,6 +249,7 @@ function domainNameControl (workingCheckout, archiveInfo, manifest, opts) {
   const possibleDomain = getPossibleDomain(workingCheckout.url)
   const isReadonly = opts.isReadonly
   const isWrong = manifest.domain && manifest.domain !== archiveInfo.domain
+  const isNotCommitted = manifest.domain && !archiveInfo.manifest.domain
 
   async function doSave (value) {
     // update dat.json
@@ -311,7 +312,8 @@ function domainNameControl (workingCheckout, archiveInfo, manifest, opts) {
               <div class="dns-control-msg">
                 ${isWrong ? yo`<span class="fas fa-fw fa-exclamation-triangle"></span>` : ''}
                 <a href="dat://${manifest.domain}" class="link" target="_blank">${manifest.domain}</a>
-                ${isWrong ? 'is not confirmed' : ''}
+                ${isWrong ? 'is not confirmed.' : ''}
+                ${isNotCommitted ? '(Make sure to commit the updated dat.json.)' : ''}
               </div>
               <div>
                 ${isWrong ? yo`<button class="btn" onclick=${onCheckAgain}>Check again</button>` : ''}
