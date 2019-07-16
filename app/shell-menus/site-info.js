@@ -213,10 +213,11 @@ class SiteInfoMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <div class="details">
-          ${this.renderActions()}
+          ${this.renderMainActions()}
           <div class="heading">
             <h2>${this.siteTitle}</h2>
           </div>
+          ${this.renderSiteID()}
           ${this.renderSiteDescription()}
         </div>
         ${this.isApplication ? html`
@@ -259,6 +260,7 @@ class SiteInfoMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
+        ${this.renderSocialActions()}
         <div class="heading">
           <button class="back" @click=${e => this.setView('')}>
             <span class="fas fa-caret-left"></span>
@@ -383,44 +385,39 @@ class SiteInfoMenu extends LitElement {
     `
   }
 
-  renderSiteSocialgraph () {
-    if (!this.isDat) return ''
-    var connectedSites = this.connectedSites
-    var followingSites = this.followingSites
-    const list = arr => {
-      if (arr.length <= 1) return arr
-      if (arr.length === 2) return [arr[0], ' and ', arr[1]]
-      var arr2 = []
-      for (let i = 0; i < arr.length; i++) {
-        arr2.push(arr[i])
-        if (i <= arr.length - 3) arr2.push(', ')
-        if (i === arr.length - 2) arr2.push(', and ')
-      }
-      return arr2
+  renderSiteID () {
+    if (!this.url) return ''
+    if (this.isDat) {
+      return html`
+        <div class="details-site-id">
+          <strong>ID:</strong>
+          ${this.datInfo.domain || prettyHash(this.datInfo.key)}
+          ${this.datInfo.domain ? '(verified)' : ''}
+        </div>
+      `
+    } else if (this.url.startsWith('beaker://')) {
+      return html`
+        <div class="details-site-id">
+          Beaker Application
+        </div>
+      `
+    } else if (this.url.startsWith('https://')) {
+      return html`
+        <div class="details-site-id">
+          <strong>ID:</strong> ${this.hostname} (verified)
+        </div>
+      `
+    } else if (this.url.startsWith('http://')) {
+      return html`
+        <div class="details-site-id">
+          <strong>ID:</strong> ${this.hostname} (not verified)
+        </div>
+      `
     }
-    return html`
-      <div class="details-site-socialgraph">
-        <span class="far fa-user"></span>
-        ${connectedSites.length
-          ? html`
-            Connected with ${list(connectedSites.map(site => this.renderFollow(site)))}.
-          ` : ''}
-        ${followingSites.length
-          ? html`
-            Followed by ${list(followingSites.map(site => this.renderFollow(site)))}.
-          ` : ''}
-        ${!connectedSites.length && !followingSites.length
-          ? 'Not followed by anyone you follow.'
-          : ''}
-      </div>
-    `
+    return ''
   }
 
-  renderFollow (site) {
-    return html`<a href="#" @click=${e => this.onOpenUrl(e, site.url)} title="${site.title}">${site.title}</a>`
-  }
-
-  renderActions () {
+  renderMainActions () {
     if (this.isMe) {
       return html`
         <div class="details-actions">
@@ -431,22 +428,38 @@ class SiteInfoMenu extends LitElement {
       return html`
         <div class="details-actions">
           ${this.isMySite ? html`<span class="label">Your site</span>` : ''}
-          ${this.followsMe ? html`<span class="label">Follows you</span>` : ''}
           ${!this.isMySite
             ? this.isSaved
               ? html`
                 <beaker-hoverable @click=${this.onToggleSaved}>
-                  <button slot="default" style="width: 76px"><span class="fas fa-save"></span> Saved</button>
-                  <button class="warning" slot="hover" style="width: 76px"><span class="fas fa-times"></span> Unsave</button>
+                  <button slot="default" style="width: 68px"><span class="fas fa-save"></span> Saved</button>
+                  <button class="warning" slot="hover" style="width: 68px"><span class="fas fa-times"></span> Unsave</button>
                 </beaker-hoverable>
               `
               : html`<button @click=${this.onToggleSaved}><span class="fas fa-save"></span> Save</button>`
             : ''}
+        </div>
+      `
+    }
+    return ''
+  }
+
+  renderSocialActions () {
+    if (this.isMe) {
+      return html`
+        <div class="details-actions">
+          <span class="label">This is you!</span>
+        </div>
+      `
+    } else if (this.isDat) {
+      return html`
+        <div class="details-actions">
+          ${this.followsMe ? html`<span class="label">Follows you</span>` : ''}
           ${this.amIFollowing
             ? html`
               <beaker-hoverable @click=${this.onToggleFollow}>
-                <button slot="default" style="width: 86px"><span class="fa fa-check"></span> Following</button>
-                <button class="warning" slot="hover" style="width: 86px"><span class="fa fa-times"></span> Unfollow</button>
+                <button slot="default" style="width: 82px"><span class="fa fa-check"></span> Following</button>
+                <button class="warning" slot="hover" style="width: 82px"><span class="fa fa-times"></span> Unfollow</button>
               </beaker-hoverable> 
             `
             : html`<button @click=${this.onToggleFollow}><span class="fas fa-rss"></span> Follow</button>`}
@@ -567,6 +580,7 @@ class SiteInfoMenu extends LitElement {
 }
 SiteInfoMenu.styles = [inputsCSS, buttonsCSS, css`
 .wrapper {
+  position: relative;
   box-sizing: border-box;
   color: #333;
   background: #fff;
@@ -575,6 +589,7 @@ SiteInfoMenu.styles = [inputsCSS, buttonsCSS, css`
 .heading {
   display: flex;
   align-items: center;
+  margin-bottom: 4px;
 }
 
 .back {
@@ -586,6 +601,10 @@ SiteInfoMenu.styles = [inputsCSS, buttonsCSS, css`
 
 .back:hover {
   background: #eee;
+}
+
+h2 {
+  margin: 0;
 }
 
 h3 {
@@ -626,7 +645,7 @@ button {
 
 .details {
   position: relative;
-  padding: 0 15px;
+  padding: 12px 15px;
   min-height: 30px;
 }
 
@@ -635,8 +654,12 @@ button {
   color: #707070;
 }
 
+.details-site-id {
+  margin-bottom: 2px;
+}
+
 .details-site-description {
-  margin-bottom: 1rem;
+  margin-bottom: 2px;
   line-height: 1.4;
   font-size: 15px;
 }
@@ -658,8 +681,12 @@ button {
 
 .details-actions {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 12px;
+  right: 13px;
+}
+
+.details-actions button {
+  padding: 3px 8px;
 }
 
 .application-state {

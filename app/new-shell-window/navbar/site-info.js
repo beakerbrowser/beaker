@@ -2,7 +2,8 @@
 import {LitElement, html, css} from '../../vendor/lit-element/lit-element'
 import _get from 'lodash.get'
 import * as bg from '../bg-process-rpc'
-import {classMap} from '../../vendor/lit-element/lit-html/directives/class-map'
+import { isDatHashRegex } from '../../lib/urls'
+import { classMap } from '../../vendor/lit-element/lit-html/directives/class-map'
 import buttonResetCSS from './button-reset.css'
 
 class NavbarSiteInfo extends LitElement {
@@ -11,6 +12,7 @@ class NavbarSiteInfo extends LitElement {
       isMenuOpen: {type: Boolean},
       url: {type: String},
       siteTitle: {type: String},
+      datDomain: {type: String},
       peers: {type: Number},
       numFollowers: {type: Number},
       loadError: {type: Object}
@@ -22,6 +24,7 @@ class NavbarSiteInfo extends LitElement {
     this.isMenuOpen = false
     this.url = ''
     this.siteTitle = ''
+    this.datDomain = ''
     this.peers = 0
     this.numFollowers = 0
     this.loadError = null
@@ -31,7 +34,15 @@ class NavbarSiteInfo extends LitElement {
     try {
       return (new URL(this.url)).protocol
     } catch (e) {
-      return false
+      return ''
+    }
+  }
+
+  get hostname () {
+    try {
+      return (new URL(this.url)).hostname
+    } catch (e) {
+      return ''
     }
   }
 
@@ -39,35 +50,37 @@ class NavbarSiteInfo extends LitElement {
   // =
 
   render () {
-    var icon
     var cls = ''
     const scheme = this.scheme
-    const isDat = scheme === 'dat:'
     var innerHTML
     if (scheme) {
       const isHttps = scheme === 'https:'
       const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
       if ((isHttps && !isInsecureResponse) || scheme === 'beaker:') {
         innerHTML = html`
+          <span class="fas secure fa-check"></span>
           <span class="label">${this.siteTitle}</span>
         `
       } else if (scheme === 'http:') {
         innerHTML = html`
-          <span class="fas insecure fa-lock-open"></span>
+          <span class="fas insecure fa-exclamation-triangle"></span>
           <span class="label">${this.siteTitle}</span>
         `
       } else if (isHttps && isInsecureResponse) {
         innerHTML = html`
-          <span class="fas insecure fa-exclamation-circle"></span>
+          <span class="fas insecure fa-exclamation-triangle"></span>
           <span class="label">${this.siteTitle}</span>
         `
       } else if (scheme === 'dat:') {
         innerHTML = html`
-          ${''/*<span class="fas secure fa-share-alt"></span>
-          <span class="label secure ${cls}">${this.peers}</span>*/}
+          ${!isDatHashRegex.test(this.hostname) || this.datDomain ? html`
+            <span class="fas secure fa-check"></span>
+          ` : ''}
           <span class="label">${this.siteTitle}</span>
-          <span class="far fa-user" style="color: gray;"></span>
-          <span class="label ${cls}" style="color: gray; margin-left: 0">${this.numFollowers}</span>
+          ${this.numFollowers > 0 ? html`
+            <span class="far fa-user" style="color: gray;"></span>
+            <span class="label ${cls}" style="color: gray; margin-left: 0">${this.numFollowers}</span>
+          ` : ''}
         `
       }
     }

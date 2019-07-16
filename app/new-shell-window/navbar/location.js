@@ -18,6 +18,7 @@ class NavbarLocation extends LitElement {
       url: {type: String},
       title: {type: String},
       siteTitle: {type: String},
+      datDomain: {type: String},
       peers: {type: Number},
       numFollowers: {type: Number},
       zoom: {type: Number},
@@ -41,6 +42,7 @@ class NavbarLocation extends LitElement {
     this.url = ''
     this.title = ''
     this.siteTitle = ''
+    this.datDomain = ''
     this.peers = 0
     this.numFollowers = 0
     this.zoom = 0
@@ -92,6 +94,7 @@ class NavbarLocation extends LitElement {
       <shell-window-navbar-site-info
         url=${this.url}
         siteTitle=${this.siteTitle}
+        datDomain=${this.datDomain}
         peers=${this.peers}
         numFollowers=${this.numFollowers}
         .loadError=${this.loadError}
@@ -131,28 +134,34 @@ class NavbarLocation extends LitElement {
     if (/^(dat|http|https|beaker):\/\//.test(this.url)) {
       try {
         var { protocol, host, pathname, search, hash } = new URL(this.url)
-        var hostVersion
-        if (protocol === 'dat:') {
-          let match = /(.*)\+(.*)/.exec(host)
-          if (match) {
-            host = match[1]
-            hostVersion = '+' + match[2]
-          }
-          if (isDatHashRegex.test(host)) {
-            host = prettyHash(host)
-          }
-        }
-        var cls = 'protocol'
-        if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
-        if (['https:'].includes(protocol) && !this.loadError) cls += ' protocol-secure'
-        if (['https:'].includes(protocol) && this.loadError && this.loadError.isInsecureResponse) cls += ' protocol-insecure'
-        if (['dat:'].includes(protocol)) cls += ' protocol-secure'
-        if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
         return html`
           <div class="input-pretty">
-            <span class=${cls}>${protocol.slice(0, -1)}</span><span class="syntax">://</span><span class="host">${host}</span>${hostVersion ? html`<span class="host-version">${hostVersion}</span>` : ''}<span class="path">${pathname}${search}${hash}</span>
+            <span class="path">${pathname}${search}${hash}</span>
           </div>
         `
+        // OLD: show full URL
+        // var hostVersion
+        // if (protocol === 'dat:') {
+        //   let match = /(.*)\+(.*)/.exec(host)
+        //   if (match) {
+        //     host = match[1]
+        //     hostVersion = '+' + match[2]
+        //   }
+        //   if (isDatHashRegex.test(host)) {
+        //     host = prettyHash(host)
+        //   }
+        // }
+        // var cls = 'protocol'
+        // if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
+        // if (['https:'].includes(protocol) && !this.loadError) cls += ' protocol-secure'
+        // if (['https:'].includes(protocol) && this.loadError && this.loadError.isInsecureResponse) cls += ' protocol-insecure'
+        // if (['dat:'].includes(protocol)) cls += ' protocol-secure'
+        // if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
+        // return html`
+        //   <div class="input-pretty">
+        //     <span class=${cls}>${protocol.slice(0, -1)}</span><span class="syntax">://</span><span class="host">${host}</span>${hostVersion ? html`<span class="host-version">${hostVersion}</span>` : ''}<span class="path">${pathname}${search}${hash}</span>
+        //   </div>
+        // `
       } catch (e) {
         // invalid URL
         return html`

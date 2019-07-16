@@ -7,6 +7,7 @@ import Events from 'events'
 import _throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
 import emitStream from 'emit-stream'
+import prettyHash from 'pretty-hash'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
@@ -25,6 +26,8 @@ import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
 import { findImageBounds } from '../../lib/bg/image'
+import { ucfirst } from '../../lib/strings'
+import { DAT_HASH_REGEX } from '@beaker/core/lib/const'
 const sitedataDb = beakerCore.dbs.sitedata
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
@@ -71,6 +74,7 @@ const STATE_VARS = [
   'url',
   'title',
   'siteTitle',
+  'datDomain',
   'numFollowers',
   'peers',
   'favicons',
@@ -208,14 +212,26 @@ class View {
   }
 
   get siteTitle () {
-    if (this.datInfo && this.datInfo.title) {
-      return this.datInfo.title
-    }
     try {
-      return (new URL(this.url)).hostname
+      var hostname = ((new URL(this.url)).hostname).replace(/\+(.+)$/, '')
+      if (this.datInfo) {
+        if (DAT_HASH_REGEX.test(hostname)) {
+          // use confirmed domain if visiting the key
+          return this.datInfo.domain || prettyHash(this.datInfo.key)
+        }
+        return hostname
+      }
+      if (this.url.startsWith('beaker://')) {
+        return `Beaker ${ucfirst(hostname)}`
+      }
+      return hostname
     } catch (e) {
       return ''
     }
+  }
+
+  get datDomain () {
+    return this.datInfo && this.datInfo.domain ? this.datInfo.domain : ''
   }
 
   get canGoBack () {
