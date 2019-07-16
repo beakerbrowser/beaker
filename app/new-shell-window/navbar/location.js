@@ -163,12 +163,12 @@ class NavbarLocation extends LitElement {
         //   </div>
         // `
       } catch (e) {
-        // invalid URL
-        return html`
-          <div class="input-pretty">${this.url}</div>
-        `
+        // invalid URL, fallback to default
       }
     }
+    return html`
+      <div class="input-pretty">${this.url}</div>
+    `
   }
 
   renderZoom () {

@@ -86,7 +86,7 @@ class NavbarSiteInfo extends LitElement {
     }
 
     if (!innerHTML) {
-      return html`<button></button>`
+      return html`<button class="hidden"></button>`
     }
 
     const buttonCls = classMap({pressed: this.isMenuOpen})
@@ -125,6 +125,10 @@ button {
 
 button:hover {
   background: #eee;
+}
+
+button.hidden {
+  display: none;
 }
 
 .fa {
