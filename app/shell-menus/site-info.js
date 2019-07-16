@@ -148,6 +148,11 @@ class SiteInfoMenu extends LitElement {
     return this.isDat && Array.isArray(this.datInfo.type) && this.datInfo.type.includes('application')
   }
 
+  get isDatDomainUnconfirmed () {
+    // viewing a dat at a hostname but no domain is confirmed
+    return this.isDat && !IS_DAT_KEY_REGEX.test(this.hostname) && this.datInfo.domain !== this.hostname
+  }
+
   get isMe () {
     return this.datInfo && this.me && this.me.url === this.origin
   }
@@ -219,8 +224,9 @@ class SiteInfoMenu extends LitElement {
           </div>
           ${this.renderSiteID()}
           ${this.renderSiteDescription()}
+          ${this.renderWarnings()}
         </div>
-        ${this.isApplication ? html`
+        ${this.isApplication && !this.isDatDomainUnconfirmed ? html`
           <div class="application-state">
             ${this.appInfo.installed ? html`
               <span><i class="fas fa-check"></i> This application is installed</span>
@@ -375,16 +381,6 @@ class SiteInfoMenu extends LitElement {
     `
   }
 
-  renderSiteDescription () {
-    var siteDescription = this.siteDescription
-    if (!siteDescription) return ''
-    return html`
-      <div class="details-site-description">
-        ${this.siteDescription}
-      </div>
-    `
-  }
-
   renderSiteID () {
     if (!this.url) return ''
     if (this.isDat) {
@@ -411,6 +407,29 @@ class SiteInfoMenu extends LitElement {
       return html`
         <div class="details-site-id">
           <strong>ID:</strong> ${this.hostname} (not verified)
+        </div>
+      `
+    }
+    return ''
+  }
+
+  renderSiteDescription () {
+    var siteDescription = this.siteDescription
+    if (!siteDescription) return ''
+    return html`
+      <div class="details-site-description">
+        ${this.siteDescription}
+      </div>
+    `
+  }
+
+  renderWarnings () {
+    if (this.isDatDomainUnconfirmed) {
+      return html`
+        <div class="details-site-warning">
+          <span class="fas fa-fw fa-exclamation-triangle"></span>
+          This site has not confirmed <code>${this.hostname}</code> as its primary identity.
+          It's safe to view, but you will not be able to follow it, install it, or use its advanced features.
         </div>
       `
     }
@@ -451,7 +470,7 @@ class SiteInfoMenu extends LitElement {
           <span class="label">This is you!</span>
         </div>
       `
-    } else if (this.isDat) {
+    } else if (this.isDat && !this.isDatDomainUnconfirmed) {
       return html`
         <div class="details-actions">
           ${this.followsMe ? html`<span class="label">Follows you</span>` : ''}
@@ -474,7 +493,7 @@ class SiteInfoMenu extends LitElement {
     const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
     if ((protocol === 'https:' && isInsecureResponse) || protocol === 'http:') {
       return html`
-        <div class="details-protocol-description">
+        <div class="details-protocol-description error">
           <p><span class="fas fa-exclamation-triangle"></span> Your connection to this site is not secure.</p>
           <p>
             You should not enter any sensitive information on this site (for example, passwords or credit cards), because it could be stolen by attackers.
@@ -664,11 +683,23 @@ button {
   font-size: 15px;
 }
 
+.details-site-warning {
+  margin: 6px -16px 0;
+  background: #fff361;
+  padding: 8px 16px;
+}
+
 .details-protocol-description {
   border-top: 1px solid #ddd;
   padding: 15px;
   background: rgb(243, 241, 241);
   line-height: 1.3;
+}
+
+.details-protocol-description.error {
+  background: #e22c2c;
+  color: #ffffff;
+  border-top-color: #c92525;
 }
 
 .details-protocol-description > :first-child {
