@@ -74,6 +74,7 @@ class ShellWindowNavbar extends LitElement {
         ?is-live-reloading=${_get(this, 'activeTab.isLiveReloading')}
         ?preview-mode=${_get(this, 'activeTab.previewMode')}
         uncommitted-changes=${_get(this, 'activeTab.uncommittedChanges', 0)}
+        application-state=${_get(this, 'activeTab.applicationState', '')}
         ?is-bookmarked=${_get(this, 'activeTab.isBookmarked', false)}
       ></shell-window-navbar-location>
       <shell-window-navbar-inpage-find
@@ -85,8 +86,8 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
-        ${this.usersMenuBtn}
         ${this.sidebarBtn}
+        ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
     `
