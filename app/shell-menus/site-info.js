@@ -131,6 +131,15 @@ class SiteInfoMenu extends LitElement {
     }
   }
 
+  get domain () {
+    try {
+      var u = new URL(this.url)
+      return u.hostname.replace(/\+(.*)$/, '')
+    } catch (e) {
+      return ''
+    }
+  }
+
   get isDat () {
     return !!this.datInfo
   }
@@ -145,7 +154,7 @@ class SiteInfoMenu extends LitElement {
 
   get isDatDomainUnconfirmed () {
     // viewing a dat at a hostname but no domain is confirmed
-    return this.isDat && !IS_DAT_KEY_REGEX.test(this.hostname) && this.datInfo.domain !== this.hostname
+    return this.isDat && !IS_DAT_KEY_REGEX.test(this.domain) && this.datInfo.domain !== this.domain
   }
 
   get isMe () {
@@ -182,7 +191,7 @@ class SiteInfoMenu extends LitElement {
     } else if (this.protocol === 'dat:') {
       return 'Untitled'
     }
-    return this.hostname
+    return this.domain
   }
 
   get siteDescription () {
@@ -395,13 +404,13 @@ class SiteInfoMenu extends LitElement {
     } else if (this.url.startsWith('https://')) {
       return html`
         <div class="details-site-id">
-          <strong>ID:</strong> ${this.hostname} (verified)
+          <strong>ID:</strong> ${this.domain} (verified)
         </div>
       `
     } else if (this.url.startsWith('http://')) {
       return html`
         <div class="details-site-id">
-          <strong>ID:</strong> ${this.hostname} (not verified)
+          <strong>ID:</strong> ${this.domain} (not verified)
         </div>
       `
     }
@@ -421,9 +430,9 @@ class SiteInfoMenu extends LitElement {
   renderWarnings () {
     if (this.isDatDomainUnconfirmed) {
       return html`
-        <div class="details-site-warning">
-          <span class="fas fa-fw fa-exclamation-triangle"></span>
-          This site has not confirmed <code>${this.hostname}</code> as its primary identity.
+        <div class="details-site-notice">
+          <span class="fas fa-fw fa-info-circle"></span>
+          This site has not confirmed <code>${this.domain}</code> as its primary identity.
           It's safe to view, but you will not be able to follow it, install it, or use its advanced features.
         </div>
       `
@@ -678,6 +687,12 @@ button {
   font-size: 15px;
 }
 
+.details-site-notice {
+  margin: 6px -16px 0;
+  background: #fafafa;
+  padding: 8px 16px;
+}
+
 .details-site-warning {
   margin: 6px -16px 0;
   background: #fff361;
@@ -808,6 +823,7 @@ button {
   text-align: center;
   border: 1px solid #ddd;
   border-radius: 4px;
+  background: #f5f5f5;
   margin: 0 0 10px;
   white-space: nowrap;
 }

@@ -73,10 +73,8 @@ class NavbarSiteInfo extends LitElement {
         `
       } else if (scheme === 'dat:') {
         innerHTML = html`
-          ${!isDatHashRegex.test(this.hostname)
-            ? this.datDomain === this.hostname
-              ? html`<span class="fas secure fa-check"></span>`
-              : html`<span class="fas warning fa-exclamation-triangle"></span>`
+          ${!isDatHashRegex.test(this.hostname) && this.datDomain === this.hostname
+            ? html`<span class="fas secure fa-check"></span>`
             : ''}
           <span class="label">${this.siteTitle}</span>
           ${this.numFollowers > 0 ? html`
