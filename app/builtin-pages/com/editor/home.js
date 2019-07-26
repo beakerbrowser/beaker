@@ -63,10 +63,14 @@ export function renderHome (opts) {
               </h3>`
             : ''}
       ${renderDiff(currentDiff)}
-      <div style="text-align: center; padding-top: 15vh">
-        <span class="fas fa-code" style="font-size: 50vh; color: #eee; margin-left: -5vw"></span>
-      </div>
-      ${''/*TODO do we want? renderReadme(archiveInfo, readmeMd)*/}
+      ${readmeMd
+        ? renderReadme(archiveInfo, readmeMd)
+        : yo`
+          <div style="text-align: center; padding-top: 15vh">
+            <span class="fas fa-code" style="font-size: 50vh; color: #eee; margin-left: -5vw"></span>
+          </div>
+        `
+      }
       ${''/*renderHotkeyHelp({OS_USES_META_KEY})*/}
     </div>`
 }
@@ -111,7 +115,12 @@ function renderReadme (archiveInfo, readmeMd) {
   }
 
   var markdownRenderer = createMd({
+    useHeadingAnchors: true,
     hrefMassager (href, context) {
+      if (href.startsWith('#')) {
+        return href
+      }
+
       var isRelative = href.startsWith('/') || href.startsWith('./')
       if (!isRelative && href.indexOf(':') === -1) {
         isRelative = true
@@ -128,6 +137,15 @@ function renderReadme (archiveInfo, readmeMd) {
         }
       }
       return href
+    },
+    highlight (str, lang) {
+      if (lang && hljs.getLanguage(lang)) {
+        try {
+          return hljs.highlight(lang, str).value;
+        } catch (__) {}
+      }
+  
+      return ''; // use external default escaping
     }
   })
 

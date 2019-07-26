@@ -36,6 +36,7 @@
     "electron-is-accelerator": "^0.1.2",
     "electron-updater": "^4.0.0",
     "emit-stream": "^0.1.2",
+    "emoji-regex": "^8.0.0",
     "from2": "^2.3.0",
     "from2-encoding": "^1.0.0",
     "from2-string": "^1.1.0",

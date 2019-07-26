@@ -357,7 +357,8 @@ async function findArchiveNodeAsync (path, expandToPath = false) {
 
 async function loadReadme () {
   const readmeMdNode = archiveFsRoot.children.find(n => (n._name || '').toLowerCase() === 'readme.md')
-  return readmeMdNode ? await workingCheckout.readFile(readmeMdNode._path, 'utf8') : ''
+  var md =  readmeMdNode ? await workingCheckout.readFile(readmeMdNode._path, 'utf8') : ''
+  return md.replace(/<!--(.*)-->/gm, '') // strip html comments
 }
 
 // rendering
@@ -460,11 +461,11 @@ function update () {
             <i class="fas fa-external-link-alt"></i>
           </a>
           ${renderVersionPicker(true)}
+          <button class="btn white nofocus" onclick=${onToggleRightSidebar}>
+            <i class="fas fa-cog"></i>
+          </button>
           <button class="btn white nofocus" onclick=${onClickArchiveMenu}>
             <span class="fas fa-ellipsis-h"></span>
-          </button>
-          <button class="btn transparent nofocus" onclick=${onToggleRightSidebar}>
-            <i class="far fa-caret-square-left"></i>
           </button>
         </div>
       </div>`,

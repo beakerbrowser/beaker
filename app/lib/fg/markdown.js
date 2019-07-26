@@ -1,6 +1,7 @@
 import MarkdownIt from 'markdown-it'
+import anchorMarkdownHeader from './anchor-markdown-header'
 
-export default function create ({allowHTML, useHeadingAnchors, hrefMassager} = {}) {
+export default function create ({allowHTML, useHeadingAnchors, hrefMassager, highlight} = {}) {
   var md = MarkdownIt({
     html: allowHTML, // Enable HTML tags in source
     xhtmlOut: false, // Use '/' to close single tags (<br />)
@@ -17,16 +18,20 @@ export default function create ({allowHTML, useHeadingAnchors, hrefMassager} = {
 
     // Highlighter function. Should return escaped HTML,
     // or '' if the source string is not changed
-    highlight: function (/* str, lang */) { return '' }
+    highlight
   })
 
   if (useHeadingAnchors) {
+    var numRepetitions = {}
     // heading anchor rendering
     md.renderer.rules.heading_open = function (tokens, idx /*, options, env */) {
-      return '<' + tokens[idx].tag + ' id="' + slugify(tokens[idx + 1].content || '') + '">'
+      var txt = tokens[idx + 1].content || ''
+      numRepetitions[txt] = (numRepetitions[txt]) ? numRepetitions[txt] + 1 : 0
+      return '<' + tokens[idx].tag + ' id="' + anchorMarkdownHeader(txt, numRepetitions[txt]) + '">'
     }
     md.renderer.rules.heading_close = function (tokens, idx /*, options, env */) {
-      return '<a class="anchor-link" href="#' + slugify(tokens[idx - 1].content || '') + '">#</a></' + tokens[idx].tag + '>\n'
+      var txt = tokens[idx - 1].content || ''
+      return '<a class="anchor-link" href="#' + anchorMarkdownHeader(txt, numRepetitions[txt]) + '">#</a></' + tokens[idx].tag + '>\n'
     }
   }
 
@@ -55,19 +60,3 @@ export default function create ({allowHTML, useHeadingAnchors, hrefMassager} = {
   return md
 }
 
-function slugify (text) {
-  // Regex for finding the nonsafe URL characters (many need escaping): & +$,:;=?@"#{}|^~[`%!'<>]./()*\
-  var nonsafeChars = /[& +$,:;=?@"#{}|^~[`%!'<>\]./()*\\]/g
-  var slug
-
-  // Note: we trim hyphens after truncating because truncating can cause dangling hyphens.
-  // Example string:                               // "⚡⚡ Don't forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
-  slug = text.trim() // "⚡⚡ Don't forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
-    .replace(/'/gi, '') // "⚡⚡ Dont forget: URL fragments should be i18n-friendly, hyphenated, short, and clean."
-    .replace(nonsafeChars, '-') // "⚡⚡-Dont-forget--URL-fragments-should-be-i18n-friendly--hyphenated--short--and-clean-"
-    .replace(/-{2,}/g, '-') // "⚡⚡-Dont-forget-URL-fragments-should-be-i18n-friendly-hyphenated-short-and-clean-"
-    .replace(/^-+|-+$/gm, '') // "⚡⚡-Dont-forget-URL-fragments-should-be-i18n-friendly-hyphenated"
-    .toLowerCase() // "⚡⚡-dont-forget-url-fragments-should-be-i18n-friendly-hyphenated"
-
-  return slug
-};
