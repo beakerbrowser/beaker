@@ -33,7 +33,7 @@ class NavbarInpageFind extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="input-container">
-        <input type="text" placeholder="Find in page" @keydown=${this.onKeydown} autofocus>
+        <input type="text" placeholder="Find in page" @keyup=${this.onKeyup} autofocus>
         <button @click=${this.onClickPrev}><i class="fas fa-angle-up"></i></button>
         <button @click=${this.onClickNext}><i class="fas fa-angle-down"></i></button>
         <button @click=${this.onClickStop}><i class="fas fa-times"></i></button>
@@ -52,7 +52,7 @@ class NavbarInpageFind extends LitElement {
   // events
   // =
 
-  onKeydown (e) {
+  onKeyup (e) {
     if (e.key === 'Escape') {
       bg.views.hideInpageFind(this.activeTabIndex)
       return
@@ -66,6 +66,14 @@ class NavbarInpageFind extends LitElement {
         bg.views.hideInpageFind(this.activeTabIndex)
       }
       return
+    }
+    if (this.query !== e.currentTarget.value) {
+      this.query = e.currentTarget.value
+      if (this.query) {
+        bg.views.setInpageFindString(this.activeTabIndex, this.query, dir)
+      } else {
+        bg.views.hideInpageFind(this.activeTabIndex)
+      }
     }
   }
 

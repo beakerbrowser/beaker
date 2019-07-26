@@ -421,8 +421,9 @@ class View {
   }
 
   setInpageFindString (str, dir) {
+    var findNext = this.currentInpageFindString === str
     this.currentInpageFindString = str
-    this.webContents.findInPage(this.currentInpageFindString, {findNext: false, forward: dir !== -1})
+    this.webContents.findInPage(this.currentInpageFindString, {findNext, forward: dir !== -1})
   }
 
   moveInpageFind (dir) {
