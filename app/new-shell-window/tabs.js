@@ -34,6 +34,11 @@ class ShellWindowTabs extends LitElement {
           ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
           <div
             class="unused-space"
+            @mousedown=${this.onMousedownUnusedSpace}
+            @mouseup=${this.onMouseupUnusedSpace}
+            @mouseout=${this.onMouseoutUnusedSpace}
+            @mousemove=${this.onMousemoveUnusedSpace}
+            @dblclick=${this.onDblclickUnusedSpace}
             @dragover=${e => this.onDragoverTab(e, this.tabs.length)}
             @dragleave=${e => this.onDragleaveTab(e, this.tabs.length)}
             @drop=${e => this.onDropTab(e, this.tabs.length)}
@@ -208,6 +213,32 @@ class ShellWindowTabs extends LitElement {
     }
     return true
   }
+
+  onMousedownUnusedSpace (e) {
+    if (e.button === 0) {
+      this.isDraggingWindow = true
+    }
+  }
+
+  onMouseupUnusedSpace (e) {
+    if (e.button === 0) {
+      this.isDraggingWindow = false
+    }
+  }
+
+  onMouseoutUnusedSpace (e) {
+    this.isDraggingWindow = false
+  }
+
+  onMousemoveUnusedSpace (e) {
+    if (this.isDraggingWindow) {
+      bg.beakerBrowser.moveWindow(e.movementX, e.movementY)
+    }
+  }
+
+  onDblclickUnusedSpace (e) {
+    bg.beakerBrowser.maximizeWindow()
+  }
 }
 ShellWindowTabs.styles = css`
 ${spinnerCSS}
@@ -216,7 +247,6 @@ ${spinnerCSS}
   background: var(--bg-background);
   position: relative;
   padding: 0 18px 0 0px;
-  -webkit-app-region: drag;
   height: 34px;
   border-bottom: 1px solid var(--color-border);
 }
@@ -253,7 +283,6 @@ ${spinnerCSS}
   height: 34px;
   width: 235px;
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
-  -webkit-app-region: no-drag;
   border: 1px solid transparent;
 }
 
@@ -456,12 +485,6 @@ ${spinnerCSS}
 
 .tab.current + .unused-space {
   border-left-color: transparent;
-}
-
-/* draggable region for OSX and windows */
-.win32 .tabs,
-.darwin .tabs {
-  -webkit-app-region: drag;
 }
 
 /* make room for traffic lights */

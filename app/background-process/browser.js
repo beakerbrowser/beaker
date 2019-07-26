@@ -157,6 +157,8 @@ export const WEBAPI = {
 
   toggleSidebar,
   setWindowDimensions,
+  moveWindow,
+  maximizeWindow,
   showOpenDialog,
   showContextMenu,
   async showModal (name, opts) {
@@ -268,6 +270,17 @@ export async function setWindowDimensions ({width, height} = {}) {
   width = width || currentWidth
   height = height || currentHeight
   win.setSize(width, height)
+}
+
+export async function moveWindow (x, y) {
+  var win = findWebContentsParentWindow(this.sender)
+  var pos = win.getPosition()
+  win.setPosition(pos[0] + x, pos[1] + y)
+}
+
+export async function maximizeWindow () {
+  var win = findWebContentsParentWindow(this.sender)
+  win.maximize()
 }
 
 export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {
