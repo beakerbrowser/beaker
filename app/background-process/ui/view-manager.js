@@ -76,6 +76,7 @@ const STATE_VARS = [
   'siteTitle',
   'datDomain',
   'numFollowers',
+  'numComments',
   'peers',
   'favicons',
   'zoom',
@@ -156,6 +157,7 @@ class View {
     this.isBookmarked = false // is the active page bookmarked?
     this.datInfo = null // metadata about the site if viewing a dat
     this.numFollowers = 0 // how many sites are following this site? (unwalled garden)
+    this.numComments = 0 // how many comments are on the current page? (unwalled garden)
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
@@ -586,6 +588,7 @@ class View {
   async refreshState () {
     await Promise.all([
       this.fetchIsBookmarked(true),
+      this.fetchAnnotations(true),
       this.fetchDatInfo(true)
     ])
     this.emitUpdateState()
@@ -599,6 +602,25 @@ class View {
       removeTrailingSlash: true
     }))
     this.isBookmarked = !!bookmark
+    if (!noEmit) {
+      this.emitUpdateState()
+    }
+  }
+
+  async fetchAnnotations (noEmit = false) {
+    this.numComments = 0
+
+    var userSession = getUserSessionFor(this.browserWindow.webContents)
+    var followedUsers = (await beakerCore.crawler.follows.list({filters: {authors: userSession.url}})).map(({topic}) => topic.url)
+    var authors = [userSession.url].concat(followedUsers)
+
+    // TODO replace with native 'count' method
+    var cs = await beakerCore.crawler.comments.thread(this.url, {filters: {authors}})
+    function countComments (comments) {
+      return comments.reduce((acc, comment) => acc + 1 + (comment.replies ? countComments(comment.replies) : 0), 0)
+    }
+    this.numComments = countComments(cs)
+
     if (!noEmit) {
       this.emitUpdateState()
     }
@@ -698,6 +720,7 @@ class View {
     this.loadingURL = null
     this.isReceivingAssets = true
     await this.fetchIsBookmarked()
+    /* dont await */ this.fetchAnnotations()
     await this.fetchDatInfo()
     if (httpResponseCode === 504 && url.startsWith('dat://')) {
       this.wasDatTimeout = true
@@ -712,6 +735,7 @@ class View {
 
   onDidNavigateInPage (e) {
     this.updateHistory()
+    /* dont await */ this.fetchAnnotations()
     if (this.isSidebarActive) {
       this.updateSidebar()
     }

@@ -21,6 +21,7 @@ class NavbarLocation extends LitElement {
       datDomain: {type: String},
       peers: {type: Number},
       numFollowers: {type: Number},
+      numComments: {type: Number},
       zoom: {type: Number},
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
@@ -46,6 +47,7 @@ class NavbarLocation extends LitElement {
     this.datDomain = ''
     this.peers = 0
     this.numFollowers = 0
+    this.numComments = 0
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
@@ -106,6 +108,9 @@ class NavbarLocation extends LitElement {
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderPreviewModeToolsBtn()}
+      <button class="text" @click=${this.onClickComments}>
+        ${this.numComments} ${pluralize(this.numComments, 'comment')}
+      </button>
       ${this.renderApplicationBtn()}
       ${this.renderSiteToolsBtn()}
       ${this.renderAvailableAlternativeBtn()}
@@ -386,6 +391,10 @@ class NavbarLocation extends LitElement {
     e.currentTarget.blur()
   }
 
+  onClickComments (e) {
+    bg.views.toggleSidebar('active')
+  }
+
   onClickZoom (e) {
     bg.views.resetZoom(this.activeTabIndex)
   }
@@ -494,6 +503,12 @@ button {
   width: 27px;
   border-radius: 0;
   color: #666;
+}
+
+button.text {
+  width: auto;
+  padding: 0 6px;
+  font-size: 12px;
 }
 
 button .fa,

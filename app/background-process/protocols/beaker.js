@@ -2,7 +2,6 @@ import {protocol} from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
 import * as mime from '@beaker/core/lib/mime'
-const {templates} = beakerCore.dbs
 const {archivesDebugPage, datDnsCachePage, datDnsCacheJS} = beakerCore.dat.debug
 import path from 'path'
 import url from 'url'

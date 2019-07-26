@@ -16,6 +16,7 @@ const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
+import * as viewManager from './ui/view-manager'
 import * as modals from './ui/subwindows/modals'
 import { findWebContentsParentWindow } from '../lib/electron'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
@@ -154,6 +155,7 @@ export const WEBAPI = {
   uploadFavicon,
   imageToIco,
 
+  toggleSidebar,
   setWindowDimensions,
   showOpenDialog,
   showContextMenu,
@@ -253,6 +255,11 @@ export async function imageToIco (image) {
   // TODO expand on this function to be png/jpg to ico
   let imageToPng = nativeImage.createFromDataURL(image).toPNG()
   return toIco(imageToPng, {resize: true})
+}
+
+async function toggleSidebar () {
+  var win = findWebContentsParentWindow(this.sender)
+  viewManager.getActive(win).toggleSidebar()
 }
 
 export async function setWindowDimensions ({width, height} = {}) {

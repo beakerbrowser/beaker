@@ -67,6 +67,7 @@ class ShellWindowNavbar extends LitElement {
         datDomain="${_get(this, 'activeTab.datDomain', '')}"
         peers="${_get(this, 'activeTab.peers', 0)}"
         numFollowers="${_get(this, 'activeTab.numFollowers', 0)}"
+        numComments="${_get(this, 'activeTab.numComments', 0)}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
         .loadError=${_get(this, 'activeTab.loadError', null)}
         donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"
@@ -86,7 +87,6 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
-        ${this.sidebarBtn}
         ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
@@ -196,15 +196,6 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get sidebarBtn () {
-    const cls = classMap({'sidebar-btn': true, pressed: this.activeTab && this.activeTab.isSidebarActive})
-    return html`
-      <button class=${cls} @click=${this.onClickSidebar}>
-        <span class="fas fa-columns"></span>
-      </button>
-    `
-  }
-
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
@@ -263,10 +254,6 @@ class ShellWindowNavbar extends LitElement {
       }
     })
     this.isUsersMenuOpen = false    
-  }
-
-  onClickSidebar (e) {
-    bg.views.toggleSidebar('active')
   }
 
   async onClickBrowserMenu (e) {
@@ -338,10 +325,6 @@ svg.icon.refresh {
   color: #fff;
   font-weight: bold;
   padding: 0 3px;
-}
-
-.sidebar-btn span {
-  color: #555;
 }
 
 .users-btn {
