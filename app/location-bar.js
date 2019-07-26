@@ -64,11 +64,7 @@ class LocationBar extends LitElement {
   }
 
   selectResult (result) {
-    if (result.record && result.record.type === 'site') {
-      bg.locationBar.loadURL(`intent:unwalled.garden/view-profile?url=${encodeURIComponent(result.url)}`)
-    } else {
-      bg.locationBar.loadURL(result.url)
-    }
+    bg.locationBar.loadURL(result.url)
     bg.locationBar.close()
   }
 
