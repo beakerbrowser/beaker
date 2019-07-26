@@ -522,7 +522,7 @@ button .fa-star {
 }
 
 button .fas.fa-star {
-  color: #696969;
+  color: #f3cc00;
 }
 
 button.zoom {
