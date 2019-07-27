@@ -45,6 +45,7 @@ class ShellWindowTabs extends LitElement {
           <div
             class="unused-space"
             @mousedown=${this.onMousedownUnusedSpace}
+            @dblclick=${this.onDblclickUnusedSpace}
             @dragover=${e => this.onDragoverTab(e, this.tabs.length)}
             @dragleave=${e => this.onDragleaveTab(e, this.tabs.length)}
             @drop=${e => this.onDropTab(e, this.tabs.length)}
