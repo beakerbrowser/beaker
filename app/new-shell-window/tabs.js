@@ -19,6 +19,16 @@ class ShellWindowTabs extends LitElement {
     this.tabs = []
     this.isFullscreen = false
     this.draggedTabIndex = null
+    this.isDraggingWindow = false
+
+    // use mousemove to ensure that dragging stops if the mouse button isnt pressed
+    // (we use this instead of mouseup because mouseup could happen outside the window)
+    window.addEventListener('mousemove', e => {
+      if (this.isDraggingWindow && (e.buttons & 1) === 0) {
+        bg.beakerBrowser.setWindowDragModeEnabled(false)
+        this.isDraggingWindow = false
+      }
+    })
   }
 
   render () {
@@ -35,10 +45,6 @@ class ShellWindowTabs extends LitElement {
           <div
             class="unused-space"
             @mousedown=${this.onMousedownUnusedSpace}
-            @mouseup=${this.onMouseupUnusedSpace}
-            @mouseout=${this.onMouseoutUnusedSpace}
-            @mousemove=${this.onMousemoveUnusedSpace}
-            @dblclick=${this.onDblclickUnusedSpace}
             @dragover=${e => this.onDragoverTab(e, this.tabs.length)}
             @dragleave=${e => this.onDragleaveTab(e, this.tabs.length)}
             @drop=${e => this.onDropTab(e, this.tabs.length)}
@@ -217,22 +223,7 @@ class ShellWindowTabs extends LitElement {
   onMousedownUnusedSpace (e) {
     if (e.button === 0) {
       this.isDraggingWindow = true
-    }
-  }
-
-  onMouseupUnusedSpace (e) {
-    if (e.button === 0) {
-      this.isDraggingWindow = false
-    }
-  }
-
-  onMouseoutUnusedSpace (e) {
-    this.isDraggingWindow = false
-  }
-
-  onMousemoveUnusedSpace (e) {
-    if (this.isDraggingWindow) {
-      bg.beakerBrowser.moveWindow(e.movementX, e.movementY)
+      bg.beakerBrowser.setWindowDragModeEnabled(true)
     }
   }
 

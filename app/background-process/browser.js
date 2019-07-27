@@ -157,6 +157,7 @@ export const WEBAPI = {
 
   toggleSidebar,
   setWindowDimensions,
+  setWindowDragModeEnabled,
   moveWindow,
   maximizeWindow,
   showOpenDialog,
@@ -270,6 +271,40 @@ export async function setWindowDimensions ({width, height} = {}) {
   width = width || currentWidth
   height = height || currentHeight
   win.setSize(width, height)
+}
+
+var _dragModeIntervals = {}
+export async function setWindowDragModeEnabled (enabled) {
+  var win = findWebContentsParentWindow(this.sender)
+  if (enabled) {
+    if (win.id in _dragModeIntervals) return
+
+    // poll the mouse cursor every 15ms
+    var lastPt = screen.getCursorScreenPoint()
+    _dragModeIntervals[win.id] = setInterval(() => {
+      var newPt = screen.getCursorScreenPoint()
+
+      // if the mouse has moved, move the window accordingly
+      var delta = {x: newPt.x - lastPt.x, y: newPt.y - lastPt.y}
+      if (delta.x || delta.y) {
+        var pos = win.getPosition()
+        win.setPosition(pos[0] + delta.x, pos[1] + delta.y)
+        lastPt = newPt
+      }
+
+      // if the mouse has moved out of the window, stop
+      var bounds = win.getBounds()
+      if (newPt.x < bounds.x || newPt.y < bounds.y || newPt.x > (bounds.x + bounds.width) || newPt.y > (bounds.y + bounds.height)) {
+        clearInterval(_dragModeIntervals[win.id])
+        delete _dragModeIntervals[win.id]
+      }
+    }, 15)
+  } else {
+    // stop the poll
+    if (!(win.id in _dragModeIntervals)) return
+    clearInterval(_dragModeIntervals[win.id])
+    delete _dragModeIntervals[win.id]
+  }
 }
 
 export async function moveWindow (x, y) {
