@@ -31,7 +31,6 @@
     "appId": "com.pfrazee.beaker-browser",
     "asar": true,
     "asarUnpack": [
-      "./markdown-renderer.build.js",
       "./json-renderer.build.js",
       "./node_modules/sodium-native/**",
       "./node_modules/@beaker/start-app/**",

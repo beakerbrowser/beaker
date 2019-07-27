@@ -1,7 +1,7 @@
 import MarkdownIt from 'markdown-it'
 import anchorMarkdownHeader from './anchor-markdown-header'
 
-export default function create ({allowHTML, useHeadingAnchors, hrefMassager, highlight} = {}) {
+export default function create ({allowHTML, useHeadingIds, useHeadingAnchors, hrefMassager, highlight} = {}) {
   var md = MarkdownIt({
     html: allowHTML, // Enable HTML tags in source
     xhtmlOut: false, // Use '/' to close single tags (<br />)
@@ -21,7 +21,7 @@ export default function create ({allowHTML, useHeadingAnchors, hrefMassager, hig
     highlight
   })
 
-  if (useHeadingAnchors) {
+  if (useHeadingAnchors || useHeadingIds) {
     var numRepetitions = {}
     // heading anchor rendering
     md.renderer.rules.heading_open = function (tokens, idx /*, options, env */) {
@@ -29,9 +29,11 @@ export default function create ({allowHTML, useHeadingAnchors, hrefMassager, hig
       numRepetitions[txt] = (numRepetitions[txt]) ? numRepetitions[txt] + 1 : 0
       return '<' + tokens[idx].tag + ' id="' + anchorMarkdownHeader(txt, numRepetitions[txt]) + '">'
     }
-    md.renderer.rules.heading_close = function (tokens, idx /*, options, env */) {
-      var txt = tokens[idx - 1].content || ''
-      return '<a class="anchor-link" href="#' + anchorMarkdownHeader(txt, numRepetitions[txt]) + '">#</a></' + tokens[idx].tag + '>\n'
+    if (useHeadingAnchors) {
+      md.renderer.rules.heading_close = function (tokens, idx /*, options, env */) {
+        var txt = tokens[idx - 1].content || ''
+        return '<a class="anchor-link" href="#' + anchorMarkdownHeader(txt, numRepetitions[txt]) + '">#</a></' + tokens[idx].tag + '>\n'
+      }
     }
   }
 
