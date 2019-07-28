@@ -60,7 +60,13 @@ class ShellWindowTabs extends LitElement {
   }
 
   renderTab (tab, index) {
-    const cls = classMap({tab: true, current: tab.isActive, pinned: tab.isPinned})
+    const showFavicon = (
+      tab.isLoading
+      || tab.isPinned
+      || (tab.favicons && tab.favicons[0])
+      || tab.url.startsWith('beaker:')
+    )
+    const cls = classMap({tab: true, current: tab.isActive, pinned: tab.isPinned, 'no-favicon': !showFavicon})
     return html`
       <div
         class="${cls}"
@@ -74,21 +80,24 @@ class ShellWindowTabs extends LitElement {
         @dragleave=${e => this.onDragleaveTab(e, index)}
         @drop=${e => this.onDropTab(e, index)}
       >
-        <div class="tab-favicon">
-          ${tab.isLoading
-            ? tab.isReceivingAssets
-              ? html`<div class="spinner"></div>`
-              : html`<div class="spinner reverse"></div>`
-            : tab.favicons && tab.favicons[0]
-              ? html`
-                <img
-                  src="${tab.favicons[tab.favicons.length - 1]}"
-                  @load=${e => this.onFaviconLoad(e, index)}
-                  @error=${e => this.onFaviconError(e, index)}
-                >
-              `
-              : html`<img src="beaker-favicon:${tab.url}?cache=${Date.now()}">`}
-        </div>
+        ${showFavicon ? html`
+          <div class="tab-favicon">
+            ${tab.isLoading
+              ? tab.isReceivingAssets
+                ? html`<div class="spinner"></div>`
+                : html`<div class="spinner reverse"></div>`
+              : tab.favicons && tab.favicons[0]
+                ? html`
+                  <img
+                    src="${tab.favicons[tab.favicons.length - 1]}"
+                    @load=${e => this.onFaviconLoad(e, index)}
+                    @error=${e => this.onFaviconError(e, index)}
+                  >
+                `
+                : html`<img src="beaker-favicon:${tab.url}?cache=${Date.now()}">`
+            }
+          </div>
+        ` : ''}
         ${tab.isPinned
           ? ''
           : html`
@@ -317,6 +326,10 @@ ${spinnerCSS}
   text-overflow: ellipsis;
   white-space: nowrap;
   border-left: 1px solid var(--color-border);
+}
+
+.tab.no-favicon .tab-title {
+  padding-left: 11px;
 }
 
 .tab.current .tab-title,
