@@ -476,8 +476,11 @@ class View {
   // live reloading
   // =
 
-  toggleLiveReloading () {
-    if (this.liveReloadEvents) {
+  toggleLiveReloading (enable) {
+    if (typeof enable === 'undefined') {
+      enable = !this.liveReloadEvents
+    }
+    if (!enable) {
       this.liveReloadEvents.close()
       this.liveReloadEvents = false
     } else if (this.datInfo) {
@@ -1325,8 +1328,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     zoom.zoomReset(getByIndex(getWindow(this.sender), index))
   },
 
-  async toggleLiveReloading (index) {
-    getByIndex(getWindow(this.sender), index).toggleLiveReloading()
+  async toggleLiveReloading (index, enabled) {
+    getByIndex(getWindow(this.sender), index).toggleLiveReloading(enabled)
   },
 
   async toggleSidebar (index, app = undefined) {

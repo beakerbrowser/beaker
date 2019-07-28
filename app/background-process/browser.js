@@ -267,9 +267,9 @@ async function toggleSidebar () {
   viewManager.getActive(win).toggleSidebar()
 }
 
-export async function toggleLiveReloading () {
+export async function toggleLiveReloading (enabled) {
   var win = findWebContentsParentWindow(this.sender)
-  viewManager.getActive(win).toggleLiveReloading()
+  viewManager.getActive(win).toggleLiveReloading(enabled)
 }
 
 export async function setWindowDimensions ({width, height} = {}) {
