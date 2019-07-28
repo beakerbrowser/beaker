@@ -180,7 +180,7 @@ class CreateArchiveModal extends LitElement {
     try {
       var url
       if (!this.currentTemplate.startsWith('dat:')) {
-        if (BASIC_TEMPLATES.find(t => t.url === this.currentTemplate) && this.currentTemplate !== 'blank') {
+        if (BASIC_TEMPLATES.find(t => t.url === this.currentTemplate)) {
           // basic website using builtin template
           url = await bg.datArchive.createArchive({
             template: this.currentTemplate,
