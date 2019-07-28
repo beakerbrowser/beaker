@@ -18,7 +18,6 @@ import { findWebContentsParentWindow } from '../../../lib/electron'
 // =
 
 export const SIDEBAR_Y = 76
-export const SIDEBAR_WIDTH = 450
 var views = {} // map of {[parentView.id] => BrowserView}
 
 // exported api
@@ -124,9 +123,9 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
 function setBounds (sidebarView, parentWindow) {
   var parentBounds = parentWindow.getContentBounds()
   sidebarView.setBounds({
-    x: parentBounds.width - SIDEBAR_WIDTH,
+    x: Math.floor(parentBounds.width / 2),
     y: SIDEBAR_Y,
-    width: SIDEBAR_WIDTH,
-    height: parentBounds.height
+    width: Math.floor(parentBounds.width / 2),
+    height: parentBounds.height - SIDEBAR_Y
   })
 }

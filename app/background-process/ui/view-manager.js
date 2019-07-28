@@ -279,7 +279,7 @@ class View {
     const win = this.browserWindow
     var {width, height} = win.getContentBounds()
     if (this.isSidebarActive) {
-      width -= sidebars.SIDEBAR_WIDTH
+      width = Math.floor(width / 2) // sidebar takes half the screen
     }
     return {x: 0, y: Y_POSITION, width, height: height - Y_POSITION}
   }
@@ -337,26 +337,43 @@ class View {
     this.emitUpdateState()
   }
 
-  toggleSidebar () {
-    this.isSidebarActive = !this.isSidebarActive
-    this.resize()
-    if (this.isSidebarActive) {
+  async toggleSidebar (app) {
+    if (!this.isSidebarActive) {
+      // create sidebar
       let v = sidebars.create(this.browserView)
       if (this.isActive) sidebars.show(this.browserView)
-      v.webContents.on('did-finish-load', () => this.updateSidebar())
+      v.webContents.on('did-finish-load', () => this.updateSidebar(app))
+      this.isSidebarActive = true
     } else {
-      sidebars.close(this.browserView)
+      if (app) {
+        // if an app is passed, toggle off if already on the view
+        // otherwise, just go to that view
+        let v = sidebars.get(this)
+        if (v) {
+          let currentApp = await v.webContents.executeJavaScript(`window.sidebarGetCurrentApp()`)
+          if (currentApp === app) {
+            sidebars.close(this.browserView)
+            this.isSidebarActive = false
+          } else {
+            this.updateSidebar(app)
+          }
+        }
+      } else {
+        sidebars.close(this.browserView)
+        this.isSidebarActive = false
+      }
     }
+    this.resize()
     
     // emit
     this.emitUpdateState()
   }
 
-  updateSidebar () {
+  updateSidebar (app) {
     var sidebarView = sidebars.get(this)
     if (sidebarView) {
       sidebarView.webContents.executeJavaScript(`
-        window.sidebarLoad("${this.url}")
+        window.sidebarLoad("${this.url}", ${app ? `"${app}"` : undefined})
       `).catch(err => {
         console.log('Failed to load sidebar', err)
       })
@@ -1312,8 +1329,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     getByIndex(getWindow(this.sender), index).toggleLiveReloading()
   },
 
-  async toggleSidebar (index) {
-    getByIndex(getWindow(this.sender), index).toggleSidebar()
+  async toggleSidebar (index, app = undefined) {
+    getByIndex(getWindow(this.sender), index).toggleSidebar(app)
   },
 
   async toggleDevTools (index) {
