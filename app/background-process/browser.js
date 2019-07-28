@@ -156,6 +156,7 @@ export const WEBAPI = {
   imageToIco,
 
   toggleSidebar,
+  toggleLiveReloading,
   setWindowDimensions,
   setWindowDragModeEnabled,
   moveWindow,
@@ -165,7 +166,8 @@ export const WEBAPI = {
   async showModal (name, opts) {
     return modals.create(this.sender, name, opts)
   },
-  openUrl: url => { openUrl(url) }, // dont return anything
+  gotoUrl,
+  openUrl: (url, opts) => { openUrl(url, opts) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
   doTest,
@@ -263,6 +265,11 @@ export async function imageToIco (image) {
 async function toggleSidebar () {
   var win = findWebContentsParentWindow(this.sender)
   viewManager.getActive(win).toggleSidebar()
+}
+
+export async function toggleLiveReloading () {
+  var win = findWebContentsParentWindow(this.sender)
+  viewManager.getActive(win).toggleLiveReloading()
 }
 
 export async function setWindowDimensions ({width, height} = {}) {
@@ -579,6 +586,11 @@ function showContextMenu (menuDefinition) {
     menu.popup({window: win})
     resolve(selection)
   })
+}
+
+async function gotoUrl (url) {
+  var win = findWebContentsParentWindow(this.sender)
+  viewManager.getActive(win).loadURL(url)
 }
 
 function openFolder (folderPath) {

@@ -17,12 +17,12 @@ export function setup () {
   })
 }
 
-export function open (url) {
+export function open (url, opts = {}) {
   setup()
   var win = windows.getActiveWindow()
   if (isLoaded && win) {
     // send command now
-    viewManager.create(win, url)
+    viewManager.create(win, url, opts)
     win.show()
   } else {
     // queue for later
