@@ -15,15 +15,13 @@ const TEMPLATE_TYPES = {
 }
 
 const BASIC_TEMPLATES = [
-  {url: 'blank', title: 'Empty Website', thumb: 'beaker://assets/img/templates/website.png'},
-  {url: 'simple', title: 'Simple Starter', thumb: 'beaker://assets/img/templates/simple.png'},
-  {url: 'litelement', title: 'LitElement Starter', thumb: 'beaker://assets/img/templates/litelement.png'}
+  {url: 'blank', title: 'Empty Website', thumb: html`<img src="beaker://assets/img/templates/website.png">`}
 ]
 
 const ADVANCED_TEMPLATES = [
-  {url: 'application', title: 'Application', thumb: 'beaker://assets/img/templates/application.png'},
-  {url: 'template', title: 'Template', thumb: 'beaker://assets/img/templates/template.png'},
-  {url: 'theme', title: 'Theme', thumb: 'beaker://assets/img/templates/theme.png'}
+  {url: 'application', title: 'Application', thumb: html`<div class="icon"><span class="far fa-fw fa-window-restore"></span></div>`},
+  {url: 'template', title: 'Template', thumb: html`<div class="icon"><span class="fas fa-fw fa-pencil-ruler"></span></div>`},
+  {url: 'theme', title: 'Theme', thumb: html`<div class="icon"><span class="fas fa-fw fa-drafting-compass"></span></div>`}
 ]
 
 class CreateArchiveModal extends LitElement {
@@ -74,13 +72,14 @@ class CreateArchiveModal extends LitElement {
       const cls = classMap({template: true, selected: url === this.currentTemplate})
       return html`
         <div class="${cls}" @click=${e => this.onClickTemplate(e, url)}>
-          <img src="${thumb ? thumb : `asset:thumb:${url}`}">
+          ${thumb ? thumb : html`<img src="asset:thumb:${url}">`}
           <div class="title">${title}</div>
         </div>
       `
     }
 
     return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">New Website</h1>
 
@@ -109,11 +108,39 @@ class CreateArchiveModal extends LitElement {
                 <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="4">Cancel</button>
                 <button type="submit" class="primary" tabindex="3">Create Website</button>
               </div>
+
+              ${this.renderChoiceDescription()}
             </div>
           </div>
         </form>
       </div>
     `
+  }
+
+  renderChoiceDescription () {
+    if (this.currentTemplate === 'application') {
+      return html`
+        <div class="template-description">
+          <span class="fas fa-fw fa-info"></span>
+          <span>
+            Applications are installable websites which can request access
+            to advanced APIs.
+          </span>
+        </div>
+      `
+    }
+    if (this.currentTemplate === 'template') {
+      return html`
+        <div class="template-description">
+          <span class="fas fa-fw fa-info"></span>
+          <span>
+            Templates are websites which can be used to create other
+            websites. Saved templates are listed as choices to the
+            left.
+          </span>
+        </div>
+      `
+    }
   }
 
   // event handlers
@@ -215,6 +242,18 @@ hr {
   margin: 20px 0;
 }
 
+.template-description {
+  display: flex;
+  margin-top: 20px;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, .5);
+}
+
+.template-description .fas {
+  margin-top: 3px;
+  margin-right: 6px;
+}
+
 .layout {
   display: flex;
   user-select: none;
@@ -259,15 +298,26 @@ hr {
   border-radius: 4px;
 }
 
-.template img {
+.template img,
+.template .icon {
   display: block;
   margin: 0 auto;
   width: 100px;
   height: 80px;
   margin-bottom: 10px;
-  object-fit: cover;
+  object-fit: scale-down;
   background: #fff;
   border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.template .icon {
+  text-align: center;
+  font-size: 24px;
+}
+
+.template .icon .fa-fw {
+  line-height: 80px;
 }
 
 .template .title {
@@ -283,6 +333,9 @@ hr {
 
 .template.selected {
   background: rgb(63, 119, 232);
+}
+
+.template.selected .title {
   color: #fff;
   font-weight: 500;
   text-shadow: 0 1px 2px rgba(0,0,0,.35);
