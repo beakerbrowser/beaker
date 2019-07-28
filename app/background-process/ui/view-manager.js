@@ -906,7 +906,7 @@ export function findContainingWindow (browserView) {
   }
 }
 
-export function create (win, url, opts = {setActive: false, isPinned: false, focusLocationBar: false, isSidebarActive: false}) {
+export function create (win, url, opts = {setActive: false, isPinned: false, focusLocationBar: false, isSidebarActive: false, sidebarApp: undefined}) {
   url = url || DEFAULT_URL
   win = getTopWindow(win)
   var views = activeViews[win.id] = activeViews[win.id] || []
@@ -941,7 +941,7 @@ export function create (win, url, opts = {setActive: false, isPinned: false, foc
     win.webContents.send('command', 'focus-location')
   }
   if (opts.isSidebarActive) {
-    view.toggleSidebar()
+    view.toggleSidebar(opts.sidebarApp)
   }
 
   // create a new preloaded view if needed
