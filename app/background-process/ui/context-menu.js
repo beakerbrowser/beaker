@@ -154,28 +154,6 @@ export default function registerContextMenu () {
             viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
           }
         })
-        menuItems.push({
-          label: 'Developer Tools',
-          submenu: [{
-            label: 'Toggle Live Reloading',
-            click: (item, win) => {
-              viewManager.getActive(win).toggleLiveReloading()
-            }
-          },
-          {
-            label: 'Fork This Site',
-            click: async (item, win) => {
-              let forkUrl = await webContents.executeJavaScript(`
-                DatArchive.fork("${props.pageURL}", {prompt: true})
-                  .then(fork => fork.url)
-                  .catch(err => null)
-              `)
-              if (forkUrl) {
-                webContents.loadURL(`beaker://editor/${forkUrl}`)
-              }
-            }
-          }]
-        })
       }
       menuItems.push({
         label: 'Inspect Element',
