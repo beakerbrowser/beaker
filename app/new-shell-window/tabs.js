@@ -340,10 +340,17 @@ ${spinnerCSS}
 .fa-volume-up,
 .fa-volume-mute {
   position: absolute;
-  top: 9px;
+  top: 8px;
   right: 10px;
   font-size: 12px;
   color: rgba(0,0,0,.6);
+  background: var(--bg-background);
+  padding: 2px 0 2px 4px;
+}
+
+.tab.current .fa-volume-up,
+.tab.current .fa-volume-mute {
+  background: var(--bg-foreground);
 }
 
 .tab-nofavicon .tab-title {
