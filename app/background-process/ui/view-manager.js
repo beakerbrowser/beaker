@@ -1034,23 +1034,26 @@ export async function remove (win, view) {
   emitReplaceState(win)
 }
 
-export function removeAllExcept (win, view) {
+export async function removeAllExcept (win, view) {
   win = getTopWindow(win)
   var views = getAll(win).slice() // .slice() to duplicate the list
   for (let v of views) {
     if (v !== view) {
-      remove(win, v)
+      await remove(win, v)
     }
   }
 }
 
-export function removeAllToRightOf (win, view) {
+export async function removeAllToRightOf (win, view) {
   win = getTopWindow(win)
-  while (true) {
-    let views = getAll(win)
-    let index = views.indexOf(view) + 1
-    if (index >= views.length) break
-    remove(win, getByIndex(win, index))
+  var toRemove = []
+  var views = getAll(win)
+  let index = views.indexOf(view)
+  for (let i = 0; i < views.length; i++) {
+    if (i > index) toRemove.push(views[i])
+  }
+  for (let v of toRemove) {
+    await remove(win, v)
   }
 }
 
