@@ -302,6 +302,8 @@ class LocationBar extends LitElement {
       this.userUrl = userSession ? userSession.url : null
     }
 
+    this.inputValue = this.inputValue.trim()
+
     var finalResults
     var [crawlerResults, historyResults] = await Promise.all([
       bg.search.query({query: this.inputValue, filters: {datasets: ['sites', 'unwalled.garden/bookmark']}, limit: 10}),
