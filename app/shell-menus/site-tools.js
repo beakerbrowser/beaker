@@ -71,11 +71,6 @@ class SiteToolsMenu extends LitElement {
             <i class="fa fa-bolt"></i>
             Toggle live reloading
           </div>
-          <hr>
-          <div class="menu-item" @click=${this.onClickFork}>
-            <i class="fas fa-code-branch"></i>
-            Fork this site
-          </div>
         </div>
       `
     }
@@ -107,6 +102,10 @@ class SiteToolsMenu extends LitElement {
               Save to my websites
             </div>
           `}
+          <div class="menu-item" @click=${this.onClickFork}>
+            <i class="far fa-clone"></i>
+            Make a copy of this site
+          </div>
           <hr>
           <div class="menu-item" @click=${e => this.onShowSubmenu('devtools')}>
             <i class="fas fa-code"></i>

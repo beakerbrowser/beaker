@@ -46,7 +46,7 @@ export function renderSiteinfoDropdownOwner (workingDatJson, archiveInfo) {
           <hr>
           <div>
             <button class="btn transparent" onclick=${e => emit('editor-fork')}>
-              <i class="fas fa-code-branch"></i> Fork this site
+              <i class="fas fa-code-branch"></i> Duplicate this site
             </button>
             ${canDelete
               ? isSaved
@@ -92,7 +92,7 @@ export function renderSiteinfoDropdownNonowner (workingDatJson, archiveInfo) {
           <hr>
           <div>
             <button class="btn transparent" onclick=${e => emit('editor-fork')}>
-              <i class="fas fa-code-branch"></i> Fork this site
+              <i class="fas fa-code-branch"></i> Duplicate this site
             </button>
           </div>
         </div>

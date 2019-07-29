@@ -86,7 +86,7 @@ class ForkArchiveModal extends LitElement {
         actionBtn = html`<button type="submit" class="btn" disabled tabindex="5"><span class="spinner"></span></button>`
         break
       case STATES.FORKING:
-        progressEl = html`<div class="fork-dat-progress">Forking...</div>`
+        progressEl = html`<div class="fork-dat-progress">Copying...</div>`
         actionBtn = html`<button type="submit" class="btn" disabled tabindex="5"><span class="spinner"></span></button>`
         break
     }
