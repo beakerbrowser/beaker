@@ -26,6 +26,11 @@ class PromptModal extends LitElement {
     bg.modals.resizeSelf({width, height})
   }
 
+
+  firstUpdated () {
+    this.shadowRoot.querySelector('input').focus()
+  }
+
   // rendering
   // =
 
