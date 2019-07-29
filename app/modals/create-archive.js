@@ -7,21 +7,8 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 
-const TEMPLATE_TYPES = {
-  blank: '',
-  application: 'application',
-  template: 'unwalled.garden/template',
-  theme: 'unwalled.garden/theme'
-}
-
 const BASIC_TEMPLATES = [
   {url: 'blank', title: 'Empty Website', thumb: html`<img src="beaker://assets/img/templates/website.png">`}
-]
-
-const ADVANCED_TEMPLATES = [
-  {url: 'application', title: 'Application', thumb: html`<div class="icon"><span class="far fa-fw fa-window-restore"></span></div>`},
-  {url: 'template', title: 'Template', thumb: html`<div class="icon"><span class="fas fa-fw fa-pencil-ruler"></span></div>`},
-  {url: 'theme', title: 'Theme', thumb: html`<div class="icon"><span class="fas fa-fw fa-drafting-compass"></span></div>`}
 ]
 
 class CreateArchiveModal extends LitElement {
@@ -86,13 +73,8 @@ class CreateArchiveModal extends LitElement {
         <form @submit=${this.onSubmit}>
           <div class="layout">
             <div class="templates">
-              <div class="templates-heading">Websites</div>
               <div class="templates-selector">
                 ${this.templates.map(t => template(t.url, t.title, t.thumb))}
-              </div>
-              <div class="templates-heading">Advanced</div>
-              <div class="templates-selector">
-                ${ADVANCED_TEMPLATES.map(t => template(t.url, t.title, t.thumb))}
               </div>
             </div>
 
@@ -108,39 +90,11 @@ class CreateArchiveModal extends LitElement {
                 <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="4">Cancel</button>
                 <button type="submit" class="primary" tabindex="3">Create Website</button>
               </div>
-
-              ${this.renderChoiceDescription()}
             </div>
           </div>
         </form>
       </div>
     `
-  }
-
-  renderChoiceDescription () {
-    if (this.currentTemplate === 'application') {
-      return html`
-        <div class="template-description">
-          <span class="fas fa-fw fa-info"></span>
-          <span>
-            Applications are installable websites which can request access
-            to advanced APIs.
-          </span>
-        </div>
-      `
-    }
-    if (this.currentTemplate === 'template') {
-      return html`
-        <div class="template-description">
-          <span class="fas fa-fw fa-info"></span>
-          <span>
-            Templates are websites which can be used to create other
-            websites. Saved templates are listed as choices to the
-            left.
-          </span>
-        </div>
-      `
-    }
   }
 
   // event handlers
@@ -180,28 +134,16 @@ class CreateArchiveModal extends LitElement {
     try {
       var url
       if (!this.currentTemplate.startsWith('dat:')) {
-        if (BASIC_TEMPLATES.find(t => t.url === this.currentTemplate)) {
-          // basic website using builtin template
-          url = await bg.datArchive.createArchive({
-            template: this.currentTemplate,
-            title: this.title,
-            description: this.description,
-            type: '',
-            networked: this.networked,
-            links: this.links,
-            prompt: false
-          })
-        } else {
-          // builtin site type
-          url = await bg.datArchive.createArchive({
-            title: this.title,
-            description: this.description,
-            type: TEMPLATE_TYPES[this.currentTemplate],
-            networked: this.networked,
-            links: this.links,
-            prompt: false
-          })
-        }
+        // using builtin template
+        url = await bg.datArchive.createArchive({
+          template: this.currentTemplate,
+          title: this.title,
+          description: this.description,
+          type: '',
+          networked: this.networked,
+          links: this.links,
+          prompt: false
+        })
       } else {
         // template forking from saved dat
         await bg.datArchive.download(this.currentTemplate)
@@ -240,18 +182,6 @@ hr {
   border: 0;
   border-top: 1px solid #eee;
   margin: 20px 0;
-}
-
-.template-description {
-  display: flex;
-  margin-top: 20px;
-  line-height: 1.4;
-  color: rgba(0, 0, 0, .5);
-}
-
-.template-description .fas {
-  margin-top: 3px;
-  margin-right: 6px;
 }
 
 .layout {
