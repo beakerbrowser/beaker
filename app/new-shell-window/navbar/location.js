@@ -81,7 +81,6 @@ class NavbarLocation extends LitElement {
   focusLocation () {
     var input = this.shadowRoot.querySelector('.input-container input')
     input.focus()
-    input.setSelectionRange(0, input.value.length)
     bg.views.focusShellWindow() // focus the shell-window UI
   }
 
@@ -339,7 +338,7 @@ class NavbarLocation extends LitElement {
   onMousedownLocation (e) {
     // track if the user is clicking, doubleclicking, or dragging the location before its focused
     // if a click, select all; if a doubleclick, select word under cursor; if a drag, do default behavior
-    if (!e.currentTarget.matches(':focus')) {
+    if (!this.isLocationFocused) {
       this.lastMousedownLocationTs = Date.now()
     }
   }
@@ -347,6 +346,7 @@ class NavbarLocation extends LitElement {
   onMouseupLocation (e) {
     if (Date.now() - this.lastMousedownLocationTs <= 300) {
       // was a fast click (probably not a drag) so select all
+      e.preventDefault()
       let inputEl = e.currentTarget
       this.mouseupClickIndex = inputEl.selectionStart
       inputEl.select()
@@ -372,6 +372,7 @@ class NavbarLocation extends LitElement {
 
   onFocusLocation (e) {
     e.currentTarget.value = this.url
+    e.currentTarget.setSelectionRange(0, this.url.length)
     this.isLocationFocused = true
   }
 
