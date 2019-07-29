@@ -13,6 +13,7 @@ class NavbarSiteInfo extends LitElement {
       url: {type: String},
       siteTitle: {type: String},
       datDomain: {type: String},
+      isOwner: {type: Boolean},
       peers: {type: Number},
       numFollowers: {type: Number},
       loadError: {type: Object}
@@ -25,6 +26,7 @@ class NavbarSiteInfo extends LitElement {
     this.url = ''
     this.siteTitle = ''
     this.datDomain = ''
+    this.isOwner = false
     this.peers = 0
     this.numFollowers = 0
     this.loadError = null
@@ -50,7 +52,6 @@ class NavbarSiteInfo extends LitElement {
   // =
 
   render () {
-    var cls = ''
     const scheme = this.scheme
     var innerHTML
     if (scheme) {
@@ -79,7 +80,10 @@ class NavbarSiteInfo extends LitElement {
           <span class="label">${this.siteTitle}</span>
           ${this.numFollowers > 0 ? html`
             <span class="far fa-user" style="color: gray;"></span>
-            <span class="label ${cls}" style="color: gray; margin-left: 0">${this.numFollowers}</span>
+            <span class="label" style="color: gray; margin-left: 0">${this.numFollowers}</span>
+          ` : ''}
+          ${this.isOwner ? html`
+            <span class="label darkbg">Your Site</span>
           ` : ''}
         `
       }
@@ -153,6 +157,14 @@ button.hidden {
   margin-right: 2px;
   font-variant-numeric: tabular-nums;
   font-weight: 500;
+}
+
+.label.darkbg {
+  background: rgba(0,0,0,.08);
+  padding: 2px 4px;
+  border-radius: 3px;
+  color: #444;
+  font-size: 10px;
 }
 
 .secure {

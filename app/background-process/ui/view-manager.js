@@ -75,6 +75,7 @@ const STATE_VARS = [
   'title',
   'siteTitle',
   'datDomain',
+  'isOwner',
   'numFollowers',
   'numComments',
   'peers',
@@ -236,6 +237,10 @@ class View {
 
   get datDomain () {
     return this.datInfo && this.datInfo.domain ? this.datInfo.domain : ''
+  }
+
+  get isOwner () {
+    return this.datInfo && this.datInfo.isOwner
   }
 
   get canGoBack () {

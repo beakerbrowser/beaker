@@ -65,6 +65,7 @@ class ShellWindowNavbar extends LitElement {
         title="${_get(this, 'activeTab.title', '')}"
         siteTitle="${_get(this, 'activeTab.siteTitle', '')}"
         datDomain="${_get(this, 'activeTab.datDomain', '')}"
+        ?isOwner="${_get(this, 'activeTab.isOwner', false)}"
         peers="${_get(this, 'activeTab.peers', 0)}"
         numFollowers="${_get(this, 'activeTab.numFollowers', 0)}"
         numComments="${_get(this, 'activeTab.numComments', 0)}"

@@ -19,6 +19,7 @@ class NavbarLocation extends LitElement {
       title: {type: String},
       siteTitle: {type: String},
       datDomain: {type: String},
+      isOwner: {type: Boolean},
       peers: {type: Number},
       numFollowers: {type: Number},
       numComments: {type: Number},
@@ -99,6 +100,7 @@ class NavbarLocation extends LitElement {
         url=${this.url}
         siteTitle=${this.siteTitle}
         datDomain=${this.datDomain}
+        ?isOwner=${this.isOwner}
         peers=${this.peers}
         numFollowers=${this.numFollowers}
         .loadError=${this.loadError}
