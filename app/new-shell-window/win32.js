@@ -49,7 +49,6 @@ div {
   right: 0;
   width: 150px;
   height: 36px;
-  -webkit-app-region: no-drag;
 }
 
 a {
