@@ -631,11 +631,10 @@ class View {
       this.uncommittedChanges = diff ? diff.length : 0
     }
     let userSession = getUserSessionFor(this.browserWindow.webContents)
-    let [siteFollowers, userFollows] = await Promise.all([
-      beakerCore.crawler.follows.list({filters: {topics: this.datInfo.url}}),
-      beakerCore.crawler.follows.list({filters: {authors: userSession.url}}),
-    ])
-    this.numFollowers = siteFollowers.filter(f1 => userFollows.find(f2 => f1.author.url === f2.topic.url || f1.author.url === userSession.url)).length
+    let userFollows = await beakerCore.crawler.follows.list({filters: {authors: userSession.url}})
+    let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
+    let siteFollowers = await beakerCore.crawler.follows.list({filters: {topics: this.datInfo.url, authors: followAuthors}})
+    this.numFollowers = siteFollowers.length
     if (!noEmit) this.emitUpdateState()
     
     if (this.datInfo.type && this.datInfo.type.includes('application')) {
