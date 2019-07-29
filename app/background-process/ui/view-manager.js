@@ -788,7 +788,9 @@ class View {
     e.preventDefault()
     if (!this.isActive) return // only open if coming from the active tab
     var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
-    create(this.browserWindow, url, {setActive, isSidebarActive: this.isSidebarActive})
+    var views = activeViews[this.browserWindow.id]
+    var tabIndex = views ? (views.indexOf(this) + 1) : undefined
+    create(this.browserWindow, url, {setActive, tabIndex, isSidebarActive: this.isSidebarActive})
   }
 
   onMediaChange (e) {
@@ -913,7 +915,18 @@ export function findContainingWindow (browserView) {
   }
 }
 
-export function create (win, url, opts = {setActive: false, isPinned: false, focusLocationBar: false, isSidebarActive: false, sidebarApp: undefined}) {
+export function create (
+    win,
+    url,
+    opts = {
+      setActive: false,
+      isPinned: false,
+      focusLocationBar: false,
+      isSidebarActive: false,
+      tabIndex: undefined,
+      sidebarApp: undefined
+    }
+  ) {
   url = url || DEFAULT_URL
   win = getTopWindow(win)
   var views = activeViews[win.id] = activeViews[win.id] || []
@@ -935,7 +948,11 @@ export function create (win, url, opts = {setActive: false, isPinned: false, foc
   if (opts.isPinned) {
     views.splice(indexOfLastPinnedView(win), 0, view)
   } else {
-    views.push(view)
+    if (typeof opts.tabIndex !== 'undefined' && opts.tabIndex !== -1) {
+      views.splice(opts.tabIndex, 0, view)
+    } else {
+      views.push(view)
+    }
   }
 
   // make active if requested, or if none others are

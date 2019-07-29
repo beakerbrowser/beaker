@@ -113,23 +113,6 @@ class ShellWindowTabs extends LitElement {
     `
   }
 
-  updated (changedProperties) {
-    if (changedProperties.has('tabs')) {
-      var oldVal = changedProperties.get('tabs') || []
-      var [oldLen, newLen] = [oldVal.length, this.tabs.length]
-      if (newLen > oldLen) {
-        // animate new tabs
-        Array.from(this.shadowRoot.querySelectorAll('.tabs > .tab')).pop().animate([
-          { transform: 'scaleX(0)' },
-          { transform: 'scaleX(1)' }
-        ], {
-          duration: 200,
-          iterations: 1
-        })
-      }
-    }
-  }
-
   // events
   // =
 
