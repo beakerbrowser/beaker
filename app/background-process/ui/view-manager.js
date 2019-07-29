@@ -218,13 +218,18 @@ class View {
 
   get siteTitle () {
     try {
-      var hostname = ((new URL(this.url)).hostname).replace(/\+(.+)$/, '')
+      var hostname = ((parseDatURL(this.url)).hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
-        if (DAT_HASH_REGEX.test(hostname)) {
-          // use confirmed domain if visiting the key
-          return this.datInfo.domain || prettyHash(this.datInfo.key)
+        if (this.datInfo.domain) {
+          // use confirmed domain if available (because we give a checkmark for that)
+          return this.datInfo.domain
         }
-        return hostname
+        if ((this.datInfo.title || '').trim()) {
+          // use site title if it exists
+          return (this.datInfo.title || '').trim()
+        }
+        // pretty hash of the key otherwise
+        return prettyHash(this.datInfo.key)
       }
       if (this.url.startsWith('beaker://')) {
         return `Beaker ${ucfirst(hostname)}`
