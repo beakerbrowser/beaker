@@ -70,7 +70,7 @@ class NavbarInpageFind extends LitElement {
     if (this.query !== e.currentTarget.value) {
       this.query = e.currentTarget.value
       if (this.query) {
-        bg.views.setInpageFindString(this.activeTabIndex, this.query, dir)
+        bg.views.setInpageFindString(this.activeTabIndex, this.query, 1)
       } else {
         bg.views.hideInpageFind(this.activeTabIndex)
       }
