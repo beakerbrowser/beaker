@@ -1,4 +1,5 @@
-import { ipcMain, session, BrowserWindow, BrowserView } from 'electron'
+import { session, BrowserView } from 'electron'
+import { PERMS, getPermId } from '@beaker/permissions'
 import * as beakerCore from '@beaker/core'
 const dat = beakerCore.dat
 const sitedata = beakerCore.dbs.sitedata
@@ -7,8 +8,6 @@ import pda from 'pauls-dat-api'
 import parseDatURL from 'parse-dat-url'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as viewManager from './view-manager'
-import PERMS from '../../lib/perms'
-import {getPermId} from '@beaker/core/lib/strings'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
 
 // globals

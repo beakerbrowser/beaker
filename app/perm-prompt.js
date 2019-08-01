@@ -1,10 +1,8 @@
 /* globals customElements */
+import { PERMS, PERM_ICONS, renderPermDesc, getPermId, getPermParam } from '@beaker/permissions'
 import { LitElement, html, css } from './vendor/lit-element/lit-element'
 import prettyHash from 'pretty-hash'
 import * as bg from './perm-prompt/bg-process-rpc'
-import PERMS from './lib/perms'
-import {PERM_ICONS, renderPermDesc} from './lib/fg/perms'
-import { getPermId, getPermParam } from './lib/strings'
 import buttonsCSS from './perm-prompt/buttons.css'
 
 const IS_DAT_KEY_REGEX = /^[0-9a-f]{64}$/i
@@ -80,7 +78,7 @@ class PermPrompt extends LitElement {
         <p>This site wants to:</p>
         <p class="perm">
           <i class="${PERM_ICONS[this.permId]}"></i>
-          ${renderPermDesc({bg, url: this.url, permId: this.permId, permParam: this.permParam, permOpts: this.permOpts})}
+          ${renderPermDesc({bg, html, url: this.url, permId: this.permId, permParam: this.permParam, permOpts: this.permOpts})}
         </p>
 
         <div class="prompt-btns">

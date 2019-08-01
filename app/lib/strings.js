@@ -2,14 +2,6 @@
 
 const URL = typeof window === 'undefined' ? require('url').URL : window.URL
 
-export function getPermId (permissionToken) {
-  return permissionToken.split(':')[0]
-}
-
-export function getPermParam (permissionToken) {
-  return permissionToken.split(':').slice(1).join(':')
-}
-
 export function ucfirst (str) {
   if (!str) str = ''
   if (typeof str !== 'string') str = '' + str

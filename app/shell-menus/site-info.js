@@ -1,11 +1,11 @@
 /* globals customElements */
+import { PERM_ICONS, renderPermDesc, getPermId, getPermParam } from '@beaker/permissions'
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import prettyHash from 'pretty-hash'
 import prettyBytes from 'pretty-bytes'
 import _get from 'lodash.get'
-import { PERM_ICONS, renderPermDesc } from '../lib/fg/perms'
-import { getPermId, getPermParam, pluralize } from '../lib/strings'
+import { pluralize } from '../lib/strings'
 import * as bg from './bg-process-rpc'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
@@ -525,7 +525,7 @@ class SiteInfoMenu extends LitElement {
       <div class="perm">
         <label class=${cls} @click=${e => this.onTogglePerm(perm)}>
           <i class="${PERM_ICONS[permId]}"></i>
-          ${renderPermDesc({bg, url: this.url, permId, permParam, permOpts: opts})}
+          ${renderPermDesc({bg, html, url: this.url, permId, permParam, permOpts: opts})}
           <input type="checkbox" value="${perm}" ?checked=${value}>
         </label>
       </div>

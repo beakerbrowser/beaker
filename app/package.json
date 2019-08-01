@@ -11,6 +11,7 @@
     "@beaker/core": "github:beakerbrowser/beaker-core#blue",
     "@beaker/dat-archive-file-diff": "^1.0.0",
     "@beaker/library-app": "^3.0.1",
+    "@beaker/permissions": "^1.0.1",
     "@beaker/search-app": "^2.1.0",
     "@beaker/sidebar-app": "^1.0.0",
     "@beaker/start-app": "^3.0.0",
