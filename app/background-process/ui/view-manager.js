@@ -601,7 +601,7 @@ class View {
     var authors = [userSession.url].concat(followedUsers)
 
     // TODO replace with native 'count' method
-    var cs = await beakerCore.crawler.comments.thread(this.url, {filters: {authors}})
+    var cs = await beakerCore.crawler.comments.thread(this.url.replace('+preview', ''), {filters: {authors}})
     function countComments (comments) {
       return comments.reduce((acc, comment) => acc + 1 + (comment.replies ? countComments(comment.replies) : 0), 0)
     }
