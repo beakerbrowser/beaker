@@ -58,6 +58,10 @@ if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
 // enable the sandbox
 app.enableSandbox()
 
+// enable process reuse to speed up navigations
+// see https://github.com/electron/electron/issues/18397
+app.allowRendererProcessReuse = true
+
 // configure the protocols
 protocol.registerSchemesAsPrivileged([
   {scheme: 'dat', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
