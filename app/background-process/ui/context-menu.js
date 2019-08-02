@@ -143,18 +143,21 @@ export default function registerContextMenu () {
           label: 'Print...',
           click: () => webContents.print()
         })
+        menuItems.push({
+          label: 'About This Site',
+          click: (item, win) => {
+            viewManager.getActive(win).toggleSidebar('site')
+          }
+        })
         menuItems.push({ type: 'separator' })
       }
 
-      // devtools
-      if (isDat) {
-        menuItems.push({
-          label: 'Site Editor',
-          click: (item, win) => {
-            viewManager.create(win, 'beaker://editor/' + props.pageURL, {setActive: true})
-          }
-        })
-      }
+      menuItems.push({
+        label: 'Edit Source',
+        click: (item, win) => {
+          viewManager.getActive(win).toggleSidebar('editor')
+        }
+      })
       menuItems.push({
         label: 'Inspect Element',
         click: item => {
