@@ -71,6 +71,10 @@ export function get (parentView) {
   return views[parentView.id]
 }
 
+export function findContainingWindow (sidebarView) {
+  return findWebContentsParentWindow(sidebarView.webContents)
+}
+
 export function show (parentView) {
   if (parentView.id in views) {
     var win = viewManager.findContainingWindow(parentView)

@@ -336,6 +336,7 @@ export function getUserSessionFor (wc) {
   // fetch current session
   var win = findWebContentsParentWindow(wc)
   if (!win) win = viewManager.findContainingWindow(BrowserView.fromWebContents(wc))
+  if (!win) win = sidebarsSubwindow.findContainingWindow(BrowserView.fromWebContents(wc))
   var sess = sessionWatcher.getState(win).userSession
 
   // return if good
