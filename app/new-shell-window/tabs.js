@@ -39,13 +39,15 @@ class ShellWindowTabs extends LitElement {
     })
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="${shellCls}">
+      <div
+        class="${shellCls}"
+        @mousedown=${this.onMousedownShell}
+        @dblclick=${this.onDblclickShell}
+      >
         <div class="tabs">
           ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
           <div
             class="unused-space"
-            @mousedown=${this.onMousedownUnusedSpace}
-            @dblclick=${this.onDblclickUnusedSpace}
             @dragover=${e => this.onDragoverTab(e, this.tabs.length)}
             @dragleave=${e => this.onDragleaveTab(e, this.tabs.length)}
             @drop=${e => this.onDropTab(e, this.tabs.length)}
@@ -213,15 +215,19 @@ class ShellWindowTabs extends LitElement {
     return true
   }
 
-  onMousedownUnusedSpace (e) {
-    if (e.button === 0) {
+  onMousedownShell (e) {
+    const is = v => e.target.classList.contains(v)
+    if ((is('shell') || is('tabs') || is('unused-space')) && e.button === 0) {
       this.isDraggingWindow = true
       bg.beakerBrowser.setWindowDragModeEnabled(true)
     }
   }
 
-  onDblclickUnusedSpace (e) {
-    bg.beakerBrowser.maximizeWindow()
+  onDblclickShell (e) {
+    const is = v => e.target.classList.contains(v)
+    if (is('shell') || is('tabs') || is('unused-space')) {
+      bg.beakerBrowser.maximizeWindow()
+    }
   }
 }
 ShellWindowTabs.styles = css`
