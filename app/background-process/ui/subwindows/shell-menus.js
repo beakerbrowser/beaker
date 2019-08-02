@@ -68,7 +68,7 @@ export function reposition (parentWindow) {
       setBounds({
         x: 5,
         y: 72,
-        width: 400,
+        width: 230,
         height: 350
       })
     } else if (view.menuId === 'users') {

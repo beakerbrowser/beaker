@@ -74,104 +74,86 @@ class BrowserMenu extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper twocol">
-        <div class="column">
-          <div class="section">
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-              <i class="fas fa-home"></i>
-              <span class="label">Home</span>
-            </div>
+      <div class="wrapper">
+        ${autoUpdaterEl}
 
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-              <i class="far fa-window-restore"></i>
-              <span class="label">Applications</span>
-            </div>
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
+            <i class="far fa-window-maximize"></i>
+            <span class="label">New Window</span>
+            <span class="shortcut">${this.accelerators.newWindow}</span>
+          </div>
 
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-              <i class="far fa-copy"></i>
-              <span class="label">Documents</span>
-            </div>
-
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-              <i class="fas fa-music"></i>
-              <span class="label">Music</span>
-            </div>
-
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-              <i class="fas fa-image"></i>
-              <span class="label">Photos</span>
-            </div>
-
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-              <i class="fas fa-film"></i>
-              <span class="label">Videos</span>
-            </div>
-
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-              <i class="fas fa-sitemap"></i>
-              <span class="label">Websites</span>
-            </div>
+          <div class="menu-item" @click=${e => this.onOpenNewTab()}>
+            <i class="far fa-file"></i>
+            <span class="label">New Tab</span>
+            <span class="shortcut">${this.accelerators.newTab}</span>
           </div>
         </div>
-        <div class="column">
-          ${autoUpdaterEl}
 
-          <div class="section">
-            <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
-              <i class="far fa-window-maximize"></i>
-              <span class="label">New Window</span>
-              <span class="shortcut">${this.accelerators.newWindow}</span>
-            </div>
-
-            <div class="menu-item" @click=${e => this.onOpenNewTab()}>
-              <i class="far fa-file"></i>
-              <span class="label">New Tab</span>
-              <span class="shortcut">${this.accelerators.newTab}</span>
-            </div>
+        <div class="section">
+          <div class="menu-item" @click=${this.onCreateSite}>
+            <i class="fas fa-plus"></i>
+            <span class="label">Create New Website</span>
           </div>
 
-          <div class="section">
-            <div class="menu-item" @click=${e => this.onOpenFile()}>
-              <i></i>
-              <span class="label">Open File...</span>
-              <span class="shortcut">${this.accelerators.openFile}</span>
-            </div>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://start/websites')}>
+            <i class="fas fa-sitemap"></i>
+            <span class="label">My Websites</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://start/applications')}>
+            <i class="far fa-window-restore"></i>
+            <span class="label">Applications</span>
           </div>
 
-          <div class="section">
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library?view=bookmarks')}>
-              <i class="far fa-star"></i>
-              <span class="label">Bookmarks</span>
-            </div>
-
-            <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
-              <i class="fas fa-arrow-down"></i>
-              <span class="label">Downloads</span>
-              ${progressEl}
-            </div>
-
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
-              <i class="fa fa-history"></i>
-              <span class="label">History</span>
-              <span class="shortcut">${this.accelerators.history}</span>
-            </div>
-            
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-              <i class="fas fa-cog"></i>
-              <span class="label">Settings</span>
-            </div>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://start/bookmarks')}>
+            <i class="far fa-star"></i>
+            <span class="label">Bookmarks</span>
           </div>
 
-          <div class="section">
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
-              <i class="far fa-question-circle"></i>
-              <span class="label">Help</span>
-            </div>
+          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
+            <i class="fas fa-arrow-down"></i>
+            <span class="label">Downloads</span>
+            ${progressEl}
+          </div>
 
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new')}>
-              <i class="far fa-flag"></i>
-              <span class="label">Report an Issue</span>
-            </div>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
+            <i class="fa fa-history"></i>
+            <span class="label">History</span>
+            <span class="shortcut">${this.accelerators.history}</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://start/search')}>
+            <i class="fas fa-search"></i>
+            <span class="label">Search</span>
+          </div>
+          
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+            <i class="fas fa-cog"></i>
+            <span class="label">Settings</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenFile()}>
+            <i></i>
+            <span class="label">Open File...</span>
+            <span class="shortcut">${this.accelerators.openFile}</span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
+            <i class="far fa-question-circle"></i>
+            <span class="label">Help</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new')}>
+            <i class="far fa-flag"></i>
+            <span class="label">Report an Issue</span>
           </div>
         </div>
       </div>
@@ -255,16 +237,15 @@ class BrowserMenu extends LitElement {
     this.requestUpdate()
   }
 
-  async onCreateSite (e, template) {
+  async onCreateSite (e) {
     bg.shellMenus.close()
 
     // create a new archive
-    const url = await bg.datArchive.createArchive({template, prompt: false})
-    bg.shellMenus.createTab('beaker://editor/' + url)
-    bg.shellMenus.close()
+    const url = await bg.datArchive.createArchive()
+    bg.beakerBrowser.openUrl(url, {setActive: true, isSidebarActive: true, sidebarApp: 'site'})
   }
 
-  async onCreateSiteFromFolder (e) {
+  /*async onCreateSiteFromFolder (e) {
     bg.shellMenus.close()
 
     // ask user for folder
@@ -280,9 +261,9 @@ class BrowserMenu extends LitElement {
     await bg.archives.setLocalSyncPath(url, folder[0], {previewMode: true})
     bg.shellMenus.createTab('beaker://editor/' + url)
     bg.shellMenus.close()
-  }
+  }*/
 
-  async onShareFiles (e) {
+  /*async onShareFiles (e) {
     bg.shellMenus.close()
 
     // ask user for files
@@ -305,7 +286,7 @@ class BrowserMenu extends LitElement {
     // open the new archive in the editor
     bg.shellMenus.createTab('beaker://editor/' + url)
     bg.shellMenus.close()
-  }
+  }*/
 
   onOpenPage (e, url) {
     bg.shellMenus.createTab(url)
@@ -319,7 +300,7 @@ class BrowserMenu extends LitElement {
 }
 BrowserMenu.styles = [commonCSS, css`
 .wrapper {
-  width: 280px;
+  width: 230px;
 }
 
 .wrapper.twocol {
