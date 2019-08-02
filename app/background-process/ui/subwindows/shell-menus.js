@@ -106,13 +106,6 @@ export function reposition (parentWindow) {
         width: 220,
         height: 122
       })
-    } else if (view.menuId === 'site-info') {
-      setBounds({
-        x: 120,
-        y: 72,
-        width: 450,
-        height: 300
-      })
     }
   }
 }

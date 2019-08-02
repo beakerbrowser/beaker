@@ -9,7 +9,6 @@ import buttonResetCSS from './button-reset.css'
 class NavbarSiteInfo extends LitElement {
   static get properties () {
     return {
-      isMenuOpen: {type: Boolean},
       url: {type: String},
       siteTitle: {type: String},
       datDomain: {type: String},
@@ -22,7 +21,6 @@ class NavbarSiteInfo extends LitElement {
 
   constructor () {
     super()
-    this.isMenuOpen = false
     this.url = ''
     this.siteTitle = ''
     this.datDomain = ''
@@ -93,12 +91,10 @@ class NavbarSiteInfo extends LitElement {
       return html`<button class="hidden"></button>`
     }
 
-    const buttonCls = classMap({pressed: this.isMenuOpen})
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <button class=${buttonCls} @click=${this.onClickButton}>
+      <button @click=${this.onClickButton}>
         ${innerHTML}
-        <span class="fas fa-caret-down"></span>
       </button>
     `
   }
@@ -107,11 +103,7 @@ class NavbarSiteInfo extends LitElement {
   // =
 
   async onClickButton () {
-    this.isMenuOpen = true
-    await bg.views.toggleMenu('site-info', {
-      params: {url: this.url}
-    })
-    this.isMenuOpen = false
+    bg.views.toggleSidebar('active', 'site')
   }
 }
 NavbarSiteInfo.styles = [buttonResetCSS, css`

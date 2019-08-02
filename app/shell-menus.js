@@ -7,7 +7,6 @@ import './shell-menus/bookmark'
 import './shell-menus/donate'
 import './shell-menus/site-tools'
 import './shell-menus/preview-mode-tools'
-import './shell-menus/site-info'
 
 class MenusWrapper extends LitElement {
   static get properties () {
@@ -87,8 +86,6 @@ class MenusWrapper extends LitElement {
         return html`<site-tools-menu></site-tools-menu>`
       case 'preview-mode-tools':
         return html`<preview-mode-tools-menu></preview-mode-tools-menu>`
-      case 'site-info':
-        return html`<site-info-menu></site-info-menu>`
     }
     return html`<div></div>`
   }
