@@ -218,12 +218,12 @@ hr {
   display: grid;
   grid-gap: 20px;
   padding: 10px 20px;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   align-items: baseline;
 }
 
 .template {
-  width: 110px;
+  width: 160px;
   padding: 10px;
   border-radius: 4px;
 }
@@ -232,8 +232,8 @@ hr {
 .template .icon {
   display: block;
   margin: 0 auto;
-  width: 100px;
-  height: 80px;
+  width: 150px;
+  height: 120px;
   margin-bottom: 10px;
   object-fit: scale-down;
   background: #fff;
