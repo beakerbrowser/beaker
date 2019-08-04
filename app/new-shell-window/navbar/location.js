@@ -109,11 +109,11 @@ class NavbarLocation extends LitElement {
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderPreviewModeToolsBtn()}
-      <button class="text" @click=${this.onClickEdit}>
-        <span class="fas fa-fw fa-edit"></span> Edit
+      <button class="text" @click=${this.onClickSidebarToggle}>
+        <span class="far fa-fw fa-caret-square-left"></span>
       </button>
       <button class="text" @click=${this.onClickComments}>
-        <span class="far fa-fw fa-comment-alt"></span> ${this.numComments} ${pluralize(this.numComments, 'comment')}
+        <span class="far fa-fw fa-comment-alt"></span> ${this.numComments}
       </button>
       ${this.renderApplicationBtn()}
       ${this.renderSiteToolsBtn()}
@@ -397,8 +397,8 @@ class NavbarLocation extends LitElement {
     e.currentTarget.blur()
   }
 
-  onClickEdit (e) {
-    bg.views.toggleSidebar('active', 'editor')
+  onClickSidebarToggle (e) {
+    bg.views.toggleSidebar('active')
   }
 
   onClickComments (e) {

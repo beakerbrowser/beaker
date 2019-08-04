@@ -88,6 +88,7 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
+        ${this.createSiteBtn}
         ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
@@ -208,6 +209,14 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get createSiteBtn () {
+    return html`
+      <button @click=${this.onClickCreateSite}>
+        <span class="fa fa-plus"></span>
+      </button>
+    `
+  }
+
   get usersMenuBtn () {
     const cls = classMap({'users-btn': true, pressed: this.isUsersMenuOpen})
     return html`
@@ -255,6 +264,14 @@ class ShellWindowNavbar extends LitElement {
       }
     })
     this.isUsersMenuOpen = false    
+  }
+
+  async onClickCreateSite (e) {
+    var url = await bg.datArchive.createArchive()
+    bg.beakerBrowser.openUrl(url, {
+      setActive: true,
+      isSidebarActive: true
+    })
   }
 
   async onClickBrowserMenu (e) {

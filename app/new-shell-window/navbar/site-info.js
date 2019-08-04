@@ -57,7 +57,7 @@ class NavbarSiteInfo extends LitElement {
       const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
       if ((isHttps && !isInsecureResponse) || scheme === 'beaker:') {
         innerHTML = html`
-          <span class="fas secure fa-check"></span>
+          <span class="fas fa-info-circle"></span>
           <span class="label">${this.siteTitle}</span>
         `
       } else if (scheme === 'http:') {
@@ -72,16 +72,14 @@ class NavbarSiteInfo extends LitElement {
         `
       } else if (scheme === 'dat:') {
         innerHTML = html`
-          ${!isDatHashRegex.test(this.hostname) && this.datDomain === this.hostname
-            ? html`<span class="fas secure fa-check"></span>`
-            : ''}
+          <span class="fas fa-info-circle"></span>
+          ${this.isOwner ? html`
+            <span class="label darkbg">Your Site</span>
+          ` : ''}
           <span class="label">${this.siteTitle}</span>
           ${this.numFollowers > 0 ? html`
             <span class="far fa-user" style="color: gray;"></span>
             <span class="label" style="color: gray; margin-left: 0">${this.numFollowers}</span>
-          ` : ''}
-          ${this.isOwner ? html`
-            <span class="label darkbg">Your Site</span>
           ` : ''}
         `
       }
