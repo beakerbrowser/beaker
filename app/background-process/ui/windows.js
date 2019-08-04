@@ -82,10 +82,10 @@ export async function setup () {
       return
     }
 
-    // handle tab webcontents
+    // handle tab & sidebar webcontents
     const parentView = BrowserView.fromWebContents(wc)
     if (!parentView) return
-    const parentWindow = viewManager.findContainingWindow(parentView)
+    const parentWindow = findWebContentsParentWindow(parentView)
     if (!parentWindow) return
 
     // attach global keybindings
