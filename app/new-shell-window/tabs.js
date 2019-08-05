@@ -226,6 +226,8 @@ class ShellWindowTabs extends LitElement {
   onDblclickShell (e) {
     const is = v => e.target.classList.contains(v)
     if (is('shell') || is('tabs') || is('unused-space')) {
+      this.isDraggingWindow = false
+      bg.beakerBrowser.setWindowDragModeEnabled(false)
       bg.beakerBrowser.maximizeWindow()
     }
   }
