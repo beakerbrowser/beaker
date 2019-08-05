@@ -1,0 +1,19 @@
+<!-- This is the theme "template" file -->
+<!-- Sites that install your theme will render this file -->
+<!-- You embed the content of the visited page using the <ug-theme-content> element -->
+
+<!-- NOTE: your theme files will be mounted to /theme when installed to a site -->
+<!-- you should import all of your theme's content from the /theme subdirectory -->
+
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="/theme/theme.css"> <!-- imports your custom styles -->
+  </head>
+  <body>
+    <ug-theme-content><!-- the page content will be inserted here --></ug-theme-content>
+
+    <script src="dat://unwalled.garden/theme.js"></script> <!-- imports the ug-theme-content element -->
+    <script src="/theme/theme.js"></script> <!-- imports your custom scripts -->
+  </body>
+</html>

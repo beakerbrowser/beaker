@@ -16,7 +16,7 @@ class CreateArchiveModal extends LitElement {
     return {
       title: {type: String},
       description: {type: String},
-      currentTemplate: {type: String},
+      currentTheme: {type: String},
       errors: {type: Object}
     }
   }
@@ -29,8 +29,8 @@ class CreateArchiveModal extends LitElement {
     this.type = null
     this.links = null
     this.networked = true
-    this.templates = []
-    this.currentTemplate = 'blank'
+    this.themes = []
+    this.currentTheme = 'blank'
     this.errors = {}
 
     // export interface
@@ -45,8 +45,8 @@ class CreateArchiveModal extends LitElement {
     this.type = params.type ? Array.isArray(params.type) ? params.type[0] : params.type : ''
     this.links = params.links
     this.networked = ('networked' in params) ? params.networked : true
-    this.templates = BASIC_TEMPLATES.concat(
-      await bg.archives.list({type: 'unwalled.garden/template', isSaved: true})
+    this.themes = BASIC_TEMPLATES.concat(
+      await bg.archives.list({type: 'unwalled.garden/theme', isSaved: true})
     )
     await this.requestUpdate()
   }
@@ -56,7 +56,7 @@ class CreateArchiveModal extends LitElement {
 
   render () {
     const template = (url, title, thumb) => {
-      const cls = classMap({template: true, selected: url === this.currentTemplate})
+      const cls = classMap({template: true, selected: url === this.currentTheme})
       return html`
         <div class="${cls}" @click=${e => this.onClickTemplate(e, url)}>
           ${thumb ? thumb : html`<img src="asset:thumb:${url}">`}
@@ -72,9 +72,9 @@ class CreateArchiveModal extends LitElement {
 
         <form @submit=${this.onSubmit}>
           <div class="layout">
-            <div class="templates">
-              <div class="templates-selector">
-                ${this.templates.map(t => template(t.url, t.title, t.thumb))}
+            <div class="themes">
+              <div class="themes-selector">
+                ${this.themes.map(t => template(t.url, t.title, t.thumb))}
               </div>
             </div>
 
@@ -101,7 +101,7 @@ class CreateArchiveModal extends LitElement {
   // =
 
   async onClickTemplate (e, url) {
-    this.currentTemplate = url
+    this.currentTheme = url
     await this.updateComplete
     this.shadowRoot.querySelector('input').focus() // focus the title input
   }
@@ -133,10 +133,9 @@ class CreateArchiveModal extends LitElement {
 
     try {
       var url
-      if (!this.currentTemplate.startsWith('dat:')) {
+      if (!this.currentTheme.startsWith('dat:')) {
         // using builtin template
         url = await bg.datArchive.createArchive({
-          template: this.currentTemplate,
           title: this.title,
           description: this.description,
           type: '',
@@ -145,15 +144,21 @@ class CreateArchiveModal extends LitElement {
           prompt: false
         })
       } else {
-        // template forking from saved dat
-        await bg.datArchive.download(this.currentTemplate)
-        url = await bg.datArchive.forkArchive(this.currentTemplate, {
+        // using a theme
+        await bg.datArchive.download(this.currentTheme)
+        url = await bg.datArchive.createArchive({
           title: this.title,
           description: this.description,
           type: '',
           networked: this.networked,
           links: this.links,
           prompt: false
+        })
+        // TODO mount the theme instead of copying
+        await bg.datArchive.exportToArchive({
+          src: this.currentTheme,
+          dst: url + 'theme',
+          skipUndownloadedFiles: false
         })
       }
       this.cbs.resolve({url})
@@ -189,7 +194,7 @@ hr {
   user-select: none;
 }
 
-.layout .templates {
+.layout .themes {
   width: 624px;
 }
 
@@ -199,14 +204,14 @@ hr {
   padding: 20px;
 }
 
-.templates {
+.themes {
   height: 468px;
   overflow-y: auto;
   background: #fafafa;
   border-right: 1px solid #ddd;
 }
 
-.templates-heading {
+.themes-heading {
   margin: 20px 20px 0px;
   padding-bottom: 5px;
   border-bottom: 1px solid #ddd;
@@ -214,7 +219,7 @@ hr {
   font-size: 11px;
 }
 
-.templates-selector {
+.themes-selector {
   display: grid;
   grid-gap: 20px;
   padding: 10px 20px;
