@@ -30,7 +30,6 @@ class NavbarLocation extends LitElement {
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
       previewMode: {type: Boolean, attribute: 'preview-mode'},
       uncommittedChanges: {type: Number, attribute: 'uncommitted-changes'},
-      applicationState: {type: String, attribute: 'application-state'},
       isSiteToolsMenuOpen: {type: Boolean},
       isPreviewModeToolsMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
@@ -55,7 +54,6 @@ class NavbarLocation extends LitElement {
     this.availableAlternative = ''
     this.previewMode = false
     this.uncommittedChanges = 0
-    this.applicationState = ''
     this.isSiteToolsMenuOpen = false
     this.isPreviewModeToolsMenuOpen = false
     this.isDonateMenuOpen = false
@@ -115,7 +113,6 @@ class NavbarLocation extends LitElement {
       <button class="text" @click=${this.onClickComments}>
         <span class="far fa-fw fa-comment-alt"></span> ${this.numComments}
       </button>
-      ${this.renderApplicationBtn()}
       ${this.renderSiteToolsBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
@@ -288,32 +285,6 @@ class NavbarLocation extends LitElement {
         <span class="${cls}"></span>
       </button>
     `
-  }
-
-  renderApplicationBtn () {
-    if (this.applicationState === 'needs-update') {
-      const cls = classMap({
-        'application-btn': true,
-        update: true
-      })
-      return html`
-        <button class="${cls}">
-          <i class="fas fa-arrow-alt-circle-up"></i> Update required
-        </button>
-      `
-    }
-    if (this.applicationState === 'installable') {
-      const cls = classMap({
-        'application-btn': true,
-        install: true
-      })
-      return html`
-        <button class="${cls}" @click=${this.onClickInstall}>
-          <i class="fas fa-download"></i> Install this application
-        </button>
-      `
-    }
-    return ''
   }
 
   // events
@@ -494,11 +465,6 @@ class NavbarLocation extends LitElement {
     })
   }
 
-  async onClickInstall () {
-    if (await bg.applications.requestInstall(this.url)) {
-      bg.views.loadURL(this.activeTabIndex, this.url) // refresh page
-    }
-  }
 }
 NavbarLocation.styles = [buttonResetCSS, css`
 :host {
@@ -613,47 +579,6 @@ button.live-reload {
 button.live-reload .fa {
   color: #ffff91;
   -webkit-text-stroke: 1px #daba47;
-}
-
-button.application-btn {
-  width: auto;
-  padding: 0 5px;
-  font-size: 11px;
-  line-height: 12px;
-  margin: 2px;
-  border-radius: 2px;
-}
-
-button.application-btn.install {
-  border: 1px solid #2864dc;
-  background: #5289f7;
-  color: #fff;
-  box-shadow: 0 1px 1px rgba(0,0,0,.1);
-}
-
-button.application-btn.install:hover {
-  background: rgb(64, 119, 230);
-}
-
-button.application-btn.update {
-  border: 1px solid rgb(11, 150, 11);
-  background: rgb(12, 185, 12);
-  color: #fff;
-  box-shadow: 0 1px 1px rgba(0,0,0,.1);
-}
-
-button.application-btn.update:hover {
-  background: rgb(24, 171, 24);
-}
-
-button.application-btn .fa-download {
-  font-size: 12px;
-  margin: 0 2px;
-}
-
-button.application-btn .fa-arrow-alt-circle-up {
-  font-size: 10px;
-  margin: 0 1px;
 }
 
 .input-container {

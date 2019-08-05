@@ -99,8 +99,7 @@ const STATE_VARS = [
   'donateLinkHref',
   'isLiveReloading',
   'previewMode',
-  'uncommittedChanges',
-  'applicationState'
+  'uncommittedChanges'
 ]
 
 // globals
@@ -163,7 +162,6 @@ class View {
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
     this.uncommittedChanges = false // does the preview have uncommitted changes?
-    this.applicationState = '' // if an application, is 'installable' or 'needs-update'
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -618,7 +616,6 @@ class View {
     this.numFollowers = 0
     this.donateLinkHref = null
     this.uncommittedChanges = false
-    this.applicationState = ''
 
     if (!this.url.startsWith('dat://')) {
       this.datInfo = null
@@ -641,16 +638,6 @@ class View {
     let siteFollowers = await beakerCore.crawler.follows.list({filters: {topics: this.datInfo.url, authors: followAuthors}})
     this.numFollowers = siteFollowers.length
     if (!noEmit) this.emitUpdateState()
-    
-    if (this.datInfo.type && this.datInfo.type.includes('application')) {
-      let userId = (await beakerCore.users.get(userSession.url)).id
-      let appState = await beakerCore.applications.getApplicationState({userId, url: this.url})
-      if (!appState.installed) {
-        this.applicationState = 'installable'
-      }
-      // TODO check for 'needs-update'
-      if (!noEmit) this.emitUpdateState()
-    }
   }
 
   async getPageMetadata () {
