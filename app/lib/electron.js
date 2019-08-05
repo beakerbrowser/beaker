@@ -19,7 +19,7 @@ export function findWebContentsParentWindow (wc) {
     if (!win) win = BrowserWindow.getFocusedWindow()
   } else {
     win = BrowserWindow.fromWebContents(wc)
-    while (win.getParentWindow()) {
+    while (win && win.getParentWindow()) {
       win = win.getParentWindow()
     }
   }
