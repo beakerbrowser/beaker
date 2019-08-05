@@ -89,31 +89,22 @@ class BrowserMenu extends LitElement {
             <span class="label">New Tab</span>
             <span class="shortcut">${this.accelerators.newTab}</span>
           </div>
-        </div>
 
-        <div class="section">
           <div class="menu-item" @click=${this.onCreateSite}>
             <i class="fas fa-plus"></i>
-            <span class="label">Create New Website</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://start/websites')}>
-            <i class="fas fa-sitemap"></i>
-            <span class="label">My Websites</span>
+            <span class="label">New Website</span>
           </div>
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://start/applications')}>
-            <i class="far fa-window-restore"></i>
-            <span class="label">Applications</span>
+          <div class="menu-item" @click=${e => this.onOpenFile()}>
+            <i></i>
+            <span class="label">Open File...</span>
+            <span class="shortcut">${this.accelerators.openFile}</span>
           </div>
+        </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://start/bookmarks')}>
-            <i class="far fa-star"></i>
-            <span class="label">Bookmarks</span>
-          </div>
-
+        <div class="section">
           <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
             <i class="fas fa-arrow-down"></i>
             <span class="label">Downloads</span>
@@ -125,23 +116,10 @@ class BrowserMenu extends LitElement {
             <span class="label">History</span>
             <span class="shortcut">${this.accelerators.history}</span>
           </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://start/search')}>
-            <i class="fas fa-search"></i>
-            <span class="label">Search</span>
-          </div>
           
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
             <i class="fas fa-cog"></i>
             <span class="label">Settings</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenFile()}>
-            <i></i>
-            <span class="label">Open File...</span>
-            <span class="shortcut">${this.accelerators.openFile}</span>
           </div>
         </div>
 
