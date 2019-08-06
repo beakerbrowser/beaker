@@ -72,7 +72,7 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
               isReadonly,
               label: 'Follows API',
               documentation: 'dat://unwalled.garden/docs/api/follows',
-              perm: 'unwalled.garden/perm/follows',
+              perm: 'unwalled.garden/api/follows',
               caps: [
                 {id: 'read', description: 'Read the user\'s followers'},
                 {id: 'write', description: 'Follow and unfollow users'}
@@ -82,7 +82,7 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
               isReadonly,
               label: 'Posts API',
               documentation: 'dat://unwalled.garden/docs/api/posts',
-              perm: 'unwalled.garden/perm/posts',
+              perm: 'unwalled.garden/api/posts',
               caps: [
                 {id: 'read', description: 'Read the user\'s feed'},
                 {id: 'write', description: 'Post to the user\'s feed'}
@@ -92,7 +92,7 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
               isReadonly,
               label: 'Bookmarks API',
               documentation: 'dat://unwalled.garden/docs/api/bookmarks',
-              perm: 'unwalled.garden/perm/bookmarks',
+              perm: 'unwalled.garden/api/bookmarks',
               caps: [
                 {id: 'read', description: 'Read the user\'s bookmarks'},
                 {id: 'write', description: 'Create and edit the user\'s bookmarks'}
@@ -102,7 +102,7 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
               isReadonly,
               label: 'Comments API',
               documentation: 'dat://unwalled.garden/docs/api/comments',
-              perm: 'unwalled.garden/perm/comments',
+              perm: 'unwalled.garden/api/comments',
               caps: [
                 {id: 'read', description: 'Read the user\'s comments'},
                 {id: 'write', description: 'Create and edit the user\'s comments'}
@@ -112,7 +112,7 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
               isReadonly,
               label: 'Reactions API',
               documentation: 'dat://unwalled.garden/docs/api/reactions',
-              perm: 'unwalled.garden/perm/reactions',
+              perm: 'unwalled.garden/api/reactions',
               caps: [
                 {id: 'read', description: 'Read the user\'s reactions'},
                 {id: 'write', description: 'Create and edit the user\'s reactions'}
@@ -122,7 +122,7 @@ export function render (workingCheckout, isReadonly, archiveInfo, workingDatJson
               isReadonly,
               label: 'Votes API',
               documentation: 'dat://unwalled.garden/docs/api/votes',
-              perm: 'unwalled.garden/perm/votes',
+              perm: 'unwalled.garden/api/votes',
               caps: [
                 {id: 'read', description: 'Read the user\'s votes'},
                 {id: 'write', description: 'Create and edit the user\'s votes'}

@@ -1,6 +1,7 @@
 /* globals window */
 
 const URL = typeof window === 'undefined' ? require('url').URL : window.URL
+export const DAT_KEY_REGEX = /[0-9a-f]{64}/i
 
 export function ucfirst (str) {
   if (!str) str = ''
@@ -50,4 +51,18 @@ export function getHostname (str) {
   } catch (e) {
     return str
   }
+}
+
+export function toNiceUrl (str) {
+  if (!str) return ''
+  try {
+    var urlParsed = new URL(str)
+    if (DAT_KEY_REGEX.test(urlParsed.hostname)) {
+      urlParsed.hostname = `${urlParsed.hostname.slice(0, 4)}..${urlParsed.hostname.slice(-2)}`
+    }
+    return urlParsed.toString()
+  } catch (e) {
+    // ignore, not a url
+  }
+  return str
 }
