@@ -4,7 +4,6 @@ import * as beakerCore from '@beaker/core'
 const dat = beakerCore.dat
 const sitedata = beakerCore.dbs.sitedata
 import _get from 'lodash.get'
-import pda from 'pauls-dat-api'
 import parseDatURL from 'parse-dat-url'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as viewManager from './view-manager'
@@ -77,7 +76,7 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
     let archive = dat.library.getArchive(key)
     if (archive) {
       let {checkoutFS} = await dat.library.getArchiveCheckout(archive, urlp.version)
-      let manifest = await pda.readManifest(checkoutFS).catch(_ => {})
+      let manifest = await checkoutFS.pda.readManifest().catch(_ => {})
       let apis = _get(manifest, 'experimental.apis')
       if (apis && Array.isArray(apis)) {
         isOptedIn = apis.includes(labApi)
