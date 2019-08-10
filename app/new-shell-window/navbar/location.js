@@ -28,10 +28,7 @@ class NavbarLocation extends LitElement {
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
-      previewMode: {type: Boolean, attribute: 'preview-mode'},
-      uncommittedChanges: {type: Number, attribute: 'uncommitted-changes'},
       isSiteToolsMenuOpen: {type: Boolean},
-      isPreviewModeToolsMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean}
@@ -52,10 +49,7 @@ class NavbarLocation extends LitElement {
     this.loadError = null
     this.donateLinkHref = false
     this.availableAlternative = ''
-    this.previewMode = false
-    this.uncommittedChanges = 0
     this.isSiteToolsMenuOpen = false
-    this.isPreviewModeToolsMenuOpen = false
     this.isDonateMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
@@ -66,14 +60,6 @@ class NavbarLocation extends LitElement {
 
   get isDat () {
     return this.url.startsWith('dat://')
-  }
-
-  get isViewingPreview () {
-    try {
-      return (new URL(this.url)).hostname.includes('+preview')
-    } catch (e) {
-      return false
-    }
   }
 
   focusLocation () {
@@ -106,7 +92,6 @@ class NavbarLocation extends LitElement {
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
-      ${this.renderPreviewModeToolsBtn()}
       <button class="text" @click=${this.onClickSidebarToggle}>
         <span class="far fa-fw fa-caret-square-left"></span>
       </button>
@@ -203,22 +188,6 @@ class NavbarLocation extends LitElement {
     return html`
       <button @click=${this.onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
         ${zoomPct}%
-      </button>
-    `
-  }
-
-  renderPreviewModeToolsBtn () {
-    if (!this.isDat || !this.previewMode) {
-      return ''
-    }
-    var isViewingPreview = this.isViewingPreview
-    var versionLabel = isViewingPreview ? 'Preview' : 'Latest'
-    var hasChanges = (+this.uncommittedChanges !== 0)
-    var changeLabel = hasChanges ? `(${this.uncommittedChanges} ${pluralize(+this.uncommittedChanges, 'change')}${isViewingPreview ? '' : ' in preview'})` : ''
-    var cls = classMap({'preview-mode-tools': true, 'has-changes': hasChanges, pressed: this.isPreviewModeToolsMenuOpen})
-    return html`
-      <button class="${cls}" @click=${this.onClickPreviewModeToolsBtn}>
-        <i class="fas fa-circle"></i> Viewing: ${versionLabel} ${changeLabel}
       </button>
     `
   }
@@ -380,20 +349,6 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
-  async onClickPreviewModeToolsBtn (e) {
-    this.isPreviewModeToolsMenuOpen = true
-    var rect1 = this.getClientRects()[0]
-    var rect2 = e.currentTarget.getClientRects()[0]
-    await bg.views.toggleMenu('preview-mode-tools', {
-      bounds: {
-        top: (rect1.bottom|0),
-        left: (rect2.right|0)
-      },
-      params: {url: this.url}
-    })
-    this.isPreviewModeToolsMenuOpen = false
-  }
-
   async onClickSiteToolsBtn (e) {
     this.isSiteToolsMenuOpen = true
     var rect1 = this.getClientRects()[0]
@@ -524,45 +479,6 @@ button.zoom {
 
 button.zoom:hover {
   background: #eaeaea;
-}
-
-button.preview-mode-tools {
-  width: auto;
-  padding: 0 5px;
-  font-size: 11px;
-  line-height: 12px;
-  margin: 2px;
-  border-radius: 2px;
-  border: 1px solid #bbdefb;
-  color: #2471af;
-  background: #e2eef7;
-}
-
-button.preview-mode-tools:hover {
-  background: #d7e7f5;
-}
-
-button.preview-mode-tools.has-changes {
-  border-color: #f3de4a;
-  color: #695116;
-  background: #fff5c4;
-}
-
-button.preview-mode-tools.has-changes:hover {
-  background: #fbefb5;
-}
-
-button.preview-mode-tools .fas {
-  display: none;
-  font-size: 7px;
-  position: relative;
-  top: -1px;
-  margin-right: 2px;
-  color: #FFC107;
-}
-
-button.preview-mode-tools.has-changes .fas {
-  display: inline;
 }
 
 button.available-alternative {

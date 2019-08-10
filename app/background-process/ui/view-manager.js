@@ -97,9 +97,7 @@ const STATE_VARS = [
   'currentInpageFindResults',
   'availableAlternative',
   'donateLinkHref',
-  'isLiveReloading',
-  'previewMode',
-  'uncommittedChanges'
+  'isLiveReloading'
 ]
 
 // globals
@@ -161,7 +159,6 @@ class View {
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
-    this.uncommittedChanges = false // does the preview have uncommitted changes?
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -264,10 +261,6 @@ class View {
 
   get isLiveReloading () {
     return !!this.liveReloadEvents
-  }
-
-  get previewMode () {
-    return this.datInfo ? this.datInfo.userSettings.previewMode : false
   }
 
   get state () {
@@ -615,7 +608,6 @@ class View {
     this.peers = 0
     this.numFollowers = 0
     this.donateLinkHref = null
-    this.uncommittedChanges = false
 
     if (!this.url.startsWith('dat://')) {
       this.datInfo = null
@@ -627,11 +619,6 @@ class View {
     this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
     this.peers = this.datInfo.peers
     this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
-    if (this.previewMode) {
-      let archive = beakerCore.dat.library.getArchive(key)
-      let diff = await beakerCore.dat.library.getDaemon().fs_diffListing(archive, {compareContent: true, shallow: true})
-      this.uncommittedChanges = diff ? diff.length : 0
-    }
     let userSession = getUserSessionFor(this.browserWindow.webContents)
     let userFollows = await beakerCore.crawler.follows.list({filters: {authors: userSession.url}})
     let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
