@@ -92,9 +92,6 @@ class NavbarLocation extends LitElement {
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
-      <button class="text" @click=${this.onClickSidebarToggle}>
-        <span class="far fa-fw fa-caret-square-left"></span>
-      </button>
       <button class="text" @click=${this.onClickComments}>
         <span class="far fa-fw fa-comment-alt"></span> ${this.numComments}
       </button>
@@ -335,10 +332,6 @@ class NavbarLocation extends LitElement {
       selectionStart: e.currentTarget.selectionStart
     })
     e.currentTarget.blur()
-  }
-
-  onClickSidebarToggle (e) {
-    bg.views.toggleSidebar('active')
   }
 
   onClickComments (e) {

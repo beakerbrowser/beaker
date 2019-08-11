@@ -85,7 +85,7 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
-        ${this.createSiteBtn}
+        ${this.toggleSidebarBtn}
         ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
@@ -206,10 +206,10 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get createSiteBtn () {
+  get toggleSidebarBtn () {
     return html`
-      <button @click=${this.onClickCreateSite}>
-        <span class="fa fa-plus"></span>
+      <button class="text" @click=${this.onClickSidebarToggle}>
+        <span class="far fa-fw fa-caret-square-left"></span>
       </button>
     `
   }
@@ -263,12 +263,8 @@ class ShellWindowNavbar extends LitElement {
     this.isUsersMenuOpen = false    
   }
 
-  async onClickCreateSite (e) {
-    var url = await bg.datArchive.createArchive()
-    bg.beakerBrowser.openUrl(url, {
-      setActive: true,
-      isSidebarActive: true
-    })
+  onClickSidebarToggle (e) {
+    bg.views.toggleSidebar('active')
   }
 
   async onClickBrowserMenu (e) {
