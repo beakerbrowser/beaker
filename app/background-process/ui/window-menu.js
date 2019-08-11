@@ -337,7 +337,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Toggle Sidebar',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+B',
+        accelerator: 'Ctrl+`',
         click: function (item, win) {
           if (win) {
             let active = viewManager.getActive(win)

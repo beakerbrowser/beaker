@@ -16,6 +16,7 @@ import * as permissions from './permissions'
 import * as statusBarSubwindow from './subwindows/status-bar'
 import * as shellMenusSubwindow from './subwindows/shell-menus'
 import * as locationBarSubwindow from './subwindows/location-bar'
+import * as promptsSubwindow from './subwindows/prompts'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
 import * as sidebarsSubwindow from './subwindows/sidebars'
@@ -27,6 +28,7 @@ const subwindows = {
   statusBar: statusBarSubwindow,
   locationBar: locationBarSubwindow,
   menu: shellMenusSubwindow,
+  prompts: promptsSubwindow,
   permPrompt: permPromptSubwindow,
   modals: modalsSubwindow,
   sidebars: sidebarsSubwindow

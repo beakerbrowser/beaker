@@ -220,7 +220,7 @@ class BrowserMenu extends LitElement {
 
     // create a new archive
     const url = await bg.datArchive.createArchive()
-    bg.beakerBrowser.openUrl(url, {setActive: true, isSidebarActive: true, sidebarApp: 'site'})
+    bg.beakerBrowser.openUrl(url, {setActive: true, isSidebarActive: true, sidebarPanel: 'site'})
   }
 
   /*async onCreateSiteFromFolder (e) {

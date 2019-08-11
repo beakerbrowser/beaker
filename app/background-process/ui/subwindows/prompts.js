@@ -1,18 +1,17 @@
 /**
- * Modal
+ * Prompts
  *
  * NOTES
- * - Modal views are created as-needed, and desroyed when not in use
- * - Modal views are attached to individual BrowserView instances
- * - Modal views are shown and hidden based on whether its owning BrowserView is visible
+ * - Prompt views are created as-needed, and desroyed when not in use
+ * - Prompt views are attached to individual BrowserView instances
+ * - Prompt views are shown and hidden based on whether its owning BrowserView is visible
  */
 
 import path from 'path'
-import { app, BrowserWindow, BrowserView } from 'electron'
+import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
-import { ModalActiveError } from 'beaker-error-constants'
 import * as viewManager from '../view-manager'
-import modalsRPCManifest from '../../rpc-manifests/modals'
+import promptsRPCManifest from '../../rpc-manifests/prompts'
 import { findWebContentsParentWindow } from '../../../lib/electron'
 
 // globals
@@ -25,12 +24,6 @@ var views = {} // map of {[parentView.id] => BrowserView}
 // =
 
 export function setup (parentWindow) {
-  // listen for the basic auth login event
-  app.on('login', async function (e, webContents, request, authInfo, cb) {
-    e.preventDefault() // default is to cancel the auth; prevent that
-    var res = await create(webContents, 'basic-auth', authInfo)
-    cb(res.username, res.password)
-  })
 }
 
 export function destroy (parentWindow) {
@@ -52,7 +45,7 @@ export function reposition (parentWindow) {
   }
 }
 
-export async function create (webContents, modalName, params = {}) {
+export async function create (webContents, promptName, params = {}) {
   // find parent window
   var parentWindow = BrowserWindow.fromWebContents(webContents)
   var parentView = BrowserView.fromWebContents(webContents)
@@ -69,42 +62,26 @@ export async function create (webContents, modalName, params = {}) {
 
   // make sure a prompt window doesnt already exist
   if (parentView.id in views) {
-    throw new ModalActiveError()
+    return
   }
 
   // create the view
   var view = views[parentView.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
-      preload: path.join(__dirname, 'modals.build.js')
+      preload: path.join(__dirname, 'prompts.build.js')
     }
   })
-  view.modalName = modalName
-  parentWindow.addBrowserView(view)
+  view.promptName = promptName
+  if (viewManager.getActive(parentWindow).id === parentView.id) {
+    parentWindow.addBrowserView(view)
+  }
   setBounds(view, parentWindow)
   view.webContents.on('console-message', (e, level, message) => {
-    console.log('Modals window says:', message)
+    console.log('Prompts window says:', message)
   })
-  view.webContents.loadURL('beaker://modals/')
-  view.webContents.focus()
-
-  // run the modal flow
-  var result
-  var err
-  try {
-    result = await view.webContents.executeJavaScript(`runModal("${modalName}", ${JSON.stringify(params)})`)
-  } catch (e) {
-    err = e
-  }
-
-  // destroy the window
-  parentWindow.removeBrowserView(view)
-  view.destroy()
-  delete views[parentView.id]
-
-  // return/throw
-  if (err) throw err
-  return result
+  view.webContents.loadURL('beaker://prompts/')
+  await view.webContents.executeJavaScript(`showPrompt("${promptName}", ${JSON.stringify(params)})`)
 }
 
 export function get (parentView) {
@@ -113,9 +90,13 @@ export function get (parentView) {
 
 export function show (parentView) {
   if (parentView.id in views) {
+    var view = views[parentView.id]
     var win = viewManager.findContainingWindow(parentView)
-    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
-    if (win) win.addBrowserView(views[parentView.id])
+    if (!win) win = findWebContentsParentWindow(view.webContents)
+    if (win) {
+      win.addBrowserView(view)
+      setBounds(view, win)
+    }
   }
 }
 
@@ -131,7 +112,8 @@ export function close (parentView) {
   if (parentView.id in views) {
     var view = views[parentView.id]
     var win = viewManager.findContainingWindow(parentView)
-    win.removeBrowserView(view)
+    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
+    if (win) win.removeBrowserView(view)
     view.destroy()
     delete views[parentView.id]
   }
@@ -140,16 +122,24 @@ export function close (parentView) {
 // rpc api
 // =
 
-rpc.exportAPI('background-process-modals', modalsRPCManifest, {
+rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
+  async close () {
+    close(this.sender)
+  },
+
   async createTab (url) {
     var win = findWebContentsParentWindow(this.sender)
     viewManager.create(win, url, {setActive: true})
   },
 
-  async resizeSelf (dimensions) {
-    var view = BrowserView.fromWebContents(this.sender)
-    var parentWindow = findWebContentsParentWindow(this.sender)
-    setBounds(view, parentWindow, dimensions)
+  async loadURL (url) {
+    var win = findWebContentsParentWindow(this.sender)
+    viewManager.getActive(win).loadURL(url)
+  },
+
+  async openSidebar (panel) {
+    var win = findWebContentsParentWindow(this.sender)
+    viewManager.getActive(win).openSidebar(panel)
   }
 })
 
@@ -157,17 +147,11 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
 // =
 
 function getDefaultWidth (view) {
-  if (view.modalName === 'create-archive') {
-    return 960
-  }
-  return 500
+  return 360
 }
 
 function getDefaultHeight (view) {
-  if (view.modalName === 'create-archive') {
-    return 600
-  }
-  return 300
+  return 80
 }
 
 function setBounds (view, parentWindow, {width, height} = {}) {
@@ -175,8 +159,8 @@ function setBounds (view, parentWindow, {width, height} = {}) {
   width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
   view.setBounds({
-    x: Math.round(parentBounds.width / 2) - Math.round(width / 2) - MARGIN_SIZE, // centered
-    y: 72,
+    x: 0,
+    y: 80,
     width: width + (MARGIN_SIZE * 2),
     height: height + MARGIN_SIZE
   })

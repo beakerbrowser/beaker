@@ -107,6 +107,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://shell-menus/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'shell-menus.html'))
   }
+  if (requestUrl === 'beaker://prompts/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'prompts.html'))
+  }
   if (requestUrl === 'beaker://perm-prompt/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'perm-prompt.html'))
   }

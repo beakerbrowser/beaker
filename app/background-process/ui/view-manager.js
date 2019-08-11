@@ -17,6 +17,7 @@ import * as zoom from './views/zoom'
 import * as shellMenus from './subwindows/shell-menus'
 import * as locationBar from './subwindows/location-bar'
 import * as statusBar from './subwindows/status-bar'
+import * as prompts from './subwindows/prompts'
 import * as permPrompt from './subwindows/perm-prompt'
 import * as modals from './subwindows/modals'
 import * as sidebars from './subwindows/sidebars'
@@ -27,7 +28,6 @@ import { examineLocationInput } from '../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
 import { findImageBounds } from '../../lib/bg/image'
 import { ucfirst } from '../../lib/strings'
-import { DAT_HASH_REGEX } from '@beaker/core/lib/const'
 const sitedataDb = beakerCore.dbs.sitedata
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
@@ -295,6 +295,7 @@ class View {
 
     const win = this.browserWindow
     win.addBrowserView(this.browserView)
+    prompts.show(this.browserView)
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
     sidebars.show(this.browserView)
@@ -308,6 +309,7 @@ class View {
     if (this.isActive) {
       shellMenus.hide(this.browserWindow) // this will close the location menu if it's open
     }
+    prompts.hide(this.browserView)
     permPrompt.hide(this.browserView)
     modals.hide(this.browserView)
     sidebars.hide(this.browserView)
@@ -316,6 +318,7 @@ class View {
 
   destroy () {
     this.deactivate()
+    prompts.close(this.browserView)
     permPrompt.close(this.browserView)
     modals.close(this.browserView)
     this.browserView.destroy()
@@ -338,25 +341,33 @@ class View {
     this.emitUpdateState()
   }
 
-  async toggleSidebar (app) {
+  async openSidebar (panel) {
+    if (!this.isSidebarActive) {
+      this.toggleSidebar(panel)
+    } else {
+      this.updateSidebar(panel)
+    }
+  }
+
+  async toggleSidebar (panel) {
     if (!this.isSidebarActive) {
       // create sidebar
       let v = sidebars.create(this.browserView)
       if (this.isActive) sidebars.show(this.browserView)
-      v.webContents.on('did-finish-load', () => this.updateSidebar(app))
+      v.webContents.on('did-finish-load', () => this.updateSidebar(panel))
       this.isSidebarActive = true
     } else {
-      if (app) {
-        // if an app is passed, toggle off if already on the view
+      if (panel) {
+        // if an panel is passed, toggle off if already on the view
         // otherwise, just go to that view
         let v = sidebars.get(this)
         if (v) {
-          let currentApp = await v.webContents.executeJavaScript(`window.sidebarGetCurrentApp()`)
-          if (currentApp === app) {
+          let currentPanel = await v.webContents.executeJavaScript(`window.sidebarGetCurrentApp()`)
+          if (currentPanel === panel) {
             sidebars.close(this.browserView)
             this.isSidebarActive = false
           } else {
-            this.updateSidebar(app)
+            this.updateSidebar(panel)
           }
         }
       } else {
@@ -370,11 +381,11 @@ class View {
     this.emitUpdateState()
   }
 
-  updateSidebar (app) {
+  updateSidebar (panel) {
     var sidebarView = sidebars.get(this)
     if (sidebarView) {
       sidebarView.webContents.executeJavaScript(`
-        window.sidebarLoad("${this.url}", ${app ? `"${app}"` : undefined})
+        window.sidebarLoad("${this.url}", ${panel ? `"${panel}"` : undefined})
       `).catch(err => {
         console.log('Failed to load sidebar', err)
       })
@@ -671,6 +682,10 @@ class View {
   }
 
   async onDidNavigate (e, url, httpResponseCode) {
+    // remove any active subwindows
+    prompts.close(this.browserView)
+    modals.close(this.browserView)
+
     // read zoom
     zoom.setZoomFromSitedata(this)
 
@@ -686,6 +701,10 @@ class View {
     }
     if (this.isSidebarActive) {
       this.updateSidebar()
+    }
+    if (httpResponseCode === 404 && this.isOwner) {
+      // prompt to create a page on 404 for owned sites
+      prompts.create(this.browserView.webContents, 'create-page', {url: this.url})
     }
 
     // emit
@@ -903,7 +922,7 @@ export function create (
       focusLocationBar: false,
       isSidebarActive: false,
       tabIndex: undefined,
-      sidebarApp: undefined
+      sidebarPanel: undefined
     }
   ) {
   url = url || DEFAULT_URL
@@ -944,7 +963,7 @@ export function create (
     win.webContents.send('command', 'focus-location')
   }
   if (opts.isSidebarActive) {
-    view.toggleSidebar(opts.sidebarApp)
+    view.toggleSidebar(opts.sidebarPanel)
   }
 
   // create a new preloaded view if needed
@@ -1335,8 +1354,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     getByIndex(getWindow(this.sender), index).toggleLiveReloading(enabled)
   },
 
-  async toggleSidebar (index, app = undefined) {
-    getByIndex(getWindow(this.sender), index).toggleSidebar(app)
+  async toggleSidebar (index, panel = undefined) {
+    getByIndex(getWindow(this.sender), index).toggleSidebar(panel)
   },
 
   async toggleDevTools (index) {
