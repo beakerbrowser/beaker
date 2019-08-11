@@ -19,7 +19,6 @@ class SiteToolsMenu extends LitElement {
 
   reset () {
     this.tabState = null
-    this.appInfo = null
     this.submenu = ''
   }
 
@@ -36,15 +35,8 @@ class SiteToolsMenu extends LitElement {
     return this.datInfo && this.datInfo.userSettings && this.datInfo.userSettings.isSaved
   }
 
-  get isApplication () {
-    return this.isDat && Array.isArray(this.datInfo.type) && this.datInfo.type.includes('application')
-  }
-
   async init (params) {
     this.tabState = await bg.views.getTabState('active', {datInfo: true})
-    if (this.isApplication) {
-      this.appInfo = await bg.applications.getInfo(this.datInfo.url)
-    }
     await this.requestUpdate()
   }
 
@@ -65,7 +57,7 @@ class SiteToolsMenu extends LitElement {
           <hr>
           <div class="menu-item" @click=${this.onClickViewSource}>
             <i class="far fa-edit"></i>
-            Site editor
+            Edit Source
           </div>
           <div class="menu-item" @click=${this.onToggleLiveReloading}>
             <i class="fa fa-bolt"></i>
@@ -78,19 +70,6 @@ class SiteToolsMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         ${this.isDat ? html`
-          ${this.isApplication ? html`
-            ${this.appInfo.installed ? html`
-              <div class="menu-item" @click=${this.onClickUninstall}>
-                <i class="fas fa-ban"></i>
-                Uninstall <span class="appname">${this.datInfo.title || 'this application'}</span>
-              </div>
-            ` : html`
-              <div class="menu-item" @click=${this.onClickInstall}>
-                <i class="fas fa-download"></i>
-                Install <span class="appname">${this.datInfo.title || 'this application'}</span>
-              </div>
-            `}
-          ` : ''}
           ${this.isSaved ? html`
             <div class="menu-item" @click=${this.onToggleSaved}>
               <i class="fas fa-trash"></i>
@@ -143,20 +122,6 @@ class SiteToolsMenu extends LitElement {
     this.submenu = v
   }
 
-  async onClickInstall () {
-    var url = this.datInfo.url
-    bg.shellMenus.close()
-    if (await bg.applications.requestInstall(url)) {
-      bg.shellMenus.loadURL(url) // refresh page
-    }
-  }
-
-  async onClickUninstall () {
-    bg.applications.uninstall(this.datInfo.url)
-    bg.shellMenus.loadURL(this.datInfo.url) // refresh page
-    bg.shellMenus.close()
-  }
-
   async onToggleSaved () {
     if (this.isSaved) {
       await bg.archives.remove(this.datInfo.url)
@@ -172,7 +137,7 @@ class SiteToolsMenu extends LitElement {
   }
 
   async onClickViewSource () {
-    await bg.shellMenus.createTab(`beaker://editor/dat://${this.datInfo.key}`)
+    await bg.views.toggleSidebar('active', 'editor')
     bg.shellMenus.close()
   }
 
@@ -212,14 +177,6 @@ class SiteToolsMenu extends LitElement {
 SiteToolsMenu.styles = [commonCSS, css`
 .wrapper {
   padding: 4px 0;
-}
-
-.menu-item .appname {
-  margin-left: 4px;
-  max-width: 120px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 `]
 
