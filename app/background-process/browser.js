@@ -155,6 +155,7 @@ export const WEBAPI = {
   uploadFavicon,
   imageToIco,
 
+  openSidebar,
   toggleSidebar,
   toggleLiveReloading,
   setWindowDimensions,
@@ -262,9 +263,14 @@ export async function imageToIco (image) {
   return toIco(imageToPng, {resize: true})
 }
 
-async function toggleSidebar () {
+async function openSidebar (panel) {
   var win = findWebContentsParentWindow(this.sender)
-  viewManager.getActive(win).toggleSidebar()
+  viewManager.getActive(win).openSidebar(panel)
+}
+
+async function toggleSidebar (panel) {
+  var win = findWebContentsParentWindow(this.sender)
+  viewManager.getActive(win).toggleSidebar(panel)
 }
 
 export async function toggleLiveReloading (enabled) {
