@@ -634,11 +634,13 @@ class View {
     } catch (e) {
       this.datInfo = null
     }
-    let userSession = getUserSessionFor(this.browserWindow.webContents)
-    let userFollows = await beakerCore.crawler.follows.list({filters: {authors: userSession.url}})
-    let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
-    let siteFollowers = await beakerCore.crawler.follows.list({filters: {topics: this.datInfo.url, authors: followAuthors}})
-    this.numFollowers = siteFollowers.length
+    if (this.datInfo) {
+      let userSession = getUserSessionFor(this.browserWindow.webContents)
+      let userFollows = await beakerCore.crawler.follows.list({filters: {authors: userSession.url}})
+      let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
+      let siteFollowers = await beakerCore.crawler.follows.list({filters: {topics: this.datInfo.url, authors: followAuthors}})
+      this.numFollowers = siteFollowers.length
+    }
     if (!noEmit) this.emitUpdateState()
   }
 
