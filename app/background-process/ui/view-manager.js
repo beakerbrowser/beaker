@@ -626,10 +626,14 @@ class View {
     }
 
     // fetch new state
-    var key = await beakerCore.dat.dns.resolveName(this.url)
-    this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
-    this.peers = this.datInfo.peers
-    this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
+    try {
+      var key = await beakerCore.dat.dns.resolveName(this.url)
+      this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
+      this.peers = this.datInfo.peers
+      this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
+    } catch (e) {
+      this.datInfo = null
+    }
     let userSession = getUserSessionFor(this.browserWindow.webContents)
     let userFollows = await beakerCore.crawler.follows.list({filters: {authors: userSession.url}})
     let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
