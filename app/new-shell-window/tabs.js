@@ -413,7 +413,9 @@ ${spinnerCSS}
   color: var(--color-tab-add--hover);
 }
 
-.tab:not(.current):hover .tab-title {
+.tab:not(.current):hover .tab-title,
+.tab:not(.current):hover .fa-volume-up,
+.tab:not(.current):hover .fa-volume-mute {
   background: var(--bg-tab--hover);
 }
 
