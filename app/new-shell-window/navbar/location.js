@@ -42,6 +42,7 @@ class NavbarLocation extends LitElement {
     this.title = ''
     this.siteTitle = ''
     this.datDomain = ''
+    this.isOwner = false
     this.peers = 0
     this.numFollowers = 0
     this.numComments = 0
@@ -103,11 +104,16 @@ class NavbarLocation extends LitElement {
   }
 
   renderLocation () {
+    var url = this.url
+    if (url.startsWith('beaker://start')) {
+      url = ''
+    }
     return html`
       <div class="input-container">
         <input
           type="text"
-          value="${this.url}"
+          value="${url}"
+          placeholder="Search or enter your address here"
           @contextmenu=${this.onContextMenuLocation}
           @mousedown=${this.onMousedownLocation}
           @mouseup=${this.onMouseupLocation}
@@ -122,6 +128,13 @@ class NavbarLocation extends LitElement {
   }
 
   renderInputPretty () {
+    if (this.url.startsWith('beaker://start')) {
+      return html`
+        <div class="input-pretty">
+          <span class="syntax">Search or enter your address here</span>
+        </div>
+      `
+    }
     if (/^(dat|http|https|beaker):\/\//.test(this.url)) {
       try {
         var { protocol, host, pathname, search, hash } = new URL(this.url)
@@ -308,7 +321,7 @@ class NavbarLocation extends LitElement {
   }
 
   onFocusLocation (e) {
-    e.currentTarget.value = this.url
+    e.currentTarget.value = this.url.startsWith('beaker://start') ? '' : this.url
     e.currentTarget.setSelectionRange(0, this.url.length)
     this.isLocationFocused = true
   }
@@ -521,6 +534,10 @@ input {
 
 input:focus {
   outline: 0;
+}
+
+input::-webkit-input-placeholder {
+  font-weight: 400;
 }
 
 .input-pretty {
