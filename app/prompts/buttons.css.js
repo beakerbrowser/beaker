@@ -15,6 +15,10 @@ button:active {
   background: #eee;
 }
 
+button:hover {
+  background: #f5f5f5;
+}
+
 button.pressed {
   box-shadow: inset 0 1px 1px rgba(0,0,0,.5);
   background: #6d6d79;

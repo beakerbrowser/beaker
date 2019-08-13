@@ -160,7 +160,7 @@ function setBounds (view, parentWindow, {width, height} = {}) {
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
   view.setBounds({
     x: 0,
-    y: 80,
+    y: 85,
     width: width + (MARGIN_SIZE * 2),
     height: height + MARGIN_SIZE
   })
