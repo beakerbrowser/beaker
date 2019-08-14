@@ -369,29 +369,6 @@ export function buildWindowMenu (opts = {}) {
         reserved: true
       },
       {
-        label: 'Toggle Javascript Console',
-        enabled: !noWindows,
-        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+J' : 'Shift+CmdOrCtrl+J',
-        click: function (item, win) {
-          if (win) {
-            let active = viewManager.getActive(win)
-            if (active) {
-              const onOpened = () => {
-                const dtwc = active.webTools.devToolsWebContents
-                if (dtwc) dtwc.executeJavaScript('DevToolsAPI.showPanel("console")')
-              }
-              if (!active.webContents.isDevToolsOpened()) {
-                active.webContents.once('devtools-opened', onOpened)
-                active.webContents.toggleDevTools()
-              } else {
-                onOpened()
-              }
-            }
-          }
-        },
-        reserved: true
-      },
-      {
         label: 'Toggle Live Reloading',
         enabled: !!isDat,
         click: function (item, win) {
