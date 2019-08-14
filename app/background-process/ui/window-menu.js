@@ -337,11 +337,22 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Toggle Sidebar',
         enabled: !noWindows,
-        accelerator: 'Ctrl+`',
+        accelerator: 'CmdOrCtrl+B',
         click: function (item, win) {
           if (win) {
             let active = viewManager.getActive(win)
             if (active) active.toggleSidebar()
+          }
+        }
+      },
+      {
+        label: 'Toggle Terminal',
+        enabled: !noWindows,
+        accelerator: 'Ctrl+`',
+        click: function (item, win) {
+          if (win) {
+            let active = viewManager.getActive(win)
+            if (active) active.toggleSidebar('terminal')
           }
         }
       },
