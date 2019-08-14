@@ -62,7 +62,7 @@ class ShellWindowTabs extends LitElement {
   }
 
   renderTab (tab, index) {
-    const showFavicon = (
+    const showFavicon = Boolean(
       tab.isLoading
       || tab.isPinned
       || (tab.favicons && tab.favicons[0])
@@ -92,11 +92,11 @@ class ShellWindowTabs extends LitElement {
                 ? html`
                   <img
                     src="${tab.favicons[tab.favicons.length - 1]}"
-                    @load=${e => this.onFaviconLoad(e, index)}
+                    @load=${e => this.onFaviconLoad(e, index, tab.favicons)}
                     @error=${e => this.onFaviconError(e, index)}
                   >
                 `
-                : html`<img src="beaker-favicon:${tab.url}?cache=${Date.now()}">`
+                : html`<img src="asset:favicon:${tab.url}?cache=${Date.now()}">`
             }
           </div>
         ` : ''}
@@ -149,10 +149,9 @@ class ShellWindowTabs extends LitElement {
     bg.views.closeTab(index)
   }
 
-  async onFaviconLoad (e, index) {
+  async onFaviconLoad (e, index, favicons) {
     // favicon loaded successfuly, capture for cache
-    var tab = this.tabs[index]
-    var {dataUrl} = await urlsToData(tab.favicons)
+    var {dataUrl} = await urlsToData(favicons)
     bg.views.onFaviconLoadSuccess(index, dataUrl)
   }
 

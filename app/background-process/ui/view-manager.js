@@ -667,7 +667,6 @@ class View {
     // update state
     this.isLoading = true
     this.loadingURL = null
-    this.favicons = null
     this.isReceivingAssets = false
     this.wasDatTimeout = false
 
@@ -700,6 +699,7 @@ class View {
     this.loadError = null
     this.loadingURL = null
     this.isReceivingAssets = true
+    this.favicons = null
     await this.fetchIsBookmarked()
     /* dont await */ this.fetchAnnotations()
     await this.fetchDatInfo()
