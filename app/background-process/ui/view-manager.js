@@ -362,7 +362,7 @@ class View {
         // otherwise, just go to that view
         let v = sidebars.get(this)
         if (v) {
-          let currentPanel = await v.webContents.executeJavaScript(`window.sidebarGetCurrentApp()`)
+          let currentPanel = await v.webContents.executeJavaScript(`window.sidebarGetCurrentPanel()`)
           if (currentPanel === panel) {
             sidebars.close(this.browserView)
             this.isSidebarActive = false
@@ -389,6 +389,7 @@ class View {
       `).catch(err => {
         console.log('Failed to load sidebar', err)
       })
+      sidebarView.webContents.focus()
     }
   }
 
