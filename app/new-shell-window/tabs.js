@@ -467,6 +467,10 @@ ${spinnerCSS}
   background: #0f8aea;
 }
 
+.tab.current .tab-favicon {
+  top: 8.5px;
+}
+
 .tab.current .tab-title:after {
   /* adjust color */
   background: linear-gradient(to right, rgba(247,247,247,0), rgb(247, 247, 247));
