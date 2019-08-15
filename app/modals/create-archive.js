@@ -8,7 +8,7 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 
 const BASIC_TEMPLATES = [
-  {url: 'blank', title: 'Empty Website', thumb: html`<img src="beaker://assets/img/templates/website.png">`}
+  {url: 'blank', title: 'No Theme', thumb: html`<img src="beaker://assets/img/templates/website.png">`}
 ]
 
 class CreateArchiveModal extends LitElement {
