@@ -55,6 +55,7 @@ export function reposition (parentWindow) {
 export async function show (parentWindow, opts) {
   var view = get(parentWindow)
   if (view) {
+    view.opts = opts
     view.webContents.executeJavaScript(`setup()`)
     parentWindow.addBrowserView(view)
     view.setBounds({
@@ -120,14 +121,13 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
   },
 
   async resizeSelf (dimensions) {
-    // TODO readd?
-    // var view = BrowserWindow.fromWebContents(this.sender)
-    // if (process.platform === 'win32') {
-    //   // on windows, add space for the border
-    //   if (dimensions.width) dimensions.width += 2
-    //   if (dimensions.height) dimensions.height += 2
-    // }
-    // view.setBounds(dimensions)
+    var view = get(getParentWindow(this.sender))
+    view.setBounds({
+      x: view.opts.bounds.x - MARGIN_SIZE,
+      y: view.opts.bounds.y,
+      width: (dimensions.width || view.opts.bounds.width) + (MARGIN_SIZE*2),
+      height: (dimensions.height || 588) + MARGIN_SIZE
+    })
   }
 })
 

@@ -289,14 +289,9 @@ class LocationBar extends LitElement {
   }
 
   resize () {
-    // DISABLED
-    // this was causing major performance costs
-    // maybe we should use transparent windows instead?
-    // -prf
-
     // adjust height based on rendering
-    // var height = this.shadowRoot.querySelector('div').clientHeight
-    // bg.locationBar.resizeSelf({height})
+    var height = this.shadowRoot.querySelector('div').clientHeight
+    bg.locationBar.resizeSelf({height})
   }
 
   async queryAutocomplete () {
@@ -396,7 +391,7 @@ input:focus {
 }
 
 .autocomplete-results {
-  height: calc(100vh - 106px);
+  max-height: 482px;
   overflow-y: auto;
 }
 
