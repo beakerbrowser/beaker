@@ -235,6 +235,7 @@ ShellWindowTabs.styles = css`
 ${spinnerCSS}
 
 .shell {
+  font-family: sans-serif;
   background: var(--bg-background);
   position: relative;
   padding: 0 18px 0 0px;
@@ -310,6 +311,8 @@ ${spinnerCSS}
 
 .tab-title {
   color: var(--color-tab);
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
   padding: 11px 11px 9px 30px;
   height: 13px;
   overflow: hidden;
