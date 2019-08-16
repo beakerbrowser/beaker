@@ -495,7 +495,7 @@ class View {
       enable = !this.liveReloadEvents
     }
     if (this.liveReloadEvents) {
-      this.liveReloadEvents.close()
+      this.liveReloadEvents.destroy()
       this.liveReloadEvents = false
     } else if (this.datInfo) {
       let archive = beakerCore.dat.library.getArchive(this.datInfo.key)
@@ -520,7 +520,7 @@ class View {
 
   stopLiveReloading () {
     if (this.liveReloadEvents) {
-      this.liveReloadEvents.close()
+      this.liveReloadEvents.destroy()
       this.liveReloadEvents = false
       this.emitUpdateState()
     }
