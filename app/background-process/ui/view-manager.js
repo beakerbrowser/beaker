@@ -566,7 +566,11 @@ class View {
       `)
       let jsonpath = path.join(app.getAppPath(), 'json-renderer.build.js')
       jsonpath = jsonpath.replace('app.asar', 'app.asar.unpacked') // fetch from unpacked dir
-      this.webContents.executeJavaScript(await fs.readFile(jsonpath, 'utf8'))
+      try {
+        await this.webContents.executeJavaScript(await fs.readFile(jsonpath, 'utf8'))
+      } catch (e) {
+        // ignore
+      }
     }
   }
 
@@ -774,7 +778,11 @@ class View {
 
     // render failure page
     var errorPageHTML = errorPage(this.loadError)
-    this.webContents.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'')
+    try {
+      await this.webContents.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'')
+    } catch (e) {
+      // ignore
+    }
   }
 
   onUpdateTargetUrl (e, url) {
