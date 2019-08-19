@@ -19,8 +19,6 @@ class ShellWindowUI extends LitElement {
       tabs: {type: Array},
       isUpdateAvailable: {type: Boolean},
       numWatchlistNotifications: {type: Number},
-      userUrl: {type: String},
-      userThumbUrl: {type: String},
       isFullscreen: {type: Boolean}
     }
   }
@@ -30,8 +28,6 @@ class ShellWindowUI extends LitElement {
     this.tabs = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
-    this.userUrl = ''
-    this.userThumbUrl = 'asset:thumb:default'
     this.isFullscreen = false
     this.activeTabIndex = -1
 
@@ -73,7 +69,6 @@ class ShellWindowUI extends LitElement {
     // listen to state updates on the auto-updater
     var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())
     browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))
-    browserEvents.addEventListener('user-thumb-changed', this.onUserThumbChanged.bind(this))
 
     // listen to state updates on the watchlist
     var wlEvents = fromEventStream(bg.watchlist.createEventsStream())
@@ -87,10 +82,6 @@ class ShellWindowUI extends LitElement {
       this.stateHasChanged()
     })
     this.isUpdateAvailable = bg.beakerBrowser.getInfo().updater.state === 'downloaded'
-    bg.beakerBrowser.getUserSession().then(user => {
-      this.userUrl = user.url
-      this.userThumbUrl = `asset:thumb:${user.url}`
-    })
   }
 
   get activeTab () {
@@ -120,8 +111,6 @@ class ShellWindowUI extends LitElement {
         .activeTab=${this.activeTab}
         ?is-update-available=${this.isUpdateAvailable}
         num-watchlist-notifications="${this.numWatchlistNotifications}"
-        user-url="${this.userUrl}"
-        user-thumb-url="${this.userThumbUrl}"
       ></shell-window-navbar>
     `
   }
@@ -131,12 +120,6 @@ class ShellWindowUI extends LitElement {
 
   onUpdaterStateChange (e) {
     this.isUpdateAvailable = (e && e.state === 'downloaded')
-  }
-
-  onUserThumbChanged (e) {
-    if (e.url === this.userUrl) {
-      this.userThumbUrl = `asset:thumb:${e.url}?cache=${Date.now()}`
-    }
   }
 }
 

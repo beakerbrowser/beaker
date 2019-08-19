@@ -14,8 +14,6 @@ class ShellWindowNavbar extends LitElement {
       activeTab: {type: Object},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
-      userUrl: {type: String, attribute: 'user-url'},
-      userThumbUrl: {type: String, attribute: 'user-thumb-url'},
       isUsersMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
@@ -208,7 +206,7 @@ class ShellWindowNavbar extends LitElement {
 
   get toggleSidebarBtn () {
     return html`
-      <button class="text" @click=${this.onClickSidebarToggle}>
+      <button @click=${this.onClickSidebarToggle}>
         <span class="far fa-fw fa-caret-square-left"></span>
       </button>
     `
@@ -218,7 +216,7 @@ class ShellWindowNavbar extends LitElement {
     const cls = classMap({'users-btn': true, pressed: this.isUsersMenuOpen})
     return html`
       <button class=${cls} @click=${this.onClickUsersMenu}>
-        <img src="${this.userThumbUrl}?cache-buster=${Date.now()}">
+        <span class="fas fa-fw fa-user-circle"></span>
       </button>
     `
   }
@@ -285,12 +283,8 @@ ShellWindowNavbar.styles = css`
 ${buttonResetCSS}
 
 button {
-  width: 30px;
-  position: relative;
-}
-
-button.nav-arrow-btn {
   width: 28px;
+  position: relative;
 }
 
 button .fa,
@@ -336,19 +330,6 @@ svg.icon.refresh {
   color: #fff;
   font-weight: bold;
   padding: 0 3px;
-}
-
-.users-btn {
-  margin: 0 2px;
-}
-
-.users-btn img {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  object-fit: cover;
-  position: relative;
-  top: 1px;
 }
 `
 customElements.define('shell-window-navbar', ShellWindowNavbar)
