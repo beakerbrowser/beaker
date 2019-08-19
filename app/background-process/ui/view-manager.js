@@ -759,7 +759,7 @@ class View {
     this.captureScreenshot()
   }
 
-  onDidFailLoad (e, errorCode, errorDescription, validatedURL, isMainFrame) {
+  async onDidFailLoad (e, errorCode, errorDescription, validatedURL, isMainFrame) {
     // ignore if this is a subresource
     if (!isMainFrame) return
 
