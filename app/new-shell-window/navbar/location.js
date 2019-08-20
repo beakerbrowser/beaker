@@ -28,7 +28,6 @@ class NavbarLocation extends LitElement {
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
-      isSiteToolsMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean}
@@ -50,7 +49,6 @@ class NavbarLocation extends LitElement {
     this.loadError = null
     this.donateLinkHref = false
     this.availableAlternative = ''
-    this.isSiteToolsMenuOpen = false
     this.isDonateMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
@@ -101,7 +99,6 @@ class NavbarLocation extends LitElement {
       <button class="text" @click=${this.onClickComments}>
         <span class="far fa-fw fa-comment-alt"></span> ${this.numComments}
       </button>
-      ${this.renderSiteToolsBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
       ${this.renderBookmarkBtn()}
@@ -203,15 +200,6 @@ class NavbarLocation extends LitElement {
     return html`
       <button @click=${this.onClickZoom} title="Zoom: ${zoomPct}%" class="zoom">
         ${zoomPct}%
-      </button>
-    `
-  }
-
-  renderSiteToolsBtn () {
-    var cls = classMap({'site-tools': true, pressed: this.isSiteToolsMenuOpen})
-    return html`
-      <button class="${cls}" @click=${this.onClickSiteToolsBtn}>
-        <span class="fa fa-ellipsis-h"></span>
       </button>
     `
   }
@@ -362,20 +350,6 @@ class NavbarLocation extends LitElement {
 
   onClickZoom (e) {
     bg.views.resetZoom(this.activeTabIndex)
-  }
-
-  async onClickSiteToolsBtn (e) {
-    this.isSiteToolsMenuOpen = true
-    var rect1 = this.getClientRects()[0]
-    var rect2 = e.currentTarget.getClientRects()[0]
-    await bg.views.toggleMenu('site-tools', {
-      bounds: {
-        top: (rect1.bottom|0),
-        left: (rect2.right|0)
-      },
-      params: {url: this.url}
-    })
-    this.isSiteToolsMenuOpen = false
   }
 
   onClickAvailableAlternative (e) {

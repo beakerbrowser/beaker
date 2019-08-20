@@ -98,9 +98,19 @@ class BrowserMenu extends LitElement {
 
         <div class="section">
           <div class="menu-item" @click=${e => this.onOpenFile()}>
-            <i></i>
+            <i class="far fa-folder-open"></i>
             <span class="label">Open File...</span>
             <span class="shortcut">${this.accelerators.openFile}</span>
+          </div>
+
+          <div class="menu-item" @click=${this.onClickSavePage}>
+            <i class="far fa-file-image"></i>
+            Download page as file
+          </div>
+
+          <div class="menu-item" @click=${this.onClickPrint}>
+            <i class="fas fa-print"></i>
+            Print page
           </div>
         </div>
 
@@ -201,6 +211,17 @@ class BrowserMenu extends LitElement {
     if (files && files[0]) {
       bg.shellMenus.createTab('file://' + files[0])
     }
+  }
+
+  async onClickSavePage () {
+    var tabState = await bg.views.getTabState('active')
+    bg.beakerBrowser.downloadURL(tabState.url)
+    bg.shellMenus.close()
+  }
+
+  onClickPrint () {
+    bg.views.print('active')
+    bg.shellMenus.close()
   }
 
   onClickDownloads (e) {

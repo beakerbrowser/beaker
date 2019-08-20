@@ -83,7 +83,7 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
         ${this.watchlistBtn}
-        ${this.toggleSidebarBtn}
+        ${this.openTerminalBtn}
         ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
@@ -204,10 +204,10 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get toggleSidebarBtn () {
+  get openTerminalBtn () {
     return html`
-      <button @click=${this.onClickSidebarToggle}>
-        <span class="far fa-fw fa-caret-square-left"></span>
+      <button @click=${this.onClickOpenTerminal}>
+        <span class="fas fa-fw fa-terminal"></span>
       </button>
     `
   }
@@ -261,8 +261,8 @@ class ShellWindowNavbar extends LitElement {
     this.isUsersMenuOpen = false    
   }
 
-  onClickSidebarToggle (e) {
-    bg.views.toggleSidebar('active')
+  onClickOpenTerminal (e) {
+    bg.views.toggleSidebar('active', 'terminal')
   }
 
   async onClickBrowserMenu (e) {
@@ -309,6 +309,10 @@ svg.icon.refresh {
 .buttons {
   display: flex;
   padding: 0 8px;
+}
+
+button .fa-terminal {
+  font-size: 14px;
 }
 
 .fa-arrow-alt-circle-up {

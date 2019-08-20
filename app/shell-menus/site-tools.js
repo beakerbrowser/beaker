@@ -2,7 +2,6 @@
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import _get from 'lodash.get'
 import * as bg from './bg-process-rpc'
-import {writeToClipboard} from '../lib/fg/event-handlers'
 import commonCSS from './common.css'
 
 class SiteToolsMenu extends LitElement {
