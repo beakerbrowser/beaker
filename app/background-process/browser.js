@@ -138,7 +138,6 @@ export const WEBAPI = {
   setSetting,
   getUserSetupStatus,
   setUserSetupStatus,
-  getDefaultLocalPath,
   setStartPageBackgroundImage,
   getDefaultProtocolSettings,
   setAsDefaultProtocolClient,
@@ -601,24 +600,6 @@ async function gotoUrl (url) {
 
 function openFolder (folderPath) {
   shell.openExternal('file://' + folderPath)
-}
-
-async function getDefaultLocalPath (dir, title) {
-  // massage the title
-  title = typeof title === 'string' ? title : ''
-  title = title.replace(INVALID_SAVE_FOLDER_CHAR_REGEX, '')
-  if (!title.trim()) {
-    title = 'Untitled'
-  }
-  title = slugify(title).toLowerCase()
-
-  // find an available variant of title
-  let tryNum = 1
-  let titleVariant = title
-  while (await jetpack.existsAsync(path.join(dir, titleVariant))) {
-    titleVariant = `${title}-${++tryNum}`
-  }
-  return path.join(dir, titleVariant)
 }
 
 async function doWebcontentsCmd (method, wcId, ...args) {
