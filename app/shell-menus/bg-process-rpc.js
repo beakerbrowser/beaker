@@ -1,7 +1,6 @@
 import * as rpc from 'pauls-electron-rpc'
 import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
 import usersManifest from '@beaker/core/web-apis/manifests/internal/users'
-import applicationsManifest from '@beaker/core/web-apis/manifests/internal/applications'
 import archivesManifest from '@beaker/core/web-apis/manifests/internal/archives'
 import bookmarksManifest from '@beaker/core/web-apis/manifests/external/bookmarks'
 import historyManifest from '@beaker/core/web-apis/manifests/internal/history'
@@ -15,7 +14,6 @@ import followsManifest from '@beaker/core/web-apis/manifests/external/unwalled-g
 
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)
 export const users = rpc.importAPI('users', usersManifest)
-export const applications = rpc.importAPI('applications', applicationsManifest)
 export const archives = rpc.importAPI('archives', archivesManifest)
 export const bookmarks = rpc.importAPI('bookmarks', bookmarksManifest)
 export const history = rpc.importAPI('history', historyManifest)
