@@ -21,7 +21,7 @@ import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 // =
 
 const MARGIN_SIZE = 10
-const IS_RIGHT_ALIGNED = ['browser', 'users', 'bookmark', 'donate', 'site-tools', 'preview-mode-tools']
+const IS_RIGHT_ALIGNED = ['browser', 'users', 'bookmark', 'donate', 'site-tools']
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -98,13 +98,6 @@ export function reposition (parentWindow) {
         y: view.boundsOpt.top,
         width: 220,
         height: 152
-      })
-    } else if (view.menuId === 'preview-mode-tools') {
-      setBounds({
-        x: parentBounds.width - view.boundsOpt.left,
-        y: view.boundsOpt.top,
-        width: 220,
-        height: 122
       })
     }
   }

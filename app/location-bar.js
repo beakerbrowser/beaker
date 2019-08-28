@@ -536,9 +536,8 @@ customElements.define('location-bar', LocationBar)
 // =
 
 const TRAILING_SLASH_REGEX = /(\/$)/
-const PREVIEW_REGEX = /(\+preview)/
 function normalizeURL (str = '') {
-  return str.replace(TRAILING_SLASH_REGEX, '').replace(PREVIEW_REGEX, '')
+  return str.replace(TRAILING_SLASH_REGEX, '')
 }
 
 function makeSafe (str = '') {
