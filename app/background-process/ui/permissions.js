@@ -105,14 +105,6 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
     return cb(true)
   }
 
-  // HACK
-  // until the applications system can be properly implemented,
-  // allow all requests from dat://beaker.social/, our default social app
-  // -prf
-  if (url.startsWith('dat://beaker.social/') && permission === 'dangerousAppControl') {
-    return cb(true)
-  }
-
   // look up the containing window
   var {win, view} = getContaining(webContents)
   if (!win || !view) {
