@@ -91,13 +91,12 @@ export async function setup () {
   // create a new user if none exists
   var defaultUser = await beakerCore.users.getDefault()
   if (!defaultUser) {
-    let newUserUrl = await beakerCore.dat.library.createNewArchive({
+    let archive = await beakerCore.dat.archives.createNewArchive({
       title: 'Anonymous',
       type: 'unwalled.garden/person'
     })
-    let archive = beakerCore.dat.library.getArchive(newUserUrl)
     await archive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
-    await beakerCore.users.add('anonymous', newUserUrl, true)
+    await beakerCore.users.add('anonymous', archive.url, true)
   }
 
   // wire up events

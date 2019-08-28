@@ -18,7 +18,7 @@ export default function registerContextMenu () {
       // var isOwner = false
       // if (isDat) {
       //   let key = await beakerCore.dat.dns.resolveName(props.pageURL)
-      //   let archive = beakerCore.dat.library.getArchive(key)
+      //   let archive = beakerCore.dat.archives.getArchive(key)
       //   isOwner = archive && archive.writable
       // }
 

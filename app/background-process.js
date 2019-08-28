@@ -141,7 +141,7 @@ app.on('quit', () => {
 
 app.on('custom-ready-to-show', () => {
   // our first window is ready to show, do any additional setup
-  beakerCore.dat.library.loadSavedArchives()
+  beakerCore.dat.archives.loadSavedArchives()
 })
 
 // only run one instance

@@ -498,11 +498,11 @@ class View {
       this.liveReloadEvents.destroy()
       this.liveReloadEvents = false
     } else if (this.datInfo) {
-      let archive = beakerCore.dat.library.getArchive(this.datInfo.key)
+      let archive = beakerCore.dat.archives.getArchive(this.datInfo.key)
       if (!archive) return
 
       let {version} = parseDatURL(this.url)
-      let {checkoutFS} = await beakerCore.dat.library.getArchiveCheckout(archive, version)
+      let {checkoutFS} = await beakerCore.dat.archives.getArchiveCheckout(archive, version)
       this.liveReloadEvents = checkoutFS.pda.watch()
 
       let event = (this.datInfo.isOwner) ? 'changed' : 'invalidated'
@@ -605,11 +605,11 @@ class View {
     this.numComments = 0
 
     var userSession = getUserSessionFor(this.browserWindow.webContents)
-    var followedUsers = (await beakerCore.crawler.follows.list({filters: {authors: userSession.url}})).map(({topic}) => topic.url)
+    var followedUsers = (await beakerCore.uwg.follows.list({filters: {authors: userSession.url}})).map(({topic}) => topic.url)
     var authors = [userSession.url].concat(followedUsers)
 
     // TODO replace with native 'count' method
-    var cs = await beakerCore.crawler.comments.thread(this.url.replace('+preview', ''), {filters: {authors}})
+    var cs = await beakerCore.uwg.comments.thread(this.url, {filters: {authors}})
     function countComments (comments) {
       return comments.reduce((acc, comment) => acc + 1 + (comment.replies ? countComments(comment.replies) : 0), 0)
     }
@@ -634,7 +634,7 @@ class View {
     // fetch new state
     try {
       var key = await beakerCore.dat.dns.resolveName(this.url)
-      this.datInfo = await beakerCore.dat.library.getArchiveInfo(key)
+      this.datInfo = await beakerCore.dat.archives.getArchiveInfo(key)
       this.peers = this.datInfo.peers
       this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
     } catch (e) {
@@ -642,9 +642,9 @@ class View {
     }
     if (this.datInfo) {
       let userSession = getUserSessionFor(this.browserWindow.webContents)
-      let userFollows = await beakerCore.crawler.follows.list({filters: {authors: userSession.url}})
+      let userFollows = await beakerCore.uwg.follows.list({filters: {authors: userSession.url}})
       let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
-      let siteFollowers = await beakerCore.crawler.follows.list({filters: {topics: this.datInfo.url, authors: followAuthors}})
+      let siteFollowers = await beakerCore.uwg.follows.list({filters: {topics: this.datInfo.url, authors: followAuthors}})
       this.numFollowers = siteFollowers.length
     }
     if (!noEmit) this.emitUpdateState()
@@ -854,27 +854,25 @@ export function setup () {
       }
     }
   }
-  beakerCore.dat.library.createEventStream().on('data', ([evt, {details}]) => {
-    if (evt === 'updated') {
-      iterateViews(view => {
-        if (view.datInfo && view.datInfo.url === details.url) {
-          view.refreshState()
-        }
-      })
-    }
-    if (evt === 'network-changed') {
-      iterateViews(view => {
-        if (view.datInfo && view.datInfo.url === details.url) {
-          // update peer count
-          view.peers = details.connections
-          view.emitUpdateState()
-        }
-        if (view.wasDatTimeout && view.url.startsWith(details.url)) {
-          // refresh if this was a timed-out dat site (peers have been found)
-          view.webContents.reload()
-        }
-      })
-    }
+  beakerCore.dat.archives.on('updated', ({details}) => {
+    iterateViews(view => {
+      if (view.datInfo && view.datInfo.url === details.url) {
+        view.refreshState()
+      }
+    })
+  })
+  beakerCore.dat.archives.on('network-changed', ({details}) => {
+    iterateViews(view => {
+      if (view.datInfo && view.datInfo.url === details.url) {
+        // update peer count
+        view.peers = details.connections
+        view.emitUpdateState()
+      }
+      if (view.wasDatTimeout && view.url.startsWith(details.url)) {
+        // refresh if this was a timed-out dat site (peers have been found)
+        view.webContents.reload()
+      }
+    })
   })
 }
 
@@ -1255,7 +1253,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var win = getWindow(this.sender)
     var view = getByIndex(win, tab)
     if (view && view.datInfo) {
-      var networkStats = await beakerCore.dat.library.getArchiveNetworkStats(view.datInfo.key)
+      var networkStats = await beakerCore.dat.archives.getArchiveNetworkStats(view.datInfo.key)
       return {
         peers: view.peers,
         networkStats

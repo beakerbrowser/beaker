@@ -73,9 +73,9 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
 
     // check dat.json for opt-in
     let isOptedIn = false
-    let archive = dat.library.getArchive(key)
+    let archive = dat.archives.getArchive(key)
     if (archive) {
-      let {checkoutFS} = await dat.library.getArchiveCheckout(archive, urlp.version)
+      let {checkoutFS} = await dat.archives.getArchiveCheckout(archive, urlp.version)
       let manifest = await checkoutFS.pda.readManifest().catch(_ => {})
       let apis = _get(manifest, 'experimental.apis')
       if (apis && Array.isArray(apis)) {

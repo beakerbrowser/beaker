@@ -50,7 +50,7 @@ export function setup () {
       let datResolvedUrl = url
       if (url.startsWith('dat://')) {
         datResolvedUrl = await dat.dns.resolveName(url)
-        datfs = dat.library.getArchive(datResolvedUrl) // (only try if the dat is loaded)
+        datfs = dat.archives.getArchive(datResolvedUrl) // (only try if the dat is loaded)
       }
       if (datfs) {
         // try .ico
