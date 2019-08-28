@@ -2,7 +2,7 @@
  * @description
  * Takes in a bitmap buffer (from NativeImage) and finds the dimensions
  * of the actual image content, effectively trimming all whitespace.
- * 
+ *
  * @param {Buffer} buf
  * @param {Object} size
  * @param {number} size.width

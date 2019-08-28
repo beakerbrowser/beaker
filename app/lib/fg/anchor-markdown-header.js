@@ -1,7 +1,7 @@
 /**
 https://github.com/thlorenz/anchor-markdown-header
 
-Copyright 2013 Thorsten Lorenz. 
+Copyright 2013 Thorsten Lorenz.
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person
@@ -26,32 +26,30 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
  */
 
-import emojiRegex from 'emoji-regex';
+import emojiRegex from 'emoji-regex'
 
-function basicGithubId(text) {
-  return text.replace(/ /g,'-')
+function basicGithubId (text) {
+  return text.replace(/ /g, '-')
     // escape codes
     .replace(/%([abcdef]|\d){2,2}/ig, '')
     // single chars that are removed
-    .replace(/[\/?!:\[\]`.,()*"';{}+=<>~\$|#@&–—]/g,'')
+    .replace(/[\/?!:\[\]`.,()*"';{}+=<>~\$|#@&–—]/g, '')
     // CJK punctuations that are removed
     .replace(/[。？！，、；：“”【】（）〔〕［］﹃﹄“ ”‘’﹁﹂—…－～《》〈〉「」]/g, '')
-    ;
-
 }
 
-function getGithubId(text, repetition) {
-  text = basicGithubId(text);
+function getGithubId (text, repetition) {
+  text = basicGithubId(text)
 
   // If no repetition, or if the repetition is 0 then ignore. Otherwise append '-' and the number.
   if (repetition) {
-    text += '-' + repetition;
+    text += '-' + repetition
   }
 
   // Strip emojis
   text = text.replace(emojiRegex(), '')
 
-  return text;
+  return text
 }
 
 /**
@@ -63,33 +61,33 @@ function getGithubId(text, repetition) {
  * @param repetition  {Number} The nth occurrence of this header text, starting with 0. Not required for the 0th instance.
  * @return            {String} The header anchor id
  */
-export default function anchorMarkdownHeader(header, repetition) {
-  var replace;
-  var customEncodeURI = encodeURI;
+export default function anchorMarkdownHeader (header, repetition) {
+  var replace
+  var customEncodeURI = encodeURI
 
-  replace = getGithubId;
-  customEncodeURI = function(uri) {
-    var newURI = encodeURI(uri);
+  replace = getGithubId
+  customEncodeURI = function (uri) {
+    var newURI = encodeURI(uri)
 
     // encodeURI replaces the zero width joiner character
     // (used to generate emoji sequences, e.g.Female Construction Worker 👷🏼‍♀️)
     // github doesn't URL encode them, so we replace them after url encoding to preserve the zwj character.
-    return newURI.replace(/%E2%80%8D/g, '\u200D');
-  };
-
-  function asciiOnlyToLowerCase(input) {
-    var result = '';
-    for (var i = 0; i < input.length; ++i) {
-      if (input[i] >= 'A' && input[i] <= 'Z') {
-        result += input[i].toLowerCase();
-      } else {
-        result += input[i];
-      }
-    }
-    return result;
+    return newURI.replace(/%E2%80%8D/g, '\u200D')
   }
 
-  var href = replace(asciiOnlyToLowerCase(header.trim()), repetition);
+  function asciiOnlyToLowerCase (input) {
+    var result = ''
+    for (var i = 0; i < input.length; ++i) {
+      if (input[i] >= 'A' && input[i] <= 'Z') {
+        result += input[i].toLowerCase()
+      } else {
+        result += input[i]
+      }
+    }
+    return result
+  }
 
-  return customEncodeURI(href);
+  var href = replace(asciiOnlyToLowerCase(header.trim()), repetition)
+
+  return customEncodeURI(href)
 };

@@ -3,7 +3,7 @@
  *
  * Helper protocol to serve site favicons and avatars from the cache.
  * Examples:
- * 
+ *
  *  - asset:favicon:dat://beakerbrowser.com
  *  - asset:favicon-32:dat://beakerbrowser.com
  *  - asset:thumb:dat://beakerbrowser.com

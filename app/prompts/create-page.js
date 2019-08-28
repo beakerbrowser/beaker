@@ -78,7 +78,7 @@ class CreatePagePrompt extends LitElement {
         // ignore, dir already exists (probably)
       }
     }
-    
+
     // create the file
     await bg.datArchive.writeFile(urlp.hostname, path, '')
     bg.prompts.openSidebar('editor')

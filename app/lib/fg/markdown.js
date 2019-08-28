@@ -61,4 +61,3 @@ export default function create ({allowHTML, useHeadingIds, useHeadingAnchors, hr
 
   return md
 }
-

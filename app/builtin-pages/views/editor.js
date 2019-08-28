@@ -450,7 +450,7 @@ function update () {
           </button>
         </div>
         ${settingsForm.render(workingCheckout, isReadonly, archive.info, workingDatJson)}
-      </div>`,
+      </div>`
     )
   } else {
     yo.update(
@@ -468,7 +468,7 @@ function update () {
             <span class="fas fa-ellipsis-h"></span>
           </button>
         </div>
-      </div>`,
+      </div>`
     )
   }
   yo.update(
@@ -1057,7 +1057,7 @@ function onClickArchiveMenu (e) {
       _get(archive, 'info.userSettings.isSaved')
         ? {icon: 'fas fa-trash', label: 'Remove from my websites', click: onArchiveUnsave}
         : {icon: 'fas fa-save', label: 'Add to my websites', click: onArchiveSave},
-      {icon: 'link', label: 'Copy link', click: () => {writeToClipboard(archive.url); toast.create('Link copied to clipboard')}},
+      {icon: 'link', label: 'Copy link', click: () => { writeToClipboard(archive.url); toast.create('Link copied to clipboard') }},
       {icon: 'far fa-clone', label: 'Duplicate this site', click: onFork}
     ]
   })

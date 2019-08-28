@@ -408,7 +408,6 @@ class NavbarLocation extends LitElement {
       params: {url: this.url, bookmarkIsNew}
     })
   }
-
 }
 NavbarLocation.styles = [buttonResetCSS, css`
 :host {

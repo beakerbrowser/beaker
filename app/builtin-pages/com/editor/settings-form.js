@@ -519,7 +519,7 @@ async function onSubmitSettings (e, workingCheckout, workingDatJson) {
         workingDatJson.application.permissions[perm] = Array.from(capset)
       }
     }
-    
+
     // write manifest
     await workingCheckout.writeFile('/dat.json', JSON.stringify(workingDatJson, null, 2))
 
@@ -545,7 +545,7 @@ function onToggleExpanded (id) {
       document.querySelector(`section#${expandedSection}`).classList.add('collapsed')
     } catch (e) { /* ignore */ }
   }
-  
+
   if (expandedSection === id) expandedSection = false
   else expandedSection = id
   sessionStorage.expandedSection = expandedSection

@@ -22,7 +22,6 @@ var logger = new Logger()
 var datCache = new DatCache()
 var crawlerStatus = new CrawlerStatus()
 
-
 // main
 // =
 

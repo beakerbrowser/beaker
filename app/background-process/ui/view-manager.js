@@ -376,7 +376,7 @@ class View {
       }
     }
     this.resize()
-    
+
     // emit
     this.emitUpdateState()
   }
@@ -488,7 +488,6 @@ class View {
 
   // live reloading
   // =
-
 
   async toggleLiveReloading (enable) {
     if (typeof enable === 'undefined') {
