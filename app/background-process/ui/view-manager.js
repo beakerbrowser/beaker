@@ -396,34 +396,39 @@ class View {
   async captureScreenshot () {
     // capture screenshot on the root page of dat & http sites
     var urlp = parseDatURL(this.url)
-    if (['dat:', 'http:', 'https:'].includes(urlp.protocol) && urlp.pathname === '/') { 
-      // wait a sec to allow loading to finish
-      await new Promise(r => setTimeout(r, 1e3))
+    if (['dat:', 'http:', 'https:'].includes(urlp.protocol) && urlp.pathname === '/') {
+      try {
+        // wait a sec to allow loading to finish
+        await new Promise(r => setTimeout(r, 1e3))
 
-      // capture the page
-      var image = await this.browserView.webContents.capturePage()
-      var orgsize = image.getSize()
-      var bounds = findImageBounds(image.toBitmap(), orgsize)
+        // capture the page
+        var image = await this.browserView.webContents.capturePage()
+        var orgsize = image.getSize()
+        var bounds = findImageBounds(image.toBitmap(), orgsize)
 
-      // adjust the bounds to match the 100x80 aspect ratio
-      if (bounds.width < bounds.height) {
-        // adjust width
-        bounds.right = bounds.left + (bounds.height / .8)|0
-      } else {
-        // adjust height
-        bounds.bottom = bounds.top + (bounds.width * .8)|0
+        // adjust the bounds to match the 100x80 aspect ratio
+        if (bounds.width < bounds.height) {
+          // adjust width
+          bounds.right = bounds.left + (bounds.height / 0.8)|0
+        } else {
+          // adjust height
+          bounds.bottom = bounds.top + (bounds.width * 0.8)|0
+        }
+
+        // give some margin
+        bounds.left = Math.max(0, bounds.left - 20)
+        bounds.right = Math.min(orgsize.width, bounds.right + 20)
+        bounds.top = Math.max(0, bounds.top - 20)
+        bounds.bottom = Math.min(orgsize.height, bounds.bottom + 20)
+
+        image = image
+          .crop(bounds)
+          .resize({width: 200, height: 160})
+        await sitedataDb.set(this.url, 'screenshot', image.toDataURL())
+      } catch (e) {
+        // ignore, can happen if the view was closed during wait
+        console.log('Failed to capture page screenshot', e)
       }
-
-      // give some margin
-      bounds.left = Math.max(0, bounds.left - 20)
-      bounds.right = Math.min(orgsize.width, bounds.right + 20)
-      bounds.top = Math.max(0, bounds.top - 20)
-      bounds.bottom = Math.min(orgsize.height, bounds.bottom + 20)
-
-      image = image
-        .crop(bounds)
-        .resize({width: 200, height: 160})
-      await sitedataDb.set(this.url, 'screenshot', image.toDataURL())
     }
   }
 
