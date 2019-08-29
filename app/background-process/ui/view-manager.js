@@ -31,7 +31,7 @@ import { ucfirst } from '../../lib/strings'
 const sitedataDb = beakerCore.dbs.sitedata
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
-const bookmarksDb = beakerCore.dbs.bookmarks
+const bookmarksAPI = beakerCore.uwg.bookmarks
 
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
@@ -593,12 +593,13 @@ class View {
   }
 
   async fetchIsBookmarked (noEmit = false) {
-    var bookmark = await bookmarksDb.getBookmark(0, normalizeURL(this.url, {
+    var url = normalizeURL(this.url, {
       stripFragment: false,
       stripWWW: false,
       removeQueryParameters: false,
       removeTrailingSlash: true
-    }))
+    })
+    var bookmark = await bookmarksAPI.getOwnBookmarkByHref(getUserSessionFor(this.browserWindow.webContents), url)
     this.isBookmarked = !!bookmark
     if (!noEmit) {
       this.emitUpdateState()

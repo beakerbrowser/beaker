@@ -2,7 +2,7 @@ import * as rpc from 'pauls-electron-rpc'
 import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
 import usersManifest from '@beaker/core/web-apis/manifests/internal/users'
 import archivesManifest from '@beaker/core/web-apis/manifests/internal/archives'
-import bookmarksManifest from '@beaker/core/web-apis/manifests/external/bookmarks'
+import bookmarksManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-bookmarks'
 import historyManifest from '@beaker/core/web-apis/manifests/internal/history'
 import sitedataManifest from '@beaker/core/web-apis/manifests/internal/sitedata'
 import downloadsManifest from '@beaker/core/web-apis/manifests/internal/downloads'
@@ -15,7 +15,7 @@ import followsManifest from '@beaker/core/web-apis/manifests/external/unwalled-g
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)
 export const users = rpc.importAPI('users', usersManifest)
 export const archives = rpc.importAPI('archives', archivesManifest)
-export const bookmarks = rpc.importAPI('bookmarks', bookmarksManifest)
+export const bookmarks = rpc.importAPI('unwalled-garden-bookmarks', bookmarksManifest)
 export const history = rpc.importAPI('history', historyManifest)
 export const sitedata = rpc.importAPI('sitedata', sitedataManifest)
 export const downloads = rpc.importAPI('downloads', downloadsManifest)

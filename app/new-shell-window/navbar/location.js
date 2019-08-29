@@ -394,7 +394,8 @@ class NavbarLocation extends LitElement {
         href: this.url,
         title: metadata.title || this.title || '',
         description: metadata.description || '',
-        tags: metadata.keywords
+        tags: metadata.keywords,
+        visibility: 'private'
       })
       bg.views.refreshState(this.activeTabIndex) // pull latest state
     }

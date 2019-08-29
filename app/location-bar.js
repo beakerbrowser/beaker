@@ -7,7 +7,7 @@ import { unsafeHTML } from './vendor/lit-element/lit-html/directives/unsafe-html
 import { examineLocationInput } from './lib/urls'
 import _uniqWith from 'lodash.uniqwith'
 import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
-import bookmarksManifest from '@beaker/core/web-apis/manifests/external/bookmarks'
+import bookmarksManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-bookmarks'
 import historyManifest from '@beaker/core/web-apis/manifests/internal/history'
 import searchManifest from '@beaker/core/web-apis/manifests/external/search'
 import locationBarManifest from './background-process/rpc-manifests/location-bar'
@@ -15,7 +15,7 @@ import viewsManifest from './background-process/rpc-manifests/views'
 
 const bg = {
   beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
-  bookmarks: rpc.importAPI('bookmarks', bookmarksManifest),
+  bookmarks: rpc.importAPI('unwalled-garden-bookmarks', bookmarksManifest),
   history: rpc.importAPI('history', historyManifest),
   search: rpc.importAPI('search', searchManifest),
   locationBar: rpc.importAPI('background-process-location-bar', locationBarManifest),
@@ -166,8 +166,7 @@ class LocationBar extends LitElement {
       `
     }
     if (r.record && r.record.type === 'unwalled.garden/bookmark') {
-      let isAuthorYou = r.record.author.url === this.userUrl
-      let authorTitle = isAuthorYou ? html`<span class="is-you">you</span>`: (r.record.author.title || 'Anonymous')
+      let authorTitle = r.record.author.isOwner ? html`<span class="is-you">you</span>`: (r.record.author.title || 'Anonymous')
       return html`
         <div class="icon"><img src=${'asset:favicon-32:' + r.url}></div>
         <div class="info">

@@ -14,7 +14,6 @@ class BookmarkMenu extends LitElement {
       title: {type: String},
       description: {type: String},
       tags: {type: String},
-      pinned: {type: Boolean},
       isPublic: {type: Boolean}
     }
   }
@@ -31,20 +30,18 @@ class BookmarkMenu extends LitElement {
     this.title = ''
     this.description = ''
     this.tags = ''
-    this.pinned = false
     this.isPublic = false
   }
 
   async init (params) {
     this.bookmarkIsNew = params.bookmarkIsNew
-    const b = this.bookmark = await bg.bookmarks.get(params.url)
+    const b = this.bookmark = await bg.bookmarks.getOwn(params.url)
     if (b && b.tags) b.tags = tagsToString(b.tags)
     if (b) {
       this.href = b.href
       this.title = b.title
       this.description = b.description
       this.tags = b.tags
-      this.pinned = b.pinned
       this.isPublic = b.isPublic
     } else {
       this.href = params.url
@@ -62,8 +59,8 @@ class BookmarkMenu extends LitElement {
       return true
     }
     return !_isEqual(
-      _pick(this, ['href', 'title', 'description', 'tags', 'pinned', 'isPublic']),
-      _pick(this.bookmark, ['href', 'title', 'description', 'tags', 'pinned', 'isPublic'])
+      _pick(this, ['href', 'title', 'description', 'tags', 'isPublic']),
+      _pick(this.bookmark, ['href', 'title', 'description', 'tags', 'isPublic'])
     )
   }
 
@@ -106,12 +103,6 @@ class BookmarkMenu extends LitElement {
               <input @change=${this.onChangePublic} ?checked=${this.isPublic || false} type="checkbox" name="isPublic" value="isPublic">
               <div class="switch"></div>
             </label>
-
-            <label class="toggle">
-              <span class="text"><i class="fas fa-fw fa-thumbtack"></i> Pin to start page</span>
-              <input @change=${this.onChangePinned} ?checked=${this.pinned || false} type="checkbox" name="pinned" value="pinned">
-              <div class="switch"></div>
-            </label>
           </div>
 
           <div class="buttons">
@@ -143,9 +134,8 @@ class BookmarkMenu extends LitElement {
     b.title = this.title
     b.description = this.description
     b.tags = this.tags.split(' ').filter(Boolean)
-    b.isPublic = this.isPublic
-    b.pinned = this.pinned
-    await bg.bookmarks.add(b)
+    b.visibility = this.isPublic ? 'public' : 'private'
+    await bg.bookmarks.edit(b.href, b)
     bg.views.refreshState('active')
     bg.shellMenus.close()
   }
@@ -168,10 +158,6 @@ class BookmarkMenu extends LitElement {
 
   onChangeTags (e) {
     this.tags = e.target.value
-  }
-
-  onChangePinned (e) {
-    this.pinned = e.target.checked
   }
 
   onChangePublic (e, v) {
