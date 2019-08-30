@@ -48,7 +48,6 @@
     "icojs": "^0.11.0",
     "identify-filetype": "^1.0.0",
     "into-stream": "^3.1.0",
-    "json-formatter-js": "^2.2.0",
     "keyboardevent-from-electron-accelerator": "^1.1.0",
     "keyboardevents-areequal": "^0.2.2",
     "listen-random-port": "^1.0.0",
