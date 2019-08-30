@@ -11,14 +11,226 @@ const BASIC_TEMPLATES = [
   {url: 'blank', title: 'Empty Site', thumb: html`<img src="beaker://assets/img/templates/website.png">`}
 ]
 
+const VISIBILITY_OPTIONS = [
+  {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access the site'},
+  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access the site'},
+  {icon: html`<span class="fa-fw fas fa-eye"></span>`, label: 'Secret', value: 'unlisted', desc: 'Only people who know the URL can access the site'},
+]
+
 class CreateArchiveModal extends LitElement {
   static get properties () {
     return {
       title: {type: String},
       description: {type: String},
       currentTemplate: {type: String},
+      visibility: {type: String},
       errors: {type: Object}
     }
+  }
+
+  static get styles () {
+    return [commonCSS, inputsCSS, buttonsCSS, css`
+    .wrapper {
+      padding: 0;
+    }
+    
+    h1.title {
+      padding: 14px 20px;
+      margin: 0;
+      border-color: #bbb;
+    }
+    
+    form {
+      padding: 0;
+      margin: 0;
+    }
+
+    input {
+      font-size: 14px;
+      height: 34px;
+      padding: 0 10px;
+      border-color: #bbb;
+    }
+
+    textarea {
+      font-size: 14px;
+      padding: 7px 10px;
+      border-color: #bbb;
+    }
+    
+    hr {
+      border: 0;
+      border-top: 1px solid #ddd;
+      margin: 20px 0;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .form-actions button {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    
+    label.fixed-width {
+      display: inline-block;
+      width: 60px;
+    }
+    
+    .layout {
+      display: flex;
+      user-select: none;
+    }
+    
+    .layout .templates {
+      width: 624px;
+    }
+    
+    .layout .inputs {
+      min-width: 200px;
+      flex: 1;
+      padding: 20px;
+    }
+
+    input[type="radio"] {
+      display: inline;
+      width: auto;
+      margin: 0 4px;
+      height: auto;
+    }
+    
+    .templates {
+      height: 468px;
+      overflow-y: auto;
+      background: #fafafa;
+      border-right: 1px solid #bbb;
+    }
+    
+    .templates-heading {
+      margin: 20px 20px 0px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #ddd;
+      color: gray;
+      font-size: 11px;
+    }
+    
+    .templates-selector {
+      display: grid;
+      grid-gap: 20px;
+      padding: 10px 20px;
+      grid-template-columns: repeat(3, 1fr);
+      align-items: baseline;
+    }
+    
+    .template {
+      width: 160px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .template img,
+    .template .icon {
+      display: block;
+      margin: 0 auto;
+      width: 150px;
+      height: 120px;
+      margin-bottom: 10px;
+      object-fit: scale-down;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    
+    .template .icon {
+      text-align: center;
+      font-size: 24px;
+    }
+    
+    .template .icon .fa-fw {
+      line-height: 80px;
+    }
+    
+    .template .title {
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .template:hover {
+      background: #eee;
+    }
+    
+    .template.selected {
+      background: rgb(63, 119, 232);
+    }
+    
+    .template.selected .title {
+      color: #fff;
+      font-weight: 500;
+      text-shadow: 0 1px 2px rgba(0,0,0,.35);
+    }
+    
+    .template.selected img {
+      border: 1px solid #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    }
+
+    .visibility {
+      border: 1px solid #ddd;
+      margin-bottom: 45px;
+      margin-top: 5px;
+    }
+
+    .visibility .option {
+      display: flex;
+      padding: 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      color: rgba(0,0,0,.5);
+    }
+
+    .visibility .option:last-child {
+      border: 0;
+    }
+
+    .visibility .option:hover {
+      color: rgba(0,0,0,.65);
+      background: #fafafa;
+    }
+
+    .visibility .option.selected {
+      color: rgba(0,0,0,.75);
+      outline: 1px solid gray;
+    }
+
+    .visibility .option > span {
+      margin: 2px 10px 0 4px;
+    }
+
+    .visibility .option-label {
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .visibility .option-desc {
+      font-weight: 400;
+    }
+
+    .visibility .option .fa-check-circle {
+      visibility: hidden;
+      margin: 2px 2px 0 auto;
+      color: #333;
+      font-size: 14px;
+      align-self: center;
+    }
+
+    .visibility .option.selected .fa-check-circle {
+      visibility: visible;
+    }
+    `]
   }
 
   constructor () {
@@ -28,8 +240,10 @@ class CreateArchiveModal extends LitElement {
     this.description = ''
     this.type = null
     this.links = null
-    this.networked = true
+    this.author = null
+    this.visibility = 'public'
     this.templates = []
+    this.users = []
     this.currentTemplate = 'blank'
     this.errors = {}
 
@@ -44,7 +258,8 @@ class CreateArchiveModal extends LitElement {
     this.description = params.description || ''
     this.type = params.type ? Array.isArray(params.type) ? params.type[0] : params.type : ''
     this.links = params.links
-    this.networked = ('networked' in params) ? params.networked : true
+    this.author = this.author || (await bg.users.getCurrent()).url
+    this.visibility = params.visibility || 'public'
     this.templates = BASIC_TEMPLATES.concat(
       await bg.archives.list({type: 'unwalled.garden/template', isSaved: true})
     )
@@ -80,11 +295,28 @@ class CreateArchiveModal extends LitElement {
 
             <div class="inputs">
               <label for="title">${ucfirst(this.simpleType)} Title</label>
-              <input autofocus name="title" tabindex="1" value=${this.title || ''} placeholder="Title" @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
+              <input autofocus name="title" tabindex="1" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
               ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
               <label for="desc">Description</label>
-              <textarea name="desc" tabindex="2" placeholder="Description (optional)" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
+              <textarea name="desc" tabindex="2" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
+
+              <label>Visibility</label>
+              <div class="visibility">
+                ${VISIBILITY_OPTIONS.map(opt => html`
+                  <div
+                    class=${classMap({option: true, selected: opt.value === this.visibility})}
+                    @click=${e => this.onChangeVisibility(e, opt.value)}
+                  >
+                    <span>${opt.icon}</span>
+                    <div>
+                      <div class="option-label">${opt.label}</div>
+                      <div class="option-desc">${opt.desc}</div>
+                    </div>
+                    <span class="fas fa-fw fa-check-circle"></span>
+                  </div>
+                `)}
+              </div>
               
               <div class="form-actions">
                 <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="4">Cancel</button>
@@ -118,6 +350,10 @@ class CreateArchiveModal extends LitElement {
     this.type = e.target.value.trim()
   }
 
+  onChangeVisibility (e, value) {
+    this.visibility = value
+  }
+
   onClickCancel (e) {
     e.preventDefault()
     this.cbs.reject(new Error('Canceled'))
@@ -139,7 +375,8 @@ class CreateArchiveModal extends LitElement {
           title: this.title,
           description: this.description,
           type: '',
-          networked: this.networked,
+          author: this.author,
+          visibility: this.visibility,
           links: this.links,
           prompt: false
         })
@@ -150,7 +387,8 @@ class CreateArchiveModal extends LitElement {
           title: this.title,
           description: this.description,
           type: [],
-          networked: this.networked,
+          author: this.author,
+          visibility: this.visibility,
           links: this.links,
           prompt: false
         })
@@ -161,120 +399,5 @@ class CreateArchiveModal extends LitElement {
     }
   }
 }
-CreateArchiveModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
-.wrapper {
-  padding: 0;
-}
-
-h1.title {
-  padding: 14px 20px;
-  margin: 0;
-  border-color: #ddd;
-}
-
-form {
-  padding: 0;
-  margin: 0;
-}
-
-hr {
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 20px 0;
-}
-
-.layout {
-  display: flex;
-  user-select: none;
-}
-
-.layout .templates {
-  width: 624px;
-}
-
-.layout .inputs {
-  min-width: 200px;
-  flex: 1;
-  padding: 20px;
-}
-
-.templates {
-  height: 468px;
-  overflow-y: auto;
-  background: #fafafa;
-  border-right: 1px solid #ddd;
-}
-
-.templates-heading {
-  margin: 20px 20px 0px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ddd;
-  color: gray;
-  font-size: 11px;
-}
-
-.templates-selector {
-  display: grid;
-  grid-gap: 20px;
-  padding: 10px 20px;
-  grid-template-columns: repeat(3, 1fr);
-  align-items: baseline;
-}
-
-.template {
-  width: 160px;
-  padding: 10px;
-  border-radius: 4px;
-}
-
-.template img,
-.template .icon {
-  display: block;
-  margin: 0 auto;
-  width: 150px;
-  height: 120px;
-  margin-bottom: 10px;
-  object-fit: scale-down;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-}
-
-.template .icon {
-  text-align: center;
-  font-size: 24px;
-}
-
-.template .icon .fa-fw {
-  line-height: 80px;
-}
-
-.template .title {
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.template:hover {
-  background: #eee;
-}
-
-.template.selected {
-  background: rgb(63, 119, 232);
-}
-
-.template.selected .title {
-  color: #fff;
-  font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0,0,0,.35);
-}
-
-.template.selected img {
-  border: 1px solid #fff;
-  box-shadow: 0 1px 2px rgba(0,0,0,.15);
-}
-
-`]
 
 customElements.define('create-archive-modal', CreateArchiveModal)
