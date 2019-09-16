@@ -172,14 +172,19 @@ class UserModal extends LitElement {
 
     try {
       var thumbBase64 = this.thumbDataURL ? this.thumbDataURL.split(',').pop() : undefined
-      this.cbs.resolve({
+      var data = {
         title: this.title,
         description: this.description,
         label: this.label,
         thumbBase64,
         thumbExt: this.thumbExt,
         setDefault: this.setDefault
-      })
+      }
+      if (this.userUrl) {
+        this.cbs.resolve(await bg.users.edit(this.userUrl, data))
+      } else {
+        this.cbs.resolve(await bg.users.create(data))
+      }
     } catch (e) {
       this.cbs.reject(e.message || e.toString())
     }

@@ -149,7 +149,6 @@ function renderUsers () {
     e.stopPropagation()
 
     var opts = await beaker.browser.showModal('user', user)
-    await beaker.users.edit(user.url, opts)
     Object.assign(user, opts)
     renderToPage()
   }

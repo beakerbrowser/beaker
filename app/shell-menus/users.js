@@ -141,8 +141,7 @@ class UsersMenu extends LitElement {
   async onEditMyProfile (e) {
     var userUrl = this.user.url
     bg.shellMenus.close()
-    var opts = await bg.shellMenus.createModal('user', this.user)
-    await bg.users.edit(userUrl, opts)
+    await bg.shellMenus.createModal('user', this.user)
   }
 
   onOpenUser (e, user) {
@@ -152,8 +151,7 @@ class UsersMenu extends LitElement {
 
   async onCreateNewUser () {
     bg.shellMenus.close()
-    var opts = await bg.shellMenus.createModal('user', {})
-    var user = await bg.users.create(opts)
+    var user = await bg.shellMenus.createModal('user', {})
     bg.shellMenus.createWindow({userSession: {url: user.url}})
   }
 
