@@ -59,6 +59,11 @@ export function setup () {
     // if beaker://, pull from hard-coded assets
     if (url.startsWith('beaker://')) {
       let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
+      if (url.startsWith('beaker://library')) {
+        let match = /\?view=([\w-]+)/.exec(url)
+        if (match) name = match[1]
+        else name = 'pins'
+      }
       return fs.readFile(path.join(__dirname, `./assets/img/favicons/${name}.png`), (err, buf) => {
         if (buf) cb({mimeType: 'image/png', data: buf})
         else cb(DEFAULTS[asset])
@@ -73,7 +78,7 @@ export function setup () {
         data = await sitedata.get(url, 'favicon')
         if (!data) {
           // try fallback to screenshot
-          data = await sitedata.get(url, 'screenshot')
+          data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
         }
       }
       if (data) {
