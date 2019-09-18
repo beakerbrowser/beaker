@@ -207,7 +207,7 @@ class LocationBar extends LitElement {
         if (opts.value && opts.value !== this.inputValue) {
           this.inputQuery = this.inputValue = opts.value
           this.currentSelection = 0
-          if (this.inputValue.startsWith('beaker://start')) {
+          if (this.inputValue.startsWith('beaker://library')) {
             this.inputQuery = this.inputValue = ''
           }
 

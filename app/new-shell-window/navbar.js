@@ -241,7 +241,7 @@ class ShellWindowNavbar extends LitElement {
   }
 
   onClickHome (e) {
-    bg.views.loadURL('active', 'beaker://start/')
+    bg.views.loadURL('active', 'beaker://library/')
   }
 
   onClickWatchlistBtn (e) {

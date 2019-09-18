@@ -130,9 +130,9 @@ class NavbarLocation extends LitElement {
   }
 
   renderInputPretty () {
-    if (this.url.startsWith('beaker://start')) {
+    if (this.url.startsWith('beaker://library')) {
       return html`
-        <div class="input-pretty">
+        <div class="input-pretty" @mouseup=${this.onClickLocation}>
           <span class="syntax">Search or enter your address here</span>
         </div>
       `
