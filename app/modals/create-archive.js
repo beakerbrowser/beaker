@@ -8,13 +8,13 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 
 const BASIC_TEMPLATES = [
-  {url: 'blank', title: 'Empty Site', thumb: html`<img src="beaker://assets/img/templates/website.png">`}
+  {url: 'blank', title: 'Website', thumb: html`<img src="beaker://assets/img/templates/website.png">`}
 ]
 
 const VISIBILITY_OPTIONS = [
-  {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access the site'},
-  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access the site'},
-  {icon: html`<span class="fa-fw fas fa-eye"></span>`, label: 'Secret', value: 'unlisted', desc: 'Only people who know the URL can access the site'},
+  {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access it'},
+  {icon: html`<span class="fa-fw fas fa-eye"></span>`, label: 'Unlisted', value: 'unlisted', desc: 'Only people who know the URL can access it'},
+  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access it'},
 ]
 
 class CreateArchiveModal extends LitElement {
@@ -235,12 +235,12 @@ class CreateArchiveModal extends LitElement {
 
   constructor () {
     super()
-    this.cbs = null
+    this.cbs = undefined
     this.title = ''
     this.description = ''
-    this.type = null
-    this.links = null
-    this.author = null
+    this.type = undefined
+    this.links = undefined
+    this.author = undefined
     this.visibility = 'public'
     this.templates = []
     this.users = []
@@ -256,13 +256,13 @@ class CreateArchiveModal extends LitElement {
     this.cbs = cbs
     this.title = params.title || ''
     this.description = params.description || ''
-    this.type = params.type ? Array.isArray(params.type) ? params.type[0] : params.type : ''
+    this.type = params.type || ''
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
     this.visibility = params.visibility || 'public'
-    this.templates = BASIC_TEMPLATES.concat(
+    this.templates = BASIC_TEMPLATES/* TODO .concat(
       await bg.archives.list({type: 'unwalled.garden/template', isSaved: true})
-    )
+    )*/
     await this.requestUpdate()
   }
 
@@ -283,7 +283,7 @@ class CreateArchiveModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">New Website</h1>
+        <h1 class="title">Create New...</h1>
 
         <form @submit=${this.onSubmit}>
           <div class="layout">
@@ -320,7 +320,7 @@ class CreateArchiveModal extends LitElement {
               
               <div class="form-actions">
                 <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="4">Cancel</button>
-                <button type="submit" class="primary" tabindex="3">Create Website</button>
+                <button type="submit" class="primary" tabindex="3">Create</button>
               </div>
             </div>
           </div>
@@ -374,7 +374,7 @@ class CreateArchiveModal extends LitElement {
         url = await bg.datArchive.createArchive({
           title: this.title,
           description: this.description,
-          type: '',
+          type: 'unwalled.garden/website',
           author: this.author,
           visibility: this.visibility,
           links: this.links,
@@ -386,7 +386,7 @@ class CreateArchiveModal extends LitElement {
         url = await bg.datArchive.forkArchive(this.currentTemplate, {
           title: this.title,
           description: this.description,
-          type: [],
+          type: 'unwalled.garden/website',
           author: this.author,
           visibility: this.visibility,
           links: this.links,
