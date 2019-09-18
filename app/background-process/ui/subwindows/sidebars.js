@@ -9,9 +9,7 @@
 
 import path from 'path'
 import { app, BrowserWindow, BrowserView } from 'electron'
-import * as rpc from 'pauls-electron-rpc'
 import * as viewManager from '../view-manager'
-// import modalsRPCManifest from '../../rpc-manifests/modals'
 import { findWebContentsParentWindow } from '../../../lib/electron'
 
 // globals

@@ -61,12 +61,12 @@ class ShellWindowNavbar extends LitElement {
         .activeTabIndex="${this.activeTabIndex}"
         url="${_get(this, 'activeTab.url', '')}"
         title="${_get(this, 'activeTab.title', '')}"
+        siteIcon="${_get(this, 'activeTab.siteIcon', '')}"
         siteTitle="${_get(this, 'activeTab.siteTitle', '')}"
         datDomain="${_get(this, 'activeTab.datDomain', '')}"
         ?isOwner="${_get(this, 'activeTab.isOwner', false)}"
         peers="${_get(this, 'activeTab.peers', 0)}"
         numFollowers="${_get(this, 'activeTab.numFollowers', 0)}"
-        numComments="${_get(this, 'activeTab.numComments', 0)}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
         .loadError=${_get(this, 'activeTab.loadError', null)}
         donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"
@@ -81,9 +81,11 @@ class ShellWindowNavbar extends LitElement {
         active-match="${_get(this, 'activeTab.currentInpageFindResults.activeMatchOrdinal', '0')}"
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
-      <div class="buttons">
+      <div class="buttons" style="padding-left: 8px">
         ${this.watchlistBtn}
-        ${this.openTerminalBtn}
+        <button @click=${this.todo} style="margin: 0px 3px">
+          <span class="fas fa-fw fa-cloud"></span>
+        </button>
         ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
@@ -92,7 +94,7 @@ class ShellWindowNavbar extends LitElement {
 
   get backBtn () {
     return html`
-      <button class="nav-arrow-btn" ?disabled=${!this.canGoBack} @click=${this.onClickGoBack}>
+      <button class="nav-arrow-btn" ?disabled=${!this.canGoBack} @click=${this.onClickGoBack} style="margin: 0px 2px">
         <svg
           class="icon nav-arrow"
           width="9" height="16"
@@ -110,7 +112,7 @@ class ShellWindowNavbar extends LitElement {
 
   get forwardBtn () {
     return html`
-      <button class="nav-arrow-btn" ?disabled=${!this.canGoForward} @click=${this.onClickGoForward}>
+      <button class="nav-arrow-btn" ?disabled=${!this.canGoForward} @click=${this.onClickGoForward} style="margin: 0px 2px">
         <svg
           class="icon nav-arrow"
           width="9" height="16"
@@ -128,7 +130,7 @@ class ShellWindowNavbar extends LitElement {
   get reloadBtn () {
     if (this.isLoading) {
       return html`
-        <button @click=${this.onClickStop}>
+        <button @click=${this.onClickStop} style="margin: 0px 2px">
           <svg
             class="icon close"
             width="12"
@@ -147,7 +149,7 @@ class ShellWindowNavbar extends LitElement {
       `
     }
     return html`
-      <button @click=${this.onClickReload}>
+      <button @click=${this.onClickReload} style="margin: 0px 2px">
         <svg
           class="icon refresh"
           width="16"
@@ -166,7 +168,7 @@ class ShellWindowNavbar extends LitElement {
 
   get homeBtn () {
     return html`
-      <button @click=${this.onClickHome} style="margin-left: 2px">
+      <button @click=${this.onClickHome} style="margin: 0 6px">
         <svg 
           class="icon home"
           width="18"
@@ -186,7 +188,7 @@ class ShellWindowNavbar extends LitElement {
       return html``
     }
     return html`
-      <button class="watchlist-btn" @click=${this.onClickWatchlistBtn}>
+      <button class="watchlist-btn" @click=${this.onClickWatchlistBtn} style="margin: 0px 2px">
         <span class="fas fa-eye"></span>
         <span class="badge">${this.numWatchlistNotifications}</span>
       </button>
@@ -196,7 +198,7 @@ class ShellWindowNavbar extends LitElement {
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
-      <button class=${cls} @click=${this.onClickBrowserMenu}>
+      <button class=${cls} @click=${this.onClickBrowserMenu} style="margin: 0px 2px">
         ${this.isUpdateAvailable
           ? html`<span class="fas fa-arrow-alt-circle-up"></span>`
           : html`<span class="fa fa-bars"></span>`}
@@ -204,18 +206,10 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get openTerminalBtn () {
-    return html`
-      <button @click=${this.onClickOpenTerminal}>
-        <span class="fas fa-fw fa-terminal"></span>
-      </button>
-    `
-  }
-
   get usersMenuBtn () {
     const cls = classMap({'users-btn': true, pressed: this.isUsersMenuOpen})
     return html`
-      <button class=${cls} @click=${this.onClickUsersMenu}>
+      <button class=${cls} @click=${this.onClickUsersMenu} style="margin: 0px 2px">
         <span class="fas fa-fw fa-user-circle"></span>
       </button>
     `
@@ -258,11 +252,7 @@ class ShellWindowNavbar extends LitElement {
         right: (rect.right|0)
       }
     })
-    this.isUsersMenuOpen = false    
-  }
-
-  onClickOpenTerminal (e) {
-    bg.views.toggleSidebar('active', 'terminal')
+    this.isUsersMenuOpen = false
   }
 
   async onClickBrowserMenu (e) {
@@ -294,8 +284,8 @@ button .fas {
   color: #333;
 }
 
-button .fas.fa-plus {
-  -webkit-text-stroke: 0.8px #eee;
+button .far.fa-hdd {
+  color: rgba(0,0,0,.6);
 }
 
 svg.icon * {
@@ -311,8 +301,10 @@ svg.icon.refresh {
   padding: 0 8px;
 }
 
-button .fa-terminal {
-  font-size: 14px;
+button .fa-cloud {
+  font-size: 13px;
+  -webkit-text-stroke: 1.5px black;
+  color: #d8d6d6;
 }
 
 .fa-arrow-alt-circle-up {

@@ -26,7 +26,6 @@ class UsersMenu extends LitElement {
   async init (params) {
     this.user = await bg.users.getCurrent().catch(err => undefined)
     this.users = await bg.users.list()
-    console.log(this.user, this.users)
     await this.requestUpdate()
   }
 
@@ -52,7 +51,7 @@ class UsersMenu extends LitElement {
         <div class="section">
           <div class="menu-item" @click=${e => this.onOpenPage(e, this.user.url)}>
             <i class="fas fa-external-link-alt"></i>
-            <span class="label">Open my website</span>
+            <span class="label">Open my profile</span>
           </div>
 
           <div class="menu-item" @click=${this.onCopyMyAddress}>

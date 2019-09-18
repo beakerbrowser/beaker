@@ -18,11 +18,11 @@ class NavbarLocation extends LitElement {
       url: {type: String},
       title: {type: String},
       siteTitle: {type: String},
+      siteIcon: {type: String},
       datDomain: {type: String},
       isOwner: {type: Boolean},
       peers: {type: Number},
       numFollowers: {type: Number},
-      numComments: {type: Number},
       zoom: {type: Number},
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
@@ -40,11 +40,11 @@ class NavbarLocation extends LitElement {
     this.url = ''
     this.title = ''
     this.siteTitle = ''
+    this.siteIcon = ''
     this.datDomain = ''
     this.isOwner = false
     this.peers = 0
     this.numFollowers = 0
-    this.numComments = 0
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
@@ -57,6 +57,10 @@ class NavbarLocation extends LitElement {
     ipcRenderer.on('command', this.onCommand.bind(this))
   }
 
+  get isBeaker () {
+    return this.url.startsWith('beaker://')
+  }
+
   get isDat () {
     return this.url.startsWith('dat://')
   }
@@ -65,6 +69,7 @@ class NavbarLocation extends LitElement {
     var input = this.shadowRoot.querySelector('.input-container input')
     input.focus()
     bg.views.focusShellWindow() // focus the shell-window UI
+    input.setSelectionRange(0, input.value.length)
   }
 
   unfocusLocation () {
@@ -81,6 +86,7 @@ class NavbarLocation extends LitElement {
       <shell-window-navbar-site-info
         url=${this.url}
         siteTitle=${this.siteTitle}
+        siteIcon=${this.siteIcon}
         datDomain=${this.datDomain}
         ?isOwner=${this.isOwner}
         peers=${this.peers}
@@ -88,38 +94,37 @@ class NavbarLocation extends LitElement {
         .loadError=${this.loadError}
       >
       </shell-window-navbar-site-info>
+      <hr>
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
-      ${this.isDat ? html`
-        <button class="text" @click=${this.onClickEdit}>
-          <span class="far fa-fw fa-edit"></span>
-        </button>
-      ` : ''}
-      <button class="text" @click=${this.onClickComments}>
-        <span class="far fa-fw fa-comment-alt"></span> ${this.numComments}
-      </button>
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
+      ${this.isDat ? html`
+        <hr>
+        <button class="text" @click=${this.onClickFollow} title="Follow this site">
+          <span class="fas fa-fw fa-rss"></span> <span class="text-label">Follow</span>
+        </button>
+        <button class="text" @click=${this.onClickFollow} title="Save this site">
+          <span class="fas fa-fw fa-save"></span> <span class="text-label">Save</span>
+        </button>
+        <hr>
+      ` : ''}
       ${this.renderBookmarkBtn()}
     `
   }
 
   renderLocation () {
     var url = this.url
-    if (url.startsWith('beaker://start')) {
+    if (url.startsWith('beaker://library')) {
       url = ''
     }
     return html`
-      <div class="input-container">
+      <div class="input-container" @contextmenu=${this.onContextMenuLocation}>
         <input
           type="text"
           value="${url}"
           placeholder="Search or enter your address here"
-          @contextmenu=${this.onContextMenuLocation}
-          @mousedown=${this.onMousedownLocation}
-          @mouseup=${this.onMouseupLocation}
-          @dblclick=${this.onDblclickLocation}
           @focus=${this.onFocusLocation}
           @blur=${this.onBlurLocation}
           @input=${this.onInputLocation}
@@ -164,8 +169,8 @@ class NavbarLocation extends LitElement {
         if (['dat:'].includes(protocol)) cls += ' protocol-secure'
         if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
         return html`
-          <div class="input-pretty">
-            <span class=${cls}>${protocol.slice(0, -1)}</span><span class="syntax">://</span><span class="host">${host}</span>${hostVersion ? html`<span class="host-version">${hostVersion}</span>` : ''}<span class="path">${pathname}${search}${hash}</span>
+          <div class="input-pretty" @mouseup=${this.onClickLocation}>
+            <span class=${cls}><span class="path">${pathname}${search}${hash}</span>
           </div>
         `
       } catch (e) {
@@ -173,7 +178,7 @@ class NavbarLocation extends LitElement {
       }
     }
     return html`
-      <div class="input-pretty">${this.url}</div>
+      <div class="input-pretty" @mouseup=${this.onClickLocation}>${this.url}</div>
     `
   }
 
@@ -253,7 +258,7 @@ class NavbarLocation extends LitElement {
       'fa-star': true
     })
     return html`
-      <button class="bookmark-btn" style="margin-right: 2px" @click=${this.onClickBookmark}>
+      <button class="bookmark-btn" @click=${this.onClickBookmark}>
         <span class="${cls}"></span>
       </button>
     `
@@ -275,46 +280,18 @@ class NavbarLocation extends LitElement {
   }
 
   onContextMenuLocation (e) {
+    e.preventDefault()
+    this.focusLocation()
     bg.views.showLocationBarContextMenu('active')
   }
 
-  onMousedownLocation (e) {
-    // track if the user is clicking, doubleclicking, or dragging the location before its focused
-    // if a click, select all; if a doubleclick, select word under cursor; if a drag, do default behavior
-    if (!this.isLocationFocused) {
-      this.lastMousedownLocationTs = Date.now()
-    }
-  }
-
-  onMouseupLocation (e) {
-    if (Date.now() - this.lastMousedownLocationTs <= 300) {
-      // was a fast click (probably not a drag) so select all
-      e.preventDefault()
-      let inputEl = e.currentTarget
-      this.mouseupClickIndex = inputEl.selectionStart
-      inputEl.select()
-
-      // setup double-click override
-      this.lastMousedownLocationTs = 0
-      this.lastMouseupLocationTs = Date.now()
-    }
-  }
-
-  onDblclickLocation (e) {
-    if (Date.now() - this.lastMouseupLocationTs <= 300) {
-      e.preventDefault()
-
-      // select the text under the cursor
-      // (we have to do this manually because we previously selected all on mouseup, which f's that default behavior up)
-      let inputEl = e.currentTarget
-      let {start, end} = findWordBoundary(inputEl.value, this.mouseupClickIndex)
-      inputEl.setSelectionRange(start, end)
-      this.lastMouseupLocationTs = 0
-    }
+  onClickLocation (e) {
+    e.preventDefault()
+    this.focusLocation()
   }
 
   onFocusLocation (e) {
-    e.currentTarget.value = this.url.startsWith('beaker://start') ? '' : this.url
+    e.currentTarget.value = this.url.startsWith('beaker://library') ? '' : this.url
     e.currentTarget.setSelectionRange(0, this.url.length)
     this.isLocationFocused = true
   }
@@ -340,12 +317,8 @@ class NavbarLocation extends LitElement {
     e.currentTarget.blur()
   }
 
-  onClickEdit (e) {
-    bg.views.toggleSidebar('active', 'editor')
-  }
-
-  onClickComments (e) {
-    bg.views.toggleSidebar('active', 'comments')
+  onClickFollow (e) {
+    // TODO
   }
 
   onClickZoom (e) {
@@ -417,18 +390,27 @@ NavbarLocation.styles = [buttonResetCSS, css`
   background: var(--bg-input);
   border: 1px solid var(--color-border-input);
   border-radius: 4px;
+  padding-right: 2px;
+}
+
+hr {
+  width: 0;
+  margin: 5px;
+  border: 0;
+  border-left: 1px solid var(--color-border-input);
 }
 
 button {
   width: 27px;
   border-radius: 0;
   color: #666;
+  margin: 0 2px;
 }
 
 button.text {
   width: auto;
   padding: 0 4px;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 button .fa,
@@ -442,14 +424,8 @@ button.text .far {
   font-size: 13px;
 }
 
-button.text .fa-edit {
-  position: relative;
-  top: -1px;
-  left: 1px;
-}
-
-button.text .fa-comment-alt {
-  font-size: 12px;
+button.text .fa-info-circle {
+  font-size: 14px;
 }
 
 button .fa-star {
@@ -458,6 +434,10 @@ button .fa-star {
 
 button .fas.fa-star {
   color: #f3cc00;
+}
+
+button .fa-terminal {
+  font-size: 13px;
 }
 
 button.zoom {
@@ -495,7 +475,7 @@ button.live-reload .fa {
 .input-container {
   position: relative;
   flex: 1;
-  margin: 0 8px;
+  margin: 0 6px;
 }
 
 .input-pretty,
@@ -533,7 +513,6 @@ input::-webkit-input-placeholder {
   z-index: 1;
   text-overflow: ellipsis;
   cursor: text;
-  pointer-events: none;
 }
 
 .input-pretty .protocol {

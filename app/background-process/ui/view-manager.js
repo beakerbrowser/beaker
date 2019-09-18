@@ -1,6 +1,7 @@
 import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain } from 'electron'
 import * as beakerCore from '@beaker/core'
 import errorPage from '@beaker/core/lib/error-page'
+import * as libTools from '@beaker/library-tools'
 import path from 'path'
 import { promises as fs } from 'fs'
 import Events from 'events'
@@ -75,6 +76,7 @@ const STATE_VARS = [
   'url',
   'title',
   'siteTitle',
+  'siteIcon',
   'datDomain',
   'isOwner',
   'numFollowers',
@@ -216,24 +218,35 @@ class View {
     try {
       var hostname = ((parseDatURL(this.url)).hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
-        if (this.datInfo.domain) {
-          // use confirmed domain if available (because we give a checkmark for that)
-          return this.datInfo.domain
+        var userSession = getUserSessionFor(this.browserWindow.webContents)
+        if (userSession && userSession.url === this.datInfo.url) {
+          return 'My Profile'
         }
-        if ((this.datInfo.title || '').trim()) {
-          // use site title if it exists
-          return (this.datInfo.title || '').trim()
+        if (this.datInfo.domain) {
+          // use confirmed domain if available
+          return this.datInfo.domain
         }
         // pretty hash of the key otherwise
         return prettyHash(this.datInfo.key)
       }
       if (this.url.startsWith('beaker://')) {
-        return `Beaker ${ucfirst(hostname)}`
+        return 'Beaker'
       }
       return hostname
     } catch (e) {
       return ''
     }
+  }
+
+  get siteIcon () {
+    if (this.datInfo) {
+      var userSession = getUserSessionFor(this.browserWindow.webContents)
+      if (userSession && userSession.url === this.datInfo.url) {
+        return 'far fa-user-circle'
+      }
+      return libTools.getFAIcon(libTools.typeToCategory(this.datInfo.type))
+    }
+    return ''
   }
 
   get datDomain () {

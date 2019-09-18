@@ -5,7 +5,6 @@ import './shell-menus/browser'
 import './shell-menus/users'
 import './shell-menus/bookmark'
 import './shell-menus/donate'
-import './shell-menus/site-tools'
 
 class MenusWrapper extends LitElement {
   static get properties () {
