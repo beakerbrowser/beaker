@@ -412,7 +412,7 @@ class View {
   async captureScreenshot () {
     // capture screenshot on the root page of dat & http sites
     var urlp = parseDatURL(this.url)
-    if (['dat:', 'http:', 'https:'].includes(urlp.protocol) && urlp.pathname === '/') {
+    if (['dat:', 'http:', 'https:'].includes(urlp.protocol)) {
       try {
         // wait a sec to allow loading to finish
         await new Promise(r => setTimeout(r, 1e3))
@@ -440,7 +440,7 @@ class View {
         image = image
           .crop(bounds)
           .resize({width: 200, height: 160})
-        await sitedataDb.set(this.url, 'screenshot', image.toDataURL())
+        await sitedataDb.set(this.url, 'screenshot', image.toDataURL(), {dontExtractOrigin: true, normalizeUrl: true})
       } catch (e) {
         // ignore, can happen if the view was closed during wait
         console.log('Failed to capture page screenshot', e)
