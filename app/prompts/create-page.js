@@ -29,10 +29,9 @@ class CreatePagePrompt extends LitElement {
   }
 
   async init (params) {
-    this.url = params.url    
+    this.url = params.url
     await this.requestUpdate()
   }
-
 
   // rendering
   // =

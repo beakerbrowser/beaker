@@ -10,24 +10,26 @@ class NavbarSiteInfo extends LitElement {
   static get properties () {
     return {
       url: {type: String},
+      siteIcon: {type: String},
       siteTitle: {type: String},
       datDomain: {type: String},
       isOwner: {type: Boolean},
       peers: {type: Number},
-      numFollowers: {type: Number},
-      loadError: {type: Object}
+      loadError: {type: Object},
+      isPressed: {type: Boolean}
     }
   }
-
+  
   constructor () {
     super()
     this.url = ''
+    this.siteIcon = ''
     this.siteTitle = ''
     this.datDomain = ''
     this.isOwner = false
     this.peers = 0
-    this.numFollowers = 0
     this.loadError = null
+    this.isPressed = false
   }
 
   get scheme () {
@@ -57,7 +59,7 @@ class NavbarSiteInfo extends LitElement {
       const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
       if ((isHttps && !isInsecureResponse) || scheme === 'beaker:') {
         innerHTML = html`
-          <span class="fas fa-info-circle"></span>
+          ${scheme !== 'beaker:' ? html`<span class="fas fa-info-circle"></span>` : ''}
           <span class="label">${this.siteTitle}</span>
         `
       } else if (scheme === 'http:') {
@@ -72,15 +74,12 @@ class NavbarSiteInfo extends LitElement {
         `
       } else if (scheme === 'dat:') {
         innerHTML = html`
-          <span class="fas fa-info-circle"></span>
-          ${this.isOwner ? html`
-            <span class="label darkbg">Your Site</span>
-          ` : ''}
-          <span class="label">${this.siteTitle}</span>
-          ${this.numFollowers > 0 ? html`
-            <span class="far fa-user" style="color: gray;"></span>
-            <span class="label" style="color: gray; margin-left: 0">${this.numFollowers}</span>
-          ` : ''}
+          ${this.isOwner ? html`<span class="label darkbg" style="margin-left: -3px; margin-right: 4px">My Site</span>` : ''}
+          <span class="${this.siteIcon || 'fas fa-info-circle'}"></span>
+          <span class="label">
+            ${this.siteAuthor ? html`${this.siteAuthor} <span class="fas fa-fw fa-angle-right"></span>` : ''}
+            ${this.siteTitle}
+          </span>
         `
       }
     }
@@ -91,7 +90,7 @@ class NavbarSiteInfo extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <button @click=${this.onClickButton}>
+      <button class=${classMap({pressed: this.isPressed})} @click=${this.onClickButton}>
         ${innerHTML}
       </button>
     `
@@ -100,8 +99,16 @@ class NavbarSiteInfo extends LitElement {
   // events
   // =
 
-  async onClickButton () {
-    bg.views.toggleSidebar('active', 'site')
+  async onClickButton (e) {
+    this.isPressed = true
+    var rect = e.currentTarget.getClientRects()[0]
+    await bg.views.toggleSiteInfo({
+      bounds: {
+        top: (rect.bottom|0),
+        left: (rect.left|0)
+      }
+    })
+    this.isPressed = false
   }
 }
 NavbarSiteInfo.styles = [buttonResetCSS, css`
@@ -110,11 +117,10 @@ NavbarSiteInfo.styles = [buttonResetCSS, css`
 }
 
 button {
-  border-right: 1px solid #ccc;
   border-radius: 0;
   height: 26px;
   line-height: 26px;
-  padding: 0 10px;
+  padding: 0 4px 0 10px;
 }
 
 button:hover {

@@ -18,6 +18,7 @@ import {open as openUrl} from './open-url'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
 import * as viewManager from './ui/view-manager'
 import * as modals from './ui/subwindows/modals'
+import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from '../lib/electron'
 import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
@@ -154,6 +155,7 @@ export const WEBAPI = {
 
   openSidebar,
   toggleSidebar,
+  toggleSiteInfo,
   toggleLiveReloading,
   setWindowDimensions,
   setWindowDragModeEnabled,
@@ -165,6 +167,7 @@ export const WEBAPI = {
     return modals.create(this.sender, name, opts)
   },
   gotoUrl,
+  refreshPage,
   openUrl: (url, opts) => { openUrl(url, opts) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
@@ -268,6 +271,17 @@ async function openSidebar (panel) {
 async function toggleSidebar (panel) {
   var win = findWebContentsParentWindow(this.sender)
   viewManager.getActive(win).toggleSidebar(panel)
+}
+
+async function toggleSiteInfo (override) {
+  var win = findWebContentsParentWindow(this.sender)
+  if (override === true) {
+    siteInfo.show(win)
+  } else if (override === false) {
+    siteInfo.hide(win)
+  } else {
+    siteInfo.toggle(win)
+  }
 }
 
 export async function toggleLiveReloading (enabled) {
@@ -594,6 +608,11 @@ function showContextMenu (menuDefinition) {
 async function gotoUrl (url) {
   var win = findWebContentsParentWindow(this.sender)
   viewManager.getActive(win).loadURL(url)
+}
+
+async function refreshPage () {
+  var win = findWebContentsParentWindow(this.sender)
+  viewManager.getActive(win).webContents.reload()
 }
 
 function openFolder (folderPath) {

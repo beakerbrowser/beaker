@@ -20,6 +20,7 @@ import * as promptsSubwindow from './subwindows/prompts'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
 import * as sidebarsSubwindow from './subwindows/sidebars'
+import * as siteInfoSubwindow from './subwindows/site-info'
 import { findWebContentsParentWindow } from '../../lib/electron'
 const settingsDb = beakerCore.dbs.settings
 
@@ -31,7 +32,8 @@ const subwindows = {
   prompts: promptsSubwindow,
   permPrompt: permPromptSubwindow,
   modals: modalsSubwindow,
-  sidebars: sidebarsSubwindow
+  sidebars: sidebarsSubwindow,
+  siteInfo: siteInfoSubwindow
 }
 
 // globals
