@@ -4,7 +4,7 @@
   "devDependencies": {
     "browserify": "^13.0.1",
     "electron": "6.0.9",
-    "electron-builder": "~20.38.5",
+    "electron-builder": "^21.2.0",
     "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-node": "^5.1.1",
@@ -33,9 +33,12 @@
     "asarUnpack": [
       "./json-renderer.build.js",
       "./node_modules/sodium-native/**",
-      "./node_modules/@beaker/start-app/**",
       "./node_modules/@beaker/library-app/**",
-      "./node_modules/@beaker/search-app/**"
+      "./node_modules/@beaker/compare-app/**",
+      "./node_modules/@beaker/search-app/**",
+      "./node_modules/@beaker/sidebar-app/**",
+      "./node_modules/@beaker/site-info-app/**",
+      "./node_modules/@beaker/viewer-apps/**"
     ],
     "copyright": "© 2019, Blue Link Labs",
     "npmRebuild": false,
@@ -78,7 +81,7 @@
     "burnthemall": "node ./tasks/burnthemall.js",
     "lint": "eslint --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern 'app/vendor' --ignore-pattern '*.build.js' --ignore-pattern 'assets' --fix app",
     "rebuild": "gulp rebuild",
-    "release": "npm run build && build -p never && gulp postbuild",
+    "release": "electron-builder -p never && gulp postbuild",
     "start": "gulp start",
     "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
