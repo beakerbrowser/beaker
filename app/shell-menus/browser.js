@@ -90,9 +90,9 @@ class BrowserMenu extends LitElement {
             <span class="shortcut">${this.accelerators.newTab}</span>
           </div>
 
-          <div class="menu-item" @click=${this.onCreateSite}>
+          <div class="menu-item" @click=${this.onCreateNew}>
             <i class="fas fa-plus"></i>
-            <span class="label">New Website</span>
+            <span class="label">Create New...</span>
           </div>
         </div>
 
@@ -160,12 +160,12 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onCreateSite(e)}>
+          <div class="menu-item" @click=${e => this.onCreateNew(e)}>
             <i class="far fa-clone"></i>
             <span class="label">Empty project</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onCreateSite(e, 'website')}>
+          <div class="menu-item" @click=${e => this.onCreateNew(e, 'website')}>
             <i class="fa fa-sitemap"></i>
             <span class="label">Website</span>
           </div>
@@ -236,7 +236,7 @@ class BrowserMenu extends LitElement {
     this.requestUpdate()
   }
 
-  async onCreateSite (e) {
+  async onCreateNew (e) {
     bg.shellMenus.close()
 
     // create a new archive
