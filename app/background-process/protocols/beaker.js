@@ -11,7 +11,6 @@ import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
 
-const START_APP_PATH = path.dirname(require.resolve('@beaker/start-app')).replace('app.asar', 'app.asar.unpacked')
 const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app')).replace('app.asar', 'app.asar.unpacked')
 const COMPARE_APP_PATH = path.dirname(require.resolve('@beaker/compare-app')).replace('app.asar', 'app.asar.unpacked')
 const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).replace('app.asar', 'app.asar.unpacked')
@@ -197,9 +196,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
-  }
-  if (requestUrl === 'beaker://start' || requestUrl.startsWith('beaker://start/')) {
-    return serveAppAsset(requestUrl, START_APP_PATH, cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://sidebar' || requestUrl.startsWith('beaker://sidebar/')) {
     return serveAppAsset(requestUrl, SIDEBAR_APP_PATH, cb, {fallbackToIndexHTML: true})
