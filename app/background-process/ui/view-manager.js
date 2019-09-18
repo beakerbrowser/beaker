@@ -626,11 +626,11 @@ class View {
     this.numComments = 0
 
     var userSession = getUserSessionFor(this.browserWindow.webContents)
-    var followedUsers = (await beakerCore.uwg.follows.list({authors: userSession.url})).map(({topic}) => topic.url)
-    var authors = [userSession.url].concat(followedUsers)
+    var followedUsers = (await beakerCore.uwg.follows.list({author: userSession.url})).map(({topic}) => topic.url)
+    var author = [userSession.url].concat(followedUsers)
 
     // TODO replace with native 'count' method
-    var cs = await beakerCore.uwg.comments.thread(this.url, {authors})
+    var cs = await beakerCore.uwg.comments.thread(this.url, {author})
     function countComments (comments) {
       return comments.reduce((acc, comment) => acc + 1 + (comment.replies ? countComments(comment.replies) : 0), 0)
     }
@@ -663,9 +663,9 @@ class View {
     }
     if (this.datInfo) {
       let userSession = getUserSessionFor(this.browserWindow.webContents)
-      let userFollows = await beakerCore.uwg.follows.list({authors: userSession.url})
+      let userFollows = await beakerCore.uwg.follows.list({author: userSession.url})
       let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
-      let siteFollowers = await beakerCore.uwg.follows.list({topics: this.datInfo.url, authors: followAuthors})
+      let siteFollowers = await beakerCore.uwg.follows.list({topic: this.datInfo.url, author: followAuthors})
       this.numFollowers = siteFollowers.length
     }
     if (!noEmit) this.emitUpdateState()
