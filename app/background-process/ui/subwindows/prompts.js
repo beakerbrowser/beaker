@@ -28,19 +28,19 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   // destroy all under this window
-  for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in views) {
-      views[view.id].destroy()
-      delete views[view.id]
+  for (let parentView of viewManager.getAll(parentWindow)) {
+    if (parentView.id in views) {
+      views[parentView.id].destroy()
+      delete views[parentView.id]
     }
   }
 }
 
 export function reposition (parentWindow) {
   // reposition all under this window
-  for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in views) {
-      setBounds(views[view.id], parentWindow)
+  for (let parentView of viewManager.getAll(parentWindow)) {
+    if (parentView.id in views) {
+      setBounds(views[parentView.id], parentView, parentWindow)
     }
   }
 }
@@ -52,6 +52,7 @@ export async function create (webContents, promptName, params = {}) {
   if (parentView && !parentWindow) {
     // if there's no window, then a web page or "sub-window" created the prompt
     // use its containing window
+    parentView = viewManager.findView(parentView)
     parentWindow = findWebContentsParentWindow(parentView.webContents)
   } else if (!parentView) {
     // if there's no view, then the shell window created the prompt
@@ -76,7 +77,7 @@ export async function create (webContents, promptName, params = {}) {
   if (viewManager.getActive(parentWindow).id === parentView.id) {
     parentWindow.addBrowserView(view)
   }
-  setBounds(view, parentWindow)
+  setBounds(view, parentView, parentWindow)
   view.webContents.on('console-message', (e, level, message) => {
     console.log('Prompts window says:', message)
   })
@@ -95,7 +96,7 @@ export function show (parentView) {
     if (!win) win = findWebContentsParentWindow(view.webContents)
     if (win) {
       win.addBrowserView(view)
-      setBounds(view, win)
+      setBounds(view, parentView, win)
     }
   }
 }
@@ -154,12 +155,12 @@ function getDefaultHeight (view) {
   return 80
 }
 
-function setBounds (view, parentWindow, {width, height} = {}) {
+function setBounds (view, parentView, parentWindow, {width, height} = {}) {
   var parentBounds = parentWindow.getContentBounds()
   width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
   view.setBounds({
-    x: 0,
+    x: parentView.isSidebarActive ? Math.floor(parentBounds.width / 2) : 0,
     y: 85,
     width: width + (MARGIN_SIZE * 2),
     height: height + MARGIN_SIZE
