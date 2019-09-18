@@ -485,6 +485,8 @@ class View {
   // =
 
   async checkForDatAlternative (url) {
+    return // DISABLED
+
     let u = (new URL(url))
     // try to do a name lookup
     var siteHasDatAlternative = await beakerCore.dat.dns.resolveName(u.hostname).then(
