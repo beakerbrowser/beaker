@@ -121,13 +121,6 @@ export default function registerContextMenu () {
 
       if (!props.linkURL && props.mediaType === 'none' && !hasText) {
         menuItems.push({
-          label: 'About This Site',
-          click: (item, win) => {
-            viewManager.getActive(win).toggleSidebar('site')
-          }
-        })
-        menuItems.push({ type: 'separator' })
-        menuItems.push({
           label: 'Back',
           enabled: webContents.canGoBack(),
           click: () => webContents.goBack()
@@ -154,7 +147,7 @@ export default function registerContextMenu () {
       }
 
       menuItems.push({
-        label: 'Edit Source',
+        label: 'Edit Page',
         click: (item, win) => {
           viewManager.getActive(win).toggleSidebar('editor')
         }
