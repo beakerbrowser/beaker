@@ -50,6 +50,9 @@ if (beakerCore.getEnvVar('BEAKER_USER_DATA_PATH')) {
   console.log('User data path set by environment variables')
   console.log('userData:', beakerCore.getEnvVar('BEAKER_USER_DATA_PATH'))
   app.setPath('userData', beakerCore.getEnvVar('BEAKER_USER_DATA_PATH'))
+} else {
+  // DEBUG use a temporary path during the internal 0.9 beta -prf
+  app.setPath('userData', join(require('os').tmpdir(), 'beaker-0.9-beta'))
 }
 if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
   testDriver.setup()
