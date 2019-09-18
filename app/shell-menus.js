@@ -80,8 +80,6 @@ class MenusWrapper extends LitElement {
         return html`<bookmark-menu></bookmark-menu>`
       case 'donate':
         return html`<donate-menu></donate-menu>`
-      case 'site-tools':
-        return html`<site-tools-menu></site-tools-menu>`
     }
     return html`<div></div>`
   }

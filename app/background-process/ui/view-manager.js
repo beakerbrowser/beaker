@@ -292,16 +292,18 @@ class View {
 
   getBounds () {
     const win = this.browserWindow
+    var x = 0
     var {width, height} = win.getContentBounds()
     if (this.isSidebarActive) {
-      width = Math.floor(width / 2) // sidebar takes half the screen
+      x = width = Math.floor(width / 2) // sidebar takes left half the screen
     }
-    return {x: 0, y: Y_POSITION, width, height: height - Y_POSITION}
+    return {x, y: Y_POSITION, width, height: height - Y_POSITION}
   }
 
   resize () {
     this.browserView.setBounds(this.getBounds())
     this.browserView.setAutoResize({width: true, height: true})
+    prompts.reposition(this.browserWindow)
   }
 
   activate () {

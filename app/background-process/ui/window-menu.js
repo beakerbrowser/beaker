@@ -335,13 +335,13 @@ export function buildWindowMenu (opts = {}) {
           }]
       },
       {
-        label: 'Toggle Sidebar',
+        label: 'Toggle Editor',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+B',
+        accelerator: 'CmdOrCtrl+b',
         click: function (item, win) {
           if (win) {
             let active = viewManager.getActive(win)
-            if (active) active.toggleSidebar()
+            if (active) active.toggleSidebar('editor')
           }
         }
       },

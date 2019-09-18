@@ -125,7 +125,7 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
 function setBounds (sidebarView, parentWindow) {
   var parentBounds = parentWindow.getContentBounds()
   sidebarView.setBounds({
-    x: Math.floor(parentBounds.width / 2),
+    x: 0,
     y: SIDEBAR_Y,
     width: Math.floor(parentBounds.width / 2),
     height: parentBounds.height - SIDEBAR_Y
