@@ -357,29 +357,16 @@ class NavbarLocation extends LitElement {
 
   async onClickBookmark () {
     var rect = this.shadowRoot.querySelector('.bookmark-btn').getClientRects()[0]
-
-    // create a bookmark if needed
-    var bookmarkIsNew = false
-    if (!this.isBookmarked) {
-      bookmarkIsNew = true
-      var metadata = await bg.views.getPageMetadata(this.activeTabIndex)
-      await bg.bookmarks.add({
-        href: this.url,
-        title: metadata.title || this.title || '',
-        description: metadata.description || '',
-        tags: metadata.keywords,
-        visibility: 'private'
-      })
-      bg.views.refreshState(this.activeTabIndex) // pull latest state
-    }
-
     // show menu
     bg.views.toggleMenu('bookmark', {
       bounds: {
         top: Number(rect.bottom),
         left: Number(rect.right)
       },
-      params: {url: this.url, bookmarkIsNew}
+      params: {
+        url: this.url,
+        metadata: await bg.views.getPageMetadata(this.activeTabIndex)
+      }
     })
   }
 }

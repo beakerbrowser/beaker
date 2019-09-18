@@ -24,17 +24,15 @@ class BookmarkMenu extends LitElement {
 
   reset () {
     this.bookmark = null
-    this.bookmarkIsNew = false
     this.href = ''
     this.title = ''
     this.description = ''
     this.tags = ''
-    this.isPublic = false
+    this.isPublic = undefined
     this.hasChanges = false
   }
 
   async init (params) {
-    this.bookmarkIsNew = params.bookmarkIsNew
     const b = this.bookmark = await bg.bookmarks.getOwn(params.url)
     if (b && b.tags) b.tags = tagsToString(b.tags)
     if (b) {
@@ -42,14 +40,17 @@ class BookmarkMenu extends LitElement {
       this.title = b.title
       this.description = b.description
       this.tags = b.tags
-      this.isPublic = b.isPublic
+      this.isPublic = b.visibility === 'public'
     } else {
       this.href = params.url
+      this.title = params.metadata.title || ''
+      this.description = params.metadata.description || ''
+      this.tags = params.metadata.tags || ''
     }
     await this.requestUpdate()
 
     // focus and highlight input
-    var input = this.shadowRoot.querySelector('input')
+    var input = this.shadowRoot.querySelector('input[type=text]')
     input.focus()
     input.setSelectionRange(0, input.value.length)
   }
@@ -62,24 +63,6 @@ class BookmarkMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <form @submit=${this.onSaveBookmark}>
-          <div class="other-options">
-            <label class="toggle">
-              <span class="text"><i class="fas fa-fw fa-broadcast-tower"></i> Share publicly</span>
-              <input @change=${this.onChangePublic} ?checked=${this.isPublic || false} type="checkbox" name="isPublic" value="isPublic">
-              <div class="switch"></div>
-            </label>
-          </div>
-
-          <div class="buttons">
-            <button type="button" class="btn remove" @click=${this.onClickRemoveBookmark}>
-              Remove bookmark
-            </button>
-
-            <button class="btn ${this.hasChanges ? 'primary' : ''}" type="submit">
-              ${this.hasChanges ? 'Save' : 'Close'}
-            </button>
-          </div>
-
           <div class="input-group">
             <label for="title">Title</label>
             <input class="bookmark-title" type="text" name="title" placeholder="Title" value="${this.title}" @keyup=${this.onChangeTitle}/>
@@ -100,6 +83,22 @@ class BookmarkMenu extends LitElement {
               @keyup=${this.onChangeTags}
             >
           </div>
+
+          <div class="input-group public">
+            <label>
+              <input type="checkbox" ?checked=${this.isPublic} @change=${this.onChangePublic}>
+              Share this bookmark publicly
+            </label>
+          </div>
+
+          <div class="buttons">
+            <button type="button" class="btn remove" @click=${this.onClickRemoveBookmark}>
+              ${this.bookmark ? 'Remove' : 'Cancel'}
+            </button>
+            <button class="btn primary" type="submit">
+              Done
+            </button>
+          </div>
         </form>
       </div>
     `
@@ -112,23 +111,24 @@ class BookmarkMenu extends LitElement {
     e.preventDefault()
 
     // update bookmark
-    if (this.hasChanges) {
-      var b = this.bookmark
-      b.href = this.href
-      b.title = this.title
-      b.description = this.description
-      b.tags = this.tags.split(' ').filter(Boolean)
-      b.visibility = this.isPublic ? 'public' : 'private'
-      await bg.bookmarks.edit(b.href, b)
-      bg.views.refreshState('active')
+    var newB = {
+      href: this.href,
+      title: this.title,
+      description: this.description,
+      tags: this.tags.split(' ').filter(Boolean),
+      visibility: this.isPublic ? 'public' : 'private'
     }
+    if (this.bookmark) await bg.bookmarks.edit(this.href, newB)
+    else await bg.bookmarks.add(newB)
+    bg.views.refreshState('active')
     bg.shellMenus.close()
   }
 
   async onClickRemoveBookmark (e) {
     var b = this.bookmark
-    if (!b) return
-    await bg.bookmarks.remove(b.href)
+    if (b) {
+      await bg.bookmarks.remove(b.href)
+    }
     bg.views.refreshState('active')
     bg.shellMenus.close()
   }
@@ -148,8 +148,8 @@ class BookmarkMenu extends LitElement {
     this.hasChanges = true
   }
 
-  onChangePublic (e, v) {
-    this.isPublic = e.target.checked
+  onChangePublic (e) {
+    this.isPublic = e.currentTarget.checked
     this.hasChanges = true
   }
 }
@@ -159,7 +159,7 @@ BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`
   padding: 15px;
   color: #333;
   background: #fff;
-  height: 290px;
+  height: 278px;
   overflow: hidden;
 }
 
@@ -180,33 +180,6 @@ form {
   margin-bottom: 2px;
 }
 
-.other-options {
-  margin-top: -16px;
-}
-
-.other-options .input-group {
-  flex-direction: row;
-  align-items: center;
-}
-
-.other-options .input-group label {
-  display: inline-block;
-  margin-right: auto;
-  font-weight: normal;
-  font-size: 13px;
-}
-
-.other-options .toggle {
-  margin: 0 -20px;
-  padding: 12px 20px;
-  line-height: 1;
-  background: #fff;
-}
-
-.other-options .toggle:hover {
-  background: #eee;
-}
-
 .input-group input,
 .input-group textarea {
   display: inline-block;
@@ -219,28 +192,32 @@ form {
   resize: none;
 }
 
-.input-group input {
+.input-group input[type=text] {
   height: 28px;
   line-height: 28px;
   color: rgba(0, 0, 0, 0.75);
 }
 
+.input-group input[type=checkbox] {
+  height: auto;
+}
+
+.input-group.public {
+  margin: 14px 0;
+}
+
 .buttons {
   display: flex;
   justify-content: flex-end;
-  padding: 12px 20px;
-  margin: 0 -20px;
-  border-top: 1px solid #ddd;
-  text-align: right;
+  padding: 0;
+  margin: 15px -20px 0;
 }
 
-.buttons .btn {
-  margin-left: 5px;
-}
-
-.buttons .btn.remove {
-  margin-right: auto;
-  margin-left: 0;
+.buttons button {
+  height: 40px;
+  flex: 1;
+  text-align: center;
+  border-radius: 0;
 }
 `]
 
