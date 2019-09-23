@@ -38,12 +38,12 @@ const subwindows = {
 
 // globals
 // =
-let userDataDir
-let numActiveWindows = 0
-let firstWindow = null
-let sessionWatcher = null
-let focusedDevtoolsHost
-let hasFirstWindowLoaded = false
+var userDataDir
+var numActiveWindows = 0
+var firstWindow = null
+var sessionWatcher = null
+var focusedDevtoolsHost
+var hasFirstWindowLoaded = false
 const BROWSING_SESSION_PATH = './shell-window-state.json'
 const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
 const PRELOAD_PATH = path.join(__dirname, 'shell-window.build.js')
@@ -54,6 +54,11 @@ const PRELOAD_PATH = path.join(__dirname, 'shell-window.build.js')
 export async function setup () {
   // config
   userDataDir = jetpack.cwd(app.getPath('userData'))
+  sessionWatcher = new SessionWatcher(userDataDir)
+  var previousSessionState = getPreviousBrowsingSession()
+  var customStartPage = await settingsDb.get('custom_start_page')
+  var isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
+  var isOpenUrlEnvVar = !!beakerCore.getEnvVar('BEAKER_OPEN_URL')
 
   // set up app events
   app.on('activate', () => {
@@ -121,12 +126,6 @@ export async function setup () {
       }
     }
   })
-
-  let previousSessionState = getPreviousBrowsingSession()
-  sessionWatcher = new SessionWatcher(userDataDir)
-  let customStartPage = await settingsDb.get('custom_start_page')
-  let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
-  let isOpenUrlEnvVar = !!beakerCore.getEnvVar('BEAKER_OPEN_URL')
 
   if (!isTestDriverActive && !isOpenUrlEnvVar && (customStartPage === 'previous' || (!previousSessionState.cleanExit && userWantsToRestoreSession()))) {
     // restore old window
