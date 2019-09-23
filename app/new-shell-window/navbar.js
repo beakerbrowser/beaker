@@ -83,9 +83,6 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons" style="padding-left: 8px">
         ${this.watchlistBtn}
-        <button @click=${this.todo} style="margin: 0px 3px">
-          <span class="fas fa-fw fa-cloud"></span>
-        </button>
         ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
@@ -299,12 +296,6 @@ svg.icon.refresh {
 .buttons {
   display: flex;
   padding: 0 8px;
-}
-
-button .fa-cloud {
-  font-size: 13px;
-  -webkit-text-stroke: 1.5px black;
-  color: #d8d6d6;
 }
 
 .fa-arrow-alt-circle-up {
