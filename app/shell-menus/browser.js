@@ -92,7 +92,7 @@ class BrowserMenu extends LitElement {
 
           <div class="menu-item" @click=${this.onCreateNew}>
             <i class="fas fa-plus"></i>
-            <span class="label">Create New...</span>
+            <span class="label">New Dat</span>
           </div>
         </div>
 
