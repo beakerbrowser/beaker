@@ -29,7 +29,7 @@ import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
 import { findImageBounds } from '../../lib/bg/image'
-import { ucfirst } from '../../lib/strings'
+import { DAT_KEY_REGEX } from '../../lib/strings'
 const sitedataDb = beakerCore.dbs.sitedata
 const settingsDb = beakerCore.dbs.settings
 const historyDb = beakerCore.dbs.history
@@ -216,7 +216,8 @@ class View {
 
   get siteTitle () {
     try {
-      var hostname = ((parseDatURL(this.url)).hostname).replace(/\+(.+)$/, '')
+      var urlp = parseDatURL(this.url)
+      var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
         var userSession = getUserSessionFor(this.browserWindow.webContents)
         if (userSession && userSession.url === this.datInfo.url) {
@@ -229,7 +230,10 @@ class View {
         // pretty hash of the key otherwise
         return prettyHash(this.datInfo.key)
       }
-      if (this.url.startsWith('beaker://')) {
+      if (urlp.protocol === 'dat:') {
+        return DAT_KEY_REGEX.test(hostname) ? prettyHash(hostname) : ''
+      }
+      if (urlp.protocol === 'beaker:') {
         return 'Beaker'
       }
       return hostname
