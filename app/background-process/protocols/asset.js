@@ -74,11 +74,11 @@ export function setup () {
       // look up in db
       let data = await sitedata.get(url, asset)
       if (!data && asset === 'thumb') {
-        // try fallback to favicon
-        data = await sitedata.get(url, 'favicon')
+        // try fallback to screenshot
+        data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
         if (!data) {
-          // try fallback to screenshot
-          data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
+          // try fallback to favicon
+          data = await sitedata.get(url, 'favicon')
         }
       }
       if (data) {
