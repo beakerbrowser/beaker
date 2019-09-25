@@ -9,7 +9,7 @@ import _uniqWith from 'lodash.uniqwith'
 import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
 import bookmarksManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-bookmarks'
 import historyManifest from '@beaker/core/web-apis/manifests/internal/history'
-import searchManifest from '@beaker/core/web-apis/manifests/external/search'
+import searchManifest from '@beaker/core/web-apis/manifests/internal/search'
 import locationBarManifest from './background-process/rpc-manifests/location-bar'
 import viewsManifest from './background-process/rpc-manifests/views'
 
@@ -147,39 +147,64 @@ class LocationBar extends LitElement {
         <div class="info"><div class="row"><span class="content-column"><span class="title">${r.title}</span></span></div></div>
       `
     }
-    if (r.record && r.record.type === 'site') {
+    if (r.resultType === 'dat' || r.resultType === 'person') {
       return html`
-        <div class="icon"><img class="avatar" src=${'asset:thumb:' + r.url}></div>
+        <div class="icon"><img class=${r.resultType === 'person' ? 'avatar' : undefined} src=${'asset:thumb:' + r.url}></div>
         <div class="info">
           <div class="row">
             <span class="content-column">
-              <span class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>
+              <span class="title">${unsafeHTML(r.titleDecorated)}</span>
               ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
             </span>
           </div>
           <div class="row provenance">
-            <span class="fas fa-fw fa-user"></span>
-            ${r.url === this.userUrl ? html`This is <span class="is-you">you</span>` : 'Followed by you'}
-            <span class="url">${toNiceUrl(r.url)}</span>
+            ${r.resultType === 'person' ? html`
+              <span class="fas fa-fw fa-user"></span>
+              ${r.url === this.userUrl ? 'My profile' : 'Followed by me'}
+              <span class="url">${toNiceUrl(r.url)}</span>
+            ` : html`
+              <span class="far fa-fw fa-folder"></span>
+              Dat by
+              ${r.author && r.author.isOwner ? html`me`: (r.author && r.author.title || 'Anonymous')}
+              <span class="url">${toNiceUrl(r.url)}</span>
+            `}
           </div>
         </div>
       `
     }
-    if (r.record && r.record.type === 'unwalled.garden/bookmark') {
-      let authorTitle = r.record.author.isOwner ? html`<span class="is-you">you</span>`: (r.record.author.title || 'Anonymous')
+    if (r.resultType === 'bookmark') {
+      let authorTitle = r.author.isOwner ? 'me' : (r.author.title || 'Anonymous')
       return html`
-        <div class="icon"><img src=${'asset:favicon-32:' + r.url}></div>
+        <div class="icon"><img src=${'asset:favicon-32:' + r.record.href}></div>
         <div class="info">
           <div class="row">
             <span class="content-column">
-              <span class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>
+              <span class="title">${unsafeHTML(r.titleDecorated)}</span>
               ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
             </span>
           </div>
           <div class="row provenance">
             <span class="fas fa-fw fa-star"></span>
             Bookmarked by ${authorTitle}
-            <span class="url">${toNiceUrl(r.url)}</span>
+            <span class="url">${toNiceUrl(r.record.href)}</span>
+          </div>
+        </div>
+      `
+    }
+    if (r.resultType === 'status') {
+      let authorTitle = r.author.isOwner ? 'me' : (r.author.title || 'Anonymous')
+      return html`
+        <div class="icon"><img class="avatar" src=${'asset:thumb:' + r.author.url}></div>
+        <div class="info">
+          <div class="row">
+            <span class="content-column">
+              "<span class="title">${unsafeHTML(r.titleDecorated)}</span>"
+            </span>
+          </div>
+          <div class="row provenance">
+            <span class="far fa-fw fa-comment-alt"></span>
+            Status by ${authorTitle}
+            <span class="url">${toNiceUrl(r.record.href)}</span>
           </div>
         </div>
       `
@@ -193,7 +218,10 @@ class LocationBar extends LitElement {
             ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
           </span>
         </div>
-        <div class="row provenance"><span class="url-column">${toNiceUrl(r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url)}</span></div>
+        <div class="row provenance">
+          <span class="fas fa-fw fa-history"></span>
+          ${toNiceUrl(r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url)}
+        </div>
       </div>
     `
   }
@@ -303,9 +331,12 @@ class LocationBar extends LitElement {
 
     var finalResults
     var [crawlerResults, historyResults] = await Promise.all([
-      bg.search.query({query: this.inputValue, filters: {datasets: ['sites', 'unwalled.garden/bookmark']}, limit: 10}),
-      bg.history.search(this.inputValue)
+      bg.search.query({query: this.inputValue, limit: 10}),
+      []// DISABLED bg.history.search(this.inputValue)
     ])
+    // History search is experimentally disabled
+    // We're seeing how it feels to focus entirely on results from the network
+    // -prf
 
     // console.log({
     //   historyResults,
@@ -422,7 +453,8 @@ input:focus {
 }
 
 .result .icon .fa,
-.result .icon .fas {
+.result .icon .fas,
+.result .icon .far {
   font-size: 13px;
   color: #707070;
   margin-left: 9px;
@@ -433,17 +465,12 @@ input:focus {
   font-size: 15px;
 }
 
-.result .url-column,
 .result .content-column,
 .result .search-column {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
-}
-
-.result .url-column {
-  color: #707070;
 }
 
 .result .title,
@@ -464,7 +491,8 @@ input:focus {
   color: #555;
 }
 
-.provenance .fas {
+.provenance .fas,
+.provenance .far {
   font-size: 11px;
   position: relative;
   top: -1px;
@@ -474,11 +502,6 @@ input:focus {
 
 .provenance .url {
   margin-left: 5px;
-}
-
-.is-you {
-  color: #3a3d4e;
-  font-weight: 500;
 }
 
 .result.selected {
@@ -560,16 +583,9 @@ function highlightSearchResult (searchTerms, nonce, result) {
   var termRe = new RegExp(`(${searchTerms.join('|')})`, 'gi') // eg '(beaker|browser)'
   const highlight = str => makeSafe(str).replace(start, '').replace(end, '').replace(termRe, (_, term) => `<strong>${term}</strong>`)
 
-  if (result.record.type === 'site') {
-    result.titleDecorated = highlight(result.title)
-    result.descriptionDecorated = highlight(result.description)
-  } else if (result.record.type === 'unwalled.garden/bookmark') {
-    result.url = result.content.href
-    result.titleDecorated = highlight(result.content.title)
-    result.descriptionDecorated = ''
-    if (result.content.description) result.descriptionDecorated += highlight(result.content.description)
-    if (result.content.tags && result.content.tags.filter(Boolean).length) result.descriptionDecorated += `<span class="tags">(${highlight(result.content.tags.join(' '))})</span>`
-  }
+  result.url = result.record.href || result.href
+  result.titleDecorated = highlight(result.record.title || result.record.body)
+  result.descriptionDecorated = highlight(result.record.description)
 }
 
 // helper for history search results
