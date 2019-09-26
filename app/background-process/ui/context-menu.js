@@ -147,7 +147,7 @@ export default function registerContextMenu () {
       }
 
       menuItems.push({
-        label: 'Edit Page',
+        label: 'View Source',
         click: (item, win) => {
           viewManager.getActive(win).toggleSidebar('editor')
         }
