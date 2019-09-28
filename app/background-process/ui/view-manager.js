@@ -8,7 +8,6 @@ import Events from 'events'
 import _throttle from 'lodash.throttle'
 import parseDatURL from 'parse-dat-url'
 import emitStream from 'emit-stream'
-import prettyHash from 'pretty-hash'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
@@ -79,7 +78,12 @@ const STATE_VARS = [
   'siteIcon',
   'datDomain',
   'isOwner',
+  'canFollow',
+  'isFollowing',
   'numFollowers',
+  'canSave',
+  'isSaved',
+  'isMyProfile',
   'numComments',
   'peers',
   'favicons',
@@ -157,8 +161,11 @@ class View {
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
     this.datInfo = null // metadata about the site if viewing a dat
+    this.isSystemDat = undefined // is this the root drive or a user?
+    this.isFollowing = undefined // is the current user following this drive?
     this.numFollowers = 0 // how many sites are following this site? (unwalled garden)
     this.numComments = 0 // how many comments are on the current page? (unwalled garden)
+    this.confirmedAuthorTitle = undefined // the title of the confirmed author of the site
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
@@ -219,19 +226,12 @@ class View {
       var urlp = parseDatURL(this.url)
       var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
-        var userSession = getUserSessionFor(this.browserWindow.webContents)
-        if (userSession && userSession.url === this.datInfo.url) {
-          return 'My Profile'
+        if (this.datInfo.type === 'unwalled.garden/person') {
+          return this.datInfo.title || 'Anonymous'
         }
-        if (this.datInfo.domain) {
-          // use confirmed domain if available
-          return this.datInfo.domain
-        }
-        // pretty hash of the key otherwise
-        return prettyHash(this.datInfo.key)
-      }
-      if (urlp.protocol === 'dat:') {
-        return DAT_KEY_REGEX.test(hostname) ? prettyHash(hostname) : ''
+        return `"${this.datInfo.title || 'Untitled'}" by ${this.confirmedAuthorTitle ? this.confirmedAuthorTitle : '(Unknown)'}`
+      } else if (urlp.protocol === 'dat:') {
+        return '(Untitled) by (Unknown)'
       }
       if (urlp.protocol === 'beaker:') {
         return 'Beaker'
@@ -244,10 +244,6 @@ class View {
 
   get siteIcon () {
     if (this.datInfo) {
-      var userSession = getUserSessionFor(this.browserWindow.webContents)
-      if (userSession && userSession.url === this.datInfo.url) {
-        return 'far fa-user-circle'
-      }
       return libTools.getFAIcon(libTools.typeToCategory(this.datInfo.type))
     }
     return ''
@@ -259,6 +255,23 @@ class View {
 
   get isOwner () {
     return this.datInfo && this.datInfo.isOwner
+  }
+
+  get canFollow () {
+    return this.datInfo && this.datInfo.type === 'unwalled.garden/person' && !this.isMyProfile
+  }
+
+  get canSave () {
+    return this.datInfo && !this.isSystemDat
+  }
+
+  get isSaved () {
+    return this.datInfo && this.datInfo.userSettings && this.datInfo.userSettings.isSaved
+  }
+
+  get isMyProfile () {
+    var userSession = getUserSessionFor(this.browserWindow.webContents)
+    return this.datInfo && this.datInfo.url === userSession.url
   }
 
   get canGoBack () {
@@ -682,7 +695,10 @@ class View {
   async fetchDatInfo (noEmit = false) {
     // clear existing state
     this.peers = 0
+    this.isSystemDat = false
+    this.isFollowing = false
     this.numFollowers = 0
+    this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
 
     if (!this.url.startsWith('dat://')) {
@@ -700,11 +716,32 @@ class View {
       this.datInfo = null
     }
     if (this.datInfo) {
+      // mark as a system dat if it's the root drive or a user drive
+      let userUrls = beakerCore.users.listUrls()
+      if (beakerCore.filesystem.isRootUrl(this.datInfo.url) || userUrls.includes(this.datInfo.url)) {
+        this.isSystemDat = true
+      }
+
+      // fetch social graph
       let userSession = getUserSessionFor(this.browserWindow.webContents)
       let userFollows = await beakerCore.uwg.follows.list({author: userSession.url})
       let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
       let siteFollowers = await beakerCore.uwg.follows.list({topic: this.datInfo.url, author: followAuthors})
+      this.isFollowing = siteFollowers.find(f => f.author.url === userSession.url)
       this.numFollowers = siteFollowers.length
+
+      // determine the confirmed author
+      if (this.datInfo.author) {
+        try {
+          if (this.datInfo.author === userSession.url) {
+            this.confirmedAuthorTitle = (await beakerCore.users.get(userSession.url)).title
+          } else if (followAuthors.includes(this.datInfo.author)) {
+            this.confirmedAuthorTitle = userFollows.find(f => f.topic.url === this.datInfo.author).topic.title
+          }
+        } catch (e) {
+          console.error(e)
+        }
+      }
     }
     if (!noEmit) this.emitUpdateState()
   }

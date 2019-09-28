@@ -240,7 +240,6 @@ ${spinnerCSS}
   position: relative;
   padding: 0 18px 0 0px;
   height: 34px;
-  border-bottom: 1px solid var(--color-border);
 }
 
 .shell.win32 {
@@ -258,7 +257,6 @@ ${spinnerCSS}
   position: relative;
   top: 0px;
   height: 34px;
-  border-left: 1px solid var(--color-border);
 }
 
 .tabs * {
@@ -271,11 +269,15 @@ ${spinnerCSS}
 .tab {
   display: inline-block;
   position: relative;
-  top: 0px;
-  height: 34px;
+  top: 3px;
+  height: 31px;
   width: 235px;
+  margin-right: 2px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
-  border: 1px solid transparent;
+  background: var(--bg-background);
+  transition: background 0.3s;
 }
 
 .tab.pinned {
@@ -288,7 +290,7 @@ ${spinnerCSS}
   text-align: center;
   position: absolute;
   left: 10px;
-  top: 9px;
+  top: 7px;
   z-index: 3;
 }
 
@@ -313,21 +315,15 @@ ${spinnerCSS}
   color: var(--color-tab);
   font-size: 11.5px;
   letter-spacing: 0.2px;
-  padding: 11px 11px 9px 30px;
+  padding: 9px 11px 9px 30px;
   height: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  border-left: 1px solid var(--color-border);
 }
 
 .tab.no-favicon .tab-title {
   padding-left: 11px;
-}
-
-.tab.current .tab-title,
-.tab.current + .tab .tab-title {
-  border-left-color: transparent;
 }
 
 .fa-volume-up,
@@ -351,7 +347,7 @@ ${spinnerCSS}
 }
 
 .tab-close {
-  display: none;
+  opacity: 0;
   position: absolute;
   right: 8px;
   top: 8px;
@@ -361,6 +357,8 @@ ${spinnerCSS}
   border-radius: 2px;
   text-align: center;
   color: var(--color-tab-close);
+  background: var(--bg-background);
+  transition: background 0.3s, opacity 0.3s;
 }
 
 .tab-close:before {
@@ -370,6 +368,7 @@ ${spinnerCSS}
   font-weight: 200;
   opacity: 0;
   line-height: .71;
+  transition: opacity 0.3s;
 }
 
 .tab-close:hover:before,
@@ -382,59 +381,14 @@ ${spinnerCSS}
   background: var(--bg-tab-close--hover);
 }
 
-.tab.tab-add-btn {
-  top: 0;
-  width: 40px;
-}
-
-.tab-add-btn .plus {
-  position: absolute;
-  top: 0;
-  display: block;
-  font-size: 22px;
-  font-weight: 300;
-  color: var(--color-tab-add);
-  margin: 4px 7px;
-  width: 26px;
-  height: 25px;
-  text-align: center;
-  line-height: 100%;
-  border-radius: 2px;
-}
-
-.tab.tab-add-btn:hover {
-  background: inherit;
-}
-
-.tab-add-btn:hover .tab-close:before {
-  opacity: 1;
-}
-
-.tab-add-btn:hover .plus {
-  background: var(--bg-tab-add--hover);
-  color: var(--color-tab-add--hover);
-}
-
-.tab:not(.current):hover .tab-title,
+.tab:not(.current):hover,
 .tab:not(.current):hover .fa-volume-up,
 .tab:not(.current):hover .fa-volume-mute {
   background: var(--bg-tab--hover);
 }
 
-/* add a gradient effect */
-.tab:not(.current):hover .tab-title:after {
-  content: '';
-  display: block;
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 27px;
-  width: 60px;
-  background: linear-gradient(to right, #d2d2d200, #d2d2d2ff);
-}
-
 .tab:hover .tab-close {
-  display: block;
+  opacity: 1;
   background: var(--bg-tab--hover);
 }
 
@@ -451,51 +405,62 @@ ${spinnerCSS}
 }
 
 .tab.current {
-  position: relative;
   background: var(--bg-tab--current);
-  border: 1px solid var(--color-border);
-  border-top: 0;
-  border-bottom: 0;
-  top: 1px;
+}
+
+.tab.current:before,
+.tab.current:after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  height: 10px;
+  width: 10px;
+  background: #fff;
 }
 
 .tab.current:before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  right: -1px;
-  height: 2px;
-  background: #0f8aea;
+  left: -10px;
+  -webkit-mask-image: radial-gradient(circle 10px at 0 0, transparent 0, transparent 10px, black 11px);
 }
 
-.tab.current .tab-favicon {
-  top: 8.5px;
-}
-
-.tab.current .tab-title:after {
-  /* adjust color */
-  background: linear-gradient(to right, rgba(247,247,247,0), rgb(247, 247, 247));
+.tab.current:after {
+  right: -10px;
+  -webkit-mask-image: radial-gradient(circle 10px at 10px 0, transparent 0, transparent 10px, black 11px);
 }
 
 .tab.current .tab-close {
   background: var(--bg-tab--current);
 }
 
-.tab.drag-hover .tab-title {
-  background: #bbb;
+.tab.drag-hover {
+  background: var(--bg-tab--drag-over);
 }
 
-.tab.current.drag-hover {
-  border-color: #888;
+.tab.tab-add-btn {
+  width: 40px;
 }
 
-.tab.current.drag-hover .tab-title {
-  background: #eee;
+.tab-add-btn .plus {
+  position: absolute;
+  top: 0;
+  display: block;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--color-tab-add);
+  margin: 3px 7px;
+  width: 26px;
+  height: 25px;
+  text-align: center;
+  line-height: 100%;
 }
 
-.tab.current + .unused-space {
-  border-left-color: transparent;
+.tab-add-btn:hover .tab-close:before {
+  opacity: 1;
+}
+
+.tab-add-btn:hover .plus {
+  color: var(--color-tab-add--hover);
 }
 
 /* make room for traffic lights */

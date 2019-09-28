@@ -62,7 +62,7 @@ export function setup () {
       if (url.startsWith('beaker://library')) {
         let match = /\?view=([\w-]+)/.exec(url)
         if (match) name = match[1]
-        else name = 'pins'
+        else name = 'launcher'
       }
       return fs.readFile(path.join(__dirname, `./assets/img/favicons/${name}.png`), (err, buf) => {
         if (buf) cb({mimeType: 'image/png', data: buf})

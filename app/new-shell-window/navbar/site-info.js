@@ -10,7 +10,6 @@ class NavbarSiteInfo extends LitElement {
   static get properties () {
     return {
       url: {type: String},
-      siteIcon: {type: String},
       siteTitle: {type: String},
       datDomain: {type: String},
       isOwner: {type: Boolean},
@@ -23,7 +22,6 @@ class NavbarSiteInfo extends LitElement {
   constructor () {
     super()
     this.url = ''
-    this.siteIcon = ''
     this.siteTitle = ''
     this.datDomain = ''
     this.isOwner = false
@@ -53,33 +51,39 @@ class NavbarSiteInfo extends LitElement {
 
   render () {
     const scheme = this.scheme
+    var certified = false
+    var insecure = false
     var innerHTML
     if (scheme) {
       const isHttps = scheme === 'https:'
       const isInsecureResponse = _get(this, 'loadError.isInsecureResponse')
       if ((isHttps && !isInsecureResponse) || scheme === 'beaker:') {
+        certified = true
         innerHTML = html`
-          ${scheme !== 'beaker:' ? html`<span class="fas fa-info-circle"></span>` : ''}
+          <span class="fas fa-check-circle certified"></span>
           <span class="label">${this.siteTitle}</span>
         `
       } else if (scheme === 'http:') {
+        insecure = true
         innerHTML = html`
           <span class="fas insecure fa-exclamation-triangle"></span>
           <span class="label">${this.siteTitle}</span>
         `
       } else if (isHttps && isInsecureResponse) {
+        insecure = true
         innerHTML = html`
           <span class="fas insecure fa-exclamation-triangle"></span>
           <span class="label">${this.siteTitle}</span>
         `
       } else if (scheme === 'dat:') {
+        if (this.isOwner) {
+          certified = true
+        }
         innerHTML = html`
-          ${this.isOwner ? html`<span class="label darkbg" style="margin-left: -3px; margin-right: 4px">My Site</span>` : ''}
-          <span class="${this.siteIcon || 'fas fa-info-circle'}"></span>
-          <span class="label">
-            ${this.siteAuthor ? html`${this.siteAuthor} <span class="fas fa-fw fa-angle-right"></span>` : ''}
-            ${this.siteTitle}
-          </span>
+          ${this.isOwner ? html`
+            <span class="fas fa-check-circle certified"></span>
+          ` : ''}
+          <span class="label">${this.siteTitle}</span>
         `
       }
     }
@@ -90,8 +94,9 @@ class NavbarSiteInfo extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <button class=${classMap({pressed: this.isPressed})} @click=${this.onClickButton}>
+      <button class=${classMap({certified, insecure, pressed: this.isPressed})} @click=${this.onClickButton}>
         ${innerHTML}
+        <span class="fas fa-caret-down"></span>
       </button>
     `
   }
@@ -117,14 +122,31 @@ NavbarSiteInfo.styles = [buttonResetCSS, css`
 }
 
 button {
-  border-radius: 0;
+  border-radius: 16px;
   height: 26px;
   line-height: 26px;
-  padding: 0 4px 0 10px;
+  padding: 0 10px;
+  background: var(--bg-cert-default);
 }
 
-button:hover {
-  background: #eee;
+button:not(:disabled):hover {
+  background: var(--bg-cert-default--hover);
+}
+
+button.certified {
+  background: var(--bg-cert-certified);
+}
+
+button.certified:hover {
+  background: var(--bg-cert-certified--hover);
+}
+
+button.insecure {
+  background: var(--bg-cert-insecure);
+}
+
+button.insecure:hover {
+  background: var(--bg-cert-insecure--hover);
 }
 
 button.hidden {
@@ -144,7 +166,7 @@ button.hidden {
 }
 
 .fa-caret-down {
-  color: #adadad;
+  color: rgba(0,0,0,.2);
   margin-left: 2px;
 }
 
@@ -155,12 +177,8 @@ button.hidden {
   font-weight: 500;
 }
 
-.label.darkbg {
-  background: rgba(0,0,0,.08);
-  padding: 2px 4px;
-  border-radius: 3px;
-  color: #444;
-  font-size: 10px;
+.certified {
+  color: var(--color-certified);
 }
 
 .secure {

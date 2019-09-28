@@ -18,10 +18,13 @@ class NavbarLocation extends LitElement {
       url: {type: String},
       title: {type: String},
       siteTitle: {type: String},
-      siteIcon: {type: String},
       datDomain: {type: String},
       isOwner: {type: Boolean},
       peers: {type: Number},
+      canSave: {type: Boolean},
+      isSaved: {type: Boolean},
+      canFollow: {type: Boolean},
+      isFollowing: {type: Boolean},
       numFollowers: {type: Number},
       zoom: {type: Number},
       loadError: {type: Object},
@@ -40,10 +43,13 @@ class NavbarLocation extends LitElement {
     this.url = ''
     this.title = ''
     this.siteTitle = ''
-    this.siteIcon = ''
     this.datDomain = ''
     this.isOwner = false
     this.peers = 0
+    this.canSave = false
+    this.isSaved = false
+    this.canFollow = false
+    this.isFollowing = false
     this.numFollowers = 0
     this.zoom = 0
     this.loadError = null
@@ -86,7 +92,6 @@ class NavbarLocation extends LitElement {
       <shell-window-navbar-site-info
         url=${this.url}
         siteTitle=${this.siteTitle}
-        siteIcon=${this.siteIcon}
         datDomain=${this.datDomain}
         ?isOwner=${this.isOwner}
         peers=${this.peers}
@@ -94,22 +99,13 @@ class NavbarLocation extends LitElement {
         .loadError=${this.loadError}
       >
       </shell-window-navbar-site-info>
-      <hr>
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
-      ${this.isDat ? html`
-        <hr>
-        <button class="text" @click=${this.onClickFollow} title="Follow this site">
-          <span class="fas fa-fw fa-rss"></span> <span class="text-label">Follow</span>
-        </button>
-        <button class="text" @click=${this.onClickFollow} title="Save this site">
-          <span class="fas fa-fw fa-save"></span> <span class="text-label">Save</span>
-        </button>
-        <hr>
-      ` : ''}
+      ${this.renderFollowBtn()}
+      ${this.renderSaveBtn()}
       ${this.renderBookmarkBtn()}
     `
   }
@@ -163,14 +159,14 @@ class NavbarLocation extends LitElement {
           }
         }
         var cls = 'protocol'
-        if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
-        if (['https:'].includes(protocol) && !this.loadError) cls += ' protocol-secure'
+        // if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
+        // if (['https:'].includes(protocol) && !this.loadError) cls += ' protocol-secure'
         if (['https:'].includes(protocol) && this.loadError && this.loadError.isInsecureResponse) cls += ' protocol-insecure'
-        if (['dat:'].includes(protocol)) cls += ' protocol-secure'
-        if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
+        // if (['dat:'].includes(protocol)) cls += ' protocol-secure'
+        // if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
         return html`
           <div class="input-pretty" @mouseup=${this.onClickLocation}>
-            <span class=${cls}><span class="path">${pathname}${search}${hash}</span>
+            <span class=${cls}>${protocol.slice(0, -1)}</span><span class="syntax">://</span><span class="host">${host}</span><span class="path">${pathname}${search}${hash}</span>
           </div>
         `
       } catch (e) {
@@ -251,6 +247,26 @@ class NavbarLocation extends LitElement {
     `
   }
 
+  renderFollowBtn () {
+    if (!this.canFollow) return ''
+    return html`
+      <button class="text ${this.isFollowing ? 'highlight' : ''}" @click=${this.onClickFollow} title="Follow this site">
+        <span class="fas fa-fw fa-rss"></span>
+        <span class="text-label">${this.isFollowing ? 'Following' : 'Follow'}</span>
+      </button>
+    `
+  }
+
+  renderSaveBtn () {
+    if (!this.canSave) return ''
+    return html`
+      <button class="text ${this.isSaved ? 'highlight' : ''}" @click=${this.onClickSave} title="Save this site">
+        <span class="fas fa-fw fa-save"></span>
+        <span class="text-label">${this.isSaved ? 'Saved' : 'Save'}</span>
+      </button>
+    `
+  }
+
   renderBookmarkBtn () {
     const cls = classMap({
       far: !this.isBookmarked,
@@ -317,8 +333,22 @@ class NavbarLocation extends LitElement {
     e.currentTarget.blur()
   }
 
-  onClickFollow (e) {
-    // TODO
+  async onClickFollow (e) {
+    if (this.isFollowing) {
+      await bg.follows.remove(this.url)
+    } else {
+      await bg.follows.add(this.url)
+    }
+    bg.views.reload('active')
+  }
+
+  async onClickSave (e) {
+    if (this.isSaved) {
+      await bg.library.configure(this.url, {isSaved: false})
+    } else {
+      await bg.library.configure(this.url, {isSaved: true})
+    }
+    bg.views.reload('active')
   }
 
   onClickZoom (e) {
@@ -378,13 +408,11 @@ NavbarLocation.styles = [buttonResetCSS, css`
   border: 1px solid var(--color-border-input);
   border-radius: 4px;
   padding-right: 2px;
+  user-select: none;
 }
 
-hr {
-  width: 0;
-  margin: 5px;
-  border: 0;
-  border-left: 1px solid var(--color-border-input);
+shell-window-navbar-site-info {
+  margin-right: 5px;
 }
 
 button {
@@ -398,6 +426,11 @@ button.text {
   width: auto;
   padding: 0 4px;
   font-size: 11px;
+}
+
+button.text.highlight {
+  color: #157bcc;
+  font-weight: 500;
 }
 
 button .fa,

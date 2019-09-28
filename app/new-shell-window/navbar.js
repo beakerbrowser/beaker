@@ -51,7 +51,7 @@ class ShellWindowNavbar extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="buttons" style="padding-left: 6px;">
+      <div class="buttons" style="padding-right: 0">
         ${this.backBtn}
         ${this.forwardBtn}
         ${this.reloadBtn}
@@ -61,11 +61,14 @@ class ShellWindowNavbar extends LitElement {
         .activeTabIndex="${this.activeTabIndex}"
         url="${_get(this, 'activeTab.url', '')}"
         title="${_get(this, 'activeTab.title', '')}"
-        siteIcon="${_get(this, 'activeTab.siteIcon', '')}"
         siteTitle="${_get(this, 'activeTab.siteTitle', '')}"
         datDomain="${_get(this, 'activeTab.datDomain', '')}"
-        ?isOwner="${_get(this, 'activeTab.isOwner', false)}"
+        ?isOwner=${_get(this, 'activeTab.isOwner', false)}
         peers="${_get(this, 'activeTab.peers', 0)}"
+        ?canSave=${_get(this, 'activeTab.canSave', false)}
+        ?isSaved=${_get(this, 'activeTab.isSaved', false)}
+        ?canFollow=${_get(this, 'activeTab.canFollow', false)}
+        ?isFollowing=${_get(this, 'activeTab.isFollowing', false)}
         numFollowers="${_get(this, 'activeTab.numFollowers', 0)}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
         .loadError=${_get(this, 'activeTab.loadError', null)}
@@ -81,7 +84,7 @@ class ShellWindowNavbar extends LitElement {
         active-match="${_get(this, 'activeTab.currentInpageFindResults.activeMatchOrdinal', '0')}"
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
-      <div class="buttons" style="padding-left: 8px">
+      <div class="buttons" style="padding-left: 0">
         ${this.watchlistBtn}
         ${this.usersMenuBtn}
         ${this.browserMenuBtn}
