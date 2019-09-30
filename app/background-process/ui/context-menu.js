@@ -4,6 +4,15 @@ import path from 'path'
 import * as viewManager from './view-manager'
 import { download } from './downloads'
 
+// NOTE
+// subtle but important!!
+// the menu instance needs to be kept in the global scope
+// otherwise the JS GC will kick in and clean up the menu object
+// which causes the context-menu to destroy prematurely
+// see https://github.com/electron/electron/issues/19424
+// -prf
+var menuInstance
+
 export default function registerContextMenu () {
   // register the context menu on every created webContents
   app.on('web-contents-created', (e, webContents) => {
@@ -161,8 +170,8 @@ export default function registerContextMenu () {
       })
 
       // show menu
-      var menu = Menu.buildFromTemplate(menuItems)
-      menu.popup({ window: targetWindow })
+      menuInstance = Menu.buildFromTemplate(menuItems)
+      menuInstance.popup({ window: targetWindow })
     })
   })
 }
