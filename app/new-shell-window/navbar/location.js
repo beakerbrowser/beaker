@@ -395,7 +395,7 @@ class NavbarLocation extends LitElement {
       },
       params: {
         url: this.url,
-        metadata: await bg.views.getPageMetadata(this.activeTabIndex)
+        metadata: {title: this.title} // DISABLED was causing issues -prf await bg.views.getPageMetadata(this.activeTabIndex)
       }
     })
   }

@@ -8,7 +8,7 @@ import { setup as setupExecuteJavascript } from './webview-preload/execute-javas
 import setupExitFullScreenHackfix from './webview-preload/exit-full-screen-hackfix'
 import readableStreamAsyncIteratorPolyfill from './webview-preload/readable-stream-async-iterator-polyfill'
 import windowOpenCloseHackfix from './webview-preload/window-open-close-hackfix'
-import './webview-preload/read-page-metadata'
+// import './webview-preload/read-page-metadata' DISABLED wasnt working effectively -prf
 
 webFrame.setSpellCheckProvider('en-US', beakerCoreWebview.createSpellChecker(rpcAPI))
 
