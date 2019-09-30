@@ -37,6 +37,19 @@ class ShellWindowNavbar extends LitElement {
     return _get(this, 'activeTab.canGoForward')
   }
 
+  get canGoUp () {
+    var url = _get(this, 'activeTab.url', '')
+    try {
+      var urlp = new URL(url)
+      if (urlp.pathname !== '/') return true
+      if (urlp.search) return true
+      if (urlp.hash) return true
+      return false
+    } catch (e) {
+      return false
+    }
+  }
+
   get isLoading () {
     return _get(this, 'activeTab.isLoading')
   }
@@ -55,6 +68,7 @@ class ShellWindowNavbar extends LitElement {
         ${this.backBtn}
         ${this.forwardBtn}
         ${this.reloadBtn}
+        ${this.updogBtn}
         ${this.homeBtn}
       </div>
       <shell-window-navbar-location
@@ -166,6 +180,14 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get updogBtn () {
+    return html`
+      <button @click=${this.onClickUpdog} ?disabled=${!this.canGoUp} style="margin: 0 0 0 4px">
+        <span class="fas fa-level-up-alt"></span>
+      </button>
+    `
+  }
+
   get homeBtn () {
     return html`
       <button @click=${this.onClickHome} style="margin: 0 6px">
@@ -238,6 +260,18 @@ class ShellWindowNavbar extends LitElement {
     bg.views.loadURL('active', 'beaker://library/')
   }
 
+  onClickUpdog (e) {
+    var url = _get(this, 'activeTab.url', '')
+    if (!url) return
+    try {
+      let urlp = new URL(url)
+      let pathname = `/${urlp.pathname.split('/').filter(Boolean).slice(0, -1).join('/')}`
+      bg.views.loadURL('active', urlp.origin + pathname)
+    } catch (e) {
+      // ignore
+    }
+  }
+
   onClickWatchlistBtn (e) {
     this.numWatchlistNotifications = 0
     bg.views.createTab('beaker://watchlist', {setActive: true})
@@ -301,7 +335,14 @@ svg.icon.refresh {
   padding: 0 8px;
 }
 
-.fa-arrow-alt-circle-up {
+.fas.fa-level-up-alt {
+  font-size: 15px;
+  position: relative;
+  top: -1px;
+  color: #555;
+}
+
+.fas.fa-arrow-alt-circle-up {
   font-size: 20px;
   color: #67bf6b;
   -webkit-text-stroke: 1px #0eab0e;
