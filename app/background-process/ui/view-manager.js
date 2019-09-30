@@ -830,7 +830,7 @@ class View {
     }
   }
 
-  onDidStopLoading (e) {
+  onDidStopLoading () {
     this.updateHistory()
 
     // update state
@@ -856,6 +856,15 @@ class View {
   onDomReady (e) {
     // capture screenshot
     this.captureScreenshot()
+
+    // HACK
+    // sometimes 'did-stop-loading' doesnt get fired
+    // not sure why, but 'dom-ready' indicates that loading is done
+    // if still isLoading or isReceivingAssets, run the did-stop-loading handler
+    // -prf
+    if (this.isLoading || this.isReceivingAssets) {
+      this.onDidStopLoading()
+    }
   }
 
   async onDidFailLoad (e, errorCode, errorDescription, validatedURL, isMainFrame) {
