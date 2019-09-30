@@ -81,7 +81,7 @@ export async function setup () {
 
   app.on('web-contents-created', async (e, wc) => {
     // await setup
-    await new Promise(resolve => wc.once('dom-ready', resolve))
+    await new Promise(resolve => wc.once('did-start-loading', resolve))
 
     // handle shell-window webcontents
     const window = BrowserWindow.fromWebContents(wc)
@@ -92,10 +92,17 @@ export async function setup () {
     }
 
     // handle tab & sidebar webcontents
-    const parentView = BrowserView.fromWebContents(wc)
+    var parentView = BrowserView.fromWebContents(wc)
     if (!parentView) return
-    const parentWindow = findWebContentsParentWindow(parentView)
-    if (!parentWindow) return
+    var parentWindow = findWebContentsParentWindow(parentView)
+    if (!parentWindow) {
+      let parentViewWrapper = viewManager.findView(parentView)
+      if (parentViewWrapper) {
+        parentWindow = parentViewWrapper.browserWindow
+      } else {
+        return
+      }
+    }
 
     // attach global keybindings
     wc.on('before-input-event', createGlobalKeybindingsHandler(parentWindow))

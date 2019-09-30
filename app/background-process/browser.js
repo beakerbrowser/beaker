@@ -4,7 +4,6 @@ import {autoUpdater} from 'electron-updater'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
-import slugify from 'slugify'
 import jetpack from 'fs-jetpack'
 import ICO from 'icojs'
 import toIco from 'to-ico'
@@ -20,7 +19,6 @@ import * as viewManager from './ui/view-manager'
 import * as modals from './ui/subwindows/modals'
 import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from '../lib/electron'
-import {INVALID_SAVE_FOLDER_CHAR_REGEX} from '@beaker/core/lib/const'
 
 // constants
 // =
