@@ -105,12 +105,8 @@ export async function setup () {
   //  - we have use ipc directly instead of using rpc, because we need custom
   //    response-lifecycle management in the main thread
   ipcMain.on('page-prompt-dialog', async (e, message, def) => {
-    try {
-      var res = await modals.create(e.sender, 'prompt', {message, default: def})
-      e.returnValue = res && res.value ? res.value : false
-    } catch (e) {
-      e.returnValue = false
-    }
+    var res = await modals.create(e.sender, 'prompt', {message, default: def}).catch(e => false)
+    e.returnValue = res && res.value ? res.value : false
   })
 
   // HACK
