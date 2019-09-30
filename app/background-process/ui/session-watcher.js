@@ -31,10 +31,11 @@ export default class SessionWatcher {
   stopRecording () { this.recording = false }
 
   watchWindow (win, initialState) {
+    const winId = win.id
     let state = initialState
     this.snapshot.windows.push(state)
     let watcher = new WindowWatcher(win, initialState)
-    this.watchers[win.id] = watcher
+    this.watchers[winId] = watcher
 
     watcher.on('change', (nextState) => {
       if (this.recording) {
@@ -52,7 +53,7 @@ export default class SessionWatcher {
         this.snapshot.windows = windows.splice(1, i)
         this.writeSnapshot()
       }
-      delete this.watchers[win.id]
+      delete this.watchers[winId]
       watcher.removeAllListeners()
     })
   }

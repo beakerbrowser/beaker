@@ -217,7 +217,7 @@ export function createShellWindow (windowState) {
   }
 
   ipcMain.on('shell-window:ready', handlePagesReady)
-  win.on('closed', () => {
+  win.on('close', () => {
     ipcMain.removeListener('shell-window:ready', handlePagesReady)
     for (let k in subwindows) {
       subwindows[k].destroy(win)
