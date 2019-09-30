@@ -7,6 +7,7 @@ import { fromEventStream } from '@beaker/core/web-apis/fg/event-target'
 import './new-shell-window/win32'
 import './new-shell-window/tabs'
 import './new-shell-window/navbar'
+import './new-shell-window/resize-hackfix'
 
 // setup
 document.addEventListener('DOMContentLoaded', () => {

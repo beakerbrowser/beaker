@@ -116,6 +116,18 @@ export async function setup () {
   })
 
   // HACK
+  // Electron has an issue where browserviews fail to calculate click regions after a resize
+  // https://github.com/electron/electron/issues/14038
+  // we can solve this by forcing a recalculation after every resize
+  // -prf
+  ipcMain.on('resize-hackfix', (e, message) => {
+    var win = findWebContentsParentWindow(e.sender)
+    if (win) {
+      win.webContents.executeJavaScript(`window.forceUpdateDragRegions()`)
+    }
+  })
+
+  // HACK
   // Electron doesn't give us a convenient way to check the content-types of responses
   // so we track the last 100 responses' headers to accomplish this
   // -prf

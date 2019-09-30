@@ -60,7 +60,7 @@ export function reposition (parentWindow) {
       view.setBounds(adjustBounds(view, parentWindow, b))
     }
     setBounds({
-      x: view.boundsOpt ? view.boundsOpt.left : 0,
+      x: view.boundsOpt ? view.boundsOpt.left : 170,
       y: 72,
       width: 400,
       height: 350
