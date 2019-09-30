@@ -280,6 +280,29 @@ ${spinnerCSS}
   transition: background 0.3s;
 }
 
+.tab:before,
+.tab:after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  height: 10px;
+  width: 10px;
+  background: #fff;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tab:before {
+  left: -10px;
+  -webkit-mask-image: radial-gradient(circle 10px at 0 0, transparent 0, transparent 10px, black 11px);
+}
+
+.tab:after {
+  right: -10px;
+  -webkit-mask-image: radial-gradient(circle 10px at 10px 0, transparent 0, transparent 10px, black 11px);
+}
+
 .tab.pinned {
   flex: 0 0 45px;
 }
@@ -406,6 +429,11 @@ ${spinnerCSS}
 
 .tab.current {
   background: var(--bg-tab--current);
+}
+
+.tab.current:before,
+.tab.current:after {
+  opacity: 1;
 }
 
 .tab.current:before,
