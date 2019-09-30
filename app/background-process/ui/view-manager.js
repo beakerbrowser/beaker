@@ -226,6 +226,9 @@ class View {
       var urlp = parseDatURL(this.url)
       var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
+        if (beakerCore.filesystem.isRootUrl(this.datInfo.url)) {
+          return 'My Hyperdrive'
+        }
         if (this.datInfo.type === 'unwalled.garden/person') {
           return this.datInfo.title || 'Anonymous'
         }
