@@ -17,6 +17,8 @@ export function urlToData (url, width, height, cb) {
 
 // like urlToData, but loads all images and takes the one that fits the target dimensions best
 export async function urlsToData (urls) {
+  if (!urls || !urls.length) return false
+  
   // load all images
   var imgs = await Promise.all(urls.map(url => {
     return new Promise(resolve => {
