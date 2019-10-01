@@ -266,12 +266,16 @@ export function createShellWindow (windowState) {
   // register event handlers
   win.on('browser-backward', onGoBack(win))
   win.on('browser-forward', onGoForward(win))
-  win.on('scroll-touch-begin', sendScrollTouchBegin)
-  win.on('scroll-touch-end', sendToWebContents('scroll-touch-end'))
-  win.on('focus', sendToWebContents('focus'))
+  // win.on('scroll-touch-begin', sendScrollTouchBegin) // TODO readd?
+  // win.on('scroll-touch-end', sendToWebContents('scroll-touch-end')) // TODO readd?
+  win.on('focus', e => {
+    // sendToWebContents('focus')(e) TODO readd?
+    var active = viewManager.getActive(win)
+    if (active) active.focus()
+  })
   win.on('blur', e => {
     statusBarSubwindow.set(win, false) // hide the statusbar on blur
-    sendToWebContents('blur')(e)
+    // sendToWebContents('blur')(e) TODO readd?
   })
   win.on('app-command', (e, cmd) => { onAppCommand(win, e, cmd) })
   win.on('enter-full-screen', e => {

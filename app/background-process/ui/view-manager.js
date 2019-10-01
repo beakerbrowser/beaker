@@ -340,6 +340,15 @@ class View {
     this.webContents.focus()
   }
 
+  focus () {
+    if (this.isSidebarActive) {
+      let sidebar = sidebars.get(this)
+      if (sidebar) sidebar.webContents.focus()
+    } else {
+      this.webContents.focus()
+    }
+  }
+
   deactivate () {
     this.browserWindow.removeBrowserView(this.browserView)
     if (this.isActive) {
