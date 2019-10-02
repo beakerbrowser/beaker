@@ -45,11 +45,11 @@ export function setup () {
 // =
 
 async function beakerProtocol (request, respond) {
-  var cb = once((statusCode, status, contentType, path) => {
+  var cb = once((statusCode, status, contentType, path, CSP) => {
     const headers = {
       'Cache-Control': 'no-cache',
       'Content-Type': (contentType || 'text/html; charset=utf-8'),
-      'Content-Security-Policy': BEAKER_CSP,
+      'Content-Security-Policy': CSP || BEAKER_CSP,
       'Access-Control-Allow-Origin': '*'
     }
     if (typeof path === 'string') {
@@ -198,7 +198,17 @@ async function beakerProtocol (request, respond) {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
   }
   if (requestUrl === 'beaker://sidebar' || requestUrl.startsWith('beaker://sidebar/')) {
-    return serveAppAsset(requestUrl, SIDEBAR_APP_PATH, cb, {fallbackToIndexHTML: true})
+    return serveAppAsset(requestUrl, SIDEBAR_APP_PATH, cb, {
+      fallbackToIndexHTML: true,
+      CSP: `
+default-src 'self' beaker:;
+img-src beaker-favicon: beaker: asset: data: dat: http: https;
+script-src 'self' beaker: dat: 'unsafe-eval';
+media-src 'self' beaker: dat:;
+style-src 'self' 'unsafe-inline' beaker:;
+child-src 'self';
+`.replace(/\n/g, '')
+    })
   }
   if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library/')) {
     return serveAppAsset(requestUrl, LIBRARY_APP_PATH, cb)
@@ -306,7 +316,7 @@ async function beakerProtocol (request, respond) {
 }
 
 // helper to serve requests to app packages
-async function serveAppAsset (requestUrl, dirPath, cb, {fallbackToIndexHTML} = {fallbackToIndexHTML: false}) {
+async function serveAppAsset (requestUrl, dirPath, cb, {CSP, fallbackToIndexHTML} = {CSP: undefined, fallbackToIndexHTML: false}) {
   // resolve the file path
   const urlp = new URL(requestUrl)
   var pathname = urlp.pathname
@@ -330,5 +340,5 @@ async function serveAppAsset (requestUrl, dirPath, cb, {fallbackToIndexHTML} = {
   var contentType = mime.identify(filepath)
 
   // serve
-  cb(200, 'OK', contentType, filepath)
+  cb(200, 'OK', contentType, filepath, CSP)
 }
