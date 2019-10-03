@@ -1,0 +1,27 @@
+@import "beaker://app-stdlib/css/common.css";
+@import "beaker://assets/font-awesome.css";
+
+body {
+  font-size: 12px;
+  background: #222;
+  --border-color: #d4d7dc;
+  min-height: 100vh;
+}
+
+#monaco-editor,
+#monaco-diff-editor {
+  height: calc(100vh - 28px);
+  margin-left: 200px;
+}
+
+#monaco-editor.fullwidth {
+  margin-left: 0;
+}
+
+/* editor style tweaks */
+.monaco-editor .line-numbers {
+  color: #999 !important;
+}
+.monaco-editor .current-line ~ .line-numbers {
+  color: #222 !important;
+}
