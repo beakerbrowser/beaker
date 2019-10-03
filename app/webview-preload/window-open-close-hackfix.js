@@ -9,7 +9,7 @@ import {ipcRenderer} from 'electron'
 export default function () {
   var origOpen = window.open
   window.open = function (...args) {
-    if (args[1] !== '_self') ipcRenderer.sendSync('BEAKER_MARK_NEXT_VIEW_SCRIPTCLOSEABLE')
+    if (args[1] !== '_self') ipcRenderer.sendSync('BEAKER_MARK_NEXT_TAB_SCRIPTCLOSEABLE')
     return origOpen.apply(window, args)
   }
   window.close = function () {

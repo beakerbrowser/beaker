@@ -8,15 +8,15 @@
  */
 
 import path from 'path'
-import { app, BrowserWindow, BrowserView } from 'electron'
-import * as viewManager from '../view-manager'
+import { BrowserView } from 'electron'
+import * as tabManager from '../tab-manager'
 import { findWebContentsParentWindow } from '../../../lib/electron'
 
 // globals
 // =
 
 export const SIDEBAR_Y = 76
-var views = {} // map of {[parentView.id] => BrowserView}
+var views = {} // map of {[tab.id] => BrowserView}
 
 // exported api
 // =
@@ -26,33 +26,33 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   // destroy all under this window
-  for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in views) {
-      views[view.id].destroy()
-      delete views[view.id]
+  for (let tab of tabManager.getAll(parentWindow)) {
+    if (tab.id in views) {
+      views[tab.id].destroy()
+      delete views[tab.id]
     }
   }
 }
 
 export function reposition (parentWindow) {
   // reposition all under this window
-  for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in views) {
-      setBounds(views[view.id], parentWindow)
+  for (let tab of tabManager.getAll(parentWindow)) {
+    if (tab.id in views) {
+      setBounds(views[tab.id], parentWindow)
     }
   }
 }
 
-export function create (parentView) {
+export function create (tab) {
   // make sure a sidebar doesnt already exist
-  if (parentView.id in views) {
+  if (tab.id in views) {
     return
   }
-  var win = viewManager.findContainingWindow(parentView)
-  if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
+  var win = tabManager.findContainingWindow(tab)
+  if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
 
   // create the view
-  var view = views[parentView.id] = new BrowserView({
+  var view = views[tab.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
       preload: path.join(__dirname, 'webview-preload.build.js')
@@ -65,41 +65,41 @@ export function create (parentView) {
   return view
 }
 
-export function get (parentView) {
-  return views[parentView.id]
+export function get (tab) {
+  return views[tab.id]
 }
 
 export function findContainingWindow (sidebarView) {
   return findWebContentsParentWindow(sidebarView.webContents)
 }
 
-export function show (parentView) {
-  if (parentView.id in views) {
-    var win = viewManager.findContainingWindow(parentView)
-    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
+export function show (tab) {
+  if (tab.id in views) {
+    var win = tabManager.findContainingWindow(tab)
+    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
     if (win) {
-      win.addBrowserView(views[parentView.id])
-      setBounds(views[parentView.id], win)
-      views[parentView.id].webContents.executeJavaScript(`window.sidebarShow()`)
+      win.addBrowserView(views[tab.id])
+      setBounds(views[tab.id], win)
+      views[tab.id].webContents.executeJavaScript(`window.sidebarShow()`)
     }
   }
 }
 
-export function hide (parentView) {
-  if (parentView.id in views) {
-    var win = viewManager.findContainingWindow(parentView)
-    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
-    if (win) win.removeBrowserView(views[parentView.id])
+export function hide (tab) {
+  if (tab.id in views) {
+    var win = tabManager.findContainingWindow(tab)
+    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
+    if (win) win.removeBrowserView(views[tab.id])
   }
 }
 
-export function close (parentView) {
-  if (parentView.id in views) {
-    var win = viewManager.findContainingWindow(parentView)
-    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
-    win.removeBrowserView(views[parentView.id])
-    views[parentView.id].destroy()
-    delete views[parentView.id]
+export function close (tab) {
+  if (tab.id in views) {
+    var win = tabManager.findContainingWindow(tab)
+    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
+    win.removeBrowserView(views[tab.id])
+    views[tab.id].destroy()
+    delete views[tab.id]
   }
 }
 
@@ -109,7 +109,7 @@ export function close (parentView) {
 rpc.exportAPI('background-process-modals', modalsRPCManifest, {
   async createTab (url) {
     var win = findWebContentsParentWindow(this.sender)
-    viewManager.create(win, url, {setActive: true})
+    tabManager.create(win, url, {setActive: true})
   },
 
   async resizeSelf (dimensions) {

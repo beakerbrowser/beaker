@@ -11,7 +11,7 @@
 import path from 'path'
 import Events from 'events'
 import { BrowserWindow, BrowserView } from 'electron'
-import * as viewManager from '../view-manager'
+import * as tabManager from '../tab-manager'
 
 // globals
 // =
@@ -88,7 +88,7 @@ export async function show (parentWindow, opts) {
     view.isVisible = true
 
     var params = opts && opts.params ? opts.params : {}
-    params.url = viewManager.getActive(parentWindow).url
+    params.url = tabManager.getActive(parentWindow).url
     await view.webContents.executeJavaScript(`init(${JSON.stringify(params)})`)
     view.webContents.focus()
 

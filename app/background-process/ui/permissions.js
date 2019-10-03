@@ -6,7 +6,7 @@ const sitedata = beakerCore.dbs.sitedata
 import _get from 'lodash.get'
 import parseDatURL from 'parse-dat-url'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
-import * as viewManager from './view-manager'
+import * as tabManager from './tab-manager'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
 
 // globals
@@ -159,7 +159,7 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
 function getContaining (webContents) {
   var view = BrowserView.fromWebContents(webContents)
   if (view) {
-    var win = viewManager.findContainingWindow(view)
+    var win = tabManager.findContainingWindow(view)
     return {win, view}
   }
   return {}

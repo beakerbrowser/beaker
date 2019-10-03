@@ -13,7 +13,7 @@ import Events from 'events'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { createShellWindow } from '../windows'
-import * as viewManager from '../view-manager'
+import * as tabManager from '../tab-manager'
 import * as modals from './modals'
 import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 
@@ -153,7 +153,7 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   async createTab (url) {
     var win = getParentWindow(this.sender)
     hide(win) // always close the menu
-    viewManager.create(win, url, {setActive: true})
+    tabManager.create(win, url, {setActive: true})
   },
 
   async createModal (name, opts) {
@@ -163,7 +163,7 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   async loadURL (url) {
     var win = getParentWindow(this.sender)
     hide(win) // always close the menu
-    viewManager.getActive(win).loadURL(url)
+    tabManager.getActive(win).loadURL(url)
   },
 
   async resizeSelf (dimensions) {
@@ -176,8 +176,8 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
 
   async showInpageFind () {
     var win = getParentWindow(this.sender)
-    var view = viewManager.getActive(win)
-    if (view) view.showInpageFind()
+    var tab = tabManager.getActive(win)
+    if (tab) tab.showInpageFind()
   }
 })
 

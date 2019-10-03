@@ -3,7 +3,7 @@ import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'ele
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
 import jetpack from 'fs-jetpack'
-import * as viewManager from './view-manager'
+import * as tabManager from './tab-manager'
 import {
   createGlobalKeybindingsHandler,
   createKeybindingProtectionsHandler,
@@ -72,7 +72,7 @@ export async function setup () {
   })
 
   openURL.setup()
-  viewManager.setup()
+  tabManager.setup()
 
   app.on('before-quit', async e => {
     sessionWatcher.exit()
@@ -96,9 +96,9 @@ export async function setup () {
     if (!parentView) return
     var parentWindow = findWebContentsParentWindow(parentView)
     if (!parentWindow) {
-      let parentViewWrapper = viewManager.findView(parentView)
-      if (parentViewWrapper) {
-        parentWindow = parentViewWrapper.browserWindow
+      let tab = tabManager.findTab(parentView)
+      if (tab) {
+        parentWindow = tab.browserWindow
       } else {
         return
       }
@@ -118,7 +118,7 @@ export async function setup () {
         wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
         wc.devToolsWebContents.on('new-window', (e, url) => {
           if (url.startsWith('chrome-devtools://')) return // ignore
-          viewManager.create(parentWindow, url, {setActive: true})
+          tabManager.create(parentWindow, url, {setActive: true})
         })
       }
     })
@@ -230,9 +230,9 @@ export function createShellWindow (windowState) {
     if (sender === win.webContents) {
       if (win.webContents.id === firstWindow) {
         // if this is the first window opened (since app start or since all windows closing)
-        viewManager.loadPins(win)
+        tabManager.loadPins(win)
       }
-      viewManager.initializeFromSnapshot(win, state.pages)
+      tabManager.initializeFromSnapshot(win, state.pages)
 
       // DISABLED
       // not sure whether we'll need this
@@ -270,7 +270,7 @@ export function createShellWindow (windowState) {
   // win.on('scroll-touch-end', sendToWebContents('scroll-touch-end')) // TODO readd?
   win.on('focus', e => {
     // sendToWebContents('focus')(e) TODO readd?
-    var active = viewManager.getActive(win)
+    var active = tabManager.getActive(win)
     if (active) active.focus()
   })
   win.on('blur', e => {
@@ -280,7 +280,7 @@ export function createShellWindow (windowState) {
   win.on('app-command', (e, cmd) => { onAppCommand(win, e, cmd) })
   win.on('enter-full-screen', e => {
     // update UI
-    viewManager.emitReplaceState(win)
+    tabManager.emitReplaceState(win)
 
     // TODO
     // registerGlobalKeybinding(win, 'Esc', onEscape(win))
@@ -288,14 +288,14 @@ export function createShellWindow (windowState) {
   })
   win.on('leave-full-screen', e => {
     // update UI
-    viewManager.emitReplaceState(win)
+    tabManager.emitReplaceState(win)
 
     // TODO
     // unregisterGlobalKeybinding(win, 'Esc')
     // sendToWebContents('leave-full-screen')(e)
   })
   win.on('resize', () => {
-    viewManager.resize(win)
+    tabManager.resize(win)
     for (let k in subwindows) {
       subwindows[k].reposition(win)
     }
@@ -349,7 +349,7 @@ export function ensureOneWindowExists () {
 export function getUserSessionFor (wc) {
   // fetch current session
   var win = findWebContentsParentWindow(wc)
-  if (!win) win = viewManager.findContainingWindow(BrowserView.fromWebContents(wc))
+  if (!win) win = tabManager.findContainingWindow(BrowserView.fromWebContents(wc))
   if (!win) win = sidebarsSubwindow.findContainingWindow(BrowserView.fromWebContents(wc))
   var sess = sessionWatcher.getState(win).userSession
 
@@ -373,7 +373,7 @@ export function getUserSessionFor (wc) {
 
 export function setUserSessionFor (wc, userSession) {
   var win = findWebContentsParentWindow(wc)
-  if (!win) win = viewManager.findContainingWindow(BrowserView.fromWebContents(wc))
+  if (!win) win = tabManager.findContainingWindow(BrowserView.fromWebContents(wc))
   return sessionWatcher.updateState(win, {userSession})
 }
 
@@ -465,31 +465,31 @@ function onClose (win) {
 }
 
 function onTabSelect (win, tabIndex) {
-  return () => viewManager.setActive(win, tabIndex)
+  return () => tabManager.setActive(win, tabIndex)
 }
 
 function onLastTab (win) {
-  return () => viewManager.setActive(win, viewManager.getAll(win).slice(-1)[0])
+  return () => tabManager.setActive(win, tabManager.getAll(win).slice(-1)[0])
 }
 
 function onNextTab (win) {
-  return () => viewManager.changeActiveBy(win, 1)
+  return () => tabManager.changeActiveBy(win, 1)
 }
 
 function onPrevTab (win) {
-  return () => viewManager.changeActiveBy(win, -1)
+  return () => tabManager.changeActiveBy(win, -1)
 }
 
 function onGoBack (win) {
-  return () => viewManager.getActive(win).webContents.goBack()
+  return () => tabManager.getActive(win).webContents.goBack()
 }
 
 function onGoForward (win) {
-  return () => viewManager.getActive(win).webContents.goForward()
+  return () => tabManager.getActive(win).webContents.goForward()
 }
 
 function onReload (win) {
-  return () => viewManager.getActive(win).webContents.reload()
+  return () => tabManager.getActive(win).webContents.reload()
 }
 
 function onFocusLocation (win) {
@@ -501,10 +501,10 @@ function onAppCommand (win, e, cmd) {
   // see https://electronjs.org/docs/all#event-app-command-windows
   switch (cmd) {
     case 'browser-backward':
-      viewManager.getActive(win).webContents.goBack()
+      tabManager.getActive(win).webContents.goBack()
       break
     case 'browser-forward':
-      viewManager.getActive(win).webContents.goForward()
+      tabManager.getActive(win).webContents.goForward()
       break
     default:
       break

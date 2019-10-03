@@ -1,8 +1,8 @@
 import * as beakerCore from '@beaker/core'
 import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
 import { createShellWindow, getFocusedDevToolsHost } from './windows'
-import * as viewManager from './view-manager'
-import * as viewZoom from './views/zoom'
+import * as tabManager from './tab-manager'
+import * as viewZoom from './tabs/zoom'
 import {download} from './downloads'
 
 // exported APIs
@@ -15,7 +15,7 @@ export function setup () {
   app.on('browser-window-focus', async (e, win) => {
     try {
       // fetch the current url
-      const url = viewManager.getActive(win).url
+      const url = tabManager.getActive(win).url
 
       // rebuild as needed
       if (requiresRebuild(url)) {
@@ -64,7 +64,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Preferences',
         accelerator: 'Command+,',
         click (item, win) {
-          if (win) viewManager.create(win, 'beaker://settings', {setActive: true})
+          if (win) tabManager.create(win, 'beaker://settings', {setActive: true})
           else createShellWindow({ pages: ['beaker://settings'] })
         }
       },
@@ -87,7 +87,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+T',
         click: function (item, win) {
           if (win) {
-            viewManager.create(win, undefined, {setActive: true, focusLocationBar: true})
+            tabManager.create(win, undefined, {setActive: true, focusLocationBar: true})
           } else {
             createShellWindow()
           }
@@ -105,7 +105,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+Shift+T',
         click: function (item, win) {
           createWindowIfNone(win, (win) => {
-            viewManager.reopenLastRemoved(win)
+            tabManager.reopenLastRemoved(win)
           })
         },
         reserved: true
@@ -116,7 +116,7 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           createWindowIfNone(win, (win) => {
             dialog.showOpenDialog({ title: 'Open file...', properties: ['openFile', 'createDirectory'] }, files => {
-              if (files && files[0]) { viewManager.create(win, 'file://' + files[0], {setActive: true}) }
+              if (files && files[0]) { tabManager.create(win, 'file://' + files[0], {setActive: true}) }
             })
           })
         }
@@ -136,10 +136,10 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+S',
         click: async (item, win) => {
-          var view = viewManager.getActive(win)
-          if (!view) return
-          const url = view.url
-          const title = view.title
+          var tab = tabManager.getActive(win)
+          if (!tab) return
+          const url = tab.url
+          const title = tab.title
           dialog.showSaveDialog({ title: `Save ${title} as...`, defaultPath: app.getPath('downloads') }, filepath => {
             if (filepath) download(win, win.webContents, url, { saveAs: filepath, suppressNewDownloadEvent: true })
           })
@@ -150,9 +150,9 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+P',
         click: (item, win) => {
-          var view = viewManager.getActive(win)
-          if (!view) return
-          view.webContents.print()
+          var tab = tabManager.getActive(win)
+          if (!tab) return
+          tab.webContents.print()
         }
       },
       { type: 'separator' },
@@ -172,8 +172,8 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           if (win) {
             // a regular browser window
-            let active = viewManager.getActive(win)
-            if (active) viewManager.remove(win, active)
+            let active = tabManager.getActive(win)
+            if (active) tabManager.remove(win, active)
           } else {
             // devtools
             let wc = getFocusedDevToolsHost()
@@ -202,8 +202,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+F',
         click: function (item, win) {
-          var view = viewManager.getActive(win)
-          if (view) view.showInpageFind()
+          var tab = tabManager.getActive(win)
+          if (tab) tab.showInpageFind()
         }
       },
       {
@@ -211,8 +211,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+G',
         click: function (item, win) {
-          var view = viewManager.getActive(win)
-          if (view) view.moveInpageFind(1)
+          var tab = tabManager.getActive(win)
+          if (tab) tab.moveInpageFind(1)
         }
       },
       {
@@ -220,8 +220,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'Shift+CmdOrCtrl+G',
         click: function (item, win) {
-          var view = viewManager.getActive(win)
-          if (view) view.moveInpageFind(-1)
+          var tab = tabManager.getActive(win)
+          if (tab) tab.moveInpageFind(-1)
         }
       }
     ]
@@ -235,7 +235,7 @@ export function buildWindowMenu (opts = {}) {
       accelerator: 'CmdOrCtrl+R',
       click: function (item, win) {
         if (win) {
-          let active = viewManager.getActive(win)
+          let active = tabManager.getActive(win)
           if (active) {
             active.webContents.reload()
           }
@@ -255,7 +255,7 @@ export function buildWindowMenu (opts = {}) {
           beakerCore.dat.dns.flushCache()
 
           if (win) {
-            let active = viewManager.getActive(win)
+            let active = tabManager.getActive(win)
             if (active) {
               active.webContents.reloadIgnoringCache()
             }
@@ -271,7 +271,7 @@ export function buildWindowMenu (opts = {}) {
         reserved: true,
         click: function (item, win) {
           if (win) {
-            viewZoom.zoomIn(viewManager.getActive(win))
+            viewZoom.zoomIn(tabManager.getActive(win))
           }
         }
       },
@@ -282,7 +282,7 @@ export function buildWindowMenu (opts = {}) {
         reserved: true,
         click: function (item, win) {
           if (win) {
-            viewZoom.zoomOut(viewManager.getActive(win))
+            viewZoom.zoomOut(tabManager.getActive(win))
           }
         }
       },
@@ -292,7 +292,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+0',
         click: function (item, win) {
           if (win) {
-            viewZoom.zoomReset(viewManager.getActive(win))
+            viewZoom.zoomReset(tabManager.getActive(win))
           }
         }
       },
@@ -318,19 +318,19 @@ export function buildWindowMenu (opts = {}) {
             label: 'Open Archives Debug Page',
             enabled: !noWindows,
             click: function (item, win) {
-              if (win) viewManager.create(win, 'beaker://internal-archives/', {setActive: true})
+              if (win) tabManager.create(win, 'beaker://internal-archives/', {setActive: true})
             }
           }, {
             label: 'Open Dat-DNS Cache Page',
             enabled: !noWindows,
             click: function (item, win) {
-              if (win) viewManager.create(win, 'beaker://dat-dns-cache/', {setActive: true})
+              if (win) tabManager.create(win, 'beaker://dat-dns-cache/', {setActive: true})
             }
           }, {
             label: 'Open Debug Log Page',
             enabled: !noWindows,
             click: function (item, win) {
-              if (win) viewManager.create(win, 'beaker://debug-log/', {setActive: true})
+              if (win) tabManager.create(win, 'beaker://debug-log/', {setActive: true})
             }
           }]
       },
@@ -340,7 +340,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+b',
         click: function (item, win) {
           if (win) {
-            let active = viewManager.getActive(win)
+            let active = tabManager.getActive(win)
             if (active) active.toggleSidebar('editor')
           }
         }
@@ -351,7 +351,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'Ctrl+`',
         click: function (item, win) {
           if (win) {
-            let active = viewManager.getActive(win)
+            let active = tabManager.getActive(win)
             if (active) active.toggleSidebar('terminal')
           }
         }
@@ -362,7 +362,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
         click: function (item, win) {
           if (win) {
-            let active = viewManager.getActive(win)
+            let active = tabManager.getActive(win)
             if (active) active.webContents.toggleDevTools()
           }
         },
@@ -373,7 +373,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !!isDat,
         click: function (item, win) {
           if (win) {
-            let active = viewManager.getActive(win)
+            let active = tabManager.getActive(win)
             if (active) active.toggleLiveReloading()
           }
         }
@@ -404,7 +404,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+Left',
         click: function (item, win) {
           if (win) {
-            let active = viewManager.getActive(win)
+            let active = tabManager.getActive(win)
             if (active) active.webContents.goBack()
           }
         }
@@ -415,7 +415,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+Right',
         click: function (item, win) {
           if (win) {
-            let active = viewManager.getActive(win)
+            let active = tabManager.getActive(win)
             if (active) active.webContents.goForward()
           }
         }
@@ -424,7 +424,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Show Full History',
         accelerator: showHistoryAccelerator,
         click: function (item, win) {
-          if (win) viewManager.create(win, 'beaker://history', {setActive: true})
+          if (win) tabManager.create(win, 'beaker://history', {setActive: true})
           else createShellWindow({ pages: ['beaker://history'] })
         }
       },
@@ -454,7 +454,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+}',
         click: function (item, win) {
-          if (win) viewManager.changeActiveBy(win, 1)
+          if (win) tabManager.changeActiveBy(win, 1)
         }
       },
       {
@@ -462,7 +462,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+{',
         click: function (item, win) {
-          if (win) viewManager.changeActiveBy(win, -1)
+          if (win) tabManager.changeActiveBy(win, -1)
         }
       }
     ]
@@ -485,19 +485,19 @@ export function buildWindowMenu (opts = {}) {
         label: 'Help',
         accelerator: 'F1',
         click: function (item, win) {
-          if (win) viewManager.create(win, 'https://beakerbrowser.com/docs/', {setActive: true})
+          if (win) tabManager.create(win, 'https://beakerbrowser.com/docs/', {setActive: true})
         }
       },
       {
         label: 'Report Bug',
         click: function (item, win) {
-          if (win) viewManager.create(win, 'https://github.com/beakerbrowser/beaker/issues', {setActive: true})
+          if (win) tabManager.create(win, 'https://github.com/beakerbrowser/beaker/issues', {setActive: true})
         }
       },
       {
         label: 'Mailing List',
         click: function (item, win) {
-          if (win) viewManager.create(win, 'https://groups.google.com/forum/#!forum/beaker-browser', {setActive: true})
+          if (win) tabManager.create(win, 'https://groups.google.com/forum/#!forum/beaker-browser', {setActive: true})
         }
       }
     ]
@@ -508,7 +508,7 @@ export function buildWindowMenu (opts = {}) {
       label: 'About',
       role: 'about',
       click: function (item, win) {
-        if (win) viewManager.create(win, 'beaker://settings', {setActive: true})
+        if (win) tabManager.create(win, 'beaker://settings', {setActive: true})
       }
     })
   }

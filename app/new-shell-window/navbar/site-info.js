@@ -18,7 +18,7 @@ class NavbarSiteInfo extends LitElement {
       isPressed: {type: Boolean}
     }
   }
-  
+
   constructor () {
     super()
     this.url = ''

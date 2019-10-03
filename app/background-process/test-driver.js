@@ -73,7 +73,7 @@ const METHODS = {
   newTab () {
     var win = getActiveWindow()
     var view = viewManager.create(win, undefined, {setActive: true})
-    return viewManager.getIndexOfView(win, view)
+    return viewManager.getIndexOfTab(win, view)
   },
 
   navigateTo (page, url) {

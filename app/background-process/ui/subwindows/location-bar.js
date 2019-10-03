@@ -11,7 +11,7 @@ import Events from 'events'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import locationBarRPCManifest from '../../rpc-manifests/location-bar'
-import * as viewManager from '../view-manager'
+import * as tabManager from '../tab-manager'
 
 // globals
 // =
@@ -110,13 +110,13 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
   async createTab (url) {
     var win = getParentWindow(this.sender)
     hide(win) // always close the location bar
-    viewManager.create(win, url, {setActive: true})
+    tabManager.create(win, url, {setActive: true})
   },
 
   async loadURL (url) {
     var win = getParentWindow(this.sender)
     hide(win) // always close the location bar
-    viewManager.getActive(win).loadURL(url)
+    tabManager.getActive(win).loadURL(url)
     get(win).webContents.send('command', 'unfocus-location') // we have to manually unfocus the location bar
   },
 

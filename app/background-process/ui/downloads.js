@@ -7,7 +7,7 @@ import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import parseDataURL from 'data-urls'
 import { requestPermission } from './permissions'
-import { openOrFocusDownloadsPage } from './view-manager'
+import { openOrFocusDownloadsPage } from './tab-manager'
 
 // globals
 // =

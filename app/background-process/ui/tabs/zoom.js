@@ -1,6 +1,6 @@
 import {URL} from 'url'
 import * as beakerCore from '@beaker/core'
-import * as viewManager from '../view-manager'
+import * as tabManager from '../tab-manager'
 const sitedataDb = beakerCore.dbs.sitedata
 
 const ZOOM_STEP = 0.5
@@ -35,7 +35,7 @@ export function setZoom (view, z) {
   sitedataDb.set(view.url, 'zoom', view.zoom)
 
   // update all pages at the origin
-  viewManager.getAll(view.browserWindow).forEach(v => {
+  tabManager.getAll(view.browserWindow).forEach(v => {
     if (v !== view && v.origin === origin) {
       v.zoom = z
     }

@@ -13,7 +13,7 @@ import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
 import normalizeURL from 'normalize-url'
 import viewsRPCManifest from '../rpc-manifests/views'
-import * as zoom from './views/zoom'
+import * as zoom from './tabs/zoom'
 import * as shellMenus from './subwindows/shell-menus'
 import * as locationBar from './subwindows/location-bar'
 import * as statusBar from './subwindows/status-bar'
@@ -110,17 +110,17 @@ const STATE_VARS = [
 // globals
 // =
 
-var activeViews = {} // map of {[win.id]: Array<View>}
-var preloadedNewTabViews = {} // map of {[win.id]: View}
+var activeTabs = {} // map of {[win.id]: Array<Tab>}
+var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: Events}
 var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
-var nextViewIsScriptCloseable = false // will the next view created be "script closable"?
+var nextTabIsScriptCloseable = false // will the next tab created be "script closable"?
 
 // classes
 // =
 
-class View {
+class Tab {
   constructor (win, opts = {isPinned: false, isHidden: false}) {
     this.browserWindow = win
     this.browserView = new BrowserView({
@@ -155,7 +155,7 @@ class View {
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
-    this.isScriptClosable = takeIsScriptClosable() // can this view be closed by `window.close` ?
+    this.isScriptClosable = takeIsScriptClosable() // can this tab be closed by `window.close` ?
 
     // helper state
     this.peers = 0 // how many peers does the site have?
@@ -403,8 +403,8 @@ class View {
       this.isSidebarActive = true
     } else {
       if (panel) {
-        // if an panel is passed, toggle off if already on the view
-        // otherwise, just go to that view
+        // if an panel is passed, toggle off if already on the panel
+        // otherwise, just go to that panel
         let v = sidebars.get(this)
         if (v) {
           let currentPanel = await v.webContents.executeJavaScript(`window.sidebarGetCurrentPanel()`)
@@ -503,7 +503,7 @@ class View {
           .resize({width: 200, height: 160})
         await sitedataDb.set(this.url, 'screenshot', image.toDataURL(), {dontExtractOrigin: true, normalizeUrl: true})
       } catch (e) {
-        // ignore, can happen if the view was closed during wait
+        // ignore, can happen if the tab was closed during wait
         console.log('Failed to capture page screenshot', e)
       }
     }
@@ -919,8 +919,8 @@ class View {
     e.preventDefault()
     if (!this.isActive) return // only open if coming from the active tab
     var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
-    var views = activeViews[this.browserWindow.id]
-    var tabIndex = views ? (views.indexOf(this) + 1) : undefined
+    var tabs = activeTabs[this.browserWindow.id]
+    var tabIndex = tabs ? (tabs.indexOf(this) + 1) : undefined
     create(this.browserWindow, url, {setActive, tabIndex, isSidebarActive: this.isSidebarActive})
   }
 
@@ -946,16 +946,16 @@ class View {
 
 export function setup () {
   // listen for webContents messages
-  ipcMain.on('BEAKER_MARK_NEXT_VIEW_SCRIPTCLOSEABLE', e => {
-    nextViewIsScriptCloseable = true
+  ipcMain.on('BEAKER_MARK_NEXT_TAB_SCRIPTCLOSEABLE', e => {
+    nextTabIsScriptCloseable = true
     e.returnValue = true
   })
   ipcMain.on('BEAKER_SCRIPTCLOSE_SELF', e => {
     var browserView = BrowserView.fromWebContents(e.sender)
     if (browserView) {
-      var view = findView(browserView)
-      if (view && view.isScriptClosable) {
-        remove(view.browserWindow, view)
+      var tab = findTab(browserView)
+      if (tab && tab.isScriptClosable) {
+        remove(tab.browserWindow, tab)
         e.returnValue = true
         return
       }
@@ -964,30 +964,30 @@ export function setup () {
   })
 
   // track peer-counts
-  function iterateViews (cb) {
-    for (let winId in activeViews) {
-      for (let view of activeViews[winId]) {
-        cb(view)
+  function iterateTabs (cb) {
+    for (let winId in activeTabs) {
+      for (let tab of activeTabs[winId]) {
+        cb(tab)
       }
     }
   }
   beakerCore.dat.archives.on('updated', ({details}) => {
-    iterateViews(view => {
-      if (view.datInfo && view.datInfo.url === details.url) {
-        view.refreshState()
+    iterateTabs(tab => {
+      if (tab.datInfo && tab.datInfo.url === details.url) {
+        tab.refreshState()
       }
     })
   })
   beakerCore.dat.archives.on('network-changed', ({details}) => {
-    iterateViews(view => {
-      if (view.datInfo && view.datInfo.url === details.url) {
+    iterateTabs(tab => {
+      if (tab.datInfo && tab.datInfo.url === details.url) {
         // update peer count
-        view.peers = details.connections
-        view.emitUpdateState()
+        tab.peers = details.connections
+        tab.emitUpdateState()
       }
-      if (view.wasDatTimeout && view.url.startsWith(details.url)) {
+      if (tab.wasDatTimeout && tab.url.startsWith(details.url)) {
         // refresh if this was a timed-out dat site (peers have been found)
-        view.webContents.reload()
+        tab.webContents.reload()
       }
     })
   })
@@ -995,7 +995,7 @@ export function setup () {
 
 export function getAll (win) {
   win = getTopWindow(win)
-  return activeViews[win.id] || []
+  return activeTabs[win.id] || []
 }
 
 export function getByIndex (win, index) {
@@ -1004,9 +1004,9 @@ export function getByIndex (win, index) {
   return getAll(win)[index]
 }
 
-export function getIndexOfView (win, view) {
+export function getIndexOfTab (win, tab) {
   win = getTopWindow(win)
-  return getAll(win).indexOf(view)
+  return getAll(win).indexOf(tab)
 }
 
 export function getAllPinned (win) {
@@ -1016,12 +1016,12 @@ export function getAllPinned (win) {
 
 export function getActive (win) {
   win = getTopWindow(win)
-  return getAll(win).find(view => view.isActive)
+  return getAll(win).find(tab => tab.isActive)
 }
 
-export function findView (browserView) {
-  for (let winId in activeViews) {
-    for (let v of activeViews[winId]) {
+export function findTab (browserView) {
+  for (let winId in activeTabs) {
+    for (let v of activeTabs[winId]) {
       if (v.browserView === browserView) {
         return v
       }
@@ -1030,16 +1030,16 @@ export function findView (browserView) {
 }
 
 export function findContainingWindow (browserView) {
-  for (let winId in activeViews) {
-    for (let v of activeViews[winId]) {
+  for (let winId in activeTabs) {
+    for (let v of activeTabs[winId]) {
       if (v.browserView === browserView) {
         return v.browserWindow
       }
     }
   }
-  for (let winId in preloadedNewTabViews) {
-    if (preloadedNewTabViews[winId].browserView === browserView) {
-      return preloadedNewTabViews[winId].browserWindow
+  for (let winId in preloadedNewTabs) {
+    if (preloadedNewTabs[winId].browserView === browserView) {
+      return preloadedNewTabs[winId].browserWindow
     }
   }
 }
@@ -1058,35 +1058,35 @@ export function create (
   ) {
   url = url || DEFAULT_URL
   win = getTopWindow(win)
-  var views = activeViews[win.id] = activeViews[win.id] || []
+  var tabs = activeTabs[win.id] = activeTabs[win.id] || []
 
-  var view
-  var preloadedNewTabView = preloadedNewTabViews[win.id]
-  if (url === DEFAULT_URL && !opts.isPinned && preloadedNewTabView) {
-    // use the preloaded new-tab view
-    view = preloadedNewTabView
-    view.isHidden = false // no longer hidden
-    preloadedNewTabView = preloadedNewTabViews[win.id] = null
+  var tab
+  var preloadedNewTab = preloadedNewTabs[win.id]
+  if (url === DEFAULT_URL && !opts.isPinned && preloadedNewTab) {
+    // use the preloaded tab
+    tab = preloadedNewTab
+    tab.isHidden = false // no longer hidden
+    preloadedNewTab = preloadedNewTabs[win.id] = null
   } else {
-    // create a new view
-    view = new View(win, {isPinned: opts.isPinned})
-    view.loadURL(url)
+    // create a new tab
+    tab = new Tab(win, {isPinned: opts.isPinned})
+    tab.loadURL(url)
   }
 
-  // add to active views
+  // add to active tabs
   if (opts.isPinned) {
-    views.splice(indexOfLastPinnedView(win), 0, view)
+    tabs.splice(indexOfLastPinnedTab(win), 0, tab)
   } else {
     if (typeof opts.tabIndex !== 'undefined' && opts.tabIndex !== -1) {
-      views.splice(opts.tabIndex, 0, view)
+      tabs.splice(opts.tabIndex, 0, tab)
     } else {
-      views.push(view)
+      tabs.push(tab)
     }
   }
 
   // make active if requested, or if none others are
   if (opts.setActive || !getActive(win)) {
-    setActive(win, view)
+    setActive(win, tab)
   }
   emitReplaceState(win)
 
@@ -1094,29 +1094,29 @@ export function create (
     win.webContents.send('command', 'focus-location')
   }
   if (opts.isSidebarActive) {
-    view.toggleSidebar(opts.sidebarPanel)
+    tab.toggleSidebar(opts.sidebarPanel)
   }
 
-  // create a new preloaded view if needed
-  if (!preloadedNewTabView) {
-    preloadedNewTabViews[win.id] = preloadedNewTabView = new View(win, {isHidden: true})
-    preloadedNewTabView.loadURL(DEFAULT_URL)
+  // create a new preloaded tab if needed
+  if (!preloadedNewTab) {
+    preloadedNewTabs[win.id] = preloadedNewTab = new Tab(win, {isHidden: true})
+    preloadedNewTab.loadURL(DEFAULT_URL)
   }
 
-  return view
+  return tab
 }
 
-export async function remove (win, view) {
+export async function remove (win, tab) {
   win = getTopWindow(win)
   // find
-  var views = getAll(win)
-  var i = views.indexOf(view)
+  var tabs = getAll(win)
+  var i = tabs.indexOf(tab)
   if (i == -1) {
-    return console.warn('view-manager remove() called for missing view', view)
+    return console.warn('tab-manager remove() called for missing tab', tab)
   }
 
   // give the 'onbeforeunload' a chance to run
-  var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(view.webContents)
+  var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(tab.webContents)
   if (onBeforeUnloadReturnValue) {
     var choice = dialog.showMessageBox({
       type: 'question',
@@ -1132,25 +1132,25 @@ export async function remove (win, view) {
 
   // save, in case the user wants to restore it
   closedURLs[win.id] = closedURLs[win.id] || []
-  closedURLs[win.id].push(view.url)
+  closedURLs[win.id].push(tab.url)
 
   // set new active if that was
-  if (view.isActive && views.length > 1) {
-    setActive(win, views[i + 1] || views[i - 1])
+  if (tab.isActive && tabs.length > 1) {
+    setActive(win, tabs[i + 1] || tabs[i - 1])
   }
 
   // remove
-  view.stopLiveReloading()
-  views.splice(i, 1)
-  view.destroy()
+  tab.stopLiveReloading()
+  tabs.splice(i, 1)
+  tab.destroy()
 
   // persist pins w/o this one, if that was
-  if (view.isPinned) {
+  if (tab.isPinned) {
     savePins(win)
   }
 
-  // close the window if that was the last view
-  if (views.length === 0) {
+  // close the window if that was the last tab
+  if (tabs.length === 0) {
     return win.close()
   }
 
@@ -1158,45 +1158,45 @@ export async function remove (win, view) {
   emitReplaceState(win)
 }
 
-export async function removeAllExcept (win, view) {
+export async function removeAllExcept (win, tab) {
   win = getTopWindow(win)
-  var views = getAll(win).slice() // .slice() to duplicate the list
-  for (let v of views) {
-    if (v !== view) {
-      await remove(win, v)
+  var tabs = getAll(win).slice() // .slice() to duplicate the list
+  for (let t of tabs) {
+    if (t !== tab) {
+      await remove(win, t)
     }
   }
 }
 
-export async function removeAllToRightOf (win, view) {
+export async function removeAllToRightOf (win, tab) {
   win = getTopWindow(win)
   var toRemove = []
-  var views = getAll(win)
-  let index = views.indexOf(view)
-  for (let i = 0; i < views.length; i++) {
-    if (i > index) toRemove.push(views[i])
+  var tabs = getAll(win)
+  let index = tabs.indexOf(tab)
+  for (let i = 0; i < tabs.length; i++) {
+    if (i > index) toRemove.push(tabs[i])
   }
-  for (let v of toRemove) {
-    await remove(win, v)
+  for (let t of toRemove) {
+    await remove(win, t)
   }
 }
 
-export function setActive (win, view) {
+export function setActive (win, tab) {
   win = getTopWindow(win)
-  if (typeof view === 'number') {
-    view = getByIndex(win, view)
+  if (typeof tab === 'number') {
+    tab = getByIndex(win, tab)
   }
-  if (!view) return
+  if (!tab) return
 
-  // deactivate the old view
+  // deactivate the old tab
   var active = getActive(win)
   if (active) {
     active.deactivate()
   }
 
-  // activate the new view
-  view.activate()
-  windowMenu.onSetCurrentLocation(win, view.url) // give the window-menu a chance to handle the change
+  // activate the new tab
+  tab.activate()
+  windowMenu.onSetCurrentLocation(win, tab.url) // give the window-menu a chance to handle the change
   emitReplaceState(win)
 }
 
@@ -1220,18 +1220,18 @@ export function takeSnapshot (win) {
     .filter(Boolean)
 }
 
-export function togglePinned (win, view) {
+export function togglePinned (win, tab) {
   win = getTopWindow(win)
   // move tab to the "end" of the pinned tabs
-  var views = getAll(win)
-  var oldIndex = views.indexOf(view)
-  var newIndex = indexOfLastPinnedView(win)
+  var tabs = getAll(win)
+  var oldIndex = tabs.indexOf(tab)
+  var newIndex = indexOfLastPinnedTab(win)
   if (oldIndex < newIndex) newIndex--
-  views.splice(oldIndex, 1)
-  views.splice(newIndex, 0, view)
+  tabs.splice(oldIndex, 1)
+  tabs.splice(newIndex, 0, tab)
 
-  // update view state
-  view.isPinned = !view.isPinned
+  // update tab state
+  tab.isPinned = !tab.isPinned
   emitReplaceState(win)
 
   // persist
@@ -1254,9 +1254,9 @@ export function reopenLastRemoved (win) {
   win = getTopWindow(win)
   var url = (closedURLs[win.id] || []).pop()
   if (url) {
-    var view = create(win, url)
-    setActive(win, view)
-    return view
+    var tab = create(win, url)
+    setActive(win, tab)
+    return tab
   }
 }
 
@@ -1265,51 +1265,51 @@ export function reorder (win, oldIndex, newIndex) {
   if (oldIndex === newIndex) {
     return
   }
-  var views = getAll(win)
-  var view = getByIndex(win, oldIndex)
-  views.splice(oldIndex, 1)
-  views.splice(newIndex, 0, view)
+  var tabs = getAll(win)
+  var tab = getByIndex(win, oldIndex)
+  tabs.splice(oldIndex, 1)
+  tabs.splice(newIndex, 0, tab)
   emitReplaceState(win)
 }
 
 export function changeActiveBy (win, offset) {
   win = getTopWindow(win)
-  var views = getAll(win)
+  var tabs = getAll(win)
   var active = getActive(win)
-  if (views.length > 1) {
-    var i = views.indexOf(active)
+  if (tabs.length > 1) {
+    var i = tabs.indexOf(active)
     if (i === -1) { return console.warn('Active page is not in the pages list! THIS SHOULD NOT HAPPEN!') }
 
     i += offset
-    if (i < 0) i = views.length - 1
-    if (i >= views.length) i = 0
+    if (i < 0) i = tabs.length - 1
+    if (i >= tabs.length) i = 0
 
-    setActive(win, views[i])
+    setActive(win, tabs[i])
   }
 }
 
 export function changeActiveTo (win, index) {
   win = getTopWindow(win)
-  var views = getAll(win)
-  if (index >= 0 && index < views.length) {
-    setActive(win, views[index])
+  var tabs = getAll(win)
+  if (index >= 0 && index < tabs.length) {
+    setActive(win, tabs[index])
   }
 }
 
 export function changeActiveToLast (win) {
   win = getTopWindow(win)
-  var views = getAll(win)
-  setActive(win, views[views.length - 1])
+  var tabs = getAll(win)
+  setActive(win, tabs[tabs.length - 1])
 }
 
 export function openOrFocusDownloadsPage (win) {
   win = getTopWindow(win)
-  var views = getAll(win)
-  var downloadsView = views.find(v => v.url.startsWith('beaker://downloads'))
-  if (!downloadsView) {
-    downloadsView = create(win, 'beaker://downloads')
+  var tabs = getAll(win)
+  var downloadsTab = tabs.find(v => v.url.startsWith('beaker://downloads'))
+  if (!downloadsTab) {
+    downloadsTab = create(win, 'beaker://downloads')
   }
-  setActive(win, downloadsView)
+  setActive(win, downloadsTab)
 }
 
 export function emitReplaceState (win) {
@@ -1319,11 +1319,11 @@ export function emitReplaceState (win) {
   win.emit('custom-pages-updated', takeSnapshot(win))
 }
 
-export function emitUpdateState (win, view) {
+export function emitUpdateState (win, tab) {
   win = getTopWindow(win)
-  var index = typeof view === 'number' ? view : getAll(win).indexOf(view)
+  var index = typeof tab === 'number' ? tab : getAll(win).indexOf(tab)
   if (index === -1) {
-    console.warn('WARNING: attempted to update state of a view not on the window')
+    console.warn('WARNING: attempted to update state of a tab not on the window')
     return
   }
   var state = getByIndex(win, index).state
@@ -1341,9 +1341,9 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async refreshState (tab) {
     var win = getWindow(this.sender)
-    var view = getByIndex(win, tab)
-    if (view) {
-      view.refreshState()
+    var tab = getByIndex(win, tab)
+    if (tab) {
+      tab.refreshState()
     }
   },
 
@@ -1354,13 +1354,13 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async getTabState (tab, opts) {
     var win = getWindow(this.sender)
-    var view = getByIndex(win, tab)
-    if (view) {
-      var state = Object.assign({}, view.state)
+    var tab = getByIndex(win, tab)
+    if (tab) {
+      var state = Object.assign({}, tab.state)
       if (opts) {
-        if (opts.datInfo) state.datInfo = view.datInfo
-        if (opts.networkStats) state.networkStats = view.datInfo ? view.datInfo.networkStats : {}
-        if (opts.sitePerms) state.sitePerms = await beakerCore.dbs.sitedata.getPermissions(view.url)
+        if (opts.datInfo) state.datInfo = tab.datInfo
+        if (opts.networkStats) state.networkStats = tab.datInfo ? tab.datInfo.networkStats : {}
+        if (opts.sitePerms) state.sitePerms = await beakerCore.dbs.sitedata.getPermissions(tab.url)
       }
       return state
     }
@@ -1368,11 +1368,11 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async getNetworkState (tab) {
     var win = getWindow(this.sender)
-    var view = getByIndex(win, tab)
-    if (view && view.datInfo) {
-      var networkStats = await beakerCore.dat.archives.getArchiveNetworkStats(view.datInfo.key)
+    var tab = getByIndex(win, tab)
+    if (tab && tab.datInfo) {
+      var networkStats = await beakerCore.dat.archives.getArchiveNetworkStats(tab.datInfo.key)
       return {
-        peers: view.peers,
+        peers: tab.peers,
         networkStats
       }
     }
@@ -1380,8 +1380,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async getPageMetadata (tab) {
     var win = getWindow(this.sender)
-    var view = getByIndex(win, tab)
-    if (view) return view.getPageMetadata()
+    var tab = getByIndex(win, tab)
+    if (tab) return tab.getPageMetadata()
     return {}
   },
 
@@ -1391,8 +1391,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     }
 
     var win = getWindow(this.sender)
-    var view = create(win, url, opts)
-    return getAll(win).indexOf(view)
+    var tab = create(win, url, opts)
+    return getAll(win).indexOf(tab)
   },
 
   async loadURL (index, url, opts = {addToNoRedirects: false}) {
@@ -1420,17 +1420,17 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async showTabContextMenu (index) {
     var win = getWindow(this.sender)
-    var view = getByIndex(win, index)
+    var tab = getByIndex(win, index)
     var menu = Menu.buildFromTemplate([
       { label: 'New Tab', click: () => create(win, null, {setActive: true}) },
       { type: 'separator' },
-      { label: 'Duplicate', click: () => create(win, view.url) },
-      { label: (view.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => togglePinned(win, view) },
-      { label: (view.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => view.toggleMuted() },
+      { label: 'Duplicate', click: () => create(win, tab.url) },
+      { label: (tab.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => togglePinned(win, tab) },
+      { label: (tab.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => tab.toggleMuted() },
       { type: 'separator' },
-      { label: 'Close Tab', click: () => remove(win, view) },
-      { label: 'Close Other Tabs', click: () => removeAllExcept(win, view) },
-      { label: 'Close Tabs to the Right', click: () => removeAllToRightOf(win, view) },
+      { label: 'Close Tab', click: () => remove(win, tab) },
+      { label: 'Close Other Tabs', click: () => removeAllExcept(win, tab) },
+      { label: 'Close Tabs to the Right', click: () => removeAllToRightOf(win, tab) },
       { type: 'separator' },
       { label: 'Reopen Closed Tab', click: () => reopenLastRemoved(win) }
     ])
@@ -1439,7 +1439,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async showLocationBarContextMenu (index) {
     var win = getWindow(this.sender)
-    var view = getByIndex(win, index)
+    var tab = getByIndex(win, index)
     var clipboardContent = clipboard.readText()
     var clipInfo = examineLocationInput(clipboardContent)
     var menu = Menu.buildFromTemplate([
@@ -1457,7 +1457,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
       // load the URL
       var url = clipInfo.isProbablyUrl ? clipInfo.vWithProtocol : clipInfo.vSearch
-      view.loadURL(url)
+      tab.loadURL(url)
     }
   },
 
@@ -1542,21 +1542,21 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   },
 
   async onFaviconLoadSuccess (index, dataUrl) {
-    var view = getByIndex(getWindow(this.sender), index)
-    if (view) {
+    var tab = getByIndex(getWindow(this.sender), index)
+    if (tab) {
       // if not a dat site, store the favicon
       // (dat caches favicons through the dat/assets.js process in beaker-core)
-      if (!view.url.startsWith('dat:')) {
-        beakerCore.dbs.sitedata.set(view.url, 'favicon', dataUrl)
+      if (!tab.url.startsWith('dat:')) {
+        beakerCore.dbs.sitedata.set(tab.url, 'favicon', dataUrl)
       }
     }
   },
 
   async onFaviconLoadError (index) {
-    var view = getByIndex(getWindow(this.sender), index)
-    if (view) {
-      view.favicons = null
-      view.emitUpdateState()
+    var tab = getByIndex(getWindow(this.sender), index)
+    if (tab) {
+      tab.favicons = null
+      tab.emitUpdateState()
     }
   }
 })
@@ -1591,14 +1591,14 @@ function emit (win, ...args) {
 }
 
 function getWindowTabState (win) {
-  return getAll(win).map(view => view.state)
+  return getAll(win).map(tab => tab.state)
 }
 
-function indexOfLastPinnedView (win) {
-  var views = getAll(win)
+function indexOfLastPinnedTab (win) {
+  var tabs = getAll(win)
   var index = 0
-  for (index; index < views.length; index++) {
-    if (!views[index].isPinned) break
+  for (index; index < tabs.length; index++) {
+    if (!tabs[index].isPinned) break
   }
   return index
 }
@@ -1641,10 +1641,10 @@ async function fireBeforeUnloadEvent (wc) {
     }
 }
 
-// `nextViewIsScriptCloseable` is set by a message received prior to window.open() being called
-// we capture the state of the flag on the next created view, then reset it
+// `nextTabIsScriptCloseable` is set by a message received prior to window.open() being called
+// we capture the state of the flag on the next created tab, then reset it
 function takeIsScriptClosable () {
-  var b = nextViewIsScriptCloseable
-  nextViewIsScriptCloseable = false
+  var b = nextTabIsScriptCloseable
+  nextTabIsScriptCloseable = false
   return b
 }

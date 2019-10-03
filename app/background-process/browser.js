@@ -15,7 +15,7 @@ const debug = beakerCore.debugLogger('beaker')
 const settingsDb = beakerCore.dbs.settings
 import {open as openUrl} from './open-url'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
-import * as viewManager from './ui/view-manager'
+import * as tabManager from './ui/tab-manager'
 import * as modals from './ui/subwindows/modals'
 import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from '../lib/electron'
@@ -271,12 +271,12 @@ export async function imageToIco (image) {
 
 async function openSidebar (panel) {
   var win = findWebContentsParentWindow(this.sender)
-  viewManager.getActive(win).openSidebar(panel)
+  tabManager.getActive(win).openSidebar(panel)
 }
 
 async function toggleSidebar (panel) {
   var win = findWebContentsParentWindow(this.sender)
-  viewManager.getActive(win).toggleSidebar(panel)
+  tabManager.getActive(win).toggleSidebar(panel)
 }
 
 async function toggleSiteInfo (override) {
@@ -292,7 +292,7 @@ async function toggleSiteInfo (override) {
 
 export async function toggleLiveReloading (enabled) {
   var win = findWebContentsParentWindow(this.sender)
-  viewManager.getActive(win).toggleLiveReloading(enabled)
+  tabManager.getActive(win).toggleLiveReloading(enabled)
 }
 
 export async function setWindowDimensions ({width, height} = {}) {
@@ -613,12 +613,12 @@ function showContextMenu (menuDefinition) {
 
 async function gotoUrl (url) {
   var win = findWebContentsParentWindow(this.sender)
-  viewManager.getActive(win).loadURL(url)
+  tabManager.getActive(win).loadURL(url)
 }
 
 async function refreshPage () {
   var win = findWebContentsParentWindow(this.sender)
-  viewManager.getActive(win).webContents.reload()
+  tabManager.getActive(win).webContents.reload()
 }
 
 function openFolder (folderPath) {

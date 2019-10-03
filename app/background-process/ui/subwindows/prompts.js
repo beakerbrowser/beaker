@@ -10,7 +10,7 @@
 import path from 'path'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
-import * as viewManager from '../view-manager'
+import * as tabManager from '../tab-manager'
 import promptsRPCManifest from '../../rpc-manifests/prompts'
 import { findWebContentsParentWindow } from '../../../lib/electron'
 
@@ -18,7 +18,7 @@ import { findWebContentsParentWindow } from '../../../lib/electron'
 // =
 
 const MARGIN_SIZE = 10
-var views = {} // map of {[parentView.id] => BrowserView}
+var views = {} // map of {[tab.id] => BrowserView}
 
 // exported api
 // =
@@ -28,56 +28,57 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   // destroy all under this window
-  for (let parentView of viewManager.getAll(parentWindow)) {
-    if (parentView.id in views) {
-      views[parentView.id].destroy()
-      delete views[parentView.id]
+  for (let tab of tabManager.getAll(parentWindow)) {
+    if (tab.id in views) {
+      views[tab.id].destroy()
+      delete views[tab.id]
     }
   }
 }
 
 export function reposition (parentWindow) {
   // reposition all under this window
-  for (let parentView of viewManager.getAll(parentWindow)) {
-    if (parentView.id in views) {
-      setBounds(views[parentView.id], parentView, parentWindow)
+  for (let tab of tabManager.getAll(parentWindow)) {
+    if (tab.id in views) {
+      setBounds(views[tab.id], tab, parentWindow)
     }
   }
 }
 
 export async function create (webContents, promptName, params = {}) {
-  // find parent window
+  // find parent window & tab
   var parentWindow = BrowserWindow.fromWebContents(webContents)
   var parentView = BrowserView.fromWebContents(webContents)
+  var tab
   if (parentView && !parentWindow) {
     // if there's no window, then a web page or "sub-window" created the prompt
     // use its containing window
-    parentView = viewManager.findView(parentView)
-    parentWindow = findWebContentsParentWindow(parentView.webContents)
+    tab = tabManager.findTab(parentView)
+    parentWindow = findWebContentsParentWindow(tab.webContents)
   } else if (!parentView) {
     // if there's no view, then the shell window created the prompt
     // attach it to the active view
-    parentView = viewManager.getActive(parentWindow)
-    parentWindow = parentView.browserWindow
+    tab = tabManager.getActive(parentWindow)
+    parentWindow = tab.browserWindow
   }
 
   // make sure a prompt window doesnt already exist
-  if (parentView.id in views) {
+  if (tab.id in views) {
     return
   }
 
   // create the view
-  var view = views[parentView.id] = new BrowserView({
+  var view = views[tab.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
       preload: path.join(__dirname, 'prompts.build.js')
     }
   })
   view.promptName = promptName
-  if (viewManager.getActive(parentWindow).id === parentView.id) {
+  if (tabManager.getActive(parentWindow).id === tab.id) {
     parentWindow.addBrowserView(view)
   }
-  setBounds(view, parentView, parentWindow)
+  setBounds(view, tab, parentWindow)
   view.webContents.on('console-message', (e, level, message) => {
     console.log('Prompts window says:', message)
   })
@@ -85,38 +86,38 @@ export async function create (webContents, promptName, params = {}) {
   await view.webContents.executeJavaScript(`showPrompt("${promptName}", ${JSON.stringify(params)})`)
 }
 
-export function get (parentView) {
-  return views[parentView.id]
+export function get (tab) {
+  return views[tab.id]
 }
 
-export function show (parentView) {
-  if (parentView.id in views) {
-    var view = views[parentView.id]
-    var win = viewManager.findContainingWindow(parentView)
+export function show (tab) {
+  if (tab.id in views) {
+    var view = views[tab.id]
+    var win = tabManager.findContainingWindow(tab)
     if (!win) win = findWebContentsParentWindow(view.webContents)
     if (win) {
       win.addBrowserView(view)
-      setBounds(view, parentView, win)
+      setBounds(view, tab, win)
     }
   }
 }
 
-export function hide (parentView) {
-  if (parentView.id in views) {
-    var win = viewManager.findContainingWindow(parentView)
-    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
-    if (win) win.removeBrowserView(views[parentView.id])
+export function hide (tab) {
+  if (tab.id in views) {
+    var win = tabManager.findContainingWindow(tab)
+    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
+    if (win) win.removeBrowserView(views[tab.id])
   }
 }
 
-export function close (parentView) {
-  if (parentView.id in views) {
-    var view = views[parentView.id]
-    var win = viewManager.findContainingWindow(parentView)
-    if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
+export function close (tab) {
+  if (tab.id in views) {
+    var view = views[tab.id]
+    var win = tabManager.findContainingWindow(tab)
+    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
     if (win) win.removeBrowserView(view)
     view.destroy()
-    delete views[parentView.id]
+    delete views[tab.id]
   }
 }
 
@@ -130,17 +131,17 @@ rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
 
   async createTab (url) {
     var win = findWebContentsParentWindow(this.sender)
-    viewManager.create(win, url, {setActive: true})
+    tabManager.create(win, url, {setActive: true})
   },
 
   async loadURL (url) {
     var win = findWebContentsParentWindow(this.sender)
-    viewManager.getActive(win).loadURL(url)
+    tabManager.getActive(win).loadURL(url)
   },
 
   async openSidebar (panel) {
     var win = findWebContentsParentWindow(this.sender)
-    viewManager.getActive(win).openSidebar(panel)
+    tabManager.getActive(win).openSidebar(panel)
   }
 })
 
@@ -155,12 +156,12 @@ function getDefaultHeight (view) {
   return 80
 }
 
-function setBounds (view, parentView, parentWindow, {width, height} = {}) {
+function setBounds (view, tab, parentWindow, {width, height} = {}) {
   var parentBounds = parentWindow.getContentBounds()
   width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
   view.setBounds({
-    x: parentView.isSidebarActive ? Math.floor(parentBounds.width / 2) : 0,
+    x: tab.isSidebarActive ? Math.floor(parentBounds.width / 2) : 0,
     y: 85,
     width: width + (MARGIN_SIZE * 2),
     height: height + MARGIN_SIZE

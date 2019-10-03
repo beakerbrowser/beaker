@@ -10,7 +10,7 @@
 import path from 'path'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
-import * as viewManager from '../view-manager'
+import * as tabManager from '../tab-manager'
 import permPromptRPCManifest from '../../rpc-manifests/perm-prompt'
 import { findWebContentsParentWindow } from '../../../lib/electron'
 
@@ -18,7 +18,7 @@ import { findWebContentsParentWindow } from '../../../lib/electron'
 // =
 
 const MARGIN_SIZE = 10
-var views = {} // map of {[parentView.id] => BrowserView}
+var views = {} // map of {[tab.id] => BrowserView}
 
 // exported api
 // =
@@ -28,19 +28,19 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   // destroy all under this window
-  for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in views) {
-      views[view.id].destroy()
-      delete views[view.id]
+  for (let tab of tabManager.getAll(parentWindow)) {
+    if (tab.id in views) {
+      views[tab.id].destroy()
+      delete views[tab.id]
     }
   }
 }
 
 export function reposition (parentWindow) {
   // reposition all under this window
-  for (let view of viewManager.getAll(parentWindow)) {
-    if (view.id in views) {
-      setBounds(views[view.id], parentWindow)
+  for (let tab of tabManager.getAll(parentWindow)) {
+    if (tab.id in views) {
+      setBounds(views[tab.id], parentWindow)
     }
   }
 }
@@ -87,7 +87,7 @@ export function get (parentView) {
 
 export function show (parentView) {
   if (parentView.id in views) {
-    var win = viewManager.findContainingWindow(parentView)
+    var win = tabManager.findContainingWindow(parentView)
     if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
     if (win) win.addBrowserView(views[parentView.id])
   }
@@ -95,7 +95,7 @@ export function show (parentView) {
 
 export function hide (parentView) {
   if (parentView.id in views) {
-    var win = viewManager.findContainingWindow(parentView)
+    var win = tabManager.findContainingWindow(parentView)
     if (!win) win = findWebContentsParentWindow(views[parentView.id].webContents)
     if (win) win.removeBrowserView(views[parentView.id])
   }
@@ -114,7 +114,7 @@ export function close (parentView) {
 rpc.exportAPI('background-process-perm-prompt', permPromptRPCManifest, {
   async createTab (url) {
     var win = findWebContentsParentWindow(this.sender)
-    viewManager.create(win, url, {setActive: true})
+    tabManager.create(win, url, {setActive: true})
   },
 
   async resizeSelf (dimensions) {

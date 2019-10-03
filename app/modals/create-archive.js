@@ -14,7 +14,7 @@ const BASIC_TEMPLATES = [
 const VISIBILITY_OPTIONS = [
   {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access it'},
   {icon: html`<span class="fa-fw fas fa-eye"></span>`, label: 'Unlisted', value: 'unlisted', desc: 'Only people who know the URL can access it'},
-  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access it'},
+  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access it'}
 ]
 
 class CreateArchiveModal extends LitElement {
