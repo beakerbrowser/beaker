@@ -33,12 +33,7 @@
     "asarUnpack": [
       "./fg/json-renderer/index.build.js",
       "./node_modules/sodium-native/**",
-      "./node_modules/@beaker/library-app/**",
-      "./node_modules/@beaker/compare-app/**",
-      "./node_modules/@beaker/search-app/**",
-      "./node_modules/@beaker/sidebar-app/**",
-      "./node_modules/@beaker/site-info-app/**",
-      "./node_modules/@beaker/viewer-apps/**"
+      "./node_modules/@beaker/search-app/**"
     ],
     "copyright": "© 2019, Blue Link Labs",
     "npmRebuild": false,

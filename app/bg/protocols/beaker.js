@@ -11,9 +11,7 @@ import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
 
-const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app')).replace('app.asar', 'app.asar.unpacked')
 const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).replace('app.asar', 'app.asar.unpacked')
-const SIDEBAR_APP_PATH = path.dirname(require.resolve('@beaker/sidebar-app')).replace('app.asar', 'app.asar.unpacked')
 
 // constants
 // =
