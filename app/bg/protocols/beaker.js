@@ -15,7 +15,6 @@ const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app')).re
 const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).replace('app.asar', 'app.asar.unpacked')
 const SIDEBAR_APP_PATH = path.dirname(require.resolve('@beaker/sidebar-app')).replace('app.asar', 'app.asar.unpacked')
 const SITE_INFO_APP_PATH = path.dirname(require.resolve('@beaker/site-info-app')).replace('app.asar', 'app.asar.unpacked')
-const VIEWER_APPS_PATH = path.dirname(require.resolve('@beaker/viewer-apps')).replace('app.asar', 'app.asar.unpacked')
 
 // constants
 // =
@@ -192,6 +191,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://compare' || requestUrl.startsWith('beaker://compare/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'compare'), cb)
   }
+  if (requestUrl === 'beaker://viewers' || requestUrl.startsWith('beaker://viewers/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'viewers'), cb)
+  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
@@ -222,9 +224,6 @@ child-src 'self';
   }
   if (requestUrl === 'beaker://site-info' || requestUrl.startsWith('beaker://site-info/')) {
     return serveAppAsset(requestUrl, SITE_INFO_APP_PATH, cb, {fallbackToIndexHTML: true})
-  }
-  if (requestUrl === 'beaker://viewers' || requestUrl.startsWith('beaker://viewers/')) {
-    return serveAppAsset(requestUrl, VIEWER_APPS_PATH, cb)
   }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/history.html'))
