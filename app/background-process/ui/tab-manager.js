@@ -125,7 +125,7 @@ class Tab {
     this.browserWindow = win
     this.browserView = new BrowserView({
       webPreferences: {
-        preload: path.join(__dirname, 'webview-preload.build.js'),
+        preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
         contextIsolation: false,
         webviewTag: false,
         sandbox: true,
@@ -647,7 +647,7 @@ class Tab {
           background: #ddd;
         }
       `)
-      let jsonpath = path.join(app.getAppPath(), 'json-renderer.build.js')
+      let jsonpath = path.join(app.getAppPath(), 'fg', 'json-renderer', 'index.build.js')
       jsonpath = jsonpath.replace('app.asar', 'app.asar.unpacked') // fetch from unpacked dir
       try {
         await this.webContents.executeJavaScript(await fs.readFile(jsonpath, 'utf8'))

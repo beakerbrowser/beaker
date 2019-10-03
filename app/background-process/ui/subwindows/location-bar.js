@@ -27,7 +27,7 @@ export function setup (parentWindow) {
   var view = views[parentWindow.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
-      preload: path.join(__dirname, 'location-bar.build.js')
+      preload: path.join(__dirname, 'fg', 'location-bar', 'index.build.js')
     }
   })
   view.setAutoResize({width: true, height: false})

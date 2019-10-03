@@ -518,7 +518,7 @@ export async function capturePage (url, opts) {
     show: false,
     defaultEncoding: 'UTF-8',
     partition: 'session-' + Date.now() + Math.random(),
-    preload: 'file://' + path.join(app.getAppPath(), 'webview-preload.build.js'),
+    preload: 'file://' + path.join(app.getAppPath(), 'fg', 'webview-preload', 'index.build.js'),
     webPreferences: {
       webSecurity: true,
       allowRunningInsecureContent: false,

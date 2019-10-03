@@ -78,7 +78,7 @@ export async function create (webContents, modalName, params = {}) {
   var view = views[tab.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
-      preload: path.join(__dirname, 'modals.build.js')
+      preload: path.join(__dirname, 'fg', 'modals', 'index.build.js')
     }
   })
   view.modalName = modalName

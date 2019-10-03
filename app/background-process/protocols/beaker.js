@@ -95,28 +95,25 @@ async function beakerProtocol (request, respond) {
 
   // browser ui
   if (requestUrl === 'beaker://shell-window/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'shell-window.html'))
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg', 'shell-window', 'index.html'))
   }
   if (requestUrl === 'beaker://shell-window/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'shell-window.build.js'))
-  }
-  if (requestUrl === 'beaker://shell-window/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'stylesheets/shell-window.css'))
+    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg', 'shell-window', 'index.build.js'))
   }
   if (requestUrl === 'beaker://location-bar/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'location-bar.html'))
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg', 'location-bar', 'index.html'))
   }
   if (requestUrl === 'beaker://shell-menus/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'shell-menus.html'))
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg', 'shell-menus', 'index.html'))
   }
   if (requestUrl === 'beaker://prompts/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'prompts.html'))
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg', 'prompts', 'index.html'))
   }
   if (requestUrl === 'beaker://perm-prompt/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'perm-prompt.html'))
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg', 'perm-prompt', 'index.html'))
   }
   if (requestUrl === 'beaker://modals/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'modals.html'))
+    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg', 'modals', 'index.html'))
   }
   if (requestUrl === 'beaker://assets/syntax-highlight.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/syntax-highlight.js'))

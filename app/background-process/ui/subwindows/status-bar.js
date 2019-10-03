@@ -6,6 +6,7 @@
  * - Status Bar views are created with each browser window and then shown/hidden as needed
  */
 import { BrowserView } from 'electron'
+import path from 'path'
 
 const WIDTH = 400
 const HEIGHT = 24
@@ -24,7 +25,7 @@ export function setup (parentWindow) {
       defaultEncoding: 'utf-8'
     }
   })
-  view.webContents.loadFile('status-bar.html')
+  view.webContents.loadFile(path.join(__dirname, 'fg', 'status-bar', 'index.html'))
   view.webContents.executeJavaScript(`set(false)`)
   show(parentWindow)
 }

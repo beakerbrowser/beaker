@@ -55,7 +55,7 @@ export function create (tab) {
   var view = views[tab.id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
-      preload: path.join(__dirname, 'webview-preload.build.js')
+      preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js')
     }
   })
   view.webContents.on('console-message', (e, level, message) => {

@@ -44,18 +44,19 @@ function burnthemallMaybeTask () {
 gulp.task('burnthemall-maybe', gulp.series(burnthemallMaybeTask))
 
 var bundleApplication = function () {
+  var fgDir = srcDir.cwd('fg')
   var bpViewsDir = srcDir.cwd('builtin-pages/views')
   var bpBuildDir = srcDir.cwd('builtin-pages/build')
   return Q.all([
     bundle(srcDir.path('background-process.js'),       srcDir.path('background-process.build.js')),
-    bundle(srcDir.path('webview-preload.js'),          srcDir.path('webview-preload.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(srcDir.path('shell-window.js'),             srcDir.path('shell-window.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true, browserifyExclude: ['fs'] }),
-    bundle(srcDir.path('shell-menus.js'),              srcDir.path('shell-menus.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(srcDir.path('location-bar.js'),             srcDir.path('location-bar.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(srcDir.path('prompts.js'),                  srcDir.path('prompts.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(srcDir.path('perm-prompt.js'),              srcDir.path('perm-prompt.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(srcDir.path('modals.js'),                   srcDir.path('modals.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(srcDir.path('json-renderer.js'),            srcDir.path('json-renderer.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
+    bundle(fgDir.path('webview-preload/index.js'),     fgDir.path('webview-preload/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(fgDir.path('shell-window/index.js'),        fgDir.path('shell-window/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true, browserifyExclude: ['fs'] }),
+    bundle(fgDir.path('shell-menus/index.js'),         fgDir.path('shell-menus/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(fgDir.path('location-bar/index.js'),        fgDir.path('location-bar/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(fgDir.path('prompts/index.js'),             fgDir.path('prompts/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(fgDir.path('perm-prompt/index.js'),         fgDir.path('perm-prompt/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(fgDir.path('modals/index.js'),              fgDir.path('modals/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(fgDir.path('json-renderer/index.js'),       fgDir.path('json-renderer/index.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('history.js'),              bpBuildDir.path('history.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('settings.js'),             bpBuildDir.path('settings.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
