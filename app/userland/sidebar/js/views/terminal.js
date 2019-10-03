@@ -3,6 +3,7 @@ import { unsafeHTML } from '../../../app-stdlib/vendor/lit-element/lit-html/dire
 import minimist from '../lib/minimist.1.2.0.js'
 import { Cliclopts } from '../lib/cliclopts.1.1.1.js'
 import { createArchive } from '../lib/term-archive-wrapper.js'
+import { importModule } from '../lib/import-module.js'
 import { joinPath, DAT_KEY_REGEX, makeSafe } from '../../../app-stdlib/js/strings.js'
 import terminalCSS from '../../css/views/terminal.css.js'
 import '../lib/term-icon.js'
@@ -164,7 +165,8 @@ class WebTerm extends LitElement {
       }
 
       try {
-        this.commandModules[packageName] = await import(joinPath(this.fs.url, COMMANDS_PATH, packageName, 'index.js'))
+        // HACK we use importModule() instead of import() because I could NOT get rollup to leave dynamic imports alone -prf
+        this.commandModules[packageName] = await importModule(joinPath(this.fs.url, COMMANDS_PATH, packageName, 'index.js'))
       } catch (err) {
         this.appendError(`Failed to load ${packageName} index.js`, err)
         continue
@@ -397,7 +399,7 @@ class WebTerm extends LitElement {
     if (!this.cwd) return html`<div></div>`
     var host = this.isFSRoot(this.cwd.host) ? '~' : shortenHash(this.cwd.host)
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper" @keydown=${this.onKeyDown}>
         <div class="output">
           ${this.outputHist}

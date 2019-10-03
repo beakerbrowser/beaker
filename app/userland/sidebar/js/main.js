@@ -92,7 +92,7 @@ class SidebarApp extends LitElement {
       <a href="#" class="${classMap({current: id === this.view})}" @click=${e => this.onClickNavItem(e, id)}>${label}</a>
     `
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <a class="close-btn" href="#" @click=${this.onClickClose}><span class="fas fa-fw fa-times"></span></a>
       ${this.renderView()}
     `

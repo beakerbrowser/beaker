@@ -202,7 +202,7 @@ async function beakerProtocol (request, respond) {
       CSP: `
 default-src 'self' beaker:;
 img-src beaker-favicon: beaker: asset: data: dat: http: https;
-script-src 'self' beaker: dat: 'unsafe-eval';
+script-src 'self' beaker: dat: blob: 'unsafe-eval';
 media-src 'self' beaker: dat:;
 style-src 'self' 'unsafe-inline' beaker:;
 child-src 'self';

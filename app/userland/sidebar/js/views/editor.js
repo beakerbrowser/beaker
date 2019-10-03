@@ -235,7 +235,7 @@ class SidebarEditorView extends LitElement {
     }
     if (this.readOnly) {
       return html`
-        <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="toolbar">
           ${this.isDat ? this.renderToolbarFiles() : ''}
           <div><span class="fas fa-fw fa-info-circle"></span> This page is read-only</div>
@@ -251,7 +251,7 @@ class SidebarEditorView extends LitElement {
       `
     }
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="toolbar">
         ${this.renderToolbarFiles()}
         ${this.dne ? html`

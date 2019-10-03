@@ -26,7 +26,7 @@ class SidebarRevisions extends LitElement {
 
   render () {
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <h5>Preview mode: ${this.currentDiff.length} unpublished revisions</h5>
       <div class="content">
         ${repeat(this.currentDiff, filediff => html`

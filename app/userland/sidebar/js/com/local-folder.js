@@ -37,7 +37,7 @@ class SidebarLocalFolder extends LitElement {
     }
   
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="field-group">
         <div class="field-group-title">Local folder</div>
         <p>
@@ -57,7 +57,7 @@ class SidebarLocalFolder extends LitElement {
 
   renderLocalFolderMissing () {
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="field-group">
         <div class="field-group-title">Local folder</div>
         <p class="error">
@@ -81,7 +81,7 @@ class SidebarLocalFolder extends LitElement {
   renderLocalFolderSet () {
     const path = this.info.userSettings.localSyncPath
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="field-group">
         <div class="field-group-title">Local folder</div>
         <p class="copy-path">
