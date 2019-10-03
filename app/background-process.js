@@ -22,7 +22,6 @@ import * as windowMenu from './background-process/ui/window-menu'
 import registerContextMenu from './background-process/ui/context-menu'
 import * as downloads from './background-process/ui/downloads'
 import * as permissions from './background-process/ui/permissions'
-import * as childProcesses from './background-process/child-processes'
 
 import * as beakerProtocol from './background-process/protocols/beaker'
 import * as beakerFaviconProtocol from './background-process/protocols/beaker-favicon'
@@ -139,7 +138,6 @@ app.on('ready', async function () {
 
 app.on('quit', () => {
   portForwarder.closePort()
-  childProcesses.closeAll()
 })
 
 app.on('custom-ready-to-show', () => {
