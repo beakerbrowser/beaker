@@ -1,0 +1,9 @@
+@import "beaker://app-stdlib/css/common.css";
+@import "beaker://app-stdlib/css/fontawesome.css";
+
+body {
+  font-size: 13px;
+  background: #fff;
+  --border-color: #d4d7dc;
+  margin: 0 10px;
+}
