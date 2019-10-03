@@ -46,8 +46,8 @@ gulp.task('burnthemall-maybe', gulp.series(burnthemallMaybeTask))
 var bundleApplication = function () {
   var fgDir = srcDir.cwd('fg')
   var userlandDir = srcDir.cwd('userland')
-  var bpViewsDir = srcDir.cwd('builtin-pages/views')
-  var bpBuildDir = srcDir.cwd('builtin-pages/build')
+  var bpViewsDir = srcDir.cwd('fg/builtin-pages/views')
+  var bpBuildDir = srcDir.cwd('fg/builtin-pages/build')
   return Q.all([
     bundle(srcDir.path('main.js'),                     srcDir.path('main.build.js')),
     bundle(fgDir.path('webview-preload/index.js'),     fgDir.path('webview-preload/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
@@ -94,10 +94,10 @@ var buildLess = function (src, dest) {
 }
 var lessTask = function () {
   return  Q.all([
-    buildLess('app/stylesheets/*.less', srcDir.path('stylesheets')),
-    buildLess('app/stylesheets/builtin-pages/*.less', srcDir.path('stylesheets/builtin-pages')),
-    buildLess('app/stylesheets/builtin-pages.less', srcDir.path('stylesheets')),
-    buildLess('app/stylesheets/icons.less', srcDir.path('stylesheets'))
+    buildLess('app/fg/builtin-pages/stylesheets/*.less', srcDir.path('fg/builtin-pages/stylesheets')),
+    buildLess('app/fg/builtin-pages/stylesheets/builtin-pages/*.less', srcDir.path('fg/builtin-pages/stylesheets/builtin-pages')),
+    buildLess('app/fg/builtin-pages/stylesheets/builtin-pages.less', srcDir.path('fg/builtin-pages/stylesheets')),
+    buildLess('app/fg/builtin-pages/stylesheets/icons.less', srcDir.path('fg/builtin-pages/stylesheets'))
   ])
 };
 gulp.task('less', gulp.series(['burnthemall-maybe'], lessTask));

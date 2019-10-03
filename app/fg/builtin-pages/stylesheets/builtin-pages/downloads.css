@@ -1,0 +1,73 @@
+.flex,
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .metadata {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+.link {
+  color: #295fcb;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: none;
+  padding: 0;
+}
+.link:hover {
+  text-decoration: underline;
+}
+.link.disabled {
+  color: #999999;
+  cursor: default;
+}
+.link.disabled:hover {
+  text-decoration: none;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .builtin-main {
+  max-width: 900px;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .title {
+  max-width: 375px;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .metadata {
+  align-items: center;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .metadata > *:not(:first-child) {
+  margin-left: 5px;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .metadata > * {
+  margin-right: 3px;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .buttons.controls {
+  opacity: 1;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .link {
+  color: #2864dc;
+  cursor: pointer;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .link:hover {
+  text-decoration: underline;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .btn.trash {
+  opacity: 0;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download .btn.trash:hover {
+  color: #d43128;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download:hover .btn.trash {
+  opacity: 1;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download.progressing {
+  height: auto;
+  padding: 8px 15px;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download.progressing .progress-ui {
+  flex: 1;
+  margin-right: 20px;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download.progressing .controls {
+  margin-left: 0;
+  margin-right: 20px;
+}
+.builtin-wrapper.builtin-wrapper.downloads-wrapper .ll-row.download.progressing .metadata {
+  margin-left: auto;
+}
