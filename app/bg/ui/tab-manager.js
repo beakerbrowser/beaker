@@ -27,7 +27,7 @@ import { getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
-import { findImageBounds } from '../../lib/bg/image'
+import { findImageBounds } from '../lib/image'
 import { DAT_KEY_REGEX } from '../../lib/strings'
 const sitedataDb = beakerCore.dbs.sitedata
 const settingsDb = beakerCore.dbs.settings
