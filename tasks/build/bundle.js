@@ -30,6 +30,15 @@ module.exports = function (src, dest, opts) {
   rollup.rollup({
     input: src,
     external: generateExternalModulesList(),
+    onwarn (warning, warn) {
+      // skip certain warnings
+      if (warning.code === 'UNRESOLVED_IMPORT') return
+      if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+      if (warning.code === 'CIRCULAR_DEPENDENCY') return
+      // Use default for everything else
+      console.log(warning.code)
+      warn(warning)
+    }
   }).then(async function (bundle) {
     var jsFile = pathUtil.basename(dest);
     var result = await bundle.generate({
