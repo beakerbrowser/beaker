@@ -117,7 +117,7 @@ class FilesExplorer extends LitElement {
     }
     if (!this.isDat) {
       return html`
-        <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="toolbar">
           <div><span class="fas fa-fw fa-info-circle"></span> This site doesn't support file listings</div>
         </div>
@@ -129,7 +129,7 @@ class FilesExplorer extends LitElement {
       return html`<span class="fa-fw far fa-file"></span>`
     }
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="toolbar">
         ${this.readOnly ? html `
           <div><span class="fas fa-fw fa-info-circle"></span> This site is read-only</div>
@@ -183,7 +183,7 @@ class FilesExplorer extends LitElement {
     contextMenu.create({
       x: e.clientX,
       y: e.clientY,
-      fontAwesomeCSSUrl: '/vendor/beaker-app-stdlib/css/fontawesome.css',
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       noBorders: true,
       roomy: true,
       items: [
@@ -315,7 +315,7 @@ class FilesExplorer extends LitElement {
     contextMenu.create({
       x: e.clientX,
       y: e.clientY,
-      fontAwesomeCSSUrl: '/vendor/beaker-app-stdlib/css/fontawesome.css',
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       noBorders: true,
       roomy: true,
       items
@@ -330,7 +330,7 @@ class FilesExplorer extends LitElement {
     contextMenu.create({
       x: rect.left - 3,
       y: rect.bottom + 1,
-      fontAwesomeCSSUrl: '/vendor/beaker-app-stdlib/css/fontawesome.css',
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       noBorders: true,
       roomy: true,
       withTriangle: true,
@@ -428,7 +428,7 @@ class FilesExplorer extends LitElement {
     contextMenu.create({
       x: e.clientX,
       y: e.clientY,
-      fontAwesomeCSSUrl: '/vendor/beaker-app-stdlib/css/fontawesome.css',
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       noBorders: true,
       roomy: true,
       items

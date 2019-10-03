@@ -13,7 +13,7 @@ const createContextMenu = (el, items) => contextMenu.create({
   withTriangle: true,
   noBorders: true,
   style: 'padding: 4px 0; min-width: 200px; font-size: 14px; color: #000',
-  fontAwesomeCSSUrl: '/vendor/beaker-app-stdlib/css/fontawesome.css',
+  fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
   items
 })
 
@@ -49,7 +49,7 @@ class TopRightControls extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div>
         <a @click=${this.onClickNewMenu} style="font-size: 14px; font-weight: 500; line-height: 14px;">+ New <i class="fas fa-caret-down"></i></a>
         <a @click=${this.onClickAppMenu}><i class="fas fa-th"></i></a>

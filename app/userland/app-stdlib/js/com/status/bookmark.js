@@ -25,7 +25,7 @@ export class FeedBookmark extends LitElement {
     var isOwner = this.userUrl === this.bookmark.author.url
     var viewProfileUrl = `${this.viewProfileBaseUrl}${encodeURIComponent(this.bookmark.author.url)}`
     return html`
-      <link rel="stylesheet" href="/vendor/beaker-app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="inner">
         <div class="content-column">
           <div class="body">

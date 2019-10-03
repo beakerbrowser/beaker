@@ -40,7 +40,7 @@ create({
   parent: document.body,
 
   // url to fontawesome css
-  fontAwesomeCSSUrl: '/vendor/beaker-app-stdlib/css/fontawesome.css',
+  fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
 
   // menu items
   items: [
