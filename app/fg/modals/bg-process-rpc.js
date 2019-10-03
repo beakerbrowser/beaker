@@ -5,7 +5,7 @@ import archivesManifest from '@beaker/core/web-apis/manifests/internal/archives'
 import datArchiveManifest from '@beaker/core/web-apis/manifests/external/dat-archive'
 import libraryManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-library'
 import profilesManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-profiles'
-import modalsManifest from '../../background-process/rpc-manifests/modals'
+import modalsManifest from '../../bg/rpc-manifests/modals'
 
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)
 export const users = rpc.importAPI('users', usersManifest)

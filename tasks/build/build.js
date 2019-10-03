@@ -48,7 +48,7 @@ var bundleApplication = function () {
   var bpViewsDir = srcDir.cwd('builtin-pages/views')
   var bpBuildDir = srcDir.cwd('builtin-pages/build')
   return Q.all([
-    bundle(srcDir.path('background-process.js'),       srcDir.path('background-process.build.js')),
+    bundle(srcDir.path('main.js'),                     srcDir.path('main.build.js')),
     bundle(fgDir.path('webview-preload/index.js'),     fgDir.path('webview-preload/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(fgDir.path('shell-window/index.js'),        fgDir.path('shell-window/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true, browserifyExclude: ['fs'] }),
     bundle(fgDir.path('shell-menus/index.js'),         fgDir.path('shell-menus/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),

@@ -4,7 +4,7 @@ import bookmarksManifest from '@beaker/core/web-apis/manifests/external/unwalled
 import followsManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-follows'
 import libraryManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-library'
 import watchlistManifest from '@beaker/core/web-apis/manifests/internal/watchlist'
-import viewsManifest from '../../background-process/rpc-manifests/views'
+import viewsManifest from '../../bg/rpc-manifests/views'
 import datArchiveManifest from '@beaker/core/web-apis/manifests/external/dat-archive'
 
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)

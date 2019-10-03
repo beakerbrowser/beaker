@@ -6,7 +6,7 @@
   "version": "0.9.0-prerelease.5",
   "author": "Paul Frazee <pfrazee@gmail.com>",
   "copyright": "© 2019, Blue Link Labs",
-  "main": "background-process.build.js",
+  "main": "main.build.js",
   "dependencies": {
     "@beaker/compare-app": "^1.0.0",
     "@beaker/core": "github:beakerbrowser/beaker-core#blue-hyperdrive10",

@@ -10,8 +10,8 @@ import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
 import bookmarksManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-bookmarks'
 import historyManifest from '@beaker/core/web-apis/manifests/internal/history'
 import searchManifest from '@beaker/core/web-apis/manifests/internal/search'
-import locationBarManifest from '../../background-process/rpc-manifests/location-bar'
-import viewsManifest from '../../background-process/rpc-manifests/views'
+import locationBarManifest from '../../bg/rpc-manifests/location-bar'
+import viewsManifest from '../../bg/rpc-manifests/views'
 
 const bg = {
   beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
