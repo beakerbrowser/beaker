@@ -14,7 +14,6 @@ import ICO from 'icojs'
 const LIBRARY_APP_PATH = path.dirname(require.resolve('@beaker/library-app')).replace('app.asar', 'app.asar.unpacked')
 const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).replace('app.asar', 'app.asar.unpacked')
 const SIDEBAR_APP_PATH = path.dirname(require.resolve('@beaker/sidebar-app')).replace('app.asar', 'app.asar.unpacked')
-const SITE_INFO_APP_PATH = path.dirname(require.resolve('@beaker/site-info-app')).replace('app.asar', 'app.asar.unpacked')
 
 // constants
 // =
@@ -194,6 +193,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://viewers' || requestUrl.startsWith('beaker://viewers/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'viewers'), cb)
   }
+  if (requestUrl === 'beaker://site-info' || requestUrl.startsWith('beaker://site-info/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'site-info'), cb, {fallbackToIndexHTML: true})
+  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
@@ -221,9 +223,6 @@ child-src 'self';
   }
   if (requestUrl === 'beaker://search' || requestUrl.startsWith('beaker://search/')) {
     return serveAppAsset(requestUrl, SEARCH_APP_PATH, cb)
-  }
-  if (requestUrl === 'beaker://site-info' || requestUrl.startsWith('beaker://site-info/')) {
-    return serveAppAsset(requestUrl, SITE_INFO_APP_PATH, cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://history/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'builtin-pages/history.html'))
