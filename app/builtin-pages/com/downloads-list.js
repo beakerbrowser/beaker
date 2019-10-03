@@ -1,4 +1,4 @@
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import prettyBytes from 'pretty-bytes'
 import { ucfirst, getHostname } from '../../lib/strings'
 import { downloadTimestamp } from '../../lib/time'

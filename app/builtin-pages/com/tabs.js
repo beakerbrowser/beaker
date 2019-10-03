@@ -1,4 +1,4 @@
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 
 export default function tabs (current, tabs) {
   return yo`

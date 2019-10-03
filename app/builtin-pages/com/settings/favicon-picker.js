@@ -1,6 +1,6 @@
 /* globals beaker */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import * as faviconMakerPopup from './favicon-maker'
 
 // globals

@@ -1,6 +1,6 @@
 /* globals DatArchive */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 
 const FETCH_COUNT = 200
 

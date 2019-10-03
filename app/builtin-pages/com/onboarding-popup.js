@@ -1,6 +1,6 @@
 /* globals beaker DatArchive localStorage */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 
 // globals
 // =

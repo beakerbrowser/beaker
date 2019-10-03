@@ -1,6 +1,6 @@
 /* globals Event beaker */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 
 export function pushUrl (e) {
   // ignore ctrl/cmd+click

@@ -1,6 +1,6 @@
 /* globals ace */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 
 var orgApplyDeltaFn
 

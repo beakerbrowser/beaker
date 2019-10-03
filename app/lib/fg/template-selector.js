@@ -1,6 +1,6 @@
 /* globals beaker DatArchive confirm */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import {EventEmitter} from 'events'
 
 // TODO this is incomplete

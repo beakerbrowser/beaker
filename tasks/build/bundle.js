@@ -28,19 +28,21 @@ module.exports = function (src, dest, opts) {
   var deferred = Q.defer();
 
   rollup.rollup({
-    entry: src,
+    input: src,
     external: generateExternalModulesList(),
-  }).then(function (bundle) {
+  }).then(async function (bundle) {
     var jsFile = pathUtil.basename(dest);
-    var result = bundle.generate({
+    var result = await bundle.generate({
       format: 'cjs',
-      sourceMap: !!(opts && opts.sourcemap),
-      sourceMapFile: jsFile,
+      output: {
+        sourceMap: !!(opts && opts.sourcemap),
+        sourceMapFile: jsFile
+      }
     });
 
     if (opts && opts.browserify) {
       // Browserify the code
-      var b = browserify(intoStream(result.code), { basedir: opts.basedir, builtins: opts.browserifyBuiltins });
+      var b = browserify(intoStream(result.output[0].code), { basedir: opts.basedir, builtins: opts.browserifyBuiltins });
       b.exclude('electron');
       if (opts.excludeNodeModules) nodeBuiltInModules.forEach(m => b.exclude(m))
       if (opts.browserifyExclude) opts.browserifyExclude.forEach(m => b.exclude(m))
@@ -57,11 +59,11 @@ module.exports = function (src, dest, opts) {
     } else {
       // Wrap code in self invoking function so the variables don't
       // pollute the global namespace.
-      var isolatedCode = '(function () {' + result.code + '\n}());';
+      var isolatedCode = '(function () {' + result.output[0].code + '\n}());';
       if (opts && opts.sourcemap) {
         return Q.all([
             jetpack.writeAsync(dest, isolatedCode + '\n//# sourceMappingURL=' + jsFile + '.map'),
-            jetpack.writeAsync(dest + '.map', result.map.toString()),
+            jetpack.writeAsync(dest + '.map', result.output[0].map.toString()),
           ]);
       }
       return jetpack.writeAsync(dest, isolatedCode)

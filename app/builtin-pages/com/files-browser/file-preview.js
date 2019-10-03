@@ -1,6 +1,6 @@
 /* globals hljs */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import mime from 'mime'
 import {render as renderFileEditor} from './file-editor'
 import BINARY_EXTENSIONS from 'binary-extensions'

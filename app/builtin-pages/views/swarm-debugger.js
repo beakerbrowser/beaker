@@ -1,6 +1,6 @@
 /* globals DatArchive beaker */
 
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import {shortenHash} from '../../lib/strings'
 
 const COLUMN_SETS = {

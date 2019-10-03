@@ -20,7 +20,7 @@
     "into-stream": "^2.0.1",
     "pre-commit": "^1.2.2",
     "q": "^1.4.1",
-    "rollup": "^0.41.0",
+    "rollup": "^1.23.0",
     "yargs": "^4.2.0"
   },
   "optionalDependencies": {

@@ -1,4 +1,4 @@
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import * as contextMenu from './context-menu'
 
 // exported api

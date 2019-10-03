@@ -1,4 +1,4 @@
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import * as svg from '../../lib/fg/svg'
 
 export default function render () {

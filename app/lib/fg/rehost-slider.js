@@ -1,7 +1,7 @@
 /* globals beaker DatArchive */
 
 import _get from 'lodash.get'
-import * as yo from 'yo-yo'
+import yo from 'yo-yo'
 import bytes from 'bytes'
 import moment from 'moment'
 import {EventEmitter} from 'events'
