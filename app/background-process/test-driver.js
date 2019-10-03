@@ -2,7 +2,7 @@ import dgram from 'dgram'
 import {ipcMain} from 'electron'
 import * as beakerCore from '@beaker/core'
 import * as windows from './ui/windows'
-import * as viewManager from './ui/view-manager'
+import * as tabManager from './ui/tab-manager'
 import * as permPrompt from './ui/subwindows/perm-prompt'
 import * as modals from './ui/subwindows/modals'
 
@@ -72,20 +72,20 @@ async function onMessage (message) {
 const METHODS = {
   newTab () {
     var win = getActiveWindow()
-    var view = viewManager.create(win, undefined, {setActive: true})
-    return viewManager.getIndexOfTab(win, view)
+    var tab = tabManager.create(win, undefined, {setActive: true})
+    return tabManager.getIndexOfTab(win, tab)
   },
 
   navigateTo (page, url) {
-    var view = viewManager.getByIndex(getActiveWindow(), page)
-    var loadPromise = new Promise(resolve => view.webContents.once('dom-ready', () => resolve()))
-    view.loadURL(url)
+    var tab = tabManager.getByIndex(getActiveWindow(), page)
+    var loadPromise = new Promise(resolve => tab.webContents.once('dom-ready', () => resolve()))
+    tab.loadURL(url)
     return loadPromise
   },
 
   getUrl (page) {
-    var view = viewManager.getByIndex(getActiveWindow(), page)
-    return view.url
+    var tab = tabManager.getByIndex(getActiveWindow(), page)
+    return tab.url
   },
 
   async executeJavascriptInShell (js) {
@@ -95,21 +95,21 @@ const METHODS = {
   },
 
   async executeJavascriptOnPage (page, js) {
-    var view = viewManager.getByIndex(getActiveWindow(), page)
-    var res = await view.webContents.executeJavaScript(js)
+    var tab = tabManager.getByIndex(getActiveWindow(), page)
+    var res = await tab.webContents.executeJavaScript(js)
     return res
   },
 
   async executeJavascriptInPermPrompt (page, js) {
-    var view = viewManager.getByIndex(getActiveWindow(), page).browserView
-    var prompt = await waitFor(() => permPrompt.get(view))
+    var tab = tabManager.getByIndex(getActiveWindow(), page).browserView
+    var prompt = await waitFor(() => permPrompt.get(tab))
     var res = await prompt.webContents.executeJavaScript(js)
     return res
   },
 
   async executeJavascriptInModal (page, js) {
-    var view = viewManager.getByIndex(getActiveWindow(), page).browserView
-    var modal = await waitFor(() => modals.get(view))
+    var tab = tabManager.getByIndex(getActiveWindow(), page).browserView
+    var modal = await waitFor(() => modals.get(tab))
     var res = await modal.webContents.executeJavaScript(js)
     return res
   }

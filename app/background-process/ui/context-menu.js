@@ -1,7 +1,7 @@
 import * as beakerCore from '@beaker/core'
 import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
-import * as viewManager from './view-manager'
+import * as tabManager from './tab-manager'
 import { download } from './downloads'
 
 // NOTE
@@ -56,7 +56,7 @@ export default function registerContextMenu () {
 
       // links
       if (props.linkURL && props.mediaType === 'none') {
-        menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => viewManager.create(win, props.linkURL, {setActive: true}) })
+        menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => tabManager.create(win, props.linkURL, {setActive: true}) })
         menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
         menuItems.push({ type: 'separator' })
       }
@@ -66,7 +66,7 @@ export default function registerContextMenu () {
         menuItems.push({ label: 'Save Image As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Image', click: () => webContents.copyImageAt(props.x, props.y) })
         menuItems.push({ label: 'Copy Image URL', click: () => clipboard.writeText(props.srcURL) })
-        menuItems.push({ label: 'Open Image in New Tab', click: (item, win) => viewManager.create(win, props.srcURL) })
+        menuItems.push({ label: 'Open Image in New Tab', click: (item, win) => tabManager.create(win, props.srcURL) })
         menuItems.push({ type: 'separator' })
       }
 
@@ -82,7 +82,7 @@ export default function registerContextMenu () {
       if (props.mediaType == 'video') {
         menuItems.push({ label: 'Save Video As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Video URL', click: () => clipboard.writeText(props.srcURL) })
-        menuItems.push({ label: 'Open Video in New Tab', click: (item, win) => viewManager.create(win, props.srcURL) })
+        menuItems.push({ label: 'Open Video in New Tab', click: (item, win) => tabManager.create(win, props.srcURL) })
         menuItems.push({ type: 'separator' })
       }
 
@@ -90,7 +90,7 @@ export default function registerContextMenu () {
       if (props.mediaType == 'audio') {
         menuItems.push({ label: 'Save Audio As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Audio URL', click: () => clipboard.writeText(props.srcURL) })
-        menuItems.push({ label: 'Open Audio in New Tab', click: (item, win) => viewManager.create(win, props.srcURL) })
+        menuItems.push({ label: 'Open Audio in New Tab', click: (item, win) => tabManager.create(win, props.srcURL) })
         menuItems.push({ type: 'separator' })
       }
 
@@ -124,7 +124,7 @@ export default function registerContextMenu () {
           searchPreviewStr += '"'
         }
         var query = 'https://duckduckgo.com/?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
-        menuItems.push({ label: 'Search DuckDuckGo for "' + searchPreviewStr, click: (item, win) => viewManager.create(win, query) })
+        menuItems.push({ label: 'Search DuckDuckGo for "' + searchPreviewStr, click: (item, win) => tabManager.create(win, query) })
         menuItems.push({ type: 'separator' })
       }
 
@@ -158,7 +158,7 @@ export default function registerContextMenu () {
       menuItems.push({
         label: 'View Source',
         click: (item, win) => {
-          viewManager.getActive(win).toggleSidebar('editor')
+          tabManager.getActive(win).toggleSidebar('editor')
         }
       })
       menuItems.push({
