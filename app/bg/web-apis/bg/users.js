@@ -1,4 +1,4 @@
-import * as globals from '../../globals'
+import * as windows from '../../ui/windows'
 import * as users from '../../filesystem/users'
 import dat from '../../dat/index'
 
@@ -168,7 +168,7 @@ export default {
 // =
 
 function getSessionUrl (sender) {
-  var userSession = globals.userSessionAPI.getFor(sender)
+  var userSession = windows.getUserSessionFor(sender)
   if (!userSession) throw new Error('No active user session')
   return userSession.url
 }

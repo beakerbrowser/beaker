@@ -1,5 +1,4 @@
 import { webFrame } from 'electron'
-import * as rpcAPI from 'pauls-electron-rpc'
 import { setup as setupWebAPIs } from '../../bg/web-apis/fg.js'
 import { setup as setupTutorial } from './tutorial'
 import { setup as setupLocationbar } from './locationbar'
@@ -12,7 +11,7 @@ import resizeHackfix from './resize-hackfix'
 import createSpellChecker from '../../bg/web-apis/fg/spell-checker.js'
 // import './read-page-metadata' DISABLED wasnt working effectively -prf
 
-webFrame.setSpellCheckProvider('en-US', createSpellChecker(rpcAPI))
+webFrame.setSpellCheckProvider('en-US', createSpellChecker())
 
 // HACKS
 setupExitFullScreenHackfix()
@@ -20,7 +19,7 @@ readableStreamAsyncIteratorPolyfill()
 windowOpenCloseHackfix()
 resizeHackfix()
 
-setupWebAPIs({ rpcAPI })
+setupWebAPIs()
 setupTutorial()
 setupLocationbar()
 setupPrompt()

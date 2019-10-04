@@ -1,7 +1,7 @@
-import globals from '../../globals'
+import * as windows from '../../ui/windows'
+import * as modals from '../../ui/subwindows/modals'
 import assert from 'assert'
 import { UserDeniedError } from 'beaker-error-constants'
-import * as sessionPerms from '../../lib/session-perms'
 
 // typedefs
 // =
@@ -26,7 +26,7 @@ export default {
    * @returns {Promise<string[]>}
    */
   async selectFileDialog (opts = {}) {
-    var userSession = globals.userSessionAPI.getFor(this.sender)
+    var userSession = windows.getUserSessionFor(this.sender)
     if (!userSession) throw new Error('No active user session')
 
     // validate
@@ -53,7 +53,7 @@ export default {
     // initiate the modal
     var res
     try {
-      res = await globals.uiAPI.showModal(this.sender, 'select-file', opts)
+      res = await modals.create(this.sender, 'select-file', opts)
     } catch (e) {
       if (e.name !== 'Error') {
         throw e // only rethrow if a specific error
@@ -76,7 +76,7 @@ export default {
    * @returns {Promise<string[]>}
    */
   async saveFileDialog (opts = {}) {
-    var userSession = globals.userSessionAPI.getFor(this.sender)
+    var userSession = windows.getUserSessionFor(this.sender)
     if (!userSession) throw new Error('No active user session')
 
     // validate
@@ -101,7 +101,7 @@ export default {
     opts.saveMode = true
     var res
     try {
-      res = await globals.uiAPI.showModal(this.sender, 'select-file', opts)
+      res = await modals.create(this.sender, 'select-file', opts)
     } catch (e) {
       if (e.name !== 'Error') {
         throw e // only rethrow if a specific error
@@ -134,7 +134,7 @@ export default {
     // initiate the modal
     var res
     try {
-      res = await globals.uiAPI.showModal(this.sender, 'select-archive', opts)
+      res = await modals.create(this.sender, 'select-archive', opts)
     } catch (e) {
       if (e.name !== 'Error') {
         throw e // only rethrow if a specific error

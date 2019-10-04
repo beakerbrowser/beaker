@@ -1,4 +1,5 @@
-import globals from '../../../globals'
+import * as beakerBrowser from '../../../browser'
+import * as permissions from '../../../ui/permissions'
 import { URL } from 'url'
 
 // constants
@@ -52,7 +53,7 @@ export default {
     }
 
     // check perms
-    await globals.permsAPI.checkLabsPerm({
+    await permissions.checkLabsPerm({
       perm: API_PERM_ID + ':' + url,
       labApi: LAB_API_ID,
       apiDocsUrl: API_DOCS_URL,
@@ -60,6 +61,6 @@ export default {
     })
 
     // run method
-    return globals.uiAPI.capturePage(url, opts)
+    return beakerBrowser.capturePage(url, opts)
   }
 }

@@ -8,9 +8,7 @@ require('tls').DEFAULT_ECDH_CURVE = 'auto' // HACK (prf) fix Node 8.9.x TLS issu
 
 import { app, protocol } from 'electron'
 import { join } from 'path'
-import * as rpc from 'pauls-electron-rpc'
 
-import globals from './bg/globals'
 import { getEnvVar } from './bg/lib/env'
 import * as logger from './bg/logger'
 import * as beakerBrowser from './bg/browser'
@@ -97,39 +95,25 @@ app.on('open-file', (e, filepath) => {
 app.on('ready', async function () {
   portForwarder.setup()
 
-  // record some global paths
-  globals.userDataPath = app.getPath('userData')
-  globals.homePath = app.getPath('home')
-  globals.templatesPath = join(__dirname, 'assets', 'templates')
-  globals.disallowedSavePaths = DISALLOWED_SAVE_PATH_NAMES.map(path => app.getPath(path))
-
-  // APIs
-  // TODO remove ALL of these!! -prf
-  globals.permsAPI = permissions
-  globals.uiAPI = {
-    showModal: modals.create,
-    capturePage: beakerBrowser.capturePage
+  // record some common opts
+  var commonOpts = {
+    userDataPath: app.getPath('userData'),
+    homePath: app.getPath('home')
   }
-  globals.userSessionAPI = {
-    getFor: windows.getUserSessionFor
-  }
-  globals.rpcAPI = rpc
-  globals.downloadsWebAPI = downloads.WEBAPI
-  globals.browserWebAPI = beakerBrowser.WEBAPI
 
   // initiate log
-  await logger.setup(join(globals.userDataPath, 'beaker.log'))
+  await logger.setup(join(commonOpts.userDataPath, 'beaker.log'))
 
   // setup databases
   for (let k in dbs) {
     if (dbs[k].setup) {
-      dbs[k].setup(globals)
+      dbs[k].setup(commonOpts)
     }
   }
 
   // start subsystems
   // (order is important)
-  await dat.setup(globals)
+  await dat.setup(commonOpts)
   await uwg.setup()
   await filesystem.setup()
   webapis.setup()

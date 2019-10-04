@@ -1,8 +1,7 @@
-import globals from '../globals'
+import * as windows from '../ui/windows'
 import * as users from '../filesystem/users'
 import * as userSiteSessions from '../filesystem/site-sessions'
 import * as datArchives from '../dat/archives'
-import { ucfirst } from '../../lib/strings'
 import * as archivesDb from '../dbs/archives'
 import { PermissionsError } from 'beaker-error-constants'
 import libTools from '@beaker/library-tools'
@@ -18,13 +17,13 @@ import libTools from '@beaker/library-tools'
 // =
 
 export async function getSessionUserId (sender) {
-  var userSession = globals.userSessionAPI.getFor(sender)
+  var userSession = windows.getUserSessionFor(sender)
   if (!userSession) throw new Error('No active user session')
   return (await users.get(userSession.url)).id
 }
 
 export async function getSessionUserArchive (sender) {
-  var userSession = globals.userSessionAPI.getFor(sender)
+  var userSession = windows.getUserSessionFor(sender)
   if (!userSession) throw new Error('No active user session')
   var key = await datArchives.fromURLToKey(userSession.url, true)
   return datArchives.getArchive(key)

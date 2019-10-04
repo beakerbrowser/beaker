@@ -1,5 +1,6 @@
-import globals from '../../globals'
 import { UserDeniedError } from 'beaker-error-constants'
+import * as windows from '../../ui/windows'
+import * as modals from '../../ui/subwindows/modals'
 import * as users from '../../filesystem/users'
 import * as userSiteSessions from '../../filesystem/site-sessions'
 import * as sessionPerms from '../../lib/session-perms'
@@ -58,7 +59,7 @@ export default {
 
     // run the modal
     try {
-      await globals.uiAPI.showModal(this.sender, 'create-user-session', {
+      await modals.create(this.sender, 'create-user-session', {
         site: {
           url: siteUrl
         },
@@ -113,7 +114,7 @@ export default {
 // =
 
 async function getUser (sender) {
-  var userSession = globals.userSessionAPI.getFor(sender)
+  var userSession = windows.getUserSessionFor(sender)
   if (!userSession) throw new Error('No active user session')
   return users.get(userSession.url)
 }

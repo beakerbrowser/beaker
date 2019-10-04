@@ -1,10 +1,10 @@
-import globals from '../../globals'
 import path from 'path'
-import fs from 'fs'
 import parseDatURL from 'parse-dat-url'
 import pda from 'pauls-dat-api2'
 import concat from 'concat-stream'
 import pick from 'lodash.pick'
+import * as modals from '../../ui/subwindows/modals'
+import * as permissions from '../../ui/permissions'
 import datDns from '../../dat/dns'
 import * as datArchives from '../../dat/archives'
 import * as datLibrary from '../../filesystem/dat-library'
@@ -35,7 +35,7 @@ export default {
       // run the creation modal
       let res
       try {
-        res = await globals.uiAPI.showModal(this.sender, 'create-archive', {title, description, type, author, visibility, links})
+        res = await modals.create(this.sender, 'create-archive', {title, description, type, author, visibility, links})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error
@@ -63,7 +63,7 @@ export default {
     if (template) {
       try {
         let archive = datArchives.getArchive(newArchiveKey)
-        let templatePath = path.join(globals.templatesPath, template)
+        let templatePath = path.join(__dirname, 'assets', 'templates', template)
         await pda.exportFilesystemToArchive({
           srcPath: templatePath,
           dstArchive: archive.session.drive,
@@ -76,7 +76,7 @@ export default {
     }
 
     // grant write permissions to the creating app
-    globals.permsAPI.grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
+    permissions.grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
     return newArchiveUrl
   },
 
@@ -95,7 +95,7 @@ export default {
       let isSelfFork = key1 === key2
       let res
       try {
-        res = await globals.uiAPI.showModal(this.sender, 'fork-archive', {url, title, description, type, author, visibility, links, isSelfFork})
+        res = await modals.create(this.sender, 'fork-archive', {url, title, description, type, author, visibility, links, isSelfFork})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error
@@ -120,7 +120,7 @@ export default {
 
     // grant write permissions to the creating app
     let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
-    globals.permsAPI.grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
+    permissions.grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
     return newArchiveUrl
   },
 
@@ -484,7 +484,7 @@ export default {
     // initiate the modal
     var res
     try {
-      res = await globals.uiAPI.showModal(this.sender, 'select-archive', {title, buttonLabel, filters})
+      res = await modals.create(this.sender, 'select-archive', {title, buttonLabel, filters})
     } catch (e) {
       if (e.name !== 'Error') {
         throw e // only rethrow if a specific error
@@ -596,7 +596,7 @@ async function assertCreateArchivePermission (sender) {
   }
 
   // ask the user
-  let allowed = await globals.permsAPI.requestPermission('createDat', sender)
+  let allowed = await permissions.requestPermission('createDat', sender)
   if (!allowed) {
     throw new UserDeniedError()
   }
@@ -624,11 +624,11 @@ async function assertWritePermission (archive, sender) {
   }
 
   // ensure the sender is allowed to write
-  var allowed = await globals.permsAPI.queryPermission(perm, sender)
+  var allowed = await permissions.queryPermission(perm, sender)
   if (allowed) return true
 
   // ask the user
-  allowed = await globals.permsAPI.requestPermission(perm, sender, { title: details.title })
+  allowed = await permissions.requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true
 }
@@ -644,7 +644,7 @@ async function assertDeleteArchivePermission (archive, sender) {
 
   // ask the user
   var details = await datArchives.getArchiveInfo(archiveKey)
-  var allowed = await globals.permsAPI.requestPermission(perm, sender, { title: details.title })
+  var allowed = await permissions.requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true
 }

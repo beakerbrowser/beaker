@@ -1,5 +1,4 @@
-import globals from '../../globals'
-import { PermissionsError } from 'beaker-error-constants'
+import * as windows from '../../ui/windows'
 import * as search from '../../uwg/search'
 
 // typedefs
@@ -53,7 +52,7 @@ export default {
    * @returns {Promise<SearchPublicAPIResult>}
    */
   async query (opts) {
-    var sess = globals.userSessionAPI.getFor(this.sender)
+    var sess = windows.getUserSessionFor(this.sender)
     if (!sess) return null
     return search.query(sess.url, opts)
   }

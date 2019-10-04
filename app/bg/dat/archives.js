@@ -56,12 +56,9 @@ export const removeListener = archivesEvents.removeListener.bind(archivesEvents)
 
 /**
  * @param {Object} opts
- * @param {Object} opts.rpcAPI
- * @param {Object} opts.datDaemonProcess
- * @param {string[]} opts.disallowedSavePaths
  * @return {Promise<void>}
  */
-export async function setup ({rpcAPI, disallowedSavePaths}) {
+export async function setup () {
   // connect to the daemon
   await daemon.setup()
 
@@ -530,7 +527,7 @@ export function fromURLToKey (url, lookupDns = false) {
     if (!lookupDns) {
       throw new InvalidURLError('Hostname is not a valid hash')
     }
-    return require('./dns').resolveName(urlp.host)
+    return datDns.resolveName(urlp.host)
   }
 
   return urlp.host

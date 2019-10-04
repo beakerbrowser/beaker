@@ -1,4 +1,5 @@
-import globals from '../../globals'
+import * as windows from '../../ui/windows'
+import * as modals from '../../ui/subwindows/modals'
 import * as datArchives from '../../dat/archives'
 import * as archivesDb from '../../dbs/archives'
 import * as uwg from '../../uwg/index'
@@ -43,7 +44,7 @@ export default {
    */
   async me () {
     await sessionPerms.getSessionOrThrow(this.sender)
-    var sess = globals.userSessionAPI.getFor(this.sender)
+    var sess = windows.getUserSessionFor(this.sender)
     if (!sess) return null
     return get(sess.url)
   },
@@ -79,16 +80,7 @@ export default {
     else if (sess) user = await users.get(sess.url)
     else user = await users.getDefault()
 
-    await globals.uiAPI.showModal(this.sender, 'user', user)
+    await modals.create(this.sender, 'user', user)
     return get(user.url)
-  }
-}
-
-function toOrigin (url) {
-  try {
-    let urlp = new URL(url)
-    return `${urlp.protocol}//${urlp.hostname}`
-  } catch (e) {
-    return url
   }
 }

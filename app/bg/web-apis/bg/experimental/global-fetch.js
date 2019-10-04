@@ -1,4 +1,4 @@
-import globals from '../../../globals'
+import * as permissions from '../../../ui/permissions'
 import http from 'http'
 import https from 'https'
 import concat from 'concat-stream'
@@ -23,7 +23,7 @@ export default {
     reqOptions.path = urlp.pathname + urlp.search + urlp.hash
 
     // check perms
-    await globals.permsAPI.checkLabsPerm({
+    await permissions.checkLabsPerm({
       perm: API_PERM_ID + ':' + reqOptions.protocol + '//' + reqOptions.host,
       labApi: LAB_API_ID,
       apiDocsUrl: API_DOCS_URL,
