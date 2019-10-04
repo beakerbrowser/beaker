@@ -68,6 +68,7 @@ export async function setup () {
   try {
     // ensure common dirs
     await ensureDir(PATHS.DATA)
+    await ensureDir(PATHS.SETTINGS)
     await ensureDir(PATHS.TRASH)
 
     // ensure all library folders exist

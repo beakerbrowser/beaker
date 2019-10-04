@@ -20,6 +20,7 @@ export const PATHS = {
   LIBRARY_SAVED_DAT: (cat) => `/.library/${cat}`,
   USERS: '/.users',
   USER: (name) => `/.users/${name}`,
+  SETTINGS: '/.settings',
   TRASH: '/.trash',
 
   // public fs

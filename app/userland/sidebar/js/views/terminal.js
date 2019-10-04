@@ -8,7 +8,7 @@ import { joinPath, DAT_KEY_REGEX, makeSafe } from '../../../app-stdlib/js/string
 import terminalCSS from '../../css/views/terminal.css.js'
 import '../lib/term-icon.js'
 
-const THEME_PATH = '/Terminal/theme.css'
+const THEME_PATH = '/.settings/terminal.css'
 const COMMANDS_PATH = '/Terminal/commands'
 
 window.addEventListener('keydown', onGlobalKeydown)
