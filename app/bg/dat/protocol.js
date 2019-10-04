@@ -14,6 +14,14 @@ import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
 
+const md = markdown({
+  allowHTML: true,
+  useHeadingIds: true,
+  useHeadingAnchors: false,
+  hrefMassager: undefined,
+  highlight: undefined
+})
+
 // HACK detect whether the native builds of some key deps are working -prf
 // -prf
 var utpLoadError = false
@@ -282,7 +290,7 @@ export const electronHandler = async function (request, respond) {
   if (!range && entry.path.endsWith('.md') && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
     let content = await checkoutFS.pda.readFile(entry.path, 'utf8')
     let contentType = canExecuteHTML ? 'text/html' : 'text/plain'
-    content = canExecuteHTML ? markdown.render(content) : content
+    content = canExecuteHTML ? renderMD(content) : content
     return respond({
       statusCode: 200,
       headers: Object.assign(headers, {
@@ -347,4 +355,12 @@ export const electronHandler = async function (request, respond) {
     logger.warn('Error reading file', {url: archive.url, path: entry.path, err})
     if (!headersSent) respondError(500, 'Failed to read file')
   })
+}
+
+function renderMD (content) {
+  return`<html>
+  <body>
+    ${md.render(content)}
+  </body>
+</html>`
 }
