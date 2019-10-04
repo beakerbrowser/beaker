@@ -42,6 +42,7 @@ export class FilesViewer extends LitElement {
     await this.readMountInfo()
     if (this.pathInfo.isDirectory()) {
       this.items = await archive.readdir(location.pathname, {stat: true})
+      this.items.sort((a, b) => a.name.localeCompare(b.name))
     }
     console.log({
       driveInfo: this.driveInfo,
