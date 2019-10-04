@@ -1,6 +1,5 @@
 import {css} from '../../vendor/lit-element/lit-element.js'
 
-
 const cssStr = css`
 :host {
   --border-color: #d4d7dc;

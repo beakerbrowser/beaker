@@ -39,6 +39,5 @@ class SearchPersonResult extends LitElement {
 
   // events
   // =
-
 }
 customElements.define('search-person-result', SearchPersonResult)

@@ -6,8 +6,8 @@ import * as QP from 'beaker://app-stdlib/js/query-params.js'
 import mainCSS from '../css/main.css.js'
 
 export class CompareApp extends LitElement {
-  static get properties() {
-    return { 
+  static get properties () {
+    return {
       base: {type: String},
       target: {type: String}
     }
@@ -84,7 +84,7 @@ export class CompareApp extends LitElement {
       ${this.diff && !this.diff.length ? html`
         <div class="empty">No differences found.</div>
       ` : ''}
-    `    
+    `
   }
 
   // events
@@ -130,7 +130,7 @@ class CompareDiffItem extends LitElement {
     this.isExpanded = false
   }
 
-  createRenderRoot() {
+  createRenderRoot () {
     return this // dont use shadow dom
   }
 
@@ -199,7 +199,7 @@ class CompareDiffItemContent extends LitElement {
   get leftUrl () {
     return this.leftOrigin + this.diff.path
   }
-  
+
   get rightUrl () {
     return this.rightOrigin + this.diff.path
   }
@@ -229,7 +229,7 @@ class CompareDiffItemContent extends LitElement {
     this.rightText = null
   }
 
-  createRenderRoot() {
+  createRenderRoot () {
     return this // dont use shadow dom
   }
 

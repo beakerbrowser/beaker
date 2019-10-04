@@ -48,7 +48,7 @@ class WebTerm extends LitElement {
     }
 
     this.commandHist = {
-      array: new Array(),
+      array: [],
       insert: -1,
       cursor: -1,
       add (entry) {
@@ -126,7 +126,7 @@ class WebTerm extends LitElement {
     this.loadBuiltins()
   }
 
-  async loadTheme() {
+  async loadTheme () {
     // load theme
     try {
       let themeSheet = new CSSStyleSheet()
@@ -260,7 +260,7 @@ class WebTerm extends LitElement {
     `)
     this.requestUpdate()
   }
-  
+
   appendError (msg, err, thenCWD, cmd) {
     this.appendOutput(
       html`<div class="error"><div class="error-header">${msg}</div><div class="error-stack">${err.toString()}</div></div>`,
@@ -268,7 +268,7 @@ class WebTerm extends LitElement {
       cmd
     )
   }
-  
+
   clearHistory () {
     this.outputHist = []
     this.requestUpdate()
@@ -303,7 +303,7 @@ class WebTerm extends LitElement {
       this.appendError('Command error', err, oldCWD, inputValue)
     }
   }
-  
+
   setFocus () {
     this.shadowRoot.querySelector('.prompt input').focus()
   }
@@ -319,12 +319,12 @@ class WebTerm extends LitElement {
 
   resolve (location) {
     const cwd = this.cwd
-  
+
     // home
     if (location.startsWith('~')) {
       location = joinPath(this.fs.url, location.slice(1))
     }
-  
+
     // relative paths
     if (location.startsWith('./')) {
       location = location.slice(2) // remove starting ./
@@ -332,7 +332,7 @@ class WebTerm extends LitElement {
     if (!location.startsWith('/') && !location.includes('://')) {
       location = joinPath(cwd.pathname, location)
     }
-  
+
     if (!location.includes('://')) {
       // .. up navs
       let parts = location.split('/')
@@ -351,7 +351,7 @@ class WebTerm extends LitElement {
       location = parts.join('/')
       location = joinPath(cwd.origin, location)
     }
-  
+
     return location
   }
 
@@ -375,7 +375,7 @@ class WebTerm extends LitElement {
       commandNameLen = Math.max(this.commands[id].name.length, commandNameLen)
       commands.push(this.commands[id])
     }
-    
+
     return {
       commands,
       toHTML () {
@@ -439,7 +439,7 @@ class WebTerm extends LitElement {
       e.preventDefault()
     }
   }
-  
+
   onPromptKeyUp (e) {
     if (e.code === 'Enter') {
       this.evalPrompt()

@@ -83,7 +83,7 @@ export class EditBookmarkPopup extends BasePopup {
       </form>
     `
   }
-  
+
   // events
   // =
 

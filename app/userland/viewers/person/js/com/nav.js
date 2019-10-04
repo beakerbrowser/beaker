@@ -20,7 +20,6 @@ class Nav extends LitElement {
     this.currentView = ''
   }
 
-
   // rendering
   // =
 

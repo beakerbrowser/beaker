@@ -1,10 +1,10 @@
 import * as rpc from 'pauls-electron-rpc'
-import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
-import usersManifest from '@beaker/core/web-apis/manifests/internal/users'
-import archivesManifest from '@beaker/core/web-apis/manifests/internal/archives'
-import datArchiveManifest from '@beaker/core/web-apis/manifests/external/dat-archive'
-import libraryManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-library'
-import profilesManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-profiles'
+import browserManifest from '../../bg/web-apis/manifests/internal/browser'
+import usersManifest from '../../bg/web-apis/manifests/internal/users'
+import archivesManifest from '../../bg/web-apis/manifests/internal/archives'
+import datArchiveManifest from '../../bg/web-apis/manifests/external/dat-archive'
+import libraryManifest from '../../bg/web-apis/manifests/external/unwalled-garden-library'
+import profilesManifest from '../../bg/web-apis/manifests/external/unwalled-garden-profiles'
 import modalsManifest from '../../bg/rpc-manifests/modals'
 
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)

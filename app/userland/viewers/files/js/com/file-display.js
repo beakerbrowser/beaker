@@ -3,7 +3,7 @@ import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directive
 import css from '../../css/com/file-display.css.js'
 
 export class FileDisplay extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       pathname: {type: String},
       info: {type: Object}
@@ -42,7 +42,7 @@ export class FileDisplay extends LitElement {
     if (/\.(mp3|ogg)$/.test(this.pathname)) {
       return this.renderAudio()
     }
-    if (this.info.size > 1_000_000) {
+    if (this.info.size > 1000000) {
       return html`<div class="too-big">This file is too big to display</div>`
     }
     return html`
@@ -64,7 +64,6 @@ export class FileDisplay extends LitElement {
 
   // events
   // =
-
 }
 
 customElements.define('file-display', FileDisplay)

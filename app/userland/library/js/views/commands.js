@@ -26,7 +26,7 @@ class CommandsView extends LitElement {
       user: {type: Object},
       items: {type: Array},
       currentSubview: {type: String},
-      currentSort: {type: String},
+      currentSort: {type: String}
     }
   }
 
@@ -61,12 +61,16 @@ class CommandsView extends LitElement {
     let url = `dat://${item.key}`
     var items = [
       {icon: 'fas fa-fw fa-external-link-alt', label: 'Open in new tab', click: () => beaker.browser.openUrl(url, {setActive: true}) },
-      {icon: 'fas fa-fw fa-link', label: 'Copy URL', click: () => {
+      {icon: 'fas fa-fw fa-link',
+label: 'Copy URL',
+click: () => {
         writeToClipboard(url)
         toast.create('Copied to your clipboard')
       }},
       '-',
-      {icon: 'fas fa-fw fa-code-branch', label: 'Fork', click: async () => {
+      {icon: 'fas fa-fw fa-code-branch',
+label: 'Fork',
+click: async () => {
         await DatArchive.fork(url)
         this.load()
       }}
@@ -74,20 +78,26 @@ class CommandsView extends LitElement {
     if (url !== this.userUrl) {
       items.push('-')
       if (item.isSaved) {
-        items.push({icon: 'fas fa-trash', label: 'Move to trash', click: async () => {
+        items.push({icon: 'fas fa-trash',
+label: 'Move to trash',
+click: async () => {
           await uwg.library.configure(item.key, {isSaved: false})
           toast.create('Moved to trash')
           this.load()
         }})
       } else {
         if (item.meta.isOwner) {
-          items.push({icon: 'fas fa-undo', label: 'Restore from trash', click: async () => {
+          items.push({icon: 'fas fa-undo',
+label: 'Restore from trash',
+click: async () => {
             await uwg.library.configure(item.key, {isSaved: true})
             toast.create('Restored')
             this.load()
           }})
         } else {
-          items.push({icon: 'fas fa-save', label: 'Save to library', click: async () => {
+          items.push({icon: 'fas fa-save',
+label: 'Save to library',
+click: async () => {
             await uwg.library.configure(item.key, {isSaved: true})
             toast.create('Saved')
             this.load()
@@ -95,7 +105,7 @@ class CommandsView extends LitElement {
         }
       }
     }
-  
+
     contextMenu.create({
       x,
       y,
@@ -105,7 +115,7 @@ class CommandsView extends LitElement {
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       style: `padding: 4px 0`,
-      items 
+      items
     })
   }
 

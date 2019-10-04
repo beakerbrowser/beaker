@@ -5,7 +5,7 @@ import * as EMOJIS from '../../../data/emoji-list.js'
 import { render as renderEmoji, setSkinTone } from '../../emoji.js'
 import { findParent } from '../../dom.js'
 
-const SKIN_TONE_EMOJIS = [`🏻`,`🏼`,`🏽`,`🏾`,`🏿`]
+const SKIN_TONE_EMOJIS = [`🏻`, `🏼`, `🏽`, `🏾`, `🏿`]
 
 export class ReactionPicker extends LitElement {
   static get properties () {
@@ -119,7 +119,7 @@ export class ReactionPicker extends LitElement {
 
   // events
   // =
-  
+
   onReject (e) {
     if (e) e.preventDefault()
     this.dispatchEvent(new CustomEvent('reject'))

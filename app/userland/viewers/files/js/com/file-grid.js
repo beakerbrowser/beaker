@@ -6,7 +6,7 @@ import { emit } from 'beaker://app-stdlib/js/dom.js'
 import mainCSS from '../../css/com/file-grid.css.js'
 
 export class FileGrid extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       items: {type: Array},
       info: {type: Object},
@@ -93,7 +93,7 @@ export class FileGrid extends LitElement {
   onClick (e, item) {
     e.preventDefault()
     e.stopPropagation()
-    
+
     var selection
     if (e.metaKey) {
       selection = this.selection.concat([item])

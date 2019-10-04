@@ -12,7 +12,7 @@ import './views/raw-file.js'
 const STATUS_PATHNAME_RE = /^\/\.data\/statuses\/(.*\.json)$/i
 
 export class PersonViewer extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       currentView: {type: String},
       user: {type: Object},
@@ -52,7 +52,7 @@ export class PersonViewer extends LitElement {
     this.info = await archive.getInfo()
     this.libraryEntry = (await uwg.library.list({key: this.info.key, isSaved: true}))[0]
     this.isUserFollowing = !!(await uwg.follows.get(this.user.url, this.info.url))
-    
+
     await this.requestUpdate()
     try {
       await this.shadowRoot.querySelector('[the-current-view]').load()
@@ -110,7 +110,7 @@ export class PersonViewer extends LitElement {
           ${this.renderView()}
         </main>
       </div>
-    `    
+    `
   }
 
   renderFollowBtn () {

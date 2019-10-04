@@ -53,6 +53,5 @@ class SearchBookmarkResult extends LitElement {
 
   // events
   // =
-
 }
 customElements.define('search-bookmark-result', SearchBookmarkResult)

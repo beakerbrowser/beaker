@@ -5,9 +5,8 @@
  **/
 
 import {protocol, screen} from 'electron'
-import * as beakerCore from '@beaker/core'
-const {dat} = beakerCore
-const {sitedata} = beakerCore.dbs
+import dat from '../dat/index'
+import * as sitedata from '../dbs/sitedata'
 import fs from 'fs'
 import path from 'path'
 import ICO from 'icojs'

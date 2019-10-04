@@ -108,7 +108,7 @@ export class FilesViewer extends LitElement {
           .mountInfo=${this.mountInfo}
         ></folder-info>
       `}
-    `    
+    `
   }
 
   renderSaveBtn () {

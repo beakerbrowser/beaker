@@ -49,6 +49,5 @@ class SearchDatResult extends LitElement {
 
   // events
   // =
-
 }
 customElements.define('search-dat-result', SearchDatResult)

@@ -49,7 +49,7 @@ class SidebarRevisions extends LitElement {
           </button>
         `}
       </div>
-    `    
+    `
   }
 
   // events

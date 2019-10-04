@@ -39,7 +39,7 @@ export class CommandViewer extends LitElement {
       ` : html`
         <about-view></about-view>
       `}
-    `    
+    `
   }
 
   renderSaveBtn () {

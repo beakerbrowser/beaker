@@ -103,7 +103,9 @@ export class Status extends LitElement {
 
     var items = [
       {icon: 'far fa-fw fa-file-alt', label: 'View status', click: () => window.open(this.status.url) },
-      {icon: 'fas fa-fw fa-link', label: 'Copy status URL', click: () => {
+      {icon: 'fas fa-fw fa-link',
+label: 'Copy status URL',
+click: () => {
         writeToClipboard(this.status.url)
         toast.create('Copied to your clipboard')
       }}
@@ -124,7 +126,7 @@ export class Status extends LitElement {
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       style: `padding: 4px 0`,
-      items 
+      items
     })
   }
 

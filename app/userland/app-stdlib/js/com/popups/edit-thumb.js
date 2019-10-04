@@ -42,7 +42,7 @@ export class BeakerEditThumb extends BasePopup {
     // run the modal
     var img = await BeakerEditThumb.create(profile.url, existingThumbPath)
     if (!img) return
-    
+
     // replace any existing thumb
     await archive.unlink('/thumb.jpg').catch(e => undefined)
     await archive.unlink('/thumb.jpeg').catch(e => undefined)
@@ -107,7 +107,7 @@ export class BeakerEditThumb extends BasePopup {
       ctx.restore()
     }
   }
-  
+
   // events
   // =
 

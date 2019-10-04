@@ -4,7 +4,7 @@ import 'beaker://app-stdlib/js/com/status/status.js'
 import 'beaker://app-stdlib/js/com/comments/thread.js'
 
 export class StatusView extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       user: {type: Object}
     }
@@ -89,7 +89,7 @@ export class StatusView extends LitElement {
 
   async onDeleteComment (e) {
     let comment = e.detail.comment
-    
+
     // delete the comment
     try {
       await uwg.statuses.remove(comment.url)
@@ -99,7 +99,6 @@ export class StatusView extends LitElement {
       console.error(e)
       return
     }
-    toast.create('Comment deleted')
     this.load()
   }
 }

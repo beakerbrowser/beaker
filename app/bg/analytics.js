@@ -1,4 +1,3 @@
-import * as beakerCore from '@beaker/core'
 import { app } from 'electron'
 import path from 'path'
 import crypto from 'crypto'
@@ -8,9 +7,10 @@ import ms from 'ms'
 import jetpack from 'fs-jetpack'
 import concat from 'concat-stream'
 import osName from 'os-name'
-const settingsDb = beakerCore.dbs.settings
-import {ANALYTICS_DATA_FILE, ANALYTICS_SERVER, ANALYTICS_CHECKIN_INTERVAL} from '@beaker/core/lib/const'
-const debug = beakerCore.debugLogger('beaker-analytics')
+import * as settingsDb from './dbs/settings'
+import {ANALYTICS_DATA_FILE, ANALYTICS_SERVER, ANALYTICS_CHECKIN_INTERVAL} from '../lib/const'
+import * as logLib from './logger'
+const logger = logLib.child({category: 'analytics'})
 
 // exported methods
 // =
@@ -46,7 +46,7 @@ async function checkin () {
 function sendPing (pingData) {
   return new Promise((resolve, reject) => {
     var qs = querystring.stringify({userId: pingData.id, os: osName(), beakerVersion: app.getVersion()})
-    debug('Sending ping to %s: %s', ANALYTICS_SERVER, qs)
+    logger.info(`Sending ping to ${ANALYTICS_SERVER}: ${qs}`)
 
     var req = https.request({
       method: 'POST',
@@ -54,16 +54,16 @@ function sendPing (pingData) {
       path: '/ping?' + qs
     }, (res) => {
       if (res.statusCode === 204) {
-        debug('Ping succeeded')
+        logger.info('Ping succeeded')
         resolve()
       } else {
         res.setEncoding('utf8')
-        res.pipe(concat(body => debug('Ping failed', res.statusCode, body)))
+        res.pipe(concat(body => logger.info(`Ping failed: ${res.statusCode} ${JSON.stringify(body)}`)))
         reject()
       }
     })
     req.on('error', err => {
-      debug('Ping failed', err)
+      logger.info(`Ping failed: ${err.toString()}`)
       reject()
     })
     req.end()

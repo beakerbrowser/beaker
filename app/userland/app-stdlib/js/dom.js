@@ -35,15 +35,15 @@ export function emit (el, evt, opts = {}) {
  * Demo: http://mathiasbynens.be/demo/dynamic-favicons
  */
 
-var _head = document.head || document.getElementsByTagName('head')[0]; // https://stackoverflow.com/a/2995536
+var _head = document.head || document.getElementsByTagName('head')[0] // https://stackoverflow.com/a/2995536
 export function changeFavicon (src) {
   var link = document.createElement('link')
   var oldLink = document.getElementById('dynamic-favicon')
-  link.id = 'dynamic-favicon';
-  link.rel = 'shortcut icon';
-  link.href = src;
+  link.id = 'dynamic-favicon'
+  link.rel = 'shortcut icon'
+  link.href = src
   if (oldLink) {
-    _head.removeChild(oldLink);
+    _head.removeChild(oldLink)
   }
-  _head.appendChild(link);
+  _head.appendChild(link)
 }

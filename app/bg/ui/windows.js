@@ -1,4 +1,3 @@
-import * as beakerCore from '@beaker/core'
 import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'electron'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher from './session-watcher'
@@ -21,8 +20,10 @@ import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
 import * as sidebarsSubwindow from './subwindows/sidebars'
 import * as siteInfoSubwindow from './subwindows/site-info'
-import { findWebContentsParentWindow } from '../../lib/electron'
-const settingsDb = beakerCore.dbs.settings
+import { findWebContentsParentWindow } from '../lib/electron'
+import * as settingsDb from '../dbs/settings'
+import { getEnvVar } from '../lib/env'
+import * as users from '../filesystem/users'
 
 const IS_WIN = process.platform === 'win32'
 const subwindows = {
@@ -57,8 +58,8 @@ export async function setup () {
   sessionWatcher = new SessionWatcher(userDataDir)
   var previousSessionState = getPreviousBrowsingSession()
   var customStartPage = await settingsDb.get('custom_start_page')
-  var isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
-  var isOpenUrlEnvVar = !!beakerCore.getEnvVar('BEAKER_OPEN_URL')
+  var isTestDriverActive = !!getEnvVar('BEAKER_TEST_DRIVER')
+  var isOpenUrlEnvVar = !!getEnvVar('BEAKER_OPEN_URL')
 
   // set up app events
   app.on('activate', () => {
@@ -149,7 +150,7 @@ export async function setup () {
     }
     if (isOpenUrlEnvVar) {
       // use the env var if specified
-      opts.pages = [beakerCore.getEnvVar('BEAKER_OPEN_URL')]
+      opts.pages = [getEnvVar('BEAKER_OPEN_URL')]
     }
     // create new window
     createShellWindow(opts)
@@ -204,7 +205,7 @@ export function createShellWindow (windowState) {
 
   // load the user session
   if (!isValidUserSession(state.userSession)) {
-    beakerCore.users.getDefault().then(defaultUser => {
+    users.getDefault().then(defaultUser => {
       if (defaultUser) {
         setUserSessionFor(win.webContents, {url: defaultUser.url})
       }
@@ -238,14 +239,14 @@ export function createShellWindow (windowState) {
       // not sure whether we'll need this
       // -prf
       // run setup modal
-      // let isTestDriverActive = !!beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
-      // let hasDoneSetup = Number(await beakerCore.dbs.sitedata.get('beaker://shell-window', 'has_done_setup')) === 1
-      // if (!!beakerCore.getEnvVar('BEAKER_RUN_SETUP_FLOW')) {
+      // let isTestDriverActive = !!getEnvVar('BEAKER_TEST_DRIVER')
+      // let hasDoneSetup = Number(await sitedataDb.get('beaker://shell-window', 'has_done_setup')) === 1
+      // if (!!getEnvVar('BEAKER_RUN_SETUP_FLOW')) {
       //   hasDoneSetup = false
       // }
       // if (!isTestDriverActive && !hasDoneSetup) {
       //   subwindows.modals.create(win.webContents, 'setup')
-      //   await beakerCore.dbs.sitedata.set('beaker://shell-window', 'has_done_setup', 1)
+      //   await sitedataDb.set('beaker://shell-window', 'has_done_setup', 1)
       // }
     }
   }
@@ -354,12 +355,12 @@ export function getUserSessionFor (wc) {
   var sess = sessionWatcher.getState(win).userSession
 
   // return if good
-  if (sess && beakerCore.users.isUser(sess.url)) {
+  if (sess && users.isUser(sess.url)) {
     return sess
   }
 
   // fallback to default
-  let defUserUrl = beakerCore.users.getDefaultUrl()
+  let defUserUrl = users.getDefaultUrl()
   if (defUserUrl) {
     sess = {url: defUserUrl}
     setUserSessionFor(wc, sess)
@@ -378,7 +379,7 @@ export function setUserSessionFor (wc, userSession) {
 }
 
 export function openProfileEditor (wc, sess) {
-  return showShellModal(wc, 'edit-profile', sess)
+  // return showShellModal(wc, 'edit-profile', sess) NEEDED? -prf
 }
 
 // internal methods

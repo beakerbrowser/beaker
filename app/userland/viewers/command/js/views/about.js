@@ -29,7 +29,7 @@ export class AboutView extends LitElement {
     var commands
     try {
       commands = manifest['unwalled.garden/command-package'].commands
-      if (!commands || !commands.length) throw 'empty'
+      if (!commands || !commands.length) throw new Error('empty')
     } catch (e) {
       return undefined
     }

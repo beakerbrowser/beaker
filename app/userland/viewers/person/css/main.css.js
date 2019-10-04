@@ -8,7 +8,7 @@ const cssStr = css`
 ${buttonsCSS}
 ${inputsCSS}
 ${tooltipCSS}
-${labelCSS  }
+${labelCSS}
 
 .banner {
   background: linear-gradient(to top, #eaeaed, #fff);

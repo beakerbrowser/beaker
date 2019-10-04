@@ -1,8 +1,6 @@
-import * as beakerCore from '@beaker/core'
-//import { app } from 'electron'
 import ms from 'ms'
 import natUpnp from 'nat-upnp'
-import {DAT_SWARM_PORT} from '@beaker/core/lib/const'
+import { DAT_SWARM_PORT } from '../lib/const'
 
 // exported methods
 // =

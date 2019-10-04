@@ -108,7 +108,9 @@ export class CommentsThread extends LitElement {
 
     var items = [
       {icon: 'far fa-fw fa-file-alt', label: 'View comment', click: () => window.open(comment.url) },
-      {icon: 'fas fa-fw fa-link', label: 'Copy comment URL', click: () => {
+      {icon: 'fas fa-fw fa-link',
+label: 'Copy comment URL',
+click: () => {
         writeToClipboard(comment.url)
         toast.create('Copied to your clipboard')
       }}
@@ -129,7 +131,7 @@ export class CommentsThread extends LitElement {
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       style: `padding: 4px 0`,
-      items 
+      items
     })
   }
 

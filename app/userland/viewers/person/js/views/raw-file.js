@@ -2,7 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import rawFileViewCSS from '../../css/views/raw-file.css.js'
 
 export class RawFileView extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       user: {type: Object}
     }
@@ -80,7 +80,6 @@ export class RawFileView extends LitElement {
 
   // events
   // =
-
 }
 
 customElements.define('raw-file-view', RawFileView)

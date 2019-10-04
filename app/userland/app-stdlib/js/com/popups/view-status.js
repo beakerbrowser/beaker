@@ -74,10 +74,9 @@ export class ViewStatusPopup extends BasePopup {
       ></beaker-comments-thread>
     `
   }
-  
+
   // events
   // =
-
 }
 
 customElements.define('beaker-view-status-popup', ViewStatusPopup)

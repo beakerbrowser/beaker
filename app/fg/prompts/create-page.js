@@ -59,7 +59,7 @@ class CreatePagePrompt extends LitElement {
     if (!path || path.endsWith('/')) {
       path = `${path}index.${ext}`
     } else if (path.endsWith(`.${ext}`)) {
-      path = path
+      // path = path (noop)
     } else if (/.(md|html)$/i.test(path)) {
       path = `${path.replace(/.(md|html)$/i, '')}.${ext}`
     } else {

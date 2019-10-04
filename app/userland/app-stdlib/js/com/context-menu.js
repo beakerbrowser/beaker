@@ -130,7 +130,7 @@ export class BeakerContextMenu extends LitElement {
   // rendering
   // =
 
-  render() {
+  render () {
     const cls = classMap({
       'dropdown-items': true,
       right: this.right,

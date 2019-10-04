@@ -69,11 +69,11 @@ class FilesExplorer extends LitElement {
 
   async load () {
     this.isLoading = true
-   
+
     var items = []
     if (this.isDat) {
       let archive = this.archive
-      
+
       let info = await archive.getInfo()
       this.readOnly = !info.isOwner
 
@@ -81,7 +81,7 @@ class FilesExplorer extends LitElement {
       let folderPath = this.pathname
       while (!st && folderPath !== '/') {
         try { st = await archive.stat(folderPath) }
-        catch (e) {/* ignore */}
+        catch (e) { /* ignore */ }
         if (!st || !st.isDirectory()) {
           folderPath = (folderPath.split('/').slice(0, -1).filter(Boolean).join('/')) || '/'
         }
@@ -131,7 +131,7 @@ class FilesExplorer extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="toolbar">
-        ${this.readOnly ? html `
+        ${this.readOnly ? html`
           <div><span class="fas fa-fw fa-info-circle"></span> This site is read-only</div>
         ` : html`
           <button class="transparent" @click=${this.onClickNewFolder}>New folder</button>
@@ -148,7 +148,7 @@ class FilesExplorer extends LitElement {
       <div class="path">
         <a @contextmenu=${this.onContextmenuCurrentFolder}>
           <span class="fa-fw ${this.currentFolder.mount ? 'fas fa-external-link-square-alt' : 'far fa-folder'}"></span>
-          ${this.currentFolder.name} ${this.currentFolder.mount ? html`(<code>${this.currentFolder.mount.key.slice(0,4)}..${this.currentFolder.mount.key.slice(-2)}</code>)` : ''}
+          ${this.currentFolder.name} ${this.currentFolder.mount ? html`(<code>${this.currentFolder.mount.key.slice(0, 4)}..${this.currentFolder.mount.key.slice(-2)}</code>)` : ''}
         </a>
       </div>
       <div class="listing" @contextmenu=${this.onContextmenuListing}>

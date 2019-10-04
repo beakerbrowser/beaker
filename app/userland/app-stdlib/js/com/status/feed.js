@@ -80,7 +80,6 @@ export class StatusFeed extends LitElement {
     }
   }
 
-
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -130,11 +129,11 @@ export class StatusFeed extends LitElement {
     await this.loadStatusComments(this.poppedUpStatus)
     try {
       await ViewStatusPopup.create(this.shadowRoot.querySelector('.popup-container'), {user: this.user, status: this.poppedUpStatus})
-    } catch (e) {/* ignore */}
+    } catch (e) { /* ignore */ }
     this.poppedUpStatus = null
     this.refreshFeed()
   }
-  
+
   async onAddReaction (e) {
     await uwg.reactions.add(e.detail.topic, e.detail.phrase)
   }
@@ -192,7 +191,7 @@ export class StatusFeed extends LitElement {
 
   async onDeleteComment (e) {
     let comment = e.detail.comment
-    
+
     // delete the comment
     try {
       await uwg.statuses.remove(comment.url)

@@ -24,7 +24,7 @@ class PeopleView extends LitElement {
       items: {type: Array},
       currentView: {type: String},
       currentSubview: {type: String},
-      currentSort: {type: String},
+      currentSort: {type: String}
     }
   }
 
@@ -132,7 +132,7 @@ class PeopleView extends LitElement {
             ${item.isLocalUser
               ? html`<span class="label">This is me</span>`
               : item.isOwner
-                ? html`<span class="label">My user</span>` 
+                ? html`<span class="label">My user</span>`
                 : html`
                   <button @click=${e => this.onToggleFollow(e, item)}>
                     <span class="fas fa-fw fa-${item.isLocalUserFollowing ? 'check' : 'rss'}"></span>

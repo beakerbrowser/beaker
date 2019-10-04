@@ -31,11 +31,11 @@ class SidebarLocalFolder extends LitElement {
     if (this.info.localSyncPathIsMissing) {
       return this.renderLocalFolderMissing()
     }
-  
+
     if (this.info.userSettings.localSyncPath) {
       return this.renderLocalFolderSet()
     }
-  
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="field-group">
@@ -115,7 +115,7 @@ class SidebarLocalFolder extends LitElement {
 
   async onClickChange () {
     if (!this.info.isOwner) return
-    
+
     // open the create folder-picker popup
     let res = await beaker.browser.showOpenDialog({
       title: 'Set local folder',
@@ -125,14 +125,14 @@ class SidebarLocalFolder extends LitElement {
     })
     if (!res || !res[0]) return
     let localSyncPath = res[0]
-  
+
     try {
       // always enable preview-mode
       await beaker.archives.setUserSettings(this.origin, {previewMode: true})
-  
+
       // set folder
       await beaker.archives.setLocalSyncPath(this.origin, localSyncPath)
-  
+
       // open folder and reload
       beaker.browser.openFolder(localSyncPath)
       emit(this, 'request-load', {bubbles: true, composed: true})
@@ -141,10 +141,10 @@ class SidebarLocalFolder extends LitElement {
       console.error(e)
     }
   }
-  
+
   async onClickRemove (e) {
     if (!this.info.isOwner) return
-  
+
     try {
       await beaker.archives.setLocalSyncPath(this.origin, null)
       emit(this, 'request-load', {bubbles: true, composed: true})

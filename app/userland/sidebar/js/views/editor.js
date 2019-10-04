@@ -1,3 +1,5 @@
+/* globals monaco */
+
 import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import sidebarEditorViewCSS from '../../css/views/editor.css.js'
 import BIN_EXTS from '../binary-extensions.js'
@@ -65,7 +67,7 @@ class SidebarEditorView extends LitElement {
 
     // load monaco
     if (!editor) {
-      require.config({ baseUrl: 'beaker://assets/' });
+      require.config({ baseUrl: 'beaker://assets/' })
       require(['vs/editor/editor.main'], () => {
         console.log('monaco loaded')
         // we have load monaco outside of the shadow dom
@@ -156,7 +158,7 @@ class SidebarEditorView extends LitElement {
       // fetch the file
       if (!this.isBinary) {
         try {
-          if (!this.resolvedPath) throw 'dne'
+          if (!this.resolvedPath) throw new Error('dne')
           body = await archive.readFile(this.resolvedPath, 'utf8')
         } catch (e) {
           this.dne = true
@@ -341,7 +343,7 @@ class SidebarEditorView extends LitElement {
       if (!path || path.endsWith('/')) {
         path = `${path}index.${ext}`
       } else if (path.endsWith(`.${ext}`)) {
-        path = path
+        // path = path (noop)
       } else if (/.(md|html)$/i.test(path)) {
         path = `${path.replace(/.(md|html)$/i, '')}.${ext}`
       } else {
@@ -360,7 +362,7 @@ class SidebarEditorView extends LitElement {
         // ignore, dir already exists (probably)
       }
     }
-    
+
     // create the file
     await this.archive.writeFile(path, '')
     beaker.browser.gotoUrl(`${this.origin}${path}`)
@@ -386,7 +388,7 @@ class SidebarEditorView extends LitElement {
     var newpath = pathparts.concat([newname]).join('/')
     await this.archive.unlink(this.resolvedPath)
     await this.archive.writeFile(newpath, editor.getModel(this.url).getValue())
-    
+
     var urlp = new URL(this.url)
     urlp.pathname = newpath
     beaker.browser.gotoUrl(urlp.toString())

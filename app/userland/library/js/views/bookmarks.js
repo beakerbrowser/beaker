@@ -25,7 +25,7 @@ class BookmarksView extends LitElement {
       user: {type: Object},
       items: {type: Array},
       currentSubview: {type: String},
-      currentSort: {type: String},
+      currentSort: {type: String}
     }
   }
 
@@ -149,17 +149,23 @@ class BookmarksView extends LitElement {
 
     var items = [
       {icon: 'fas fa-fw fa-external-link-alt', label: 'Open in new tab', click: () => beaker.browser.openUrl(item.href, {setActive: true}) },
-      {icon: 'fas fa-fw fa-link', label: 'Copy URL', click: () => {
+      {icon: 'fas fa-fw fa-link',
+label: 'Copy URL',
+click: () => {
         writeToClipboard(item.href)
         toast.create('Copied to your clipboard')
       }},
       '-',
-      {icon: 'fas fa-fw fa-pencil-alt', label: 'Edit bookmark', click: async () => {
+      {icon: 'fas fa-fw fa-pencil-alt',
+label: 'Edit bookmark',
+click: async () => {
         var values = await EditBookmarkPopup.create(item)
         await uwg.bookmarks.edit(item.href, values)
         this.load()
       }},
-      {icon: 'fas fa-fw fa-trash', label: 'Delete bookmark', click: async () => {
+      {icon: 'fas fa-fw fa-trash',
+label: 'Delete bookmark',
+click: async () => {
         if (confirm('Are you sure?')) {
           await uwg.bookmarks.remove(item.href)
           toast.create('Bookmark deleted')
@@ -167,7 +173,7 @@ class BookmarksView extends LitElement {
         }
       }}
     ]
-  
+
     contextMenu.create({
       x: e.clientX,
       y: e.clientY,
@@ -175,7 +181,7 @@ class BookmarksView extends LitElement {
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       style: `padding: 4px 0`,
-      items 
+      items
     })
   }
 }

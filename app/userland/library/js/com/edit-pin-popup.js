@@ -61,7 +61,7 @@ export class EditPinPopup extends BasePopup {
       </form>
     `
   }
-  
+
   // events
   // =
 

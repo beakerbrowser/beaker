@@ -6,7 +6,7 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import datsViewCSS from '../../css/views/dats.css.js'
 
 export class DatsView extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       user: {type: Object},
       info: {type: Object},
@@ -53,7 +53,7 @@ export class DatsView extends LitElement {
       <div class="listing">
         ${repeat(this.items, item => this.renderItem(item))}
       </div>
-    `    
+    `
   }
 
   renderItem (item) {
@@ -82,31 +82,39 @@ export class DatsView extends LitElement {
     let url = `dat://${item.key}`
     var items = [
       {icon: 'fas fa-fw fa-external-link-alt', label: 'Open in new tab', click: () => window.open(url)},
-      {icon: 'fas fa-fw fa-link', label: 'Copy URL', click: () => {
+      {icon: 'fas fa-fw fa-link',
+label: 'Copy URL',
+click: () => {
         writeToClipboard(url)
         toast.create('Copied to your clipboard')
       }},
       '-',
-      {icon: 'fas fa-fw fa-code-branch', label: 'Fork this dat', click: async () => {
+      {icon: 'fas fa-fw fa-code-branch',
+label: 'Fork this dat',
+click: async () => {
         var f = await DatArchive.fork(url)
         window.open(f.url)
       }}
     ]
     items.push('-')
     if (item.isSaved) {
-      items.push({icon: 'fas fa-trash', label: 'Move to trash', click: async () => {
+      items.push({icon: 'fas fa-trash',
+label: 'Move to trash',
+click: async () => {
         await uwg.library.configure(item.key, {isSaved: false})
         toast.create('Moved to trash')
         this.load()
       }})
     } else {
-      items.push({icon: 'fas fa-undo', label: 'Save to my library', click: async () => {
+      items.push({icon: 'fas fa-undo',
+label: 'Save to my library',
+click: async () => {
         await uwg.library.configure(item.key, {isSaved: true})
         toast.create('Restored')
         this.load()
       }})
     }
-  
+
     contextMenu.create({
       x: e.clientX,
       y: e.clientY,
@@ -114,7 +122,7 @@ export class DatsView extends LitElement {
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       style: `padding: 4px 0`,
-      items 
+      items
     })
   }
 }

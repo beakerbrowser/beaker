@@ -34,7 +34,7 @@ export class HistoryAutocomplete extends LitElement {
     var queryAtTimeOfRun = this.query
     var res = this.query ? await beaker.history.search(this.query) : []
     console.log(res)
-    
+
     if (queryAtTimeOfRun !== this.query) {
       // user changed query while we were running, discard
       console.log('Discarding results from outdated query')

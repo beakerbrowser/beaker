@@ -25,14 +25,14 @@ class HoverMenu extends LitElement {
   // =
 
   render () {
-    const item = (([id, label]) => {
+    const item = ([id, label]) => {
       if (label.divider) return html`<hr>`
       return html`
         <a class="item" @click=${e => this.onClick(e, id)}>
           ${label}
         </a>
       `
-    })
+    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="dropdown" @mouseover=${this.onMouseOver} @mouseleave=${this.onMouseLeave}>

@@ -1,11 +1,11 @@
 import * as rpc from 'pauls-electron-rpc'
-import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
-import bookmarksManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-bookmarks'
-import followsManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-follows'
-import libraryManifest from '@beaker/core/web-apis/manifests/external/unwalled-garden-library'
-import watchlistManifest from '@beaker/core/web-apis/manifests/internal/watchlist'
+import browserManifest from '../../bg/web-apis/manifests/internal/browser'
+import bookmarksManifest from '../../bg/web-apis/manifests/external/unwalled-garden-bookmarks'
+import followsManifest from '../../bg/web-apis/manifests/external/unwalled-garden-follows'
+import libraryManifest from '../../bg/web-apis/manifests/external/unwalled-garden-library'
+import watchlistManifest from '../../bg/web-apis/manifests/internal/watchlist'
 import viewsManifest from '../../bg/rpc-manifests/views'
-import datArchiveManifest from '@beaker/core/web-apis/manifests/external/dat-archive'
+import datArchiveManifest from '../../bg/web-apis/manifests/external/dat-archive'
 
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)
 export const bookmarks = rpc.importAPI('unwalled-garden-bookmarks', bookmarksManifest)

@@ -36,7 +36,6 @@ module.exports = function (src, dest, opts) {
       if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
       if (warning.code === 'CIRCULAR_DEPENDENCY') return
       // Use default for everything else
-      console.log(warning.code)
       warn(warning)
     }
   }).then(async function (bundle) {

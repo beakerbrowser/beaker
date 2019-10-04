@@ -1,9 +1,9 @@
-import * as beakerCore from '@beaker/core'
-import { app, BrowserWindow, dialog, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, dialog, Menu } from 'electron'
 import { createShellWindow, getFocusedDevToolsHost } from './windows'
 import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
 import {download} from './downloads'
+import dat from '../dat/index'
 
 // exported APIs
 // =
@@ -252,7 +252,7 @@ export function buildWindowMenu (opts = {}) {
           // clear all dat-dns cache on hard reload, to make sure the next
           // load is fresh
           // -prf
-          beakerCore.dat.dns.flushCache()
+          dat.dns.flushCache()
 
           if (win) {
             let active = tabManager.getActive(win)

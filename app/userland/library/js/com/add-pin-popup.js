@@ -185,7 +185,7 @@ export class AddPinPopup extends BasePopup {
         <div class="group-items">${group.map(g => this.renderSuggestion(g))}</div>
       </div>`
   }
-  
+
   renderSuggestion (row) {
     const title = row.title || 'Untitled'
     return html`
@@ -202,7 +202,7 @@ export class AddPinPopup extends BasePopup {
   firstUpdated () {
     this.shadowRoot.querySelector('input').focus()
   }
-  
+
   // events
   // =
 
@@ -211,7 +211,7 @@ export class AddPinPopup extends BasePopup {
       this.isURLFocused = true
     }
   }
-  
+
   async onChangeQuery (e) {
     this.query = this.shadowRoot.querySelector('input').value
     this.loadSuggestions()
@@ -225,7 +225,7 @@ export class AddPinPopup extends BasePopup {
     }
     this.dispatchEvent(new CustomEvent('resolve', {detail}))
   }
-    
+
   onContextMenu (e) {
     e.preventDefault()
     var url = e.currentTarget.getAttribute('href')
@@ -237,7 +237,6 @@ export class AddPinPopup extends BasePopup {
   }
 }
 customElements.define('add-pin-popup', AddPinPopup)
-
 
 // helpers
 // =

@@ -92,7 +92,7 @@ export class Reactions extends LitElement {
 
   emitRemove (phrase) {
     this.dispatchEvent(new CustomEvent('delete-reaction', {bubbles: true, composed: true, detail: {topic: this.topic, phrase}}))
-    
+
     // optimistic update UI
     var reaction = this.reactions.find(r => r.phrase === phrase)
     if (reaction) reaction.authors = reaction.authors.filter(author => author.url !== this.userUrl)
@@ -122,13 +122,3 @@ export class Reactions extends LitElement {
 }
 
 customElements.define('beaker-reactions', Reactions)
-
-// helpers
-//-
-
-function offset (el) {
-  var rect = el.getBoundingClientRect(),
-  scrollLeft = window.pageXOffset || document.documentElement.scrollLeft,
-  scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  return { top: rect.top + scrollTop, left: rect.left + scrollLeft, right: rect.right + scrollLeft, bottom: rect.bottom + scrollTop }
-}

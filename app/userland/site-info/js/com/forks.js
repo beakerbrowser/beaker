@@ -45,7 +45,7 @@ class SiteInfoForks extends LitElement {
           </div>
         `)}
       </div>
-    `    
+    `
   }
 
   // events

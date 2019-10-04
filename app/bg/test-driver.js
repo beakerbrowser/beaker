@@ -1,14 +1,14 @@
 import dgram from 'dgram'
-import {ipcMain} from 'electron'
-import * as beakerCore from '@beaker/core'
+import { ipcMain } from 'electron'
 import * as windows from './ui/windows'
 import * as tabManager from './ui/tab-manager'
 import * as permPrompt from './ui/subwindows/perm-prompt'
 import * as modals from './ui/subwindows/modals'
+import { getEnvVar } from './lib/env'
 
 const LOG_MESSAGES = false
 
-var testPort = +beakerCore.getEnvVar('BEAKER_TEST_DRIVER')
+var testPort = +getEnvVar('BEAKER_TEST_DRIVER')
 var sock
 
 // exported api

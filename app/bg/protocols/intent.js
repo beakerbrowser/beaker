@@ -1,6 +1,6 @@
 import {protocol} from 'electron'
 import querystring from 'querystring'
-import errorPage from '@beaker/core/lib/error-page'
+import errorPage from '../lib/error-page'
 import intoStream from 'into-stream'
 
 // exported api

@@ -1,8 +1,8 @@
-import * as beakerCore from '@beaker/core'
 import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import * as tabManager from './tab-manager'
 import { download } from './downloads'
+import * as spellChecker from '../web-apis/bg/spell-checker'
 
 // NOTE
 // subtle but important!!
@@ -22,12 +22,12 @@ export default function registerContextMenu () {
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
       const isDat = props.pageURL.startsWith('dat://')
-      const isMisspelled = props.selectionText && beakerCore.spellChecker.isMisspelled(props.selectionText)
-      const spellingSuggestions = isMisspelled && beakerCore.spellChecker.getSuggestions(props.selectionText).slice(0, 5)
+      const isMisspelled = props.selectionText && spellChecker.isMisspelled(props.selectionText)
+      const spellingSuggestions = isMisspelled && spellChecker.getSuggestions(props.selectionText).slice(0, 5)
       // var isOwner = false
       // if (isDat) {
-      //   let key = await beakerCore.dat.dns.resolveName(props.pageURL)
-      //   let archive = beakerCore.dat.archives.getArchive(key)
+      //   let key = await dat.dns.resolveName(props.pageURL)
+      //   let archive = dat.archives.getArchive(key)
       //   isOwner = archive && archive.writable
       // }
 

@@ -3,7 +3,7 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import bookmarksViewCSS from '../../css/views/bookmarks.css.js'
 
 export class BookmarksView extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       user: {type: Object},
       info: {type: Object},
@@ -50,7 +50,7 @@ export class BookmarksView extends LitElement {
       <div class="listing">
         ${repeat(this.items, item => this.renderItem(item))}
       </div>
-    `    
+    `
   }
 
   renderItem (item) {
@@ -64,7 +64,6 @@ export class BookmarksView extends LitElement {
 
   // events
   // =
-
 }
 
 customElements.define('bookmarks-view', BookmarksView)

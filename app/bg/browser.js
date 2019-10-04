@@ -1,4 +1,3 @@
-import * as beakerCore from '@beaker/core'
 import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen, session, nativeImage} from 'electron'
 import {autoUpdater} from 'electron-updater'
 import os from 'os'
@@ -11,14 +10,18 @@ import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import LRU from 'lru'
 const exec = require('util').promisify(require('child_process').exec)
-const debug = beakerCore.debugLogger('beaker')
-const settingsDb = beakerCore.dbs.settings
+import * as logLib from './logger'
+const logger = logLib.child({category: 'browser'})
+import * as settingsDb from './dbs/settings'
+import * as users from './filesystem/users'
+import dat from './dat/index'
 import {open as openUrl} from './open-url'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
 import * as tabManager from './ui/tab-manager'
 import * as modals from './ui/subwindows/modals'
 import * as siteInfo from './ui/subwindows/site-info'
-import { findWebContentsParentWindow } from '../lib/electron'
+import { findWebContentsParentWindow } from './lib/electron'
+import { getEnvVar } from './lib/env'
 
 // constants
 // =
@@ -59,11 +62,11 @@ var browserEvents = new EventEmitter()
 
 process.on('unhandledRejection', (reason, p) => {
   console.error('Unhandled Rejection at: Promise', p, 'reason:', reason)
-  debug('Unhandled Rejection at: Promise', p, 'reason:', reason)
+  logger.error(`Unhandled Rejection at: Promise ${p.toString()} reason: ${reason.toString()}`)
 })
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err)
-  debug('Uncaught exception:', err)
+  logger.error(`Uncaught exception: ${err.toString()}`)
 })
 
 // exported methods
@@ -79,7 +82,7 @@ export async function setup () {
       autoUpdater.on('update-downloaded', onUpdateDownloaded)
       autoUpdater.on('error', onUpdateError)
     } catch (e) {
-      debug('[AUTO-UPDATE] error', e.toString())
+      logger.error(`Auto-updater error: ${e.toString()}`)
     }
     setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
   }
@@ -88,14 +91,14 @@ export async function setup () {
   userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
 
   // create a new user if none exists
-  var defaultUser = await beakerCore.users.getDefault()
+  var defaultUser = await users.getDefault()
   if (!defaultUser) {
-    let archive = await beakerCore.dat.archives.createNewArchive({
+    let archive = await dat.archives.createNewArchive({
       title: 'Anonymous',
       type: 'unwalled.garden/person'
     })
     await archive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
-    await beakerCore.users.add('anonymous', archive.url, true)
+    await users.add('anonymous', archive.url, true)
   }
 
   // wire up events
@@ -433,11 +436,11 @@ export function checkForUpdates (opts = {}) {
   if (updaterState != UPDATER_STATUS_IDLE) { return }
 
   // update global state
-  debug('[AUTO-UPDATE] Checking for a new version.')
+  logger.info('[AUTO-UPDATE] Checking for a new version.')
   updaterError = false
   setUpdaterState(UPDATER_STATUS_CHECKING)
   if (opts.prerelease) {
-    debug('[AUTO-UPDATE] Jumping to pre-releases.')
+    logger.info('[AUTO-UPDATE] Jumping to pre-releases.')
     autoUpdater.allowPrerelease = true
   }
   autoUpdater.checkForUpdates()
@@ -450,9 +453,9 @@ export function restartBrowser () {
   if (updaterState == UPDATER_STATUS_DOWNLOADED) {
     // run the update installer
     autoUpdater.quitAndInstall()
-    debug('[AUTO-UPDATE] Quitting and installing.')
+    logger.info('[AUTO-UPDATE] Quitting and installing.')
   } else {
-    debug('Restarting Beaker by restartBrowser()')
+    logger.info('Restarting Beaker by restartBrowser()')
     // do a simple restart
     app.relaunch()
     setTimeout(() => app.exit(0), 1e3)
@@ -463,7 +466,7 @@ async function getUserSession () {
   var sess = getUserSessionFor(this.sender)
   // get session user info
   if (!sess) return null
-  return beakerCore.users.get(sess.url)
+  return users.get(sess.url)
 }
 
 async function setUserSession (url) {
@@ -472,7 +475,7 @@ async function setUserSession (url) {
   url = urlp.origin
 
   // lookup the user
-  var user = await beakerCore.get(url)
+  var user = await users.get(url)
   if (!user) throw new Error('Invalid user URL')
 
   // set the session
@@ -482,7 +485,7 @@ async function setUserSession (url) {
 
 async function showEditProfileModal () {
   var sess = await getUserSession.call(this)
-  return showShellModal(this.sender, 'edit-profile', sess)
+  // return showShellModal(this.sender, 'edit-profile', sess) NEEDED? -prf
 }
 
 export function getSetting (key) {
@@ -586,7 +589,7 @@ function showContextMenu (menuDefinition) {
     }
 
     // add 'inspect element' in development
-    if (beakerCore.getEnvVar('NODE_ENV') === 'develop' || beakerCore.getEnvVar('NODE_ENV') === 'test') {
+    if (getEnvVar('NODE_ENV') === 'develop' || getEnvVar('NODE_ENV') === 'test') {
       menuDefinition.push({type: 'separator'})
       menuDefinition.push({
         label: 'Inspect Element',
@@ -666,24 +669,24 @@ function scheduledAutoUpdate () {
 // =
 
 function onUpdateAvailable () {
-  debug('[AUTO-UPDATE] New version available. Downloading...')
+  logger.info('[AUTO-UPDATE] New version available. Downloading...')
   autoUpdater.downloadUpdate()
   setUpdaterState(UPDATER_STATUS_DOWNLOADING)
 }
 
 function onUpdateNotAvailable () {
-  debug('[AUTO-UPDATE] No browser update available.')
+  logger.info('[AUTO-UPDATE] No browser update available.')
   setUpdaterState(UPDATER_STATUS_IDLE)
 }
 
 function onUpdateDownloaded () {
-  debug('[AUTO-UPDATE] New browser version downloaded. Ready to install.')
+  logger.info('[AUTO-UPDATE] New browser version downloaded. Ready to install.')
   setUpdaterState(UPDATER_STATUS_DOWNLOADED)
 }
 
 function onUpdateError (e) {
   console.error(e)
-  debug('[AUTO-UPDATE] error', e.toString(), e)
+  logger.error(`[AUTO-UPDATE] error: ${e.toString()}`)
   setUpdaterState(UPDATER_STATUS_IDLE)
   updaterError = {message: (e.toString() || '').split('\n')[0]}
   browserEvents.emit('updater-error', updaterError)

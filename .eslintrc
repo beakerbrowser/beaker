@@ -37,7 +37,8 @@
     "HTMLElement": true,
     "CustomEvent": true,
     "localStorage": true,
-    "FileReader": true
+    "FileReader": true,
+    "Blob": true
   },
 
   "rules": {

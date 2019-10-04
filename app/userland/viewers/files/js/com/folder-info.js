@@ -4,7 +4,7 @@ import { ucfirst, toNiceUrl, joinPath } from 'beaker://app-stdlib/js/strings.js'
 import css from '../../css/com/file-and-folder-info.css.js'
 
 export class FolderInfo extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       title: {type: String},
       driveInfo: {type: Object},
@@ -120,7 +120,6 @@ export class FolderInfo extends LitElement {
 
   // events
   // =
-
 }
 
 customElements.define('folder-info', FolderInfo)

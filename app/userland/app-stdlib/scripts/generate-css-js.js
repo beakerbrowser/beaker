@@ -23,7 +23,7 @@ function handleFolder (dirpath) {
 function handleCSSFile (cssPath) {
   const cssJsPath = cssPathToJsPath(cssPath)
   console.log('Generating', cssJsPath)
-  
+
   // read the css
   const css = fs.readFileSync(cssPath, 'utf8')
 

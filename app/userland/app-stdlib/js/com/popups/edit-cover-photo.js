@@ -50,7 +50,7 @@ export class BeakerEditCoverPhoto extends BasePopup {
     // run the modal
     var img = await BeakerEditCoverPhoto.create(profile.url, existingCoverPath)
     if (!img) return
-    
+
     // replace any existing cover
     await archive.unlink('/cover.jpg').catch(e => undefined)
     await archive.unlink('/cover.jpeg').catch(e => undefined)
@@ -107,7 +107,6 @@ export class BeakerEditCoverPhoto extends BasePopup {
       this.loadedImg = {ext, base64buf}
     }
     fr.readAsDataURL(file)
-  
   }
 
   onSubmit (e) {

@@ -2,7 +2,7 @@
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import { join as joinPath } from 'path'
-import Stat from '@beaker/core/web-apis/fg/stat'
+import Stat from '../../bg/web-apis/fg/stat'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'

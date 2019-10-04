@@ -1,10 +1,10 @@
 const fs = require('fs')
 
 const DISALLOWED = new Set([
-  "🔫",
-  "🔪",
-  "🖕",
-  "🗡️"
+  '🔫',
+  '🔪',
+  '🖕',
+  '🗡️'
 ])
 
 var emojiDataStr = fs.readFileSync(require('path').join(__dirname, 'emoji-data.txt'), 'utf8')
@@ -17,10 +17,10 @@ for (let groupStr of emojiDataStr.split('# group: ').slice(1)) {
   if (name === 'Component') {
     continue // skip
   }
-  
+
   let re = /$([0-9A-F\.\s]+);/gim
   let match
-  while (match = re.exec(groupStr)) {
+  while ((match = re.exec(groupStr))) {
     let emoji = match[1].trim().split(' ').map(v => String.fromCodePoint(parseInt(v, 16))).join('') // parse out emoji
     emoji = emoji.replace(/🏻|🏼|🏽|🏾|🏿/g, '') // strip skin tones
     if (DISALLOWED.has(emoji)) continue // skip disallowed emojis

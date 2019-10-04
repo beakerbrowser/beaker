@@ -62,7 +62,7 @@ export class LibraryApp extends LitElement {
   // rendering
   // =
 
-  render () {    
+  render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <library-nav

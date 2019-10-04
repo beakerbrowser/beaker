@@ -57,7 +57,7 @@ export class BeakerEditProfile extends BasePopup {
       </form>
     `
   }
-  
+
   // events
   // =
 

@@ -1,6 +1,6 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import { fromEventStream } from '@beaker/core/web-apis/fg/event-target'
+import { fromEventStream } from '../../bg/web-apis/fg/event-target'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 

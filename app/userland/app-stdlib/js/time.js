@@ -19,14 +19,14 @@ export function shortDate (ts) {
   return formatter.format(ts)
 }
 
-// simple timediff fn 
+// simple timediff fn
 // replace this with Intl.RelativeTimeFormat when it lands in Beaker
 // https://stackoverflow.com/questions/6108819/javascript-timestamp-to-relative-time-eg-2-seconds-ago-one-week-ago-etc-best
-const msPerMinute = 60 * 1000;
-const msPerHour = msPerMinute * 60;
-const msPerDay = msPerHour * 24;
-const msPerMonth = msPerDay * 30;
-const msPerYear = msPerDay * 365;
+const msPerMinute = 60 * 1000
+const msPerHour = msPerMinute * 60
+const msPerDay = msPerHour * 24
+const msPerMonth = msPerDay * 30
+const msPerYear = msPerDay * 365
 const now = Date.now()
 export function timeDifference (ts, short = false, postfix = 'ago') {
   ts = Number(new Date(ts))
@@ -38,8 +38,8 @@ export function timeDifference (ts, short = false, postfix = 'ago') {
   } else if (elapsed < msPerHour) {
     let n = Math.round(elapsed/msPerMinute)
     return `${n}${short ? 'm' : pluralize(n, ' minute')} ${postfix}`
-  } else if (elapsed < msPerDay ) {
-    let n = Math.round(elapsed/msPerHour )
+  } else if (elapsed < msPerDay) {
+    let n = Math.round(elapsed/msPerHour)
     return `${n}${short ? 'h' : pluralize(n, ' hour')} ${postfix}`
   } else if (elapsed < msPerMonth) {
     let n = Math.round(elapsed/msPerDay)
@@ -48,7 +48,7 @@ export function timeDifference (ts, short = false, postfix = 'ago') {
     let n = Math.round(elapsed/msPerMonth)
     return `${n}${short ? 'mo' : pluralize(n, ' month')} ${postfix}`
   } else {
-    let n = Math.round(elapsed/msPerYear )
+    let n = Math.round(elapsed/msPerYear)
     return `${n}${short ? 'yr' : pluralize(n, ' year')} ${postfix}`
   }
 }

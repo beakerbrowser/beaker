@@ -110,10 +110,10 @@ class SidebarComments extends LitElement {
 
   async onDeleteComment (e) {
     let comment = e.detail.comment
-    
+
     // delete the comment
     try {
-      await posts.remove(comment.url)
+      await uwg.comments.remove(comment.url)
     } catch (e) {
       alert('Something went wrong. Please let the Beaker team know! (An error is logged in the console.)')
       console.error('Failed to delete comment')

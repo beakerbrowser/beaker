@@ -13,11 +13,11 @@ import '../com/subview-tabs.js'
 
 const SUBVIEWS = [
   {id: 'pins', label: html`<span class="fas fa-fw fa-thumbtack"></span> Pins`},
-  {id: 'whats-new', label: html`<span class="fas fa-fw fa-star-of-life"></span> What's New`},
+  {id: 'whats-new', label: html`<span class="fas fa-fw fa-star-of-life"></span> What's New`}
 ]
 
 class LauncherView extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       currentSubview: {type: String},
       pins: {type: Array}
@@ -44,7 +44,7 @@ class LauncherView extends LitElement {
   // rendering
   // =
 
-  render() {
+  render () {
     document.title = 'New Tab'
     if (!this.pins) {
       return html`<div></div>`
@@ -89,7 +89,7 @@ class LauncherView extends LitElement {
       var pin = await AddPinPopup.create()
       this.pins = this.pins.concat([pin])
       pins.save(this.pins)
-      toast.create('Pin added', '', 10e3, {label: 'Undo', click: undo})
+      toast.create('Pin added', '', 10e3)
     } catch (e) {
       // ignore
       console.log(e)
@@ -112,7 +112,7 @@ class LauncherView extends LitElement {
       // render popup
       var values = await EditPinPopup.create(pin)
       Object.assign(pin, values)
-      
+
       // make update
       pins.save(this.pins)
       this.requestUpdate()
@@ -165,7 +165,7 @@ class LauncherView extends LitElement {
     if (this.draggedPin !== dropTargetPin) {
       var dropIndex = this.pins.indexOf(dropTargetPin)
       var draggedIndex = this.pins.indexOf(this.draggedPin)
-      
+
       // remove the dragged pin
       this.pins.splice(draggedIndex, 1)
 

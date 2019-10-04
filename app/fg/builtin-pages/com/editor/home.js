@@ -1,7 +1,7 @@
 import yo from 'yo-yo'
 import {pluralize} from '../../../../lib/strings'
 import {emit} from '../../../lib/event-handlers'
-import createMd from '../../../lib/markdown'
+import createMd from '../../../../lib/markdown'
 
 // exported api
 // =

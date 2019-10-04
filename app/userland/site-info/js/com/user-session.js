@@ -46,7 +46,7 @@ class UserSession extends LitElement {
           </div>
         </div>
       </div>
-    `    
+    `
   }
 
   // events

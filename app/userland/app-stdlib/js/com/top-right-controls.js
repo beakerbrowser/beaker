@@ -47,7 +47,7 @@ class TopRightControls extends LitElement {
     return this.user ? html`<img src="${this.user.url}/thumb?cache=${this.cacheBuster}">` : ''
   }
 
-  render() {
+  render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div>
@@ -95,7 +95,7 @@ class TopRightControls extends LitElement {
       {icon: false, label: 'Blank website', click: () => goto('beaker://library/?view=new-website')},
       '-',
       html`<div class="section-header small light">Templates</div>`,
-      {icon: false, label: 'Wiki', click: () => create(WIKI_KEY, 'Untitled Wiki', ' ', url => url + '?edit')},
+      {icon: false, label: 'Wiki', click: () => create(WIKI_KEY, 'Untitled Wiki', ' ', url => url + '?edit')}
     ]
     createContextMenu(e.currentTarget, items)
   }
@@ -167,4 +167,3 @@ a:hover {
 `
 
 customElements.define('beaker-top-right-controls', TopRightControls)
-

@@ -1,6 +1,5 @@
 import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain } from 'electron'
-import * as beakerCore from '@beaker/core'
-import errorPage from '@beaker/core/lib/error-page'
+import errorPage from '../lib/error-page'
 import * as libTools from '@beaker/library-tools'
 import path from 'path'
 import { promises as fs } from 'fs'
@@ -26,13 +25,15 @@ import * as windowMenu from './window-menu'
 import { getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
-import { findWebContentsParentWindow } from '../../lib/electron'
+import { findWebContentsParentWindow } from '../lib/electron'
 import { findImageBounds } from '../lib/image'
-import { DAT_KEY_REGEX } from '../../lib/strings'
-const sitedataDb = beakerCore.dbs.sitedata
-const settingsDb = beakerCore.dbs.settings
-const historyDb = beakerCore.dbs.history
-const bookmarksAPI = beakerCore.uwg.bookmarks
+import * as sitedataDb from '../dbs/sitedata'
+import * as settingsDb from '../dbs/settings'
+import * as historyDb from '../dbs/history'
+import * as uwg from '../uwg/index'
+import * as filesystem from '../filesystem/index'
+import * as users from '../filesystem/users'
+import dat from '../dat/index'
 
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
@@ -226,7 +227,7 @@ class Tab {
       var urlp = parseDatURL(this.url)
       var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
-        if (beakerCore.filesystem.isRootUrl(this.datInfo.url)) {
+        if (filesystem.isRootUrl(this.datInfo.url)) {
           return 'My Hyperdrive'
         }
         if (this.datInfo.type === 'unwalled.garden/person') {
@@ -547,15 +548,15 @@ class Tab {
 
   async checkForDatAlternative (url) {
     return // DISABLED
-
+/*
     let u = (new URL(url))
     // try to do a name lookup
-    var siteHasDatAlternative = await beakerCore.dat.dns.resolveName(u.hostname).then(
+    var siteHasDatAlternative = await dat.dns.resolveName(u.hostname).then(
       res => Boolean(res),
       err => false
     )
     if (siteHasDatAlternative) {
-      var autoRedirectToDat = !!await beakerCore.dbs.settings.get('auto_redirect_to_dat')
+      var autoRedirectToDat = !!await settingsDb.get('auto_redirect_to_dat')
       if (autoRedirectToDat && !noRedirectHostnames.has(u.hostname)) {
         // automatically redirect
         let datUrl = url.replace(u.protocol, 'dat:')
@@ -567,7 +568,7 @@ class Tab {
     } else {
       this.availableAlternative = ''
     }
-    this.emitUpdateState()
+    this.emitUpdateState()*/
   }
 
   // live reloading
@@ -581,11 +582,11 @@ class Tab {
       this.liveReloadEvents.destroy()
       this.liveReloadEvents = false
     } else if (this.datInfo) {
-      let archive = beakerCore.dat.archives.getArchive(this.datInfo.key)
+      let archive = dat.archives.getArchive(this.datInfo.key)
       if (!archive) return
 
       let {version} = parseDatURL(this.url)
-      let {checkoutFS} = await beakerCore.dat.archives.getArchiveCheckout(archive, version)
+      let {checkoutFS} = await dat.archives.getArchiveCheckout(archive, version)
       this.liveReloadEvents = checkoutFS.pda.watch()
 
       let event = (this.datInfo.isOwner) ? 'changed' : 'invalidated'
@@ -678,7 +679,7 @@ class Tab {
       removeQueryParameters: false,
       removeTrailingSlash: true
     })
-    var bookmark = await bookmarksAPI.getOwnBookmarkByHref(getUserSessionFor(this.browserWindow.webContents), url)
+    var bookmark = await uwg.bookmarks.getOwnBookmarkByHref(getUserSessionFor(this.browserWindow.webContents), url)
     this.isBookmarked = !!bookmark
     if (!noEmit) {
       this.emitUpdateState()
@@ -689,11 +690,11 @@ class Tab {
     this.numComments = 0
 
     var userSession = getUserSessionFor(this.browserWindow.webContents)
-    var followedUsers = (await beakerCore.uwg.follows.list({author: userSession.url})).map(({topic}) => topic.url)
+    var followedUsers = (await uwg.follows.list({author: userSession.url})).map(({topic}) => topic.url)
     var author = [userSession.url].concat(followedUsers)
 
     // TODO replace with native 'count' method
-    var cs = await beakerCore.uwg.comments.thread(this.url, {author})
+    var cs = await uwg.comments.thread(this.url, {author})
     function countComments (comments) {
       return comments.reduce((acc, comment) => acc + 1 + (comment.replies ? countComments(comment.replies) : 0), 0)
     }
@@ -720,8 +721,8 @@ class Tab {
 
     // fetch new state
     try {
-      var key = await beakerCore.dat.dns.resolveName(this.url)
-      this.datInfo = await beakerCore.dat.archives.getArchiveInfo(key)
+      var key = await dat.dns.resolveName(this.url)
+      this.datInfo = await dat.archives.getArchiveInfo(key)
       this.peers = this.datInfo.peers
       this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
     } catch (e) {
@@ -729,16 +730,16 @@ class Tab {
     }
     if (this.datInfo) {
       // mark as a system dat if it's the root drive or a user drive
-      let userUrls = beakerCore.users.listUrls()
-      if (beakerCore.filesystem.isRootUrl(this.datInfo.url) || userUrls.includes(this.datInfo.url)) {
+      let userUrls = users.listUrls()
+      if (filesystem.isRootUrl(this.datInfo.url) || userUrls.includes(this.datInfo.url)) {
         this.isSystemDat = true
       }
 
       // fetch social graph
       let userSession = getUserSessionFor(this.browserWindow.webContents)
-      let userFollows = await beakerCore.uwg.follows.list({author: userSession.url})
+      let userFollows = await uwg.follows.list({author: userSession.url})
       let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
-      let siteFollowers = await beakerCore.uwg.follows.list({topic: this.datInfo.url, author: followAuthors})
+      let siteFollowers = await uwg.follows.list({topic: this.datInfo.url, author: followAuthors})
       this.isFollowing = siteFollowers.find(f => f.author.url === userSession.url)
       this.numFollowers = siteFollowers.length
 
@@ -746,7 +747,7 @@ class Tab {
       if (this.datInfo.author) {
         try {
           if (this.datInfo.author === userSession.url) {
-            this.confirmedAuthorTitle = (await beakerCore.users.get(userSession.url)).title
+            this.confirmedAuthorTitle = (await users.get(userSession.url)).title
           } else if (followAuthors.includes(this.datInfo.author)) {
             this.confirmedAuthorTitle = userFollows.find(f => f.topic.url === this.datInfo.author).topic.title
           }
@@ -971,14 +972,14 @@ export function setup () {
       }
     }
   }
-  beakerCore.dat.archives.on('updated', ({details}) => {
+  dat.archives.on('updated', ({details}) => {
     iterateTabs(tab => {
       if (tab.datInfo && tab.datInfo.url === details.url) {
         tab.refreshState()
       }
     })
   })
-  beakerCore.dat.archives.on('network-changed', ({details}) => {
+  dat.archives.on('network-changed', ({details}) => {
     iterateTabs(tab => {
       if (tab.datInfo && tab.datInfo.url === details.url) {
         // update peer count
@@ -1341,7 +1342,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async refreshState (tab) {
     var win = getWindow(this.sender)
-    var tab = getByIndex(win, tab)
+    tab = getByIndex(win, tab)
     if (tab) {
       tab.refreshState()
     }
@@ -1354,13 +1355,13 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async getTabState (tab, opts) {
     var win = getWindow(this.sender)
-    var tab = getByIndex(win, tab)
+    tab = getByIndex(win, tab)
     if (tab) {
       var state = Object.assign({}, tab.state)
       if (opts) {
         if (opts.datInfo) state.datInfo = tab.datInfo
         if (opts.networkStats) state.networkStats = tab.datInfo ? tab.datInfo.networkStats : {}
-        if (opts.sitePerms) state.sitePerms = await beakerCore.dbs.sitedata.getPermissions(tab.url)
+        if (opts.sitePerms) state.sitePerms = await sitedataDb.getPermissions(tab.url)
       }
       return state
     }
@@ -1368,9 +1369,9 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async getNetworkState (tab) {
     var win = getWindow(this.sender)
-    var tab = getByIndex(win, tab)
+    tab = getByIndex(win, tab)
     if (tab && tab.datInfo) {
-      var networkStats = await beakerCore.dat.archives.getArchiveNetworkStats(tab.datInfo.key)
+      var networkStats = await dat.archives.getArchiveNetworkStats(tab.datInfo.key)
       return {
         peers: tab.peers,
         networkStats
@@ -1380,7 +1381,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async getPageMetadata (tab) {
     var win = getWindow(this.sender)
-    var tab = getByIndex(win, tab)
+    tab = getByIndex(win, tab)
     if (tab) return tab.getPageMetadata()
     return {}
   },
@@ -1545,9 +1546,9 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var tab = getByIndex(getWindow(this.sender), index)
     if (tab) {
       // if not a dat site, store the favicon
-      // (dat caches favicons through the dat/assets.js process in beaker-core)
+      // (dat caches favicons through the dat/assets.js process)
       if (!tab.url.startsWith('dat:')) {
-        beakerCore.dbs.sitedata.set(tab.url, 'favicon', dataUrl)
+        sitedataDb.set(tab.url, 'favicon', dataUrl)
       }
     }
   },

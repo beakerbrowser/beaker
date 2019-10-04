@@ -9,7 +9,7 @@ import '../hover-menu.js'
 
 const SUBVIEWS = [
   {id: 'feed', label: html`<span class="fas fa-fw fa-list"></span> Feed`},
-  {id: 'notifications', label: html`<span class="far fa-fw fa-bell"></span> Notifications`},
+  {id: 'notifications', label: html`<span class="far fa-fw fa-bell"></span> Notifications`}
 ]
 
 class StatusesView extends LitElement {
@@ -23,7 +23,6 @@ class StatusesView extends LitElement {
   static get styles () {
     return statusesViewCSS
   }
-
 
   constructor () {
     super()
@@ -40,7 +39,7 @@ class StatusesView extends LitElement {
 
   render () {
     document.title = 'News Feed'
-    
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <beaker-status-feed .user=${this.user}></beaker-status-feed>

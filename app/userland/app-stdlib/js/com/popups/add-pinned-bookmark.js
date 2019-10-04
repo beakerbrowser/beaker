@@ -81,7 +81,7 @@ export class AddPinnedBookmarkPopup extends BasePopup {
         <div class="group-items">${group.map(g => this.renderSuggestion(g, useThumb))}</div>
       </div>`
   }
-  
+
   renderSuggestion (row) {
     const title = row.title || 'Untitled'
     return html`
@@ -98,7 +98,7 @@ export class AddPinnedBookmarkPopup extends BasePopup {
   firstUpdated () {
     this.shadowRoot.querySelector('input').focus()
   }
-  
+
   // events
   // =
 
@@ -107,7 +107,7 @@ export class AddPinnedBookmarkPopup extends BasePopup {
       this.isURLFocused = true
     }
   }
-  
+
   async onChangeQuery (e) {
     this.query = this.shadowRoot.querySelector('input').value
     this.loadSuggestions()
@@ -127,7 +127,7 @@ export class AddPinnedBookmarkPopup extends BasePopup {
     await this.pin(e.currentTarget.getAttribute('href'), e.currentTarget.getAttribute('title'))
     this.dispatchEvent(new CustomEvent('resolve'))
   }
-    
+
   onContextMenu (e) {
     e.preventDefault()
     var url = e.currentTarget.getAttribute('href')
@@ -240,7 +240,6 @@ AddPinnedBookmarkPopup.styles = [popupsCSS, css`
 `]
 
 customElements.define('beaker-add-pinned-bookmark-popup', AddPinnedBookmarkPopup)
-
 
 // helpers
 // =

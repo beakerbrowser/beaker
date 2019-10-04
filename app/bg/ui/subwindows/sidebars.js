@@ -10,7 +10,7 @@
 import path from 'path'
 import { BrowserView } from 'electron'
 import * as tabManager from '../tab-manager'
-import { findWebContentsParentWindow } from '../../../lib/electron'
+import { findWebContentsParentWindow } from '../../lib/electron'
 
 // globals
 // =

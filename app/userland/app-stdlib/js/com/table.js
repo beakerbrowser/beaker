@@ -14,8 +14,8 @@ import tableCSS from '../../css/com/table.css.js'
  */
 
 export class Table extends LitElement {
-  static get properties() {
-    return { 
+  static get properties () {
+    return {
       rows: {type: Array}
     }
   }
@@ -69,7 +69,7 @@ export class Table extends LitElement {
   // rendering
   // =
 
-  render() {
+  render () {
     return html`
       <link rel="stylesheet" href="${this.fontAwesomeCSSUrl}">
       ${this.hasHeadingLabels
@@ -88,7 +88,7 @@ export class Table extends LitElement {
   getColumnClasses (column) {
     return classMap({
       col: true,
-      [column.id]: true,  
+      [column.id]: true,
       stretch: column.stretch
     })
   }

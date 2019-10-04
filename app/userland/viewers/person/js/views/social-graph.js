@@ -5,7 +5,7 @@ import { pluralize } from 'beaker://app-stdlib/js/strings.js'
 import socialGraphViewCSS from '../../css/views/social-graph.css.js'
 
 export class SocialGraphView extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       user: {type: Object},
       info: {type: Object},
@@ -74,9 +74,8 @@ export class SocialGraphView extends LitElement {
       <div class="listing">
         ${repeat(this.items, item => this.renderItem(item))}
       </div>
-    `    
+    `
   }
-
 
   renderItem (item) {
     const numFollowers = item.followers.length

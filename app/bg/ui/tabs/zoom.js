@@ -1,7 +1,6 @@
 import {URL} from 'url'
-import * as beakerCore from '@beaker/core'
 import * as tabManager from '../tab-manager'
-const sitedataDb = beakerCore.dbs.sitedata
+import * as sitedataDb from '../../dbs/sitedata'
 
 const ZOOM_STEP = 0.5
 

@@ -1,8 +1,7 @@
 import { session, BrowserView } from 'electron'
 import { PERMS, getPermId } from '@beaker/permissions'
-import * as beakerCore from '@beaker/core'
-const dat = beakerCore.dat
-const sitedata = beakerCore.dbs.sitedata
+import dat from '../dat/index'
+import * as sitedata from '../dbs/sitedata'
 import _get from 'lodash.get'
 import parseDatURL from 'parse-dat-url'
 import * as permPromptSubwindow from './subwindows/perm-prompt'

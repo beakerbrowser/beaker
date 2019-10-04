@@ -13,7 +13,7 @@ import * as rpc from 'pauls-electron-rpc'
 import { ModalActiveError } from 'beaker-error-constants'
 import * as tabManager from '../tab-manager'
 import modalsRPCManifest from '../../rpc-manifests/modals'
-import { findWebContentsParentWindow } from '../../../lib/electron'
+import { findWebContentsParentWindow } from '../../lib/electron'
 
 // globals
 // =

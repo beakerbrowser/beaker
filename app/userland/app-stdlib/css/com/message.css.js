@@ -1,6 +1,5 @@
 import {css} from '../../vendor/lit-element/lit-element.js'
 
-
 const cssStr = css`
 .message {
   display: flex;

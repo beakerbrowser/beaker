@@ -3,7 +3,7 @@
 import { ipcRenderer } from 'electron'
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
-import { fromEventStream } from '@beaker/core/web-apis/fg/event-target'
+import { fromEventStream } from '../../bg/web-apis/fg/event-target'
 import './win32'
 import './tabs'
 import './navbar'

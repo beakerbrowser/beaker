@@ -1,6 +1,6 @@
 import { webFrame } from 'electron'
 import * as rpcAPI from 'pauls-electron-rpc'
-import * as beakerCoreWebview from '@beaker/core/webview'
+import { setup as setupWebAPIs } from '../../bg/web-apis/fg.js'
 import { setup as setupTutorial } from './tutorial'
 import { setup as setupLocationbar } from './locationbar'
 import { setup as setupPrompt } from './prompt'
@@ -9,9 +9,10 @@ import setupExitFullScreenHackfix from './exit-full-screen-hackfix'
 import readableStreamAsyncIteratorPolyfill from './readable-stream-async-iterator-polyfill'
 import windowOpenCloseHackfix from './window-open-close-hackfix'
 import resizeHackfix from './resize-hackfix'
+import createSpellChecker from '../../bg/web-apis/fg/spell-checker.js'
 // import './read-page-metadata' DISABLED wasnt working effectively -prf
 
-webFrame.setSpellCheckProvider('en-US', beakerCoreWebview.createSpellChecker(rpcAPI))
+webFrame.setSpellCheckProvider('en-US', createSpellChecker(rpcAPI))
 
 // HACKS
 setupExitFullScreenHackfix()
@@ -19,7 +20,7 @@ readableStreamAsyncIteratorPolyfill()
 windowOpenCloseHackfix()
 resizeHackfix()
 
-beakerCoreWebview.setup({ rpcAPI })
+setupWebAPIs({ rpcAPI })
 setupTutorial()
 setupLocationbar()
 setupPrompt()

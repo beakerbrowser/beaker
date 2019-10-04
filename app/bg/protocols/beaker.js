@@ -1,8 +1,7 @@
 import {protocol} from 'electron'
-import * as beakerCore from '@beaker/core'
-import errorPage from '@beaker/core/lib/error-page'
-import * as mime from '@beaker/core/lib/mime'
-const {archivesDebugPage, datDnsCachePage, datDnsCacheJS} = beakerCore.dat.debug
+import errorPage from '../lib/error-page'
+import * as mime from '../lib/mime'
+import { archivesDebugPage, datDnsCachePage, datDnsCacheJS } from '../dat/debugging'
 import path from 'path'
 import url from 'url'
 import once from 'once'
@@ -289,25 +288,26 @@ child-src 'self';
   if (requestUrl === 'beaker://dat-dns-cache/main.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', datDnsCacheJS)
   }
-  if (requestUrl.startsWith('beaker://debug-log/')) {
-    const PAGE_SIZE = 1e6
-    var start = queryParams.start ? (+queryParams.start) : 0
-    let content = await beakerCore.getLogFileContent(start, start + PAGE_SIZE)
-    var pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
-    return respond({
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Content-Security-Policy': BEAKER_CSP,
-        'Access-Control-Allow-Origin': '*'
-      },
-      data: intoStream(`
-        ${pagination}
-        <pre>${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-        ${pagination}
-      `)
-    })
-  }
+  // TODO replace?
+  // if (requestUrl.startsWith('beaker://debug-log/')) {
+  //   const PAGE_SIZE = 1e6
+  //   var start = queryParams.start ? (+queryParams.start) : 0
+  //   let content = await beakerCore.getLogFileContent(start, start + PAGE_SIZE)
+  //   var pagination = `<h2>Showing bytes ${start} - ${start + PAGE_SIZE}. <a href="beaker://debug-log/?start=${start + PAGE_SIZE}">Next page</a></h2>`
+  //   return respond({
+  //     statusCode: 200,
+  //     headers: {
+  //       'Content-Type': 'text/html; charset=utf-8',
+  //       'Content-Security-Policy': BEAKER_CSP,
+  //       'Access-Control-Allow-Origin': '*'
+  //     },
+  //     data: intoStream(`
+  //       ${pagination}
+  //       <pre>${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+  //       ${pagination}
+  //     `)
+  //   })
+  // }
 
   return cb(404, 'Not Found')
 }

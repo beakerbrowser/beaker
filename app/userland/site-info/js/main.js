@@ -170,7 +170,7 @@ class SiteInfoApp extends LitElement {
       this.user = await uwg.profiles.me()
     }
     this.followedUsers = (await uwg.follows.list({author: this.user.url})).map(({topic}) => topic.url)
-   
+
     this.info = {}
     this.manifest = null
     this.followers = null
@@ -205,7 +205,7 @@ class SiteInfoApp extends LitElement {
     } else {
       this.info = {
         title: this.hostname,
-        domain: this.isHttps ? this.hostname : undefined  
+        domain: this.isHttps ? this.hostname : undefined
       }
     }
 
@@ -440,7 +440,7 @@ class SiteInfoApp extends LitElement {
             <span class="fas fa-fw fa-cog"></span>
             Settings
           </a>
-          ${this.isDat ? html `
+          ${this.isDat ? html`
             <a class=${classMap({active: this.view === 'peers'})} @click=${e => this.onSetView(e, 'peers')}>
               <span class="fas fa-fw fa-share-alt"></span>
               ${this.info.peers} ${pluralize(this.info.peers, 'peer')}

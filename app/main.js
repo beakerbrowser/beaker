@@ -6,15 +6,23 @@ require('tls').DEFAULT_ECDH_CURVE = 'auto' // HACK (prf) fix Node 8.9.x TLS issu
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import {app, protocol} from 'electron'
-import {join} from 'path'
-import * as beakerCore from '@beaker/core'
+import { app, protocol } from 'electron'
+import { join } from 'path'
 import * as rpc from 'pauls-electron-rpc'
 
+import globals from './bg/globals'
+import { getEnvVar } from './bg/lib/env'
+import * as logger from './bg/logger'
 import * as beakerBrowser from './bg/browser'
 import * as adblocker from './bg/adblocker'
 import * as analytics from './bg/analytics'
 import * as portForwarder from './bg/nat-port-forwarder'
+import dbs from './bg/dbs/index'
+import dat from './bg/dat/index'
+import * as filesystem from './bg/filesystem/index'
+import * as uwg from './bg/uwg/index'
+import * as webapis from './bg/web-apis/bg'
+import * as spellCheckerLib from './bg/lib/spell-checker'
 
 import * as windows from './bg/ui/windows'
 import * as modals from './bg/ui/subwindows/modals'
@@ -45,15 +53,15 @@ const DISALLOWED_SAVE_PATH_NAMES = [
 // =
 
 // read config from env vars
-if (beakerCore.getEnvVar('BEAKER_USER_DATA_PATH')) {
+if (getEnvVar('BEAKER_USER_DATA_PATH')) {
   console.log('User data path set by environment variables')
-  console.log('userData:', beakerCore.getEnvVar('BEAKER_USER_DATA_PATH'))
-  app.setPath('userData', beakerCore.getEnvVar('BEAKER_USER_DATA_PATH'))
+  console.log('userData:', getEnvVar('BEAKER_USER_DATA_PATH'))
+  app.setPath('userData', getEnvVar('BEAKER_USER_DATA_PATH'))
 } else {
   // DEBUG use a temporary path during the internal 0.9 beta -prf
   app.setPath('userData', join(require('os').tmpdir(), 'beaker-0.9-beta'))
 }
-if (beakerCore.getEnvVar('BEAKER_TEST_DRIVER')) {
+if (getEnvVar('BEAKER_TEST_DRIVER')) {
   testDriver.setup()
 }
 
@@ -89,29 +97,43 @@ app.on('open-file', (e, filepath) => {
 app.on('ready', async function () {
   portForwarder.setup()
 
-  // setup core
-  await beakerCore.setup({
-    // paths
-    userDataPath: app.getPath('userData'),
-    homePath: app.getPath('home'),
-    templatesPath: join(__dirname, 'assets', 'templates'),
-    disallowedSavePaths: DISALLOWED_SAVE_PATH_NAMES.map(path => app.getPath(path)),
+  // record some global paths
+  globals.userDataPath = app.getPath('userData')
+  globals.homePath = app.getPath('home')
+  globals.templatesPath = join(__dirname, 'assets', 'templates')
+  globals.disallowedSavePaths = DISALLOWED_SAVE_PATH_NAMES.map(path => app.getPath(path))
 
-    // APIs
-    permsAPI: permissions,
-    uiAPI: {
-      showModal: modals.create,
-      capturePage: beakerBrowser.capturePage
-    },
-    userSessionAPI: {
-      getFor: windows.getUserSessionFor
-    },
-    rpcAPI: rpc,
-    downloadsWebAPI: downloads.WEBAPI,
-    browserWebAPI: beakerBrowser.WEBAPI
-  })
+  // APIs
+  // TODO remove ALL of these!! -prf
+  globals.permsAPI = permissions
+  globals.uiAPI = {
+    showModal: modals.create,
+    capturePage: beakerBrowser.capturePage
+  }
+  globals.userSessionAPI = {
+    getFor: windows.getUserSessionFor
+  }
+  globals.rpcAPI = rpc
+  globals.downloadsWebAPI = downloads.WEBAPI
+  globals.browserWebAPI = beakerBrowser.WEBAPI
 
-  // base
+  // initiate log
+  await logger.setup(join(globals.userDataPath, 'beaker.log'))
+
+  // setup databases
+  for (let k in dbs) {
+    if (dbs[k].setup) {
+      dbs[k].setup(globals)
+    }
+  }
+
+  // start subsystems
+  // (order is important)
+  await dat.setup(globals)
+  await uwg.setup()
+  await filesystem.setup()
+  webapis.setup()
+  spellCheckerLib.setup()
   await beakerBrowser.setup()
   adblocker.setup()
   analytics.setup()
@@ -128,7 +150,7 @@ app.on('ready', async function () {
   beakerFaviconProtocol.setup() // TODO deprecateme
   assetProtocol.setup()
   intentProtocol.setup()
-  protocol.registerStreamProtocol('dat', beakerCore.dat.protocol.electronHandler, err => {
+  protocol.registerStreamProtocol('dat', dat.protocol.electronHandler, err => {
     if (err) {
       console.error(err)
       throw new Error('Failed to create protocol: dat')
@@ -142,7 +164,7 @@ app.on('quit', () => {
 
 app.on('custom-ready-to-show', () => {
   // our first window is ready to show, do any additional setup
-  beakerCore.dat.archives.loadSavedArchives()
+  dat.archives.loadSavedArchives()
 })
 
 // only run one instance

@@ -1,6 +1,6 @@
 import * as rpc from 'pauls-electron-rpc'
-import browserManifest from '@beaker/core/web-apis/manifests/internal/browser'
-import datArchiveManifest from '@beaker/core/web-apis/manifests/external/dat-archive'
+import browserManifest from '../../bg/web-apis/manifests/internal/browser'
+import datArchiveManifest from '../../bg/web-apis/manifests/external/dat-archive'
 import permPromptManifest from '../../bg/rpc-manifests/perm-prompt'
 
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)

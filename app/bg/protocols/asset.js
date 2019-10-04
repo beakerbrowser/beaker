@@ -11,8 +11,7 @@
  **/
 
 import {protocol, screen} from 'electron'
-import * as beakerCore from '@beaker/core'
-const {sitedata} = beakerCore.dbs
+import * as sitedata from '../dbs/sitedata'
 import fs from 'fs'
 import path from 'path'
 

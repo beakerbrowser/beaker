@@ -5,7 +5,7 @@ import css from '../../css/com/file-and-folder-info.css.js'
 import './file-display.js'
 
 export class FileInfo extends LitElement {
-  static get properties() {
+  static get properties () {
     return {
       driveInfo: {type: Object},
       pathInfo: {type: Object},
@@ -83,7 +83,6 @@ export class FileInfo extends LitElement {
 
   // events
   // =
-
 }
 
 customElements.define('file-info', FileInfo)
