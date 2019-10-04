@@ -67,8 +67,8 @@ class SidebarEditorView extends LitElement {
 
     // load monaco
     if (!editor) {
-      require.config({ baseUrl: 'beaker://assets/' })
-      require(['vs/editor/editor.main'], () => {
+      window.require.config({ baseUrl: 'beaker://assets/' })
+      window.require(['vs/editor/editor.main'], () => {
         console.log('monaco loaded')
         // we have load monaco outside of the shadow dom
         let opts = {
