@@ -302,7 +302,7 @@ async function saveLibraryJson () {
       visibility: dat.visibility,
       savedAt: dat.savedAt.toISOString()
     }))
-  }))
+  }, null, 2))
 }
 
 /**
