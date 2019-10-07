@@ -7,14 +7,66 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 
-const BASIC_TEMPLATES = [
-  {url: 'blank', title: 'Website', thumb: html`<img src="beaker://assets/img/templates/website.png">`}
+// TODO
+// read types from the fs registry
+const TYPES = [
+  {
+    title: 'System',
+    types: [
+      {
+        id: undefined,
+        title: 'Shared Files',
+      },
+      {
+        id: 'website',
+        title: 'Website',
+      },
+      {
+        id: 'application',
+        title: 'Application'
+      }
+    ]
+  },
+  {
+    title: 'Unwalled Garden',
+    types: [
+      {
+        id: 'unwalled.garden/photo-album',
+        title: 'Photo Album'
+      },
+      {
+        id: 'unwalled.garden/music-album',
+        title: 'Music Album'
+      },
+      {
+        id: 'unwalled.garden/video-album',
+        title: 'Video Album'
+      },
+      {
+        id: 'unwalled.garden/podcast',
+        title: 'Podcast'
+      },
+      {
+        id: 'unwalled.garden/ebook',
+        title: 'E-Book'
+      }
+    ]
+  },
+  {
+    title: 'Web Term',
+    types: [
+      {
+        id: "webterm.sh/cmd-pkg",
+        title: "Command Package"
+      }
+    ]
+  }
 ]
 
 const VISIBILITY_OPTIONS = [
-  {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access it'},
-  {icon: html`<span class="fa-fw fas fa-eye"></span>`, label: 'Unlisted', value: 'unlisted', desc: 'Only people who know the URL can access it'},
-  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access it'}
+  {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access the drive'},
+  {icon: html`<span class="fa-fw fas fa-eye"></span>`, label: 'Unlisted', value: 'unlisted', desc: 'Only people who know the URL can access the drive'},
+  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access the drive'}
 ]
 
 class CreateArchiveModal extends LitElement {
@@ -22,7 +74,7 @@ class CreateArchiveModal extends LitElement {
     return {
       title: {type: String},
       description: {type: String},
-      currentTemplate: {type: String},
+      type: {type: String},
       visibility: {type: String},
       errors: {type: Object}
     }
@@ -83,15 +135,11 @@ class CreateArchiveModal extends LitElement {
       display: flex;
       user-select: none;
     }
-    
-    .layout .templates {
-      width: 624px;
-    }
-    
+        
     .layout .inputs {
       min-width: 200px;
       flex: 1;
-      padding: 20px;
+      padding: 16px 14px 12px;
     }
 
     input[type="radio"] {
@@ -101,81 +149,40 @@ class CreateArchiveModal extends LitElement {
       height: auto;
     }
     
-    .templates {
-      height: 468px;
-      overflow-y: auto;
-      background: #fafafa;
-      border-right: 1px solid #bbb;
-    }
-    
-    .templates-heading {
-      margin: 20px 20px 0px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #ddd;
-      color: gray;
-      font-size: 11px;
-    }
-    
-    .templates-selector {
-      display: grid;
-      grid-gap: 20px;
-      padding: 10px 20px;
-      grid-template-columns: repeat(3, 1fr);
-      align-items: baseline;
-    }
-    
-    .template {
+    .types {
       width: 160px;
-      padding: 10px;
-      border-radius: 4px;
+      height: 442px;
+      overflow-y: auto;
+      background: #f5f5fa;
     }
     
-    .template img,
-    .template .icon {
-      display: block;
-      margin: 0 auto;
-      width: 150px;
-      height: 120px;
-      margin-bottom: 10px;
-      object-fit: scale-down;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 3px;
+    .type-group-title {
+      padding: 8px;
+      color: #889;
+      font-size: 11px;
+      font-weight: 500;
     }
     
-    .template .icon {
-      text-align: center;
-      font-size: 24px;
+    .type {
+      padding: 6px 20px;
     }
     
-    .template .icon .fa-fw {
-      line-height: 80px;
-    }
-    
-    .template .title {
-      text-align: center;
+    .type .type-title {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     
-    .template:hover {
-      background: #eee;
+    .type:hover {
+      background: #e5e5f3;
     }
     
-    .template.selected {
+    .type.selected {
       background: rgb(63, 119, 232);
     }
     
-    .template.selected .title {
+    .type.selected .type-title {
       color: #fff;
-      font-weight: 500;
-      text-shadow: 0 1px 2px rgba(0,0,0,.35);
-    }
-    
-    .template.selected img {
-      border: 1px solid #fff;
-      box-shadow: 0 1px 2px rgba(0,0,0,.15);
     }
 
     .visibility {
@@ -242,9 +249,7 @@ class CreateArchiveModal extends LitElement {
     this.links = undefined
     this.author = undefined
     this.visibility = 'public'
-    this.templates = []
     this.users = []
-    this.currentTemplate = 'blank'
     this.errors = {}
 
     // export interface
@@ -256,11 +261,11 @@ class CreateArchiveModal extends LitElement {
     this.cbs = cbs
     this.title = params.title || ''
     this.description = params.description || ''
-    this.type = params.type || ''
+    this.type = params.type || undefined
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
     this.visibility = params.visibility || 'public'
-    this.templates = BASIC_TEMPLATES/* TODO .concat(
+    this.typeOptions = TYPES/* TODO 
       await bg.archives.list({type: 'unwalled.garden/template', isSaved: true})
     )*/
     await this.requestUpdate()
@@ -270,12 +275,22 @@ class CreateArchiveModal extends LitElement {
   // =
 
   render () {
-    const template = (url, title, thumb) => {
-      const cls = classMap({template: true, selected: url === this.currentTemplate})
+    const renderType = type => {
+      const cls = classMap({type: true, selected: this.type === type.id})
       return html`
-        <div class="${cls}" @click=${e => this.onClickTemplate(e, url)}>
-          ${thumb ? thumb : html`<img src="asset:thumb:${url}">`}
-          <div class="title">${title}</div>
+        <div class="${cls}" @click=${e => this.onClickType(e, type.id)}>
+          <div class="type-title">${type.title}</div>
+        </div>
+      `
+    }
+
+    const renderTypeGroup = group => {
+      return html`
+        <div class="type-group">
+          <div class="type-group-title">${group.title}</div>
+          <div class="types-selector">
+            ${group.types.map(t => renderType(t))}
+          </div>
         </div>
       `
     }
@@ -283,18 +298,16 @@ class CreateArchiveModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">Create New...</h1>
+        <h1 class="title">Create New Drive</h1>
 
         <form @submit=${this.onSubmit}>
           <div class="layout">
-            <div class="templates">
-              <div class="templates-selector">
-                ${this.templates.map(t => template(t.url, t.title, t.thumb))}
-              </div>
+            <div class="types">
+              ${(this.typeOptions || []).map(g => renderTypeGroup(g))}
             </div>
 
             <div class="inputs">
-              <label for="title">${ucfirst(this.simpleType)} Title</label>
+              <label for="title">Title</label>
               <input autofocus name="title" tabindex="1" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
               ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
@@ -332,8 +345,8 @@ class CreateArchiveModal extends LitElement {
   // event handlers
   // =
 
-  async onClickTemplate (e, url) {
-    this.currentTemplate = url
+  async onClickType (e, typeId) {
+    this.type = typeId
     await this.updateComplete
     this.shadowRoot.querySelector('input').focus() // focus the title input
   }
@@ -368,31 +381,15 @@ class CreateArchiveModal extends LitElement {
     }
 
     try {
-      var url
-      if (!this.currentTemplate.startsWith('dat:')) {
-        // using builtin template
-        url = await bg.datArchive.createArchive({
-          title: this.title,
-          description: this.description,
-          type: 'unwalled.garden/website',
-          author: this.author,
-          visibility: this.visibility,
-          links: this.links,
-          prompt: false
-        })
-      } else {
-        // using a template
-        await bg.datArchive.download(this.currentTemplate)
-        url = await bg.datArchive.forkArchive(this.currentTemplate, {
-          title: this.title,
-          description: this.description,
-          type: 'unwalled.garden/website',
-          author: this.author,
-          visibility: this.visibility,
-          links: this.links,
-          prompt: false
-        })
-      }
+      var url = await bg.datArchive.createArchive({
+        title: this.title,
+        description: this.description,
+        type: this.type,
+        author: this.author,
+        visibility: this.visibility,
+        links: this.links,
+        prompt: false
+      })
       this.cbs.resolve({url})
     } catch (e) {
       this.cbs.reject(e.message || e.toString())
