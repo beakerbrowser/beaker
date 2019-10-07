@@ -156,9 +156,15 @@ export default function registerContextMenu () {
       }
 
       menuItems.push({
-        label: 'View Source',
+        label: 'View Editor',
         click: (item, win) => {
           tabManager.getActive(win).toggleSidebar('editor')
+        }
+      })
+      menuItems.push({
+        label: 'View Terminal',
+        click: (item, win) => {
+          tabManager.getActive(win).toggleSidebar('terminal')
         }
       })
       menuItems.push({
