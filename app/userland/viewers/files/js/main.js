@@ -22,6 +22,7 @@ export class FilesViewer extends LitElement {
     this.driveInfo = undefined
     this.pathInfo = undefined
     this.mountInfo = undefined
+    this.isNotFound = false
     this.items = []
     this.selection = []
     this.load()
@@ -38,11 +39,16 @@ export class FilesViewer extends LitElement {
     var archive = new DatArchive(location)
     this.driveInfo = await archive.getInfo()
     this.driveInfo.ident = await navigator.filesystem.identifyDrive(archive.url)
-    this.pathInfo = await archive.stat(location.pathname)
-    await this.readMountInfo()
-    if (this.pathInfo.isDirectory()) {
-      this.items = await archive.readdir(location.pathname, {stat: true})
-      this.items.sort((a, b) => a.name.localeCompare(b.name))
+    try {
+      this.pathInfo = await archive.stat(location.pathname)
+      await this.readMountInfo()
+      if (this.pathInfo.isDirectory()) {
+        this.items = await archive.readdir(location.pathname, {stat: true})
+        this.items.sort((a, b) => a.name.localeCompare(b.name))
+      }
+    } catch (e) {
+      console.log(e)
+      this.isNotFound = true
     }
     console.log({
       driveInfo: this.driveInfo,
@@ -72,7 +78,7 @@ export class FilesViewer extends LitElement {
   // =
 
   render () {
-    if (!this.driveInfo || !this.pathInfo) return html``
+    if (!this.driveInfo) return html``
 
     var title = this.filename
     if (!title) title = this.driveInfo.title
@@ -82,33 +88,41 @@ export class FilesViewer extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${this.pathInfo.isDirectory() ? html`
-        <file-grid
-          .items=${this.items}
-          .selection=${this.selection}
-          @change-selection=${this.onChangeSelection}
-        ></file-grid>
-      ` : html`
-        <file-display
-          pathname=${window.location.pathname}
-          .info=${this.pathInfo}
-        ></file-display>
-      `}
-      ${this.selection.length > 0 ? html`
-        <file-info
-          .driveInfo=${this.driveInfo}
-          .pathInfo=${this.pathInfo}
-          .mountInfo=${this.mountInfo}
-          .selection=${this.selection}
-        ></file-info>
-      ` : html`
-        <folder-info
-          title=${title}
-          .driveInfo=${this.driveInfo}
-          .pathInfo=${this.pathInfo}
-          .mountInfo=${this.mountInfo}
-        ></folder-info>
-      `}
+      ${this.pathInfo ? html`
+        ${this.pathInfo.isDirectory() ? html`
+          <file-grid
+            .items=${this.items}
+            .selection=${this.selection}
+            @change-selection=${this.onChangeSelection}
+          ></file-grid>
+        ` : html`
+          <file-display
+            pathname=${window.location.pathname}
+            .info=${this.pathInfo}
+          ></file-display>
+        `}
+        ${this.selection.length > 0 ? html`
+          <file-info
+            .driveInfo=${this.driveInfo}
+            .pathInfo=${this.pathInfo}
+            .mountInfo=${this.mountInfo}
+            .selection=${this.selection}
+          ></file-info>
+        ` : html`
+          <folder-info
+            title=${title}
+            .driveInfo=${this.driveInfo}
+            .pathInfo=${this.pathInfo}
+            .mountInfo=${this.mountInfo}
+          ></folder-info>
+        `}
+      ` : undefined}
+      ${this.isNotFound ? html`
+        <div style="margin: 0 20px">
+          <h1>404</h1>
+          <h2>File Not found</h2>
+        </div>
+      ` : undefined}
     `
   }
 
