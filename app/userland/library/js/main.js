@@ -7,7 +7,8 @@ import './com/filters.js'
 import './views/launcher.js'
 import './views/bookmarks.js'
 import './views/statuses.js'
-import './views/dats.js'
+import './views/drives.js'
+import './views/trash.js'
 import './views/commands.js'
 import './views/people.js'
 import './views/search.js'
@@ -114,14 +115,19 @@ export class LibraryApp extends LitElement {
             .user=${this.user}
           ></commands-view>
         `
-      case 'websites':
-      case 'trash':
+      case 'drives':
         return html`
-          <dats-view
+          <drives-view
             the-current-view
             .user=${this.user}
-            currentView=${this.currentView}
-          ></dats-view>
+          ></drives-view>
+        `
+      case 'trash':
+        return html`
+          <trash-view
+            the-current-view
+            .user=${this.user}
+          ></trash-view>
         `
       case 'search':
         return html`

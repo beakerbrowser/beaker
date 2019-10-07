@@ -56,8 +56,11 @@ class LibraryNav extends LitElement {
       <br>
       <h5>Library</h5>
       ${item('bookmarks', 'far fa-star', 'Bookmarks')}
-      ${item('websites', 'far fa-file-alt', 'Websites')}
-      ${item('commands', 'fas fa-terminal', 'Commands')}
+      ${item('drives', 'far fa-hdd', 'Drives')}
+      <a class="item" href=${this.fs ? this.fs.url : ''}>
+        <span class="fa-fw far fa-folder"></span>
+        <span class="label">Filesystem</span>
+      </a>
       <br>
       <h5>Network</h5>
       ${item('people', libTools.getFAIcon('people'), 'People')}
@@ -67,10 +70,8 @@ class LibraryNav extends LitElement {
       </a>
       <br>
       <h5>System</h5>
-      <a class="item" href=${this.fs ? this.fs.url : ''}>
-        <span class="fa-fw far fa-hdd"></span>
-        <span class="label">My Hyperdrive</span>
-      </a>
+      ${item('applications', 'far fa-window-restore', 'Applications', true)}
+      ${item('commands', 'fas fa-terminal', 'Commands')}
       ${item('cloud-peers', 'fas fa-cloud', 'Cloud Peers', true)}
       ${item('settings', 'fas fa-cog', 'Settings', true)}
       ${item('trash', 'fas fa-trash', 'Trash')}

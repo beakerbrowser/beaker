@@ -35,14 +35,22 @@ a:hover {
   text-decoration: underline;
 }
 
-.listing {
+h4 {
+  font-weight: 400;
+  color: #889;
+  border-bottom: 1px solid #dde;
+  padding-bottom: 5px;
+  margin-bottom: 0;
+}
+
+.listing.grid {
   display: grid;
   padding: 5px 15px;
   grid-gap: 15px 15px;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 }
 
-.item {
+.listing.grid .item {
   cursor: pointer;
   border-radius: 4px;
   color: inherit;
@@ -52,13 +60,13 @@ a:hover {
   overflow: hidden;
 }
 
-.item:hover {
+.listing.grid .item:hover {
   border-color: #bbc;
   box-shadow: 0 2px 3px rgba(0,0,0,.05);
   text-decoration: none;
 }
 
-.item img {
+.listing.grid .item img {
   display: block;
   background: #fff;
   width: 100%;
@@ -67,11 +75,11 @@ a:hover {
   border-bottom: 1px solid #eee;
 }
 
-.item .details {
+.listing.grid .item .details {
   padding: 10px 12px;
 }
 
-.item .title {
+.listing.grid .item .title {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -80,13 +88,13 @@ a:hover {
   line-height: 20px;
 }
 
-.item .author {
+.listing.grid .item .author {
   font-size: 12px;
   line-height: 20px;
   color: gray;
 }
 
-.item .bottom-line {
+.listing.grid .item .bottom-line {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -95,12 +103,56 @@ a:hover {
   color: #555;
 }
 
+.listing.list .item {
+  display: flex;
+  cursor: pointer;
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f5;
+  color: inherit;
+  background: #fff;
+  user-select: none;
+  overflow: hidden;
+}
+
+.listing.list .item:hover {
+  background-color: #f5f5fa;
+  text-decoration: none;
+}
+
+.listing.list .item > * {
+  margin-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listing.list .item img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: cover;
+}
+
+.listing.list .item .title {
+  font-weight: 500;
+}
+
+.listing.list .item .author {
+  color: #889;
+}
+
+.listing.list .item .label {
+  padding: 0 5px;
+  line-height: 16px;
+  top: 0;
+}
+
 .item .visibility.public {
   color: var(--blue);
 }
 
 .item .visibility.unlisted {
-  color: gray;
+  color: #889;
 }
 
 .item .visibility.private {

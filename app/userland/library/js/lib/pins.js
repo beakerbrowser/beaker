@@ -16,7 +16,7 @@ export async function save (pins) {
   await fs.mkdir('/.data').catch(err => null)
   await fs.mkdir('/.data/beakerbrowser.com').catch(err => null)
   await fs.writeFile('/.settings/launcher-pins.json', JSON.stringify({
-    type: 'beakerbrowser.com/pins',
+    type: 'launcher-pins',
     pins
   }, null, 2))
 }

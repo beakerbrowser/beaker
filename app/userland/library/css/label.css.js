@@ -9,7 +9,7 @@ const cssStr = css`
   font-weight: 500;
   padding: 4px 6px 5px;
   border-radius: 4px;
-  background: #eee;
+  background: #eeeef2;
   font-size: 10px;
   line-height: 1;
 }
