@@ -7,7 +7,7 @@
   "properties": {
     "type": {
       "type": "string",
-      "const": "application",
+      "const": "application"
     },
     "driveTypes": {
       "type": "array",

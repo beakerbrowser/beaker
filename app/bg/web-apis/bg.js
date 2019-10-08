@@ -13,6 +13,8 @@ import watchlistManifest from './manifests/internal/watchlist'
 import crawlerManifest from './manifests/internal/crawler'
 import usersManifest from './manifests/internal/users'
 import searchManifest from './manifests/internal/search'
+import programsManifest from './manifests/internal/programs'
+import typesManifest from './manifests/internal/types'
 
 // internal apis
 import { WEBAPI as loggerAPI } from '../logger'
@@ -25,6 +27,8 @@ import { WEBAPI as beakerBrowserAPI } from '../browser'
 import { WEBAPI as crawlerAPI } from '../uwg/index'
 import usersAPI from './bg/users'
 import searchAPI from './bg/search'
+import { WEBAPI as programsAPI } from '../filesystem/program-registry'
+import { WEBAPI as typesAPI } from '../filesystem/type-registry'
 
 // external manifests
 import navigatorManifest from './manifests/external/navigator'
@@ -83,6 +87,8 @@ export const setup = function () {
   rpc.exportAPI('crawler', crawlerManifest, crawlerAPI, internalOnly)
   rpc.exportAPI('users', usersManifest, usersAPI, internalOnly)
   rpc.exportAPI('search', searchManifest, searchAPI, internalOnly)
+  rpc.exportAPI('programs', programsManifest, programsAPI, internalOnly)
+  rpc.exportAPI('types', typesManifest, typesAPI, internalOnly)
 
   // external apis
   rpc.exportAPI('navigator', navigatorManifest, navigatorAPI, secureOnly)

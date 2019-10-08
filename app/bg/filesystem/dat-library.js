@@ -55,7 +55,12 @@ export async function setup () {
   if (libraryJsonStr) {
     try {
       let libraryJsonObj = JSON.parse(libraryJsonStr)
-      dats = (libraryJsonObj.dats || []).filter(dat => typeof dat.key === 'string' && DAT_HASH_REGEX.test(dat.key))
+      dats = (libraryJsonObj.dats || []).filter(dat => (
+        !!dat
+        && typeof dat === 'object' 
+        && typeof dat.key === 'string'
+        && DAT_HASH_REGEX.test(dat.key)
+      ))
     } catch (e) {
       logger.error(`Invalid ${PATHS.LIBRARY_JSON} file`, {error: e})
       logger.error(`A new ${PATHS.LIBRARY_JSON} will be created and the previous file will be saved as ${PATHS.LIBRARY_JSON}.backup`)

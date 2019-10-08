@@ -7,7 +7,7 @@
   "properties": {
     "type": {
       "type": "string",
-      "const": "type-pkg",
+      "const": "type-pkg"
     },
     "driveTypes": {
       "type": "array",

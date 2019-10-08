@@ -40,13 +40,13 @@ h4 {
   color: #889;
   border-bottom: 1px solid #dde;
   padding-bottom: 5px;
-  margin-bottom: 0;
+  margin: 5px 0 0;
 }
 
 .listing.grid {
   display: grid;
-  padding: 5px 15px;
-  grid-gap: 15px 15px;
+  padding: 15px;
+  grid-gap: 15px;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 }
 
@@ -101,6 +101,10 @@ h4 {
   font-size: 10px;
   height: 20px;
   color: #555;
+}
+
+.listing.list {
+  margin-bottom: 15px;
 }
 
 .listing.list .item {

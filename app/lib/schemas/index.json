@@ -6,13 +6,13 @@
   "type": "object",
   "properties": {
     "title": {
-      "type": "string",
+      "type": "string"
     },
     "description": {
-      "type": "string",
+      "type": "string"
     },
     "type": {
-      "type": "string",
+      "type": "string"
     },
     "author": {
       "type": "string",

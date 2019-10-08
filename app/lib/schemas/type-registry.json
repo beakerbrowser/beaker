@@ -3,9 +3,7 @@
   "title": "Type Registry",
   "type": "object",
   "required": [
-    "type",
-    "installed",
-    "renderers"
+    "type"
   ],
   "properties": {
     "type": {
@@ -35,7 +33,7 @@
         }
       }
     },
-    "renderers": {
+    "driveHandlers": {
       "type": "object",
       "additionalProperties": { "type": "string" }
     }
