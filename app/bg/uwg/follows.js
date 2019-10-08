@@ -2,7 +2,6 @@ import assert from 'assert'
 import _difference from 'lodash.difference'
 import Events from 'events'
 import { URL } from 'url'
-import Ajv from 'ajv'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'uwg', dataset: 'follows'})
 import lock from '../../lib/lock'
@@ -12,10 +11,7 @@ import * as uwg from './index'
 import * as datArchives from '../dat/archives'
 import * as archivesDb from '../dbs/archives'
 import { doCrawl, doCheckpoint, emitProgressEvent, ensureDirectory } from './util'
-import followsSchema from './json-schemas/follows'
-import { PATHS } from '../../lib/const'
-
-import { join as joinPath } from 'path'
+import * as schemas from '../../lib/schemas'
 import _differenceBy from 'lodash.differenceby'
 
 // constants
@@ -43,8 +39,7 @@ const JSON_PATH = '/.data/follows.json'
 // =
 
 const events = new Events()
-const ajv = (new Ajv())
-const validateFollows = ajv.compile(followsSchema)
+const validateFollows = schemas.getValidator('unwalled.garden/follows.json')
 
 // exported api
 // =

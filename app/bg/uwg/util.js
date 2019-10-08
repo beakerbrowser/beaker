@@ -182,7 +182,7 @@ export function normalizeTopicUrl (url) {
     return (urlp.protocol + '//' + urlp.hostname + urlp.pathname + urlp.search + urlp.hash).replace(/([/]$)/g, '')
   } catch (e) {}
   return null
-};
+}
 
 /**
  * @param {string} url

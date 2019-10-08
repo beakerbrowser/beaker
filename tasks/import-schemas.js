@@ -25,7 +25,7 @@ console.log('')
 for (let name of SCHEMAS) {
   console.log(name)
   var content = fs.readFileSync(path.join(tmpdir, name + '.json'))
-  fs.writeFileSync(path.join(__dirname, '../app/bg/uwg/json-schemas/', name + '.js'), `export default ${content}`)
+  fs.writeFileSync(path.join(__dirname, '../app/lib/schemas/unwalled.garden/', name + '.json'), content)
 }
 
 console.log('')

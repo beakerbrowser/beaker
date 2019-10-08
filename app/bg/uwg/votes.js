@@ -1,5 +1,4 @@
 import Events from 'events'
-import Ajv from 'ajv'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'uwg', dataset: 'votes'})
 import * as db from '../dbs/profile-data-db'
@@ -8,7 +7,7 @@ import * as datArchives from '../dat/archives'
 import * as archivesDb from '../dbs/archives'
 import knex from '../lib/knex'
 import { doCrawl, doCheckpoint, emitProgressEvent, getMatchingChangesInOrder, ensureDirectory, normalizeTopicUrl, generateTimeFilename } from './util'
-import voteSchema from './json-schemas/vote'
+import * as schemas from '../../lib/schemas'
 
 // constants
 // =
@@ -46,8 +45,7 @@ const JSON_PATH_REGEX = /^\/\.data\/votes\/([^/]+)\.json$/i
 // =
 
 const events = new Events()
-const ajv = (new Ajv())
-const validateVote = ajv.compile(voteSchema)
+const validateVote = schemas.getValidator('unwalled.garden/vote.json')
 
 // exported api
 // =

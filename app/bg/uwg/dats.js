@@ -1,7 +1,6 @@
 import _difference from 'lodash.difference'
 import Events from 'events'
 import { URL } from 'url'
-import Ajv from 'ajv'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'uwg', dataset: 'dats'})
 import lock from '../../lib/lock'
@@ -11,7 +10,7 @@ import * as uwg from './index'
 import * as datArchives from '../dat/archives'
 import * as archivesDb from '../dbs/archives'
 import { doCrawl, doCheckpoint, emitProgressEvent, ensureDirectory } from './util'
-import datsSchema from './json-schemas/dats'
+import * as schemas from '../../lib/schemas'
 
 // constants
 // =
@@ -39,8 +38,7 @@ const JSON_PATH = '/.data/dats.json'
 // =
 
 const events = new Events()
-const ajv = (new Ajv())
-const validateDats = ajv.compile(datsSchema)
+const validateDats = schemas.getValidator('unwalled.garden/dats.json')
 
 // exported api
 // =

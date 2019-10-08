@@ -1,7 +1,6 @@
 import assert from 'assert'
 import { URL } from 'url'
 import Events from 'events'
-import Ajv from 'ajv'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'uwg', dataset: 'comments'})
 import * as db from '../dbs/profile-data-db'
@@ -11,7 +10,7 @@ import * as archivesDb from '../dbs/archives'
 import lock from '../../lib/lock'
 import knex from '../lib/knex'
 import { doCrawl, doCheckpoint, emitProgressEvent, getMatchingChangesInOrder, generateTimeFilename, ensureDirectory, normalizeTopicUrl } from './util'
-import commentSchema from './json-schemas/comment'
+import * as schemas from '../../lib/schemas'
 
 // constants
 // =
@@ -55,8 +54,7 @@ const JSON_PATH_REGEX = /^\/\.data\/comments\/([^/]+)\.json$/i
 // =
 
 const events = new Events()
-const ajv = (new Ajv())
-const validateComment = ajv.compile(commentSchema)
+const validateComment = schemas.getValidator('unwalled.garden/comment.json')
 
 // exported api
 // =

@@ -1,7 +1,6 @@
 import assert from 'assert'
 import { URL } from 'url'
 import Events from 'events'
-import Ajv from 'ajv'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'uwg', dataset: 'bookmarks'})
 import * as db from '../dbs/profile-data-db'
@@ -11,7 +10,7 @@ import knex from '../lib/knex'
 import * as uwg from './index'
 import * as filesystem from '../filesystem/index'
 import { doCrawl, doCheckpoint, emitProgressEvent, getMatchingChangesInOrder, slugifyUrl, normalizeTopicUrl, ensureDirectory } from './util'
-import bookmarkSchema from './json-schemas/bookmark'
+import * as schemas from '../../lib/schemas'
 
 // constants
 // =
@@ -45,8 +44,7 @@ const JSON_PATH_REGEX = /^\/\.data\/bookmarks\/([^/]+)\.json$/i
 // =
 
 const events = new Events()
-const ajv = (new Ajv())
-const validateBookmark = ajv.compile(bookmarkSchema)
+const validateBookmark = schemas.getValidator('unwalled.garden/bookmark.json')
 
 // exported api
 // =

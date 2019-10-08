@@ -1,5 +1,4 @@
 import Events from 'events'
-import Ajv from 'ajv'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'uwg', dataset: 'reactions'})
 import * as db from '../dbs/profile-data-db'
@@ -8,7 +7,7 @@ import * as datArchives from '../dat/archives'
 import lock from '../../lib/lock'
 import knex from '../lib/knex'
 import { doCrawl, doCheckpoint, emitProgressEvent, getMatchingChangesInOrder, ensureDirectory, normalizeTopicUrl, slugifyUrl } from './util'
-import reactionSchema from './json-schemas/reaction'
+import * as schemas from '../../lib/schemas'
 
 // constants
 // =
@@ -40,8 +39,7 @@ const JSON_PATH_REGEX = /^\/\.data\/reactions\/([^/]+)\.json$/i
 // =
 
 const events = new Events()
-const ajv = (new Ajv())
-const validateReaction = ajv.compile(reactionSchema)
+const validateReaction = schemas.getValidator('unwalled.garden/reaction.json')
 
 // exported api
 // =

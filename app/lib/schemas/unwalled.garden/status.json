@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://unwalled.garden/status.json",
+  "type": "object",
+  "title": "Status",
+  "description": "A broadcasted piece of content.",
+  "required": ["type", "body", "createdAt"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "unwalled.garden/status"
+    },
+    "body": {
+      "type": "string",
+      "maxLength": 1000000
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

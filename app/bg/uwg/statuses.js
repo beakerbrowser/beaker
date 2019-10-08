@@ -1,7 +1,6 @@
 import assert from 'assert'
 import { URL } from 'url'
 import Events from 'events'
-import Ajv from 'ajv'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'uwg', dataset: 'statuses'})
 import * as db from '../dbs/profile-data-db'
@@ -11,7 +10,7 @@ import * as archivesDb from '../dbs/archives'
 import lock from '../../lib/lock'
 import knex from '../lib/knex'
 import { doCrawl, doCheckpoint, emitProgressEvent, getMatchingChangesInOrder, generateTimeFilename, ensureDirectory } from './util'
-import statusSchema from './json-schemas/status'
+import * as schemas from '../../lib/schemas'
 
 // constants
 // =
@@ -41,8 +40,7 @@ const JSON_PATH_REGEX = /^\/\.data\/statuses\/([^/]+)\.json$/i
 // =
 
 const events = new Events()
-const ajv = (new Ajv())
-const validateStatus = ajv.compile(statusSchema)
+const validateStatus = schemas.getValidator('unwalled.garden/status.json')
 
 // exported api
 // =
