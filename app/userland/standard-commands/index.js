@@ -1,3 +1,5 @@
+/* globals terminal */
+
 // current working directory methods
 // =
 
