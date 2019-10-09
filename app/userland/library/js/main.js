@@ -4,14 +4,14 @@ import _debounce from 'lodash.debounce'
 import './com/nav.js'
 import './com/side-filters.js'
 import './com/filters.js'
-import './views/launcher.js'
 import './views/bookmarks.js'
-import './views/statuses.js'
 import './views/drives.js'
-import './views/trash.js'
-import './views/commands.js'
+import './views/launcher.js'
 import './views/people.js'
 import './views/search.js'
+import './views/settings.js'
+import './views/statuses.js'
+import './views/trash.js'
 import mainCSS from '../css/main.css.js'
 
 export class LibraryApp extends LitElement {
@@ -81,10 +81,6 @@ export class LibraryApp extends LitElement {
 
   renderView () {
     switch (this.currentView) {
-      case 'launcher':
-        return html`
-          <launcher-view the-current-view></launcher-view>
-        `
       case 'bookmarks':
         return html`
           <bookmarks-view
@@ -92,6 +88,24 @@ export class LibraryApp extends LitElement {
             .user=${this.user}
             currentView=${this.currentView}
           ></bookmarks-view>
+        `
+      case 'commands':
+        return html`
+          <commands-view
+            the-current-view
+            .user=${this.user}
+          ></commands-view>
+        `
+      case 'drives':
+        return html`
+          <drives-view
+            the-current-view
+            .user=${this.user}
+          ></drives-view>
+        `
+      case 'launcher':
+        return html`
+          <launcher-view the-current-view></launcher-view>
         `
       case 'news-feed':
         return html`
@@ -108,26 +122,12 @@ export class LibraryApp extends LitElement {
             currentView=${this.currentView}
           ></people-view>
         `
-      case 'commands':
+      case 'settings':
         return html`
-          <commands-view
+          <settings-view
             the-current-view
             .user=${this.user}
-          ></commands-view>
-        `
-      case 'drives':
-        return html`
-          <drives-view
-            the-current-view
-            .user=${this.user}
-          ></drives-view>
-        `
-      case 'trash':
-        return html`
-          <trash-view
-            the-current-view
-            .user=${this.user}
-          ></trash-view>
+          ></settings-view>
         `
       case 'search':
         return html`
@@ -137,6 +137,13 @@ export class LibraryApp extends LitElement {
             currentView=${this.currentView}
             currentQuery=${this.currentQuery}
           ></search-view>
+        `
+      case 'trash':
+        return html`
+          <trash-view
+            the-current-view
+            .user=${this.user}
+          ></trash-view>
         `
       default:
         return html`<div class="empty"><div><span class="fas fa-toolbox"></span></div>Under Construction</div>`

@@ -57,23 +57,18 @@ class LibraryNav extends LitElement {
       <h5>Library</h5>
       ${item('bookmarks', 'far fa-star', 'Bookmarks')}
       ${item('drives', 'far fa-hdd', 'Drives')}
+      ${item('people', 'fas fa-rss', 'Following')}
       <a class="item" href=${this.fs ? this.fs.url : ''}>
         <span class="fa-fw far fa-folder"></span>
         <span class="label">Filesystem</span>
       </a>
       <br>
-      <h5>Network</h5>
-      ${item('people', libTools.getFAIcon('people'), 'People')}
+      <h5>System</h5>
       <a class="item" href=${this.user ? this.user.url : ''}>
         <img class="avatar" src="asset:thumb:${this.user ? this.user.url : ''}?cache_buster=${Date.now()}">
         <span class="label">${this.user ? this.user.title : ''}</span>
       </a>
-      <br>
-      <h5>System</h5>
-      ${item('applications', 'far fa-window-restore', 'Applications', true)}
-      ${item('commands', 'fas fa-terminal', 'Commands')}
-      ${item('cloud-peers', 'fas fa-cloud', 'Cloud Peers', true)}
-      ${item('settings', 'fas fa-cog', 'Settings', true)}
+      ${item('settings', 'fas fa-cog', 'Settings')}
       ${item('trash', 'fas fa-trash', 'Trash')}
     `
   }

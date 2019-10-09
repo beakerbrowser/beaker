@@ -32,10 +32,6 @@ class PeopleView extends LitElement {
     return peopleViewCSS
   }
 
-  get userUrl () {
-    return this.user ? this.user.url : ''
-  }
-
   constructor () {
     super()
     this.currentSubview = oneof(QP.getParam('subview'), 'following', ['following', 'foafs'])

@@ -1,10 +1,10 @@
-import {css} from '../../../app-stdlib/vendor/lit-element/lit-element.js'
-import colorsCSS from '../../../app-stdlib/css/colors.css.js'
-import buttonsCSS from '../../../app-stdlib/css/buttons2.css.js'
-import tooltipCSS from '../../../app-stdlib/css/tooltip.css.js'
-import emptyCSS from '../empty.css.js'
-import labelCSS from '../label.css.js'
-import viewHeaderCSS from '../view-header.css.js'
+import {css} from '../../../../app-stdlib/vendor/lit-element/lit-element.js'
+import colorsCSS from '../../../../app-stdlib/css/colors.css.js'
+import buttonsCSS from '../../../../app-stdlib/css/buttons2.css.js'
+import tooltipCSS from '../../../../app-stdlib/css/tooltip.css.js'
+import emptyCSS from '../../empty.css.js'
+import labelCSS from '../../label.css.js'
+import viewHeaderCSS from '../../view-header.css.js'
 
 const cssStr = css`
 ${colorsCSS}
@@ -16,14 +16,7 @@ ${viewHeaderCSS}
 
 :host {
   display: block;
-  margin: 0px 10px 50px 190px;
-}
-
-@media (min-width: 1300px) {
-  .empty {
-    position: relative;
-    left: -90px;
-  }
+  max-width: 600px;
 }
 
 a {
@@ -37,10 +30,8 @@ a:hover {
 
 .listing {
   display: grid;
-  padding: 5px 15px;
   grid-gap: 10px 10px;
   grid-template-columns: 1fr;
-  max-width: 800px;
 }
 
 .item {

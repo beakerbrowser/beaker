@@ -26,12 +26,10 @@ const VIZ_OPTIONS = {
   list: 'List'
 }
 
-// TODO replace with userland types registry
-const TEMP_TYPE_NAMES = {
-  default: 'Shared Files',
+const CORE_TYPES_MAP = {
+  default: 'Shared Folder',
   website: 'Website',
-  application: 'Application',
-  'webterm.sh/cmd-pkg': 'Command Package'
+  application: 'Application'
 }
 
 export class DrivesView extends LitElement {
@@ -63,10 +61,20 @@ export class DrivesView extends LitElement {
     this.currentSubview = oneof(QP.getParam('subview'), 'library', ['library', 'mine', 'network'])
     this.currentSort = oneof(QP.getParam('sort'), 'mtime', ['mtime', 'title'])
     this.currentViz = oneof(QP.getParam('viz'), getSavedConfig('viz', 'grid'), ['grid', 'list'])
+    this.typesMap = undefined
     this.items = []
   }
 
   async load () {
+    if (!this.typesMap) {
+      this.typesMap = Object.assign(
+        {},
+        CORE_TYPES_MAP,
+        Object.fromEntries((await beaker.types.listDriveTypes()).map(t => ([t.id, t.title])))
+      )
+      console.log(this.typesMap)
+    }
+
     let type = undefined
     let [isSaved, isOwner, visibility] = [undefined, undefined, undefined]
     if (this.currentSubview !== 'network') isSaved = true
@@ -75,6 +83,7 @@ export class DrivesView extends LitElement {
     if (this.currentSubview === 'network') visibility = 'public'
     var items = await uwg.library.list({type, isSaved, isOwner, visibility, sortBy: this.currentSort})
     this.items = items
+
     console.log('loaded', this.items)
   }
 
@@ -193,7 +202,7 @@ export class DrivesView extends LitElement {
 
   renderGroup (type, items) {
     return html`
-      <h4>${TEMP_TYPE_NAMES[type] || type}</h4>
+      <h4>${this.typesMap[type] || type}</h4>
       <div class="listing ${this.currentViz}">
         ${repeat(items, item => this.renderItem(item))}
       </div>
