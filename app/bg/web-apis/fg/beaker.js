@@ -33,21 +33,21 @@ export const setup = function (rpc) {
     const typesRPC = rpc.importAPI('types', typesManifest, opts)
 
     // attach APIs
-    beaker.browser = beakerBrowserRPC
+    beaker.browser = Object.assign({}, beakerBrowserRPC)
     beaker.browser.createEventsStream = () => fromEventStream(beakerBrowserRPC.createEventsStream())
-    beaker.crawler = crawlerRPC
+    beaker.crawler = Object.assign({}, crawlerRPC)
     beaker.crawler.createEventsStream = () => fromEventStream(crawlerRPC.createEventsStream())
-    beaker.downloads = downloadsRPC
+    beaker.downloads = Object.assign({}, downloadsRPC)
     beaker.downloads.createEventsStream = () => fromEventStream(downloadsRPC.createEventsStream())
-    beaker.history = historyRPC
-    beaker.logger = loggerRPC
+    beaker.history = Object.assign({}, historyRPC)
+    beaker.logger = Object.assign({}, loggerRPC)
     beaker.logger.stream = (opts) => fromEventStream(loggerRPC.stream(opts))
-    beaker.programs = programsRPC
-    beaker.sitedata = sitedataRPC
-    beaker.users = usersRPC
-    beaker.search = searchRPC
-    beaker.types = typesRPC
-    beaker.watchlist = watchlistRPC
+    beaker.programs = Object.assign({}, programsRPC)
+    beaker.sitedata = Object.assign({}, sitedataRPC)
+    beaker.users = Object.assign({}, usersRPC)
+    beaker.search = Object.assign({}, searchRPC)
+    beaker.types = Object.assign({}, typesRPC)
+    beaker.watchlist = Object.assign({}, watchlistRPC)
     beaker.watchlist.createEventsStream = () => fromEventStream(watchlistRPC.createEventsStream())
 
     // beaker.archives
