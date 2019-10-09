@@ -33,7 +33,7 @@
         }
       }
     },
-    "driveHandlers": {
+    "defaultDriveHandlers": {
       "type": "object",
       "additionalProperties": { "type": "string" }
     }

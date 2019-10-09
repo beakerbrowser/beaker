@@ -4,7 +4,7 @@ export default {
   getTypePackage: 'promise',
   installTypePackage: 'promise',
   uninstallTypePackage: 'promise',
-  listDriveHandlers: 'promise',
-  getDriveHandler: 'promise',
-  setDriveHandler: 'promise'
+  getDriveHandlers: 'promise',
+  getDefaultDriveHandler: 'promise',
+  setDefaultDriveHandler: 'promise'
 }

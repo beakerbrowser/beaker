@@ -3,7 +3,6 @@ const logger = logLib.child({category: 'filesystem', subcategory: 'program-regis
 import dat from '../dat/index'
 import * as filesystem from './index'
 import { PATHS } from '../../lib/const'
-import _cloneDeep from 'lodash.clonedeep'
 import lock from '../../lib/lock'
 
 // typedefs
@@ -16,11 +15,6 @@ import lock from '../../lib/lock'
  * @prop {string} version
  * @prop {object} manifest
  */
-
-// globals
-// =
-
-var installedPrograms = undefined
 
 // exported api
 // =
@@ -35,15 +29,21 @@ export const WEBAPI = {
 /**
  * @param {Object} [opts]
  * @param {string} [opts.type]
+ * @param {string} [opts.handlesDriveType]
  * @returns {Promise<InstalledProgram[]>}
  */
 export async function listPrograms (opts = {}) {
-  await ensureLoaded()
-  var programs = _cloneDeep(installedPrograms)
+  var {installedPrograms} = await load()
   if (opts.type) {
-    programs = programs.filter(p => p.manifest.type === opts.type)
+    installedPrograms = installedPrograms.filter(p => p.manifest.type === opts.type)
   }
-  return programs
+  if (opts.handlesDriveType) {
+    installedPrograms = installedPrograms.filter(p => (
+      Array.isArray(p.manifest.driveTypes)
+      && p.manifest.driveTypes.find(t => t.id === opts.handlesDriveType)
+    ))
+  }
+  return installedPrograms
 }
 
 /**
@@ -51,9 +51,9 @@ export async function listPrograms (opts = {}) {
  * @returns {Promise<InstalledProgram>}
  */
 export async function getProgram (url) {
-  await ensureLoaded()
+  var {installedPrograms} = await load()
   url = normalizeUrl(url)
-  return _cloneDeep(installedPrograms.find(p => normalizeUrl(p.url) === url))
+  return installedPrograms.find(p => normalizeUrl(p.url) === url)
 }
 
 /**
@@ -62,7 +62,6 @@ export async function getProgram (url) {
  * @returns {Promise<void>}
  */
 export async function installProgram (url, version) {
-  await ensureLoaded()
   url = normalizeUrl(url)
   var key = dat.archives.fromURLToKey(url)
   logger.info('Installing program', {url, key, version})
@@ -73,16 +72,22 @@ export async function installProgram (url, version) {
   var manifest = await checkout.pda.readFile('dat.json', 'utf8')
   manifest = JSON.parse(manifest)
 
-  if (await getProgram(url)) {
-    installedPrograms = installedPrograms.filter(p => normalizeUrl(p.url) !== url)
+  var release = await lock('update:program-registry')
+  try {
+    var {installedPrograms} = await load()
+    if (await getProgram(url)) {
+      installedPrograms = installedPrograms.filter(p => normalizeUrl(p.url) !== url)
+    }
+    installedPrograms.push({
+      url,
+      key,
+      version,
+      manifest
+    })
+    await persist({installedPrograms})
+  } finally {
+    release()
   }
-  installedPrograms.push({
-    url,
-    key,
-    version,
-    manifest
-  })
-  await persist()
 
   logger.verbose('Successfully installed program', {url, key, version})
 }
@@ -92,24 +97,29 @@ export async function installProgram (url, version) {
  * @returns {Promise<void>}
  */
 export async function uninstallProgram (url) {
-  await ensureLoaded()
-  url = normalizeUrl(url)
-  logger.info('Uninstalling program', {url})
+  var release = await lock('update:program-registry')
+  try {
+    url = normalizeUrl(url)
+    logger.info('Uninstalling program', {url})
 
-  installedPrograms = installedPrograms.filter(p => normalizeUrl(p.url) !== url)
-  await persist()
+    var {installedPrograms} = await load()
+    installedPrograms = installedPrograms.filter(p => normalizeUrl(p.url) !== url)
+    await persist({installedPrograms})
 
-  logger.verbose('Successfully uninstalled program', {url})
+    logger.verbose('Successfully uninstalled program', {url})
+  } finally {
+    release()
+  }
 }
 
 // internal methods
 // =
 
 /**
- * @returns {Promise<void>}
+ * @returns {Promise<Object>}
  */
-async function ensureLoaded () {
-  if (installedPrograms) return
+async function load () {
+  var installedPrograms
   var release = await lock('access:program-registry')
   try {
     var programRegistryStr
@@ -137,12 +147,13 @@ async function ensureLoaded () {
   } finally {
     release()
   }
+  return {installedPrograms}
 }
 
 /**
  * @returns {Promise<void>}
  */
-async function persist () {
+async function persist ({installedPrograms}) {
   var release = await lock('access:program-registry')
   try {
     await filesystem.get().pda.writeFile(PATHS.PROGRAM_REGISTRY_JSON, JSON.stringify({
