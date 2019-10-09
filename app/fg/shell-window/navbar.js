@@ -84,6 +84,8 @@ class ShellWindowNavbar extends LitElement {
         ?canFollow=${_get(this, 'activeTab.canFollow', false)}
         ?isFollowing=${_get(this, 'activeTab.isFollowing', false)}
         numFollowers="${_get(this, 'activeTab.numFollowers', 0)}"
+        ?canInstall=${_get(this, 'activeTab.canInstall', false)}
+        ?isInstalled=${_get(this, 'activeTab.isInstalled', false)}
         zoom="${_get(this, 'activeTab.zoom', '')}"
         .loadError=${_get(this, 'activeTab.loadError', null)}
         donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"

@@ -32,6 +32,7 @@ import * as settingsDb from '../dbs/settings'
 import * as historyDb from '../dbs/history'
 import * as uwg from '../uwg/index'
 import * as filesystem from '../filesystem/index'
+import * as programRegistry from '../filesystem/program-registry'
 import * as users from '../filesystem/users'
 import dat from '../dat/index'
 
@@ -82,6 +83,8 @@ const STATE_VARS = [
   'canFollow',
   'isFollowing',
   'numFollowers',
+  'canInstall',
+  'isInstalled',
   'canSave',
   'isSaved',
   'isMyProfile',
@@ -164,6 +167,7 @@ class Tab {
     this.datInfo = null // metadata about the site if viewing a dat
     this.isSystemDat = undefined // is this the root drive or a user?
     this.isFollowing = undefined // is the current user following this drive?
+    this.isInstalled = undefined // is the drive an installed application?
     this.numFollowers = 0 // how many sites are following this site? (unwalled garden)
     this.numComments = 0 // how many comments are on the current page? (unwalled garden)
     this.confirmedAuthorTitle = undefined // the title of the confirmed author of the site
@@ -261,12 +265,16 @@ class Tab {
     return this.datInfo && this.datInfo.isOwner
   }
 
+  get canSave () {
+    return this.datInfo && !this.isSystemDat
+  }
+
   get canFollow () {
     return this.datInfo && this.datInfo.type === 'unwalled.garden/person' && !this.isMyProfile
   }
 
-  get canSave () {
-    return this.datInfo && !this.isSystemDat
+  get canInstall () {
+    return this.datInfo && (this.datInfo.type === 'application' || this.datInfo.type === 'webterm.sh/cmd-pkg')
   }
 
   get isSaved () {
@@ -710,6 +718,7 @@ class Tab {
     this.peers = 0
     this.isSystemDat = false
     this.isFollowing = false
+    this.isInstalled = false
     this.numFollowers = 0
     this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
@@ -742,6 +751,11 @@ class Tab {
       let siteFollowers = await uwg.follows.list({topic: this.datInfo.url, author: followAuthors})
       this.isFollowing = siteFollowers.find(f => f.author.url === userSession.url)
       this.numFollowers = siteFollowers.length
+
+      // fetch install state
+      if (this.canInstall) {
+        this.isInstalled = await programRegistry.isInstalled(this.url)
+      }
 
       // determine the confirmed author
       if (this.datInfo.author) {

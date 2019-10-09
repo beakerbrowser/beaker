@@ -58,6 +58,14 @@ export async function getProgram (url) {
 
 /**
  * @param {string} url 
+ * @returns {Promise<Boolean>}
+ */
+export async function isInstalled (url) {
+  return !!(await getProgram(url))
+}
+
+/**
+ * @param {string} url 
  * @param {number|string} version 
  * @returns {Promise<void>}
  */

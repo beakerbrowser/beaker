@@ -201,7 +201,7 @@ export async function getDriveHandlers (typeId) {
 
 /**
  * @param {string} typeId 
- * @returns {Promise<DriveHandler>}
+ * @returns {Promise<string>}
  */
 export async function getDefaultDriveHandler (typeId) {
   var {defaultDriveHandlers} = await load()

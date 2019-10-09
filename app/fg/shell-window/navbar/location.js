@@ -24,6 +24,8 @@ class NavbarLocation extends LitElement {
       canFollow: {type: Boolean},
       isFollowing: {type: Boolean},
       numFollowers: {type: Number},
+      canInstall: {type: Boolean},
+      isInstalled: {type: Boolean},
       zoom: {type: Number},
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
@@ -49,6 +51,8 @@ class NavbarLocation extends LitElement {
     this.canFollow = false
     this.isFollowing = false
     this.numFollowers = 0
+    this.canInstall = false
+    this.isInstalled = false
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
@@ -103,6 +107,7 @@ class NavbarLocation extends LitElement {
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
       ${this.renderFollowBtn()}
+      ${this.renderInstallBtn()}
       ${this.renderSaveBtn()}
       ${this.renderBookmarkBtn()}
     `
@@ -248,9 +253,19 @@ class NavbarLocation extends LitElement {
   renderFollowBtn () {
     if (!this.canFollow) return ''
     return html`
-      <button class="text ${this.isFollowing ? 'highlight' : ''}" @click=${this.onClickFollow} title="Follow this site">
+      <button class="text ${this.isFollowing ? 'highlight' : ''}" @click=${this.onClickFollow} title="Follow this drive">
         <span class="fas fa-fw fa-rss"></span>
         <span class="text-label">${this.isFollowing ? 'Following' : 'Follow'}</span>
+      </button>
+    `
+  }
+
+  renderInstallBtn () {
+    if (!this.canInstall) return ''
+    return html`
+      <button class="text ${this.isInstalled ? 'highlight' : ''}" @click=${this.onClickInstall} title="Install this drive">
+        <span class="fas fa-fw fa-download"></span>
+        <span class="text-label">${this.isInstalled ? 'Installed' : 'Install'}</span>
       </button>
     `
   }
@@ -258,7 +273,7 @@ class NavbarLocation extends LitElement {
   renderSaveBtn () {
     if (!this.canSave) return ''
     return html`
-      <button class="text ${this.isSaved ? 'highlight' : ''}" @click=${this.onClickSave} title="Save this site">
+      <button class="text ${this.isSaved ? 'highlight' : ''}" @click=${this.onClickSave} title="Save this drive">
         <span class="fas fa-fw fa-save"></span>
         <span class="text-label">${this.isSaved ? 'Saved' : 'Save'}</span>
       </button>
@@ -336,6 +351,15 @@ class NavbarLocation extends LitElement {
       await bg.follows.remove(this.url)
     } else {
       await bg.follows.add(this.url)
+    }
+    bg.views.reload('active')
+  }
+
+  async onClickInstall (e) {
+    if (this.isInstalled) {
+      await bg.programs.uninstallProgram(this.url)
+    } else {
+      await bg.programs.installProgram(this.url)
     }
     bg.views.reload('active')
   }

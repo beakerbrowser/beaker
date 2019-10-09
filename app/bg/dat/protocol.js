@@ -7,12 +7,12 @@ import intoStream from 'into-stream'
 import { toZipStream } from '../lib/zip'
 import slugify from 'slugify'
 import markdown from '../../lib/markdown'
-import libTools from '@beaker/library-tools'
 import datDns from './dns'
 import * as datArchives from './archives'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
+import * as typeRegistry from '../filesystem/type-registry'
 
 const md = markdown({
   allowHTML: true,
@@ -151,12 +151,14 @@ export const electronHandler = async function (request, respond) {
   try { manifest = await checkoutFS.pda.readManifest() } catch (e) { manifest = null }
 
   // read type and configure
-  var category = libTools.typeToCategory(manifest ? manifest.type : '', false) || 'files'
-  const hasViewerApp = category !== 'website'
-  const canExecuteHTML = !hasViewerApp
+  const type = manifest ? manifest.type : undefined
+  const canExecuteHTML = type === 'website' || type === 'application'
 
-  // render root-page applications by type
-  if (hasViewerApp && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
+  // serve the handler application
+  if (!canExecuteHTML && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
+    let handlerUrl = await typeRegistry.getDefaultDriveHandler(type)
+    // TODO pin version
+    if (handlerUrl === 'system') handlerUrl = 'beaker://viewers/files'
     return respond({
       statusCode: 200,
       headers: {
@@ -164,8 +166,8 @@ export const electronHandler = async function (request, respond) {
         'Content-Type': 'text/html'
       },
       data: intoStream(`
-<link rel="stylesheet" href="beaker://viewers/${category}/index.css">
-<script type="module" src="beaker://viewers/${category}/index.js"></script>
+<link rel="stylesheet" href="${handlerUrl}/drive-handler.css">
+<script type="module" src="${handlerUrl}/drive-handler.js"></script>
 `)
     })
   }
