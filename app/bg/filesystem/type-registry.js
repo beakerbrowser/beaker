@@ -225,6 +225,22 @@ export async function setDefaultDriveHandler (typeId, url) {
   }
 }
 
+/**
+ * @param {string} typeId 
+ * @returns {Promise<void>}
+ */
+export async function unsetDefaultDriveHandler (typeId) {
+  var release = await lock('update:type-registry')
+  try {
+    var {installedTypePackages, defaultDriveHandlers} = await load()
+    logger.info('Unsetting drive handler', {type: typeId})
+    delete defaultDriveHandlers[typeId]
+    await persist({installedTypePackages, defaultDriveHandlers})
+  } finally {
+    release()
+  }
+}
+
 // internal methods
 // =
 

@@ -3,6 +3,7 @@ import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'program-registry'})
 import dat from '../dat/index'
 import * as filesystem from './index'
+import * as typeRegistry from './type-registry'
 import { PATHS, BUILTIN_PROGRAMS } from '../../lib/const'
 import lock from '../../lib/lock'
 
@@ -81,6 +82,7 @@ export async function installProgram (url, version) {
   if (!version) version = (await archive.getInfo()).version
   var manifest = JSON.parse(await checkout.pda.readFile('dat.json', 'utf8'))
 
+  // add to the program registry
   var release = await lock('update:program-registry')
   try {
     var {installedPrograms} = await load()
@@ -98,6 +100,13 @@ export async function installProgram (url, version) {
     release()
   }
 
+  // set as the default handler for any types that don't have one yet
+  for (let dt of driveTypes(manifest)) {
+    if ((await typeRegistry.getDefaultDriveHandler(dt.id)) === 'system') {
+      await typeRegistry.setDefaultDriveHandler(dt.id, url)
+    }
+  }
+
   logger.verbose('Successfully installed program', {url, key, version})
 }
 
@@ -109,19 +118,29 @@ export async function uninstallProgram (url) {
   if (url.startsWith('beaker://')) {
     throw new Error('Cannot uninstall builtin applications')
   }
+  url = normalizeUrl(url)
+  logger.info('Uninstalling program', {url})
 
+  // remove from the program registry
+  var oldEntry
   var release = await lock('update:program-registry')
   try {
-    url = normalizeUrl(url)
-    logger.info('Uninstalling program', {url})
-
     var {installedPrograms} = await load()
+    oldEntry = installedPrograms.find(p => normalizeUrl(p.url) === url)
+    if (!oldEntry) return
     installedPrograms = installedPrograms.filter(p => normalizeUrl(p.url) !== url)
     await persist({installedPrograms})
 
     logger.verbose('Successfully uninstalled program', {url})
   } finally {
     release()
+  }
+
+  // unregister from the default type handlers
+  for (let dt of driveTypes(oldEntry.manifest)) {
+    if ((await typeRegistry.getDefaultDriveHandler(dt.id)) === url) {
+      await typeRegistry.unsetDefaultDriveHandler(dt.id)
+    }
   }
 }
 
@@ -187,6 +206,17 @@ async function persist ({installedPrograms}) {
     throw e
   } finally {
     release()
+  }
+}
+
+function* driveTypes (manifest) {
+  if (manifest && Array.isArray(manifest.driveTypes)) {
+    for (let dt of manifest.driveTypes) {
+      if (!dt || typeof dt !== 'object' || typeof dt.id !== 'string') {
+        continue
+      }
+      yield dt
+    }
   }
 }
 
