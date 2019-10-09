@@ -161,8 +161,6 @@ export const electronHandler = async function (request, respond) {
     if (handlerUrl === 'system') {
       if (type === 'webterm.sh/cmd-pkg') {
         handlerUrl = 'beaker://cmd-pkg'
-      } else if (type === 'unwalled.garden/person') {
-        handlerUrl = 'beaker://social'
       } else {
         handlerUrl = 'beaker://explorer'
       }
