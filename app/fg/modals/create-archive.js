@@ -6,62 +6,25 @@ import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
+import _groupBy from 'lodash.groupby'
 
-// TODO
-// read types from the fs registry
-const TYPES = [
-  {
-    title: 'System',
-    types: [
-      {
-        id: undefined,
-        title: 'Shared Files',
-      },
-      {
-        id: 'website',
-        title: 'Website',
-      },
-      {
-        id: 'application',
-        title: 'Application'
-      }
-    ]
-  },
-  {
-    title: 'Unwalled Garden',
-    types: [
-      {
-        id: 'unwalled.garden/photo-album',
-        title: 'Photo Album'
-      },
-      {
-        id: 'unwalled.garden/music-album',
-        title: 'Music Album'
-      },
-      {
-        id: 'unwalled.garden/video-album',
-        title: 'Video Album'
-      },
-      {
-        id: 'unwalled.garden/podcast',
-        title: 'Podcast'
-      },
-      {
-        id: 'unwalled.garden/ebook',
-        title: 'E-Book'
-      }
-    ]
-  },
-  {
-    title: 'Web Term',
-    types: [
-      {
-        id: "webterm.sh/cmd-pkg",
-        title: "Command Package"
-      }
-    ]
-  }
-]
+const CORE_TYPES = {
+  title: 'Basic',
+  types: [
+    {
+      id: undefined,
+      title: 'Shared Folder',
+    },
+    {
+      id: 'website',
+      title: 'Website',
+    },
+    {
+      id: 'application',
+      title: 'Application'
+    }
+  ]
+}
 
 const VISIBILITY_OPTIONS = [
   {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access the drive'},
@@ -265,9 +228,16 @@ class CreateArchiveModal extends LitElement {
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
     this.visibility = params.visibility || 'public'
-    this.typeOptions = TYPES/* TODO 
-      await bg.archives.list({type: 'unwalled.garden/template', isSaved: true})
-    )*/
+
+    var driveTypes = _groupBy(await bg.types.listDriveTypes(), t => t.origin.url)
+    var driveTypeGroups = Object.values(driveTypes).map(types => {
+      return {
+        title: types[0].origin.title,
+        types
+      }
+    })
+    this.typeOptions = [CORE_TYPES].concat(driveTypeGroups)
+
     await this.requestUpdate()
   }
 
