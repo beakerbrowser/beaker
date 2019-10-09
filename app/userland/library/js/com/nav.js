@@ -52,7 +52,6 @@ class LibraryNav extends LitElement {
         <i class="fa fa-search"></i>
       </div>
       ${item('launcher', 'fas fa-th', 'Launcher')}
-      ${item('news-feed', 'far fa-newspaper', 'News Feed')}
       <br>
       <h5>Library</h5>
       ${item('bookmarks', 'far fa-star', 'Bookmarks')}

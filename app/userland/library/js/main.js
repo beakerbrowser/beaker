@@ -10,7 +10,6 @@ import './views/launcher.js'
 import './views/people.js'
 import './views/search.js'
 import './views/settings.js'
-import './views/statuses.js'
 import './views/trash.js'
 import mainCSS from '../css/main.css.js'
 
@@ -106,13 +105,6 @@ export class LibraryApp extends LitElement {
       case 'launcher':
         return html`
           <launcher-view the-current-view></launcher-view>
-        `
-      case 'news-feed':
-        return html`
-          <statuses-view
-            the-current-view
-            .user=${this.user}
-          ></statuses-view>
         `
       case 'people':
         return html`

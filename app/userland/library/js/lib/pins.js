@@ -26,10 +26,10 @@ export async function save (pins) {
 
 function defaults () {
   return [
-    {title: 'News Feed', href: 'beaker://library?view=news-feed'},
+    {title: 'Beaker Social', href: 'beaker://social'},
     {title: 'Bookmarks', href: 'beaker://library?view=bookmarks'},
-    {title: 'People', href: 'beaker://library?view=people'},
-    {title: 'Dat Library', href: 'beaker://library?view=dats'},
+    {title: 'Drives', href: 'beaker://library?view=drives'},
+    {title: 'Following', href: 'beaker://library?view=people'},
     {title: 'Documentation', href: 'https://beakerbrowser.com/docs'},
     {title: 'Report an issue', href: 'https://github.com/beakerbrowser/beaker/issues'}
   ]
