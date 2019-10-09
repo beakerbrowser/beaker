@@ -29,5 +29,6 @@
     }
   ],
   "defaultDriveHandlers": {
+    "unwalled.garden/person": "beaker://social"
   }
 }
