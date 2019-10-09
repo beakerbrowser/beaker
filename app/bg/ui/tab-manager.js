@@ -823,7 +823,7 @@ class Tab {
     if (this.isSidebarActive) {
       this.updateSidebar()
     }
-    if (httpResponseCode === 404 && this.isOwner && this.datInfo.type === 'unwalled.garden/website') {
+    if (httpResponseCode === 404 && this.isOwner && (this.datInfo.type === 'website' || this.datInfo.type === 'application')) {
       // prompt to create a page on 404 for owned sites
       prompts.create(this.browserView.webContents, 'create-page', {url: this.url})
     }
