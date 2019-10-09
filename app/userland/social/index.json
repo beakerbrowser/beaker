@@ -1,0 +1,11 @@
+{
+  "type": "application",
+  "title": "Beaker Social",
+  "description": "Beaker's builtin social application",
+  "driveTypes": [
+    {
+      "id": "unwalled.garden/person",
+      "title": "Person"
+    }
+  ]
+}

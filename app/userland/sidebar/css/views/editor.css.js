@@ -14,6 +14,10 @@ ${tooltipCSS}
   color: #eee;
 }
 
+a {
+  color: #b4b4ff;
+}
+
 .empty {
   padding: 10px;
 }

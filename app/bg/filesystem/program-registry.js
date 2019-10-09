@@ -1,8 +1,9 @@
+import { readFileSync } from 'fs'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'program-registry'})
 import dat from '../dat/index'
 import * as filesystem from './index'
-import { PATHS } from '../../lib/const'
+import { PATHS, BUILTIN_PROGRAMS } from '../../lib/const'
 import lock from '../../lib/lock'
 
 // typedefs
@@ -22,6 +23,7 @@ import lock from '../../lib/lock'
 export const WEBAPI = {
   listPrograms,
   getProgram,
+  isInstalled,
   installProgram,
   uninstallProgram
 }
@@ -77,8 +79,7 @@ export async function installProgram (url, version) {
   var archive = await dat.archives.getOrLoadArchive(key)
   var checkout = version ? await dat.archives.getArchiveCheckout(archive, version) : archive
   if (!version) version = (await archive.getInfo()).version
-  var manifest = await checkout.pda.readFile('dat.json', 'utf8')
-  manifest = JSON.parse(manifest)
+  var manifest = JSON.parse(await checkout.pda.readFile('dat.json', 'utf8'))
 
   var release = await lock('update:program-registry')
   try {
@@ -105,6 +106,10 @@ export async function installProgram (url, version) {
  * @returns {Promise<void>}
  */
 export async function uninstallProgram (url) {
+  if (url.startsWith('beaker://')) {
+    throw new Error('Cannot uninstall builtin applications')
+  }
+
   var release = await lock('update:program-registry')
   try {
     url = normalizeUrl(url)
@@ -152,6 +157,11 @@ async function load () {
         await filesystem.get().pda.rename(PATHS.PROGRAM_REGISTRY_JSON, PATHS.PROGRAM_REGISTRY_JSON + '.backup')
       }
     }
+
+    // add builtins
+    for (let builtin of BUILTIN_PROGRAMS) {
+      installedPrograms.unshift({url: builtin.url, manifest: JSON.parse(readFileSync(builtin.manifestPath, 'utf8'))})
+    }
   } finally {
     release()
   }
@@ -164,6 +174,10 @@ async function load () {
 async function persist ({installedPrograms}) {
   var release = await lock('access:program-registry')
   try {
+    // filter out builtins
+    installedPrograms = installedPrograms.filter(p => !p.url.startsWith('beaker://'))
+
+    // save to disk
     await filesystem.get().pda.writeFile(PATHS.PROGRAM_REGISTRY_JSON, JSON.stringify({
       type: 'program-registry',
       installed: installedPrograms

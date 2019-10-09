@@ -158,7 +158,15 @@ export const electronHandler = async function (request, respond) {
   if (!canExecuteHTML && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
     let handlerUrl = await typeRegistry.getDefaultDriveHandler(type)
     // TODO pin version
-    if (handlerUrl === 'system') handlerUrl = 'beaker://viewers/files'
+    if (handlerUrl === 'system') {
+      if (type === 'webterm.sh/cmd-pkg') {
+        handlerUrl = 'beaker://cmd-pkg'
+      } else if (type === 'unwalled.garden/person') {
+        handlerUrl = 'beaker://social'
+      } else {
+        handlerUrl = 'beaker://explorer'
+      }
+    }
     return respond({
       statusCode: 200,
       headers: {

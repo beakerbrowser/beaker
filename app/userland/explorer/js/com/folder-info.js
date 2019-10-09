@@ -6,7 +6,6 @@ import css from '../../css/com/file-and-folder-info.css.js'
 export class FolderInfo extends LitElement {
   static get properties () {
     return {
-      title: {type: String},
       driveInfo: {type: Object},
       pathInfo: {type: Object},
       mountInfo: {type: Object}
@@ -19,7 +18,6 @@ export class FolderInfo extends LitElement {
 
   constructor () {
     super()
-    this.title = undefined
     this.driveInfo = undefined
     this.pathInfo = undefined
     this.mountInfo = undefined
@@ -40,6 +38,13 @@ export class FolderInfo extends LitElement {
     return undefined
   }
 
+  get title () {
+    var info = this.currentDriveInfo
+    if (info.title) return info.title
+    if (info.ident.isRoot) return 'My Hyperdrive'
+    return 'Untitled'
+  }
+
   getRealUrl (pathname) {
     var slicePoint = this.mountInfo ? (this.mountInfo.mountPath.length + 1) : 0
     return joinPath(this.currentDriveInfo.url, pathname.slice(slicePoint))
@@ -54,6 +59,7 @@ export class FolderInfo extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <section>
         <h3>${this.title}</h3>
+        <p>${this.currentDriveInfo.description || html`<em>No description</em>`}</p>
         ${this.renderSize()}
       </section>
       <section>

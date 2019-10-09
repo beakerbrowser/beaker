@@ -11,14 +11,14 @@ export class CommandViewer extends LitElement {
   constructor () {
     super()
     this.info = undefined
-    this.libraryEntry = undefined
+    this.isInstalled = undefined
     this.load()
   }
 
   async load () {
     var archive = new DatArchive(location)
     this.info = await archive.getInfo()
-    this.libraryEntry = (await uwg.library.list({key: this.info.key, isSaved: true}))[0]
+    // this.isInstalled = await beaker.programs.isInstalled(this.info.url) TODO
     await this.requestUpdate()
   }
 
@@ -31,7 +31,7 @@ export class CommandViewer extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="header">
         <h1>${this.info.title}</h1>
-        <p class="description">${this.info.description || html`<em>No description</em>`}</p>
+        <div class="description">${this.info.description || html`<em>No description</em>`}</div>
         <div>${this.renderSaveBtn()}</div>
       </div>
       ${location.pathname !== '/' ? html`
@@ -43,26 +43,30 @@ export class CommandViewer extends LitElement {
   }
 
   renderSaveBtn () {
-    const isSaved = !!this.libraryEntry
+    if (location.protocol === 'beaker:') {
+      return html`<div style="margin-top: 10px"><small><span class="fas fa-check"></span> Builtin (cannot be uninstalled)</button></small></div>`
+    }
+    return undefined
+    /* TODO
     return html`
-      <button class="${isSaved ? 'primary' : ''}" @click=${this.onToggleSaved}>
-        ${isSaved ? html`
+      <button class="${this.isInstalled ? 'primary' : ''}" @click=${this.onToggleInstalled}>
+        ${this.isInstalled ? html`
           <span class="fas fa-fw fa-check"></span> Installed
         ` : html`
           <span class="fas fa-fw fa-download"></span> Install
         `}
       </button>
-    `
+    `*/
   }
 
   // events
   // =
 
-  async onToggleSaved (e) {
-    if (this.libraryEntry) {
-      await uwg.library.configure(this.info.url, {isSaved: false})
+  async onToggleInstalled (e) {
+    if (this.isInstalled) {
+      await beaker.programs.uninstallProgram(this.info.url)
     } else {
-      await uwg.library.configure(this.info.url, {isSaved: true})
+      await beaker.programs.installProgram(this.info.url)
     }
     this.load()
   }

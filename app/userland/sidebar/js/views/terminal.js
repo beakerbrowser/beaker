@@ -9,7 +9,6 @@ import terminalCSS from '../../css/views/terminal.css.js'
 import '../lib/term-icon.js'
 
 const THEME_PATH = '/.settings/terminal.css'
-const COMMANDS_PATH = '/Terminal/commands'
 
 window.addEventListener('keydown', onGlobalKeydown)
 
@@ -139,52 +138,36 @@ class WebTerm extends LitElement {
   }
 
   async loadCommands () {
-    var packageNames = []
-    try { packageNames = await this.fs.readdir(COMMANDS_PATH) }
-    catch (err) {
-      this.appendError(`Failed to read commands directory at ${COMMANDS_PATH}`, err)
-    }
-    for (let packageName of packageNames) {
-      let manifest
-      try {
-        manifest = JSON.parse(await this.fs.readFile(joinPath(COMMANDS_PATH, packageName, 'dat.json')))
-      } catch (err) {
-        this.appendError(`Failed to read manifest of command: ${packageName}`, err)
-        continue
-      }
-
-      if (manifest.type !== 'unwalled.garden/command-package') {
-        this.appendError(`Skipping ${packageName}, not a command package (type is ${manifest.type}, should be unwalled.garden/command-package)`)
-        continue
-      }
-
-      let config = manifest['unwalled.garden/command-package']
-      if (!config || !config.commands || !Array.isArray(config.commands) || config.commands.length === 0) {
-        this.appendError(`Skipping ${packageName}, no commands found`)
+    var packages = await beaker.programs.listPrograms({type: 'webterm.sh/cmd-pkg'})
+    console.log(packages)
+    for (let pkg of packages) {
+      var commands = pkg.manifest.commands
+      if (!commands || !Array.isArray(commands) || commands.length === 0) {
+        this.appendError(`Skipping ${pkg.manifest.title} (${pkg.url})`, 'No commands found')
         continue
       }
 
       try {
         // HACK we use importModule() instead of import() because I could NOT get rollup to leave dynamic imports alone -prf
-        this.commandModules[packageName] = await importModule(joinPath(this.fs.url, COMMANDS_PATH, packageName, 'index.js'))
+        this.commandModules[pkg.url] = await importModule(joinPath(pkg.url, 'index.js'))
       } catch (err) {
-        this.appendError(`Failed to load ${packageName} index.js`, err)
+        this.appendError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
         continue
       }
 
-      for (let command of config.commands) {
+      for (let command of commands) {
         if (!command.name) continue
-        let fullName = `${packageName}.${command.name}`
         let commandData = {
-          package: packageName,
+          package: pkg.url,
           name: command.name,
           help: command.help,
           usage: command.usage,
           options: command.options
         }
-        this.commands[fullName] = commandData
         if (!(command.name in this.commands)) {
           this.commands[command.name] = commandData
+        } else {
+          this.appendError(`Unabled to add ${command.name} from ${pkg.manifest.title}`, 'Command name already in use')
         }
       }
     }
@@ -263,7 +246,7 @@ class WebTerm extends LitElement {
 
   appendError (msg, err, thenCWD, cmd) {
     this.appendOutput(
-      html`<div class="error"><div class="error-header">${msg}</div><div class="error-stack">${err.toString()}</div></div>`,
+      html`<div class="error"><div class="error-header">${msg}</div><div class="error-stack">${err ? err.toString() : ''}</div></div>`,
       thenCWD,
       cmd
     )

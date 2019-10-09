@@ -21,14 +21,14 @@ export class AboutView extends LitElement {
     var manifest
     try {
       var archive = new DatArchive(location)
-      manifest = JSON.parse(await archive.readFile('/dat.json', 'utf8'))
+      manifest = JSON.parse(await archive.readFile('/index.json', 'utf8'))
     } catch (e) {
       return e.toString()
     }
 
     var commands
     try {
-      commands = manifest['unwalled.garden/command-package'].commands
+      commands = manifest.commands
       if (!commands || !commands.length) throw new Error('empty')
     } catch (e) {
       return undefined

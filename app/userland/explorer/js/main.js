@@ -110,7 +110,6 @@ export class FilesViewer extends LitElement {
           ></file-info>
         ` : html`
           <folder-info
-            title=${title}
             .driveInfo=${this.driveInfo}
             .pathInfo=${this.pathInfo}
             .mountInfo=${this.mountInfo}

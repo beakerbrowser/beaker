@@ -11,7 +11,7 @@ ${tooltipCSS}
 ${labelCSS}
 
 .banner {
-  background: linear-gradient(to top, #eaeaed, #fff);
+  background: linear-gradient(to top, #eaeaf5, #fff);
 }
 
 .banner-inner {
