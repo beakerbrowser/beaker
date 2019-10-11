@@ -2,7 +2,6 @@ import {css} from '../../vendor/lit-element/lit-element.js'
 import commoncss from '../common.css.js'
 import searchinputcss from './search-input.css.js'
 import autocompletecss from './autocomplete.css.js'
-
 const cssStr = css`
 ${commoncss}
 ${searchinputcss}

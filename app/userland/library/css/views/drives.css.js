@@ -36,6 +36,9 @@ a:hover {
 }
 
 h4 {
+  position: sticky;
+  top: 0;
+  background: #fff;
   font-weight: 400;
   color: #889;
   border-bottom: 1px solid #dde;
@@ -138,11 +141,20 @@ h4 {
 }
 
 .listing.list .item .title {
-  font-weight: 500;
+  flex: 4;
 }
 
 .listing.list .item .author {
   color: #889;
+  flex: 1;
+}
+
+.listing.list .item .visibility {
+  flex: 1;
+}
+
+.listing.list .item .is-owner {
+  width: 50px;
 }
 
 .listing.list .item .label {

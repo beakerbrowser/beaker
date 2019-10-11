@@ -6,12 +6,6 @@ import * as contextMenu from '../../../../app-stdlib/js/com/context-menu.js'
 import viewCSS from '../../../css/views/settings/programs.css.js'
 import * as QP from '../../lib/query-params.js'
 import { oneof } from '../../lib/validation.js'
-import '../../hover-menu.js'
-
-const SORT_OPTIONS = {
-  mtime: 'Recently updated',
-  title: 'Alphabetical'
-}
 
 class ProgramsView extends LitElement {
   static get properties () {

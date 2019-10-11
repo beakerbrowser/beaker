@@ -2,7 +2,6 @@ import { LitElement, html } from '../../../../app-stdlib/vendor/lit-element/lit-
 import { repeat } from '../../../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import viewCSS from '../../../css/views/settings/drive-handlers.css.js'
 import * as toast from '../../../../app-stdlib/js/com/toast.js'
-import '../../hover-menu.js'
 
 class DriveHandlersView extends LitElement {
   static get properties () {

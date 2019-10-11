@@ -33,7 +33,6 @@ function handleCSSFile (cssPath) {
   // write the css-js file
   fs.writeFileSync(cssJsPath, `import {css} from '${path.relative(path.dirname(cssPath), litElementPath)}'
 ${imports}
-
 const cssStr = css\`
 ${newCss}
 \`

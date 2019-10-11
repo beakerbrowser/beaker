@@ -1,7 +1,6 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
 import buttonscss from '../../buttons.css.js'
 import reactionscss from '../reactions/reactions.css.js'
-
 const cssStr = css`
 ${buttonscss}
 ${reactionscss}

@@ -1,6 +1,5 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
 import tooltipcss from '../../tooltip.css.js'
-
 const cssStr = css`
 ${tooltipcss}
 

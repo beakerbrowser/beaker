@@ -20,6 +20,7 @@ class LibraryNav extends LitElement {
 
   constructor () {
     super()
+    this.user = undefined
     this.currentQuery = ''
   }
 
@@ -39,7 +40,7 @@ class LibraryNav extends LitElement {
         todo
       })
       return html`
-        <a class=${cls} @click=${e => this.onClick(e, id)}}>
+        <a class=${cls} href="/?view=${id}"}>
           <span class="fa-fw ${icon || 'no-icon'}"></span>
           <span class="label">${label}</span>
         </a>
@@ -56,7 +57,6 @@ class LibraryNav extends LitElement {
       <h5>Library</h5>
       ${item('bookmarks', 'far fa-star', 'Bookmarks')}
       ${item('drives', 'far fa-hdd', 'Drives')}
-      ${item('people', 'fas fa-rss', 'Following')}
       <a class="item" href=${this.fs ? this.fs.url : ''}>
         <span class="fa-fw far fa-folder"></span>
         <span class="label">Filesystem</span>
@@ -74,17 +74,6 @@ class LibraryNav extends LitElement {
 
   // events
   // =
-
-  onClick (e, view) {
-    e.preventDefault()
-    emit(this, 'change-view', {bubbles: true, detail: {view}})
-  }
-
-  async onClickNew () {
-    var archive = await DatArchive.create()
-    toast.create('Website created')
-    beaker.browser.openUrl(archive.url, {setActive: true})
-  }
 
   onKeyupQuery (e) {
     this.currentQuery = e.currentTarget.value

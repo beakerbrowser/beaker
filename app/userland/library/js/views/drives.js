@@ -12,7 +12,7 @@ import '../hover-menu.js'
 
 const SUBVIEW_OPTIONS = {
   library: 'Saved',
-  mine: 'By Me',
+  mine: 'Owned By Me',
   network: 'By Followed Users'
 }
 
@@ -70,19 +70,17 @@ export class DrivesView extends LitElement {
       this.typesMap = Object.assign(
         {},
         CORE_TYPES_MAP,
-        Object.fromEntries((await beaker.types.listDriveTypes()).map(t => ([t.id, t.title])))
+        Object.fromEntries((await beaker.types.listDriveTypes()).map(t => ([t.id, `${t.title} (${t.id})`])))
       )
       console.log(this.typesMap)
     }
 
-    let type = undefined
     let [isSaved, isOwner, visibility] = [undefined, undefined, undefined]
     if (this.currentSubview !== 'network') isSaved = true
     if (this.currentSubview === 'mine') isOwner = true
     else if (this.currentSubview === 'network') isOwner = false
     if (this.currentSubview === 'network') visibility = 'public'
-    var items = await uwg.library.list({type, isSaved, isOwner, visibility, sortBy: this.currentSort})
-    this.items = items
+    this.items = await uwg.library.list({isSaved, isOwner, visibility, sortBy: this.currentSort})
 
     console.log('loaded', this.items)
   }
@@ -229,9 +227,9 @@ export class DrivesView extends LitElement {
         <a class="item" href=${item.url} @contextmenu=${e => this.onContextMenuDrive(e, item)}>
           <img src="asset:favicon:${item.url}?cache_buster=${Date.now()}">
           <div class="title">${item.meta.title || html`<em>Untitled</em>`}</div>
-          <div class="author">by ${item.author ? item.author.title : html`<em>Unknown</em>`}</div>
+          <div class="author">${item.author ? html`by ${item.author.title}` : undefined}</div>
           ${this.renderVisibility(item.visibility)}
-          ${item.meta.isOwner ? html`<span class="label">Owner</span>` : ''}
+          <div class="is-owner">${item.meta.isOwner ? html`<span class="label">Owner</span>` : ''}</div>
         </a>
       `      
     }

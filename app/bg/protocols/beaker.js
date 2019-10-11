@@ -251,12 +251,6 @@ child-src 'self';
   if (requestUrl === 'beaker://swarm-debugger/' || requestUrl.startsWith('beaker://swarm-debugger/')) {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/swarm-debugger.html'))
   }
-  if (requestUrl === 'beaker://settings/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/settings.html'))
-  }
-  if (requestUrl === 'beaker://settings/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/settings.build.js'))
-  }
   if (requestUrl === 'beaker://watchlist/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/watchlist.css'))
   }

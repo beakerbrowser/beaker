@@ -2,7 +2,11 @@ import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-ele
 import { classMap } from '../../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import * as QP from '../lib/query-params.js'
 import settingsViewCSS from '../../css/views/settings.css.js'
+import './settings/crawler.js'
 import './settings/drive-handlers.js'
+import './settings/general.js'
+import './settings/info.js'
+import './settings/log.js'
 import './settings/programs.js'
 
 class SettingsView extends LitElement {
@@ -23,6 +27,11 @@ class SettingsView extends LitElement {
   }
 
   async load () {
+    try {
+      await Promise.all(Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.unload()))
+    } catch (e) {
+      console.debug(e)
+    }
     await this.requestUpdate()
     try {
       await Promise.all(Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load()))
@@ -61,7 +70,7 @@ class SettingsView extends LitElement {
       ${item('crawler', 'fas fa-spider', 'Crawler')}
       ${item('log-viewer', 'far fa-list-alt', 'Log Viewer')}
       <hr>
-      ${item('help', 'far fa-question-circle', 'Information & Help')}
+      ${item('info', 'far fa-question-circle', 'Information & Help')}
       <hr>
     `
   }
@@ -75,6 +84,14 @@ class SettingsView extends LitElement {
         `
       case 'commands':
         return html`<programs-view loadable type="webterm.sh/cmd-pkg"></programs-view>`
+      case 'crawler':
+        return html`<crawler-settings-view loadable></crawler-settings-view>`
+      case 'general':
+        return html`<general-settings-view loadable></general-settings-view>`
+      case 'info':
+        return html`<info-settings-view loadable></info-settings-view>`
+      case 'log-viewer':
+        return html`<log-settings-view loadable></log-settings-view>`
       default:
         return html`<div class="empty"><div><span class="fas fa-toolbox"></span></div>Under Construction</div>`
     }
