@@ -218,6 +218,9 @@ child-src 'self';
   if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'library'), cb)
   }
+  if (requestUrl === 'beaker://history' || requestUrl.startsWith('beaker://history/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'history'), cb)
+  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {
@@ -229,12 +232,6 @@ child-src 'self';
   }
   if (requestUrl === 'beaker://search' || requestUrl.startsWith('beaker://search/')) {
     return serveAppAsset(requestUrl, SEARCH_APP_PATH, cb)
-  }
-  if (requestUrl === 'beaker://history/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/history.html'))
-  }
-  if (requestUrl === 'beaker://history/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/history.build.js'))
   }
   if (requestUrl === 'beaker://downloads/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/downloads.html'))
