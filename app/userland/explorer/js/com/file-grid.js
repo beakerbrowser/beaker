@@ -1,7 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import mainCSS from '../../css/com/file-grid.css.js'
 
@@ -22,7 +21,6 @@ export class FileGrid extends LitElement {
     super()
     this.items = []
     this.selection = []
-    this.addEventListener('click', this.onClickOutside.bind(this))
   }
 
   async load () {
@@ -56,6 +54,10 @@ export class FileGrid extends LitElement {
           ${repeat(files, this.renderItem.bind(this))}
         </div>
       ` : ''}
+      ${files.length === 0 && folders.length === 0 ? html`
+        <h4>Files</h4>
+        <div class="empty">This folder is empty</div>
+      ` : ''}
     `
   }
 
@@ -86,12 +88,7 @@ export class FileGrid extends LitElement {
   // events
   // =
 
-  onClickOutside (e) {
-    emit(this, 'change-selection', {detail: {selection: []}})
-  }
-
   onClick (e, item) {
-    e.preventDefault()
     e.stopPropagation()
 
     var selection
@@ -104,7 +101,7 @@ export class FileGrid extends LitElement {
   }
 
   onDblClick (e, item) {
-    window.location = joinPath(window.location.toString(), item.name)
+    emit(this, 'goto', {detail: {item}})
   }
 }
 
