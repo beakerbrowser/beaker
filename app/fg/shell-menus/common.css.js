@@ -20,10 +20,13 @@ hr {
   height: 25px;
   padding: 0 15px;
   cursor: default;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-item:hover {
-  background: #eee;
+  background: #ededf2;
 }
 
 .menu-item i {
@@ -35,12 +38,25 @@ hr {
   margin-left: -5px;
 }
 
+.menu-item .favicon {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-right: 10px;
+}
+
 .menu-item.disabled {
   opacity: 0.5;
 }
 
 .menu-item.disabled:hover {
   background: none;
+}
+
+.menu-item .label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menu-item i.more {

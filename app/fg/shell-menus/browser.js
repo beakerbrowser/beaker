@@ -40,6 +40,7 @@ class BrowserMenu extends LitElement {
 
   async init () {
     this.profile = await bg.beakerBrowser.getUserSession().catch(err => undefined)
+    this.bookmarks = await bg.bookmarks.list({isOwner: true, sortBy: 'title'})
     await this.requestUpdate()
   }
 
@@ -48,8 +49,20 @@ class BrowserMenu extends LitElement {
       return html`<div></div>`
     }
 
-    if (this.submenu === 'create-new') {
-      return this.renderCreateNew()
+    if (this.submenu === 'applications') {
+      return this.renderApplications()
+    }
+
+    if (this.submenu === 'bookmarks') {
+      return this.renderBookmarks()
+    }
+
+    if (this.submenu === 'system') {
+      return this.renderSystem()
+    }
+
+    if (this.submenu === 'this-page') {
+      return this.renderThisPage()
     }
 
     // auto-updater
@@ -65,30 +78,26 @@ class BrowserMenu extends LitElement {
       `
     }
 
-    // render the progress bar if downloading anything
-    var progressEl = ''
-    if (this.shouldPersistDownloadsIndicator && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
-      progressEl = html`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
-    }
-
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         ${autoUpdaterEl}
 
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
-            <i class="far fa-window-maximize"></i>
-            <span class="label">New Window</span>
-            <span class="shortcut">${this.accelerators.newWindow}</span>
-          </div>
+        <div class="section gray">
+          <div class="menu-item-group">
+            <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
+              <span class="label">New Window</span>
+              <span class="shortcut">${this.accelerators.newWindow}</span>
+            </div>
 
-          <div class="menu-item" @click=${e => this.onOpenNewTab()}>
-            <i class="far fa-file"></i>
-            <span class="label">New Tab</span>
-            <span class="shortcut">${this.accelerators.newTab}</span>
+            <div class="menu-item" @click=${e => this.onOpenNewTab()}>
+              <span class="label">New Tab</span>
+              <span class="shortcut">${this.accelerators.newTab}</span>
+            </div>
           </div>
+        </div>
 
+        ${''/*<div class="section">
           <div class="menu-item" @click=${this.onCreateNew}>
             <i class="fas fa-plus"></i>
             <span class="label">New Dat</span>
@@ -102,43 +111,35 @@ class BrowserMenu extends LitElement {
             <span class="shortcut">${this.accelerators.openFile}</span>
           </div>
 
-          <div class="menu-item" @click=${this.onClickSavePage}>
-            <i class="far fa-file-image"></i>
-            Download page as file
-          </div>
-
-          <div class="menu-item" @click=${this.onClickPrint}>
-            <i class="fas fa-print"></i>
-            Print page
-          </div>
-        </div>
+  </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
-            <i class="far fa-star"></i>
+        </div>*/}
+
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onShowSubmenu('applications')}>
+            <span class="label">Applications</span>
+            <i class="more fa fa-angle-right"></i>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onShowSubmenu('bookmarks')}>
             <span class="label">Bookmarks</span>
+            <i class="more fa fa-angle-right"></i>
           </div>
 
-          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
-            <i class="fas fa-arrow-down"></i>
-            <span class="label">Downloads</span>
-            ${progressEl}
+          <div class="menu-item" @click=${e => this.onShowSubmenu('this-page')}>
+            <span class="label">This Page</span>
+            <i class="more fa fa-angle-right"></i>
           </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
-            <i class="fa fa-history"></i>
-            <span class="label">History</span>
-            <span class="shortcut">${this.accelerators.history}</span>
-          </div>
-          
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-            <i class="fas fa-cog"></i>
-            <span class="label">Settings</span>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('system')}>
+            <span class="label">System</span>
+            <i class="more fa fa-angle-right"></i>
           </div>
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'dat://beakerbrowser.com/docs/')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://beakerbrowser.com/docs/')}>
             <i class="far fa-question-circle"></i>
             <span class="label">Help</span>
           </div>
@@ -152,7 +153,7 @@ class BrowserMenu extends LitElement {
     `
   }
 
-  renderCreateNew () {
+  renderApplications () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -160,23 +161,108 @@ class BrowserMenu extends LitElement {
           <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
             <i class="fa fa-angle-left"></i>
           </button>
-          <h2>Create New</h2>
+          <h2>Applications</h2>
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onCreateNew(e)}>
-            <i class="far fa-clone"></i>
-            <span class="label">Empty project</span>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+            <img class="favicon" src="asset:favicon:beaker://library">
+            <span class="label">Library</span>
+          </div>
+        </div>
+      </div>`
+  }
+
+  renderBookmarks () {
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="header">
+          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+            <i class="fa fa-angle-left"></i>
+          </button>
+          <h2>Bookmarks</h2>
+        </div>
+
+        <div class="section scrollable">
+          ${this.bookmarks.map(b => html`
+            <div class="menu-item" @click=${e => this.onOpenPage(e, b.href)}>
+              <img class="favicon" src="asset:favicon:${b.href}">
+              <span class="label">${b.title}</span>
+            </div>
+          `)}
+        </div>
+      </div>`
+  }
+
+  renderSystem () {
+    // render the progress bar if downloading anything
+    var progressEl = ''
+    if (this.shouldPersistDownloadsIndicator && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
+      progressEl = html`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
+    }
+
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="header">
+          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+            <i class="fa fa-angle-left"></i>
+          </button>
+          <h2>System</h2>
+        </div>
+
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+            <img class="favicon" src="asset:favicon:beaker://bookmarks">
+            <span class="label">Bookmarks</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onCreateNew(e, 'website')}>
-            <i class="fa fa-sitemap"></i>
-            <span class="label">Website</span>
+          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
+            <img class="favicon" src="asset:favicon:beaker://downloads">
+              <span class="label">Downloads</span>
+              ${progressEl}
+            </div>
+
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
+            <img class="favicon" src="asset:favicon:beaker://history">
+              <span class="label">History</span>
+              <span class="shortcut">${this.accelerators.history}</span>
+            </div>
+
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://explorer')}>
+              <img class="favicon" src="asset:favicon:beaker://explorer">
+              <span class="label">My Hyperdrive</span>
+            </div>
+            
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+              <img class="favicon" src="asset:favicon:beaker://settings">
+              <span class="label">Settings</span>
+            </div>
+        </div>
+      </div>`
+  }
+
+  renderThisPage () {
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="header">
+          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+            <i class="fa fa-angle-left"></i>
+          </button>
+          <h2>This Page</h2>
+        </div>
+
+        <div class="section">
+          <div class="menu-item" @click=${this.onClickSavePage}>
+            <i class="fas fa-download"></i>
+            Download page as file
           </div>
 
-          <div class="menu-item" @click=${e => this.onCreateSiteFromFolder(e)}>
-            <i class="far fa-folder"></i>
-            <span class="label">From folder</span>
+          <div class="menu-item" @click=${this.onClickPrint}>
+            <i class="fas fa-print"></i>
+            Print page
           </div>
         </div>
       </div>`
@@ -306,21 +392,6 @@ BrowserMenu.styles = [commonCSS, css`
   width: 230px;
 }
 
-.wrapper.twocol {
-  display: flex;
-  width: 400px;
-}
-
-.column {
-  flex: 1;
-}
-
-.column:first-child {
-  flex: 0 0 160px;
-  background: #fafafa;
-  border-right: 1px solid #ddd;
-}
-
 .wrapper::-webkit-scrollbar {
   display: none;
 }
@@ -332,6 +403,40 @@ BrowserMenu.styles = [commonCSS, css`
 .section.auto-updater {
   padding-bottom: 0;
   border-bottom: 0;
+}
+
+.section.gray {
+  padding: 2px 0;
+  background: #f5f5fa;
+}
+
+.section.gray .menu-item:hover {
+  background: #e5e5ee;
+}
+
+.section.scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.menu-item-group {
+  display: flex;
+}
+
+.menu-item-group > .menu-item:first-child {
+  padding-right: 8px;
+}
+
+.menu-item-group > .menu-item:last-child {
+  padding-left: 8px;
+}
+
+.menu-item-group > .menu-item .shortcut {
+  padding-left: 10px;
+}
+
+.menu-item {
+  height: 40px;
 }
 
 .menu-item.auto-updater {
