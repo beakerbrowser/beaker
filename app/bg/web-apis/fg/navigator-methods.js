@@ -37,6 +37,9 @@ export const setup = function (rpc) {
         url = url.url
       }
       return filesystemApi.identifyDrive(url)
+    },
+    async query (opts) {
+      return filesystemApi.query(opts)
     }
   }
 }
