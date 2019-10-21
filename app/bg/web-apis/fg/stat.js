@@ -26,6 +26,7 @@ const Stat = function Stat (data) {
     ? {key: data.mount.key.toString('hex')}
     : null
   this.linkname = data ? data.linkname : null
+  this.metadata = data ? data.metadata : {}
 }
 
 export default Stat
