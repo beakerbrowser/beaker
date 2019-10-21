@@ -30,5 +30,5 @@ export function defaultWindowState () {
 }
 
 export function defaultPageState () {
-  return [ 'beaker://library' ]
+  return [ 'beaker://desktop' ]
 }

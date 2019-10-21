@@ -115,7 +115,7 @@ class NavbarLocation extends LitElement {
 
   renderLocation () {
     var url = this.url
-    if (url.startsWith('beaker://library')) {
+    if (url.startsWith('beaker://desktop')) {
       url = ''
     }
     return html`
@@ -134,7 +134,7 @@ class NavbarLocation extends LitElement {
   }
 
   renderInputPretty () {
-    if (this.url.startsWith('beaker://library')) {
+    if (this.url.startsWith('beaker://desktop')) {
       return html`
         <div class="input-pretty" @mouseup=${this.onClickLocation}>
           <span class="syntax">Search or enter your address here</span>
@@ -320,7 +320,7 @@ class NavbarLocation extends LitElement {
   }
 
   onFocusLocation (e) {
-    e.currentTarget.value = this.url.startsWith('beaker://library') ? '' : this.url
+    e.currentTarget.value = this.url.startsWith('beaker://desktop') ? '' : this.url
     e.currentTarget.setSelectionRange(0, this.url.length)
     this.isLocationFocused = true
   }

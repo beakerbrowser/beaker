@@ -69,7 +69,7 @@ const TLS_ERROR_CODES = Object.values({
 const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
 
 const Y_POSITION = 76
-const DEFAULT_URL = 'beaker://library'
+const DEFAULT_URL = 'beaker://desktop'
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
 // the variables which are automatically sent to the shell-window for rendering

@@ -259,7 +259,7 @@ class ShellWindowNavbar extends LitElement {
   }
 
   onClickHome (e) {
-    bg.views.loadURL('active', 'beaker://library/')
+    bg.views.loadURL('active', 'beaker://desktop/')
   }
 
   onClickUpdog (e) {

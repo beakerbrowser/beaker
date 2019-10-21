@@ -114,6 +114,11 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
+            <i class="far fa-star"></i>
+            <span class="label">Bookmarks</span>
+          </div>
+
           <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
             <i class="fas fa-arrow-down"></i>
             <span class="label">Downloads</span>
