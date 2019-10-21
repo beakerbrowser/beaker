@@ -30,12 +30,13 @@ import _pick from 'lodash.pick'
 
 export default {
   /**
-   * @returns {Promise<NavigatorFilesystemPublicAPIRootRecord>}
+   * @returns {NavigatorFilesystemPublicAPIRootRecord}
    */
-  async get () {
-    if (!(await sessionPerms.isTrustedApp(this.sender))) {
-      throw new PermissionsError()
-    }
+  get () {
+    // TODO handle permissions
+    // if (!(await sessionPerms.isTrustedApp(this.sender))) {
+    //   throw new PermissionsError()
+    // }
     return {
       url: filesystem.get().url
     }
