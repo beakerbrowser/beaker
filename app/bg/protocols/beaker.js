@@ -215,6 +215,9 @@ child-src 'self';
 `.replace(/\n/g, '')
     })
   }
+  if (requestUrl === 'beaker://bookmarks' || requestUrl.startsWith('beaker://bookmarks/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'bookmarks'), cb)
+  }
   if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'library'), cb)
   }
