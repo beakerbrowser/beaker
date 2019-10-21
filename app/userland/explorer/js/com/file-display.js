@@ -1,12 +1,36 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
+import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
+import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+import MarkdownIt from 'beaker://app-stdlib/vendor/markdown-it.js'
 import css from '../../css/com/file-display.css.js'
+
+const md = MarkdownIt({
+  html: false, // Enable HTML tags in source
+  xhtmlOut: false, // Use '/' to close single tags (<br />)
+  breaks: true, // Convert '\n' in paragraphs into <br>
+  langPrefix: 'language-', // CSS language prefix for fenced blocks
+  linkify: false, // Autoconvert URL-like text to links
+
+  // Enable some language-neutral replacement + quotes beautification
+  typographer: true,
+
+  // Double + single quotes replacement pairs, when typographer enabled,
+  // and smartquotes on. Set doubles to '«»' for Russian, '„“' for German.
+  quotes: '“”‘’',
+
+  // Highlighter function. Should return escaped HTML,
+  // or '' if the source string is not changed
+  highlight: undefined
+})
 
 export class FileDisplay extends LitElement {
   static get properties () {
     return {
+      driveUrl: {type: String, attribute: 'drive-url'},
       pathname: {type: String},
-      info: {type: Object}
+      info: {type: Object},
+      renderMode: {type: String, attribute: 'render-mode'}
     }
   }
 
@@ -14,16 +38,29 @@ export class FileDisplay extends LitElement {
     return css
   }
 
+  get url () {
+    return joinPath(this.driveUrl, this.pathname)
+  }
+
   constructor () {
     super()
+    this.driveUrl = undefined
     this.pathname = undefined
     this.info = undefined
+    this.renderMode = undefined
   }
 
   async readFile () {
     try {
-      var archive = new DatArchive(location)
-      return await archive.readFile(this.pathname, 'utf8')
+      var archive = new DatArchive(this.driveUrl)
+      var file = await archive.readFile(this.pathname, 'utf8')
+
+      if (this.pathname.endsWith('.md') && this.renderMode !== 'raw') {
+        file = md.render(file)
+        return html`<div class="markdown">${unsafeHTML(file)}</div>`
+      }
+
+      return html`<div class="text">${file}</div>`
     } catch (e) {
       return e.toString()
     }
@@ -45,21 +82,19 @@ export class FileDisplay extends LitElement {
     if (this.info.size > 1000000) {
       return html`<div class="too-big">This file is too big to display</div>`
     }
-    return html`
-      <div class="text">${until(this.readFile(), 'Loading...')}</div>
-    `
+    return html`${until(this.readFile(), 'Loading...')}`
   }
 
   renderImage () {
-    return html`<img src=${this.pathname}>`
+    return html`<img src=${this.url}>`
   }
 
   renderVideo () {
-    return html`<video controls><source src=${this.pathname}></video>`
+    return html`<video controls><source src=${this.url}></video>`
   }
 
   renderAudio () {
-    return html`<audio controls><source src=${this.pathname}></audio>`
+    return html`<audio controls><source src=${this.url}></audio>`
   }
 
   // events

@@ -18,6 +18,14 @@ h4 {
   margin: 0;
 }
 
+.empty {
+  background: var(--bg-color--light);
+  padding: 40px;
+  margin: 20px;
+  border-radius: 4px;
+  color: #667;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, 110px);

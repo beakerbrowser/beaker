@@ -5,21 +5,63 @@ const cssStr = css`
 ${typographyCSS}
 
 :host {
+  display: block;
+  --text-font-size: 14px;
+  --text-padding: 0;
+  --text-background: transparent;
+  --text-max-width: none;
+}
+
+a {
+  text-decoration: none;
+  color: var(--blue);
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 .text {
   white-space: pre-wrap;
   max-width: 100%;
-  font-family: var(--code-font);
   font-style: normal;
-  font-size: 12px;
   word-break: break-all;
+  font-size: var(--text-font-size);
+  padding: var(--text-padding);
+  background: var(--text-background);
+  max-width: var(--text-max-width);
+  border-radius: 4px;
+}
+
+.markdown {
+  padding: var(--text-padding);
+  background: var(--text-background);
+  max-width: var(--text-max-width);
+  border-radius: 4px;
+}
+
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown > :last-child {
+  margin-bottom: 0;
 }
 
 img,
 video,
 audio {
   max-width: 100%;
+}
+
+:host > img {
+  border-radius: 4px;
+}
+
+:host([fullwidth]) > img {
+  width: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 `
