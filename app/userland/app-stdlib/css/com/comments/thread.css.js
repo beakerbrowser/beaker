@@ -22,7 +22,6 @@ ${reactionscss}
   --composer-border: 1px solid #ddd;
 
   display: block;
-  border: 1px solid var(--border-color);
   border-radius: 4px;
   background: #fff;
 }

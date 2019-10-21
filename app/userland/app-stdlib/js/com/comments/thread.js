@@ -34,7 +34,7 @@ export class CommentsThread extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <beaker-comment-composer
         topic="${this.topicUrl}"
-        placeholder=${this.composerPlaceholder || 'Add your reply'}
+        placeholder=${this.composerPlaceholder || 'Add a comment'}
       ></beaker-comment-composer>
       ${this.renderComments(this.comments)}
     `
