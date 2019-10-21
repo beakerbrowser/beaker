@@ -249,8 +249,8 @@ export async function unsetDefaultDriveHandler (typeId) {
  */
 async function load () {
   var release = await lock('access:type-registry')
-  var installedTypePackages
-  var defaultDriveHandlers
+  var installedTypePackages = []
+  var defaultDriveHandlers = {}
   try {
     var typeRegistryStr
     try {
