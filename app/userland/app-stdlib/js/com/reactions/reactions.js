@@ -1,9 +1,6 @@
 import { LitElement, html } from '../../../vendor/lit-element/lit-element.js'
 import { classMap } from '../../../vendor/lit-element/lit-html/directives/class-map.js'
 import { ifDefined } from '../../../vendor/lit-element/lit-html/directives/if-defined.js'
-import { ucfirst } from '../../strings.js'
-
-const DEFAULT_PHRASES = ['like', 'agree', 'haha']
 
 export class Reactions extends LitElement {
   static get properties () {
@@ -27,15 +24,6 @@ export class Reactions extends LitElement {
     return this
   }
 
-  get defaultReactions () {
-    var reactions = this.reactions || []
-    return DEFAULT_PHRASES.map(phrase => reactions.find(r => r.phrase === phrase) || {phrase, authors: []})
-  }
-
-  get addedReactions () {
-    return this.reactions.filter(r => !DEFAULT_PHRASES.includes(r.phrase))
-  }
-
   render () {
     const renderReaction = r => {
       var alreadySet = !!r.authors.find(a => a.url === this.userUrl)
@@ -46,7 +34,7 @@ export class Reactions extends LitElement {
           @click=${e => this.emitChange(e, alreadySet, r.phrase)}
           data-tooltip=${ifDefined(r.authors.length ? r.authors.map(a => a.title || 'Anonymous').join(', ') : undefined)}
         >
-          <span class="label">${ucfirst(r.phrase)}</span>
+          <span class="label">${r.phrase}</span>
           ${r.authors.length > 0 ? html`
             <span class="count">${r.authors.length}</span>
           `: ''}
@@ -54,17 +42,10 @@ export class Reactions extends LitElement {
       `
     }
 
-    var reactions = this.reactions.slice()
-    for (let i = 0; i < DEFAULT_PHRASES.length && reactions.length < 4; i++) {
-      if (!reactions.find(r => r.phrase === DEFAULT_PHRASES[i])) {
-        reactions.push({phrase: DEFAULT_PHRASES[i], authors: []})
-      }
-    }
-
     return html`
-      ${reactions.map(renderReaction)}
-      <span class="reaction other" @click=${this.onClickOther} data-tooltip="Custom reaction">
-        <span class="fas fa-pencil-alt"></span>
+      ${this.reactions.map(renderReaction)}
+      <span class="reaction other" @click=${this.onClickOther} data-tooltip="Add a tag">
+        <span class="fas fa-tag"></span>
       </span>
     `
   }
@@ -104,7 +85,7 @@ export class Reactions extends LitElement {
     e.stopPropagation()
 
     do {
-      var phrase = prompt('Enter a custom reaction (characters only)')
+      var phrase = prompt('Enter a tag')
       if (!phrase) break
       if (phrase.length > 20) {
         alert('Must be 20 characters or less')
