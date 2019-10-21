@@ -77,7 +77,7 @@ export class FileGrid extends LitElement {
         @dblclick=${e => this.onDblClick(e, item)}
       >
         <span class="fas fa-fw fa-${icon}"></span>
-        ${item.stat.mount ? html`<span class="fas fa-external-link-square-alt"></span>` : ''}
+        ${item.subicon ? html`<span class="subicon ${item.subicon}"></span>` : ''}
         <span class="name">${item.name}</span>
       </div>
     `

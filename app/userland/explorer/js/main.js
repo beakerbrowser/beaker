@@ -45,6 +45,19 @@ export class FilesViewer extends LitElement {
       if (this.pathInfo.isDirectory()) {
         this.items = await archive.readdir(location.pathname, {stat: true})
         this.items.sort((a, b) => a.name.localeCompare(b.name))
+        this.items.forEach(item => {
+          if (item.stat.mount) {
+            item.subicon = 'fas fa-external-link-square-alt'
+          } else if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/' && item.name === 'feed') {
+            item.subicon = 'fas fa-list'
+          } else if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/' && item.name === 'bookmarks') {
+            item.subicon = 'fas fa-star'
+          } else if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/' && item.name === 'friends') {
+            item.subicon = 'fas fa-user'
+          } else if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/' && item.name === '.data') {
+            item.subicon = 'fas fa-database'
+          }
+        })
       }
     } catch (e) {
       console.log(e)

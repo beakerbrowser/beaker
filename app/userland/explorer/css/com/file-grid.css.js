@@ -74,11 +74,21 @@ h4 {
   border-radius: 4px;
 }
 
-.item .fa-external-link-square-alt {
+.item .subicon {
   position: absolute;
+  top: 19px;
+  left: 40px;
+  color: rgba(0,0,0,.3);
+}
+
+.item .subicon.fa-star {
+  top: 19px;
+  left: 38px;
+}
+
+.item .subicon.fa-external-link-square-alt {
   top: 18px;
   left: 57px;
-  color: rgba(0,0,0,.3);
 }
 
 .item.selected {
