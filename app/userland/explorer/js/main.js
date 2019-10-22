@@ -10,6 +10,36 @@ import './com/mount-info.js'
 import './com/location-info.js'
 import './com/selection-info.js'
 
+const ICONS = {
+  rootRoot: {
+    '.data': 'fas fa-database',
+    '.settings': 'fas fa-cog',
+    '.trash': 'far fa-trash-alt',
+    Library: 'fas fa-book',
+    Users: 'fas fa-user-friends'
+  },
+  rootLibrary: {
+    Applications: 'fas fa-drafting-compass',
+    Documents: 'fas fa-file-pdf',
+    Modules: 'fas fa-code',
+    Music: 'fas fa-music',
+    Photos: 'fas fa-image',
+    Podcasts: 'fas fa-microphone',
+    Videos: 'fas fa-film',
+    Websites: 'fas fa-sitemap'
+  },
+  personRoot: {
+    '.data': 'fas fa-database',
+    feed: 'fas fa-list',
+    friends: 'fas fa-user'
+  },
+  data: {
+    bookmarks: 'fas fa-star',
+    comments: 'fas fa-comments',
+    tags: 'fas fa-tags'
+  }
+}
+
 export class ExplorerApp extends LitElement {
   static get propertes () {
     return {
@@ -81,17 +111,20 @@ export class ExplorerApp extends LitElement {
       if (this.pathInfo.isDirectory()) {
         this.items = await archive.readdir(location.pathname, {stat: true})
         this.items.sort((a, b) => a.name.localeCompare(b.name))
+        let driveKind = ''
+        if (this.currentDriveInfo.ident.isRoot) driveKind = 'root'
+        if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
         this.items.forEach(item => {
           if (item.stat.mount) {
             item.subicon = 'fas fa-external-link-square-alt'
-          } else if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/' && item.name === 'feed') {
-            item.subicon = 'fas fa-list'
-          } else if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/' && item.name === 'bookmarks') {
-            item.subicon = 'fas fa-star'
-          } else if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/' && item.name === 'friends') {
-            item.subicon = 'fas fa-user'
-          } else if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/' && item.name === '.data') {
-            item.subicon = 'fas fa-database'
+          } else if (driveKind === 'root' && this.realPathname === '/') {
+            item.subicon = ICONS.rootRoot[item.name]
+          } else if (driveKind === 'root' && this.realPathname === '/Library') {
+            item.subicon = ICONS.rootLibrary[item.name]
+          } else if (driveKind === 'person' && this.realPathname === '/') {
+            item.subicon = ICONS.personRoot[item.name]
+          } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/.data') {
+            item.subicon = ICONS.data[item.name]
           }
         })
       }
