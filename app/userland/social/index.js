@@ -36,10 +36,6 @@ export class App extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="layout">
-        <person-viewer-nav
-          currentView=${this.currentView}
-          @change-view=${this.onChangeView}
-        ></person-viewer-nav>
         <main>
           <beaker-status-feed .user=${this.user}></beaker-status-feed>
         </main>
