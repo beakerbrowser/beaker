@@ -16,14 +16,6 @@ ${viewHeaderCSS}
 
 :host {
   display: block;
-  margin: 0px 10px 50px 190px;
-}
-
-@media (min-width: 1300px) {
-  .empty {
-    position: relative;
-    left: -90px;
-  }
 }
 
 a {

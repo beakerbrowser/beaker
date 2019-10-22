@@ -161,7 +161,7 @@ export class DrivesView extends LitElement {
   // =
 
   render () {
-    document.title = 'Drives'
+    document.title = 'Library'
     let items = this.items
 
     return html`
@@ -193,7 +193,7 @@ export class DrivesView extends LitElement {
         </button>
       </div>
       ${!items.length
-        ? html`<div class="empty"><div><span class="far fa-sad-tear"></span></div>No drives found.</div>`
+        ? html`<div class="empty">No drives found.</div>`
         : html`${repeat(this.groups, ([type, items]) => this.renderGroup(type, items))}`}
     `
   }

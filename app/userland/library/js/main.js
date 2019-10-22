@@ -1,15 +1,10 @@
 import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
 import * as QP from './lib/query-params.js'
 import _debounce from 'lodash.debounce'
-import './com/nav.js'
 import './com/side-filters.js'
 import './com/filters.js'
-import './views/bookmarks.js'
 import './views/drives.js'
-import './views/launcher.js'
 import './views/people.js'
-import './views/search.js'
-import './views/settings.js'
 import './views/trash.js'
 import mainCSS from '../css/main.css.js'
 
@@ -29,7 +24,7 @@ export class LibraryApp extends LitElement {
 
     this.user = undefined
     this.fs = undefined
-    this.currentView = QP.getParam('view', 'launcher')
+    this.currentView = QP.getParam('view', 'drives')
     this.currentWritableFilter = QP.getParam('writable', '')
     this.currentQuery = undefined
     this.items = []
@@ -65,13 +60,6 @@ export class LibraryApp extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <library-nav
-        .user=${this.user}
-        .fs=${this.fs}
-        currentView=${this.currentView}
-        @change-view=${this.onChangeView}
-        @change-query=${this.onChangeQuery}
-      ></library-nav>
       <div id="content">
         ${this.renderView()}
       </div>
@@ -80,31 +68,12 @@ export class LibraryApp extends LitElement {
 
   renderView () {
     switch (this.currentView) {
-      case 'bookmarks':
-        return html`
-          <bookmarks-view
-            the-current-view
-            .user=${this.user}
-            currentView=${this.currentView}
-          ></bookmarks-view>
-        `
-      case 'commands':
-        return html`
-          <commands-view
-            the-current-view
-            .user=${this.user}
-          ></commands-view>
-        `
       case 'drives':
         return html`
           <drives-view
             the-current-view
             .user=${this.user}
           ></drives-view>
-        `
-      case 'launcher':
-        return html`
-          <launcher-view the-current-view></launcher-view>
         `
       case 'people':
         return html`
@@ -113,22 +82,6 @@ export class LibraryApp extends LitElement {
             .user=${this.user}
             currentView=${this.currentView}
           ></people-view>
-        `
-      case 'settings':
-        return html`
-          <settings-view
-            the-current-view
-            .user=${this.user}
-          ></settings-view>
-        `
-      case 'search':
-        return html`
-          <search-view
-            the-current-view
-            .user=${this.user}
-            currentView=${this.currentView}
-            currentQuery=${this.currentQuery}
-          ></search-view>
         `
       case 'trash':
         return html`
