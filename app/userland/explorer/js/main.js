@@ -177,6 +177,7 @@ export class ExplorerApp extends LitElement {
     var selectionIsFolder = this.selection[0] ? this.selection[0].stat.isDirectory() : this.pathInfo.isDirectory()
     var selectionUrl = this.getRealUrl(this.selection[0] ? joinPath(this.realPathname, this.selection[0].name) : this.realPathname)
     var selectionName = selectionUrl.split('/').pop() || (this.realPathname === '/' ? 'drive' : selectionIsFolder ? 'folder' : 'file')
+    if (this.selection[0] && this.selection[0].stat.mount) selectionUrl = `dat://${this.selection[0].stat.mount.key}`
     var downloadUrl = `${downloadUrl}${selectionIsFolder ? '?download_as=zip' : ''}`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -245,8 +246,9 @@ export class ExplorerApp extends LitElement {
             `}
             ${this.selection.length <= 1 ? html`
               <section class="transparent">
-                <p><a href=${selectionUrl} target="_blank"><span class="fa-fw fas fa-external-link-alt"></span> Open in new tab</a></p>
+                <p><a href=${selectionUrl} target="_blank"><span class="fa-fw fas fa-external-link-alt"></span> Open ${this.selection.length ? 'selected' : ''} in new tab</a></p>
                 <p><a href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export ${selectionName}</a></p>
+                <p><a href="#" @click=${this.onToggleShowHidden}><span class="fa-fw fas fa-eye"></span> ${this.showHidden ? 'Hide' : 'Show'} hidden files</a></p>
               </section>
             ` : ''}
           ` : undefined}

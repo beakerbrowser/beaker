@@ -8,7 +8,7 @@ const cssStr = css`
 .readme {
   margin: 4px 0;
   padding: 14px;
-  background: var(--bg-color--light);
+  background: var(--bg-color);
   border-radius: 8px;
 }
 

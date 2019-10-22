@@ -48,7 +48,7 @@ a:hover {
 .content {
   margin: 10px 0px 14px;
   padding: 14px;
-  background: var(--bg-color--light);
+  background: var(--bg-color);
   border-radius: 8px;
 }
 

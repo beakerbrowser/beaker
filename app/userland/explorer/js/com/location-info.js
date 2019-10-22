@@ -57,6 +57,7 @@ export class LocationInfo extends LitElement {
     if (!this.currentDriveInfo) return html``
     const title = this.title
     const canEdit = this.currentDriveInfo.isOwner
+    const renderModes = this.renderModes
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${title ? html`<section><h3><a href=${this.realUrl}>${title}</a></h3></section>` : ''}
@@ -69,10 +70,12 @@ export class LocationInfo extends LitElement {
           <button ?disabled=${!canEdit} @click=${e => this.doEmit('delete')} class="transparent"><span class="fa-fw fas fa-trash"></span> Delete</button>
         `}
       </section>
-      <section class="selector">
-        <h5>View</h5>
-        ${this.renderModes.map(mode => this.renderRenderModeSelector(...mode))}
-      </section>
+      ${renderModes.length > 1 ? html`
+        <section class="selector">
+          <h5>View</h5>
+          ${renderModes.map(mode => this.renderRenderModeSelector(...mode))}
+        </section>
+      ` : ''}
     `
   }
 
