@@ -227,6 +227,9 @@ child-src 'self';
   if (requestUrl === 'beaker://history' || requestUrl.startsWith('beaker://history/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'history'), cb)
   }
+  if (requestUrl === 'beaker://settings' || requestUrl.startsWith('beaker://settings/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'settings'), cb)
+  }
 
   // builtin pages
   if (requestUrl === 'beaker://assets/builtin-pages.css') {

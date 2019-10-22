@@ -61,6 +61,7 @@ var bundleApplication = function () {
     bundle(userlandDir.path('site-info/js/main.js'),   userlandDir.path('site-info/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(userlandDir.path('sidebar/js/main.js'),     userlandDir.path('sidebar/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(userlandDir.path('library/js/main.js'),     userlandDir.path('library/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(userlandDir.path('settings/js/main.js'),    userlandDir.path('settings/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(userlandDir.path('history/js/main.js'),     userlandDir.path('history/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
     bundle(bpViewsDir.path('history.js'),              bpBuildDir.path('history.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
