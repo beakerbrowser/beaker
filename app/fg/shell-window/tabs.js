@@ -273,14 +273,14 @@ ${spinnerCSS}
   height: 31px;
   width: 235px;
   margin-right: 2px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+/*  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;*/
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
   background: var(--bg-background);
   transition: background 0.3s;
 }
 
-.tab:before,
+/*.tab:before,
 .tab:after {
   content: '';
   position: absolute;
@@ -301,7 +301,7 @@ ${spinnerCSS}
 .tab:after {
   right: -10px;
   -webkit-mask-image: radial-gradient(circle 10px at 10px 0, transparent 0, transparent 10px, black 11px);
-}
+}*/
 
 .tab.pinned {
   flex: 0 0 45px;
@@ -436,7 +436,7 @@ ${spinnerCSS}
   opacity: 1;
 }
 
-.tab.current:before,
+/*.tab.current:before,
 .tab.current:after {
   content: '';
   position: absolute;
@@ -455,7 +455,7 @@ ${spinnerCSS}
 .tab.current:after {
   right: -10px;
   -webkit-mask-image: radial-gradient(circle 10px at 10px 0, transparent 0, transparent 10px, black 11px);
-}
+}*/
 
 .tab.current .tab-close {
   background: var(--bg-tab--current);
