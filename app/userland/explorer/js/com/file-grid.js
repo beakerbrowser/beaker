@@ -9,7 +9,8 @@ export class FileGrid extends LitElement {
     return {
       items: {type: Array},
       info: {type: Object},
-      selection: {type: Array}
+      selection: {type: Array},
+      showHidden: {type: Boolean, attribute: 'show-hidden'}
     }
   }
 
@@ -21,17 +22,18 @@ export class FileGrid extends LitElement {
     super()
     this.items = []
     this.selection = []
+    this.showHidden = false
   }
 
   async load () {
   }
 
   get folders () {
-    return this.items.filter(i => i.stat.isDirectory())
+    return this.items.filter(i => i.stat.isDirectory() && (this.showHidden || !i.name.startsWith('.')))
   }
 
   get files () {
-    return this.items.filter(i => i.stat.isFile())
+    return this.items.filter(i => i.stat.isFile() && (this.showHidden || !i.name.startsWith('.')))
   }
   // rendering
   // =
@@ -64,6 +66,7 @@ export class FileGrid extends LitElement {
   renderItem (item) {
     var cls = classMap({
       item: true,
+      hidden: item.name.startsWith('.'),
       folder: item.stat.isDirectory(),
       file: item.stat.isFile(),
       selected: this.selection.includes(item)

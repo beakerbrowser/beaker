@@ -46,6 +46,10 @@ h4 {
   padding: 4px;
 }
 
+.item.hidden .fa-fw {
+  opacity: 0.5;
+}
+
 .item .fa-fw {
   font-size: 40px;
   line-height: 40px;

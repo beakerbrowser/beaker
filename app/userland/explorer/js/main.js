@@ -34,6 +34,7 @@ export class ExplorerApp extends LitElement {
     this.renderMode = undefined
     this.driveTitle = undefined
     this.mountTitle = undefined
+    this.showHidden = localStorage.showHidden == 1
     this.load()
   }
 
@@ -170,6 +171,7 @@ export class ExplorerApp extends LitElement {
                 real-pathname=${this.realPathname}
                 current-drive-title=${this.currentDriveTitle}
                 render-mode=${this.renderMode}
+                ?show-hidden=${this.showHidden}
                 .currentDriveInfo=${this.currentDriveInfo}
                 .items=${this.items}
                 .selection=${this.selection}
@@ -267,6 +269,13 @@ export class ExplorerApp extends LitElement {
       await uwg.library.configure(this.driveInfo.url, {isSaved: true})
     }
     this.load()
+  }
+
+  onToggleShowHidden (e) {
+    e.preventDefault()
+    this.showHidden = !this.showHidden
+    localStorage.showHidden = this.showHidden ? '1' : '0'
+    this.requestUpdate()
   }
 
   onChangeSelection (e) {

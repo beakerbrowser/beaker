@@ -15,7 +15,8 @@ export class FolderView extends LitElement {
       selection: {type: Array},
       renderMode: {type: String, attribute: 'render-mode'},
       realUrl: {type: String, attribute: 'real-url'},
-      realPathname: {type: String, attribute: 'real-pathname'}
+      realPathname: {type: String, attribute: 'real-pathname'},
+      showHidden: {type: Boolean, attribute: 'show-hidden'}
     }
   }
 
@@ -33,6 +34,7 @@ export class FolderView extends LitElement {
     this.renderMode = undefined
     this.realUrl = undefined
     this.realPathname = undefined
+    this.showHidden = undefined
   }
 
   getInlineMdItem () {
@@ -63,6 +65,7 @@ export class FolderView extends LitElement {
       <file-grid
         .items=${this.items}
         .selection=${this.selection}
+        ?show-hidden=${this.showHidden}
       ></file-grid>
       ${inlineMdItem ? html`
         <div class="readme">
