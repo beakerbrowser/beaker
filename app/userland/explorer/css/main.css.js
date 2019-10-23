@@ -10,7 +10,7 @@ ${tooltipCSS}
 
 :host {
   --bg-color: #f1f1f6;
-  --bg-color--light: #f9f9fc;
+  --bg-color--light: #f8f8fc;
 }
 
 a {
@@ -22,11 +22,10 @@ a:hover {
 }
 
 .layout {
-  min-height: 100vh;
 }
 
 main {
-  margin: 0 370px 0 300px;
+  margin: 0 370px 100px 300px;
 }
 
 nav {
@@ -211,10 +210,12 @@ nav section.selector > div.active span {
 
   nav.left {
     grid-area: botleft;
+    width: initial;
   }
 
   nav.right {
     grid-area: botright;
+    width: initial;
   }
 
   main {

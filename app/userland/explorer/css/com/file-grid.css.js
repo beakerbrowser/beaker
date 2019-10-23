@@ -21,8 +21,8 @@ h4 {
 .empty {
   background: var(--bg-color--light);
   padding: 40px;
-  margin: 20px;
-  border-radius: 4px;
+  margin: 14px 0;
+  border-radius: 8px;
   color: #667;
 }
 
@@ -44,10 +44,6 @@ h4 {
   border: 1px solid transparent;
   border-radius: 4px;
   padding: 4px;
-}
-
-.item.hidden .fa-fw {
-  opacity: 0.5;
 }
 
 .item .fa-fw {
@@ -93,6 +89,14 @@ h4 {
 .item .subicon.fa-external-link-square-alt {
   top: 18px;
   left: 57px;
+}
+
+.item.hidden .fa-fw {
+  opacity: 0.5;
+}
+
+.item.hidden .subicon {
+  opacity: 0.5;
 }
 
 .item.selected {

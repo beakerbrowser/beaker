@@ -16,7 +16,7 @@ const ICONS = {
     '.settings': 'fas fa-cog',
     '.trash': 'far fa-trash-alt',
     Library: 'fas fa-book',
-    Users: 'fas fa-user-friends'
+    Users: 'fas fa-user'
   },
   rootLibrary: {
     Applications: 'fas fa-drafting-compass',
@@ -31,12 +31,12 @@ const ICONS = {
   personRoot: {
     '.data': 'fas fa-database',
     feed: 'fas fa-list',
-    friends: 'fas fa-user'
+    friends: 'fas fa-user-friends'
   },
   data: {
     bookmarks: 'fas fa-star',
-    comments: 'fas fa-comments',
-    tags: 'fas fa-tags'
+    comments: 'fas fa-comment',
+    tags: 'fas fa-tag'
   }
 }
 
