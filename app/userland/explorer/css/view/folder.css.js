@@ -12,6 +12,15 @@ const cssStr = css`
   border-radius: 8px;
 }
 
+.add-readme-link {
+  color: rgba(0,0,0,.4);
+  text-decoration: none;
+}
+
+.add-readme-link:hover {
+  text-decoration: underline;
+}
+
 file-display {
   --text-padding: 14px 14px 18px;
   --text-background: #fff;

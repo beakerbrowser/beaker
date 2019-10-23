@@ -102,14 +102,14 @@ export class ExplorerApp extends LitElement {
       this.user = await uwg.profiles.me()
     }
 
-    var archive = new DatArchive(location)
-    this.driveInfo = await archive.getInfo()
-    this.driveInfo.ident = await navigator.filesystem.identifyDrive(archive.url)
+    var drive = new DatArchive(location)
+    this.driveInfo = await drive.getInfo()
+    this.driveInfo.ident = await navigator.filesystem.identifyDrive(drive.url)
     try {
-      this.pathInfo = await archive.stat(location.pathname)
+      this.pathInfo = await drive.stat(location.pathname)
       await this.readMountInfo()
       if (this.pathInfo.isDirectory()) {
-        this.items = await archive.readdir(location.pathname, {stat: true})
+        this.items = await drive.readdir(location.pathname, {stat: true})
         this.items.sort((a, b) => a.name.localeCompare(b.name))
         let driveKind = ''
         if (this.currentDriveInfo.ident.isRoot) driveKind = 'root'
@@ -137,6 +137,15 @@ export class ExplorerApp extends LitElement {
       if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/feed') {
         this.renderMode = 'feed'
       }
+      if (!this.watchStream) {
+        let currentDrive = new DatArchive(this.currentDriveInfo.url)
+        this.watchStream = currentDrive.watch(this.realPathname)
+        this.watchStream.addEventListener('changed', e => {
+          this.load()
+        })
+      }
+    } else if (/[?&]edit/.test(location.search)) {
+      this.renderMode = 'editor'
     }
 
     this.driveTitle = getDriveTitle(this.driveInfo)
@@ -186,7 +195,9 @@ export class ExplorerApp extends LitElement {
         @click=${this.onClickLayout}
         @goto=${this.onGoto}
         @new-folder=${this.onNewFolder}
+        @new-file=${this.onNewFile}
         @import=${this.onImport}
+        @save=${this.onSave}
         @rename=${this.onRename}
         @delete=${this.onDelete}
       >
@@ -323,6 +334,27 @@ export class ExplorerApp extends LitElement {
     this.requestUpdate()
   }
 
+  async onNewFile (e) {
+    if (!this.currentDriveInfo.isOwner) return
+    var filename = prompt('Enter the name of your new file')
+    if (filename) {
+      var pathname = joinPath(this.realPathname, filename)
+      var drive = new DatArchive(this.currentDriveInfo.url)
+      if (await drive.stat(pathname).catch(e => false)) {
+        toast.create('A file or folder already exists at that name')
+        return
+      }
+      try {
+        await drive.writeFile(pathname, '')
+      } catch (e) {
+        console.error(e)
+        toast.create(`Error: ${e.toString()}`, 'error')
+        return
+      }
+      window.location = window.location.origin + pathname + '?edit'
+    }
+  }
+
   async onNewFolder (e) {
     if (!this.currentDriveInfo.isOwner) return
     var foldername = prompt('Enter the name of your new folder')
@@ -365,6 +397,20 @@ export class ExplorerApp extends LitElement {
     } catch (e) {
       toast.create(`Import failed: ${e.toString()}`, 'error')
     }
+  }
+
+  async onSave (e) {
+    if (!this.currentDriveInfo.isOwner) return
+    var value = this.shadowRoot.querySelector('explorer-view-file').editor.getValue()
+    var drive = new DatArchive(this.currentDriveInfo.url)
+    try {
+      await drive.writeFile(this.realPathname, value, 'utf8')
+    } catch (e) {
+      console.error(e)
+      toast.create(`Save failed: ${e.toString()}`, 'error')
+      return
+    }
+    toast.create('Saved', 'success')
   }
 
   async onRename (e) {

@@ -75,6 +75,10 @@ export class FolderView extends LitElement {
             .info=${inlineMdItem.stat}
           ></file-display>
         </div>
+      ` : this.currentDriveInfo.isOwner ? html`
+        <div class="readme">
+          <a class="add-readme-link" href="#" @click=${this.onAddReadme}>+ Add README.md</a>
+        </div>
       ` : ''}
       <social-signals
         user-url=${this.userUrl}
@@ -89,10 +93,14 @@ export class FolderView extends LitElement {
     `
   }
 
-
   // events
   // =
 
+  onAddReadme (e) {
+    var drive = new DatArchive(this.currentDriveInfo.url)
+    drive.writeFile(this.realPathname + '/README.md', '')
+    window.location = this.realUrl + '/README.md?edit'
+  }
 }
 
 customElements.define('explorer-view-folder', FolderView)

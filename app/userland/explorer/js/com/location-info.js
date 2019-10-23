@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
+import { isFilenameBinary } from 'beaker://app-stdlib/js/is-ext-binary.js'
 
 export class LocationInfo extends LitElement {
   static get properties () {
@@ -58,14 +59,25 @@ export class LocationInfo extends LitElement {
     const title = this.title
     const canEdit = this.currentDriveInfo.isOwner
     const renderModes = this.renderModes
+    const isText = !isFilenameBinary(this.realPathname)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${title ? html`<section><h3><a href=${this.realUrl}>${title}</a></h3></section>` : ''}
       <section>
         ${this.pathInfo.isDirectory() ? html`
+          <button ?disabled=${!canEdit} @click=${e => this.doEmit('new-file')} class="transparent"><span class="fa-fw far fa-file"></span> New file</button>
           <button ?disabled=${!canEdit} @click=${e => this.doEmit('new-folder')} class="transparent"><span class="fa-fw far fa-folder"></span> New folder</button>
           <button ?disabled=${!canEdit} @click=${e => this.doEmit('import')} class="transparent"><span class="fa-fw fas fa-file-import"></span> Import files</button>
         ` : html`
+          ${isText ? 
+            this.renderMode === 'editor' ? html`
+              <button ?disabled=${!canEdit} @click=${e => this.doEmit('save')} class="transparent">
+                <span class="fa-fw fas fa-save"></span> Save
+              </button>
+            ` : html`
+              <button ?disabled=${!canEdit} @click=${e => this.onSelectRenderMode(e, 'editor')} class="transparent"><span class="fa-fw far fa-edit"></span> Edit</button>
+            `
+          : ''}
           <button ?disabled=${!canEdit} @click=${e => this.doEmit('rename')} class="transparent"><span class="fa-fw fas fa-i-cursor"></span> Rename</button>
           <button ?disabled=${!canEdit} @click=${e => this.doEmit('delete')} class="transparent"><span class="fa-fw fas fa-trash"></span> Delete</button>
         `}

@@ -7,3 +7,15 @@ body {
   font-size: 14px;
   --border-color: #d4d7dc;
 }
+
+#monaco-editor {
+  position: fixed;
+  z-index: 1;
+  top: 30px;
+  height: calc(100vh - 40px);
+  left: 300px;
+  right: 370px;
+  border: 1px solid #e1e1e6;
+  border-radius: 4px;
+  overflow: hidden;
+}
