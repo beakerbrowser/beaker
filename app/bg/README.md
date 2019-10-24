@@ -11,5 +11,4 @@ Notable folders:
  - `protocols` contains the custom URL scheme handlers.
  - `rpc-manifests` contains the RPC manifests for internal RPC that's leveraged by `/app/fg` components.
  - `ui` contains the code which manages windows, tabs, subwindows, and everything about the user interface.
- - `uwg` contains the unwalled garden crawler and APIs for reading/writing UwG records.
  - `web-apis` contains all interfaces which are exposed to the userland environment via RPC. It currently contains both fg and bg code (which maybe ought to change).

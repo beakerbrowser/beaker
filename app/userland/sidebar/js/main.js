@@ -19,8 +19,6 @@ class SidebarApp extends LitElement {
     this.currentUrl = ''
     this.view = 'editor'
     this.rootUrl = null
-    this.user = null
-    this.followedUsers = []
 
     const globalAnchorClickHandler = (isPopup) => e => {
       e.preventDefault()
@@ -54,20 +52,11 @@ class SidebarApp extends LitElement {
     }
   }
 
-  get feedAuthors () {
-    if (!this.user) return []
-    return [this.user.url].concat(this.followedUsers)
-  }
-
   async load () {
     this.isLoading = true
     if (!this.rootUrl) {
-      this.rootUrl = (await navigator.filesystem.get()).url
+      this.rootUrl = navigator.filesystem.url
     }
-    if (!this.user) {
-      this.user = await uwg.profiles.me()
-    }
-    this.followedUsers = (await uwg.follows.list({author: this.user.url})).map(({topic}) => topic.url)
 
     this.isLoading = false
     this.requestUpdate()
@@ -87,10 +76,6 @@ class SidebarApp extends LitElement {
   // =
 
   render () {
-    if (!this.user) return html`<div></div>`
-    const navItem = (id, label) => html`
-      <a href="#" class="${classMap({current: id === this.view})}" @click=${e => this.onClickNavItem(e, id)}>${label}</a>
-    `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <a class="close-btn" href="#" @click=${this.onClickClose}><span class="fas fa-fw fa-times"></span></a>

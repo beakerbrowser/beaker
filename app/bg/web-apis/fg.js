@@ -2,7 +2,6 @@ import * as rpc from 'pauls-electron-rpc'
 import * as DatArchive from './fg/dat-archive'
 import * as beaker from './fg/beaker'
 import * as experimental from './fg/experimental'
-import * as uwg from './fg/uwg'
 import * as navigatorMethods from './fg/navigator-methods'
 
 export const setup = function () {
@@ -15,6 +14,5 @@ export const setup = function () {
   if (['beaker:', 'dat:'].includes(window.location.protocol)) {
     window.beaker = beaker.setup(rpc)
     window.experimental = experimental.setup(rpc)
-    window.uwg = uwg.setup(rpc)
   }
 }

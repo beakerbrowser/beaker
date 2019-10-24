@@ -76,3 +76,15 @@ export function highlightSearchResult (str = '', nonce = 0) {
   var end = new RegExp(`\\{/${nonce}\\}`, 'g') // eg {/500}
   return makeSafe(str).replace(start, '<strong>').replace(end, '</strong>')
 }
+
+const reservedChars = /[<>:"/\\|?*\x00-\x1F]/g
+const endingDashes = /([-]+$)/g
+export function slugifyUrl (str = '') {
+  try {
+    let url = new URL(str)
+    str = url.protocol + url.hostname + url.pathname + url.search + url.hash
+  } catch (e) {
+    // ignore
+  }
+  return str.replace(reservedChars, '-').replace(endingDashes, '')
+}

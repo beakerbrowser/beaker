@@ -141,12 +141,11 @@ export class AddPinPopup extends BasePopup {
   }
 
   async initialLoad () {
-    this.user = await uwg.profiles.me()
     await this.loadSuggestions()
   }
 
   async loadSuggestions () {
-    this.suggestions = await beaker.crawler.listSuggestions(this.user.url, this.query)
+    this.suggestions = [] // TODO await beaker.crawler.listSuggestions(this.user.url, this.query)
     console.log(this.query, this.suggestions)
   }
 

@@ -13,7 +13,7 @@ export class CommentsThread extends LitElement {
   static get properties () {
     return {
       comments: {type: Array},
-      topicUrl: {type: String, attribute: 'topic-url'},
+      href: {type: String, attribute: 'topic-url'},
       userUrl: {type: String, attribute: 'user-url'},
       activeReplies: {type: Object},
       composerPlaceholder: {type: String, attribute: 'composer-placeholder'}
@@ -23,7 +23,7 @@ export class CommentsThread extends LitElement {
   constructor () {
     super()
     this.comments = null
-    this.topicUrl = ''
+    this.href = ''
     this.userUrl = ''
     this.activeReplies = {}
     this.composerPlaceholder = undefined
@@ -33,7 +33,7 @@ export class CommentsThread extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <beaker-comment-composer
-        topic="${this.topicUrl}"
+        href="${this.href}"
         placeholder=${this.composerPlaceholder || 'Add a comment'}
       ></beaker-comment-composer>
       ${this.renderComments(this.comments)}
@@ -75,7 +75,7 @@ export class CommentsThread extends LitElement {
         </div>
         ${this.activeReplies[comment.url] ? html`
           <beaker-comment-composer
-            topic="${comment.topic}"
+            topic="${comment.href}"
             reply-to="${comment.url}"
             alwaysActive
             @submit-comment=${e => this.onSubmitComment(e, comment.url)}

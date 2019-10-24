@@ -50,7 +50,7 @@ export async function listPrograms (opts = {}) {
 }
 
 /**
- * @param {string} url 
+ * @param {string} url
  * @returns {Promise<InstalledProgram>}
  */
 export async function getProgram (url) {
@@ -60,7 +60,7 @@ export async function getProgram (url) {
 }
 
 /**
- * @param {string} url 
+ * @param {string} url
  * @returns {Promise<Boolean>}
  */
 export async function isInstalled (url) {
@@ -68,8 +68,8 @@ export async function isInstalled (url) {
 }
 
 /**
- * @param {string} url 
- * @param {number|string} version 
+ * @param {string} url
+ * @param {number|string} version
  * @returns {Promise<void>}
  */
 export async function installProgram (url, version) {
@@ -111,7 +111,7 @@ export async function installProgram (url, version) {
 }
 
 /**
- * @param {string} url 
+ * @param {string} url
  * @returns {Promise<void>}
  */
 export async function uninstallProgram (url) {
@@ -151,7 +151,7 @@ export async function uninstallProgram (url) {
  * @returns {Promise<Object>}
  */
 async function load () {
-  var installedPrograms
+  var installedPrograms = []
   var release = await lock('access:program-registry')
   try {
     var programRegistryStr
@@ -209,7 +209,7 @@ async function persist ({installedPrograms}) {
   }
 }
 
-function* driveTypes (manifest) {
+function * driveTypes (manifest) {
   if (manifest && Array.isArray(manifest.driveTypes)) {
     for (let dt of manifest.driveTypes) {
       if (!dt || typeof dt !== 'object' || typeof dt.id !== 'string') {
@@ -221,7 +221,7 @@ function* driveTypes (manifest) {
 }
 
 /**
- * @param {string} url 
+ * @param {string} url
  * @returns {string}
  */
 function normalizeUrl (url) {

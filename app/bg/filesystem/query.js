@@ -40,8 +40,9 @@ import { join as joinPath } from 'path'
  * @typedef {Object} FSQueryResult
  * @prop {string} type
  * @prop {string} path
+ * @prop {string} url
  * @prop {Stat} stat
- * @prop {DriveInfo} parentDrive
+ * @prop {DriveInfo} drive
  * @prop {DriveInfo} [targetDrive]
  */
 
@@ -49,13 +50,13 @@ import { join as joinPath } from 'path'
 // =
 
 // navigator.filesystem.query({type: 'mount', path: ['/public', '/public/friends/*', '/public/friends/*/friends/*']})
-// => [{type: 'mount', path: '/public', stat, targetDrive, parentDrive}, {type: 'mount', path: '/public/friend/bob', stat, targetDrive, parentDrive}, ...]
+// => [{type: 'mount', path: '/public', stat, targetDrive, drive}, {type: 'mount', path: '/public/friend/bob', stat, targetDrive, drive}, ...]
 
 // navigator.filesystem.query({type: 'mount', mount: url, path: ['/public/friends/*', '/public/friends/*/friends/*']})
-// => [{type: 'mount', path: '/public/friend/bob', stat, targetDrive, parentDrive}, ...]
+// => [{type: 'mount', path: '/public/friend/bob', stat, targetDrive, drive}, ...]
 
 // navigator.filesystem.query({type: 'file', meta: {href: url}, path: ['/public/comments', '/public/friends/*/comments', '/public/friends/*/friends/*/comments']})
-// => [{type: 'folder', path: '/public/comment/foo.txt', stat, parentDrive}]
+// => [{type: 'folder', path: '/public/comment/foo.txt', stat, drive}]
 
 /**
  * @param {FSQueryOpts} opts
@@ -104,7 +105,7 @@ export async function query (opts) {
       type,
       path,
       stat,
-      parentDrive: undefined, // TODO
+      drive: undefined, // TODO
       targetDrive: undefined // TODO
     })
   }

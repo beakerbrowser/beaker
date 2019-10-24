@@ -61,7 +61,7 @@ export class Reactions extends LitElement {
   }
 
   emitAdd (phrase) {
-    this.dispatchEvent(new CustomEvent('add-reaction', {bubbles: true, composed: true, detail: {topic: this.topic, phrase}}))
+    this.dispatchEvent(new CustomEvent('add-reaction', {bubbles: true, composed: true, detail: {href: this.topic, phrase}}))
 
     // optimistic update UI
     var author = {url: this.userUrl, title: 'You'}
@@ -72,7 +72,7 @@ export class Reactions extends LitElement {
   }
 
   emitRemove (phrase) {
-    this.dispatchEvent(new CustomEvent('delete-reaction', {bubbles: true, composed: true, detail: {topic: this.topic, phrase}}))
+    this.dispatchEvent(new CustomEvent('delete-reaction', {bubbles: true, composed: true, detail: {href: this.topic, phrase}}))
 
     // optimistic update UI
     var reaction = this.reactions.find(r => r.phrase === phrase)

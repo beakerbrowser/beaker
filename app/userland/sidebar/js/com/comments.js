@@ -1,5 +1,6 @@
 import { LitElement, html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import * as toast from '../../../app-stdlib/js/com/toast.js'
+import { comments, annotations } from '../../../app-stdlib/js/uwg.js'
 import '../../../app-stdlib/js/com/comments/thread.js'
 
 class SidebarComments extends LitElement {
@@ -55,9 +56,9 @@ class SidebarComments extends LitElement {
   }
 
   async load () {
-    var cs = await uwg.comments.thread(this.url, {author: this.feedAuthors})
+    var cs = await comments.thread(this.url)
     this.commentCount = countComments(cs)
-    await loadCommentReactions(this.feedAuthors, cs)
+    await loadCommentAnnotations(this.feedAuthors, cs)
     this.comments = cs
   }
 
@@ -72,8 +73,8 @@ class SidebarComments extends LitElement {
         topic-url="${this.url}"
         user-url="${this.user.url}"
         composer-placeholder="Add a comment about this site"
-        @add-reaction=${this.onAddReaction}
-        @delete-reaction=${this.onDeleteReaction}
+        @add-tag=${this.onAddTag}
+        @delete-tag=${this.onDeleteTag}
         @submit-comment=${this.onSubmitComment}
         @delete-comment=${this.onDeleteComment}
       >
@@ -84,19 +85,25 @@ class SidebarComments extends LitElement {
   // events
   // =
 
-  async onAddReaction (e) {
-    await uwg.reactions.add(e.detail.topic, e.detail.emoji)
+  async onAddTag (e) {
+    var record = (await annotations.get(e.detail.href)) || {}
+    record.tags = record.tags || []
+    if (!record.tags.includes(e.detail.tag)) {
+      record.tags.push(e.detail.tag)
+    }
+    await annotations.put(e.detail.href, record)
   }
 
-  async onDeleteReaction (e) {
-    await uwg.reactions.remove(e.detail.topic, e.detail.emoji)
+  async onDeleteTag (e) {
+    var record = (await annotations.get(e.detail.href)) || {}
+    record.tags = (record.tags || []).filter(t => t !== e.detail.tag)
+    await annotations.put(e.detail.href, record)
   }
 
   async onSubmitComment (e) {
     // add the new comment
     try {
-      var {topic, replyTo, body} = e.detail
-      await uwg.comments.add(topic, {replyTo, body})
+      await comments.add(e.detail)
     } catch (e) {
       alert('Something went wrong. Please let the Beaker team know! (An error is logged in the console.)')
       console.error('Failed to add comment')
@@ -113,7 +120,7 @@ class SidebarComments extends LitElement {
 
     // delete the comment
     try {
-      await uwg.comments.remove(comment.url)
+      await comments.remove(comment.path)
     } catch (e) {
       alert('Something went wrong. Please let the Beaker team know! (An error is logged in the console.)')
       console.error('Failed to delete comment')
@@ -133,9 +140,9 @@ function countComments (comments) {
   return comments.reduce((acc, comment) => acc + 1 + (comment.replies ? countComments(comment.replies) : 0), 0)
 }
 
-async function loadCommentReactions (author, comments) {
+async function loadCommentAnnotations (author, comments) {
   await Promise.all(comments.map(async (comment) => {
-    comment.reactions = await uwg.reactions.tabulate(comment.url, {author})
-    if (comment.replies) await loadCommentReactions(author, comment.replies)
+    comment.annotations = await annotations.tabulate(comment.url)
+    if (comment.replies) await loadCommentAnnotations(author, comment.replies)
   }))
 }

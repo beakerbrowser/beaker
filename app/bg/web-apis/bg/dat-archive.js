@@ -7,7 +7,6 @@ import * as modals from '../../ui/subwindows/modals'
 import * as permissions from '../../ui/permissions'
 import datDns from '../../dat/dns'
 import * as datArchives from '../../dat/archives'
-import * as datLibrary from '../../filesystem/dat-library'
 import * as archivesDb from '../../dbs/archives'
 import { timer } from '../../../lib/time'
 import * as users from '../../filesystem/users'
@@ -50,7 +49,7 @@ export default {
       // create
       try {
         var newArchive = await datArchives.createNewArchive({title, description, type, author, links})
-        await datLibrary.configureArchive(newArchive, {isSaved: true, isHosting: true, visibility})
+        // TODO uwg await datLibrary.configureArchive(newArchive, {isSaved: true, isHosting: true, visibility})
       } catch (e) {
         console.log(e)
         throw e
@@ -110,11 +109,12 @@ export default {
       // create
       let key = await lookupUrlDatKey(url)
       let newArchive = await datArchives.forkArchive(key, {title, description, type, author, links})
-      await datLibrary.configureArchive(newArchive, {
-        isSaved: true,
-        isHosting: true,
-        visibility
-      })
+      // TODO uwg
+      // await datLibrary.configureArchive(newArchive, {
+      //   isSaved: true,
+      //   isHosting: true,
+      //   visibility
+      // })
       newArchiveUrl = newArchive.url
     }
 
@@ -128,7 +128,7 @@ export default {
     var {archive} = await lookupArchive(this.sender, url)
     await assertDeleteArchivePermission(archive, this.sender)
     assertArchiveDeletable(archive)
-    await datLibrary.configureArchive(archive, {isSaved: false})
+    // TODO uwg await datLibrary.configureArchive(archive, {isSaved: false})
   },
 
   async loadArchive (url) {
@@ -183,7 +183,7 @@ export default {
       // handle 'visibility' specially
       // also, only allow beaker to set 'visibility' for now
       if (('visibility' in settings) && this.sender.getURL().startsWith('beaker:')) {
-        await datLibrary.configureArchive(archive, {visibility: settings.visibility})
+        // TODO uwg await datLibrary.configureArchive(archive, {visibility: settings.visibility})
       }
 
       // only allow beaker to set these manifest updates for now

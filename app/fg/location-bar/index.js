@@ -7,17 +7,13 @@ import { unsafeHTML } from '../vendor/lit-element/lit-html/directives/unsafe-htm
 import { examineLocationInput } from '../../lib/urls'
 import _uniqWith from 'lodash.uniqwith'
 import browserManifest from '../../bg/web-apis/manifests/internal/browser'
-import bookmarksManifest from '../../bg/web-apis/manifests/external/unwalled-garden-bookmarks'
 import historyManifest from '../../bg/web-apis/manifests/internal/history'
-import searchManifest from '../../bg/web-apis/manifests/internal/search'
 import locationBarManifest from '../../bg/rpc-manifests/location-bar'
 import viewsManifest from '../../bg/rpc-manifests/views'
 
 const bg = {
   beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
-  bookmarks: rpc.importAPI('unwalled-garden-bookmarks', bookmarksManifest),
   history: rpc.importAPI('history', historyManifest),
-  search: rpc.importAPI('search', searchManifest),
   locationBar: rpc.importAPI('background-process-location-bar', locationBarManifest),
   views: rpc.importAPI('background-process-views', viewsManifest)
 }
@@ -331,7 +327,7 @@ class LocationBar extends LitElement {
 
     var finalResults
     var [crawlerResults, historyResults] = await Promise.all([
-      bg.search.query({query: this.inputValue, limit: 10}),
+      [], // TODO uwg bg.search.query({query: this.inputValue, limit: 10}),
       []// DISABLED bg.history.search(this.inputValue)
     ])
     // History search is experimentally disabled

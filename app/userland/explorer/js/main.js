@@ -15,18 +15,16 @@ const ICONS = {
     '.data': 'fas fa-database',
     '.settings': 'fas fa-cog',
     '.trash': 'far fa-trash-alt',
-    Library: 'fas fa-book',
-    Users: 'fas fa-user'
+    library: 'fas fa-book',
+    users: 'fas fa-user'
   },
   rootLibrary: {
-    Applications: 'fas fa-drafting-compass',
-    Documents: 'fas fa-file-pdf',
-    Modules: 'fas fa-code',
-    Music: 'fas fa-music',
-    Photos: 'fas fa-image',
-    Podcasts: 'fas fa-microphone',
-    Videos: 'fas fa-film',
-    Websites: 'fas fa-sitemap'
+    applications: 'fas fa-drafting-compass',
+    bookmarks: 'fas fa-star',
+    files: 'fas fa-copy',
+    media: 'fas fa-photo-video',
+    modules: 'fas fa-code',
+    websites: 'fas fa-sitemap'
   },
   personRoot: {
     '.data': 'fas fa-database',
@@ -34,9 +32,8 @@ const ICONS = {
     friends: 'fas fa-user-friends'
   },
   data: {
-    bookmarks: 'fas fa-star',
-    comments: 'fas fa-comment',
-    tags: 'fas fa-tag'
+    annotations: 'fas fa-tag',
+    comments: 'fas fa-comment'
   }
 }
 
@@ -99,7 +96,7 @@ export class ExplorerApp extends LitElement {
 
   async load () {
     if (!this.user) {
-      this.user = await uwg.profiles.me()
+      this.user = await navigator.session.get()
     }
 
     var drive = new DatArchive(location)
@@ -119,7 +116,7 @@ export class ExplorerApp extends LitElement {
             item.subicon = 'fas fa-external-link-square-alt'
           } else if (driveKind === 'root' && this.realPathname === '/') {
             item.subicon = ICONS.rootRoot[item.name]
-          } else if (driveKind === 'root' && this.realPathname === '/Library') {
+          } else if (driveKind === 'root' && this.realPathname === '/library') {
             item.subicon = ICONS.rootLibrary[item.name]
           } else if (driveKind === 'person' && this.realPathname === '/') {
             item.subicon = ICONS.personRoot[item.name]
@@ -187,7 +184,7 @@ export class ExplorerApp extends LitElement {
     var selectionUrl = this.getRealUrl(this.selection[0] ? joinPath(this.realPathname, this.selection[0].name) : this.realPathname)
     var selectionName = selectionUrl.split('/').pop() || (this.realPathname === '/' ? 'drive' : selectionIsFolder ? 'folder' : 'file')
     if (this.selection[0] && this.selection[0].stat.mount) selectionUrl = `dat://${this.selection[0].stat.mount.key}`
-    var downloadUrl = `${downloadUrl}${selectionIsFolder ? '?download_as=zip' : ''}`
+    var downloadUrl = `${selectionUrl}${selectionIsFolder ? '?download_as=zip' : ''}`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div
@@ -275,19 +272,6 @@ export class ExplorerApp extends LitElement {
     `
   }
 
-  renderSaveBtn () {
-    const isSaved = !!this.libraryEntry
-    return html`
-      <button class="big ${isSaved ? 'primary' : ''}" @click=${this.onToggleSaved}>
-        ${isSaved ? html`
-          <span class="fas fa-fw fa-save"></span> Saved
-        ` : html`
-          <span class="fas fa-fw fa-save"></span> Save
-        `}
-      </button>
-    `
-  }
-
   // events
   // =
 
@@ -306,15 +290,6 @@ export class ExplorerApp extends LitElement {
     } else {
       window.location = joinPath(window.location.toString(), item.name)
     }
-  }
-
-  async onToggleSaved (e) {
-    if (this.libraryEntry) {
-      await uwg.library.configure(this.driveInfo.url, {isSaved: false})
-    } else {
-      await uwg.library.configure(this.driveInfo.url, {isSaved: true})
-    }
-    this.load()
   }
 
   onToggleShowHidden (e) {
@@ -380,7 +355,7 @@ export class ExplorerApp extends LitElement {
     toast.create(`Importing ${files.length} files...`)
     var drive = new DatArchive(this.currentDriveInfo.url)
     try {
-      for (let i = 0, file; file = files[i]; i++) {
+      for (let i = 0, file; (file = files[i]); i++) {
         let reader = new FileReader()
         let p = new Promise((resolve, reject) => {
           reader.onload = e => resolve(e.target.result)
@@ -462,7 +437,7 @@ export class ExplorerApp extends LitElement {
         if (!confirm(`Are you sure you want to delete this ${this.pathInfo.isDirectory() ? 'folder' : 'file'}?`)) {
           return
         }
-        
+
         toast.create(`Deleting 1 item...`)
         await del(this.realPathname, this.pathInfo)
         toast.create(`Deleted 1 item`, 'success')

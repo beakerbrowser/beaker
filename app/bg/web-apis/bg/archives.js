@@ -1,7 +1,6 @@
 import datDns from '../../dat/dns'
 import * as datArchives from '../../dat/archives'
 import * as archivesDb from '../../dbs/archives'
-import * as datLibrary from '../../filesystem/dat-library'
 import * as trash from '../../filesystem/trash'
 import * as users from '../../filesystem/users'
 import { PermissionsError } from 'beaker-error-constants'
@@ -18,11 +17,6 @@ export default {
       status.peers += archives[k].metadata.peers.length
     }
     return status
-  },
-
-  async listTrash () {
-    var records = await datLibrary.listTrash()
-    return records.map(massageRecord)
   },
 
   async collectTrash () {

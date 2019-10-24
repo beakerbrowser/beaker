@@ -11,7 +11,6 @@ export class MountInfo extends LitElement {
     }
   }
 
-
   constructor () {
     super()
     this.mountInfo = undefined

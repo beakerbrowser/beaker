@@ -1,5 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
+import { comments, annotations } from 'beaker://app-stdlib/js/uwg.js'
 import css from '../../css/com/social-signals.css.js'
 import 'beaker://app-stdlib/js/com/reactions/reactions.js'
 
@@ -22,7 +23,7 @@ class SocialSignals extends LitElement {
     this.authors = undefined
     this.topic = undefined
     this.numComments = undefined
-    this.reactions = undefined
+    this.annotations = undefined
   }
 
   // rendering
@@ -36,28 +37,29 @@ class SocialSignals extends LitElement {
         <span class="far fa-fw fa-comment"></span>
         ${until(this.renderNumComments(), '')}
       </span>
-      ${until(this.renderReactions(), '')}
+      ${until(this.renderAnnotations(), '')}
     `
   }
-  
+
   async renderNumComments () {
     if (this.numComments === undefined) {
-      this.numComments = (await uwg.comments.list({topic: this.topic, author: this.authors})).length
+      this.numComments = (await comments.list({href: this.topic})).length
     }
     return this.numComments
   }
 
-  async renderReactions () {
-    if (this.reactions === undefined) {
-      this.reactions = await uwg.reactions.tabulate(this.topic, {author: this.authors})
+  async renderAnnotations () {
+    if (this.annotations === undefined) {
+      this.annotations = await annotations.tabulate(this.topic)
     }
-    return html`
-      <beaker-reactions
-        user-url="${this.userUrl}"
-        .reactions=${this.reactions}
-        topic="${this.topic}"
-      ></beaker-reactions>
-    `
+    return '' // TODO
+    // return html`
+    //   <beaker-reactions
+    //     user-url="${this.userUrl}"
+    //     .reactions=${this.reactions}
+    //     topic="${this.topic}"
+    //   ></beaker-reactions>
+    // `
   }
 }
 customElements.define('social-signals', SocialSignals)

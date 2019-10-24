@@ -11,7 +11,6 @@ export class DriveInfo extends LitElement {
     }
   }
 
-
   constructor () {
     super()
     this.driveInfo = undefined

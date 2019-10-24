@@ -90,7 +90,21 @@ export default {
       // use sender url
       siteUrl = await sessionPerms.toDatOrigin(this.sender.getURL())
     }
-    return massageSessionRecord(user, await userSiteSessions.get(user.id, siteUrl))
+    var record = massageSessionRecord(user, await userSiteSessions.get(user.id, siteUrl))
+    if (!record) {
+      if (await sessionPerms.isTrustedApp(this.sender)) {
+        // create a default session record
+        record = {
+          profile: {
+            url: user.url,
+            title: user.title,
+            description: user.description
+          },
+          permissions: []
+        }
+      }
+    }
+    return record
   },
 
   /**

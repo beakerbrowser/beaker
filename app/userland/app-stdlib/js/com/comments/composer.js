@@ -5,7 +5,7 @@ import { emit } from '../../dom.js'
 export class CommentComposer extends LitElement {
   static get properties () {
     return {
-      topic: {type: String},
+      href: {type: String},
       replyTo: {type: String, attribute: 'reply-to'},
       isFocused: {type: Boolean},
       alwaysActive: {type: Boolean},
@@ -16,7 +16,7 @@ export class CommentComposer extends LitElement {
 
   constructor () {
     super()
-    this.topic = ''
+    this.href = ''
     this.replyTo = ''
     this.isFocused = false
     this.alwaysActive = false
@@ -27,7 +27,7 @@ export class CommentComposer extends LitElement {
   _submit () {
     if (!this.draftText) return
     var detail = {
-      topic: this.topic,
+      href: this.href,
       replyTo: this.replyTo || undefined,
       body: this.draftText
     }

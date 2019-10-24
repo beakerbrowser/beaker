@@ -164,12 +164,12 @@ class SiteInfoApp extends LitElement {
     if (!this.url) return
 
     if (!this.rootUrl) {
-      this.rootUrl = (await navigator.filesystem.get()).url
+      this.rootUrl = navigator.filesystem.url
     }
     if (!this.user) {
-      this.user = await uwg.profiles.me()
+      this.user = await navigator.session.get()
     }
-    this.followedUsers = (await uwg.follows.list({author: this.user.url})).map(({topic}) => topic.url)
+    this.followedUsers = [] // TODO (await uwg.follows.list({author: this.user.url})).map(({topic}) => topic.url)
 
     this.info = {}
     this.manifest = null
@@ -198,10 +198,10 @@ class SiteInfoApp extends LitElement {
       }
 
       // fetch forks
-      this.forks = await uwg.library.list({forkOf: this.origin})
+      this.forks = [] // TODO await uwg.library.list({forkOf: this.origin})
 
       // read social data
-      this.followers = (await uwg.follows.list({author: this.feedAuthors, topic: this.origin})).map(({author}) => author)
+      this.followers = [] // TODO (await uwg.follows.list({author: this.feedAuthors, topic: this.origin})).map(({author}) => author)
     } else {
       this.info = {
         title: this.hostname,
@@ -499,32 +499,32 @@ class SiteInfoApp extends LitElement {
   }
 
   async onClickHost (e) {
-    await uwg.library.configure(this.origin, {isSaved: true, isHosting: true})
+    // TODO await uwg.library.configure(this.origin, {isSaved: true, isHosting: true})
     this.load()
   }
 
   async onClickUnhost (e) {
-    await uwg.library.configure(this.origin, {isHosting: false})
+    // TODO await uwg.library.configure(this.origin, {isHosting: false})
     this.load()
   }
 
   async onClickSave (e) {
-    await uwg.library.configure(this.origin, {isSaved: true})
+    // TODO await uwg.library.configure(this.origin, {isSaved: true})
     this.load()
   }
 
   async onClickUnsave (e) {
-    await uwg.library.configure(this.origin, {isSaved: false})
+    // TODO await uwg.library.configure(this.origin, {isSaved: false})
     this.load()
   }
 
   async onClickFollow () {
-    await uwg.follows.add(this.origin)
+    // TODO await uwg.follows.add(this.origin)
     this.load()
   }
 
   async onClickUnfollow () {
-    await uwg.follows.remove(this.origin)
+    // TODO await uwg.follows.remove(this.origin)
     this.load()
   }
 

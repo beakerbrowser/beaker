@@ -1,6 +1,5 @@
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'type-registry'})
-import dat from '../dat/index'
 import * as filesystem from './index'
 import * as programRegistry from './program-registry'
 import { PATHS } from '../../lib/const'
@@ -11,22 +10,13 @@ import lock from '../../lib/lock'
 //
 
 /**
- * @typedef {Object} InstalledTypePackage
- * @prop {string} url
- * @prop {string} key
- * @prop {string} version
- * @prop {object} manifest
- * 
  * @typedef {Object} DriveType
  * @prop {string} id
  * @prop {string} title
- * @prop {Object} origin
- * @prop {string} origin.url
- * @prop {string} origin.title
- * @prop {string} origin.type
+ * @prop {string} origin
  * @prop {string} defaultHandler
  * @prop {DriveHandler[]} handlers
- * 
+ *
  * @typedef {Object} DriveHandler
  * @prop {string} url
  * @prop {string} title
@@ -37,10 +27,6 @@ import lock from '../../lib/lock'
 
 export const WEBAPI = {
   listDriveTypes,
-  listTypePackages,
-  getTypePackage,
-  installTypePackage,
-  uninstallTypePackage,
   getDriveHandlers,
   getDefaultDriveHandler,
   setDefaultDriveHandler
@@ -50,36 +36,25 @@ export const WEBAPI = {
  * @returns {Promise<DriveType[]>}
  */
 export async function listDriveTypes () {
-  var {installedTypePackages, defaultDriveHandlers} = await load()
+  var {driveTypes, defaultDriveHandlers} = await load()
   var types = []
 
   const getDefaultDriveHandler = typeId => defaultDriveHandlers[typeId] || 'system'
 
   // installed type packages
-  for (let pkg of installedTypePackages) {
-    if (!pkg.manifest || typeof pkg.manifest !== 'object') continue
-    if (!pkg.manifest.type || typeof pkg.manifest.type !== 'string') continue
-    if (!pkg.manifest.title || typeof pkg.manifest.title !== 'string') continue
-    if (!Array.isArray(pkg.manifest.driveTypes)) continue
-    
-    for (let t of pkg.manifest.driveTypes) {
-      if (!t || typeof t !== 'object') continue
-      if (!t.id || typeof t.id !== 'string') continue
-      if (!t.title || typeof t.title !== 'string') continue
-      if (types.find(t2 => t.id === t2.id)) continue // avoid duplicates
+  for (let t of driveTypes) {
+    if (!t || typeof t !== 'object') continue
+    if (!t.id || typeof t.id !== 'string') continue
+    if (!t.title || typeof t.title !== 'string') continue
+    if (types.find(t2 => t.id === t2.id)) continue // avoid duplicates
 
-      types.push({
-        origin: {
-          url: pkg.url,
-          title: pkg.manifest.title,
-          type: pkg.manifest.type,
-        },
-        id: t.id,
-        title: t.title,
-        defaultHandler: getDefaultDriveHandler(t.id),
-        handlers: await getDriveHandlers(t.id)
-      })
-    }
+    types.push({
+      origin: undefined,
+      id: t.id,
+      title: t.title,
+      defaultHandler: getDefaultDriveHandler(t.id),
+      handlers: await getDriveHandlers(t.id)
+    })
   }
 
   // installed application types
@@ -97,11 +72,7 @@ export async function listDriveTypes () {
       if (types.find(t2 => t.id === t2.id)) continue // avoid duplicates
 
       types.push({
-        origin: {
-          url: program.url,
-          title: program.manifest.title,
-          type: program.manifest.type,
-        },
+        origin: program.url,
         id: t.id,
         title: t.title,
         defaultHandler: getDefaultDriveHandler(t.id),
@@ -114,81 +85,7 @@ export async function listDriveTypes () {
 }
 
 /**
- * @returns {Promise<InstalledTypePackage[]>}
- */
-export async function listTypePackages () {
-  var {installedTypePackages} = await load()
-  return installedTypePackages
-}
-
-/**
- * @param {string} url 
- * @returns {Promise<InstalledTypePackage>}
- */
-export async function getTypePackage (url) {
-  var {installedTypePackages} = await load()
-  url = normalizeUrl(url)
-  return installedTypePackages.find(p => normalizeUrl(p.url) === url)
-}
-
-/**
- * @param {string} url 
- * @param {number|string} version 
- * @returns {Promise<void>}
- */
-export async function installTypePackage (url, version) {
-  var release = await lock('update:type-registry')
-  try {
-    url = normalizeUrl(url)
-    var key = dat.archives.fromURLToKey(url)
-    logger.info('Installing type package', {url, key, version})
-
-    var archive = await dat.archives.getOrLoadArchive(key)
-    var checkout = version ? await dat.archives.getArchiveCheckout(archive, version) : archive
-    if (!version) version = (await archive.getInfo()).version
-    var manifest = await checkout.pda.readFile('dat.json', 'utf8')
-    manifest = JSON.parse(manifest)
-
-    var {installedTypePackages, defaultDriveHandlers} = await load()
-    if (await getTypePackage(url)) {
-      installedTypePackages = installedTypePackages.filter(p => normalizeUrl(p.url) !== url)
-    }
-    installedTypePackages.push({
-      url,
-      key,
-      version,
-      manifest
-    })
-    await persist({installedTypePackages, defaultDriveHandlers})
-
-    logger.verbose('Successfully installed type package', {url, key, version})
-  } finally {
-    release()
-  }
-}
-
-/**
- * @param {string} url 
- * @returns {Promise<void>}
- */
-export async function uninstallTypePackage (url) {
-  var release = await lock('update:type-registry')
-  try {
-    url = normalizeUrl(url)
-    logger.info('Uninstalling type package', {url})
-
-    var {installedTypePackages, defaultDriveHandlers} = await load()
-    installedTypePackages = installedTypePackages.filter(p => normalizeUrl(p.url) !== url)
-    await persist({installedTypePackages, defaultDriveHandlers})
-
-    logger.verbose('Successfully uninstalled type package', {url})  
-  } finally {
-    release()
-  }
-}
-
-/**
- * @param {string} typeId 
+ * @param {string} typeId
  * @returns {Promise<DriveHandler[]>}
  */
 export async function getDriveHandlers (typeId) {
@@ -200,7 +97,7 @@ export async function getDriveHandlers (typeId) {
 }
 
 /**
- * @param {string} typeId 
+ * @param {string} typeId
  * @returns {Promise<string>}
  */
 export async function getDefaultDriveHandler (typeId) {
@@ -209,33 +106,33 @@ export async function getDefaultDriveHandler (typeId) {
 }
 
 /**
- * @param {string} typeId 
- * @param {string} url 
+ * @param {string} typeId
+ * @param {string} url
  * @returns {Promise<void>}
  */
 export async function setDefaultDriveHandler (typeId, url) {
   var release = await lock('update:type-registry')
   try {
-    var {installedTypePackages, defaultDriveHandlers} = await load()
+    var {driveTypes, defaultDriveHandlers} = await load()
     logger.info('Setting drive handler', {type: typeId, handler: url})
     defaultDriveHandlers[typeId] = normalizeUrl(url)
-    await persist({installedTypePackages, defaultDriveHandlers})
+    await persist({driveTypes, defaultDriveHandlers})
   } finally {
     release()
   }
 }
 
 /**
- * @param {string} typeId 
+ * @param {string} typeId
  * @returns {Promise<void>}
  */
 export async function unsetDefaultDriveHandler (typeId) {
   var release = await lock('update:type-registry')
   try {
-    var {installedTypePackages, defaultDriveHandlers} = await load()
+    var {driveTypes, defaultDriveHandlers} = await load()
     logger.info('Unsetting drive handler', {type: typeId})
     delete defaultDriveHandlers[typeId]
-    await persist({installedTypePackages, defaultDriveHandlers})
+    await persist({driveTypes, defaultDriveHandlers})
   } finally {
     release()
   }
@@ -249,7 +146,7 @@ export async function unsetDefaultDriveHandler (typeId) {
  */
 async function load () {
   var release = await lock('access:type-registry')
-  var installedTypePackages = []
+  var driveTypes = []
   var defaultDriveHandlers = {}
   try {
     var typeRegistryStr
@@ -263,10 +160,10 @@ async function load () {
     if (typeRegistryStr) {
       try {
         let typeRegistryObj = JSON.parse(typeRegistryStr)
-        installedTypePackages = (Array.isArray(typeRegistryObj.installed) ? typeRegistryObj.installed : []).filter(pkg => (
-          !!pkg
-          && typeof pkg === 'object'
-          && typeof pkg.url === 'string'
+        driveTypes = (Array.isArray(typeRegistryObj.driveTypes) ? typeRegistryObj.driveTypes : []).filter(type => (
+          !!type
+          && typeof type === 'object'
+          && typeof type.id === 'string'
         ))
         defaultDriveHandlers = typeRegistryObj.defaultDriveHandlers && typeof typeRegistryObj.defaultDriveHandlers === 'object' ? typeRegistryObj.defaultDriveHandlers : {}
       } catch (e) {
@@ -278,18 +175,18 @@ async function load () {
   } finally {
     release()
   }
-  return {installedTypePackages, defaultDriveHandlers}
+  return {driveTypes, defaultDriveHandlers}
 }
 
 /**
  * @returns {Promise<void>}
  */
-async function persist ({installedTypePackages, defaultDriveHandlers}) {
+async function persist ({driveTypes, defaultDriveHandlers}) {
   var release = await lock('access:type-registry')
   try {
     await filesystem.get().pda.writeFile(PATHS.TYPE_REGISTRY_JSON, JSON.stringify({
       type: 'type-registry',
-      installed: installedTypePackages,
+      driveTypes,
       defaultDriveHandlers
     }, null, 2))
   } catch (e) {
@@ -301,7 +198,7 @@ async function persist ({installedTypePackages, defaultDriveHandlers}) {
 }
 
 /**
- * @param {string} url 
+ * @param {string} url
  * @returns {string}
  */
 function normalizeUrl (url) {

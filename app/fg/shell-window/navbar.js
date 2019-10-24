@@ -79,11 +79,6 @@ class ShellWindowNavbar extends LitElement {
         datDomain="${_get(this, 'activeTab.datDomain', '')}"
         ?isOwner=${_get(this, 'activeTab.isOwner', false)}
         peers="${_get(this, 'activeTab.peers', 0)}"
-        ?canSave=${_get(this, 'activeTab.canSave', false)}
-        ?isSaved=${_get(this, 'activeTab.isSaved', false)}
-        ?canFollow=${_get(this, 'activeTab.canFollow', false)}
-        ?isFollowing=${_get(this, 'activeTab.isFollowing', false)}
-        numFollowers="${_get(this, 'activeTab.numFollowers', 0)}"
         ?canInstall=${_get(this, 'activeTab.canInstall', false)}
         ?isInstalled=${_get(this, 'activeTab.isInstalled', false)}
         zoom="${_get(this, 'activeTab.zoom', '')}"

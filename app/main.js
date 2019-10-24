@@ -18,7 +18,6 @@ import * as portForwarder from './bg/nat-port-forwarder'
 import dbs from './bg/dbs/index'
 import dat from './bg/dat/index'
 import * as filesystem from './bg/filesystem/index'
-import * as uwg from './bg/uwg/index'
 import * as webapis from './bg/web-apis/bg'
 import * as spellCheckerLib from './bg/lib/spell-checker'
 
@@ -114,7 +113,6 @@ app.on('ready', async function () {
   // start subsystems
   // (order is important)
   await dat.setup(commonOpts)
-  await uwg.setup()
   await filesystem.setup()
   webapis.setup()
   spellCheckerLib.setup()

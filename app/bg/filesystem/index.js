@@ -3,11 +3,8 @@ const logger = logLib.category('filesystem')
 import dat from '../dat/index'
 import * as db from '../dbs/profile-data-db'
 import * as users from './users'
-import * as datLibrary from './dat-library'
 import * as trash from './trash'
-import * as uwg from '../uwg/index'
-import libTools from '@beaker/library-tools'
-import { PATHS } from '../../lib/const'
+import { PATHS, LIBRARY_CATEGORIES } from '../../lib/const'
 
 // typedefs
 // =
@@ -58,7 +55,6 @@ export async function setup () {
 
   // load root archive
   rootArchive = await dat.archives.getOrLoadArchive(browsingProfile.url)
-  uwg.watchSite(rootArchive)
 
   // setup users
   var userList = await users.setup()
@@ -73,10 +69,9 @@ export async function setup () {
 
     // ensure all library folders exist
     await ensureDir(PATHS.LIBRARY)
-    for (let cat of libTools.getCategoriesArray(true)) {
-      await ensureDir(PATHS.LIBRARY_SAVED_DAT(cat))
+    for (let cat of LIBRARY_CATEGORIES) {
+      await ensureDir(PATHS.LIBRARY_CAT(cat))
     }
-    await ensureDir(PATHS.LIBRARY_SAVED_DAT('other'))
 
     // ensure all user mounts are set
     await ensureDir(PATHS.USERS)
@@ -105,9 +100,6 @@ export async function setup () {
     console.error('Error while constructing the root archive', e)
     logger.error('Error while constructing the root archive', e)
   }
-
-  // load the library
-  await datLibrary.setup()
 }
 
 /**

@@ -14,7 +14,7 @@ ${reactionscss}
   --title-color: #333;
   --header-color: #888;
   --footer-color: #888;
-  --border-color: #ccc;
+  --border-color: transparent;
 
   display: block;
   border: 1px solid var(--border-color);

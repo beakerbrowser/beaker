@@ -87,7 +87,7 @@ class WebTerm extends LitElement {
           this.url = this.startUrl
         } else {
           // default to home if not looking at a dat
-          this.url = (await navigator.filesystem.get()).url
+          this.url = navigator.filesystem.url
         }
       }
       this.load()
@@ -96,7 +96,7 @@ class WebTerm extends LitElement {
 
   async load () {
     if (!this.fs) {
-      this.fs = await navigator.filesystem.get()
+      this.fs = navigator.filesystem
     }
 
     var cwd = this.parseURL(this.url)

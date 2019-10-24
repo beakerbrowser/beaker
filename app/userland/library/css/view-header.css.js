@@ -5,7 +5,7 @@ const cssStr = css`
   display: flex;
   align-items: center;
   height: 26px;
-  padding: 10px 0;
+  padding: 0 0 10px;
   user-select: none;
 }
 

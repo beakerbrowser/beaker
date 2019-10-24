@@ -118,7 +118,7 @@ export class HistoryApp extends LitElement {
   renderRows () {
     var rowEls = []
     this.lastRenderedDate = moment().startOf('day').add(1, 'day')
-  
+
     this.visits.forEach((row, i) => {
       // render a date heading if this post is from a different day than the last
       var oldLastDate = this.lastRenderedDate
@@ -130,11 +130,11 @@ export class HistoryApp extends LitElement {
           </div>
         `)
       }
-  
+
       // render row
       rowEls.push(this.renderRow(row, i))
     })
-  
+
     // empty state
     if (rowEls.length === 0) {
       if (this.isFetching) {
@@ -145,13 +145,13 @@ export class HistoryApp extends LitElement {
         rowEls.push(html`<p class="empty">No history... yet!</p>`)
       }
     }
-  
+
     return rowEls
   }
-  
+
   renderClearHistoryButton () {
     if (this.query && this.query.length) return ''
-  
+
     return html`
       <div class="clear-history">
         <a @click=${this.onClickDeleteBulk}>
@@ -167,7 +167,7 @@ export class HistoryApp extends LitElement {
       </div>
     `
   }
-  
+
   renderRow (row, i) {
     return html`
       <div class="row">
@@ -184,7 +184,7 @@ export class HistoryApp extends LitElement {
       </div>
     `
   }
-  
+
   renderSubheader () {
     return html`
       <div class="search-container">
@@ -211,30 +211,30 @@ export class HistoryApp extends LitElement {
       this.fillPage()
     }
   }
-  
+
   onClearQuery () {
     this.shadowRoot.querySelector('input.search').value = ''
     this.query = ''
     this.fillPage()
   }
-  
+
   onUpdatePeriodFilter (e) {
     this.shadowRoot.querySelector('input.search').value = ''
     this.query = ''
     this.currentPeriodFilter = e.target.dataset.period
     this.fillPage()
   }
-  
+
   onScroll (e) {
     if (this.isAtEnd) return
-  
+
     var el = this
     if (el.offsetHeight + el.scrollTop + BEGIN_LOAD_OFFSET >= el.scrollHeight) {
       // hit bottom
       this.fetchMore()
     }
   }
-  
+
   onClickDelete (e, i) {
     if (!confirm('Are you sure?')) return
     var v = this.visits[i]
@@ -242,11 +242,11 @@ export class HistoryApp extends LitElement {
     beaker.history.removeVisit(v.url)
     this.requestUpdate()
   }
-  
+
   onClickDeleteBulk () {
     if (!confirm('Are you sure?')) return
     var period = this.shadowRoot.querySelector('#delete-period').value
-  
+
     // clear all history
     if (period === 'all') {
       this.visits = []
@@ -254,11 +254,11 @@ export class HistoryApp extends LitElement {
       this.requestUpdate()
     } else {
       var threshold = moment().startOf(period).valueOf()
-  
+
       // filter out visits that with a timestamp >= threshold
       this.visits = this.visits.filter(v => v.ts < threshold)
       beaker.history.removeVisitsAfter(threshold)
-  
+
       // fetch and render more visits if possible
       this.fetchMore()
     }

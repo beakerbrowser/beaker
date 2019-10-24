@@ -1,8 +1,6 @@
 export default {
-  list: 'promise',
   get: 'promise',
-  getOwn: 'promise',
   add: 'promise',
-  edit: 'promise',
+  update: 'promise',
   remove: 'promise'
 }

@@ -19,7 +19,6 @@ import * as datAssets from './assets'
 import datDns from './dns'
 
 // fs modules
-import * as datLibrary from '../filesystem/dat-library'
 import * as users from '../filesystem/users'
 
 // constants
@@ -92,7 +91,8 @@ export async function setup () {
  */
 export async function loadSavedArchives () {
   // load all saved archives
-  var archives = await datLibrary.list({isHosting: true})
+  var archives = [] // TODO uwg await datLibrary.list({isHosting: true})
+
   // HACK
   // load the archives one at a time and give 5 seconds between each
   // why: the purpose of loading saved archives is to seed them
@@ -313,7 +313,7 @@ async function loadArchiveInner (key, settingsOverride) {
   var keyStr = datEncoding.toStr(archive.key)
 
   // fetch library settings
-  var userSettings = datLibrary.getConfig(keyStr)
+  var userSettings = null // TODO uwg datLibrary.getConfig(keyStr)
   if (!userSettings) {
     if (users.isUser(archive.url)) {
       userSettings = {key: keyStr, isSaved: true, isHosting: true, visibility: 'unlisted', savedAt: null, meta: null}
@@ -424,7 +424,7 @@ export async function getArchiveInfo (key) {
   var archive = await getOrLoadArchive(key)
 
   // fetch archive data
-  var userSettings = datLibrary.getConfig(key)
+  var userSettings = null // TODO uwg datLibrary.getConfig(key)
   var [meta, manifest, archiveInfo] = await Promise.all([
     archivesDb.getMeta(key),
     archive.pda.readManifest().catch(_ => {}),

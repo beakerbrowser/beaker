@@ -44,7 +44,7 @@ export class LibraryApp extends LitElement {
       this.user = await beaker.users.getCurrent()
     }
     if (!this.fs) {
-      this.fs = await navigator.filesystem.get()
+      this.fs = navigator.filesystem
     }
     await this.requestUpdate()
     try {

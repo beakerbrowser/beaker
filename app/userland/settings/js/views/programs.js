@@ -49,7 +49,7 @@ class ProgramsView extends LitElement {
           writeToClipboard(url)
           toast.create('Copied to your clipboard')
         }
-      },
+      }
     ]
     if (url.startsWith('dat://')) {
       items.push('-')

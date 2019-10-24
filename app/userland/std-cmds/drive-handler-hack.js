@@ -8,7 +8,7 @@ window.DatArchive = class {
   async getInfo () {
     return {
       type: 'webterm.sh/cmd-pkg',
-      title: 'Standard Commands',
+      title: 'Standard Commands'
     }
   }
 

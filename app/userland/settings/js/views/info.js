@@ -16,11 +16,10 @@ class InfoSettingsView extends LitElement {
     this.browserInfo = undefined
   }
 
-
   async load () {
     this.browserInfo = beaker.browser.getInfo()
     console.log('loaded', {
-      browserInfo: this.browserInfo,
+      browserInfo: this.browserInfo
     })
     this.requestUpdate()
   }

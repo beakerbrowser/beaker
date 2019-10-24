@@ -35,12 +35,18 @@ ${colorsCSS}
 
 .item {
   display: block;
-  padding: 8px 10px;
+  padding: 12px 14px;
   color: var(--color-text);
+  font-size: 12px;
 }
 
 .item:hover {
   background: #f5f5f5;
+}
+
+.item .fa-fw {
+  margin-left: 2px;
+  margin-right: 10px;
 }
 
 hr {

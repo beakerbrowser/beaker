@@ -69,11 +69,11 @@ class SelectArchiveModal extends LitElement {
     this.type = params.filters && params.filters.type
     await this.requestUpdate()
 
-    this.archives = await bg.library.list({
+    this.archives = [] /* TODO uwg await bg.library.list({
       isSaved: true,
       isOwner: (params.filters && params.filters.isOwner),
       type: this.type
-    })
+    })*/
     this.type = params.filters && params.filters.type
     this.archives.sort((a, b) => (a.title || '').localeCompare(b.title || ''))
     await this.requestUpdate()

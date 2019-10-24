@@ -11,7 +11,6 @@ class BookmarkMenu extends LitElement {
       href: {type: String},
       title: {type: String},
       description: {type: String},
-      tags: {type: String},
       isPublic: {type: Boolean},
       hasChanges: {type: Boolean}
     }
@@ -27,25 +26,21 @@ class BookmarkMenu extends LitElement {
     this.href = ''
     this.title = ''
     this.description = ''
-    this.tags = ''
     this.isPublic = undefined
     this.hasChanges = false
   }
 
   async init (params) {
-    const b = this.bookmark = await bg.bookmarks.getOwn(params.url)
-    if (b && b.tags) b.tags = tagsToString(b.tags)
+    const b = this.bookmark = await bg.bookmarks.get(params.url)
     if (b) {
       this.href = b.href
       this.title = b.title
       this.description = b.description
-      this.tags = b.tags
-      this.isPublic = b.visibility === 'public'
+      this.isPublic = b.isPublic
     } else {
       this.href = params.url
       this.title = params.metadata.title || ''
       this.description = params.metadata.description || ''
-      this.tags = params.metadata.tags || ''
     }
     await this.requestUpdate()
 
@@ -71,17 +66,6 @@ class BookmarkMenu extends LitElement {
           <div class="input-group">
             <label for="description">Description</label>
             <textarea class="bookmark-description" name="description" placeholder="Description" @keyup=${this.onChangeDescription}>${this.description}</textarea>
-          </div>
-
-          <div class="input-group tags">
-            <label for="tags">Tags</label>
-            <input
-              type="text"
-              placeholder="Separate with spaces"
-              name="tags"
-              value="${this.tags}"
-              @keyup=${this.onChangeTags}
-            >
           </div>
 
           <div class="input-group public">
@@ -115,10 +99,9 @@ class BookmarkMenu extends LitElement {
       href: this.href,
       title: this.title,
       description: this.description,
-      tags: this.tags.split(' ').filter(Boolean),
-      visibility: this.isPublic ? 'public' : 'private'
+      isPublic: this.isPublic
     }
-    if (this.bookmark) await bg.bookmarks.edit(this.href, newB)
+    if (this.bookmark) await bg.bookmarks.update(this.href, newB)
     else await bg.bookmarks.add(newB)
     bg.views.refreshState('active')
     bg.shellMenus.close()
@@ -140,11 +123,6 @@ class BookmarkMenu extends LitElement {
 
   onChangeDescription (e) {
     this.description = e.target.value
-    this.hasChanges = true
-  }
-
-  onChangeTags (e) {
-    this.tags = e.target.value
     this.hasChanges = true
   }
 
@@ -222,10 +200,3 @@ form {
 `]
 
 customElements.define('bookmark-menu', BookmarkMenu)
-
-// internal methods
-// =
-
-function tagsToString (tags) {
-  return (tags || []).join(' ')
-}

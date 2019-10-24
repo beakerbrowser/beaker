@@ -23,7 +23,7 @@ export class App extends LitElement {
 
   async load () {
     if (!this.user) {
-      this.user = await uwg.profiles.me()
+      this.user = await navigator.session.get()
     }
     await this.requestUpdate()
     this.shadowRoot.querySelector('beaker-status-feed').load()
@@ -45,8 +45,6 @@ export class App extends LitElement {
 
   // events
   // =
-
-
 }
 
 customElements.define('app-main', App)

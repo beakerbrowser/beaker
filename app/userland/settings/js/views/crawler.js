@@ -227,7 +227,6 @@ class CrawlerSettingsView extends LitElement {
       return v * this.currentSort[1]
     })
   }
-
 }
 customElements.define('crawler-settings-view', CrawlerSettingsView)
 

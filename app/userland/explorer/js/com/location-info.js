@@ -11,7 +11,7 @@ export class LocationInfo extends LitElement {
       renderMode: {type: String, attribute: 'render-mode'},
       driveInfo: {type: Object},
       pathInfo: {type: Object},
-      mountInfo: {type: Object},
+      mountInfo: {type: Object}
     }
   }
 
@@ -69,7 +69,7 @@ export class LocationInfo extends LitElement {
           <button ?disabled=${!canEdit} @click=${e => this.doEmit('new-folder')} class="transparent"><span class="fa-fw far fa-folder"></span> New folder</button>
           <button ?disabled=${!canEdit} @click=${e => this.doEmit('import')} class="transparent"><span class="fa-fw fas fa-file-import"></span> Import files</button>
         ` : html`
-          ${isText ? 
+          ${isText ?
             this.renderMode === 'editor' ? html`
               <button ?disabled=${!canEdit} @click=${e => this.doEmit('save')} class="transparent">
                 <span class="fa-fw fas fa-save"></span> Save

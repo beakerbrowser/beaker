@@ -40,7 +40,7 @@ class BrowserMenu extends LitElement {
 
   async init () {
     this.profile = await bg.beakerBrowser.getUserSession().catch(err => undefined)
-    this.bookmarks = await bg.bookmarks.list({isOwner: true, sortBy: 'title'})
+    this.bookmarks = [] // TODO await bg.bookmarks.list({isOwner: true, sortBy: 'title'})
     await this.requestUpdate()
   }
 

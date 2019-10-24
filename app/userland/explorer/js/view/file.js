@@ -106,7 +106,6 @@ export class FileView extends LitElement {
 
   // events
   // =
-
 }
 
 customElements.define('explorer-view-file', FileView)

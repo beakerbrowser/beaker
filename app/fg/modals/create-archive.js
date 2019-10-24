@@ -13,11 +13,11 @@ const CORE_TYPES = {
   types: [
     {
       id: undefined,
-      title: 'Shared Folder',
+      title: 'Shared Folder'
     },
     {
       id: 'website',
-      title: 'Website',
+      title: 'Website'
     },
     {
       id: 'application',

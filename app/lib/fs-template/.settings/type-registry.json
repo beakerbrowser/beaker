@@ -1,34 +1,18 @@
 {
   "type": "type-registry",
-  "installed": [
+  "driveTypes": [
     {
-      "url": "hd://unwalled.garden",
-      "manifest": {
-        "title": "Unwalled Garden",
-        "type": "type-pkg",
-        "driveTypes": [
-          {
-            "id": "unwalled.garden/person",
-            "title": "Person"
-          }
-        ]
-      }
+      "id": "unwalled.garden/person",
+      "title": "Person"
     },
     {
-      "url": "hd://webterm.sh",
-      "manifest": {
-        "title": "WebTerm",
-        "type": "type-pkg",
-        "driveTypes": [
-          {
-            "id": "webterm.sh/cmd-pkg",
-            "title": "Command Package"
-          }
-        ]
-      }
+      "id": "webterm.sh/cmd-pkg",
+      "title": "Command Package"
     }
   ],
   "defaultDriveHandlers": {
-    "unwalled.garden/person": "beaker://social"
+    "unwalled.garden/person": "system",
+    "webterm.sh/cmd-pkg": "system",
+    "default": "system"
   }
 }

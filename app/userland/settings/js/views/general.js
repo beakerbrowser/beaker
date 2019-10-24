@@ -77,7 +77,7 @@ class GeneralSettingsView extends LitElement {
         </div>
       `
     }
-  
+
     switch (this.browserInfo.updater.state) {
       default:
       case 'idle':
@@ -116,7 +116,7 @@ class GeneralSettingsView extends LitElement {
             </div>
           </div>
         </div>`
-  
+
       case 'checking':
         return html`
         <div class="section">
@@ -145,7 +145,7 @@ class GeneralSettingsView extends LitElement {
             </div>
           </div>
         </div>`
-  
+
       case 'downloading':
         return html`
         <div class="section">
@@ -160,7 +160,7 @@ class GeneralSettingsView extends LitElement {
             ${this.renderAutoUpdateCheckbox()}
           </div>
         </div>`
-  
+
       case 'downloaded':
         return html`
         <div class="section">
@@ -177,7 +177,7 @@ class GeneralSettingsView extends LitElement {
         </div>`
     }
   }
-  
+
   renderAutoUpdateCheckbox () {
     return html`<label>
       <input type="checkbox" ?checked=${this.isAutoUpdateEnabled} @click=${this.onToggleAutoUpdate} /> Check for updates automatically
@@ -217,7 +217,7 @@ class GeneralSettingsView extends LitElement {
     const toggleRegistered = (protocol) => {
       // update and optimistically render
       this.defaultProtocolSettings[protocol] = !this.defaultProtocolSettings[protocol]
-  
+
       if (this.defaultProtocolSettings[protocol]) {
         beaker.browser.setAsDefaultProtocolClient(protocol)
       } else {
@@ -226,7 +226,7 @@ class GeneralSettingsView extends LitElement {
       toast.create('Setting updated')
       this.requestUpdate()
     }
-  
+
     return html`
       <div class="section default-browser">
         <h2 id="protocol" class="subtitle-heading">Default browser settings</h2>
@@ -255,7 +255,7 @@ class GeneralSettingsView extends LitElement {
       this.requestUpdate()
       toast.create('Setting updated')
     }
-  
+
     return html`
       <div class="section analytics">
         <h2 class="subtitle-heading">Beaker Analytics</h2>
@@ -279,7 +279,7 @@ class GeneralSettingsView extends LitElement {
           </ul>
         </div>
       </div>`
-  }  
+  }
 
   // events
   // =
@@ -291,7 +291,7 @@ class GeneralSettingsView extends LitElement {
     this.browserInfo.updater.error = false
     this.requestUpdate()
   }
-  
+
   onUpdaterError (err) {
     console.debug('onUpdaterError', err)
     if (!this.browserInfo) { return }
@@ -303,7 +303,7 @@ class GeneralSettingsView extends LitElement {
     // trigger check
     beaker.browser.checkForUpdates()
   }
-  
+
   onClickCheckPrereleases (e) {
     e.preventDefault()
     beaker.browser.checkForUpdates({prerelease: true})

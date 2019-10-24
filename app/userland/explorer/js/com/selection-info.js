@@ -12,7 +12,7 @@ export class SelectionInfo extends LitElement {
       mountInfo: {type: Object},
       selection: {type: Array},
       noPreview: {type: Boolean, attribute: 'no-preview'},
-      userUrl: {type: String, attribute: 'user-url'},
+      userUrl: {type: String, attribute: 'user-url'}
     }
   }
 

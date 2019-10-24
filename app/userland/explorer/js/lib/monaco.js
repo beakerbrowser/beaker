@@ -1,4 +1,4 @@
-// exported 
+// exported
 // =
 
 export async function createEditor () {

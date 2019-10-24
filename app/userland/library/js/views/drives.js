@@ -114,7 +114,7 @@ export class DrivesView extends LitElement {
           icon: 'fas fa-trash',
           label: 'Move to trash',
           click: async () => {
-            await uwg.library.configure(item.key, {isSaved: false})
+            // TODO await uwg.library.configure(item.key, {isSaved: false})
             toast.create('Moved to trash')
             this.load()
           }
@@ -125,7 +125,7 @@ export class DrivesView extends LitElement {
             icon: 'fas fa-undo',
             label: 'Restore from trash',
             click: async () => {
-              await uwg.library.configure(item.key, {isSaved: true})
+              // TODO await uwg.library.configure(item.key, {isSaved: true})
               toast.create('Restored')
               this.load()
             }
@@ -135,7 +135,7 @@ export class DrivesView extends LitElement {
             icon: 'fas fa-save',
             label: 'Save to library',
             click: async () => {
-              await uwg.library.configure(item.key, {isSaved: true})
+              // TODO await uwg.library.configure(item.key, {isSaved: true})
               toast.create('Saved')
               this.load()
             }

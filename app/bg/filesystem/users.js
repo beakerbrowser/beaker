@@ -3,11 +3,10 @@ import Events from 'events'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'users'})
 import dat from '../dat/index'
-import * as uwg from '../uwg/index'
 import * as filesystem from './index'
-import * as follows from '../uwg/follows'
 import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
+import { PATHS } from '../../lib/const'
 
 // constants
 // =
@@ -87,15 +86,17 @@ export async function setup () {
     try {
       user.archive = await dat.archives.getOrLoadArchive(user.url)
       user.url = user.archive.url // copy the archive url, which includes the domain if set
-      uwg.watchSite(user.archive)
       events.emit('load-user', user)
     } catch (err) {
       logger.error('Failed to load user', {details: {user, err}})
     }
 
     // ensure file structure
-    await ensureDirectory(user, '/.refs')
-    await ensureDirectory(user, '/.refs/authored')
+    await ensureDirectory(user, PATHS.DATA)
+    await ensureDirectory(user, PATHS.DATA_NS('annotations'))
+    await ensureDirectory(user, PATHS.DATA_NS('comments'))
+    await ensureDirectory(user, PATHS.FEED)
+    await ensureDirectory(user, PATHS.FRIENDS)
   }))
 
   // remove any invalid users
@@ -140,7 +141,7 @@ async function tick () {
             var archive = await dat.archives.getOrLoadArchive(crawlTarget) // TODO timeout on load
 
             // run crawl
-            await uwg.crawlSite(archive)
+            // TODO uwg
 
             if (!wasLoaded) {
               // unload archive
@@ -256,7 +257,6 @@ export async function add (label, url, setDefault = false, isTemporary = false) 
   // fetch the user archive
   user.archive = await dat.archives.getOrLoadArchive(user.url)
   user.url = user.archive.url // copy the archive url, which includes the domain if set
-  uwg.watchSite(user.archive)
   events.emit('load-user', user)
   return fetchUserInfo(user)
 };
@@ -325,7 +325,6 @@ export async function remove (url) {
   await filesystem.removeUser(user)
   users.splice(users.indexOf(user), 1)
   await db.run(`DELETE FROM users WHERE url = ?`, [user.url])
-  /* dont await */uwg.unwatchSite(user.archive)
   events.emit('unload-user', user)
 };
 
@@ -373,11 +372,11 @@ async function selectNextCrawlTargets (user) {
   var rows = [user.url]
 
   // get followed sites
-  var followedUrls = (await follows.list({author: user.url})).map(({topic}) => topic.url)
+  var followedUrls = []// TODO uwg (await follows.list({author: user.url})).map(({topic}) => topic.url)
   rows = rows.concat(followedUrls)
 
   // get sites followed by followed sites
-  var foafUrls = (await follows.list({author: followedUrls})).map(({topic}) => topic.url)
+  var foafUrls = [] // TODO uwg (await follows.list({author: followedUrls})).map(({topic}) => topic.url)
   rows = rows.concat(foafUrls)
 
   // eleminate duplicates

@@ -3,7 +3,7 @@ import _debounce from 'lodash.debounce'
 import viewCSS from '../../css/views/log.css.js'
 
 const AVAILABLE_LEVELS = ['error', 'warn', 'info', 'verbose', 'debug', 'silly']
-const AVAILABLE_CATEGORIES = ['all', 'uwg', 'dat']
+const AVAILABLE_CATEGORIES = ['all', 'dat']
 
 class LogSettingsView extends LitElement {
   static get properties () {
@@ -17,7 +17,7 @@ class LogSettingsView extends LitElement {
 
   constructor () {
     super()
-    
+
     this.isLoading = false
     this.isControlsExpanded = false
     this.rows = undefined

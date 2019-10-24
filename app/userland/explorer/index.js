@@ -1,1 +1,1 @@
-window.location = navigator.filesystem.root.url
+window.location = navigator.filesystem.url

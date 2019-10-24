@@ -10,7 +10,6 @@ import emitStream from 'emit-stream'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
-import normalizeURL from 'normalize-url'
 import viewsRPCManifest from '../rpc-manifests/views'
 import * as zoom from './tabs/zoom'
 import * as shellMenus from './subwindows/shell-menus'
@@ -30,8 +29,8 @@ import { findImageBounds } from '../lib/image'
 import * as sitedataDb from '../dbs/sitedata'
 import * as settingsDb from '../dbs/settings'
 import * as historyDb from '../dbs/history'
-import * as uwg from '../uwg/index'
 import * as filesystem from '../filesystem/index'
+import * as bookmarks from '../filesystem/bookmarks'
 import * as programRegistry from '../filesystem/program-registry'
 import * as users from '../filesystem/users'
 import dat from '../dat/index'
@@ -81,14 +80,11 @@ const STATE_VARS = [
   'datDomain',
   'isOwner',
   'canFollow',
-  'isFollowing',
-  'numFollowers',
   'canInstall',
   'isInstalled',
   'canSave',
   'isSaved',
   'isMyProfile',
-  'numComments',
   'peers',
   'favicons',
   'zoom',
@@ -166,10 +162,7 @@ class Tab {
     this.isBookmarked = false // is the active page bookmarked?
     this.datInfo = null // metadata about the site if viewing a dat
     this.isSystemDat = undefined // is this the root drive or a user?
-    this.isFollowing = undefined // is the current user following this drive?
     this.isInstalled = undefined // is the drive an installed application?
-    this.numFollowers = 0 // how many sites are following this site? (unwalled garden)
-    this.numComments = 0 // how many comments are on the current page? (unwalled garden)
     this.confirmedAuthorTitle = undefined // the title of the confirmed author of the site
     this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
@@ -674,40 +667,13 @@ class Tab {
   async refreshState () {
     await Promise.all([
       this.fetchIsBookmarked(true),
-      this.fetchAnnotations(true),
       this.fetchDatInfo(true)
     ])
     this.emitUpdateState()
   }
 
   async fetchIsBookmarked (noEmit = false) {
-    var url = normalizeURL(this.url, {
-      stripFragment: false,
-      stripWWW: false,
-      removeQueryParameters: false,
-      removeTrailingSlash: true
-    })
-    var bookmark = await uwg.bookmarks.getOwnBookmarkByHref(getUserSessionFor(this.browserWindow.webContents), url)
-    this.isBookmarked = !!bookmark
-    if (!noEmit) {
-      this.emitUpdateState()
-    }
-  }
-
-  async fetchAnnotations (noEmit = false) {
-    this.numComments = 0
-
-    var userSession = getUserSessionFor(this.browserWindow.webContents)
-    var followedUsers = (await uwg.follows.list({author: userSession.url})).map(({topic}) => topic.url)
-    var author = [userSession.url].concat(followedUsers)
-
-    // TODO replace with native 'count' method
-    var cs = await uwg.comments.thread(this.url, {author})
-    function countComments (comments) {
-      return comments.reduce((acc, comment) => acc + 1 + (comment.replies ? countComments(comment.replies) : 0), 0)
-    }
-    this.numComments = countComments(cs)
-
+    this.isBookmarked = !!(await bookmarks.get(this.url))
     if (!noEmit) {
       this.emitUpdateState()
     }
@@ -717,9 +683,7 @@ class Tab {
     // clear existing state
     this.peers = 0
     this.isSystemDat = false
-    this.isFollowing = false
     this.isInstalled = false
-    this.numFollowers = 0
     this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
 
@@ -744,14 +708,6 @@ class Tab {
         this.isSystemDat = true
       }
 
-      // fetch social graph
-      let userSession = getUserSessionFor(this.browserWindow.webContents)
-      let userFollows = await uwg.follows.list({author: userSession.url})
-      let followAuthors = [userSession.url].concat(userFollows.map(f => f.topic.url))
-      let siteFollowers = await uwg.follows.list({topic: this.datInfo.url, author: followAuthors})
-      this.isFollowing = siteFollowers.find(f => f.author.url === userSession.url)
-      this.numFollowers = siteFollowers.length
-
       // fetch install state
       if (this.canInstall) {
         this.isInstalled = await programRegistry.isInstalled(this.url)
@@ -762,8 +718,6 @@ class Tab {
         try {
           if (this.datInfo.author === userSession.url) {
             this.confirmedAuthorTitle = (await users.get(userSession.url)).title
-          } else if (followAuthors.includes(this.datInfo.author)) {
-            this.confirmedAuthorTitle = userFollows.find(f => f.topic.url === this.datInfo.author).topic.title
           }
         } catch (e) {
           console.error(e)
@@ -829,7 +783,6 @@ class Tab {
     this.isReceivingAssets = true
     this.favicons = null
     await this.fetchIsBookmarked()
-    /* dont await */ this.fetchAnnotations()
     await this.fetchDatInfo()
     if (httpResponseCode === 504 && url.startsWith('dat://')) {
       this.wasDatTimeout = true
@@ -848,7 +801,6 @@ class Tab {
 
   onDidNavigateInPage (e) {
     this.updateHistory()
-    /* dont await */ this.fetchAnnotations()
     if (this.isSidebarActive) {
       this.updateSidebar()
     }

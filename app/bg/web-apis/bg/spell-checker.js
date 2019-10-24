@@ -1,22 +1,17 @@
 import * as spellCheckerLib from '../../lib/spell-checker'
 
 export function spellCheck (text) {
-  return !self.isMisspelled(text)
+  return !isMisspelled(text)
 }
 
 export function isMisspelled (text) {
   const misspelled = spellCheckerLib.spellchecker.isMisspelled(text)
-
-  // Makes everything faster.
   if (!misspelled) {
     return false
   }
-
-  // Check the locale and skip list.
   if (spellCheckerLib.locale.match(/^en/) && spellCheckerLib.SKIP_LIST.includes(text)) {
     return false
   }
-
   return true
 }
 

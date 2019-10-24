@@ -21,25 +21,15 @@ export const setup = function (rpc) {
     }
   }
 
-  var rootDrive
   var filesystemApi = rpc.importAPI('navigator-filesystem', filesystemManifest, RPC_OPTS)
-  navigator.filesystem = {
-    get root () {
-      if (!rootDrive) rootDrive = new DatArchive(filesystemApi.get().url)
-      return rootDrive
-    },
-    get () {
-      var {url} = filesystemApi.get()
-      return new DatArchive(url)
-    },
-    async identifyDrive (url) {
-      if (url instanceof DatArchive) {
-        url = url.url
-      }
-      return filesystemApi.identifyDrive(url)
-    },
-    async query (opts) {
-      return filesystemApi.query(opts)
+  navigator.filesystem = new DatArchive(filesystemApi.get().url)
+  navigator.filesystem.identifyDrive = async (url) => {
+    if (url instanceof DatArchive) {
+      url = url.url
     }
+    return filesystemApi.identifyDrive(url)
+  }
+  navigator.filesystem.query = async (opts) => {
+    return filesystemApi.query(opts)
   }
 }
