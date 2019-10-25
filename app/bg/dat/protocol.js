@@ -171,7 +171,7 @@ export const electronHandler = async function (request, respond) {
         // TODO CSP
         'Content-Type': 'text/html'
       },
-      data: intoStream(`
+      data: intoStream(`<meta charset="utf-8">
 <link rel="stylesheet" href="${handlerUrl}/drive-handler.css">
 <script type="module" src="${handlerUrl}/drive-handler.js"></script>
 `)
@@ -366,7 +366,7 @@ export const electronHandler = async function (request, respond) {
 }
 
 function renderMD (content) {
-  return`<html>
+  return `<html>
   <body>
     ${md.render(content)}
   </body>
