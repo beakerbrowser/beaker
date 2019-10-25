@@ -2,7 +2,6 @@ export default {
   loadArchive: 'promise',
   createArchive: 'promise',
   forkArchive: 'promise',
-  unlinkArchive: 'promise',
 
   getInfo: 'promise',
   configure: 'promise',

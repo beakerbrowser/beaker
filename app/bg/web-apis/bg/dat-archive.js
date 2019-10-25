@@ -124,13 +124,6 @@ export default {
     return newArchiveUrl
   },
 
-  async unlinkArchive (url) {
-    var {archive} = await lookupArchive(this.sender, url)
-    await assertDeleteArchivePermission(archive, this.sender)
-    assertArchiveDeletable(archive)
-    // TODO uwg await datLibrary.configureArchive(archive, {isSaved: false})
-  },
-
   async loadArchive (url) {
     if (!url || typeof url !== 'string') {
       return Promise.reject(new InvalidURLError())

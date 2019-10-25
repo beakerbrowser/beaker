@@ -69,16 +69,6 @@ export const setup = function (rpc) {
         .catch(e => throwWithFixedStack(e, errStack))
     }
 
-    static unlink (url) {
-      var errStack = (new Error()).stack
-      url = (typeof url.url === 'string') ? url.url : url
-      if (!isDatURL(url)) {
-        throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
-      }
-      return datRPC.unlinkArchive(url)
-        .catch(e => throwWithFixedStack(e, errStack))
-    }
-
     // override to create the activity stream if needed
     addEventListener (type, callback) {
       if (type === 'network-changed' || type === 'download' || type === 'upload' || type === 'sync') {
