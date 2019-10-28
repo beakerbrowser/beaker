@@ -1,5 +1,5 @@
-import { slugifyUrl, DAT_KEY_REGEX } from './strings.js'
-import { queryRead, queryHas, ensureParentDir } from './fs.js'
+import { slugifyUrl, DAT_KEY_REGEX, joinPath } from './strings.js'
+import { queryRead, queryHas, ensureParentDir, ensureMount, ensureUnmount, getAvailableMountName } from './fs.js'
 
 // typedefs
 // =
@@ -76,6 +76,29 @@ export const profiles = {
   }
 }
 
+export const library = {
+  /**
+   * @param {string} url
+   * @param {string} title
+   * @returns {Promise<void>}
+   */
+  async add (url, title = 'untitled') {
+    var name = await getAvailableMountName('/library', title)
+    await ensureMount(joinPath('/library', name), url)
+  },
+
+  /**
+   * @param {string} url
+   * @returns {Promise<void>}
+   */
+  async remove (url) {
+    var files = await navigator.filesystem.query({mount: url, path: '/library/*'})
+    for (let file of files) {
+      await ensureUnmount(file.path)
+    }
+  }
+}
+
 export const friends = {
   /**
    * @param {Object} [query]
@@ -91,12 +114,13 @@ export const friends = {
   },
 
   /**
-   * @param {string} name
    * @param {string} url
+   * @param {string} title
    * @returns {Promise<void>}
    */
-  async add (name, url) {
-    return navigator.filesystem.mount(`/public/friends/${name}`, url)
+  async add (url, title = 'anonymous') {
+    var name = await getAvailableMountName('/public/friends', title)
+    await ensureMount(joinPath('/public/friends', name), url)
   },
 
   /**

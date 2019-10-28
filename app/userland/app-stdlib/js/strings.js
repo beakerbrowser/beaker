@@ -77,8 +77,6 @@ export function highlightSearchResult (str = '', nonce = 0) {
   return makeSafe(str).replace(start, '<strong>').replace(end, '</strong>')
 }
 
-const reservedChars = /[<>:"/\\|?*\x00-\x1F]/g
-const endingDashes = /([-]+$)/g
 export function slugifyUrl (str = '') {
   try {
     let url = new URL(str)
@@ -86,5 +84,11 @@ export function slugifyUrl (str = '') {
   } catch (e) {
     // ignore
   }
+  return slugify(str)
+}
+
+const reservedChars = /[ <>:"/\\|?*\x00-\x1F]/g
+const endingDashes = /([-]+$)/g
+export function slugify (str = '') {
   return str.replace(reservedChars, '-').replace(endingDashes, '')
 }

@@ -1,4 +1,5 @@
 import { isFilenameBinary } from './is-ext-binary.js'
+import { joinPath, slugify } from './strings.js'
 
 // typedefs
 // =
@@ -96,6 +97,64 @@ export async function ensureDir (path) {
  */
 export async function ensureParentDir (path) {
   return ensureDir(path.split('/').slice(0, -1).join('/'))
+}
+
+/**
+ * @param {string} path 
+ * @param {string} url 
+ * @return {Promise<void>}
+ */
+export async function ensureMount (path, url) {
+  try {
+    let st = await safeStat(path)
+    let key = await DatArchive.resolveName(url)
+    if (!st) {
+      // add mount
+      await navigator.filesystem.mount(path, key)
+    } else if (st.mount) {
+      if (st.mount.key.toString('hex') !== key) {
+        // change mount
+        await navigator.filesystem.unmount(path)
+        await navigator.filesystem.mount(path, key)
+      }
+    } else {
+      console.error('Warning! Filesystem expects a mount but an unexpected file exists at this location.', {path})
+    }
+  } catch (e) {
+    console.error('Filesystem failed to mount archive', {path, url, error: e})
+  }
+}
+
+/**
+ * @param {string} path 
+ * @return {Promise<void>}
+ */
+export async function ensureUnmount (path) {
+  try {
+    let st = await safeStat(path)
+    if (st && st.mount) {
+      // remove mount
+      await navigator.filesystem.unmount(path)
+    }
+  } catch (e) {
+    console.error('Filesystem failed to unmount archive', {path, error: e})
+  }
+}
+
+/**
+ * @param {string} containingPath
+ * @param {string} title
+ * @returns {Promise<string>}
+ */
+export async function getAvailableMountName (containingPath, title) {
+  var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
+  for (let i = 1; i < 1e9; i++) {
+    let name = (i === 1) ? basename : `${basename}-${i}`
+    let st = await safeStat(joinPath(containingPath, name))
+    if (!st) return name
+  }
+  // yikes if this happens
+  throw new Error('Unable to find an available name for ' + title)
 }
 
 // internal
