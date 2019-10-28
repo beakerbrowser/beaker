@@ -1,4 +1,3 @@
-import {protocol} from 'electron'
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
 import { archivesDebugPage, datDnsCachePage, datDnsCacheJS } from '../dat/debugging'
@@ -28,7 +27,7 @@ const BEAKER_CSP = `
 // exported api
 // =
 
-export function setup () {
+export function register (protocol) {
   // setup the protocol handler
   protocol.registerStreamProtocol('beaker', beakerProtocol, err => {
     if (err) throw new Error('Failed to create protocol: beaker. ' + err)

@@ -43,6 +43,8 @@ export default {
   openUrl: 'promise',
   gotoUrl: 'promise',
   refreshPage: 'promise',
+  getTabDriveHandler: 'promise',
+  setTabDriveHandler: 'promise',
   openFolder: 'promise',
   doWebcontentsCmd: 'promise',
   doTest: 'promise',

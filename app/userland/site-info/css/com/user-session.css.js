@@ -8,7 +8,7 @@ ${buttonsCSS}
 
 .field-group {
   display: block;
-  padding: 10px;
+  padding: 12px;
   border-bottom: 1px solid #ccc;
 }
 

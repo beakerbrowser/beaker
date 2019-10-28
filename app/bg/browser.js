@@ -177,6 +177,8 @@ export const WEBAPI = {
   },
   gotoUrl,
   refreshPage,
+  getTabDriveHandler,
+  setTabDriveHandler,
   openUrl: (url, opts) => { openUrl(url, opts) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
@@ -622,6 +624,16 @@ async function gotoUrl (url) {
 async function refreshPage () {
   var win = findWebContentsParentWindow(this.sender)
   tabManager.getActive(win).webContents.reload()
+}
+
+async function getTabDriveHandler () {
+  var win = findWebContentsParentWindow(this.sender)
+  return tabManager.getActive(win).getDriveHandler()
+}
+
+async function setTabDriveHandler (handler) {
+  var win = findWebContentsParentWindow(this.sender)
+  return tabManager.getActive(win).setDriveHandler(handler)
 }
 
 function openFolder (folderPath) {

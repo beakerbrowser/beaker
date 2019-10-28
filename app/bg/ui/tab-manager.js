@@ -1,4 +1,4 @@
-import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain } from 'electron'
+import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, session } from 'electron'
 import errorPage from '../lib/error-page'
 import * as libTools from '@beaker/library-tools'
 import path from 'path'
@@ -30,10 +30,13 @@ import * as sitedataDb from '../dbs/sitedata'
 import * as settingsDb from '../dbs/settings'
 import * as historyDb from '../dbs/history'
 import * as filesystem from '../filesystem/index'
+import * as typeRegistry from '../filesystem/type-registry'
 import * as bookmarks from '../filesystem/bookmarks'
 import * as programRegistry from '../filesystem/program-registry'
 import * as users from '../filesystem/users'
 import dat from '../dat/index'
+import * as beakerProtocol from '../protocols/beaker'
+import * as assetProtocol from '../protocols/asset'
 
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
@@ -133,10 +136,14 @@ class Tab {
         nativeWindowOpen: true,
         nodeIntegration: false,
         scrollBounce: true,
-        navigateOnDragDrop: true
+        navigateOnDragDrop: true,
+        partition: '' + Date.now()
       }
     })
     this.browserView.setBackgroundColor('#fff')
+    assetProtocol.register(this.browserView.webContents.session.protocol)
+    beakerProtocol.register(this.browserView.webContents.session.protocol)
+    dat.protocol.register(this.browserView.webContents.session.protocol, this)
 
     // webview state
     this.loadingURL = null // URL being loaded, if any
@@ -156,6 +163,7 @@ class Tab {
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
     this.isScriptClosable = takeIsScriptClosable() // can this tab be closed by `window.close` ?
+    this.driveHandlers = {} // what are the current drive handlers for the tab?
 
     // helper state
     this.peers = 0 // how many peers does the site have?
@@ -225,7 +233,7 @@ class Tab {
       var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
         if (filesystem.isRootUrl(this.datInfo.url)) {
-          return 'My Hyperdrive'
+          return 'Filesystem'
         }
         if (this.datInfo.type === 'unwalled.garden/person') {
           return this.datInfo.title || 'Anonymous'
@@ -511,6 +519,20 @@ class Tab {
     }
   }
 
+  async getDriveHandler () {
+    if (this.driveHandlers[this.origin]) {
+      return this.driveHandlers[this.origin]
+    }
+    if (this.datInfo) {
+      return typeRegistry.getDefaultDriveHandler(this.datInfo.type)
+    }
+    return undefined
+  }
+
+  setDriveHandler (handler) {
+    this.driveHandlers[this.origin] = handler
+  }
+
   // inpage finder
   // =
 
@@ -691,8 +713,9 @@ class Tab {
       this.datInfo = null
       return
     }
-
+    
     // fetch new state
+    let userSession = getUserSessionFor(this.browserWindow.webContents)
     try {
       var key = await dat.dns.resolveName(this.url)
       this.datInfo = await dat.archives.getArchiveInfo(key)

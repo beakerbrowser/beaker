@@ -44,7 +44,16 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 // exported api
 // =
 
-export const electronHandler = async function (request, respond) {
+export function register (protocol, tab) {
+  protocol.registerStreamProtocol('dat', electronHandler(tab), err => {
+    if (err) {
+      console.error(err)
+      throw new Error('Failed to create protocol: dat')
+    }
+  })
+}
+
+export const electronHandler = tabInstance => async function (request, respond) {
   // log warnings now, after the logger has setup its transports
   if (utpLoadError) {
     logger.warn('Failed to load utp-native. Peer-to-peer connectivity may be degraded.', {err: utpLoadError.toString()})
@@ -152,19 +161,12 @@ export const electronHandler = async function (request, respond) {
 
   // read type and configure
   const type = manifest ? manifest.type : undefined
-  const canExecuteHTML = type === 'website' || type === 'application'
+  var handler = await tabInstance.getDriveHandler() || await typeRegistry.getDefaultDriveHandler(type)
+  const canExecuteHTML = handler === 'website'
 
   // serve the handler application
   if (!canExecuteHTML && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
-    let handlerUrl = await typeRegistry.getDefaultDriveHandler(type)
     // TODO pin version
-    if (handlerUrl === 'system') {
-      if (type === 'webterm.sh/cmd-pkg') {
-        handlerUrl = 'beaker://cmd-pkg'
-      } else {
-        handlerUrl = 'beaker://explorer'
-      }
-    }
     return respond({
       statusCode: 200,
       headers: {
@@ -172,8 +174,8 @@ export const electronHandler = async function (request, respond) {
         'Content-Type': 'text/html'
       },
       data: intoStream(`<meta charset="utf-8">
-<link rel="stylesheet" href="${handlerUrl}/drive-handler.css">
-<script type="module" src="${handlerUrl}/drive-handler.js"></script>
+<link rel="stylesheet" href="${handler}/drive-handler.css">
+<script type="module" src="${handler}/drive-handler.js"></script>
 `)
     })
   }

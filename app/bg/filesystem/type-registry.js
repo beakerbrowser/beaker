@@ -39,7 +39,7 @@ export async function listDriveTypes () {
   var {driveTypes, defaultDriveHandlers} = await load()
   var types = []
 
-  const getDefaultDriveHandler = typeId => defaultDriveHandlers[typeId] || 'system'
+  const getDefaultDriveHandler = typeId => defaultDriveHandlers[typeId] || 'beaker://explorer/'
 
   // installed type packages
   for (let t of driveTypes) {
@@ -89,11 +89,13 @@ export async function listDriveTypes () {
  * @returns {Promise<DriveHandler[]>}
  */
 export async function getDriveHandlers (typeId) {
-  var programs = await programRegistry.listPrograms({handlesDriveType: typeId})
+  var programs = typeId ? await programRegistry.listPrograms({handlesDriveType: typeId}) : []
+  if (typeId === 'website') programs.unshift({url: 'website', manifest: {title: 'Website'}})
+  if (typeId === 'application') programs.unshift({url: 'website', manifest: {title: 'Application'}})
   return programs.map(program => ({
     url: program.url,
     title: _get(program, 'manifest.title', '')
-  })).concat([{url: 'system', title: 'System'}])
+  })).concat([{url: 'beaker://explorer/', title: 'Files Explorer'}])
 }
 
 /**
@@ -102,7 +104,9 @@ export async function getDriveHandlers (typeId) {
  */
 export async function getDefaultDriveHandler (typeId) {
   var {defaultDriveHandlers} = await load()
-  return defaultDriveHandlers[typeId] || 'system'
+  if ( defaultDriveHandlers[typeId]) return defaultDriveHandlers[typeId]
+  if (typeId === 'application' || typeId === 'website') return 'website'
+  return 'beaker://explorer/'
 }
 
 /**

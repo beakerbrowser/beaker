@@ -128,16 +128,11 @@ app.on('ready', async function () {
   permissions.setup()
 
   // protocols
-  beakerProtocol.setup()
+  beakerProtocol.register(protocol)
   beakerFaviconProtocol.setup() // TODO deprecateme
   assetProtocol.setup()
-  intentProtocol.setup()
-  protocol.registerStreamProtocol('dat', dat.protocol.electronHandler, err => {
-    if (err) {
-      console.error(err)
-      throw new Error('Failed to create protocol: dat')
-    }
-  })
+  assetProtocol.register(protocol)
+  // intentProtocol.setup() TODO
 })
 
 app.on('quit', () => {

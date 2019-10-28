@@ -10,12 +10,14 @@
  *  - asset:cover:dat://beakerbrowser.com
  **/
 
-import {protocol, screen} from 'electron'
+import { screen } from 'electron'
 import * as sitedata from '../dbs/sitedata'
 import fs from 'fs'
 import path from 'path'
 
 const NOT_FOUND = -6 // TODO I dont think this is the right code -prf
+
+var handler
 
 export function setup () {
   var DEFAULTS = {
@@ -43,7 +45,7 @@ export function setup () {
   const isRetina = display.scaleFactor >= 2
 
   // register favicon protocol
-  protocol.registerBufferProtocol('asset', async (request, cb) => {
+  handler = async (request, cb) => {
     // parse the URL
     let {asset, url, size} = parseAssetUrl(request.url)
     if (isRetina) {
@@ -91,7 +93,11 @@ export function setup () {
     }
 
     cb(DEFAULTS[asset])
-  }, e => {
+  }
+}
+
+export function register (protocol) {
+  protocol.registerBufferProtocol('asset', handler, e => {
     if (e) { console.error('Failed to register asset protocol', e) }
   })
 }
