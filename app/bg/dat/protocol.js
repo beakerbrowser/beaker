@@ -161,7 +161,7 @@ export const electronHandler = tabInstance => async function (request, respond) 
 
   // read type and configure
   const type = manifest ? manifest.type : undefined
-  var handler = await tabInstance.getDriveHandler() || await typeRegistry.getDefaultDriveHandler(type)
+  var handler = tabInstance.driveHandlers[urlp.protocol + '//' + urlp.hostname] || await typeRegistry.getDefaultDriveHandler(type)
   const canExecuteHTML = handler === 'website'
 
   // serve the handler application
