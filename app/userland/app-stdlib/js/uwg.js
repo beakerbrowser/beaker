@@ -1,4 +1,4 @@
-import { slugifyUrl } from './strings.js'
+import { slugifyUrl, DAT_KEY_REGEX } from './strings.js'
 import { queryRead, queryHas, ensureParentDir } from './fs.js'
 
 // typedefs
@@ -6,6 +6,7 @@ import { queryRead, queryHas, ensureParentDir } from './fs.js'
 
 /**
  * @typedef {import('./fs.js').FSQueryResult} FSQueryResult
+ * @typedef {import('./fs.js').DriveInfo} DriveInfo
  *
  * @typedef {FSQueryResult} Comment
  * @prop {string} content.type
@@ -45,6 +46,35 @@ import { queryRead, queryHas, ensureParentDir } from './fs.js'
 
 // exported
 // =
+
+var profileCache = {}
+export const profiles = {
+  /**
+   * @param {string} key 
+   * @returns {Promise<DriveInfo?>}
+   */
+  async get (key) {
+    var match = DAT_KEY_REGEX.exec(key)
+    if (match) key = match[0]
+    else key = await DatArchive.resolveName(key)
+
+    // check cache
+    if (profileCache[key]) {
+      return profileCache[key]
+    }
+
+    // check network expanding from self -> friends -> foafs
+    var entry
+    for (let path of ['/public', '/public/friends/*', '/public/friends/*/friends/*']) {
+      var res = /** @type FSQueryResult[] */(await navigator.filesystem.query({path, mount: key}))
+      if (res[0]) {
+        entry = /** @type FSQueryResult */(res[0])
+        break
+      }
+    }
+    return entry ? entry.mount : undefined
+  }
+}
 
 export const friends = {
   /**
@@ -138,7 +168,7 @@ export const bookmarks = {
    */
   async add ({href, title, description, isPublic}) {
     var slug = slugifyUrl(href)
-    var path = isPublic ? `/public/library/bookmarks/${slug}.json` : `/library/bookmarks/${slug}.json`
+    var path = isPublic ? `/public/.data/bookmarks/${slug}.json` : `/.data/bookmarks/${slug}.json`
 
     await ensureParentDir(path)
     await navigator.filesystem.writeFile(path, JSON.stringify({
@@ -172,7 +202,7 @@ export const bookmarks = {
     href = href || oldBookmark.href
 
     var slug = slugifyUrl(href)
-    var path = isPublic ? `/public/library/bookmarks/${slug}.json` : `/library/bookmarks/${slug}.json`
+    var path = isPublic ? `/public/.data/bookmarks/${slug}.json` : `/.data/bookmarks/${slug}.json`
 
     // remove old if changing isPublic
     if (bookmarkPath !== path) {
@@ -468,14 +498,14 @@ function getFeedPaths (author) {
 function getBookmarkPaths (author, href = undefined) {
   var filename = (href ? slugifyUrl(href) : '*') + '.json'
   if (author === 'me') {
-    return [`/library/bookmarks/${filename}`, `/public/library/bookmarks/${filename}`]
+    return [`/.data/bookmarks/${filename}`, `/public/.data/bookmarks/${filename}`]
   } else if (author) {
-    return `/public/friends/${author}/library/bookmarks/${filename}`
+    return `/public/friends/${author}/.data/bookmarks/${filename}`
   } else {
     return [
-      `/library/bookmarks/${filename}`,
-      `/public/library/bookmarks/${filename}`,
-      `/public/friends/*/library/bookmarks/${filename}`
+      `/.data/bookmarks/${filename}`,
+      `/public/.data/bookmarks/${filename}`,
+      `/public/friends/*/.data/bookmarks/${filename}`
     ]
   }
 }
@@ -530,6 +560,7 @@ function massageBookmark (bookmark) {
   bookmark.content.description = typeof bookmark.content.description === 'string' ? bookmark.content.description : undefined
   bookmark.content.createdAt = typeof bookmark.content.createdAt === 'string' ? new Date(bookmark.content.createdAt) : undefined
   bookmark.content.updatedAt = typeof bookmark.content.updatedAt === 'string' ? new Date(bookmark.content.updatedAt) : undefined
+  bookmark.content.isPublic = bookmark.path.startsWith('/public')
   return true
 }
 

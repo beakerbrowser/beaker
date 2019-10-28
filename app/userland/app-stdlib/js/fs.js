@@ -31,9 +31,7 @@ import { isFilenameBinary } from './is-ext-binary.js'
  * @prop {string} title
  * @prop {string} description
  * @prop {string} type
- * @prop {Object} ident
- * @prop {boolean} ident.isRoot
- * @prop {boolean} ident.isUser
+ * @prop {string} author
  *
  * @typedef {Object} FSQueryResult
  * @prop {string} type
