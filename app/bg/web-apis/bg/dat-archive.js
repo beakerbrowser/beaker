@@ -3,13 +3,16 @@ import parseDatURL from 'parse-dat-url'
 import pda from 'pauls-dat-api2'
 import concat from 'concat-stream'
 import pick from 'lodash.pick'
+import _get from 'lodash.get'
 import * as modals from '../../ui/subwindows/modals'
 import * as permissions from '../../ui/permissions'
 import datDns from '../../dat/dns'
 import * as datArchives from '../../dat/archives'
 import * as archivesDb from '../../dbs/archives'
 import { timer } from '../../../lib/time'
+import * as filesystem from '../../filesystem/index'
 import * as users from '../../filesystem/users'
+import * as windows from '../../ui/windows'
 import { DAT_MANIFEST_FILENAME, DAT_CONFIGURABLE_FIELDS, DAT_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DAT_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
 
@@ -27,7 +30,8 @@ export default {
 
     // only allow these vars to be set by beaker, for now
     if (!this.sender.getURL().startsWith('beaker:')) {
-      author = visibility = template = undefined
+      visibility = template = undefined
+      author = _get(windows.getUserSessionFor(this.sender), 'url')
     }
 
     if (prompt !== false) {
@@ -49,7 +53,7 @@ export default {
       // create
       try {
         var newArchive = await datArchives.createNewArchive({title, description, type, author, links})
-        // TODO uwg await datLibrary.configureArchive(newArchive, {isSaved: true, isHosting: true, visibility})
+        await filesystem.addToLibrary(newArchive.url, title)
       } catch (e) {
         console.log(e)
         throw e
@@ -84,7 +88,8 @@ export default {
 
     // only allow these vars to be set by beaker, for now
     if (!this.sender.getURL().startsWith('beaker:')) {
-      author = visibility = undefined
+      visibility = undefined
+      author = _get(windows.getUserSessionFor(this.sender), 'url')
     }
 
     if (prompt !== false) {
@@ -109,12 +114,7 @@ export default {
       // create
       let key = await lookupUrlDatKey(url)
       let newArchive = await datArchives.forkArchive(key, {title, description, type, author, links})
-      // TODO uwg
-      // await datLibrary.configureArchive(newArchive, {
-      //   isSaved: true,
-      //   isHosting: true,
-      //   visibility
-      // })
+      await filesystem.addToLibrary(newArchive.url, title)
       newArchiveUrl = newArchive.url
     }
 

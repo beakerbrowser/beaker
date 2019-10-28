@@ -16,8 +16,6 @@ export const PATHS = {
   // private fs
   DEFAULT_USER: '/public',
   LIBRARY: '/library',
-  LIBRARY_JSON: '/library/library.json',
-  LIBRARY_CAT: (cat) => `/library/${cat}`,
   PROGRAM_REGISTRY_JSON: '/.settings/program-registry.json',
   USERS: '/users',
   USER: (name) => `/users/${name}`,
@@ -29,7 +27,6 @@ export const PATHS = {
   FEED: '/feed',
   FRIENDS: '/friends'
 }
-export const LIBRARY_CATEGORIES = ['applications', 'bookmarks', 'files', 'media', 'modules', 'websites']
 
 // builtin programs
 export const BUILTIN_PROGRAMS = [

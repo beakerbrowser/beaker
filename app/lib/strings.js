@@ -41,6 +41,19 @@ export function highlight (str = '', nonce = 0) {
   return str.replace(start, '<strong>').replace(end, '</strong>')
 }
 
+export function joinPath (...args) {
+  var str = args[0]
+  for (let v of args.slice(1)) {
+    v = v && typeof v === 'string' ? v : ''
+    let left = str.endsWith('/')
+    let right = v.startsWith('/')
+    if (left !== right) str += v
+    else if (left) str += v.slice(1)
+    else str += '/' + v
+  }
+  return str
+}
+
 export function getHostname (str) {
   try {
     const u = new URL(str)

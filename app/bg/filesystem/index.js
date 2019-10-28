@@ -1,10 +1,12 @@
+import { join as joinPath } from 'path'
 import * as logLib from '../logger'
 const logger = logLib.category('filesystem')
+import slugify from 'slugify'
 import dat from '../dat/index'
 import * as db from '../dbs/profile-data-db'
 import * as users from './users'
 import * as trash from './trash'
-import { PATHS, LIBRARY_CATEGORIES } from '../../lib/const'
+import { PATHS } from '../../lib/const'
 
 // typedefs
 // =
@@ -64,14 +66,9 @@ export async function setup () {
   try {
     // ensure common dirs
     await ensureDir(PATHS.DATA)
+    await ensureDir(PATHS.LIBRARY)
     await ensureDir(PATHS.SETTINGS)
     await ensureDir(PATHS.TRASH)
-
-    // ensure all library folders exist
-    await ensureDir(PATHS.LIBRARY)
-    for (let cat of LIBRARY_CATEGORIES) {
-      await ensureDir(PATHS.LIBRARY_CAT(cat))
-    }
 
     // ensure all user mounts are set
     await ensureDir(PATHS.USERS)
@@ -117,6 +114,16 @@ export async function addUser (user) {
  */
 export async function removeUser (user) {
   await ensureUnmount(PATHS.USER(user.label))
+}
+
+/**
+ * @param {string} url
+ * @param {string} title
+ * @returns {Promise<void>}
+ */
+export async function addToLibrary (url, title) {
+  var name = await getAvailableMountName(PATHS.LIBRARY, title)
+  await ensureMount(joinPath(PATHS.LIBRARY, name), url)
 }
 
 // internal methods
@@ -175,4 +182,20 @@ async function ensureUnmount (path) {
   } catch (e) {
     logger.error('Filesystem failed to unmount archive', {path, error: e})
   }
+}
+
+/**
+ * @param {string} containingPath
+ * @param {string} title
+ * @returns {Promise<string>}
+ */
+async function getAvailableMountName (containingPath, title) {
+  var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
+  for (let i = 1; i < 1e9; i++) {
+    let name = (i === 1) ? basename : `${basename}-${i}`
+    let st = await stat(joinPath(containingPath, name))
+    if (!st) return name
+  }
+  // yikes if this happens
+  throw new Error('Unable to find an available name for ' + title)
 }

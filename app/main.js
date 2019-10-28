@@ -22,7 +22,6 @@ import * as webapis from './bg/web-apis/bg'
 import * as spellCheckerLib from './bg/lib/spell-checker'
 
 import * as windows from './bg/ui/windows'
-import * as modals from './bg/ui/subwindows/modals'
 import * as windowMenu from './bg/ui/window-menu'
 import registerContextMenu from './bg/ui/context-menu'
 import * as downloads from './bg/ui/downloads'
