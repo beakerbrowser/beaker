@@ -1,36 +1,10 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
-import { ucfirst } from '../../lib/strings'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import _groupBy from 'lodash.groupby'
-
-const CORE_TYPES = {
-  title: 'Basic',
-  types: [
-    {
-      id: undefined,
-      title: 'Shared Folder'
-    },
-    {
-      id: 'website',
-      title: 'Website'
-    },
-    {
-      id: 'application',
-      title: 'Application'
-    }
-  ]
-}
-
-const VISIBILITY_OPTIONS = [
-  {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access the drive'},
-  {icon: html`<span class="fa-fw fas fa-eye"></span>`, label: 'Unlisted', value: 'unlisted', desc: 'Only people who know the URL can access the drive'},
-  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access the drive'}
-]
 
 class CreateArchiveModal extends LitElement {
   static get properties () {
@@ -38,7 +12,6 @@ class CreateArchiveModal extends LitElement {
       title: {type: String},
       description: {type: String},
       type: {type: String},
-      visibility: {type: String},
       errors: {type: Object}
     }
   }
@@ -54,9 +27,15 @@ class CreateArchiveModal extends LitElement {
       margin: 0;
       border-color: #bbb;
     }
+
+    h1.title select {
+      position: relative;
+      top: -1px;
+      left: 1px;
+    }
     
     form {
-      padding: 0;
+      padding: 14px 20px;
       margin: 0;
     }
 
@@ -95,14 +74,7 @@ class CreateArchiveModal extends LitElement {
     }
     
     .layout {
-      display: flex;
       user-select: none;
-    }
-        
-    .layout .inputs {
-      min-width: 200px;
-      flex: 1;
-      padding: 16px 14px 12px;
     }
 
     input[type="radio"] {
@@ -110,95 +82,6 @@ class CreateArchiveModal extends LitElement {
       width: auto;
       margin: 0 4px;
       height: auto;
-    }
-    
-    .types {
-      width: 160px;
-      height: 442px;
-      overflow-y: auto;
-      background: #f5f5fa;
-    }
-    
-    .type-group-title {
-      padding: 8px;
-      color: #889;
-      font-size: 11px;
-      font-weight: 500;
-    }
-    
-    .type {
-      padding: 6px 20px;
-    }
-    
-    .type .type-title {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .type:hover {
-      background: #e5e5f3;
-    }
-    
-    .type.selected {
-      background: rgb(63, 119, 232);
-    }
-    
-    .type.selected .type-title {
-      color: #fff;
-    }
-
-    .visibility {
-      border: 1px solid #ddd;
-      margin-bottom: 45px;
-      margin-top: 5px;
-    }
-
-    .visibility .option {
-      display: flex;
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-      color: rgba(0,0,0,.5);
-    }
-
-    .visibility .option:last-child {
-      border: 0;
-    }
-
-    .visibility .option:hover {
-      color: rgba(0,0,0,.65);
-      background: #fafafa;
-    }
-
-    .visibility .option.selected {
-      color: rgba(0,0,0,.75);
-      outline: 1px solid gray;
-    }
-
-    .visibility .option > span {
-      margin: 2px 10px 0 4px;
-    }
-
-    .visibility .option-label {
-      font-weight: 500;
-      margin-bottom: 2px;
-    }
-
-    .visibility .option-desc {
-      font-weight: 400;
-    }
-
-    .visibility .option .fa-check-circle {
-      visibility: hidden;
-      margin: 2px 2px 0 auto;
-      color: #333;
-      font-size: 14px;
-      align-self: center;
-    }
-
-    .visibility .option.selected .fa-check-circle {
-      visibility: visible;
     }
     `]
   }
@@ -211,8 +94,6 @@ class CreateArchiveModal extends LitElement {
     this.type = undefined
     this.links = undefined
     this.author = undefined
-    this.visibility = 'public'
-    this.users = []
     this.errors = {}
 
     // export interface
@@ -227,17 +108,6 @@ class CreateArchiveModal extends LitElement {
     this.type = params.type || undefined
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
-    this.visibility = params.visibility || 'public'
-
-    var driveTypes = _groupBy(await bg.types.listDriveTypes(), t => t.origin.url)
-    var driveTypeGroups = Object.values(driveTypes).map(types => {
-      return {
-        title: types[0].origin.title,
-        types
-      }
-    })
-    this.typeOptions = [CORE_TYPES].concat(driveTypeGroups)
-
     await this.requestUpdate()
   }
 
@@ -245,67 +115,41 @@ class CreateArchiveModal extends LitElement {
   // =
 
   render () {
-    const renderType = type => {
-      const cls = classMap({type: true, selected: this.type === type.id})
-      return html`
-        <div class="${cls}" @click=${e => this.onClickType(e, type.id)}>
-          <div class="type-title">${type.title}</div>
-        </div>
-      `
-    }
-
-    const renderTypeGroup = group => {
-      return html`
-        <div class="type-group">
-          <div class="type-group-title">${group.title}</div>
-          <div class="types-selector">
-            ${group.types.map(t => renderType(t))}
-          </div>
-        </div>
-      `
-    }
-
+    const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">Create New Drive</h1>
+        <h1 class="title">
+          Create new 
+          <select name="type" @change=${this.onChangeType}>
+            <optgroup label="Files">
+              ${typeopt('undefined', 'Hyperdrive')}
+            </optgroup>
+            <optgroup label="Media">
+              ${typeopt('website', 'Website')}
+            </optgroup>
+            <optgroup label="Advanced">
+              ${typeopt('application', 'Application')}
+              ${typeopt('webterm.sh/cmd-pkg', 'Webterm Command')}
+            </optgroup>
+          </select>
+        </h1>
 
         <form @submit=${this.onSubmit}>
-          <div class="layout">
-            <div class="types">
-              ${(this.typeOptions || []).map(g => renderTypeGroup(g))}
-            </div>
+          <label for="title">Title</label>
+          <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
+          ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
-            <div class="inputs">
-              <label for="title">Title</label>
-              <input autofocus name="title" tabindex="1" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
-              ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
+          <details>
+            <summary><label for="desc">Description</label></summary>
+            <textarea name="desc" tabindex="3" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
+          </details>
+          
+          <hr>
 
-              <label for="desc">Description</label>
-              <textarea name="desc" tabindex="2" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
-
-              <label>Visibility</label>
-              <div class="visibility">
-                ${VISIBILITY_OPTIONS.map(opt => html`
-                  <div
-                    class=${classMap({option: true, selected: opt.value === this.visibility})}
-                    @click=${e => this.onChangeVisibility(e, opt.value)}
-                  >
-                    <span>${opt.icon}</span>
-                    <div>
-                      <div class="option-label">${opt.label}</div>
-                      <div class="option-desc">${opt.desc}</div>
-                    </div>
-                    <span class="fas fa-fw fa-check-circle"></span>
-                  </div>
-                `)}
-              </div>
-              
-              <div class="form-actions">
-                <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="4">Cancel</button>
-                <button type="submit" class="primary" tabindex="3">Create</button>
-              </div>
-            </div>
+          <div class="form-actions">
+            <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="5">Cancel</button>
+            <button type="submit" class="primary" tabindex="4">Create</button>
           </div>
         </form>
       </div>
@@ -314,12 +158,6 @@ class CreateArchiveModal extends LitElement {
 
   // event handlers
   // =
-
-  async onClickType (e, typeId) {
-    this.type = typeId
-    await this.updateComplete
-    this.shadowRoot.querySelector('input').focus() // focus the title input
-  }
 
   onChangeTitle (e) {
     this.title = e.target.value.trim()
@@ -331,10 +169,6 @@ class CreateArchiveModal extends LitElement {
 
   onChangeType (e) {
     this.type = e.target.value.trim()
-  }
-
-  onChangeVisibility (e, value) {
-    this.visibility = value
   }
 
   onClickCancel (e) {
@@ -354,9 +188,8 @@ class CreateArchiveModal extends LitElement {
       var url = await bg.datArchive.createArchive({
         title: this.title,
         description: this.description,
-        type: this.type,
+        type: this.type !== 'undefined' ? this.type : undefined,
         author: this.author,
-        visibility: this.visibility,
         links: this.links,
         prompt: false
       })

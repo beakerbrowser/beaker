@@ -3,6 +3,7 @@ import {css} from '../vendor/lit-element/lit-element'
 export default css`
 .wrapper {
   padding: 10px 20px;
+  user-select: none;
 }
 
 h1.title {
@@ -29,7 +30,8 @@ form {
 
 form textarea,
 form input,
-form .input {
+form .input,
+form details {
   display: block;
   width: 100%;
   margin: 5px 0 15px 0;
@@ -39,6 +41,16 @@ form textarea {
   resize: none;
   padding: 7px;
   height: 55px;
+}
+
+details input,
+details textarea,
+details .input {
+  margin-bottom: 0;
+}
+
+details summary {
+  outline: 0;
 }
 
 .form-actions {

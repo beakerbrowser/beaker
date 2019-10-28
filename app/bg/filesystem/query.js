@@ -2,6 +2,7 @@ import * as filesystem from './index'
 import datDns from '../dat/dns'
 import { getArchiveInfo } from '../dat/archives'
 import { joinPath } from '../../lib/strings'
+import { DAT_HASH_REGEX } from '../../lib/const'
 import _pick from 'lodash.pick'
 
 // typedefs
@@ -82,7 +83,10 @@ export async function query (opts) {
   }
 
   // massage opts
-  if (opts.mount) opts.mount = await datDns.resolveName(opts.mount)
+  if (opts.mount) {
+    opts.mount = await datDns.resolveName(opts.mount)
+    opts.mount = DAT_HASH_REGEX.exec(opts.mount)[0]
+  }
 
   // drive lookup tools & cache
   var parentDriveCache = {}
