@@ -1,6 +1,8 @@
 import * as filesystem from './index'
 import datDns from '../dat/dns'
-import { join as joinPath } from 'path'
+import { getArchiveInfo } from '../dat/archives'
+import { joinPath } from '../../lib/strings'
+import _pick from 'lodash.pick'
 
 // typedefs
 // =
@@ -33,9 +35,7 @@ import { join as joinPath } from 'path'
  * @prop {string} title
  * @prop {string} description
  * @prop {string} type
- * @prop {Object} ident
- * @prop {boolean} ident.isRoot
- * @prop {boolean} ident.isUser
+ * @prop {string} author
  * 
  * @typedef {Object} FSQueryResult
  * @prop {string} type
@@ -43,17 +43,17 @@ import { join as joinPath } from 'path'
  * @prop {string} url
  * @prop {Stat} stat
  * @prop {DriveInfo} drive
- * @prop {DriveInfo} [targetDrive]
+ * @prop {DriveInfo} [mount]
  */
 
 // exported api
 // =
 
 // navigator.filesystem.query({type: 'mount', path: ['/public', '/public/friends/*', '/public/friends/*/friends/*']})
-// => [{type: 'mount', path: '/public', stat, targetDrive, drive}, {type: 'mount', path: '/public/friend/bob', stat, targetDrive, drive}, ...]
+// => [{type: 'mount', path: '/public', stat, mount, drive}, {type: 'mount', path: '/public/friend/bob', stat, mount, drive}, ...]
 
 // navigator.filesystem.query({type: 'mount', mount: url, path: ['/public/friends/*', '/public/friends/*/friends/*']})
-// => [{type: 'mount', path: '/public/friend/bob', stat, targetDrive, drive}, ...]
+// => [{type: 'mount', path: '/public/friend/bob', stat, mount, drive}, ...]
 
 // navigator.filesystem.query({type: 'file', meta: {href: url}, path: ['/public/comments', '/public/friends/*/comments', '/public/friends/*/friends/*/comments']})
 // => [{type: 'folder', path: '/public/comment/foo.txt', stat, drive}]
@@ -63,6 +63,8 @@ import { join as joinPath } from 'path'
  * @returns {Promise<FSQueryResult[]>}
  */
 export async function query (opts) {
+  var root = filesystem.get()
+
   // validate opts
   if (!opts || !opts.path) throw new Error('The `path` parameter is required')
   if (!(typeof opts.path === 'string' || (Array.isArray(opts.path) && opts.path.every(v => typeof v === 'string')))) {
@@ -81,9 +83,43 @@ export async function query (opts) {
   // massage opts
   if (opts.mount) opts.mount = await datDns.resolveName(opts.mount)
 
+  // drive lookup tools & cache
+  var parentDriveCache = {}
+  async function getParentDriveInfo (path) {
+    var pathParts = path.split('/').filter(Boolean).slice(0, -1)
+    while (pathParts.length > 0) {
+      let mountPath = pathParts.join('/')
+      let drive
+  
+      if (parentDriveCache[mountPath]) {
+        // from cache
+        drive = await getDriveInfo(parentDriveCache[mountPath])
+      } else {
+        // check fs
+        let st = await root.pda.stat(mountPath).catch(e => null)
+        if (st && st.mount && st.mount.key) {
+          parentDriveCache[mountPath] = st.mount.key
+          drive = await getDriveInfo(st.mount.key)
+        }
+      }
+
+      if (drive) {
+        return {drive, url: joinPath(drive.url, path.slice(mountPath.length + 1))}
+      }
+
+      pathParts.pop()
+    }
+    return {drive: await getDriveInfo(root.key), url: joinPath(root.url, path)}
+  }
+  var driveInfoCache = {}
+  async function getDriveInfo (key) {
+    key = key.toString('hex')
+    if (driveInfoCache[key]) return driveInfoCache[key]
+    return (driveInfoCache[key] = _pick(await getArchiveInfo(key), ['url', 'title', 'description', 'type', 'author']))
+  }
+
   // iterate all matching paths and match against the query
   var results = []
-  var root = filesystem.get()
   for await (let path of expandPaths(root, opts.path)) {
     let stat
     try {
@@ -101,12 +137,14 @@ export async function query (opts) {
     if (opts.mount && (type !== 'mount' || stat.mount.key.toString('hex') !== opts.mount)) continue
     // meta TODO
 
+    var {drive, url} = await getParentDriveInfo(path)
     results.push({
       type,
       path,
+      url,
       stat,
-      drive: undefined, // TODO
-      targetDrive: undefined // TODO
+      drive,
+      mount: type === 'mount' ? (await getDriveInfo(stat.mount.key)) : undefined
     })
   }
 
