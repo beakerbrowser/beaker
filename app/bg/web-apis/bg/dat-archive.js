@@ -147,7 +147,7 @@ export default {
         key: info.key,
         url: info.url,
         domain: info.domain,
-        isOwner: info.isOwner,
+        writable: info.writable,
         // networked: info.userSettings.networked,
 
         // state

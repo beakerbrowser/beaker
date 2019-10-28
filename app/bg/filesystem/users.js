@@ -435,8 +435,8 @@ async function validateUserUrl (url) {
   // make sure the archive is saved and that we own the archive
   var urlp = new URL(url)
   var meta = await archivesDb.getMeta(urlp.hostname)
-  if (!meta.isOwner) {
-    throw new Error('User dat is not owned by this device')
+  if (!meta.writable) {
+    throw new Error('User drive is not owned by this device')
   }
 }
 

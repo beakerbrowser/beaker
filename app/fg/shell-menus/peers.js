@@ -49,7 +49,7 @@ class PeersMenu extends LitElement {
   // =
 
   render () {
-    var isOwner = _get(this, 'datInfo.isOwner', false)
+    var writable = _get(this, 'datInfo.writable', false)
     var isSaved = _get(this, 'datInfo.userSettings.isSaved', false)
     var peers = _get(this, 'datInfo.peers', 0)
     var downloadTotal = _get(this, 'datInfo.networkStats.downloadTotal', 0)
@@ -76,7 +76,7 @@ class PeersMenu extends LitElement {
           </div>
         </div>
 
-        ${isOwner
+        ${writable
           ? ''
           : html`
             <label class="toggle">

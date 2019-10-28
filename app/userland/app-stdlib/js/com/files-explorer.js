@@ -75,7 +75,7 @@ class FilesExplorer extends LitElement {
       let archive = this.archive
 
       let info = await archive.getInfo()
-      this.readOnly = !info.isOwner
+      this.readOnly = !info.writable
 
       let st
       let folderPath = this.pathname

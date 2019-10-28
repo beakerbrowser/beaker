@@ -57,7 +57,7 @@ export class LocationInfo extends LitElement {
   render () {
     if (!this.currentDriveInfo) return html``
     const title = this.title
-    const canEdit = this.currentDriveInfo.isOwner
+    const canEdit = this.currentDriveInfo.writable
     const renderModes = this.renderModes
     const isText = !isFilenameBinary(this.realPathname)
     return html`

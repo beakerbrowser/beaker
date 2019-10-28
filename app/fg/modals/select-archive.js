@@ -71,7 +71,7 @@ class SelectArchiveModal extends LitElement {
 
     this.archives = [] /* TODO uwg await bg.library.list({
       isSaved: true,
-      isOwner: (params.filters && params.filters.isOwner),
+      writable: (params.filters && params.filters.writable),
       type: this.type
     })*/
     this.type = params.filters && params.filters.type
@@ -192,11 +192,11 @@ class SelectArchiveModal extends LitElement {
         <div class="info">
           <img class="favicon" src="beaker-favicon:${archive.url}" />
 
-          <span class="title" title="${archive.title} ${archive.isOwner ? '' : '(Read-only)'}">
+          <span class="title" title="${archive.title} ${archive.writable ? '' : '(Read-only)'}">
             ${archive.title || 'Untitled'}
           </span>
 
-          ${archive.isOwner ? '' : html`<span class="readonly">read-only</span>`}
+          ${archive.writable ? '' : html`<span class="readonly">read-only</span>`}
 
           <span class="hash">${shortenHash(archive.url)}</span>
         </div>

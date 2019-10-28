@@ -65,7 +65,7 @@ export class DriveInfo extends LitElement {
       ` : ''}
       <section>
         ${this.renderVisibility()}
-        ${this.renderIsOwner()}
+        ${this.renderIsWritable()}
         ${this.renderSize()}
       </section>
     `
@@ -84,9 +84,9 @@ export class DriveInfo extends LitElement {
     return html`<p><small>Size:</small> ${bytes(this.driveInfo.size)}</p>`
   }
 
-  renderIsOwner () {
-    if (this.driveInfo.isOwner) {
-      return html`<p><span class="fas fa-fw fa-pen"></span> Owner</p>`
+  renderIsWritable () {
+    if (this.driveInfo.writable) {
+      return html`<p><span class="fas fa-fw fa-pen"></span> Writable</p>`
     }
     return undefined
   }

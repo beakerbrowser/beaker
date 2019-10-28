@@ -136,10 +136,10 @@ class SelectFileModal extends LitElement {
     if (defined(this.filters.networked) && this.filters.networked !== this.archiveInfo.networked) {
       return false
     }
-    if (defined(this.filters.writable) && this.filters.writable !== this.archiveInfo.isOwner) { // TODO change isOwner to writable
+    if (defined(this.filters.writable) && this.filters.writable !== this.archiveInfo.writable) {
       return false
     }
-    if (this.saveMode && !this.archiveInfo.isOwner) { // TODO change isOwner to writable
+    if (this.saveMode && !this.archiveInfo.writable) {
       return false
     }
     if (file.stat.isFile()) {

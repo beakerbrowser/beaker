@@ -41,7 +41,7 @@ import { isFilenameBinary } from './is-ext-binary.js'
  * @prop {string} url
  * @prop {Stat} stat
  * @prop {DriveInfo} drive
- * @prop {DriveInfo} [targetDrive]
+ * @prop {DriveInfo} [mount]
  * @prop {any} [content]
  */
 

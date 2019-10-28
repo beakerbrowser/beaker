@@ -140,7 +140,7 @@ class SiteInfoApp extends LitElement {
         // get drive info
         let drive = this.drive
         this.info = await drive.getInfo()
-        this.readOnly = !this.info.isOwner
+        this.readOnly = !this.info.writable
 
         // watch for network events
         if (!this.onNetworkChanged) {

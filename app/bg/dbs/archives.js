@@ -26,7 +26,7 @@ import datDns from '../dat/dns'
  * @prop {number} size
  * @prop {string} author
  * @prop {string} forkOf
- * @prop {boolean} isOwner
+ * @prop {boolean} writable
  * @prop {number} lastAccessTime
  * @prop {number} lastLibraryAccessTime
  *
@@ -184,10 +184,11 @@ export async function getMeta (key, {noDefault} = {noDefault: false}) {
 
   // massage some values
   meta.url = `dat://${meta.dnsName || meta.key}`
-  meta.isOwner = !!meta.isOwner
   delete meta.dnsName
+  meta.writable = !!meta.isOwner
 
   // remove old attrs
+  delete meta.isOwner
   delete meta.createdByTitle
   delete meta.createdByUrl
   delete meta.metaSize
@@ -216,11 +217,11 @@ export async function setMeta (key, value) {
   }
 
   // extract the desired values
-  var {title, description, type, size, author, forkOf, mtime, isOwner} = value
+  var {title, description, type, size, author, forkOf, mtime, writable} = value
   title = typeof title === 'string' ? title : ''
   description = typeof description === 'string' ? description : ''
   type = typeof type === 'string' ? type : ''
-  var isOwnerFlag = flag(isOwner)
+  var isOwnerFlag = flag(writable)
   if (typeof author === 'string') author = normalizeDatUrl(author)
   if (typeof forkOf === 'string') forkOf = normalizeDatUrl(forkOf)
 
@@ -257,7 +258,7 @@ function defaultMeta (key, name) {
     author: undefined,
     forkOf: undefined,
     mtime: 0,
-    isOwner: false,
+    writable: false,
     lastAccessTime: 0,
     lastLibraryAccessTime: 0,
     size: 0

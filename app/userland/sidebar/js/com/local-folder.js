@@ -114,7 +114,7 @@ class SidebarLocalFolder extends LitElement {
   // =
 
   async onClickChange () {
-    if (!this.info.isOwner) return
+    if (!this.info.writable) return
 
     // open the create folder-picker popup
     let res = await beaker.browser.showOpenDialog({
@@ -143,7 +143,7 @@ class SidebarLocalFolder extends LitElement {
   }
 
   async onClickRemove (e) {
-    if (!this.info.isOwner) return
+    if (!this.info.writable) return
 
     try {
       await beaker.archives.setLocalSyncPath(this.origin, null)

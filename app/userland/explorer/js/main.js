@@ -310,7 +310,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async onNewFile (e) {
-    if (!this.currentDriveInfo.isOwner) return
+    if (!this.currentDriveInfo.writable) return
     var filename = prompt('Enter the name of your new file')
     if (filename) {
       var pathname = joinPath(this.realPathname, filename)
@@ -331,7 +331,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async onNewFolder (e) {
-    if (!this.currentDriveInfo.isOwner) return
+    if (!this.currentDriveInfo.writable) return
     var foldername = prompt('Enter the name of your new folder')
     if (foldername) {
       var pathname = joinPath(this.realPathname, foldername)
@@ -346,7 +346,7 @@ export class ExplorerApp extends LitElement {
   }
 
   onImport (e) {
-    if (!this.currentDriveInfo.isOwner) return
+    if (!this.currentDriveInfo.writable) return
     this.shadowRoot.querySelector('#files-picker').click()
   }
 
@@ -375,7 +375,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async onSave (e) {
-    if (!this.currentDriveInfo.isOwner) return
+    if (!this.currentDriveInfo.writable) return
     var value = this.shadowRoot.querySelector('explorer-view-file').editor.getValue()
     var drive = new DatArchive(this.currentDriveInfo.url)
     try {
@@ -389,7 +389,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async onRename (e) {
-    if (!this.currentDriveInfo.isOwner) return
+    if (!this.currentDriveInfo.writable) return
     var oldName = this.selection[0] ? this.selection[0].name : this.filename
     var newName = prompt('Enter the new name for this file or folder', oldName)
     if (newName) {
@@ -411,7 +411,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async onDelete (e) {
-    if (!this.currentDriveInfo.isOwner) return
+    if (!this.currentDriveInfo.writable) return
 
     var drive = new DatArchive(this.currentDriveInfo.url)
     const del = async (pathname, stat) => {

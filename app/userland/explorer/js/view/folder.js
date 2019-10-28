@@ -75,7 +75,7 @@ export class FolderView extends LitElement {
             .info=${inlineMdItem.stat}
           ></file-display>
         </div>
-      ` : this.currentDriveInfo.isOwner ? html`
+      ` : this.currentDriveInfo.writable ? html`
         <div class="readme">
           <a class="add-readme-link" href="#" @click=${this.onAddReadme}>+ Add README.md</a>
         </div>

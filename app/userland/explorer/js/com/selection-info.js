@@ -48,7 +48,7 @@ export class SelectionInfo extends LitElement {
   // =
 
   render () {
-    const canEdit = this.currentDriveInfo.isOwner
+    const canEdit = this.currentDriveInfo.writable
     if (this.selection.length > 1) {
       return html`
         <section><strong>${this.selection.length} items selected</strong></section>

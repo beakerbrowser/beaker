@@ -76,7 +76,7 @@ function massageRecord (record) {
       title: record.author.title,
       description: record.author.description,
       type: record.author.type,
-      isOwner: record.author.isOwner
+      writable: record.author.writable
     } : undefined,
     meta: {
       title: record.meta.title,
@@ -86,7 +86,7 @@ function massageRecord (record) {
       size: record.meta.size,
       author: record.meta.author,
       forkOf: record.meta.forkOf,
-      isOwner: record.meta.isOwner
+      writable: record.meta.writable
     },
     isSaved: record.isSaved,
     isHosting: record.isHosting,

@@ -81,7 +81,7 @@ const STATE_VARS = [
   'siteTitle',
   'siteIcon',
   'datDomain',
-  'isOwner',
+  'writable',
   'canFollow',
   'canInstall',
   'isInstalled',
@@ -262,8 +262,8 @@ class Tab {
     return this.datInfo && this.datInfo.domain ? this.datInfo.domain : ''
   }
 
-  get isOwner () {
-    return this.datInfo && this.datInfo.isOwner
+  get writable () {
+    return this.datInfo && this.datInfo.writable
   }
 
   get canSave () {
@@ -612,12 +612,11 @@ class Tab {
       let {checkoutFS} = await dat.archives.getArchiveCheckout(archive, version)
       this.liveReloadEvents = checkoutFS.pda.watch()
 
-      let event = (this.datInfo.isOwner) ? 'changed' : 'invalidated'
       const reload = _throttle(() => {
         this.browserView.webContents.reload()
       }, TRIGGER_LIVE_RELOAD_DEBOUNCE, {leading: false})
       this.liveReloadEvents.on('data', ([evt]) => {
-        if (evt === event) reload()
+        if (evt === 'changed') reload()
       })
       // ^ note this throttle is run on the front edge.
       // That means snappier reloads (no delay) but possible double reloads if multiple files change
@@ -813,7 +812,7 @@ class Tab {
     if (this.isSidebarActive) {
       this.updateSidebar()
     }
-    if (httpResponseCode === 404 && this.isOwner && (this.datInfo.type === 'website' || this.datInfo.type === 'application')) {
+    if (httpResponseCode === 404 && this.writable && (this.datInfo.type === 'website' || this.datInfo.type === 'application')) {
       // prompt to create a page on 404 for owned sites
       prompts.create(this.browserView.webContents, 'create-page', {url: this.url})
     }

@@ -24,12 +24,6 @@ export default function registerContextMenu () {
       const isDat = props.pageURL.startsWith('dat://')
       const isMisspelled = props.selectionText && spellChecker.isMisspelled(props.selectionText)
       const spellingSuggestions = isMisspelled && spellChecker.getSuggestions(props.selectionText).slice(0, 5)
-      // var isOwner = false
-      // if (isDat) {
-      //   let key = await dat.dns.resolveName(props.pageURL)
-      //   let archive = dat.archives.getArchive(key)
-      //   isOwner = archive && archive.writable
-      // }
 
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?

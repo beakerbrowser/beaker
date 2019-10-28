@@ -11,7 +11,7 @@ class NavbarSiteInfo extends LitElement {
       url: {type: String},
       siteTitle: {type: String},
       datDomain: {type: String},
-      isOwner: {type: Boolean},
+      writable: {type: Boolean},
       peers: {type: Number},
       loadError: {type: Object},
       isPressed: {type: Boolean}
@@ -23,7 +23,7 @@ class NavbarSiteInfo extends LitElement {
     this.url = ''
     this.siteTitle = ''
     this.datDomain = ''
-    this.isOwner = false
+    this.writable = false
     this.peers = 0
     this.loadError = null
     this.isPressed = false
@@ -75,11 +75,11 @@ class NavbarSiteInfo extends LitElement {
           <span class="label">${this.siteTitle}</span>
         `
       } else if (scheme === 'dat:') {
-        if (this.isOwner) {
+        if (this.writable) {
           certified = true
         }
         innerHTML = html`
-          ${this.isOwner ? html`
+          ${this.writable ? html`
             <span class="fas fa-check-circle certified"></span>
           ` : ''}
           <span class="label">${this.siteTitle}</span>

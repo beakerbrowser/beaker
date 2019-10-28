@@ -36,6 +36,7 @@ import _pick from 'lodash.pick'
  * @prop {string} description
  * @prop {string} type
  * @prop {string} author
+ * @prop {boolean} writable
  * 
  * @typedef {Object} FSQueryResult
  * @prop {string} type
@@ -115,7 +116,7 @@ export async function query (opts) {
   async function getDriveInfo (key) {
     key = key.toString('hex')
     if (driveInfoCache[key]) return driveInfoCache[key]
-    return (driveInfoCache[key] = _pick(await getArchiveInfo(key), ['url', 'title', 'description', 'type', 'author']))
+    return (driveInfoCache[key] = _pick(await getArchiveInfo(key), ['url', 'title', 'description', 'type', 'author', 'writable']))
   }
 
   // iterate all matching paths and match against the query

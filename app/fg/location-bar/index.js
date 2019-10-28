@@ -161,7 +161,7 @@ class LocationBar extends LitElement {
             ` : html`
               <span class="far fa-fw fa-folder"></span>
               Dat by
-              ${r.author && r.author.isOwner ? html`me`: (r.author && r.author.title || 'Anonymous')}
+              ${r.author && r.author.writable ? html`me`: (r.author && r.author.title || 'Anonymous')}
               <span class="url">${toNiceUrl(r.url)}</span>
             `}
           </div>
@@ -169,7 +169,7 @@ class LocationBar extends LitElement {
       `
     }
     if (r.resultType === 'bookmark') {
-      let authorTitle = r.author.isOwner ? 'me' : (r.author.title || 'Anonymous')
+      let authorTitle = r.author.writable ? 'me' : (r.author.title || 'Anonymous')
       return html`
         <div class="icon"><img src=${'asset:favicon-32:' + r.record.href}></div>
         <div class="info">
@@ -188,7 +188,7 @@ class LocationBar extends LitElement {
       `
     }
     if (r.resultType === 'status') {
-      let authorTitle = r.author.isOwner ? 'me' : (r.author.title || 'Anonymous')
+      let authorTitle = r.author.writable ? 'me' : (r.author.title || 'Anonymous')
       return html`
         <div class="icon"><img class="avatar" src=${'asset:thumb:' + r.author.url}></div>
         <div class="info">

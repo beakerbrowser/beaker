@@ -67,7 +67,7 @@ export class MountInfo extends LitElement {
       ` : ''}
       <section>
         ${this.renderVisibility()}
-        ${this.renderIsOwner()}
+        ${this.renderIsWritable()}
         ${this.renderSize()}
       </section>
     `
@@ -86,9 +86,9 @@ export class MountInfo extends LitElement {
     return html`<p><small>Size:</small> ${bytes(this.mountInfo.size)}</p>`
   }
 
-  renderIsOwner () {
-    if (this.mountInfo.isOwner) {
-      return html`<p><span class="fas fa-fw fa-pen"></span> Owner</p>`
+  renderIsWritable () {
+    if (this.mountInfo.writable) {
+      return html`<p><span class="fas fa-fw fa-pen"></span> Writable</p>`
     }
     return undefined
   }

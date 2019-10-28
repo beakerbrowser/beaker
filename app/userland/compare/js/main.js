@@ -67,7 +67,7 @@ export class CompareApp extends LitElement {
           <span class="fas fa-fw fa-sync"></span> Reverse
         </button>
         <div style="flex: 1"></div>
-        ${this.targetInfo.isOwner ? html`
+        ${this.targetInfo.writable ? html`
           <button class="primary" @click=${this.onClickMergeAll}>Merge all</button>
         ` : ''}
       </div>
@@ -77,7 +77,7 @@ export class CompareApp extends LitElement {
           .diff=${diff}
           .leftOrigin=${this.target}
           .rightOrigin=${this.base}
-          ?can-merge=${this.targetInfo.isOwner}
+          ?can-merge=${this.targetInfo.writable}
           @merge=${this.onClickMergeItem}
         ></compare-diff-item>
       `) : ''}

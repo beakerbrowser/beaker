@@ -145,9 +145,9 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
       archive.pda.readSize('/')
     ])
     var {title, description, type, author, forkOf} = (manifest || {})
-    var isOwner = archive.writable
+    var writable = archive.writable
     var mtime = updateMTime ? Date.now() : oldMeta.mtime
-    var details = {title, description, type, mtime, size, author, forkOf, isOwner}
+    var details = {title, description, type, mtime, size, author, forkOf, writable}
 
     // check for changes
     if (!hasMetaChanged(details, oldMeta)) {

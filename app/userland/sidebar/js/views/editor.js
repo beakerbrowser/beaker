@@ -133,10 +133,10 @@ class SidebarEditorView extends LitElement {
         manifest = null
       }
       console.log(info)
-      this.readOnly = !info.isOwner
+      this.readOnly = !info.writable
 
       // readonly if viewing historic version
-      if (info.isOwner) {
+      if (info.writable) {
         let v = this.viewedDatVersion
         if (v == +v) { // viewing a numeric version? (in the history)
           this.readOnly = true
