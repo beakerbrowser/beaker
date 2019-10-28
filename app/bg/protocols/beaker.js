@@ -214,9 +214,6 @@ child-src 'self';
 `.replace(/\n/g, '')
     })
   }
-  if (requestUrl === 'beaker://bookmarks' || requestUrl.startsWith('beaker://bookmarks/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'bookmarks'), cb)
-  }
   if (requestUrl === 'beaker://desktop' || requestUrl.startsWith('beaker://desktop/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'desktop'), cb)
   }

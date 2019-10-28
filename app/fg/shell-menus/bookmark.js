@@ -137,7 +137,7 @@ BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`
   padding: 15px;
   color: #333;
   background: #fff;
-  height: 278px;
+  height: 226px;
   overflow: hidden;
 }
 

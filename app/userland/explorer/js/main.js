@@ -33,6 +33,7 @@ const ICONS = {
   },
   data: {
     annotations: 'fas fa-tag',
+    bookmarks: 'fas fa-star',
     comments: 'fas fa-comment'
   }
 }
@@ -116,8 +117,6 @@ export class ExplorerApp extends LitElement {
             item.subicon = 'fas fa-external-link-square-alt'
           } else if (driveKind === 'root' && this.realPathname === '/') {
             item.subicon = ICONS.rootRoot[item.name]
-          } else if (driveKind === 'root' && this.realPathname === '/library') {
-            item.subicon = ICONS.rootLibrary[item.name]
           } else if (driveKind === 'person' && this.realPathname === '/') {
             item.subicon = ICONS.personRoot[item.name]
           } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/.data') {

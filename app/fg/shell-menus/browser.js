@@ -40,7 +40,7 @@ class BrowserMenu extends LitElement {
 
   async init () {
     this.profile = await bg.beakerBrowser.getUserSession().catch(err => undefined)
-    this.bookmarks = [] // TODO await bg.bookmarks.list({isOwner: true, sortBy: 'title'})
+    this.bookmarks = await bg.bookmarks.list({sortBy: 'title'})
     await this.requestUpdate()
   }
 
@@ -213,11 +213,6 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://bookmarks')}>
-            <img class="favicon" src="asset:favicon:beaker://bookmarks">
-            <span class="label">Bookmarks</span>
-          </div>
-
           <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
             <img class="favicon" src="asset:favicon:beaker://downloads">
               <span class="label">Downloads</span>
