@@ -25,8 +25,10 @@ class HoverMenu extends LitElement {
   // =
 
   render () {
-    const item = ([id, label]) => {
-      if (label.divider) return html`<hr>`
+    var items = Array.isArray(this.options) ? this.options : Object.entries(this.options).map(([id, label]) => ({id, label}))
+
+    const item = ({id, label, divider}) => {
+      if (divider) return html`<hr>`
       return html`
         <a class="item" @click=${e => this.onClick(e, id)}>
           ${label}
@@ -44,7 +46,7 @@ class HoverMenu extends LitElement {
         ${this.isOpen
           ? html`
             <div class="dropdown-menu">
-              ${repeat(Object.entries(this.options), item)}
+              ${repeat(items, item)}
             </div>
           ` : ''}
       </div>

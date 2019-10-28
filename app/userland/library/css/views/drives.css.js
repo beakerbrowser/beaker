@@ -16,6 +16,8 @@ ${viewHeaderCSS}
 
 :host {
   display: block;
+  padding-top: 40px;
+  padding-bottom: 100vh;
 }
 
 a {
@@ -27,20 +29,26 @@ a:hover {
   text-decoration: underline;
 }
 
+.flex1 { flex: 1; }
+.flex2 { flex: 2; }
+.flex3 { flex: 3; }
+.flex4 { flex: 4; }
+
 h4 {
-  position: sticky;
-  top: 0;
-  background: #fff;
-  font-weight: 400;
-  color: #889;
-  border-bottom: 1px solid #dde;
-  padding-bottom: 5px;
-  margin: 5px 0 0;
+  font-weight: bold;
+  letter-spacing: 0.6px;
+  margin: 15px 20px 0;
+  font-size: 36px;
+  color: #ccccd8;
+}
+
+.listing {
+  margin-bottom: 30px;
 }
 
 .listing.grid {
   display: grid;
-  padding: 15px;
+  padding: 15px 30px;
   grid-gap: 15px;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 }
@@ -49,15 +57,13 @@ h4 {
   cursor: pointer;
   border-radius: 4px;
   color: inherit;
-  border: 1px solid #ccd;
   background: #fff;
   user-select: none;
   overflow: hidden;
 }
 
 .listing.grid .item:hover {
-  border-color: #bbc;
-  box-shadow: 0 2px 3px rgba(0,0,0,.05);
+  background: #fafaff;
   text-decoration: none;
 }
 
@@ -83,30 +89,16 @@ h4 {
   line-height: 20px;
 }
 
-.listing.grid .item .author {
-  font-size: 12px;
-  line-height: 20px;
-  color: gray;
-}
-
-.listing.grid .item .bottom-line {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 10px;
-  height: 20px;
-  color: #555;
-}
-
 .listing.list {
-  margin-bottom: 15px;
+  margin: 10px 30px 30px;
 }
 
 .listing.list .item {
   display: flex;
   cursor: pointer;
   padding: 10px;
-  border-bottom: 1px solid #f0f0f5;
+  margin-bottom: 5px;
+  border-radius: 4px;
   color: inherit;
   background: #fff;
   user-select: none;
@@ -114,7 +106,7 @@ h4 {
 }
 
 .listing.list .item:hover {
-  background-color: #f5f5fa;
+  background: #fafaff;
   text-decoration: none;
 }
 
@@ -123,6 +115,7 @@ h4 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #889;
 }
 
 .listing.list .item img {
@@ -132,21 +125,21 @@ h4 {
   object-fit: cover;
 }
 
+.listing.list .item img.avatar {
+  border-radius: 50%;
+}
+
 .listing.list .item .title {
-  flex: 4;
+  font-weight: bold;
+  color: #667;
 }
 
-.listing.list .item .author {
-  color: #889;
-  flex: 1;
+.listing.list .item .href {
+  color: var(--blue);
 }
 
-.listing.list .item .visibility {
-  flex: 1;
-}
-
-.listing.list .item .is-owner {
-  width: 50px;
+.listing.list .item .writable {
+  width: 40px;
 }
 
 .listing.list .item .label {
@@ -155,12 +148,16 @@ h4 {
   top: 0;
 }
 
-.item .visibility.public {
-  color: var(--blue);
+.listing.list .item button {
+  padding: 1px 4px;
 }
 
-.item .visibility.unlisted {
-  color: #889;
+.item .visibility {
+  width: 62px;
+}
+
+.item .visibility.public {
+  color: var(--blue);
 }
 
 .item .visibility.private {

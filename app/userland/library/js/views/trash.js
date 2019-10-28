@@ -8,7 +8,6 @@ const VIZ_OPTIONS = {
 }
 
 class TrashView extends DrivesView {
-
   async load () {
     var items = await beaker.archives.listTrash()
     this.items = items

@@ -21,7 +21,6 @@ ${colorsCSS}
   position: absolute;
   top: 24px;
   background: #fff;
-  width: 180px;
   padding: 6px 0;
   border: 1px solid #bbb;
   border-radius: 2px;
@@ -35,9 +34,11 @@ ${colorsCSS}
 
 .item {
   display: block;
-  padding: 12px 14px;
+  padding: 12px 30px 12px 14px;
+  min-width: 60px;
   color: var(--color-text);
   font-size: 12px;
+  white-space: nowrap;
 }
 
 .item:hover {

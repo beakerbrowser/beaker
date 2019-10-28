@@ -2,11 +2,17 @@ import { css } from '../../app-stdlib/vendor/lit-element/lit-element.js'
 
 const cssStr = css`
 .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+
   display: flex;
   align-items: center;
   height: 26px;
   padding: 0 0 10px;
   user-select: none;
+  background: #fff;
 }
 
 .header button {
@@ -34,6 +40,10 @@ const cssStr = css`
 
 .header hover-menu {
   margin: 0 6px;
+}
+
+.header hover-menu + hover-menu {
+  margin-left: 0;
 }
 
 .header subview-tabs {
