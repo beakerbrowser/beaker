@@ -486,8 +486,12 @@ async function setUserSession (url) {
 }
 
 async function showEditProfileModal () {
+  var user
   var sess = await getUserSession.call(this)
-  // return showShellModal(this.sender, 'edit-profile', sess) NEEDED? -prf
+  if (sess) user = await users.get(sess.url)
+  else user = await users.getDefault()
+  await modals.create(this.sender, 'user', user)
+  return users.get(user.url)
 }
 
 export function getSetting (key) {
