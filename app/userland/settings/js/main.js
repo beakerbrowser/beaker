@@ -2,7 +2,6 @@ import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-elemen
 import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import * as QP from './lib/query-params.js'
 import css from '../css/main.css.js'
-import './views/crawler.js'
 import './views/drive-handlers.js'
 import './views/general.js'
 import './views/info.js'
@@ -67,9 +66,7 @@ class SettingsApp extends LitElement {
       ${item('cloud-peers', 'fas fa-cloud', 'Cloud Peers')}
       ${item('users', 'fas fa-users', 'Users')}
       <hr>
-      ${item('crawler', 'fas fa-spider', 'Crawler')}
       ${item('log-viewer', 'far fa-list-alt', 'Log Viewer')}
-      <hr>
       ${item('info', 'far fa-question-circle', 'Information & Help')}
       <hr>
     `
@@ -84,8 +81,6 @@ class SettingsApp extends LitElement {
         `
       case 'commands':
         return html`<programs-view loadable type="webterm.sh/cmd-pkg"></programs-view>`
-      case 'crawler':
-        return html`<crawler-settings-view loadable></crawler-settings-view>`
       case 'general':
         return html`<general-settings-view loadable></general-settings-view>`
       case 'info':
