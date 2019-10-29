@@ -35,8 +35,7 @@ import * as bookmarks from '../filesystem/bookmarks'
 import * as programRegistry from '../filesystem/program-registry'
 import * as users from '../filesystem/users'
 import dat from '../dat/index'
-import * as beakerProtocol from '../protocols/beaker'
-import * as assetProtocol from '../protocols/asset'
+import * as driveHandlerHack from './tabs/drive-handler-hack'
 
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
@@ -136,14 +135,10 @@ class Tab {
         nativeWindowOpen: true,
         nodeIntegration: false,
         scrollBounce: true,
-        navigateOnDragDrop: true,
-        partition: '' + Date.now()
+        navigateOnDragDrop: true
       }
     })
     this.browserView.setBackgroundColor('#fff')
-    assetProtocol.register(this.browserView.webContents.session.protocol)
-    beakerProtocol.register(this.browserView.webContents.session.protocol)
-    dat.protocol.register(this.browserView.webContents.session.protocol, this)
 
     // webview state
     this.loadingURL = null // URL being loaded, if any
@@ -316,8 +311,8 @@ class Tab {
   // management
   // =
 
-  loadURL (url) {
-    this.browserView.webContents.loadURL(url)
+  loadURL (url, opts) {
+    this.browserView.webContents.loadURL(url, opts)
   }
 
   getBounds () {
@@ -780,15 +775,19 @@ class Tab {
 
   onDidStartNavigation (e, url, isInPlace, isMainFrame) {
     if (!isMainFrame) return
+    var origin = toOrigin(url)
 
     // turn off live reloading if we're leaving the domain
-    if (toOrigin(url) !== toOrigin(this.url)) {
+    if (origin !== toOrigin(this.url)) {
       this.stopLiveReloading()
     }
 
     // update state
     this.loadingURL = url
     this.emitUpdateState()
+
+    // set drive handler for the protocol to read
+    driveHandlerHack.setDriveHandler(url, this.driveHandlers[origin])
   }
 
   async onDidNavigate (e, url, httpResponseCode) {

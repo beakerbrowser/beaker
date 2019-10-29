@@ -13,6 +13,7 @@ import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
 import * as typeRegistry from '../filesystem/type-registry'
+import * as driveHandlerHack from '../ui/tabs/drive-handler-hack'
 
 const md = markdown({
   allowHTML: true,
@@ -44,8 +45,8 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 // exported api
 // =
 
-export function register (protocol, tab) {
-  protocol.registerStreamProtocol('dat', electronHandler(tab), err => {
+export function register (protocol) {
+  protocol.registerStreamProtocol('dat', electronHandler, err => {
     if (err) {
       console.error(err)
       throw new Error('Failed to create protocol: dat')
@@ -53,7 +54,7 @@ export function register (protocol, tab) {
   })
 }
 
-export const electronHandler = tabInstance => async function (request, respond) {
+export const electronHandler = async function (request, respond) {
   // log warnings now, after the logger has setup its transports
   if (utpLoadError) {
     logger.warn('Failed to load utp-native. Peer-to-peer connectivity may be degraded.', {err: utpLoadError.toString()})
@@ -161,7 +162,7 @@ export const electronHandler = tabInstance => async function (request, respond) 
 
   // read type and configure
   const type = manifest ? manifest.type : undefined
-  var handler = tabInstance.driveHandlers[urlp.protocol + '//' + urlp.hostname] || await typeRegistry.getDefaultDriveHandler(type)
+  var handler = driveHandlerHack.getDriveHandler(request.url) || await typeRegistry.getDefaultDriveHandler(type)
   const canExecuteHTML = handler === 'website'
 
   // serve the handler application

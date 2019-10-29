@@ -131,6 +131,7 @@ app.on('ready', async function () {
   beakerFaviconProtocol.setup() // TODO deprecateme
   assetProtocol.setup()
   assetProtocol.register(protocol)
+  dat.protocol.register(protocol)
   // intentProtocol.setup() TODO
 })
 
