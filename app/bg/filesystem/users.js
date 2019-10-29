@@ -11,9 +11,6 @@ import { PATHS } from '../../lib/const'
 // constants
 // =
 
-const CRAWL_TICK_INTERVAL = 5e3
-const NUM_SIMULTANEOUS_CRAWLS = 10
-const CRAWL_TIMEOUT = 15e3
 const LABEL_REGEX = /[a-z0-9-]/i
 
 // typedefs
@@ -40,7 +37,6 @@ const LABEL_REGEX = /[a-z0-9-]/i
 
 var events = new Events()
 var users = []
-var nextCrawlUserIndex = 0
 
 // exported api
 // =
@@ -72,7 +68,7 @@ export async function setup () {
     user.archive = null
     user.isDefault = Boolean(user.isDefault)
     user.createdAt = new Date(user.createdAt)
-    logger.info('Loading user', {details: user.url})
+    logger.info('Loading user', {details: {url: user.url}})
 
     // validate
     try {
@@ -106,63 +102,7 @@ export async function setup () {
     await db.run(`DELETE FROM users WHERE url = ?`, [invalidUser.url])
   })
 
-  // initiate ticker
-  queueTick()
-
   return users
-};
-
-function queueTick () {
-  setTimeout(tick, CRAWL_TICK_INTERVAL)
-}
-
-/**
- * @returns {Promise<void>}
- */
-async function tick () {
-  try {
-    var user = users[nextCrawlUserIndex]
-    nextCrawlUserIndex++
-    if (nextCrawlUserIndex >= users.length) nextCrawlUserIndex = 0
-    if (!user) return queueTick()
-
-    // assemble the next set of crawl targets
-    var crawlTargets = await selectNextCrawlTargets(user)
-    logger.verbose(`Indexing ${crawlTargets.length} sites`, {details: {urls: crawlTargets}})
-
-    // trigger the crawls on each
-    var activeCrawls = crawlTargets.map(async (crawlTarget) => {
-      await Promise.race([
-        new Promise((resolve, reject) => setTimeout(() => reject(`Crawl timed out for ${crawlTarget}`), CRAWL_TIMEOUT)),
-        (async () => {
-          try {
-            // load archive
-            var wasLoaded = true // TODO
-            var archive = await dat.archives.getOrLoadArchive(crawlTarget) // TODO timeout on load
-
-            // run crawl
-            // TODO uwg
-
-            if (!wasLoaded) {
-              // unload archive
-              // TODO
-            }
-          } catch (e) {
-            // TODO handle?
-          }
-        })()
-      ])
-    })
-
-    // await all crawls
-    await Promise.all(activeCrawls)
-  } catch (e) {
-    console.error(e)
-    logger.error('Crawler tick errored', {details: {error: e.toString()}})
-  }
-
-  // queue next tick
-  queueTick()
 }
 
 /**
@@ -170,14 +110,14 @@ async function tick () {
  */
 export async function list () {
   return Promise.all(users.map(fetchUserInfo))
-};
+}
 
 /**
  * @returns {string[]}
  */
 export function listUrls () {
   return users.map(u => u.url)
-};
+}
 
 /**
  * @param {string} url
@@ -347,57 +287,6 @@ export function validateUserLabel (label) {
 
 // internal methods
 // =
-
-/**
- * Assembles a list of crawl targets based on the current database state.
- * Depends on NUM_SIMULTANEOUS_CRAWLS.
- *
- * This function will assemble the list using simple priority heuristics. The priorities are currently:
- *
- *  1. Self
- *  2. Followed sites
- *  3. FoaFs
- *
- * The sites will be ordered by these priorities and then iterated linearly. The ordering within
- * the priority groupings will be according to URL for a deterministic but effectively random ordering.
- *
- * NOTE. The current database state must be queried every time this function is run because the user
- * will follow and unfollow during runtime, which changes the list.
- *
- * @param {Object} user - the user to select crawl-targets for.
- * @returns {Promise<Array<string>>}
- */
-async function selectNextCrawlTargets (user) {
-  // get self
-  var rows = [user.url]
-
-  // get followed sites
-  var followedUrls = []// TODO uwg (await follows.list({author: user.url})).map(({topic}) => topic.url)
-  rows = rows.concat(followedUrls)
-
-  // get sites followed by followed sites
-  var foafUrls = [] // TODO uwg (await follows.list({author: followedUrls})).map(({topic}) => topic.url)
-  rows = rows.concat(foafUrls)
-
-  // eleminate duplicates
-  rows = Array.from(new Set(rows))
-
-  // assemble into list
-  var start = user.crawlSelectorCursor || 0
-  if (start > rows.length) start = 0
-  var end = start + NUM_SIMULTANEOUS_CRAWLS
-  var nextCrawlTargets = rows.slice(start, end)
-  var numRemaining = NUM_SIMULTANEOUS_CRAWLS - nextCrawlTargets.length
-  if (numRemaining && rows.length >= NUM_SIMULTANEOUS_CRAWLS) {
-    // wrap around
-    nextCrawlTargets = nextCrawlTargets.concat(rows.slice(0, numRemaining))
-    user.crawlSelectorCursor = numRemaining
-  } else {
-    user.crawlSelectorCursor = end
-  }
-
-  return nextCrawlTargets.map(row => typeof row === 'string' ? row : row.url)
-}
 
 /**
  * @param {Object} user
