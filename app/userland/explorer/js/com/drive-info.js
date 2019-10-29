@@ -36,7 +36,7 @@ export class DriveInfo extends LitElement {
   get title () {
     var info = this.driveInfo
     if (info.title) return info.title
-    if (info.ident.isRoot) return 'My Hyperdrive'
+    if (info.ident.isRoot) return 'Filesystem'
     return 'Untitled'
   }
 

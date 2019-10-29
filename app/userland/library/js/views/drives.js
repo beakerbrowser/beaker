@@ -142,7 +142,9 @@ export class DrivesView extends LitElement {
         icon: 'fas fa-fw fa-code-branch',
         label: 'Fork this site',
         click: async () => {
-          await DatArchive.fork(url)
+          var drive = await DatArchive.fork(url)
+          toast.create('Drive created')
+          beaker.browser.openUrl(drive.url, {setActive: true})
           this.load()
         }
       })

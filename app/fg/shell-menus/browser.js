@@ -227,7 +227,7 @@ class BrowserMenu extends LitElement {
 
             <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://explorer')}>
               <img class="favicon" src="asset:favicon:beaker://explorer">
-              <span class="label">My Hyperdrive</span>
+              <span class="label">Filesystem</span>
             </div>
             
             <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>

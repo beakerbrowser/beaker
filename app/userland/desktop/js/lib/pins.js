@@ -22,7 +22,7 @@ export async function save (pins) {
 
 function defaults () {
   return [
-    {title: 'My Hyperdrive', href: 'beaker://explorer/'},
+    {title: 'Filesystem', href: 'beaker://explorer/'},
     {title: 'Library', href: 'beaker://library/'},
     {title: 'Beaker Social', href: 'beaker://social/'}
   ]

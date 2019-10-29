@@ -36,7 +36,7 @@ export class MountInfo extends LitElement {
   get title () {
     var info = this.mountInfo
     if (info.title) return info.title
-    if (info.ident.isRoot) return 'My Hyperdrive'
+    if (info.ident.isRoot) return 'Filesystem'
     return 'Untitled'
   }
 

@@ -15,16 +15,8 @@ const ICONS = {
     '.data': 'fas fa-database',
     '.settings': 'fas fa-cog',
     '.trash': 'far fa-trash-alt',
-    library: 'fas fa-book',
+    library: 'fas fa-university',
     users: 'fas fa-user'
-  },
-  rootLibrary: {
-    applications: 'fas fa-drafting-compass',
-    bookmarks: 'fas fa-star',
-    files: 'fas fa-copy',
-    media: 'fas fa-photo-video',
-    modules: 'fas fa-code',
-    websites: 'fas fa-sitemap'
   },
   personRoot: {
     '.data': 'fas fa-database',
@@ -454,6 +446,6 @@ customElements.define('explorer-app', ExplorerApp)
 
 function getDriveTitle (info) {
   if (info.title) return info.title
-  else if (info.ident.isRoot) return 'My Hyperdrive'
+  else if (info.ident.isRoot) return 'Filesystem'
   else return 'Untitled'
 }
