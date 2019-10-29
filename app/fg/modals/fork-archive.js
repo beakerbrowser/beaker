@@ -14,12 +14,6 @@ const STATES = {
   FORKING: 2
 }
 
-const VISIBILITY_OPTIONS = [
-  {icon: html`<span class="fa-fw fas fa-bullhorn"></span>`, label: 'Public', value: 'public', desc: 'Anybody can access it'},
-  {icon: html`<span class="fa-fw fas fa-eye"></span>`, label: 'Secret', value: 'unlisted', desc: 'Only people who know the URL can access it'},
-  {icon: html`<span class="fa-fw fas fa-lock"></span>`, label: 'Private', value: 'private', desc: 'Only you can access it'}
-]
-
 class ForkArchiveModal extends LitElement {
   static get properties () {
     return {
@@ -32,6 +26,21 @@ class ForkArchiveModal extends LitElement {
 
   static get styles () {
     return [commonCSS, inputsCSS, buttonsCSS, spinnerCSS, css`
+    .wrapper {
+      padding: 0;
+    }
+    
+    h1.title {
+      padding: 14px 20px;
+      margin: 0;
+      border-color: #bbb;
+    }
+    
+    form {
+      padding: 14px 20px;
+      margin: 0;
+    }
+
     input {
       font-size: 14px;
       height: 34px;
@@ -44,58 +53,17 @@ class ForkArchiveModal extends LitElement {
       padding: 7px 10px;
       border-color: #bbb;
     }
-
-    .visibility {
-      border: 1px solid #ddd;
-      margin-bottom: 10px;
-      margin-top: 5px;
-    }
-
-    .visibility .option {
-      display: flex;
-      padding: 10px;
-      cursor: pointer;
-      border-bottom: 1px solid #eee;
-      color: rgba(0,0,0,.5);
-    }
-
-    .visibility .option:last-child {
+    
+    hr {
       border: 0;
+      border-top: 1px solid #ddd;
+      margin: 20px 0;
     }
 
-    .visibility .option:hover {
-      color: rgba(0,0,0,.65);
-      background: #fafafa;
-    }
-
-    .visibility .option.selected {
-      color: rgba(0,0,0,.75);
-      outline: 1px solid gray;
-    }
-
-    .visibility .option > span {
-      margin: 2px 10px 0 4px;
-    }
-
-    .visibility .option-label {
-      font-weight: 500;
-      margin-bottom: 2px;
-    }
-
-    .visibility .option-desc {
-      font-weight: 400;
-    }
-
-    .visibility .option .fa-check-circle {
-      visibility: hidden;
-      margin: 2px 2px 0 auto;
-      color: #333;
-      font-size: 14px;
-      align-self: center;
-    }
-
-    .visibility .option.selected .fa-check-circle {
-      visibility: visible;
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     `]
   }
@@ -115,7 +83,6 @@ class ForkArchiveModal extends LitElement {
     this.type = null
     this.links = null
     this.author = null
-    this.visibility = 'public'
 
     // export interface
     window.forkArchiveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
@@ -129,7 +96,6 @@ class ForkArchiveModal extends LitElement {
     this.title = params.title || ''
     this.description = params.description || ''
     this.type = params.type
-    this.visibility = params.visibility || 'public'
     this.author = this.author || (await bg.users.getCurrent()).url
     this.links = params.links
     this.networked = ('networked' in params) ? params.networked : true
@@ -141,8 +107,10 @@ class ForkArchiveModal extends LitElement {
     if (!this.title) this.title = this.archiveInfo.title
     if (!this.description) this.description = this.archiveInfo.description
     await this.requestUpdate()
+    this.adjustHeight()
+  }
 
-    // adjust height based on rendering
+  adjustHeight () {
     var height = this.shadowRoot.querySelector('div').clientHeight
     bg.modals.resizeSelf({height})
   }
@@ -180,32 +148,20 @@ class ForkArchiveModal extends LitElement {
         <form @submit=${this.onSubmit}>
           <label for="title">Title</label>
           <input name="title" tabindex="2" value="${this.title}" @change=${this.onChangeTitle} />
+          
+          <details @toggle=${e => this.adjustHeight()}>
+            <summary><label for="desc">Description</label></summary>
+            <textarea name="desc" tabindex="3" @change=${this.onChangeDescription}>${this.description}</textarea>
+          </details>
 
-          <label for="desc">Description</label>
-          <textarea name="desc" tabindex="3" @change=${this.onChangeDescription}>${this.description}</textarea>
-
-          <label>Visibility</label>
-          <div class="visibility">
-            ${VISIBILITY_OPTIONS.map(opt => html`
-              <div
-                class=${classMap({option: true, selected: opt.value === this.visibility})}
-                @click=${e => this.onChangeVisibility(e, opt.value)}
-              >
-                <span>${opt.icon}</span>
-                <div>
-                  <div class="option-label">${opt.label}</div>
-                  <div class="option-desc">${opt.desc}</div>
-                </div>
-                <span class="fas fa-fw fa-check-circle"></span>
-              </div>
-            `)}
-          </div>
-
-          ${progressEl}
+          <hr>
 
           <div class="form-actions">
-            <button type="button" class="btn cancel" @click=${this.onClickCancel} tabindex="4">Cancel</button>
-            ${actionBtn}
+            ${progressEl}
+            <div>
+              <button type="button" class="btn cancel" @click=${this.onClickCancel} tabindex="4">Cancel</button>
+              ${actionBtn}
+            </div>
           </div>
         </form>
       </div>
@@ -221,12 +177,19 @@ class ForkArchiveModal extends LitElement {
           <label for="title">Title</label>
           <input name="title" tabindex="2" placeholder="Title" disabled />
 
-          <label for="desc">Description</label>
-          <textarea name="desc" tabindex="3" placeholder="Description (optional)" disabled></textarea>
+          <details @toggle=${e => this.adjustHeight()}>
+            <summary><label for="desc">Description</label></summary>
+            <textarea name="desc" tabindex="3" placeholder="Description (optional)" disabled></textarea>
+          </details>
+
+          <hr>
 
           <div class="form-actions">
-            <button type="button" class="btn cancel" @click=${this.onClickCancel} tabindex="4">Cancel</button>
-            <button type="submit" class="btn" tabindex="5" disabled>Create copy</button>
+            <div></div>
+            <div>
+              <button type="button" class="btn cancel" @click=${this.onClickCancel} tabindex="4">Cancel</button>
+              <button type="submit" class="btn" tabindex="5" disabled>Create copy</button>
+            </div>
           </div>
         </form>
       </div>
@@ -242,10 +205,6 @@ class ForkArchiveModal extends LitElement {
 
   onChangeDescription (e) {
     this.description = e.target.value
-  }
-
-  onChangeVisibility (e, value) {
-    this.visibility = value
   }
 
   onClickCancel (e) {
@@ -266,7 +225,6 @@ class ForkArchiveModal extends LitElement {
         description: this.description,
         type: this.type,
         author: this.author,
-        visibility: this.visibility,
         links: this.links,
         prompt: false
       })

@@ -67,22 +67,6 @@ class CreateArchiveModal extends LitElement {
       padding: 6px 12px;
       font-size: 12px;
     }
-    
-    label.fixed-width {
-      display: inline-block;
-      width: 60px;
-    }
-    
-    .layout {
-      user-select: none;
-    }
-
-    input[type="radio"] {
-      display: inline;
-      width: auto;
-      margin: 0 4px;
-      height: auto;
-    }
     `]
   }
 
@@ -109,6 +93,12 @@ class CreateArchiveModal extends LitElement {
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
     await this.requestUpdate()
+    this.adjustHeight()
+  }
+
+  adjustHeight () {
+    var height = this.shadowRoot.querySelector('div').clientHeight
+    bg.modals.resizeSelf({height})
   }
 
   // rendering
@@ -140,7 +130,7 @@ class CreateArchiveModal extends LitElement {
           <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
           ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
-          <details>
+          <details @toggle=${e => this.adjustHeight()}>
             <summary><label for="desc">Description</label></summary>
             <textarea name="desc" tabindex="3" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
           </details>
