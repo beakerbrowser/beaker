@@ -1,7 +1,9 @@
 import * as windows from '../../ui/windows'
 import * as modals from '../../ui/subwindows/modals'
+import * as datArchives from '../../dat/archives'
 import assert from 'assert'
 import { UserDeniedError } from 'beaker-error-constants'
+import _pick from 'lodash.pick'
 
 // typedefs
 // =
@@ -10,6 +12,20 @@ import { UserDeniedError } from 'beaker-error-constants'
 // =
 
 export default {
+  /**
+   * @param {string} url 
+   * @returns {Promise<void>}
+   */
+  async drivePropertiesDialog (url) {
+    assert(url && typeof url === 'string', '`url` must be a string')
+    var info = await datArchives.getArchiveInfo(url)
+    await modals.create(this.sender, 'drive-properties', {
+      url: info.url,
+      writable: info.writable,
+      props: _pick(info, ['title', 'description', 'type'])
+    })
+  },
+
   /**
    * @param {Object} [opts]
    * @param {string} [opts.title]

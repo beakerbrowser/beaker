@@ -4,6 +4,7 @@ import * as bg from './bg-process-rpc'
 import './setup'
 import './create-archive'
 import './fork-archive'
+import './drive-properties'
 import './select-archive'
 import './select-file'
 import './prompt'
@@ -69,6 +70,8 @@ class ModalsWrapper extends LitElement {
         return html`<create-archive-modal></create-archive-modal>`
       case 'fork-archive':
         return html`<fork-archive-modal></fork-archive-modal>`
+      case 'drive-properties':
+        return html`<drive-properties-modal></drive-properties-modal>`
       case 'select-archive':
         return html`<select-archive-modal></select-archive-modal>`
       case 'select-file':
