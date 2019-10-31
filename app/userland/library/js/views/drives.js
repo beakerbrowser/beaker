@@ -10,7 +10,7 @@ import * as QP from '../lib/query-params.js'
 import { oneof } from '../lib/validation.js'
 import * as createNew from '../lib/create-new'
 import _groupBy from 'lodash.groupby'
-import '../hover-menu.js'
+import '../../../app-stdlib/js/com/hover-menu.js'
 
 const SUBVIEW_OPTIONS = {
   library: 'My Library',

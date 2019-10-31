@@ -1,7 +1,7 @@
-import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
-import { repeat } from '../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { emit } from '../../app-stdlib/js/dom.js'
-import hoverMenuCSS from '../css/hover-menu.css.js'
+import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
+import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
+import { emit } from '../dom.js'
+import hoverMenuCSS from '../../css/com/hover-menu.css.js'
 
 class HoverMenu extends LitElement {
   static get properties () {
@@ -40,8 +40,8 @@ class HoverMenu extends LitElement {
       <div class="dropdown" @mouseover=${this.onMouseOver} @mouseleave=${this.onMouseLeave}>
         <div class="dropdown-box">
           <span class="fa-fw ${this.icon}"></span>
-          ${this.current}
-          <span class="fas fa-angle-down"></span>
+          <span class="menu-label">${this.current}</span>
+          <span class="fas fa-caret-down"></span>
         </div>
         ${this.isOpen
           ? html`

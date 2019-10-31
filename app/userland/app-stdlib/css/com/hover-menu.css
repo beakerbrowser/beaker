@@ -1,8 +1,12 @@
-import {css} from '../../app-stdlib/vendor/lit-element/lit-element.js'
-import colorsCSS from '../../app-stdlib/css/colors.css.js'
+@import "../colors.css";
 
-const cssStr = css`
-${colorsCSS}
+:host {
+  --menu-label-font-size: 12px;
+}
+
+.menu-label {
+  font-size: var(--menu-label-font-size);
+}
 
 .dropdown {
   display: inline-block;
@@ -54,5 +58,3 @@ hr {
   border: 0;
   border-top: 1px solid #ddd;
 }
-`
-export default cssStr

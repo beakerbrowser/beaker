@@ -9,7 +9,6 @@ import { emit } from '../../../app-stdlib/js/dom.js'
 import * as createNew from '../lib/create-new'
 import { EditBookmarkPopup } from '../com/edit-bookmark-popup.js'
 import bookmarksViewCSS from '../../css/views/bookmarks.css.js'
-import '../hover-menu.js'
 
 const SUBVIEW_OPTIONS = {
   mine: 'By Me',
