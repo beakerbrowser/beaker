@@ -5,7 +5,7 @@ import './setup'
 import './create-archive'
 import './fork-archive'
 import './drive-properties'
-import './select-archive'
+import './select-drive'
 import './select-file'
 import './prompt'
 import './basic-auth'
@@ -72,8 +72,8 @@ class ModalsWrapper extends LitElement {
         return html`<fork-archive-modal></fork-archive-modal>`
       case 'drive-properties':
         return html`<drive-properties-modal></drive-properties-modal>`
-      case 'select-archive':
-        return html`<select-archive-modal></select-archive-modal>`
+      case 'select-drive':
+        return html`<select-drive-modal></select-drive-modal>`
       case 'select-file':
         return html`<select-file-modal></select-file-modal>`
       case 'prompt':

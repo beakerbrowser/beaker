@@ -131,26 +131,22 @@ export default {
    * @param {Object} [opts]
    * @param {string} [opts.title]
    * @param {string} [opts.buttonLabel]
-   * @param {Object} [opts.filters]
-   * @param {boolean} [opts.filters.writable]
-   * @param {string} [opts.filters.type]
+   * @param {boolean} [opts.writable]
+   * @param {string} [opts.type]
    * @returns {Promise<string[]>}
    */
-  async selectDatArchiveDialog (opts = {}) {
+  async selectDriveDialog (opts = {}) {
     // validate
     assert(opts && typeof opts === 'object', 'Must pass an options object')
     assert(!opts.title || typeof opts.title === 'string', '.title must be a string')
     assert(!opts.buttonLabel || typeof opts.buttonLabel === 'string', '.buttonLabel must be a string')
-    if (opts.filters) {
-      assert(typeof opts.filters === 'object', '.filters must be an object')
-      assert(!opts.filters.type || typeof opts.filters.type === 'string', '.filters.type must be a string')
-      assert(!opts.filters.writable || typeof opts.filters.writable === 'boolean', '.filters.writable must be a boolean')
-    }
+    assert(!opts.type || typeof opts.type === 'string', '.type must be a string')
+    assert(!opts.writable || typeof opts.writable === 'boolean', '.writable must be a boolean')
 
     // initiate the modal
     var res
     try {
-      res = await modals.create(this.sender, 'select-archive', opts)
+      res = await modals.create(this.sender, 'select-drive', opts)
     } catch (e) {
       if (e.name !== 'Error') {
         throw e // only rethrow if a specific error

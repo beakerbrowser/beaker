@@ -5,6 +5,7 @@ import archivesManifest from '../../bg/web-apis/manifests/internal/archives'
 import typesManifest from '../../bg/web-apis/manifests/internal/types'
 import datArchiveManifest from '../../bg/web-apis/manifests/external/dat-archive'
 import modalsManifest from '../../bg/rpc-manifests/modals'
+import navigatorFsManifest from '../../bg/web-apis/manifests/external/navigator-filesystem'
 
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)
 export const users = rpc.importAPI('users', usersManifest)
@@ -12,3 +13,4 @@ export const archives = rpc.importAPI('archives', archivesManifest)
 export const types = rpc.importAPI('types', typesManifest)
 export const datArchive = rpc.importAPI('dat-archive', datArchiveManifest)
 export const modals = rpc.importAPI('background-process-modals', modalsManifest)
+export const navigatorFs = rpc.importAPI('navigator-filesystem', navigatorFsManifest)

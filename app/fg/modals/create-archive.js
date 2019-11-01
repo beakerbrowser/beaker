@@ -113,7 +113,7 @@ class CreateArchiveModal extends LitElement {
           Create new 
           <select name="type" @change=${this.onChangeType}>
             <optgroup label="Files">
-              ${typeopt('undefined', 'Hyperdrive')}
+              ${typeopt('undefined', 'Files drive')}
             </optgroup>
             <optgroup label="Media">
               ${typeopt('website', 'Website')}
