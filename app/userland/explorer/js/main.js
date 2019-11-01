@@ -106,9 +106,17 @@ export class ExplorerApp extends LitElement {
         let driveKind = ''
         if (this.currentDriveInfo.ident.isRoot) driveKind = 'root'
         if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
-        this.items.forEach(item => {
+        for (let item of this.items) {
+          item.icon = item.stat.isDirectory() ? 'folder' : 'file'
           if (item.stat.mount) {
-            item.subicon = 'fas fa-external-link-square-alt'
+            item.icon = 'hdd'
+            item.mountInfo = await (new DatArchive(item.stat.mount.key)).getInfo()
+            switch (item.mountInfo.type) {
+              case 'website': item.subicon = 'fas fa-sitemap'; break
+              case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
+              default: item.subicon = 'fas fa-folder'; break
+              // default: item.subicon = 'fas fa-external-link-square-alt'; break
+            }
           } else if (driveKind === 'root' && this.realPathname === '/') {
             item.subicon = ICONS.rootRoot[item.name]
           } else if (driveKind === 'person' && this.realPathname === '/') {
@@ -116,7 +124,7 @@ export class ExplorerApp extends LitElement {
           } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/.data') {
             item.subicon = ICONS.data[item.name]
           }
-        })
+        }
       }
     } catch (e) {
       console.log(e)

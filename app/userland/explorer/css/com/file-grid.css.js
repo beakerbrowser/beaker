@@ -3,6 +3,7 @@ import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 const cssStr = css`
 
 :host {
+  --color-drive: #bacad2;
   --color-folder: #9ec2e0;
   --color-file: #bbbbcc;
   --color-itemname: #484444;
@@ -12,7 +13,7 @@ const cssStr = css`
 
 h4 {
   border-top: 1px solid #e3e3ee;
-  color: #80808c;
+  color: #b0b0bc;
   padding-top: 6px;
   padding-left: 4px;
   margin: 0;
@@ -52,11 +53,15 @@ h4 {
   margin-bottom: 5px;
 }
 
-.item .fa-folder {
+.item .fa-fw.fa-folder {
   color: var(--color-folder);
 }
 
-.item .fa-file {
+.item .fa-fw.fa-hdd {
+  color: var(--color-drive);
+}
+
+.item .fa-fw.fa-file {
   -webkit-text-stroke: 1px var(--color-file);
   color: #fff;
   font-size: 36px;
@@ -78,7 +83,14 @@ h4 {
   position: absolute;
   top: 19px;
   left: 40px;
-  color: rgba(0,0,0,.3);
+  color: rgba(0,0,0,.4);
+}
+
+.item .mounticon {
+  position: absolute;
+  color: #5a5a5a;
+  left: 70px;
+  top: 30px;
 }
 
 .item .subicon.fa-star {
@@ -86,9 +98,10 @@ h4 {
   left: 38px;
 }
 
-.item .subicon.fa-external-link-square-alt {
-  top: 18px;
-  left: 57px;
+.item.mount .subicon {
+  top: 27px;
+  font-size: 9px;
+  left: 36px;
 }
 
 .item.hidden .fa-fw {

@@ -28,8 +28,12 @@ export class FileGrid extends LitElement {
   async load () {
   }
 
+  get mounts () {
+    return this.items.filter(i => i.stat.isDirectory() && (i.stat.mount && i.stat.mount.key) && (this.showHidden || !i.name.startsWith('.')))
+  }
+
   get folders () {
-    return this.items.filter(i => i.stat.isDirectory() && (this.showHidden || !i.name.startsWith('.')))
+    return this.items.filter(i => i.stat.isDirectory() && !(i.stat.mount && i.stat.mount.key) && (this.showHidden || !i.name.startsWith('.')))
   }
 
   get files () {
@@ -39,11 +43,18 @@ export class FileGrid extends LitElement {
   // =
 
   render () {
+    var mounts = this.mounts
     var folders = this.folders
     var files = this.files
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      ${mounts.length > 0 ? html`
+        <h4>Drives</h4>
+        <div class="grid">
+          ${repeat(mounts, this.renderItem.bind(this))}
+        </div>
+      ` : ''}
       ${folders.length > 0 ? html`
         <h4>Folders</h4>
         <div class="grid">
@@ -56,7 +67,7 @@ export class FileGrid extends LitElement {
           ${repeat(files, this.renderItem.bind(this))}
         </div>
       ` : ''}
-      ${files.length === 0 && folders.length === 0 ? html`
+      ${mounts.length === 0 && files.length === 0 && folders.length === 0 ? html`
         <h4>Files</h4>
         <div class="empty">This folder is empty</div>
       ` : ''}
@@ -67,22 +78,20 @@ export class FileGrid extends LitElement {
     var cls = classMap({
       item: true,
       hidden: item.name.startsWith('.'),
+      mount: item.mountInfo,
       folder: item.stat.isDirectory(),
       file: item.stat.isFile(),
       selected: this.selection.includes(item)
     })
-    var icon = 'file'
-    if (item.stat.isDirectory()) {
-      icon = 'folder'
-    }
     return html`
       <div
         class=${cls}
         @click=${e => this.onClick(e, item)}
         @dblclick=${e => this.onDblClick(e, item)}
       >
-        <span class="fas fa-fw fa-${icon}"></span>
+        <span class="fas fa-fw fa-${item.icon}"></span>
         ${item.subicon ? html`<span class="subicon ${item.subicon}"></span>` : ''}
+        ${item.mountInfo ? html`<span class="mounticon fas fa-external-link-square-alt"></span>` : ''}
         <span class="name">${item.name}</span>
       </div>
     `

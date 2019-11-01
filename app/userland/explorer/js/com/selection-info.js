@@ -1,6 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
-import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, toNiceUrl } from 'beaker://app-stdlib/js/strings.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import './file-display.js'
 
@@ -66,6 +66,14 @@ export class SelectionInfo extends LitElement {
         <h3><a href=${selRealUrl}>${sel.name}</a></h3>
         ${this.renderSize()}
       </section>
+      ${sel.mountInfo ? html`
+        <section>
+          <h5>Mounted drive</h5>
+          <p><small>URL:</small> <a class="link" href=${sel.mountInfo.url}>${toNiceUrl(sel.mountInfo.url)}</a></p>
+          <p><small>Title:</small> ${sel.mountInfo.title || 'Untitled'}</p>
+          ${sel.mountInfo.description ? html`<p><small>Description: </small> ${sel.mountInfo.description}</p>` : ''}
+        </section>
+      ` : ''}
       <section>
         <button ?disabled=${!canEdit} @click=${e => this.doEmit('rename')} class="transparent"><span class="fa-fw fas fa-i-cursor"></span> Rename</button>
         <button ?disabled=${!canEdit} @click=${e => this.doEmit('delete')} class="transparent"><span class="fa-fw fas fa-trash"></span> Delete</button>
