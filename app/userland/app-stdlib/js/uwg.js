@@ -1,5 +1,5 @@
 import { slugifyUrl, DAT_KEY_REGEX, joinPath } from './strings.js'
-import { queryRead, queryHas, ensureParentDir, ensureMount, ensureUnmount, getAvailableMountName } from './fs.js'
+import { queryRead, queryHas, ensureParentDir, ensureMount, ensureUnmount, getAvailableName } from './fs.js'
 
 // typedefs
 // =
@@ -83,7 +83,7 @@ export const library = {
    * @returns {Promise<void>}
    */
   async add (url, title = 'untitled') {
-    var name = await getAvailableMountName('/library', title)
+    var name = await getAvailableName('/library', title)
     await ensureMount(joinPath('/library', name), url)
   },
 
@@ -119,7 +119,7 @@ export const friends = {
    * @returns {Promise<void>}
    */
   async add (url, title = 'anonymous') {
-    var name = await getAvailableMountName('/public/friends', title)
+    var name = await getAvailableName('/public/friends', title)
     await ensureMount(joinPath('/public/friends', name), url)
   },
 

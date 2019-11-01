@@ -81,7 +81,7 @@ export async function queryHas (query) {
  */
 export async function ensureDir (path) {
   try {
-    let st = await safeStat(path)
+    let st = await navigator.filesystem.stat(path).catch(e => null)
     if (!st) {
       await navigator.filesystem.mkdir(path)
     } else if (!st.isDirectory()) {
@@ -106,7 +106,7 @@ export async function ensureParentDir (path) {
  */
 export async function ensureMount (path, url) {
   try {
-    let st = await safeStat(path)
+    let st = await navigator.filesystem.stat(path).catch(e => null)
     let key = await DatArchive.resolveName(url)
     if (!st) {
       // add mount
@@ -131,7 +131,7 @@ export async function ensureMount (path, url) {
  */
 export async function ensureUnmount (path) {
   try {
-    let st = await safeStat(path)
+    let st = await navigator.filesystem.stat(path).catch(e => null)
     if (st && st.mount) {
       // remove mount
       await navigator.filesystem.unmount(path)
@@ -144,27 +144,16 @@ export async function ensureUnmount (path) {
 /**
  * @param {string} containingPath
  * @param {string} title
+ * @param {Object} fs
  * @returns {Promise<string>}
  */
-export async function getAvailableMountName (containingPath, title) {
+export async function getAvailableName (containingPath, title, fs = navigator.filesystem) {
   var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
   for (let i = 1; i < 1e9; i++) {
     let name = (i === 1) ? basename : `${basename}-${i}`
-    let st = await safeStat(joinPath(containingPath, name))
+    let st = await fs.stat(joinPath(containingPath, name), fs).catch(e => null)
     if (!st) return name
   }
   // yikes if this happens
   throw new Error('Unable to find an available name for ' + title)
-}
-
-// internal
-// =
-
-/**
- * @param {string} path
- * @returns {Promise<Object>}
- */
-async function safeStat (path) {
-  try { return await navigator.filesystem.stat(path) }
-  catch (e) { return null }
 }

@@ -122,7 +122,7 @@ export async function removeUser (user) {
  * @returns {Promise<void>}
  */
 export async function addToLibrary (url, title) {
-  var name = await getAvailableMountName(PATHS.LIBRARY, title)
+  var name = await getAvailableName(PATHS.LIBRARY, title)
   await ensureMount(joinPath(PATHS.LIBRARY, name), url)
 }
 
@@ -189,7 +189,7 @@ async function ensureUnmount (path) {
  * @param {string} title
  * @returns {Promise<string>}
  */
-async function getAvailableMountName (containingPath, title) {
+async function getAvailableName (containingPath, title) {
   var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
   for (let i = 1; i < 1e9; i++) {
     let name = (i === 1) ? basename : `${basename}-${i}`
