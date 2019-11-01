@@ -1,5 +1,6 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
+import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { emit } from '../dom.js'
 import hoverMenuCSS from '../../css/com/hover-menu.css.js'
 
@@ -41,7 +42,7 @@ class HoverMenu extends LitElement {
       <div class="dropdown" @mouseover=${this.onMouseOver} @mouseleave=${this.onMouseLeave}>
         <div class="dropdown-box">
           <span class="fa-fw ${this.icon}"></span>
-          <span class="menu-label">${this.current}</span>
+          <span class="menu-label">${unsafeHTML(this.current)}</span>
           <span class="fas fa-caret-down"></span>
         </div>
         ${this.isOpen

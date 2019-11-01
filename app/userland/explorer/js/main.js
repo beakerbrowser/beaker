@@ -175,6 +175,15 @@ export class ExplorerApp extends LitElement {
     }
   }
 
+  get explorerMenu () {
+    return [
+      {id: 'filesystem', label: html`<span class="far fa-fw fa-hdd"></span> Go to: Filesystem`},
+      {id: 'library', label: html`<span class="fas fa-fw fa-university"></span> Go to: /library`},
+      {id: 'public', label: html`<span class="fas fa-fw fa-user"></span> Go to: /public`},
+    ]
+
+  }
+
   get driveMenu () {
     return [
       {id: 'new-drive', label: html`<span class="far fa-fw fa-hdd"></span> New hyperdrive`},
@@ -237,6 +246,7 @@ export class ExplorerApp extends LitElement {
         @delete=${this.onDelete}
       >
         <div class="menubar">
+          <hover-menu .options=${this.explorerMenu} current="<span class='fas fa-fw fa-folder'></span> Explorer" @change=${this.onSelectExplorerMenuItem}></hover-menu>
           <hover-menu .options=${this.driveMenu} current="Drive" @change=${this.onSelectMenuItem}></hover-menu>
           <hover-menu .options=${this.folderMenu} current="Folder" @change=${this.onSelectMenuItem}></hover-menu>
           <hover-menu .options=${this.fileMenu} current="File" @change=${this.onSelectMenuItem}></hover-menu>
@@ -350,6 +360,17 @@ export class ExplorerApp extends LitElement {
   onChangeRenderMode (e) {
     this.renderMode = e.detail.renderMode
     this.requestUpdate()
+  }
+
+  async onSelectExplorerMenuItem (e) {
+    switch (e.detail.id) {
+      case 'filesystem': window.location = navigator.filesystem.url; break
+      case 'library': window.location = navigator.filesystem.url + '/library'; break
+      case 'public':
+        let st = await navigator.filesystem.stat('/public')
+        window.location = `dat://${st.mount.key}`
+        break
+    }
   }
 
   onSelectMenuItem (e) {
