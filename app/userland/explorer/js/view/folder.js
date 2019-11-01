@@ -42,6 +42,20 @@ export class FolderView extends LitElement {
     if (md) return md
   }
 
+  get pathAncestry () {
+    var ancestry = []
+    var acc = []
+    for (let part of this.realPathname.split('/')) {
+      if (!part) continue
+      acc.push(part)
+      ancestry.push([
+        joinPath(this.currentDriveInfo.url, acc.join('/')),
+        part
+      ])
+    }
+    return ancestry
+  }
+
   // rendering
   // =
 
@@ -62,6 +76,10 @@ export class FolderView extends LitElement {
     }
     var inlineMdItem = this.getInlineMdItem()
     return html`
+      <div class="header">
+        <a class="author" href=${this.currentDriveInfo.url}>${this.currentDriveTitle}</a>
+        ${this.pathAncestry.map(([url, name]) => html`/ <a class="name" href=${url}>${name}</a>`)}
+      </div>
       <file-grid
         .items=${this.items}
         .selection=${this.selection}

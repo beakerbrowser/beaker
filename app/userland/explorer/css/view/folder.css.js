@@ -5,6 +5,30 @@ const cssStr = css`
   display: block;
 }
 
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.header {
+  margin: 8px 0 10px;
+  font-size: 12px;
+  color: #556;
+}
+
+.header .author {
+  font-weight: 500;
+  color: inherit;
+}
+
+.header .name {
+  margin-right: 5px;
+  color: inherit;
+}
+
 .readme {
   margin: 4px 0 8px;
   padding: 14px;
