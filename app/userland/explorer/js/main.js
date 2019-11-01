@@ -2,6 +2,8 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
+import { emit } from 'beaker://app-stdlib/js/dom.js'
+import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 import mainCSS from '../css/main.css.js'
 import './view/file.js'
 import './view/folder.js'
@@ -16,7 +18,7 @@ const ICONS = {
     '.settings': 'fas fa-cog',
     '.trash': 'far fa-trash-alt',
     library: 'fas fa-university',
-    users: 'fas fa-user'
+    users: 'fas fa-users'
   },
   personRoot: {
     '.data': 'fas fa-database',
@@ -165,6 +167,38 @@ export class ExplorerApp extends LitElement {
     }
   }
 
+  get driveMenu () {
+    return [
+      {id: 'new-drive', label: html`<span class="far fa-fw fa-hdd"></span> New hyperdrive`},
+      {divider: true},
+      {id: 'clone-drive', label: html`<span class="far fa-fw fa-clone"></span> Clone this drive`},
+      {id: 'export', label: html`<span class="far fa-fw fa-file-archive"></span> Export as .zip`},
+      {divider: true},
+      {id: 'drive-properties', label: html`<span class="far fa-fw fa-list-alt"></span> Properties`}
+    ]
+  }
+
+  get folderMenu () {
+    const inFolder = this.pathInfo.isDirectory()
+    return [
+      {id: 'new-folder', label: html`<span class="far fa-fw fa-folder"></span> New folder`, disabled: !inFolder},
+      {id: 'new-file', label: html`<span class="far fa-fw fa-file"></span> New file`, disabled: !inFolder},
+      {divider: true},
+      {id: 'import', label: html`<span class="fas fa-fw fa-file-import"></span> Import files...`, disabled: !inFolder},
+      {id: 'add-mount', label: html`<span class="fas fa-fw fa-external-link-square-alt"></span> Mount a drive`, disabled: !inFolder}
+    ]
+  }
+
+  get fileMenu () {
+    var items = []
+    const inFile = !this.pathInfo.isDirectory()
+    const numSelected = this.selection.length
+    return items.concat([
+      {id: 'rename', label: html`<span class="fas fa-fw fa-i-cursor"></span> Rename`, disabled: !(inFile || numSelected === 1)},
+      {id: 'delete', label: html`<span class="fas fa-fw fa-trash"></span> Delete`, disabled: !(inFile || numSelected > 0)},
+    ])
+  }
+
   // rendering
   // =
 
@@ -182,13 +216,23 @@ export class ExplorerApp extends LitElement {
         class="layout render-mode-${this.renderMode}"
         @click=${this.onClickLayout}
         @goto=${this.onGoto}
+        @new-drive=${this.onNewDrive}
         @new-folder=${this.onNewFolder}
         @new-file=${this.onNewFile}
+        @add-mount=${this.onAddMount}
+        @clone-drive=${this.onCloneDrive}
+        @drive-properties=${this.onDriveProperties}
         @import=${this.onImport}
+        @export=${this.onExport}
         @save=${this.onSave}
         @rename=${this.onRename}
         @delete=${this.onDelete}
       >
+        <div class="menubar">
+          <hover-menu .options=${this.driveMenu} current="Drive" @change=${this.onSelectMenuItem}></hover-menu>
+          <hover-menu .options=${this.folderMenu} current="Folder" @change=${this.onSelectMenuItem}></hover-menu>
+          <hover-menu .options=${this.fileMenu} current="File" @change=${this.onSelectMenuItem}></hover-menu>
+        </div>
         ${this.pathInfo ? html`
           <nav class="left">
             <drive-info .driveInfo=${this.driveInfo}></drive-info>
@@ -246,7 +290,7 @@ export class ExplorerApp extends LitElement {
             ${this.selection.length <= 1 ? html`
               <section class="transparent">
                 <p><a href=${selectionUrl} target="_blank"><span class="fa-fw fas fa-external-link-alt"></span> Open ${this.selection.length ? 'selected' : ''} in new tab</a></p>
-                <p><a href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export ${selectionName}</a></p>
+                <p><a id="download-link" href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export ${selectionName}</a></p>
                 <p><a href="#" @click=${this.onToggleShowHidden}><span class="fa-fw fas fa-eye"></span> ${this.showHidden ? 'Hide' : 'Show'} hidden files</a></p>
               </section>
             ` : ''}
@@ -300,6 +344,16 @@ export class ExplorerApp extends LitElement {
     this.requestUpdate()
   }
 
+  onSelectMenuItem (e) {
+    emit(e.target, e.detail.id)
+  }
+
+  async onNewDrive (e) {
+    var drive = await DatArchive.create()
+    toast.create('Drive created')
+    window.open(drive.url)
+  }
+
   async onNewFile (e) {
     if (!this.currentDriveInfo.writable) return
     var filename = prompt('Enter the name of your new file')
@@ -336,9 +390,40 @@ export class ExplorerApp extends LitElement {
     }
   }
 
+  async onAddMount (e) {
+    if (!this.currentDriveInfo.writable) return
+    var drive = new DatArchive(this.currentDriveInfo.url)
+    var targetUrl = await navigator.selectDriveDialog()
+    var target = new DatArchive(targetUrl)
+    var info = await target.getInfo()
+    var name = await getAvailableName(this.realPathname, info.title, drive)
+    try {
+      await drive.mount(joinPath(this.realPathname, name), target.url)
+    } catch (e) {
+      toast.error(e.toString())
+      console.error(e)
+    }
+    this.load()
+  }
+
+  async onCloneDrive (e) {
+    var drive = await DatArchive.fork(this.currentDriveInfo.url)
+    toast.create('Drive created')
+    window.location = drive.url
+  }
+
+  async onDriveProperties (e) {
+    await navigator.drivePropertiesDialog(this.currentDriveInfo.url)
+    this.load()
+  }
+
   onImport (e) {
     if (!this.currentDriveInfo.writable) return
     this.shadowRoot.querySelector('#files-picker').click()
+  }
+
+  onExport (e) {
+   this.shadowRoot.querySelector('#download-link').click()
   }
 
   async onChangeImportFiles (e) {
@@ -356,7 +441,6 @@ export class ExplorerApp extends LitElement {
 
         var buf = await p
         let pathname = joinPath(this.realPathname, file.name)
-        console.log(pathname, buf)
         await drive.writeFile(pathname, buf)
       }
       toast.create(`Imported ${files.length} files`, 'success')

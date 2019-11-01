@@ -48,8 +48,13 @@ ${colorscss}
   white-space: nowrap;
 }
 
-.item:hover {
+.item:not(.disabled):hover {
   background: #f5f5f5;
+}
+
+.item.disabled {
+  color: var(--color-text--muted);
+  cursor: default !important;
 }
 
 .item .fa-fw {

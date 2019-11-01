@@ -21,16 +21,31 @@ a:hover {
   text-decoration: underline;
 }
 
+.link {
+  color: var(--blue);
+}
+
+.menubar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  padding: 0 10px;
+  background: #fff;
+  z-index: 1;
+}
+
 .layout {
 }
 
 main {
-  margin: 0 370px 100px 300px;
+  margin: 30px 370px 100px 300px;
 }
 
 nav {
   position: fixed;
-  top: 0;
+  top: 30px;
   width: 270px;
   height: calc(100vh - 10px);
   box-sizing: border-box;
@@ -193,9 +208,9 @@ nav section.selector > div.active span {
 @media (max-width: 1000px) {
   .layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 30px 1fr 1fr;
     grid-template-rows: auto auto;
-    grid-template-areas: "top top" "botleft botright";
+    grid-template-areas: "top top" "mid mid" "botleft botright";
     grid-gap: 10px;
     padding: 0 10px;
   }
@@ -219,8 +234,13 @@ nav section.selector > div.active span {
   }
 
   main {
-    grid-area: top;
+    grid-area: mid;
     margin: 0;
+  }
+
+  .menubar {
+    grid-area: top;
+    padding: 0;
   }
 }
 `

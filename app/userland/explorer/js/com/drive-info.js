@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 import { ucfirst } from 'beaker://app-stdlib/js/strings.js'
+import 'beaker://app-stdlib/js/com/hover-menu.js'
 
 export class DriveInfo extends LitElement {
   static get properties () {
@@ -55,10 +56,6 @@ export class DriveInfo extends LitElement {
         </h1>
         ${this.driveInfo.description ? html`<p>${this.driveInfo.description}</p>` : undefined}
         ${this.renderType()}
-        <div class="bottom-ctrls">
-          <button class="transparent">Settings <span class="fas fa-caret-down"></span></button>
-          <button class="transparent">Tools <span class="fas fa-caret-down"></span></button>
-        </div>
       </section>
       ${this.driveInfo.type === 'unwalled.garden/person' && !this.driveInfo.ident.isUser ? html`
         <section class="btn primary"><span class="fa-fw fas fa-user-plus"></span> Add to <code>/public/friends</code></section>
@@ -105,6 +102,7 @@ export class DriveInfo extends LitElement {
 
   // events
   // =
+
 
   onThumbLoad () {
     this.isThumbLoaded = true
