@@ -137,10 +137,9 @@ class UsersMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-  async onEditMyProfile (e) {
-    var userUrl = this.user.url
+  onEditMyProfile (e) {
     bg.shellMenus.close()
-    await bg.shellMenus.createModal('user', this.user)
+    bg.beakerBrowser.showEditProfileModal()
   }
 
   onOpenUser (e, user) {

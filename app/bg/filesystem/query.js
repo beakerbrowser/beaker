@@ -154,7 +154,7 @@ export async function query (opts) {
   }
 
   if (opts.sort === 'name') {
-    results.sort((a, b) => (opts.reverse) ? b.path.localeCompare(a.path) : a.path.localeCompare(b.path))
+    results.sort((a, b) => (opts.reverse) ? b.path.toLowerCase().localeCompare(a.path.toLowerCase()) : a.path.toLowerCase().localeCompare(b.path.toLowerCase()))
   } else if (opts.sort === 'mtime') {
     results.sort((a, b) => (opts.reverse) ? b.stat.mtime - a.stat.mtime : a.stat.mtime - b.stat.mtime)
   } else if (opts.sort === 'ctime') {

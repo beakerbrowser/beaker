@@ -159,9 +159,6 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
 // =
 
 function getDefaultWidth (view) {
-  if (view.modalName === 'create-archive') {
-    return 400
-  }
   return 500
 }
 
