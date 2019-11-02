@@ -3,6 +3,7 @@ export default {
   get: 'promise',
   getCurrent: 'promise',
   getDefault: 'promise',
+  showCreateDialog: 'promise',
   create: 'promise',
   createTemporary: 'promise',
   add: 'promise',

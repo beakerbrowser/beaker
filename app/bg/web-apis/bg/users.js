@@ -1,4 +1,5 @@
 import * as windows from '../../ui/windows'
+import * as modals from '../../ui/subwindows/modals'
 import * as users from '../../filesystem/users'
 import dat from '../../dat/index'
 
@@ -55,6 +56,15 @@ export default {
   async getDefault () {
     var sessionUrl = getSessionUrl(this.sender)
     return massageUserRecord(await users.getDefault(), sessionUrl)
+  },
+
+  /**
+   * @returns {Promise<WebAPIUser>}
+   */
+  async showCreateDialog () {
+    var sessionUrl = getSessionUrl(this.sender)
+    var user = await modals.create(this.sender, 'user', {})
+    return massageUserRecord(await users.get(user.url), sessionUrl)
   },
 
   /**
