@@ -37,21 +37,22 @@ export function setup () {
  * @returns {Promise<TrashItem[]>}
  */
 export async function query (query = {}) {
-  var items = /** @type TrashItem[] */([])
-  var names = await filesystem.get().pda.readdir(PATHS.TRASH)
-  for (let name of names) {
-    let st = await filesystem.get().pda.stat(joinPath(PATHS.TRASH, name))
-    if (query.mounts && !st.mount) {
-      continue
-    }
-    if (query.olderThan) {
-      if (Date.now() - st.mtime < query.olderThan) {
-        continue
-      }
-    }
-    items.push({name, stat: st})
-  }
-  return items
+  return [] // TODO
+  // var items = /** @type TrashItem[] */([])
+  // var names = await filesystem.get().pda.readdir(PATHS.TRASH)
+  // for (let name of names) {
+  //   let st = await filesystem.get().pda.stat(joinPath(PATHS.TRASH, name))
+  //   if (query.mounts && !st.mount) {
+  //     continue
+  //   }
+  //   if (query.olderThan) {
+  //     if (Date.now() - st.mtime < query.olderThan) {
+  //       continue
+  //     }
+  //   }
+  //   items.push({name, stat: st})
+  // }
+  // return items
 }
 
 /**

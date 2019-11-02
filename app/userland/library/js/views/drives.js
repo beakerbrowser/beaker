@@ -24,7 +24,7 @@ export class DrivesView extends LitElement {
 
   constructor () {
     super()
-    this.currentViz = oneof(getSavedConfig('viz', 'list'), 'grid', ['grid', 'list'])
+    this.currentViz = oneof(getSavedConfig('viz', 'grid'), 'grid', ['grid', 'list'])
     this.bookmarks = []
     this.drives = {}
   }
@@ -222,7 +222,7 @@ export class DrivesView extends LitElement {
   }
 
   renderBookmark (item) {
-    const isPublic = !item.path.startsWith('/.data')
+    const isPublic = !item.path.startsWith('/data')
     if (this.currentViz === 'grid') {
       return html`
         <a class="item" href=${item.content.href} @contextmenu=${e => this.onContextMenu(e, 'bookmark', item)}>

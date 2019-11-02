@@ -12,8 +12,8 @@ import * as filesystem from './index'
 export async function list () {
   var files = (await query({
     path: [
-      `/.data/bookmarks/*.json`,
-      `/public/.data/bookmarks/*.json`
+      `/data/unwalled.garden/bookmarks/*.json`,
+      `/public/data/unwalled.garden/bookmarks/*.json`
     ]
   }))
   return Promise.all(files.map(readBookmark))
@@ -27,8 +27,8 @@ export async function get (href) {
   var slug = toSlug(href)
   var file = (await query({
     path: [
-      `/.data/bookmarks/${slug}.json`,
-      `/public/.data/bookmarks/${slug}.json`
+      `/data/unwalled.garden/bookmarks/${slug}.json`,
+      `/public/data/unwalled.garden/bookmarks/${slug}.json`
     ]
   }))[0]
   if (!file) return null
@@ -45,7 +45,7 @@ export async function get (href) {
  */
 export async function add ({href, title, description, isPublic}) {
   var slug = toSlug(href)
-  var path = isPublic ? `/public/.data/bookmarks/${slug}.json` : `/.data/bookmarks/${slug}.json`
+  var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
 
   await filesystem.get().pda.writeFile(path, JSON.stringify({
     type: 'unwalled.garden/bookmark',
@@ -73,13 +73,13 @@ export async function update (oldHref, {href, title, description, isPublic}) {
   if (!oldBookmark) return add({href, title, description, isPublic})
 
   var slug = toSlug(href || oldBookmark.href)
-  var path = isPublic ? `/public/.data/bookmarks/${slug}.json` : `/.data/bookmarks/${slug}.json`
+  var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
 
   // remove old if changing isPublic
   if (typeof isPublic !== 'undefined' && oldBookmark.isPublic !== isPublic) {
     try {
       let oldSlug = toSlug(oldBookmark.href)
-      let oldPath = oldBookmark.isPublic ? `/public/.data/bookmarks/${oldSlug}.json` : `/.data/bookmarks/${oldSlug}.json`
+      let oldPath = oldBookmark.isPublic ? `/public/data/unwalled.garden/bookmarks/${oldSlug}.json` : `/data/unwalled.garden/bookmarks/${oldSlug}.json`
       await filesystem.get().pda.unlink(oldPath)
     } catch (e) {
       // ignore
@@ -108,7 +108,7 @@ export async function remove (href) {
   if (!oldBookmark) return
 
   let slug = toSlug(oldBookmark.href)
-  let path = oldBookmark.isPublic ? `/public/.data/bookmarks/${slug}.json` : `/.data/bookmarks/${slug}.json`
+  let path = oldBookmark.isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
   await filesystem.get().pda.unlink(path)
 }
 

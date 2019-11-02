@@ -192,7 +192,7 @@ export const bookmarks = {
    */
   async add ({href, title, description, isPublic}) {
     var slug = slugifyUrl(href)
-    var path = isPublic ? `/public/.data/bookmarks/${slug}.json` : `/.data/bookmarks/${slug}.json`
+    var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
 
     await ensureParentDir(path)
     await navigator.filesystem.writeFile(path, JSON.stringify({
@@ -226,7 +226,7 @@ export const bookmarks = {
     href = href || oldBookmark.href
 
     var slug = slugifyUrl(href)
-    var path = isPublic ? `/public/.data/bookmarks/${slug}.json` : `/.data/bookmarks/${slug}.json`
+    var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
 
     // remove old if changing isPublic
     if (bookmarkPath !== path) {
@@ -346,7 +346,7 @@ export const comments = {
    * @returns {Promise<string>}
    */
   async add ({href, replyTo, body}) {
-    var path = `/public/.data/comments/${slugifyUrl(href)}/${Date.now()}.json`
+    var path = `/public/data/unwalled.garden/comments/${slugifyUrl(href)}/${Date.now()}.json`
     await ensureParentDir(path)
     await navigator.filesystem.writeFile(path, JSON.stringify({
       type: 'unwalled.garden/comment',
@@ -456,7 +456,7 @@ export const annotations = {
    * @returns {Promise<string>}
    */
   async put (href, {tags, vote} = {tags: undefined, vote: undefined}) {
-    var path = `/public/.data/annotations/${slugifyUrl(href)}.json`
+    var path = `/public/data/unwalled.garden/annotations/${slugifyUrl(href)}.json`
     await ensureParentDir(path)
     await navigator.filesystem.writeFile(path, JSON.stringify({
       type: 'unwalled.garden/annotation',
@@ -472,7 +472,7 @@ export const annotations = {
    * @returns {Promise<void>}
    */
   async remove (href) {
-    var path = `/public/.data/annotations/${slugifyUrl(href)}.json`
+    var path = `/public/data/unwalled.garden/annotations/${slugifyUrl(href)}.json`
     await navigator.filesystem.unlink(path)
   }
 }
@@ -522,14 +522,14 @@ function getFeedPaths (author) {
 function getBookmarkPaths (author, href = undefined) {
   var filename = (href ? slugifyUrl(href) : '*') + '.json'
   if (author === 'me') {
-    return [`/.data/bookmarks/${filename}`, `/public/.data/bookmarks/${filename}`]
+    return [`/data/unwalled.garden/bookmarks/${filename}`, `/public/data/unwalled.garden/bookmarks/${filename}`]
   } else if (author) {
-    return `/public/friends/${author}/.data/bookmarks/${filename}`
+    return `/public/friends/${author}/data/unwalled.garden/bookmarks/${filename}`
   } else {
     return [
-      `/.data/bookmarks/${filename}`,
-      `/public/.data/bookmarks/${filename}`,
-      `/public/friends/*/.data/bookmarks/${filename}`
+      `/data/unwalled.garden/bookmarks/${filename}`,
+      `/public/data/unwalled.garden/bookmarks/${filename}`,
+      `/public/friends/*/data/unwalled.garden/bookmarks/${filename}`
     ]
   }
 }
@@ -542,13 +542,13 @@ function getBookmarkPaths (author, href = undefined) {
 function getCommentPaths (author, href = undefined) {
   var foldername = (href ? slugifyUrl(href) : '*')
   if (author === 'me') {
-    return `/public/.data/comments/${foldername}/*.json`
+    return `/public/data/unwalled.garden/comments/${foldername}/*.json`
   } else if (author) {
-    return `/public/friends/${author}/.data/comments/${foldername}/*.json`
+    return `/public/friends/${author}/data/unwalled.garden/comments/${foldername}/*.json`
   } else {
     return [
-      `/public/.data/comments/${foldername}/*.json`,
-      `/public/friends/*/.data/comments/${foldername}/*.json`
+      `/public/data/unwalled.garden/comments/${foldername}/*.json`,
+      `/public/friends/*/data/unwalled.garden/comments/${foldername}/*.json`
     ]
   }
 }
@@ -561,13 +561,13 @@ function getCommentPaths (author, href = undefined) {
 function getAnnotationPaths (author, href = undefined) {
   var filename = (href ? slugifyUrl(href) : '*') + '.json'
   if (author === 'me') {
-    return `/public/.data/annotations/${filename}`
+    return `/public/data/unwalled.garden/annotations/${filename}`
   } else if (author) {
-    return `/public/friends/${author}/.data/annotations/${filename}`
+    return `/public/friends/${author}/data/unwalled.garden/annotations/${filename}`
   } else {
     return [
-      `/public/.data/annotations/${filename}`,
-      `/public/friends/*/.data/annotations/${filename}`
+      `/public/data/unwalled.garden/annotations/${filename}`,
+      `/public/friends/*/data/unwalled.garden/annotations/${filename}`
     ]
   }
 }

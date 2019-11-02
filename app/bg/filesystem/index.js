@@ -66,9 +66,10 @@ export async function setup () {
   try {
     // ensure common dirs
     await ensureDir(PATHS.DATA)
+    await ensureDir(PATHS.DATA_NS('unwalled.garden'))
+    await ensureDir(joinPath(PATHS.DATA_NS('unwalled.garden'), 'bookmarks'))
     await ensureDir(PATHS.LIBRARY)
     await ensureDir(PATHS.SETTINGS)
-    await ensureDir(PATHS.TRASH)
 
     // ensure all user mounts are set
     await ensureDir(PATHS.USERS)

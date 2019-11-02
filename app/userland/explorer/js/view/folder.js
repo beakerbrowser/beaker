@@ -61,19 +61,19 @@ export class FolderView extends LitElement {
 
   render () {
     if (!this.currentDriveInfo || !this.items || !this.selection) return html``
-    if (this.renderMode === 'feed') {
-      return html`
-        <file-feed
-          user-url=${this.userUrl}
-          real-url=${this.realUrl}
-          real-pathname=${this.realPathname}
-          current-drive-title=${this.currentDriveTitle}
-          .currentDriveInfo=${this.currentDriveInfo}
-          .items=${this.items}
-          .selection=${this.selection}
-        ></file-feed>
-      `
-    }
+    // if (this.renderMode === 'feed') {
+    //   return html`
+    //     <file-feed
+    //       user-url=${this.userUrl}
+    //       real-url=${this.realUrl}
+    //       real-pathname=${this.realPathname}
+    //       current-drive-title=${this.currentDriveTitle}
+    //       .currentDriveInfo=${this.currentDriveInfo}
+    //       .items=${this.items}
+    //       .selection=${this.selection}
+    //     ></file-feed>
+    //   `
+    // }
     var inlineMdItem = this.getInlineMdItem()
     return html`
       <div class="header">

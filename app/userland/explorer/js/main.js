@@ -14,18 +14,16 @@ import './com/selection-info.js'
 
 const ICONS = {
   rootRoot: {
-    '.data': 'fas fa-database',
-    '.settings': 'fas fa-cog',
-    '.trash': 'far fa-trash-alt',
+    data: 'fas fa-database',
+    settings: 'fas fa-cog',
     library: 'fas fa-university',
     users: 'fas fa-users'
   },
   personRoot: {
-    '.data': 'fas fa-database',
-    feed: 'fas fa-list',
+    data: 'fas fa-database',
     friends: 'fas fa-user-friends'
   },
-  data: {
+  uwg: {
     annotations: 'fas fa-tag',
     bookmarks: 'fas fa-star',
     comments: 'fas fa-comment'
@@ -121,14 +119,15 @@ export class ExplorerApp extends LitElement {
               case 'website': item.subicon = 'fas fa-sitemap'; break
               case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
               default: item.subicon = 'fas fa-folder'; break
-              // default: item.subicon = 'fas fa-external-link-square-alt'; break
             }
           } else if (driveKind === 'root' && this.realPathname === '/') {
             item.subicon = ICONS.rootRoot[item.name]
           } else if (driveKind === 'person' && this.realPathname === '/') {
             item.subicon = ICONS.personRoot[item.name]
-          } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/.data') {
-            item.subicon = ICONS.data[item.name]
+          } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/data' && item.stat.isDirectory()) {
+            item.subicon = 'fas fa-database'
+          } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/data/unwalled.garden') {
+            item.subicon = ICONS.uwg[item.name]
           }
         }
       }
@@ -138,9 +137,6 @@ export class ExplorerApp extends LitElement {
     }
 
     if (this.pathInfo.isDirectory()) {
-      if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/feed') {
-        this.renderMode = 'feed'
-      }
       if (!this.watchStream) {
         let currentDrive = new DatArchive(this.currentDriveInfo.url)
         this.watchStream = currentDrive.watch(this.realPathname)

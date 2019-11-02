@@ -39,9 +39,6 @@ export class LocationInfo extends LitElement {
 
   get renderModes () {
     if (this.pathInfo.isDirectory()) {
-      if (this.currentDriveInfo.type === 'unwalled.garden/person' && this.realPathname === '/feed') {
-        return [['feed', 'Inline Feed'], ['undefined', 'Files']]
-      }
       return [['undefined', 'Files']]
     } else {
       if (this.realPathname.endsWith('.md')) {

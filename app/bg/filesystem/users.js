@@ -7,6 +7,7 @@ import * as filesystem from './index'
 import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
 import { PATHS } from '../../lib/const'
+import { joinPath } from '../../lib/strings'
 
 // constants
 // =
@@ -89,9 +90,10 @@ export async function setup () {
 
     // ensure file structure
     await ensureDirectory(user, PATHS.DATA)
-    await ensureDirectory(user, PATHS.DATA_NS('annotations'))
-    await ensureDirectory(user, PATHS.DATA_NS('comments'))
-    await ensureDirectory(user, PATHS.FEED)
+    await ensureDirectory(user, PATHS.DATA_NS('unwalled.garden'))
+    await ensureDirectory(user, joinPath(PATHS.DATA_NS('unwalled.garden'), 'annotations'))
+    await ensureDirectory(user, joinPath(PATHS.DATA_NS('unwalled.garden'), 'bookmarks'))
+    await ensureDirectory(user, joinPath(PATHS.DATA_NS('unwalled.garden'), 'comments'))
     await ensureDirectory(user, PATHS.FRIENDS)
   }))
 

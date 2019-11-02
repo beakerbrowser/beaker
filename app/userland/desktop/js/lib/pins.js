@@ -1,7 +1,7 @@
 
 export async function load () {
   try {
-    var str = await navigator.filesystem.readFile('/.settings/desktop.json')
+    var str = await navigator.filesystem.readFile('/settings/desktop.json')
     var obj = JSON.parse(str)
     return obj.pins
   } catch (e) {
@@ -11,7 +11,7 @@ export async function load () {
 }
 
 export async function save (pins) {
-  await navigator.filesystem.writeFile('/.settings/desktop.json', JSON.stringify({
+  await navigator.filesystem.writeFile('/settings/desktop.json', JSON.stringify({
     type: 'desktop',
     pins
   }, null, 2))
