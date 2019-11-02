@@ -89,6 +89,10 @@ export class ExplorerApp extends LitElement {
     return this.mountTitle || this.driveTitle
   }
 
+  get isEditing () {
+    return this.renderMode === 'editor'
+  }
+
   async load () {
     if (!this.user) {
       this.user = await navigator.session.get()
@@ -521,7 +525,9 @@ export class ExplorerApp extends LitElement {
 
     var drive = new DatArchive(this.currentDriveInfo.url)
     const del = async (pathname, stat) => {
-      if (stat.isDirectory()) {
+      if (stat.mount && stat.mount.key) {
+        await drive.unmount(pathname)
+      } else if (stat.isDirectory()) {
         await drive.rmdir(pathname, {recursive: true})
       } else {
         await drive.unlink(pathname)
