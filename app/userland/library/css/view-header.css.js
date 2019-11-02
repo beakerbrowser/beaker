@@ -6,11 +6,12 @@ const cssStr = css`
   top: 0;
   left: 0;
   width: 100%;
+  z-index: 2;
 
   display: flex;
   align-items: center;
   height: 26px;
-  padding: 0 0 10px;
+  padding: 0 0 4px;
   user-select: none;
   background: #fff;
 }

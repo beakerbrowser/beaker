@@ -16,8 +16,10 @@ ${viewHeaderCSS}
 
 :host {
   display: block;
-  padding-top: 40px;
-  padding-bottom: 100vh;
+}
+
+main {
+  margin: 30px 0 50vh;
 }
 
 a {
@@ -35,27 +37,37 @@ a:hover {
 .flex4 { flex: 4; }
 
 h4 {
-  font-weight: bold;
-  letter-spacing: 0.6px;
-  margin: 15px 20px 0;
-  font-size: 36px;
-  color: #ccccd8;
+  letter-spacing: 0.7px;
+  font-size: 24px;
+  border-top: 1px solid #bbc;
+  color: #667;
+  padding: 16px 24px;
+  margin: 0px;
+}
+
+.twocol-grouping {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+.twocol-grouping > :first-child {
+  border-right: 1px solid #bbc;
 }
 
 .listing {
-  margin-bottom: 30px;
+  padding: 6px 40px 28px;
 }
 
 .listing.grid {
   display: grid;
-  padding: 15px 30px;
-  grid-gap: 15px;
+  grid-gap: 10px;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 }
 
 .listing.grid .item {
   cursor: pointer;
   border-radius: 4px;
+  border: 1px solid #dde;
   color: inherit;
   background: #fff;
   user-select: none;
@@ -90,7 +102,6 @@ h4 {
 }
 
 .listing.list {
-  margin: 10px 30px 30px;
 }
 
 .listing.list .item {
@@ -130,16 +141,12 @@ h4 {
 }
 
 .listing.list .item .title {
-  font-weight: bold;
+  font-weight: 500;
   color: #667;
 }
 
 .listing.list .item .href {
   color: var(--blue);
-}
-
-.listing.list .item .writable {
-  width: 40px;
 }
 
 .listing.list .item .label {
@@ -162,6 +169,34 @@ h4 {
 
 .item .visibility.private {
   color: inherit;
+}
+
+.listing.list .item.adder {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.listing.list .item.adder:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.listing.grid .item.adder {
+  position: relative;
+  border: 0;
+  background: rgba(255, 255, 255, 0.4);
+  min-height: 170px;
+}
+
+.listing.grid .item.adder:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.listing.grid .item.adder .fa-fw {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  color: rgba(0, 0, 0, 0.15);
 }
 `
 export default cssStr

@@ -6,7 +6,6 @@ import * as contextMenu from '../../../app-stdlib/js/com/context-menu.js'
 import { bookmarks } from '../../../app-stdlib/js/uwg.js'
 import { emit } from '../../../app-stdlib/js/dom.js'
 // import { VIEW_OPTIONS } from '../lib/const'
-import * as createNew from '../lib/create-new'
 import { EditBookmarkPopup } from '../com/edit-bookmark-popup.js'
 import bookmarksViewCSS from '../../css/views/bookmarks.css.js'
 

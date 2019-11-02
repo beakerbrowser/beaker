@@ -5,41 +5,15 @@ import * as toast from '../../../app-stdlib/js/com/toast.js'
 import * as contextMenu from '../../../app-stdlib/js/com/context-menu.js'
 import drivesViewCSS from '../../css/views/drives.css.js'
 import { bookmarks, friends, library, profiles } from '../../../app-stdlib/js/uwg.js'
+import { toNiceUrl } from '../../../app-stdlib/js/strings.js'
 import { EditBookmarkPopup } from '../com/edit-bookmark-popup.js'
-import * as QP from '../lib/query-params.js'
 import { oneof } from '../lib/validation.js'
-import * as createNew from '../lib/create-new'
 import _groupBy from 'lodash.groupby'
 import '../../../app-stdlib/js/com/hover-menu.js'
-
-const SUBVIEW_OPTIONS = {
-  library: 'My Library',
-  network: 'Network Library'
-}
-
-const SORT_OPTIONS = {
-  mtime: 'Recently updated',
-  title: 'Alphabetical'
-}
-
-const VIZ_OPTIONS = {
-  grid: 'Grid',
-  list: 'List'
-}
-
-const TYPES_MAP = {
-  default: 'Hyperdrives',
-  website: 'Websites',
-  application: 'Applications',
-  'webterm.sh': 'Webterm Commands',
-  'unwalled.garden/person': 'People'
-}
 
 export class DrivesView extends LitElement {
   static get properties () {
     return {
-      currentSubview: {type: String},
-      currentSort: {type: String},
       currentViz: {type: String}
     }
   }
@@ -48,55 +22,47 @@ export class DrivesView extends LitElement {
     return drivesViewCSS
   }
 
-  get userUrl () {
-    return this.user ? this.user.url : ''
-  }
-
-  get driveGroups () {
-    return Object.entries(_groupBy(this.drives, item => item.mount.type || 'default'))
-  }
-
   constructor () {
     super()
-    this.currentSubview = oneof(QP.getParam('subview'), 'library', ['library', 'network'])
-    this.currentSort = oneof(getSavedConfig('sort', 'mtime'), 'mtime', ['mtime', 'title'])
-    this.currentViz = oneof(getSavedConfig('viz', 'list'), 'list', ['grid', 'list'])
-    this.user = undefined
+    this.currentViz = oneof(getSavedConfig('viz', 'list'), 'grid', ['grid', 'list'])
     this.bookmarks = []
-    this.drives = []
-    this.contacts = []
+    this.drives = {}
   }
 
-  get drivesQueryPath () {
-    if (this.currentSubview === 'network') {
-      return [`/library/*`, `/public/library/*`, `/public/friends/*/library/*`]
-    }
-    return [`/library/*`, `/public/library/*`]
-  }
-
-  get contactsQueryPath () {
-    if (this.currentSubview === 'network') {
-      return [`/public`, `/public/friends/*`, `/public/friends/*/friends/*`]
-    }
-    return [`/public`, `/public/friends/*`]
+  get libraryMenu () {
+    const toggle = (prefix, id, current, label) => ({
+      id: `${prefix}:${id}`,
+      label: html`<span class="far fa-fw ${id === current ? 'fa-check-circle' : 'fa-circle'}"></span> ${label}`
+    })
+    return [
+      {heading: 'View'},
+      toggle('viz', 'grid', this.currentViz, 'Grid'),
+      toggle('viz', 'list', this.currentViz, 'List'),
+    ]
   }
 
   async load () {
     this.bookmarks = await bookmarks.list({
       author: this.currentSubview === 'library' ? 'me' : undefined,
-      sort: this.currentSort,
-      reverse: this.currentSort === 'createdAt'
+      sort: 'name',
+      reverse: false
     })
-    this.drives = await navigator.filesystem.query({type: 'mount', path: this.drivesQueryPath})
-    for (let item of this.drives) {
-      if (item.mount && item.mount.author) {
-        item.author = await profiles.get(item.mount.author)
-      }
+    this.drives = {
+      'You': await navigator.filesystem.query({type: 'mount', path: '/public'}),
+      'Friends': await navigator.filesystem.query({type: 'mount', path: '/public/friends/*'}),
+      'Library': await navigator.filesystem.query({type: 'mount', path: '/library/*'}),
+      'Users': await navigator.filesystem.query({type: 'mount', path: '/users/*'})
     }
-    this.contacts = await navigator.filesystem.query({type: 'mount', path: this.contactsQueryPath})
-    this.user = this.contacts.find(item => item.path === '/public').drive
+    for (let path in this.drives) {
+      for (let item of this.drives[path]) {
+        if (item.mount && item.mount.author) {
+          item.author = await profiles.get(item.mount.author)
+        }
+      }
+      this.drives[path].sort((a, b) => (a.mount.title || 'Untitled').localeCompare(b.mount.title || 'Untitled'))
+    }
 
-    console.log('loaded', {bookmarks: this.bookmarks, drives: this.drives, contacts: this.contacts})
+    console.log('loaded', {bookmarks: this.bookmarks, drives: this.drives})
     this.requestUpdate()
   }
 
@@ -139,8 +105,8 @@ export class DrivesView extends LitElement {
       })
     } else if (type === 'drive') {
       items.push({
-        icon: 'fas fa-fw fa-code-branch',
-        label: 'Fork this site',
+        icon: 'far fa-fw fa-clone',
+        label: 'Clone this drive',
         click: async () => {
           var drive = await DatArchive.fork(url)
           toast.create('Drive created')
@@ -148,72 +114,57 @@ export class DrivesView extends LitElement {
           this.load()
         }
       })
+      if (/^\/(library|public\/friends)\//.test(item.path)) {
+        var label = item.path.startsWith('/library/') ? 'Library' : 'Friends'
+        items.push({
+          icon: 'far fa-fw fa-trash-alt',
+          label: `Remove from ${label}`,
+          click: async () => {
+            await navigator.filesystem.unmount(item.path)
+            const undo = async () => {
+              await navigator.filesystem.mount(item.path, item.mount.url)
+              this.load()
+            }
+            toast.create(`Removed from ${label}`, '', 10e3, {label: 'Undo', click: undo})
+            this.load()
+          }
+        })
+      } else if (item.path.startsWith('/users/')) {
+        items.push({
+          icon: 'far fa-fw fa-trash-alt',
+          label: `Delete User`,
+          click: async () => {
+            let user = await beaker.users.get(item.mount.url)
+            await beaker.users.remove(user.url)
+            const undo = async () => {
+              await beaker.users.add(user.label, user.url)
+              this.load()
+            }
+            toast.create(`Deleted User`, '', 10e3, {label: 'Undo', click: undo})
+            this.load()
+          }
+        })
+      }
       items.push('-')
-      if (item.path.startsWith('/library')) {
-        items.push({
-          icon: 'fas fa-fw fa-trash',
-          label: 'Remove from My Library',
-          click: async () => {
-            await library.remove(item.mount.url)
-            const undo = async () => {
-              await library.add(item.mount.url, item.mount.title)
-              this.load()
-            }
-            toast.create('Removed from My Library', '', 10e3, {label: 'Undo', click: undo})
-            this.load()
-          }
-        })
-      } else {
-        items.push({
-          icon: 'fas fa-fw fa-plus',
-          label: 'Add to My Library',
-          click: async () => {
-            await library.add(item.mount.url, item.mount.title)
-            toast.create('Saved to My Library')
-            this.load()
-          }
-        })
-      }
-    } else if (type === 'contact') {
-      if (item.path === '/public') {
-        items.push({
-          icon: 'fas fa-fw fa-pencil-alt',
-          label: 'Edit my profile',
-          click: async () => {
-            await beaker.browser.showEditProfileModal()
-            this.load()
-          }
-        })
-      } else if (/\/public\/friends\/([^\/])$/i.test(item.path)) {
-        items.push({
-          icon: 'fas fa-fw fa-user-minus',
-          label: 'Remove from My Friends',
-          click: async () => {
-            await friends.remove(item.mount.url)
-            const undo = async () => {
-              await friends.add(item.mount.url, item.mount.title)
-              this.load()
-            }
-            toast.create('Removed from My Friends', '', 10e3, {label: 'Undo', click: undo})
-            this.load()
-          }
-        })
-      } else {
-        items.push({
-          icon: 'fas fa-fw fa-user-plus',
-          label: 'Add to My Friends',
-          click: async () => {
-            await friends.add(item.mount.url, item.mount.title)
-            this.load()
-          }
-        })
-      }
+      items.push({
+        icon: 'far fa-fw fa-list-alt',
+        label: 'Drive properties',
+        click: async () => {
+          await navigator.drivePropertiesDialog(url)
+          this.load()
+        }
+      })
+    }
+
+    var right = !isContextMenu
+    if (x > document.body.scrollWidth - 300) {
+      right = true
     }
 
     contextMenu.create({
       x,
       y,
-      right: !isContextMenu,
+      right,
       withTriangle: !isContextMenu,
       roomy: !isContextMenu,
       noBorders: true,
@@ -231,54 +182,47 @@ export class DrivesView extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="header">
         <hover-menu
-          icon="fas fa-filter"
-          .options=${SUBVIEW_OPTIONS}
-          current=${SUBVIEW_OPTIONS[this.currentSubview]}
-          @change=${this.onChangeSubview}
+          .options=${this.libraryMenu}
+          icon="fas fa-university"
+          current="Library"
+          @change=${this.onSelectView}
         ></hover-menu>
-        <hr>
-        <hover-menu
-          icon="fas fa-sort-amount-down"
-          .options=${SORT_OPTIONS}
-          @change=${this.onChangeSort}
-        ></hover-menu>
-        <hover-menu
-          icon="fas fa-th-list"
-          .options=${VIZ_OPTIONS}
-          @change=${this.onChangeViz}
-        ></hover-menu>
-        <hr>
-        <button class="" @click=${this.onClickNew} style="margin-left: 10px">
-          New <span class="fas fa-fw fa-caret-down"></span>
-        </button>
       </div>
 
-      <h4>Bookmarks</h4>
-      <div class="listing ${this.currentViz}">
-        ${repeat(this.bookmarks, item => this.renderBookmark(item))}
-      </div>
+      <main>
+        <h4>Bookmarks</h4>
+        <div class="listing ${this.currentViz}">
+          ${repeat(this.bookmarks, item => this.renderBookmark(item))}
+          ${this.renderAdder('Bookmarks')}
+        </div>
+        ${this.renderDriveGroup('Library')}
+        <div class=${this.currentViz === 'grid' ? 'twocol-grouping' : ''}>
+          ${this.renderDriveGroup('You')}
+          ${this.renderDriveGroup('Friends')}
+        </div>
+        ${this.renderDriveGroup('Users')}
+      </main>
+    `
+  }
 
-      ${repeat(this.driveGroups, ([type, items]) => this.renderDriveGroup(type, items))}
-
-      <h4>Contacts</h4>
-      <div class="listing ${this.currentViz}">
-        ${repeat(this.contacts, item => this.renderContact(item))}
+  renderDriveGroup (group) {
+    return html`
+      <div>
+        <h4>${group}</h4>
+        <div class="listing ${this.currentViz}">
+          ${repeat(this.drives[group] || [], item => this.renderDrive(item))}
+          ${group !== 'You' ? this.renderAdder(group) : ''}
+        </div>
       </div>
     `
   }
 
-  renderDriveGroup (type, items) {
-    return html`
-      <h4>${TYPES_MAP[type] || type}</h4>
-      <div class="listing ${this.currentViz}">
-        ${repeat(items, item => this.renderDrive(item))}
-      </div>
-    `
+  renderAdder (group) {
+    return html`<a class="item adder" @click=${e => this.onClickAdd(e, group)}><span class="fas fa-fw fa-plus"></span></a>`
   }
 
   renderBookmark (item) {
     const isPublic = !item.path.startsWith('/.data')
-    const isMine = item.path.startsWith('/.data') || item.path.startsWith('/public/.data')
     if (this.currentViz === 'grid') {
       return html`
         <a class="item" href=${item.content.href} @contextmenu=${e => this.onContextMenu(e, 'bookmark', item)}>
@@ -296,20 +240,10 @@ export class DrivesView extends LitElement {
           <span class="href">${item.content.href}</span>
           <span class="description">${item.content.description}</span>
           <span class="flex1"></span>
-          <div class="writable">${isMine ? html`<span class="label">Mine</span>` : ''}</div>
           <span class="visibility ${isPublic ? 'public' : 'private'}">
             <span class="fas fa-fw fa-${isPublic ? 'globe-americas' : 'lock'}"></span>
             ${isPublic ? 'Public' : 'Private'}
           </span>
-          ${item.path.startsWith('/public') === 'public' ? html`
-            <span
-              class="author tooltip-left"
-              data-tooltip=${item.drive.title || 'Anonymous'}
-              @click=${e => this.onClickAuthor(e, item)}
-            >
-              <img src="asset:thumb:${item.drive.url}">
-            </span>
-          ` : ''}
           <button class="transparent" @click=${e => this.onClickMenu(e, 'bookmark', item)}>
             <span class="fas fa-fw fa-ellipsis-h"></span>
           </button>
@@ -319,8 +253,6 @@ export class DrivesView extends LitElement {
   }
 
   renderDrive (item) {
-    const isPublic = !item.path.startsWith('/library')
-    const isMine = true // TODO
     if (this.currentViz === 'grid') {
       return html`
         <a class="item" href=${item.mount.url} @contextmenu=${e => this.onContextMenu(e, 'drive', item)}>
@@ -335,61 +267,10 @@ export class DrivesView extends LitElement {
         <a class="item" href=${item.mount.url} @contextmenu=${e => this.onContextMenu(e, 'drive', item)}>
           <img src="asset:favicon:${item.mount.url}?cache_buster=${Date.now()}">
           <div class="title">${item.mount.title || html`<em>Untitled</em>`}</div>
-          <div class="author">by ${item.author ? item.author.title : '(unknown)'}</div>
+          ${item.mount.author ? html`<div class="author">by ${item.author ? item.author.title : '(unknown)'}</div>` : ''}
           <span class="flex1"></span>
-          <div class="writable">${isMine ? html`<span class="label">Mine</span>` : ''}</div>
-          <span class="visibility ${isPublic ? 'public' : 'private'}">
-            <span class="fas fa-fw fa-${isPublic ? 'globe-americas' : 'lock'}"></span>
-            ${isPublic ? 'Public' : 'Private'}
-          </span>
+          ${item.mount.description ? html`<span class="description">${item.mount.description}</span>` : ''}
           <button class="transparent" @click=${e => this.onClickMenu(e, 'drive', item)}>
-            <span class="fas fa-fw fa-ellipsis-h"></span>
-          </button>
-        </a>
-      `
-    }
-  }
-
-  renderContact (item) {
-    const isYou = item.path === '/public'
-    const isMine = isYou || item.drive.url === this.userUrl
-    const isPublic = true // all contacts are currently public
-    if (this.currentViz === 'grid') {
-      return html`
-        <a class="item" href=${item.mount.url} @contextmenu=${e => this.onContextMenu(e, 'contact', item)}>
-          <img src="asset:thumb:${item.mount.url}?cache_buster=${Date.now()}">
-          <div class="details">
-            <div class="title">${item.mount.title || html`<em>Untitled</em>`}</div>
-            <div class="provenance">
-              ${isYou
-                ? html`This is you`
-                : isMine
-                  ? html`Your friend`
-                  : html`Friend of ${item.drive.title}`}
-            </div>
-          </div>
-        </a>
-      `
-    } else {
-      return html`
-        <a class="item" href=${item.mount.url} @contextmenu=${e => this.onContextMenu(e, 'contact', item)}>
-          <img class="avatar" src="asset:thumb:${item.mount.url}?cache_buster=${Date.now()}">
-          <div class="title">${item.mount.title || html`<em>Untitled</em>`}</div>
-          ${item.mount.description ? html`<div class="description">${item.mount.description}</div>` : ''}
-          <div class="provenance">
-            ${isYou
-              ? html`This is you`
-              : isMine
-                ? html`Your friend`
-                : html`Friend of ${item.drive.title}`}
-          </div>
-          <span class="flex1"></span>
-          <div class="writable">${isMine ? html`<span class="label">Mine</span>` : ''}</div>
-          <span class="visibility ${isPublic ? 'public' : 'private'}">
-            <span class="fas fa-fw fa-${isPublic ? 'globe-americas' : 'lock'}"></span>
-            ${isPublic ? 'Public' : 'Private'}
-          </span>
-          <button class="transparent" @click=${e => this.onClickMenu(e, 'contact', item)}>
             <span class="fas fa-fw fa-ellipsis-h"></span>
           </button>
         </a>
@@ -400,22 +281,56 @@ export class DrivesView extends LitElement {
   // events
   // =
 
-  onChangeSubview (e) {
-    this.currentSubview = e.detail.id
-    QP.setParams({subview: this.currentSubview})
-    location.reload()
+  onSelectView (e) {
+    if (e.detail.id.startsWith('viz:')) {
+      this.changeViz(e.detail.id.slice('viz:'.length))
+    }
   }
 
-  onChangeSort (e) {
-    this.currentSort = e.detail.id
-    setSavedConfig('sort', this.currentSort)
-    this.load()
-  }
-
-  onChangeViz (e) {
-    this.currentViz = e.detail.id
+  changeViz (v) {
+    this.currentViz = v
     setSavedConfig('viz', this.currentViz)
     this.requestUpdate()
+  }
+
+  async onClickAdd (e, group) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (group === 'Bookmarks') {
+      let b = await EditBookmarkPopup.create()
+      await beaker.bookmarks.add(b)
+      this.load()
+    } else if (group === 'Library') {
+      let driveCreator = (type = undefined) => async () => {
+        var drive = await DatArchive.create({type})
+        toast.create('Drive created')
+        beaker.browser.openUrl(drive.url, {setActive: true})
+        this.load()
+      }
+      await contextMenu.create({
+        x: e.clientX,
+        y: e.clientY,
+        noBorders: true,
+        roomy: true,
+        fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+        style: `padding: 4px 0`,
+        items: [
+          html`<div class="section-header light small">Basic</div>`,
+          {icon: 'far fa-fw fa-folder-open', label: 'Files drive', click: driveCreator()},
+          {icon: 'fas fa-fw fa-sitemap', label: 'Website', click: driveCreator('website')},
+          '-',
+          html`<div class="section-header light small">Advanced</div>`,
+          {icon: 'fas fa-fw fa-drafting-compass', label: 'Application', click: driveCreator('application')},
+          {icon: 'fas fa-fw fa-terminal', label: 'Webterm Command', click: driveCreator('webterm.sh/cmd-pkg')},
+        ]
+      })
+    } else if (group === 'Users') {
+      await beaker.users.showCreateDialog()
+      this.load()
+    } else {
+      alert('TODO')
+    }
   }
 
   onContextMenu (e, type, item) {
