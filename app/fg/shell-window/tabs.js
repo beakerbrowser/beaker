@@ -410,9 +410,9 @@ ${spinnerCSS}
   content: '';
   position: absolute;
   left: 0;
-  top: -2px;
+  top: -3px;
   width: 100%;
-  height: 2px;
+  height: 3px;
   background: var(--color-current-tab-highlight);
 }
 
