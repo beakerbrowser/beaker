@@ -1,11 +1,13 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 import { ucfirst } from 'beaker://app-stdlib/js/strings.js'
+import { library, friends } from 'beaker://app-stdlib/js/uwg.js'
 import 'beaker://app-stdlib/js/com/hover-menu.js'
 
 export class DriveInfo extends LitElement {
   static get properties () {
     return {
+      userUrl: {type: String, attribute: 'user-url'},
       driveInfo: {type: Object},
       isThumbLoaded: {type: Boolean},
       hasThumb: {type: Boolean}
@@ -14,6 +16,7 @@ export class DriveInfo extends LitElement {
 
   constructor () {
     super()
+    this.userUrl = undefined
     this.driveInfo = undefined
     this.isThumbLoaded = false
     this.hasThumb = true
@@ -28,9 +31,6 @@ export class DriveInfo extends LitElement {
     if (!info.ident) return undefined
     if (info.ident.isRoot) return 'private'
     if (info.ident.isUser) return 'public'
-    if (info.ident.libraryEntry) {
-      return info.ident.libraryEntry.visibility
-    }
     return undefined
   }
 
@@ -39,6 +39,14 @@ export class DriveInfo extends LitElement {
     if (info.title) return info.title
     if (info.ident.isRoot) return 'Filesystem'
     return 'Untitled'
+  }
+
+  get isInLibrary () {
+    return !!this.driveInfo.ident.libraryQuery
+  }
+
+  get isInFriends () {
+    return !!this.driveInfo.ident.friendsQuery
   }
 
   // rendering
@@ -57,8 +65,23 @@ export class DriveInfo extends LitElement {
         ${this.driveInfo.description ? html`<p>${this.driveInfo.description}</p>` : undefined}
         ${this.renderType()}
       </section>
-      ${this.driveInfo.type === 'unwalled.garden/person' && !this.driveInfo.ident.isUser ? html`
-        <section class="btn primary"><span class="fa-fw fas fa-user-plus"></span> Add to <code>/public/friends</code></section>
+      ${this.driveInfo.type === 'unwalled.garden/person' && this.driveInfo.url !== this.userUrl ? html`
+        <section class="btn" @click=${this.onToggleFriends}>
+          ${this.isInFriends ? html`
+            <span class="fa-fw fas fa-user-minus"></span> Remove from Friends
+          ` : html`
+            <span class="fa-fw fas fa-user-plus"></span> Add to Friends
+          `}
+        </section>`
+      : ''}
+      ${this.driveInfo.type !== 'unwalled.garden/person' ? html`
+        <section class="btn" @click=${this.onToggleLibrary}>
+          ${this.isInLibrary ? html`
+            <span class="fa-mod"><span class="fa-fw fas fa-university"></span><span class="fas fa-minus"></span></span> Remove from Library
+          ` : html`
+            <span class="fa-mod"><span class="fa-fw fas fa-university"></span><span class="fas fa-plus"></span></span> Add to Library
+          `}
+        </section>
       ` : ''}
       <section>
         ${this.renderVisibility()}
@@ -110,6 +133,24 @@ export class DriveInfo extends LitElement {
 
   onThumbError () {
     this.hasThumb = false
+  }
+
+  async onToggleFriends () {
+    if (this.isInFriends) {
+      await friends.remove(this.driveInfo.url)
+    } else {
+      await friends.add(this.driveInfo.url, this.driveInfo.title)
+    }
+    location.reload()
+  }
+
+  async onToggleLibrary () {
+    if (this.isInLibrary) {
+      await library.remove(this.driveInfo.url)
+    } else {
+      await library.add(this.driveInfo.url, this.driveInfo.title)
+    }
+    location.reload()
   }
 }
 

@@ -101,6 +101,8 @@ export class ExplorerApp extends LitElement {
     var drive = new DatArchive(location)
     this.driveInfo = await drive.getInfo()
     this.driveInfo.ident = await navigator.filesystem.identifyDrive(drive.url)
+    this.driveInfo.ident.friendsQuery = (await navigator.filesystem.query({mount: drive.url, path: '/public/friends/*'}))[0]
+    this.driveInfo.ident.libraryQuery = (await navigator.filesystem.query({mount: drive.url, path: '/library/*'}))[0]
     try {
       this.pathInfo = await drive.stat(location.pathname)
       await this.readMountInfo()
@@ -258,7 +260,7 @@ export class ExplorerApp extends LitElement {
         </div>
         ${this.pathInfo ? html`
           <nav class="left">
-            <drive-info .driveInfo=${this.driveInfo}></drive-info>
+            <drive-info .driveInfo=${this.driveInfo} user-url=${this.user.url}></drive-info>
             ${this.mountInfo ? html`
               <mount-info .mountInfo=${this.mountInfo}></mount-info>
             ` : ''}
