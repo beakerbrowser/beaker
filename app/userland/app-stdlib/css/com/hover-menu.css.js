@@ -39,6 +39,14 @@ ${colorscss}
   right: 0;
 }
 
+.heading {
+  cursor: default !important;
+  padding: 6px 30px 6px 14px;
+  color: var(--color-text--moted);
+  font-size: 10px;
+  font-weight: 500;
+}
+
 .item {
   display: block;
   padding: 12px 30px 12px 14px;

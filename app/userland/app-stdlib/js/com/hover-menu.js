@@ -28,7 +28,8 @@ class HoverMenu extends LitElement {
   render () {
     var items = Array.isArray(this.options) ? this.options : Object.entries(this.options).map(([id, label]) => ({id, label}))
 
-    const item = ({id, label, divider, disabled}) => {
+    const item = ({id, label, divider, disabled, heading}) => {
+      if (heading) return html`<div class="heading">${heading}</div>`
       if (divider) return html`<hr>`
       if (disabled) return html`<a class="item disabled">${label}</a>`
       return html`
