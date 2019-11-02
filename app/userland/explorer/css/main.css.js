@@ -210,8 +210,8 @@ nav section.selector > div.active span {
 @media (max-width: 1000px) {
   .layout {
     display: grid;
-    grid-template-columns: 30px 1fr 1fr;
-    grid-template-rows: auto auto;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 15px auto auto;
     grid-template-areas: "top top" "mid mid" "botleft botright";
     grid-gap: 10px;
     padding: 0 10px;
