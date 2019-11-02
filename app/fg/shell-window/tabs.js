@@ -273,35 +273,10 @@ ${spinnerCSS}
   height: 31px;
   width: 235px;
   margin-right: 2px;
-/*  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;*/
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
   background: var(--bg-background);
   transition: background 0.3s;
 }
-
-/*.tab:before,
-.tab:after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  bottom: 0;
-  height: 10px;
-  width: 10px;
-  background: #fff;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.tab:before {
-  left: -10px;
-  -webkit-mask-image: radial-gradient(circle 10px at 0 0, transparent 0, transparent 10px, black 11px);
-}
-
-.tab:after {
-  right: -10px;
-  -webkit-mask-image: radial-gradient(circle 10px at 10px 0, transparent 0, transparent 10px, black 11px);
-}*/
 
 .tab.pinned {
   flex: 0 0 45px;
@@ -431,31 +406,15 @@ ${spinnerCSS}
   background: var(--bg-tab--current);
 }
 
-.tab.current:before,
-.tab.current:after {
-  opacity: 1;
-}
-
-/*.tab.current:before,
-.tab.current:after {
+.tab.current:before {
   content: '';
   position: absolute;
-  z-index: 1;
-  bottom: 0;
-  height: 10px;
-  width: 10px;
-  background: #fff;
+  left: 0;
+  top: -2px;
+  width: 100%;
+  height: 2px;
+  background: var(--color-current-tab-highlight);
 }
-
-.tab.current:before {
-  left: -10px;
-  -webkit-mask-image: radial-gradient(circle 10px at 0 0, transparent 0, transparent 10px, black 11px);
-}
-
-.tab.current:after {
-  right: -10px;
-  -webkit-mask-image: radial-gradient(circle 10px at 10px 0, transparent 0, transparent 10px, black 11px);
-}*/
 
 .tab.current .tab-close {
   background: var(--bg-tab--current);
