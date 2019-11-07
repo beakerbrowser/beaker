@@ -1,26 +1,29 @@
-import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import {  html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { emit } from 'beaker://app-stdlib/js/dom.js'
-import mainCSS from '../../css/com/file-grid.css.js'
+import { timeDifference } from 'beaker://app-stdlib/js/time.js'
+import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { FileGrid } from './file-grid.js'
+import './file-display.js'
+import css from '../../css/com/inline-file-list.css.js'
 
-export class FileGrid extends LitElement {
+export class InlineFileList extends FileGrid {
   static get properties () {
     return {
       itemGroups: {type: Array},
       selection: {type: Array},
       showOrigin: {type: Boolean, attribute: 'show-origin'}
     }
+    
   }
-
   static get styles () {
-    return mainCSS
+    return css
   }
 
   constructor () {
     super()
     this.itemGroups = []
-    this.selection = []
+    this.selection = undefined
     this.showOrigin = undefined
   }
 
@@ -35,7 +38,7 @@ export class FileGrid extends LitElement {
         if (group.items.length === 0) return ''
         return html`
           <h4>${group.label}</h4>
-          <div class="grid">
+          <div class="list">
             ${repeat(group.items, this.renderItem.bind(this))}
           </div>
         `
@@ -50,45 +53,40 @@ export class FileGrid extends LitElement {
   renderItem (item) {
     var cls = classMap({
       item: true,
-      mount: item.mountInfo,
-      folder: item.stat.isDirectory(),
-      file: item.stat.isFile(),
       selected: this.selection.includes(item)
     })
     var driveTitle = item.drive.title || 'Untitled'
+    var folder = item.path.split('/').slice(0, -1).join('/') || '/'
     return html`
       <div
         class=${cls}
         @click=${e => this.onClick(e, item)}
         @dblclick=${e => this.onDblClick(e, item)}
       >
-        <span class="fas fa-fw fa-${item.icon}"></span>
-        ${item.subicon ? html`<span class="subicon ${item.subicon}"></span>` : ''}
-        ${item.mountInfo ? html`<span class="mounticon fas fa-external-link-square-alt"></span>` : ''}
-        <div class="name">${item.name}</div>
-        ${this.showOrigin ? html`<div class="author">${driveTitle}</div>` : ''}
+        <div class="info">
+          <div><a class="name" href=${item.url}>${item.name}</a></div>
+          ${this.showOrigin ? html`
+            <div>Drive: <a class="author" href=${item.drive.url}>${driveTitle}</a></div>
+            <div>Folder: <a class="folder" href=${joinPath(item.drive.url, folder)}>${folder}</a></div>
+          ` : ''}
+          <div>
+            Updated: <span class="date">${timeDifference(item.stat.ctime, true, 'ago')}</span>
+          </div>
+        </div>
+        <div class="content">
+          <file-display
+            horz
+            drive-url=${item.drive.url}
+            pathname=${item.path}
+            .info=${item}
+          ></file-display>
+        </div>
       </div>
     `
   }
 
   // events
   // =
-
-  onClick (e, item) {
-    e.stopPropagation()
-
-    var selection
-    if (e.metaKey) {
-      selection = this.selection.concat([item])
-    } else {
-      selection = [item]
-    }
-    emit(this, 'change-selection', {detail: {selection}})
-  }
-
-  onDblClick (e, item) {
-    emit(this, 'goto', {detail: {item}})
-  }
 }
 
-customElements.define('file-grid', FileGrid)
+customElements.define('inline-file-list', InlineFileList)

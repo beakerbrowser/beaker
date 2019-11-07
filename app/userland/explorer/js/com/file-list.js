@@ -1,10 +1,11 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
+import { format as formatBytes } from 'beaker://app-stdlib/vendor/bytes/index.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
-import mainCSS from '../../css/com/file-grid.css.js'
+import mainCSS from '../../css/com/file-list.css.js'
 
-export class FileGrid extends LitElement {
+export class FileList extends LitElement {
   static get properties () {
     return {
       itemGroups: {type: Array},
@@ -22,6 +23,9 @@ export class FileGrid extends LitElement {
     this.itemGroups = []
     this.selection = []
     this.showOrigin = undefined
+
+    this.dateFormatter = new Intl.DateTimeFormat('en-us', {day: "numeric", month: "short", year: "numeric",})
+    this.timeFormatter = new Intl.DateTimeFormat('en-US', {hour12: true, hour: "2-digit", minute: "2-digit"})
   }
 
   // rendering
@@ -35,7 +39,7 @@ export class FileGrid extends LitElement {
         if (group.items.length === 0) return ''
         return html`
           <h4>${group.label}</h4>
-          <div class="grid">
+          <div class="list">
             ${repeat(group.items, this.renderItem.bind(this))}
           </div>
         `
@@ -62,11 +66,11 @@ export class FileGrid extends LitElement {
         @click=${e => this.onClick(e, item)}
         @dblclick=${e => this.onDblClick(e, item)}
       >
+        ${this.showOrigin ? html`<span class="author">${driveTitle}</span>` : ''}
         <span class="fas fa-fw fa-${item.icon}"></span>
-        ${item.subicon ? html`<span class="subicon ${item.subicon}"></span>` : ''}
-        ${item.mountInfo ? html`<span class="mounticon fas fa-external-link-square-alt"></span>` : ''}
-        <div class="name">${item.name}</div>
-        ${this.showOrigin ? html`<div class="author">${driveTitle}</div>` : ''}
+        <span class="name">${item.name}</span>
+        <span class="date">${this.dateFormatter.format(item.stat.ctime)} <span>at</span> ${this.timeFormatter.format(item.stat.ctime)}</span>
+        <span class="size">${item.stat.size ? formatBytes(item.stat.size) : ''}</span>
       </div>
     `
   }
@@ -91,4 +95,4 @@ export class FileGrid extends LitElement {
   }
 }
 
-customElements.define('file-grid', FileGrid)
+customElements.define('file-list', FileList)

@@ -176,6 +176,10 @@ nav p {
   margin: 10px 0;
 }
 
+nav button .fa-caret-down {
+  margin-left: 2px;
+}
+
 nav section.selector {
   padding: 0;
 }

@@ -2,6 +2,7 @@ import errors from 'beaker-error-constants'
 import manifest from '../manifests/external/navigator'
 import sessionManifest from '../manifests/external/navigator-session'
 import filesystemManifest from '../manifests/external/navigator-filesystem'
+import Stat from './stat'
 
 const RPC_OPTS = { timeout: false, errors }
 
@@ -30,6 +31,10 @@ export const setup = function (rpc) {
     return filesystemApi.identifyDrive(url)
   }
   navigator.filesystem.query = async (opts) => {
-    return filesystemApi.query(opts)
+    var res = await filesystemApi.query(opts)
+    res.forEach(item => {
+      if (item.stat) item.stat = new Stat(item.stat)
+    })
+    return res
   }
 }

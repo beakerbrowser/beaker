@@ -52,8 +52,8 @@ export class FileDisplay extends LitElement {
 
   async readFile () {
     try {
-      var archive = new DatArchive(this.driveUrl)
-      var file = await archive.readFile(this.pathname, 'utf8')
+      var drive = new DatArchive(this.driveUrl)
+      var file = await drive.readFile(this.pathname, 'utf8')
 
       if (this.pathname.endsWith('.md') && this.renderMode !== 'raw') {
         file = md.render(file)
@@ -70,6 +70,15 @@ export class FileDisplay extends LitElement {
   // =
 
   render () {
+    if (this.info.stat.isDirectory()) {
+      if (this.info.stat.mount && this.info.stat.mount.key) {
+        return this.renderMount()
+      }
+      return this.renderIcon('fas fa-folder')
+    } 
+    if (this.pathname.endsWith('.view')) {
+      return this.renderIcon('fas fa-layer-group')
+    }
     if (/\.(png|jpe?g|gif)$/.test(this.pathname)) {
       return this.renderImage()
     }
@@ -79,7 +88,7 @@ export class FileDisplay extends LitElement {
     if (/\.(mp3|ogg)$/.test(this.pathname)) {
       return this.renderAudio()
     }
-    if (this.info.size > 1000000) {
+    if (this.info.stat.size > 1000000) {
       return html`<div class="too-big">This file is too big to display</div>`
     }
     return html`${until(this.readFile(), 'Loading...')}`
@@ -95,6 +104,27 @@ export class FileDisplay extends LitElement {
 
   renderAudio () {
     return html`<audio controls><source src=${this.url}></audio>`
+  }
+
+  renderIcon (icon) {
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="icon"><span class="${icon}"></span></div>
+    `
+  }
+
+  renderMount () {
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="mount">
+        <img src="asset:thumb:${this.info.mountInfo.url}">
+        <div class="info">
+          <div class="title">${this.info.mountInfo.title || 'Untitled'}</div>
+          <div class="description">${this.info.mountInfo.description}</div>
+        </div>
+      </div>
+    `
+      // <div class="icon"><span class="fas fa-hdd"></span></div>
   }
 
   // events

@@ -7,6 +7,7 @@ import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 import mainCSS from '../css/main.css.js'
 import './view/file.js'
 import './view/folder.js'
+import './view/query.js'
 import './com/drive-info.js'
 import './com/mount-info.js'
 import './com/location-info.js'
@@ -52,9 +53,9 @@ export class ExplorerApp extends LitElement {
     this.items = []
     this.selection = []
     this.renderMode = undefined
+    this.inlineMode = false
     this.driveTitle = undefined
     this.mountTitle = undefined
-    this.showHidden = localStorage.showHidden == 1
     this.load()
   }
 
@@ -87,8 +88,8 @@ export class ExplorerApp extends LitElement {
     return this.mountTitle || this.driveTitle
   }
 
-  get isEditing () {
-    return this.renderMode === 'editor'
+  get isViewingQuery () {
+    return location.pathname.endsWith('.view')
   }
 
   async load () {
@@ -96,56 +97,56 @@ export class ExplorerApp extends LitElement {
       this.user = await navigator.session.get()
     }
 
+    // read drive information
     var drive = new DatArchive(location)
     this.driveInfo = await drive.getInfo()
     this.driveInfo.ident = await navigator.filesystem.identifyDrive(drive.url)
     this.driveInfo.ident.friendsQuery = (await navigator.filesystem.query({mount: drive.url, path: '/public/friends/*'}))[0]
     this.driveInfo.ident.libraryQuery = (await navigator.filesystem.query({mount: drive.url, path: '/library/*'}))[0]
+
+    // read location content
     try {
       this.pathInfo = await drive.stat(location.pathname)
       await this.readMountInfo()
       if (this.pathInfo.isDirectory()) {
-        this.items = await drive.readdir(location.pathname, {stat: true})
-        this.items.sort((a, b) => a.name.localeCompare(b.name))
-        let driveKind = ''
-        if (this.currentDriveInfo.ident.isRoot) driveKind = 'root'
-        if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
-        for (let item of this.items) {
-          item.icon = item.stat.isDirectory() ? 'folder' : 'file'
-          if (item.stat.mount) {
-            item.icon = 'hdd'
-            item.mountInfo = await (new DatArchive(item.stat.mount.key)).getInfo()
-            switch (item.mountInfo.type) {
-              case 'website': item.subicon = 'fas fa-sitemap'; break
-              case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
-              default: item.subicon = 'fas fa-folder'; break
-            }
-          } else if (driveKind === 'root' && this.realPathname === '/') {
-            item.subicon = ICONS.rootRoot[item.name]
-          } else if (driveKind === 'person' && this.realPathname === '/') {
-            item.subicon = ICONS.personRoot[item.name]
-          } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/data' && item.stat.isDirectory()) {
-            item.subicon = 'fas fa-database'
-          } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/data/unwalled.garden') {
-            item.subicon = ICONS.uwg[item.name]
-          }
-        }
+        await this.readDirectory(drive)
+      } else if (location.pathname.endsWith('.view')) {
+        await this.readViewfile(drive)
       }
     } catch (e) {
       console.log(e)
       this.isNotFound = true
     }
 
+    // apply sorting
+    if (this.items) {
+      this.items.sort((a, b) => a.name.localeCompare(b.name))
+    }
+
+    // view config
+    this.inlineMode = Boolean(getSavedConfig('inline-mode', false))
     if (this.pathInfo.isDirectory()) {
+      this.renderMode = getSavedConfig('render-mode', 'grid')
       if (!this.watchStream) {
         let currentDrive = new DatArchive(this.currentDriveInfo.url)
         this.watchStream = currentDrive.watch(this.realPathname)
+        var hackSetupTime = Date.now()
         this.watchStream.addEventListener('changed', e => {
+          // HACK
+          // for some reason, the watchstream is firing 'changed' immediately
+          // ignore if the event fires within 1s of setup
+          // -prf
+          if (Date.now() - hackSetupTime <= 1000) return
+
           this.load()
         })
       }
     } else if (/[?&]edit/.test(location.search)) {
       this.renderMode = 'editor'
+    } else if (location.pathname.endsWith('.view')) {
+      this.renderMode = getSavedConfig('render-mode', 'grid')
+    } else {
+      this.renderMode = getSavedConfig('render-mode', 'default')
     }
 
     this.driveTitle = getDriveTitle(this.driveInfo)
@@ -155,10 +156,67 @@ export class ExplorerApp extends LitElement {
     console.log({
       driveInfo: this.driveInfo,
       mountInfo: this.mountInfo,
-      pathInfo: this.pathInfo
+      pathInfo: this.pathInfo,
+      items: this.items,
+      itemGroups: this.itemGroups
     })
 
     this.requestUpdate()
+  }
+
+  async readDirectory (drive) {
+    let driveKind = ''
+    if (this.currentDriveInfo.ident.isRoot) driveKind = 'root'
+    if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
+
+    this.items = await drive.readdir(location.pathname, {stat: true})
+
+    for (let item of this.items) {
+      item.path = this.getRealPathname(joinPath(location.pathname, item.name))
+      item.drive = this.currentDriveInfo
+      item.url = joinPath(item.drive.url, item.path)
+      item.icon = item.stat.isDirectory() ? 'folder' : 'file'
+      if (item.stat.mount) {
+        item.icon = 'hdd'
+        item.mountInfo = await (new DatArchive(item.stat.mount.key)).getInfo()
+        switch (item.mountInfo.type) {
+          case 'website': item.subicon = 'fas fa-sitemap'; break
+          case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
+          default: item.subicon = 'fas fa-folder'; break
+        }
+      } else if (item.stat.isFile() && item.name.endsWith('.view')) {
+        item.icon = 'layer-group'
+      } else if (driveKind === 'root' && this.realPathname === '/') {
+        item.subicon = ICONS.rootRoot[item.name]
+      } else if (driveKind === 'person' && this.realPathname === '/') {
+        item.subicon = ICONS.personRoot[item.name]
+      } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/data' && item.stat.isDirectory()) {
+        item.subicon = 'fas fa-database'
+      } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/data/unwalled.garden') {
+        item.subicon = ICONS.uwg[item.name]
+      }
+    }
+  }
+
+  async readViewfile (drive) {
+    var viewFile = await drive.readFile(location.pathname, 'utf8')
+    var view = JSON.parse(viewFile)
+    validateViewfile(view)
+
+    this.items = await navigator.filesystem.query(view.query)
+
+    // massage the items to fit same form as `readDirectory()`
+    this.items.forEach(item => {
+      item.name = item.path.split('/').pop()
+      item.path = (new URL(item.url)).pathname
+      item.icon = item.stat.isDirectory() ? 'folder' : 'file'
+      if (item.stat.mount) {
+        item.icon = 'hdd'
+        item.mountInfo = item.mount
+      } else if (item.stat.isFile() && item.name.endsWith('.view')) {
+        item.icon = 'layer-group'
+      }
+    })
   }
 
   async readMountInfo () {
@@ -186,7 +244,6 @@ export class ExplorerApp extends LitElement {
       {id: 'library', label: html`<span class="fas fa-fw fa-university"></span> <code>/library</code>`},
       {id: 'public', label: html`<span class="fas fa-fw fa-user"></span> <code>/public</code>`},
     ]
-
   }
 
   get driveMenu () {
@@ -209,7 +266,7 @@ export class ExplorerApp extends LitElement {
     ]
   }
 
-  get fileMenu () {
+  get editMenu () {
     var items = []
     const inFile = !this.pathInfo.isDirectory()
     const numSelected = this.selection.length
@@ -219,12 +276,61 @@ export class ExplorerApp extends LitElement {
     ])
   }
 
+  get renderModes () {
+    if (this.pathInfo.isDirectory()) {
+      return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
+    } else {
+      if (this.realPathname.endsWith('.md')) {
+        return [['default', 'file', 'File'], ['raw', 'code', 'Raw File']]
+      }
+      if (this.realPathname.endsWith('.view')) {
+        return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
+      }
+      return [['default', 'File']]
+    }
+  }
+
+  get itemGroups () {
+    var groups = {}
+    const add = (id, label, item) => {
+      if (!groups[id]) groups[id] = {id, label, items: [item]}
+      else groups[id].items.push(item)
+    }
+    for (let i of this.items) {
+      if (i.stat.mount && i.stat.mount.key) {
+        switch (i.mountInfo.type) {
+          case 'unwalled.garden/person': add('people', 'People', i); break
+          case 'website': add('websites', 'Websites', i); break
+          case 'application': add('applications', 'Applications', i); break
+          case 'webterm.sh/cmd-pkg': add('commands', 'Webterm Commands', i); break
+          default: add('drives', 'Drives', i)
+        }
+      } else if (i.stat.isDirectory()) {
+        add('folders', 'Folders', i)
+      } else if (i.name.endsWith('.view')) {
+        add('views', 'Views', i)
+      } else {
+        add('files', 'Files', i)
+      }
+    }
+
+    const groupsOrder = ['views', 'people', 'websites', 'applications', 'commands', 'drives', 'folders', 'files']
+    var groupsArr = []
+    for (let id in groups) {
+      groupsArr[groupsOrder.indexOf(id)] = groups[id]
+    }
+    return groupsArr
+  }
+
   // rendering
   // =
 
   render () {
     if (!this.driveInfo) return html``
 
+    const renderModes = this.renderModes
+    const isViewfile = this.pathInfo.isFile() && location.pathname.endsWith('.view')
+    const isFolderLike = this.pathInfo.isDirectory() || isViewfile
     var selectionIsFolder = this.selection[0] ? this.selection[0].stat.isDirectory() : this.pathInfo.isDirectory()
     var selectionUrl = this.getRealUrl(this.selection[0] ? joinPath(this.realPathname, this.selection[0].name) : this.realPathname)
     var selectionName = selectionUrl.split('/').pop() || (this.realPathname === '/' ? 'drive' : selectionIsFolder ? 'folder' : 'file')
@@ -236,6 +342,7 @@ export class ExplorerApp extends LitElement {
         class="layout render-mode-${this.renderMode}"
         @click=${this.onClickLayout}
         @goto=${this.onGoto}
+        @change-selection=${this.onChangeSelection}
         @new-drive=${this.onNewDrive}
         @new-folder=${this.onNewFolder}
         @new-file=${this.onNewFile}
@@ -252,7 +359,8 @@ export class ExplorerApp extends LitElement {
           <hover-menu .options=${this.explorerMenu} icon="fas fa-folder" current="Explorer" @change=${this.onSelectExplorerMenuItem}></hover-menu>
           <hover-menu .options=${this.driveMenu} current="Drive" @change=${this.onSelectMenuItem}></hover-menu>
           <hover-menu .options=${this.folderMenu} current="Folder" @change=${this.onSelectMenuItem}></hover-menu>
-          <hover-menu .options=${this.fileMenu} current="File" @change=${this.onSelectMenuItem}></hover-menu>
+          <hover-menu .options=${this.editMenu} current="Edit" @change=${this.onSelectMenuItem}></hover-menu>
+          </span>
         </div>
         ${this.pathInfo ? html`
           <nav class="left">
@@ -262,18 +370,32 @@ export class ExplorerApp extends LitElement {
             ` : ''}
           </nav>
           <main>
-            ${this.pathInfo.isDirectory() ? html`
+            ${isViewfile ? html`
+              <explorer-view-query
+                user-url=${this.user.url}
+                real-url=${this.realUrl}
+                real-pathname=${this.realPathname}
+                current-drive-title=${this.currentDriveTitle}
+                render-mode=${this.renderMode}
+                ?inline-mode=${this.inlineMode}
+                .currentDriveInfo=${this.currentDriveInfo}
+                .pathInfo=${this.pathInfo}
+                .items=${this.items}
+                .itemGroups=${this.itemGroups}
+                .selection=${this.selection}
+              ></explorer-view-query>
+            ` : this.pathInfo.isDirectory() ? html`
               <explorer-view-folder
                 user-url=${this.user.url}
                 real-url=${this.realUrl}
                 real-pathname=${this.realPathname}
                 current-drive-title=${this.currentDriveTitle}
                 render-mode=${this.renderMode}
-                ?show-hidden=${this.showHidden}
+                ?inline-mode=${this.inlineMode}
                 .currentDriveInfo=${this.currentDriveInfo}
                 .items=${this.items}
+                .itemGroups=${this.itemGroups}
                 .selection=${this.selection}
-                @change-selection=${this.onChangeSelection}
               ></explorer-view-folder>
             ` : html`
               <explorer-view-file
@@ -284,10 +406,34 @@ export class ExplorerApp extends LitElement {
                 render-mode=${this.renderMode}
                 .currentDriveInfo=${this.currentDriveInfo}
                 .pathInfo=${this.pathInfo}
+                .selection=${this.selection}
               ></explorer-view-file>
             `}
           </main>
           <nav class="right">
+            <section class="transparent" style="padding: 2px">
+              <span class="btn-group">
+                ${renderModes.map(([id, icon, label]) => html`
+                  <button
+                    class=${id == this.renderMode ? 'pressed' : ''}
+                    @click=${e => this.onChangeRenderMode(e, id)}
+                    title="Change the view to: ${label}"
+                  ><span class="fas fa-${icon}"></span></button>
+                `)}
+              </span>
+              ${isFolderLike ? html`
+                <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
+                  <span class="fas fa-eye"></span>
+                </button>
+                ${''/* TODO <span class="btn-group">
+                  <button title="Change the current sort order">
+                    <span class="fas fa-sort-amount-down"></span><span class="fas fa-caret-down"></span>
+                  </button><button title="Change the grouping of files">
+                    <span class="fas fa-border-all"></span><span class="fas fa-caret-down"></span>
+                  </button>
+                </span>*/}
+              ` : ''}
+            </section>
             ${this.selection.length > 0 ? html`
               <selection-info
                 user-url=${this.user.url}
@@ -295,7 +441,7 @@ export class ExplorerApp extends LitElement {
                 .pathInfo=${this.pathInfo}
                 .mountInfo=${this.mountInfo}
                 .selection=${this.selection}
-                ?no-preview=${this.renderMode === 'feed'}
+                ?no-preview=${this.inlineMode}
               ></selection-info>
             ` : html`
               <location-info
@@ -305,14 +451,12 @@ export class ExplorerApp extends LitElement {
                 .driveInfo=${this.driveInfo}
                 .pathInfo=${this.pathInfo}
                 .mountInfo=${this.mountInfo}
-                @change-render-mode=${this.onChangeRenderMode}
               ></location-info>
             `}
             ${this.selection.length <= 1 ? html`
               <section class="transparent">
                 <p><a href=${selectionUrl} target="_blank"><span class="fa-fw fas fa-external-link-alt"></span> Open ${this.selection.length ? 'selected' : ''} in new tab</a></p>
                 <p><a id="download-link" href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export ${selectionName}</a></p>
-                <p><a href="#" @click=${this.onToggleShowHidden}><span class="fa-fw fas fa-eye"></span> ${this.showHidden ? 'Hide' : 'Show'} hidden files</a></p>
               </section>
             ` : ''}
           ` : undefined}
@@ -343,16 +487,11 @@ export class ExplorerApp extends LitElement {
     var {item} = e.detail
     if (item.stat.mount) {
       window.location = `dat://${item.stat.mount.key}`
+    } else if (this.isViewingQuery) {
+      window.location = item.url
     } else {
       window.location = joinPath(window.location.toString(), item.name)
     }
-  }
-
-  onToggleShowHidden (e) {
-    e.preventDefault()
-    this.showHidden = !this.showHidden
-    localStorage.showHidden = this.showHidden ? '1' : '0'
-    this.requestUpdate()
   }
 
   onChangeSelection (e) {
@@ -360,8 +499,15 @@ export class ExplorerApp extends LitElement {
     this.requestUpdate()
   }
 
-  onChangeRenderMode (e) {
-    this.renderMode = e.detail.renderMode
+  onChangeRenderMode (e, renderMode) {
+    this.renderMode = renderMode
+    setSavedConfig('render-mode', this.renderMode)
+    this.requestUpdate()
+  }
+
+  onToggleInlineMode (e) {
+    this.inlineMode = !this.inlineMode
+    setSavedConfig('inline-mode', this.inlineMode ? '1' : '')
     this.requestUpdate()
   }
 
@@ -563,8 +709,38 @@ export class ExplorerApp extends LitElement {
 
 customElements.define('explorer-app', ExplorerApp)
 
+// internal methods
+// =
+
 function getDriveTitle (info) {
   if (info.title) return info.title
   else if (info.ident.isRoot) return 'Filesystem'
   else return 'Untitled'
+}
+
+function getSavedConfig (name, fallback = undefined) {
+  return localStorage.getItem(`setting:${name}:${location.pathname}`) || fallback
+}
+
+function setSavedConfig (name, value) {
+  localStorage.setItem(`setting:${name}:${location.pathname}`, value)
+}
+
+function validateViewfile (view) {
+  if (typeof view.viewfile !== 'number' || view.viewfile < 1) {
+    throw new Error('Unrecognized version ("viewfile" attribute): ' + view.viewfile)
+  }
+  if (!view.query || typeof view.query !== 'object') {
+    throw new Error('No "query" is specified in the viewfile')
+  }
+  if (!view.query.path) {
+    throw new Error('No "query.path" is specified in the viewfile')
+  }
+  if (Array.isArray(view.query.path)) {
+    if (!view.query.path.every(p => typeof p === 'string')) {
+      throw new Error('The "query.path" includes invalid (non-string) values')
+    }
+  } else if (typeof view.query.path !== 'string') {
+    throw new Error('The "query.path" is invalid (it must be a string or array of strings)')
+  }
 }

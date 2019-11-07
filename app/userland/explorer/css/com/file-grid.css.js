@@ -7,8 +7,13 @@ const cssStr = css`
   --color-folder: #9ec2e0;
   --color-file: #bbbbcc;
   --color-itemname: #484444;
+  --color-itemdrive: #99a;
+  --color-viewfile: #ffffff;
+  --color-viewfile-outline: #a7a7ad;
   --color-hover-bg: #f3f3f8;
-  --color-selected-bg: #e4e4ec;
+  --color-selected-fg: #fff;
+  --color-selected-bg: #4379e4;
+  --color-selected-bg-icon: #dddde5;
 }
 
 h4 {
@@ -61,6 +66,12 @@ h4 {
   color: var(--color-drive);
 }
 
+.item .fa-fw.fa-layer-group {
+  -webkit-text-stroke: 1px var(--color-viewfile-outline);
+  color: var(--color-viewfile);
+  font-size: 36px;
+}
+
 .item .fa-fw.fa-file {
   -webkit-text-stroke: 1px var(--color-file);
   color: #fff;
@@ -69,14 +80,21 @@ h4 {
   margin-bottom: 4px;
 }
 
-.item .name {
+.item .name,
+.item .author {
   color: var(--color-itemname);
   width: 100%;
   text-align: center;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 12px;
   border-radius: 4px;
+}
+
+.item .author {
+  color: var(--color-itemdrive);
+  font-size: 10px;
 }
 
 .item .subicon {
@@ -104,19 +122,17 @@ h4 {
   left: 36px;
 }
 
-.item.hidden .fa-fw {
-  opacity: 0.5;
-}
-
-.item.hidden .subicon {
-  opacity: 0.5;
-}
-
 .item.selected {
+}
+
+.item.selected .fa-fw {
+  background: var(--color-selected-bg-icon);
+  border-radius: 4px;
 }
 
 .item.selected .name {
   background: var(--color-selected-bg);
+  color: var(--color-selected-fg);
 }
 
 `

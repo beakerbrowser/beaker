@@ -2,7 +2,9 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import css from '../../css/view/folder.css.js'
 import '../com/file-grid.js'
-import '../com/file-feed.js'
+import '../com/file-list.js'
+import '../com/inline-file-grid.js'
+import '../com/inline-file-list.js'
 import '../com/file-display.js'
 
 export class FolderView extends LitElement {
@@ -12,11 +14,12 @@ export class FolderView extends LitElement {
       currentDriveInfo: {type: Object},
       currentDriveTitle: {type: String, attribute: 'current-drive-title'},
       items: {type: Array},
+      itemGroups: {type: Array},
       selection: {type: Array},
       renderMode: {type: String, attribute: 'render-mode'},
+      inlineMode: {type: Boolean, attribute: 'inline-mode'},
       realUrl: {type: String, attribute: 'real-url'},
-      realPathname: {type: String, attribute: 'real-pathname'},
-      showHidden: {type: Boolean, attribute: 'show-hidden'}
+      realPathname: {type: String, attribute: 'real-pathname'}
     }
   }
 
@@ -30,11 +33,12 @@ export class FolderView extends LitElement {
     this.currentDriveInfo = undefined
     this.currentDriveTitle = undefined
     this.items = undefined
+    this.itemGroups = undefined
     this.selection = undefined
     this.renderMode = undefined
+    this.inlineMode = undefined
     this.realUrl = undefined
     this.realPathname = undefined
-    this.showHidden = undefined
   }
 
   getInlineMdItem () {
@@ -80,11 +84,15 @@ export class FolderView extends LitElement {
         <a class="author" href=${this.currentDriveInfo.url}>${this.currentDriveTitle}</a>
         ${this.pathAncestry.map(([url, name]) => html`/ <a class="name" href=${url}>${name}</a>`)}
       </div>
-      <file-grid
-        .items=${this.items}
-        .selection=${this.selection}
-        ?show-hidden=${this.showHidden}
-      ></file-grid>
+      ${this.renderMode === 'grid' ? (
+        this.inlineMode
+          ? html`<inline-file-grid .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-grid>`
+          : html`<file-grid .itemGroups=${this.itemGroups} .selection=${this.selection}></file-grid>`
+      ) : (
+        this.inlineMode
+          ? html`<inline-file-list .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-list>`
+          : html`<file-list .itemGroups=${this.itemGroups} .selection=${this.selection}></file-list>`
+      )}
       ${inlineMdItem ? html`
         <div class="readme">
           <file-display

@@ -48,18 +48,15 @@ export class SelectionInfo extends LitElement {
   // =
 
   render () {
-    const canEdit = this.currentDriveInfo.writable
     if (this.selection.length > 1) {
       return html`
         <section><strong>${this.selection.length} items selected</strong></section>
-        <section>
-          <button ?disabled=${!canEdit} @click=${e => this.doEmit('delete')} class="transparent"><span class="fa-fw fas fa-trash"></span> Delete</button>
-        </section>
       `
     }
     var sel = this.selection[0]
     var selPathname = joinPath(location.pathname, sel.name)
     var selRealUrl = this.getRealUrl(selPathname)
+    console.log(sel)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <section>
@@ -74,17 +71,13 @@ export class SelectionInfo extends LitElement {
           ${sel.mountInfo.description ? html`<p><small>Description: </small> ${sel.mountInfo.description}</p>` : ''}
         </section>
       ` : ''}
-      <section>
-        <button ?disabled=${!canEdit} @click=${e => this.doEmit('rename')} class="transparent"><span class="fa-fw fas fa-i-cursor"></span> Rename</button>
-        <button ?disabled=${!canEdit} @click=${e => this.doEmit('delete')} class="transparent"><span class="fa-fw fas fa-trash"></span> Delete</button>
-      </section>
       ${!this.noPreview && sel.stat.isFile() ? html`
         <section>
           <h5>Preview</h5>
           <file-display
-            drive-url=${this.currentDriveInfo.url}
-            pathname=${this.getRealPathname(selPathname)}
-            .info=${sel.stat}
+            drive-url=${sel.drive.url}
+            pathname=${sel.path}
+            .info=${sel}
           ></file-display>
         </section>
       ` : ''}
@@ -112,9 +105,6 @@ export class SelectionInfo extends LitElement {
   // events
   // =
 
-  doEmit (evt) {
-    emit(this, evt)
-  }
 }
 
 customElements.define('selection-info', SelectionInfo)
