@@ -1,5 +1,6 @@
 import * as rpc from 'pauls-electron-rpc'
 
+const INTERNAL_ORIGIN_REGEX = /^(beaker:)/i
 const SECURE_ORIGIN_REGEX = /^(beaker:|dat:|https:|http:\/\/localhost(\/|:))/i
 
 // internal manifests
@@ -83,7 +84,7 @@ export const setup = function () {
 }
 
 function internalOnly (event, methodName, args) {
-  return (event && event.sender && event.sender.getURL().startsWith('beaker:'))
+  return (event && event.sender && INTERNAL_ORIGIN_REGEX.test(event.sender.getURL()))
 }
 
 function secureOnly (event, methodName, args) {

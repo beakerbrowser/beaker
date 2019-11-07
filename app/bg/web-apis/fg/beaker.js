@@ -17,7 +17,7 @@ export const setup = function (rpc) {
   const opts = { timeout: false, errors }
 
   // internal only
-  if (window.location.protocol === 'beaker:') {
+  if (['beaker:'].includes(window.location.protocol)) {
     const loggerRPC = rpc.importAPI('logger', loggerManifest, opts)
     const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
     const beakerBrowserRPC = rpc.importAPI('beaker-browser', beakerBrowserManifest, opts)

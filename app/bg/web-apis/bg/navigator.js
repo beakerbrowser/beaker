@@ -1,4 +1,6 @@
+import { BrowserView } from 'electron'
 import * as windows from '../../ui/windows'
+import * as tabManager from '../../ui/tab-manager'
 import * as modals from '../../ui/subwindows/modals'
 import * as datArchives from '../../dat/archives'
 import assert from 'assert'
@@ -78,6 +80,7 @@ export default {
     if (!res || !res.paths) throw new UserDeniedError()
     return res.paths
   },
+
   /**
    * @param {Object} [opts]
    * @param {string} [opts.title]
@@ -154,6 +157,27 @@ export default {
     }
     if (!res || !res.url) throw new UserDeniedError()
     return res.url
+  },
+
+  /**
+   * Can only be used by beaker:// sites
+   * 
+   * @returns {Promise<void>}
+   */
+  async toggleEditor () {
+    var tab = tabManager.findTab(BrowserView.fromWebContents(this.sender))
+    if (!tab) return
+
+    var isAllowed = (this.sender.getURL().startsWith('beaker:'))
+    if (!isAllowed) {
+      // check if in the explorer viewer app
+      var handler = await tab.getDriveHandler()
+      isAllowed = (handler && handler.startsWith('beaker:'))
+    }
+
+    if (isAllowed) {
+      tab.toggleSidebar('editor')
+    }
   }
 }
 
