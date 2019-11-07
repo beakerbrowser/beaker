@@ -141,13 +141,16 @@ export class ExplorerApp extends LitElement {
           this.load()
         })
       }
-    } else if (/[?&]edit/.test(location.search)) {
-      this.renderMode = 'editor'
     } else if (location.pathname.endsWith('.view')) {
       this.renderMode = getSavedConfig('render-mode', getVFCfg(this.viewfileObj, 'renderMode', ['grid', 'list']) || 'grid')
       this.inlineMode = Boolean(getSavedConfig('inline-mode', getVFCfg(this.viewfileObj, 'inline', [true, false]) || false))
     } else {
       this.renderMode = getSavedConfig('render-mode', 'default')
+    }
+
+    if (location.hash === '#edit') {
+      navigator.toggleEditor()
+      location.hash = ''
     }
 
     this.driveTitle = getDriveTitle(this.driveInfo)
@@ -283,6 +286,8 @@ export class ExplorerApp extends LitElement {
     const inFile = !this.pathInfo.isDirectory()
     const numSelected = this.selection.length
     return items.concat([
+      {id: 'toggle-editor', label: html`<span class="fas fa-fw fa-edit"></span> Editor`, disabled: !inFile},
+      {divider: true},
       {id: 'rename', label: html`<span class="fas fa-fw fa-i-cursor"></span> Rename`, disabled: !(inFile || numSelected === 1)},
       {id: 'delete', label: html`<span class="fas fa-fw fa-trash"></span> Delete`, disabled: !(inFile || numSelected > 0)},
     ])
@@ -363,9 +368,9 @@ export class ExplorerApp extends LitElement {
         @drive-properties=${this.onDriveProperties}
         @import=${this.onImport}
         @export=${this.onExport}
-        @save=${this.onSave}
         @rename=${this.onRename}
         @delete=${this.onDelete}
+        @toggle-editor=${this.onToggleEditor}
       >
         <div class="menubar">
           <hover-menu .options=${this.explorerMenu} icon="fas fa-folder" current="Explorer" @change=${this.onSelectExplorerMenuItem}></hover-menu>
@@ -473,12 +478,6 @@ export class ExplorerApp extends LitElement {
             ` : ''}
           ` : undefined}
           </nav>
-        ${this.isNotFound ? html`
-          <div style="margin: 0 20px">
-            <h1>404</h1>
-            <h2>File Not found</h2>
-          </div>
-        ` : undefined}
       </div>
       <input type="file" id="files-picker" multiple @change=${this.onChangeImportFiles} />
     `
@@ -562,7 +561,7 @@ export class ExplorerApp extends LitElement {
         toast.create(`Error: ${e.toString()}`, 'error')
         return
       }
-      window.location = window.location.origin + pathname + '?edit'
+      window.location = window.location.origin + pathname + '#edit'
     }
   }
 
@@ -640,20 +639,6 @@ export class ExplorerApp extends LitElement {
     }
   }
 
-  async onSave (e) {
-    if (!this.currentDriveInfo.writable) return
-    var value = this.shadowRoot.querySelector('explorer-view-file').editor.getValue()
-    var drive = new DatArchive(this.currentDriveInfo.url)
-    try {
-      await drive.writeFile(this.realPathname, value, 'utf8')
-    } catch (e) {
-      console.error(e)
-      toast.create(`Save failed: ${e.toString()}`, 'error')
-      return
-    }
-    toast.create('Saved', 'success')
-  }
-
   async onRename (e) {
     if (!this.currentDriveInfo.writable) return
     var oldName = this.selection[0] ? this.selection[0].name : this.filename
@@ -716,6 +701,10 @@ export class ExplorerApp extends LitElement {
       console.error(e)
       toast.create(`Deletion failed: ${e.toString()}`, 'error')
     }
+  }
+
+  onToggleEditor (e) {
+    navigator.toggleEditor()
   }
 }
 

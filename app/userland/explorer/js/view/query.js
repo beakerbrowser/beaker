@@ -1,8 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { timeDifference } from 'beaker://app-stdlib/js/time.js'
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
-import { emit } from 'beaker://app-stdlib/js/dom.js'
-import { createEditor } from '../lib/monaco.js'
 import css from '../../css/view/file.css.js'
 import '../com/file-display.js'
 import '../com/viewfile-query.js'
