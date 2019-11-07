@@ -14,20 +14,20 @@ import './com/location-info.js'
 import './com/selection-info.js'
 
 const ICONS = {
-  rootRoot: {
-    data: 'fas fa-database',
-    settings: 'fas fa-cog',
-    library: 'fas fa-university',
-    users: 'fas fa-users'
+  root: {
+    '/data': 'fas fa-database',
+    '/settings': 'fas fa-cog',
+    '/library': 'fas fa-university',
+    '/users': 'fas fa-users'
   },
-  personRoot: {
-    data: 'fas fa-database',
-    friends: 'fas fa-user-friends'
+  person: {
+    '/data': 'fas fa-database',
+    '/friends': 'fas fa-user-friends',
   },
-  uwg: {
-    annotations: 'fas fa-tag',
-    bookmarks: 'fas fa-star',
-    comments: 'fas fa-comment'
+  common: {
+    '/data/unwalled.garden/annotations': 'fas fa-tag',
+    '/data/unwalled.garden/bookmarks': 'fas fa-star',
+    '/data/unwalled.garden/comments': 'fas fa-comment'
   }
 }
 
@@ -187,14 +187,8 @@ export class ExplorerApp extends LitElement {
         }
       } else if (item.stat.isFile() && item.name.endsWith('.view')) {
         item.icon = 'layer-group'
-      } else if (driveKind === 'root' && this.realPathname === '/') {
-        item.subicon = ICONS.rootRoot[item.name]
-      } else if (driveKind === 'person' && this.realPathname === '/') {
-        item.subicon = ICONS.personRoot[item.name]
-      } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/data' && item.stat.isDirectory()) {
-        item.subicon = 'fas fa-database'
-      } else if ((driveKind === 'root' || driveKind === 'person') && this.realPathname === '/data/unwalled.garden') {
-        item.subicon = ICONS.uwg[item.name]
+      } else {
+        item.subicon = getSubicon(driveKind, item)
       }
     }
   }
@@ -216,6 +210,10 @@ export class ExplorerApp extends LitElement {
         item.mountInfo = item.mount
       } else if (item.stat.isFile() && item.name.endsWith('.view')) {
         item.icon = 'layer-group'
+      } else {
+        let driveKind = ''
+        if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
+        item.subicon = getSubicon(driveKind, item)
       }
     })
 
@@ -767,5 +765,13 @@ function validateViewfile (view) {
     }
   } else if (typeof view.query.path !== 'string') {
     throw new Error('The "query.path" is invalid (it must be a string or array of strings)')
+  }
+}
+
+function getSubicon (driveKind, item) {
+  if (driveKind === 'root') {
+    return ICONS.root[item.path] || ICONS.common[item.path]
+  } else if (driveKind === 'person') {
+    return  ICONS.person[item.path] || ICONS.common[item.path]
   }
 }

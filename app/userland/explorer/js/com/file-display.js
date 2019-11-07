@@ -109,7 +109,10 @@ export class FileDisplay extends LitElement {
   renderIcon (icon) {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="icon"><span class="${icon}"></span></div>
+      <div class="icon">
+        <span class="${icon}"></span>
+        ${this.info.subicon ? html`<span class="subicon ${this.info.subicon}"></span>` : ''}
+      </div>
     `
   }
 

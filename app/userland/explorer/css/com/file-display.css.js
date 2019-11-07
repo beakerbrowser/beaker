@@ -88,6 +88,7 @@ audio {
 }
 
 .icon {
+  position: relative;
   padding: 0 4px;
 }
 
@@ -109,6 +110,15 @@ audio {
   color: #fff;
   font-size: 64px;
 }
+
+.icon .subicon {
+  position: absolute;
+  color: rgba(0,0,0,.4);
+  font-size: 30px;
+  left: 13px;
+  top: 8px;
+}
+
 
 .mount {
   box-sizing: border-box;
