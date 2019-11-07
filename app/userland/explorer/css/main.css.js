@@ -49,7 +49,7 @@ nav {
   position: fixed;
   top: 30px;
   width: 270px;
-  height: calc(100vh - 10px);
+  height: calc(100vh - 40px);
   box-sizing: border-box;
   background: var(--bg-color);
   border-radius: 8px;

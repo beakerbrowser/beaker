@@ -52,6 +52,7 @@ export class ExplorerApp extends LitElement {
     this.isNotFound = false
     this.items = []
     this.selection = []
+    this.viewfileObj = undefined
     this.renderMode = undefined
     this.inlineMode = false
     this.driveTitle = undefined
@@ -124,9 +125,9 @@ export class ExplorerApp extends LitElement {
     }
 
     // view config
-    this.inlineMode = Boolean(getSavedConfig('inline-mode', false))
     if (this.pathInfo.isDirectory()) {
       this.renderMode = getSavedConfig('render-mode', 'grid')
+      this.inlineMode = Boolean(getSavedConfig('inline-mode', false))
       if (!this.watchStream) {
         let currentDrive = new DatArchive(this.currentDriveInfo.url)
         this.watchStream = currentDrive.watch(this.realPathname)
@@ -137,14 +138,14 @@ export class ExplorerApp extends LitElement {
           // ignore if the event fires within 1s of setup
           // -prf
           if (Date.now() - hackSetupTime <= 1000) return
-
           this.load()
         })
       }
     } else if (/[?&]edit/.test(location.search)) {
       this.renderMode = 'editor'
     } else if (location.pathname.endsWith('.view')) {
-      this.renderMode = getSavedConfig('render-mode', 'grid')
+      this.renderMode = getSavedConfig('render-mode', getVFCfg(this.viewfileObj, 'renderMode', ['grid', 'list']) || 'grid')
+      this.inlineMode = Boolean(getSavedConfig('inline-mode', getVFCfg(this.viewfileObj, 'inline', [true, false]) || false))
     } else {
       this.renderMode = getSavedConfig('render-mode', 'default')
     }
@@ -200,10 +201,10 @@ export class ExplorerApp extends LitElement {
 
   async readViewfile (drive) {
     var viewFile = await drive.readFile(location.pathname, 'utf8')
-    var view = JSON.parse(viewFile)
-    validateViewfile(view)
+    this.viewfileObj = JSON.parse(viewFile)
+    validateViewfile(this.viewfileObj)
 
-    this.items = await navigator.filesystem.query(view.query)
+    this.items = await navigator.filesystem.query(this.viewfileObj.query)
 
     // massage the items to fit same form as `readDirectory()`
     this.items.forEach(item => {
@@ -217,6 +218,19 @@ export class ExplorerApp extends LitElement {
         item.icon = 'layer-group'
       }
     })
+
+    // apply merge
+    if (getVFCfg(this.viewfileObj, 'merge', ['mtime', undefined])) {
+      let map = {}
+      for (let item of this.items) {
+        if (item.name in map) {
+          map[item.name] =  (map[item.name].stat.mtime > item.stat.mtime) ? map[item.name] : item
+        } else {
+          map[item.name] = item
+        }
+      }
+      this.items = Object.values(map)
+    }
   }
 
   async readMountInfo () {
@@ -724,6 +738,17 @@ function getSavedConfig (name, fallback = undefined) {
 
 function setSavedConfig (name, value) {
   localStorage.setItem(`setting:${name}:${location.pathname}`, value)
+}
+
+function oneof (v, values) {
+  if (values.includes(v)) return v
+}
+
+function getVFCfg (obj, key, values) {
+  const ns = 'unwalled.garden/explorer-view'
+  if (obj[ns] && typeof obj[ns] === 'object') {
+    return oneof(obj[ns][key], values)
+  }
 }
 
 function validateViewfile (view) {
