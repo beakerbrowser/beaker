@@ -11,7 +11,7 @@ import resizeHackfix from './resize-hackfix'
 import createSpellChecker from '../../bg/web-apis/fg/spell-checker.js'
 // import './read-page-metadata' DISABLED wasnt working effectively -prf
 
-webFrame.setSpellCheckProvider('en-US', createSpellChecker())
+// webFrame.setSpellCheckProvider('en-US', createSpellChecker())
 
 // HACKS
 setupExitFullScreenHackfix()

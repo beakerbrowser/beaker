@@ -86,7 +86,6 @@
     "semver": "^5.7.0",
     "slugify": "^1.3.5",
     "speedometer": "^1.0.0",
-    "spellchecker": "^3.7.0",
     "split2": "^2.2.0",
     "sqlite3": "^4.1.0",
     "stream-throttle": "^0.1.3",

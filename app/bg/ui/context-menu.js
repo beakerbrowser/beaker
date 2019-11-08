@@ -22,8 +22,8 @@ export default function registerContextMenu () {
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
       const isDat = props.pageURL.startsWith('dat://')
-      const isMisspelled = props.selectionText && spellChecker.isMisspelled(props.selectionText)
-      const spellingSuggestions = isMisspelled && spellChecker.getSuggestions(props.selectionText).slice(0, 5)
+      const isMisspelled = false//TODOprops.selectionText && spellChecker.isMisspelled(props.selectionText)
+      const spellingSuggestions = false//TODOisMisspelled && spellChecker.getSuggestions(props.selectionText).slice(0, 5)
 
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?

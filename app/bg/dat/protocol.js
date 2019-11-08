@@ -3,7 +3,7 @@ import parseRange from 'range-parser'
 import once from 'once'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'dat', subcategory: 'dat-serve'})
-import intoStream from 'into-stream'
+// import intoStream from 'into-stream'
 import { toZipStream } from '../lib/zip'
 import slugify from 'slugify'
 import markdown from '../../lib/markdown'
@@ -14,6 +14,7 @@ import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
 import * as typeRegistry from '../filesystem/type-registry'
 import * as driveHandlerHack from '../ui/tabs/drive-handler-hack'
+import { joinPath } from '../../lib/strings'
 
 const md = markdown({
   allowHTML: true,
@@ -34,6 +35,21 @@ var sodiumLoadError = false
 try { require('sodium-native') }
 catch (err) {
   sodiumLoadError = err
+}
+
+/**
+ * HACK
+ * Electron has an issue that's causing file read streams to fail to serve
+ * Reading into memory seems to resolve the issue
+ * https://github.com/electron/electron/issues/21018
+ * -prf
+ */
+import { PassThrough } from 'stream'
+function intoStream (text) {
+  const rv = new PassThrough()
+  rv.push(text)
+  rv.push(null)
+  return rv
 }
 
 // constants
@@ -175,8 +191,8 @@ export const electronHandler = async function (request, respond) {
         'Content-Type': 'text/html'
       },
       data: intoStream(`<meta charset="utf-8">
-<link rel="stylesheet" href="${handler}/drive-handler.css">
-<script type="module" src="${handler}/drive-handler.js"></script>
+<link rel="stylesheet" href="${joinPath(handler, 'drive-handler.css')}">
+<script type="module" src="${joinPath(handler, 'drive-handler.js')}"></script>
 `)
     })
   }

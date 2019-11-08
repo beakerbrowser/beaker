@@ -75,7 +75,7 @@ export const setup = function () {
   rpc.exportAPI('navigator-session', navigatorSessionManifest, navigatorSessionAPI, secureOnly)
   rpc.exportAPI('navigator-filesystem', navigatorFilesystemManifest, navigatorFilesystemAPI, secureOnly)
   rpc.exportAPI('dat-archive', datArchiveManifest, datArchiveAPI, secureOnly)
-  rpc.exportAPI('spell-checker', spellCheckerManifest, spellCheckerAPI)
+  // rpc.exportAPI('spell-checker', spellCheckerManifest, spellCheckerAPI) TODO
 
   // experimental apis
   rpc.exportAPI('experimental-capture-page', experimentalCapturePageManifest, experimentalCapturePageAPI, secureOnly)

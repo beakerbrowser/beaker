@@ -125,7 +125,6 @@ function toSlug (href = '') {
     })
   } catch (e) {
     // ignore
-    console.log(e)
   }
   return slugifyUrl(href)
 }

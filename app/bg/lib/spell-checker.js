@@ -1,7 +1,7 @@
 import osLocale from 'os-locale'
 import os from 'os'
 import semver from 'semver'
-export const spellchecker = require('spellchecker')
+export const spellchecker = {}//require('spellchecker')
 
 // exported api
 // =
