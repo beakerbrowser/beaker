@@ -152,13 +152,13 @@ export default function registerContextMenu () {
       menuItems.push({
         label: 'View Editor',
         click: (item, win) => {
-          tabManager.getActive(win).toggleSidebar('editor')
+          tabManager.getActive(win).toggleSidebar('beaker://editor')
         }
       })
       menuItems.push({
         label: 'View Terminal',
         click: (item, win) => {
-          tabManager.getActive(win).toggleSidebar('terminal')
+          tabManager.getActive(win).toggleSidebar('beaker://webterm')
         }
       })
       menuItems.push({

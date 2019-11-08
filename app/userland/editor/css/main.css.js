@@ -1,7 +1,7 @@
-import {css} from '../../../app-stdlib/vendor/lit-element/lit-element.js'
-import buttonsCSS from '../../../app-stdlib/css/buttons2.css.js'
-import toolbarCSS from '../toolbar.css.js'
-import tooltipCSS from '../../../app-stdlib/css/tooltip.css.js'
+import {css} from '../../app-stdlib/vendor/lit-element/lit-element.js'
+import buttonsCSS from '../../app-stdlib/css/buttons2.css.js'
+import toolbarCSS from './toolbar.css.js'
+import tooltipCSS from '../../app-stdlib/css/tooltip.css.js'
 
 const cssStr = css`
 ${buttonsCSS}

@@ -201,8 +201,11 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://site-info' || requestUrl.startsWith('beaker://site-info/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'site-info'), cb, {fallbackToIndexHTML: true})
   }
-  if (requestUrl === 'beaker://sidebar' || requestUrl.startsWith('beaker://sidebar/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'sidebar'), cb, {
+  if (requestUrl === 'beaker://editor' || requestUrl.startsWith('beaker://editor/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'editor'), cb, {fallbackToIndexHTML: true})
+  }
+  if (requestUrl === 'beaker://webterm' || requestUrl.startsWith('beaker://webterm/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'webterm'), cb, {
       fallbackToIndexHTML: true,
       CSP: `
 default-src 'self' beaker:;

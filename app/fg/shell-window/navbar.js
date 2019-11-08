@@ -263,7 +263,8 @@ class ShellWindowNavbar extends LitElement {
     try {
       let urlp = new URL(url)
       let pathname = `/${urlp.pathname.split('/').filter(Boolean).slice(0, -1).join('/')}`
-      bg.views.loadURL('active', urlp.origin + pathname)
+      url = urlp.origin + pathname
+      bg.views.loadURL('active', url)
     } catch (e) {
       // ignore
     }

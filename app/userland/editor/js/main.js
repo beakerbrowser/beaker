@@ -1,15 +1,12 @@
 /* globals monaco */
 
-import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
-import sidebarEditorViewCSS from '../../css/views/editor.css.js'
-import BIN_EXTS from '../binary-extensions.js'
+import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
+import sidebarEditorViewCSS from '../css/main.css.js'
+import { isFilenameBinary } from '../../app-stdlib/js/is-ext-binary.js'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
-import '../../../app-stdlib/js/com/files-explorer.js'
+import '../../app-stdlib/js/com/files-explorer.js'
 
-var editor // monaco instance
-var diffEditor // monaco diff instance
-
-class SidebarEditorView extends LitElement {
+class EditorApp extends LitElement {
   static get properties () {
     return {
       url: {type: String},
@@ -57,6 +54,7 @@ class SidebarEditorView extends LitElement {
 
   constructor () {
     super()
+    this.editor = undefined // monaco instance
     this.url = ''
     this.isLoading = true
     this.isFilesOpen = false
@@ -65,44 +63,38 @@ class SidebarEditorView extends LitElement {
     this.isBinary = false
     this.resolvedPath = ''
 
-    // load monaco
-    if (!editor) {
-      window.require.config({ baseUrl: 'beaker://assets/' })
-      window.require(['vs/editor/editor.main'], () => {
-        console.log('monaco loaded')
-        // we have load monaco outside of the shadow dom
-        let opts = {
-          folding: false,
-          renderLineHighlight: 'all',
-          lineNumbersMinChars: 4,
-          automaticLayout: true,
-          fixedOverflowWidgets: true,
-          roundedSelection: false,
-          minimap: {enabled: false},
-          theme: 'vs-dark',
-          value: ''
-        }
-        editor = monaco.editor.create(document.querySelector('#monaco-editor'), opts)
-        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function () {
-          document.querySelector('sidebar-app').shadowRoot.querySelector('sidebar-editor-view').onClickSave()
-        })
-        diffEditor = monaco.editor.createDiffEditor(document.querySelector('#monaco-diff-editor'), Object.assign({}, opts, {readOnly: true}))
-        this.load()
-      })
-    } else {
+    window.sidebarLoad = (url) => {
+      this.url = url
       this.load()
     }
-  }
 
-  attributeChangedCallback (name, oldval, newval) {
-    super.attributeChangedCallback(name, oldval, newval)
-    if (name === 'url') {
+    // load monaco
+    window.require.config({ baseUrl: 'beaker://assets/' })
+    window.require(['vs/editor/editor.main'], () => {
+      console.log('monaco loaded')
+      // we have load monaco outside of the shadow dom
+      let opts = {
+        folding: false,
+        renderLineHighlight: 'all',
+        lineNumbersMinChars: 4,
+        automaticLayout: true,
+        fixedOverflowWidgets: true,
+        roundedSelection: false,
+        minimap: {enabled: false},
+        theme: 'vs-dark',
+        value: ''
+      }
+      this.editor = monaco.editor.create(document.querySelector('#monaco-editor'), opts)
+      this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function () {
+        document.querySelector('sidebar-app').shadowRoot.querySelector('sidebar-editor-view').onClickSave()
+      })
+      // diffEditor = monaco.editor.createDiffEditor(document.querySelector('#monaco-diff-editor'), Object.assign({}, opts, {readOnly: true}))
       this.load()
-    }
+    })
   }
 
   async load () {
-    if (!editor || !this.url) return
+    if (!this.editor || !this.url) return
     var url = this.url
 
     // reset the editor
@@ -111,7 +103,7 @@ class SidebarEditorView extends LitElement {
     }
 
     console.log('Loading', url)
-    editor.setValue('')
+    this.editor.setValue('')
     this.isLoading = true
     this.readOnly = true
     this.dne = false
@@ -150,7 +142,7 @@ class SidebarEditorView extends LitElement {
       // figure out if it's binary
       {
         let filename = this.resolvedPath.split('/').pop()
-        if (filename.includes('.') && BIN_EXTS.includes(filename.split('.').pop())) {
+        if (filename.includes('.') && isFilenameBinary(filename)) {
           this.isBinary = true
         }
       }
@@ -206,7 +198,7 @@ class SidebarEditorView extends LitElement {
         }
       }
 
-      editor.updateOptions({
+      this.editor.updateOptions({
         // only enable autocomplete for html/css/js
         quickSuggestions: ['html', 'css', 'javascript'].includes(model.getModeId()),
         wordBasedSuggestions: false,
@@ -214,7 +206,7 @@ class SidebarEditorView extends LitElement {
         readOnly: this.readOnly
       })
       model.updateOptions({tabSize: 2})
-      editor.setModel(model)
+      this.editor.setModel(model)
     }
 
     this.isLoading = false
@@ -375,7 +367,7 @@ class SidebarEditorView extends LitElement {
 
   async onClickSave () {
     if (this.readOnly) return
-    await this.archive.writeFile(this.resolvedPath, editor.getModel(this.url).getValue())
+    await this.archive.writeFile(this.resolvedPath, this.editor.getModel(this.url).getValue())
     beaker.browser.refreshPage()
   }
 
@@ -387,7 +379,7 @@ class SidebarEditorView extends LitElement {
     if (!newname) return
     var newpath = pathparts.concat([newname]).join('/')
     await this.archive.unlink(this.resolvedPath)
-    await this.archive.writeFile(newpath, editor.getModel(this.url).getValue())
+    await this.archive.writeFile(newpath, this.editor.getModel(this.url).getValue())
 
     var urlp = new URL(this.url)
     urlp.pathname = newpath
@@ -409,9 +401,9 @@ class SidebarEditorView extends LitElement {
     beaker.browser.openUrl(`${archive.url}${this.pathname}`, {
       setActive: true,
       isSidebarActive: true,
-      sidebarPanel: 'editor'
+      sidebarPanel: 'beaker://editor/'
     })
   }
 }
 
-customElements.define('sidebar-editor-view', SidebarEditorView)
+customElements.define('editor-app', EditorApp)

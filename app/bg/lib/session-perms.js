@@ -131,7 +131,7 @@ export function describePerm (permId, caps) {
  * @returns {Promise<boolean>}
  */
 export async function isTrustedApp (sender) {
-  if (sender.getURL().startsWith('beaker://')) return true
+  if (/^(beaker):/i.test(sender.getURL())) return true
   return senderHasViewerApp(sender)
 }
 

@@ -59,7 +59,7 @@ var bundleApplication = function () {
     bundle(fgDir.path('modals/index.js'),              fgDir.path('modals/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(fgDir.path('json-renderer/index.js'),       fgDir.path('json-renderer/index.build.js'), { browserify: true, basedir: srcDir.cwd(), excludeNodeModules: true }),
     bundle(userlandDir.path('site-info/js/main.js'),   userlandDir.path('site-info/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(userlandDir.path('sidebar/js/main.js'),     userlandDir.path('sidebar/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
+    bundle(userlandDir.path('editor/js/main.js'),      userlandDir.path('editor/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(userlandDir.path('library/js/main.js'),     userlandDir.path('library/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(userlandDir.path('settings/js/main.js'),    userlandDir.path('settings/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(userlandDir.path('history/js/main.js'),     userlandDir.path('history/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),

@@ -1,26 +1,20 @@
-import { LitElement, html, TemplateResult } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
-import { unsafeHTML } from '../../../app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
-import minimist from '../lib/minimist.1.2.0.js'
-import { Cliclopts } from '../lib/cliclopts.1.1.1.js'
-import { createArchive } from '../lib/term-archive-wrapper.js'
-import { importModule } from '../lib/import-module.js'
-import { joinPath, DAT_KEY_REGEX, makeSafe } from '../../../app-stdlib/js/strings.js'
-import terminalCSS from '../../css/views/terminal.css.js'
-import '../lib/term-icon.js'
+import { LitElement, html, TemplateResult } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
+import minimist from './lib/minimist.1.2.0.js'
+import { Cliclopts } from './lib/cliclopts.1.1.1.js'
+import { createArchive } from './lib/term-archive-wrapper.js'
+import { importModule } from './lib/import-module.js'
+import { joinPath, DAT_KEY_REGEX, makeSafe } from 'beaker://app-stdlib/js/strings.js'
+import css from '../css/main.css.js'
+import './lib/term-icon.js'
 
 const THEME_PATH = '/settings/terminal.css'
 
 window.addEventListener('keydown', onGlobalKeydown)
 
 class WebTerm extends LitElement {
-  static get properties () {
-    return {
-      startUrl: {type: String, attribute: 'url'}
-    }
-  }
-
   static get styles () {
-    return [terminalCSS]
+    return [css]
   }
 
   constructor () {
@@ -76,22 +70,14 @@ class WebTerm extends LitElement {
         this.setFocus()
       }
     })
-  }
 
-  async attributeChangedCallback (name, oldval, newval) {
-    super.attributeChangedCallback(name, oldval, newval)
-    if (name === 'url') {
-      if (!this.url) {
-        if (this.startUrl.startsWith('dat://')) {
-          // adopt starting url
-          this.url = this.startUrl
-        } else {
-          // default to home if not looking at a dat
-          this.url = navigator.filesystem.url
-        }
-      }
+    this.url = navigator.filesystem.url
+    window.sidebarLoad = (url) => {
+      this.url = url
       this.load()
     }
+
+    this.load()
   }
 
   async load () {

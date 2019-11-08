@@ -5,11 +5,9 @@ body {
   font-size: 12px;
   background: #222;
   --border-color: #d4d7dc;
-  min-height: 100vh;
 }
 
-#monaco-editor,
-#monaco-diff-editor {
+#monaco-editor {
   height: calc(100vh - 28px);
   margin-left: 200px;
 }

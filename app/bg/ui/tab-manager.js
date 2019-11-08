@@ -403,8 +403,9 @@ class Tab {
     if (!this.isSidebarActive) {
       // create sidebar
       let v = sidebars.create(this.browserView)
+      v.webContents.loadURL(panel)
+      v.webContents.on('did-finish-load', () => this.updateSidebar())
       if (this.isActive) sidebars.show(this.browserView)
-      v.webContents.on('did-finish-load', () => this.updateSidebar(panel))
       this.isSidebarActive = true
     } else {
       if (panel) {
@@ -412,12 +413,12 @@ class Tab {
         // otherwise, just go to that panel
         let v = sidebars.get(this)
         if (v) {
-          let currentPanel = await v.webContents.executeJavaScript(`window.sidebarGetCurrentPanel()`)
-          if (currentPanel === panel) {
+          if (toOrigin(v.webContents.getURL()) === toOrigin(panel)) {
             sidebars.close(this.browserView)
             this.isSidebarActive = false
           } else {
-            this.updateSidebar(panel)
+            v.webContents.loadURL(panel)
+            v.webContents.on('did-finish-load', () => this.updateSidebar())
           }
         }
       } else {
@@ -431,11 +432,11 @@ class Tab {
     this.emitUpdateState()
   }
 
-  updateSidebar (panel) {
+  updateSidebar () {
     var sidebarView = sidebars.get(this)
     if (sidebarView) {
       sidebarView.webContents.executeJavaScript(`
-        window.sidebarLoad("${this.url}", ${panel ? `"${panel}"` : undefined})
+        window.sidebarLoad("${this.url}")
       `).catch(err => {
         console.log('Failed to load sidebar', err)
       })

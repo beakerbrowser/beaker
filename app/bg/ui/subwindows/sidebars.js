@@ -61,7 +61,6 @@ export function create (tab) {
   view.webContents.on('console-message', (e, level, message) => {
     console.log('Sidebar window says:', message)
   })
-  view.webContents.loadURL('beaker://sidebar/')
   return view
 }
 
@@ -80,7 +79,6 @@ export function show (tab) {
     if (win) {
       win.addBrowserView(views[tab.id])
       setBounds(views[tab.id], win)
-      views[tab.id].webContents.executeJavaScript(`window.sidebarShow()`)
     }
   }
 }
@@ -102,22 +100,6 @@ export function close (tab) {
     delete views[tab.id]
   }
 }
-
-// rpc api
-// =
-/*
-rpc.exportAPI('background-process-modals', modalsRPCManifest, {
-  async createTab (url) {
-    var win = findWebContentsParentWindow(this.sender)
-    tabManager.create(win, url, {setActive: true})
-  },
-
-  async resizeSelf (dimensions) {
-    var view = BrowserView.fromWebContents(this.sender)
-    var parentWindow = findWebContentsParentWindow(this.sender)
-    setBounds(view, parentWindow, dimensions)
-  }
-})*/
 
 // internal methods
 // =

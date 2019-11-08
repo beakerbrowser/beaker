@@ -57,7 +57,7 @@ export function setup () {
       return cb({data: NOT_FOUND})
     }
 
-    // if beaker://, pull from hard-coded assets
+    // hardcoded assets
     if (url.startsWith('beaker://')) {
       let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
       return fs.readFile(path.join(__dirname, `./assets/img/favicons/${name}.png`), (err, buf) => {
