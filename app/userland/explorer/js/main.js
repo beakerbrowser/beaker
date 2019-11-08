@@ -2,6 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
+import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 import mainCSS from '../css/main.css.js'
@@ -358,8 +359,10 @@ export class ExplorerApp extends LitElement {
       <div
         class="layout render-mode-${this.renderMode}"
         @click=${this.onClickLayout}
+        @contextmenu=${this.onContextmenuLayout}
         @goto=${this.onGoto}
         @change-selection=${this.onChangeSelection}
+        @show-context-menu=${this.onShowMenu}
         @new-drive=${this.onNewDrive}
         @new-folder=${this.onNewFolder}
         @new-file=${this.onNewFile}
@@ -492,6 +495,12 @@ export class ExplorerApp extends LitElement {
     }
     this.selection = []
     this.requestUpdate()
+  }
+
+  onContextmenuLayout (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    this.onShowMenu({detail: {x: e.clientX, y: e.clientY}})
   }
 
   onGoto (e) {
@@ -705,6 +714,96 @@ export class ExplorerApp extends LitElement {
 
   onToggleEditor (e) {
     navigator.toggleEditor()
+  }
+
+  onShowMenu (e) {
+    var items = []
+    if (this.selection.length === 1 || this.pathInfo.isFile()) {
+      let sel = this.selection[0] || {url: window.location, stat: this.pathInfo}
+      let writable = this.selection.reduce((acc, v) => acc && v.drive.writable, true)
+      items.push({
+        icon: 'fas fa-fw fa-external-link-alt',
+        label: 'Open in new tab',
+        click: () => window.open(sel.url)
+      })
+      items.push({
+        icon: 'fas fa-fw fa-file-export',
+        label: 'Export',
+        click: () => {
+          this.shadowRoot.querySelector('#download-link').click()
+        }
+      })
+      items.push('-')
+      items.push({
+        icon: 'fas fa-fw fa-edit',
+        label: 'Edit',
+        disabled: !writable || !sel.stat.isFile(),
+        click: () => {
+          var shouldReload = (window.location === sel.url)
+          window.location = sel.url + '#edit'
+          if (shouldReload) window.location.reload()
+        }
+      })
+      items.push('-')
+      items.push({
+        icon: 'fas fa-fw fa-i-cursor',
+        label: 'Rename',
+        disabled: !writable,
+        click: () => this.onRename()
+      })
+      items.push({
+        icon: 'fas fa-fw fa-trash',
+        label: 'Delete',
+        disabled: !writable,
+        click: () => this.onDelete()
+      })
+    } else if (this.selection.length > 1) {
+      let writable = this.selection.reduce((acc, v) => acc && v.drive.writable, true)
+      items.push({
+        icon: 'fas fa-fw fa-trash',
+        label: 'Delete',
+        disabled: !writable,
+        click: () => this.onDelete()
+      })
+    } else {
+      let writable = this.currentDriveInfo.writable
+      items.push({
+        icon: 'far fa-fw fa-file',
+        label: 'New file',
+        disabled: !writable,
+        click: () => this.onNewFile()
+      })
+      items.push({
+        icon: 'far fa-fw fa-folder',
+        label: 'New folder',
+        disabled: !writable,
+        click: () => this.onNewFolder()
+      })
+      items.push('-')
+      items.push({
+        icon: 'fas fa-fw fa-file-import',
+        label: 'Import files',
+        disabled: !writable,
+        click: () => this.onImport()
+      })
+      items.push({
+        icon: 'fas fa-fw fa-external-link-square-alt',
+        label: 'Mount a drive',
+        disabled: !writable,
+        click: () => this.onAddMount()
+      })
+    }
+
+    contextMenu.create({
+      x: e.detail.x,
+      y: e.detail.y,
+      right: (e.detail.x > document.body.scrollWidth - 300),
+      roomy: false,
+      noBorders: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      style: `padding: 4px 0`,
+      items
+    })
   }
 }
 

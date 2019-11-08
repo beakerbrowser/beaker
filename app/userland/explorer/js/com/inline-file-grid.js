@@ -59,6 +59,7 @@ export class InlineFileGrid extends FileGrid {
         class=${cls}
         @click=${e => this.onClick(e, item)}
         @dblclick=${e => this.onDblClick(e, item)}
+        @contextmenu=${e => this.onContextMenu(e, item)}
       >
         <div class="content">
           <file-display

@@ -39,6 +39,8 @@ a:hover {
 }
 
 .layout {
+  height: 100vh;
+  overflow: auto;
 }
 
 main {

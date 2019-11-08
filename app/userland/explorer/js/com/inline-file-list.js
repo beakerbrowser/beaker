@@ -62,6 +62,7 @@ export class InlineFileList extends FileGrid {
         class=${cls}
         @click=${e => this.onClick(e, item)}
         @dblclick=${e => this.onDblClick(e, item)}
+        @contextmenu=${e => this.onContextMenu(e, item)}
       >
         <div class="info">
           <div><a class="name" href=${item.url}>${item.name}</a></div>

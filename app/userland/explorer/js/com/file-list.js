@@ -65,6 +65,7 @@ export class FileList extends LitElement {
         class=${cls}
         @click=${e => this.onClick(e, item)}
         @dblclick=${e => this.onDblClick(e, item)}
+        @contextmenu=${e => this.onContextMenu(e, item)}
       >
         ${this.showOrigin ? html`<span class="author">${driveTitle}</span>` : ''}
         <span class="fas fa-fw fa-${item.icon}"></span>
@@ -92,6 +93,15 @@ export class FileList extends LitElement {
 
   onDblClick (e, item) {
     emit(this, 'goto', {detail: {item}})
+  }
+
+  onContextMenu (e, item) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!this.selection.includes(item)) {
+      emit(this, 'change-selection', {detail: {selection: [item]}})
+    }
+    emit(this, 'show-context-menu', {detail: {x: e.clientX, y: e.clientY}})
   }
 }
 
