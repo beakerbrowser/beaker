@@ -215,7 +215,7 @@ class LocationBar extends LitElement {
           </span>
         </div>
         <div class="row provenance">
-          <span class="fas fa-fw fa-history"></span>
+          ${''/*<span class="fas fa-fw fa-history"></span>*/}
           ${toNiceUrl(r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url)}
         </div>
       </div>
@@ -327,8 +327,8 @@ class LocationBar extends LitElement {
 
     var finalResults
     var [crawlerResults, historyResults] = await Promise.all([
-      [], // TODO uwg bg.search.query({query: this.inputValue, limit: 10}),
-      []// DISABLED bg.history.search(this.inputValue)
+      {results: []}, // TODO uwg bg.search.query({query: this.inputValue, limit: 10}),
+      bg.history.search(this.inputValue)
     ])
     // History search is experimentally disabled
     // We're seeing how it feels to focus entirely on results from the network
