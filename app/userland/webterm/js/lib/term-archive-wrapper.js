@@ -5,10 +5,8 @@ so that errors can be smoothly generated
 
 export function createArchive (url) {
   if (url.startsWith('dat:')) {
-    console.log('returning DatArchive', url)
     return new DatArchive(url)
   }
-  console.log('returning OtherOrigin', url)
   return new OtherOrigin(url)
 }
 

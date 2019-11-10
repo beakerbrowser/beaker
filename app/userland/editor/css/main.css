@@ -3,8 +3,9 @@
 
 body {
   font-size: 12px;
-  background: #222;
+  background: #223;
   --border-color: #d4d7dc;
+  border-right: 1px solid #889;
 }
 
 #monaco-editor {
@@ -14,12 +15,4 @@ body {
 
 #monaco-editor.fullwidth {
   margin-left: 0;
-}
-
-/* editor style tweaks */
-.monaco-editor .line-numbers {
-  color: #999 !important;
-}
-.monaco-editor .current-line ~ .line-numbers {
-  color: #222 !important;
 }

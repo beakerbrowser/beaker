@@ -9,9 +9,12 @@ ${toolbarCSS}
 ${tooltipCSS}
 
 :host {
+  --default: #eef;
+  --background: #223;
+  
   display: block;
-  background: #222;
-  color: #eee;
+  background: var(--background);
+  color: var(--default);
 }
 
 a {
@@ -34,11 +37,28 @@ files-explorer {
   bottom: 0;
   width: 200px;
   z-index: 1;
-  background: #222;
+  background: var(--background);
 }
 
 :host(.files-open) {
   padding-left: 200px;
+}
+
+.close-btn {
+  display: none;
+  position: fixed;
+  top: 2px;
+  right: 2px;
+  background: transparent;
+  border: 0;
+  color: var(--default);
+  cursor: pointer;
+}
+.close-btn:hover {
+  background: transparent;
+}
+:host(.sidebar) .close-btn {
+  display: inline;
 }
 `
 export default cssStr

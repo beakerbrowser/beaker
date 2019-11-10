@@ -65,6 +65,7 @@ class EditorApp extends LitElement {
 
     window.sidebarLoad = (url) => {
       this.url = url
+      this.classList.add('sidebar')
       this.load()
     }
 
@@ -73,6 +74,14 @@ class EditorApp extends LitElement {
     window.require(['vs/editor/editor.main'], () => {
       console.log('monaco loaded')
       // we have load monaco outside of the shadow dom
+      monaco.editor.defineTheme('custom-dark', {
+        base: 'vs-dark',
+        inherit: true,
+        rules: [{ background: '222233' }],
+        colors: {
+          'editor.background': '#222233'
+        }
+      })
       let opts = {
         folding: false,
         renderLineHighlight: 'all',
@@ -81,12 +90,12 @@ class EditorApp extends LitElement {
         fixedOverflowWidgets: true,
         roundedSelection: false,
         minimap: {enabled: false},
-        theme: 'vs-dark',
+        theme: 'custom-dark',
         value: ''
       }
       this.editor = monaco.editor.create(document.querySelector('#monaco-editor'), opts)
       this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function () {
-        document.querySelector('sidebar-app').shadowRoot.querySelector('sidebar-editor-view').onClickSave()
+        document.querySelector('editor-app').onClickSave()
       })
       // diffEditor = monaco.editor.createDiffEditor(document.querySelector('#monaco-diff-editor'), Object.assign({}, opts, {readOnly: true}))
       this.load()
@@ -230,6 +239,7 @@ class EditorApp extends LitElement {
     if (this.readOnly) {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <button class="close-btn" @click=${this.onClickClose}><span class="fas fa-times"></button>
         <div class="toolbar">
           ${this.isDat ? this.renderToolbarFiles() : ''}
           <div><span class="fas fa-fw fa-info-circle"></span> This page is read-only</div>
@@ -246,6 +256,7 @@ class EditorApp extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <button class="close-btn" @click=${this.onClickClose}><span class="fas fa-times"></button>
       <div class="toolbar">
         ${this.renderToolbarFiles()}
         ${this.dne ? html`
@@ -315,6 +326,10 @@ class EditorApp extends LitElement {
 
   // events
   // =
+
+  onClickClose (e) {
+    beaker.browser.toggleSidebar()
+  }
 
   onToggleFilesOpen (e) {
     this.isFilesOpen = !this.isFilesOpen

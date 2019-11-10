@@ -370,6 +370,7 @@ class WebTerm extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper" @keydown=${this.onKeyDown}>
+        <button class="close-btn" @click=${this.onClickClose}><span class="fas fa-times"></button>
         <div class="output">
           ${this.outputHist}
         </div>
@@ -388,6 +389,10 @@ class WebTerm extends LitElement {
 
   // events
   // =
+
+  onClickClose (e) {
+    beaker.browser.toggleSidebar()
+  }
 
   onKeyDown (e) {
     this.setFocus()
@@ -426,7 +431,7 @@ function shortenHash (str = '') {
 }
 
 function onGlobalKeydown (e) {
-  var webTerm = document.body.querySelector('sidebar-app').shadowRoot.querySelector('web-term')
+  var webTerm = document.body.querySelector('web-term')
   if (!webTerm) return
   if (e.key.match(/^[\d\w]$/i) && !e.ctrlKey && !e.metaKey) {
     // text written, focus the cli
