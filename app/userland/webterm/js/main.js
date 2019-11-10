@@ -1,4 +1,5 @@
 import { LitElement, html, TemplateResult } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
 import minimist from './lib/minimist.1.2.0.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
@@ -9,6 +10,7 @@ import css from '../css/main.css.js'
 import './lib/term-icon.js'
 
 const THEME_PATH = '/settings/terminal.css'
+const TAB_COMPLETION_RENDER_LIMIT = 15
 
 window.addEventListener('keydown', onGlobalKeydown)
 
@@ -27,6 +29,7 @@ class WebTerm extends LitElement {
     this.cwd = undefined
     this.outputHist = []
     this.fs = undefined
+    this.tabCompletion = undefined
 
     var getCWD = () => this.cwd
     var setCWD = this.setCWD.bind(this)
@@ -74,10 +77,16 @@ class WebTerm extends LitElement {
     this.url = navigator.filesystem.url
     window.sidebarLoad = (url) => {
       this.url = url
+      this.classList.add('sidebar')
       this.load()
     }
 
     this.load()
+  }
+
+  get promptInput () {
+    try { return this.shadowRoot.querySelector('.prompt input').value }
+    catch (e) { return '' }
   }
 
   async load () {
@@ -214,7 +223,7 @@ class WebTerm extends LitElement {
 
     // finished, render/replace with final output
     if (typeof output === 'undefined') {
-      output = 'Ok.'
+      output = ''
     } else if (output.toHTML) {
       output = unsafeHTML(output.toHTML())
     } else if (typeof output !== 'string' && !(output instanceof TemplateResult)) {
@@ -227,6 +236,8 @@ class WebTerm extends LitElement {
         <div class="entry-content">${output}</div>
       </div>
     `)
+
+    await this.readTabCompletionOptions()
     this.requestUpdate()
   }
 
@@ -281,6 +292,64 @@ class WebTerm extends LitElement {
     let a = (url || '').match(DAT_KEY_REGEX)
     let b = this.fs.url.match(DAT_KEY_REGEX)
     return a && a[0] === b[0]
+  }
+
+  async readTabCompletionOptions () {
+    var input = this.promptInput
+
+    if (input.includes(' ')) {
+      // resolve input + pwd to a directory
+      let location = this.resolve(input.split(' ').pop())
+      let lp = new URL(location)
+      if (lp.pathname && !lp.pathname.endsWith('/')) {
+        lp.pathname = lp.pathname.split('/').slice(0, -1).join('/')
+      }
+
+      // read directory
+      this.tabCompletion = await (createArchive(lp.origin)).readdir(lp.pathname, {stat: true})
+      this.tabCompletion.sort((a, b) => {
+        if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
+        if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1
+        return a.name.localeCompare(b.name)
+      })
+    } else if (input) {
+      // display command options
+      this.tabCompletion = this.help().commands
+    } else {
+      // no input
+      this.tabCompletion = undefined
+    }
+
+    if (this.tabCompletion) {
+      let endOfInput = input.split(' ').pop().split('/').pop()
+      this.tabCompletion = this.tabCompletion.filter(item => {
+        return item.name.startsWith(endOfInput)
+      })
+    }
+
+    this.requestUpdate()
+  }
+
+  triggerTabComplete (name) {
+    var inputParts = this.promptInput.split(' ')
+    var endOfInput = inputParts.pop()
+    if (!name) {
+      if (!this.tabCompletion || this.tabCompletion.length !== 1) return
+      if (endOfInput.length === 0) return
+      
+      // splice the name into the end of the input (respect slashes)
+      var endOfInputParts = endOfInput.split('/')
+      endOfInput = endOfInputParts.slice(0, -1).concat([this.tabCompletion[0].name]).join('/')
+      if (this.tabCompletion[0].stat && this.tabCompletion[0].stat.isDirectory()) {
+        // add a trailing slash for directories
+        endOfInput += '/'
+      }
+
+      inputParts.push(endOfInput)
+    } else {
+      inputParts.push(name)
+    }
+    this.shadowRoot.querySelector('.prompt input').value = inputParts.join(' ')
   }
 
   // userland-facing methods
@@ -367,6 +436,8 @@ class WebTerm extends LitElement {
   render () {
     if (!this.cwd) return html`<div></div>`
     var host = this.isFSRoot(this.cwd.host) ? '~' : shortenHash(this.cwd.host)
+    var additionalTabCompleteOptions = this.tabCompletion ? this.tabCompletion.length - TAB_COMPLETION_RENDER_LIMIT : 0
+    let endOfInput = this.promptInput.split(' ').pop().split('/').pop()
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper" @keydown=${this.onKeyDown}>
@@ -377,6 +448,31 @@ class WebTerm extends LitElement {
         <div class="prompt">
           ${host}${this.cwd.pathname}&gt; <input @keyup=${this.onPromptKeyUp} />
         </div>
+        ${this.tabCompletion ? html`
+          <div class="tab-completion">
+            ${repeat(this.tabCompletion.slice(0, TAB_COMPLETION_RENDER_LIMIT), item => {
+              // highlight the part of the name that matches the input
+              let name = item.name
+              if (name.startsWith(endOfInput)) {
+                name = html`<strong>${endOfInput}</strong>${name.slice(endOfInput.length)}`
+              }
+
+              const onClick = e => {
+                if (item.stat) this.triggerTabComplete(item.name + (item.stat.isDirectory() ? '/' : ''))
+                else this.appendOutput(this.help({}, item.name), this.cwd, `help ${item.name}`)
+                this.setFocus()
+              }
+
+              if (item.stat) {
+                var type = item.stat.isDirectory() ? 'folder' : 'file'
+                return html`<a @click=${onClick}><term-icon icon=${type}></term-icon> ${name}</a>`
+              } else {
+                return html`<a @click=${onClick}><span>${name}</span> <small class="color-gray">${item.help || ''}</small></a>`
+              }
+            })}
+            ${additionalTabCompleteOptions >= 1 ? html`<a>${additionalTabCompleteOptions} other items...</a>` : ''}
+          </div>
+        ` : ''}
       </div>
     `
   }
@@ -411,12 +507,15 @@ class WebTerm extends LitElement {
       this.commandHist.reset()
     } else if (e.code === 'Tab') {
       e.preventDefault()
+      this.triggerTabComplete()
     }
   }
 
   onPromptKeyUp (e) {
     if (e.code === 'Enter') {
       this.evalPrompt()
+    } else {
+      this.readTabCompletionOptions()
     }
   }
 }

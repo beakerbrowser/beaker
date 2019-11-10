@@ -110,6 +110,29 @@ audio {
   color: inherit;
 }
 
+.tab-completion {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 300px);
+  grid-gap: 5px;
+  border: 1px solid var(--gray);
+  border-radius: 4px;
+  margin: 5px 0;
+  padding: 10px;
+  max-width: 920px;
+}
+
+.tab-completion a {
+  color: var(--lightgray);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+.tab-completion a strong {
+  color: var(--default);
+}
+
 .color-default { color: var(--default); }
 .color-background { color: var(--background); }
 .color-lightgray { color: var(--lightgray); }
