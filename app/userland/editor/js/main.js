@@ -64,6 +64,7 @@ class EditorApp extends LitElement {
     this.resolvedPath = ''
 
     window.sidebarLoad = (url) => {
+      if (this.url === url) return
       this.url = url
       this.classList.add('sidebar')
       this.load()
