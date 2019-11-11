@@ -35,7 +35,6 @@ a:hover {
   padding: 2px 5px;
   font-size: 10px;
   font-weight: 500;
-  margin: 3px;
 }
 
 .menubar {

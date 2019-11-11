@@ -12,6 +12,7 @@ import './view/file.js'
 import './view/folder.js'
 import './view/query.js'
 import './com/drive-info.js'
+import './com/viewfile-info.js'
 import './com/selection-info.js'
 
 const ICONS = {
@@ -490,8 +491,17 @@ export class ExplorerApp extends LitElement {
                   .selection=${this.selection}
                   ?no-preview=${this.inlineMode}
                 ></selection-info>
+              ` : isViewfile ? html`
+                <viewfile-info
+                  .currentDriveInfo=${this.currentDriveInfo}
+                  .pathInfo=${this.pathInfo}
+                  .viewfileObj=${this.viewfileObj}
+                ></viewfile-info>
               ` : html`
-                <drive-info .driveInfo=${this.driveInfo} user-url=${this.user.url}></drive-info>
+                <drive-info
+                  .driveInfo=${this.driveInfo}
+                  user-url=${this.user.url}
+                ></drive-info>
               `}
               ${this.selection.length <= 1 ? html`
                 <section class="transparent">
