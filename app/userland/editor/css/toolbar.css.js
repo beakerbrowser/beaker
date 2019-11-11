@@ -5,8 +5,8 @@ const cssStr = css`
   display: flex;
   align-items: center;
   height: 26px;
-  background: #222;
-  color: #eee;
+  background: var(--background);
+  color: var(--default);
 }
 
 .toolbar > * {

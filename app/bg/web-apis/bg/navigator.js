@@ -176,7 +176,7 @@ export default {
     }
 
     if (isAllowed) {
-      tab.toggleSidebar('editor')
+      tab.toggleSidebar('beaker://editor/')
     }
   }
 }

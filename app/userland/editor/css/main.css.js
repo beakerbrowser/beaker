@@ -8,10 +8,7 @@ ${buttonsCSS}
 ${toolbarCSS}
 ${tooltipCSS}
 
-:host {
-  --default: #eef;
-  --background: #223;
-  
+:host {  
   display: block;
   background: var(--background);
   color: var(--default);

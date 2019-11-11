@@ -2,9 +2,11 @@
 @import "beaker://assets/font-awesome.css";
 
 body {
+  --default: #eef;
+  --background: #223;
+
   font-size: 12px;
-  background: #223;
-  --border-color: #d4d7dc;
+  background: var(--background);
   border-right: 1px solid #889;
 }
 

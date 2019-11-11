@@ -233,7 +233,7 @@ class FilesExplorer extends LitElement {
         label: `Edit file`,
         click: () => {
           beaker.browser.gotoUrl(url)
-          beaker.browser.openSidebar('editor')
+          beaker.browser.openSidebar('beaker://editor/')
         }
       })
     }
