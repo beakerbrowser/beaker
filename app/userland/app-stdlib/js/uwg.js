@@ -129,7 +129,7 @@ export const friends = {
    */
   async remove (urlOrName) {
     var mount = await navigator.filesystem.query({path: '/public/friends/*', mount: urlOrName})
-    if (mount[0]) return navigator.filesystem.unmount(mount.path)
+    if (mount[0]) return navigator.filesystem.unmount(mount[0].path)
 
     try {
       await navigator.filesystem.stat(`/public/friends/${urlOrName}`)

@@ -4,6 +4,17 @@ import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-
 import { emit } from '../dom.js'
 import hoverMenuCSS from '../../css/com/hover-menu.css.js'
 
+// NOTE
+// We use the globalOpenCounter to let multiple side-by-side hover-menus share "open" state
+// This is to create a menubar behavior.
+//
+// Each time a hover-menu is opened, the counter increments
+// 500ms after a hover-menu closes, the counter decrements
+// If the counter > 0 on hover, we open the menu
+// (only relevant when require-click attr is set)
+// -prf
+var globalOpenCounter = 0
+
 class HoverMenu extends LitElement {
   static get properties () {
     return {
@@ -33,14 +44,14 @@ class HoverMenu extends LitElement {
       if (divider) return html`<hr>`
       if (disabled) return html`<a class="item disabled">${label}</a>`
       return html`
-        <a class="item" @click=${e => this.onClick(e, id)}>
+        <a class="item" @click=${e => this.onClickItem(e, id)}>
           ${label}
         </a>
       `
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="dropdown" @mouseover=${this.onMouseOver} @mouseleave=${this.onMouseLeave}>
+      <div class="dropdown" @click=${this.onClick} @mouseover=${this.onMouseOver} @mouseleave=${this.onMouseLeave}>
         <div class="dropdown-box">
           <span class="fa-fw ${this.icon}"></span>
           <span class="menu-label">${unsafeHTML(this.current)}</span>
@@ -59,17 +70,34 @@ class HoverMenu extends LitElement {
   // events
   // =
 
-  onClick (e, id) {
+  onClickItem (e, id) {
     e.preventDefault()
+    e.stopPropagation()
     emit(this, 'change', {bubbles: true, detail: {id}})
   }
 
   onMouseOver (e) {
-    this.isOpen = true
+    if (!this.hasAttribute('require-click')) {
+      this.isOpen = true
+      globalOpenCounter++
+    } else if (!this.isOpen && globalOpenCounter > 0) {
+      this.isOpen = true
+      globalOpenCounter++
+    }
+  }
+
+  onClick (e) {
+    if (!this.isOpen) {
+      this.isOpen = true
+      globalOpenCounter++
+    }
   }
 
   onMouseLeave (e) {
-    this.isOpen = false
+    if (this.isOpen) {
+      setTimeout(() => { globalOpenCounter-- }, 500)
+      this.isOpen = false
+    }
   }
 }
 HoverMenu.styles = hoverMenuCSS

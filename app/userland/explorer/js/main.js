@@ -395,10 +395,10 @@ export class ExplorerApp extends LitElement {
         @toggle-editor=${this.onToggleEditor}
       >
         <div class="menubar">
-          <hover-menu .options=${this.explorerMenu} icon="fas fa-folder" current="Explorer" @change=${this.onSelectExplorerMenuItem}></hover-menu>
-          <hover-menu .options=${this.driveMenu} current="Drive" @change=${this.onSelectMenuItem}></hover-menu>
-          <hover-menu .options=${this.folderMenu} current="Folder" @change=${this.onSelectMenuItem}></hover-menu>
-          <hover-menu .options=${this.editMenu} current="Edit" @change=${this.onSelectMenuItem}></hover-menu>
+          <hover-menu require-click .options=${this.explorerMenu} icon="fas fa-folder" current="Explorer" @change=${this.onSelectExplorerMenuItem}></hover-menu>
+          <hover-menu require-click .options=${this.driveMenu} current="Drive" @change=${this.onSelectMenuItem}></hover-menu>
+          <hover-menu require-click .options=${this.folderMenu} current="Folder" @change=${this.onSelectMenuItem}></hover-menu>
+          <hover-menu require-click .options=${this.editMenu} current="Edit" @change=${this.onSelectMenuItem}></hover-menu>
           </span>
         </div>
         <div class="nav-toggle left" @click=${e => this.toggleNav('left')}><span class="fas fa-caret-${this.hideNavLeft ? 'right' : 'left'}"></span></div>
