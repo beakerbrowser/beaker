@@ -127,11 +127,11 @@ export class FileDisplay extends LitElement {
         </div>
       </div>
     `
-      // <div class="icon"><span class="fas fa-hdd"></span></div>
   }
 
   // events
   // =
+
 }
 
 customElements.define('file-display', FileDisplay)

@@ -21,7 +21,7 @@ a:hover {
 
 h4 {
   border-top: 1px solid #ccc;
-  color: #556;
+  color: #b0b0bc;
   font-size: 21px;
   padding-top: 6px;
   padding-left: 4px;
