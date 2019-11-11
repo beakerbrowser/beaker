@@ -2,6 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
+import { timeDifference } from 'beaker://app-stdlib/js/time.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
@@ -95,6 +96,20 @@ export class ExplorerApp extends LitElement {
 
   get isViewingQuery () {
     return location.pathname.endsWith('.view')
+  }
+
+  get pathAncestry () {
+    var ancestry = []
+    var acc = []
+    for (let part of this.realPathname.split('/')) {
+      if (!part) continue
+      acc.push(part)
+      ancestry.push([
+        joinPath(this.currentDriveInfo.url, acc.join('/')),
+        part
+      ])
+    }
+    return ancestry
   }
 
   async load () {
@@ -331,7 +346,7 @@ export class ExplorerApp extends LitElement {
       }
     }
 
-    const groupsOrder = ['views', 'people', 'websites', 'applications', 'commands', 'drives', 'folders', 'files']
+    const groupsOrder = ['people', 'websites', 'applications', 'commands', 'drives', 'views', 'folders', 'files']
     var groupsArr = []
     for (let id in groups) {
       groupsArr[groupsOrder.indexOf(id)] = groups[id]
@@ -395,6 +410,35 @@ export class ExplorerApp extends LitElement {
             </nav>
           `}
           <main>
+            <div class="header">
+              <a class="author" href=${this.currentDriveInfo.url}>${this.currentDriveTitle}</a>
+              ${this.pathAncestry.map(([url, name]) => html`<span>/</span> <a class="name" href=${url}>${name}</a>`)}
+              ${this.pathInfo && this.pathInfo.isFile() ? html`
+                <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
+              ` : ''}
+              <span class="spacer"></span>
+              <span class="btn-group">
+                ${renderModes.map(([id, icon, label]) => html`
+                  <button
+                    class=${id == this.renderMode ? 'pressed' : ''}
+                    @click=${e => this.onChangeRenderMode(e, id)}
+                    title="Change the view to: ${label}"
+                  ><span class="fas fa-${icon}"></span></button>
+                `)}
+              </span>
+              ${isFolderLike ? html`
+                <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
+                  <span class="fas fa-eye"></span>
+                </button>
+                ${''/* TODO <span class="btn-group">
+                  <button title="Change the current sort order">
+                    <span class="fas fa-sort-amount-down"></span><span class="fas fa-caret-down"></span>
+                  </button><button title="Change the grouping of files">
+                    <span class="fas fa-border-all"></span><span class="fas fa-caret-down"></span>
+                  </button>
+                </span>*/}
+              ` : ''}
+            </div>
             ${isViewfile ? html`
               <explorer-view-query
                 user-url=${this.user.url}
@@ -437,29 +481,6 @@ export class ExplorerApp extends LitElement {
           </main>
           ${this.hideNavRight ? '' : html`
             <nav class="right">
-              <section class="transparent" style="padding: 2px">
-                <span class="btn-group">
-                  ${renderModes.map(([id, icon, label]) => html`
-                    <button
-                      class=${id == this.renderMode ? 'pressed' : ''}
-                      @click=${e => this.onChangeRenderMode(e, id)}
-                      title="Change the view to: ${label}"
-                    ><span class="fas fa-${icon}"></span></button>
-                  `)}
-                </span>
-                ${isFolderLike ? html`
-                  <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
-                    <span class="fas fa-eye"></span>
-                  </button>
-                  ${''/* TODO <span class="btn-group">
-                    <button title="Change the current sort order">
-                      <span class="fas fa-sort-amount-down"></span><span class="fas fa-caret-down"></span>
-                    </button><button title="Change the grouping of files">
-                      <span class="fas fa-border-all"></span><span class="fas fa-caret-down"></span>
-                    </button>
-                  </span>*/}
-                ` : ''}
-              </section>
               ${this.selection.length > 0 ? html`
                 <selection-info
                   user-url=${this.user.url}

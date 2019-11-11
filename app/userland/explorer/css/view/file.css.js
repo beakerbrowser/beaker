@@ -13,49 +13,17 @@ a:hover {
   text-decoration: underline;
 }
 
-.header {
-  margin: 8px 0 10px;
-  font-size: 12px;
-  color: #556;
-  background: var(--bg-color--light);
-  padding: 5px 10px;
-  border-radius: 8px;
-}
-
-.header img {
-  display: inline-block;
-  object-fit: cover;
-  width: 24px;
-  height: 24px;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
-  margin-right: 3px;
-  border-radius: 50%;
-}
-
-.header .date {
-  color: #99a;
-}
-
-.header .author {
-  font-weight: 500;
-  color: inherit;
-}
-
-.header .name {
-  margin-right: 5px;
-  color: inherit;
-}
-
 .content {
   margin: 10px 0px 14px;
+  border: 1px solid #ccd;
+  border-radius: 4px;
 }
 
 file-display {
   --text-padding: 14px 14px 18px;
   --text-background: #fff;
   --text-max-width: 60em;
+  --media-margin: 14px 14px 18px;
 }
 
 social-signals {

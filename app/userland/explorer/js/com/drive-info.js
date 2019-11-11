@@ -1,4 +1,5 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 import { ucfirst } from 'beaker://app-stdlib/js/strings.js'
 import { library, friends } from 'beaker://app-stdlib/js/uwg.js'
@@ -30,10 +31,6 @@ export class DriveInfo extends LitElement {
     return 'Untitled'
   }
 
-  get isInFriends () {
-    return this.driveInfo.ident && !!this.driveInfo.ident.friendsQuery
-  }
-
   // rendering
   // =
 
@@ -57,11 +54,7 @@ export class DriveInfo extends LitElement {
           <div class="bottom-ctrls">
             ${this.driveInfo.url !== this.userUrl ? html`
               <button class="transparent" @click=${this.onToggleFriends}>
-                ${this.isInFriends ? html`
-                  <span class="fa-fw fas fa-user-minus"></span> Remove from Friends
-                ` : html`
-                  <span class="fa-fw fas fa-user-plus"></span> Add to Friends
-                `}
+                ${until(this.renderAddBtn(), '')}
               </button>
             ` : html`
               <span class="label">My profile</span>
@@ -75,6 +68,18 @@ export class DriveInfo extends LitElement {
         ` : ''}
       </section>
     `
+  }
+  
+  async renderAddBtn () {
+    var isInFriends = (await navigator.filesystem.query({
+      path: '/public/friends/*',
+      mount: this.driveInfo.url
+    })).length > 0
+    if (isInFriends) {
+      return html`<span class="fa-fw fas fa-user-minus"></span> Remove from Friends`
+    } else {
+      return html`<span class="fa-fw fas fa-user-plus"></span> Add to Friends`
+    }
   }
 
   updated () {
@@ -119,7 +124,11 @@ export class DriveInfo extends LitElement {
   }
 
   async onToggleFriends () {
-    if (this.isInFriends) {
+    var isInFriends = (await navigator.filesystem.query({
+      path: '/public/friends/*',
+      mount: this.driveInfo.url
+    })).length > 0
+    if (isInFriends) {
       await friends.remove(this.driveInfo.url)
     } else {
       await friends.add(this.driveInfo.url, this.driveInfo.title)

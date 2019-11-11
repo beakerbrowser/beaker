@@ -13,25 +13,6 @@ a:hover {
   text-decoration: underline;
 }
 
-.header {
-  margin: 8px 0 10px;
-  font-size: 12px;
-  color: #556;
-  background: var(--bg-color--light);
-  padding: 5px 10px;
-  border-radius: 8px;
-}
-
-.header .author {
-  font-weight: 500;
-  color: inherit;
-}
-
-.header .name {
-  margin-right: 5px;
-  color: inherit;
-}
-
 .readme {
   margin: 4px 0 8px;
   padding: 14px;

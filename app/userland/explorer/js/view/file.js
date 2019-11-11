@@ -32,21 +32,6 @@ export class FileView extends LitElement {
     this.realUrl = undefined
     this.realPathname = undefined
     this.renderMode = undefined
-    this.editor = undefined
-  }
-
-  get pathAncestry () {
-    var ancestry = []
-    var acc = []
-    for (let part of this.realPathname.split('/')) {
-      if (!part) continue
-      acc.push(part)
-      ancestry.push([
-        joinPath(this.currentDriveInfo.url, acc.join('/')),
-        part
-      ])
-    }
-    return ancestry
   }
 
   // rendering
@@ -54,17 +39,6 @@ export class FileView extends LitElement {
 
   render () {
     if (!this.currentDriveInfo || !this.pathInfo) return html``
-    return html`
-      <div class="header">
-        <a class="author" href=${this.currentDriveInfo.url}>${this.currentDriveTitle}</a>
-        ${this.pathAncestry.map(([url, name]) => html`/ <a class="name" href=${url}>${name}</a>`)}
-        <span class="date">${timeDifference(this.pathInfo.ctime, true, 'ago')}</span>
-      </div>
-      ${this.renderByMode()}
-    `
-  }
-
-  renderByMode () {
     return html`
       <div class="content">
         <file-display
@@ -74,18 +48,9 @@ export class FileView extends LitElement {
           .info=${{stat: this.pathInfo}}
         ></file-display>
       </div>
-      <social-signals
-        user-url=${this.userUrl}
-        topic=${this.realUrl}
-        .authors=${[this.userUrl]}
-      ></social-signals>
-      <beaker-comments-thread
-        .comments=${[]}
-        topic-url="${this.realUrl}"
-        user-url="${this.userUrl}"
-      ></beaker-comments-thread>
     `
   }
+
 
   // events
   // =

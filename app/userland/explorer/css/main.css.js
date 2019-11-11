@@ -141,26 +141,6 @@ nav section .bottom-ctrls {
   padding-top: 4px;
 }
 
-nav section.btn {
-  padding: 10px;
-  cursor: pointer;
-  font-size: 11px;
-  text-align: center;
-}
-
-nav section.btn:hover {
-  background: #f5f5f5;
-}
-
-nav section.btn.primary {
-  border: 1px solid #b0c4ec;
-  color: #3e74c7;
-}
-
-nav section.btn .fa-fw:first-child {
-  margin-left: -20px;
-}
-
 nav social-signals {
   padding: 0 2px;
   margin-bottom: 10px;
@@ -212,33 +192,6 @@ nav button .fa-caret-down {
   margin-left: 2px;
 }
 
-nav section.selector {
-  padding: 0;
-}
-
-nav section.selector h5 {
-  padding: 12px 12px 10px;
-}
-
-nav section.selector > div {
-  border-top: 1px solid #dde;
-  padding: 10px 12px;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-nav section.selector > div:hover {
-  background: var(--bg-color--light);
-}
-
-nav section.selector > div span {
-  visibility: hidden;
-}
-
-nav section.selector > div.active span {
-  visibility: visible;
-}
-
 nav .facts {
   line-height: 1.6;
 }
@@ -247,6 +200,44 @@ nav .facts > span {
   display: inline-block;
   white-space: nowrap;
   margin-right: 5px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin: 8px 0 10px;
+  font-size: 12px;
+  color: #556;
+  background: var(--bg-color);
+  padding: 5px 10px;
+  border-radius: 8px;
+}
+
+.header > *:not(:last-child) {
+  margin-right: 5px;
+}
+
+.header .date {
+  color: #99a;
+}
+
+.header .author {
+  font-weight: 500;
+  color: inherit;
+}
+
+.header .name {
+  margin-right: 5px;
+  color: inherit;
+}
+
+.header .spacer {
+  flex: 1;
+}
+
+.header button {
+  padding: 4px 6px;
+  font-size: 8px;
 }
 
 #files-picker {
