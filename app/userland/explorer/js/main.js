@@ -101,11 +101,11 @@ export class ExplorerApp extends LitElement {
   get pathAncestry () {
     var ancestry = []
     var acc = []
-    for (let part of this.realPathname.split('/')) {
+    for (let part of location.pathname.split('/')) {
       if (!part) continue
       acc.push(part)
       ancestry.push([
-        joinPath(this.currentDriveInfo.url, acc.join('/')),
+        joinPath(this.driveInfo.url, acc.join('/')),
         part
       ])
     }
@@ -411,7 +411,7 @@ export class ExplorerApp extends LitElement {
           `}
           <main>
             <div class="header">
-              <a class="author" href=${this.currentDriveInfo.url}>${this.currentDriveTitle}</a>
+              <a class="author" href=${this.driveInfo.url}>${this.driveTitle}</a>
               ${this.pathAncestry.map(([url, name]) => html`<span>/</span> <a class="name" href=${url}>${name}</a>`)}
               ${this.pathInfo && this.pathInfo.isFile() ? html`
                 <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
