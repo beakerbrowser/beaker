@@ -79,6 +79,7 @@ h4 {
 
 .item .content file-display {
   overflow: hidden;
+  pointer-events: none;
   --text-max-height: 170px;
   --text-font-size: 11px;
   --text-padding: 10px;
