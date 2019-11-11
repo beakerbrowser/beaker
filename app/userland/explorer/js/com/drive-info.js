@@ -9,7 +9,6 @@ export class DriveInfo extends LitElement {
     return {
       userUrl: {type: String, attribute: 'user-url'},
       driveInfo: {type: Object},
-      isThumbLoaded: {type: Boolean},
       hasThumb: {type: Boolean}
     }
   }
@@ -18,7 +17,6 @@ export class DriveInfo extends LitElement {
     super()
     this.userUrl = undefined
     this.driveInfo = undefined
-    this.isThumbLoaded = false
     this.hasThumb = true
   }
 
@@ -26,27 +24,14 @@ export class DriveInfo extends LitElement {
     return this // no shadow dom
   }
 
-  get visibility () {
-    var info = this.driveInfo
-    if (!info.ident) return undefined
-    if (info.ident.isRoot) return 'private'
-    if (info.ident.isUser) return 'public'
-    return undefined
-  }
-
   get title () {
     var info = this.driveInfo
     if (info.title) return info.title
-    if (info.ident.isRoot) return 'Filesystem'
     return 'Untitled'
   }
 
-  get isInLibrary () {
-    return !!this.driveInfo.ident.libraryQuery
-  }
-
   get isInFriends () {
-    return !!this.driveInfo.ident.friendsQuery
+    return this.driveInfo.ident && !!this.driveInfo.ident.friendsQuery
   }
 
   // rendering
@@ -58,78 +43,76 @@ export class DriveInfo extends LitElement {
       <section>
         <h1>
           ${this.hasThumb ? html`
-            <img src="/thumb" @load=${this.onThumbLoad} @error=${this.onThumbError} style=${this.isThumbLoaded ? '' : 'display: none'}>
+            <img @error=${this.onThumbError}>
           ` : ''}
           <a href="/">${this.title}</a>
         </h1>
         ${this.driveInfo.description ? html`<p>${this.driveInfo.description}</p>` : undefined}
-        ${this.renderType()}
-      </section>
-      ${this.driveInfo.type === 'unwalled.garden/person' && this.driveInfo.url !== this.userUrl ? html`
-        <section class="btn" @click=${this.onToggleFriends}>
-          ${this.isInFriends ? html`
-            <span class="fa-fw fas fa-user-minus"></span> Remove from Friends
-          ` : html`
-            <span class="fa-fw fas fa-user-plus"></span> Add to Friends
-          `}
-        </section>`
-      : ''}
-      ${this.driveInfo.type !== 'unwalled.garden/person' ? html`
-        <section class="btn" @click=${this.onToggleLibrary}>
-          ${this.isInLibrary ? html`
-            <span class="fa-mod"><span class="fa-fw fas fa-university"></span><span class="fas fa-minus"></span></span> Remove from Library
-          ` : html`
-            <span class="fa-mod"><span class="fa-fw fas fa-university"></span><span class="fas fa-plus"></span></span> Add to Library
-          `}
-        </section>
-      ` : ''}
-      <section>
-        ${this.renderVisibility()}
-        ${this.renderIsWritable()}
-        ${this.renderSize()}
+        <p class="facts">
+          ${this.renderType()}
+          ${this.renderIsWritable()}
+          ${this.renderSize()}
+        </p>
+        ${this.driveInfo.type === 'unwalled.garden/person' ? html`
+          <div class="bottom-ctrls">
+            ${this.driveInfo.url !== this.userUrl ? html`
+              <button class="transparent" @click=${this.onToggleFriends}>
+                ${this.isInFriends ? html`
+                  <span class="fa-fw fas fa-user-minus"></span> Remove from Friends
+                ` : html`
+                  <span class="fa-fw fas fa-user-plus"></span> Add to Friends
+                `}
+              </button>
+            ` : html`
+              <span class="label">My profile</span>
+            `}
+          </div>
+        ` : ''}
+        ${this.driveInfo.url === navigator.filesystem.url ? html`
+          <div class="bottom-ctrls">
+            <span class="label">My home drive</span>
+          </div>
+        ` : ''}
       </section>
     `
   }
 
+  updated () {
+    // HACK
+    // for reasons I cant understand, just changing the `src` attribute failed to update the image
+    // this solves that issue
+    // -prf
+    try {
+      this.querySelector('img').removeAttribute('src')
+      this.querySelector('img').setAttribute('src', `${this.driveInfo.url}/thumb`)
+    } catch (e) {}
+  }
+
   renderType () {
     if (this.driveInfo.type === 'unwalled.garden/person') {
-      return html`<p><span class="fas fa-fw fa-user-circle"></span> Person</p>`
+      return html`<span><span class="fas fa-fw fa-user-circle"></span> Person</span>`
     }
     if (this.driveInfo.type === 'unwalled.garden/website') {
-      return html`<p><span class="far fa-fw fa-file-alt"></span> Website</p>`
+      return html`<span><span class="far fa-fw fa-file-alt"></span> Website</span>`
     }
   }
 
   renderSize () {
-    return html`<p><small>Size:</small> ${bytes(this.driveInfo.size)}</p>`
+    if (this.driveInfo.size) {
+      return html`<span><span class="fas fa-fw fa-save"></span> ${bytes(this.driveInfo.size)}</span>`
+    }
   }
 
   renderIsWritable () {
     if (this.driveInfo.writable) {
-      return html`<p><span class="fas fa-fw fa-pen"></span> Writable</p>`
+      return html`<span><span class="fas fa-fw fa-pen"></span> Writable</span>`
     }
-    return undefined
-  }
-
-  renderVisibility () {
-    var visibility = this.visibility
-    if (!visibility) return undefined
-    var icon = ''
-    switch (visibility) {
-      case 'public': icon = 'fa-globe-americas'; break
-      case 'private': icon = 'fa-lock'; break
-      case 'unlisted': icon = 'fa-eye'; break
-    }
-    return html`<p class="visibility ${visibility}"><span class="fa-fw fas ${icon}"></span> ${ucfirst(visibility)}</p>`
+    return html`<span><span class="fas fa-fw fa-eye"></span> Read-only</span>`
   }
 
   // events
   // =
 
-
-  onThumbLoad () {
-    this.isThumbLoaded = true
-  }
 
   onThumbError () {
     this.hasThumb = false
@@ -144,12 +127,8 @@ export class DriveInfo extends LitElement {
     location.reload()
   }
 
-  async onToggleLibrary () {
-    if (this.isInLibrary) {
-      await library.remove(this.driveInfo.url)
-    } else {
-      await library.add(this.driveInfo.url, this.driveInfo.title)
-    }
+  async onClickSaveTo () {
+    
     location.reload()
   }
 }

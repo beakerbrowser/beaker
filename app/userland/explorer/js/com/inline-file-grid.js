@@ -69,7 +69,7 @@ export class InlineFileGrid extends FileGrid {
           ></file-display>
         </div>
         <div class="header">
-          <div><a class="name" href=${item.url}>${item.name}</a></div>
+          <div><a class="name" href=${item.url}>${this.showOrigin ? item.path : item.name}</a></div>
           ${this.showOrigin ? html`
             <div><a class="author" href=${item.drive.url} title=${driveTitle}>${driveTitle}</a></div>
           ` : ''}

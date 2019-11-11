@@ -17,6 +17,9 @@ a:hover {
   margin: 8px 0 10px;
   font-size: 12px;
   color: #556;
+  background: var(--bg-color--light);
+  padding: 5px 10px;
+  border-radius: 8px;
 }
 
 .header img {
@@ -47,9 +50,6 @@ a:hover {
 
 .content {
   margin: 10px 0px 14px;
-  padding: 14px;
-  background: var(--bg-color);
-  border-radius: 8px;
 }
 
 file-display {

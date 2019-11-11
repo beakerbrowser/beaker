@@ -17,6 +17,9 @@ a:hover {
   margin: 8px 0 10px;
   font-size: 12px;
   color: #556;
+  background: var(--bg-color--light);
+  padding: 5px 10px;
+  border-radius: 8px;
 }
 
 .header .author {

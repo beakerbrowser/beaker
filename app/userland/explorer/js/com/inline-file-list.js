@@ -65,10 +65,9 @@ export class InlineFileList extends FileGrid {
         @contextmenu=${e => this.onContextMenu(e, item)}
       >
         <div class="info">
-          <div><a class="name" href=${item.url}>${item.name}</a></div>
+          <div><a class="name" href=${item.url}>${this.showOrigin ? item.path : item.name}</a></div>
           ${this.showOrigin ? html`
             <div>Drive: <a class="author" href=${item.drive.url}>${driveTitle}</a></div>
-            <div>Folder: <a class="folder" href=${joinPath(item.drive.url, folder)}>${folder}</a></div>
           ` : ''}
           <div>
             Updated: <span class="date">${timeDifference(item.stat.ctime, true, 'ago')}</span>

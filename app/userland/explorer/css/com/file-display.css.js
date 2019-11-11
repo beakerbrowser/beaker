@@ -162,6 +162,7 @@ audio {
 }
 
 :host([horz]) .mount img {
+  height: 100%;
   border-radius: 8px;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;

@@ -1,4 +1,5 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
@@ -10,8 +11,6 @@ import './view/file.js'
 import './view/folder.js'
 import './view/query.js'
 import './com/drive-info.js'
-import './com/mount-info.js'
-import './com/location-info.js'
 import './com/selection-info.js'
 
 const ICONS = {
@@ -36,7 +35,9 @@ export class ExplorerApp extends LitElement {
   static get propertes () {
     return {
       selection: {type: Array},
-      renderMode: {type: String}
+      renderMode: {type: String},
+      hideNavLeft: {type: Boolean},
+      hideNavRight: {type: Boolean}
     }
   }
 
@@ -58,6 +59,8 @@ export class ExplorerApp extends LitElement {
     this.inlineMode = false
     this.driveTitle = undefined
     this.mountTitle = undefined
+    this.hideNavLeft = true
+    this.hideNavRight = false
     this.load()
   }
 
@@ -96,15 +99,12 @@ export class ExplorerApp extends LitElement {
 
   async load () {
     if (!this.user) {
-      this.user = await navigator.session.get()
+      this.user = (await navigator.session.get()).profile
     }
 
     // read drive information
     var drive = new DatArchive(location)
     this.driveInfo = await drive.getInfo()
-    this.driveInfo.ident = await navigator.filesystem.identifyDrive(drive.url)
-    this.driveInfo.ident.friendsQuery = (await navigator.filesystem.query({mount: drive.url, path: '/public/friends/*'}))[0]
-    this.driveInfo.ident.libraryQuery = (await navigator.filesystem.query({mount: drive.url, path: '/library/*'}))[0]
 
     // read location content
     try {
@@ -112,6 +112,9 @@ export class ExplorerApp extends LitElement {
       await this.readMountInfo()
       if (this.pathInfo.isDirectory()) {
         await this.readDirectory(drive)
+        if (this.items) {
+          this.items.sort((a, b) => a.name.localeCompare(b.name))
+        }
       } else if (location.pathname.endsWith('.view')) {
         await this.readViewfile(drive)
       }
@@ -120,15 +123,10 @@ export class ExplorerApp extends LitElement {
       this.isNotFound = true
     }
 
-    // apply sorting
-    if (this.items) {
-      this.items.sort((a, b) => a.name.localeCompare(b.name))
-    }
-
     // view config
     if (this.pathInfo.isDirectory()) {
       this.renderMode = getSavedConfig('render-mode', 'grid')
-      this.inlineMode = Boolean(getSavedConfig('inline-mode', false))
+      this.inlineMode = Boolean(getSavedConfig('inline-mode', true))
       if (!this.watchStream) {
         let currentDrive = new DatArchive(this.currentDriveInfo.url)
         this.watchStream = currentDrive.watch(this.realPathname)
@@ -148,6 +146,8 @@ export class ExplorerApp extends LitElement {
     } else {
       this.renderMode = getSavedConfig('render-mode', 'default')
     }
+    this.hideNavLeft = Boolean(getGlobalSavedConfig('hide-nav-left', true))
+    this.hideNavRight = Boolean(getGlobalSavedConfig('hide-nav-right', false))
 
     if (location.hash === '#edit') {
       navigator.toggleEditor()
@@ -171,7 +171,7 @@ export class ExplorerApp extends LitElement {
 
   async readDirectory (drive) {
     let driveKind = ''
-    if (this.currentDriveInfo.ident.isRoot) driveKind = 'root'
+    if (this.currentDriveInfo.url === navigator.filesystem.url) driveKind = 'root'
     if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
 
     this.items = await drive.readdir(location.pathname, {stat: true})
@@ -244,7 +244,6 @@ export class ExplorerApp extends LitElement {
         let mount = new DatArchive(st.mount.key)
         this.mountInfo = await mount.getInfo()
         this.mountInfo.mountPath = pathParts.join('/')
-        this.mountInfo.ident = await navigator.filesystem.identifyDrive(mount.url)
         return
       }
       pathParts.pop()
@@ -256,9 +255,9 @@ export class ExplorerApp extends LitElement {
       {id: 'new-drive', label: html`<span class="far fa-fw fa-hdd"></span> New hyperdrive`},
       {divider: true},
       {heading: 'Locations'},
-      {id: 'filesystem', label: html`<span class="fas fa-fw fa-home"></span> <code>/</code>`},
-      {id: 'library', label: html`<span class="fas fa-fw fa-university"></span> <code>/library</code>`},
-      {id: 'public', label: html`<span class="fas fa-fw fa-user"></span> <code>/public</code>`},
+      {id: 'filesystem', label: html`<span class="fas fa-fw fa-home"></span> Home drive`},
+      {id: 'library', label: html`<span class="fas fa-fw fa-university"></span> My Library`},
+      {id: 'public', label: html`<span class="fas fa-fw fa-user-circle"></span> My Profile`},
     ]
   }
 
@@ -357,7 +356,12 @@ export class ExplorerApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div
-        class="layout render-mode-${this.renderMode}"
+        class=${classMap({
+          layout: true,
+          ['render-mode-' + this.renderMode]: true,
+          'hide-nav-left': this.hideNavLeft,
+          'hide-nav-right': this.hideNavRight,
+        })}
         @click=${this.onClickLayout}
         @contextmenu=${this.onContextmenuLayout}
         @goto=${this.onGoto}
@@ -382,13 +386,14 @@ export class ExplorerApp extends LitElement {
           <hover-menu .options=${this.editMenu} current="Edit" @change=${this.onSelectMenuItem}></hover-menu>
           </span>
         </div>
+        <div class="nav-toggle left" @click=${e => this.toggleNav('left')}><span class="fas fa-caret-${this.hideNavLeft ? 'right' : 'left'}"></span></div>
+        <div class="nav-toggle right" @click=${e => this.toggleNav('right')}><span class="fas fa-caret-${this.hideNavRight ? 'left' : 'right'}"></span></div>
         ${this.pathInfo ? html`
-          <nav class="left">
-            <drive-info .driveInfo=${this.driveInfo} user-url=${this.user.url}></drive-info>
-            ${this.mountInfo ? html`
-              <mount-info .mountInfo=${this.mountInfo}></mount-info>
-            ` : ''}
-          </nav>
+          ${this.hideNavLeft ? '' : html`
+            <nav class="left">
+              todo
+            </nav>
+          `}
           <main>
             ${isViewfile ? html`
               <explorer-view-query
@@ -430,57 +435,52 @@ export class ExplorerApp extends LitElement {
               ></explorer-view-file>
             `}
           </main>
-          <nav class="right">
-            <section class="transparent" style="padding: 2px">
-              <span class="btn-group">
-                ${renderModes.map(([id, icon, label]) => html`
-                  <button
-                    class=${id == this.renderMode ? 'pressed' : ''}
-                    @click=${e => this.onChangeRenderMode(e, id)}
-                    title="Change the view to: ${label}"
-                  ><span class="fas fa-${icon}"></span></button>
-                `)}
-              </span>
-              ${isFolderLike ? html`
-                <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
-                  <span class="fas fa-eye"></span>
-                </button>
-                ${''/* TODO <span class="btn-group">
-                  <button title="Change the current sort order">
-                    <span class="fas fa-sort-amount-down"></span><span class="fas fa-caret-down"></span>
-                  </button><button title="Change the grouping of files">
-                    <span class="fas fa-border-all"></span><span class="fas fa-caret-down"></span>
+          ${this.hideNavRight ? '' : html`
+            <nav class="right">
+              <section class="transparent" style="padding: 2px">
+                <span class="btn-group">
+                  ${renderModes.map(([id, icon, label]) => html`
+                    <button
+                      class=${id == this.renderMode ? 'pressed' : ''}
+                      @click=${e => this.onChangeRenderMode(e, id)}
+                      title="Change the view to: ${label}"
+                    ><span class="fas fa-${icon}"></span></button>
+                  `)}
+                </span>
+                ${isFolderLike ? html`
+                  <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
+                    <span class="fas fa-eye"></span>
                   </button>
-                </span>*/}
-              ` : ''}
-            </section>
-            ${this.selection.length > 0 ? html`
-              <selection-info
-                user-url=${this.user.url}
-                .driveInfo=${this.driveInfo}
-                .pathInfo=${this.pathInfo}
-                .mountInfo=${this.mountInfo}
-                .selection=${this.selection}
-                ?no-preview=${this.inlineMode}
-              ></selection-info>
-            ` : html`
-              <location-info
-                real-pathname=${this.realPathname}
-                real-url=${this.realUrl}
-                render-mode=${this.renderMode}
-                .driveInfo=${this.driveInfo}
-                .pathInfo=${this.pathInfo}
-                .mountInfo=${this.mountInfo}
-              ></location-info>
-            `}
-            ${this.selection.length <= 1 ? html`
-              <section class="transparent">
-                <p><a href=${selectionUrl} target="_blank"><span class="fa-fw fas fa-external-link-alt"></span> Open ${this.selection.length ? 'selected' : ''} in new tab</a></p>
-                <p><a id="download-link" href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export ${selectionName}</a></p>
+                  ${''/* TODO <span class="btn-group">
+                    <button title="Change the current sort order">
+                      <span class="fas fa-sort-amount-down"></span><span class="fas fa-caret-down"></span>
+                    </button><button title="Change the grouping of files">
+                      <span class="fas fa-border-all"></span><span class="fas fa-caret-down"></span>
+                    </button>
+                  </span>*/}
+                ` : ''}
               </section>
-            ` : ''}
-          ` : undefined}
-          </nav>
+              ${this.selection.length > 0 ? html`
+                <selection-info
+                  user-url=${this.user.url}
+                  .driveInfo=${this.driveInfo}
+                  .pathInfo=${this.pathInfo}
+                  .mountInfo=${this.mountInfo}
+                  .selection=${this.selection}
+                  ?no-preview=${this.inlineMode}
+                ></selection-info>
+              ` : html`
+                <drive-info .driveInfo=${this.driveInfo} user-url=${this.user.url}></drive-info>
+              `}
+              ${this.selection.length <= 1 ? html`
+                <section class="transparent">
+                  <p><a href=${selectionUrl} target="_blank"><span class="fa-fw fas fa-external-link-alt"></span> Open ${this.selection.length ? 'selected' : ''} in new tab</a></p>
+                  <p><a id="download-link" href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export ${selectionName}</a></p>
+                </section>
+              ` : ''}
+            </nav>
+          `}
+        ` : undefined}
       </div>
       <input type="file" id="files-picker" multiple @change=${this.onChangeImportFiles} />
     `
@@ -529,6 +529,16 @@ export class ExplorerApp extends LitElement {
     this.inlineMode = !this.inlineMode
     setSavedConfig('inline-mode', this.inlineMode ? '1' : '')
     this.requestUpdate()
+  }
+
+  toggleNav (side) {
+    if (side === 'left') {
+      this.hideNavLeft = !this.hideNavLeft
+      setGlobalSavedConfig('hide-nav-left', this.hideNavLeft ? '1' : '')
+    } else {
+      this.hideNavRight = !this.hideNavRight
+      setGlobalSavedConfig('hide-nav-right', this.hideNavRight ? '1' : '')
+    }
   }
 
   async onSelectExplorerMenuItem (e) {
@@ -813,9 +823,15 @@ customElements.define('explorer-app', ExplorerApp)
 // =
 
 function getDriveTitle (info) {
-  if (info.title) return info.title
-  else if (info.ident.isRoot) return 'Filesystem'
-  else return 'Untitled'
+  return info.title || 'Untitled'
+}
+
+function getGlobalSavedConfig (name, fallback = undefined) {
+  return localStorage.getItem(`setting:${name}`) || fallback
+}
+
+function setGlobalSavedConfig (name, value) {
+  localStorage.setItem(`setting:${name}`, value)
 }
 
 function getSavedConfig (name, fallback = undefined) {
@@ -831,6 +847,7 @@ function oneof (v, values) {
 }
 
 function getVFCfg (obj, key, values) {
+  if (!obj) return undefined
   const ns = 'unwalled.garden/explorer-view'
   if (obj[ns] && typeof obj[ns] === 'object') {
     return oneof(obj[ns][key], values)

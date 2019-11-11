@@ -66,7 +66,7 @@ export class FileGrid extends LitElement {
         <span class="fas fa-fw fa-${item.icon}"></span>
         ${item.subicon ? html`<span class="subicon ${item.subicon}"></span>` : ''}
         ${item.mountInfo ? html`<span class="mounticon fas fa-external-link-square-alt"></span>` : ''}
-        <div class="name">${item.name}</div>
+        <div class="name">${this.showOrigin ? item.path : item.name}</div>
         ${this.showOrigin ? html`<div class="author">${driveTitle}</div>` : ''}
       </div>
     `

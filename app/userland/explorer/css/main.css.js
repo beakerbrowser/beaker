@@ -13,6 +13,7 @@ ${famodCSS}
 :host {
   --bg-color: #f1f1f6;
   --bg-color--light: #f8f8fc;
+  --bg-color--dark: #e2e2ee;
 }
 
 a {
@@ -27,6 +28,16 @@ a:hover {
   color: var(--blue);
 }
 
+.label {
+  display: inline-block;
+  background: var(--bg-color);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-weight: 500;
+  margin: 3px;
+}
+
 .menubar {
   position: fixed;
   top: 0;
@@ -35,7 +46,7 @@ a:hover {
   height: 30px;
   padding: 0 10px;
   background: #fff;
-  z-index: 1;
+  z-index: 3;
 }
 
 .layout {
@@ -47,8 +58,30 @@ main {
   margin: 30px 370px 100px 300px;
 }
 
+.hide-nav-left main { margin-left: 16px; }
+.hide-nav-right main { margin-right: 16px; }
+
+.nav-toggle {
+  position: fixed;
+  top: 30px;
+  width: 14px;
+  height: calc(100vh - 40px);
+  padding: 50vh 2px 0;
+  box-sizing: border-box;
+  z-index: 1;
+}
+.nav-toggle:hover {
+  cursor: pointer;
+  background: var(--bg-color--dark);
+}
+.nav-toggle span { display: none; }
+.nav-toggle:hover span { display: inline; }
+.nav-toggle.left { left: 0; }
+.nav-toggle.right { right: 0; text-align: right; }
+
 nav {
   position: fixed;
+  z-index: 2;
   top: 30px;
   width: 270px;
   height: calc(100vh - 40px);
@@ -113,7 +146,6 @@ nav section.btn {
   cursor: pointer;
   font-size: 11px;
   text-align: center;
-  box-shadow: 0 2px 1px rgba(0,0,0,.1);
 }
 
 nav section.btn:hover {
@@ -123,7 +155,6 @@ nav section.btn:hover {
 nav section.btn.primary {
   border: 1px solid #b0c4ec;
   color: #3e74c7;
-  box-shadow: rgba(0, 0, 0, 0.05) 0px 2px 1px;
 }
 
 nav section.btn .fa-fw:first-child {
@@ -164,10 +195,9 @@ nav img {
   display: inline-block;
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: 8px;
   object-fit: cover;
   margin-right: 10px;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 2px 2px, rgba(0, 0, 0, 0.15) 0px 2px 5px;
 }
 
 nav a {
@@ -207,6 +237,16 @@ nav section.selector > div span {
 
 nav section.selector > div.active span {
   visibility: visible;
+}
+
+nav .facts {
+  line-height: 1.6;
+}
+
+nav .facts > span {
+  display: inline-block;
+  white-space: nowrap;
+  margin-right: 5px;
 }
 
 #files-picker {

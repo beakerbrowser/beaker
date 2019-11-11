@@ -61,15 +61,13 @@ export class SelectionInfo extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <section>
         <h3><a href=${selRealUrl}>${sel.name}</a></h3>
-        ${this.renderSize()}
+        <p class="facts">
+          ${this.renderDrive()}
+          ${this.renderSize()}
+        </p>
       </section>
       ${sel.mountInfo ? html`
-        <section>
-          <h5>Mounted drive</h5>
-          <p><small>URL:</small> <a class="link" href=${sel.mountInfo.url}>${toNiceUrl(sel.mountInfo.url)}</a></p>
-          <p><small>Title:</small> ${sel.mountInfo.title || 'Untitled'}</p>
-          ${sel.mountInfo.description ? html`<p><small>Description: </small> ${sel.mountInfo.description}</p>` : ''}
-        </section>
+        <drive-info .driveInfo=${sel.mountInfo} user-url=${this.userUrl}></drive-info>
       ` : ''}
       ${!this.noPreview && sel.stat.isFile() ? html`
         <section>
@@ -96,10 +94,16 @@ export class SelectionInfo extends LitElement {
     `
   }
 
+  renderDrive () {
+    if (this.selection.length !== 1) return undefined
+    var drive = this.selection[0].drive
+    return html`<span><small>Drive:</small> <a href=${drive.url} title=${drive.title}>${drive.title}</a>`
+  }
+
   renderSize () {
     const sz = this.selection[0].stat.size
-    if (!sz) return undefined
-    return html`<p><small>Size:</small> ${bytes(sz)}</p>`
+    if (!sz || this.selection.length > 1) return undefined
+    return html`<span><span class="fas fa-fw fa-save"></span> ${bytes(sz)}</span>`
   }
 
   // events

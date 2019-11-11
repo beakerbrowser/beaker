@@ -93,12 +93,12 @@ export class FolderView extends LitElement {
           ? html`<inline-file-list .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-list>`
           : html`<file-list .itemGroups=${this.itemGroups} .selection=${this.selection}></file-list>`
       )}
-      ${inlineMdItem ? html`
+      ${''/* TODO inlineMdItem ? html`
         <div class="readme">
           <file-display
             drive-url=${this.currentDriveInfo.url}
             pathname=${joinPath(this.realPathname, inlineMdItem.name)}
-            .info=${inlineMdItem.stat}
+            .info=${{stat: inlineMdItem.stat}}
           ></file-display>
         </div>
       ` : this.currentDriveInfo.writable ? html`
@@ -115,7 +115,7 @@ export class FolderView extends LitElement {
         .comments=${[]}
         topic-url="${this.realUrl}"
         user-url="${this.userUrl}"
-      ></beaker-comments-thread>
+      ></beaker-comments-thread>*/}
     `
   }
 
