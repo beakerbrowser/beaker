@@ -62,16 +62,16 @@ main {
 
 .nav-toggle {
   position: fixed;
-  top: 30px;
-  width: 14px;
-  height: calc(100vh - 40px);
+  top: 0px;
+  width: 20px;
+  height: calc(100vh - 30px);
   padding: 50vh 2px 0;
   box-sizing: border-box;
-  z-index: 1;
+  z-index: 3;
 }
 .nav-toggle:hover {
   cursor: pointer;
-  background: var(--bg-color--dark);
+  background: rgba(0, 0, 0, .08);
 }
 .nav-toggle span { display: none; }
 .nav-toggle:hover span { display: inline; }
@@ -83,21 +83,21 @@ nav {
   z-index: 2;
   top: 30px;
   width: 270px;
-  height: calc(100vh - 40px);
+  height: calc(100vh - 30px);
   box-sizing: border-box;
   background: var(--bg-color);
-  border-radius: 8px;
   padding: 10px;
   overflow-y: auto;
 }
 
 nav.left {
-  left: 10px;
+  left: 0px;
 }
 
 nav.right {
-  right: 10px;
-  width: 340px;
+  right: 0px;
+  width: 360px;
+  border-top-left-radius: 8px;
 }
 
 nav section {
@@ -202,9 +202,12 @@ nav .facts > span {
 }
 
 .header {
+  position: sticky;
+  z-index: 2;
+  top: 30px;
   display: flex;
   align-items: center;
-  margin: 8px 0 10px;
+  margin: 8px -4px 10px;
   font-size: 12px;
   color: #556;
   background: var(--bg-color);
@@ -243,43 +246,5 @@ nav .facts > span {
   display: none;
 }
 
-@media (max-width: 1000px) {
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 15px auto auto;
-    grid-template-areas: "top top" "mid mid" "botleft botright";
-    grid-gap: 10px;
-    padding: 0 10px;
-  }
-
-  nav {
-    position: relative;
-    height: initial;
-    width: initial;
-    left: initial !important;
-    right: initial !important;
-  }
-
-  nav.left {
-    grid-area: botleft;
-    width: initial;
-  }
-
-  nav.right {
-    grid-area: botright;
-    width: initial;
-  }
-
-  main {
-    grid-area: mid;
-    margin: 0;
-  }
-
-  .menubar {
-    grid-area: top;
-    padding: 0;
-  }
-}
 `
 export default cssStr

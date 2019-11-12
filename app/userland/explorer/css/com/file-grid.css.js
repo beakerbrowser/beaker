@@ -99,7 +99,7 @@ h4 {
 
 .item .subicon {
   position: absolute;
-  top: 19px;
+  top: 22px;
   left: 40px;
   color: rgba(0,0,0,.4);
 }

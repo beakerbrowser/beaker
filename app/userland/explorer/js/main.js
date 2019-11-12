@@ -347,7 +347,7 @@ export class ExplorerApp extends LitElement {
       }
     }
 
-    const groupsOrder = ['people', 'websites', 'applications', 'commands', 'drives', 'views', 'folders', 'files']
+    const groupsOrder = ['folders', 'users', 'websites', 'applications', 'commands', 'drives', 'views', 'files']
     var groupsArr = []
     for (let id in groups) {
       groupsArr[groupsOrder.indexOf(id)] = groups[id]
@@ -402,14 +402,8 @@ export class ExplorerApp extends LitElement {
           <hover-menu require-click .options=${this.editMenu} current="Edit" @change=${this.onSelectMenuItem}></hover-menu>
           </span>
         </div>
-        <div class="nav-toggle left" @click=${e => this.toggleNav('left')}><span class="fas fa-caret-${this.hideNavLeft ? 'right' : 'left'}"></span></div>
         <div class="nav-toggle right" @click=${e => this.toggleNav('right')}><span class="fas fa-caret-${this.hideNavRight ? 'left' : 'right'}"></span></div>
         ${this.pathInfo ? html`
-          ${this.hideNavLeft ? '' : html`
-            <nav class="left">
-              todo
-            </nav>
-          `}
           <main>
             <div class="header">
               <a class="author" href=${this.driveInfo.url}>${this.driveTitle}</a>

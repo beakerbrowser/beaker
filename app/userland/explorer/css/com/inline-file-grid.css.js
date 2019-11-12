@@ -38,11 +38,11 @@ h4 {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 180px));
   grid-gap: 10px 10px;
   width: 100%;
   user-select: none;
-  padding: 10px 0px 20px 0px;
+  padding: 10px 10px 20px 10px;
   box-sizing: border-box;
 }
 
