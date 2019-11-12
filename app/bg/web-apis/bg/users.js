@@ -171,6 +171,27 @@ export default {
    */
   async remove (url) {
     return users.remove(url)
+  },
+
+  /**
+   * Used by beaker://setup
+   * 
+   * @param {Object} opts
+   * @param {string} [opts.title]
+   * @param {string} [opts.description]
+   * @param {string} [opts.thumbBase64]
+   * @param {string} [opts.thumbExt]
+   */
+  async setupDefault (opts) {
+    var user = await users.getDefault()
+    await user.archive.pda.updateManifest({
+      title: opts.title,
+      description: opts.description
+    })
+    if (('thumbBase64' in opts)) {
+      await writeThumbnail(user.archive, opts.thumbBase64, opts.thumbExt)
+    }
+    await users.edit(user.url, opts)
   }
 }
 

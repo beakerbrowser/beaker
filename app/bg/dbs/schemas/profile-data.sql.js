@@ -1,4 +1,8 @@
 export default `
+CREATE TABLE setup_state (
+  profileCreated INTEGER DEFAULT 0
+);
+
 CREATE TABLE profiles (
   id INTEGER PRIMARY KEY NOT NULL,
   url TEXT,
@@ -152,5 +156,5 @@ CREATE TABLE archives (
 -- default profile
 INSERT INTO profiles (id) VALUES (0);
 
-PRAGMA user_version = 43;
+PRAGMA user_version = 44;
 `

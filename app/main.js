@@ -21,6 +21,7 @@ import * as filesystem from './bg/filesystem/index'
 import * as webapis from './bg/web-apis/bg'
 import * as spellCheckerLib from './bg/lib/spell-checker'
 
+import { runSetupFlow } from './bg/ui/setup-flow'
 import * as windows from './bg/ui/windows'
 import * as windowMenu from './bg/ui/window-menu'
 import registerContextMenu from './bg/ui/context-menu'
@@ -34,16 +35,6 @@ import * as intentProtocol from './bg/protocols/intent'
 
 import * as testDriver from './bg/test-driver'
 import * as openURL from './bg/open-url'
-
-const DISALLOWED_SAVE_PATH_NAMES = [
-  'home',
-  'desktop',
-  'documents',
-  'downloads',
-  'music',
-  'pictures',
-  'videos'
-]
 
 // setup
 // =
@@ -119,13 +110,6 @@ app.on('ready', async function () {
   adblocker.setup()
   analytics.setup()
 
-  // ui
-  windowMenu.setup()
-  registerContextMenu()
-  windows.setup()
-  downloads.setup()
-  permissions.setup()
-
   // protocols
   beakerProtocol.register(protocol)
   beakerFaviconProtocol.setup() // TODO deprecateme
@@ -133,6 +117,20 @@ app.on('ready', async function () {
   assetProtocol.register(protocol)
   dat.protocol.register(protocol)
   // intentProtocol.setup() TODO
+
+  // setup flow
+  await runSetupFlow()
+
+  // ui
+  windowMenu.setup()
+  registerContextMenu()
+  windows.setup()
+  downloads.setup()
+  permissions.setup()
+})
+
+app.on('window-all-closed', () => {
+  // do nothing
 })
 
 app.on('quit', () => {

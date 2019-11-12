@@ -46,8 +46,8 @@ var sessionWatcher = null
 var focusedDevtoolsHost
 var hasFirstWindowLoaded = false
 const BROWSING_SESSION_PATH = './shell-window-state.json'
-const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
-const PRELOAD_PATH = path.join(__dirname, 'fg', 'shell-window', 'index.build.js')
+export const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
+export const PRELOAD_PATH = path.join(__dirname, 'fg', 'shell-window', 'index.build.js')
 
 // exported methods
 // =

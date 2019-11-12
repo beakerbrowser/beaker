@@ -18,6 +18,7 @@ import dat from './dat/index'
 import {open as openUrl} from './open-url'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
 import * as tabManager from './ui/tab-manager'
+import { updateSetupState } from './ui/setup-flow'
 import * as modals from './ui/subwindows/modals'
 import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from './lib/electron'
@@ -49,10 +50,6 @@ autoUpdater.autoDownload = false
 // what's the updater doing?
 var updaterState = UPDATER_STATUS_IDLE
 var updaterError = false // has there been an error?
-
-// where is the user in the setup flow?
-var userSetupStatus = false
-var userSetupStatusLookupPromise
 
 // content-type tracker
 var resourceContentTypes = new LRU(100) // URL -> Content-Type
@@ -87,9 +84,6 @@ export async function setup () {
     setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
   }
 
-  // fetch user setup status
-  userSetupStatusLookupPromise = settingsDb.get('user-setup-status')
-
   // create a new user if none exists
   var defaultUser = await users.getDefault()
   if (!defaultUser) {
@@ -120,7 +114,7 @@ export async function setup () {
   ipcMain.on('resize-hackfix', (e, message) => {
     var win = findWebContentsParentWindow(e.sender)
     if (win) {
-      win.webContents.executeJavaScript(`window.forceUpdateDragRegions()`)
+      win.webContents.executeJavaScript(`if (window.forceUpdateDragRegions) { window.forceUpdateDragRegions() }`)
     }
   })
 
@@ -144,8 +138,7 @@ export const WEBAPI = {
   getSetting,
   getSettings,
   setSetting,
-  getUserSetupStatus,
-  setUserSetupStatus,
+  updateSetupState,
   setStartPageBackgroundImage,
   getDefaultProtocolSettings,
   setAsDefaultProtocolClient,
@@ -504,16 +497,6 @@ export function getSettings () {
 
 export function setSetting (key, value) {
   return settingsDb.set(key, value)
-}
-
-export async function getUserSetupStatus () {
-  // if not cached, defer to the lookup promise
-  return (userSetupStatus) || userSetupStatusLookupPromise
-}
-
-export function setUserSetupStatus (status) {
-  userSetupStatus = status // cache
-  return settingsDb.set('user-setup-status', status)
 }
 
 const SCROLLBAR_WIDTH = 16

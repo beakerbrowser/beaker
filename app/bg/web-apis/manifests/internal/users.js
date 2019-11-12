@@ -8,5 +8,6 @@ export default {
   createTemporary: 'promise',
   add: 'promise',
   edit: 'promise',
-  remove: 'promise'
+  remove: 'promise',
+  setupDefault: 'promise'
 }
