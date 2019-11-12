@@ -117,10 +117,10 @@ class BrowserMenu extends LitElement {
         </div>*/}
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onShowSubmenu('applications')}>
+          ${''/* TODO <div class="menu-item" @click=${e => this.onShowSubmenu('applications')}>
             <span class="label">Applications</span>
             <i class="more fa fa-angle-right"></i>
-          </div>
+          </div>*/}
 
           <div class="menu-item" @click=${e => this.onShowSubmenu('bookmarks')}>
             <span class="label">Bookmarks</span>
@@ -165,10 +165,6 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-            <img class="favicon" src="asset:favicon:beaker://library">
-            <span class="label">Library</span>
-          </div>
         </div>
       </div>`
   }

@@ -235,9 +235,6 @@ child-src 'self';
   if (requestUrl === 'beaker://desktop' || requestUrl.startsWith('beaker://desktop/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'desktop'), cb)
   }
-  if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'library'), cb)
-  }
   if (requestUrl === 'beaker://history' || requestUrl.startsWith('beaker://history/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'history'), cb)
   }
