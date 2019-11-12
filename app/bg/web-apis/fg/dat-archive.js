@@ -191,6 +191,24 @@ export const setup = function (rpc) {
       }
     }
 
+    async updateMetadata (path, metadata, opts = {}) {
+      var errStack = (new Error()).stack
+      try {
+        return await datRPC.updateMetadata(this.url, path, metadata, opts)
+      } catch (e) {
+        throwWithFixedStack(e, errStack)
+      }
+    }
+
+    async deleteMetadata (path, keys, opts = {}) {
+      var errStack = (new Error()).stack
+      try {
+        return await datRPC.deleteMetadata(this.url, path, keys, opts)
+      } catch (e) {
+        throwWithFixedStack(e, errStack)
+      }
+    }
+
     async readdir (path = '/', opts = {}) {
       var errStack = (new Error()).stack
       try {

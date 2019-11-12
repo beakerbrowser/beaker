@@ -14,6 +14,8 @@ export default {
   copy: 'promise',
   rename: 'promise',
   download: 'promise',
+  updateMetadata: 'promise',
+  deleteMetadata: 'promise',
 
   readdir: 'promise',
   mkdir: 'promise',

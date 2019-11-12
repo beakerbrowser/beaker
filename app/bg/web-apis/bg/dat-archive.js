@@ -349,6 +349,40 @@ export default {
     })
   },
 
+  async updateMetadata (url, filepath, metadata, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
+      const {archive, checkoutFS, isHistoric} = await lookupArchive(this.sender, url, opts)
+      if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
+
+      pause() // dont count against timeout, there may be user prompts
+      await assertWritePermission(archive, this.sender)
+      assertValidPath(filepath)
+      resume()
+
+      checkin('updating metadata')
+      return checkoutFS.pda.updateMetadata(filepath, metadata)
+    })
+  },
+
+  async deleteMetadata (url, filepath, keys, opts = {}) {
+    filepath = normalizeFilepath(filepath || '')
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
+      const {archive, checkoutFS, isHistoric} = await lookupArchive(this.sender, url, opts)
+      if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
+
+      pause() // dont count against timeout, there may be user prompts
+      await assertWritePermission(archive, this.sender)
+      assertValidPath(filepath)
+      resume()
+
+      checkin('updating metadata')
+      return checkoutFS.pda.deleteMetadata(filepath, keys)
+    })
+  },
+
   async readdir (url, filepath, opts = {}) {
     filepath = normalizeFilepath(filepath || '')
     return timer(to(opts), async (checkin, pause, resume) => {

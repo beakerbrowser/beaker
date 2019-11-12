@@ -34,6 +34,8 @@ const SETUP_RETRIES = 10
 * @prop {function(string): Promise<void>} mkdir
 * @prop {function(string, string): Promise<void>} copy
 * @prop {function(string, string): Promise<void>} rename
+* @prop {function(string, Object): Promise<void>} updateMetadata
+* @prop {function(string, string|string[]): Promise<void>} deleteMetadata
 * @prop {function(string): Promise<void>} unlink
 * @prop {function(string, Object=): Promise<void>} rmdir
 * @prop {function(string, string|Buffer): Promise<void>} mount
