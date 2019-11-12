@@ -131,6 +131,30 @@ export async function rm (opts, dst) {
   }
 }
 
+export async function meta (opts, location, key = undefined, ...value) {
+  if (!location) throw new Error('path is required')
+  var {archive, pathname} = resolveParse(location)
+  if (value.length) {
+    await archive.updateMetadata(pathname, {[key]: value.join(' ')})
+  } else if (opts.delete) {
+    await archive.deleteMetadata(pathname, key)
+  } else {
+    var st = await archive.stat(pathname)
+    if (key) {
+      return st.metadata[key]
+    } else {
+      var meta = st.metadata
+      Object.defineProperty(meta, 'toHTML', {
+        enumerable: false,
+        value: () => {
+          return `<table>${Object.entries(meta).map(([k, v]) => `<tr><td><strong>${esc(k || '')}&ensp;</strong></td><td>&quot;${esc(v || '')}&quot;</td></tr>`).join('')}</table>`
+        }
+      })
+      return meta
+    }
+  }
+}
+
 // utilities
 // =
 
@@ -182,7 +206,7 @@ export async function edit (opts = {}, location = '') {
 // =
 
 function esc (str = '') {
-  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '')
+  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
 function resolveParse (location) {

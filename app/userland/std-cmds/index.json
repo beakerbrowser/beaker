@@ -38,6 +38,20 @@
       "usage": "rm {path}"
     },
     {
+      "name": "meta",
+      "help": "Get/set metadata on a file or folder",
+      "usage": "meta {path} [key] [value] [-d/--delete]",
+      "options": [
+        {
+          "name": "delete",
+          "abbr": "d",
+          "help": "Delete the key value",
+          "boolean": true,
+          "default": false
+        }
+      ]
+    },
+    {
       "name": "peek",
       "help": "View the contents of a file into the terminal",
       "usage": "peek {path}"
