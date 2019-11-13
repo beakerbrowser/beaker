@@ -50,29 +50,13 @@ export class FileDisplay extends LitElement {
     this.renderMode = undefined
   }
 
-  async readFile () {
-    try {
-      var drive = new DatArchive(this.driveUrl)
-      var file = await drive.readFile(this.pathname, 'utf8')
-
-      if (this.pathname.endsWith('.md') && this.renderMode !== 'raw') {
-        file = md.render(file)
-        return html`<div class="markdown">${unsafeHTML(file)}</div>`
-      }
-
-      return html`<div class="text">${file}</div>`
-    } catch (e) {
-      return e.toString()
-    }
-  }
-
   // rendering
   // =
 
   render () {
     if (this.info.stat.isDirectory()) {
       if (this.info.stat.mount && this.info.stat.mount.key) {
-        return this.renderMount()
+        return html`${until(this.renderAndRenderMount(), 'Loading...')}`
       }
       return this.renderIcon('fas fa-folder')
     } 
@@ -91,7 +75,7 @@ export class FileDisplay extends LitElement {
     if (this.info.stat.size > 1000000) {
       return html`<div class="too-big">This file is too big to display</div>`
     }
-    return html`${until(this.readFile(), 'Loading...')}`
+    return html`${until(this.readAndRenderFile(), 'Loading...')}`
   }
 
   renderImage () {
@@ -116,17 +100,42 @@ export class FileDisplay extends LitElement {
     `
   }
 
-  renderMount () {
+  async renderAndRenderMount () {
+    var user = await navigator.filesystem.stat('/public')
+    var label = undefined
+    if (this.info.mountInfo.key === user.mount.key) {
+      label = 'My profile'
+    } else if (this.info.mountInfo.url === navigator.filesystem.url) {
+      label = 'My home drive'
+    }
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="mount">
         <img src="asset:thumb:${this.info.mountInfo.url}">
         <div class="info">
+          ${label ? html`<div class="label">${label}</div>` : ''}
           <div class="title">${this.info.mountInfo.title || 'Untitled'}</div>
           <div class="description">${this.info.mountInfo.description}</div>
         </div>
       </div>
     `
+  }
+
+  async readAndRenderFile () {
+    try {
+      var drive = new DatArchive(this.driveUrl)
+      var file = await drive.readFile(this.pathname, 'utf8')
+
+      if (this.pathname.endsWith('.md') && this.renderMode !== 'raw') {
+        file = md.render(file)
+        return html`<div class="markdown">${unsafeHTML(file)}</div>`
+      }
+
+      return html`<div class="text">${file}</div>`
+    } catch (e) {
+      return e.toString()
+    }
   }
 
   // events
