@@ -11,6 +11,7 @@ customElements.define('profile-view', class extends HTMLElement {
 
     this.shadow = this.attachShadow({mode: 'open'})
     this.render()
+    setTimeout(() => this.setAttribute('active', true), 1)
   }
 
   render () {
@@ -45,15 +46,11 @@ customElements.define('profile-view', class extends HTMLElement {
   :host {
     display: block;
     padding: 0 10px;
-
     opacity: 0;
-    animation: fade-in 1s 1;
-    animation-fill-mode: forwards;
-    animation-timing-function: cubic;
+    transition: opacity 0.5s;
   }
-  @keyframes fade-in {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+  :host([active]) {
+    opacity: 1;
   }
 
   h1 {
@@ -146,7 +143,10 @@ customElements.define('profile-view', class extends HTMLElement {
       this.errors.general = e.message || e.toString()
       return this.render()
     }
-    console.log('dispatching')
-    this.dispatchEvent(new CustomEvent('next', {bubbles: true, composed: true}))
+
+    this.removeAttribute('active')
+    setTimeout(() => {
+      this.dispatchEvent(new CustomEvent('next', {bubbles: true, composed: true}))
+    }, 500)
   }
 })

@@ -34,7 +34,7 @@ export async function runSetupFlow () {
       frame: false,
       width: 600,
       height: 500,
-      backgroundColor: '#fff',
+      backgroundColor: '#334',
       webPreferences: {
         preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
         defaultEncoding: 'utf-8',
