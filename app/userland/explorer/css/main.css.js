@@ -24,6 +24,11 @@ a:hover {
   text-decoration: underline;
 }
 
+table {
+  font-size: inherit;
+  color: inherit;
+}
+
 .link {
   color: var(--blue);
 }
@@ -105,51 +110,6 @@ nav.right {
   border-top-left-radius: 8px;
 }
 
-nav section {
-  display: block;
-  background: #fff;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
-  width: 100%;
-  box-sizing: border-box;
-  border: 0;
-  box-shadow: none;
-  font-size: 12px;
-}
-
-nav section > :first-child {
-  margin-top: 0;
-}
-
-nav section > :last-child {
-  margin-bottom: 0;
-}
-
-nav section.transparent {
-  background: transparent;
-}
-
-nav file-display {
-  max-height: 25vh;
-  overflow: hidden;
-}
-
-nav selection-info[full-view] file-display {
-  max-height: none;
-}
-
-nav section .bottom-ctrls {
-  margin: 0 -8px -8px;
-  border-top: 1px solid #eef;
-  padding-top: 4px;
-}
-
-nav social-signals {
-  padding: 0 2px;
-  margin-bottom: 10px;
-}
-
 nav section h1,
 nav section h2 {
   display: flex;
@@ -192,8 +152,62 @@ nav p {
   margin: 10px 0;
 }
 
+nav code {
+  word-break: break-all;
+}
+
 nav button .fa-caret-down {
   margin-left: 2px;
+}
+
+nav section {
+  display: block;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  box-shadow: none;
+  font-size: 12px;
+}
+
+nav section section {
+  border: 1px solid #dde;
+  margin: 0;
+}
+
+nav section > :first-child {
+  margin-top: 0;
+}
+
+nav section > :last-child {
+  margin-bottom: 0;
+}
+
+nav section.transparent {
+  background: transparent;
+}
+
+nav file-display {
+  max-height: 25vh;
+  overflow: hidden;
+}
+
+nav selection-info[full-view] file-display {
+  max-height: none;
+}
+
+nav section .bottom-ctrls {
+  margin: 0 -8px -8px;
+  border-top: 1px solid #eef;
+  padding-top: 4px;
+}
+
+nav social-signals {
+  padding: 0 2px;
+  margin-bottom: 10px;
 }
 
 nav .facts {
@@ -204,6 +218,16 @@ nav .facts > span {
   display: inline-block;
   white-space: nowrap;
   margin-right: 5px;
+}
+
+nav .help {
+ background: transparent;
+ border: 1px solid #b7b7d0;
+ color: #85859e;
+}
+
+nav .help table tr:not(:last-child) td {
+  padding-bottom: 5px;
 }
 
 .header {

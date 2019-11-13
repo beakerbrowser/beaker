@@ -14,6 +14,7 @@ import './view/query.js'
 import './com/drive-info.js'
 import './com/viewfile-info.js'
 import './com/selection-info.js'
+import './com/contextual-help.js'
 
 const ICONS = {
   root: {
@@ -476,6 +477,10 @@ export class ExplorerApp extends LitElement {
           </main>
           ${this.hideNavRight ? '' : html`
             <nav class="right">
+              <drive-info
+                .driveInfo=${this.driveInfo}
+                user-url=${this.user.url}
+              ></drive-info>
               ${this.selection.length > 0 ? html`
                 <selection-info
                   user-url=${this.user.url}
@@ -491,12 +496,14 @@ export class ExplorerApp extends LitElement {
                   .pathInfo=${this.pathInfo}
                   .viewfileObj=${this.viewfileObj}
                 ></viewfile-info>
-              ` : html`
-                <drive-info
-                  .driveInfo=${this.driveInfo}
-                  user-url=${this.user.url}
-                ></drive-info>
-              `}
+              ` : ''}
+              <contextual-help
+                user-url=${this.user.url}
+                .driveInfo=${this.driveInfo}
+                .pathInfo=${this.pathInfo}
+                .mountInfo=${this.mountInfo}
+                .selection=${this.selection}
+              ></contextual-help>
               ${this.selection.length <= 1 ? html`
                 <section class="transparent">
                   <p><a href=${selectionUrl} target="_blank"><span class="fa-fw fas fa-external-link-alt"></span> Open ${this.selection.length ? 'selected' : ''} in new tab</a></p>

@@ -56,30 +56,29 @@ export class SelectionInfo extends LitElement {
     var sel = this.selection[0]
     var selPathname = joinPath(location.pathname, sel.name)
     var selRealUrl = this.getRealUrl(selPathname)
-    console.log(sel)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <section>
         <h3><a href=${selRealUrl}>${sel.name}</a></h3>
+        <p><code>${selPathname}</code></p>
         <p class="facts">
           ${this.renderDrive()}
           ${this.renderSize()}
         </p>
+        ${sel.mountInfo ? html`
+          <drive-info .driveInfo=${sel.mountInfo} user-url=${this.userUrl}></drive-info>
+        ` : ''}
+        ${!this.noPreview && sel.stat.isFile() ? html`
+          <section>
+            <file-display
+              drive-url=${sel.drive.url}
+              pathname=${sel.path}
+              .info=${sel}
+            ></file-display>
+          </section>
+        ` : ''}
       </section>
-      ${sel.mountInfo ? html`
-        <drive-info .driveInfo=${sel.mountInfo} user-url=${this.userUrl}></drive-info>
-      ` : ''}
-      ${!this.noPreview && sel.stat.isFile() ? html`
-        <section>
-          <h5>Preview</h5>
-          <file-display
-            drive-url=${sel.drive.url}
-            pathname=${sel.path}
-            .info=${sel}
-          ></file-display>
-        </section>
-      ` : ''}
-      <section>
+      ${''/* TODO <section>
         <social-signals
           user-url=${this.userUrl}
           topic=${selRealUrl}
@@ -90,14 +89,14 @@ export class SelectionInfo extends LitElement {
           topic-url="${selRealUrl}"
           user-url="${this.userUrl}"
         ></beaker-comments-thread>
-      </section>
+      </section>*/}
     `
   }
 
   renderDrive () {
     if (this.selection.length !== 1) return undefined
     var drive = this.selection[0].drive
-    return html`<span><small>Drive:</small> <a href=${drive.url} title=${drive.title}>${drive.title}</a>`
+    return html`<span><span class="far fa-fw fa-hdd"></span> <a href=${drive.url} title=${drive.title}>${drive.title}</a>`
   }
 
   renderSize () {

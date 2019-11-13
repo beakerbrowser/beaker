@@ -69,7 +69,7 @@ export class FileList extends LitElement {
       >
         ${this.showOrigin ? html`<span class="author">${driveTitle}</span>` : ''}
         <span class="fas fa-fw fa-${item.icon}"></span>
-        <span class="name">${this.showOrigin ? item.path : item.name}</span>
+        <span class="name">${this.showOrigin ? item.path : item.name} ${item.mountInfo ? html`<span class="fas fa-external-link-square-alt"></span>` : ''}</span>
         <span class="date">${this.dateFormatter.format(item.stat.ctime)} <span>at</span> ${this.timeFormatter.format(item.stat.ctime)}</span>
         <span class="size">${item.stat.size ? formatBytes(item.stat.size) : ''}</span>
       </div>
