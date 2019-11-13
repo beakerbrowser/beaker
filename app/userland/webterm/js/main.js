@@ -227,7 +227,7 @@ class WebTerm extends LitElement {
     } else if (output.toHTML) {
       output = unsafeHTML(output.toHTML())
     } else if (typeof output !== 'string' && !(output instanceof TemplateResult)) {
-      output = JSON.stringify(output).replace(/^"|"$/g, '')
+      output = JSON.stringify(output)
     }
     thenCWD = thenCWD || this.cwd
     this.outputHist.splice(outputHistIndex, 1, html`
