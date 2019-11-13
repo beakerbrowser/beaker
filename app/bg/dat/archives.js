@@ -19,6 +19,7 @@ import * as datAssets from './assets'
 import datDns from './dns'
 
 // fs modules
+import * as filesystem from '../filesystem/index'
 import * as users from '../filesystem/users'
 
 // constants
@@ -431,6 +432,9 @@ export async function getArchiveInfo (key) {
     archive.getInfo()
   ])
   manifest = manifest || {}
+  if (filesystem.isRootUrl(archive.url) && !meta.title) {
+    meta.title = 'My Home Drive'
+  }
   meta.key = key
   meta.url = archive.url
   meta.domain = archive.domain
