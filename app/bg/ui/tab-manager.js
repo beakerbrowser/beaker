@@ -228,7 +228,7 @@ class Tab {
       var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
         if (filesystem.isRootUrl(this.datInfo.url)) {
-          return 'Filesystem'
+          return 'My Home Drive'
         }
         if (this.datInfo.type === 'unwalled.garden/person') {
           return this.datInfo.title || 'Anonymous'
