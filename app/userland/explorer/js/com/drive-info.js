@@ -57,13 +57,13 @@ export class DriveInfo extends LitElement {
                 ${until(this.renderAddBtn(), '')}
               </button>
             ` : html`
-              <span class="label">My profile</span>
+              <span class="label verified"><span class="fas fa-fw fa-check-circle"></span> My profile</span>
             `}
           </div>
         ` : ''}
         ${this.driveInfo.url === navigator.filesystem.url ? html`
           <div class="bottom-ctrls">
-            <span class="label">My home drive</span>
+            <span class="label verified"><span class="fas fa-fw fa-check-circle"></span> My home drive</span>
           </div>
         ` : ''}
       </section>

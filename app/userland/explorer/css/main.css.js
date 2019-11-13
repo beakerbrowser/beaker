@@ -37,6 +37,11 @@ a:hover {
   font-weight: 500;
 }
 
+.label.verified {
+  color: #2196F3;
+  background: #e6f1ff;
+}
+
 .menubar {
   position: fixed;
   top: 0;
