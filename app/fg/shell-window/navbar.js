@@ -14,7 +14,6 @@ class ShellWindowNavbar extends LitElement {
       activeTab: {type: Object},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
-      isUsersMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -25,7 +24,6 @@ class ShellWindowNavbar extends LitElement {
     this.activeTab = null
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
-    this.isUsersMenuOpen = false
     this.isBrowserMenuOpen = false
   }
 
@@ -97,7 +95,6 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons" style="padding-left: 0">
         ${this.watchlistBtn}
-        ${this.usersMenuBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -221,15 +218,6 @@ class ShellWindowNavbar extends LitElement {
         ${this.isUpdateAvailable
           ? html`<span class="fas fa-arrow-alt-circle-up"></span>`
           : html`<span class="fa fa-bars"></span>`}
-      </button>
-    `
-  }
-
-  get usersMenuBtn () {
-    const cls = classMap({'users-btn': true, pressed: this.isUsersMenuOpen})
-    return html`
-      <button class=${cls} @click=${this.onClickUsersMenu} style="margin: 0px 2px">
-        <span class="fas fa-fw fa-user-circle"></span>
       </button>
     `
   }

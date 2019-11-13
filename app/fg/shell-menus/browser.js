@@ -19,7 +19,7 @@ class BrowserMenu extends LitElement {
     const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
     this.accelerators = {
       newWindow: cmdOrCtrlChar + 'N',
-      newTab: cmdOrCtrlChar + 'T',
+      print: cmdOrCtrlChar + 'P',
       findInPage: cmdOrCtrlChar + 'F',
       history: cmdOrCtrlChar + (isDarwin ? 'Y' : 'H'),
       openFile: cmdOrCtrlChar + 'O'
@@ -39,13 +39,14 @@ class BrowserMenu extends LitElement {
   }
 
   async init () {
-    this.profile = await bg.beakerBrowser.getUserSession().catch(err => undefined)
+    this.user = await bg.users.getCurrent().catch(err => undefined)
+    this.users = await bg.users.list()
     this.bookmarks = await bg.bookmarks.list({sortBy: 'title'})
     await this.requestUpdate()
   }
 
   render () {
-    if (!this.profile) {
+    if (!this.user) {
       return html`<div></div>`
     }
 
@@ -57,12 +58,12 @@ class BrowserMenu extends LitElement {
       return this.renderBookmarks()
     }
 
-    if (this.submenu === 'system') {
-      return this.renderSystem()
+    if (this.submenu === 'switch-user') {
+      return this.renderSwitchUser()
     }
 
-    if (this.submenu === 'this-page') {
-      return this.renderThisPage()
+    if (this.submenu === 'tools') {
+      return this.renderTools()
     }
 
     // auto-updater
@@ -83,17 +84,10 @@ class BrowserMenu extends LitElement {
       <div class="wrapper">
         ${autoUpdaterEl}
 
-        <div class="section gray">
-          <div class="menu-item-group">
-            <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
-              <span class="label">New Window</span>
-              <span class="shortcut">${this.accelerators.newWindow}</span>
-            </div>
-
-            <div class="menu-item" @click=${e => this.onOpenNewTab()}>
-              <span class="label">New Tab</span>
-              <span class="shortcut">${this.accelerators.newTab}</span>
-            </div>
+        <div class="menu-item user current-user" @click=${e => this.onOpenPage(e, this.user.url)}>
+          <img src="asset:thumb:${this.user.url}?cache_buster=${Date.now()}">
+          <div class="user-details">
+            <div class="user-title">${this.user.title}</div>
           </div>
         </div>
 
@@ -123,19 +117,41 @@ class BrowserMenu extends LitElement {
           </div>*/}
 
           <div class="menu-item" @click=${e => this.onShowSubmenu('bookmarks')}>
+            <i class="far fa-star"></i>
             <span class="label">Bookmarks</span>
             <i class="more fa fa-angle-right"></i>
           </div>
 
-          <div class="menu-item" @click=${e => this.onShowSubmenu('this-page')}>
-            <span class="label">This Page</span>
-            <i class="more fa fa-angle-right"></i>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('switch-user')}>
+            <i class="far fa-user"></i>
+            <span class="label">Switch user</span>
+            <i class="more fas fa-angle-right"></i>
           </div>
 
-          <div class="menu-item" @click=${e => this.onShowSubmenu('system')}>
-            <span class="label">System</span>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('tools')}>
+            <i class="fas fa-tools"></i>
+            <span class="label">Tools</span>
             <i class="more fa fa-angle-right"></i>
           </div>
+        </div>
+
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
+            <i class="far fa-window-restore"></i>
+            <span class="label">New Window</span>
+            <span class="shortcut">${this.accelerators.newWindow}</span>
+          </div>
+
+          <div class="menu-item" @click=${this.onClickPrint}>
+            <i class="fas fa-print"></i>
+            <span class="label">Print page</span>
+            <span class="shortcut">${this.accelerators.print}</span>
+          </div>
+
+          ${''/*<div class="menu-item" @click=${this.onClickSavePage}>
+            <i class="fas fa-file-export"></i>
+            Export page as file
+          </div>*/}
         </div>
 
         <div class="section">
@@ -191,7 +207,43 @@ class BrowserMenu extends LitElement {
       </div>`
   }
 
-  renderSystem () {
+
+  renderSwitchUser () {
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="header">
+          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+            <i class="fa fa-angle-left"></i>
+          </button>
+          <h2>Switch user</h2>
+        </div>
+
+        <hr>
+
+        ${this.users.map(user => html`
+          <div class="menu-item user" @click=${e => this.onOpenUser(e, user)}>
+            <img src="asset:thumb:${user.url}?cache_buster=${Date.now()}">
+            <div class="user-details">
+              <div class="user-title">${user.title}</div>
+            </div>
+          </div>
+        `)}
+
+        <hr>
+
+        <div class="menu-item" @click=${this.onCreateNewUser}>
+          <i class="fas fa-plus"></i>
+          <span>New user</span>
+        </div>
+        <div class="menu-item" @click=${this.onCreateTemporaryUser}>
+          <i class="far fa-user"></i>
+          <span>Temporary user</span>
+        </div>
+      </div>`
+  }
+
+  renderTools () {
     // render the progress bar if downloading anything
     var progressEl = ''
     if (this.shouldPersistDownloadsIndicator && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
@@ -205,7 +257,7 @@ class BrowserMenu extends LitElement {
           <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
             <i class="fa fa-angle-left"></i>
           </button>
-          <h2>System</h2>
+          <h2>Tools</h2>
         </div>
 
         <div class="section">
@@ -220,41 +272,16 @@ class BrowserMenu extends LitElement {
               <span class="label">History</span>
               <span class="shortcut">${this.accelerators.history}</span>
             </div>
-
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://explorer')}>
-              <img class="favicon" src="asset:favicon:beaker://explorer">
-              <span class="label">Filesystem</span>
-            </div>
             
             <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
               <img class="favicon" src="asset:favicon:beaker://settings">
               <span class="label">Settings</span>
             </div>
-        </div>
-      </div>`
-  }
 
-  renderThisPage () {
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
-        <div class="header">
-          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
-            <i class="fa fa-angle-left"></i>
-          </button>
-          <h2>This Page</h2>
-        </div>
-
-        <div class="section">
-          <div class="menu-item" @click=${this.onClickSavePage}>
-            <i class="fas fa-download"></i>
-            Download page as file
-          </div>
-
-          <div class="menu-item" @click=${this.onClickPrint}>
-            <i class="fas fa-print"></i>
-            Print page
-          </div>
+            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://webterm')}>
+              <img class="favicon" src="asset:favicon:beaker://webterm">
+              <span class="label">Webterm</span>
+            </div>
         </div>
       </div>`
   }
@@ -323,6 +350,23 @@ class BrowserMenu extends LitElement {
     // create a new archive
     const url = await bg.datArchive.createArchive()
     bg.beakerBrowser.openUrl(url, {setActive: true, isSidebarActive: true})
+  }
+
+  onOpenUser (e, user) {
+    bg.shellMenus.createWindow({userSession: user})
+    bg.shellMenus.close()
+  }
+
+  async onCreateNewUser () {
+    bg.shellMenus.close()
+    var user = await bg.shellMenus.createModal('user', {})
+    bg.shellMenus.createWindow({userSession: {url: user.url}})
+  }
+
+  async onCreateTemporaryUser () {
+    bg.shellMenus.close()
+    var user = await bg.users.createTemporary()
+    bg.shellMenus.createWindow({userSession: {url: user.url, isTemporary: true}})
   }
 
   /*async onCreateSiteFromFolder (e) {
@@ -466,6 +510,33 @@ BrowserMenu.styles = [commonCSS, css`
 .menu-item.downloads progress {
   margin-left: 20px;
   width: 100px;
+}
+
+.menu-item.user {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 400;
+  height: 60px;
+}
+
+.menu-item.user img {
+  margin-right: 14px;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+}
+
+.menu-item.current-user {
+  height: 76px;
+  border-bottom: 1px solid #ccc;
+  cursor: default;
+  font-size: 18px;
+}
+
+.menu-item.current-user img {
+  height: 48px;
+  width: 48px;
 }
 `]
 

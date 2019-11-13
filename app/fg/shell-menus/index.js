@@ -2,7 +2,6 @@
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
 import './browser'
-import './users'
 import './bookmark'
 import './donate'
 
