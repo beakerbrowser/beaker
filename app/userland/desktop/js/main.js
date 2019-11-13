@@ -24,11 +24,14 @@ class DesktopApp extends LitElement {
     this.pins = []
     this.draggedPin = null
     this.dragStartTime = 0
+    this.userUrl = ''
     this.load()
   }
 
   async load () {
+    this.userUrl = `dat://${(await navigator.filesystem.stat('/public')).mount.key}`
     this.pins = await pins.load()
+    console.log(this.userUrl)
   }
 
   // rendering
@@ -38,8 +41,39 @@ class DesktopApp extends LitElement {
     if (!this.pins) {
       return html`<div></div>`
     }
+    const fs = navigator.filesystem.url
+    const user = this.userUrl
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="ctrl-bar right">
+        <button class="transparent tooltip-left" @click=${this.onClickNewDrive} data-type="" data-tooltip="New Files Drive">
+          <span class="relative"><span class="icon far fa-hdd"></span> <span class="fas fa-plus plusmod"></span></span>
+        </button>
+        <button class="transparent tooltip-left" @click=${this.onClickNewDrive} data-type="website" data-tooltip="New Website">
+          <span class="relative"><span class="icon fas fa-sitemap"></span> <span class="fas fa-plus plusmod"></span></span>
+        </button>
+      </div>
+      <div class="ctrl-bar left">
+        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}" data-tooltip="My Home Drive">
+          <span class="icon fas fa-home"></span>
+        </button>
+        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}/library" data-tooltip="My Library">
+          <span class="icon fas fa-university"></span>
+        </button>
+        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${user}/friends" data-tooltip="My Friends">
+          <span class="icon fas fa-user-friends"></span>
+        </button>
+        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${user}" data-tooltip="My Profile">
+          <span class="icon fas fa-user-circle"></span>
+        </button>
+        <div style="flex: 1"></div>
+        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="beaker://webterm/" data-tooltip="Webterm">
+          <span class="icon fas fa-terminal"></span>
+        </button>
+        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="beaker://settings/" data-tooltip="Settings">
+          <span class="icon fas fa-cog"></span>
+        </button>
+      </div>
       ${this.renderPins()}
     `
   }
@@ -72,6 +106,18 @@ class DesktopApp extends LitElement {
 
   // events
   // =
+
+  onClickLinkBtn (e) {
+    var href = e.currentTarget.dataset.href
+    if (e.metaKey) window.open(href)
+    else window.location = href
+  }
+
+  async onClickNewDrive (e) {
+    var type = e.currentTarget.dataset.type
+    var drive = await DatArchive.create({type})
+    window.location = drive.url
+  }
 
   async onClickAdd () {
     try {
