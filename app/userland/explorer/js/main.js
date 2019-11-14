@@ -271,10 +271,14 @@ export class ExplorerApp extends LitElement {
     return [
       {id: 'new-drive', label: html`<span class="far fa-fw fa-hdd"></span> New hyperdrive`},
       {divider: true},
-      {heading: 'Locations'},
+      {heading: 'Private Locations'},
       {id: 'filesystem', label: html`<span class="fas fa-fw fa-home"></span> Home drive`},
-      {id: 'library', label: html`<span class="fas fa-fw fa-university"></span> My Library`},
-      {id: 'public', label: html`<span class="fas fa-fw fa-user-circle"></span> My Profile`},
+      {id: 'library', label: html`<span class="fas fa-fw fa-university"></span> Library`},
+      {divider: true},
+      {heading: 'Public Locations'},
+      {id: 'public', label: html`<span class="fas fa-fw fa-user-circle"></span> Profile`},
+      {id: 'feed', label: html`<span class="fas fa-fw fa-rss"></span> Feed`},
+      {id: 'friends', label: html`<span class="fas fa-fw fa-user-friends"></span> Friends`}
     ]
   }
 
@@ -578,10 +582,9 @@ export class ExplorerApp extends LitElement {
       case 'new-drive': this.onNewDrive(); break
       case 'filesystem': window.location = navigator.filesystem.url; break
       case 'library': window.location = navigator.filesystem.url + '/library'; break
-      case 'public':
-        let st = await navigator.filesystem.stat('/public')
-        window.location = `dat://${st.mount.key}`
-        break
+      case 'public': window.location = this.user.url; break
+      case 'feed': window.location = this.user.url + '/feed'; break
+      case 'friends': window.location = this.user.url + '/friends'; break
     }
   }
 
