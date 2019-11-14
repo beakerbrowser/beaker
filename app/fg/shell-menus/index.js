@@ -47,6 +47,15 @@ class MenusWrapper extends LitElement {
 
     // global event listeners
     window.addEventListener('blur', e => {
+      try {
+        // check if any menu needs to stay open
+        if (this.shadowRoot.querySelector('[active-menu]').hasAttribute('stay-open')) {
+          return
+        }
+      } catch (e) {
+        // ignore
+      }
+
       bg.shellMenus.close()
 
       // reset any active state
@@ -70,15 +79,15 @@ class MenusWrapper extends LitElement {
   renderMenu () {
     switch (this.currentMenu) {
       case 'browser':
-        return html`<browser-menu></browser-menu>`
+        return html`<browser-menu active-menu></browser-menu>`
       case 'users':
-        return html`<users-menu></users-menu>`
+        return html`<users-menu active-menu></users-menu>`
       case 'location':
-        return html`<location-menu></location-menu>`
+        return html`<location-menu active-menu></location-menu>`
       case 'bookmark':
-        return html`<bookmark-menu></bookmark-menu>`
+        return html`<bookmark-menu active-menu></bookmark-menu>`
       case 'donate':
-        return html`<donate-menu></donate-menu>`
+        return html`<donate-menu active-menu></donate-menu>`
     }
     return html`<div></div>`
   }

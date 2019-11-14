@@ -62,6 +62,10 @@ export async function create (webContents, modalName, params = {}) {
     // use its containing window
     tab = tabManager.findTab(parentView)
     parentWindow = findWebContentsParentWindow(parentView.webContents)
+    if (!tab) {
+      // this can happen when the passed `webContents` is a shell-menu or similar sub-window
+      tab = tabManager.getActive(parentWindow)
+    }
   } else if (!parentView) {
     // if there's no view, then the shell window created the prompt
     // attach it to the active view

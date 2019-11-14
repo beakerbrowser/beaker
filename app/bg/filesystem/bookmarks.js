@@ -1,5 +1,5 @@
 import normalizeURL from 'normalize-url'
-import { slugifyUrl } from '../../lib/strings.js'
+import { joinPath, slugifyUrl } from '../../lib/strings.js'
 import { query } from './query.js'
 import * as filesystem from './index'
 
@@ -11,12 +11,9 @@ import * as filesystem from './index'
  */
 export async function list () {
   var files = (await query({
-    path: [
-      `/data/unwalled.garden/bookmarks/*.json`,
-      `/public/data/unwalled.garden/bookmarks/*.json`
-    ]
+    path: '/library/bookmarks/*.goto',
   }))
-  return Promise.all(files.map(readBookmark))
+  return files.map(massageBookmark)
 }
 
 /**
@@ -24,37 +21,26 @@ export async function list () {
  * @returns {Promise<Object>}
  */
 export async function get (href) {
-  var slug = toSlug(href)
   var file = (await query({
-    path: [
-      `/data/unwalled.garden/bookmarks/${slug}.json`,
-      `/public/data/unwalled.garden/bookmarks/${slug}.json`
-    ]
+    path: '/library/bookmarks/*.goto',
+    metadata: {href}
   }))[0]
   if (!file) return null
-  return readBookmark(file)  
+  return massageBookmark(file)  
 }
 
 /**
  * @param {Object} bookmark
+ * @param {string} bookmark.location
  * @param {string} bookmark.href
  * @param {string} bookmark.title
- * @param {string} [bookmark.description]
- * @param {boolean} bookmark.isPublic
  * @returns {Promise<string>}
  */
-export async function add ({href, title, description, isPublic}) {
+export async function add ({location, href, title}) {
+  location = location || '/library/bookmarks'
   var slug = toSlug(href)
-  var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
-
-  await filesystem.get().pda.writeFile(path, JSON.stringify({
-    type: 'unwalled.garden/bookmark',
-    href,
-    title,
-    description,
-    createdAt: (new Date()).toISOString()
-  }, null, 2))
-
+  var path = joinPath(location, slug + '.goto')
+  await filesystem.get().pda.writeFile(path, '', {metadata: {href, title}})
   return path
 }
 
@@ -68,6 +54,8 @@ export async function add ({href, title, description, isPublic}) {
  * @returns {Promise<string>}
  */
 export async function update (oldHref, {href, title, description, isPublic}) {
+  return // TODO - is this function needed?
+
   // read existing
   var oldBookmark = await get(oldHref)
   if (!oldBookmark) return add({href, title, description, isPublic})
@@ -104,6 +92,7 @@ export async function update (oldHref, {href, title, description, isPublic}) {
  * @returns {Promise<void>}
  */
 export async function remove (href) {
+  return // TODO - is this function needed?
   var oldBookmark = await get(href)
   if (!oldBookmark) return
 
@@ -129,14 +118,9 @@ function toSlug (href = '') {
   return slugifyUrl(href)
 }
 
-async function readBookmark (file) {
-  var content
-  try {
-    content = JSON.parse(await filesystem.get().pda.readFile(file.path))
-  } catch (e) {
-    return null
+function massageBookmark (file) {
+  return {
+    href: file.stat.metadata.href,
+    title: file.stat.metadata.title || file.stat.metadata.href
   }
-
-  content.isPublic = file.path.startsWith('/public')
-  return content
 }

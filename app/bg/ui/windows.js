@@ -352,7 +352,7 @@ export function getUserSessionFor (wc) {
   var win = findWebContentsParentWindow(wc)
   if (!win) win = tabManager.findContainingWindow(BrowserView.fromWebContents(wc))
   if (!win) win = sidebarsSubwindow.findContainingWindow(BrowserView.fromWebContents(wc))
-  var sess = sessionWatcher.getState(win).userSession
+  var sess = win ? sessionWatcher.getState(win).userSession : undefined
 
   // return if good
   if (sess && users.isUser(sess.url)) {

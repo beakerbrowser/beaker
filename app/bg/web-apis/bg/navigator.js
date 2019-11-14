@@ -2,6 +2,7 @@ import { BrowserView } from 'electron'
 import * as windows from '../../ui/windows'
 import * as tabManager from '../../ui/tab-manager'
 import * as modals from '../../ui/subwindows/modals'
+import * as filesystem from '../../filesystem/index'
 import * as datArchives from '../../dat/archives'
 import assert from 'assert'
 import { UserDeniedError } from 'beaker-error-constants'
@@ -65,7 +66,7 @@ export default {
 
     // set defaults
     if (!opts.archive) {
-      opts.archive = userSession.url
+      opts.archive = filesystem.get().url
     }
 
     // initiate the modal
@@ -113,7 +114,7 @@ export default {
 
     // set defaults
     if (!opts.archive) {
-      opts.archive = userSession.url
+      opts.archive = filesystem.get().url
     }
 
     // initiate the modal

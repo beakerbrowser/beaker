@@ -96,7 +96,7 @@ class NavbarLocation extends LitElement {
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
       ${this.renderInstallBtn()}
-      ${this.renderBookmarkBtn()}
+      ${this.renderLinkBtn()}
     `
   }
 
@@ -247,15 +247,10 @@ class NavbarLocation extends LitElement {
     `
   }
 
-  renderBookmarkBtn () {
-    const cls = classMap({
-      far: !this.isBookmarked,
-      fas: this.isBookmarked,
-      'fa-star': true
-    })
+  renderLinkBtn () {
     return html`
-      <button class="bookmark-btn" @click=${this.onClickBookmark}>
-        <span class="${cls}"></span>
+      <button class="link-btn" @click=${this.onClickLink}>
+        <span class="fas fa-link"></span>
       </button>
     `
   }
@@ -265,7 +260,7 @@ class NavbarLocation extends LitElement {
 
   onCommand (e, cmd) {
     if (cmd === 'create-bookmark') {
-      this.onClickBookmark()
+      this.onClickLink()
     }
     if (cmd === 'focus-location') {
       this.focusLocation()
@@ -356,8 +351,8 @@ class NavbarLocation extends LitElement {
     this.isDonateMenuOpen = false
   }
 
-  async onClickBookmark () {
-    var rect = this.shadowRoot.querySelector('.bookmark-btn').getClientRects()[0]
+  async onClickLink () {
+    var rect = this.shadowRoot.querySelector('.link-btn').getClientRects()[0]
     // show menu
     bg.views.toggleMenu('bookmark', {
       bounds: {
@@ -419,16 +414,13 @@ button.text .fa-info-circle {
   font-size: 14px;
 }
 
-button .fa-star {
+button.link-btn {
+  border-radius: 4px;
+  margin: 0;
+}
+
+button .fa-link {
   font-size: 14px;
-}
-
-button .fas.fa-star {
-  color: #f3cc00;
-}
-
-button .fa-terminal {
-  font-size: 13px;
 }
 
 button.zoom {
