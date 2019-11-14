@@ -862,7 +862,9 @@ function getDriveTitle (info) {
 }
 
 function getGlobalSavedConfig (name, fallback = undefined) {
-  return localStorage.getItem(`setting:${name}`) || fallback
+  var value = localStorage.getItem(`setting:${name}`)
+  if (value === null) return fallback
+  return value
 }
 
 function setGlobalSavedConfig (name, value) {
@@ -870,7 +872,9 @@ function setGlobalSavedConfig (name, value) {
 }
 
 function getSavedConfig (name, fallback = undefined) {
-  return localStorage.getItem(`setting:${name}:${location.pathname}`) || fallback
+  var value = localStorage.getItem(`setting:${name}:${location.pathname}`)
+  if (value === null) return fallback
+  return value
 }
 
 function setSavedConfig (name, value) {
