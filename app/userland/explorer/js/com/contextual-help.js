@@ -52,15 +52,17 @@ export class ContextualHelp extends LitElement {
       'here': hasSel ? 'there' : 'here',
       'this drive': hasSel ? 'that drive' : 'this drive'
     }
-    var path = hasSel ? sel.path : this.realPathname
+    var path = hasSel ? (sel.mountInfo ? '/' : sel.path) : this.realPathname
     if (target.url === this.userUrl) {
       var help
       if (path === '/feed') {
         help = `${labels['This(folder)']} is your feed. Save files ${labels['here']} to share them with your network.`
       } else if (path === '/friends') {
         help = `${labels['This(folder)']} contains your friends. Add users' drives ${labels['here']} to follow their activity.`
-      } else {
+      } else if (path === '/' || !self) {
         help = `${labels['This(drive)']} is your public profile. It represents you on the network.`
+      } else {
+        return html``
       }
       return html`
         <section class="help">
@@ -77,8 +79,10 @@ export class ContextualHelp extends LitElement {
         help = `${labels['This(folder)']} contains all your saved files and drives.`
       } else if (path === '/settings') {
         help = `${labels['This(folder)']} contains configuration for your system.`
-      } else {
+      } else if (path === '/' || !sel) {
         help = `${labels['This(drive)']} is your private home drive. It contains all of your personal data.`
+      } else {
+        return html``
       }
       return html`
         <section class="help">
