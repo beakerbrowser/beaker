@@ -208,6 +208,8 @@ export class ExplorerApp extends LitElement {
         }
       } else if (item.stat.isFile() && item.name.endsWith('.view')) {
         item.icon = 'layer-group'
+      } else if (item.stat.isFile() && item.name.endsWith('.goto')) {
+        item.icon = 'link'
       } else {
         item.subicon = getSubicon(driveKind, item)
       }
@@ -318,7 +320,7 @@ export class ExplorerApp extends LitElement {
     if (this.pathInfo.isDirectory()) {
       return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
     } else {
-      if (this.realPathname.endsWith('.md')) {
+      if (this.realPathname.endsWith('.md') || this.realPathname.endsWith('.goto')) {
         return [['default', 'file', 'File'], ['raw', 'code', 'Raw File']]
       }
       if (this.realPathname.endsWith('.view')) {
@@ -544,6 +546,8 @@ export class ExplorerApp extends LitElement {
     var {item} = e.detail
     if (item.stat.mount) {
       window.location = `dat://${item.stat.mount.key}`
+    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
+      window.location = item.stat.metadata.href
     } else if (this.isViewingQuery) {
       window.location = item.url
     } else {
