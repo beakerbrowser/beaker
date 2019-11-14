@@ -65,56 +65,24 @@ export async function setup () {
   logger.info('Loading root archive', {url: browsingProfile.url})
   try {
     // ensure common dirs
-    await ensureDir(PATHS.DATA)
-    await ensureDir(PATHS.DATA_NS('unwalled.garden'))
-    await ensureDir(joinPath(PATHS.DATA_NS('unwalled.garden'), 'bookmarks'))
     await ensureDir(PATHS.LIBRARY)
+    await ensureDir(PATHS.LIBRARY_NS('bookmarks'))
+    await ensureDir(PATHS.LIBRARY_NS('comments'))
+    await ensureDir(PATHS.LIBRARY_NS('documents'))
+    await ensureDir(PATHS.LIBRARY_NS('media'))
+    await ensureDir(PATHS.LIBRARY_NS('projects'))
     await ensureDir(PATHS.SETTINGS)
 
     // ensure all user mounts are set
-    await ensureDir(PATHS.USERS)
     for (let user of userList) {
-      if (user.isDefault) await ensureMount(PATHS.DEFAULT_USER, user.url)
-      if (!user.isTemporary) {
-        await ensureMount(PATHS.USER(user.label), user.url)
+      if (user.isDefault) {
+        await ensureMount(PATHS.DEFAULT_USER, user.url)
       }
     }
-
-    // clear out any old user mounts
-    let usersFilenames = await rootArchive.pda.readdir(PATHS.USERS)
-    for (let filename of usersFilenames) {
-      if (!userList.find(u => u.label === filename)) {
-        let path = PATHS.USER(filename)
-        let st = await stat(path)
-        if (st && st.mount) {
-          logger.info('Removing old /users mount', {path})
-          await rootArchive.pda.unmount(path)
-        }
-      }
-    }
-
-    // TODO remove /users mounts under old labels
   } catch (e) {
-    console.error('Error while constructing the root archive', e)
-    logger.error('Error while constructing the root archive', e)
+    console.error('Error while constructing the root archive', e.toString())
+    logger.error('Error while constructing the root archive', {error: e.toString()})
   }
-}
-
-/**
- * @param {User} user
- * @returns {Promise<void>}
- */
-export async function addUser (user) {
-  await ensureMount(PATHS.USER(user.label), user.url)
-  if (user.isDefault) await ensureMount(PATHS.DEFAULT_USER, user.url)
-}
-
-/**
- * @param {User} user
- * @returns {Promise<void>}
- */
-export async function removeUser (user) {
-  await ensureUnmount(PATHS.USER(user.label))
 }
 
 /**
@@ -145,7 +113,7 @@ async function ensureDir (path) {
       logger.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
     }
   } catch (e) {
-    logger.error('Filesystem failed to make directory', {path, error: e})
+    logger.error('Filesystem failed to make directory', {path: '' + path, error: e})
   }
 }
 

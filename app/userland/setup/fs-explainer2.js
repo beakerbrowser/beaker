@@ -30,7 +30,7 @@ customElements.define('fs-explainer2-view', class extends BaseSlideView {
   </p>
   <div class="fadeout">
     <p class="sidenote">
-      It contains your public content, including your<br><strong><span class="fas fa-university"></span> Public Library</strong> and <strong><span class="fas fa-rss"></span> Feed</strong>.
+      It contains your public content, including your<br><strong><span class="fas fa-user-friends"></span> Friends</strong> and <strong><span class="fas fa-rss"></span> Feed</strong>.
     </p>
   </div>
 </div>

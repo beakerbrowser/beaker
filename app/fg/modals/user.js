@@ -7,14 +7,11 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
 import defaultUserThumbJpg from '../lib/default-user-thumb.jpg'
 
-const LABEL_REGEX = /[a-z0-9-]/i
-
 class UserModal extends LitElement {
   static get properties () {
     return {
       thumbDataURL: {type: String},
       thumbExt: {type: String},
-      label: {type: String},
       title: {type: String},
       description: {type: String},
       setDefault: {type: Boolean},
@@ -28,7 +25,6 @@ class UserModal extends LitElement {
     this.userUrl = ''
     this.thumbDataURL = undefined
     this.thumbExt = undefined
-    this.label = ''
     this.title = ''
     this.description = ''
     this.setDefault = false
@@ -39,7 +35,6 @@ class UserModal extends LitElement {
   async init (params, cbs) {
     this.cbs = cbs
     this.userUrl = params.url || ''
-    this.label = params.label || ''
     this.title = params.title || ''
     this.description = params.description || ''
     this.setDefault = params.isDefault
@@ -75,10 +70,6 @@ class UserModal extends LitElement {
           <label for="description">Bio / Description</label>
           <textarea name="description" tabindex="3" placeholder="Bio / Description (optional)" @change=${this.onChangeDescription} class=${this.errors.description ? 'has-error' : ''}>${this.description || ''}</textarea>
           ${this.errors.description ? html`<div class="error">${this.errors.description}</div>` : ''}
-
-          <label for="label">Label</label>
-          <input name="label" tabindex="4" value=${this.label || ''} placeholder="Label (This is used privately to help you identify your users.)" @change=${this.onChangeLabel} class=${this.errors.label ? 'has-error' : ''} />
-          ${this.errors.label ? html`<div class="error">${this.errors.label}</div>` : ''}
 
           <hr>
 
@@ -135,15 +126,10 @@ class UserModal extends LitElement {
 
   onChangeTitle (e) {
     this.title = e.target.value.trim()
-    this.label = slugify(this.title).toLowerCase()
   }
 
   onChangeDescription (e) {
     this.description = e.target.value.trim()
-  }
-
-  onChangeLabel (e) {
-    this.label = slugify(e.target.value.trim())
   }
 
   onToggleSetDefault (e) {
@@ -161,11 +147,6 @@ class UserModal extends LitElement {
     // validate
     this.errors = {}
     if (!this.title) this.errors.title = 'Required'
-    if (!this.label) this.errors.label = 'Required'
-    else if (!LABEL_REGEX.test(this.label)) this.errors.label = 'Must be letters, numbers, or dashes (no spaces)'
-    var existingUsers = await bg.users.list()
-    var existingLabelUser = existingUsers.find(u => u.label === this.label)
-    if (existingLabelUser && existingLabelUser.url !== this.userUrl) this.errors.label = 'This label is already in use'
     if (Object.keys(this.errors).length > 0) {
       return this.requestUpdate()
     }
@@ -175,7 +156,6 @@ class UserModal extends LitElement {
       var data = {
         title: this.title,
         description: this.description,
-        label: this.label,
         thumbBase64,
         thumbExt: this.thumbExt,
         setDefault: this.setDefault

@@ -92,7 +92,7 @@ export async function setup () {
       type: 'unwalled.garden/person'
     })
     await archive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
-    await users.add('anonymous', archive.url, true)
+    await users.add(archive.url, true)
   }
 
   // wire up events

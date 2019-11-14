@@ -10,7 +10,6 @@ import dat from '../../dat/index'
  * @typedef {import('../../filesystem/users').User} User
  *
  * @typedef {Object} WebAPIUser
- * @prop {string} label
  * @prop {string} url
  * @prop {boolean} isDefault
  * @prop {boolean} isTemporary
@@ -69,7 +68,6 @@ export default {
 
   /**
    * @param {Object} opts
-   * @param {string} opts.label
    * @param {boolean} opts.setDefault
    * @param {string} opts.title
    * @param {string} opts.description
@@ -79,9 +77,6 @@ export default {
    */
   async create (opts) {
     var sessionUrl = getSessionUrl(this.sender)
-
-    // validate
-    users.validateUserLabel(opts.label)
 
     // create new dat archive
     var archive = await dat.archives.createNewArchive({
@@ -96,7 +91,7 @@ export default {
     }
 
     // save user
-    return massageUserRecord(await users.add(opts.label, archive.url), sessionUrl)
+    return massageUserRecord(await users.add(archive.url), sessionUrl)
   },
 
   /**
@@ -113,23 +108,21 @@ export default {
     })
 
     // save user
-    return massageUserRecord(await users.add(`temp-${Date.now()}`, archive.url, false, true), sessionUrl)
+    return massageUserRecord(await users.add(archive.url, false, true), sessionUrl)
   },
 
   /**
-   * @param {string} label
    * @param {string} url
    * @returns {Promise<WebAPIUser>}
    */
-  async add (label, url) {
+  async add (url) {
     var sessionUrl = getSessionUrl(this.sender)
-    return massageUserRecord(await users.add(label, url), sessionUrl)
+    return massageUserRecord(await users.add(url), sessionUrl)
   },
 
   /**
    * @param {string} url
    * @param {Object} opts
-   * @param {string} [opts.label]
    * @param {boolean} [opts.setDefault]
    * @param {string} [opts.title]
    * @param {string} [opts.description]
@@ -139,9 +132,6 @@ export default {
    */
   async edit (url, opts) {
     var sessionUrl = getSessionUrl(this.sender)
-
-    // validate
-    if (opts.label) users.validateUserLabel(opts.label)
 
     // fetch user
     var user = await users.get(url)
@@ -221,7 +211,6 @@ async function writeThumbnail (archive, base64, ext) {
  */
 function massageUserRecord (record, sessionUrl) {
   return {
-    label: record.label,
     url: record.url,
     isDefault: record.isDefault,
     isTemporary: record.isTemporary,

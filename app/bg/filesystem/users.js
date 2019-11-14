@@ -1,18 +1,10 @@
-import assert from 'assert'
 import Events from 'events'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'users'})
 import dat from '../dat/index'
-import * as filesystem from './index'
 import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
 import { PATHS } from '../../lib/const'
-import { joinPath } from '../../lib/strings'
-
-// constants
-// =
-
-const LABEL_REGEX = /[a-z0-9-]/i
 
 // typedefs
 // =
@@ -22,7 +14,6 @@ const LABEL_REGEX = /[a-z0-9-]/i
  *
  * @typedef {Object} User
  * @prop {number} id
- * @prop {string} label
  * @prop {string} url
  * @prop {DaemonDatArchive} archive
  * @prop {boolean} isDefault
@@ -89,11 +80,7 @@ export async function setup () {
     }
 
     // ensure file structure
-    await ensureDirectory(user, PATHS.DATA)
-    await ensureDirectory(user, PATHS.DATA_NS('unwalled.garden'))
-    await ensureDirectory(user, joinPath(PATHS.DATA_NS('unwalled.garden'), 'annotations'))
-    await ensureDirectory(user, joinPath(PATHS.DATA_NS('unwalled.garden'), 'bookmarks'))
-    await ensureDirectory(user, joinPath(PATHS.DATA_NS('unwalled.garden'), 'comments'))
+    await ensureDirectory(user, PATHS.FEED)
     await ensureDirectory(user, PATHS.FRIENDS)
   }))
 
@@ -133,16 +120,6 @@ export async function get (url) {
 }
 
 /**
- * @param {string} label
- * @return {Promise<User>}
- */
-export async function getByLabel (label) {
-  var user = users.find(user => user.label === label)
-  if (!user) return null
-  return fetchUserInfo(user)
-}
-
-/**
  * @return {Promise<User>}
  */
 export async function getDefault () {
@@ -161,27 +138,22 @@ export function getDefaultUrl () {
 }
 
 /**
- * @param {string} label
  * @param {string} url
  * @param {boolean} [setDefault=false]
  * @param {boolean} [isTemporary=false]
  * @returns {Promise<User>}
  */
-export async function add (label, url, setDefault = false, isTemporary = false) {
+export async function add (url, setDefault = false, isTemporary = false) {
   // validate
-  validateUserLabel(label)
   await validateUserUrl(url)
 
-  // make sure the user label or URL doesnt already exist
+  // make sure the user URL doesnt already exist
   url = normalizeUrl(url)
   var existingUser = users.find(user => user.url === url)
   if (existingUser) throw new Error('User already exists at that URL')
-  existingUser = users.find(user => user.label === label)
-  if (existingUser) throw new Error('User already exists at that label')
 
   // create the new user
   var user = /** @type User */({
-    label,
     url,
     archive: null,
     isDefault: setDefault || users.length === 0,
@@ -190,11 +162,10 @@ export async function add (label, url, setDefault = false, isTemporary = false) 
   })
   logger.verbose('Adding user', {details: user.url})
   await db.run(
-    `INSERT INTO users (label, url, isDefault, isTemporary, createdAt) VALUES (?, ?, ?, ?, ?)`,
-    [user.label, user.url, Number(user.isDefault), Number(user.isTemporary), Number(user.createdAt)]
+    `INSERT INTO users (url, isDefault, isTemporary, createdAt) VALUES (?, ?, ?, ?)`,
+    [user.url, Number(user.isDefault), Number(user.isTemporary), Number(user.createdAt)]
   )
   users.push(user)
-  await filesystem.addUser(user)
 
   // fetch the user archive
   user.archive = await dat.archives.getOrLoadArchive(user.url)
@@ -208,26 +179,16 @@ export async function add (label, url, setDefault = false, isTemporary = false) 
  * @param {Object} opts
  * @param {string} [opts.title]
  * @param {string} [opts.description]
- * @param {string} [opts.label]
  * @param {boolean} [opts.setDefault]
  * @returns {Promise<User>}
  */
 export async function edit (url, opts) {
   // validate
   await validateUserUrl(url)
-  if ('label' in opts) validateUserLabel(opts.label)
 
-  // make sure the user label or URL doesnt already exist
   url = normalizeUrl(url)
-  var existingUser = users.find(user => user.label === opts.label)
-  if (existingUser && existingUser.url !== url) throw new Error('User already exists at that label')
-
   var user = users.find(user => user.url === url)
-
-  // remove old filesystem mount if the label is changing
-  if (opts.label && opts.label !== user.label) {
-    await filesystem.removeUser(user)
-  }
+  if (!user) throw new Error('User does not exist at that URL')
 
   // update the user
   if (opts.title) user.title = opts.title
@@ -239,11 +200,6 @@ export async function edit (url, opts) {
     await db.run(`UPDATE users SET isDefault = 0 WHERE isDefault = 1`)
     await db.run(`UPDATE users SET isDefault = 1 WHERE url = ?`, [user.url])
   }
-  if (opts.label) {
-    user.label = opts.label
-    await db.run(`UPDATE users SET label = ? WHERE url = ?`, [opts.label, user.url])
-  }
-  await filesystem.addUser(user)
   logger.verbose('Updated user', {details: user.url})
 
   // fetch the user archive
@@ -264,7 +220,6 @@ export async function remove (url) {
 
   // remove the user
   logger.verbose('Removing user', {details: user.url})
-  await filesystem.removeUser(user)
   users.splice(users.indexOf(user), 1)
   await db.run(`DELETE FROM users WHERE url = ?`, [user.url])
   events.emit('unload-user', user)
@@ -279,14 +234,6 @@ export function isUser (url) {
   return !!users.find(user => user.url === url)
 }
 
-/**
- * @param {string} label
- */
-export function validateUserLabel (label) {
-  assert(label && typeof label === 'string', 'Label must be a non-empty string')
-  assert(LABEL_REGEX.test(label), 'Labels can only comprise of letters, numbers, and dashes')
-}
-
 // internal methods
 // =
 
@@ -298,7 +245,6 @@ async function fetchUserInfo (user) {
   var meta = await archivesDb.getMeta(user.archive.key)
   return {
     id: user.id,
-    label: user.label,
     url: user.archive.url,
     archive: user.archive,
     isDefault: user.isDefault,

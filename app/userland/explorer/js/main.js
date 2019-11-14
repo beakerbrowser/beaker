@@ -18,19 +18,19 @@ import './com/contextual-help.js'
 
 const ICONS = {
   root: {
-    '/data': 'fas fa-database',
-    '/settings': 'fas fa-cog',
     '/library': 'fas fa-university',
-    '/users': 'fas fa-users'
+    '/library/bookmarks': 'fas fa-star',
+    '/library/comments': 'fas fa-comment',
+    '/library/documents': 'fas fa-file-word',
+    '/library/media': 'fas fa-photo-video',
+    '/library/projects': 'fas fa-coffee',
+    '/settings': 'fas fa-cog'
   },
   person: {
-    '/data': 'fas fa-database',
     '/friends': 'fas fa-user-friends',
+    '/feed': 'fa fa-rss'
   },
   common: {
-    '/data/unwalled.garden/annotations': 'fas fa-tag',
-    '/data/unwalled.garden/bookmarks': 'fas fa-star',
-    '/data/unwalled.garden/comments': 'fas fa-comment'
   }
 }
 
@@ -333,7 +333,7 @@ export class ExplorerApp extends LitElement {
     for (let i of this.items) {
       if (i.stat.mount && i.stat.mount.key) {
         switch (i.mountInfo.type) {
-          case 'unwalled.garden/person': add('people', 'People', i); break
+          case 'unwalled.garden/person': add('users', 'Users', i); break
           case 'website': add('websites', 'Websites', i); break
           case 'application': add('applications', 'Applications', i); break
           case 'webterm.sh/cmd-pkg': add('commands', 'Webterm Commands', i); break
