@@ -155,6 +155,23 @@ export async function meta (opts, location, key = undefined, ...value) {
   }
 }
 
+export async function mkgoto (opts, location, href) {
+  if (!location) throw new Error('path is required')
+  if (!href) throw new Error('href is required')
+  var {archive, pathname} = resolveParse(location)
+
+  if (!pathname.endsWith('.goto')) {
+    pathname += '.goto'
+  }
+
+  await archive.writeFile(pathname, '', {
+    metadata: {
+      href,
+      title: opts.title
+    }
+  })
+}
+
 // utilities
 // =
 

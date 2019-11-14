@@ -52,6 +52,18 @@
       ]
     },
     {
+      "name": "mkgoto",
+      "help": "Create a .goto file",
+      "usage": "mkgoto {path} {href} [-t/--title title]",
+      "options": [
+        {
+          "name": "title",
+          "abbr": "t",
+          "help": "Specify a title attribute on the .goto file"
+        }
+      ]
+    },
+    {
       "name": "peek",
       "help": "View the contents of a file into the terminal",
       "usage": "peek {path}"
