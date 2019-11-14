@@ -42,7 +42,6 @@ export class InlineFileGrid extends FileGrid {
         `
       })}
       ${isEmpty ? html`
-        <h4>Files</h4>
         <div class="empty">This folder is empty</div>
       ` : ''}
     `

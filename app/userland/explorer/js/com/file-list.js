@@ -45,7 +45,6 @@ export class FileList extends LitElement {
         `
       })}
       ${isEmpty ? html`
-        <h4>Files</h4>
         <div class="empty">This folder is empty</div>
       ` : ''}
     `
