@@ -41,7 +41,7 @@
     "fs-reverse": "0.0.3",
     "function-queue": "0.0.12",
     "hyperdrive-daemon": "git://github.com/andrewosh/hyperdrive-daemon.git#hypercore-8",
-    "hyperdrive-daemon-client": "^0.14.0",
+    "hyperdrive-daemon-client": "git://github.com/andrewosh/hyperdrive-daemon-client.git#hypercore-8",
     "hyperdrive-network-speed": "^2.1.0",
     "icojs": "^0.12.3",
     "identify-filetype": "^1.0.0",
