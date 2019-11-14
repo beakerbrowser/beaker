@@ -503,6 +503,7 @@ export class ExplorerApp extends LitElement {
               ` : ''}
               <contextual-help
                 user-url=${this.user.url}
+                real-pathname=${this.realPathname}
                 .driveInfo=${this.driveInfo}
                 .pathInfo=${this.pathInfo}
                 .mountInfo=${this.mountInfo}
