@@ -112,7 +112,7 @@ export class FileDisplay extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="mount">
-        <img src="asset:thumb:${this.info.mountInfo.url}">
+        <img src="asset:thumb:${this.info.mountInfo.url}?cache_buster=${Date.now()}">
         <div class="info">
           ${label ? html`<div class="label">${label}</div>` : ''}
           <div class="title">${this.info.mountInfo.title || 'Untitled'}</div>
