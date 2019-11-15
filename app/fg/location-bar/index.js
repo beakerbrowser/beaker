@@ -391,13 +391,13 @@ class LocationBar extends LitElement {
 LocationBar.styles = [css`
 .wrapper {
   background: #fff;
-  border-radius: 4px;
+  border-radius: 16px;
 }
 
 input {
   box-sizing: border-box;
   border: 0;
-  border-radius: 4px;
+  border-radius: 16px;
   padding: 0 54px;
 
   line-height: 26px;
@@ -513,33 +513,32 @@ input:focus {
 }
 
 .search-engines {
-  border-top: 1px solid #ddd;
-  background: #f7f7f7;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 .search-engines .label {
-  padding: 6px 8px;
-  border-bottom: 1px solid #ddd;
+  padding: 6px 8px 4px;
   font-size: 11px;
 }
 
 .search-engines .list {
   display: flex;
   align-items: center;
+  padding-bottom: 4px;
 }
 
 .search-engines .list a {
-  flex: 0 0 60px;
+  border-radius: 50%;
+  flex: 0 0 42px;
   text-align: center;
-  border-right: 1px solid #ddd;
   padding: 8px 0;
+  margin-left: 12px;
   cursor: pointer;
 }
 
 .search-engines .list a:hover {
-  background: #eee;
+  background: #f0f0f8;
 }
 
 .search-engines .list a img {
