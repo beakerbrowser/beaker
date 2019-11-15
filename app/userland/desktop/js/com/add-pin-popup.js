@@ -1,23 +1,21 @@
 /* globals beaker */
 import { html, css } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { BasePopup } from 'beaker://app-stdlib/js/com/popups/base.js'
+import buttonsCSS from 'beaker://app-stdlib/css/buttons2.css.js'
 import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import { toNiceUrl } from 'beaker://app-stdlib/js/strings.js'
+import { toNiceUrl, joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { toItemGroups, getSubicon } from 'beaker://explorer/js/lib/files.js'
+import 'beaker://explorer/js/com/inline-file-grid.js'
 
 // exported api
 // =
 
 export class AddPinPopup extends BasePopup {
-  static get properties () {
-    return {
-      suggestions: {type: Object}
-    }
-  }
-
   static get styles () {
-    return [popupsCSS, css`
+    return [buttonsCSS, popupsCSS, css`
     .popup-inner {
       width: 1000px;
     }
@@ -26,10 +24,14 @@ export class AddPinPopup extends BasePopup {
       padding: 0;
     }
 
+    .popup-inner .body > div:not(:first-child) {
+      margin-top: 0px; /* override this rule */
+    }
+
     .filter-control {
       padding: 8px 10px;
-      background: rgb(250, 250, 250);
-      border-bottom: 1px solid rgb(238, 238, 238);
+      background: #f1f1f6;
+      border-bottom: 1px solid #e0e0ee;
     }
 
     .filter-control input {
@@ -38,10 +40,49 @@ export class AddPinPopup extends BasePopup {
       width: 100%;
     }
 
-    .suggestions {
-      overflow-y: auto;
+    main {
       max-height: calc(100vh - 300px);
-      padding-top: 20px;
+      overflow-y: auto;
+    }
+
+    footer {
+      padding: 8px 10px;
+      background: #f1f1f6;
+      border-top: 1px solid #e0e0ee;
+      text-align: right;
+    }
+
+    footer button {
+      font-size: 14px;
+    }
+
+    nav {
+      padding: 4px;
+      margin: 10px;
+      border-radius: 8px;
+      background: #f6f6fd;
+    }
+
+    nav button {
+      background: #fff;
+      box-shadow: rgba(0, 0, 0, 0.15) 0px 1px 1px;
+    }
+
+    nav .path {
+      margin-left: 4px;
+    }
+
+    nav .path span {
+      margin-left: 4px;
+      letter-spacing: 0.3px;
+      color: #667;
+    }
+
+    inline-file-grid:not(.empty) {
+      padding: 18px 16px 0;
+    }
+
+    .history {
       margin-top: 0 !important;
     }
 
@@ -121,10 +162,11 @@ export class AddPinPopup extends BasePopup {
 
   constructor () {
     super()
-    this.user = null
-    this.suggestions = {}
+    this.explorerPath = '/library'
+    this.explorerItems = []
     this.query = ''
-    this.isURLFocused = false
+    this.history = []
+    this.selection = []
 
     this.initialLoad()
   }
@@ -141,12 +183,44 @@ export class AddPinPopup extends BasePopup {
   }
 
   async initialLoad () {
-    await this.loadSuggestions()
+    await this.load()
   }
 
-  async loadSuggestions () {
-    this.suggestions = [] // TODO await beaker.crawler.listSuggestions(this.user.url, this.query)
-    console.log(this.query, this.suggestions)
+  reset () {
+    this.selection = []
+    this.explorerItems = []
+    this.history = []
+  }
+
+  async load () {
+    this.reset()
+
+    var explorerItems = await navigator.filesystem.readdir(this.explorerPath, {stat: true})
+    var driveInfo = await navigator.filesystem.getInfo()
+    for (let item of explorerItems) {
+      item.drive = driveInfo
+      item.path = joinPath(this.explorerPath, item.name)
+      item.url = joinPath(navigator.filesystem.url, item.path)
+      if (item.stat.mount && item.stat.mount.key) {
+        item.mountInfo = await (new DatArchive(item.stat.mount.key)).getInfo()
+      }
+      item.subicon = getSubicon('root', item)
+    }
+    explorerItems.sort((a, b) => a.name.localeCompare(b.name))
+    
+    this.explorerItems = explorerItems
+    this.requestUpdate()
+  }
+
+  async runQuery () {
+    this.reset()
+    this.history = await beaker.history.search(this.query)
+    console.log(this.history)
+    this.requestUpdate()
+  }
+
+  get explorerItemGroups () {
+    return toItemGroups(this.explorerItems)
   }
 
   // rendering
@@ -157,42 +231,47 @@ export class AddPinPopup extends BasePopup {
   }
 
   renderBody () {
-    var hasResults = !this.query || (Object.values(this.suggestions).filter(arr => arr.length > 0).length > 0)
+    var hasResults = this.history.length > 0
     return html`  
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="filter-control">
-        <input type="text" id="search-input" name="url" placeholder="Search" @input=${this.onFocusSearch} @keyup=${e => delay(this.onChangeQuery.bind(this), e)} />
+        <input type="text" id="search-input" name="url" placeholder="Search my history" @keyup=${e => delay(this.onChangeQuery.bind(this), e)} />
       </div>
-      <div class="suggestions ${this.query ? 'query-results' : 'defaults'}">
-        ${hasResults ? '' : html`<div class="empty">No results</div>`}
-        ${this.renderSuggestionGroup('bookmarks', 'My Bookmarks')}
-        ${this.renderSuggestionGroup('websites', 'Websites')}
-        ${this.renderSuggestionGroup('people', 'People')}
-        ${this.renderSuggestionGroup('modules', 'Modules')}
-        ${this.renderSuggestionGroup('themes', 'Themes')}
-        ${this.renderSuggestionGroup('templates', 'Templates')}
-        ${this.renderSuggestionGroup('history', 'My Browsing History')}
-      </div>
+      <main>
+        ${this.query ? html`
+          <div class="history ${this.query ? 'query-results' : 'defaults'}">
+            ${hasResults ? '' : html`<div class="empty">No results</div>`}
+            ${repeat(this.history, item => this.renderHistoryItem(item))}
+          </div>
+        ` : html`
+          <nav>
+            <button @click=${this.onClickExplorerUpdog}><span class="fas fa-level-up-alt"></span></button>
+            <span class="path">${this.explorerPath.split('/').filter(Boolean).map(segment => html`<span>/</span><span>${segment}</span>`)}</span>
+          </nav>
+          <inline-file-grid
+            class=${this.explorerItems.length === 0 ? 'empty' : ''}
+            .itemGroups=${this.explorerItemGroups}
+            .selection=${this.selection}
+            @goto=${this.onExplorerGoto}
+            @change-selection=${this.onExplorerChangeSelection}
+            @show-context-menu=${this.onExplorerContextMenu}
+          ></inline-file-grid>
+        `}
+      </main>
+      <footer>
+        <button class="primary big" ?disabled=${this.selection.length === 0} @click=${this.onClickSubmit}>Pin Selected Item</button>
+      </footer>
     `
   }
 
-  renderSuggestionGroup (key, label) {
-    var group = this.suggestions[key]
-    if (!group || !group.length) return ''
+  renderHistoryItem (item) {
+    const title = item.title || 'Untitled'
     return html`
-      <div class="group">
-        <div class="group-title">${label}</div>
-        <div class="group-items">${group.map(g => this.renderSuggestion(g))}</div>
-      </div>`
-  }
-
-  renderSuggestion (row) {
-    const title = row.title || 'Untitled'
-    return html`
-      <a href=${row.url} class="suggestion" title=${title} @click=${this.onClick} @contextmenu=${this.onContextMenu}>
-        <img class="thumb" src="asset:thumb:${row.url}"/>
+      <a href=${item.url} class="suggestion" title=${title} @click=${this.onClickHistory} @contextmenu=${this.onContextMenuHistory}>
+        <img class="thumb" src="asset:thumb:${item.url}"/>
         <span class="details">
           <span class="title">${title}</span>
-          <span class="url">${toNiceUrl(row.url)}</span>
+          <span class="url">${toNiceUrl(item.url)}</span>
         </span>
       </a>
     `
@@ -205,18 +284,43 @@ export class AddPinPopup extends BasePopup {
   // events
   // =
 
-  onFocusSearch () {
-    if (!this.isURLFocused) {
-      this.isURLFocused = true
-    }
-  }
-
   async onChangeQuery (e) {
     this.query = this.shadowRoot.querySelector('input').value
-    this.loadSuggestions()
+    if (this.query) this.runQuery()
+    else this.load()
   }
 
-  async onClick (e) {
+  onClickExplorerUpdog (e) {
+    this.explorerPath = this.explorerPath.split('/').slice(0, -1).join('/') || '/'
+    this.load()
+  }
+
+  onExplorerGoto (e) {
+    var {item} = e.detail
+    if (item.stat.isFile()) {
+      this.selection = [item]
+      return this.onClickSubmit(e)
+    }
+    this.explorerPath = item.path
+    this.load()
+  }
+
+  onExplorerChangeSelection (e) {
+    this.selection = e.detail.selection
+    this.requestUpdate()
+  }
+
+  async onExplorerContextMenu (e) {
+    if (!this.selection[0]) return
+    var url = await getUrl(this.selection[0])
+    const items = [
+      {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(url)},
+      {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(url)}
+    ]
+    contextMenu.create({x: e.detail.x, y: e.detail.y, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
+  }
+
+  onClickHistory (e) {
     e.preventDefault()
     const detail = {
       href: e.currentTarget.getAttribute('href'),
@@ -225,7 +329,7 @@ export class AddPinPopup extends BasePopup {
     this.dispatchEvent(new CustomEvent('resolve', {detail}))
   }
 
-  onContextMenu (e) {
+  onContextMenuHistory (e) {
     e.preventDefault()
     var url = e.currentTarget.getAttribute('href')
     const items = [
@@ -234,17 +338,54 @@ export class AddPinPopup extends BasePopup {
     ]
     contextMenu.create({x: e.clientX, y: e.clientY, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
   }
+
+  async onClickSubmit (e) {
+    e.preventDefault()
+    var sel = this.selection[0]
+    if (!sel) return
+    const detail = {
+      href: await getUrl(sel),
+      title: getTitle(sel)
+    }
+    this.dispatchEvent(new CustomEvent('resolve', {detail}))
+  }
 }
 customElements.define('add-pin-popup', AddPinPopup)
 
 // helpers
 // =
 
-function trunc (str, n) {
-  if (str && str.length > n) {
-    str = str.slice(0, n - 3) + '...'
+async function getUrl (item) {
+  if (item.name.endsWith('.goto')) {
+    return item.stat.metadata.href
   }
-  return str
+  if (item.mountInfo) {
+    return item.mountInfo.url
+  }
+  return getRealUrl(item)
+}
+
+function getTitle (item) {
+  if (item.name.endsWith('.goto')) {
+    return item.stat.metadata.title || item.name
+  }
+  if (item.mountInfo) {
+    return item.mountInfo.title
+  }
+  return item.name
+}
+
+async function getRealUrl (item) {
+  var pathParts = item.path.split('/').filter(Boolean)
+  var discardedParts = []
+  while (pathParts.length > 0) {
+    let st = await navigator.filesystem.stat(pathParts.join('/'))
+    if (st.mount) {
+      return `dat://${st.mount.key}/${discardedParts.join('/')}`
+    }
+    discardedParts.unshift(pathParts.pop())
+  }
+  return item.url
 }
 
 function delay (cb, param) {

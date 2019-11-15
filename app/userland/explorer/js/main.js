@@ -7,6 +7,7 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
+import { toItemGroups, getSubicon } from './lib/files.js'
 import mainCSS from '../css/main.css.js'
 import './view/file.js'
 import './view/folder.js'
@@ -15,24 +16,6 @@ import './com/drive-info.js'
 import './com/viewfile-info.js'
 import './com/selection-info.js'
 import './com/contextual-help.js'
-
-const ICONS = {
-  root: {
-    '/library': 'fas fa-university',
-    '/library/bookmarks': 'fas fa-star',
-    '/library/comments': 'fas fa-comment',
-    '/library/documents': 'fas fa-file-word',
-    '/library/media': 'fas fa-photo-video',
-    '/library/projects': 'fas fa-coffee',
-    '/settings': 'fas fa-cog'
-  },
-  person: {
-    '/friends': 'fas fa-user-friends',
-    '/feed': 'fa fa-rss'
-  },
-  common: {
-  }
-}
 
 export class ExplorerApp extends LitElement {
   static get propertes () {
@@ -331,35 +314,7 @@ export class ExplorerApp extends LitElement {
   }
 
   get itemGroups () {
-    var groups = {}
-    const add = (id, label, item) => {
-      if (!groups[id]) groups[id] = {id, label, items: [item]}
-      else groups[id].items.push(item)
-    }
-    for (let i of this.items) {
-      if (i.stat.mount && i.stat.mount.key) {
-        switch (i.mountInfo.type) {
-          case 'unwalled.garden/person': add('users', 'Users', i); break
-          case 'website': add('websites', 'Websites', i); break
-          case 'application': add('applications', 'Applications', i); break
-          case 'webterm.sh/cmd-pkg': add('commands', 'Webterm Commands', i); break
-          default: add('drives', 'Drives', i)
-        }
-      } else if (i.stat.isDirectory()) {
-        add('folders', 'Folders', i)
-      } else if (i.name.endsWith('.view')) {
-        add('views', 'Views', i)
-      } else {
-        add('files', 'Files', i)
-      }
-    }
-
-    const groupsOrder = ['folders', 'users', 'websites', 'applications', 'commands', 'drives', 'views', 'files']
-    var groupsArr = []
-    for (let id in groups) {
-      groupsArr[groupsOrder.indexOf(id)] = groups[id]
-    }
-    return groupsArr
+    return toItemGroups(this.items)
   }
 
   // rendering
@@ -914,13 +869,5 @@ function validateViewfile (view) {
     }
   } else if (typeof view.query.path !== 'string') {
     throw new Error('The "query.path" is invalid (it must be a string or array of strings)')
-  }
-}
-
-function getSubicon (driveKind, item) {
-  if (driveKind === 'root') {
-    return ICONS.root[item.path] || ICONS.common[item.path]
-  } else if (driveKind === 'person') {
-    return  ICONS.person[item.path] || ICONS.common[item.path]
   }
 }

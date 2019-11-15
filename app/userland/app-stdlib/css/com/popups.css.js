@@ -35,10 +35,10 @@ ${inputscss}
 
 .popup-inner .head {
   position: relative;
-  background: #fafafa;
+  background: #f1f1f6;
   padding: 7px 12px;
   width: 100%;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e0e0ee;
   border-radius: 4px 4px 0 0;
 }
 
