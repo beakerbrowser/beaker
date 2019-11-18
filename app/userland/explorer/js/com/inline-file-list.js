@@ -66,9 +66,9 @@ export class InlineFileList extends FileGrid {
         <div class="info">
           <div>
             <a class="name" href=${item.url}>
-              ${this.showOrigin ? item.path : item.name}
               ${item.mountInfo ? html`<span class="fas fa-external-link-square-alt"></span>` : ''}
               ${!item.mountInfo && item.name.endsWith('.goto') ? html`<span class="fas fa-link"></span>` : ''}
+              ${this.showOrigin ? item.path : item.name}
             </a>
           </div>
           ${this.showOrigin ? html`

@@ -132,7 +132,15 @@ export class FileDisplay extends LitElement {
         return html`<div class="markdown">${unsafeHTML(file)}</div>`
       }
       if (this.pathname.endsWith('.goto') && this.renderMode !== 'raw') {
-        return html`<img class="goto-thumb" src="asset:thumb:${this.info.stat.metadata.href}?cache_buster=${Date.now()}">`
+        return html`
+          <div class="goto">
+            <img src="asset:thumb:${this.info.stat.metadata.href}?cache_buster=${Date.now()}">
+            <div class="info">
+              <div class="title">${this.info.stat.metadata.title || 'Untitled'}</div>
+              <div class="description">${this.info.stat.metadata.href}</div>
+            </div>
+          </div>
+        `
       }
 
       return html`<div class="text">${file}</div>`

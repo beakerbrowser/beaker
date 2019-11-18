@@ -21,6 +21,7 @@ ${typographyCSS}
   --media-max-height: none;
   --media-margin: 0;
   --mount-padding: 0;
+  --goto-padding: 0;
   --color-drive: #6c8c9e;
   --color-folder: #9ec2e0;
   --color-viewfile-outline: #a7a7ad;
@@ -121,7 +122,6 @@ audio {
   top: 8px;
 }
 
-
 .mount {
   box-sizing: border-box;
   padding: var(--mount-padding);
@@ -186,6 +186,75 @@ audio {
 
 :host([horz]) .mount .info .description {
   display: block;
+}
+
+.goto {
+  box-sizing: border-box;
+  padding: var(--goto-padding);
+}
+
+.goto img {
+  display: block;
+  width: 100%;
+  border-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border: 1px solid #ddd;
+  border-bottom: 0;
+  object-fit: cover;
+  box-sizing: border-box;
+}
+
+.goto .info {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.goto .info .title {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.goto .info .description {
+  display: none;
+}
+
+:host([horz]) .goto {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+}
+
+:host([horz]) .goto img {
+  height: 100%;
+  min-height: 40px;
+  border-radius: 8px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border: 1px solid #ddd;
+  border-right: 0;
+}
+
+:host([horz]) .goto .info {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+:host([horz]) .goto .info .title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+:host([horz]) .goto .info .description {
+  display: block;
+  color: gray;
 }
 `
 export default cssStr
