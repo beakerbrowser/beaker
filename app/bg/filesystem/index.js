@@ -86,6 +86,14 @@ export async function setup () {
 }
 
 /**
+ * @param {string} url 
+ * @returns {Promise<void>}
+ */
+export async function setDefaultUser (url) {
+  await ensureMount(PATHS.DEFAULT_USER, url)
+}
+
+/**
  * @param {string} url
  * @param {string} title
  * @returns {Promise<void>}

@@ -2,6 +2,7 @@ import Events from 'events'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'users'})
 import dat from '../dat/index'
+import * as filesystem from './index'
 import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
 import { PATHS } from '../../lib/const'
@@ -161,11 +162,17 @@ export async function add (url, setDefault = false, isTemporary = false) {
     createdAt: new Date()
   })
   logger.verbose('Adding user', {details: user.url})
-  await db.run(
+  var dbres = await db.run(
     `INSERT INTO users (url, isDefault, isTemporary, createdAt) VALUES (?, ?, ?, ?)`,
     [user.url, Number(user.isDefault), Number(user.isTemporary), Number(user.createdAt)]
   )
+  user.id = dbres.lastID
   users.push(user)
+
+  // establish the default user
+  if (user.isDefault) {
+    await filesystem.setDefaultUser(user.url)
+  }
 
   // fetch the user archive
   user.archive = await dat.archives.getOrLoadArchive(user.url)
