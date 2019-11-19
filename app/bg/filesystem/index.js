@@ -121,7 +121,7 @@ async function ensureDir (path) {
       logger.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
     }
   } catch (e) {
-    logger.error('Filesystem failed to make directory', {path: '' + path, error: e})
+    logger.error('Filesystem failed to make directory', {path: '' + path, error: e.toString()})
   }
 }
 
@@ -144,7 +144,7 @@ async function ensureMount (path, url) {
       logger.error('Warning! Filesystem expects a mount but an unexpected file exists at this location.', {path})
     }
   } catch (e) {
-    logger.error('Filesystem failed to mount archive', {path, url, error: e})
+    logger.error('Filesystem failed to mount archive', {path, url, error: e.toString()})
   }
 }
 
@@ -157,7 +157,7 @@ async function ensureUnmount (path) {
       await rootArchive.pda.unmount(path)
     }
   } catch (e) {
-    logger.error('Filesystem failed to unmount archive', {path, error: e})
+    logger.error('Filesystem failed to unmount archive', {path, error: e.toString()})
   }
 }
 

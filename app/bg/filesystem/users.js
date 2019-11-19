@@ -169,15 +169,20 @@ export async function add (url, setDefault = false, isTemporary = false) {
   user.id = dbres.lastID
   users.push(user)
 
+  // fetch the user archive
+  user.archive = await dat.archives.getOrLoadArchive(user.url)
+  user.url = user.archive.url // copy the archive url, which includes the domain if set
+  events.emit('load-user', user)
+
   // establish the default user
   if (user.isDefault) {
     await filesystem.setDefaultUser(user.url)
   }
 
-  // fetch the user archive
-  user.archive = await dat.archives.getOrLoadArchive(user.url)
-  user.url = user.archive.url // copy the archive url, which includes the domain if set
-  events.emit('load-user', user)
+  // ensure file structure
+  await ensureDirectory(user, PATHS.FEED)
+  await ensureDirectory(user, PATHS.FRIENDS)
+
   return fetchUserInfo(user)
 };
 
@@ -284,12 +289,26 @@ async function validateUserUrl (url) {
   }
 }
 
+async function stat (user, path) {
+  try { return await user.archive.pda.stat(path) }
+  catch (e) { return null }
+}
+
 /**
  * @param {User} user
- * @param {string} pathname
+ * @param {string} path
  * @returns {Promise<void>}
  */
-async function ensureDirectory (user, pathname) {
-  try { await user.archive.pda.mkdir(pathname) }
-  catch (e) { /* ignore */ }
+async function ensureDirectory (user, path) {
+  try {
+    let st = await stat(user, path)
+    if (!st) {
+      logger.info(`Creating directory ${path}`)
+      await user.archive.pda.mkdir(path)
+    } else if (!st.isDirectory()) {
+      logger.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
+    }
+  } catch (e) {
+    logger.error('Filesystem failed to make directory', {path: '' + path, error: e.toString()})
+  }
 }
