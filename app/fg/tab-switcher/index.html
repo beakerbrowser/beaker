@@ -76,7 +76,6 @@
         let tabEl = document.createElement('div')
         tabEl.classList.add('tab')
         tabEl.dataset.index = i++
-        tabEl.addEventListener('mouseover', onMouseOverTab)
         tabEl.append(imgEl)
         tabEl.append(titleEl)
         mainEl.append(tabEl)
@@ -84,6 +83,16 @@
 
       currentSelection = defaultCurrentSelection
       highlightCurrentSelection()
+
+      // HACK
+      // wait 100ms before attaching the hover listeners
+      // (otherwise the event gets picked up during initial render)
+      // -prf
+      setTimeout(function () {
+        for (let tabEl of Array.from(mainEl.querySelectorAll('.tab'))) {
+          tabEl.addEventListener('mouseover', onMouseOverTab)
+        }
+      }, 100)
     }
 
     window.moveSelection = function (dir) {
