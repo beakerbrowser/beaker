@@ -114,6 +114,7 @@ const STATE_VARS = [
 
 var activeTabs = {} // map of {[win.id]: Array<Tab>}
 var preloadedNewTabs = {} // map of {[win.id]: Tab}
+var lastSelectedTabIndex = {} // map of {[win.id]: Number}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: Events}
 var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
@@ -1181,6 +1182,7 @@ export function setActive (win, tab) {
   var active = getActive(win)
   if (active) {
     active.deactivate()
+    lastSelectedTabIndex[win.id] = getAll(win).indexOf(active)
   }
 
   // activate the new tab
@@ -1289,6 +1291,13 @@ export function changeActiveToLast (win) {
   win = getTopWindow(win)
   var tabs = getAll(win)
   setActive(win, tabs[tabs.length - 1])
+}
+
+export function getPreviousTabIndex (win) {
+  var index = lastSelectedTabIndex[win.id]
+  if (typeof index !== 'number') return 0
+  if (index < 0 || index >= getAll(win).length) return 0
+  return index
 }
 
 export function openOrFocusDownloadsPage (win) {

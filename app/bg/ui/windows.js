@@ -20,6 +20,7 @@ import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
 import * as sidebarsSubwindow from './subwindows/sidebars'
 import * as siteInfoSubwindow from './subwindows/site-info'
+import * as tabSwitcherSubwindow from './subwindows/tab-switcher'
 import { findWebContentsParentWindow } from '../lib/electron'
 import * as settingsDb from '../dbs/settings'
 import { getEnvVar } from '../lib/env'
@@ -34,17 +35,20 @@ const subwindows = {
   permPrompt: permPromptSubwindow,
   modals: modalsSubwindow,
   sidebars: sidebarsSubwindow,
-  siteInfo: siteInfoSubwindow
+  siteInfo: siteInfoSubwindow,
+  tabSwitcher: tabSwitcherSubwindow
 }
 
 // globals
 // =
+
 var userDataDir
 var numActiveWindows = 0
 var firstWindow = null
 var sessionWatcher = null
 var focusedDevtoolsHost
 var hasFirstWindowLoaded = false
+var isTabSwitcherActive = {} // map of {[window.id] => Boolean}
 const BROWSING_SESSION_PATH = './shell-window-state.json'
 export const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
 export const PRELOAD_PATH = path.join(__dirname, 'fg', 'shell-window', 'index.build.js')
@@ -88,6 +92,7 @@ export async function setup () {
     const window = BrowserWindow.fromWebContents(wc)
     if (window) {
       // attach global keybindings
+      wc.on('before-input-event', globalTabSwitcherKeyHandler)
       wc.on('before-input-event', createGlobalKeybindingsHandler(window))
       return
     }
@@ -106,8 +111,8 @@ export async function setup () {
     }
 
     // attach global keybindings
+    wc.on('before-input-event', globalTabSwitcherKeyHandler)
     wc.on('before-input-event', createGlobalKeybindingsHandler(parentWindow))
-    // attach keybinding protections
     wc.on('before-input-event', createKeybindingProtectionsHandler(parentWindow))
 
     // HACK
@@ -254,8 +259,6 @@ export function createShellWindow (windowState) {
   // register shortcuts
   for (var i = 1; i <= 8; i++) { registerGlobalKeybinding(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
   registerGlobalKeybinding(win, 'CmdOrCtrl+9', onLastTab(win))
-  registerGlobalKeybinding(win, 'Ctrl+Tab', onNextTab(win))
-  registerGlobalKeybinding(win, 'Ctrl+Shift+Tab', onPrevTab(win))
   registerGlobalKeybinding(win, 'Ctrl+PageUp', onPrevTab(win))
   registerGlobalKeybinding(win, 'Ctrl+PageDown', onNextTab(win))
   registerGlobalKeybinding(win, 'CmdOrCtrl+[', onGoBack(win))
@@ -312,7 +315,7 @@ export function createShellWindow (windowState) {
 }
 
 export function getActiveWindow () {
-  // try to pull the focused window; if there isnt one, fallback to the last created
+  // try to pull the `focus`ed window; if there isnt one, fallback to the last created
   var win = BrowserWindow.getFocusedWindow()
   if (!win || win.webContents.getURL() !== 'beaker://shell-window/') {
     win = BrowserWindow.getAllWindows().filter(win => win.webContents.getURL() === 'beaker://shell-window/').pop()
@@ -514,6 +517,29 @@ function onAppCommand (win, e, cmd) {
 
 function onEscape (win) {
   return () => win.webContents.send('window-event', 'leave-page-full-screen')
+}
+
+// tab switcher input handling
+// =
+
+function globalTabSwitcherKeyHandler (e, input) {
+  var win = getActiveWindow()
+
+  if (input.type === 'keyDown' && input.key === 'Tab' && input.control) {
+    if (!isTabSwitcherActive[win.id]) {
+      isTabSwitcherActive[win.id] = true
+      tabSwitcherSubwindow.show(win)
+    } else {
+      if (input.shift) {
+        tabSwitcherSubwindow.moveSelection(win, -1)
+      } else {
+        tabSwitcherSubwindow.moveSelection(win, 1)
+      }
+    }
+  } else if (isTabSwitcherActive[win.id] && input.type === 'keyUp' && input.key === 'Control') {
+    isTabSwitcherActive[win.id] = false
+    tabSwitcherSubwindow.hide(win)
+  }
 }
 
 // window event handlers
