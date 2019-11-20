@@ -156,7 +156,8 @@ class NavbarLocation extends LitElement {
         // if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
         return html`
           <div class="input-pretty" @mouseup=${this.onClickLocation}>
-            <span class=${cls}>${protocol.slice(0, -1)}</span><span class="syntax">://</span><span class="host">${host}</span><span class="path">${pathname}${search}${hash}</span>
+            ${''/*<span class=${cls}>${protocol.slice(0, -1)}</span><span class="syntax">://</span><span class="host">${host}</span>*/}
+            <span class="path">${pathname}${search}${hash}</span>
           </div>
         `
       } catch (e) {
