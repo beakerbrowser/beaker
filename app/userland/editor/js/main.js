@@ -52,19 +52,32 @@ class EditorApp extends LitElement {
     return path.split('/').pop().includes('.')
   }
 
+  get hasChanges () {
+    var model = this.editor.getModel(this.url)
+    return (
+      typeof this.lastSavedVersionId !== 'undefined'
+      && !!model
+      && this.lastSavedVersionId !== model.getAlternativeVersionId()
+    )
+  }
+
   constructor () {
     super()
     this.editor = undefined // monaco instance
     this.url = ''
+    this.currentTabUrl = ''
     this.isLoading = true
     this.isFilesOpen = false
     this.readOnly = true
+    this.lastSavedVersionId = undefined
     this.dne = false
     this.isBinary = false
     this.resolvedPath = ''
 
     window.sidebarLoad = (url) => {
+      this.currentTabUrl = url
       if (this.url === url) return
+      if (this.hasChanges) return // dont leave an unsaved buffer
       this.url = url
       this.classList.add('sidebar')
       this.load()
@@ -217,6 +230,7 @@ class EditorApp extends LitElement {
       })
       model.updateOptions({tabSize: 2})
       this.editor.setModel(model)
+      this.lastSavedVersionId = model.getAlternativeVersionId()
     }
 
     this.isLoading = false
@@ -378,13 +392,16 @@ class EditorApp extends LitElement {
   }
 
   onClickView () {
+    this.currentTabUrl = this.url
     beaker.browser.gotoUrl(this.url)
   }
 
   async onClickSave () {
     if (this.readOnly) return
-    await this.archive.writeFile(this.resolvedPath, this.editor.getModel(this.url).getValue())
-    beaker.browser.refreshPage()
+    var model = this.editor.getModel(this.url)
+    await this.archive.writeFile(this.resolvedPath, model.getValue())
+    this.lastSavedVersionId = model.getAlternativeVersionId()
+    if (this.url === this.currentTabUrl) beaker.browser.refreshPage()
   }
 
   async onClickRename () {
