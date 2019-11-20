@@ -273,7 +273,7 @@ class SelectDriveModal extends LitElement {
     const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
     return html`
       <form @submit=${this.onSubmit}>
-        <h1 class="title">${this.customTitle || 'Select an drive'}</h1>
+        <h1 class="title">${this.customTitle || 'Select a drive'}</h1>
         <div class="view create-drive">
           <label for="title">Title</label>
           <input autofocus name="title" tabindex="2" value=${this.title || ''} placeholder="Title" @change=${this.onChangeTitle} />
