@@ -72,6 +72,7 @@ class ShellWindowTabs extends LitElement {
     return html`
       <div
         class="${cls}"
+        title=${tab.title || tab.url}
         draggable="true"
         @click=${e => this.onClickTab(e, index)}
         @contextmenu=${e => this.onContextmenuTab(e, index)}
