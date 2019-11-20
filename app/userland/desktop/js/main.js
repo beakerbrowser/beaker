@@ -26,6 +26,10 @@ class DesktopApp extends LitElement {
     this.dragStartTime = 0
     this.userUrl = ''
     this.load()
+
+    window.addEventListener('focus', e => {
+      this.load()
+    })
   }
 
   async load () {
