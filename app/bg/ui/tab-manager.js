@@ -922,7 +922,7 @@ class Tab {
     // -prf
     {
       let win = new BrowserWindow({
-        webContents: options.webContents, // use existing webContents if provided
+        webContents: options ? options.webContents : undefined, // use existing webContents if provided
         webPreferences: {
           sandbox: true,
           enableRemoteModule: false,
