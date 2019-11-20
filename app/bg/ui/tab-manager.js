@@ -905,13 +905,36 @@ class Tab {
     this.emitUpdateState()
   }
 
-  onNewWindow (e, url, frameName, disposition) {
+  onNewWindow (e, url, frameName, disposition, options) {
     e.preventDefault()
+
+    // HACK
+    // calling preventDefault() without providing an alternative window currently freezes the opening tab
+    // to solve this, we go ahead and create a new window but keep it hidden and destroy it immediately
+    // this will cause the return value of `window.open()` to be wrong
+    // -prf
+    {
+      let win = new BrowserWindow({
+        webContents: options.webContents, // use existing webContents if provided
+        webPreferences: {
+          sandbox: true,
+          enableRemoteModule: false,
+          javascript: false
+        },
+        show: false
+      })
+      win.once('ready-to-show', () => win.close())
+      if (!options.webContents) {
+        win.loadURL(url) // existing webContents will be navigated automatically
+      }
+      e.newGuest = win
+    }
+
     if (!this.isActive) return // only open if coming from the active tab
     var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
     var tabs = activeTabs[this.browserWindow.id]
     var tabIndex = tabs ? (tabs.indexOf(this) + 1) : undefined
-    create(this.browserWindow, url, {setActive, tabIndex, isSidebarActive: this.isSidebarActive})
+    var newTab = create(this.browserWindow, url, {setActive, tabIndex, isSidebarActive: this.isSidebarActive})
   }
 
   onMediaChange (e) {
