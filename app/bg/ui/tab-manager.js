@@ -1,4 +1,4 @@
-import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, session } from 'electron'
+import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, webContents } from 'electron'
 import errorPage from '../lib/error-page'
 import * as libTools from '@beaker/library-tools'
 import path from 'path'
@@ -148,6 +148,7 @@ class Tab {
     this.favicons = null // array of favicon URLs
     this.zoom = 0 // what's the current zoom level?
     this.loadError = null // page error state, if any
+    this.previouslyFocusedWebcontents = undefined // the webcontents which was focused when the tab was last deactivated
 
     // browser state
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab
@@ -343,7 +344,12 @@ class Tab {
     sidebars.show(this.browserView)
 
     this.resize()
-    this.webContents.focus()
+    if (this.previouslyFocusedWebcontents) {
+      this.previouslyFocusedWebcontents.focus()
+      this.previouslyFocusedWebcontents = undefined
+    } else {
+      this.webContents.focus()
+    }
   }
 
   focus () {
@@ -356,6 +362,7 @@ class Tab {
   }
 
   deactivate () {
+    this.previouslyFocusedWebcontents = webContents.getFocusedWebContents()
     this.browserWindow.removeBrowserView(this.browserView)
     if (this.isActive) {
       shellMenus.hide(this.browserWindow) // this will close the location menu if it's open
