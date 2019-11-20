@@ -571,8 +571,6 @@ export class ExplorerApp extends LitElement {
       url = `dat://${item.stat.mount.key}`
     } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
       url = item.stat.metadata.href
-    } else if (this.isViewingQuery) {
-      url.pathname = item.rootPath
     } else {
       url = item.url
     }
@@ -818,7 +816,7 @@ export class ExplorerApp extends LitElement {
           icon: 'far fa-fw fa-copy',
           label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
           click: () => {
-            writeToClipboard(joinPath(window.location.pathname, sel.name))
+            writeToClipboard((sel.rootPath) ? sel.rootPath : joinPath(window.location.pathname, sel.name))
             toast.create('Copied to clipboard')
           }
         })
@@ -831,43 +829,45 @@ export class ExplorerApp extends LitElement {
             toast.create('Copied to clipboard')
           }
         })
-        items.push('-')
       }
-      if (sel.stat.isFile()) {
-        items.push({
-          icon: 'fas fa-fw fa-edit',
-          label: 'Edit',
-          disabled: !writable || !sel.stat.isFile(),
-          click: () => {
-            if (this.selection[0]) {
-              window.location = joinPath(window.location.toString(), sel.name) + '#edit'
-            } else {
-              window.location.hash = 'edit'
-              window.location.reload()
+      if (!this.isViewingQuery) {
+        items.push('-')
+        if (sel.stat.isFile()) {
+          items.push({
+            icon: 'fas fa-fw fa-edit',
+            label: 'Edit',
+            disabled: !writable || !sel.stat.isFile(),
+            click: () => {
+              if (this.selection[0]) {
+                window.location = joinPath(window.location.toString(), sel.name) + '#edit'
+              } else {
+                window.location.hash = 'edit'
+                window.location.reload()
+              }
             }
+          })
+        }
+        items.push({
+          icon: 'fas fa-fw fa-i-cursor',
+          label: 'Rename',
+          disabled: !writable,
+          click: () => this.onRename()
+        })
+        items.push({
+          icon: 'fas fa-fw fa-trash',
+          label: 'Delete',
+          disabled: !writable,
+          click: () => this.onDelete()
+        })
+        items.push('-')
+        items.push({
+          icon: 'fas fa-fw fa-file-export',
+          label: 'Export...',
+          click: () => {
+            this.shadowRoot.querySelector('#download-link').click()
           }
         })
       }
-      items.push({
-        icon: 'fas fa-fw fa-i-cursor',
-        label: 'Rename',
-        disabled: !writable,
-        click: () => this.onRename()
-      })
-      items.push({
-        icon: 'fas fa-fw fa-trash',
-        label: 'Delete',
-        disabled: !writable,
-        click: () => this.onDelete()
-      })
-      items.push('-')
-      items.push({
-        icon: 'fas fa-fw fa-file-export',
-        label: 'Export...',
-        click: () => {
-          this.shadowRoot.querySelector('#download-link').click()
-        }
-      })
     } else if (this.selection.length > 1) {
       let writable = this.selection.reduce((acc, v) => acc && v.drive.writable, true)
       items.push({
