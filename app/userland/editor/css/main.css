@@ -3,7 +3,7 @@
 
 body {
   --default: #eef;
-  --background: #223;
+  --background: #334;
 
   font-size: 12px;
   background: var(--background);

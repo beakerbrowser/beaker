@@ -8,7 +8,7 @@ ${buttons2css}
 }
 
 :host([fullheight]) .listing {
-  height: calc(100vh - 83px);
+  height: calc(100vh - 49px);
   overflow-y: auto;
 }
 
@@ -16,7 +16,7 @@ ${buttons2css}
   display: flex;
   align-items: center;
   height: 26px;
-  background: #222;
+  background: #334;
   padding-left: 5px;
 }
 
@@ -79,7 +79,9 @@ ${buttons2css}
 
 .listing .item .name {
   flex: 1;
-  word-break: break-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .listing .item .size {
