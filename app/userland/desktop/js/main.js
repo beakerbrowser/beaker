@@ -57,19 +57,13 @@ class DesktopApp extends LitElement {
         <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}" data-tooltip="My Home Drive">
           <span class="icon fas fa-home"></span>
         </button>
-        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}/library" data-tooltip="My Library">
-          <span class="icon fas fa-university"></span>
-        </button>
-        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${user}/friends" data-tooltip="My Friends">
-          <span class="icon fas fa-user-friends"></span>
-        </button>
-        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${user}" data-tooltip="My Profile">
+        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}/public" data-tooltip="My Profile">
           <span class="icon fas fa-user-circle"></span>
         </button>
-        <div style="flex: 1"></div>
         <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="beaker://webterm/" data-tooltip="Webterm">
           <span class="icon fas fa-terminal"></span>
         </button>
+        <div style="flex: 1"></div>
         <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="beaker://settings/" data-tooltip="Settings">
           <span class="icon fas fa-cog"></span>
         </button>
