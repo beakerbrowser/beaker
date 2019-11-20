@@ -107,11 +107,12 @@ function onClickAnywhere (e) {
 // =
 
 export class BeakerContextMenu extends LitElement {
-  constructor ({x, y, right, withTriangle, roomy, noBorders, style, items, fontAwesomeCSSUrl, render}) {
+  constructor ({x, y, right, top, withTriangle, roomy, noBorders, style, items, fontAwesomeCSSUrl, render}) {
     super()
     this.x = x
     this.y = y
     this.right = right || false
+    this.top = top || false
     this.withTriangle = withTriangle || false
     this.roomy = roomy || false
     this.noBorders = noBorders || false
@@ -135,6 +136,7 @@ export class BeakerContextMenu extends LitElement {
       'dropdown-items': true,
       right: this.right,
       left: !this.right,
+      top: this.top,
       'with-triangle': this.withTriangle,
       roomy: this.roomy,
       'no-border': this.noBorders
