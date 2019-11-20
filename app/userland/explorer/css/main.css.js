@@ -156,6 +156,11 @@ nav code {
   word-break: break-all;
 }
 
+nav button {
+  box-shadow: none !important;
+  border-radius: 6px;
+}
+
 nav button .fa-caret-down {
   margin-left: 2px;
 }
@@ -191,7 +196,7 @@ nav section.transparent {
 }
 
 nav file-display {
-  max-height: 25vh;
+  max-height: 360px;
   overflow: hidden;
 }
 
@@ -226,8 +231,31 @@ nav .help {
  color: #85859e;
 }
 
+nav .help table {
+  width: 100%;
+}
+
 nav .help table tr:not(:last-child) td {
   padding-bottom: 5px;
+}
+
+nav .help table td:first-child {
+  width: 18px;
+  text-align: center;
+}
+
+nav .help table td:first-child span {
+  margin-left: -6px;
+}
+
+nav .help input {
+  height: 22px;
+  width: 100%;
+  border-radius: 10px;
+  background: #e1e1e8;
+  color: #778;
+  border: 0;
+  text-overflow: ellipsis;
 }
 
 .header {

@@ -133,12 +133,10 @@ export class FileDisplay extends LitElement {
       }
       if (this.pathname.endsWith('.goto') && this.renderMode !== 'raw') {
         return html`
+          <link rel="stylesheet" href="beaker://assets/font-awesome.css">
           <div class="goto">
-            <img src="asset:thumb:${this.info.stat.metadata.href}?cache_buster=${Date.now()}">
-            <div class="info">
-              <div class="title">${this.info.stat.metadata.title || 'Untitled'}</div>
-              <div class="description">${this.info.stat.metadata.href}</div>
-            </div>
+            <div class="title"><span class="fas fa-external-link-alt"></span> ${this.info.stat.metadata.title || this.info.name}</div>
+            <div class="description">${this.info.stat.metadata.href}</div>
           </div>
         `
       }

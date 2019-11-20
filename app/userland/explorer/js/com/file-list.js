@@ -3,6 +3,7 @@ import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/direct
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { format as formatBytes } from 'beaker://app-stdlib/vendor/bytes/index.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
+import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../../css/com/file-list.css.js'
 
 export class FileList extends LitElement {
@@ -67,8 +68,12 @@ export class FileList extends LitElement {
         @contextmenu=${e => this.onContextMenu(e, item)}
       >
         ${this.showOrigin ? html`<span class="author">${driveTitle}</span>` : ''}
-        <span class="fas fa-fw fa-${item.icon}"></span>
-        <span class="name">${this.showOrigin ? item.path : item.name} ${item.mountInfo ? html`<span class="fas fa-external-link-square-alt"></span>` : ''}</span>
+        <span class="icon">
+          <span class="fas fa-fw fa-${item.icon} mainicon"></span>
+          ${item.subicon ? html`<span class="fas fa-fw fa-${item.subicon} subicon"></span>` : ''}
+          ${item.mountInfo ? html`<span class="fas fa-fw fa-external-link-square-alt subicon"></span>` : ''}
+        </span>
+        <span class="name">${this.showOrigin ? item.path : item.name}</span>
         <span class="date">${this.dateFormatter.format(item.stat.ctime)} <span>at</span> ${this.timeFormatter.format(item.stat.ctime)}</span>
         <span class="size">${item.stat.size ? formatBytes(item.stat.size) : ''}</span>
       </div>
@@ -80,6 +85,7 @@ export class FileList extends LitElement {
 
   onClick (e, item) {
     e.stopPropagation()
+    contextMenu.destroy()
 
     var selection
     if (e.metaKey) {
@@ -97,6 +103,7 @@ export class FileList extends LitElement {
   onContextMenu (e, item) {
     e.preventDefault()
     e.stopPropagation()
+    contextMenu.destroy()
     if (!this.selection.includes(item)) {
       emit(this, 'change-selection', {detail: {selection: [item]}})
     }

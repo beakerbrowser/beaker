@@ -7,7 +7,7 @@ import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { toNiceUrl, joinPath } from 'beaker://app-stdlib/js/strings.js'
-import { toItemGroups, getSubicon } from 'beaker://explorer/js/lib/files.js'
+import { toSemanticItemGroups, getSubicon } from 'beaker://explorer/js/lib/files.js'
 import 'beaker://explorer/js/com/inline-file-grid.js'
 
 // exported api
@@ -220,7 +220,7 @@ export class AddPinPopup extends BasePopup {
   }
 
   get explorerItemGroups () {
-    return toItemGroups(this.explorerItems)
+    return toSemanticItemGroups(this.explorerItems)
   }
 
   // rendering

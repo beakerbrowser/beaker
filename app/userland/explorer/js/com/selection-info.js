@@ -59,12 +59,8 @@ export class SelectionInfo extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <section>
-        <h3><a href=${selRealUrl}>${sel.name}</a></h3>
-        <p><code>${selPathname}</code></p>
-        <p class="facts">
-          ${this.renderDrive()}
-          ${this.renderSize()}
-        </p>
+        <h3>${selPathname}</h3>
+        ${this.renderSize()}
         ${sel.mountInfo ? html`
           <drive-info .driveInfo=${sel.mountInfo} user-url=${this.userUrl}></drive-info>
         ` : ''}
@@ -93,16 +89,10 @@ export class SelectionInfo extends LitElement {
     `
   }
 
-  renderDrive () {
-    if (this.selection.length !== 1) return undefined
-    var drive = this.selection[0].drive
-    return html`<span><span class="far fa-fw fa-hdd"></span> <a href=${drive.url} title=${drive.title}>${drive.title}</a>`
-  }
-
   renderSize () {
     const sz = this.selection[0].stat.size
     if (!sz || this.selection.length > 1) return undefined
-    return html`<span><span class="fas fa-fw fa-save"></span> ${bytes(sz)}</span>`
+    return html`<p class="facts"><span><span class="fas fa-fw fa-save"></span> ${bytes(sz)}</span></p>`
   }
 
   // events

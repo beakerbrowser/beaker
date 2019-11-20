@@ -47,7 +47,6 @@ export class DriveInfo extends LitElement {
         ${this.driveInfo.description ? html`<p>${this.driveInfo.description}</p>` : undefined}
         <p class="facts">
           ${this.renderType()}
-          ${this.renderIsWritable()}
           ${this.renderSize()}
         </p>
         ${this.driveInfo.type === 'unwalled.garden/person' ? html`
@@ -108,13 +107,6 @@ export class DriveInfo extends LitElement {
     }
   }
 
-  renderIsWritable () {
-    if (this.driveInfo.writable) {
-      return html`<span><span class="fas fa-fw fa-pen"></span> Writable</span>`
-    }
-    return html`<span><span class="fas fa-fw fa-eye"></span> Read-only</span>`
-  }
-
   // events
   // =
 
@@ -129,15 +121,11 @@ export class DriveInfo extends LitElement {
       mount: this.driveInfo.url
     })).length > 0
     if (isInFriends) {
-      await friends.remove(this.driveInfo.url)
+      await friends.remove(this.driveInfo.url).catch(console.log)
     } else {
       await friends.add(this.driveInfo.url, this.driveInfo.title)
     }
-    location.reload()
-  }
-
-  async onClickSaveTo () {
-    
+    return
     location.reload()
   }
 }

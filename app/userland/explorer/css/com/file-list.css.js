@@ -3,14 +3,17 @@ import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 const cssStr = css`
 
 :host {
-  --color-drive: #a9b6bd;
+  --color-drive: #ccd;
   --color-folder: #9ec2e0;
   --color-file: #9a9aab;
+  --color-goto: #9a9aab;
+  --color-subicon: #556;
   --color-itemname: #333;
   --color-itemprop: #777;
   --color-viewfile: #ffffff;
   --color-viewfile-outline: #95959c;
   --color-hover-bg: #f3f3f8;
+  --color-subicon-selected: #fff;
   --color-itemname-selected: #fff;
   --color-itemprop-selected: rgba(255, 255, 255, 0.7);
   --color-selected-bg: #4379e4;
@@ -55,11 +58,16 @@ h4 {
   color: var(--color-itemprop);
 }
 
-.item .fa-fw {
+.item .icon {
+  position: relative;
   overflow: initial;
   font-size: 18px;
   line-height: 18px;
-  margin-right: 5px;
+  width: 30px;
+}
+
+.item .icon .mainicon {
+  width: 24px;
 }
 
 .item .fa-fw.fa-folder {
@@ -78,6 +86,23 @@ h4 {
 .item .fa-fw.fa-file {
   -webkit-text-stroke: 1px var(--color-file);
   color: #fff;
+}
+
+.item .fa-fw.fa-external-link-alt {
+  color: var(--color-goto);
+  font-size: 13px;
+}
+
+.item .subicon {
+  color: var(--color-subicon);
+  font-size: 10px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+
+.item .subicon.fa-rss {
+  left: -1px;
 }
 
 .item .author {
@@ -117,6 +142,10 @@ h4 {
 .item.selected .fa-fw {
   text-shadow: 0 1px 2px rgba(0,0,0,.4);
   -webkit-text-stroke: 0;
+}
+
+.item.selected .subicon {
+  color: var(--color-subicon-selected);
 }
 
 `

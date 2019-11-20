@@ -1,8 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
-import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
-import { ucfirst } from 'beaker://app-stdlib/js/strings.js'
-import { library, friends } from 'beaker://app-stdlib/js/uwg.js'
+import * as toast from 'beaker://app-stdlib/js/com/toast.js'
+import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
+import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import 'beaker://app-stdlib/js/com/hover-menu.js'
 
 export class ContextualHelp extends LitElement {
@@ -38,65 +37,73 @@ export class ContextualHelp extends LitElement {
     return this.driveInfo
   }
 
+  get targetItemUrl () {
+    if (this.selection.length === 1) {
+      return this.selection[0].url
+    }
+    return joinPath(this.targetDrive.url, this.realPathname)
+  }
+
+  get targetItemLabel () {
+    return this.pathInfo.isDirectory() ? 'folder' : 'file'
+  }
+
   // rendering
   // =
 
   render () {
     const target = this.targetDrive
     if (!target) return html``
-    const hasSel = this.selection.length > 0
-    const sel = hasSel ? this.selection[0] : undefined
-    var labels = {
-      'This(drive)': hasSel ? 'The selected item' : 'This',
-      'This(folder)': hasSel ? 'The selected folder' : 'This folder',
-      'here': hasSel ? 'there' : 'here',
-      'this drive': hasSel ? 'that drive' : 'this drive'
+    return html`
+      <section class="help">
+        <table>
+          ${this.renderUrlCtrl()}
+          ${this.renderVisibilityHelp()}
+          ${this.renderIsWritableHelp()}
+        </table>
+      </section>
+    `
+  }
+
+  renderUrlCtrl () {
+    if (this.targetDrive.url === navigator.filesystem.url) {
+      return ''
     }
-    var path = hasSel ? (sel.mountInfo ? '/' : sel.path) : this.realPathname
-    if (target.url === this.userUrl) {
-      var help
-      if (path === '/feed') {
-        help = `${labels['This(folder)']} is your feed. Save files ${labels['here']} to share them with your network.`
-      } else if (path === '/friends') {
-        help = `${labels['This(folder)']} contains your friends. Add users' drives ${labels['here']} to follow their activity.`
-      } else if (path === '/' || !self) {
-        help = `${labels['This(drive)']} is your public profile. It represents you on the network.`
-      } else {
-        return html``
-      }
-      return html`
-        <section class="help">
-          <table>
-            <tr><td colspan="2">${help}</td></tr>
-            <tr><td><span class="fas fa-globe"></span></td><td><strong>All of the files in ${labels['this drive']} are public.</strong></td></tr>
-          </table>
-        </section>
-      `
+    return html`
+      <tr>
+        <td class="tooltip-right" data-tooltip="Click here to copy the URL" @click=${this.onClickCopyUrl} style="cursor: pointer">
+          <span class="fas fa-link"></span>
+        </td>
+        <td>
+          <input value="${this.targetItemUrl}">
+        </td>
+      </tr>
+    `
+  }
+
+  renderVisibilityHelp () {
+    if (this.targetDrive.url === navigator.filesystem.url) {
+      return html`<tr><td><span class="fas fa-lock"></span></td><td>Only you can see this ${this.targetItemLabel}.</td></tr>`
     }
-    if (target.url === navigator.filesystem.url) {
-      var help
-      if (path === '/library') {
-        help = `${labels['This(folder)']} contains all your saved files and drives.`
-      } else if (path === '/settings') {
-        help = `${labels['This(folder)']} contains configuration for your system.`
-      } else if (path === '/' || !sel) {
-        help = `${labels['This(drive)']} is your private home drive. It contains all of your personal data.`
-      } else {
-        return html``
-      }
-      return html`
-        <section class="help">
-          <table>
-            <tr><td colspan="2">${help}</td></tr>
-            <tr><td><span class="fas fa-lock"></span></td><td><strong>All of the files in ${labels['this drive']} are private.</strong></td></tr>
-          </table>
-        </section>
-      `
+    return html`<tr><td><span class="fas fa-globe"></span></td><td>Anyone with the link can view this ${this.targetItemLabel}.</td></tr>`
+  }
+
+  renderIsWritableHelp () {
+    if (this.targetDrive.writable) {
+      return html`<tr><td><span class="fas fa-fw fa-pen"></span></td><td>Only you can edit this ${this.targetItemLabel}.</td></tr>`
     }
+    return html`<tr><td><span class="fas fa-fw fa-eye"></span></td><td>You can not edit this ${this.targetItemLabel}.</td></tr>`
   }
 
   // events
   // =
+
+  onClickCopyUrl (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    writeToClipboard(this.targetItemUrl)
+    toast.create('Copied to clipboard')
+  }
 
 }
 

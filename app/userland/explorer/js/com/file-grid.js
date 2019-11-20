@@ -2,6 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
+import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../../css/com/file-grid.css.js'
 
 export class FileGrid extends LitElement {
@@ -76,6 +77,7 @@ export class FileGrid extends LitElement {
 
   onClick (e, item) {
     e.stopPropagation()
+    contextMenu.destroy()
 
     var selection
     if (e.metaKey) {
@@ -93,6 +95,7 @@ export class FileGrid extends LitElement {
   onContextMenu (e, item) {
     e.preventDefault()
     e.stopPropagation()
+    contextMenu.destroy()
     if (!this.selection.includes(item)) {
       emit(this, 'change-selection', {detail: {selection: [item]}})
     }

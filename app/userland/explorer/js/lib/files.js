@@ -2,7 +2,6 @@ const ICONS = {
   root: {
     '/library': 'fas fa-university',
     '/library/bookmarks': 'fas fa-star',
-    '/library/comments': 'fas fa-comment',
     '/library/documents': 'fas fa-file-word',
     '/library/media': 'fas fa-photo-video',
     '/library/projects': 'fas fa-coffee',
@@ -16,7 +15,31 @@ const ICONS = {
   }
 }
 
-export function toItemGroups (items) {
+export function toSimpleItemGroups (items) {
+  var groups = {}
+  const add = (id, label, item) => {
+    if (!groups[id]) groups[id] = {id, label, items: [item]}
+    else groups[id].items.push(item)
+  }
+  for (let i of items) {
+    if (i.stat.mount) {
+      add('mounts', 'Mounts', i)
+    } else if (i.stat.isDirectory()) {
+      add('folders', 'Folders', i)
+    } else {
+      add('files', 'Files', i)
+    }
+  }
+
+  const groupsOrder = ['mounts', 'folders', 'files']
+  var groupsArr = []
+  for (let id in groups) {
+    groupsArr[groupsOrder.indexOf(id)] = groups[id]
+  }
+  return groupsArr
+}
+
+export function toSemanticItemGroups (items) {
   var groups = {}
   const add = (id, label, item) => {
     if (!groups[id]) groups[id] = {id, label, items: [item]}
@@ -52,6 +75,6 @@ export function getSubicon (driveKind, item) {
   if (driveKind === 'root') {
     return ICONS.root[item.path] || ICONS.common[item.path]
   } else if (driveKind === 'person') {
-    return  ICONS.person[item.path] || ICONS.common[item.path]
+    return ICONS.person[item.path] || ICONS.common[item.path]
   }
 }

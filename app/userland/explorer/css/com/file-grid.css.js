@@ -3,9 +3,10 @@ import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 const cssStr = css`
 
 :host {
-  --color-drive: #bacad2;
+  --color-drive: #ccd;
   --color-folder: #9ec2e0;
   --color-file: #bbbbcc;
+  --color-goto: #bbbbce;
   --color-itemname: #484444;
   --color-itemdrive: #99a;
   --color-viewfile: #ffffff;
@@ -72,6 +73,11 @@ h4 {
   font-size: 36px;
 }
 
+.item .fa-fw.fa-external-link-alt {
+  font-size: 28px;
+  color: var(--color-goto);
+}
+
 .item .fa-fw.fa-file {
   -webkit-text-stroke: 1px var(--color-file);
   color: #fff;
@@ -107,8 +113,9 @@ h4 {
 .item .mounticon {
   position: absolute;
   color: #5a5a5a;
-  left: 70px;
-  top: 30px;
+  left: 57px;
+  top: 16px;
+  font-size: 16px;
 }
 
 .item .subicon.fa-star {

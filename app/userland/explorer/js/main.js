@@ -1,13 +1,17 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, pluralize, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import { timeDifference } from 'beaker://app-stdlib/js/time.js'
+import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
+import { friends } from 'beaker://app-stdlib/js/uwg.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
+import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
+import * as shareMenu from './com/share-menu.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
-import { toItemGroups, getSubicon } from './lib/files.js'
+import { toSimpleItemGroups, getSubicon } from './lib/files.js'
 import mainCSS from '../css/main.css.js'
 import './view/file.js'
 import './view/folder.js'
@@ -38,6 +42,7 @@ export class ExplorerApp extends LitElement {
     this.pathInfo = undefined
     this.mountInfo = undefined
     this.isNotFound = false
+    this.pathAncestry = []
     this.items = []
     this.selection = []
     this.viewfileObj = undefined
@@ -79,22 +84,22 @@ export class ExplorerApp extends LitElement {
     return this.mountTitle || this.driveTitle
   }
 
-  get isViewingQuery () {
-    return location.pathname.endsWith('.view')
+  get locationAsItem () {
+    return {
+      name: this.filename,
+      stat: this.pathInfo,
+      path: window.location.pathname,
+      url: window.location.toString(),
+      drive: this.currentDriveInfo
+    }
   }
 
-  get pathAncestry () {
-    var ancestry = []
-    var acc = []
-    for (let part of location.pathname.split('/')) {
-      if (!part) continue
-      acc.push(part)
-      ancestry.push([
-        joinPath(this.driveInfo.url, acc.join('/')),
-        part
-      ])
-    }
-    return ancestry
+  get currentShareUrl () {
+    return this.selection[0] ? joinPath(this.currentDriveInfo.url, this.selection[0].path) : this.realUrl
+  }
+
+  get isViewingQuery () {
+    return location.pathname.endsWith('.view')
   }
 
   async load () {
@@ -109,7 +114,7 @@ export class ExplorerApp extends LitElement {
     // read location content
     try {
       this.pathInfo = await drive.stat(location.pathname)
-      await this.readMountInfo()
+      await this.readPathAncestry()
       if (this.pathInfo.isDirectory()) {
         await this.readDirectory(drive)
         if (this.items) {
@@ -125,8 +130,8 @@ export class ExplorerApp extends LitElement {
 
     // view config
     if (this.pathInfo.isDirectory()) {
-      this.renderMode = getSavedConfig('render-mode', 'grid')
-      this.inlineMode = Boolean(getSavedConfig('inline-mode', true))
+      this.renderMode = getSavedConfig('render-mode', 'list')
+      this.inlineMode = Boolean(getSavedConfig('inline-mode', false))
       if (!this.watchStream) {
         let currentDrive = new DatArchive(this.currentDriveInfo.url)
         this.watchStream = currentDrive.watch(this.realPathname)
@@ -141,7 +146,7 @@ export class ExplorerApp extends LitElement {
         })
       }
     } else if (location.pathname.endsWith('.view')) {
-      this.renderMode = getSavedConfig('render-mode', getVFCfg(this.viewfileObj, 'renderMode', ['grid', 'list']) || 'grid')
+      this.renderMode = getSavedConfig('render-mode', getVFCfg(this.viewfileObj, 'renderMode', ['grid', 'list']) || 'list')
       this.inlineMode = Boolean(getSavedConfig('inline-mode', getVFCfg(this.viewfileObj, 'inline', [true, false]) || false))
     } else {
       this.renderMode = getSavedConfig('render-mode', 'default')
@@ -156,7 +161,7 @@ export class ExplorerApp extends LitElement {
 
     this.driveTitle = getDriveTitle(this.driveInfo)
     this.mountTitle = this.mountInfo ? getDriveTitle(this.mountInfo) : undefined
-    document.title = this.filename ? `${this.currentDriveTitle} / ${this.filename}` : this.currentDriveTitle
+    document.title = this.filename ? `${this.driveTitle} / ${this.filename}` : this.driveTitle
 
     console.log({
       driveInfo: this.driveInfo,
@@ -182,19 +187,19 @@ export class ExplorerApp extends LitElement {
       item.url = joinPath(item.drive.url, item.path)
       item.icon = item.stat.isDirectory() ? 'folder' : 'file'
       if (item.stat.mount) {
-        item.icon = 'hdd'
-        item.mountInfo = await (new DatArchive(item.stat.mount.key)).getInfo()
-        switch (item.mountInfo.type) {
-          case 'website': item.subicon = 'fas fa-sitemap'; break
-          case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
-          default: item.subicon = 'fas fa-folder'; break
-        }
+        item.mountInfo = await (new DatArchive(item.stat.mount.key)).getInfo()        
+        // item.icon = 'hdd'
+        // switch (item.mountInfo.type) {
+        //   case 'website': item.subicon = 'fas fa-sitemap'; break
+        //   case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
+        //   default: item.subicon = ''; break
+        // }
       } else if (item.stat.isFile() && item.name.endsWith('.view')) {
         item.icon = 'layer-group'
       } else if (item.stat.isFile() && item.name.endsWith('.goto')) {
-        item.icon = 'link'
+        item.icon = 'external-link-alt'
       } else {
-        item.subicon = getSubicon(driveKind, item)
+        // item.subicon = getSubicon(driveKind, item)
       }
     }
   }
@@ -209,11 +214,17 @@ export class ExplorerApp extends LitElement {
     // massage the items to fit same form as `readDirectory()`
     this.items.forEach(item => {
       item.name = item.path.split('/').pop()
+      item.rootPath = item.path // retain the original path as `rootPath`
       item.path = (new URL(item.url)).pathname
       item.icon = item.stat.isDirectory() ? 'folder' : 'file'
       if (item.stat.mount) {
-        item.icon = 'hdd'
         item.mountInfo = item.mount
+        item.icon = 'hdd'
+        switch (item.mountInfo.type) {
+          case 'website': item.subicon = 'fas fa-sitemap'; break
+          case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
+          default: item.subicon = ''; break
+        }
       } else if (item.stat.isFile() && item.name.endsWith('.view')) {
         item.icon = 'layer-group'
       } else {
@@ -237,25 +248,28 @@ export class ExplorerApp extends LitElement {
     }
   }
 
-  async readMountInfo () {
-    var archive = new DatArchive(location)
+  async readPathAncestry () {
+    var ancestry = []
+    var drive = new DatArchive(location)
     var pathParts = location.pathname.split('/').filter(Boolean)
-    while (pathParts.length > 0) {
-      let st = await archive.stat(pathParts.join('/'))
-      if (st.mount) {
-        let mount = new DatArchive(st.mount.key)
-        this.mountInfo = await mount.getInfo()
+    while (pathParts.length) {
+      let name = pathParts[pathParts.length - 1]
+      let path = '/' + pathParts.join('/')
+      let stat = await drive.stat(pathParts.join('/')).catch(e => null)
+      let mount = stat.mount ? await (new DatArchive(stat.mount.key)).getInfo() : undefined
+      ancestry.unshift({name, path, stat, mount})
+      if (!this.mountInfo && mount) {
+        // record the mount info for the "closest" mount
+        this.mountInfo = mount
         this.mountInfo.mountPath = pathParts.join('/')
-        return
       }
       pathParts.pop()
     }
+    this.pathAncestry = ancestry
   }
 
   get explorerMenu () {
     return [
-      {id: 'new-drive', label: html`<span class="far fa-fw fa-hdd"></span> New hyperdrive`},
-      {divider: true},
       {heading: 'Private Locations'},
       {id: 'filesystem', label: html`<span class="fas fa-fw fa-home"></span> Home drive`},
       {id: 'library', label: html`<span class="fas fa-fw fa-university"></span> Library`},
@@ -267,23 +281,14 @@ export class ExplorerApp extends LitElement {
     ]
   }
 
-  get driveMenu () {
-    return [
-      {id: 'clone-drive', label: html`<span class="far fa-fw fa-clone"></span> Clone this drive`},
-      {id: 'export', label: html`<span class="far fa-fw fa-file-archive"></span> Export as .zip`},
-      {divider: true},
-      {id: 'drive-properties', label: html`<span class="far fa-fw fa-list-alt"></span> Properties`}
-    ]
-  }
-
-  get folderMenu () {
+  get fileMenu () {
     const inFolder = this.pathInfo.isDirectory()
     return [
       {id: 'new-folder', label: html`<span class="far fa-fw fa-folder"></span> New folder`, disabled: !inFolder},
       {id: 'new-file', label: html`<span class="far fa-fw fa-file"></span> New file`, disabled: !inFolder},
+      {id: 'new-mount', label: html`<span class="fas fa-fw fa-external-link-square-alt"></span> New mount`, disabled: !inFolder},
       {divider: true},
-      {id: 'import', label: html`<span class="fas fa-fw fa-file-import"></span> Import files...`, disabled: !inFolder},
-      {id: 'add-mount', label: html`<span class="fas fa-fw fa-external-link-square-alt"></span> Mount a drive`, disabled: !inFolder}
+      {id: 'import', label: html`<span class="fas fa-fw fa-file-import"></span> Import files...`, disabled: !inFolder}
     ]
   }
 
@@ -292,11 +297,18 @@ export class ExplorerApp extends LitElement {
     const inFile = !this.pathInfo.isDirectory()
     const numSelected = this.selection.length
     return items.concat([
-      {id: 'toggle-editor', label: html`<span class="fas fa-fw fa-edit"></span> Editor`, disabled: !inFile},
-      {divider: true},
       {id: 'rename', label: html`<span class="fas fa-fw fa-i-cursor"></span> Rename`, disabled: !(inFile || numSelected === 1)},
       {id: 'delete', label: html`<span class="fas fa-fw fa-trash"></span> Delete`, disabled: !(inFile || numSelected > 0)},
     ])
+  }
+
+  get driveMenu () {
+    return [
+      {id: 'clone-drive', label: html`<span class="far fa-fw fa-clone"></span> Clone this drive`},
+      {id: 'export', label: html`<span class="far fa-fw fa-file-archive"></span> Export as .zip`},
+      {divider: true},
+      {id: 'drive-properties', label: html`<span class="far fa-fw fa-list-alt"></span> Properties`}
+    ]
   }
 
   get renderModes () {
@@ -314,7 +326,7 @@ export class ExplorerApp extends LitElement {
   }
 
   get itemGroups () {
-    return toItemGroups(this.items)
+    return toSimpleItemGroups(this.items)
   }
 
   // rendering
@@ -328,7 +340,8 @@ export class ExplorerApp extends LitElement {
     const isFolderLike = this.pathInfo.isDirectory() || isViewfile
     var selectionIsFolder = this.selection[0] ? this.selection[0].stat.isDirectory() : this.pathInfo.isDirectory()
     var selectionUrl = this.getRealUrl(this.selection[0] ? joinPath(this.realPathname, this.selection[0].name) : this.realPathname)
-    var selectionName = selectionUrl.split('/').pop() || (this.realPathname === '/' ? 'drive' : selectionIsFolder ? 'folder' : 'file')
+    var selectionType = (selectionIsFolder ? 'folder' : 'file')
+    var selectionName = selectionUrl.split('/').pop() || selectionType
     if (this.selection[0] && this.selection[0].stat.mount) selectionUrl = `dat://${this.selection[0].stat.mount.key}`
     var downloadUrl = `${selectionUrl}${selectionIsFolder ? '?download_as=zip' : ''}`
     return html`
@@ -348,7 +361,7 @@ export class ExplorerApp extends LitElement {
         @new-drive=${this.onNewDrive}
         @new-folder=${this.onNewFolder}
         @new-file=${this.onNewFile}
-        @add-mount=${this.onAddMount}
+        @new-mount=${this.onNewMount}
         @clone-drive=${this.onCloneDrive}
         @drive-properties=${this.onDriveProperties}
         @import=${this.onImport}
@@ -358,18 +371,18 @@ export class ExplorerApp extends LitElement {
         @toggle-editor=${this.onToggleEditor}
       >
         <div class="menubar">
-          <hover-menu require-click .options=${this.explorerMenu} icon="fas fa-folder" current="Explorer" @change=${this.onSelectExplorerMenuItem}></hover-menu>
-          <hover-menu require-click .options=${this.driveMenu} current="Drive" @change=${this.onSelectMenuItem}></hover-menu>
-          <hover-menu require-click .options=${this.folderMenu} current="Folder" @change=${this.onSelectMenuItem}></hover-menu>
+          <hover-menu require-click .options=${this.explorerMenu} current="Explorer" @change=${this.onSelectExplorerMenuItem}></hover-menu>
+          <hover-menu require-click .options=${this.fileMenu} current="File" @change=${this.onSelectMenuItem}></hover-menu>
           <hover-menu require-click .options=${this.editMenu} current="Edit" @change=${this.onSelectMenuItem}></hover-menu>
+          <hover-menu require-click .options=${this.driveMenu} current="Drive" @change=${this.onSelectMenuItem}></hover-menu>
           </span>
         </div>
         <div class="nav-toggle right" @click=${e => this.toggleNav('right')}><span class="fas fa-caret-${this.hideNavRight ? 'left' : 'right'}"></span></div>
         ${this.pathInfo ? html`
           <main>
             <div class="header">
-              <a class="author" href=${this.driveInfo.url}>${this.driveTitle}</a>
-              ${this.pathAncestry.map(([url, name]) => html`<span>/</span> <a class="name" href=${url}>${name}</a>`)}
+              <a class="author" href=${this.driveInfo.url}><span class="fas fa-fw fa-hdd"></span> ${this.driveTitle}</a>
+              ${this.renderPathAncestry()}
               ${this.pathInfo && this.pathInfo.isFile() ? html`
                 <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
               ` : ''}
@@ -439,8 +452,8 @@ export class ExplorerApp extends LitElement {
           ${this.hideNavRight ? '' : html`
             <nav class="right">
               <drive-info
-                .driveInfo=${this.driveInfo}
                 user-url=${this.user.url}
+                .driveInfo=${this.currentDriveInfo}
               ></drive-info>
               ${this.selection.length > 0 ? html`
                 <selection-info
@@ -457,7 +470,7 @@ export class ExplorerApp extends LitElement {
                   .pathInfo=${this.pathInfo}
                   .viewfileObj=${this.viewfileObj}
                 ></viewfile-info>
-              ` : ''}
+              ` : html``}
               <contextual-help
                 user-url=${this.user.url}
                 real-pathname=${this.realPathname}
@@ -466,12 +479,6 @@ export class ExplorerApp extends LitElement {
                 .mountInfo=${this.mountInfo}
                 .selection=${this.selection}
               ></contextual-help>
-              ${this.selection.length <= 1 ? html`
-                <section class="transparent">
-                  <p><a href=${selectionUrl} target="_blank"><span class="fa-fw fas fa-external-link-alt"></span> Open ${this.selection.length ? 'selected' : ''} in new tab</a></p>
-                  <p><a id="download-link" href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export ${selectionName}</a></p>
-                </section>
-              ` : ''}
             </nav>
           `}
         ` : undefined}
@@ -480,11 +487,57 @@ export class ExplorerApp extends LitElement {
     `
   }
 
+  renderPathAncestry () {
+    return this.pathAncestry.map(item => {
+      const icon = item.mount ? 'fas fa-external-link-square-alt' : item.stat.isDirectory() ? 'far fa-folder' : 'far fa-file'
+      return html`
+        <span class="fas fa-fw fa-angle-right"></span>
+        <a class="name" href=${item.path}>
+          <span class="fa-fw ${icon}"></span>
+          ${item.mount ? item.mount.title : item.name}
+        </a>
+      `
+    })
+  }
+
+//   ${this.selection.length <= 1 ? html`
+//   <section class="transparent" style="padding: 2px 14px">
+//     ${this.currentDriveInfo.url !== navigator.filesystem.url ? html`
+//       <p><a href="#" @click=${this.onClickShare}><span class="fa-fw fas fa-share-square"></span> Share this ${selectionType}</a></p>
+//     ` : ''}
+//     <p><a id="download-link" href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export...</a></p>
+//   </section>
+// ` : ''}
+  
+//   ${this.currentDriveInfo.type === 'unwalled.garden/person' ? html`
+//   <section class="transparent" style="padding: 0">
+//     <button class="primary"><span class="far fa-fw fa-window-restore"></span> Open This User Profile</button>
+//     ${this.currentDriveInfo.url !== this.user.url ?
+//       until(this.renderAddBtn(), '')
+//     : html`
+//       <button @click=${undefined}>
+//         Edit My Profile
+//       </button>
+//     `}
+//   </section>
+// ` : ''}
+//   async renderAddBtn () {
+//     var isInFriends = (await navigator.filesystem.query({
+//       path: '/public/friends/*',
+//       mount: this.driveInfo.url
+//     })).length > 0
+//     if (isInFriends) {
+//       return html`<button class="" @click=${this.onToggleFriends}><span class="fa-fw fas fa-user-minus"></span> Remove from Friends</button>`
+//     } else {
+//       return html`<button class="primary" @click=${this.onToggleFriends}><span class="fa-fw fas fa-user-plus"></span> Add to Friends</button>`
+//     }
+//   }
+
   // events
   // =
 
   onClickLayout (e) {
-    if (findParent(e.target, el => el.tagName === 'NAV')) {
+    if (findParent(e.target, el => el.tagName === 'NAV' || (el.classList && el.classList.contains('menubar')))) {
       return
     }
     this.selection = []
@@ -492,6 +545,7 @@ export class ExplorerApp extends LitElement {
   }
 
   onContextmenuLayout (e) {
+    if (e.target.tagName === 'INPUT') return
     e.preventDefault()
     e.stopPropagation()
     this.onShowMenu({detail: {x: e.clientX, y: e.clientY}})
@@ -499,15 +553,36 @@ export class ExplorerApp extends LitElement {
 
   onGoto (e) {
     var {item} = e.detail
+    this.goto(item)
+  }
+
+  canShare (item) {
     if (item.stat.mount) {
-      window.location = `dat://${item.stat.mount.key}`
-    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
-      window.location = item.stat.metadata.href
-    } else if (this.isViewingQuery) {
-      window.location = item.url
-    } else {
-      window.location = joinPath(window.location.toString(), item.name)
+      return true
+    } else if (item.drive.url !== navigator.filesystem.url) {
+      return true
     }
+    return false
+  }
+
+  getShareUrl (item) {
+    let url = ''
+    if (item.stat.mount) {
+      url = `dat://${item.stat.mount.key}`
+    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
+      url = item.stat.metadata.href
+    } else if (this.isViewingQuery) {
+      url.pathname = item.rootPath
+    } else {
+      url = item.url
+    }
+    return url
+  }
+
+  goto (item, newWindow = false) {
+    var url = joinPath(window.location.toString(), item.name)
+    if (newWindow) window.open(url)
+    else window.location = url
   }
 
   onChangeSelection (e) {
@@ -594,10 +669,10 @@ export class ExplorerApp extends LitElement {
     }
   }
 
-  async onAddMount (e) {
+  async onNewMount (e) {
     if (!this.currentDriveInfo.writable) return
     var drive = new DatArchive(this.currentDriveInfo.url)
-    var targetUrl = await navigator.selectDriveDialog()
+    var targetUrl = await navigator.selectDriveDialog({title: 'Select or Create a Drive'})
     var target = new DatArchive(targetUrl)
     var info = await target.getInfo()
     var name = await getAvailableName(this.realPathname, info.title, drive)
@@ -724,32 +799,48 @@ export class ExplorerApp extends LitElement {
   onShowMenu (e) {
     var items = []
     if (this.selection.length === 1 || this.pathInfo.isFile()) {
-      let sel = this.selection[0] || {url: window.location, stat: this.pathInfo}
+      let sel = this.selection[0] || this.locationAsItem
       let writable = this.selection.reduce((acc, v) => acc && v.drive.writable, true)
-      items.push({
-        icon: 'fas fa-fw fa-external-link-alt',
-        label: 'Open in new tab',
-        click: () => window.open(sel.url)
-      })
-      items.push({
-        icon: 'fas fa-fw fa-file-export',
-        label: 'Export',
-        click: () => {
-          this.shadowRoot.querySelector('#download-link').click()
-        }
-      })
-      items.push('-')
-      items.push({
-        icon: 'fas fa-fw fa-edit',
-        label: 'Edit',
-        disabled: !writable || !sel.stat.isFile(),
-        click: () => {
-          var shouldReload = (window.location === sel.url)
-          window.location = sel.url + '#edit'
-          if (shouldReload) window.location.reload()
-        }
-      })
-      items.push('-')
+      if (this.selection[0]) {
+        items.push({
+          icon: 'fas fa-fw fa-external-link-alt',
+          label: 'Open in new tab',
+          click: () => this.goto(sel, true)
+        })
+        items.push({
+          icon: 'far fa-fw fa-copy',
+          label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
+          click: () => {
+            writeToClipboard(joinPath(window.location.pathname, sel.name))
+            toast.create('Copied to clipboard')
+          }
+        })
+        items.push({
+          icon: 'fas fa-fw fa-share-square',
+          label: 'Copy share link',
+          disabled: !this.canShare(sel),
+          click: () => {
+            writeToClipboard(this.getShareUrl(sel))
+            toast.create('Copied to clipboard')
+          }
+        })
+        items.push('-')
+      }
+      if (sel.stat.isFile()) {
+        items.push({
+          icon: 'fas fa-fw fa-edit',
+          label: 'Edit',
+          disabled: !writable || !sel.stat.isFile(),
+          click: () => {
+            if (this.selection[0]) {
+              window.location = joinPath(window.location.toString(), sel.name) + '#edit'
+            } else {
+              window.location.hash = 'edit'
+              window.location.reload()
+            }
+          }
+        })
+      }
       items.push({
         icon: 'fas fa-fw fa-i-cursor',
         label: 'Rename',
@@ -762,6 +853,14 @@ export class ExplorerApp extends LitElement {
         disabled: !writable,
         click: () => this.onDelete()
       })
+      items.push('-')
+      items.push({
+        icon: 'fas fa-fw fa-file-export',
+        label: 'Export...',
+        click: () => {
+          this.shadowRoot.querySelector('#download-link').click()
+        }
+      })
     } else if (this.selection.length > 1) {
       let writable = this.selection.reduce((acc, v) => acc && v.drive.writable, true)
       items.push({
@@ -773,29 +872,47 @@ export class ExplorerApp extends LitElement {
     } else {
       let writable = this.currentDriveInfo.writable
       items.push({
+        icon: 'far fa-fw fa-folder',
+        label: 'New folder',
+        disabled: !writable,
+        click: () => this.onNewFolder()
+      })
+      items.push({
         icon: 'far fa-fw fa-file',
         label: 'New file',
         disabled: !writable,
         click: () => this.onNewFile()
       })
       items.push({
-        icon: 'far fa-fw fa-folder',
-        label: 'New folder',
+        icon: 'fas fa-fw fa-external-link-square-alt',
+        label: 'New mount',
         disabled: !writable,
-        click: () => this.onNewFolder()
+        click: () => this.onNewMount()
+      })
+      items.push('-')
+      items.push({
+        icon: 'far fa-fw fa-copy',
+        label: `Copy folder path`,
+        click: () => {
+          writeToClipboard(window.location.pathname)
+          toast.create('Copied to clipboard')
+        }
+      })
+      items.push({
+        icon: 'fas fa-fw fa-share-square',
+        label: `Copy folder share link`,
+        disabled: !this.canShare(this.locationAsItem),
+        click: () => {
+          writeToClipboard(this.getShareUrl(this.locationAsItem))
+          toast.create('Copied to clipboard')
+        }
       })
       items.push('-')
       items.push({
         icon: 'fas fa-fw fa-file-import',
-        label: 'Import files',
+        label: 'Import...',
         disabled: !writable,
         click: () => this.onImport()
-      })
-      items.push({
-        icon: 'fas fa-fw fa-external-link-square-alt',
-        label: 'Mount a drive',
-        disabled: !writable,
-        click: () => this.onAddMount()
       })
     }
 
@@ -803,12 +920,38 @@ export class ExplorerApp extends LitElement {
       x: e.detail.x,
       y: e.detail.y,
       right: (e.detail.x > document.body.scrollWidth - 300),
+      top: (e.detail.y > document.body.scrollHeight / 2),
       roomy: false,
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       style: `padding: 4px 0`,
       items
     })
+  }
+
+  onClickShare (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    var rect = e.currentTarget.getClientRects()[0]
+    shareMenu.create({
+      x: rect.left - 10,
+      y: rect.bottom + 4,
+      url: this.currentShareUrl,
+      targetLabel: (this.selection[0] ? this.selection[0].stat : this.pathInfo).isDirectory() ? 'folder' : 'file'
+    })
+  }
+
+  async onToggleFriends () {
+    var isInFriends = (await navigator.filesystem.query({
+      path: '/public/friends/*',
+      mount: this.driveInfo.url
+    })).length > 0
+    if (isInFriends) {
+      await friends.remove(this.driveInfo.url)
+    } else {
+      await friends.add(this.driveInfo.url, this.driveInfo.title)
+    }
+    location.reload()
   }
 }
 
@@ -833,7 +976,7 @@ function setGlobalSavedConfig (name, value) {
 
 function getSavedConfig (name, fallback = undefined) {
   var value = localStorage.getItem(`setting:${name}:${location.pathname}`)
-  if (value === null) return fallback
+  if (value === null) return getGlobalSavedConfig (name, fallback)
   return value
 }
 
