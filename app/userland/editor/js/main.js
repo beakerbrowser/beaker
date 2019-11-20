@@ -277,7 +277,7 @@ class EditorApp extends LitElement {
         ${this.dne ? html`
           <div style="padding: 0 5px">
             <span class="fas fa-fw fa-info-circle"></span>
-            This page does not exist.
+            Not viewing a file.
           </div>
         ` : html`
           <button class="transparent tooltip-nodelay tooltip-onsmall" title="Save" @click=${this.onClickSave} data-tooltip="Save">
@@ -289,11 +289,11 @@ class EditorApp extends LitElement {
           <button class="transparent tooltip-nodelay tooltip-onsmall" title="Delete" @click=${this.onClickDelete} data-tooltip="Delete">
             <span class="fas fa-fw fa-trash"></span> <span class="btn-label">Delete</span>
           </button>
+          <span class="divider"></span>
+          <button class="transparent tooltip-nodelay tooltip-onsmall" title="View file" @click=${this.onClickView} data-tooltip="Delete">
+            <span class="far fa-fw fa-window-maximize"></span> <span class="btn-label">View file</span>
+          </button>
         `}
-        <span class="divider"></span>
-        <button class="transparent tooltip-nodelay tooltip-onsmall" title="View file" @click=${this.onClickView} data-tooltip="Delete">
-          <span class="far fa-fw fa-window-maximize"></span> <span class="btn-label">View file</span>
-        </button>
       </div>
       ${this.isBinary ? html`
         <div class="empty">
@@ -302,14 +302,7 @@ class EditorApp extends LitElement {
       ` : ''}
       ${this.dne ? html`
         <div class="empty">
-          ${this.hasFileExt ? html`
-            You can <a href="#" @click=${e => this.onClickCreate(e)}>create a new page here</a>.
-          ` : html`
-            You can create a new page here using
-            <a href="#" @click=${e => this.onClickCreate(e, 'md')}>Markdown</a>
-            or
-            <a href="#" @click=${e => this.onClickCreate(e, 'html')}>HTML</a>.
-          `}
+          ${''/* TODO put anything here? -prf */}
         </div>
       ` : ''}
       ${this.isFilesOpen ? this.renderFilesSidebar() : ''}
