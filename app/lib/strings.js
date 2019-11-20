@@ -80,8 +80,13 @@ export function toNiceUrl (str) {
   return str
 }
 
-const reservedChars = /[<>:"/\\|?*\x00-\x1F]/g
+const reservedChars = /[^A-Za-z0-9]/g
+const continuousDashes = /(-[-]+)/g
 const endingDashes = /([-]+$)/g
+export function slugify (str = '') {
+  return str.replace(reservedChars, '-').replace(continuousDashes, '-').replace(endingDashes, '')
+}
+
 export function slugifyUrl (str = '') {
   try {
     let url = new URL(str)
@@ -89,5 +94,5 @@ export function slugifyUrl (str = '') {
   } catch (e) {
     // ignore
   }
-  return str.replace(reservedChars, '-').replace(endingDashes, '')
+  return slugify(str)
 }

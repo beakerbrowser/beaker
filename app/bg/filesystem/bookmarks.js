@@ -1,7 +1,7 @@
-import normalizeURL from 'normalize-url'
-import { joinPath, slugifyUrl } from '../../lib/strings.js'
+import { joinPath, slugify } from '../../lib/strings.js'
 import { query } from './query.js'
 import * as filesystem from './index'
+import { URL } from 'url'
 
 // exported
 // =
@@ -38,8 +38,28 @@ export async function get (href) {
  */
 export async function add ({location, href, title}) {
   location = location || '/library/bookmarks'
-  var slug = toSlug(href)
-  var path = joinPath(location, slug + '.goto')
+  var slug
+  
+  try {
+    var hrefp = new URL(href)
+    if (hrefp.pathname === '/' && !hrefp.search && !hrefp.hash) {
+      // at the root path - use the hostname for the filename
+      slug = slugify(hrefp.hostname)
+    } else if (typeof title === 'string' && !!title.trim()) {
+      // use the title if available on subpages
+      slug = slugify(title.trim())
+    } else {
+      // use parts of the url
+      slug = slugify(hrefp.hostname + hrefp.pathname + hrefp.search + hrefp.hash)
+    }
+  } catch (e) {
+    // weird URL, just use slugified version of it
+    slug = slugify(href)
+  }
+  slug = slug.toLowerCase()
+
+  var filename = await filesystem.getAvailableName(location, slug, 'goto') // avoid collisions
+  var path = joinPath(location, filename)
   await filesystem.get().pda.writeFile(path, '', {metadata: {href, title}})
   return path
 }
@@ -60,13 +80,13 @@ export async function update (oldHref, {href, title, description, isPublic}) {
   var oldBookmark = await get(oldHref)
   if (!oldBookmark) return add({href, title, description, isPublic})
 
-  var slug = toSlug(href || oldBookmark.href)
+  var slug = slugify(href || oldBookmark.href)
   var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
 
   // remove old if changing isPublic
   if (typeof isPublic !== 'undefined' && oldBookmark.isPublic !== isPublic) {
     try {
-      let oldSlug = toSlug(oldBookmark.href)
+      let oldSlug = slugify(oldBookmark.href)
       let oldPath = oldBookmark.isPublic ? `/public/data/unwalled.garden/bookmarks/${oldSlug}.json` : `/data/unwalled.garden/bookmarks/${oldSlug}.json`
       await filesystem.get().pda.unlink(oldPath)
     } catch (e) {
@@ -96,27 +116,13 @@ export async function remove (href) {
   var oldBookmark = await get(href)
   if (!oldBookmark) return
 
-  let slug = toSlug(oldBookmark.href)
+  let slug = slugify(oldBookmark.href)
   let path = oldBookmark.isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
   await filesystem.get().pda.unlink(path)
 }
 
 // internal
 // =
-
-function toSlug (href = '') {
-  try {
-    href = normalizeURL(href, {
-      stripFragment: false,
-      stripWWW: false,
-      removeQueryParameters: false,
-      removeTrailingSlash: true
-    })
-  } catch (e) {
-    // ignore
-  }
-  return slugifyUrl(href)
-}
 
 function massageBookmark (file) {
   return {

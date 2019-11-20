@@ -98,8 +98,24 @@ export async function setDefaultUser (url) {
  * @returns {Promise<void>}
  */
 export async function addToLibrary (url, title) {
-  var name = await getAvailableName(PATHS.LIBRARY, title)
+  var name = await getAvailableName(PATHS.LIBRARY, slugify((title || '').trim() || 'untitled').toLowerCase())
   await ensureMount(joinPath(PATHS.LIBRARY, name), url)
+}
+
+/**
+ * @param {string} containingPath
+ * @param {string} basename
+ * @param {string} ext
+ * @returns {Promise<string>}
+ */
+export async function getAvailableName (containingPath, basename, ext = '') {
+  for (let i = 1; i < 1e9; i++) {
+    let name = ((i === 1) ? basename : `${basename}-${i}`) + `.${ext}`
+    let st = await stat(joinPath(containingPath, name))
+    if (!st) return name
+  }
+  // yikes if this happens
+  throw new Error('Unable to find an available name for ' + basename)
 }
 
 // internal methods
@@ -158,20 +174,4 @@ async function ensureUnmount (path) {
   } catch (e) {
     logger.error('Filesystem failed to unmount archive', {path, error: e.toString()})
   }
-}
-
-/**
- * @param {string} containingPath
- * @param {string} title
- * @returns {Promise<string>}
- */
-async function getAvailableName (containingPath, title) {
-  var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
-  for (let i = 1; i < 1e9; i++) {
-    let name = (i === 1) ? basename : `${basename}-${i}`
-    let st = await stat(joinPath(containingPath, name))
-    if (!st) return name
-  }
-  // yikes if this happens
-  throw new Error('Unable to find an available name for ' + title)
 }
