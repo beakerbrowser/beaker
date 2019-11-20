@@ -580,7 +580,12 @@ export class ExplorerApp extends LitElement {
   }
 
   goto (item, newWindow = false) {
-    var url = joinPath(window.location.toString(), item.name)
+    var url
+    if (item.name.endsWith('.goto') && item.stat.metadata.href) {
+      url = item.stat.metadata.href
+    } else {
+      url = joinPath(window.location.toString(), item.name)
+    }
     if (newWindow) window.open(url)
     else window.location = url
   }
