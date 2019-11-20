@@ -581,7 +581,9 @@ export class ExplorerApp extends LitElement {
 
   goto (item, newWindow = false) {
     var url
-    if (item.name.endsWith('.goto') && item.stat.metadata.href) {
+    if (item.rootPath) {
+      url = this.driveInfo.url + item.rootPath
+    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
       url = item.stat.metadata.href
     } else {
       url = joinPath(window.location.toString(), item.name)

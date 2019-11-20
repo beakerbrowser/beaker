@@ -54,7 +54,7 @@ export class SelectionInfo extends LitElement {
       `
     }
     var sel = this.selection[0]
-    var selPathname = joinPath(location.pathname, sel.name)
+    var selPathname = sel.rootPath || joinPath(location.pathname, sel.name)
     var selRealUrl = this.getRealUrl(selPathname)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
