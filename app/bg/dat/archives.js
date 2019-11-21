@@ -143,7 +143,7 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
     var [manifest, oldMeta, size] = await Promise.all([
       archive.pda.readManifest().catch(_ => {}),
       archivesDb.getMeta(key),
-      archive.pda.readSize('/')
+      0//archive.pda.readSize('/')
     ])
     var {title, description, type, author, forkOf} = (manifest || {})
     var writable = archive.writable
