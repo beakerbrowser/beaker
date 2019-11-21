@@ -806,30 +806,28 @@ export class ExplorerApp extends LitElement {
     if (this.selection.length === 1 || this.pathInfo.isFile()) {
       let sel = this.selection[0] || this.locationAsItem
       let writable = this.selection.reduce((acc, v) => acc && v.drive.writable, true)
-      if (this.selection[0]) {
-        items.push({
-          icon: 'fas fa-fw fa-external-link-alt',
-          label: 'Open in new tab',
-          click: () => this.goto(sel, true)
-        })
-        items.push({
-          icon: 'far fa-fw fa-copy',
-          label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
-          click: () => {
-            writeToClipboard((sel.rootPath) ? sel.rootPath : joinPath(window.location.pathname, sel.name))
-            toast.create('Copied to clipboard')
-          }
-        })
-        items.push({
-          icon: 'fas fa-fw fa-share-square',
-          label: 'Copy share link',
-          disabled: !this.canShare(sel),
-          click: () => {
-            writeToClipboard(this.getShareUrl(sel))
-            toast.create('Copied to clipboard')
-          }
-        })
-      }
+      items.push({
+        icon: 'fas fa-fw fa-external-link-alt',
+        label: 'Open in new tab',
+        click: () => this.goto(sel, true)
+      })
+      items.push({
+        icon: 'far fa-fw fa-copy',
+        label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
+        click: () => {
+          writeToClipboard((sel.rootPath) ? sel.rootPath : joinPath(window.location.pathname, sel.name))
+          toast.create('Copied to clipboard')
+        }
+      })
+      items.push({
+        icon: 'fas fa-fw fa-share-square',
+        label: 'Copy share link',
+        disabled: !this.canShare(sel),
+        click: () => {
+          writeToClipboard(this.getShareUrl(sel))
+          toast.create('Copied to clipboard')
+        }
+      })
       if (!this.isViewingQuery) {
         items.push('-')
         if (sel.stat.isFile()) {
