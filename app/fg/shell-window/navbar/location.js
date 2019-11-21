@@ -26,6 +26,7 @@ class NavbarLocation extends LitElement {
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
+      isShareMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean}
@@ -47,6 +48,7 @@ class NavbarLocation extends LitElement {
     this.loadError = null
     this.donateLinkHref = false
     this.availableAlternative = ''
+    this.isShareMenuOpen = false
     this.isDonateMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
@@ -61,6 +63,21 @@ class NavbarLocation extends LitElement {
 
   get isDat () {
     return this.url.startsWith('dat://')
+  }
+
+  get modifiedUrl () {
+    var url = this.url
+    if (url.startsWith('beaker://desktop')) {
+      url = ''
+    } else if (url.includes('://')) {
+      try {
+        let urlp = (new URL(url))
+        url = urlp.pathname + urlp.search + urlp.hash
+      } catch (e) {
+        // ignore, malformed URL
+      }
+    }
+    return url
   }
 
   focusLocation () {
@@ -96,20 +113,17 @@ class NavbarLocation extends LitElement {
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
       ${this.renderInstallBtn()}
-      ${this.renderLinkBtn()}
+      ${this.renderShareBtn()}
+      ${this.renderBookmarkBtn()}
     `
   }
 
   renderLocation () {
-    var url = this.url
-    if (url.startsWith('beaker://desktop')) {
-      url = ''
-    }
     return html`
       <div class="input-container" @contextmenu=${this.onContextMenuLocation}>
         <input
           type="text"
-          value="${url}"
+          value="${this.modifiedUrl}"
           placeholder="Search or enter your address here"
           @focus=${this.onFocusLocation}
           @blur=${this.onBlurLocation}
@@ -248,10 +262,19 @@ class NavbarLocation extends LitElement {
     `
   }
 
-  renderLinkBtn () {
+  renderBookmarkBtn () {
     return html`
-      <button class="link-btn" @click=${this.onClickLink}>
-        <span class="fas fa-link"></span>
+      <button class="bookmark" @click=${this.onClickBookmark}>
+        <span class="far fa-star"></span>
+      </button>
+    `
+  }
+
+  renderShareBtn () {
+    var cls = classMap({share: true, pressed: this.isShareMenuOpen})
+    return html`
+      <button class="${cls}" @click=${this.onClickShareMenu}>
+        <i class="fas fa-share-square"></i>
       </button>
     `
   }
@@ -261,7 +284,7 @@ class NavbarLocation extends LitElement {
 
   onCommand (e, cmd) {
     if (cmd === 'create-bookmark') {
-      this.onClickLink()
+      this.onClickBookmark()
     }
     if (cmd === 'focus-location') {
       this.focusLocation()
@@ -283,7 +306,7 @@ class NavbarLocation extends LitElement {
   }
 
   onFocusLocation (e) {
-    e.currentTarget.value = this.url.startsWith('beaker://desktop') ? '' : this.url
+    e.currentTarget.value = this.modifiedUrl
     e.currentTarget.setSelectionRange(0, this.url.length)
     this.isLocationFocused = true
   }
@@ -338,6 +361,19 @@ class NavbarLocation extends LitElement {
     this.isLiveReloading = false
   }
 
+  async onClickShareMenu (e) {
+    this.isShareMenuOpen = true
+    var rect = this.shadowRoot.querySelector('.share').getClientRects()[0]
+    await bg.views.toggleMenu('share', {
+      bounds: {
+        top: Number(rect.bottom),
+        left: Number(rect.right)
+      },
+      params: {url: this.url}
+    })
+    this.isShareMenuOpen = false
+  }
+
   async onClickDonateMenu (e) {
     this.isDonateMenuOpen = true
     var rect1 = this.getClientRects()[0]
@@ -352,8 +388,8 @@ class NavbarLocation extends LitElement {
     this.isDonateMenuOpen = false
   }
 
-  async onClickLink () {
-    var rect = this.shadowRoot.querySelector('.link-btn').getClientRects()[0]
+  async onClickBookmark () {
+    var rect = this.shadowRoot.querySelector('.bookmark').getClientRects()[0]
     // show menu
     bg.views.toggleMenu('bookmark', {
       bounds: {
@@ -389,6 +425,10 @@ button {
   margin: 0 2px;
 }
 
+button.share {
+  border-radius: 4px;
+}
+
 button.text {
   width: auto;
   padding: 0 4px;
@@ -415,7 +455,7 @@ button.text .fa-info-circle {
   font-size: 14px;
 }
 
-button.link-btn {
+button.bookmark {
   border-radius: 4px;
   margin: 0;
 }

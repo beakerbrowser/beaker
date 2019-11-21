@@ -5,6 +5,7 @@ const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 export function examineLocationInput (v) {
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (
+    v.startsWith('/') ||
     /\.[A-z]/.test(v) ||
     isIPAddressRegex.test(v) ||
     isDatHashRegex.test(v) ||
@@ -16,7 +17,7 @@ export function examineLocationInput (v) {
   ))
   var vWithProtocol = v
   var isGuessingTheScheme = false
-  if (isProbablyUrl && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:'))) {
+  if (isProbablyUrl && !v.startsWith('/') && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:'))) {
     if (isDatHashRegex.test(v)) {
       vWithProtocol = 'dat://' + v
     } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {

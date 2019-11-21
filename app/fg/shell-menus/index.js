@@ -4,6 +4,7 @@ import * as bg from './bg-process-rpc'
 import './browser'
 import './bookmark'
 import './donate'
+import './share'
 
 class MenusWrapper extends LitElement {
   static get properties () {
@@ -80,14 +81,12 @@ class MenusWrapper extends LitElement {
     switch (this.currentMenu) {
       case 'browser':
         return html`<browser-menu active-menu></browser-menu>`
-      case 'users':
-        return html`<users-menu active-menu></users-menu>`
-      case 'location':
-        return html`<location-menu active-menu></location-menu>`
       case 'bookmark':
         return html`<bookmark-menu active-menu></bookmark-menu>`
       case 'donate':
         return html`<donate-menu active-menu></donate-menu>`
+      case 'share':
+        return html`<share-menu active-menu></share-menu>`
     }
     return html`<div></div>`
   }

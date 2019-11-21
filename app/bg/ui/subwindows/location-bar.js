@@ -116,7 +116,12 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
   async loadURL (url) {
     var win = getParentWindow(this.sender)
     hide(win) // always close the location bar
-    tabManager.getActive(win).loadURL(url)
+    var active = tabManager.getActive(win)
+    if (url.startsWith('/')) {
+      // relative to current origin
+      url = active.origin + url
+    }
+    active.loadURL(url)
     get(win).webContents.send('command', 'unfocus-location') // we have to manually unfocus the location bar
   },
 
