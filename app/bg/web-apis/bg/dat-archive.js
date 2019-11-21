@@ -9,6 +9,7 @@ import * as permissions from '../../ui/permissions'
 import datDns from '../../dat/dns'
 import * as datArchives from '../../dat/archives'
 import * as archivesDb from '../../dbs/archives'
+import { chunkMapAsync } from '../../../lib/functions'
 import { timer } from '../../../lib/time'
 import * as filesystem from '../../filesystem/index'
 import * as users from '../../filesystem/users'
@@ -392,12 +393,10 @@ export default {
       checkin('reading directory')
       var names = await checkoutFS.pda.readdir(filepath, opts)
       if (opts.stat) {
-        for (let i = 0; i < names.length; i++) {
-          names[i] = {
-            name: names[i],
-            stat: await checkoutFS.pda.stat(path.join(filepath, names[i]))
-          }
-        }
+        names = await chunkMapAsync(names, 30, async (name) => ({
+          name,
+          stat: await checkoutFS.pda.stat(path.join(filepath, name))
+        }))
       }
       return names
     })
