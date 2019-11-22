@@ -110,7 +110,7 @@ ${tooltipCSS}
 
 .pins {
   display: grid;
-  padding: 5px 85px;
+  padding: 5px 95px;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   grid-gap: 15px;
   width: 100%;
