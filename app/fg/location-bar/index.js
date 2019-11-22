@@ -228,7 +228,7 @@ class LocationBar extends LitElement {
   onCommand (cmd, opts) {
     switch (cmd) {
       case 'set-value':
-        if (opts.value && opts.value !== this.inputValue) {
+        if (!opts.value || opts.value !== this.inputValue) {
           this.inputQuery = this.inputValue = opts.value
           this.currentSelection = 0
           if (this.inputValue.startsWith('beaker://library')) {
@@ -264,7 +264,7 @@ class LocationBar extends LitElement {
 
   onInputLocation (e) {
     var value = e.currentTarget.value.trim()
-    if (value && this.inputValue !== value) {
+    if (!value || this.inputValue !== value) {
       this.inputQuery = this.inputValue = value // update the current value
       this.currentSelection = 0 // reset the selection
       this.queryAutocomplete()
@@ -328,7 +328,7 @@ class LocationBar extends LitElement {
     var finalResults
     var [crawlerResults, historyResults] = await Promise.all([
       {results: []}, // TODO uwg bg.search.query({query: this.inputValue, limit: 10}),
-      bg.history.search(this.inputValue)
+      this.inputValue ? bg.history.search(this.inputValue) : []
     ])
     // History search is experimentally disabled
     // We're seeing how it feels to focus entirely on results from the network
@@ -345,10 +345,10 @@ class LocationBar extends LitElement {
     historyResults.forEach(r => highlightHistoryResult(searchTerms, r))
 
     // figure out what we're looking at
-    var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue)
+    var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue || '/')
 
     // set the top results accordingly
-    var gotoResult = { url: vWithProtocol, title: 'Go to ' + this.inputValue, isGuessingTheScheme, isGoto: true }
+    var gotoResult = { url: vWithProtocol, title: 'Go to ' + (this.inputValue || '/'), isGuessingTheScheme, isGoto: true }
     var searchResult = {
       search: this.inputValue,
       title: `Search DuckDuckGo for "${this.inputValue}"`,
