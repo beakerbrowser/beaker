@@ -14,7 +14,7 @@ export const PATHS = {
   // DATA_NS: (ns) => `/data/${ns}`,
 
   // private fs
-  DEFAULT_USER: '/public',
+  DEFAULT_USER: '/profile',
   LIBRARY: '/library',
   LIBRARY_NS: (ns) => `/library/${ns}`,
   PROGRAM_REGISTRY_JSON: '/settings/program-registry.json',

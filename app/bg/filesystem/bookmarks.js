@@ -81,13 +81,13 @@ export async function update (oldHref, {href, title, description, isPublic}) {
   if (!oldBookmark) return add({href, title, description, isPublic})
 
   var slug = slugify(href || oldBookmark.href)
-  var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
+  var path = isPublic ? `/profile/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
 
   // remove old if changing isPublic
   if (typeof isPublic !== 'undefined' && oldBookmark.isPublic !== isPublic) {
     try {
       let oldSlug = slugify(oldBookmark.href)
-      let oldPath = oldBookmark.isPublic ? `/public/data/unwalled.garden/bookmarks/${oldSlug}.json` : `/data/unwalled.garden/bookmarks/${oldSlug}.json`
+      let oldPath = oldBookmark.isPublic ? `/profile/data/unwalled.garden/bookmarks/${oldSlug}.json` : `/data/unwalled.garden/bookmarks/${oldSlug}.json`
       await filesystem.get().pda.unlink(oldPath)
     } catch (e) {
       // ignore
@@ -117,7 +117,7 @@ export async function remove (href) {
   if (!oldBookmark) return
 
   let slug = slugify(oldBookmark.href)
-  let path = oldBookmark.isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
+  let path = oldBookmark.isPublic ? `/profile/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
   await filesystem.get().pda.unlink(path)
 }
 

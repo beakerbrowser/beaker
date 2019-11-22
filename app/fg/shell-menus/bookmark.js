@@ -5,7 +5,7 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
 
-const DEFAULT_LOCATIONS = ['/library/bookmarks', '/public']
+const DEFAULT_LOCATIONS = ['/library/bookmarks', '/profile']
 
 class BookmarkMenu extends LitElement {
   static get properties () {

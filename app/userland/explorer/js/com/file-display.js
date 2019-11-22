@@ -101,7 +101,7 @@ export class FileDisplay extends LitElement {
   }
 
   async renderAndRenderMount () {
-    var user = await navigator.filesystem.stat('/public')
+    var user = await navigator.filesystem.stat('/profile')
     var label = undefined
     if (this.info.mountInfo.key === user.mount.key) {
       label = 'My profile'

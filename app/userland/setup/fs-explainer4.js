@@ -29,7 +29,7 @@ customElements.define('fs-explainer4-view', class extends BaseSlideView {
 </p>
 <p style="font-size: 18px; margin: 30px 0 30px">
   <span class="far fa-hand-point-right"></span> Your <strong><span class="fas fa-home"></span> Home Drive</strong> is located at <code>~/</code><br>
-  <span class="far fa-hand-point-right"></span> and your <strong><span class="fas fa-user-circle"></span> Profile</strong> is located at <code>~/public</code>.
+  <span class="far fa-hand-point-right"></span> and your <strong><span class="fas fa-user-circle"></span> Profile</strong> is located at <code>~/profile</code>.
 </p>
 <div class="fadein">
   <p style="font-size: 18px; margin: 30px 0 30px">
@@ -50,5 +50,5 @@ customElements.define('fs-explainer4-view', class extends BaseSlideView {
   When you create new hyperdrives, they will be mounted to your <strong><span class="fas fa-university"></span> Private Library</strong> at <code>~/library</code>.
 </p>
 <p style="font-size: 18px; margin: 30px 0 30px">
-  If you want to share a hyperdrive, you can mount it to your <strong><span class="fas fa-university"></span> Public Library</strong> at <code>~/public/library</code>.
+  If you want to share a hyperdrive, you can mount it to your <strong><span class="fas fa-university"></span> Public Library</strong> at <code>~/profile/library</code>.
 </p> */}

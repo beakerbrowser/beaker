@@ -130,7 +130,7 @@ class SiteInfoApp extends LitElement {
     if (!this.url) return
     try {
       if (!this.user) {
-        let st = await navigator.filesystem.stat('/public')
+        let st = await navigator.filesystem.stat('/profile')
         let userDrive = new DatArchive(st.mount.key)
         this.user = await userDrive.getInfo()
       }

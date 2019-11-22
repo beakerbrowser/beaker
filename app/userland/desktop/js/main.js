@@ -33,7 +33,7 @@ class DesktopApp extends LitElement {
   }
 
   async load () {
-    this.userUrl = `dat://${(await navigator.filesystem.stat('/public')).mount.key}`
+    this.userUrl = `dat://${(await navigator.filesystem.stat('/profile')).mount.key}`
     this.pins = await pins.load()
     console.log(this.userUrl)
   }
@@ -61,7 +61,7 @@ class DesktopApp extends LitElement {
         <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}" data-tooltip="My Home Drive">
           <span class="icon fas fa-home"></span>
         </button>
-        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}/public" data-tooltip="My Profile">
+        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}/profile" data-tooltip="My Profile">
           <span class="icon fas fa-user-circle"></span>
         </button>
         <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="beaker://webterm/" data-tooltip="Webterm">

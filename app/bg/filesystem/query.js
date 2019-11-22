@@ -51,14 +51,14 @@ import _pick from 'lodash.pick'
 // exported api
 // =
 
-// navigator.filesystem.query({type: 'mount', path: ['/public', '/public/friends/*', '/public/friends/*/friends/*']})
-// => [{type: 'mount', path: '/public', stat, mount, drive}, {type: 'mount', path: '/public/friend/bob', stat, mount, drive}, ...]
+// navigator.filesystem.query({type: 'mount', path: ['/profile', '/profile/friends/*', '/profile/friends/*/friends/*']})
+// => [{type: 'mount', path: '/profile', stat, mount, drive}, {type: 'mount', path: '/profile/friend/bob', stat, mount, drive}, ...]
 
-// navigator.filesystem.query({type: 'mount', mount: url, path: ['/public/friends/*', '/public/friends/*/friends/*']})
-// => [{type: 'mount', path: '/public/friend/bob', stat, mount, drive}, ...]
+// navigator.filesystem.query({type: 'mount', mount: url, path: ['/profile/friends/*', '/profile/friends/*/friends/*']})
+// => [{type: 'mount', path: '/profile/friend/bob', stat, mount, drive}, ...]
 
-// navigator.filesystem.query({type: 'file', meta: {href: url}, path: ['/public/comments', '/public/friends/*/comments', '/public/friends/*/friends/*/comments']})
-// => [{type: 'folder', path: '/public/comment/foo.txt', stat, drive}]
+// navigator.filesystem.query({type: 'file', meta: {href: url}, path: ['/profile/comments', '/profile/friends/*/comments', '/profile/friends/*/friends/*/comments']})
+// => [{type: 'folder', path: '/profile/comments/foo.txt', stat, drive}]
 
 /**
  * @param {FSQueryOpts} opts

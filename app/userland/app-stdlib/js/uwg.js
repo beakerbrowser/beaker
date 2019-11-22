@@ -65,7 +65,7 @@ export const profiles = {
 
     // check network expanding from self -> friends -> foafs
     var entry
-    for (let path of ['/public', '/public/friends/*', '/public/friends/*/friends/*']) {
+    for (let path of ['/profile', '/profile/friends/*', '/profile/friends/*/friends/*']) {
       var res = /** @type FSQueryResult[] */(await navigator.filesystem.query({path, mount: key}))
       if (res[0]) {
         entry = /** @type FSQueryResult */(res[0])
@@ -119,8 +119,8 @@ export const friends = {
    * @returns {Promise<void>}
    */
   async add (url, title = 'anonymous') {
-    var name = await getAvailableName('/public/friends', title)
-    await ensureMount(joinPath('/public/friends', name), url)
+    var name = await getAvailableName('/profile/friends', title)
+    await ensureMount(joinPath('/profile/friends', name), url)
   },
 
   /**
@@ -128,15 +128,15 @@ export const friends = {
    * @returns {Promise<void>}
    */
   async remove (urlOrName) {
-    var mount = await navigator.filesystem.query({path: '/public/friends/*', mount: urlOrName})
+    var mount = await navigator.filesystem.query({path: '/profile/friends/*', mount: urlOrName})
     if (mount[0]) return navigator.filesystem.unmount(mount[0].path)
 
     try {
-      await navigator.filesystem.stat(`/public/friends/${urlOrName}`)
+      await navigator.filesystem.stat(`/profile/friends/${urlOrName}`)
     } catch (e) {
       return // dne
     }
-    return navigator.filesystem.unmount(`/public/friends/${urlOrName}`)
+    return navigator.filesystem.unmount(`/profile/friends/${urlOrName}`)
   }
 }
 
@@ -192,7 +192,7 @@ export const bookmarks = {
    */
   async add ({href, title, description, isPublic}) {
     var slug = slugifyUrl(href)
-    var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
+    var path = isPublic ? `/profile/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
 
     await ensureParentDir(path)
     await navigator.filesystem.writeFile(path, JSON.stringify({
@@ -226,7 +226,7 @@ export const bookmarks = {
     href = href || oldBookmark.href
 
     var slug = slugifyUrl(href)
-    var path = isPublic ? `/public/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
+    var path = isPublic ? `/profile/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
 
     // remove old if changing isPublic
     if (bookmarkPath !== path) {
@@ -346,7 +346,7 @@ export const comments = {
    * @returns {Promise<string>}
    */
   async add ({href, replyTo, body}) {
-    var path = `/public/data/unwalled.garden/comments/${slugifyUrl(href)}/${Date.now()}.json`
+    var path = `/profile/data/unwalled.garden/comments/${slugifyUrl(href)}/${Date.now()}.json`
     await ensureParentDir(path)
     await navigator.filesystem.writeFile(path, JSON.stringify({
       type: 'unwalled.garden/comment',
@@ -456,7 +456,7 @@ export const annotations = {
    * @returns {Promise<string>}
    */
   async put (href, {tags, vote} = {tags: undefined, vote: undefined}) {
-    var path = `/public/data/unwalled.garden/annotations/${slugifyUrl(href)}.json`
+    var path = `/profile/data/unwalled.garden/annotations/${slugifyUrl(href)}.json`
     await ensureParentDir(path)
     await navigator.filesystem.writeFile(path, JSON.stringify({
       type: 'unwalled.garden/annotation',
@@ -472,7 +472,7 @@ export const annotations = {
    * @returns {Promise<void>}
    */
   async remove (href) {
-    var path = `/public/data/unwalled.garden/annotations/${slugifyUrl(href)}.json`
+    var path = `/profile/data/unwalled.garden/annotations/${slugifyUrl(href)}.json`
     await navigator.filesystem.unlink(path)
   }
 }
@@ -486,13 +486,13 @@ export const annotations = {
  */
 function getFriendPaths (author) {
   if (author === 'me') {
-    return `/public/friends/*`
+    return `/profile/friends/*`
   } else if (author) {
-    return `/public/friends/${author}/friends/*`
+    return `/profile/friends/${author}/friends/*`
   } else {
     return [
-      `/public/friends/*`,
-      `/public/friends/*/friends/*`
+      `/profile/friends/*`,
+      `/profile/friends/*/friends/*`
     ]
   }
 }
@@ -503,13 +503,13 @@ function getFriendPaths (author) {
  */
 function getFeedPaths (author) {
   if (author === 'me') {
-    return `/public/feed/*`
+    return `/profile/feed/*`
   } else if (author) {
-    return `/public/friends/${author}/feed/*`
+    return `/profile/friends/${author}/feed/*`
   } else {
     return [
-      `/public/feed/*`,
-      `/public/friends/*/feed/*`
+      `/profile/feed/*`,
+      `/profile/friends/*/feed/*`
     ]
   }
 }
@@ -522,14 +522,14 @@ function getFeedPaths (author) {
 function getBookmarkPaths (author, href = undefined) {
   var filename = (href ? slugifyUrl(href) : '*') + '.json'
   if (author === 'me') {
-    return [`/data/unwalled.garden/bookmarks/${filename}`, `/public/data/unwalled.garden/bookmarks/${filename}`]
+    return [`/data/unwalled.garden/bookmarks/${filename}`, `/profile/data/unwalled.garden/bookmarks/${filename}`]
   } else if (author) {
-    return `/public/friends/${author}/data/unwalled.garden/bookmarks/${filename}`
+    return `/profile/friends/${author}/data/unwalled.garden/bookmarks/${filename}`
   } else {
     return [
       `/data/unwalled.garden/bookmarks/${filename}`,
-      `/public/data/unwalled.garden/bookmarks/${filename}`,
-      `/public/friends/*/data/unwalled.garden/bookmarks/${filename}`
+      `/profile/data/unwalled.garden/bookmarks/${filename}`,
+      `/profile/friends/*/data/unwalled.garden/bookmarks/${filename}`
     ]
   }
 }
@@ -542,13 +542,13 @@ function getBookmarkPaths (author, href = undefined) {
 function getCommentPaths (author, href = undefined) {
   var foldername = (href ? slugifyUrl(href) : '*')
   if (author === 'me') {
-    return `/public/data/unwalled.garden/comments/${foldername}/*.json`
+    return `/profile/data/unwalled.garden/comments/${foldername}/*.json`
   } else if (author) {
-    return `/public/friends/${author}/data/unwalled.garden/comments/${foldername}/*.json`
+    return `/profile/friends/${author}/data/unwalled.garden/comments/${foldername}/*.json`
   } else {
     return [
-      `/public/data/unwalled.garden/comments/${foldername}/*.json`,
-      `/public/friends/*/data/unwalled.garden/comments/${foldername}/*.json`
+      `/profile/data/unwalled.garden/comments/${foldername}/*.json`,
+      `/profile/friends/*/data/unwalled.garden/comments/${foldername}/*.json`
     ]
   }
 }
@@ -561,13 +561,13 @@ function getCommentPaths (author, href = undefined) {
 function getAnnotationPaths (author, href = undefined) {
   var filename = (href ? slugifyUrl(href) : '*') + '.json'
   if (author === 'me') {
-    return `/public/data/unwalled.garden/annotations/${filename}`
+    return `/profile/data/unwalled.garden/annotations/${filename}`
   } else if (author) {
-    return `/public/friends/${author}/data/unwalled.garden/annotations/${filename}`
+    return `/profile/friends/${author}/data/unwalled.garden/annotations/${filename}`
   } else {
     return [
-      `/public/data/unwalled.garden/annotations/${filename}`,
-      `/public/friends/*/data/unwalled.garden/annotations/${filename}`
+      `/profile/data/unwalled.garden/annotations/${filename}`,
+      `/profile/friends/*/data/unwalled.garden/annotations/${filename}`
     ]
   }
 }
@@ -584,7 +584,7 @@ function massageBookmark (bookmark) {
   bookmark.content.description = typeof bookmark.content.description === 'string' ? bookmark.content.description : undefined
   bookmark.content.createdAt = typeof bookmark.content.createdAt === 'string' ? new Date(bookmark.content.createdAt) : undefined
   bookmark.content.updatedAt = typeof bookmark.content.updatedAt === 'string' ? new Date(bookmark.content.updatedAt) : undefined
-  bookmark.content.isPublic = bookmark.path.startsWith('/public')
+  bookmark.content.isPublic = bookmark.path.startsWith('/profile')
   return true
 }
 

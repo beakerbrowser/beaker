@@ -472,7 +472,7 @@ export class ExplorerApp extends LitElement {
 // ` : ''}
 //   async renderAddBtn () {
 //     var isInFriends = (await navigator.filesystem.query({
-//       path: '/public/friends/*',
+//       path: '/profile/friends/*',
 //       mount: this.driveInfo.url
 //     })).length > 0
 //     if (isInFriends) {
@@ -882,7 +882,7 @@ export class ExplorerApp extends LitElement {
 
   async onToggleFriends () {
     var isInFriends = (await navigator.filesystem.query({
-      path: '/public/friends/*',
+      path: '/profile/friends/*',
       mount: this.driveInfo.url
     })).length > 0
     if (isInFriends) {
