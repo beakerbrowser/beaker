@@ -42,30 +42,33 @@ ${tooltipCSS}
   border-top-left-radius: 12px;
 }
 
-.ctrl-bar button {
+.ctrl-bar .ctrl {
+  display: block;
   margin-bottom: 12px;
   border-radius: 0;
+  padding: 5px 10px;
+  text-align: center;
 }
 
-.ctrl-bar button:hover {
+.ctrl-bar .ctrl:hover {
   background: transparent;
 }
 
-.ctrl-bar button.profile {
+.ctrl-bar .ctrl.profile {
   margin-top: -12px;
   margin-bottom: 8px;
 }
 
-.ctrl-bar button.profile::before {
+.ctrl-bar .ctrl.profile::before {
   left: calc(100% + 26px);
 }
 
-.ctrl-bar button.profile::after {
+.ctrl-bar .ctrl.profile::after {
   left: calc(100% + 20px) !important;
 }
 
-.ctrl-bar button img {
-  height: 60ox;
+.ctrl-bar .ctrl img {
+  height: 60px;
   width: 60px;
   object-fit: contain;
   border-radius: 50%;
@@ -74,14 +77,14 @@ ${tooltipCSS}
   background: rgb(241, 241, 246);
 }
 
-.ctrl-bar button span,
-.ctrl-bar button img {
+.ctrl-bar .ctrl span,
+.ctrl-bar .ctrl img {
   transition: transform 0.25s, color 0.25s, box-shadow 0.25s;
   transform: scale(1.0);
 }
 
-.ctrl-bar button:hover span,
-.ctrl-bar button:hover img {
+.ctrl-bar .ctrl:hover span,
+.ctrl-bar .ctrl:hover img {
   transform: scale(1.2);
   color: #223;
   box-shadow: rgb(241, 241, 246) 0px 0px 0px 0px;

@@ -50,27 +50,27 @@ class DesktopApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="ctrl-bar right">
-        <button class="transparent tooltip-left" @click=${this.onClickNewDrive} data-type="" data-tooltip="New Files Drive">
+        <button class="ctrl transparent tooltip-left" @click=${this.onClickNewDrive} data-type="" data-tooltip="New Files Drive">
           <span class="relative"><span class="icon far fa-hdd"></span> <span class="fas fa-plus plusmod"></span></span>
         </button>
-        <button class="transparent tooltip-left" @click=${this.onClickNewDrive} data-type="website" data-tooltip="New Website">
+        <button class="ctrl transparent tooltip-left" @click=${this.onClickNewDrive} data-type="website" data-tooltip="New Website">
           <span class="relative"><span class="icon fas fa-sitemap"></span> <span class="fas fa-plus plusmod"></span></span>
         </button>
       </div>
       <div class="ctrl-bar left">
-        <button class="transparent profile tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}/profile" data-tooltip="My Profile">
+        <a class="ctrl transparent profile tooltip-right" href="${fs}/profile" data-tooltip="My Profile">
           <img src="asset:thumb:${user}">
-        </button>
-        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}" data-tooltip="My Home Drive">
+        </a>
+        <a class="ctrl transparent tooltip-right" href="${fs}" data-tooltip="My Home Drive">
           <span class="icon fas fa-home"></span>
-        </button>
-        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="beaker://webterm/" data-tooltip="Webterm">
+        </a>
+        <a class="ctrl transparent tooltip-right" href="beaker://webterm/" data-tooltip="Webterm">
           <span class="icon fas fa-terminal"></span>
-        </button>
+        </a>
         <div style="flex: 1"></div>
-        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="beaker://settings/" data-tooltip="Settings">
+        <a class="ctrl transparent tooltip-right" href="beaker://settings/" data-tooltip="Settings">
           <span class="icon fas fa-cog"></span>
-        </button>
+        </a>
       </div>
       ${this.renderPins()}
     `
@@ -104,12 +104,6 @@ class DesktopApp extends LitElement {
 
   // events
   // =
-
-  onClickLinkBtn (e) {
-    var href = e.currentTarget.dataset.href
-    if (e.metaKey) window.open(href)
-    else window.location = href
-  }
 
   async onClickNewDrive (e) {
     var type = e.currentTarget.dataset.type
