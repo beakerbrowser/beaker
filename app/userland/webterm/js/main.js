@@ -172,7 +172,9 @@ class WebTerm extends LitElement {
     this.commandModules.builtins = {help: this.help.bind(this)}
     this.commands.help = {
       package: 'builtins',
-      name: 'help'
+      name: 'help',
+      help: 'Get documentation on a command',
+      usage: 'help [command]'
     }
   }
 
@@ -409,9 +411,10 @@ class WebTerm extends LitElement {
     }
 
     for (let id in sourceSet) {
-      if (id === 'help' || (!topic && id.includes('.'))) continue
-      commandNameLen = Math.max(this.commands[id].name.length, commandNameLen)
-      commands.push(this.commands[id])
+      if (!topic && id.includes('.')) continue
+      let command = this.commands[id]
+      commandNameLen = Math.max(command.name.length, commandNameLen)
+      commands.push(command)
     }
 
     return {
