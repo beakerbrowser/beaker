@@ -55,6 +55,7 @@ export class BaseSlideView extends HTMLElement {
     transform: translateX(-50%);
     color: #2864dc;
     font-size: 21px;
+    -webkit-app-region: no-drag;
   }
   a:hover {
     cursor: pointer;

@@ -83,6 +83,7 @@ customElements.define('intro-view', class extends HTMLElement {
     animation-fill-mode: forwards;
     animation-timing-function: cubic;
     animation-delay: 3.8s;
+    -webkit-app-region: no-drag;
   }
   a:hover {
     text-decoration: underline;
