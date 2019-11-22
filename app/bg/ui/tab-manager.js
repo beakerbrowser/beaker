@@ -931,7 +931,7 @@ class Tab {
         show: false
       })
       win.once('ready-to-show', () => win.close())
-      if (!options.webContents) {
+      if (!options || !options.webContents) {
         win.loadURL(url) // existing webContents will be navigated automatically
       }
       e.newGuest = win
