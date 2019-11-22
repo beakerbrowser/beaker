@@ -58,11 +58,11 @@ class DesktopApp extends LitElement {
         </button>
       </div>
       <div class="ctrl-bar left">
+        <button class="transparent profile tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}/profile" data-tooltip="My Profile">
+          <img src="asset:thumb:${user}">
+        </button>
         <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}" data-tooltip="My Home Drive">
           <span class="icon fas fa-home"></span>
-        </button>
-        <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="${fs}/profile" data-tooltip="My Profile">
-          <span class="icon fas fa-user-circle"></span>
         </button>
         <button class="transparent tooltip-right" @click=${this.onClickLinkBtn} data-href="beaker://webterm/" data-tooltip="Webterm">
           <span class="icon fas fa-terminal"></span>

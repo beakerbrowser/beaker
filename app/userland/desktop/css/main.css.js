@@ -48,17 +48,43 @@ ${tooltipCSS}
 }
 
 .ctrl-bar button:hover {
-  background: rgba(0, 0, 50, 0.1);
+  background: transparent;
 }
 
-.ctrl-bar button span {
-  transition: transform 0.25s, color 0.25s;
+.ctrl-bar button.profile {
+  margin-top: -12px;
+  margin-bottom: 8px;
+}
+
+.ctrl-bar button.profile::before {
+  left: calc(100% + 26px);
+}
+
+.ctrl-bar button.profile::after {
+  left: calc(100% + 20px) !important;
+}
+
+.ctrl-bar button img {
+  height: 60ox;
+  width: 60px;
+  object-fit: contain;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: rgb(241, 241, 246) 0px 0px 0px 4px;
+  background: rgb(241, 241, 246);
+}
+
+.ctrl-bar button span,
+.ctrl-bar button img {
+  transition: transform 0.25s, color 0.25s, box-shadow 0.25s;
   transform: scale(1.0);
 }
 
-.ctrl-bar button:hover span {
+.ctrl-bar button:hover span,
+.ctrl-bar button:hover img {
   transform: scale(1.2);
   color: #223;
+  box-shadow: rgb(241, 241, 246) 0px 0px 0px 0px;
 }
 
 .ctrl-bar .icon {
