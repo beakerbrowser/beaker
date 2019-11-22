@@ -298,6 +298,14 @@ export function createShellWindow (windowState) {
     // unregisterGlobalKeybinding(win, 'Esc')
     // sendToWebContents('leave-full-screen')(e)
   })
+  function onMaxChange () {
+    tabManager.resize(win)
+    // on ubuntu, the maximize/unmaximize animations require multiple resizings
+    setTimeout(() => tabManager.resize(win), 250)
+    setTimeout(() => tabManager.resize(win), 500)
+  }
+  win.on('maximize', onMaxChange)
+  win.on('unmaximize', onMaxChange)
   win.on('resize', () => {
     tabManager.resize(win)
     for (let k in subwindows) {

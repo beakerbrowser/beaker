@@ -329,7 +329,6 @@ class Tab {
 
   resize () {
     this.browserView.setBounds(this.getBounds())
-    this.browserView.setAutoResize({width: true, height: true})
     prompts.reposition(this.browserWindow)
   }
 
