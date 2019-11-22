@@ -64,7 +64,7 @@ table {
 }
 
 main {
-  margin: 30px 370px 100px 300px;
+  margin: 0px 370px 100px 300px;
 }
 
 .hide-nav-left main { margin-left: 16px; }
@@ -74,7 +74,7 @@ main {
   position: fixed;
   top: 0px;
   width: 20px;
-  height: calc(100vh - 30px);
+  height: 100vh;
   padding: 50vh 2px 0;
   box-sizing: border-box;
   z-index: 3;
@@ -91,9 +91,9 @@ main {
 nav {
   position: fixed;
   z-index: 2;
-  top: 30px;
+  top: 0px;
   width: 270px;
-  height: calc(100vh - 30px);
+  height: 100vh;
   box-sizing: border-box;
   background: var(--bg-color);
   padding: 10px;
@@ -261,15 +261,14 @@ nav .help input {
 .header {
   position: sticky;
   z-index: 2;
-  top: 30px;
+  top: 0px;
   display: flex;
   align-items: center;
-  margin: 8px -4px 10px;
+  margin: 0px -4px 4px;
   font-size: 12px;
   color: #556;
-  background: var(--bg-color);
+  background: #fff;
   padding: 5px 10px;
-  border-radius: 8px;
 }
 
 .header > *:not(:last-child) {

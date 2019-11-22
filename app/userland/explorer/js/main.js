@@ -1,9 +1,8 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { joinPath, pluralize, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import { timeDifference } from 'beaker://app-stdlib/js/time.js'
-import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import { friends } from 'beaker://app-stdlib/js/uwg.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
@@ -268,49 +267,6 @@ export class ExplorerApp extends LitElement {
     this.pathAncestry = ancestry
   }
 
-  get explorerMenu () {
-    return [
-      {heading: 'Private Locations'},
-      {id: 'filesystem', label: html`<span class="fas fa-fw fa-home"></span> Home drive`},
-      {id: 'library', label: html`<span class="fas fa-fw fa-university"></span> Library`},
-      {divider: true},
-      {heading: 'Public Locations'},
-      {id: 'public', label: html`<span class="fas fa-fw fa-user-circle"></span> Profile`},
-      {id: 'feed', label: html`<span class="fas fa-fw fa-rss"></span> Feed`},
-      {id: 'friends', label: html`<span class="fas fa-fw fa-user-friends"></span> Friends`}
-    ]
-  }
-
-  get fileMenu () {
-    const inFolder = this.pathInfo.isDirectory()
-    return [
-      {id: 'new-folder', label: html`<span class="far fa-fw fa-folder"></span> New folder`, disabled: !inFolder},
-      {id: 'new-file', label: html`<span class="far fa-fw fa-file"></span> New file`, disabled: !inFolder},
-      {id: 'new-mount', label: html`<span class="fas fa-fw fa-external-link-square-alt"></span> New mount`, disabled: !inFolder},
-      {divider: true},
-      {id: 'import', label: html`<span class="fas fa-fw fa-file-import"></span> Import files...`, disabled: !inFolder}
-    ]
-  }
-
-  get editMenu () {
-    var items = []
-    const inFile = !this.pathInfo.isDirectory()
-    const numSelected = this.selection.length
-    return items.concat([
-      {id: 'rename', label: html`<span class="fas fa-fw fa-i-cursor"></span> Rename`, disabled: !(inFile || numSelected === 1)},
-      {id: 'delete', label: html`<span class="fas fa-fw fa-trash"></span> Delete`, disabled: !(inFile || numSelected > 0)},
-    ])
-  }
-
-  get driveMenu () {
-    return [
-      {id: 'clone-drive', label: html`<span class="far fa-fw fa-clone"></span> Clone this drive`},
-      {id: 'export', label: html`<span class="far fa-fw fa-file-archive"></span> Export as .zip`},
-      {divider: true},
-      {id: 'drive-properties', label: html`<span class="far fa-fw fa-list-alt"></span> Properties`}
-    ]
-  }
-
   get renderModes () {
     if (this.pathInfo.isDirectory()) {
       return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
@@ -370,13 +326,6 @@ export class ExplorerApp extends LitElement {
         @delete=${this.onDelete}
         @toggle-editor=${this.onToggleEditor}
       >
-        <div class="menubar">
-          <hover-menu require-click .options=${this.explorerMenu} current="Explorer" @change=${this.onSelectExplorerMenuItem}></hover-menu>
-          <hover-menu require-click .options=${this.fileMenu} current="File" @change=${this.onSelectMenuItem}></hover-menu>
-          <hover-menu require-click .options=${this.editMenu} current="Edit" @change=${this.onSelectMenuItem}></hover-menu>
-          <hover-menu require-click .options=${this.driveMenu} current="Drive" @change=${this.onSelectMenuItem}></hover-menu>
-          </span>
-        </div>
         <div class="nav-toggle right" @click=${e => this.toggleNav('right')}><span class="fas fa-caret-${this.hideNavRight ? 'left' : 'right'}"></span></div>
         ${this.pathInfo ? html`
           <main>
@@ -615,21 +564,6 @@ export class ExplorerApp extends LitElement {
       this.hideNavRight = !this.hideNavRight
       setGlobalSavedConfig('hide-nav-right', this.hideNavRight ? '1' : '')
     }
-  }
-
-  async onSelectExplorerMenuItem (e) {
-    switch (e.detail.id) {
-      case 'new-drive': this.onNewDrive(); break
-      case 'filesystem': window.location = navigator.filesystem.url; break
-      case 'library': window.location = navigator.filesystem.url + '/library'; break
-      case 'public': window.location = this.user.url; break
-      case 'feed': window.location = this.user.url + '/feed'; break
-      case 'friends': window.location = this.user.url + '/friends'; break
-    }
-  }
-
-  onSelectMenuItem (e) {
-    emit(e.target, e.detail.id)
   }
 
   async onNewDrive (e) {
