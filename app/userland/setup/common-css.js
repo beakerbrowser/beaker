@@ -1,4 +1,9 @@
 export const commonCSS = `
+a,
+button {
+  -webkit-app-region: no-drag;
+}
+
 form {
   padding-top: 10px;
 }
@@ -11,6 +16,7 @@ form details {
   width: 100%;
   margin: 5px 0 15px 0;
   box-sizing: border-box;
+  -webkit-app-region: no-drag;
 }
 
 form textarea {

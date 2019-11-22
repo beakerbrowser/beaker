@@ -29,7 +29,8 @@ export async function runSetupFlow () {
     setupWindow = new BrowserWindow({
       // titleBarStyle: 'hiddenInset',
       autoHideMenuBar: true,
-      fullscreenable: true,
+      fullscreenable: false,
+      resizable: false,
       fullscreenWindowTitle: true,
       frame: false,
       width: 600,
