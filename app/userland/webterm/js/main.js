@@ -30,6 +30,7 @@ class WebTerm extends LitElement {
     this.outputHist = []
     this.fs = undefined
     this.tabCompletion = undefined
+    this.liveHelp = undefined
 
     var getCWD = () => this.cwd
     var setCWD = this.setCWD.bind(this)
@@ -314,12 +315,17 @@ class WebTerm extends LitElement {
         if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1
         return a.name.localeCompare(b.name)
       })
+
+      // get live help on the current command
+      this.liveHelp = this.help({}, input.split(' ').shift())
     } else if (input) {
       // display command options
       this.tabCompletion = this.help().commands
+      this.liveHelp = undefined
     } else {
       // no input
       this.tabCompletion = undefined
+      this.liveHelp = undefined
     }
 
     if (this.tabCompletion) {
@@ -476,6 +482,7 @@ class WebTerm extends LitElement {
             ${additionalTabCompleteOptions >= 1 ? html`<a>${additionalTabCompleteOptions} other items...</a>` : ''}
           </div>
         ` : ''}
+        <div class="live-help">${this.liveHelp ? unsafeHTML(this.liveHelp.toHTML()) : ''}</div>
       </div>
     `
   }

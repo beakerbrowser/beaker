@@ -133,6 +133,13 @@ audio {
   color: var(--default);
 }
 
+.live-help {
+  padding: 10px;
+  min-height: 70px;
+  white-space: pre;
+  word-break: break-word;
+}
+
 .color-default { color: var(--default); }
 .color-background { color: var(--background); }
 .color-lightgray { color: var(--lightgray); }
