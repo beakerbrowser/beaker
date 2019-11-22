@@ -440,15 +440,19 @@ class Tab {
     this.emitUpdateState()
   }
 
-  updateSidebar () {
-    var sidebarView = sidebars.get(this)
-    if (sidebarView) {
-      sidebarView.webContents.executeJavaScript(`
+  async updateSidebar (panel) {
+    var v = sidebars.get(this)
+    if (v) {
+      if (panel && toOrigin(v.webContents.getURL()) !== toOrigin(panel)) {
+        v.webContents.loadURL(panel)
+        await new Promise(r => v.webContents.on('did-finish-load', r))
+      }
+      v.webContents.executeJavaScript(`
         window.sidebarLoad("${this.url}")
       `).catch(err => {
         console.log('Failed to load sidebar', err)
       })
-      sidebarView.webContents.focus()
+      v.webContents.focus()
     }
   }
 
