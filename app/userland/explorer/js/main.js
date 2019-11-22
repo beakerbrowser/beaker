@@ -611,7 +611,7 @@ export class ExplorerApp extends LitElement {
   async onNewMount (e) {
     if (!this.currentDriveInfo.writable) return
     var drive = new DatArchive(this.currentDriveInfo.url)
-    var targetUrl = await navigator.selectDriveDialog({title: 'Select or Create a Drive'})
+    var targetUrl = await navigator.selectDriveDialog({title: 'Select a drive'})
     var target = new DatArchive(targetUrl)
     var info = await target.getInfo()
     var name = await getAvailableName(this.realPathname, info.title, drive)
@@ -811,20 +811,20 @@ export class ExplorerApp extends LitElement {
     } else {
       let writable = this.currentDriveInfo.writable
       items.push({
-        icon: 'far fa-fw fa-folder',
-        label: 'New folder',
-        disabled: !writable,
-        click: () => this.onNewFolder()
-      })
-      items.push({
         icon: 'far fa-fw fa-file',
         label: 'New file',
         disabled: !writable,
         click: () => this.onNewFile()
       })
       items.push({
-        icon: 'fas fa-fw fa-external-link-square-alt',
-        label: 'New mount',
+        icon: 'far fa-fw fa-folder',
+        label: 'New folder',
+        disabled: !writable,
+        click: () => this.onNewFolder()
+      })
+      items.push({
+        icon: 'fas fa-fw fa-long-arrow-alt-right as-link-icon',
+        label: 'New link',
         disabled: !writable,
         click: () => this.onNewMount()
       })

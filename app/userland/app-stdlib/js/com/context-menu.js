@@ -213,6 +213,25 @@ a.dropdown-item {
 .dropdown-items.roomy .dropdown-item {
   padding-right: 30px; /* add a little cushion to the right */
 }
+
+/* custom icon css */
+.fa-long-arrow-alt-right.as-link-icon {
+  position: relative;
+  transform: rotate(-45deg);
+  left: 1px;
+}
+.fa-long-arrow-alt-right.as-link-icon:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -1px;
+  left: 4px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid #666;
+  border-radius: 2px;
+  transform: rotate(45deg);
+}
 `
 
 customElements.define('beaker-context-menu', BeakerContextMenu)

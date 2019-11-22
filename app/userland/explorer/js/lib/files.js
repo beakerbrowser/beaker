@@ -22,16 +22,14 @@ export function toSimpleItemGroups (items) {
     else groups[id].items.push(item)
   }
   for (let i of items) {
-    if (i.stat.mount) {
-      add('mounts', 'Mounts', i)
-    } else if (i.stat.isDirectory()) {
+    if (i.stat.isDirectory()) {
       add('folders', 'Folders', i)
     } else {
       add('files', 'Files', i)
     }
   }
 
-  const groupsOrder = ['mounts', 'folders', 'files']
+  const groupsOrder = ['folders', 'files']
   var groupsArr = []
   for (let id in groups) {
     groupsArr[groupsOrder.indexOf(id)] = groups[id]
