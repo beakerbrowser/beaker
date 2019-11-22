@@ -64,10 +64,10 @@ class DesktopApp extends LitElement {
         <a class="ctrl transparent tooltip-right" href="${fs}" data-tooltip="My Home Drive">
           <span class="icon fas fa-home"></span>
         </a>
+        <div style="flex: 1"></div>
         <a class="ctrl transparent tooltip-right" href="beaker://webterm/" data-tooltip="Webterm">
           <span class="icon fas fa-terminal"></span>
         </a>
-        <div style="flex: 1"></div>
         <a class="ctrl transparent tooltip-right" href="beaker://settings/" data-tooltip="Settings">
           <span class="icon fas fa-cog"></span>
         </a>
