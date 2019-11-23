@@ -357,6 +357,10 @@ export class ExplorerApp extends LitElement {
                   </button>
                 </span>*/}
               ` : ''}
+              <button class="labeled-btn" @click=${this.onClickActions}>
+                Actions${this.selection.length ? ` (${this.selection.length} ${pluralize(this.selection.length, 'item')})` : ''}
+                <span class="fas fa-fw fa-caret-down"></span>
+              </button>
             </div>
             ${isViewfile ? html`
               <explorer-view-query
@@ -564,6 +568,13 @@ export class ExplorerApp extends LitElement {
       this.hideNavRight = !this.hideNavRight
       setGlobalSavedConfig('hide-nav-right', this.hideNavRight ? '1' : '')
     }
+  }
+
+  onClickActions (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    let rect = e.currentTarget.getClientRects()[0]
+    this.onShowMenu({detail: {x: rect.right, y: rect.bottom, right: true}})
   }
 
   async onNewDrive (e) {
@@ -858,7 +869,7 @@ export class ExplorerApp extends LitElement {
     contextMenu.create({
       x: e.detail.x,
       y: e.detail.y,
-      right: (e.detail.x > document.body.scrollWidth - 300),
+      right: e.detail.right || (e.detail.x > document.body.scrollWidth - 300),
       top: (e.detail.y > document.body.scrollHeight / 2),
       roomy: false,
       noBorders: true,

@@ -157,7 +157,6 @@ nav code {
 }
 
 nav button {
-  box-shadow: none !important;
   border-radius: 6px;
 }
 
@@ -296,6 +295,11 @@ nav .help input {
 .header button {
   padding: 4px 6px;
   font-size: 8px;
+}
+
+.header button.labeled-btn {
+  padding: 2px 3px 2px 7px;
+  font-size: 10px;
 }
 
 #files-picker {
