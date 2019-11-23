@@ -45,3 +45,11 @@ export function chunkArray (arr, chunkSize) {
   }
   return result
 }
+
+/**
+ * Async function which resolves after the given ms
+ * @param {Number} ms 
+ */
+export async function wait (ms = 1) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}

@@ -4,6 +4,7 @@ import datEncoding from 'dat-encoding'
 import parseDatURL from 'parse-dat-url'
 import _debounce from 'lodash.debounce'
 import pda from 'pauls-dat-api2'
+import { wait } from '../../lib/functions'
 import * as logLib from '../logger'
 const baseLogger = logLib.get()
 const logger = baseLogger.child({category: 'dat', subcategory: 'archives'})
@@ -25,7 +26,7 @@ import * as users from '../filesystem/users'
 // constants
 // =
 
-import { DAT_HASH_REGEX, DAT_PRESERVED_FIELDS_ON_FORK } from '../../lib/const'
+import { DAT_HASH_REGEX, DAT_PRESERVED_FIELDS_ON_FORK, DAT_MANIFEST_FILENAME } from '../../lib/const'
 
 import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 
@@ -335,6 +336,9 @@ async function loadArchiveInner (key, settingsOverride) {
 
   // update db
   archivesDb.touch(archive.key).catch(err => console.error('Failed to update lastAccessTime for archive', archive.key, err))
+  if (!archive.writable) {
+    await downloadHack(archive, DAT_MANIFEST_FILENAME)
+  }
   await pullLatestArchiveMeta(archive)
   datAssets.update(archive)
 
@@ -350,6 +354,22 @@ async function loadArchiveInner (key, settingsOverride) {
   // now store in main archives listing, as loaded
   archives[keyStr] = archive
   return archive
+}
+
+/**
+ * HACK to work around the incomplete daemon-client download() method -prf
+ */
+async function downloadHack (archive, path) {
+  let st = await archive.pda.stat(path).catch(err => undefined)
+  if (!st) return
+  await archive.session.drive.download(path)
+  for (let i = 0; i < 10; i++) {
+    await wait(500)
+    let fileStats = await archive.session.drive.fileStats(path)
+    if (fileStats.downloadedBlocks >= fileStats.blocks) {
+      return
+    }
+  }
 }
 
 export function getArchive (key) {
