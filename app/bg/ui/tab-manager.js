@@ -1492,6 +1492,18 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     }
   },
 
+  async showNavbarShortcutContextMenu (index) {
+    var win = getWindow(this.sender)
+    var tab = getByIndex(win, index)
+    var fsUrl = filesystem.get().url
+    var menu = Menu.buildFromTemplate([
+      { label: 'Start Page', click: () => tab.loadURL('beaker://desktop/') },
+      { label: 'My Home Drive', click: () => tab.loadURL(fsUrl) },
+      { label: 'My Profile', click: () => tab.loadURL(`${fsUrl}/profile`) }
+    ])
+    menu.popup({window: win})
+  },
+
   async goBack (index) {
     getByIndex(getWindow(this.sender), index).webContents.goBack()
   },

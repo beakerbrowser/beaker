@@ -67,7 +67,7 @@ class ShellWindowNavbar extends LitElement {
         ${this.forwardBtn}
         ${this.reloadBtn}
         ${this.updogBtn}
-        ${this.desktopBtn}
+        ${this.shortcutBtn}
       </div>
       <shell-window-navbar-location
         .activeTabIndex="${this.activeTabIndex}"
@@ -182,9 +182,9 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get desktopBtn () {
+  get shortcutBtn () {
     return html`
-      <button @click=${this.onClickDesktop} style="margin: 0 6px">
+      <button @click=${this.onClickShortcut} style="margin: 0 6px">
         <span class="fas fa-th"></span>
       </button>
     `
@@ -232,8 +232,8 @@ class ShellWindowNavbar extends LitElement {
     bg.views.reload(this.activeTabIndex)
   }
 
-  onClickDesktop (e) {
-    bg.views.loadURL('active', 'beaker://desktop/')
+  onClickShortcut (e) {
+    bg.views.showNavbarShortcutContextMenu('active')
   }
 
   onClickUpdog (e) {

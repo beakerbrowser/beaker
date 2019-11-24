@@ -559,6 +559,7 @@ export class ExplorerApp extends LitElement {
       this.hideNavRight = !this.hideNavRight
       setGlobalSavedConfig('hide-nav-right', this.hideNavRight ? '1' : '')
     }
+    this.requestUpdate()
   }
 
   onClickActions (e) {
