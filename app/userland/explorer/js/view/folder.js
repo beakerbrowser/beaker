@@ -68,12 +68,12 @@ export class FolderView extends LitElement {
     return html`
       ${this.renderMode === 'grid' ? (
         this.inlineMode
-          ? html`<inline-file-grid .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-grid>`
-          : html`<file-grid .itemGroups=${this.itemGroups} .selection=${this.selection}></file-grid>`
+          ? html`<inline-file-grid .items=${this.items} .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-grid>`
+          : html`<file-grid .items=${this.items} .itemGroups=${this.itemGroups} .selection=${this.selection}></file-grid>`
       ) : (
         this.inlineMode
-          ? html`<inline-file-list .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-list>`
-          : html`<file-list .itemGroups=${this.itemGroups} .selection=${this.selection}></file-list>`
+          ? html`<inline-file-list .items=${this.items} .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-list>`
+          : html`<file-list .items=${this.items} .itemGroups=${this.itemGroups} .selection=${this.selection}></file-list>`
       )}
       ${''/* TODO inlineMdItem ? html`
         <div class="readme">

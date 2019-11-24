@@ -1,50 +1,13 @@
-import {  html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { BaseFilesView } from './base-files-view.js'
+import { html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { FileGrid } from './file-grid.js'
 import './file-display.js'
-import css from '../../css/com/inline-file-grid.css.js'
+import baseCSS from '../../css/com/base-files-view.css.js'
+import inlineGridCSS from '../../css/com/inline-file-grid.css.js'
 
-export class InlineFileGrid extends FileGrid {
-  static get properties () {
-    return {
-      itemGroups: {type: Array},
-      selection: {type: Array},
-      showOrigin: {type: Boolean, attribute: 'show-origin'}
-    }
-  }
-
+export class InlineFileGrid extends BaseFilesView {
   static get styles () {
-    return css
-  }
-
-  constructor () {
-    super()
-    this.itemGroups = []
-    this.selection = []
-    this.showOrigin = undefined
-  }
-
-  // rendering
-  // =
-
-  render () {
-    var isEmpty = this.itemGroups.reduce((acc, group) => acc && group.length === 0, true)
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${this.itemGroups.map(group => {
-        if (group.items.length === 0) return ''
-        return html`
-          <h4>${group.label}</h4>
-          <div class="grid">
-            ${repeat(group.items, this.renderItem.bind(this))}
-          </div>
-        `
-      })}
-      ${isEmpty ? html`
-        <div class="empty">This folder is empty</div>
-      ` : ''}
-    `
+    return [baseCSS, inlineGridCSS]
   }
 
   renderItem (item) {
@@ -56,9 +19,10 @@ export class InlineFileGrid extends FileGrid {
     return html`
       <div
         class=${cls}
-        @click=${e => this.onClick(e, item)}
-        @dblclick=${e => this.onDblClick(e, item)}
-        @contextmenu=${e => this.onContextMenu(e, item)}
+        @click=${e => this.onClickItem(e, item)}
+        @dblclick=${e => this.onDblClickItem(e, item)}
+        @contextmenu=${e => this.onContextMenuItem(e, item)}
+        data-url=${item.url}
       >
         <div class="content">
           <file-display
@@ -78,9 +42,6 @@ export class InlineFileGrid extends FileGrid {
       </div>
     `
   }
-
-  // events
-  // =
 }
 
 customElements.define('inline-file-grid', InlineFileGrid)

@@ -309,7 +309,6 @@ export class ExplorerApp extends LitElement {
           'hide-nav-left': this.hideNavLeft,
           'hide-nav-right': this.hideNavRight,
         })}
-        @click=${this.onClickLayout}
         @contextmenu=${this.onContextmenuLayout}
         @goto=${this.onGoto}
         @change-selection=${this.onChangeSelection}
@@ -488,14 +487,6 @@ export class ExplorerApp extends LitElement {
 
   // events
   // =
-
-  onClickLayout (e) {
-    if (findParent(e.target, el => el.tagName === 'NAV' || (el.classList && el.classList.contains('menubar')))) {
-      return
-    }
-    this.selection = []
-    this.requestUpdate()
-  }
 
   onContextmenuLayout (e) {
     if (e.target.tagName === 'INPUT') return

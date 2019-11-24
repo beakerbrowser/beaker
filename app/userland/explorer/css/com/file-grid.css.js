@@ -17,30 +17,13 @@ const cssStr = css`
   --color-selected-bg-icon: #dddde5;
 }
 
-h4 {
-  border-top: 1px solid #e3e3ee;
-  color: #b0b0bc;
-  padding-top: 6px;
-  padding-left: 4px;
-  margin: 0;
-}
-
-.empty {
-  background: var(--bg-color--light);
-  padding: 40px;
-  margin: 14px 0;
-  border-radius: 8px;
-  color: #667;
-}
-
-.grid {
+.items {
   display: grid;
   grid-template-columns: repeat(auto-fill, 110px);
   grid-template-rows: repeat(auto-fill, 86px);
   grid-gap: 15px;
   margin: 15px 0;
   width: 100%;
-  user-select: none;
 }
 
 .item {

@@ -64,7 +64,7 @@ table {
 }
 
 main {
-  margin: 0px 370px 100px 300px;
+  margin: 0px 370px 0px 300px;
 }
 
 .hide-nav-left main { margin-left: 16px; }
@@ -263,11 +263,11 @@ nav .help input {
   top: 0px;
   display: flex;
   align-items: center;
-  margin: 0px -4px 4px;
+  margin: 0px -4px;
   font-size: 12px;
   color: #556;
   background: #fff;
-  padding: 5px 0 5px 10px;
+  padding: 5px 0 5px 5px;
 }
 
 .header > *:not(:last-child) {

@@ -19,23 +19,7 @@ const cssStr = css`
   --color-selected-bg: #4379e4;
 }
 
-h4 {
-  border-top: 1px solid #e3e3ee;
-  color: #b0b0bc;
-  padding-top: 6px;
-  padding-left: 4px;
-  margin: 0;
-}
-
-.empty {
-  background: var(--bg-color--light);
-  padding: 40px;
-  margin: 14px 0;
-  border-radius: 8px;
-  color: #667;
-}
-
-.list {
+.items {
   margin: 5px 0 15px;
   width: 100%;
   user-select: none;

@@ -1,55 +1,23 @@
-import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { BaseFilesView } from './base-files-view.js'
+import { html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { format as formatBytes } from 'beaker://app-stdlib/vendor/bytes/index.js'
-import { emit } from 'beaker://app-stdlib/js/dom.js'
-import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import mainCSS from '../../css/com/file-list.css.js'
+import baseCSS from '../../css/com/base-files-view.css.js'
+import listCSS from '../../css/com/file-list.css.js'
 
-export class FileList extends LitElement {
-  static get properties () {
-    return {
-      itemGroups: {type: Array},
-      selection: {type: Array},
-      showOrigin: {type: Boolean, attribute: 'show-origin'}
-    }
-  }
-
+export class FileList extends BaseFilesView {
   static get styles () {
-    return mainCSS
+    return [baseCSS, listCSS]
   }
 
   constructor () {
     super()
-    this.itemGroups = []
-    this.selection = []
-    this.showOrigin = undefined
-
     this.dateFormatter = new Intl.DateTimeFormat('en-us', {day: "numeric", month: "short", year: "numeric",})
     this.timeFormatter = new Intl.DateTimeFormat('en-US', {hour12: true, hour: "2-digit", minute: "2-digit"})
   }
 
   // rendering
   // =
-
-  render () {
-    var isEmpty = this.itemGroups.reduce((acc, group) => acc && group.length === 0, true)
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${this.itemGroups.map(group => {
-        if (group.items.length === 0) return ''
-        return html`
-          <h4>${group.label}</h4>
-          <div class="list">
-            ${repeat(group.items, this.renderItem.bind(this))}
-          </div>
-        `
-      })}
-      ${isEmpty ? html`
-        <div class="empty">This folder is empty</div>
-      ` : ''}
-    `
-  }
 
   renderItem (item) {
     var cls = classMap({
@@ -63,9 +31,10 @@ export class FileList extends LitElement {
     return html`
       <div
         class=${cls}
-        @click=${e => this.onClick(e, item)}
-        @dblclick=${e => this.onDblClick(e, item)}
-        @contextmenu=${e => this.onContextMenu(e, item)}
+        @click=${e => this.onClickItem(e, item)}
+        @dblclick=${e => this.onDblClickItem(e, item)}
+        @contextmenu=${e => this.onContextMenuItem(e, item)}
+        data-url=${item.url}
       >
         ${this.showOrigin ? html`<span class="author">${driveTitle}</span>` : ''}
         <span class="icon">
@@ -78,36 +47,6 @@ export class FileList extends LitElement {
         <span class="size">${item.stat.size ? formatBytes(item.stat.size) : ''}</span>
       </div>
     `
-  }
-
-  // events
-  // =
-
-  onClick (e, item) {
-    e.stopPropagation()
-    contextMenu.destroy()
-
-    var selection
-    if (e.metaKey) {
-      selection = this.selection.concat([item])
-    } else {
-      selection = [item]
-    }
-    emit(this, 'change-selection', {detail: {selection}})
-  }
-
-  onDblClick (e, item) {
-    emit(this, 'goto', {detail: {item}})
-  }
-
-  onContextMenu (e, item) {
-    e.preventDefault()
-    e.stopPropagation()
-    contextMenu.destroy()
-    if (!this.selection.includes(item)) {
-      emit(this, 'change-selection', {detail: {selection: [item]}})
-    }
-    emit(this, 'show-context-menu', {detail: {x: e.clientX, y: e.clientY}})
   }
 }
 
