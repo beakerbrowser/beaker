@@ -1,8 +1,10 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { emit } from 'beaker://app-stdlib/js/dom.js'
+import { findParent, emit } from 'beaker://app-stdlib/js/dom.js'
+import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { doCopy, doMove } from '../lib/files.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
+import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import mainCSS from '../../css/com/file-grid.css.js'
 
 export class BaseFilesView extends LitElement {
@@ -28,6 +30,77 @@ export class BaseFilesView extends LitElement {
     this.dragSelector = undefined
   }
 
+  stopDragSelection () {
+    // wait for next tick so that onclick can register that we were dragging
+    setTimeout(() => {
+      if (this.dragSelector && this.dragSelector.el) {
+        this.dragSelector.el.remove()
+      }
+      this.dragSelector = undefined
+    }, 1)
+  }
+
+  handleDragDrop (x, y, item, dataTransfer) {
+    var text = dataTransfer.getData('text/plain')
+    if (text) return this.handleDragDropUrls(x, y, item, text.split('\n'))
+    // TODO: handle dropped files
+  }
+
+  handleDragDropUrls (x, y, item, urls) {
+    var targetUrl = window.location.toString()
+    if (item) targetUrl = joinPath(targetUrl, item.name)
+    contextMenu.create({
+      x,
+      y,
+      roomy: false,
+      noBorders: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      style: `padding: 4px 0`,
+      items: [
+        html`<div class="section-header small light">${urls.length} ${pluralize(urls.length, 'item')}...</div>`,
+        {
+          icon: 'far fa-copy',
+          label: `Copy ${item ? `to ${item.name}` : 'here'}`,
+          async click () {
+            for (let url of urls) {
+              try {
+                await doCopy({sourceItem: url, targetFolder: targetUrl})
+              } catch (e) {
+                console.error(e)
+                toast.create(`Failed to copy ${url.split('/').pop()}: ${e.toString().replace('Error: ', '')}`, 'error')
+                return
+              }
+              toast.create(`Copied ${urls.length} items`)
+            }
+          }
+        },
+        {
+          icon: 'cut',
+          label: `Move ${item ? `to ${item.name}` : 'here'}`,
+          async click () {
+            for (let url of urls) {
+              try {
+                await doMove({sourceItem: url, targetFolder: targetUrl})
+              } catch (e) {
+                console.error(e)
+                toast.create(`Failed to move ${url.split('/').pop()}: ${e.toString().replace('Error: ', '')}`, 'error')
+                return
+              }
+              toast.create(`Move ${urls.length} items`)
+            }
+          }
+        },
+        '-',
+        {
+          icon: 'times-circle',
+          label: `Cancel`,
+          click: () => {
+          }
+        }
+      ]
+    })
+  }
+
   // rendering
   // =
 
@@ -42,6 +115,10 @@ export class BaseFilesView extends LitElement {
         @mousedown=${this.onMousedownContainer}
         @mousemove=${this.onMousemoveContainer}
         @mouseup=${this.onMouseupContainer}
+        @dragenter=${this.onDragenterContainer}
+        @dragover=${this.onDragoverContainer}
+        @dragleave=${this.onDragleaveContainer}
+        @drop=${this.onDropContainer}
       >
         ${this.itemGroups.map(group => {
           if (group.items.length === 0) return ''
@@ -91,6 +168,20 @@ export class BaseFilesView extends LitElement {
       emit(this, 'change-selection', {detail: {selection: [item]}})
     }
     emit(this, 'show-context-menu', {detail: {x: e.clientX, y: e.clientY}})
+  }
+
+  onDragstartItem (e, item) {
+    this.stopDragSelection()
+    var items = this.selection.length ? this.selection : [item]
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', items.map(item => joinPath(window.location.toString(), item.name)).join(`\n`))
+  }
+
+  onDropItem (e, item) {
+    e.stopPropagation()
+    e.currentTarget.classList.remove('drag-hover')
+    this.handleDragDrop(e.clientX, e.clientY, item, e.dataTransfer)
+    return false
   }
 
   onClickContainer (e) {
@@ -152,14 +243,48 @@ export class BaseFilesView extends LitElement {
 
   onMouseupContainer (e) {
     if (this.dragSelector) {
-      // wait for next tick so that onclick can register that we were dragging
-      setTimeout(() => {
-        if (this.dragSelector && this.dragSelector.el) {
-          this.dragSelector.el.remove()
-        }
-        this.dragSelector = undefined
-      }, 1)
+      this.stopDragSelection()
     }
+  }
+
+  onDragenterContainer (e) {
+    e.preventDefault()
+
+    this.dragAndDropCounter = (this.dragAndDropCounter || 0) + 1
+    var itemEl = findParent(e.target, 'folder')
+    if (itemEl) {
+      this.shadowRoot.querySelector('.container').classList.remove('drag-hover')
+      itemEl.classList.add('drag-hover')
+      this.dragLastEntered = itemEl
+    } else {
+      this.shadowRoot.querySelector('.container').classList.add('drag-hover')
+      this.dragLastEntered = this.shadowRoot.querySelector('.container')
+    }
+    e.dataTransfer.dropEffect = 'move'
+    return false
+  }
+
+  onDragoverContainer (e) {
+    e.preventDefault()
+    return false
+  }
+
+  onDragleaveContainer (e) {
+    this.dragAndDropCounter = (this.dragAndDropCounter || 0) - 1
+    var itemEl = findParent(e.target, 'folder')
+    if (this.dragAndDropCounter === 0) {
+      this.shadowRoot.querySelector('.container').classList.remove('drag-hover')
+    } else if (itemEl && itemEl !== this.dragLastEntered) {
+      if (this.dragLastEntered) this.dragLastEntered.classList.add('drag-hover')
+      itemEl.classList.remove('drag-hover')
+    }
+  }
+
+  onDropContainer (e) {
+    e.stopPropagation()
+    e.currentTarget.classList.remove('drag-hover')
+    this.handleDragDrop(e.clientX, e.clientY, null, e.dataTransfer)
+    return false
   }
 }
 

@@ -1,3 +1,5 @@
+import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+
 const ICONS = {
   root: {
     '/library': 'fas fa-university',
@@ -75,4 +77,32 @@ export function getSubicon (driveKind, item) {
   } else if (driveKind === 'person') {
     return ICONS.person[item.path] || ICONS.common[item.path]
   }
+}
+
+async function doCopyOrMove ({sourceItem, targetFolder}, op) {
+  let sourceItemParsed = new URL(sourceItem)
+  let targetFolderParsed = new URL(targetFolder)
+  if (sourceItemParsed.origin !== targetFolderParsed.origin) {
+    console.log(sourceItemParsed, targetFolderParsed)
+    throw new Error('Can only copy or move files that are on the same drive')
+  }
+
+  var drive = new DatArchive(targetFolderParsed.hostname)
+  var name = sourceItemParsed.pathname.split('/').pop()
+  var targetPath = joinPath(targetFolderParsed.pathname, name)
+  if (await (drive.stat(targetPath).catch(e => undefined))) {
+    if (!confirm(`${name} already exists in the target folder. Overwrite?`)) {
+      throw new Error('Canceled')
+    }
+  }
+
+  return op(drive, sourceItemParsed.pathname, targetPath)
+}
+
+export async function doCopy (params) {
+  return doCopyOrMove(params, (drive, sourcePath, targetPath) => drive.copy(sourcePath, targetPath))
+}
+
+export async function doMove (params) {
+  return doCopyOrMove(params, (drive, sourcePath, targetPath) => drive.rename(sourcePath, targetPath))  
 }

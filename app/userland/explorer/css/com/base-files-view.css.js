@@ -29,10 +29,22 @@ h4 {
   user-select: none;
 }
 
+.item {
+}
+
 .drag-selector {
   position: fixed;
   background: #5591ff33;
   border: 1px solid #77adffee;
+  pointer-events: none;
+}
+
+.drag-hover {
+  background: #f5f5ff !important;
+  outline: 2px dashed #ccd;
+}
+
+.item.drag-hover * {
   pointer-events: none;
 }
 

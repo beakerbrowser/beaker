@@ -14,6 +14,7 @@ export class InlineFileList extends BaseFilesView {
   renderItem (item) {
     var cls = classMap({
       item: true,
+      folder: item.stat.isDirectory(),
       selected: this.selection.includes(item)
     })
     var driveTitle = item.drive.title || 'Untitled'
@@ -21,9 +22,12 @@ export class InlineFileList extends BaseFilesView {
     return html`
       <div
         class=${cls}
+        draggable="true"
         @click=${e => this.onClickItem(e, item)}
         @dblclick=${e => this.onDblClickItem(e, item)}
         @contextmenu=${e => this.onContextMenuItem(e, item)}
+        @dragstart=${e => this.onDragstartItem(e, item)}
+        @drop=${e => this.onDropItem(e, item)}
         data-url=${item.url}
       >
         <div class="info">

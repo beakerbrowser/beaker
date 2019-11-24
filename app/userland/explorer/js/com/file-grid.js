@@ -21,9 +21,12 @@ export class FileGrid extends BaseFilesView {
     return html`
       <div
         class=${cls}
+        draggable="true"
         @click=${e => this.onClickItem(e, item)}
         @dblclick=${e => this.onDblClickItem(e, item)}
         @contextmenu=${e => this.onContextMenuItem(e, item)}
+        @dragstart=${e => this.onDragstartItem(e, item)}
+        @drop=${e => this.onDropItem(e, item)}
         data-url=${item.url}
       >
         <span class="fas fa-fw fa-${item.icon}"></span>
