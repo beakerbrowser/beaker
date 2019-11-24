@@ -748,19 +748,19 @@ export class ExplorerApp extends LitElement {
         click: () => this.goto(sel, true)
       })
       items.push({
-        icon: 'far fa-fw fa-copy',
-        label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
-        click: () => {
-          writeToClipboard((sel.rootPath) ? sel.rootPath : joinPath(window.location.pathname, sel.name))
-          toast.create('Copied to clipboard')
-        }
-      })
-      items.push({
         icon: 'fas fa-fw fa-share-square',
         label: 'Copy share link',
         disabled: !this.canShare(sel),
         click: () => {
           writeToClipboard(this.getShareUrl(sel))
+          toast.create('Copied to clipboard')
+        }
+      })
+      items.push({
+        icon: 'custom-path-icon',
+        label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
+        click: () => {
+          writeToClipboard((sel.rootPath) ? sel.rootPath : joinPath(window.location.pathname, sel.name))
           toast.create('Copied to clipboard')
         }
       })
@@ -825,26 +825,26 @@ export class ExplorerApp extends LitElement {
         click: () => this.onNewFolder()
       })
       items.push({
-        icon: 'fas fa-fw fa-long-arrow-alt-right as-link-icon',
+        icon: 'fas fa-fw fa-long-arrow-alt-right custom-link-icon',
         label: 'New link',
         disabled: !writable,
         click: () => this.onNewMount()
       })
       items.push('-')
       items.push({
-        icon: 'far fa-fw fa-copy',
-        label: `Copy folder path`,
+        icon: 'fas fa-fw fa-share-square',
+        label: `Copy share link`,
+        disabled: !this.canShare(this.locationAsItem),
         click: () => {
-          writeToClipboard(window.location.pathname)
+          writeToClipboard(this.getShareUrl(this.locationAsItem))
           toast.create('Copied to clipboard')
         }
       })
       items.push({
-        icon: 'fas fa-fw fa-share-square',
-        label: `Copy folder share link`,
-        disabled: !this.canShare(this.locationAsItem),
+        icon: 'custom-path-icon',
+        label: `Copy path`,
         click: () => {
-          writeToClipboard(this.getShareUrl(this.locationAsItem))
+          writeToClipboard(window.location.pathname)
           toast.create('Copied to clipboard')
         }
       })

@@ -215,10 +215,15 @@ a.dropdown-item {
 }
 
 /* custom icon css */
-.fa-long-arrow-alt-right.as-link-icon {
+.fa-long-arrow-alt-right.custom-link-icon {
   position: relative;
   transform: rotate(-45deg);
   left: 1px;
+}
+.fa-custom-path-icon:after {
+  content: './';
+  letter-spacing: -1px;
+  font-family: var(--code-font);
 }
 `
 
