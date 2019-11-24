@@ -357,7 +357,7 @@ export class ExplorerApp extends LitElement {
                   </button>
                 </span>*/}
               ` : ''}
-              <button class="labeled-btn" @click=${this.onClickActions}>
+              <button class="primary labeled-btn" @click=${this.onClickActions}>
                 Actions${this.selection.length ? ` (${this.selection.length} ${pluralize(this.selection.length, 'item')})` : ''}
                 <span class="fas fa-fw fa-caret-down"></span>
               </button>

@@ -267,7 +267,7 @@ nav .help input {
   font-size: 12px;
   color: #556;
   background: #fff;
-  padding: 5px 10px;
+  padding: 5px 0 5px 10px;
 }
 
 .header > *:not(:last-child) {
@@ -298,7 +298,8 @@ nav .help input {
 }
 
 .header button.labeled-btn {
-  padding: 2px 3px 2px 7px;
+  padding: 5px 10px 5px 12px;
+  border-radius: 12px;
   font-size: 10px;
 }
 
