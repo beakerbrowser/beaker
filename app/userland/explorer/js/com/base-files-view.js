@@ -38,6 +38,7 @@ export class BaseFilesView extends LitElement {
       <div
         class="container"
         @click=${this.onClickContainer}
+        @contextmenu=${this.onContextMenuContainer}
         @mousedown=${this.onMousedownContainer}
         @mousemove=${this.onMousemoveContainer}
         @mouseup=${this.onMouseupContainer}
@@ -93,6 +94,12 @@ export class BaseFilesView extends LitElement {
   }
 
   onClickContainer (e) {
+    if (!this.dragSelector || !this.dragSelector.isActive) {
+      emit(this, 'change-selection', {detail: {selection: []}})
+    }
+  }
+
+  onContextMenuContainer (e) {
     if (!this.dragSelector || !this.dragSelector.isActive) {
       emit(this, 'change-selection', {detail: {selection: []}})
     }
