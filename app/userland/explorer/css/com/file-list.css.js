@@ -29,8 +29,7 @@ const cssStr = css`
   position: relative;
   display: flex;
   align-items: center;
-  border: 1px solid transparent;
-  border-radius: 4px;
+  border-bottom: 1px solid #fff5;
   padding: 4px;
   letter-spacing: -0.2px;
 }

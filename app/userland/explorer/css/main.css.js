@@ -268,6 +268,7 @@ nav .help input {
   color: #556;
   background: #fff;
   padding: 5px 0 5px 5px;
+  user-select: none;
 }
 
 .header > *:not(:last-child) {
