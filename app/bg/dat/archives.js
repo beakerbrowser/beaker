@@ -360,12 +360,13 @@ async function loadArchiveInner (key, settingsOverride) {
  * HACK to work around the incomplete daemon-client download() method -prf
  */
 async function downloadHack (archive, path) {
-  let st = await archive.pda.stat(path).catch(err => undefined)
-  if (!st) return
+  if (!(await archive.pda.stat(path).catch(err => undefined))) return
+  let fileStats = (await archive.session.drive.fileStats(path)).get(path)
+  if (fileStats.downloadedBlocks >= fileStats.blocks) return
   await archive.session.drive.download(path)
   for (let i = 0; i < 10; i++) {
     await wait(500)
-    let fileStats = await archive.session.drive.fileStats(path)
+    fileStats = (await archive.session.drive.fileStats(path)).get(path)
     if (fileStats.downloadedBlocks >= fileStats.blocks) {
       return
     }
