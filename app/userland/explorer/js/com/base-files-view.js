@@ -7,6 +7,38 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import mainCSS from '../../css/com/file-grid.css.js'
 
+/**
+ * NOTES ON DRAG & DROP AND THE DRAG SELECTOR
+ * 
+ * Two critical & subtle rules:
+ * - RULE A. The 'drag & drop' mode is only activated if the target item is selected
+ * - RULE B. The 'drag selector' mode is only activated after the cursor moves 50px in some direction
+ * 
+ * - RULE B has two effects:
+ *   1. When the target is selected, it gives 'drag & drop' mode a chance to activate.
+ *   2. When the target is not selected, it avoids selecting the target immediately,
+ *      which (due to event ordering) would trigger 'drag & drop' otherwise.
+ *      Why? Because RULE A depends on the item being selected, so if the 'drag selector'
+ *      triggers immediately, it will select the current item and then 'drag & drop' would
+ *      kick in.
+ * 
+ * We want the user to be able to use the 'drag selector' when they initiate the click on unselected
+ * items, and we want the 'drag & drop' to happen if the click is initiated on the selected item.
+ * 
+ * -prf
+ */
+
+/**
+ * NOTES ON DRAG & DROP EVENT BEHAVIORS
+ * 
+ * - The web platform is very finicky with its dragenter/dragleave/etc events and will sometimes
+ *   fail to fire if the drag moves too quickly.
+ * - To make sure that drop-targets get the '.drag-hover' added and removed correctly, we rely on
+ *   selectively removing pointer-events on DOM elements during 'drag & drop' mode.
+ * 
+ * -prf
+ */
+
 export class BaseFilesView extends LitElement {
   static get properties () {
     return {
@@ -202,6 +234,12 @@ export class BaseFilesView extends LitElement {
   }
 
   onDragstartItem (e, item) {
+    if (!this.selection.includes(item)) {
+      // only drag if already selected - otherwise do a drag-selector
+      e.preventDefault()
+      return
+    }
+
     this.stopDragSelection()
     var items = this.selection.length ? this.selection : [item]
     e.dataTransfer.effectAllowed = 'move'
@@ -244,7 +282,7 @@ export class BaseFilesView extends LitElement {
 
   onMousemoveContainer (e) {
     var diffMode = e.metaKey || e.shiftKey
-    if (this.dragSelector) {
+    if (this.dragSelector && !this.dragDropModeActive) {
       if (!e.buttons) {
         // mouseup must have happened outside of our container el
         return this.onMouseupContainer(e)
@@ -253,8 +291,8 @@ export class BaseFilesView extends LitElement {
         if (!this.dragSelector.isActive) {
           // check if enough space has been covered to start the selector behavior
           if (
-            Math.abs(this.dragSelector.current.x - this.dragSelector.start.x) > 5
-            || Math.abs(this.dragSelector.current.y - this.dragSelector.start.y) > 5
+            Math.abs(this.dragSelector.current.x - this.dragSelector.start.x) > 50
+            || Math.abs(this.dragSelector.current.y - this.dragSelector.start.y) > 50
           ) {
             this.dragSelector.el = createDragSelectorEl()
             this.shadowRoot.append(this.dragSelector.el)
