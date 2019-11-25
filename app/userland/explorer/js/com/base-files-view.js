@@ -1,10 +1,9 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { findParent, emit } from 'beaker://app-stdlib/js/dom.js'
-import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
-import { doCopy, doMove, canWriteTo } from '../lib/files.js'
+import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { handleDragDrop } from '../lib/drag-drop.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import mainCSS from '../../css/com/file-grid.css.js'
 
 /**
@@ -83,94 +82,6 @@ export class BaseFilesView extends LitElement {
       this.shadowRoot.querySelector('.container').classList.remove('is-dragging')
       Array.from(this.shadowRoot.querySelectorAll('.drag-hover'), el => el.classList.remove('drag-hover'))
     }
-  }
-
-  handleDragDrop (x, y, item, dataTransfer) {
-    var text = dataTransfer.getData('text/plain')
-    if (text) {
-      if (!item || !item.stat.isDirectory()) {
-        // TODO:
-        // currently ignore drops that arent onto a subfolder
-        // eventually drops may come from other tabs and we need to handle those
-        // -prf
-        return
-      }
-      return this.handleDragDropUrls(x, y, item, text.split('\n'))
-    }
-    // TODO: handle dropped files
-  }
-
-  async handleDragDropUrls (x, y, item, urls) {
-    var targetUrl = window.location.toString()
-    if (item) targetUrl = joinPath(targetUrl, item.name)
-    var targetEl = this.shadowRoot.querySelector(item ? `.item[data-url="${item.url}"]` : '.container')
-    if (targetEl) targetEl.classList.add('drop-target')
-
-    var items
-    if (await canWriteTo(targetUrl)) {
-      items = [
-        html`<div class="section-header small light">${urls.length} ${pluralize(urls.length, 'item')}...</div>`,
-        {
-          icon: 'far fa-copy',
-          label: `Copy ${item ? `to ${item.name}` : 'here'}`,
-          async click () {
-            for (let url of urls) {
-              try {
-                await doCopy({sourceItem: url, targetFolder: targetUrl})
-              } catch (e) {
-                console.error(e)
-                toast.create(`Failed to copy ${url.split('/').pop()}: ${e.toString().replace('Error: ', '')}`, 'error')
-                return
-              }
-              toast.create(`Copied ${urls.length} items`)
-            }
-          }
-        },
-        {
-          icon: 'cut',
-          label: `Move ${item ? `to ${item.name}` : 'here'}`,
-          async click () {
-            for (let url of urls) {
-              try {
-                await doMove({sourceItem: url, targetFolder: targetUrl})
-              } catch (e) {
-                console.error(e)
-                toast.create(`Failed to move ${url.split('/').pop()}: ${e.toString().replace('Error: ', '')}`, 'error')
-                return
-              }
-              toast.create(`Move ${urls.length} items`)
-            }
-          }
-        },
-        '-',
-        {
-          icon: 'times-circle',
-          label: `Cancel`,
-          click: () => {}
-        }
-      ]
-    } else {
-      items = [
-        html`<div class="section-header small light"><span class="fas fa-fw fa-exclamation-triangle"></span> Can't drop here</div>`,
-        html`<div class="section-header" style="font-size: 14px">The target folder is read-only.</div>`,
-        '-',
-        {
-          icon: 'times-circle',
-          label: `Cancel`,
-          click: () => {}
-        }
-      ]
-    }
-    await contextMenu.create({
-      x,
-      y,
-      roomy: false,
-      noBorders: true,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
-      style: `padding: 4px 0`,
-      items
-    })
-    if (targetEl) targetEl.classList.remove('drop-target')
   }
 
   // rendering
@@ -265,7 +176,8 @@ export class BaseFilesView extends LitElement {
   onDropItem (e, item) {
     e.stopPropagation()
     e.currentTarget.classList.remove('drag-hover')
-    this.handleDragDrop(e.clientX, e.clientY, item, e.dataTransfer)
+    var targetPath = item.stat.isDirectory() ? joinPath(window.location.pathname, item.name) : window.location.pathname
+    handleDragDrop(e.currentTarget, e.clientX, e.clientY, targetPath, e.dataTransfer)
     return false
   }
 
@@ -384,7 +296,7 @@ export class BaseFilesView extends LitElement {
   onDropContainer (e) {
     e.stopPropagation()
     this.endDragDropMode()
-    this.handleDragDrop(e.clientX, e.clientY, null, e.dataTransfer)
+    handleDragDrop(this.shadowRoot.querySelector('.container'), e.clientX, e.clientY, window.location.pathname, e.dataTransfer)
     return false
   }
 }

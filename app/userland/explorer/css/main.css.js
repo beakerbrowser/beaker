@@ -304,6 +304,16 @@ nav .help input {
   font-size: 10px;
 }
 
+.header .drag-hover,
+.header .drop-target {
+  background: #f5f5ff !important;
+  outline: rgb(191, 191, 243) dashed 1px;
+}
+
+.header .drag-hover * {
+  pointer-events: none;
+}
+
 #files-picker {
   display: none;
 }

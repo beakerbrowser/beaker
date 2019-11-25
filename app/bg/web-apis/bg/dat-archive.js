@@ -304,7 +304,6 @@ export default {
     return timer(to(opts), async (checkin, pause, resume) => {
       checkin('searching for archive')
 
-      console.log({srcpath, dstpath})
       const src = await lookupArchive(this.sender, srcpath.includes('://') ? srcpath : url)
       const dst = await lookupArchive(this.sender, dstpath.includes('://') ? dstpath : url)
 

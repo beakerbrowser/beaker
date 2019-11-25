@@ -1,20 +1,19 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
-import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import { timeDifference } from 'beaker://app-stdlib/js/time.js'
 import { friends } from 'beaker://app-stdlib/js/uwg.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as shareMenu from './com/share-menu.js'
-import { emit } from 'beaker://app-stdlib/js/dom.js'
 import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 import { toSimpleItemGroups, getSubicon } from './lib/files.js'
 import mainCSS from '../css/main.css.js'
 import './view/file.js'
 import './view/folder.js'
 import './view/query.js'
+import './com/path-ancestry.js'
 import './com/drive-info.js'
 import './com/viewfile-info.js'
 import './com/selection-info.js'
@@ -328,8 +327,11 @@ export class ExplorerApp extends LitElement {
         ${this.pathInfo ? html`
           <main>
             <div class="header">
-              <a class="author" href=${this.driveInfo.url}><span class="fas fa-fw fa-hdd"></span> ${this.driveTitle}</a>
-              ${this.renderPathAncestry()}
+              <path-ancestry
+                drive-title=${this.driveTitle}
+                .driveInfo=${this.driveInfo}
+                .pathAncestry=${this.pathAncestry}
+              ></path-ancestry>
               ${this.pathInfo && this.pathInfo.isFile() ? html`
                 <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
               ` : ''}
@@ -438,19 +440,6 @@ export class ExplorerApp extends LitElement {
       </div>
       <input type="file" id="files-picker" multiple @change=${this.onChangeImportFiles} />
     `
-  }
-
-  renderPathAncestry () {
-    return this.pathAncestry.map(item => {
-      const icon = item.mount ? 'fas fa-external-link-square-alt' : item.stat.isDirectory() ? 'far fa-folder' : 'far fa-file'
-      return html`
-        <span class="fas fa-fw fa-angle-right"></span>
-        <a class="name" href=${item.path}>
-          <span class="fa-fw ${icon}"></span>
-          ${item.mount ? item.mount.title : item.name}
-        </a>
-      `
-    })
   }
 
 //   ${this.selection.length <= 1 ? html`
