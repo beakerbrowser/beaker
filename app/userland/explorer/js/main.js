@@ -198,7 +198,7 @@ export class ExplorerApp extends LitElement {
       } else if (item.stat.isFile() && item.name.endsWith('.goto')) {
         item.icon = 'external-link-alt'
       } else {
-        // item.subicon = getSubicon(driveKind, item)
+        item.subicon = getSubicon(driveKind, item)
       }
     }
   }
@@ -218,7 +218,6 @@ export class ExplorerApp extends LitElement {
       item.icon = item.stat.isDirectory() ? 'folder' : 'file'
       if (item.stat.mount) {
         item.mountInfo = item.mount
-        item.icon = 'hdd'
         switch (item.mountInfo.type) {
           case 'website': item.subicon = 'fas fa-sitemap'; break
           case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break

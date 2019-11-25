@@ -44,6 +44,10 @@ h4 {
   outline: 2px dashed #ccd;
 }
 
+.container.is-dragging .item:not(.folder) * {
+  pointer-events: none;
+}
+
 .item.drag-hover * {
   pointer-events: none;
 }

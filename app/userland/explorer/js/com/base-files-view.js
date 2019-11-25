@@ -40,6 +40,19 @@ export class BaseFilesView extends LitElement {
     }, 1)
   }
 
+  startDragDropMode () {
+    this.dragDropModeActive = true
+    this.shadowRoot.querySelector('.container').classList.add('is-dragging')
+  }
+
+  endDragDropMode () {
+    if (this.dragDropModeActive) {
+      this.dragDropModeActive = false
+      this.shadowRoot.querySelector('.container').classList.remove('is-dragging')
+      Array.from(this.shadowRoot.querySelectorAll('.drag-hover'), el => el.classList.remove('drag-hover'))
+    }
+  }
+
   handleDragDrop (x, y, item, dataTransfer) {
     var text = dataTransfer.getData('text/plain')
     if (text) return this.handleDragDropUrls(x, y, item, text.split('\n'))
@@ -181,6 +194,7 @@ export class BaseFilesView extends LitElement {
     var items = this.selection.length ? this.selection : [item]
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', items.map(item => joinPath(window.location.toString(), item.name)).join(`\n`))
+    this.startDragDropMode()
   }
 
   onDropItem (e, item) {
@@ -257,6 +271,10 @@ export class BaseFilesView extends LitElement {
         }
       }
     }
+    if (this.dragDropModeActive && !e.buttons) {
+      // catch the case where 'drop' event occurred outside container
+      this.endDragDropMode()
+    }
   }
 
   onMouseupContainer (e) {
@@ -268,14 +286,14 @@ export class BaseFilesView extends LitElement {
   onDragenterContainer (e) {
     e.preventDefault()
 
-    this.dragAndDropCounter = (this.dragAndDropCounter || 0) + 1
+    var contanerEl = this.shadowRoot.querySelector('.container')
     var itemEl = findParent(e.target, 'folder')
     if (itemEl) {
-      this.shadowRoot.querySelector('.container').classList.remove('drag-hover')
+      contanerEl.classList.remove('drag-hover')
       itemEl.classList.add('drag-hover')
       this.dragLastEntered = itemEl
-    } else {
-      this.shadowRoot.querySelector('.container').classList.add('drag-hover')
+    } else if (!contanerEl.classList.contains('drag-hover')) {
+      contanerEl.classList.add('drag-hover')
       this.dragLastEntered = this.shadowRoot.querySelector('.container')
     }
     e.dataTransfer.dropEffect = 'move'
@@ -288,19 +306,19 @@ export class BaseFilesView extends LitElement {
   }
 
   onDragleaveContainer (e) {
-    this.dragAndDropCounter = (this.dragAndDropCounter || 0) - 1
+    var contanerEl = this.shadowRoot.querySelector('.container')
     var itemEl = findParent(e.target, 'folder')
-    if (this.dragAndDropCounter === 0) {
-      this.shadowRoot.querySelector('.container').classList.remove('drag-hover')
-    } else if (itemEl && itemEl !== this.dragLastEntered) {
+    if (itemEl && itemEl !== this.dragLastEntered) {
       if (this.dragLastEntered) this.dragLastEntered.classList.add('drag-hover')
       itemEl.classList.remove('drag-hover')
+    } else if (contanerEl === e.target) {
+      contanerEl.classList.remove('drag-hover')
     }
   }
 
   onDropContainer (e) {
     e.stopPropagation()
-    e.currentTarget.classList.remove('drag-hover')
+    this.endDragDropMode()
     this.handleDragDrop(e.clientX, e.clientY, null, e.dataTransfer)
     return false
   }

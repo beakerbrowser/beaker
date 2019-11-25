@@ -47,12 +47,12 @@ export class QueryView extends LitElement {
     return html`
       ${this.renderMode === 'grid' ? (
         this.inlineMode
-          ? html`<inline-file-grid show-origin .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-grid>`
-          : html`<file-grid show-origin .itemGroups=${this.itemGroups} .selection=${this.selection}></file-grid>`
+          ? html`<inline-file-grid show-origin .items=${this.items} .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-grid>`
+          : html`<file-grid show-origin .items=${this.items} .itemGroups=${this.itemGroups} .selection=${this.selection}></file-grid>`
       ) : (
         this.inlineMode
-          ? html`<inline-file-list show-origin .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-list>`
-          : html`<file-list show-origin .itemGroups=${this.itemGroups} .selection=${this.selection}></file-list>`
+          ? html`<inline-file-list show-origin .items=${this.items} .itemGroups=${this.itemGroups} .selection=${this.selection}></inline-file-list>`
+          : html`<file-list show-origin .items=${this.items} .itemGroups=${this.itemGroups} .selection=${this.selection}></file-list>`
       )}
     `
   }
