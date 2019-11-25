@@ -149,7 +149,13 @@ export class BaseFilesView extends LitElement {
 
     var selection
     if (e.metaKey) {
-      selection = this.selection.concat([item])
+      let i = this.selection.indexOf(item)
+      if (i === -1) {
+        selection = this.selection.concat([item])
+      } else {
+        this.selection.splice(i, 1)
+        selection = this.selection
+      }
     } else {
       selection = [item]
     }
@@ -204,12 +210,14 @@ export class BaseFilesView extends LitElement {
         isActive: false,
         el: undefined,
         start: {x: e.pageX, y: e.pageY},
-        current: {x: e.pageX, y: e.pageY}
+        current: {x: e.pageX, y: e.pageY},
+        initialSelection: this.selection.slice()
       }
     }
   }
 
   onMousemoveContainer (e) {
+    var diffMode = e.metaKey || e.shiftKey
     if (this.dragSelector) {
       if (!e.buttons) {
         // mouseup must have happened outside of our container el
@@ -231,10 +239,20 @@ export class BaseFilesView extends LitElement {
         if (this.dragSelector.isActive) {
           // update the drag-selector rendering and update the selection list
           positionDragSelector(this.dragSelector)
-          var selectedEls = findElsInSelector(this.dragSelector, this.shadowRoot.querySelectorAll('.item'))
-          if (selectedEls.length !== this.selection.length) {
-            var selection = selectedEls.map(el => this.items.find(i => i.url === el.dataset.url))
-            emit(this, 'change-selection', {detail: {selection}})
+          var newSelectedEls = findElsInSelector(this.dragSelector, this.shadowRoot.querySelectorAll('.item'))
+          var newSelection = newSelectedEls.map(el => this.items.find(i => i.url === el.dataset.url))
+          if (diffMode) {
+            for (let sel of this.dragSelector.initialSelection) {
+              let i = newSelection.indexOf(sel)
+              if (i !== -1) {
+                newSelection.splice(i, 1)
+              } else {
+                newSelection.push(sel)
+              }
+            }
+          }
+          if (hasSelectionChanged(newSelection, this.selection)) {
+            emit(this, 'change-selection', {detail: {selection: newSelection}})
           }
         }
       }
@@ -331,4 +349,9 @@ function findElsInSelector (dragSelector, candidateEls) {
     if (dragRect.right < elRect.left) return false
     return true
   })
+}
+
+function hasSelectionChanged (left, right) {
+  if (left.length !== right.length) return true
+  return left.reduce((v, acc) => acc || right.indexOf(v) === -1, false)
 }
