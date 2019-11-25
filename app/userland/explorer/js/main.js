@@ -335,15 +335,17 @@ export class ExplorerApp extends LitElement {
                 <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
               ` : ''}
               <span class="spacer"></span>
-              <span class="btn-group">
-                ${renderModes.map(([id, icon, label]) => html`
-                  <button
-                    class=${id == this.renderMode ? 'pressed' : ''}
-                    @click=${e => this.onChangeRenderMode(e, id)}
-                    title="Change the view to: ${label}"
-                  ><span class="fas fa-${icon}"></span></button>
-                `)}
-              </span>
+              ${renderModes.length > 1 ? html`
+                <span class="btn-group">
+                  ${renderModes.map(([id, icon, label]) => html`
+                    <button
+                      class=${id == this.renderMode ? 'pressed' : ''}
+                      @click=${e => this.onChangeRenderMode(e, id)}
+                      title="Change the view to: ${label}"
+                    ><span class="fas fa-${icon}"></span></button>
+                  `)}
+                </span>
+              ` : ''}
               ${isFolderLike ? html`
                 <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
                   <span class="fas fa-eye"></span>
