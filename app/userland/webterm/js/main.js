@@ -203,6 +203,12 @@ class WebTerm extends LitElement {
   }
 
   async appendOutput (output, thenCWD, cmd) {
+    const header = () => {
+      let host = this.isFSRoot(thenCWD.host) ? '~' : shortenHash(thenCWD.host)
+      let pathname = (thenCWD.pathname || '').replace(/\/$/, '')
+      return html`<div class="entry-header">${host}${pathname}&gt; ${cmd || ''}</div>`
+    }
+
     // create the place in the history
     var outputHistIndex = this.outputHist.length
     this.outputHist.push(html``)
@@ -211,7 +217,7 @@ class WebTerm extends LitElement {
     if (output instanceof Promise) {
       this.outputHist.splice(outputHistIndex, 1, html`
         <div class="entry">
-          <div class="entry-header">${this.isFSRoot(thenCWD.host) ? '~' : shortenHash(thenCWD.host)}${thenCWD.pathname}&gt; ${cmd || ''}</div>
+          ${header()}
           <div class="entry-content"><span class="spinner"></span></div>
         </div>
       `)
@@ -235,7 +241,7 @@ class WebTerm extends LitElement {
     thenCWD = thenCWD || this.cwd
     this.outputHist.splice(outputHistIndex, 1, html`
       <div class="entry">
-        <div class="entry-header">${this.isFSRoot(thenCWD.host) ? '~' : shortenHash(thenCWD.host)}${thenCWD.pathname}&gt; ${cmd || ''}</div>
+        ${header()}
         <div class="entry-content">${output}</div>
       </div>
     `)
@@ -445,6 +451,7 @@ class WebTerm extends LitElement {
   render () {
     if (!this.cwd) return html`<div></div>`
     var host = this.isFSRoot(this.cwd.host) ? '~' : shortenHash(this.cwd.host)
+    var pathname = this.cwd.pathname.replace(/\/$/, '')
     var additionalTabCompleteOptions = this.tabCompletion ? this.tabCompletion.length - TAB_COMPLETION_RENDER_LIMIT : 0
     let endOfInput = this.promptInput.split(' ').pop().split('/').pop()
     return html`
@@ -455,7 +462,7 @@ class WebTerm extends LitElement {
           ${this.outputHist}
         </div>
         <div class="prompt">
-          ${host}${this.cwd.pathname}&gt; <input @keyup=${this.onPromptKeyUp} />
+          ${host}${pathname}&gt; <input @keyup=${this.onPromptKeyUp} />
         </div>
         ${this.tabCompletion ? html`
           <div class="tab-completion">
