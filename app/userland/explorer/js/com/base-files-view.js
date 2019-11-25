@@ -55,7 +55,16 @@ export class BaseFilesView extends LitElement {
 
   handleDragDrop (x, y, item, dataTransfer) {
     var text = dataTransfer.getData('text/plain')
-    if (text) return this.handleDragDropUrls(x, y, item, text.split('\n'))
+    if (text) {
+      if (!item || !item.stat.isDirectory()) {
+        // TODO:
+        // currently ignore drops that arent onto a subfolder
+        // eventually drops may come from other tabs and we need to handle those
+        // -prf
+        return
+      }
+      return this.handleDragDropUrls(x, y, item, text.split('\n'))
+    }
     // TODO: handle dropped files
   }
 
