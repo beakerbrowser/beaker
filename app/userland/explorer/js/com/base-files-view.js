@@ -59,10 +59,12 @@ export class BaseFilesView extends LitElement {
     // TODO: handle dropped files
   }
 
-  handleDragDropUrls (x, y, item, urls) {
+  async handleDragDropUrls (x, y, item, urls) {
     var targetUrl = window.location.toString()
     if (item) targetUrl = joinPath(targetUrl, item.name)
-    contextMenu.create({
+    var targetEl = this.shadowRoot.querySelector(item ? `.item[data-url="${item.url}"]` : '.container')
+    if (targetEl) targetEl.classList.add('drop-target')
+    await contextMenu.create({
       x,
       y,
       roomy: false,
@@ -112,6 +114,7 @@ export class BaseFilesView extends LitElement {
         }
       ]
     })
+    if (targetEl) targetEl.classList.remove('drop-target')
   }
 
   // rendering

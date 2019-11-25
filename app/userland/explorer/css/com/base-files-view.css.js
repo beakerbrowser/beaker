@@ -39,9 +39,10 @@ h4 {
   pointer-events: none;
 }
 
-.drag-hover {
+.drag-hover,
+.drop-target {
   background: #f5f5ff !important;
-  outline: 2px dashed #ccd;
+  outline: rgb(191, 191, 243) dashed 1px;
 }
 
 .container.is-dragging .item:not(.folder) * {
