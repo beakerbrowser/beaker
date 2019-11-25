@@ -2,7 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { findParent, emit } from 'beaker://app-stdlib/js/dom.js'
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
-import { doCopy, doMove } from '../lib/files.js'
+import { doCopy, doMove, canWriteTo } from '../lib/files.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import mainCSS from '../../css/com/file-grid.css.js'
@@ -105,14 +105,10 @@ export class BaseFilesView extends LitElement {
     if (item) targetUrl = joinPath(targetUrl, item.name)
     var targetEl = this.shadowRoot.querySelector(item ? `.item[data-url="${item.url}"]` : '.container')
     if (targetEl) targetEl.classList.add('drop-target')
-    await contextMenu.create({
-      x,
-      y,
-      roomy: false,
-      noBorders: true,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
-      style: `padding: 4px 0`,
-      items: [
+
+    var items
+    if (await canWriteTo(targetUrl)) {
+      items = [
         html`<div class="section-header small light">${urls.length} ${pluralize(urls.length, 'item')}...</div>`,
         {
           icon: 'far fa-copy',
@@ -150,10 +146,29 @@ export class BaseFilesView extends LitElement {
         {
           icon: 'times-circle',
           label: `Cancel`,
-          click: () => {
-          }
+          click: () => {}
         }
       ]
+    } else {
+      items = [
+        html`<div class="section-header small light"><span class="fas fa-fw fa-exclamation-triangle"></span> Can't drop here</div>`,
+        html`<div class="section-header" style="font-size: 14px">The target folder is read-only.</div>`,
+        '-',
+        {
+          icon: 'times-circle',
+          label: `Cancel`,
+          click: () => {}
+        }
+      ]
+    }
+    await contextMenu.create({
+      x,
+      y,
+      roomy: false,
+      noBorders: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      style: `padding: 4px 0`,
+      items
     })
     if (targetEl) targetEl.classList.remove('drop-target')
   }

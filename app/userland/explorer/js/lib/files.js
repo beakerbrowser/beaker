@@ -106,3 +106,18 @@ export async function doCopy (params) {
 export async function doMove (params) {
   return doCopyOrMove(params, (drive, sourcePath, targetPath) => drive.rename(sourcePath, targetPath))  
 }
+
+export async function canWriteTo (url) {
+  let urlp = new URL(url)
+  let drive = new DatArchive(urlp.host)
+  let acc = []
+  for (let segment of urlp.pathname.split('/')) {
+    acc.push(segment)
+    let st = await drive.stat(acc.join('/'))
+    if (st.mount && st.mount.key) {
+      drive = new DatArchive(st.mount.key)
+      acc = []
+    }
+  }
+  return (await drive.getInfo()).writable
+}
