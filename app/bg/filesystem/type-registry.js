@@ -173,7 +173,7 @@ async function load () {
       } catch (e) {
         logger.error(`Invalid ${PATHS.TYPE_REGISTRY_JSON} file`, {error: e})
         logger.error(`A new ${PATHS.TYPE_REGISTRY_JSON} will be created and the previous file will be saved as ${PATHS.TYPE_REGISTRY_JSON}.backup`)
-        await filesystem.get().pda.rename(PATHS.TYPE_REGISTRY_JSON, PATHS.TYPE_REGISTRY_JSON + '.backup')
+        await filesystem.get().pda.rename(PATHS.TYPE_REGISTRY_JSON, filesystem.get().session.drive, PATHS.TYPE_REGISTRY_JSON + '.backup')
       }
     }
   } finally {

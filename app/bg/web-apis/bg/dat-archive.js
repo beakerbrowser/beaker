@@ -298,40 +298,53 @@ export default {
     })
   },
 
-  async copy (url, filepath, dstpath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async copy (url, srcpath, dstpath, opts = {}) {
+    srcpath = normalizeFilepath(srcpath || '')
+    dstpath = normalizeFilepath(dstpath || '')
     return timer(to(opts), async (checkin, pause, resume) => {
       checkin('searching for archive')
-      const {archive, checkoutFS} = await lookupArchive(this.sender, url)
+
+      console.log({srcpath, dstpath})
+      const src = await lookupArchive(this.sender, srcpath.includes('://') ? srcpath : url)
+      const dst = await lookupArchive(this.sender, dstpath.includes('://') ? dstpath : url)
+
+      if (srcpath.includes('://')) srcpath = (new URL(srcpath)).pathname
+      if (dstpath.includes('://')) dstpath = (new URL(dstpath)).pathname
 
       pause() // dont count against timeout, there may be user prompts
       const senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-      await assertWritePermission(archive, this.sender)
+      await assertWritePermission(dst.archive, this.sender)
       assertUnprotectedFilePath(dstpath, this.sender)
-      const sourceSize = await archive.pda.readSize(filepath)
-      await assertQuotaPermission(archive, senderOrigin, sourceSize)
+      const sourceSize = await src.archive.pda.readSize(srcpath)
+      await assertQuotaPermission(dst.archive, senderOrigin, sourceSize)
       resume()
 
       checkin('copying file')
-      return checkoutFS.pda.copy(filepath, dstpath)
+      return src.checkoutFS.pda.copy(srcpath, dst.checkoutFS.session.drive, dstpath)
     })
   },
 
-  async rename (url, filepath, dstpath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async rename (url, srcpath, dstpath, opts = {}) {
+    srcpath = normalizeFilepath(srcpath || '')
+    dstpath = normalizeFilepath(dstpath || '')
     return timer(to(opts), async (checkin, pause, resume) => {
       checkin('searching for archive')
-      const {archive, checkoutFS} = await lookupArchive(this.sender, url)
+
+      const src = await lookupArchive(this.sender, srcpath.includes('://') ? srcpath : url)
+      const dst = await lookupArchive(this.sender, dstpath.includes('://') ? dstpath : url)
+
+      if (srcpath.includes('://')) srcpath = (new URL(srcpath)).pathname
+      if (dstpath.includes('://')) dstpath = (new URL(dstpath)).pathname
 
       pause() // dont count against timeout, there may be user prompts
-      await assertWritePermission(archive, this.sender)
+      await assertWritePermission(dst.archive, this.sender)
       assertValidFilePath(dstpath)
-      assertUnprotectedFilePath(filepath, this.sender)
+      assertUnprotectedFilePath(srcpath, this.sender)
       assertUnprotectedFilePath(dstpath, this.sender)
       resume()
 
       checkin('renaming file')
-      return checkoutFS.pda.rename(filepath, dstpath)
+      return src.checkoutFS.pda.rename(srcpath, dst.checkoutFS.session.drive, dstpath)
     })
   },
 
@@ -746,7 +759,7 @@ async function parseUrlParts (url) {
 
 function normalizeFilepath (str) {
   str = decodeURIComponent(str)
-  if (str.charAt(0) !== '/') {
+  if (!str.includes('://') && str.charAt(0) !== '/') {
     str = '/' + str
   }
   return str
