@@ -594,7 +594,7 @@ export class ExplorerApp extends LitElement {
         toast.create(`Error: ${e.toString()}`, 'error')
         return
       }
-      window.location = window.location.origin + pathname + '#edit'
+      window.location = joinPath(window.location.toString(), filename + '#edit')
     }
   }
 
