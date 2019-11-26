@@ -76,11 +76,11 @@ class EditorApp extends LitElement {
 
     window.sidebarLoad = (url) => {
       this.currentTabUrl = url
-      if (this.url === url) return
-      if (this.hasChanges) return // dont leave an unsaved buffer
-      this.url = url
-      this.classList.add('sidebar')
-      this.load()
+      if (!this.url) {
+        this.url = url
+        this.classList.add('sidebar')
+        this.load()
+      }
     }
 
     // load monaco

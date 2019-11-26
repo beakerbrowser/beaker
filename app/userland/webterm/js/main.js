@@ -76,10 +76,14 @@ class WebTerm extends LitElement {
     })
 
     this.url = navigator.filesystem.url
+    var isSidebarMode = false
     window.sidebarLoad = (url) => {
-      this.url = url
-      this.classList.add('sidebar')
-      this.load()
+      if (!isSidebarMode) {
+        isSidebarMode = true
+        this.url = url
+        this.classList.add('sidebar')
+        this.load()
+      }
     }
 
     this.load()
