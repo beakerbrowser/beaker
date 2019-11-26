@@ -98,13 +98,13 @@ export async function mv (opts, src, dst) {
   if (!dst) throw new Error('dst is required')
   var srcp = resolveParse(src)
   var dstp = resolveParse(dst)
-  if (srcp.origin === dstp.origin) {
-    await srcp.archive.rename(srcp.pathname, dstp.pathname)
-  } else {
-    let content = await srcp.archive.readFile(srcp.pathname)
-    await dstp.archive.writeFile(dstp.filename, content)
-    await srcp.archive.unlink(srcp.pathname)
+  
+  let st = await dstp.archive.stat(dstp.pathname).catch(e => undefined)
+  if (st && st.isDirectory()) {
+    dstp.pathname = joinPath(dstp.pathname, src.split('/').pop())
   }
+
+  await srcp.archive.rename(srcp.pathname, dstp.toString())
 }
 
 export async function cp (opts, src, dst) {
@@ -112,12 +112,13 @@ export async function cp (opts, src, dst) {
   if (!dst) throw new Error('dst is required')
   var srcp = resolveParse(src)
   var dstp = resolveParse(dst)
-  if (srcp.origin === dstp.origin) {
-    await srcp.archive.copy(srcp.pathname, dstp.pathname)
-  } else {
-    let content = await srcp.archive.readFile(srcp.pathname)
-    await dstp.archive.writeFile(dstp.filename, content)
+  
+  let st = await dstp.archive.stat(dstp.pathname).catch(e => undefined)
+  if (st && st.isDirectory()) {
+    dstp.pathname = joinPath(dstp.pathname, src.split('/').pop())
   }
+
+  await srcp.archive.copy(srcp.pathname, dstp.toString())
 }
 
 export async function rm (opts, dst) {
