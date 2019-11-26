@@ -76,10 +76,24 @@ export class BaseFilesView extends LitElement {
     this.shadowRoot.querySelector('.container').classList.add('is-dragging')
   }
 
+  createDragGhost (items) {
+    var wrapper = document.createElement('div')
+    wrapper.className = 'drag-ghost'
+    items.forEach(item => {
+      var el = document.createElement('div')
+      el.textContent = item.name
+      wrapper.append(el)
+    })
+    this.shadowRoot.append(wrapper)
+    return wrapper
+  }
+
   endDragDropMode () {
     if (this.dragDropModeActive) {
       this.dragDropModeActive = false
       this.shadowRoot.querySelector('.container').classList.remove('is-dragging')
+      try { this.shadowRoot.querySelector('.drag-ghost').remove() }
+      catch (e) {}
       Array.from(this.shadowRoot.querySelectorAll('.drag-hover'), el => el.classList.remove('drag-hover'))
     }
   }
@@ -170,6 +184,7 @@ export class BaseFilesView extends LitElement {
     var items = this.selection.length ? this.selection : [item]
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', items.map(item => joinPath(window.location.toString(), item.name)).join(`\n`))
+    e.dataTransfer.setDragImage(this.createDragGhost(items), 0, 0)
     this.startDragDropMode()
   }
 

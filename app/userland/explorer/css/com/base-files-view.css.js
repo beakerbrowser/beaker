@@ -53,5 +53,10 @@ h4 {
   pointer-events: none;
 }
 
+.drag-ghost {
+  position: fixed;
+  right: -100%;
+}
+
 `
 export default cssStr
