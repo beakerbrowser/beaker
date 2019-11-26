@@ -5,7 +5,6 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { doCopy, doMove, canWriteTo } from './files.js'
 
 export async function handleDragDrop (targetEl, x, y, targetPath, dataTransfer) {
-  console.log(targetPath, window.location.pathname)
   if (targetPath === window.location.pathname) {
     // TODO:
     // currently we ignore drops that are onto the current location
@@ -40,15 +39,18 @@ export async function handleDragDropUrls (x, y, targetPath, urls) {
         icon: 'far fa-copy',
         label: `Copy to ${targetName}`,
         async click () {
+          let n = 0
           for (let url of urls) {
             try {
               await doCopy({sourceItem: url, targetFolder: targetUrl})
+              n++
             } catch (e) {
               console.error(e)
-              toast.create(`Failed to copy ${url.split('/').pop()}: ${e.toString().replace('Error: ', '')}`, 'error')
+              let niceError = e.toString().split(':').slice(1).join(':').trim()
+              toast.create(`${niceError}. ${n} ${pluralize(n, 'item')} copied.`, 'error')
               return
             }
-            toast.create(`Copied ${urls.length} items`)
+            toast.create(`Copied ${n} ${pluralize(n, 'item')}`)
           }
         }
       },
@@ -56,15 +58,18 @@ export async function handleDragDropUrls (x, y, targetPath, urls) {
         icon: 'cut',
         label: `Move to ${targetName}`,
         async click () {
+          let n = 0
           for (let url of urls) {
             try {
               await doMove({sourceItem: url, targetFolder: targetUrl})
+              n++
             } catch (e) {
               console.error(e)
-              toast.create(`Failed to move ${url.split('/').pop()}: ${e.toString().replace('Error: ', '')}`, 'error')
+              let niceError = e.toString().split(':').slice(1).join(':').trim()
+              toast.create(`${niceError}. ${n} ${pluralize(n, 'item')} copied.`, 'error')
               return
             }
-            toast.create(`Move ${urls.length} items`)
+            toast.create(`Move ${n} ${pluralize(n, 'item')}`)
           }
         }
       },

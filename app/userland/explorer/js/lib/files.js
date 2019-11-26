@@ -87,8 +87,12 @@ async function doCopyOrMove ({sourceItem, targetFolder}, op) {
 
   var name = sourceItemParsed.pathname.split('/').pop()
   var targetPath = joinPath(targetFolderParsed.pathname, name)
-  if (await (targetDrive.stat(targetPath).catch(e => undefined))) {
-    if (!confirm(`${name} already exists in the target folder. Overwrite?`)) {
+  var targetSt = await (targetDrive.stat(targetPath).catch(e => undefined))
+  if (targetSt) {
+    if (targetSt.isFile() && !confirm(`${name} already exists in the target folder. Overwrite?`)) {
+      throw new Error('Canceled')
+    } else if (targetSt.isDirectory()) {
+      alert(`A folder named "${name}" already exists in the target folder and cannot be overwritten.`)
       throw new Error('Canceled')
     }
   }
