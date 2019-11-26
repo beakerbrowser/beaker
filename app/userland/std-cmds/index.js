@@ -192,6 +192,13 @@ export async function peek (opts = {}, location = '') {
 
 export async function go (opts = {}, location = '') {
   location = terminal.resolve(location)
+  if (location.endsWith('.goto')) {
+    let urlp = parseLocation(location)
+    let st = await urlp.archive.stat(urlp.pathname).catch(e => undefined)
+    if (st && st.metadata.href) {
+      location = st.metadata.href
+    }
+  }
   try {
     terminal.cwd = location.toString()
   } catch (e) {
