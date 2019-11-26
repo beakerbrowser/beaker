@@ -846,6 +846,11 @@ export class ExplorerApp extends LitElement {
         disabled: !writable,
         click: () => this.onImport()
       })
+      items.push({
+        icon: 'fas fa-fw fa-terminal',
+        label: 'Open terminal',
+        click: () => navigator.updateSidebar('beaker://webterm', {setTarget: window.location.toString()})
+      })
     }
 
     contextMenu.create({
