@@ -153,7 +153,7 @@ export class ExplorerApp extends LitElement {
     this.hideNavRight = Boolean(getGlobalSavedConfig('hide-nav-right', false))
 
     if (location.hash === '#edit') {
-      navigator.toggleEditor()
+      navigator.updateSidebar('beaker://editor', {setTarget: window.location.toString()})
       location.hash = ''
     }
 
@@ -725,7 +725,7 @@ export class ExplorerApp extends LitElement {
   }
 
   onToggleEditor (e) {
-    navigator.toggleEditor()
+    navigator.updateSidebar('beaker://editor', {setTarget: window.location.toString()})
   }
 
   onShowMenu (e) {

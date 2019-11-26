@@ -455,6 +455,11 @@ class Tab {
     }
   }
 
+  async executeInSidebar (js) {
+    var v = sidebars.get(this)
+    if (v) return v.webContents.executeJavaScript(js)
+  }
+
   async captureScreenshot () {
     // capture screenshot on the root page of dat & http sites
     var urlp = parseDatURL(this.url)

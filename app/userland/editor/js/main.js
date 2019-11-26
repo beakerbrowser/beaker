@@ -74,9 +74,9 @@ class EditorApp extends LitElement {
     this.isBinary = false
     this.resolvedPath = ''
 
-    window.sidebarLoad = (url) => {
+    window.sidebarLoad = (url, {force} = {force: false}) => {
       this.currentTabUrl = url
-      if (!this.url) {
+      if (!this.url || force) {
         this.url = url
         this.classList.add('sidebar')
         this.load()

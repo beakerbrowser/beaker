@@ -3,5 +3,5 @@ export default {
   selectFileDialog: 'promise',
   saveFileDialog: 'promise',
   selectDriveDialog: 'promise',
-  toggleEditor: 'promise'
+  updateSidebar: 'promise'
 }
