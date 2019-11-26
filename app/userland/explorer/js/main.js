@@ -154,7 +154,7 @@ export class ExplorerApp extends LitElement {
 
     if (location.hash === '#edit') {
       navigator.updateSidebar('beaker://editor', {setTarget: window.location.toString()})
-      location.hash = ''
+      history.replaceState(undefined, document.title, window.location.toString().split('#')[0])
     }
 
     this.driveTitle = getDriveTitle(this.driveInfo)
