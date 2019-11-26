@@ -751,7 +751,12 @@ export class ExplorerApp extends LitElement {
         icon: 'custom-path-icon',
         label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
         click: () => {
-          writeToClipboard((sel.rootPath) ? sel.rootPath : joinPath(window.location.pathname, sel.name))
+          var path = sel.rootPath 
+            ? sel.rootPath
+            : this.selection[0]
+              ? joinPath(window.location.pathname, sel.name)
+              : window.location.pathname
+          writeToClipboard(path)
           toast.create('Copied to clipboard')
         }
       })
