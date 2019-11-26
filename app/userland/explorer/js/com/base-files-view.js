@@ -59,6 +59,7 @@ export class BaseFilesView extends LitElement {
     this.selection = []
     this.showOrigin = undefined
     this.dragSelector = undefined
+    this.lastClickedItemEl = undefined
   }
 
   stopDragSelection () {
@@ -153,9 +154,23 @@ export class BaseFilesView extends LitElement {
         this.selection.splice(i, 1)
         selection = this.selection
       }
+    } else if (e.shiftKey && this.lastClickedItemEl) {
+      // shift-click to range select
+      // because items are broken up into groups, the easiest way to do this
+      // is to find the items using the drag-selector's hit detection
+      let selector = {start: getElXY(this.lastClickedItemEl), current: getElXY(e.currentTarget)}
+      let els = findElsInSelector(selector, this.shadowRoot.querySelectorAll('.item'))
+      let items = els.map(el => this.items.find(i => i.url === el.dataset.url))
+      selection = this.selection.slice()
+      for (let item of items) {
+        if (!selection.includes(item)) {
+          selection.push(item)
+        }
+      }
     } else {
       selection = [item]
     }
+    this.lastClickedItemEl = e.currentTarget
     emit(this, 'change-selection', {detail: {selection}})
   }
 
@@ -364,4 +379,12 @@ function findElsInSelector (dragSelector, candidateEls) {
 function hasSelectionChanged (left, right) {
   if (left.length !== right.length) return true
   return left.reduce((v, acc) => acc || right.indexOf(v) === -1, false)
+}
+
+function getElXY (el) {
+  let rect = el.getClientRects()[0]
+  return {
+    x: (rect.left + rect.right) / 2,
+    y: (rect.top + rect.bottom) / 2
+  }
 }
