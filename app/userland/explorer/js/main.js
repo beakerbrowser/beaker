@@ -4,11 +4,13 @@ import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { timeDifference } from 'beaker://app-stdlib/js/time.js'
 import { friends } from 'beaker://app-stdlib/js/uwg.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
-import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as shareMenu from './com/share-menu.js'
 import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 import { toSimpleItemGroups, getSubicon } from './lib/files.js'
+import { constructItems as constructContextMenuItems } from './lib/context-menu.js'
+import { getDriveTitle, getGlobalSavedConfig, setGlobalSavedConfig, getSavedConfig, setSavedConfig, getVFCfg } from './lib/config.js'
+import { validateViewfile } from './lib/viewfile.js'
 import mainCSS from '../css/main.css.js'
 import './view/file.js'
 import './view/folder.js'
@@ -269,10 +271,10 @@ export class ExplorerApp extends LitElement {
     if (this.pathInfo.isDirectory()) {
       return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
     } else {
-      if (this.realPathname.endsWith('.md') || this.realPathname.endsWith('.goto')) {
+      if (location.pathname.endsWith('.md') || location.pathname.endsWith('.goto')) {
         return [['default', 'file', 'File'], ['raw', 'code', 'Raw File']]
       }
-      if (this.realPathname.endsWith('.view')) {
+      if (location.pathname.endsWith('.view')) {
         return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
       }
       return [['default', 'File']]
@@ -289,15 +291,14 @@ export class ExplorerApp extends LitElement {
   render () {
     if (!this.driveInfo) return html``
 
-    const renderModes = this.renderModes
-    const isViewfile = this.pathInfo.isFile() && location.pathname.endsWith('.view')
-    const isFolderLike = this.pathInfo.isDirectory() || isViewfile
-    var selectionIsFolder = this.selection[0] ? this.selection[0].stat.isDirectory() : this.pathInfo.isDirectory()
-    var selectionUrl = this.getRealUrl(this.selection[0] ? joinPath(this.realPathname, this.selection[0].name) : this.realPathname)
-    var selectionType = (selectionIsFolder ? 'folder' : 'file')
-    var selectionName = selectionUrl.split('/').pop() || selectionType
-    if (this.selection[0] && this.selection[0].stat.mount) selectionUrl = `dat://${this.selection[0].stat.mount.key}`
-    var downloadUrl = `${selectionUrl}${selectionIsFolder ? '?download_as=zip' : ''}`
+    // TODO: reimplement files exporting -prf
+    // var selectionIsFolder = this.selection[0] ? this.selection[0].stat.isDirectory() : this.pathInfo.isDirectory()
+    // var selectionUrl = this.getRealUrl(this.selection[0] ? joinPath(this.realPathname, this.selection[0].name) : this.realPathname)
+    // var selectionType = (selectionIsFolder ? 'folder' : 'file')
+    // var selectionName = selectionUrl.split('/').pop() || selectionType
+    // if (this.selection[0] && this.selection[0].stat.mount) selectionUrl = `dat://${this.selection[0].stat.mount.key}`
+    // var downloadUrl = `${selectionUrl}${selectionIsFolder ? '?download_as=zip' : ''}`
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div
@@ -326,154 +327,141 @@ export class ExplorerApp extends LitElement {
         <div class="nav-toggle right" @click=${e => this.toggleNav('right')}><span class="fas fa-caret-${this.hideNavRight ? 'left' : 'right'}"></span></div>
         ${this.pathInfo ? html`
           <main>
-            <div class="header">
-              <path-ancestry
-                drive-title=${this.driveTitle}
-                .driveInfo=${this.driveInfo}
-                .pathAncestry=${this.pathAncestry}
-              ></path-ancestry>
-              ${this.pathInfo && this.pathInfo.isFile() ? html`
-                <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
-              ` : ''}
-              <span class="spacer"></span>
-              ${renderModes.length > 1 ? html`
-                <span class="btn-group">
-                  ${renderModes.map(([id, icon, label]) => html`
-                    <button
-                      class=${id == this.renderMode ? 'pressed' : ''}
-                      @click=${e => this.onChangeRenderMode(e, id)}
-                      title="Change the view to: ${label}"
-                    ><span class="fas fa-${icon}"></span></button>
-                  `)}
-                </span>
-              ` : ''}
-              ${isFolderLike ? html`
-                <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
-                  <span class="fas fa-eye"></span>
-                </button>
-                ${''/* TODO <span class="btn-group">
-                  <button title="Change the current sort order">
-                    <span class="fas fa-sort-amount-down"></span><span class="fas fa-caret-down"></span>
-                  </button><button title="Change the grouping of files">
-                    <span class="fas fa-border-all"></span><span class="fas fa-caret-down"></span>
-                  </button>
-                </span>*/}
-              ` : ''}
-              <button class="primary labeled-btn" @click=${this.onClickActions}>
-                Actions${this.selection.length ? ` (${this.selection.length} ${pluralize(this.selection.length, 'item')})` : ''}
-                <span class="fas fa-fw fa-caret-down"></span>
-              </button>
-            </div>
-            ${isViewfile ? html`
-              <explorer-view-query
-                user-url=${this.user.url}
-                real-url=${this.realUrl}
-                real-pathname=${this.realPathname}
-                current-drive-title=${this.currentDriveTitle}
-                render-mode=${this.renderMode}
-                ?inline-mode=${this.inlineMode}
-                .currentDriveInfo=${this.currentDriveInfo}
-                .pathInfo=${this.pathInfo}
-                .items=${this.items}
-                .itemGroups=${this.itemGroups}
-                .selection=${this.selection}
-              ></explorer-view-query>
-            ` : this.pathInfo.isDirectory() ? html`
-              <explorer-view-folder
-                user-url=${this.user.url}
-                real-url=${this.realUrl}
-                real-pathname=${this.realPathname}
-                current-drive-title=${this.currentDriveTitle}
-                render-mode=${this.renderMode}
-                ?inline-mode=${this.inlineMode}
-                .currentDriveInfo=${this.currentDriveInfo}
-                .items=${this.items}
-                .itemGroups=${this.itemGroups}
-                .selection=${this.selection}
-              ></explorer-view-folder>
-            ` : html`
-              <explorer-view-file
-                user-url=${this.user.url}
-                real-url=${this.realUrl}
-                real-pathname=${this.realPathname}
-                current-drive-title=${this.currentDriveTitle}
-                render-mode=${this.renderMode}
-                .currentDriveInfo=${this.currentDriveInfo}
-                .pathInfo=${this.pathInfo}
-                .selection=${this.selection}
-              ></explorer-view-file>
-            `}
+            ${this.renderHeader()}
+            ${this.renderView()}
           </main>
-          ${this.hideNavRight ? '' : html`
-            <nav class="right">
-              <drive-info
-                user-url=${this.user.url}
-                .driveInfo=${this.currentDriveInfo}
-              ></drive-info>
-              ${this.selection.length > 0 ? html`
-                <selection-info
-                  user-url=${this.user.url}
-                  .driveInfo=${this.driveInfo}
-                  .pathInfo=${this.pathInfo}
-                  .mountInfo=${this.mountInfo}
-                  .selection=${this.selection}
-                  ?no-preview=${this.inlineMode}
-                ></selection-info>
-              ` : isViewfile ? html`
-                <viewfile-info
-                  .currentDriveInfo=${this.currentDriveInfo}
-                  .pathInfo=${this.pathInfo}
-                  .viewfileObj=${this.viewfileObj}
-                ></viewfile-info>
-              ` : html``}
-              <contextual-help
-                user-url=${this.user.url}
-                real-pathname=${this.realPathname}
-                .driveInfo=${this.driveInfo}
-                .pathInfo=${this.pathInfo}
-                .mountInfo=${this.mountInfo}
-                .selection=${this.selection}
-              ></contextual-help>
-            </nav>
-          `}
+          ${this.renderRightNav()}
         ` : undefined}
       </div>
       <input type="file" id="files-picker" multiple @change=${this.onChangeImportFiles} />
     `
   }
 
-//   ${this.selection.length <= 1 ? html`
-//   <section class="transparent" style="padding: 2px 14px">
-//     ${this.currentDriveInfo.url !== navigator.filesystem.url ? html`
-//       <p><a href="#" @click=${this.onClickShare}><span class="fa-fw fas fa-share-square"></span> Share this ${selectionType}</a></p>
-//     ` : ''}
-//     <p><a id="download-link" href=${downloadUrl} download=${selectionName}><span class="fa-fw fas fa-file-export"></span> Export...</a></p>
-//   </section>
-// ` : ''}
-  
-//   ${this.currentDriveInfo.type === 'unwalled.garden/person' ? html`
-//   <section class="transparent" style="padding: 0">
-//     <button class="primary"><span class="far fa-fw fa-window-restore"></span> Open This User Profile</button>
-//     ${this.currentDriveInfo.url !== this.user.url ?
-//       until(this.renderAddBtn(), '')
-//     : html`
-//       <button @click=${undefined}>
-//         Edit My Profile
-//       </button>
-//     `}
-//   </section>
-// ` : ''}
-//   async renderAddBtn () {
-//     var isInFriends = (await navigator.filesystem.query({
-//       path: '/profile/friends/*',
-//       mount: this.driveInfo.url
-//     })).length > 0
-//     if (isInFriends) {
-//       return html`<button class="" @click=${this.onToggleFriends}><span class="fa-fw fas fa-user-minus"></span> Remove from Friends</button>`
-//     } else {
-//       return html`<button class="primary" @click=${this.onToggleFriends}><span class="fa-fw fas fa-user-plus"></span> Add to Friends</button>`
-//     }
-//   }
+  renderHeader () {
+    const renderModes = this.renderModes
+    const isViewfile = this.pathInfo.isFile() && location.pathname.endsWith('.view')
+    const isFolderLike = this.pathInfo.isDirectory() || isViewfile
+    return html`
+      <div class="header">
+        <path-ancestry
+          drive-title=${this.driveTitle}
+          .driveInfo=${this.driveInfo}
+          .pathAncestry=${this.pathAncestry}
+        ></path-ancestry>
+        ${this.pathInfo && this.pathInfo.isFile() ? html`
+          <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
+        ` : ''}
+        <span class="spacer"></span>
+        ${renderModes.length > 1 ? html`
+          <span class="btn-group">
+            ${renderModes.map(([id, icon, label]) => html`
+              <button
+                class=${id == this.renderMode ? 'pressed' : ''}
+                @click=${e => this.onChangeRenderMode(e, id)}
+                title="Change the view to: ${label}"
+              ><span class="fas fa-${icon}"></span></button>
+            `)}
+          </span>
+        ` : ''}
+        ${isFolderLike ? html`
+          <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
+            <span class="fas fa-eye"></span>
+          </button>
+        ` : ''}
+        <button class="primary labeled-btn" @click=${this.onClickActions}>
+          Actions${this.selection.length ? ` (${this.selection.length} ${pluralize(this.selection.length, 'item')})` : ''}
+          <span class="fas fa-fw fa-caret-down"></span>
+        </button>
+      </div>
+    `
+  }
+
+  renderView () {
+    const isViewfile = this.pathInfo.isFile() && location.pathname.endsWith('.view')
+    if (isViewfile) {
+      return html`
+        <explorer-view-query
+          user-url=${this.user.url}
+          real-url=${this.realUrl}
+          real-pathname=${this.realPathname}
+          current-drive-title=${this.currentDriveTitle}
+          render-mode=${this.renderMode}
+          ?inline-mode=${this.inlineMode}
+          .currentDriveInfo=${this.currentDriveInfo}
+          .pathInfo=${this.pathInfo}
+          .items=${this.items}
+          .itemGroups=${this.itemGroups}
+          .selection=${this.selection}
+        ></explorer-view-query>
+      `
+    }
+    if (this.pathInfo.isDirectory()) {
+      return html`
+        <explorer-view-folder
+          user-url=${this.user.url}
+          real-url=${this.realUrl}
+          real-pathname=${this.realPathname}
+          current-drive-title=${this.currentDriveTitle}
+          render-mode=${this.renderMode}
+          ?inline-mode=${this.inlineMode}
+          .currentDriveInfo=${this.currentDriveInfo}
+          .items=${this.items}
+          .itemGroups=${this.itemGroups}
+          .selection=${this.selection}
+        ></explorer-view-folder>
+      `
+    }
+    return html`
+      <explorer-view-file
+        user-url=${this.user.url}
+        real-url=${this.realUrl}
+        real-pathname=${this.realPathname}
+        current-drive-title=${this.currentDriveTitle}
+        render-mode=${this.renderMode}
+        .currentDriveInfo=${this.currentDriveInfo}
+        .pathInfo=${this.pathInfo}
+        .selection=${this.selection}
+      ></explorer-view-file>
+    `
+  }
+
+  renderRightNav () {
+    if (this.hideNavRight) return ''
+
+    const isViewfile = this.pathInfo.isFile() && location.pathname.endsWith('.view')
+    return html`
+      <nav class="right">
+        <drive-info
+          user-url=${this.user.url}
+          .driveInfo=${this.currentDriveInfo}
+        ></drive-info>
+        ${this.selection.length > 0 ? html`
+          <selection-info
+            user-url=${this.user.url}
+            .driveInfo=${this.driveInfo}
+            .pathInfo=${this.pathInfo}
+            .mountInfo=${this.mountInfo}
+            .selection=${this.selection}
+            ?no-preview=${this.inlineMode}
+          ></selection-info>
+        ` : isViewfile ? html`
+          <viewfile-info
+            .currentDriveInfo=${this.currentDriveInfo}
+            .pathInfo=${this.pathInfo}
+            .viewfileObj=${this.viewfileObj}
+          ></viewfile-info>
+        ` : html``}
+        <contextual-help
+          user-url=${this.user.url}
+          real-pathname=${this.realPathname}
+          .driveInfo=${this.driveInfo}
+          .pathInfo=${this.pathInfo}
+          .mountInfo=${this.mountInfo}
+          .selection=${this.selection}
+        ></contextual-help>
+      </nav>
+    `
+  }
 
   // events
   // =
@@ -729,135 +717,6 @@ export class ExplorerApp extends LitElement {
   }
 
   onShowMenu (e) {
-    var items = []
-    if (this.selection.length === 1 || this.pathInfo.isFile()) {
-      let sel = this.selection[0] || this.locationAsItem
-      let writable = this.selection.reduce((acc, v) => acc && v.drive.writable, true)
-      items.push({
-        icon: 'fas fa-fw fa-external-link-alt',
-        label: 'Open in new tab',
-        click: () => this.goto(sel, true)
-      })
-      items.push({
-        icon: 'fas fa-fw fa-share-square',
-        label: 'Copy share link',
-        disabled: !this.canShare(sel),
-        click: () => {
-          writeToClipboard(this.getShareUrl(sel))
-          toast.create('Copied to clipboard')
-        }
-      })
-      items.push({
-        icon: 'custom-path-icon',
-        label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
-        click: () => {
-          var path = sel.rootPath 
-            ? sel.rootPath
-            : this.selection[0]
-              ? joinPath(window.location.pathname, sel.name)
-              : window.location.pathname
-          writeToClipboard(path)
-          toast.create('Copied to clipboard')
-        }
-      })
-      if (!this.isViewingQuery) {
-        items.push('-')
-        if (sel.stat.isFile()) {
-          items.push({
-            icon: 'fas fa-fw fa-edit',
-            label: 'Edit',
-            disabled: !writable || !sel.stat.isFile(),
-            click: () => {
-              if (this.selection[0]) {
-                window.location = joinPath(window.location.toString(), sel.name) + '#edit'
-              } else {
-                window.location.hash = 'edit'
-                window.location.reload()
-              }
-            }
-          })
-        }
-        items.push({
-          icon: 'fas fa-fw fa-i-cursor',
-          label: 'Rename',
-          disabled: !writable,
-          click: () => this.onRename()
-        })
-        items.push({
-          icon: 'fas fa-fw fa-trash',
-          label: 'Delete',
-          disabled: !writable,
-          click: () => this.onDelete()
-        })
-        items.push('-')
-        items.push({
-          icon: 'fas fa-fw fa-file-export',
-          label: 'Export...',
-          click: () => {
-            this.shadowRoot.querySelector('#download-link').click()
-          }
-        })
-      }
-    } else if (this.selection.length > 1) {
-      let writable = this.selection.reduce((acc, v) => acc && v.drive.writable, true)
-      items.push({
-        icon: 'fas fa-fw fa-trash',
-        label: 'Delete',
-        disabled: !writable,
-        click: () => this.onDelete()
-      })
-    } else {
-      let writable = this.currentDriveInfo.writable
-      items.push({
-        icon: 'far fa-fw fa-file',
-        label: 'New file',
-        disabled: !writable,
-        click: () => this.onNewFile()
-      })
-      items.push({
-        icon: 'far fa-fw fa-folder',
-        label: 'New folder',
-        disabled: !writable,
-        click: () => this.onNewFolder()
-      })
-      items.push({
-        icon: 'fas fa-fw fa-long-arrow-alt-right custom-link-icon',
-        label: 'New link',
-        disabled: !writable,
-        click: () => this.onNewMount()
-      })
-      items.push('-')
-      items.push({
-        icon: 'fas fa-fw fa-share-square',
-        label: `Copy share link`,
-        disabled: !this.canShare(this.locationAsItem),
-        click: () => {
-          writeToClipboard(this.getShareUrl(this.locationAsItem))
-          toast.create('Copied to clipboard')
-        }
-      })
-      items.push({
-        icon: 'custom-path-icon',
-        label: `Copy path`,
-        click: () => {
-          writeToClipboard(window.location.pathname)
-          toast.create('Copied to clipboard')
-        }
-      })
-      items.push('-')
-      items.push({
-        icon: 'fas fa-fw fa-file-import',
-        label: 'Import...',
-        disabled: !writable,
-        click: () => this.onImport()
-      })
-      items.push({
-        icon: 'fas fa-fw fa-terminal',
-        label: 'Open terminal',
-        click: () => navigator.updateSidebar('beaker://webterm', {setTarget: window.location.toString()})
-      })
-    }
-
     contextMenu.create({
       x: e.detail.x,
       y: e.detail.y,
@@ -867,7 +726,7 @@ export class ExplorerApp extends LitElement {
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       style: `padding: 4px 0`,
-      items
+      items: constructContextMenuItems(this)
     })
   }
 
@@ -898,61 +757,3 @@ export class ExplorerApp extends LitElement {
 }
 
 customElements.define('explorer-app', ExplorerApp)
-
-// internal methods
-// =
-
-function getDriveTitle (info) {
-  return info.title || 'Untitled'
-}
-
-function getGlobalSavedConfig (name, fallback = undefined) {
-  var value = localStorage.getItem(`setting:${name}`)
-  if (value === null) return fallback
-  return value
-}
-
-function setGlobalSavedConfig (name, value) {
-  localStorage.setItem(`setting:${name}`, value)
-}
-
-function getSavedConfig (name, fallback = undefined) {
-  var value = localStorage.getItem(`setting:${name}:${location.pathname}`)
-  if (value === null) return getGlobalSavedConfig (name, fallback)
-  return value
-}
-
-function setSavedConfig (name, value) {
-  localStorage.setItem(`setting:${name}:${location.pathname}`, value)
-}
-
-function oneof (v, values) {
-  if (values.includes(v)) return v
-}
-
-function getVFCfg (obj, key, values) {
-  if (!obj) return undefined
-  const ns = 'unwalled.garden/explorer-view'
-  if (obj[ns] && typeof obj[ns] === 'object') {
-    return oneof(obj[ns][key], values)
-  }
-}
-
-function validateViewfile (view) {
-  if (typeof view.viewfile !== 'number' || view.viewfile < 1) {
-    throw new Error('Unrecognized version ("viewfile" attribute): ' + view.viewfile)
-  }
-  if (!view.query || typeof view.query !== 'object') {
-    throw new Error('No "query" is specified in the viewfile')
-  }
-  if (!view.query.path) {
-    throw new Error('No "query.path" is specified in the viewfile')
-  }
-  if (Array.isArray(view.query.path)) {
-    if (!view.query.path.every(p => typeof p === 'string')) {
-      throw new Error('The "query.path" includes invalid (non-string) values')
-    }
-  } else if (typeof view.query.path !== 'string') {
-    throw new Error('The "query.path" is invalid (it must be a string or array of strings)')
-  }
-}
