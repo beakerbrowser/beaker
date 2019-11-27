@@ -175,7 +175,7 @@ export class BaseFilesView extends LitElement {
     this.stopDragSelection()
     var items = this.selection.length ? this.selection : [item]
     e.dataTransfer.effectAllowed = 'move'
-    e.dataTransfer.setData('text/plain', items.map(item => joinPath(window.location.toString(), item.name)).join(`\n`))
+    e.dataTransfer.setData('text/plain', items.map(item => item.url).join(`\n`))
     e.dataTransfer.setDragImage(this.createDragGhost(items), 0, 0)
     this.startDragDropMode()
   }
@@ -183,7 +183,7 @@ export class BaseFilesView extends LitElement {
   onDropItem (e, item) {
     e.stopPropagation()
     e.currentTarget.classList.remove('drag-hover')
-    var targetPath = item.stat.isDirectory() ? joinPath(window.location.pathname, item.name) : window.location.pathname
+    var targetPath = item.stat.isDirectory() ? item.path : window.location.pathname
     handleDragDrop(e.currentTarget, e.clientX, e.clientY, targetPath, e.dataTransfer)
     return false
   }

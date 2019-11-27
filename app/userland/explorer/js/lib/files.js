@@ -47,7 +47,7 @@ export function toSemanticItemGroups (items) {
   }
   for (let i of items) {
     if (i.stat.mount && i.stat.mount.key) {
-      switch (i.mountInfo.type) {
+      switch (i.mount.type) {
         case 'unwalled.garden/person': add('users', 'Users', i); break
         case 'website': add('websites', 'Websites', i); break
         case 'application': add('applications', 'Applications', i); break
@@ -73,9 +73,9 @@ export function toSemanticItemGroups (items) {
 
 export function getSubicon (driveKind, item) {
   if (driveKind === 'root') {
-    return ICONS.root[item.path] || ICONS.common[item.path]
+    return ICONS.root[item.realPath] || ICONS.common[item.realPath]
   } else if (driveKind === 'person') {
-    return ICONS.person[item.path] || ICONS.common[item.path]
+    return ICONS.person[item.realPath] || ICONS.common[item.realPath]
   }
 }
 

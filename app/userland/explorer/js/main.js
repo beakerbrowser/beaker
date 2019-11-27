@@ -95,7 +95,7 @@ export class ExplorerApp extends LitElement {
   }
 
   get currentShareUrl () {
-    return this.selection[0] ? joinPath(this.currentDriveInfo.url, this.selection[0].path) : this.realUrl
+    return this.selection[0] ? this.selection[0].shareUrl : this.realUrl
   }
 
   get isViewingQuery () {
@@ -179,29 +179,22 @@ export class ExplorerApp extends LitElement {
     if (this.currentDriveInfo.url === navigator.filesystem.url) driveKind = 'root'
     if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
 
-    this.items = await drive.readdir(location.pathname, {stat: true})
+    var items = await drive.readdir(location.pathname, {stat: true})
 
-    for (let item of this.items) {
-      item.path = this.getRealPathname(joinPath(location.pathname, item.name))
+    for (let item of items) {
       item.drive = this.currentDriveInfo
-      item.url = joinPath(item.drive.url, item.path)
-      item.icon = item.stat.isDirectory() ? 'folder' : 'file'
+      item.path = joinPath(location.pathname, item.name)
+      item.url = joinPath(location.origin, item.path)
+      item.realPath = this.getRealPathname(item.path)
+      item.realUrl = joinPath(item.drive.url, item.realPath)
       if (item.stat.mount) {
-        item.mountInfo = await (new DatArchive(item.stat.mount.key)).getInfo()        
-        // item.icon = 'hdd'
-        // switch (item.mountInfo.type) {
-        //   case 'website': item.subicon = 'fas fa-sitemap'; break
-        //   case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
-        //   default: item.subicon = ''; break
-        // }
-      } else if (item.stat.isFile() && item.name.endsWith('.view')) {
-        item.icon = 'layer-group'
-      } else if (item.stat.isFile() && item.name.endsWith('.goto')) {
-        item.icon = 'external-link-alt'
-      } else {
-        item.subicon = getSubicon(driveKind, item)
+        item.mount = await (new DatArchive(item.stat.mount.key)).getInfo()   
       }
+      item.shareUrl = this.getShareUrl(item)
+      this.setItemIcons(driveKind, item)
     }
+
+    this.items = items
   }
 
   async readViewfile (drive) {
@@ -209,41 +202,52 @@ export class ExplorerApp extends LitElement {
     this.viewfileObj = JSON.parse(viewFile)
     validateViewfile(this.viewfileObj)
 
-    this.items = await navigator.filesystem.query(this.viewfileObj.query)
+    var items = await navigator.filesystem.query(this.viewfileObj.query)
 
     // massage the items to fit same form as `readDirectory()`
-    this.items.forEach(item => {
+    items.forEach(item => {
       item.name = item.path.split('/').pop()
-      item.rootPath = item.path // retain the original path as `rootPath`
-      item.path = (new URL(item.url)).pathname
-      item.icon = item.stat.isDirectory() ? 'folder' : 'file'
-      if (item.stat.mount) {
-        item.mountInfo = item.mount
-        switch (item.mountInfo.type) {
-          case 'website': item.subicon = 'fas fa-sitemap'; break
-          case 'unwalled.garden/person': item.subicon = 'fas fa-user'; break
-          default: item.subicon = ''; break
-        }
-      } else if (item.stat.isFile() && item.name.endsWith('.view')) {
-        item.icon = 'layer-group'
-      } else {
-        let driveKind = ''
-        if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
-        item.subicon = getSubicon(driveKind, item)
-      }
+      item.realPath = (new URL(item.url)).pathname
+      item.realUrl = item.url
+      item.url = joinPath(location.origin, item.path)
+      item.shareUrl = this.getShareUrl(item)
+      this.setItemIcons('', item)
     })
 
     // apply merge
     if (getVFCfg(this.viewfileObj, 'merge', ['mtime', undefined])) {
       let map = {}
-      for (let item of this.items) {
+      for (let item of items) {
         if (item.name in map) {
           map[item.name] =  (map[item.name].stat.mtime > item.stat.mtime) ? map[item.name] : item
         } else {
           map[item.name] = item
         }
       }
-      this.items = Object.values(map)
+      items = Object.values(map)
+    }
+
+    this.items = items
+  }
+
+  getShareUrl (item) {
+    if (item.stat.mount) {
+      return `dat://${item.stat.mount.key}`
+    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
+      return item.stat.metadata.href
+    } else {
+      return item.realUrl
+    }
+  }
+
+  setItemIcons (driveKind, item) {
+    item.icon = item.stat.isDirectory() ? 'folder' : 'file'
+    if (item.stat.isFile() && item.name.endsWith('.view')) {
+      item.icon = 'layer-group'
+    } else if (item.stat.isFile() && item.name.endsWith('.goto')) {
+      item.icon = 'external-link-alt'
+    } else {
+      item.subicon = getSubicon(driveKind, item)
     }
   }
 
@@ -479,7 +483,7 @@ export class ExplorerApp extends LitElement {
   }
 
   canShare (item) {
-    if (item.stat.mount) {
+    if (item.mount) {
       return true
     } else if (item.drive.url !== navigator.filesystem.url) {
       return true
@@ -487,26 +491,12 @@ export class ExplorerApp extends LitElement {
     return false
   }
 
-  getShareUrl (item) {
-    let url = ''
-    if (item.stat.mount) {
-      url = `dat://${item.stat.mount.key}`
-    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
-      url = item.stat.metadata.href
-    } else {
-      url = item.url
-    }
-    return url
-  }
-
   goto (item, newWindow = false) {
     var url
-    if (item.rootPath) {
-      url = navigator.filesystem.url + item.rootPath
-    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
+    if (item.name.endsWith('.goto') && item.stat.metadata.href) {
       url = item.stat.metadata.href
     } else {
-      url = joinPath(window.location.toString(), item.name)
+      url = joinPath(window.location.origin, item.path)
     }
     if (newWindow) window.open(url)
     else window.location = url
@@ -674,13 +664,13 @@ export class ExplorerApp extends LitElement {
     if (!this.currentDriveInfo.writable) return
 
     var drive = new DatArchive(this.currentDriveInfo.url)
-    const del = async (pathname, stat) => {
+    const del = async (path, stat) => {
       if (stat.mount && stat.mount.key) {
-        await drive.unmount(pathname)
+        await drive.unmount(path)
       } else if (stat.isDirectory()) {
-        await drive.rmdir(pathname, {recursive: true})
+        await drive.rmdir(path, {recursive: true})
       } else {
-        await drive.unlink(pathname)
+        await drive.unlink(path)
       }
     }
 
@@ -692,7 +682,7 @@ export class ExplorerApp extends LitElement {
 
         toast.create(`Deleting ${pluralize(this.selection.length, 'item')}...`)
         for (let sel of this.selection) {
-          await del(joinPath(this.realPathname, sel.name), sel.stat)
+          await del(sel.realPath, sel.stat)
         }
         toast.create(`Deleted ${pluralize(this.selection.length, 'item')}`, 'success')
       } else {

@@ -32,14 +32,14 @@ export class ContextualHelp extends LitElement {
 
   get targetDrive () {
     if (this.selection.length > 1) return undefined
-    if (this.selection.length === 1 && this.selection[0].mountInfo) return this.selection[0].mountInfo
+    if (this.selection.length === 1 && this.selection[0].mount) return this.selection[0].mount
     if (this.mountInfo) return this.mountInfo
     return this.driveInfo
   }
 
   get targetItemUrl () {
     if (this.selection.length === 1) {
-      return this.selection[0].url
+      return this.selection[0].shareUrl
     }
     return joinPath(this.targetDrive.url, this.realPathname)
   }

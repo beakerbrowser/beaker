@@ -12,7 +12,7 @@ export class FileGrid extends BaseFilesView {
   renderItem (item) {
     var cls = classMap({
       item: true,
-      mount: item.mountInfo,
+      mount: !!item.mount,
       folder: item.stat.isDirectory(),
       file: item.stat.isFile(),
       selected: this.selection.includes(item)
@@ -31,8 +31,8 @@ export class FileGrid extends BaseFilesView {
       >
         <span class="fas fa-fw fa-${item.icon}"></span>
         ${item.subicon ? html`<span class="subicon ${item.subicon}"></span>` : ''}
-        ${item.mountInfo ? html`<span class="mounticon fas fa-external-link-square-alt"></span>` : ''}
-        <div class="name">${this.showOrigin ? item.path : item.name}</div>
+        ${item.mount ? html`<span class="mounticon fas fa-external-link-square-alt"></span>` : ''}
+        <div class="name">${this.showOrigin ? item.realPath : item.name}</div>
         ${this.showOrigin ? html`<div class="author">${driveTitle}</div>` : ''}
       </div>
     `

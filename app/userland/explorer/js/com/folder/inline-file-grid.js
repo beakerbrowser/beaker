@@ -37,7 +37,7 @@ export class InlineFileGrid extends BaseFilesView {
         </div>
         <div class="header">
           <div>
-            <a class="name" href=${item.url}>${this.showOrigin ? item.path : item.name}</a>
+            <a class="name" href=${item.url}>${this.showOrigin ? item.realPath : item.name}</a>
           </div>
           ${this.showOrigin ? html`
             <div><a class="author" href=${item.drive.url} title=${driveTitle}>${driveTitle}</a></div>

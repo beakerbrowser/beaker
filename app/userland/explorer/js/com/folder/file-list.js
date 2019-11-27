@@ -22,7 +22,7 @@ export class FileList extends BaseFilesView {
   renderItem (item) {
     var cls = classMap({
       item: true,
-      mount: item.mountInfo,
+      mount: !!item.mount,
       folder: item.stat.isDirectory(),
       file: item.stat.isFile(),
       selected: this.selection.includes(item)
@@ -43,9 +43,9 @@ export class FileList extends BaseFilesView {
         <span class="icon">
           <span class="fas fa-fw fa-${item.icon} mainicon"></span>
           ${item.subicon ? html`<span class="fas fa-fw fa-${item.subicon} subicon"></span>` : ''}
-          ${item.mountInfo ? html`<span class="fas fa-fw fa-external-link-square-alt subicon"></span>` : ''}
+          ${item.mount ? html`<span class="fas fa-fw fa-external-link-square-alt subicon"></span>` : ''}
         </span>
-        <span class="name">${this.showOrigin ? item.path : item.name}</span>
+        <span class="name">${this.showOrigin ? item.realPath : item.name}</span>
         <span class="date">${this.dateFormatter.format(item.stat.ctime)} <span>at</span> ${this.timeFormatter.format(item.stat.ctime)}</span>
         <span class="size">${item.stat.size ? formatBytes(item.stat.size) : ''}</span>
       </div>

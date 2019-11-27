@@ -17,7 +17,7 @@ export function constructItems (app) {
       label: 'Copy share link',
       disabled: !app.canShare(sel),
       click: () => {
-        writeToClipboard(app.getShareUrl(sel))
+        writeToClipboard(sel.shareUrl)
         toast.create('Copied to clipboard')
       }
     })
@@ -25,11 +25,7 @@ export function constructItems (app) {
       icon: 'custom-path-icon',
       label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
       click: () => {
-        var path = sel.rootPath 
-          ? sel.rootPath
-          : app.selection[0]
-            ? joinPath(window.location.pathname, sel.name)
-            : window.location.pathname
+        var path = app.selection[0] ? sel.path : window.location.pathname
         writeToClipboard(path)
         toast.create('Copied to clipboard')
       }
@@ -43,7 +39,7 @@ export function constructItems (app) {
           disabled: !writable || !sel.stat.isFile(),
           click: () => {
             if (app.selection[0]) {
-              window.location = joinPath(window.location.toString(), sel.name) + '#edit'
+              window.location = joinPath(window.location.origin, sel.path) + '#edit'
             } else {
               window.location.hash = 'edit'
               window.location.reload()

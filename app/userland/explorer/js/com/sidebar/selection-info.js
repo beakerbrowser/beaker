@@ -31,19 +31,6 @@ export class SelectionInfo extends LitElement {
     return this // no shadow dom
   }
 
-  get currentDriveInfo () {
-    return this.mountInfo || this.driveInfo
-  }
-
-  getRealPathname (pathname) {
-    var slicePoint = this.mountInfo ? (this.mountInfo.mountPath.length + 1) : 0
-    return pathname.slice(slicePoint)
-  }
-
-  getRealUrl (pathname) {
-    return joinPath(this.currentDriveInfo.url, this.getRealPathname(pathname))
-  }
-
   // rendering
   // =
 
@@ -54,15 +41,13 @@ export class SelectionInfo extends LitElement {
       `
     }
     var sel = this.selection[0]
-    var selPathname = sel.rootPath || joinPath(location.pathname, sel.name)
-    var selRealUrl = this.getRealUrl(selPathname)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <section>
-        <h3>${selPathname}</h3>
+        <h3>${sel.path}</h3>
         ${this.renderSize()}
-        ${sel.mountInfo ? html`
-          <drive-info .driveInfo=${sel.mountInfo} user-url=${this.userUrl}></drive-info>
+        ${sel.mount ? html`
+          <drive-info .driveInfo=${sel.mount} user-url=${this.userUrl}></drive-info>
         ` : ''}
         ${!this.noPreview && sel.stat.isFile() ? html`
           <section>
