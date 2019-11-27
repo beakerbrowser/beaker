@@ -365,13 +365,17 @@ nav .help input {
 
 .header button {
   padding: 4px 6px;
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .header button.labeled-btn {
   padding: 5px 10px 5px 12px;
   border-radius: 12px;
   font-size: 10px;
+}
+
+.header button.active {
+  background: #eef;
 }
 
 .header .drag-hover,

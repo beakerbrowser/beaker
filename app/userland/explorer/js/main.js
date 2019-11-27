@@ -9,6 +9,7 @@ import * as shareMenu from './com/share-menu.js'
 import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 import { toSimpleItemGroups, getSubicon } from './lib/files.js'
 import { constructItems as constructContextMenuItems } from './lib/context-menu.js'
+import * as settingsMenu from './com/settings-menu.js'
 import { getDriveTitle, getGlobalSavedConfig, setGlobalSavedConfig, getSavedConfig, setSavedConfig, getVFCfg } from './lib/config.js'
 import { validateViewfile } from './lib/viewfile.js'
 import mainCSS from '../css/main.css.js'
@@ -28,10 +29,12 @@ const LOADING_STATES = {
 }
 
 export class ExplorerApp extends LitElement {
-  static get propertes () {
+  static get properties () {
     return {
       selection: {type: Array},
       renderMode: {type: String},
+      inlineMode: {type: Boolean},
+      sortMode: {type: String},
       hideNavLeft: {type: Boolean},
       hideNavRight: {type: Boolean}
     }
@@ -61,6 +64,7 @@ export class ExplorerApp extends LitElement {
     this.selection = []
     this.renderMode = undefined
     this.inlineMode = false
+    this.sortMode = undefined
     this.hideNavLeft = true
     this.hideNavRight = false
     
@@ -126,7 +130,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async attempt (task, fn) {
-    console.debug(task)
+    console.debug(task) // leave this in for live debugging
     try {
       return await fn()
     } catch (e) {
@@ -168,6 +172,7 @@ export class ExplorerApp extends LitElement {
     if (this.pathInfo.isDirectory()) {
       this.renderMode = getSavedConfig('render-mode', 'list')
       this.inlineMode = Boolean(getSavedConfig('inline-mode', false))
+      this.sortMode = getSavedConfig('sort-mode', 'name')
       if (!this.watchStream) {
         let currentDrive = new DatArchive(this.currentDriveInfo.url)
         this.watchStream = currentDrive.watch(this.realPathname)
@@ -184,6 +189,7 @@ export class ExplorerApp extends LitElement {
     } else if (location.pathname.endsWith('.view')) {
       this.renderMode = getSavedConfig('render-mode', getVFCfg(this.viewfileObj, 'renderMode', ['grid', 'list']) || 'list')
       this.inlineMode = Boolean(getSavedConfig('inline-mode', getVFCfg(this.viewfileObj, 'inline', [true, false]) || false))
+      this.sortMode = getSavedConfig('sort-mode', 'name') // TODO
     } else {
       this.renderMode = getSavedConfig('render-mode', 'default')
     }
@@ -283,8 +289,7 @@ export class ExplorerApp extends LitElement {
       this.setItemIcons(driveKind, item)
     }
     
-    items.sort((a, b) => a.name.localeCompare(b.name))
-
+    this.sortItems(items)
     this.items = items
   }
 
@@ -345,12 +350,26 @@ export class ExplorerApp extends LitElement {
     }
   }
 
+  sortItems (items) {
+    if (this.sortMode === 'name') {
+      items.sort((a, b) => a.name.localeCompare(b.name))
+    } else if (this.sortMode === 'name-reversed') {
+      items.sort((a, b) => b.name.localeCompare(a.name))
+    } else if (this.sortMode === 'newest') {
+      items.sort((a, b) => b.stat.ctime - a.stat.ctime)
+    } else if (this.sortMode === 'oldest') {
+      items.sort((a, b) => a.stat.ctime - b.stat.ctime)
+    } else if (this.sortMode === 'recently-changed') {
+      items.sort((a, b) => b.stat.mtime - a.stat.mtime)
+    }
+  }
+
   get renderModes () {
     if (this.pathInfo.isDirectory()) {
       return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
     } else {
       if (location.pathname.endsWith('.md') || location.pathname.endsWith('.goto')) {
-        return [['default', 'file', 'File'], ['raw', 'code', 'Raw File']]
+        return [['default', 'file', 'Rendered'], ['raw', 'code', 'Raw File']]
       }
       if (location.pathname.endsWith('.view')) {
         return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
@@ -438,9 +457,6 @@ export class ExplorerApp extends LitElement {
   }
 
   renderHeader () {
-    const renderModes = this.renderModes
-    const isViewfile = this.pathInfo.isFile() && location.pathname.endsWith('.view')
-    const isFolderLike = this.pathInfo.isDirectory() || isViewfile
     return html`
       <div class="header">
         <path-ancestry
@@ -452,22 +468,9 @@ export class ExplorerApp extends LitElement {
           <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
         ` : ''}
         <span class="spacer"></span>
-        ${renderModes.length > 1 ? html`
-          <span class="btn-group">
-            ${renderModes.map(([id, icon, label]) => html`
-              <button
-                class=${id == this.renderMode ? 'pressed' : ''}
-                @click=${e => this.onChangeRenderMode(e, id)}
-                title="Change the view to: ${label}"
-              ><span class="fas fa-${icon}"></span></button>
-            `)}
-          </span>
-        ` : ''}
-        ${isFolderLike ? html`
-          <button title="Toggle inline rendering of the files" class=${this.inlineMode ? 'pressed' : ''} @click=${this.onToggleInlineMode}>
-            <span class="fas fa-eye"></span>
-          </button>
-        ` : ''}
+        <button class="transparent" @click=${this.onClickSettings}>
+          <span class="fas fa-cog"></span> Settings
+        </button>
         <button class="primary labeled-btn" @click=${this.onClickActions}>
           Actions${this.selection.length ? ` (${this.selection.length} ${pluralize(this.selection.length, 'item')})` : ''}
           <span class="fas fa-fw fa-caret-down"></span>
@@ -644,6 +647,13 @@ export class ExplorerApp extends LitElement {
     this.requestUpdate()
   }
 
+  onChangeSortMode (e) {
+    this.sortMode = e.target.value
+    this.sortItems(this.items)
+    setSavedConfig('sort-mode', this.sortMode)
+    this.requestUpdate()
+  }
+
   toggleNav (side) {
     if (side === 'left') {
       this.hideNavLeft = !this.hideNavLeft
@@ -660,6 +670,16 @@ export class ExplorerApp extends LitElement {
     e.stopPropagation()
     let rect = e.currentTarget.getClientRects()[0]
     this.onShowMenu({detail: {x: rect.right, y: rect.bottom, right: true}})
+  }
+
+  async onClickSettings (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    let el = e.currentTarget
+    let rect = el.getClientRects()[0]
+    el.classList.add('active')
+    await settingsMenu.create(this, {x: (rect.left + rect.right) / 2, y: rect.bottom})
+    el.classList.remove('active')
   }
 
   async onNewDrive (e) {

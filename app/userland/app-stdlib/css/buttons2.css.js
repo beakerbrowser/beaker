@@ -88,7 +88,7 @@ button.transparent {
 }
 
 button.transparent:hover {
-  background: #f5f5f5;
+  background: #f5f5fa;
 }
 
 button.transparent.pressed {
