@@ -30,6 +30,7 @@ export class ViewfileInfo extends LitElement {
   // =
 
   render () {
+    if (!this.viewfileObj) return ''
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <section>

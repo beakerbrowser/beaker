@@ -21,6 +21,12 @@ import './com/sidebar/viewfile-info.js'
 import './com/sidebar/selection-info.js'
 import './com/sidebar/contextual-help.js'
 
+const LOADING_STATES = {
+  INITIAL: 0,
+  CONTENT: 1,
+  LOADED: 2
+}
+
 export class ExplorerApp extends LitElement {
   static get propertes () {
     return {
@@ -37,21 +43,27 @@ export class ExplorerApp extends LitElement {
 
   constructor () {
     super()
+
+    // location information
     this.user = undefined
     this.driveInfo = undefined
     this.pathInfo = undefined
     this.mountInfo = undefined
-    this.isNotFound = false
     this.pathAncestry = []
     this.items = []
-    this.selection = []
     this.viewfileObj = undefined
-    this.renderMode = undefined
-    this.inlineMode = false
     this.driveTitle = undefined
     this.mountTitle = undefined
+    
+    // UI state
+    this.loadingState = LOADING_STATES.INITIAL
+    this.errorState = undefined
+    this.selection = []
+    this.renderMode = undefined
+    this.inlineMode = false
     this.hideNavLeft = true
     this.hideNavRight = false
+    
     this.load()
   }
 
@@ -102,30 +114,54 @@ export class ExplorerApp extends LitElement {
     return location.pathname.endsWith('.view')
   }
 
+  updated () {
+    if (this.loadingState === LOADING_STATES.INITIAL) {
+      setTimeout(() => {
+        try {
+          // fade in the loading view so that it only renders if loading is taking time
+          this.shadowRoot.querySelector('.loading-view').classList.add('visible')
+        } catch (e) {}
+      }, 1)
+    }
+  }
+
+  async attempt (task, fn) {
+    console.debug(task)
+    try {
+      return await fn()
+    } catch (e) {
+      this.errorState = {task, error: e}
+      this.requestUpdate()
+      if (e.name === 'TimeoutError') {
+        return this.attempt(task, fn)
+      } else {
+        throw e
+      }
+    }
+  }
+
   async load () {
     if (!this.user) {
       this.user = (await navigator.session.get()).profile
     }
 
-    // read drive information
+    // read location information
     var drive = new DatArchive(location)
-    this.driveInfo = await drive.getInfo()
-
-    // read location content
     try {
-      this.pathInfo = await drive.stat(location.pathname)
+      this.driveInfo = await this.attempt(`Reading drive information (${location.origin})`, () => drive.getInfo())
+      this.driveTitle = getDriveTitle(this.driveInfo)
+      this.mountTitle = this.mountInfo ? getDriveTitle(this.mountInfo) : undefined
+      document.title = this.filename ? `${this.driveTitle} / ${this.filename}` : this.driveTitle
+
+      this.pathInfo = await this.attempt(`Reading path information (${location.pathname})`, () => drive.stat(location.pathname))
       await this.readPathAncestry()
-      if (this.pathInfo.isDirectory()) {
-        await this.readDirectory(drive)
-        if (this.items) {
-          this.items.sort((a, b) => a.name.localeCompare(b.name))
-        }
-      } else if (location.pathname.endsWith('.view')) {
-        await this.readViewfile(drive)
-      }
     } catch (e) {
-      console.log(e)
-      this.isNotFound = true
+      if (e.name === 'NotFoundError') {
+        this.pathInfo = {isFile: ()=>false, isDirectory: ()=>false}
+        this.loadingState = LOADING_STATES.LOADED
+        this.requestUpdate()
+        return
+      }
     }
 
     // view config
@@ -154,14 +190,26 @@ export class ExplorerApp extends LitElement {
     this.hideNavLeft = Boolean(getGlobalSavedConfig('hide-nav-left', true))
     this.hideNavRight = Boolean(getGlobalSavedConfig('hide-nav-right', false))
 
+    // update loading state
+    this.loadingState = LOADING_STATES.CONTENT
+    this.requestUpdate()
+    // return
+
+    // read location content
+    try {
+      if (this.pathInfo.isDirectory()) {
+        await this.readDirectory(drive)
+      } else if (location.pathname.endsWith('.view')) {
+        await this.readViewfile(drive)
+      }
+    } catch (e) {
+      console.log(e)
+    }
+
     if (location.hash === '#edit') {
       navigator.updateSidebar('beaker://editor', {setTarget: window.location.toString()})
       history.replaceState(undefined, document.title, window.location.toString().split('#')[0])
     }
-
-    this.driveTitle = getDriveTitle(this.driveInfo)
-    this.mountTitle = this.mountInfo ? getDriveTitle(this.mountInfo) : undefined
-    document.title = this.filename ? `${this.driveTitle} / ${this.filename}` : this.driveTitle
 
     console.log({
       driveInfo: this.driveInfo,
@@ -171,7 +219,42 @@ export class ExplorerApp extends LitElement {
       itemGroups: this.itemGroups
     })
 
+    this.loadingState = LOADING_STATES.LOADED
     this.requestUpdate()
+  }
+
+  async readPathAncestry () {
+    var ancestry = []
+    var drive = new DatArchive(location)
+    var pathParts = location.pathname.split('/').filter(Boolean)
+    while (pathParts.length) {
+      let name = pathParts[pathParts.length - 1]
+      let path = '/' + pathParts.join('/')
+      let stat = undefined
+      let mount = undefined
+      if (path === location.pathname) {
+        stat = this.pathInfo
+      } else {
+        stat = await this.attempt(
+          `Reading path information (${path})`,
+          () => drive.stat(path).catch(e => undefined)
+        )
+      }
+      if (stat.mount) {
+        mount = await this.attempt(
+          `Reading drive information (${stat.mount.key}) for parent mount at ${path}`,
+          () => (new DatArchive(stat.mount.key)).getInfo()
+        )
+      }
+      ancestry.unshift({name, path, stat, mount})
+      if (!this.mountInfo && mount) {
+        // record the mount info for the "closest" mount
+        this.mountInfo = mount
+        this.mountInfo.mountPath = pathParts.join('/')
+      }
+      pathParts.pop()
+    }
+    this.pathAncestry = ancestry
   }
 
   async readDirectory (drive) {
@@ -179,7 +262,10 @@ export class ExplorerApp extends LitElement {
     if (this.currentDriveInfo.url === navigator.filesystem.url) driveKind = 'root'
     if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
 
-    var items = await drive.readdir(location.pathname, {stat: true})
+    var items = await this.attempt(
+      `Reading directory (${location.pathname})`,
+      () => drive.readdir(location.pathname, {stat: true})
+    )
 
     for (let item of items) {
       item.drive = this.currentDriveInfo
@@ -188,11 +274,16 @@ export class ExplorerApp extends LitElement {
       item.realPath = this.getRealPathname(item.path)
       item.realUrl = joinPath(item.drive.url, item.realPath)
       if (item.stat.mount) {
-        item.mount = await (new DatArchive(item.stat.mount.key)).getInfo()   
+        item.mount = await this.attempt(
+          `Reading drive information (${item.stat.mount.key}) for mounted drive at ${item.path}`,
+          () => (new DatArchive(item.stat.mount.key)).getInfo()
+        )
       }
       item.shareUrl = this.getShareUrl(item)
       this.setItemIcons(driveKind, item)
     }
+    
+    items.sort((a, b) => a.name.localeCompare(b.name))
 
     this.items = items
   }
@@ -202,7 +293,10 @@ export class ExplorerApp extends LitElement {
     this.viewfileObj = JSON.parse(viewFile)
     validateViewfile(this.viewfileObj)
 
-    var items = await navigator.filesystem.query(this.viewfileObj.query)
+    var items = await this.attempt(
+      `Running .view query (${location.pathname})`,
+      () => navigator.filesystem.query(this.viewfileObj.query)
+    )
 
     // massage the items to fit same form as `readDirectory()`
     items.forEach(item => {
@@ -251,26 +345,6 @@ export class ExplorerApp extends LitElement {
     }
   }
 
-  async readPathAncestry () {
-    var ancestry = []
-    var drive = new DatArchive(location)
-    var pathParts = location.pathname.split('/').filter(Boolean)
-    while (pathParts.length) {
-      let name = pathParts[pathParts.length - 1]
-      let path = '/' + pathParts.join('/')
-      let stat = await drive.stat(pathParts.join('/')).catch(e => null)
-      let mount = stat.mount ? await (new DatArchive(stat.mount.key)).getInfo() : undefined
-      ancestry.unshift({name, path, stat, mount})
-      if (!this.mountInfo && mount) {
-        // record the mount info for the "closest" mount
-        this.mountInfo = mount
-        this.mountInfo.mountPath = pathParts.join('/')
-      }
-      pathParts.pop()
-    }
-    this.pathAncestry = ancestry
-  }
-
   get renderModes () {
     if (this.pathInfo.isDirectory()) {
       return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
@@ -293,8 +367,6 @@ export class ExplorerApp extends LitElement {
   // =
 
   render () {
-    if (!this.driveInfo) return html``
-
     // TODO: reimplement files exporting -prf
     // var selectionIsFolder = this.selection[0] ? this.selection[0].stat.isDirectory() : this.pathInfo.isDirectory()
     // var selectionUrl = this.getRealUrl(this.selection[0] ? joinPath(this.realPathname, this.selection[0].name) : this.realPathname)
@@ -329,15 +401,39 @@ export class ExplorerApp extends LitElement {
         @toggle-editor=${this.onToggleEditor}
       >
         <div class="nav-toggle right" @click=${e => this.toggleNav('right')}><span class="fas fa-caret-${this.hideNavRight ? 'left' : 'right'}"></span></div>
-        ${this.pathInfo ? html`
-          <main>
-            ${this.renderHeader()}
-            ${this.renderView()}
-          </main>
-          ${this.renderRightNav()}
-        ` : undefined}
+        ${this.loadingState === LOADING_STATES.INITIAL
+          ? this.renderInitialLoading()
+          : html`
+            <main>
+              ${this.renderHeader()}
+              ${this.loadingState === LOADING_STATES.CONTENT ? html`
+                <div class="loading-notice">Loading...</div>
+              ` : ''}
+              ${this.renderErrorState()}
+              ${this.renderView()}
+            </main>
+            ${this.renderRightNav()}
+          `}
       </div>
       <input type="file" id="files-picker" multiple @change=${this.onChangeImportFiles} />
+    `
+  }
+
+  renderInitialLoading () {
+    var errorView = this.renderErrorState()
+    if (errorView) return errorView
+    return html`
+      <div class="loading-view">
+        <div>
+          <span class="spinner"></span> Searching the network...
+        </div>
+        ${this.errorState && this.errorState.error.name === 'TimeoutError' ? html`
+          <div style="margin-top: 10px; margin-left: 27px; font-size: 12px; opacity: 0.75;">
+            We're having some trouble ${this.errorState.task.toLowerCase()}.<br>
+            It may not be available on the network.
+          </div>
+        ` : ''}
+      </div>
     `
   }
 
@@ -352,7 +448,7 @@ export class ExplorerApp extends LitElement {
           .driveInfo=${this.driveInfo}
           .pathAncestry=${this.pathAncestry}
         ></path-ancestry>
-        ${this.pathInfo && this.pathInfo.isFile() ? html`
+        ${this.pathInfo.isFile() ? html`
           <span class="date">${timeDifference(this.pathInfo.mtime, true, 'ago')}</span>
         ` : ''}
         <span class="spacer"></span>
@@ -381,6 +477,11 @@ export class ExplorerApp extends LitElement {
   }
 
   renderView () {
+    if (this.items.length === 0 && (this.loadingState === LOADING_STATES.CONTENT || this.errorState)) {
+      // if there are no items, the views will say "this folder is empty"
+      // that's inaccurate if we're in a loading or error state, so don't do that
+      return ''
+    }
     const isViewfile = this.pathInfo.isFile() && location.pathname.endsWith('.view')
     if (isViewfile) {
       return html`
@@ -464,6 +565,30 @@ export class ExplorerApp extends LitElement {
           .selection=${this.selection}
         ></contextual-help>
       </nav>
+    `
+  }
+
+  renderErrorState () {
+    if (!this.errorState || this.errorState.error.name === 'TimeoutError') return undefined
+    if (this.errorState.error.name === 'NotFoundError') {
+      return html`
+        <div class="error-view">
+          <div class="error-title"><span class="fas fa-fw fa-exclamation-triangle"></span> File or folder not found</div>
+          <div class="error-task">Check the location and try again:</div>
+          <pre>${location.pathname}</pre>
+        </div>
+      `
+
+    }
+    return html`
+      <div class="error-view">
+        <div class="error-title"><span class="fas fa-fw fa-exclamation-triangle"></span> Something has gone wrong</div>
+        <div class="error-task">While ${this.errorState.task.toLowerCase()}</div>
+        <details>
+          <summary>${this.errorState.error.toString().split(':').slice(1).join(':').trim()}</summary>
+          <pre>${this.errorState.error.stack}</pre>
+        </details>
+      </div>
     `
   }
 

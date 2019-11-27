@@ -3,12 +3,14 @@ import buttonsCSS from 'beaker://app-stdlib/css/buttons2.css.js'
 import inputsCSS from 'beaker://app-stdlib/css/inputs.css.js'
 import tooltipCSS from 'beaker://app-stdlib/css/tooltip.css.js'
 import famodCSS from 'beaker://app-stdlib/css/fa-mod.css.js'
+import spinnerCSS from 'beaker://app-stdlib/css/com/spinner.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
 ${inputsCSS}
 ${tooltipCSS}
 ${famodCSS}
+${spinnerCSS}
 
 :host {
   --bg-color: #f1f1f6;
@@ -65,10 +67,78 @@ table {
 
 main {
   margin: 0px 370px 0px 300px;
+  position: relative;
 }
 
 .hide-nav-left main { margin-left: 16px; }
 .hide-nav-right main { margin-right: 16px; }
+
+.loading-view {
+  background: var(--bg-color--light);
+  padding: 40px;
+  margin: 20px;
+  border-radius: 8px;
+  color: #667;
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.loading-view > div {
+  display: flex;
+  align-items: center;
+}
+
+.loading-view.visible {
+  opacity: 1;
+}
+
+.loading-view .spinner {
+  margin-right: 10px;
+  color: #778;
+}
+
+.loading-notice {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  z-index: 10;
+  padding: 5px 10px;
+  background: #fffa;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 3px #0002;
+}
+
+.error-view {
+  background: #fee;
+  padding: 40px;
+  margin: 20px;
+  border-radius: 8px;
+  color: #c55;
+  font-size: 16px;
+  line-height: 32px;
+}
+
+main .error-view {
+  margin: 4px 0;
+}
+
+.error-view .error-title {
+  font-size: 27px;
+  line-height: 50px;
+}
+
+.error-view summary {
+  font-weight: bold;
+}
+
+.error-view pre {
+  background: #fffa;
+  line-height: 1;
+  padding: 10px;
+  border-radius: 4px;
+}
 
 .nav-toggle {
   position: fixed;
