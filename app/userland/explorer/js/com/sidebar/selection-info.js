@@ -2,7 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 import { joinPath, toNiceUrl } from 'beaker://app-stdlib/js/strings.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
-import './file-display.js'
+import '../file/file-display.js'
 
 export class SelectionInfo extends LitElement {
   static get properties () {

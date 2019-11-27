@@ -1,8 +1,8 @@
 import { BaseFilesView } from './base-files-view.js'
 import { html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import baseCSS from '../../css/com/base-files-view.css.js'
-import gridCSS from '../../css/com/file-grid.css.js'
+import baseCSS from '../../../css/com/folder/base-files-view.css.js'
+import gridCSS from '../../../css/com/folder/file-grid.css.js'
 
 export class FileGrid extends BaseFilesView {
   static get styles () {

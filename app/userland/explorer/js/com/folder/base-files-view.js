@@ -2,9 +2,9 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { findParent, emit } from 'beaker://app-stdlib/js/dom.js'
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
-import { handleDragDrop } from '../lib/drag-drop.js'
+import { handleDragDrop } from '../../lib/drag-drop.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import mainCSS from '../../css/com/file-grid.css.js'
+import mainCSS from '../../../css/com/folder/file-grid.css.js'
 
 /**
  * NOTES ON DRAG & DROP EVENT BEHAVIORS

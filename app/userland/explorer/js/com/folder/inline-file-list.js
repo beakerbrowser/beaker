@@ -2,9 +2,9 @@ import { BaseFilesView } from './base-files-view.js'
 import { html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { timeDifference } from 'beaker://app-stdlib/js/time.js'
-import './file-display.js'
-import baseCSS from '../../css/com/base-files-view.css.js'
-import inlineListCSS from '../../css/com/inline-file-list.css.js'
+import '../file/file-display.js'
+import baseCSS from '../../../css/com/folder/base-files-view.css.js'
+import inlineListCSS from '../../../css/com/folder/inline-file-list.css.js'
 
 export class InlineFileList extends BaseFilesView {
   static get styles () {
@@ -18,7 +18,6 @@ export class InlineFileList extends BaseFilesView {
       selected: this.selection.includes(item)
     })
     var driveTitle = item.drive.title || 'Untitled'
-    var folder = item.path.split('/').slice(0, -1).join('/') || '/'
     return html`
       <div
         class=${cls}

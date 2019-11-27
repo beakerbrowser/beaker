@@ -1,6 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { joinPath, toNiceUrl } from 'beaker://app-stdlib/js/strings.js'
-import './file-display.js'
+import '../file/file-display.js'
 
 export class ViewfileInfo extends LitElement {
   static get properties () {

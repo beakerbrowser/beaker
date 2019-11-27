@@ -3,7 +3,7 @@ import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directive
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import MarkdownIt from 'beaker://app-stdlib/vendor/markdown-it.js'
-import css from '../../css/com/file-display.css.js'
+import css from '../../../css/com/file/file-display.css.js'
 
 const md = MarkdownIt({
   html: false, // Enable HTML tags in source

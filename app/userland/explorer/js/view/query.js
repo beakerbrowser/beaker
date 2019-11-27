@@ -1,7 +1,5 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import css from '../../css/view/file.css.js'
-import '../com/file-display.js'
-import '../com/viewfile-query.js'
+import '../com/file/file-display.js'
 import '../com/social-signals.js'
 import 'beaker://app-stdlib/js/com/comments/thread.js'
 
@@ -19,10 +17,6 @@ export class QueryView extends LitElement {
       realUrl: {type: String, attribute: 'real-url'},
       realPathname: {type: String, attribute: 'real-pathname'}
     }
-  }
-
-  static get styles () {
-    return css
   }
 
   constructor () {

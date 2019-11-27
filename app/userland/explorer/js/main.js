@@ -14,10 +14,10 @@ import './view/file.js'
 import './view/folder.js'
 import './view/query.js'
 import './com/path-ancestry.js'
-import './com/drive-info.js'
-import './com/viewfile-info.js'
-import './com/selection-info.js'
-import './com/contextual-help.js'
+import './com/sidebar/drive-info.js'
+import './com/sidebar/viewfile-info.js'
+import './com/sidebar/selection-info.js'
+import './com/sidebar/contextual-help.js'
 
 export class ExplorerApp extends LitElement {
   static get propertes () {
