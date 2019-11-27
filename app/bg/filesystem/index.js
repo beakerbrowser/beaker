@@ -108,9 +108,9 @@ export async function addToLibrary (url, title) {
  * @param {string} ext
  * @returns {Promise<string>}
  */
-export async function getAvailableName (containingPath, basename, ext = '') {
+export async function getAvailableName (containingPath, basename, ext = undefined) {
   for (let i = 1; i < 1e9; i++) {
-    let name = ((i === 1) ? basename : `${basename}-${i}`) + `.${ext}`
+    let name = ((i === 1) ? basename : `${basename}-${i}`) + (ext ? `.${ext}` : '')
     let st = await stat(joinPath(containingPath, name))
     if (!st) return name
   }
