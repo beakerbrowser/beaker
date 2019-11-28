@@ -31,7 +31,7 @@ export class InlineFileGrid extends BaseFilesView {
         <div class="content">
           <file-display
             drive-url=${item.drive.url}
-            pathname=${item.path}
+            pathname=${item.realPath}
             .info=${item}
           ></file-display>
         </div>
