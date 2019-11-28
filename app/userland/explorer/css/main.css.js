@@ -349,16 +349,6 @@ nav .help input {
   color: #99a;
 }
 
-.header .author {
-  font-weight: 500;
-  color: inherit;
-}
-
-.header .name {
-  margin-right: 5px;
-  color: inherit;
-}
-
 .header .spacer {
   flex: 1;
 }
@@ -366,6 +356,7 @@ nav .help input {
 .header button {
   padding: 4px 6px;
   font-size: 10px;
+  white-space: nowrap;
 }
 
 .header button.labeled-btn {
@@ -387,6 +378,35 @@ nav .help input {
 .header .drag-hover * {
   pointer-events: none;
 }
+
+.header path-ancestry {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  align-items: baseline;
+}
+
+.header path-ancestry::-webkit-scrollbar {
+  display: none;
+}
+
+.header path-ancestry a {
+  white-space: nowrap;
+}
+
+.header path-ancestry .author {
+  font-weight: 500;
+  color: inherit;
+}
+
+.header path-ancestry .name {
+  color: inherit;
+}
+
+.header path-ancestry .fa-angle-right {
+  margin: 0 2px;
+}
+
 
 #files-picker {
   display: none;
