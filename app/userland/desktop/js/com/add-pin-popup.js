@@ -8,7 +8,7 @@ import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { toNiceUrl, joinPath } from 'beaker://app-stdlib/js/strings.js'
 import { toSemanticItemGroups, getSubicon } from 'beaker://explorer/js/lib/files.js'
-import 'beaker://explorer/js/com/inline-file-grid.js'
+import 'beaker://explorer/js/com/folder/inline-file-grid.js'
 
 // exported api
 // =
@@ -201,8 +201,10 @@ export class AddPinPopup extends BasePopup {
       item.drive = driveInfo
       item.path = joinPath(this.explorerPath, item.name)
       item.url = joinPath(navigator.filesystem.url, item.path)
+      item.realPath = item.path
+      item.realUrl = joinPath(item.drive.url, item.realPath)
       if (item.stat.mount && item.stat.mount.key) {
-        item.mountInfo = await (new DatArchive(item.stat.mount.key)).getInfo()
+        item.mount = await (new DatArchive(item.stat.mount.key)).getInfo()
       }
       item.subicon = getSubicon('root', item)
     }
