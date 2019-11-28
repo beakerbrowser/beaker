@@ -17,6 +17,11 @@ export function create (app, {x, y}) {
     app.onChangeSortMode(e)
     this.requestUpdate()
   }
+
+  function onApplyViewSettingsGlobally (e) {
+    app.onApplyViewSettingsGlobally(e)
+    this.requestUpdate()
+  }
   
   const renderModes = app.renderModes
   const isViewfile = app.pathInfo.isFile() && location.pathname.endsWith('.view')
@@ -60,7 +65,7 @@ export function create (app, {x, y}) {
                 ${sortModeOpt('recently-changed', 'recently changed')}
               </select>
             </div>
-            <div class="btn bottom-btn">
+            <div class="btn bottom-btn" @click=${onApplyViewSettingsGlobally}>
               Apply as default view settings
             </div>
           ` : ''}

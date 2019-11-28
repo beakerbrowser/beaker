@@ -654,6 +654,13 @@ export class ExplorerApp extends LitElement {
     this.requestUpdate()
   }
 
+  onApplyViewSettingsGlobally (e) {
+    setGlobalSavedConfig('render-mode', this.renderMode)
+    setGlobalSavedConfig('inline-mode', this.inlineMode ? '1' : '')
+    setGlobalSavedConfig('sort-mode', this.sortMode)
+    toast.create('Default view settings updated')
+  }
+
   toggleNav (side) {
     if (side === 'left') {
       this.hideNavLeft = !this.hideNavLeft
