@@ -7,6 +7,7 @@ import { fromEventStream } from '../../bg/web-apis/fg/event-target'
 import './win32'
 import './tabs'
 import './navbar'
+import './sidebar-resizer'
 import './resize-hackfix'
 
 // setup
@@ -97,6 +98,7 @@ class ShellWindowUI extends LitElement {
     this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
     if (this.activeTab) {
       this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
+      this.shadowRoot.querySelector('shell-window-sidebar-resizer').requestUpdate()
     }
   }
 
@@ -113,6 +115,10 @@ class ShellWindowUI extends LitElement {
         ?is-update-available=${this.isUpdateAvailable}
         num-watchlist-notifications="${this.numWatchlistNotifications}"
       ></shell-window-navbar>
+      <shell-window-sidebar-resizer
+        .activeTabIndex=${this.activeTabIndex}
+        .activeTab=${this.activeTab}
+      ></shell-window-sidebar-resizer>
     `
   }
 

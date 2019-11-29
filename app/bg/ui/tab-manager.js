@@ -24,6 +24,7 @@ import * as windowMenu from './window-menu'
 import { getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
+import { clamp } from '../../lib/math'
 import { findWebContentsParentWindow } from '../lib/electron'
 import { findImageBounds } from '../lib/image'
 import * as sitedataDb from '../dbs/sitedata'
@@ -101,6 +102,7 @@ const STATE_VARS = [
   'isAudioMuted',
   'isCurrentlyAudible',
   'isSidebarActive',
+  'sidebarWidth',
   'isInpageFindActive',
   'currentInpageFindString',
   'currentInpageFindResults',
@@ -155,6 +157,7 @@ class Tab {
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
     this.isSidebarActive = false // is the sidebar open?
+    this.sidebarWidth = undefined // what is the current sidebar width?
     this.liveReloadEvents = null // live-reload event stream
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
@@ -317,18 +320,24 @@ class Tab {
     this.browserView.webContents.loadURL(url, opts)
   }
 
-  getBounds () {
-    const win = this.browserWindow
+  calculateBounds (windowBounds) {
     var x = 0
-    var {width, height} = win.getContentBounds()
+    var {width, height} = windowBounds
     if (this.isSidebarActive) {
-      x = width = Math.floor(width / 2) // sidebar takes left half the screen
+      // sidebar takes left side of the screen
+      x = (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
+      width -= (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
     }
     return {x, y: Y_POSITION, width, height: height - Y_POSITION}
   }
 
   resize () {
-    this.browserView.setBounds(this.getBounds())
+    var {width, height} = this.browserWindow.getContentBounds()
+    if (this.isSidebarActive && width < this.sidebarWidth + 100) {
+      // shrink the sidebar to ensure the content stays visible
+      this.setSidebarWidth(width - 100)
+    }
+    this.browserView.setBounds(this.calculateBounds({width, height}))
     prompts.reposition(this.browserWindow)
   }
 
@@ -340,7 +349,7 @@ class Tab {
     prompts.show(this.browserView)
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
-    sidebars.show(this.browserView)
+    sidebars.show(this)
 
     this.resize()
     if (this.previouslyFocusedWebcontents) {
@@ -369,7 +378,7 @@ class Tab {
     prompts.hide(this.browserView)
     permPrompt.hide(this.browserView)
     modals.hide(this.browserView)
-    sidebars.hide(this.browserView)
+    sidebars.hide(this)
     this.isActive = false
   }
 
@@ -409,10 +418,11 @@ class Tab {
   async toggleSidebar (panel) {
     if (!this.isSidebarActive) {
       // create sidebar
-      let v = sidebars.create(this.browserView)
+      let v = sidebars.create(this)
       v.webContents.loadURL(panel)
       v.webContents.on('did-finish-load', () => this.updateSidebar())
-      if (this.isActive) sidebars.show(this.browserView)
+      this.sidebarWidth = clamp((this.browserWindow.getContentBounds().width / 2)|0, 100, 800)
+      if (this.isActive) sidebars.show(this)
       this.isSidebarActive = true
     } else {
       if (panel) {
@@ -421,7 +431,7 @@ class Tab {
         let v = sidebars.get(this)
         if (v) {
           if (toOrigin(v.webContents.getURL()) === toOrigin(panel)) {
-            sidebars.close(this.browserView)
+            sidebars.close(this)
             this.isSidebarActive = false
           } else {
             v.webContents.loadURL(panel)
@@ -429,7 +439,7 @@ class Tab {
           }
         }
       } else {
-        sidebars.close(this.browserView)
+        sidebars.close(this)
         this.isSidebarActive = false
       }
     }
@@ -458,6 +468,15 @@ class Tab {
   async executeInSidebar (js) {
     var v = sidebars.get(this)
     if (v) return v.webContents.executeJavaScript(js)
+  }
+
+  setSidebarWidth (v) {
+    if (this.isSidebarActive) {
+      this.sidebarWidth = clamp(v|0, 100, this.browserWindow.getContentBounds().width - 100)
+      this.resize()
+      sidebars.repositionOne(this)
+      this.emitUpdateState({sidebarWidth: this.sidebarWidth})
+    }
   }
 
   async captureScreenshot () {
@@ -774,9 +793,9 @@ class Tab {
   // events
   // =
 
-  emitUpdateState () {
+  emitUpdateState (state = undefined) {
     if (this.isHidden) return
-    emitUpdateState(this.browserWindow, this)
+    emitUpdateState(this.browserWindow, this, state)
   }
 
   onDidStartLoading (e) {
@@ -1355,14 +1374,14 @@ export function emitReplaceState (win) {
   win.emit('custom-pages-updated', takeSnapshot(win))
 }
 
-export function emitUpdateState (win, tab) {
+export function emitUpdateState (win, tab, state = undefined) {
   win = getTopWindow(win)
   var index = typeof tab === 'number' ? tab : getAll(win).indexOf(tab)
   if (index === -1) {
     console.warn('WARNING: attempted to update state of a tab not on the window')
     return
   }
-  var state = getByIndex(win, index).state
+  state = state || getByIndex(win, index).state
   emit(win, 'update-state', {index, state})
   win.emit('custom-pages-updated', takeSnapshot(win))
 }

@@ -34,6 +34,7 @@ export default {
   toggleLiveReloading: 'promise',
   setWindowDimensions: 'promise',
   setWindowDragModeEnabled: 'promise',
+  setSidebarResizeModeEnabled: 'promise',
   moveWindow: 'promise',
   maximizeWindow: 'promise',
   showOpenDialog: 'promise',

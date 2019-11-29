@@ -16,6 +16,8 @@ import { findWebContentsParentWindow } from '../../lib/electron'
 // =
 
 export const SIDEBAR_Y = 76
+export const SIDEBAR_EDGE_PADDING = 6
+export const HALF_SIDEBAR_EDGE_PADDING = SIDEBAR_EDGE_PADDING / 2
 var views = {} // map of {[tab.id] => BrowserView}
 
 // exported api
@@ -38,8 +40,14 @@ export function reposition (parentWindow) {
   // reposition all under this window
   for (let tab of tabManager.getAll(parentWindow)) {
     if (tab.id in views) {
-      setBounds(views[tab.id], parentWindow)
+      setBounds(views[tab.id], tab)
     }
+  }
+}
+
+export function repositionOne (tab) {
+  if (tab.id in views) {
+    setBounds(views[tab.id], tab)
   }
 }
 
@@ -48,8 +56,6 @@ export function create (tab) {
   if (tab.id in views) {
     return
   }
-  var win = tabManager.findContainingWindow(tab)
-  if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
 
   // create the view
   var view = views[tab.id] = new BrowserView({
@@ -74,28 +80,20 @@ export function findContainingWindow (sidebarView) {
 
 export function show (tab) {
   if (tab.id in views) {
-    var win = tabManager.findContainingWindow(tab)
-    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
-    if (win) {
-      win.addBrowserView(views[tab.id])
-      setBounds(views[tab.id], win)
-    }
+    tab.browserWindow.addBrowserView(views[tab.id])
+    setBounds(views[tab.id], tab)
   }
 }
 
 export function hide (tab) {
   if (tab.id in views) {
-    var win = tabManager.findContainingWindow(tab)
-    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
-    if (win) win.removeBrowserView(views[tab.id])
+    tab.browserWindow.removeBrowserView(views[tab.id])
   }
 }
 
 export function close (tab) {
   if (tab.id in views) {
-    var win = tabManager.findContainingWindow(tab)
-    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
-    win.removeBrowserView(views[tab.id])
+    tab.browserWindow.removeBrowserView(views[tab.id])
     views[tab.id].destroy()
     delete views[tab.id]
   }
@@ -104,12 +102,12 @@ export function close (tab) {
 // internal methods
 // =
 
-function setBounds (sidebarView, parentWindow) {
-  var parentBounds = parentWindow.getContentBounds()
+function setBounds (sidebarView, tab) {
+  var parentBounds = tab.browserWindow.getContentBounds()
   sidebarView.setBounds({
     x: 0,
     y: SIDEBAR_Y,
-    width: Math.floor(parentBounds.width / 2),
+    width: tab.sidebarWidth - HALF_SIDEBAR_EDGE_PADDING,
     height: parentBounds.height - SIDEBAR_Y
   })
 }

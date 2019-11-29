@@ -339,6 +339,7 @@ nav .help input {
   background: #fff;
   padding: 5px 0 5px 5px;
   user-select: none;
+  white-space: nowrap;
 }
 
 .header > *:not(:last-child) {
@@ -391,7 +392,6 @@ nav .help input {
 }
 
 .header path-ancestry a {
-  white-space: nowrap;
 }
 
 .header path-ancestry .author {

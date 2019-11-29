@@ -161,6 +161,7 @@ export const WEBAPI = {
   toggleLiveReloading,
   setWindowDimensions,
   setWindowDragModeEnabled,
+  setSidebarResizeModeEnabled,
   moveWindow,
   maximizeWindow,
   showOpenDialog,
@@ -301,15 +302,15 @@ export async function setWindowDimensions ({width, height} = {}) {
   win.setSize(width, height)
 }
 
-var _dragModeIntervals = {}
+var _windowDragInterval = undefined
 export async function setWindowDragModeEnabled (enabled) {
   var win = findWebContentsParentWindow(this.sender)
   if (enabled) {
-    if (win.id in _dragModeIntervals) return
+    if (_windowDragInterval) return
 
     // poll the mouse cursor every 15ms
     var lastPt = screen.getCursorScreenPoint()
-    _dragModeIntervals[win.id] = setInterval(() => {
+    _windowDragInterval = setInterval(() => {
       var newPt = screen.getCursorScreenPoint()
 
       // if the mouse has moved, move the window accordingly
@@ -323,15 +324,35 @@ export async function setWindowDragModeEnabled (enabled) {
       // if the mouse has moved out of the window, stop
       var bounds = win.getBounds()
       if (newPt.x < bounds.x || newPt.y < bounds.y || newPt.x > (bounds.x + bounds.width) || newPt.y > (bounds.y + bounds.height)) {
-        clearInterval(_dragModeIntervals[win.id])
-        delete _dragModeIntervals[win.id]
+        clearInterval(_windowDragInterval)
+        _windowDragInterval = undefined
       }
     }, 15)
   } else {
     // stop the poll
-    if (!(win.id in _dragModeIntervals)) return
-    clearInterval(_dragModeIntervals[win.id])
-    delete _dragModeIntervals[win.id]
+    if (!_windowDragInterval) return
+    clearInterval(_windowDragInterval)
+    _windowDragInterval = undefined
+  }
+}
+
+var _sidebarResizeInterval = undefined
+export async function setSidebarResizeModeEnabled (enabled) {
+  var win = findWebContentsParentWindow(this.sender)
+  var tab = tabManager.getActive(win)
+  if (!win || !tab) return console.log('ended a')
+  if (enabled) {
+    if (_sidebarResizeInterval) return console.log('ended b')
+    // poll the mouse cursor every 15ms
+    _sidebarResizeInterval = setInterval(() => {
+      var bounds = win.getBounds()
+      var pt = screen.getCursorScreenPoint()
+      tab.setSidebarWidth(pt.x - bounds.x)
+    }, 15)
+  } else {
+    if (!_sidebarResizeInterval) return console.log('ended c')
+    clearInterval(_sidebarResizeInterval)
+    _sidebarResizeInterval = undefined
   }
 }
 
