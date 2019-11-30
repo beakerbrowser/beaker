@@ -8,8 +8,7 @@
 import { BrowserView } from 'electron'
 import path from 'path'
 
-const WIDTH = 400
-const HEIGHT = 24
+const HEIGHT = 25
 
 // globals
 // =
@@ -44,8 +43,8 @@ export function get (parentWindow) {
 export function reposition (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    var {height} = parentWindow.getContentBounds()
-    view.setBounds({x: 0, y: height - HEIGHT, width: WIDTH, height: HEIGHT})
+    var {width, height} = parentWindow.getContentBounds()
+    view.setBounds({x: 0, y: height - HEIGHT, width, height: HEIGHT})
   }
 }
 
