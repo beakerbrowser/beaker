@@ -8,6 +8,7 @@ import './win32'
 import './tabs'
 import './navbar'
 import './sidebar-resizer'
+import './footer-menu'
 import './resize-hackfix'
 
 // setup
@@ -119,6 +120,10 @@ class ShellWindowUI extends LitElement {
         .activeTabIndex=${this.activeTabIndex}
         .activeTab=${this.activeTab}
       ></shell-window-sidebar-resizer>
+      <shell-window-footer-menu
+        .activeTabIndex=${this.activeTabIndex}
+        .activeTab=${this.activeTab}
+      ></shell-window-footer-menu>
     `
   }
 

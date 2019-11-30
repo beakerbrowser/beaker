@@ -71,6 +71,7 @@ const TLS_ERROR_CODES = Object.values({
 const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
 
 const Y_POSITION = 76
+export const FOOTER_HEIGHT = 25
 const DEFAULT_URL = 'beaker://desktop'
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
@@ -328,6 +329,7 @@ class Tab {
       x = (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
       width -= (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
     }
+    height -= FOOTER_HEIGHT
     return {x, y: Y_POSITION, width, height: height - Y_POSITION}
   }
 

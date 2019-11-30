@@ -108,6 +108,6 @@ function setBounds (sidebarView, tab) {
     x: 0,
     y: SIDEBAR_Y,
     width: tab.sidebarWidth - HALF_SIDEBAR_EDGE_PADDING,
-    height: parentBounds.height - SIDEBAR_Y
+    height: parentBounds.height - SIDEBAR_Y - tabManager.FOOTER_HEIGHT
   })
 }

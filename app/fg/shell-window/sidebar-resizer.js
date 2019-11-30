@@ -21,7 +21,7 @@ class ShellWindowSidebarResizer extends LitElement {
       height: 100vh;
       width: 6px;
       cursor: ew-resize;
-      background: #223;
+      background: #334;
     }
     `
   }
