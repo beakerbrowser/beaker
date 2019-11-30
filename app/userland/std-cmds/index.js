@@ -218,12 +218,11 @@ export async function edit (opts = {}, location = '') {
   if (opts.n) {
     await beaker.browser.openUrl(location, {
       setActive: true,
-      isSidebarActive: true,
-      sidebarPanel: 'beaker://editor'
+      sidebarPanels: ['editor-app']
     })
   } else {
-    await beaker.browser.gotoUrl(location)
-    await beaker.browser.openSidebar('beaker://editor')
+    await beaker.browser.executeSidebarCommand('show-panel', 'editor-app', location)
+    await beaker.browser.executeSidebarCommand('set-context', 'editor-app', location)
   }
 }
 

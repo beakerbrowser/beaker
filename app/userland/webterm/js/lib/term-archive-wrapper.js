@@ -14,7 +14,6 @@ class OtherOrigin {
   constructor (url) {
     this.url = url
     for (let k of Object.getOwnPropertyNames(DatArchive.prototype)) {
-      console.log(k)
       if (!this[k] && typeof DatArchive.prototype[k] === 'function') {
         this[k] = this.doThrow.bind(this)
       }

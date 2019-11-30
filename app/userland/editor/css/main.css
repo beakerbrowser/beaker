@@ -9,12 +9,3 @@ body {
   background: var(--background);
   border-right: 1px solid #889;
 }
-
-#monaco-editor {
-  height: calc(100vh - 28px);
-  margin-left: 200px;
-}
-
-#monaco-editor.fullwidth {
-  margin-left: 0;
-}

@@ -1,7 +1,7 @@
 /* globals monaco */
 
 import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
-import sidebarEditorViewCSS from '../css/main.css.js'
+import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { isFilenameBinary } from '../../app-stdlib/js/is-ext-binary.js'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import '../../app-stdlib/js/com/files-explorer.js'
@@ -18,8 +18,8 @@ class EditorApp extends LitElement {
     }
   }
 
-  static get styles () {
-    return [sidebarEditorViewCSS]
+  createRenderRoot () {
+    return this // no shadow dom
   }
 
   get isDat () {
@@ -63,6 +63,7 @@ class EditorApp extends LitElement {
 
   constructor () {
     super()
+    this.editorEl = undefined
     this.editor = undefined // monaco instance
     this.url = ''
     this.currentTabUrl = ''
@@ -73,52 +74,63 @@ class EditorApp extends LitElement {
     this.dne = false
     this.isBinary = false
     this.resolvedPath = ''
+  }
 
-    window.sidebarLoad = (url, {force} = {force: false}) => {
-      this.currentTabUrl = url
-      if (!this.url || force) {
-        this.url = url
-        this.classList.add('sidebar')
-        this.load()
-      }
+  teardown () {
+    if (this.editor) {
+      this.editor.dispose()
     }
+  }
 
-    // load monaco
-    window.require.config({ baseUrl: 'beaker://assets/' })
-    window.require(['vs/editor/editor.main'], () => {
-      console.log('monaco loaded')
-      // we have load monaco outside of the shadow dom
-      monaco.editor.defineTheme('custom-dark', {
-        base: 'vs-dark',
-        inherit: true,
-        rules: [{ background: '222233' }],
-        colors: {
-          'editor.background': '#222233'
+  ensureEditorEl () {
+    if (!this.editorEl) {
+      this.editorEl = document.createElement('div')
+      this.editorEl.id = 'monaco-editor'
+    }
+    this.append(this.editorEl)
+  }
+
+  async createEditor () {
+    this.ensureEditorEl()
+    return new Promise((resolve, reject) => {
+      window.require.config({ baseUrl: 'beaker://assets/' })
+      window.require(['vs/editor/editor.main'], () => {
+        console.log('monaco loaded')
+        // we have load monaco outside of the shadow dom
+        monaco.editor.defineTheme('custom-dark', {
+          base: 'vs-dark',
+          inherit: true,
+          rules: [{ background: '222233' }],
+          colors: {
+            'editor.background': '#222233'
+          }
+        })
+        let opts = {
+          folding: false,
+          renderLineHighlight: 'all',
+          lineNumbersMinChars: 4,
+          automaticLayout: true,
+          fixedOverflowWidgets: true,
+          roundedSelection: false,
+          minimap: {enabled: false},
+          theme: 'custom-dark',
+          value: ''
         }
+        this.editor = monaco.editor.create(this.editorEl, opts)
+        this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function () {
+          document.querySelector('editor-app').onClickSave()
+        })
+        resolve()
       })
-      let opts = {
-        folding: false,
-        renderLineHighlight: 'all',
-        lineNumbersMinChars: 4,
-        automaticLayout: true,
-        fixedOverflowWidgets: true,
-        roundedSelection: false,
-        minimap: {enabled: false},
-        theme: 'custom-dark',
-        value: ''
-      }
-      this.editor = monaco.editor.create(document.querySelector('#monaco-editor'), opts)
-      this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, function () {
-        document.querySelector('editor-app').onClickSave()
-      })
-      // diffEditor = monaco.editor.createDiffEditor(document.querySelector('#monaco-diff-editor'), Object.assign({}, opts, {readOnly: true}))
-      this.load()
     })
   }
 
-  async load () {
-    if (!this.editor || !this.url) return
-    var url = this.url
+  async load (url) {
+    if (!this.editor) {
+      await this.createEditor()
+    }
+    if (this.url === url || !url) return
+    this.url = url
 
     // reset the editor
     for (let model of monaco.editor.getModels()) {
@@ -243,10 +255,8 @@ class EditorApp extends LitElement {
   render () {
     if (this.isFilesOpen) {
       this.classList.add('files-open')
-      document.querySelector('#monaco-editor').classList.remove('fullwidth')
     } else {
       this.classList.remove('files-open')
-      document.querySelector('#monaco-editor').classList.add('fullwidth')
     }
     if (this.isLoading) {
       return html``
@@ -254,7 +264,6 @@ class EditorApp extends LitElement {
     if (this.readOnly) {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-        <button class="close-btn" @click=${this.onClickClose}><span class="fas fa-times"></button>
         <div class="toolbar">
           ${this.isDat ? this.renderToolbarFiles() : ''}
           <div><span class="fas fa-fw fa-info-circle"></span> This page is read-only</div>
@@ -271,7 +280,6 @@ class EditorApp extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <button class="close-btn" @click=${this.onClickClose}><span class="fas fa-times"></button>
       <div class="toolbar">
         ${this.renderToolbarFiles()}
         ${this.dne ? html`
@@ -299,14 +307,17 @@ class EditorApp extends LitElement {
         <div class="empty">
           Binary file
         </div>
-      ` : ''}
-      ${this.dne ? html`
+      ` : this.dne ? html`
         <div class="empty">
           ${''/* TODO put anything here? -prf */}
         </div>
       ` : ''}
       ${this.isFilesOpen ? this.renderFilesSidebar() : ''}
     `
+  }
+
+  updated () {
+    this.ensureEditorEl()
   }
 
   renderToolbarFiles () {
@@ -335,17 +346,12 @@ class EditorApp extends LitElement {
   // events
   // =
 
-  onClickClose (e) {
-    beaker.browser.toggleSidebar()
-  }
-
   onToggleFilesOpen (e) {
     this.isFilesOpen = !this.isFilesOpen
   }
 
   onOpenFile (e) {
-    this.url = e.detail.url
-    this.load()
+    this.load(e.detail.url)
   }
 
   async onClickCreate (e, ext) {
@@ -426,8 +432,7 @@ class EditorApp extends LitElement {
     var archive = await DatArchive.fork(this.url)
     beaker.browser.openUrl(`${archive.url}${this.pathname}`, {
       setActive: true,
-      isSidebarActive: true,
-      sidebarPanel: 'beaker://editor/'
+      sidebarPanels: ['editor-app']
     })
   }
 }

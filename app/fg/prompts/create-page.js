@@ -80,7 +80,7 @@ class CreatePagePrompt extends LitElement {
 
     // create the file
     await bg.datArchive.writeFile(urlp.hostname, path, '')
-    bg.prompts.openSidebar('beaker://editor/')
+    bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
     bg.prompts.loadURL(`${urlp.origin}${path}`)
   }
 }

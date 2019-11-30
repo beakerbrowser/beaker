@@ -12,8 +12,6 @@ import './lib/term-icon.js'
 const THEME_PATH = '/settings/terminal.css'
 const TAB_COMPLETION_RENDER_LIMIT = 15
 
-window.addEventListener('keydown', onGlobalKeydown)
-
 class WebTerm extends LitElement {
   static get styles () {
     return [css]
@@ -68,6 +66,13 @@ class WebTerm extends LitElement {
       }
     }
 
+    this.addEventListener('keydown', e => {
+      if (e.key.match(/^[\d\w]$/i) && !e.ctrlKey && !e.metaKey) {
+        // text written, focus the cli
+        this.setFocus()
+      }
+    })
+
     this.addEventListener('click', e => {
       if (e.path[0] === this) {
         // click outside of any content, focus the cli
@@ -76,17 +81,10 @@ class WebTerm extends LitElement {
     })
 
     this.url = navigator.filesystem.url
-    var isSidebarMode = false
-    window.sidebarLoad = (url, {force} = {force: false}) => {
-      if (!isSidebarMode || force) {
-        isSidebarMode = true
-        this.url = url
-        this.classList.add('sidebar')
-        this.load()
-      }
-    }
+  }
 
-    this.load()
+  teardown () {
+
   }
 
   get promptInput () {
@@ -94,7 +92,8 @@ class WebTerm extends LitElement {
     catch (e) { return '' }
   }
 
-  async load () {
+  async load (url) {
+    this.url = url
     if (!this.fs) {
       this.fs = navigator.filesystem
     }
@@ -461,7 +460,6 @@ class WebTerm extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper" @keydown=${this.onKeyDown}>
-        <button class="close-btn" @click=${this.onClickClose}><span class="fas fa-times"></button>
         <div class="output">
           ${this.outputHist}
         </div>
@@ -507,10 +505,6 @@ class WebTerm extends LitElement {
   // events
   // =
 
-  onClickClose (e) {
-    beaker.browser.toggleSidebar()
-  }
-
   onKeyDown (e) {
     this.setFocus()
     if (e.code === 'KeyL' && e.ctrlKey) {
@@ -548,13 +542,4 @@ customElements.define('web-term', WebTerm)
 
 function shortenHash (str = '') {
   return str.replace(/[0-9a-f]{64}/ig, v => `${v.slice(0, 6)}..${v.slice(-2)}`)
-}
-
-function onGlobalKeydown (e) {
-  var webTerm = document.body.querySelector('web-term')
-  if (!webTerm) return
-  if (e.key.match(/^[\d\w]$/i) && !e.ctrlKey && !e.metaKey) {
-    // text written, focus the cli
-    webTerm.setFocus()
-  }
 }

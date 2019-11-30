@@ -155,8 +155,7 @@ export const WEBAPI = {
   uploadFavicon,
   imageToIco,
 
-  openSidebar,
-  toggleSidebar,
+  executeSidebarCommand,
   toggleSiteInfo,
   toggleLiveReloading,
   setWindowDimensions,
@@ -268,14 +267,9 @@ export async function imageToIco (image) {
   return toIco(imageToPng, {resize: true})
 }
 
-async function openSidebar (panel) {
+async function executeSidebarCommand (...args) {
   var win = findWebContentsParentWindow(this.sender)
-  tabManager.getActive(win).openSidebar(panel)
-}
-
-async function toggleSidebar (panel) {
-  var win = findWebContentsParentWindow(this.sender)
-  tabManager.getActive(win).toggleSidebar(panel)
+  tabManager.getActive(win).executeSidebarCommand(...args)
 }
 
 async function toggleSiteInfo (override) {
@@ -340,9 +334,9 @@ var _sidebarResizeInterval = undefined
 export async function setSidebarResizeModeEnabled (enabled) {
   var win = findWebContentsParentWindow(this.sender)
   var tab = tabManager.getActive(win)
-  if (!win || !tab) return console.log('ended a')
+  if (!win || !tab) return
   if (enabled) {
-    if (_sidebarResizeInterval) return console.log('ended b')
+    if (_sidebarResizeInterval) return
     // poll the mouse cursor every 15ms
     _sidebarResizeInterval = setInterval(() => {
       var bounds = win.getBounds()
@@ -350,7 +344,7 @@ export async function setSidebarResizeModeEnabled (enabled) {
       tab.setSidebarWidth(pt.x - bounds.x)
     }, 15)
   } else {
-    if (!_sidebarResizeInterval) return console.log('ended c')
+    if (!_sidebarResizeInterval) return
     clearInterval(_sidebarResizeInterval)
     _sidebarResizeInterval = undefined
   }

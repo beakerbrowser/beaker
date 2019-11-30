@@ -23,6 +23,14 @@ const BEAKER_CSP = `
   style-src 'self' 'unsafe-inline' beaker:;
   child-src 'self';
 `.replace(/\n/g, '')
+const SIDEBAR_CSP = `
+default-src 'self' beaker:;
+img-src beaker-favicon: beaker: asset: data: dat: http: https;
+script-src 'self' beaker: dat: blob: 'unsafe-eval';
+media-src 'self' beaker: dat:;
+style-src 'self' 'unsafe-inline' beaker:;
+child-src 'self';
+`.replace(/\n/g, '')
 
 // exported api
 // =
@@ -219,20 +227,19 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://setup' || requestUrl.startsWith('beaker://setup/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'setup'), cb, {fallbackToIndexHTML: true})
   }
+  if (requestUrl === 'beaker://sidebar' || requestUrl.startsWith('beaker://sidebar/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'sidebar'), cb, {
+      fallbackToIndexHTML: true,
+      CSP: SIDEBAR_CSP
+    })
+  }
   if (requestUrl === 'beaker://editor' || requestUrl.startsWith('beaker://editor/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'editor'), cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://webterm' || requestUrl.startsWith('beaker://webterm/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'webterm'), cb, {
       fallbackToIndexHTML: true,
-      CSP: `
-default-src 'self' beaker:;
-img-src beaker-favicon: beaker: asset: data: dat: http: https;
-script-src 'self' beaker: dat: blob: 'unsafe-eval';
-media-src 'self' beaker: dat:;
-style-src 'self' 'unsafe-inline' beaker:;
-child-src 'self';
-`.replace(/\n/g, '')
+      CSP: SIDEBAR_CSP
     })
   }
   if (requestUrl === 'beaker://desktop' || requestUrl.startsWith('beaker://desktop/')) {

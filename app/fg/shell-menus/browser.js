@@ -349,7 +349,7 @@ class BrowserMenu extends LitElement {
 
     // create a new archive
     const url = await bg.datArchive.createArchive()
-    bg.beakerBrowser.openUrl(url, {setActive: true, isSidebarActive: true})
+    bg.beakerBrowser.openUrl(url, {setActive: true, sidebarPanels: ['editor-app']})
   }
 
   onOpenUser (e, user) {

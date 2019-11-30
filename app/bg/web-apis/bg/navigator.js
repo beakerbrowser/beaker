@@ -163,13 +163,9 @@ export default {
   /**
    * Can only be used by beaker:// sites
    * 
-   * @param {string} panel
-   * @param {Object} [opts]
-   * @param {boolean} [opts.toggle]
-   * @param {string} [opts.setTarget]
    * @returns {Promise<void>}
    */
-  async updateSidebar (panel, {toggle, setTarget} = {toggle: false, setTarget: undefined}) {
+  async executeSidebarCommand (...args) {
     var tab = tabManager.findTab(BrowserView.fromWebContents(this.sender))
     if (!tab) return
 
@@ -181,16 +177,7 @@ export default {
     }
 
     if (isAllowed) {
-      if (toggle) {
-        tab.toggleSidebar(panel)
-      } else {
-        tab.openSidebar(panel)
-      }
-      if (setTarget) {
-        tab.executeInSidebar(`
-          window.sidebarLoad("${setTarget}", {force: true})
-        `)
-      }
+      return tab.executeSidebarCommand(...args)
     }
   }
 }

@@ -223,7 +223,7 @@ class FilesExplorer extends LitElement {
       click: () => {
         beaker.browser.openUrl(url, {
           setActive: true,
-          isSidebarActive: true
+          sidebarPanels: ['editor-app']
         })
       }
     })
@@ -233,7 +233,8 @@ class FilesExplorer extends LitElement {
         label: `Edit file`,
         click: () => {
           beaker.browser.gotoUrl(url)
-          beaker.browser.openSidebar('beaker://editor/')
+          beaker.browser.executeSidebarCommand('show-panel', 'editor-app')
+          beaker.browser.executeSidebarCommand('set-context', 'editor-app', url)
         }
       })
     }
@@ -270,7 +271,7 @@ class FilesExplorer extends LitElement {
           click: () => {
             beaker.browser.openUrl(`dat://${item.stat.mount.key}`, {
               setActive: true,
-              isSidebarActive: true
+              sidebarPanels: ['editor-app']
             })
           }
         },
@@ -389,7 +390,7 @@ class FilesExplorer extends LitElement {
       click: () => {
         beaker.browser.openUrl(url, {
           setActive: true,
-          isSidebarActive: true
+          sidebarPanels: ['editor-app']
         })
       }
     })
@@ -410,7 +411,7 @@ class FilesExplorer extends LitElement {
           click: () => {
             beaker.browser.openUrl(`dat://${this.currentFolder.mount.key}`, {
               setActive: true,
-              isSidebarActive: true
+              sidebarPanels: ['editor-app']
             })
           }
         },

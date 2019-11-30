@@ -19,7 +19,7 @@ export default {
   reload: 'promise',
   resetZoom: 'promise',
   toggleLiveReloading: 'promise',
-  toggleSidebar: 'promise',
+  executeSidebarCommand: 'promise',
   toggleDevTools: 'promise',
   print: 'promise',
   showInpageFind: 'promise',

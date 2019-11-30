@@ -213,7 +213,8 @@ export class ExplorerApp extends LitElement {
     }
 
     if (location.hash === '#edit') {
-      navigator.updateSidebar('beaker://editor', {setTarget: window.location.toString()})
+      navigator.executeSidebarCommand('show-panel', 'editor-app')
+      navigator.executeSidebarCommand('set-context', 'editor-app', window.location.toString())
       history.replaceState(undefined, document.title, window.location.toString().split('#')[0])
     }
 
@@ -855,7 +856,8 @@ export class ExplorerApp extends LitElement {
   }
 
   onToggleEditor (e) {
-    navigator.updateSidebar('beaker://editor', {setTarget: window.location.toString()})
+    navigator.executeSidebarCommand('show-panel', 'editor-app')
+    navigator.executeSidebarCommand('set-context', 'editor-app', window.location.toString())
   }
 
   onShowMenu (e) {

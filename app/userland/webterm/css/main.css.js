@@ -26,24 +26,6 @@ ${spinnerCSS}
   color: var(--default);
 }
 
-:host(.sidebar) {
-  border-right: 1px solid var(--gray);
-}
-
-.close-btn {
-  display: none;
-  position: fixed;
-  top: 5px;
-  right: 5px;
-  background: transparent;
-  border: 0;
-  color: var(--default);
-  cursor: pointer;
-}
-:host(.sidebar) .close-btn {
-  display: inline;
-}
-
 a {
   text-decoration: none;
   cursor: pointer;

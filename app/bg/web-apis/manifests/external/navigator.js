@@ -3,5 +3,5 @@ export default {
   selectFileDialog: 'promise',
   saveFileDialog: 'promise',
   selectDriveDialog: 'promise',
-  updateSidebar: 'promise'
+  executeSidebarCommand: 'promise'
 }

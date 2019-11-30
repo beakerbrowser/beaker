@@ -407,67 +407,49 @@ class Tab {
     this.emitUpdateState()
   }
 
-  async openSidebar (panel) {
-    if (!this.isSidebarActive) {
-      this.toggleSidebar(panel)
-    } else {
-      this.updateSidebar(panel)
+  async openSidebar () {
+    if (this.isSidebarActive) return
+    
+    let v = sidebars.create(this)
+    v.webContents.loadURL('beaker://sidebar/')
+    var onDidFinishLoad = new Promise(r => v.webContents.on('did-finish-load', r))
+
+    this.sidebarWidth = clamp((this.browserWindow.getContentBounds().width / 2)|0, 100, 800)
+    if (this.isActive) {
+      sidebars.show(this)
+      v.webContents.focus()
     }
+
+    this.isSidebarActive = true
+    this.resize()
+    this.emitUpdateState()
+    await onDidFinishLoad
   }
 
-  async toggleSidebar (panel) {
-    if (!this.isSidebarActive) {
-      // create sidebar
-      let v = sidebars.create(this)
-      v.webContents.loadURL(panel)
-      v.webContents.on('did-finish-load', () => this.updateSidebar())
-      this.sidebarWidth = clamp((this.browserWindow.getContentBounds().width / 2)|0, 100, 800)
-      if (this.isActive) sidebars.show(this)
-      this.isSidebarActive = true
-    } else {
-      if (panel) {
-        // if an panel is passed, toggle off if already on the panel
-        // otherwise, just go to that panel
-        let v = sidebars.get(this)
-        if (v) {
-          if (toOrigin(v.webContents.getURL()) === toOrigin(panel)) {
-            sidebars.close(this)
-            this.isSidebarActive = false
-          } else {
-            v.webContents.loadURL(panel)
-            v.webContents.on('did-finish-load', () => this.updateSidebar())
-          }
-        }
-      } else {
-        sidebars.close(this)
-        this.isSidebarActive = false
-      }
-    }
+  async closeSidebar () {
+    if (!this.isSidebarActive) return
+    sidebars.close(this)
+    this.isSidebarActive = false
     this.resize()
-
-    // emit
     this.emitUpdateState()
   }
 
-  async updateSidebar (panel) {
-    var v = sidebars.get(this)
-    if (v) {
-      if (panel && toOrigin(v.webContents.getURL()) !== toOrigin(panel)) {
-        v.webContents.loadURL(panel)
-        await new Promise(r => v.webContents.on('did-finish-load', r))
-      }
-      v.webContents.executeJavaScript(`
-        window.sidebarLoad("${this.url}")
-      `).catch(err => {
-        console.log('Failed to load sidebar', err)
-      })
-      v.webContents.focus()
+  async executeSidebarCommand (cmd, ...args) {
+    const execJs = (js) => sidebars.get(this).webContents.executeJavaScript(js)
+    switch (cmd) {
+      case 'hide-panel':
+      case 'close':
+        if (!this.isSidebarActive) return
+      default:
+        await this.openSidebar()
     }
-  }
-
-  async executeInSidebar (js) {
-    var v = sidebars.get(this)
-    if (v) return v.webContents.executeJavaScript(js)
+    switch (cmd) {
+      case 'show-panel':   await execJs(`showPanel("${args[0]}", "${args[1] || this.url}")`); break
+      case 'toggle-panel': await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`); break
+      case 'hide-panel':   await execJs(`hidePanel("${args[0]}")`); break
+      case 'set-context':  await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
+      case 'close':        this.closeSidebar(); break
+    }
   }
 
   setSidebarWidth (v) {
@@ -844,9 +826,6 @@ class Tab {
     if (httpResponseCode === 504 && url.startsWith('dat://')) {
       this.wasDatTimeout = true
     }
-    if (this.isSidebarActive) {
-      this.updateSidebar()
-    }
     if (httpResponseCode === 404 && this.writable && (this.datInfo.type === 'website' || this.datInfo.type === 'application')) {
       // prompt to create a page on 404 for owned sites
       prompts.create(this.browserView.webContents, 'create-page', {url: this.url})
@@ -858,9 +837,6 @@ class Tab {
 
   onDidNavigateInPage (e) {
     this.updateHistory()
-    if (this.isSidebarActive) {
-      this.updateSidebar()
-    }
   }
 
   onDidStopLoading () {
@@ -968,7 +944,7 @@ class Tab {
     var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
     var tabs = activeTabs[this.browserWindow.id]
     var tabIndex = tabs ? (tabs.indexOf(this) + 1) : undefined
-    var newTab = create(this.browserWindow, url, {setActive, tabIndex, isSidebarActive: this.isSidebarActive})
+    var newTab = create(this.browserWindow, url, {setActive, tabIndex})
   }
 
   onMediaChange (e) {
@@ -1098,9 +1074,8 @@ export function create (
       setActive: false,
       isPinned: false,
       focusLocationBar: false,
-      isSidebarActive: false,
       tabIndex: undefined,
-      sidebarPanel: undefined
+      sidebarPanels: undefined
     }
   ) {
   url = url || DEFAULT_URL
@@ -1140,8 +1115,10 @@ export function create (
   if (opts.focusLocationBar) {
     win.webContents.send('command', 'focus-location')
   }
-  if (opts.isSidebarActive) {
-    tab.toggleSidebar(opts.sidebarPanel)
+  if (opts.sidebarPanels) {
+    for (let p of opts.sidebarPanels) {
+      tab.executeSidebarCommand('show-panel', p)
+    }
   }
 
   // create a new preloaded tab if needed
@@ -1552,8 +1529,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     getByIndex(getWindow(this.sender), index).toggleLiveReloading(enabled)
   },
 
-  async toggleSidebar (index, panel = undefined) {
-    getByIndex(getWindow(this.sender), index).toggleSidebar(panel)
+  async executeSidebarCommand (index, ...args) {
+    getByIndex(getWindow(this.sender), index).executeSidebarCommand(...args)
   },
 
   async toggleDevTools (index) {

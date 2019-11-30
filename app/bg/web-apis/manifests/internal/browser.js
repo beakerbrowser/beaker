@@ -28,8 +28,7 @@ export default {
 
   getResourceContentType: 'sync',
 
-  openSidebar: 'promise',
-  toggleSidebar: 'promise',
+  executeSidebarCommand: 'promise',
   toggleSiteInfo: 'promise',
   toggleLiveReloading: 'promise',
   setWindowDimensions: 'promise',

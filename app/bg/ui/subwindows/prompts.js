@@ -139,9 +139,9 @@ rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
     tabManager.getActive(win).loadURL(url)
   },
 
-  async openSidebar (panel) {
+  async executeSidebarCommand (...args) {
     var win = findWebContentsParentWindow(this.sender)
-    tabManager.getActive(win).openSidebar(panel)
+    tabManager.getActive(win).executeSidebarCommand(...args)
   }
 })
 

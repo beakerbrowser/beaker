@@ -341,7 +341,7 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           if (win) {
             let active = tabManager.getActive(win)
-            if (active) active.toggleSidebar('beaker://editor')
+            if (active) active.executeSidebarCommand('toggle-panel', 'editor-app')
           }
         }
       },
@@ -352,7 +352,7 @@ export function buildWindowMenu (opts = {}) {
         click: function (item, win) {
           if (win) {
             let active = tabManager.getActive(win)
-            if (active) active.toggleSidebar('beaker://webterm')
+            if (active) active.executeSidebarCommand('toggle-panel', 'web-term')
           }
         }
       },

@@ -124,7 +124,10 @@ export function constructItems (app) {
     items.push({
       icon: 'fas fa-fw fa-terminal',
       label: 'Open terminal',
-      click: () => navigator.updateSidebar('beaker://webterm', {setTarget: window.location.toString()})
+      click: () => {
+        navigator.executeSidebarCommand('show-panel', 'web-term')
+        navigator.executeSidebarCommand('set-context', 'web-term', window.location.toString())
+      }
     })
   }
   return items

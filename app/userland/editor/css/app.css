@@ -1,0 +1,45 @@
+@import "../../app-stdlib/css/buttons2.css";
+@import "./toolbar.css";
+@import "../../app-stdlib/css/tooltip.css";
+
+editor-app {
+  display: block;
+  background: var(--background);
+  color: var(--default);
+}
+
+editor-app a {
+  /* color: #b4b4ff; */
+}
+
+editor-app a,
+editor-app button {
+  outline: 0;
+}
+
+editor-app .empty {
+  padding: 10px;
+}
+
+editor-app .divider {
+  border-left: 1px solid rgba(255, 255, 255, .4);
+  height: 21px;
+}
+
+editor-app files-explorer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 200px;
+  z-index: 1;
+  background: var(--background);
+}
+
+editor-app.files-open {
+  padding-left: 200px;
+}
+
+editor-app #monaco-editor {
+  height: 100%;
+}
