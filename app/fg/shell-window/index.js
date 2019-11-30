@@ -100,6 +100,7 @@ class ShellWindowUI extends LitElement {
     if (this.activeTab) {
       this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
       this.shadowRoot.querySelector('shell-window-sidebar-resizer').requestUpdate()
+      this.shadowRoot.querySelector('shell-window-footer-menu').requestUpdate()
     }
   }
 

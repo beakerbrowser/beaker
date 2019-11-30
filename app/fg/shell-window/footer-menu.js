@@ -1,9 +1,7 @@
 /* globals customElements */
-import {LitElement, html, css} from '../vendor/lit-element/lit-element'
+import { LitElement, html, css } from '../vendor/lit-element/lit-element'
+import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import * as bg from './bg-process-rpc'
-
-const WIDTH = 6
-const HALF_WIDTH = WIDTH / 2
 
 class ShellWindowFooterMenu extends LitElement {
   static get properties () {
@@ -29,9 +27,11 @@ class ShellWindowFooterMenu extends LitElement {
       border-top: 1px solid #445;
       background: #334;
       color: #eef;
+      user-select: none;
     }
     a {
       padding: 0 8px;
+      margin-right: 1px;
       height: 24px;
       box-sizing: border-box;
       text-align: center;
@@ -56,10 +56,20 @@ class ShellWindowFooterMenu extends LitElement {
   // =
 
   render () {
+    const sidebarBtn = (panel, label) => {
+      var panels = this.activeTab ? this.activeTab.sidebarPanels : []
+      return html`
+        <a
+          class=${classMap({pressed: panels.includes(panel)})}
+          @click=${e => this.onClickSidebarToggle(e, panel)}
+        >${label}</a>
+      `
+    }
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <a @click=${e => this.onClickSidebarToggle(e, 'web-term')}><span class="fas fa-terminal"></span> Terminal</a>
-      <a @click=${e => this.onClickSidebarToggle(e, 'editor-app')}><span class="fas fa-edit"></span> Editor</a>
+      ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
+      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`)}
     `
   }
 

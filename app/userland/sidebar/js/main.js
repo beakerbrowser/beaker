@@ -1,6 +1,14 @@
 import 'beaker://editor/js/main.build.js'
 import 'beaker://webterm/js/main.js'
 
+/**
+ * NOTE
+ * Any changes to sidebar state should be routed through
+ * the background process via `executeSidebarCommand` as
+ * the background-process tracks some state and needs to
+ * be kept in sync with the frontend.
+ */
+
 const MIN_PANEL_HEIGHT = 50
 
 class SidebarApp extends HTMLElement {
@@ -84,7 +92,7 @@ class SidebarApp extends HTMLElement {
     let closeBtnEl = document.createElement('button')
     closeBtnEl.className = 'close-btn'
     closeBtnEl.innerHTML = '<span class="fas fa-times"></span>'
-    closeBtnEl.addEventListener('click', e => this.removePanel(panel.tagName))
+    closeBtnEl.addEventListener('click', e => beaker.browser.executeSidebarCommand('hide-panel', panel.tagName))
 
     let panelEl = document.createElement('div')
     panelEl.className = 'panel'

@@ -103,6 +103,7 @@ const STATE_VARS = [
   'isAudioMuted',
   'isCurrentlyAudible',
   'isSidebarActive',
+  'sidebarPanels',
   'sidebarWidth',
   'isInpageFindActive',
   'currentInpageFindString',
@@ -158,6 +159,7 @@ class Tab {
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
     this.isSidebarActive = false // is the sidebar open?
+    this.sidebarPanels = new Set() // the active sidebar panels
     this.sidebarWidth = undefined // what is the current sidebar width?
     this.liveReloadEvents = null // live-reload event stream
     this.isInpageFindActive = false // is the inpage-finder UI active?
@@ -310,6 +312,7 @@ class Tab {
 
   get state () {
     var state = _pick(this, STATE_VARS)
+    state.sidebarPanels = Array.from(state.sidebarPanels) // convert from a set to an array
     if (this.loadingURL) state.url = this.loadingURL
     return state
   }
@@ -423,6 +426,7 @@ class Tab {
     }
 
     this.isSidebarActive = true
+    this.sidebarPanels.clear()
     this.resize()
     this.emitUpdateState()
     await onDidFinishLoad
@@ -432,6 +436,7 @@ class Tab {
     if (!this.isSidebarActive) return
     sidebars.close(this)
     this.isSidebarActive = false
+    this.sidebarPanels.clear()
     this.resize()
     this.emitUpdateState()
   }
@@ -451,6 +456,18 @@ class Tab {
       case 'hide-panel':   await execJs(`hidePanel("${args[0]}")`); break
       case 'set-context':  await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
       case 'close':        this.closeSidebar(); break
+    }
+    switch (cmd) {
+      case 'show-panel': this.sidebarPanels.add(args[0]); this.emitUpdateState(); break
+      case 'hide-panel': this.sidebarPanels.delete(args[0]); this.emitUpdateState(); break
+      case 'toggle-panel': 
+        if (!this.sidebarPanels.has(args[0])) {
+          this.sidebarPanels.add(args[0])
+        } else {
+          this.sidebarPanels.delete(args[0])
+        }
+        this.emitUpdateState()
+        break
     }
   }
 
