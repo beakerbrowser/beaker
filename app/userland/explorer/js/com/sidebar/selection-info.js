@@ -53,7 +53,7 @@ export class SelectionInfo extends LitElement {
           <section>
             <file-display
               drive-url=${sel.drive.url}
-              pathname=${sel.path}
+              pathname=${sel.realPath}
               .info=${sel}
             ></file-display>
           </section>
