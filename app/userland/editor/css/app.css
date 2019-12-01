@@ -4,12 +4,10 @@
 
 editor-app {
   display: block;
+  position: relative;
   background: var(--background);
   color: var(--default);
-}
-
-editor-app a {
-  /* color: #b4b4ff; */
+  user-select: none;
 }
 
 editor-app a,
@@ -18,7 +16,22 @@ editor-app button {
 }
 
 editor-app .empty {
-  padding: 10px;
+  height: 100vh;
+  background: #223;
+  font-style: italic;
+  color: #eef7;
+  padding: 10px 16px;
+}
+
+editor-app .empty a:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+editor-app .empty .binary-render > * {
+  margin: 10px 0;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 editor-app .divider {
@@ -27,17 +40,18 @@ editor-app .divider {
 }
 
 editor-app files-explorer {
-  position: fixed;
+  position: absolute;
   left: 0;
-  top: 0;
+  top: 26px;
   bottom: 0;
   width: 200px;
   z-index: 1;
   background: var(--background);
 }
 
-editor-app.files-open {
-  padding-left: 200px;
+editor-app.files-open #monaco-editor,
+editor-app.files-open .empty {
+  margin-left: 200px;
 }
 
 editor-app #monaco-editor {

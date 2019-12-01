@@ -4,7 +4,11 @@ import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-elemen
 import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { isFilenameBinary } from '../../app-stdlib/js/is-ext-binary.js'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
-import '../../app-stdlib/js/com/files-explorer.js'
+import { joinPath } from '../../app-stdlib/js/strings.js'
+import * as contextMenu from '../../app-stdlib/js/com/context-menu.js'
+import { writeToClipboard } from '../../app-stdlib/js/clipboard.js'
+import * as toast from '../../app-stdlib/js/com/toast.js'
+import './com/files-explorer.js'
 
 class EditorApp extends LitElement {
   static get properties () {
@@ -47,6 +51,10 @@ class EditorApp extends LitElement {
     return urlp.pathname
   }
 
+  get resolvedFilename () {
+    return (this.resolvedPath || '').split('/').pop()
+  }
+
   get hasFileExt () {
     var path = this.pathname
     return path.split('/').pop().includes('.')
@@ -66,9 +74,11 @@ class EditorApp extends LitElement {
     this.editorEl = undefined
     this.editor = undefined // monaco instance
     this.url = ''
+    this.stat = undefined
     this.currentTabUrl = ''
     this.isLoading = true
     this.isFilesOpen = false
+    this.liveReloadMode = false
     this.readOnly = true
     this.lastSavedVersionId = undefined
     this.dne = false
@@ -130,6 +140,11 @@ class EditorApp extends LitElement {
       await this.createEditor()
     }
     if (this.url === url || !url) return
+    if (this.hasChanges) {
+      if (!confirm('You have unsaved changes. Are you sure you want to change files?')) {
+        return
+      }
+    }
     this.url = url
 
     // reset the editor
@@ -147,51 +162,7 @@ class EditorApp extends LitElement {
 
     var body = ''
     if (url.startsWith('dat:')) {
-      // load archive meta
-      let archive = new DatArchive(url)
-      let [info, manifest] = await Promise.all([
-        archive.getInfo(),
-        archive.readFile('/dat.json', 'utf8').catch(e => '')
-      ])
-      try {
-        manifest = JSON.parse(manifest)
-      } catch (e) {
-        console.debug('Failed to parse manifest', {e, manifest})
-        manifest = null
-      }
-      console.log(info)
-      this.readOnly = !info.writable
-
-      // readonly if viewing historic version
-      if (info.writable) {
-        let v = this.viewedDatVersion
-        if (v == +v) { // viewing a numeric version? (in the history)
-          this.readOnly = true
-        }
-      }
-
-      // determine the entry to load
-      var entry = await datServeResolvePath(archive, manifest, url, '*/*')
-      this.resolvedPath = entry ? entry.path : this.pathname
-
-      // figure out if it's binary
-      {
-        let filename = this.resolvedPath.split('/').pop()
-        if (filename.includes('.') && isFilenameBinary(filename)) {
-          this.isBinary = true
-        }
-      }
-
-      // fetch the file
-      if (!this.isBinary) {
-        try {
-          if (!this.resolvedPath) throw new Error('dne')
-          body = await archive.readFile(this.resolvedPath, 'utf8')
-        } catch (e) {
-          this.dne = true
-          body = ''
-        }
-      }
+      body = await this.loadDat(url)
     } else if (url.startsWith('http:') || url.startsWith('https:')) {
       this.isFilesOpen = false
       try {
@@ -249,6 +220,156 @@ class EditorApp extends LitElement {
     this.requestUpdate()
   }
 
+  async loadDat (url) {
+    var body
+
+    // load archive meta
+    let archive = new DatArchive(url)
+    let [info, manifest] = await Promise.all([
+      archive.getInfo(),
+      archive.readFile('/dat.json', 'utf8').catch(e => '')
+    ])
+    try {
+      manifest = JSON.parse(manifest)
+    } catch (e) {
+      console.debug('Failed to parse manifest', {e, manifest})
+      manifest = null
+    }
+    console.log(info)
+    this.readOnly = !info.writable
+
+    // readonly if viewing historic version
+    if (info.writable) {
+      let v = this.viewedDatVersion
+      if (v == +v) { // viewing a numeric version? (in the history)
+        this.readOnly = true
+      }
+    }
+
+    // determine the entry to load
+    var entry = await datServeResolvePath(archive, manifest, url, '*/*')
+    this.resolvedPath = entry ? entry.path : this.pathname
+    this.stat = await archive.stat(this.resolvedPath).catch(e => undefined)
+
+    // figure out if it's binary
+    {
+      let filename = this.resolvedPath.split('/').pop()
+      if (filename.includes('.') && isFilenameBinary(filename)) {
+        this.isBinary = true
+      }
+    }
+
+    // fetch the file
+    if (!this.isBinary) {
+      try {
+        if (!this.resolvedPath) throw new Error('dne')
+        body = await archive.readFile(this.resolvedPath, 'utf8')
+      } catch (e) {
+        this.dne = true
+        body = ''
+      }
+    }
+
+    return body
+  }
+
+  loadExplorer () {
+    try {
+      this.querySelector('files-explorer').load()
+    } catch (e) {
+      console.warn(e)
+    }
+  }
+
+  showMenu (x, y, folderPath, item) {
+    var items = []
+    if (item) {
+      items.push({
+        icon: 'fas fa-fw fa-external-link-alt',
+        label: 'Open in new tab',
+        click () {
+          beaker.browser.openUrl(item.url)
+        }
+      })
+      items.push({
+        icon: 'fas fa-fw fa-share-square',
+        label: 'Copy share link',
+        disabled: !item.shareUrl,
+        click () {
+          writeToClipboard(item.shareUrl)
+          toast.create('Copied to your clipboard')
+        }
+      })
+      items.push({
+        icon: 'custom-path-icon',
+        label: `Copy ${item.stat.isFile() ? 'file' : 'folder'} path`,
+        click () {
+          writeToClipboard(item.path)
+          toast.create('Copied to your clipboard')
+        }
+      })
+      items.push('-')
+      items.push({
+        icon: 'fa fa-fw fa-i-cursor',
+        label: 'Rename',
+        disabled: this.readOnly,
+        click: () => this.onClickRename(item.path)
+      })
+      items.push({
+        icon: 'fa fa-fw fa-trash',
+        label: 'Delete',
+        disabled: this.readOnly,
+        click: () => this.onClickDelete(item.path)
+      })
+      items.push('-')
+      items.push({
+        icon: 'fas fa-fw fa-file-export',
+        label: 'Export file',
+        click: () => this.onClickExportFiles(item.path)
+      })
+    } else {
+      items.push({
+        icon: 'far fa-fw fa-folder',
+        label: 'New folder',
+        disabled: this.readOnly,
+        click: () => this.onClickNewFolder(folderPath)
+      })
+      items.push({
+        icon: 'far fa-fw fa-file',
+        label: 'New file',
+        disabled: this.readOnly,
+        click: () => this.onClickNewFile(folderPath)
+      })
+      items.push({
+        icon: 'fas fa-fw fa-long-arrow-alt-right custom-link-icon',
+        label: 'New link',
+        disabled: this.readOnly,
+        click: () => this.onClickNewLink(folderPath)
+      })
+      items.push('-')
+      items.push({
+        icon: 'fas fa-fw fa-file-import',
+        label: 'Import files',
+        disabled: this.readOnly,
+        click: () => this.onClickImportFiles(folderPath)
+      })
+      items.push({
+        icon: 'fas fa-fw fa-file-export',
+        label: 'Export files',
+        click: () => this.onClickExportFiles(folderPath)
+      })
+    }
+
+    contextMenu.create({
+      x,
+      y,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      noBorders: true,
+      roomy: true,
+      items
+    })
+  }
+
   // rendering
   // =
 
@@ -258,61 +379,31 @@ class EditorApp extends LitElement {
     } else {
       this.classList.remove('files-open')
     }
-    if (this.isLoading) {
-      return html``
-    }
-    if (this.readOnly) {
-      return html`
-        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-        <div class="toolbar">
-          ${this.isDat ? this.renderToolbarFiles() : ''}
-          <div><span class="fas fa-fw fa-info-circle"></span> This page is read-only</div>
-          ${this.isDat ? html`<button class="transparent" @click=${this.onClickFork}><span class="far fa-fw fa-clone"></span> Make an editable copy</button>` : ''}
-          <div class="divider"></div>
-        </div>
-        ${this.isFilesOpen ? this.renderFilesSidebar() : ''}
-        ${this.isBinary ? html`
-          <div class="empty">
-            Binary file
-          </div>
-        ` : ''}
-      `
-    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="toolbar">
-        ${this.renderToolbarFiles()}
-        ${this.dne ? html`
-          <div style="padding: 0 5px">
-            <span class="fas fa-fw fa-info-circle"></span>
-            Not viewing a file.
-          </div>
-        ` : html`
-          <button class="transparent tooltip-nodelay tooltip-onsmall" title="Save" @click=${this.onClickSave} data-tooltip="Save">
-            <span class="fas fa-fw fa-save"></span> <span class="btn-label">Save</span>
-          </button>
-          <button class="transparent tooltip-nodelay tooltip-onsmall" title="Rename" @click=${this.onClickRename} data-tooltip="Rename">
-            <span class="fas fa-fw fa-i-cursor"></span> <span class="btn-label">Rename</span>
-          </button>
-          <button class="transparent tooltip-nodelay tooltip-onsmall" title="Delete" @click=${this.onClickDelete} data-tooltip="Delete">
-            <span class="fas fa-fw fa-trash"></span> <span class="btn-label">Delete</span>
-          </button>
-          <span class="divider"></span>
-          <button class="transparent tooltip-nodelay tooltip-onsmall" title="View file" @click=${this.onClickView} data-tooltip="Delete">
-            <span class="far fa-fw fa-window-maximize"></span> <span class="btn-label">View file</span>
-          </button>
-        `}
-      </div>
+      ${this.renderToolbar()}
+      ${this.isFilesOpen ? html`
+        <files-explorer
+          url=${this.url}
+          open-file-path=${this.resolvedPath}
+          @open=${this.onOpenFile}
+          @show-menu=${this.onShowMenu}
+        ></files-explorer>
+      ` : ''}
       ${this.isBinary ? html`
         <div class="empty">
-          Binary file
+          This file is not editable here.
+          <div class="binary-render">
+            ${(/\.(png|jpe?g|gif)$/.test(this.pathname)) ? html`<img src=${this.url}>` : ''}
+            ${(/\.(mp4|webm|mov)$/.test(this.pathname)) ? html`<video controls><source src=${this.url}></video>` : ''}
+            ${(/\.(mp3|ogg)$/.test(this.pathname)) ? html`<audio controls><source src=${this.url}></audio>` : ''}
+          </div>
         </div>
       ` : this.dne ? html`
         <div class="empty">
-          ${''/* TODO put anything here? -prf */}
+          <a @click=${e => { this.isFilesOpen = true }}>Select a file to edit</a>
         </div>
       ` : ''}
-      ${this.isFilesOpen ? this.renderFilesSidebar() : ''}
     `
   }
 
@@ -320,26 +411,39 @@ class EditorApp extends LitElement {
     this.ensureEditorEl()
   }
 
-  renderToolbarFiles () {
+  renderToolbar () {
     return html`
-      <button class="transparent" @click=${this.onToggleFilesOpen}>
-        ${this.isFilesOpen ? html`
-          <span class="far fa-fw fa-caret-square-left"></span>
-        ` : html`
-          <span class="far fa-fw fa-folder-open"></span> <span class="btn-label">Files</span>
-        `}
-      </button>
-      <span class="divider"></span>
-    `
-  }
-
-  renderFilesSidebar () {
-    return html`
-      <files-explorer
-        fullheight
-        url=${this.url}
-        @open=${this.onOpenFile}
-      ></files-explorer>
+      <div class="toolbar" @contextmenu=${this.onContextmenuToolbar}>
+        <button class="transparent" @click=${this.onToggleFilesOpen}>
+          ${this.isFilesOpen ? html`
+            <span class="far fa-fw fa-folder-open"></span>
+          ` : html`
+            <span class="far fa-fw fa-folder"></span>
+          `}
+        </button>
+        <span class="divider"></span>
+        <button title="Save" @click=${this.onClickSave} ?disabled=${this.readOnly || this.dne}>
+          <span class="fas fa-fw fa-save"></span> Save
+        </button>
+        <button title="View file" @click=${this.onClickView} ?disabled=${this.dne}>
+          <span class="far fa-fw fa-window-maximize"></span> View file
+        </button>
+        <span class="divider"></span>
+        ${this.isLoading ? html`
+          <div><span class="fas fa-fw fa-info-circle"></span> Loading...</div>
+          <span class="divider"></span>
+        ` : this.readOnly ? html`
+          <div><span class="fas fa-fw fa-info-circle"></span> This page is read-only</div>
+          <span class="divider"></span>
+        ` : ''}
+        <span class="spacer"></span>
+        <button title="Settings" @click=${this.onClickSettings}>
+          <span class="fas fa-fw fa-cog"></span> Settings
+        </button>
+        <button class="primary" title="Actions" @click=${this.onClickActions}>
+          Actions <span class="fas fa-caret-down"></span>
+        </button>
+      </div>
     `
   }
 
@@ -354,40 +458,73 @@ class EditorApp extends LitElement {
     this.load(e.detail.url)
   }
 
-  async onClickCreate (e, ext) {
-    if (e) e.preventDefault()
-    if (this.readOnly) return
+  onShowMenu (e) {
+    this.showMenu(e.detail.x, e.detail.y, e.detail.folderPath, e.detail.item)
+  }
 
-    // figure out a path that works for the given ext
-    let path = this.resolvedPath || this.pathname
-    if (ext) {
-      if (!path || path.endsWith('/')) {
-        path = `${path}index.${ext}`
-      } else if (path.endsWith(`.${ext}`)) {
-        // path = path (noop)
-      } else if (/.(md|html)$/i.test(path)) {
-        path = `${path.replace(/.(md|html)$/i, '')}.${ext}`
-      } else {
-        path = `${path}.${ext}`
-      }
-    }
+  onContextmenuToolbar (e) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
-    // ensure the parent directory exists
-    var pathParts = path.split('/').filter(Boolean).slice(0, -1)
-    var pathAgg = []
-    for (let pathPart of pathParts) {
-      try {
-        pathAgg.push(pathPart)
-        await this.archive.mkdir(pathAgg.join('/'))
-      } catch (e) {
-        // ignore, dir already exists (probably)
-      }
-    }
+  onClickActions (e) {
+    e.preventDefault()
+    e.stopPropagation()
 
-    // create the file
-    await this.archive.writeFile(path, '')
-    beaker.browser.gotoUrl(`${this.origin}${path}`)
-    this.load()
+    let rect = e.currentTarget.getClientRects()[0]
+    contextMenu.create({
+      x: rect.right,
+      y: rect.bottom,
+      right: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      noBorders: true,
+      roomy: true,
+      items: [
+        {
+          icon: 'fa fa-fw fa-i-cursor',
+          label: 'Rename',
+          disabled: this.dne || this.readOnly,
+          click: () => this.onClickRename(this.resolvedPath)
+        },
+        {
+          icon: 'fa fa-fw fa-trash',
+          label: 'Delete',
+          disabled: this.dne || this.readOnly,
+          click: () => this.onClickDelete(this.resolvedPath)
+        },
+        '-',
+        {
+          icon: 'fas fa-fw fa-file-export',
+          label: 'Export file',
+          disabled: this.dne,
+          click: () => this.onClickExportFiles(this.resolvedPath)
+        }
+      ]
+    })
+  }
+
+  onClickSettings (e) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    let rect = e.currentTarget.getClientRects()[0]
+    contextMenu.create({
+      x: rect.right,
+      y: rect.bottom,
+      right: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      noBorders: true,
+      roomy: true,
+      items: [
+        {
+          icon: 'fas fa-fw fa-bolt',
+          label: `${this.liveReloadMode ? 'Disable' : 'Enable'} live reload`,
+          click: () => {
+            this.liveReloadMode = !this.liveReloadMode
+          }
+        }
+      ]
+    })
   }
 
   onClickView () {
@@ -400,40 +537,107 @@ class EditorApp extends LitElement {
     var model = this.editor.getModel(this.url)
     await this.archive.writeFile(this.resolvedPath, model.getValue())
     this.lastSavedVersionId = model.getAlternativeVersionId()
-    if (this.url === this.currentTabUrl) beaker.browser.refreshPage()
+    if (this.liveReloadMode) beaker.browser.gotoUrl(this.url)
   }
 
-  async onClickRename () {
+  async onClickRename (oldpath) {
     if (this.readOnly) return
-    var pathparts = this.resolvedPath.split('/')
-    var oldname = pathparts.pop()
+    var folderPath = oldpath.split('/').slice(0, -1).join('/')
+    var oldname = oldpath.split('/').pop()
     var newname = prompt('Enter the new name of this file', oldname)
     if (!newname) return
-    var newpath = pathparts.concat([newname]).join('/')
-    await this.archive.unlink(this.resolvedPath)
-    await this.archive.writeFile(newpath, this.editor.getModel(this.url).getValue())
+    var newpath = joinPath(folderPath, newname)
+    await this.archive.rename(oldpath, newpath)
 
-    var urlp = new URL(this.url)
-    urlp.pathname = newpath
-    beaker.browser.gotoUrl(urlp.toString())
-    this.load()
+    this.loadExplorer()
+    if (this.resolvedPath === oldpath) {
+      var urlp = new URL(this.url)
+      urlp.pathname = newpath
+      this.load(urlp.toString())
+      if (this.liveReloadMode) beaker.browser.gotoUrl(urlp.toString())
+    }
   }
 
-  async onClickDelete () {
+  async onClickDelete (path) {
     if (this.readOnly) return
     if (confirm('Are you sure you want to delete this file?')) {
-      await this.archive.unlink(this.resolvedPath)
-      beaker.browser.gotoUrl(this.url)
+      let st = await this.archive.stat(path)
+      if (st.mount && st.mount.key) {
+        await this.archive.unmount(path)
+      } else if (st.isDirectory()) {
+        await this.archive.rmdir(path, {recursive: true})
+      } else {
+        await this.archive.unlink(path)
+      }
+
+      this.loadExplorer()
+      if (this.resolvedPath === path) {
+        this.load(this.url)
+        if (this.liveReloadMode) beaker.browser.gotoUrl(this.url)
+      }
+    }
+  }
+
+  async onClickNewFolder (folderPath) {
+    if (this.readOnly) return
+    var name = prompt('Enter the new folder name')
+    if (name) {
+      let path = joinPath(folderPath, name)
+      await this.archive.mkdir(path)
+      this.loadExplorer()
+    }
+  }
+
+  async onClickNewFile (folderPath) {
+    if (this.readOnly) return
+    var name = prompt('Enter the new file name')
+    if (name) {
+      let path = joinPath(folderPath, name)
+      await this.archive.writeFile(path, '')
+      this.loadExplorer()
+    }
+  }
+
+  async onClickNewLink (folderPath) {
+    if (this.readOnly) return
+    var url = await navigator.selectDriveDialog()
+    if (!url) return
+    var name = await prompt('Enter the new link name')
+    if (!name) return
+    await this.archive.mount(joinPath(folderPath, name), url)
+    this.loadExplorer()
+  }
+
+  async onClickImportFiles (folderPath) {
+    alert('Todo')
+    return
+    if (this.readOnly) return
+
+    let browserInfo = beaker.browser.getInfo()
+    var osCanImportFoldersAndFiles = browserInfo.platform === 'darwin'
+
+    var files = await beaker.browser.showOpenDialog({
+      title: 'Import files',
+      buttonLabel: 'Import',
+      properties: ['openFile', osCanImportFoldersAndFiles ? 'openDirectory' : false, 'multiSelections', 'createDirectory'].filter(Boolean)
+    })
+    if (files) {
+      for (let src of files) {
+        await DatArchive.importFromFilesystem({
+          src,
+          dst: joinPath(this.origin, this.folderPath),
+          ignore: ['dat.json'],
+          inplaceImport: false
+        })
+      }
       this.load()
     }
   }
 
-  async onClickFork () {
-    var archive = await DatArchive.fork(this.url)
-    beaker.browser.openUrl(`${archive.url}${this.pathname}`, {
-      setActive: true,
-      sidebarPanels: ['editor-app']
-    })
+  async onClickExportFiles (folderPath) {
+    alert('Todo')
+    return
+    beaker.browser.downloadURL(`${this.origin}?download_as=zip`)
   }
 }
 

@@ -11,6 +11,10 @@ body {
   border-right: 1px solid #445;
 }
 
+beaker-context-menu {
+  color: #333;
+}
+
 sidebar-app {
   display: flex;
   flex-direction: column;

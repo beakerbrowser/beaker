@@ -30,6 +30,7 @@ const cssStr = css`
   border: 1px solid #dadada;
   border-radius: 10px;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
 }
 
 .dropdown-items .section {

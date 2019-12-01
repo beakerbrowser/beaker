@@ -80,8 +80,10 @@ class CreatePagePrompt extends LitElement {
 
     // create the file
     await bg.datArchive.writeFile(urlp.hostname, path, '')
+    let newUrl = `${urlp.origin}${path}`
     bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
-    bg.prompts.loadURL(`${urlp.origin}${path}`)
+    bg.prompts.executeSidebarCommand('set-context', 'editor-app', newUrl)
+    bg.prompts.loadURL(newUrl)
   }
 }
 
