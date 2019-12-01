@@ -370,12 +370,12 @@ export class ExplorerApp extends LitElement {
       return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
     } else {
       if (location.pathname.endsWith('.md') || location.pathname.endsWith('.goto')) {
-        return [['default', 'file', 'Rendered'], ['raw', 'code', 'Raw File']]
+        return [['default', 'file', 'Rendered'], ['raw', 'code', 'Source']]
       }
       if (location.pathname.endsWith('.view')) {
         return [['grid', 'th-large', 'Files Grid'], ['list', 'th-list', 'Files List']]
       }
-      return [['default', 'File']]
+      return [['default', 'file', 'File']]
     }
   }
 

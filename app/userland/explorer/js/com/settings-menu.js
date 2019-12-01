@@ -37,7 +37,8 @@ export function create (app, {x, y}) {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="settings-menu">
-          ${renderModes.length > 1 ? html`
+          ${renderModes.length ? html`
+            <h5>View mode</h5>
             <div class="render-modes">
               ${renderModes.map(([id, icon, label]) => html`
                 <div
