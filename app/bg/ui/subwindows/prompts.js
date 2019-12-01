@@ -161,7 +161,7 @@ function setBounds (view, tab, parentWindow, {width, height} = {}) {
   width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
   view.setBounds({
-    x: tab.isSidebarActive ? Math.floor(parentBounds.width / 2) : 0,
+    x: tab.isSidebarActive ? tab.sidebarWidth : 0,
     y: 85,
     width: width + (MARGIN_SIZE * 2),
     height: height + MARGIN_SIZE
