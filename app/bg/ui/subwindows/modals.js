@@ -163,10 +163,12 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
 // =
 
 function getDefaultWidth (view) {
+  if (view.modalName === 'select-file') return 800
   return 500
 }
 
 function getDefaultHeight (view) {
+  if (view.modalName === 'select-file') return 460
   return 300
 }
 

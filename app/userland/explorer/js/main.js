@@ -888,7 +888,8 @@ export class ExplorerApp extends LitElement {
 
   async doCompare (base) {
     var target = await navigator.selectFileDialog({
-      title: 'Select a folder to compare against'
+      title: 'Select a folder to compare against',
+      select: ['folder']
     })
     window.open(`beaker://compare/?base=${base}&target=${joinPath(navigator.filesystem.url, target[0])}`)
   }

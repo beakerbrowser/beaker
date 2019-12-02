@@ -6,7 +6,7 @@ import Stat from '../../bg/web-apis/fg/stat'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
-import buttonsCSS from './buttons.css'
+import buttonsCSS from './buttons2.css'
 
 class SelectFileModal extends LitElement {
   static get properties () {
@@ -17,6 +17,169 @@ class SelectFileModal extends LitElement {
     }
   }
 
+  static get styles () {
+    return [commonCSS, inputsCSS, buttonsCSS, css`
+      .title {
+        background: #fff;
+        border: 0;
+        padding: 10px 10px 0;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .wrapper {
+        padding: 0 15px 10px;
+      }
+
+      form {
+        padding: 0;
+        margin: 0;
+      }
+
+      .form-actions {
+        display: flex;
+        text-align: left;
+      }
+
+      .form-actions .left {
+        flex: 1;
+      }
+
+      .form-actions .btn.cancel {
+        margin-right: 5px;
+      }
+
+      .path {
+        display: flex;
+        align-items: center;
+        padding: 4px 0 6px;
+      }
+
+      .path .fa-fw {
+        margin-right: 4px;
+      }
+
+      .path > div {
+        cursor: pointer;
+        margin-right: 4px;
+        max-width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .path > div:hover {
+        text-decoration: underline;
+      }
+
+      .view {
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+
+      .filename {
+        display: flex;
+        align-items: center;
+        margin: 6px 0 10px;
+        background: #f3f3fa;
+        border-radius: 4px;
+        padding-left: 10px;
+      }
+
+      .filename label {
+        margin-right: 10px;
+        font-weight: normal;
+      }
+
+      .filename input {
+        flex: 1;
+        margin: 0;
+        font-size: 13px;
+      }
+
+      .files-list {
+        border-radius: 8px;
+        height: 350px;
+        overflow-y: scroll;
+        border: 1px solid #ccc;
+        user-select: none;
+        cursor: default;
+        padding: 4px 0;
+      }
+
+      .files-list .item {
+        padding: 6px 10px;
+      }
+
+      .files-list .item.disabled {
+        font-style: italic;
+        color: #aaa;
+      }
+
+      .files-list .item .info {
+        display: flex;
+        width: 100%;
+        align-items: center;
+      }
+
+      .files-list .item .info .fa-fw {
+        margin-right: 5px;
+      }
+
+      .files-list .item .info .fa-folder {
+        color: #9ec2e0;
+      }
+
+      .files-list .item .info .fa-file {
+        -webkit-text-stroke: 1px #9a9aab;
+        color: #fff;
+      }
+
+      .files-list .item .info .name {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .files-list .item.selected {
+        background: #2864dc;
+        color: #fff;
+      }
+
+      .files-list .item.selected .fa-fw {
+        text-shadow: 0 1px 2px #0006;
+      }
+
+      .drive-changer {
+        display: flex;
+      }
+
+      .drive-changer > * {
+        border-radius: 0 !important;
+      }
+      
+      .drive-changer > *:first-child {
+        border-top-left-radius: 4px !important;
+        border-bottom-left-radius: 4px !important;
+      }
+      
+      .drive-changer > *:last-child {
+        border-top-right-radius: 4px !important;
+        border-bottom-right-radius: 4px !important;
+      }
+
+      .drive-changer input {
+        flex: 0 0 300px;
+        height: auto;
+        margin: 0;
+        border-left: 0;
+        border-right: 0;
+      }
+      `]
+  }
+
   constructor () {
     super()
 
@@ -25,6 +188,7 @@ class SelectFileModal extends LitElement {
     this.files = []
     this.selectedPaths = []
     this.archiveInfo = null
+    this.isChangeDriveOpen = false
 
     // params
     this.saveMode = false
@@ -33,7 +197,7 @@ class SelectFileModal extends LitElement {
     this.defaultFilename = ''
     this.title = ''
     this.buttonLabel = ''
-    this.select = ['file', 'folder', 'archive']
+    this.select = ['file', 'folder', 'mount']
     this.filters = {
       extensions: undefined,
       writable: undefined,
@@ -154,7 +318,7 @@ class SelectFileModal extends LitElement {
       }
       return true
     } else {
-      return this.select.includes('folder') || this.select.includes('archive')
+      return this.select.includes('folder') || this.select.includes('mount')
     }
   }
 
@@ -170,7 +334,10 @@ class SelectFileModal extends LitElement {
       if (file && file.stat.isDirectory()) return false
       return true
     } else {
-      if (this.selectedPaths.length === 0) return false
+      if (this.selectedPaths.length === 0) {
+        if (this.select.includes('folder')) return true // can select current location
+        return false
+      }
       if (this.filters.extensions) {
         // if there's an extensions requirement,
         // folders can still be selected but they're not valid targets
@@ -208,7 +375,18 @@ class SelectFileModal extends LitElement {
             </div>
 
             <div class="form-actions">
-              <div class="left"></div>
+              <div class="left">
+                <div class="drive-changer">
+                  <button
+                    class="${this.isChangeDriveOpen ? 'pressed' : ''}"
+                    @click=${this.onClickChangeDrive}
+                  >Change drive</button>
+                  ${this.isChangeDriveOpen ? html`
+                    <input class="drive-url-input" placeholder="Drive URL">
+                    <button @click=${this.onClickChangeDriveGo}>Go</button>
+                  ` : ''}
+              </div>
+              </div>
               <div class="right">
                 <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
                 <button ?disabled=${!this.hasValidSelection} type="submit" class="btn primary" tabindex="5">
@@ -265,7 +443,7 @@ class SelectFileModal extends LitElement {
         data-path=${file.path}
       >
         <div class="info">
-          <span class="fa-fw ${file.stat.isFile() ? 'far fa-file' : 'fas fa-folder'}"></span>
+          <span class="fa-fw ${file.stat.isFile() ? 'fas fa-file' : 'fas fa-folder'}"></span>
           <span class="name" title="${file.name}">${file.name}</span>
         </div>
       </div>
@@ -274,6 +452,30 @@ class SelectFileModal extends LitElement {
 
   // event handlers
   // =
+
+  onClickChangeDrive (e) {
+    e.preventDefault()
+    this.isChangeDriveOpen = !this.isChangeDriveOpen
+    this.requestUpdate()
+  }
+
+  async onClickChangeDriveGo (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    e.currentTarget.textContent = 'Loading...'
+
+    try {
+      var archive = this.shadowRoot.querySelector('.drive-url-input').value
+      var archiveInfo = await bg.datArchive.getInfo(archive)
+    } catch (e) {
+      return this.requestUpdate()
+    }
+
+    this.archive = archiveInfo.url
+    this.archiveInfo = archiveInfo
+    this.isChangeDriveOpen = false
+    this.goto('/')
+  }
 
   onClickPath (e, path) {
     e.preventDefault()
@@ -319,130 +521,14 @@ class SelectFileModal extends LitElement {
       }
       this.cbs.resolve({path})
     } else {
+      if (this.select.includes('folder') && this.selectedPaths.length === 0) {
+        // use current location
+        this.selectedPaths = [this.path]
+      }
       this.cbs.resolve({paths: this.selectedPaths})
     }
   }
 }
-SelectFileModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
-.title {
-  background: #fff;
-  border: 0;
-  padding: 10px 10px 0;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.wrapper {
-  padding: 15px;
-}
-
-form {
-  padding: 0;
-  margin: 0;
-}
-
-.form-actions {
-  display: flex;
-  text-align: left;
-}
-
-.form-actions .left {
-  flex: 1;
-}
-
-.form-actions .btn.cancel {
-  margin-right: 5px;
-}
-
-.path {
-  display: flex;
-  align-items: center;
-  border: 1px solid #ccc;
-  border-bottom: 0;
-  padding: 4px 6px;
-  background: #eee;
-}
-
-.path .fa-fw {
-  margin-right: 4px;
-}
-
-.path > div {
-  cursor: pointer;
-  margin-right: 4px;
-  max-width: 100px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.path > div:hover {
-  text-decoration: underline;
-}
-
-.view {
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.filename {
-  display: flex;
-  align-items: center;
-  margin: 0 0 10px;
-}
-
-.filename label {
-  margin-right: 10px;
-  font-weight: normal;
-}
-
-.filename input {
-  flex: 1;
-  margin: 0;
-  font-size: 13px;
-}
-
-.files-list {
-  height: 350px;
-  overflow-y: scroll;
-  border: 1px solid #ccc;
-  user-select: none;
-  cursor: default;
-  padding: 2px 0;
-}
-
-.files-list .item {
-  padding: 6px 10px;
-}
-
-.files-list .item.disabled {
-  font-style: italic;
-  color: #aaa;
-}
-
-.files-list .item .info {
-  display: flex;
-  width: 100%;
-  align-items: center;
-}
-
-.files-list .item .info .fa-fw {
-  margin-right: 5px;
-}
-
-.files-list .item .info .name {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.files-list .item.selected {
-  background: #2864dc;
-  color: #fff;
-}
-`]
 
 customElements.define('select-file-modal', SelectFileModal)
 
