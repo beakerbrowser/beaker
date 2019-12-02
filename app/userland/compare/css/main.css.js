@@ -9,28 +9,34 @@ ${inputsCSS}
 ${tooltipCSS}
 
 :host {
-  display: block;
-  max-width: 1000px;
-  margin: 10px auto;
-  border: 1px solid #ccc;
-  border-bottom: 0;
+  --color-folder: #9ec2e0;
+  --color-file: #9a9aab;
+  --color-itemname: #333;
+  --color-itemname-selected: #fff;
+  --color-selected-bg: #4379e4;
+
+  display: flex;
 }
 
 .header {
   display: flex;
   align-items: center;
-  padding: 12px 18px;
-  border-bottom: 1px solid #ccc;
+  padding: 10px;
+  margin: 10px;
+  background: #fff;
+  border-radius: 8px;
 }
 
 .header .title {
-  font-size: 15px;
-  margin-right: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 5px;
 }
 
 .header a {
   text-decoration: none;
   color: var(--blue);
+  font-weight: normal;
 }
 
 .header a:hover {
@@ -41,48 +47,87 @@ ${tooltipCSS}
   font-size: 13px;
 }
 
+.header button {
+  padding: 4px 6px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.header button.primary {
+  padding: 5px 10px 5px 12px;
+  border-radius: 12px;
+  font-size: 10px;
+}
+
+nav {
+  width: 300px;
+  padding-bottom: 100px;
+}
+
+nav h4 {
+  border-top: 1px solid #e3e3ee;
+  color: #b0b0bc;
+  padding-top: 6px;
+  padding-left: 4px;
+  margin: 10px 0 5px 10px;
+  user-select: none;
+}
+
+nav h4:first-child {
+  margin-top: 0;
+}
+
+main {
+  flex: 1;
+  position: sticky;
+  top: 0px;
+  background: #f1f1f6;
+  border-radius: 8px;
+  margin: 0 10px;
+  height: 100vh
+}
+
 .empty {
   padding: 18px;
   background: #f5f5f5;
-  border-bottom: 1px solid #ccc;
   color: #666;
 }
 
 compare-diff-item .item {
+  position: relative;
   display: flex;
   align-items: center;
-  padding: 14px;
+  padding: 4px 14px;
   user-select: none;
+  white-space: nowrap;
 }
 
-compare-diff-item .item.clickable {
-  cursor: pointer;
+compare-diff-item .item.selected {
+  background: var(--color-selected-bg);
 }
 
-compare-diff-item .item.add {
-  color: #116520;
-  background: rgb(239, 255, 241);
-  border-bottom: 1px solid rgb(208, 218, 209);
+compare-diff-item .item .icon {
+  width: 20px;
 }
 
-compare-diff-item .item.mod {
-  color: rgb(115, 95, 17);
-  background: rgb(255, 250, 230);
-  border-bottom: 1px solid rgb(226, 211, 151);
+compare-diff-item .item .icon .fa-fw.fa-folder {
+  color: var(--color-folder);
 }
 
-compare-diff-item .item.del {
-  color: #86120c;
-  background: rgb(253, 234, 233);
-  border-bottom: 1px solid rgb(218, 199, 198);
+compare-diff-item .item .icon .fa-fw.fa-file {
+  -webkit-text-stroke: 1px var(--color-file);
+  color: #fff;
 }
 
-compare-diff-item button.transparent {
-  color: rgba(0,0,0,.75);
+compare-diff-item .item .path {
+  flex: 1;
+  color: var(--color-itemname);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-compare-diff-item button.transparent:hover {
-  background: rgba(0,0,0,.05);
+compare-diff-item .item.selected .path {
+  color: var(--color-itemname-selected);
 }
 
 .revision {
@@ -104,12 +149,34 @@ compare-diff-item button.transparent:hover {
 .revision-indicator.mod { background: #fac800; }
 .revision-indicator.del { background: #d93229; }
 
+compare-diff-item .item.selected .icon span {
+  text-shadow: 0 1px 2px #0006;
+}
+
+compare-diff-item .item.selected .revision-indicator {
+  box-shadow: 0 1px 2px #0006;
+}
+
+compare-diff-item-content {
+  display: block;
+  background: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px;
+}
+
+compare-diff-item-content .info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #889;
+}
+
 compare-diff-item-content .container {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-gap: 5px;
-  padding: 5px;
-  border-bottom: 1px solid #ccc;
 }
 
 compare-diff-item-content .container.split {
@@ -122,14 +189,17 @@ compare-diff-item-content .action {
   margin-bottom: 5px;
 }
 
-compare-diff-item-content .text {
-  font-family: var(--code-font);
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  padding: 3px;
-  white-space: pre;
+compare-diff-item-content .wrap {
+  border: 1px solid #e3e3ee;
+  border-radius: 8px;
+  padding: 10px;
   overflow-x: auto;
   box-sizing: border-box;
+}
+
+compare-diff-item-content .text {
+  font-family: var(--code-font);
+  white-space: pre;
 }
 
 compare-diff-item-content img,
