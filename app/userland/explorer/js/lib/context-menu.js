@@ -60,9 +60,16 @@ export function constructItems (app) {
         click: () => app.onDelete()
       })
       items.push('-')
+      if (!sel.stat.isFile()) {
+        items.push({
+          icon: 'fas fa-fw fa-code-branch',
+          label: 'Merge tool',
+          click: () => app.doCompare(sel.url)
+        })
+      }
       items.push({
         icon: 'fas fa-fw fa-file-export',
-        label: 'Export...',
+        label: 'Export',
         click: () => {
           app.shadowRoot.querySelector('#download-link').click()
         }
@@ -116,17 +123,21 @@ export function constructItems (app) {
     })
     items.push('-')
     items.push({
+      icon: 'fas fa-fw fa-code-branch',
+      label: 'Merge tool',
+      click: () => app.doCompare(window.location.toString())
+    })
+    items.push({
       icon: 'fas fa-fw fa-file-import',
-      label: 'Import...',
+      label: 'Import',
       disabled: !writable,
       click: () => app.onImport()
     })
     items.push({
-      icon: 'fas fa-fw fa-terminal',
-      label: 'Open terminal',
+      icon: 'fas fa-fw fa-file-export',
+      label: 'Export',
       click: () => {
-        navigator.executeSidebarCommand('show-panel', 'web-term')
-        navigator.executeSidebarCommand('set-context', 'web-term', window.location.toString())
+        app.shadowRoot.querySelector('#download-link').click()
       }
     })
   }

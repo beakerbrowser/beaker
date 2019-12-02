@@ -70,6 +70,10 @@ export class CompareApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <nav>
+        ${!this.diff ? html`<div style="padding: 5px">Comparing...</div>` : ''}
+        ${this.diff && !this.diff.length ? html`
+          <div class="empty">No differences found.</div>
+        ` : ''}
         ${repeat(this.diff || [], diff => {
           let heading = lastDiffType !== diff.change ? html`
             <h4>${({'add': 'Add', 'del': 'Delete', 'mod': 'Change'})[diff.change]}</h4>
@@ -112,10 +116,6 @@ export class CompareApp extends LitElement {
             <button class="primary" @click=${this.onClickMergeAll}>Merge all</button>
           ` : ''}
         </div>
-        ${!this.diff ? html`<div style="padding: 5px">Comparing...</div>` : ''}
-        ${this.diff && !this.diff.length ? html`
-          <div class="empty">No differences found.</div>
-        ` : ''}
         ${this.selectedItem ? html`
           <compare-diff-item-content
             .leftOrigin=${this.targetArchive.url}

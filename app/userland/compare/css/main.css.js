@@ -88,9 +88,11 @@ main {
 }
 
 .empty {
-  padding: 18px;
-  background: #f5f5f5;
-  color: #666;
+  margin-left: 10px;
+  padding: 24px;
+  border-radius: 8px;
+  background: rgb(241, 241, 246);
+  color: #667;
 }
 
 compare-diff-item .item {

@@ -886,6 +886,13 @@ export class ExplorerApp extends LitElement {
     })
   }
 
+  async doCompare (base) {
+    var target = await navigator.selectFileDialog({
+      title: 'Select a folder to compare against'
+    })
+    window.open(`beaker://compare/?base=${base}&target=${joinPath(navigator.filesystem.url, target[0])}`)
+  }
+
   async onToggleFriends () {
     var isInFriends = (await navigator.filesystem.query({
       path: '/profile/friends/*',
