@@ -1,11 +1,15 @@
-import { BrowserView } from 'electron'
+import { BrowserView, dialog } from 'electron'
+import os from 'os'
+import pda from 'pauls-dat-api2'
 import * as windows from '../../ui/windows'
 import * as tabManager from '../../ui/tab-manager'
 import * as modals from '../../ui/subwindows/modals'
 import * as filesystem from '../../filesystem/index'
 import * as datArchives from '../../dat/archives'
+import { lookupArchive } from './dat-archive'
+import { joinPath } from '../../../lib/strings'
 import assert from 'assert'
-import { UserDeniedError } from 'beaker-error-constants'
+import { UserDeniedError, ArchiveNotWritableError } from 'beaker-error-constants'
 import _pick from 'lodash.pick'
 
 // typedefs
@@ -179,7 +183,69 @@ export default {
     if (isAllowed) {
       return tab.executeSidebarCommand(...args)
     }
+  },
+
+  async importFilesDialog (url) {
+    if (!(await isBeakerApp(this.sender))) return
+
+    var OS_CAN_IMPORT_FOLDERS_AND_FILES = os.platform() === 'darwin'
+    var res = await dialog.showOpenDialog({
+      title: 'Import files',
+      buttonLabel: 'Import',
+      properties: ['openFile', OS_CAN_IMPORT_FOLDERS_AND_FILES ? 'openDirectory' : false, 'multiSelections', 'createDirectory'].filter(Boolean)
+    })
+    if (res.filePaths.length) {
+      var {checkoutFS, filepath, isHistoric} = await lookupArchive(this.sender, url)
+      if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
+      for (let srcPath of res.filePaths) {
+        await pda.exportFilesystemToArchive({
+          srcPath,
+          dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
+          dstPath: filepath,
+          ignore: ['dat.json'],
+          inplaceImport: false,
+          dryRun: false
+        })
+      }
+    }
+  },
+
+  async exportFilesDialog (urls) {
+    if (!(await isBeakerApp(this.sender))) return
+
+    var res = await dialog.showOpenDialog({
+      title: 'Export files',
+      buttonLabel: 'Export',
+      properties: ['openDirectory', 'createDirectory']
+    })
+    if (res.filePaths.length) {
+      var baseDstPath = res.filePaths[0]
+      urls = Array.isArray(urls) ? urls : [urls]
+      for (let srcUrl of urls) {
+        let {checkoutFS, filepath} = await lookupArchive(this.sender, srcUrl)
+        let dstPath = joinPath(baseDstPath, filepath.split('/').pop())
+        await pda.exportArchiveToFilesystem({
+          srcArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
+          srcPath: filepath,
+          dstPath,
+          overwriteExisting: false,
+          skipUndownloadedFiles: false
+        })
+      }
+    }
   }
+}
+
+async function isBeakerApp (sender) {
+  if (sender.getURL().startsWith('beaker:')) {
+    return true
+  }
+
+  var tab = tabManager.findTab(BrowserView.fromWebContents(sender))
+  if (!tab) return false
+  // check if in the explorer viewer app
+  var handler = await tab.getDriveHandler()
+  return (handler && handler.startsWith('beaker:'))
 }
 
 function isStrArray (v) {

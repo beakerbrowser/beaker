@@ -387,14 +387,6 @@ export class ExplorerApp extends LitElement {
   // =
 
   render () {
-    // TODO: reimplement files exporting -prf
-    // var selectionIsFolder = this.selection[0] ? this.selection[0].stat.isDirectory() : this.pathInfo.isDirectory()
-    // var selectionUrl = this.getRealUrl(this.selection[0] ? joinPath(this.realPathname, this.selection[0].name) : this.realPathname)
-    // var selectionType = (selectionIsFolder ? 'folder' : 'file')
-    // var selectionName = selectionUrl.split('/').pop() || selectionType
-    // if (this.selection[0] && this.selection[0].stat.mount) selectionUrl = `dat://${this.selection[0].stat.mount.key}`
-    // var downloadUrl = `${selectionUrl}${selectionIsFolder ? '?download_as=zip' : ''}`
-
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div
@@ -435,7 +427,6 @@ export class ExplorerApp extends LitElement {
             ${this.renderRightNav()}
           `}
       </div>
-      <input type="file" id="files-picker" multiple @change=${this.onChangeImportFiles} />
     `
   }
 
@@ -759,35 +750,27 @@ export class ExplorerApp extends LitElement {
     this.load()
   }
 
-  onImport (e) {
+  async onImport (e) {
     if (!this.currentDriveInfo.writable) return
-    this.shadowRoot.querySelector('#files-picker').click()
-  }
-
-  onExport (e) {
-   this.shadowRoot.querySelector('#download-link').click()
-  }
-
-  async onChangeImportFiles (e) {
-    var files = e.target.files
-    toast.create(`Importing ${files.length} files...`)
-    var drive = new DatArchive(this.currentDriveInfo.url)
+    toast.create('Importing...')
     try {
-      for (let i = 0, file; (file = files[i]); i++) {
-        let reader = new FileReader()
-        let p = new Promise((resolve, reject) => {
-          reader.onload = e => resolve(e.target.result)
-          reader.onerror = reject
-        })
-        reader.readAsArrayBuffer(file)
-
-        var buf = await p
-        let pathname = joinPath(this.realPathname, file.name)
-        await drive.writeFile(pathname, buf)
-      }
-      toast.create(`Imported ${files.length} files`, 'success')
+      await navigator.importFilesDialog(window.location.toString())
+      toast.create('Import complete', 'success')
     } catch (e) {
-      toast.create(`Import failed: ${e.toString()}`, 'error')
+      console.log(e)
+      toast.create(e.toString(), 'error')
+    }
+  }
+
+  async onExport (e) {
+    var urls = (this.selection.length ? this.selection : this.items).map(item => item.url)
+    toast.create('Exporting...')
+    try {
+      await navigator.exportFilesDialog(urls)
+      toast.create('Export complete', 'success')
+    } catch (e) {
+      console.log(e)
+      toast.create(e.toString(), 'error')
     }
   }
 

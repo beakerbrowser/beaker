@@ -407,10 +407,5 @@ nav .help input {
   margin: 0 2px;
 }
 
-
-#files-picker {
-  display: none;
-}
-
 `
 export default cssStr

@@ -281,7 +281,7 @@ class EditorApp extends LitElement {
     }
   }
 
-  showMenu (x, y, folderPath, item) {
+  showMenu (x, y, folderPath, item, folderItemUrls) {
     var items = []
     if (item) {
       items.push({
@@ -325,7 +325,7 @@ class EditorApp extends LitElement {
       items.push({
         icon: 'fas fa-fw fa-file-export',
         label: 'Export file',
-        click: () => this.onClickExportFiles(item.path)
+        click: () => this.onClickExportFiles([item.url])
       })
     } else {
       items.push({
@@ -356,7 +356,7 @@ class EditorApp extends LitElement {
       items.push({
         icon: 'fas fa-fw fa-file-export',
         label: 'Export files',
-        click: () => this.onClickExportFiles(folderPath)
+        click: () => this.onClickExportFiles(folderItemUrls)
       })
     }
 
@@ -459,7 +459,7 @@ class EditorApp extends LitElement {
   }
 
   onShowMenu (e) {
-    this.showMenu(e.detail.x, e.detail.y, e.detail.folderPath, e.detail.item)
+    this.showMenu(e.detail.x, e.detail.y, e.detail.folderPath, e.detail.item, e.detail.folderItemUrls)
   }
 
   onContextmenuToolbar (e) {
@@ -609,35 +609,26 @@ class EditorApp extends LitElement {
   }
 
   async onClickImportFiles (folderPath) {
-    alert('Todo')
-    return
-    if (this.readOnly) return
-
-    let browserInfo = beaker.browser.getInfo()
-    var osCanImportFoldersAndFiles = browserInfo.platform === 'darwin'
-
-    var files = await beaker.browser.showOpenDialog({
-      title: 'Import files',
-      buttonLabel: 'Import',
-      properties: ['openFile', osCanImportFoldersAndFiles ? 'openDirectory' : false, 'multiSelections', 'createDirectory'].filter(Boolean)
-    })
-    if (files) {
-      for (let src of files) {
-        await DatArchive.importFromFilesystem({
-          src,
-          dst: joinPath(this.origin, this.folderPath),
-          ignore: ['dat.json'],
-          inplaceImport: false
-        })
-      }
-      this.load()
+    toast.create('Importing...')
+    try {
+      await navigator.importFilesDialog(joinPath(this.archive.url, folderPath))
+      toast.create('Import complete', 'success')
+    } catch (e) {
+      console.log(e)
+      toast.create(e.toString(), 'error')
     }
+    this.loadExplorer()
   }
 
-  async onClickExportFiles (folderPath) {
-    alert('Todo')
-    return
-    beaker.browser.downloadURL(`${this.origin}?download_as=zip`)
+  async onClickExportFiles (urls) {
+    toast.create('Exporting...')
+    try {
+      await navigator.exportFilesDialog(urls)
+      toast.create('Export complete', 'success')
+    } catch (e) {
+      console.log(e)
+      toast.create(e.toString(), 'error')
+    }
   }
 }
 

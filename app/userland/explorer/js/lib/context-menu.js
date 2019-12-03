@@ -70,9 +70,7 @@ export function constructItems (app) {
       items.push({
         icon: 'fas fa-fw fa-file-export',
         label: 'Export',
-        click: () => {
-          app.shadowRoot.querySelector('#download-link').click()
-        }
+        click: () => app.onExport()
       })
     }
   } else if (app.selection.length > 1) {
@@ -82,6 +80,11 @@ export function constructItems (app) {
       label: 'Delete',
       disabled: !writable,
       click: () => app.onDelete()
+    })
+    items.push({
+      icon: 'fas fa-fw fa-file-export',
+      label: 'Export',
+      click: () => app.onExport()
     })
   } else {
     let writable = app.currentDriveInfo.writable
@@ -136,9 +139,7 @@ export function constructItems (app) {
     items.push({
       icon: 'fas fa-fw fa-file-export',
       label: 'Export',
-      click: () => {
-        app.shadowRoot.querySelector('#download-link').click()
-      }
+      click: () => app.onExport()
     })
   }
   return items

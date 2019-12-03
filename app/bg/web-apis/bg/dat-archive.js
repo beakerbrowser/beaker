@@ -769,7 +769,7 @@ function normalizeFilepath (str) {
 // - returns {archive, filepath, version}
 // - sets checkoutFS to what's requested by version
 // - throws if the filepath is invalid
-async function lookupArchive (sender, url, opts = {}) {
+export async function lookupArchive (sender, url, opts = {}) {
   // lookup the archive
   var {archiveKey, filepath, version} = await parseUrlParts(url)
   var archive = datArchives.getArchive(archiveKey)

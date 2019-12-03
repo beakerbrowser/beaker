@@ -187,7 +187,8 @@ class FilesExplorer extends LitElement {
   onContextmenuListing (e) {
     e.preventDefault()
     e.stopPropagation()
-    emit(this, 'show-menu', {detail: {x: e.clientX, y: e.clientY, folderPath: this.folderPath}})
+    var folderItemUrls = this.items.map(item => item.url)
+    emit(this, 'show-menu', {detail: {x: e.clientX, y: e.clientY, folderPath: this.folderPath, folderItemUrls}})
   }
 
   onContextmenuItem (e, item) {
