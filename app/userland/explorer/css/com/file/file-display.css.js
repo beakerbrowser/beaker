@@ -19,7 +19,7 @@ ${typographyCSS}
   --text-border-radius: 4px;
   --img-border-radius: 4px;
   --media-max-height: none;
-  --media-margin: 0;
+  --media-padding: 0;
   --mount-padding: 0;
   --goto-padding: 12px 14px;
   --color-drive: #6c8c9e;
@@ -78,7 +78,8 @@ video,
 audio {
   max-width: 100%;
   max-height: var(--media-max-height);
-  margin: var(--media-margin);
+  padding: var(--media-padding);
+  box-sizing: border-box;
 }
 
 :host > img {

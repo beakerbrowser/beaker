@@ -23,7 +23,7 @@ file-display {
   --text-padding: 14px 14px 18px;
   --text-background: #fff;
   --text-max-width: 60em;
-  --media-margin: 14px 14px 18px;
+  --media-padding: 14px 14px 18px;
 }
 
 social-signals {
