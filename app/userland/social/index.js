@@ -1,7 +1,7 @@
-import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { LitElement, html } from './vendor/lit-element/lit-element.js'
 import mainCSS from './css/main.css.js'
 // import './js/com/nav.js'
-import 'beaker://app-stdlib/js/com/status/feed.js'
+import './js/com/status/feed.js'
 
 export class App extends LitElement {
   static get properties () {
@@ -23,7 +23,8 @@ export class App extends LitElement {
 
   async load () {
     if (!this.user) {
-      this.user = await navigator.session.get()
+      let st = await navigator.filesystem.stat('/profile')
+      this.user = {url: `dat://${st.mount.key}`}
     }
     await this.requestUpdate()
     this.shadowRoot.querySelector('beaker-status-feed').load()
@@ -34,7 +35,7 @@ export class App extends LitElement {
 
   render () {
     return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <div class="layout">
         <main>
           <beaker-status-feed .user=${this.user}></beaker-status-feed>
