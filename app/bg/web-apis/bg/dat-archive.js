@@ -12,6 +12,7 @@ import * as archivesDb from '../../dbs/archives'
 import { chunkMapAsync } from '../../../lib/functions'
 import { timer } from '../../../lib/time'
 import * as filesystem from '../../filesystem/index'
+import { query } from '../../filesystem/query'
 import * as users from '../../filesystem/users'
 import * as windows from '../../ui/windows'
 import { DAT_MANIFEST_FILENAME, DAT_CONFIGURABLE_FIELDS, DAT_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DAT_API_TIMEOUT } from '../../../lib/const'
@@ -500,6 +501,15 @@ export default {
 
       checkin('unmounting archive')
       return checkoutFS.pda.unmount(filepath)
+    })
+  },
+
+  async query (url, opts) {
+    return timer(to(opts), async (checkin, pause, resume) => {
+      checkin('looking up archive')
+      const {checkoutFS} = await lookupArchive(this.sender, url, opts)
+      checkin('running query')
+      return query(checkoutFS, opts)
     })
   },
 

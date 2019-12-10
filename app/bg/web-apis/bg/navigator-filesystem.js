@@ -1,7 +1,6 @@
 import { PermissionsError } from 'beaker-error-constants'
 import * as sessionPerms from '../../lib/session-perms'
 import * as filesystem from '../../filesystem/index'
-import { query } from '../../filesystem/query'
 import * as users from '../../filesystem/users'
 import _pick from 'lodash.pick'
 
@@ -53,17 +52,5 @@ export default {
       isRoot,
       isUser
     }
-  },
-
-  /**
-   *
-   * @param {FSQueryOpts} opts
-   * @returns {Promise<FSQueryResult[]>}
-   */
-  async query (opts) {
-    if (!(await sessionPerms.isTrustedApp(this.sender))) {
-      throw new PermissionsError()
-    }
-    return query(opts)
   }
 }

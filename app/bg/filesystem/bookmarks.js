@@ -10,7 +10,7 @@ import { URL } from 'url'
  * @returns {Promise<Object>}
  */
 export async function list () {
-  var files = (await query({
+  var files = (await query(filesystem.get(), {
     path: '/library/bookmarks/*.goto',
   }))
   return files.map(massageBookmark)
@@ -21,7 +21,7 @@ export async function list () {
  * @returns {Promise<Object>}
  */
 export async function get (href) {
-  var file = (await query({
+  var file = (await query(filesystem.get(), {
     path: '/library/bookmarks/*.goto',
     metadata: {href}
   }))[0]

@@ -267,6 +267,19 @@ export const setup = function (rpc) {
       }
     }
 
+    async query (opts) {
+      var errStack = (new Error()).stack
+      try {
+        var res = await datRPC.query(this.url, opts)
+        res.forEach(item => {
+          if (item.stat) item.stat = new Stat(item.stat)
+        })
+        return res
+      } catch (e) {
+        throwWithFixedStack(e, errStack)
+      }
+    }
+
     createFileActivityStream (pathSpec = null) {
       console.warn('The DatArchive createFileActivityStream() API has been deprecated, use watch() instead.')
       return this.watch(pathSpec)

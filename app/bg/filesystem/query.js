@@ -1,4 +1,3 @@
-import * as filesystem from './index'
 import datDns from '../dat/dns'
 import { getArchiveInfo } from '../dat/archives'
 import { joinPath } from '../../lib/strings'
@@ -9,6 +8,8 @@ import _pick from 'lodash.pick'
 // =
 
 /**
+ * @typedef {import('../dat/daemon').DaemonDatArchive} DaemonDatArchive
+ * 
  * @typedef {Object} FSQueryOpts
  * @prop {string|string[]} path
  * @prop {string} [type]
@@ -61,12 +62,11 @@ import _pick from 'lodash.pick'
 // => [{type: 'folder', path: '/profile/comments/foo.txt', stat, drive}]
 
 /**
+ * @param {DaemonDatArchive} root
  * @param {FSQueryOpts} opts
  * @returns {Promise<FSQueryResult[]>}
  */
-export async function query (opts) {
-  var root = filesystem.get()
-
+export async function query (root, opts) {
   // validate opts
   if (!opts || !opts.path) throw new Error('The `path` parameter is required')
   if (!(typeof opts.path === 'string' || (Array.isArray(opts.path) && opts.path.every(v => typeof v === 'string')))) {

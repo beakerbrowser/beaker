@@ -26,6 +26,8 @@ export default {
   mount: 'promise',
   unmount: 'promise',
 
+  query: 'promise',
+
   watch: 'readable',
   createNetworkActivityStream: 'readable',
 
