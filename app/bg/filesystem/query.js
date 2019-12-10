@@ -14,7 +14,7 @@ import _pick from 'lodash.pick'
  * @prop {string|string[]} path
  * @prop {string} [type]
  * @prop {string} [mount]
- * @prop {Object} [meta]
+ * @prop {Object} [metadata]
  * @prop {string} [sort] - 'name', 'ctime', 'mtime'
  * @prop {boolean} [reverse]
  * @prop {number} [limit]
@@ -58,7 +58,7 @@ import _pick from 'lodash.pick'
 // navigator.filesystem.query({type: 'mount', mount: url, path: ['/profile/friends/*', '/profile/friends/*/friends/*']})
 // => [{type: 'mount', path: '/profile/friend/bob', stat, mount, drive}, ...]
 
-// navigator.filesystem.query({type: 'file', meta: {href: url}, path: ['/profile/comments', '/profile/friends/*/comments', '/profile/friends/*/friends/*/comments']})
+// navigator.filesystem.query({type: 'file', metadata: {href: url}, path: ['/profile/comments', '/profile/friends/*/comments', '/profile/friends/*/friends/*/comments']})
 // => [{type: 'folder', path: '/profile/comments/foo.txt', stat, drive}]
 
 /**
@@ -78,8 +78,8 @@ export async function query (root, opts) {
   if (opts.mount && typeof opts.mount !== 'string') {
     throw new Error('The `mount` parameter must be a string')
   }
-  if (opts.meta && typeof opts.meta !== 'object') {
-    throw new Error('The `meta` parameter must be an object')
+  if (opts.metadata && typeof opts.metadata !== 'object') {
+    throw new Error('The `metadata` parameter must be an object')
   }
 
   // massage opts
@@ -140,7 +140,16 @@ export async function query (root, opts) {
 
     if (opts.type && type !== opts.type) continue
     if (opts.mount && (type !== 'mount' || stat.mount.key.toString('hex') !== opts.mount)) continue
-    // meta TODO
+    if (opts.metadata) {
+      let metaMatch = true
+      for (let k in opts.metadata) {
+        if (stat.metadata[k] !== opts.metadata[k]) {
+          metaMatch = false
+          break
+        }
+      }
+      if (!metaMatch) continue
+    }
 
     var {drive, url} = await getParentDriveInfo(path)
     results.push({
