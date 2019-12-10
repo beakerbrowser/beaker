@@ -27,7 +27,7 @@ export class StatusFeed extends LitElement {
     this.user = undefined
     this.author = undefined
     this.followedUsers = []
-    this.statuses = []
+    this.statuses = undefined
     this.poppedUpStatus = undefined
   }
 
@@ -80,26 +80,32 @@ export class StatusFeed extends LitElement {
             @submit=${this.onSubmitStatus}
           ></beaker-status-composer>
         ` : ''}
-        ${repeat(this.statuses, status => html`
-          <beaker-status
-            expandable
-            .status=${status}
-            user-url="${this.user.url}"
-            @expand=${this.onExpandStatus}
-            @delete=${this.onDeleteStatus}
-          ></beaker-status>
-        `)}
-        ${this.statuses.length === 0
-          ? html`
-            <div class="empty">
-              <div><span class="fas fa-image"></span></div>
-              <div>
-                ${this.author
-                  ? 'This user has not posted anything.'
-                  : 'This is your feed. It will show statuses from users you follow.'}
+        ${typeof this.statuses === 'undefined' ? html`
+          <div class="empty">
+            <span class="spinner"></span>
+          </div>
+        ` : html`
+          ${repeat(this.statuses, status => html`
+            <beaker-status
+              expandable
+              .status=${status}
+              user-url="${this.user.url}"
+              @expand=${this.onExpandStatus}
+              @delete=${this.onDeleteStatus}
+            ></beaker-status>
+          `)}
+          ${this.statuses.length === 0
+            ? html`
+              <div class="empty">
+                <div><span class="fas fa-image"></span></div>
+                <div>
+                  ${this.author
+                    ? 'This user has not posted anything.'
+                    : 'This is your feed. It will show statuses from users you follow.'}
+                </div>
               </div>
-            </div>
-          ` : ''}
+            ` : ''}
+        `}
       </div>
       <div class="popup-container"
         @submit-comment=${this.onSubmitComment}
@@ -157,8 +163,8 @@ export class StatusFeed extends LitElement {
   async onSubmitComment (e) {
     // add the new comment
     try {
-      var {topic, replyTo, body} = e.detail
-      await uwg.comments.add({href: topic, replyTo, body})
+      var {href, replyTo, body} = e.detail
+      await uwg.comments.add({href, replyTo, body})
     } catch (e) {
       alert('Something went wrong. Please let the Beaker team know! (An error is logged in the console.)')
       console.error('Failed to add comment')

@@ -1,28 +1,21 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
+import emptyCSS from '../empty.css.js'
+import spinnerCSS from '../spinner.css.js'
 
 const cssStr = css`
+${emptyCSS}
+${spinnerCSS}
+
 :host {
   display: block;
 }
 
-beaker-status-composer,
+beaker-status-composer {
+  margin: 20px 0 30px;
+}
+
 beaker-status {
-  margin-top: 10px;
-  margin-bottom: 35px;
-}
-
-.empty {
-  background: #fafafa;
-  padding: 40px 0 0;
-  color: #8a8a8a;
-  text-align: center;
-  min-height: 200px;
-}
-
-.empty .fas {
-  font-size: 85px;
-  margin-bottom: 30px;
-  color: #ccc;
+  margin-bottom: 10px;
 }
 `
 export default cssStr

@@ -12,7 +12,7 @@ export class ViewStatusPopup extends BasePopup {
   static get styles () {
     return [popupsCSS, css`
     .popup-inner {
-      width: 560px;
+      width: 640px;
       overflow: visible;
     }
 
@@ -64,12 +64,13 @@ export class ViewStatusPopup extends BasePopup {
     return html`
       <beaker-status
         expanded
+        inline-avi
         .status=${this.status}
         user-url="${this.user.url}"
       ></beaker-status>
       <beaker-comments-thread
         .comments=${this.status.comments}
-        topic-url="${this.status.url}"
+        href="${this.status.url}"
         user-url="${this.user.url}"
       ></beaker-comments-thread>
     `

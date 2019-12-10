@@ -37,7 +37,7 @@ export class StatusComposer extends LitElement {
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <div class="input-placeholder" @click=${this.onClickPlaceholder}>
-        <span class="fas fa-fw fa-pencil-alt" style="margin-right: 8px"></span> What's happening?
+        <span class="fas fa-fw fa-pen-alt" style="margin-right: 8px"></span> Post a new file
       </div>
     `
   }

@@ -30,18 +30,21 @@ export class Status extends LitElement {
 
   render () {
     if (!this.status || !this.status.content) return
-    var viewProfileUrl = this.status.drive.url // TODO
+    var viewProfileUrl = '/' + this.status.drive.url.slice('dat://'.length) // TODO
+    var viewStatusUrl = viewProfileUrl + '/status/' + this.status.url.split('/').pop()
     var content = this.expanded ? this.status.content : this.status.content.slice(0, RENDER_LIMIT)
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <div class="inner" @click=${this.onTopClick}>
+        <a class="avatar" href="${viewProfileUrl}"><img src="asset:thumb:${this.status.drive.url}"></a>
         <div class="content-column">
           <div class="header">
-            <a class="avatar" href="${viewProfileUrl}"><img src="asset:thumb:${this.status.drive.url}"></a>
-            <a class="title" href="${viewProfileUrl}">${this.status.drive.title}</a>
-            <a class="id" href="${viewProfileUrl}">pfrazee@beaker.network</a>
-            <a class="date" href=${this.status.url}>${timeDifference(this.status.stat.ctime, true, 'ago')}</a>
-            <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-ellipsis-h"></span></button>
+            <div class="header-line">
+              <a class="title" href="${viewStatusUrl}">${this.status.url.split('/').pop()}</a>
+              <a class="date" href=${viewStatusUrl}>${timeDifference(this.status.stat.ctime, true, 'ago')}</a>
+              by&nbsp;<a class="id" href="${viewProfileUrl}">TODO@beaker.network</a>
+              <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-ellipsis-h"></span></button>
+            </div>
           </div>
           <div class="body">${content}${this.isTooLong ? '...' : ''}</div>
           ${this.isTooLong ? html`<a class="readmore" href="#">Read more</a>` : ''}

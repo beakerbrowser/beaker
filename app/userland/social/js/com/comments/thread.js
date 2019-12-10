@@ -12,7 +12,7 @@ export class CommentsThread extends LitElement {
   static get properties () {
     return {
       comments: {type: Array},
-      href: {type: String, attribute: 'topic-url'},
+      href: {type: String},
       userUrl: {type: String, attribute: 'user-url'},
       activeReplies: {type: Object},
       composerPlaceholder: {type: String, attribute: 'composer-placeholder'}
@@ -52,11 +52,11 @@ export class CommentsThread extends LitElement {
     return html`
       <div class="comment">
         <div class="header">
-          <a class="title" href="${comment.author.url}">${comment.author.title}</a>
-          <a class="permalink" href="${comment.url}">${timeDifference(comment.createdAt, true, 'ago')}</a>
+          <a class="title" href="${comment.drive.url}">${comment.drive.title}</a>
+          <a class="permalink" href="${comment.url}">${timeDifference(comment.stat.ctime, true, 'ago')}</a>
             <button class="menu transparent" @click=${e => this.onClickMenu(e, comment)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
-        <div class="body">${comment.body}</div>
+        <div class="body">${comment.content.body}</div>
         <div class="footer">
           <a href="#" @click=${e => this.onClickToggleReply(e, comment.url)}>
             ${this.activeReplies[comment.url]
@@ -68,13 +68,13 @@ export class CommentsThread extends LitElement {
               <beaker-reactions
                 user-url="${this.userUrl}"
                 .reactions=${comment.reactions}
-                topic="${comment.url}"
+                href="${comment.url}"
               ></beaker-reactions>`
             : ''}
         </div>
         ${this.activeReplies[comment.url] ? html`
           <beaker-comment-composer
-            topic="${comment.href}"
+            href="${comment.content.href}"
             reply-to="${comment.url}"
             alwaysActive
             @submit-comment=${e => this.onSubmitComment(e, comment.url)}
@@ -115,7 +115,7 @@ click: () => {
       }}
     ]
 
-    if (this.userUrl === comment.author.url) {
+    if (this.userUrl === comment.drive.url) {
       items.push('-')
       items.push({icon: 'fas fa-fw fa-trash', label: 'Delete comment', click: () => this.onClickDelete(comment) })
     }

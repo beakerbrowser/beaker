@@ -9,7 +9,7 @@ ${buttons2css}
 :host {
   display: block;
   background: #fff;
-  border: 1px solid var(--border-color);
+  border: 1px solid #ccd;
   border-radius: 8px;
   overflow: hidden;
 }

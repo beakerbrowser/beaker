@@ -50,13 +50,14 @@ import { chunkMapAsync } from './functions.js'
 
 /**
  * @param {FSQueryOpts} query
+ * @param {DatArchive} [drive]
  * @returns {Promise<FSQueryResult[]>}
  */
-export async function queryRead (query) {
-  var files = await navigator.filesystem.query(query)
+export async function queryRead (query, drive = navigator.filesystem) {
+  var files = await drive.query(query)
   await chunkMapAsync(files, 10, async (file) => {
     if (isFilenameBinary(file.path)) return
-    file.content = await navigator.filesystem.readFile(file.path, 'utf8').catch(err => undefined)
+    file.content = await drive.readFile(file.path, 'utf8').catch(err => undefined)
     if (file.path.endsWith('.json')) {
       try {
         file.content = JSON.parse(file.content)
@@ -70,10 +71,11 @@ export async function queryRead (query) {
 
 /**
  * @param {FSQueryOpts} query
+ * @param {DatArchive} [drive]
  * @returns {Promise<boolean>}
  */
-export async function queryHas (query) {
-  var files = await navigator.filesystem.query(query)
+export async function queryHas (query, drive = navigator.filesystem) {
+  var files = await drive.query(query)
   return files.length > 0
 }
 

@@ -7,6 +7,13 @@ import { queryRead, queryHas, ensureParentDir, ensureMount, ensureUnmount, getAv
 /**
  * @typedef {import('./fs.js').FSQueryResult} FSQueryResult
  * @typedef {import('./fs.js').DriveInfo} DriveInfo
+ * 
+ * @typedef {DriveInfo} SocialProfile
+ * @prop {boolean} isUser
+ * @prop {boolean} isUserFollowing
+ * @prop {boolean} isFollowingUser
+ * @prop {DriveInfo[]} followers
+ * @prop {DriveInfo[]} following
  *
  * @typedef {FSQueryResult} Comment
  * @prop {string} content.type
@@ -43,9 +50,10 @@ var profileCache = {}
 export const profiles = {
   /**
    * @param {string} key 
-   * @returns {Promise<DriveInfo?>}
+   * @param {DriveInfo} user
+   * @returns {Promise<SocialProfile>}
    */
-  async get (key) {
+  async get (key, user) {
     var match = DAT_KEY_REGEX.exec(key)
     if (match) key = match[0]
     else key = await DatArchive.resolveName(key)
@@ -55,16 +63,20 @@ export const profiles = {
       return profileCache[key]
     }
 
-    // check network expanding from self -> friends -> foafs
-    var entry
-    for (let path of ['/profile', '/profile/friends/*', '/profile/friends/*/friends/*']) {
-      var res = /** @type FSQueryResult[] */(await navigator.filesystem.query({path, mount: key}))
-      if (res[0]) {
-        entry = /** @type FSQueryResult */(res[0])
-        break
-      }
-    }
-    return entry ? entry.mount : undefined
+    var drive = new DatArchive(key)
+    var [profile, followersQuery, followingQuery] = await Promise.all([
+      drive.getInfo(),
+      friends.list({target: key}),
+      friends.list({author: key})
+    ])
+
+    profile.isUser = profile.url === user.url
+    profile.followers = followersQuery.map(item => item.drive)
+    profile.following = followingQuery.map(item => item.mount)
+    profile.isFollowingUser = Boolean(profile.following.find(f => f.url === user.url))
+    profile.isUserFollowing = Boolean(profile.followers.find(f => f.url === user.url))
+
+    return profile
   }
 }
 
@@ -76,7 +88,9 @@ export const friends = {
    * @returns {Promise<FSQueryResult[]>}
    */
   async list ({author, target} = {author: undefined, target: undefined}) {
-    return navigator.filesystem.query({
+    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    return drive.query({
+      type: 'mount',
       path: getFriendPaths(author),
       mount: target
     })
@@ -121,7 +135,29 @@ export const feed = {
    * @returns {Promise<FSQueryResult[]>}
    */
   async list ({author, sort, reverse, offset, limit} = {author: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
-    return queryRead({path: getFeedPaths(author), sort, reverse, offset, limit})
+    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    return queryRead({path: getFeedPaths(author), sort, reverse, offset, limit}, drive)
+  },
+
+  /**
+   * 
+   * @param {string} author 
+   * @param {string} name 
+   * @returns {Promise<FSQueryResult>}
+   */
+  async get (author, name) {
+    let path = `/feed/${name}`
+    let drive = new DatArchive(author)
+    let url = drive.url + path
+    return {
+      type: 'file',
+      path,
+      url,
+      stat: await drive.stat(path),
+      drive: await drive.getInfo(),
+      mount: undefined,
+      content: await drive.readFile(path)
+    }
   },
 
   /**
@@ -385,7 +421,7 @@ function getFriendPaths (author) {
   if (author === 'me') {
     return `/profile/friends/*`
   } else if (author) {
-    return `/profile/friends/${author}/friends/*`
+    return `/friends/*`
   } else {
     return [
       `/profile/friends/*`,
@@ -402,7 +438,7 @@ function getFeedPaths (author) {
   if (author === 'me') {
     return `/profile/feed/*`
   } else if (author) {
-    return `/profile/friends/${author}/feed/*`
+    return `/feed/*`
   } else {
     return [
       `/profile/feed/*`,

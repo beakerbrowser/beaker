@@ -5,7 +5,7 @@ const cssStr = css`
 ${buttons2css}
 
 :host {
-  --body-font-size: 15px;
+  --body-font-size: 16px;
   --header-font-size: 13px;
   --title-font-size: 14px;
   --footer-font-size: 12px;
@@ -39,29 +39,16 @@ a:hover {
 }
 
 .inner {
-  display: flex;
-  align-items: center;
-  width: var(--inner-width);
-}
-
-.content-column {
-  flex: 1;
-}
-
-.header {
   position: relative;
   display: flex;
-  align-items: center;
-  padding: 8px 16px 4px;
-  font-size: var(--header-font-size);
-  line-height: var(--header-font-size);
-  color: var(--header-color);
+  align-items: top;
+  width: var(--inner-width);
+  padding: 10px 10px;
 }
 
 .avatar {
-  position: absolute;
-  left: -28px;
-  top: -20px;
+  flex: 0 0 60px;
+  padding-top: 5px;
 }
 
 .avatar img {
@@ -70,7 +57,40 @@ a:hover {
   object-fit: cover;
   width: 48px;
   height: 48px;
-  border: 5px solid #fff;
+}
+
+:host([inline-avi]) .avatar {
+  position: absolute;
+  top: 7px;
+  left: 10px;
+  z-index: 1;
+}
+
+:host([inline-avi]) .avatar img {
+  width: 36px;
+  height: 36px;
+}
+
+.content-column {
+  flex: 1;
+}
+
+.header {
+  position: relative;
+  font-size: var(--header-font-size);
+  line-height: var(--header-font-size);
+  color: var(--header-color);
+}
+
+:host([inline-avi]) .header {
+  padding: 8px 0px 14px 46px;
+}
+
+.header-line {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
 }
 
 .title {
@@ -78,7 +98,6 @@ a:hover {
   color: var(--title-color);
   font-weight: bold;
   margin-right: 12px;
-  margin-left: 20px;
   line-height: 17px;
 }
 
@@ -90,19 +109,19 @@ a:hover {
 }
 
 .header .menu {
-  margin-left: auto;
   padding: 2px 4px;
 }
 
 .body {
   color: rgba(0, 0, 0, 0.9);
-  padding: 6px 18px;
+  padding: 4px 0;
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: var(--body-font-size);
   line-height: 1.4;
   white-space: pre-line;
+  max-width: 40em;
 }
 
 .readmore {
@@ -116,7 +135,7 @@ a:hover {
   align-items: center;
   font-size: var(--footer-font-size);
   color: var(--footer-color);
-  padding: 4px 18px 8px;
+  padding: 4px 0 8px;
 }
 
 .footer a {
