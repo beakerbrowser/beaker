@@ -52,7 +52,7 @@ export class CommentsThread extends LitElement {
     return html`
       <div class="comment">
         <div class="header">
-          <a class="title" href="${comment.drive.url}">${comment.drive.title}</a>
+          <a class="title" href="/${comment.drive.url.slice('dat://'.length)}">${comment.drive.title}</a>
           <a class="permalink" href="${comment.url}">${timeDifference(comment.stat.ctime, true, 'ago')}</a>
             <button class="menu transparent" @click=${e => this.onClickMenu(e, comment)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>

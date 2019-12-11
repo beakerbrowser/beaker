@@ -18,11 +18,12 @@ ${buttons2css}
   --comment-left-margin: 12px;
   --composer-padding: 14px 18px;
   --composer-margin: 0;
-  --composer-border: 1px solid #ddd;
+  --composer-border: 1px solid #ccd;
 
   display: block;
   border-radius: 4px;
   background: #fff;
+  margin: 10px 0;
 }
 
 a {

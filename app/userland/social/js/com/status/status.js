@@ -36,13 +36,13 @@ export class Status extends LitElement {
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <div class="inner" @click=${this.onTopClick}>
-        <a class="avatar" href="${viewProfileUrl}"><img src="asset:thumb:${this.status.drive.url}"></a>
+        <a class="avatar" href="${viewProfileUrl}"><img src="asset:thumb:${this.status.drive.url}?cache_buster=${Date.now()}"></a>
         <div class="content-column">
           <div class="header">
             <div class="header-line">
-              <a class="title" href="${viewStatusUrl}">${this.status.url.split('/').pop()}</a>
+              <a class="title" href="${viewProfileUrl}">${this.status.drive.title}</a>
               <a class="date" href=${viewStatusUrl}>${timeDifference(this.status.stat.ctime, true, 'ago')}</a>
-              by&nbsp;<a class="id" href="${viewProfileUrl}">TODO@beaker.network</a>
+              <a class="id" href="${viewProfileUrl}">TODO@beaker.network</a>
               <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-ellipsis-h"></span></button>
             </div>
           </div>

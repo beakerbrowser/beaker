@@ -6,7 +6,7 @@ ${colorscss}
 
 button {
   background: #fff;
-  border: 1px solid var(--border-color);
+  border: 1px solid #dde;
   border-radius: 3px;
   box-shadow: 0 1px 1px rgba(0,0,0,.05);
   padding: 5px 10px;

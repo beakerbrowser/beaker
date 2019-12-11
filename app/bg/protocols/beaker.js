@@ -213,7 +213,7 @@ async function beakerProtocol (request, respond) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'explorer'), cb)
   }
   if (requestUrl === 'beaker://social' || requestUrl.startsWith('beaker://social/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'social'), cb)
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'social'), cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://cmd-pkg' || requestUrl.startsWith('beaker://cmd-pkg/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'cmd-pkg'), cb)

@@ -69,7 +69,7 @@ export class App extends LitElement {
           <a class=${classMap({active: this.route === 'notifications' })} href="/notifications"><span class="fas fa-fw fa-bell"></span> Notifications</a>
           <span class="spacer"></span>
           ${this.user ? html`<a href="/${this.user.url.slice('dat://'.length)}">
-            <img src="asset:thumb:${this.user.url}">
+            <img src="asset:thumb:${this.user.url}?cache_buster=${Date.now()}">
             ${this.user.title}
           </a>` : ''}
         </div>

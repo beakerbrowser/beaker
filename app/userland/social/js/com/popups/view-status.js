@@ -12,7 +12,8 @@ export class ViewStatusPopup extends BasePopup {
   static get styles () {
     return [popupsCSS, css`
     .popup-inner {
-      width: 640px;
+      width: 100%;
+      max-width: 640px;
       overflow: visible;
     }
 

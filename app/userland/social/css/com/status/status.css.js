@@ -13,10 +13,9 @@ ${buttons2css}
   --title-color: #334;
   --header-color: #889;
   --footer-color: #889;
-  --border-color: transparent;
 
   display: block;
-  border: 1px solid var(--border-color);
+  border: 1px solid #ccd;
   border-radius: 8px;
   background: #fff;
 }
@@ -27,7 +26,7 @@ ${buttons2css}
 
 :host([expandable]) .inner:hover {
   background: #fbfbfb;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 a {
@@ -43,7 +42,7 @@ a:hover {
   display: flex;
   align-items: top;
   width: var(--inner-width);
-  padding: 10px 10px;
+  padding: 10px 12px;
 }
 
 .avatar {
@@ -110,6 +109,7 @@ a:hover {
 
 .header .menu {
   padding: 2px 4px;
+  margin-left: auto;
 }
 
 .body {
@@ -135,7 +135,7 @@ a:hover {
   align-items: center;
   font-size: var(--footer-font-size);
   color: var(--footer-color);
-  padding: 4px 0 8px;
+  padding: 4px 0 0;
 }
 
 .footer a {

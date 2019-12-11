@@ -2,6 +2,7 @@ import { LitElement, html } from '../../../vendor/lit-element/lit-element.js'
 import * as uwg from '../../lib/uwg.js'
 import { pluralize } from '../../lib/strings.js'
 import * as toast from '../toast.js'
+import { EditProfilePopup } from '../popups/edit-profile.js'
 import headerCSS from '../../../css/com/profiles/header.css.js'
 
 export class ProfileHeader extends LitElement {
@@ -35,9 +36,9 @@ export class ProfileHeader extends LitElement {
     var numFollowers = this.profile.followers.length
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
-      <a class="avatar" href="/${id}"><img src="asset:thumb:${this.profile.url}"></a>
+      <a class="avatar" href="/${id}"><img src="asset:thumb:${this.profile.url}?cache_buster=${Date.now()}"></a>
       ${this.profile.isUser ? html`
-        <button class="primary big rounded">Edit profile</button>
+        <button class="primary big rounded" @click=${this.onEditProfile}>Edit profile</button>
       ` : html`
         <button class="primary big rounded" @click=${this.onToggleFollow}>${this.profile.isUserFollowing ? 'Unfollow' : 'Follow'}</button>
       `}
@@ -54,6 +55,15 @@ export class ProfileHeader extends LitElement {
 
   // events
   // =
+
+  async onEditProfile (e) {
+    try {
+      await EditProfilePopup.create(document.body, {user: this.profile})
+      this.load()
+    } catch (e) {
+      // ignore
+    }
+  }
 
   async onToggleFollow (e) {
     try {

@@ -21,7 +21,7 @@ ${inputscss}
   background: #fff;
   box-shadow: 0 2px 25px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.55);
-  border-radius: 4px;
+  border-radius: 8px;
   width: 450px;
   margin: 80px auto;
   overflow: hidden;
@@ -81,6 +81,7 @@ ${inputscss}
 .popup-inner input {
   display: block;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .popup-inner label.toggle {
