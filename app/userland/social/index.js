@@ -81,15 +81,15 @@ export class App extends LitElement {
   renderView () {
     switch (this.route) {
       case 'home': return html`
-        <div class="layout">
+        <div class="layout narrow">
           <main><beaker-status-feed loadable .user=${this.user}></beaker-status-feed></main>
         </div>
       `
       case 'notifications': return html`
-        <div class="layout"><main>todo</main></div>
+        <div class="layout narrow"><main>todo</main></div>
       `
       case 'profile': return html`
-        <div class="layout">
+        <div class="layout narrow">
           <main>
             <beaker-profile-header loadable .user=${this.user} id=${this.routeParams.groups.id}></beaker-profile-header>
             <beaker-status-feed loadable .user=${this.user} author=${this.routeParams.groups.id}></beaker-status-feed>

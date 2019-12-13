@@ -77,6 +77,20 @@ export function highlightSearchResult (str = '', nonce = 0) {
   return makeSafe(str).replace(start, '<strong>').replace(end, '</strong>')
 }
 
+export function normalizeUrl (str = '') {
+  try {
+    let url = new URL(str)
+    let res = url.protocol + '//' + url.hostname
+    if (url.port) res += ':' + url.port
+    res += url.pathname.replace(/(\/)$/, '') || '/'
+    if (url.search && url.search !== '?') res += url.search
+    if (url.hash && url.hash !== '#') res += url.hash
+    return res
+  } catch (e) {
+    return str
+  }
+}
+
 export function slugifyUrl (str = '') {
   try {
     let url = new URL(str)
@@ -84,7 +98,7 @@ export function slugifyUrl (str = '') {
   } catch (e) {
     // ignore
   }
-  return slugify(str)
+  return slugify(normalizeUrl(str))
 }
 
 const reservedChars = /[ <>:"/\\|?*\x00-\x1F]/g

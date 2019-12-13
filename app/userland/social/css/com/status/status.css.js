@@ -1,14 +1,16 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
-import buttons2css from '../../buttons.css.js'
+import buttonsCSS from '../../buttons.css.js'
+import tooltipCSS from '../tooltip.css.js'
 
 const cssStr = css`
-${buttons2css}
+${buttonsCSS}
+${tooltipCSS}
 
 :host {
   --body-font-size: 16px;
   --header-font-size: 13px;
   --title-font-size: 14px;
-  --footer-font-size: 12px;
+  --footer-font-size: 15px;
   --inner-width: initial;
   --title-color: #334;
   --header-color: #889;
@@ -61,13 +63,17 @@ a:hover {
 :host([inline-avi]) .avatar {
   position: absolute;
   top: 7px;
-  left: 10px;
+  left: 14px;
   z-index: 1;
 }
 
 :host([inline-avi]) .avatar img {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
+}
+
+:host([inline-avi]) .inner {
+  padding: 10px 16px;
 }
 
 .content-column {
@@ -82,7 +88,7 @@ a:hover {
 }
 
 :host([inline-avi]) .header {
-  padding: 8px 0px 14px 46px;
+  padding: 5px 0px 14px 40px;
 }
 
 .header-line {
@@ -138,23 +144,39 @@ a:hover {
   padding: 4px 0 0;
 }
 
-.footer a {
-  margin: 0 5px;
-  color: inherit;
-}
-
 .footer > * {
   white-space: nowrap;
 }
 
-.footer a:first-child {
-  margin-left: 0;
+.footer a {
+  color: inherit;
+  margin-right: 40px;
+  padding: 3px 6px;
+  border-radius: 16px;
+
+  /* to counteract the padding */
+  position: relative;
+  left: -6px;
 }
 
-beaker-reactions {
-  display: flex;
-  flex-wrap: wrap;
-  margin-left: 8px;
+.footer a:hover {
+  text-decoration: none;
+  color: var(--blue);
+  background: #dde8fd;
+  cursor: pointer;
+}
+
+.footer a.selected {
+  color: var(--blue);
+}
+
+.footer a.likes:hover {
+  color: #E91E63;
+  background: #ffe1eb;
+}
+
+.footer a.likes.selected {
+  color: #E91E63;
 }
 
 .permalink {

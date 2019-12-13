@@ -10,7 +10,7 @@ ${buttons2css}
   background: #fff;
   padding: 14px 18px;
   border: 1px solid #ccd;
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
   --input-font-size: 14px;
 }

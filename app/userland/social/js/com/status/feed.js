@@ -54,7 +54,10 @@ export class StatusFeed extends LitElement {
 
   async loadFeedAnnotations (statuses) {
     await Promise.all(statuses.map(async (status) => {
-      status.numComments = await uwg.comments.count({href: status.url})
+      ;[status.likedBy, status.numComments] = await Promise.all([
+        uwg.likes.tabulate(status.url),
+        uwg.comments.count({href: status.url})
+      ])
     }))
   }
 
@@ -74,7 +77,7 @@ export class StatusFeed extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
-      <div class="feed">
+      <div class="feed" @toggle-like=${this.onToggleLike}>
         ${!this.author ? html`
           <beaker-status-composer
             @submit=${this.onSubmitStatus}
@@ -108,6 +111,7 @@ export class StatusFeed extends LitElement {
         `}
       </div>
       <div class="popup-container"
+        @toggle-like=${this.onToggleLike}
         @submit-comment=${this.onSubmitComment}
         @delete-comment=${this.onDeleteComment}
       ></div>
@@ -125,6 +129,27 @@ export class StatusFeed extends LitElement {
     } catch (e) { /* ignore */ }
     this.poppedUpStatus = null
     this.refreshFeed()
+  }
+
+  async onToggleLike (e) {
+    let statusEl = e.target
+    let status = e.detail.status
+    try {
+      let i = status.likedBy.findIndex(drive => drive.url === this.user.url)
+      if (i !== -1) {
+        await uwg.likes.remove(status.url)
+      } else {
+        await uwg.likes.put(status.url)
+      }
+    } catch (e) {
+      alert('Something went wrong. Please let the Beaker team know! (An error is logged in the console.)')
+      console.error('Failed to add/remove like')
+      console.error(e)
+      return
+    }
+
+    status.likedBy = await uwg.likes.tabulate(status.url)
+    statusEl.requestUpdate()
   }
 
   async onSubmitStatus (e) {

@@ -28,11 +28,21 @@ export class Status extends LitElement {
     return !this.expanded && this.status.content.length > RENDER_LIMIT
   }
 
+  get isLiked () {
+    // well, I like to think I am...
+    return this.status && this.status.likedBy && this.status.likedBy.find(drive => drive.url === this.userUrl)
+  }
+
   render () {
     if (!this.status || !this.status.content) return
     var viewProfileUrl = '/' + this.status.drive.url.slice('dat://'.length) // TODO
     var viewStatusUrl = viewProfileUrl + '/status/' + this.status.url.split('/').pop()
     var content = this.expanded ? this.status.content : this.status.content.slice(0, RENDER_LIMIT)
+    var isLiked = this.isLiked
+    var likesTooltip = 'Liked by:\n' + this.status.likedBy.slice(0, 4).map(drive => drive.title).join('\n')
+    if (this.status.likedBy.length > 4) {
+      likesTooltip += `\nand ${this.status.likedBy.length - 4} more`
+    }
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <div class="inner" @click=${this.onTopClick}>
@@ -58,10 +68,14 @@ export class Status extends LitElement {
               <div class="embed-description">The Beaker guy</div>
           </div>*/}
           <div class="footer">
-            <span class="comments">
+            <a class="comments" @click=${this.onTopClick}>
               <span class="far fa-fw fa-comment"></span>
               ${this.status.numComments}
-            </span>
+            </a>
+            <a class="likes ${isLiked ? 'selected' : ''}" @click=${this.onLikeClick} data-tooltip=${likesTooltip}>
+              <span class="${isLiked ? 'fas' : 'far'} fa-fw fa-heart"></span>
+              ${this.status.likedBy.length}
+            </a>
           </div>
         </div>
       </div>
@@ -79,7 +93,13 @@ export class Status extends LitElement {
     }
     e.preventDefault()
     e.stopPropagation()
-    emit(this, 'expand', {bubbles: true, composed: true, detail: {status: this.status}})
+    emit(this, 'expand', {detail: {status: this.status}})
+  }
+
+  onLikeClick (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    emit(this, 'toggle-like', {detail: {status: this.status}})
   }
 
   onClickMenu (e) {
@@ -88,12 +108,14 @@ export class Status extends LitElement {
 
     var items = [
       {icon: 'far fa-fw fa-file-alt', label: 'View status', click: () => window.open(this.status.url) },
-      {icon: 'fas fa-fw fa-link',
-label: 'Copy status URL',
-click: () => {
-        writeToClipboard(this.status.url)
-        toast.create('Copied to your clipboard')
-      }}
+      {
+        icon: 'fas fa-fw fa-link',
+        label: 'Copy status URL',
+        click: () => {
+          writeToClipboard(this.status.url)
+          toast.create('Copied to your clipboard')
+        }
+      }
     ]
 
     if (this.userUrl === this.status.drive.url) {

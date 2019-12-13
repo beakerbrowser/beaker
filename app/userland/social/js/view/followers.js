@@ -33,7 +33,7 @@ export class FollowersView extends LitElement {
   render () {
     if (!this.followers) return html``
     return html`
-      <div class="layout">
+      <div class="layout narrow">
         <main>
           <beaker-profile-header loadable .user=${this.user} id=${this.author}></beaker-profile-header>
           ${this.followers.length === 0 ? html`

@@ -1,5 +1,5 @@
-import { slugifyUrl, DAT_KEY_REGEX, joinPath } from './strings.js'
-import { queryRead, queryHas, ensureParentDir, ensureMount, ensureUnmount, getAvailableName } from './fs.js'
+import { normalizeUrl, slugifyUrl, DAT_KEY_REGEX, joinPath } from './strings.js'
+import { queryRead, ensureDir, ensureParentDir, ensureMount, ensureUnmount, getAvailableName } from './fs.js'
 
 // typedefs
 // =
@@ -330,6 +330,91 @@ export const comments = {
   }
 }
 
+export const likes = {
+  /**
+   * @param {Object} query
+   * @param {string} [query.author]
+   * @param {string} [query.href]
+   * @param {string} [query.sort]
+   * @param {boolean} [query.reverse]
+   * @returns {Promise<FSQueryResult[]>}
+   */
+  async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
+    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    return drive.query({
+      path: getLikePaths(author),
+      metadata: {href},
+      sort,
+      reverse
+    })
+  },
+
+  /**
+   * @param {string} href
+   * @param {Object} query
+   * @param {string} [query.author]
+   * @returns {Promise<DriveInfo[]>}
+   */
+  async tabulate (href, {author} = {author: undefined}) {
+    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var likes = await drive.query({
+      path: getLikePaths(author),
+      metadata: {href}
+    })
+
+    // construct tabulated list
+    var likers = {}
+    likes.forEach(like => {
+      if (!(like.drive.url in likers)) {
+        likers[like.drive.url] = like.drive
+      }
+    })
+
+    return Object.values(likers)
+  },
+
+  /**
+   * @param {string} href
+   * @returns {Promise<String>}
+   */
+  async get (author, href) {
+    href = normalizeUrl(href)
+    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var likes = await drive.query({
+      path: getLikePaths(author),
+      metadata: {href}
+    })
+    return likes[0] ? likes[0].path : undefined
+  },
+
+  /**
+   * @param {string} href
+   * @returns {Promise<string>}
+   */
+  async put (href) {
+    href = normalizeUrl(href)
+    if (await likes.get('me', href)) {
+      return
+    }
+
+    var path = `/profile/links/likes/${Date.now()}.goto`
+    await ensureDir('/profile/links')
+    await ensureDir('/profile/links/likes')
+    await navigator.filesystem.writeFile(path, '', {metadata: {href}})
+    return path
+  },
+
+  /**
+   * @param {string} href
+   * @returns {Promise<void>}
+   */
+  async remove (href) {
+    href = normalizeUrl(href)
+    var path = await likes.get('me', href)
+    if (path) await navigator.filesystem.unlink(path)
+  }
+}
+
 export const annotations = {
   /**
    * @param {Object} query
@@ -482,6 +567,23 @@ function getAnnotationPaths (author, href = undefined) {
     return [
       `/profile/annotations/${filename}`,
       `/profile/friends/*/annotations/${filename}`
+    ]
+  }
+}
+
+/**
+ * @param {string} author
+ * @returns {string|string[]}
+ */
+function getLikePaths (author) {
+  if (author === 'me') {
+    return `/profile/links/likes/*.goto`
+  } else if (author) {
+    return `/links/likes/*.goto`
+  } else {
+    return [
+      `/profile/links/likes/*.goto`,
+      `/profile/friends/*/links/likes/*.goto`
     ]
   }
 }

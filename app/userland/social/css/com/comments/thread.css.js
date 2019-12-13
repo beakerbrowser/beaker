@@ -23,7 +23,6 @@ ${buttons2css}
   display: block;
   border-radius: 4px;
   background: #fff;
-  margin: 10px 0;
 }
 
 a {

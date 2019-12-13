@@ -11,9 +11,11 @@ ${spinnerCSS}
 }
 
 .layout {
-  max-width: 640px;
   margin: 0 auto;
-  padding: 0 10px;
+}
+
+.layout.narrow {
+  max-width: 640px;
 }
 
 .layout.wide {
@@ -100,6 +102,26 @@ header img {
 
 header .spacer {
   flex: 1;
+}
+
+nav.pills {
+  display: flex;
+  margin: 6px 0;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+nav.pills a {
+  padding: 6px 16px;
+  border-radius: 4px;
+  margin-right: 4px;
+}
+
+nav.pills a.selected,
+nav.pills a:hover {
+  cursor: pointer;
+  background: #f0f0f7;
+  font-weight: 500;
 }
 
 `
