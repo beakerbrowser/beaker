@@ -145,6 +145,7 @@ class WebTerm extends LitElement {
     })
     userPackages = userPackages.filter(p => p.stat.isDirectory())
     for (let pkg of userPackages) {
+      pkg.name = pkg.path.split('/').pop()
       try {
         pkg.manifest = JSON.parse(await navigator.filesystem.readFile(`/${pkg.path}/index.json`))
       } catch (e) {
@@ -164,7 +165,7 @@ class WebTerm extends LitElement {
 
       try {
         // HACK we use importModule() instead of import() because I could NOT get rollup to leave dynamic imports alone -prf
-        this.commandModules[pkg.url] = await importModule(joinPath(pkg.url, 'index.js'))
+        this.commandModules[pkg.name] = await importModule(joinPath(pkg.url, 'index.js'))
       } catch (err) {
         this.outputError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
         continue
@@ -173,7 +174,7 @@ class WebTerm extends LitElement {
       for (let command of commands) {
         if (!command.name) continue
         let commandData = {
-          package: pkg.url,
+          package: pkg.name || pkg.url,
           name: command.name,
           help: command.help,
           usage: command.usage,
