@@ -165,7 +165,7 @@ class WebTerm extends LitElement {
 
       try {
         // HACK we use importModule() instead of import() because I could NOT get rollup to leave dynamic imports alone -prf
-        this.commandModules[pkg.name] = await importModule(joinPath(pkg.url, 'index.js'))
+        this.commandModules[pkg.name || pkg.url] = await importModule(joinPath(pkg.url, 'index.js'))
       } catch (err) {
         this.outputError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
         continue
