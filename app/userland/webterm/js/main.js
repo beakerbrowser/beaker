@@ -10,6 +10,9 @@ import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import css from '../css/main.css.js'
 import './lib/term-icon.js'
 
+// export lit-html as a window global
+window.html = html
+
 const THEME_PATH = '/settings/terminal.css'
 const TAB_COMPLETION_RENDER_LIMIT = 15
 
@@ -310,10 +313,18 @@ class WebTerm extends LitElement {
         resolve: this.resolve.bind(this),
         out: (...args) => {
           args = args.map(arg => {
-            if (arg && typeof arg === 'object') return JSON.stringify(arg)
+            if (arg && typeof arg === 'object' && !(arg instanceof TemplateResult)) { 
+              return JSON.stringify(arg)
+            }
             return arg
           })
-          additionalOutput.push(html`<div class="entry">${unsafeHTML(args.join(' '))}</div>`)
+          let argsSpaced = []
+          for (let i = 0; i < args.length - 1; i++) {
+            argsSpaced.push(args[i])
+            argsSpaced.push(' ')
+          }
+          argsSpaced.push(args[args.length - 1])
+          additionalOutput.push(html`<div class="entry">${argsSpaced}</div>`)
           this.requestUpdate() 
         }
       }
