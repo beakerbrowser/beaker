@@ -1,22 +1,20 @@
-/* globals terminal */
-
 // current working directory methods
 // =
 
 export async function ls (opts = {}, location = '') {
   // pick target location
-  location = terminal.resolve(location)
+  location = this.resolve(location)
   var {archive, protocol, pathname} = parseLocation(location)
 
   // read
   var listing
   var st = await archive.stat(pathname)
   if (st.isUnsupportedProtocol) {
-    throw new Error(`ls() is not supported on ${esc(protocol)} addresses`)
+    throw new Error(`ls() is not supported on ${protocol} addresses`)
   } else if (st.isFile()) {
     return {
       listing: [{name: pathname.split('/').pop(), stat: st}],
-      toHTML: () => `Is a file.\nSize: ${st.size}`
+      toHTML: () => html`Is a file.\nSize: ${st.size}`
     }
   } else {
     listing = await archive.readdir(pathname, {stat: true})
@@ -41,22 +39,21 @@ export async function ls (opts = {}, location = '') {
             const weight = entry.stat.isDirectory() ? 'bold' : 'normal'
             const icon = entry.stat.isDirectory() ? 'folder' : 'file'
             const mountInfo = entry.stat.mount
-              ? ` <span class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</span>`
+              ? html` <span class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</span>`
               : ''
-            return `<div><a
-              href="${esc(joinPath(joinPath(archive.url, pathname), entry.name))}"
+            return html`<div><a
+              href="${joinPath(joinPath(archive.url, pathname), entry.name)}"
               class="color-${color}"
               style="font-weight: ${weight}"
-            ><term-icon icon="${icon}"></term-icon> ${esc(entry.name)}${mountInfo}</a></div>`
+            ><term-icon icon="${icon}"></term-icon> ${entry.name}${mountInfo}</a></div>`
           })
-          .join('')
       }
     }
   }
 }
 
 export async function cd (opts = {}, location = '') {
-  var cwd = terminal.resolve(location)
+  var cwd = this.resolve(location)
   if (cwd.startsWith('dat://')) {
     // make sure the target location can be visited
     let urlp = new URL(cwd)
@@ -64,20 +61,20 @@ export async function cd (opts = {}, location = '') {
     let st
     try { st = await archive.stat(urlp.pathname) }
     catch (e) {
-      throw new Error(`${esc(location)}: No such file or directory`)
+      throw new Error(`${location}: No such file or directory`)
     }
     if (!st.isDirectory()) {
-      throw new Error(`${esc(location)}: Not a directory`)
+      throw new Error(`${location}: Not a directory`)
     }
   }
-  terminal.cwd = cwd
+  this.cwd = cwd
 }
 
 export function pwd (opts = {}) {
-  let cwd = terminal.cwd.toString()
+  let cwd = this.cwd.toString()
   return {
     cwd,
-    toHTML: () => `<a href="${esc(cwd)}">${esc(cwd)}</div>`
+    toHTML: () => html`<a href="${cwd}">${cwd}</div>`
   }
 }
 
@@ -86,7 +83,7 @@ export function pwd (opts = {}) {
 
 export async function mkdir (opts, dst) {
   if (!dst) throw new Error('dst is required')
-  var {archive, pathname} = resolveParse(dst)
+  var {archive, pathname} = resolveParse(this, dst)
   await archive.mkdir(pathname)
 }
 
@@ -96,8 +93,8 @@ export async function mkdir (opts, dst) {
 export async function mv (opts, src, dst) {
   if (!src) throw new Error('src is required')
   if (!dst) throw new Error('dst is required')
-  var srcp = resolveParse(src)
-  var dstp = resolveParse(dst)
+  var srcp = resolveParse(this, src)
+  var dstp = resolveParse(this, dst)
   
   let st = await dstp.archive.stat(dstp.pathname).catch(e => undefined)
   if (st && st.isDirectory()) {
@@ -110,8 +107,8 @@ export async function mv (opts, src, dst) {
 export async function cp (opts, src, dst) {
   if (!src) throw new Error('src is required')
   if (!dst) throw new Error('dst is required')
-  var srcp = resolveParse(src)
-  var dstp = resolveParse(dst)
+  var srcp = resolveParse(this, src)
+  var dstp = resolveParse(this, dst)
   
   let st = await dstp.archive.stat(dstp.pathname).catch(e => undefined)
   if (st && st.isDirectory()) {
@@ -123,7 +120,7 @@ export async function cp (opts, src, dst) {
 
 export async function rm (opts, dst) {
   if (!dst) throw new Error('dst is required')
-  var {archive, pathname} = resolveParse(dst)
+  var {archive, pathname} = resolveParse(this, dst)
   var st = await archive.stat(pathname)
   if (st.isDirectory()) {
     await archive.rmdir(pathname, {recursive: true})
@@ -134,7 +131,7 @@ export async function rm (opts, dst) {
 
 export async function meta (opts, location, key = undefined, ...value) {
   if (!location) throw new Error('path is required')
-  var {archive, pathname} = resolveParse(location)
+  var {archive, pathname} = resolveParse(this, location)
   if (value.length) {
     await archive.updateMetadata(pathname, {[key]: value.join(' ')})
   } else if (opts.delete) {
@@ -148,7 +145,7 @@ export async function meta (opts, location, key = undefined, ...value) {
       Object.defineProperty(meta, 'toHTML', {
         enumerable: false,
         value: () => {
-          return `<table>${Object.entries(meta).map(([k, v]) => `<tr><td><strong>${esc(k || '')}&ensp;</strong></td><td>&quot;${esc(v || '')}&quot;</td></tr>`).join('')}</table>`
+          return html`<table>${Object.entries(meta).map(([k, v]) => `<tr><td><strong>${k || ''}&ensp;</strong></td><td>&quot;${v || ''}&quot;</td></tr>`)}</table>`
         }
       })
       return meta
@@ -159,7 +156,7 @@ export async function meta (opts, location, key = undefined, ...value) {
 export async function mkgoto (opts, location, href) {
   if (!location) throw new Error('path is required')
   if (!href) throw new Error('href is required')
-  var {archive, pathname} = resolveParse(location)
+  var {archive, pathname} = resolveParse(this, location)
 
   if (!pathname.endsWith('.goto')) {
     pathname += '.goto'
@@ -177,22 +174,22 @@ export async function mkgoto (opts, location, href) {
 // =
 
 export async function peek (opts = {}, location = '') {
-  var {archive, origin, pathname} = resolveParse(location)
+  var {archive, origin, pathname} = resolveParse(this, location)
   if (/\.(png|jpe?g|gif)$/.test(pathname)) {
-    return {toHTML: () => `<img src=${esc(origin + pathname)}>`}
+    return {toHTML: () => html`<img src=${(origin + pathname)}>`}
   }
   if (/\.(mp4|webm|mov)$/.test(pathname)) {
-    return {toHTML: () => `<video controls><source src=${esc(origin + pathname)}></video>`}
+    return {toHTML: () => html`<video controls><source src=${(origin + pathname)}></video>`}
   }
   if (/\.(mp3|ogg)$/.test(pathname)) {
-    return {toHTML: () => `<audio controls><source src=${esc(origin + pathname)}></audio>`}
+    return {toHTML: () => html`<audio controls><source src=${(origin + pathname)}></audio>`}
   }
   var content = await archive.readFile(pathname, 'utf8')
-  return {toHTML: () => esc(content)}
+  return {toHTML: () => (content)}
 }
 
 export async function go (opts = {}, location = '') {
-  location = terminal.resolve(location)
+  location = this.resolve(location)
   if (location.endsWith('.goto')) {
     let urlp = parseLocation(location)
     let st = await urlp.archive.stat(urlp.pathname).catch(e => undefined)
@@ -201,7 +198,7 @@ export async function go (opts = {}, location = '') {
     }
   }
   try {
-    terminal.cwd = location.toString()
+    this.cwd = location.toString()
   } catch (e) {
     // will fail if not a directory, don't worry about it
     if (!e.notADirectory) throw e
@@ -214,7 +211,7 @@ export async function go (opts = {}, location = '') {
 }
 
 export async function edit (opts = {}, location = '') {
-  location = terminal.resolve(location)
+  location = this.resolve(location)
   if (opts.n) {
     await beaker.browser.openUrl(location, {
       setActive: true,
@@ -229,12 +226,8 @@ export async function edit (opts = {}, location = '') {
 // internal methods
 // =
 
-function esc (str = '') {
-  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
-}
-
-function resolveParse (location) {
-  return parseLocation(terminal.resolve(location))
+function resolveParse (env, location) {
+  return parseLocation(env.resolve(location))
 }
 
 function parseLocation (location) {
