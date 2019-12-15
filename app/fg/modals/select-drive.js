@@ -210,7 +210,7 @@ class SelectDriveModal extends LitElement {
       type: 'mount',
       sort: 'name'
     })
-    this.drives = entries.map(entry => entry.mount)
+    this.drives = await Promise.all(entries.map(entry => bg.datArchive.getInfo(entry.mount)))
     if (params.type) this.drives = this.drives.filter(drive => drive.type === params.type)
     if (typeof params.writable === 'boolean') {
       this.drives = this.drives.filter(drive => drive.writable === params.writable)

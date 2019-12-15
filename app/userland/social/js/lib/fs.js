@@ -28,20 +28,13 @@ import { chunkMapAsync } from './functions.js'
  * @prop {string} [mount.key]
  * @prop {string} linkname
  *
- * @typedef {Object} DriveInfo
- * @prop {string} url
- * @prop {string} title
- * @prop {string} description
- * @prop {string} type
- * @prop {string} author
- *
  * @typedef {Object} FSQueryResult
  * @prop {string} type
  * @prop {string} path
  * @prop {string} url
  * @prop {Stat} stat
- * @prop {DriveInfo} drive
- * @prop {DriveInfo} [mount]
+ * @prop {string} drive
+ * @prop {string} [mount]
  * @prop {any} [content]
  */
 
@@ -81,12 +74,13 @@ export async function queryHas (query, drive = navigator.filesystem) {
 
 /**
  * @param {string} path
+ * @param {Object} [drive]
  */
-export async function ensureDir (path) {
+export async function ensureDir (path, drive = navigator.filesystem) {
   try {
-    let st = await navigator.filesystem.stat(path).catch(e => null)
+    let st = await drive.stat(path).catch(e => null)
     if (!st) {
-      await navigator.filesystem.mkdir(path)
+      await drive.mkdir(path)
     } else if (!st.isDirectory()) {
       console.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
     }
@@ -97,28 +91,30 @@ export async function ensureDir (path) {
 
 /**
  * @param {string} path
+ * @param {Object} [drive]
  */
-export async function ensureParentDir (path) {
-  return ensureDir(path.split('/').slice(0, -1).join('/'))
+export async function ensureParentDir (path, drive = navigator.filesystem) {
+  return ensureDir(path.split('/').slice(0, -1).join('/'), drive)
 }
 
 /**
  * @param {string} path 
  * @param {string} url 
+ * @param {Object} [drive]
  * @return {Promise<void>}
  */
-export async function ensureMount (path, url) {
+export async function ensureMount (path, url, drive = navigator.filesystem) {
   try {
-    let st = await navigator.filesystem.stat(path).catch(e => null)
+    let st = await drive.stat(path).catch(e => null)
     let key = await DatArchive.resolveName(url)
     if (!st) {
       // add mount
-      await navigator.filesystem.mount(path, key)
+      await drive.mount(path, key)
     } else if (st.mount) {
       if (st.mount.key.toString('hex') !== key) {
         // change mount
-        await navigator.filesystem.unmount(path)
-        await navigator.filesystem.mount(path, key)
+        await drive.unmount(path)
+        await drive.mount(path, key)
       }
     } else {
       console.error('Warning! Filesystem expects a mount but an unexpected file exists at this location.', {path})
@@ -130,14 +126,15 @@ export async function ensureMount (path, url) {
 
 /**
  * @param {string} path 
+ * @param {Object} [drive]
  * @return {Promise<void>}
  */
-export async function ensureUnmount (path) {
+export async function ensureUnmount (path, drive = navigator.filesystem) {
   try {
-    let st = await navigator.filesystem.stat(path).catch(e => null)
+    let st = await drive.stat(path).catch(e => null)
     if (st && st.mount) {
       // remove mount
-      await navigator.filesystem.unmount(path)
+      await drive.unmount(path)
     }
   } catch (e) {
     console.error('Filesystem failed to unmount archive', {path, error: e})
@@ -145,16 +142,40 @@ export async function ensureUnmount (path) {
 }
 
 /**
+ * @param {string} pathSelector 
+ * @param {string} url
+ * @param {Object} [drive]
+ * @return {Promise<void>}
+ */
+export async function ensureUnmountByUrl (pathSelector, url, drive = navigator.filesystem) {
+  try {
+    let mounts = await drive.query({
+      path: pathSelector,
+      type: 'mount'
+    })
+    let mount = mounts.find(item => item.mount === url)
+    if (mount) {
+      // remove mount
+      await drive.unmount(mount.path)
+    } else {
+      throw "Mount not found"
+    }
+  } catch (e) {
+    console.error('Filesystem failed to unmount archive', {pathSelector, url, error: e})
+  }
+}
+
+/**
  * @param {string} containingPath
  * @param {string} title
- * @param {Object} fs
+ * @param {Object} [drive]
  * @returns {Promise<string>}
  */
-export async function getAvailableName (containingPath, title, fs = navigator.filesystem) {
+export async function getAvailableName (containingPath, title, drive = navigator.filesystem) {
   var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
   for (let i = 1; i < 1e9; i++) {
     let name = (i === 1) ? basename : `${basename}-${i}`
-    let st = await fs.stat(joinPath(containingPath, name), fs).catch(e => null)
+    let st = await drive.stat(joinPath(containingPath, name)).catch(e => null)
     if (!st) return name
   }
   // yikes if this happens

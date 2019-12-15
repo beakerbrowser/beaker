@@ -1,5 +1,7 @@
 import { LitElement, html } from './vendor/lit-element/lit-element.js'
 import { classMap } from './vendor/lit-element/lit-html/directives/class-map.js'
+import * as uwg from './js/lib/uwg.js'
+import * as tutil from './js/lib/test-utils.js'
 import mainCSS from './css/main.css.js'
 import './js/com/profiles/header.js'
 import './js/com/profiles/aside.js'
@@ -17,6 +19,9 @@ const ROUTES = {
   'profileStatus': /^\/(?<id>[^\/]+)\/status\/(?<filename>[^\/]+)$/i,
   'profileComment': /^\/(?<id>[^\/]+)\/comment\/(?<filename>[^\/]+)$/i
 }
+
+window.tutil = tutil
+tutil.init()
 
 export class App extends LitElement {
   static get properties () {
@@ -52,6 +57,7 @@ export class App extends LitElement {
     if (!this.user) {
       let st = await navigator.filesystem.stat('/profile')
       this.user = await (new DatArchive(st.mount.key)).getInfo()
+      uwg.profiles.setUser(this.user)
     }
     await this.requestUpdate()
     Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())

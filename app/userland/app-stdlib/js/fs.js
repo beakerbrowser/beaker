@@ -27,20 +27,13 @@ import { joinPath, slugify } from './strings.js'
  * @prop {string} [mount.key]
  * @prop {string} linkname
  *
- * @typedef {Object} DriveInfo
- * @prop {string} url
- * @prop {string} title
- * @prop {string} description
- * @prop {string} type
- * @prop {string} author
- *
  * @typedef {Object} FSQueryResult
  * @prop {string} type
  * @prop {string} path
  * @prop {string} url
  * @prop {Stat} stat
- * @prop {DriveInfo} drive
- * @prop {DriveInfo} [mount]
+ * @prop {string} drive
+ * @prop {string} [mount]
  * @prop {any} [content]
  */
 

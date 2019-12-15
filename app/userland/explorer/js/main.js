@@ -305,14 +305,19 @@ export class ExplorerApp extends LitElement {
     )
 
     // massage the items to fit same form as `readDirectory()`
-    items.forEach(item => {
+    // TODO- cache the drive getInfo reads
+    await this.attempt(
+      `Reading .view file information (${location.pathname})`,
+      () => Promise.all(items.map(async (item) => {
       item.name = item.path.split('/').pop()
       item.realPath = (new URL(item.url)).pathname
       item.realUrl = item.url
       item.url = joinPath(location.origin, item.path)
       item.shareUrl = this.getShareUrl(item)
+      item.drive = await (new DatArchive(item.drive)).getInfo()
+      item.mount = item.mount ? await (new DatArchive(item.mount)).getInfo() : undefined
       this.setItemIcons('', item)
-    })
+    })))
 
     // apply merge
     if (getVFCfg(this.viewfileObj, 'merge', ['mtime', undefined])) {

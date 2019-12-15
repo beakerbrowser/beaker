@@ -1,9 +1,7 @@
 import datDns from '../dat/dns'
-import { getArchiveInfo } from '../dat/archives'
 import { joinPath } from '../../lib/strings'
 import { chunkMapAsync } from '../../lib/functions'
 import { DAT_HASH_REGEX } from '../../lib/const'
-import _pick from 'lodash.pick'
 
 // typedefs
 // =
@@ -32,22 +30,14 @@ import _pick from 'lodash.pick'
  * @prop {Object} [mount]
  * @prop {string} [mount.key]
  * @prop {string} linkname
- * 
- * @typedef {Object} DriveInfo
- * @prop {string} url
- * @prop {string} title
- * @prop {string} description
- * @prop {string} type
- * @prop {string} author
- * @prop {boolean} writable
- * 
+ *  
  * @typedef {Object} FSQueryResult
  * @prop {string} type
  * @prop {string} path
  * @prop {string} url
  * @prop {Stat} stat
- * @prop {DriveInfo} drive
- * @prop {DriveInfo} [mount]
+ * @prop {string} drive
+ * @prop {string} [mount]
  */
 
 // exported api
@@ -69,7 +59,6 @@ import _pick from 'lodash.pick'
  */
 export async function query (root, opts) {
   var parentDriveStatCache = {}
-  var driveInfoCache = {}
 
   // validate opts
   if (!opts || !opts.path) throw new Error('The `path` parameter is required')
@@ -106,22 +95,16 @@ export async function query (root, opts) {
       }
       st = await st
       if (st && st.mount && st.mount.key) {
-        drive = await getDriveInfo(st.mount.key)
+        drive = `dat://${st.mount.key.toString('hex')}`
       }
 
       if (drive) {
-        return {drive, url: joinPath(drive.url, path.slice(mountPath.length + 1))}
+        return {drive, url: joinPath(drive, path.slice(mountPath.length + 1))}
       }
 
       pathParts.pop()
     }
-    return {drive: await getDriveInfo(root.key), url: joinPath(root.url, path)}
-  }
-  async function getDriveInfo (key) {
-    key = key.toString('hex')
-    if (driveInfoCache[key]) return await driveInfoCache[key]
-    driveInfoCache[key] = getArchiveInfo(key).then(obj => _pick(obj, ['url', 'title', 'description', 'type', 'author', 'writable']))
-    return await driveInfoCache[key]
+    return {drive: `dat://${root.key.toString('hex')}`, url: joinPath(root.url, path)}
   }
 
   // iterate all matching paths and match against the query
@@ -160,7 +143,7 @@ export async function query (root, opts) {
       url,
       stat,
       drive,
-      mount: type === 'mount' ? (await getDriveInfo(stat.mount.key)) : undefined
+      mount: type === 'mount' ? `dat://${stat.mount.key.toString('hex')}` : undefined
     })
   })
 

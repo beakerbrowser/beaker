@@ -46,37 +46,62 @@ import { queryRead, ensureDir, ensureParentDir, ensureMount, ensureUnmount, getA
 // exported
 // =
 
+var user = undefined
 var profileCache = {}
 export const profiles = {
+  setUser (u) {
+    user = u
+  },
+
   /**
    * @param {string} key 
-   * @param {DriveInfo} user
    * @returns {Promise<SocialProfile>}
    */
-  async get (key, user) {
+  async get (key) {
     var match = DAT_KEY_REGEX.exec(key)
     if (match) key = match[0]
     else key = await DatArchive.resolveName(key)
 
     // check cache
     if (profileCache[key]) {
-      return profileCache[key]
+      return await profileCache[key]
     }
 
-    var drive = new DatArchive(key)
-    var [profile, followersQuery, followingQuery] = await Promise.all([
-      drive.getInfo(),
+    profileCache[key] = (async function () {
+      var drive = new DatArchive(key)
+      var profile = await drive.getInfo()
+      profile.isUser = profile.url === user.url
+      profile.followers = undefined
+      profile.following = undefined
+      profile.isFollowingUser = false
+      profile.isUserFollowing = false
+      return profile
+    })()
+
+    return await profileCache[key]
+  },
+
+  async readSocialGraph (prof, user) {
+    var key = prof.url.slice('dat://'.length)
+
+    var [followersQuery, followingQuery] = await Promise.all([
       friends.list({target: key}),
       friends.list({author: key})
     ])
 
-    profile.isUser = profile.url === user.url
-    profile.followers = followersQuery.map(item => item.drive)
-    profile.following = followingQuery.map(item => item.mount)
-    profile.isFollowingUser = Boolean(profile.following.find(f => f.url === user.url))
-    profile.isUserFollowing = Boolean(profile.followers.find(f => f.url === user.url))
+    prof.followers = followersQuery.map(item => item.drive)
+    prof.following = followingQuery.map(item => item.mount)
+    prof.isFollowingUser = Boolean(prof.following.find(f => f.url === user.url))
+    prof.isUserFollowing = Boolean(prof.followers.find(f => f.url === user.url))
+  },
 
-    return profile
+  async readProfile (item) {
+    item.drive = typeof item.drive === 'string' ? await profiles.get(item.drive) : item.drive
+    item.mount = typeof item.mount === 'string' ? await profiles.get(item.mount) : item.mount
+  },
+
+  async readAllProfiles (items) {
+    await Promise.all(items.map(profiles.readProfile))
   }
 }
 
@@ -89,37 +114,46 @@ export const friends = {
    */
   async list ({author, target} = {author: undefined, target: undefined}) {
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
-    return drive.query({
+    let results = await drive.query({
       type: 'mount',
       path: getFriendPaths(author),
       mount: target
     })
+    await profiles.readAllProfiles(results)
+    return results
   },
 
   /**
    * @param {string} url
    * @param {string} title
+   * @param {Object} [drive]
    * @returns {Promise<void>}
    */
-  async add (url, title = 'anonymous') {
-    var name = await getAvailableName('/profile/friends', title)
-    await ensureMount(joinPath('/profile/friends', name), url)
+  async add (url, title = 'anonymous', drive = undefined) {
+    var path = drive ? '/friends' : '/profile/friends'
+    await ensureDir(path, drive)
+    var name = await getAvailableName(path, title, drive)
+    await ensureMount(joinPath(path, name), url, drive)
   },
 
   /**
    * @param {string} urlOrName
+   * @param {Object} [drive]
    * @returns {Promise<void>}
    */
-  async remove (urlOrName) {
-    var mount = await navigator.filesystem.query({path: '/profile/friends/*', mount: urlOrName})
-    if (mount[0]) return navigator.filesystem.unmount(mount[0].path)
+  async remove (urlOrName, drive = undefined) {
+    var path = drive ? '/friends' : '/profile/friends'
+    drive = drive || navigator.filesystem
+
+    var mount = await drive.query({path: `${path}/*`, mount: urlOrName})
+    if (mount[0]) return drive.unmount(mount[0].path)
 
     try {
-      await navigator.filesystem.stat(`/profile/friends/${urlOrName}`)
+      await drive.stat(`${path}/${urlOrName}`)
     } catch (e) {
       return // dne
     }
-    return navigator.filesystem.unmount(`/profile/friends/${urlOrName}`)
+    return drive.unmount(`${path}/${urlOrName}`)
   }
 }
 
@@ -136,7 +170,9 @@ export const feed = {
    */
   async list ({author, sort, reverse, offset, limit} = {author: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
-    return queryRead({path: getFeedPaths(author), sort, reverse, offset, limit}, drive)
+    var res = await queryRead({path: getFeedPaths(author), sort, reverse, offset, limit}, drive)
+    await profiles.readAllProfiles(res)
+    return res
   },
 
   /**
@@ -162,12 +198,14 @@ export const feed = {
 
   /**
    * @param {string} content
+   * @param {Object} [drive]
    * @returns {Promise<string>}
    */
-  async add (content) {
-    var path = `/profile/feed/${Date.now()}.md`
-    await ensureParentDir(path)
-    await navigator.filesystem.writeFile(path, content)
+  async add (content, drive = undefined) {
+    var path = drive ? `/feed/${Date.now()}.md` : `/profile/feed/${Date.now()}.md`
+    drive = drive || navigator.filesystem
+    await ensureParentDir(path, drive)
+    await drive.writeFile(path, content)
     return path
   },
 
@@ -191,7 +229,9 @@ export const comments = {
    */
   async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
     var comments = await queryRead({path: getCommentPaths(author, href), sort, reverse})
-    return comments.filter(massageComment)
+    comments = comments.filter(massageComment)
+    await profiles.readAllProfiles(comments)
+    return comments
   },
 
   /**
@@ -218,6 +258,7 @@ export const comments = {
   async thread (href, {author, parent, depth} = {author: undefined, parent: undefined, depth: undefined}) {
     var comments = await queryRead({path: getCommentPaths(author, href)})
     comments = comments.filter(massageComment)
+    await profiles.readAllProfiles(comments)
 
     // create a map of comments by their URL
     var commentsByUrl = {}
@@ -280,6 +321,7 @@ export const comments = {
    */
   async add ({href, replyTo, body}) {
     var path = `/profile/comments/${slugifyUrl(href)}/${Date.now()}.json`
+    await ensureDir('/profile/comments')
     await ensureParentDir(path)
     await navigator.filesystem.writeFile(path, JSON.stringify({
       type: 'unwalled.garden/comment',
@@ -341,12 +383,14 @@ export const likes = {
    */
   async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
-    return drive.query({
+    var res = await drive.query({
       path: getLikePaths(author),
       metadata: {href},
       sort,
       reverse
     })
+    await profiles.readAllProfiles(res)
+    return res
   },
 
   /**
@@ -361,6 +405,7 @@ export const likes = {
       path: getLikePaths(author),
       metadata: {href}
     })
+    await profiles.readAllProfiles(likes)
 
     // construct tabulated list
     var likers = {}
