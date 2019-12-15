@@ -137,8 +137,26 @@ class WebTerm extends LitElement {
   }
 
   async loadCommands () {
-    var packages = await beaker.programs.listPrograms({type: 'webterm.sh/cmd-pkg'})
+    var packages = [{
+      url: 'beaker://std-cmds/',
+      manifest: await (await fetch('beaker://std-cmds/index.json')).json()
+    }]
+
+    var userPackages = await navigator.filesystem.query({
+      path: '/settings/webterm/cmds/*'
+    })
+    userPackages = userPackages.filter(p => p.stat.isDirectory())
+    for (let pkg of userPackages) {
+      try {
+        pkg.manifest = JSON.parse(await navigator.filesystem.readFile(`/${pkg.path}/index.json`))
+      } catch (e) {
+        console.log(e)
+        this.appendError(`Failed to read ${pkg.path} manifest`, e.toString())
+      }
+    }
+    packages = packages.concat(userPackages)
     console.log(packages)
+
     for (let pkg of packages) {
       var commands = pkg.manifest.commands
       if (!commands || !Array.isArray(commands) || commands.length === 0) {
