@@ -39,26 +39,27 @@ export class StatusFeed extends LitElement {
       reverse: true
     })
     statuses = statuses.filter(status => status.content)
-    await this.loadFeedAnnotations(statuses)
+    /* dont await */ this.loadFeedAnnotations(statuses)
     this.statuses = statuses
     console.log(this.statuses)
   }
 
+  requestFeedPostsUpdate () {
+    Array.from(this.shadowRoot.querySelectorAll('beaker-status'), el => el.requestUpdate())
+  }
+
   async refreshFeed () {
-    var statuses = this.statuses.slice()
-    await this.loadFeedAnnotations(statuses)
-    this.statuses = [] // HACK - should find the right way to get litelement to rerender -prf
-    await this.requestUpdate()
-    this.statuses = statuses
+    this.loadFeedAnnotations(this.statuses)
   }
 
   async loadFeedAnnotations (statuses) {
-    await Promise.all(statuses.map(async (status) => {
+    for (let status of statuses) {
       ;[status.likedBy, status.numComments] = await Promise.all([
         uwg.likes.tabulate(status.url),
         uwg.comments.count({href: status.url})
       ])
-    }))
+      this.requestFeedPostsUpdate()
+    }
   }
 
   async loadStatusComments (status) {

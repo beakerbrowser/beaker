@@ -27,13 +27,16 @@ export class ProfileHeader extends LitElement {
 
   async load () {
     this.profile = await uwg.profiles.get(this.id, this.user)
+    await this.requestUpdate()
+    await uwg.profiles.readSocialGraph(this.profile, this.user)
+    await this.requestUpdate()
   }
 
   render () {
-    if (!this.profile) return html``
+    if (!this.profile) return html`<span class="spinner"></span>`
     var id = this.profile.url.slice('dat://'.length)
-    var numFollowing = this.profile.following.length
-    var numFollowers = this.profile.followers.length
+    var numFollowing = this.profile.following ? this.profile.following.length : html`<span class="spinner"></span>`
+    var numFollowers =  this.profile.followers ? this.profile.followers.length : html`<span class="spinner"></span>`
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <a class="avatar" href="/${id}"><img src="asset:thumb:${this.profile.url}?cache_buster=${Date.now()}"></a>
@@ -47,7 +50,7 @@ export class ProfileHeader extends LitElement {
       <p class="description">${this.profile.description}</p>
       <p class="stats">
         <a href="/${id}/following"><strong>${numFollowing}</strong> Following</a>
-        <a href="/${id}/followers"><strong>${numFollowers}</strong> ${pluralize(numFollowers, 'Follower')}</a>
+        <a href="/${id}/followers"><strong>${numFollowers}</strong> ${typeof numFollowers === 'number' ? pluralize(numFollowers, 'Follower') : 'Followers'}</a>
         <a href=${this.profile.url}><strong class="fas fa-link"></strong> TODO</a>
       </p>
     `

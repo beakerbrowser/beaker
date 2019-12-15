@@ -25,7 +25,7 @@ export class Status extends LitElement {
   }
 
   get isTooLong () {
-    return !this.expanded && this.status.content.length > RENDER_LIMIT
+    return false // TODO !this.expanded && this.status.content.length > RENDER_LIMIT
   }
 
   get isLiked () {
@@ -39,9 +39,12 @@ export class Status extends LitElement {
     var viewStatusUrl = viewProfileUrl + '/status/' + this.status.url.split('/').pop()
     var content = this.expanded ? this.status.content : this.status.content.slice(0, RENDER_LIMIT)
     var isLiked = this.isLiked
-    var likesTooltip = 'Liked by:\n' + this.status.likedBy.slice(0, 4).map(drive => drive.title).join('\n')
-    if (this.status.likedBy.length > 4) {
-      likesTooltip += `\nand ${this.status.likedBy.length - 4} more`
+    var likesTooltip = undefined
+    if (this.status.likedBy) {
+      likesTooltip = 'Liked by:\n' + this.status.likedBy.slice(0, 4).map(drive => drive.title).join('\n')
+      if (this.status.likedBy.length > 4) {
+        likesTooltip += `\nand ${this.status.likedBy.length - 4} more`
+      }
     }
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
@@ -74,7 +77,7 @@ export class Status extends LitElement {
             </a>
             <a class="likes ${isLiked ? 'selected' : ''}" @click=${this.onLikeClick} data-tooltip=${likesTooltip}>
               <span class="${isLiked ? 'fas' : 'far'} fa-fw fa-heart"></span>
-              ${this.status.likedBy.length}
+              ${this.status.likedBy ? this.status.likedBy.length: ''}
             </a>
           </div>
         </div>

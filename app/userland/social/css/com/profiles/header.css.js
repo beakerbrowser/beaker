@@ -1,8 +1,10 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
 import buttonsCSS from '../../buttons.css.js'
+import spinnerCSS from '../spinner.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
+${spinnerCSS}
 
 :host {
   display: block;
