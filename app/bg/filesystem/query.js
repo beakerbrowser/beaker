@@ -1,6 +1,7 @@
 import datDns from '../dat/dns'
 import { getArchiveInfo } from '../dat/archives'
 import { joinPath } from '../../lib/strings'
+import { chunkMapAsync } from '../../lib/functions'
 import { DAT_HASH_REGEX } from '../../lib/const'
 import _pick from 'lodash.pick'
 
@@ -67,6 +68,9 @@ import _pick from 'lodash.pick'
  * @returns {Promise<FSQueryResult[]>}
  */
 export async function query (root, opts) {
+  var parentDriveStatCache = {}
+  var driveInfoCache = {}
+
   // validate opts
   if (!opts || !opts.path) throw new Error('The `path` parameter is required')
   if (!(typeof opts.path === 'string' || (Array.isArray(opts.path) && opts.path.every(v => typeof v === 'string')))) {
@@ -89,23 +93,20 @@ export async function query (root, opts) {
   }
 
   // drive lookup tools & cache
-  var parentDriveCache = {}
   async function getParentDriveInfo (path) {
     var pathParts = path.split('/').filter(Boolean).slice(0, -1)
     while (pathParts.length > 0) {
       let mountPath = pathParts.join('/')
       let drive
   
-      if (parentDriveCache[mountPath]) {
-        // from cache
-        drive = await getDriveInfo(parentDriveCache[mountPath])
-      } else {
-        // check fs
-        let st = await root.pda.stat(mountPath).catch(e => null)
-        if (st && st.mount && st.mount.key) {
-          parentDriveCache[mountPath] = st.mount.key
-          drive = await getDriveInfo(st.mount.key)
-        }
+      // check fs
+      let st = parentDriveStatCache[mountPath]
+      if (!st) {
+        parentDriveStatCache[mountPath] = st = root.pda.stat(mountPath).catch(e => null)
+      }
+      st = await st
+      if (st && st.mount && st.mount.key) {
+        drive = await getDriveInfo(st.mount.key)
       }
 
       if (drive) {
@@ -116,30 +117,31 @@ export async function query (root, opts) {
     }
     return {drive: await getDriveInfo(root.key), url: joinPath(root.url, path)}
   }
-  var driveInfoCache = {}
   async function getDriveInfo (key) {
     key = key.toString('hex')
-    if (driveInfoCache[key]) return driveInfoCache[key]
-    return (driveInfoCache[key] = _pick(await getArchiveInfo(key), ['url', 'title', 'description', 'type', 'author', 'writable']))
+    if (driveInfoCache[key]) return await driveInfoCache[key]
+    driveInfoCache[key] = getArchiveInfo(key).then(obj => _pick(obj, ['url', 'title', 'description', 'type', 'author', 'writable']))
+    return await driveInfoCache[key]
   }
 
   // iterate all matching paths and match against the query
+  var candidates = await expandPaths(root, opts.path)
   var results = []
-  for await (let path of expandPaths(root, opts.path)) {
+  await chunkMapAsync(candidates, 100, async (path) => {
     let stat
     try {
       stat = await root.pda.stat(path)
     } catch (e) {
       // dne, skip
-      continue
+      return
     }
 
     var type = 'file'
     if (stat.mount && stat.mount.key) type = 'mount'
     else if (stat.isDirectory()) type = 'directory'
 
-    if (opts.type && type !== opts.type) continue
-    if (opts.mount && (type !== 'mount' || stat.mount.key.toString('hex') !== opts.mount)) continue
+    if (opts.type && type !== opts.type) return
+    if (opts.mount && (type !== 'mount' || stat.mount.key.toString('hex') !== opts.mount)) return
     if (opts.metadata) {
       let metaMatch = true
       for (let k in opts.metadata) {
@@ -148,7 +150,7 @@ export async function query (root, opts) {
           break
         }
       }
-      if (!metaMatch) continue
+      if (!metaMatch) return
     }
 
     var {drive, url} = await getParentDriveInfo(path)
@@ -160,7 +162,7 @@ export async function query (root, opts) {
       drive,
       mount: type === 'mount' ? (await getDriveInfo(stat.mount.key)) : undefined
     })
-  }
+  })
 
   if (opts.sort === 'name') {
     results.sort((a, b) => (opts.reverse) ? b.path.toLowerCase().localeCompare(a.path.toLowerCase()) : a.path.toLowerCase().localeCompare(b.path.toLowerCase()))
@@ -180,11 +182,10 @@ export async function query (root, opts) {
 // internal
 // =
 
-
-async function* expandPaths (root, patterns) {
+async function expandPaths (root, patterns) {
+  var paths = []
   patterns = Array.isArray(patterns) ? patterns : [patterns]
-
-  for (let pattern of patterns) {
+  await Promise.all(patterns.map(async (pattern) => {
     // parse the pattern into a set of ops
     let acc = []
     let ops = []
@@ -225,9 +226,10 @@ async function* expandPaths (root, patterns) {
     
     // emit the results
     for (let result of workingPaths) {
-      yield result
+      paths.push(result)
     }
-  }
+  }))
+  return paths
 }
 
 // TODO!!
