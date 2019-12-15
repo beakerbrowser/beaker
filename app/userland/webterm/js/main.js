@@ -1,6 +1,5 @@
 import { LitElement, html, TemplateResult } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
 import minimist from './lib/minimist.1.2.0.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
 import { createArchive } from './lib/term-archive-wrapper.js'
@@ -255,7 +254,7 @@ class WebTerm extends LitElement {
     if (typeof output === 'undefined') {
       output = ''
     } else if (output.toHTML) {
-      output = unsafeHTML(output.toHTML())
+      output = output.toHTML()
     } else if (typeof output !== 'string' && !(output instanceof TemplateResult)) {
       output = JSON.stringify(output)
     }
@@ -478,13 +477,12 @@ class WebTerm extends LitElement {
       toHTML () {
         return commands
           .map(command => {
-            var summary = `<strong>${makeSafe(command.name).padEnd(commandNameLen + 2)}</strong> ${makeSafe(command.help || '')} <small class="color-gray">package: ${makeSafe(command.package)}</small>`
+            var summary = html`<strong>${command.name.padEnd(commandNameLen + 2)}</strong> ${command.help || ''} <small class="color-gray">package: ${command.package}</small>\n`
             if (!includeDetails || (!command.usage && !command.options)) return summary
             var cliclopts = new Cliclopts(command.options)
 
-            return `${summary}\n\nUsage: ${makeSafe(command.usage || '')}\n${makeSafe(cliclopts.usage())}`
+            return html`${summary}\n\nUsage: ${command.usage || ''}\n${cliclopts.usage()}\n`
           })
-          .join('\n')
       }
     }
   }
@@ -531,7 +529,7 @@ class WebTerm extends LitElement {
             ${additionalTabCompleteOptions >= 1 ? html`<a>${additionalTabCompleteOptions} other items...</a>` : ''}
           </div>
         ` : ''}
-        <div class="live-help">${this.liveHelp ? unsafeHTML(this.liveHelp.toHTML()) : ''}</div>
+        <div class="live-help">${this.liveHelp ? this.liveHelp.toHTML() : ''}</div>
       </div>
     `
   }

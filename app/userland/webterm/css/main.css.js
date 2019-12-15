@@ -55,7 +55,7 @@ audio {
 }
 
 .output .entry {
-  white-space: pre-line;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 
