@@ -26,6 +26,10 @@ ${spinnerCSS}
   color: var(--default);
 }
 
+:host::-webkit-scrollbar {
+  display: none;
+}
+
 a {
   text-decoration: none;
   cursor: pointer;
@@ -42,18 +46,15 @@ audio {
   max-width: 100%;
 }
 
-.output .entry {
-  margin-bottom: 1rem;
-}
-
-.output .entry .entry-header {
+.output .header {
+  margin-top: 1rem;
   line-height: 1;
   margin-bottom: 2px;
   font-weight: bold;
   word-break: break-all;
 }
 
-.output .entry .entry-content {
+.output .entry {
   white-space: pre;
   word-break: break-word;
 }
@@ -74,6 +75,7 @@ audio {
   display: flex;
   line-height: 1;
   font-weight: bold;
+  margin-top: 1rem;
 }
 
 .prompt input {

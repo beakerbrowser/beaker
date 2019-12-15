@@ -6,6 +6,7 @@ import { Cliclopts } from './lib/cliclopts.1.1.1.js'
 import { createArchive } from './lib/term-archive-wrapper.js'
 import { importModule } from './lib/import-module.js'
 import { joinPath, DAT_KEY_REGEX, makeSafe } from 'beaker://app-stdlib/js/strings.js'
+import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import css from '../css/main.css.js'
 import './lib/term-icon.js'
 
@@ -29,18 +30,6 @@ class WebTerm extends LitElement {
     this.fs = undefined
     this.tabCompletion = undefined
     this.liveHelp = undefined
-
-    var getCWD = () => this.cwd
-    var setCWD = this.setCWD.bind(this)
-    window.terminal = {
-      get cwd () {
-        return getCWD()
-      },
-      set cwd (v) {
-        return setCWD(v)
-      },
-      resolve: this.resolve.bind(this)
-    }
 
     this.commandHist = {
       array: [],
@@ -74,6 +63,13 @@ class WebTerm extends LitElement {
     })
 
     this.addEventListener('click', e => {
+      let anchor = findParent(e.path[0], el => el.tagName === 'A')
+      if (anchor) {
+        e.stopPropagation()
+        e.preventDefault()
+        beaker.browser.openUrl(anchor.getAttribute('href'), {setActive: true})
+        return
+      }
       if (e.path[0] === this) {
         // click outside of any content, focus the cli
         this.setFocus()
@@ -110,7 +106,7 @@ class WebTerm extends LitElement {
 
     if (!this.isLoaded) {
       await this.importEnvironment()
-      await this.appendOutput(html`<div><strong>Welcome to webterm 1.0.</strong> Type <code>help</code> if you get lost.</div>`, this.cwd.pathname)
+      await this.output(html`<div><strong>Welcome to webterm 1.0.</strong> Type <code>help</code> if you get lost.</div>`)
       this.isLoaded = true
     }
 
@@ -151,7 +147,7 @@ class WebTerm extends LitElement {
         pkg.manifest = JSON.parse(await navigator.filesystem.readFile(`/${pkg.path}/index.json`))
       } catch (e) {
         console.log(e)
-        this.appendError(`Failed to read ${pkg.path} manifest`, e.toString())
+        this.outputError(`Failed to read ${pkg.path} manifest`, e.toString())
       }
     }
     packages = packages.concat(userPackages)
@@ -160,7 +156,7 @@ class WebTerm extends LitElement {
     for (let pkg of packages) {
       var commands = pkg.manifest.commands
       if (!commands || !Array.isArray(commands) || commands.length === 0) {
-        this.appendError(`Skipping ${pkg.manifest.title} (${pkg.url})`, 'No commands found')
+        this.outputError(`Skipping ${pkg.manifest.title} (${pkg.url})`, 'No commands found')
         continue
       }
 
@@ -168,7 +164,7 @@ class WebTerm extends LitElement {
         // HACK we use importModule() instead of import() because I could NOT get rollup to leave dynamic imports alone -prf
         this.commandModules[pkg.url] = await importModule(joinPath(pkg.url, 'index.js'))
       } catch (err) {
-        this.appendError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
+        this.outputError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
         continue
       }
 
@@ -184,7 +180,7 @@ class WebTerm extends LitElement {
         if (!(command.name in this.commands)) {
           this.commands[command.name] = commandData
         } else {
-          this.appendError(`Unabled to add ${command.name} from ${pkg.manifest.title}`, 'Command name already in use')
+          this.outputError(`Unabled to add ${command.name} from ${pkg.manifest.title}`, 'Command name already in use')
         }
       }
     }
@@ -223,31 +219,32 @@ class WebTerm extends LitElement {
     return new URL(url)
   }
 
-  async appendOutput (output, thenCWD, cmd) {
-    const header = () => {
-      let host = this.isFSRoot(thenCWD.host) ? '~' : shortenHash(thenCWD.host)
-      let pathname = (thenCWD.pathname || '').replace(/\/$/, '')
-      return html`<div class="entry-header">${host}${pathname}&gt; ${cmd || ''}</div>`
-    }
+  outputHeader (thenCwd, cmd) {
+    let host = this.isFSRoot(thenCwd.host) ? '~' : shortenHash(thenCwd.host)
+    let pathname = (thenCwd.pathname || '').replace(/\/$/, '')
+    this.outputHist.push(html`<div class="header">${host}${pathname}&gt; ${cmd || ''}</div>`)
+  }
 
+  async output (output) {
+    return this._output(this.outputHist, output)
+  }
+
+  async _output (buffer, output) {
     // create the place in the history
-    var outputHistIndex = this.outputHist.length
-    this.outputHist.push(html``)
+    var index = buffer.length
+    buffer.push(html``)
 
     // show a spinner for promises
     if (output instanceof Promise) {
-      this.outputHist.splice(outputHistIndex, 1, html`
-        <div class="entry">
-          ${header()}
-          <div class="entry-content"><span class="spinner"></span></div>
-        </div>
+      buffer.splice(index, 1, html`
+        <div class="entry"><span class="spinner"></span></div>
       `)
       this.requestUpdate()
 
       try {
         output = await output
       } catch (err) {
-        output = html`<div class="error"><div class="error-header">Command error</div><div class="error-stack">${err.toString()}</div></div>`
+        output = html`<div class="error"><div class="error-stack">${err.toString()}</div></div>`
       }
     }
 
@@ -259,24 +256,17 @@ class WebTerm extends LitElement {
     } else if (typeof output !== 'string' && !(output instanceof TemplateResult)) {
       output = JSON.stringify(output)
     }
-    thenCWD = thenCWD || this.cwd
-    this.outputHist.splice(outputHistIndex, 1, html`
-      <div class="entry">
-        ${header()}
-        <div class="entry-content">${output}</div>
-      </div>
+    buffer.splice(index, 1, html`
+      <div class="entry">${output}</div>
     `)
-
-    await this.readTabCompletionOptions()
     this.requestUpdate()
   }
 
-  appendError (msg, err, thenCWD, cmd) {
-    this.appendOutput(
-      html`<div class="error"><div class="error-header">${msg}</div><div class="error-stack">${err ? err.toString() : ''}</div></div>`,
-      thenCWD,
-      cmd
-    )
+  outputError (msg, err, thenCWD, cmd) {
+    this.outputHeader(thenCWD, cmd)
+    this.output(html`
+      <div class="error"><div class="error-header">${msg}</div><div class="error-stack">${err ? err.toString() : ''}</div></div>
+    `)
   }
 
   clearHistory () {
@@ -297,7 +287,7 @@ class WebTerm extends LitElement {
     var commandName = args[0]
     var command = this.commands[commandName]
     if (!command) {
-      this.appendError(`Command not found: ${commandName}`, '', this.cwd, commandName)
+      this.outputError(`Command not found: ${commandName}`, '', this.cwd, commandName)
       return false
     }
 
@@ -307,10 +297,32 @@ class WebTerm extends LitElement {
     delete argv._
     try {
       var oldCWD = new URL(this.cwd.toString())
-      var res = this.commandModules[command.package][command.name](argv, ...restArgs)
-      this.appendOutput(res, oldCWD, inputValue)
+      this.outputHeader(oldCWD, inputValue)
+
+      var additionalOutput = []
+      this.outputHist.push(additionalOutput)
+
+      let getCWD = () => this.cwd
+      let setCWD = this.setCWD.bind(this)
+      let ctx = {
+        get cwd () { return getCWD() },
+        set cwd (v) { setCWD(v) },
+        resolve: this.resolve.bind(this),
+        out: (...args) => {
+          args = args.map(arg => {
+            if (arg && typeof arg === 'object') return JSON.stringify(arg)
+            return arg
+          })
+          additionalOutput.push(html`<div class="entry">${unsafeHTML(args.join(' '))}</div>`)
+          this.requestUpdate() 
+        }
+      }
+
+      var res = this.commandModules[command.package][command.name].call(ctx, argv, ...restArgs)
+      this.output(res)
+      this.readTabCompletionOptions()
     } catch (err) {
-      this.appendError('Command error', err, oldCWD, inputValue)
+      this.outputError('Command error', err, oldCWD, inputValue)
     }
   }
 
@@ -495,7 +507,6 @@ class WebTerm extends LitElement {
 
               const onClick = e => {
                 if (item.stat) this.triggerTabComplete(item.name + (item.stat.isDirectory() ? '/' : ''))
-                else this.appendOutput(this.help({}, item.name), this.cwd, `help ${item.name}`)
                 this.setFocus()
               }
 
@@ -503,7 +514,7 @@ class WebTerm extends LitElement {
                 var type = item.stat.isDirectory() ? 'folder' : 'file'
                 return html`<a @click=${onClick}><term-icon icon=${type}></term-icon> ${name}</a>`
               } else {
-                return html`<a @click=${onClick}><span>${name}</span> <small class="color-gray">${item.help || ''}</small></a>`
+                return html`<span><span>${name}</span> <small class="color-gray">${item.help || ''}</small></span>`
               }
             })}
             ${additionalTabCompleteOptions >= 1 ? html`<a>${additionalTabCompleteOptions} other items...</a>` : ''}
