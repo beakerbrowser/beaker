@@ -212,6 +212,12 @@ export async function go (opts = {}, location = '') {
 
 export async function edit (opts = {}, location = '') {
   location = this.resolve(location)
+
+  // create if dne
+  var urlp = parseLocation(location)
+  let st = await urlp.archive.stat(urlp.pathname).catch(e => undefined)
+  if (!st) await urlp.archive.writeFile(urlp.pathname, '')
+
   if (opts.n) {
     await beaker.browser.openUrl(location, {
       setActive: true,
