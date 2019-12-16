@@ -205,7 +205,7 @@ class SelectDriveModal extends LitElement {
     this.type = params.type
     await this.requestUpdate()
 
-    var entries = await bg.navigatorFs.query({
+    var entries = await bg.datArchive.query(bg.navigatorFs.get().url, {
       path: '/library/*',
       type: 'mount',
       sort: 'name'
