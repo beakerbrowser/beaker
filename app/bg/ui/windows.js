@@ -255,19 +255,19 @@ export function createShellWindow (windowState) {
   }
 
   // register shortcuts
-  for (var i = 1; i <= 8; i++) { registerGlobalKeybinding(win, 'CmdOrCtrl+' + i, onTabSelect(win, i - 1)) }
-  registerGlobalKeybinding(win, 'CmdOrCtrl+9', onLastTab(win))
-  registerGlobalKeybinding(win, 'Ctrl+PageUp', onPrevTab(win))
-  registerGlobalKeybinding(win, 'Ctrl+PageDown', onNextTab(win))
-  registerGlobalKeybinding(win, 'CmdOrCtrl+[', onGoBack(win))
-  registerGlobalKeybinding(win, 'CmdOrCtrl+]', onGoForward(win))
-  registerGlobalKeybinding(win, 'Alt+D', onFocusLocation(win))
-  registerGlobalKeybinding(win, 'F5', onReload(win))
-  registerGlobalKeybinding(win, 'F6', onFocusLocation(win))
+  for (var i = 1; i <= 8; i++) { registerGlobalKeybinding(win, 'CmdOrCtrl+' + i, onTabSelect(i - 1)) }
+  registerGlobalKeybinding(win, 'CmdOrCtrl+9', onLastTab)
+  registerGlobalKeybinding(win, 'Ctrl+PageUp', onPrevTab)
+  registerGlobalKeybinding(win, 'Ctrl+PageDown', onNextTab)
+  registerGlobalKeybinding(win, 'CmdOrCtrl+[', onGoBack)
+  registerGlobalKeybinding(win, 'CmdOrCtrl+]', onGoForward)
+  registerGlobalKeybinding(win, 'Alt+D', onFocusLocation)
+  registerGlobalKeybinding(win, 'F5', onReload)
+  registerGlobalKeybinding(win, 'F6', onFocusLocation)
 
   // register event handlers
-  win.on('browser-backward', onGoBack(win))
-  win.on('browser-forward', onGoForward(win))
+  win.on('browser-backward', onGoBack)
+  win.on('browser-forward', onGoForward)
   // win.on('scroll-touch-begin', sendScrollTouchBegin) // TODO readd?
   // win.on('scroll-touch-end', sendToWebContents('scroll-touch-end')) // TODO readd?
   win.on('focus', e => {
@@ -474,36 +474,46 @@ function onClose (win) {
   }
 }
 
-function onTabSelect (win, tabIndex) {
-  return () => tabManager.setActive(win, tabIndex)
+function onTabSelect (tabIndex) {
+  return () => {  
+    var win = BrowserWindow.getFocusedWindow()
+    tabManager.setActive(win, tabIndex)
+  }
 }
 
-function onLastTab (win) {
-  return () => tabManager.setActive(win, tabManager.getAll(win).slice(-1)[0])
+function onLastTab () {
+  var win = BrowserWindow.getFocusedWindow()
+  tabManager.setActive(win, tabManager.getAll(win).slice(-1)[0])
 }
 
-function onNextTab (win) {
-  return () => tabManager.changeActiveBy(win, 1)
+function onNextTab () {
+  var win = BrowserWindow.getFocusedWindow()
+  tabManager.changeActiveBy(win, 1)
 }
 
-function onPrevTab (win) {
-  return () => tabManager.changeActiveBy(win, -1)
+function onPrevTab () {
+  var win = BrowserWindow.getFocusedWindow()
+  tabManager.changeActiveBy(win, -1)
 }
 
-function onGoBack (win) {
-  return () => tabManager.getActive(win).webContents.goBack()
+function onGoBack () {
+  var win = BrowserWindow.getFocusedWindow()
+  tabManager.getActive(win).webContents.goBack()
 }
 
-function onGoForward (win) {
-  return () => tabManager.getActive(win).webContents.goForward()
+function onGoForward () {
+  var win = BrowserWindow.getFocusedWindow()
+  tabManager.getActive(win).webContents.goForward()
 }
 
-function onReload (win) {
-  return () => tabManager.getActive(win).webContents.reload()
+function onReload () {
+  var win = BrowserWindow.getFocusedWindow()
+  tabManager.getActive(win).webContents.reload()
 }
 
-function onFocusLocation (win) {
-  return () => win.webContents.send('command', 'focus-location')
+function onFocusLocation () {
+  var win = BrowserWindow.getFocusedWindow()
+  win.webContents.send('command', 'focus-location')
 }
 
 function onAppCommand (win, e, cmd) {
