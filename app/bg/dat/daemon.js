@@ -148,7 +148,22 @@ function createDatArchiveSessionPDA (datArchive) {
   var obj = {}
   for (let k in pda) {
     if (typeof pda[k] === 'function') {
-      obj[k] = pda[k].bind(pda, datArchive)
+      if (getEnvVar('LOG_HYPERDRIVE_DAEMON_CALLS')) {
+        obj[k] = async (...args) => {
+          let t = Date.now()
+          console.log('->', k, ...args)
+          try {
+            var res = await pda[k].call(pda, datArchive, ...args)
+            console.log(`:: ${Date.now() - t} ms`, k, ...args)
+            return res
+          } catch (e) {
+            console.log(`:: ${Date.now() - t} ms`, k, ...args)
+            throw e
+          }
+        }
+      } else {
+        obj[k] = pda[k].bind(pda, datArchive)
+      }
     }
   }
   return obj
