@@ -4,6 +4,8 @@ import constants from 'hyperdrive-daemon-client/lib/constants'
 import { HyperdriveClient } from 'hyperdrive-daemon-client'
 import datEncoding from 'dat-encoding'
 import * as pda from 'pauls-dat-api2'
+import { getEnvVar } from '../lib/env'
+import * as childProcesses from '../child-processes'
 
 const SETUP_RETRIES = 10
 
@@ -60,9 +62,13 @@ export const setup = async function () {
   // instantiate the daemon
   // TODO the daemon should be managed in an external process
   await createMetadata(`localhost:${constants.port}`)
-  var daemon = new HyperdriveDaemon()
-  await daemon.start()
-  process.on('exit', () => daemon.stop())
+  if (getEnvVar('EMBED_HYPERDRIVE_DAEMON')) {
+    var daemon = new HyperdriveDaemon()
+    await daemon.start()
+    process.on('exit', () => daemon.stop())
+  } else {
+    await childProcesses.spawn('hyperdrive-daemon', './bg/dat/daemon-process.js')
+  }
 
   for (let i = 0; i < SETUP_RETRIES; i++) {
     try {
