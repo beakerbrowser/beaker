@@ -25,6 +25,7 @@ import { findWebContentsParentWindow } from '../lib/electron'
 import * as settingsDb from '../dbs/settings'
 import { getEnvVar } from '../lib/env'
 import * as users from '../filesystem/users'
+import _pick from 'lodash.pick'
 
 const IS_WIN = process.platform === 'win32'
 const subwindows = {
@@ -452,7 +453,7 @@ function ensureVisibleOnSomeDisplay (windowState) {
   if (!visible) {
     // Window is partially or fully not visible now.
     // Reset it to safe defaults.
-    return defaultWindowState(windowState)
+    return Object.assign({}, windowState, _pick(defaultWindowState(), ['x', 'y', 'width', 'height', 'minWidth', 'minHeight'])
   }
   return windowState
 }
