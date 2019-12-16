@@ -62,8 +62,6 @@ class NavbarInpageFind extends LitElement {
       this.query = e.currentTarget.value
       if (this.query) {
         bg.views.setInpageFindString(this.activeTabIndex, this.query, dir)
-      } else {
-        bg.views.hideInpageFind(this.activeTabIndex)
       }
       return
     }
@@ -71,8 +69,6 @@ class NavbarInpageFind extends LitElement {
       this.query = e.currentTarget.value
       if (this.query) {
         bg.views.setInpageFindString(this.activeTabIndex, this.query, 1)
-      } else {
-        bg.views.hideInpageFind(this.activeTabIndex)
       }
     }
   }

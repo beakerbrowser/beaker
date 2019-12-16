@@ -595,6 +595,7 @@ class Tab {
   }
 
   moveInpageFind (dir) {
+    if (!this.currentInpageFindString) return
     this.webContents.findInPage(this.currentInpageFindString, {findNext: false, forward: dir !== -1})
   }
 
