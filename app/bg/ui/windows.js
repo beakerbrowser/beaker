@@ -453,7 +453,7 @@ function ensureVisibleOnSomeDisplay (windowState) {
   if (!visible) {
     // Window is partially or fully not visible now.
     // Reset it to safe defaults.
-    return Object.assign({}, windowState, _pick(defaultWindowState(), ['x', 'y', 'width', 'height', 'minWidth', 'minHeight'])
+    return Object.assign({}, windowState, _pick(defaultWindowState(), ['x', 'y', 'width', 'height', 'minWidth', 'minHeight']))
   }
   return windowState
 }
