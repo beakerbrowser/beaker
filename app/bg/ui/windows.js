@@ -102,11 +102,9 @@ export async function setup () {
     if (!parentView) return
     var parentWindow = findWebContentsParentWindow(parentView)
     if (!parentWindow) {
-      let tab = tabManager.findTab(parentView)
-      if (tab) {
-        parentWindow = tab.browserWindow
-      } else {
-        return
+      parentWindow = tabManager.findContainingWindow(parentView)
+      if (!parentWindow) {
+        return 
       }
     }
 

@@ -1103,6 +1103,7 @@ export function create (
 
   var tab
   var preloadedNewTab = preloadedNewTabs[win.id]
+  var loadWhenReady = false
   if (url === DEFAULT_URL && !opts.isPinned && preloadedNewTab) {
     // use the preloaded tab
     tab = preloadedNewTab
@@ -1111,7 +1112,8 @@ export function create (
   } else {
     // create a new tab
     tab = new Tab(win, {isPinned: opts.isPinned})
-    tab.loadURL(url)
+    // tab.loadURL(url)
+    loadWhenReady = true
   }
 
   // add to active tabs
@@ -1123,6 +1125,14 @@ export function create (
     } else {
       tabs.push(tab)
     }
+  }
+  if (loadWhenReady) {
+    // NOTE
+    // `loadURL()` triggers some events (eg app.on('web-contents-created'))
+    // which need to be handled *after* the tab is added to the listing
+    // thus this `loadWhenReady` logic
+    // -prf
+    tab.loadURL(url)
   }
 
   // make active if requested, or if none others are
