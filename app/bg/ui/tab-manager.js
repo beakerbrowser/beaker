@@ -248,7 +248,7 @@ class Tab {
       if (urlp.protocol === 'beaker:') {
         return 'Beaker'
       }
-      return hostname
+      return hostname + (urlp.port ? `:${urlp.port}` : '')
     } catch (e) {
       return ''
     }
@@ -1680,7 +1680,7 @@ function indexOfLastPinnedTab (win) {
 function toOrigin (str) {
   try {
     var u = new URL(str)
-    return u.protocol + '//' + u.hostname
+    return u.protocol + '//' + u.hostname + (u.port ? `:${u.port}` : '')
   } catch (e) { return '' }
 }
 
