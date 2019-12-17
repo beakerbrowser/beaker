@@ -7,6 +7,8 @@ import pump from 'pump'
 import split2 from 'split2'
 import through2 from 'through2'
 import { Readable } from 'stream'
+import os from 'os'
+import { join } from 'path'
 const {combine, timestamp, json, simple, colorize, padLevels} = winston.format
 import tailFile from './lib/tail-file'
 
@@ -111,6 +113,19 @@ export const WEBAPI = {
     })
     s2.on('close', () => s1.destroy())
     return s2
+  },
+  async listDaemonLog () {
+    var file = await new Promise((resolve, reject) => {
+      pump(
+        fs.createReadStream(join(os.homedir(), '.hyperdrive/log.json'), {start: 0, end: 1e6, encoding: 'utf8'}),
+        concat(resolve),
+        reject
+      )
+    })
+    return file.split('\n').map(line => {
+      try { return JSON.parse(line) }
+      catch (e) { return undefined }
+    }).filter(Boolean)
   }
 }
 

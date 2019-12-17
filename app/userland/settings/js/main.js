@@ -6,6 +6,7 @@ import './views/drive-handlers.js'
 import './views/general.js'
 import './views/info.js'
 import './views/fs-audit-log.js'
+import './views/daemon-log.js'
 import './views/log.js'
 import './views/programs.js'
 
@@ -67,8 +68,9 @@ class SettingsApp extends LitElement {
       ${item('cloud-peers', 'fas fa-cloud', 'Cloud Peers')}
       ${item('users', 'fas fa-users', 'Users')}
       <hr>
-      ${item('fs-audit-log', 'fas fa-clipboard-check', 'Filesystem Audit Log')}
       ${item('general-logs', 'fas fa-clipboard-list', 'General Logs')}
+      ${item('fs-audit-log', 'fas fa-clipboard-check', 'Filesystem Audit Log')}
+      ${item('daemon-log', 'fas fa-clipboard-list', 'Daemon Log')}
       ${item('info', 'far fa-question-circle', 'Information & Help')}
       <hr>
     `
@@ -87,10 +89,12 @@ class SettingsApp extends LitElement {
         return html`<general-settings-view loadable></general-settings-view>`
       case 'info':
         return html`<info-settings-view loadable></info-settings-view>`
-      case 'fs-audit-log':
-        return html`<fs-audit-log-view loadable></fs-audit-log-view>`
       case 'general-logs':
         return html`<log-settings-view loadable></log-settings-view>`
+      case 'fs-audit-log':
+        return html`<fs-audit-log-view loadable></fs-audit-log-view>`
+      case 'daemon-log':
+          return html`<daemon-log-view loadable></daemon-log-view>`
       default:
         return html`<div class="empty"><div><span class="fas fa-toolbox"></span></div>Under Construction</div>`
     }

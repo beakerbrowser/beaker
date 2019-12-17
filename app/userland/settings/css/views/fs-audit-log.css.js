@@ -8,7 +8,8 @@ ${buttonsCSS}
 
 :host {
   display: block;
-  height: 100vh;
+  height: calc(100vh - 2px);
+  width: calc(100vw - 220px);
   overflow: auto;
 }
 
