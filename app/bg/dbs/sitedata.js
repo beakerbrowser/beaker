@@ -193,7 +193,7 @@ export const WEBAPI = {
 async function extractOrigin (originURL) {
   var urlp = parseDatUrl(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
-  return (urlp.protocol + urlp.host)
+  return (urlp.protocol + urlp.host + (urlp.port ? `:${urlp.port}` : ''))
 }
 
 /**
@@ -203,7 +203,7 @@ async function extractOrigin (originURL) {
 function normalizeUrl (originURL) {
   try {
     var urlp = new URL(originURL)
-    return (urlp.protocol + '//' + urlp.hostname + urlp.pathname).replace(/([/]$)/g, '')
+    return (urlp.protocol + '//' + urlp.hostname + (urlp.port ? `:${urlp.port}` : '') + urlp.pathname).replace(/([/]$)/g, '')
   } catch (e) {}
   return originURL
 }

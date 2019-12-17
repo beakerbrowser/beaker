@@ -18,6 +18,7 @@ import typesManifest from './manifests/internal/types'
 
 // internal apis
 import { WEBAPI as loggerAPI } from '../logger'
+import * as auditLog from '../dbs/audit-log'
 import archivesAPI from './bg/archives'
 import * as bookmarksAPI from '../filesystem/bookmarks'
 import historyAPI from './bg/history'
@@ -58,7 +59,7 @@ import experimentalGlobalFetchAPI from './bg/experimental/global-fetch'
 
 export const setup = function () {
   // internal apis
-  rpc.exportAPI('logger', loggerManifest, loggerAPI, internalOnly)
+  rpc.exportAPI('logger', loggerManifest, Object.assign({}, {listAuditLog: auditLog.list}, loggerAPI), internalOnly)
   rpc.exportAPI('archives', archivesManifest, archivesAPI, internalOnly)
   rpc.exportAPI('beaker-browser', beakerBrowserManifest, beakerBrowserAPI, internalOnly)
   rpc.exportAPI('bookmarks', bookmarksManifest, bookmarksAPI, internalOnly)

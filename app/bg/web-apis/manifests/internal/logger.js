@@ -1,4 +1,5 @@
 export default {
   stream: 'readable',
-  query: 'promise'
+  query: 'promise',
+  listAuditLog: 'promise'
 }
