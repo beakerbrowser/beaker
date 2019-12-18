@@ -46,6 +46,12 @@ audio {
   max-width: 100%;
 }
 
+pre {
+  margin: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+
 .output .header {
   margin-top: 1rem;
   line-height: 1;
@@ -55,12 +61,10 @@ audio {
 }
 
 .output .entry {
-  white-space: pre-wrap;
   word-break: break-word;
 }
 
 .output .error {
-  white-space: normal;
   color: var(--error);
 }
 
@@ -120,7 +124,6 @@ audio {
 .live-help {
   padding: 10px;
   min-height: 70px;
-  white-space: pre;
   word-break: break-word;
 }
 

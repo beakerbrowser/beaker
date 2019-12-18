@@ -145,7 +145,7 @@ export async function meta (opts, location, key = undefined, ...value) {
       Object.defineProperty(meta, 'toHTML', {
         enumerable: false,
         value: () => {
-          return html`<table>${Object.entries(meta).map(([k, v]) => `<tr><td><strong>${k || ''}&ensp;</strong></td><td>&quot;${v || ''}&quot;</td></tr>`)}</table>`
+          return html`<table>${Object.entries(meta).map(([k, v]) => html`<tr><td><strong>${k || ''}&ensp;</strong></td><td>&quot;${v || ''}&quot;</td></tr>`)}</table>`
         }
       })
       return meta
@@ -185,7 +185,7 @@ export async function peek (opts = {}, location = '') {
     return {toHTML: () => html`<audio controls><source src=${(origin + pathname)}></audio>`}
   }
   var content = await archive.readFile(pathname, 'utf8')
-  return {toHTML: () => (content)}
+  return {toHTML: () => html`<pre>${content}</pre>`}
 }
 
 export async function go (opts = {}, location = '') {

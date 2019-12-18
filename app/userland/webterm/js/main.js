@@ -508,11 +508,16 @@ class WebTerm extends LitElement {
       toHTML () {
         return commands
           .map(command => {
-            var summary = html`<strong>${command.name.padEnd(commandNameLen + 2)}</strong> ${command.help || ''} <small class="color-gray">package: ${command.package}</small>\n`
+            var summary = html`
+              <strong style="white-space: pre">${command.name.padEnd(commandNameLen + 2)}</strong>
+              ${command.help || ''}
+              <small class="color-gray">package: ${command.package}</small>
+              <br>
+            `
             if (!includeDetails || (!command.usage && !command.options)) return summary
             var cliclopts = new Cliclopts(command.options)
 
-            return html`${summary}\nUsage: ${command.usage || ''}\n${cliclopts.usage()}`
+            return html`${summary}<br>Usage: ${command.usage || ''}<br><pre>${cliclopts.usage()}</pre>`
           })
       }
     }
