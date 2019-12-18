@@ -541,7 +541,7 @@ class WebTerm extends LitElement {
         <div class="prompt">
           ${host}${pathname}&gt; <input @keyup=${this.onPromptKeyUp} />
         </div>
-        ${this.tabCompletion ? html`
+        ${this.tabCompletion && this.tabCompletion.length ? html`
           <div class="tab-completion">
             ${repeat(this.tabCompletion.slice(0, TAB_COMPLETION_RENDER_LIMIT), item => {
               // highlight the part of the name that matches the input
