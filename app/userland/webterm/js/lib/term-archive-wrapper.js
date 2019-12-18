@@ -29,7 +29,7 @@ class OtherOrigin {
     }
   }
 
-  doThrow () {
+  async doThrow () {
     let urlp = new URL(this.url)
     throw new Error(`${urlp.protocol} does not support this command`)
   }

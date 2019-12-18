@@ -157,6 +157,7 @@ class WebTerm extends LitElement {
     console.log(packages)
 
     for (let pkg of packages) {
+      var pkgId = pkg.name || pkg.url
       var commands = pkg.manifest.commands
       if (!commands || !Array.isArray(commands) || commands.length === 0) {
         this.outputError(`Skipping ${pkg.manifest.title} (${pkg.url})`, 'No commands found')
@@ -165,7 +166,7 @@ class WebTerm extends LitElement {
 
       try {
         // HACK we use importModule() instead of import() because I could NOT get rollup to leave dynamic imports alone -prf
-        this.commandModules[pkg.name || pkg.url] = await importModule(joinPath(pkg.url, 'index.js'))
+        this.commandModules[pkgId] = await importModule(joinPath(pkg.url, 'index.js'))
       } catch (err) {
         this.outputError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
         continue
@@ -174,11 +175,14 @@ class WebTerm extends LitElement {
       for (let command of commands) {
         if (!command.name) continue
         let commandData = {
-          package: pkg.name || pkg.url,
+          fn: this.commandModules[pkgId][command.name],
+          package: pkgId,
           name: command.name,
+          path: [command.name],
           help: command.help,
           usage: command.usage,
-          options: command.options
+          options: command.options,
+          subcommands: subcommandsMap(pkg, this.commandModules[pkgId], command)
         }
         if (!(command.name in this.commands)) {
           this.commands[command.name] = commandData
@@ -192,6 +196,7 @@ class WebTerm extends LitElement {
   async loadBuiltins () {
     this.commandModules.builtins = {help: this.help.bind(this)}
     this.commands.help = {
+      fn: this.help.bind(this),
       package: 'builtins',
       name: 'help',
       help: 'Get documentation on a command',
@@ -266,10 +271,8 @@ class WebTerm extends LitElement {
   }
 
   outputError (msg, err, thenCWD, cmd) {
-    this.outputHeader(thenCWD, cmd)
-    this.output(html`
-      <div class="error"><div class="error-header">${msg}</div><div class="error-stack">${err ? err.toString() : ''}</div></div>
-    `)
+    if (thenCWD || cmd) this.outputHeader(thenCWD, cmd)
+    this.output(html`<div class="error"><div class="error-header">${msg}</div><div class="error-stack">${err ? err.toString() : ''}</div></div>`)
   }
 
   clearHistory () {
@@ -285,17 +288,23 @@ class WebTerm extends LitElement {
     this.commandHist.add(prompt.value)
     var inputValue = prompt.value
     var args = prompt.value.split(' ')
+    var paramsIndex = 1
     prompt.value = ''
 
     var commandName = args[0]
     var command = this.commands[commandName]
+    if (command && command.subcommands) {
+      command = command.subcommands[args[1]]
+      paramsIndex = 2
+    }
     if (!command) {
-      this.outputError(`Command not found: ${commandName}`, '', this.cwd, commandName)
+      this.outputError('', `Command not found: ${commandName}`, this.cwd, commandName)
+      this.readTabCompletionOptions()
       return false
     }
 
     var cliclopts = new Cliclopts(command.options)
-    var argv = minimist(args.slice(1), cliclopts.options())
+    var argv = minimist(args.slice(paramsIndex), cliclopts.options())
     var restArgs = argv._
     delete argv._
     try {
@@ -329,12 +338,12 @@ class WebTerm extends LitElement {
         }
       }
 
-      var res = this.commandModules[command.package][command.name].call(ctx, argv, ...restArgs)
+      var res = command.fn.call(ctx, argv, ...restArgs)
       this.output(res)
-      this.readTabCompletionOptions()
     } catch (err) {
-      this.outputError('Command error', err, oldCWD, inputValue)
+      this.outputError('Command error', err)
     }
+    this.readTabCompletionOptions()
   }
 
   setFocus () {
@@ -347,10 +356,21 @@ class WebTerm extends LitElement {
     return a && a[0] === b[0]
   }
 
+  lookupCommand (input) {
+    let cmd = undefined
+    for (let token of input.split(' ')) {
+      let next = cmd ? (cmd.subcommands ? cmd.subcommands[token] : undefined) : this.commands[token]
+      if (!next) break
+      cmd = next
+    }
+    return cmd
+  }
+
   async readTabCompletionOptions () {
     var input = this.promptInput
+    var cmd = this.lookupCommand(input)
 
-    if (input.includes(' ')) {
+    if (cmd && !cmd.subcommands) {
       // resolve input + pwd to a directory
       let location = this.resolve(input.split(' ').pop())
       let lp = new URL(location)
@@ -359,7 +379,7 @@ class WebTerm extends LitElement {
       }
 
       // read directory
-      this.tabCompletion = await (createArchive(lp.origin)).readdir(lp.pathname, {stat: true})
+      this.tabCompletion = await (createArchive(lp.origin).readdir(lp.pathname, {stat: true}).catch(err => []))
       this.tabCompletion.sort((a, b) => {
         if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
         if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1
@@ -367,10 +387,14 @@ class WebTerm extends LitElement {
       })
 
       // get live help on the current command
-      this.liveHelp = this.help({}, input.split(' ').shift())
+      this.liveHelp = this.help({}, ...cmd.path)
     } else if (input) {
       // display command options
-      this.tabCompletion = this.help().commands
+      if (cmd && cmd.subcommands && input.includes(' ')) {
+        this.tabCompletion = Object.values(cmd.subcommands)
+      } else {
+        this.tabCompletion = Object.values(this.commands)
+      }
       this.liveHelp = undefined
     } else {
       // no input
@@ -451,24 +475,30 @@ class WebTerm extends LitElement {
     return location
   }
 
-  help (opts, topic) {
+  help (opts, ...topic) {
     var commands = []
     var sourceSet
     var commandNameLen = 0
-    const includeDetails = !!topic
+    var includeDetails = false
 
-    if (topic) {
-      if (!(topic in this.commands)) {
-        throw new Error(`Not a command: ${topic}`)
+    var cmd = undefined
+    if (topic[0]) {
+      cmd = this.lookupCommand(topic.join(' '))
+      if (!cmd) throw new Error(`Not a command: ${topic.join(' ')}`)
+    }
+
+    if (cmd) {
+      if (cmd.subcommands) {
+        sourceSet = cmd.subcommands
+      } else {
+        sourceSet = {[topic.join(' ')]: cmd}
+        includeDetails = true
       }
-      sourceSet = {[topic]: this.commands[topic]}
     } else {
       sourceSet = this.commands
     }
 
-    for (let id in sourceSet) {
-      if (!topic && id.includes('.')) continue
-      let command = this.commands[id]
+    for (let command of Object.values(sourceSet)) {
       commandNameLen = Math.max(command.name.length, commandNameLen)
       commands.push(command)
     }
@@ -482,7 +512,7 @@ class WebTerm extends LitElement {
             if (!includeDetails || (!command.usage && !command.options)) return summary
             var cliclopts = new Cliclopts(command.options)
 
-            return html`${summary}\n\nUsage: ${command.usage || ''}\n${cliclopts.usage()}\n`
+            return html`${summary}\nUsage: ${command.usage || ''}\n${cliclopts.usage()}`
           })
       }
     }
@@ -581,4 +611,23 @@ customElements.define('web-term', WebTerm)
 
 function shortenHash (str = '') {
   return str.replace(/[0-9a-f]{64}/ig, v => `${v.slice(0, 6)}..${v.slice(-2)}`)
+}
+
+function subcommandsMap (pkg, commandModule, command) {
+  if (!command.subcommands || !Array.isArray(command.subcommands)) {
+    return undefined
+  }
+  let subcommands = {}
+  for (let subcmd of command.subcommands) {
+    subcommands[subcmd.name] = {
+      fn: commandModule[command.name][subcmd.name],
+      package: pkg.name || pkg.url,
+      name: subcmd.name,
+      path: [command.name, subcmd.name],
+      help: subcmd.help,
+      usage: subcmd.usage,
+      options: subcmd.options,
+    }
+  }
+  return subcommands
 }
