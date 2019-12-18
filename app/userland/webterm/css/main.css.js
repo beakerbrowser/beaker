@@ -15,6 +15,7 @@ ${spinnerCSS}
   --warning: #ff0;
   --info: #83f;
   --font: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
+  --text-shadow: 1px 1px 1px #00f;
 
   display: block;
   box-sizing: border-box;
@@ -24,6 +25,7 @@ ${spinnerCSS}
   overflow-y: auto;
   background: var(--background);
   color: var(--default);
+  text-shadow: var(--text-shadow);
 }
 
 :host::-webkit-scrollbar {
