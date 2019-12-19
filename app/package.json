@@ -40,7 +40,7 @@
     "fs-jetpack": "^1.3.1",
     "fs-reverse": "0.0.3",
     "function-queue": "0.0.12",
-    "hyperdrive-daemon": "git://github.com/andrewosh/hyperdrive-daemon.git#hypercore-8",
+    "hyperdrive-daemon": "git://github.com/andrewosh/hyperdrive-daemon.git#no-dependency-graph",
     "hyperdrive-daemon-client": "git://github.com/andrewosh/hyperdrive-daemon-client.git#hypercore-8",
     "hyperdrive-network-speed": "^2.1.0",
     "icojs": "^0.12.3",

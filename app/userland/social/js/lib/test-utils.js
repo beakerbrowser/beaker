@@ -14,7 +14,7 @@ export async function generateDrives (num = 10) {
 
   for (let i = 0; i < num; i++) {
     let profile = FAKE_PROFILES[(i + debugDrives.length) % FAKE_PROFILES.length]
-    let drive = await DatArchive.create(Object.assign(profile, {type: 'unwalled.garden/person'}))
+    let drive = await DatArchive.create(Object.assign(profile, {type: 'unwalled.garden/person', prompt: false}))
     debugDrives.push(drive.url)
   }
 }
@@ -36,10 +36,9 @@ export async function socializeDrives () {
 
 export async function generatePosts (numPosts = 10) {
   var driveUrls = Array.from(debugDrives)
-  for (let driveUrl of driveUrls) {
-    let drive = new DatArchive(driveUrl)
-    console.log('Adding', numPosts, 'posts for', driveUrl)
-    for (let i = 0; i < numPosts; i++) {
+  for (let i = 0; i < numPosts; i++) {
+    for (let driveUrl of driveUrls) {
+      let drive = new DatArchive(driveUrl)
       let numLines = Math.floor(Math.random() * 2) + 1
       let text = FAKE_POST.slice(0, numLines).join('\n\n')
       await uwg.feed.add(text, drive)

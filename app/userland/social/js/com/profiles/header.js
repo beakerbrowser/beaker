@@ -42,6 +42,8 @@ export class ProfileHeader extends LitElement {
       <a class="avatar" href="/${id}"><img src="asset:thumb:${this.profile.url}?cache_buster=${Date.now()}"></a>
       ${this.profile.isUser ? html`
         <button class="primary big rounded" @click=${this.onEditProfile}>Edit profile</button>
+      ` : typeof this.profile.isUserFollowing === 'undefined' ? html`
+        <span class="spinner" style="position: absolute; top: 10px; right: 10px"></span>
       ` : html`
         <button class="primary big rounded" @click=${this.onToggleFollow}>${this.profile.isUserFollowing ? 'Unfollow' : 'Follow'}</button>
       `}

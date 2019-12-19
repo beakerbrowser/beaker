@@ -1,5 +1,6 @@
 import { normalizeUrl, slugifyUrl, DAT_KEY_REGEX, joinPath } from './strings.js'
 import { queryRead, ensureDir, ensureParentDir, ensureMount, ensureUnmount, getAvailableName } from './fs.js'
+import { lock } from './lock.js'
 
 // typedefs
 // =
@@ -73,26 +74,33 @@ export const profiles = {
       profile.isUser = profile.url === user.url
       profile.followers = undefined
       profile.following = undefined
-      profile.isFollowingUser = false
-      profile.isUserFollowing = false
+      profile.isFollowingUser = undefined
+      profile.isUserFollowing = undefined
       return profile
     })()
 
     return await profileCache[key]
   },
 
-  async readSocialGraph (prof, user) {
-    var key = prof.url.slice('dat://'.length)
+  async readSocialGraph (prof, user, {includeProfiles} = {includeProfiles: false}) {
+    // lock this read to be sequential to avoid overloading the hyperdrive stack
+    let release = await lock('read-social-graph')
+    try {
+      if (prof.followers && prof.following) return
+      var key = prof.url.slice('dat://'.length)
 
-    var [followersQuery, followingQuery] = await Promise.all([
-      friends.list({target: key}),
-      friends.list({author: key})
-    ])
+      var [followersQuery, followingQuery] = await Promise.all([
+        friends.list({target: key}, {includeProfiles}),
+        friends.list({author: key}, {includeProfiles})
+      ])
 
-    prof.followers = followersQuery.map(item => item.drive)
-    prof.following = followingQuery.map(item => item.mount)
-    prof.isFollowingUser = Boolean(prof.following.find(f => f.url === user.url))
-    prof.isUserFollowing = Boolean(prof.followers.find(f => f.url === user.url))
+      prof.followers = followersQuery.map(item => item.drive)
+      prof.following = followingQuery.map(item => item.mount)
+      prof.isFollowingUser = Boolean(prof.following.find(f => f.url === user.url))
+      prof.isUserFollowing = Boolean(prof.followers.find(f => f.url === user.url))
+    } finally {
+      release()
+    }
   },
 
   async readProfile (item) {
@@ -110,16 +118,20 @@ export const friends = {
    * @param {Object} [query]
    * @param {string} [query.author]
    * @param {string} [query.target]
+   * @param {Object} [opts]
+   * @param {boolean} [opts.includeProfiles]
    * @returns {Promise<FSQueryResult[]>}
    */
-  async list ({author, target} = {author: undefined, target: undefined}) {
+  async list ({author, target} = {author: undefined, target: undefined}, {includeProfiles} = {includeProfiles: false}) {
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
     let results = await drive.query({
       type: 'mount',
       path: getFriendPaths(author),
       mount: target
     })
-    await profiles.readAllProfiles(results)
+    if (includeProfiles) {
+      await profiles.readAllProfiles(results)
+    }
     return results
   },
 
@@ -131,7 +143,10 @@ export const friends = {
    */
   async add (url, title = 'anonymous', drive = undefined) {
     var path = drive ? '/friends' : '/profile/friends'
+    drive = drive || navigator.filesystem
     await ensureDir(path, drive)
+    var mount = await drive.query({path: `${path}/*`, mount: url})
+    if (mount[0]) return
     var name = await getAvailableName(path, title, drive)
     await ensureMount(joinPath(path, name), url, drive)
   },

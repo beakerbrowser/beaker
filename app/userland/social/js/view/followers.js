@@ -24,7 +24,7 @@ export class FollowersView extends LitElement {
   }
 
   async load () {
-    this.followers = await uwg.friends.list({target: this.author})
+    this.followers = await uwg.friends.list({target: this.author}, {includeProfiles: true})
     console.log(this.followers)
     await this.requestUpdate()
     Array.from(this.querySelectorAll('[loadable]'), el => el.load())
