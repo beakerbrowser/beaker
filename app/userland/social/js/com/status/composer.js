@@ -15,12 +15,21 @@ export class StatusComposer extends LitElement {
     this.isFocused = false
     this.draftText = ''
     on(document, 'focus-composer', () => this.onClickPlaceholder())
+
+    if (location.search && location.search.includes('compose')) {
+      let params = new URLSearchParams(location.search)
+      this.draftText = params.get('body')
+    }
   }
 
   _submit () {
     if (!this.draftText) return
     this.dispatchEvent(new CustomEvent('submit', {detail: {body: this.draftText}}))
     this.draftText = ''
+  }
+
+  setDraft (v) {
+    this.draftText = v
   }
 
   // rendering
