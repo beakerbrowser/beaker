@@ -95,6 +95,131 @@
           "default": false
         }
       ]
+    },
+    {
+      "name": "soc",
+      "help": "Social networking commands",
+      "subcommands": [
+        {
+          "name": "ls",
+          "help": "List the latest posts in your feed",
+          "usage": "soc ls [-s] [-p {page=1}] [-n {num=10}]",
+          "options": [
+            {
+              "name": "short",
+              "abbr": "s",
+              "help": "Shorten the output",
+              "boolean": true,
+              "default": false
+            },
+            {
+              "name": "page",
+              "abbr": "p",
+              "help": "Select which page of posts to show (1-indexed)",
+              "default": 1
+            },
+            {
+              "name": "num",
+              "abbr": "n",
+              "help": "How many posts to include in a page",
+              "default": 10
+            }
+          ]
+        },
+        {
+          "name": "post",
+          "help": "Compose a new post",
+          "usage": "soc post [-y] [-f {file}] [{body}]",
+          "options": [
+            {
+              "name": "yes",
+              "abbr": "y",
+              "help": "Post immediately without reviewing first",
+              "boolean": true,
+              "default": false
+            },
+            {
+              "name": "file",
+              "abbr": "f",
+              "help": "Use the content of the given file as the post-body (should be a text file)"
+            }
+          ]
+        },
+        {
+          "name": "whoami",
+          "help": "Output your profile",
+          "usage": "whoami"
+        },
+        {
+          "name": "whois",
+          "help": "Output the specified user's profile",
+          "usage": "whois {id}"
+        },
+        {
+          "name": "graph",
+          "help": "List follows/followers",
+          "usage": "soc graph me|{id} [-m]",
+          "options": [
+            {
+              "name": "mutual",
+              "abbr": "m",
+              "help": "List only mutually-following users"
+            }
+          ]
+        },
+        {
+          "name": "follow",
+          "help": "Follow a user",
+          "usage": "soc follow {id}"
+        },
+        {
+          "name": "unfollow",
+          "help": "Unfollow a user",
+          "usage": "soc unfollow {id}"
+        },
+        {
+          "name": "home",
+          "help": "Go to the home feed",
+          "usage": "soc home [-n]",
+          "options": [
+            {
+              "name": "new-tab",
+              "abbr": "n",
+              "help": "Open in a new tab",
+              "boolean": true,
+              "default": false
+            }
+          ]
+        },
+        {
+          "name": "me",
+          "help": "Go to your profile page",
+          "usage": "soc me [-n]",
+          "options": [
+            {
+              "name": "new-tab",
+              "abbr": "n",
+              "help": "Open in a new tab",
+              "boolean": true,
+              "default": false
+            }
+          ]
+        },
+        {
+          "name": "view",
+          "help": "View a profile, post, or comment",
+          "usage": "soc view {num|url} [-n]",
+          "options": [
+            {
+              "name": "new-tab",
+              "abbr": "n",
+              "help": "Open in a new tab",
+              "boolean": true,
+              "default": false
+            }
+          ]
+        }
+      ]
     }
   ]
 }

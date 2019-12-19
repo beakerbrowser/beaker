@@ -1,3 +1,8 @@
+import { resolveParse, parseLocation, joinPath } from './util.js'
+import * as social from './social.js'
+
+export const soc = social
+
 // current working directory methods
 // =
 
@@ -226,68 +231,5 @@ export async function edit (opts = {}, location = '') {
   } else {
     await beaker.browser.executeSidebarCommand('show-panel', 'editor-app', location)
     await beaker.browser.executeSidebarCommand('set-context', 'editor-app', location)
-  }
-}
-
-// internal methods
-// =
-
-function resolveParse (env, location) {
-  return parseLocation(env.resolve(location))
-}
-
-function parseLocation (location) {
-  var urlp = new URL(location)
-  urlp.archive = createArchive(urlp.toString())
-  return urlp
-}
-
-function joinPath (left, right) {
-  left = (left || '').toString()
-  right = (right || '').toString()
-  if (left.endsWith('/') && right.startsWith('/')) {
-    return left + right.slice(1)
-  }
-  if (!left.endsWith('/') && !right.startsWith('/')) {
-    return left + '/' + right
-  }
-  return left + right
-}
-
-/*
-This wrapper provides a DatArchive interface for non-dat sites
-so that errors can be smoothly generated
-*/
-
-function createArchive (url) {
-  if (url.startsWith('dat:')) {
-    return new DatArchive(url)
-  }
-  return new OtherOrigin(url)
-}
-
-class OtherOrigin {
-  constructor (url) {
-    this.url = url
-    for (let k of Object.getOwnPropertyNames(DatArchive.prototype)) {
-      console.log(k)
-      if (!this[k] && typeof DatArchive.prototype[k] === 'function') {
-        this[k] = this.doThrow.bind(this)
-      }
-    }
-  }
-
-  stat () {
-    // fake response to just let stat() callers pass through
-    return {
-      isUnsupportedProtocol: true,
-      isDirectory: () => true,
-      isFile: () => true
-    }
-  }
-
-  doThrow () {
-    let urlp = new URL(this.url)
-    throw new Error(`${urlp.protocol} does not support this command`)
   }
 }
