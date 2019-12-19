@@ -13,7 +13,7 @@ export async function generateDrives (num = 10) {
   }
 
   for (let i = 0; i < num; i++) {
-    let profile = FAKE_PROFILES[i + debugDrives.length]
+    let profile = FAKE_PROFILES[(i + debugDrives.length) % FAKE_PROFILES.length]
     let drive = await DatArchive.create(Object.assign(profile, {type: 'unwalled.garden/person'}))
     debugDrives.push(drive.url)
   }
