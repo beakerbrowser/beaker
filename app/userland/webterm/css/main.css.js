@@ -15,7 +15,8 @@ ${spinnerCSS}
   --warning: #ff0;
   --info: #83f;
   --font: Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, serif;
-  --text-shadow: 1px 1px 1px #00f;
+  --shadow: 1px 1px 1px #00f;
+  --text-shadow: var(--shadow);
 
   display: block;
   box-sizing: border-box;
@@ -150,14 +151,14 @@ pre {
 .bg-info { background: var(--info); }
 .bg-background { background: var(--background); }
 
-.border-default { border: 1px solid var(--default); }
-.border-lightgray { border: 1px solid var(--lightgray); }
-.border-gray { border: 1px solid var(--gray); }
-.border-darkgray { border: 1px solid var(--darkgray); }
-.border-error { border: 1px solid var(--error); }
-.border-warning { border: 1px solid var(--warning); }
-.border-success { border: 1px solid var(--success); }
-.border-info { border: 1px solid var(--info); }
+.border-default { border-radius: 4px; border: 1px solid var(--default); }
+.border-lightgray { border-radius: 4px; border: 1px solid var(--lightgray); }
+.border-gray { border-radius: 4px; border: 1px solid var(--gray); }
+.border-darkgray { border-radius: 4px; border: 1px solid var(--darkgray); }
+.border-error { border-radius: 4px; border: 1px solid var(--error); }
+.border-warning { border-radius: 4px; border: 1px solid var(--warning); }
+.border-success { border-radius: 4px; border: 1px solid var(--success); }
+.border-info { border-radius: 4px; border: 1px solid var(--info); }
 
 .weight-thin { font-weight: 400; }
 .weight-normal { font-weight: 500; }
