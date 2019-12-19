@@ -16,7 +16,7 @@ const ROUTES = {
   'profile': /^\/(?<id>[^\/]+)$/i,
   'profileFollowers': /^\/(?<id>[^\/]+)\/followers$/i,
   'profileFollowing': /^\/(?<id>[^\/]+)\/following$/i,
-  'profileStatus': /^\/(?<id>[^\/]+)\/status\/(?<filename>[^\/]+)$/i,
+  'profileStatus': /^\/(?<id>[^\/]+)\/feed\/(?<filename>[^\/]+)$/i,
   'profileComment': /^\/(?<id>[^\/]+)\/comment\/(?<filename>[^\/]+)$/i
 }
 

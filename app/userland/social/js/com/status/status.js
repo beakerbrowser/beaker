@@ -36,7 +36,7 @@ export class Status extends LitElement {
   render () {
     if (!this.status || !this.status.content) return
     var viewProfileUrl = '/' + this.status.drive.url.slice('dat://'.length) // TODO
-    var viewStatusUrl = viewProfileUrl + '/status/' + this.status.url.split('/').pop()
+    var viewStatusUrl = viewProfileUrl + '/feed/' + this.status.url.split('/').pop()
     var content = this.expanded ? this.status.content : this.status.content.slice(0, RENDER_LIMIT)
     var isLiked = this.isLiked
     var likesTooltip = undefined
