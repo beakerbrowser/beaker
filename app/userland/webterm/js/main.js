@@ -69,7 +69,11 @@ class WebTerm extends LitElement {
       if (anchor) {
         e.stopPropagation()
         e.preventDefault()
-        beaker.browser.openUrl(anchor.getAttribute('href'), {setActive: true})
+        if (e.metaKey) {
+          beaker.browser.openUrl(anchor.getAttribute('href'), {setActive: true})
+        } else {
+          beaker.browser.gotoUrl(anchor.getAttribute('href'))
+        }
         return
       }
       if (e.path[0] === this) {
