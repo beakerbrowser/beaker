@@ -4,7 +4,7 @@ import minimist from './lib/minimist.1.2.0.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
 import { createArchive } from './lib/term-archive-wrapper.js'
 import { importModule } from './lib/import-module.js'
-import { joinPath, DAT_KEY_REGEX, makeSafe } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, DAT_KEY_REGEX, shortenAllKeys } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import css from '../css/main.css.js'
 import './lib/term-icon.js'
@@ -233,7 +233,7 @@ class WebTerm extends LitElement {
 
   outputHeader (thenCwd, cmd) {
     let host = this.isFSRoot(thenCwd.host) ? '~' : shortenHash(thenCwd.host)
-    let pathname = (thenCwd.pathname || '').replace(/\/$/, '')
+    let pathname = shortenAllKeys(thenCwd.pathname || '').replace(/\/$/, '')
     this.outputHist.push(html`<div class="header">${host}${pathname}&gt; ${cmd || ''}</div>`)
   }
 
@@ -533,7 +533,7 @@ class WebTerm extends LitElement {
   render () {
     if (!this.cwd) return html`<div></div>`
     var host = this.isFSRoot(this.cwd.host) ? '~' : shortenHash(this.cwd.host)
-    var pathname = this.cwd.pathname.replace(/\/$/, '')
+    var pathname = shortenAllKeys(this.cwd.pathname).replace(/\/$/, '')
     var additionalTabCompleteOptions = this.tabCompletion ? this.tabCompletion.length - TAB_COMPLETION_RENDER_LIMIT : 0
     let endOfInput = this.promptInput.split(' ').pop().split('/').pop()
     return html`

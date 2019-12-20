@@ -31,6 +31,10 @@ export function joinPath (...args) {
   return str
 }
 
+export function shortenAllKeys (str = '') {
+  return str.replace(/[0-9a-f]{64}/ig, (key) => `${key.slice(0, 4)}..${key.slice(-2)}`)
+}
+
 export function toDomain (str) {
   if (!str) return ''
   try {
