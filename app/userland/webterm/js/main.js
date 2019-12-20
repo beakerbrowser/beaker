@@ -1,4 +1,5 @@
 import { LitElement, html, TemplateResult } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { render } from 'beaker://app-stdlib/vendor/lit-element/lit-html/lit-html.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import minimist from './lib/minimist.1.2.0.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
@@ -11,6 +12,7 @@ import './lib/term-icon.js'
 
 // export lit-html as a window global
 window.html = html
+window.html.render = render
 
 const THEME_PATH = '/settings/terminal.css'
 const TAB_COMPLETION_RENDER_LIMIT = 15
