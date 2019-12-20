@@ -26,13 +26,24 @@ export async function ls (opts = {}) {
     post.content = await navigator.filesystem.readFile(post.path)
   }
   posts.toHTML = () => {
+    if (!opts.long) {
+      return posts.map((post, i) => html`
+        <div style="display: flex; align-items: center; margin-bottom: 10px; overflow: hidden; white-space: nowrap; height: 1rem">
+          <strong class="color-lightgray" style="margin-right: 10px">${i + 1}.</strong>
+          <img src="asset:thumb:${post.drive.url}" style="width: 16px; border-radius: 50%; margin-right: 10px">
+          <a href="beaker://social/${post.drive.url.slice('dat://'.length)}" style="margin-right: 10px"><strong>${post.drive.title}</strong></a>
+          <a class="color-lightgray" href="beaker://social/${post.url.slice('dat://'.length)}" style="margin-right: 10px"><small>${timeDifference(post.stat.ctime)}</small></a>
+          <span>${post.content}</span>
+        </div>
+      `).reverse()      
+    }
     return posts.map((post, i) => html`
       <div class="border-lightgray" style="padding: 10px; margin: 5px 0">
         <div style="display: flex; align-items: center; margin-bottom: 10px">
-          <strong style="margin-right: 10px">${i + 1}.</strong>
+          <strong class="color-lightgray" style="margin-right: 10px">${i + 1}.</strong>
           <img src="asset:thumb:${post.drive.url}" style="width: 16px; border-radius: 50%; margin-right: 10px">
           <a href="beaker://social/${post.drive.url.slice('dat://'.length)}" style="margin-right: 10px"><strong>${post.drive.title}</strong></a>
-          <a href="beaker://social/${post.url.slice('dat://'.length)}"><small>${timeDifference(post.stat.ctime)}</small></a>
+          <a class="color-lightgray" href="beaker://social/${post.url.slice('dat://'.length)}"><small>${timeDifference(post.stat.ctime)}</small></a>
         </div>
         <div>
           ${post.content}

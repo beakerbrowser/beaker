@@ -103,12 +103,12 @@
         {
           "name": "ls",
           "help": "List the latest posts in your feed",
-          "usage": "soc ls [-s] [-p {page=1}] [-n {num=10}]",
+          "usage": "soc ls [-l] [-p {page=1}] [-n {num=10}]",
           "options": [
             {
-              "name": "short",
-              "abbr": "s",
-              "help": "Shorten the output",
+              "name": "long",
+              "abbr": "l",
+              "help": "Lengthen the output",
               "boolean": true,
               "default": false
             },
