@@ -450,6 +450,9 @@ class WebTerm extends LitElement {
     }
 
     // relative paths
+    if (location === '.') {
+      return cwd.toString()
+    }
     if (location.startsWith('./')) {
       location = location.slice(2) // remove starting ./
     }

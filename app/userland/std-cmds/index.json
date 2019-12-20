@@ -54,12 +54,31 @@
     {
       "name": "mkgoto",
       "help": "Create a .goto file",
-      "usage": "mkgoto {path} {href} [-t/--title title]",
+      "usage": "mkgoto {goto-path} {href} [-t/--title title]",
       "options": [
         {
           "name": "title",
           "abbr": "t",
           "help": "Specify a title attribute on the .goto file"
+        }
+      ]
+    },
+    {
+      "name": "b",
+      "help": "Bookmark the current working directory or current page",
+      "usage": "b [-p] [-f {name}] [{href}]",
+      "options": [
+        {
+          "name": "page",
+          "abbr": "p",
+          "help": "Bookmarking the page instead of the current working directory",
+          "boolean": true,
+          "default": false
+        },
+        {
+          "name": "filename",
+          "abbr": "f",
+          "help": "Specify the name of the .goto file to save in bookmarks"
         }
       ]
     },

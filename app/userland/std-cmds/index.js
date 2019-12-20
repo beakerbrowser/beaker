@@ -175,6 +175,13 @@ export async function mkgoto (opts, location, href) {
   })
 }
 
+export async function b (opts = {}, href = '.') {
+  href = opts.page ? 'TODO' : this.resolve(href || '.')
+  var name = opts.filename || href.split('/').filter(Boolean).pop()
+  if (!name.endsWith('.goto')) name += '.goto'
+  await navigator.filesystem.writeFile(`/library/bookmarks/${name}`, '', {metadata: {href}})
+}
+
 // utilities
 // =
 
