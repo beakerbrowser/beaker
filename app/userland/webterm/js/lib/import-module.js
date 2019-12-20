@@ -10,7 +10,15 @@ function toAbsoluteURL (url) {
   return a.cloneNode(false).href // -> "http://example.com/hoge.html"
 }
 
-export function importModule (url) {
+export async function importModule (url) {
+  var fileObj
+  if (url.startsWith('dat://')) {
+    let drive = new DatArchive(url)
+    let file = await drive.readFile((new URL(url)).pathname)
+    let blob = new Blob([file], { type: 'text/javascript' })
+    fileObj = URL.createObjectURL(blob)
+  }
+
   return new Promise((resolve, reject) => {
     const vector = '$importModule$' + Math.random().toString(32).slice(2)
     const script = document.createElement('script')
@@ -20,6 +28,7 @@ export function importModule (url) {
       script.onload = null
       script.remove()
       URL.revokeObjectURL(script.src)
+      if (fileObj) URL.revokeObjectURL(fileObj)
       script.src = ''
     }
     script.defer = 'defer'
@@ -32,7 +41,7 @@ export function importModule (url) {
       resolve(window[vector])
       destructor()
     }
-    const absURL = toAbsoluteURL(url)
+    const absURL = fileObj ? fileObj : toAbsoluteURL(url)
     const loader = `import * as m from "${absURL}"; window.${vector} = m;` // export Module
     const blob = new Blob([loader], { type: 'text/javascript' })
     script.src = URL.createObjectURL(blob)
