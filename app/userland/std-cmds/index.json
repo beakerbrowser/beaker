@@ -122,6 +122,32 @@
       ]
     },
     {
+      "name": "cmd",
+      "help": "Webterm command management",
+      "subcommands": [
+        {
+          "name": "ls",
+          "help": "List all installed command-packages",
+          "usage": "cmd ls"
+        },
+        {
+          "name": "create",
+          "help": "Create a new command-package",
+          "usage": "cmd create"
+        },
+        {
+          "name": "install",
+          "help": "Install a command-package",
+          "usage": "cmd install {url}"
+        },
+        {
+          "name": "uninstall",
+          "help": "Uninstall a command-package",
+          "usage": "cmd install {name|url}"
+        }
+      ]
+    },
+    {
       "name": "soc",
       "help": "Social networking commands",
       "subcommands": [

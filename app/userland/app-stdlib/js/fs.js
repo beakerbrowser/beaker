@@ -135,6 +135,29 @@ export async function ensureUnmount (path) {
 }
 
 /**
+ * @param {string} pathSelector 
+ * @param {string} url
+ * @param {Object} [drive]
+ * @return {Promise<void>}
+ */
+export async function ensureUnmountByUrl (pathSelector, url, drive = navigator.filesystem) {
+  try {
+    let mounts = await drive.query({
+      path: pathSelector,
+      mount: url
+    })
+    if (mounts[0]) {
+      // remove mount
+      await drive.unmount(mounts[0].path)
+    } else {
+      throw "Mount not found"
+    }
+  } catch (e) {
+    console.error('Filesystem failed to unmount archive', {pathSelector, url, error: e})
+  }
+}
+
+/**
  * @param {string} containingPath
  * @param {string} title
  * @param {Object} fs
