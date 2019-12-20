@@ -334,6 +334,24 @@ class WebTerm extends LitElement {
           argsSpaced.push(args[args.length - 1])
           additionalOutput.push(html`<div class="entry">${argsSpaced}</div>`)
           this.requestUpdate() 
+        },
+        prompt: (txt, defValue) => {
+          return new Promise((resolve, reject) => {
+            const onKeydown = e => {
+              if (e.code === 'Enter') {
+                e.currentTarget.value = e.currentTarget.value || defValue
+                resolve(e.currentTarget.value)
+                e.currentTarget.setAttribute('disabled', 1)
+                this.setFocus()
+              }
+            }
+            additionalOutput.push(html`<div class="entry subprompt">
+              <strong>${txt}</strong>
+              ${defValue ? html`<span class="def">[${defValue}]</span>` : ''}:
+              <input @keydown=${onKeydown}>
+            </div>`)
+            this.requestUpdate().then(() => this.setFocusSubprompt())
+          })
         }
       }
 
@@ -347,6 +365,14 @@ class WebTerm extends LitElement {
 
   setFocus () {
     this.shadowRoot.querySelector('.prompt input').focus()
+  }
+
+  setFocusSubprompt () {
+    try {
+      Array.from(this.shadowRoot.querySelectorAll('.subprompt input')).pop().focus()
+    } catch (e) {
+      this.setFocus()
+    }
   }
 
   isFSRoot (url) {

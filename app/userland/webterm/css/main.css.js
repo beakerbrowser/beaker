@@ -116,6 +116,22 @@ pre {
   color: inherit;
 }
 
+.subprompt {
+  display: flex;
+  align-items: center;
+  margin: 2px 0;
+}
+
+.subprompt .def {
+  margin-left: 5px;
+  color: var(--lightgray);
+}
+
+.subprompt input {
+  flex: 1;
+  margin-left: 5px;
+}
+
 .floating-help-outer {
   position: relative;
   min-height: 140px;
