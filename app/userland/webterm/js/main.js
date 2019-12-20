@@ -321,7 +321,7 @@ class WebTerm extends LitElement {
         resolve: this.resolve.bind(this),
         out: (...args) => {
           args = args.map(arg => {
-            if (arg && typeof arg === 'object' && !(arg instanceof TemplateResult)) { 
+            if (arg && typeof arg === 'object' && !(arg instanceof TemplateResult) && !(arg instanceof HTMLElement)) { 
               return JSON.stringify(arg)
             }
             return arg
