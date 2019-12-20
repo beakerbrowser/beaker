@@ -49,6 +49,21 @@ audio {
   max-width: 100%;
 }
 
+input,
+textarea {
+  background: var(--background);
+  border: 1px solid var(--darkgray);
+  color: var(--default);
+  border-radius: 2px;
+}
+
+button {
+  background: var(--default);
+  border: 1px solid var(--lightgray);
+  color: var(--darkgray);
+  border-radius: 2px;
+}
+
 pre {
   margin: 0;
   font-size: inherit;
