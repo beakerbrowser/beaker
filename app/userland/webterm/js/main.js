@@ -545,31 +545,35 @@ class WebTerm extends LitElement {
         <div class="prompt">
           ${host}${pathname}&gt; <input @keyup=${this.onPromptKeyUp} />
         </div>
-        ${this.tabCompletion && this.tabCompletion.length ? html`
-          <div class="tab-completion">
-            ${repeat(this.tabCompletion.slice(0, TAB_COMPLETION_RENDER_LIMIT), item => {
-              // highlight the part of the name that matches the input
-              let name = item.name
-              if (name.startsWith(endOfInput)) {
-                name = html`<strong>${endOfInput}</strong>${name.slice(endOfInput.length)}`
-              }
+        <div class="floating-help-outer">
+          <div class="floating-help-inner">
+            ${this.tabCompletion && this.tabCompletion.length ? html`
+              <div class="tab-completion">
+                ${repeat(this.tabCompletion.slice(0, TAB_COMPLETION_RENDER_LIMIT), item => {
+                  // highlight the part of the name that matches the input
+                  let name = item.name
+                  if (name.startsWith(endOfInput)) {
+                    name = html`<strong>${endOfInput}</strong>${name.slice(endOfInput.length)}`
+                  }
 
-              const onClick = e => {
-                if (item.stat) this.triggerTabComplete(item.name + (item.stat.isDirectory() ? '/' : ''))
-                this.setFocus()
-              }
+                  const onClick = e => {
+                    if (item.stat) this.triggerTabComplete(item.name + (item.stat.isDirectory() ? '/' : ''))
+                    this.setFocus()
+                  }
 
-              if (item.stat) {
-                var type = item.stat.isDirectory() ? 'folder' : 'file'
-                return html`<a @click=${onClick}><term-icon icon=${type}></term-icon> ${name}</a>`
-              } else {
-                return html`<span><span>${name}</span> <small class="color-gray">${item.help || ''}</small></span>`
-              }
-            })}
-            ${additionalTabCompleteOptions >= 1 ? html`<a>${additionalTabCompleteOptions} other items...</a>` : ''}
+                  if (item.stat) {
+                    var type = item.stat.isDirectory() ? 'folder' : 'file'
+                    return html`<a @click=${onClick}><term-icon icon=${type}></term-icon> ${name}</a>`
+                  } else {
+                    return html`<span><span>${name}</span> <small class="color-gray">${item.help || ''}</small></span>`
+                  }
+                })}
+                ${additionalTabCompleteOptions >= 1 ? html`<a>${additionalTabCompleteOptions} other items...</a>` : ''}
+              </div>
+            ` : ''}
+            <div class="live-help">${this.liveHelp ? this.liveHelp.toHTML() : ''}</div>
           </div>
-        ` : ''}
-        <div class="live-help">${this.liveHelp ? this.liveHelp.toHTML() : ''}</div>
+        </div>
       </div>
     `
   }

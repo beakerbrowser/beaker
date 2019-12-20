@@ -101,6 +101,15 @@ pre {
   color: inherit;
 }
 
+.floating-help-outer {
+  position: relative;
+  min-height: 140px;
+}
+
+.floating-help-inner {
+  position: absolute;
+}
+
 .tab-completion {
   display: grid;
   grid-template-columns: repeat(auto-fill, 300px);
@@ -109,6 +118,8 @@ pre {
   border-radius: 4px;
   margin: 5px 0;
   padding: 10px;
+  width: calc(100vw - 20px);
+  box-sizing: border-box;
   max-width: 920px;
 }
 
@@ -126,8 +137,9 @@ pre {
 
 .live-help {
   padding: 10px;
-  min-height: 70px;
   word-break: break-word;
+  width: calc(100vw - 20px);
+  box-sizing: border-box;
 }
 
 .color-default { color: var(--default); }
