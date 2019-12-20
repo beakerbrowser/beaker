@@ -90,8 +90,14 @@
     {
       "name": "go",
       "help": "Go to the target in the browser",
-      "usage": "go {path}",
+      "usage": "go [-bn] {path}",
       "options": [
+        {
+          "name": "bookmark",
+          "abbr": "b",
+          "help": "Use {path} as the name of a bookmark to lookup and follow",
+          "boolean": true
+        },
         {
           "name": "new-tab",
           "abbr": "n",

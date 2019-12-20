@@ -201,6 +201,10 @@ export async function peek (opts = {}, location = '') {
 }
 
 export async function go (opts = {}, location = '') {
+  if (opts.bookmark) {
+    location = `~/library/bookmarks/${location}`
+    if (!location.endsWith('.goto')) location += '.goto'
+  }
   location = this.resolve(location)
   if (location.endsWith('.goto')) {
     let urlp = parseLocation(location)
