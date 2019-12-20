@@ -19,6 +19,10 @@ export class StatusComposer extends LitElement {
     if (location.search && location.search.includes('compose')) {
       let params = new URLSearchParams(location.search)
       this.draftText = params.get('body')
+      this.isFocused = true
+      this.requestUpdate().then(_ => {
+        this.shadowRoot.querySelector('textarea').focus()
+      })
     }
   }
 
