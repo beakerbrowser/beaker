@@ -59,13 +59,6 @@ class WebTerm extends LitElement {
       }
     }
 
-    this.addEventListener('keydown', e => {
-      if (e.key.match(/^[\d\w]$/i) && !e.ctrlKey && !e.metaKey) {
-        // text written, focus the cli
-        this.setFocus()
-      }
-    })
-
     this.addEventListener('click', e => {
       let anchor = findParent(e.path[0], el => el.tagName === 'A')
       if (anchor) {
@@ -78,8 +71,8 @@ class WebTerm extends LitElement {
         }
         return
       }
-      if (e.path[0] === this) {
-        // click outside of any content, focus the cli
+      if (!this.shadowRoot.activeElement && window.getSelection().type !== 'Range') {
+        // clicks that are not text-selections should focus the input
         this.setFocus()
       }
     })
@@ -593,7 +586,6 @@ class WebTerm extends LitElement {
   // =
 
   onKeyDown (e) {
-    this.setFocus()
     if (e.code === 'KeyL' && e.ctrlKey) {
       e.preventDefault()
       this.clearHistory()
