@@ -158,7 +158,7 @@
         {
           "name": "graph",
           "help": "List follows/followers",
-          "usage": "soc graph me|{id} [-m]",
+          "usage": "soc graph [{id}] [-m]",
           "options": [
             {
               "name": "mutual",

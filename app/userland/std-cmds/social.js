@@ -95,7 +95,7 @@ export async function whois (opts = {}, id) {
 }
 
 export async function graph (opts = {}, id) {
-  let key = id === 'me' ? (await navigator.filesystem.stat('/profile')).mount.key : await DatArchive.resolveName(id)
+  let key = !id ? (await navigator.filesystem.stat('/profile')).mount.key : await DatArchive.resolveName(id)
   let drive = new DatArchive(key)
   let [followers, following] = await Promise.all([
     navigator.filesystem.query({path: ['/profile/friends/*', '/profile/friends/*/friends/*'], mount: key}),
