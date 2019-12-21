@@ -34,6 +34,7 @@ class WebTerm extends LitElement {
     this.fs = undefined
     this.tabCompletion = undefined
     this.liveHelp = undefined
+    this.envVars = {}
 
     this.commandHist = {
       array: [],
@@ -94,6 +95,9 @@ class WebTerm extends LitElement {
     if (!this.fs) {
       this.fs = navigator.filesystem
     }
+
+    this.envVars.home = navigator.filesystem.url
+    this.envVars.profile = 'dat://' + (await navigator.filesystem.stat('/profile')).mount.key
 
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {
@@ -279,6 +283,15 @@ class WebTerm extends LitElement {
     this.requestUpdate()
   }
 
+  applySubstitutions (str = '') {
+    return str.replace(/\$([a-z]+|\([a-z]+\))/ig, (val) => {
+      var key = val.slice(1).toLowerCase()
+      if (key === '@') throw new Error('TODO') // TODO
+      if (key === 'cwd') return this.cwd.toString()
+      return this.envVars[key] || ''
+    })
+  }
+
   async evalPrompt () {
     var prompt = this.shadowRoot.querySelector('.prompt input')
     if (!prompt.value.trim()) {
@@ -286,7 +299,7 @@ class WebTerm extends LitElement {
     }
     this.commandHist.add(prompt.value)
     var inputValue = prompt.value
-    var args = prompt.value.match(/[^'"\s]+|"[^"]+"|'[^']+'/ig)
+    var args = this.applySubstitutions(prompt.value).match(/[^'"\s]+|"[^"]+"|'[^']+'/ig)
     args = args.map(arg => arg.replace(/(^['"])|(['"]$)/gi, ''))
     var paramsIndex = 1
     prompt.value = ''
