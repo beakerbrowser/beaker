@@ -136,6 +136,13 @@ export async function rm (opts, dst) {
   }
 }
 
+export async function query (opts = {}, ...path) {
+  opts.path = path
+  var res = await navigator.filesystem.query(opts)
+  res.toHTML = () => html`${res.map(r => html`<a href=${r.url}>${r.path}</a><br>`)}`
+  return res
+}
+
 export async function meta (opts, location, key = undefined, ...value) {
   if (!location) throw new Error('path is required')
   var {archive, pathname} = resolveParse(this, location)

@@ -38,6 +38,44 @@
       "usage": "rm {path}"
     },
     {
+      "name": "query",
+      "help": "Run a query across the filesystem",
+      "usage": "query [{path...}] [-t file|folder|mount] [-m {url}] [-s name|ctime|mtime] [-r] [--limit n] [--offset n]",
+      "options": [
+        {
+          "name": "type",
+          "abbr": "t",
+          "help": "Filter the type of result (file, folder, mount)"
+        },
+        {
+          "name": "mount",
+          "abbr": "m",
+          "help": "Filter to mounts of the given url"
+        },
+        {
+          "name": "sort",
+          "abbr": "s",
+          "help": "Sort the results by the given attribute (name, ctime, mtime)"
+        },
+        {
+          "name": "reverse",
+          "abbr": "r",
+          "help": "Reverse the results",
+          "boolean": true
+        },
+        {
+          "name": "limit",
+          "help": "The number of results to return",
+          "default": 10
+        },
+        {
+          "name": "offset",
+          "help": "The offset into the results to return",
+          "default": 0
+        }
+      ]
+    },
+    {
       "name": "meta",
       "help": "Get/set metadata on a file or folder",
       "usage": "meta {path} [key] [value] [-d/--delete]",
