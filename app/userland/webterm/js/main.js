@@ -286,7 +286,8 @@ class WebTerm extends LitElement {
     }
     this.commandHist.add(prompt.value)
     var inputValue = prompt.value
-    var args = prompt.value.split(' ')
+    var args = prompt.value.match(/[^'"\s]+|"[^"]+"|'[^']+'/ig)
+    args = args.map(arg => arg.replace(/(^['"])|(['"]$)/gi, ''))
     var paramsIndex = 1
     prompt.value = ''
 
