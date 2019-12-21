@@ -57,7 +57,7 @@ export async function ls (opts = {}) {
 export async function post (opts = {}, ...bodyParts) {
   var body = bodyParts.join(' ')
   if (opts.file) {
-    let {archive, pathname} = resolveParse(this, opts.file)
+    let {archive, pathname} = resolveParse(this.env, opts.file)
     body = await archive.readFile(pathname)
   }
   if (opts.yes) {

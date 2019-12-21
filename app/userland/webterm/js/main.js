@@ -283,12 +283,22 @@ class WebTerm extends LitElement {
     this.requestUpdate()
   }
 
+  getEnv (key) {
+    if (key === '@') throw new Error('TODO') // TODO
+    if (key === 'cwd') return this.cwd.toString()
+    return this.envVars[key] || ''
+  }
+
+  setEnv (key, value) {
+    if (key === '@') return
+    if (key === 'cwd') return
+    this.envVars[key] = value
+  }
+
   applySubstitutions (str = '') {
     return str.replace(/\$([a-z]+|\([a-z]+\))/ig, (val) => {
       var key = val.slice(1).toLowerCase()
-      if (key === '@') throw new Error('TODO') // TODO
-      if (key === 'cwd') return this.cwd.toString()
-      return this.envVars[key] || ''
+      return this.getEnv(key)
     })
   }
 
@@ -327,12 +337,30 @@ class WebTerm extends LitElement {
       var additionalOutput = []
       this.outputHist.push(additionalOutput)
 
-      let getCWD = () => this.cwd
-      let setCWD = this.setCWD.bind(this)
       let ctx = {
-        get cwd () { return getCWD() },
-        set cwd (v) { setCWD(v) },
-        resolve: this.resolve.bind(this),
+        env: {
+          get: this.getEnv.bind(this),
+          set: this.setEnv.bind(this),
+          goto: this.setCWD.bind(this),
+          focus: this.setFocus.bind(this),
+          resolve: this.resolve.bind(this)
+        },
+        page: {
+          goto (url, opts = {}) {
+            if (opts.newTab) beaker.browser.openUrl(url, {setActive: true})
+            else beaker.browser.gotoUrl(url)
+          },
+          refresh () { beaker.browser.refreshPage() },
+          focus () { beaker.browser.focusPage() },
+          exec (js) { return beaker.browser.executeJavaScriptInPage(js) },
+          inject (css) { return beaker.browser.injectCssInPage(css) }
+        },
+        panel: {
+          open (panel, ...args) { return beaker.browser.executeSidebarCommand('show-panel', panel, ...args) },
+          close (panel) { return beaker.browser.executeSidebarCommand('close-panel', panel) },
+          focus (panel) { return beaker.browser.executeSidebarCommand('focus-panel', panel) },
+          goto (panel, url) { return beaker.browser.executeSidebarCommand('set-context', panel, url) }
+        },
         out: (...args) => {
           args = args.map(arg => {
             if (arg && typeof arg === 'object' && !(arg instanceof TemplateResult) && !(arg instanceof HTMLElement)) { 

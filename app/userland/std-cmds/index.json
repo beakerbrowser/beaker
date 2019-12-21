@@ -65,8 +65,8 @@
         },
         {
           "name": "limit",
-          "help": "The number of results to return",
-          "default": 10
+          "help": "The number of results to return (0 means all)",
+          "default": 0
         },
         {
           "name": "offset",
@@ -104,15 +104,8 @@
     {
       "name": "b",
       "help": "Bookmark the current working directory or current page",
-      "usage": "b [-p] [-f {name}] [{href}]",
+      "usage": "b [-f {name}] [{href}]",
       "options": [
-        {
-          "name": "page",
-          "abbr": "p",
-          "help": "Bookmarking the page instead of the current working directory",
-          "boolean": true,
-          "default": false
-        },
         {
           "name": "filename",
           "abbr": "f",
@@ -147,17 +140,8 @@
     },
     {
       "name": "edit",
-      "help": "Edit the target using the default editor",
-      "usage": "edit {path}",
-      "options": [
-        {
-          "name": "new-tab",
-          "abbr": "n",
-          "help": "Open in a new tab",
-          "boolean": true,
-          "default": false
-        }
-      ]
+      "help": "Edit the target using the browser editor",
+      "usage": "edit {path}"
     },
     {
       "name": "cmd",

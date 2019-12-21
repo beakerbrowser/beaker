@@ -10,7 +10,7 @@ export const soc = social
 
 export async function ls (opts = {}, location = '') {
   // pick target location
-  location = this.resolve(location)
+  location = this.env.resolve(location)
   var {archive, protocol, pathname} = parseLocation(location)
 
   // read
@@ -58,7 +58,7 @@ export async function ls (opts = {}, location = '') {
 }
 
 export async function cd (opts = {}, location = '') {
-  var cwd = this.resolve(location)
+  var cwd = this.env.resolve(location)
   if (cwd.startsWith('dat://')) {
     // make sure the target location can be visited
     let urlp = new URL(cwd)
@@ -72,11 +72,11 @@ export async function cd (opts = {}, location = '') {
       throw new Error(`${location}: Not a directory`)
     }
   }
-  this.cwd = cwd
+  this.env.goto(cwd)
 }
 
 export function pwd (opts = {}) {
-  let cwd = this.cwd.toString()
+  let cwd = this.env.get('cwd')
   return {
     cwd,
     toHTML: () => html`<a href="${cwd}">${cwd}</div>`
@@ -88,7 +88,7 @@ export function pwd (opts = {}) {
 
 export async function mkdir (opts, dst) {
   if (!dst) throw new Error('dst is required')
-  var {archive, pathname} = resolveParse(this, dst)
+  var {archive, pathname} = resolveParse(this.env, dst)
   await archive.mkdir(pathname)
 }
 
@@ -98,8 +98,8 @@ export async function mkdir (opts, dst) {
 export async function mv (opts, src, dst) {
   if (!src) throw new Error('src is required')
   if (!dst) throw new Error('dst is required')
-  var srcp = resolveParse(this, src)
-  var dstp = resolveParse(this, dst)
+  var srcp = resolveParse(this.env, src)
+  var dstp = resolveParse(this.env, dst)
   
   let st = await dstp.archive.stat(dstp.pathname).catch(e => undefined)
   if (st && st.isDirectory()) {
@@ -112,8 +112,8 @@ export async function mv (opts, src, dst) {
 export async function cp (opts, src, dst) {
   if (!src) throw new Error('src is required')
   if (!dst) throw new Error('dst is required')
-  var srcp = resolveParse(this, src)
-  var dstp = resolveParse(this, dst)
+  var srcp = resolveParse(this.env, src)
+  var dstp = resolveParse(this.env, dst)
   
   let st = await dstp.archive.stat(dstp.pathname).catch(e => undefined)
   if (st && st.isDirectory()) {
@@ -125,7 +125,7 @@ export async function cp (opts, src, dst) {
 
 export async function rm (opts, dst) {
   if (!dst) throw new Error('dst is required')
-  var {archive, pathname} = resolveParse(this, dst)
+  var {archive, pathname} = resolveParse(this.env, dst)
   var st = await archive.stat(pathname)
   if (st.isDirectory()) {
     await archive.rmdir(pathname, {recursive: true})
@@ -143,7 +143,7 @@ export async function query (opts = {}, ...path) {
 
 export async function meta (opts, location, key = undefined, ...value) {
   if (!location) throw new Error('path is required')
-  var {archive, pathname} = resolveParse(this, location)
+  var {archive, pathname} = resolveParse(this.env, location)
   if (value.length) {
     await archive.updateMetadata(pathname, {[key]: value.join(' ')})
   } else if (opts.delete) {
@@ -168,7 +168,7 @@ export async function meta (opts, location, key = undefined, ...value) {
 export async function mkgoto (opts, location, href) {
   if (!location) throw new Error('path is required')
   if (!href) throw new Error('href is required')
-  var {archive, pathname} = resolveParse(this, location)
+  var {archive, pathname} = resolveParse(this.env, location)
 
   if (!pathname.endsWith('.goto')) {
     pathname += '.goto'
@@ -183,7 +183,7 @@ export async function mkgoto (opts, location, href) {
 }
 
 export async function b (opts = {}, href = '.') {
-  href = opts.page ? 'TODO' : this.resolve(href || '.')
+  href = this.env.resolve(href || '.')
   var name = opts.filename || href.split('/').filter(Boolean).pop()
   if (!name.endsWith('.goto')) name += '.goto'
   await navigator.filesystem.writeFile(`/library/bookmarks/${name}`, '', {metadata: {href}})
@@ -193,7 +193,7 @@ export async function b (opts = {}, href = '.') {
 // =
 
 export async function peek (opts = {}, location = '') {
-  var {archive, origin, pathname} = resolveParse(this, location)
+  var {archive, origin, pathname} = resolveParse(this.env, location)
   if (/\.(png|jpe?g|gif)$/.test(pathname)) {
     return {toHTML: () => html`<img src=${(origin + pathname)}>`}
   }
@@ -212,7 +212,7 @@ export async function go (opts = {}, location = '') {
     location = `~/library/bookmarks/${location}`
     if (!location.endsWith('.goto')) location += '.goto'
   }
-  location = this.resolve(location)
+  location = this.env.resolve(location)
   if (location.endsWith('.goto')) {
     let urlp = parseLocation(location)
     let st = await urlp.archive.stat(urlp.pathname).catch(e => undefined)
@@ -221,33 +221,23 @@ export async function go (opts = {}, location = '') {
     }
   }
   try {
-    this.cwd = location.toString()
+    this.env.goto(location.toString())
   } catch (e) {
     // will fail if not a directory, don't worry about it
     if (!e.notADirectory) throw e
   }
-  if (opts.n) {
-    await beaker.browser.openUrl(location, {setActive: true})
-  } else {
-    await beaker.browser.gotoUrl(location)
-  }
+  await this.page.goto(location, {newTab: opts.n})
 }
 
 export async function edit (opts = {}, location = '') {
-  location = this.resolve(location)
+  location = this.env.resolve(location)
 
   // create if dne
   var urlp = parseLocation(location)
   let st = await urlp.archive.stat(urlp.pathname).catch(e => undefined)
   if (!st) await urlp.archive.writeFile(urlp.pathname, '')
 
-  if (opts.n) {
-    await beaker.browser.openUrl(location, {
-      setActive: true,
-      sidebarPanels: ['editor-app']
-    })
-  } else {
-    await beaker.browser.executeSidebarCommand('show-panel', 'editor-app', location)
-    await beaker.browser.executeSidebarCommand('set-context', 'editor-app', location)
-  }
+  await this.panel.open('editor-app', location)
+  await this.panel.goto('editor-app', location)
+  await this.panel.focus('editor-app')
 }

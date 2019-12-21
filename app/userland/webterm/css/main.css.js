@@ -88,9 +88,8 @@ pre {
 .output .header *:last-child {
   flex: 1;
   word-break: break-all;
-  padding: 0 0 0 4px;
+  padding: 0 0 0 3px;
   margin: 0 0 0 8px;
-  background: #fff2;
 }
 
 .output .entry {
