@@ -406,6 +406,7 @@ class WebTerm extends LitElement {
   }
 
   async readTabCompletionOptions () {
+    this.isTabCompletionLoading = true
     var input = this.promptInput
     var cmd = this.lookupCommand(input)
 
@@ -448,10 +449,12 @@ class WebTerm extends LitElement {
       })
     }
 
+    this.isTabCompletionLoading = false
     this.requestUpdate()
   }
 
   triggerTabComplete (name) {
+    if (this.isTabCompletionLoading) return
     var inputParts = this.promptInput.split(' ')
     var endOfInput = inputParts.pop()
     if (!name) {
@@ -480,6 +483,7 @@ class WebTerm extends LitElement {
       inputParts.push(name)
     }
     this.shadowRoot.querySelector('.prompt input').value = inputParts.join(' ')
+    this.readTabCompletionOptions()
   }
 
   // userland-facing methods
@@ -649,14 +653,20 @@ class WebTerm extends LitElement {
       this.shadowRoot.querySelector('.prompt input').value = ''
       this.commandHist.reset()
     } else if (e.code === 'Tab') {
+      // NOTE: subtle behavior here-
+      // we prevent default on keydown to maintain focus
+      // we trigger tabcomplete on keyup to make sure it runs after
+      // readTabCompletionOptions()
+      // -prf
       e.preventDefault()
-      this.triggerTabComplete()
     }
   }
 
   onPromptKeyUp (e) {
     if (e.code === 'Enter') {
       this.evalPrompt()
+    } else if (e.code === 'Tab') {
+      this.triggerTabComplete()
     } else {
       this.readTabCompletionOptions()
     }
