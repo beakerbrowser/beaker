@@ -71,11 +71,26 @@ pre {
 }
 
 .output .header {
-  margin-top: 1rem;
+  display: flex;
+  align-items: center;
   line-height: 1;
-  margin-bottom: 2px;
-  font-weight: bold;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  border-left: 2px solid var(--lightgray);
+  padding-left: 5px;
+}
+
+.output .header *:first-child {
+  max-width: 50vw;
   word-break: break-all;
+}
+
+.output .header *:last-child {
+  flex: 1;
+  word-break: break-all;
+  padding: 0 0 0 4px;
+  margin: 0 0 0 8px;
+  background: #fff2;
 }
 
 .output .entry {
@@ -96,8 +111,14 @@ pre {
 .prompt {
   display: flex;
   line-height: 1;
-  font-weight: bold;
-  margin-top: 1rem;
+  margin-top: 8px;
+  border-left: 2px solid var(--lightgray);
+  padding-left: 5px;
+}
+
+.prompt strong {
+  max-width: 50vw;
+  word-break: break-all;
 }
 
 .prompt input {
@@ -109,11 +130,16 @@ pre {
   line-height: 1;
   font-size: inherit;
   font-weight: inherit;
-  padding: 0 0 0 10px;
   outline: 0;
   border: 0;
+  padding: 0 0 0 5px;
+  margin: 0 0 0 8px;
   font-family: var(--font);
   color: inherit;
+}
+
+.prompt input:focus {
+  background: #fff2;
 }
 
 .subprompt {

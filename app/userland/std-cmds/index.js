@@ -43,7 +43,6 @@ export async function ls (opts = {}, location = '') {
             }
 
             // render
-            const weight = entry.stat.isDirectory() ? 'bold' : 'normal'
             const icon = entry.stat.isDirectory() ? 'folder' : 'file'
             const mountInfo = entry.stat.mount
               ? html` <span class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</span>`
@@ -51,7 +50,6 @@ export async function ls (opts = {}, location = '') {
             return html`<div><a
               href="${joinPath(joinPath(archive.url, pathname), entry.name)}"
               class="color-${color}"
-              style="font-weight: ${weight}"
             ><term-icon icon="${icon}"></term-icon> ${entry.name}${mountInfo}</a></div>`
           })
       }

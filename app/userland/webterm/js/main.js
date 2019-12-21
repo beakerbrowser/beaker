@@ -233,7 +233,7 @@ class WebTerm extends LitElement {
   outputHeader (thenCwd, cmd) {
     let host = this.isFSRoot(thenCwd.host) ? '~' : shortenHash(thenCwd.host)
     let pathname = shortenAllKeys(thenCwd.pathname || '').replace(/\/$/, '')
-    this.outputHist.push(html`<div class="header">${host}${pathname}&gt; ${cmd || ''}</div>`)
+    this.outputHist.push(html`<div class="header"><strong>${host}${pathname}&gt;</strong> <span>${cmd || ''}</span></div>`)
   }
 
   async output (output) {
@@ -594,7 +594,7 @@ class WebTerm extends LitElement {
           ${this.outputHist}
         </div>
         <div class="prompt">
-          ${host}${pathname}&gt; <input @keyup=${this.onPromptKeyUp} />
+          <strong>${host}${pathname}&gt;</strong> <input @keyup=${this.onPromptKeyUp} />
         </div>
         <div class="floating-help-outer">
           <div class="floating-help-inner">
