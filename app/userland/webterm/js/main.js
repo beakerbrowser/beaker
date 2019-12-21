@@ -455,13 +455,22 @@ class WebTerm extends LitElement {
     var inputParts = this.promptInput.split(' ')
     var endOfInput = inputParts.pop()
     if (!name) {
-      if (!this.tabCompletion || this.tabCompletion.length !== 1) return
+      if (!this.tabCompletion || this.tabCompletion.length === 0) return
       if (endOfInput.length === 0) return
+
+      var isDir = false
+      var completion = ''
+      if (this.tabCompletion.length === 1) {
+        completion = this.tabCompletion[0].name
+        isDir = this.tabCompletion[0].stat && this.tabCompletion[0].stat.isDirectory()
+      } else {
+        completion = sharedTabCompletionPrefix(this.tabCompletion)
+      }
       
       // splice the name into the end of the input (respect slashes)
       var endOfInputParts = endOfInput.split('/')
-      endOfInput = endOfInputParts.slice(0, -1).concat([this.tabCompletion[0].name]).join('/')
-      if (this.tabCompletion[0].stat && this.tabCompletion[0].stat.isDirectory()) {
+      endOfInput = endOfInputParts.slice(0, -1).concat([completion]).join('/')
+      if (isDir) {
         // add a trailing slash for directories
         endOfInput += '/'
       }
@@ -680,4 +689,17 @@ function subcommandsMap (pkg, commandModule, command) {
     }
   }
   return subcommands
+}
+
+function sharedTabCompletionPrefix (tabCompletionOpts) {
+  var names = tabCompletionOpts.map(opt => opt.name)
+  names.sort()
+
+  var i = 0
+  var first = names[0]
+  var last = names[names.length - 1]
+  while (i < first.length && i < last.length && first.charAt(i) === last.charAt(i)) {
+    i++
+  }
+  return first.substring(0, i)
 }
