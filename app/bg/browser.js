@@ -1,4 +1,4 @@
-import {app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen, session, nativeImage} from 'electron'
+import {app, dialog, BrowserWindow, BrowserView, webContents, ipcMain, shell, Menu, screen, session, nativeImage} from 'electron'
 import {autoUpdater} from 'electron-updater'
 import os from 'os'
 import path from 'path'
@@ -170,6 +170,9 @@ export const WEBAPI = {
   },
   gotoUrl,
   refreshPage,
+  focusPage,
+  executeJavaScriptInPage,
+  injectCssInPage,
   getTabDriveHandler,
   setTabDriveHandler,
   openUrl: (url, opts) => { openUrl(url, opts) }, // dont return anything
@@ -268,8 +271,7 @@ export async function imageToIco (image) {
 }
 
 async function executeSidebarCommand (...args) {
-  var win = findWebContentsParentWindow(this.sender)
-  tabManager.getActive(win).executeSidebarCommand(...args)
+  return getSenderTab(this.sender).executeSidebarCommand(...args)
 }
 
 async function toggleSiteInfo (override) {
@@ -619,23 +621,31 @@ function showContextMenu (menuDefinition) {
 }
 
 async function gotoUrl (url) {
-  var win = findWebContentsParentWindow(this.sender)
-  tabManager.getActive(win).loadURL(url)
+  getSenderTab(this.sender).loadURL(url)
 }
 
 async function refreshPage () {
-  var win = findWebContentsParentWindow(this.sender)
-  tabManager.getActive(win).webContents.reload()
+  getSenderTab(this.sender).webContents.reload()
+}
+
+async function focusPage () {
+  getSenderTab(this.sender).focus()
+}
+
+async function executeJavaScriptInPage (js) {
+  return getSenderTab(this.sender).webContents.executeJavaScript(js, true)
+}
+
+async function injectCssInPage (css) {
+  return getSenderTab(this.sender).webContents.insertCSS(css, {cssOrigin: 'user'})
 }
 
 async function getTabDriveHandler () {
-  var win = findWebContentsParentWindow(this.sender)
-  return tabManager.getActive(win).getDriveHandler()
+  return getSenderTab(this.sender).getDriveHandler()
 }
 
 async function setTabDriveHandler (handler) {
-  var win = findWebContentsParentWindow(this.sender)
-  return tabManager.getActive(win).setDriveHandler(handler)
+  return getSenderTab(this.sender).setDriveHandler(handler)
 }
 
 function openFolder (folderPath) {
@@ -653,6 +663,16 @@ async function doTest (test) {
 
 // internal methods
 // =
+
+function getSenderTab (sender) {
+  var view = BrowserView.fromWebContents(sender)
+  if (view) {
+    let tab = tabManager.findTab(view)
+    if (tab) return tab
+  }
+  var win = findWebContentsParentWindow(this.sender)
+  return tabManager.getActive(win)
+}
 
 function setUpdaterState (state) {
   updaterState = state

@@ -1066,9 +1066,12 @@ export function getActive (win) {
 
 export function findTab (browserView) {
   for (let winId in activeTabs) {
-    for (let v of activeTabs[winId]) {
-      if (v.browserView === browserView) {
-        return v
+    for (let tab of activeTabs[winId]) {
+      if (tab.browserView === browserView) {
+        return tab
+      }
+      if (tab.isSidebarActive && sidebars.get(tab) === browserView) {
+        return tab
       }
     }
   }
