@@ -1,8 +1,8 @@
 /* globals monaco */
 
 import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
-import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { isFilenameBinary } from '../../app-stdlib/js/is-ext-binary.js'
+import lock from '../../../lib/lock.js'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import { joinPath } from '../../app-stdlib/js/strings.js'
 import * as contextMenu from '../../app-stdlib/js/com/context-menu.js'
@@ -92,6 +92,12 @@ class EditorApp extends LitElement {
     }
   }
 
+  setFocus () {
+    if (this.editor) {
+      this.editor.focus()
+    }
+  }
+
   ensureEditorEl () {
     if (!this.editorEl) {
       this.editorEl = document.createElement('div')
@@ -105,7 +111,6 @@ class EditorApp extends LitElement {
     return new Promise((resolve, reject) => {
       window.require.config({ baseUrl: 'beaker://assets/' })
       window.require(['vs/editor/editor.main'], () => {
-        console.log('monaco loaded')
         // we have load monaco outside of the shadow dom
         monaco.editor.defineTheme('custom-dark', {
           base: 'vs-dark',
@@ -136,88 +141,97 @@ class EditorApp extends LitElement {
   }
 
   async load (url) {
-    if (!this.editor) {
-      await this.createEditor()
-    }
-    if (this.url === url || !url) return
-    if (this.hasChanges) {
-      if (!confirm('You have unsaved changes. Are you sure you want to change files?')) {
+    var release = await lock('editor-load')
+    try {
+      this.isLoading = true
+      if (!this.editor) {
+        await this.createEditor()
+      }
+      if (this.url === url || !url) {
+        this.isLoading = false
         return
       }
-    }
-    this.url = url
-
-    // reset the editor
-    for (let model of monaco.editor.getModels()) {
-      model.dispose()
-    }
-
-    console.log('Loading', url)
-    this.editor.setValue('')
-    this.isLoading = true
-    this.readOnly = true
-    this.dne = false
-    this.isBinary = false
-    this.resolvedPath = ''
-
-    var body = ''
-    if (url.startsWith('dat:')) {
-      body = await this.loadDat(url)
-    } else if (url.startsWith('http:') || url.startsWith('https:')) {
-      this.isFilesOpen = false
-      try {
-        body = await beaker.browser.fetchBody(url)
-      } catch (e) {
-        this.dne = true
-        body = ''
+      if (this.hasChanges) {
+        if (!confirm('You have unsaved changes. Are you sure you want to change files?')) {
+          this.isLoading = false
+          return
+        }
       }
-    } else {
-      this.isFilesOpen = false
-      try {
-        let res = await fetch(url)
-        body = await res.text()
-      } catch (e) {
-        this.dne = true
-        body = ''
+      this.url = url
+
+      // reset the editor
+      for (let model of monaco.editor.getModels()) {
+        model.dispose()
       }
-    }
 
-    if (!this.dne && !this.isBinary) {
-      // create a model
-      let urlp2 = new URL(url)
-      urlp2.pathname = this.resolvedPath || this.pathname
-      let model = monaco.editor.createModel(body, null, url ? monaco.Uri.parse(urlp2.toString()) : undefined)
+      console.log('Loading', url)
+      this.editor.setValue('')
+      this.readOnly = true
+      this.dne = false
+      this.isBinary = false
+      this.resolvedPath = ''
 
-      // override the model syntax highlighting when the URL doesnt give enough info (no extension)
-      if (body && model.getModeId() === 'plaintext') {
-        let type = await beaker.browser.getResourceContentType(url)
-        if (type) {
-          if (type.includes('text/html')) {
-            monaco.editor.setModelLanguage(model, 'html')
-          } else if (type.includes('text/markdown')) {
-            monaco.editor.setModelLanguage(model, 'markdown')
-          } else if (type.includes('text/css')) {
-            monaco.editor.setModelLanguage(model, 'css')
-          } else if (type.includes('text/javascript') || type.includes('application/javascript')) {
-            monaco.editor.setModelLanguage(model, 'javascript')
-          }
+      var body = ''
+      if (url.startsWith('dat:')) {
+        body = await this.loadDat(url)
+      } else if (url.startsWith('http:') || url.startsWith('https:')) {
+        this.isFilesOpen = false
+        try {
+          body = await beaker.browser.fetchBody(url)
+        } catch (e) {
+          this.dne = true
+          body = ''
+        }
+      } else {
+        this.isFilesOpen = false
+        try {
+          let res = await fetch(url)
+          body = await res.text()
+        } catch (e) {
+          this.dne = true
+          body = ''
         }
       }
 
-      this.editor.updateOptions({
-        // only enable autocomplete for html/css/js
-        quickSuggestions: ['html', 'css', 'javascript'].includes(model.getModeId()),
-        wordBasedSuggestions: false,
-        wordWrap: 'on',
-        readOnly: this.readOnly
-      })
-      model.updateOptions({tabSize: 2})
-      this.editor.setModel(model)
-      this.lastSavedVersionId = model.getAlternativeVersionId()
-    }
+      if (!this.dne && !this.isBinary) {
+        // create a model
+        let urlp2 = new URL(url)
+        urlp2.pathname = this.resolvedPath || this.pathname
+        let model = monaco.editor.createModel(body, null, url ? monaco.Uri.parse(urlp2.toString()) : undefined)
 
-    this.isLoading = false
-    this.requestUpdate()
+        // override the model syntax highlighting when the URL doesnt give enough info (no extension)
+        if (body && model.getModeId() === 'plaintext') {
+          let type = await beaker.browser.getResourceContentType(url)
+          if (type) {
+            if (type.includes('text/html')) {
+              monaco.editor.setModelLanguage(model, 'html')
+            } else if (type.includes('text/markdown')) {
+              monaco.editor.setModelLanguage(model, 'markdown')
+            } else if (type.includes('text/css')) {
+              monaco.editor.setModelLanguage(model, 'css')
+            } else if (type.includes('text/javascript') || type.includes('application/javascript')) {
+              monaco.editor.setModelLanguage(model, 'javascript')
+            }
+          }
+        }
+
+        this.editor.updateOptions({
+          // only enable autocomplete for html/css/js
+          quickSuggestions: ['html', 'css', 'javascript'].includes(model.getModeId()),
+          wordBasedSuggestions: false,
+          wordWrap: 'on',
+          readOnly: this.readOnly
+        })
+        model.updateOptions({tabSize: 2})
+        this.editor.setModel(model)
+        this.lastSavedVersionId = model.getAlternativeVersionId()
+      }
+
+      this.isLoading = false
+      this.requestUpdate()
+    } finally {
+      release()
+    }
   }
 
   async loadDat (url) {

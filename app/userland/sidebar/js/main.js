@@ -27,6 +27,7 @@ class SidebarApp extends HTMLElement {
     window.showPanel = (panel, url) => this.addPanel(panel, url)
     window.togglePanel = (panel, url) => this.hasPanel(panel) ? this.removePanel(panel) : this.addPanel(panel, url)
     window.hidePanel = panel => this.removePanel(panel)
+    window.setFocus = panel => this.hasPanel(panel) ? this.querySelector(panel).setFocus() : undefined
     window.setContext = (panel, url) => this.hasPanel(panel) ? this.querySelector(panel).load(url) : undefined
 
     this.addEventListener('mousemove', this.onMousemove.bind(this))

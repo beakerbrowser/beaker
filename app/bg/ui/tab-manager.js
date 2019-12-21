@@ -442,7 +442,8 @@ class Tab {
   }
 
   async executeSidebarCommand (cmd, ...args) {
-    const execJs = (js) => sidebars.get(this).webContents.executeJavaScript(js)
+    const wc = () => sidebars.get(this).webContents
+    const execJs = (js) => wc().executeJavaScript(js)
     switch (cmd) {
       case 'hide-panel':
       case 'close':
@@ -455,6 +456,7 @@ class Tab {
       case 'toggle-panel': await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`); break
       case 'hide-panel':   await execJs(`hidePanel("${args[0]}")`); break
       case 'set-context':  await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
+      case 'focus-panel':  wc().focus(); await execJs(`setFocus("${args[0]}")`); break
       case 'close':        this.closeSidebar(); break
     }
     switch (cmd) {
