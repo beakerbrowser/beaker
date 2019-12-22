@@ -24,7 +24,7 @@
     "yargs": "^4.2.0"
   },
   "optionalDependencies": {
-    "appdmg": "^0.4.5",
+    "appdmg": "^0.6.0",
     "rcedit": "^0.5.0"
   },
   "build": {
