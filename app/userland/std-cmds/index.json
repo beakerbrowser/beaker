@@ -244,7 +244,26 @@
         {
           "name": "post",
           "help": "Compose a new post",
-          "usage": "soc post [-y] [-f {file}] [{body}]",
+          "usage": "soc post [{body}] [-y] [-f {file}]",
+          "options": [
+            {
+              "name": "yes",
+              "abbr": "y",
+              "help": "Post immediately without reviewing first",
+              "boolean": true,
+              "default": false
+            },
+            {
+              "name": "file",
+              "abbr": "f",
+              "help": "Use the content of the given file as the post-body (should be a text file)"
+            }
+          ]
+        },
+        {
+          "name": "share",
+          "help": "Share a file or URL on your feed",
+          "usage": "soc share {url} [{body}] [-y] [-f {file}]",
           "options": [
             {
               "name": "yes",

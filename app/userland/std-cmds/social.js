@@ -54,12 +54,28 @@ export async function ls (opts = {}) {
   return posts
 }
 
-export async function post (opts = {}, ...bodyParts) {
-  var body = bodyParts.join(' ')
+export async function post (opts = {}, body) {
   if (opts.file) {
     let {archive, pathname} = resolveParse(this.env, opts.file)
     body = await archive.readFile(pathname)
   }
+  if (opts.yes) {
+    await navigator.filesystem.writeFile(`/profile/feed/${Date.now()}.md`, body)
+  } else {
+    let urlParams = new URLSearchParams()
+    urlParams.set('body', body)
+    beaker.browser.gotoUrl(`beaker://social/?compose&${urlParams.toString()}`)
+  }
+}
+
+export async function share (opts = {}, href, body) {
+  href = this.env.resolve(href)
+  if (opts.file) {
+    let {archive, pathname} = resolveParse(this.env, opts.file)
+    body = await archive.readFile(pathname)
+  }
+  this.out(html`<strong>NOTE</strong>: This command is incomplete, sharing is not fully implemented in .network`)
+  body = `${href}${body ? `\n${body}` : ''}`
   if (opts.yes) {
     await navigator.filesystem.writeFile(`/profile/feed/${Date.now()}.md`, body)
   } else {
