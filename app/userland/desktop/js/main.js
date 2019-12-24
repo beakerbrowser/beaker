@@ -24,7 +24,6 @@ class DesktopApp extends LitElement {
     this.pins = []
     this.draggedPin = null
     this.dragStartTime = 0
-    this.userUrl = ''
     this.load()
 
     window.addEventListener('focus', e => {
@@ -33,9 +32,7 @@ class DesktopApp extends LitElement {
   }
 
   async load () {
-    this.userUrl = `dat://${(await navigator.filesystem.stat('/profile')).mount.key}`
     this.pins = await pins.load()
-    console.log(this.userUrl)
   }
 
   // rendering
@@ -45,8 +42,6 @@ class DesktopApp extends LitElement {
     if (!this.pins) {
       return html`<div></div>`
     }
-    const fs = navigator.filesystem.url
-    const user = this.userUrl
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="ctrl-bar right">
@@ -56,16 +51,8 @@ class DesktopApp extends LitElement {
         <button class="ctrl transparent tooltip-left" @click=${this.onClickNewDrive} data-type="website" data-tooltip="New Website">
           <span class="relative"><span class="icon fas fa-sitemap"></span> <span class="fas fa-plus plusmod"></span></span>
         </button>
-      </div>
-      <div class="ctrl-bar left">
-        <a class="ctrl transparent profile tooltip-right" href="${fs}/profile" data-tooltip="My Profile">
-          <img src="asset:thumb:${user}">
-        </a>
-        <a class="ctrl transparent tooltip-right" href="${fs}" data-tooltip="My Home Drive">
-          <span class="icon fas fa-home"></span>
-        </a>
         <div style="flex: 1"></div>
-        <a class="ctrl transparent tooltip-right" href="beaker://settings/" data-tooltip="Settings">
+        <a class="ctrl transparent tooltip-left" href="beaker://settings/" data-tooltip="Settings">
           <span class="icon fas fa-cog"></span>
         </a>
       </div>

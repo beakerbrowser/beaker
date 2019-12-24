@@ -54,51 +54,19 @@ ${tooltipCSS}
   background: transparent;
 }
 
-.ctrl-bar .ctrl.profile {
-  margin-top: -12px;
-  margin-bottom: 8px;
-}
-
-.ctrl-bar .ctrl.profile::before {
-  left: calc(100% + 26px);
-}
-
-.ctrl-bar .ctrl.profile::after {
-  left: calc(100% + 20px) !important;
-}
-
-.ctrl-bar .ctrl img {
-  height: 60px;
-  width: 60px;
-  object-fit: contain;
-  border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: rgb(241, 241, 246) 0px 0px 0px 4px;
-  background: rgb(241, 241, 246);
-}
-
-.ctrl-bar .ctrl span,
-.ctrl-bar .ctrl img {
+.ctrl-bar .ctrl span {
   transition: transform 0.25s, color 0.25s, box-shadow 0.25s;
   transform: scale(1.0);
 }
 
-.ctrl-bar .ctrl:hover span,
-.ctrl-bar .ctrl:hover img {
+.ctrl-bar .ctrl:hover span {
   transform: scale(1.2);
   color: #223;
-  box-shadow: rgb(241, 241, 246) 0px 0px 0px 0px;
 }
 
 .ctrl-bar .icon {
   font-size: 17px;
   color: #445;
-}
-
-.ctrl-bar .fas.fa-user-friends,
-.ctrl-bar .fas.fa-sitemap,
-.ctrl-bar .fas.fa-terminal {
-  font-size: 15px;
 }
 
 .ctrl-bar .plusmod {
@@ -110,7 +78,7 @@ ${tooltipCSS}
 
 .pins {
   display: grid;
-  padding: 5px 95px;
+  padding: 5px 95px 5px 15px;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   grid-gap: 15px;
   width: 100%;
