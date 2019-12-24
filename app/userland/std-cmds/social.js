@@ -110,6 +110,47 @@ export async function whois (opts = {}, id) {
   }
 }
 
+export async function find (opts = {}, query = '') {
+  query = ('' + query).toLowerCase()
+  var candidates = await navigator.filesystem.query({
+    type: 'mount',
+    path: ['/profile', '/profile/friends/*', '/profile/friends/*/friends/*']
+  })
+
+  var hits = []
+  const test = v => ('' + (v || '')).toLowerCase().includes(query)
+  for (let candidate of candidates) {
+    let profile = await whois({}, candidate.mount)
+    if (test(profile.title) || test(profile.description)) {
+      if (!hits.find(p2 => p2.url === profile.url)) {
+        hits.push(profile)
+      }
+    }
+  }
+
+  Object.defineProperty(hits, 'toHTML', {
+    enumerable: false,
+    value: () => {
+      return html`
+        <div class="border-lightgray" style="padding: 0 10px; margin: 5px 0">
+          ${hits.length === 0 ? html`<p><em>No matches found in your friends or foafs</em></p>` : ''}
+          ${hits.map(f => html`
+            <p>
+              <a href="beaker://social/${f.url.slice('dat://'.length)}">
+                <strong>${f.title}</strong>
+                <small>${toNiceDomain(f.url)}</small>
+              </a>
+              ${f.description || ''}
+            </p>
+          `)}
+        </div>
+      `
+    }
+  })
+
+  return hits
+}
+
 export async function graph (opts = {}, id) {
   let key = !id ? (await navigator.filesystem.stat('/profile')).mount.key : await DatArchive.resolveName(id)
   let drive = new DatArchive(key)

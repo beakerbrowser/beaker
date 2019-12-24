@@ -290,6 +290,11 @@
           "usage": "whois {id}"
         },
         {
+          "name": "find",
+          "help": "Search your social graph for a user",
+          "usage": "find {query}"
+        },
+        {
           "name": "graph",
           "help": "List follows/followers",
           "usage": "soc graph [{id}] [-m]",
