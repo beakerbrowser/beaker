@@ -283,6 +283,13 @@ class WebTerm extends LitElement {
     this.requestUpdate()
   }
 
+  getAllEnv () {
+    return Object.assign({}, this.envVars, {
+      '@': 'todo', // TODO
+      cwd: this.cwd.toString()
+    })
+  }
+
   getEnv (key) {
     if (key === '@') throw new Error('TODO') // TODO
     if (key === 'cwd') return this.cwd.toString()
@@ -339,6 +346,7 @@ class WebTerm extends LitElement {
 
       let ctx = {
         env: {
+          getAll: this.getAllEnv.bind(this),
           get: this.getEnv.bind(this),
           set: this.setEnv.bind(this),
           goto: this.setCWD.bind(this),

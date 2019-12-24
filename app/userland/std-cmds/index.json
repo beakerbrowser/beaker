@@ -144,6 +144,27 @@
       "usage": "edit {path}"
     },
     {
+      "name": "env",
+      "help": "Get and set environment variables",
+      "subcommands": [
+        {
+          "name": "ls",
+          "help": "List all environment variables",
+          "usage": "env ls"
+        },
+        {
+          "name": "get",
+          "help": "Get the value of an environment variable",
+          "usage": "env get {name}"
+        },
+        {
+          "name": "set",
+          "help": "Set the value of an environment variable",
+          "usage": "env set {name} {value}"
+        }
+      ]
+    },
+    {
       "name": "cmd",
       "help": "Webterm command management",
       "subcommands": [

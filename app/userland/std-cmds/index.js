@@ -241,3 +241,27 @@ export async function edit (opts = {}, location = '') {
   await this.panel.goto('editor-app', location)
   await this.panel.focus('editor-app')
 }
+
+// env vars
+// =
+
+export const env = {
+  ls (opts) {
+    var vars = this.env.getAll()
+    Object.defineProperty(vars, 'toHTML', {
+      enumerable: false,
+      value: () => {
+        return Object.entries(vars).map(([k, v]) => html`<strong>${k}</strong>: ${v}<br>`)
+      }
+    })
+    return vars
+  },
+  get (opts, name) {
+    if (name.startsWith('$')) name = name.slice(1)
+    return this.env.get(name)
+  },
+  set (opts, name, value) {
+    if (name.startsWith('$')) name = name.slice(1)
+    return this.env.set(name, value)
+  }
+}
