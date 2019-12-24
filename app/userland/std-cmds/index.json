@@ -165,7 +165,7 @@
       ]
     },
     {
-      "name": "pg",
+      "name": "page",
       "help": "Interact with the active page",
       "subcommands": [
         {

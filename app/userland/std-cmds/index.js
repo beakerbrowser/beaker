@@ -269,7 +269,7 @@ export const env = {
 // page interactions
 // =
 
-export const pg = {
+export const page = {
   async exec (opts, js) {
     var result = await this.page.exec(js)
     return {
