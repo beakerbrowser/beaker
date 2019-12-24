@@ -265,3 +265,28 @@ export const env = {
     return this.env.set(name, value)
   }
 }
+
+// page interactions
+// =
+
+export const pg = {
+  async exec (opts, js) {
+    var result = await this.page.exec(js)
+    return {
+      result,
+      toHTML: () => html`<pre>${result}</pre>`
+    }
+  },
+  async inject (opts, css) {
+    var id = await this.page.inject(css)
+    const uninject = e => {
+      e.preventDefault()
+      this.page.uninject(id)
+    } 
+    this.out(html`<button @click=${uninject}>Uninject</button>`)
+    return id
+  },
+  async uninject (opts, id) {
+    return this.page.uninject(''+id)
+  }
+}

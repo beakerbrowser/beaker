@@ -45,6 +45,7 @@ export default {
   focusPage: 'promise',
   executeJavaScriptInPage: 'promise',
   injectCssInPage: 'promise',
+  uninjectCssInPage: 'promise',
   getTabDriveHandler: 'promise',
   setTabDriveHandler: 'promise',
   openFolder: 'promise',

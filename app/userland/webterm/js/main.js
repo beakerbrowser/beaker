@@ -260,7 +260,7 @@ class WebTerm extends LitElement {
     }
 
     // finished, render/replace with final output
-    if (typeof output === 'undefined') {
+    if (typeof output === 'undefined' || !output) {
       output = ''
     } else if (output.toHTML) {
       output = output.toHTML()
@@ -361,7 +361,8 @@ class WebTerm extends LitElement {
           refresh () { beaker.browser.refreshPage() },
           focus () { beaker.browser.focusPage() },
           exec (js) { return beaker.browser.executeJavaScriptInPage(js) },
-          inject (css) { return beaker.browser.injectCssInPage(css) }
+          inject (css) { return beaker.browser.injectCssInPage(css) },
+          uninject (id) { return beaker.browser.uninjectCssInPage(id) }
         },
         panel: {
           open (panel, ...args) { return beaker.browser.executeSidebarCommand('show-panel', panel, ...args) },

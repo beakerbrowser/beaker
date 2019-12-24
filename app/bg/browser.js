@@ -173,6 +173,7 @@ export const WEBAPI = {
   focusPage,
   executeJavaScriptInPage,
   injectCssInPage,
+  uninjectCssInPage,
   getTabDriveHandler,
   setTabDriveHandler,
   openUrl: (url, opts) => { openUrl(url, opts) }, // dont return anything
@@ -634,10 +635,20 @@ async function focusPage () {
 
 async function executeJavaScriptInPage (js) {
   return getSenderTab(this.sender).webContents.executeJavaScript(js, true)
+    .catch(err => { 
+      if (err.toString().includes('Script failed to execute')) {
+        throw "Injected script failed to execute"
+      }
+      throw err
+    })
 }
 
 async function injectCssInPage (css) {
-  return getSenderTab(this.sender).webContents.insertCSS(css, {cssOrigin: 'user'})
+  return getSenderTab(this.sender).webContents.insertCSS(css)
+}
+
+async function uninjectCssInPage (key) {
+  return getSenderTab(this.sender).webContents.removeInsertedCSS(key)
 }
 
 async function getTabDriveHandler () {

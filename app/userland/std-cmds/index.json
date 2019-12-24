@@ -165,6 +165,27 @@
       ]
     },
     {
+      "name": "pg",
+      "help": "Interact with the active page",
+      "subcommands": [
+        {
+          "name": "exec",
+          "help": "Execute javascript in the active page",
+          "usage": "exec {js}"
+        },
+        {
+          "name": "inject",
+          "help": "Inject CSS into the active page",
+          "usage": "inject {css}"
+        },
+        {
+          "name": "uninject",
+          "help": "Uninject CSS that was previously injected",
+          "usage": "uninject {id}"
+        }
+      ]
+    },
+    {
       "name": "cmd",
       "help": "Webterm command management",
       "subcommands": [
