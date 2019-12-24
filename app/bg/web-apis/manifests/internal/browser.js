@@ -41,6 +41,7 @@ export default {
   showModal: 'promise',
   openUrl: 'promise',
   gotoUrl: 'promise',
+  getPageUrl: 'promise',
   refreshPage: 'promise',
   focusPage: 'promise',
   executeJavaScriptInPage: 'promise',

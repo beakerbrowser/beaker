@@ -169,6 +169,7 @@ export const WEBAPI = {
     return modals.create(this.sender, name, opts)
   },
   gotoUrl,
+  getPageUrl,
   refreshPage,
   focusPage,
   executeJavaScriptInPage,
@@ -623,6 +624,10 @@ function showContextMenu (menuDefinition) {
 
 async function gotoUrl (url) {
   getSenderTab(this.sender).loadURL(url)
+}
+
+async function getPageUrl () {
+  return getSenderTab(this.sender).url
 }
 
 async function refreshPage () {
