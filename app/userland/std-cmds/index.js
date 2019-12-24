@@ -134,11 +134,27 @@ export async function rm (opts, dst) {
   }
 }
 
-export async function query (opts = {}, ...path) {
-  opts.path = path
-  var res = await navigator.filesystem.query(opts)
-  res.toHTML = () => html`${res.map(r => html`<a href=${r.url}>${r.path}</a><br>`)}`
-  return res
+export async function query (opts = {}, ...paths) {
+  var queriesMap = {}
+  for (let path of paths) {
+    let p = resolveParse(this.env, path)
+    if (p.origin in queriesMap) {
+      queriesMap[p.origin].opts.path.push(p.pathname)
+    } else {
+      queriesMap[p.origin] = {
+        archive: p.archive,
+        opts: Object.assign({}, opts, {path: [p.pathname]})
+      }
+    }
+  }
+  
+  var allResults = []
+  for (let query of Object.values(queriesMap)) {
+    let res = await query.archive.query(query.opts)
+    allResults = allResults.concat(res)
+  }
+  allResults.toHTML = () => html`${allResults.map(r => html`<a href=${r.url}>${r.path}</a><br>`)}`
+  return allResults
 }
 
 export async function meta (opts, location, key = undefined, ...value) {
