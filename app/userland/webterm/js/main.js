@@ -285,13 +285,11 @@ class WebTerm extends LitElement {
 
   getAllEnv () {
     return Object.assign({}, this.envVars, {
-      '@': 'todo', // TODO
       cwd: this.cwd.toString()
     })
   }
 
   getEnv (key) {
-    if (key === '@') throw new Error('TODO') // TODO
     if (key === 'cwd') return this.cwd.toString()
     return this.envVars[key] || ''
   }
@@ -303,7 +301,7 @@ class WebTerm extends LitElement {
   }
 
   applySubstitutions (str = '') {
-    return str.replace(/\$([a-z]+|\([a-z]+\))/ig, (val) => {
+    return str.replace(/\$([a-z@]+|\([a-z@]+\))/ig, (val) => {
       var key = val.slice(1).toLowerCase()
       return this.getEnv(key)
     })
@@ -315,6 +313,9 @@ class WebTerm extends LitElement {
       return
     }
     this.commandHist.add(prompt.value)
+
+    this.envVars['@'] = await beaker.browser.getPageUrl()
+
     var inputValue = prompt.value
     var args = this.applySubstitutions(prompt.value).match(/[^'"\s]+|"[^"]+"|'[^']+'/ig)
     args = args.map(arg => arg.replace(/(^['"])|(['"]$)/gi, ''))
