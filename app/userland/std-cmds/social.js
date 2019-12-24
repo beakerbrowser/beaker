@@ -64,7 +64,7 @@ export async function post (opts = {}, body) {
   } else {
     let urlParams = new URLSearchParams()
     urlParams.set('body', body)
-    beaker.browser.gotoUrl(`beaker://social/?compose&${urlParams.toString()}`)
+    this.page.goto(`beaker://social/?compose&${urlParams.toString()}`)
   }
 }
 
@@ -81,7 +81,7 @@ export async function share (opts = {}, href, body) {
   } else {
     let urlParams = new URLSearchParams()
     urlParams.set('body', body)
-    beaker.browser.gotoUrl(`beaker://social/?compose&${urlParams.toString()}`)
+    this.page.goto(`beaker://social/?compose&${urlParams.toString()}`)
   }
 }
 
@@ -179,23 +179,20 @@ export async function unfollow (opts = {}, id) {
 
 export function home (opts = {}) {
   var url = 'beaker://social/'
-  if (opts['new-tab']) beaker.browser.openUrl(url, {setActive: true})
-  else beaker.browser.gotoUrl(url)
+  this.page.goto(url, {newTab: opts['new-tab']})
 }
 
 export async function me (opts = {}) {
   let prof = await whoami()
   var url = 'beaker://social/' + prof.url.slice('dat://'.length)
-  if (opts['new-tab']) beaker.browser.openUrl(url, {setActive: true})
-  else beaker.browser.gotoUrl(url)
+  this.page.goto(url, {newTab: opts['new-tab']})
 }
 
 export function view (opts = {}, id) {
   if (isNumeric(id)) id = lastPosts[id - 1]
   if (id.startsWith('dat://')) id = id.slice('dat://'.length)
   var url = 'beaker://social/' + id
-  if (opts['new-tab']) beaker.browser.openUrl(url, {setActive: true})
-  else beaker.browser.gotoUrl(url)
+  this.page.goto(url, {newTab: opts['new-tab']})
 }
 
 // internal
