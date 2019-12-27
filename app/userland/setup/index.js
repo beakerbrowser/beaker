@@ -2,9 +2,6 @@ import './intro.js'
 import './profile.js'
 import './grid-explainer.js'
 import './fs-explainer.js'
-import './fs-explainer2.js'
-import './fs-explainer3.js'
-import './fs-explainer4.js'
 
 customElements.define('setup-app', class extends HTMLElement {
   constructor () {
@@ -29,13 +26,13 @@ customElements.define('setup-app', class extends HTMLElement {
         this.innerHTML = `<fs-explainer-view></fs-explainer-view>`
         break
       case 5:
-        this.innerHTML = `<fs-explainer2-view></fs-explainer2-view>`
+        this.querySelector('fs-explainer-view').setPhase(2)
         break
       case 6:
-        this.innerHTML = `<fs-explainer3-view></fs-explainer3-view>`
+        this.querySelector('fs-explainer-view').setPhase(3)
         break
       case 7:
-        this.innerHTML = `<fs-explainer4-view></fs-explainer4-view>`
+        this.querySelector('fs-explainer-view').setPhase(4)
         break
     }
   }

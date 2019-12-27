@@ -25,7 +25,6 @@ export class BaseSlideView extends HTMLElement {
     height: 100vh;
     width: 100vw;
     background: #fff;
-    text-align: center;
     padding: 0 20px;
     box-sizing: border-box;
   }
@@ -37,12 +36,6 @@ export class BaseSlideView extends HTMLElement {
   }
   h1 strong {
     font-size: 42px;
-  }
-  .sidenote {
-    background: #eef;
-    color: #334;
-    padding: 20px;
-    border-radius: 8px;
   }
   hr {
     border: 0;
@@ -60,6 +53,10 @@ export class BaseSlideView extends HTMLElement {
   a:hover {
     cursor: pointer;
     text-decoration: underline;
+  }
+  .bullet {
+    display: inline-block;
+    margin: 0 25px;
   }
 </style>
 ${this.render()}

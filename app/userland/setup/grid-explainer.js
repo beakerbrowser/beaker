@@ -15,7 +15,7 @@ customElements.define('grid-explainer-view', class extends BaseSlideView {
   opacity: 0;
 }
 </style>
-<h1>You are now on<br><strong>The Grid</strong></h1>
+<h1>You are now on<br><strong>The Global Data Grid</strong></h1>
 <hr>
 <p class="big" style="font-size: 24px; margin: 125px 0">
   <strong>The Grid</strong> is a global filesystem that connects every computer in the world.
