@@ -7,6 +7,10 @@ export function init () {
   instrument(DatArchive.prototype)
 }
 
+export function listDrives () {
+  return Array.from(debugDrives, url => `beaker://social/${url.slice('dat://'.length)}`)
+}
+
 export async function generateDrives (num = 10) {
   if (!confirm('This will generate a lot of test drives. Continue?')) {
     return
@@ -29,7 +33,7 @@ export async function socializeDrives () {
       let followUrl = getRandomOtherThan(driveUrls, driveUrl)
       let followProfile = await (new DatArchive(followUrl)).getInfo()
       console.log('following', followUrl, followProfile.title)
-      await uwg.friends.add(followUrl, followProfile.title, drive)
+      await uwg.follows.add(followUrl, followProfile.title, drive)
     }
   }
 }

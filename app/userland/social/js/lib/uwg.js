@@ -82,8 +82,8 @@ export const profiles = {
 
       prof.followers = followersQuery.map(item => item.drive)
       prof.following = followingQuery.map(item => item.mount)
-      prof.isFollowingUser = Boolean(prof.following.find(f => f.url === user.url))
-      prof.isUserFollowing = Boolean(prof.followers.find(f => f.url === user.url))
+      prof.isFollowingUser = Boolean(prof.following.find(f => f === user.url))
+      prof.isUserFollowing = Boolean(prof.followers.find(f => f === user.url))
     } finally {
       release()
     }

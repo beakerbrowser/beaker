@@ -26,7 +26,7 @@ export class ProfileHeader extends LitElement {
   }
 
   async load () {
-    this.profile = await uwg.profiles.get(this.id, this.user)
+    this.profile = await uwg.profiles.get(this.id)
     await this.requestUpdate()
     await uwg.profiles.readSocialGraph(this.profile, this.user)
     await this.requestUpdate()
@@ -73,10 +73,10 @@ export class ProfileHeader extends LitElement {
   async onToggleFollow (e) {
     try {
       if (this.profile.isUserFollowing) {
-        await uwg.friends.remove(this.profile.url)
+        await uwg.follows.remove(this.profile.url)
         toast.create(`Unfollowed ${this.profile.title}`)
       } else {
-        await uwg.friends.add(this.profile.url, this.profile.title)
+        await uwg.follows.add(this.profile.url, this.profile.title)
         toast.create(`Followed ${this.profile.title}`)
       }
     } catch (e) {
