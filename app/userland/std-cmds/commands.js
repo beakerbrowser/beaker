@@ -1,7 +1,7 @@
 import { ensureDir, ensureMount, ensureUnmount, ensureUnmountByUrl, getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 
 export async function ls () {
-  let res = await navigator.filesystem.query({path: '/settings/webterm/cmds/*'})
+  let res = await navigator.filesystem.query({path: '/system/webterm/cmds/*'})
   res = res.filter(r => r.stat.isDirectory())
   res = res.map(r => ({name: r.path.split('/').pop(), path: r.path, url: r.mount}))
   res.toHTML = () => {
@@ -34,25 +34,25 @@ export async function create () {
 }
 
 export async function install (opts = {}, url) {
-  await ensureDir('/settings')
-  await ensureDir('/settings/webterm')
-  await ensureDir('/settings/webterm/cmds')
+  await ensureDir('/system')
+  await ensureDir('/system/webterm')
+  await ensureDir('/system/webterm/cmds')
 
   var driveInfo = await (new DatArchive(url)).getInfo()
-  var name = await getAvailableName('/settings/webterm/cmds', driveInfo.title || 'untitled')
-  let path = `/settings/webterm/cmds/${name}`
+  var name = await getAvailableName('/system/webterm/cmds', driveInfo.title || 'untitled')
+  let path = `/system/webterm/cmds/${name}`
   await ensureMount(path, driveInfo.url)
 
   return {name, path, url, toHTML: () => html`Installed <a href=${navigator.filesystem.url + path}>${name}</a>`}
 }
 
 export async function uninstall (opts = {}, urlOrName) {
-  await ensureDir('/settings')
-  await ensureDir('/settings/webterm')
-  await ensureDir('/settings/webterm/cmds')
+  await ensureDir('/system')
+  await ensureDir('/system/webterm')
+  await ensureDir('/system/webterm/cmds')
   
-  await ensureUnmount(`/settings/webterm/cmds/${urlOrName}`)
-  await ensureUnmountByUrl(`/settings/webterm/cmds/*`, urlOrName)
+  await ensureUnmount(`/system/webterm/cmds/${urlOrName}`)
+  await ensureUnmountByUrl(`/system/webterm/cmds/*`, urlOrName)
 }
 
 // internal

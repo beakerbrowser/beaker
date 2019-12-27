@@ -105,7 +105,7 @@ audio {
   color: var(--color-folder);
 }
 
-.icon .fa-hdd {
+.icon .mainicon.fa-hdd {
   color: var(--color-drive);
 }
 

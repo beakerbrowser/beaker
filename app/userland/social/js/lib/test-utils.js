@@ -53,7 +53,7 @@ export async function deleteDrives () {
 
   for (let url of debugDrives) {
     console.debug('Unlinking', url)
-    await ensureUnmountByUrl('/library/*', url)
+    await ensureUnmountByUrl('/system/drives/*', url)
   }
   debugDrives.length = 0
 }

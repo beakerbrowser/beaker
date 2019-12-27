@@ -2,16 +2,21 @@ import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 
 const ICONS = {
   root: {
+    '/desktop': 'fas fa-th',
     '/library': 'fas fa-university',
     '/library/bookmarks': 'fas fa-star',
     '/library/documents': 'fas fa-file-word',
     '/library/media': 'fas fa-photo-video',
     '/library/projects': 'fas fa-coffee',
-    '/settings': 'fas fa-cog'
+    '/system': 'fas fa-cog',
+    '/system/drives': 'fas fa-hdd',
+    '/system/webterm': 'fas fa-terminal'
   },
   person: {
-    '/friends': 'fas fa-user-friends',
-    '/feed': 'fa fa-rss'
+    '/comments': 'fas fa-comment',
+    '/follows': 'fas fa-user-friends',
+    '/feed': 'fa fa-rss',
+    '/likes': 'fas fa-heart'
   },
   common: {
   }

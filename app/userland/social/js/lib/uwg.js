@@ -76,8 +76,8 @@ export const profiles = {
       var key = prof.url.slice('dat://'.length)
 
       var [followersQuery, followingQuery] = await Promise.all([
-        friends.list({target: key}, {includeProfiles}),
-        friends.list({author: key}, {includeProfiles})
+        follows.list({target: key}, {includeProfiles}),
+        follows.list({author: key}, {includeProfiles})
       ])
 
       prof.followers = followersQuery.map(item => item.drive)
@@ -99,7 +99,7 @@ export const profiles = {
   }
 }
 
-export const friends = {
+export const follows = {
   /**
    * @param {Object} [query]
    * @param {string} [query.author]
@@ -128,7 +128,7 @@ export const friends = {
    * @returns {Promise<void>}
    */
   async add (url, title = 'anonymous', drive = undefined) {
-    var path = drive ? '/friends' : '/profile/friends'
+    var path = drive ? '/follows' : '/profile/follows'
     drive = drive || navigator.filesystem
     await ensureDir(path, drive)
     var mount = await drive.query({path: `${path}/*`, mount: url})
@@ -143,7 +143,7 @@ export const friends = {
    * @returns {Promise<void>}
    */
   async remove (urlOrName, drive = undefined) {
-    var path = drive ? '/friends' : '/profile/friends'
+    var path = drive ? '/follows' : '/profile/follows'
     drive = drive || navigator.filesystem
 
     var mount = await drive.query({path: `${path}/*`, mount: urlOrName})
@@ -443,9 +443,8 @@ export const likes = {
       return
     }
 
-    var path = `/profile/links/likes/${Date.now()}.goto`
-    await ensureDir('/profile/links')
-    await ensureDir('/profile/links/likes')
+    var path = `/profile/likes/${Date.now()}.goto`
+    await ensureDir('/profile/likes')
     await navigator.filesystem.writeFile(path, '', {metadata: {href}})
     return path
   },
@@ -470,13 +469,13 @@ export const likes = {
  */
 function getFriendPaths (author) {
   if (author === 'me') {
-    return `/profile/friends/*`
+    return `/profile/follows/*`
   } else if (author) {
-    return `/friends/*`
+    return `/follows/*`
   } else {
     return [
-      `/profile/friends/*`,
-      `/profile/friends/*/friends/*`
+      `/profile/follows/*`,
+      `/profile/follows/*/follows/*`
     ]
   }
 }
@@ -493,7 +492,7 @@ function getFeedPaths (author) {
   } else {
     return [
       `/profile/feed/*`,
-      `/profile/friends/*/feed/*`
+      `/profile/follows/*/feed/*`
     ]
   }
 }
@@ -524,13 +523,13 @@ function getCommentPaths (author, href = undefined) {
  */
 function getLikePaths (author) {
   if (author === 'me') {
-    return `/profile/links/likes/*.goto`
+    return `/profile/likes/*.goto`
   } else if (author) {
-    return `/links/likes/*.goto`
+    return `/likes/*.goto`
   } else {
     return [
-      `/profile/links/likes/*.goto`,
-      `/profile/friends/*/links/likes/*.goto`
+      `/profile/likes/*.goto`,
+      `/profile/follows/*/likes/*.goto`
     ]
   }
 }

@@ -81,8 +81,10 @@ export async function setup () {
     }
 
     // ensure file structure
+    await ensureDirectory(user, PATHS.COMMENTS)
     await ensureDirectory(user, PATHS.FEED)
-    await ensureDirectory(user, PATHS.FRIENDS)
+    await ensureDirectory(user, PATHS.FOLLOWS)
+    await ensureDirectory(user, PATHS.LIKES)
   }))
 
   // remove any invalid users
@@ -180,8 +182,10 @@ export async function add (url, setDefault = false, isTemporary = false) {
   }
 
   // ensure file structure
+  await ensureDirectory(user, PATHS.COMMENTS)
   await ensureDirectory(user, PATHS.FEED)
-  await ensureDirectory(user, PATHS.FRIENDS)
+  await ensureDirectory(user, PATHS.FOLLOWS)
+  await ensureDirectory(user, PATHS.LIKES)
 
   return fetchUserInfo(user)
 };

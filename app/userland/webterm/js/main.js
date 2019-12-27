@@ -14,7 +14,7 @@ import './lib/term-icon.js'
 window.html = html
 window.html.render = render
 
-const THEME_PATH = '/settings/terminal.css'
+const THEME_PATH = '/system/webterm/theme.css'
 const TAB_COMPLETION_RENDER_LIMIT = 15
 
 class WebTerm extends LitElement {
@@ -144,7 +144,7 @@ class WebTerm extends LitElement {
     }]
 
     var userPackages = await navigator.filesystem.query({
-      path: '/settings/webterm/cmds/*'
+      path: '/system/webterm/cmds/*'
     })
     userPackages = userPackages.filter(p => p.stat.isDirectory())
     for (let pkg of userPackages) {

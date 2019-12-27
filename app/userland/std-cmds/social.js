@@ -13,7 +13,7 @@ var lastPosts = []
 export async function ls (opts = {}) {
   lastPosts.length = 0
   let posts = await navigator.filesystem.query({
-    path: ['/profile/feed/*', '/profile/friends/*/feed/*'],
+    path: ['/profile/feed/*', '/profile/follows/*/feed/*'],
     sort: 'ctime',
     reverse: true,
     limit: opts.num,
@@ -114,7 +114,7 @@ export async function find (opts = {}, query = '') {
   query = ('' + query).toLowerCase()
   var candidates = await navigator.filesystem.query({
     type: 'mount',
-    path: ['/profile', '/profile/friends/*', '/profile/friends/*/friends/*']
+    path: ['/profile', '/profile/follows/*', '/profile/follows/*/follows/*']
   })
 
   var hits = []
@@ -133,7 +133,7 @@ export async function find (opts = {}, query = '') {
     value: () => {
       return html`
         <div class="border-lightgray" style="padding: 0 10px; margin: 5px 0">
-          ${hits.length === 0 ? html`<p><em>No matches found in your friends or foafs</em></p>` : ''}
+          ${hits.length === 0 ? html`<p><em>No matches found in your follows or foafs</em></p>` : ''}
           ${hits.map(f => html`
             <p>
               <a href="beaker://social/${f.url.slice('dat://'.length)}">
@@ -155,8 +155,8 @@ export async function graph (opts = {}, id) {
   let key = !id ? (await navigator.filesystem.stat('/profile')).mount.key : await DatArchive.resolveName(id)
   let drive = new DatArchive(key)
   let [followers, following] = await Promise.all([
-    navigator.filesystem.query({path: ['/profile/friends/*', '/profile/friends/*/friends/*'], mount: key}),
-    drive.query({path: '/friends/*', type: 'mount'})
+    navigator.filesystem.query({path: ['/profile/follows/*', '/profile/follows/*/follows/*'], mount: key}),
+    drive.query({path: '/follows/*', type: 'mount'})
   ])
   followers = Array.from((new Set(followers.map(f => f.drive))))
   following = Array.from((new Set(following.map(f => f.mount))))
@@ -204,15 +204,15 @@ export async function graph (opts = {}, id) {
 
 export async function follow (opts = {}, id) {
   var key = await DatArchive.resolveName(id)
-  var res = await navigator.filesystem.query({path: '/profile/friends/*', mount: key})
+  var res = await navigator.filesystem.query({path: '/profile/follows/*', mount: key})
   if (res.length === 0) {
-    await navigator.filesystem.mount('/profile/friends/' + key, key)
+    await navigator.filesystem.mount('/profile/follows/' + key, key)
   }
 }
 
 export async function unfollow (opts = {}, id) {
   var key = await DatArchive.resolveName(id)
-  var res = await navigator.filesystem.query({path: '/profile/friends/*', mount: key})
+  var res = await navigator.filesystem.query({path: '/profile/follows/*', mount: key})
   for (let k of res) {
     await navigator.filesystem.unmount(k.path)
   }

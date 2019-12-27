@@ -65,12 +65,16 @@ export async function setup () {
   logger.info('Loading root archive', {url: browsingProfile.url})
   try {
     // ensure common dirs
+    await ensureDir(PATHS.DESKTOP)
     await ensureDir(PATHS.LIBRARY)
     await ensureDir(PATHS.LIBRARY_NS('bookmarks'))
     await ensureDir(PATHS.LIBRARY_NS('documents'))
     await ensureDir(PATHS.LIBRARY_NS('media'))
     await ensureDir(PATHS.LIBRARY_NS('projects'))
-    await ensureDir(PATHS.SETTINGS)
+    await ensureDir(PATHS.SYSTEM)
+    await ensureDir(PATHS.SYSTEM_NS('drives'))
+    await ensureDir(PATHS.SYSTEM_NS('webterm'))
+    await ensureDir(PATHS.SYSTEM_NS('webterm/cmds'))
 
     // ensure all user mounts are set
     for (let user of userList) {
@@ -98,8 +102,8 @@ export async function setDefaultUser (url) {
  * @returns {Promise<void>}
  */
 export async function addToLibrary (url, title) {
-  var name = await getAvailableName(PATHS.LIBRARY, slugify((title || '').trim() || 'untitled').toLowerCase())
-  await ensureMount(joinPath(PATHS.LIBRARY, name), url)
+  var name = await getAvailableName(PATHS.SYSTEM_NS('drives'), slugify((title || '').trim() || 'untitled').toLowerCase())
+  await ensureMount(joinPath(PATHS.SYSTEM_NS('drives'), name), url)
 }
 
 /**

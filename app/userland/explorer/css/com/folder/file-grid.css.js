@@ -46,7 +46,7 @@ const cssStr = css`
   color: var(--color-folder);
 }
 
-.item .fa-fw.fa-hdd {
+.item .mainicon.fa-fw.fa-hdd {
   color: var(--color-drive);
 }
 

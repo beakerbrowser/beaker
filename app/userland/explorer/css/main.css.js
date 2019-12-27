@@ -279,11 +279,6 @@ nav section .bottom-ctrls {
   padding-top: 4px;
 }
 
-nav social-signals {
-  padding: 0 2px;
-  margin-bottom: 10px;
-}
-
 nav .facts {
   line-height: 1.6;
 }

@@ -9,21 +9,21 @@ export const ANALYTICS_CHECKIN_INTERVAL = ms('1w')
 
 // hyperdrive FS file paths
 export const PATHS = {
-  // common
-  // DATA: '/data',
-  // DATA_NS: (ns) => `/data/${ns}`,
-
   // private fs
   DEFAULT_USER: '/profile',
+  DESKTOP: '/desktop',
   LIBRARY: '/library',
   LIBRARY_NS: (ns) => `/library/${ns}`,
-  PROGRAM_REGISTRY_JSON: '/settings/program-registry.json',
-  SETTINGS: '/settings',
-  TYPE_REGISTRY_JSON: '/settings/type-registry.json',
+  PROGRAM_REGISTRY_JSON: '/system/program-registry.json',
+  SYSTEM: '/system',
+  SYSTEM_NS: (ns) => `/system/${ns}`,
+  TYPE_REGISTRY_JSON: '/system/type-registry.json',
 
   // user fs
+  COMMENTS: '/comments',
   FEED: '/feed',
-  FRIENDS: '/friends'
+  FOLLOWS: '/follows',
+  LIKES: '/likes',
 }
 
 // builtin programs
