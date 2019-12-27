@@ -1,7 +1,5 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import '../com/file/file-display.js'
-import '../com/social-signals.js'
-import 'beaker://app-stdlib/js/com/comments/thread.js'
 
 export class QueryView extends LitElement {
   static get properties () {

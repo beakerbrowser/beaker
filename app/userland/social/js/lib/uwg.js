@@ -28,20 +28,6 @@ import { lock } from './lock.js'
  * @prop {ThreadedComment} parent
  * @prop {ThreadedComment[]} [replies]
  * @prop {number} replyCount
- *
- * @typedef {FSQueryResult} Annotation
- * @prop {string} content.type
- * @prop {string[]} content.tags
- * @prop {number} [content.vote]
- *
- * @typedef {Object} TabulatedAnnotationTag
- * @prop {string} tag
- * @prop {string[]} authors
- *
- * @typedef {Object} TabulatedAnnotations
- * @prop {string[]} upvoters
- * @prop {string[]} downvoters
- * @prop {TabulatedAnnotationTag[]} tags
  */
 
 // exported
@@ -475,86 +461,6 @@ export const likes = {
   }
 }
 
-export const annotations = {
-  /**
-   * @param {Object} query
-   * @param {string} [query.author]
-   * @param {string} [query.href]
-   * @param {string} [query.sort]
-   * @param {boolean} [query.reverse]
-   * @returns {Promise<Annotation[]>}
-   */
-  async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
-    var annotations = await queryRead({path: getAnnotationPaths(author, href), sort, reverse})
-    return annotations.filter(massageAnnotation)
-  },
-
-  /**
-   * @param {string} href
-   * @param {Object} query
-   * @param {string} [query.author]
-   * @returns {Promise<TabulatedAnnotations>}
-   */
-  async tabulate (href, {author} = {author: undefined}) {
-    var annotations = /** @type Annotation[] */(await queryRead({path: getAnnotationPaths(author, href)}))
-    annotations = annotations.filter(massageAnnotation)
-
-    // construct tabulated list
-    var tags = {}
-    var upvoters = []
-    var downvoters = []
-    annotations.forEach(annotation => {
-      if (annotation.vote === 1) upvoters.push(annotation.drive.url)
-      else if (annotation.vote === -1) downvoters.push(annotation.drive.url)
-      annotation.tags.forEach(tags => {
-        if (!tags[tags]) {
-          tags[tags] = {tags, authors: [annotation.drive.url]}
-        } else {
-          tags[tags].authors.push(annotation.drive.url)
-        }
-      })
-    })
-
-    return {upvoters, downvoters, tags: Object.values(tags)}
-  },
-  /**
-   * @param {string} href
-   * @returns {Promise<Annotation>}
-   */
-  async get (href) {
-    var annotations = await queryRead({path: getAnnotationPaths('me', href)})
-    return annotations.filter(massageAnnotation)[0]
-  },
-
-  /**
-   * @param {string} href
-   * @param {Object} annotation
-   * @param {string[]} [annotation.tags]
-   * @param {number} [annotation.vote]
-   * @returns {Promise<string>}
-   */
-  async put (href, {tags, vote} = {tags: undefined, vote: undefined}) {
-    var path = `/profile/annotations/${slugifyUrl(href)}.json`
-    await ensureParentDir(path)
-    await navigator.filesystem.writeFile(path, JSON.stringify({
-      type: 'unwalled.garden/annotation',
-      href,
-      tags,
-      vote
-    }))
-    return path
-  },
-
-  /**
-   * @param {string} href
-   * @returns {Promise<void>}
-   */
-  async remove (href) {
-    var path = `/profile/annotations/${slugifyUrl(href)}.json`
-    await navigator.filesystem.unlink(path)
-  }
-}
-
 // internal
 // =
 
@@ -603,30 +509,11 @@ function getCommentPaths (author, href = undefined) {
   if (author === 'me') {
     return `/profile/comments/${foldername}/*.json`
   } else if (author) {
-    return `/profile/friends/${author}/comments/${foldername}/*.json`
+    return `/profile/follows/${author}/comments/${foldername}/*.json`
   } else {
     return [
       `/profile/comments/${foldername}/*.json`,
-      `/profile/friends/*/comments/${foldername}/*.json`
-    ]
-  }
-}
-
-/**
- * @param {string} author
- * @param {string?} href
- * @returns {string|string[]}
- */
-function getAnnotationPaths (author, href = undefined) {
-  var filename = (href ? slugifyUrl(href) : '*') + '.json'
-  if (author === 'me') {
-    return `/profile/annotations/${filename}`
-  } else if (author) {
-    return `/profile/friends/${author}/annotations/${filename}`
-  } else {
-    return [
-      `/profile/annotations/${filename}`,
-      `/profile/friends/*/annotations/${filename}`
+      `/profile/follows/*/comments/${foldername}/*.json`
     ]
   }
 }
@@ -660,18 +547,5 @@ function massageComment (comment) {
   comment.content.body = typeof comment.content.body === 'string' ? comment.content.body : undefined
   comment.content.createdAt = typeof comment.content.createdAt === 'string' ? new Date(comment.content.createdAt) : undefined
   comment.content.updatedAt = typeof comment.content.updatedAt === 'string' ? new Date(comment.content.updatedAt) : undefined
-  return true
-}
-
-const VALID_VOTES = [-1, 0, 1]
-/**
- * @param {Annotation} annotation
- * @returns {boolean}
- */
-function massageAnnotation (annotation) {
-  if (!annotation.content || typeof annotation.content !== 'object') return false
-  if (annotation.content.type !== 'unwalled.garden/annotation') return false
-  annotation.content.tags = Array.isArray(annotation.content.tags) ? annotation.content.tags.map(tag => tag.toString()) : []
-  annotation.content.vote = VALID_VOTES.includes(annotation.content.vote) ? annotation.content.vote : undefined
   return true
 }

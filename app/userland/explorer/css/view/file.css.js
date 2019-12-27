@@ -26,8 +26,5 @@ file-display {
   --media-padding: 14px 14px 18px;
 }
 
-social-signals {
-  margin: 4px 0px;
-}
 `
 export default cssStr

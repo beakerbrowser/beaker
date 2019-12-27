@@ -3,8 +3,6 @@ import { timeDifference } from 'beaker://app-stdlib/js/time.js'
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import css from '../../css/view/file.css.js'
 import '../com/file/file-display.js'
-import '../com/social-signals.js'
-import 'beaker://app-stdlib/js/com/comments/thread.js'
 
 export class FileView extends LitElement {
   static get properties () {

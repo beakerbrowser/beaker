@@ -2,7 +2,6 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 import { ucfirst } from 'beaker://app-stdlib/js/strings.js'
-import { library, friends } from 'beaker://app-stdlib/js/uwg.js'
 import 'beaker://app-stdlib/js/com/hover-menu.js'
 
 export class DriveInfo extends LitElement {
@@ -51,11 +50,7 @@ export class DriveInfo extends LitElement {
         </p>
         ${this.driveInfo.type === 'unwalled.garden/person' ? html`
           <div class="bottom-ctrls">
-            ${this.driveInfo.url !== this.userUrl ? html`
-              <button class="transparent" @click=${this.onToggleFriends}>
-                ${until(this.renderAddBtn(), '')}
-              </button>
-            ` : html`
+            ${this.driveInfo.url !== this.userUrl ? '' : html`
               <span class="label verified"><span class="fas fa-fw fa-check-circle"></span> My profile</span>
             `}
           </div>
@@ -67,18 +62,6 @@ export class DriveInfo extends LitElement {
         ` : ''}
       </section>
     `
-  }
-  
-  async renderAddBtn () {
-    var isInFriends = (await navigator.filesystem.query({
-      path: '/profile/friends/*',
-      mount: this.driveInfo.url
-    })).length > 0
-    if (isInFriends) {
-      return html`<span class="fa-fw fas fa-user-minus"></span> Remove from Friends`
-    } else {
-      return html`<span class="fa-fw fas fa-user-plus"></span> Add to Friends`
-    }
   }
 
   updated () {
@@ -110,23 +93,8 @@ export class DriveInfo extends LitElement {
   // events
   // =
 
-
   onThumbError () {
     this.hasThumb = false
-  }
-
-  async onToggleFriends () {
-    var isInFriends = (await navigator.filesystem.query({
-      path: '/profile/friends/*',
-      mount: this.driveInfo.url
-    })).length > 0
-    if (isInFriends) {
-      await friends.remove(this.driveInfo.url).catch(console.log)
-    } else {
-      await friends.add(this.driveInfo.url, this.driveInfo.title)
-    }
-    return
-    location.reload()
   }
 }
 

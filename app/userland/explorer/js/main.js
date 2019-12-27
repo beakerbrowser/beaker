@@ -2,7 +2,6 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { timeDifference } from 'beaker://app-stdlib/js/time.js'
-import { friends } from 'beaker://app-stdlib/js/uwg.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as shareMenu from './com/share-menu.js'
@@ -880,19 +879,6 @@ export class ExplorerApp extends LitElement {
       select: ['folder']
     })
     window.open(`beaker://compare/?base=${base}&target=${joinPath(navigator.filesystem.url, target[0])}`)
-  }
-
-  async onToggleFriends () {
-    var isInFriends = (await navigator.filesystem.query({
-      path: '/profile/friends/*',
-      mount: this.driveInfo.url
-    })).length > 0
-    if (isInFriends) {
-      await friends.remove(this.driveInfo.url)
-    } else {
-      await friends.add(this.driveInfo.url, this.driveInfo.title)
-    }
-    location.reload()
   }
 }
 

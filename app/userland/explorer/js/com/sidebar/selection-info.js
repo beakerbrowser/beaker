@@ -59,18 +59,6 @@ export class SelectionInfo extends LitElement {
           </section>
         ` : ''}
       </section>
-      ${''/* TODO <section>
-        <social-signals
-          user-url=${this.userUrl}
-          topic=${selRealUrl}
-          .authors=${[this.userUrl]}
-        ></social-signals>
-        <beaker-comments-thread
-          .comments=${[]}
-          topic-url="${selRealUrl}"
-          user-url="${this.userUrl}"
-        ></beaker-comments-thread>
-      </section>*/}
     `
   }
 
