@@ -344,12 +344,12 @@ async function loadArchiveInner (key, settingsOverride) {
 
   // wire up events
   archive.pullLatestArchiveMeta = opts => pullLatestArchiveMeta(archive, opts)
-  archive.fileActStream = archive.pda.watch('/')
-  archive.fileActStream.on('data',  _debounce(([event, {path}]) => {
-    if (event !== 'changed') return
-    archive.pullLatestArchiveMeta({updateMTime: true})
-    datAssets.update(archive)
-  }), 1e3)
+  // archive.fileActStream = archive.pda.watch('/')
+  // archive.fileActStream.on('data',  _debounce(([event, {path}]) => {
+  //   if (event !== 'changed') return
+  //   archive.pullLatestArchiveMeta({updateMTime: true})
+  //   datAssets.update(archive)
+  // }), 1e3)
 
   // now store in main archives listing, as loaded
   archives[keyStr] = archive
@@ -446,6 +446,7 @@ export async function getArchiveInfo (key) {
   var archive = await getOrLoadArchive(key)
 
   // fetch archive data
+  await archive.pullLatestArchiveMeta()
   var userSettings = null // TODO uwg datLibrary.getConfig(key)
   var [meta, manifest, archiveInfo] = await Promise.all([
     archivesDb.getMeta(key),

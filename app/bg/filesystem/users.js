@@ -258,6 +258,7 @@ export function isUser (url) {
  * @returns {Promise<User>}
  */
 async function fetchUserInfo (user) {
+  await user.archive.pullLatestArchiveMeta()
   var meta = await archivesDb.getMeta(user.archive.key)
   return {
     id: user.id,
