@@ -186,39 +186,39 @@
       ]
     },
     {
-      "name": "cmd",
+      "name": "commands",
       "help": "Webterm command management",
       "subcommands": [
         {
           "name": "ls",
           "help": "List all installed command-packages",
-          "usage": "cmd ls"
+          "usage": "commands ls"
         },
         {
           "name": "create",
           "help": "Create a new command-package",
-          "usage": "cmd create"
+          "usage": "commands create"
         },
         {
           "name": "install",
           "help": "Install a command-package",
-          "usage": "cmd install {url}"
+          "usage": "commands install {url}"
         },
         {
           "name": "uninstall",
           "help": "Uninstall a command-package",
-          "usage": "cmd install {name|url}"
+          "usage": "commands install {name|url}"
         }
       ]
     },
     {
-      "name": "soc",
+      "name": "social",
       "help": "Social networking commands",
       "subcommands": [
         {
           "name": "ls",
           "help": "List the latest posts in your feed",
-          "usage": "soc ls [-l] [-p {page=1}] [-n {num=10}]",
+          "usage": "social ls [-l] [-p {page=1}] [-n {num=10}]",
           "options": [
             {
               "name": "long",
@@ -244,7 +244,7 @@
         {
           "name": "post",
           "help": "Compose a new post",
-          "usage": "soc post [{body}] [-y] [-f {file}]",
+          "usage": "social post [{body}] [-y] [-f {file}]",
           "options": [
             {
               "name": "yes",
@@ -263,7 +263,7 @@
         {
           "name": "share",
           "help": "Share a file or URL on your feed",
-          "usage": "soc share {url} [{body}] [-y] [-f {file}]",
+          "usage": "social share {url} [{body}] [-y] [-f {file}]",
           "options": [
             {
               "name": "yes",
@@ -297,7 +297,7 @@
         {
           "name": "graph",
           "help": "List follows/followers",
-          "usage": "soc graph [{id}] [-m]",
+          "usage": "social graph [{id}] [-m]",
           "options": [
             {
               "name": "mutual",
@@ -309,17 +309,17 @@
         {
           "name": "follow",
           "help": "Follow a user",
-          "usage": "soc follow {id}"
+          "usage": "social follow {id}"
         },
         {
           "name": "unfollow",
           "help": "Unfollow a user",
-          "usage": "soc unfollow {id}"
+          "usage": "social unfollow {id}"
         },
         {
           "name": "home",
           "help": "Go to the home feed",
-          "usage": "soc home [-n]",
+          "usage": "social home [-n]",
           "options": [
             {
               "name": "new-tab",
@@ -333,7 +333,7 @@
         {
           "name": "me",
           "help": "Go to your profile page",
-          "usage": "soc me [-n]",
+          "usage": "social me [-n]",
           "options": [
             {
               "name": "new-tab",
@@ -347,7 +347,7 @@
         {
           "name": "view",
           "help": "View a profile, post, or comment",
-          "usage": "soc view {num|url} [-n]",
+          "usage": "social view {num|url} [-n]",
           "options": [
             {
               "name": "new-tab",
