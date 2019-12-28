@@ -12,80 +12,18 @@ ${tooltipCSS}
   display: block;
 }
 
-.header {
-  height: 47px;
-}
-
-.relative {
-  position: relative;
-}
-
-.ctrl-bar {
-  position: fixed;
-  top: 0;
-  height: 100vh;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  background: #f1f1f6;
-  width: 55px;
-  padding-top: 10px;
-}
-
-.ctrl-bar.left {
-  left: 0;
-  border-top-right-radius: 12px;
-}
-
-.ctrl-bar.right {
-  right: 0;
-  border-top-left-radius: 12px;
-}
-
-.ctrl-bar .ctrl {
-  display: block;
-  margin-bottom: 12px;
-  border-radius: 0;
-  padding: 5px 10px;
-  text-align: center;
-}
-
-.ctrl-bar .ctrl:hover {
-  background: transparent;
-}
-
-.ctrl-bar .ctrl span {
-  transition: transform 0.25s, color 0.25s, box-shadow 0.25s;
-  transform: scale(1.0);
-}
-
-.ctrl-bar .ctrl:hover span {
-  transform: scale(1.2);
-  color: #223;
-}
-
-.ctrl-bar .icon {
-  font-size: 17px;
-  color: #445;
-}
-
-.ctrl-bar .plusmod {
-  position: absolute;
-  font-size: 6px;
-  top: -6px;
-  right: -6px;
-}
-
-.pins {
+.files {
   display: grid;
-  padding: 5px 95px 5px 15px;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  padding: 10vh 15px 5px 15px;
+  margin: 0 auto;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   grid-gap: 15px;
   width: 100%;
+  max-width: 800px;
   user-select: none;
 }
 
-.pin {
+.file {
   cursor: pointer;
   position: relative;
   border-radius: 3px;
@@ -94,49 +32,108 @@ ${tooltipCSS}
   background: #fff;
   overflow: hidden;
   user-select: none;
-  transition: background 0.3s;
   min-height: 100px;
 }
 
-.pin:hover {
-  background: #f2f2f8;
+.file:hover {
   text-decoration: none;
 }
 
-.pin .favicon {
+.file .favicon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: absolute;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1;
+  border-radius: 50%;
+  background: #f2f2f8;
+  width: 36px;
+  height: 36px;
+}
+
+.file:hover .favicon-wrapper {
+  background: #e6e6ea;
+}
+
+.file .favicon {
   border-radius: 4px;
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
 }
 
-.pin .details {
-  padding: 60px 12px 20px;
+.file .details {
+  padding: 60px 2px 20px;
 }
 
-.pin .details > * {
+.file .details > * {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.pin .title {
+.file .title {
   font-size: 12px;
   line-height: 20px;
   text-align: center;
 }
 
-.pin.add span {
+.file.add span {
   position: absolute;
   left: 50%;
   top: 45%;
   transform: translate(-50%, -50%);
-  font-size: 28px;
+  font-size: 22px;
   color: rgba(0, 0, 150, 0.15);
+}
+
+.file.add:hover span {
+  color: rgba(0, 0, 150, 0.25);
+}
+
+.dock-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  background: #f1f1f6;
+}
+
+.dock {
+  padding: 30px 15px;
+}
+
+.dock-separator {
+  width: auto;
+  padding: 3px 7px;
+  margin-right: 25px;
+  color: #bbb;
+}
+
+.dock-item {
+  display: inline-block;
+  width: auto;
+  cursor: pointer;
+  margin-bottom: 0;
+  padding: 3px 7px;
+  font-weight: 400;
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: .15px;
+  color: rgba(0,0,0,.75);
+}
+
+.dock-item:not(:last-child) {
+  margin-right: 25px;
+}
+
+.dock-item:hover {
+  color: @color-text;
+  background: rgba(0,0,0,.075);
+  border-radius: 2px;
 }
 `
 export default cssStr

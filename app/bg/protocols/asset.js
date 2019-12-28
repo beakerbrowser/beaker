@@ -11,7 +11,9 @@
  **/
 
 import { screen } from 'electron'
+import parseDatUrl from 'parse-dat-url'
 import * as sitedata from '../dbs/sitedata'
+import * as filesystem from '../filesystem/index'
 import fs from 'fs'
 import path from 'path'
 
@@ -27,11 +29,11 @@ export function setup () {
   }
 
   // load defaults
-  fs.readFile(path.join(__dirname, './assets/img/default-favicon.png'), (err, buf) => {
+  fs.readFile(path.join(__dirname, './assets/img/favicons/default.png'), (err, buf) => {
     if (err) { console.error('Failed to load default favicon', path.join(__dirname, './assets/img/default-favicon.png'), err) }
     if (buf) { DEFAULTS.favicon.data = buf }
   })
-  fs.readFile(path.join(__dirname, './assets/img/default-thumb.jpg'), (err, buf) => {
+  fs.readFile(path.join(__dirname, './assets/img/default-user-thumb.jpg'), (err, buf) => {
     if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-thumb.jpg'), err) }
     if (buf) { DEFAULTS.thumb.data = buf }
   })
@@ -60,10 +62,7 @@ export function setup () {
     // hardcoded assets
     if (url.startsWith('beaker://')) {
       let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
-      return fs.readFile(path.join(__dirname, `./assets/img/favicons/${name}.png`), (err, buf) => {
-        if (buf) cb({mimeType: 'image/png', data: buf})
-        else cb(DEFAULTS[asset])
-      })
+      return servePng(path.join(__dirname, `./assets/img/favicons/${name}.png`), DEFAULTS[asset], cb)
     }
 
     try {
@@ -92,6 +91,17 @@ export function setup () {
       console.log(e)
     }
 
+    // try standard icons
+    if (url.startsWith('dat://')) {
+      let urlp = parseDatUrl(url)
+      if (filesystem.isRootUrl(`dat://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
+        return servePng(path.join(__dirname, `./assets/img/favicons/drive.png`), DEFAULTS[asset], cb)
+      }
+      if (!urlp.pathname || urlp.pathname.endsWith('/')) {
+        return servePng(path.join(__dirname, `./assets/img/favicons/folder.png`), DEFAULTS[asset], cb)
+      }
+    }
+
     cb(DEFAULTS[asset])
   }
 }
@@ -110,4 +120,11 @@ function parseAssetUrl (str) {
     size: (+match[2]) || 16,
     url: match[3]
   }
+}
+
+function servePng (p, fallback, cb) {
+  return fs.readFile(p, (err, buf) => {
+    if (buf) cb({mimeType: 'image/png', data: buf})
+    else cb(fallback)
+  })
 }

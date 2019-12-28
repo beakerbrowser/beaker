@@ -161,12 +161,13 @@ export async function ensureUnmountByUrl (pathSelector, url, drive = navigator.f
  * @param {string} containingPath
  * @param {string} title
  * @param {Object} fs
+ * @param {string} ext
  * @returns {Promise<string>}
  */
-export async function getAvailableName (containingPath, title, fs = navigator.filesystem) {
+export async function getAvailableName (containingPath, title, fs = navigator.filesystem, ext = '') {
   var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
   for (let i = 1; i < 1e9; i++) {
-    let name = (i === 1) ? basename : `${basename}-${i}`
+    let name = ((i === 1) ? basename : `${basename}-${i}`) + (ext ? `.${ext}` : '')
     let st = await fs.stat(joinPath(containingPath, name), fs).catch(e => null)
     if (!st) return name
   }

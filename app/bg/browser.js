@@ -564,20 +564,17 @@ function createEventsStream () {
   return emitStream(browserEvents)
 }
 
-function showOpenDialog (opts = {}) {
+async function showOpenDialog (opts = {}) {
   var wc = this.sender
-  return new Promise((resolve) => {
-    dialog.showOpenDialog({
-      title: opts.title,
-      buttonLabel: opts.buttonLabel,
-      filters: opts.filters,
-      properties: opts.properties,
-      defaultPath: opts.defaultPath
-    }, filenames => {
-      wc.focus() // return focus back to the the page
-      resolve(filenames)
-    })
+  var res = await dialog.showOpenDialog({
+    title: opts.title,
+    buttonLabel: opts.buttonLabel,
+    filters: opts.filters,
+    properties: opts.properties,
+    defaultPath: opts.defaultPath
   })
+  wc.focus() // return focus back to the the page
+  return res.filePaths
 }
 
 function showContextMenu (menuDefinition) {

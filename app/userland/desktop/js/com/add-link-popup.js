@@ -7,13 +7,13 @@ import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { toNiceUrl, joinPath } from 'beaker://app-stdlib/js/strings.js'
-import { toSemanticItemGroups, getSubicon } from 'beaker://explorer/js/lib/files.js'
+import { toSimpleItemGroups, getSubicon } from 'beaker://explorer/js/lib/files.js'
 import 'beaker://explorer/js/com/folder/inline-file-grid.js'
 
 // exported api
 // =
 
-export class AddPinPopup extends BasePopup {
+export class AddLinkPopup extends BasePopup {
   static get styles () {
     return [buttonsCSS, popupsCSS, css`
     .popup-inner {
@@ -162,7 +162,7 @@ export class AddPinPopup extends BasePopup {
 
   constructor () {
     super()
-    this.explorerPath = '/library'
+    this.explorerPath = '/'
     this.explorerItems = []
     this.query = ''
     this.history = []
@@ -175,11 +175,11 @@ export class AddPinPopup extends BasePopup {
   //
 
   static async create () {
-    return BasePopup.create(AddPinPopup)
+    return BasePopup.create(AddLinkPopup)
   }
 
   static destroy () {
-    return BasePopup.destroy('add-pin-popup')
+    return BasePopup.destroy('add-link-popup')
   }
 
   async initialLoad () {
@@ -222,14 +222,14 @@ export class AddPinPopup extends BasePopup {
   }
 
   get explorerItemGroups () {
-    return toSemanticItemGroups(this.explorerItems)
+    return toSimpleItemGroups(this.explorerItems)
   }
 
   // rendering
   // =
 
   renderTitle () {
-    return 'Pin to start page'
+    return 'Create shortcut'
   }
 
   renderBody () {
@@ -261,7 +261,7 @@ export class AddPinPopup extends BasePopup {
         `}
       </main>
       <footer>
-        <button class="primary big" ?disabled=${this.selection.length === 0} @click=${this.onClickSubmit}>Pin Selected Item</button>
+        <button class="primary big" ?disabled=${this.selection.length === 0} @click=${this.onClickSubmit}>Add Selected Item</button>
       </footer>
     `
   }
@@ -352,7 +352,7 @@ export class AddPinPopup extends BasePopup {
     this.dispatchEvent(new CustomEvent('resolve', {detail}))
   }
 }
-customElements.define('add-pin-popup', AddPinPopup)
+customElements.define('add-link-popup', AddLinkPopup)
 
 // helpers
 // =
@@ -387,7 +387,7 @@ async function getRealUrl (item) {
     }
     discardedParts.unshift(pathParts.pop())
   }
-  return item.url
+  return item.url + (item.stat.isDirectory() ? '/' : '')
 }
 
 function delay (cb, param) {

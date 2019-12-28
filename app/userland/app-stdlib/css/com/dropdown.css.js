@@ -94,6 +94,7 @@ const cssStr = css`
 
 .dropdown-items.center {
   left: 50%;
+  right: unset;
   transform: translateX(-50%);
 }
 

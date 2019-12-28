@@ -233,7 +233,8 @@ class ShellWindowNavbar extends LitElement {
   }
 
   onClickShortcut (e) {
-    bg.views.showNavbarShortcutContextMenu('active')
+    // bg.views.showNavbarShortcutContextMenu('active')
+    bg.views.loadURL('active', 'beaker://desktop/')
   }
 
   onClickUpdog (e) {
