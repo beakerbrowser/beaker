@@ -1,10 +1,14 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
+import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
+import spinnerCSS from './spinner.css'
 import _groupBy from 'lodash.groupby'
+
+const TEMPLATES_DIR = '/system/templates'
 
 class CreateArchiveModal extends LitElement {
   static get properties () {
@@ -12,12 +16,13 @@ class CreateArchiveModal extends LitElement {
       title: {type: String},
       description: {type: String},
       type: {type: String},
+      template: {type: String},
       errors: {type: Object}
     }
   }
 
   static get styles () {
-    return [commonCSS, inputsCSS, buttonsCSS, css`
+    return [commonCSS, inputsCSS, buttonsCSS, spinnerCSS, css`
     .wrapper {
       padding: 0;
     }
@@ -58,6 +63,49 @@ class CreateArchiveModal extends LitElement {
       margin: 20px 0;
     }
 
+    .templates {
+      background: #eef;
+      border: 1px solid #ccd;
+      padding: 10px;
+      overflow-y: auto;
+      max-height: 180px;
+      margin: 4px 0 0;
+    }
+
+    .templates-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-gap: 10px;
+    }
+
+    .template img,
+    .template .img-for-none {
+      max-width: 100%;
+      height: 80px;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    .template .img-for-none {
+      background: #fff;
+    }
+
+    .template .title {
+      text-align: center;
+    }
+
+    .template.selected .title span {
+      background: #334;
+      color: #fff;
+      border-radius: 4px;
+      padding: 0 6px;
+    }
+
+    .template.selected img,
+    .template.selected .img-for-none {
+      outline: 1px solid #334;
+    }
+
     .form-actions {
       display: flex;
       justify-content: space-between;
@@ -78,6 +126,8 @@ class CreateArchiveModal extends LitElement {
     this.type = undefined
     this.links = undefined
     this.author = undefined
+    this.tempate = undefined
+    this.templates = []
     this.errors = {}
 
     // export interface
@@ -92,7 +142,23 @@ class CreateArchiveModal extends LitElement {
     this.type = params.type || undefined
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
+    this.templates = await this.readTemplates()
     await this.requestUpdate()
+  }
+
+  async readTemplates () {
+    var fsurl = bg.navigatorFs.get().url
+    var files = (await bg.datArchive.readdir(fsurl, TEMPLATES_DIR, {stat: true}).catch(e => []))
+    var infos = await Promise.all(files.map(file => {
+      if (file.stat.mount && file.stat.mount.key) {
+        return bg.datArchive.getInfo(file.stat.mount.key).catch(e => false)
+      }
+      return false
+    }))
+    return infos.filter(Boolean)
+  }
+
+  updated () {
     this.adjustHeight()
   }
 
@@ -112,16 +178,8 @@ class CreateArchiveModal extends LitElement {
         <h1 class="title">
           Create new 
           <select name="type" @change=${this.onChangeType}>
-            <optgroup label="Files">
-              ${typeopt('undefined', 'Files drive')}
-            </optgroup>
-            <optgroup label="Media">
-              ${typeopt('website', 'Website')}
-            </optgroup>
-            <optgroup label="Advanced">
-              ${typeopt('application', 'Application')}
-              ${typeopt('webterm.sh/cmd-pkg', 'Webterm Command')}
-            </optgroup>
+            ${typeopt('undefined', 'Files drive')}
+            ${typeopt('website', 'Website')}
           </select>
         </h1>
 
@@ -134,6 +192,22 @@ class CreateArchiveModal extends LitElement {
             <summary><label for="desc">Description</label></summary>
             <textarea name="desc" tabindex="3" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
           </details>
+
+          ${this.type === 'website' ? html`
+            <label for="desc">Template</label>
+            <div class="templates">
+              <div class="templates-grid">
+                <div 
+                  class="template ${this.template === undefined ? 'selected' : ''}"
+                  @click=${e => this.onClickTemplate(e, undefined)}
+                >
+                  <div class="img-for-none"></div>
+                  <div class="title"><span>None</span></div>
+                </div>
+                ${repeat(this.templates, t => this.renderTemplate(t))}
+              </div>
+            </div>
+          ` : ''}
           
           <hr>
 
@@ -142,6 +216,18 @@ class CreateArchiveModal extends LitElement {
             <button type="submit" class="primary" tabindex="4">Create</button>
           </div>
         </form>
+      </div>
+    `
+  }
+
+  renderTemplate (template) {
+    return html`
+      <div 
+        class="template ${this.template === template.url ? 'selected' : ''}"
+        @click=${e => this.onClickTemplate(e, template.url)}
+      >
+        <img src="${template.url}/thumb">
+        <div class="title"><span>${template.title}</span></div>
       </div>
     `
   }
@@ -161,6 +247,10 @@ class CreateArchiveModal extends LitElement {
     this.type = e.target.value.trim()
   }
 
+  onClickTemplate (e, templateUrl) {
+    this.template = templateUrl
+  }
+
   onClickCancel (e) {
     e.preventDefault()
     this.cbs.reject(new Error('Canceled'))
@@ -174,6 +264,8 @@ class CreateArchiveModal extends LitElement {
       return
     }
 
+    this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div>`
+
     try {
       var url = await bg.datArchive.createArchive({
         title: this.title,
@@ -183,6 +275,13 @@ class CreateArchiveModal extends LitElement {
         links: this.links,
         prompt: false
       })
+      if (this.template) {
+        await bg.datArchive.exportToArchive({
+          src: this.template,
+          dst: url,
+          ignore: ['/dat.json']
+        })
+      }
       this.cbs.resolve({url})
     } catch (e) {
       this.cbs.reject(e.message || e.toString())

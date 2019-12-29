@@ -73,6 +73,7 @@ export async function setup () {
     await ensureDir(PATHS.LIBRARY_NS('projects'))
     await ensureDir(PATHS.SYSTEM)
     await ensureDir(PATHS.SYSTEM_NS('drives'))
+    await ensureDir(PATHS.SYSTEM_NS('templates'))
     await ensureDir(PATHS.SYSTEM_NS('webterm'))
     await ensureDir(PATHS.SYSTEM_NS('webterm/cmds'))
 

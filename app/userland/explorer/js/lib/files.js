@@ -10,6 +10,7 @@ const ICONS = {
     '/library/projects': 'fas fa-coffee',
     '/system': 'fas fa-cog',
     '/system/drives': 'fas fa-hdd',
+    '/system/templates': 'fas fa-drafting-compass',
     '/system/webterm': 'fas fa-terminal'
   },
   person: {
