@@ -134,6 +134,13 @@ export async function rm (opts, dst) {
   }
 }
 
+export async function mount (opts, mountUrl, dst) {
+  if (!mountUrl) throw new Error('mount-url is required')
+  if (!dst) throw new Error('dst is required')
+  var {archive, pathname} = resolveParse(this.env, dst)
+  await archive.mount(pathname, mountUrl)
+}
+
 export async function query (opts = {}, ...paths) {
   var queriesMap = {}
   for (let path of paths) {

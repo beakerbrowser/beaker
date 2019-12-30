@@ -38,6 +38,11 @@
       "usage": "rm {path}"
     },
     {
+      "name": "mount",
+      "help": "Mount a hyperdrive as a subfolder",
+      "usage": "mount {mount-url} {dst}"
+    },
+    {
       "name": "query",
       "help": "Run a query across the filesystem",
       "usage": "query [{path...}] [-t file|folder|mount] [-m {url}] [-s name|ctime|mtime] [-r] [--limit n] [--offset n]",
