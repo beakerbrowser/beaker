@@ -470,7 +470,11 @@ class WebTerm extends LitElement {
       })
 
       // get live help on the current command
-      this.liveHelp = this.help({}, ...cmd.path)
+      if (cmd.path) {
+        this.liveHelp = this.help({}, ...cmd.path)
+      } else {
+        this.liveHelp = this.help({})
+      }
     } else if (input) {
       // display command options
       if (cmd && cmd.subcommands && input.includes(' ')) {
