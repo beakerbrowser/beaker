@@ -46,7 +46,7 @@ export class InlineFileList extends BaseFilesView {
           <file-display
             horz
             drive-url=${item.drive.url}
-            pathname=${item.path}
+            pathname=${item.realPath}
             .info=${item}
           ></file-display>
         </div>
