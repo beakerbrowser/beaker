@@ -31,7 +31,6 @@ class WebTerm extends LitElement {
     this.commandModules = {}
     this.cwd = undefined
     this.outputHist = []
-    this.fs = undefined
     this.tabCompletion = undefined
     this.liveHelp = undefined
     this.envVars = {}
@@ -91,10 +90,14 @@ class WebTerm extends LitElement {
   }
 
   async load (url) {
-    this.url = url
-    if (!this.fs) {
-      this.fs = navigator.filesystem
+    if (url.startsWith('beaker://')) {
+      if (url.startsWith('beaker://desktop/')) {
+        url = navigator.filesystem.url + '/desktop'
+      } else {
+        url = navigator.filesystem.url
+      }
     }
+    this.url = url
 
     this.envVars.home = navigator.filesystem.url
     this.envVars.profile = 'dat://' + (await navigator.filesystem.stat('/profile')).mount.key
@@ -129,7 +132,7 @@ class WebTerm extends LitElement {
     // load theme
     try {
       let themeSheet = new CSSStyleSheet()
-      let themeCSS = await this.fs.readFile(THEME_PATH)
+      let themeCSS = await navigator.filesystem.readFile(THEME_PATH)
       themeSheet.replace(themeCSS)
       this.shadowRoot.adoptedStyleSheets = Array.from(this.shadowRoot.adoptedStyleSheets).concat(themeSheet)
     } catch (e) {
@@ -434,7 +437,7 @@ class WebTerm extends LitElement {
 
   isFSRoot (url) {
     let a = (url || '').match(DAT_KEY_REGEX)
-    let b = this.fs.url.match(DAT_KEY_REGEX)
+    let b = navigator.filesystem.url.match(DAT_KEY_REGEX)
     return a && a[0] === b[0]
   }
 
@@ -541,7 +544,7 @@ class WebTerm extends LitElement {
 
     // home
     if (location.startsWith('~')) {
-      location = joinPath(this.fs.url, location.slice(1))
+      location = joinPath(navigator.filesystem.url, location.slice(1))
     }
 
     // relative paths
