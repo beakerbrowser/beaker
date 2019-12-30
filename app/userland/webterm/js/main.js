@@ -325,8 +325,13 @@ class WebTerm extends LitElement {
     var commandName = args[0]
     var command = this.commands[commandName]
     if (command && command.subcommands) {
-      command = command.subcommands[args[1]]
-      paramsIndex = 2
+      if (command.subcommands[args[1]]) {
+        command = command.subcommands[args[1]]
+        paramsIndex = 2
+      } else {
+        command = this.commands.help
+        paramsIndex = 0
+      }
     }
     if (!command) {
       this.outputError('', `Command not found: ${commandName}`, this.cwd, commandName)
@@ -573,6 +578,8 @@ class WebTerm extends LitElement {
     var sourceSet
     var commandNameLen = 0
     var includeDetails = false
+    var heading = undefined
+    var parentCmdName = ''
 
     var cmd = undefined
     if (topic[0]) {
@@ -582,6 +589,8 @@ class WebTerm extends LitElement {
 
     if (cmd) {
       if (cmd.subcommands) {
+        parentCmdName = cmd.name + ' '
+        heading = cmd.help ? html`${cmd.help || ''}<br><br>` : undefined
         sourceSet = cmd.subcommands
       } else {
         sourceSet = {[topic.join(' ')]: cmd}
@@ -592,17 +601,19 @@ class WebTerm extends LitElement {
     }
 
     for (let command of Object.values(sourceSet)) {
-      commandNameLen = Math.max(command.name.length, commandNameLen)
+      commandNameLen = Math.max(command.name.length + parentCmdName.length, commandNameLen)
       commands.push(command)
     }
 
     return {
       commands,
       toHTML () {
-        return commands
-          .map(command => {
+        return html`
+          ${heading}
+          ${commands.map(command => {
+            var name = parentCmdName + command.name
             var summary = html`
-              <strong style="white-space: pre">${command.name.padEnd(commandNameLen + 2)}</strong>
+              <strong style="white-space: pre">${name.padEnd(commandNameLen + 2)}</strong>
               ${command.help || ''}
               <small class="color-gray">package: ${command.package}</small>
               <br>
@@ -611,7 +622,8 @@ class WebTerm extends LitElement {
             var cliclopts = new Cliclopts(command.options)
 
             return html`${summary}<br>Usage: ${command.usage || ''}<br><pre>${cliclopts.usage()}</pre>`
-          })
+          })}
+        `
       }
     }
   }
