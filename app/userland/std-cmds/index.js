@@ -198,7 +198,7 @@ export async function mkgoto (opts, location, href) {
   })
 }
 
-export async function b (opts = {}, href = '.') {
+export async function bookmark (opts = {}, href = '.') {
   href = this.env.resolve(href || '.')
   var name = opts.filename || href.split('/').filter(Boolean).pop()
   if (!name.endsWith('.goto')) name += '.goto'

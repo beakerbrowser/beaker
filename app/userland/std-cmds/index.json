@@ -14,7 +14,7 @@
     },
     {
       "name": "pwd",
-      "help": "Fetch the current directory",
+      "help": "Print the current directory",
       "usage": "pwd"
     },
     {
@@ -102,9 +102,9 @@
       ]
     },
     {
-      "name": "b",
+      "name": "bookmark",
       "help": "Bookmark the current working directory or current page",
-      "usage": "b [-f {name}] [{href}]",
+      "usage": "bookmark [-f {name}] [{href}]",
       "options": [
         {
           "name": "filename",
