@@ -334,7 +334,7 @@ class WebTerm extends LitElement {
       }
     }
     if (!command) {
-      this.outputError('', `Command not found: ${commandName}`, this.cwd, commandName)
+      this.outputError('', `Command not found: ${commandName}`, this.cwd, inputValue)
       this.readTabCompletionOptions()
       return false
     }
