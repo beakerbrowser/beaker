@@ -123,8 +123,8 @@ export class Post extends LitElement {
           </span>
         </div>
         <div>
-          [<a class="topic" title=${toNiceTopic(this.post.topic)} href="/?topic=${encodeURIComponent(this.post.topic)}">${toNiceTopic(this.post.topic)}</a>]
-          by <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
+          <a class="topic" title=${toNiceTopic(this.post.topic)} href="/?topic=${encodeURIComponent(this.post.topic)}">${toNiceTopic(this.post.topic)}</a>
+          | by <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
           | posted <a href=${viewPostUrl}>${timeDifference(ctime, true, 'ago')}</a>
           | <a class="comments" href=${viewPostUrl}>
             ${this.post.numComments} ${pluralize(this.post.numComments, 'comment')}

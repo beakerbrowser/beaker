@@ -50,7 +50,7 @@ ${tooltipCSS}
 header {
   display: flex;
   align-items: center;
-  margin: 6px 6px 16px;
+  margin: 10px 6px 10px;
 }
 
 header a {
@@ -69,14 +69,6 @@ header a:last-child {
 
 header a:hover {
   color: var(--blue);
-}
-
-header .topic {
-  display: block;
-  color: #778;
-  font-weight: 500;
-  font-size: 14px;
-  padding: 2px 0;
 }
 
 header .spacer {

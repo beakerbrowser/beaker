@@ -1,5 +1,4 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
-import * as uwg from '../lib/uwg.js'
 import '../com/posts/feed.js'
 import '../com/post-buttons.js'
 import '../com/topics.js'

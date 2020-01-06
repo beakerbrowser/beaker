@@ -1,8 +1,10 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
-import buttons2css from '../../buttons.css.js'
+import buttonsCSS from '../../buttons.css.js'
+import votectrlCSS from '../votectrl.css.js'
 
 const cssStr = css`
-${buttons2css}
+${buttonsCSS}
+${votectrlCSS}
 
 :host {
   --body-font-size: 15px;
@@ -14,8 +16,8 @@ ${buttons2css}
   --footer-color: #888;
   --footer-background: #fff;
   --replies-left-margin: 12px;
-  --comment-top-margin: 20px;
-  --comment-left-margin: 12px;
+  --comment-top-margin: 16px;
+  --comment-left-margin: 2px;
   --composer-padding: 14px 18px;
   --composer-margin: 0;
   --composer-border: 1px solid #ccd;
@@ -47,21 +49,12 @@ beaker-comment-composer {
 }
 
 .comment {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  align-items: baseline;
   margin-top: var(--comment-top-margin);
   margin-left: var(--comment-left-margin);
   border-left: 2px solid #f5f5f5;
-}
-
-.avatar.icon {
-  display: inline-block;
-  border-radius: 50%;
-  object-fit: cover;
-  width: 18px;
-  height: 18px;
-  vertical-align: middle;
-  position: relative;
-  top: -1px;
-  margin-right: 3px;
 }
 
 .header {

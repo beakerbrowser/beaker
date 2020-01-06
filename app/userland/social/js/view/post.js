@@ -46,8 +46,12 @@ export class PostView extends LitElement {
     ])
     this.post = post
     console.log(this.post)
+
     await this.requestUpdate()
     Array.from(this.querySelectorAll('[loadable]'), el => el.load())
+
+    await loadCommentAnnotations(post.comments)
+    this.querySelector('beaker-comments-thread').requestUpdate()
   }
 
   render () {
@@ -56,6 +60,24 @@ export class PostView extends LitElement {
       <style>
         beaker-post {
           margin-bottom: 16px;
+        }
+        .votes {
+          margin: -14px 0 10px 40px;
+          color: #667;
+          font-size: 12px;
+          background: #f8f8fc;
+          padding: 6px 10px;
+          border-radius: 4px;
+        }
+        .votes strong {
+          font-weight: 500;
+        }
+        .votes a {
+          color: inherit;
+          text-decoration: none;
+        }
+        .votes a:hover {
+          text-decoration: underline;
         }
         beaker-comments-thread {
           margin-left: 40px;
@@ -69,22 +91,18 @@ export class PostView extends LitElement {
             .post=${this.post}
             user-url="${this.user ? this.user.url : undefined}"
           ></beaker-post>
-          ${this.post.votes.upvotes.length || this.post.votes.upvotes.length ? html`
+          ${this.post.votes.upvotes.length || this.post.votes.downvotes.length ? html`
             <div class="votes">
               ${this.post.votes.upvotes.length ? html`
                 <div>
                   <strong>Upvoted by:</strong>
-                  ${this.post.votes.upvotes.map(profile => html`
-                    <a href=${profile.url} title=${profile.title}>${profile.title}</a>
-                  `)}
+                  ${this.renderVoters(this.post.votes.upvotes)}
                 </div>
               ` : ''}
               ${this.post.votes.downvotes.length ? html`
                 <div>
                   <strong>Downvoted by:</strong>
-                  ${this.post.votes.downvotes.map(profile => html`
-                    <a href=${profile.url} title=${profile.title}>${profile.title}</a>
-                  `)}
+                  ${this.renderVoters(this.post.votes.downvotes)}
                 </div>
               ` : ''}
             </div>
@@ -104,6 +122,18 @@ export class PostView extends LitElement {
         </aside>
       </div>
     `
+  }
+
+  renderVoters (voters) {
+    var els = []
+    for (let i = 0; i < voters.length; i++) {
+      let profile = voters[i]
+      let comma = (i !== voters.length - 1) ? ', ' : ''
+      els.push(html`
+        <a href=${'beaker://social/' + profile.url.slice('dat://'.length)} title=${profile.title}>${profile.title}</a>${comma}
+      `)
+    }
+    return els
   }
 
   // events
@@ -169,10 +199,9 @@ export class PostView extends LitElement {
 
 customElements.define('beaker-post-view', PostView)
 
-async function loadCommentReactions (comments) {
+async function loadCommentAnnotations (comments) {
   await Promise.all(comments.map(async (comment) => {
-    // comment.reactions = await uwg.reactions.tabulate(comment.url, {author})
-    // comment.reactions.sort((a, b) => b.authors.length - a.authors.length)
-    // if (comment.replies) await loadCommentReactions(author, comment.replies)
+    comment.votes = await uwg.votes.tabulate(comment.url)
+    if (comment.replies) await loadCommentAnnotations(comment.replies)
   }))
 }

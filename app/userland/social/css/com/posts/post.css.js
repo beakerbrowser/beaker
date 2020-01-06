@@ -1,10 +1,12 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
 import buttonsCSS from '../../buttons.css.js'
 import tooltipCSS from '../tooltip.css.js'
+import votectrlCSS from '../votectrl.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
 ${tooltipCSS}
+${votectrlCSS}
 
 :host {
   display: grid;
@@ -30,48 +32,10 @@ a:hover {
   text-decoration: underline;
 }
 
-.votectrl {
-  position: relative;
-  top: 0;
-}
-
-.votectrl > * {
-  display: block;
-  line-height: 0.8;
-  color: #bbc;
-}
-
-.votectrl .karma,
-.votectrl .fas {
-  width: 30px;
-  text-align: center;
-}
-
-.votectrl .karma {
-  color: #889;
-  font-weight: 600;
-}
-
-.votectrl .fas {
-  font-size: 16px;
-}
-
-.votectrl .upvoted,
-.votectrl .upvote:hover,
-.votectrl .upvote.selected {
-  color: var(--red);
-}
-
-.votectrl .downvoted,
-.votectrl .downvote:hover,
-.votectrl .downvote.selected {
-  color: var(--red);
-}
-
-:host(expanded) .votectrl .fas {
+:host([expanded]) .votectrl .fas {
   font-size: 20px;
 }
-:host(expanded) .votectrl .karma {
+:host([expanded]) .votectrl .karma {
   font-size: 18px;
 }
 
@@ -81,7 +45,7 @@ a:hover {
   color: var(--blue);
 }
 
-:host(expanded) .title {
+:host([expanded]) .title {
   font-size: 22px;
 }
 

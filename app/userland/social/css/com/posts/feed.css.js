@@ -8,14 +8,13 @@ ${spinnerCSS}
 
 :host {
   display: block;
+  padding-right: 10px;
 }
 
-beaker-status-composer {
-  margin: 20px 0 30px;
-}
-
-beaker-status {
-  margin-bottom: 10px;
+beaker-post {
+  border-top: 1px solid #dde;
+  padding: 10px;
+  margin: 0;
 }
 `
 export default cssStr

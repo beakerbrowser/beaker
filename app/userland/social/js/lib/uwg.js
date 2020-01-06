@@ -347,15 +347,19 @@ export const comments = {
    * @param {string} [query.href]
    * @param {string} [query.sort]
    * @param {boolean} [query.reverse]
+   * @param {number} [query.offset]
+   * @param {number} [query.limit]
    * @returns {Promise<Comment[]>}
    */
-  async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
+  async list ({author, href, sort, reverse, offset, limit} = {author: undefined, href: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
     href = href ? normalizeUrl(href) : undefined
     var comments = await queryRead({
       path: getCommentsPaths(author),
       metadata: href ? {href} : undefined,
       sort,
-      reverse
+      reverse,
+      offset,
+      limit
     })
     comments = comments.filter(c => isNonemptyString(c.content))
     await profiles.readAllProfiles(comments)

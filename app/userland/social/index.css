@@ -17,7 +17,7 @@ body {
   color: #333;
   font-family: var(--system-font);
   font-size: 14px;
-  padding: 0 10px;
+  padding: 0 10px 50px;
 }
 
 *,

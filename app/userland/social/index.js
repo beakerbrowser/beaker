@@ -5,6 +5,7 @@ import * as tutil from './js/lib/test-utils.js'
 import { toNiceTopic, pluralize } from './js/lib/strings.js'
 import mainCSS from './css/main.css.js'
 import './js/view/posts.js'
+import './js/view/comments.js'
 import './js/view/compose.js'
 import './js/view/post.js'
 import './js/view/profile.js'
@@ -12,12 +13,13 @@ import './js/view/profile.js'
 const ROUTES = {
   'home': /^\/(index.html)?$/i,
   'compose': /^\/compose$/i,
+  'comments': /^\/comments$/i,
   'notifications': /^\/notifications$/i,
-  'profile': /^\/(?<id>[^\/]+)$/i,
-  'posts': /^\/(?<id>[^\/]+)\/posts$/i,
-  'comments': /^\/(?<id>[^\/]+)\/comments$/i,
-  'followers': /^\/(?<id>[^\/]+)\/followers$/i,
-  'following': /^\/(?<id>[^\/]+)\/following$/i,
+  'userProfile': /^\/(?<id>[^\/]+)$/i,
+  'userPosts': /^\/(?<id>[^\/]+)\/posts$/i,
+  'userComments': /^\/(?<id>[^\/]+)\/comments$/i,
+  'userFollowers': /^\/(?<id>[^\/]+)\/followers$/i,
+  'userFollowing': /^\/(?<id>[^\/]+)\/following$/i,
   'post': /^\/(?<id>[^\/]+)\/posts\/(?<topic>[^\/]+)\/(?<filename>[^\/]+)$/i,
   'comment': /^\/(?<id>[^\/]+)\/comments\/(?<filename>[^\/]+)$/i
 }
@@ -75,8 +77,9 @@ export class App extends LitElement {
       <header>
         <a class=${classMap({active: this.route === 'home'})} href="/">
           <strong><span class="fas fa-fw fa-flask"></span> Beaker.Network</a></strong>
-          ${this.renderTopic()}
         </a>
+        <a href="/" title="Posts">Posts</a>
+        <a href="/comments" title="Comments">Comments</a>
         <span class="spacer"></span>
         <a
           class=${classMap({active: this.route === 'notifications' })}
@@ -107,17 +110,6 @@ export class App extends LitElement {
     `
   }
 
-  renderTopic () {
-    if (this.route !== 'home') {
-      return undefined
-    }
-    var params = new URLSearchParams(location.search)
-    var topic = params.get('topic')
-    return html`<span class="topic">
-      ${topic ? html`Topic: <strong>${toNiceTopic(topic)}</strong>` : 'All topics'}
-    </span>`
-  }
-
   renderView () {
     switch (this.route) {
       case 'home': return html`
@@ -126,20 +118,23 @@ export class App extends LitElement {
       case 'compose': return html`
         <beaker-compose-view loadable .user=${this.user}></beaker-compose-view>
       `
+      case 'comments': return html`
+        <beaker-comments-view loadable .user=${this.user}></beaker-comments-view>
+      `
       case 'notifications': return html`
         <div class="layout"><main>todo</main></div>
       `
-      case 'profile':
-      case 'posts': return html`
+      case 'userProfile':
+      case 'userPosts': return html`
         <beaker-profile-view loadable .user=${this.user} profile-id=${this.routeParams.groups.id}></beaker-profile-view>
       `
-      case 'comments': return html`
+      case 'userComments': return html`
         <beaker-profile-view loadable .user=${this.user} profile-id=${this.routeParams.groups.id} subview="comments"></beaker-profile-view>
       `
-      case 'following': return html`
+      case 'userFollowing': return html`
         <beaker-profile-view loadable .user=${this.user} profile-id=${this.routeParams.groups.id} subview="following"></beaker-profile-view>
       `
-      case 'followers': return html`
+      case 'userFollowers': return html`
         <beaker-profile-view loadable .user=${this.user} profile-id=${this.routeParams.groups.id} subview="followers"></beaker-profile-view>
       `
       case 'post': return html`

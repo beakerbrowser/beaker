@@ -3,6 +3,7 @@ import { repeat } from '../../../vendor/lit-element/lit-html/directives/repeat.j
 import commentsThreadCSS from '../../../css/com/comments/thread.css.js'
 import { timeDifference } from '../../lib/time.js'
 import { writeToClipboard } from '../../lib/clipboard.js'
+import * as uwg from '../../lib/uwg.js'
 import { emit } from '../../lib/dom.js'
 import * as contextMenu from '../context-menu.js'
 import * as toast from '../toast.js'
@@ -28,11 +29,24 @@ export class CommentsThread extends LitElement {
     this.composerPlaceholder = undefined
   }
 
+  getUserVote (comment) {
+    var votes = comment && comment.votes
+    if (!votes) return 0
+    if (votes.upvotes.find(u => u.url === this.userUrl)) return 1
+    if (votes.downvotes.find(u => u.url === this.userUrl)) return -1
+    return 0
+  }
+
+  getKarma (comment) {
+    var votes = comment && comment.votes
+    if (!votes) return undefined
+    return votes.upvotes.length - votes.downvotes.length
+  }
+
   render () {
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <beaker-comment-composer
-        always-active
         href="${this.href}"
         placeholder=${this.composerPlaceholder || 'Add a comment'}
       ></beaker-comment-composer>
@@ -50,30 +64,42 @@ export class CommentsThread extends LitElement {
   }
 
   renderComment (comment) {
+    var userVote = this.getUserVote(comment)
+    var karma = this.getKarma(comment)
     return html`
       <div class="comment">
-        <div class="header">
-          <a class="title" href="/${comment.drive.url.slice('dat://'.length)}">${comment.drive.title}</a>
-          <a class="permalink" href="${comment.url}">${timeDifference(comment.stat.ctime, true, 'ago')}</a>
-          <button class="menu transparent" @click=${e => this.onClickMenu(e, comment)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
-        </div>
-        <div class="body">${comment.content}</div>
-        <div class="footer">
-          <a href="#" @click=${e => this.onClickToggleReply(e, comment.url)}>
-            ${this.activeReplies[comment.url]
-              ? html`<span class="fas fa-fw fa-times"></span> Cancel reply`
-              : html`<span class="fas fa-fw fa-reply"></span> Reply`}
+        <div class="votectrl">
+          <a class="upvote ${userVote === 1 ? 'selected' : ''}" @click=${e => this.onClickUpvote(e, comment)}>
+            <span class="fas fa-caret-up"></span>
+          </a>
+          <div class="karma ${userVote === 1 ? 'upvoted' : userVote === -1 ? 'downvoted' : ''}">${karma}</div>
+          <a class="downvote ${userVote === -1 ? 'selected' : ''}" @click=${e => this.onClickDownvote(e, comment)}>
+            <span class="fas fa-caret-down"></span>
           </a>
         </div>
-        ${this.activeReplies[comment.url] ? html`
-          <beaker-comment-composer
-            href="${comment.stat.metadata.href}"
-            parent="${comment.url}"
-            alwaysActive
-            @submit-comment=${e => this.onSubmitComment(e, comment.url)}
-          ></beaker-comment-composer>
-        ` : ''}
-        ${comment.replies && comment.replies.length ? this.renderComments(comment.replies) : ''}
+        <div class="content">
+          <div class="header">
+            <a class="title" href="/${comment.drive.url.slice('dat://'.length)}">${comment.drive.title}</a>
+            <a class="permalink" href="${comment.url}">${timeDifference(comment.stat.ctime, true, 'ago')}</a>
+            <button class="menu transparent" @click=${e => this.onClickMenu(e, comment)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
+          </div>
+          <div class="body">${comment.content}</div>
+          <div class="footer">
+            <a href="#" @click=${e => this.onClickToggleReply(e, comment.url)}>
+              ${this.activeReplies[comment.url]
+                ? html`<span class="fas fa-fw fa-times"></span> Cancel reply`
+                : html`<span class="fas fa-fw fa-reply"></span> Reply`}
+            </a>
+          </div>
+          ${this.activeReplies[comment.url] ? html`
+            <beaker-comment-composer
+              href="${comment.stat.metadata.href}"
+              parent="${comment.url}"
+              @submit-comment=${e => this.onSubmitComment(e, comment.url)}
+            ></beaker-comment-composer>
+          ` : ''}
+          ${comment.replies && comment.replies.length ? this.renderComments(comment.replies) : ''}
+        </div>
       </div>
     `
   }
@@ -91,6 +117,26 @@ export class CommentsThread extends LitElement {
 
   onSubmitComment (e, url) {
     this.activeReplies[url] = false
+    this.requestUpdate()
+  }
+
+  async onClickUpvote (e, comment) {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    var userVote = this.getUserVote(comment)
+    await uwg.votes.put(comment.url, userVote === 1 ? 0 : 1)
+    comment.votes = await uwg.votes.tabulate(comment.url)
+    this.requestUpdate()
+  }
+
+  async onClickDownvote (e, comment) {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    var userVote = this.getUserVote(comment)
+    await uwg.votes.put(comment.url, userVote === -1 ? 0 : -1)
+    comment.votes = await uwg.votes.tabulate(comment.url)
     this.requestUpdate()
   }
 

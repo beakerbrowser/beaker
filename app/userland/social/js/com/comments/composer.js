@@ -8,7 +8,6 @@ export class CommentComposer extends LitElement {
       href: {type: String},
       parent: {type: String},
       isFocused: {type: Boolean},
-      alwaysActive: {type: Boolean, attribute: 'always-active'},
       draftText: {type: String},
       placeholder: {type: String}
     }
@@ -19,7 +18,6 @@ export class CommentComposer extends LitElement {
     this.href = ''
     this.parent = ''
     this.isFocused = false
-    this.alwaysActive = false
     this.draftText = ''
     this.placeholder = 'Write a new comment'
   }
@@ -43,27 +41,11 @@ export class CommentComposer extends LitElement {
   // =
 
   render () {
-    if (this.alwaysActive || this.isFocused || this.draftText) {
-      return this.renderActive()
-    }
-    return this.renderInactive()
-  }
-
-  renderInactive () {
-    return html`
-      <div class="input-placeholder" @click=${this.onClickPlaceholder}>
-        ${this.placeholder}
-      </div>
-    `
-  }
-
-  renderActive () {
     return html`
       <textarea
         placeholder="Enter your comment here"
         @keydown=${this.onKeydownTextarea}
         @keyup=${this.onChangeTextarea}
-        @blur=${this.onBlurTextarea}
       >${this.draftText}</textarea>
       <div class="actions">
         <button
@@ -78,14 +60,6 @@ export class CommentComposer extends LitElement {
   // events
   // =
 
-  async onClickPlaceholder () {
-    this.isFocused = true
-
-    // focus after update
-    await this.updateComplete
-    this.shadowRoot.querySelector('textarea').focus()
-  }
-
   onKeydownTextarea (e) {
     // check for cmd/ctrl+enter
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
@@ -99,10 +73,6 @@ export class CommentComposer extends LitElement {
 
   onChangeTextarea (e) {
     this.draftText = e.currentTarget.value
-  }
-
-  onBlurTextarea () {
-    this.isFocused = false
   }
 
   onClickPost () {
