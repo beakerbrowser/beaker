@@ -279,7 +279,7 @@ ShellWindowNavbar.styles = css`
   background: var(--bg-foreground);
   height: 28px;
   padding: 6px 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--bg-background);
 }
 
 ${buttonResetCSS}
