@@ -34,6 +34,7 @@ export function identify (name, chunk) {
     // fallback to using the entry name
     mimeType = mime.lookup(name)
   }
+  mimeType = correctSomeMimeTypes(mimeType, name)
 
   // hackish fix
   // the svg test can be a bit aggressive: html pages with
@@ -198,4 +199,16 @@ function isBinaryCheck (bytes) {
   }
 
   return false
+}
+
+/**
+ * @param {string} mimeType 
+ * @param {string} name 
+ * @returns {string}
+ */
+function correctSomeMimeTypes (mimeType, name) {
+  if (mimeType === 'video/quicktime' && name.endsWith('.mov')) {
+    return 'video/mp4'
+  }
+  return mimeType
 }

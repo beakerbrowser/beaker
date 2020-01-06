@@ -27,6 +27,7 @@ import { DAT_HASH_REGEX } from '../../lib/const'
  * @prop {Date} atime
  * @prop {Date} mtime
  * @prop {Date} ctime
+ * @prop {Object} metadata
  * @prop {Object} [mount]
  * @prop {string} [mount.key]
  * @prop {string} linkname

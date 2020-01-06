@@ -103,7 +103,7 @@ export const electronHandler = async function (request, respond) {
   var fileReadStream
   var headersSent = false
   var archive
-  var cspHeader = ''
+  var cspHeader = 'default-src *'
 
   // validate request
   var urlp = parseDatUrl(request.url, true)
@@ -300,10 +300,10 @@ export const electronHandler = async function (request, respond) {
     range = range[0] // only handle first range given
     statusCode = 206
     headers['Content-Range'] = 'bytes ' + range.start + '-' + range.end + '/' + entry.size
-    headers['Content-Length'] = range.end - range.start + 1
+    headers['Content-Length'] = '' + (range.end - range.start + 1)
   } else {
     if (entry.size) {
-      headers['Content-Length'] = entry.size
+      headers['Content-Length'] = '' + (entry.size)
     }
   }
 
@@ -328,7 +328,7 @@ export const electronHandler = async function (request, respond) {
   }
 
   // fetch the entry and stream the response
-  fileReadStream = await checkoutFS.pda.createReadStream(entry.path, range)
+  fileReadStream = checkoutFS.pda.createReadStream(entry.path, range)
   var dataStream = fileReadStream
     .pipe(mime.identifyStream(entry.path, mimeType => {
       // cleanup the timeout now, as bytes have begun to stream
