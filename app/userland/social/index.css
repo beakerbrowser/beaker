@@ -7,7 +7,7 @@ body {
   --orange: rgb(255, 149, 0);
   --yellow: rgb(255, 204, 0);
   --lime: #E6EE9C;
-  --green: rgb(76, 217, 100);
+  --green: rgb(51, 167, 71);
   --teal: rgb(90, 200, 250);
   --blue: #2864dc;
   --purple: rgb(88, 86, 214);

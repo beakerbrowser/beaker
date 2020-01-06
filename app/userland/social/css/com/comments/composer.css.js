@@ -7,10 +7,11 @@ ${buttons2css}
 
 :host {
   display: block;
+  position: relative;
   background: #fff;
   padding: 14px 18px;
   border: 1px solid #ccd;
-  border-radius: 8px;
+  border-radius: 4px;
   overflow: hidden;
   --input-font-size: 14px;
 }
@@ -37,8 +38,7 @@ textarea {
   width: 100%;
   box-sizing: border-box;
   height: auto;
-  min-height: 55px;
-  margin-bottom: 10px;
+  min-height: 70px;
   resize: none;
   border: 0 !important;
   outline: 0 !important;
@@ -46,6 +46,9 @@ textarea {
 }
 
 .actions {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
   display: flex;
   align-items: center;
 }

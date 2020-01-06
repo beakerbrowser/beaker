@@ -32,6 +32,7 @@ export class CommentsThread extends LitElement {
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <beaker-comment-composer
+        always-active
         href="${this.href}"
         placeholder=${this.composerPlaceholder || 'Add a comment'}
       ></beaker-comment-composer>
@@ -54,28 +55,20 @@ export class CommentsThread extends LitElement {
         <div class="header">
           <a class="title" href="/${comment.drive.url.slice('dat://'.length)}">${comment.drive.title}</a>
           <a class="permalink" href="${comment.url}">${timeDifference(comment.stat.ctime, true, 'ago')}</a>
-            <button class="menu transparent" @click=${e => this.onClickMenu(e, comment)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
+          <button class="menu transparent" @click=${e => this.onClickMenu(e, comment)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
-        <div class="body">${comment.content.body}</div>
+        <div class="body">${comment.content}</div>
         <div class="footer">
           <a href="#" @click=${e => this.onClickToggleReply(e, comment.url)}>
             ${this.activeReplies[comment.url]
               ? html`<span class="fas fa-fw fa-times"></span> Cancel reply`
               : html`<span class="fas fa-fw fa-reply"></span> Reply`}
           </a>
-          ${'reactions' in comment
-            ? html`
-              <beaker-reactions
-                user-url="${this.userUrl}"
-                .reactions=${comment.reactions}
-                href="${comment.url}"
-              ></beaker-reactions>`
-            : ''}
         </div>
         ${this.activeReplies[comment.url] ? html`
           <beaker-comment-composer
-            href="${comment.content.href}"
-            reply-to="${comment.url}"
+            href="${comment.stat.metadata.href}"
+            parent="${comment.url}"
             alwaysActive
             @submit-comment=${e => this.onSubmitComment(e, comment.url)}
           ></beaker-comment-composer>
@@ -92,7 +85,7 @@ export class CommentsThread extends LitElement {
     this.activeReplies[url] = !this.activeReplies[url]
     await this.requestUpdate()
     if (this.activeReplies[url]) {
-      this.shadowRoot.querySelector(`beaker-comment-composer[reply-to="${url}"]`).focus()
+      this.shadowRoot.querySelector(`beaker-comment-composer[parent="${url}"]`).focus()
     }
   }
 
@@ -106,26 +99,25 @@ export class CommentsThread extends LitElement {
     e.stopPropagation()
 
     var items = [
-      {icon: 'far fa-fw fa-file-alt', label: 'View comment', click: () => window.open(comment.url) },
-      {icon: 'fas fa-fw fa-link',
-label: 'Copy comment URL',
-click: () => {
-        writeToClipboard(comment.url)
-        toast.create('Copied to your clipboard')
-      }}
+      {
+        icon: 'fas fa-fw fa-link',
+        label: 'Copy comment URL',
+        click: () => {
+          writeToClipboard(comment.url)
+          toast.create('Copied to your clipboard')
+        }
+      }
     ]
 
     if (this.userUrl === comment.drive.url) {
-      items.push('-')
       items.push({icon: 'fas fa-fw fa-trash', label: 'Delete comment', click: () => this.onClickDelete(comment) })
     }
 
     var rect = e.currentTarget.getClientRects()[0]
     contextMenu.create({
-      x: rect.right + 4,
+      x: rect.left,
       y: rect.bottom + 8,
-      right: true,
-      withTriangle: true,
+      left: true,
       roomy: true,
       noBorders: true,
       style: `padding: 4px 0`,

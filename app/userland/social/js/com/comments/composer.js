@@ -6,9 +6,9 @@ export class CommentComposer extends LitElement {
   static get properties () {
     return {
       href: {type: String},
-      replyTo: {type: String, attribute: 'reply-to'},
+      parent: {type: String},
       isFocused: {type: Boolean},
-      alwaysActive: {type: Boolean},
+      alwaysActive: {type: Boolean, attribute: 'always-active'},
       draftText: {type: String},
       placeholder: {type: String}
     }
@@ -17,7 +17,7 @@ export class CommentComposer extends LitElement {
   constructor () {
     super()
     this.href = ''
-    this.replyTo = ''
+    this.parent = ''
     this.isFocused = false
     this.alwaysActive = false
     this.draftText = ''
@@ -28,8 +28,8 @@ export class CommentComposer extends LitElement {
     if (!this.draftText) return
     var detail = {
       href: this.href,
-      replyTo: this.replyTo || undefined,
-      body: this.draftText
+      parent: this.parent || undefined,
+      content: this.draftText
     }
     emit(this, 'submit-comment', {bubbles: true, detail})
     this.draftText = ''

@@ -10,7 +10,7 @@ import { chunkMapAsync } from './functions.js'
  * @prop {string|string[]} path
  * @prop {string} [type]
  * @prop {string} [mount]
- * @prop {Object} [meta]
+ * @prop {Object} [metadata]
  * @prop {string} [sort] - 'name', 'ctime', 'mtime'
  * @prop {boolean} [reverse]
  * @prop {number} [limit]
@@ -24,6 +24,7 @@ import { chunkMapAsync } from './functions.js'
  * @prop {Date} atime
  * @prop {Date} mtime
  * @prop {Date} ctime
+ * @prop {Object} metadata
  * @prop {Object} [mount]
  * @prop {string} [mount.key]
  * @prop {string} linkname
@@ -92,9 +93,10 @@ export async function ensureDir (path, drive = navigator.filesystem) {
 /**
  * @param {string} path
  * @param {Object} [drive]
+ * @param {number} [depth=1]
  */
-export async function ensureParentDir (path, drive = navigator.filesystem) {
-  return ensureDir(path.split('/').slice(0, -1).join('/'), drive)
+export async function ensureParentDir (path, drive = navigator.filesystem, depth = 1) {
+  return ensureDir(path.split('/').slice(0, -1 * depth).join('/'), drive)
 }
 
 /**

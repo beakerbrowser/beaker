@@ -252,5 +252,5 @@ const BIN_EXTS = [
 ]
 
 export function isFilenameBinary (str = '') {
-  return BIN_EXTS.includes(str.split('.').pop())
+  return BIN_EXTS.includes(str.split('.').pop().toLowerCase())
 }

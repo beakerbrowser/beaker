@@ -1,6 +1,8 @@
-import { normalizeUrl, slugifyUrl, DAT_KEY_REGEX, joinPath } from './strings.js'
+import { normalizeUrl, normalizeTopic, isValidTopic, DAT_KEY_REGEX, joinPath } from './strings.js'
 import { queryRead, ensureDir, ensureParentDir, ensureMount, ensureUnmount, getAvailableName } from './fs.js'
 import { lock } from './lock.js'
+import { DEFAULT_TOPICS } from './const.js'
+import { isFilenameBinary } from './is-ext-binary.js'
 
 // typedefs
 // =
@@ -15,19 +17,21 @@ import { lock } from './lock.js'
  * @prop {boolean} isFollowingUser
  * @prop {DriveInfo[]} followers
  * @prop {DriveInfo[]} following
+ * 
+ * @typedef {FSQueryResult} Post
+ * @prop {string} topic
  *
  * @typedef {FSQueryResult} Comment
- * @prop {string} content.type
- * @prop {string} content.href
- * @prop {string} [content.replyTo]
- * @prop {string} content.body
- * @prop {Date} content.createdAt
- * @prop {Date} [content.updatedAt]
+ * @prop {string} content
  *
  * @typedef {Comment} ThreadedComment
  * @prop {ThreadedComment} parent
  * @prop {ThreadedComment[]} [replies]
  * @prop {number} replyCount
+ * 
+ * @typedef {Object} TabulatedVotes
+ * @prop {DriveInfo[]} upvotes
+ * @prop {DriveInfo[]} downvotes
  */
 
 // exported
@@ -112,7 +116,7 @@ export const follows = {
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
     let results = await drive.query({
       type: 'mount',
-      path: getFriendPaths(author),
+      path: getFollowsPaths(author),
       mount: target
     })
     if (includeProfiles) {
@@ -158,64 +162,181 @@ export const follows = {
   }
 }
 
-export const feed = {
+export const posts = {
   /**
    * @param {Object} [query]
+   * @param {string} [query.topic]
    * @param {string} [query.author]
-   * @param {string} [query.href]
    * @param {string} [query.sort]
    * @param {boolean} [query.reverse]
    * @param {number} [query.offset]
    * @param {number} [query.limit]
-   * @returns {Promise<FSQueryResult[]>}
+   * @returns {Promise<Post[]>}
    */
-  async list ({author, sort, reverse, offset, limit} = {author: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
+  async list ({topic, author, sort, reverse, offset, limit} = {topic: undefined, author: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
-    var res = await queryRead({path: getFeedPaths(author), sort, reverse, offset, limit}, drive)
-    await profiles.readAllProfiles(res)
-    return res
+    var posts = await queryRead({
+      path: getPostsPaths(author, topic),
+      sort,
+      reverse, 
+      offset,
+      limit
+    }, drive)
+    posts = posts.filter(post => {
+      if (!isNonemptyString(post.stat.metadata.title)) {
+        return false
+      }
+      if (post.path.endsWith('.goto')) {
+        return (
+          isNonemptyString(post.stat.metadata.href)
+          && isUrl(post.stat.metadata.href)
+        )
+      }
+      if (post.path.endsWith('.md') || post.path.endsWith('.txt')) {
+        return isNonemptyString(post.content)
+      }
+      return true
+    })
+    for (let post of posts) {
+      let pathParts = post.path.split('/')
+      post.topic = pathParts[pathParts.length - 2]
+    }
+    await profiles.readAllProfiles(posts)
+    return posts
   },
 
   /**
    * 
    * @param {string} author 
-   * @param {string} name 
-   * @returns {Promise<FSQueryResult>}
+   * @param {string} path 
+   * @returns {Promise<Post>}
    */
-  async get (author, name) {
-    let path = `/feed/${name}`
+  async get (author, path) {
     let drive = new DatArchive(author)
     let url = drive.url + path
+
+    let pathParts = path.split('/')
+    var topic = pathParts[pathParts.length - 2]
+
     return {
       type: 'file',
       path,
       url,
       stat: await drive.stat(path),
-      drive: await drive.getInfo(),
+      drive: await profiles.get(author),
       mount: undefined,
-      content: await drive.readFile(path)
+      content: isFilenameBinary(path) ? undefined : await drive.readFile(path),
+      topic
     }
   },
 
   /**
-   * @param {string} content
+   * @param {Object} post
+   * @param {string} post.href
+   * @param {string} post.title
+   * @param {string} post.topic
    * @param {Object} [drive]
    * @returns {Promise<string>}
    */
-  async add (content, drive = undefined) {
-    var path = drive ? `/feed/${Date.now()}.md` : `/profile/feed/${Date.now()}.md`
+  async addLink ({href, title, topic}, drive = undefined) {
+    if (!isNonemptyString(href)) throw new Error('URL is required')
+    if (!isUrl(href)) throw new Error('Invalid URL')
+    if (!isNonemptyString(title)) throw new Error('Title is required')
+    if (!isValidTopic(topic)) throw new Error('Topic is required')
+
+    href = normalizeUrl(href)
+    topic = normalizeTopic(topic)
+    var path = drive ? `/posts/${topic}/${Date.now()}.goto` : `/profile/posts/${topic}/${Date.now()}.goto`
+
     drive = drive || navigator.filesystem
-    await ensureParentDir(path, drive)
-    await drive.writeFile(path, content)
+    await ensureParentDir(path, drive, 2)
+    await ensureParentDir(path, drive, 1)
+    await drive.writeFile(path, '', {metadata: {href, title}})
     return path
   },
 
   /**
-   * @param {string} statusPath
+   * @param {Object} post
+   * @param {string} post.title
+   * @param {string} post.topic
+   * @param {string} post.content
+   * @param {Object} [drive]
+   * @returns {Promise<string>}
+   */
+  async addTextPost ({title, topic, content}, drive = undefined) {
+    if (!isNonemptyString(content)) throw new Error('Content is required')
+    if (!isNonemptyString(title)) throw new Error('Title is required')
+    if (!isValidTopic(topic)) throw new Error('Topic is required')
+
+    topic = normalizeTopic(topic)
+    var path = drive ? `/posts/${topic}/${Date.now()}.md` : `/profile/posts/${topic}/${Date.now()}.md`
+
+    drive = drive || navigator.filesystem
+    await ensureParentDir(path, drive, 2)
+    await ensureParentDir(path, drive, 1)
+    await drive.writeFile(path, content, {metadata: {title}})
+    return path
+  },
+
+  /**
+   * @param {Object} post
+   * @param {string} post.title
+   * @param {string} post.topic
+   * @param {string} post.ext
+   * @param {string} post.base64buf
+   * @param {Object} [drive]
+   * @returns {Promise<string>}
+   */
+  async addFile ({title, topic, ext, base64buf}, drive = undefined) {
+    if (!isNonemptyString(base64buf)) throw new Error('Base64buf is required')
+    if (!isNonemptyString(ext)) throw new Error('File extension is required')
+    if (!isNonemptyString(title)) throw new Error('Title is required')
+    if (!isValidTopic(topic)) throw new Error('Topic is required')
+
+    topic = normalizeTopic(topic)
+    var path = drive ? `/posts/${topic}/${Date.now()}.${ext}` : `/profile/posts/${topic}/${Date.now()}.${ext}`
+
+    drive = drive || navigator.filesystem
+    await ensureParentDir(path, drive, 2)
+    await ensureParentDir(path, drive, 1)
+    await drive.writeFile(path, base64buf, {encoding: 'base64', metadata: {title}})
+    return path
+  },
+
+  /**
+   * @param {string} postPath
    * @returns {Promise<void>}
    */
-  async remove (statusPath) {
-    await navigator.filesystem.unlink(statusPath)
+  async remove (postPath) {
+    await navigator.filesystem.unlink(postPath)
+  }
+}
+
+export const topics = {
+  /**
+   * @param {Object} query
+   * @param {string} [query.author]
+   * @returns {Promise<Array<string>>}
+   */
+  async list ({author} = {author: undefined}) {
+    var folders = await navigator.filesystem.query({
+      type: 'directory',
+      path: getTopicsPaths(author)
+    })
+
+    var topics = new Set()
+    for (let folder of folders) {
+      let name = folder.path.split('/').pop()
+      if (!isValidTopic(name)) continue
+      name = normalizeTopic(name)
+      topics.add(name)
+    }
+
+    for (let t of DEFAULT_TOPICS) {
+      topics.add(t)
+    }
+
+    return Array.from(topics)
   }
 }
 
@@ -229,8 +350,14 @@ export const comments = {
    * @returns {Promise<Comment[]>}
    */
   async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
-    var comments = await queryRead({path: getCommentPaths(author, href), sort, reverse})
-    comments = comments.filter(massageComment)
+    href = href ? normalizeUrl(href) : undefined
+    var comments = await queryRead({
+      path: getCommentsPaths(author),
+      metadata: href ? {href} : undefined,
+      sort,
+      reverse
+    })
+    comments = comments.filter(c => isNonemptyString(c.content))
     await profiles.readAllProfiles(comments)
     return comments
   },
@@ -244,7 +371,13 @@ export const comments = {
    * @returns {Promise<Comment[]>}
    */
   async count ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
-    var comments = await navigator.filesystem.query({path: getCommentPaths(author, href), sort, reverse})
+    href = href ? normalizeUrl(href) : undefined
+    var comments = await navigator.filesystem.query({
+      path: getCommentsPaths(author),
+      metadata: href ? {href} : undefined,
+      sort,
+      reverse
+    })
     return comments.length
   },
 
@@ -257,8 +390,12 @@ export const comments = {
    * @returns {Promise<ThreadedComment[]>}
    */
   async thread (href, {author, parent, depth} = {author: undefined, parent: undefined, depth: undefined}) {
-    var comments = await queryRead({path: getCommentPaths(author, href)})
-    comments = comments.filter(massageComment)
+    href = normalizeUrl(href)
+    var comments = await queryRead({
+      path: getCommentsPaths(author),
+      metadata: href ? {href} : undefined
+    })
+    comments = comments.filter(c => isNonemptyString(c.content))
     await profiles.readAllProfiles(comments)
 
     // create a map of comments by their URL
@@ -268,8 +405,8 @@ export const comments = {
     // attach each comment to its parent, forming a tree
     var rootComments = []
     comments.forEach(comment => {
-      if (comment.content.replyTo) {
-        let parent = commentsByUrl[comment.content.replyTo]
+      if (comment.stat.metadata.parent) {
+        let parent = commentsByUrl[comment.stat.metadata.parent]
         if (!parent) {
           // TODO insert a placeholder parent when not found
           // something that means "this post was by somebody you dont follow"
@@ -291,7 +428,7 @@ export const comments = {
     if (parent) {
       rootComments = []
       comments.forEach(comment => {
-        if (comment.content.replyTo === parent) {
+        if (comment.stat.metadata.parent === parent) {
           rootComments.push(comment)
         }
       })
@@ -316,51 +453,40 @@ export const comments = {
   /**
    * @param {Object} comment
    * @param {string} comment.href
-   * @param {string} [comment.replyTo]
-   * @param {string} comment.body
+   * @param {string} [comment.parent]
+   * @param {string} comment.content
    * @returns {Promise<string>}
    */
-  async add ({href, replyTo, body}) {
-    var path = `/profile/comments/${slugifyUrl(href)}/${Date.now()}.json`
-    await ensureDir('/profile/comments')
+  async add ({href, parent, content}) {
+    if (!isNonemptyString(href)) throw new Error('URL is required')
+    if (!isUrl(href)) throw new Error('Invalid URL')
+    if (!isNonemptyString(content)) throw new Error('Content is required')
+    
+    href = normalizeUrl(href)
+
+    var path = `/profile/comments/${Date.now()}.md`
     await ensureParentDir(path)
-    await navigator.filesystem.writeFile(path, JSON.stringify({
-      type: 'unwalled.garden/comment',
-      href,
-      replyTo,
-      body,
-      createdAt: (new Date()).toISOString()
-    }))
+    await navigator.filesystem.writeFile(path, content, {metadata: {href, parent}})
     return path
   },
 
   /**
    * @param {string} commentPath
    * @param {Object} comment
-   * @param {string} [comment.replyTo]
-   * @param {string} [comment.body]
+   * @param {string} [comment.content]
    * @returns {Promise<string>}
    */
-  async update (commentPath, {replyTo, body}) {
-     // read existing
-     var oldComment = {}
+  async update (commentPath, {content}) {
+    if (!isNonemptyString(content)) throw new Error('Content is required')
+    
+     var stat
      try {
-       oldComment = JSON.parse(await navigator.filesystem.readFile(commentPath))
+       stat = await navigator.filesystem.stat(commentPath)
      } catch (e) {
        throw new Error(`Failed to read comment-file for update: ${e.toString()}`)
      }
 
-     // write new
-     await ensureParentDir(commentPath)
-     await navigator.filesystem.writeFile(commentPath, JSON.stringify({
-       type: 'unwalled.garden/comment',
-       href: oldComment.href,
-       replyTo: typeof replyTo === 'string' ? replyTo : oldComment.replyTo,
-       body: typeof body === 'string' ? body : oldComment.body,
-       createdAt: oldComment.createdAt || (new Date()).toISOString(),
-       updatedAt: (new Date()).toISOString()
-     }, null, 2))
-
+     await navigator.filesystem.writeFile(commentPath, content, {metadata: stat.metadata})
      return commentPath
   },
 
@@ -373,7 +499,7 @@ export const comments = {
   }
 }
 
-export const likes = {
+export const votes = {
   /**
    * @param {Object} query
    * @param {string} [query.author]
@@ -383,10 +509,11 @@ export const likes = {
    * @returns {Promise<FSQueryResult[]>}
    */
   async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
+    href = href ? normalizeUrl(href) : undefined
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
     var res = await drive.query({
-      path: getLikePaths(author),
-      metadata: {href},
+      path: getVotesPaths(author),
+      metadata: href ? {href} : undefined,
       sort,
       reverse
     })
@@ -398,76 +525,95 @@ export const likes = {
    * @param {string} href
    * @param {Object} query
    * @param {string} [query.author]
-   * @returns {Promise<DriveInfo[]>}
+   * @returns {Promise<TabulatedVotes>}
    */
   async tabulate (href, {author} = {author: undefined}) {
+    href = normalizeUrl(href)
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
-    var likes = await drive.query({
-      path: getLikePaths(author),
+    var votes = await drive.query({
+      path: getVotesPaths(author),
       metadata: {href}
     })
-    await profiles.readAllProfiles(likes)
+    await profiles.readAllProfiles(votes)
 
     // construct tabulated list
-    var likers = {}
-    likes.forEach(like => {
-      if (!(like.drive.url in likers)) {
-        likers[like.drive.url] = like.drive
+    var upvotes = new Set()
+    var downvotes = new Set()
+    for (let vote of votes) {
+      if (Number(vote.stat.metadata.vote) === -1) {
+        upvotes.delete(vote.drive)
+        downvotes.add(vote.drive)
+      } else {
+        upvotes.add(vote.drive)
+        downvotes.delete(vote.drive)
       }
-    })
+    }
 
-    return Object.values(likers)
+    return {
+      upvotes: Array.from(upvotes),
+      downvotes: Array.from(downvotes)
+    }
   },
 
   /**
    * @param {string} href
-   * @returns {Promise<String>}
+   * @returns {Promise<FSQueryResult>}
    */
   async get (author, href) {
     href = normalizeUrl(href)
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
-    var likes = await drive.query({
-      path: getLikePaths(author),
+    var votes = await drive.query({
+      path: getVotesPaths(author),
       metadata: {href}
     })
-    return likes[0] ? likes[0].path : undefined
+    return votes[0] ? votes[0] : undefined
   },
 
   /**
    * @param {string} href
+   * @param {number} vote
    * @returns {Promise<string>}
    */
-  async put (href) {
-    href = normalizeUrl(href)
-    if (await likes.get('me', href)) {
-      return
-    }
+  async put (href, vote) {
+    if (!isNonemptyString(href)) throw new Error('URL is required')
+    if (!isUrl(href)) throw new Error('Invalid URL')
 
-    var path = `/profile/likes/${Date.now()}.goto`
-    await ensureDir('/profile/likes')
-    await navigator.filesystem.writeFile(path, '', {metadata: {href}})
+    href = normalizeUrl(href)
+    vote = vote == 1 ? 1 : vote == -1 ? -1 : 0
+
+    var existingVote = await votes.get('me', href)
+    if (existingVote) await navigator.filesystem.unlink(existingVote.path)
+
+    if (!vote) return
+
+    var path = `/profile/votes/${Date.now()}.goto`
+    await ensureParentDir(path)
+    await navigator.filesystem.writeFile(path, '', {metadata: {href, vote}})
     return path
-  },
-
-  /**
-   * @param {string} href
-   * @returns {Promise<void>}
-   */
-  async remove (href) {
-    href = normalizeUrl(href)
-    var path = await likes.get('me', href)
-    if (path) await navigator.filesystem.unlink(path)
   }
 }
 
 // internal
 // =
 
+function isNonemptyString (v) {
+  return v && typeof v === 'string'
+}
+
+function isUrl (v) {
+  try {
+    var u = new URL(v)
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
 /**
  * @param {string} author
  * @returns {string|string[]}
  */
-function getFriendPaths (author) {
+function getFollowsPaths (author) {
   if (author === 'me') {
     return `/profile/follows/*`
   } else if (author) {
@@ -482,37 +628,32 @@ function getFriendPaths (author) {
 
 /**
  * @param {string} author
+ * @param {string} [topic]
  * @returns {string|string[]}
  */
-function getFeedPaths (author) {
+function getPostsPaths (author, topic = undefined) {
+  topic = topic || '*'
   if (author === 'me') {
-    return `/profile/feed/*`
+    return `/profile/posts/${topic}/*`
   } else if (author) {
-    return `/feed/*`
+    return `/posts/${topic}/*`
   } else {
     return [
-      `/profile/feed/*`,
-      `/profile/follows/*/feed/*`
+      `/profile/posts/${topic}/*`,
+      `/profile/follows/*/posts/${topic}/*`
     ]
   }
 }
 
-
-/**
- * @param {string} author
- * @param {string?} href
- * @returns {string|string[]}
- */
-function getCommentPaths (author, href = undefined) {
-  var foldername = (href ? slugifyUrl(href) : '*')
+function getTopicsPaths (author) {
   if (author === 'me') {
-    return `/profile/comments/${foldername}/*.json`
+    return `/profile/posts/*`
   } else if (author) {
-    return `/profile/follows/${author}/comments/${foldername}/*.json`
+    return `/posts/*`
   } else {
     return [
-      `/profile/comments/${foldername}/*.json`,
-      `/profile/follows/*/comments/${foldername}/*.json`
+      `/profile/posts/*`,
+      `/profile/follows/*/posts/*`
     ]
   }
 }
@@ -521,30 +662,32 @@ function getCommentPaths (author, href = undefined) {
  * @param {string} author
  * @returns {string|string[]}
  */
-function getLikePaths (author) {
+function getCommentsPaths (author) {
   if (author === 'me') {
-    return `/profile/likes/*.goto`
+    return `/profile/comments/*.md`
   } else if (author) {
-    return `/likes/*.goto`
+    return `/profile/follows/${author}/comments/*.md`
   } else {
     return [
-      `/profile/likes/*.goto`,
-      `/profile/follows/*/likes/*.goto`
+      `/profile/comments/*.md`,
+      `/profile/follows/*/comments/*.md`
     ]
   }
 }
 
 /**
- * @param {Comment} comment
- * @returns {boolean}
+ * @param {string} author
+ * @returns {string|string[]}
  */
-function massageComment (comment) {
-  if (!comment.content || typeof comment.content !== 'object') return false
-  if (comment.content.type !== 'unwalled.garden/comment') return false
-  comment.content.href = typeof comment.content.href === 'string' ? comment.content.href : undefined
-  comment.content.replyTo = typeof comment.content.replyTo === 'string' ? comment.content.replyTo : undefined
-  comment.content.body = typeof comment.content.body === 'string' ? comment.content.body : undefined
-  comment.content.createdAt = typeof comment.content.createdAt === 'string' ? new Date(comment.content.createdAt) : undefined
-  comment.content.updatedAt = typeof comment.content.updatedAt === 'string' ? new Date(comment.content.updatedAt) : undefined
-  return true
+function getVotesPaths (author) {
+  if (author === 'me') {
+    return `/profile/votes/*.goto`
+  } else if (author) {
+    return `/votes/*.goto`
+  } else {
+    return [
+      `/profile/votes/*.goto`,
+      `/profile/follows/*/votes/*.goto`
+    ]
+  }
 }

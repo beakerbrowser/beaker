@@ -7,17 +7,17 @@ ${buttonsCSS}
 ${spinnerCSS}
 
 :host {
-  display: block;
-  position: relative;
-  background: #fff;
-  border-radius: 8px;
-  text-align: center;
-  padding: 60px 20px 10px;
-  margin: 70px 0 10px;
+  display: grid;
+  border-radius: 4px;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  grid-gap: 20px;
+  border: 1px solid #ccd;
+  overflow: hidden;
 }
 
 a {
-  color: #889;
+  color: var(--blue);
   text-decoration: none;
 }
 
@@ -26,48 +26,49 @@ a:hover {
 }
 
 img {
-  position: absolute;
-  left: 50%;
-  top: -70px;
-  transform: translateX(-50%);
-
   display: block;
   margin: 0 auto;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+  width: 150px;
+  height: 150px;
   object-fit: cover;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px #ccd;
-}
-
-button {
-  position: absolute;
-  top: 20px;
-  left: calc(50% + 120px);
-  transform: translateX(-50%);
-  font-size: 14px;
 }
 
 .title,
-.id {
-  margin: 0;
+.info {
+  margin: 0 0 4px;
+}
+
+.title {
+  font-size: 31px;
+  letter-spacing: 0.65px;
 }
 
 .title a {
   color: inherit;
 }
 
-.stats {
-  font-size: 16px;
+.info {
+  font-size: 15px;
+  letter-spacing: 0.35px;
 }
 
-.stats a + a {
-  margin-left: 10px;
+.ctrls {
+  margin: 10px 0 0;
 }
 
-.stats a strong {
-  color: #334;
+.info .fa-fw {
+  font-size: 11px;
+  color: #778;
+}
+
+button {
+  font-size: 14px;
+  padding: 6px 12px;
+}
+
+button .fa-fw {
+  font-size: 13px;
+  margin-right: 2px;
 }
 
 `

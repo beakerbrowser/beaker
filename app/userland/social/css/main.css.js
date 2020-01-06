@@ -1,10 +1,12 @@
 import {css} from '../vendor/lit-element/lit-element.js'
 import emptyCSS from './com/empty.css.js'
 import spinnerCSS from './com/spinner.css.js'
+import tooltipCSS from './com/tooltip.css.js'
 
 const cssStr = css`
 ${emptyCSS}
 ${spinnerCSS}
+${tooltipCSS}
 
 :host {
   display: block;
@@ -18,19 +20,15 @@ ${spinnerCSS}
   max-width: 640px;
 }
 
-.layout.wide {
-  max-width: 960px;
-}
-
 .layout.left-col {
   display: grid;
-  grid-template-columns: 300px 1fr;
+  grid-template-columns: 240px 1fr;
   grid-gap: 10px;
 }
 
 .layout.right-col {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: 1fr 240px;
   grid-gap: 10px;
 }
 
@@ -50,15 +48,9 @@ ${spinnerCSS}
 }
 
 header {
-  background: #fff;
-  padding: 0 10px;
-  margin-bottom: 20px;
-}
-
-header .inner {
   display: flex;
-  max-width: 960px;
-  margin: 0 auto;
+  align-items: center;
+  margin: 6px 6px 16px;
 }
 
 header a {
@@ -66,38 +58,25 @@ header a {
   color: #556;
   font-weight: 500;
   text-decoration: none;
-  font-size: 16px;
-  padding: 2px 5px;
+  font-size: 14px;
+  padding: 2px 0;
   margin-right: 20px;
-  border-bottom: 2px solid transparent;
 }
 
 header a:last-child {
-  margin-right: 10px;
+  margin-right: 0px;
 }
 
-header a:hover,
-header a.active {
+header a:hover {
   color: var(--blue);
-  border-bottom: 2px solid var(--blue);
 }
 
-header a .fa-fw {
-  margin-right: 4px;
-  width: 26px;
-}
-
-header img {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 4px;
-  border: 2px solid #fff;
-  
-  vertical-align: middle;
-  position: relative;
-  top: -2px;
+header .topic {
+  display: block;
+  color: #778;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 2px 0;
 }
 
 header .spacer {
@@ -106,22 +85,22 @@ header .spacer {
 
 nav.pills {
   display: flex;
-  margin: 6px 0;
-  font-size: 10px;
-  font-weight: 500;
+  margin: 0 0 10px;
+  font-size: 13px;
 }
 
 nav.pills a {
   padding: 6px 16px;
   border-radius: 4px;
   margin-right: 4px;
+  color: inherit;
+  text-decoration: none;
 }
 
 nav.pills a.selected,
 nav.pills a:hover {
   cursor: pointer;
-  background: #f0f0f7;
-  font-weight: 500;
+  background: #eaeaf3;
 }
 
 `

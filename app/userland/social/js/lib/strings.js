@@ -106,3 +106,15 @@ const endingDashes = /([-]+$)/g
 export function slugify (str = '') {
   return str.replace(reservedChars, '-').replace(endingDashes, '')
 }
+
+export function toNiceTopic (t) {
+  return t.replace(/_/g, ' ')
+}
+
+export function normalizeTopic (t) {
+  return t.replace(/\s/g, '_')
+}
+
+export function isValidTopic (t) {
+  return /[a-z0-9_\s]+/.test(t)
+}

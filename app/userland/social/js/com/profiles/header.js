@@ -39,22 +39,34 @@ export class ProfileHeader extends LitElement {
     var numFollowers =  this.profile.followers ? this.profile.followers.length : html`<span class="spinner"></span>`
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
-      <a class="avatar" href="/${id}"><img src="asset:thumb:${this.profile.url}?cache_buster=${Date.now()}"></a>
-      ${this.profile.isUser ? html`
-        <button class="primary big rounded" @click=${this.onEditProfile}>Edit profile</button>
-      ` : typeof this.profile.isUserFollowing === 'undefined' ? html`
-        <span class="spinner" style="position: absolute; top: 10px; right: 10px"></span>
-      ` : html`
-        <button class="primary big rounded" @click=${this.onToggleFollow}>${this.profile.isUserFollowing ? 'Unfollow' : 'Follow'}</button>
-      `}
-      <h1 class="title"><a href="/${id}">${this.profile.title}</a></h1>
-      <p class="id"><a href="/${id}">TODO@beaker.network</a></p>
-      <p class="description">${this.profile.description}</p>
-      <p class="stats">
-        <a href="/${id}/following"><strong>${numFollowing}</strong> Following</a>
-        <a href="/${id}/followers"><strong>${numFollowers}</strong> ${typeof numFollowers === 'number' ? pluralize(numFollowers, 'Follower') : 'Followers'}</a>
-        <a href=${this.profile.url}><strong class="fas fa-link"></strong> TODO</a>
-      </p>
+      <a class="avatar" href="/${id}"><img src="${this.profile.url}/thumb?cache_buster=${Date.now()}"></a>
+      <div class="main">
+        <h1 class="title"><a href="/${id}">${this.profile.title}</a></h1>
+        <p class="info">
+          <a class="id" href=${this.profile.url}>pfrazee.com</a>
+        </p>
+        <p class="info">
+          <span class="description">${this.profile.description}</span>
+        </p>
+        <p class="ctrls">
+          ${this.profile.isUser ? html`
+            <button class="" @click=${this.onEditProfile}>
+              <span class="fas fa-fw fa-user-edit"></span>
+              Edit your profile
+            </button>
+          ` : typeof this.profile.isUserFollowing === 'undefined' ? html`
+            <span class="spinner" style="position: absolute; top: 10px; right: 10px"></span>
+          ` : html`
+            <button class="" @click=${this.onToggleFollow}>
+              ${this.profile.isUserFollowing ? html`
+                <span class="fas fa-fw fa-user-minus"></span> Unfollow
+              ` : html`
+                <span class="fas fa-fw fa-user-plus"></span> Follow
+              `}
+            </button>
+          `}
+        </p>
+      </div>
     `
   }
 

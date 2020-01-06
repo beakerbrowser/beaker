@@ -9,13 +9,11 @@ ${spinnerCSS}
 :host {
   display: block;
   position: relative;
-  background: #fff;
   border: 1px solid #ccd;
-  border-radius: 8px;
+  border-radius: 4px;
   box-sizing: border-box;
-  padding: 14px 12px 16px 12px;
+  padding: 16px 12px 16px 16px;
   margin: 0px 0 10px;
-  max-width: 360px;
 }
 
 :host(.dark) {
@@ -33,62 +31,54 @@ a:hover {
 }
 
 img {
-  position: absolute;
-  left: 12px;
-  top: 12px;
-
   display: block;
   margin: 0 auto;
-  width: 36px;
-  height: 36px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
-}
-
-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 12px;
-  padding: 4px 8px !important;
-  background: transparent !important;
-  border: 1px solid var(--blue) !important;
-  color: var(--blue) !important;
-}
-
-button:hover {
-  background: #eef !important;
-}
-
-.title,
-.id {
-  margin: 0 0 0 46px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #ccd;
 }
 
 .title {
-  font-size: 14px;
+  font-size: 24px;
+  margin: 12px 0 0;
+  line-height: 1;
+  text-align: center;
 }
 
 .title a {
   color: inherit;
 }
 
-.id,
-.description {
-  font-size: 13px;
+.info {
+  font-size: 14px;
+  margin: 6px 0 0;
+  text-align: center;
 }
 
-.stats {
-  font-size: 12px;
-  margin-bottom: 0;
+.id {
+  font-size: 15px;
 }
 
-.stats a + a {
-  margin-left: 6px;
+.ctrls {
+  margin: 14px 0 0;
 }
 
-.stats a strong {
-  color: #334;
+button {
+  display: block;
+  font-size: 14px;
+  width: 100%;
+  padding: 8px 12px !important;
+}
+
+button .fa-fw {
+  margin-right: 4px;
+}
+
+button:hover {
+  background: #eef !important;
 }
 
 `

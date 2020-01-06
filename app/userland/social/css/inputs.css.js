@@ -18,25 +18,18 @@ textarea {
 }
 
 input[type="checkbox"],
-textarea[type="checkbox"],
 input[type="radio"],
-textarea[type="radio"],
-input[type="range"],
-textarea[type="range"] {
+input[type="range"] {
   padding: 0;
 }
 
 input[type="checkbox"]:focus,
-textarea[type="checkbox"]:focus,
 input[type="radio"]:focus,
-textarea[type="radio"]:focus,
-input[type="range"]:focus,
-textarea[type="range"]:focus {
+input[type="range"]:focus {
   box-shadow: none;
 }
 
-input[type="radio"],
-textarea[type="radio"] {
+input[type="radio"] {
   width: 14px;
   height: 14px;
   outline: none;
@@ -46,25 +39,21 @@ textarea[type="radio"] {
   transition: border 0.1s ease;
 }
 
-input[type="radio"]:hover,
-textarea[type="radio"]:hover {
+input[type="radio"]:hover {
   border: 1px solid var(--color-blue);
 }
 
-input[type="radio"]:checked,
-textarea[type="radio"]:checked {
+input[type="radio"]:checked {
   border: 4.5px solid var(--color-blue);
 }
 
-input[type="file"],
-textarea[type="file"] {
+input[type="file"] {
   padding: 0;
   border: 0;
   line-height: 1;
 }
 
-input[type="file"]:focus,
-textarea[type="file"]:focus {
+input[type="file"]:focus {
   border: 0;
   box-shadow: none;
 }
