@@ -1,3 +1,4 @@
+import { basename } from 'path'
 import datDns from '../dat/dns'
 import { joinPath } from '../../lib/strings'
 import { chunkMapAsync } from '../../lib/functions'
@@ -149,7 +150,7 @@ export async function query (root, opts) {
   })
 
   if (opts.sort === 'name') {
-    results.sort((a, b) => (opts.reverse) ? b.path.toLowerCase().localeCompare(a.path.toLowerCase()) : a.path.toLowerCase().localeCompare(b.path.toLowerCase()))
+    results.sort((a, b) => (opts.reverse) ? basename(b.path).toLowerCase().localeCompare(basename(a.path).toLowerCase()) : basename(a.path).toLowerCase().localeCompare(basename(b.path).toLowerCase()))
   } else if (opts.sort === 'mtime') {
     results.sort((a, b) => (opts.reverse) ? b.stat.mtime - a.stat.mtime : a.stat.mtime - b.stat.mtime)
   } else if (opts.sort === 'ctime') {
