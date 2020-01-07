@@ -273,10 +273,10 @@ ${spinnerCSS}
   top: 3px;
   height: 31px;
   width: 235px;
-  margin-right: 2px;
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
   background: var(--bg-background);
   transition: background 0.3s;
+  border-left: 1px solid var(--color-tab-border);
 }
 
 .tab.pinned {
@@ -410,9 +410,9 @@ ${spinnerCSS}
 .tab.current:before {
   content: '';
   position: absolute;
-  left: 0;
+  left: -1px;
   top: -3px;
-  width: 100%;
+  width: calc(100% + 2px);
   height: 3px;
   background: var(--color-current-tab-highlight);
 }
