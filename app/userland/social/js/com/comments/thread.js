@@ -16,6 +16,7 @@ export class CommentsThread extends LitElement {
       href: {type: String},
       userUrl: {type: String, attribute: 'user-url'},
       activeReplies: {type: Object},
+      activeEdits: {type: Object},
       composerPlaceholder: {type: String, attribute: 'composer-placeholder'}
     }
   }
@@ -26,6 +27,7 @@ export class CommentsThread extends LitElement {
     this.href = ''
     this.userUrl = ''
     this.activeReplies = {}
+    this.activeEdits = {}
     this.composerPlaceholder = undefined
   }
 
@@ -90,12 +92,28 @@ export class CommentsThread extends LitElement {
                 ? html`<span class="fas fa-fw fa-times"></span> Cancel reply`
                 : html`<span class="fas fa-fw fa-reply"></span> Reply`}
             </a>
+            ${comment.drive.url === this.userUrl ? html`
+              <a href="#" @click=${e => this.onClickToggleEdit(e, comment.url)}>
+                ${this.activeEdits[comment.url]
+                  ? html`<span class="fas fa-fw fa-times"></span> Cancel edit`
+                  : html`<span class="fas fa-fw fa-pencil-alt"></span> Edit`}
+              </a>
+            ` : ''}
           </div>
           ${this.activeReplies[comment.url] ? html`
             <beaker-comment-composer
               href="${comment.stat.metadata.href}"
               parent="${comment.url}"
               @submit-comment=${e => this.onSubmitComment(e, comment.url)}
+            ></beaker-comment-composer>
+          ` : ''}
+          ${this.activeEdits[comment.url] ? html`
+            <beaker-comment-composer
+              editing
+              href="${comment.stat.metadata.href}"
+              parent="${comment.url}"
+              .comment=${comment}
+              @submit-comment=${e => this.onSubmitEdit(e, comment.url)}
             ></beaker-comment-composer>
           ` : ''}
           ${comment.replies && comment.replies.length ? this.renderComments(comment.replies) : ''}
@@ -109,14 +127,29 @@ export class CommentsThread extends LitElement {
 
   async onClickToggleReply (e, url) {
     this.activeReplies[url] = !this.activeReplies[url]
+    this.activeEdits[url] = false
     await this.requestUpdate()
     if (this.activeReplies[url]) {
       this.shadowRoot.querySelector(`beaker-comment-composer[parent="${url}"]`).focus()
     }
   }
 
+  async onClickToggleEdit (e, url) {
+    this.activeEdits[url] = !this.activeEdits[url]
+    this.activeReplies[url] = false
+    await this.requestUpdate()
+    if (this.activeEdits[url]) {
+      this.shadowRoot.querySelector(`beaker-comment-composer[parent="${url}"]`).focus()
+    }
+  }
+
   onSubmitComment (e, url) {
     this.activeReplies[url] = false
+    this.requestUpdate()
+  }
+
+  onSubmitEdit (e, url) {
+    this.activeEdits[url] = false
     this.requestUpdate()
   }
 

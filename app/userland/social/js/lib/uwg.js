@@ -510,30 +510,32 @@ export const comments = {
   },
 
   /**
-   * @param {string} commentPath
-   * @param {Object} comment
-   * @param {string} [comment.content]
+   * @param {Comment} comment
+   * @param {Object} updates
+   * @param {string} [updates.content]
    * @returns {Promise<string>}
    */
-  async update (commentPath, {content}) {
+  async update (comment, {content}) {
     if (!isNonemptyString(content)) throw new Error('Content is required')
+    var commentPath = `/profile/comments/${comment.path.split('/').pop()}`
     
-     var stat
-     try {
-       stat = await navigator.filesystem.stat(commentPath)
-     } catch (e) {
-       throw new Error(`Failed to read comment-file for update: ${e.toString()}`)
-     }
+    var stat
+    try {
+      stat = await navigator.filesystem.stat(commentPath)
+    } catch (e) {
+      throw new Error(`Failed to read comment-file for update: ${e.toString()}`)
+    }
 
-     await navigator.filesystem.writeFile(commentPath, content, {metadata: stat.metadata})
-     return commentPath
+    await navigator.filesystem.writeFile(commentPath, content, {metadata: stat.metadata})
+    return commentPath
   },
 
   /**
-   * @param {string} commentPath
+   * @param {Comment} comment
    * @returns {Promise<void>}
    */
-  async remove (commentPath) {
+  async remove (comment) {
+    var commentPath = `/profile/comments/${comment.path.split('/').pop()}`
     await navigator.filesystem.unlink(commentPath)
   }
 }

@@ -173,8 +173,12 @@ export class PostView extends LitElement {
   async onSubmitComment (e) {
     // add the new comment
     try {
-      var {href, parent, content} = e.detail
-      await uwg.comments.add({href, parent, content})
+      var {isEditing, editTarget, href, parent, content} = e.detail
+      if (isEditing) {
+        await uwg.comments.update(editTarget, {content})
+      } else {
+        await uwg.comments.add({href, parent, content})
+      }
     } catch (e) {
       alert('Something went wrong. Please let the Beaker team know! (An error is logged in the console.)')
       console.error('Failed to add comment')
@@ -189,7 +193,7 @@ export class PostView extends LitElement {
 
     // delete the comment
     try {
-      await uwg.comments.remove(comment.path)
+      await uwg.comments.remove(comment)
     } catch (e) {
       alert('Something went wrong. Please let the Beaker team know! (An error is logged in the console.)')
       console.error('Failed to delete comment')

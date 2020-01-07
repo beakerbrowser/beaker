@@ -5,8 +5,10 @@ import { emit } from '../../lib/dom.js'
 export class CommentComposer extends LitElement {
   static get properties () {
     return {
+      isEditing: {type: Boolean, attribute: 'editing'},
       href: {type: String},
       parent: {type: String},
+      comment: {type: Object},
       isFocused: {type: Boolean},
       draftText: {type: String},
       placeholder: {type: String}
@@ -15,16 +17,26 @@ export class CommentComposer extends LitElement {
 
   constructor () {
     super()
+    this.isEditing = false
     this.href = ''
     this.parent = ''
+    this.comment = undefined
     this.isFocused = false
     this.draftText = ''
     this.placeholder = 'Write a new comment'
   }
 
+  updated (changedProperties) {
+    if (this.isEditing && changedProperties.has('comment')) {
+      this.draftText = this.comment.content
+    }
+  }
+
   _submit () {
     if (!this.draftText) return
     var detail = {
+      isEditing: this.isEditing,
+      editTarget: this.comment,
       href: this.href,
       parent: this.parent || undefined,
       content: this.draftText
@@ -52,7 +64,7 @@ export class CommentComposer extends LitElement {
           class="btn primary"
           ?disabled=${this.draftText.length === 0}
           @click=${this.onClickPost}
-        >Post</button>
+        >${this.isEditing ? 'Update' : 'Post'}</button>
       </div>
     `
   }
