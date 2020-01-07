@@ -36,7 +36,7 @@ export class PostsFeed extends LitElement {
       author: this.author ? this.author : undefined,
       offset: this.page * PAGE_SIZE,
       limit: PAGE_SIZE,
-      sort: 'ctime',
+      sort: 'name',
       reverse: true
     })
     /* dont await */ this.loadFeedAnnotations(posts)

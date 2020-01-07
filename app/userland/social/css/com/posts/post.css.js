@@ -60,6 +60,10 @@ a:hover {
   font-size: 10px;
 }
 
+button.menu {
+  padding: 0;
+}
+
 .topic {
   font-weight: bold;
   color: #445;

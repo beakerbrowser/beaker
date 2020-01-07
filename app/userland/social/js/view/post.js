@@ -195,6 +195,10 @@ export class PostView extends LitElement {
     toast.create('Comment deleted')
     this.load()
   }
+
+  async onPostDeleted (e) {
+    window.location = `/${this.author}`
+  }
 }
 
 customElements.define('beaker-post-view', PostView)

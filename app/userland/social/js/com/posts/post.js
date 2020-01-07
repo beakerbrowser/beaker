@@ -121,6 +121,7 @@ export class Post extends LitElement {
             ${isTextPost ? html`<span class="far fa-comment-alt"></span> text post` : ''}
             ${isFile ? html`<span class="far fa-file"></span> file` : ''}
           </span>
+          <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-caret-down"></span></button>
         </div>
         <div>
           <a class="topic" title=${toNiceTopic(this.post.topic)} href="/?topic=${encodeURIComponent(this.post.topic)}">${toNiceTopic(this.post.topic)}</a>
@@ -132,7 +133,7 @@ export class Post extends LitElement {
         </div>
         ${isExpanded && isTextPost ? html`
           <div class="text-post-content">
-            ${isMarkdown ? unsafeHTML(md.render(this.post.content)) : this.post.content}
+            ${isMarkdown ? unsafeHTML(md.render(this.post.content)) : html`<pre>${this.post.content}</pre>`}
           </div>
         ` : ''}
         ${isExpanded && isFile ? html`
@@ -188,7 +189,7 @@ export class Post extends LitElement {
       {icon: 'far fa-fw fa-file-alt', label: 'View post file', click: () => window.open(this.post.url) },
       {
         icon: 'fas fa-fw fa-link',
-        label: 'Copy post URL',
+        label: 'Copy post file URL',
         click: () => {
           writeToClipboard(this.post.url)
           toast.create('Copied to your clipboard')
@@ -198,14 +199,15 @@ export class Post extends LitElement {
 
     if (this.userUrl === this.post.drive.url) {
       items.push('-')
+      items.push({icon: 'fas fa-fw fa-paragraph', label: 'Change post title', click: () => this.onClickChangeTitle() })
       items.push({icon: 'fas fa-fw fa-trash', label: 'Delete post', click: () => this.onClickDelete() })
     }
 
     var rect = e.currentTarget.getClientRects()[0]
     contextMenu.create({
-      x: rect.right + 4,
-      y: rect.bottom + 8,
-      right: true,
+      x: rect.left + 8,
+      y: rect.bottom + 4,
+      center: true,
       withTriangle: true,
       roomy: true,
       noBorders: true,
@@ -214,10 +216,20 @@ export class Post extends LitElement {
     })
   }
 
+  async onClickChangeTitle () {
+    var newTitle = prompt('New post title', this.post.stat.metadata.title)
+    if (!newTitle) return
+    newTitle = newTitle.trim()
+    if (!newTitle) return
+    await uwg.posts.changeTitle(this.post, newTitle)
+    this.post.stat.metadata.title = newTitle
+    this.requestUpdate()
+  }
+
   async onClickDelete () {
     if (!confirm('Are you sure?')) return
     try {
-      await uwg.posts.remove(this.post.path)
+      await uwg.posts.remove(this.post)
     } catch (e) {
       console.error(e)
       toast.create(e.toString(), 'error')

@@ -321,11 +321,27 @@ export const posts = {
   },
 
   /**
-   * @param {string} postPath
+   * @param {Post} post 
+   * @param {string} newTitle 
+   */
+  async changeTitle (post, newTitle) {
+    if (!isNonemptyString(newTitle)) throw new Error('Title is required')
+
+    var filename = post.path.split('/').pop()
+    var path = `/profile/posts/${post.topic}/${filename}`
+    var metadata = Object.assign({}, post.stat.metadata, {title: newTitle})
+    console.log(path, metadata)
+    await navigator.filesystem.writeFile(path, post.content || '', {metadata})
+  },
+
+  /**
+   * @param {Post} post
    * @returns {Promise<void>}
    */
-  async remove (postPath) {
-    await navigator.filesystem.unlink(postPath)
+  async remove (post) {
+    var filename = post.path.split('/').pop()
+    var path = `/profile/posts/${post.topic}/${filename}`
+    await navigator.filesystem.unlink(path)
   }
 }
 
