@@ -62,7 +62,7 @@ export class App extends LitElement {
       let st = await navigator.filesystem.stat('/profile')
       this.user = await (new DatArchive(st.mount.key)).getInfo()
       uwg.profiles.setUser(this.user)
-      await uwg.profiles.readSocialGraph(this.user)
+      await uwg.profiles.readSocialGraph(this.user, this.user)
     }
     await this.requestUpdate()
     Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())

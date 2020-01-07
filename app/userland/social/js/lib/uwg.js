@@ -461,16 +461,17 @@ export const comments = {
    * @param {string} comment.content
    * @returns {Promise<string>}
    */
-  async add ({href, parent, content}) {
+  async add ({href, parent, content}, drive = undefined) {
     if (!isNonemptyString(href)) throw new Error('URL is required')
     if (!isUrl(href)) throw new Error('Invalid URL')
     if (!isNonemptyString(content)) throw new Error('Content is required')
     
     href = normalizeUrl(href)
 
-    var path = `/profile/comments/${Date.now()}.md`
-    await ensureParentDir(path)
-    await navigator.filesystem.writeFile(path, content, {metadata: {href, parent}})
+    var path = drive ? `/comments/${Date.now()}.md` : `/profile/comments/${Date.now()}.md`
+    drive = drive || navigator.filesystem
+    await ensureParentDir(path, drive)
+    await drive.writeFile(path, content, {metadata: {href, parent}})
     return path
   },
 
@@ -578,21 +579,22 @@ export const votes = {
    * @param {number} vote
    * @returns {Promise<string>}
    */
-  async put (href, vote) {
+  async put (href, vote, drive = undefined) {
     if (!isNonemptyString(href)) throw new Error('URL is required')
     if (!isUrl(href)) throw new Error('Invalid URL')
 
     href = normalizeUrl(href)
     vote = vote == 1 ? 1 : vote == -1 ? -1 : 0
 
-    var existingVote = await votes.get('me', href)
-    if (existingVote) await navigator.filesystem.unlink(existingVote.path)
+    var existingVote = await votes.get(drive ? drive.url : 'me', href)
+    if (existingVote) await (drive || navigator.filesystem).unlink(existingVote.path)
 
     if (!vote) return
 
-    var path = `/profile/votes/${Date.now()}.goto`
-    await ensureParentDir(path)
-    await navigator.filesystem.writeFile(path, '', {metadata: {href, vote}})
+    var path = drive ? `/votes/${Date.now()}.goto` : `/profile/votes/${Date.now()}.goto`
+    drive = drive || navigator.filesystem
+    await ensureParentDir(path, drive)
+    await drive.writeFile(path, '', {metadata: {href, vote}})
     return path
   }
 }

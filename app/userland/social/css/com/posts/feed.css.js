@@ -13,7 +13,7 @@ ${spinnerCSS}
 
 beaker-post {
   border-top: 1px solid #dde;
-  padding: 10px;
+  padding: 16px 10px;
   margin: 0;
 }
 `

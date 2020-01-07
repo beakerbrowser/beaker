@@ -40,12 +40,49 @@ export async function socializeDrives () {
 
 export async function generatePosts (numPosts = 10) {
   var driveUrls = Array.from(debugDrives)
+  var fake_post_words = FAKE_POST.split(' ')
   for (let i = 0; i < numPosts; i++) {
     for (let driveUrl of driveUrls) {
       let drive = new DatArchive(driveUrl)
-      let numLines = Math.floor(Math.random() * 2) + 1
-      let text = FAKE_POST.slice(0, numLines).join('\n\n')
-      await uwg.feed.add(text, drive)
+      let numWords = Math.min(Math.floor(Math.random() * fake_post_words.length), 30) + 1
+      let startWord = Math.floor(Math.random() * numWords)
+      let title = fake_post_words.slice(startWord, numWords).join(' ')
+      await uwg.posts.addLink({
+        href: 'https://beakerbrowser.com',
+        title,
+        topic: 'debug posts'
+      }, drive)
+    }
+  }
+}
+
+export async function generateComments (numComments = 10) {
+  var driveUrls = Array.from(debugDrives)
+  var fake_post_words = FAKE_POST.split(' ')
+  for (let i = 0; i < numComments; i++) {
+    for (let driveUrl of driveUrls) {
+      let drive = new DatArchive(driveUrl)
+      let numWords = Math.min(Math.floor(Math.random() * fake_post_words.length)) + 1
+      let startWord = Math.floor(Math.random() * numWords)
+      let content = fake_post_words.slice(startWord, numWords).join(' ')
+      let post = await getRandomPost()
+      let parentComment = (Math.random() > 0.5) ? await getRandomCommentOnPost(post) : undefined
+      await uwg.comments.add({
+        href: post.url,
+        parent: parentComment ? parentComment.url : undefined,
+        content
+      }, drive)
+    }
+  }
+}
+
+export async function generateVotes (numVotes = 100) {
+  var driveUrls = Array.from(debugDrives)
+  for (let i = 0; i < numVotes; i++) {
+    for (let driveUrl of driveUrls) {
+      let drive = new DatArchive(driveUrl)
+      let target = await getRandomPostOrComment()
+      await uwg.votes.put(target.url, (Math.random() > 0.7) ? 1 : -1, drive)
     }
   }
 }
@@ -64,6 +101,25 @@ export async function deleteDrives () {
 
 // internal
 // =
+
+async function getRandomPost () {
+  var posts = await uwg.posts.list({limit: 50})
+  return posts[Math.floor(Math.random() * posts.length)]
+}
+
+async function getRandomCommentOnPost (post) {
+  var comments = await uwg.comments.list({limit: 50, href: post.url})
+  return comments[Math.floor(Math.random() * comments.length)]
+}
+
+async function getRandomPostOrComment () {
+  var [posts, comments] = await Promise.all([
+    uwg.posts.list({limit: 50}),
+    await uwg.comments.list({limit: 50})
+  ])
+  var candidates = posts.concat(comments)
+  return candidates[Math.floor(Math.random() * candidates.length)]
+}
 
 function getRandomOtherThan (values, valueNotToTake) {
   let v = undefined
@@ -101,11 +157,7 @@ function instrument (obj) {
   })
 }
 
-const FAKE_POST = [
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
-  "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-]
+const FAKE_POST = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 
 const FAKE_PROFILES = [
   {
