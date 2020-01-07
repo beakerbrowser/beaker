@@ -126,6 +126,23 @@ export const follows = {
   },
 
   /**
+   * @param {Object} query]
+   * @param {string} query.author
+   * @param {string} query.target
+   * @returns {Promise<boolean>}
+   */
+  async exists ({author, target}) {
+    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    let results = await drive.query({
+      type: 'mount',
+      path: getFollowsPaths(author),
+      mount: target,
+      limit: 1
+    })
+    return !!results[0]
+  },
+
+  /**
    * @param {string} url
    * @param {string} title
    * @param {Object} [drive]

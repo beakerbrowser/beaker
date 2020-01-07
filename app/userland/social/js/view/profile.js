@@ -4,6 +4,7 @@ import * as uwg from '../lib/uwg.js'
 import '../com/profiles/aside.js'
 import '../com/posts/feed.js'
 import '../com/comments/feed.js'
+import '../com/profiles/list.js'
 import '../com/post-buttons.js'
 import '../com/topics.js'
 
@@ -33,7 +34,7 @@ export class ProfileView extends LitElement {
     this.following = await uwg.follows.list({author: this.profileId}, {includeProfiles: false})
     this.followers = await uwg.follows.list({target: this.profileId}, {includeProfiles: false})
     await this.requestUpdate()
-    Array.from(this.querySelectorAll('[loadable]'), el => el.load())
+    // Array.from(this.querySelectorAll('[loadable]'), el => el.load())
   }
 
   render () {
@@ -69,7 +70,12 @@ export class ProfileView extends LitElement {
     if (this.subview === 'comments') {
       return html`<beaker-comments-feed loadable .user=${this.user}></beaker-comments-feed>`
     }
-    return `todo: ${this.subview}`
+    if (this.subview === 'followers') {
+      return html`<beaker-profile-list loadable .user=${this.user} query="followers" source=${this.profileId}></beaker-profile-list>`
+    }
+    if (this.subview === 'following') {
+      return html`<beaker-profile-list loadable .user=${this.user} query="following" source=${this.profileId}></beaker-profile-list>`
+    }
   }
 
   // events
