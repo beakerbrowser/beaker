@@ -1,10 +1,12 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
 import inputscss from '../../inputs.css.js'
 import buttonscss from '../../buttons.css.js'
+import spinnercss from '../spinner.css.js'
 
 const cssStr = css`
 ${inputscss}
 ${buttonscss}
+${spinnercss}
 
 :host {
   display: block;
@@ -95,6 +97,15 @@ textarea {
 
 #native-file-input {
   display: none;
+}
+
+.link-metadata {
+  display: inline-flex;
+  align-items: center;
+}
+
+.link-metadata > * {
+  margin-right: 5px;
 }
 
 input.success,

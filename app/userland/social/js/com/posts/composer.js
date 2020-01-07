@@ -12,6 +12,7 @@ export class PostComposer extends LitElement {
       type: {type: String},
       validation: {type: Object},
       topics: {type: Array},
+      linkMetadata: {type: Object},
       file: {type: Object}
     }
   }
@@ -22,6 +23,7 @@ export class PostComposer extends LitElement {
     this.type = qp.get('type') || 'link'
     this.validation = {}
     this.topics = []
+    this.linkMetadata = undefined
     this.file = undefined
 
     if (location.search && location.search.includes('compose')) {
@@ -39,7 +41,9 @@ export class PostComposer extends LitElement {
   }
 
   setType (type) {
+    if (type === this.type) return
     this.type = type
+    this.linkMetadata = undefined
     this.queueValidation()
 
     let url = new URL(window.location)
@@ -100,7 +104,41 @@ export class PostComposer extends LitElement {
     this.validation = validation
   }
 
+  queueReadUrlMetadata () {
+    this.linkMetadata = undefined
+    clearTimeout(this.metato)
+    this.metato = setTimeout(this.readUrlMetadata.bind(this), 500)
+  }
+
+  async readUrlMetadata () {
+    this.linkMetadata = {loading: true}
+    var url = this.shadowRoot.querySelector('input#url').value
+    var urlp = new URL(url)
+    if (urlp.protocol === 'dat:') {
+      if (urlp.pathname === '/') {
+        try {
+          let info = await (new DatArchive(urlp.hostname)).getInfo({timeout: 10e3})
+          this.linkMetadata = {
+            success: true,
+            driveType: info.type
+          }
+          return
+        } catch (e) {
+          this.linkMetadata = {
+            success: false,
+            message: 'Failed to read metadata from URL'
+          }
+          return
+        }
+      }
+    }
+    this.linkMetadata = {none: true}
+  }
+
   canSubmit () {
+    if (this.type === 'link' && (!this.linkMetadata || this.linkMetadata.loading)) {
+      return false
+    }
     var inputs = Object.values(this.validation)
     return inputs.length > 0 && inputs.reduce((acc, input) => acc && input.success && !input.unset, true)
   }
@@ -113,11 +151,11 @@ export class PostComposer extends LitElement {
       <a class=${id === this.type ? 'selected' : ''} @click=${e => this.setType(id)}>${label}</a>
     `
     const input = (id, placeholder) => html`
-      <input id=${id} name=${id} class=${this.getInputClass(id)} placeholder=${placeholder} @keyup=${this.queueValidation}>
+      <input id=${id} name=${id} class=${this.getInputClass(id)} placeholder=${placeholder} @keyup=${this.onKeyup}>
       ${this.renderValidationError(id)}
     `
     const textarea = (id, placeholder) => html`
-      <textarea id=${id} name=${id} class=${this.getInputClass(id)} placeholder=${placeholder} @keyup=${this.queueValidation}></textarea>
+      <textarea id=${id} name=${id} class=${this.getInputClass(id)} placeholder=${placeholder} @keyup=${this.onKeyup}></textarea>
       ${this.renderValidationError(id)}
     `
     return html`
@@ -140,6 +178,7 @@ export class PostComposer extends LitElement {
         ${this.type === 'link' ? html`<div class="form-group">${input('url', 'URL')}</div>` : ''}
         ${this.type === 'text' ? html`<div class="form-group">${textarea('content', 'Post body (markdown is supported)')}</div>` : ''}
         ${this.type === 'file' ? this.renderFileInput() : ''}
+        ${typeof this.linkMetadata !== 'undefined' ? this.renderLinkMetadata() : ''}
         <div class="actions">
           <button type="submit" class="btn primary" ?disabled=${!this.canSubmit()}>
             ${this.type === 'link' ? html`<span class="fas fa-fw fa-link"></span> Post Link` : ''}
@@ -173,6 +212,35 @@ export class PostComposer extends LitElement {
     `
   }
 
+  renderLinkMetadata () {
+    if (this.linkMetadata.loading) {
+      return html`
+        <div class="link-metadata">
+          <span class="spinner"></span> Reading URL metadata...
+        </div>
+      `
+    }
+    if (this.linkMetadata.none) {
+      return html`
+        <div class="link-metadata">
+          No metadata found on this URL
+        </div>
+      `
+    }
+    if (!this.linkMetadata.success) {
+      return html`
+        <div class="link-metadata">
+          <span class="fa-fw fas fa-exclamation-triangle"></span> Failed to load URL metadata
+        </div>
+      `
+    }
+    return html`
+      <div class="link-metadata">
+        <span class="fa-fw fas fa-info"></span> <strong>Drive Type:</strong> ${this.linkMetadata.driveType || 'None'}
+      </div>
+    `
+  }
+
   renderValidationError (id) {
     if (this.validation[id] && this.validation[id].error) {
       return html`<div class="error">${this.validation[id].error}</div>`
@@ -181,6 +249,13 @@ export class PostComposer extends LitElement {
 
   // events
   // =
+
+  onKeyup (e) {
+    this.queueValidation()
+    if (e.target.id === 'url') {
+      this.queueReadUrlMetadata()
+    }
+  }
 
   async onClickSelectHyperdriveFile (e) {
     e.preventDefault()
@@ -229,7 +304,8 @@ export class PostComposer extends LitElement {
         path = await uwg.posts.addLink({
           topic: getValue('topic'),
           title: getValue('title'),
-          href: getValue('url')
+          href: getValue('url'),
+          driveType: this.linkMetadata.driveType
         })
       } else if (this.type === 'text') {
         path = await uwg.posts.addTextPost({

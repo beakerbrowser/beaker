@@ -252,14 +252,16 @@ export const posts = {
    * @param {string} post.href
    * @param {string} post.title
    * @param {string} post.topic
+   * @param {string} [post.driveType]
    * @param {Object} [drive]
    * @returns {Promise<string>}
    */
-  async addLink ({href, title, topic}, drive = undefined) {
+  async addLink ({href, title, topic, driveType}, drive = undefined) {
     if (!isNonemptyString(href)) throw new Error('URL is required')
     if (!isUrl(href)) throw new Error('Invalid URL')
     if (!isNonemptyString(title)) throw new Error('Title is required')
     if (!isValidTopic(topic)) throw new Error('Topic is required')
+    if (driveType && !isNonemptyString(driveType)) throw new Error('DriveType must be a string')
 
     href = normalizeUrl(href)
     topic = normalizeTopic(topic)
@@ -268,7 +270,7 @@ export const posts = {
     drive = drive || navigator.filesystem
     await ensureParentDir(path, drive, 2)
     await ensureParentDir(path, drive, 1)
-    await drive.writeFile(path, '', {metadata: {href, title}})
+    await drive.writeFile(path, '', {metadata: {href, title, 'drive-type': driveType}})
     return path
   },
 
