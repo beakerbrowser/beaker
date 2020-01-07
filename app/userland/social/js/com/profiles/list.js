@@ -3,6 +3,7 @@ import { repeat } from '../../../vendor/lit-element/lit-html/directives/repeat.j
 import * as uwg from '../../lib/uwg.js'
 import * as toast from '../toast.js'
 import listCSS from '../../../css/com/profiles/list.css.js'
+import '../img-fallbacks.js'
 
 export class ProfileList extends LitElement {
   static get properties () {
@@ -56,7 +57,12 @@ export class ProfileList extends LitElement {
     var id = profile.url.slice('dat://'.length)
     return html`
       <div class="profile">
-        <a class="avatar" href="/${id}"><img src="${profile.url}/thumb"></a>
+        <a class="avatar" href="/${id}">
+          <beaker-img-fallbacks>
+            <img src="${profile.url}/thumb" slot="img1">
+            <img src="/img/default-user-thumb.jpg" slot="img2">
+          </beaker-img-fallbacks>
+        </a>
         <div class="main">
           <h1 class="title">
             <a href="/${id}">${profile.title}</a>

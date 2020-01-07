@@ -4,6 +4,7 @@ import { pluralize } from '../../lib/strings.js'
 import * as toast from '../toast.js'
 import { EditProfilePopup } from '../popups/edit-profile.js'
 import headerCSS from '../../../css/com/profiles/header.css.js'
+import '../img-fallbacks.js'
 
 export class ProfileHeader extends LitElement {
   static get properties () {
@@ -35,11 +36,14 @@ export class ProfileHeader extends LitElement {
   render () {
     if (!this.profile) return html`<span class="spinner"></span>`
     var id = this.profile.url.slice('dat://'.length)
-    var numFollowing = this.profile.following ? this.profile.following.length : html`<span class="spinner"></span>`
-    var numFollowers =  this.profile.followers ? this.profile.followers.length : html`<span class="spinner"></span>`
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
-      <a class="avatar" href="/${id}"><img src="${this.profile.url}/thumb?cache_buster=${Date.now()}"></a>
+      <a class="avatar" href="/${id}">
+        <beaker-img-fallbacks>
+          <img src="${this.profile.url}/thumb" slot="img1">
+          <img src="/img/default-user-thumb.jpg" slot="img2">
+        </beaker-img-fallbacks>
+      </a>
       <div class="main">
         <h1 class="title"><a href="/${id}">${this.profile.title}</a></h1>
         <p class="info">

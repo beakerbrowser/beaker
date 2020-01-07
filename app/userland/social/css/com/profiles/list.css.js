@@ -25,11 +25,14 @@ a:hover {
   margin-bottom: 10px;
 }
 
+.avatar {
+  align-self: stretch;
+}
+
 img {
   display: block;
-  width: 150px;
-  height: auto;
-  max-height: 200px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
