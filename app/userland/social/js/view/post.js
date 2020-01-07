@@ -39,10 +39,9 @@ export class PostView extends LitElement {
 
   async load () {
     var post = await uwg.posts.get(this.author, this.path)
-    ;[post.votes, post.numComments, post.comments] = await Promise.all([
+    ;[post.votes, post.numComments] = await Promise.all([
       uwg.votes.tabulate(post.url),
-      uwg.comments.count({href: post.url}),
-      uwg.comments.thread(post.url)
+      uwg.comments.count({href: post.url})
     ])
     this.post = post
     console.log(this.post)
@@ -50,8 +49,10 @@ export class PostView extends LitElement {
     await this.requestUpdate()
     Array.from(this.querySelectorAll('[loadable]'), el => el.load())
 
-    await loadCommentAnnotations(post.comments)
-    this.querySelector('beaker-comments-thread').requestUpdate()
+    var comments = await uwg.comments.thread(post.url)
+    await loadCommentAnnotations(comments)
+    post.comments = comments
+    await this.requestUpdate()
   }
 
   render () {
@@ -90,6 +91,7 @@ export class PostView extends LitElement {
             expanded
             .post=${this.post}
             user-url="${this.user ? this.user.url : undefined}"
+            @deleted=${this.onPostDeleted}
           ></beaker-post>
           ${this.post.votes.upvotes.length || this.post.votes.downvotes.length ? html`
             <div class="votes">
@@ -107,13 +109,15 @@ export class PostView extends LitElement {
               ` : ''}
             </div>
           ` : ''}
-          <beaker-comments-thread
-            .comments=${this.post ? this.post.comments : undefined}
-            href="${this.post ? this.post.url : undefined}"
-            user-url="${this.user ? this.user.url : undefined}"
-            @submit-comment=${this.onSubmitComment}
-            @delete-comment=${this.onDeleteComment}
-          ></beaker-comments-thread>
+          ${this.post.comments ? html`
+            <beaker-comments-thread
+              .comments=${this.post ? this.post.comments : undefined}
+              href="${this.post ? this.post.url : undefined}"
+              user-url="${this.user ? this.user.url : undefined}"
+              @submit-comment=${this.onSubmitComment}
+              @delete-comment=${this.onDeleteComment}
+            ></beaker-comments-thread>
+          ` : html`<div class="spinner" style="margin-left: 40px"></div>`}
         </main>
         <aside>
           <beaker-profile-aside class="dark" loadable .user=${this.user} id=${this.author}></beaker-profile-aside>
@@ -208,4 +212,7 @@ async function loadCommentAnnotations (comments) {
     comment.votes = await uwg.votes.tabulate(comment.url)
     if (comment.replies) await loadCommentAnnotations(comment.replies)
   }))
+  comments.sort((a, b) => {
+    return (b.votes.upvotes.length - b.votes.downvotes.length) - (a.votes.upvotes.length - a.votes.downvotes.length)
+  })
 }
