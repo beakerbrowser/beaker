@@ -3,6 +3,7 @@ import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
 import * as uwg from '../lib/uwg.js'
 import '../com/profiles/aside.js'
 import '../com/posts/feed.js'
+import '../com/comments/feed.js'
 import '../com/post-buttons.js'
 import '../com/topics.js'
 
@@ -64,6 +65,9 @@ export class ProfileView extends LitElement {
   renderSubview () {
     if (this.subview === 'posts') {
       return html`<beaker-posts-feed loadable .user=${this.user}></beaker-posts-feed>`
+    }
+    if (this.subview === 'comments') {
+      return html`<beaker-comments-feed loadable .user=${this.user}></beaker-comments-feed>`
     }
     return `todo: ${this.subview}`
   }
