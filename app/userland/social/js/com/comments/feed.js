@@ -6,8 +6,9 @@ import * as contextMenu from '../context-menu.js'
 import * as toast from '../toast.js'
 import { timeDifference } from '../../lib/time.js'
 import feedCSS from '../../../css/com/comments/feed.css.js'
+import '../paginator.js'
 
-const LOAD_LIMIT = 50
+const PAGE_SIZE = 25
 
 export class CommentsFeed extends LitElement {
   static get properties () {
@@ -27,22 +28,20 @@ export class CommentsFeed extends LitElement {
     this.user = undefined
     this.author = undefined
     this.comments = undefined
+    this.page = 0
   }
 
   async load () {
     var comments = await uwg.comments.list({
       author: this.author ? this.author : undefined,
-      limit: LOAD_LIMIT,
+      offset: this.page * PAGE_SIZE,
+      limit: PAGE_SIZE,
       sort: 'ctime',
       reverse: true
     })
     /* dont await */ this.loadFeedAnnotations(comments)
     this.comments = comments
     console.log(this.comments)
-  }
-
-  async refreshFeed () {
-    this.loadFeedAnnotations(this.comments)
   }
 
   async loadFeedAnnotations (comments) {
@@ -116,6 +115,11 @@ export class CommentsFeed extends LitElement {
               </div>
             ` : ''}
         `}
+        <beaker-paginator
+          page=${this.page}
+          label="Showing comments ${(this.page * PAGE_SIZE) + 1} - ${(this.page + 1) * PAGE_SIZE}"
+          @change-page=${this.onChangePage}
+        ></beaker-paginator>
       </div>
     `
   }
@@ -180,6 +184,12 @@ export class CommentsFeed extends LitElement {
     // TODO
     
     this.comments = this.comments.filter(c => c.url !== comment.url)
+  }
+
+  onChangePage (e) {
+    this.page = e.detail.page
+    this.comments = undefined
+    this.load()
   }
 }
 

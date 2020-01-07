@@ -3,8 +3,9 @@ import { repeat } from '../../../vendor/lit-element/lit-html/directives/repeat.j
 import * as uwg from '../../lib/uwg.js'
 import feedCSS from '../../../css/com/posts/feed.css.js'
 import './post.js'
+import '../paginator.js'
 
-const LOAD_LIMIT = 50
+const PAGE_SIZE = 25
 
 export class PostsFeed extends LitElement {
   static get properties () {
@@ -26,13 +27,15 @@ export class PostsFeed extends LitElement {
     this.author = undefined
     this.topic = undefined
     this.posts = undefined
+    this.page = 0
   }
 
   async load () {
     var posts = await uwg.posts.list({
       topic: this.topic,
       author: this.author ? this.author : undefined,
-      limit: LOAD_LIMIT,
+      offset: this.page * PAGE_SIZE,
+      limit: PAGE_SIZE,
       sort: 'ctime',
       reverse: true
     })
@@ -86,6 +89,11 @@ export class PostsFeed extends LitElement {
                 </div>
               </div>
             ` : ''}
+          <beaker-paginator
+            page=${this.page}
+            label="Showing posts ${(this.page * PAGE_SIZE) + 1} - ${(this.page + 1) * PAGE_SIZE}"
+            @change-page=${this.onChangePage}
+          ></beaker-paginator>
         `}
       </div>
     `
@@ -93,6 +101,12 @@ export class PostsFeed extends LitElement {
 
   // events
   // =
+
+  onChangePage (e) {
+    this.page = e.detail.page
+    this.posts = undefined
+    this.load()
+  }
 
   async onPostDeleted (e) {
     let post = e.detail.post

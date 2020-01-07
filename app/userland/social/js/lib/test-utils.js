@@ -82,7 +82,7 @@ export async function generateVotes (numVotes = 100) {
     for (let driveUrl of driveUrls) {
       let drive = new DatArchive(driveUrl)
       let target = await getRandomPostOrComment()
-      await uwg.votes.put(target.url, (Math.random() > 0.7) ? 1 : -1, drive)
+      await uwg.votes.put(target.url, (Math.random() > 0.7) ? -1 : 1, drive)
     }
   }
 }

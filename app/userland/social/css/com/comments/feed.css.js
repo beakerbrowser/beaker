@@ -19,6 +19,7 @@ ${votectrlCSS}
   --header-color: #888;
 
   display: block;
+  padding-right: 10px;
 }
 
 a {
