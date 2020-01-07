@@ -369,6 +369,7 @@ export const comments = {
    * @returns {Promise<Comment[]>}
    */
   async list ({author, href, sort, reverse, offset, limit} = {author: undefined, href: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
+    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
     href = href ? normalizeUrl(href) : undefined
     var comments = await queryRead({
       path: getCommentsPaths(author),
@@ -377,7 +378,7 @@ export const comments = {
       reverse,
       offset,
       limit
-    })
+    }, drive)
     comments = comments.filter(c => isNonemptyString(c.content))
     await profiles.readAllProfiles(comments)
     return comments
@@ -689,7 +690,7 @@ function getCommentsPaths (author) {
   if (author === 'me') {
     return `/profile/comments/*.md`
   } else if (author) {
-    return `/profile/follows/${author}/comments/*.md`
+    return `/comments/*.md`
   } else {
     return [
       `/profile/comments/*.md`,

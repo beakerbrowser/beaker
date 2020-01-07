@@ -65,10 +65,10 @@ export class ProfileView extends LitElement {
 
   renderSubview () {
     if (this.subview === 'posts') {
-      return html`<beaker-posts-feed loadable .user=${this.user}></beaker-posts-feed>`
+      return html`<beaker-posts-feed loadable .user=${this.user} author=${this.profileId}></beaker-posts-feed>`
     }
     if (this.subview === 'comments') {
-      return html`<beaker-comments-feed loadable .user=${this.user}></beaker-comments-feed>`
+      return html`<beaker-comments-feed loadable .user=${this.user} author=${this.profileId}></beaker-comments-feed>`
     }
     if (this.subview === 'followers') {
       return html`<beaker-profile-list loadable .user=${this.user} query="followers" source=${this.profileId}></beaker-profile-list>`
