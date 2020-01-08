@@ -20,6 +20,7 @@ export async function generateDrives (num = 10) {
     let profile = FAKE_PROFILES[(i + debugDrives.length) % FAKE_PROFILES.length]
     let drive = await DatArchive.create(Object.assign(profile, {type: 'unwalled.garden/person', prompt: false}))
     debugDrives.push(drive.url)
+    await uwg.follows.add(drive.url, profile.title)
   }
 }
 
@@ -94,6 +95,7 @@ export async function deleteDrives () {
 
   for (let url of debugDrives) {
     console.debug('Unlinking', url)
+    await uwg.follows.remove(url).catch(e => undefined)
     await ensureUnmountByUrl('/system/drives/*', url)
   }
   debugDrives.length = 0

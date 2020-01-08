@@ -332,7 +332,6 @@ export const posts = {
     var filename = post.path.split('/').pop()
     var path = `/profile/posts/${post.topic}/${filename}`
     var metadata = Object.assign({}, post.stat.metadata, {title: newTitle})
-    console.log(path, metadata)
     await navigator.filesystem.writeFile(path, post.content || '', {metadata})
   },
 
@@ -375,6 +374,7 @@ export const topics = {
   }
 }
 
+var commentCache = {}
 export const comments = {
   /**
    * @param {Object} query
@@ -412,12 +412,21 @@ export const comments = {
    */
   async count ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
     href = href ? normalizeUrl(href) : undefined
-    var comments = await navigator.filesystem.query({
-      path: getCommentsPaths(author),
-      metadata: href ? {href} : undefined,
-      sort,
-      reverse
-    })
+    // commented out in favor of the cache
+    // var comments = await navigator.filesystem.query({
+    //   path: getCommentsPaths(author),
+    //   metadata: href ? {href} : undefined,
+    //   sort,
+    //   reverse
+    // })
+    var ckey = author || 'default'
+    if (!commentCache[ckey]) {
+      commentCache[ckey] = await navigator.filesystem.query({
+        path: getCommentsPaths(author)
+      })
+    }
+    var comments = commentCache[ckey]
+    if (href) comments = comments.filter(comment => comment.stat.metadata.href === href)
     return comments.length
   },
 
@@ -542,6 +551,7 @@ export const comments = {
   }
 }
 
+var voteCache = {}
 export const votes = {
   /**
    * @param {Object} query
@@ -568,16 +578,28 @@ export const votes = {
    * @param {string} href
    * @param {Object} query
    * @param {string} [query.author]
+   * @param {Object} [opts]
+   * @param {boolean} [opts.includeProfiles]
    * @returns {Promise<TabulatedVotes>}
    */
-  async tabulate (href, {author} = {author: undefined}) {
+  async tabulate (href, {author} = {author: undefined}, {includeProfiles} = {includeProfiles: false}) {
     href = normalizeUrl(href)
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
-    var votes = await drive.query({
-      path: getVotesPaths(author),
-      metadata: {href}
-    })
-    await profiles.readAllProfiles(votes)
+    // commented out in favor of the cache
+    // var votes = await drive.query({
+    //   path: getVotesPaths(author),
+    //   metadata: {href}
+    // })
+    if (!voteCache[author]) {
+      voteCache[author] = await drive.query({
+        path: getVotesPaths(author)
+      })
+    }
+    var votes = voteCache[author].filter(item => item.stat.metadata.href === href)
+
+    if (includeProfiles) {
+      await profiles.readAllProfiles(votes)
+    }
 
     // construct tabulated list
     var upvotes = new Set()
