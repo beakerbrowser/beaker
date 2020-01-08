@@ -21,11 +21,12 @@ class ShellWindowFooterMenu extends LitElement {
       height: 25px;
 
       display: flex;
-      font-size: 12px;
+      font-size: 11px;
+      letter-spacing: 0.4px;
       padding: 0 5px;
       box-sizing: border-box;
       border-top: 1px solid var(--color-footer-border);
-      background: var(--bg-background);
+      background: var(--bg-footer);
       color: var(--color-footer);
       user-select: none;
     }
@@ -42,6 +43,11 @@ class ShellWindowFooterMenu extends LitElement {
     a:hover {
       background: var(--bg-footer--hover);
       color: var(--color-footer--hover);
+    }
+    a .fas {
+      font-size: 10px;
+      position: relative;
+      top: -1px;
     }
     `
   }

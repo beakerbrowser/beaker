@@ -99,11 +99,11 @@ ${tooltipCSS}
   left: 0;
   width: 100%;
   text-align: center;
-  background: #f1f1f6;
+  background: #fff;
 }
 
 .dock {
-  padding: 30px 15px;
+  padding: 5px 15px 30px;
 }
 
 .dock-separator {
