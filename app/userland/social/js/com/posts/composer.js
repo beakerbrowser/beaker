@@ -25,19 +25,30 @@ export class PostComposer extends LitElement {
     this.topics = []
     this.linkMetadata = undefined
     this.file = undefined
-
-    if (location.search && location.search.includes('compose')) {
-      // TODO
-      // let params = new URLSearchParams(location.search)
-      // this.draftText = params.get('body')
-      // this.requestUpdate().then(_ => {
-      //   this.shadowRoot.querySelector('textarea').focus()
-      // })
-    }
   }
 
   async load () {
     this.topics = await uwg.topics.list()
+
+    if (location.search && location.search.includes('from-cli')) {
+      let params = new URLSearchParams(location.search)
+      this.setType(params.get('type') || 'link')
+      await this.requestUpdate()
+
+      this.shadowRoot.querySelector('input#title').value = params.get('title')
+      this.shadowRoot.querySelector('input#topic').value = params.get('topic')
+      if (params.get('url')) {
+        this.shadowRoot.querySelector('input#url').value = params.get('url')    
+        this.queueReadUrlMetadata()    
+      } else if (params.get('file')) {
+        let url = params.get('file')
+        let urlp = new URL(url)
+        let drive = new DatArchive(urlp.hostname)
+        let base64buf = await drive.readFile(urlp.pathname, 'base64')
+        this.file = {source: 'hyperdrive', name: urlp.pathname.split('/').pop(), base64buf}
+      }
+      this.queueValidation()
+    }
   }
 
   setType (type) {

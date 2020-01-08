@@ -223,15 +223,8 @@
         {
           "name": "ls",
           "help": "List the latest posts in your feed",
-          "usage": "social ls [-l] [-p {page=1}] [-n {num=10}]",
+          "usage": "social ls [-p {page=1}] [-n {num=10}]",
           "options": [
-            {
-              "name": "long",
-              "abbr": "l",
-              "help": "Lengthen the output",
-              "boolean": true,
-              "default": false
-            },
             {
               "name": "page",
               "abbr": "p",
@@ -249,38 +242,22 @@
         {
           "name": "post",
           "help": "Compose a new post",
-          "usage": "social post [{body}] [-y] [-f {file}]",
+          "usage": "social post {title} [-t {topic}] [-l {url}] [-f {file}]",
           "options": [
             {
-              "name": "yes",
-              "abbr": "y",
-              "help": "Post immediately without reviewing first",
-              "boolean": true,
-              "default": false
+              "name": "topic",
+              "abbr": "t",
+              "help": "The topic to post under"
+            },
+            {
+              "name": "link",
+              "abbr": "l",
+              "help": "The URL to post"
             },
             {
               "name": "file",
               "abbr": "f",
-              "help": "Use the content of the given file as the post-body (should be a text file)"
-            }
-          ]
-        },
-        {
-          "name": "share",
-          "help": "Share a file or URL on your feed",
-          "usage": "social share {url} [{body}] [-y] [-f {file}]",
-          "options": [
-            {
-              "name": "yes",
-              "abbr": "y",
-              "help": "Post immediately without reviewing first",
-              "boolean": true,
-              "default": false
-            },
-            {
-              "name": "file",
-              "abbr": "f",
-              "help": "Use the content of the given file as the post-body (should be a text file)"
+              "help": "The path to a file to post"
             }
           ]
         },

@@ -13,8 +13,8 @@ var lastPosts = []
 export async function ls (opts = {}) {
   lastPosts.length = 0
   let posts = await navigator.filesystem.query({
-    path: ['/profile/feed/*', '/profile/follows/*/feed/*'],
-    sort: 'ctime',
+    path: ['/profile/posts/*/*', '/profile/follows/*/posts/*/*'],
+    sort: 'name',
     reverse: true,
     limit: opts.num,
     offset: (opts.page - 1) * opts.num
@@ -23,30 +23,17 @@ export async function ls (opts = {}) {
   for (let post of posts) {
     lastPosts.push(post.url)
     profiles[post.drive] = post.drive = profiles[post.drive] || await (new DatArchive(post.drive)).getInfo()
-    post.content = await navigator.filesystem.readFile(post.path)
   }
   posts.toHTML = () => {
-    if (!opts.long) {
-      return posts.map((post, i) => html`
-        <div style="display: flex; align-items: center; margin-bottom: 10px; overflow: hidden; white-space: nowrap; height: 1rem">
-          <strong class="color-lightgray" style="margin-right: 10px">${i + 1}.</strong>
-          <img src="asset:thumb:${post.drive.url}" style="width: 16px; border-radius: 50%; margin-right: 10px">
-          <a href="beaker://social/${post.drive.url.slice('dat://'.length)}" style="margin-right: 10px"><strong>${post.drive.title}</strong></a>
-          <a class="color-lightgray" href="beaker://social/${post.url.slice('dat://'.length)}" style="margin-right: 10px"><small>${timeDifference(post.stat.ctime)}</small></a>
-          <span>${post.content}</span>
-        </div>
-      `).reverse()      
-    }
     return posts.map((post, i) => html`
-      <div class="border-lightgray" style="padding: 10px; margin: 5px 0">
-        <div style="display: flex; align-items: center; margin-bottom: 10px">
-          <strong class="color-lightgray" style="margin-right: 10px">${i + 1}.</strong>
-          <img src="asset:thumb:${post.drive.url}" style="width: 16px; border-radius: 50%; margin-right: 10px">
-          <a href="beaker://social/${post.drive.url.slice('dat://'.length)}" style="margin-right: 10px"><strong>${post.drive.title}</strong></a>
-          <a class="color-lightgray" href="beaker://social/${post.url.slice('dat://'.length)}"><small>${timeDifference(post.stat.ctime)}</small></a>
+      <div class="border-lightgray" style="margin-bottom: 5px; padding: 5px; overflow: hidden; white-space: nowrap; overflow: hidden;">
+        <div style="display: flex; align-items: center; font-size: 10px; margin-bottom: 2px;">
+          <strong class="color-lightgray" style="margin-right: 5px">${i + 1}.</strong>
+          <a href="beaker://social/${post.drive.url.slice('dat://'.length)}" style="margin-right: 5px">${post.drive.title}</a>
+          <a class="color-lightgray" href="beaker://social/${post.url.slice('dat://'.length)}" style="margin-right: 10px"><small>${timeDifference(post.stat.ctime)}</small></a>
         </div>
-        <div>
-          ${post.content}
+        <div style="font-size: 14px">
+          <a href=${post.stat.metadata.href || post.url}><strong>${post.stat.metadata.title}</strong></a>
         </div>
       </div>
     `).reverse()
@@ -54,18 +41,29 @@ export async function ls (opts = {}) {
   return posts
 }
 
-export async function post (opts = {}, body) {
-  if (opts.file) {
-    let {archive, pathname} = resolveParse(this.env, opts.file)
-    body = await archive.readFile(pathname)
+export async function post (opts = {}, title = '') {
+  if (opts.link && opts.file) {
+    throw new Error('Must give a file or a link (cannot give both)')
   }
-  if (opts.yes) {
-    await navigator.filesystem.writeFile(`/profile/feed/${Date.now()}.md`, body)
+  if (!opts.link && !opts.file) {
+    throw new Error('Must give a file (-f) or link (-l)')
+  }
+  title = title.trim()
+  if (!title) throw new Error('Must give a title')
+  if (opts.file) opts.file = this.env.resolve(opts.file)
+
+  let urlParams = new URLSearchParams()
+  urlParams.set('from-cli', 1)
+  urlParams.set('title', title)
+  if (opts.topic) urlParams.set('topic', opts.topic)
+  if (opts.link) {
+    urlParams.set('type', 'link')
+    urlParams.set('url', opts.link)
   } else {
-    let urlParams = new URLSearchParams()
-    urlParams.set('body', body)
-    this.page.goto(`beaker://social/?compose&${urlParams.toString()}`)
+    urlParams.set('type', 'file')
+    urlParams.set('file', opts.file)
   }
+  this.page.goto(`beaker://social/compose?${urlParams.toString()}`)
 }
 
 export async function share (opts = {}, href, body) {
@@ -242,7 +240,7 @@ export function view (opts = {}, id) {
 function renderProfile (key, info) {
   return html`
     <div class="border-lightgray" style="padding: 0px 10px">
-      <h1><img src="asset:thumb:${info.url}" style="width: 32px; border-radius: 50%"> ${info.title}</h1>
+      <h1><img src="${info.url}/thumb" style="width: 32px; border-radius: 50%"> ${info.title}</h1>
       <p><strong>Bio:</strong> ${info.description}</p>
       <p><strong>Profile:</strong> <a href="beaker://social/${key}">beaker.network/${key}</a></p>
       <p><strong>Drive:</strong> <a href="${info.url}">${toNiceUrl(info.url)}</a></p>
