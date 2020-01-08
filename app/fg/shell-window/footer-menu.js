@@ -24,9 +24,9 @@ class ShellWindowFooterMenu extends LitElement {
       font-size: 12px;
       padding: 0 5px;
       box-sizing: border-box;
-      border-top: 1px solid #445;
-      background: #334;
-      color: #eef;
+      border-top: 1px solid var(--color-footer-border);
+      background: var(--bg-background);
+      color: var(--color-footer);
       user-select: none;
     }
     a {
@@ -40,8 +40,8 @@ class ShellWindowFooterMenu extends LitElement {
     }
     a.pressed,
     a:hover {
-      background: #223;
-      color: #fff;
+      background: var(--bg-footer--hover);
+      color: var(--color-footer--hover);
     }
     `
   }
