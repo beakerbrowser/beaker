@@ -16,8 +16,8 @@ const ICONS = {
   person: {
     '/comments': 'fas fa-comment',
     '/follows': 'fas fa-user-friends',
-    '/feed': 'fa fa-rss',
-    '/likes': 'fas fa-heart'
+    '/posts': 'fa fa-rss',
+    '/votes': 'fas fa-vote-yea'
   },
   common: {
   }

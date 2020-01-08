@@ -21,9 +21,9 @@ export const PATHS = {
 
   // user fs
   COMMENTS: '/comments',
-  FEED: '/feed',
+  POSTS: '/posts',
   FOLLOWS: '/follows',
-  LIKES: '/likes',
+  VOTES: '/votes',
 }
 
 // builtin programs
