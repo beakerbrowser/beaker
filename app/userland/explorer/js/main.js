@@ -270,7 +270,7 @@ export class ExplorerApp extends LitElement {
 
     var items = await this.attempt(
       `Reading directory (${location.pathname})`,
-      () => drive.readdir(location.pathname, {stat: true})
+      () => drive.readdir(location.pathname, {includeStats: true})
     )
 
     for (let item of items) {

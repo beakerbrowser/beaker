@@ -465,7 +465,7 @@ class WebTerm extends LitElement {
       }
 
       // read directory
-      this.tabCompletion = await (createArchive(lp.origin).readdir(lp.pathname, {stat: true}).catch(err => []))
+      this.tabCompletion = await (createArchive(lp.origin).readdir(lp.pathname, {includeStats: true}).catch(err => []))
       this.tabCompletion.sort((a, b) => {
         if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
         if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1

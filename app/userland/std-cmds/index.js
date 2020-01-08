@@ -24,7 +24,7 @@ export async function ls (opts = {}, location = '') {
       toHTML: () => html`Is a file.\nSize: ${st.size}`
     }
   } else {
-    listing = await archive.readdir(pathname, {stat: true})
+    listing = await archive.readdir(pathname, {includeStats: true})
     return {
       listing,
       toHTML () {

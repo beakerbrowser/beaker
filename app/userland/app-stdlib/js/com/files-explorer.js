@@ -88,7 +88,7 @@ class FilesExplorer extends LitElement {
       }
       this.folderPath = folderPath
 
-      items = await archive.readdir(folderPath, {stat: true})
+      items = await archive.readdir(folderPath, {includeStats: true})
       items.sort((a, b) => {
         if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
         if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1

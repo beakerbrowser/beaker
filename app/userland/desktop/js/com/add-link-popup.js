@@ -195,7 +195,7 @@ export class AddLinkPopup extends BasePopup {
   async load () {
     this.reset()
 
-    var explorerItems = await navigator.filesystem.readdir(this.explorerPath, {stat: true})
+    var explorerItems = await navigator.filesystem.readdir(this.explorerPath, {includeStats: true})
     var driveInfo = await navigator.filesystem.getInfo()
     for (let item of explorerItems) {
       item.drive = driveInfo

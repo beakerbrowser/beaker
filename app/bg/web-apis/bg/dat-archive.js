@@ -431,11 +431,8 @@ export default {
 
         checkin('reading directory')
         var names = await checkoutFS.pda.readdir(filepath, opts)
-        if (opts.stat) {
-          names = await chunkMapAsync(names, 30, async (name) => ({
-            name,
-            stat: await checkoutFS.pda.stat(path.join(filepath, name))
-          }))
+        if (opts.includeStats) {
+          names = names.map(obj => ({name: obj.name, stat: obj.stat}))
         }
         return names
       })

@@ -57,7 +57,7 @@ export async function setup () {
 
   // load root archive
   rootArchive = await dat.archives.getOrLoadArchive(browsingProfile.url)
-
+  
   // setup users
   var userList = await users.setup()
 

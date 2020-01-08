@@ -87,7 +87,7 @@ class FilesExplorer extends LitElement {
 
       var parentDrive = await this.getParentDriveInfo()
       var canShare = parentDrive.info.url !== navigator.filesystem.url
-      items = await drive.readdir(folderPath, {stat: true})
+      items = await drive.readdir(folderPath, {includeStats: true})
       items.forEach(item => {
         item.path = joinPath(this.folderPath, item.name)
         item.url = joinPath(info.url, item.path)

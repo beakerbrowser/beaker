@@ -549,7 +549,9 @@ class EditorApp extends LitElement {
   async onClickSave () {
     if (this.readOnly) return
     var model = this.editor.getModel(this.url)
-    await this.archive.writeFile(this.resolvedPath, model.getValue())
+    let st = await this.archive.stat(this.resolvedPath).catch(e => undefined)
+    let metadata = st && st.metadata ? st.metadata : undefined
+    await this.archive.writeFile(this.resolvedPath, model.getValue(), {metadata})
     this.lastSavedVersionId = model.getAlternativeVersionId()
     if (this.liveReloadMode) beaker.browser.gotoUrl(this.url)
   }

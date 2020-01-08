@@ -213,7 +213,7 @@ export const setup = function (rpc) {
       var errStack = (new Error()).stack
       try {
         var names = await datRPC.readdir(this.url, path, opts)
-        if (opts.stat) {
+        if (opts.includeStats) {
           names.forEach(name => { name.stat = new Stat(name.stat) })
         }
         return names

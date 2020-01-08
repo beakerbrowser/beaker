@@ -10,7 +10,7 @@ export const FIXED_FILES = [
 export async function load () {
   var userFiles = []
   try {
-    userFiles = await navigator.filesystem.readdir('/desktop', {stat: true})
+    userFiles = await navigator.filesystem.readdir('/desktop', {includeStats: true})
     userFiles.sort((a, b) => a.name.localeCompare(b.name))
   } catch (e) {
     console.log('Failed to load desktop files', e)

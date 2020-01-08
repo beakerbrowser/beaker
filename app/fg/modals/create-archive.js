@@ -148,7 +148,7 @@ class CreateArchiveModal extends LitElement {
 
   async readTemplates () {
     var fsurl = bg.navigatorFs.get().url
-    var files = (await bg.datArchive.readdir(fsurl, TEMPLATES_DIR, {stat: true}).catch(e => []))
+    var files = (await bg.datArchive.readdir(fsurl, TEMPLATES_DIR, {includeStats: true}).catch(e => []))
     var infos = await Promise.all(files.map(file => {
       if (file.stat.mount && file.stat.mount.key) {
         return bg.datArchive.getInfo(file.stat.mount.key).catch(e => false)

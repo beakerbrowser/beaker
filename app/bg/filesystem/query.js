@@ -60,8 +60,6 @@ import { DAT_HASH_REGEX } from '../../lib/const'
  * @returns {Promise<FSQueryResult[]>}
  */
 export async function query (root, opts) {
-  var parentDriveStatCache = {}
-
   // validate opts
   if (!opts || !opts.path) throw new Error('The `path` parameter is required')
   if (!(typeof opts.path === 'string' || (Array.isArray(opts.path) && opts.path.every(v => typeof v === 'string')))) {
@@ -83,43 +81,14 @@ export async function query (root, opts) {
     opts.mount = DAT_HASH_REGEX.exec(opts.mount)[0]
   }
 
-  // drive lookup tools & cache
-  async function getParentDriveInfo (path) {
-    var pathParts = path.split('/').filter(Boolean).slice(0, -1)
-    while (pathParts.length > 0) {
-      let mountPath = pathParts.join('/')
-      let drive
-  
-      // check fs
-      let st = parentDriveStatCache[mountPath]
-      if (!st) {
-        parentDriveStatCache[mountPath] = st = root.pda.stat(mountPath).catch(e => null)
-      }
-      st = await st
-      if (st && st.mount && st.mount.key) {
-        drive = `dat://${st.mount.key.toString('hex')}`
-      }
-
-      if (drive) {
-        return {drive, url: joinPath(drive, path.slice(mountPath.length + 1))}
-      }
-
-      pathParts.pop()
-    }
-    return {drive: `dat://${root.key.toString('hex')}`, url: joinPath(root.url, path)}
-  }
-
   // iterate all matching paths and match against the query
   var candidates = await expandPaths(root, opts.path)
   var results = []
-  await chunkMapAsync(candidates, 100, async (path) => {
-    let stat
-    try {
-      stat = await root.pda.stat(path)
-    } catch (e) {
-      // dne, skip
-      return
-    }
+  await chunkMapAsync(candidates, 100, async (item) => {
+    let path = item.name
+    let stat = item.stat
+    let localDriveKey = item.localDriveKey
+    let innerPath = item.innerPath
 
     var type = 'file'
     if (stat.mount && stat.mount.key) type = 'mount'
@@ -138,11 +107,11 @@ export async function query (root, opts) {
       if (!metaMatch) return
     }
 
-    var {drive, url} = await getParentDriveInfo(path)
+    var drive = `dat://${localDriveKey}`
     results.push({
       type,
       path,
-      url,
+      url: joinPath(drive, innerPath),
       stat,
       drive,
       mount: type === 'mount' ? `dat://${stat.mount.key.toString('hex')}` : undefined
@@ -168,7 +137,7 @@ export async function query (root, opts) {
 // =
 
 async function expandPaths (root, patterns) {
-  var paths = []
+  var matches = []
   patterns = Array.isArray(patterns) ? patterns : [patterns]
   await Promise.all(patterns.map(async (pattern) => {
     // parse the pattern into a set of ops
@@ -186,22 +155,29 @@ async function expandPaths (root, patterns) {
     if (acc.length) ops.push(['push', acc.join('/')])
 
     // run the ops to assemble a list of matching paths
-    var workingPaths = ['/']
+    var workingPaths = [{name: '/', innerPath: '/', localDriveKey: root.key.toString('hex')}]
     for (let op of ops) {
       let newWorkingPaths = []
       if (op[0] === 'push') {
         // add the given segment to all working paths
-        newWorkingPaths = workingPaths.map(v => joinPath(v, op[1]))
+        newWorkingPaths = workingPaths.map(v => ({
+          name: joinPath(v.name, op[1]),
+          innerPath: v.innerPath,
+          stat: v.stat,
+          mount: v.mount
+        }))
       } else if (op[0] === 'match') {
         // compile a glob-matching regex from the segment
         var re = new RegExp(`^${op[1].replace(/\*/g, '[^/]*')}$`, 'i')
         
         // read the files at each working path
         for (let workingPath of workingPaths) {
-          for (let name of await root.pda.readdir(workingPath).catch(e => [])) {
+          for (let item of await root.pda.readdir(workingPath.name, {includeStats: true}).catch(e => [])) {
             // add matching names to the working path
-            if (re.test(name)) {
-              newWorkingPaths.push(joinPath(workingPath, name))
+            if (re.test(item.name)) {
+              item.localDriveKey = item.mount.key.toString('hex')
+              item.name = joinPath(workingPath.name, item.name)
+              newWorkingPaths.push(item)
             }
           }
         }
@@ -211,10 +187,10 @@ async function expandPaths (root, patterns) {
     
     // emit the results
     for (let result of workingPaths) {
-      paths.push(result)
+      matches.push(result)
     }
   }))
-  return paths
+  return matches
 }
 
 // TODO!!

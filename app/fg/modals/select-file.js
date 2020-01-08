@@ -283,7 +283,7 @@ class SelectFileModal extends LitElement {
   }
 
   async readdir () {
-    var files = await bg.datArchive.readdir(this.archive, this.path, {stat: true})
+    var files = await bg.datArchive.readdir(this.archive, this.path, {includeStats: true})
     files.forEach(file => {
       file.stat = new Stat(file.stat)
       file.path = joinPath(this.path, file.name)

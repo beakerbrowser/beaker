@@ -161,7 +161,7 @@ main .error-view {
 nav {
   position: fixed;
   z-index: 2;
-  top: 0px;
+  top: 4px;
   width: 270px;
   height: 100vh;
   box-sizing: border-box;
