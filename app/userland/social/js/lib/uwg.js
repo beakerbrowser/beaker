@@ -600,9 +600,10 @@ export const votes = {
    * @param {string} [query.author]
    * @param {Object} [opts]
    * @param {boolean} [opts.includeProfiles]
+   * @param {boolean} [opts.noCache]
    * @returns {Promise<TabulatedVotes>}
    */
-  async tabulate (href, {author} = {author: undefined}, {includeProfiles} = {includeProfiles: false}) {
+  async tabulate (href, {author} = {author: undefined}, {includeProfiles, noCache} = {includeProfiles: false, noCache: false}) {
     href = normalizeUrl(href)
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
     // commented out in favor of the cache
@@ -610,7 +611,7 @@ export const votes = {
     //   path: getVotesPaths(author),
     //   metadata: {href}
     // })
-    if (!voteCache[author]) {
+    if (!voteCache[author] || noCache) {
       voteCache[author] = await drive.query({
         path: getVotesPaths(author)
       })
@@ -676,6 +677,17 @@ export const votes = {
     await ensureParentDir(path, drive)
     await drive.writeFile(path, '', {metadata: {href, vote}})
     return path
+  },
+
+  /**
+   * @param {Object} votes 
+   * @param {string} subjectUrl 
+   */
+  getVoteBy (votes, subjectUrl) {
+    if (!votes) return 0
+    if (votes.upvotes.find(url => (url.url || url) === subjectUrl)) return 1
+    if (votes.downvotes.find(url => (url.url || url) === subjectUrl)) return -1
+    return 0
   }
 }
 

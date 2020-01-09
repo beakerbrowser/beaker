@@ -32,11 +32,7 @@ export class CommentsThread extends LitElement {
   }
 
   getUserVote (comment) {
-    var votes = comment && comment.votes
-    if (!votes) return 0
-    if (votes.upvotes.find(u => u.url === this.userUrl)) return 1
-    if (votes.downvotes.find(u => u.url === this.userUrl)) return -1
-    return 0
+    return uwg.votes.getVoteBy(comment && comment.votes, this.userUrl)
   }
 
   getKarma (comment) {
@@ -159,7 +155,11 @@ export class CommentsThread extends LitElement {
     
     var userVote = this.getUserVote(comment)
     await uwg.votes.put(comment.url, userVote === 1 ? 0 : 1)
-    comment.votes = await uwg.votes.tabulate(comment.url)
+    if (userVote === 1) {
+      comment.votes.upvotes = comment.votes.upvotes.filter(url => url !== this.userUrl)
+    } else {
+      comment.votes.upvotes.push(this.userUrl)
+    }
     this.requestUpdate()
   }
 
@@ -169,7 +169,11 @@ export class CommentsThread extends LitElement {
     
     var userVote = this.getUserVote(comment)
     await uwg.votes.put(comment.url, userVote === -1 ? 0 : -1)
-    comment.votes = await uwg.votes.tabulate(comment.url)
+    if (userVote === -1) {
+      comment.votes.downvotes = comment.votes.downvotes.filter(url => url !== this.userUrl)
+    } else {
+      comment.votes.downvotes.push(this.userUrl)
+    }
     this.requestUpdate()
   }
 

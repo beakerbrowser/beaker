@@ -49,11 +49,7 @@ export class Post extends LitElement {
   }
 
   getUserVote () {
-    var votes = this.post && this.post.votes
-    if (!votes) return 0
-    if (votes.upvotes.find(u => u.url === this.userUrl)) return 1
-    if (votes.downvotes.find(u => u.url === this.userUrl)) return -1
-    return 0
+    return uwg.votes.getVoteBy(this.post && this.post.votes, this.userUrl)
   }
 
   getKarma () {
@@ -167,7 +163,11 @@ export class Post extends LitElement {
     
     var userVote = this.getUserVote()
     await uwg.votes.put(this.post.url, userVote === 1 ? 0 : 1)
-    this.post.votes = await uwg.votes.tabulate(this.post.url)
+    if (userVote === 1) {
+      this.post.votes.upvotes = this.post.votes.upvotes.filter(url => (url.url || url) !== this.userUrl)
+    } else {
+      this.post.votes.upvotes.push({url: this.userUrl})
+    }
     this.requestUpdate()
   }
 
@@ -177,7 +177,11 @@ export class Post extends LitElement {
     
     var userVote = this.getUserVote()
     await uwg.votes.put(this.post.url, userVote === -1 ? 0 : -1)
-    this.post.votes = await uwg.votes.tabulate(this.post.url)
+    if (userVote === -1) {
+      this.post.votes.downvotes = this.post.votes.downvotes.filter(url => (url.url || url) !== this.userUrl)
+    } else {
+      this.post.votes.downvotes.push({url: this.userUrl})
+    }
     this.requestUpdate()
   }
 
