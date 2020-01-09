@@ -63,6 +63,10 @@ export class App extends LitElement {
     }
     console.log(this.route, this.routeParams)
 
+    if (this.route === 'comment') {
+      this.doCommentRedirect()
+    }
+
     if (!this.user) {
       let st = await navigator.filesystem.stat('/profile')
       this.user = await (new DatArchive(st.mount.key)).getInfo()
@@ -84,6 +88,16 @@ export class App extends LitElement {
   async checkNotifications () {
     await notificationsIndex.updateIndex(this.user.url)
     setTimeout(this.checkNotifications.bind(this), NOTIFICATIONS_INTERVAL)
+  }
+
+  async doCommentRedirect () {
+    try {
+      var comment = await uwg.comments.get(this.routeParams.groups.id, `/comments/${this.routeParams.groups.filename}`)
+      var urlp = new URL(comment.stat.metadata.href)
+      window.location = `/${urlp.hostname}${urlp.pathname}`
+    } catch (e) {
+      console.error('Failed to load comment', e)
+    }
   }
 
   // rendering
@@ -164,13 +178,6 @@ export class App extends LitElement {
           topic=${this.routeParams.groups.topic}
           filename=${this.routeParams.groups.filename}
         ></beaker-post-view>
-      `
-      case 'comment': return html`
-        <div class="layout wide">
-          <main>
-            comment-view todo
-          </main>
-        </div>
       `
       case '404': return html`<div class="layout"><main><h1>404 not found</h1></main></div>`
     }
