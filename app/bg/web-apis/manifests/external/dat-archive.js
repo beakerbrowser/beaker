@@ -5,6 +5,7 @@ export default {
 
   getInfo: 'promise',
   configure: 'promise',
+  diff: 'promise',
   history: 'promise',
 
   stat: 'promise',
@@ -34,8 +35,8 @@ export default {
   resolveName: 'promise',
   selectArchive: 'promise',
 
-  diff: 'promise',
-  merge: 'promise',
+  beakerDiff: 'promise',
+  beakerMerge: 'promise',
 
   importFromFilesystem: 'promise',
   exportToFilesystem: 'promise',

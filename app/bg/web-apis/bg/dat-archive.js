@@ -210,6 +210,17 @@ export default {
     ))
   },
 
+  async diff (url, other, prefix, opts = {}) {
+    return auditLog.record(this.sender.getURL(), 'diff', {url, other, prefix}, undefined, () => (
+      timer(to(opts), async (checkin, pause, resume) => {
+        checkin('looking up archive')
+        const {checkoutFS} = await lookupArchive(this.sender, url, opts)
+        checkin('diffing')
+        return checkoutFS.pda.diff(other, prefix)
+      })
+    ))
+  },
+
   async history (url, opts = {}) {
     return auditLog.record(this.sender.getURL(), 'history', {url}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
@@ -578,7 +589,7 @@ export default {
     return res.url
   },
 
-  async diff (srcUrl, dstUrl, opts) {
+  async beakerDiff (srcUrl, dstUrl, opts) {
     assertBeakerOnly(this.sender)
     if (!srcUrl || typeof srcUrl !== 'string') {
       throw new InvalidURLError('The first parameter of diff() must be a dat URL')
@@ -590,7 +601,7 @@ export default {
     return pda.diff(src.checkoutFS.pda, src.filepath, dst.checkoutFS.pda, dst.filepath, opts)
   },
 
-  async merge (srcUrl, dstUrl, opts) {
+  async beakerMerge (srcUrl, dstUrl, opts) {
     assertBeakerOnly(this.sender)
     if (!srcUrl || typeof srcUrl !== 'string') {
       throw new InvalidURLError('The first parameter of merge() must be a dat URL')

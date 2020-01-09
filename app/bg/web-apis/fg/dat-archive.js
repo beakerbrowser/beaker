@@ -38,6 +38,10 @@ export const setup = function (rpc) {
         enumerable: true,
         value: url
       })
+      Object.defineProperty(this, 'version', {
+        enumerable: true,
+        value: urlParsed
+      })
 
       // load into the 'active' (in-memory) cache
       setHidden(this, LOAD_PROMISE, datRPC.loadArchive(url))
@@ -101,22 +105,28 @@ export const setup = function (rpc) {
       return new DatArchive(`dat://${urlParsed.hostname}${version}`)
     }
 
-    async diff (opts = {}) {
-      // noop
-      console.warn('The DatArchive diff() API has been deprecated.')
-      return []
+    async diff (other, prefix, opts = {}) {
+      var errStack = (new Error()).stack
+      try {
+        other = other && typeof other === 'object' && other.version ? other.version : other
+        var res = await datRPC.diff(this.url, other, prefix, opts)
+        for (let change of res) {
+          if (change.value.stat) {
+            change.value.stat = new Stat(change.value.stat)
+          }
+        }
+        return res
+      } catch (e) {
+        throwWithFixedStack(e, errStack)
+      }
     }
 
     async commit (opts = {}) {
-      // noop
-      console.warn('The DatArchive commit() API has been deprecated.')
-      return []
+      throw new Error('The DatArchive commit() API has been deprecated.')
     }
 
     async revert (opts = {}) {
-      // noop
-      console.warn('The DatArchive revert() API has been deprecated.')
-      return []
+      throw new Error('The DatArchive revert() API has been deprecated.')
     }
 
     async history (opts = {}) {
@@ -368,7 +378,7 @@ export const setup = function (rpc) {
       if (srcUrl && typeof srcUrl.url === 'string') srcUrl = srcUrl.url
       if (dstUrl && typeof dstUrl.url === 'string') dstUrl = dstUrl.url
       var errStack = (new Error()).stack
-      return datRPC.diff(srcUrl, dstUrl, opts)
+      return datRPC.beakerDiff(srcUrl, dstUrl, opts)
         .catch(e => throwWithFixedStack(e, errStack))
     }
 
@@ -376,7 +386,7 @@ export const setup = function (rpc) {
       if (srcUrl && typeof srcUrl.url === 'string') srcUrl = srcUrl.url
       if (dstUrl && typeof dstUrl.url === 'string') dstUrl = dstUrl.url
       var errStack = (new Error()).stack
-      return datRPC.merge(srcUrl, dstUrl, opts)
+      return datRPC.beakerMerge(srcUrl, dstUrl, opts)
         .catch(e => throwWithFixedStack(e, errStack))
     }
   }
