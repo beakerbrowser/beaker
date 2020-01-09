@@ -5,17 +5,17 @@
  * The index is updated by diffing from the last "checked" version.
  * All updates are filtered for relevance (e.g. likes on my posts) and then recorded.
  * 
- * Indexes are stored in ~/system/beaker.network/
- * The number of events kept is truncated to 300 to avoid performance degradation.
+ * Indexes are stored in IndexedDB
+ * TODO: The number of events kept should be truncated to 300 to avoid performance degradation.
  * 
  * The index should be scheduled to run in the background during idle time.
  * It will update the index-files periodically so that interruption is not an issue.
  * New notifications are updated as-found so that the UI can alert the user asap.
  */
 
-// import { }
+import { openDB } from '../../vendor/idb/index.js'
+import '../../vendor/idb/async-iterators.js'
 import { lock } from './lock.js'
-import { ensureDir } from './fs.js'
 
 // typedefs
 // =
@@ -26,7 +26,7 @@ import { ensureDir } from './fs.js'
  * @prop {string} author
  * @prop {number} timestamp
  * @prop {Object} detail
- * @prop {boolean} read
+ * @prop {boolean} isRead
  * 
  * @typedef {Object} NotificationsIndex
  * @param {Object} drives
@@ -41,55 +41,57 @@ import { ensureDir } from './fs.js'
 // exported api
 // =
 
+export var db = undefined
 export const events = new EventTarget()
 
-export const STORED_EVENT_LIMIT = 300
-export const INDEX_INTERVAL = 90e3 // every 90s
+export const STORED_EVENT_LIMIT = 300 // TODO
 export const INDEXES = /** @type IndexDefinition[] */([
   {
-    path: '/likes/',
+    path: '/votes/',
     filterFn (change, {userUrl}) {
-      if (!change.stat) return false
-      if (typeof change.stat.metadata.href !== 'string') return false
-      return change.stat.metadata.startsWith(userUrl)
+      if (change.type !== 'put') return false
+      if (!change.value.stat) return false
+      var {href} = change.value.stat.metadata
+      if (typeof href !== 'string') return false
+      return href.startsWith(userUrl)
     },
     toEvent (change, drive) {
+      var {href, vote} = change.value.stat.metadata
       return {
-        event: 'like',
+        event: 'vote',
         author: drive.url,
-        timestamp: change.stat.ctime,
-        detail: {
-          href: change.stat.metadata.href
-        },
-        read: false
+        timestamp: basename(change.name),
+        detail: {href, vote},
+        isRead: false
       }
     }
   },
   {
     path: '/comments/',
     filterFn (change, {userUrl}) {
-      if (!change.stat) return false
-      if (typeof change.stat.metadata.href !== 'string') return false
-      return change.stat.metadata.startsWith(userUrl)
+      if (change.type !== 'put') return false
+      if (!change.value.stat) return false
+      var {href, parent} = change.value.stat.metadata
+      if (typeof href !== 'string') return false
+      return href.startsWith(userUrl) || (parent && parent.startsWith(userUrl))
     },
     toEvent (change, drive) {
+      var {href, parent} = change.value.stat.metadata
       return {
         event: 'comment',
         author: drive.url,
-        timestamp: change.stat.ctime,
-        detail: {
-          href: change.stat.metadata.href,
-          replyTo: change.stat.metadata.replyTo
-        },
-        read: false
+        timestamp: basename(change.name),
+        detail: {href, parent},
+        isRead: false
       }
     }
   },
   {
     path: '/follows/',
     filterFn (change, {userUrl}) {
-      if (!change.mount) return false
-      return isKeyEq(change.mount.key, userUrl)
+      if (change.type !== 'mount') return false
+      if (!change.value.mount) return false
+      return isKeyEq(change.value.mount.key, userUrl)
     },
     toEvent (change, drive) {
       return {
@@ -97,7 +99,7 @@ export const INDEXES = /** @type IndexDefinition[] */([
         author: drive.url,
         timestamp: change.stat.ctime,
         detail: {},
-        read: false
+        isRead: false
       }
     }
   }
@@ -106,9 +108,21 @@ export const INDEXES = /** @type IndexDefinition[] */([
 /**
  * @returns {void}
  */
-export function setup () {
-  // TODO should we avoid running after every page load?
-  setTimeout(updateIndex, 5e3)
+export async function setup () {
+  db = await openDB('index:notifications', 1, { 
+    upgrade (db, oldVersion, newVersion, transaction) {
+      var eventsStore = db.createObjectStore('events', {keyPath: 'timestamp'})
+      var drivesStore = db.createObjectStore('drives', {keyPath: 'url'})
+    },
+    blocked () {
+      // TODO do we need to handle this?
+      console.debug('index:notifications DB is blocked')
+    },
+    blocking () {
+      // TODO do we need to handle this?
+      console.debug('index:notifications DB is blocking')
+    }
+  })
 }
 
 /**
@@ -118,31 +132,100 @@ export function setup () {
  * @returns {Promise<NotificationEvent[]>}
  */
 export async function list ({offset, limit} = {offset: 0, limit: 50}) {
-  var index = await readIndex()
-  return index.events.slice(offset, offset + limit)
+  if (!db) await setup()
+  var end = offset + limit
+  var index = 0
+  var results = []
+  var tx = db.transaction('events', 'readonly')
+  for await (let cursor of tx.store.iterate(undefined, 'prev')) {
+    if (index >= offset) results.push(cursor.value)
+    index++
+    if (index >= end) break
+  }
+  return results
 }
 
 /**
  * @param {Object} [opts] 
- * @param {boolean} [opts.unread] 
+ * @param {boolean} [opts.isUnread] 
  */
-export async function count ({unread} = {unread: false}) {
-  var index = await readIndex()
-  if (unread) return index.events.filter(evt => !evt.read).length
-  return index.events.length
+export async function count ({isUnread} = {isUnread: false}) {
+  if (!db) await setup()
+  if (!isUnread) return db.count('events')
+  var count = 0
+  var tx = db.transaction('events', 'readonly')
+  for await (let cursor of tx.store) {
+    if (!cursor.value.isRead) {
+      count++
+    }
+  }
+  return count
 }
 
 /**
  * @returns {Promise<void>}
  */
 export async function markAllRead () {
+  if (!db) await setup()
   var release = await lock('notifications-update')
   try {
-    var index = await readIndex()
-    for (let evt of index.events) {
-      evt.read = true
+    var tx = db.transaction('events', 'readwrite')
+    for await (let cursor of tx.store) {
+      if (!cursor.value.isRead) {
+        cursor.value.isRead = true
+        cursor.update(cursor.value)
+      }
     }
-    await writeIndex(index)
+    await tx.done
+  } finally {
+    release()
+  }
+}
+
+
+/**
+ * @param {string} userUrl 
+ * @returns {Promise<void>}
+ */
+export async function updateIndex (userUrl) {
+  if (!db) await setup()
+  var release = await lock('notifications-update')
+  try {
+    var filterOpts = {userUrl}
+    var followedUsers = await navigator.filesystem.query({
+      type: 'mount',
+      path: [
+        '/profile/follows/*',
+        '/profile/follows/*/follows/*',
+      ]
+    })
+    var userKeySet = new Set(followedUsers.map(f => f.mount))
+
+    for (let userKey of userKeySet) {
+      let drive = new DatArchive(userKey)
+      let driveMeta = await db.get('drives', drive.url)
+      let lastVersion = driveMeta ? driveMeta.version : undefined
+      let currentVersion = (await drive.getInfo()).version
+      if (typeof lastVersion !== 'number') {
+        lastVersion = currentVersion
+      }
+
+      let numNewEvents = 0
+      for (let INDEX of INDEXES) {
+        let changes = await drive.diff(lastVersion, INDEX.path)
+        for (let change of changes) {
+          if (!INDEX.filterFn(change, filterOpts)) continue
+          let evt = INDEX.toEvent(change, drive)
+          await db.put('events', evt)
+          numNewEvents++
+        }
+      }
+
+      await db.put('drives', {url: drive.url.toString(), version: currentVersion})
+      if (numNewEvents > 0) {
+        events.dispatchEvent(new CustomEvent('new-events', {detail: {numNewEvents}}))
+      }
+    }
   } finally {
     release()
   }
@@ -162,85 +245,9 @@ function isKeyEq (a = '', b = '') {
 }
 
 /**
- * @returns {Promise<NotificationsIndex>}
+ * @param {string} value
+ * @returns {string}
  */
-async function readIndex () {
-  var index
-  try {
-    index = JSON.parse(await navigator.filesystem.readFile('/system/beaker.network/notifications.json'))
-  } catch (e) {
-    index = {}
-  }
-  index.drives = index.drives && typeof index.drives === 'object' ? index.drives : {}
-  index.events = index.events && Array.isArray(index.events) ? index.events : []
-  index.events = index.events.filter(validateEvent)
-  return index
-}
-
-/**
- * @param {Object} evt 
- */
-function validateEvent (evt) {
-  if (!evt || typeof evt !== 'object') return false
-  if (typeof evt.event !== 'string') return false
-  if (typeof evt.author !== 'string') evt.author = undefined
-  if (typeof evt.timestamp !== 'number') evt.timestamp = undefined
-  if (typeof evt.detail !== 'object') evt.detail = undefined
-  return true
-}
-
-/**
- * @param {NotificationsIndex} index 
- * @returns {Promise<void>}
- */
-async function writeIndex (index) {
-  await ensureDir('/system/beaker.network')
-  await navigator.filesystem.writeFile(
-    '/system/beaker.network/notifications.json',
-    JSON.stringify(index, null, 2)
-  )
-}
-
-/**
- * @param {string} userUrl 
- * @returns {Promise<void>}
- */
-async function updateIndex (userUrl) {
-  var release = await lock('notifications-update')
-  try {
-    var index = await readIndex()
-    var filterOpts = {userUrl}
-    var followedUsers = await drive.query({
-      type: 'mount',
-      path: [
-        '/profile/follows/*',
-        '/profile/follows/*/follows/*',
-      ]
-    })
-
-    for (let followedUser of followedUsers) {
-      let drive = new DatArchive(followedUser.mount.key)
-      let lastVersion = index.drives[drive.url]
-      var currentVersion = (await drive.getInfo()).version
-      if (typeof lastVersion !== 'number') {
-        lastVersion = currentVersion
-      }
-
-      let events = []
-      for (let INDEX of INDEXES) {
-        var changes = await drive.diff(lastVersion, INDEX.path)
-        changes = changes.filter(c => INDEX.filterFn(c, filterOpts))
-        events = events.concat(changes.map(c => INDEX.toEvent(c, drive)))
-      }
-      let numNewEvents = events.length
-
-      index.drives[drive.url] = currentVersion
-      index.events = events.concat(index.events).slice(0, STORED_EVENT_LIMIT)
-      await writeIndex(index)
-      events.dispatchEvent(new CustomEvent('new-events', {detail: {numNewEvents}}))
-    }
-  } finally {
-    release()
-  }
-  setTimeout(updateIndex, INDEX_INTERVAL)
+function basename (value) {
+  return value.split('/').pop().split('.')[0]
 }

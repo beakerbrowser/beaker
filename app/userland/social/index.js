@@ -1,6 +1,7 @@
 import { LitElement, html } from './vendor/lit-element/lit-element.js'
 import { classMap } from './vendor/lit-element/lit-html/directives/class-map.js'
 import * as uwg from './js/lib/uwg.js'
+import * as notificationsIndex from './js/lib/notifications.js'
 import * as tutil from './js/lib/test-utils.js'
 import { toNiceTopic, pluralize } from './js/lib/strings.js'
 import mainCSS from './css/main.css.js'
@@ -9,6 +10,9 @@ import './js/view/comments.js'
 import './js/view/compose.js'
 import './js/view/post.js'
 import './js/view/profile.js'
+import './js/view/notifications.js'
+
+const NOTIFICATIONS_INTERVAL = 15e3
 
 const ROUTES = {
   'home': /^\/(index.html)?$/i,
@@ -44,6 +48,7 @@ export class App extends LitElement {
     this.route = '404'
     this.routeParams = undefined
     this.user = undefined
+    this.notificationCount = undefined
     this.load()
   }
 
@@ -66,6 +71,19 @@ export class App extends LitElement {
     }
     await this.requestUpdate()
     Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
+
+    this.notificationCount = await notificationsIndex.count({isUnread: true})
+    await this.requestUpdate()
+    notificationsIndex.events.addEventListener('new-events', e => {
+      this.notificationCount += e.detail.numNewEvents
+      this.requestUpdate()
+    })
+    setTimeout(this.checkNotifications.bind(this), 5e3)
+  }
+
+  async checkNotifications () {
+    await notificationsIndex.updateIndex(this.user.url)
+    setTimeout(this.checkNotifications.bind(this), NOTIFICATIONS_INTERVAL)
   }
 
   // rendering
@@ -75,19 +93,20 @@ export class App extends LitElement {
     return html`
       <link rel="stylesheet" href="/webfonts/fontawesome.css">
       <header>
-        <a class=${classMap({active: this.route === 'home'})} href="/">
+        <a href="/">
           <strong><span class="fas fa-fw fa-flask"></span> Beaker.Network</a></strong>
         </a>
         <a href="/" title="Posts">Posts</a>
         <a href="/comments" title="Comments">Comments</a>
         <span class="spacer"></span>
         <a
-          class=${classMap({active: this.route === 'notifications' })}
+          class=${classMap({highlighted: this.notificationCount > 0 })}
           href="/notifications"
-          title="${0 || 'No'} ${pluralize(0, 'notification')}"
-          data-tooltip="${0 || 'No'} ${pluralize(0, 'notification')}"
+          title="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
+          data-tooltip="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
         >
-          <span class="fas fa-fw fa-bell"></span> 0
+          <span class="fas fa-fw fa-bell"></span>
+          ${typeof this.notificationCount === 'undefined' ? html`<span class="spinner"></span>` : this.notificationCount}
         </a>
         ${this.user && this.user.following ? html`
           <a
@@ -122,7 +141,7 @@ export class App extends LitElement {
         <beaker-comments-view loadable .user=${this.user}></beaker-comments-view>
       `
       case 'notifications': return html`
-        <div class="layout"><main>todo</main></div>
+        <beaker-notifications-view loadable .user=${this.user}></beaker-notifications-view>
       `
       case 'userProfile':
       case 'userPosts': return html`

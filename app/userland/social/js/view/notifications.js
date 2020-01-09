@@ -1,9 +1,10 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
-import '../com/comments/feed.js'
+import * as notificationsIndex from '../lib/notifications.js'
+import '../com/notifications/feed.js'
 import '../com/post-buttons.js'
 import '../com/topics.js'
 
-export class CommentsView extends LitElement {
+export class NotificationsView extends LitElement {
   static get properties () {
     return {
       user: {type: Object}
@@ -22,6 +23,9 @@ export class CommentsView extends LitElement {
   async load () {
     await this.requestUpdate()
     // Array.from(this.querySelectorAll('[loadable]'), el => el.load())
+    setTimeout(() => {
+      notificationsIndex.markAllRead()
+    }, 2e3)
   }
 
   render () {
@@ -29,7 +33,7 @@ export class CommentsView extends LitElement {
     return html`
       <div class="layout right-col">
         <main>
-          <beaker-comments-feed loadable .user=${this.user}></beaker-comments-feed>
+          <beaker-notifications-feed loadable .user=${this.user}></beaker-notifications-feed>
         </main>
         <nav>
           <beaker-post-buttons></beaker-post-buttons>
@@ -44,4 +48,4 @@ export class CommentsView extends LitElement {
 
 }
 
-customElements.define('beaker-comments-view', CommentsView)
+customElements.define('beaker-notifications-view', NotificationsView)

@@ -500,6 +500,26 @@ export const comments = {
   },
 
   /**
+   * 
+   * @param {string} author 
+   * @param {string} path 
+   * @returns {Promise<Comment>}
+   */
+  async get (author, path) {
+    let drive = new DatArchive(author)
+    let url = drive.url + path
+    return {
+      type: 'file',
+      path,
+      url,
+      stat: await drive.stat(path),
+      drive: await profiles.get(author),
+      mount: undefined,
+      content: await drive.readFile(path),
+    }
+  },
+
+  /**
    * @param {Object} comment
    * @param {string} comment.href
    * @param {string} [comment.parent]

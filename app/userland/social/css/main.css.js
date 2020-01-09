@@ -71,6 +71,10 @@ header a:hover {
   color: var(--blue);
 }
 
+header a.highlighted {
+  color: var(--red);
+}
+
 header .spacer {
   flex: 1;
 }
