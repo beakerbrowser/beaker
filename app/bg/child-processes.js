@@ -9,7 +9,7 @@ process.on('exit', closeAll)
 // exported api
 // =
 
-export async function spawn (id, modulePath) {
+export async function spawn (id, modulePath, ...args) {
   var fullModulePath = require.resolve(modulePath)
   const opts = {
     stdio: 'inherit',
@@ -18,7 +18,7 @@ export async function spawn (id, modulePath) {
     })
   }
   console.log(`Starting external process ${id}`)
-  var proc = childProcess.fork(fullModulePath, opts)
+  var proc = childProcess.fork(fullModulePath, args, opts)
     .on('error', console.log)
     .on('close', () => {
       delete processes[id]
