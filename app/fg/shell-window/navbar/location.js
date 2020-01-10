@@ -460,6 +460,10 @@ button.bookmark {
   margin: 0;
 }
 
+button.bookmark .fa-star {
+  font-size: 16px;
+}
+
 button .fa-link {
   font-size: 14px;
 }
