@@ -132,11 +132,11 @@ export class SearchInput extends LitElement {
     if (e.key === 'Escape') {
       return this.unfocus()
     }
-    if (e.key === 'ArrowUp') {
+    if (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'p')) {
       e.preventDefault()
       this.highlighted = Math.max(this.highlighted - 1, 0)
     }
-    if (e.key === 'ArrowDown') {
+    if (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n')) {
       e.preventDefault()
       this.highlighted = Math.min(this.highlighted + 1, this.results.length - 1)
     }
