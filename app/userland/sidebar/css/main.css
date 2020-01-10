@@ -37,6 +37,11 @@ sidebar-app .divider:last-child {
 sidebar-app .panel {
   position: relative;
   overflow: hidden;
+  border: 1px solid transparent;
+}
+
+sidebar-app .panel:focus-within {
+  border: 1px solid #eef;
 }
 
 .close-btn {

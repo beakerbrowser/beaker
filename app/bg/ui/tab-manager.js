@@ -452,8 +452,8 @@ class Tab {
         await this.openSidebar()
     }
     switch (cmd) {
-      case 'show-panel':   await execJs(`showPanel("${args[0]}", "${args[1] || this.url}")`); break
-      case 'toggle-panel': await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`); break
+      case 'show-panel':   wc().focus(); await execJs(`showPanel("${args[0]}", "${args[1] || this.url}")`); break
+      case 'toggle-panel': wc().focus(); await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`); break
       case 'hide-panel':   await execJs(`hidePanel("${args[0]}")`); break
       case 'set-context':  await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
       case 'focus-panel':  wc().focus(); await execJs(`setFocus("${args[0]}")`); break

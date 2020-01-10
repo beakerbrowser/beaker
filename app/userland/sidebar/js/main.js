@@ -24,7 +24,7 @@ class SidebarApp extends HTMLElement {
     window.sidebar = this // DEBUG
 
     // API called by the background process
-    window.showPanel = (panel, url) => this.addPanel(panel, url)
+    window.showPanel = (panel, url, opts) => this.addPanel(panel, url, opts)
     window.togglePanel = (panel, url) => this.hasPanel(panel) ? this.removePanel(panel) : this.addPanel(panel, url)
     window.hidePanel = panel => this.removePanel(panel)
     window.setFocus = panel => this.hasPanel(panel) ? this.querySelector(panel).setFocus() : undefined
@@ -42,28 +42,43 @@ class SidebarApp extends HTMLElement {
     return this.panels.find(p => p.tagName === tagName)
   }
 
-  async addPanel (tagName, url) {
+  async addPanel (tagName, url, opts) {
     // NOTE for now, there are only 2 panels 
     // and they are hardcoded with specific orders
 
     // no duplicates
-    if (this.panels.find(p => p.tagName === tagName)) return
+    if (!this.panels.find(p => p.tagName === tagName)) {
+      var panel = {tagName, height: 0}
+      if (tagName === 'web-term') this.panels.push(panel)
+      else this.panels.unshift(panel)
+      var panelIndex = this.panels.indexOf(panel)
 
-    var panel = {tagName, height: 0}
-    if (tagName === 'web-term') this.panels.push(panel)
-    else this.panels.unshift(panel)
-    var panelIndex = this.panels.indexOf(panel)
+      await this.addPanelEls(panelIndex)
+      this.redistributeHeights()
+      this.updateElementHeights()
 
-    await this.addPanelEls(panelIndex)
-    this.redistributeHeights()
-    this.updateElementHeights()
+      if (url) this.querySelector(tagName).load(url)
+    }
 
-    if (url) this.querySelector(tagName).load(url)
+    try {
+      this.querySelector(tagName).setFocus()
+    } catch (e) {
+      console.log('Unexpected error when setting focus', e)
+    }
   }
 
   removePanel (tagName) {
-    let i = this.panels.findIndex(p => p.tagName === tagName)
-    if (i === -1) return
+    var i
+    if (tagName === 'focused') {
+      let panelEls = Array.from(this.querySelectorAll('.panel'))
+      let focusedPanelEl = panelEls.find(el => el.contains(document.activeElement))
+      if (!focusedPanelEl) focusedPanelEl = panelEls[0]
+      i = panelEls.findIndex(el => el === focusedPanelEl)
+      tagName = this.panels[i].tagName
+    } else {
+      i = this.panels.findIndex(p => p.tagName === tagName)
+      if (i === -1) return
+    }
     this.querySelector(tagName).teardown()
     this.removePanelEls(i)
     this.panels.splice(i, 1)

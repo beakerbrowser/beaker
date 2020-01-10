@@ -182,7 +182,13 @@ export function buildWindowMenu (opts = {}) {
           if (win) {
             // a regular browser window
             let active = tabManager.getActive(win)
-            if (active) tabManager.remove(win, active)
+            if (active) {
+              if (active.isSidebarActive) {
+                active.executeSidebarCommand('hide-panel', 'focused')
+              } else {
+                tabManager.remove(win, active)
+              }
+            }
           } else {
             // devtools
             let wc = getFocusedDevToolsHost()
@@ -352,26 +358,26 @@ export function buildWindowMenu (opts = {}) {
           }]
       },
       {
-        label: 'Toggle Editor',
+        label: 'Open Editor',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+b',
-        click: function (item) {
+        click: async function (item) {
           var win = getWin()
           if (win) {
             let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('toggle-panel', 'editor-app')
+            if (active) active.executeSidebarCommand('show-panel', 'editor-app')
           }
         }
       },
       {
-        label: 'Toggle Terminal',
+        label: 'Open Terminal',
         enabled: !noWindows,
         accelerator: 'Ctrl+`',
         click: function (item) {
           var win = getWin()
           if (win) {
             let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('toggle-panel', 'web-term')
+            if (active) active.executeSidebarCommand('show-panel', 'web-term')
           }
         }
       },

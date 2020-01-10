@@ -150,15 +150,15 @@ export default function registerContextMenu () {
       }
 
       menuItems.push({
-        label: 'View Editor',
-        click: (item, win) => {
-          tabManager.getActive(win).executeSidebarCommand('toggle-panel', 'editor-app')
+        label: 'Open Editor',
+        click: async (item, win) => {
+          tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
         }
       })
       menuItems.push({
-        label: 'View Terminal',
-        click: (item, win) => {
-          tabManager.getActive(win).executeSidebarCommand('toggle-panel', 'web-term')
+        label: 'Open Terminal',
+        click: async (item, win) => {
+          tabManager.getActive(win).executeSidebarCommand('show-panel', 'web-term')
         }
       })
       menuItems.push({

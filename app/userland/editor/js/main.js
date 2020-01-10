@@ -84,6 +84,7 @@ class EditorApp extends LitElement {
     this.dne = false
     this.isBinary = false
     this.resolvedPath = ''
+    this.setFocusOnLoad = false
   }
 
   teardown () {
@@ -95,6 +96,8 @@ class EditorApp extends LitElement {
   setFocus () {
     if (this.editor) {
       this.editor.focus()
+    } else {
+      this.setFocusOnLoad = true
     }
   }
 
@@ -239,6 +242,11 @@ class EditorApp extends LitElement {
 
       this.isLoading = false
       this.requestUpdate()
+
+      if (this.setFocusOnLoad) {
+        setTimeout(() => this.editor.focus(), 1)
+        this.setFocusOnLoad = false
+      }
     } finally {
       release()
     }
