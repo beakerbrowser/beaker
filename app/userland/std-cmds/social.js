@@ -98,6 +98,19 @@ export async function find (opts = {}, query = '') {
     path: ['/profile', '/profile/follows/*', '/profile/follows/*/follows/*']
   })
 
+  // remove duplicates
+  {
+    let candidates2 = []
+    let set = new Set()
+    for (const item of candidates) {
+      if(!set.has(item.mount)){
+        set.add(item.mount)
+        candidates2.push(item)
+      }
+    }
+    candidates = candidates2
+  }
+
   var hits = []
   const test = v => ('' + (v || '')).toLowerCase().includes(query)
   for (let candidate of candidates) {
