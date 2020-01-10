@@ -156,16 +156,29 @@ async function expandPaths (root, patterns) {
 
     // run the ops to assemble a list of matching paths
     var workingPaths = [{name: '/', innerPath: '/', localDriveKey: root.key.toString('hex')}]
-    for (let op of ops) {
+    for (let i = 0; i < ops.length; i++) {
+      let op = ops[i]
+      let isLastOp = i === ops.length - 1
       let newWorkingPaths = []
       if (op[0] === 'push') {
         // add the given segment to all working paths
-        newWorkingPaths = workingPaths.map(v => ({
-          name: joinPath(v.name, op[1]),
-          innerPath: v.innerPath,
-          stat: v.stat,
-          mount: v.mount
-        }))
+        if (isLastOp) {
+          newWorkingPaths = await Promise.all(workingPaths.map(async (workingPath) => {
+            var bname = basename(op[1])
+            let item = (await root.pda.readdir(workingPath.name, {includeStats: true})).find(item => item.name === bname)
+            item.localDriveKey = item.mount ? item.mount.key.toString('hex') : workingPath.localDriveKey
+            item.name = joinPath(workingPath.name, item.name)
+            return item
+          }))
+        } else {
+          newWorkingPaths = workingPaths.map(v => ({
+            name: joinPath(v.name, op[1]),
+            innerPath: v.innerPath,
+            localDriveKey: v.localDriveKey,
+            stat: v.stat,
+            mount: v.mount
+          }))
+        }
       } else if (op[0] === 'match') {
         // compile a glob-matching regex from the segment
         var re = new RegExp(`^${op[1].replace(/\*/g, '[^/]*')}$`, 'i')
@@ -175,7 +188,7 @@ async function expandPaths (root, patterns) {
           for (let item of await root.pda.readdir(workingPath.name, {includeStats: true}).catch(e => [])) {
             // add matching names to the working path
             if (re.test(item.name)) {
-              item.localDriveKey = item.mount.key.toString('hex')
+              item.localDriveKey = item.mount ? item.mount.key.toString('hex') : workingPath.localDriveKey
               item.name = joinPath(workingPath.name, item.name)
               newWorkingPaths.push(item)
             }
