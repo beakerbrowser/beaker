@@ -225,6 +225,16 @@ class EditorApp extends LitElement {
         model.updateOptions({tabSize: 2})
         this.editor.setModel(model)
         this.lastSavedVersionId = model.getAlternativeVersionId()
+
+        var wasChanged = false
+        model.onDidChangeContent(() => {
+          var hasChanges = this.lastSavedVersionId !== model.getAlternativeVersionId()
+          if (wasChanged !== hasChanges) {
+            if (hasChanges) this.querySelector('#save-btn').removeAttribute('disabled')
+            else this.querySelector('#save-btn').setAttribute('disabled', 1)
+            wasChanged = hasChanges
+          }
+        })
       }
 
       this.isLoading = false
@@ -436,7 +446,7 @@ class EditorApp extends LitElement {
           `}
         </button>
         <span class="divider"></span>
-        <button title="Save" @click=${this.onClickSave} ?disabled=${this.readOnly || this.dne}>
+        <button id="save-btn" title="Save" @click=${this.onClickSave} ?disabled=${this.readOnly || this.dne || !this.hasChanges}>
           <span class="fas fa-fw fa-save"></span> Save
         </button>
         <button title="View file" @click=${this.onClickView} ?disabled=${this.dne}>
