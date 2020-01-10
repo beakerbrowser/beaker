@@ -4,7 +4,7 @@ import postCSS from '../../../css/com/posts/post.css.js'
 import { timeDifference } from '../../lib/time.js'
 import { emit } from '../../lib/dom.js'
 import { writeToClipboard } from '../../lib/clipboard.js'
-import { toNiceDomain, toNiceTopic, pluralize } from '../../lib/strings.js'
+import { toNiceDomain, toNiceTopic, toNiceDriveType, pluralize } from '../../lib/strings.js'
 import MarkdownIt from '../../../vendor/markdown-it.js'
 import * as uwg from '../../lib/uwg.js'
 import * as contextMenu from '../context-menu.js'
@@ -58,27 +58,15 @@ export class Post extends LitElement {
     return votes.upvotes.length - votes.downvotes.length
   }
 
-  // getUpvotesTooltip () {
-  //   if (this.post.votes && this.post.votes.upvotes.length) {
-  //     let upvotesTooltip = 'Upvoted by:\n' + this.post.votes.upvotes.slice(0, 4).map(drive => drive.title).join('\n')
-  //     if (this.post.votes.upvotes.length > 4) {
-  //       upvotesTooltip += `\nand ${this.post.votes.upvotes.length - 4} more`
-  //     }
-  //     return upvotesTooltip
-  //   }
-  //   return ''
-  // }
-
-  // getDownvotesTooltip () {
-  //   if (this.post.votes && this.post.votes.downvotes.length) {
-  //     let downvotesTooltip = 'Downvoted by:\n' + this.post.votes.downvotes.slice(0, 4).map(drive => drive.title).join('\n')
-  //     if (this.post.votes.downvotes.length > 4) {
-  //       downvotesTooltip += `\nand ${this.post.votes.downvotes.length - 4} more`
-  //     }
-  //     return downvotesTooltip
-  //   }
-  //   return ''
-  // }
+  getDriveTypeIcon (dt) {
+    switch (dt) {
+      case 'unwalled.garden/person': return 'fas fa-user'
+      case 'unwalled.garden/module': return 'fas fa-cube'
+      case 'unwalled.garden/template': return 'fas fa-drafting-compass'
+      case 'webterm.sh/cmd-pkg': return 'fas fa-terminal'
+      default: return 'far fa-hdd'
+    }
+  }
 
   render () {
     if (!this.post) return
@@ -112,12 +100,18 @@ export class Post extends LitElement {
       <div class="content">
         <div>
           <a class="title" href=${href} title=${postMeta.title}>${postMeta.title}</a>
+          ${postMeta['drive-type'] ? html`
+            <span class="drive-type">
+              <span class=${this.getDriveTypeIcon(postMeta['drive-type'])}></span>
+              ${toNiceDriveType(postMeta['drive-type'])}
+            </span>
+          ` : ''}
           <span class="domain">
             ${isLink ? html`<span class="fas fa-link"></span> ${toNiceDomain(postMeta.href)}` : ''}
             ${isTextPost ? html`<span class="far fa-comment-alt"></span> text post` : ''}
             ${isFile ? html`<span class="far fa-file"></span> file` : ''}
           </span>
-          <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-caret-down"></span></button>
+          <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
         <div>
           <a class="topic" title=${toNiceTopic(this.post.topic)} href="/?topic=${encodeURIComponent(this.post.topic)}">${toNiceTopic(this.post.topic)}</a>

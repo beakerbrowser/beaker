@@ -11,6 +11,8 @@ import './js/view/compose.js'
 import './js/view/post.js'
 import './js/view/profile.js'
 import './js/view/notifications.js'
+import './js/view/search.js'
+import './js/com/search-input.js'
 
 const NOTIFICATIONS_INTERVAL = 15e3
 
@@ -19,6 +21,7 @@ const ROUTES = {
   'compose': /^\/compose$/i,
   'comments': /^\/comments$/i,
   'notifications': /^\/notifications$/i,
+  'search': /^\/search$/i,
   'userProfile': /^\/(?<id>[^\/]+)$/i,
   'userPosts': /^\/(?<id>[^\/]+)\/posts$/i,
   'userComments': /^\/(?<id>[^\/]+)\/comments$/i,
@@ -113,6 +116,7 @@ export class App extends LitElement {
         <a href="/" title="Posts">Posts</a>
         <a href="/comments" title="Comments">Comments</a>
         <span class="spacer"></span>
+        <beaker-search-input placeholder="Search your network"></beaker-search-input>
         <a
           class=${classMap({highlighted: this.notificationCount > 0 })}
           href="/notifications"
@@ -156,6 +160,9 @@ export class App extends LitElement {
       `
       case 'notifications': return html`
         <beaker-notifications-view loadable .user=${this.user}></beaker-notifications-view>
+      `
+      case 'search': return html`
+        <beaker-search-view loadable .user=${this.user}></beaker-search-view>
       `
       case 'userProfile':
       case 'userPosts': return html`

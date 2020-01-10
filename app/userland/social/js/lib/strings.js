@@ -1,4 +1,10 @@
 export const DAT_KEY_REGEX = /[0-9a-f]{64}/i
+export const KNOWN_DRIVE_TYPES = {
+  'unwalled.garden/person': 'user',
+  'unwalled.garden/module': 'module',
+  'unwalled.garden/template': 'template',
+  'webterm.sh/cmd-pkg': 'webterm command'
+}
 
 export function ucfirst (str) {
   if (!str) str = ''
@@ -117,4 +123,9 @@ export function normalizeTopic (t) {
 
 export function isValidTopic (t) {
   return /[a-z0-9_\s]+/.test(t)
+}
+
+export function toNiceDriveType (dt) {
+  if (!dt) return ''
+  return KNOWN_DRIVE_TYPES[dt] || dt
 }

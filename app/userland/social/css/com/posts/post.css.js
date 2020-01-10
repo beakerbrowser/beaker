@@ -49,10 +49,13 @@ a:hover {
   font-size: 22px;
 }
 
+.drive-type,
 .domain {
   color: #778;
 }
 
+.drive-type .far,
+.drive-type .fas,
 .domain .far,
 .domain .fas {
   position: relative;

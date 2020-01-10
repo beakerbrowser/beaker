@@ -184,16 +184,23 @@ export const posts = {
    * @param {Object} [query]
    * @param {string} [query.topic]
    * @param {string} [query.author]
+   * @param {string} [query.driveType]
    * @param {string} [query.sort]
    * @param {boolean} [query.reverse]
    * @param {number} [query.offset]
    * @param {number} [query.limit]
+   * @param {Object} [opts]
+   * @param {boolean} [opts.includeProfiles]
    * @returns {Promise<Post[]>}
    */
-  async list ({topic, author, sort, reverse, offset, limit} = {topic: undefined, author: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
+  async list (
+    {topic, author, driveType, sort, reverse, offset, limit} = {topic: undefined, author: undefined, driveType: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined},
+    {includeProfiles} = {includeProfiles: false}
+  ) {
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
     var posts = await queryRead({
       path: getPostsPaths(author, topic),
+      metadata: driveType ? {'drive-type': driveType} : undefined,
       sort,
       reverse, 
       offset,
@@ -218,7 +225,9 @@ export const posts = {
       let pathParts = post.path.split('/')
       post.topic = pathParts[pathParts.length - 2]
     }
-    await profiles.readAllProfiles(posts)
+    if (includeProfiles) {
+      await profiles.readAllProfiles(posts)
+    }
     return posts
   },
 

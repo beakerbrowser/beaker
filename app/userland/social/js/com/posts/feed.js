@@ -38,7 +38,7 @@ export class PostsFeed extends LitElement {
       limit: PAGE_SIZE,
       sort: 'name',
       reverse: true
-    })
+    }, {includeProfiles: true})
     /* dont await */ this.loadFeedAnnotations(posts)
     this.posts = posts
     console.log(this.posts)

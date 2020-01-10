@@ -105,7 +105,7 @@ export async function deleteDrives () {
 // =
 
 async function getRandomPost () {
-  var posts = await uwg.posts.list({limit: 50})
+  var posts = await uwg.posts.list({limit: 50}, {includeProfiles: true})
   return posts[Math.floor(Math.random() * posts.length)]
 }
 
@@ -116,7 +116,7 @@ async function getRandomCommentOnPost (post) {
 
 async function getRandomPostOrComment () {
   var [posts, comments] = await Promise.all([
-    uwg.posts.list({limit: 50}),
+    uwg.posts.list({limit: 50}, {includeProfiles: true}),
     await uwg.comments.list({limit: 50})
   ])
   var candidates = posts.concat(comments)
