@@ -3,6 +3,7 @@ import { repeat } from '../../../vendor/lit-element/lit-html/directives/repeat.j
 import * as uwg from '../../lib/uwg.js'
 import resultsCSS from '../../../css/com/search/results.css.js'
 import '../posts/post.js'
+import '../profiles/list.js'
 import '../paginator.js'
 
 const QUERY_PAGE_SIZE = 100
@@ -32,13 +33,19 @@ export class SearchResults extends LitElement {
   }
 
   async load () {
-    var results = await this.runQuery()
+    var results = await this.runPostsQuery()
+    if (this.driveType === 'unwalled.garden/person' && results.length < PAGE_SIZE) {
+      results = results.concat(await this.runFollowsQuery(results.length))
+    }
     /* dont await */ this.loadFeedAnnotations(results)
     this.results = results
     console.log(this.results)
+
+    await this.requestUpdate()
+    Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
   }
 
-  async runQuery () {
+  async runPostsQuery () {
     var sliceStart = this.page * PAGE_SIZE
     var sliceEnd = sliceStart + PAGE_SIZE
     var results = []
@@ -69,6 +76,20 @@ export class SearchResults extends LitElement {
     return results
   }
 
+  async runFollowsQuery (numExistingResults) {
+    var sliceStart = this.page * PAGE_SIZE + numExistingResults
+    var sliceEnd = sliceStart + PAGE_SIZE - numExistingResults
+    var query = this.query ? this.query.toLowerCase() : undefined
+    let results = await uwg.follows.list(undefined, {includeProfiles: true, removeDuplicateMounts: true})
+    if (query) {
+      results = results.filter(candidate => (
+        candidate.mount.title.toLowerCase().includes(query)
+      ))
+    }
+    results = results.map(r => r.mount).slice(sliceStart, sliceEnd)
+    return results
+  }
+
   requestFeedPostsUpdate () {
     Array.from(this.shadowRoot.querySelectorAll('beaker-post'), el => el.requestUpdate())
   }
@@ -78,10 +99,11 @@ export class SearchResults extends LitElement {
   }
 
   async loadFeedAnnotations (results) {
-    for (let post of results) {
-      ;[post.votes, post.numComments] = await Promise.all([
-        uwg.votes.tabulate(post.url),
-        uwg.comments.count({href: post.url})
+    for (let result of results) {
+      if (!isPost(result)) continue
+      ;[result.votes, result.numComments] = await Promise.all([
+        uwg.votes.tabulate(result.url),
+        uwg.comments.count({href: result.url})
       ])
       this.requestFeedPostsUpdate()
     }
@@ -96,12 +118,15 @@ export class SearchResults extends LitElement {
             <span class="spinner"></span>
           </div>
         ` : html`
-          ${repeat(this.results, post => html`
+          ${repeat(this.results, result => isPost(result) ? html`
             <beaker-post
-              .post=${post}
+              .post=${result}
               user-url="${this.user.url}"
             ></beaker-post>
-          `)}
+          ` : '')}
+          ${this.driveType === 'unwalled.garden/person' ? html`
+            <beaker-profile-list loadable .user=${this.user} .profiles=${this.results.filter(isNotPost)}></beaker-profile-list>
+          ` : ''}
           ${this.results.length === 0
             ? html`
               <div class="empty">
@@ -132,3 +157,11 @@ export class SearchResults extends LitElement {
 }
 
 customElements.define('beaker-search-results', SearchResults)
+
+function isPost (result) {
+  return result.type === 'file'
+}
+
+function isNotPost (result) {
+  return !isPost(result)
+}

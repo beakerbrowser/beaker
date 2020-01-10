@@ -110,15 +110,27 @@ export const follows = {
    * @param {string} [query.target]
    * @param {Object} [opts]
    * @param {boolean} [opts.includeProfiles]
+   * @param {boolean} [opts.removeDuplicateMounts]
    * @returns {Promise<FSQueryResult[]>}
    */
-  async list ({author, target} = {author: undefined, target: undefined}, {includeProfiles} = {includeProfiles: false}) {
+  async list ({author, target} = {author: undefined, target: undefined}, {includeProfiles, removeDuplicateMounts} = {includeProfiles: false, removeDuplicateMounts: false}) {
     var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
     let results = await drive.query({
       type: 'mount',
       path: getFollowsPaths(author),
       mount: target
     })
+    if (removeDuplicateMounts) {
+      let results2 = []
+      let set = new Set()
+      for (const item of results) {
+        if(!set.has(item.mount)){
+          set.add(item.mount)
+          results2.push(item)
+        }
+      }
+      results = results2
+    }
     if (includeProfiles) {
       await profiles.readAllProfiles(results)
     }
@@ -126,7 +138,7 @@ export const follows = {
   },
 
   /**
-   * @param {Object} query]
+   * @param {Object} query
    * @param {string} query.author
    * @param {string} query.target
    * @returns {Promise<boolean>}
