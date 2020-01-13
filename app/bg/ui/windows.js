@@ -193,6 +193,7 @@ export function createShellWindow (windowState) {
     icon: ICON_PATH,
     show: false // will show when ready
   })
+  win.isShellInterfaceHidden = state.isShellInterfaceHidden
   win.once('ready-to-show', () => {
     win.show()
     if (!hasFirstWindowLoaded) {
@@ -391,6 +392,16 @@ export function setUserSessionFor (wc, userSession) {
 
 export function openProfileEditor (wc, sess) {
   // return showShellModal(wc, 'edit-profile', sess) NEEDED? -prf
+}
+
+export function toggleShellInterface (win) {
+  var isShellInterfaceHidden = !win.isShellInterfaceHidden
+  win.isShellInterfaceHidden = isShellInterfaceHidden
+  win.setWindowButtonVisibility(!isShellInterfaceHidden)
+  sessionWatcher.updateState(win, {isShellInterfaceHidden})
+
+  tabManager.emitReplaceState(win)
+  win.emit('resize')
 }
 
 // internal methods

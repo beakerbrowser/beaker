@@ -326,14 +326,18 @@ class Tab {
 
   calculateBounds (windowBounds) {
     var x = 0
+    var y = Y_POSITION
     var {width, height} = windowBounds
+    if (this.browserWindow.isShellInterfaceHidden) {
+      y = 0
+    }
     if (this.isSidebarActive) {
       // sidebar takes left side of the screen
       x = (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
       width -= (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
     }
     height -= FOOTER_HEIGHT
-    return {x, y: Y_POSITION, width, height: height - Y_POSITION}
+    return {x, y: y, width, height: height - y}
   }
 
   resize () {
@@ -1441,7 +1445,7 @@ export function openOrFocusDownloadsPage (win) {
 
 export function emitReplaceState (win) {
   win = getTopWindow(win)
-  var state = {tabs: getWindowTabState(win), isFullscreen: win.isFullScreen()}
+  var state = {tabs: getWindowTabState(win), isFullscreen: win.isFullScreen(), isShellInterfaceHidden: win.isShellInterfaceHidden}
   emit(win, 'replace-state', state)
   win.emit('custom-pages-updated', takeSnapshot(win))
 }

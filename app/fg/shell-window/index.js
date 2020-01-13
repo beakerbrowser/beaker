@@ -22,6 +22,7 @@ class ShellWindowUI extends LitElement {
       tabs: {type: Array},
       isUpdateAvailable: {type: Boolean},
       numWatchlistNotifications: {type: Number},
+      isShellInterfaceHidden: {type: Boolean},
       isFullscreen: {type: Boolean}
     }
   }
@@ -31,6 +32,7 @@ class ShellWindowUI extends LitElement {
     this.tabs = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
+    this.isShellInterfaceHidden = false
     this.isFullscreen = false
     this.activeTabIndex = -1
 
@@ -57,9 +59,10 @@ class ShellWindowUI extends LitElement {
 
     // listen to state updates to the window's tabs states
     var viewEvents = fromEventStream(bg.views.createEventStream())
-    viewEvents.addEventListener('replace-state', ({tabs, isFullscreen}) => {
+    viewEvents.addEventListener('replace-state', ({tabs, isFullscreen, isShellInterfaceHidden}) => {
       this.tabs = tabs
       this.isFullscreen = isFullscreen
+      this.isShellInterfaceHidden = isShellInterfaceHidden
       this.stateHasChanged()
     })
     viewEvents.addEventListener('update-state', ({index, state}) => {
@@ -110,13 +113,15 @@ class ShellWindowUI extends LitElement {
   render () {
     return html`
       <shell-window-win32></shell-window-win32>
-      <shell-window-tabs .tabs=${this.tabs} ?is-fullscreen=${this.isFullscreen}></shell-window-tabs>
-      <shell-window-navbar
-        .activeTabIndex=${this.activeTabIndex}
-        .activeTab=${this.activeTab}
-        ?is-update-available=${this.isUpdateAvailable}
-        num-watchlist-notifications="${this.numWatchlistNotifications}"
-      ></shell-window-navbar>
+      ${this.isShellInterfaceHidden ? '' : html`
+        <shell-window-tabs .tabs=${this.tabs} ?is-fullscreen=${this.isFullscreen}></shell-window-tabs>
+        <shell-window-navbar
+          .activeTabIndex=${this.activeTabIndex}
+          .activeTab=${this.activeTab}
+          ?is-update-available=${this.isUpdateAvailable}
+          num-watchlist-notifications="${this.numWatchlistNotifications}"
+        ></shell-window-navbar>
+      `}
       <shell-window-sidebar-resizer
         .activeTabIndex=${this.activeTabIndex}
         .activeTab=${this.activeTab}

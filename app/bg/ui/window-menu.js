@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
-import { createShellWindow, getFocusedDevToolsHost } from './windows'
+import { createShellWindow, toggleShellInterface, getFocusedDevToolsHost } from './windows'
 import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
 import {download} from './downloads'
@@ -312,10 +312,20 @@ export function buildWindowMenu (opts = {}) {
         ]
       },
       {
+        label: 'Toggle Browser UI',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+Shift+H',
+        click: function (item) {
+          var win = getWin()
+          if (!win) return
+          toggleShellInterface(win)
+        }
+      },
+      {
         label: 'Pop Out Tab',
         enabled: !noWindows,
         accelerator: 'Shift+CmdOrCtrl+N',
-        click: async function (item) {
+        click: function (item) {
           var win = getWin()
           if (!win) return
           var active = tabManager.getActive(win)
