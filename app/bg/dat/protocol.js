@@ -103,7 +103,7 @@ export const electronHandler = async function (request, respond) {
   var fileReadStream
   var headersSent = false
   var archive
-  var cspHeader = 'default-src *'
+  var cspHeader = `default-src * 'unsafe-inline'`
 
   // validate request
   var urlp = parseDatUrl(request.url, true)
