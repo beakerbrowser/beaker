@@ -1553,20 +1553,19 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var win = getWindow(this.sender)
     var tab = getByIndex(win, index)
     var menu = Menu.buildFromTemplate([
-      { label: 'New Tab', click: () => create(win, null, {setActive: true}) },
-      { type: 'separator' },
-      { label: 'Duplicate', click: () => create(win, tab.url) },
       { label: (tab.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => togglePinned(win, tab) },
       { label: 'Pop Out Tab', click: () => popOutTab(tab) },
+      { label: 'Duplicate Tab', click: () => create(win, tab.url) },
       { label: (tab.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => tab.toggleMuted() },
       { type: 'separator' },
       { label: 'Close Tab', click: () => remove(win, tab) },
       { label: 'Close Other Tabs', click: () => removeAllExcept(win, tab) },
       { label: 'Close Tabs to the Right', click: () => removeAllToRightOf(win, tab) },
       { type: 'separator' },
+      { label: 'New Tab', click: () => create(win, null, {setActive: true}) },
       { label: 'Reopen Closed Tab', click: () => reopenLastRemoved(win) }
     ])
-    menu.popup({window: win})
+    menu.popup()
   },
 
   async showLocationBarContextMenu (index) {
