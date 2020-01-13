@@ -282,6 +282,36 @@ export function buildWindowMenu (opts = {}) {
       },
       { type: 'separator' },
       {
+        type: 'submenu',
+        label: 'Sidebar',
+        submenu: [
+          {
+            label: 'Open Editor',
+            enabled: !noWindows,
+            accelerator: 'CmdOrCtrl+b',
+            click: async function (item) {
+              var win = getWin()
+              if (win) {
+                let active = tabManager.getActive(win)
+                if (active) active.executeSidebarCommand('show-panel', 'editor-app')
+              }
+            }
+          },
+          {
+            label: 'Open Terminal',
+            enabled: !noWindows,
+            accelerator: 'Ctrl+`',
+            click: function (item) {
+              var win = getWin()
+              if (win) {
+                let active = tabManager.getActive(win)
+                if (active) active.executeSidebarCommand('show-panel', 'web-term')
+              }
+            }
+          },
+        ]
+      },
+      {
         label: 'Pop Out Tab',
         enabled: !noWindows,
         accelerator: 'Shift+CmdOrCtrl+N',
@@ -332,95 +362,6 @@ export function buildWindowMenu (opts = {}) {
           var win = getWin()
           if (win) {
             viewZoom.zoomReset(tabManager.getActive(win))
-          }
-        }
-      },
-    { type: 'separator' },
-      {
-        type: 'submenu',
-        label: 'Advanced Tools',
-        submenu: [{
-          label: 'Reload Shell-Window',
-          enabled: !noWindows,
-          click: function () {
-            getWin().webContents.reloadIgnoringCache()
-          }
-        }, {
-          label: 'Toggle Shell-Window DevTools',
-          enabled: !noWindows,
-          click: function () {
-            getWin().webContents.openDevTools({mode: 'detach'})
-          }
-        },
-      { type: 'separator' },
-          {
-            label: 'Open Archives Debug Page',
-            enabled: !noWindows,
-            click: function (item) {
-              var win = getWin()
-              if (win) tabManager.create(win, 'beaker://internal-archives/', {setActive: true})
-            }
-          }, {
-            label: 'Open Dat-DNS Cache Page',
-            enabled: !noWindows,
-            click: function (item) {
-              var win = getWin()
-              if (win) tabManager.create(win, 'beaker://dat-dns-cache/', {setActive: true})
-            }
-          }, {
-            label: 'Open Debug Log Page',
-            enabled: !noWindows,
-            click: function (item) {
-              var win = getWin()
-              if (win) tabManager.create(win, 'beaker://debug-log/', {setActive: true})
-            }
-          }]
-      },
-      {
-        label: 'Open Editor',
-        enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+b',
-        click: async function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'editor-app')
-          }
-        }
-      },
-      {
-        label: 'Open Terminal',
-        enabled: !noWindows,
-        accelerator: 'Ctrl+`',
-        click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'web-term')
-          }
-        }
-      },
-      {
-        label: 'Toggle DevTools',
-        enabled: !noWindows,
-        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
-        click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.webContents.toggleDevTools()
-          }
-        },
-        reserved: true
-      },
-      {
-        label: 'Toggle Live Reloading',
-        enabled: !!isDat,
-        click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.toggleLiveReloading()
           }
         }
       }
@@ -478,6 +419,76 @@ export function buildWindowMenu (opts = {}) {
         click: function (item) {
           var win = getWin()
           if (win) win.webContents.send('command', 'create-bookmark')
+        }
+      }
+    ]
+  }
+
+  var developerMenu = {
+    label: 'Developer',
+    submenu: [
+      {
+        type: 'submenu',
+        label: 'Advanced Tools',
+        submenu: [{
+          label: 'Reload Shell-Window',
+          enabled: !noWindows,
+          click: function () {
+            getWin().webContents.reloadIgnoringCache()
+          }
+        }, {
+          label: 'Toggle Shell-Window DevTools',
+          enabled: !noWindows,
+          click: function () {
+            getWin().webContents.openDevTools({mode: 'detach'})
+          }
+        },
+      { type: 'separator' },
+          {
+            label: 'Open Archives Debug Page',
+            enabled: !noWindows,
+            click: function (item) {
+              var win = getWin()
+              if (win) tabManager.create(win, 'beaker://internal-archives/', {setActive: true})
+            }
+          }, {
+            label: 'Open Dat-DNS Cache Page',
+            enabled: !noWindows,
+            click: function (item) {
+              var win = getWin()
+              if (win) tabManager.create(win, 'beaker://dat-dns-cache/', {setActive: true})
+            }
+          }, {
+            label: 'Open Debug Log Page',
+            enabled: !noWindows,
+            click: function (item) {
+              var win = getWin()
+              if (win) tabManager.create(win, 'beaker://debug-log/', {setActive: true})
+            }
+          }]
+      },
+      {
+        label: 'Toggle DevTools',
+        enabled: !noWindows,
+        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
+        click: function (item) {
+          var win = getWin()
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.webContents.toggleDevTools()
+          }
+        },
+        reserved: true
+      },
+      {
+        label: 'Toggle Live Reloading',
+        enabled: !!isDat,
+        click: function (item) {
+          var win = getWin()
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.toggleLiveReloading()
+          }
         }
       }
     ]
@@ -563,7 +574,7 @@ export function buildWindowMenu (opts = {}) {
   }
 
   // assemble final menu
-  var menus = [fileMenu, editMenu, viewMenu, historyMenu, windowMenu, helpMenu]
+  var menus = [fileMenu, editMenu, viewMenu, historyMenu, developerMenu, windowMenu, helpMenu]
   if (process.platform === 'darwin') menus.unshift(darwinMenu)
   return menus
 }
