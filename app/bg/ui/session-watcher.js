@@ -93,6 +93,7 @@ class WindowWatcher extends EventEmitter {
     this.handleClosed = this.handleClosed.bind(this)
     this.handlePagesUpdated = this.handlePagesUpdated.bind(this)
     this.handlePositionChange = this.handlePositionChange.bind(this)
+    this.handleAlwaysOnTopChanged = this.handleAlwaysOnTopChanged.bind(this)
 
     // right now this class trusts that the initial state is correctly formed by this point
     this.snapshot = initialState
@@ -100,6 +101,7 @@ class WindowWatcher extends EventEmitter {
     win.on('closed', this.handleClosed)
     win.on('resize', debounce(this.handlePositionChange, 1000))
     win.on('moved', this.handlePositionChange)
+    win.on('always-on-top-changed', this.handleAlwaysOnTopChanged)
     win.on('custom-pages-updated', this.handlePagesUpdated)
   }
 
@@ -130,6 +132,11 @@ class WindowWatcher extends EventEmitter {
 
   handlePositionChange () {
     Object.assign(this.snapshot, getCurrentPosition(this.getWindow()))
+    this.emit('change', this.snapshot)
+  }
+
+  handleAlwaysOnTopChanged (e, isAlwaysOnTop) {
+    this.snapshot.isAlwaysOnTop = isAlwaysOnTop
     this.emit('change', this.snapshot)
   }
 }

@@ -171,6 +171,7 @@ export function createShellWindow (windowState) {
     fullscreenable: true,
     fullscreenWindowTitle: true,
     frame: !IS_WIN,
+    alwaysOnTop: state.isAlwaysOnTop,
     x,
     y,
     width,

@@ -324,7 +324,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Pop Out Tab',
         enabled: !noWindows,
-        accelerator: 'Shift+CmdOrCtrl+N',
+        accelerator: 'Shift+CmdOrCtrl+P',
         click: function (item) {
           var win = getWin()
           if (!win) return
@@ -508,6 +508,16 @@ export function buildWindowMenu (opts = {}) {
     label: 'Window',
     role: 'window',
     submenu: [
+      {
+        type: 'checkbox',
+        label: 'Always on Top',
+        checked: (getWin() ? getWin().isAlwaysOnTop() : false),
+        click: function () {
+          var win = getWin()
+          if (!win) return
+          win.setAlwaysOnTop(!win.isAlwaysOnTop())
+        }
+      },
       {
         label: 'Minimize',
         accelerator: 'CmdOrCtrl+M',
