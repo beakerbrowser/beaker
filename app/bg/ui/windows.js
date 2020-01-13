@@ -105,7 +105,10 @@ export async function setup () {
     if (!parentWindow) {
       parentWindow = tabManager.findContainingWindow(parentView)
       if (!parentWindow) {
-        return 
+        parentWindow = sidebarsSubwindow.findContainingWindow(parentView)
+        if (!parentWindow) {
+          return
+        }
       }
     }
 
@@ -490,7 +493,7 @@ function onClose (win) {
 }
 
 function onTabSelect (tabIndex) {
-  return () => {  
+  return () => {
     var win = BrowserWindow.getFocusedWindow()
     tabManager.setActive(win, tabIndex)
   }
