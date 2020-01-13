@@ -41,6 +41,7 @@ export default class SessionWatcher {
       if (this.recording) {
         let { windows } = this.snapshot
         let i = windows.indexOf(state)
+        if (i === -1) return
         state = windows[i] = nextState
         this.writeSnapshot()
       }
@@ -50,7 +51,7 @@ export default class SessionWatcher {
       if (this.recording) {
         let { windows } = this.snapshot
         let i = windows.indexOf(state)
-        this.snapshot.windows = windows.splice(1, i)
+        this.snapshot.windows = windows.splice(i, 1)
         this.writeSnapshot()
       }
       delete this.watchers[winId]

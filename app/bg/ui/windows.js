@@ -81,8 +81,8 @@ export async function setup () {
   tabManager.setup()
 
   app.on('before-quit', async e => {
-    sessionWatcher.exit()
     sessionWatcher.stopRecording()
+    sessionWatcher.exit()
   })
 
   app.on('web-contents-created', async (e, wc) => {
@@ -451,6 +451,7 @@ function getPreviousBrowsingSession () {
   } catch (err) {
     // For some reason json can't be read (might be corrupted).
     // No worries, we have defaults.
+    console.error('Failed to read previous browsing session state', err)
   }
   return Object.assign({}, defaultBrowsingSessionState(), restoredState)
 }
