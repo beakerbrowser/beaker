@@ -114,6 +114,80 @@ export async function doMove (params) {
   return doCopyOrMove(params, (sourceDrive, sourcePath, targetDrive, targetPath) => sourceDrive.rename(sourcePath, joinPath(targetDrive.url, targetPath)))
 }
 
+export function doImport (targetFolder, fileOrFolder) {
+  let targetFolderParsed = new URL(targetFolder)
+  var targetDrive = new DatArchive(targetFolderParsed.hostname)
+
+  const handleFileOrFolder = (entry, path = '') => {
+    if (entry.isDirectory) {
+      return handleFolder(entry, path)
+    } else if (entry.isFile) {
+      return handleFile(entry, path)
+    }
+  }
+
+  const handleFolder = (folderEntry, path) => {
+    return new Promise((resolve, reject) => {
+      var dirReader = folderEntry.createReader()
+      dirReader.readEntries(async (entries) => {
+        try {
+          var name = folderEntry.name
+          var targetPath = joinPath(targetFolderParsed.pathname, path, name)
+          var targetSt = await (targetDrive.stat(targetPath).catch(e => undefined))
+          if (targetSt) {
+            if (!confirm(`${name} already exists in the target folder. Overwrite?`)) {
+              throw new Error('Canceled')
+            }
+            if (targetSt.isFile()) {
+              await targetDrive.unlink(targetPath)
+            } else {
+              await targetDrive.rmdir(targetPath, {recursive: true})
+            }
+          }
+          await targetDrive.mkdir(joinPath(path, name))
+
+          for (let entry of entries) {
+            await handleFileOrFolder(entry, joinPath(path, name))
+          }
+          resolve()
+        } catch (e) {
+          reject(e)
+        }
+      })
+    })
+  }
+
+  const handleFile = (fileEntry, path) => {
+    return new Promise((resolve, reject) => {
+      fileEntry.file(file => {
+        let reader = new FileReader()
+        reader.readAsArrayBuffer(file)
+        reader.onloadend = async () => {
+          try {
+            var name = file.name
+            var targetPath = joinPath(targetFolderParsed.pathname, path, name)
+            var targetSt = await (targetDrive.stat(targetPath).catch(e => undefined))
+            if (targetSt) {
+              if (targetSt.isFile() && !confirm(`${name} already exists in the target folder. Overwrite?`)) {
+                throw new Error('Canceled')
+              } else if (targetSt.isDirectory()) {
+                alert(`A folder named "${name}" already exists in the target folder and cannot be overwritten.`)
+                throw new Error('Canceled')
+              }
+            }
+            await targetDrive.writeFile(joinPath(path, name), reader.result, 'buffer')
+            resolve()
+          } catch (e) {
+            reject(e)
+          }
+        }
+      })
+    })
+  }
+  
+  handleFileOrFolder(fileOrFolder.webkitGetAsEntry())
+}
+
 export async function canWriteTo (url) {
   let urlp = new URL(url)
   let drive = new DatArchive(urlp.host)

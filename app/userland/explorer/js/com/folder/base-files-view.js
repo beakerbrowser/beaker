@@ -1,7 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { findParent, emit } from 'beaker://app-stdlib/js/dom.js'
-import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import { handleDragDrop } from '../../lib/drag-drop.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../../../css/com/folder/file-grid.css.js'
@@ -74,8 +73,8 @@ export class BaseFilesView extends LitElement {
       this.shadowRoot.querySelector('.container').classList.remove('is-dragging')
       try { this.shadowRoot.querySelector('.drag-ghost').remove() }
       catch (e) {}
-      Array.from(this.shadowRoot.querySelectorAll('.drag-hover'), el => el.classList.remove('drag-hover'))
     }
+    Array.from(this.shadowRoot.querySelectorAll('.drag-hover'), el => el.classList.remove('drag-hover'))
   }
 
   // rendering
@@ -181,9 +180,10 @@ export class BaseFilesView extends LitElement {
   }
 
   onDropItem (e, item) {
+    e.preventDefault()
     e.stopPropagation()
     e.currentTarget.classList.remove('drag-hover')
-    var targetPath = item.stat.isDirectory() ? item.path : window.location.pathname
+    var targetPath = item && item.stat.isDirectory() ? item.path : window.location.pathname
     handleDragDrop(e.currentTarget, e.clientX, e.clientY, targetPath, e.dataTransfer)
     return false
   }
@@ -269,6 +269,7 @@ export class BaseFilesView extends LitElement {
 
   onDragenterContainer (e) {
     e.preventDefault()
+    e.stopPropagation()
 
     var contanerEl = this.shadowRoot.querySelector('.container')
     var itemEl = findParent(e.target, 'folder')
@@ -286,10 +287,13 @@ export class BaseFilesView extends LitElement {
 
   onDragoverContainer (e) {
     e.preventDefault()
+    e.stopPropagation()
     return false
   }
 
   onDragleaveContainer (e) {
+    e.preventDefault()
+    e.stopPropagation()
     var contanerEl = this.shadowRoot.querySelector('.container')
     var itemEl = findParent(e.target, 'folder')
     if (itemEl && itemEl !== this.dragLastEntered) {
@@ -301,6 +305,7 @@ export class BaseFilesView extends LitElement {
   }
 
   onDropContainer (e) {
+    e.preventDefault()
     e.stopPropagation()
     this.endDragDropMode()
     handleDragDrop(this.shadowRoot.querySelector('.container'), e.clientX, e.clientY, window.location.pathname, e.dataTransfer)
