@@ -21,7 +21,7 @@ import * as modals from './subwindows/modals'
 import * as sidebars from './subwindows/sidebars'
 import * as siteInfo from './subwindows/site-info'
 import * as windowMenu from './window-menu'
-import { getUserSessionFor } from './windows'
+import { createShellWindow, getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
@@ -395,6 +395,15 @@ class Tab {
     this.browserView.destroy()
   }
 
+  transferWindow (targetWindow) {
+    this.deactivate()
+    prompts.close(this.browserView)
+    permPrompt.close(this.browserView)
+    modals.close(this.browserView)
+
+    this.browserWindow = targetWindow
+  }
+
   async updateHistory () {
     var url = this.url
     var title = this.title
@@ -552,6 +561,9 @@ class Tab {
       }
     }
   }
+
+  // drive handlers
+  // =
 
   async getDriveHandler () {
     if (this.driveHandlers[this.origin]) {
@@ -1280,6 +1292,54 @@ export function takeSnapshot (win) {
     .filter(Boolean)
 }
 
+export async function popOutTab (tab) {
+  var newWin = createShellWindow()
+  await new Promise(r => newWin.once('custom-pages-ready', r))
+  transferTabToWindow(tab, newWin)
+  removeAllExcept(newWin, tab)
+}
+
+export function transferTabToWindow (tab, targetWindow) {
+  var sourceWindow = tab.browserWindow
+
+  // find
+  var sourceTabs = getAll(sourceWindow)
+  var i = sourceTabs.indexOf(tab)
+  if (i == -1) {
+    return console.warn('tab-manager transferTabToWindow() called for missing tab', tab)
+  }
+
+  // remove
+  var shouldCloseSource = false
+  sourceTabs.splice(i, 1)
+  if (tab.isPinned) savePins(sourceWindow)
+  if (sourceTabs.length === 0) {
+    shouldCloseSource = true
+  } else {
+    if (tab.isActive) {
+      // console.log('changing active', (sourceTabs[i + 1] || sourceTabs[i - 1]).url)
+      // setActive(sourceWindow, sourceTabs[i + 1] || sourceTabs[i - 1])
+      changeActiveToLast(sourceWindow)
+    }
+    emitReplaceState(sourceWindow)
+  }
+
+  // transfer to the new window
+  tab.transferWindow(targetWindow)
+  var targetTabs = getAll(targetWindow)
+  if (tab.isPinned) {
+    targetTabs.splice(indexOfLastPinnedTab(targetWindow), 0, tab)
+    savePins(targetWindow)
+  } else {
+    targetTabs.push(tab)
+  }
+  emitReplaceState(targetWindow)
+
+  if (shouldCloseSource) {
+    sourceWindow.close()
+  }
+}
+
 export function togglePinned (win, tab) {
   win = getTopWindow(win)
   // move tab to the "end" of the pinned tabs
@@ -1493,6 +1553,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       { type: 'separator' },
       { label: 'Duplicate', click: () => create(win, tab.url) },
       { label: (tab.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => togglePinned(win, tab) },
+      { label: 'Pop Out Tab', click: () => popOutTab(tab) },
       { label: (tab.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => tab.toggleMuted() },
       { type: 'separator' },
       { label: 'Close Tab', click: () => remove(win, tab) },

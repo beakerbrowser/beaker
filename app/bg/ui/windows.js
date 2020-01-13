@@ -238,6 +238,7 @@ export function createShellWindow (windowState) {
         tabManager.loadPins(win)
       }
       tabManager.initializeFromSnapshot(win, state.pages)
+      win.emit('custom-pages-ready')
 
       // DISABLED
       // not sure whether we'll need this

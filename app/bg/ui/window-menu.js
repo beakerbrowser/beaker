@@ -280,6 +280,25 @@ export function buildWindowMenu (opts = {}) {
         },
         reserved: true
       },
+      { type: 'separator' },
+      {
+        label: 'Pop Out Tab',
+        enabled: !noWindows,
+        accelerator: 'Shift+CmdOrCtrl+N',
+        click: async function (item) {
+          var win = getWin()
+          if (!win) return
+          var active = tabManager.getActive(win)
+          if (!active) return
+          tabManager.popOutTab(active)
+        }
+      },
+      {
+        label: 'Full Screen',
+        enabled: !noWindows,
+        accelerator: (process.platform === 'darwin') ? 'Ctrl+Cmd+F' : 'F11',
+        role: 'toggleFullScreen'
+      },
     { type: 'separator' },
       {
         label: 'Zoom In',
@@ -404,13 +423,6 @@ export function buildWindowMenu (opts = {}) {
             if (active) active.toggleLiveReloading()
           }
         }
-      },
-      { type: 'separator' },
-      {
-        label: 'Full Screen',
-        enabled: !noWindows,
-        accelerator: (process.platform === 'darwin') ? 'Ctrl+Cmd+F' : 'F11',
-        role: 'toggleFullScreen'
       }
     ]
   }
