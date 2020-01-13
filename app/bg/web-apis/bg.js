@@ -1,4 +1,6 @@
+import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
+import { findTab } from '../ui/tab-manager'
 
 const INTERNAL_ORIGIN_REGEX = /^(beaker:)/i
 const SECURE_ORIGIN_REGEX = /^(beaker:|dat:|https:|http:\/\/localhost(\/|:))/i
@@ -85,13 +87,24 @@ export const setup = function () {
 }
 
 function internalOnly (event, methodName, args) {
-  return (event && event.sender && INTERNAL_ORIGIN_REGEX.test(event.sender.getURL()))
+  return (event && event.sender && INTERNAL_ORIGIN_REGEX.test(getUrl(event.sender)))
 }
 
 function secureOnly (event, methodName, args) {
   if (!(event && event.sender)) {
     return false
   }
-  var url = event.sender.getURL()
-  return SECURE_ORIGIN_REGEX.test(url)
+  return SECURE_ORIGIN_REGEX.test(getUrl(event.sender))
+}
+
+function getUrl (sender) {
+  var url = sender.getURL()
+  if (!url || sender.isLoadingMainFrame()) {
+    let view = BrowserView.fromWebContents(sender)
+    let tab = findTab(view)
+    if (tab) {
+      url = tab.loadingURL || url
+    }
+  }
+  return url
 }

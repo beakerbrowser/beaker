@@ -22,11 +22,15 @@ export const setup = function (rpc) {
   }
 
   var filesystemApi = rpc.importAPI('navigator-filesystem', filesystemManifest, RPC_OPTS)
-  navigator.filesystem = new DatArchive(filesystemApi.get().url)
-  navigator.filesystem.identifyDrive = async (url) => {
-    if (url instanceof DatArchive) {
-      url = url.url
+  try {
+    navigator.filesystem = new DatArchive(filesystemApi.get().url)
+    navigator.filesystem.identifyDrive = async (url) => {
+      if (url instanceof DatArchive) {
+        url = url.url
+      }
+      return filesystemApi.identifyDrive(url)
     }
-    return filesystemApi.identifyDrive(url)
+  } catch (e) {
+    // not supported
   }
 }

@@ -1,4 +1,4 @@
-import { webFrame } from 'electron'
+// import { webFrame } from 'electron'
 import { setup as setupWebAPIs } from '../../bg/web-apis/fg.js'
 import { setup as setupTutorial } from './tutorial'
 import { setup as setupLocationbar } from './locationbar'
