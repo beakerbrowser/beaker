@@ -1,13 +1,13 @@
 import path from 'path'
 import fs from 'fs'
-import { app, dialog, shell } from 'electron'
+import { app, dialog, shell, BrowserView } from 'electron'
 import mime from 'mime'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import parseDataURL from 'data-urls'
 import { requestPermission } from './permissions'
-import { openOrFocusDownloadsPage } from './tab-manager'
+import { openOrFocusDownloadsPage, findTab, remove as removeTab } from './tab-manager'
 
 // globals
 // =
@@ -46,6 +46,14 @@ export function registerListener (win, opts = {}) {
     if (!opts.suppressNewDownloadEvent) {
       downloadsEvents.emit('new-download', toJSON(item))
       openOrFocusDownloadsPage(win)
+    }
+
+    if (!wc.getURL()) {
+      // download was triggered when the user opened a new tab
+      // close the tab and do the download instead
+      let view = BrowserView.fromWebContents(wc)
+      let tab = view ? findTab(view) : undefined
+      if (tab) removeTab(tab.browserWindow, tab)
     }
 
     var lastBytes = 0
