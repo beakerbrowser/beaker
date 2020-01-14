@@ -6,9 +6,9 @@ import buttonsCSS from 'beaker://app-stdlib/css/buttons2.css.js'
 import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import { toNiceUrl, joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { toNiceUrl, joinPath, normalizeUrl } from 'beaker://app-stdlib/js/strings.js'
 import { toSimpleItemGroups, getSubicon } from 'beaker://explorer/js/lib/files.js'
-import 'beaker://explorer/js/com/folder/inline-file-grid.js'
+import 'beaker://explorer/js/com/folder/file-grid.js'
 
 // exported api
 // =
@@ -78,8 +78,9 @@ export class AddLinkPopup extends BasePopup {
       color: #667;
     }
 
-    inline-file-grid:not(.empty) {
-      padding: 18px 16px 0;
+    file-grid {
+      display: block;
+      padding: 0 16px 0;
     }
 
     .history {
@@ -88,6 +89,10 @@ export class AddLinkPopup extends BasePopup {
 
     .empty {
       color: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+    }
+
+    file-grid.empty {
       padding: 0 20px 20px;
     }
 
@@ -206,6 +211,12 @@ export class AddLinkPopup extends BasePopup {
       if (item.stat.mount && item.stat.mount.key) {
         item.mount = await (new DatArchive(item.stat.mount.key)).getInfo()
       }
+      item.icon = item.stat.isDirectory() ? 'folder' : 'file'
+      if (item.stat.isFile() && item.name.endsWith('.view')) {
+        item.icon = 'layer-group'
+      } else if (item.stat.isFile() && item.name.endsWith('.goto')) {
+        item.icon = 'external-link-alt'
+      }
       item.subicon = getSubicon('root', item)
     }
     explorerItems.sort((a, b) => a.name.localeCompare(b.name))
@@ -217,6 +228,13 @@ export class AddLinkPopup extends BasePopup {
   async runQuery () {
     this.reset()
     this.history = await beaker.history.search(this.query)
+    var queryEntry = normalizeUrl(this.query)
+    if (!this.history.find(item => normalizeUrl(item.url) === queryEntry)) {
+      this.history.unshift({
+        title: queryEntry,
+        url: queryEntry
+      })
+    }
     console.log(this.history)
     this.requestUpdate()
   }
@@ -237,7 +255,7 @@ export class AddLinkPopup extends BasePopup {
     return html`  
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="filter-control">
-        <input type="text" id="search-input" name="url" placeholder="Search my history" @keyup=${e => delay(this.onChangeQuery.bind(this), e)} />
+        <input type="text" id="search-input" name="url" placeholder="Search my history or input a URL" @keyup=${e => delay(this.onChangeQuery.bind(this), e)} />
       </div>
       <main>
         ${this.query ? html`
@@ -250,14 +268,14 @@ export class AddLinkPopup extends BasePopup {
             <button @click=${this.onClickExplorerUpdog}><span class="fas fa-level-up-alt"></span></button>
             <span class="path">${this.explorerPath.split('/').filter(Boolean).map(segment => html`<span>/</span><span>${segment}</span>`)}</span>
           </nav>
-          <inline-file-grid
+          <file-grid
             class=${this.explorerItems.length === 0 ? 'empty' : ''}
             .itemGroups=${this.explorerItemGroups}
             .selection=${this.selection}
             @goto=${this.onExplorerGoto}
             @change-selection=${this.onExplorerChangeSelection}
             @show-context-menu=${this.onExplorerContextMenu}
-          ></inline-file-grid>
+          ></file-grid>
         `}
       </main>
       <footer>

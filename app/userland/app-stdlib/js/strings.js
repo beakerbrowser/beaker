@@ -96,3 +96,17 @@ const endingDashes = /([-]+$)/g
 export function slugify (str = '') {
   return str.replace(reservedChars, '-').replace(endingDashes, '')
 }
+
+export function normalizeUrl (str = '') {
+  try {
+    let url = new URL(str)
+    let res = url.protocol + '//' + url.hostname
+    if (url.port) res += ':' + url.port
+    res += url.pathname.replace(/(\/)$/, '') || '/'
+    if (url.search && url.search !== '?') res += url.search
+    if (url.hash && url.hash !== '#') res += url.hash
+    return res
+  } catch (e) {
+    return str
+  }
+}

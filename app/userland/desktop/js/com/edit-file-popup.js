@@ -52,11 +52,11 @@ export class EditFilePopup extends BasePopup {
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <form @submit=${this.onSubmit}>
           <div>
-            <label for="href-input">URL</label>
-            <input required type="text" id="href-input" name="href" value="${this.file.stat.metadata.href}" placeholder="E.g. beakerbrowser.com" />
-
             <label for="title-input">Title</label>
             <input required type="text" id="title-input" name="title" value="${this.file.stat.metadata.title}" placeholder="E.g. Beaker Browser" />
+
+            <label for="href-input">URL</label>
+            <input required type="text" id="href-input" name="href" value="${this.file.stat.metadata.href}" placeholder="E.g. beakerbrowser.com" />
           </div>
 
           <div class="actions">
