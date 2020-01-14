@@ -4,7 +4,8 @@ import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
-import {shortenHash} from '../../lib/strings'
+import spinnerCSS from './spinner.css'
+import { shortenHash, getHostname } from '../../lib/strings'
 
 const VIEWS = {
   SELECT: 0,
@@ -23,7 +24,7 @@ class SelectDriveModal extends LitElement {
   }
 
   static get styles () {
-    return [commonCSS, inputsCSS, buttonsCSS, css`
+    return [commonCSS, inputsCSS, buttonsCSS, spinnerCSS, css`
       .wrapper,
       form {
         padding: 0;
@@ -109,6 +110,17 @@ class SelectDriveModal extends LitElement {
         border: 1px solid #ddd;
       }
 
+      .drives-list .loading {
+        display: flex;
+        padding: 10px;
+        align-items: center;
+        color: gray;
+      }
+
+      .drives-list .loading .spinner {
+        margin-right: 5px;
+      }
+
       .drives-list .empty {
         padding: 5px 10px;
         color: gray;
@@ -189,7 +201,7 @@ class SelectDriveModal extends LitElement {
     this.title = ''
     this.description = ''
     this.selectedDriveUrl = ''
-    this.drives = []
+    this.drives = undefined
 
     // params
     this.customTitle = ''
@@ -204,12 +216,13 @@ class SelectDriveModal extends LitElement {
     this.buttonLabel = params.buttonLabel || 'Select'
     this.type = params.type
     await this.requestUpdate()
+    this.adjustHeight()
 
     var entries = await bg.datArchive.query(bg.navigatorFs.get().url, {
       path: '/system/drives/*',
       type: 'mount',
       sort: 'name'
-    })
+    }).catch(err => [])
     this.drives = await Promise.all(entries.map(entry => bg.datArchive.getInfo(entry.mount)))
     if (params.type) this.drives = this.drives.filter(drive => drive.type === params.type)
     if (typeof params.writable === 'boolean') {
@@ -223,6 +236,10 @@ class SelectDriveModal extends LitElement {
     // adjust height based on rendering
     var height = this.shadowRoot.querySelector('div').clientHeight
     bg.modals.resizeSelf({height})
+  }
+
+  get hasValidSelection () {
+    return !!this.selectedDriveUrl || isDriveUrl(this.currentTitleFilter)
   }
 
   // rendering
@@ -248,7 +265,7 @@ class SelectDriveModal extends LitElement {
           ${this.renderTypeFilter()}
           <div class="filter-container">
             <i class="fa fa-search"></i>
-            <input autofocus @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search">
+            <input autofocus @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or input the URL of a drive">
           </div>
           ${this.renderDrivesList()}
         </div>
@@ -261,7 +278,7 @@ class SelectDriveModal extends LitElement {
           </div>
           <div class="right">
             <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-            <button ?disabled=${!this.selectedDriveUrl} type="submit" class="btn primary" tabindex="5">
+            <button ?disabled=${!this.hasValidSelection} type="submit" class="btn primary" tabindex="5">
               ${this.buttonLabel}
             </button>
           </div>
@@ -324,12 +341,19 @@ class SelectDriveModal extends LitElement {
   }
 
   renderDrivesList () {
+    if (!this.drives) {
+      return html`<ul class="drives-list"><li class="loading"><span class="spinner"></span> Loading...</li></ul>`
+    }
+
     var filtered = this.drives
     if (this.currentTitleFilter) {
       filtered = filtered.filter(a => a.title && a.title.toLowerCase().includes(this.currentTitleFilter))
     }
 
     if (!filtered.length) {
+      if (isDriveUrl(this.currentTitleFilter)) {
+        return html`<ul class="drives-list"><li class="empty">This URL is a valid drive (${getHostname(this.currentTitleFilter)})</li></ul>`
+      }
       return html`<ul class="drives-list"><li class="empty">No drives found</li></ul>`
     }
 
@@ -380,6 +404,9 @@ class SelectDriveModal extends LitElement {
 
   onChangeTitleFilter (e) {
     this.currentTitleFilter = e.target.value.toLowerCase()
+    if (this.selectedDriveUrl && isDriveUrl(this.currentTitleFilter)) {
+      this.selectedDriveUrl = undefined
+    }
   }
 
   onChangeSelecteddrive (e) {
@@ -424,9 +451,18 @@ class SelectDriveModal extends LitElement {
         this.cbs.reject(e.message || e.toString())
       }
     } else {
-      this.cbs.resolve({url: this.selectedDriveUrl})
+      this.cbs.resolve({url: this.selectedDriveUrl ? this.selectedDriveUrl : (new URL(this.currentTitleFilter)).origin})
     }
   }
 }
 
 customElements.define('select-drive-modal', SelectDriveModal)
+
+function isDriveUrl (v = '') {
+  try {
+    var urlp = new URL(v)
+    return urlp.protocol === 'dat:'
+  } catch (e) {
+    return false
+  }
+}
