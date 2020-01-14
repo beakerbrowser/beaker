@@ -5,16 +5,21 @@ import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import { unsafeHTML } from '../vendor/lit-element/lit-html/directives/unsafe-html'
 import { examineLocationInput } from '../../lib/urls'
+import { joinPath } from '../../lib/strings'
 import _uniqWith from 'lodash.uniqwith'
 import browserManifest from '../../bg/web-apis/manifests/internal/browser'
+import datArchiveManifest from '../../bg/web-apis/manifests/external/dat-archive'
 import historyManifest from '../../bg/web-apis/manifests/internal/history'
 import locationBarManifest from '../../bg/rpc-manifests/location-bar'
+import navigatorManifestFs from '../../bg/web-apis/manifests/external/navigator-filesystem'
 import viewsManifest from '../../bg/rpc-manifests/views'
 
 const bg = {
   beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
+  datArchive: rpc.importAPI('dat-archive', datArchiveManifest),
   history: rpc.importAPI('history', historyManifest),
   locationBar: rpc.importAPI('background-process-location-bar', locationBarManifest),
+  navigatorFs: rpc.importAPI('navigator-filesystem', navigatorManifestFs),
   views: rpc.importAPI('background-process-views', viewsManifest)
 }
 
@@ -31,6 +36,7 @@ class LocationBar extends LitElement {
   constructor () {
     super()
     this.reset()
+    this.homeDriveUrl = undefined
 
     // fetch platform information
     var {platform} = bg.beakerBrowser.getInfo()
@@ -51,7 +57,7 @@ class LocationBar extends LitElement {
   }
 
   reset () {
-    this.userUrl = null
+    this.currentTabLocation = undefined
     this.inputValue = ''
     this.inputQuery = ''
     this.autocompleteResults = []
@@ -143,64 +149,17 @@ class LocationBar extends LitElement {
         <div class="info"><div class="row"><span class="content-column"><span class="title">${r.title}</span></span></div></div>
       `
     }
-    if (r.resultType === 'dat' || r.resultType === 'person') {
+    if (r.isDriveEntry) {
       return html`
-        <div class="icon"><img class=${r.resultType === 'person' ? 'avatar' : undefined} src=${'asset:thumb:' + r.url}></div>
+        <div class="icon"><i class="far fa-${isFolder(r) ? 'folder' : 'file'}"></i></div>
         <div class="info">
           <div class="row">
             <span class="content-column">
-              <span class="title">${unsafeHTML(r.titleDecorated)}</span>
-              ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
+              <span class="title">${r.nameDecorated}</span>
             </span>
           </div>
           <div class="row provenance">
-            ${r.resultType === 'person' ? html`
-              <span class="fas fa-fw fa-user"></span>
-              ${r.url === this.userUrl ? 'My profile' : 'Followed by me'}
-              <span class="url">${toNiceUrl(r.url)}</span>
-            ` : html`
-              <span class="far fa-fw fa-folder"></span>
-              Dat by
-              ${r.author && r.author.writable ? html`me`: (r.author && r.author.title || 'Anonymous')}
-              <span class="url">${toNiceUrl(r.url)}</span>
-            `}
-          </div>
-        </div>
-      `
-    }
-    if (r.resultType === 'bookmark') {
-      let authorTitle = r.author.writable ? 'me' : (r.author.title || 'Anonymous')
-      return html`
-        <div class="icon"><img src=${'asset:favicon-32:' + r.record.href}></div>
-        <div class="info">
-          <div class="row">
-            <span class="content-column">
-              <span class="title">${unsafeHTML(r.titleDecorated)}</span>
-              ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
-            </span>
-          </div>
-          <div class="row provenance">
-            <span class="fas fa-fw fa-star"></span>
-            Bookmarked by ${authorTitle}
-            <span class="url">${toNiceUrl(r.record.href)}</span>
-          </div>
-        </div>
-      `
-    }
-    if (r.resultType === 'status') {
-      let authorTitle = r.author.writable ? 'me' : (r.author.title || 'Anonymous')
-      return html`
-        <div class="icon"><img class="avatar" src=${'asset:thumb:' + r.author.url}></div>
-        <div class="info">
-          <div class="row">
-            <span class="content-column">
-              "<span class="title">${unsafeHTML(r.titleDecorated)}</span>"
-            </span>
-          </div>
-          <div class="row provenance">
-            <span class="far fa-fw fa-comment-alt"></span>
-            Status by ${authorTitle}
-            <span class="url">${toNiceUrl(r.record.href)}</span>
+            ${r.path}
           </div>
         </div>
       `
@@ -272,22 +231,38 @@ class LocationBar extends LitElement {
   }
 
   onKeydownLocation (e) {
-    // on enter
     if (e.key === 'Enter') {
       e.preventDefault()
-
       this.selectResult(this.autocompleteResults[this.currentSelection])
       return
     }
 
-    // on escape
     if (e.key === 'Escape') {
       e.preventDefault()
       bg.locationBar.close()
       return
     }
 
-    // on keycode navigations
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      let unmatchedNamePortion = undefined
+      let selection = this.autocompleteResults[this.currentSelection]
+      if (selection.isDriveEntry) {
+        unmatchedNamePortion = selection.unmatchedNamePortion
+        if (isFolder(selection)) unmatchedNamePortion += '/'
+      } else {
+        let driveEntries = this.autocompleteResults.filter(r => r.isDriveEntry)
+        if (driveEntries.length === 1) {
+          unmatchedNamePortion = driveEntries[0].unmatchedNamePortion
+          if (isFolder(driveEntries[0])) unmatchedNamePortion += '/'
+        }
+      }
+      if (unmatchedNamePortion) {
+        this.shadowRoot.querySelector('input').value = this.inputValue = this.inputQuery + unmatchedNamePortion
+        this.queryAutocomplete()
+      }
+    }
+
     var up = (e.key === 'ArrowUp' || (e.ctrlKey && e.key === 'p'))
     var down = (e.key === 'ArrowDown' || (e.ctrlKey && e.key === 'n'))
     if (up || down) {
@@ -318,30 +293,52 @@ class LocationBar extends LitElement {
   }
 
   async queryAutocomplete () {
-    if (!this.userUrl) {
-      let userSession = await bg.beakerBrowser.getUserSession().catch(err => null)
-      this.userUrl = userSession ? userSession.url : null
-    }
-
     this.inputValue = this.inputValue.trim()
 
+    // determine the URL that the user is targeting (only if it references a drive)
+    var inputDriveUrl = undefined
+    var inputDriveUrlp = undefined
+    if (this.inputValue.startsWith('~')) {
+      if (!this.homeDriveUrl) {
+        this.homeDriveUrl = bg.navigatorFs.get().url
+      }
+      inputDriveUrl = joinPath(this.homeDriveUrl, this.inputValue.slice(1))
+    } else if (this.inputValue.startsWith('/')) {
+      if (!this.currentTabLocation) {
+        this.currentTabLocation = (await bg.views.getTabState('active').catch(e => ({url: ''}))).url
+      }
+      if (this.currentTabLocation.startsWith('dat://')) {
+        try {
+          let urlp = new URL(this.currentTabLocation)
+          inputDriveUrl = joinPath(urlp.origin, this.inputValue.slice(1))
+        } catch (e) {
+          // ignore, bad url
+        }
+      }
+    } else if (this.inputValue.startsWith('dat://')) {
+      inputDriveUrl = this.inputValue
+    }
+    if (inputDriveUrl) {
+      try {
+        inputDriveUrlp = new URL(inputDriveUrl)
+      } catch (e) {
+        // just ignore
+      }
+    }
+
     var finalResults
-    var [crawlerResults, historyResults] = await Promise.all([
-      {results: []}, // TODO uwg bg.search.query({query: this.inputValue, limit: 10}),
+    var [driveResults, historyResults] = await Promise.all([
+      inputDriveUrlp ? searchDrive(inputDriveUrlp) : [],
       this.inputValue ? bg.history.search(this.inputValue) : []
     ])
-    // History search is experimentally disabled
-    // We're seeing how it feels to focus entirely on results from the network
-    // -prf
 
     // console.log({
-    //   historyResults,
-    //   crawlerResults
+      // historyResults,
+      // driveResults
     // })
 
     // decorate results with bolded regions
     var searchTerms = this.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
-    crawlerResults.results.forEach(r => highlightSearchResult(searchTerms, crawlerResults.highlightNonce, r))
     historyResults.forEach(r => highlightHistoryResult(searchTerms, r))
 
     // figure out what we're looking at
@@ -358,7 +355,7 @@ class LocationBar extends LitElement {
     else finalResults = [searchResult, gotoResult]
 
     // add search results
-    finalResults = finalResults.concat(crawlerResults.results)
+    finalResults = finalResults.concat(driveResults)
     finalResults = finalResults.concat(historyResults)
 
     // remove duplicates
@@ -454,6 +451,20 @@ input:focus {
   font-size: 13px;
   color: #707070;
   margin-left: 9px;
+}
+
+.result .icon .fa-folder {
+  -webkit-text-stroke: 1px #fff;
+  font-size: 26px;
+  margin-left: 3px;
+  color: #889;
+}
+
+.result .icon .fa-file {
+  -webkit-text-stroke: 1px #fff;
+  font-size: 26px;
+  margin-left: 6px;
+  color: #889;
 }
 
 .result .content-column,
@@ -567,20 +578,40 @@ function toNiceUrl (str) {
   return str.replace(DAT_KEY_REGEX, (_, m) => `${m.slice(0, 6)}..${m.slice(-2)}`)
 }
 
-// helper for crawler search results
-// - search results are returned from beaker's search APIs with nonces wrapping the highlighted sections
-// - e.g. a search for "test" might return "the {500}test{/500} result"
-// - in this case, we want to highlight at a more fine grain (the search terms)
-// - so we strip the nonces and use the search terms for highlighting
-function highlightSearchResult (searchTerms, nonce, result) {
-  var start = new RegExp(`\\{${nonce}\\}`, 'g') // eg {500}
-  var end = new RegExp(`\\{/${nonce}\\}`, 'g') // eg {/500}
-  var termRe = new RegExp(`(${searchTerms.join('|')})`, 'gi') // eg '(beaker|browser)'
-  const highlight = str => makeSafe(str).replace(start, '').replace(end, '').replace(termRe, (_, term) => `<strong>${term}</strong>`)
+async function searchDrive (urlp) {
+  try {
+    var nameFilter = undefined
+    var parentFolderPath = urlp.pathname
+    if (!parentFolderPath.endsWith('/')) {
+      let parts = parentFolderPath.split('/')
+      nameFilter = parts.pop()
+      parentFolderPath = parts.join('/')
+    }
 
-  result.url = result.record.href || result.href
-  result.titleDecorated = highlight(result.record.title || result.record.body)
-  result.descriptionDecorated = highlight(result.record.description)
+    var items = await bg.datArchive.readdir(urlp.origin, parentFolderPath, {timeout: 2e3, includeStats: true})
+    if (nameFilter) {
+      nameFilter = nameFilter.toLowerCase()
+      items = items.filter(item => item.name.toLowerCase().startsWith(nameFilter))
+    }
+    items.sort((a, b) => a.name.localeCompare(b.name))
+
+    for (let item of items) {
+      item.isDriveEntry = true
+      item.unmatchedNamePortion = nameFilter ? item.name.slice(nameFilter.length) : item.name
+      item.nameDecorated = nameFilter ? html`<strong>${nameFilter}</strong>${item.unmatchedNamePortion}` : item.name
+      item.path = joinPath(parentFolderPath, item.name)
+      item.url = joinPath(urlp.origin, item.path)
+    }
+
+    return items
+  } catch (e) {
+    console.debug('Failed to readdir', e)
+    return []
+  }
+}
+
+function isFolder (item) {
+  return (item.stat.mode & 16384) === 16384
 }
 
 // helper for history search results

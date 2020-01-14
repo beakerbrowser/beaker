@@ -1,11 +1,12 @@
 export const isDatHashRegex = /^[a-z0-9]{64}/i
 const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
+const isPath = /^(~|\/)/
 
 // helper to determine what the user may be inputting into the locaiton bar
 export function examineLocationInput (v) {
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (
-    v.startsWith('/') ||
+    isPath.test(v) ||
     /\.[A-z]/.test(v) ||
     isIPAddressRegex.test(v) ||
     isDatHashRegex.test(v) ||
@@ -17,7 +18,7 @@ export function examineLocationInput (v) {
   ))
   var vWithProtocol = v
   var isGuessingTheScheme = false
-  if (isProbablyUrl && !v.startsWith('/') && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:'))) {
+  if (isProbablyUrl && !isPath.test(v) && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:'))) {
     if (isDatHashRegex.test(v)) {
       vWithProtocol = 'dat://' + v
     } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {

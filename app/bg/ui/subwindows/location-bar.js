@@ -12,6 +12,8 @@ import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import locationBarRPCManifest from '../../rpc-manifests/location-bar'
 import * as tabManager from '../tab-manager'
+import * as filesystem from '../../filesystem/index'
+import { joinPath } from '../../../lib/strings'
 
 // globals
 // =
@@ -120,6 +122,9 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
     if (url.startsWith('/')) {
       // relative to current origin
       url = active.origin + url
+    } else if (url.startsWith('~')) {
+      // relative to home drive
+      url = joinPath(filesystem.get().url, url.slice(1))
     }
     active.loadURL(url)
     get(win).webContents.send('command', 'unfocus-location') // we have to manually unfocus the location bar
