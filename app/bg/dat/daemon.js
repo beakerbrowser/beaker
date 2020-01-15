@@ -1,13 +1,14 @@
+import { app } from 'electron'
 import HyperdriveDaemon from 'hyperdrive-daemon'
+import * as HyperdriveDaemonManager from 'hyperdrive-daemon/manager'
 import { createMetadata } from 'hyperdrive-daemon/lib/metadata'
 import constants from 'hyperdrive-daemon-client/lib/constants'
 import { HyperdriveClient } from 'hyperdrive-daemon-client'
 import datEncoding from 'dat-encoding'
 import * as pda from 'pauls-dat-api2'
 import { getEnvVar } from '../lib/env'
-import * as childProcesses from '../child-processes'
 
-const SETUP_RETRIES = 10
+const SETUP_RETRIES = 100
 
 // typedefs
 // =
@@ -61,21 +62,29 @@ var client // client object created by hyperdrive-daemon-client
 export const setup = async function () {
   // instantiate the daemon
   // TODO the daemon should be managed in an external process
-  await createMetadata(`localhost:${constants.port}`)
   if (getEnvVar('EMBED_HYPERDRIVE_DAEMON')) {
+    await createMetadata(`localhost:${constants.port}`)
     var daemon = new HyperdriveDaemon()
     await daemon.start()
     process.on('exit', () => daemon.stop())
   } else {
-    await childProcesses.spawn('hyperdrive-daemon', './bg/dat/daemon-process.js')
+    await HyperdriveDaemonManager.start({
+      interpreter: app.getPath('exe'),
+      env: Object.assign({}, process.env, {ELECTRON_RUN_AS_NODE: 1}),
+      memoryOnly: false,
+      heapSize: 4096 // 4GB heap
+    })
   }
 
+  var connectBackoff = 100
   for (let i = 0; i < SETUP_RETRIES; i++) {
     try {
       client = new HyperdriveClient()
       await client.ready()
     } catch (e) {
       console.log('Failed to connect to daemon, retrying', e)
+      await new Promise(r => setTimeout(r, connectBackoff))
+      connectBackoff += 100
     }
   }
 
