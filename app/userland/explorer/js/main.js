@@ -878,7 +878,7 @@ export class ExplorerApp extends LitElement {
       title: 'Select a folder to compare against',
       select: ['folder']
     })
-    window.open(`beaker://compare/?base=${base}&target=${joinPath(navigator.filesystem.url, target[0])}`)
+    window.open(`beaker://compare/?base=${base}&target=${target[0].url}`)
   }
 }
 

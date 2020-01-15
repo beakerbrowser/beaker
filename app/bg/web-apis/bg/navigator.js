@@ -82,8 +82,8 @@ export default {
         throw e // only rethrow if a specific error
       }
     }
-    if (!res || !res.paths) throw new UserDeniedError()
-    return res.paths
+    if (!res) throw new UserDeniedError()
+    return res
   },
 
   /**
@@ -131,8 +131,8 @@ export default {
         throw e // only rethrow if a specific error
       }
     }
-    if (!res || !res.path) throw new UserDeniedError()
-    return res.path
+    if (!res) throw new UserDeniedError()
+    return res
   },
 
   /**

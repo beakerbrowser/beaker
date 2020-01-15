@@ -105,7 +105,7 @@ class BookmarkMenu extends LitElement {
       this.setAttribute('stay-open', 1)
       value = (await bg.navigator.selectFileDialog({
         title: 'Select the folder to save to'
-      }).catch(e => ([this.location])))[0]
+      }).catch(e => ([this.location])))[0].path
       this.removeAttribute('stay-open')
     }
     this.location = value

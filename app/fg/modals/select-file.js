@@ -1,7 +1,7 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
-import { join as joinPath } from 'path'
+import { joinPath } from '../../lib/strings'
 import Stat from '../../bg/web-apis/fg/stat'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
@@ -22,7 +22,7 @@ class SelectFileModal extends LitElement {
       .title {
         background: #fff;
         border: 0;
-        padding: 10px 10px 0;
+        padding: 6px;
         text-align: center;
         font-size: 14px;
         font-weight: 500;
@@ -35,6 +35,12 @@ class SelectFileModal extends LitElement {
       form {
         padding: 0;
         margin: 0;
+      }
+
+      .layout {
+        display: grid;
+        grid-gap: 10px;
+        grid-template-columns: 180px 1fr;
       }
 
       .form-actions {
@@ -50,10 +56,25 @@ class SelectFileModal extends LitElement {
         margin-right: 5px;
       }
 
+      .drives-list {
+        background: #f5f5fa;
+        height: 379px;
+        overflow-y: auto;
+      }
+
+      .drives-list .drive {
+        padding: 5px 10px;
+      }
+
+      .drives-list .drive.selected {
+        background: #0031;
+        font-weight: 500;
+      }
+
       .path {
         display: flex;
         align-items: center;
-        padding: 4px 0 6px;
+        padding: 0 0 4px;
       }
 
       .path .fa-fw {
@@ -99,7 +120,7 @@ class SelectFileModal extends LitElement {
       }
 
       .files-list {
-        border-radius: 8px;
+        border-radius: 4px;
         height: 350px;
         overflow-y: scroll;
         border: 1px solid #ccc;
@@ -184,15 +205,15 @@ class SelectFileModal extends LitElement {
     super()
 
     // state
+    this.drives = []
     this.path = '/'
     this.files = []
     this.selectedPaths = []
-    this.archiveInfo = null
-    this.isChangeDriveOpen = false
+    this.driveInfo = null
 
     // params
     this.saveMode = false
-    this.archive = null
+    this.drive = null
     this.defaultPath = '/'
     this.defaultFilename = ''
     this.title = ''
@@ -211,7 +232,7 @@ class SelectFileModal extends LitElement {
   async init (params, cbs) {
     this.cbs = cbs
     this.saveMode = params.saveMode
-    this.archive = params.archive
+    this.drive = params.archive
     this.path = params.defaultPath || '/'
     this.defaultFilename = params.defaultFilename || ''
     this.title = params.title || ''
@@ -248,7 +269,9 @@ class SelectFileModal extends LitElement {
       }
     }
 
-    this.archiveInfo = await bg.datArchive.getInfo(this.archive)
+    var homeDriveUrl = bg.navigatorFs.get().url
+    this.drives.push(await bg.datArchive.getInfo(homeDriveUrl))
+    this.driveInfo = await bg.datArchive.getInfo(this.drive)
     await this.readdir()
     this.updateComplete.then(_ => {
       this.adjustHeight()
@@ -258,6 +281,14 @@ class SelectFileModal extends LitElement {
         this.requestUpdate()
       }
     })
+
+    var systemDrivesItems = await bg.datArchive.readdir(homeDriveUrl, '/system/drives', {includeStats: true})
+    for (let item of systemDrivesItems) {
+      if (item.stat.mount && item.stat.mount.key) {
+        this.drives.push(await bg.datArchive.getInfo(item.stat.mount.key))
+      }
+    }
+    this.requestUpdate()
   }
 
   adjustHeight () {
@@ -283,7 +314,7 @@ class SelectFileModal extends LitElement {
   }
 
   async readdir () {
-    var files = await bg.datArchive.readdir(this.archive, this.path, {includeStats: true})
+    var files = await bg.datArchive.readdir(this.drive, this.path, {includeStats: true})
     files.forEach(file => {
       file.stat = new Stat(file.stat)
       file.path = joinPath(this.path, file.name)
@@ -297,13 +328,13 @@ class SelectFileModal extends LitElement {
   }
 
   canSelectFile (file) {
-    if (defined(this.filters.networked) && this.filters.networked !== this.archiveInfo.networked) {
+    if (defined(this.filters.networked) && this.filters.networked !== this.driveInfo.networked) {
       return false
     }
-    if (defined(this.filters.writable) && this.filters.writable !== this.archiveInfo.writable) {
+    if (defined(this.filters.writable) && this.filters.writable !== this.driveInfo.writable) {
       return false
     }
-    if (this.saveMode && !this.archiveInfo.writable) {
+    if (this.saveMode && !this.driveInfo.writable) {
       return false
     }
     if (file.stat.isFile()) {
@@ -366,27 +397,22 @@ class SelectFileModal extends LitElement {
               `
               : ''}
 
-            <div class="path">
-              ${this.renderPath()}
-            </div>
-
-            <div class="view">
-              ${this.renderFilesList()}
+            <div class="layout">
+              <div class="column-drives">
+                ${this.renderDrivesList()}
+              </div>
+              <div class="column-files">
+                <div class="path">
+                  ${this.renderPath()}
+                </div>
+                <div class="view">
+                  ${this.renderFilesList()}
+                </div>
+              </div>
             </div>
 
             <div class="form-actions">
-              <div class="left">
-                <div class="drive-changer">
-                  <button
-                    class="${this.isChangeDriveOpen ? 'pressed' : ''}"
-                    @click=${this.onClickChangeDrive}
-                  >Change drive</button>
-                  ${this.isChangeDriveOpen ? html`
-                    <input class="drive-url-input" placeholder="Drive URL">
-                    <button @click=${this.onClickChangeDriveGo}>Go</button>
-                  ` : ''}
-              </div>
-              </div>
+              <div class="left"></div>
               <div class="right">
                 <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
                 <button ?disabled=${!this.hasValidSelection} type="submit" class="btn primary" tabindex="5">
@@ -400,11 +426,37 @@ class SelectFileModal extends LitElement {
     `
   }
 
+  renderDrivesList () {
+    return html`
+      <div class="drives-list">
+        ${this.drives.map(drive => this.renderDrive(drive))}
+      </div>
+    `
+  }
+
+  renderDrive (driveInfo) {
+    const cls = classMap({
+      drive: true,
+      selected: this.drive === driveInfo.url
+    })
+    return html`
+      <div
+        class="${cls}"
+        @click=${this.onSelectDrive}
+        data-url=${driveInfo.url}
+      >
+        <div class="info">
+          <span class="name" title="${driveInfo.title}">${driveInfo.title}</span>
+        </div>
+      </div>
+    `
+  }
+
   renderPath () {
     var pathParts = this.path.split('/').filter(Boolean)
     var pathAcc = []
     return [html`
-      <div @click=${e => this.onClickPath(e, '/')}>${this.archiveInfo && this.archiveInfo.title || 'Untitled'}</div>
+      <div @click=${e => this.onClickPath(e, '/')}>${this.driveInfo && this.driveInfo.title || 'Untitled'}</div>
       <span class="fa-fw fas fa-angle-right"></span>
     `].concat(pathParts.map(part => {
       pathAcc.push(part)
@@ -453,27 +505,19 @@ class SelectFileModal extends LitElement {
   // event handlers
   // =
 
-  onClickChangeDrive (e) {
-    e.preventDefault()
-    this.isChangeDriveOpen = !this.isChangeDriveOpen
-    this.requestUpdate()
-  }
-
-  async onClickChangeDriveGo (e) {
+  async onSelectDrive (e) {
     e.preventDefault()
     e.stopPropagation()
-    e.currentTarget.textContent = 'Loading...'
 
     try {
-      var archive = this.shadowRoot.querySelector('.drive-url-input').value
-      var archiveInfo = await bg.datArchive.getInfo(archive)
+      var drive = e.currentTarget.dataset.url
+      var driveInfo = await bg.datArchive.getInfo(drive)
     } catch (e) {
       return this.requestUpdate()
     }
 
-    this.archive = archiveInfo.url
-    this.archiveInfo = archiveInfo
-    this.isChangeDriveOpen = false
+    this.drive = driveInfo.url
+    this.driveInfo = driveInfo
     this.goto('/')
   }
 
@@ -510,8 +554,9 @@ class SelectFileModal extends LitElement {
     this.cbs.reject(new Error('Canceled'))
   }
 
-  async onSubmit (e) {
+  onSubmit (e) {
     if (e) e.preventDefault()
+    const makeSelectionObj = path => ({path, origin: this.drive, url: joinPath(this.drive, path)})
     if (this.saveMode) {
       let path = joinPath(this.path, this.filenameInput.value)
       if (this.getFile(path)) {
@@ -519,13 +564,13 @@ class SelectFileModal extends LitElement {
           return
         }
       }
-      this.cbs.resolve({path})
+      this.cbs.resolve(makeSelectionObj(path))
     } else {
       if (this.select.includes('folder') && this.selectedPaths.length === 0) {
         // use current location
         this.selectedPaths = [this.path]
       }
-      this.cbs.resolve({paths: this.selectedPaths})
+      this.cbs.resolve(this.selectedPaths.map(makeSelectionObj))
     }
   }
 }

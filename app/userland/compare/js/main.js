@@ -156,12 +156,12 @@ export class CompareApp extends LitElement {
           label: 'Change folder',
           click: async () => {
             // TODO this modal needs to be in "select folder" mode
-            let path = await navigator.selectFileDialog({
+            let sel = await navigator.selectFileDialog({
               archive: this.baseArchive.url,
               defaultPath: this.basePath,
               select: ['folder']
             })
-            this.base = joinPath(this.baseArchive.url, path[0])
+            this.base = sel[0].url
             this.load()
           }
         }
@@ -191,12 +191,12 @@ export class CompareApp extends LitElement {
           label: 'Change folder',
           click: async () => {
             // TODO this modal needs to be in "select folder" mode
-            let path = await navigator.selectFileDialog({
+            let sel = await navigator.selectFileDialog({
               archive: this.targetArchive.url,
               defaultPath: this.targetPath,
               select: ['folder']
             })
-            this.target = joinPath(this.targetArchive.url, path[0])
+            this.target = sel.url
             this.load()
           }
         }

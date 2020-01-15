@@ -272,13 +272,13 @@ export class PostComposer extends LitElement {
     e.preventDefault()
     e.stopPropagation()
 
-    var paths = await navigator.selectFileDialog({
+    var sels = await navigator.selectFileDialog({
       select: ['file'],
       allowMultiple: false,
       disallowCreate: true
     })
-    var base64buf = await navigator.filesystem.readFile(paths[0], 'base64')
-    this.file = {source: 'hyperdrive', name: paths[0].split('/').pop(), base64buf}
+    var base64buf = await (new DatArchive(sels[0].origin)).readFile(sels[0].path, 'base64')
+    this.file = {source: 'hyperdrive', name: sels[0].path.split('/').pop(), base64buf}
     this.runValidation()
   }
 
