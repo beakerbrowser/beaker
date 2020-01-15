@@ -10,12 +10,18 @@ ${tooltipCSS}
 
 :host {
   --color-folder: #9ec2e0;
+  --color-mount: #9ec2e0;
   --color-file: #9a9aab;
   --color-itemname: #333;
   --color-itemname-selected: #fff;
   --color-selected-bg: #4379e4;
 
   display: flex;
+  padding-top: 10px;
+}
+
+a {
+  color: var(--blue);
 }
 
 .header {
@@ -116,6 +122,10 @@ compare-diff-item .item .icon .fa-fw.fa-folder {
   color: var(--color-folder);
 }
 
+compare-diff-item .item .icon .fa-fw.fa-external-link-square-alt {
+  color: var(--color-mount);
+}
+
 compare-diff-item .item .icon .fa-fw.fa-file {
   -webkit-text-stroke: 1px var(--color-file);
   color: #fff;
@@ -183,6 +193,15 @@ compare-diff-item-content .container {
 
 compare-diff-item-content .container.split {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+
+compare-diff-item-content .container .fa-fw.fa-folder {
+  color: var(--color-folder);
+}
+
+compare-diff-item-content .container .fa-fw.fa-external-link-square-alt {
+  color: var(--color-mount);
 }
 
 compare-diff-item-content .action {

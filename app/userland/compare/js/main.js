@@ -2,10 +2,11 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
-import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as QP from 'beaker://app-stdlib/js/query-params.js'
+import * as compare from './lib/compare.js'
 import mainCSS from '../css/main.css.js'
 
 export class CompareApp extends LitElement {
@@ -43,16 +44,16 @@ export class CompareApp extends LitElement {
       target: this.target
     }, false, true)
 
-    this.diff = await DatArchive.diff(this.base, this.target, {compareContent: true, shallow: false})
-    this.diff.sort((a, b) => (a.change).localeCompare(b.change) || (a.path || '').localeCompare(b.path || ''))
+    const filter = path => path !== 'dat.json' && !path.endsWith('/dat.json')
+    this.diff = await compare.diff(this.baseArchive, this.basePath, this.targetArchive, this.targetPath, {compareContent: true, shallow: false, filter})
     console.log(this.diff)
     this.requestUpdate()
   }
 
-  async doMerge (opts) {
+  async doMerge (diff) {
     try {
       toast.create('Merging...')
-      await DatArchive.merge(this.baseArchive, this.targetArchive, opts)
+      await compare.applyRight(this.baseArchive, this.targetArchive, diff)
       toast.create('Files updated', 'success')
     } catch (e) {
       console.error(e)
@@ -67,6 +68,7 @@ export class CompareApp extends LitElement {
   render () {
     if (!this.baseInfo || !this.targetInfo) return html``
     let lastDiffType = undefined
+    const diffSortFn = (a, b) => (a.change).localeCompare(b.change) || (a.path || '').localeCompare(b.path || '')
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <nav>
@@ -74,7 +76,7 @@ export class CompareApp extends LitElement {
         ${this.diff && !this.diff.length ? html`
           <div class="empty">No differences found.</div>
         ` : ''}
-        ${repeat(this.diff || [], diff => {
+        ${repeat((this.diff || []).slice().sort(diffSortFn), diff => {
           let heading = lastDiffType !== diff.change ? html`
             <h4>${({'add': 'Add', 'del': 'Delete', 'mod': 'Change'})[diff.change]}</h4>
           ` : ''
@@ -83,8 +85,7 @@ export class CompareApp extends LitElement {
             ${heading}
             <compare-diff-item
               .diff=${diff}
-              .leftOrigin=${this.targetArchive.url}
-              .rightOrigin=${this.baseArchive.url}
+              .rightPath=${this.targetPath}
               ?can-merge=${this.targetInfo.writable}
               ?selected=${this.selectedItem === diff}
               @select=${this.onSelectItem}
@@ -118,10 +119,10 @@ export class CompareApp extends LitElement {
         </div>
         ${this.selectedItem ? html`
           <compare-diff-item-content
-            .leftOrigin=${this.targetArchive.url}
-            .rightOrigin=${this.baseArchive.url}
-            .leftPath=${this.targetPath}
-            .rightPath=${this.basePath}
+            .leftOrigin=${this.baseArchive.url}
+            .rightOrigin=${this.targetArchive.url}
+            .leftPath=${this.basePath}
+            .rightPath=${this.targetPath}
             .diff=${this.selectedItem}
             @merge=${this.onClickMergeItem}
           ></compare-diff-item-content>
@@ -211,10 +212,7 @@ export class CompareApp extends LitElement {
   onClickMergeItem (e) {
     if (!confirm('Merge change?')) return
     var {diff} = e.detail
-    this.doMerge({
-      shallow: false,
-      paths: [diff.path + (diff.type === 'dir' ? '/' : '')] // trailing slash indicates directory
-    })
+    this.doMerge([diff])
   }
 
   onClickReverse (e) {
@@ -224,7 +222,7 @@ export class CompareApp extends LitElement {
 
   onClickMergeAll (e) {
     if (!confirm('Merge all changes?')) return
-    this.doMerge({shallow: false})
+    this.doMerge(this.diff)
   }
 }
 
@@ -233,6 +231,7 @@ class CompareDiffItem extends LitElement {
     return {
       diff: {type: Object},
       selected: {type: Boolean},
+      rightPath: {type: String},
       canMerge: {type: Boolean, attribute: 'can-merge'}
     }
   }
@@ -249,20 +248,14 @@ class CompareDiffItem extends LitElement {
   }
 
   render () {
-    if (this.diff.type === 'dir') {
-      return html`
-        <div class="item ${this.diff.change} ${this.selected ? 'selected' : ''}" @click=${this.onSelect}>
-          <div class="revision-indicator ${this.diff.change}"></div>
-          <div class="icon"><span class="fas fa-fw fa-folder"></span></div>
-          <div class="path">${this.diff.path}</div>
-        </div>
-      `
-    }
+    var icon = 'file'
+    if (this.diff.type === 'mount') icon = 'external-link-square-alt'
+    if (this.diff.type === 'dir') icon = 'folder'
     return html`
       <div class="item ${this.diff.change} ${this.selected ? 'selected' : ''}" @click=${this.onSelect}>
         <div class="revision-indicator ${this.diff.change}"></div>
-        <div class="icon"><span class="fas fa-fw fa-file"></span></div>
-        <div class="path">${this.diff.path}</div>
+        <div class="icon"><span class="fas fa-fw fa-${icon}"></span></div>
+        <div class="path">${relativePath(this.rightPath, this.diff.rightPath)}</div>
       </div>
     `
   }
@@ -285,30 +278,6 @@ class CompareDiffItemContent extends LitElement {
     }
   }
 
-  get leftUrl () {
-    return joinPath(this.leftOrigin, this.leftPath, this.diff.path)
-  }
-
-  get rightUrl () {
-    return joinPath(this.rightOrigin, this.rightPath, this.diff.path)
-  }
-
-  get isImage () {
-    return /\.(png|jpe?g|gif)$/i.test(this.diff.path)
-  }
-
-  get isVideo () {
-    return /\.(mp4|webm|mov)$/i.test(this.diff.path)
-  }
-
-  get isAudio () {
-    return /\.(mp3|ogg)$/i.test(this.diff.path)
-  }
-
-  get isText () {
-    return !this.isImage && !this.isVideo && !this.isAudio
-  }
-
   constructor () {
     super()
     this.leftOrigin = null
@@ -320,26 +289,51 @@ class CompareDiffItemContent extends LitElement {
     return this // dont use shadow dom
   }
 
-  async renderLeftText () {
-    var left = new DatArchive(this.leftOrigin)
+  renderLeftColumn () {
     if (this.diff.change === 'del' || this.diff.change === 'mod') {
-      return left.readFile(joinPath(this.leftPath, this.diff.path))
+      return this.renderFileContent(new DatArchive(this.rightOrigin), this.diff.rightPath, this.diff.rightMountKey)
     }
     return ''
   }
 
-  async renderRightText () {
+  renderRightColumn () {
     var right = new DatArchive(this.rightOrigin)
     if (this.diff.change === 'add' || this.diff.change === 'mod') {
-      return right.readFile(joinPath(this.rightPath, this.diff.path))
+      return this.renderFileContent(new DatArchive(this.leftOrigin), this.diff.leftPath, this.diff.leftMountKey)
     }
     return ''
+  }
+
+  renderFileContent (drive, path, mountKey) {
+    if (this.diff.type === 'mount') {
+      return html`
+        <span class="fas fa-fw fa-external-link-square-alt"></span>
+        Mount to <a href="dat://${mountKey}" target="_blank">${toNiceDomain(mountKey)}</a>
+      `
+    }
+    if (this.diff.type === 'dir') return html`<span class="fas fa-fw fa-folder"></span> Directory`
+    if (/\.(png|jpe?g|gif)$/.test(path)) {
+      return html`<img src=${drive.url + path}>`
+    }
+    if (/\.(mp4|webm|mov)$/.test(path)) {
+      return html`<video controls><source src=${drive.url + path}></video>`
+    }
+    if (/\.(mp3|ogg)$/.test(path)) {
+      return html`<audio controls><source src=${drive.url + path}></audio>`
+    }
+    return html`<div class="text">${until(drive.readFile(path), 'Loading...')}`
   }
   
   render () {
     return html`
       <div class="info">
-        <span class="path">${this.diff.path}</span>
+        <span class="path">
+          <div class="revision-indicator ${this.diff.change}"></div>
+          ${this.diff.change === 'add' ? 'Add' : ''}
+          ${this.diff.change === 'del' ? 'Delete' : ''}
+          ${this.diff.change === 'mod' ? 'Change' : ''}
+          ${this.diff.rightPath}
+        </span>
         <button class="transparent" @click=${this.onClickMerge}>Merge</button>
       </div>
       ${this.renderContainer()}
@@ -350,31 +344,15 @@ class CompareDiffItemContent extends LitElement {
     if (this.diff.change === 'mod') {
       return html`
         <div class="container split">
-          <div><div class="action">From</div><div class="wrap">${this.renderLeft()}</div></div>
-          <div><div class="action">To</div><div class="wrap">${this.renderRight()}</div></div>
+          <div><div class="action">From</div><div class="wrap">${this.renderLeftColumn()}</div></div>
+          <div><div class="action">To</div><div class="wrap">${this.renderRightColumn()}</div></div>
         </div>
       `
     } else if (this.diff.change === 'add') {
-      return html`<div class="container"><div><div class="action">Add</div><div class="wrap">${this.renderRight()}</div></div></div>`
+      return html`<div class="container"><div><div class="wrap">${this.renderRightColumn()}</div></div></div>`
     } else if (this.diff.change === 'del') {
-      return html`<div class="container"><div><div class="action">Delete</div><div class="wrap">${this.renderLeft()}</div></div></div>`
+      return html`<div class="container"><div><div class="wrap">${this.renderLeftColumn()}</div></div></div>`
     }
-  }
-
-  renderLeft () {
-    if (this.diff.type !== 'file') return html`<span class="fas fa-fw fa-folder"></span> Directory`
-    if (this.isImage) return html`<img src=${this.leftUrl}>`
-    if (this.isVideo) return html`<video controls><source src=${this.leftUrl}></video>`
-    if (this.isAudio) return html`<audio controls><source src=${this.leftUrl}></audio>`
-    if (this.isText) return html`<div class="text">${until(this.renderLeftText(), 'Loading...')}</div>`
-  }
-
-  renderRight () {
-    if (this.diff.type !== 'file') return html`<span class="fas fa-fw fa-folder"></span> Directory`
-    if (this.isImage) return html`<img src=${this.rightUrl}>`
-    if (this.isVideo) return html`<video controls><source src=${this.rightUrl}></video>`
-    if (this.isAudio) return html`<audio controls><source src=${this.rightUrl}></audio>`
-    if (this.isText) return html`<div class="text">${until(this.renderRightText(), 'Loading...')}</div>`
   }
 
   onClickMerge (e) {
@@ -387,3 +365,10 @@ class CompareDiffItemContent extends LitElement {
 customElements.define('compare-app', CompareApp)
 customElements.define('compare-diff-item', CompareDiffItem)
 customElements.define('compare-diff-item-content', CompareDiffItemContent)
+
+function relativePath (basePath, fullPath) {
+  if (fullPath.startsWith(basePath)) {
+    return fullPath.slice(basePath.length)
+  }
+  return fullPath
+}
