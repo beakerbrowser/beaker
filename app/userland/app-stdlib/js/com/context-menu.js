@@ -161,7 +161,7 @@ export class BeakerContextMenu extends LitElement {
                   return item
                 }
                 var icon = item.icon
-                if (icon && !icon.includes(' ')) {
+                if (typeof icon === 'string' && !icon.includes(' ')) {
                   icon = 'fa fa-' + icon
                 }
                 if (item.disabled) {
@@ -182,7 +182,9 @@ export class BeakerContextMenu extends LitElement {
                 }
                 return html`
                   <div class="dropdown-item" @click=${() => { destroy(); item.click() }}>
-                    ${icon !== false ? html`<i class="${icon}"></i>` : ''}
+                    ${typeof icon === 'string'
+                      ? html`<i class="${icon}"></i>`
+                      : icon ? icon : ''}
                     ${item.label}
                   </div>
                 `

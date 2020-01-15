@@ -1,3 +1,4 @@
+import { html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
@@ -62,8 +63,8 @@ export function constructItems (app) {
       items.push('-')
       if (!sel.stat.isFile()) {
         items.push({
-          icon: 'fas fa-fw fa-code-branch',
-          label: 'Merge tool',
+          icon: html`<i style="padding-left: 2px; font-size: 16px; box-sizing: border-box">◨</i>`,
+          label: 'Diff / merge',
           click: () => app.doCompare(sel.url)
         })
       }
@@ -126,8 +127,8 @@ export function constructItems (app) {
     })
     items.push('-')
     items.push({
-      icon: 'fas fa-fw fa-code-branch',
-      label: 'Merge tool',
+      icon: html`<i style="padding-left: 2px; font-size: 16px; box-sizing: border-box">◨</i>`,
+      label: 'Diff / merge',
       click: () => app.doCompare(window.location.toString())
     })
     items.push({
