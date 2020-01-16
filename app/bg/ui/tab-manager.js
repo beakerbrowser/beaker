@@ -36,7 +36,6 @@ import * as bookmarks from '../filesystem/bookmarks'
 import * as programRegistry from '../filesystem/program-registry'
 import * as users from '../filesystem/users'
 import hyper from '../hyper/index'
-import * as driveHandlerHack from './tabs/drive-handler-hack'
 
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
@@ -166,7 +165,6 @@ class Tab {
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
     this.isScriptClosable = takeIsScriptClosable() // can this tab be closed by `window.close` ?
-    this.driveHandlers = {} // what are the current drive handlers for the tab?
 
     // helper state
     this.peers = 0 // how many peers does the site have?
@@ -566,23 +564,6 @@ class Tab {
     }
   }
 
-  // drive handlers
-  // =
-
-  async getDriveHandler () {
-    if (this.driveHandlers[this.origin]) {
-      return this.driveHandlers[this.origin]
-    }
-    if (this.datInfo) {
-      return typeRegistry.getDefaultDriveHandler(this.datInfo.type)
-    }
-    return undefined
-  }
-
-  setDriveHandler (handler) {
-    this.driveHandlers[this.origin] = handler
-  }
-
   // inpage finder
   // =
 
@@ -841,9 +822,6 @@ class Tab {
     // update state
     this.loadingURL = url
     this.emitUpdateState()
-
-    // set drive handler for the protocol to read
-    driveHandlerHack.setDriveHandler(url, this.driveHandlers[origin])
   }
 
   async onDidNavigate (e, url, httpResponseCode) {

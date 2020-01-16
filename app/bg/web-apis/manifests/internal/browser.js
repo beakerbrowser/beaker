@@ -47,8 +47,6 @@ export default {
   executeJavaScriptInPage: 'promise',
   injectCssInPage: 'promise',
   uninjectCssInPage: 'promise',
-  getTabDriveHandler: 'promise',
-  setTabDriveHandler: 'promise',
   openFolder: 'promise',
   doWebcontentsCmd: 'promise',
   doTest: 'promise',

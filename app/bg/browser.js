@@ -175,8 +175,6 @@ export const WEBAPI = {
   executeJavaScriptInPage,
   injectCssInPage,
   uninjectCssInPage,
-  getTabDriveHandler,
-  setTabDriveHandler,
   openUrl: (url, opts) => { openUrl(url, opts) }, // dont return anything
   openFolder,
   doWebcontentsCmd,
@@ -651,14 +649,6 @@ async function injectCssInPage (css) {
 
 async function uninjectCssInPage (key) {
   return getSenderTab(this.sender).webContents.removeInsertedCSS(key)
-}
-
-async function getTabDriveHandler () {
-  return getSenderTab(this.sender).getDriveHandler()
-}
-
-async function setTabDriveHandler (handler) {
-  return getSenderTab(this.sender).setDriveHandler(handler)
 }
 
 function openFolder (folderPath) {

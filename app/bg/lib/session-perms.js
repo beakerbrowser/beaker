@@ -33,8 +33,10 @@ export async function getSessionUserDrive (sender) {
  * @param {string} url
  * @returns {Promise<string>}
  */
-export async function toDatOrigin (url) {
-  if (!url.startsWith('drive://') && !url.startsWith('web://')) throw new Error('Can only create sessions with hyperdrive sites')
+export async function toDriveOrigin (url) {
+  if (!url.startsWith('drive://') && !url.startsWith('web://')) {
+    throw new Error('Can only create sessions with hyperdrive sites')
+  }
   return drives.getPrimaryUrl(url)
 }
 
@@ -45,7 +47,7 @@ export async function toDatOrigin (url) {
 export async function getSessionOrThrow (sender) {
   if (await isTrustedApp(sender)) return
   var userId = await getSessionUserId(sender)
-  var session = await userSiteSessions.get(userId, await toDatOrigin(sender.getURL()))
+  var session = await userSiteSessions.get(userId, await toDriveOrigin(sender.getURL()))
   if (!session) {
     throw new PermissionsError()
   }

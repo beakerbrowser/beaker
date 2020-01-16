@@ -174,12 +174,6 @@ export default {
     if (!tab) return
 
     var isAllowed = (this.sender.getURL().startsWith('beaker:'))
-    if (!isAllowed) {
-      // check if in the explorer viewer app
-      var handler = await tab.getDriveHandler()
-      isAllowed = (handler && handler.startsWith('beaker:'))
-    }
-
     if (isAllowed) {
       return tab.executeSidebarCommand(...args)
     }
@@ -240,12 +234,11 @@ async function isBeakerApp (sender) {
   if (sender.getURL().startsWith('beaker:')) {
     return true
   }
-
-  var tab = tabManager.findTab(BrowserView.fromWebContents(sender))
-  if (!tab) return false
-  // check if in the explorer viewer app
-  var handler = await tab.getDriveHandler()
-  return (handler && handler.startsWith('beaker:'))
+  // drive: URLs are handled by beaker code
+  if (sender.getURL().startsWith('drive:')) {
+    return true
+  }
+  return false
 }
 
 function isStrArray (v) {

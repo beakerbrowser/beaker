@@ -34,7 +34,7 @@ export default {
       throw new Error('First argument must be an object')
     }
     var user = await getUser(this.sender)
-    var siteUrl = await sessionPerms.toDatOrigin(this.sender.getURL())
+    var siteUrl = await sessionPerms.toDriveOrigin(this.sender.getURL())
 
     // prep the perms
     opts.permissions = opts.permissions || {}
@@ -85,10 +85,10 @@ export default {
     var user = await getUser(this.sender)
     if (this.sender.getURL().startsWith('beaker:') && siteUrl) {
       // trusted app, use given url
-      siteUrl = await sessionPerms.toDatOrigin(siteUrl)
+      siteUrl = await sessionPerms.toDriveOrigin(siteUrl)
     } else {
       // use sender url
-      siteUrl = await sessionPerms.toDatOrigin(this.sender.getURL())
+      siteUrl = await sessionPerms.toDriveOrigin(this.sender.getURL())
     }
     var record = massageSessionRecord(user, await userSiteSessions.get(user.id, siteUrl))
     if (!record) {
@@ -115,10 +115,10 @@ export default {
     var user = await getUser(this.sender)
     if (this.sender.getURL().startsWith('beaker:') && siteUrl) {
       // trusted app, use given url
-      siteUrl = await sessionPerms.toDatOrigin(siteUrl)
+      siteUrl = await sessionPerms.toDriveOrigin(siteUrl)
     } else {
       // use sender url
-      siteUrl = await sessionPerms.toDatOrigin(this.sender.getURL())
+      siteUrl = await sessionPerms.toDriveOrigin(this.sender.getURL())
     }
     await userSiteSessions.destroy(user.id, siteUrl)
   }

@@ -121,8 +121,6 @@ class SiteInfoApp extends LitElement {
     this.readOnly = true
     this.info = undefined
     this.requestedPerms = undefined
-    this.currentDriveHandler = undefined
-    this.driveHandlers = []
   }
 
   async load () {
@@ -158,13 +156,9 @@ class SiteInfoApp extends LitElement {
         }
       }
 
-      this.currentDriveHandler = await beaker.browser.getTabDriveHandler()
-      this.driveHandlers = await beaker.types.getDriveHandlers(this.info.type)
-      console.log(this.currentDriveHandler, this.driveHandlers)
-
       // choose default view
       if (!this.view) {
-        this.view = this.isDrive ? 'apps' : 'permissions'
+        this.view = 'permissions'
       }
 
       // all sites: get requested perms
@@ -219,12 +213,6 @@ class SiteInfoApp extends LitElement {
           </div>
         ` : ''}
 
-        ${this.view === 'apps' ? html`
-          <div class="handlers">
-            ${repeat(this.driveHandlers, h => this.renderHandler(h))}
-          </div>
-        ` : ''}
-
         ${this.view === 'permissions' ? html`
           <user-session
             origin=${this.origin}
@@ -271,12 +259,6 @@ class SiteInfoApp extends LitElement {
     return html`
       <div class="nav">
         <div class="tabs">
-          ${this.isDrive ? html`
-            <a class=${classMap({active: this.view === 'apps'})} @click=${e => this.onSetView(e, 'apps')}>
-              <span class="fas fa-fw fa-drafting-compass"></span>
-              Viewing with
-            </a>
-          ` : ''}
           <a class=${classMap({active: this.view === 'permissions'})} @click=${e => this.onSetView(e, 'permissions')}>
             <span class="fas fa-fw fa-key"></span>
             Permissions
@@ -292,30 +274,12 @@ class SiteInfoApp extends LitElement {
     `
   }
 
-  renderHandler (handler) {
-    const isCurrent = this.currentDriveHandler === handler.url
-    return html`
-      <div class="handler" @click=${e => this.onSelectHandler(e, handler)}>
-        <span class="far fa-fw fa-${isCurrent ? 'check-circle' : 'circle'}"></span>
-        <img class="favicon" src="asset:favicon:${handler.url}">
-        <span class="title">${handler.title}</span>
-      </div>
-    `
-  }
-
   // events
   // =
 
   onSetView (e, view) {
     e.preventDefault()
     this.view = view
-  }
-
-  async onSelectHandler (e, handler) {
-    this.currentDriveHandler = handler.url
-    await beaker.browser.setTabDriveHandler(handler.url)
-    beaker.browser.refreshPage()
-    beaker.browser.toggleSiteInfo(false)
   }
 }
 
