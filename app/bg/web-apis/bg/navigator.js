@@ -196,7 +196,7 @@ export default {
           srcPath,
           dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
           dstPath: filepath,
-          ignore: ['dat.json'],
+          ignore: ['index.json'],
           inplaceImport: false,
           dryRun: false
         })

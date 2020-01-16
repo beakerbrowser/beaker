@@ -80,7 +80,7 @@ export async function installProgram (url, version) {
   var drive = await hyper.drives.getOrLoadDrive(key)
   var checkout = version ? await hyper.drives.getDriveCheckout(drive, version) : drive
   if (!version) version = (await drive.getInfo()).version
-  var manifest = JSON.parse(await checkout.pda.readFile('dat.json', 'utf8'))
+  var manifest = JSON.parse(await checkout.pda.readFile('index.json', 'utf8'))
 
   // add to the program registry
   var release = await lock('update:program-registry')

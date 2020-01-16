@@ -26,7 +26,7 @@ import * as users from '../filesystem/users'
 // constants
 // =
 
-import { DAT_HASH_REGEX, DAT_PRESERVED_FIELDS_ON_FORK, DAT_MANIFEST_FILENAME } from '../../lib/const'
+import { DAT_HASH_REGEX, DAT_PRESERVED_FIELDS_ON_FORK, DRIVE_MANIFEST_FILENAME } from '../../lib/const'
 
 import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 
@@ -246,7 +246,7 @@ export async function forkDrive (srcDriveUrl, manifest = {}) {
   var dstDrive = await createNewDrive(dstManifest)
 
   // copy files
-  var ignore = ['/.dat', '/.git', '/dat.json']
+  var ignore = ['/.dat', '/.git', '/index.json']
   await pda.exportArchiveToArchive({
     srcDrive: srcDrive.session.drive,
     dstDrive: dstDrive.session.drive,
@@ -341,7 +341,7 @@ async function loadDriveInner (key, settingsOverride) {
   // update db
   archivesDb.touch(drive.key).catch(err => console.error('Failed to update lastAccessTime for drive', drive.key, err))
   if (!drive.writable) {
-    await downloadHack(drive, DAT_MANIFEST_FILENAME)
+    await downloadHack(drive, DRIVE_MANIFEST_FILENAME)
   }
   await pullLatestDriveMeta(drive)
   datAssets.update(drive)
@@ -506,7 +506,7 @@ export async function getPrimaryUrl (url) {
 
 /**
  * @desc
- * Check that the drive's dat.json `domain` matches the current DNS
+ * Check that the drive's index.json `domain` matches the current DNS
  * If yes, write the confirmed entry to the dat_dns table
  *
  * @param {string} key

@@ -472,7 +472,7 @@ class FilesExplorer extends LitElement {
         await Hyperdrive.importFromFilesystem({
           src,
           dst: joinPath(this.origin, this.folderPath),
-          ignore: ['dat.json'],
+          ignore: ['index.json'],
           inplaceImport: false
         })
       }

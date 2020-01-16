@@ -70,7 +70,7 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
     // resolve name
     let key = await hyper.dns.resolveName(urlp.hostname)
 
-    // check dat.json for opt-in
+    // check index.json for opt-in
     let isOptedIn = false
     let drive = hyper.drives.getDrive(key)
     if (drive) {
@@ -82,7 +82,7 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
       }
     }
     if (!isOptedIn) {
-      throw new PermissionsError(`You must include "${labApi}" in your dat.json experimental.apis list. See ${apiDocsUrl} for more information.`)
+      throw new PermissionsError(`You must include "${labApi}" in your index.json experimental.apis list. See ${apiDocsUrl} for more information.`)
     }
 
     // ask user

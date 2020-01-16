@@ -173,7 +173,7 @@ class Tab {
     this.isSystemDat = undefined // is this the root drive or a user?
     this.isInstalled = undefined // is the drive an installed application?
     this.confirmedAuthorTitle = undefined // the title of the confirmed author of the site
-    this.donateLinkHref = null // the URL of the donate site, if set by the dat.json
+    this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
 
@@ -222,7 +222,7 @@ class Tab {
   get title () {
     var title = this.webContents.getTitle()
     if (this.datInfo && this.datInfo.title && (!title || title.startsWith(this.origin))) {
-      // fallback to the dat.json title field if the page doesnt provide a title
+      // fallback to the index.json title field if the page doesnt provide a title
       title = this.datInfo.title
     }
     return title

@@ -47,7 +47,7 @@ export const INVALID_SAVE_FOLDER_CHAR_REGEX = /[^0-9a-zA-Z-_ ]/g
 
 // dat settings
 export const DAT_SWARM_PORT = 3282
-export const DAT_MANIFEST_FILENAME = 'dat.json'
+export const DRIVE_MANIFEST_FILENAME = 'index.json'
 let quotaEnvVar = process.env.BEAKER_DAT_QUOTA_DEFAULT_BYTES_ALLOWED || process.env.beaker_dat_quota_default_bytes_allowed
 export const DAT_QUOTA_DEFAULT_BYTES_ALLOWED = bytes.parse(quotaEnvVar || '500mb')
 export const DAT_CACHE_TIME = ms('7d')
@@ -55,7 +55,7 @@ export const DEFAULT_DAT_DNS_TTL = ms('1h')
 export const MAX_DAT_DNS_TTL = ms('7d')
 export const DEFAULT_DAT_API_TIMEOUT = ms('60s')
 
-// dat.json manifest fields which can be changed by configure()
+// index.json manifest fields which can be changed by configure()
 export const DAT_CONFIGURABLE_FIELDS = [
   'title',
   'description',
@@ -66,7 +66,7 @@ export const DAT_CONFIGURABLE_FIELDS = [
   'fallback_page'
 ]
 
-// dat.json manifest fields which should be preserved in forks
+// index.json manifest fields which should be preserved in forks
 export const DAT_PRESERVED_FIELDS_ON_FORK = [
   'web_root',
   'fallback_page',

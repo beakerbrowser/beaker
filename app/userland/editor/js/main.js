@@ -255,7 +255,7 @@ class EditorApp extends LitElement {
     let drive = new Hyperdrive(url)
     let [info, manifest] = await Promise.all([
       drive.getInfo(),
-      drive.readFile('/dat.json', 'utf8').catch(e => '')
+      drive.readFile('/index.json', 'utf8').catch(e => '')
     ])
     try {
       manifest = JSON.parse(manifest)

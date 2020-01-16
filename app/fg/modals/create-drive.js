@@ -279,7 +279,7 @@ class CreateDriveModal extends LitElement {
         await bg.hyperdrive.exportToDrive({
           src: this.template,
           dst: url,
-          ignore: ['/dat.json']
+          ignore: ['/index.json']
         })
       }
       this.cbs.resolve({url})
