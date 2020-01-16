@@ -72,7 +72,7 @@ export class App extends LitElement {
 
     if (!this.user) {
       let st = await navigator.filesystem.stat('/profile')
-      this.user = await (new DatArchive(st.mount.key)).getInfo()
+      this.user = await (new Hyperdrive(st.mount.key)).getInfo()
       uwg.profiles.setUser(this.user)
       await uwg.profiles.readSocialGraph(this.user, this.user)
     }

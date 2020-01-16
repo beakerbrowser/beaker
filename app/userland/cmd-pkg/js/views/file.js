@@ -9,8 +9,8 @@ export class FileView extends LitElement {
 
   async readFile () {
     try {
-      var archive = new DatArchive(location)
-      return await archive.readFile(location.pathname, 'utf8')
+      var drive = new Hyperdrive(location)
+      return await drive.readFile(location.pathname, 'utf8')
     } catch (e) {
       return e.toString()
     }

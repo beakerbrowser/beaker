@@ -87,15 +87,15 @@ class ShareMenu extends LitElement {
                
         // find the drive that owns the location
         while (pathParts.length > 0) {
-          let st = await bg.datArchive.stat(urlp.origin, pathParts.join('/'))
+          let st = await bg.hyperdrive.stat(urlp.origin, pathParts.join('/'))
           if (st.mount) {
-            driveInfo = await bg.datArchive.getInfo(st.mount.key)
+            driveInfo = await bg.hyperdrive.getInfo(st.mount.key)
             break
           }
           pathAcc.unshift(pathParts.pop())
         }
         if (!driveInfo) {
-          driveInfo = await bg.datArchive.getInfo(urlp.origin)
+          driveInfo = await bg.hyperdrive.getInfo(urlp.origin)
         }
 
         // make sure it can be shared

@@ -14,7 +14,7 @@ import * as logLib from './logger'
 const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
 import * as users from './filesystem/users'
-import dat from './dat/index'
+import hyper from './hyper/index'
 import {open as openUrl} from './open-url'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
 import * as tabManager from './ui/tab-manager'
@@ -87,12 +87,12 @@ export async function setup () {
   // create a new user if none exists
   var defaultUser = await users.getDefault()
   if (!defaultUser) {
-    let archive = await dat.archives.createNewArchive({
+    let drive = await hyper.drives.createNewDrive({
       title: 'Anonymous',
       type: 'unwalled.garden/person'
     })
-    await archive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
-    await users.add(archive.url, true)
+    await drive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
+    await users.add(drive.url, true)
   }
 
   // wire up events

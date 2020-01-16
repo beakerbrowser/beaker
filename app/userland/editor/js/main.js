@@ -26,8 +26,8 @@ class EditorApp extends LitElement {
     return this // no shadow dom
   }
 
-  get archive () {
-    return new DatArchive(this.url)
+  get drive () {
+    return new Hyperdrive(this.url)
   }
 
   get origin () {
@@ -251,11 +251,11 @@ class EditorApp extends LitElement {
   async loadDat (url) {
     var body
 
-    // load archive meta
-    let archive = new DatArchive(url)
+    // load drive meta
+    let drive = new Hyperdrive(url)
     let [info, manifest] = await Promise.all([
-      archive.getInfo(),
-      archive.readFile('/dat.json', 'utf8').catch(e => '')
+      drive.getInfo(),
+      drive.readFile('/dat.json', 'utf8').catch(e => '')
     ])
     try {
       manifest = JSON.parse(manifest)
@@ -275,9 +275,9 @@ class EditorApp extends LitElement {
     }
 
     // determine the entry to load
-    var entry = await datServeResolvePath(archive, manifest, url, '*/*')
+    var entry = await datServeResolvePath(drive, manifest, url, '*/*')
     this.resolvedPath = entry ? entry.path : this.pathname
-    this.stat = await archive.stat(this.resolvedPath).catch(e => undefined)
+    this.stat = await drive.stat(this.resolvedPath).catch(e => undefined)
 
     // figure out if it's binary
     {
@@ -291,7 +291,7 @@ class EditorApp extends LitElement {
     if (!this.isBinary) {
       try {
         if (!this.resolvedPath) throw new Error('dne')
-        body = await archive.readFile(this.resolvedPath, 'utf8')
+        body = await drive.readFile(this.resolvedPath, 'utf8')
       } catch (e) {
         this.dne = true
         body = ''
@@ -563,9 +563,9 @@ class EditorApp extends LitElement {
   async onClickSave () {
     if (this.readOnly) return
     var model = this.editor.getModel(this.url)
-    let st = await this.archive.stat(this.resolvedPath).catch(e => undefined)
+    let st = await this.drive.stat(this.resolvedPath).catch(e => undefined)
     let metadata = st && st.metadata ? st.metadata : undefined
-    await this.archive.writeFile(this.resolvedPath, model.getValue(), {metadata})
+    await this.drive.writeFile(this.resolvedPath, model.getValue(), {metadata})
     this.lastSavedVersionId = model.getAlternativeVersionId()
     if (this.liveReloadMode) beaker.browser.gotoUrl(this.url)
   }
@@ -577,7 +577,7 @@ class EditorApp extends LitElement {
     var newname = prompt('Enter the new name of this file', oldname)
     if (!newname) return
     var newpath = joinPath(folderPath, newname)
-    await this.archive.rename(oldpath, newpath)
+    await this.drive.rename(oldpath, newpath)
 
     this.loadExplorer()
     if (this.resolvedPath === oldpath) {
@@ -591,13 +591,13 @@ class EditorApp extends LitElement {
   async onClickDelete (path) {
     if (this.readOnly) return
     if (confirm('Are you sure you want to delete this file?')) {
-      let st = await this.archive.stat(path)
+      let st = await this.drive.stat(path)
       if (st.mount && st.mount.key) {
-        await this.archive.unmount(path)
+        await this.drive.unmount(path)
       } else if (st.isDirectory()) {
-        await this.archive.rmdir(path, {recursive: true})
+        await this.drive.rmdir(path, {recursive: true})
       } else {
-        await this.archive.unlink(path)
+        await this.drive.unlink(path)
       }
 
       this.loadExplorer()
@@ -613,7 +613,7 @@ class EditorApp extends LitElement {
     var name = prompt('Enter the new folder name')
     if (name) {
       let path = joinPath(folderPath, name)
-      await this.archive.mkdir(path)
+      await this.drive.mkdir(path)
       this.loadExplorer()
     }
   }
@@ -623,7 +623,7 @@ class EditorApp extends LitElement {
     var name = prompt('Enter the new file name')
     if (name) {
       let path = joinPath(folderPath, name)
-      await this.archive.writeFile(path, '')
+      await this.drive.writeFile(path, '')
       this.loadExplorer()
     }
   }
@@ -634,14 +634,14 @@ class EditorApp extends LitElement {
     if (!url) return
     var name = await prompt('Enter the new link name')
     if (!name) return
-    await this.archive.mount(joinPath(folderPath, name), url)
+    await this.drive.mount(joinPath(folderPath, name), url)
     this.loadExplorer()
   }
 
   async onClickImportFiles (folderPath) {
     toast.create('Importing...')
     try {
-      await navigator.importFilesDialog(joinPath(this.archive.url, folderPath))
+      await navigator.importFilesDialog(joinPath(this.drive.url, folderPath))
       toast.create('Import complete', 'success')
     } catch (e) {
       console.log(e)

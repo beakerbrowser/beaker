@@ -3,7 +3,7 @@ import { createShellWindow, toggleShellInterface, getFocusedDevToolsHost } from 
 import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
 import {download} from './downloads'
-import dat from '../dat/index'
+import hyper from '../hyper/index'
 
 // exported APIs
 // =
@@ -265,10 +265,10 @@ export function buildWindowMenu (opts = {}) {
         click: function (item) {
           // HACK
           // this is *super* lazy but it works
-          // clear all dat-dns cache on hard reload, to make sure the next
+          // clear all hyper-dns cache on hard reload, to make sure the next
           // load is fresh
           // -prf
-          dat.dns.flushCache()
+          hyper.dns.flushCache()
 
           var win = getWin()
           if (win) {
@@ -455,18 +455,18 @@ export function buildWindowMenu (opts = {}) {
         },
       { type: 'separator' },
           {
-            label: 'Open Archives Debug Page',
+            label: 'Open Hyperdrives Debug Page',
             enabled: !noWindows,
             click: function (item) {
               var win = getWin()
-              if (win) tabManager.create(win, 'beaker://internal-archives/', {setActive: true})
+              if (win) tabManager.create(win, 'beaker://active-drives/', {setActive: true})
             }
           }, {
             label: 'Open Dat-DNS Cache Page',
             enabled: !noWindows,
             click: function (item) {
               var win = getWin()
-              if (win) tabManager.create(win, 'beaker://dat-dns-cache/', {setActive: true})
+              if (win) tabManager.create(win, 'beaker://hyper-dns-cache/', {setActive: true})
             }
           }, {
             label: 'Open Debug Log Page',

@@ -35,7 +35,7 @@ import * as typeRegistry from '../filesystem/type-registry'
 import * as bookmarks from '../filesystem/bookmarks'
 import * as programRegistry from '../filesystem/program-registry'
 import * as users from '../filesystem/users'
-import dat from '../dat/index'
+import hyper from '../hyper/index'
 import * as driveHandlerHack from './tabs/drive-handler-hack'
 
 const ERR_ABORTED = -3
@@ -625,7 +625,7 @@ class Tab {
 /*
     let u = (new URL(url))
     // try to do a name lookup
-    var siteHasDatAlternative = await dat.dns.resolveName(u.hostname).then(
+    var siteHasDatAlternative = await hyper.dns.resolveName(u.hostname).then(
       res => Boolean(res),
       err => false
     )
@@ -656,11 +656,11 @@ class Tab {
       this.liveReloadEvents.destroy()
       this.liveReloadEvents = false
     } else if (this.datInfo) {
-      let archive = dat.archives.getArchive(this.datInfo.key)
-      if (!archive) return
+      let drive = hyper.drives.getDrive(this.datInfo.key)
+      if (!drive) return
 
       let {version} = parseDriveUrl(this.url)
-      let {checkoutFS} = await dat.archives.getArchiveCheckout(archive, version)
+      let {checkoutFS} = await hyper.drives.getDriveCheckout(drive, version)
       this.liveReloadEvents = checkoutFS.pda.watch()
 
       const reload = _throttle(() => {
@@ -767,8 +767,8 @@ class Tab {
     // fetch new state
     let userSession = getUserSessionFor(this.browserWindow.webContents)
     try {
-      var key = await dat.dns.resolveName(this.url)
-      this.datInfo = await dat.archives.getArchiveInfo(key)
+      var key = await hyper.dns.resolveName(this.url)
+      this.datInfo = await hyper.drives.getDriveInfo(key)
       this.peers = this.datInfo.peers
       this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
     } catch (e) {
@@ -1032,14 +1032,14 @@ export function setup () {
       }
     }
   }
-  dat.archives.on('updated', ({details}) => {
+  hyper.drives.on('updated', ({details}) => {
     iterateTabs(tab => {
       if (tab.datInfo && tab.datInfo.url === details.url) {
         tab.refreshState()
       }
     })
   })
-  dat.archives.on('network-changed', ({details}) => {
+  hyper.drives.on('network-changed', ({details}) => {
     iterateTabs(tab => {
       if (tab.datInfo && tab.datInfo.url === details.url) {
         // update peer count
@@ -1501,7 +1501,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
     if (tab && tab.datInfo) {
-      var networkStats = await dat.archives.getArchiveNetworkStats(tab.datInfo.key)
+      var networkStats = await hyper.drives.getDriveNetworkStats(tab.datInfo.key)
       return {
         peers: tab.peers,
         networkStats

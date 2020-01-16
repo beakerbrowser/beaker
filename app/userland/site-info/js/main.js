@@ -47,7 +47,7 @@ class SiteInfoApp extends LitElement {
   }
 
   get drive () {
-    return new DatArchive(this.url)
+    return new Hyperdrive(this.url)
   }
 
   get origin () {
@@ -131,7 +131,7 @@ class SiteInfoApp extends LitElement {
     try {
       if (!this.user) {
         let st = await navigator.filesystem.stat('/profile')
-        let userDrive = new DatArchive(st.mount.key)
+        let userDrive = new Hyperdrive(st.mount.key)
         this.user = await userDrive.getInfo()
       }
 
@@ -173,10 +173,10 @@ class SiteInfoApp extends LitElement {
         var opts = {}
         var permParam = beakerPermissions.getPermParam(perm)
         if (isDatHashRegex.test(permParam)) {
-          let archiveInfo
-          try { archiveInfo = await (new DatArchive(permParam)).getInfo() }
+          let driveInfo
+          try { driveInfo = await (new Hyperdrive(permParam)).getInfo() }
           catch (e) { /* ignore */ }
-          opts.title = archiveInfo && archiveInfo.title ? archiveInfo.title : toNiceDomain(permParam)
+          opts.title = driveInfo && driveInfo.title ? driveInfo.title : toNiceDomain(permParam)
         }
         return {perm, value, opts}
       }))

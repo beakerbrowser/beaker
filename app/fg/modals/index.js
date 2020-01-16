@@ -2,8 +2,8 @@
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
 import './setup'
-import './create-archive'
-import './fork-archive'
+import './create-drive'
+import './fork-drive'
 import './drive-properties'
 import './select-drive'
 import './select-file'
@@ -66,10 +66,10 @@ class ModalsWrapper extends LitElement {
     switch (this.currentModal) {
       case 'setup':
         return html`<setup-modal></setup-modal>`
-      case 'create-archive':
-        return html`<create-archive-modal></create-archive-modal>`
-      case 'fork-archive':
-        return html`<fork-archive-modal></fork-archive-modal>`
+      case 'create-drive':
+        return html`<create-drive-modal></create-drive-modal>`
+      case 'fork-drive':
+        return html`<fork-drive-modal></fork-drive-modal>`
       case 'drive-properties':
         return html`<drive-properties-modal></drive-properties-modal>`
       case 'select-drive':

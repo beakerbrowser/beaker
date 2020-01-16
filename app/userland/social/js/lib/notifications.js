@@ -202,7 +202,7 @@ export async function updateIndex (userUrl) {
     var userKeySet = new Set(followedUsers.map(f => f.mount))
 
     for (let userKey of userKeySet) {
-      let drive = new DatArchive(userKey)
+      let drive = new Hyperdrive(userKey)
       let driveMeta = await db.get('drives', drive.url)
       let lastVersion = driveMeta ? driveMeta.version : undefined
       let currentVersion = (await drive.getInfo()).version

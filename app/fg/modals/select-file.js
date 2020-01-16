@@ -232,7 +232,7 @@ class SelectFileModal extends LitElement {
   async init (params, cbs) {
     this.cbs = cbs
     this.saveMode = params.saveMode
-    this.drive = params.archive
+    this.drive = params.drives
     this.path = params.defaultPath || '/'
     this.defaultFilename = params.defaultFilename || ''
     this.title = params.title || ''
@@ -264,14 +264,14 @@ class SelectFileModal extends LitElement {
         } else if (folder) {
           this.title = 'Select folders'
         } else if (mount) {
-          this.title = 'Select dat archives'
+          this.title = 'Select drives'
         }
       }
     }
 
     var homeDriveUrl = bg.navigatorFs.get().url
-    this.drives.push(await bg.datArchive.getInfo(homeDriveUrl))
-    this.driveInfo = await bg.datArchive.getInfo(this.drive)
+    this.drives.push(await bg.hyperdrive.getInfo(homeDriveUrl))
+    this.driveInfo = await bg.hyperdrive.getInfo(this.drive)
     await this.readdir()
     this.updateComplete.then(_ => {
       this.adjustHeight()
@@ -282,10 +282,10 @@ class SelectFileModal extends LitElement {
       }
     })
 
-    var systemDrivesItems = await bg.datArchive.readdir(homeDriveUrl, '/system/drives', {includeStats: true})
+    var systemDrivesItems = await bg.hyperdrive.readdir(homeDriveUrl, '/system/drives', {includeStats: true})
     for (let item of systemDrivesItems) {
       if (item.stat.mount && item.stat.mount.key) {
-        this.drives.push(await bg.datArchive.getInfo(item.stat.mount.key))
+        this.drives.push(await bg.hyperdrive.getInfo(item.stat.mount.key))
       }
     }
     this.requestUpdate()
@@ -314,7 +314,7 @@ class SelectFileModal extends LitElement {
   }
 
   async readdir () {
-    var files = await bg.datArchive.readdir(this.drive, this.path, {includeStats: true})
+    var files = await bg.hyperdrive.readdir(this.drive, this.path, {includeStats: true})
     files.forEach(file => {
       file.stat = new Stat(file.stat)
       file.path = joinPath(this.path, file.name)
@@ -511,7 +511,7 @@ class SelectFileModal extends LitElement {
 
     try {
       var drive = e.currentTarget.dataset.url
-      var driveInfo = await bg.datArchive.getInfo(drive)
+      var driveInfo = await bg.hyperdrive.getInfo(drive)
     } catch (e) {
       return this.requestUpdate()
     }

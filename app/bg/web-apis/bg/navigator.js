@@ -5,8 +5,8 @@ import * as windows from '../../ui/windows'
 import * as tabManager from '../../ui/tab-manager'
 import * as modals from '../../ui/subwindows/modals'
 import * as filesystem from '../../filesystem/index'
-import * as datArchives from '../../dat/archives'
-import { lookupArchive } from './dat-archive'
+import * as drives from '../../hyper/drives'
+import { lookupDrive } from './hyperdrive'
 import { joinPath } from '../../../lib/strings'
 import assert from 'assert'
 import { UserDeniedError, ArchiveNotWritableError } from 'beaker-error-constants'
@@ -25,7 +25,7 @@ export default {
    */
   async drivePropertiesDialog (url) {
     assert(url && typeof url === 'string', '`url` must be a string')
-    var info = await datArchives.getArchiveInfo(url)
+    var info = await drives.getDriveInfo(url)
     await modals.create(this.sender, 'drive-properties', {
       url: info.url,
       writable: info.writable,
@@ -37,7 +37,7 @@ export default {
    * @param {Object} [opts]
    * @param {string} [opts.title]
    * @param {string} [opts.buttonLabel]
-   * @param {string} [opts.archive]
+   * @param {string} [opts.drive]
    * @param {string} [opts.defaultPath]
    * @param {string[]} [opts.select]
    * @param {Object} [opts.filters]
@@ -56,7 +56,7 @@ export default {
     assert(opts && typeof opts === 'object', 'Must pass an options object')
     assert(!opts.title || typeof opts.title === 'string', '.title must be a string')
     assert(!opts.buttonLabel || typeof opts.buttonLabel === 'string', '.buttonLabel must be a string')
-    assert(!opts.archive || typeof opts.archive === 'string', '.archive must be a string')
+    assert(!opts.drive || typeof opts.drive === 'string', '.drive must be a string')
     assert(!opts.defaultPath || typeof opts.defaultPath === 'string', '.defaultPath must be a string')
     assert(!opts.select || isStrArray(opts.select), '.select must be an array of strings')
     if (opts.filters) {
@@ -69,8 +69,8 @@ export default {
     assert(!opts.disallowCreate || typeof opts.disallowCreate === 'boolean', '.filters.disallowCreate must be a boolean')
 
     // set defaults
-    if (!opts.archive) {
-      opts.archive = filesystem.get().url
+    if (!opts.drive) {
+      opts.drive = filesystem.get().url
     }
 
     // initiate the modal
@@ -90,7 +90,7 @@ export default {
    * @param {Object} [opts]
    * @param {string} [opts.title]
    * @param {string} [opts.buttonLabel]
-   * @param {string} [opts.archive]
+   * @param {string} [opts.drive]
    * @param {string} [opts.defaultPath]
    * @param {string} [opts.defaultFilename]
    * @param {string} [opts.extension]
@@ -107,7 +107,7 @@ export default {
     assert(opts && typeof opts === 'object', 'Must pass an options object')
     assert(!opts.title || typeof opts.title === 'string', '.title must be a string')
     assert(!opts.buttonLabel || typeof opts.buttonLabel === 'string', '.buttonLabel must be a string')
-    assert(!opts.archive || typeof opts.archive === 'string', '.archive must be a string')
+    assert(!opts.drive || typeof opts.drive === 'string', '.drive must be a string')
     assert(!opts.defaultPath || typeof opts.defaultPath === 'string', '.defaultPath must be a string')
     assert(!opts.defaultFilename || typeof opts.defaultFilename === 'string', '.defaultFilename must be a string')
     if (opts.filters) {
@@ -117,8 +117,8 @@ export default {
     }
 
     // set defaults
-    if (!opts.archive) {
-      opts.archive = filesystem.get().url
+    if (!opts.drive) {
+      opts.drive = filesystem.get().url
     }
 
     // initiate the modal
@@ -195,7 +195,7 @@ export default {
       properties: ['openFile', OS_CAN_IMPORT_FOLDERS_AND_FILES ? 'openDirectory' : false, 'multiSelections', 'createDirectory'].filter(Boolean)
     })
     if (res.filePaths.length) {
-      var {checkoutFS, filepath, isHistoric} = await lookupArchive(this.sender, url)
+      var {checkoutFS, filepath, isHistoric} = await lookupDrive(this.sender, url)
       if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
       for (let srcPath of res.filePaths) {
         await pda.exportFilesystemToArchive({
@@ -222,7 +222,7 @@ export default {
       var baseDstPath = res.filePaths[0]
       urls = Array.isArray(urls) ? urls : [urls]
       for (let srcUrl of urls) {
-        let {checkoutFS, filepath} = await lookupArchive(this.sender, srcUrl)
+        let {checkoutFS, filepath} = await lookupDrive(this.sender, srcUrl)
         let dstPath = joinPath(baseDstPath, filepath.split('/').pop())
         await pda.exportArchiveToFilesystem({
           srcArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,

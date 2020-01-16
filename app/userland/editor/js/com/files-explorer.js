@@ -25,7 +25,7 @@ class FilesExplorer extends LitElement {
   }
 
   get drive () {
-    return new DatArchive(this.url)
+    return new Hyperdrive(this.url)
   }
 
   get origin () {
@@ -121,7 +121,7 @@ class FilesExplorer extends LitElement {
       if (stat.mount) {
         return {
           path,
-          info: await (new DatArchive(stat.mount.key)).getInfo()
+          info: await (new Hyperdrive(stat.mount.key)).getInfo()
         }
       }
       pathParts.pop()

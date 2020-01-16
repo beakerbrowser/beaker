@@ -20,8 +20,8 @@ export class AboutView extends LitElement {
   async renderCommands () {
     var manifest
     try {
-      var archive = new DatArchive(location)
-      manifest = JSON.parse(await archive.readFile('/index.json', 'utf8'))
+      var drive = new Hyperdrive(location)
+      manifest = JSON.parse(await drive.readFile('/index.json', 'utf8'))
     } catch (e) {
       return e.toString()
     }

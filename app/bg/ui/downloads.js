@@ -1,12 +1,10 @@
 import path from 'path'
 import fs from 'fs'
 import { app, dialog, shell, BrowserView } from 'electron'
-import mime from 'mime'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import parseDataURL from 'data-urls'
-import { requestPermission } from './permissions'
 import { openOrFocusDownloadsPage, findTab, remove as removeTab } from './tab-manager'
 
 // globals

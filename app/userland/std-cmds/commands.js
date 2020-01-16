@@ -16,7 +16,7 @@ export async function create () {
   while (!title) title = await this.prompt('Package title')
   description = await this.prompt('Package description')
 
-  var drive = await DatArchive.create({
+  var drive = await Hyperdrive.create({
     type: 'webterm.sh/cmd-pkg',
     title,
     description,
@@ -38,7 +38,7 @@ export async function install (opts = {}, url) {
   await ensureDir('/system/webterm')
   await ensureDir('/system/webterm/cmds')
 
-  var driveInfo = await (new DatArchive(url)).getInfo()
+  var driveInfo = await (new Hyperdrive(url)).getInfo()
   var name = await getAvailableName('/system/webterm/cmds', driveInfo.title || 'untitled')
   let path = `/system/webterm/cmds/${name}`
   await ensureMount(path, driveInfo.url)

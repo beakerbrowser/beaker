@@ -150,7 +150,7 @@ export class ExplorerApp extends LitElement {
     }
 
     // read location information
-    var drive = new DatArchive(location)
+    var drive = new Hyperdrive(location)
     try {
       this.driveInfo = await this.attempt(`Reading drive information (${location.origin})`, () => drive.getInfo())
       this.driveTitle = getDriveTitle(this.driveInfo)
@@ -174,7 +174,7 @@ export class ExplorerApp extends LitElement {
       this.inlineMode = Boolean(getSavedConfig('inline-mode', false))
       this.sortMode = getSavedConfig('sort-mode', 'name')
       if (!this.watchStream) {
-        let currentDrive = new DatArchive(this.currentDriveInfo.url)
+        let currentDrive = new Hyperdrive(this.currentDriveInfo.url)
         this.watchStream = currentDrive.watch(this.realPathname)
         var hackSetupTime = Date.now()
         this.watchStream.addEventListener('changed', e => {
@@ -232,7 +232,7 @@ export class ExplorerApp extends LitElement {
 
   async readPathAncestry () {
     var ancestry = []
-    var drive = new DatArchive(location)
+    var drive = new Hyperdrive(location)
     var pathParts = location.pathname.split('/').filter(Boolean)
     while (pathParts.length) {
       let name = pathParts[pathParts.length - 1]
@@ -250,7 +250,7 @@ export class ExplorerApp extends LitElement {
       if (stat.mount) {
         mount = await this.attempt(
           `Reading drive information (${stat.mount.key}) for parent mount at ${path}`,
-          () => (new DatArchive(stat.mount.key)).getInfo()
+          () => (new Hyperdrive(stat.mount.key)).getInfo()
         )
       }
       ancestry.unshift({name, path, stat, mount})
@@ -283,7 +283,7 @@ export class ExplorerApp extends LitElement {
       if (item.stat.mount) {
         item.mount = await this.attempt(
           `Reading drive information (${item.stat.mount.key}) for mounted drive at ${item.path}`,
-          () => (new DatArchive(item.stat.mount.key)).getInfo()
+          () => (new Hyperdrive(item.stat.mount.key)).getInfo()
         )
       }
       item.shareUrl = this.getShareUrl(item)
@@ -314,8 +314,8 @@ export class ExplorerApp extends LitElement {
       item.realUrl = item.url
       item.url = joinPath(location.origin, item.path)
       item.shareUrl = this.getShareUrl(item)
-      item.drive = await (new DatArchive(item.drive)).getInfo()
-      item.mount = item.mount ? await (new DatArchive(item.mount)).getInfo() : undefined
+      item.drive = await (new Hyperdrive(item.drive)).getInfo()
+      item.mount = item.mount ? await (new Hyperdrive(item.mount)).getInfo() : undefined
       this.setItemIcons('', item)
     })))
 
@@ -693,7 +693,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async onNewDrive (e) {
-    var drive = await DatArchive.create()
+    var drive = await Hyperdrive.create()
     toast.create('Drive created')
     window.open(drive.url)
   }
@@ -703,7 +703,7 @@ export class ExplorerApp extends LitElement {
     var filename = prompt('Enter the name of your new file')
     if (filename) {
       var pathname = joinPath(this.realPathname, filename)
-      var drive = new DatArchive(this.currentDriveInfo.url)
+      var drive = new Hyperdrive(this.currentDriveInfo.url)
       if (await drive.stat(pathname).catch(e => false)) {
         toast.create('A file or folder already exists at that name')
         return
@@ -724,7 +724,7 @@ export class ExplorerApp extends LitElement {
     var foldername = prompt('Enter the name of your new folder')
     if (foldername) {
       var pathname = joinPath(this.realPathname, foldername)
-      var drive = new DatArchive(this.currentDriveInfo.url)
+      var drive = new Hyperdrive(this.currentDriveInfo.url)
       try {
         await drive.mkdir(pathname)
       } catch (e) {
@@ -736,9 +736,9 @@ export class ExplorerApp extends LitElement {
 
   async onNewMount (e) {
     if (!this.currentDriveInfo.writable) return
-    var drive = new DatArchive(this.currentDriveInfo.url)
+    var drive = new Hyperdrive(this.currentDriveInfo.url)
     var targetUrl = await navigator.selectDriveDialog({title: 'Select a drive'})
-    var target = new DatArchive(targetUrl)
+    var target = new Hyperdrive(targetUrl)
     var info = await target.getInfo()
     var name = await getAvailableName(this.realPathname, info.title, drive)
     try {
@@ -751,7 +751,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async onCloneDrive (e) {
-    var drive = await DatArchive.fork(this.currentDriveInfo.url)
+    var drive = await Hyperdrive.fork(this.currentDriveInfo.url)
     toast.create('Drive created')
     window.location = drive.url
   }
@@ -792,7 +792,7 @@ export class ExplorerApp extends LitElement {
     if (newName) {
       var oldPath = this.selection[0] ? joinPath(this.realPathname, oldName) : this.realPathname
       var newPath = oldPath.split('/').slice(0, -1).concat([newName]).join('/')
-      var drive = new DatArchive(this.currentDriveInfo.url)
+      var drive = new Hyperdrive(this.currentDriveInfo.url)
       try {
         await drive.rename(oldPath, newPath)
       } catch (e) {
@@ -810,7 +810,7 @@ export class ExplorerApp extends LitElement {
   async onDelete (e) {
     if (!this.currentDriveInfo.writable) return
 
-    var drive = new DatArchive(this.currentDriveInfo.url)
+    var drive = new Hyperdrive(this.currentDriveInfo.url)
     const del = async (path, stat) => {
       if (stat.mount && stat.mount.key) {
         await drive.unmount(path)

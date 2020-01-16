@@ -94,8 +94,8 @@ export async function collect ({olderThan} = {}) {
 
   // clear cached dats
   // TODO
-  // fetch all archive metas with lastaccesstime older than DAT_CACHE_TIME
-  // then delete the archive
+  // fetch all drive metas with lastaccesstime older than DAT_CACHE_TIME
+  // then delete the drive
   {
     // await datLibrary.removeFromTrash(trashItems[i].key)
     // totalBytes += await archivesDb.deleteArchive(trashItems[i].key)

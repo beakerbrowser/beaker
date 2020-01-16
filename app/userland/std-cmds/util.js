@@ -6,7 +6,7 @@ export function resolveParse (env, location) {
 
 export function parseLocation (location) {
   var urlp = new URL(location)
-  urlp.archive = createArchive(urlp.toString())
+  urlp.drive = createDrive(urlp.toString())
   return urlp
 }
 
@@ -56,13 +56,13 @@ export function toNiceUrl (str) {
 }
 
 /*
-This wrapper provides a DatArchive interface for non-dat sites
+This wrapper provides a Hyperdrive interface for non-dat sites
 so that errors can be smoothly generated
 */
 
-export function createArchive (url) {
+export function createDrive (url) {
   if (url.startsWith('drive:') || url.startsWith('web:')) {
-    return new DatArchive(url)
+    return new Hyperdrive(url)
   }
   return new OtherOrigin(url)
 }
@@ -70,9 +70,9 @@ export function createArchive (url) {
 class OtherOrigin {
   constructor (url) {
     this.url = url
-    for (let k of Object.getOwnPropertyNames(DatArchive.prototype)) {
+    for (let k of Object.getOwnPropertyNames(Hyperdrive.prototype)) {
       console.log(k)
-      if (!this[k] && typeof DatArchive.prototype[k] === 'function') {
+      if (!this[k] && typeof Hyperdrive.prototype[k] === 'function') {
         this[k] = this.doThrow.bind(this)
       }
     }

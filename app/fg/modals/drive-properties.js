@@ -194,15 +194,15 @@ class DrivePropertiesModal extends LitElement {
       reader.readAsArrayBuffer(file)
 
       await Promise.all([
-        bg.datArchive.unlink(this.url, '/thumb.png').catch(e => null),
-        bg.datArchive.unlink(this.url, '/thumb.jpg').catch(e => null),
-        bg.datArchive.unlink(this.url, '/thumb.jpeg').catch(e => null)
+        bg.hyperdrive.unlink(this.url, '/thumb.png').catch(e => null),
+        bg.hyperdrive.unlink(this.url, '/thumb.jpg').catch(e => null),
+        bg.hyperdrive.unlink(this.url, '/thumb.jpeg').catch(e => null)
       ])
-      await bg.datArchive.writeFile(this.url, `/thumb.${ext}`, await bufPromise)
+      await bg.hyperdrive.writeFile(this.url, `/thumb.${ext}`, await bufPromise)
     }
 
     // handle props
-    await bg.datArchive.configure(this.url, newProps).catch(e => null)
+    await bg.hyperdrive.configure(this.url, newProps).catch(e => null)
 
     this.cbs.resolve()
   }

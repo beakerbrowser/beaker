@@ -14,7 +14,7 @@ const SETUP_RETRIES = 100
 // =
 
 /**
-* @typedef {Object} DaemonDatArchive
+* @typedef {Object} DaemonHyperdrive
 * @prop {number} sessionId
 * @prop {Buffer} key
 * @prop {string} url
@@ -25,9 +25,9 @@ const SETUP_RETRIES = 100
 * @prop {function(): Promise<void>} session.close
 * @prop {function(Object): Promise<void>} session.configureNetwork
 * @prop {function(): Promise<Object>} getInfo
-* @prop {DaemonDatArchivePDA} pda
+* @prop {DaemonHyperdrivePDA} pda
 *
-* @typedef {Object} DaemonDatArchivePDA
+* @typedef {Object} DaemonHyperdrivePDA
 * @prop {function(string): Promise<Object>} stat
 * @prop {function(string, Object=): Promise<any>} readFile
 * @prop {function(string, Object=): Promise<Array<Object>>} readdir
@@ -94,19 +94,19 @@ export const setup = async function () {
 }
 
 /**
- * Creates a dat-archive interface to the daemon for the given key
+ * Creates a hyperdrives interface to the daemon for the given key
  *
  * @param {Object} opts
  * @param {Buffer} opts.key
  * @param {number} [opts.version]
  * @param {Buffer} [opts.hash]
  * @param {boolean} [opts.writable]
- * @returns {Promise<DaemonDatArchive>}
+ * @returns {Promise<DaemonHyperdrive>}
  */
-export const createDatArchiveSession = async function (opts) {
+export const createHyperdriveSession = async function (opts) {
   const drive = await client.drive.get(opts)
   const key = datEncoding.toStr(drive.key)
-  var datArchive = {
+  var driveObj = {
     key: datEncoding.toBuf(key),
     url: `drive://${key}`,
     writable: drive.writable,
@@ -137,20 +137,20 @@ export const createDatArchiveSession = async function (opts) {
       }
     },
 
-    pda: createDatArchiveSessionPDA(drive)
+    pda: createHyperdriveSessionPDA(drive)
   }
-  return /** @type DaemonDatArchive */(datArchive)
+  return /** @type DaemonHyperdrive */(driveObj)
 }
 
 // internal methods
 // =
 
 /**
- * Provides a pauls-dat-api2 object for the given archive
- * @param {Object} datArchive
- * @returns {DaemonDatArchivePDA}
+ * Provides a pauls-dat-api2 object for the given drive
+ * @param {Object} drive
+ * @returns {DaemonHyperdrivePDA}
  */
-function createDatArchiveSessionPDA (datArchive) {
+function createHyperdriveSessionPDA (drive) {
   var obj = {}
   for (let k in pda) {
     if (typeof pda[k] === 'function') {
@@ -159,7 +159,7 @@ function createDatArchiveSessionPDA (datArchive) {
           let t = Date.now()
           console.log('->', k, ...args)
           try {
-            var res = await pda[k].call(pda, datArchive, ...args)
+            var res = await pda[k].call(pda, drive, ...args)
             console.log(`:: ${Date.now() - t} ms`, k, ...args)
             return res
           } catch (e) {
@@ -168,7 +168,7 @@ function createDatArchiveSessionPDA (datArchive) {
           }
         }
       } else {
-        obj[k] = pda[k].bind(pda, datArchive)
+        obj[k] = pda[k].bind(pda, drive)
       }
     }
   }

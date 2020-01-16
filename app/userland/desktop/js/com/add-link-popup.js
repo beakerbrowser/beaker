@@ -209,7 +209,7 @@ export class AddLinkPopup extends BasePopup {
       item.realPath = item.path
       item.realUrl = joinPath(item.drive.url, item.realPath)
       if (item.stat.mount && item.stat.mount.key) {
-        item.mount = await (new DatArchive(item.stat.mount.key)).getInfo()
+        item.mount = await (new Hyperdrive(item.stat.mount.key)).getInfo()
       }
       item.icon = item.stat.isDirectory() ? 'folder' : 'file'
       if (item.stat.isFile() && item.name.endsWith('.view')) {

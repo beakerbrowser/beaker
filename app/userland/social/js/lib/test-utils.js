@@ -4,7 +4,7 @@ import * as uwg from './uwg.js'
 var debugDrives = createPersistedArray('debug-drives')
 
 export function init () {
-  instrument(DatArchive.prototype)
+  instrument(Hyperdrive.prototype)
 }
 
 export function listDrives () {
@@ -18,7 +18,7 @@ export async function generateDrives (num = 10) {
 
   for (let i = 0; i < num; i++) {
     let profile = FAKE_PROFILES[(i + debugDrives.length) % FAKE_PROFILES.length]
-    let drive = await DatArchive.create(Object.assign(profile, {type: 'unwalled.garden/person', prompt: false}))
+    let drive = await Hyperdrive.create(Object.assign(profile, {type: 'unwalled.garden/person', prompt: false}))
     debugDrives.push(drive.url)
     await uwg.follows.add(drive.url, profile.title)
   }
@@ -27,12 +27,12 @@ export async function generateDrives (num = 10) {
 export async function socializeDrives () {
   var driveUrls = Array.from(debugDrives)
   for (let driveUrl of driveUrls) {
-    let drive = new DatArchive(driveUrl)
+    let drive = new Hyperdrive(driveUrl)
     var numFollows = Math.floor(Math.random() * driveUrls.length)
     console.log('Adding', numFollows, 'follows for', driveUrl)
     for (let i = 0; i < numFollows; i++) {
       let followUrl = getRandomOtherThan(driveUrls, driveUrl)
-      let followProfile = await (new DatArchive(followUrl)).getInfo()
+      let followProfile = await (new Hyperdrive(followUrl)).getInfo()
       console.log('following', followUrl, followProfile.title)
       await uwg.follows.add(followUrl, followProfile.title, drive)
     }
@@ -44,7 +44,7 @@ export async function generatePosts (numPosts = 10) {
   var fake_post_words = FAKE_POST.split(' ')
   for (let i = 0; i < numPosts; i++) {
     for (let driveUrl of driveUrls) {
-      let drive = new DatArchive(driveUrl)
+      let drive = new Hyperdrive(driveUrl)
       let numWords = Math.min(Math.floor(Math.random() * fake_post_words.length), 30) + 1
       let startWord = Math.floor(Math.random() * numWords)
       let title = fake_post_words.slice(startWord, numWords).join(' ')
@@ -62,7 +62,7 @@ export async function generateComments (numComments = 10) {
   var fake_post_words = FAKE_POST.split(' ')
   for (let i = 0; i < numComments; i++) {
     for (let driveUrl of driveUrls) {
-      let drive = new DatArchive(driveUrl)
+      let drive = new Hyperdrive(driveUrl)
       let numWords = Math.min(Math.floor(Math.random() * fake_post_words.length)) + 1
       let startWord = Math.floor(Math.random() * numWords)
       let content = fake_post_words.slice(startWord, numWords).join(' ')
@@ -81,7 +81,7 @@ export async function generateVotes (numVotes = 100) {
   var driveUrls = Array.from(debugDrives)
   for (let i = 0; i < numVotes; i++) {
     for (let driveUrl of driveUrls) {
-      let drive = new DatArchive(driveUrl)
+      let drive = new Hyperdrive(driveUrl)
       let target = await getRandomPostOrComment()
       await uwg.votes.put(target.url, (Math.random() > 0.7) ? -1 : 1, drive)
     }

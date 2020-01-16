@@ -1,8 +1,8 @@
 import { parseDriveUrl } from '../../../../lib/urls'
 import { PermissionsError } from 'beaker-error-constants'
 import * as permissions from '../../../ui/permissions'
-import * as datArchives from '../../../dat/archives'
-import datDns from '../../../dat/dns'
+import * as drives from '../../../hyper/drives'
+import hyperDns from '../../../hyper/dns'
 import { DAT_HASH_REGEX } from '../../../../lib/const'
 
 // constants
@@ -19,63 +19,63 @@ const LAB_PERMS_OBJ = {perm: API_PERM_ID, labApi: LAB_API_ID, apiDocsUrl: API_DO
 export default {
   async list () {
     await permissions.checkLabsPerm(Object.assign({sender: this.sender}, LAB_PERMS_OBJ))
-    var archive = await getSenderArchive(this.sender)
-    // TODO return datArchives.getDaemon().ext_listPeers(archive.key.toString('hex'))
+    var drive = await getSenderDrive(this.sender)
+    // TODO return drives.getDaemon().ext_listPeers(drive.key.toString('hex'))
   },
 
   async get (peerId) {
     await permissions.checkLabsPerm(Object.assign({sender: this.sender}, LAB_PERMS_OBJ))
-    var archive = await getSenderArchive(this.sender)
-    // TODO return datArchives.getDaemon().ext_getPeer(archive.key.toString('hex'), peerId)
+    var drive = await getSenderDrive(this.sender)
+    // TODO return drives.getDaemon().ext_getPeer(drive.key.toString('hex'), peerId)
   },
 
   async broadcast (data) {
     await permissions.checkLabsPerm(Object.assign({sender: this.sender}, LAB_PERMS_OBJ))
-    var archive = await getSenderArchive(this.sender)
-    // TODO return datArchives.getDaemon().ext_broadcastEphemeralMessage(archive.key.toString('hex'), data)
+    var drive = await getSenderDrive(this.sender)
+    // TODO return drives.getDaemon().ext_broadcastEphemeralMessage(drive.key.toString('hex'), data)
   },
 
   async send (peerId, data) {
     await permissions.checkLabsPerm(Object.assign({sender: this.sender}, LAB_PERMS_OBJ))
-    var archive = await getSenderArchive(this.sender)
-    // TODO return datArchives.getDaemon().ext_sendEphemeralMessage(archive.key.toString('hex'), peerId, data)
+    var drive = await getSenderDrive(this.sender)
+    // TODO return drives.getDaemon().ext_sendEphemeralMessage(drive.key.toString('hex'), peerId, data)
   },
 
   async getSessionData () {
     await permissions.checkLabsPerm(Object.assign({sender: this.sender}, LAB_PERMS_OBJ))
-    var archive = await getSenderArchive(this.sender)
-    // TODO return datArchives.getDaemon().ext_getSessionData(archive.key.toString('hex'))
+    var drive = await getSenderDrive(this.sender)
+    // TODO return drives.getDaemon().ext_getSessionData(drive.key.toString('hex'))
   },
 
   async setSessionData (sessionData) {
     await permissions.checkLabsPerm(Object.assign({sender: this.sender}, LAB_PERMS_OBJ))
-    var archive = await getSenderArchive(this.sender)
-    // TODO return datArchives.getDaemon().ext_setSessionData(archive.key.toString('hex'), sessionData)
+    var drive = await getSenderDrive(this.sender)
+    // TODO return drives.getDaemon().ext_setSessionData(drive.key.toString('hex'), sessionData)
   },
 
   async createEventStream () {
     await permissions.checkLabsPerm(Object.assign({sender: this.sender}, LAB_PERMS_OBJ))
-    var archive = await getSenderArchive(this.sender)
-    // TODO return datArchives.getDaemon().ext_createDatPeersStream(archive.key.toString('hex'))
+    var drive = await getSenderDrive(this.sender)
+    // TODO return drives.getDaemon().ext_createDatPeersStream(drive.key.toString('hex'))
   },
 
   async getOwnPeerId () {
     await permissions.checkLabsPerm(Object.assign({sender: this.sender}, LAB_PERMS_OBJ))
-    // TODO return datArchives.getDaemon().ext_getOwnPeerId()
+    // TODO return drives.getDaemon().ext_getOwnPeerId()
   }
 }
 
 // internal methods
 // =
 
-async function getSenderArchive (sender) {
+async function getSenderDrive (sender) {
   var url = sender.getURL()
   if (!url.startsWith('web:')) {
     throw new PermissionsError('Only web:// sites can use the datPeers API')
   }
   var urlp = parseDriveUrl(url)
   if (!DAT_HASH_REGEX.test(urlp.host)) {
-    urlp.host = await datDns.resolveName(url)
+    urlp.host = await hyperDns.resolveName(url)
   }
-  return datArchives.getArchive(urlp.host)
+  return drives.getDrive(urlp.host)
 }

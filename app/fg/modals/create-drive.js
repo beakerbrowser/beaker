@@ -10,7 +10,7 @@ import _groupBy from 'lodash.groupby'
 
 const TEMPLATES_DIR = '/system/templates'
 
-class CreateArchiveModal extends LitElement {
+class CreateDriveModal extends LitElement {
   static get properties () {
     return {
       title: {type: String},
@@ -131,8 +131,8 @@ class CreateArchiveModal extends LitElement {
     this.errors = {}
 
     // export interface
-    window.createArchiveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
-    window.createArchiveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
+    window.createDriveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
+    window.createDriveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
   }
 
   async init (params, cbs) {
@@ -148,10 +148,10 @@ class CreateArchiveModal extends LitElement {
 
   async readTemplates () {
     var fsurl = bg.navigatorFs.get().url
-    var files = (await bg.datArchive.readdir(fsurl, TEMPLATES_DIR, {includeStats: true}).catch(e => []))
+    var files = (await bg.hyperdrive.readdir(fsurl, TEMPLATES_DIR, {includeStats: true}).catch(e => []))
     var infos = await Promise.all(files.map(file => {
       if (file.stat.mount && file.stat.mount.key) {
-        return bg.datArchive.getInfo(file.stat.mount.key).catch(e => false)
+        return bg.hyperdrive.getInfo(file.stat.mount.key).catch(e => false)
       }
       return false
     }))
@@ -267,7 +267,7 @@ class CreateArchiveModal extends LitElement {
     this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div>`
 
     try {
-      var url = await bg.datArchive.createArchive({
+      var url = await bg.hyperdrive.createDrive({
         title: this.title,
         description: this.description,
         type: this.type !== 'undefined' ? this.type : undefined,
@@ -276,7 +276,7 @@ class CreateArchiveModal extends LitElement {
         prompt: false
       })
       if (this.template) {
-        await bg.datArchive.exportToArchive({
+        await bg.hyperdrive.exportToDrive({
           src: this.template,
           dst: url,
           ignore: ['/dat.json']
@@ -289,4 +289,4 @@ class CreateArchiveModal extends LitElement {
   }
 }
 
-customElements.define('create-archive-modal', CreateArchiveModal)
+customElements.define('create-drive-modal', CreateDriveModal)

@@ -7,7 +7,7 @@ const SECURE_ORIGIN_REGEX = /^(beaker:|drive:|web:|https:|http:\/\/localhost(\/|
 
 // internal manifests
 import loggerManifest from './manifests/internal/logger'
-import archivesManifest from './manifests/internal/archives'
+import drivesManifest from './manifests/internal/drives'
 import beakerBrowserManifest from './manifests/internal/browser'
 import bookmarksManifest from './manifests/internal/bookmarks'
 import downloadsManifest from './manifests/internal/downloads'
@@ -21,7 +21,7 @@ import typesManifest from './manifests/internal/types'
 // internal apis
 import { WEBAPI as loggerAPI } from '../logger'
 import * as auditLog from '../dbs/audit-log'
-import archivesAPI from './bg/archives'
+import drivesAPI from './bg/drives'
 import * as bookmarksAPI from '../filesystem/bookmarks'
 import historyAPI from './bg/history'
 import { WEBAPI as sitedataAPI } from '../dbs/sitedata'
@@ -36,14 +36,14 @@ import { WEBAPI as typesAPI } from '../filesystem/type-registry'
 import navigatorManifest from './manifests/external/navigator'
 import navigatorSessionManifest from './manifests/external/navigator-session'
 import navigatorFilesystemManifest from './manifests/external/navigator-filesystem'
-import datArchiveManifest from './manifests/external/dat-archive'
+import hyperdriveManifest from './manifests/external/hyperdrive'
 import spellCheckerManifest from './manifests/external/spell-checker'
 
 // external apis
 import navigatorAPI from './bg/navigator'
 import navigatorSessionAPI from './bg/navigator-session'
 import navigatorFilesystemAPI from './bg/navigator-filesystem'
-import datArchiveAPI from './bg/dat-archive'
+import hyperdriveAPI from './bg/hyperdrive'
 import * as spellCheckerAPI from './bg/spell-checker'
 
 // experimental manifests
@@ -62,10 +62,10 @@ import experimentalGlobalFetchAPI from './bg/experimental/global-fetch'
 export const setup = function () {
   // internal apis
   rpc.exportAPI('logger', loggerManifest, Object.assign({}, {listAuditLog: auditLog.list}, loggerAPI), internalOnly)
-  rpc.exportAPI('archives', archivesManifest, archivesAPI, internalOnly)
   rpc.exportAPI('beaker-browser', beakerBrowserManifest, beakerBrowserAPI, internalOnly)
   rpc.exportAPI('bookmarks', bookmarksManifest, bookmarksAPI, internalOnly)
   rpc.exportAPI('downloads', downloadsManifest, downloadsAPI, internalOnly)
+  rpc.exportAPI('drives', drivesManifest, drivesAPI, internalOnly)
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
@@ -77,7 +77,7 @@ export const setup = function () {
   rpc.exportAPI('navigator', navigatorManifest, navigatorAPI, secureOnly)
   rpc.exportAPI('navigator-session', navigatorSessionManifest, navigatorSessionAPI, secureOnly)
   rpc.exportAPI('navigator-filesystem', navigatorFilesystemManifest, navigatorFilesystemAPI, secureOnly)
-  rpc.exportAPI('dat-archive', datArchiveManifest, datArchiveAPI, secureOnly)
+  rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly)
   // rpc.exportAPI('spell-checker', spellCheckerManifest, spellCheckerAPI) TODO
 
   // experimental apis

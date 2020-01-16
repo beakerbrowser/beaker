@@ -13,7 +13,7 @@ function toAbsoluteURL (url) {
 export async function importModule (url) {
   var fileObj
   if (url.startsWith('drive://') || url.startsWith('web://')) {
-    let drive = new DatArchive(url)
+    let drive = new Hyperdrive(url)
     let file = await drive.readFile((new URL(url)).pathname)
     let blob = new Blob([file], { type: 'text/javascript' })
     fileObj = URL.createObjectURL(blob)

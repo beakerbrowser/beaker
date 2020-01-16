@@ -157,7 +157,7 @@ class DesktopApp extends LitElement {
 
   async onCreateDrive (type) {
     contextMenu.destroy()
-    var drive = await DatArchive.create({type})
+    var drive = await Hyperdrive.create({type})
     window.location = drive.url
   }
 
@@ -170,12 +170,12 @@ class DesktopApp extends LitElement {
     })
     if (!folder || !folder.length) return
 
-    var drive = await DatArchive.create({
+    var drive = await Hyperdrive.create({
       title: folder[0].split('/').pop(),
       prompt: false
     })
     toast.create('Importing...')
-    await DatArchive.importFromFilesystem({src: folder[0], dst: drive.url})
+    await Hyperdrive.importFromFilesystem({src: folder[0], dst: drive.url})
     window.location = drive.url
   }
 

@@ -16,8 +16,8 @@ export class CommandViewer extends LitElement {
   }
 
   async load () {
-    var archive = new DatArchive(location)
-    this.info = await archive.getInfo()
+    var drive = new Hyperdrive(location)
+    this.info = await drive.getInfo()
     // this.isInstalled = await beaker.programs.isInstalled(this.info.url) TODO
     await this.requestUpdate()
   }

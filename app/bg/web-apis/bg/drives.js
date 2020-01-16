@@ -1,5 +1,5 @@
-import datDns from '../../dat/dns'
-import * as datArchives from '../../dat/archives'
+import hyperDns from '../../hyper/dns'
+import * as drives from '../../hyper/drives'
 import * as archivesDb from '../../dbs/archives'
 import * as trash from '../../filesystem/trash'
 import * as users from '../../filesystem/users'
@@ -10,11 +10,11 @@ import { PermissionsError } from 'beaker-error-constants'
 
 export default {
   async status () {
-    var status = {archives: 0, peers: 0}
-    var archives = datArchives.getActiveArchives()
-    for (var k in archives) {
-      status.archives++
-      status.peers += archives[k].metadata.peers.length
+    var status = {drives: 0, peers: 0}
+    var drives = drives.getActiveDrives()
+    for (var k in drives) {
+      status.drives++
+      status.peers += drives[k].metadata.peers.length
     }
     return status
   },
@@ -25,11 +25,11 @@ export default {
 
   async delete (url) {
     // TODO
-    // var archive = await datArchives.getOrLoadArchive(url)
-    // assertArchiveDeletable(archive.key)
-    // await datLibrary.configureArchive(archive, {isSaved: false})
-    // await datArchives.unloadArchive(archive.key)
-    // var bytes = await archivesDb.deleteArchive(archive.key)
+    // var drive = await drives.getOrLoadDrive(url)
+    // assertDriveDeletable(drive.key)
+    // await datLibrary.configureDrive(drive, {isSaved: false})
+    // await drives.unloadDrive(drive.key)
+    // var bytes = await archivesDb.deleteArchive(drive.key)
     // return {bytes}
   },
 
@@ -38,30 +38,30 @@ export default {
   },
 
   async clearFileCache (url) {
-    return datArchives.clearFileCache(await datArchives.fromURLToKey(url, true))
+    return drives.clearFileCache(await drives.fromURLToKey(url, true))
   },
 
   clearDnsCache () {
-    datDns.flushCache()
+    hyperDns.flushCache()
   },
 
   createEventStream () {
-    return datArchives.createEventStream()
+    return drives.createEventStream()
   },
 
   getDebugLog (key) {
-    return datArchives.getDebugLog(key)
+    return drives.getDebugLog(key)
   },
 
   createDebugStream () {
-    return datArchives.createDebugStream()
+    return drives.createDebugStream()
   }
 }
 
 // internal methods
 // =
 
-function assertArchiveDeletable (key) {
+function assertDriveDeletable (key) {
   if (users.isUser(`drive://${key}`)) {
     throw new PermissionsError('Unable to delete the user profile.')
   }

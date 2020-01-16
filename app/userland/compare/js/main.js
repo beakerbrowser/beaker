@@ -30,10 +30,10 @@ export class CompareApp extends LitElement {
   }
 
   async load () {
-    this.baseArchive = new DatArchive(this.base)
-    this.targetArchive = new DatArchive(this.target)
-    this.baseInfo = await this.baseArchive.getInfo()
-    this.targetInfo = await this.targetArchive.getInfo()
+    this.baseDrive = new Hyperdrive(this.base)
+    this.targetDrive = new Hyperdrive(this.target)
+    this.baseInfo = await this.baseDrive.getInfo()
+    this.targetInfo = await this.targetDrive.getInfo()
     this.basePath = (new URL(this.base)).pathname
     this.targetPath = (new URL(this.target)).pathname
     this.selectedItem = undefined
@@ -45,7 +45,7 @@ export class CompareApp extends LitElement {
     }, false, true)
 
     const filter = path => path !== 'dat.json' && !path.endsWith('/dat.json')
-    this.diff = await compare.diff(this.baseArchive, this.basePath, this.targetArchive, this.targetPath, {compareContent: true, shallow: false, filter})
+    this.diff = await compare.diff(this.baseDrive, this.basePath, this.targetDrive, this.targetPath, {compareContent: true, shallow: false, filter})
     console.log(this.diff)
     this.requestUpdate()
   }
@@ -53,7 +53,7 @@ export class CompareApp extends LitElement {
   async doMerge (diff) {
     try {
       toast.create('Merging...')
-      await compare.applyRight(this.baseArchive, this.targetArchive, diff)
+      await compare.applyRight(this.baseDrive, this.targetDrive, diff)
       toast.create('Files updated', 'success')
     } catch (e) {
       console.error(e)
@@ -119,8 +119,8 @@ export class CompareApp extends LitElement {
         </div>
         ${this.selectedItem ? html`
           <compare-diff-item-content
-            .leftOrigin=${this.baseArchive.url}
-            .rightOrigin=${this.targetArchive.url}
+            .leftOrigin=${this.baseDrive.url}
+            .rightOrigin=${this.targetDrive.url}
             .leftPath=${this.basePath}
             .rightPath=${this.targetPath}
             .diff=${this.selectedItem}
@@ -157,7 +157,7 @@ export class CompareApp extends LitElement {
           click: async () => {
             // TODO this modal needs to be in "select folder" mode
             let sel = await navigator.selectFileDialog({
-              archive: this.baseArchive.url,
+              drive: this.baseDrive.url,
               defaultPath: this.basePath,
               select: ['folder']
             })
@@ -192,7 +192,7 @@ export class CompareApp extends LitElement {
           click: async () => {
             // TODO this modal needs to be in "select folder" mode
             let sel = await navigator.selectFileDialog({
-              archive: this.targetArchive.url,
+              drive: this.targetDrive.url,
               defaultPath: this.targetPath,
               select: ['folder']
             })
@@ -291,15 +291,15 @@ class CompareDiffItemContent extends LitElement {
 
   renderLeftColumn () {
     if (this.diff.change === 'del' || this.diff.change === 'mod') {
-      return this.renderFileContent(new DatArchive(this.rightOrigin), this.diff.rightPath, this.diff.rightMountKey)
+      return this.renderFileContent(new Hyperdrive(this.rightOrigin), this.diff.rightPath, this.diff.rightMountKey)
     }
     return ''
   }
 
   renderRightColumn () {
-    var right = new DatArchive(this.rightOrigin)
+    var right = new Hyperdrive(this.rightOrigin)
     if (this.diff.change === 'add' || this.diff.change === 'mod') {
-      return this.renderFileContent(new DatArchive(this.leftOrigin), this.diff.leftPath, this.diff.leftMountKey)
+      return this.renderFileContent(new Hyperdrive(this.leftOrigin), this.diff.leftPath, this.diff.leftMountKey)
     }
     return ''
   }

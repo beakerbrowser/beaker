@@ -3,7 +3,7 @@ import { render } from 'beaker://app-stdlib/vendor/lit-element/lit-html/lit-html
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import minimist from './lib/minimist.1.2.0.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
-import { createArchive } from './lib/term-archive-wrapper.js'
+import { createDrive } from './lib/term-drive-wrapper.js'
 import { importModule } from './lib/import-module.js'
 import { joinPath, DAT_KEY_REGEX, shortenAllKeys } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
@@ -105,7 +105,7 @@ class WebTerm extends LitElement {
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {
       try {
-        let st = await (createArchive(cwd.origin)).stat(cwd.pathname)
+        let st = await (createDrive(cwd.origin)).stat(cwd.pathname)
         if (st.isDirectory()) break
       } catch (e) { /* ignore */ }
       cwd.pathname = cwd.pathname.split('/').slice(0, -1).join('/')
@@ -465,7 +465,7 @@ class WebTerm extends LitElement {
       }
 
       // read directory
-      this.tabCompletion = await (createArchive(lp.origin).readdir(lp.pathname, {includeStats: true}).catch(err => []))
+      this.tabCompletion = await (createDrive(lp.origin).readdir(lp.pathname, {includeStats: true}).catch(err => []))
       this.tabCompletion.sort((a, b) => {
         if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
         if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1

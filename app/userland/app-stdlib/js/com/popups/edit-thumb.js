@@ -26,13 +26,13 @@ export class BeakerEditThumb extends BasePopup {
 
   static async runFlow (profiles) {
     var profile = await profiles.me()
-    var archive = new DatArchive(profile.url)
+    var drive = new Hyperdrive(profile.url)
 
     // find the existing thumb
     var existingThumbPath = null
     const test = async (path) => {
       if (existingThumbPath) return
-      var res = await archive.stat(path).catch(e => {})
+      var res = await drive.stat(path).catch(e => {})
       if (res) existingThumbPath = path
     }
     await test('/thumb.jpg')
@@ -44,10 +44,10 @@ export class BeakerEditThumb extends BasePopup {
     if (!img) return
 
     // replace any existing thumb
-    await archive.unlink('/thumb.jpg').catch(e => undefined)
-    await archive.unlink('/thumb.jpeg').catch(e => undefined)
-    await archive.unlink('/thumb.png').catch(e => undefined)
-    await archive.writeFile(`/thumb.${img.ext}`, img.base64buf, 'base64')
+    await drive.unlink('/thumb.jpg').catch(e => undefined)
+    await drive.unlink('/thumb.jpeg').catch(e => undefined)
+    await drive.unlink('/thumb.png').catch(e => undefined)
+    await drive.writeFile(`/thumb.${img.ext}`, img.base64buf, 'base64')
   }
 
   static destroy () {

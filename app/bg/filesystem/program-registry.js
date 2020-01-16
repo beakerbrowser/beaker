@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'program-registry'})
-import dat from '../dat/index'
+import hyper from '../hyper/index'
 import * as filesystem from './index'
 import * as typeRegistry from './type-registry'
 import { PATHS, BUILTIN_PROGRAMS } from '../../lib/const'
@@ -74,12 +74,12 @@ export async function isInstalled (url) {
  */
 export async function installProgram (url, version) {
   url = normalizeUrl(url)
-  var key = dat.archives.fromURLToKey(url)
+  var key = hyper.drives.fromURLToKey(url)
   logger.info('Installing program', {url, key, version})
 
-  var archive = await dat.archives.getOrLoadArchive(key)
-  var checkout = version ? await dat.archives.getArchiveCheckout(archive, version) : archive
-  if (!version) version = (await archive.getInfo()).version
+  var drive = await hyper.drives.getOrLoadDrive(key)
+  var checkout = version ? await hyper.drives.getDriveCheckout(drive, version) : drive
+  if (!version) version = (await drive.getInfo()).version
   var manifest = JSON.parse(await checkout.pda.readFile('dat.json', 'utf8'))
 
   // add to the program registry

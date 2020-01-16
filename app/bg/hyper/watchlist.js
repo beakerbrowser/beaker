@@ -4,7 +4,7 @@ import * as logLib from '../logger'
 const logger = logLib.child({category: 'dat', subcategory: 'watchlist'})
 
 // dat modules
-import * as datArchives from './archives'
+import * as drives from './drives'
 
 import datDns from './dns'
 import * as watchlistDb from '../dbs/watchlist'
@@ -93,11 +93,11 @@ async function watch (site) {
     return
   }
 
-  // load archive
-  var archive = await datArchives.loadArchive(key)
+  // load drive
+  var drive = await drives.loadDrive(key)
   if (site.resolved === 0) {
     watchlistEvents.emit('resolved', site)
   }
-  archive.pda.download('/').catch(e => { /* ignore cancels */ }) // download the site to make sure it's available
+  drive.pda.download('/').catch(e => { /* ignore cancels */ }) // download the site to make sure it's available
   await updateWatchlist(0, site, {resolved: 1})
 }

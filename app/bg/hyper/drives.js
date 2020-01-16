@@ -7,7 +7,7 @@ import pda from 'pauls-dat-api2'
 import { wait } from '../../lib/functions'
 import * as logLib from '../logger'
 const baseLogger = logLib.get()
-const logger = baseLogger.child({category: 'dat', subcategory: 'archives'})
+const logger = baseLogger.child({category: 'dat', subcategory: 'drives'})
 
 // dbs
 import * as settingsDb from '../dbs/settings'
@@ -34,26 +34,26 @@ import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 // =
 
 /**
- * @typedef {import('./daemon').DaemonDatArchive} DaemonDatArchive
+ * @typedef {import('./daemon').DaemonHyperdrive} DaemonHyperdrive
  */
 
 // globals
 // =
 
-var archives = {} // in-memory cache of archive objects. key -> archive
-var archiveLoadPromises = {} // key -> promise
-var archiveSessionCheckouts = {} // key+version -> DaemonDatArchive
-var archivesEvents = new EventEmitter()
+var drives = {} // in-memory cache of drive objects. key -> drive
+var driveLoadPromises = {} // key -> promise
+var driveSessionCheckouts = {} // key+version -> DaemonHyperdrive
+var drivesEvents = new EventEmitter()
 
 // var daemonEvents TODO
 
 // exported API
 // =
 
-export const on = archivesEvents.on.bind(archivesEvents)
+export const on = drivesEvents.on.bind(drivesEvents)
 
-export const addListener = archivesEvents.addListener.bind(archivesEvents)
-export const removeListener = archivesEvents.removeListener.bind(archivesEvents)
+export const addListener = drivesEvents.addListener.bind(drivesEvents)
+export const removeListener = drivesEvents.removeListener.bind(drivesEvents)
 
 /**
  * @param {Object} opts
@@ -64,15 +64,15 @@ export async function setup () {
   await daemon.setup()
 
   datDnsDb.on('updated', ({key, name}) => {
-    var archive = getArchive(key)
-    if (archive) {
-      archive.domain = name
+    var drive = getDrive(key)
+    if (drive) {
+      drive.domain = name
     }
   })
 
   // re-export events
   // TODO
-  // daemonEvents.on('network-changed', evt => archivesEvents.emit('network-changed', evt))
+  // daemonEvents.on('network-changed', evt => drivesEvents.emit('network-changed', evt))
 
   // configure the bandwidth throttle
   // TODO
@@ -91,20 +91,20 @@ export async function setup () {
 /**
  * @returns {Promise<void>}
  */
-export async function loadSavedArchives () {
-  // load all saved archives
-  var archives = [] // TODO uwg await datLibrary.list({isHosting: true})
+export async function loadSavedDrives () {
+  // load all saved drives
+  var drives = [] // TODO uwg await datLibrary.list({isHosting: true})
 
   // HACK
-  // load the archives one at a time and give 5 seconds between each
-  // why: the purpose of loading saved archives is to seed them
+  // load the drives one at a time and give 5 seconds between each
+  // why: the purpose of loading saved drives is to seed them
   // loading them all at once can bog down the user's device
-  // if the user tries to access an archive, Beaker will load it immediately
+  // if the user tries to access an drive, Beaker will load it immediately
   // so spacing out the loads has no visible impact on the user
   // (except for reducing the overall load for the user)
   // -prf
-  for (let a of archives) {
-    loadArchive(a.key)
+  for (let a of drives) {
+    loadDrive(a.key)
     await new Promise(r => setTimeout(r, 5e3)) // wait 5s
   }
 };
@@ -113,7 +113,7 @@ export async function loadSavedArchives () {
  * @returns {NodeJS.ReadableStream}
  */
 export function createEventStream () {
-  return emitStream.toStream(archivesEvents)
+  return emitStream.toStream(drivesEvents)
 };
 
 /**
@@ -132,22 +132,22 @@ export function createDebugStream () {
   // return daemon.createDebugStream()
 };
 
-// read metadata for the archive, and store it in the meta db
-export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
+// read metadata for the drive, and store it in the meta db
+export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
   try {
-    var key = archive.key.toString('hex')
+    var key = drive.key.toString('hex')
 
     // trigger DNS update
     confirmDomain(key)
 
-    // read the archive meta and size on disk
+    // read the drive meta and size on disk
     var [manifest, oldMeta, size] = await Promise.all([
-      archive.pda.readManifest().catch(_ => {}),
+      drive.pda.readManifest().catch(_ => {}),
       archivesDb.getMeta(key),
-      0//archive.pda.readSize('/')
+      0//drive.pda.readSize('/')
     ])
     var {title, description, type, author, forkOf} = (manifest || {})
-    var writable = archive.writable
+    var writable = drive.writable
     var mtime = updateMTime ? Date.now() : oldMeta.mtime
     var details = {title, description, type, mtime, size, author, forkOf, writable}
 
@@ -161,71 +161,71 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
 
     // emit the updated event
     details.url = 'drive://' + key
-    archivesEvents.emit('updated', {key, details, oldMeta})
+    drivesEvents.emit('updated', {key, details, oldMeta})
     return details
   } catch (e) {
     console.error('Error pulling meta', e)
   }
 }
 
-// archive creation
+// drive creation
 // =
 
 /**
- * @returns {Promise<DaemonDatArchive>}
+ * @returns {Promise<DaemonHyperdrive>}
  */
-export async function createNewRootArchive () {
-  var archive = await loadArchive(null, {visibility: 'private'})
-  await pullLatestArchiveMeta(archive)
-  return archive
+export async function createNewRootDrive () {
+  var drive = await loadDrive(null, {visibility: 'private'})
+  await pullLatestDriveMeta(drive)
+  return drive
 };
 
 /**
  * @param {Object} [manifest]
- * @returns {Promise<DaemonDatArchive>}
+ * @returns {Promise<DaemonHyperdrive>}
  */
-export async function createNewArchive (manifest = {}) {
-  // create the archive
-  var archive = await loadArchive(null)
+export async function createNewDrive (manifest = {}) {
+  // create the drive
+  var drive = await loadDrive(null)
 
   // write the manifest and default datignore
   await Promise.all([
-    archive.pda.writeManifest(manifest),
-    archive.pda.writeFile('/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
+    drive.pda.writeManifest(manifest),
+    drive.pda.writeFile('/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
   ])
 
   // save the metadata
-  await pullLatestArchiveMeta(archive)
+  await pullLatestDriveMeta(drive)
 
-  return archive
+  return drive
 }
 
 /**
- * @param {string} srcArchiveUrl
+ * @param {string} srcDriveUrl
  * @param {Object} [manifest]
- * @returns {Promise<DaemonDatArchive>}
+ * @returns {Promise<DaemonHyperdrive>}
  */
-export async function forkArchive (srcArchiveUrl, manifest = {}) {
-  srcArchiveUrl = fromKeyToURL(srcArchiveUrl)
+export async function forkDrive (srcDriveUrl, manifest = {}) {
+  srcDriveUrl = fromKeyToURL(srcDriveUrl)
 
-  // get the source archive
-  var srcArchive
+  // get the source drive
+  var srcDrive
   var downloadRes = await Promise.race([
     (async function () {
-      srcArchive = await getOrLoadArchive(srcArchiveUrl)
-      if (!srcArchive) {
-        throw new Error('Invalid archive key')
+      srcDrive = await getOrLoadDrive(srcDriveUrl)
+      if (!srcDrive) {
+        throw new Error('Invalid drive key')
       }
-      return srcArchive.pda.download('/')
+      return srcDrive.pda.download('/')
     })(),
     new Promise(r => setTimeout(() => r('timeout'), 60e3))
   ])
   if (downloadRes === 'timeout') {
-    throw new TimeoutError('Timed out while downloading source archive')
+    throw new TimeoutError('Timed out while downloading source drive')
   }
 
-  // fetch source archive meta
-  var srcManifest = await srcArchive.pda.readManifest().catch(_ => {})
+  // fetch source drive meta
+  var srcManifest = await srcDrive.pda.readManifest().catch(_ => {})
   srcManifest = srcManifest || {}
 
   // override any manifest data
@@ -234,7 +234,7 @@ export async function forkArchive (srcArchiveUrl, manifest = {}) {
     description: (manifest.description) ? manifest.description : srcManifest.description,
     type: (manifest.type) ? manifest.type : srcManifest.type,
     author: manifest.author,
-    forkOf: srcArchiveUrl
+    forkOf: srcDriveUrl
   }
   DAT_PRESERVED_FIELDS_ON_FORK.forEach(field => {
     if (srcManifest[field]) {
@@ -242,32 +242,32 @@ export async function forkArchive (srcArchiveUrl, manifest = {}) {
     }
   })
 
-  // create the new archive
-  var dstArchive = await createNewArchive(dstManifest)
+  // create the new drive
+  var dstDrive = await createNewDrive(dstManifest)
 
   // copy files
   var ignore = ['/.dat', '/.git', '/dat.json']
   await pda.exportArchiveToArchive({
-    srcArchive: srcArchive.session.drive,
-    dstArchive: dstArchive.session.drive,
+    srcDrive: srcDrive.session.drive,
+    dstDrive: dstDrive.session.drive,
     skipUndownloadedFiles: true,
     ignore
   })
 
   // write a .datignore if DNE
   try {
-    await dstArchive.pda.stat('/.datignore')
+    await dstDrive.pda.stat('/.datignore')
   } catch (e) {
-    await dstArchive.pda.writeFile('/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
+    await dstDrive.pda.writeFile('/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
   }
 
-  return dstArchive
+  return dstDrive
 };
 
-// archive management
+// drive management
 // =
 
-export async function loadArchive (key, settingsOverride) {
+export async function loadDrive (key, settingsOverride) {
   // validate key
   if (key) {
     if (!Buffer.isBuffer(key)) {
@@ -282,20 +282,20 @@ export async function loadArchive (key, settingsOverride) {
 
   // fallback to the promise, if possible
   var keyStr = key ? datEncoding.toStr(key) : null
-  if (keyStr && keyStr in archiveLoadPromises) {
-    return archiveLoadPromises[keyStr]
+  if (keyStr && keyStr in driveLoadPromises) {
+    return driveLoadPromises[keyStr]
   }
 
   // run and cache the promise
-  var p = loadArchiveInner(key, settingsOverride)
-  if (key) archiveLoadPromises[keyStr] = p
+  var p = loadDriveInner(key, settingsOverride)
+  if (key) driveLoadPromises[keyStr] = p
   p.catch(err => {
-    console.error('Failed to load archive', keyStr, err.toString())
+    console.error('Failed to load drive', keyStr, err.toString())
   })
 
   // when done, clear the promise
   if (key) {
-    const clear = () => delete archiveLoadPromises[keyStr]
+    const clear = () => delete driveLoadPromises[keyStr]
     p.then(clear, clear)
   }
 
@@ -303,21 +303,21 @@ export async function loadArchive (key, settingsOverride) {
 }
 
 // main logic, separated out so we can capture the promise
-async function loadArchiveInner (key, settingsOverride) {
+async function loadDriveInner (key, settingsOverride) {
   // ensure the folders exist
   // TODO needed?
   // var metaPath = archivesDb.getArchiveMetaPath(key)
   // mkdirp.sync(metaPath)
 
-  // create the archive session with the daemon
-  var archive = await daemon.createDatArchiveSession({key})
-  key = archive.key
-  var keyStr = datEncoding.toStr(archive.key)
+  // create the drive session with the daemon
+  var drive = await daemon.createHyperdriveSession({key})
+  key = drive.key
+  var keyStr = datEncoding.toStr(drive.key)
 
   // fetch library settings
   var userSettings = null // TODO uwg datLibrary.getConfig(keyStr)
   if (!userSettings) {
-    if (users.isUser(archive.url)) {
+    if (users.isUser(drive.url)) {
       userSettings = {key: keyStr, isSaved: true, isHosting: true, visibility: 'unlisted', savedAt: null, meta: null}
     }
   }
@@ -325,9 +325,9 @@ async function loadArchiveInner (key, settingsOverride) {
     userSettings = Object.assign(userSettings || {}, settingsOverride)
   }
 
-  // put the archive on the network
+  // put the drive on the network
   if (!userSettings || userSettings.visibility !== 'private') {
-    archive.session.configureNetwork({
+    drive.session.configureNetwork({
       announce: true,
       lookup: true,
       remember: false
@@ -336,55 +336,55 @@ async function loadArchiveInner (key, settingsOverride) {
 
   // fetch dns name if known
   let dnsRecord = await datDnsDb.getCurrentByKey(datEncoding.toStr(key))
-  archive.domain = dnsRecord ? dnsRecord.name : undefined
+  drive.domain = dnsRecord ? dnsRecord.name : undefined
 
   // update db
-  archivesDb.touch(archive.key).catch(err => console.error('Failed to update lastAccessTime for archive', archive.key, err))
-  if (!archive.writable) {
-    await downloadHack(archive, DAT_MANIFEST_FILENAME)
+  archivesDb.touch(drive.key).catch(err => console.error('Failed to update lastAccessTime for drive', drive.key, err))
+  if (!drive.writable) {
+    await downloadHack(drive, DAT_MANIFEST_FILENAME)
   }
-  await pullLatestArchiveMeta(archive)
-  datAssets.update(archive)
+  await pullLatestDriveMeta(drive)
+  datAssets.update(drive)
 
   // wire up events
-  archive.pullLatestArchiveMeta = opts => pullLatestArchiveMeta(archive, opts)
-  // archive.fileActStream = archive.pda.watch('/')
-  // archive.fileActStream.on('data',  _debounce(([event, {path}]) => {
+  drive.pullLatestDriveMeta = opts => pullLatestDriveMeta(drive, opts)
+  // drive.fileActStream = drive.pda.watch('/')
+  // drive.fileActStream.on('data',  _debounce(([event, {path}]) => {
   //   if (event !== 'changed') return
-  //   archive.pullLatestArchiveMeta({updateMTime: true})
-  //   datAssets.update(archive)
+  //   drive.pullLatestDriveMeta({updateMTime: true})
+  //   datAssets.update(drive)
   // }), 1e3)
 
-  // now store in main archives listing, as loaded
-  archives[keyStr] = archive
-  return archive
+  // now store in main drives listing, as loaded
+  drives[keyStr] = drive
+  return drive
 }
 
 /**
  * HACK to work around the incomplete daemon-client download() method -prf
  */
-async function downloadHack (archive, path) {
-  if (!(await archive.pda.stat(path).catch(err => undefined))) return
-  let fileStats = (await archive.session.drive.fileStats(path)).get(path)
+async function downloadHack (drive, path) {
+  if (!(await drive.pda.stat(path).catch(err => undefined))) return
+  let fileStats = (await drive.session.drive.fileStats(path)).get(path)
   if (fileStats.downloadedBlocks >= fileStats.blocks) return
-  await archive.session.drive.download(path)
+  await drive.session.drive.download(path)
   for (let i = 0; i < 10; i++) {
     await wait(500)
-    fileStats = (await archive.session.drive.fileStats(path)).get(path)
+    fileStats = (await drive.session.drive.fileStats(path)).get(path)
     if (fileStats.downloadedBlocks >= fileStats.blocks) {
       return
     }
   }
 }
 
-export function getArchive (key) {
+export function getDrive (key) {
   key = fromURLToKey(key)
-  return archives[key]
+  return drives[key]
 }
 
-export async function getArchiveCheckout (archive, version) {
+export async function getDriveCheckout (drive, version) {
   var isHistoric = false
-  var checkoutFS = archive
+  var checkoutFS = drive
   if (typeof version !== 'undefined' && version !== null) {
     let seq = parseInt(version)
     if (Number.isNaN(seq)) {
@@ -394,98 +394,96 @@ export async function getArchiveCheckout (archive, version) {
         throw new Error('Invalid version identifier:' + version)
       }
     } else {
-      let checkoutKey = `${archive.key}+${version}`
-      if (!(checkoutKey in archiveSessionCheckouts)) {
-        archiveSessionCheckouts[checkoutKey] = await daemon.createDatArchiveSession({
-          key: archive.key,
+      let checkoutKey = `${drive.key}+${version}`
+      if (!(checkoutKey in driveSessionCheckouts)) {
+        driveSessionCheckouts[checkoutKey] = await daemon.createHyperdriveSession({
+          key: drive.key,
           version,
           writable: false
         })
       }
-      checkoutFS = archiveSessionCheckouts[checkoutKey]
-      checkoutFS.domain = archive.domain
+      checkoutFS = driveSessionCheckouts[checkoutKey]
+      checkoutFS.domain = drive.domain
       isHistoric = true
     }
   }
   return {isHistoric, checkoutFS}
 };
 
-export function getActiveArchives () {
-  return archives
+export function getActiveDrives () {
+  return drives
 };
 
-export async function getOrLoadArchive (key) {
+export async function getOrLoadDrive (key) {
   key = await fromURLToKey(key, true)
-  var archive = getArchive(key)
-  if (archive) {
-    return archive
-  }
-  return loadArchive(key)
+  var drive = getDrive(key)
+  if (drive) return drive
+  return loadDrive(key)
 }
 
-export async function unloadArchive (key) {
+export async function unloadDrive (key) {
   key = await fromURLToKey(key, true)
-  var archive = archives[key]
-  if (!archive) return
-  if (archive.fileActStream) {
-    archive.fileActStream.close()
-    archive.fileActStream = null
+  var drive = drives[key]
+  if (!drive) return
+  if (drive.fileActStream) {
+    drive.fileActStream.close()
+    drive.fileActStream = null
   }
-  delete archives[key]
-  archive.session.configureNetwork({
+  delete drives[key]
+  drive.session.configureNetwork({
     announce: false,
     lookup: false,
     remember: false
   })
-  archive.session.close()
+  drive.session.close()
 };
 
-export function isArchiveLoaded (key) {
+export function isDriveLoaded (key) {
   key = fromURLToKey(key)
-  return key in archives
+  return key in drives
 }
 
-// archive fetch/query
+// drive fetch/query
 // =
 
-export async function getArchiveInfo (key) {
-  // get the archive
+export async function getDriveInfo (key) {
+  // get the drive
   key = await fromURLToKey(key, true)
-  var archive = await getOrLoadArchive(key)
+  var drive = await getOrLoadDrive(key)
 
-  // fetch archive data
-  await archive.pullLatestArchiveMeta()
+  // fetch drive data
+  await drive.pullLatestDriveMeta()
   var userSettings = null // TODO uwg datLibrary.getConfig(key)
-  var [meta, manifest, archiveInfo] = await Promise.all([
+  var [meta, manifest, driveInfo] = await Promise.all([
     archivesDb.getMeta(key),
-    archive.pda.readManifest().catch(_ => {}),
-    archive.getInfo()
+    drive.pda.readManifest().catch(_ => {}),
+    drive.getInfo()
   ])
   manifest = manifest || {}
-  if (filesystem.isRootUrl(archive.url) && !meta.title) {
+  if (filesystem.isRootUrl(drive.url) && !meta.title) {
     meta.title = 'My Home Drive'
   }
   meta.key = key
-  meta.url = archive.url
-  meta.domain = archive.domain
+  meta.url = drive.url
+  meta.domain = drive.domain
   meta.links = manifest.links || {}
   meta.manifest = manifest
-  meta.version = archiveInfo.version
+  meta.version = driveInfo.version
   meta.userSettings = {
     isSaved: userSettings ? true : false,
     isHosting: userSettings ? userSettings.isHosting : false,
     visibility: userSettings ? userSettings.visibility : undefined,
     savedAt: userSettings ? userSettings.savedAt : null
   }
-  meta.peers = archiveInfo.peers
-  meta.networkStats = archiveInfo.networkStats
+  meta.peers = driveInfo.peers
+  meta.networkStats = driveInfo.networkStats
 
   return meta
 };
 
-export async function getArchiveNetworkStats (key) {
+export async function getDriveNetworkStats (key) {
   key = await fromURLToKey(key, true)
-  return {} // TODO daemon.getArchiveNetworkStats(key)
+  return {} // TODO daemon.getDriveNetworkStats(key)
 };
 
 export async function clearFileCache (key) {
@@ -508,7 +506,7 @@ export async function getPrimaryUrl (url) {
 
 /**
  * @desc
- * Check that the archive's dat.json `domain` matches the current DNS
+ * Check that the drive's dat.json `domain` matches the current DNS
  * If yes, write the confirmed entry to the dat_dns table
  *
  * @param {string} key
@@ -517,8 +515,8 @@ export async function getPrimaryUrl (url) {
 export async function confirmDomain (key) {
   // fetch the current domain from the manifest
   try {
-    var archive = await getOrLoadArchive(key)
-    var datJson = await archive.pda.readManifest()
+    var drive = await getOrLoadDrive(key)
+    var datJson = await drive.pda.readManifest()
   } catch (e) {
     return false
   }

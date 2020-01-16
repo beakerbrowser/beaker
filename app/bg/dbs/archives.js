@@ -8,13 +8,13 @@ import { InvalidArchiveKeyError } from 'beaker-error-constants'
 import * as db from './profile-data-db'
 import lock from '../../lib/lock'
 import { DAT_HASH_REGEX } from '../../lib/const'
-import datDns from '../dat/dns'
+import hyperDns from '../hyper/dns'
 
 // typedefs
 // =
 
 /**
- * @typedef {import('../dat/daemon').DaemonDatArchive} DaemonDatArchive
+ * @typedef {import('../dat/daemon').DaemonHyperdrive} DaemonHyperdrive
  *
  * @typedef {Object} LibraryArchiveMeta
  * @prop {string} key
@@ -62,7 +62,7 @@ export function getDatPath () {
 
 /**
  * @description Get the path to an archive's files.
- * @param {string | Buffer | DaemonDatArchive} archiveOrKey
+ * @param {string | Buffer | DaemonHyperdrive} archiveOrKey
  * @returns {string}
  */
 //
@@ -129,7 +129,7 @@ export async function hasMeta (key) {
   var keyStr = typeof key !== 'string' ? datEncoding.toStr(key) : key
   if (!DAT_HASH_REGEX.test(keyStr)) {
     try {
-      keyStr = await datDns.resolveName(keyStr)
+      keyStr = await hyperDns.resolveName(keyStr)
     } catch (e) {
       return false
     }
@@ -162,7 +162,7 @@ export async function getMeta (key, {noDefault} = {noDefault: false}) {
   // validate inputs
   if (!DAT_HASH_REGEX.test(keyStr)) {
     try {
-      keyStr = await datDns.resolveName(keyStr)
+      keyStr = await hyperDns.resolveName(keyStr)
     } catch (e) {
       return noDefault ? undefined : defaultMeta(keyStr, origKeyStr)
     }

@@ -139,7 +139,7 @@ export async function diff (leftDrive, initLeftPath, rightDrive, initRightPath, 
     if (opts.filter && !(opts.filter(leftPath) || opts.filter(rightPath))) {
       return
     }
-    // find everything at and below the current path in the archive
+    // find everything at and below the current path in the drive
     // they should be removed
     var st = await rightDrive.stat(rightPath)
     if (!isFirstRecursion /* when first called from diff(), dont check for a cycle again */) {

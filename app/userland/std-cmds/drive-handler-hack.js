@@ -1,7 +1,7 @@
 // massive hack
-// overwrite DatArchive to provide information about myself
+// overwrite Hyperdrive to provide information about myself
 // so that the drive-handler script can render our ui
-window.DatArchive = class {
+window.Hyperdrive = class {
   constructor () {
   }
 

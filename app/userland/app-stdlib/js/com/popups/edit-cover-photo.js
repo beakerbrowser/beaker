@@ -34,13 +34,13 @@ export class BeakerEditCoverPhoto extends BasePopup {
 
   static async runFlow (profiles) {
     var profile = await profiles.me()
-    var archive = new DatArchive(profile.url)
+    var drive = new Hyperdrive(profile.url)
 
     // find the existing cover
     var existingCoverPath = null
     const test = async (path) => {
       if (existingCoverPath) return
-      var res = await archive.stat(path).catch(e => {})
+      var res = await drive.stat(path).catch(e => {})
       if (res) existingCoverPath = path
     }
     await test('/cover.jpg')
@@ -52,10 +52,10 @@ export class BeakerEditCoverPhoto extends BasePopup {
     if (!img) return
 
     // replace any existing cover
-    await archive.unlink('/cover.jpg').catch(e => undefined)
-    await archive.unlink('/cover.jpeg').catch(e => undefined)
-    await archive.unlink('/cover.png').catch(e => undefined)
-    await archive.writeFile(`/cover.${img.ext}`, img.base64buf, 'base64')
+    await drive.unlink('/cover.jpg').catch(e => undefined)
+    await drive.unlink('/cover.jpeg').catch(e => undefined)
+    await drive.unlink('/cover.png').catch(e => undefined)
+    await drive.writeFile(`/cover.${img.ext}`, img.base64buf, 'base64')
   }
 
   static destroy () {

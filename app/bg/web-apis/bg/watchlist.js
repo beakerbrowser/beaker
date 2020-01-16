@@ -1,29 +1,29 @@
-import * as datWatchlist from '../../dat/watchlist'
+import * as hyperWatchlist from '../../hyper/watchlist'
 
 // exported api
 // =
 
 export default {
   async add (url, opts) {
-    return datWatchlist.addSite(0, url, opts)
+    return hyperWatchlist.addSite(0, url, opts)
   },
 
   async list () {
-    return datWatchlist.getSites(0)
+    return hyperWatchlist.getSites(0)
   },
 
   async update (site) {
-    return datWatchlist.updateWatchlist(0, site)
+    return hyperWatchlist.updateWatchlist(0, site)
   },
 
   async remove (url) {
-    return datWatchlist.removeSite(0, url)
+    return hyperWatchlist.removeSite(0, url)
   },
 
   // events
   // =
 
   createEventsStream () {
-    return datWatchlist.createEventsStream()
+    return hyperWatchlist.createEventsStream()
   }
 }

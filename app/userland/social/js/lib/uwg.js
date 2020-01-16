@@ -51,7 +51,7 @@ export const profiles = {
   async get (key) {
     var match = DAT_KEY_REGEX.exec(key)
     if (match) key = match[0]
-    else key = await DatArchive.resolveName(key)
+    else key = await Hyperdrive.resolveName(key)
 
     // check cache
     if (profileCache[key]) {
@@ -59,7 +59,7 @@ export const profiles = {
     }
 
     profileCache[key] = (async function () {
-      var drive = new DatArchive(key)
+      var drive = new Hyperdrive(key)
       var profile = await drive.getInfo()
       profile.isUser = profile.url === user.url
       profile.followers = undefined
@@ -114,7 +114,7 @@ export const follows = {
    * @returns {Promise<FSQueryResult[]>}
    */
   async list ({author, target} = {author: undefined, target: undefined}, {includeProfiles, removeDuplicateMounts} = {includeProfiles: false, removeDuplicateMounts: false}) {
-    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var drive = (author && author !== 'me') ? new Hyperdrive(author) : navigator.filesystem
     let results = await drive.query({
       type: 'mount',
       path: getFollowsPaths(author),
@@ -144,7 +144,7 @@ export const follows = {
    * @returns {Promise<boolean>}
    */
   async exists ({author, target}) {
-    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var drive = (author && author !== 'me') ? new Hyperdrive(author) : navigator.filesystem
     let results = await drive.query({
       type: 'mount',
       path: getFollowsPaths(author),
@@ -209,7 +209,7 @@ export const posts = {
     {topic, author, driveType, sort, reverse, offset, limit} = {topic: undefined, author: undefined, driveType: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined},
     {includeProfiles} = {includeProfiles: false}
   ) {
-    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var drive = (author && author !== 'me') ? new Hyperdrive(author) : navigator.filesystem
     var posts = await queryRead({
       path: getPostsPaths(author, topic),
       metadata: driveType ? {'drive-type': driveType} : undefined,
@@ -250,7 +250,7 @@ export const posts = {
    * @returns {Promise<Post>}
    */
   async get (author, path) {
-    let drive = new DatArchive(author)
+    let drive = new Hyperdrive(author)
     let url = drive.url + path
 
     let pathParts = path.split('/')
@@ -408,7 +408,7 @@ export const comments = {
    * @returns {Promise<Comment[]>}
    */
   async list ({author, href, sort, reverse, offset, limit} = {author: undefined, href: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
-    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var drive = (author && author !== 'me') ? new Hyperdrive(author) : navigator.filesystem
     href = href ? normalizeUrl(href) : undefined
     var comments = await queryRead({
       path: getCommentsPaths(author),
@@ -527,7 +527,7 @@ export const comments = {
    * @returns {Promise<Comment>}
    */
   async get (author, path) {
-    let drive = new DatArchive(author)
+    let drive = new Hyperdrive(author)
     let url = drive.url + path
     return {
       type: 'file',
@@ -604,7 +604,7 @@ export const votes = {
    */
   async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
     href = href ? normalizeUrl(href) : undefined
-    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var drive = (author && author !== 'me') ? new Hyperdrive(author) : navigator.filesystem
     var res = await drive.query({
       path: getVotesPaths(author),
       metadata: href ? {href} : undefined,
@@ -626,7 +626,7 @@ export const votes = {
    */
   async tabulate (href, {author} = {author: undefined}, {includeProfiles, noCache} = {includeProfiles: false, noCache: false}) {
     href = normalizeUrl(href)
-    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var drive = (author && author !== 'me') ? new Hyperdrive(author) : navigator.filesystem
     // commented out in favor of the cache
     // var votes = await drive.query({
     //   path: getVotesPaths(author),
@@ -668,7 +668,7 @@ export const votes = {
    */
   async get (author, href) {
     href = normalizeUrl(href)
-    var drive = (author && author !== 'me') ? new DatArchive(author) : navigator.filesystem
+    var drive = (author && author !== 'me') ? new Hyperdrive(author) : navigator.filesystem
     var votes = await drive.query({
       path: getVotesPaths(author),
       metadata: {href}

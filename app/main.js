@@ -16,7 +16,7 @@ import * as adblocker from './bg/adblocker'
 import * as analytics from './bg/analytics'
 import * as portForwarder from './bg/nat-port-forwarder'
 import dbs from './bg/dbs/index'
-import dat from './bg/dat/index'
+import hyper from './bg/hyper/index'
 import * as filesystem from './bg/filesystem/index'
 import * as webapis from './bg/web-apis/bg'
 import * as spellCheckerLib from './bg/lib/spell-checker'
@@ -106,7 +106,7 @@ app.on('ready', async function () {
 
   // start subsystems
   // (order is important)
-  await dat.setup(commonOpts)
+  await hyper.setup(commonOpts)
   await filesystem.setup()
   webapis.setup()
   spellCheckerLib.setup()
@@ -121,7 +121,7 @@ app.on('ready', async function () {
   assetProtocol.register(protocol)
   driveProtocol.register(protocol)
   webProtocol.register(protocol)
-  dat.protocol.register(protocol)
+  hyper.protocol.register(protocol)
   // intentProtocol.setup() TODO
 
   // setup flow
@@ -145,7 +145,7 @@ app.on('quit', () => {
 
 app.on('custom-ready-to-show', () => {
   // our first window is ready to show, do any additional setup
-  dat.archives.loadSavedArchives()
+  hyper.drives.loadSavedDrives()
 })
 
 // only run one instance

@@ -1,6 +1,6 @@
 import { session, BrowserView } from 'electron'
 import { PERMS, getPermId } from '@beaker/permissions'
-import dat from '../dat/index'
+import hyper from '../hyper/index'
 import * as sitedata from '../dbs/sitedata'
 import _get from 'lodash.get'
 import { parseDriveUrl } from '../../lib/urls'
@@ -68,13 +68,13 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
   if (urlp.protocol === 'beaker:') return true
   if (urlp.protocol === 'web:') {
     // resolve name
-    let key = await dat.dns.resolveName(urlp.hostname)
+    let key = await hyper.dns.resolveName(urlp.hostname)
 
     // check dat.json for opt-in
     let isOptedIn = false
-    let archive = dat.archives.getArchive(key)
-    if (archive) {
-      let {checkoutFS} = await dat.archives.getArchiveCheckout(archive, urlp.version)
+    let drive = hyper.drives.getDrive(key)
+    if (drive) {
+      let {checkoutFS} = await hyper.drives.getDriveCheckout(drive, urlp.version)
       let manifest = await checkoutFS.pda.readManifest().catch(_ => {})
       let apis = _get(manifest, 'experimental.apis')
       if (apis && Array.isArray(apis)) {

@@ -1,7 +1,7 @@
 export default {
-  loadArchive: 'promise',
-  createArchive: 'promise',
-  forkArchive: 'promise',
+  loadDrive: 'promise',
+  createDrive: 'promise',
+  forkDrive: 'promise',
 
   getInfo: 'promise',
   configure: 'promise',
@@ -33,12 +33,12 @@ export default {
   createNetworkActivityStream: 'readable',
 
   resolveName: 'promise',
-  selectArchive: 'promise',
+  selectDrive: 'promise',
 
   beakerDiff: 'promise',
   beakerMerge: 'promise',
 
   importFromFilesystem: 'promise',
   exportToFilesystem: 'promise',
-  exportToArchive: 'promise'
+  exportToDrive: 'promise'
 }

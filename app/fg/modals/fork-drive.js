@@ -14,7 +14,7 @@ const STATES = {
   FORKING: 2
 }
 
-class ForkArchiveModal extends LitElement {
+class ForkDriveModal extends LitElement {
   static get properties () {
     return {
       state: {type: Number},
@@ -72,7 +72,7 @@ class ForkArchiveModal extends LitElement {
     super()
 
     // internal state
-    this.archiveInfo = null
+    this.driveInfo = null
     this.state = STATES.READY
 
     // params
@@ -85,8 +85,8 @@ class ForkArchiveModal extends LitElement {
     this.author = null
 
     // export interface
-    window.forkArchiveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
-    window.forkArchiveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
+    window.forkDriveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
+    window.forkDriveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
   }
 
   async init (params, cbs) {
@@ -101,11 +101,11 @@ class ForkArchiveModal extends LitElement {
     this.networked = ('networked' in params) ? params.networked : true
     await this.requestUpdate()
 
-    // fetch archive info
-    this.url = await bg.datArchive.resolveName(params.url)
-    this.archiveInfo = await bg.datArchive.getInfo(this.url)
-    if (!this.title) this.title = this.archiveInfo.title
-    if (!this.description) this.description = this.archiveInfo.description
+    // fetch drive info
+    this.url = await bg.hyperdrive.resolveName(params.url)
+    this.driveInfo = await bg.hyperdrive.getInfo(this.url)
+    if (!this.title) this.title = this.driveInfo.title
+    if (!this.description) this.description = this.driveInfo.description
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -119,7 +119,7 @@ class ForkArchiveModal extends LitElement {
   // =
 
   render () {
-    if (!this.archiveInfo) {
+    if (!this.driveInfo) {
       return this.renderLoading()
     }
 
@@ -143,7 +143,7 @@ class ForkArchiveModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">Make a fork of ${this.archiveInfo.title ? `"${this.archiveInfo.title}"` : prettyHash(this.archiveInfo.key)}</h1>
+        <h1 class="title">Make a fork of ${this.driveInfo.title ? `"${this.driveInfo.title}"` : prettyHash(this.driveInfo.key)}</h1>
 
         <form @submit=${this.onSubmit}>
           <label for="title">Title</label>
@@ -216,11 +216,11 @@ class ForkArchiveModal extends LitElement {
     e.preventDefault()
 
     this.state = STATES.DOWNLOADING
-    await bg.datArchive.download(this.url)
+    await bg.hyperdrive.download(this.url)
 
     this.state = STATES.FORKING
     try {
-      var url = await bg.datArchive.forkArchive(this.url, {
+      var url = await bg.hyperdrive.forkDrive(this.url, {
         title: this.title,
         description: this.description,
         type: this.type,
@@ -235,4 +235,4 @@ class ForkArchiveModal extends LitElement {
   }
 }
 
-customElements.define('fork-archive-modal', ForkArchiveModal)
+customElements.define('fork-drive-modal', ForkDriveModal)

@@ -1,7 +1,7 @@
 import Events from 'events'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'users'})
-import dat from '../dat/index'
+import hyper from '../hyper/index'
 import * as filesystem from './index'
 import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
@@ -11,12 +11,12 @@ import { PATHS } from '../../lib/const'
 // =
 
 /**
- * @typedef {import('../dat/daemon').DaemonDatArchive} DaemonDatArchive
+ * @typedef {import('../dat/daemon').DaemonHyperdrive} DaemonHyperdrive
  *
  * @typedef {Object} User
  * @prop {number} id
  * @prop {string} url
- * @prop {DaemonDatArchive} archive
+ * @prop {DaemonHyperdrive} drive
  * @prop {boolean} isDefault
  * @prop {boolean} isTemporary
  * @prop {string} title
@@ -51,14 +51,14 @@ export async function setup () {
       // delete old temporary user
       logger.info('Deleting temporary user', {details: user.url})
       user.isInvalid = true // let invalid-user-deletion clean up the record
-      let key = dat.archives.fromURLToKey(user.url)
-      let archive = await dat.archives.getOrLoadArchive(key)
+      let key = hyper.drives.fromURLToKey(user.url)
+      let drive = await hyper.drives.getOrLoadDrive(key)
       return
     }
 
     // massage data
     user.url = normalizeUrl(user.url)
-    user.archive = null
+    user.drive = null
     user.isDefault = Boolean(user.isDefault)
     user.createdAt = new Date(user.createdAt)
     logger.info('Loading user', {details: {url: user.url}})
@@ -71,10 +71,10 @@ export async function setup () {
       return
     }
 
-    // fetch the user archive
+    // fetch the user drive
     try {
-      user.archive = await dat.archives.getOrLoadArchive(user.url)
-      user.url = user.archive.url // copy the archive url, which includes the domain if set
+      user.drive = await hyper.drives.getOrLoadDrive(user.url)
+      user.url = user.drive.url // copy the drive url, which includes the domain if set
       events.emit('load-user', user)
     } catch (err) {
       logger.error('Failed to load user', {details: {user, err}})
@@ -158,7 +158,7 @@ export async function add (url, setDefault = false, isTemporary = false) {
   // create the new user
   var user = /** @type User */({
     url,
-    archive: null,
+    drive: null,
     isDefault: setDefault || users.length === 0,
     isTemporary,
     createdAt: new Date()
@@ -171,9 +171,9 @@ export async function add (url, setDefault = false, isTemporary = false) {
   user.id = dbres.lastID
   users.push(user)
 
-  // fetch the user archive
-  user.archive = await dat.archives.getOrLoadArchive(user.url)
-  user.url = user.archive.url // copy the archive url, which includes the domain if set
+  // fetch the user drive
+  user.drive = await hyper.drives.getOrLoadDrive(user.url)
+  user.url = user.drive.url // copy the drive url, which includes the domain if set
   events.emit('load-user', user)
 
   // establish the default user
@@ -218,9 +218,9 @@ export async function edit (url, opts) {
   }
   logger.verbose('Updated user', {details: user.url})
 
-  // fetch the user archive
-  user.archive = await dat.archives.getOrLoadArchive(user.url)
-  user.url = user.archive.url // copy the archive url, which includes the domain if set
+  // fetch the user drive
+  user.drive = await hyper.drives.getOrLoadDrive(user.url)
+  user.url = user.drive.url // copy the drive url, which includes the domain if set
   return fetchUserInfo(user)
 };
 
@@ -258,12 +258,12 @@ export function isUser (url) {
  * @returns {Promise<User>}
  */
 async function fetchUserInfo (user) {
-  await user.archive.pullLatestArchiveMeta()
-  var meta = await archivesDb.getMeta(user.archive.key)
+  await user.drive.pullLatestDriveMeta()
+  var meta = await archivesDb.getMeta(user.drive.key)
   return {
     id: user.id,
-    url: user.archive.url,
-    archive: user.archive,
+    url: user.drive.url,
+    drive: user.drive,
     isDefault: user.isDefault,
     isTemporary: user.isTemporary,
     title: meta.title,
@@ -286,7 +286,7 @@ function normalizeUrl (url) {
  * @returns {Promise<void>}
  */
 async function validateUserUrl (url) {
-  // make sure the archive is saved and that we own the archive
+  // make sure the drive is saved and that we own the drive
   var urlp = new URL(url)
   var meta = await archivesDb.getMeta(urlp.hostname)
   if (!meta.writable) {
@@ -295,7 +295,7 @@ async function validateUserUrl (url) {
 }
 
 async function stat (user, path) {
-  try { return await user.archive.pda.stat(path) }
+  try { return await user.drive.pda.stat(path) }
   catch (e) { return null }
 }
 
@@ -309,7 +309,7 @@ async function ensureDirectory (user, path) {
     let st = await stat(user, path)
     if (!st) {
       logger.info(`Creating directory ${path}`)
-      await user.archive.pda.mkdir(path)
+      await user.drive.pda.mkdir(path)
     } else if (!st.isDirectory()) {
       logger.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
     }

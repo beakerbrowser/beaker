@@ -1,6 +1,6 @@
 import errors from 'beaker-error-constants'
 import { parseDriveUrl } from '../../../lib/urls'
-import datArchiveManifest from '../manifests/external/dat-archive'
+import hyperdriveManifest from '../manifests/external/hyperdrive'
 import { EventTarget, Event, fromEventStream } from './event-target'
 import Stat from './stat'
 
@@ -9,14 +9,14 @@ const NETWORK_ACT_STREAM = Symbol() // eslint-disable-line
 
 export const setup = function (rpc) {
   // create the rpc apis
-  const datRPC = rpc.importAPI('dat-archive', datArchiveManifest, { timeout: false, errors })
+  const hyperdriveRPC = rpc.importAPI('hyperdrive', hyperdriveManifest, { timeout: false, errors })
 
-  class DatArchive extends EventTarget {
+  class Hyperdrive extends EventTarget {
     constructor (url) {
       super()
       var errStack = (new Error()).stack
 
-      // simple case: new DatArchive(window.location)
+      // simple case: new Hyperdrive(window.location)
       if (url === window.location) {
         url = window.location.toString()
       }
@@ -44,12 +44,12 @@ export const setup = function (rpc) {
       })
 
       // load into the 'active' (in-memory) cache
-      setHidden(this, LOAD_PROMISE, datRPC.loadArchive(url))
+      setHidden(this, LOAD_PROMISE, hyperdriveRPC.loadDrive(url))
     }
 
     static load (url) {
       var errStack = (new Error()).stack
-      const a = new DatArchive(url)
+      const a = new Hyperdrive(url)
       return a[LOAD_PROMISE]
         .then(() => a)
         .catch(e => throwWithFixedStack(e, errStack))
@@ -57,8 +57,8 @@ export const setup = function (rpc) {
 
     static create (opts = {}) {
       var errStack = (new Error()).stack
-      return datRPC.createArchive(opts)
-        .then(newUrl => new DatArchive(newUrl))
+      return hyperdriveRPC.createDrive(opts)
+        .then(newUrl => new Hyperdrive(newUrl))
         .catch(e => throwWithFixedStack(e, errStack))
     }
 
@@ -68,8 +68,8 @@ export const setup = function (rpc) {
       if (!isDriveUrl(url)) {
         throwWithFixedStack(new Error('Invalid URL: must be a drive:// or web:// URL'), errStack)
       }
-      return datRPC.forkArchive(url, opts)
-        .then(newUrl => new DatArchive(newUrl))
+      return hyperdriveRPC.forkDrive(url, opts)
+        .then(newUrl => new Hyperdrive(newUrl))
         .catch(e => throwWithFixedStack(e, errStack))
     }
 
@@ -84,7 +84,7 @@ export const setup = function (rpc) {
     async getInfo (opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.getInfo(this.url, opts)
+        return await hyperdriveRPC.getInfo(this.url, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -93,7 +93,7 @@ export const setup = function (rpc) {
     async configure (info, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.configure(this.url, info, opts)
+        return await hyperdriveRPC.configure(this.url, info, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -102,14 +102,14 @@ export const setup = function (rpc) {
     checkout (version) {
       const urlParsed = parseDriveUrl(this.url)
       version = version ? `+${version}` : ''
-      return new DatArchive(`drive://${urlParsed.hostname}${version}`)
+      return new Hyperdrive(`drive://${urlParsed.hostname}${version}`)
     }
 
     async diff (other, prefix, opts = {}) {
       var errStack = (new Error()).stack
       try {
         other = other && typeof other === 'object' && other.version ? other.version : other
-        var res = await datRPC.diff(this.url, other, prefix, opts)
+        var res = await hyperdriveRPC.diff(this.url, other, prefix, opts)
         for (let change of res) {
           if (change.value.stat) {
             change.value.stat = new Stat(change.value.stat)
@@ -122,17 +122,17 @@ export const setup = function (rpc) {
     }
 
     async commit (opts = {}) {
-      throw new Error('The DatArchive commit() API has been deprecated.')
+      throw new Error('The Hyperdrive commit() API has been deprecated.')
     }
 
     async revert (opts = {}) {
-      throw new Error('The DatArchive revert() API has been deprecated.')
+      throw new Error('The Hyperdrive revert() API has been deprecated.')
     }
 
     async history (opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.history(this.url, opts)
+        return await hyperdriveRPC.history(this.url, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -141,7 +141,7 @@ export const setup = function (rpc) {
     async stat (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return new Stat(await datRPC.stat(this.url, path, opts))
+        return new Stat(await hyperdriveRPC.stat(this.url, path, opts))
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -150,7 +150,7 @@ export const setup = function (rpc) {
     async readFile (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.readFile(this.url, path, opts)
+        return await hyperdriveRPC.readFile(this.url, path, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -159,7 +159,7 @@ export const setup = function (rpc) {
     async writeFile (path, data, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.writeFile(this.url, path, data, opts)
+        return await hyperdriveRPC.writeFile(this.url, path, data, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -168,7 +168,7 @@ export const setup = function (rpc) {
     async unlink (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.unlink(this.url, path, opts)
+        return await hyperdriveRPC.unlink(this.url, path, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -177,7 +177,7 @@ export const setup = function (rpc) {
     async copy (path, dstPath, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return datRPC.copy(this.url, path, dstPath, opts)
+        return hyperdriveRPC.copy(this.url, path, dstPath, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -186,7 +186,7 @@ export const setup = function (rpc) {
     async rename (path, dstPath, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return datRPC.rename(this.url, path, dstPath, opts)
+        return hyperdriveRPC.rename(this.url, path, dstPath, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -195,7 +195,7 @@ export const setup = function (rpc) {
     async download (path = '/', opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.download(this.url, path, opts)
+        return await hyperdriveRPC.download(this.url, path, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -204,7 +204,7 @@ export const setup = function (rpc) {
     async updateMetadata (path, metadata, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.updateMetadata(this.url, path, metadata, opts)
+        return await hyperdriveRPC.updateMetadata(this.url, path, metadata, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -213,7 +213,7 @@ export const setup = function (rpc) {
     async deleteMetadata (path, keys, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.deleteMetadata(this.url, path, keys, opts)
+        return await hyperdriveRPC.deleteMetadata(this.url, path, keys, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -222,7 +222,7 @@ export const setup = function (rpc) {
     async readdir (path = '/', opts = {}) {
       var errStack = (new Error()).stack
       try {
-        var names = await datRPC.readdir(this.url, path, opts)
+        var names = await hyperdriveRPC.readdir(this.url, path, opts)
         if (opts.includeStats) {
           names.forEach(name => { name.stat = new Stat(name.stat) })
         }
@@ -235,7 +235,7 @@ export const setup = function (rpc) {
     async mkdir (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.mkdir(this.url, path, opts)
+        return await hyperdriveRPC.mkdir(this.url, path, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -244,7 +244,7 @@ export const setup = function (rpc) {
     async rmdir (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.rmdir(this.url, path, opts)
+        return await hyperdriveRPC.rmdir(this.url, path, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -253,7 +253,7 @@ export const setup = function (rpc) {
     async symlink (target, linkname, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.symlink(this.url, target, linkname, opts)
+        return await hyperdriveRPC.symlink(this.url, target, linkname, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -262,7 +262,7 @@ export const setup = function (rpc) {
     async mount (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.mount(this.url, path, opts)
+        return await hyperdriveRPC.mount(this.url, path, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -271,7 +271,7 @@ export const setup = function (rpc) {
     async unmount (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.unmount(this.url, path, opts)
+        return await hyperdriveRPC.unmount(this.url, path, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -280,7 +280,7 @@ export const setup = function (rpc) {
     async query (opts) {
       var errStack = (new Error()).stack
       try {
-        var res = await datRPC.query(this.url, opts)
+        var res = await hyperdriveRPC.query(this.url, opts)
         res.forEach(item => {
           if (item.stat) item.stat = new Stat(item.stat)
         })
@@ -291,7 +291,7 @@ export const setup = function (rpc) {
     }
 
     createFileActivityStream (pathSpec = null) {
-      console.warn('The DatArchive createFileActivityStream() API has been deprecated, use watch() instead.')
+      console.warn('The Hyperdrive createFileActivityStream() API has been deprecated, use watch() instead.')
       return this.watch(pathSpec)
     }
 
@@ -304,7 +304,7 @@ export const setup = function (rpc) {
           pathSpec = null
         }
 
-        var evts = fromEventStream(datRPC.watch(this.url, pathSpec))
+        var evts = fromEventStream(hyperdriveRPC.watch(this.url, pathSpec))
         if (onInvalidated) {
           evts.addEventListener('invalidated', onInvalidated)
         }
@@ -315,10 +315,10 @@ export const setup = function (rpc) {
     }
 
     createNetworkActivityStream () {
-      console.warn('The DatArchive createNetworkActivityStream() API has been deprecated, use addEventListener() instead.')
+      console.warn('The Hyperdrive createNetworkActivityStream() API has been deprecated, use addEventListener() instead.')
       var errStack = (new Error()).stack
       try {
-        return fromEventStream(datRPC.createNetworkActivityStream(this.url))
+        return fromEventStream(hyperdriveRPC.createNetworkActivityStream(this.url))
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
@@ -327,66 +327,66 @@ export const setup = function (rpc) {
     static async resolveName (name) {
       var errStack = (new Error()).stack
       try {
-        // simple case: DatArchive.resolveName(window.location)
+        // simple case: Hyperdrive.resolveName(window.location)
         if (name === window.location) {
           name = window.location.toString()
         }
-        return await datRPC.resolveName(name)
+        return await hyperdriveRPC.resolveName(name)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
     }
 
-    static selectArchive (opts = {}) {
+    static selectDrive (opts = {}) {
       var errStack = (new Error()).stack
-      return datRPC.selectArchive(opts)
-        .then(url => new DatArchive(url))
+      return hyperdriveRPC.selectDrive(opts)
+        .then(url => new Hyperdrive(url))
         .catch(e => throwWithFixedStack(e, errStack))
     }
   }
 
   // add internal methods
   if (window.location.protocol === 'beaker:') {
-    DatArchive.importFromFilesystem = async function (opts = {}) {
+    Hyperdrive.importFromFilesystem = async function (opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.importFromFilesystem(opts)
+        return await hyperdriveRPC.importFromFilesystem(opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
     }
 
-    DatArchive.exportToFilesystem = async function (opts = {}) {
+    Hyperdrive.exportToFilesystem = async function (opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.exportToFilesystem(opts)
+        return await hyperdriveRPC.exportToFilesystem(opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
     }
 
-    DatArchive.exportToArchive = async function (opts = {}) {
+    Hyperdrive.exportToDrive = async function (opts = {}) {
       var errStack = (new Error()).stack
       try {
-        return await datRPC.exportToArchive(opts)
+        return await hyperdriveRPC.exportToDrive(opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
     }
 
-    DatArchive.diff = async function (srcUrl, dstUrl, opts = {}) {
+    Hyperdrive.diff = async function (srcUrl, dstUrl, opts = {}) {
       if (srcUrl && typeof srcUrl.url === 'string') srcUrl = srcUrl.url
       if (dstUrl && typeof dstUrl.url === 'string') dstUrl = dstUrl.url
       var errStack = (new Error()).stack
-      return datRPC.beakerDiff(srcUrl, dstUrl, opts)
+      return hyperdriveRPC.beakerDiff(srcUrl, dstUrl, opts)
         .catch(e => throwWithFixedStack(e, errStack))
     }
 
-    DatArchive.merge = async function (srcUrl, dstUrl, opts = {}) {
+    Hyperdrive.merge = async function (srcUrl, dstUrl, opts = {}) {
       if (srcUrl && typeof srcUrl.url === 'string') srcUrl = srcUrl.url
       if (dstUrl && typeof dstUrl.url === 'string') dstUrl = dstUrl.url
       var errStack = (new Error()).stack
-      return datRPC.beakerMerge(srcUrl, dstUrl, opts)
+      return hyperdriveRPC.beakerMerge(srcUrl, dstUrl, opts)
         .catch(e => throwWithFixedStack(e, errStack))
     }
   }
@@ -409,14 +409,14 @@ export const setup = function (rpc) {
     throw e
   }
 
-  function createNetworkActStream (archive) {
-    if (archive[NETWORK_ACT_STREAM]) return
-    var s = archive[NETWORK_ACT_STREAM] = fromEventStream(datRPC.createNetworkActivityStream(archive.url))
-    s.addEventListener('network-changed', detail => archive.dispatchEvent(new Event('network-changed', {target: archive, peers: detail.connections})))
-    s.addEventListener('download', detail => archive.dispatchEvent(new Event('download', {target: archive, feed: detail.feed, block: detail.block, bytes: detail.bytes})))
-    s.addEventListener('upload', detail => archive.dispatchEvent(new Event('upload', {target: archive, feed: detail.feed, block: detail.block, bytes: detail.bytes})))
-    s.addEventListener('sync', detail => archive.dispatchEvent(new Event('sync', {target: archive, feed: detail.feed})))
+  function createNetworkActStream (drive) {
+    if (drive[NETWORK_ACT_STREAM]) return
+    var s = drive[NETWORK_ACT_STREAM] = fromEventStream(hyperdriveRPC.createNetworkActivityStream(drive.url))
+    s.addEventListener('network-changed', detail => drive.dispatchEvent(new Event('network-changed', {target: drive, peers: detail.connections})))
+    s.addEventListener('download', detail => drive.dispatchEvent(new Event('download', {target: drive, feed: detail.feed, block: detail.block, bytes: detail.bytes})))
+    s.addEventListener('upload', detail => drive.dispatchEvent(new Event('upload', {target: drive, feed: detail.feed, block: detail.block, bytes: detail.bytes})))
+    s.addEventListener('sync', detail => drive.dispatchEvent(new Event('sync', {target: drive, feed: detail.feed})))
   }
 
-  return DatArchive
+  return Hyperdrive
 }

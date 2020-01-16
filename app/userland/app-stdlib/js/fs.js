@@ -100,7 +100,7 @@ export async function ensureParentDir (path) {
 export async function ensureMount (path, url) {
   try {
     let st = await navigator.filesystem.stat(path).catch(e => null)
-    let key = await DatArchive.resolveName(url)
+    let key = await Hyperdrive.resolveName(url)
     if (!st) {
       // add mount
       await navigator.filesystem.mount(path, key)
@@ -114,7 +114,7 @@ export async function ensureMount (path, url) {
       console.error('Warning! Filesystem expects a mount but an unexpected file exists at this location.', {path})
     }
   } catch (e) {
-    console.error('Filesystem failed to mount archive', {path, url, error: e})
+    console.error('Filesystem failed to mount drive', {path, url, error: e})
   }
 }
 
@@ -130,7 +130,7 @@ export async function ensureUnmount (path) {
       await navigator.filesystem.unmount(path)
     }
   } catch (e) {
-    console.error('Filesystem failed to unmount archive', {path, error: e})
+    console.error('Filesystem failed to unmount drive', {path, error: e})
   }
 }
 
@@ -153,7 +153,7 @@ export async function ensureUnmountByUrl (pathSelector, url, drive = navigator.f
       throw "Mount not found"
     }
   } catch (e) {
-    console.error('Filesystem failed to unmount archive', {pathSelector, url, error: e})
+    console.error('Filesystem failed to unmount drive', {pathSelector, url, error: e})
   }
 }
 

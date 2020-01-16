@@ -8,7 +8,7 @@ import { examineLocationInput } from '../../lib/urls'
 import { joinPath } from '../../lib/strings'
 import _uniqWith from 'lodash.uniqwith'
 import browserManifest from '../../bg/web-apis/manifests/internal/browser'
-import datArchiveManifest from '../../bg/web-apis/manifests/external/dat-archive'
+import hyperdriveManifest from '../../bg/web-apis/manifests/external/hyperdrive'
 import historyManifest from '../../bg/web-apis/manifests/internal/history'
 import locationBarManifest from '../../bg/rpc-manifests/location-bar'
 import navigatorManifestFs from '../../bg/web-apis/manifests/external/navigator-filesystem'
@@ -16,7 +16,7 @@ import viewsManifest from '../../bg/rpc-manifests/views'
 
 const bg = {
   beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
-  datArchive: rpc.importAPI('dat-archive', datArchiveManifest),
+  hyperdrive: rpc.importAPI('hyperdrive', hyperdriveManifest),
   history: rpc.importAPI('history', historyManifest),
   locationBar: rpc.importAPI('background-process-location-bar', locationBarManifest),
   navigatorFs: rpc.importAPI('navigator-filesystem', navigatorManifestFs),
@@ -589,7 +589,7 @@ async function searchDrive (urlp) {
       parentFolderPath = parts.join('/')
     }
 
-    var items = await bg.datArchive.readdir(urlp.origin, parentFolderPath, {timeout: 2e3, includeStats: true})
+    var items = await bg.hyperdrive.readdir(urlp.origin, parentFolderPath, {timeout: 2e3, includeStats: true})
     if (nameFilter) {
       nameFilter = nameFilter.toLowerCase()
       items = items.filter(item => item.name.toLowerCase().startsWith(nameFilter))

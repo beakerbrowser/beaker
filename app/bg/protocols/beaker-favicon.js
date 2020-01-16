@@ -5,7 +5,7 @@
  **/
 
 import {protocol, screen} from 'electron'
-import dat from '../dat/index'
+import hyper from '../hyper/index'
 import * as sitedata from '../dbs/sitedata'
 import fs from 'fs'
 import path from 'path'
@@ -45,8 +45,8 @@ export function setup () {
       // pick the filesystem
       let datResolvedUrl = url
       if (url.startsWith('drive://') || url.startsWith('web://')) {
-        datResolvedUrl = await dat.dns.resolveName(url)
-        datfs = dat.archives.getArchive(datResolvedUrl) // (only try if the dat is loaded)
+        datResolvedUrl = await hyper.dns.resolveName(url)
+        datfs = hyper.drives.getDrive(datResolvedUrl) // (only try if the dat is loaded)
       }
       if (datfs) {
         // try .ico

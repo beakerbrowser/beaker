@@ -112,7 +112,7 @@ class PeersMenu extends LitElement {
 
   async onToggleSeeding () {
     this.datInfo.userSettings.isSaved = !this.datInfo.userSettings.isSaved
-    await bg.archives.setUserSettings(this.datInfo.key, {isSaved: this.datInfo.userSettings.isSaved})
+    await bg.drives.setUserSettings(this.datInfo.key, {isSaved: this.datInfo.userSettings.isSaved})
     bg.views.refreshState('active')
   }
 }

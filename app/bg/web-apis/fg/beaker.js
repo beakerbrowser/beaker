@@ -1,10 +1,10 @@
 import { EventTarget, bindEventStream, fromEventStream } from './event-target'
 import errors from 'beaker-error-constants'
 import loggerManifest from '../manifests/internal/logger'
-import archivesManifest from '../manifests/internal/archives'
 import beakerBrowserManifest from '../manifests/internal/browser'
 import bookmarksManifest from '../manifests/internal/bookmarks'
 import downloadsManifest from '../manifests/internal/downloads'
+import drivesManifest from '../manifests/internal/drives'
 import historyManifest from '../manifests/internal/history'
 import sitedataManifest from '../manifests/internal/sitedata'
 import watchlistManifest from '../manifests/internal/watchlist'
@@ -19,10 +19,10 @@ export const setup = function (rpc) {
   // internal only
   if (['beaker:'].includes(window.location.protocol)) {
     const loggerRPC = rpc.importAPI('logger', loggerManifest, opts)
-    const archivesRPC = rpc.importAPI('archives', archivesManifest, opts)
     const beakerBrowserRPC = rpc.importAPI('beaker-browser', beakerBrowserManifest, opts)
     const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
     const downloadsRPC = rpc.importAPI('downloads', downloadsManifest, opts)
+    const drivesRPC = rpc.importAPI('drives', drivesManifest, opts)
     const historyRPC = rpc.importAPI('history', historyManifest, opts)
     const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
     const watchlistRPC = rpc.importAPI('watchlist', watchlistManifest, opts)
@@ -46,20 +46,20 @@ export const setup = function (rpc) {
     beaker.watchlist = Object.assign({}, watchlistRPC)
     beaker.watchlist.createEventsStream = () => fromEventStream(watchlistRPC.createEventsStream())
 
-    // beaker.archives
-    beaker.archives = new EventTarget()
-    beaker.archives.status = archivesRPC.status
-    beaker.archives.listTrash = archivesRPC.listTrash
-    beaker.archives.collectTrash = archivesRPC.collectTrash
-    beaker.archives.delete = archivesRPC.delete
-    beaker.archives.touch = archivesRPC.touch
-    beaker.archives.clearFileCache = archivesRPC.clearFileCache
-    beaker.archives.clearDnsCache = archivesRPC.clearDnsCache
-    beaker.archives.getDebugLog = archivesRPC.getDebugLog
-    beaker.archives.createDebugStream = () => fromEventStream(archivesRPC.createDebugStream())
+    // beaker.drives
+    beaker.drives = new EventTarget()
+    beaker.drives.status = drivesRPC.status
+    beaker.drives.listTrash = drivesRPC.listTrash
+    beaker.drives.collectTrash = drivesRPC.collectTrash
+    beaker.drives.delete = drivesRPC.delete
+    beaker.drives.touch = drivesRPC.touch
+    beaker.drives.clearFileCache = drivesRPC.clearFileCache
+    beaker.drives.clearDnsCache = drivesRPC.clearDnsCache
+    beaker.drives.getDebugLog = drivesRPC.getDebugLog
+    beaker.drives.createDebugStream = () => fromEventStream(drivesRPC.createDebugStream())
     window.addEventListener('load', () => {
       try {
-        bindEventStream(archivesRPC.createEventStream(), beaker.archives)
+        bindEventStream(drivesRPC.createEventStream(), beaker.drives)
       } catch (e) {
         // permissions error
       }

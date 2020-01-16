@@ -1,5 +1,5 @@
 import { basename } from 'path'
-import datDns from '../dat/dns'
+import hyperDns from '../hyper/dns'
 import { joinPath } from '../../lib/strings'
 import { chunkMapAsync } from '../../lib/functions'
 import { DAT_HASH_REGEX } from '../../lib/const'
@@ -8,7 +8,7 @@ import { DAT_HASH_REGEX } from '../../lib/const'
 // =
 
 /**
- * @typedef {import('../dat/daemon').DaemonDatArchive} DaemonDatArchive
+ * @typedef {import('../dat/daemon').DaemonHyperdrive} DaemonHyperdrive
  * 
  * @typedef {Object} FSQueryOpts
  * @prop {string|string[]} path
@@ -55,7 +55,7 @@ import { DAT_HASH_REGEX } from '../../lib/const'
 // => [{type: 'folder', path: '/profile/comments/foo.txt', stat, drive}]
 
 /**
- * @param {DaemonDatArchive} root
+ * @param {DaemonHyperdrive} root
  * @param {FSQueryOpts} opts
  * @returns {Promise<FSQueryResult[]>}
  */
@@ -77,7 +77,7 @@ export async function query (root, opts) {
 
   // massage opts
   if (opts.mount) {
-    opts.mount = await datDns.resolveName(opts.mount)
+    opts.mount = await hyperDns.resolveName(opts.mount)
     opts.mount = DAT_HASH_REGEX.exec(opts.mount)[0]
   }
 

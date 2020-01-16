@@ -48,11 +48,11 @@ class PermPrompt extends LitElement {
 
     // fetch dat title if needed
     if (!this.permOpts.title && IS_DAT_KEY_REGEX.test(this.permParam)) {
-      let archiveKey = this.permParam
-      let archiveInfo
-      try { archiveInfo = await bg.datArchive.getInfo(archiveKey) }
+      let driveKey = this.permParam
+      let driveInfo
+      try { driveInfo = await bg.hyperdrive.getInfo(driveKey) }
       catch (e) { /* ignore */ }
-      this.permOpts.title = archiveInfo && archiveInfo.title ? archiveInfo.title : prettyHash(this.permParam)
+      this.permOpts.title = driveInfo && driveInfo.title ? driveInfo.title : prettyHash(this.permParam)
     }
 
     // create the prompt

@@ -7,8 +7,8 @@ const logger = logLib.child({category: 'dat', subcategory: 'web-scheme'})
 import { toZipStream } from '../lib/zip'
 import slugify from 'slugify'
 import markdown from '../../lib/markdown'
-import datDns from '../dat/dns'
-import * as datArchives from '../dat/archives'
+import hyperDns from '../hyper/dns'
+import * as drives from '../hyper/drives'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
@@ -98,7 +98,7 @@ export const protocolHandler = async function (request, respond) {
   // resolve the name
   // (if it's a hostname, do a DNS lookup)
   try {
-    var driveKey = await datDns.resolveName(urlp.host, {ignoreCachedMiss: true})
+    var driveKey = await hyperDns.resolveName(urlp.host, {ignoreCachedMiss: true})
   } catch (err) {
     return respondError(404, 'No DNS record found for ' + urlp.host, {
       errorDescription: 'No DNS record found',
@@ -127,7 +127,7 @@ export const protocolHandler = async function (request, respond) {
 
   try {
     // start searching the network
-    drive = await datArchives.getOrLoadArchive(driveKey)
+    drive = await drives.getOrLoadDrive(driveKey)
   } catch (err) {
     logger.warn('Failed to open drive', {url: driveKey, err})
     cleanup()
@@ -142,7 +142,7 @@ export const protocolHandler = async function (request, respond) {
 
   // checkout version if needed
   try {
-    var {checkoutFS} = await datArchives.getArchiveCheckout(drive, urlp.version)
+    var {checkoutFS} = await drives.getDriveCheckout(drive, urlp.version)
   } catch (err) {
     logger.warn('Failed to open drive checkout', {url: driveKey, err})
     cleanup()

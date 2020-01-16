@@ -27,8 +27,8 @@ class FilesExplorer extends LitElement {
     return this.url && (this.url.startsWith('drive:') || this.url.startsWith('web:'))
   }
 
-  get archive () {
-    return new DatArchive(this.url)
+  get drive () {
+    return new Hyperdrive(this.url)
   }
 
   get origin () {
@@ -72,15 +72,15 @@ class FilesExplorer extends LitElement {
 
     var items = []
     if (this.isDrive) {
-      let archive = this.archive
+      let drive = this.drive
 
-      let info = await archive.getInfo()
+      let info = await drive.getInfo()
       this.readOnly = !info.writable
 
       let st
       let folderPath = this.pathname
       while (!st && folderPath !== '/') {
-        try { st = await archive.stat(folderPath) }
+        try { st = await drive.stat(folderPath) }
         catch (e) { /* ignore */ }
         if (!st || !st.isDirectory()) {
           folderPath = (folderPath.split('/').slice(0, -1).filter(Boolean).join('/')) || '/'
@@ -88,14 +88,14 @@ class FilesExplorer extends LitElement {
       }
       this.folderPath = folderPath
 
-      items = await archive.readdir(folderPath, {includeStats: true})
+      items = await drive.readdir(folderPath, {includeStats: true})
       items.sort((a, b) => {
         if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
         if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1
         return a.name.localeCompare(b.name)
       })
 
-      this.currentFolder = await archive.stat(folderPath)
+      this.currentFolder = await drive.stat(folderPath)
       this.currentFolder.path = folderPath
       this.currentFolder.name = folderPath.split('/').pop() || '/'
     }
@@ -254,7 +254,7 @@ class FilesExplorer extends LitElement {
         if (!newname) return
         var oldpath = joinPath(this.folderPath, item.name)
         var newpath = joinPath(this.folderPath, newname)
-        await this.archive.rename(oldpath, newpath)
+        await this.drive.rename(oldpath, newpath)
         if (oldpath === this.pathname) {
           beaker.browser.gotoUrl(joinPath(this.origin, newpath))
         } else {
@@ -289,7 +289,7 @@ class FilesExplorer extends LitElement {
           click: async () => {
             if (confirm(`Are you sure you want to unmount ${item.name}?`)) {
               let path = joinPath(this.folderPath, item.name)
-              await this.archive.unmount(path)
+              await this.drive.unmount(path)
               this.load()
             }
           }
@@ -303,9 +303,9 @@ class FilesExplorer extends LitElement {
           if (confirm(`Are you sure you want to delete ${item.name}?`)) {
             let path = joinPath(this.folderPath, item.name)
             if (item.stat.isDirectory()) {
-              await this.archive.rmdir(path, {recursive: true})
+              await this.drive.rmdir(path, {recursive: true})
             } else {
-              await this.archive.unlink(path)
+              await this.drive.unlink(path)
             }
             this.load()
           }
@@ -441,7 +441,7 @@ class FilesExplorer extends LitElement {
     var name = prompt('Enter the new folder name')
     if (name) {
       let path = joinPath(this.folderPath, name)
-      await this.archive.mkdir(path)
+      await this.drive.mkdir(path)
       this.load()
     }
   }
@@ -451,7 +451,7 @@ class FilesExplorer extends LitElement {
     var name = prompt('Enter the new file name')
     if (name) {
       let path = joinPath(this.folderPath, name)
-      await this.archive.writeFile(path, '')
+      await this.drive.writeFile(path, '')
       this.load()
     }
   }
@@ -469,7 +469,7 @@ class FilesExplorer extends LitElement {
     })
     if (files) {
       for (let src of files) {
-        await DatArchive.importFromFilesystem({
+        await Hyperdrive.importFromFilesystem({
           src,
           dst: joinPath(this.origin, this.folderPath),
           ignore: ['dat.json'],
@@ -487,11 +487,11 @@ class FilesExplorer extends LitElement {
   async onClickMount (e) {
     if (this.readOnly) return
 
-    var url = await navigator.selectDatArchiveDialog()
+    var url = await navigator.selectDriveDialog()
     if (!url) return
     var name = await prompt('Enter the mount name')
     if (!name) return
-    await this.archive.mount(name, url)
+    await this.drive.mount(name, url)
     this.load()
   }
 }

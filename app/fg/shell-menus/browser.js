@@ -347,8 +347,8 @@ class BrowserMenu extends LitElement {
   async onCreateNew (e) {
     bg.shellMenus.close()
 
-    // create a new archive
-    const url = await bg.datArchive.createArchive()
+    // create a new drive
+    const url = await bg.hyperdrive.createDrive()
     bg.beakerBrowser.openUrl(url, {setActive: true, sidebarPanels: ['editor-app']})
   }
 
@@ -368,49 +368,6 @@ class BrowserMenu extends LitElement {
     var user = await bg.users.createTemporary()
     bg.shellMenus.createWindow({userSession: {url: user.url, isTemporary: true}})
   }
-
-  /*async onCreateSiteFromFolder (e) {
-    bg.shellMenus.close()
-
-    // ask user for folder
-    const folder = await bg.beakerBrowser.showOpenDialog({
-      title: 'Select folder',
-      buttonLabel: 'Use folder',
-      properties: ['openDirectory']
-    })
-    if (!folder || !folder.length) return
-
-    // create a new archive
-    const url = await bg.datArchive.createArchive({prompt: false})
-    await bg.archives.setLocalSyncPath(url, folder[0], {previewMode: true})
-    bg.shellMenus.createTab('beaker://editor/' + url)
-    bg.shellMenus.close()
-  }*/
-
-  /*async onShareFiles (e) {
-    bg.shellMenus.close()
-
-    // ask user for files
-    const filesOnly = this.browserInfo.platform === 'linux' || this.browserInfo.platform === 'win32'
-    const files = await bg.beakerBrowser.showOpenDialog({
-      title: 'Select files to share',
-      buttonLabel: 'Share files',
-      properties: ['openFile', filesOnly ? false : 'openDirectory', 'multiSelections'].filter(Boolean)
-    })
-    if (!files || !files.length) return
-
-    // create the dat and import the files
-    const url = await bg.datArchive.createArchive({
-      title: `Shared files (${moment().format('M/DD/YYYY h:mm:ssa')})`,
-      description: `Files shared with Beaker`,
-      prompt: false
-    })
-    await Promise.all(files.map(src => bg.datArchive.importFromFilesystem({src, dst: url, inplaceImport: false})))
-
-    // open the new archive in the editor
-    bg.shellMenus.createTab('beaker://editor/' + url)
-    bg.shellMenus.close()
-  }*/
 
   onOpenPage (e, url) {
     bg.shellMenus.createTab(url)

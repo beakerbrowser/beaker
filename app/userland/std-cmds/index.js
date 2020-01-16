@@ -11,11 +11,11 @@ export const social = socialModule
 export async function ls (opts = {}, location = '') {
   // pick target location
   location = this.env.resolve(location)
-  var {archive, protocol, pathname} = parseLocation(location)
+  var {drive, protocol, pathname} = parseLocation(location)
 
   // read
   var listing
-  var st = await archive.stat(pathname)
+  var st = await drive.stat(pathname)
   if (st.isUnsupportedProtocol) {
     throw new Error(`ls() is not supported on ${protocol} addresses`)
   } else if (st.isFile()) {
@@ -24,7 +24,7 @@ export async function ls (opts = {}, location = '') {
       toHTML: () => html`Is a file.\nSize: ${st.size}`
     }
   } else {
-    listing = await archive.readdir(pathname, {includeStats: true})
+    listing = await drive.readdir(pathname, {includeStats: true})
     return {
       listing,
       toHTML () {
@@ -48,7 +48,7 @@ export async function ls (opts = {}, location = '') {
               ? html` <span class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</span>`
               : ''
             return html`<div><a
-              href="${joinPath(joinPath(archive.url, pathname), entry.name)}"
+              href="${joinPath(joinPath(drive.url, pathname), entry.name)}"
               class="color-${color}"
             ><term-icon icon="${icon}"></term-icon> ${entry.name}${mountInfo}</a></div>`
           })
@@ -62,9 +62,9 @@ export async function cd (opts = {}, location = '') {
   if (cwd.startsWith('drive://') || cwd.startsWith('web://')) {
     // make sure the target location can be visited
     let urlp = new URL(cwd)
-    let archive = new DatArchive(urlp.origin)
+    let drive = new Hyperdrive(urlp.origin)
     let st
-    try { st = await archive.stat(urlp.pathname) }
+    try { st = await drive.stat(urlp.pathname) }
     catch (e) {
       throw new Error(`${location}: No such file or directory`)
     }
@@ -88,8 +88,8 @@ export function pwd (opts = {}) {
 
 export async function mkdir (opts, dst) {
   if (!dst) throw new Error('dst is required')
-  var {archive, pathname} = resolveParse(this.env, dst)
-  await archive.mkdir(pathname)
+  var {drive, pathname} = resolveParse(this.env, dst)
+  await drive.mkdir(pathname)
 }
 
 // file & folder manipulation
@@ -101,12 +101,12 @@ export async function mv (opts, src, dst) {
   var srcp = resolveParse(this.env, src)
   var dstp = resolveParse(this.env, dst)
   
-  let st = await dstp.archive.stat(dstp.pathname).catch(e => undefined)
+  let st = await dstp.drive.stat(dstp.pathname).catch(e => undefined)
   if (st && st.isDirectory()) {
     dstp.pathname = joinPath(dstp.pathname, src.split('/').pop())
   }
 
-  await srcp.archive.rename(srcp.pathname, dstp.toString())
+  await srcp.drive.rename(srcp.pathname, dstp.toString())
 }
 
 export async function cp (opts, src, dst) {
@@ -115,30 +115,30 @@ export async function cp (opts, src, dst) {
   var srcp = resolveParse(this.env, src)
   var dstp = resolveParse(this.env, dst)
   
-  let st = await dstp.archive.stat(dstp.pathname).catch(e => undefined)
+  let st = await dstp.drive.stat(dstp.pathname).catch(e => undefined)
   if (st && st.isDirectory()) {
     dstp.pathname = joinPath(dstp.pathname, src.split('/').pop())
   }
 
-  await srcp.archive.copy(srcp.pathname, dstp.toString())
+  await srcp.drive.copy(srcp.pathname, dstp.toString())
 }
 
 export async function rm (opts, dst) {
   if (!dst) throw new Error('dst is required')
-  var {archive, pathname} = resolveParse(this.env, dst)
-  var st = await archive.stat(pathname)
+  var {drive, pathname} = resolveParse(this.env, dst)
+  var st = await drive.stat(pathname)
   if (st.isDirectory()) {
-    await archive.rmdir(pathname, {recursive: true})
+    await drive.rmdir(pathname, {recursive: true})
   } else {
-    await archive.unlink(pathname)
+    await drive.unlink(pathname)
   }
 }
 
 export async function mount (opts, mountUrl, dst) {
   if (!mountUrl) throw new Error('mount-url is required')
   if (!dst) throw new Error('dst is required')
-  var {archive, pathname} = resolveParse(this.env, dst)
-  await archive.mount(pathname, mountUrl)
+  var {drive, pathname} = resolveParse(this.env, dst)
+  await drive.mount(pathname, mountUrl)
 }
 
 export async function query (opts = {}, ...paths) {
@@ -149,7 +149,7 @@ export async function query (opts = {}, ...paths) {
       queriesMap[p.origin].opts.path.push(p.pathname)
     } else {
       queriesMap[p.origin] = {
-        archive: p.archive,
+        drive: p.drive,
         opts: Object.assign({}, opts, {path: [p.pathname]})
       }
     }
@@ -157,7 +157,7 @@ export async function query (opts = {}, ...paths) {
   
   var allResults = []
   for (let query of Object.values(queriesMap)) {
-    let res = await query.archive.query(query.opts)
+    let res = await query.drive.query(query.opts)
     allResults = allResults.concat(res)
   }
   allResults.toHTML = () => html`${allResults.map(r => html`<a href=${r.url}>${r.path}</a><br>`)}`
@@ -166,13 +166,13 @@ export async function query (opts = {}, ...paths) {
 
 export async function meta (opts, location, key = undefined, ...value) {
   if (!location) throw new Error('path is required')
-  var {archive, pathname} = resolveParse(this.env, location)
+  var {drive, pathname} = resolveParse(this.env, location)
   if (value.length) {
-    await archive.updateMetadata(pathname, {[key]: value.join(' ')})
+    await drive.updateMetadata(pathname, {[key]: value.join(' ')})
   } else if (opts.delete) {
-    await archive.deleteMetadata(pathname, key)
+    await drive.deleteMetadata(pathname, key)
   } else {
-    var st = await archive.stat(pathname)
+    var st = await drive.stat(pathname)
     if (key) {
       return st.metadata[key]
     } else {
@@ -191,13 +191,13 @@ export async function meta (opts, location, key = undefined, ...value) {
 export async function mkgoto (opts, location, href) {
   if (!location) throw new Error('path is required')
   if (!href) throw new Error('href is required')
-  var {archive, pathname} = resolveParse(this.env, location)
+  var {drive, pathname} = resolveParse(this.env, location)
 
   if (!pathname.endsWith('.goto')) {
     pathname += '.goto'
   }
 
-  await archive.writeFile(pathname, '', {
+  await drive.writeFile(pathname, '', {
     metadata: {
       href,
       title: opts.title
@@ -216,7 +216,7 @@ export async function bookmark (opts = {}, href = '.') {
 // =
 
 export async function peek (opts = {}, location = '') {
-  var {archive, origin, pathname} = resolveParse(this.env, location)
+  var {drive, origin, pathname} = resolveParse(this.env, location)
   if (/\.(png|jpe?g|gif)$/.test(pathname)) {
     return {toHTML: () => html`<img src=${(origin + pathname)}>`}
   }
@@ -226,7 +226,7 @@ export async function peek (opts = {}, location = '') {
   if (/\.(mp3|ogg)$/.test(pathname)) {
     return {toHTML: () => html`<audio controls><source src=${(origin + pathname)}></audio>`}
   }
-  var content = await archive.readFile(pathname, 'utf8')
+  var content = await drive.readFile(pathname, 'utf8')
   return {toHTML: () => html`<pre>${content}</pre>`}
 }
 
@@ -238,7 +238,7 @@ export async function go (opts = {}, location = '') {
   location = this.env.resolve(location)
   if (location.endsWith('.goto')) {
     let urlp = parseLocation(location)
-    let st = await urlp.archive.stat(urlp.pathname).catch(e => undefined)
+    let st = await urlp.drive.stat(urlp.pathname).catch(e => undefined)
     if (st && st.metadata.href) {
       location = st.metadata.href
     }
@@ -257,8 +257,8 @@ export async function edit (opts = {}, location = '') {
 
   // create if dne
   var urlp = parseLocation(location)
-  let st = await urlp.archive.stat(urlp.pathname).catch(e => undefined)
-  if (!st) await urlp.archive.writeFile(urlp.pathname, '')
+  let st = await urlp.drive.stat(urlp.pathname).catch(e => undefined)
+  if (!st) await urlp.drive.writeFile(urlp.pathname, '')
 
   await this.panel.open('editor-app', location)
   await this.panel.goto('editor-app', location)

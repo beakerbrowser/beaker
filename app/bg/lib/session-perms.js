@@ -1,7 +1,7 @@
 import * as windows from '../ui/windows'
 import * as users from '../filesystem/users'
 import * as userSiteSessions from '../filesystem/site-sessions'
-import * as datArchives from '../dat/archives'
+import * as drives from '../hyper/drives'
 import * as archivesDb from '../dbs/archives'
 import { PermissionsError } from 'beaker-error-constants'
 import libTools from '@beaker/library-tools'
@@ -22,11 +22,11 @@ export async function getSessionUserId (sender) {
   return (await users.get(userSession.url)).id
 }
 
-export async function getSessionUserArchive (sender) {
+export async function getSessionUserDrive (sender) {
   var userSession = windows.getUserSessionFor(sender)
   if (!userSession) throw new Error('No active user session')
-  var key = await datArchives.fromURLToKey(userSession.url, true)
-  return datArchives.getArchive(key)
+  var key = await drives.fromURLToKey(userSession.url, true)
+  return drives.getDrive(key)
 }
 
 /**
@@ -35,7 +35,7 @@ export async function getSessionUserArchive (sender) {
  */
 export async function toDatOrigin (url) {
   if (!url.startsWith('drive://') && !url.startsWith('web://')) throw new Error('Can only create sessions with hyperdrive sites')
-  return datArchives.getPrimaryUrl(url)
+  return drives.getPrimaryUrl(url)
 }
 
 /**

@@ -1,15 +1,15 @@
-import { getActiveArchives } from './archives'
+import { getActiveDrives } from './drives'
 import datDns from './dns'
 
 /**
  * @returns {string}
  */
-export const archivesDebugPage = function () {
-  var archives = getActiveArchives()
+export const drivesDebugPage = function () {
+  var drives = getActiveDrives()
   return `<html>
     <body>
-      ${Object.keys(archives).map(key => {
-    var a = archives[key]
+      ${Object.keys(drives).map(key => {
+    var a = drives[key]
     return `<div style="font-family: monospace">
           <h3>${a.key.toString('hex')}</h3>
           <table>
@@ -51,7 +51,7 @@ export const datDnsCacheJS = function () {
   return `
     document.querySelector('button').addEventListener('click', clear)
     async function clear () {
-      await beaker.archives.clearDnsCache()
+      await beaker.drives.clearDnsCache()
       location.reload()
     }
   `

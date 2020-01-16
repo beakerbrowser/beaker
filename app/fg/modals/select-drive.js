@@ -218,12 +218,12 @@ class SelectDriveModal extends LitElement {
     await this.requestUpdate()
     this.adjustHeight()
 
-    var entries = await bg.datArchive.query(bg.navigatorFs.get().url, {
+    var entries = await bg.hyperdrive.query(bg.navigatorFs.get().url, {
       path: '/system/drives/*',
       type: 'mount',
       sort: 'name'
     }).catch(err => [])
-    this.drives = await Promise.all(entries.map(entry => bg.datArchive.getInfo(entry.mount)))
+    this.drives = await Promise.all(entries.map(entry => bg.hyperdrive.getInfo(entry.mount)))
     if (params.type) this.drives = this.drives.filter(drive => drive.type === params.type)
     if (typeof params.writable === 'boolean') {
       this.drives = this.drives.filter(drive => drive.writable === params.writable)
@@ -440,7 +440,7 @@ class SelectDriveModal extends LitElement {
     if (e) e.preventDefault()
     if (this.currentView === VIEWS.CREATE) {
       try {
-        var url = await bg.datArchive.createArchive({
+        var url = await bg.hyperdrive.createDrive({
           title: this.title,
           description: this.description,
           type: this.type !== 'undefined' ? this.type : undefined,

@@ -1,6 +1,6 @@
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
-import { archivesDebugPage, datDnsCachePage, datDnsCacheJS } from '../dat/debugging'
+import { drivesDebugPage, datDnsCachePage, datDnsCacheJS } from '../hyper/debugging'
 import path from 'path'
 import url from 'url'
 import once from 'once'
@@ -309,8 +309,8 @@ async function beakerProtocol (request, respond) {
   }
 
   // debugging
-  if (requestUrl === 'beaker://internal-archives/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', archivesDebugPage)
+  if (requestUrl === 'beaker://active-drives/') {
+    return cb(200, 'OK', 'text/html; charset=utf-8', drivesDebugPage)
   }
   if (requestUrl === 'beaker://dat-dns-cache/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', datDnsCachePage)

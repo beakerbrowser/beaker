@@ -22,7 +22,7 @@ export async function ls (opts = {}) {
   let profiles = {}
   for (let post of posts) {
     lastPosts.push(post.url)
-    profiles[post.drive] = post.drive = profiles[post.drive] || await (new DatArchive(post.drive)).getInfo()
+    profiles[post.drive] = post.drive = profiles[post.drive] || await (new Hyperdrive(post.drive)).getInfo()
   }
   posts.toHTML = () => {
     return posts.map((post, i) => html`
@@ -69,7 +69,7 @@ export async function post (opts = {}, title = '') {
 export async function whoami () {
   let st = await navigator.filesystem.stat('/profile')
   let key = st.mount.key
-  let info = await (new DatArchive(key)).getInfo()
+  let info = await (new Hyperdrive(key)).getInfo()
   return {
     title: info.title,
     description: info.description,
@@ -80,8 +80,8 @@ export async function whoami () {
 }
 
 export async function whois (opts = {}, id) {
-  let key = await DatArchive.resolveName(id)
-  let info = await (new DatArchive(key)).getInfo()
+  let key = await Hyperdrive.resolveName(id)
+  let info = await (new Hyperdrive(key)).getInfo()
   return {
     title: info.title,
     description: info.description,
@@ -146,8 +146,8 @@ export async function find (opts = {}, query = '') {
 }
 
 export async function graph (opts = {}, id) {
-  let key = !id ? (await navigator.filesystem.stat('/profile')).mount.key : await DatArchive.resolveName(id)
-  let drive = new DatArchive(key)
+  let key = !id ? (await navigator.filesystem.stat('/profile')).mount.key : await Hyperdrive.resolveName(id)
+  let drive = new Hyperdrive(key)
   let [followers, following] = await Promise.all([
     navigator.filesystem.query({path: ['/profile/follows/*', '/profile/follows/*/follows/*'], mount: key}),
     drive.query({path: '/follows/*', type: 'mount'})
@@ -197,7 +197,7 @@ export async function graph (opts = {}, id) {
 }
 
 export async function follow (opts = {}, id) {
-  var key = await DatArchive.resolveName(id)
+  var key = await Hyperdrive.resolveName(id)
   var res = await navigator.filesystem.query({path: '/profile/follows/*', mount: key})
   if (res.length === 0) {
     await navigator.filesystem.mount('/profile/follows/' + key, key)
@@ -205,7 +205,7 @@ export async function follow (opts = {}, id) {
 }
 
 export async function unfollow (opts = {}, id) {
-  var key = await DatArchive.resolveName(id)
+  var key = await Hyperdrive.resolveName(id)
   var res = await navigator.filesystem.query({path: '/profile/follows/*', mount: key})
   for (let k of res) {
     await navigator.filesystem.unmount(k.path)

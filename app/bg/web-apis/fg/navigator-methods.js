@@ -23,9 +23,9 @@ export const setup = function (rpc) {
 
   var filesystemApi = rpc.importAPI('navigator-filesystem', filesystemManifest, RPC_OPTS)
   try {
-    navigator.filesystem = new DatArchive(filesystemApi.get().url)
+    navigator.filesystem = new Hyperdrive(filesystemApi.get().url)
     navigator.filesystem.identifyDrive = async (url) => {
-      if (url instanceof DatArchive) {
+      if (url instanceof Hyperdrive) {
         url = url.url
       }
       return filesystemApi.identifyDrive(url)

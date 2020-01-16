@@ -155,7 +155,7 @@ export class EditProfilePopup extends BasePopup {
     }
 
     try {
-      let drive = new DatArchive(this.user.url)
+      let drive = new Hyperdrive(this.user.url)
       await drive.configure({
         title: this.title,
         description: this.description

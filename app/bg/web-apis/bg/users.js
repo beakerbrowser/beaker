@@ -1,7 +1,7 @@
 import * as windows from '../../ui/windows'
 import * as modals from '../../ui/subwindows/modals'
 import * as users from '../../filesystem/users'
-import dat from '../../dat/index'
+import hyper from '../../hyper/index'
 
 // typedefs
 // =
@@ -78,8 +78,8 @@ export default {
   async create (opts) {
     var sessionUrl = getSessionUrl(this.sender)
 
-    // create new dat archive
-    var archive = await dat.archives.createNewArchive({
+    // create new drive
+    var drive = await hyper.drives.createNewDrive({
       type: 'unwalled.garden/person',
       title: opts.title,
       description: opts.description
@@ -87,11 +87,11 @@ export default {
 
     // write thumbnail
     if (opts.thumbBase64) {
-      await writeThumbnail(archive, opts.thumbBase64, opts.thumbExt)
+      await writeThumbnail(drive, opts.thumbBase64, opts.thumbExt)
     }
 
     // save user
-    return massageUserRecord(await users.add(archive.url), sessionUrl)
+    return massageUserRecord(await users.add(drive.url), sessionUrl)
   },
 
   /**
@@ -100,15 +100,15 @@ export default {
   async createTemporary () {
     var sessionUrl = getSessionUrl(this.sender)
 
-    // create new dat archive
-    var archive = await dat.archives.createNewArchive({
+    // create new drive
+    var drive = await hyper.drives.createNewDrive({
       type: 'unwalled.garden/person',
       title: 'Temporary User',
       description: 'Created ' + (new Date()).toLocaleString()
     })
 
     // save user
-    return massageUserRecord(await users.add(archive.url, false, true), sessionUrl)
+    return massageUserRecord(await users.add(drive.url, false, true), sessionUrl)
   },
 
   /**
@@ -137,17 +137,17 @@ export default {
     var user = await users.get(url)
     if (!user) return
 
-    // update archive
+    // update drive
     if (('title' in opts) || ('description' in opts)) {
       let cfg = {}
       if ('title' in opts) cfg.title = opts.title
       if ('description' in opts) cfg.description = opts.description
-      await user.archive.pda.updateManifest(cfg)
+      await user.drive.pda.updateManifest(cfg)
     }
 
     // update thumbnail
     if (('thumbBase64' in opts)) {
-      await writeThumbnail(user.archive, opts.thumbBase64, opts.thumbExt)
+      await writeThumbnail(user.drive, opts.thumbBase64, opts.thumbExt)
     }
 
     // update user
@@ -174,12 +174,12 @@ export default {
    */
   async setupDefault (opts) {
     var user = await users.getDefault()
-    await user.archive.pda.updateManifest({
+    await user.drive.pda.updateManifest({
       title: opts.title,
       description: opts.description
     })
     if (('thumbBase64' in opts)) {
-      await writeThumbnail(user.archive, opts.thumbBase64, opts.thumbExt)
+      await writeThumbnail(user.drive, opts.thumbBase64, opts.thumbExt)
     }
     await users.edit(user.url, opts)
   }
@@ -194,15 +194,15 @@ function getSessionUrl (sender) {
   return userSession.url
 }
 
-async function writeThumbnail (archive, base64, ext) {
+async function writeThumbnail (drive, base64, ext) {
   // remove any existing
   await Promise.all([
-    archive.pda.unlink('/thumb.jpg').catch(err => {}),
-    archive.pda.unlink('/thumb.jpeg').catch(err => {}),
-    archive.pda.unlink('/thumb.png').catch(err => {})
+    drive.pda.unlink('/thumb.jpg').catch(err => {}),
+    drive.pda.unlink('/thumb.jpeg').catch(err => {}),
+    drive.pda.unlink('/thumb.png').catch(err => {})
   ])
   // write new
-  await archive.pda.writeFile(`/thumb.${ext || 'png'}`, base64, 'base64')
+  await drive.pda.writeFile(`/thumb.${ext || 'png'}`, base64, 'base64')
 }
 
 /**

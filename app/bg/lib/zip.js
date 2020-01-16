@@ -2,26 +2,26 @@ import { join } from 'path'
 import yazl from 'yazl'
 
 /**
- * @typedef {import('../dat/daemon').DaemonDatArchive} DaemonDatArchive
+ * @typedef {import('../dat/daemon').DaemonHyperdrive} DaemonHyperdrive
  * @typedef {import('stream').Readable} Readable
  */
 
 /**
- * @param {DaemonDatArchive} archive
+ * @param {DaemonHyperdrive} drive
  * @param {string} [dirpath = '/']
  * @returns {Readable}
  */
-export const toZipStream = function (archive, dirpath = '/') {
+export const toZipStream = function (drive, dirpath = '/') {
   var zipfile = new yazl.ZipFile()
 
   // create listing stream
-  archive.pda.readdir(dirpath, {recursive: true}).then(async (paths) => {
+  drive.pda.readdir(dirpath, {recursive: true}).then(async (paths) => {
     for (let path of paths) {
       let readPath = join(dirpath, path)
 
       // files only
       try {
-        let entry = await archive.pda.stat(readPath)
+        let entry = await drive.pda.stat(readPath)
         if (!entry.isFile()) {
           continue
         }
@@ -31,9 +31,9 @@ export const toZipStream = function (archive, dirpath = '/') {
       }
 
       // pipe each entry into the zip
-      zipfile.addBuffer(await archive.pda.readFile(readPath, 'binary'), path)
+      zipfile.addBuffer(await drive.pda.readFile(readPath, 'binary'), path)
       // NOTE
-      // for some reason using archive.createReadStream() to feed into the zipfile addReadStream() was not working with multiple files
+      // for some reason using drive.createReadStream() to feed into the zipfile addReadStream() was not working with multiple files
       // no idea why, maybe a sign of a bug in the dat-daemon's zip rpc
       // -prf
     }
