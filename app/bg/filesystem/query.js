@@ -107,14 +107,14 @@ export async function query (root, opts) {
       if (!metaMatch) return
     }
 
-    var drive = `dat://${localDriveKey}`
+    var drive = `drive://${localDriveKey}`
     results.push({
       type,
       path,
       url: joinPath(drive, innerPath),
       stat,
       drive,
-      mount: type === 'mount' ? `dat://${stat.mount.key.toString('hex')}` : undefined
+      mount: type === 'mount' ? `drive://${stat.mount.key.toString('hex')}` : undefined
     })
   })
 

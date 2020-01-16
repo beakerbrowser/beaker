@@ -401,7 +401,7 @@ async function getRealUrl (item) {
   while (pathParts.length > 0) {
     let st = await navigator.filesystem.stat(pathParts.join('/'))
     if (st.mount) {
-      return `dat://${st.mount.key}/${discardedParts.join('/')}`
+      return `drive://${st.mount.key}/${discardedParts.join('/')}`
     }
     discardedParts.unshift(pathParts.pop())
   }

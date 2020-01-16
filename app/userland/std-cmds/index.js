@@ -59,7 +59,7 @@ export async function ls (opts = {}, location = '') {
 
 export async function cd (opts = {}, location = '') {
   var cwd = this.env.resolve(location)
-  if (cwd.startsWith('dat://')) {
+  if (cwd.startsWith('drive://') || cwd.startsWith('web://')) {
     // make sure the target location can be visited
     let urlp = new URL(cwd)
     let archive = new DatArchive(urlp.origin)

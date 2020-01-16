@@ -5,7 +5,7 @@ import path from 'path'
 import { promises as fs } from 'fs'
 import Events from 'events'
 import _throttle from 'lodash.throttle'
-import parseDatURL from 'parse-dat-url'
+import { parseDriveUrl } from '../../lib/urls'
 import emitStream from 'emit-stream'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
@@ -232,7 +232,7 @@ class Tab {
 
   get siteTitle () {
     try {
-      var urlp = parseDatURL(this.url)
+      var urlp = parseDriveUrl(this.url)
       var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.datInfo) {
         if (filesystem.isRootUrl(this.datInfo.url)) {
@@ -242,7 +242,7 @@ class Tab {
           return this.datInfo.title || 'Anonymous'
         }
         return `"${this.datInfo.title || 'Untitled'}" by ${this.confirmedAuthorTitle ? this.confirmedAuthorTitle : '(Unknown)'}`
-      } else if (urlp.protocol === 'dat:') {
+      } else if (urlp.protocol === 'drive:' || urlp.protocol === 'web:') {
         return '(Untitled) by (Unknown)'
       }
       if (urlp.protocol === 'beaker:') {
@@ -412,7 +412,7 @@ class Tab {
     var url = this.url
     var title = this.title
 
-    if (/^(http|https|dat)/i.test(url)) {
+    if (url !== 'beaker://desktop/' && url !== 'beaker://history/') {
       historyDb.addVisit(0, {url, title})
       if (this.isPinned) {
         savePins(this.browserWindow)
@@ -497,8 +497,8 @@ class Tab {
 
   async captureScreenshot () {
     // capture screenshot on the root page of dat & http sites
-    var urlp = parseDatURL(this.url)
-    if (['dat:', 'http:', 'https:'].includes(urlp.protocol)) {
+    var urlp = parseDriveUrl(this.url)
+    if (['web:', 'http:', 'https:'].includes(urlp.protocol)) {
       try {
         // wait a sec to allow loading to finish
         await new Promise(r => setTimeout(r, 1e3))
@@ -659,7 +659,7 @@ class Tab {
       let archive = dat.archives.getArchive(this.datInfo.key)
       if (!archive) return
 
-      let {version} = parseDatURL(this.url)
+      let {version} = parseDriveUrl(this.url)
       let {checkoutFS} = await dat.archives.getArchiveCheckout(archive, version)
       this.liveReloadEvents = checkoutFS.pda.watch()
 
@@ -759,7 +759,7 @@ class Tab {
     this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
 
-    if (!this.url.startsWith('dat://')) {
+    if (!this.url.startsWith('drive://') && !this.url.startsWith('web://')) {
       this.datInfo = null
       return
     }
@@ -861,7 +861,7 @@ class Tab {
     this.favicons = null
     await this.fetchIsBookmarked()
     await this.fetchDatInfo()
-    if (httpResponseCode === 504 && url.startsWith('dat://')) {
+    if (httpResponseCode === 504 && url.startsWith('web://')) {
       this.wasDatTimeout = true
     }
     if (httpResponseCode === 404 && this.writable && (this.datInfo.type === 'website' || this.datInfo.type === 'application')) {
@@ -1687,9 +1687,9 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   async onFaviconLoadSuccess (index, dataUrl) {
     var tab = getByIndex(getWindow(this.sender), index)
     if (tab) {
-      // if not a dat site, store the favicon
-      // (dat caches favicons through the dat/assets.js process)
-      if (!tab.url.startsWith('dat:')) {
+      // if not a hyperdrive site, store the favicon
+      // (hyperdrive caches favicons through the hyperdrive/assets.js process)
+      if (!tab.url.startsWith('web:')) {
         sitedataDb.set(tab.url, 'favicon', dataUrl)
       }
     }

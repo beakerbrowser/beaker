@@ -51,7 +51,7 @@ class ProgramsView extends LitElement {
         }
       }
     ]
-    if (url.startsWith('dat://')) {
+    if (url.startsWith('drive://')) {
       items.push('-')
       items.push({
         icon: 'fas fa-fw fa-trash',

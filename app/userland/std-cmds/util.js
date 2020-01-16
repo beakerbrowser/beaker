@@ -61,7 +61,7 @@ so that errors can be smoothly generated
 */
 
 export function createArchive (url) {
-  if (url.startsWith('dat:')) {
+  if (url.startsWith('drive:') || url.startsWith('web:')) {
     return new DatArchive(url)
   }
   return new OtherOrigin(url)

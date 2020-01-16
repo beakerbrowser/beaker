@@ -23,8 +23,7 @@ const SETUP_RETRIES = 100
 * @prop {Object} session
 * @prop {Object} session.drive
 * @prop {function(): Promise<void>} session.close
-* @prop {function(): Promise<void>} session.publish
-* @prop {function(): Promise<void>} session.unpublish
+* @prop {function(Object): Promise<void>} session.configureNetwork
 * @prop {function(): Promise<Object>} getInfo
 * @prop {DaemonDatArchivePDA} pda
 *
@@ -72,7 +71,8 @@ export const setup = async function () {
       interpreter: app.getPath('exe'),
       env: Object.assign({}, process.env, {ELECTRON_RUN_AS_NODE: 1}),
       memoryOnly: false,
-      heapSize: 4096 // 4GB heap
+      heapSize: 4096, // 4GB heap
+      storage: constants.root
     })
   }
 
@@ -108,7 +108,7 @@ export const createDatArchiveSession = async function (opts) {
   const key = datEncoding.toStr(drive.key)
   var datArchive = {
     key: datEncoding.toBuf(key),
-    url: `dat://${key}`,
+    url: `drive://${key}`,
     writable: drive.writable,
     domain: undefined,
 
@@ -117,11 +117,8 @@ export const createDatArchiveSession = async function (opts) {
       async close () {
         return drive.close()
       },
-      async publish () {
-        return drive.publish()
-      },
-      async unpublish () {
-        return drive.unpublish()
+      async configureNetwork (opts) {
+        return drive.configureNetwork(opts)
       }
     },
 

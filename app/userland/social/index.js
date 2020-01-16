@@ -128,7 +128,7 @@ export class App extends LitElement {
         </a>
         ${this.user && this.user.following ? html`
           <a
-            href="/${this.user.url.slice('dat://'.length)}/following"
+            href="/${this.user.url.slice('drive://'.length)}/following"
             title="Following ${this.user.following.length} ${pluralize(this.user.following.length, 'user')}"
             data-tooltip="Following ${this.user.following.length} ${pluralize(this.user.following.length, 'user')}"
           >
@@ -137,7 +137,7 @@ export class App extends LitElement {
           </a>
         ` : ''}
         ${this.user ? html`
-          <a href="/${this.user.url.slice('dat://'.length)}">
+          <a href="/${this.user.url.slice('drive://'.length)}">
             <span class="fas fa-fw fa-user-circle"></span>
             ${this.user.title}
           </a>

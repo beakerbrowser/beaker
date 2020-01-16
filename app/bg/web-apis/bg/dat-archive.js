@@ -1,5 +1,5 @@
 import path from 'path'
-import parseDatURL from 'parse-dat-url'
+import { parseDriveUrl } from '../../../lib/urls'
 import pda from 'pauls-dat-api2'
 import concat from 'concat-stream'
 import pick from 'lodash.pick'
@@ -63,7 +63,7 @@ export default {
       }
       newArchiveUrl = newArchive.url
     }
-    let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
+    let newArchiveKey = await lookupUrlDriveKey(newArchiveUrl)
 
     // apply the template
     if (template) {
@@ -97,8 +97,8 @@ export default {
 
     if (prompt !== false) {
       // run the fork modal
-      let key1 = await lookupUrlDatKey(url)
-      let key2 = await lookupUrlDatKey(this.sender.getURL())
+      let key1 = await lookupUrlDriveKey(url)
+      let key2 = await lookupUrlDriveKey(this.sender.getURL())
       let isSelfFork = key1 === key2
       let res
       try {
@@ -115,14 +115,14 @@ export default {
       await assertCreateArchivePermission(this.sender)
 
       // create
-      let key = await lookupUrlDatKey(url)
+      let key = await lookupUrlDriveKey(url)
       let newArchive = await datArchives.forkArchive(key, {title, description, type, author, links})
       await filesystem.addToLibrary(newArchive.url, title)
       newArchiveUrl = newArchive.url
     }
 
     // grant write permissions to the creating app
-    let newArchiveKey = await lookupUrlDatKey(newArchiveUrl)
+    let newArchiveKey = await lookupUrlDriveKey(newArchiveUrl)
     permissions.grantPermission('modifyDat:' + newArchiveKey, this.sender.getURL())
     return newArchiveUrl
   },
@@ -713,7 +713,7 @@ async function assertWritePermission (archive, sender) {
   }
 
   // self-modification ALWAYS allowed
-  var senderDatKey = await lookupUrlDatKey(sender.getURL())
+  var senderDatKey = await lookupUrlDriveKey(sender.getURL())
   if (senderDatKey === archiveKey) {
     return true
   }
@@ -745,7 +745,7 @@ async function assertDeleteArchivePermission (archive, sender) {
 }
 
 function assertArchiveDeletable (archive) {
-  var archiveUrl = 'dat://' + archive.key.toString('hex')
+  var archiveUrl = 'drive://' + archive.key.toString('hex')
   if (users.isUser(archiveUrl)) {
     throw new PermissionsError('Unable to delete the user profile.')
   }
@@ -796,11 +796,11 @@ async function parseUrlParts (url) {
     archiveKey = url
     filepath = '/'
   } else {
-    var urlp = parseDatURL(url)
+    var urlp = parseDriveUrl(url)
 
     // validate
-    if (urlp.protocol !== 'dat:') {
-      throw new InvalidURLError('URL must be a dat: scheme')
+    if (urlp.protocol !== 'drive:' && urlp.protocol !== 'web:') {
+      throw new InvalidURLError('URL must be a drive: or web: scheme')
     }
     if (!DAT_HASH_REGEX.test(urlp.host)) {
       urlp.host = await datDns.resolveName(url)
@@ -838,13 +838,13 @@ export async function lookupArchive (sender, url, opts = {}) {
   return {archive, filepath, version, isHistoric, checkoutFS}
 }
 
-async function lookupUrlDatKey (url) {
+async function lookupUrlDriveKey (url) {
   if (DAT_HASH_REGEX.test(url)) return url
-  if (url.startsWith('dat://') === false) {
-    return false // not a dat site
+  if (!url.startsWith('drive://') && !url.startsWith('web://')) {
+    return false // not a drive site
   }
 
-  var urlp = parseDatURL(url)
+  var urlp = parseDriveUrl(url)
   try {
     return await datDns.resolveName(urlp.hostname)
   } catch (e) {

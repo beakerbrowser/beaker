@@ -62,7 +62,7 @@ export default {
 // =
 
 function assertArchiveDeletable (key) {
-  if (users.isUser(`dat://${key}`)) {
+  if (users.isUser(`drive://${key}`)) {
     throw new PermissionsError('Unable to delete the user profile.')
   }
 }
@@ -70,7 +70,7 @@ function assertArchiveDeletable (key) {
 function massageRecord (record) {
   return {
     key: record.key,
-    url: `dat://${record.key}`,
+    url: `drive://${record.key}`,
     author: record.author ? {
       url: record.author.url,
       title: record.author.title,

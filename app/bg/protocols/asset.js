@@ -4,14 +4,14 @@
  * Helper protocol to serve site favicons and avatars from the cache.
  * Examples:
  *
- *  - asset:favicon:dat://beakerbrowser.com
- *  - asset:favicon-32:dat://beakerbrowser.com
- *  - asset:thumb:dat://beakerbrowser.com
- *  - asset:cover:dat://beakerbrowser.com
+ *  - asset:favicon:web://beakerbrowser.com
+ *  - asset:favicon-32:web://beakerbrowser.com
+ *  - asset:thumb:web://beakerbrowser.com
+ *  - asset:cover:web://beakerbrowser.com
  **/
 
 import { screen } from 'electron'
-import parseDatUrl from 'parse-dat-url'
+import { parseDriveUrl } from '../../lib/urls'
 import * as sitedata from '../dbs/sitedata'
 import * as filesystem from '../filesystem/index'
 import fs from 'fs'
@@ -92,9 +92,9 @@ export function setup () {
     }
 
     // try standard icons
-    if (url.startsWith('dat://')) {
-      let urlp = parseDatUrl(url)
-      if (filesystem.isRootUrl(`dat://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
+    if (url.startsWith('drive://') || url.startsWith('web://')) {
+      let urlp = parseDriveUrl(url)
+      if (filesystem.isRootUrl(`drive://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
         return servePng(path.join(__dirname, `./assets/img/favicons/drive.png`), DEFAULTS[asset], cb)
       }
       if (!urlp.pathname || urlp.pathname.endsWith('/')) {

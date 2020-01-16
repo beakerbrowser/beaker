@@ -1,6 +1,6 @@
 import sqlite3 from 'sqlite3'
 import path from 'path'
-import parseDatUrl from 'parse-dat-url'
+import { parseDriveUrl } from '../../lib/urls'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../lib/db'
 
@@ -191,7 +191,7 @@ export const WEBAPI = {
  * @returns {Promise<string>}
  */
 async function extractOrigin (originURL) {
-  var urlp = parseDatUrl(originURL)
+  var urlp = parseDriveUrl(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
   return (urlp.protocol + urlp.host + (urlp.port ? `:${urlp.port}` : ''))
 }

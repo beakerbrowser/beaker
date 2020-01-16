@@ -183,7 +183,7 @@ export async function getMeta (key, {noDefault} = {noDefault: false}) {
   }
 
   // massage some values
-  meta.url = `dat://${meta.dnsName || meta.key}`
+  meta.url = `drive://${meta.dnsName || meta.key}`
   delete meta.dnsName
   meta.writable = !!meta.isOwner
 
@@ -222,8 +222,8 @@ export async function setMeta (key, value) {
   description = typeof description === 'string' ? description : ''
   type = typeof type === 'string' ? type : ''
   var isOwnerFlag = flag(writable)
-  if (typeof author === 'string') author = normalizeDatUrl(author)
-  if (typeof forkOf === 'string') forkOf = normalizeDatUrl(forkOf)
+  if (typeof author === 'string') author = normalizeDriveUrl(author)
+  if (typeof forkOf === 'string') forkOf = normalizeDriveUrl(forkOf)
 
   // write
   var release = await lock('archives-db:meta')
@@ -251,7 +251,7 @@ export async function setMeta (key, value) {
 function defaultMeta (key, name) {
   return {
     key,
-    url: `dat://${name}`,
+    url: `drive://${name}`,
     title: undefined,
     description: undefined,
     type: undefined,
@@ -283,10 +283,10 @@ export function extractOrigin (originURL) {
   return (urlp.protocol + (urlp.slashes ? '//' : '') + urlp.host)
 }
 
-function normalizeDatUrl (url) {
+function normalizeDriveUrl (url) {
   var match = url.match(DAT_HASH_REGEX)
   if (match) {
-    return `dat://${match[0]}`
+    return `drive://${match[0]}`
   }
   return extractOrigin(url)
 }

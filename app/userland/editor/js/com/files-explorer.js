@@ -20,8 +20,8 @@ class FilesExplorer extends LitElement {
     return [sidebarFilesViewCSS]
   }
 
-  get isDat () {
-    return this.url && this.url.startsWith('dat:')
+  get isDrive () {
+    return this.url && (this.url.startsWith('drive:') || this.url.startsWith('web:'))
   }
 
   get drive () {
@@ -68,7 +68,7 @@ class FilesExplorer extends LitElement {
     this.isLoading = true
 
     var items = []
-    if (this.isDat) {
+    if (this.isDrive) {
       let drive = this.drive
 
       let info = await drive.getInfo()
@@ -140,7 +140,7 @@ class FilesExplorer extends LitElement {
         </div>
       `
     }
-    if (!this.isDat) {
+    if (!this.isDrive) {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="empty"><span class="fas fa-fw fa-info-circle"></span> This site doesn't support file listings</div>

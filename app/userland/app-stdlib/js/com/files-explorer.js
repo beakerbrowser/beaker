@@ -23,8 +23,8 @@ class FilesExplorer extends LitElement {
     return [sidebarFilesViewCSS]
   }
 
-  get isDat () {
-    return this.url && this.url.startsWith('dat:')
+  get isDrive () {
+    return this.url && (this.url.startsWith('drive:') || this.url.startsWith('web:'))
   }
 
   get archive () {
@@ -71,7 +71,7 @@ class FilesExplorer extends LitElement {
     this.isLoading = true
 
     var items = []
-    if (this.isDat) {
+    if (this.isDrive) {
       let archive = this.archive
 
       let info = await archive.getInfo()
@@ -115,7 +115,7 @@ class FilesExplorer extends LitElement {
         </div>
       `
     }
-    if (!this.isDat) {
+    if (!this.isDrive) {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="toolbar">
@@ -269,7 +269,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-external-link-alt',
           label: `Open mount in new tab`,
           click: () => {
-            beaker.browser.openUrl(`dat://${item.stat.mount.key}`, {
+            beaker.browser.openUrl(`drive://${item.stat.mount.key}`, {
               setActive: true,
               sidebarPanels: ['editor-app']
             })
@@ -279,7 +279,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-link',
           label: `Copy Mount URL`,
           click () {
-            writeToClipboard(`dat://${item.stat.mount.key}`)
+            writeToClipboard(`drive://${item.stat.mount.key}`)
             toast.create('Copied to your clipboard')
           }
         },
@@ -409,7 +409,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-external-link-alt',
           label: `Open mount in new tab`,
           click: () => {
-            beaker.browser.openUrl(`dat://${this.currentFolder.mount.key}`, {
+            beaker.browser.openUrl(`drive://${this.currentFolder.mount.key}`, {
               setActive: true,
               sidebarPanels: ['editor-app']
             })
@@ -419,7 +419,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-link',
           label: `Copy Mount URL`,
           click () {
-            writeToClipboard(`dat://${this.currentFolder.mount.key}`)
+            writeToClipboard(`drive://${this.currentFolder.mount.key}`)
             toast.create('Copied to your clipboard')
           }
         }

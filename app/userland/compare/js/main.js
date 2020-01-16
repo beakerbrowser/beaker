@@ -308,7 +308,7 @@ class CompareDiffItemContent extends LitElement {
     if (this.diff.type === 'mount') {
       return html`
         <span class="fas fa-fw fa-external-link-square-alt"></span>
-        Mount to <a href="dat://${mountKey}" target="_blank">${toNiceDomain(mountKey)}</a>
+        Mount to <a href="drive://${mountKey}" target="_blank">${toNiceDomain(mountKey)}</a>
       `
     }
     if (this.diff.type === 'dir') return html`<span class="fas fa-fw fa-folder"></span> Directory`

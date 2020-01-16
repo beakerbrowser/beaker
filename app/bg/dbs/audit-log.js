@@ -1,6 +1,6 @@
 import sqlite3 from 'sqlite3'
 import path from 'path'
-import parseDatUrl from 'parse-dat-url'
+import { parseDriveUrl } from '../../lib/urls'
 import knex from '../lib/knex'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../lib/db'
@@ -72,7 +72,7 @@ function insert (table, data) {
  * @returns {string}
  */
 function extractOrigin (originURL) {
-  var urlp = parseDatUrl(originURL)
+  var urlp = parseDriveUrl(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
   return (urlp.protocol + '//' + urlp.host + (urlp.port ? `:${urlp.port}` : ''))
 }
@@ -82,7 +82,7 @@ function extractOrigin (originURL) {
  * @returns {string}
  */
 function extractHostname (originURL) {
-  var urlp = parseDatUrl(originURL)
+  var urlp = parseDriveUrl(originURL)
   return urlp.host
 }
 

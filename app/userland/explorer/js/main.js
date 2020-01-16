@@ -1,6 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, pluralize, changeURLScheme } from 'beaker://app-stdlib/js/strings.js'
 import { timeDifference } from 'beaker://app-stdlib/js/time.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
@@ -105,7 +105,8 @@ export class ExplorerApp extends LitElement {
       stat: this.pathInfo,
       path: window.location.pathname,
       url: window.location.toString(),
-      drive: this.currentDriveInfo
+      drive: this.currentDriveInfo,
+      realUrl: this.realUrl
     }
   }
 
@@ -336,7 +337,7 @@ export class ExplorerApp extends LitElement {
 
   getShareUrl (item) {
     if (item.stat.mount) {
-      return `dat://${item.stat.mount.key}`
+      return `drive://${item.stat.mount.key}`
     } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
       return item.stat.metadata.href
     } else {
@@ -537,6 +538,7 @@ export class ExplorerApp extends LitElement {
       <nav class="right">
         <drive-info
           user-url=${this.user.url}
+          real-url=${this.realUrl}
           .driveInfo=${this.currentDriveInfo}
         ></drive-info>
         ${this.selection.length > 0 ? html`
@@ -615,12 +617,17 @@ export class ExplorerApp extends LitElement {
     return false
   }
 
-  goto (item, newWindow = false) {
+  goto (item, newWindow = false, useWebScheme = false) {
     var url
-    if (item.name.endsWith('.goto') && item.stat.metadata.href) {
+    if (typeof item === 'string') {
+      url = item
+    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
       url = item.stat.metadata.href
     } else {
       url = joinPath(window.location.origin, item.path)
+    }
+    if (useWebScheme) {
+      url = changeURLScheme(url, 'web')
     }
     if (newWindow) window.open(url)
     else window.location = url

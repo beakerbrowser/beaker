@@ -40,8 +40,8 @@ export async function addSite (profileId, url, opts) {
   if (typeof opts.seedWhenResolved !== 'boolean') {
     throw new Error('seedWhenResolved must be a boolean')
   }
-  if (!url.startsWith('dat://')) {
-    url = 'dat://' + url
+  if (!url.startsWith('drive://')) {
+    url = 'drive://' + url
   }
 
   try {

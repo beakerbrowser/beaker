@@ -22,8 +22,11 @@ export function shorten (str, n = 6) {
 }
 
 export function shortenHash (str, n = 6) {
-  if (str.startsWith('dat://')) {
-    return 'dat://' + shortenHash(str.slice('dat://'.length).replace(/\/$/, '')) + '/'
+  if (str.startsWith('web://')) {
+    return 'web://' + shortenHash(str.slice('web://'.length).replace(/\/$/, '')) + '/'
+  }
+  if (str.startsWith('drive://')) {
+    return 'drive://' + shortenHash(str.slice('drive://'.length).replace(/\/$/, '')) + '/'
   }
   if (str.length > (n + 5)) {
     return str.slice(0, n) + '..' + str.slice(-2)
@@ -57,8 +60,11 @@ export function joinPath (...args) {
 export function getHostname (str) {
   try {
     const u = new URL(str)
-    if (u.protocol === 'dat:' && u.hostname.length === 64) {
-      return 'dat://' + shortenHash(u.hostname)
+    if (u.protocol === 'drive:' && u.hostname.length === 64) {
+      return 'drive://' + shortenHash(u.hostname)
+    }
+    if (u.protocol === 'web:' && u.hostname.length === 64) {
+      return 'web://' + shortenHash(u.hostname)
     }
     return u.hostname
   } catch (e) {

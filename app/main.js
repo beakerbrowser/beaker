@@ -31,6 +31,8 @@ import * as permissions from './bg/ui/permissions'
 import * as beakerProtocol from './bg/protocols/beaker'
 import * as beakerFaviconProtocol from './bg/protocols/beaker-favicon'
 import * as assetProtocol from './bg/protocols/asset'
+import * as driveProtocol from './bg/protocols/drive'
+import * as webProtocol from './bg/protocols/web'
 import * as intentProtocol from './bg/protocols/intent'
 
 import * as testDriver from './bg/test-driver'
@@ -62,6 +64,8 @@ app.allowRendererProcessReuse = true
 // configure the protocols
 protocol.registerSchemesAsPrivileged([
   {scheme: 'dat', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
+  {scheme: 'drive', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
+  {scheme: 'web', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
   {scheme: 'beaker', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}}
 ])
 
@@ -115,6 +119,8 @@ app.on('ready', async function () {
   beakerFaviconProtocol.setup() // TODO deprecateme
   assetProtocol.setup()
   assetProtocol.register(protocol)
+  driveProtocol.register(protocol)
+  webProtocol.register(protocol)
   dat.protocol.register(protocol)
   // intentProtocol.setup() TODO
 

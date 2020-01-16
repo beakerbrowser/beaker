@@ -17,20 +17,24 @@ function intoStream (text) {
 // =
 
 export function register (protocol) {
-  protocol.registerStreamProtocol('dat', electronHandler, err => {
+  protocol.registerStreamProtocol('drive', protocolHandler, err => {
     if (err) {
       console.error(err)
-      throw new Error('Failed to create protocol: dat')
+      throw new Error('Failed to create protocol: drive')
     }
   })
 }
 
-export const electronHandler = async function (request, respond) {
+export const protocolHandler = async function (request, respond) {
   respond({
     statusCode: 200,
     headers: {
-      Location: request.replace('dat:', 'drive:')
+      // TODO CSP
+      'Content-Type': 'text/html'
     },
-    data: intoStream(`Redirecting...`)
+    data: intoStream(`<meta charset="utf-8">
+<link rel="stylesheet" href="beaker://explorer/drive-handler.css">
+<script type="module" src="beaker://explorer/drive-handler.js"></script>
+`)
   })
 }

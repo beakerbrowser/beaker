@@ -145,8 +145,8 @@ function validate () {
     urlError.textContent = 'Please enter a site.'
     urlError.style.opacity = 1
     success = false
-  } else if (!/dat?:\/\//.test(url) && !/[a-f0-9]{64}/.test(url)) {
-    urlError.textContent = 'Please enter a valid dat:// url'
+  } else if (!/(web|drive)?:\/\//.test(url) && !/[a-f0-9]{64}/.test(url)) {
+    urlError.textContent = 'Please enter a valid drive:// or web:// url'
     urlError.style.opacity = 1
     success = false
   }

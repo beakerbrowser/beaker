@@ -298,6 +298,7 @@ class LocationBar extends LitElement {
     // determine the URL that the user is targeting (only if it references a drive)
     var inputDriveUrl = undefined
     var inputDriveUrlp = undefined
+    var isDriveUrlRe = /^(drive|web):\/\//i
     if (this.inputValue.startsWith('~')) {
       if (!this.homeDriveUrl) {
         this.homeDriveUrl = bg.navigatorFs.get().url
@@ -307,7 +308,7 @@ class LocationBar extends LitElement {
       if (!this.currentTabLocation) {
         this.currentTabLocation = (await bg.views.getTabState('active').catch(e => ({url: ''}))).url
       }
-      if (this.currentTabLocation.startsWith('dat://')) {
+      if (isDriveUrlRe.test(this.currentTabLocation)) {
         try {
           let urlp = new URL(this.currentTabLocation)
           inputDriveUrl = joinPath(urlp.origin, this.inputValue.slice(1))
@@ -315,7 +316,7 @@ class LocationBar extends LitElement {
           // ignore, bad url
         }
       }
-    } else if (this.inputValue.startsWith('dat://')) {
+    } else if (isDriveUrlRe.test(this.inputValue)) {
       inputDriveUrl = this.inputValue
     }
     if (inputDriveUrl) {

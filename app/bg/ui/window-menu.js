@@ -54,7 +54,7 @@ export function setApplicationMenu (opts = {}) {
 }
 
 export function buildWindowMenu (opts = {}) {
-  const isDat = opts.url && opts.url.startsWith('dat://')
+  const isDriveSite = opts.url && opts.url.startsWith('web://')
   const noWindows = opts.noWindows === true
   const getWin = () => BrowserWindow.getFocusedWindow()
 
@@ -492,7 +492,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Toggle Live Reloading',
-        enabled: !!isDat,
+        enabled: !!isDriveSite,
         click: function (item) {
           var win = getWin()
           if (win) {

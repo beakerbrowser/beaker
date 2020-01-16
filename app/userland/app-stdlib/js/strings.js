@@ -110,3 +110,13 @@ export function normalizeUrl (str = '') {
     return str
   }
 }
+
+export function changeURLScheme (url = '', scheme = '') {
+  try {
+    let urlp = new URL(url)
+    urlp.protocol = scheme
+    return urlp.toString()
+  } catch (e) {
+    return url
+  }
+}

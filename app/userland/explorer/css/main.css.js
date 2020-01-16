@@ -279,6 +279,19 @@ nav section .bottom-ctrls {
   padding-top: 4px;
 }
 
+nav section .bottom-ctrls a.btn {
+  display: inline-block;
+  padding: 4px;
+  text-decoration: none;
+  margin: 0 6px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+nav section .bottom-ctrls a.btn:hover {
+  background: rgb(245, 245, 250);
+}
+
 nav .facts {
   line-height: 1.6;
 }

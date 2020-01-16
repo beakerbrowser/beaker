@@ -61,10 +61,6 @@ class NavbarLocation extends LitElement {
     return this.url.startsWith('beaker://')
   }
 
-  get isDat () {
-    return this.url.startsWith('dat://')
-  }
-
   get modifiedUrl () {
     var url = this.url
     if (url.startsWith('beaker://desktop')) {
@@ -142,7 +138,7 @@ class NavbarLocation extends LitElement {
         </div>
       `
     }
-    if (/^(dat|http|https|beaker):\/\//.test(this.url)) {
+    if (/^(web|drive|http|https|beaker):\/\//.test(this.url)) {
       try {
         var { protocol, host, pathname, search, hash } = new URL(this.url)
         // TODO just show path?
@@ -152,7 +148,7 @@ class NavbarLocation extends LitElement {
         //   </div>
         // `
         var hostVersion
-        if (protocol === 'dat:') {
+        if (protocol === 'drive:' || protocol === 'web:') {
           let match = /(.*)\+(.*)/.exec(host)
           if (match) {
             host = match[1]

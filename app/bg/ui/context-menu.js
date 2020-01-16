@@ -21,7 +21,6 @@ export default function registerContextMenu () {
       const { mediaFlags, editFlags } = props
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
-      const isDat = props.pageURL.startsWith('dat://')
       const isMisspelled = false//TODOprops.selectionText && spellChecker.isMisspelled(props.selectionText)
       const spellingSuggestions = false//TODOisMisspelled && spellChecker.getSuggestions(props.selectionText).slice(0, 5)
 

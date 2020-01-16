@@ -48,8 +48,8 @@ export default {
     try { urlp = new URL(url) }
     catch (e) { throw new Error('The first argument must be a URL string') }
 
-    if (['http:', 'https:', 'dat:'].indexOf(urlp.protocol) === -1) {
-      throw new Error('Can only capture pages served over http, https, or dat')
+    if (['http:', 'https:', 'web:'].indexOf(urlp.protocol) === -1) {
+      throw new Error('Can only capture pages served over http, https, or web')
     }
 
     // check perms

@@ -34,7 +34,7 @@ export async function getSessionUserArchive (sender) {
  * @returns {Promise<string>}
  */
 export async function toDatOrigin (url) {
-  if (!url.startsWith('dat://')) throw new Error('Can only create sessions with dat sites')
+  if (!url.startsWith('drive://') && !url.startsWith('web://')) throw new Error('Can only create sessions with hyperdrive sites')
   return datArchives.getPrimaryUrl(url)
 }
 
@@ -132,7 +132,8 @@ export function describePerm (permId, caps) {
  */
 export async function isTrustedApp (sender) {
   if (/^(beaker):/i.test(sender.getURL())) return true
-  return senderHasViewerApp(sender)
+  // TODO
+  return true
 }
 
 // internal methods

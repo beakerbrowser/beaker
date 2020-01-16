@@ -100,7 +100,7 @@ class WebTerm extends LitElement {
     this.url = url
 
     this.envVars.home = navigator.filesystem.url
-    this.envVars.profile = 'dat://' + (await navigator.filesystem.stat('/profile')).mount.key
+    this.envVars.profile = 'drive://' + (await navigator.filesystem.stat('/profile')).mount.key
 
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {
@@ -212,14 +212,14 @@ class WebTerm extends LitElement {
 
   setCWD (location) {
     var locationParsed
-    if (location.startsWith('dat://')) {
+    if (location.startsWith('drive://')) {
       try {
         locationParsed = new URL(location)
         location = `${locationParsed.host}${locationParsed.pathname}`
       } catch (err) {
         location = `${this.cwd.host}${joinPath(this.cwd.pathname, location)}`
       }
-      locationParsed = new URL('dat://' + location)
+      locationParsed = new URL('drive://' + location)
     } else {
       locationParsed = new URL(location)
     }
@@ -229,7 +229,7 @@ class WebTerm extends LitElement {
   }
 
   parseURL (url) {
-    if (!url.includes('://')) url = 'dat://' + url
+    if (!url.includes('://')) url = 'drive://' + url
     return new URL(url)
   }
 

@@ -54,7 +54,7 @@ export class ProfileList extends LitElement {
   }
    
   renderProfile (profile) {
-    var id = profile.url.slice('dat://'.length)
+    var id = profile.url.slice('drive://'.length)
     return html`
       <div class="profile">
         <a class="avatar" href="/${id}">

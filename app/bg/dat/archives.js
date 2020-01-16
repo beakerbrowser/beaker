@@ -1,7 +1,7 @@
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import datEncoding from 'dat-encoding'
-import parseDatURL from 'parse-dat-url'
+import { parseDriveUrl } from '../../lib/urls'
 import _debounce from 'lodash.debounce'
 import pda from 'pauls-dat-api2'
 import { wait } from '../../lib/functions'
@@ -160,7 +160,7 @@ export async function pullLatestArchiveMeta (archive, {updateMTime} = {}) {
     await archivesDb.setMeta(key, details)
 
     // emit the updated event
-    details.url = 'dat://' + key
+    details.url = 'drive://' + key
     archivesEvents.emit('updated', {key, details, oldMeta})
     return details
   } catch (e) {
@@ -327,7 +327,11 @@ async function loadArchiveInner (key, settingsOverride) {
 
   // put the archive on the network
   if (!userSettings || userSettings.visibility !== 'private') {
-    archive.session.publish()
+    archive.session.configureNetwork({
+      announce: true,
+      lookup: true,
+      remember: false
+    })
   }
 
   // fetch dns name if known
@@ -428,7 +432,11 @@ export async function unloadArchive (key) {
     archive.fileActStream = null
   }
   delete archives[key]
-  archive.session.unpublish()
+  archive.session.configureNetwork({
+    announce: false,
+    lookup: false,
+    remember: false
+  })
   archive.session.close()
 };
 
@@ -494,8 +502,8 @@ export async function clearFileCache (key) {
 export async function getPrimaryUrl (url) {
   var key = await fromURLToKey(url, true)
   var datDnsRecord = await datDnsDb.getCurrentByKey(key)
-  if (!datDnsRecord) return `dat://${key}`
-  return `dat://${datDnsRecord.name}`
+  if (!datDnsRecord) return `drive://${key}`
+  return `drive://${datDnsRecord.name}`
 }
 
 /**
@@ -543,11 +551,9 @@ export function fromURLToKey (url, lookupDns = false) {
     return url
   }
 
-  var urlp = parseDatURL(url)
-
-  // validate
-  if (urlp.protocol !== 'dat:') {
-    throw new InvalidURLError('URL must be a dat: scheme')
+  var urlp = parseDriveUrl(url)
+  if (urlp.protocol !== 'drive:' && urlp.protocol !== 'web:' && urlp.protocol !== 'dat:') {
+    throw new InvalidURLError('URL must be a drive:, web:, or dat: scheme')
   }
   if (!DAT_HASH_REGEX.test(urlp.host)) {
     if (!lookupDns) {
@@ -563,8 +569,8 @@ export function fromKeyToURL (key) {
   if (typeof key !== 'string') {
     key = datEncoding.toStr(key)
   }
-  if (!key.startsWith('dat://')) {
-    return `dat://${key}/`
+  if (!key.startsWith('drive://')) {
+    return `drive://${key}/`
   }
   return key
 }

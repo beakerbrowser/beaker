@@ -30,8 +30,8 @@ class SiteInfoApp extends LitElement {
     return [mainCSS]
   }
 
-  get isDat () {
-    return this.url && this.url.startsWith('dat:')
+  get isDrive () {
+    return this.url && (this.url.startsWith('drive:') || this.url.startsWith('web:'))
   }
 
   get isHttps () {
@@ -68,7 +68,7 @@ class SiteInfoApp extends LitElement {
   get isDatDomainUnconfirmed () {
     // viewing a dat at a hostname but no domain is confirmed
     var hostname = this.hostname.replace(/\+.*$/i, '')
-    return this.isDat && !isDatHashRegex.test(hostname) && this.info.domain !== hostname
+    return this.isDrive && !isDatHashRegex.test(hostname) && this.info.domain !== hostname
   }
 
   constructor () {
@@ -136,7 +136,7 @@ class SiteInfoApp extends LitElement {
       }
 
       this.info = {}
-      if (this.isDat) {
+      if (this.isDrive) {
         // get drive info
         let drive = this.drive
         this.info = await drive.getInfo()
@@ -164,7 +164,7 @@ class SiteInfoApp extends LitElement {
 
       // choose default view
       if (!this.view) {
-        this.view = this.isDat ? 'apps' : 'permissions'
+        this.view = this.isDrive ? 'apps' : 'permissions'
       }
 
       // all sites: get requested perms
@@ -247,9 +247,9 @@ class SiteInfoApp extends LitElement {
       <div class="site-info">
         <div class="details">
           <h1>${this.info.title}</h1>
-          ${this.isDat && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
-          ${this.isDat ? this.renderAuthor() : ''}
-          ${this.isDat && this.info.forkOf ? html`
+          ${this.isDrive && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
+          ${this.isDrive ? this.renderAuthor() : ''}
+          ${this.isDrive && this.info.forkOf ? html`
             <p class="fork-of"><span class="fas fa-fw fa-code-branch"></span> Fork of <a href=${this.info.forkOf}>${toNiceUrl(this.info.forkOf)}</a></p>
           ` : ''}
         </div>
@@ -271,7 +271,7 @@ class SiteInfoApp extends LitElement {
     return html`
       <div class="nav">
         <div class="tabs">
-          ${this.isDat ? html`
+          ${this.isDrive ? html`
             <a class=${classMap({active: this.view === 'apps'})} @click=${e => this.onSetView(e, 'apps')}>
               <span class="fas fa-fw fa-drafting-compass"></span>
               Viewing with
@@ -281,7 +281,7 @@ class SiteInfoApp extends LitElement {
             <span class="fas fa-fw fa-key"></span>
             Permissions
           </a>
-          ${this.isDat ? html`
+          ${this.isDrive ? html`
             <a class=${classMap({active: this.view === 'peers'})} @click=${e => this.onSetView(e, 'peers')}>
               <span class="fas fa-fw fa-share-alt"></span>
               ${this.info.peers} ${pluralize(this.info.peers, 'peer')}

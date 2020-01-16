@@ -26,10 +26,6 @@ class EditorApp extends LitElement {
     return this // no shadow dom
   }
 
-  get isDat () {
-    return this.url && this.url.startsWith('dat:')
-  }
-
   get archive () {
     return new DatArchive(this.url)
   }
@@ -175,7 +171,7 @@ class EditorApp extends LitElement {
       this.resolvedPath = ''
 
       var body = ''
-      if (url.startsWith('dat:')) {
+      if (url.startsWith('drive:') || url.startsWith('web:')) {
         body = await this.loadDat(url)
       } else if (url.startsWith('http:') || url.startsWith('https:')) {
         this.isFilesOpen = false

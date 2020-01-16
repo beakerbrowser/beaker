@@ -125,7 +125,7 @@ export class PostComposer extends LitElement {
     this.linkMetadata = {loading: true}
     var url = this.shadowRoot.querySelector('input#url').value
     var urlp = new URL(url)
-    if (urlp.protocol === 'dat:') {
+    if (urlp.protocol === 'drive:' || urlp.protocol === 'web:') {
       if (urlp.pathname === '/') {
         try {
           let info = await (new DatArchive(urlp.hostname)).getInfo({timeout: 10e3})

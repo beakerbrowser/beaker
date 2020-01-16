@@ -3,7 +3,7 @@ import { PERMS, getPermId } from '@beaker/permissions'
 import dat from '../dat/index'
 import * as sitedata from '../dbs/sitedata'
 import _get from 'lodash.get'
-import parseDatURL from 'parse-dat-url'
+import { parseDriveUrl } from '../../lib/urls'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as tabManager from './tab-manager'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
@@ -64,9 +64,9 @@ export function denyAllRequests (win) {
 }
 
 export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
-  var urlp = parseDatURL(sender.getURL())
+  var urlp = parseDriveUrl(sender.getURL())
   if (urlp.protocol === 'beaker:') return true
-  if (urlp.protocol === 'dat:') {
+  if (urlp.protocol === 'web:') {
     // resolve name
     let key = await dat.dns.resolveName(urlp.hostname)
 

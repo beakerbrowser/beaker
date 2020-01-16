@@ -1,13 +1,14 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
-import { ucfirst } from 'beaker://app-stdlib/js/strings.js'
+import { changeURLScheme } from 'beaker://app-stdlib/js/strings.js'
 import 'beaker://app-stdlib/js/com/hover-menu.js'
 
 export class DriveInfo extends LitElement {
   static get properties () {
     return {
       userUrl: {type: String, attribute: 'user-url'},
+      realUrl: {type: String, attribute: 'real-url'},
       driveInfo: {type: Object},
       hasThumb: {type: Boolean}
     }
@@ -16,6 +17,7 @@ export class DriveInfo extends LitElement {
   constructor () {
     super()
     this.userUrl = undefined
+    this.realUrl = undefined
     this.driveInfo = undefined
     this.hasThumb = true
   }
@@ -52,14 +54,18 @@ export class DriveInfo extends LitElement {
           <div class="bottom-ctrls">
             ${this.driveInfo.url !== this.userUrl ? '' : html`
               <span class="label verified"><span class="fas fa-fw fa-check-circle"></span> My profile</span>
+              <a class="btn" href=${changeURLScheme(this.realUrl, 'web')} target="_blank"><span class="fas fa-fw fa-desktop"></span> Open as Website</a>
             `}
           </div>
-        ` : ''}
-        ${this.driveInfo.url === navigator.filesystem.url ? html`
+        ` : this.driveInfo.url === navigator.filesystem.url ? html`
           <div class="bottom-ctrls">
             <span class="label verified"><span class="fas fa-fw fa-check-circle"></span> My home drive</span>
           </div>
-        ` : ''}
+        ` : html`
+          <div class="bottom-ctrls">
+            <a class="btn" href=${changeURLScheme(this.realUrl, 'web')} target="_blank"><span class="fas fa-fw fa-desktop"></span> Open as Website</a>
+          </div>
+        `}
       </section>
     `
   }
@@ -71,7 +77,7 @@ export class DriveInfo extends LitElement {
     // -prf
     try {
       this.querySelector('img').removeAttribute('src')
-      this.querySelector('img').setAttribute('src', `${this.driveInfo.url}/thumb`)
+      this.querySelector('img').setAttribute('src', `${changeURLScheme(this.driveInfo.url, 'web')}/thumb`)
     } catch (e) {}
   }
 

@@ -1,7 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
-import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, changeURLScheme } from 'beaker://app-stdlib/js/strings.js'
 import MarkdownIt from 'beaker://app-stdlib/vendor/markdown-it.js'
 import css from '../../../css/com/file/file-display.css.js'
 
@@ -79,15 +79,15 @@ export class FileDisplay extends LitElement {
   }
 
   renderImage () {
-    return html`<img src=${this.url}>`
+    return html`<img src=${changeURLScheme(this.url, 'web')}>`
   }
 
   renderVideo () {
-    return html`<video controls><source src=${this.url}></video>`
+    return html`<video controls><source src=${changeURLScheme(this.url, 'web')}></video>`
   }
 
   renderAudio () {
-    return html`<audio controls><source src=${this.url}></audio>`
+    return html`<audio controls><source src=${changeURLScheme(this.url, 'web')}></audio>`
   }
 
   renderIcon (icon) {

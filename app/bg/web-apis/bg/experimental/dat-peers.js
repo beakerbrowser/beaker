@@ -1,4 +1,4 @@
-import parseDatURL from 'parse-dat-url'
+import { parseDriveUrl } from '../../../../lib/urls'
 import { PermissionsError } from 'beaker-error-constants'
 import * as permissions from '../../../ui/permissions'
 import * as datArchives from '../../../dat/archives'
@@ -70,10 +70,10 @@ export default {
 
 async function getSenderArchive (sender) {
   var url = sender.getURL()
-  if (!url.startsWith('dat:')) {
-    throw new PermissionsError('Only dat:// sites can use the datPeers API')
+  if (!url.startsWith('web:')) {
+    throw new PermissionsError('Only web:// sites can use the datPeers API')
   }
-  var urlp = parseDatURL(url)
+  var urlp = parseDriveUrl(url)
   if (!DAT_HASH_REGEX.test(urlp.host)) {
     urlp.host = await datDns.resolveName(url)
   }

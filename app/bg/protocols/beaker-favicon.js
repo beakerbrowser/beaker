@@ -39,12 +39,12 @@ export function setup () {
       })
     }
 
-    // if a dat, see if there's a favicon.ico or .png
+    // if a drive, see if there's a favicon.ico or .png
     try {
       let data, datfs
       // pick the filesystem
       let datResolvedUrl = url
-      if (url.startsWith('dat://')) {
+      if (url.startsWith('drive://') || url.startsWith('web://')) {
         datResolvedUrl = await dat.dns.resolveName(url)
         datfs = dat.archives.getArchive(datResolvedUrl) // (only try if the dat is loaded)
       }
@@ -121,10 +121,6 @@ function parseBeakerFaviconURL (str) {
   let res = {
     faviconSize: (+match[1]) || 16,
     url: match[2]
-  }
-  // special case: in beaker://library, use the dat being viewed
-  if (res.url.startsWith('beaker://library/dat://')) {
-    res.url = res.url.slice('beaker://library/'.length)
   }
   return res
 }

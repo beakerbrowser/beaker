@@ -1,5 +1,5 @@
 import errors from 'beaker-error-constants'
-import parseDatURL from 'parse-dat-url'
+import { parseDriveUrl } from '../../../lib/urls'
 import datArchiveManifest from '../manifests/external/dat-archive'
 import { EventTarget, Event, fromEventStream } from './event-target'
 import Stat from './stat'
@@ -23,15 +23,15 @@ export const setup = function (rpc) {
 
       // basic URL validation
       if (!url || typeof url !== 'string') {
-        throwWithFixedStack(new Error('Invalid dat:// URL'), errStack)
+        throwWithFixedStack(new Error('Invalid drive:// URL'), errStack)
       }
 
       // parse the URL
-      const urlParsed = parseDatURL(url)
-      if (!urlParsed || (urlParsed.protocol !== 'dat:')) {
-        throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
+      const urlParsed = parseDriveUrl(url)
+      if (!urlParsed || (urlParsed.protocol !== 'drive:' && urlParsed.protocol !== 'web:')) {
+        throwWithFixedStack(new Error('Invalid URL: must be a drive:// or web:// URL'), errStack)
       }
-      url = 'dat://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
+      url = 'drive://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
 
       // define this.url as a frozen getter
       Object.defineProperty(this, 'url', {
@@ -65,8 +65,8 @@ export const setup = function (rpc) {
     static fork (url, opts = {}) {
       var errStack = (new Error()).stack
       url = (typeof url.url === 'string') ? url.url : url
-      if (!isDatURL(url)) {
-        throwWithFixedStack(new Error('Invalid URL: must be a dat:// URL'), errStack)
+      if (!isDriveUrl(url)) {
+        throwWithFixedStack(new Error('Invalid URL: must be a drive:// or web:// URL'), errStack)
       }
       return datRPC.forkArchive(url, opts)
         .then(newUrl => new DatArchive(newUrl))
@@ -100,9 +100,9 @@ export const setup = function (rpc) {
     }
 
     checkout (version) {
-      const urlParsed = parseDatURL(this.url)
+      const urlParsed = parseDriveUrl(this.url)
       version = version ? `+${version}` : ''
-      return new DatArchive(`dat://${urlParsed.hostname}${version}`)
+      return new DatArchive(`drive://${urlParsed.hostname}${version}`)
     }
 
     async diff (other, prefix, opts = {}) {
@@ -398,9 +398,9 @@ export const setup = function (rpc) {
     Object.defineProperty(t, attr, {enumerable: false, value})
   }
 
-  function isDatURL (url) {
-    var urlp = parseDatURL(url)
-    return urlp && urlp.protocol === 'dat:'
+  function isDriveUrl (url) {
+    var urlp = parseDriveUrl(url)
+    return urlp && (urlp.protocol === 'drive:' || urlp.protocol === 'web:')
   }
 
   function throwWithFixedStack (e, errStack) {
