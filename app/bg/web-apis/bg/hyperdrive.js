@@ -16,11 +16,13 @@ import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
 import * as users from '../../filesystem/users'
 import * as windows from '../../ui/windows'
-import { DAT_MANIFEST_FILENAME, DAT_CONFIGURABLE_FIELDS, DAT_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DAT_API_TIMEOUT } from '../../../lib/const'
+import { DRIVE_MANIFEST_FILENAME, DAT_CONFIGURABLE_FIELDS, DAT_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DAT_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
 
 // exported api
 // =
+
+const isSenderBeaker = (sender) => /^(beaker|drive):/.test(sender.getURL()) // drive: code runs beaker code only
 
 const to = (opts) =>
   (opts && typeof opts.timeout !== 'undefined')
@@ -32,7 +34,7 @@ export default {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
-    if (!this.sender.getURL().startsWith('beaker:')) {
+    if (!isSenderBeaker(this.sender)) {
       visibility = template = undefined
       author = _get(windows.getUserSessionFor(this.sender), 'url')
     }
@@ -90,7 +92,7 @@ export default {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
-    if (!this.sender.getURL().startsWith('beaker:')) {
+    if (!isSenderBeaker(this.sender)) {
       visibility = undefined
       author = _get(windows.getUserSessionFor(this.sender), 'url')
     }
@@ -142,7 +144,7 @@ export default {
         var info = await drives.getDriveInfo(url)
 
         // request from beaker internal sites: give all data
-        if (this.sender.getURL().startsWith('beaker:')) {
+        if (isSenderBeaker(this.sender)) {
           return info
         }
 
@@ -181,12 +183,12 @@ export default {
 
         // handle 'visibility' specially
         // also, only allow beaker to set 'visibility' for now
-        if (('visibility' in settings) && this.sender.getURL().startsWith('beaker:')) {
+        if (('visibility' in settings) && isSenderBeaker(this.sender)) {
           // TODO uwg await datLibrary.configureDrive(drive, {visibility: settings.visibility})
         }
 
         // only allow beaker to set these manifest updates for now
-        if (!this.sender.getURL().startsWith('beaker:')) {
+        if (!isSenderBeaker(this.sender)) {
           delete settings.author
         }
 
@@ -669,24 +671,24 @@ export default {
 
 // helper to check if filepath refers to a file that userland is not allowed to edit directly
 function assertUnprotectedFilePath (filepath, sender) {
-  if (sender.getURL().startsWith('beaker:')) {
+  if (isSenderBeaker(sender)) {
     return // can write any file
   }
-  if (filepath === '/' + DAT_MANIFEST_FILENAME) {
+  if (filepath === '/' + DRIVE_MANIFEST_FILENAME) {
     throw new ProtectedFileNotWritableError()
   }
 }
 
 // temporary helper to make sure the call is made by a beaker: page
 function assertBeakerOnly (sender) {
-  if (!sender.getURL().startsWith('beaker:')) {
+  if (!isSenderBeaker(sender)) {
     throw new PermissionsError()
   }
 }
 
 async function assertCreateDrivePermission (sender) {
   // beaker: always allowed
-  if (sender.getURL().startsWith('beaker:')) {
+  if (isSenderBeaker(sender)) {
     return true
   }
 
@@ -708,7 +710,7 @@ async function assertWritePermission (drive, sender) {
   }
 
   // beaker: always allowed
-  if (sender.getURL().startsWith('beaker:')) {
+  if (isSenderBeaker(sender)) {
     return true
   }
 
@@ -733,7 +735,7 @@ async function assertDeleteDrivePermission (drive, sender) {
   const perm = ('deleteDat:' + driveKey)
 
   // beaker: always allowed
-  if (sender.getURL().startsWith('beaker:')) {
+  if (isSenderBeaker(sender)) {
     return true
   }
 
@@ -752,8 +754,8 @@ function assertDriveDeletable (drive) {
 }
 
 async function assertQuotaPermission (drive, senderOrigin, byteLength) {
-  // beaker: always allowed
-  if (senderOrigin.startsWith('beaker:')) {
+  // beaker: and drive: always allowed
+  if (senderOrigin.startsWith('beaker:') || senderOrigin.startsWith('drive:')) {
     return
   }
 
