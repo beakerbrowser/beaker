@@ -71,8 +71,25 @@ header a:hover {
   color: var(--blue);
 }
 
+header a:hover svg path {
+  fill: var(--blue) !important;
+}
+
 header a.highlighted {
   color: var(--red);
+}
+
+header .brand {
+  position: relative;
+  padding-left: 20px;
+}
+
+header .logo {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 16px;
+  height: 16px;
 }
 
 header .spacer {
