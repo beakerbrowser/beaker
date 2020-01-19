@@ -51,6 +51,7 @@ header {
   display: flex;
   align-items: center;
   margin: 10px 6px 10px;
+  letter-spacing: 0.75px;
 }
 
 header a {
@@ -70,11 +71,6 @@ header a:last-child {
 header a:hover {
   color: var(--blue);
 }
-
-header a:hover svg path {
-  fill: var(--blue) !important;
-}
-
 header a.highlighted {
   color: var(--red);
 }
@@ -100,6 +96,7 @@ nav.pills {
   display: flex;
   margin: 0 0 10px;
   font-size: 13px;
+  letter-spacing: 0.5px;
 }
 
 nav.pills a {

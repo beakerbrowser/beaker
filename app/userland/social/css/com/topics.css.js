@@ -8,6 +8,10 @@ ${spinnerCSS}
   display: block;
 }
 
+h3 {
+  letter-spacing: 0.5px;
+}
+
 a {
   text-decoration: none;
   color: #778;
