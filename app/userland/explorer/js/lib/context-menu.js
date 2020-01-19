@@ -148,6 +148,12 @@ export function constructItems (app) {
     })
     items.push('-')
     items.push({
+      icon: 'far fa-fw fa-clone',
+      label: 'Clone this drive',
+      disabled: !app.canShare(app.locationAsItem),
+      click: () => app.onCloneDrive()
+    })
+    items.push({
       icon: html`<i style="padding-left: 2px; font-size: 16px; box-sizing: border-box">◨</i>`,
       label: 'Diff / merge',
       click: () => app.doCompare(window.location.toString())

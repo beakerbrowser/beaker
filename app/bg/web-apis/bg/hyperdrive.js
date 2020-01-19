@@ -88,7 +88,7 @@ export default {
     return newDriveUrl
   },
 
-  async forkDrive (url, {title, description, type, author, visibility, links, prompt} = {}) {
+  async cloneDrive (url, {title, description, type, author, visibility, links, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
@@ -98,13 +98,13 @@ export default {
     }
 
     if (prompt !== false) {
-      // run the fork modal
+      // run the clone modal
       let key1 = await lookupUrlDriveKey(url)
       let key2 = await lookupUrlDriveKey(this.sender.getURL())
-      let isSelfFork = key1 === key2
+      let isSelfClone = key1 === key2
       let res
       try {
-        res = await modals.create(this.sender, 'fork-drive', {url, title, description, type, author, visibility, links, isSelfFork})
+        res = await modals.create(this.sender, 'clone-drive', {url, title, description, type, author, visibility, links, isSelfClone})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error
@@ -118,7 +118,7 @@ export default {
 
       // create
       let key = await lookupUrlDriveKey(url)
-      let newDrive = await drives.forkDrive(key, {title, description, type, author, links})
+      let newDrive = await drives.cloneDrive(key, {title, description, type, author, links})
       await filesystem.addToLibrary(newDrive.url, title)
       newDriveUrl = newDrive.url
     }

@@ -66,8 +66,8 @@ export const DAT_CONFIGURABLE_FIELDS = [
   'fallback_page'
 ]
 
-// index.json manifest fields which should be preserved in forks
-export const DAT_PRESERVED_FIELDS_ON_FORK = [
+// index.json manifest fields which should be preserved in clones
+export const DRIVE_PRESERVED_FIELDS_ON_CLONE = [
   'web_root',
   'fallback_page',
   'links',

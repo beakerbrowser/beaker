@@ -11,10 +11,10 @@ import spinnerCSS from './spinner.css'
 const STATES = {
   READY: 0,
   DOWNLOADING: 1,
-  FORKING: 2
+  CLONING: 2
 }
 
-class ForkDriveModal extends LitElement {
+class CloneDriveModal extends LitElement {
   static get properties () {
     return {
       state: {type: Number},
@@ -85,8 +85,8 @@ class ForkDriveModal extends LitElement {
     this.author = null
 
     // export interface
-    window.forkDriveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
-    window.forkDriveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
+    window.cloneDriveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
+    window.cloneDriveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
   }
 
   async init (params, cbs) {
@@ -127,15 +127,15 @@ class ForkDriveModal extends LitElement {
     var actionBtn
     switch (this.state) {
       case STATES.READY:
-        progressEl = html`<div class="fork-dat-progress">Ready to fork.</div>`
-        actionBtn = html`<button type="submit" class="btn primary" tabindex="5">Create fork</button>`
+        progressEl = html`<div class="clone-dat-progress">Ready to clone.</div>`
+        actionBtn = html`<button type="submit" class="btn primary" tabindex="5">Create copy</button>`
         break
       case STATES.DOWNLOADING:
-        progressEl = html`<div class="fork-dat-progress">Downloading remaining files...</div>`
+        progressEl = html`<div class="clone-dat-progress">Downloading remaining files...</div>`
         actionBtn = html`<button type="submit" class="btn" disabled tabindex="5"><span class="spinner"></span></button>`
         break
-      case STATES.FORKING:
-        progressEl = html`<div class="fork-dat-progress">Forking...</div>`
+      case STATES.CLONING:
+        progressEl = html`<div class="clone-dat-progress">Copying...</div>`
         actionBtn = html`<button type="submit" class="btn" disabled tabindex="5"><span class="spinner"></span></button>`
         break
     }
@@ -143,7 +143,7 @@ class ForkDriveModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">Make a fork of ${this.driveInfo.title ? `"${this.driveInfo.title}"` : prettyHash(this.driveInfo.key)}</h1>
+        <h1 class="title">Make a copy of ${this.driveInfo.title ? `"${this.driveInfo.title}"` : prettyHash(this.driveInfo.key)}</h1>
 
         <form @submit=${this.onSubmit}>
           <label for="title">Title</label>
@@ -218,9 +218,9 @@ class ForkDriveModal extends LitElement {
     this.state = STATES.DOWNLOADING
     await bg.hyperdrive.download(this.url)
 
-    this.state = STATES.FORKING
+    this.state = STATES.CLONING
     try {
-      var url = await bg.hyperdrive.forkDrive(this.url, {
+      var url = await bg.hyperdrive.cloneDrive(this.url, {
         title: this.title,
         description: this.description,
         type: this.type,
@@ -235,4 +235,4 @@ class ForkDriveModal extends LitElement {
   }
 }
 
-customElements.define('fork-drive-modal', ForkDriveModal)
+customElements.define('clone-drive-modal', CloneDriveModal)

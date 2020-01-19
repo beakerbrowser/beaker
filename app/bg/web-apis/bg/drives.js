@@ -85,7 +85,6 @@ function massageRecord (record) {
       mtime: record.meta.mtime,
       size: record.meta.size,
       author: record.meta.author,
-      forkOf: record.meta.forkOf,
       writable: record.meta.writable
     },
     isSaved: record.isSaved,

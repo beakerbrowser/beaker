@@ -62,13 +62,13 @@ export const setup = function (rpc) {
         .catch(e => throwWithFixedStack(e, errStack))
     }
 
-    static fork (url, opts = {}) {
+    static clone (url, opts = {}) {
       var errStack = (new Error()).stack
       url = (typeof url.url === 'string') ? url.url : url
       if (!isDriveUrl(url)) {
         throwWithFixedStack(new Error('Invalid URL: must be a drive:// or web:// URL'), errStack)
       }
-      return hyperdriveRPC.forkDrive(url, opts)
+      return hyperdriveRPC.cloneDrive(url, opts)
         .then(newUrl => new Hyperdrive(newUrl))
         .catch(e => throwWithFixedStack(e, errStack))
     }

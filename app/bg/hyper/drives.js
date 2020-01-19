@@ -26,7 +26,7 @@ import * as users from '../filesystem/users'
 // constants
 // =
 
-import { DAT_HASH_REGEX, DAT_PRESERVED_FIELDS_ON_FORK, DRIVE_MANIFEST_FILENAME } from '../../lib/const'
+import { DAT_HASH_REGEX, DRIVE_PRESERVED_FIELDS_ON_CLONE, DRIVE_MANIFEST_FILENAME } from '../../lib/const'
 
 import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 
@@ -146,10 +146,10 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
       archivesDb.getMeta(key),
       0//drive.pda.readSize('/')
     ])
-    var {title, description, type, author, forkOf} = (manifest || {})
+    var {title, description, type, author} = (manifest || {})
     var writable = drive.writable
     var mtime = updateMTime ? Date.now() : oldMeta.mtime
-    var details = {title, description, type, mtime, size, author, forkOf, writable}
+    var details = {title, description, type, mtime, size, author, writable}
 
     // check for changes
     if (!hasMetaChanged(details, oldMeta)) {
@@ -205,7 +205,7 @@ export async function createNewDrive (manifest = {}) {
  * @param {Object} [manifest]
  * @returns {Promise<DaemonHyperdrive>}
  */
-export async function forkDrive (srcDriveUrl, manifest = {}) {
+export async function cloneDrive (srcDriveUrl, manifest = {}) {
   srcDriveUrl = fromKeyToURL(srcDriveUrl)
 
   // get the source drive
@@ -233,10 +233,9 @@ export async function forkDrive (srcDriveUrl, manifest = {}) {
     title: (manifest.title) ? manifest.title : srcManifest.title,
     description: (manifest.description) ? manifest.description : srcManifest.description,
     type: (manifest.type) ? manifest.type : srcManifest.type,
-    author: manifest.author,
-    forkOf: srcDriveUrl
+    author: manifest.author
   }
-  DAT_PRESERVED_FIELDS_ON_FORK.forEach(field => {
+  DRIVE_PRESERVED_FIELDS_ON_CLONE.forEach(field => {
     if (srcManifest[field]) {
       dstManifest[field] = srcManifest[field]
     }
@@ -248,18 +247,11 @@ export async function forkDrive (srcDriveUrl, manifest = {}) {
   // copy files
   var ignore = ['/.dat', '/.git', '/index.json']
   await pda.exportArchiveToArchive({
-    srcDrive: srcDrive.session.drive,
-    dstDrive: dstDrive.session.drive,
+    srcArchive: srcDrive.session.drive,
+    dstArchive: dstDrive.session.drive,
     skipUndownloadedFiles: true,
     ignore
   })
-
-  // write a .datignore if DNE
-  try {
-    await dstDrive.pda.stat('/.datignore')
-  } catch (e) {
-    await dstDrive.pda.writeFile('/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
-  }
 
   return dstDrive
 };
@@ -574,7 +566,7 @@ export function fromKeyToURL (key) {
 }
 
 function hasMetaChanged (m1, m2) {
-  for (let k of ['title', 'description', 'type', 'size', 'author', 'forkOf', 'writable', 'mtime']) {
+  for (let k of ['title', 'description', 'type', 'size', 'author', 'writable', 'mtime']) {
     if (!m1[k]) m1[k] = undefined
     if (!m2[k]) m2[k] = undefined
     if (m1[k] !== m2[k]) {

@@ -751,7 +751,7 @@ export class ExplorerApp extends LitElement {
   }
 
   async onCloneDrive (e) {
-    var drive = await Hyperdrive.fork(this.currentDriveInfo.url)
+    var drive = await Hyperdrive.clone(this.currentDriveInfo.url)
     toast.create('Drive created')
     window.location = drive.url
   }
