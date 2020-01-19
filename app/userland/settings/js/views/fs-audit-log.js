@@ -69,7 +69,7 @@ class FsAuditLogView extends LitElement {
     return html`
       <tr class="logger-row">
         <td class="caller"><a href=${row.caller} target="_blank">${toNiceDomain(row.caller)}</a></td>
-        <td class="target"><a href=${'drive://' + row.target} target="_blank">${toNiceDomain(row.target)}</a></td>
+        <td class="target"><a href=${'hd://' + row.target} target="_blank">${toNiceDomain(row.target)}</a></td>
         <td class="ts"><code>${timeDifference(row.ts, true)}</code></td>
         <td class="runtime"><code>${row.runtime}ms</code></td>
         <td class="method"><code>${row.method}</code></td>

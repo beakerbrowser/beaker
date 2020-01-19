@@ -234,10 +234,6 @@ async function isBeakerApp (sender) {
   if (sender.getURL().startsWith('beaker:')) {
     return true
   }
-  // drive: URLs are handled by beaker code
-  if (sender.getURL().startsWith('drive:')) {
-    return true
-  }
   return false
 }
 

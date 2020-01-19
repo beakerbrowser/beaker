@@ -17,17 +17,17 @@ const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).repl
 // content security policies
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src beaker-favicon: beaker: asset: data: web: http: https;
+  img-src beaker-favicon: beaker: asset: data: hd: http: https;
   script-src 'self' beaker: 'unsafe-eval';
-  media-src 'self' beaker: web:;
+  media-src 'self' beaker: hd:;
   style-src 'self' 'unsafe-inline' beaker:;
   child-src 'self';
 `.replace(/\n/g, '')
 const SIDEBAR_CSP = `
 default-src 'self' beaker:;
-img-src beaker-favicon: beaker: asset: data: web: http: https;
-script-src 'self' beaker: web: blob: 'unsafe-eval';
-media-src 'self' beaker: web:;
+img-src beaker-favicon: beaker: asset: data: hd: http: https;
+script-src 'self' beaker: hd: blob: 'unsafe-eval';
+media-src 'self' beaker: hd:;
 style-src 'self' 'unsafe-inline' beaker:;
 child-src 'self';
 `.replace(/\n/g, '')

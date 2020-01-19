@@ -2,7 +2,7 @@ import { parseDriveUrl } from '../../lib/urls'
 import parseRange from 'range-parser'
 import once from 'once'
 import * as logLib from '../logger'
-const logger = logLib.child({category: 'dat', subcategory: 'web-scheme'})
+const logger = logLib.child({category: 'dat', subcategory: 'hd-scheme'})
 // import intoStream from 'into-stream'
 import { toZipStream } from '../lib/zip'
 import slugify from 'slugify'
@@ -47,10 +47,10 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 // =
 
 export function register (protocol) {
-  protocol.registerStreamProtocol('web', protocolHandler, err => {
+  protocol.registerStreamProtocol('hd', protocolHandler, err => {
     if (err) {
       console.error(err)
-      throw new Error('Failed to create protocol: web')
+      throw new Error('Failed to create protocol: hd')
     }
   })
 }
@@ -88,7 +88,7 @@ export const protocolHandler = async function (request, respond) {
     return respondError(404, 'Drive Not Found', {
       title: 'Site Not Found',
       errorDescription: 'Invalid URL',
-      errorInfo: `${request.url} is an invalid web:// URL`
+      errorInfo: `${request.url} is an invalid hd:// URL`
     })
   }
   if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -102,7 +102,7 @@ export const protocolHandler = async function (request, respond) {
   } catch (err) {
     return respondError(404, 'No DNS record found for ' + urlp.host, {
       errorDescription: 'No DNS record found',
-      errorInfo: `No DNS record found for web://${urlp.host}`
+      errorInfo: `No DNS record found for hd://${urlp.host}`
     })
   }
 
@@ -212,7 +212,7 @@ export const protocolHandler = async function (request, respond) {
       return respond({
         statusCode: 303,
         headers: {
-          Location: `web://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}`
+          Location: `hd://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}`
         },
         data: intoStream('')
       })

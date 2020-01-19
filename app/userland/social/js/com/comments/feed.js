@@ -75,7 +75,7 @@ export class CommentsFeed extends LitElement {
           </div>
         ` : html`
           ${repeat(this.comments, comment => {
-            var contextUrl = `/${comment.stat.metadata.href.slice('drive://'.length)}`
+            var contextUrl = `/${comment.stat.metadata.href.slice('hd://'.length)}`
             var userVote = this.getUserVote(comment)
             var karma = this.getKarma(comment)
             return html`
@@ -91,7 +91,7 @@ export class CommentsFeed extends LitElement {
                 </div>
                 <div class="content">
                   <div class="header">
-                    <a class="title" href="/${comment.drive.url.slice('drive://'.length)}">${comment.drive.title}</a>
+                    <a class="title" href="/${comment.drive.url.slice('hd://'.length)}">${comment.drive.title}</a>
                     <a class="permalink" href="${contextUrl}">${timeDifference(comment.stat.ctime, true, 'ago')}</a>
                     <button class="menu transparent" @click=${e => this.onClickMenu(e, comment)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
                   </div>

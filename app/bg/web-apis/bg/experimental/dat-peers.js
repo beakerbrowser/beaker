@@ -3,7 +3,7 @@ import { PermissionsError } from 'beaker-error-constants'
 import * as permissions from '../../../ui/permissions'
 import * as drives from '../../../hyper/drives'
 import hyperDns from '../../../hyper/dns'
-import { DAT_HASH_REGEX } from '../../../../lib/const'
+import { HYPERDRIVE_HASH_REGEX } from '../../../../lib/const'
 
 // constants
 // =
@@ -70,11 +70,11 @@ export default {
 
 async function getSenderDrive (sender) {
   var url = sender.getURL()
-  if (!url.startsWith('web:')) {
-    throw new PermissionsError('Only web:// sites can use the datPeers API')
+  if (!url.startsWith('hd:')) {
+    throw new PermissionsError('Only hd:// sites can use the datPeers API')
   }
   var urlp = parseDriveUrl(url)
-  if (!DAT_HASH_REGEX.test(urlp.host)) {
+  if (!HYPERDRIVE_HASH_REGEX.test(urlp.host)) {
     urlp.host = await hyperDns.resolveName(url)
   }
   return drives.getDrive(urlp.host)

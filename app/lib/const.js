@@ -38,8 +38,8 @@ export const TRASH_FIRST_COLLECT_WAIT = ms('30s') // how long after process star
 export const TRASH_REGULAR_COLLECT_WAIT = ms('15m') // how long between collections?
 
 // 64 char hex
-export const DAT_HASH_REGEX = /^[0-9a-f]{64}$/i
-export const DAT_URL_REGEX = /^(?:(drive|web|dat):\/\/)?([0-9a-f]{64})/i
+export const HYPERDRIVE_HASH_REGEX = /^[0-9a-f]{64}$/i
+export const HYPERDRIVE_URL_REGEX = /^(?:(hd|dat):\/\/)?([0-9a-f]{64})/i
 
 // url file paths
 export const DAT_VALID_PATH_REGEX = /^[a-z0-9\-._~!$&'()*+,;=:@/\s]+$/i

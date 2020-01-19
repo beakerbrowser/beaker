@@ -7,7 +7,7 @@ import jetpack from 'fs-jetpack'
 import { InvalidArchiveKeyError } from 'beaker-error-constants'
 import * as db from './profile-data-db'
 import lock from '../../lib/lock'
-import { DAT_HASH_REGEX } from '../../lib/const'
+import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
 import hyperDns from '../hyper/dns'
 
 // typedefs
@@ -127,7 +127,7 @@ export async function touch (key, timeVar = 'lastAccessTime', value = -1) {
 export async function hasMeta (key) {
   // massage inputs
   var keyStr = typeof key !== 'string' ? datEncoding.toStr(key) : key
-  if (!DAT_HASH_REGEX.test(keyStr)) {
+  if (!HYPERDRIVE_HASH_REGEX.test(keyStr)) {
     try {
       keyStr = await hyperDns.resolveName(keyStr)
     } catch (e) {
@@ -160,7 +160,7 @@ export async function getMeta (key, {noDefault} = {noDefault: false}) {
   var origKeyStr = keyStr
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(keyStr)) {
+  if (!HYPERDRIVE_HASH_REGEX.test(keyStr)) {
     try {
       keyStr = await hyperDns.resolveName(keyStr)
     } catch (e) {
@@ -183,7 +183,7 @@ export async function getMeta (key, {noDefault} = {noDefault: false}) {
   }
 
   // massage some values
-  meta.url = `drive://${meta.dnsName || meta.key}`
+  meta.url = `hd://${meta.dnsName || meta.key}`
   delete meta.dnsName
   meta.writable = !!meta.isOwner
 
@@ -209,7 +209,7 @@ export async function setMeta (key, value) {
   var keyStr = datEncoding.toStr(key)
 
   // validate inputs
-  if (!DAT_HASH_REGEX.test(keyStr)) {
+  if (!HYPERDRIVE_HASH_REGEX.test(keyStr)) {
     throw new InvalidArchiveKeyError()
   }
   if (!value || typeof value !== 'object') {
@@ -251,7 +251,7 @@ export async function setMeta (key, value) {
 function defaultMeta (key, name) {
   return {
     key,
-    url: `drive://${name}`,
+    url: `hd://${name}`,
     title: undefined,
     description: undefined,
     type: undefined,
@@ -284,9 +284,9 @@ export function extractOrigin (originURL) {
 }
 
 function normalizeDriveUrl (url) {
-  var match = url.match(DAT_HASH_REGEX)
+  var match = url.match(HYPERDRIVE_HASH_REGEX)
   if (match) {
-    return `drive://${match[0]}`
+    return `hd://${match[0]}`
   }
   return extractOrigin(url)
 }

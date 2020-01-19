@@ -337,7 +337,7 @@ export class ExplorerApp extends LitElement {
 
   getShareUrl (item) {
     if (item.stat.mount) {
-      return `drive://${item.stat.mount.key}`
+      return `hd://${item.stat.mount.key}`
     } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
       return item.stat.metadata.href
     } else {

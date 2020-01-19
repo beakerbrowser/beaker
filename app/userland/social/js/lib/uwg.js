@@ -77,7 +77,7 @@ export const profiles = {
     let release = await lock('read-social-graph')
     try {
       if (prof.followers && prof.following) return
-      var key = prof.url.slice('drive://'.length)
+      var key = prof.url.slice('hd://'.length)
 
       var [followersQuery, followingQuery] = await Promise.all([
         follows.list({target: key}, {includeProfiles}),

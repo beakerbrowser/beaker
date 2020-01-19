@@ -16,13 +16,13 @@ import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
 import * as users from '../../filesystem/users'
 import * as windows from '../../ui/windows'
-import { DRIVE_MANIFEST_FILENAME, DAT_CONFIGURABLE_FIELDS, DAT_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DAT_API_TIMEOUT } from '../../../lib/const'
+import { DRIVE_MANIFEST_FILENAME, DAT_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DAT_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
 
 // exported api
 // =
 
-const isSenderBeaker = (sender) => /^(beaker|drive):/.test(sender.getURL()) // drive: code runs beaker code only
+const isSenderBeaker = (sender) => /^(beaker):/.test(sender.getURL())
 
 const to = (opts) =>
   (opts && typeof opts.timeout !== 'undefined')
@@ -573,7 +573,7 @@ export default {
   },
 
   async resolveName (name) {
-    if (DAT_HASH_REGEX.test(name)) return name
+    if (HYPERDRIVE_HASH_REGEX.test(name)) return name
     return hyperDns.resolveName(name)
   },
 
@@ -747,15 +747,15 @@ async function assertDeleteDrivePermission (drive, sender) {
 }
 
 function assertDriveDeletable (drive) {
-  var driveUrl = 'drive://' + drive.key.toString('hex')
+  var driveUrl = 'hd://' + drive.key.toString('hex')
   if (users.isUser(driveUrl)) {
     throw new PermissionsError('Unable to delete the user profile.')
   }
 }
 
 async function assertQuotaPermission (drive, senderOrigin, byteLength) {
-  // beaker: and drive: always allowed
-  if (senderOrigin.startsWith('beaker:') || senderOrigin.startsWith('drive:')) {
+  // beaker: always allowed
+  if (senderOrigin.startsWith('beaker:')) {
     return
   }
 
@@ -793,7 +793,7 @@ function assertValidPath (fileOrFolderPath) {
 
 async function parseUrlParts (url) {
   var driveKey, filepath, version
-  if (DAT_HASH_REGEX.test(url)) {
+  if (HYPERDRIVE_HASH_REGEX.test(url)) {
     // simple case: given the key
     driveKey = url
     filepath = '/'
@@ -801,10 +801,10 @@ async function parseUrlParts (url) {
     var urlp = parseDriveUrl(url)
 
     // validate
-    if (urlp.protocol !== 'drive:' && urlp.protocol !== 'web:') {
-      throw new InvalidURLError('URL must be a drive: or web: scheme')
+    if (urlp.protocol !== 'hd:') {
+      throw new InvalidURLError('URL must be a hd: scheme')
     }
-    if (!DAT_HASH_REGEX.test(urlp.host)) {
+    if (!HYPERDRIVE_HASH_REGEX.test(urlp.host)) {
       urlp.host = await hyperDns.resolveName(url)
     }
 
@@ -837,8 +837,8 @@ export async function lookupDrive (sender, url, opts = {}) {
 }
 
 async function lookupUrlDriveKey (url) {
-  if (DAT_HASH_REGEX.test(url)) return url
-  if (!url.startsWith('drive://') && !url.startsWith('web://')) {
+  if (HYPERDRIVE_HASH_REGEX.test(url)) return url
+  if (!url.startsWith('hd://')) {
     return false // not a drive site
   }
 

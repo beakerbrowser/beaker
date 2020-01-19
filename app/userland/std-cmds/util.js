@@ -61,7 +61,7 @@ so that errors can be smoothly generated
 */
 
 export function createDrive (url) {
-  if (url.startsWith('drive:') || url.startsWith('web:')) {
+  if (url.startsWith('hd:')) {
     return new Hyperdrive(url)
   }
   return new OtherOrigin(url)

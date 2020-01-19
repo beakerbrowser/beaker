@@ -23,15 +23,15 @@ export const setup = function (rpc) {
 
       // basic URL validation
       if (!url || typeof url !== 'string') {
-        throwWithFixedStack(new Error('Invalid drive:// URL'), errStack)
+        throwWithFixedStack(new Error('Invalid hd:// URL'), errStack)
       }
 
       // parse the URL
       const urlParsed = parseDriveUrl(url)
-      if (!urlParsed || (urlParsed.protocol !== 'drive:' && urlParsed.protocol !== 'web:')) {
-        throwWithFixedStack(new Error('Invalid URL: must be a drive:// or web:// URL'), errStack)
+      if (!urlParsed || urlParsed.protocol !== 'hd:') {
+        throwWithFixedStack(new Error('Invalid URL: must be a hd:// URL'), errStack)
       }
-      url = 'drive://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
+      url = 'hd://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
 
       // define this.url as a frozen getter
       Object.defineProperty(this, 'url', {
@@ -66,7 +66,7 @@ export const setup = function (rpc) {
       var errStack = (new Error()).stack
       url = (typeof url.url === 'string') ? url.url : url
       if (!isDriveUrl(url)) {
-        throwWithFixedStack(new Error('Invalid URL: must be a drive:// or web:// URL'), errStack)
+        throwWithFixedStack(new Error('Invalid URL: must be a hd:// URL'), errStack)
       }
       return hyperdriveRPC.cloneDrive(url, opts)
         .then(newUrl => new Hyperdrive(newUrl))
@@ -102,7 +102,7 @@ export const setup = function (rpc) {
     checkout (version) {
       const urlParsed = parseDriveUrl(this.url)
       version = version ? `+${version}` : ''
-      return new Hyperdrive(`drive://${urlParsed.hostname}${version}`)
+      return new Hyperdrive(`hd://${urlParsed.hostname}${version}`)
     }
 
     async diff (other, prefix, opts = {}) {
@@ -400,7 +400,7 @@ export const setup = function (rpc) {
 
   function isDriveUrl (url) {
     var urlp = parseDriveUrl(url)
-    return urlp && (urlp.protocol === 'drive:' || urlp.protocol === 'web:')
+    return urlp && (urlp.protocol === 'hd:')
   }
 
   function throwWithFixedStack (e, errStack) {

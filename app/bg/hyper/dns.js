@@ -1,7 +1,7 @@
 import { InvalidDomainName } from 'beaker-error-constants'
 import * as datDnsDb from '../dbs/dat-dns'
 import * as drives from './drives'
-import { DAT_HASH_REGEX } from '../../lib/const'
+import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'dat', subcategory: 'dns'})
 
@@ -42,6 +42,6 @@ async function read (name, err) {
   return record.key
 }
 async function write (name, key) {
-  if (DAT_HASH_REGEX.test(name)) return // dont write for raw urls
+  if (HYPERDRIVE_HASH_REGEX.test(name)) return // dont write for raw urls
   await drives.confirmDomain(key)
 }

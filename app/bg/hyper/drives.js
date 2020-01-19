@@ -26,7 +26,7 @@ import * as users from '../filesystem/users'
 // constants
 // =
 
-import { DAT_HASH_REGEX, DRIVE_PRESERVED_FIELDS_ON_CLONE, DRIVE_MANIFEST_FILENAME } from '../../lib/const'
+import { HYPERDRIVE_HASH_REGEX, DRIVE_PRESERVED_FIELDS_ON_CLONE, DRIVE_MANIFEST_FILENAME } from '../../lib/const'
 
 import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 
@@ -160,7 +160,7 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
     await archivesDb.setMeta(key, details)
 
     // emit the updated event
-    details.url = 'drive://' + key
+    details.url = 'hd://' + key
     drivesEvents.emit('updated', {key, details, oldMeta})
     return details
   } catch (e) {
@@ -265,7 +265,7 @@ export async function loadDrive (key, settingsOverride) {
     if (!Buffer.isBuffer(key)) {
       // existing dat
       key = await fromURLToKey(key, true)
-      if (!DAT_HASH_REGEX.test(key)) {
+      if (!HYPERDRIVE_HASH_REGEX.test(key)) {
         throw new InvalidURLError()
       }
       key = datEncoding.toBuf(key)
@@ -492,8 +492,8 @@ export async function clearFileCache (key) {
 export async function getPrimaryUrl (url) {
   var key = await fromURLToKey(url, true)
   var datDnsRecord = await datDnsDb.getCurrentByKey(key)
-  if (!datDnsRecord) return `drive://${key}`
-  return `drive://${datDnsRecord.name}`
+  if (!datDnsRecord) return `hd://${key}`
+  return `hd://${datDnsRecord.name}`
 }
 
 /**
@@ -536,16 +536,16 @@ export function fromURLToKey (url, lookupDns = false) {
   if (Buffer.isBuffer(url)) {
     return url
   }
-  if (DAT_HASH_REGEX.test(url)) {
+  if (HYPERDRIVE_HASH_REGEX.test(url)) {
     // simple case: given the key
     return url
   }
 
   var urlp = parseDriveUrl(url)
-  if (urlp.protocol !== 'drive:' && urlp.protocol !== 'web:' && urlp.protocol !== 'dat:') {
-    throw new InvalidURLError('URL must be a drive:, web:, or dat: scheme')
+  if (urlp.protocol !== 'hd:' && urlp.protocol !== 'dat:') {
+    throw new InvalidURLError('URL must be a hd: or dat: scheme')
   }
-  if (!DAT_HASH_REGEX.test(urlp.host)) {
+  if (!HYPERDRIVE_HASH_REGEX.test(urlp.host)) {
     if (!lookupDns) {
       throw new InvalidURLError('Hostname is not a valid hash')
     }
@@ -559,8 +559,8 @@ export function fromKeyToURL (key) {
   if (typeof key !== 'string') {
     key = datEncoding.toStr(key)
   }
-  if (!key.startsWith('drive://')) {
-    return `drive://${key}/`
+  if (!key.startsWith('hd://')) {
+    return `hd://${key}/`
   }
   return key
 }

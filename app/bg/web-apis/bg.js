@@ -2,8 +2,8 @@ import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { findTab } from '../ui/tab-manager'
 
-const INTERNAL_ORIGIN_REGEX = /^(beaker:|drive:)/i
-const SECURE_ORIGIN_REGEX = /^(beaker:|drive:|web:|https:|http:\/\/localhost(\/|:))/i
+const INTERNAL_ORIGIN_REGEX = /^(beaker:)/i
+const SECURE_ORIGIN_REGEX = /^(beaker:|hd:|https:|http:\/\/localhost(\/|:))/i
 
 // internal manifests
 import loggerManifest from './manifests/internal/logger'

@@ -2,7 +2,7 @@ import { basename } from 'path'
 import hyperDns from '../hyper/dns'
 import { joinPath } from '../../lib/strings'
 import { chunkMapAsync } from '../../lib/functions'
-import { DAT_HASH_REGEX } from '../../lib/const'
+import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
 
 // typedefs
 // =
@@ -78,7 +78,7 @@ export async function query (root, opts) {
   // massage opts
   if (opts.mount) {
     opts.mount = await hyperDns.resolveName(opts.mount)
-    opts.mount = DAT_HASH_REGEX.exec(opts.mount)[0]
+    opts.mount = HYPERDRIVE_HASH_REGEX.exec(opts.mount)[0]
   }
 
   // iterate all matching paths and match against the query
@@ -107,14 +107,14 @@ export async function query (root, opts) {
       if (!metaMatch) return
     }
 
-    var drive = `drive://${localDriveKey}`
+    var drive = `hd://${localDriveKey}`
     results.push({
       type,
       path,
       url: joinPath(drive, innerPath),
       stat,
       drive,
-      mount: type === 'mount' ? `drive://${stat.mount.key.toString('hex')}` : undefined
+      mount: type === 'mount' ? `hd://${stat.mount.key.toString('hex')}` : undefined
     })
   })
 

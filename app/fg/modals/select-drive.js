@@ -461,7 +461,7 @@ customElements.define('select-drive-modal', SelectDriveModal)
 function isDriveUrl (v = '') {
   try {
     var urlp = new URL(v)
-    return urlp.protocol === 'drive:' || urlp.protocol === 'web:'
+    return urlp.protocol === 'drive:'
   } catch (e) {
     return false
   }

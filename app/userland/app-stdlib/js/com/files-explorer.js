@@ -24,7 +24,7 @@ class FilesExplorer extends LitElement {
   }
 
   get isDrive () {
-    return this.url && (this.url.startsWith('drive:') || this.url.startsWith('web:'))
+    return this.url && this.url.startsWith('hd:')
   }
 
   get drive () {
@@ -269,7 +269,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-external-link-alt',
           label: `Open mount in new tab`,
           click: () => {
-            beaker.browser.openUrl(`drive://${item.stat.mount.key}`, {
+            beaker.browser.openUrl(`hd://${item.stat.mount.key}`, {
               setActive: true,
               sidebarPanels: ['editor-app']
             })
@@ -279,7 +279,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-link',
           label: `Copy Mount URL`,
           click () {
-            writeToClipboard(`drive://${item.stat.mount.key}`)
+            writeToClipboard(`hd://${item.stat.mount.key}`)
             toast.create('Copied to your clipboard')
           }
         },
@@ -409,7 +409,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-external-link-alt',
           label: `Open mount in new tab`,
           click: () => {
-            beaker.browser.openUrl(`drive://${this.currentFolder.mount.key}`, {
+            beaker.browser.openUrl(`hd://${this.currentFolder.mount.key}`, {
               setActive: true,
               sidebarPanels: ['editor-app']
             })
@@ -419,7 +419,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-link',
           label: `Copy Mount URL`,
           click () {
-            writeToClipboard(`drive://${this.currentFolder.mount.key}`)
+            writeToClipboard(`hd://${this.currentFolder.mount.key}`)
             toast.create('Copied to your clipboard')
           }
         }

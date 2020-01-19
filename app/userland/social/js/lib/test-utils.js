@@ -8,7 +8,7 @@ export function init () {
 }
 
 export function listDrives () {
-  return Array.from(debugDrives, url => `beaker://social/${url.slice('drive://'.length)}`)
+  return Array.from(debugDrives, url => `beaker://social/${url.slice('hd://'.length)}`)
 }
 
 export async function generateDrives (num = 10) {

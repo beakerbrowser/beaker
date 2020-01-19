@@ -298,7 +298,7 @@ class LocationBar extends LitElement {
     // determine the URL that the user is targeting (only if it references a drive)
     var inputDriveUrl = undefined
     var inputDriveUrlp = undefined
-    var isDriveUrlRe = /^(drive|web):\/\//i
+    var isDriveUrlRe = /^hd:\/\//i
     if (this.inputValue.startsWith('~')) {
       if (!this.homeDriveUrl) {
         this.homeDriveUrl = bg.navigatorFs.get().url

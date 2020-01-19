@@ -54,7 +54,7 @@ export function setApplicationMenu (opts = {}) {
 }
 
 export function buildWindowMenu (opts = {}) {
-  const isDriveSite = opts.url && opts.url.startsWith('web://')
+  const isDriveSite = opts.url && opts.url.startsWith('hd://')
   const noWindows = opts.noWindows === true
   const getWin = () => BrowserWindow.getFocusedWindow()
 

@@ -21,7 +21,7 @@ class FilesExplorer extends LitElement {
   }
 
   get isDrive () {
-    return this.url && (this.url.startsWith('drive:') || this.url.startsWith('web:'))
+    return this.url && this.url.startsWith('hd:')
   }
 
   get drive () {

@@ -4,10 +4,10 @@
  * Helper protocol to serve site favicons and avatars from the cache.
  * Examples:
  *
- *  - asset:favicon:web://beakerbrowser.com
- *  - asset:favicon-32:web://beakerbrowser.com
- *  - asset:thumb:web://beakerbrowser.com
- *  - asset:cover:web://beakerbrowser.com
+ *  - asset:favicon:hd://beakerbrowser.com
+ *  - asset:favicon-32:hd://beakerbrowser.com
+ *  - asset:thumb:hd://beakerbrowser.com
+ *  - asset:cover:hd://beakerbrowser.com
  **/
 
 import { screen } from 'electron'
@@ -92,9 +92,9 @@ export function setup () {
     }
 
     // try standard icons
-    if (url.startsWith('drive://') || url.startsWith('web://')) {
+    if (url.startsWith('hd://')) {
       let urlp = parseDriveUrl(url)
-      if (filesystem.isRootUrl(`drive://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
+      if (filesystem.isRootUrl(`hd://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
         return servePng(path.join(__dirname, `./assets/img/favicons/drive.png`), DEFAULTS[asset], cb)
       }
       if (!urlp.pathname || urlp.pathname.endsWith('/')) {
