@@ -120,3 +120,20 @@ export function changeURLScheme (url = '', scheme = '') {
     return url
   }
 }
+
+export function toNiceDriveType (type = '') {
+  if (!type) return 'files drive'
+  if (type === 'unwalled.garden/person') return 'beaker user'
+  if (type === 'unwalled.garden/template') return 'template'
+  return type
+}
+
+export function getDriveTypeIcon (type = '') {
+  switch (type) {
+    case 'unwalled.garden/person': return 'fas fa-user'
+    case 'unwalled.garden/template': return 'fas fa-drafting-compass'
+    case 'module': return 'fas fa-cube'
+    case 'website': return 'fas fa-desktop'
+    default: return 'far fa-folder-open'
+  }
+}

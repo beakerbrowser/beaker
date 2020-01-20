@@ -209,6 +209,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://compare' || requestUrl.startsWith('beaker://compare/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'compare'), cb)
   }
+  if (requestUrl === 'beaker://drives' || requestUrl.startsWith('beaker://drives/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'drives'), cb)
+  }
   if (requestUrl === 'beaker://explorer' || requestUrl.startsWith('beaker://explorer/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'explorer'), cb)
   }

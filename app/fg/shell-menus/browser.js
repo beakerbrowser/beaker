@@ -263,25 +263,30 @@ class BrowserMenu extends LitElement {
         <div class="section">
           <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
             <img class="favicon" src="asset:favicon:beaker://downloads">
-              <span class="label">Downloads</span>
-              ${progressEl}
-            </div>
+            <span class="label">Downloads</span>
+            ${progressEl}
+          </div>
 
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
             <img class="favicon" src="asset:favicon:beaker://history">
-              <span class="label">History</span>
-              <span class="shortcut">${this.accelerators.history}</span>
-            </div>
+            <span class="label">History</span>
+            <span class="shortcut">${this.accelerators.history}</span>
+          </div>
             
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-              <img class="favicon" src="asset:favicon:beaker://settings">
-              <span class="label">Settings</span>
-            </div>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://drives')}>
+            <img class="favicon" src="asset:favicon:beaker://drives">
+            <span class="label">My Drives</span>
+          </div>
+            
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+            <img class="favicon" src="asset:favicon:beaker://settings">
+            <span class="label">Settings</span>
+          </div>
 
-            <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://webterm')}>
-              <img class="favicon" src="asset:favicon:beaker://webterm">
-              <span class="label">Webterm</span>
-            </div>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://webterm')}>
+            <img class="favicon" src="asset:favicon:beaker://webterm">
+            <span class="label">Webterm</span>
+          </div>
         </div>
       </div>`
   }
