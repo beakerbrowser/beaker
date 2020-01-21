@@ -22,7 +22,7 @@ import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritab
 // exported api
 // =
 
-const isSenderBeaker = (sender) => /^(beaker):/.test(sender.getURL())
+const isSenderBeaker = (sender) => /^(beaker|https?:\/\/(.*\.)?hyperdrive\.network(:|\/)):/.test(sender.getURL())
 
 const to = (opts) =>
   (opts && typeof opts.timeout !== 'undefined')

@@ -134,7 +134,7 @@ export function describePerm (permId, caps) {
  */
 export async function isTrustedApp (sender) {
   // TEMPORARY: hyperdrive.network is trusted
-  if (/^(beaker:|https?:\/\/hyperdrive\.network(:|\/))/i.test(sender.getURL())) return true
+  if (/^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/i.test(sender.getURL())) return true
   return true
 }
 

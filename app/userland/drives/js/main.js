@@ -7,7 +7,7 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../css/main.css.js'
 
-const EXPLORER_APP = 'http://hyperdrive.network:5000/'
+const EXPLORER_APP = 'https://hyperdrive.network/'
 const EXPLORER_URL = drive => `${EXPLORER_APP}${drive.url.slice('hd://'.length)}`
 
 export class DrivesApp extends LitElement {
