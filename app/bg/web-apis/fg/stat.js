@@ -1,6 +1,12 @@
 // http://man7.org/linux/man-pages/man2/stat.2.html
 // mirrored from hyperdrive/lib/stat.js
 
+function toHex (buf) {
+  return buf.reduce((memo, i) => (
+    memo + ('0' + i.toString(16)).slice(-2) // pad with leading 0 if <16
+  ), '')
+}
+
 const Stat = function Stat (data) {
   if (!(this instanceof Stat)) return new Stat(data)
 
@@ -23,7 +29,7 @@ const Stat = function Stat (data) {
   this.mtime = new Date(data ? data.mtime : 0)
   this.ctime = new Date(data ? data.ctime : 0)
   this.mount = data && data.mount && data.mount.key
-    ? {key: data.mount.key.toString('hex')}
+    ? {key: toHex(data.mount.key)}
     : null
   this.linkname = data ? data.linkname : null
   this.metadata = data ? data.metadata : {}

@@ -129,10 +129,10 @@ export const createHyperdriveSession = async function (opts) {
       ])
       return {
         version,
-        peers: stats[0].metadata.peers,
+        peers: stats.stats[0].metadata.peers,
         networkStats: {
-          uploadTotal: stats[0].metadata.uploadedBytes + stats[0].content.uploadedBytes,
-          downloadTotal: stats[0].metadata.downloadedBytes + stats[0].content.downloadedBytes
+          uploadTotal: stats.stats[0].metadata.uploadedBytes + stats.stats[0].content.uploadedBytes,
+          downloadTotal: stats.stats[0].metadata.downloadedBytes + stats.stats[0].content.downloadedBytes
         }
       }
     },

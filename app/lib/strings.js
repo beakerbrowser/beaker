@@ -96,3 +96,9 @@ export function slugifyUrl (str = '') {
   }
   return slugify(str)
 }
+
+export function toHex (buf) {
+  return buf.reduce((memo, i) => (
+    memo + ('0' + i.toString(16)).slice(-2) // pad with leading 0 if <16
+  ), '')
+}

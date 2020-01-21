@@ -113,7 +113,7 @@ export async function ensureMount (path, url, drive = navigator.filesystem) {
       // add mount
       await drive.mount(path, key)
     } else if (st.mount) {
-      if (st.mount.key.toString('hex') !== key) {
+      if (st.mount.key !== key) {
         // change mount
         await drive.unmount(path)
         await drive.mount(path, key)

@@ -105,7 +105,7 @@ export async function ensureMount (path, url) {
       // add mount
       await navigator.filesystem.mount(path, key)
     } else if (st.mount) {
-      if (st.mount.key.toString('hex') !== key) {
+      if (st.mount.key !== key) {
         // change mount
         await navigator.filesystem.unmount(path)
         await navigator.filesystem.mount(path, key)
