@@ -110,8 +110,6 @@ export function setup () {
     }
 
     cb({ mimeType: 'image/png', data: defaultFaviconBuffer })
-  }, e => {
-    if (e) { console.error('Failed to register beaker-favicon protocol', e) }
   })
 }
 

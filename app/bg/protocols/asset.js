@@ -107,9 +107,7 @@ export function setup () {
 }
 
 export function register (protocol) {
-  protocol.registerBufferProtocol('asset', handler, e => {
-    if (e) { console.error('Failed to register asset protocol', e) }
-  })
+  protocol.registerBufferProtocol('asset', handler)
 }
 
 const ASSET_URL_RE = /^asset:([a-z]+)(-\d+)?:(.*)/

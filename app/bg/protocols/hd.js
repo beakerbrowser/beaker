@@ -47,12 +47,7 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 // =
 
 export function register (protocol) {
-  protocol.registerStreamProtocol('hd', protocolHandler, err => {
-    if (err) {
-      console.error(err)
-      throw new Error('Failed to create protocol: hd')
-    }
-  })
+  protocol.registerStreamProtocol('hd', protocolHandler)
 }
 
 export const protocolHandler = async function (request, respond) {

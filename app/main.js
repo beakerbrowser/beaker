@@ -32,6 +32,7 @@ import * as beakerProtocol from './bg/protocols/beaker'
 import * as beakerFaviconProtocol from './bg/protocols/beaker-favicon'
 import * as assetProtocol from './bg/protocols/asset'
 import * as hdProtocol from './bg/protocols/hd'
+import * as datProtocol from './bg/protocols/dat'
 import * as intentProtocol from './bg/protocols/intent'
 
 import * as testDriver from './bg/test-driver'
@@ -118,7 +119,7 @@ app.on('ready', async function () {
   assetProtocol.setup()
   assetProtocol.register(protocol)
   hdProtocol.register(protocol)
-  hyper.protocol.register(protocol)
+  datProtocol.register(protocol)
   // intentProtocol.setup() TODO
 
   // setup flow

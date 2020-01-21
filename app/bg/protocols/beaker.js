@@ -37,9 +37,7 @@ child-src 'self';
 
 export function register (protocol) {
   // setup the protocol handler
-  protocol.registerStreamProtocol('beaker', beakerProtocol, err => {
-    if (err) throw new Error('Failed to create protocol: beaker. ' + err)
-  })
+  protocol.registerStreamProtocol('beaker', beakerProtocol)
 }
 
 // internal methods
