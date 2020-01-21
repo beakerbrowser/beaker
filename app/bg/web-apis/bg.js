@@ -4,7 +4,7 @@ import { findTab } from '../ui/tab-manager'
 
 // TEMPORARY: hyperdrive.network is trusted
 const INTERNAL_ORIGIN_REGEX = /^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/i
-const SECURE_ORIGIN_REGEX = /^(beaker:|hd:|https:|http:\/\/localhost(\/|:)|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/i
+const SITE_ORIGIN_REGEX = /^(beaker:|hd:|https?:)/i
 
 // internal manifests
 import loggerManifest from './manifests/internal/logger'
@@ -95,7 +95,7 @@ function secureOnly (event, methodName, args) {
   if (!(event && event.sender)) {
     return false
   }
-  return SECURE_ORIGIN_REGEX.test(getUrl(event.sender))
+  return SITE_ORIGIN_REGEX.test(getUrl(event.sender))
 }
 
 function getUrl (sender) {

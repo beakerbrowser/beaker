@@ -6,8 +6,7 @@ import * as navigatorMethods from './fg/navigator-methods'
 
 export const setup = function () {
   // setup APIs
-  if (['beaker:', 'hd:', 'https:'].includes(window.location.protocol) ||
-      (window.location.protocol === 'http:' && window.location.hostname === 'localhost') ||
+  if (['beaker:', 'hd:', 'https:', 'http:'].includes(window.location.protocol) ||
       window.location.hostname.endsWith('hyperdrive.network') /* TEMPRARY */) {
     window.Hyperdrive = Hyperdrive.setup(rpc)
     navigatorMethods.setup(rpc)
