@@ -212,6 +212,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://drives' || requestUrl.startsWith('beaker://drives/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'drives'), cb)
   }
+  if (requestUrl === 'beaker://drive-view' || requestUrl.startsWith('beaker://drive-view/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'drive-view'), cb)
+  }
   if (requestUrl === 'beaker://explorer' || requestUrl.startsWith('beaker://explorer/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'explorer'), cb)
   }

@@ -118,6 +118,16 @@ export async function setup () {
     }
   })
 
+  // TEMPORARY HACK
+  // method to open the editor sidebar from untrusted pages
+  // -prf
+  ipcMain.on('temp-open-editor-sidebar', (e) => {
+    var win = findWebContentsParentWindow(e.sender)
+    if (win) {
+      tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
+    }
+  })
+
   // HACK
   // Electron doesn't give us a convenient way to check the content-types of responses
   // so we track the last 100 responses' headers to accomplish this

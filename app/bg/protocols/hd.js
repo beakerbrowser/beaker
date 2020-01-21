@@ -209,17 +209,32 @@ export const protocolHandler = async function (request, respond) {
 
     // make sure there's a trailing slash
     if (!hasTrailingSlash) {
+
       return respond({
-        statusCode: 303,
-        headers: {
-          Location: `hd://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}`
-        },
-        data: intoStream('')
+        statusCode: 200,
+        headers: {'Content-Type': 'text/html'},
+        data: intoStream(`<!doctype html><meta http-equiv="refresh" content="0; url=hd://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}">`)
       })
     }
 
-    // 404
-    entry = null
+    // directory listing
+    return respond({
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache',
+        'Content-Security-Policy': `default-src 'self' beaker:`
+      },
+      data: intoStream(`<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+    <script type="module" src="beaker://drive-view/index.js"></script>
+  </head>
+</html>`)
+    })
   }
 
   // handle not found

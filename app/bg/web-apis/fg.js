@@ -16,5 +16,8 @@ export const setup = function () {
     window.location.hostname.endsWith('hyperdrive.network') /* TEMPRARY */) {
     window.beaker = beaker.setup(rpc)
     window.experimental = experimental.setup(rpc)
+
+    // TEMPORARY
+    window.__beakerOpenEditor = () => require('electron').ipcRenderer.send('temp-open-editor-sidebar')
   }
 }
