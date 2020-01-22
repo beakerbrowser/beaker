@@ -80,7 +80,7 @@ export default {
 
     // create new drive
     var drive = await hyper.drives.createNewDrive({
-      type: 'unwalled.garden/person',
+      type: 'user',
       title: opts.title,
       description: opts.description
     })
@@ -102,7 +102,7 @@ export default {
 
     // create new drive
     var drive = await hyper.drives.createNewDrive({
-      type: 'unwalled.garden/person',
+      type: 'user',
       title: 'Temporary User',
       description: 'Created ' + (new Date()).toLocaleString()
     })

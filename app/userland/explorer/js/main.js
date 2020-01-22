@@ -267,7 +267,7 @@ export class ExplorerApp extends LitElement {
   async readDirectory (drive) {
     let driveKind = ''
     if (this.currentDriveInfo.url === navigator.filesystem.url) driveKind = 'root'
-    if (this.currentDriveInfo.type === 'unwalled.garden/person') driveKind = 'person'
+    else driveKind = 'common'
 
     var items = await this.attempt(
       `Reading directory (${location.pathname})`,

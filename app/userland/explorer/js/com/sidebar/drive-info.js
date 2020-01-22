@@ -50,7 +50,7 @@ export class DriveInfo extends LitElement {
           ${this.renderType()}
           ${this.renderSize()}
         </p>
-        ${this.driveInfo.type === 'unwalled.garden/person' ? html`
+        ${this.driveInfo.type === 'user' ? html`
           <div class="bottom-ctrls">
             ${this.driveInfo.url !== this.userUrl ? '' : html`
               <span class="label verified"><span class="fas fa-fw fa-check-circle"></span> My profile</span>
@@ -82,11 +82,11 @@ export class DriveInfo extends LitElement {
   }
 
   renderType () {
-    if (this.driveInfo.type === 'unwalled.garden/person') {
-      return html`<span><span class="fas fa-fw fa-user-circle"></span> Person</span>`
+    if (this.driveInfo.type === 'user') {
+      return html`<span><span class="fas fa-fw fa-user-circle"></span> User</span>`
     }
-    if (this.driveInfo.type === 'unwalled.garden/website') {
-      return html`<span><span class="far fa-fw fa-file-alt"></span> Website</span>`
+    if (this.driveInfo.type === 'website') {
+      return html`<span><span class="far fa-fw fa-desktop"></span> Website</span>`
     }
   }
 

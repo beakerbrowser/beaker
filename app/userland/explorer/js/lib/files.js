@@ -8,18 +8,13 @@ const ICONS = {
     '/library/documents': 'fas fa-file-word',
     '/library/media': 'fas fa-photo-video',
     '/library/projects': 'fas fa-coffee',
-    '/system': 'fas fa-cog',
-    '/system/drives': 'fas fa-hdd',
-    '/system/templates': 'fas fa-drafting-compass',
-    '/system/webterm': 'fas fa-terminal'
+    '/system': 'fas fa-cog'
   },
-  person: {
+  common: {
     '/comments': 'fas fa-comment',
     '/follows': 'fas fa-user-friends',
     '/posts': 'fa fa-rss',
     '/votes': 'fas fa-vote-yea'
-  },
-  common: {
   }
 }
 
@@ -54,7 +49,7 @@ export function toSemanticItemGroups (items) {
   for (let i of items) {
     if (i.stat.mount && i.stat.mount.key) {
       switch (i.mount.type) {
-        case 'unwalled.garden/person': add('users', 'Users', i); break
+        case 'user': add('users', 'Users', i); break
         case 'website': add('websites', 'Websites', i); break
         case 'application': add('applications', 'Applications', i); break
         case 'webterm.sh/cmd-pkg': add('commands', 'Webterm Commands', i); break
@@ -80,8 +75,8 @@ export function toSemanticItemGroups (items) {
 export function getSubicon (driveKind, item) {
   if (driveKind === 'root') {
     return ICONS.root[item.realPath] || ICONS.common[item.realPath]
-  } else if (driveKind === 'person') {
-    return ICONS.person[item.realPath] || ICONS.common[item.realPath]
+  } else {
+    return ICONS.common[item.realPath] || ICONS.common[item.realPath]
   }
 }
 

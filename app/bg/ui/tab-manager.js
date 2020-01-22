@@ -272,7 +272,7 @@ class Tab {
   }
 
   get canFollow () {
-    return this.datInfo && this.datInfo.type === 'unwalled.garden/person' && !this.isMyProfile
+    return this.datInfo && !this.isMyProfile
   }
 
   get canInstall () {

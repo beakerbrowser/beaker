@@ -2,8 +2,8 @@
   "type": "type-registry",
   "driveTypes": [
     {
-      "id": "unwalled.garden/person",
-      "title": "Person"
+      "id": "user",
+      "title": "User"
     },
     {
       "id": "webterm.sh/cmd-pkg",
@@ -11,7 +11,7 @@
     }
   ],
   "defaultDriveHandlers": {
-    "unwalled.garden/person": "system",
+    "user": "system",
     "webterm.sh/cmd-pkg": "system",
     "default": "system"
   }

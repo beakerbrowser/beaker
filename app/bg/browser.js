@@ -89,7 +89,7 @@ export async function setup () {
   if (!defaultUser) {
     let drive = await hyper.drives.createNewDrive({
       title: 'Anonymous',
-      type: 'unwalled.garden/person'
+      type: 'user'
     })
     await drive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
     await users.add(drive.url, true)
