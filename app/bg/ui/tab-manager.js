@@ -236,7 +236,7 @@ class Tab {
         if (filesystem.isRootUrl(this.datInfo.url)) {
           return 'My Home Drive'
         }
-        if (this.datInfo.type === 'unwalled.garden/person') {
+        if (this.datInfo.type === 'user') {
           return this.datInfo.title || 'Anonymous'
         }
         return `"${this.datInfo.title || 'Untitled'}" by ${this.confirmedAuthorTitle ? this.confirmedAuthorTitle : '(Unknown)'}`

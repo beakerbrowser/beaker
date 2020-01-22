@@ -6,6 +6,7 @@ import _debounce from 'lodash.debounce'
 import pda from 'pauls-dat-api2'
 import { wait } from '../../lib/functions'
 import * as logLib from '../logger'
+import { listDrives } from '../filesystem/index'
 const baseLogger = logLib.get()
 const logger = baseLogger.child({category: 'dat', subcategory: 'drives'})
 
@@ -93,7 +94,7 @@ export async function setup () {
  */
 export async function loadSavedDrives () {
   // load all saved drives
-  var drives = [] // TODO uwg await datLibrary.list({isHosting: true})
+  var drives = listDrives()
 
   // HACK
   // load the drives one at a time and give 5 seconds between each
@@ -103,9 +104,11 @@ export async function loadSavedDrives () {
   // so spacing out the loads has no visible impact on the user
   // (except for reducing the overall load for the user)
   // -prf
-  for (let a of drives) {
-    loadDrive(a.key)
-    await new Promise(r => setTimeout(r, 5e3)) // wait 5s
+  for (let drive of drives) {
+    if (drive.seeding) {
+      loadDrive(drive.key)
+      await new Promise(r => setTimeout(r, 5e3)) // wait 5s
+    }
   }
 };
 

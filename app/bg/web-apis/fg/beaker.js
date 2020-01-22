@@ -49,6 +49,10 @@ export const setup = function (rpc) {
     // beaker.drives
     beaker.drives = new EventTarget()
     beaker.drives.status = drivesRPC.status
+    beaker.drives.get = drivesRPC.get
+    beaker.drives.list = drivesRPC.list
+    beaker.drives.configure = drivesRPC.configure
+    beaker.drives.remove = drivesRPC.remove
     beaker.drives.listTrash = drivesRPC.listTrash
     beaker.drives.collectTrash = drivesRPC.collectTrash
     beaker.drives.delete = drivesRPC.delete

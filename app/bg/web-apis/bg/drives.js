@@ -1,6 +1,7 @@
 import hyperDns from '../../hyper/dns'
 import * as drives from '../../hyper/drives'
 import * as archivesDb from '../../dbs/archives'
+import { listDrives, configDrive, removeDrive, isRootUrl } from '../../filesystem/index'
 import * as trash from '../../filesystem/trash'
 import * as users from '../../filesystem/users'
 import { PermissionsError } from 'beaker-error-constants'
@@ -17,6 +18,47 @@ export default {
       status.peers += drives[k].metadata.peers.length
     }
     return status
+  },
+
+  async get (key) {
+    key = await drives.fromURLToKey(key, true)
+    var drive = listDrives().find(drive => drive.key === key)
+    var info = await drives.getDriveInfo(key).catch(e => {})
+    var url = `hd://${key}`
+    var ident = getIdent(url)
+    return {
+      key,
+      url,
+      info,
+      saved: !!drive,
+      seeding: ident.user || (drive ? drive.seeding : false),
+      ident
+    }
+  },
+
+  async list () {
+    var records = []
+    for (let drive of listDrives()) {
+      let url = `hd://${drive.key}`
+      let ident = getIdent(url)
+      records.push({
+        key: drive.key,
+        url,
+        info: await drives.getDriveInfo(drive.key).catch(e => {}),
+        saved: true,
+        seeding: ident.user || drive.seeding,
+        ident
+      })
+    }
+    return records
+  },
+
+  async configure (key, opts) {
+    return configDrive(key, opts)
+  },
+
+  async remove (key) {
+    return removeDrive(key)
   },
 
   async collectTrash () {
@@ -67,29 +109,8 @@ function assertDriveDeletable (key) {
   }
 }
 
-function massageRecord (record) {
-  return {
-    key: record.key,
-    url: `hd://${record.key}`,
-    author: record.author ? {
-      url: record.author.url,
-      title: record.author.title,
-      description: record.author.description,
-      type: record.author.type,
-      writable: record.author.writable
-    } : undefined,
-    meta: {
-      title: record.meta.title,
-      description: record.meta.description,
-      type: record.meta.type,
-      mtime: record.meta.mtime,
-      size: record.meta.size,
-      author: record.meta.author,
-      writable: record.meta.writable
-    },
-    isSaved: record.isSaved,
-    isHosting: record.isHosting,
-    visibility: record.visibility,
-    savedAt: Number(record.savedAt)
-  }
+function getIdent (url) {
+  var home = isRootUrl(url)
+  var user = users.isUser(url)
+  return {system: home || user, home, user}
 }

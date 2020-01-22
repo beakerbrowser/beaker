@@ -1,4 +1,3 @@
 export default {
-  get: 'sync',
-  identifyDrive: 'promise'
+  get: 'sync'
 }

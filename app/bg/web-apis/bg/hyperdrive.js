@@ -58,7 +58,7 @@ export default {
       // create
       try {
         var newDrive = await drives.createNewDrive({title, description, type, author, links})
-        await filesystem.addToLibrary(newDrive.url, title)
+        await filesystem.configDrive(newDrive.url, {seeding: true})
       } catch (e) {
         console.log(e)
         throw e
@@ -119,7 +119,7 @@ export default {
       // create
       let key = await lookupUrlDriveKey(url)
       let newDrive = await drives.cloneDrive(key, {title, description, type, author, links})
-      await filesystem.addToLibrary(newDrive.url, title)
+      await filesystem.configDrive(newDrive.url, {seeding: true})
       newDriveUrl = newDrive.url
     }
 

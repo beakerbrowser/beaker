@@ -1,5 +1,9 @@
 export default {
   status: 'promise',
+  get: 'promise',
+  list: 'promise',
+  configure: 'promise',
+  remove: 'promise',
   listTrash: 'promise',
   collectTrash: 'promise',
   delete: 'promise',

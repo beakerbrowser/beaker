@@ -7,14 +7,13 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../css/main.css.js'
 
-const EXPLORER_APP = 'https://hyperdrive.network/'
-const EXPLORER_URL = drive => `${EXPLORER_APP}${drive.url.slice('hd://'.length)}`
+const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hd://'.length)}`
+const BEAKER_NETWORK_URL = drive => `https://beaker.network/${drive.url.slice('hd://'.length)}`
 
 export class DrivesApp extends LitElement {
   static get properties () {
     return {
       drives: {type: Array},
-      category: {type: String},
       filter: {type: String}
     }
   }
@@ -33,23 +32,42 @@ export class DrivesApp extends LitElement {
   }
 
   async load () {
-    var driveEntries = await navigator.filesystem.query({path: '/system/drives/*', type: 'mount'})
-    var driveInfos = await Promise.all(driveEntries.map(entry => (new Hyperdrive(entry.mount).getInfo())))
+    var drives
+    if (this.category === 'system') {
+      let profileStat = await navigator.filesystem.stat('/profile')
+      drives = [
+        await beaker.drives.get(navigator.filesystem.url),
+        await beaker.drives.get(profileStat.mount.key)
+      ]
+    } else if (this.category === 'following') {
+      let driveEntries = await navigator.filesystem.query({path: '/profile/following/*', type: 'mount'})
+      drives = await Promise.all(driveEntries.map(entry => beaker.drives.get(entry.mount)))
+    } else {
+      drives = await beaker.drives.list()
+    }
 
-    let profileStat = await navigator.filesystem.stat('/profile')
-    let profileInfo = await (new Hyperdrive(profileStat.mount.key)).getInfo()
-    driveInfos.unshift(profileInfo)
+    if (this.category === 'files') {
+      drives = drives.filter(drive => !drive.info.type)
+    } else if (this.category === 'websites') {
+      drives = drives.filter(drive => drive.info.type === 'website')
+    } else if (this.category === 'modules') {
+      drives = drives.filter(drive => drive.info.type === 'module')
+    } else if (this.category === 'templates') {
+      drives = drives.filter(drive => drive.info.type === 'template')
+    } else if (this.category === 'webterm-cmds') {
+      drives = drives.filter(drive => drive.info.type === 'webterm.sh/cmd-pkg')
+    } else if (this.category === 'other') {
+      drives = drives.filter(drive => !['', 'website', 'module', 'template', 'webterm.sh/cmd-pkg'].includes(drive.info.type || ''))
+    }
 
-    driveInfos.unshift({
-      url: navigator.filesystem.url,
-      title: 'Home drive',
-      description: 'Your private filesystem',
-      type: ''
-    })
+    drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
 
-    driveInfos.sort((a, b) => (a.type || '').localeCompare(b.type || '') || (a.title).localeCompare(b.title))
+    this.drives = drives
+  }
 
-    this.drives = driveInfos
+  setCategory (cat) {
+    this.category = cat
+    this.load()
   }
 
   newDriveMenu (x, y, right = false) {
@@ -82,7 +100,78 @@ export class DrivesApp extends LitElement {
         {
           icon: 'fas fa-fw fa-drafting-compass',
           label: 'Template',
-          click: () => this.newDrive('unwalled.garden/template')
+          click: () => this.newDrive('template')
+        }
+      ]
+    })
+  }
+
+  driveMenu (drive, x, y, right = false) {
+    return contextMenu.create({
+      x,
+      y,
+      right: right || (x > document.body.scrollWidth - 300),
+      top: (y > document.body.scrollHeight / 2),
+      roomy: false,
+      noBorders: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      style: `padding: 4px 0`,
+      items: [
+        {
+          icon: 'fas fa-fw fa-external-link-alt',
+          label: 'Open in a New Tab',
+          click: () => window.open(drive.url)
+        },
+        {
+          icon: html`
+            <i class="fa-stack" style="font-size: 6px">
+              <span class="far fa-fw fa-folder-open fa-stack-2x" style="opacity: 0.4"></span>
+              <span class="fas fa-fw fa-search fa-stack-1x" style="margin-left: -1px; margin-top: -2px; font-size: 9px"></span>
+            </i>
+          `,
+          label: 'Open with Files Explorer',
+          click: () => window.open(EXPLORER_URL(drive))
+        },
+        {
+          icon: html`<i><img src="/img/beaker-network-icon.svg" style="width: 14px"></i>`,
+          label: 'Open with Beaker.Network',
+          click: () => window.open(BEAKER_NETWORK_URL(drive))
+        },
+        '-',
+        {
+          icon: html`
+            <i class="fa-stack" style="font-size: 6px">
+              <span class="far fa-fw fa-hdd fa-stack-2x"></span>
+              <span class="fas fa-fw fa-share fa-stack-1x" style="margin-left: -10px; margin-top: -5px; font-size: 7px"></span>
+            </i>
+          `,
+          label: 'Copy Drive Link',
+          click: () => {
+            writeToClipboard(drive.url)
+            toast.create('Copied to clipboard')
+          }
+        },
+        '-',
+        {
+          icon: 'far fa-fw fa-clone',
+          label: 'Clone this Drive',
+          click: () => this.cloneDrive(drive)
+        },
+        {
+          icon: html`<i style="padding-left: 2px; font-size: 16px; box-sizing: border-box">◨</i>`,
+          label: 'Diff / Merge',
+          click: () => this.compareDrive(drive)
+        },
+        '-',
+        {
+          icon: 'far fa-fw fa-list-alt',
+          label: 'Drive Properties',
+          click: () => this.driveProps(drive)
+        },
+        {
+          icon: 'fas fa-fw fa-trash-alt',
+          label: 'Remove from My Drives',
+          click: () => this.removeDrive(drive)
         }
       ]
     })
@@ -118,7 +207,14 @@ export class DrivesApp extends LitElement {
   }
 
   async removeDrive (drive) {
-    // TODO
+    await beaker.drives.remove(drive.url)
+    const undo = async () => {
+      await beaker.drives.configure(drive.url, {seeding: drive.seeding})
+      this.drives.push(drive)
+      this.requestUpdate()
+    }
+    toast.create('Drive removed', '', 10e3, {label: 'Undo', click: undo})
+    this.load()
   }
 
   // rendering
@@ -128,30 +224,36 @@ export class DrivesApp extends LitElement {
     const navItem = (id, label) => html`
       <a
         class=${classMap({selected: id === this.category})}
-        @click=${e => { this.category = id }}
+        @click=${e => { this.setCategory(id) }}
       >${label}</a>
     `
     var drives = this.drives
-    if (drives && this.category !== 'all') {
-      drives = drives.filter(drive => drive.type === this.category)
-    }
+    // if (drives && this.category !== 'all') {
+    //   drives = drives.filter(drive => drive.type === this.category)
+    // }
     if (drives && this.filter) {
-      drives = drives.filter(drive => drive.title.toLowerCase().includes(this.filter))
+      drives = drives.filter(drive => drive.info.title.toLowerCase().includes(this.filter))
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <nav>
         <div class="top-ctrl">
           <input placeholder="Filter" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
-          <button @click=${this.onClickNew}>New +</button>
+          <button class="primary" @click=${this.onClickNew}>New +</button>
         </div>
         <div class="categories">
-          ${navItem('all', 'All')}
-          ${navItem('', 'Files drives')}
-          ${navItem('website', 'Websites')}
-          ${navItem('module', 'Modules')}
-          ${navItem('unwalled.garden/template', 'Templates')}
-          ${navItem('unwalled.garden/person', 'Beaker users')}
+          <hr>
+          ${navItem('all', 'All drives')}
+          ${navItem('following', 'Following')}
+          <hr>
+          ${navItem('files', 'Files drives')}
+          ${navItem('websites', 'Websites')}
+          ${navItem('modules', 'Modules')}
+          ${navItem('templates', 'Templates')}
+          ${navItem('other', 'Other')}
+          <hr>
+          ${navItem('webterm-cmds', 'Webterm commands')}
+          ${navItem('system', 'System')}
         </div>
       </nav>
       <main>
@@ -162,20 +264,35 @@ export class DrivesApp extends LitElement {
             ${repeat(drives, drive => html`
               <div
                 class="${classMap({drive: true})}"
-                @click=${e => this.onClickDrive(e, drive)}
                 @contextmenu=${e => this.onContextmenuDrive(e, drive)}
               >
-                <div class="title"><span class="fa-fw ${getDriveTypeIcon(drive.type)}"></span> ${drive.title || html`<em>Untitled</em>`}</div>
+                <div class="ctrls btn-group">
+                  <button ?disabled=${drive.ident.system} @click=${e => this.onToggleSeeding(e, drive)}>
+                    ${drive.url === navigator.filesystem.url ? html`
+                      <span class="fas fa-fw fa-lock"></span> Private
+                    ` : drive.seeding ? html`
+                      <span class="fas fa-circle"></span> Seeding
+                    ` : html`
+                      Not seeding
+                    `}
+                  </button>
+                  <button @click=${e => this.onClickDriveMenuBtn(e, drive)}><span class="fas fa-fw fa-caret-down"></span></button>
+                </div>
+                <div class="title">
+                  <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
+                    <span class="fa-fw ${getDriveTypeIcon(drive.info.type)}"></span> ${drive.info.title || html`<em>Untitled</em>`}
+                  </a>
+                </div>
                 <div class="details">
-                  <div class="type">${toNiceDriveType(drive.type)}</div>
-                  <div class="description">${drive.description}</div>
+                  <div class="type">${toNiceDriveType(drive.info.type)}</div>
+                  <div class="description">${drive.info.description}</div>
                 </div>
                 <div class="details">
                   <div class="network">
                     ${drive.url === navigator.filesystem.url ? html`
                       <span class="fa-fw fas fa-lock"></span> private
                     ` : html`
-                      <span class="fa-fw fas fa-share-alt"></span> 0 peers
+                      <span class="fa-fw fas fa-share-alt"></span> TODO peers
                     `}
                   </div>
                 </div>
@@ -190,83 +307,100 @@ export class DrivesApp extends LitElement {
           `
         }
       </main>
+      <section>
+        ${this.renderHelp()}
+      </section>
     `
+  }
+
+  renderHelp () {
+    if (this.category === 'all') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-share-alt"></span> Seeding</h3>
+          <p><em>Seeding</em> is hosting a drive on the network from your computer. Drives that you seed can be reached by other devices.</p>
+          <p>If you are not seeding a drive, you can still access it locally and may be able to download updates from other seeders on the network.</p>
+          <p>(Note: you will temporarily seed any drive when you visit it. Turning on seeding keeps it active even when not visiting the drive.)
+        </div>
+      `
+    }
+    if (this.category === 'following') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-rss"></span> Following</h3>
+          <p>You can follow drives to receive updates and information from them.</p>
+          <p>Your followed drives are listed publicly on your profile so that other people can discover them.</p>
+        </div>
+      `
+    }
+    if (this.category === 'files') {
+      return html`
+        <div class="help">
+          <h3><span class="far fa-fw fa-folder-open"></span> Files drives</h3>
+          <p><em>Files drives</em> are folders containing files. They're similar to .zip files, but they live on the peer-to-peer network.</p>
+        </div>
+      `
+    }
+    if (this.category === 'websites') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-desktop"></span> Websites</h3>
+          <p><em>Websites</em> are drives that contain web pages. They're just like any other website, but they live on the peer-to-peer network.</p>
+        </div>
+      `
+    }
+    if (this.category === 'modules') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-cube"></span> Modules</h3>
+          <p><em>Modules</em> are drives that contain code, styles, and other software assets. They can be imported by other drives to provide reusable components.</p>
+        </div>
+      `
+    }
+    if (this.category === 'templates') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-drafting-compass"></span> Templates</h3>
+          <p><em>Templates</em> are starters for creating new drives. You can create a new drive from any template you have installed.</p>
+        </div>
+      `
+    }
+    if (this.category === 'webterm-cmds') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-terminal"></span> Webterm commands</h3>
+          <p><em>Webterm</em> is an advanced terminal for interacting with the Hyperdrive ecosystem. You can open it in any tab by pressing <kbd>Ctrl + ~</kbd>.</p>
+          <p>Webterm commands are user-created programs which you can execute from Webterm. Install webterm command-packages to add them to your terminal environment.</p>
+        </div>
+      `
+    }
+    if (this.category === 'system') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-cog"></span> System</h3>
+          <p>These drives are created by Beaker. Your "Home Drive" is the root of your personal filesystem. Your "Profile" represents you publicly on the network.</p>
+        </div>
+      `
+    }
   }
 
   // events
   // =
 
-  onClickDrive (e, drive) {
-    e.preventDefault()
-    var url = EXPLORER_URL(drive)
-    if (e.metaKey) {
-      window.open(url)
-    } else {
-      window.location = url
-    }
-  }
-
-  onContextmenuDrive (e, drive) {
+  async onContextmenuDrive (e, drive) {
     e.preventDefault()
     e.stopPropagation()
-    var exploreFilesUrl = EXPLORER_URL(drive)
-    contextMenu.create({
-      x: e.clientX,
-      y: e.clientY,
-      right: (e.clientX > document.body.scrollWidth - 300),
-      top: (e.clientY > document.body.scrollHeight / 2),
-      roomy: false,
-      noBorders: true,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
-      style: `padding: 4px 0`,
-      items: [
-        {
-          icon: 'fas fa-fw fa-external-link-alt',
-          label: 'Explore files in new tab',
-          click: () => window.open(exploreFilesUrl)
-        },
-        {
-          icon: 'fas fa-fw fa-desktop',
-          label: 'Open as website',
-          click: () => window.open(drive.url)
-        },
-        {
-          icon: html`
-            <i class="fa-stack" style="font-size: 6px">
-              <span class="far fa-fw fa-hdd fa-stack-2x"></span>
-              <span class="fas fa-fw fa-share fa-stack-1x" style="margin-left: -10px; margin-top: -5px; font-size: 7px"></span>
-            </i>
-          `,
-          label: 'Copy drive link',
-          click: () => {
-            writeToClipboard(drive.url)
-            toast.create('Copied to clipboard')
-          }
-        },
-        '-',
-        {
-          icon: 'far fa-fw fa-clone',
-          label: 'Clone this drive',
-          click: () => this.cloneDrive(drive)
-        },
-        {
-          icon: html`<i style="padding-left: 2px; font-size: 16px; box-sizing: border-box">◨</i>`,
-          label: 'Diff / merge',
-          click: () => this.compareDrive(drive)
-        },
-        {
-          icon: 'fas fa-fw fa-trash-alt',
-          label: 'Remove from my drives',
-          click: () => this.removeDrive(drive)
-        },
-        '-',
-        {
-          icon: 'far fa-fw fa-list-alt',
-          label: 'Drive properties',
-          click: () => this.driveProps(drive)
-        }
-      ]
-    })
+    var el = e.currentTarget
+    el.style.background = '#fafafd'
+    await this.driveMenu(drive, e.clientX, e.clientY)
+    el.style.background = 'none'
+  }
+
+  onClickDriveMenuBtn (e, drive) {
+    e.preventDefault()
+    e.stopPropagation()
+    var rect = e.currentTarget.getClientRects()[0]
+    this.driveMenu(drive, rect.right, rect.bottom, true)
   }
 
   onClickNew (e) {
@@ -280,6 +414,17 @@ export class DrivesApp extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     this.newDriveMenu(e.clientX, e.clientY)
+  }
+
+  async onToggleSeeding (e, drive) {
+    drive.seeding = !drive.seeding
+    await beaker.drives.configure(drive.url, {seeding: drive.seeding})
+    if (drive.seeding) {
+      toast.create('Now seeding on the network')
+    } else {
+      toast.create('No longer seeding on the network')
+    }
+    this.requestUpdate()
   }
 }
 

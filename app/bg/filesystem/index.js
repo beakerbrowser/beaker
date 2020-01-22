@@ -7,6 +7,7 @@ import * as db from '../dbs/profile-data-db'
 import * as users from './users'
 import * as trash from './trash'
 import { PATHS } from '../../lib/const'
+import lock from '../../lib/lock'
 
 // typedefs
 // =
@@ -14,6 +15,10 @@ import { PATHS } from '../../lib/const'
 /**
  * @typedef {import('../dat/daemon').DaemonHyperdrive} DaemonHyperdrive
  * @typedef {import('./users').User} User
+ * 
+ * @typedef {Object} DriveConfig
+ * @property {string} key
+ * @property {boolean} seeding
  */
 
 // globals
@@ -21,6 +26,7 @@ import { PATHS } from '../../lib/const'
 
 var browsingProfile
 var rootDrive
+var drives = []
 
 // exported api
 // =
@@ -72,8 +78,6 @@ export async function setup () {
     await ensureDir(PATHS.LIBRARY_NS('media'))
     await ensureDir(PATHS.LIBRARY_NS('projects'))
     await ensureDir(PATHS.SYSTEM)
-    await ensureDir(PATHS.SYSTEM_NS('drives'))
-    await ensureDir(PATHS.SYSTEM_NS('templates'))
     await ensureDir(PATHS.SYSTEM_NS('webterm'))
     await ensureDir(PATHS.SYSTEM_NS('webterm/cmds'))
 
@@ -87,6 +91,14 @@ export async function setup () {
     console.error('Error while constructing the root drive', e.toString())
     logger.error('Error while constructing the root drive', {error: e.toString()})
   }
+
+  // load drive config
+  try {
+    drives = JSON.parse(await rootDrive.pda.readFile(PATHS.SYSTEM_NS('drives.json'))).drives
+  } catch (e) {
+    console.error('Error while reading the drive configuration at /system/drives.json', e.toString())
+    logger.error('Error while reading the drive configuration at /system/drives.json', {error: e.toString()})
+  }
 }
 
 /**
@@ -98,13 +110,50 @@ export async function setDefaultUser (url) {
 }
 
 /**
+ * @returns {Array<DriveConfig>}
+ */
+export function listDrives () {
+  return drives
+}
+
+/**
  * @param {string} url
- * @param {string} title
+ * @param {Object} [opts]
+ * @param {Boolean} [opts.seeding]
  * @returns {Promise<void>}
  */
-export async function addToLibrary (url, title) {
-  var name = await getAvailableName(PATHS.SYSTEM_NS('drives'), slugify((title || '').trim() || 'untitled').toLowerCase())
-  await ensureMount(joinPath(PATHS.SYSTEM_NS('drives'), name), url)
+export async function configDrive (url, {seeding} = {seeding: false}) {
+  var release = await lock('filesystem:drives')
+  try {
+    var key = await hyper.drives.fromURLToKey(url, true)
+    var drive = drives.find(drive => drive.key === key)
+    if (!drive) {
+      drive = /** @type DriveConfig */({key, seeding})
+      drives.push(drive)
+    } else {
+      drive.seeding = seeding
+    }
+    await rootDrive.pda.writeFile(PATHS.SYSTEM_NS('drives.json'), JSON.stringify({drives}, null, 2))
+  } finally {
+    release()
+  }
+}
+
+/**
+ * @param {string} url
+ * @returns {Promise<void>}
+ */
+export async function removeDrive (url) {
+  var release = await lock('filesystem:drives')
+  try {
+    var key = await hyper.drives.fromURLToKey(url, true)
+    var driveIndex = drives.findIndex(drive => drive.key === key)
+    if (driveIndex === -1) return
+    drives.splice(driveIndex, 1)
+    await rootDrive.pda.writeFile(PATHS.SYSTEM_NS('drives.json'), JSON.stringify({drives}, null, 2))
+  } finally {
+    release()
+  }
 }
 
 /**

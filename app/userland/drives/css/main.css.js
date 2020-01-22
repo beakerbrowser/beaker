@@ -11,11 +11,10 @@ ${tooltipCSS}
 ${spinnerCSS}
 
 :host {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  grid-gap: 8px;
-  padding: 4px;
+  display: flex;
+  padding-left: 4px;
   min-height: 100vh;
+  background: #fafafd;
 }
 
 a {
@@ -27,8 +26,24 @@ a:hover {
   text-decoration: underline;
 }
 
+nav {
+  flex: 0 0 200px;
+  border-right: 1px solid #dde;
+}
+
+main {
+  flex: 1;
+  max-width: 800px;
+  background: #fff;
+}
+
+section {
+}
+
 nav .top-ctrl {
   display: flex;
+  padding-top: 5px;
+  padding-right: 5px;
 }
 
 nav .top-ctrl input {
@@ -38,69 +53,83 @@ nav .top-ctrl input {
 }
 
 nav .categories {
-  margin: 4px 0;
-  border: 1px solid #dde;
-  border-radius: 4px;
-  overflow: hidden;
+  margin: 5px 0;
 }
 
 nav .categories a {
   display: block;
-  padding: 8px;
-  border-bottom: 1px solid #dde;
-  color: inherit;
+  padding: 14px 16px;
+  color: #556;
   user-select: none;
+  border-top: 1px solid transparent;
+  border-left: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  cursor: pointer;
 }
 
-nav .categories a:last-child {
-  border: 0;
-}
-
-nav .categories a:hover,
-nav .categories a.selected {
+nav .categories a:hover {
   background: #fafafd;
   text-decoration: none;
 }
 
 nav .categories a.selected {
-  font-weight: 500;
+  position: relative;
+  color: #333;
+  background: #fff;
+  font-weight: bold;
+  border-top: 1px solid #dde;
+  border-left: 1px solid #dde;
+  border-bottom: 1px solid #dde;
 }
 
-main {
+nav .categories a.selected:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 100%;
+  right: -1px;
+  width: 2px;
+  background: #fff;
+}
+
+nav .categories hr {
+  margin: 4px 4px;
+  border: 0;
+  border-top: 1px solid #dde;
 }
 
 .drives {
   font-size: 13px;
+  padding-top: 6px;
+  min-height: 100vh;
+  box-sizing: border-box;
+  border-right: 1px solid #dde;
 }
 
 .drives .empty {
-  user-select: none;
-  background: #fafafd;
   font-size: 17px;
-  letter-spacing: 0.25px;
+  letter-spacing: 0.75px;
   color: #667;
-  padding: 40px;
+  padding: 28px 40px;
 }
 
 .drive {
-  padding: 20px 16px;
-  border-top: 1px solid #dde;
-  user-select: none;
-  cursor: pointer;
+  padding: 18px 24px;
+  border-bottom: 1px solid #eef;
 }
 
-.drive:last-child {
-  border-bottom: 1px solid #dde;
-}
-
-.drive:hover {
-  background: #fafafd;
+.drive .ctrls {
+  float: right;
 }
 
 .drive .title {
   font-size: 18px;
   font-weight: bold;
   padding: 4px;
+}
+
+.drive .title a {
+  color: inherit;
 }
 
 .drive .title .fa-fw {
@@ -134,24 +163,43 @@ main {
   letter-spacing: -0.2px;
 }
 
-.drive.selected {
-  background: #4379e4;
+.drive .fa-circle {
+  animation: glow 2s infinite;
+  margin-right: 2px;
 }
 
-.drive.selected .details > * {
-  color: rgba(255, 255, 255, 0.9);
+@keyframes glow {
+  0%    { color: #5bf; text-shadow: 0 0 2px #09f; }
+  50%  { color: #09f; text-shadow: 0 0 0px #09f; }
+  100%  { color: #5bf; text-shadow: 0 0 2px #09f; }
 }
 
-.drive.selected > .title {
+.help {
+  max-width: 350px;
+  line-height: 1.4;
+  margin: 24px;
+  background: #fafafd;
+  border-radius: 8px;
+  letter-spacing: 0.2px;
+  color: #778;
+}
+
+.help > :first-child {
+  margin-top: 0;
+}
+
+.help > :last-child {
+  margin-bottom: 0;
+}
+
+.help kbd {
+  background: #223;
   color: #fff;
+  font-family: var(--code-font);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.7rem;
 }
 
-.drag-selector {
-  position: fixed;
-  background: #5591ff33;
-  border: 1px solid #77adffee;
-  pointer-events: none;
-  z-index: 2;
-}
 `
 export default cssStr
