@@ -12,7 +12,7 @@ ${spinnerCSS}
 
 :host {
   display: flex;
-  padding-left: 4px;
+  padding-left: 204px;
   min-height: 100vh;
   background: #fafafd;
 }
@@ -27,7 +27,11 @@ a:hover {
 }
 
 nav {
-  flex: 0 0 200px;
+  position: fixed;
+  top: 0;
+  left: 4px;
+  height: 100vh;
+  width: 200px;
   border-right: 1px solid #dde;
 }
 
