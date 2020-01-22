@@ -232,7 +232,7 @@ class SelectFileModal extends LitElement {
   async init (params, cbs) {
     this.cbs = cbs
     this.saveMode = params.saveMode
-    this.drive = params.drives
+    this.drive = params.drive
     this.path = params.defaultPath || '/'
     this.defaultFilename = params.defaultFilename || ''
     this.title = params.title || ''
@@ -282,11 +282,9 @@ class SelectFileModal extends LitElement {
       }
     })
 
-    var systemDrivesItems = await bg.hyperdrive.readdir(homeDriveUrl, '/system/drives', {includeStats: true})
-    for (let item of systemDrivesItems) {
-      if (item.stat.mount && item.stat.mount.key) {
-        this.drives.push(await bg.hyperdrive.getInfo(item.stat.mount.key))
-      }
+    var savedDrives = await bg.drives.list()
+    for (let drive of savedDrives) {
+      this.drives.push(drive.info)
     }
     this.requestUpdate()
   }
