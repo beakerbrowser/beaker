@@ -48,12 +48,6 @@ class CreateDriveModal extends LitElement {
       padding: 0 10px;
       border-color: #bbb;
     }
-
-    textarea {
-      font-size: 14px;
-      padding: 7px 10px;
-      border-color: #bbb;
-    }
     
     hr {
       border: 0;
@@ -171,6 +165,8 @@ class CreateDriveModal extends LitElement {
           <select name="type" @change=${this.onChangeType}>
             ${typeopt('undefined', 'Files drive')}
             ${typeopt('website', 'Website')}
+            ${typeopt('module', 'Module')}
+            ${typeopt('template', 'Template')}
           </select>
         </h1>
 
@@ -179,26 +175,22 @@ class CreateDriveModal extends LitElement {
           <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
           ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
-          <details @toggle=${e => this.adjustHeight()}>
-            <summary><label for="desc">Description</label></summary>
-            <textarea name="desc" tabindex="3" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
-          </details>
+          <label for="desc">Description</label>
+          <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''}>
 
-          ${this.type === 'website' ? html`
-            <label for="desc">Template</label>
-            <div class="templates">
-              <div class="templates-grid">
-                <div 
-                  class="template ${this.template === undefined ? 'selected' : ''}"
-                  @click=${e => this.onClickTemplate(e, undefined)}
-                >
-                  <div class="img-for-none"></div>
-                  <div class="title"><span>None</span></div>
-                </div>
-                ${repeat(this.templates, t => this.renderTemplate(t))}
+          <label for="desc">Template</label>
+          <div class="templates">
+            <div class="templates-grid">
+              <div 
+                class="template ${this.template === undefined ? 'selected' : ''}"
+                @click=${e => this.onClickTemplate(e, undefined)}
+              >
+                <div class="img-for-none"></div>
+                <div class="title"><span>None</span></div>
               </div>
+              ${repeat(this.templates, t => this.renderTemplate(t))}
             </div>
-          ` : ''}
+          </div>
           
           <hr>
 

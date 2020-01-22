@@ -180,11 +180,7 @@ export class DrivesApp extends LitElement {
   async newDrive (type) {
     var drive = await Hyperdrive.create({type})
     toast.create('Drive created')
-    if (type === 'website') {
-      window.location = drive.url
-    } else {
-      window.location = EXPLORER_URL(drive)
-    }
+    window.location = drive.url
   }
 
   async cloneDrive (drive) {

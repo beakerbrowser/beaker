@@ -132,11 +132,29 @@ class DesktopApp extends LitElement {
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('website')}>
               <div class="label">
-                <i class="fa fa-fw fa-desktop"></i>
+                <i class="fas fa-fw fa-desktop"></i>
                 Website
               </div>
               <p class="description">
                 Create a new website 
+              </p>
+            </div>
+            <div class="dropdown-item" @click=${() => this.onCreateDrive('module')}>
+              <div class="label">
+                <i class="fas fa-fw fa-cube"></i>
+                Module
+              </div>
+              <p class="description">
+                Create a new module
+              </p>
+            </div>
+            <div class="dropdown-item" @click=${() => this.onCreateDrive('template')}>
+              <div class="label">
+                <i class="fas fa-fw fa-drafting-compass"></i>
+                Template
+              </div>
+              <p class="description">
+                Create a new template
               </p>
             </div>
             <hr>
