@@ -6,7 +6,7 @@ import url from 'url'
 import once from 'once'
 import fs from 'fs'
 import jetpack from 'fs-jetpack'
-// import intoStream from 'into-stream' HACKFIX
+import intoStream from 'into-stream'
 import ICO from 'icojs'
 
 const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).replace('app.asar', 'app.asar.unpacked')
@@ -43,21 +43,6 @@ export function register (protocol) {
 // internal methods
 // =
 
-/**
- * HACK
- * Electron has an issue that's causing file read streams to fail to serve
- * Reading into memory seems to resolve the issue
- * https://github.com/electron/electron/issues/21018
- * -prf
- */
-import { PassThrough } from 'stream'
-function intoStream (text) {
-  const rv = new PassThrough()
-  rv.push(text)
-  rv.push(null)
-  return rv
-}
-
 async function beakerProtocol (request, respond) {
   var cb = once((statusCode, status, contentType, path, CSP) => {
     const headers = {
@@ -67,7 +52,7 @@ async function beakerProtocol (request, respond) {
       'Access-Control-Allow-Origin': '*'
     }
     if (typeof path === 'string') {
-      respond({statusCode, headers, data: intoStream(fs.readFileSync(path))}) // HACK- should be fs.createReadStream(path)}) with no intoStream()
+      respond({statusCode, headers, data: fs.createReadStream(path)})
     } else if (typeof path === 'function') {
       respond({statusCode, headers, data: intoStream(path())})
     } else {

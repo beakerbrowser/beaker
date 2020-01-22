@@ -288,7 +288,21 @@ export const protocolHandler = async function (request, respond) {
   }
 
   // fetch the entry and stream the response
-  fileReadStream = checkoutFS.pda.createReadStream(entry.path, range)
+  // HACK solution until electron issue resolved -prf
+  headersSent = true
+  Object.assign(headers, {
+    'Content-Type': mime.identify(entry.path)
+  })
+  var data = await checkoutFS.pda.readFile(entry.path, 'binary')
+  if (range) {
+    data = data.slice(range.start, range.end + 1)
+  }
+  respond({
+    statusCode,
+    headers,
+    data: intoStream(data)
+  })
+  /*fileReadStream = checkoutFS.pda.createReadStream(entry.path, range)
   var dataStream = fileReadStream
     .pipe(mime.identifyStream(entry.path, mimeType => {
       // cleanup the timeout now, as bytes have begun to stream
@@ -341,7 +355,7 @@ export const protocolHandler = async function (request, respond) {
   fileReadStream.once('error', err => {
     logger.warn('Error reading file', {url: drive.url, path: entry.path, err})
     if (!headersSent) respondError(500, 'Failed to read file')
-  })
+  })*/
 }
 
 function renderMD (content) {
