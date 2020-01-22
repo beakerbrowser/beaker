@@ -173,7 +173,7 @@ export default {
     var tab = tabManager.findTab(BrowserView.fromWebContents(this.sender))
     if (!tab) return
 
-    var isAllowed = (this.sender.getURL().startsWith('beaker:') || /^https?:\/\/hyperdrive\.network(:|\/)/i.test(this.sender.getURL()))
+    var isAllowed = isBeakerApp(this.sender)
     if (isAllowed) {
       return tab.executeSidebarCommand(...args)
     }
