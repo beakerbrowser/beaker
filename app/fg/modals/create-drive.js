@@ -8,8 +8,6 @@ import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
 import _groupBy from 'lodash.groupby'
 
-const TEMPLATES_DIR = '/system/templates'
-
 class CreateDriveModal extends LitElement {
   static get properties () {
     return {
@@ -80,7 +78,7 @@ class CreateDriveModal extends LitElement {
 
     .template img,
     .template .img-for-none {
-      max-width: 100%;
+      width: 100%;
       height: 80px;
       object-fit: cover;
       margin-bottom: 10px;
@@ -147,15 +145,8 @@ class CreateDriveModal extends LitElement {
   }
 
   async readTemplates () {
-    var fsurl = bg.navigatorFs.get().url
-    var files = (await bg.hyperdrive.readdir(fsurl, TEMPLATES_DIR, {includeStats: true}).catch(e => []))
-    var infos = await Promise.all(files.map(file => {
-      if (file.stat.mount && file.stat.mount.key) {
-        return bg.hyperdrive.getInfo(file.stat.mount.key).catch(e => false)
-      }
-      return false
-    }))
-    return infos.filter(Boolean)
+    var drives = await bg.drives.list()
+    return drives.map(drive => drive.info).filter(info => info.type === 'template')
   }
 
   updated () {
