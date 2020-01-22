@@ -18,7 +18,6 @@ export class CommandViewer extends LitElement {
   async load () {
     var drive = new Hyperdrive(location)
     this.info = await drive.getInfo()
-    // this.isInstalled = await beaker.programs.isInstalled(this.info.url) TODO
     await this.requestUpdate()
   }
 
@@ -64,9 +63,9 @@ export class CommandViewer extends LitElement {
 
   async onToggleInstalled (e) {
     if (this.isInstalled) {
-      await beaker.programs.uninstallProgram(this.info.url)
+      // await beaker.programs.uninstallProgram(this.info.url)
     } else {
-      await beaker.programs.installProgram(this.info.url)
+      // await beaker.programs.installProgram(this.info.url)
     }
     this.load()
   }

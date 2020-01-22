@@ -9,8 +9,6 @@ import historyManifest from '../manifests/internal/history'
 import sitedataManifest from '../manifests/internal/sitedata'
 import watchlistManifest from '../manifests/internal/watchlist'
 import usersManifest from '../manifests/internal/users'
-import programsManifest from '../manifests/internal/programs'
-import typesManifest from '../manifests/internal/types'
 
 export const setup = function (rpc) {
   const beaker = {}
@@ -27,8 +25,6 @@ export const setup = function (rpc) {
     const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
     const watchlistRPC = rpc.importAPI('watchlist', watchlistManifest, opts)
     const usersRPC = rpc.importAPI('users', usersManifest, opts)
-    const programsRPC = rpc.importAPI('programs', programsManifest, opts)
-    const typesRPC = rpc.importAPI('types', typesManifest, opts)
 
     // attach APIs
     beaker.browser = Object.assign({}, beakerBrowserRPC)
@@ -39,10 +35,8 @@ export const setup = function (rpc) {
     beaker.history = Object.assign({}, historyRPC)
     beaker.logger = Object.assign({}, loggerRPC)
     beaker.logger.stream = (opts) => fromEventStream(loggerRPC.stream(opts))
-    beaker.programs = Object.assign({}, programsRPC)
     beaker.sitedata = Object.assign({}, sitedataRPC)
     beaker.users = Object.assign({}, usersRPC)
-    beaker.types = Object.assign({}, typesRPC)
     beaker.watchlist = Object.assign({}, watchlistRPC)
     beaker.watchlist.createEventsStream = () => fromEventStream(watchlistRPC.createEventsStream())
 

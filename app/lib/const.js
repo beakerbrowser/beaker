@@ -14,10 +14,8 @@ export const PATHS = {
   DESKTOP: '/desktop',
   LIBRARY: '/library',
   LIBRARY_NS: (ns) => `/library/${ns}`,
-  PROGRAM_REGISTRY_JSON: '/system/program-registry.json',
   SYSTEM: '/system',
   SYSTEM_NS: (ns) => `/system/${ns}`,
-  TYPE_REGISTRY_JSON: '/system/type-registry.json',
 
   // user fs
   COMMENTS: '/comments',
@@ -25,12 +23,6 @@ export const PATHS = {
   FOLLOWS: '/follows',
   VOTES: '/votes',
 }
-
-// builtin programs
-export const BUILTIN_PROGRAMS = [
-  {url: 'beaker://social', manifestPath: joinPath(__dirname, 'userland', 'social', 'index.json')},
-  {url: 'beaker://std-cmds', manifestPath: joinPath(__dirname, 'userland', 'std-cmds', 'index.json')}
-]
 
 // hyperdrive trash management
 export const TRASH_EXPIRATION_AGE = ms('7d') // how old do items need to be before deleting them from the trash?

@@ -328,15 +328,6 @@ class NavbarLocation extends LitElement {
     e.currentTarget.blur()
   }
 
-  async onClickInstall (e) {
-    if (this.isInstalled) {
-      await bg.programs.uninstallProgram(this.url)
-    } else {
-      await bg.programs.installProgram(this.url)
-    }
-    bg.views.reload('active')
-  }
-
   onClickZoom (e) {
     bg.views.resetZoom(this.activeTabIndex)
   }

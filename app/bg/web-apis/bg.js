@@ -16,8 +16,6 @@ import historyManifest from './manifests/internal/history'
 import sitedataManifest from './manifests/internal/sitedata'
 import watchlistManifest from './manifests/internal/watchlist'
 import usersManifest from './manifests/internal/users'
-import programsManifest from './manifests/internal/programs'
-import typesManifest from './manifests/internal/types'
 
 // internal apis
 import { WEBAPI as loggerAPI } from '../logger'
@@ -30,8 +28,6 @@ import watchlistAPI from './bg/watchlist'
 import { WEBAPI as downloadsAPI } from '../ui/downloads'
 import { WEBAPI as beakerBrowserAPI } from '../browser'
 import usersAPI from './bg/users'
-import { WEBAPI as programsAPI } from '../filesystem/program-registry'
-import { WEBAPI as typesAPI } from '../filesystem/type-registry'
 
 // external manifests
 import navigatorManifest from './manifests/external/navigator'
@@ -71,8 +67,6 @@ export const setup = function () {
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
   rpc.exportAPI('users', usersManifest, usersAPI, internalOnly)
-  rpc.exportAPI('programs', programsManifest, programsAPI, internalOnly)
-  rpc.exportAPI('types', typesManifest, typesAPI, internalOnly)
 
   // external apis
   rpc.exportAPI('navigator', navigatorManifest, navigatorAPI, secureOnly)

@@ -2,13 +2,11 @@ import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-elemen
 import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import * as QP from './lib/query-params.js'
 import css from '../css/main.css.js'
-import './views/drive-handlers.js'
 import './views/general.js'
 import './views/info.js'
 import './views/fs-audit-log.js'
 import './views/daemon-log.js'
 import './views/log.js'
-import './views/programs.js'
 
 class SettingsApp extends LitElement {
   static get properties () {
@@ -63,8 +61,6 @@ class SettingsApp extends LitElement {
     return html`
       ${item('general', 'fas fa-cog', 'General')}
       <hr>
-      ${item('applications', 'far fa-window-restore', 'Applications')}
-      ${item('commands', 'fas fa-terminal', 'Commands')}
       ${item('cloud-peers', 'fas fa-cloud', 'Cloud Peers')}
       ${item('users', 'fas fa-users', 'Users')}
       <hr>
@@ -78,13 +74,6 @@ class SettingsApp extends LitElement {
 
   renderSubview () {
     switch (this.currentSubview) {
-      case 'applications':
-        return html`
-          <programs-view loadable type="application"></programs-view>
-          <drive-handlers-view loadable></drive-handlers-view>
-        `
-      case 'commands':
-        return html`<programs-view loadable type="webterm.sh/cmd-pkg"></programs-view>`
       case 'general':
         return html`<general-settings-view loadable></general-settings-view>`
       case 'info':

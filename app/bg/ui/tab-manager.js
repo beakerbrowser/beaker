@@ -31,9 +31,7 @@ import * as sitedataDb from '../dbs/sitedata'
 import * as settingsDb from '../dbs/settings'
 import * as historyDb from '../dbs/history'
 import * as filesystem from '../filesystem/index'
-import * as typeRegistry from '../filesystem/type-registry'
 import * as bookmarks from '../filesystem/bookmarks'
-import * as programRegistry from '../filesystem/program-registry'
 import * as users from '../filesystem/users'
 import hyper from '../hyper/index'
 
@@ -83,8 +81,6 @@ const STATE_VARS = [
   'datDomain',
   'writable',
   'canFollow',
-  'canInstall',
-  'isInstalled',
   'canSave',
   'isSaved',
   'isMyProfile',
@@ -171,7 +167,6 @@ class Tab {
     this.isBookmarked = false // is the active page bookmarked?
     this.datInfo = null // metadata about the site if viewing a dat
     this.isSystemDat = undefined // is this the root drive or a user?
-    this.isInstalled = undefined // is the drive an installed application?
     this.confirmedAuthorTitle = undefined // the title of the confirmed author of the site
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
@@ -273,10 +268,6 @@ class Tab {
 
   get canFollow () {
     return this.datInfo && !this.isMyProfile
-  }
-
-  get canInstall () {
-    return this.datInfo && (this.datInfo.type === 'application' || this.datInfo.type === 'webterm.sh/cmd-pkg')
   }
 
   get isSaved () {
@@ -736,7 +727,6 @@ class Tab {
     // clear existing state
     this.peers = 0
     this.isSystemDat = false
-    this.isInstalled = false
     this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
 
@@ -760,11 +750,6 @@ class Tab {
       let userUrls = users.listUrls()
       if (filesystem.isRootUrl(this.datInfo.url) || userUrls.includes(this.datInfo.url)) {
         this.isSystemDat = true
-      }
-
-      // fetch install state
-      if (this.canInstall) {
-        this.isInstalled = await programRegistry.isInstalled(this.url)
       }
 
       // determine the confirmed author
