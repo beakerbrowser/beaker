@@ -108,10 +108,19 @@ export async function setDefaultUser (url) {
 }
 
 /**
+ * @param {Object} [opts]
+ * @param {boolean} [opts.includeSystem]
  * @returns {Array<DriveConfig>}
  */
-export function listDrives () {
-  return drives
+export function listDrives ({includeSystem} = {includeSystem: false}) {
+  var d = drives.slice()
+  if (includeSystem) {
+    for (let userUrl of users.listUrls()) {
+      d.unshift({key: userUrl.slice('hd://'.length)})
+    }
+    d.unshift({key: rootDrive.url.slice('hd://'.length)})
+  }
+  return d
 }
 
 /**

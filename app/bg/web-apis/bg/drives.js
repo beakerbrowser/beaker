@@ -36,9 +36,9 @@ export default {
     }
   },
 
-  async list () {
+  async list (opts) {
     var records = []
-    for (let drive of listDrives()) {
+    for (let drive of listDrives(opts)) {
       let url = `hd://${drive.key}`
       let ident = getIdent(url)
       records.push({

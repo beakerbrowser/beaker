@@ -218,7 +218,7 @@ class SelectDriveModal extends LitElement {
     await this.requestUpdate()
     this.adjustHeight()
 
-    this.drives = await bg.drives.list()
+    this.drives = await bg.drives.list({includeSystem: true})
     if (params.type) this.drives = this.drives.filter(drive => drive.info.type === params.type)
     if (typeof params.writable === 'boolean') {
       this.drives = this.drives.filter(drive => drive.info.writable === params.writable)
