@@ -29,8 +29,8 @@ export async function ls (opts = {}) {
       <div class="border-lightgray" style="margin-bottom: 5px; padding: 5px; overflow: hidden; white-space: nowrap; overflow: hidden;">
         <div style="display: flex; align-items: center; font-size: 10px; margin-bottom: 2px;">
           <strong class="color-lightgray" style="margin-right: 5px">${i + 1}.</strong>
-          <a href="beaker://social/${post.drive.url.slice('hd://'.length)}" style="margin-right: 5px">${post.drive.title}</a>
-          <a class="color-lightgray" href="beaker://social/${post.url.slice('hd://'.length)}" style="margin-right: 10px"><small>${timeDifference(post.stat.ctime)}</small></a>
+          <a href="https://beaker.network/${post.drive.url.slice('hd://'.length)}" style="margin-right: 5px">${post.drive.title}</a>
+          <a class="color-lightgray" href="https://beaker.network/${post.url.slice('hd://'.length)}" style="margin-right: 10px"><small>${timeDifference(post.stat.ctime)}</small></a>
         </div>
         <div style="font-size: 14px">
           <a href=${post.stat.metadata.href || post.url}><strong>${post.stat.metadata.title}</strong></a>
@@ -63,7 +63,7 @@ export async function post (opts = {}, title = '') {
     urlParams.set('type', 'file')
     urlParams.set('file', opts.file)
   }
-  this.page.goto(`beaker://social/compose?${urlParams.toString()}`)
+  this.page.goto(`https://beaker.network/compose?${urlParams.toString()}`)
 }
 
 export async function whoami () {
@@ -130,7 +130,7 @@ export async function find (opts = {}, query = '') {
           ${hits.length === 0 ? html`<p><em>No matches found in your follows or foafs</em></p>` : ''}
           ${hits.map(f => html`
             <p>
-              <a href="beaker://social/${f.url.slice('hd://'.length)}">
+              <a href="https://beaker.network/${f.url.slice('hd://'.length)}">
                 <strong>${f.title}</strong>
                 <small>${toNiceDomain(f.url)}</small>
               </a>
@@ -180,16 +180,16 @@ export async function graph (opts = {}, id) {
         return html`
           <div class="border-lightgray" style="padding: 0 10px 10px; margin: 5px 0">
             <h3>Mutuals (${following.length})</h3>
-            ${following.map(f => html`<a href="beaker://social/${f.url.slice('hd://'.length)}">${f.title} <small>${toNiceDomain(f.url)}</small></a><br>`)}
+            ${following.map(f => html`<a href="https://beaker.network/${f.url.slice('hd://'.length)}">${f.title} <small>${toNiceDomain(f.url)}</small></a><br>`)}
           </div>
         `
       }
       return html`
         <div class="border-lightgray" style="padding: 0 10px 10px; margin: 5px 0">
           <h3>Following (${following.length})</h3>
-          ${following.map(f => html`<a href="beaker://social/${f.url.slice('hd://'.length)}">${f.title} <small>${toNiceDomain(f.url)}</small></a><br>`)}
+          ${following.map(f => html`<a href="https://beaker.network/${f.url.slice('hd://'.length)}">${f.title} <small>${toNiceDomain(f.url)}</small></a><br>`)}
           <h3>Followers (${followers.length})</h3>
-          ${followers.map(f => html`<a href="beaker://social/${f.url.slice('hd://'.length)}">${f.title} <small>${toNiceDomain(f.url)}</small></a><br>`)}
+          ${followers.map(f => html`<a href="https://beaker.network/${f.url.slice('hd://'.length)}">${f.title} <small>${toNiceDomain(f.url)}</small></a><br>`)}
         </div>
       `
     }
@@ -213,20 +213,20 @@ export async function unfollow (opts = {}, id) {
 }
 
 export function home (opts = {}) {
-  var url = 'beaker://social/'
+  var url = 'https://beaker.network/'
   this.page.goto(url, {newTab: opts['new-tab']})
 }
 
 export async function me (opts = {}) {
   let prof = await whoami()
-  var url = 'beaker://social/' + prof.url.slice('hd://'.length)
+  var url = 'https://beaker.network/' + prof.url.slice('hd://'.length)
   this.page.goto(url, {newTab: opts['new-tab']})
 }
 
 export function view (opts = {}, id) {
   if (isNumeric(id)) id = lastPosts[id - 1]
   if (id.startsWith('hd://')) id = id.slice('hd://'.length)
-  var url = 'beaker://social/' + id
+  var url = 'https://beaker.network/' + id
   this.page.goto(url, {newTab: opts['new-tab']})
 }
 
@@ -238,7 +238,7 @@ function renderProfile (key, info) {
     <div class="border-lightgray" style="padding: 0px 10px">
       <h1><img src="${info.url}/thumb" style="width: 32px; border-radius: 50%"> ${info.title}</h1>
       <p><strong>Bio:</strong> ${info.description}</p>
-      <p><strong>Profile:</strong> <a href="beaker://social/${key}">beaker.network/${key}</a></p>
+      <p><strong>Profile:</strong> <a href="https://beaker.network/${key}">beaker.network/${key}</a></p>
       <p><strong>Drive:</strong> <a href="${info.url}">${toNiceUrl(info.url)}</a></p>
     </div>
   `
