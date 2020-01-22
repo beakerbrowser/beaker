@@ -218,15 +218,10 @@ class SelectDriveModal extends LitElement {
     await this.requestUpdate()
     this.adjustHeight()
 
-    var entries = await bg.hyperdrive.query(bg.navigatorFs.get().url, {
-      path: '/system/drives/*',
-      type: 'mount',
-      sort: 'name'
-    }).catch(err => [])
-    this.drives = await Promise.all(entries.map(entry => bg.hyperdrive.getInfo(entry.mount)))
-    if (params.type) this.drives = this.drives.filter(drive => drive.type === params.type)
+    this.drives = await bg.drives.list()
+    if (params.type) this.drives = this.drives.filter(drive => drive.info.type === params.type)
     if (typeof params.writable === 'boolean') {
-      this.drives = this.drives.filter(drive => drive.writable === params.writable)
+      this.drives = this.drives.filter(drive => drive.info.writable === params.writable)
     }
     await this.requestUpdate()
     this.adjustHeight()
@@ -265,7 +260,7 @@ class SelectDriveModal extends LitElement {
           ${this.renderTypeFilter()}
           <div class="filter-container">
             <i class="fa fa-search"></i>
-            <input autofocus @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or input the URL of a drive">
+            <input autofocus @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a drive">
           </div>
           ${this.renderDrivesList()}
         </div>
@@ -347,7 +342,7 @@ class SelectDriveModal extends LitElement {
 
     var filtered = this.drives
     if (this.currentTitleFilter) {
-      filtered = filtered.filter(a => a.title && a.title.toLowerCase().includes(this.currentTitleFilter))
+      filtered = filtered.filter(a => a.info.title && a.info.title.toLowerCase().includes(this.currentTitleFilter))
     }
 
     if (!filtered.length) {
@@ -372,11 +367,11 @@ class SelectDriveModal extends LitElement {
         <div class="info">
           <img class="favicon" src="beaker-favicon:${drive.url}" />
 
-          <span class="title" title="${drive.title} ${drive.writable ? '' : '(Read-only)'}">
-            ${drive.title || 'Untitled'}
+          <span class="title" title="${drive.info.title} ${drive.info.writable ? '' : '(Read-only)'}">
+            ${drive.info.title || 'Untitled'}
           </span>
 
-          ${drive.writable ? '' : html`<span class="readonly">read-only</span>`}
+          ${drive.info.writable ? '' : html`<span class="readonly">read-only</span>`}
 
           <span class="hash">${shortenHash(drive.url)}</span>
         </div>
