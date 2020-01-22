@@ -120,16 +120,21 @@ export function listDrives () {
  * @param {Boolean} [opts.seeding]
  * @returns {Promise<void>}
  */
-export async function configDrive (url, {seeding} = {seeding: false}) {
+export async function configDrive (url, {seeding} = {seeding: undefined}) {
   var release = await lock('filesystem:drives')
   try {
     var key = await hyper.drives.fromURLToKey(url, true)
     var drive = drives.find(drive => drive.key === key)
     if (!drive) {
+      if (typeof seeding === 'undefined') {
+        seeding = true
+      }
       drive = /** @type DriveConfig */({key, seeding})
       drives.push(drive)
     } else {
-      drive.seeding = seeding
+      if (typeof seeding !== 'undefined') {
+        drive.seeding = seeding
+      }
     }
     await rootDrive.pda.writeFile(PATHS.SYSTEM_NS('drives.json'), JSON.stringify({drives}, null, 2))
   } finally {
