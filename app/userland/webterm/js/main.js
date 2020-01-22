@@ -14,7 +14,6 @@ import './lib/term-icon.js'
 window.html = html
 window.html.render = render
 
-const THEME_PATH = '/system/webterm/theme.css'
 const TAB_COMPLETION_RENDER_LIMIT = 15
 
 class WebTerm extends LitElement {
@@ -123,21 +122,8 @@ class WebTerm extends LitElement {
   }
 
   async importEnvironment () {
-    this.loadTheme()
     this.loadCommands()
     this.loadBuiltins()
-  }
-
-  async loadTheme () {
-    // load theme
-    try {
-      let themeSheet = new CSSStyleSheet()
-      let themeCSS = await navigator.filesystem.readFile(THEME_PATH)
-      themeSheet.replace(themeCSS)
-      this.shadowRoot.adoptedStyleSheets = Array.from(this.shadowRoot.adoptedStyleSheets).concat(themeSheet)
-    } catch (e) {
-      console.log('Failed to load theme css', e)
-    }
   }
 
   async loadCommands () {
@@ -146,24 +132,22 @@ class WebTerm extends LitElement {
       manifest: await (await fetch('beaker://std-cmds/index.json')).json()
     }]
 
-    var userPackages = await navigator.filesystem.query({
-      path: '/system/webterm/cmds/*'
-    })
-    userPackages = userPackages.filter(p => p.stat.isDirectory())
-    for (let pkg of userPackages) {
-      pkg.name = pkg.path.split('/').pop()
+    var cmdPkgDrives = (await beaker.drives.list()).map(drive => drive.info).filter(info => info.type === 'webterm.sh/cmd-pkg')
+    for (let drive of cmdPkgDrives) {
       try {
-        pkg.manifest = JSON.parse(await navigator.filesystem.readFile(`/${pkg.path}/index.json`))
+        packages.push({
+          url: drive.url,
+          manifest: JSON.parse(await (new Hyperdrive(drive.url).readFile(`index.json`)))
+        })
       } catch (e) {
         console.log(e)
-        this.outputError(`Failed to read ${pkg.path} manifest`, e.toString())
+        this.outputError(`Failed to read ${drive.title} manifest (${drive.url})`, e.toString())
       }
     }
-    packages = packages.concat(userPackages)
     console.log(packages)
 
     for (let pkg of packages) {
-      var pkgId = pkg.name || pkg.url
+      var pkgId = pkg.url
       var commands = pkg.manifest.commands
       if (!commands || !Array.isArray(commands) || commands.length === 0) {
         this.outputError(`Skipping ${pkg.manifest.title} (${pkg.url})`, 'No commands found')

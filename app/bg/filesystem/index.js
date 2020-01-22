@@ -78,8 +78,6 @@ export async function setup () {
     await ensureDir(PATHS.LIBRARY_NS('media'))
     await ensureDir(PATHS.LIBRARY_NS('projects'))
     await ensureDir(PATHS.SYSTEM)
-    await ensureDir(PATHS.SYSTEM_NS('webterm'))
-    await ensureDir(PATHS.SYSTEM_NS('webterm/cmds'))
 
     // ensure all user mounts are set
     for (let user of userList) {

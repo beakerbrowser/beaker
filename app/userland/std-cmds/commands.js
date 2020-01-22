@@ -1,13 +1,12 @@
 import { ensureDir, ensureMount, ensureUnmount, ensureUnmountByUrl, getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 
 export async function ls () {
-  let res = await navigator.filesystem.query({path: '/system/webterm/cmds/*'})
-  res = res.filter(r => r.stat.isDirectory())
-  res = res.map(r => ({name: r.path.split('/').pop(), path: r.path, url: r.mount}))
-  res.toHTML = () => {
-    return res.map(r => html`<p><a href=${navigator.filesystem.url + r.path}>${r.name}</a></p>`)
+  let drives = await beaker.drives.list()
+  let driveInfos = drives.map(drive => drive.info).filter(info => info.type === 'webterm.sh/cmd-pkg')
+  driveInfos.toHTML = () => {
+  return driveInfos.map(info => html`<p><a href=${info.url}><strong>${info.title}</strong></a> ${info.description}</p>`)
   }
-  return res
+  return driveInfos
 }
 
 export async function create () {
@@ -34,25 +33,13 @@ export async function create () {
 }
 
 export async function install (opts = {}, url) {
-  await ensureDir('/system')
-  await ensureDir('/system/webterm')
-  await ensureDir('/system/webterm/cmds')
-
-  var driveInfo = await (new Hyperdrive(url)).getInfo()
-  var name = await getAvailableName('/system/webterm/cmds', driveInfo.title || 'untitled')
-  let path = `/system/webterm/cmds/${name}`
-  await ensureMount(path, driveInfo.url)
-
-  return {name, path, url, toHTML: () => html`Installed <a href=${navigator.filesystem.url + path}>${name}</a>`}
+  await beaker.drives.configure(url)
+  return {url, toHTML: () => html`Installed <a href=${url}>${url}</a>`}
 }
 
-export async function uninstall (opts = {}, urlOrName) {
-  await ensureDir('/system')
-  await ensureDir('/system/webterm')
-  await ensureDir('/system/webterm/cmds')
-  
-  await ensureUnmount(`/system/webterm/cmds/${urlOrName}`)
-  await ensureUnmountByUrl(`/system/webterm/cmds/*`, urlOrName)
+export async function uninstall (opts = {}, url) {
+  await beaker.drives.remove(url)
+  return {url, toHTML: () => html`Uninstalled <a href=${url}>${url}</a>`}
 }
 
 // internal
