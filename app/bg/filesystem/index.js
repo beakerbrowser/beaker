@@ -124,6 +124,14 @@ export function listDrives ({includeSystem} = {includeSystem: false}) {
 }
 
 /**
+ * @param {string} key
+ * @returns {DriveConfig}
+ */
+export function getDriveConfig (key) {
+  return listDrives().find(d => d.key === key)
+}
+
+/**
  * @param {string} url
  * @param {Object} [opts]
  * @param {Boolean} [opts.seeding]

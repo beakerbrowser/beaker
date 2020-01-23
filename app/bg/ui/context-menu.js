@@ -2,6 +2,8 @@ import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import * as tabManager from './tab-manager'
 import { download } from './downloads'
+import { getDriveConfig, configDrive, removeDrive } from '../filesystem/index'
+import { runCloneFlow, runDiffMergeFlow, runDrivePropertiesFlow } from './util'
 import * as spellChecker from '../web-apis/bg/spell-checker'
 
 // NOTE
@@ -19,6 +21,7 @@ export default function registerContextMenu () {
     webContents.on('context-menu', async (e, props) => {
       var menuItems = []
       const { mediaFlags, editFlags } = props
+      const isHyperdrive = props.pageURL.startsWith('hd://')
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
       const isMisspelled = false//TODOprops.selectionText && spellChecker.isMisspelled(props.selectionText)
@@ -137,6 +140,61 @@ export default function registerContextMenu () {
           click: () => webContents.reload()
         })
         menuItems.push({ type: 'separator' })
+        if (isHyperdrive) {
+          let driveInfo = tabManager.getActive(targetWindow).driveInfo
+          let key = driveInfo ? driveInfo.key : undefined
+          let driveCfg = getDriveConfig(key)
+          menuItems.push({
+            label: 'Hyperdrive',
+            submenu: [
+              { label: 'Open with Files Explorer', click: (item, win) => tabManager.create(win, `https://hyperdrive.network/${props.pageURL.slice('hd://'.length)}`, {setActive: true}) },
+              { label: 'Open with Beaker.Network', click: (item, win) => tabManager.create(win, `https://beaker.network/${props.pageURL.slice('hd://'.length)}`, {setActive: true}) },
+              { type: 'separator' },
+              { 
+                label: 'Seed This Drive',
+                type: 'checkbox',
+                checked: driveCfg && driveCfg.seeding,
+                click: (item, win) => {
+                  configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
+                }
+              },
+              {
+                label: 'Save to My Drives',
+                type: 'checkbox',
+                checked: !!driveCfg,
+                click: (item, win) => {
+                  if (!driveCfg) configDrive(key, {seeding: false})
+                  else removeDrive(key)
+                }
+              },
+              { type: 'separator' },
+              {
+                label: 'Clone This Drive',
+                click: async (item, win) => {
+                  var url = await runCloneFlow(win, key)
+                  tabManager.create(win, url, {setActive: true})
+                }
+              },
+              { label: 'Diff / Merge', click: (item, win) => runDiffMergeFlow(win, props.pageURL) },
+              { type: 'separator' },
+              { label: 'Drive Properties', click: (item, win) => runDrivePropertiesFlow(win, key) }
+            ]
+          })
+          menuItems.push({ type: 'separator' })
+        }
+        menuItems.push({
+          label: 'Sidebar: Editor',
+          click: async (item, win) => {
+            tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
+          }
+        })
+        menuItems.push({
+          label: 'Sidebar: Terminal',
+          click: async (item, win) => {
+            tabManager.getActive(win).executeSidebarCommand('show-panel', 'web-term')
+          }
+        })
+        menuItems.push({ type: 'separator' })
         menuItems.push({
           label: 'Save Page As...',
           click: downloadPrompt('pageURL', '.html')
@@ -148,18 +206,7 @@ export default function registerContextMenu () {
         menuItems.push({ type: 'separator' })
       }
 
-      menuItems.push({
-        label: 'Open Editor',
-        click: async (item, win) => {
-          tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
-        }
-      })
-      menuItems.push({
-        label: 'Open Terminal',
-        click: async (item, win) => {
-          tabManager.getActive(win).executeSidebarCommand('show-panel', 'web-term')
-        }
-      })
+      menuItems.push({ type: 'separator' })
       menuItems.push({
         label: 'Inspect Element',
         click: item => {

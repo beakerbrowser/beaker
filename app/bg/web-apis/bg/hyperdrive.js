@@ -82,8 +82,10 @@ export default {
       }
     }
 
-    // grant write permissions to the creating app
-    permissions.grantPermission('modifyDat:' + newDriveKey, this.sender.getURL())
+    if (!isSenderBeaker(this.sender)) {
+      // grant write permissions to the creating app
+      permissions.grantPermission('modifyDat:' + newDriveKey, this.sender.getURL())
+    }
     return newDriveUrl
   },
 
@@ -122,9 +124,11 @@ export default {
       newDriveUrl = newDrive.url
     }
 
-    // grant write permissions to the creating app
-    let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
-    permissions.grantPermission('modifyDat:' + newDriveKey, this.sender.getURL())
+    if (!isSenderBeaker(this.sender)) {
+      // grant write permissions to the creating app
+      let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
+      permissions.grantPermission('modifyDat:' + newDriveKey, this.sender.getURL())
+    }
     return newDriveUrl
   },
 
