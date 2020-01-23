@@ -5,6 +5,7 @@ import './browser'
 import './bookmark'
 import './donate'
 import './share'
+import './site'
 
 class MenusWrapper extends LitElement {
   static get properties () {
@@ -87,6 +88,8 @@ class MenusWrapper extends LitElement {
         return html`<donate-menu active-menu></donate-menu>`
       case 'share':
         return html`<share-menu active-menu></share-menu>`
+      case 'site':
+        return html`<site-menu active-menu></site-menu>`
     }
     return html`<div></div>`
   }

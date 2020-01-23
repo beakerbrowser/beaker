@@ -142,12 +142,6 @@ class BrowserMenu extends LitElement {
             <span class="shortcut">${this.accelerators.newWindow}</span>
           </div>
 
-          <div class="menu-item" @click=${this.onClickPrint}>
-            <i class="fas fa-print"></i>
-            <span class="label">Print page</span>
-            <span class="shortcut">${this.accelerators.print}</span>
-          </div>
-
           ${''/*<div class="menu-item" @click=${this.onClickSavePage}>
             <i class="fas fa-file-export"></i>
             Export page as file
@@ -282,11 +276,6 @@ class BrowserMenu extends LitElement {
             <img class="favicon" src="asset:favicon:beaker://settings">
             <span class="label">Settings</span>
           </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://webterm')}>
-            <img class="favicon" src="asset:favicon:beaker://webterm">
-            <span class="label">Webterm</span>
-          </div>
         </div>
       </div>`
   }
@@ -329,11 +318,6 @@ class BrowserMenu extends LitElement {
   async onClickSavePage () {
     var tabState = await bg.views.getTabState('active')
     bg.beakerBrowser.downloadURL(tabState.url)
-    bg.shellMenus.close()
-  }
-
-  onClickPrint () {
-    bg.views.print('active')
     bg.shellMenus.close()
   }
 

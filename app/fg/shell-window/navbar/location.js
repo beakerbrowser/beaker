@@ -26,6 +26,7 @@ class NavbarLocation extends LitElement {
       availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
       isShareMenuOpen: {type: Boolean},
+      isSiteMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
       isLocationFocused: {type: Boolean}
@@ -46,6 +47,7 @@ class NavbarLocation extends LitElement {
     this.donateLinkHref = false
     this.availableAlternative = ''
     this.isShareMenuOpen = false
+    this.isSiteMenuOpen = false
     this.isDonateMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
@@ -106,6 +108,7 @@ class NavbarLocation extends LitElement {
       ${this.renderLiveReloadingBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
+      ${this.renderSiteBtn()}
       ${this.renderShareBtn()}
       ${this.renderBookmarkBtn()}
     `
@@ -263,6 +266,15 @@ class NavbarLocation extends LitElement {
     `
   }
 
+  renderSiteBtn () {
+    var cls = classMap({site: true, pressed: this.isSiteMenuOpen})
+    return html`
+      <button class="${cls}" @click=${this.onClickSiteMenu}>
+        <i class="fas fa-angle-down"></i>
+      </button>
+    `
+  }
+
   // events
   // =
 
@@ -396,6 +408,22 @@ class NavbarLocation extends LitElement {
       }
     })
   }
+
+  async onClickSiteMenu () {
+    this.isSiteMenuOpen = true
+    var rect = this.shadowRoot.querySelector('.site').getClientRects()[0]
+    // show menu
+    await bg.views.toggleMenu('site', {
+      bounds: {
+        top: Number(rect.bottom),
+        left: Number(rect.right)
+      },
+      params: {
+        url: this.url
+      }
+    })
+    this.isSiteMenuOpen = false
+  }
 }
 NavbarLocation.styles = [buttonResetCSS, css`
 :host {
@@ -419,7 +447,8 @@ button {
   margin: 0 2px;
 }
 
-button.share {
+button.share,
+button.site {
   border-radius: 4px;
 }
 

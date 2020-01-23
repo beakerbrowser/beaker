@@ -162,6 +162,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://assets/font-source-sans-pro-le') {
     return cb(200, 'OK', 'application/font-woff2', path.join(__dirname, 'assets/fonts/source-sans-pro-le.woff2'))
   }
+  if (requestUrl === 'beaker://assets/logo-black.svg') {
+    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/logo-black.svg'))
+  }
   if (requestUrl.startsWith('beaker://assets/logo2')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo2.png'))
   }
