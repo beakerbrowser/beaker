@@ -109,7 +109,7 @@ class NavbarLocation extends LitElement {
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
       ${this.renderSiteBtn()}
-      ${this.renderShareBtn()}
+      ${''/* DISABLED this.renderShareBtn()*/}
       ${this.renderBookmarkBtn()}
     `
   }
