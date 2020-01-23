@@ -19,6 +19,11 @@ import lock from '../../lib/lock'
  * @typedef {Object} DriveConfig
  * @property {string} key
  * @property {boolean} seeding
+ * 
+ * @typedef {Object} DriveIdent
+ * @property {boolean} system
+ * @property {boolean} user
+ * @property {boolean} root
  */
 
 // globals
@@ -105,6 +110,16 @@ export async function setup () {
  */
 export async function setDefaultUser (url) {
   await ensureMount(PATHS.DEFAULT_USER, url)
+}
+
+/**
+ * @param {string} url 
+ * @returns {DriveIdent}
+ */
+export function getDriveIdent (url) {
+  var home = isRootUrl(url)
+  var user = users.isUser(url)
+  return {system: home || user, home, user}
 }
 
 /**

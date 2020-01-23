@@ -1,7 +1,7 @@
 import hyperDns from '../../hyper/dns'
 import * as drives from '../../hyper/drives'
 import * as archivesDb from '../../dbs/archives'
-import { listDrives, configDrive, removeDrive, isRootUrl } from '../../filesystem/index'
+import { listDrives, configDrive, removeDrive, getDriveIdent } from '../../filesystem/index'
 import * as trash from '../../filesystem/trash'
 import * as users from '../../filesystem/users'
 import { PermissionsError } from 'beaker-error-constants'
@@ -25,7 +25,7 @@ export default {
     var drive = listDrives().find(drive => drive.key === key)
     var info = await drives.getDriveInfo(key).catch(e => {})
     var url = `hd://${key}`
-    var ident = getIdent(url)
+    var ident = getDriveIdent(url)
     return {
       key,
       url,
@@ -40,7 +40,7 @@ export default {
     var records = []
     for (let drive of listDrives(opts)) {
       let url = `hd://${drive.key}`
-      let ident = getIdent(url)
+      let ident = getDriveIdent(url)
       records.push({
         key: drive.key,
         url,
@@ -107,10 +107,4 @@ function assertDriveDeletable (key) {
   if (users.isUser(`hd://${key}`)) {
     throw new PermissionsError('Unable to delete the user profile.')
   }
-}
-
-function getIdent (url) {
-  var home = isRootUrl(url)
-  var user = users.isUser(url)
-  return {system: home || user, home, user}
 }

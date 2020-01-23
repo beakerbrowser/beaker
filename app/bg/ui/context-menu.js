@@ -2,7 +2,7 @@ import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import * as tabManager from './tab-manager'
 import { download } from './downloads'
-import { getDriveConfig, configDrive, removeDrive } from '../filesystem/index'
+import { getDriveConfig, configDrive, removeDrive, getDriveIdent } from '../filesystem/index'
 import { runCloneFlow, runDiffMergeFlow, runDrivePropertiesFlow } from './util'
 import * as spellChecker from '../web-apis/bg/spell-checker'
 
@@ -144,6 +144,7 @@ export default function registerContextMenu () {
           let driveInfo = tabManager.getActive(targetWindow).driveInfo
           let key = driveInfo ? driveInfo.key : undefined
           let driveCfg = getDriveConfig(key)
+          let driveIdent = getDriveIdent(`hd://${key}`)
           menuItems.push({
             label: 'Hyperdrive',
             submenu: [
@@ -153,7 +154,8 @@ export default function registerContextMenu () {
               { 
                 label: 'Seed This Drive',
                 type: 'checkbox',
-                checked: driveCfg && driveCfg.seeding,
+                checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
+                enabled: !driveIdent.system,
                 click: (item, win) => {
                   configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
                 }
@@ -161,7 +163,8 @@ export default function registerContextMenu () {
               {
                 label: 'Save to My Drives',
                 type: 'checkbox',
-                checked: !!driveCfg,
+                checked: !!driveCfg || driveIdent.system,
+                enabled: !driveIdent.system,
                 click: (item, win) => {
                   if (!driveCfg) configDrive(key, {seeding: false})
                   else removeDrive(key)
