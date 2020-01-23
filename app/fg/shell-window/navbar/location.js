@@ -29,7 +29,8 @@ class NavbarLocation extends LitElement {
       isSiteMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
-      isLocationFocused: {type: Boolean}
+      isLocationFocused: {type: Boolean},
+      hasExpanded: {type: Boolean}
     }
   }
 
@@ -101,6 +102,7 @@ class NavbarLocation extends LitElement {
         ?writable=${this.writable}
         peers=${this.peers}
         .loadError=${this.loadError}
+        ?hide-origin=${this.hasExpanded}
       >
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
@@ -317,13 +319,14 @@ class NavbarLocation extends LitElement {
 
   onInputLocation (e) {
     var rect = this.getClientRects()[0]
+    var value = e.currentTarget.value
     bg.views.runLocationBarCmd('set-value', {
       bounds: {
         x: rect.left|0,
         y: (rect.top|0) - 2,
         width: rect.width|0
       },
-      value: e.currentTarget.value,
+      value,
       selectionStart: e.currentTarget.selectionStart
     })
     e.currentTarget.blur()
@@ -431,20 +434,19 @@ NavbarLocation.styles = [buttonResetCSS, css`
   flex: 1;
   background: var(--bg-input);
   border: 1px solid var(--color-border-input);
-  border-radius: 4px;
-  padding-right: 2px;
+  border-radius: 16px;
+  padding-right: 8px;
   user-select: none;
 }
 
-shell-window-navbar-site-info {
-  margin-right: 5px;
+:host(.insecure) {
+  border: 1px solid var(--color-border-input--insecure);
 }
 
 button {
   width: 27px;
   border-radius: 0;
   color: #666;
-  margin: 0 2px;
 }
 
 button.share,
@@ -478,13 +480,8 @@ button.text .fa-info-circle {
   font-size: 14px;
 }
 
-button.bookmark {
-  border-radius: 4px;
-  margin: 0;
-}
-
 button.bookmark .fa-star {
-  font-size: 16px;
+  font-size: 14px;
 }
 
 button .fa-link {
@@ -539,17 +536,17 @@ input {
   border: 0;
   padding: 0;
 
-  line-height: 26px;
   width: 100%;
-  height: 25px;
+  height: 26px;
   overflow: hidden;
 
   color: var(--color-input);
   background: var(--bg-input);
-  font-size: 13.5px;
+  font-size: 12.5px;
+  line-height: 27px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
-  font-weight: 500;
-  letter-spacing: -.2px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
 }
 
 input:focus {

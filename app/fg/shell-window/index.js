@@ -23,7 +23,8 @@ class ShellWindowUI extends LitElement {
       isUpdateAvailable: {type: Boolean},
       numWatchlistNotifications: {type: Number},
       isShellInterfaceHidden: {type: Boolean},
-      isFullscreen: {type: Boolean}
+      isFullscreen: {type: Boolean},
+      hasLocationExpanded: {type: Boolean}
     }
   }
 
@@ -34,6 +35,7 @@ class ShellWindowUI extends LitElement {
     this.numWatchlistNotifications = 0
     this.isShellInterfaceHidden = false
     this.isFullscreen = false
+    this.hasLocationExpanded = false
     this.activeTabIndex = -1
 
     // fetch platform information

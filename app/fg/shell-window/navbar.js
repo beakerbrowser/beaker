@@ -52,6 +52,10 @@ class ShellWindowNavbar extends LitElement {
     return _get(this, 'activeTab.isLoading')
   }
 
+  get isInsecure () {
+    return _get(this, 'activeTab.url', '').startsWith('http:') || _get(this, 'activeTab.loadError.isInsecureResponse')
+  }
+
   focusLocation () {
     this.shadowRoot.querySelector('shell-window-navbar-location').focusLocation()
   }
@@ -70,6 +74,7 @@ class ShellWindowNavbar extends LitElement {
         ${this.shortcutBtn}
       </div>
       <shell-window-navbar-location
+        class=${classMap({insecure: this.isInsecure})}
         .activeTabIndex="${this.activeTabIndex}"
         url="${_get(this, 'activeTab.url', '')}"
         title="${_get(this, 'activeTab.title', '')}"
@@ -93,7 +98,7 @@ class ShellWindowNavbar extends LitElement {
         active-match="${_get(this, 'activeTab.currentInpageFindResults.activeMatchOrdinal', '0')}"
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
-      <div class="buttons" style="padding-left: 0">
+      <div class="buttons" style="padding-left: 4px">
         ${this.watchlistBtn}
         ${this.browserMenuBtn}
       </div>

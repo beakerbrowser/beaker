@@ -25,6 +25,7 @@ import { createShellWindow, getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
+import { DAT_KEY_REGEX } from '../../lib/strings'
 import { findWebContentsParentWindow } from '../lib/electron'
 import { findImageBounds } from '../lib/image'
 import * as sitedataDb from '../dbs/sitedata'
@@ -226,22 +227,19 @@ class Tab {
   get siteTitle () {
     try {
       var urlp = parseDriveUrl(this.url)
-      var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
+      if (DAT_KEY_REGEX.test(urlp.hostname)) {
+        urlp.hostname = `${urlp.hostname.slice(0, 4)}..${urlp.hostname.slice(-2)}`
+      }
+      var origin = urlp.protocol + '//' + (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.driveInfo) {
         if (filesystem.isRootUrl(this.driveInfo.url)) {
           return 'My Home Drive'
         }
-        if (this.driveInfo.type === 'user') {
-          return this.driveInfo.title || 'Anonymous'
-        }
-        return `"${this.driveInfo.title || 'Untitled'}" by ${this.confirmedAuthorTitle ? this.confirmedAuthorTitle : '(Unknown)'}`
-      } else if (urlp.protocol === 'hd:') {
-        return '(Untitled) by (Unknown)'
       }
       if (urlp.protocol === 'beaker:') {
         return 'Beaker'
       }
-      return hostname + (urlp.port ? `:${urlp.port}` : '')
+      return origin + (urlp.port ? `:${urlp.port}` : '')
     } catch (e) {
       return ''
     }

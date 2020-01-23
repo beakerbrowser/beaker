@@ -149,8 +149,7 @@ class DriveView extends LitElement {
         <div class="entries">
           ${location.pathname !== '/' ? html`
             <div>
-              <span class="fa-fw far fa-folder"></span>
-              <a href=".." title="Go up a directory">..</a>
+              <a href=".." title="Go up a directory"><span class="fa-fw fas fa-level-up-alt"></span> ..</a>
             </div>
           ` : ''}
           ${repeat(this.directories, entry => this.renderEntry(entry))}
@@ -170,8 +169,8 @@ class DriveView extends LitElement {
     if (entry.stat.mount && entry.stat.mount.key) {
       return html`
         <div>
-          <span class="fa-fw fas fa-external-link-square-alt"></span>
           <a href="hd://${entry.stat.mount.key}" title=${entry.name}>
+            <span class="fa-fw fas fa-external-link-square-alt"></span>
             ${entry.name}
           </a>
         </div>
@@ -179,8 +178,8 @@ class DriveView extends LitElement {
     }
     return html`
       <div>
-        <span class="fa-fw far fa-${entry.stat.isDirectory() ? 'folder' : 'file-alt'}"></span>
         <a href="./${entry.name}${entry.stat.isDirectory() ? '/' : ''}" title=${entry.name}>
+          <span class="fa-fw far fa-${entry.stat.isDirectory() ? 'folder' : 'file-alt'}"></span>
           ${entry.name}
         </a>
       </div>

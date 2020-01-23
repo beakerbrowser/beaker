@@ -14,7 +14,8 @@ class NavbarSiteInfo extends LitElement {
       writable: {type: Boolean},
       peers: {type: Number},
       loadError: {type: Object},
-      isPressed: {type: Boolean}
+      isPressed: {type: Boolean},
+      hideOrigin: {type: Boolean, attribute: 'hide-origin'}
     }
   }
 
@@ -27,6 +28,7 @@ class NavbarSiteInfo extends LitElement {
     this.peers = 0
     this.loadError = null
     this.isPressed = false
+    this.hideOrigin = false
   }
 
   get scheme () {
@@ -93,9 +95,8 @@ class NavbarSiteInfo extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <button class=${classMap({certified, insecure, pressed: this.isPressed})} @click=${this.onClickButton}>
+      <button class=${classMap({certified, insecure, pressed: this.isPressed, 'hide-origin': this.hideOrigin})} @click=${this.onClickButton}>
         ${innerHTML}
-        <span class="fas fa-caret-down"></span>
       </button>
     `
   }
@@ -121,10 +122,12 @@ NavbarSiteInfo.styles = [buttonResetCSS, css`
 }
 
 button {
-  border-radius: 16px;
+  border-radius: 0;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
   height: 26px;
   line-height: 26px;
-  padding: 0 10px;
+  padding: 0 7px 0 10px;
   background: var(--bg-cert-default);
 }
 
@@ -148,6 +151,10 @@ button.insecure:hover {
   background: var(--bg-cert-insecure--hover);
 }
 
+button.hide-origin .label {
+  display: none;
+}
+
 button.hidden {
   display: none;
 }
@@ -158,22 +165,26 @@ button.hidden {
   color: gray;
 }
 
+.fa-exclamation-triangle,
+.fa-check-circle {
+  font-size: 12.5px;
+  line-height: 27px;
+}
+
 .fa-user {
   font-size: 9px;
   position: relative;
   top: -1px;
 }
 
-.fa-caret-down {
-  color: rgba(0,0,0,.2);
-  margin-left: 2px;
-}
-
 .label {
   margin-left: 2px;
   margin-right: 2px;
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
+  font-weight: 400;
+  font-size: 12.5px;
+  line-height: 27px;
+  letter-spacing: 0.5px;
 }
 
 .certified {

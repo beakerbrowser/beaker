@@ -428,8 +428,8 @@ input {
   color: #222;
   font-size: 13.5px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
-  font-weight: 500;
-  letter-spacing: -.2px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
 }
 
 input:focus {
