@@ -17,7 +17,7 @@ class NavbarLocation extends LitElement {
       url: {type: String},
       title: {type: String},
       siteTitle: {type: String},
-      datDomain: {type: String},
+      driveDomain: {type: String},
       writable: {type: Boolean},
       peers: {type: Number},
       zoom: {type: Number},
@@ -38,7 +38,7 @@ class NavbarLocation extends LitElement {
     this.url = ''
     this.title = ''
     this.siteTitle = ''
-    this.datDomain = ''
+    this.driveDomain = ''
     this.writable = false
     this.peers = 0
     this.zoom = 0
@@ -95,7 +95,7 @@ class NavbarLocation extends LitElement {
       <shell-window-navbar-site-info
         url=${this.url}
         siteTitle=${this.siteTitle}
-        datDomain=${this.datDomain}
+        driveDomain=${this.driveDomain}
         ?writable=${this.writable}
         peers=${this.peers}
         .loadError=${this.loadError}

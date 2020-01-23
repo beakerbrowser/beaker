@@ -10,7 +10,7 @@ class NavbarSiteInfo extends LitElement {
     return {
       url: {type: String},
       siteTitle: {type: String},
-      datDomain: {type: String},
+      driveDomain: {type: String},
       writable: {type: Boolean},
       peers: {type: Number},
       loadError: {type: Object},
@@ -22,7 +22,7 @@ class NavbarSiteInfo extends LitElement {
     super()
     this.url = ''
     this.siteTitle = ''
-    this.datDomain = ''
+    this.driveDomain = ''
     this.writable = false
     this.peers = 0
     this.loadError = null

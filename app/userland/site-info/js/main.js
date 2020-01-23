@@ -65,7 +65,7 @@ class SiteInfoApp extends LitElement {
     return urlp.pathname
   }
 
-  get isDatDomainUnconfirmed () {
+  get isDriveDomainUnconfirmed () {
     // viewing a dat at a hostname but no domain is confirmed
     var hostname = this.hostname.replace(/\+.*$/i, '')
     return this.isDrive && !isDatHashRegex.test(hostname) && this.info.domain !== hostname
@@ -192,7 +192,7 @@ class SiteInfoApp extends LitElement {
       ${this.renderSiteInfo()}
       ${this.renderNav()}
       <div class="inner">
-        ${this.isDatDomainUnconfirmed ? html`
+        ${this.isDriveDomainUnconfirmed ? html`
           <div class="notice">
             <p><span class="fas fa-fw fa-exclamation-triangle"></span> Domain issue</p>
             <p>

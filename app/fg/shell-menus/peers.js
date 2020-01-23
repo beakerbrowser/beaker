@@ -23,7 +23,7 @@ class PeersMenu extends LitElement {
   }
 
   reset () {
-    this.datInfo = null
+    this.driveInfo = null
     if (this.pollInterval) {
       clearInterval(this.pollInterval)
     }
@@ -31,12 +31,12 @@ class PeersMenu extends LitElement {
 
   async init (params) {
     this.url = params.url
-    this.datInfo = (await bg.views.getTabState('active', {datInfo: true})).datInfo
+    this.driveInfo = (await bg.views.getTabState('active', {driveInfo: true})).driveInfo
     await this.requestUpdate()
 
     // periodically fetch updates
     this.pollInterval = setInterval(async () => {
-      this.datInfo.networkStats = await bg.views.getTabState('active', {networkStats: true})
+      this.driveInfo.networkStats = await bg.views.getTabState('active', {networkStats: true})
       this.requestUpdate()
     }, NETWORK_STATS_POLL_INTERVAL)
 
@@ -49,11 +49,11 @@ class PeersMenu extends LitElement {
   // =
 
   render () {
-    var writable = _get(this, 'datInfo.writable', false)
-    var isSaved = _get(this, 'datInfo.userSettings.isSaved', false)
-    var peers = _get(this, 'datInfo.peers', 0)
-    var downloadTotal = _get(this, 'datInfo.networkStats.downloadTotal', 0)
-    var uploadTotal = _get(this, 'datInfo.networkStats.uploadTotal', 0)
+    var writable = _get(this, 'driveInfo.writable', false)
+    var isSaved = _get(this, 'driveInfo.userSettings.isSaved', false)
+    var peers = _get(this, 'driveInfo.peers', 0)
+    var downloadTotal = _get(this, 'driveInfo.networkStats.downloadTotal', 0)
+    var uploadTotal = _get(this, 'driveInfo.networkStats.uploadTotal', 0)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -61,7 +61,7 @@ class PeersMenu extends LitElement {
           <div class="header-info">
             <img class="favicon" src="beaker-favicon: ${this.url}"/>
             <h1 class="page-title">
-              ${_get(this, 'datInfo.title', html`<em>Untitled</em>`)}
+              ${_get(this, 'driveInfo.title', html`<em>Untitled</em>`)}
             </h1>
           </div>
 
@@ -111,8 +111,8 @@ class PeersMenu extends LitElement {
   }
 
   async onToggleSeeding () {
-    this.datInfo.userSettings.isSaved = !this.datInfo.userSettings.isSaved
-    await bg.drives.setUserSettings(this.datInfo.key, {isSaved: this.datInfo.userSettings.isSaved})
+    this.driveInfo.userSettings.isSaved = !this.driveInfo.userSettings.isSaved
+    await bg.drives.setUserSettings(this.driveInfo.key, {isSaved: this.driveInfo.userSettings.isSaved})
     bg.views.refreshState('active')
   }
 }

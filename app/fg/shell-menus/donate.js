@@ -17,12 +17,12 @@ class DonateMenu extends LitElement {
   }
 
   reset () {
-    this.datInfo = null
+    this.driveInfo = null
   }
 
   async init (params) {
     this.url = params.url
-    this.datInfo = (await bg.views.getTabState('active', {datInfo: true})).datInfo
+    this.driveInfo = (await bg.views.getTabState('active', {driveInfo: true})).driveInfo
     await this.requestUpdate()
   }
 
@@ -44,8 +44,8 @@ class DonateMenu extends LitElement {
   }
 
   render () {
-    var title = _get(this, 'datInfo.title', 'this site')
-    const paymentLink = String(_get(this, 'datInfo.links.payment.0.href'))
+    var title = _get(this, 'driveInfo.title', 'this site')
+    const paymentLink = String(_get(this, 'driveInfo.links.payment.0.href'))
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">

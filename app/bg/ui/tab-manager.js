@@ -78,7 +78,7 @@ const STATE_VARS = [
   'title',
   'siteTitle',
   'siteIcon',
-  'datDomain',
+  'driveDomain',
   'writable',
   'canFollow',
   'canSave',
@@ -116,7 +116,7 @@ var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var lastSelectedTabIndex = {} // map of {[win.id]: Number}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: Events}
-var noRedirectHostnames = new Set() // set of hostnames which have dat-redirection disabled
+var noRedirectHostnames = new Set() // set of hostnames which have drive-redirection disabled
 var nextTabIsScriptCloseable = false // will the next tab created be "script closable"?
 
 // classes
@@ -165,12 +165,12 @@ class Tab {
     // helper state
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
-    this.datInfo = null // metadata about the site if viewing a dat
-    this.isSystemDat = undefined // is this the root drive or a user?
+    this.driveInfo = null // metadata about the site if viewing a hyperdrive
+    this.isSystemDrive = undefined // is this the root drive or a user?
     this.confirmedAuthorTitle = undefined // the title of the confirmed author of the site
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
-    this.wasDatTimeout = false // did the last navigation result in a timed-out dat?
+    this.wasDriveTimeout = false // did the last navigation result in a timed-out hyperdrive?
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
@@ -216,9 +216,9 @@ class Tab {
 
   get title () {
     var title = this.webContents.getTitle()
-    if (this.datInfo && this.datInfo.title && (!title || title.startsWith(this.origin))) {
+    if (this.driveInfo && this.driveInfo.title && (!title || title.startsWith(this.origin))) {
       // fallback to the index.json title field if the page doesnt provide a title
-      title = this.datInfo.title
+      title = this.driveInfo.title
     }
     return title
   }
@@ -227,14 +227,14 @@ class Tab {
     try {
       var urlp = parseDriveUrl(this.url)
       var hostname = (urlp.hostname).replace(/\+(.+)$/, '')
-      if (this.datInfo) {
-        if (filesystem.isRootUrl(this.datInfo.url)) {
+      if (this.driveInfo) {
+        if (filesystem.isRootUrl(this.driveInfo.url)) {
           return 'My Home Drive'
         }
-        if (this.datInfo.type === 'user') {
-          return this.datInfo.title || 'Anonymous'
+        if (this.driveInfo.type === 'user') {
+          return this.driveInfo.title || 'Anonymous'
         }
-        return `"${this.datInfo.title || 'Untitled'}" by ${this.confirmedAuthorTitle ? this.confirmedAuthorTitle : '(Unknown)'}`
+        return `"${this.driveInfo.title || 'Untitled'}" by ${this.confirmedAuthorTitle ? this.confirmedAuthorTitle : '(Unknown)'}`
       } else if (urlp.protocol === 'hd:') {
         return '(Untitled) by (Unknown)'
       }
@@ -248,35 +248,35 @@ class Tab {
   }
 
   get siteIcon () {
-    if (this.datInfo) {
-      return libTools.getFAIcon(libTools.typeToCategory(this.datInfo.type))
+    if (this.driveInfo) {
+      return libTools.getFAIcon(libTools.typeToCategory(this.driveInfo.type))
     }
     return ''
   }
 
-  get datDomain () {
-    return this.datInfo && this.datInfo.domain ? this.datInfo.domain : ''
+  get driveDomain () {
+    return this.driveInfo && this.driveInfo.domain ? this.driveInfo.domain : ''
   }
 
   get writable () {
-    return this.datInfo && this.datInfo.writable
+    return this.driveInfo && this.driveInfo.writable
   }
 
   get canSave () {
-    return this.datInfo && !this.isSystemDat
+    return this.driveInfo && !this.isSystemDrive
   }
 
   get canFollow () {
-    return this.datInfo && !this.isMyProfile
+    return this.driveInfo && !this.isMyProfile
   }
 
   get isSaved () {
-    return this.datInfo && this.datInfo.userSettings && this.datInfo.userSettings.isSaved
+    return this.driveInfo && this.driveInfo.userSettings && this.driveInfo.userSettings.isSaved
   }
 
   get isMyProfile () {
     var userSession = getUserSessionFor(this.browserWindow.webContents)
-    return this.datInfo && this.datInfo.url === userSession.url
+    return this.driveInfo && this.driveInfo.url === userSession.url
   }
 
   get canGoBack () {
@@ -592,7 +592,7 @@ class Tab {
   // alternative protocols
   // =
 
-  async checkForDatAlternative (url) {
+  async checkForHyperdriveAlternative (url) {
     return // DISABLED
 /*
     let u = (new URL(url))
@@ -627,8 +627,8 @@ class Tab {
     if (this.liveReloadEvents) {
       this.liveReloadEvents.destroy()
       this.liveReloadEvents = false
-    } else if (this.datInfo) {
-      let drive = hyper.drives.getDrive(this.datInfo.key)
+    } else if (this.driveInfo) {
+      let drive = hyper.drives.getDrive(this.driveInfo.key)
       if (!drive) return
 
       let {version} = parseDriveUrl(this.url)
@@ -711,7 +711,7 @@ class Tab {
   async refreshState () {
     await Promise.all([
       this.fetchIsBookmarked(true),
-      this.fetchDatInfo(true)
+      this.fetchDriveInfo(true)
     ])
     this.emitUpdateState()
   }
@@ -723,15 +723,15 @@ class Tab {
     }
   }
 
-  async fetchDatInfo (noEmit = false) {
+  async fetchDriveInfo (noEmit = false) {
     // clear existing state
     this.peers = 0
-    this.isSystemDat = false
+    this.isSystemDrive = false
     this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
 
     if (!this.url.startsWith('hd://')) {
-      this.datInfo = null
+      this.driveInfo = null
       return
     }
     
@@ -739,23 +739,23 @@ class Tab {
     let userSession = getUserSessionFor(this.browserWindow.webContents)
     try {
       var key = await hyper.dns.resolveName(this.url)
-      this.datInfo = await hyper.drives.getDriveInfo(key)
-      this.peers = this.datInfo.peers
-      this.donateLinkHref = _get(this, 'datInfo.links.payment.0.href')
+      this.driveInfo = await hyper.drives.getDriveInfo(key)
+      this.peers = this.driveInfo.peers
+      this.donateLinkHref = _get(this, 'driveInfo.links.payment.0.href')
     } catch (e) {
-      this.datInfo = null
+      this.driveInfo = null
     }
-    if (this.datInfo) {
-      // mark as a system dat if it's the root drive or a user drive
+    if (this.driveInfo) {
+      // mark as a system drive if it's the root drive or a user drive
       let userUrls = users.listUrls()
-      if (filesystem.isRootUrl(this.datInfo.url) || userUrls.includes(this.datInfo.url)) {
-        this.isSystemDat = true
+      if (filesystem.isRootUrl(this.driveInfo.url) || userUrls.includes(this.driveInfo.url)) {
+        this.isSystemDrive = true
       }
 
       // determine the confirmed author
-      if (this.datInfo.author) {
+      if (this.driveInfo.author) {
         try {
-          if (this.datInfo.author === userSession.url) {
+          if (this.driveInfo.author === userSession.url) {
             this.confirmedAuthorTitle = (await users.get(userSession.url)).title
           }
         } catch (e) {
@@ -789,7 +789,7 @@ class Tab {
     this.isLoading = true
     this.loadingURL = null
     this.isReceivingAssets = false
-    this.wasDatTimeout = false
+    this.wasDriveTimeout = false
 
     // emit
     this.emitUpdateState()
@@ -823,11 +823,11 @@ class Tab {
     this.isReceivingAssets = true
     this.favicons = null
     await this.fetchIsBookmarked()
-    await this.fetchDatInfo()
+    await this.fetchDriveInfo()
     if (httpResponseCode === 504 && url.startsWith('hd://')) {
-      this.wasDatTimeout = true
+      this.wasDriveTimeout = true
     }
-    if (httpResponseCode === 404 && this.writable && (this.datInfo.type === 'website' || this.datInfo.type === 'application')) {
+    if (httpResponseCode === 404 && this.writable && (this.driveInfo.type === 'website' || this.driveInfo.type === 'application')) {
       // prompt to create a page on 404 for owned sites
       prompts.create(this.browserView.webContents, 'create-page', {url: this.url})
     }
@@ -848,9 +848,9 @@ class Tab {
     this.loadingURL = null
     this.isReceivingAssets = false
 
-    // check for dat alternatives
+    // check for hyperdrive alternatives
     if (this.url.startsWith('https://')) {
-      this.checkForDatAlternative(this.url)
+      this.checkForHyperdriveAlternative(this.url)
     } else {
       this.availableAlternative = ''
     }
@@ -997,20 +997,20 @@ export function setup () {
   }
   hyper.drives.on('updated', ({details}) => {
     iterateTabs(tab => {
-      if (tab.datInfo && tab.datInfo.url === details.url) {
+      if (tab.driveInfo && tab.driveInfo.url === details.url) {
         tab.refreshState()
       }
     })
   })
   hyper.drives.on('network-changed', ({details}) => {
     iterateTabs(tab => {
-      if (tab.datInfo && tab.datInfo.url === details.url) {
+      if (tab.driveInfo && tab.driveInfo.url === details.url) {
         // update peer count
         tab.peers = details.connections
         tab.emitUpdateState()
       }
-      if (tab.wasDatTimeout && tab.url.startsWith(details.url)) {
-        // refresh if this was a timed-out dat site (peers have been found)
+      if (tab.wasDriveTimeout && tab.url.startsWith(details.url)) {
+        // refresh if this was a timed-out hyperdrive site (peers have been found)
         tab.webContents.reload()
       }
     })
@@ -1452,8 +1452,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     if (tab) {
       var state = Object.assign({}, tab.state)
       if (opts) {
-        if (opts.datInfo) state.datInfo = tab.datInfo
-        if (opts.networkStats) state.networkStats = tab.datInfo ? tab.datInfo.networkStats : {}
+        if (opts.driveInfo) state.driveInfo = tab.driveInfo
+        if (opts.networkStats) state.networkStats = tab.driveInfo ? tab.driveInfo.networkStats : {}
         if (opts.sitePerms) state.sitePerms = await sitedataDb.getPermissions(tab.url)
       }
       return state
@@ -1463,8 +1463,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   async getNetworkState (tab) {
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
-    if (tab && tab.datInfo) {
-      var networkStats = await hyper.drives.getDriveNetworkStats(tab.datInfo.key)
+    if (tab && tab.driveInfo) {
+      var networkStats = await hyper.drives.getDriveNetworkStats(tab.driveInfo.key)
       return {
         peers: tab.peers,
         networkStats

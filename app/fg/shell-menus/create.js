@@ -11,11 +11,11 @@ class CreateMenu extends LitElement {
   }
 
   reset () {
-    this.datInfo = null
+    this.driveInfo = null
   }
 
   async init (params) {
-    this.datInfo = (await bg.views.getTabState('active', {datInfo: true})).datInfo
+    this.driveInfo = (await bg.views.getTabState('active', {driveInfo: true})).driveInfo
     await this.requestUpdate()
   }
 
