@@ -5,6 +5,7 @@ import { classMap } from '../../vendor/lit-element/lit-html/directives/class-map
 import prettyHash from 'pretty-hash'
 import * as bg from '../bg-process-rpc'
 import buttonResetCSS from './button-reset.css'
+import { joinPath } from '../../../lib/strings'
 import './site-info'
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
@@ -19,8 +20,6 @@ class NavbarLocation extends LitElement {
       datDomain: {type: String},
       writable: {type: Boolean},
       peers: {type: Number},
-      canInstall: {type: Boolean},
-      isInstalled: {type: Boolean},
       zoom: {type: Number},
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
@@ -42,8 +41,6 @@ class NavbarLocation extends LitElement {
     this.datDomain = ''
     this.writable = false
     this.peers = 0
-    this.canInstall = false
-    this.isInstalled = false
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
@@ -52,6 +49,7 @@ class NavbarLocation extends LitElement {
     this.isDonateMenuOpen = false
     this.isBookmarked = false
     this.isLocationFocused = false
+    this.hasExpanded = false
 
     // listen for commands from the main process
     ipcRenderer.on('command', this.onCommand.bind(this))
@@ -108,7 +106,6 @@ class NavbarLocation extends LitElement {
       ${this.renderLiveReloadingBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderDonateBtn()}
-      ${this.renderInstallBtn()}
       ${this.renderShareBtn()}
       ${this.renderBookmarkBtn()}
     `
@@ -124,6 +121,7 @@ class NavbarLocation extends LitElement {
           @focus=${this.onFocusLocation}
           @blur=${this.onBlurLocation}
           @input=${this.onInputLocation}
+          @keydown=${this.onKeydownLocation}
         >
         ${this.isLocationFocused ? '' : this.renderInputPretty()}
       </div>
@@ -248,16 +246,6 @@ class NavbarLocation extends LitElement {
     `
   }
 
-  renderInstallBtn () {
-    if (!this.canInstall) return ''
-    return html`
-      <button class="text ${this.isInstalled ? 'highlight' : ''}" @click=${this.onClickInstall} title="Install this drive">
-        <span class="fas fa-fw fa-download"></span>
-        <span class="text-label">${this.isInstalled ? 'Installed' : 'Install'}</span>
-      </button>
-    `
-  }
-
   renderBookmarkBtn () {
     return html`
       <button class="bookmark" @click=${this.onClickBookmark}>
@@ -312,6 +300,7 @@ class NavbarLocation extends LitElement {
     window.getSelection().empty()
     this.shadowRoot.querySelector('.input-container input').value = this.url // reset value
     this.isLocationFocused = false
+    this.hasExpanded = false
   }
 
   onInputLocation (e) {
@@ -326,6 +315,24 @@ class NavbarLocation extends LitElement {
       selectionStart: e.currentTarget.selectionStart
     })
     e.currentTarget.blur()
+  }
+
+  onKeydownLocation (e) {
+    var left = (e.key === 'ArrowLeft' || (e.ctrlKey && e.key === 'b'))
+    if (left && !this.hasExpanded) {
+      let input = this.shadowRoot.querySelector('.input-container input')
+      if (input.selectionStart === 0) {
+        e.preventDefault()
+        this.hasExpanded = true
+        try {
+          var oldValueLen = input.value.length
+          input.value = this.url
+          input.selectionStart = input.selectionEnd = this.url.length - oldValueLen
+        } catch (e) {
+          // ignore
+        }
+      }
+    }
   }
 
   onClickZoom (e) {
