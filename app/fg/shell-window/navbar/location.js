@@ -5,7 +5,7 @@ import { classMap } from '../../vendor/lit-element/lit-html/directives/class-map
 import prettyHash from 'pretty-hash'
 import * as bg from '../bg-process-rpc'
 import buttonResetCSS from './button-reset.css'
-import { joinPath } from '../../../lib/strings'
+import tooltipCSS from './tooltip.css'
 import './site-info'
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
@@ -18,6 +18,9 @@ class NavbarLocation extends LitElement {
       title: {type: String},
       siteTitle: {type: String},
       driveDomain: {type: String},
+      isHomeDrive: {type: Boolean, attribute: 'is-home-drive'},
+      isUserDrive: {type: Boolean, attribute: 'is-user-drive'},
+      isFollowing: {type: Boolean, attribute: 'is-following'},
       writable: {type: Boolean},
       peers: {type: Number},
       zoom: {type: Number},
@@ -41,6 +44,9 @@ class NavbarLocation extends LitElement {
     this.title = ''
     this.siteTitle = ''
     this.driveDomain = ''
+    this.isHomeDrive = false
+    this.isUserDrive = false
+    this.isFollowing = false
     this.writable = false
     this.peers = 0
     this.zoom = 0
@@ -60,6 +66,10 @@ class NavbarLocation extends LitElement {
 
   get isBeaker () {
     return this.url.startsWith('beaker://')
+  }
+
+  get isHyperdrive () {
+    return this.url.startsWith('hd://')
   }
 
   get modifiedUrl () {
@@ -109,8 +119,10 @@ class NavbarLocation extends LitElement {
       ${this.renderZoom()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderAvailableAlternativeBtn()}
-      ${this.renderDonateBtn()}
+      ${this.renderIdentLabel()}
       ${this.renderSiteBtn()}
+      ${this.renderDonateBtn()}
+      ${this.renderSocialBtn()}
       ${''/* DISABLED this.renderShareBtn()*/}
       ${this.renderBookmarkBtn()}
     `
@@ -250,10 +262,46 @@ class NavbarLocation extends LitElement {
       </button>
     `
   }
+  
+  renderIdentLabel () {
+    if (!this.isHyperdrive) {
+      return ''
+    }
+    if (this.isHomeDrive) {
+      return html`<span class="label">My Home Drive</span>`
+    }
+    if (this.isUserDrive) {
+      return html`<span class="label">My User Profile</span>`
+    }
+    if (this.writable) {
+      return html`<span class="label">My Hyperdrive</span>`
+    }
+  }
+  
+  renderSocialBtn () {
+    if (!this.isHyperdrive || this.isHomeDrive || this.isUserDrive) {
+      return ''
+    }
+    return html`
+      <button
+        class="${classMap({social: true, highlight: this.isFollowing, 'tooltip-left': true})}"
+        @click=${this.onClickToggleFollow}
+        data-tooltip=${this.isFollowing ? 'Following' : 'Follow'}
+        tooltip=${this.isFollowing ? 'Following' : 'Follow'}
+      >
+        <i class="fa fa-rss"></i>
+      </button>
+    `
+  }
 
   renderBookmarkBtn () {
     return html`
-      <button class="bookmark" @click=${this.onClickBookmark}>
+      <button
+        class="bookmark tooltip-left"
+        @click=${this.onClickBookmark}
+        data-tooltip="Bookmark this page"
+        title="Bookmark this page"
+      >
         <span class="far fa-star"></span>
       </button>
     `
@@ -403,6 +451,10 @@ class NavbarLocation extends LitElement {
     this.isDonateMenuOpen = false
   }
 
+  async onClickToggleFollow (e) {
+    bg.views.toggleFollowing('active')
+  }
+
   async onClickBookmark () {
     var rect = this.shadowRoot.querySelector('.bookmark').getClientRects()[0]
     // show menu
@@ -434,7 +486,7 @@ class NavbarLocation extends LitElement {
     this.isSiteMenuOpen = false
   }
 }
-NavbarLocation.styles = [buttonResetCSS, css`
+NavbarLocation.styles = [buttonResetCSS, tooltipCSS, css`
 :host {
   display: flex;
   flex: 1;
@@ -455,20 +507,10 @@ button {
   color: #666;
 }
 
-button.share,
-button.site {
-  border-radius: 4px;
-}
-
 button.text {
   width: auto;
   padding: 0 4px;
   font-size: 11px;
-}
-
-button.text.highlight {
-  color: #157bcc;
-  font-weight: 500;
 }
 
 button .fa,
@@ -484,6 +526,15 @@ button.text .far {
 
 button.text .fa-info-circle {
   font-size: 14px;
+}
+
+button.social .fa-rss {
+  font-size: 12px;
+}
+
+button.social.highlight {
+  color: #189bff;
+  background: #d6edff;
 }
 
 button.bookmark .fa-star {
@@ -589,5 +640,16 @@ input::-webkit-input-placeholder {
   font-weight: 400;
 }
 
+.label {
+  font-size: 11px;
+  background: #f1f9ff;
+  color: #4d98d4;
+  letter-spacing: 0.5px;
+  height: 18px;
+  margin: 4px 4px;
+  line-height: 18px;
+  padding: 0 6px;
+  border-radius: 4px;
+}
 `]
 customElements.define('shell-window-navbar-location', NavbarLocation)

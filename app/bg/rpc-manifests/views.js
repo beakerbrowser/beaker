@@ -22,6 +22,7 @@ export default {
   executeSidebarCommand: 'promise',
   toggleDevTools: 'promise',
   print: 'promise',
+  toggleFollowing: 'promise',
   showInpageFind: 'promise',
   hideInpageFind: 'promise',
   setInpageFindString: 'promise',

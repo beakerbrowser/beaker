@@ -25,13 +25,14 @@ import { createShellWindow, getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
-import { DAT_KEY_REGEX } from '../../lib/strings'
+import { DAT_KEY_REGEX, slugify } from '../../lib/strings'
 import { findWebContentsParentWindow } from '../lib/electron'
 import { findImageBounds } from '../lib/image'
 import * as sitedataDb from '../dbs/sitedata'
 import * as settingsDb from '../dbs/settings'
 import * as historyDb from '../dbs/history'
 import * as filesystem from '../filesystem/index'
+import { query as fsquery } from '../filesystem/query'
 import * as bookmarks from '../filesystem/bookmarks'
 import * as users from '../filesystem/users'
 import hyper from '../hyper/index'
@@ -80,11 +81,10 @@ const STATE_VARS = [
   'siteTitle',
   'siteIcon',
   'driveDomain',
+  'isHomeDrive',
+  'isUserDrive',
+  'isFollowing',
   'writable',
-  'canFollow',
-  'canSave',
-  'isSaved',
-  'isMyProfile',
   'peers',
   'favicons',
   'zoom',
@@ -167,7 +167,6 @@ class Tab {
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
     this.driveInfo = null // metadata about the site if viewing a hyperdrive
-    this.isSystemDrive = undefined // is this the root drive or a user?
     this.confirmedAuthorTitle = undefined // the title of the confirmed author of the site
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
@@ -232,7 +231,7 @@ class Tab {
       }
       var origin = urlp.protocol + '//' + (urlp.hostname).replace(/\+(.+)$/, '')
       if (this.driveInfo) {
-        if (filesystem.isRootUrl(this.driveInfo.url)) {
+        if (_get(this.driveInfo, 'ident.home', false)) {
           return 'My Home Drive'
         }
       }
@@ -253,28 +252,23 @@ class Tab {
   }
 
   get driveDomain () {
-    return this.driveInfo && this.driveInfo.domain ? this.driveInfo.domain : ''
+    return _get(this.driveInfo, 'domain', '')
+  }
+
+  get isHomeDrive () {
+    return _get(this.driveInfo, 'ident.home', false)
+  }
+
+  get isUserDrive () {
+    return _get(this.driveInfo, 'ident.user', false)
+  }
+
+  get isFollowing () {
+    return _get(this.driveInfo, 'isFollowing', false)
   }
 
   get writable () {
-    return this.driveInfo && this.driveInfo.writable
-  }
-
-  get canSave () {
-    return this.driveInfo && !this.isSystemDrive
-  }
-
-  get canFollow () {
-    return this.driveInfo && !this.isMyProfile
-  }
-
-  get isSaved () {
-    return this.driveInfo && this.driveInfo.userSettings && this.driveInfo.userSettings.isSaved
-  }
-
-  get isMyProfile () {
-    var userSession = getUserSessionFor(this.browserWindow.webContents)
-    return this.driveInfo && this.driveInfo.url === userSession.url
+    return _get(this.driveInfo, 'writable', false)
   }
 
   get canGoBack () {
@@ -724,7 +718,6 @@ class Tab {
   async fetchDriveInfo (noEmit = false) {
     // clear existing state
     this.peers = 0
-    this.isSystemDrive = false
     this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
 
@@ -734,20 +727,23 @@ class Tab {
     }
     
     // fetch new state
-    let userSession = getUserSessionFor(this.browserWindow.webContents)
+    var userSession = getUserSessionFor(this.browserWindow.webContents)
+    var key
     try {
-      var key = await hyper.dns.resolveName(this.url)
+      key = await hyper.dns.resolveName(this.url)
       this.driveInfo = await hyper.drives.getDriveInfo(key)
+      this.driveInfo.ident = filesystem.getDriveIdent(this.driveInfo.url)
       this.peers = this.driveInfo.peers
       this.donateLinkHref = _get(this, 'driveInfo.links.payment.0.href')
     } catch (e) {
       this.driveInfo = null
     }
+    if (!noEmit) this.emitUpdateState()
+
     if (this.driveInfo) {
-      // mark as a system drive if it's the root drive or a user drive
-      let userUrls = users.listUrls()
-      if (filesystem.isRootUrl(this.driveInfo.url) || userUrls.includes(this.driveInfo.url)) {
-        this.isSystemDrive = true
+      // fetch social information if not a system drive
+      if (!this.driveInfo.ident.system) {
+        this.driveInfo.isFollowing = (await fsquery(filesystem.get(), {path: '/profile/follows/*', mount: key})).length !== 0
       }
 
       // determine the confirmed author
@@ -1599,6 +1595,23 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async print (index) {
     getByIndex(getWindow(this.sender), index).webContents.print()
+  },
+
+  async toggleFollowing (index) {
+    var tab = getByIndex(getWindow(this.sender), index)
+    if (!tab.driveInfo) return
+
+    var fs = filesystem.get()
+    if (!tab.isFollowing) {
+      let name = await filesystem.getAvailableName('/profile/follows', slugify(tab.driveInfo.title || 'anonymous').toLowerCase())
+      await fs.pda.mount(`/profile/follows/${name}`, tab.driveInfo.url)
+    } else {
+      let mount = await fsquery(fs, {path: '/profile/follows/*', mount: tab.driveInfo.url})
+      if (mount[0]) {
+        await fs.pda.unmount(mount[0].path)
+      }
+    }
+    await tab.fetchDriveInfo()
   },
 
   async showInpageFind (index) {

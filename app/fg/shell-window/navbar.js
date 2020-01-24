@@ -80,10 +80,11 @@ class ShellWindowNavbar extends LitElement {
         title="${_get(this, 'activeTab.title', '')}"
         siteTitle="${_get(this, 'activeTab.siteTitle', '')}"
         driveDomain="${_get(this, 'activeTab.driveDomain', '')}"
+        ?is-home-drive=${_get(this, 'activeTab.isHomeDrive', false)}
+        ?is-user-drive=${_get(this, 'activeTab.isUserDrive', false)}
+        ?is-following=${_get(this, 'activeTab.isFollowing', false)}
         ?writable=${_get(this, 'activeTab.writable', false)}
         peers="${_get(this, 'activeTab.peers', 0)}"
-        ?canInstall=${_get(this, 'activeTab.canInstall', false)}
-        ?isInstalled=${_get(this, 'activeTab.isInstalled', false)}
         zoom="${_get(this, 'activeTab.zoom', '')}"
         .loadError=${_get(this, 'activeTab.loadError', null)}
         donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"
