@@ -320,6 +320,12 @@ class NavbarLocation extends LitElement {
   onInputLocation (e) {
     var rect = this.getClientRects()[0]
     var value = e.currentTarget.value
+    var selectionStart = e.currentTarget.selectionStart
+    if (value.startsWith('/') && !this.hasExpanded) {
+      let origin = (new URL(this.url)).origin 
+      value = origin + value
+      selectionStart += origin.length
+    }
     bg.views.runLocationBarCmd('set-value', {
       bounds: {
         x: rect.left|0,
@@ -327,7 +333,7 @@ class NavbarLocation extends LitElement {
         width: rect.width|0
       },
       value,
-      selectionStart: e.currentTarget.selectionStart
+      selectionStart
     })
     e.currentTarget.blur()
   }
