@@ -127,8 +127,9 @@ button {
   border-bottom-left-radius: 16px;
   height: 26px;
   line-height: 26px;
-  padding: 0 7px 0 10px;
+  padding: 0 12px 0 10px;
   background: var(--bg-cert-default);
+  clip-path: polygon(0% 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
 }
 
 button:not(:disabled):hover {
