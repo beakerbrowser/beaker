@@ -156,6 +156,35 @@ export const protocolHandler = async function (request, respond) {
     cspHeader = manifest.content_security_policy
   }
 
+  // check for the presence of a theme
+  var theme = undefined
+  if (await checkoutFS.pda.stat('/theme').catch(e => false)) {
+    let [themeJs, themeCss, defaultHtml] = await Promise.all([
+      checkoutFS.pda.stat('/theme/theme.js').catch(e => false),
+      checkoutFS.pda.stat('/theme/theme.css').catch(e => false),
+      checkoutFS.pda.stat('/theme/default.html').catch(e => false)
+    ])
+    theme = {js: themeJs, css: themeCss, defaultHtml}
+  }
+  const serveThemeDefaultHtml = async () => {
+    return respond({
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': '*',
+        'Content-Security-Policy': cspHeader
+      },
+      data: intoStream(await checkoutFS.pda.readFile('/theme/default.html')) // TODO use stream
+    })
+  }
+  const injectThemeScriptAndStyle = () => {
+    if (!theme) return ''
+    return [
+      theme.js ? `<script type="module" src="/theme/theme.js"></script>` : undefined,
+      theme.css ? `<link rel="stylesheet" href="/theme/theme.css">` : undefined,
+    ].filter(Boolean).join('\n') + '\n'
+  }
+
   // handle zip download
   if (urlp.query.download_as === 'zip') {
     cleanup()
@@ -212,6 +241,11 @@ export const protocolHandler = async function (request, respond) {
       })
     }
 
+    // theme default
+    if (theme && theme.defaultHtml) {
+      return serveThemeDefaultHtml()
+    }
+
     // directory listing
     return respond({
       statusCode: 200,
@@ -235,6 +269,13 @@ export const protocolHandler = async function (request, respond) {
   // handle not found
   if (!entry) {
     cleanup()
+
+    // theme default
+    if (theme && theme.defaultHtml) {
+      return serveThemeDefaultHtml()
+    }
+
+    // error page
     return respondError(404, 'File Not Found', {
       errorDescription: 'File Not Found',
       errorInfo: `Beaker could not find the file ${urlp.path}`,
@@ -277,7 +318,17 @@ export const protocolHandler = async function (request, respond) {
   if (!range && entry.path.endsWith('.md') && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
     let content = await checkoutFS.pda.readFile(entry.path, 'utf8')
     let contentType = canExecuteHTML ? 'text/html' : 'text/plain'
-    content = canExecuteHTML ? renderMD(content) : content
+    content = canExecuteHTML
+      ? `<!doctype html>
+<html>
+  <head>
+    ${injectThemeScriptAndStyle()}
+  </head>
+  <body>
+    ${md.render(content)}
+  </body>
+</html>`
+      : content
     return respond({
       statusCode: 200,
       headers: Object.assign(headers, {
@@ -296,6 +347,9 @@ export const protocolHandler = async function (request, respond) {
   var data = await checkoutFS.pda.readFile(entry.path, 'binary')
   if (range) {
     data = data.slice(range.start, range.end + 1)
+  }
+  if (headers['Content-Type'].includes('text/html') && theme) {
+    data = `${injectThemeScriptAndStyle()}${data.toString('utf8')}`
   }
   respond({
     statusCode,
@@ -356,12 +410,4 @@ export const protocolHandler = async function (request, respond) {
     logger.warn('Error reading file', {url: drive.url, path: entry.path, err})
     if (!headersSent) respondError(500, 'Failed to read file')
   })*/
-}
-
-function renderMD (content) {
-  return `<html>
-  <body>
-    ${md.render(content)}
-  </body>
-</html>`
 }
