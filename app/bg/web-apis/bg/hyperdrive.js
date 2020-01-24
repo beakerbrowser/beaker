@@ -29,12 +29,12 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async createDrive ({title, description, type, author, visibility, links, template, prompt} = {}) {
+  async createDrive ({title, description, type, author, visibility, links, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
-      visibility = template = undefined
+      visibility = undefined
       author = _get(windows.getUserSessionFor(this.sender), 'url')
     }
 
@@ -65,22 +65,6 @@ export default {
       newDriveUrl = newDrive.url
     }
     let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
-
-    // apply the template
-    if (template) {
-      try {
-        let drive = drives.getDrive(newDriveKey)
-        let templatePath = path.join(__dirname, 'assets', 'templates', template)
-        await pda.exportFilesystemToArchive({
-          srcPath: templatePath,
-          dstArchive: drive.session.drive,
-          dstPath: '/',
-          inplaceImport: true
-        })
-      } catch (e) {
-        console.error('Failed to import template', e)
-      }
-    }
 
     if (!isSenderBeaker(this.sender)) {
       // grant write permissions to the creating app

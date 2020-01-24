@@ -174,6 +174,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/default-user-thumb')) {
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
   }
+  if (requestUrl.startsWith('beaker://assets/default-theme-thumb')) {
+    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-theme-thumb.jpg'))
+  }
   if (requestUrl.startsWith('beaker://assets/search-icon-large')) {
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/search-icon-large.png'))
   }

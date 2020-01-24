@@ -14,7 +14,7 @@ class CreateDriveModal extends LitElement {
       title: {type: String},
       description: {type: String},
       type: {type: String},
-      template: {type: String},
+      theme: {type: String},
       errors: {type: Object}
     }
   }
@@ -55,7 +55,7 @@ class CreateDriveModal extends LitElement {
       margin: 20px 0;
     }
 
-    .templates {
+    .themes {
       background: #eef;
       border: 1px solid #ccd;
       padding: 10px;
@@ -64,37 +64,37 @@ class CreateDriveModal extends LitElement {
       margin: 4px 0 0;
     }
 
-    .templates-grid {
+    .themes-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-gap: 10px;
     }
 
-    .template img,
-    .template .img-for-none {
+    .theme img,
+    .theme .img-for-none {
       width: 100%;
       height: 80px;
       object-fit: cover;
       margin-bottom: 10px;
     }
 
-    .template .img-for-none {
+    .theme .img-for-none {
       background: #fff;
     }
 
-    .template .title {
+    .theme .title {
       text-align: center;
     }
 
-    .template.selected .title span {
+    .theme.selected .title span {
       background: #334;
       color: #fff;
       border-radius: 4px;
       padding: 0 6px;
     }
 
-    .template.selected img,
-    .template.selected .img-for-none {
+    .theme.selected img,
+    .theme.selected .img-for-none {
       outline: 1px solid #334;
     }
 
@@ -118,8 +118,8 @@ class CreateDriveModal extends LitElement {
     this.type = undefined
     this.links = undefined
     this.author = undefined
-    this.tempate = undefined
-    this.templates = []
+    this.theme = undefined
+    this.themes = []
     this.errors = {}
 
     // export interface
@@ -134,13 +134,13 @@ class CreateDriveModal extends LitElement {
     this.type = params.type || undefined
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
-    this.templates = await this.readTemplates()
+    this.themes = await this.readThemes()
     await this.requestUpdate()
   }
 
-  async readTemplates () {
+  async readThemes () {
     var drives = await bg.drives.list()
-    return drives.map(drive => drive.info).filter(info => info.type === 'template')
+    return drives.map(drive => drive.info).filter(info => info.type === 'theme')
   }
 
   updated () {
@@ -166,7 +166,7 @@ class CreateDriveModal extends LitElement {
             ${typeopt('undefined', 'Files drive')}
             ${typeopt('website', 'Website')}
             ${typeopt('module', 'Module')}
-            ${typeopt('template', 'Template')}
+            ${typeopt('theme', 'Theme')}
           </select>
         </h1>
 
@@ -178,17 +178,17 @@ class CreateDriveModal extends LitElement {
           <label for="desc">Description</label>
           <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''}>
 
-          <label for="desc">Template</label>
-          <div class="templates">
-            <div class="templates-grid">
+          <label for="desc">Theme</label>
+          <div class="themes">
+            <div class="themes-grid">
               <div 
-                class="template ${this.template === undefined ? 'selected' : ''}"
-                @click=${e => this.onClickTemplate(e, undefined)}
+                class="theme ${this.theme === undefined ? 'selected' : ''}"
+                @click=${e => this.onClickTheme(e, undefined)}
               >
                 <div class="img-for-none"></div>
                 <div class="title"><span>None</span></div>
               </div>
-              ${repeat(this.templates, t => this.renderTemplate(t))}
+              ${repeat(this.themes, t => this.renderTheme(t))}
             </div>
           </div>
           
@@ -203,14 +203,14 @@ class CreateDriveModal extends LitElement {
     `
   }
 
-  renderTemplate (template) {
+  renderTheme (theme) {
     return html`
       <div 
-        class="template ${this.template === template.url ? 'selected' : ''}"
-        @click=${e => this.onClickTemplate(e, template.url)}
+        class="theme ${this.theme === theme.url ? 'selected' : ''}"
+        @click=${e => this.onClickTheme(e, theme.url)}
       >
-        <img src="${template.url}/thumb">
-        <div class="title"><span>${template.title}</span></div>
+        <img src="${theme.url}/thumb" @error=${this.onThemeImgError}>
+        <div class="title"><span>${theme.title}</span></div>
       </div>
     `
   }
@@ -230,8 +230,12 @@ class CreateDriveModal extends LitElement {
     this.type = e.target.value.trim()
   }
 
-  onClickTemplate (e, templateUrl) {
-    this.template = templateUrl
+  onClickTheme (e, themeUrl) {
+    this.theme = themeUrl
+  }
+
+  onThemeImgError (e) {
+    e.currentTarget.setAttribute('src', 'beaker://assets/default-theme-thumb')
   }
 
   onClickCancel (e) {
@@ -258,12 +262,12 @@ class CreateDriveModal extends LitElement {
         links: this.links,
         prompt: false
       })
-      if (this.template) {
-        await bg.hyperdrive.exportToDrive({
-          src: this.template,
-          dst: url,
-          ignore: ['/index.json']
-        })
+      if (this.theme) {
+        try {
+          await bg.hyperdrive.mount(url, '/theme', this.theme)
+        } catch (e) {
+          console.error('Failed to set theme', e)
+        }
       }
       this.cbs.resolve({url})
     } catch (e) {

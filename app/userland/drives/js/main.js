@@ -52,12 +52,12 @@ export class DrivesApp extends LitElement {
       drives = drives.filter(drive => drive.info.type === 'website')
     } else if (this.category === 'modules') {
       drives = drives.filter(drive => drive.info.type === 'module')
-    } else if (this.category === 'templates') {
-      drives = drives.filter(drive => drive.info.type === 'template')
+    } else if (this.category === 'themes') {
+      drives = drives.filter(drive => drive.info.type === 'theme')
     } else if (this.category === 'webterm-cmds') {
       drives = drives.filter(drive => drive.info.type === 'webterm.sh/cmd-pkg')
     } else if (this.category === 'other') {
-      drives = drives.filter(drive => !['', 'website', 'module', 'template', 'webterm.sh/cmd-pkg'].includes(drive.info.type || ''))
+      drives = drives.filter(drive => !['', 'website', 'module', 'theme', 'webterm.sh/cmd-pkg'].includes(drive.info.type || ''))
     }
 
     drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
@@ -99,8 +99,8 @@ export class DrivesApp extends LitElement {
         },
         {
           icon: 'fas fa-fw fa-drafting-compass',
-          label: 'Template',
-          click: () => this.newDrive('template')
+          label: 'Theme',
+          click: () => this.newDrive('theme')
         }
       ]
     })
@@ -245,7 +245,7 @@ export class DrivesApp extends LitElement {
           ${navItem('files', 'Files drives')}
           ${navItem('websites', 'Websites')}
           ${navItem('modules', 'Modules')}
-          ${navItem('templates', 'Templates')}
+          ${navItem('themes', 'Themes')}
           ${navItem('other', 'Other')}
           <hr>
           ${navItem('webterm-cmds', 'Webterm commands')}
@@ -353,11 +353,11 @@ export class DrivesApp extends LitElement {
         </div>
       `
     }
-    if (this.category === 'templates') {
+    if (this.category === 'themes') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-drafting-compass"></span> Templates</h3>
-          <p><em>Templates</em> are starters for creating new drives. You can create a new drive from any template you have installed.</p>
+          <h3><span class="fas fa-fw fa-drafting-compass"></span> Themes</h3>
+          <p><em>Themes</em> are swappable user-interfaces for drives. You can use a theme in your drive to change the visuals and even generate UIs automatically.</p>
         </div>
       `
     }

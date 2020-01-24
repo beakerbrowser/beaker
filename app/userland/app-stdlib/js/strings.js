@@ -130,7 +130,7 @@ export function toNiceDriveType (type = '') {
 export function getDriveTypeIcon (type = '') {
   switch (type) {
     case 'user': return 'fas fa-user'
-    case 'template': return 'fas fa-drafting-compass'
+    case 'theme': return 'fas fa-drafting-compass'
     case 'webterm.sh/cmd-pkg': return 'fas fa-terminal'
     case 'module': return 'fas fa-cube'
     case 'website': return 'fas fa-desktop'
