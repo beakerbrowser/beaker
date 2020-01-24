@@ -54,6 +54,7 @@ class DrivePropertiesModal extends LitElement {
     }
 
     .prop .img-input,
+    .prop .other-input,
     .prop input[type="text"] {
       flex: 1;
       font-size: 14px;
@@ -62,6 +63,7 @@ class DrivePropertiesModal extends LitElement {
     }
 
     .prop .img-input:hover,
+    .prop .other-input:hover,
     .prop input[type="text"]:hover {
       background: #f0f0f0;
     }
@@ -113,8 +115,15 @@ class DrivePropertiesModal extends LitElement {
     this.props.title = this.props.title || ''
     this.props.description = this.props.description || ''
     this.props.type = this.props.type || ''
+    this.props.theme = this.props.theme || ''
+    this.themes = await this.readThemes()
     await this.requestUpdate()
     this.adjustHeight()
+  }
+
+  async readThemes () {
+    var drives = await bg.drives.list()
+    return drives.map(drive => drive.info).filter(info => info.type === 'theme')
   }
 
   adjustHeight () {
@@ -156,6 +165,20 @@ class DrivePropertiesModal extends LitElement {
   }
 
   renderProp (key, value) {
+    if (key === 'theme') {
+      let opt = (id, label) => html`<option value=${id} ?selected=${id === value}>${label}</option>`
+      return html`
+        <div class="prop">
+          <div class="key">${key}</div>
+          <div class="other-input">
+            <select name=${key}>
+              ${opt('', 'None')}
+              ${this.themes.map(theme => opt(theme.url, theme.title))}
+            </select>
+          </div>
+        </div>
+      `
+    }
     return html`
       <div class="prop">
         <div class="key">${key}</div>
@@ -199,6 +222,14 @@ class DrivePropertiesModal extends LitElement {
         bg.hyperdrive.unlink(this.url, '/thumb.jpeg').catch(e => null)
       ])
       await bg.hyperdrive.writeFile(this.url, `/thumb.${ext}`, await bufPromise)
+    }
+
+    // handle theme
+    if (newProps.theme !== this.props.theme) {
+      await bg.hyperdrive.unmount(this.url, '/theme')
+      if (newProps.theme) {
+        await bg.hyperdrive.mount(this.url, '/theme', newProps.theme)
+      }
     }
 
     // handle props

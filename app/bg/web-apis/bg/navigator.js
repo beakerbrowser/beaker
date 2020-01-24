@@ -25,11 +25,16 @@ export default {
    */
   async drivePropertiesDialog (url) {
     assert(url && typeof url === 'string', '`url` must be a string')
+    var drive = await drives.getOrLoadDrive(url)
     var info = await drives.getDriveInfo(url)
+    var themeStat = await drive.pda.stat('/theme').catch(e => undefined)
     await modals.create(this.sender, 'drive-properties', {
       url: info.url,
       writable: info.writable,
-      props: _pick(info, ['title', 'description', 'type'])
+      props: Object.assign(
+        _pick(info, ['title', 'description', 'type']),
+        {theme: themeStat ? `hd://${themeStat.mount.key.toString('hex')}` : ''}
+      )
     })
   },
 
