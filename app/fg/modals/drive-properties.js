@@ -226,7 +226,7 @@ class DrivePropertiesModal extends LitElement {
 
     // handle theme
     if (newProps.theme !== this.props.theme) {
-      await bg.hyperdrive.unmount(this.url, '/theme')
+      await bg.hyperdrive.unmount(this.url, '/theme').catch(e => undefined)
       if (newProps.theme) {
         await bg.hyperdrive.mount(this.url, '/theme', newProps.theme)
       }
