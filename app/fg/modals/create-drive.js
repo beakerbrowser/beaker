@@ -70,16 +70,11 @@ class CreateDriveModal extends LitElement {
       grid-gap: 10px;
     }
 
-    .theme img,
-    .theme .img-for-none {
+    .theme img {
       width: 100%;
       height: 80px;
-      object-fit: cover;
+      object-fit: contain;
       margin-bottom: 10px;
-    }
-
-    .theme .img-for-none {
-      background: #fff;
     }
 
     .theme .title {
@@ -93,9 +88,9 @@ class CreateDriveModal extends LitElement {
       padding: 0 6px;
     }
 
-    .theme.selected img,
-    .theme.selected .img-for-none {
+    .theme.selected img {
       outline: 1px solid #334;
+      background: #fafafa;
     }
 
     .form-actions {
@@ -185,8 +180,15 @@ class CreateDriveModal extends LitElement {
                 class="theme ${this.theme === undefined ? 'selected' : ''}"
                 @click=${e => this.onClickTheme(e, undefined)}
               >
-                <div class="img-for-none"></div>
+                <img src="beaker://assets/img/themes/none.png">
                 <div class="title"><span>None</span></div>
+              </div>
+              <div 
+                class="theme ${this.theme === 'builtin:blogger' ? 'selected' : ''}"
+                @click=${e => this.onClickTheme(e, 'builtin:blogger')}
+              >
+                <img src="beaker://assets/img/themes/blogger.png">
+                <div class="title"><span>Blogger</span></div>
               </div>
               ${repeat(this.themes, t => this.renderTheme(t))}
             </div>
@@ -260,15 +262,9 @@ class CreateDriveModal extends LitElement {
         type: this.type !== 'undefined' ? this.type : undefined,
         author: this.author,
         links: this.links,
+        theme: this.theme,
         prompt: false
       })
-      if (this.theme) {
-        try {
-          await bg.hyperdrive.mount(url, '/theme', this.theme)
-        } catch (e) {
-          console.error('Failed to set theme', e)
-        }
-      }
       this.cbs.resolve({url})
     } catch (e) {
       this.cbs.reject(e.message || e.toString())

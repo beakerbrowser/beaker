@@ -29,12 +29,12 @@ const to = (opts) =>
     : DEFAULT_DAT_API_TIMEOUT
 
 export default {
-  async createDrive ({title, description, type, author, visibility, links, prompt} = {}) {
+  async createDrive ({title, description, type, author, visibility, links, theme, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
-      visibility = undefined
+      visibility = theme = undefined
       author = _get(windows.getUserSessionFor(this.sender), 'url')
     }
 
@@ -65,6 +65,10 @@ export default {
       newDriveUrl = newDrive.url
     }
     let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
+
+    if (theme) {
+      await setTheme(drives.getDrive(newDriveKey), theme)
+    }
 
     if (!isSenderBeaker(this.sender)) {
       // grant write permissions to the creating app
@@ -195,6 +199,11 @@ export default {
         checkin('updating drive')
         await checkoutFS.pda.updateManifest(manifestUpdates)
         await drives.pullLatestDriveMeta(drive)
+
+        var oldTheme = await getTheme(checkoutFS)
+        if (settings.theme !== oldTheme) {
+          await setTheme(drive, settings.theme)
+        }
       })
     ))
   },
@@ -839,4 +848,36 @@ async function lookupUrlDriveKey (url) {
 
 function massageHistoryObj ({name, version, type}) {
   return {path: name, version, type}
+}
+
+export async function getTheme (drive) {
+  var themeStat = await drive.pda.stat('/theme').catch(e => undefined)
+  if (themeStat) {
+    if (themeStat.mount) {
+      return `hd://${themeStat.mount.key.toString('hex')}`
+    } else {
+      return drive.pda.readFile('/theme/.beaker-theme').catch(e => 'custom')
+    }
+  }
+  return undefined
+}
+
+export async function setTheme (drive, theme) {
+  try {
+    await drive.pda.rmdir('/theme', {recursive: true}).catch(e => undefined)
+    await drive.pda.unmount('/theme').catch(e => undefined)
+    if (theme.startsWith('builtin:')) {
+      let themePath = path.join(__dirname, 'assets', 'themes', theme.slice('builtin:'.length))
+      await pda.exportFilesystemToArchive({
+        srcPath: themePath,
+        dstArchive: drive.session.drive,
+        dstPath: '/theme/',
+        inplaceImport: true
+      })
+    } else if (theme.startsWith('hd:')) {
+      await drive.pda.mount('/theme', theme)
+    }
+  } catch (e) {
+    console.error('Failed to set theme', e)
+  }
 }

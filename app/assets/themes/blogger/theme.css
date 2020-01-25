@@ -1,0 +1,164 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  margin: 0 10px;
+  --blue: #2864dc;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.btn {
+  display: inline-block;
+  border-radius: 2px;
+  padding: 4px 8px;
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.25px;
+  font-weight: 400;
+  background: #2864dc;
+  color: #fff;
+  border: 1px solid #2864dc;
+  transition: background 0.1s ease;
+  margin-left: 4px;
+}
+
+.btn.pressed {
+  box-shadow: inset 0px 0 5px rgba(0, 0, 0, 0.25);
+}
+
+.btn:hover {
+  background: #2357bf;
+  text-decoration: none;
+}
+
+h2 {
+  margin: 0;
+  letter-spacing: 0.5px;
+  font-weight: bold;
+  font-size: 12px;
+  color: #667;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+drive-header {
+  display: flex;
+  align-items: center;
+  min-height: 80px;
+}
+
+drive-header img {
+  object-fit: cover;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  margin: 0px 16px 0 0;
+}
+
+drive-header .details {
+  flex: 1;
+}
+
+drive-header .links {
+  align-self: baseline;
+  padding: 14px 0;
+}
+
+drive-header h1,
+drive-header p {
+  margin: 0.1em 0;
+  line-height: 1;
+}
+
+drive-breadcrumbs {
+  display: flex;
+  font-size: 12px;
+  padding: 14px 0;
+}
+
+drive-breadcrumbs span,
+drive-breadcrumbs a {
+  margin-right: 6px;
+  color: #778;
+}
+
+drive-page .content {
+  padding: 14px 0;
+  max-width: 100%;
+}
+
+drive-page pre.content {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 15px;
+}
+
+drive-page .content > * {
+  margin-top: 0;
+}
+
+drive-posts {
+  display: block;
+  padding-bottom: 14px;
+}
+
+drive-posts header {
+  position: relative;
+  padding: 14px 0 8px;
+}
+
+drive-posts .post {
+  padding: 8px 0;
+}
+
+drive-posts .admin {
+  position: absolute;
+  right: 0;
+  top: 10px;
+}
+
+drive-posts .post {
+  letter-spacing: 0.5px;
+}
+
+drive-posts h3 {
+  margin: 0;
+  font-weight: 500;
+}
+
+drive-posts .post .details {
+  color: #778;
+  font-size: 12px;
+}
+
+drive-posts .post .details a.topic {
+  color: #778;
+}
+
+drive-files {
+  display: block;
+  padding: 14px 0;
+}
+
+drive-files .grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 14px;
+  margin-top: 14px;
+}
+
+drive-files .grid a {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

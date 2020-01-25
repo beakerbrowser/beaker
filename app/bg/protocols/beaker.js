@@ -190,6 +190,10 @@ async function beakerProtocol (request, respond) {
     let imgPath = requestUrl.slice('beaker://assets/img/templates/'.length)
     return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/templates/${imgPath}`))
   }
+  if (requestUrl.startsWith('beaker://assets/img/themes/')) {
+    let imgPath = requestUrl.slice('beaker://assets/img/themes/'.length)
+    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/themes/${imgPath}`))
+  }
 
   // userland
   if (requestUrl === 'beaker://app-stdlib' || requestUrl.startsWith('beaker://app-stdlib/')) {

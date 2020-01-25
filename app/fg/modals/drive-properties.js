@@ -173,6 +173,8 @@ class DrivePropertiesModal extends LitElement {
           <div class="other-input">
             <select name=${key}>
               ${opt('', 'None')}
+              ${value === 'custom' ? opt('custom', 'Custom') : ''}
+              ${opt('builtin:blogger', 'Blogger')}
               ${this.themes.map(theme => opt(theme.url, theme.title))}
             </select>
           </div>
@@ -222,14 +224,6 @@ class DrivePropertiesModal extends LitElement {
         bg.hyperdrive.unlink(this.url, '/thumb.jpeg').catch(e => null)
       ])
       await bg.hyperdrive.writeFile(this.url, `/thumb.${ext}`, await bufPromise)
-    }
-
-    // handle theme
-    if (newProps.theme !== this.props.theme) {
-      await bg.hyperdrive.unmount(this.url, '/theme').catch(e => undefined)
-      if (newProps.theme) {
-        await bg.hyperdrive.mount(this.url, '/theme', newProps.theme)
-      }
     }
 
     // handle props
