@@ -159,14 +159,14 @@ export const protocolHandler = async function (request, respond) {
   // check for the presence of a theme
   var theme = undefined
   if (await checkoutFS.pda.stat('/theme').catch(e => false)) {
-    let [themeJs, themeCss, defaultHtml] = await Promise.all([
+    let [js, css, html] = await Promise.all([
       checkoutFS.pda.stat('/theme/theme.js').catch(e => false),
       checkoutFS.pda.stat('/theme/theme.css').catch(e => false),
-      checkoutFS.pda.stat('/theme/default.html').catch(e => false)
+      checkoutFS.pda.stat('/theme/theme.html').catch(e => false)
     ])
-    theme = {js: themeJs, css: themeCss, defaultHtml}
+    theme = {js, css, html}
   }
-  const serveThemeDefaultHtml = async () => {
+  const serveThemeHtml = async () => {
     return respond({
       statusCode: 200,
       headers: {
@@ -174,7 +174,7 @@ export const protocolHandler = async function (request, respond) {
         'Access-Control-Allow-Origin': '*',
         'Content-Security-Policy': cspHeader
       },
-      data: intoStream(await checkoutFS.pda.readFile('/theme/default.html')) // TODO use stream
+      data: intoStream(await checkoutFS.pda.readFile('/theme/theme.html')) // TODO use stream
     })
   }
   const injectThemeScriptAndStyle = () => {
@@ -233,7 +233,6 @@ export const protocolHandler = async function (request, respond) {
 
     // make sure there's a trailing slash
     if (!hasTrailingSlash) {
-
       return respond({
         statusCode: 200,
         headers: {'Content-Type': 'text/html'},
@@ -241,9 +240,9 @@ export const protocolHandler = async function (request, respond) {
       })
     }
 
-    // theme default
-    if (theme && theme.defaultHtml) {
-      return serveThemeDefaultHtml()
+    // theme template
+    if (theme && theme.html) {
+      return serveThemeHtml()
     }
 
     // directory listing
@@ -266,14 +265,14 @@ export const protocolHandler = async function (request, respond) {
     })
   }
 
+  // theme template
+  if (mime.acceptHeaderWantsHTML(request.headers.Accept) && theme && theme.html) {
+    return serveThemeHtml()
+  }
+
   // handle not found
   if (!entry) {
     cleanup()
-
-    // theme default
-    if (theme && theme.defaultHtml) {
-      return serveThemeDefaultHtml()
-    }
 
     // error page
     return respondError(404, 'File Not Found', {
