@@ -84,6 +84,9 @@ export async function setup () {
     await ensureDir(PATHS.LIBRARY_NS('projects'))
     await ensureDir(PATHS.SYSTEM)
 
+    // default desktop shortcuts
+    await rootDrive.pda.writeFile('/desktop/beaker.network.goto', '', {metadata: {href: 'https://beaker.network/', title: 'Beaker.Network'}})
+
     // ensure all user mounts are set
     for (let user of userList) {
       if (user.isDefault) {
