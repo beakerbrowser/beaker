@@ -18,7 +18,11 @@ export async function load () {
   } catch (e) {
     console.log('Failed to load desktop files', e)
   }
-  return FIXED_FILES.concat([makeFixedLink('.profile.goto', `hd://${profile.mount.key}`, 'My Profile')]).concat(userFiles)
+  return [
+    FIXED_FILES[0],
+    makeFixedLink('.profile.goto', `hd://${profile.mount.key}`, 'My Profile'),
+    FIXED_FILES[1]
+  ].concat(userFiles)
 }
 
 export async function createLink ({href, title}) {
