@@ -313,10 +313,9 @@ export class DrivesApp extends LitElement {
     if (this.category === 'all') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-share-alt"></span> Seeding</h3>
-          <p><em>Seeding</em> is hosting a drive on the network from your computer. Drives that you seed can be reached by other devices.</p>
-          <p>If you are not seeding a drive, you can still access it locally and may be able to download updates from other seeders on the network.</p>
-          <p>(Note: you will temporarily seed any drive when you visit it. Turning on seeding keeps it active even when not visiting the drive.)
+          <h3><span class="fas fa-fw fa-share-alt"></span> Hyperdrive</h3>
+          <p><em>Hyperdrive</em> is a peer-to-peer files network. Each "hyperdrive" (or just "drive") is a networked folder which can be accessed like a website.</p>
+          <p>You can create additional hyperdrives to share on the network, and you can also <em>seed</em> other people's drives to help keep them online.</p>
         </div>
       `
     }
