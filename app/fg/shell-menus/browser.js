@@ -85,7 +85,7 @@ class BrowserMenu extends LitElement {
         ${autoUpdaterEl}
 
         <div class="menu-item user current-user" @click=${e => this.onOpenPage(e, this.user.url)}>
-          <img src="asset:thumb:${this.user.url}?cache_buster=${Date.now()}">
+          <img src="${this.user.url}/thumb?cache_buster=${Date.now()}">
           <div class="user-details">
             <div class="user-title">${this.user.title}</div>
           </div>

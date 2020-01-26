@@ -189,9 +189,16 @@ export default {
 // =
 
 function getSessionUrl (sender) {
-  var userSession = windows.getUserSessionFor(sender)
-  if (!userSession) throw new Error('No active user session')
-  return userSession.url
+  try {
+    var userSession = windows.getUserSessionFor(sender)
+    if (!userSession) throw new Error('No active user session')
+    return userSession.url
+  } catch (e) {
+    if (sender.getURL().startsWith('beaker:')) {
+      return undefined
+    }
+    throw e
+  }
 }
 
 async function writeThumbnail (drive, base64, ext) {

@@ -48,14 +48,13 @@ export const MAX_DAT_DNS_TTL = ms('7d')
 export const DEFAULT_DAT_API_TIMEOUT = ms('60s')
 
 // index.json manifest fields which can be changed by configure()
-export const DAT_CONFIGURABLE_FIELDS = [
+export const DRIVE_CONFIGURABLE_FIELDS = [
   'title',
   'description',
   'type',
   'author',
   'links',
-  'web_root',
-  'fallback_page'
+  'theme'
 ]
 
 // index.json manifest fields which should be preserved in clones

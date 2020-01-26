@@ -1,8 +1,8 @@
 import { BaseSlideView } from './base-slide-view.js'
 
 const SIDENOTES = [
-  'It contains all of your personal data, including your <strong><span class="fas fa-university"></span>Private Library</strong> and <strong><span class="fas fa-cog"></span> Settings</strong>.',
-  'It contains your public content, including your <strong><span class="fas fa-user-friends"></span> Follows</strong> and <strong><span class="fas fa-rss"></span> Feed</strong>.',
+  'It contains all of your personal data, including your <strong><span class="far fa-star"></span>Bookmarks</strong> and <strong><span class="fas fa-cog"></span> Settings</strong>.',
+  'It contains your public content, including your <strong><span class="fas fa-user-friends"></span> Follows</strong> and <strong><span class="fas fa-rss"></span> Posts</strong>.',
   'Anything you put in <code>~/</code> is private!',
   'Anything you put in <code>~/profile</code> is public!'
 ]
