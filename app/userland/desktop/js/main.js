@@ -64,6 +64,15 @@ class DesktopApp extends LitElement {
           </a>
         </div>
       </div>
+      <div class="beta-notice">
+        <h3>Welcome to the Beaker Private Beta</h3>
+        <p>All of your data is temporary, so don't get too attached to it!</p>
+        <p>Helpful links:</p>
+        <ul>
+          <li><a href="https://userlist.beakerbrowser.com/">Beta Users List</a></li>
+          <li><a href="https://beaker-browser.gitbook.io/docs/">Documentation</a></li>
+        </ul>
+      </div>
     `
   }
 

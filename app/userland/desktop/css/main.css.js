@@ -135,5 +135,30 @@ ${tooltipCSS}
   background: rgba(0,0,0,.075);
   border-radius: 2px;
 }
+
+.beta-notice {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  width: 290px;
+  padding: 0 10px;
+  border: 1px solid #ccd;
+  border-radius: 8px;
+}
+
+.beta-notice a {
+  color: var(--blue);
+}
+
+.beta-notice a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 1300px) {
+  .beta-notice {
+    top: unset;
+    bottom: 70px;
+  }
+}
 `
 export default cssStr
