@@ -3,9 +3,9 @@
   "productName": "Beaker Browser",
   "description": "An Experimental Peer-to-Peer Web Browser.",
   "homepage": "https://beakerbrowser.com/",
-  "version": "0.9.0-prerelease.6",
+  "version": "0.9.0-prerelease.7",
   "author": "Paul Frazee <pfrazee@gmail.com>",
-  "copyright": "© 2019, Blue Link Labs",
+  "copyright": "© 2020, Blue Link Labs",
   "main": "main.build.js",
   "dependencies": {
     "@beaker/dat-archive-file-diff": "^1.0.0",
