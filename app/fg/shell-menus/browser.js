@@ -91,25 +91,6 @@ class BrowserMenu extends LitElement {
           </div>
         </div>
 
-        ${''/*<div class="section">
-          <div class="menu-item" @click=${this.onCreateNew}>
-            <i class="fas fa-plus"></i>
-            <span class="label">New Dat</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenFile()}>
-            <i class="far fa-folder-open"></i>
-            <span class="label">Open File...</span>
-            <span class="shortcut">${this.accelerators.openFile}</span>
-          </div>
-
-  </div>
-
-        <div class="section">
-        </div>*/}
-
         <div class="section">
           ${''/* TODO <div class="menu-item" @click=${e => this.onShowSubmenu('applications')}>
             <span class="label">Applications</span>
@@ -140,6 +121,17 @@ class BrowserMenu extends LitElement {
             <i class="far fa-window-restore"></i>
             <span class="label">New Window</span>
             <span class="shortcut">${this.accelerators.newWindow}</span>
+          </div>
+
+          <div class="menu-item" @click=${this.onCreateNew}>
+            <i class="far fa-hdd"></i>
+            <span class="label">New Hyperdrive</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenFile()}>
+            <i class="far fa-folder-open"></i>
+            <span class="label">Open File...</span>
+            <span class="shortcut">${this.accelerators.openFile}</span>
           </div>
 
           ${''/*<div class="menu-item" @click=${this.onClickSavePage}>
