@@ -45,7 +45,7 @@ export const DAT_QUOTA_DEFAULT_BYTES_ALLOWED = bytes.parse(quotaEnvVar || '500mb
 export const DAT_CACHE_TIME = ms('7d')
 export const DEFAULT_DAT_DNS_TTL = ms('1h')
 export const MAX_DAT_DNS_TTL = ms('7d')
-export const DEFAULT_DAT_API_TIMEOUT = ms('60s')
+export const DEFAULT_DRIVE_API_TIMEOUT = ms('60s')
 
 // index.json manifest fields which can be changed by configure()
 export const DRIVE_CONFIGURABLE_FIELDS = [

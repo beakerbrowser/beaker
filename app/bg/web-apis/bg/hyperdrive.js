@@ -15,7 +15,7 @@ import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
 import * as users from '../../filesystem/users'
 import * as windows from '../../ui/windows'
-import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DAT_API_TIMEOUT } from '../../../lib/const'
+import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DRIVE_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
 
 // exported api
@@ -26,7 +26,7 @@ const isSenderBeaker = (sender) => /^(beaker:|https?:\/\/(.*\.)?hyperdrive\.netw
 const to = (opts) =>
   (opts && typeof opts.timeout !== 'undefined')
     ? opts.timeout
-    : DEFAULT_DAT_API_TIMEOUT
+    : DEFAULT_DRIVE_API_TIMEOUT
 
 export default {
   async createDrive ({title, description, type, author, visibility, links, theme, prompt} = {}) {
@@ -143,21 +143,17 @@ export default {
         return {
           key: info.key,
           url: info.url,
-          domain: info.domain,
+          // domain: info.domain, TODO
           writable: info.writable,
-          // networked: info.userSettings.networked,
 
           // state
           version: info.version,
           peers: info.peers,
-          mtime: info.mtime,
-          size: info.size,
 
           // manifest
           title: info.title,
           description: info.description,
-          type: info.type,
-          links: info.links
+          type: info.type
         }
       })
     ))
@@ -215,44 +211,6 @@ export default {
         const {checkoutFS} = await lookupDrive(this.sender, url, opts)
         checkin('diffing')
         return checkoutFS.pda.diff(other, prefix)
-      })
-    ))
-  },
-
-  async history (url, opts = {}) {
-    return auditLog.record(this.sender.getURL(), 'history', {url}, undefined, () => (
-      timer(to(opts), async (checkin, pause, resume) => {
-        checkin('looking up drive')
-
-        var reverse = opts.reverse === true
-        var {start, end} = opts
-        var {drive, checkoutFS} = await lookupDrive(this.sender, url, opts)
-        var driveInfo = await drive.getInfo()
-
-        checkin('reading history')
-
-        // if reversing the output, modify start/end
-        start = start || 0
-        end = end || (driveInfo.version + 1)
-        if (reverse) {
-          // swap values
-          let t = start
-          start = end
-          end = t
-          // start from the end
-          start = (driveInfo.version + 1) - start
-          end = (driveInfo.version + 1) - end
-        }
-
-        return new Promise((resolve, reject) => {
-          var stream = checkoutFS.history({live: false, start, end})
-          stream.pipe(concat({encoding: 'object'}, values => {
-            values = values.map(massageHistoryObj)
-            if (reverse) values.reverse()
-            resolve(values)
-          }))
-          stream.on('error', reject)
-        })
       })
     ))
   },
@@ -508,7 +466,7 @@ export default {
     ))
   },
 
-  async mount (url, filepath, opts) {
+  async mount (url, filepath, mount, opts) {
     filepath = normalizeFilepath(filepath || '')
     return auditLog.record(this.sender.getURL(), 'mount', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
@@ -523,7 +481,7 @@ export default {
         resume()
 
         checkin('mounting drive')
-        return checkoutFS.pda.mount(filepath, opts)
+        return checkoutFS.pda.mount(filepath, mount)
       })
     ))
   },
@@ -571,20 +529,6 @@ export default {
   async resolveName (name) {
     if (HYPERDRIVE_HASH_REGEX.test(name)) return name
     return hyperDns.resolveName(name)
-  },
-
-  async selectDrive ({title, buttonLabel, filters} = {}) {
-    // initiate the modal
-    var res
-    try {
-      res = await modals.create(this.sender, 'select-drive', {title, buttonLabel, filters})
-    } catch (e) {
-      if (e.name !== 'Error') {
-        throw e // only rethrow if a specific error
-      }
-    }
-    if (!res || !res.url) throw new UserDeniedError()
-    return res.url
   },
 
   async beakerDiff (srcUrl, dstUrl, opts) {
@@ -844,10 +788,6 @@ async function lookupUrlDriveKey (url) {
   } catch (e) {
     return false
   }
-}
-
-function massageHistoryObj ({name, version, type}) {
-  return {path: name, version, type}
 }
 
 export async function getTheme (drive) {

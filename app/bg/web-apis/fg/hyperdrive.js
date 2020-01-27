@@ -121,23 +121,6 @@ export const setup = function (rpc) {
       }
     }
 
-    async commit (opts = {}) {
-      throw new Error('The Hyperdrive commit() API has been deprecated.')
-    }
-
-    async revert (opts = {}) {
-      throw new Error('The Hyperdrive revert() API has been deprecated.')
-    }
-
-    async history (opts = {}) {
-      var errStack = (new Error()).stack
-      try {
-        return await hyperdriveRPC.history(this.url, opts)
-      } catch (e) {
-        throwWithFixedStack(e, errStack)
-      }
-    }
-
     async stat (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
@@ -290,11 +273,6 @@ export const setup = function (rpc) {
       }
     }
 
-    createFileActivityStream (pathSpec = null) {
-      console.warn('The Hyperdrive createFileActivityStream() API has been deprecated, use watch() instead.')
-      return this.watch(pathSpec)
-    }
-
     watch (pathSpec = null, onInvalidated = null) {
       var errStack = (new Error()).stack
       try {
@@ -314,16 +292,6 @@ export const setup = function (rpc) {
       }
     }
 
-    createNetworkActivityStream () {
-      console.warn('The Hyperdrive createNetworkActivityStream() API has been deprecated, use addEventListener() instead.')
-      var errStack = (new Error()).stack
-      try {
-        return fromEventStream(hyperdriveRPC.createNetworkActivityStream(this.url))
-      } catch (e) {
-        throwWithFixedStack(e, errStack)
-      }
-    }
-
     static async resolveName (name) {
       var errStack = (new Error()).stack
       try {
@@ -335,13 +303,6 @@ export const setup = function (rpc) {
       } catch (e) {
         throwWithFixedStack(e, errStack)
       }
-    }
-
-    static selectDrive (opts = {}) {
-      var errStack = (new Error()).stack
-      return hyperdriveRPC.selectDrive(opts)
-        .then(url => new Hyperdrive(url))
-        .catch(e => throwWithFixedStack(e, errStack))
     }
   }
 

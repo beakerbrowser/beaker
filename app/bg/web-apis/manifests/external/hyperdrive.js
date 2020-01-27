@@ -6,7 +6,6 @@ export default {
   getInfo: 'promise',
   configure: 'promise',
   diff: 'promise',
-  history: 'promise',
 
   stat: 'promise',
   readFile: 'promise',
@@ -33,11 +32,9 @@ export default {
   createNetworkActivityStream: 'readable',
 
   resolveName: 'promise',
-  selectDrive: 'promise',
 
   beakerDiff: 'promise',
   beakerMerge: 'promise',
-
   importFromFilesystem: 'promise',
   exportToFilesystem: 'promise',
   exportToDrive: 'promise'
