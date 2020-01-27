@@ -29,6 +29,10 @@ form textarea {
   text-align: right;
 }
 
+select {
+  -webkit-app-region: no-drag;
+}
+
 input,
 textarea {
   font-size: 15px;

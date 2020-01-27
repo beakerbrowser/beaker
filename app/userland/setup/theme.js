@@ -110,10 +110,8 @@ customElements.define('theme-view', class extends HTMLElement {
 
     if (this.theme) {
       var {url} = await beaker.users.getDefault()
-      console.log('url', url)
       var drive = new Hyperdrive(url)
       await drive.configure({theme: this.theme})
-      console.log('configured', this.theme)
     }
 
     this.removeAttribute('active')
