@@ -28,6 +28,7 @@ import * as users from '../filesystem/users'
 import _pick from 'lodash.pick'
 
 const IS_WIN = process.platform === 'win32'
+const IS_LINUX = process.platform === 'linux'
 const subwindows = {
   statusBar: statusBarSubwindow,
   locationBar: locationBarSubwindow,
@@ -170,7 +171,7 @@ export function createShellWindow (windowState) {
   var { x, y, width, height, minWidth, minHeight } = state
   var win = new BrowserWindow({
     titleBarStyle: 'hiddenInset',
-    autoHideMenuBar: true,
+    autoHideMenuBar: !IS_LINUX,
     fullscreenable: true,
     fullscreenWindowTitle: true,
     frame: !IS_WIN,
