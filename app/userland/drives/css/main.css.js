@@ -51,8 +51,8 @@ nav .top-ctrl {
 }
 
 nav .top-ctrl input {
-  flex: 1;
   margin-right: 5px;
+  width: 110px;
   height: 24px;
 }
 
