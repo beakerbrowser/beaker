@@ -79,15 +79,13 @@ class DriveView extends LitElement {
     }
 
     .entries {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      grid-gap: 20px;
       margin: 20px 0;
       font-size: 14px;
       letter-spacing: 0.75px;
     }
 
     .entries > div {
+      line-height: 30px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
