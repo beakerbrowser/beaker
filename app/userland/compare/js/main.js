@@ -44,7 +44,7 @@ export class CompareApp extends LitElement {
       target: this.target
     }, false, true)
 
-    const filter = path => path !== 'index.json' && !path.endsWith('/index.json')
+    const filter = path => path !== '/index.json'
     this.diff = await compare.diff(this.baseDrive, this.basePath, this.targetDrive, this.targetPath, {compareContent: true, shallow: false, filter})
     console.log(this.diff)
     this.requestUpdate()
