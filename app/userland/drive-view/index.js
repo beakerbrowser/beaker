@@ -175,10 +175,16 @@ class DriveView extends LitElement {
         </div>
       `
     }
+    var icon = `far fa-${entry.stat.isDirectory() ? 'folder' : 'file-alt'}`
+    var href = `./${entry.name}${entry.stat.isDirectory() ? '/' : ''}`
+    if (entry.name.endsWith('.goto') && entry.stat.metadata.href) {
+      icon = 'fas fa-link'
+      href = entry.stat.metadata.href
+    }
     return html`
       <div>
-        <a href="./${entry.name}${entry.stat.isDirectory() ? '/' : ''}" title=${entry.name}>
-          <span class="fa-fw far fa-${entry.stat.isDirectory() ? 'folder' : 'file-alt'}"></span>
+        <a href=${href} title=${entry.name}>
+          <span class="fa-fw ${icon}"></span>
           ${entry.name}
         </a>
       </div>
