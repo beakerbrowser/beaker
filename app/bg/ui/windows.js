@@ -402,7 +402,9 @@ export function openProfileEditor (wc, sess) {
 export function toggleShellInterface (win) {
   var isShellInterfaceHidden = !win.isShellInterfaceHidden
   win.isShellInterfaceHidden = isShellInterfaceHidden
-  win.setWindowButtonVisibility(!isShellInterfaceHidden)
+  if (win.setWindowButtonVisibility) {
+    win.setWindowButtonVisibility(!isShellInterfaceHidden)
+  }
   sessionWatcher.updateState(win, {isShellInterfaceHidden})
 
   tabManager.emitReplaceState(win)
