@@ -205,5 +205,11 @@ nav .categories hr {
   font-size: 0.7rem;
 }
 
+@media (max-width: 1000px) {
+  .help {
+    display: none;
+  }
+}
+
 `
 export default cssStr
