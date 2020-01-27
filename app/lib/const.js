@@ -34,7 +34,7 @@ export const HYPERDRIVE_HASH_REGEX = /^[0-9a-f]{64}$/i
 export const HYPERDRIVE_URL_REGEX = /^(?:(hd|dat):\/\/)?([0-9a-f]{64})/i
 
 // url file paths
-export const DAT_VALID_PATH_REGEX = /^[a-z0-9\-._~!$&'()*+,;=:@/\s]+$/i
+export const DRIVE_VALID_PATH_REGEX = /^[a-z0-9\-._~!$&'()*+,;=:@/\s]+$/i
 export const INVALID_SAVE_FOLDER_CHAR_REGEX = /[^0-9a-zA-Z-_ ]/g
 
 // dat settings

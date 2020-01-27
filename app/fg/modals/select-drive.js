@@ -183,11 +183,7 @@ class SelectDriveModal extends LitElement {
       }
 
       .create-drive {
-        height: 250px;
-      }
-
-      .create-drive textarea {
-        height: 97px;
+        height: 190px;
       }
     `]
   }
@@ -290,24 +286,18 @@ class SelectDriveModal extends LitElement {
           <label for="title">Title</label>
           <input autofocus name="title" tabindex="2" value=${this.title || ''} placeholder="Title" @change=${this.onChangeTitle} />
 
+          <label for="desc">Description</label>
+          <input name="desc" tabindex="3" placeholder="Description (optional)" @change=${this.onChangeDescription} value=${this.description || ''}>
+
           <label for="type">Type</label>
           <div style="margin: 5px 0 15px">
             <select name="type" @change=${this.onChangeType}>
-              <optgroup label="Files">
-                ${typeopt('undefined', 'Files drive')}
-              </optgroup>
-              <optgroup label="Media">
-                ${typeopt('website', 'Website')}
-              </optgroup>
-              <optgroup label="Advanced">
-                ${typeopt('application', 'Application')}
-                ${typeopt('webterm.sh/cmd-pkg', 'Webterm Command')}
-              </optgroup>
+              ${typeopt('undefined', 'Files drive')}
+              ${typeopt('website', 'Website')}
+              ${typeopt('module', 'Module')}
+              ${typeopt('theme', 'Theme')}
             </select>
           </div>
-
-          <label for="desc">Description</label>
-          <textarea name="desc" tabindex="3" placeholder="Description (optional)" @change=${this.onChangeDescription}>${this.description || ''}</textarea>
         </div>
 
         <div class="form-actions">
@@ -347,7 +337,21 @@ class SelectDriveModal extends LitElement {
 
     if (!filtered.length) {
       if (isDriveUrl(this.currentTitleFilter)) {
-        return html`<ul class="drives-list"><li class="empty">This URL is a valid drive (${getHostname(this.currentTitleFilter)})</li></ul>`
+        return html`
+          <ul class="drives-list">
+            <li
+              class="drive selected"
+              @dblclick=${this.onDblClickdrive}
+            >
+              <div class="info">
+                <img class="favicon" src="beaker-favicon:${this.currentTitleFilter}" />
+
+                <span class="title" title="${toOrigin(this.currentTitleFilter)}">
+                  ${toOrigin(this.currentTitleFilter).slice(0, 60)}...
+                </span>
+              </div>
+            </li>
+          </ul>`
       }
       return html`<ul class="drives-list"><li class="empty">No drives found</li></ul>`
     }
@@ -456,7 +460,16 @@ customElements.define('select-drive-modal', SelectDriveModal)
 function isDriveUrl (v = '') {
   try {
     var urlp = new URL(v)
-    return urlp.protocol === 'drive:'
+    return urlp.protocol === 'hd:'
+  } catch (e) {
+    return false
+  }
+}
+
+function toOrigin (v = '') {
+  try {
+    var urlp = new URL(v)
+    return urlp.protocol + '//' + urlp.hostname
   } catch (e) {
     return false
   }

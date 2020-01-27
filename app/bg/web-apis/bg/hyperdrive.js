@@ -15,7 +15,7 @@ import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
 import * as users from '../../filesystem/users'
 import * as windows from '../../ui/windows'
-import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DAT_VALID_PATH_REGEX, DEFAULT_DRIVE_API_TIMEOUT } from '../../../lib/const'
+import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DRIVE_VALID_PATH_REGEX, DEFAULT_DRIVE_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
 
 // exported api
@@ -720,7 +720,7 @@ function assertValidFilePath (filepath) {
 }
 
 function assertValidPath (fileOrFolderPath) {
-  if (!DAT_VALID_PATH_REGEX.test(fileOrFolderPath)) {
+  if (!DRIVE_VALID_PATH_REGEX.test(fileOrFolderPath)) {
     throw new InvalidPathError('Path contains invalid characters')
   }
 }
