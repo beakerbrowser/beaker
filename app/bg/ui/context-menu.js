@@ -149,7 +149,7 @@ export default function registerContextMenu () {
             label: 'Hyperdrive',
             submenu: [
               { label: 'Open with Files Explorer', click: (item, win) => tabManager.create(win, `https://hyperdrive.network/${props.pageURL.slice('hd://'.length)}`, {setActive: true}) },
-              { label: 'Open with Beaker.Network', click: (item, win) => tabManager.create(win, `https://beaker.network/${props.pageURL.slice('hd://'.length)}`, {setActive: true}) },
+              { label: 'Open with Beaker.Network', click: (item, win) => tabManager.create(win, `https://beaker.network/${(new URL(props.pageURL)).hostname}`, {setActive: true}) },
               { type: 'separator' },
               { 
                 label: 'Seed This Drive',

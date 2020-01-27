@@ -8,7 +8,7 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../css/main.css.js'
 
 const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hd://'.length)}`
-const BEAKER_NETWORK_URL = drive => `https://beaker.network/${drive.url.slice('hd://'.length)}`
+const BEAKER_NETWORK_URL = drive => `https://beaker.network/${(new URL(drive.url)).hostname}`
 
 export class DrivesApp extends LitElement {
   static get properties () {
