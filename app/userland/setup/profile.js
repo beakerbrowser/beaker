@@ -131,6 +131,17 @@ customElements.define('profile-view', class extends HTMLElement {
       return this.render()
     }
 
+    if (!this.thumbDataURL) {
+      // use default thumb
+      let blob = await (await fetch('beaker://assets/default-user-thumb')).blob()
+      this.thumbDataURL = await new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onerror = reject
+        reader.onload = () => resolve(reader.result)
+        reader.readAsDataURL(blob)
+      })
+    }
+
     try {
       var thumbBase64 = this.thumbDataURL ? this.thumbDataURL.split(',').pop() : undefined
       await beaker.users.setupDefault({
