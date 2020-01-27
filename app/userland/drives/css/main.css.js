@@ -51,8 +51,8 @@ nav .top-ctrl {
 }
 
 nav .top-ctrl input {
-  flex: 1;
   margin-right: 5px;
+  width: 110px;
   height: 24px;
 }
 
@@ -203,6 +203,12 @@ nav .categories hr {
   padding: 1px 5px;
   border-radius: 4px;
   font-size: 0.7rem;
+}
+
+@media (max-width: 1000px) {
+  .help {
+    display: none;
+  }
 }
 
 `
