@@ -77,9 +77,7 @@ class NavbarSiteInfo extends LitElement {
           <span class="label">${this.siteTitle}</span>
         `
       } else if (scheme === 'hd:') {
-        if (this.writable) {
-          certified = true
-        }
+        certified = true
         innerHTML = html`
           ${this.writable ? html`
             <span class="fas fa-check-circle certified"></span>
