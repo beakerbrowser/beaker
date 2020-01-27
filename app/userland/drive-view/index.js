@@ -97,10 +97,11 @@ class DriveView extends LitElement {
 
     .prompt {
       margin: 30px 0;
-      font-size: 13px;
-      border: 1px solid #dde;
-      padding: 10px;
-      border-radius: 4px;
+      background: #fafafd;
+      font-size: 14px;
+      padding: 30px 20px;
+      letter-spacing: 0.5px;
+      border-radius: 8px;
     }
     `
   }
@@ -155,7 +156,7 @@ class DriveView extends LitElement {
         </div>
         ${this.info.writable ? html`
           <div class="prompt">
-            <strong>Advanced:</strong> Create an <a @click=${e => this.onCreateIndex(e, 'md')} href="#">index.md</a>
+            Create an <a @click=${e => this.onCreateIndex(e, 'md')} href="#">index.md</a>
             or <a @click=${e => this.onCreateIndex(e, 'html')} href="#">index.html</a> in this directory.
           </div>
         ` : ''}
