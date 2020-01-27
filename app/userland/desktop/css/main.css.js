@@ -140,10 +140,11 @@ ${tooltipCSS}
   position: fixed;
   top: 10px;
   left: 10px;
-  width: 290px;
-  padding: 0 10px;
-  border: 1px solid #ccd;
+  width: 300px;
+  padding: 0 12px 6px;
+  border: 1px solid var(--blue);
   border-radius: 8px;
+  box-shadow: 0 0 2px #2864dc;
 }
 
 .beta-notice a {
