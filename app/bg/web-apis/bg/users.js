@@ -178,7 +178,7 @@ export default {
       title: opts.title,
       description: opts.description
     })
-    if (('thumbBase64' in opts)) {
+    if (('thumbBase64' in opts) && opts.thumbBase64) {
       await writeThumbnail(user.drive, opts.thumbBase64, opts.thumbExt)
     }
     await users.edit(user.url, opts)
