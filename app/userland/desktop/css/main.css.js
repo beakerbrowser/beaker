@@ -12,6 +12,37 @@ ${tooltipCSS}
   display: block;
 }
 
+.top-right-ctrls {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+}
+
+.top-right-ctrls a {
+  display: inline-block;
+  color: #fff;
+  background: var(--blue);
+  border: 1px solid var(--blue);
+  transition: background 0.1s ease 0s;
+  font-size: 13px;
+  line-height: 26px;
+  letter-spacing: 0.25px;
+  font-weight: 400;
+  padding: 0px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.top-right-ctrls a:hover {
+  background: #1c50b9;
+}
+
+.top-right-ctrls a span {
+  margin-left: 4px;
+  font-size: 11px;
+}
+
 .files {
   display: grid;
   padding: 10vh 15px 5px 15px;

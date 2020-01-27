@@ -43,6 +43,9 @@ class DesktopApp extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="top-right-ctrls">
+        <a @click=${this.onClickNew}>New <span class="fas fa-plus"></span></a>
+      </div>
       ${this.renderFiles()}
       <div class="dock-wrapper">
         <div class="dock">
@@ -58,9 +61,8 @@ class DesktopApp extends LitElement {
           <a class="dock-item" href="beaker://downloads">
             Downloads
           </a>
-          <span class="dock-separator">|</span>
-          <a class="dock-item" @click=${this.onClickNew}>
-            New +
+          <a class="dock-item" href="beaker://drives">
+            My Drives
           </a>
         </div>
       </div>
@@ -107,9 +109,10 @@ class DesktopApp extends LitElement {
     e.preventDefault()
     e.stopPropagation()
 
+    var rect = e.currentTarget.getClientRects()[0]
     contextMenu.create({
-      x: e.clientX,
-      y: e.clientY - 20,
+      x: rect.right,
+      y: rect.bottom,
       render: () => {
         return html`
           <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -129,7 +132,7 @@ class DesktopApp extends LitElement {
               margin-left: 35px !important;
             }
           </style>
-          <div class="dropdown-items center top roomy no-border">
+          <div class="dropdown-items roomy no-border">
             <div class="dropdown-item" @click=${() => this.onCreateDrive()}>
               <div class="label">
                 <i class="far fa-fw fa-hdd"></i>
