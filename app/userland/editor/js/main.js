@@ -73,7 +73,7 @@ class EditorApp extends LitElement {
     this.stat = undefined
     this.currentTabUrl = ''
     this.isLoading = true
-    this.isFilesOpen = false
+    this.isFilesOpen = true
     this.liveReloadMode = false
     this.readOnly = true
     this.lastSavedVersionId = undefined
