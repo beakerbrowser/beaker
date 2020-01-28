@@ -225,7 +225,7 @@ class Tab {
 
   get siteTitle () {
     try {
-      var urlp = parseDriveUrl(this.url)
+      var urlp = new URL(this.url)
       if (DAT_KEY_REGEX.test(urlp.hostname)) {
         urlp.hostname = `${urlp.hostname.slice(0, 4)}..${urlp.hostname.slice(-2)}`
       }
