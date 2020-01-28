@@ -459,7 +459,7 @@ class FilesExplorer extends LitElement {
   async onClickImportFiles (e) {
     if (this.readOnly) return
 
-    let browserInfo = beaker.browser.getInfo()
+    let browserInfo = await beaker.browser.getInfo()
     var osCanImportFoldersAndFiles = browserInfo.platform === 'darwin'
 
     var files = await beaker.browser.showOpenDialog({

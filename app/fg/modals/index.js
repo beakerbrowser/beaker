@@ -23,19 +23,10 @@ class ModalsWrapper extends LitElement {
     super()
     this.currentModal = null
     this.cbs = null
+    this.fetchBrowserInfo()
 
     // export interface
     window.runModal = this.runModal.bind(this)
-
-    // fetch platform information
-    var {platform} = bg.beakerBrowser.getInfo()
-    window.platform = platform
-    if (platform === 'darwin') {
-      document.body.classList.add('darwin')
-    }
-    if (platform === 'win32') {
-      document.body.classList.add('win32')
-    }
 
     // global event listeners
     window.addEventListener('keydown', e => {
@@ -43,6 +34,17 @@ class ModalsWrapper extends LitElement {
         this.cbs.reject(new Error('Canceled'))
       }
     })
+  }
+
+  async fetchBrowserInfo () {
+    var {platform} = await bg.beakerBrowser.getInfo()
+    window.platform = platform
+    if (platform === 'darwin') {
+      document.body.classList.add('darwin')
+    }
+    if (platform === 'win32') {
+      document.body.classList.add('win32')
+    }
   }
 
   async runModal (name, params) {

@@ -13,13 +13,20 @@ class SiteMenu extends LitElement {
 
   constructor () {
     super()
+    this.accelerators = {
+      print: ''
+    }
+    this.fetchBrowserInfo()
+  }
 
-    this.browserInfo = bg.beakerBrowser.getInfo()
-    const isDarwin = this.browserInfo.platform === 'darwin'
+  async fetchBrowserInfo () {
+    var browserInfo = await bg.beakerBrowser.getInfo()
+    const isDarwin = browserInfo.platform === 'darwin'
     const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
     this.accelerators = {
       print: cmdOrCtrlChar + 'P'
     }
+    this.requestUpdate()
   }
 
   reset () {
@@ -36,7 +43,6 @@ class SiteMenu extends LitElement {
 
     if (this.url.startsWith('hd://')) {
       try {
-        console.log('getting', this.url)
         this.driveInfo = await bg.hyperdrive.getInfo(this.url)
         this.driveConfig = await bg.drives.get(this.url)
       } catch (e) {

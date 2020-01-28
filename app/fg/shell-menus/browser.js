@@ -13,8 +13,22 @@ class BrowserMenu extends LitElement {
 
   constructor () {
     super()
+    this.submenu = ''
+    this.sumProgress = null // null means no active downloads
+    this.shouldPersistDownloadsIndicator = false
+    this.accelerators = {
+      newWindow: '',
+      print: '',
+      findInPage: '',
+      history: '',
+      openFile: ''
+    }
+    fromEventStream(bg.downloads.createEventsStream()).addEventListener('sum-progress', this.onDownloadsSumProgress.bind(this))
+    this.fetchBrowserInfo()
+  }
 
-    this.browserInfo = bg.beakerBrowser.getInfo()
+  async fetchBrowserInfo () {
+    this.browserInfo = await bg.beakerBrowser.getInfo()
     const isDarwin = this.browserInfo.platform === 'darwin'
     const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
     this.accelerators = {
@@ -25,13 +39,6 @@ class BrowserMenu extends LitElement {
       openFile: cmdOrCtrlChar + 'O'
     }
 
-    this.submenu = ''
-    this.sumProgress = null // null means no active downloads
-    this.shouldPersistDownloadsIndicator = false
-
-    // wire up events
-    var dlEvents = fromEventStream(bg.downloads.createEventsStream())
-    dlEvents.addEventListener('sum-progress', this.onDownloadsSumProgress.bind(this))
   }
 
   reset () {

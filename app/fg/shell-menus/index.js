@@ -17,17 +17,10 @@ class MenusWrapper extends LitElement {
   constructor () {
     super()
     this.currentParams = null
+    this.setup()
+  }
 
-    // fetch platform information
-    var {platform} = bg.beakerBrowser.getInfo()
-    window.platform = platform
-    if (platform === 'darwin') {
-      document.body.classList.add('darwin')
-    }
-    if (platform === 'win32') {
-      document.body.classList.add('win32')
-    }
-
+  async setup () {
     // export interface
     const reset = (name) => {
       if (!name.endsWith('-menu')) name += '-menu'
@@ -72,6 +65,16 @@ class MenusWrapper extends LitElement {
         bg.shellMenus.close()
       }
     })
+
+    // fetch platform information
+    var browserInfo = await bg.beakerBrowser.getInfo()
+    window.platform = browserInfo.platform
+    if (browserInfo.platform === 'darwin') {
+      document.body.classList.add('darwin')
+    }
+    if (browserInfo.platform === 'win32') {
+      document.body.classList.add('win32')
+    }
   }
 
   render () {

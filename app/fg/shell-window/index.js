@@ -37,14 +37,17 @@ class ShellWindowUI extends LitElement {
     this.isFullscreen = false
     this.hasLocationExpanded = false
     this.activeTabIndex = -1
+    this.setup()
+  }
 
+  async setup () {
     // fetch platform information
-    var {platform} = bg.beakerBrowser.getInfo()
-    window.platform = platform
-    if (platform === 'darwin') {
+    var browserInfo = await bg.beakerBrowser.getInfo()
+    window.platform = browserInfo.platform
+    if (browserInfo.platform === 'darwin') {
       document.body.classList.add('darwin')
     }
-    if (platform === 'win32') {
+    if (browserInfo.platform === 'win32') {
       document.body.classList.add('win32')
     }
 
@@ -89,7 +92,7 @@ class ShellWindowUI extends LitElement {
       this.tabs = state
       this.stateHasChanged()
     })
-    this.isUpdateAvailable = bg.beakerBrowser.getInfo().updater.state === 'downloaded'
+    this.isUpdateAvailable = browserInfo.updater.state === 'downloaded'
   }
 
   get activeTab () {

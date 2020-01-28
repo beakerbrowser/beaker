@@ -23,8 +23,12 @@ class PermPrompt extends LitElement {
     window.clickAccept = () => this.shadowRoot.querySelector('.prompt-accept').click()
     window.clickReject = () => this.shadowRoot.querySelector('.prompt-reject').click()
 
+    this.fetchBrowserInfo()
+  }
+
+  async fetchBrowserInfo () {
     // fetch platform information
-    var {platform} = bg.beakerBrowser.getInfo()
+    var {platform} = await bg.beakerBrowser.getInfo()
     window.platform = platform
     if (platform === 'darwin') {
       document.body.classList.add('darwin')

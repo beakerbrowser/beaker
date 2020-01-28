@@ -37,16 +37,7 @@ class LocationBar extends LitElement {
     super()
     this.reset()
     this.homeDriveUrl = undefined
-
-    // fetch platform information
-    var {platform} = bg.beakerBrowser.getInfo()
-    window.platform = platform
-    if (platform === 'darwin') {
-      document.body.classList.add('darwin')
-    }
-    if (platform === 'win32') {
-      document.body.classList.add('win32')
-    }
+    this.fetchBrowserInfo()
 
     // disallow right click
     window.addEventListener('contextmenu', e => e.preventDefault())
@@ -54,6 +45,17 @@ class LocationBar extends LitElement {
     // export interface
     window.setup = () => this.reset()
     window.command = (command, opts) => this.onCommand(command, opts)
+  }
+
+  async fetchBrowserInfo () {
+    var {platform} = await bg.beakerBrowser.getInfo()
+    window.platform = platform
+    if (platform === 'darwin') {
+      document.body.classList.add('darwin')
+    }
+    if (platform === 'win32') {
+      document.body.classList.add('win32')
+    }
   }
 
   reset () {
