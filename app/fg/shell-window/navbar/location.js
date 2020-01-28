@@ -138,7 +138,6 @@ class NavbarLocation extends LitElement {
           @focus=${this.onFocusLocation}
           @blur=${this.onBlurLocation}
           @input=${this.onInputLocation}
-          @keydown=${this.onKeydownLocation}
         >
         ${this.isLocationFocused ? '' : this.renderInputPretty()}
       </div>
@@ -352,8 +351,12 @@ class NavbarLocation extends LitElement {
   }
 
   onFocusLocation (e) {
-    e.currentTarget.value = this.modifiedUrl
-    e.currentTarget.setSelectionRange(0, this.url.length)
+    if (!this.url.startsWith('beaker://desktop')) {
+      e.currentTarget.value = this.url
+      this.hasExpanded = true
+    } else {
+      e.currentTarget.value = ''
+    }
     this.isLocationFocused = true
   }
 
@@ -369,11 +372,6 @@ class NavbarLocation extends LitElement {
     var rect = this.getClientRects()[0]
     var value = e.currentTarget.value
     var selectionStart = e.currentTarget.selectionStart
-    if (value.startsWith('/') && !this.hasExpanded) {
-      let origin = (new URL(this.url)).origin 
-      value = origin + value
-      selectionStart += origin.length
-    }
     bg.views.runLocationBarCmd('set-value', {
       bounds: {
         x: rect.left|0,
@@ -386,23 +384,6 @@ class NavbarLocation extends LitElement {
     e.currentTarget.blur()
   }
 
-  onKeydownLocation (e) {
-    var left = (e.key === 'ArrowLeft' || (e.ctrlKey && e.key === 'b'))
-    if (left && !this.hasExpanded) {
-      let input = this.shadowRoot.querySelector('.input-container input')
-      if (input.selectionStart === 0) {
-        e.preventDefault()
-        this.hasExpanded = true
-        try {
-          var oldValueLen = input.value.length
-          input.value = this.url
-          input.selectionStart = input.selectionEnd = this.url.length - oldValueLen
-        } catch (e) {
-          // ignore
-        }
-      }
-    }
-  }
 
   onClickZoom (e) {
     bg.views.resetZoom(this.activeTabIndex)
