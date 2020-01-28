@@ -173,6 +173,7 @@ export const WEBAPI = {
   setSidebarResizeModeEnabled,
   moveWindow,
   maximizeWindow,
+  resizeSiteInfo,
   showOpenDialog,
   showContextMenu,
   async showModal (name, opts) {
@@ -371,6 +372,11 @@ export async function moveWindow (x, y) {
 export async function maximizeWindow () {
   var win = findWebContentsParentWindow(this.sender)
   win.maximize()
+}
+
+export function resizeSiteInfo (bounds) {
+  var win = findWebContentsParentWindow(this.sender)
+  siteInfo.resize(win, bounds)
 }
 
 export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {

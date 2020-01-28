@@ -36,6 +36,7 @@ export default {
   setSidebarResizeModeEnabled: 'promise',
   moveWindow: 'promise',
   maximizeWindow: 'promise',
+  resizeSiteInfo: 'promise',
   showOpenDialog: 'promise',
   showContextMenu: 'promise',
   showModal: 'promise',

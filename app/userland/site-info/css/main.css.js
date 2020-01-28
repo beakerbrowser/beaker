@@ -44,9 +44,11 @@ h1 {
 }
 
 .notice {
-  background: #fafafa;
-  margin: 10px;
   padding: 10px;
+}
+
+.notice > :last-child {
+  margin-bottom: 0;
 }
 
 .label {

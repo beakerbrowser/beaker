@@ -76,15 +76,15 @@ class SiteInfoApp extends LitElement {
     this.reset()
 
     // global event listeners
-    // window.addEventListener('blur', e => {
-    //   beaker.browser.toggleSiteInfo(false)
-    //   this.reset()
-    // })
-    // window.addEventListener('keydown', e => {
-    //   if (e.key === 'Escape') {
-    //     beaker.browser.toggleSiteInfo(false)
-    //   }
-    // })
+    window.addEventListener('blur', e => {
+      beaker.browser.toggleSiteInfo(false)
+      this.reset()
+    })
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        beaker.browser.toggleSiteInfo(false)
+      }
+    })
     const globalAnchorClickHandler = (isPopup) => e => {
       e.preventDefault()
       var a = e.path.reduce((acc, v) => acc || (v.tagName === 'A' ? v : undefined), undefined)
@@ -189,39 +189,41 @@ class SiteInfoApp extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${this.renderSiteInfo()}
-      ${this.renderNav()}
-      <div class="inner">
-        ${this.isDriveDomainUnconfirmed ? html`
-          <div class="notice">
-            <p><span class="fas fa-fw fa-exclamation-triangle"></span> Domain issue</p>
-            <p>
-              This site has not confirmed <code>${this.hostname}</code> as its primary domain.
-              It's safe to view but you will not be able to follow it or use its advanced features.
-            </p>
-          </div>
-        ` : ''}
+      <div>
+        ${this.renderSiteInfo()}
+        ${this.renderNav()}
+        <div class="inner">
+          ${this.isDriveDomainUnconfirmed ? html`
+            <div class="notice">
+              <p><span class="fas fa-fw fa-exclamation-triangle"></span> Domain issue</p>
+              <p>
+                This site has not confirmed <code>${this.hostname}</code> as its primary domain.
+                It's safe to view but you will not be able to follow it or use its advanced features.
+              </p>
+            </div>
+          ` : ''}
 
-        ${this.isHttp ? html`
-          <div class="notice">
-            <p class="warning">
-              <span class="fas fa-exclamation-triangle"></span> Your connection to this site is not secure.
-            </p>
-            <p>
-              You should not enter any sensitive information on this site (for example, passwords or credit cards) because it could be stolen by attackers.
-            </p>
-          </div>
-        ` : ''}
+          ${this.isHttp ? html`
+            <div class="notice">
+              <p class="warning">
+                <span class="fas fa-exclamation-triangle"></span> Your connection to this site is not secure.
+              </p>
+              <p>
+                You should not enter any sensitive information on this site (for example, passwords or credit cards) because it could be stolen by attackers.
+              </p>
+            </div>
+          ` : ''}
 
-        ${this.view === 'permissions' ? html`
-          <user-session
-            origin=${this.origin}
-          ></user-session>
-          <requested-perms
-            origin=${this.origin}
-            .perms=${this.requestedPerms}
-          ></requested-perms>
-        ` : ''}
+          ${this.view === 'permissions' ? html`
+            <user-session
+              origin=${this.origin}
+            ></user-session>
+            <requested-perms
+              origin=${this.origin}
+              .perms=${this.requestedPerms}
+            ></requested-perms>
+          ` : ''}
+        </div>
       </div>
     `
   }
@@ -272,6 +274,15 @@ class SiteInfoApp extends LitElement {
         </div>
       </div>
     `
+  }
+
+  async updated () {
+    setTimeout(() => {
+      // adjust height based on rendering
+      var height = this.shadowRoot.querySelector('div').clientHeight
+      if (!height) return
+      beaker.browser.resizeSiteInfo({height})
+    }, 50)
   }
 
   // events

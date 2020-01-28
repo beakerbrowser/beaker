@@ -50,7 +50,6 @@ export function get (parentWindow) {
 export function reposition (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    let parentBounds = parentWindow.getContentBounds()
     const setBounds = (b) => {
       // HACK workaround the lack of view.getBounds() -prf
       if (view.currentBounds) {
@@ -68,7 +67,16 @@ export function reposition (parentWindow) {
   }
 }
 
-export async function toggle (parentWindow, opts) {
+export function resize (parentWindow, bounds = {}) {
+  var view = get(parentWindow)
+  if (view && view.currentBounds) {
+    view.currentBounds.width = bounds.width || view.currentBounds.width
+    view.currentBounds.height = bounds.height || view.currentBounds.height
+    view.setBounds(adjustBounds(view, parentWindow, view.currentBounds))
+  }
+}
+
+export function toggle (parentWindow, opts) {
   var view = get(parentWindow)
   if (view) {
     if (view.isVisible) {
