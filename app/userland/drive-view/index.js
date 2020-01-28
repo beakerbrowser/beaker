@@ -97,11 +97,13 @@ class DriveView extends LitElement {
 
     .prompt {
       margin: 30px 0;
-      background: #fafafd;
       font-size: 14px;
-      padding: 30px 20px;
       letter-spacing: 0.5px;
-      border-radius: 8px;
+      padding: 20px 10px;
+      background: #fff;
+      border-top: 1px solid #dde;
+      border-radius: 0;
+      color: #778;
     }
     `
   }
