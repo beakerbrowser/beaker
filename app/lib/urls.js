@@ -37,7 +37,7 @@ export function examineLocationInput (v) {
 
 const SCHEME_REGEX = /[a-z]+:\/\//i
 //                   1          2      3        4
-const VERSION_REGEX = /^(dat:\/\/)?([^/]+)(\+[^/]+)(.*)$/i
+const VERSION_REGEX = /^(hyper:\/\/)?([^/]+)(\+[^/]+)(.*)$/i
 export function parseDriveUrl (str, parseQS) {
   // prepend the scheme if it's missing
   if (!SCHEME_REGEX.test(str)) {
