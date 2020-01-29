@@ -7,11 +7,7 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
 import _groupBy from 'lodash.groupby'
-import { filterThemeByType } from '../../lib/hyper'
-
-const BUILTIN_THEMES = [
-  {id: 'blogger', label: 'Blogger', manifest: {theme: {drive_types: 'website'}}}
-]
+import { BUILTIN_THEMES, filterThemeByType } from '../../lib/hyper'
 
 class CreateDriveModal extends LitElement {
   static get properties () {
@@ -161,8 +157,7 @@ class CreateDriveModal extends LitElement {
 
   render () {
     const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
-    const builtinThemes = BUILTIN_THEMES.filter(this.filterThemeByType.bind(this))
-    const themes = this.themes.filter(this.filterThemeByType.bind(this))
+    const themes = BUILTIN_THEMES.concat(this.themes).filter(this.filterThemeByType.bind(this))
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -195,15 +190,6 @@ class CreateDriveModal extends LitElement {
                   <img src="beaker://assets/img/themes/none.png">
                   <div class="title"><span>None</span></div>
                 </div>
-                ${repeat(builtinThemes, theme => html`
-                  <div 
-                    class="theme ${this.theme === `builtin:${theme.id}` ? 'selected' : ''}"
-                    @click=${e => this.onClickTheme(e, `builtin:${theme.id}`)}
-                  >
-                    <img src="beaker://assets/img/themes/${theme.id}.png">
-                    <div class="title"><span>${theme.label}</span></div>
-                  </div>
-                `)}
                 ${repeat(themes, t => this.renderTheme(t))}
               </div>
             </div>
@@ -221,12 +207,15 @@ class CreateDriveModal extends LitElement {
   }
 
   renderTheme (theme) {
+    var imgSrc = theme.url.startsWith('builtin')
+      ? `beaker://assets/img/themes/${theme.url.slice('builtin:'.length)}.png`
+      : `${theme.url}/thumb`
     return html`
       <div 
         class="theme ${this.theme === theme.url ? 'selected' : ''}"
         @click=${e => this.onClickTheme(e, theme.url)}
       >
-        <img src="${theme.url}/thumb" @error=${this.onThemeImgError}>
+        <img src=${imgSrc} @error=${this.onThemeImgError}>
         <div class="title"><span>${theme.title}</span></div>
       </div>
     `

@@ -5,6 +5,7 @@ import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
+import { BUILTIN_THEMES, filterThemeByType } from '../../lib/hyper'
 
 class DrivePropertiesModal extends LitElement {
   static get styles () {
@@ -144,7 +145,7 @@ class DrivePropertiesModal extends LitElement {
 
         <form @submit=${this.onSubmit}>
           <div class="props">
-            ${repeat(Object.entries(this.props), entry => this.renderProp(...entry))}
+            ${repeat(Object.entries(this.props), entry => entry[0], entry => this.renderProp(...entry))}
 
             <div class="prop">
               <div class="key">thumbnail</div>
@@ -166,6 +167,9 @@ class DrivePropertiesModal extends LitElement {
 
   renderProp (key, value) {
     if (key === 'theme') {
+      let typeInput = this.shadowRoot.querySelector('input[name="type"]')
+      let currentType = typeInput ? typeInput.value : this.props.type
+      let themes = BUILTIN_THEMES.concat(this.themes).filter(t => filterThemeByType(t.manifest, currentType))
       let opt = (id, label) => html`<option value=${id} ?selected=${id === value}>${label}</option>`
       return html`
         <div class="prop">
@@ -174,8 +178,7 @@ class DrivePropertiesModal extends LitElement {
             <select name=${key}>
               ${opt('', 'None')}
               ${value === 'custom' ? opt('custom', 'Custom') : ''}
-              ${opt('builtin:blogger', 'Blogger')}
-              ${this.themes.map(theme => opt(theme.url, theme.title))}
+              ${themes.map(theme => opt(theme.url, theme.title))}
             </select>
           </div>
         </div>
@@ -184,13 +187,17 @@ class DrivePropertiesModal extends LitElement {
     return html`
       <div class="prop">
         <div class="key">${key}</div>
-        <input type="text" name=${key} value=${value} ?readonly=${!this.writable}>
+        <input type="text" name=${key} value=${value} ?readonly=${!this.writable} @change=${this.onInputChange}>
       </div>
     `
   }
 
   // event handlers
   // =
+
+  onInputChange (e) {
+    this.requestUpdate()
+  }
 
   onClickCancel (e) {
     e.preventDefault()
