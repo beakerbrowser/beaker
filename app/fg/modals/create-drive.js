@@ -7,6 +7,11 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
 import _groupBy from 'lodash.groupby'
+import { filterThemeByType } from '../../lib/hyper'
+
+const BUILTIN_THEMES = [
+  {id: 'blogger', label: 'Blogger', manifest: {theme: {drive_types: 'website'}}}
+]
 
 class CreateDriveModal extends LitElement {
   static get properties () {
@@ -138,6 +143,10 @@ class CreateDriveModal extends LitElement {
     return drives.map(drive => drive.info).filter(info => info.type === 'theme')
   }
 
+  filterThemeByType (theme) {
+    return filterThemeByType(theme.manifest, this.type)
+  }
+
   updated () {
     this.adjustHeight()
   }
@@ -152,13 +161,15 @@ class CreateDriveModal extends LitElement {
 
   render () {
     const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
+    const builtinThemes = BUILTIN_THEMES.filter(this.filterThemeByType.bind(this))
+    const themes = this.themes.filter(this.filterThemeByType.bind(this))
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">
           Create new 
           <select name="type" @change=${this.onChangeType}>
-            ${typeopt('undefined', 'Files drive')}
+            ${typeopt('', 'Files drive')}
             ${typeopt('website', 'Website')}
             ${typeopt('module', 'Module')}
             ${typeopt('theme', 'Theme')}
@@ -173,27 +184,31 @@ class CreateDriveModal extends LitElement {
           <label for="desc">Description</label>
           <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''}>
 
-          <label for="desc">Theme</label>
-          <div class="themes">
-            <div class="themes-grid">
-              <div 
-                class="theme ${this.theme === undefined ? 'selected' : ''}"
-                @click=${e => this.onClickTheme(e, undefined)}
-              >
-                <img src="beaker://assets/img/themes/none.png">
-                <div class="title"><span>None</span></div>
+          ${this.type !== 'theme' ? html`
+            <label for="desc">Theme</label>
+            <div class="themes">
+              <div class="themes-grid">
+                <div 
+                  class="theme ${this.theme === undefined ? 'selected' : ''}"
+                  @click=${e => this.onClickTheme(e, undefined)}
+                >
+                  <img src="beaker://assets/img/themes/none.png">
+                  <div class="title"><span>None</span></div>
+                </div>
+                ${repeat(builtinThemes, theme => html`
+                  <div 
+                    class="theme ${this.theme === `builtin:${theme.id}` ? 'selected' : ''}"
+                    @click=${e => this.onClickTheme(e, `builtin:${theme.id}`)}
+                  >
+                    <img src="beaker://assets/img/themes/${theme.id}.png">
+                    <div class="title"><span>${theme.label}</span></div>
+                  </div>
+                `)}
+                ${repeat(themes, t => this.renderTheme(t))}
               </div>
-              <div 
-                class="theme ${this.theme === 'builtin:blogger' ? 'selected' : ''}"
-                @click=${e => this.onClickTheme(e, 'builtin:blogger')}
-              >
-                <img src="beaker://assets/img/themes/blogger.png">
-                <div class="title"><span>Blogger</span></div>
-              </div>
-              ${repeat(this.themes, t => this.renderTheme(t))}
             </div>
-          </div>
-          
+          ` : ''}
+            
           <hr>
 
           <div class="form-actions">
@@ -230,6 +245,9 @@ class CreateDriveModal extends LitElement {
 
   onChangeType (e) {
     this.type = e.target.value.trim()
+    if (this.type === 'theme') {
+      this.theme = undefined
+    }
   }
 
   onClickTheme (e, themeUrl) {
@@ -259,7 +277,7 @@ class CreateDriveModal extends LitElement {
       var url = await bg.hyperdrive.createDrive({
         title: this.title,
         description: this.description,
-        type: this.type !== 'undefined' ? this.type : undefined,
+        type: this.type !== '' ? this.type : undefined,
         author: this.author,
         links: this.links,
         theme: this.theme,
