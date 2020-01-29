@@ -27,7 +27,7 @@ import * as users from '../filesystem/users'
 // constants
 // =
 
-import { HYPERDRIVE_HASH_REGEX, DRIVE_PRESERVED_FIELDS_ON_CLONE, DRIVE_MANIFEST_FILENAME } from '../../lib/const'
+import { HYPERDRIVE_HASH_REGEX, DRIVE_MANIFEST_FILENAME } from '../../lib/const'
 
 import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 
@@ -238,11 +238,11 @@ export async function cloneDrive (srcDriveUrl, manifest = {}) {
     type: (manifest.type) ? manifest.type : srcManifest.type,
     author: manifest.author
   }
-  DRIVE_PRESERVED_FIELDS_ON_CLONE.forEach(field => {
-    if (srcManifest[field]) {
-      dstManifest[field] = srcManifest[field]
+  for (let k in srcManifest) {
+    if (!dstManifest[k]) {
+      dstManifest[k] = srcManifest[k]
     }
-  })
+  }
 
   // create the new drive
   var dstDrive = await createNewDrive(dstManifest)

@@ -57,15 +57,6 @@ export const DRIVE_CONFIGURABLE_FIELDS = [
   'theme'
 ]
 
-// index.json manifest fields which should be preserved in clones
-export const DRIVE_PRESERVED_FIELDS_ON_CLONE = [
-  'web_root',
-  'fallback_page',
-  'links',
-  'experimental',
-  'content_security_policy'
-]
-
 // workspace settings
 export const WORKSPACE_VALID_NAME_REGEX = /^[a-z][a-z0-9-]*$/i
 
