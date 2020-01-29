@@ -193,8 +193,8 @@ export async function createNewDrive (manifest = {}) {
 
   // write the manifest and default datignore
   await Promise.all([
-    drive.pda.writeManifest(manifest),
-    drive.pda.writeFile('/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
+    drive.pda.writeManifest(manifest)
+    // DISABLED drive.pda.writeFile('/.datignore', await settingsDb.get('default_dat_ignore'), 'utf8')
   ])
 
   // save the metadata
