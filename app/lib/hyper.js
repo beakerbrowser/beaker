@@ -1,7 +1,7 @@
 import _get from 'lodash.get'
 
 export const BUILTIN_THEMES = [
-  {url: 'builtin:blogger', title: 'Blogger', manifest: {theme: {drive_types: 'website'}}}
+  {url: 'builtin:blogger', title: 'Blogger', manifest: {theme: {drive_types: 'user'}}}
 ]
 
 export function filterThemeByType (manifest, targetType) {
