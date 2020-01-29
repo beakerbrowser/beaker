@@ -26,6 +26,9 @@ export class DrivePage extends HTMLElement {
     this.stat = await this.self.stat(pathname).catch(e => undefined)
 
     if (this.stat && this.stat.isFile()) {
+      if (this.stat.metadata.title) {
+        this.append(h('h2', {}, this.stat.metadata.title))
+      }
       if (/\.(png|jpe?g|gif)/i.test(pathname)) {
         this.append(h('img', {className: 'content', src: pathname, title: pathname.split('/').pop()}))
       } else if (/\.(mp4|webm|mov)/i.test(pathname)) {
@@ -47,8 +50,9 @@ export class DrivePage extends HTMLElement {
     } else {
       if (pathname === '/' || pathname.startsWith('/posts/')) {
         this.append(new DrivePosts())
+      } else {
+        this.append(new DriveFiles())
       }
-      this.append(new DriveFiles())
     }
   }
 }

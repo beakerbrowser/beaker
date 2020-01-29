@@ -33,19 +33,6 @@ export class DrivePosts extends HTMLElement {
   }
 
   render () {
-    var mode = this.mode
-
-    var header = h('header')
-    if (this.info.writable) {
-      header.append(h('div', {className: 'admin'}, [
-        h('a', {className: 'btn', href: `https://beaker.network/compose`}, '+ New Post')
-      ]))
-    }
-    if (mode === 'recent') header.append(h('h2', {}, 'Recent posts'))
-    if (mode === 'all') header.append(h('h2', {}, 'All posts'))
-    if (mode === 'topic') header.append(h('h2', {}, `"${this.topic}" posts`))
-    this.append(header)
-
     for (let post of this.posts) {
       let href = post.stat.metadata.href || post.url
       let link = h('h3', {}, h('a', {href}, post.stat.metadata.title))

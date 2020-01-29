@@ -1,3 +1,4 @@
-import { DriveHeader } from './js/header.js'
-import { DriveBreadcrumbs } from './js/breadcrumbs.js'
-import { DrivePage } from './js/page.js'
+import './js/admin.js'
+import './js/header.js'
+import './js/breadcrumbs.js'
+import './js/page.js'
