@@ -155,6 +155,7 @@ nav .categories hr {
 .drive .type {
   letter-spacing: -0.2px;
   color: green;
+  overflow: visible;
 }
 
 .drive .description {
