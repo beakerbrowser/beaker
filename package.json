@@ -81,9 +81,6 @@
     "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
   },
-  "pre-commit": [
-    "lint"
-  ],
   "collective": {
     "type": "opencollective",
     "url": "https://opencollective.com/beaker",
