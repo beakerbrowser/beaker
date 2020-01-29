@@ -55,8 +55,13 @@ export default {
       await assertCreateDrivePermission(this.sender)
 
       // create
+      let newDrive
       try {
-        var newDrive = await drives.createNewDrive({title, description, type, author, links})
+        let manifest = {title, description, type, author, links}
+        if (type === 'theme') {
+          manifest.theme = {drive_types: ['website']}
+        }
+        newDrive = await drives.createNewDrive(manifest)
         await filesystem.configDrive(newDrive.url, {seeding: true})
       } catch (e) {
         console.log(e)
