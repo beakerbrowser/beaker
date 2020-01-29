@@ -21,7 +21,7 @@ export default function registerContextMenu () {
     webContents.on('context-menu', async (e, props) => {
       var menuItems = []
       const { mediaFlags, editFlags } = props
-      const isHyperdrive = props.pageURL.startsWith('hd://')
+      const isHyperdrive = props.pageURL.startsWith('hyper://')
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
       const isMisspelled = false//TODOprops.selectionText && spellChecker.isMisspelled(props.selectionText)
@@ -144,11 +144,11 @@ export default function registerContextMenu () {
           let driveInfo = tabManager.getActive(targetWindow).driveInfo
           let key = driveInfo ? driveInfo.key : undefined
           let driveCfg = getDriveConfig(key)
-          let driveIdent = getDriveIdent(`hd://${key}`)
+          let driveIdent = getDriveIdent(`hyper://${key}`)
           menuItems.push({
             label: 'Hyperdrive',
             submenu: [
-              { label: 'Open with Files Explorer', click: (item, win) => tabManager.create(win, `https://hyperdrive.network/${props.pageURL.slice('hd://'.length)}`, {setActive: true}) },
+              { label: 'Open with Files Explorer', click: (item, win) => tabManager.create(win, `https://hyperdrive.network/${props.pageURL.slice('hyper://'.length)}`, {setActive: true}) },
               { label: 'Open with Beaker.Network', click: (item, win) => tabManager.create(win, `https://beaker.network/${(new URL(props.pageURL)).hostname}`, {setActive: true}) },
               { type: 'separator' },
               { 

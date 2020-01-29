@@ -70,8 +70,8 @@ export default {
 
 async function getSenderDrive (sender) {
   var url = sender.getURL()
-  if (!url.startsWith('hd:')) {
-    throw new PermissionsError('Only hd:// sites can use the datPeers API')
+  if (!url.startsWith('hyper:')) {
+    throw new PermissionsError('Only hyper:// sites can use the datPeers API')
   }
   var urlp = parseDriveUrl(url)
   if (!HYPERDRIVE_HASH_REGEX.test(urlp.host)) {

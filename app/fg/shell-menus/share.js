@@ -77,7 +77,7 @@ class ShareMenu extends LitElement {
 
   async init (params) {
     var shareableUrl = undefined
-    if (params.url.startsWith('hd://')) {
+    if (params.url.startsWith('hyper://')) {
       // establish the shareable url
       try {
         let driveInfo

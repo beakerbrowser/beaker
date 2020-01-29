@@ -2,7 +2,7 @@ import { parseDriveUrl } from '../../lib/urls'
 import parseRange from 'range-parser'
 import once from 'once'
 import * as logLib from '../logger'
-const logger = logLib.child({category: 'dat', subcategory: 'hd-scheme'})
+const logger = logLib.child({category: 'dat', subcategory: 'hyper-scheme'})
 // import intoStream from 'into-stream'
 import { toZipStream } from '../lib/zip'
 import slugify from 'slugify'
@@ -47,7 +47,7 @@ const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
 // =
 
 export function register (protocol) {
-  protocol.registerStreamProtocol('hd', protocolHandler)
+  protocol.registerStreamProtocol('hyper', protocolHandler)
 }
 
 export const protocolHandler = async function (request, respond) {
@@ -83,7 +83,7 @@ export const protocolHandler = async function (request, respond) {
     return respondError(404, 'Drive Not Found', {
       title: 'Site Not Found',
       errorDescription: 'Invalid URL',
-      errorInfo: `${request.url} is an invalid hd:// URL`
+      errorInfo: `${request.url} is an invalid hyper:// URL`
     })
   }
   if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -97,7 +97,7 @@ export const protocolHandler = async function (request, respond) {
   } catch (err) {
     return respondError(404, 'No DNS record found for ' + urlp.host, {
       errorDescription: 'No DNS record found',
-      errorInfo: `No DNS record found for hd://${urlp.host}`
+      errorInfo: `No DNS record found for hyper://${urlp.host}`
     })
   }
 
@@ -236,7 +236,7 @@ export const protocolHandler = async function (request, respond) {
       return respond({
         statusCode: 200,
         headers: {'Content-Type': 'text/html'},
-        data: intoStream(`<!doctype html><meta http-equiv="refresh" content="0; url=hd://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}">`)
+        data: intoStream(`<!doctype html><meta http-equiv="refresh" content="0; url=hyper://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}">`)
       })
     }
 

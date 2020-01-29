@@ -34,7 +34,7 @@ export async function getSessionUserDrive (sender) {
  * @returns {Promise<string>}
  */
 export async function toDriveOrigin (url) {
-  if (!url.startsWith('hd://')) {
+  if (!url.startsWith('hyper://')) {
     throw new Error('Can only create sessions with hyperdrive sites')
   }
   return drives.getPrimaryUrl(url)

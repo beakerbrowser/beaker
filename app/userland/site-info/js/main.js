@@ -31,7 +31,7 @@ class SiteInfoApp extends LitElement {
   }
 
   get isDrive () {
-    return this.url && this.url.startsWith('hd:')
+    return this.url && this.url.startsWith('hyper:')
   }
 
   get isHttps () {

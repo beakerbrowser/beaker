@@ -5,7 +5,7 @@ import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 
 const EXPLORER_APP = 'https://hyperdrive.network/'
 export const FIXED_FILES = [
-  makeFixedLink('.home-drive.goto', `${EXPLORER_APP}${navigator.filesystem.url.slice('hd://'.length)}`, 'Home Drive'),
+  makeFixedLink('.home-drive.goto', `${EXPLORER_APP}${navigator.filesystem.url.slice('hyper://'.length)}`, 'Home Drive'),
   makeFixedLink('.drives.goto', 'beaker://drives/', 'My Drives'),
 ]
 
@@ -20,7 +20,7 @@ export async function load () {
   }
   return [
     FIXED_FILES[0],
-    makeFixedLink('.profile.goto', `hd://${profile.mount.key}`, 'My Profile'),
+    makeFixedLink('.profile.goto', `hyper://${profile.mount.key}`, 'My Profile'),
     FIXED_FILES[1]
   ].concat(userFiles)
 }

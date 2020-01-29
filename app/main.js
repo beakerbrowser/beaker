@@ -1,5 +1,8 @@
-Error.stackTraceLimit = Infinity
 require('tls').DEFAULT_ECDH_CURVE = 'auto' // HACK (prf) fix Node 8.9.x TLS issues, see https://github.com/nodejs/node/issues/19359
+
+// DEBUG
+// Error.stackTraceLimit = Infinity
+// require('events').defaultMaxListeners = 1e3 // pls stfu
 
 // This is main process of Electron, started as first thing when your
 // app starts. This script is running through entire life of your application.
@@ -31,7 +34,7 @@ import * as permissions from './bg/ui/permissions'
 import * as beakerProtocol from './bg/protocols/beaker'
 import * as beakerFaviconProtocol from './bg/protocols/beaker-favicon'
 import * as assetProtocol from './bg/protocols/asset'
-import * as hdProtocol from './bg/protocols/hd'
+import * as hyperProtocol from './bg/protocols/hyper'
 import * as datProtocol from './bg/protocols/dat'
 import * as intentProtocol from './bg/protocols/intent'
 
@@ -64,7 +67,7 @@ app.allowRendererProcessReuse = true
 // configure the protocols
 protocol.registerSchemesAsPrivileged([
   {scheme: 'dat', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
-  {scheme: 'hd', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
+  {scheme: 'hyper', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
   {scheme: 'beaker', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}}
 ])
 
@@ -118,7 +121,7 @@ app.on('ready', async function () {
   beakerFaviconProtocol.setup() // TODO deprecateme
   assetProtocol.setup()
   assetProtocol.register(protocol)
-  hdProtocol.register(protocol)
+  hyperProtocol.register(protocol)
   datProtocol.register(protocol)
   // intentProtocol.setup() TODO
 

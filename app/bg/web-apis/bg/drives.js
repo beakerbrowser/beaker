@@ -24,7 +24,7 @@ export default {
     key = await drives.fromURLToKey(key, true)
     var drive = listDrives().find(drive => drive.key === key)
     var info = await drives.getDriveInfo(key).catch(e => {})
-    var url = `hd://${key}`
+    var url = `hyper://${key}`
     var ident = getDriveIdent(url)
     return {
       key,
@@ -39,7 +39,7 @@ export default {
   async list (opts) {
     var records = []
     for (let drive of listDrives(opts)) {
-      let url = `hd://${drive.key}`
+      let url = `hyper://${drive.key}`
       let ident = getDriveIdent(url)
       records.push({
         key: drive.key,
@@ -104,7 +104,7 @@ export default {
 // =
 
 function assertDriveDeletable (key) {
-  if (users.isUser(`hd://${key}`)) {
+  if (users.isUser(`hyper://${key}`)) {
     throw new PermissionsError('Unable to delete the user profile.')
   }
 }

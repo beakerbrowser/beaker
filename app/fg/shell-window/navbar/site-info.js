@@ -76,7 +76,7 @@ class NavbarSiteInfo extends LitElement {
           <span class="fas insecure fa-exclamation-triangle"></span>
           <span class="label">${this.siteTitle}</span>
         `
-      } else if (scheme === 'hd:') {
+      } else if (scheme === 'hyper:') {
         certified = true
         innerHTML = html`
           ${this.writable ? html`

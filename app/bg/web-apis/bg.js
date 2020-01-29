@@ -4,7 +4,7 @@ import { findTab } from '../ui/tab-manager'
 
 // TEMPORARY: hyperdrive.network is trusted
 const INTERNAL_ORIGIN_REGEX = /^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/i
-const SITE_ORIGIN_REGEX = /^(beaker:|hd:|https?:)/i
+const SITE_ORIGIN_REGEX = /^(beaker:|hyper:|https?:)/i
 
 // internal manifests
 import loggerManifest from './manifests/internal/logger'

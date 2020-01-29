@@ -44,7 +44,7 @@ export function setup () {
       let data, datfs
       // pick the filesystem
       let datResolvedUrl = url
-      if (url.startsWith('hd://')) {
+      if (url.startsWith('hyper://')) {
         datResolvedUrl = await hyper.dns.resolveName(url)
         datfs = hyper.drives.getDrive(datResolvedUrl) // (only try if the dat is loaded)
       }

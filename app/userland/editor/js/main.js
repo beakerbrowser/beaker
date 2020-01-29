@@ -171,7 +171,7 @@ class EditorApp extends LitElement {
       this.resolvedPath = ''
 
       var body = ''
-      if (url.startsWith('hd:')) {
+      if (url.startsWith('hyper:')) {
         body = await this.loadDat(url)
       } else if (url.startsWith('http:') || url.startsWith('https:')) {
         this.isFilesOpen = false

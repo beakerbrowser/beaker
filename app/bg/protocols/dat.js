@@ -24,7 +24,7 @@ export const electronHandler = async function (request, respond) {
   respond({
     statusCode: 200,
     headers: {
-      Location: request.replace('dat:', 'hd:')
+      Location: request.replace('dat:', 'hyper:')
     },
     data: intoStream(`Redirecting...`)
   })

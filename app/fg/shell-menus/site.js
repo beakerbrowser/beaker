@@ -41,7 +41,7 @@ class SiteMenu extends LitElement {
     this.requestUpdate()
     console.log(this.url)
 
-    if (this.url.startsWith('hd://')) {
+    if (this.url.startsWith('hyper://')) {
       try {
         this.driveInfo = await bg.hyperdrive.getInfo(this.url)
         this.driveConfig = await bg.drives.get(this.url)
@@ -103,7 +103,7 @@ class SiteMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, `https://hyperdrive.network/${this.url.slice('hd://'.length)}`)}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, `https://hyperdrive.network/${this.url.slice('hyper://'.length)}`)}>
             <i class="far fa-folder-open"></i>
             <span class="label">Open with Files Explorer</span>
           </div>

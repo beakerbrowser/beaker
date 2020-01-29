@@ -4,10 +4,10 @@
  * Helper protocol to serve site favicons and avatars from the cache.
  * Examples:
  *
- *  - asset:favicon:hd://beakerbrowser.com
- *  - asset:favicon-32:hd://beakerbrowser.com
- *  - asset:thumb:hd://beakerbrowser.com
- *  - asset:cover:hd://beakerbrowser.com
+ *  - asset:favicon:hyper://beakerbrowser.com
+ *  - asset:favicon-32:hyper://beakerbrowser.com
+ *  - asset:thumb:hyper://beakerbrowser.com
+ *  - asset:cover:hyper://beakerbrowser.com
  **/
 
 import { screen } from 'electron'
@@ -93,12 +93,12 @@ export function setup () {
     }
 
     // try standard icons
-    if (url.startsWith('hd://')) {
+    if (url.startsWith('hyper://')) {
       let urlp = parseDriveUrl(url)
-      if (filesystem.isRootUrl(`hd://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
+      if (filesystem.isRootUrl(`hyper://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
         return servePng(path.join(__dirname, `./assets/img/favicons/drive.png`), DEFAULTS[asset], cb)
       }
-      if (users.isUser(`hd://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
+      if (users.isUser(`hyper://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
         return servePng(path.join(__dirname, `./assets/img/favicons/people.png`), DEFAULTS[asset], cb)
       }
       if (!urlp.pathname || urlp.pathname.endsWith('/')) {

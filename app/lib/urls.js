@@ -23,7 +23,7 @@ export function examineLocationInput (v) {
   var isGuessingTheScheme = false
   if (isProbablyUrl && !isPath.test(v) && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:'))) {
     if (isDatHashRegex.test(v)) {
-      vWithProtocol = 'hd://' + v
+      vWithProtocol = 'hyper://' + v
     } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {
       vWithProtocol = 'http://' + v
     } else {
@@ -41,7 +41,7 @@ const VERSION_REGEX = /^(dat:\/\/)?([^/]+)(\+[^/]+)(.*)$/i
 export function parseDriveUrl (str, parseQS) {
   // prepend the scheme if it's missing
   if (!SCHEME_REGEX.test(str)) {
-    str = 'hd://' + str
+    str = 'hyper://' + str
   }
 
   var parsed, version = null, match = VERSION_REGEX.exec(str)

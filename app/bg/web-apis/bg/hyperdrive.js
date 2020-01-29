@@ -692,7 +692,7 @@ async function assertDeleteDrivePermission (drive, sender) {
 }
 
 function assertDriveDeletable (drive) {
-  var driveUrl = 'hd://' + drive.key.toString('hex')
+  var driveUrl = 'hyper://' + drive.key.toString('hex')
   if (users.isUser(driveUrl)) {
     throw new PermissionsError('Unable to delete the user profile.')
   }
@@ -746,8 +746,8 @@ async function parseUrlParts (url) {
     var urlp = parseDriveUrl(url)
 
     // validate
-    if (urlp.protocol !== 'hd:') {
-      throw new InvalidURLError('URL must be a hd: scheme')
+    if (urlp.protocol !== 'hyper:') {
+      throw new InvalidURLError('URL must be a hyper: scheme')
     }
     if (!HYPERDRIVE_HASH_REGEX.test(urlp.host)) {
       urlp.host = await hyperDns.resolveName(url)
@@ -783,7 +783,7 @@ export async function lookupDrive (sender, url, opts = {}) {
 
 async function lookupUrlDriveKey (url) {
   if (HYPERDRIVE_HASH_REGEX.test(url)) return url
-  if (!url.startsWith('hd://')) {
+  if (!url.startsWith('hyper://')) {
     return false // not a drive site
   }
 
@@ -799,7 +799,7 @@ export async function getTheme (drive) {
   var themeStat = await drive.pda.stat('/theme').catch(e => undefined)
   if (themeStat) {
     if (themeStat.mount) {
-      return `hd://${themeStat.mount.key.toString('hex')}`
+      return `hyper://${themeStat.mount.key.toString('hex')}`
     } else {
       return drive.pda.readFile('/theme/.beaker-theme').catch(e => 'custom')
     }
@@ -819,7 +819,7 @@ export async function setTheme (drive, theme) {
         dstPath: '/theme/',
         inplaceImport: true
       })
-    } else if (theme.startsWith('hd:')) {
+    } else if (theme.startsWith('hyper:')) {
       await drive.pda.mount('/theme', theme)
     }
   } catch (e) {

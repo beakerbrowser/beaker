@@ -69,7 +69,7 @@ class NavbarLocation extends LitElement {
   }
 
   get isHyperdrive () {
-    return this.url.startsWith('hd://')
+    return this.url.startsWith('hyper://')
   }
 
   get modifiedUrl () {
@@ -152,7 +152,7 @@ class NavbarLocation extends LitElement {
         </div>
       `
     }
-    if (/^(hd|http|https|beaker):\/\//.test(this.url)) {
+    if (/^(hyper|http|https|beaker):\/\//.test(this.url)) {
       try {
         var { protocol, host, pathname, search, hash } = new URL(this.url)
         // TODO just show path?
@@ -162,7 +162,7 @@ class NavbarLocation extends LitElement {
         //   </div>
         // `
         var hostVersion
-        if (protocol === 'hd:') {
+        if (protocol === 'hyper:') {
           let match = /(.*)\+(.*)/.exec(host)
           if (match) {
             host = match[1]

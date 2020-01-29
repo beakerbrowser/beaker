@@ -460,7 +460,7 @@ customElements.define('select-drive-modal', SelectDriveModal)
 function isDriveUrl (v = '') {
   try {
     var urlp = new URL(v)
-    return urlp.protocol === 'hd:'
+    return urlp.protocol === 'hyper:'
   } catch (e) {
     return false
   }

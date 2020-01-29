@@ -163,7 +163,7 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
     await archivesDb.setMeta(key, details)
 
     // emit the updated event
-    details.url = 'hd://' + key
+    details.url = 'hyper://' + key
     drivesEvents.emit('updated', {key, details, oldMeta})
     return details
   } catch (e) {
@@ -495,8 +495,8 @@ export async function clearFileCache (key) {
 export async function getPrimaryUrl (url) {
   var key = await fromURLToKey(url, true)
   var datDnsRecord = await datDnsDb.getCurrentByKey(key)
-  if (!datDnsRecord) return `hd://${key}`
-  return `hd://${datDnsRecord.name}`
+  if (!datDnsRecord) return `hyper://${key}`
+  return `hyper://${datDnsRecord.name}`
 }
 
 /**
@@ -545,8 +545,8 @@ export function fromURLToKey (url, lookupDns = false) {
   }
 
   var urlp = parseDriveUrl(url)
-  if (urlp.protocol !== 'hd:' && urlp.protocol !== 'dat:') {
-    throw new InvalidURLError('URL must be a hd: or dat: scheme')
+  if (urlp.protocol !== 'hyper:' && urlp.protocol !== 'dat:') {
+    throw new InvalidURLError('URL must be a hyper: or dat: scheme')
   }
   if (!HYPERDRIVE_HASH_REGEX.test(urlp.host)) {
     if (!lookupDns) {
@@ -562,8 +562,8 @@ export function fromKeyToURL (key) {
   if (typeof key !== 'string') {
     key = datEncoding.toStr(key)
   }
-  if (!key.startsWith('hd://')) {
-    return `hd://${key}/`
+  if (!key.startsWith('hyper://')) {
+    return `hyper://${key}/`
   }
   return key
 }

@@ -183,7 +183,7 @@ export async function getMeta (key, {noDefault} = {noDefault: false}) {
   }
 
   // massage some values
-  meta.url = `hd://${meta.dnsName || meta.key}`
+  meta.url = `hyper://${meta.dnsName || meta.key}`
   delete meta.dnsName
   meta.writable = !!meta.isOwner
 
@@ -251,7 +251,7 @@ export async function setMeta (key, value) {
 function defaultMeta (key, name) {
   return {
     key,
-    url: `hd://${name}`,
+    url: `hyper://${name}`,
     title: undefined,
     description: undefined,
     type: undefined,
@@ -286,7 +286,7 @@ export function extractOrigin (originURL) {
 function normalizeDriveUrl (url) {
   var match = url.match(HYPERDRIVE_HASH_REGEX)
   if (match) {
-    return `hd://${match[0]}`
+    return `hyper://${match[0]}`
   }
   return extractOrigin(url)
 }

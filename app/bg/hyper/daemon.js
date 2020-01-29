@@ -108,7 +108,7 @@ export const createHyperdriveSession = async function (opts) {
   const key = datEncoding.toStr(drive.key)
   var driveObj = {
     key: datEncoding.toBuf(key),
-    url: `hd://${key}`,
+    url: `hyper://${key}`,
     writable: drive.writable,
     domain: undefined,
 

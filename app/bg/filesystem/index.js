@@ -134,9 +134,9 @@ export function listDrives ({includeSystem} = {includeSystem: false}) {
   var d = drives.slice()
   if (includeSystem) {
     for (let userUrl of users.listUrls()) {
-      d.unshift({key: userUrl.slice('hd://'.length)})
+      d.unshift({key: userUrl.slice('hyper://'.length)})
     }
-    d.unshift({key: rootDrive.url.slice('hd://'.length)})
+    d.unshift({key: rootDrive.url.slice('hyper://'.length)})
   }
   return d
 }

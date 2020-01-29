@@ -479,7 +479,7 @@ class Tab {
   async captureScreenshot () {
     // capture screenshot on the root page of dat & http sites
     var urlp = parseDriveUrl(this.url)
-    if (['hd:', 'http:', 'https:'].includes(urlp.protocol)) {
+    if (['hyper:', 'http:', 'https:'].includes(urlp.protocol)) {
       try {
         // wait a sec to allow loading to finish
         await new Promise(r => setTimeout(r, 1e3))
@@ -721,7 +721,7 @@ class Tab {
     this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
 
-    if (!this.url.startsWith('hd://')) {
+    if (!this.url.startsWith('hyper://')) {
       this.driveInfo = null
       return
     }
@@ -818,7 +818,7 @@ class Tab {
     this.favicons = null
     await this.fetchIsBookmarked()
     await this.fetchDriveInfo()
-    if (httpResponseCode === 504 && url.startsWith('hd://')) {
+    if (httpResponseCode === 504 && url.startsWith('hyper://')) {
       this.wasDriveTimeout = true
     }
     if (httpResponseCode === 404 && this.writable && (this.driveInfo.type === 'website' || this.driveInfo.type === 'application')) {
@@ -1663,7 +1663,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     if (tab) {
       // if not a hyperdrive site, store the favicon
       // (hyperdrive caches favicons through the hyperdrive/assets.js process)
-      if (!tab.url.startsWith('hd:')) {
+      if (!tab.url.startsWith('hyper:')) {
         sitedataDb.set(tab.url, 'favicon', dataUrl)
       }
     }

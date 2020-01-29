@@ -40,8 +40,8 @@ export async function addSite (profileId, url, opts) {
   if (typeof opts.seedWhenResolved !== 'boolean') {
     throw new Error('seedWhenResolved must be a boolean')
   }
-  if (!url.startsWith('hd://')) {
-    url = 'hd://' + url
+  if (!url.startsWith('hyper://')) {
+    url = 'hyper://' + url
   }
 
   try {
