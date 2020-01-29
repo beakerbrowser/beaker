@@ -225,14 +225,8 @@ class EditorApp extends LitElement {
         this.editor.setModel(model)
         this.lastSavedVersionId = model.getAlternativeVersionId()
 
-        var wasChanged = false
         model.onDidChangeContent(() => {
-          var hasChanges = this.lastSavedVersionId !== model.getAlternativeVersionId()
-          if (wasChanged !== hasChanges) {
-            if (hasChanges) this.querySelector('#save-btn').removeAttribute('disabled')
-            else this.querySelector('#save-btn').setAttribute('disabled', 1)
-            wasChanged = hasChanges
-          }
+          this.setSaveBtnState()
         })
       }
 
@@ -306,6 +300,14 @@ class EditorApp extends LitElement {
       this.querySelector('files-explorer').load()
     } catch (e) {
       console.warn(e)
+    }
+  }
+
+  setSaveBtnState () {
+    if (this.readOnly || this.dne || !this.hasChanges) {
+      this.querySelector('#save-btn').setAttribute('disabled', '')
+    } else {
+      this.querySelector('#save-btn').removeAttribute('disabled')
     }
   }
 
@@ -567,6 +569,7 @@ class EditorApp extends LitElement {
     let metadata = st && st.metadata ? st.metadata : undefined
     await this.drive.writeFile(this.resolvedPath, model.getValue(), {metadata})
     this.lastSavedVersionId = model.getAlternativeVersionId()
+    this.setSaveBtnState()
     if (this.liveReloadMode) beaker.browser.gotoUrl(this.url)
   }
 
