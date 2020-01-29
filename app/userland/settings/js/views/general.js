@@ -31,7 +31,7 @@ class GeneralSettingsView extends LitElement {
     this.browserEvents.addEventListener('updater-error', this.onUpdaterError.bind(this))
 
     // fetch data
-    this.browserInfo = beaker.browser.getInfo()
+    this.browserInfo = await beaker.browser.getInfo()
     this.settings = await beaker.browser.getSettings()
     this.defaultProtocolSettings = await beaker.browser.getDefaultProtocolSettings()
     console.log('loaded', {
@@ -61,7 +61,7 @@ class GeneralSettingsView extends LitElement {
   }
 
   renderAutoUpdater () {
-    if (!this.browserInfo.updater.isBrowserUpdatesSupported) {
+    if (this.browserInfo && !this.browserInfo.updater.isBrowserUpdatesSupported) {
       return html`
         <div class="section">
           <h2 id="auto-updater">Auto updater</h2>
