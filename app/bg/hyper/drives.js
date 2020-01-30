@@ -389,17 +389,20 @@ export async function getDriveCheckout (drive, version) {
         throw new Error('Invalid version identifier:' + version)
       }
     } else {
-      let checkoutKey = `${drive.key}+${version}`
-      if (!(checkoutKey in driveSessionCheckouts)) {
-        driveSessionCheckouts[checkoutKey] = await daemon.createHyperdriveSession({
-          key: drive.key,
-          version,
-          writable: false
-        })
+      let latestVersion = await drive.session.drive.version()
+      if (version <= latestVersion) {
+        let checkoutKey = `${drive.key}+${version}`
+        if (!(checkoutKey in driveSessionCheckouts)) {
+          driveSessionCheckouts[checkoutKey] = await daemon.createHyperdriveSession({
+            key: drive.key,
+            version,
+            writable: false
+          })
+        }
+        checkoutFS = driveSessionCheckouts[checkoutKey]
+        checkoutFS.domain = drive.domain
+        isHistoric = true
       }
-      checkoutFS = driveSessionCheckouts[checkoutKey]
-      checkoutFS.domain = drive.domain
-      isHistoric = true
     }
   }
   return {isHistoric, checkoutFS}
