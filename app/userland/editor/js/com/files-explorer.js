@@ -33,7 +33,7 @@ class FilesExplorer extends LitElement {
     return urlp.origin
   }
 
-  get viewedDatVersion () {
+  get viewedDriveVersion () {
     let urlp = new URL(this.url)
     let parts = urlp.hostname.split('+')
     if (parts.length === 2) return parts[1]
@@ -90,7 +90,7 @@ class FilesExplorer extends LitElement {
       items = await drive.readdir(folderPath, {includeStats: true})
       items.forEach(item => {
         item.path = joinPath(this.folderPath, item.name)
-        item.url = joinPath(info.url, item.path)
+        item.url = joinPath(drive.url, item.path)
         if (canShare) {
           item.shareUrl = joinPath(parentDrive.info.url, item.path.replace(parentDrive.path, ''))
         } else {
