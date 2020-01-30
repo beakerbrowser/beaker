@@ -40,7 +40,7 @@ export const setup = function (rpc) {
       })
       Object.defineProperty(this, 'version', {
         enumerable: true,
-        value: urlParsed
+        value: urlParsed.version
       })
 
       // load into the 'active' (in-memory) cache
