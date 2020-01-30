@@ -3,7 +3,7 @@ import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directive
 import { repeat } from '../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { pluralize, ucfirst, toNiceUrl, toNiceDomain } from '../../app-stdlib/js/strings.js'
 import mainCSS from '../css/main.css.js'
-import './com/forks.js'
+import './com/drive-history.js'
 import './com/user-session.js'
 import './com/requested-perms.js'
 
@@ -223,6 +223,10 @@ class SiteInfoApp extends LitElement {
               .perms=${this.requestedPerms}
             ></requested-perms>
           ` : ''}
+
+          ${this.view === 'history' ? html`
+            <drive-history url=${this.url} origin=${this.origin} .info=${this.info}></drive-history>
+          ` : ''}
         </div>
       </div>
     `
@@ -269,6 +273,10 @@ class SiteInfoApp extends LitElement {
             <a class=${classMap({active: this.view === 'peers'})} @click=${e => this.onSetView(e, 'peers')}>
               <span class="fas fa-fw fa-share-alt"></span>
               ${this.info.peers} ${pluralize(this.info.peers, 'peer')}
+            </a>
+            <a class=${classMap({active: this.view === 'history'})} @click=${e => this.onSetView(e, 'history')}>
+              <span class="fas fa-fw fa-history"></span>
+              Version History
             </a>
           ` : ''}
         </div>

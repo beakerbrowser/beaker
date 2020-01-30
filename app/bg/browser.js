@@ -694,7 +694,7 @@ function getSenderTab (sender) {
     let tab = tabManager.findTab(view)
     if (tab) return tab
   }
-  var win = findWebContentsParentWindow(this.sender)
+  var win = findWebContentsParentWindow(sender)
   return tabManager.getActive(win)
 }
 

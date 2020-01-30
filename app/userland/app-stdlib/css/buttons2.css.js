@@ -63,10 +63,10 @@ button.gray:hover {
 }
 
 button[disabled] {
-  border-color: var(--border-color);
-  background: #fff;
-  color: #999;
-  cursor: default;
+  border-color: var(--border-color) !important;
+  background: #fff !important;
+  color: #999 !important;
+  cursor: default !important;
 }
 
 button.rounded {
