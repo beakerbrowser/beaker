@@ -21,8 +21,8 @@ export class DriveAdmin extends HTMLElement {
       editProfile.addEventListener('click', this.onClickEditProfile.bind(this))
       links.prepend(editProfile)
 
-      // let newPost = h('a', {className: 'btn', href: `https://beaker.network/compose`}, 'New Post')
-      // links.prepend(newPost)
+      let newPost = h('a', {className: 'btn', href: `https://beaker.network/compose`}, 'New Post')
+      links.prepend(newPost)
     }
     this.append(links)
   }
