@@ -129,7 +129,7 @@ class WebTerm extends LitElement {
   async loadCommands () {
     var packages = [{
       url: 'beaker://std-cmds/',
-      manifest: await (await fetch('beaker://std-cmds/index.json')).json()
+      manifest: JSON.parse(await beaker.browser.readFile('beaker://std-cmds/index.json', 'utf8'))
     }]
 
     var cmdPkgDrives = (await beaker.drives.list()).map(drive => drive.info).filter(info => info.type === 'webterm.sh/cmd-pkg')

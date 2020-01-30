@@ -174,6 +174,10 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/default-user-thumb')) {
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
   }
+  if (requestUrl.startsWith('beaker://setup/default-user-thumb')) {
+    // rehost under beaker://setup because there's a CSP bug stopping beaker://setup from accessing beaker://assets
+    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
+  }
   if (requestUrl.startsWith('beaker://assets/default-theme-thumb')) {
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-theme-thumb.jpg'))
   }

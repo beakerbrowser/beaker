@@ -133,7 +133,7 @@ customElements.define('profile-view', class extends HTMLElement {
 
     if (!this.thumbDataURL) {
       // use default thumb
-      let blob = await (await fetch('beaker://assets/default-user-thumb')).blob()
+      let blob = await (await fetch('beaker://setup/default-user-thumb')).blob()
       this.thumbDataURL = await new Promise((resolve, reject) => {
         const reader = new FileReader()
         reader.onerror = reject

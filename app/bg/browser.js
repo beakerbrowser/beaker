@@ -210,7 +210,12 @@ export async function downloadURL (url) {
   this.sender.downloadURL(url)
 }
 
-function readFile (pathname, opts) {
+function readFile (obj, opts) {
+  var pathname = undefined
+  if (obj === 'beaker://std-cmds/index.json') {
+    pathname = path.join(__dirname, 'userland', 'std-cmds', 'index.json')
+  }
+  if (!pathname) return
   return new Promise((resolve, reject) => {
     fs.readFile(pathname, opts, (err, res) => {
       if (err) reject(err)
