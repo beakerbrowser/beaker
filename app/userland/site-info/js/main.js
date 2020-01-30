@@ -42,6 +42,10 @@ class SiteInfoApp extends LitElement {
     return this.url && this.url.startsWith('http:')
   }
 
+  get isBeaker () {
+    return this.url && this.url.startsWith('beaker:')
+  }
+
   get isRootDrive () {
     return this.origin === navigator.filesystem.url
   }
@@ -237,6 +241,10 @@ class SiteInfoApp extends LitElement {
       // dont render anything in the root drive
       return ''
     }
+    var protocol = ''
+    if (this.isDrive) protocol = html`<p class="protocol">Accessed using the Hyper protocol</p>`
+    if (this.isHttps) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
+    if (this.isBeaker) protocol = html`<p class="protocol">This page is served by Beaker</p>`
     return html`
       <div class="site-info">
         <div class="details">
@@ -246,16 +254,18 @@ class SiteInfoApp extends LitElement {
           ${this.isDrive && this.info.forkOf ? html`
             <p class="fork-of"><span class="fas fa-fw fa-code-branch"></span> Fork of <a href=${this.info.forkOf}>${toNiceUrl(this.info.forkOf)}</a></p>
           ` : ''}
+          ${protocol}
         </div>
       </div>
     `
   }
 
   renderAuthor () {
+    return '' // TODO
     if (!this.info.author) return ''
     return html`
       <p class="author">
-        by <a href="${this.info.author}" target="_blank">Paul Frazee</a>
+        by <a href="${this.info.author}" target="_blank">${this.info.author}</a>
       </p>
     `
   }
