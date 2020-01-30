@@ -25,7 +25,7 @@ import { createShellWindow, getUserSessionFor } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
-import { DAT_KEY_REGEX, slugify } from '../../lib/strings'
+import { DRIVE_KEY_REGEX, slugify } from '../../lib/strings'
 import { findWebContentsParentWindow } from '../lib/electron'
 import { findImageBounds } from '../lib/image'
 import * as sitedataDb from '../dbs/sitedata'
@@ -226,10 +226,14 @@ class Tab {
   get siteTitle () {
     try {
       var urlp = new URL(this.url)
-      if (DAT_KEY_REGEX.test(urlp.hostname)) {
-        urlp.hostname = `${urlp.hostname.slice(0, 4)}..${urlp.hostname.slice(-2)}`
+      var hostname = urlp.hostname
+      if (DRIVE_KEY_REGEX.test(hostname)) {
+        hostname = hostname.replace(DRIVE_KEY_REGEX, v => `${v.slice(0, 4)}..${v.slice(-2)}`)
       }
-      var origin = urlp.protocol + '//' + (urlp.hostname).replace(/\+(.+)$/, '')
+      if (hostname.includes('+')) {
+        hostname = hostname.replace(/\+[\d]+/, v => ` (v${v.slice(1)})`)
+      }
+      var origin = urlp.protocol + '//' + (hostname)
       if (this.driveInfo) {
         if (_get(this.driveInfo, 'ident.home', false)) {
           return 'My Home Drive'

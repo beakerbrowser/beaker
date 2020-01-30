@@ -1,4 +1,4 @@
-export const DAT_KEY_REGEX = /[0-9a-f]{64}/i
+export const DRIVE_KEY_REGEX = /[0-9a-f]{64}/i
 
 export function resolveParse (env, location) {
   return parseLocation(env.resolve(location))
@@ -35,7 +35,7 @@ export function toDomain (str) {
 
 export function toNiceDomain (str, len=4) {
   var domain = toDomain(str)
-  if (DAT_KEY_REGEX.test(domain)) {
+  if (DRIVE_KEY_REGEX.test(domain)) {
     domain = `${domain.slice(0, len)}..${domain.slice(-2)}`
   }
   return domain
@@ -45,7 +45,7 @@ export function toNiceUrl (str) {
   if (!str) return ''
   try {
     var urlParsed = new URL(str)
-    if (DAT_KEY_REGEX.test(urlParsed.hostname)) {
+    if (DRIVE_KEY_REGEX.test(urlParsed.hostname)) {
       urlParsed.hostname = `${urlParsed.hostname.slice(0, 4)}..${urlParsed.hostname.slice(-2)}`
     }
     return urlParsed.toString()

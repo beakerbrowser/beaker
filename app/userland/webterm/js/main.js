@@ -5,7 +5,7 @@ import minimist from './lib/minimist.1.2.0.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
 import { createDrive } from './lib/term-drive-wrapper.js'
 import { importModule } from './lib/import-module.js'
-import { joinPath, DAT_KEY_REGEX, shortenAllKeys } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, DRIVE_KEY_REGEX, shortenAllKeys } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import css from '../css/main.css.js'
 import './lib/term-icon.js'
@@ -420,8 +420,8 @@ class WebTerm extends LitElement {
   }
 
   isFSRoot (url) {
-    let a = (url || '').match(DAT_KEY_REGEX)
-    let b = navigator.filesystem.url.match(DAT_KEY_REGEX)
+    let a = (url || '').match(DRIVE_KEY_REGEX)
+    let b = navigator.filesystem.url.match(DRIVE_KEY_REGEX)
     return a && a[0] === b[0]
   }
 

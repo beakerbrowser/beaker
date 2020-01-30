@@ -597,10 +597,10 @@ function makeSafe (str = '') {
   return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
-const DAT_KEY_REGEX = /([0-9a-f]{64})/ig
+const DRIVE_KEY_REGEX = /([0-9a-f]{64})/ig
 function toNiceUrl (str) {
   if (typeof str !== 'string') return str
-  return str.replace(DAT_KEY_REGEX, (_, m) => `${m.slice(0, 6)}..${m.slice(-2)}`)
+  return str.replace(DRIVE_KEY_REGEX, (_, m) => `${m.slice(0, 6)}..${m.slice(-2)}`)
 }
 
 async function searchDrive (urlp) {

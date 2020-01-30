@@ -5,7 +5,7 @@ import prettyHash from 'pretty-hash'
 import * as bg from './bg-process-rpc'
 import buttonsCSS from './buttons.css'
 
-const IS_DAT_KEY_REGEX = /^[0-9a-f]{64}$/i
+const IS_DRIVE_KEY_REGEX = /^[0-9a-f]{64}$/i
 
 class PermPrompt extends LitElement {
   constructor () {
@@ -51,7 +51,7 @@ class PermPrompt extends LitElement {
     this.isPermExperimental = PERM.experimental
 
     // fetch dat title if needed
-    if (!this.permOpts.title && IS_DAT_KEY_REGEX.test(this.permParam)) {
+    if (!this.permOpts.title && IS_DRIVE_KEY_REGEX.test(this.permParam)) {
       let driveKey = this.permParam
       let driveInfo
       try { driveInfo = await bg.hyperdrive.getInfo(driveKey) }
