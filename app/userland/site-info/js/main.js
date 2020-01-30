@@ -84,6 +84,7 @@ class SiteInfoApp extends LitElement {
       beaker.browser.toggleSiteInfo(false)
       this.reset()
     })
+    window.addEventListener('contextmenu', e => e.preventDefault())
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         beaker.browser.toggleSiteInfo(false)
