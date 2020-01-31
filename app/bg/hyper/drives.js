@@ -236,9 +236,10 @@ export async function cloneDrive (srcDriveUrl, manifest = {}) {
     title: (manifest.title) ? manifest.title : srcManifest.title,
     description: (manifest.description) ? manifest.description : srcManifest.description,
     type: (manifest.type) ? manifest.type : srcManifest.type,
-    author: manifest.author
+    // author: manifest.author
   }
   for (let k in srcManifest) {
+    if (k === 'author') continue
     if (!dstManifest[k]) {
       dstManifest[k] = srcManifest[k]
     }

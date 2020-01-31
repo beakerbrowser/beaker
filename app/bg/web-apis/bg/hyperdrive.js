@@ -35,7 +35,7 @@ export default {
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
       visibility = theme = undefined
-      author = _get(windows.getUserSessionFor(this.sender), 'url')
+      author = undefined // TODO _get(windows.getUserSessionFor(this.sender), 'url')
     }
 
     if (prompt !== false) {
@@ -57,7 +57,7 @@ export default {
       // create
       let newDrive
       try {
-        let manifest = {title, description, type, author, links}
+        let manifest = {title, description, type, /*TODO author,*/ links}
         if (type === 'theme') {
           manifest.theme = {drive_types: ['website']}
         }
@@ -88,7 +88,7 @@ export default {
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
       visibility = undefined
-      author = _get(windows.getUserSessionFor(this.sender), 'url')
+      author = undefined // TODO _get(windows.getUserSessionFor(this.sender), 'url')
     }
 
     if (prompt !== false) {
@@ -112,7 +112,7 @@ export default {
 
       // create
       let key = await lookupUrlDriveKey(url)
-      let newDrive = await drives.cloneDrive(key, {title, description, type, author, links})
+      let newDrive = await drives.cloneDrive(key, {title, description, type, /* TODO author,*/ links})
       await filesystem.configDrive(newDrive.url, {seeding: true})
       newDriveUrl = newDrive.url
     }
