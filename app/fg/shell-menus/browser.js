@@ -110,11 +110,11 @@ class BrowserMenu extends LitElement {
             <i class="more fa fa-angle-right"></i>
           </div>
 
-          <div class="menu-item" @click=${e => this.onShowSubmenu('switch-user')}>
+          ${''/* TODO <div class="menu-item" @click=${e => this.onShowSubmenu('switch-user')}>
             <i class="far fa-user"></i>
             <span class="label">Switch user</span>
             <i class="more fas fa-angle-right"></i>
-          </div>
+          </div>*/}
 
           <div class="menu-item" @click=${e => this.onShowSubmenu('tools')}>
             <i class="fas fa-tools"></i>
