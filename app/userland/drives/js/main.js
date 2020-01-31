@@ -1,7 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { toNiceDriveType, getDriveTypeIcon } from 'beaker://app-stdlib/js/strings.js'
+import { toNiceDriveType, getDriveTypeIcon, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
@@ -263,13 +263,13 @@ export class DrivesApp extends LitElement {
                 @contextmenu=${e => this.onContextmenuDrive(e, drive)}
               >
                 <div class="ctrls btn-group">
-                  <button ?disabled=${drive.ident.system} @click=${e => this.onToggleSeeding(e, drive)}>
+                  <button ?disabled=${drive.ident.system} @click=${e => this.onToggleHosting(e, drive)}>
                     ${drive.url === navigator.filesystem.url ? html`
                       <span class="fas fa-fw fa-lock"></span> Private
                     ` : drive.seeding ? html`
-                      <span class="fas fa-circle"></span> Seeding
+                      <span class="fas fa-circle"></span> ${drive.info.writable ? 'Hosting' : 'Co-hosting'}: ${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}
                     ` : html`
-                      Not seeding
+                      Not hosting
                     `}
                   </button>
                   <button @click=${e => this.onClickDriveMenuBtn(e, drive)}><span class="fas fa-fw fa-caret-down"></span></button>
@@ -282,15 +282,6 @@ export class DrivesApp extends LitElement {
                 <div class="details">
                   <div class="type">${toNiceDriveType(drive.info.type)}</div>
                   <div class="description">${drive.info.description}</div>
-                </div>
-                <div class="details">
-                  <div class="network">
-                    ${drive.url === navigator.filesystem.url ? html`
-                      <span class="fa-fw fas fa-lock"></span> private
-                    ` : html`
-                      <span class="fa-fw fas fa-share-alt"></span> TODO peers
-                    `}
-                  </div>
                 </div>
               </div>
             `)}
@@ -315,7 +306,7 @@ export class DrivesApp extends LitElement {
         <div class="help">
           <h3><span class="fas fa-fw fa-share-alt"></span> Hyperdrive</h3>
           <p><em>Hyperdrive</em> is a peer-to-peer files network. Each "hyperdrive" (or just "drive") is a networked folder which can be accessed like a website.</p>
-          <p>You can create additional hyperdrives to share on the network, and you can also <em>seed</em> other people's drives to help keep them online.</p>
+          <p>You can create additional hyperdrives to share on the network, and you can also <em>co-host</em> other people's drives to help keep them online.</p>
         </div>
       `
     }
@@ -332,7 +323,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="far fa-fw fa-folder-open"></span> Files drives</h3>
-          <p><em>Files drives</em> are folders containing files. They're similar to .zip files, but they live on the peer-to-peer network.</p>
+          <p><em>Files drives</em> are folders containing files. They're like .zip archives that live on the network.</p>
         </div>
       `
     }
@@ -340,7 +331,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-desktop"></span> Websites</h3>
-          <p><em>Websites</em> are drives that contain web pages. They're just like any other website, but they live on the peer-to-peer network.</p>
+          <p><em>Websites</em> are hyperdrives that contain web pages and applications.</p>
         </div>
       `
     }
@@ -411,13 +402,13 @@ export class DrivesApp extends LitElement {
     this.newDriveMenu(e.clientX, e.clientY)
   }
 
-  async onToggleSeeding (e, drive) {
+  async onToggleHosting (e, drive) {
     drive.seeding = !drive.seeding
     await beaker.drives.configure(drive.url, {seeding: drive.seeding})
     if (drive.seeding) {
-      toast.create('Now seeding on the network')
+      toast.create('Now hosting on the network')
     } else {
-      toast.create('No longer seeding on the network')
+      toast.create('No longer hosting on the network')
     }
     this.requestUpdate()
   }
