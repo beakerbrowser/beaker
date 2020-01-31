@@ -152,7 +152,7 @@ export default function registerContextMenu () {
               { label: 'Open with Beaker.Network', click: (item, win) => tabManager.create(win, `https://beaker.network/${(new URL(props.pageURL)).hostname}`, {setActive: true}) },
               { type: 'separator' },
               { 
-                label: 'Seed This Drive',
+                label: 'Host This Drive',
                 type: 'checkbox',
                 checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
                 enabled: !driveIdent.system,
