@@ -1154,7 +1154,7 @@ export async function remove (win, tab) {
   // give the 'onbeforeunload' a chance to run
   var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(tab.webContents)
   if (onBeforeUnloadReturnValue) {
-    var choice = dialog.showMessageBox({
+    var choice = dialog.showMessageBoxSync({
       type: 'question',
       buttons: ['Leave', 'Stay'],
       title: 'Do you want to leave this site?',
