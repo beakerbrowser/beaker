@@ -1,0 +1,10 @@
+{
+  "title": "Builtin Module Theme",
+  "description": "",
+  "type": "theme",
+  "theme": {
+    "drive_types": [
+      "module"
+    ]
+  }
+}

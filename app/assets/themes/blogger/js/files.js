@@ -18,7 +18,7 @@ export class DriveFiles extends HTMLElement {
     this.append(h('h2', {}, 'Files'))
     var grid = h('div', {className: 'grid'})
     for (let entry of this.entries) {
-      let href = entry.stat.mount ? `hd://${entry.stat.mount.key}` : `./${entry.name}${entry.stat.isDirectory() ? '/' : ''}`
+      let href = entry.stat.mount ? `hyper://${entry.stat.mount.key}` : `./${entry.name}${entry.stat.isDirectory() ? '/' : ''}`
       grid.append(h('div', {className: 'entry'}, h('a', {href}, entry.name)))
     }
     this.append(grid)
