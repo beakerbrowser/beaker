@@ -49,9 +49,8 @@ export default class SessionWatcher {
 
     watcher.on('remove', () => {
       if (this.recording) {
-        let { windows } = this.snapshot
-        let i = windows.indexOf(state)
-        this.snapshot.windows = windows.splice(i, 1)
+        let i = this.snapshot.windows.indexOf(state)
+        this.snapshot.windows.splice(i, 1)
         this.writeSnapshot()
       }
       delete this.watchers[winId]
