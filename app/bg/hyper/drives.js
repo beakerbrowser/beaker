@@ -8,7 +8,7 @@ import { wait } from '../../lib/functions'
 import * as logLib from '../logger'
 import { listDrives } from '../filesystem/index'
 const baseLogger = logLib.get()
-const logger = baseLogger.child({category: 'dat', subcategory: 'drives'})
+const logger = baseLogger.child({category: 'hyper', subcategory: 'drives'})
 
 // dbs
 import * as settingsDb from '../dbs/settings'

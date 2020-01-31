@@ -15,6 +15,7 @@ const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
 import * as users from './filesystem/users'
 import hyper from './hyper/index'
+import { convertDatArchive } from './dat/index'
 import {open as openUrl} from './open-url'
 import {getUserSessionFor, setUserSessionFor} from './ui/windows'
 import * as tabManager from './ui/tab-manager'
@@ -126,6 +127,16 @@ export async function setup () {
     if (win) {
       tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
     }
+  })
+
+  // TEMPORARY HACK
+  // method to convert dats to hyperdrives
+  // -prf
+  ipcMain.on('temp-convert-dat', async (e, key) => {
+    var win = findWebContentsParentWindow(e.sender)
+    if (!win) return
+    var driveUrl = await convertDatArchive(key)
+    tabManager.create(win, driveUrl, {setActive: true})
   })
 
   // HACK

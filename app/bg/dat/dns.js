@@ -1,7 +1,4 @@
 import { InvalidDomainName } from 'beaker-error-constants'
-import * as datDnsDb from '../dbs/dat-dns'
-import * as drives from './drives'
-import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'hyper', subcategory: 'dns'})
 
@@ -13,7 +10,6 @@ logger.info(`Using ${DNS_PROVIDER[0]} to resolve DNS lookups`)
 import datDnsFactory from 'dat-dns'
 
 const datDns = datDnsFactory({
-  persistentCache: {read, write},
   dnsHost: DNS_PROVIDER[0],
   dnsPath: DNS_PROVIDER[1]
 })
@@ -32,16 +28,4 @@ datDns.resolveName = async function (name, opts, cb) {
     .catch(_ => {
       throw new InvalidDomainName()
     })
-}
-
-// persistent cache methods
-async function read (name, err) {
-  // check the cache
-  var record = await datDnsDb.getCurrentByName(name)
-  if (!record) throw err
-  return record.key
-}
-async function write (name, key) {
-  if (HYPERDRIVE_HASH_REGEX.test(name)) return // dont write for raw urls
-  await drives.confirmDomain(key)
 }

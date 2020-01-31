@@ -2,7 +2,7 @@ import { parseDriveUrl } from '../../lib/urls'
 import parseRange from 'range-parser'
 import once from 'once'
 import * as logLib from '../logger'
-const logger = logLib.child({category: 'dat', subcategory: 'hyper-scheme'})
+const logger = logLib.child({category: 'hyper', subcategory: 'hyper-scheme'})
 // import intoStream from 'into-stream'
 import { toZipStream } from '../lib/zip'
 import slugify from 'slugify'
@@ -12,7 +12,6 @@ import * as drives from '../hyper/drives'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
-import { joinPath } from '../../lib/strings'
 
 const md = markdown({
   allowHTML: true,

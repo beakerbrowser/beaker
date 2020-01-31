@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import emitStream from 'emit-stream'
 import * as logLib from '../logger'
-const logger = logLib.child({category: 'dat', subcategory: 'watchlist'})
+const logger = logLib.child({category: 'hyper', subcategory: 'watchlist'})
 
 // dat modules
 import * as drives from './drives'
