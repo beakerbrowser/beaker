@@ -117,6 +117,7 @@ class NavbarSiteInfo extends LitElement {
 NavbarSiteInfo.styles = [buttonResetCSS, css`
 :host {
   display: block;
+  min-width: 5px;
 }
 
 button {
