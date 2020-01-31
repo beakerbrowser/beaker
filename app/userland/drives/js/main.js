@@ -40,7 +40,7 @@ export class DrivesApp extends LitElement {
         await beaker.drives.get(profileStat.mount.key)
       ]
     } else if (this.category === 'following') {
-      let driveEntries = await navigator.filesystem.query({path: '/profile/following/*', type: 'mount'})
+      let driveEntries = await navigator.filesystem.query({path: '/profile/follows/*', type: 'mount'})
       drives = await Promise.all(driveEntries.map(entry => beaker.drives.get(entry.mount)))
     } else {
       drives = await beaker.drives.list({includeSystem: true})
