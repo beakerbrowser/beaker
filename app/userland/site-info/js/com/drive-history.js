@@ -47,12 +47,7 @@ class SiteInfoDriveHistory extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="ctrls">
-        <label for="version">Viewing: ${toLabel(this.viewedVersion)}</label>
-        <button
-          class="primary"
-          ?disabled=${targetVersion === this.viewedVersion}
-          @click=${this.onClickGoto}
-        >Go to ${toLabel(targetVersion)}</button>
+        <label for="version">Viewing: ${toLabel(targetVersion)}</label>
       </div>
       <div>
         <input
@@ -64,7 +59,8 @@ class SiteInfoDriveHistory extends LitElement {
           max="${this.info.version}"
           value="${targetVersion}"
           step="1"
-          @input=${this.onChangeVersionSlider}
+          @input=${this.onInputVersionSlider}
+          @change=${this.onChangeVersionSlider}
         >
         <datalist id="tickmarks">
           ${tickmarks}
@@ -76,11 +72,11 @@ class SiteInfoDriveHistory extends LitElement {
   // events
   // =
 
-  onChangeVersionSlider (e) {
+  onInputVersionSlider (e) {
     this.targetVersion = +e.currentTarget.value
   }
 
-  onClickGoto (e) {
+  onChangeVersionSlider (e) {
     var url = new URL(this.url)
     url.hostname = url.hostname.replace(/\+(.+)$/, '')
     if (this.targetVersion != this.info.version) {
