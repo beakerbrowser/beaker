@@ -7,7 +7,7 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
 import _groupBy from 'lodash.groupby'
-import { BUILTIN_THEMES, filterThemeByType } from '../../lib/hyper'
+import { BUILTIN_TYPES } from '../../lib/hyper'
 
 class CreateDriveModal extends LitElement {
   static get properties () {
@@ -15,7 +15,6 @@ class CreateDriveModal extends LitElement {
       title: {type: String},
       description: {type: String},
       type: {type: String},
-      theme: {type: String},
       errors: {type: Object}
     }
   }
@@ -56,42 +55,17 @@ class CreateDriveModal extends LitElement {
       margin: 20px 0;
     }
 
-    .themes {
-      background: #eef;
-      border: 1px solid #ccd;
-      padding: 10px;
-      overflow-y: auto;
-      max-height: 180px;
-      margin: 4px 0 0;
-    }
+    .theme {
 
-    .themes-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-gap: 10px;
     }
 
     .theme img {
+      display: block;
       width: 100%;
-      height: 80px;
-      object-fit: contain;
-      margin-bottom: 10px;
-    }
-
-    .theme .title {
-      text-align: center;
-    }
-
-    .theme.selected .title span {
-      background: #334;
-      color: #fff;
-      border-radius: 4px;
-      padding: 0 6px;
-    }
-
-    .theme.selected img {
-      outline: 1px solid #334;
-      background: #fafafa;
+      height: 250px;
+      border-bottom: 1px solid #ccd;
+      margin: 0;
+      object-fit: cover;
     }
 
     .form-actions {
@@ -114,8 +88,6 @@ class CreateDriveModal extends LitElement {
     this.type = undefined
     this.links = undefined
     this.author = undefined
-    this.theme = undefined
-    this.themes = []
     this.errors = {}
 
     // export interface
@@ -130,17 +102,7 @@ class CreateDriveModal extends LitElement {
     this.type = params.type || undefined
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
-    this.themes = await this.readThemes()
     await this.requestUpdate()
-  }
-
-  async readThemes () {
-    var drives = await bg.drives.list()
-    return drives.map(drive => drive.info).filter(info => info.type === 'theme')
-  }
-
-  filterThemeByType (theme) {
-    return filterThemeByType(theme.manifest, this.type)
   }
 
   updated () {
@@ -156,20 +118,22 @@ class CreateDriveModal extends LitElement {
   // =
 
   render () {
+    var builtinType = BUILTIN_TYPES.find(t => t.type === this.type)
+    var themeImg = builtinType ? builtinType.img : 'none-actually'
     const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
-    const themes = BUILTIN_THEMES.concat(this.themes).filter(this.filterThemeByType.bind(this))
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">
           Create new 
           <select name="type" @change=${this.onChangeType}>
-            ${typeopt('', 'Files drive')}
-            ${typeopt('website', 'Website')}
-            ${typeopt('module', 'Module')}
-            ${typeopt('theme', 'Theme')}
+            ${repeat(BUILTIN_TYPES, t => typeopt(t.type, t.title))}
           </select>
         </h1>
+
+        <div class="theme">
+          <img src="beaker://assets/img/themes/${themeImg}.png">
+        </div>
 
         <form @submit=${this.onSubmit}>
           <label for="title">Title</label>
@@ -177,23 +141,7 @@ class CreateDriveModal extends LitElement {
           ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
           <label for="desc">Description</label>
-          <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''}>
-
-          ${this.type !== 'theme' ? html`
-            <label for="desc">Theme</label>
-            <div class="themes">
-              <div class="themes-grid">
-                <div 
-                  class="theme ${this.theme === undefined ? 'selected' : ''}"
-                  @click=${e => this.onClickTheme(e, undefined)}
-                >
-                  <img src="beaker://assets/img/themes/none.png">
-                  <div class="title"><span>None</span></div>
-                </div>
-                ${repeat(themes, t => this.renderTheme(t))}
-              </div>
-            </div>
-          ` : ''}
+          <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Optional">
             
           <hr>
 
@@ -202,21 +150,6 @@ class CreateDriveModal extends LitElement {
             <button type="submit" class="primary" tabindex="4">Create</button>
           </div>
         </form>
-      </div>
-    `
-  }
-
-  renderTheme (theme) {
-    var imgSrc = theme.url.startsWith('builtin')
-      ? `beaker://assets/img/themes/${theme.url.slice('builtin:'.length)}.png`
-      : `${theme.url}/thumb`
-    return html`
-      <div 
-        class="theme ${this.theme === theme.url ? 'selected' : ''}"
-        @click=${e => this.onClickTheme(e, theme.url)}
-      >
-        <img src=${imgSrc} @error=${this.onThemeImgError}>
-        <div class="title"><span>${theme.title}</span></div>
       </div>
     `
   }
@@ -234,13 +167,10 @@ class CreateDriveModal extends LitElement {
 
   onChangeType (e) {
     this.type = e.target.value.trim()
-    if (this.type === 'theme') {
-      this.theme = undefined
-    }
   }
 
-  onClickTheme (e, themeUrl) {
-    this.theme = themeUrl
+  onChangeTheme (e) {
+    this.theme = e.currentTarget.value
   }
 
   onThemeImgError (e) {
@@ -263,15 +193,21 @@ class CreateDriveModal extends LitElement {
     this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div>`
 
     try {
+      var builtinType = BUILTIN_TYPES.find(t => t.type === this.type)
       var url = await bg.hyperdrive.createDrive({
         title: this.title,
         description: this.description,
         type: this.type !== '' ? this.type : undefined,
         author: this.author,
         links: this.links,
-        theme: this.theme,
+        theme: builtinType && builtinType.theme || undefined,
         prompt: false
       })
+      if (builtinType && builtinType.scaffold) {
+        for (let file of builtinType.scaffold) {
+          await bg.hyperdrive.writeFile(url, file.pathname, file.content)
+        }
+      }
       this.cbs.resolve({url})
     } catch (e) {
       this.cbs.reject(e.message || e.toString())
