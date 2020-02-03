@@ -52,12 +52,12 @@ export class DrivesApp extends LitElement {
       drives = drives.filter(drive => drive.info.type === 'website')
     } else if (this.category === 'modules') {
       drives = drives.filter(drive => drive.info.type === 'module')
-    } else if (this.category === 'themes') {
-      drives = drives.filter(drive => drive.info.type === 'theme')
+    } else if (this.category === 'wikis') {
+      drives = drives.filter(drive => drive.info.type === 'wiki')
     } else if (this.category === 'webterm-cmds') {
       drives = drives.filter(drive => drive.info.type === 'webterm.sh/cmd-pkg')
     } else if (this.category === 'other') {
-      drives = drives.filter(drive => !['', 'website', 'module', 'theme', 'webterm.sh/cmd-pkg'].includes(drive.info.type || ''))
+      drives = drives.filter(drive => !['', 'website', 'module', 'wiki', 'webterm.sh/cmd-pkg'].includes(drive.info.type || ''))
     }
 
     drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
@@ -93,14 +93,14 @@ export class DrivesApp extends LitElement {
           click: () => this.newDrive('website')
         },
         {
+          icon: 'far fa-fw fa-file-word',
+          label: 'Wiki Site',
+          click: () => this.newDrive('wiki')
+        },
+        {
           icon: 'fas fa-fw fa-cube',
           label: 'Module',
           click: () => this.newDrive('module')
-        },
-        {
-          icon: 'fas fa-fw fa-drafting-compass',
-          label: 'Theme',
-          click: () => this.newDrive('theme')
         }
       ]
     })
@@ -246,7 +246,7 @@ export class DrivesApp extends LitElement {
           ${navItem('files', 'Files drives')}
           ${navItem('websites', 'Websites')}
           ${navItem('modules', 'Modules')}
-          ${navItem('themes', 'Themes')}
+          ${navItem('wikis', 'Wikis')}
           ${navItem('other', 'Other')}
           <hr>
           ${navItem('webterm-cmds', 'Webterm commands')}

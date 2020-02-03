@@ -38,6 +38,11 @@ ${tooltipCSS}
   background: #1c50b9;
 }
 
+.top-right-ctrls a.pressed {
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.85);
+  background: #1c50b9;
+}
+
 .top-right-ctrls a span {
   margin-left: 4px;
   font-size: 11px;

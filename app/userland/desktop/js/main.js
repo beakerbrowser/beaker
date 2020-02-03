@@ -105,14 +105,16 @@ class DesktopApp extends LitElement {
   // events
   // =
 
-  onClickNew (e) {
+  async onClickNew (e) {
     e.preventDefault()
     e.stopPropagation()
 
-    var rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({
-      x: rect.right,
-      y: rect.bottom,
+    var btn = e.currentTarget
+    var rect = btn.getClientRects()[0]
+    btn.classList.add('pressed')
+    await contextMenu.create({
+      x: rect.left - 5,
+      y: 5,
       render: () => {
         return html`
           <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -138,36 +140,24 @@ class DesktopApp extends LitElement {
                 <i class="far fa-fw fa-hdd"></i>
                 Files drive
               </div>
-              <p class="description">
-                Create an empty hyperdrive
-              </p>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('website')}>
               <div class="label">
                 <i class="fas fa-fw fa-desktop"></i>
                 Website
               </div>
-              <p class="description">
-                Create a new website 
-              </p>
+            </div>
+            <div class="dropdown-item" @click=${() => this.onCreateDrive('wiki')}>
+              <div class="label">
+                <i class="far fa-fw fa-file-word"></i>
+                Wiki Site
+              </div>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('module')}>
               <div class="label">
                 <i class="fas fa-fw fa-cube"></i>
                 Module
               </div>
-              <p class="description">
-                Create a new module
-              </p>
-            </div>
-            <div class="dropdown-item" @click=${() => this.onCreateDrive('theme')}>
-              <div class="label">
-                <i class="fas fa-fw fa-drafting-compass"></i>
-                Theme
-              </div>
-              <p class="description">
-                Create a new theme
-              </p>
             </div>
             <hr>
             <div class="dropdown-item" @click=${this.onCreateDriveFromFolder}>
@@ -175,14 +165,12 @@ class DesktopApp extends LitElement {
                 <i class="far fa-fw fa-folder"></i>
                 From folder
               </div>
-              <p class="description">
-                Create from a folder on your computer
-              </p>
             </div>
           </div>
         `
       }
     })
+    btn.classList.remove('pressed')
   }
 
   async onCreateDrive (type) {
