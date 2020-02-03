@@ -99,7 +99,7 @@ class CreateDriveModal extends LitElement {
     this.cbs = cbs
     this.title = params.title || ''
     this.description = params.description || ''
-    this.type = params.type || undefined
+    this.type = params.type || ''
     this.links = params.links
     this.author = this.author || (await bg.users.getCurrent()).url
     await this.requestUpdate()
@@ -119,7 +119,7 @@ class CreateDriveModal extends LitElement {
 
   render () {
     var builtinType = BUILTIN_TYPES.find(t => t.type === this.type)
-    var themeImg = builtinType ? builtinType.img : 'none-actually'
+    var themeImg = builtinType ? builtinType.img : 'none'
     const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">

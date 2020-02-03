@@ -63,7 +63,7 @@ document.getElementById('url').textContent = location.toString()
 `
 
 export const BUILTIN_TYPES = [
-  {type: '', theme: '', title: 'Files Drive', img: 'none-actually'},
+  {type: '', theme: '', title: 'Files Drive', img: 'files-drive'},
   {type: 'website', theme: '', title: 'Website', img: 'website', scaffold: [
     {pathname: '/index.html', content: WEBSITE_INDEX_SCAFFOLD},
     {pathname: '/styles.css', content: WEBSITE_CSS_SCAFFOLD},
