@@ -34,7 +34,24 @@ class CreateDriveModal extends LitElement {
     h1.title select {
       position: relative;
       top: -1px;
-      left: 1px;
+      left: 5px;
+
+      -webkit-appearance: none;
+      display: inline-block;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: #444;
+      padding: 5px 30px 5px 10px;
+      max-width: 100%;
+      border: 1px solid #bbc;
+      border-radius: 4px;
+      outline: 0;
+      background-color: #fff;
+      background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAARVBMVEUAAAAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAz1sU3AAAAFnRSTlMAAwQMERkbIikuVWl0dXeDtLXF5PH5X4+8lwAAAIxJREFUSInt0TcCwjAQRNFvE5dkwKD7H5WGINsKszWa+r9qoO1ftjqc1B0N2DyDYwNcPX0Ia0Yf2HFx9Y+e7u4Be6B3CAOXsPcTqrDvd5qw6G1FxL0ipn1dzPuaWPZlkepLIt3nRa7PiXyfFqU+Jcr9UtT6uaj3U6H0sdD6n1D7j9B76M7jbevo29rgBddTP/7iwZL3AAAAAElFTkSuQmCC);
+      background-repeat: no-repeat;
+      background-position: right .7em top 50%, 0 0;
+      background-size: .65em auto, 100%;
     }
     
     form {
@@ -101,7 +118,7 @@ class CreateDriveModal extends LitElement {
     this.description = params.description || ''
     this.type = params.type || ''
     this.links = params.links
-    this.author = this.author || (await bg.users.getCurrent()).url
+    this.author = undefined // this.author = this.author || (await bg.users.getCurrent()).url
     await this.requestUpdate()
   }
 
