@@ -75,7 +75,7 @@ export class DrivesApp extends LitElement {
       x,
       y,
       right: right || (x > document.body.scrollWidth - 300),
-      top: (y > document.body.scrollHeight / 2),
+      top: (y > window.innerHeight / 2),
       roomy: false,
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
@@ -111,7 +111,7 @@ export class DrivesApp extends LitElement {
       x,
       y,
       right: right || (x > document.body.scrollWidth - 300),
-      top: (y > document.body.scrollHeight / 2),
+      top: (y > window.innerHeight / 2),
       roomy: false,
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
@@ -171,6 +171,7 @@ export class DrivesApp extends LitElement {
         {
           icon: 'fas fa-fw fa-trash-alt',
           label: 'Remove from My Drives',
+          disabled: drive.ident.system,
           click: () => this.removeDrive(drive)
         }
       ]
