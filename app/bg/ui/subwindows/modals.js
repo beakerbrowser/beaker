@@ -174,12 +174,14 @@ function getDefaultHeight (view) {
 
 function setBounds (view, parentWindow, {width, height} = {}) {
   var parentBounds = parentWindow.getContentBounds()
-  width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
-  height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
+  // HACK workaround the lack of view.getBounds() -prf
+  view.currentBounds = view.currentBounds || {width: undefined, height: undefined}
+  view.currentBounds.width = Math.min(width || view.currentBounds.width || getDefaultWidth(view), parentBounds.width - 20)
+  view.currentBounds.height = Math.min(height || view.currentBounds.height || getDefaultHeight(view), parentBounds.height - 20)
   view.setBounds({
-    x: Math.round(parentBounds.width / 2) - Math.round(width / 2) - MARGIN_SIZE, // centered
+    x: Math.round(parentBounds.width / 2) - Math.round(view.currentBounds.width / 2) - MARGIN_SIZE, // centered
     y: 72,
-    width: width + (MARGIN_SIZE * 2),
-    height: height + MARGIN_SIZE
+    width: view.currentBounds.width + (MARGIN_SIZE * 2),
+    height: view.currentBounds.height + MARGIN_SIZE
   })
 }
