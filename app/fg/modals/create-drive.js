@@ -72,16 +72,17 @@ class CreateDriveModal extends LitElement {
       margin: 20px 0;
     }
 
-    .theme {
+    .preview {
 
     }
 
-    .theme img {
+    .preview img {
       display: block;
       width: 100%;
-      height: 250px;
-      border-bottom: 1px solid #ccd;
-      margin: 0;
+      height: 230px;
+      border: 1px solid #ccd;
+      border-radius: 4px;
+      margin: 5px 0 15px;
       object-fit: cover;
     }
 
@@ -147,12 +148,7 @@ class CreateDriveModal extends LitElement {
             ${repeat(BUILTIN_TYPES, t => typeopt(t.type, t.title))}
           </select>
         </h1>
-
-        <div class="theme">
-          <img src="beaker://assets/img/themes/${themeImg}.png">
-        </div>
-
-        <form @submit=${this.onSubmit}>
+        <form @submit=${this.onSubmit}>          
           <label for="title">Title</label>
           <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
           ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
@@ -160,7 +156,10 @@ class CreateDriveModal extends LitElement {
           <label for="desc">Description</label>
           <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Optional">
             
-          <hr>
+          <div class="preview">
+            <label>Preview</label>
+            <img src="beaker://assets/img/themes/${themeImg}.png">
+          </div>
 
           <div class="form-actions">
             <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="5">Cancel</button>
