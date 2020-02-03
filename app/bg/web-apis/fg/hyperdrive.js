@@ -245,6 +245,7 @@ export const setup = function (rpc) {
     async mount (path, opts = {}) {
       var errStack = (new Error()).stack
       try {
+        if (opts instanceof Hyperdrive) opts = opts.url
         return await hyperdriveRPC.mount(this.url, path, opts)
       } catch (e) {
         throwWithFixedStack(e, errStack)
@@ -273,18 +274,18 @@ export const setup = function (rpc) {
       }
     }
 
-    watch (pathSpec = null, onInvalidated = null) {
+    watch (pathSpec = null, onChanged = null) {
       var errStack = (new Error()).stack
       try {
-        // usage: (onInvalidated)
+        // usage: (onChanged)
         if (typeof pathSpec === 'function') {
-          onInvalidated = pathSpec
+          onChanged = pathSpec
           pathSpec = null
         }
 
         var evts = fromEventStream(hyperdriveRPC.watch(this.url, pathSpec))
-        if (onInvalidated) {
-          evts.addEventListener('invalidated', onInvalidated)
+        if (onChanged) {
+          evts.addEventListener('changed', onChanged)
         }
         return evts
       } catch (e) {
