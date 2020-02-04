@@ -105,7 +105,6 @@ const secureOnly = apiName => (event, methodName, args) => {
     return false
   }
   var senderInfo = getSenderInfo(event)
-  console.log('req', senderInfo, `${apiName}.${methodName}`)
   if (!SITE_ORIGIN_REGEX.test(senderInfo.url)) {
     return false
   }
