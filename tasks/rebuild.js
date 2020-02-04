@@ -2,25 +2,30 @@ var gulp = require('gulp')
 var path = require('path')
 var run = require('./util-run')
 
-//(cd app && HOME=~/.electron-gyp npm rebuild --runtime=electron --target=8.0.0-beta.7 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build
+function runAsync (...args) {
+  return new Promise(resolve => {
+    run(...args, resolve)
+  })
+}
 
-gulp.task('rebuild', gulp.series(function () {
+const MODULES_NEEDING_REBUILD = ['sqlite3', 'sodium-native']
+
+//(cd app && HOME=~/.electron-gyp npm rebuild --runtime=electron --target=8.0.0 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build
+
+gulp.task('rebuild', gulp.series(async () => {
   // TODO read electron version
   var cwd = path.join(process.cwd(), 'app')
   console.log(cwd)
-  return new Promise(resolve => {
-    var env = {}
-    if (process.platform === 'darwin') {
-      env = {
-        // required to make spellchecker compile
-        CXXFLAGS: '-mmacosx-version-min=10.10',
-        LDFLAGS: '-mmacosx-version-min=10.10'
-      }
+  var env = {}
+  if (process.platform === 'darwin') {
+    env = {
+      // required to make spellchecker compile
+      CXXFLAGS: '-mmacosx-version-min=10.10',
+      LDFLAGS: '-mmacosx-version-min=10.10'
     }
-    run(`HOME=~/.electron-gyp npm rebuild --runtime=electron --target=8.0.0-beta.7 --disturl=https://atom.io/download/atom-shell --build-from-source`, {cwd, env, shell: true}, function () {
-      run(`npm run build`, {shell: true}, function () {
-        resolve()
-      })
-    })
-  })
+  }
+  for (let mod of MODULES_NEEDING_REBUILD) {
+    await runAsync(`HOME=~/.electron-gyp npm rebuild ${mod} --runtime=electron --target=8.0.0 --disturl=https://atom.io/download/atom-shell --build-from-source`, {cwd, env, shell: true})
+  }
+  await runAsync(`npm run build`, {shell: true})
 }))

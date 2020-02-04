@@ -94,7 +94,7 @@
     "textextensions": "^2.5.0",
     "through2": "^2.0.5",
     "to-ico": "^1.1.5",
-    "utp-native": "^2.1.4",
+    "utp-native": "^2.1.7",
     "winston": "github:winstonjs/winston#b4ced895b3e1ead8a616590189b003cfd9d7acca",
     "yazl": "^2.5.1",
     "yo-yo": "^1.4.0",
