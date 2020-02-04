@@ -101,6 +101,11 @@ export class DrivesApp extends LitElement {
           icon: 'fas fa-fw fa-cube',
           label: 'Module',
           click: () => this.newDrive('module')
+        },
+        {
+          icon: 'fas fa-fw fa-code',
+          label: 'Code Snippet',
+          click: () => this.newDrive('code-snippet')
         }
       ]
     })

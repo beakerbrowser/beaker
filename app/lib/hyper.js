@@ -70,7 +70,8 @@ export const BUILTIN_TYPES = [
     {pathname: '/scripts.js', content: WEBSITE_JS_SCAFFOLD}
   ]},
   {type: 'wiki', theme: 'builtin:simple-wiki', img: 'simple-wiki', title: 'Wiki Site'},
-  {type: 'module', theme: 'builtin:simple-module', img: 'simple-module', title: 'Module'}
+  {type: 'module', theme: 'builtin:simple-module', img: 'simple-module', title: 'Module'},
+  {type: 'code-snippet', theme: 'builtin:code-snippet', img: 'code-snippet', title: 'Code Snippet'}
 ]
 
 export const BUILTIN_THEMES = [
