@@ -1,14 +1,15 @@
 import _get from 'lodash.get'
 
-const WEBSITE_INDEX_SCAFFOLD = `<!doctype html5>
+const WEBSITE_SCAFFOLD = {
+  '/index.html': (info) => `<!doctype html5>
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/index.css">
   </head>
   <body>
     <main>
-      <h1>New website</h1>
+      <h1>${info.title || 'New website'}</h1>
       <p>
         This website was created with <a href="https://beakerbrowser.com/" title="The Beaker Browser">The Beaker Browser</a>.
       </p>
@@ -27,12 +28,11 @@ const WEBSITE_INDEX_SCAFFOLD = `<!doctype html5>
         Learn more about how HTML works: <a href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Introduction_to_HTML">MDN Introduction to HTML</a>.
       </p>
     </main>
-    <script type="module" src="/scripts.js"></script>
+    <script type="module" src="/index.js"></script>
   </body>
 </html>
-`
-
-const WEBSITE_CSS_SCAFFOLD = `body {
+`,
+  '/index.css': () => `body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   background: #fafafd;
@@ -56,21 +56,67 @@ main hr {
   border-top: 1px solid #ccd;
   margin: 2rem 0;
 }
-`
-
-const WEBSITE_JS_SCAFFOLD = `console.log("Hello, world!")
+`,
+  '/index.js': () => `console.log("Hello, world!")
 document.getElementById('url').textContent = location.toString()
 `
+}
+
+const MODULE_SCAFFOLD = {
+  '/index.md': (info) => `# ${info.title || 'New Module'}\n\n${info.description}`,
+  '/index.js': () => `export function hello (who = 'world') {\n  return \`hello \${who}\`\n}`,
+  '/demo': 'folder',
+  '/demo/index.html': () => `<h1>Demo</h1>
+<div id="demo-container"></div>
+
+<script type="module">
+  import * as myModule from '../index.js'
+  document.getElementById('demo-container').innerHTML = \`
+    <h2><code>hello('friends') => '\${myModule.hello('friends')}'</code></h2>
+  \`
+</script>`,
+  '/tests': 'folder',
+  '/tests/index.html': () => `<link rel="stylesheet" href="/theme/vendor/mocha.css" />
+<script src="/theme/vendor/chai.js"></script>
+<script src="/theme/vendor/mocha.js"></script>
+
+<div id="mocha"></div>
+
+<script>
+  mocha.setup('bdd')
+  mocha.checkLeaks()
+</script>
+<script type="module" src="./index.js"></script>
+<script>
+  mocha.run()
+</script>`,
+  '/tests/index.js': () => `/**
+* Define your tests here.
+* 
+* Reference:
+*  - Mocha Test Runner: https://mochajs.org/
+*  - Chai Assertion Library: https://www.chaijs.com/
+*/
+
+import * as myModule from '../index.js'
+
+describe('My Module', () => {
+  describe('hello()', () => {
+    it('should accept an audience string', () => {
+      chai.assert.equal(myModule.hello('friends'), 'hello friends')
+    })
+    it('should default to "world"', () => {
+      chai.assert.equal(myModule.hello(), 'hello world')
+    })
+  })
+})`
+}
 
 export const BUILTIN_TYPES = [
   {type: '', theme: '', title: 'Files Drive', img: 'files-drive'},
-  {type: 'website', theme: '', title: 'Website', img: 'website', scaffold: [
-    {pathname: '/index.html', content: WEBSITE_INDEX_SCAFFOLD},
-    {pathname: '/styles.css', content: WEBSITE_CSS_SCAFFOLD},
-    {pathname: '/scripts.js', content: WEBSITE_JS_SCAFFOLD}
-  ]},
+  {type: 'website', theme: '', title: 'Website', img: 'website', scaffold: WEBSITE_SCAFFOLD},
   {type: 'wiki', theme: 'builtin:simple-wiki', img: 'simple-wiki', title: 'Wiki Site'},
-  {type: 'module', theme: 'builtin:simple-module', img: 'simple-module', title: 'Module'},
+  {type: 'module', theme: 'builtin:simple-module', img: 'simple-module', title: 'Module', scaffold: MODULE_SCAFFOLD},
   {type: 'code-snippet', theme: 'builtin:code-snippet', img: 'code-snippet', title: 'Code Snippet'}
 ]
 

@@ -1,6 +1,7 @@
-import MarkdownIt from './markdown-it.js'
+import MarkdownIt from './vendor/markdown-it.js'
 
 var self = new Hyperdrive(location)
+var infoPromise = self.getInfo()
 
 function h (tag, attrs, ...children) {
   var el = document.createElement(tag)
@@ -24,39 +25,52 @@ customElements.define('module-header', class extends HTMLElement {
     this.render()
   }
   async render () {
-    this.info = await self.getInfo()
+    var [info, hasTests, hasDemo] = await Promise.all([
+       infoPromise,
+       self.stat('/tests/index.html').catch(e => false),
+       self.stat('/demo/index.html').catch(e => false)
+     ])
 
-    this.append(h('h1', {}, h('a', {href: '/'}, this.info.title)))
-    if (this.info.description) {
-      this.append(h('p', {}, this.info.description))
-    }
-
-    if (this.info.writable) {
-      let buttons = []
-
-      let editProps = h('button', {}, 'Edit Drive Properties')
+    this.append(h('h1', {}, h('a', {href: '/'}, info.title)))
+    if (info.writable) {
+      let editProps = h('a', {title: 'Edit Properties', href: '#'}, 'Edit')
       editProps.addEventListener('click', async (e) => {
+        e.preventDefault()
         await navigator.drivePropertiesDialog(self.url)
         location.reload()
       })
-      buttons.push(editProps)
-
-      this.append(h('div', {class: 'admin'}, ...buttons))
+      this.append(h('p', {}, `${info.description} [ `, editProps, ` ]`))
+    } else {
+      this.append(h('p', {}, info.description))
     }
+
+    var buttons = []
+    if (hasDemo) {
+      buttons.push(h('a', {class: 'button', href: '/demo/', title: 'View Demo'}, 'View Demo'))
+    }
+    if (hasTests) {
+      buttons.push(h('a', {class: 'button', href: '/tests/', title: 'Run Tests'}, 'Run Tests'))
+    }
+    this.append(h('div', {class: 'admin'}, ...buttons))
   }
 })
 
 class ModuleBreadcrumbs extends HTMLElement {
   constructor () {
     super()
-    let parts = location.pathname.split('/').filter(Boolean)
-    let acc = []
-    this.append(h('a', {href: '/'}, 'Home'))
+    this.render()
+  }
+  async render () {
+    var info = await infoPromise
+    var parts = location.pathname.split('/').filter(Boolean)
+    var acc = []
+    this.append(h('a', {href: '/'}, info.title))
+    this.append(h('span', {}, '/'))
     for (let part of parts) {
       acc.push(part)
       let href = '/' + acc.join('/')
-      this.append(h('span', {}, '/'))
       this.append(h('a', {href}, part))
+      this.append(h('span', {}, '/'))
     }
   }
 }
@@ -82,10 +96,13 @@ class ModuleDirectoryView extends HTMLElement {
       let isMount = !!entry.stat.mount
       let href = isMount ? `hyper://${entry.stat.mount.key}` : `./${entry.name}${isDir ? '/' : ''}`
       listing.append(h('div', {class: 'entry'},
-        h('img', {class: 'icon', src: `/theme/${isMount ? 'mount' : isDir ? 'folder' : 'file'}.svg`}),
-        h('a', {href}, `${entry.name}${isDir ? '/' : ''}`),
+        h('img', {class: 'icon', src: `/theme/img/${isMount ? 'mount' : isDir ? 'folder' : 'file'}.svg`}),
+        h('a', {href}, entry.name),
         h('small', {}, formatBytes(entry.stat.size))
       ))
+    }
+    if (entries.length === 0) {
+      listing.append(h('div', {class: 'entry'}, 'This folder is empty'))
     }
     this.append(listing)
   }
@@ -93,11 +110,11 @@ class ModuleDirectoryView extends HTMLElement {
 customElements.define('module-directory-view', ModuleDirectoryView)
 
 class ModuleFileView extends HTMLElement {
-  constructor (pathname) {
+  constructor (pathname, renderHTML = false) {
     super()
-    this.render(pathname)
+    this.render(pathname, renderHTML)
   }
-  async render (pathname) {
+  async render (pathname, renderHTML = false) {
     // check existence
     let stat = await self.stat(pathname).catch(e => undefined)
     if (!stat) {
@@ -116,7 +133,7 @@ class ModuleFileView extends HTMLElement {
     } else {
       // render content
       let content = await self.readFile(pathname)
-      if (/\.(md|html)$/i.test(pathname)) {
+      if (renderHTML && /\.(md|html)$/i.test(pathname)) {
         if (pathname.endsWith('.md')) {
           let md = new MarkdownIt()
           content = md.render(content)
@@ -124,6 +141,7 @@ class ModuleFileView extends HTMLElement {
         let contentEl = h('div', {class: 'content'})
         contentEl.innerHTML = content
         this.append(contentEl)
+        executeScripts(contentEl)
       } else {
         let codeBlock = h('pre', {class: 'content'}, content)
         hljs.highlightBlock(codeBlock)
@@ -141,20 +159,9 @@ class ModuleReadmeView extends HTMLElement {
   }
   async render () {
     let files = await self.readdir(location.pathname).catch(e => ([]))
-    files = files.filter(f => ['readme', 'readme.md', 'readme.txt'].includes(f.toLowerCase()))
+    files = files.filter(f => ['index.html', 'index.md'].includes(f.toLowerCase()))
     if (files[0]) {
-      this.append(new ModuleFileView(location.pathname + files[0]))
-    } else {
-      let info = await self.getInfo()
-      if (info.writable) {
-        let a = h('a', {href: '#'}, 'Add a readme')
-        a.addEventListener('click', async (e) => {
-          e.preventDefault()
-          await self.writeFile(location.pathname + 'README.md', '# README')
-          location.reload()
-        })
-        this.append(h('div', {class: 'empty'}, a))
-      }
+      this.append(new ModuleFileView(location.pathname + files[0], true))
     }
   }
 }
@@ -174,3 +181,21 @@ customElements.define('module-page', class extends HTMLElement {
     }
   }
 })
+
+async function executeScripts (el) {
+  for (let scriptEl of Array.from(el.querySelectorAll('script'))) {
+    let promise
+    let newScriptEl = document.createElement('script')
+    newScriptEl.setAttribute('type', scriptEl.getAttribute('type') || 'module')
+    newScriptEl.textContent = scriptEl.textContent
+    if (scriptEl.getAttribute('src')) {
+      newScriptEl.setAttribute('src', scriptEl.getAttribute('src'))
+      promise = new Promise((resolve, reject) => {
+        newScriptEl.onload = resolve
+        newScriptEl.onerror = resolve
+      })
+    }
+    document.head.append(newScriptEl)
+    await promise
+  }
+}

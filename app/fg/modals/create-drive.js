@@ -210,7 +210,7 @@ class CreateDriveModal extends LitElement {
 
     try {
       var builtinType = BUILTIN_TYPES.find(t => t.type === this.type)
-      var url = await bg.hyperdrive.createDrive({
+      var info = {
         title: this.title,
         description: this.description,
         type: this.type !== '' ? this.type : undefined,
@@ -218,10 +218,15 @@ class CreateDriveModal extends LitElement {
         links: this.links,
         theme: builtinType && builtinType.theme || undefined,
         prompt: false
-      })
+      }
+      var url = await bg.hyperdrive.createDrive(info)
       if (builtinType && builtinType.scaffold) {
-        for (let file of builtinType.scaffold) {
-          await bg.hyperdrive.writeFile(url, file.pathname, file.content)
+        for (let path in builtinType.scaffold) {
+          if (builtinType.scaffold[path] === 'folder') {
+            await bg.hyperdrive.mkdir(url, path)
+          } else {
+            await bg.hyperdrive.writeFile(url, path, builtinType.scaffold[path](info))
+          }
         }
       }
       this.cbs.resolve({url})
