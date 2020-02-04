@@ -1,10 +1,20 @@
 var self = new Hyperdrive(location)
 
 var editors = {
-  js: document.getElementById('js'),
-  css: document.getElementById('css'),
-  html: document.getElementById('html')
+  js: ace.edit('js'),
+  css: ace.edit('css'),
+  html: ace.edit('html')
 }
+window.editors = editors
+editors.js.session.setMode('ace/mode/javascript')
+editors.css.session.setMode('ace/mode/css')
+editors.html.session.setMode('ace/mode/html')
+for (let k in editors) {
+  editors[k].session.setUseWorker(false)
+  editors[k].session.setTabSize(2)
+  editors[k].session.setUseSoftTabs(true)
+}
+
 var result = document.getElementById('result')
 var iframe = document.createElement('iframe')
 iframe.setAttribute('sandbox', 'allow-scripts')
@@ -14,13 +24,16 @@ setup()
 async function setup () {
   var info = await self.getInfo()
 
-  editors.js.value = await self.readFile('/index.js').catch(e => '')
-  editors.css.value = await self.readFile('/index.css').catch(e => '')
-  editors.html.value = await self.readFile('/index.html').catch(e => '')
+  editors.js.setValue(await self.readFile('/index.js').catch(e => ''))
+  editors.css.setValue(await self.readFile('/index.css').catch(e => ''))
+  editors.html.setValue(await self.readFile('/index.html').catch(e => ''))
+  for (let k in editors) {
+    editors[k].selection.moveTo(0,0)
+  }
   result.append(iframe)
 
   for (let k in editors) {
-    editors[k].addEventListener('keyup', debounce(e => onChangeEditor(k), 1e3))
+    editors[k].session.on('change', debounce(e => onChangeEditor(k), 1e3))
   }
 
   runSnippet()
@@ -29,11 +42,12 @@ async function setup () {
 function runSnippet () {
   iframe.src = `data:text/html;base64,${btoa(`
     <style>
-      ${editors.css.value}
+      ${editors.css.getValue()}
     </style>
-    ${editors.html.value}
+    ${editors.html.getValue()}
     <script>
-      ${editors.js.value}
+      window.snippetUrl = "${window.location.toString()}";
+      ${editors.js.getValue()}
     </script>
   `)}`
 }
@@ -50,8 +64,8 @@ async function onChangeEditor (id) {
   var editor = editors[id]
   var filename = `/index.${id}`
   var current = await self.readFile(filename).catch(e => '')
-  if (current !== editor.value) {
+  if (current !== editor.getValue()) {
     runSnippet()
-    self.writeFile(filename, editor.value).catch(e => undefined)
+    self.writeFile(filename, editor.getValue()).catch(e => undefined)
   }
 }

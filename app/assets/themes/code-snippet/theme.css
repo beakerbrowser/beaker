@@ -1,6 +1,6 @@
 body {
   --border-color: #aab;
-  --header-background: #eef;
+  --header-background: #f3f3f8;
   --header-height: 28px;
 
   margin: 0;
@@ -16,6 +16,7 @@ main {
 }
 
 main section {
+  position: relative;
   min-width: 0;
   min-height: 0;
 }
@@ -35,6 +36,7 @@ main section:nth-child(3) {
 
 main section header {
   background: var(--header-background);
+  border-bottom: 1px solid #dde;
   padding: 0 10px;
   height: var(--header-height);
   line-height: var(--header-height);
@@ -44,16 +46,21 @@ main section header {
   font-size: 13px;
 }
 
-textarea {
-  width: 100%;
-  height: calc(100% - var(--header-height));
+.editor {
+  position: absolute;
+  top: var(--header-height);
+  left: 0;
+  bottom: 0;
+  right: 0;
+  /* width: 100%; */
+  /* height: calc(100% - var(--header-height));
   border: 0;
   resize: none;
   outline: 0;
   box-sizing: border-box;
   padding: 10px;
   font-size: 13px;
-  font-family: Consolas, 'Lucida Console', Monaco, monospace;
+  font-family: Consolas, 'Lucida Console', Monaco, monospace;*/
 }
 
 iframe {
