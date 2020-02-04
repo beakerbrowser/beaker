@@ -74,7 +74,7 @@ export const protocolHandler = async function (request, respond) {
   var fileReadStream
   var headersSent = false
   var drive
-  var cspHeader = `default-src * 'unsafe-inline'`
+  var cspHeader = undefined
 
   // validate request
   var urlp = parseDriveUrl(request.url, true)
