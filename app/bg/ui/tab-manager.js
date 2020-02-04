@@ -129,6 +129,7 @@ class Tab {
     this.browserView = new BrowserView({
       webPreferences: {
         preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
+        nodeIntegrationInSubFrames: true,
         contextIsolation: false,
         webviewTag: false,
         sandbox: true,
@@ -149,6 +150,8 @@ class Tab {
     this.zoom = 0 // what's the current zoom level?
     this.loadError = null // page error state, if any
     this.previouslyFocusedWebcontents = undefined // the webcontents which was focused when the tab was last deactivated
+    this.mainFrameId = undefined // the frameRoutingId of the main frame
+    this.frameUrls = {} // map of frameRoutingId -> string (url)
 
     // browser state
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab
@@ -300,6 +303,22 @@ class Tab {
     state.sidebarPanels = Array.from(state.sidebarPanels) // convert from a set to an array
     if (this.loadingURL) state.url = this.loadingURL
     return state
+  }
+
+  getIPCSenderInfo (event) {
+    if (event.sender === this.webContents) {
+      return {
+        url: this.frameUrls[event.frameId],
+        isMainFrame: event.frameId === this.mainFrameId
+      }
+    }
+    if (sidebars.get(this) && event.sender === sidebars.get(this).webContents) {
+      return {
+        url: sidebars.get(this).webContents.getURL(),
+        isMainFrame: true
+      }
+    }
+    return {url: '', isMainFrame: false}
   }
 
   // management
@@ -793,8 +812,10 @@ class Tab {
     this.emitUpdateState()
   }
 
-  onDidStartNavigation (e, url, isInPlace, isMainFrame) {
+  onDidStartNavigation (e, url, isInPlace, isMainFrame, frameProcessId, frameRoutingId) {
+    this.frameUrls[frameRoutingId] = url
     if (!isMainFrame) return
+    this.mainFrameId = frameRoutingId
     var origin = toOrigin(url)
 
     // turn off live reloading if we're leaving the domain
@@ -820,6 +841,7 @@ class Tab {
     this.loadingURL = null
     this.isReceivingAssets = true
     this.favicons = null
+    this.frameUrls = {[this.mainFrameId]: url} // drop all non-main-frame URLs
     await this.fetchIsBookmarked()
     await this.fetchDriveInfo()
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {

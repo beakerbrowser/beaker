@@ -7,7 +7,7 @@ import { ipcRenderer } from 'electron'
 
 export const setup = function () {
   // setup APIs
-  if (['beaker:', 'hyper:', 'https:', 'http:'].includes(window.location.protocol) ||
+  if (['beaker:', 'hyper:', 'https:', 'http:', 'data:'].includes(window.location.protocol) ||
       window.location.hostname.endsWith('hyperdrive.network') /* TEMPRARY */) {
     window.Hyperdrive = Hyperdrive.setup(rpc)
     navigatorMethods.setup(rpc)

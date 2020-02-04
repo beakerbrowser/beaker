@@ -4,7 +4,18 @@ import { findTab } from '../ui/tab-manager'
 
 // TEMPORARY: hyperdrive.network is trusted
 const INTERNAL_ORIGIN_REGEX = /^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/i
-const SITE_ORIGIN_REGEX = /^(beaker:|hyper:|https?:)/i
+const SITE_ORIGIN_REGEX = /^(beaker:|hyper:|https?:|data:)/i
+const IFRAME_WHITELIST = [
+  'hyperdrive.loadDrive',
+  'hyperdrive.getInfo',
+  'hyperdrive.diff',
+  'hyperdrive.stat',
+  'hyperdrive.readFile',
+  'hyperdrive.readdir',
+  'hyperdrive.query',
+  'hyperdrive.watch',
+  'hyperdrive.resolveName'
+]
 
 // internal manifests
 import loggerManifest from './manifests/internal/logger'
@@ -69,10 +80,10 @@ export const setup = function () {
   rpc.exportAPI('users', usersManifest, usersAPI, internalOnly)
 
   // external apis
-  rpc.exportAPI('navigator', navigatorManifest, navigatorAPI, secureOnly)
-  rpc.exportAPI('navigator-session', navigatorSessionManifest, navigatorSessionAPI, secureOnly)
-  rpc.exportAPI('navigator-filesystem', navigatorFilesystemManifest, navigatorFilesystemAPI, secureOnly)
-  rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly)
+  rpc.exportAPI('navigator', navigatorManifest, navigatorAPI, secureOnly('navigator'))
+  rpc.exportAPI('navigator-session', navigatorSessionManifest, navigatorSessionAPI, secureOnly('navigator-session'))
+  rpc.exportAPI('navigator-filesystem', navigatorFilesystemManifest, navigatorFilesystemAPI, secureOnly('navigator-filesystem'))
+  rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
   // rpc.exportAPI('spell-checker', spellCheckerManifest, spellCheckerAPI) TODO
 
   // experimental apis
@@ -82,24 +93,31 @@ export const setup = function () {
 }
 
 function internalOnly (event, methodName, args) {
-  return (event && event.sender && INTERNAL_ORIGIN_REGEX.test(getUrl(event.sender)))
-}
-
-function secureOnly (event, methodName, args) {
   if (!(event && event.sender)) {
     return false
   }
-  return SITE_ORIGIN_REGEX.test(getUrl(event.sender))
+  var senderInfo = getSenderInfo(event)
+  return senderInfo.isMainFrame && INTERNAL_ORIGIN_REGEX.test(senderInfo.url)
 }
 
-function getUrl (sender) {
-  var url = sender.getURL()
-  if (!url || sender.isLoadingMainFrame()) {
-    let view = BrowserView.fromWebContents(sender)
-    let tab = findTab(view)
-    if (tab) {
-      url = tab.loadingURL || url
-    }
+const secureOnly = apiName => (event, methodName, args) => {
+  if (!(event && event.sender)) {
+    return false
   }
-  return url
+  var senderInfo = getSenderInfo(event)
+  console.log('req', senderInfo, `${apiName}.${methodName}`)
+  if (!SITE_ORIGIN_REGEX.test(senderInfo.url)) {
+    return false
+  }
+  if (!senderInfo.isMainFrame) {
+    return IFRAME_WHITELIST.includes(`${apiName}.${methodName}`)
+  }
+  return true
+}
+
+function getSenderInfo (event) {
+  var view = BrowserView.fromWebContents(event.sender)
+  var tab = (view) ? findTab(view) : undefined
+  if (tab) return tab.getIPCSenderInfo(event)
+  return {isMainFrame: true, url: event.sender.getURL()}
 }
