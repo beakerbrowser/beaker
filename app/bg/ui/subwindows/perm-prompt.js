@@ -114,7 +114,7 @@ export function close (parentView) {
 rpc.exportAPI('background-process-perm-prompt', permPromptRPCManifest, {
   async createTab (url) {
     var win = findWebContentsParentWindow(this.sender)
-    tabManager.create(win, url, {setActive: true})
+    tabManager.create(win, url, {setActive: true, adjacentActive: true})
   },
 
   async resizeSelf (dimensions) {

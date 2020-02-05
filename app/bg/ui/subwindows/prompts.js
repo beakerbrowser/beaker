@@ -131,7 +131,7 @@ rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
 
   async createTab (url) {
     var win = findWebContentsParentWindow(this.sender)
-    tabManager.create(win, url, {setActive: true})
+    tabManager.create(win, url, {setActive: true, adjacentActive: true})
   },
 
   async loadURL (url) {

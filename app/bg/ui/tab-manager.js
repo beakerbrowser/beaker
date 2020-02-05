@@ -963,9 +963,7 @@ class Tab {
 
     if (!this.isActive) return // only open if coming from the active tab
     var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
-    var tabs = activeTabs[this.browserWindow.id]
-    var tabIndex = tabs ? (tabs.indexOf(this) + 1) : undefined
-    var newTab = create(this.browserWindow, url, {setActive, tabIndex})
+    var newTab = create(this.browserWindow, url, {setActive, adjacentActive: true})
   }
 
   onMediaChange (e) {
@@ -1098,6 +1096,7 @@ export function create (
       setActive: false,
       isPinned: false,
       focusLocationBar: false,
+      adjacentActive: false,
       tabIndex: undefined,
       sidebarPanels: undefined
     }
@@ -1125,8 +1124,15 @@ export function create (
   if (opts.isPinned) {
     tabs.splice(indexOfLastPinnedTab(win), 0, tab)
   } else {
-    if (typeof opts.tabIndex !== 'undefined' && opts.tabIndex !== -1) {
-      tabs.splice(opts.tabIndex, 0, tab)
+    let tabIndex = (typeof opts.tabIndex !== 'undefined' && opts.tabIndex !== -1) ? opts.tabIndex : undefined
+    if (opts.adjacentActive) {
+      let active = getActive(win)
+      tabIndex = active ? tabs.indexOf(active) : undefined
+      if (tabIndex === -1) tabIndex = undefined
+      else tabIndex++
+    }
+    if (typeof tabIndex !== 'undefined') {
+      tabs.splice(tabIndex, 0, tab)
     } else {
       tabs.push(tab)
     }
@@ -1538,7 +1544,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var menu = Menu.buildFromTemplate([
       { label: (tab.isPinned) ? 'Unpin Tab' : 'Pin Tab', click: () => togglePinned(win, tab) },
       { label: 'Pop Out Tab', click: () => popOutTab(tab) },
-      { label: 'Duplicate Tab', click: () => create(win, tab.url) },
+      { label: 'Duplicate Tab', click: () => create(win, tab.url, {adjacentActive: true}) },
       { label: (tab.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => tab.toggleMuted() },
       { type: 'separator' },
       { label: 'Close Tab', click: () => remove(win, tab) },

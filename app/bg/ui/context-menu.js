@@ -52,7 +52,7 @@ export default function registerContextMenu () {
 
       // links
       if (props.linkURL && props.mediaType === 'none') {
-        menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => tabManager.create(win, props.linkURL, {setActive: true}) })
+        menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => tabManager.create(win, props.linkURL, {setActive: true, adjacentActive: true}) })
         menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
         menuItems.push({ type: 'separator' })
       }
@@ -62,7 +62,7 @@ export default function registerContextMenu () {
         menuItems.push({ label: 'Save Image As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Image', click: () => webContents.copyImageAt(props.x, props.y) })
         menuItems.push({ label: 'Copy Image URL', click: () => clipboard.writeText(props.srcURL) })
-        menuItems.push({ label: 'Open Image in New Tab', click: (item, win) => tabManager.create(win, props.srcURL) })
+        menuItems.push({ label: 'Open Image in New Tab', click: (item, win) => tabManager.create(win, props.srcURL, {adjacentActive: true}) })
         menuItems.push({ type: 'separator' })
       }
 
@@ -78,7 +78,7 @@ export default function registerContextMenu () {
       if (props.mediaType == 'video') {
         menuItems.push({ label: 'Save Video As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Video URL', click: () => clipboard.writeText(props.srcURL) })
-        menuItems.push({ label: 'Open Video in New Tab', click: (item, win) => tabManager.create(win, props.srcURL) })
+        menuItems.push({ label: 'Open Video in New Tab', click: (item, win) => tabManager.create(win, props.srcURL, {adjacentActive: true}) })
         menuItems.push({ type: 'separator' })
       }
 
@@ -86,14 +86,14 @@ export default function registerContextMenu () {
       if (props.mediaType == 'audio') {
         menuItems.push({ label: 'Save Audio As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Audio URL', click: () => clipboard.writeText(props.srcURL) })
-        menuItems.push({ label: 'Open Audio in New Tab', click: (item, win) => tabManager.create(win, props.srcURL) })
+        menuItems.push({ label: 'Open Audio in New Tab', click: (item, win) => tabManager.create(win, props.srcURL, {adjacentActive: true}) })
         menuItems.push({ type: 'separator' })
       }
 
       // spell check
       if (props.isMisspelled !== '' && props.isEditable) {
         for (let i in spellingSuggestions) {
-          menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label) })
+          menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label, {adjacentActive: true}) })
         }
         menuItems.push({ type: 'separator' })
       }
@@ -120,7 +120,7 @@ export default function registerContextMenu () {
           searchPreviewStr += '"'
         }
         var query = 'https://duckduckgo.com/?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
-        menuItems.push({ label: 'Search DuckDuckGo for "' + searchPreviewStr, click: (item, win) => tabManager.create(win, query) })
+        menuItems.push({ label: 'Search DuckDuckGo for "' + searchPreviewStr, click: (item, win) => tabManager.create(win, query, {adjacentActive: true}) })
         menuItems.push({ type: 'separator' })
       }
 
@@ -148,8 +148,8 @@ export default function registerContextMenu () {
           menuItems.push({
             label: 'Hyperdrive',
             submenu: [
-              { label: 'Open with Files Explorer', click: (item, win) => tabManager.create(win, `https://hyperdrive.network/${props.pageURL.slice('hyper://'.length)}`, {setActive: true}) },
-              { label: 'Open with Beaker.Network', click: (item, win) => tabManager.create(win, `https://beaker.network/${(new URL(props.pageURL)).hostname}`, {setActive: true}) },
+              { label: 'Open with Files Explorer', click: (item, win) => tabManager.create(win, `https://hyperdrive.network/${props.pageURL.slice('hyper://'.length)}`, {setActive: true, adjacentActive: true}) },
+              { label: 'Open with Beaker.Network', click: (item, win) => tabManager.create(win, `https://beaker.network/${(new URL(props.pageURL)).hostname}`, {setActive: true, adjacentActive: true}) },
               { type: 'separator' },
               { 
                 label: 'Host This Drive',

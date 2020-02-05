@@ -127,7 +127,7 @@ export async function setup () {
         wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
         wc.devToolsWebContents.on('new-window', (e, url) => {
           if (url.startsWith('chrome-devtools://')) return // ignore
-          tabManager.create(parentWindow, url, {setActive: true})
+          tabManager.create(parentWindow, url, {setActive: true, adjacentActive: true})
         })
       }
     })

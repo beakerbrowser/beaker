@@ -25,7 +25,7 @@ export async function runDiffMergeFlow (win, url) {
     }
   )
   var url = `beaker://compare/?base=${url}&target=${target[0].url}`
-  tabManager.create(win, url, {setActive: true})
+  tabManager.create(win, url, {setActive: true, adjacentActive: true})
 }
 
 export async function runDrivePropertiesFlow (win, key) {

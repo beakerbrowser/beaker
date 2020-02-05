@@ -149,7 +149,7 @@ export function close (tab) {
 rpc.exportAPI('background-process-modals', modalsRPCManifest, {
   async createTab (url) {
     var win = findWebContentsParentWindow(this.sender)
-    tabManager.create(win, url, {setActive: true})
+    tabManager.create(win, url, {setActive: true, adjacentActive: true})
   },
 
   async resizeSelf (dimensions) {
