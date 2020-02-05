@@ -28,6 +28,7 @@ class WebTerm extends LitElement {
     this.url = ''
     this.commands = {}
     this.commandModules = {}
+    this.pageCommands = {}
     this.cwd = undefined
     this.outputHist = []
     this.tabCompletion = undefined
@@ -124,6 +125,7 @@ class WebTerm extends LitElement {
   async importEnvironment () {
     this.loadCommands()
     this.loadBuiltins()
+    this.loadPageCommands()
   }
 
   async loadCommands () {
@@ -192,6 +194,28 @@ class WebTerm extends LitElement {
       help: 'Get documentation on a command',
       usage: 'help [command]'
     }
+  }
+
+  async loadPageCommands () {
+    this.pageCommands = await beaker.browser.executeJavaScriptInPage(`
+      ;(() => {
+        let commands = {}
+        if (navigator.terminal.commands.length) {
+          for (let command of navigator.terminal.commands) {
+            commands[command.name] = {
+              package: 'page commands',
+              name: '@' + command.name,
+              path: ['@' + command.name],
+              help: command.help,
+              usage: command.usage,
+              options: command.options,
+              subcommands: undefined
+            }
+          }
+        }
+        return commands
+      })();
+    `)
   }
 
   setCWD (location) {
@@ -309,15 +333,31 @@ class WebTerm extends LitElement {
     var paramsIndex = 1
     prompt.value = ''
 
+    var command
     var commandName = args[0]
-    var command = this.commands[commandName]
-    if (command && command.subcommands) {
-      if (command.subcommands[args[1]]) {
-        command = command.subcommands[args[1]]
-        paramsIndex = 2
-      } else {
-        command = this.commands.help
-        paramsIndex = 0
+    if (commandName.startsWith('@')) {
+      await this.loadPageCommands()
+      command = this.pageCommands[commandName.slice(1)]
+      if (command) {
+        command.fn = (...args) => beaker.browser.executeJavaScriptInPage(`
+          ;(() => {
+            let command = navigator.terminal.commands.find(c => c.name === ${JSON.stringify(commandName.slice(1))});
+            if (command) {
+              return command.handle.apply(command, ${JSON.stringify(args)})
+            }
+          })();
+        `)
+      }
+    } else {
+      command = this.commands[commandName]
+      if (command && command.subcommands) {
+        if (command.subcommands[args[1]]) {
+          command = command.subcommands[args[1]]
+          paramsIndex = 2
+        } else {
+          command = this.commands.help
+          paramsIndex = 0
+        }
       }
     }
     if (!command) {
@@ -404,6 +444,7 @@ class WebTerm extends LitElement {
     } catch (err) {
       this.outputError('Command error', err)
     }
+    this.loadPageCommands()
     this.readTabCompletionOptions()
   }
 
@@ -427,10 +468,14 @@ class WebTerm extends LitElement {
 
   lookupCommand (input) {
     let cmd = undefined
-    for (let token of input.split(' ')) {
-      let next = cmd ? (cmd.subcommands ? cmd.subcommands[token] : undefined) : this.commands[token]
-      if (!next) break
-      cmd = next
+    if (input.startsWith('@')) {
+      cmd = this.pageCommands[input.split(' ')[0].slice(1)]
+    } else {
+      for (let token of input.split(' ')) {
+        let next = cmd ? (cmd.subcommands ? cmd.subcommands[token] : undefined) : this.commands[token]
+        if (!next) break
+        cmd = next
+      }
     }
     return cmd
   }
@@ -466,6 +511,8 @@ class WebTerm extends LitElement {
       // display command options
       if (cmd && cmd.subcommands && input.includes(' ')) {
         this.tabCompletion = Object.values(cmd.subcommands)
+      } else if (input.startsWith('@')) {
+        this.tabCompletion = Object.values(this.pageCommands)
       } else {
         this.tabCompletion = Object.values(this.commands)
       }

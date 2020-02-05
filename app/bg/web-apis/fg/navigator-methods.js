@@ -27,4 +27,22 @@ export const setup = function (rpc) {
   } catch (e) {
     // not supported
   }
+
+  var _terminalCommands = []
+  navigator.terminal = {
+    get commands () {
+      return _terminalCommands
+    },
+    registerCommands (commands) {
+      if (!commands || !Array.isArray(commands)) throw new Error('Must provide an array of commands')
+      for (let command of commands) {
+        if (!command || typeof command !== 'object') throw new Error('Each command must be an object')
+        if (!command.handle || typeof command.handle !== 'function') throw new Error('Each command must have a `handle` function')
+        if (!command.name || typeof command.name !== 'string') throw new Error('Each command must have a `name` string')
+        if (command.help && typeof command.help !== 'string') throw new Error('The `help` attribute on a command must be a string')
+        if (command.usage && typeof command.usage !== 'string') throw new Error('The `usage` attribute on a command must be a string')
+      }
+      _terminalCommands = commands
+    }
+  }
 }
