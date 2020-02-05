@@ -199,3 +199,54 @@ async function executeScripts (el) {
     await promise
   }
 }
+
+navigator.terminal.registerCommands([
+  {
+    name: 'test',
+    help: 'Run the module tests',
+    handle () {
+      if (location.pathname !== '/tests/') {
+        location.pathname = '/tests/'
+      } else {
+        location.reload()
+      }
+    }
+  },
+  {
+    name: 'demo',
+    help: 'View the module demo',
+    handle () {
+      if (location.pathname !== '/demo/') {
+        location.pathname = '/demo/'
+      } else {
+        location.reload()
+      }
+    }
+  },
+  {
+    name: 'run',
+    help: 'Run a script in the /scripts directory',
+    usage: '@run {script} {...args}',
+    async handle (opts = {}, ...args) {
+      var scriptName = args[0]
+      if (!scriptName) throw new Error('Must specify a script to run')
+      if (!scriptName.endsWith('.js')) {
+        scriptName += '.js'
+      }
+      var scriptPath = `/scripts/${scriptName}`
+      try {
+        var script = await import(scriptPath)
+      } catch (e) {
+        if (e.message.includes('Failed to fetch')) {
+          throw new Error(`No script found in /scripts named ${scriptName}`)
+        } else {
+          throw e
+        }
+      }
+      if (typeof script.default !== 'function') {
+        throw new Error('The script must export a default function')
+      }
+      return script.default(opts, args.slice(1))
+    }
+  }
+])

@@ -75,6 +75,17 @@ const MODULE_SCAFFOLD = {
     <h2><code>hello('friends') => '\${myModule.hello('friends')}'</code></h2>
   \`
 </script>`,
+  '/scripts': 'folder',
+  '/scripts/build.js': () => `/**
+  * You can define a build step here.
+  * Run this build by calling \`@run build\` in the browser terminal.
+  * 
+  * You can add more scripts by adding them in the /scripts directory.
+  */
+ 
+ export default function (opts = {}, ...args) {
+   return 'No build step required'
+ }`,
   '/tests': 'folder',
   '/tests/index.html': () => `<link rel="stylesheet" href="/theme/vendor/mocha.css" />
 <script src="/theme/vendor/chai.js"></script>
