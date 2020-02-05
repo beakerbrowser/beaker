@@ -54,7 +54,6 @@ class SiteInfoDriveHistory extends LitElement {
           type="range"
           id="version"
           name="version"
-          list="tickmarks"
           min="1"
           max="${this.info.version}"
           value="${targetVersion}"
@@ -62,9 +61,6 @@ class SiteInfoDriveHistory extends LitElement {
           @input=${this.onInputVersionSlider}
           @change=${this.onChangeVersionSlider}
         >
-        <datalist id="tickmarks">
-          ${tickmarks}
-        </datalist>
       </div>
     `
   }
