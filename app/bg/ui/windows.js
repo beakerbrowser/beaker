@@ -263,10 +263,6 @@ export function createShellWindow (windowState) {
   }
 
   // register shortcuts
-  for (var i = 1; i <= 8; i++) { registerGlobalKeybinding(win, 'CmdOrCtrl+' + i, onTabSelect(i - 1)) }
-  registerGlobalKeybinding(win, 'CmdOrCtrl+9', onLastTab)
-  registerGlobalKeybinding(win, 'Ctrl+PageUp', onPrevTab)
-  registerGlobalKeybinding(win, 'Ctrl+PageDown', onNextTab)
   registerGlobalKeybinding(win, 'CmdOrCtrl+[', onGoBack)
   registerGlobalKeybinding(win, 'CmdOrCtrl+]', onGoForward)
   registerGlobalKeybinding(win, 'Alt+D', onFocusLocation)

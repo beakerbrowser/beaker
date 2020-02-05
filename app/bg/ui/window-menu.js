@@ -504,6 +504,15 @@ export function buildWindowMenu (opts = {}) {
     ]
   }
 
+  const gotoTabShortcut = index => ({
+    label: `Tab ${index}`,
+    enabled: !noWindows,
+    accelerator: `CmdOrCtrl+${index}`,
+    click: function (item) {
+      var win = getWin()
+      if (win) tabManager.setActive(win, index - 1)
+    }
+  })
   var windowMenu = {
     label: 'Window',
     role: 'window',
@@ -526,7 +535,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Next Tab',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+}',
+        accelerator: 'CmdOrCtrl+PageDown',
         click: function (item) {
           var win = getWin()
           if (win) tabManager.changeActiveBy(win, 1)
@@ -535,11 +544,34 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Previous Tab',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+{',
+        accelerator: 'CmdOrCtrl+PageUp',
         click: function (item) {
           var win = getWin()
           if (win) tabManager.changeActiveBy(win, -1)
         }
+      },
+      {
+        label: 'Tab Shortcuts',
+        type: 'submenu',
+        submenu: [
+          gotoTabShortcut(1),
+          gotoTabShortcut(2),
+          gotoTabShortcut(3),
+          gotoTabShortcut(4),
+          gotoTabShortcut(5),
+          gotoTabShortcut(6),
+          gotoTabShortcut(7),
+          gotoTabShortcut(8),
+          {
+            label: `Last Tab`,
+            enabled: !noWindows,
+            accelerator: `CmdOrCtrl+9`,
+            click: function (item) {
+              var win = getWin()
+              if (win) tabManager.setActive(win, tabManager.getAll(win).slice(-1)[0])
+            }
+          }
+        ]
       }
     ]
   }
