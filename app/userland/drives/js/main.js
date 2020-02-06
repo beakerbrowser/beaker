@@ -39,9 +39,6 @@ export class DrivesApp extends LitElement {
         await beaker.drives.get(navigator.filesystem.url),
         await beaker.drives.get(profileStat.mount.key)
       ]
-    } else if (this.category === 'following') {
-      let driveEntries = await navigator.filesystem.query({path: '/profile/follows/*', type: 'mount'})
-      drives = await Promise.all(driveEntries.map(entry => beaker.drives.get(entry.mount)))
     } else {
       drives = await beaker.drives.list({includeSystem: true})
     }
@@ -251,7 +248,6 @@ export class DrivesApp extends LitElement {
         <div class="categories">
           <hr>
           ${navItem('all', 'All drives')}
-          ${navItem('following', 'Following')}
           <hr>
           ${navItem('files', 'Files drives')}
           ${navItem('websites', 'Websites')}
@@ -318,15 +314,6 @@ export class DrivesApp extends LitElement {
           <h3><span class="fas fa-fw fa-share-alt"></span> Hyperdrive</h3>
           <p><em>Hyperdrive</em> is a peer-to-peer files network. Each "hyperdrive" (or just "drive") is a networked folder which can be accessed like a website.</p>
           <p>You can create additional hyperdrives to share on the network, and you can also <em>co-host</em> other people's drives to help keep them online.</p>
-        </div>
-      `
-    }
-    if (this.category === 'following') {
-      return html`
-        <div class="help">
-          <h3><span class="fas fa-fw fa-rss"></span> Following</h3>
-          <p>You can follow drives to receive updates and information from them.</p>
-          <p>Your followed drives are listed publicly on your profile so that other people can discover them.</p>
         </div>
       `
     }

@@ -21,8 +21,7 @@ class SiteInfoApp extends LitElement {
       info: {type: Object},
       manifest: {type: Object},
       requestedPerms: {type: Object},
-      forks: {type: Array},
-      followers: {type: Array}
+      forks: {type: Array}
     }
   }
 

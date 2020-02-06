@@ -20,7 +20,6 @@ class NavbarLocation extends LitElement {
       driveDomain: {type: String},
       isHomeDrive: {type: Boolean, attribute: 'is-home-drive'},
       isUserDrive: {type: Boolean, attribute: 'is-user-drive'},
-      isFollowing: {type: Boolean, attribute: 'is-following'},
       writable: {type: Boolean},
       peers: {type: Number},
       zoom: {type: Number},
@@ -46,7 +45,6 @@ class NavbarLocation extends LitElement {
     this.driveDomain = ''
     this.isHomeDrive = false
     this.isUserDrive = false
-    this.isFollowing = false
     this.writable = false
     this.peers = 0
     this.zoom = 0
@@ -122,7 +120,6 @@ class NavbarLocation extends LitElement {
       ${this.renderIdentLabel()}
       ${this.renderSiteBtn()}
       ${this.renderDonateBtn()}
-      ${this.renderSocialBtn()}
       ${''/* DISABLED this.renderShareBtn()*/}
       ${this.renderBookmarkBtn()}
     `
@@ -276,22 +273,6 @@ class NavbarLocation extends LitElement {
       return html`<span class="label">My Hyperdrive</span>`
     }
   }
-  
-  renderSocialBtn () {
-    if (!this.isHyperdrive || this.isHomeDrive || this.isUserDrive) {
-      return ''
-    }
-    return html`
-      <button
-        class="${classMap({social: true, highlight: this.isFollowing, 'tooltip-left': true})}"
-        @click=${this.onClickToggleFollow}
-        data-tooltip=${this.isFollowing ? 'Following' : 'Follow'}
-        tooltip=${this.isFollowing ? 'Following' : 'Follow'}
-      >
-        <i class="fa fa-rss"></i>
-      </button>
-    `
-  }
 
   renderBookmarkBtn () {
     return html`
@@ -432,10 +413,6 @@ class NavbarLocation extends LitElement {
     this.isDonateMenuOpen = false
   }
 
-  async onClickToggleFollow (e) {
-    bg.views.toggleFollowing('active')
-  }
-
   async onClickBookmark () {
     var rect = this.shadowRoot.querySelector('.bookmark').getClientRects()[0]
     // show menu
@@ -507,15 +484,6 @@ button.text .far {
 
 button.text .fa-info-circle {
   font-size: 14px;
-}
-
-button.social .fa-rss {
-  font-size: 12px;
-}
-
-button.social.highlight {
-  color: #189bff;
-  background: #d6edff;
 }
 
 button.bookmark .fa-star {

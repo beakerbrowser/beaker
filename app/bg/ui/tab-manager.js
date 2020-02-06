@@ -83,7 +83,6 @@ const STATE_VARS = [
   'driveDomain',
   'isHomeDrive',
   'isUserDrive',
-  'isFollowing',
   'writable',
   'peers',
   'favicons',
@@ -268,10 +267,6 @@ class Tab {
 
   get isUserDrive () {
     return _get(this.driveInfo, 'ident.user', false)
-  }
-
-  get isFollowing () {
-    return _get(this.driveInfo, 'isFollowing', false)
   }
 
   get writable () {
@@ -764,11 +759,6 @@ class Tab {
     if (!noEmit) this.emitUpdateState()
 
     if (this.driveInfo) {
-      // fetch social information if not a system drive
-      if (!this.driveInfo.ident.system) {
-        this.driveInfo.isFollowing = (await fsquery(filesystem.get(), {path: '/profile/follows/*', mount: key})).length !== 0
-      }
-
       // determine the confirmed author
       if (this.driveInfo.author) {
         try {
@@ -1627,23 +1617,6 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async print (index) {
     getByIndex(getWindow(this.sender), index).webContents.print()
-  },
-
-  async toggleFollowing (index) {
-    var tab = getByIndex(getWindow(this.sender), index)
-    if (!tab.driveInfo) return
-
-    var fs = filesystem.get()
-    if (!tab.isFollowing) {
-      let name = await filesystem.getAvailableName('/profile/follows', slugify(tab.driveInfo.title || 'anonymous').toLowerCase())
-      await fs.pda.mount(`/profile/follows/${name}`, tab.driveInfo.url)
-    } else {
-      let mount = await fsquery(fs, {path: '/profile/follows/*', mount: tab.driveInfo.url})
-      if (mount[0]) {
-        await fs.pda.unmount(mount[0].path)
-      }
-    }
-    await tab.fetchDriveInfo()
   },
 
   async showInpageFind (index) {

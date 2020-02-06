@@ -82,7 +82,6 @@ class ShellWindowNavbar extends LitElement {
         driveDomain="${_get(this, 'activeTab.driveDomain', '')}"
         ?is-home-drive=${_get(this, 'activeTab.isHomeDrive', false)}
         ?is-user-drive=${_get(this, 'activeTab.isUserDrive', false)}
-        ?is-following=${_get(this, 'activeTab.isFollowing', false)}
         ?writable=${_get(this, 'activeTab.writable', false)}
         peers="${_get(this, 'activeTab.peers', 0)}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
