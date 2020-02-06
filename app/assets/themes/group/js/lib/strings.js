@@ -110,18 +110,6 @@ export function slugify (str = '') {
   return str.replace(reservedChars, '-').replace(endingDashes, '')
 }
 
-export function toNiceTopic (t) {
-  return t.replace(/_/g, ' ')
-}
-
-export function normalizeTopic (t) {
-  return t.replace(/\s/g, '_')
-}
-
-export function isValidTopic (t) {
-  return /[a-z0-9_\s]+/.test(t)
-}
-
 export function toNiceDriveType (dt) {
   if (!dt) return ''
   return KNOWN_DRIVE_TYPES[dt] || dt
@@ -130,7 +118,6 @@ export function toNiceDriveType (dt) {
 export function fromPostUrlToAppRoute (postUrl) {
   var url = new URL(postUrl)
   var pathParts = url.pathname.split('/')
-  var topic = pathParts[3]
-  var filename = pathParts[4]
-  return `/${url.hostname}/posts/${topic}/${filename}`
+  var filename = pathParts[3]
+  return `/${url.hostname}/posts/${filename}`
 }

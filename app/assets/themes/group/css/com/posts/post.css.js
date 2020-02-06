@@ -67,11 +67,6 @@ button.menu {
   padding: 0;
 }
 
-.topic {
-  font-weight: 500;
-  color: #445;
-}
-
 .text-post-content {
   border: 1px solid #ccd;
   border-radius: 4px;

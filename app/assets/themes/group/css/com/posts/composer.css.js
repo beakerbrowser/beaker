@@ -14,8 +14,6 @@ ${spinnercss}
   border: 1px solid #ccd;
   border-radius: 8px;
   overflow: hidden;
-  max-width: 800px;
-  margin: 0 auto;
 }
 
 a {
@@ -130,23 +128,8 @@ input#title {
   font-weight: bold;
 }
 
-input#topic {
-  width: 160px;
-  margin-right: 10px;
-}
-
 ::-webkit-input-placeholder {
   font-size: inherit;
-}
-
-a.topic {
-  color: #889;
-  font-weight: 500;
-  margin-right: 6px;
-  text-decoration: underline;
-  cursor: pointer;
-  white-space: nowrap;
-  line-height: 30px;
 }
 
 .actions {

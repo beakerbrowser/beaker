@@ -1,17 +1,14 @@
-import {LitElement, html} from '../../../vendor/lit-element/lit-element.js'
+import { LitElement, html } from '../../../vendor/lit-element/lit-element.js'
 import composerCSS from '../../../css/com/posts/composer.css.js'
-import { toNiceTopic, ucfirst } from '../../lib/strings.js'
+import { ucfirst } from '../../lib/strings.js'
 import * as uwg from '../../lib/uwg.js'
 import * as toast from '../toast.js'
-
-const TOPIC_LIMIT = 30
 
 export class PostComposer extends LitElement {
   static get properties () {
     return {
       type: {type: String},
       validation: {type: Object},
-      topics: {type: Array},
       linkMetadata: {type: Object},
       file: {type: Object}
     }
@@ -22,21 +19,17 @@ export class PostComposer extends LitElement {
     let qp = new URLSearchParams(location.search)
     this.type = qp.get('type') || 'link'
     this.validation = {}
-    this.topics = []
     this.linkMetadata = undefined
     this.file = undefined
   }
 
   async load () {
-    this.topics = await uwg.topics.list()
-
     if (location.search && location.search.includes('from-cli')) {
       let params = new URLSearchParams(location.search)
       this.setType(params.get('type') || 'link')
       await this.requestUpdate()
 
       this.shadowRoot.querySelector('input#title').value = params.get('title')
-      this.shadowRoot.querySelector('input#topic').value = params.get('topic')
       if (params.get('url')) {
         this.shadowRoot.querySelector('input#url').value = params.get('url')    
         this.queueReadUrlMetadata()    
@@ -62,11 +55,6 @@ export class PostComposer extends LitElement {
     qp.set('type', type)
     url.search = qp.toString()
     history.replaceState({}, null, url.toString())
-  }
-
-  setTopic (topic) {
-    this.shadowRoot.querySelector('input#topic').value = topic
-    this.runValidation()
   }
 
   getInputClass (id) {
@@ -177,14 +165,6 @@ export class PostComposer extends LitElement {
         ${typeSelector('file', html`<span class="far fa-fw fa-file"></span> File`)}
       </div>
       <form @submit=${this.onSubmitPost}>
-        <div class="form-group">
-          <div>
-            ${input('topic', 'Topic')}
-            ${this.topics.slice(0, TOPIC_LIMIT).map(topic => html`
-              <a class="topic" @click=${e => this.setTopic(toNiceTopic(topic))}>${toNiceTopic(topic)}</a>
-            `)}
-          </div>
-        </div>
         <div class="form-group">${input('title', 'Title')}</div>
         ${this.type === 'link' ? html`<div class="form-group">${input('url', 'URL')}</div>` : ''}
         ${this.type === 'text' ? html`<div class="form-group">${textarea('content', 'Post body (markdown is supported)')}</div>` : ''}
@@ -313,14 +293,12 @@ export class PostComposer extends LitElement {
     try {
       if (this.type === 'link') {
         path = await uwg.posts.addLink({
-          topic: getValue('topic'),
           title: getValue('title'),
           href: getValue('url'),
           driveType: this.linkMetadata.driveType
         })
       } else if (this.type === 'text') {
         path = await uwg.posts.addTextPost({
-          topic: getValue('topic'),
           title: getValue('title'),
           content: getValue('content')
         })
@@ -328,7 +306,6 @@ export class PostComposer extends LitElement {
         let ext = this.file.name.split('.').pop().toLowerCase()
         if (this.file.name.indexOf('.') === -1) ext = 'txt'
         path = await uwg.posts.addFile({
-          topic: getValue('topic'),
           title: getValue('title'),
           ext,
           base64buf: this.file.base64buf
@@ -342,10 +319,8 @@ export class PostComposer extends LitElement {
 
     toast.create(`${ucfirst(this.type)} posted`)
     var user = uwg.profiles.getUser()
-    var pathParts = path.split('/')
-    var topic = pathParts[3]
-    var filename = pathParts[4]
-    window.location = `/${user.username}/posts/${topic}/${filename}`
+    var filename = path.split('/').pop()
+    window.location = `/${user.username}/posts/${filename}`
   }
 }
 PostComposer.styles = composerCSS

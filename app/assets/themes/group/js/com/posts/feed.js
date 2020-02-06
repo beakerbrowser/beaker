@@ -12,7 +12,6 @@ export class PostsFeed extends LitElement {
     return {
       user: {type: Object},
       author: {type: String},
-      topic: {type: String},
       posts: {type: Array}
     }
   }
@@ -25,7 +24,6 @@ export class PostsFeed extends LitElement {
     super()
     this.user = undefined
     this.author = undefined
-    this.topic = undefined
     this.posts = undefined
     this.page = 0
   }
@@ -33,7 +31,6 @@ export class PostsFeed extends LitElement {
   async load () {
     var authorProfile = this.author ? await uwg.users.getByUsername(this.author) : undefined
     var posts = await uwg.posts.list({
-      topic: this.topic,
       author: this.author ? authorProfile.url : undefined,
       offset: this.page * PAGE_SIZE,
       limit: PAGE_SIZE,

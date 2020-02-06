@@ -1,7 +1,5 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import '../com/profiles/list.js'
-import '../com/search-input.js'
-import '../com/topics.js'
 
 export class UsersView extends LitElement {
   static get properties () {
@@ -26,14 +24,10 @@ export class UsersView extends LitElement {
 
   render () {
     return html`
-      <div class="layout right-col">
+      <div class="layout">
         <main>
           <beaker-profile-list loadable .user=${this.user}></beaker-profiles-list>
         </main>
-        <nav>
-          <beaker-search-input placeholder="Search this group"></beaker-search-input>
-          <beaker-topics loadable></beaker-topics>
-        </nav>
       </div>
     `
   }

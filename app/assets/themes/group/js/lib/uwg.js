@@ -1,7 +1,6 @@
-import { normalizeUrl, normalizeTopic, isValidTopic, DRIVE_KEY_REGEX, joinPath } from './strings.js'
+import { normalizeUrl, DRIVE_KEY_REGEX, joinPath } from './strings.js'
 import { queryRead, ensureDir, ensureParentDir, ensureMount, ensureUnmount, getAvailableName } from './fs.js'
 import { lock } from './lock.js'
-import { DEFAULT_TOPICS } from './const.js'
 import { isFilenameBinary } from './is-ext-binary.js'
 
 // typedefs
@@ -16,7 +15,6 @@ import { isFilenameBinary } from './is-ext-binary.js'
  * @prop {boolean} isUser
  * 
  * @typedef {FSQueryResult} Post
- * @prop {string} topic
  *
  * @typedef {FSQueryResult} Comment
  * @prop {string} content
@@ -219,7 +217,6 @@ export const users = {
 export const posts = {
   /**
    * @param {Object} [query]
-   * @param {string} [query.topic]
    * @param {string} [query.author]
    * @param {string} [query.driveType]
    * @param {string} [query.sort]
@@ -232,13 +229,13 @@ export const posts = {
    * @returns {Promise<Post[]>}
    */
   async list (
-    {topic, author, driveType, sort, reverse, offset, limit} = {topic: undefined, author: undefined, driveType: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined},
+    {author, driveType, sort, reverse, offset, limit} = {author: undefined, driveType: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined},
     {includeProfiles, includeContent} = {includeProfiles: false, includeContent: true}
   ) {
     var drive = new Hyperdrive(author || location)
     var queryFn = includeContent ? queryRead : (q, drive) => drive.query(q)
     var posts = await queryFn({
-      path: getPostsPaths(author, topic),
+      path: getPostsPaths(author),
       metadata: driveType ? {'drive-type': driveType} : undefined,
       sort,
       reverse, 
@@ -260,10 +257,6 @@ export const posts = {
       }
       return true
     })
-    for (let post of posts) {
-      let pathParts = post.path.split('/')
-      post.topic = pathParts[pathParts.length - 2]
-    }
     if (includeProfiles) {
       await profiles.readAllProfiles(posts)
     }
@@ -279,10 +272,6 @@ export const posts = {
   async get (author, path) {
     let drive = new Hyperdrive(author)
     let url = drive.url + path
-
-    let pathParts = path.split('/')
-    var topic = pathParts[pathParts.length - 2]
-
     return {
       type: 'file',
       path,
@@ -290,8 +279,7 @@ export const posts = {
       stat: await drive.stat(path),
       drive: await profiles.get(author),
       mount: undefined,
-      content: isFilenameBinary(path) ? undefined : await drive.readFile(path),
-      topic
+      content: isFilenameBinary(path) ? undefined : await drive.readFile(path)
     }
   },
 
@@ -299,22 +287,19 @@ export const posts = {
    * @param {Object} post
    * @param {string} post.href
    * @param {string} post.title
-   * @param {string} post.topic
    * @param {string} [post.driveType]
    * @param {Object} [drive]
    * @returns {Promise<string>}
    */
-  async addLink ({href, title, topic, driveType}, drive = undefined) {
+  async addLink ({href, title, driveType}, drive = undefined) {
     if (!isNonemptyString(href)) throw new Error('URL is required')
     if (!isUrl(href)) throw new Error('Invalid URL')
     if (!isNonemptyString(title)) throw new Error('Title is required')
-    if (!isValidTopic(topic)) throw new Error('Topic is required')
     if (driveType && !isNonemptyString(driveType)) throw new Error('DriveType must be a string')
 
     href = normalizeUrl(href)
-    topic = normalizeTopic(topic)
     drive = drive || userDrive
-    var path = `/beaker-forum/posts/${topic}/${Date.now()}.goto`
+    var path = `/beaker-forum/posts/${Date.now()}.goto`
     await ensureParentDir(path, drive)
     await drive.writeFile(path, '', {metadata: {href, title, 'drive-type': driveType}})
     return path
@@ -323,19 +308,15 @@ export const posts = {
   /**
    * @param {Object} post
    * @param {string} post.title
-   * @param {string} post.topic
    * @param {string} post.content
    * @param {Object} [drive]
    * @returns {Promise<string>}
    */
-  async addTextPost ({title, topic, content}, drive = undefined) {
+  async addTextPost ({title, content}, drive = undefined) {
     if (!isNonemptyString(content)) throw new Error('Content is required')
     if (!isNonemptyString(title)) throw new Error('Title is required')
-    if (!isValidTopic(topic)) throw new Error('Topic is required')
-
-    topic = normalizeTopic(topic)
     drive = drive || userDrive
-    var path = `/beaker-forum/posts/${topic}/${Date.now()}.md`
+    var path = `/beaker-forum/posts/${Date.now()}.md`
     await ensureParentDir(path, drive)
     await drive.writeFile(path, content, {metadata: {title}})
     return path
@@ -344,21 +325,18 @@ export const posts = {
   /**
    * @param {Object} post
    * @param {string} post.title
-   * @param {string} post.topic
    * @param {string} post.ext
    * @param {string} post.base64buf
    * @param {Object} [drive]
    * @returns {Promise<string>}
    */
-  async addFile ({title, topic, ext, base64buf}, drive = undefined) {
+  async addFile ({title, ext, base64buf}, drive = undefined) {
     if (!isNonemptyString(base64buf)) throw new Error('Base64buf is required')
     if (!isNonemptyString(ext)) throw new Error('File extension is required')
     if (!isNonemptyString(title)) throw new Error('Title is required')
-    if (!isValidTopic(topic)) throw new Error('Topic is required')
 
-    topic = normalizeTopic(topic)
     drive = drive || userDrive
-    var path = `/beaker-forum/posts/${topic}/${Date.now()}.${ext}`
+    var path = `/beaker-forum/posts/${Date.now()}.${ext}`
     await ensureParentDir(path, drive)
     await drive.writeFile(path, base64buf, {encoding: 'base64', metadata: {title}})
     return path
@@ -371,7 +349,7 @@ export const posts = {
   async changeTitle (post, newTitle) {
     if (!isNonemptyString(newTitle)) throw new Error('Title is required')
     var filename = post.path.split('/').pop()
-    var path = `/beaker-forum/posts/${post.topic}/${filename}`
+    var path = `/beaker-forum/posts/${filename}`
     var metadata = Object.assign({}, post.stat.metadata, {title: newTitle})
     await userDrive.writeFile(path, post.content || '', {metadata})
   },
@@ -382,37 +360,8 @@ export const posts = {
    */
   async remove (post) {
     var filename = post.path.split('/').pop()
-    var path = `/beaker-forum/posts/${post.topic}/${filename}`
+    var path = `/beaker-forum/posts/${filename}`
     await userDrive.unlink(path)
-  }
-}
-
-export const topics = {
-  /**
-   * @param {Object} query
-   * @param {string} [query.author]
-   * @returns {Promise<Array<string>>}
-   */
-  async list ({author} = {author: undefined}) {
-    var drive = new Hyperdrive(author || location)
-    var folders = await drive.query({
-      type: 'directory',
-      path: getTopicsPaths(author)
-    })
-
-    var topics = new Set()
-    for (let folder of folders) {
-      let name = folder.path.split('/').pop()
-      if (!isValidTopic(name)) continue
-      name = normalizeTopic(name)
-      topics.add(name)
-    }
-
-    for (let t of DEFAULT_TOPICS) {
-      topics.add(t)
-    }
-
-    return Array.from(topics)
   }
 }
 
@@ -708,13 +657,13 @@ export const votes = {
 
     href = normalizeUrl(href)
     vote = vote == 1 ? 1 : vote == -1 ? -1 : 0
+    drive = drive || userDrive
 
-    var existingVote = await votes.get(drive ? drive.url : 'me', href)
-    if (existingVote) await (drive || userDrive).unlink(existingVote.path)
+    var existingVote = await votes.get(drive.url, href)
+    if (existingVote) await drive.unlink(existingVote.path)
 
     if (!vote) return
 
-    drive = drive || userDrive
     var path = `/beaker-forum/votes/${Date.now()}.goto`
     await ensureParentDir(path, drive)
     await drive.writeFile(path, '', {metadata: {href, vote}})
@@ -762,19 +711,9 @@ async function toKey (key) {
 
 /**
  * @param {string} author
- * @param {string} [topic]
  * @returns {string|string[]}
  */
-function getPostsPaths (author, topic = undefined) {
-  topic = topic || '*'
-  if (author) {
-    return `/beaker-forum/posts/${topic}/*`
-  } else {
-    return `/users/*/beaker-forum/posts/${topic}/*`
-  }
-}
-
-function getTopicsPaths (author) {
+function getPostsPaths (author) {
   if (author) {
     return `/beaker-forum/posts/*`
   } else {

@@ -2,7 +2,7 @@ import { LitElement, html } from '../../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../../vendor/lit-element/lit-html/directives/repeat.js'
 import * as uwg from '../../lib/uwg.js'
 import { timeDifference } from '../../lib/time.js'
-import { toNiceUrl, toNiceTopic, pluralize } from '../../lib/strings.js'
+import { toNiceUrl, pluralize } from '../../lib/strings.js'
 import resultsCSS from '../../../css/com/search/results.css.js'
 import '../posts/post.js'
 import '../profiles/list.js'
@@ -137,7 +137,6 @@ export class SearchResults extends LitElement {
                   </h4>
                   <div class="details">
                     by <a class="author" href=${viewProfileUrl} title=${result.postMeta.author.title}>${result.postMeta.author.title}</a>
-                    | <a class="topic" title=${toNiceTopic(result.postMeta.topic)} href="/?topic=${encodeURIComponent(result.postMeta.topic)}">${toNiceTopic(result.postMeta.topic)}</a>
                     | posted <a href=${result.viewUrl}>${timeDifference(result.postMeta.ctime, true, 'ago')}</a>
                     | <a class="comments" href=${result.viewUrl}>
                       ${numComments} ${pluralize(numComments, 'comment')}
@@ -217,7 +216,6 @@ function fromPostToResult (post) {
     title: metadata.title,
     postMeta: {
       ctime: post.stat.ctime, // TODO replace with rtime
-      topic: post.topic,
       'drive-type': metadata['drive-type'],
       author: post.drive,
       votes: undefined,

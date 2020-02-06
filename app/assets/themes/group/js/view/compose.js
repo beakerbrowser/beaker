@@ -1,8 +1,5 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
-import * as uwg from '../lib/uwg.js'
 import '../com/posts/composer.js'
-import '../com/search-input.js'
-import '../com/topics.js'
 
 export class ComposeView extends LitElement {
   static get properties () {
@@ -28,14 +25,10 @@ export class ComposeView extends LitElement {
   render () {
     if (!this.user) return html``
     return html`
-      <div class="layout right-col">
+      <div class="layout">
         <main>
           <beaker-post-composer loadable></beaker-post-composer>
         </main>
-        <nav>
-          <beaker-search-input placeholder="Search this group"></beaker-search-input>
-          <beaker-topics loadable></beaker-topics>
-        </nav>
       </div>
     `
   }

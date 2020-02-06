@@ -8,7 +8,6 @@ ${spinnerCSS}
 
 :host {
   display: block;
-  padding-right: 10px;
 }
 
 beaker-post {

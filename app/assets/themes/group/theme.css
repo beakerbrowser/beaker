@@ -30,6 +30,21 @@ body {
   margin: 0;
 }
 
+body:before {
+  content: '';
+  display: block;
+  background: #f1f1f6;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 50px;
+  z-index: -1;
+
+  background: #fff;
+  box-shadow: 0 2px 3px #0002;
+}
+
 a {
   text-decoration: none;
   color: inherit;

@@ -30,7 +30,7 @@ const ROUTES = {
   'userProfile': /^\/(?<username>[^\/]+)\/?$/i,
   'userPosts': /^\/(?<username>[^\/]+)\/posts\/?$/i,
   'userComments': /^\/(?<username>[^\/]+)\/comments\/?$/i,
-  'post': /^\/(?<username>[^\/]+)\/posts\/(?<topic>[^\/]+)\/(?<filename>[^\/]+)$/i,
+  'post': /^\/(?<username>[^\/]+)\/posts\/(?<filename>[^\/]+)$/i,
   'comment': /^\/(?<username>[^\/]+)\/comments\/(?<filename>[^\/]+)$/i
 }
 
@@ -144,45 +144,50 @@ export class App extends LitElement {
     return html`
       <link rel="stylesheet" href="/theme/webfonts/fontawesome.css">
       <header>
-        <a class="brand" href="/">
-          <strong>${this.groupInfo.title}</strong>
-        </a>
-        <a href="/" title="Posts">Posts</a>
-        <a href="/comments" title="Comments">Comments</a>
-        <span class="spacer"></span>
-        ${this.groupInfo.writable ? html`
-          <a href="#" @click=${this.onClickAdminMenu}>
-            <span class="fas fa-toolbox"></span> Admin <span class="fas fa-caret-down"></span>
+        <div class="top">
+          <a class="brand" href="/">
+            <strong>${this.groupInfo.title}</strong>
           </a>
-        ` : ''}
-        ${this.user ? html`
+          <span class="spacer"></span>
+          ${this.groupInfo.writable ? html`
+            <a href="#" @click=${this.onClickAdminMenu}>
+              <span class="fas fa-toolbox"></span> Admin <span class="fas fa-caret-down"></span>
+            </a>
+          ` : ''}
           <a
-            class=${classMap({highlighted: this.notificationCount > 0 })}
-            href="/notifications"
-            title="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
-            data-tooltip="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
+            href="/users"
+            title="${this.userCount || ''} ${pluralize(this.userCount || 0, 'member')}"
+            data-tooltip="${this.userCount || ''} ${pluralize(this.userCount || 0, 'member')}"
           >
-            <span class="fas fa-fw fa-bell"></span>
-            ${typeof this.notificationCount === 'undefined' ? html`<span class="spinner"></span>` : this.notificationCount}
+            <span class="fas fa-fw fa-users"></span>
+            ${typeof this.userCount === 'undefined' ? html`<span class="spinner"></span>` : this.userCount}
           </a>
-        ` : ''}
-        <a
-          href="/users"
-          title="${this.userCount || ''} ${pluralize(this.userCount || 0, 'member')}"
-        >
-          <span class="fas fa-fw fa-users"></span>
-          ${typeof this.userCount === 'undefined' ? html`<span class="spinner"></span>` : `${this.userCount} ${pluralize(this.userCount || 0, 'member')}`}
-        </a>
-        ${this.registration.isRegistered ? html`
-          <a href="/${this.user.url.slice('hyper://'.length)}">
-            <span class="fas fa-fw fa-user-circle"></span>
-            ${this.user.title}
-          </a>
-          <a class="compose-btn" href="/compose"><span class="fas fa-plus"></span> New Post</a>
-        ` : this.registration.hasUser ? html`
-        ` : html`
-          <a href="#" @click=${this.onClickJoin}><span class="fas fa-user-plus"></span> Join This Group</a>
-        `}
+          ${this.registration.isRegistered ? html`
+            <a
+              class=${classMap({highlighted: this.notificationCount > 0 })}
+              href="/notifications"
+              title="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
+              data-tooltip="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
+            >
+              <span class="fas fa-fw fa-bell"></span>
+              ${typeof this.notificationCount === 'undefined' ? html`<span class="spinner"></span>` : this.notificationCount}
+            </a>
+            <a href="/${this.user.username}">
+              <span class="fas fa-fw fa-user-circle"></span>
+              ${this.user.title}
+            </a>
+            <a class="compose-btn" href="/compose"><span class="fas fa-plus"></span> New Post</a>
+          ` : this.registration.hasUser ? html`
+          ` : html`
+            <a href="#" @click=${this.onClickJoin}><span class="fas fa-user-plus"></span> Join This Group</a>
+          `}
+        </div>
+        <div class="bottom">
+          <a href="/" title="Posts">Posts</a>
+          <a href="/comments" title="Comments">Comments</a>
+          <span class="spacer"></span>
+          <beaker-search-input placeholder="Search this group"></beaker-search-input>
+        </div>
       </header>
       ${this.registration.hasUser && !this.registration.isRegistered ? html`
         <div class="flash-message">
@@ -233,7 +238,6 @@ export class App extends LitElement {
           loadable
           .user=${this.user}
           author=${this.routeParams.groups.username}
-          topic=${this.routeParams.groups.topic}
           filename=${this.routeParams.groups.filename}
         ></beaker-post-view>
       `

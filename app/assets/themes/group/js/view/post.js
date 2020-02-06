@@ -4,15 +4,12 @@ import * as toast from '../com/toast.js'
 import '../com/profiles/aside.js'
 import '../com/posts/post.js'
 import '../com/comments/thread.js'
-import '../com/search-input.js'
-import '../com/topics.js'
 
 export class PostView extends LitElement {
   static get properties () {
     return {
       user: {type: Object},
       author: {type: String},
-      topic: {type: String},
       filename: {type: String},
       post: {type: Object}
     }
@@ -26,13 +23,12 @@ export class PostView extends LitElement {
     super()
     this.user = undefined
     this.author = undefined
-    this.topic = undefined
     this.filename = undefined
     this.post = undefined
   }
 
   get path () {
-    return `/beaker-forum/posts/${this.topic}/${this.filename}`
+    return `/beaker-forum/posts/${this.filename}`
   }
 
   async load () {
@@ -84,7 +80,7 @@ export class PostView extends LitElement {
           margin-bottom: 100px;
         }
       </style>
-      <div class="layout right-col">
+      <div class="layout">
         <main>
           <beaker-post
             expanded
@@ -118,11 +114,6 @@ export class PostView extends LitElement {
             ></beaker-comments-thread>
           ` : html`<div class="spinner" style="margin-left: 40px"></div>`}
         </main>
-        <aside>
-          <beaker-profile-aside class="dark" loadable .user=${this.user} id=${this.author}></beaker-profile-aside>
-          <beaker-search-input placeholder="Search this group"></beaker-search-input>
-          <beaker-topics loadable></beaker-topics>
-        </aside>
       </div>
     `
   }

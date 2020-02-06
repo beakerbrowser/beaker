@@ -36,8 +36,7 @@ export async function generatePosts (numPosts = 10) {
       let title = fake_post_words.slice(startWord, numWords).join(' ')
       await uwg.posts.addLink({
         href: 'https://beakerbrowser.com',
-        title,
-        topic: 'debug posts'
+        title
       }, drive)
     }
   }

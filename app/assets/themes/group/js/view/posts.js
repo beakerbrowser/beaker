@@ -1,7 +1,5 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import '../com/posts/feed.js'
-import '../com/search-input.js'
-import '../com/topics.js'
 
 export class PostsView extends LitElement {
   static get properties () {
@@ -17,7 +15,6 @@ export class PostsView extends LitElement {
   constructor () {
     super()
     this.user = undefined
-    this.topic = (new URLSearchParams(location.search)).get('topic') || undefined
   }
 
   async load () {
@@ -27,14 +24,10 @@ export class PostsView extends LitElement {
 
   render () {
     return html`
-      <div class="layout right-col">
+      <div class="layout">
         <main>
-          <beaker-posts-feed loadable .user=${this.user} .topic=${this.topic}></beaker-posts-feed>
+          <beaker-posts-feed loadable .user=${this.user}></beaker-posts-feed>
         </main>
-        <nav>
-          <beaker-search-input placeholder="Search this group"></beaker-search-input>
-          <beaker-topics loadable></beaker-topics>
-        </nav>
       </div>
     `
   }

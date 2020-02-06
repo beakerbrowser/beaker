@@ -10,7 +10,6 @@ ${spinnerCSS}
   --input-bg-color: #f1f1f6;
   --input-border-radius: 16px;
   display: block;
-  margin-right: 16px;
 }
 
 .search-container {

@@ -4,7 +4,7 @@ import postCSS from '../../../css/com/posts/post.css.js'
 import { timeDifference } from '../../lib/time.js'
 import { emit } from '../../lib/dom.js'
 import { writeToClipboard } from '../../lib/clipboard.js'
-import { toNiceDomain, toNiceTopic, toNiceDriveType, pluralize } from '../../lib/strings.js'
+import { toNiceDomain, toNiceDriveType, pluralize } from '../../lib/strings.js'
 import MarkdownIt from '../../../vendor/markdown-it.js'
 import * as uwg from '../../lib/uwg.js'
 import * as contextMenu from '../context-menu.js'
@@ -78,7 +78,7 @@ export class Post extends LitElement {
 
     var postMeta = this.post.stat.metadata
     var viewProfileUrl = '/' + this.post.drive.username
-    var viewPostUrl = viewProfileUrl + '/posts/' + this.post.url.split('/').slice(-2).join('/')
+    var viewPostUrl = viewProfileUrl + '/posts/' + this.post.url.split('/').pop()
     var href = isLink ? postMeta.href : this.post.url
     var userVote = this.getUserVote()
     var karma = this.getKarma()
@@ -114,8 +114,7 @@ export class Post extends LitElement {
           <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
         <div>
-          <a class="topic" title=${toNiceTopic(this.post.topic)} href="/?topic=${encodeURIComponent(this.post.topic)}">${toNiceTopic(this.post.topic)}</a>
-          | by <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
+          by <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
           | posted <a href=${viewPostUrl}>${timeDifference(ctime, true, 'ago')}</a>
           | <a class="comments" href=${viewPostUrl}>
             ${this.post.numComments} ${pluralize(this.post.numComments, 'comment')}

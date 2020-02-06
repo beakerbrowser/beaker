@@ -10,7 +10,7 @@ ${tooltipCSS}
 
 :host {
   display: block;
-  max-width: 1200px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
@@ -65,16 +65,26 @@ ${tooltipCSS}
 }
 
 header {
+}
+
+header > div {
   display: flex;
   align-items: center;
-  margin: 4px 6px 10px;
   height: 50px;
   letter-spacing: 0.75px;
 }
 
+header .top {
+  color: #556;
+}
+
+header .bottom {
+  color: #556;
+}
+
 header a {
   display: block;
-  color: #556;
+  color: inherit;
   font-weight: 500;
   text-decoration: none;
   font-size: 14px;
@@ -94,14 +104,15 @@ header a.highlighted {
 }
 
 header .brand {
-  font-size: 17px;
+  font-size: 21px;
+  line-height: 1;
 }
 
 header .compose-btn {
   background: #4d84f3;
   color: #fff;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 13px;
   padding: 6px 12px;
   font-weight: normal;
   box-shadow: 0 1px 2px #0002;
@@ -116,6 +127,27 @@ header .compose-btn:hover {
 
 header .spacer {
   flex: 1;
+}
+
+nav.pills {
+  display: flex;
+  margin: 0 0 10px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+nav.pills a {
+  padding: 6px 16px;
+  border-radius: 4px;
+  margin-right: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+
+nav.pills a.selected,
+nav.pills a:hover {
+  cursor: pointer;
+  background: #eaeaf3;
 }
 
 .flash-message {
