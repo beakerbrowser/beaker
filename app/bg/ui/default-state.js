@@ -26,8 +26,7 @@ export function defaultWindowState () {
     minHeight,
     pages: defaultPageState(),
     isAlwaysOnTop: false,
-    hideShellInterface: false,
-    userSession: null
+    hideShellInterface: false
   }
 }
 

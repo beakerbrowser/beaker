@@ -10,7 +10,6 @@ export const FIXED_FILES = [
 ]
 
 export async function load () {
-  var profile = await navigator.filesystem.stat('/profile')
   var userFiles = []
   try {
     userFiles = await navigator.filesystem.readdir('/desktop', {includeStats: true})
@@ -20,7 +19,6 @@ export async function load () {
   }
   return [
     FIXED_FILES[0],
-    makeFixedLink('.profile.goto', `hyper://${profile.mount.key}`, 'My Profile'),
     FIXED_FILES[1]
   ].concat(userFiles)
 }

@@ -260,18 +260,6 @@ class ShellWindowNavbar extends LitElement {
     bg.views.createTab('beaker://watchlist', {setActive: true})
   }
 
-  async onClickUsersMenu (e) {
-    this.isUsersMenuOpen = true
-    var rect = e.currentTarget.getClientRects()[0]
-    await bg.views.toggleMenu('users', {
-      bounds: {
-        top: (rect.bottom|0),
-        right: (rect.right|0)
-      }
-    })
-    this.isUsersMenuOpen = false
-  }
-
   async onClickBrowserMenu (e) {
     this.isBrowserMenuOpen = true
     await bg.views.toggleMenu('browser')

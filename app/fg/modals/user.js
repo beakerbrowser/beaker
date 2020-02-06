@@ -14,7 +14,6 @@ class UserModal extends LitElement {
       thumbExt: {type: String},
       title: {type: String},
       description: {type: String},
-      setDefault: {type: Boolean},
       errors: {type: Object}
     }
   }
@@ -27,7 +26,6 @@ class UserModal extends LitElement {
     this.thumbExt = undefined
     this.title = ''
     this.description = ''
-    this.setDefault = false
     this.isTemporary = false
     this.errors = {}
   }
@@ -37,7 +35,6 @@ class UserModal extends LitElement {
     this.userUrl = params.url || ''
     this.title = params.title || ''
     this.description = params.description || ''
-    this.setDefault = params.isDefault
     this.isTemporary = params.isTemporary
     if (!this.userUrl) {
       // use default thumb
@@ -74,21 +71,7 @@ class UserModal extends LitElement {
           <hr>
 
           <div class="form-actions">
-            ${this.isTemporary ? html`<div></div>` : html`
-              <label class="toggle non-fullwidth">
-                <input
-                  type="checkbox"
-                  name="setDefault"
-                  value="setDefault"
-                  ?checked=${this.setDefault}
-                  @click=${this.onToggleSetDefault}
-                >
-                <div class="switch"></div>
-                <span class="text">
-                  Set as default user
-                </span>
-              </label>
-            `}
+            <div></div>
             <div>
               <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
               <button type="submit" class="btn primary" tabindex="5">Save</button>
@@ -132,10 +115,6 @@ class UserModal extends LitElement {
     this.description = e.target.value.trim()
   }
 
-  onToggleSetDefault (e) {
-    this.setDefault = !this.setDefault
-  }
-
   onClickCancel (e) {
     e.preventDefault()
     this.cbs.reject(new Error('Canceled'))
@@ -157,8 +136,7 @@ class UserModal extends LitElement {
         title: this.title,
         description: this.description,
         thumbBase64,
-        thumbExt: this.thumbExt,
-        setDefault: this.setDefault
+        thumbExt: this.thumbExt
       }
       if (this.userUrl) {
         this.cbs.resolve(await bg.users.edit(this.userUrl, data))

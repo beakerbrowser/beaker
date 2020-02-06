@@ -21,7 +21,7 @@ import * as modals from './subwindows/modals'
 import * as sidebars from './subwindows/sidebars'
 import * as siteInfo from './subwindows/site-info'
 import * as windowMenu from './window-menu'
-import { createShellWindow, getUserSessionFor } from './windows'
+import { createShellWindow } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
@@ -745,7 +745,6 @@ class Tab {
     }
     
     // fetch new state
-    var userSession = getUserSessionFor(this.browserWindow.webContents)
     var key
     try {
       key = await hyper.dns.resolveName(this.url)
@@ -755,20 +754,6 @@ class Tab {
       this.donateLinkHref = _get(this, 'driveInfo.links.payment.0.href')
     } catch (e) {
       this.driveInfo = null
-    }
-    if (!noEmit) this.emitUpdateState()
-
-    if (this.driveInfo) {
-      // determine the confirmed author
-      if (this.driveInfo.author) {
-        try {
-          if (this.driveInfo.author === userSession.url) {
-            this.confirmedAuthorTitle = (await users.get(userSession.url)).title
-          }
-        } catch (e) {
-          console.error(e)
-        }
-      }
     }
     if (!noEmit) this.emitUpdateState()
   }
@@ -1577,8 +1562,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var fsUrl = filesystem.get().url
     var menu = Menu.buildFromTemplate([
       { label: 'Start Page', click: () => tab.loadURL('beaker://desktop/') },
-      { label: 'My Home Drive', click: () => tab.loadURL(fsUrl) },
-      { label: 'My Profile', click: () => tab.loadURL(`${fsUrl}/profile`) }
+      { label: 'My Home Drive', click: () => tab.loadURL(fsUrl) }
     ])
     menu.popup({window: win})
   },

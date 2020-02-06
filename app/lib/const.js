@@ -10,18 +10,11 @@ export const ANALYTICS_CHECKIN_INTERVAL = ms('1w')
 // hyperdrive FS file paths
 export const PATHS = {
   // private fs
-  DEFAULT_USER: '/profile',
   DESKTOP: '/desktop',
   LIBRARY: '/library',
   LIBRARY_NS: (ns) => `/library/${ns}`,
   SYSTEM: '/system',
-  SYSTEM_NS: (ns) => `/system/${ns}`,
-
-  // user fs
-  COMMENTS: '/comments',
-  POSTS: '/posts',
-  FOLLOWS: '/follows',
-  VOTES: '/votes',
+  SYSTEM_NS: (ns) => `/system/${ns}`
 }
 
 // hyperdrive trash management

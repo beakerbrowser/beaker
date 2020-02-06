@@ -119,7 +119,7 @@ class CreateDriveModal extends LitElement {
     this.description = params.description || ''
     this.type = params.type || ''
     this.links = params.links
-    this.author = undefined // this.author = this.author || (await bg.users.getCurrent()).url
+    this.author = undefined // this.author = params.author
     await this.requestUpdate()
   }
 

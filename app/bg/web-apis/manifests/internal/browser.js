@@ -4,10 +4,6 @@ export default {
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
-  getUserSession: 'promise',
-  setUserSession: 'promise',
-  showEditProfileModal: 'promise',
-
   getSettings: 'promise',
   getSetting: 'promise',
   setSetting: 'promise',

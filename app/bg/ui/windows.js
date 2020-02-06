@@ -24,7 +24,6 @@ import * as tabSwitcherSubwindow from './subwindows/tab-switcher'
 import { findWebContentsParentWindow } from '../lib/electron'
 import * as settingsDb from '../dbs/settings'
 import { getEnvVar } from '../lib/env'
-import * as users from '../filesystem/users'
 import _pick from 'lodash.pick'
 
 const IS_WIN = process.platform === 'win32'
@@ -213,15 +212,6 @@ export function createShellWindow (windowState) {
   win.loadURL('beaker://shell-window')
   sessionWatcher.watchWindow(win, state)
 
-  // load the user session
-  if (!isValidUserSession(state.userSession)) {
-    users.getDefault().then(defaultUser => {
-      if (defaultUser) {
-        setUserSessionFor(win.webContents, {url: defaultUser.url})
-      }
-    })
-  }
-
   numActiveWindows++
   if (numActiveWindows === 1) {
     firstWindow = win.webContents.id
@@ -360,41 +350,6 @@ export function ensureOneWindowExists () {
   }
 }
 
-export function getUserSessionFor (wc) {
-  // fetch current session
-  var win = findWebContentsParentWindow(wc)
-  if (!win) win = tabManager.findContainingWindow(BrowserView.fromWebContents(wc))
-  if (!win) win = sidebarsSubwindow.findContainingWindow(BrowserView.fromWebContents(wc))
-  var sess = win ? sessionWatcher.getState(win).userSession : undefined
-
-  // return if good
-  if (sess && users.isUser(sess.url)) {
-    return sess
-  }
-
-  // fallback to default
-  let defUserUrl = users.getDefaultUrl()
-  if (defUserUrl) {
-    sess = {url: defUserUrl}
-    setUserSessionFor(wc, sess)
-    console.log('Window had to fallback to default user:', sess.url)
-    return sess
-  }
-
-  console.error('No user session available for window')
-  return null
-}
-
-export function setUserSessionFor (wc, userSession) {
-  var win = findWebContentsParentWindow(wc)
-  if (!win) win = tabManager.findContainingWindow(BrowserView.fromWebContents(wc))
-  return sessionWatcher.updateState(win, {userSession})
-}
-
-export function openProfileEditor (wc, sess) {
-  // return showShellModal(wc, 'edit-profile', sess) NEEDED? -prf
-}
-
 export function toggleShellInterface (win) {
   var isShellInterfaceHidden = !win.isShellInterfaceHidden
   win.isShellInterfaceHidden = isShellInterfaceHidden
@@ -434,10 +389,6 @@ function restoreBrowsingSession (previousSessionState) {
   if (windows.length) {
     for (let windowState of windows) {
       if (windowState) {
-        if (windowState.userSession && windowState.userSession.isTemporary) {
-          // dont recreate temporary user sessions
-          continue
-        }
         createShellWindow(windowState)
       }
     }
@@ -600,8 +551,4 @@ function sendScrollTouchBegin (e) {
 
 function getScreenAPI () {
   return require('electron').screen
-}
-
-function isValidUserSession (userSession) {
-  return userSession && typeof userSession === 'object'
 }

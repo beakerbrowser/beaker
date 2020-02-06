@@ -13,11 +13,8 @@ const exec = require('util').promisify(require('child_process').exec)
 import * as logLib from './logger'
 const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
-import * as users from './filesystem/users'
-import hyper from './hyper/index'
 import { convertDatArchive } from './dat/index'
 import {open as openUrl} from './open-url'
-import {getUserSessionFor, setUserSessionFor} from './ui/windows'
 import * as tabManager from './ui/tab-manager'
 import { updateSetupState } from './ui/setup-flow'
 import * as modals from './ui/subwindows/modals'
@@ -85,17 +82,6 @@ export async function setup () {
     setTimeout(scheduledAutoUpdate, 15e3) // wait 15s for first run
   }
 
-  // create a new user if none exists
-  var defaultUser = await users.getDefault()
-  if (!defaultUser) {
-    let drive = await hyper.drives.createNewDrive({
-      title: 'Anonymous',
-      type: 'user'
-    })
-    await drive.pda.writeFile('/thumb.jpg', await jetpack.cwd(__dirname).cwd('assets/img').readAsync('default-user-thumb.jpg', 'buffer'), 'binary')
-    await users.add(drive.url, true)
-  }
-
   // wire up events
   app.on('web-contents-created', onWebContentsCreated)
 
@@ -151,10 +137,6 @@ export const WEBAPI = {
   getInfo,
   checkForUpdates,
   restartBrowser,
-
-  getUserSession,
-  setUserSession,
-  showEditProfileModal,
 
   getSetting,
   getSettings,
@@ -504,36 +486,6 @@ export function restartBrowser () {
     app.relaunch()
     setTimeout(() => app.exit(0), 1e3)
   }
-}
-
-async function getUserSession () {
-  var sess = getUserSessionFor(this.sender)
-  // get session user info
-  if (!sess) return null
-  return users.get(sess.url)
-}
-
-async function setUserSession (url) {
-  // normalize the url
-  var urlp = new URL(url)
-  url = urlp.origin
-
-  // lookup the user
-  var user = await users.get(url)
-  if (!user) throw new Error('Invalid user URL')
-
-  // set the session
-  var userSession = {url: user.url}
-  setUserSessionFor(this.sender, userSession)
-}
-
-async function showEditProfileModal () {
-  var user
-  var sess = await getUserSession.call(this)
-  if (sess) user = await users.get(sess.url)
-  else user = await users.getDefault()
-  await modals.create(this.sender, 'user', user)
-  return users.get(user.url)
 }
 
 export function getSetting (key) {

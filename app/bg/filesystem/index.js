@@ -1,7 +1,6 @@
 import { join as joinPath } from 'path'
 import * as logLib from '../logger'
 const logger = logLib.category('filesystem')
-import slugify from 'slugify'
 import hyper from '../hyper/index'
 import * as db from '../dbs/profile-data-db'
 import * as users from './users'
@@ -88,11 +87,9 @@ export async function setup () {
     await rootDrive.pda.writeFile('/desktop/beaker.network.goto', '', {metadata: {href: 'https://beaker.network/', title: 'Beaker.Network'}})
 
     // ensure all user mounts are set
-    for (let user of userList) {
-      if (user.isDefault) {
-        await ensureMount(PATHS.DEFAULT_USER, user.url)
-      }
-    }
+    // TODO
+    // for (let user of userList) {
+    // }
   } catch (e) {
     console.error('Error while constructing the root drive', e.toString())
     logger.error('Error while constructing the root drive', {error: e.toString()})
@@ -105,14 +102,6 @@ export async function setup () {
     console.error('Error while reading the drive configuration at /system/drives.json', e.toString())
     logger.error('Error while reading the drive configuration at /system/drives.json', {error: e.toString()})
   }
-}
-
-/**
- * @param {string} url 
- * @returns {Promise<void>}
- */
-export async function setDefaultUser (url) {
-  await ensureMount(PATHS.DEFAULT_USER, url)
 }
 
 /**

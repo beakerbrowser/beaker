@@ -2,16 +2,15 @@ import { BaseSlideView } from './base-slide-view.js'
 
 const SIDENOTES = [
   'It contains all of your personal data, including your <strong><span class="far fa-star"></span>Bookmarks</strong> and <strong><span class="fas fa-cog"></span> Settings</strong>.',
-  'It contains your public content, including your <strong><span class="fas fa-user-friends"></span> Follows</strong> and <strong><span class="fas fa-rss"></span> Posts</strong>.',
-  'Anything you put in <code>~/</code> is private!',
-  'Anything you put in <code>~/profile</code> is public!'
+  'A Hyperdrive is a set of files that lives on the peer-to-peer network.',
+  'There are plenty of templates to get you started.'
 ]
 
 const SIDENOTE_TOPS = [
   '160px',
   '210px',
   '260px',
-  '320px'
+  // '320px'
 ]
 
 customElements.define('fs-explainer-view', class extends BaseSlideView {
@@ -70,13 +69,10 @@ p.info.grayed {
   <span class="bullet">&bull;</span> You have a private <strong><span class="fas fa-home"></span> Home Drive</strong>.
 </p>
 <p class="info grayed">
-  <span class="bullet">&bull;</span> You also have a public <strong><span class="fas fa-user-circle"></span> Profile</strong>.
+  <span class="bullet">&bull;</span> You can create new <strong><span class="far fa-hdd"></span> Hyperdrives</strong> to share.
 </p>
 <p class="info grayed">
-  <span class="bullet">&bull;</span> Your <strong><span class="fas fa-home"></span> Home Drive</strong> is located at <code>~/</code><br>
-</p>
-<p class="info grayed">
-  <span class="bullet">&bull;</span> Your <strong><span class="fas fa-user-circle"></span> Profile</strong> is located at <code>~/profile</code>.
+  <span class="bullet">&bull;</span> <strong><span class="far fa-hdd"></span> Hyperdrives</strong> can serve websites, files, code modules, user groups, and more.
 </p>
 <p class="sidenote">
   ${SIDENOTES[0]}

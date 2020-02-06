@@ -96,7 +96,7 @@ class CloneDriveModal extends LitElement {
     this.title = params.title || ''
     this.description = params.description || ''
     this.type = params.type
-    this.author = this.author || (await bg.users.getCurrent()).url
+    this.author = this.author
     this.links = params.links
     this.networked = ('networked' in params) ? params.networked : true
     await this.requestUpdate()

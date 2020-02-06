@@ -17,7 +17,6 @@ import { PATHS } from '../../lib/const'
  * @prop {number} id
  * @prop {string} url
  * @prop {DaemonHyperdrive} drive
- * @prop {boolean} isDefault
  * @prop {boolean} isTemporary
  * @prop {string} title
  * @prop {string} description
@@ -59,7 +58,6 @@ export async function setup () {
     // massage data
     user.url = normalizeUrl(user.url)
     user.drive = null
-    user.isDefault = Boolean(user.isDefault)
     user.createdAt = new Date(user.createdAt)
     logger.info('Loading user', {details: {url: user.url}})
 
@@ -79,12 +77,6 @@ export async function setup () {
     } catch (err) {
       logger.error('Failed to load user', {details: {user, err}})
     }
-
-    // ensure file structure
-    await ensureDirectory(user, PATHS.COMMENTS)
-    await ensureDirectory(user, PATHS.FOLLOWS)
-    await ensureDirectory(user, PATHS.POSTS)
-    await ensureDirectory(user, PATHS.VOTES)
   }))
 
   // remove any invalid users
@@ -123,30 +115,11 @@ export async function get (url) {
 }
 
 /**
- * @return {Promise<User>}
- */
-export async function getDefault () {
-  var user = users.find(user => user.isDefault === true)
-  if (!user) return null
-  return fetchUserInfo(user)
-}
-
-/**
- * @return {string}
- */
-export function getDefaultUrl () {
-  var user = users.find(user => user.isDefault === true)
-  if (!user) return null
-  return user.url
-}
-
-/**
  * @param {string} url
- * @param {boolean} [setDefault=false]
  * @param {boolean} [isTemporary=false]
  * @returns {Promise<User>}
  */
-export async function add (url, setDefault = false, isTemporary = false) {
+export async function add (url, isTemporary = false) {
   // validate
   await validateUserUrl(url)
 
@@ -159,14 +132,13 @@ export async function add (url, setDefault = false, isTemporary = false) {
   var user = /** @type User */({
     url,
     drive: null,
-    isDefault: setDefault || users.length === 0,
     isTemporary,
     createdAt: new Date()
   })
   logger.verbose('Adding user', {details: user.url})
   var dbres = await db.run(
-    `INSERT INTO users (url, isDefault, isTemporary, createdAt) VALUES (?, ?, ?, ?)`,
-    [user.url, Number(user.isDefault), Number(user.isTemporary), Number(user.createdAt)]
+    `INSERT INTO users (url, isTemporary, createdAt) VALUES (?, ?, ?, ?)`,
+    [user.url, Number(user.isTemporary), Number(user.createdAt)]
   )
   user.id = dbres.lastID
   users.push(user)
@@ -176,17 +148,6 @@ export async function add (url, setDefault = false, isTemporary = false) {
   user.url = user.drive.url // copy the drive url, which includes the domain if set
   events.emit('load-user', user)
 
-  // establish the default user
-  if (user.isDefault) {
-    await filesystem.setDefaultUser(user.url)
-  }
-
-  // ensure file structure
-  await ensureDirectory(user, PATHS.COMMENTS)
-  await ensureDirectory(user, PATHS.FOLLOWS)
-  await ensureDirectory(user, PATHS.POSTS)
-  await ensureDirectory(user, PATHS.VOTES)
-
   return fetchUserInfo(user)
 };
 
@@ -195,7 +156,6 @@ export async function add (url, setDefault = false, isTemporary = false) {
  * @param {Object} opts
  * @param {string} [opts.title]
  * @param {string} [opts.description]
- * @param {boolean} [opts.setDefault]
  * @returns {Promise<User>}
  */
 export async function edit (url, opts) {
@@ -209,13 +169,6 @@ export async function edit (url, opts) {
   // update the user
   if (opts.title) user.title = opts.title
   if (opts.description) user.description = opts.title
-  if (opts.setDefault) {
-    try { users.find(user => user.isDefault).isDefault = false }
-    catch (e) { /* ignore, no existing default */ }
-    user.isDefault = true
-    await db.run(`UPDATE users SET isDefault = 0 WHERE isDefault = 1`)
-    await db.run(`UPDATE users SET isDefault = 1 WHERE url = ?`, [user.url])
-  }
   logger.verbose('Updated user', {details: user.url})
 
   // fetch the user drive
@@ -264,7 +217,6 @@ async function fetchUserInfo (user) {
     id: user.id,
     url: user.drive.url,
     drive: user.drive,
-    isDefault: user.isDefault,
     isTemporary: user.isTemporary,
     title: meta.title,
     description: meta.description,
@@ -291,29 +243,5 @@ async function validateUserUrl (url) {
   var meta = await archivesDb.getMeta(urlp.hostname)
   if (!meta.writable) {
     throw new Error('User drive is not owned by this device')
-  }
-}
-
-async function stat (user, path) {
-  try { return await user.drive.pda.stat(path) }
-  catch (e) { return null }
-}
-
-/**
- * @param {User} user
- * @param {string} path
- * @returns {Promise<void>}
- */
-async function ensureDirectory (user, path) {
-  try {
-    let st = await stat(user, path)
-    if (!st) {
-      logger.info(`Creating directory ${path}`)
-      await user.drive.pda.mkdir(path)
-    } else if (!st.isDirectory()) {
-      logger.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
-    }
-  } catch (e) {
-    logger.error('Filesystem failed to make directory', {path: '' + path, error: e.toString()})
   }
 }

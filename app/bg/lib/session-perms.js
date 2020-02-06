@@ -1,4 +1,3 @@
-import * as windows from '../ui/windows'
 import * as users from '../filesystem/users'
 import * as userSiteSessions from '../filesystem/site-sessions'
 import * as drives from '../hyper/drives'
@@ -17,13 +16,13 @@ import libTools from '@beaker/library-tools'
 // =
 
 export async function getSessionUserId (sender) {
-  var userSession = windows.getUserSessionFor(sender)
+  var userSession = undefined // TODO windows.getUserSessionFor(sender)
   if (!userSession) throw new Error('No active user session')
   return (await users.get(userSession.url)).id
 }
 
 export async function getSessionUserDrive (sender) {
-  var userSession = windows.getUserSessionFor(sender)
+  var userSession = undefined // TODO windows.getUserSessionFor(sender)
   if (!userSession) throw new Error('No active user session')
   var key = await drives.fromURLToKey(userSession.url, true)
   return drives.getDrive(key)
@@ -140,23 +139,6 @@ export async function isTrustedApp (sender) {
 
 // internal methods
 // =
-
-/**
- * @param {Object} sender
- * @returns {Promise<boolean>}
- */
-async function senderHasViewerApp (sender) {
-  var url = sender.getURL()
-  var hasViewerApp = false
-  if (url.startsWith('dat://')) {
-    let meta = await archivesDb.getMeta(url, {noDefault: true})
-    if (meta) {
-      let category = libTools.typeToCategory(meta.type, false)
-      hasViewerApp = !category || category !== 'website'
-    }
-  }
-  return hasViewerApp
-}
 
 /**
  * @param {UserSiteSession} sess

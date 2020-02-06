@@ -46,27 +46,17 @@ class BrowserMenu extends LitElement {
   }
 
   async init () {
-    this.user = await bg.users.getCurrent().catch(err => undefined)
-    this.users = await bg.users.list()
     this.bookmarks = await bg.bookmarks.list({sortBy: 'title'})
     await this.requestUpdate()
   }
 
   render () {
-    if (!this.user) {
-      return html`<div></div>`
-    }
-
     if (this.submenu === 'applications') {
       return this.renderApplications()
     }
 
     if (this.submenu === 'bookmarks') {
       return this.renderBookmarks()
-    }
-
-    if (this.submenu === 'switch-user') {
-      return this.renderSwitchUser()
     }
 
     if (this.submenu === 'tools') {
@@ -91,11 +81,23 @@ class BrowserMenu extends LitElement {
       <div class="wrapper">
         ${autoUpdaterEl}
 
-        <div class="menu-item user current-user" @click=${e => this.onOpenPage(e, this.user.url)}>
-          <img src="${this.user.url}/thumb?cache_buster=${Date.now()}">
-          <div class="user-details">
-            <div class="user-title">${this.user.title}</div>
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
+            <i class="far fa-window-restore"></i>
+            <span class="label">New Window</span>
+            <span class="shortcut">${this.accelerators.newWindow}</span>
           </div>
+
+          <div class="menu-item" @click=${e => this.onOpenFile()}>
+            <i class="far fa-folder-open"></i>
+            <span class="label">Open File...</span>
+            <span class="shortcut">${this.accelerators.openFile}</span>
+          </div>
+
+          ${''/*<div class="menu-item" @click=${this.onClickSavePage}>
+            <i class="fas fa-file-export"></i>
+            Export page as file
+          </div>*/}
         </div>
 
         <div class="section">
@@ -110,41 +112,11 @@ class BrowserMenu extends LitElement {
             <i class="more fa fa-angle-right"></i>
           </div>
 
-          ${''/* TODO <div class="menu-item" @click=${e => this.onShowSubmenu('switch-user')}>
-            <i class="far fa-user"></i>
-            <span class="label">Switch user</span>
-            <i class="more fas fa-angle-right"></i>
-          </div>*/}
-
           <div class="menu-item" @click=${e => this.onShowSubmenu('tools')}>
             <i class="fas fa-tools"></i>
             <span class="label">Tools</span>
             <i class="more fa fa-angle-right"></i>
           </div>
-        </div>
-
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
-            <i class="far fa-window-restore"></i>
-            <span class="label">New Window</span>
-            <span class="shortcut">${this.accelerators.newWindow}</span>
-          </div>
-
-          <div class="menu-item" @click=${this.onCreateNew}>
-            <i class="far fa-hdd"></i>
-            <span class="label">New Hyperdrive</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenFile()}>
-            <i class="far fa-folder-open"></i>
-            <span class="label">Open File...</span>
-            <span class="shortcut">${this.accelerators.openFile}</span>
-          </div>
-
-          ${''/*<div class="menu-item" @click=${this.onClickSavePage}>
-            <i class="fas fa-file-export"></i>
-            Export page as file
-          </div>*/}
         </div>
 
         <div class="section">
@@ -196,42 +168,6 @@ class BrowserMenu extends LitElement {
               <span class="label">${b.title}</span>
             </div>
           `)}
-        </div>
-      </div>`
-  }
-
-
-  renderSwitchUser () {
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
-        <div class="header">
-          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
-            <i class="fa fa-angle-left"></i>
-          </button>
-          <h2>Switch user</h2>
-        </div>
-
-        <hr>
-
-        ${this.users.map(user => html`
-          <div class="menu-item user" @click=${e => this.onOpenUser(e, user)}>
-            <img src="asset:thumb:${user.url}?cache_buster=${Date.now()}">
-            <div class="user-details">
-              <div class="user-title">${user.title}</div>
-            </div>
-          </div>
-        `)}
-
-        <hr>
-
-        <div class="menu-item" @click=${this.onCreateNewUser}>
-          <i class="fas fa-plus"></i>
-          <span>New user</span>
-        </div>
-        <div class="menu-item" @click=${this.onCreateTemporaryUser}>
-          <i class="far fa-user"></i>
-          <span>Temporary user</span>
         </div>
       </div>`
   }
@@ -332,31 +268,6 @@ class BrowserMenu extends LitElement {
     this.requestUpdate()
   }
 
-  async onCreateNew (e) {
-    bg.shellMenus.close()
-
-    // create a new drive
-    const url = await bg.hyperdrive.createDrive()
-    bg.beakerBrowser.openUrl(url, {setActive: true, sidebarPanels: ['editor-app']})
-  }
-
-  onOpenUser (e, user) {
-    bg.shellMenus.createWindow({userSession: user})
-    bg.shellMenus.close()
-  }
-
-  async onCreateNewUser () {
-    bg.shellMenus.close()
-    var user = await bg.shellMenus.createModal('user', {})
-    bg.shellMenus.createWindow({userSession: {url: user.url}})
-  }
-
-  async onCreateTemporaryUser () {
-    bg.shellMenus.close()
-    var user = await bg.users.createTemporary()
-    bg.shellMenus.createWindow({userSession: {url: user.url, isTemporary: true}})
-  }
-
   onOpenPage (e, url) {
     bg.shellMenus.createTab(url)
     bg.shellMenus.close()
@@ -455,33 +366,6 @@ BrowserMenu.styles = [commonCSS, css`
 .menu-item.downloads progress {
   margin-left: 20px;
   width: 100px;
-}
-
-.menu-item.user {
-  display: flex;
-  align-items: center;
-  font-size: 15px;
-  font-weight: 400;
-  height: 60px;
-}
-
-.menu-item.user img {
-  margin-right: 14px;
-  height: 40px;
-  width: 40px;
-  border-radius: 50%;
-}
-
-.menu-item.current-user {
-  height: 76px;
-  border-bottom: 1px solid #ccc;
-  cursor: default;
-  font-size: 18px;
-}
-
-.menu-item.current-user img {
-  height: 48px;
-  width: 48px;
 }
 `]
 

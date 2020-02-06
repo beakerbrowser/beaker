@@ -100,7 +100,6 @@ class WebTerm extends LitElement {
     this.url = url
 
     this.envVars.home = navigator.filesystem.url
-    this.envVars.profile = 'hyper://' + (await navigator.filesystem.stat('/profile')).mount.key
 
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {

@@ -51,9 +51,6 @@ export default {
    * @returns {Promise<string[]>}
    */
   async selectFileDialog (opts = {}) {
-    var userSession = windows.getUserSessionFor(this.sender)
-    if (!userSession) throw new Error('No active user session')
-
     // validate
     assert(opts && typeof opts === 'object', 'Must pass an options object')
     assert(!opts.title || typeof opts.title === 'string', '.title must be a string')
@@ -102,9 +99,6 @@ export default {
    * @returns {Promise<string[]>}
    */
   async saveFileDialog (opts = {}) {
-    var userSession = windows.getUserSessionFor(this.sender)
-    if (!userSession) throw new Error('No active user session')
-
     // validate
     assert(opts && typeof opts === 'object', 'Must pass an options object')
     assert(!opts.title || typeof opts.title === 'string', '.title must be a string')

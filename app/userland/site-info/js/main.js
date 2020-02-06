@@ -120,7 +120,6 @@ class SiteInfoApp extends LitElement {
   reset () {
     this.url = ''
     this.view = undefined
-    this.user = undefined
     this.isLoading = true
     this.readOnly = true
     this.info = undefined
@@ -131,12 +130,6 @@ class SiteInfoApp extends LitElement {
     this.isLoading = true
     if (!this.url) return
     try {
-      if (!this.user) {
-        let st = await navigator.filesystem.stat('/profile')
-        let userDrive = new Hyperdrive(st.mount.key)
-        this.user = await userDrive.getInfo()
-      }
-
       this.info = {}
       if (this.isDrive) {
         // get drive info

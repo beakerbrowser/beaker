@@ -32,16 +32,7 @@ export class DrivesApp extends LitElement {
   }
 
   async load () {
-    var drives
-    if (this.category === 'system') {
-      let profileStat = await navigator.filesystem.stat('/profile')
-      drives = [
-        await beaker.drives.get(navigator.filesystem.url),
-        await beaker.drives.get(profileStat.mount.key)
-      ]
-    } else {
-      drives = await beaker.drives.list({includeSystem: true})
-    }
+    var drives = await beaker.drives.list({includeSystem: true})
 
     if (this.category === 'files') {
       drives = drives.filter(drive => !drive.info.type)
@@ -55,6 +46,8 @@ export class DrivesApp extends LitElement {
       drives = drives.filter(drive => drive.info.type === 'webterm.sh/cmd-pkg')
     } else if (this.category === 'other') {
       drives = drives.filter(drive => !['', 'website', 'module', 'wiki', 'webterm.sh/cmd-pkg'].includes(drive.info.type || ''))
+    } else if (this.category === 'system') {
+      drives = drives.filter(drive => drive.ident.system)
     }
 
     drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))

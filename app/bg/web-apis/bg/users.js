@@ -1,4 +1,3 @@
-import * as windows from '../../ui/windows'
 import * as modals from '../../ui/subwindows/modals'
 import * as users from '../../filesystem/users'
 import hyper from '../../hyper/index'
@@ -11,9 +10,7 @@ import hyper from '../../hyper/index'
  *
  * @typedef {Object} WebAPIUser
  * @prop {string} url
- * @prop {boolean} isDefault
  * @prop {boolean} isTemporary
- * @prop {boolean} isCurrent
  * @prop {string} title
  * @prop {string} description
  * @prop {string} createdAt
@@ -27,9 +24,8 @@ export default {
    * @returns {Promise<WebAPIUser[]>}
    */
   async list () {
-    var sessionUrl = getSessionUrl(this.sender)
     var records = await users.list()
-    return records.map(record => massageUserRecord(record, sessionUrl))
+    return records.map(record => massageUserRecord(record))
   },
 
   /**
@@ -37,38 +33,19 @@ export default {
    * @returns {Promise<WebAPIUser>}
    */
   async get (url) {
-    var sessionUrl = getSessionUrl(this.sender)
-    return massageUserRecord(await users.get(url), sessionUrl)
-  },
-
-  /**
-   * @returns {Promise<WebAPIUser>}
-   */
-  async getCurrent () {
-    var sessionUrl = getSessionUrl(this.sender)
-    return massageUserRecord(await users.get(sessionUrl), sessionUrl)
-  },
-
-  /**
-   * @returns {Promise<WebAPIUser>}
-   */
-  async getDefault () {
-    var sessionUrl = getSessionUrl(this.sender)
-    return massageUserRecord(await users.getDefault(), sessionUrl)
+    return massageUserRecord(await users.get(url))
   },
 
   /**
    * @returns {Promise<WebAPIUser>}
    */
   async showCreateDialog () {
-    var sessionUrl = getSessionUrl(this.sender)
     var user = await modals.create(this.sender, 'user', {})
-    return massageUserRecord(await users.get(user.url), sessionUrl)
+    return massageUserRecord(await users.get(user.url))
   },
 
   /**
    * @param {Object} opts
-   * @param {boolean} opts.setDefault
    * @param {string} opts.title
    * @param {string} opts.description
    * @param {string} opts.thumbBase64
@@ -76,8 +53,6 @@ export default {
    * @returns {Promise<WebAPIUser>}
    */
   async create (opts) {
-    var sessionUrl = getSessionUrl(this.sender)
-
     // create new drive
     var drive = await hyper.drives.createNewDrive({
       type: 'user',
@@ -91,15 +66,13 @@ export default {
     }
 
     // save user
-    return massageUserRecord(await users.add(drive.url), sessionUrl)
+    return massageUserRecord(await users.add(drive.url))
   },
 
   /**
    * @returns {Promise<WebAPIUser>}
    */
   async createTemporary () {
-    var sessionUrl = getSessionUrl(this.sender)
-
     // create new drive
     var drive = await hyper.drives.createNewDrive({
       type: 'user',
@@ -108,7 +81,7 @@ export default {
     })
 
     // save user
-    return massageUserRecord(await users.add(drive.url, false, true), sessionUrl)
+    return massageUserRecord(await users.add(drive.url, true))
   },
 
   /**
@@ -116,14 +89,12 @@ export default {
    * @returns {Promise<WebAPIUser>}
    */
   async add (url) {
-    var sessionUrl = getSessionUrl(this.sender)
-    return massageUserRecord(await users.add(url), sessionUrl)
+    return massageUserRecord(await users.add(url))
   },
 
   /**
    * @param {string} url
    * @param {Object} opts
-   * @param {boolean} [opts.setDefault]
    * @param {string} [opts.title]
    * @param {string} [opts.description]
    * @param {string} [opts.thumbBase64]
@@ -131,8 +102,6 @@ export default {
    * @returns {Promise<WebAPIUser>}
    */
   async edit (url, opts) {
-    var sessionUrl = getSessionUrl(this.sender)
-
     // fetch user
     var user = await users.get(url)
     if (!user) return
@@ -152,7 +121,7 @@ export default {
 
     // update user
     await users.edit(url, opts)
-    return massageUserRecord(await users.get(url), sessionUrl)
+    return massageUserRecord(await users.get(url))
   },
 
   /**
@@ -161,45 +130,11 @@ export default {
    */
   async remove (url) {
     return users.remove(url)
-  },
-
-  /**
-   * Used by beaker://setup
-   * 
-   * @param {Object} opts
-   * @param {string} [opts.title]
-   * @param {string} [opts.description]
-   * @param {string} [opts.thumbBase64]
-   * @param {string} [opts.thumbExt]
-   */
-  async setupDefault (opts) {
-    var user = await users.getDefault()
-    await user.drive.pda.updateManifest({
-      title: opts.title,
-      description: opts.description
-    })
-    if (('thumbBase64' in opts) && opts.thumbBase64) {
-      await writeThumbnail(user.drive, opts.thumbBase64, opts.thumbExt)
-    }
-    await users.edit(user.url, opts)
   }
 }
 
 // internal methods
 // =
-
-function getSessionUrl (sender) {
-  try {
-    var userSession = windows.getUserSessionFor(sender)
-    if (!userSession) throw new Error('No active user session')
-    return userSession.url
-  } catch (e) {
-    if (sender.getURL().startsWith('beaker:')) {
-      return undefined
-    }
-    throw e
-  }
-}
 
 async function writeThumbnail (drive, base64, ext) {
   // remove any existing
@@ -216,12 +151,10 @@ async function writeThumbnail (drive, base64, ext) {
  * @param {User} record
  * @returns {WebAPIUser}
  */
-function massageUserRecord (record, sessionUrl) {
+function massageUserRecord (record) {
   return {
     url: record.url,
-    isDefault: record.isDefault,
     isTemporary: record.isTemporary,
-    isCurrent: record.url === sessionUrl,
     title: record.title,
     description: record.description,
     createdAt: record.createdAt.toISOString()

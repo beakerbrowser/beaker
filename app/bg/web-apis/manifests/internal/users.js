@@ -1,8 +1,6 @@
 export default {
   list: 'promise',
   get: 'promise',
-  getCurrent: 'promise',
-  getDefault: 'promise',
   showCreateDialog: 'promise',
   create: 'promise',
   createTemporary: 'promise',

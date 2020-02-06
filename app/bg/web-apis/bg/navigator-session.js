@@ -128,7 +128,7 @@ export default {
 // =
 
 async function getUser (sender) {
-  var userSession = windows.getUserSessionFor(sender)
+  var userSession = undefined // TODO windows.getUserSessionFor(sender)
   if (!userSession) throw new Error('No active user session')
   return users.get(userSession.url)
 }
