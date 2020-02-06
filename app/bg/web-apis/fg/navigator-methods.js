@@ -23,7 +23,13 @@ export const setup = function (rpc) {
 
   var filesystemApi = rpc.importAPI('navigator-filesystem', filesystemManifest, RPC_OPTS)
   try {
-    navigator.filesystem = new Hyperdrive(filesystemApi.get().url)
+    let fsUrl = undefined
+    Object.defineProperty(navigator, 'filesystem', {
+      get () {
+        if (!fsUrl) fsUrl = filesystemApi.get().url
+        return new Hyperdrive(fsUrl)
+      }
+    })
   } catch (e) {
     // not supported
   }
