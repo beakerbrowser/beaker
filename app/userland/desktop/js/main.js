@@ -165,6 +165,12 @@ class DesktopApp extends LitElement {
                 Code Snippet
               </div>
             </div>
+            <div class="dropdown-item" @click=${() => this.onCreateDrive('group')}>
+              <div class="label">
+                <i class="fas fa-fw fa-users"></i>
+                User Group
+              </div>
+            </div>
             <hr>
             <div class="dropdown-item" @click=${this.onCreateDriveFromFolder}>
               <div class="label">

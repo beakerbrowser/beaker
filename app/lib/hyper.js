@@ -128,7 +128,8 @@ export const BUILTIN_TYPES = [
   {type: 'website', theme: '', title: 'Website', img: 'website', scaffold: WEBSITE_SCAFFOLD},
   {type: 'wiki', theme: 'builtin:simple-wiki', img: 'simple-wiki', title: 'Wiki Site'},
   {type: 'module', theme: 'builtin:simple-module', img: 'simple-module', title: 'Module', scaffold: MODULE_SCAFFOLD},
-  {type: 'code-snippet', theme: 'builtin:code-snippet', img: 'code-snippet', title: 'Code Snippet'}
+  {type: 'code-snippet', theme: 'builtin:code-snippet', img: 'code-snippet', title: 'Code Snippet'},
+  {type: 'group', theme: 'builtin:group', img: 'group', title: 'User Group'}
 ]
 
 export const BUILTIN_THEMES = [
