@@ -1,9 +1,7 @@
 import { resolveParse, parseLocation, joinPath } from './util.js'
 import * as commandsModule from './commands.js'
-import * as socialModule from './social.js'
 
 export const commands = commandsModule
-export const social = socialModule
 
 // current working directory methods
 // =
