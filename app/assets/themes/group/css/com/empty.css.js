@@ -9,10 +9,11 @@ const cssStr = css`
   border-radius: 8px;
 }
 
+.empty .far,
 .empty .fas {
   font-size: 85px;
   margin-bottom: 30px;
-  color: #ccc;
+  color: #0002;
 }
 `
 export default cssStr

@@ -108,11 +108,11 @@ export class CommentsFeed extends LitElement {
           ${this.comments.length === 0
             ? html`
               <div class="empty">
-                <div><span class="fas fa-image"></span></div>
+                <div><span class="far fa-comment"></span></div>
                 <div>
                   ${this.author
                     ? 'This user has not made any comments.'
-                    : 'This is the comments feed. It will show comments from users in this group.'}
+                    : 'This group has not made any comments.'}
                 </div>
               </div>
             ` : ''}

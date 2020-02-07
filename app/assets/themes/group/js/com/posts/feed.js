@@ -79,11 +79,11 @@ export class PostsFeed extends LitElement {
           ${this.posts.length === 0
             ? html`
               <div class="empty">
-                <div><span class="fas fa-image"></span></div>
+                <div><span class="far fa-comment"></span></div>
                 <div>
                   ${this.author
                     ? 'This user has not posted anything.'
-                    : 'This is your feed. It will show posts from users in this group.'}
+                    : 'This group has not posted anything.'}
                 </div>
               </div>
             ` : ''}
