@@ -16,6 +16,36 @@ window.html.render = render
 
 const TAB_COMPLETION_RENDER_LIMIT = 15
 
+
+// Look up control/navigation keys via keycode.
+//
+// Taken from https://github.com/ccampbell/mousetrap/blob/2f9a476ba6158ba69763e4fcf914966cc72ef433/mousetrap.js#L39-L62,
+// licensed under the Apache-2.0.
+const KEYCODE_MAP = {
+  8: 'backspace',
+  9: 'tab',
+  13: 'enter',
+  16: 'shift',
+  17: 'ctrl',
+  18: 'alt',
+  20: 'capslock',
+  27: 'esc',
+  32: 'space',
+  33: 'pageup',
+  34: 'pagedown',
+  35: 'end',
+  36: 'home',
+  37: 'left',
+  38: 'up',
+  39: 'right',
+  40: 'down',
+  45: 'ins',
+  46: 'del',
+  91: 'meta',
+  93: 'meta',
+  224: 'meta'
+}
+
 class WebTerm extends LitElement {
   static get styles () {
     return [css]
@@ -726,20 +756,21 @@ class WebTerm extends LitElement {
   // =
 
   onKeyDown (e) {
+    let keycode = KEYCODE_MAP[e.which];
     if (e.code === 'KeyL' && e.ctrlKey) {
       e.preventDefault()
       this.clearHistory()
-    } else if (e.code === 'ArrowUp' || (e.code === 'KeyP' && e.ctrlKey)) {
+    } else if ((keycode === 'up') || (e.code === 'KeyP' && e.ctrlKey)) {
       e.preventDefault()
       this.shadowRoot.querySelector('.prompt input').value = this.commandHist.prevUp()
-    } else if (e.code === 'ArrowDown' || (e.code === 'KeyN' && e.ctrlKey)) {
+    } else if ((keycode === 'down') || (e.code === 'KeyN' && e.ctrlKey)) {
       e.preventDefault()
       this.shadowRoot.querySelector('.prompt input').value = this.commandHist.prevDown()
-    } else if (e.code === 'Escape') {
+    } else if ((keycode === 'esc') || (e.code === 'Escape')) {
       e.preventDefault()
       this.shadowRoot.querySelector('.prompt input').value = ''
       this.commandHist.reset()
-    } else if (e.code === 'Tab') {
+    } else if ((keycode === 'tab') || (e.code === 'Tab')) {
       // NOTE: subtle behavior here-
       // we prevent default on keydown to maintain focus
       // we trigger tabcomplete on keyup to make sure it runs after
@@ -750,9 +781,10 @@ class WebTerm extends LitElement {
   }
 
   onPromptKeyUp (e) {
-    if (e.code === 'Enter') {
+    let keycode = KEYCODE_MAP[e.which];
+    if ((keycode === 'enter') || (e.code === 'Enter')) {
       this.evalPrompt()
-    } else if (e.code === 'Tab') {
+    } else if ((keycode === 'tab') || (e.code === 'Tab')) {
       this.triggerTabComplete()
     } else {
       this.readTabCompletionOptions()
