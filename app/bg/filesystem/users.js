@@ -42,7 +42,7 @@ export const removeListener = events.removeListener.bind(events)
  */
 export async function setup () {
   var queryRes = await query(filesystem.get(), {path: '/profiles/*', type: 'mount'})
-  userUrls = queryRes.map(res => `hyper://${res.mount}`)
+  userUrls = queryRes.map(res => res.mount)
 }
 
 /**

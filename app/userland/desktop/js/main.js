@@ -135,16 +135,22 @@ class DesktopApp extends LitElement {
             }
           </style>
           <div class="dropdown-items roomy no-border">
-            <div class="dropdown-item" @click=${() => this.onCreateDrive()}>
-              <div class="label">
-                <i class="far fa-fw fa-hdd"></i>
-                Files drive
-              </div>
-            </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('website')}>
               <div class="label">
                 <i class="fas fa-fw fa-desktop"></i>
                 Website
+              </div>
+            </div>
+            <div class="dropdown-item" @click=${() => this.onCreateDrive('group')}>
+              <div class="label">
+                <i class="fas fa-fw fa-users"></i>
+                User Group
+              </div>
+            </div>
+            <div class="dropdown-item" @click=${() => this.onCreateDrive()}>
+              <div class="label">
+                <i class="far fa-fw fa-hdd"></i>
+                Files drive
               </div>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('wiki')}>
@@ -163,12 +169,6 @@ class DesktopApp extends LitElement {
               <div class="label">
                 <i class="fas fa-fw fa-code"></i>
                 Code Snippet
-              </div>
-            </div>
-            <div class="dropdown-item" @click=${() => this.onCreateDrive('group')}>
-              <div class="label">
-                <i class="fas fa-fw fa-users"></i>
-                User Group
               </div>
             </div>
             <hr>

@@ -8,7 +8,21 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../css/main.css.js'
 
 const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hyper://'.length)}`
-const BEAKER_NETWORK_URL = drive => `https://beaker.network/${(new URL(drive.url)).hostname}`
+const CATEGORIES = {
+  all: [
+    {id: 'website', label: 'Websites' },
+    {id: 'group', label: 'User Groups' },
+    {id: 'files', label: 'Files drives' },
+    {id: 'wiki', label: 'Wikis' },
+    {id: 'module', label: 'Modules' },
+    {id: 'code-snippet', label: 'Code Snippets' },
+    {id: 'other', label: 'Other' }
+  ],
+  system: [
+    {id: 'user', label: 'My Users'},
+    {id: 'webterm.sh/cmd-pkg', label: 'Webterm commands'}
+  ]
+}
 
 export class DrivesApp extends LitElement {
   static get properties () {
@@ -34,21 +48,24 @@ export class DrivesApp extends LitElement {
   async load () {
     var drives = await beaker.drives.list({includeSystem: true})
 
+    const isSystem = drive => drive.ident.system || drive.info.type === 'webterm.sh/cmd-pkg'
     if (this.category === 'files') {
-      drives = drives.filter(drive => !drive.info.type)
-    } else if (this.category === 'websites') {
-      drives = drives.filter(drive => drive.info.type === 'website')
-    } else if (this.category === 'modules') {
-      drives = drives.filter(drive => drive.info.type === 'module')
-    } else if (this.category === 'wikis') {
-      drives = drives.filter(drive => drive.info.type === 'wiki')
-    } else if (this.category === 'webterm-cmds') {
-      drives = drives.filter(drive => drive.info.type === 'webterm.sh/cmd-pkg')
+      drives = drives.filter(drive => !isSystem(drive) && !drive.info.type)
     } else if (this.category === 'other') {
-      drives = drives.filter(drive => !['', 'website', 'module', 'wiki', 'webterm.sh/cmd-pkg'].includes(drive.info.type || ''))
+      drives = drives.filter(drive => (
+        !isSystem(drive) &&
+        !['', 'website', 'wiki', 'group', 'module', 'code-snippet'].includes(drive.info.type || '')
+      ))
+    } else if (this.category === 'all') {
+      drives = drives.filter(drive => !isSystem(drive))
     } else if (this.category === 'system') {
-      drives = drives.filter(drive => drive.ident.system)
+      drives = drives.filter(drive => isSystem(drive))
+    } else if (this.category === 'user') {
+      drives = drives.filter(drive => isSystem(drive) && drive.info.type === 'user')
+    } else {
+      drives = drives.filter(drive => drive.info.type === this.category)
     }
+    console.log(drives)
 
     drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
 
@@ -73,14 +90,19 @@ export class DrivesApp extends LitElement {
       items: [
         html`<div class="section-header light small">New drive</a>`,
         {
-          icon: 'far fa-fw fa-folder-open',
-          label: 'Files drive',
-          click: () => this.newDrive()
-        },
-        {
           icon: 'fas fa-fw fa-desktop',
           label: 'Website',
           click: () => this.newDrive('website')
+        },
+        {
+          icon: 'fas fa-fw fa-users',
+          label: 'User Group',
+          click: () => this.newDrive('group')
+        },
+        {
+          icon: 'far fa-fw fa-folder-open',
+          label: 'Files drive',
+          click: () => this.newDrive()
         },
         {
           icon: 'far fa-fw fa-file-word',
@@ -96,11 +118,6 @@ export class DrivesApp extends LitElement {
           icon: 'fas fa-fw fa-code',
           label: 'Code Snippet',
           click: () => this.newDrive('code-snippet')
-        },
-        {
-          icon: 'fas fa-fw fa-users',
-          label: 'User Group',
-          click: () => this.newDrive('group')
         }
       ]
     })
@@ -131,11 +148,6 @@ export class DrivesApp extends LitElement {
           `,
           label: 'Open with Files Explorer',
           click: () => window.open(EXPLORER_URL(drive))
-        },
-        {
-          icon: html`<i><img src="/img/beaker-network-icon.svg" style="width: 14px"></i>`,
-          label: 'Open with Beaker.Network',
-          click: () => window.open(BEAKER_NETWORK_URL(drive))
         },
         '-',
         {
@@ -218,9 +230,12 @@ export class DrivesApp extends LitElement {
   // =
 
   render () {
+    var currentParentCategoryId = (this.category in CATEGORIES)
+      ? false
+      : Object.entries(CATEGORIES).find(([parentId, items]) => items.find(item => item.id === this.category))[0]
     const navItem = (id, label) => html`
       <a
-        class=${classMap({selected: id === this.category})}
+        class=${classMap({selected: id === this.category || id === currentParentCategoryId, partially: id === currentParentCategoryId})}
         @click=${e => { this.setCategory(id) }}
       >${label}</a>
     `
@@ -235,21 +250,19 @@ export class DrivesApp extends LitElement {
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <nav>
         <div class="top-ctrl">
+          <span class="fas fa-search"></span>
           <input placeholder="Filter" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
           <button class="primary" @click=${this.onClickNew}>New +</button>
         </div>
         <div class="categories">
-          <hr>
-          ${navItem('all', 'All drives')}
-          <hr>
-          ${navItem('files', 'Files drives')}
-          ${navItem('websites', 'Websites')}
-          ${navItem('modules', 'Modules')}
-          ${navItem('wikis', 'Wikis')}
-          ${navItem('other', 'Other')}
-          <hr>
-          ${navItem('webterm-cmds', 'Webterm commands')}
+          ${navItem('all', 'Content')}
+          <div class="subcategory">
+            ${CATEGORIES.all.map(item => navItem(item.id, item.label))}
+          </div>
           ${navItem('system', 'System')}
+          <div class="subcategory">
+            ${CATEGORIES.system.map(item => navItem(item.id, item.label))}
+          </div>
         </div>
       </nav>
       <main>
@@ -304,48 +317,80 @@ export class DrivesApp extends LitElement {
     if (this.category === 'all') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-share-alt"></span> Hyperdrive</h3>
-          <p><em>Hyperdrive</em> is a peer-to-peer files network. Each "hyperdrive" (or just "drive") is a networked folder which can be accessed like a website.</p>
-          <p>You can create additional hyperdrives to share on the network, and you can also <em>co-host</em> other people's drives to help keep them online.</p>
+          <h3><span class="fas fa-fw fa-info"></span> Hyperdrive</h3>
+          <p><em>Hyperdrive</em> is a peer-to-peer files network. Each "hyperdrive" is a networked folder which can be accessed on the Web.</p>
+          <p>Hyperdrives can be websites, user groups, wikis, and more. You can host your own drives and <em>co-host</em> other people's drives to help keep them online.</p>
         </div>
       `
     }
     if (this.category === 'files') {
       return html`
         <div class="help">
-          <h3><span class="far fa-fw fa-folder-open"></span> Files drives</h3>
+          <h3><span class="fas fa-fw fa-info"></span> Files drives</h3>
           <p><em>Files drives</em> are folders containing files. They're like .zip archives that live on the network.</p>
         </div>
       `
     }
-    if (this.category === 'websites') {
+    if (this.category === 'group') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-desktop"></span> Websites</h3>
+          <h3><span class="fas fa-fw fa-info"></span> User Groups</h3>
+          <p><em>User Groups</em> are hyperdrive sites with members who can share content together.</p>
+        </div>
+      `
+    }
+    if (this.category === 'website') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-info"></span> Websites</h3>
           <p><em>Websites</em> are hyperdrives that contain web pages and applications.</p>
         </div>
       `
     }
-    if (this.category === 'modules') {
+    if (this.category === 'wiki') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-cube"></span> Modules</h3>
+          <h3><span class="fas fa-fw fa-info"></span> Wiki Sites</h3>
+          <p><em>Wikis</em> are simple hyperdrive sites which contain documentation or collected information about some topic.</p>
+        </div>
+      `
+    }
+    if (this.category === 'module') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-info"></span> Modules</h3>
           <p><em>Modules</em> are drives that contain code, styles, and other software assets. They can be imported by other drives to provide reusable components.</p>
+        </div>
+      `
+    }
+    if (this.category === 'code-snippet') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-info"></span> Code Snippets</h3>
+          <p><em>Code Snippets</em> are hyperdrive sites which share some example code. They're used to demonstrate an API, code pattern, or algorithm.</p>
         </div>
       `
     }
     if (this.category === 'themes') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-drafting-compass"></span> Themes</h3>
+          <h3><span class="fas fa-fw fa-info"></span> Themes</h3>
           <p><em>Themes</em> are swappable user-interfaces for drives. You can use a theme in your drive to change the visuals and even generate UIs automatically.</p>
         </div>
       `
     }
-    if (this.category === 'webterm-cmds') {
+    if (this.category === 'user') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-terminal"></span> Webterm commands</h3>
+          <h3><span class="fas fa-fw fa-info"></span> Users</h3>
+          <p><em>Users</em> are hyperdrives created by <em>User Groups</em>. They contain all the content which you create for the group and represent your profile.</p>
+        </div>
+      `
+    }
+    if (this.category === 'webterm.sh/cmd-pkg') {
+      return html`
+        <div class="help">
+          <h3><span class="fas fa-fw fa-info"></span> Webterm commands</h3>
           <p><em>Webterm</em> is an advanced terminal for interacting with the Hyperdrive ecosystem. You can open it in any tab by pressing <kbd>Ctrl + ~</kbd>.</p>
           <p>Webterm commands are user-created programs which you can execute from Webterm. Install webterm command-packages to add them to your terminal environment.</p>
         </div>
@@ -354,8 +399,8 @@ export class DrivesApp extends LitElement {
     if (this.category === 'system') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-cog"></span> System</h3>
-          <p>These drives are created by Beaker. Your "Home Drive" is the root of your personal filesystem. Your "Profile" represents you publicly on the network.</p>
+          <h3><span class="fas fa-fw fa-info"></span> System</h3>
+          <p>These drives are created by Beaker. Your "Home Drive" is the root of your personal filesystem.</p>
         </div>
       `
     }

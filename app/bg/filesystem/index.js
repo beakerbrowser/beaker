@@ -22,7 +22,7 @@ import lock from '../../lib/lock'
  * @typedef {Object} DriveIdent
  * @property {boolean} system
  * @property {boolean} user
- * @property {boolean} root
+ * @property {boolean} home
  */
 
 // globals
@@ -69,7 +69,7 @@ export async function setup () {
   rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url)
   
   // setup users
-  var userList = await users.setup()
+  await users.setup()
 
   // enforce root files structure
   logger.info('Loading root drive', {url: browsingProfile.url})

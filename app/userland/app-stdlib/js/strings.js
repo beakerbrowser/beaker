@@ -131,6 +131,8 @@ export function getDriveTypeIcon (type = '') {
   switch (type) {
     case 'user': return 'fas fa-user'
     case 'wiki': return 'far fa-file-word'
+    case 'code-snippet': return 'fas fa-code'
+    case 'group': return 'fas fa-users'
     case 'webterm.sh/cmd-pkg': return 'fas fa-terminal'
     case 'module': return 'fas fa-cube'
     case 'website': return 'fas fa-desktop'

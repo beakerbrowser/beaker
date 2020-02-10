@@ -32,7 +32,8 @@ nav {
   left: 4px;
   height: 100vh;
   width: 200px;
-  border-right: 1px solid #dde;
+  border-right: 1px solid #0005;
+  white-space: nowrap;
 }
 
 main {
@@ -46,14 +47,17 @@ section {
 
 nav .top-ctrl {
   display: flex;
-  padding-top: 5px;
-  padding-right: 5px;
+  align-items: center;
+  padding: 5px 5px 0;
 }
 
 nav .top-ctrl input {
+  flex: 1;
   margin-right: 5px;
-  width: 110px;
   height: 24px;
+  border: 0;
+  background: none;
+  box-shadow: none;
 }
 
 nav .categories {
@@ -62,6 +66,7 @@ nav .categories {
 
 nav .categories a {
   display: block;
+  position: relative;
   padding: 14px 16px;
   color: #556;
   user-select: none;
@@ -76,17 +81,27 @@ nav .categories a:hover {
   text-decoration: none;
 }
 
-nav .categories a.selected {
-  position: relative;
-  color: #333;
-  background: #fff;
-  font-weight: bold;
+nav .categories > a {
   border-top: 1px solid #dde;
   border-left: 1px solid #dde;
   border-bottom: 1px solid #dde;
 }
 
-nav .categories a.selected:after {
+nav .categories > a.selected {
+  color: #333;
+  background: #fff;
+  font-weight: bold;
+  border-top: 1px solid #0005;
+  border-left: 1px solid #0005;
+  border-bottom: 1px solid #0005;
+}
+
+
+nav .categories > a.selected.partially {
+  font-weight: normal;
+}
+
+nav .categories > a.selected:after {
   content: '';
   position: absolute;
   top: 0;
@@ -96,10 +111,42 @@ nav .categories a.selected:after {
   background: #fff;
 }
 
-nav .categories hr {
-  margin: 4px 4px;
-  border: 0;
-  border-top: 1px solid #dde;
+nav .categories .subcategory {
+  position: relative;
+  padding-left: 16px;
+}
+
+nav .categories .subcategory:before {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 0;
+  width: 1px;
+  height: calc(100% - 10px);
+  background: #0002;
+}
+
+nav .categories > a.selected + .subcategory:before {
+  background: #0005;
+}
+
+nav .categories .subcategory a:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: #0002;
+}
+
+nav .categories .subcategory a.selected {
+  color: #333;
+  font-weight: bold;
+}
+
+nav .categories .subcategory a.selected:before {
+  background: #0009;
 }
 
 .drives {
