@@ -61,8 +61,8 @@ class DesktopApp extends LitElement {
           <a class="dock-item" href="beaker://downloads">
             Downloads
           </a>
-          <a class="dock-item" href="beaker://drives">
-            My Drives
+          <a class="dock-item" href="beaker://library">
+            My Library
           </a>
         </div>
       </div>

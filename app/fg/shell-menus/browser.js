@@ -202,9 +202,9 @@ class BrowserMenu extends LitElement {
             <span class="shortcut">${this.accelerators.history}</span>
           </div>
             
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://drives')}>
-            <img class="favicon" src="asset:favicon:beaker://drives">
-            <span class="label">My Drives</span>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+            <img class="favicon" src="asset:favicon:beaker://library">
+            <span class="label">My Library</span>
           </div>
             
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>

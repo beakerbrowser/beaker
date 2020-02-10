@@ -161,7 +161,7 @@ export default function registerContextMenu () {
                 }
               },
               {
-                label: 'Save to My Drives',
+                label: 'Save to My Library',
                 type: 'checkbox',
                 checked: !!driveCfg || driveIdent.system,
                 enabled: !driveIdent.system,

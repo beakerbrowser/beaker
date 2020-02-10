@@ -170,7 +170,7 @@ export class DrivesApp extends LitElement {
         },
         {
           icon: 'fas fa-fw fa-trash-alt',
-          label: 'Remove from My Drives',
+          label: 'Remove from My Library',
           disabled: drive.ident.system,
           click: () => this.removeDrive(drive)
         }

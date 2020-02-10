@@ -22,7 +22,6 @@ import { joinPath } from '../../lib/strings'
  * @prop {string} [group.url]
  * @prop {string} [group.title]
  * @prop {string} [group.description]
- * @prop {boolean} isRegistered
  */
 
 // globals
