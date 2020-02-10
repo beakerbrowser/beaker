@@ -102,9 +102,3 @@ export default {
 
 // internal methods
 // =
-
-function assertDriveDeletable (key) {
-  if (users.isUser(`hyper://${key}`)) {
-    throw new PermissionsError('Unable to delete the user profile.')
-  }
-}

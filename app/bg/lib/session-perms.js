@@ -36,7 +36,7 @@ export async function toDriveOrigin (url) {
   if (!url.startsWith('hyper://')) {
     throw new Error('Can only create sessions with hyperdrive sites')
   }
-  return drives.getPrimaryUrl(url)
+  return `hyper://${await drives.fromURLToKey(url, true)}`
 }
 
 /**
@@ -65,66 +65,6 @@ export async function assertCan (sender, perm, cap) {
   if (!(await can(sess, perm, cap))) {
     throw new PermissionsError()
   }
-}
-
-/**
- * @param {Object} perms
- */
-export function normalizePerms (perms) {
-  for (let permId in perms) {
-    if (!getPermIcon(permId)) {
-      delete perms[permId]
-    }
-  }
-}
-
-/**
- * @param {string} permId
- * @returns {string}
- */
-export function getPermIcon (permId) {
-  switch (permId) {
-    case 'unwalled.garden/api/follows':
-      return 'fas fa-rss'
-    case 'unwalled.garden/api/statuses':
-      return `far fa-comment-alt`
-    case 'unwalled.garden/api/bookmarks':
-      return `far fa-star`
-    case 'unwalled.garden/api/comments':
-      return `far fa-comments`
-    case 'unwalled.garden/api/reactions':
-      return `far fa-smile`
-    case 'unwalled.garden/api/votes':
-      return `fas fa-vote-yea`
-    case 'unwalled.garden/api/library':
-      return `fas fa-book`
-  }
-  return ''
-}
-
-/**
- * @param {string} permId
- * @param {string[]} caps
- * @returns {string}
- */
-export function describePerm (permId, caps) {
-  switch (permId) {
-    case 'unwalled.garden/api/follows':
-      return 'Follows'
-    case 'unwalled.garden/api/statuses':
-      return `Status updates`
-    case 'unwalled.garden/api/bookmarks':
-      return `Bookmarks`
-    case 'unwalled.garden/api/comments':
-      return `Comments`
-    case 'unwalled.garden/api/reactions':
-      return `Reactions`
-    case 'unwalled.garden/api/votes':
-      return `Votes`
-    case 'unwalled.garden/api/library':
-      return `Dat library`
-  }
-  return ''
 }
 
 /**

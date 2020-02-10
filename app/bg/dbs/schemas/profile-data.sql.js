@@ -9,23 +9,12 @@ CREATE TABLE profiles (
   createdAt INTEGER DEFAULT (strftime('%s', 'now'))
 );
 
-CREATE TABLE users (
-  id INTEGER PRIMARY KEY NOT NULL,
-  label TEXT,
-  url TEXT,
-  isDefault INTEGER DEFAULT 0,
-  isTemporary INTEGER DEFAULT 0,
-  createdAt INTEGER
-);
-
 CREATE TABLE user_site_sessions (
   id INTEGER PRIMARY KEY NOT NULL,
-  userId INTEGER NOT NULL,
-  url TEXT,
+  siteOrigin TEXT,
+  userUrl TEXT,
   permissionsJson TEXT,
-  createdAt INTEGER,
- 
-  FOREIGN KEY (userId) REFERENCES users (id) ON DELETE CASCADE
+  createdAt INTEGER
 );
 
 CREATE TABLE archives_meta (
@@ -156,5 +145,5 @@ CREATE TABLE archives (
 -- default profile
 INSERT INTO profiles (id) VALUES (0);
 
-PRAGMA user_version = 44;
+PRAGMA user_version = 45;
 `

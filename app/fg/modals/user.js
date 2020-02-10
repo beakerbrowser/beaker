@@ -1,7 +1,6 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
-import slugify from 'slugify'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
@@ -26,7 +25,6 @@ class UserModal extends LitElement {
     this.thumbExt = undefined
     this.title = ''
     this.description = ''
-    this.isTemporary = false
     this.errors = {}
   }
 
@@ -35,7 +33,6 @@ class UserModal extends LitElement {
     this.userUrl = params.url || ''
     this.title = params.title || ''
     this.description = params.description || ''
-    this.isTemporary = params.isTemporary
     if (!this.userUrl) {
       // use default thumb
       this.thumbDataURL = defaultUserThumbJpg
@@ -132,17 +129,12 @@ class UserModal extends LitElement {
 
     try {
       var thumbBase64 = this.thumbDataURL ? this.thumbDataURL.split(',').pop() : undefined
-      var data = {
+      this.cbs.resolve({
         title: this.title,
         description: this.description,
         thumbBase64,
         thumbExt: this.thumbExt
-      }
-      if (this.userUrl) {
-        this.cbs.resolve(await bg.users.edit(this.userUrl, data))
-      } else {
-        this.cbs.resolve(await bg.users.create(data))
-      }
+      })
     } catch (e) {
       this.cbs.reject(e.message || e.toString())
     }

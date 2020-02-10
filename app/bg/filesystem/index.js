@@ -81,6 +81,7 @@ export async function setup () {
     await ensureDir(PATHS.LIBRARY_NS('documents'))
     await ensureDir(PATHS.LIBRARY_NS('media'))
     await ensureDir(PATHS.LIBRARY_NS('projects'))
+    await ensureDir(PATHS.PROFILES)
     await ensureDir(PATHS.SYSTEM)
 
     // default desktop shortcuts
@@ -186,12 +187,13 @@ export async function removeDrive (url) {
 /**
  * @param {string} containingPath
  * @param {string} basename
- * @param {string} ext
+ * @param {string} [ext]
+ * @param {string} [joiningChar]
  * @returns {Promise<string>}
  */
-export async function getAvailableName (containingPath, basename, ext = undefined) {
+export async function getAvailableName (containingPath, basename, ext = undefined, joiningChar = '-') {
   for (let i = 1; i < 1e9; i++) {
-    let name = ((i === 1) ? basename : `${basename}-${i}`) + (ext ? `.${ext}` : '')
+    let name = ((i === 1) ? basename : `${basename}${joiningChar}${i}`) + (ext ? `.${ext}` : '')
     let st = await stat(joinPath(containingPath, name))
     if (!st) return name
   }

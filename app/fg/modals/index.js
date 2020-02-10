@@ -10,7 +10,6 @@ import './select-file'
 import './prompt'
 import './basic-auth'
 import './user'
-import './create-user-session'
 
 class ModalsWrapper extends LitElement {
   static get properties () {
@@ -84,8 +83,6 @@ class ModalsWrapper extends LitElement {
         return html`<basic-auth-modal></basic-auth-modal>`
       case 'user':
         return html`<user-modal></user-modal>`
-      case 'create-user-session':
-        return html`<create-user-session-modal></create-user-session-modal>`
     }
     return html`<div></div>`
   }

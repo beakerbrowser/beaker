@@ -1,106 +1,75 @@
 import Events from 'events'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'filesystem', subcategory: 'users'})
-import hyper from '../hyper/index'
 import * as filesystem from './index'
-import * as db from '../dbs/profile-data-db'
+import { query } from './query'
 import * as archivesDb from '../dbs/archives'
-import { PATHS } from '../../lib/const'
+import { joinPath } from '../../lib/strings'
 
 // typedefs
 // =
 
 /**
- * @typedef {import('../dat/daemon').DaemonHyperdrive} DaemonHyperdrive
+ * @typedef {import('../hyper/daemon').DaemonHyperdrive} DaemonHyperdrive
+ * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
  *
  * @typedef {Object} User
- * @prop {number} id
+ * @prop {string} [id]
  * @prop {string} url
- * @prop {DaemonHyperdrive} drive
- * @prop {boolean} isTemporary
  * @prop {string} title
  * @prop {string} description
- * @prop {string} type
- * @prop {Date} createdAt
+ * @prop {Object} [group]
+ * @prop {string} [group.url]
+ * @prop {string} [group.title]
+ * @prop {string} [group.description]
+ * @prop {boolean} isRegistered
  */
 
 // globals
 // =
 
+var userUrls = []
 var events = new Events()
-var users = []
 
 // exported api
 // =
 
 export const on = events.on.bind(events)
-
 export const addListener = events.addListener.bind(events)
 export const removeListener = events.removeListener.bind(events)
 
 /**
- * @returns {Promise<User[]>}
+ * @returns {Promise<void>}
  */
 export async function setup () {
-  // load the current users
-  users = await db.all(`SELECT * FROM users`)
-  await Promise.all(users.map(async (user) => {
-    // old temporary?
-    if (user.isTemporary) {
-      // delete old temporary user
-      logger.info('Deleting temporary user', {details: user.url})
-      user.isInvalid = true // let invalid-user-deletion clean up the record
-      let key = hyper.drives.fromURLToKey(user.url)
-      let drive = await hyper.drives.getOrLoadDrive(key)
-      return
-    }
-
-    // massage data
-    user.url = normalizeUrl(user.url)
-    user.drive = null
-    user.createdAt = new Date(user.createdAt)
-    logger.info('Loading user', {details: {url: user.url}})
-
-    // validate
-    try {
-      await validateUserUrl(user.url)
-    } catch (e) {
-      user.isInvalid = true
-      return
-    }
-
-    // fetch the user drive
-    try {
-      user.drive = await hyper.drives.getOrLoadDrive(user.url)
-      user.url = user.drive.url // copy the drive url, which includes the domain if set
-      events.emit('load-user', user)
-    } catch (err) {
-      logger.error('Failed to load user', {details: {user, err}})
-    }
-  }))
-
-  // remove any invalid users
-  var invalids = users.filter(user => user.isInvalid)
-  users = users.filter(user => !user.isInvalid)
-  invalids.forEach(async (invalidUser) => {
-    await db.run(`DELETE FROM users WHERE url = ?`, [invalidUser.url])
-  })
-
-  return users
+  var queryRes = await query(filesystem.get(), {path: '/profiles/*', type: 'mount'})
+  userUrls = queryRes.map(res => `hyper://${res.mount}`)
 }
 
 /**
+ * @param {Object} [opts]
+ * @param {string} [opts.group]
  * @returns {Promise<User[]>}
  */
-export async function list () {
-  return Promise.all(users.map(fetchUserInfo))
+export async function list ({group} = {group: undefined}) {
+  var fs = filesystem.get()
+  var res = await query(fs, {path: '/profiles/*', type: 'mount'})
+  if (group) {
+    let userGroups = {}
+    for (let user of res) {
+      let st = await fs.pda.stat(joinPath(user.path, 'group')).catch(e => undefined)
+      if (st && st.mount.key) userGroups[user.mount] = st.mount.key.toString('hex')
+    }
+    res = res.filter(user => userGroups[user.mount] === group)
+  }
+  return Promise.all(res.map(fetchUserInfo))
 }
 
 /**
  * @returns {string[]}
  */
 export function listUrls () {
-  return users.map(u => u.url)
+  return userUrls.slice()
 }
 
 /**
@@ -109,73 +78,36 @@ export function listUrls () {
  */
 export async function get (url) {
   url = normalizeUrl(url)
-  var user = users.find(user => user.url === url)
-  if (!user) return null
-  return fetchUserInfo(user)
+  var user = await query(filesystem.get(), {path: '/profiles/*', mount: url})
+  if (!user[0]) return null
+  return fetchUserInfo(user[0])
 }
 
 /**
  * @param {string} url
- * @param {boolean} [isTemporary=false]
+ * @param {string} userTitle
+ * @param {string} groupTitle
  * @returns {Promise<User>}
  */
-export async function add (url, isTemporary = false) {
-  // validate
-  await validateUserUrl(url)
-
-  // make sure the user URL doesnt already exist
-  url = normalizeUrl(url)
-  var existingUser = users.find(user => user.url === url)
-  if (existingUser) throw new Error('User already exists at that URL')
-
-  // create the new user
-  var user = /** @type User */({
-    url,
-    drive: null,
-    isTemporary,
-    createdAt: new Date()
-  })
-  logger.verbose('Adding user', {details: user.url})
-  var dbres = await db.run(
-    `INSERT INTO users (url, isTemporary, createdAt) VALUES (?, ?, ?, ?)`,
-    [user.url, Number(user.isTemporary), Number(user.createdAt)]
-  )
-  user.id = dbres.lastID
-  users.push(user)
-
-  // fetch the user drive
-  user.drive = await hyper.drives.getOrLoadDrive(user.url)
-  user.url = user.drive.url // copy the drive url, which includes the domain if set
-  events.emit('load-user', user)
-
-  return fetchUserInfo(user)
-};
-
-/**
- * @param {string} url
- * @param {Object} opts
- * @param {string} [opts.title]
- * @param {string} [opts.description]
- * @returns {Promise<User>}
- */
-export async function edit (url, opts) {
-  // validate
+export async function add (url, userTitle, groupTitle) {
   await validateUserUrl(url)
 
   url = normalizeUrl(url)
-  var user = users.find(user => user.url === url)
-  if (!user) throw new Error('User does not exist at that URL')
+  var res = await query(filesystem.get(), {path: '/profiles/*', mount: url})
+  if (res[0]) throw new Error('User already exists at that URL')
 
-  // update the user
-  if (opts.title) user.title = opts.title
-  if (opts.description) user.description = opts.title
-  logger.verbose('Updated user', {details: user.url})
+  var mountName = userTitle || 'Anonymous'
+  if (groupTitle) mountName += ` @ ${groupTitle}`
+  mountName = await filesystem.getAvailableName('/profiles', mountName, undefined, ' ')
+  var path = joinPath('/profiles/', mountName)
 
-  // fetch the user drive
-  user.drive = await hyper.drives.getOrLoadDrive(user.url)
-  user.url = user.drive.url // copy the drive url, which includes the domain if set
-  return fetchUserInfo(user)
-};
+  logger.verbose('Adding user', {details: {url, path}})
+  await filesystem.get().pda.mount(path, url)
+  userUrls.push(url)
+
+  var res = await query(filesystem.get(), {path: '/profiles/*', mount: url})
+  return fetchUserInfo(res[0])
+}
 
 /**
  * @param {string} url
@@ -183,16 +115,14 @@ export async function edit (url, opts) {
  */
 export async function remove (url) {
   url = normalizeUrl(url)
-  // get the user
-  var user = await get(url)
-  if (!user) return
+  
+  var res = await query(filesystem.get(), {path: '/profiles/*', mount: url})
+  if (!res[0]) return
 
-  // remove the user
-  logger.verbose('Removing user', {details: user.url})
-  users.splice(users.indexOf(user), 1)
-  await db.run(`DELETE FROM users WHERE url = ?`, [user.url])
-  events.emit('unload-user', user)
-};
+  logger.verbose('Removing user', {details: {url: res[0].url, path: res[0].path}})
+  await filesystem.get().pda.unmount(res[0].path)
+  userUrls = userUrls.filter(u2 => u2 !== url)
+}
 
 /**
  * @param {string} url
@@ -200,28 +130,40 @@ export async function remove (url) {
  */
 export function isUser (url) {
   url = normalizeUrl(url)
-  return !!users.find(user => user.url === url)
+  return !!userUrls.find(url2 => url2 === url)
 }
 
 // internal methods
 // =
 
 /**
- * @param {Object} user
+ * @param {FSQueryResult} userQueryRes
  * @returns {Promise<User>}
  */
-async function fetchUserInfo (user) {
-  await user.drive.pullLatestDriveMeta()
-  var meta = await archivesDb.getMeta(user.drive.key)
+async function fetchUserInfo (userQueryRes) {
+  const fs = filesystem.get()
+  var id = undefined
+  var group = undefined
+  var groupStat = await fs.pda.stat(joinPath(userQueryRes.path, '/group')).catch(e => undefined)
+  if (groupStat && groupStat.mount.key) {
+    let groupInfo = await fs.pda.readFile(joinPath(userQueryRes.path, '/group/index.json')).then(JSON.parse).catch(e => undefined)
+    group = {
+      url: `hyper://${groupStat.mount.key.toString('hex')}`,
+      title: groupInfo ? groupInfo.title : '',
+      description: groupInfo ? groupInfo.description : ''
+    }
+    let registrationRes = await query(fs, {path: joinPath(userQueryRes.path, '/group/users/*'), mount: userQueryRes.mount})
+    if (registrationRes[0]) {
+      id = registrationRes[0].path.split('/').pop()
+    }
+  }
+  var meta = await archivesDb.getMeta(userQueryRes.mount)
   return {
-    id: user.id,
-    url: user.drive.url,
-    drive: user.drive,
-    isTemporary: user.isTemporary,
+    id,
+    url: userQueryRes.mount,
     title: meta.title,
     description: meta.description,
-    type: meta.type,
-    createdAt: new Date(user.createdAt)
+    group
   }
 }
 
@@ -230,7 +172,10 @@ async function fetchUserInfo (user) {
  * @returns {string}
  */
 function normalizeUrl (url) {
-  return url ? url.replace(/(\/)$/, '') : url
+  if (!url) throw new Error(`Invalid url: "${url}"`)
+  if (!url.includes('://')) url = `hyper://${url}`
+  let urlp = new URL(url)
+  return `hyper://${urlp.hostname}${urlp.pathname}`.replace(/(\/)$/, '')
 }
 
 /**
