@@ -155,17 +155,12 @@ export const protocolHandler = async function (request, respond) {
     cspHeader = manifest.content_security_policy
   }
 
-  // check for the presence of a theme
-  var theme = undefined
-  if (await checkoutFS.pda.stat('/theme').catch(e => false)) {
-    let [js, css, html] = await Promise.all([
-      checkoutFS.pda.stat('/theme/theme.js').catch(e => false),
-      checkoutFS.pda.stat('/theme/theme.css').catch(e => false),
-      checkoutFS.pda.stat('/theme/theme.html').catch(e => false)
-    ])
-    theme = {js, css, html}
+  // check for the presence of a frontend
+  var frontend = false
+  if (await checkoutFS.pda.stat('/.ui/ui.html').catch(e => false)) {
+    frontend = true
   }
-  const serveThemeHtml = async () => {
+  const serveFrontendHTML = async () => {
     return respond({
       statusCode: 200,
       headers: {
@@ -173,15 +168,8 @@ export const protocolHandler = async function (request, respond) {
         'Access-Control-Allow-Origin': '*',
         'Content-Security-Policy': cspHeader
       },
-      data: intoStream(await checkoutFS.pda.readFile('/theme/theme.html')) // TODO use stream
+      data: intoStream(await checkoutFS.pda.readFile('/.ui/ui.html')) // TODO use stream
     })
-  }
-  const injectThemeScriptAndStyle = () => {
-    if (!theme) return ''
-    return [
-      theme.js ? `<script type="module" src="/theme/theme.js"></script>` : undefined,
-      theme.css ? `<link rel="stylesheet" href="/theme/theme.css">` : undefined,
-    ].filter(Boolean).join('\n') + '\n'
   }
 
   // handle zip download
@@ -239,9 +227,9 @@ export const protocolHandler = async function (request, respond) {
       })
     }
 
-    // theme template
-    if (theme && theme.html) {
-      return serveThemeHtml()
+    // frontend
+    if (frontend) {
+      return serveFrontendHTML()
     }
 
     // directory listing
@@ -264,9 +252,9 @@ export const protocolHandler = async function (request, respond) {
     })
   }
 
-  // theme template
-  if (mime.acceptHeaderWantsHTML(request.headers.Accept) && theme && theme.html) {
-    return serveThemeHtml()
+  // frontend
+  if (mime.acceptHeaderWantsHTML(request.headers.Accept) && frontend) {
+    return serveFrontendHTML()
   }
 
   // handle not found
@@ -320,7 +308,7 @@ export const protocolHandler = async function (request, respond) {
       ? `<!doctype html>
 <html>
   <head>
-    ${injectThemeScriptAndStyle()}
+    <meta charset="utf8">
   </head>
   <body>
     ${md.render(content)}
@@ -345,9 +333,6 @@ export const protocolHandler = async function (request, respond) {
   var data = await checkoutFS.pda.readFile(entry.path, 'binary')
   if (range) {
     data = data.slice(range.start, range.end + 1)
-  }
-  if (headers['Content-Type'].includes('text/html') && theme) {
-    data = `${injectThemeScriptAndStyle()}${data.toString('utf8')}`
   }
   respond({
     statusCode,

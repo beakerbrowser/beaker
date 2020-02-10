@@ -137,7 +137,7 @@ class CreateDriveModal extends LitElement {
 
   render () {
     var builtinType = BUILTIN_TYPES.find(t => t.type === this.type)
-    var themeImg = builtinType ? builtinType.img : 'none'
+    var frontendImg = builtinType ? builtinType.img : 'none'
     const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -158,7 +158,7 @@ class CreateDriveModal extends LitElement {
             
           <div class="preview">
             <label>Preview</label>
-            <img src="beaker://assets/img/themes/${themeImg}.png">
+            <img src="beaker://assets/img/frontends/${frontendImg}.png">
           </div>
 
           <div class="form-actions">
@@ -185,12 +185,12 @@ class CreateDriveModal extends LitElement {
     this.type = e.target.value.trim()
   }
 
-  onChangeTheme (e) {
-    this.theme = e.currentTarget.value
+  onChangeFrontend (e) {
+    this.frontend = e.currentTarget.value
   }
 
-  onThemeImgError (e) {
-    e.currentTarget.setAttribute('src', 'beaker://assets/default-theme-thumb')
+  onFrontendImgError (e) {
+    e.currentTarget.setAttribute('src', 'beaker://assets/default-frontend-thumb')
   }
 
   onClickCancel (e) {
@@ -216,7 +216,7 @@ class CreateDriveModal extends LitElement {
         type: this.type !== '' ? this.type : undefined,
         author: this.author,
         links: this.links,
-        theme: builtinType && builtinType.theme || undefined,
+        frontend: builtinType && builtinType.frontend || undefined,
         prompt: false
       }
       var url = await bg.hyperdrive.createDrive(info)

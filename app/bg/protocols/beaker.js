@@ -178,8 +178,8 @@ async function beakerProtocol (request, respond) {
     // rehost under beaker://setup because there's a CSP bug stopping beaker://setup from accessing beaker://assets
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
   }
-  if (requestUrl.startsWith('beaker://assets/default-theme-thumb')) {
-    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-theme-thumb.jpg'))
+  if (requestUrl.startsWith('beaker://assets/default-frontend-thumb')) {
+    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-frontend-thumb.jpg'))
   }
   if (requestUrl.startsWith('beaker://assets/search-icon-large')) {
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/search-icon-large.png'))
@@ -194,9 +194,9 @@ async function beakerProtocol (request, respond) {
     let imgPath = requestUrl.slice('beaker://assets/img/templates/'.length)
     return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/templates/${imgPath}`))
   }
-  if (requestUrl.startsWith('beaker://assets/img/themes/')) {
-    let imgPath = requestUrl.slice('beaker://assets/img/themes/'.length)
-    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/themes/${imgPath}`))
+  if (requestUrl.startsWith('beaker://assets/img/frontends/')) {
+    let imgPath = requestUrl.slice('beaker://assets/img/frontends/'.length)
+    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/frontends/${imgPath}`))
   }
 
   // userland

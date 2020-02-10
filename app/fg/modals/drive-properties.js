@@ -5,7 +5,7 @@ import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
-import { BUILTIN_THEMES, filterThemeByType } from '../../lib/hyper'
+import { BUILTIN_FRONTENDS, filterFrontendByType } from '../../lib/hyper'
 
 class DrivePropertiesModal extends LitElement {
   static get styles () {
@@ -116,15 +116,15 @@ class DrivePropertiesModal extends LitElement {
     this.props.title = this.props.title || ''
     this.props.description = this.props.description || ''
     this.props.type = this.props.type || ''
-    this.props.theme = this.props.theme || ''
-    this.themes = await this.readThemes()
+    this.props.frontend = this.props.frontend || ''
+    this.frontends = await this.readFrontends()
     await this.requestUpdate()
     this.adjustHeight()
   }
 
-  async readThemes () {
+  async readFrontends () {
     var drives = await bg.drives.list()
-    return drives.map(drive => drive.info).filter(info => info.type === 'theme')
+    return drives.map(drive => drive.info).filter(info => info.type === 'frontend')
   }
 
   adjustHeight () {
@@ -166,10 +166,10 @@ class DrivePropertiesModal extends LitElement {
   }
 
   renderProp (key, value) {
-    if (key === 'theme') {
+    if (key === 'frontend') {
       let typeInput = this.shadowRoot.querySelector('input[name="type"]')
       let currentType = typeInput ? typeInput.value : this.props.type
-      let themes = BUILTIN_THEMES.concat(this.themes).filter(t => filterThemeByType(t.manifest, currentType))
+      let frontends = BUILTIN_FRONTENDS.concat(this.frontends).filter(t => filterFrontendByType(t.manifest, currentType))
       let opt = (id, label) => html`<option value=${id} ?selected=${id === value}>${label}</option>`
       return html`
         <div class="prop">
@@ -178,7 +178,7 @@ class DrivePropertiesModal extends LitElement {
             <select name=${key}>
               ${opt('', 'None')}
               ${value === 'custom' ? opt('custom', 'Custom') : ''}
-              ${themes.map(theme => opt(theme.url, theme.title))}
+              ${frontends.map(frontend => opt(frontend.url, frontend.title))}
             </select>
           </div>
         </div>

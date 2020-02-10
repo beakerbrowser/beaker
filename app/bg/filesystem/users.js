@@ -95,8 +95,7 @@ export async function add (url, userTitle, groupTitle) {
   var res = await query(filesystem.get(), {path: '/profiles/*', mount: url})
   if (res[0]) throw new Error('User already exists at that URL')
 
-  var mountName = userTitle || 'Anonymous'
-  if (groupTitle) mountName += ` @ ${groupTitle}`
+  var mountName = `${groupTitle || 'Unnamed Group'} (${userTitle || 'Anonymous'})`
   mountName = await filesystem.getAvailableName('/profiles', mountName, undefined, ' ')
   var path = joinPath('/profiles/', mountName)
 

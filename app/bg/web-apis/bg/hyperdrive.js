@@ -29,12 +29,12 @@ const to = (opts) =>
     : DEFAULT_DRIVE_API_TIMEOUT
 
 export default {
-  async createDrive ({title, description, type, author, visibility, links, theme, prompt} = {}) {
+  async createDrive ({title, description, type, author, visibility, links, frontend, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
-      visibility = theme = undefined
+      visibility = frontend = undefined
       author = undefined // TODO _get(windows.getUserSessionFor(this.sender), 'url')
     }
 
@@ -58,8 +58,8 @@ export default {
       let newDrive
       try {
         let manifest = {title, description, type, /*TODO author,*/ links}
-        if (type === 'theme') {
-          manifest.theme = {drive_types: ['website']}
+        if (type === 'frontend') {
+          manifest.frontend = {drive_types: ['website']}
         }
         newDrive = await drives.createNewDrive(manifest)
         await filesystem.configDrive(newDrive.url, {seeding: true})
@@ -71,8 +71,8 @@ export default {
     }
     let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
 
-    if (theme) {
-      await setTheme(drives.getDrive(newDriveKey), theme)
+    if (frontend) {
+      await setFrontend(drives.getDrive(newDriveKey), frontend)
     }
 
     if (!isSenderBeaker(this.sender)) {
@@ -201,9 +201,9 @@ export default {
         await checkoutFS.pda.updateManifest(manifestUpdates)
         await drives.pullLatestDriveMeta(drive)
 
-        var oldTheme = await getTheme(checkoutFS)
-        if (settings.theme !== oldTheme) {
-          await setTheme(drive, settings.theme)
+        var oldFrontend = await getFrontend(checkoutFS)
+        if (settings.frontend !== oldFrontend) {
+          await setFrontend(drive, settings.frontend)
         }
       })
     ))
@@ -795,34 +795,34 @@ async function lookupUrlDriveKey (url) {
   }
 }
 
-export async function getTheme (drive) {
-  var themeStat = await drive.pda.stat('/theme').catch(e => undefined)
-  if (themeStat) {
-    if (themeStat.mount) {
-      return `hyper://${themeStat.mount.key.toString('hex')}`
+export async function getFrontend (drive) {
+  var uiStat = await drive.pda.stat('/.ui').catch(e => undefined)
+  if (uiStat) {
+    if (uiStat.mount) {
+      return `hyper://${uiStat.mount.key.toString('hex')}`
     } else {
-      return drive.pda.readFile('/theme/.beaker-theme').catch(e => 'custom')
+      return drive.pda.readFile('/.ui/.beaker-ui').catch(e => 'custom')
     }
   }
   return undefined
 }
 
-export async function setTheme (drive, theme) {
+export async function setFrontend (drive, frontend) {
   try {
-    await drive.pda.rmdir('/theme', {recursive: true}).catch(e => undefined)
-    await drive.pda.unmount('/theme').catch(e => undefined)
-    if (theme.startsWith('builtin:')) {
-      let themePath = path.join(__dirname, 'assets', 'themes', theme.slice('builtin:'.length))
+    await drive.pda.rmdir('/.ui', {recursive: true}).catch(e => undefined)
+    await drive.pda.unmount('/.ui').catch(e => undefined)
+    if (frontend.startsWith('builtin:')) {
+      let frontendPath = path.join(__dirname, 'assets', 'frontends', frontend.slice('builtin:'.length))
       await pda.exportFilesystemToArchive({
-        srcPath: themePath,
+        srcPath: frontendPath,
         dstArchive: drive.session.drive,
-        dstPath: '/theme/',
+        dstPath: '/.ui/',
         inplaceImport: true
       })
-    } else if (theme.startsWith('hyper:')) {
-      await drive.pda.mount('/theme', theme)
+    } else if (frontend.startsWith('hyper:')) {
+      await drive.pda.mount('/.ui', frontend)
     }
   } catch (e) {
-    console.error('Failed to set theme', e)
+    console.error('Failed to set frontend', e)
   }
 }

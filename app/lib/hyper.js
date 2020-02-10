@@ -87,9 +87,9 @@ const MODULE_SCAFFOLD = {
    return 'No build step required'
  }`,
   '/tests': 'folder',
-  '/tests/index.html': () => `<link rel="stylesheet" href="/theme/vendor/mocha.css" />
-<script src="/theme/vendor/chai.js"></script>
-<script src="/theme/vendor/mocha.js"></script>
+  '/tests/index.html': () => `<link rel="stylesheet" href="/.ui/vendor/mocha.css" />
+<script src="/.ui/vendor/chai.js"></script>
+<script src="/.ui/vendor/mocha.js"></script>
 
 <div id="mocha"></div>
 
@@ -124,22 +124,22 @@ describe('My Module', () => {
 }
 
 export const BUILTIN_TYPES = [
-  {type: '', theme: '', title: 'Files Drive', img: 'files-drive'},
-  {type: 'website', theme: '', title: 'Website', img: 'website', scaffold: WEBSITE_SCAFFOLD},
-  {type: 'wiki', theme: 'builtin:simple-wiki', img: 'simple-wiki', title: 'Wiki Site'},
-  {type: 'module', theme: 'builtin:simple-module', img: 'simple-module', title: 'Module', scaffold: MODULE_SCAFFOLD},
-  {type: 'code-snippet', theme: 'builtin:code-snippet', img: 'code-snippet', title: 'Code Snippet'},
-  {type: 'group', theme: 'builtin:group', img: 'group', title: 'User Group'}
+  {type: '', frontend: '', title: 'Files Drive', img: 'files-drive'},
+  {type: 'website', frontend: '', title: 'Website', img: 'website', scaffold: WEBSITE_SCAFFOLD},
+  {type: 'wiki', frontend: 'builtin:simple-wiki', img: 'simple-wiki', title: 'Wiki Site'},
+  {type: 'module', frontend: 'builtin:simple-module', img: 'simple-module', title: 'Module', scaffold: MODULE_SCAFFOLD},
+  {type: 'code-snippet', frontend: 'builtin:code-snippet', img: 'code-snippet', title: 'Code Snippet'},
+  {type: 'group', frontend: 'builtin:group', img: 'group', title: 'User Group'}
 ]
 
-export const BUILTIN_THEMES = [
-  {url: 'builtin:blogger', title: 'Blogger', manifest: {theme: {drive_types: 'user'}}},
-  {url: 'builtin:simple-wiki', title: 'Simple Wiki', manifest: {theme: {drive_types: 'website'}}},
-  {url: 'builtin:simple-module', title: 'Simple Module', manifest: {theme: {drive_types: 'module'}}}
+export const BUILTIN_FRONTENDS = [
+  {url: 'builtin:blogger', title: 'Blogger', manifest: {frontend: {drive_types: 'user'}}},
+  {url: 'builtin:simple-wiki', title: 'Simple Wiki', manifest: {frontend: {drive_types: 'website'}}},
+  {url: 'builtin:simple-module', title: 'Simple Module', manifest: {frontend: {drive_types: 'module'}}}
 ]
 
-export function filterThemeByType (manifest, targetType) {
-  var matchingTypes = _get(manifest, 'theme.drive_types', undefined)
+export function filterFrontendByType (manifest, targetType) {
+  var matchingTypes = _get(manifest, 'frontend.drive_types', undefined)
   if (!matchingTypes) return true
   matchingTypes = Array.isArray(matchingTypes) ? matchingTypes : [matchingTypes]
   for (let matchingType of matchingTypes) {

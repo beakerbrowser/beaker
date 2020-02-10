@@ -393,11 +393,11 @@ export class DrivesApp extends LitElement {
         </div>
       `
     }
-    if (this.category === 'themes') {
+    if (this.category === 'frontend') {
       return html`
         <div class="help">
-          <h3><span class="fas fa-fw fa-info"></span> Themes</h3>
-          <p><em>Themes</em> are swappable user-interfaces for drives. You can use a theme in your drive to change the visuals and even generate UIs automatically.</p>
+          <h3><span class="fas fa-fw fa-info"></span> Frontends</h3>
+          <p><em>Frontends</em> are swappable user-interfaces for drives.</p>
         </div>
       `
     }

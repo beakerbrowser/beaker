@@ -295,7 +295,7 @@ class SelectDriveModal extends LitElement {
               ${typeopt('undefined', 'Files drive')}
               ${typeopt('website', 'Website')}
               ${typeopt('module', 'Module')}
-              ${typeopt('theme', 'Theme')}
+              ${typeopt('frontend', 'Frontend')}
             </select>
           </div>
         </div>

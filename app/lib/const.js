@@ -48,7 +48,7 @@ export const DRIVE_CONFIGURABLE_FIELDS = [
   'type',
   'author',
   'links',
-  'theme'
+  'frontend'
 ]
 
 // workspace settings
