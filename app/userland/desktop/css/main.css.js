@@ -174,9 +174,11 @@ ${tooltipCSS}
 
 .beta-notice {
   position: fixed;
-  top: 10px;
-  left: 10px;
-  width: 300px;
+  bottom: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  width: 370px;
   padding: 0 12px 6px;
   border: 1px solid var(--blue);
   border-radius: 8px;
@@ -189,13 +191,6 @@ ${tooltipCSS}
 
 .beta-notice a:hover {
   text-decoration: underline;
-}
-
-@media (max-width: 1300px) {
-  .beta-notice {
-    top: unset;
-    bottom: 70px;
-  }
 }
 `
 export default cssStr
