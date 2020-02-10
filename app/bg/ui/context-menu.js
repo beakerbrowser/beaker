@@ -149,7 +149,6 @@ export default function registerContextMenu () {
             label: 'Hyperdrive',
             submenu: [
               { label: 'Open with Files Explorer', click: (item, win) => tabManager.create(win, `https://hyperdrive.network/${props.pageURL.slice('hyper://'.length)}`, {setActive: true, adjacentActive: true}) },
-              { label: 'Open with Beaker.Network', click: (item, win) => tabManager.create(win, `https://beaker.network/${(new URL(props.pageURL)).hostname}`, {setActive: true, adjacentActive: true}) },
               { type: 'separator' },
               { 
                 label: 'Host This Drive',

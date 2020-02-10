@@ -107,10 +107,6 @@ class SiteMenu extends LitElement {
             <i class="far fa-folder-open"></i>
             <span class="label">Open with Files Explorer</span>
           </div>
-          <div class="menu-item" @click=${e => this.onOpenPage(e, `https://beaker.network/${(new URL(this.url)).hostname}`)}>
-            <i><img src="beaker://assets/logo-black.svg" style="width: 16px; margin-left: -1px;"></i>
-            <span class="label">Open with Beaker.Network</span>
-          </div>
         </div>
       </div>
     `
