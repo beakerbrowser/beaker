@@ -84,7 +84,8 @@ nav .categories > a {
   border-top: 1px solid #dde;
   border-left: 1px solid #dde;
   border-bottom: 1px solid #dde;
-  background: #f3f3f8;
+  background: #fdfdff;
+  font-weight: 500;
 }
 
 nav .categories > a.selected {

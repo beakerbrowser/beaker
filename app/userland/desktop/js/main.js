@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
+import { HELP } from 'beaker://app-stdlib/js/const.js'
 import { EditFilePopup } from './com/edit-file-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
@@ -121,10 +122,38 @@ class DesktopApp extends LitElement {
           <style>
             .dropdown-items {
               padding: 6px 0 4px;
+              overflow: visible !important;
             }
             .dropdown-item {
+              position: relative;
               padding-top: 14px !important;
               padding-bottom: 10px !important;
+            }
+            .dropdown-item .hover-help {
+              display: none;
+              position: absolute;
+              top: 0;
+              right: calc(100% + 10px);
+              background: #fff;
+              color: #556;
+              padding: 16px;
+              border-radius: 8px;
+              box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+              width: 280px;
+              white-space: normal;
+              line-height: 1.3;
+              letter-spacing: 0.25px;
+            }
+            .dropdown-item .hover-help .fa-info {
+              margin-right: 14px;
+              margin-top: 4px;
+              color: #889;
+            }
+            .dropdown-item .hover-help p {
+              margin: 0;
+            }
+            .dropdown-item:hover .hover-help {
+              display: flex;
             }
             .fa-fw {
               margin-left: 2px !important;
@@ -140,11 +169,17 @@ class DesktopApp extends LitElement {
                 <i class="fas fa-fw fa-desktop"></i>
                 Website
               </div>
+              <div class="hover-help">
+                <span class="fas fa-info"></span> ${HELP.websites()}
+              </div>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('group')}>
               <div class="label">
                 <i class="fas fa-fw fa-users"></i>
                 User Group
+              </div>
+              <div class="hover-help">
+                <span class="fas fa-info"></span> ${HELP.groups()}
               </div>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive()}>
@@ -152,11 +187,17 @@ class DesktopApp extends LitElement {
                 <i class="far fa-fw fa-hdd"></i>
                 Files drive
               </div>
+              <div class="hover-help">
+                <span class="fas fa-info"></span> ${HELP.files()}
+              </div>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('wiki')}>
               <div class="label">
                 <i class="far fa-fw fa-file-word"></i>
                 Wiki Site
+              </div>
+              <div class="hover-help">
+                <span class="fas fa-info"></span> ${HELP.wikis()}
               </div>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('module')}>
@@ -164,11 +205,17 @@ class DesktopApp extends LitElement {
                 <i class="fas fa-fw fa-cube"></i>
                 Module
               </div>
+              <div class="hover-help">
+                <span class="fas fa-info"></span> ${HELP.modules()}
+              </div>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('code-snippet')}>
               <div class="label">
                 <i class="fas fa-fw fa-code"></i>
                 Code Snippet
+              </div>
+              <div class="hover-help">
+                <span class="fas fa-info"></span> ${HELP.codeSnippets()}
               </div>
             </div>
             <hr>
@@ -176,6 +223,9 @@ class DesktopApp extends LitElement {
               <div class="label">
                 <i class="far fa-fw fa-folder"></i>
                 From folder
+              </div>
+              <div class="hover-help">
+              <span class="fas fa-info"></span> <p>Create a hyperdrive by importing from a folder on your computer.</p>
               </div>
             </div>
           </div>

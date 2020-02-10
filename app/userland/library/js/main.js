@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
+import { HELP } from 'beaker://app-stdlib/js/const.js'
 import { toNiceDriveType, getDriveTypeIcon, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
@@ -349,7 +350,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Files drives</h3>
-          <p><em>Files drives</em> are folders containing files. They're like .zip archives that live on the network.</p>
+          ${HELP.files()}
         </div>
       `
     }
@@ -357,7 +358,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> User Groups</h3>
-          <p><em>User Groups</em> are hyperdrive sites with members who can share content together.</p>
+          ${HELP.groups()}
         </div>
       `
     }
@@ -365,7 +366,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Websites</h3>
-          <p><em>Websites</em> are hyperdrives that contain web pages and applications.</p>
+          ${HELP.websites()}
         </div>
       `
     }
@@ -373,7 +374,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Wiki Sites</h3>
-          <p><em>Wikis</em> are simple hyperdrive sites which contain documentation or collected information about some topic.</p>
+          ${HELP.wikis()}
         </div>
       `
     }
@@ -381,7 +382,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Modules</h3>
-          <p><em>Modules</em> are drives that contain code, styles, and other software assets. They can be imported by other drives to provide reusable components.</p>
+          ${HELP.modules()}
         </div>
       `
     }
@@ -389,7 +390,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Code Snippets</h3>
-          <p><em>Code Snippets</em> are hyperdrive sites which share some example code. They're used to demonstrate an API, code pattern, or algorithm.</p>
+          ${HELP.codeSnippets()}
         </div>
       `
     }
@@ -397,7 +398,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Frontends</h3>
-          <p><em>Frontends</em> are swappable user-interfaces for drives.</p>
+          ${HELP.frontends()}
         </div>
       `
     }
