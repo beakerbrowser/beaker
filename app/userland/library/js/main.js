@@ -9,17 +9,21 @@ import mainCSS from '../css/main.css.js'
 
 const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hyper://'.length)}`
 const CATEGORIES = {
-  all: [
+  content: [
     {id: 'website', label: 'Websites' },
-    {id: 'group', label: 'User Groups' },
     {id: 'files', label: 'Files drives' },
     {id: 'wiki', label: 'Wikis' },
-    {id: 'module', label: 'Modules' },
-    {id: 'code-snippet', label: 'Code Snippets' },
     {id: 'other', label: 'Other' }
   ],
-  system: [
+  groups: [
+    {id: 'group', label: 'User Groups' },
     {id: 'user', label: 'My Users'},
+  ],
+  code: [
+    {id: 'module', label: 'Modules' },
+    {id: 'code-snippet', label: 'Code Snippets' }
+  ],
+  system: [
     {id: 'webterm.sh/cmd-pkg', label: 'Webterm commands'}
   ]
 }
@@ -39,7 +43,7 @@ export class DrivesApp extends LitElement {
   constructor () {
     super()
     this.drives = undefined
-    this.category = 'all'
+    this.category = 'content'
     this.filter = undefined
     this.load()
     this.addEventListener('contextmenu', this.onContextmenu.bind(this))
@@ -48,28 +52,38 @@ export class DrivesApp extends LitElement {
   async load () {
     var drives = await beaker.drives.list({includeSystem: true})
 
-    const isSystem = drive => drive.ident.system || drive.info.type === 'webterm.sh/cmd-pkg'
-    if (this.category === 'files') {
-      drives = drives.filter(drive => !isSystem(drive) && !drive.info.type)
-    } else if (this.category === 'other') {
-      drives = drives.filter(drive => (
-        !isSystem(drive) &&
-        !['', 'website', 'wiki', 'group', 'module', 'code-snippet'].includes(drive.info.type || '')
-      ))
-    } else if (this.category === 'all') {
-      drives = drives.filter(drive => !isSystem(drive))
-    } else if (this.category === 'system') {
-      drives = drives.filter(drive => isSystem(drive))
-    } else if (this.category === 'user') {
-      drives = drives.filter(drive => isSystem(drive) && drive.info.type === 'user')
-    } else {
-      drives = drives.filter(drive => drive.info.type === this.category)
+    const categorizeDrive = (drive) => {
+      if (drive.info.type === 'website') return ['content', 'website']
+      if (!drive.info.type && !drive.ident.system) return ['content', 'files']
+      if (drive.info.type === 'wiki') return ['content', 'wiki']
+      if (drive.ident.user || drive.info.type === 'user') return ['groups', 'user']
+      if (drive.info.type === 'group') return ['groups', 'group']
+      if (drive.info.type === 'module') return ['code', 'module']
+      if (drive.info.type === 'code-snippet') return ['code', 'code-snippet']
+      if (drive.ident.home) return ['system']
+      if (drive.info.type === 'webterm.sh/cmd-pkg') return ['system', 'webterm.sh/cmd-pkg']
+      return ['content', 'other']
     }
+    drives = drives.filter(drive => categorizeDrive(drive).includes(this.category))
+    drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
     console.log(drives)
 
-    drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
-
     this.drives = drives
+
+    for (let drive of drives) {
+      if (drive.info.type === 'user') {
+        let userDrive = new Hyperdrive(drive.url)
+        let [groupStat, groupInfo] = await Promise.all([
+          userDrive.stat('/group').catch(e => undefined),
+          userDrive.readFile('/group/index.json').then(JSON.parse).catch(e => undefined)
+        ])
+        if (groupStat?.mount?.key && groupInfo) {
+          groupInfo.url = `hyper://${groupStat.mount.key}`
+          drive.groupInfo = groupInfo
+        }
+        this.requestUpdate()
+      }
+    }
   }
 
   setCategory (cat) {
@@ -240,9 +254,6 @@ export class DrivesApp extends LitElement {
       >${label}</a>
     `
     var drives = this.drives
-    // if (drives && this.category !== 'all') {
-    //   drives = drives.filter(drive => drive.type === this.category)
-    // }
     if (drives && this.filter) {
       drives = drives.filter(drive => drive.info.title.toLowerCase().includes(this.filter))
     }
@@ -255,9 +266,17 @@ export class DrivesApp extends LitElement {
           <button class="primary" @click=${this.onClickNew}>New +</button>
         </div>
         <div class="categories">
-          ${navItem('all', 'Content')}
+          ${navItem('content', 'Content')}
           <div class="subcategory">
-            ${CATEGORIES.all.map(item => navItem(item.id, item.label))}
+            ${CATEGORIES.content.map(item => navItem(item.id, item.label))}
+          </div>
+          ${navItem('groups', 'Groups')}
+          <div class="subcategory">
+            ${CATEGORIES.groups.map(item => navItem(item.id, item.label))}
+          </div>
+          ${navItem('code', 'Code')}
+          <div class="subcategory">
+            ${CATEGORIES.code.map(item => navItem(item.id, item.label))}
           </div>
           ${navItem('system', 'System')}
           <div class="subcategory">
@@ -292,6 +311,9 @@ export class DrivesApp extends LitElement {
                     <span class="fa-fw ${getDriveTypeIcon(drive.info.type)}"></span> ${drive.info.title || html`<em>Untitled</em>`}
                   </a>
                 </div>
+                ${drive.groupInfo ? html`
+                  <div class="group">Member of <a href=${drive.groupInfo.url} target="_blank" title=${drive.groupInfo.title || 'Unnamed Group'}>${drive.groupInfo.title || 'Unnamed Group'}</pre>
+                ` : ''}
                 <div class="details">
                   <div class="type">${toNiceDriveType(drive.info.type)}</div>
                   <div class="description">${drive.info.description}</div>
@@ -314,7 +336,7 @@ export class DrivesApp extends LitElement {
   }
 
   renderHelp () {
-    if (this.category === 'all') {
+    if (this.category === 'content') {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Hyperdrive</h3>
@@ -331,7 +353,7 @@ export class DrivesApp extends LitElement {
         </div>
       `
     }
-    if (this.category === 'group') {
+    if (this.category === 'group' || this.category === 'groups') {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> User Groups</h3>
@@ -400,7 +422,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> System</h3>
-          <p>These drives are created by Beaker. Your "Home Drive" is the root of your personal filesystem.</p>
+          <p>These drives are managed specially by Beaker. Your "Home Drive" is the root of your personal filesystem.</p>
         </div>
       `
     }

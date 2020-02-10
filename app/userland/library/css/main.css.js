@@ -77,7 +77,6 @@ nav .categories a {
 }
 
 nav .categories a:hover {
-  background: #fafafd;
   text-decoration: none;
 }
 
@@ -85,6 +84,7 @@ nav .categories > a {
   border-top: 1px solid #dde;
   border-left: 1px solid #dde;
   border-bottom: 1px solid #dde;
+  background: #f3f3f8;
 }
 
 nav .categories > a.selected {
@@ -185,6 +185,10 @@ nav .categories .subcategory a.selected:before {
 
 .drive .title .fa-fw {
   margin-right: 3px;
+}
+
+.drive .group {
+  margin-left: 33px;
 }
 
 .drive .details {
