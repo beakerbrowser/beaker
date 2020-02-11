@@ -7,7 +7,7 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
 import _groupBy from 'lodash.groupby'
-import { BUILTIN_TYPES } from '../../lib/hyper'
+import { BUILTIN_TYPES, BUILTIN_FRONTENDS, filterFrontendByType } from '../../lib/hyper'
 
 class CreateDriveModal extends LitElement {
   static get properties () {
@@ -15,6 +15,7 @@ class CreateDriveModal extends LitElement {
       title: {type: String},
       description: {type: String},
       type: {type: String},
+      frontend: {type: String},
       errors: {type: Object}
     }
   }
@@ -31,17 +32,11 @@ class CreateDriveModal extends LitElement {
       border-color: #bbb;
     }
 
-    h1.title select {
-      position: relative;
-      top: -1px;
-      left: 5px;
-
+    select {
       -webkit-appearance: none;
       display: inline-block;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: #444;
+      font-size: 13px;
+      font-weight: 500;
       padding: 5px 30px 5px 10px;
       max-width: 100%;
       border: 1px solid #bbc;
@@ -52,6 +47,16 @@ class CreateDriveModal extends LitElement {
       background-repeat: no-repeat;
       background-position: right .7em top 50%, 0 0;
       background-size: .65em auto, 100%;
+    }
+
+    h1.title select {
+      position: relative;
+      top: -1px;
+      left: 5px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #444;
+      letter-spacing: 0.5px;
     }
     
     form {
@@ -72,18 +77,33 @@ class CreateDriveModal extends LitElement {
       margin: 20px 0;
     }
 
-    .preview {
-
+    .frontend select {
+      display: block;
+      padding: 7px 30px 7px 10px;
+      background-color: #fafafd;
+      width: 100%;
+      margin-top: 5px;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
     }
 
-    .preview img {
+    .frontend select:disabled {
+      color: inherit;
+      background-image: none;
+    }
+
+    img.preview {
       display: block;
       width: 100%;
       height: 230px;
       border: 1px solid #ccd;
+      border-top: 0;
       border-radius: 4px;
-      margin: 5px 0 15px;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      margin: 0 0 15px;
       object-fit: cover;
+      box-sizing: border-box;
     }
 
     .form-actions {
@@ -119,7 +139,13 @@ class CreateDriveModal extends LitElement {
     this.description = params.description || ''
     this.type = params.type || ''
     this.links = params.links
+    this.frontend = params.frontend
     this.author = undefined // this.author = params.author
+
+    if (!this.frontend || !this.matchingFrontends.find(fe => fe.url === this.frontend)) {
+      this.frontend = this.matchingFrontends[0].url
+    }
+
     await this.requestUpdate()
   }
 
@@ -132,13 +158,23 @@ class CreateDriveModal extends LitElement {
     bg.modals.resizeSelf({height})
   }
 
+  get availableFrontends () {
+    return BUILTIN_FRONTENDS
+  }
+
+  get matchingFrontends () {
+    return this.availableFrontends.filter(t => filterFrontendByType(t.manifest, this.type))
+  }
+
   // rendering
   // =
 
   render () {
-    var builtinType = BUILTIN_TYPES.find(t => t.type === this.type)
-    var frontendImg = builtinType ? builtinType.img : 'none'
+    const matchingFrontends = this.matchingFrontends
+    var currentFrontend = this.availableFrontends.find(fe => fe.url === this.frontend)
+    var frontendImg = currentFrontend ? currentFrontend.img : 'none'
     const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
+    const feopt = (id, label) => html`<option value=${id} ?selected=${id === this.frontend}>${label}</option>`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -156,9 +192,12 @@ class CreateDriveModal extends LitElement {
           <label for="desc">Description</label>
           <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Optional">
             
-          <div class="preview">
-            <label>Preview</label>
-            <img src="beaker://assets/img/frontends/${frontendImg}.png">
+          <div class="frontend">
+            <label>Frontend</label>
+            <select name="frontend" @change=${this.onChangeFrontend} ?disabled=${matchingFrontends.length <= 1}>
+              ${repeat(matchingFrontends, fe => feopt(fe.url, fe.title))}
+            </select>
+            <img class="preview" src="beaker://assets/img/frontends/${frontendImg}.png">
           </div>
 
           <div class="form-actions">
@@ -183,10 +222,11 @@ class CreateDriveModal extends LitElement {
 
   onChangeType (e) {
     this.type = e.target.value.trim()
+    this.frontend = this.matchingFrontends[0].url
   }
 
   onChangeFrontend (e) {
-    this.frontend = e.currentTarget.value
+    this.frontend = e.target.value.trim()
   }
 
   onFrontendImgError (e) {
@@ -209,23 +249,23 @@ class CreateDriveModal extends LitElement {
     this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div>`
 
     try {
-      var builtinType = BUILTIN_TYPES.find(t => t.type === this.type)
+      var frontend = this.availableFrontends.find(fe => fe.url === this.frontend)
       var info = {
         title: this.title,
         description: this.description,
         type: this.type !== '' ? this.type : undefined,
         author: this.author,
         links: this.links,
-        frontend: builtinType && builtinType.frontend || undefined,
+        frontend: frontend && !frontend.url.startsWith('null:') ? frontend.url : undefined,
         prompt: false
       }
       var url = await bg.hyperdrive.createDrive(info)
-      if (builtinType && builtinType.scaffold) {
-        for (let path in builtinType.scaffold) {
-          if (builtinType.scaffold[path] === 'folder') {
+      if (frontend && frontend.scaffold) {
+        for (let path in frontend.scaffold) {
+          if (frontend.scaffold[path] === 'folder') {
             await bg.hyperdrive.mkdir(url, path)
           } else {
-            await bg.hyperdrive.writeFile(url, path, builtinType.scaffold[path](info))
+            await bg.hyperdrive.writeFile(url, path, frontend.scaffold[path](info))
           }
         }
       }

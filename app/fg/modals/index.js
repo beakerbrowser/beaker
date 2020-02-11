@@ -88,7 +88,7 @@ class ModalsWrapper extends LitElement {
   }
 
   onContextMenu (e) {
-    e.preventDefault() // disable context menu
+    // e.preventDefault() // disable context menu RESTOREME
   }
 }
 
