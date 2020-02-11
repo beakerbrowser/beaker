@@ -137,7 +137,7 @@ export function close (tab) {
   if (tab.id in views) {
     var view = views[tab.id]
     var win = tabManager.findContainingWindow(tab)
-    win.removeBrowserView(view)
+    if (win) win.removeBrowserView(view)
     view.destroy()
     delete views[tab.id]
   }
