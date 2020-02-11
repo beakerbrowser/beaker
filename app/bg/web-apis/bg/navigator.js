@@ -151,6 +151,9 @@ export default {
     var res
     try {
       res = await modals.create(this.sender, 'select-drive', opts)
+      if (res && res.gotoCreate) {
+        res = await modals.create(this.sender, 'create-drive', opts)
+      }
     } catch (e) {
       if (e.name !== 'Error') {
         throw e // only rethrow if a specific error

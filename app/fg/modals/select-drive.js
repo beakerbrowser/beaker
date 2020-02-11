@@ -5,17 +5,11 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
 import spinnerCSS from './spinner.css'
-import { shortenHash, getHostname } from '../../lib/strings'
-
-const VIEWS = {
-  SELECT: 0,
-  CREATE: 1
-}
+import { shortenHash } from '../../lib/strings'
 
 class SelectDriveModal extends LitElement {
   static get properties () {
     return {
-      currentView: {type: Number},
       currentTitleFilter: {type: String},
       title: {type: String},
       description: {type: String},
@@ -78,7 +72,7 @@ class SelectDriveModal extends LitElement {
       }
 
       .drive-picker .type-container {
-        margin-top: 10px;
+        margin-bottom: 10px;
         background: #eee;
         padding: 10px;
         border-radius: 4px;
@@ -181,10 +175,6 @@ class SelectDriveModal extends LitElement {
         color: rgba(255, 255, 255, 0.9);
         font-weight: 100;
       }
-
-      .create-drive {
-        height: 190px;
-      }
     `]
   }
 
@@ -192,10 +182,7 @@ class SelectDriveModal extends LitElement {
     super()
 
     // state
-    this.currentView = VIEWS.SELECT
     this.currentTitleFilter = ''
-    this.title = ''
-    this.description = ''
     this.selectedDriveUrl = ''
     this.drives = undefined
 
@@ -240,80 +227,34 @@ class SelectDriveModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        ${this.currentView === VIEWS.SELECT
-          ? this.renderSelect()
-          : this.renderCreate()}
+        <form @submit=${this.onSubmit}>
+          <h1 class="title">${this.customTitle || 'Select a drive'}</h1>
+
+          <div class="view drive-picker">
+            ${this.renderTypeFilter()}
+            <div class="filter-container">
+              <i class="fa fa-search"></i>
+              <input autofocus @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a drive">
+            </div>
+            ${this.renderDrivesList()}
+          </div>
+
+          <div class="form-actions">
+            <div class="left">
+              <button type="button" @click=${this.onClickCreate} data-content="newdrive" class="btn">
+                Create new drive
+              </button>
+            </div>
+            <div class="right">
+              <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+              <button ?disabled=${!this.hasValidSelection} type="submit" class="btn primary" tabindex="5">
+                ${this.buttonLabel}
+              </button>
+            </div>
+          </div>
+        </form>
       </div>
     `
-  }
-
-  renderSelect () {
-    return html`
-      <form @submit=${this.onSubmit}>
-        <h1 class="title">${this.customTitle || 'Select a drive'}</h1>
-
-        <div class="view drive-picker">
-          ${this.renderTypeFilter()}
-          <div class="filter-container">
-            <i class="fa fa-search"></i>
-            <input autofocus @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a drive">
-          </div>
-          ${this.renderDrivesList()}
-        </div>
-
-        <div class="form-actions">
-          <div class="left">
-            <button type="button" @click=${this.onClickGotoCreateView} data-content="newdrive" class="btn">
-              Create new drive
-            </button>
-          </div>
-          <div class="right">
-            <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-            <button ?disabled=${!this.hasValidSelection} type="submit" class="btn primary" tabindex="5">
-              ${this.buttonLabel}
-            </button>
-          </div>
-        </div>
-      </form>`
-  }
-
-  renderCreate () {
-    const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
-    return html`
-      <form @submit=${this.onSubmit}>
-        <h1 class="title">${this.customTitle || 'Select a drive'}</h1>
-        <div class="view create-drive">
-          <label for="title">Title</label>
-          <input autofocus name="title" tabindex="2" value=${this.title || ''} placeholder="Title" @change=${this.onChangeTitle} />
-
-          <label for="desc">Description</label>
-          <input name="desc" tabindex="3" placeholder="Description (optional)" @change=${this.onChangeDescription} value=${this.description || ''}>
-
-          <label for="type">Type</label>
-          <div style="margin: 5px 0 15px">
-            <select name="type" @change=${this.onChangeType}>
-              ${typeopt('undefined', 'Files drive')}
-              ${typeopt('website', 'Website')}
-              ${typeopt('module', 'Module')}
-              ${typeopt('frontend', 'Frontend')}
-            </select>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <div class="left">
-            <button type="button" @click=${this.onClickGotoSelectView} data-content="drivePicker" class="btn">
-              <i class="fa fa-caret-left"></i> Back
-            </button>
-          </div>
-          <div class="right">
-            <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-            <button type="submit" class="btn primary" tabindex="5">
-              Create
-            </button>
-          </div>
-        </div>
-      </form>`
   }
 
   renderTypeFilter () {
@@ -386,21 +327,6 @@ class SelectDriveModal extends LitElement {
   // event handlers
   // =
 
-  onChangeTitle (e) {
-    this.selectedDriveUrl = ''
-    this.title = e.target.value
-  }
-
-  onChangeType (e) {
-    this.selectedDriveUrl = ''
-    this.type = e.target.value
-  }
-
-  onChangeDescription (e) {
-    this.selectedDriveUrl = ''
-    this.description = e.target.value
-  }
-
   onChangeTitleFilter (e) {
     this.currentTitleFilter = e.target.value.toLowerCase()
     if (this.selectedDriveUrl && isDriveUrl(this.currentTitleFilter)) {
@@ -418,40 +344,18 @@ class SelectDriveModal extends LitElement {
     this.onSubmit()
   }
 
-  async onClickGotoCreateView (e) {
-    this.currentView = VIEWS.CREATE
-    await this.updateComplete
-    this.adjustHeight()
-  }
-
-  async onClickGotoSelectView (e) {
-    this.currentView = VIEWS.SELECT
-    await this.updateComplete
-    this.adjustHeight()
-  }
-
   onClickCancel (e) {
     e.preventDefault()
     this.cbs.reject(new Error('Canceled'))
   }
 
-  async onSubmit (e) {
+  onClickCreate (e) {
+    this.cbs.resolve({gotoCreate: true})
+  }
+
+  onSubmit (e) {
     if (e) e.preventDefault()
-    if (this.currentView === VIEWS.CREATE) {
-      try {
-        var url = await bg.hyperdrive.createDrive({
-          title: this.title,
-          description: this.description,
-          type: this.type !== 'undefined' ? this.type : undefined,
-          prompt: false
-        })
-        this.cbs.resolve({url})
-      } catch (e) {
-        this.cbs.reject(e.message || e.toString())
-      }
-    } else {
-      this.cbs.resolve({url: this.selectedDriveUrl ? this.selectedDriveUrl : (new URL(this.currentTitleFilter)).origin})
-    }
+    this.cbs.resolve({url: this.selectedDriveUrl ? this.selectedDriveUrl : (new URL(this.currentTitleFilter)).origin})
   }
 }
 
