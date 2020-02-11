@@ -25,7 +25,7 @@ export class ProfileHeader extends LitElement {
   }
 
   async load () {
-    this.profile = await uwg.users.getByUsername(this.id)
+    this.profile = await uwg.users.getByUserID(this.id)
     await this.requestUpdate()
   }
 
@@ -33,16 +33,16 @@ export class ProfileHeader extends LitElement {
     if (!this.profile) return html`<span class="spinner"></span>`
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
-      <a class="avatar" href="/${this.profile.username}">
+      <a class="avatar" href="/${this.profile.id}">
         <beaker-img-fallbacks>
           <img src="${this.profile.url}/thumb" slot="img1">
           <img src="/.ui/img/default-user-thumb.jpg" slot="img2">
         </beaker-img-fallbacks>
       </a>
       <div class="main">
-        <h1 class="title"><a href="/${this.profile.username}">${this.profile.title}</a></h1>
+        <h1 class="title"><a href="/${this.profile.id}">${this.profile.title}</a></h1>
         <p class="info">
-          <a class="id" href="/${this.profile.username}">${this.profile.username}</a>
+          <a class="id" href="/${this.profile.id}">${this.profile.id}</a>
         </p>
         <p class="info">
           <span class="description">${this.profile.description}</span>

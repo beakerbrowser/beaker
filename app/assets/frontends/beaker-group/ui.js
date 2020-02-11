@@ -27,11 +27,11 @@ const ROUTES = {
   'users': /^\/users\/?$/i,
   'notifications': /^\/notifications\/?$/i,
   'search': /^\/search\/?$/i,
-  'userProfile': /^\/(?<username>[^\/]+)\/?$/i,
-  'userPosts': /^\/(?<username>[^\/]+)\/posts\/?$/i,
-  'userComments': /^\/(?<username>[^\/]+)\/comments\/?$/i,
-  'post': /^\/(?<username>[^\/]+)\/posts\/(?<filename>[^\/]+)$/i,
-  'comment': /^\/(?<username>[^\/]+)\/comments\/(?<filename>[^\/]+)$/i
+  'userProfile': /^\/(?<id>[^\/]+)\/?$/i,
+  'userPosts': /^\/(?<id>[^\/]+)\/posts\/?$/i,
+  'userComments': /^\/(?<id>[^\/]+)\/comments\/?$/i,
+  'post': /^\/(?<id>[^\/]+)\/posts\/(?<filename>[^\/]+)$/i,
+  'comment': /^\/(?<id>[^\/]+)\/comments\/(?<filename>[^\/]+)$/i
 }
 
 window.tutil = tutil
@@ -41,7 +41,7 @@ export class App extends LitElement {
   static get properties () {
     return {
       currentView: {type: String},
-      user: {type: Object}
+      session: {type: Object}
     }
   }
 
@@ -54,14 +54,7 @@ export class App extends LitElement {
     this.groupInfo = {title: ''}
     this.route = '404'
     this.routeParams = undefined
-    this.user = undefined
-    this.registration = {
-      userUrl: undefined,
-      get hasUser () {
-        return Boolean(this.userUrl)
-      },
-      isRegistered: false
-    }
+    this.session = undefined
     this.userCount = undefined
     this.notificationCount = undefined
     this.load()
@@ -78,12 +71,12 @@ export class App extends LitElement {
     }
     console.log(this.route, this.routeParams)
 
-    // reroute from user keys to their username
-    if (this.routeParams?.groups?.username && /[0-9a-f]{64}/i.test(this.routeParams.groups.username)) {
+    // reroute from user keys to their id
+    if (this.routeParams?.groups?.id && /[0-9a-f]{64}/i.test(this.routeParams.groups.id)) {
       try {
-        console.log('redirecting from', this.routeParams.groups.username)
-        let userProfile = await uwg.users.getByKey(this.routeParams.groups.username)
-        location.pathname = location.pathname.replace(this.routeParams.groups.username, userProfile.username)
+        console.log('redirecting from', this.routeParams.groups.id)
+        let userProfile = await uwg.users.getByKey(this.routeParams.groups.id)
+        location.pathname = location.pathname.replace(this.routeParams.groups.id, userProfile.id)
         return
       } catch (e) {
         toast.create('That user is not a member of this group')
@@ -96,14 +89,11 @@ export class App extends LitElement {
     var self = new Hyperdrive(location)
     this.groupInfo = await self.getInfo()
     this.userCount = await uwg.users.count()
-    if (!this.user && localStorage.userUrl) {
-      this.registration.userUrl = localStorage.userUrl
-      this.registration.isRegistered = Boolean(await uwg.users.getByKey(localStorage.userUrl).catch(e => undefined))
-      if (this.registration.isRegistered) {
-        this.user = await uwg.profiles.setUser(this.registration.userUrl)
-      }
+    this.session = await navigator.session.get()
+    if (this.session) {
+      await uwg.profiles.setUser(this.session.user.url)
     }
-    console.log(this.registration)
+    console.log(this.session)
 
     if (this.route === 'comment') {
       await this.doCommentRedirect()
@@ -122,8 +112,8 @@ export class App extends LitElement {
   }
 
   async checkNotifications () {
-    if (this.user) {
-      await notificationsIndex.updateIndex(this.user.url)
+    if (this.session?.user?.group?.isMember) {
+      await notificationsIndex.updateIndex(this.session.user.url)
     }
     setTimeout(this.checkNotifications.bind(this), NOTIFICATIONS_INTERVAL)
   }
@@ -162,7 +152,7 @@ export class App extends LitElement {
             <span class="fas fa-fw fa-users"></span>
             ${typeof this.userCount === 'undefined' ? html`<span class="spinner"></span>` : this.userCount}
           </a>
-          ${this.registration.isRegistered ? html`
+          ${this.session?.user?.group?.isMember ? html`
             <a
               class=${classMap({highlighted: this.notificationCount > 0 })}
               href="/notifications"
@@ -172,12 +162,12 @@ export class App extends LitElement {
               <span class="fas fa-fw fa-bell"></span>
               ${typeof this.notificationCount === 'undefined' ? html`<span class="spinner"></span>` : this.notificationCount}
             </a>
-            <a href="/${this.user.username}">
+            <a href="/${this.session.user.group.userid}">
               <span class="fas fa-fw fa-user-circle"></span>
-              ${this.user.title}
+              ${this.session.user.title}
             </a>
             <a class="compose-btn" href="/compose"><span class="fas fa-plus"></span> New Post</a>
-          ` : this.registration.hasUser ? html`
+          ` : this.session?.user ? html`
           ` : html`
             <a href="#" @click=${this.onClickJoin}><span class="fas fa-user-plus"></span> Join This Group</a>
           `}
@@ -189,15 +179,15 @@ export class App extends LitElement {
           <beaker-search-input placeholder="Search this group"></beaker-search-input>
         </div>
       </header>
-      ${this.registration.hasUser && !this.registration.isRegistered ? html`
+      ${this.session?.user && !this.session?.user?.group?.isMember ? html`
         <div class="flash-message">
           <h2>Next Step</h2>
           <p>
-            Send the group admin your URL via text, email, or courier pidgeon.
+            Send the group admin your URL via text or email.
             Once they've added your profile, you'll be a part of the group!
           </p>
           <a class="copy-btn" @click=${this.onClickCopyUserUrl}>
-            <span>${this.registration.userUrl}</span>
+            <span>${this.session.user.url}</span>
             <span class="fas fa-paste"></span>
           </a>
         </div>
@@ -209,35 +199,35 @@ export class App extends LitElement {
   renderView () {
     switch (this.route) {
       case 'home': return html`
-        <beaker-posts-view loadable .user=${this.user}></beaker-posts-view>
+        <beaker-posts-view loadable .user=${this.session?.user}></beaker-posts-view>
       `
       case 'compose': return html`
-        <beaker-compose-view loadable .user=${this.user}></beaker-compose-view>
+        <beaker-compose-view loadable .user=${this.session?.user}></beaker-compose-view>
       `
       case 'comments': return html`
-        <beaker-comments-view loadable .user=${this.user}></beaker-comments-view>
+        <beaker-comments-view loadable .user=${this.session?.user}></beaker-comments-view>
       `
       case 'users': return html`
-        <beaker-users-view loadable .user=${this.user}></beaker-users-view>
+        <beaker-users-view loadable .user=${this.session?.user}></beaker-users-view>
       `
       case 'notifications': return html`
-        <beaker-notifications-view loadable .user=${this.user}></beaker-notifications-view>
+        <beaker-notifications-view loadable .user=${this.session?.user}></beaker-notifications-view>
       `
       case 'search': return html`
-        <beaker-search-view loadable .user=${this.user}></beaker-search-view>
+        <beaker-search-view loadable .user=${this.session?.user}></beaker-search-view>
       `
       case 'userProfile':
       case 'userPosts': return html`
-        <beaker-profile-view loadable .user=${this.user} profile-id=${this.routeParams.groups.username}></beaker-profile-view>
+        <beaker-profile-view loadable .user=${this.session?.user} profile-id=${this.routeParams.groups.id}></beaker-profile-view>
       `
       case 'userComments': return html`
-        <beaker-profile-view loadable .user=${this.user} profile-id=${this.routeParams.groups.username} subview="comments"></beaker-profile-view>
+        <beaker-profile-view loadable .user=${this.session?.user} profile-id=${this.routeParams.groups.id} subview="comments"></beaker-profile-view>
       `
       case 'post': return html`
         <beaker-post-view
           loadable
-          .user=${this.user}
-          author=${this.routeParams.groups.username}
+          .user=${this.session?.user}
+          author=${this.routeParams.groups.id}
           filename=${this.routeParams.groups.filename}
         ></beaker-post-view>
       `
@@ -251,17 +241,9 @@ export class App extends LitElement {
   async onClickJoin (e) {
     e.preventDefault()
 
-    var title = prompt('Enter your user name')
-    if (!title) return
-    var userDrive = await Hyperdrive.create({
-      type: 'user',
-      title,
-      prompt: false
-    })
-    localStorage.userUrl = userDrive.url
-
+    var session = await navigator.session.request()
     if (this.groupInfo.writable) {
-      await uwg.users.add(userDrive.url, slugify(title))
+      await uwg.users.add(session.user.url, slugify(session.user.title))
     }
 
     location.reload()
@@ -269,7 +251,7 @@ export class App extends LitElement {
 
   onClickCopyUserUrl (e) {
     e.preventDefault()
-    writeToClipboard(this.registration.userUrl)
+    writeToClipboard(this.session?.user?.url)
     toast.create('Copied to your clipboard')
   }
 
@@ -298,10 +280,10 @@ export class App extends LitElement {
   async onAdminAddUser () {
     var url = prompt('URL of the user to add')
     if (!url) return
-    var username = prompt('Username of the new user')
-    if (!username) return
+    var id = prompt('Choose an ID (username) for the new user')
+    if (!id) return
     try {
-      await uwg.users.add(url, username)
+      await uwg.users.add(url, id)
       toast.create('User added', 'success')
     } catch (e) {
       console.log(e)
@@ -310,12 +292,12 @@ export class App extends LitElement {
   }
 
   async onAdminRenameUser () {
-    var oldUsername = prompt('User\'s current name')
-    if (!oldUsername) return
-    var newUsername = prompt('New username')
-    if (!newUsername) return
+    var oldId = prompt('User\'s current ID')
+    if (!oldId) return
+    var newId = prompt('New ID')
+    if (!newId) return
     try {
-      await uwg.users.rename(oldUsername, newUsername)
+      await uwg.users.rename(oldId, newId)
       toast.create('User renamed', 'success')
     } catch (e) {
       console.log(e)
@@ -324,10 +306,10 @@ export class App extends LitElement {
   }
 
   async onAdminRemoveUser () {
-    var username = prompt('Name of the user to remove')
-    if (!username) return
+    var id = prompt('ID of the user to remove')
+    if (!id) return
     try {
-      await uwg.users.removeByUsername(username)
+      await uwg.users.removeByUserID(id)
       toast.create('User removed', 'success')
     } catch (e) {
       console.log(e)

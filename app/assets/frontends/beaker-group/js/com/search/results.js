@@ -91,7 +91,7 @@ export class SearchResults extends LitElement {
     let results = await uwg.users.list(undefined, {includeProfiles: true})
     if (query) {
       results = results.filter(candidate => (
-        candidate.username.toLowerCase().includes(query)
+        candidate.id.toLowerCase().includes(query)
         || candidate.title.toLowerCase().includes(query)
         || candidate.description.toLowerCase().includes(query)
       ))
@@ -126,7 +126,7 @@ export class SearchResults extends LitElement {
         ` : html`
           ${repeat(this.results, result => {
             if (result.type === 'post') {
-              let viewProfileUrl = `/${result.postMeta.author.username}`
+              let viewProfileUrl = `/${result.postMeta.author.id}`
               let numComments = result.postMeta.numComments || 0
               let votes = result.postMeta.votes
               return html`
@@ -156,7 +156,7 @@ export class SearchResults extends LitElement {
                 <div class="result">
                   <h4>
                     <a class="title" href=${result.viewUrl}>${facetize(result.title, queryRe, this.query)}</a>
-                    <small><a href=${result.viewUrl}>${result.userMeta.username}</a></small>
+                    <small><a href=${result.viewUrl}>${result.userMeta.id}</a></small>
                   </h4>
                   <div class="description">${facetize(result.userMeta.description, queryRe, this.query)}</div>
                 </div>
@@ -189,7 +189,7 @@ export class SearchResults extends LitElement {
       let profile = users[i]
       let comma = (i !== users.length - 1) ? ', ' : ''
       els.push(html`
-        <a href=${'/' + profile.username} title=${profile.title}>${profile.title}</a>${comma}
+        <a href=${'/' + profile.id} title=${profile.title}>${profile.title}</a>${comma}
       `)
     }
     return els
@@ -227,11 +227,11 @@ function fromPostToResult (post) {
 function fromProfileToResult (profile) {
   return {
     type: 'user',
-    viewUrl: `/${profile.username}`,
+    viewUrl: `/${profile.id}`,
     url: profile.url,
     title: profile.title,
     userMeta: {
-      username: profile.username,
+      id: profile.id,
       description: profile.description
     }
   }

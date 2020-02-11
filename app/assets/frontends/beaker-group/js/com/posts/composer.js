@@ -320,7 +320,7 @@ export class PostComposer extends LitElement {
     toast.create(`${ucfirst(this.type)} posted`)
     var user = uwg.profiles.getUser()
     var filename = path.split('/').pop()
-    window.location = `/${user.username}/posts/${filename}`
+    window.location = `/${user.id}/posts/${filename}`
   }
 }
 PostComposer.styles = composerCSS

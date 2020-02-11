@@ -32,7 +32,7 @@ export class PostView extends LitElement {
   }
 
   async load () {
-    var authorProfile = await uwg.users.getByUsername(this.author)
+    var authorProfile = await uwg.users.getByUserID(this.author)
     var post = await uwg.posts.get(authorProfile.url, this.path)
     ;[post.votes, post.numComments] = await Promise.all([
       uwg.votes.tabulate(post.url, undefined, {includeProfiles: true}),

@@ -77,7 +77,7 @@ export class Post extends LitElement {
     var isFile = !isLink && !isTextPost
 
     var postMeta = this.post.stat.metadata
-    var viewProfileUrl = '/' + this.post.drive.username
+    var viewProfileUrl = '/' + this.post.drive.id
     var viewPostUrl = viewProfileUrl + '/posts/' + this.post.url.split('/').pop()
     var href = isLink ? postMeta.href : this.post.url
     var userVote = this.getUserVote()

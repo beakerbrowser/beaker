@@ -29,7 +29,7 @@ export class PostsFeed extends LitElement {
   }
 
   async load () {
-    var authorProfile = this.author ? await uwg.users.getByUsername(this.author) : undefined
+    var authorProfile = this.author ? await uwg.users.getByUserID(this.author) : undefined
     var posts = await uwg.posts.list({
       author: this.author ? authorProfile.url : undefined,
       offset: this.page * PAGE_SIZE,

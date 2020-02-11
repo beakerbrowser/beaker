@@ -11,7 +11,7 @@ import { isFilenameBinary } from './is-ext-binary.js'
  * @typedef {import('./fs.js').DriveInfo} DriveInfo
  * 
  * @typedef {DriveInfo} UserProfile
- * @prop {string} username
+ * @prop {string} id
  * @prop {boolean} isUser
  * 
  * @typedef {FSQueryResult} Post
@@ -64,7 +64,7 @@ export const profiles = {
       var drive = new Hyperdrive(key)
       var profile = await drive.getInfo()
       profile.isUser = false
-      profile.username = await groupDrive.query({path: '/users/*', mount: profile.url})
+      profile.id = await groupDrive.query({path: '/users/*', mount: profile.url})
         .then(res => res[0].path.split('/').pop())
         .catch(e => undefined)
       return profile
@@ -113,7 +113,7 @@ export const users = {
       return mounts.map(mount => {
         return {
           url: `hyper://${mount.stat.mount.key}`,
-          username: mount.path.split('/').pop()
+          id: mount.path.split('/').pop()
         }
       })
     }
@@ -131,11 +131,11 @@ export const users = {
   },
 
   /**
-   * @param {string} username 
+   * @param {string} id 
    * @returns {Promise<UserProfile>}
    */
-  async getByUsername (username) {
-    var stat = await groupDrive.stat(`/users/${username}`).catch(e => undefined)
+  async getByUserID (id) {
+    var stat = await groupDrive.stat(`/users/${id}`).catch(e => undefined)
     if (stat && stat.mount.key) {
       return profiles.get(stat.mount.key)
     } else {
@@ -156,45 +156,45 @@ export const users = {
 
   /**
    * @param {string} key 
-   * @param {string} username 
+   * @param {string} id 
    * @returns {Promise<void>}
    */
-  async add (key, username) {
+  async add (key, id) {
     if (!key) throw new Error('The user URL is required')
-    if (!username) throw new Error('The username is required')
-    if (!isValidUsername(username)) throw new Error(`The username "${username}" is not valid`)
+    if (!id) throw new Error('The user ID is required')
+    if (!isValidUserID(id)) throw new Error(`The user ID "${id}" is not valid`)
 
-    var st = await groupDrive.stat(`/users/${username}`).catch(e => undefined)
-    if (st) throw new Error(`The usernaame "${username}" is already taken`)
+    var st = await groupDrive.stat(`/users/${id}`).catch(e => undefined)
+    if (st) throw new Error(`The usernaame "${id}" is already taken`)
 
     await ensureDir('/users', groupDrive)
-    await groupDrive.mount(`/users/${username}`, key)
+    await groupDrive.mount(`/users/${id}`, key)
   },
   
   /**
-   * @param {string} oldUsername 
-   * @param {string} newUsername
+   * @param {string} oldId 
+   * @param {string} newId
    * @returns {Promise<void>}
    */
-  async rename (oldUsername, newUsername) {
-    if (!oldUsername) throw new Error('The previous username is required')
-    if (!newUsername) throw new Error('The new username is required')
-    if (!isValidUsername(newUsername)) throw new Error(`The username "${newUsername}" is not valid`)
+  async rename (oldId, newId) {
+    if (!oldId) throw new Error('The previous user ID is required')
+    if (!newId) throw new Error('The new user ID is required')
+    if (!isValidUserID(newId)) throw new Error(`The user ID "${newId}" is not valid`)
 
-    var st = await groupDrive.stat(`/users/${oldUsername}`)
-      .catch(e => { throw new Error(`There is no user named "${oldUsername}"`) })
-    if (!st.mount.key) throw new Error('The specified username does not point to a user drive')
-    await groupDrive.unmount(`/users/${oldUsername}`)
-    await groupDrive.mount(`/users/${newUsername}`, st.mount.key)
+    var st = await groupDrive.stat(`/users/${oldId}`)
+      .catch(e => { throw new Error(`There is no user named "${oldId}"`) })
+    if (!st.mount.key) throw new Error('The specified user ID does not point to a user drive')
+    await groupDrive.unmount(`/users/${oldId}`)
+    await groupDrive.mount(`/users/${newId}`, st.mount.key)
   },
 
   /**
-   * @param {string} username 
+   * @param {string} id 
    * @returns {Promise<void>}
    */
-  async removeByUsername (username) {
-    if (!username) throw new Error('The username is required')
-    await groupDrive.unmount(`/users/${username}`)
+  async removeByUserID (id) {
+    if (!id) throw new Error('The user ID is required')
+    await groupDrive.unmount(`/users/${id}`)
   },
 
   /**
@@ -698,7 +698,7 @@ function isUrl (v) {
   }
 }
 
-function isValidUsername (v) {
+function isValidUserID (v) {
   return isNonemptyString(v) && /^[a-z][a-z0-9-\.]*$/i.test(v)
 }
 

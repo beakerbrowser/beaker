@@ -20,9 +20,7 @@ function destroy () {
   var toast = document.querySelector('beaker-toast')
 
   if (toast) {
-    // fadeout before removing element
-    toast.classList.add('hidden')
-    setTimeout(() => toast.remove(), 500)
+    toast.remove()
   }
 }
 
@@ -35,9 +33,10 @@ class BeakerToast extends LitElement {
   }
 
   render () {
+    const onClick = e => destroy()
     const onButtonClick = this.button ? (e) => { destroy(); this.button.click(e) } : undefined
     return html`
-    <div id="toast-wrapper" class="toast-wrapper ${this.button ? '' : 'nomouse'}">
+    <div id="toast-wrapper" class="toast-wrapper ${this.button ? '' : 'nomouse'}" @click=${onClick}>
       <p class="toast ${this.type}">${this.message} ${this.button ? html`<a class="toast-btn" @click=${onButtonClick}>${this.button.label}</a>` : ''}</p>
     </div>
     `
