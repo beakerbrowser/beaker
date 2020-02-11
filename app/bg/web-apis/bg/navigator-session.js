@@ -14,7 +14,6 @@ import * as sessionPerms from '../../lib/session-perms'
  *
  * @typedef {Object} NavigatorSessionPublicAPIRecord
  * @prop {Object} user
- * @prop {string} [user.id]
  * @prop {string} user.url
  * @prop {string} user.title
  * @prop {string} user.description
@@ -22,6 +21,8 @@ import * as sessionPerms from '../../lib/session-perms'
  * @prop {string} [user.group.url]
  * @prop {string} [user.group.title]
  * @prop {string} [user.group.description]
+ * @prop {boolean} [user.group.isMember]
+ * @prop {string} [user.group.userid]
  */
 
 // exported api
@@ -36,9 +37,10 @@ export default {
    */
   async request (opts = {}) {
     var siteOrigin = await sessionPerms.toDriveOrigin(this.sender.getURL())
-    if (typeof opts !== 'object') {
+    if (!opts || typeof opts !== 'object') {
       throw new Error('First argument must be an object')
     }
+    opts.group = opts.group || siteOrigin
     if (opts && typeof opts.group !== 'string') {
       throw new Error('The `group` parameter must be a string (URL)')
     }
@@ -54,46 +56,65 @@ export default {
     }
     opts.permissions = (opts.permissions || []).filter(p => typeof p === 'string')
 
-    // TEMP require the group URL
-    if (!opts.group) throw new Error('The `group` parameter is required')
-    var groupUrl = opts.group
+    // fetch info about the group
+    var groupDrive = await drives.getOrLoadDrive(opts.group)
+    var groupInfo
+    try {
+      groupInfo = await groupDrive.pda.readFile('/index.json').then(JSON.parse)
+    } catch (e) {
+      console.log(e)
+      throw new Error('Invalid group: the index.json of the group has not been configured correctly')
+    }
 
-    // create a user if none exists for this group
-    var user = (await users.list({group: groupUrl}))[0]
-    if (!user) {
-      // fetch info about the group
-      let groupDrive = await drives.getOrLoadDrive(groupUrl)
-      let groupInfo
-      try {
-        groupInfo = await groupDrive.pda.readFile('/index.json').then(JSON.parse)
-      } catch (e) {
-        console.log(e)
-        throw new Error('Invalid group: the index.json of the group has not been configured correctly')
+    // run modal
+    var user
+    var availableUsers = await users.list({group: opts.group})
+    var newUserConfig = undefined
+    var selectedUser = undefined
+    if (availableUsers.length > 0) {
+      let currentModal = 'select'
+      while (!newUserConfig && !selectedUser) {
+        if (currentModal === 'select') {
+          try {
+            selectedUser = await modals.create(this.sender, 'user-select', {
+              users: availableUsers
+            })
+            if (selectedUser.gotoCreate) {
+              selectedUser = undefined
+              currentModal = 'create'
+            }
+          } catch (e) {
+            throw new UserDeniedError()
+          }
+        } else {
+          try {
+            newUserConfig = await modals.create(this.sender, 'user-editor', {})
+          } catch (e) {
+            currentModal = 'select'
+          }
+        }
       }
-
-      // run modal
-      let availableUsers = users.list({group: groupUrl})
-      let userConfig
+    } else {
       try {
-        userConfig = await modals.create(this.sender, 'user', {
-          site: {url: siteOrigin},
-          users: availableUsers,
-          group: groupUrl,
-          permissions: opts.permissions
-        })
+        newUserConfig = await modals.create(this.sender, 'user-editor', {})
       } catch (e) {
         throw new UserDeniedError()
       }
+    }          
 
+    if (newUserConfig) {
       // create the user
       let userDrive = await drives.createNewDrive({
-        title: userConfig.title || 'Anonymous',
-        description: userConfig.description,
+        title: newUserConfig.title || 'Anonymous',
+        description: newUserConfig.description,
         type: 'user'
       })
-      await userDrive.pda.writeFile(`/thumb.${userConfig.thumbExt}`, userConfig.thumbBase64, 'base64')
-      await userDrive.pda.mount('/group', groupUrl)
-      user = await users.add(userDrive.url, userConfig.title, groupInfo.title)
+      await userDrive.pda.writeFile(`/thumb.${newUserConfig.thumbExt}`, newUserConfig.thumbBase64, 'base64')
+      await userDrive.pda.mount('/group', opts.group)
+      user = await users.add(userDrive.url, newUserConfig.title, groupInfo.title)
+    } else {
+      // select existing user
+      user = availableUsers.find(u => selectedUser.url === u.url)
     }
 
     // create the session
@@ -144,7 +165,6 @@ function massageSessionRecord (user) {
   if (!user) return undefined
   return {
     user: {
-      id: user.id,
       url: user.url,
       title: user.title,
       description: user.description,

@@ -6,7 +6,7 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
 import defaultUserThumbJpg from '../lib/default-user-thumb.jpg'
 
-class UserModal extends LitElement {
+class UserEditorModal extends LitElement {
   static get properties () {
     return {
       thumbDataURL: {type: String},
@@ -15,6 +15,58 @@ class UserModal extends LitElement {
       description: {type: String},
       errors: {type: Object}
     }
+  }
+
+  static get styles () {
+    return [commonCSS, inputsCSS, buttonsCSS, css`
+    .wrapper {
+      padding: 0;
+    }
+    
+    h1.title {
+      font-size: 17px;
+      padding: 14px 20px;
+      margin: 0;
+      border-color: #bbb;
+    }
+    
+    form {
+      padding: 14px 20px;
+      margin: 0;
+    }
+    
+    input {
+      font-size: 14px;
+      height: 34px;
+      padding: 0 10px;
+      border-color: #bbb;
+    }
+    
+    .img-ctrl {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    img {
+      border-radius: 50%;
+      object-fit: cover;
+      width: 130px;
+      height: 130px;
+      margin-bottom: 10px;
+    }
+    
+    input[type="file"] {
+      display: none;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
+    }
+    `]
   }
 
   constructor () {
@@ -62,17 +114,12 @@ class UserModal extends LitElement {
           ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
           <label for="description">Bio / Description</label>
-          <textarea name="description" tabindex="3" placeholder="Bio / Description (optional)" @change=${this.onChangeDescription} class=${this.errors.description ? 'has-error' : ''}>${this.description || ''}</textarea>
+          <input name="description" tabindex="3" placeholder="Bio / Description (optional)" @change=${this.onChangeDescription} class=${this.errors.description ? 'has-error' : ''} value=${this.description || ''}>
           ${this.errors.description ? html`<div class="error">${this.errors.description}</div>` : ''}
 
-          <hr>
-
           <div class="form-actions">
-            <div></div>
-            <div>
-              <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-              <button type="submit" class="btn primary" tabindex="5">Save</button>
-            </div>
+            <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
+            <button type="submit" class="btn primary" tabindex="5">Create User</button>
           </div>
         </form>
       </div>
@@ -140,42 +187,5 @@ class UserModal extends LitElement {
     }
   }
 }
-UserModal.styles = [commonCSS, inputsCSS, buttonsCSS, css`
-.img-ctrl {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 
-img {
-  border-radius: 50%;
-  object-fit: cover;
-  width: 130px;
-  height: 130px;
-  margin-bottom: 10px;
-}
-
-hr {
-  border: 0;
-  border-top: 1px solid #ccc;
-  margin: 20px 0;
-}
-
-input[type="file"] {
-  display: none;
-}
-
-.toggle .text {
-  font-size: 13px;
-  margin-left: 8px;
-}
-
-.form-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  text-align: left;
-}
-`]
-
-customElements.define('user-modal', UserModal)
+customElements.define('user-editor-modal', UserEditorModal)

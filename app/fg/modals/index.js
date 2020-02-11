@@ -9,7 +9,8 @@ import './select-drive'
 import './select-file'
 import './prompt'
 import './basic-auth'
-import './user'
+import './user-editor'
+import './user-select'
 
 class ModalsWrapper extends LitElement {
   static get properties () {
@@ -81,14 +82,16 @@ class ModalsWrapper extends LitElement {
         return html`<prompt-modal></prompt-modal>`
       case 'basic-auth':
         return html`<basic-auth-modal></basic-auth-modal>`
-      case 'user':
-        return html`<user-modal></user-modal>`
+      case 'user-editor':
+        return html`<user-editor-modal></user-editor-modal>`
+      case 'user-select':
+        return html`<user-select-modal></user-select-modal>`
     }
     return html`<div></div>`
   }
 
   onContextMenu (e) {
-    // e.preventDefault() // disable context menu RESTOREME
+    e.preventDefault() // disable context menu
   }
 }
 

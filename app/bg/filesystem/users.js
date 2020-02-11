@@ -14,7 +14,6 @@ import { joinPath } from '../../lib/strings'
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
  *
  * @typedef {Object} User
- * @prop {string} [id]
  * @prop {string} url
  * @prop {string} title
  * @prop {string} description
@@ -22,6 +21,8 @@ import { joinPath } from '../../lib/strings'
  * @prop {string} [group.url]
  * @prop {string} [group.title]
  * @prop {string} [group.description]
+ * @prop {boolean} [group.isMember]
+ * @prop {string} [group.userid]
  */
 
 // globals
@@ -140,7 +141,6 @@ export function isUser (url) {
  */
 async function fetchUserInfo (userQueryRes) {
   const fs = filesystem.get()
-  var id = undefined
   var group = undefined
   var groupStat = await fs.pda.stat(joinPath(userQueryRes.path, '/group')).catch(e => undefined)
   if (groupStat && groupStat.mount.key) {
@@ -148,16 +148,18 @@ async function fetchUserInfo (userQueryRes) {
     group = {
       url: `hyper://${groupStat.mount.key.toString('hex')}`,
       title: groupInfo ? groupInfo.title : '',
-      description: groupInfo ? groupInfo.description : ''
+      description: groupInfo ? groupInfo.description : '',
+      isMember: false,
+      userid: undefined
     }
     let registrationRes = await query(fs, {path: joinPath(userQueryRes.path, '/group/users/*'), mount: userQueryRes.mount})
     if (registrationRes[0]) {
-      id = registrationRes[0].path.split('/').pop()
+      group.isMember = true
+      group.userid = registrationRes[0].path.split('/').pop()
     }
   }
   var meta = await archivesDb.getMeta(userQueryRes.mount)
   return {
-    id,
     url: userQueryRes.mount,
     title: meta.title,
     description: meta.description,
