@@ -32,7 +32,7 @@ nav {
   left: 4px;
   height: 100vh;
   width: 200px;
-  border-right: 1px solid #0005;
+  border-right: 1px solid #dde;
   white-space: nowrap;
 }
 
@@ -84,7 +84,7 @@ nav .categories > a {
   border-top: 1px solid #dde;
   border-left: 1px solid #dde;
   border-bottom: 1px solid #dde;
-  background: #fdfdff;
+  background: #fff;
   font-weight: 500;
 }
 
@@ -92,17 +92,14 @@ nav .categories > a.selected {
   color: #333;
   background: #fff;
   font-weight: bold;
-  border-top: 1px solid #0005;
-  border-left: 1px solid #0005;
-  border-bottom: 1px solid #0005;
 }
 
 
 nav .categories > a.selected.partially {
-  font-weight: normal;
+  font-weight: 500;
 }
 
-nav .categories > a.selected:after {
+nav .categories > a:after {
   content: '';
   position: absolute;
   top: 0;
@@ -117,26 +114,22 @@ nav .categories .subcategory {
   padding-left: 16px;
 }
 
-nav .categories .subcategory:before {
+nav .categories > a.selected + .subcategory:before {
   content: '';
   position: absolute;
   left: 12px;
   top: 0;
   width: 1px;
-  height: calc(100% - 10px);
+  height: calc(100% - 22px);
   background: #0002;
 }
 
-nav .categories > a.selected + .subcategory:before {
-  background: #0005;
-}
-
-nav .categories .subcategory a:before {
+nav .categories > a.selected + .subcategory a:before {
   content: '';
   position: absolute;
-  left: 0;
+  left: -4px;
   top: 50%;
-  width: 10px;
+  width: 16px;
   height: 1px;
   background: #0002;
 }
@@ -144,10 +137,6 @@ nav .categories .subcategory a:before {
 nav .categories .subcategory a.selected {
   color: #333;
   font-weight: bold;
-}
-
-nav .categories .subcategory a.selected:before {
-  background: #0009;
 }
 
 .drives {
@@ -167,6 +156,7 @@ nav .categories .subcategory a.selected:before {
 
 .drive {
   padding: 18px 24px;
+  color: #555;
   border-bottom: 1px solid #eef;
 }
 
@@ -258,9 +248,39 @@ nav .categories .subcategory a.selected:before {
   font-size: 0.7rem;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1100px) {
   .help {
     display: none;
+  }
+}
+
+@media (min-width: 1400px) {
+  :host {
+    padding-left: 301px;
+  }
+  nav {
+    left: 50px;
+    width: 250px;
+  }
+}
+
+@media (min-width: 1600px) {
+  :host {
+    padding-left: 401px;
+  }
+  nav {
+    left: 150px;
+    width: 250px;
+  }
+}
+
+@media (min-width: 1800px) {
+  :host {
+    padding-left: 501px;
+  }
+  nav {
+    left: 250px;
+    width: 250px;
   }
 }
 
