@@ -6,6 +6,9 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import { BUILTIN_FRONTENDS, filterFrontendByType } from '../../lib/hyper'
+import { ucfirst } from '../../lib/strings'
+
+const USABLE_BUILTIN_FRONTENDS = BUILTIN_FRONTENDS.filter(fe => fe.url.startsWith('builtin:'))
 
 class DrivePropertiesModal extends LitElement {
   static get styles () {
@@ -148,7 +151,7 @@ class DrivePropertiesModal extends LitElement {
             ${repeat(Object.entries(this.props), entry => entry[0], entry => this.renderProp(...entry))}
 
             <div class="prop">
-              <div class="key">thumbnail</div>
+              <div class="key">Thumbnail</div>
               <div class="img-input">
                 <img src="${this.url}/thumb">
                 <input id="thumb-input" type="file" accept=".jpg,.jpeg,.png">
@@ -169,11 +172,11 @@ class DrivePropertiesModal extends LitElement {
     if (key === 'frontend') {
       let typeInput = this.shadowRoot.querySelector('input[name="type"]')
       let currentType = typeInput ? typeInput.value : this.props.type
-      let frontends = BUILTIN_FRONTENDS.concat(this.frontends).filter(t => filterFrontendByType(t.manifest, currentType))
+      let frontends = USABLE_BUILTIN_FRONTENDS.concat(this.frontends).filter(t => filterFrontendByType(t.manifest, currentType))
       let opt = (id, label) => html`<option value=${id} ?selected=${id === value}>${label}</option>`
       return html`
         <div class="prop">
-          <div class="key">${key}</div>
+          <div class="key">${ucfirst(key)}</div>
           <div class="other-input">
             <select name=${key}>
               ${opt('', 'None')}
@@ -186,7 +189,7 @@ class DrivePropertiesModal extends LitElement {
     }
     return html`
       <div class="prop">
-        <div class="key">${key}</div>
+        <div class="key">${ucfirst(key)}</div>
         <input type="text" name=${key} value=${value} ?readonly=${!this.writable} @change=${this.onInputChange}>
       </div>
     `
