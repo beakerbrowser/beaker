@@ -213,7 +213,7 @@ export async function bookmark (opts = {}, href = '.') {
 // utilities
 // =
 
-export async function peek (opts = {}, location = '') {
+export async function cat (opts = {}, location = '') {
   var {drive, origin, pathname} = resolveParse(this.env, location)
   if (/\.(png|jpe?g|gif)$/.test(pathname)) {
     return {toHTML: () => html`<img src=${(origin + pathname)}>`}

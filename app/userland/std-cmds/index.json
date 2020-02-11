@@ -119,9 +119,9 @@
       ]
     },
     {
-      "name": "peek",
-      "help": "View the contents of a file into the terminal",
-      "usage": "peek {path}"
+      "name": "cat",
+      "help": "Output the contents of a file into the terminal",
+      "usage": "cat {path}"
     },
     {
       "name": "go",
