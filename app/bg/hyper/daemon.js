@@ -61,6 +61,18 @@ var client // client object created by hyperdrive-daemon-client
 export const setup = async function () {
   // instantiate the daemon
   // TODO the daemon should be managed in an external process
+
+  try {
+    client = new HyperdriveClient()
+    await client.ready()
+    process.hyperdriveDaemonClient = client
+    process.hyperdriveDaemon = null
+    console.log('Connected to an external daemon.')
+    return
+  } catch (err) {
+    console.log('Failed to connect to an external daemon. Launching the daemon...')
+  }
+
   if (getEnvVar('EMBED_HYPERDRIVE_DAEMON')) {
     await createMetadata(`localhost:${constants.port}`)
     var daemon = new HyperdriveDaemon()
