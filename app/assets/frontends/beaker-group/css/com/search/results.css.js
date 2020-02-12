@@ -43,7 +43,7 @@ a:hover {
 }
 
 .result .title {
-  color: var(--blue);
+  color: var(--color-link);
 }
 
 .result .author {

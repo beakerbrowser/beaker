@@ -64,12 +64,13 @@ ${tooltipCSS}
 }
 
 .banner {
-  height: 150px;
+  height: var(--banner-height);
   width: 100%;
-  background-image: url("/banner"), linear-gradient(to bottom, #3085ef, #425de2);
-  background-position: center center;
-  background-size: cover;
-  background-repeat: no-repeat;
+  background-color: var(--banner-background-color);
+  background-image: var(--banner-background-image);
+  background-position: var(--banner-background-position);
+  background-size: var(--banner-background-size);
+  background-repeat: var(--banner-background-repeat);
 }
 
 header {
@@ -77,8 +78,8 @@ header {
   align-items: center;
   letter-spacing: 0.75px;
   height: 52px;
-  background: #f5f5fb;
-  color: #556;
+  background: var(--header-background);
+  color: var(--header-color);
   padding: 0 20px 0 10px;
   margin-bottom: 20px;
 }
@@ -98,7 +99,7 @@ header a:last-child {
 }
 
 header a:hover {
-  color: var(--blue);
+  color: var(--link-color);
 }
 
 header .brand {
@@ -135,28 +136,29 @@ header .circle-btn {
   font-size: 13px;
   text-align: center;
   border-radius: 50%;
-  border: 1px solid #aab;
-  background: #fff;
-  color: #889;
+  color: var(--header-notifications-color);
+  border: 1px solid var(--header-notifications-border-color);
+  background: transparent;
 }
 
 header .circle-btn:hover {
-  border-color: var(--blue);
+  border-color: var(--link-color);
 }
 
 header .circle-btn.highlighted {
-  color: var(--red);
-  border-color: var(--red);
+  color: var(--header-notifications-color--highlighted);
+  border-color: var(--header-notifications-border-color--highlighted);
 }
 
 header beaker-search-input {
-  --input-bg-color: #fff;
-  --input-border: 1px solid #aab;
+  --input-bg-color: var(--header-search-background);
+  --input-color: var(--header-search-color);
+  --input-border: 1px solid var(--header-search-border-color);
 }
 
 header .compose-btn {
-  background: #4d84f3;
-  color: #fff;
+  background: var(--button-background--primary);
+  color: var(--button-color--primary);
   border-radius: 20px;
   font-size: 12px;
   padding: 6px 14px;
@@ -164,8 +166,8 @@ header .compose-btn {
 }
 
 header .compose-btn:hover {
-  color: #fff;
-  background: #3d74e3;
+  background: var(--button-background--primary--hover);
+  color: var(--button-color--primary--hover);
 }
 
 header .spacer {

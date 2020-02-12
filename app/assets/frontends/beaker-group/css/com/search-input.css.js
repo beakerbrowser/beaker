@@ -10,6 +10,7 @@ ${spinnerCSS}
   --input-bg-color: #f1f1f6;
   --input-border: 0;
   --input-border-radius: 16px;
+  --input-color: #555;
   display: block;
   margin-right: 16px;
 }
@@ -31,6 +32,7 @@ input.search {
   background: var(--input-bg-color);
   border-radius: var(--input-border-radius);
   border: var(--input-border);
+  color: var(--input-color);
   left: 0;
   top: 0;
   width: 100%;
@@ -44,6 +46,7 @@ input.search {
 
 input.search::-webkit-input-placeholder {
   font-size: 13px;
+  color: var(--input-color);
 }
 
 input:focus {
@@ -55,7 +58,7 @@ input:focus {
   left: 12px;
   font-size: 13px;
   top: 13px;
-  color: rgba(0,0,0,0.4);
+  color: var(--input-color);
   z-index: 1;
 }
 

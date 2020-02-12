@@ -17,7 +17,7 @@ ${spinnerCSS}
 }
 
 a {
-  color: var(--blue);
+  color: var(--color-link);
   text-decoration: none;
 }
 

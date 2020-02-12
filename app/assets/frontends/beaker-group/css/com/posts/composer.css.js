@@ -19,7 +19,7 @@ ${spinnercss}
 }
 
 a {
-  color: var(--blue);
+  color: var(--color-link);
 }
 
 .type-selector {
@@ -45,12 +45,12 @@ a {
 
 .type-selector a:hover,
 .type-selector a.selected {
-  color: var(--blue);
+  color: var(--color-link);
   background: #fafaff;
 }
 
 .type-selector a.selected {
-  border-bottom: 2px solid var(--blue);
+  border-bottom: 2px solid var(--color-link);
 }
 
 form {

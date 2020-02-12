@@ -5,22 +5,24 @@ const cssStr = css`
 ${colorscss}
 
 button {
-  background: #fff;
-  border: 1px solid #ccd;
+  background: var(--button-background);
+  color: var(--button-color);
+  border: 1px solid var(--button-border-color);
   border-radius: 3px;
   box-shadow: 0 1px 1px rgba(0,0,0,.05);
   padding: 5px 10px;
-  color: #333;
   outline: 0;
   cursor: pointer;
 }
 
 button:hover {
-  background: #f5f5f5;
+  background: var(--button-background--hover);
+  color: var(--button-color--hover);
 }
 
 button:active {
-  background: #eee;
+  background: var(--button-background--hover);
+  color: var(--button-color--hover);
 }
 
 button.big {
@@ -41,14 +43,15 @@ button.pressed {
 }
 
 button.primary {
-  background: #5289f7;
-  border-color: var(--blue);
-  color: #fff;
+  background: var(--button-background--primary);
+  color: var(--button-color--primary);
+  border-color: var(--button-border-color--primary);
   box-shadow: 0 1px 1px rgba(0,0,0,.1);
 }
 
 button.primary:hover {
-  background: rgb(73, 126, 234);
+  background: var(--button-background--primary--hover);
+  color: var(--button-color--primary--hover);
 }
 
 button.gray {

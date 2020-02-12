@@ -89,7 +89,14 @@ export class EditProfilePopup extends BasePopup {
     return html`
       <form @submit=${this.onSubmit}>
         <div class="img-ctrl">
-          <img src=${this.thumbDataURL || `asset:thumb:${this.user.url}?cache_buster=${Date.now()}`}>
+          ${this.thumbDataURL ? html`
+            <img src=${this.thumbDataURL}>
+          ` : html`
+            <beaker-img-fallbacks>
+              <img src="${this.user.url}/thumb" slot="img1">
+              <img src="/.ui/img/default-user-thumb" slot="img2">
+            </beaker-img-fallbacks>
+          `}
           <input type="file" accept=".jpg,.jpeg,.png" @change=${this.onChooseThumbFile}>
           <button type="button" @click=${this.onClickChangeThumb} class="btn" tabindex="4">Choose Picture</button>
         </div>
@@ -99,10 +106,8 @@ export class EditProfilePopup extends BasePopup {
         ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
         <label for="description">Bio / Description</label>
-        <textarea name="description" tabindex="3" placeholder="Bio / Description (optional)" @change=${this.onChangeDescription} class=${this.errors.description ? 'has-error' : ''}>${this.description || ''}</textarea>
+        <input name="description" tabindex="3" placeholder="Bio / Description (optional)" @change=${this.onChangeDescription} class=${this.errors.description ? 'has-error' : ''} value=${this.description || ''}>
         ${this.errors.description ? html`<div class="error">${this.errors.description}</div>` : ''}
-
-        <hr>
 
         <div class="form-actions">
           <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>

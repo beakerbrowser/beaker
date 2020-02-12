@@ -112,10 +112,13 @@ export class GroupSettingsPopup extends BasePopup {
 
   renderBody () {
     return html`
+      <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
       <form @submit=${this.onSubmit}>
         <div class="img-ctrls">
           <div class="img-ctrl thumb">
-            ${this.thumbDataURL ? html`
+            ${this.thumbDataURL === 'none' ? html`
+              <img src="/.ui/img/default-group-thumb">
+            ` : this.thumbDataURL ? html`
               <img src=${this.thumbDataURL}>
             ` : html`
               <beaker-img-fallbacks>
@@ -124,11 +127,16 @@ export class GroupSettingsPopup extends BasePopup {
               </beaker-img-fallbacks>
             `}
             <input type="file" accept=".jpg,.jpeg,.png" @change=${this.onChooseThumbFile}>
-            <button type="button" @click=${this.onClickChangeThumb} class="btn" tabindex="4">Change Thumbnail</button>
+            <div class="btn-group">
+              <button type="button" @click=${this.onClickChangeThumb} class="btn" tabindex="4">Change Thumbnail</button>
+              <button @click=${this.onClearThumb}><span class="fas fa-times"></span></button>
+            </div>
           </div>
 
           <div class="img-ctrl banner">
-            ${this.bannerDataURL ? html`
+            ${this.bannerDataURL === 'none' ? html`
+              <img src="/.ui/img/default-group-banner"></img>
+            ` : this.bannerDataURL ? html`
               <img src=${this.bannerDataURL}>
             ` : html`
               <beaker-img-fallbacks>
@@ -137,7 +145,10 @@ export class GroupSettingsPopup extends BasePopup {
               </beaker-img-fallbacks>
             `}
             <input type="file" accept=".jpg,.jpeg,.png" @change=${this.onChooseBannerFile}>
-            <button type="button" @click=${this.onClickChangeBanner} class="btn" tabindex="4">Change Banner</button>
+            <div class="btn-group">
+              <button type="button" @click=${this.onClickChangeBanner} class="btn" tabindex="4">Change Banner</button>
+              <button @click=${this.onClearBanner}><span class="fas fa-times"></span></button>
+            </div>
           </div>
         </div>
 
@@ -180,6 +191,11 @@ export class GroupSettingsPopup extends BasePopup {
     fr.readAsDataURL(file)
   }
 
+  onClearThumb (e) {
+    e.preventDefault()
+    this.thumbDataURL = 'none'
+  }
+
   onClickChangeBanner (e) {
     e.preventDefault()
     this.shadowRoot.querySelector('.banner input[type="file"]').click()
@@ -194,6 +210,11 @@ export class GroupSettingsPopup extends BasePopup {
       this.bannerDataURL = /** @type string */(fr.result)
     }
     fr.readAsDataURL(file)
+  }
+
+  onClearBanner (e) {
+    e.preventDefault()
+    this.bannerDataURL = 'none'
   }
 
   onChangeTitle (e) {
@@ -236,12 +257,14 @@ export class GroupSettingsPopup extends BasePopup {
       }
       if (this.bannerDataURL) {
         await Promise.all([
-          drive.unlink('/bannere.jpg').catch(e => undefined),
-          drive.unlink('/bannere.jpeg').catch(e => undefined),
-          drive.unlink('/bannere.png').catch(e => undefined)
+          drive.unlink('/banner.jpg').catch(e => undefined),
+          drive.unlink('/banner.jpeg').catch(e => undefined),
+          drive.unlink('/banner.png').catch(e => undefined)
         ])
-        var bannerBase64 = this.bannerDataURL ? this.bannerDataURL.split(',').pop() : undefined
-        await drive.writeFile(`/banner.${this.bannerExt}`, bannerBase64, 'base64')
+        if (this.bannerDataURL !== 'none') {
+          var bannerBase64 = this.bannerDataURL ? this.bannerDataURL.split(',').pop() : undefined
+          await drive.writeFile(`/banner.${this.bannerExt}`, bannerBase64, 'base64')
+        }
       }
       if (this.thumbDataURL) {
         await Promise.all([
@@ -249,8 +272,10 @@ export class GroupSettingsPopup extends BasePopup {
           drive.unlink('/thumb.jpeg').catch(e => undefined),
           drive.unlink('/thumb.png').catch(e => undefined)
         ])
-        var thumbBase64 = this.thumbDataURL ? this.thumbDataURL.split(',').pop() : undefined
-        await drive.writeFile(`/thumb.${this.thumbExt}`, thumbBase64, 'base64')
+        if (this.thumbDataURL !== 'none') {
+          var thumbBase64 = this.thumbDataURL ? this.thumbDataURL.split(',').pop() : undefined
+          await drive.writeFile(`/thumb.${this.thumbExt}`, thumbBase64, 'base64')
+        }
       }
       emit(this, 'resolve')
     } catch (e) {

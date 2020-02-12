@@ -15,7 +15,7 @@ ${votectrlCSS}
   letter-spacing: 0.5px;
   font-size: 14px;
   margin-bottom: 10px;
-  color: #667;
+  color: var(--post-color);
 }
 
 :host([expanded]) {
@@ -25,7 +25,7 @@ ${votectrlCSS}
 
 a {
   text-decoration: none;
-  color: #667;
+  color: var(--post-link-color);
   font-weight: 500;
   cursor: pointer;
 }
@@ -63,7 +63,7 @@ a:hover {
 .title {
   font-size: 18px;
   font-weight: 600;
-  color: #555;
+  color: var(--post-title-color);
 }
 
 :host([expanded]) .title {
@@ -72,7 +72,7 @@ a:hover {
 
 .drive-type,
 .domain {
-  color: #778;
+  color: var(--post-link-color);
 }
 
 .drive-type .far,
@@ -109,7 +109,7 @@ button.menu {
 }
 
 .text-post-content a {
-  color: var(--blue);
+  color: var(--link-color);
 }
 
 .text-post-content pre {

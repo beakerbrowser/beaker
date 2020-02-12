@@ -31,13 +31,13 @@ const cssStr = css`
 .votectrl .upvoted,
 .votectrl .upvote:hover,
 .votectrl .upvote.selected {
-  color: var(--red);
+  color: var(--vote-color);
 }
 
 .votectrl .downvoted,
 .votectrl .downvote:hover,
 .votectrl .downvote.selected {
-  color: var(--red);
+  color: var(--vote-color);
 }
 `
 export default cssStr
