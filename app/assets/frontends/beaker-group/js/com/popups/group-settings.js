@@ -251,7 +251,7 @@ export class GroupSettingsPopup extends BasePopup {
         description: this.description
       })
       if (this.rules) {
-        await drive.readFile('/rules.md', this.rules)
+        await drive.writeFile('/rules.md', this.rules)
       } else {
         await drive.unlink('/rules.md').catch(e => undefined)
       }
