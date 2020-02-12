@@ -9,6 +9,7 @@ import '../com/profiles/list.js'
 export class ProfileView extends LitElement {
   static get properties () {
     return {
+      showAdminCtrls: {type: Boolean, attribute: 'admin-ctrls'},
       user: {type: Object},
       profileId: {type: String, attribute: 'profile-id'},
       subview: {type: String}
@@ -21,6 +22,7 @@ export class ProfileView extends LitElement {
 
   constructor () {
     super()
+    this.showAdminCtrls = false
     this.user = undefined
     this.profileId = undefined
     this.subview = 'posts'
@@ -39,9 +41,9 @@ export class ProfileView extends LitElement {
       >${label}</a>
     `
     return html`
-      <div class="layout left-col">
+      <div class="layout three-col">
         <nav>
-          <beaker-profile-aside loadable .user=${this.user} id=${this.profileId}></beaker-profile-aside>
+          <beaker-profile-aside loadable .user=${this.user} id=${this.profileId} ?admin-ctrls=${this.showAdminCtrls}></beaker-profile-aside>
         </nav>
         <main>
           <nav class="pills">
@@ -50,6 +52,9 @@ export class ProfileView extends LitElement {
           </nav>
           ${this.renderSubview()}
         </main>
+        <nav>
+          <beaker-about loadable></beaker-about>
+        </nav>
       </div>
     `
   }

@@ -1,13 +1,14 @@
 import { LitElement, html } from '../../../vendor/lit-element/lit-element.js'
 import * as uwg from '../../lib/uwg.js'
 import { EditProfilePopup } from '../popups/edit-profile.js'
+import * as toast from '../toast.js'
 import headerCSS from '../../../css/com/profiles/header.css.js'
 import '../img-fallbacks.js'
 
 export class ProfileHeader extends LitElement {
   static get properties () {
     return {
-      user: {type: Object},
+      showAdminCtrls: {type: Boolean, attribute: 'admin-ctrls'},
       id: {type: String},
       profile: {type: Object}
     }
@@ -19,7 +20,7 @@ export class ProfileHeader extends LitElement {
 
   constructor () {
     super()
-    this.user = undefined
+    this.showAdminCtrls = false
     this.id = undefined
     this.profile = undefined
   }
@@ -35,7 +36,7 @@ export class ProfileHeader extends LitElement {
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
       <a class="avatar" href="/${this.profile.id}">
         <beaker-img-fallbacks>
-          <img src="${this.profile.url}/thumb" slot="img1">
+          <img src="/users/${this.profile.id}/thumb" slot="img1">
           <img src="/.ui/img/default-user-thumb.jpg" slot="img2">
         </beaker-img-fallbacks>
       </a>
@@ -49,9 +50,20 @@ export class ProfileHeader extends LitElement {
         </p>
         <p class="ctrls">
           ${this.profile.isUser ? html`
-            <button class="" @click=${this.onEditProfile}>
+            <button @click=${this.onEditProfile}>
               <span class="fas fa-fw fa-user-edit"></span>
               Edit your profile
+            </button>
+          ` : ''}
+          ${this.showAdminCtrls ? html`
+            <h4>Admin</h4>
+            <button @click=${this.onChangeUserId}>
+              <span class="fas fa-fw fa-i-cursor"></span>
+              Change User ID
+            </button>
+            <button @click=${this.onRemoveUser}>
+              <span class="fas fa-fw fa-user-times"></span>
+              Remove User
             </button>
           ` : ''}
         </p>
@@ -65,9 +77,36 @@ export class ProfileHeader extends LitElement {
   async onEditProfile (e) {
     try {
       await EditProfilePopup.create(document.body, {user: this.profile})
-      this.load()
+      location.reload()
     } catch (e) {
       // ignore
+    }
+  }
+
+  async onChangeUserId () {
+    var newId = prompt('Change this user\'s id to:', this.id)
+    if (!newId) return
+    try {
+      await uwg.users.rename(this.id, newId)
+      toast.create('User renamed', 'success')
+      setTimeout(() => {window.location = `/${newId}`}, 1e3)
+    } catch (e) {
+      console.log(e)
+      toast.create(e.toString(), 'error')
+    }
+  }
+
+  async onRemoveUser () {
+    if (!confirm('Are you sure you want to remove this user?')) {
+      return
+    }
+    try {
+      await uwg.users.removeByUserID(this.id)
+      toast.create('User removed', 'success')
+      setTimeout(() => {window.location = '/'}, 1e3)
+    } catch (e) {
+      console.log(e)
+      toast.create(e.toString(), 'error')
     }
   }
 

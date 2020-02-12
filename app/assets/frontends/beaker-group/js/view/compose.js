@@ -1,5 +1,6 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import '../com/posts/composer.js'
+import '../com/about.js'
 
 export class ComposeView extends LitElement {
   static get properties () {
@@ -25,10 +26,13 @@ export class ComposeView extends LitElement {
   render () {
     if (!this.user) return html``
     return html`
-      <div class="layout">
+      <div class="layout right-col">
         <main>
           <beaker-post-composer loadable></beaker-post-composer>
         </main>
+        <nav>
+          <beaker-about loadable></beaker-about>
+        </nav>
       </div>
     `
   }

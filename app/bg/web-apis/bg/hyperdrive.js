@@ -201,9 +201,11 @@ export default {
         await checkoutFS.pda.updateManifest(manifestUpdates)
         await drives.pullLatestDriveMeta(drive)
 
-        var oldFrontend = await getFrontend(checkoutFS)
-        if (settings.frontend !== oldFrontend) {
-          await setFrontend(drive, settings.frontend)
+        if ('frontend' in settings) {
+          var oldFrontend = await getFrontend(checkoutFS)
+          if (settings.frontend !== oldFrontend) {
+            await setFrontend(drive, settings.frontend)
+          }
         }
       })
     ))

@@ -6,7 +6,6 @@ import * as tutil from './js/lib/test-utils.js'
 import { pluralize, fromPostUrlToAppRoute, slugify } from './js/lib/strings.js'
 import { writeToClipboard } from './js/lib/clipboard.js'
 import * as toast from './js/com/toast.js'
-import * as contextMenu from './js/com/context-menu.js'
 import mainCSS from './css/main.css.js'
 import './js/view/posts.js'
 import './js/view/comments.js'
@@ -55,7 +54,6 @@ export class App extends LitElement {
     this.route = '404'
     this.routeParams = undefined
     this.session = undefined
-    this.userCount = undefined
     this.notificationCount = undefined
     this.load()
   }
@@ -88,7 +86,6 @@ export class App extends LitElement {
     // load group data
     var self = new Hyperdrive(location)
     this.groupInfo = await self.getInfo()
-    this.userCount = await uwg.users.count()
     this.session = await navigator.session.get()
     if (this.session) {
       await uwg.profiles.setUser(this.session.user.url)
@@ -133,51 +130,36 @@ export class App extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
+      <div class="banner"></div>
       <header>
-        <div class="top">
-          <a class="brand" href="/">
-            <strong>${this.groupInfo.title}</strong>
+        <a class="brand" href="/">
+          <img src="/thumb" @error=${this.onErrorBrandThumb}>
+          <strong>${this.groupInfo.title}</strong>
+        </a>
+        <span class="spacer"></span>
+        <beaker-search-input placeholder="Search this group"></beaker-search-input>
+        ${/*this.groupInfo.writable ? html`
+          <a href="#" @click=${this.onClickAdminMenu}>
+            <span class="fas fa-toolbox"></span> Admin <span class="fas fa-caret-down"></span>
           </a>
-          <span class="spacer"></span>
-          ${this.groupInfo.writable ? html`
-            <a href="#" @click=${this.onClickAdminMenu}>
-              <span class="fas fa-toolbox"></span> Admin <span class="fas fa-caret-down"></span>
-            </a>
-          ` : ''}
+        ` : */''}
+        ${this.session?.user?.group?.isMember ? html`
+          <a class="compose-btn" href="/compose">New Post</a>
           <a
-            href="/users"
-            title="${this.userCount || ''} ${pluralize(this.userCount || 0, 'member')}"
-            data-tooltip="${this.userCount || ''} ${pluralize(this.userCount || 0, 'member')}"
+            class=${classMap({'circle-btn': true, highlighted: !!this.notificationCount})}
+            href="/notifications"
+            title="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
+            data-tooltip="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
           >
-            <span class="fas fa-fw fa-users"></span>
-            ${typeof this.userCount === 'undefined' ? html`<span class="spinner"></span>` : this.userCount}
+            ${this.notificationCount ? this.notificationCount : html`<span class="far fa-fw fa-bell"></span>`}
           </a>
-          ${this.session?.user?.group?.isMember ? html`
-            <a
-              class=${classMap({highlighted: this.notificationCount > 0 })}
-              href="/notifications"
-              title="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
-              data-tooltip="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
-            >
-              <span class="fas fa-fw fa-bell"></span>
-              ${typeof this.notificationCount === 'undefined' ? html`<span class="spinner"></span>` : this.notificationCount}
-            </a>
-            <a href="/${this.session.user.group.userid}">
-              <span class="fas fa-fw fa-user-circle"></span>
-              ${this.session.user.title}
-            </a>
-            <a class="compose-btn" href="/compose"><span class="fas fa-plus"></span> New Post</a>
-          ` : this.session?.user ? html`
-          ` : html`
-            <a href="#" @click=${this.onClickJoin}><span class="fas fa-user-plus"></span> Join This Group</a>
-          `}
-        </div>
-        <div class="bottom">
-          <a href="/" title="Posts">Posts</a>
-          <a href="/comments" title="Comments">Comments</a>
-          <span class="spacer"></span>
-          <beaker-search-input placeholder="Search this group"></beaker-search-input>
-        </div>
+          <a href="/${this.session.user.group.userid}">
+            <img class="avatar" src="${this.session.user.url}/thumb">
+          </a>
+        ` : this.session?.user ? html`
+        ` : html`
+          <a href="#" @click=${this.onClickJoin}><span class="fas fa-user-plus"></span> Join This Group</a>
+        `}
       </header>
       ${this.session?.user && !this.session?.user?.group?.isMember ? html`
         <div class="flash-message">
@@ -218,10 +200,10 @@ export class App extends LitElement {
       `
       case 'userProfile':
       case 'userPosts': return html`
-        <beaker-profile-view loadable .user=${this.session?.user} profile-id=${this.routeParams.groups.id}></beaker-profile-view>
+        <beaker-profile-view loadable .user=${this.session?.user} profile-id=${this.routeParams.groups.id} ?admin-ctrls=${this.groupInfo.writable}></beaker-profile-view>
       `
       case 'userComments': return html`
-        <beaker-profile-view loadable .user=${this.session?.user} profile-id=${this.routeParams.groups.id} subview="comments"></beaker-profile-view>
+        <beaker-profile-view loadable .user=${this.session?.user} profile-id=${this.routeParams.groups.id} subview="comments" ?admin-ctrls=${this.groupInfo.writable}></beaker-profile-view>
       `
       case 'post': return html`
         <beaker-post-view
@@ -238,6 +220,10 @@ export class App extends LitElement {
   // events
   // =
 
+  onErrorBrandThumb (e) {
+    e.currentTarget.setAttribute('src', '/.ui/img/default-group-thumb.jpg')
+  }
+
   async onClickJoin (e) {
     e.preventDefault()
 
@@ -253,68 +239,6 @@ export class App extends LitElement {
     e.preventDefault()
     writeToClipboard(this.session?.user?.url)
     toast.create('Copied to your clipboard')
-  }
-
-  onClickAdminMenu (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    var rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({
-      x: (rect.left + rect.right) / 2,
-      y: rect.bottom,
-      center: true,
-      roomy: true,
-      items: [{
-        label: 'Add user',
-        click: () => this.onAdminAddUser()
-      }, {
-        label: 'Rename user',
-        click: () => this.onAdminRenameUser()
-      }, {
-        label: 'Remove user',
-        click: () => this.onAdminRemoveUser()
-      }]
-    })
-  }
-
-  async onAdminAddUser () {
-    var url = prompt('URL of the user to add')
-    if (!url) return
-    var id = prompt('Choose an ID (username) for the new user')
-    if (!id) return
-    try {
-      await uwg.users.add(url, id)
-      toast.create('User added', 'success')
-    } catch (e) {
-      console.log(e)
-      toast.create(e.toString(), 'error')
-    }
-  }
-
-  async onAdminRenameUser () {
-    var oldId = prompt('User\'s current ID')
-    if (!oldId) return
-    var newId = prompt('New ID')
-    if (!newId) return
-    try {
-      await uwg.users.rename(oldId, newId)
-      toast.create('User renamed', 'success')
-    } catch (e) {
-      console.log(e)
-      toast.create(e.toString(), 'error')
-    }
-  }
-
-  async onAdminRemoveUser () {
-    var id = prompt('ID of the user to remove')
-    if (!id) return
-    try {
-      await uwg.users.removeByUserID(id)
-      toast.create('User removed', 'success')
-    } catch (e) {
-      console.log(e)
-      toast.create(e.toString(), 'error')
-    }
   }
 }
 

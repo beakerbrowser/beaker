@@ -10,26 +10,32 @@ ${votectrlCSS}
 
 :host {
   display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
+  grid-template-columns: 30px 50px minmax(0, 1fr);
   align-items: center;
   letter-spacing: 0.5px;
   font-size: 14px;
   margin-bottom: 10px;
+  color: #667;
 }
 
 :host([expanded]) {
   align-items: flex-start;
-  font-size: 16px;
+  grid-template-columns: 30px 50px minmax(0, 1fr);
 }
 
 a {
   text-decoration: none;
   color: #667;
+  font-weight: 500;
   cursor: pointer;
 }
 
 a:hover {
   text-decoration: underline;
+}
+
+:host([expanded]) .votectrl {
+  top: -4px;
 }
 
 :host([expanded]) .votectrl .fas {
@@ -39,10 +45,25 @@ a:hover {
   font-size: 18px;
 }
 
+.icon {
+  text-align: center;
+  margin-right: 8px;
+  font-size: 21px;
+}
+
+.icon .fa-file,
+.icon .fa-image {
+  font-size: 24px;
+}
+
+:host([expanded]) .icon {
+  line-height: 44px;
+}
+
 .title {
-  font-size: 19px;
-  font-weight: 500;
-  color: var(--blue);
+  font-size: 18px;
+  font-weight: 600;
+  color: #555;
 }
 
 :host([expanded]) .title {
@@ -68,10 +89,15 @@ button.menu {
 }
 
 .text-post-content {
-  border: 1px solid #ccd;
-  border-radius: 4px;
-  padding: 14px;
-  margin: 10px 0 0;
+  border: 1px dashed #dde;
+  border-left: 0;
+  border-right: 0;
+  padding: 24px 0;
+  margin-top: 24px;
+  color: #333;
+  font-size: 15px;
+  letter-spacing: 0.25px;
+  max-width: 50em;
 }
 
 .text-post-content > :first-child {
@@ -119,14 +145,18 @@ button.menu {
 }
 
 .file-content {
-  border: 1px solid #ccd;
-  border-radius: 4px;
-  padding: 14px;
-  margin: 10px 0 0;
+  margin-top: 14px;
 }
 
 .file-content h3 {
   margin: 0;
+}
+
+.file-content h3 a {
+  display: inline-block;
+  padding: 10px 16px;
+  border: 1px solid #ccd;
+  border-radius: 4px;
 }
 
 .file-content h3 + * {

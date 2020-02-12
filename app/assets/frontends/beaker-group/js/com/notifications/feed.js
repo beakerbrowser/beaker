@@ -155,18 +155,20 @@ export class NotificationsFeed extends LitElement {
           ${this.notifications.length === 0
             ? html`
               <div class="empty">
-                <div><span class="fas fa-image"></span></div>
+                <div><span class="far fa-bell"></span></div>
                 <div>
-                  This is the notifications feed. It will show notifications from users in this group.
+                  You have no notifications.
                 </div>
               </div>
             ` : ''}
+          ${this.page > 0 || this.notifications.length === PAGE_SIZE ? html`
+            <beaker-paginator
+              page=${this.page}
+              label="Showing notifications ${(this.page * PAGE_SIZE) + 1} - ${(this.page + 1) * PAGE_SIZE}"
+              @change-page=${this.onChangePage}
+            ></beaker-paginator>
+          ` : ''}
         `}
-        <beaker-paginator
-          page=${this.page}
-          label="Showing notifications ${(this.page * PAGE_SIZE) + 1} - ${(this.page + 1) * PAGE_SIZE}"
-          @change-page=${this.onChangePage}
-        ></beaker-paginator>
       </div>
     `
   }

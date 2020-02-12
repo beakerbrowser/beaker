@@ -11,8 +11,7 @@ ${spinnerCSS}
 }
 
 beaker-post {
-  border-top: 1px solid #dde;
-  padding: 16px 10px;
+  padding: 8px 6px;
   margin: 0;
 }
 `

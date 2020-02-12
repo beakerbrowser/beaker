@@ -1,5 +1,6 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import '../com/posts/feed.js'
+import '../com/about.js'
 
 export class PostsView extends LitElement {
   static get properties () {
@@ -24,10 +25,18 @@ export class PostsView extends LitElement {
 
   render () {
     return html`
-      <div class="layout">
+      <div class="layout right-col">
         <main>
+          <nav class="pills">
+            <a class="selected" href="/" title="Posts">Posts</a>
+            <a href="/comments" title="Comments">Comments</a>
+            <a href="/users" title="Users">Users</a>
+          </nav>
           <beaker-posts-feed loadable .user=${this.user}></beaker-posts-feed>
         </main>
+        <nav>
+          <beaker-about loadable></beaker-about>
+        </nav>
       </div>
     `
   }

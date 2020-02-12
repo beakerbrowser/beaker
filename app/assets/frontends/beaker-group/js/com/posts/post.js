@@ -79,12 +79,22 @@ export class Post extends LitElement {
     var postMeta = this.post.stat.metadata
     var viewProfileUrl = '/' + this.post.drive.id
     var viewPostUrl = viewProfileUrl + '/posts/' + this.post.url.split('/').pop()
-    var href = isLink ? postMeta.href : this.post.url
+    var href = isLink ? postMeta.href : viewPostUrl
     var userVote = this.getUserVote()
     var karma = this.getKarma()
     var author = this.post.drive
     var ctime = this.post.stat.ctime // TODO replace with rtime
     var isExpanded = this.hasAttribute('expanded')
+    var icon = isLink ? 'fas fa-link' : isTextPost ? 'far fa-comment-alt' : 'far fa-file'
+    if (isFile) {
+      if (/\.(png|jpe?g|gif)$/i.test(this.post.path)) {
+        icon = 'far fa-image'
+      } else if (/\.(mp4|webm|mov)$/i.test(this.post.path)) {
+        icon = 'fas fa-film'
+      } else if (/\.(mp3|ogg)$/i.test(this.post.path)) {
+        icon = 'far fa-play-circle'
+      }
+    }
 
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
@@ -97,6 +107,7 @@ export class Post extends LitElement {
           <span class="fas fa-caret-down"></span>
         </a>
       </div>
+      <div class="icon"><span class=${icon}></span></div>
       <div class="content">
         <div>
           <a class="title" href=${href} title=${postMeta.title}>${postMeta.title}</a>
@@ -107,9 +118,7 @@ export class Post extends LitElement {
             </span>
           ` : ''}
           <span class="domain">
-            ${isLink ? html`<span class="fas fa-link"></span> ${toNiceDomain(postMeta.href)}` : ''}
-            ${isTextPost ? html`<span class="far fa-comment-alt"></span> ${toNiceDomain(this.post.url)}` : ''}
-            ${isFile ? html`<span class="far fa-file"></span> ${toNiceDomain(this.post.url)}` : ''}
+            ${isLink ? toNiceDomain(postMeta.href) : ''}
           </span>
           <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
@@ -127,7 +136,6 @@ export class Post extends LitElement {
         ` : ''}
         ${isExpanded && isFile ? html`
           <div class="file-content">
-            <h3><span class="far fa-fw fa-file"></span> <a href=${this.post.url}>${this.post.url.split('/').pop()}</a></h3>
             ${this.renderFile()}
           </div>
         ` : undefined}
@@ -145,6 +153,7 @@ export class Post extends LitElement {
     if (/\.(mp3|ogg)$/i.test(this.post.path)) {
       return html`<audio controls><source src=${this.post.url}></audio>`
     }
+    return html`<h3><a href=${this.post.url}>.${this.post.url.split('.').pop()} Link</a></h3>`
   }
 
   // events

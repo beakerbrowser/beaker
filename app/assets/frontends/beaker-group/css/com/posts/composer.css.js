@@ -14,6 +14,8 @@ ${spinnercss}
   border: 1px solid #ccd;
   border-radius: 8px;
   overflow: hidden;
+  max-width: 800px;
+  margin: 10px auto;
 }
 
 a {

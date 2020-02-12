@@ -12,9 +12,9 @@ ${votectrlCSS}
 
 :host {
   --body-font-size: 15px;
-  --header-font-size: 12px;
-  --title-font-size: 13px;
-  --footer-font-size: 12px;
+  --header-font-size: 14px;
+  --title-font-size: 14px;
+  --footer-font-size: 13px;
   --title-color: var(--color-link);
   --header-color: #888;
 
@@ -33,8 +33,7 @@ a:hover {
   display: grid;
   grid-template-columns: 20px 1fr;
   align-items: baseline;
-  border-top: 1px solid #dde;
-  padding: 8px 6px 16px;
+  padding: 8px 14px 12px;
 }
 
 .header {
@@ -73,13 +72,13 @@ a:hover {
 }
 
 .footer {
-  padding: 0 16px;
+  padding: 4px 16px 0;
+  font-size: var(--footer-font-size);
 }
 
 .view-context {
   background: #f0f0f5;
   color: #778;
-  font-size: 10px;
   padding: 2px 6px;
   border-radius: 4px;
 }

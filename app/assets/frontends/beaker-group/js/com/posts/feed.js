@@ -87,11 +87,13 @@ export class PostsFeed extends LitElement {
                 </div>
               </div>
             ` : ''}
-          <beaker-paginator
-            page=${this.page}
-            label="Showing posts ${(this.page * PAGE_SIZE) + 1} - ${(this.page + 1) * PAGE_SIZE}"
-            @change-page=${this.onChangePage}
-          ></beaker-paginator>
+          ${this.page > 0 || this.posts.length === PAGE_SIZE ? html`
+            <beaker-paginator
+              page=${this.page}
+              label="Showing posts ${(this.page * PAGE_SIZE) + 1} - ${(this.page + 1) * PAGE_SIZE}"
+              @change-page=${this.onChangePage}
+            ></beaker-paginator>
+          ` : ''}
         `}
       </div>
     `

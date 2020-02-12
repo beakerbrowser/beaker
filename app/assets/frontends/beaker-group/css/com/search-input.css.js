@@ -8,8 +8,10 @@ ${spinnerCSS}
 
 :host {
   --input-bg-color: #f1f1f6;
+  --input-border: 0;
   --input-border-radius: 16px;
   display: block;
+  margin-right: 16px;
 }
 
 .search-container {
@@ -28,14 +30,14 @@ ${spinnerCSS}
 input.search {
   background: var(--input-bg-color);
   border-radius: var(--input-border-radius);
-  border: 0;
+  border: var(--input-border);
   left: 0;
   top: 0;
   width: 100%;
-  height: 30px;
+  height: 29px;
   padding: 0 10px;
   padding-left: 32px;
-  margin-top: 3px;
+  margin-top: 4px;
   box-sizing: border-box;
   font-size: 13px;
 }

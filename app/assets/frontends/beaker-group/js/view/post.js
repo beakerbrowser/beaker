@@ -4,6 +4,7 @@ import * as toast from '../com/toast.js'
 import '../com/profiles/aside.js'
 import '../com/posts/post.js'
 import '../com/comments/thread.js'
+import '../com/about.js'
 
 export class PostView extends LitElement {
   static get properties () {
@@ -55,10 +56,10 @@ export class PostView extends LitElement {
     return html`
       <style>
         beaker-post {
-          margin-bottom: 16px;
+          margin: 20px 0 16px;
         }
         .votes {
-          margin: -14px 0 10px 40px;
+          margin: 0 0 10px 78px;
           color: #667;
           font-size: 12px;
           background: #f8f8fc;
@@ -75,13 +76,22 @@ export class PostView extends LitElement {
         .votes a:hover {
           text-decoration: underline;
         }
+        beaker-profile-aside {
+          width: 260px;
+          margin: 0 auto 16px;
+        }
         beaker-comments-thread {
-          margin-left: 40px;
+          margin-left: 78px;
           margin-bottom: 100px;
         }
       </style>
-      <div class="layout">
+      <div class="layout right-col">
         <main>
+          <nav class="pills">
+            <a class="selected" href="/" title="Posts">Posts</a>
+            <a href="/comments" title="Comments">Comments</a>
+            <a href="/users" title="Users">Users</a>
+          </nav>
           <beaker-post
             expanded
             .post=${this.post}
@@ -114,6 +124,10 @@ export class PostView extends LitElement {
             ></beaker-comments-thread>
           ` : html`<div class="spinner" style="margin-left: 40px"></div>`}
         </main>
+        <nav>
+          <beaker-profile-aside loadable id=${this.author}></beaker-profile-aside>
+          <beaker-about loadable></beaker-about>
+        </nav>
       </div>
     `
   }

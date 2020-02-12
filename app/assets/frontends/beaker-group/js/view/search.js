@@ -1,6 +1,7 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { toNiceDriveType } from '../lib/strings.js'
 import '../com/search/results.js'
+import '../com/about.js'
 
 export class SearchView extends LitElement {
   static get properties () {
@@ -31,17 +32,16 @@ export class SearchView extends LitElement {
     return html`
       <style>
         .search-title {
-          margin: 0 0 10px;
+          padding: 1px 8px 10px;
+          margin: 0 8px 14px;
           color: #556;
-          font-size: 18px;
+          font-size: 16px;
           letter-spacing: 0.5px;
           font-weight: normal;
-          background: #f3f3f8;
-          padding: 10px 16px;
-          border-radius: 8px;
+          border-bottom: 1px solid #ccd;
         }
       </style>
-      <div class="layout">
+      <div class="layout right-col">
         <main>
           <h3 class="search-title">
             <span class="fas fa-fw fa-search"></span>
@@ -49,6 +49,9 @@ export class SearchView extends LitElement {
           </h3>
           <beaker-search-results loadable .user=${this.user} drive-type=${this.driveType || ''} query=${this.query || ''}></beaker-search-results>
         </main>
+        <nav>
+          <beaker-about loadable></beaker-about>
+        </nav>
       </div>
     `
   }

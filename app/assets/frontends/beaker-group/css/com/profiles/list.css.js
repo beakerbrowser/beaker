@@ -15,14 +15,17 @@ a:hover {
   text-decoration: underline;
 }
 
-.profile {
+.profiles {
   display: grid;
-  border-radius: 4px;
-  grid-template-columns: 80px 1fr;
-  align-items: center;
+  grid-template-columns: repeat(auto-fill, 400px);
   grid-gap: 20px;
+}
+
+.profile {
+  display: flex;
+  border-radius: 4px;
   border: 1px solid #ccd;
-  margin-bottom: 10px;
+  align-items: center;
 }
 
 .avatar {
@@ -31,7 +34,8 @@ a:hover {
 
 img {
   display: block;
-  width: 100%;
+  width: 120px;
+  min-height: 120px;
   height: 100%;
   object-fit: cover;
   border-top-left-radius: 4px;
@@ -39,7 +43,7 @@ img {
 }
 
 .main {
-  padding: 10px;
+  padding: 16px;
 }
 
 .title,
@@ -48,7 +52,7 @@ img {
 }
 
 .title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 500;
   letter-spacing: 0.65px;
 }

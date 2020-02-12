@@ -56,7 +56,7 @@ ${inputscss}
 }
 
 .popup-inner .body {
-  padding: 12px;
+  padding: 16px;
 }
 
 .popup-inner .body > div:not(:first-child) {
@@ -104,32 +104,23 @@ ${inputscss}
 
 .popup-inner textarea,
 .popup-inner input {
+  font-size: 15px;
   margin-bottom: 10px;
 }
 
+.popup-inner input {
+  padding: 0 10px;
+  height: 36px;
+}
+
 .popup-inner textarea {
-  height: 60px;
+  height: 100px;
   resize: vertical;
+  padding: 10px;
 }
 
-.popup-inner .actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
-}
-
-.popup-inner .actions .left,
-.popup-inner .actions .link {
-  margin-right: auto;
-}
-
-.popup-inner .actions .btn,
-.popup-inner .actions .success,
-.popup-inner .actions .primary {
-  margin-left: 5px;
+.popup-inner .form-actions button {
+  font-size: 14px;
 }
 
 .popup-inner .actions .spinner {

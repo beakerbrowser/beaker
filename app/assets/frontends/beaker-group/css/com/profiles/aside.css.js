@@ -81,5 +81,9 @@ button:hover {
   background: #eef !important;
 }
 
+button + button {
+  margin-top: 5px;
+}
+
 `
 export default cssStr

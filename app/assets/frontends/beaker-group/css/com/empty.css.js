@@ -2,8 +2,7 @@ import {css} from '../../vendor/lit-element/lit-element.js'
 
 const cssStr = css`
 .empty {
-  background: #fafafe;
-  padding: 200px 0;
+  padding: 80px 0;
   color: #889;
   text-align: center;
   border-radius: 8px;
