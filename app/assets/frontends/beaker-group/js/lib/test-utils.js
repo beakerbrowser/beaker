@@ -62,7 +62,7 @@ export async function generateComments (numComments = 10) {
   }
 }
 
-export async function generateVotes (numVotes = 100) {
+export async function generateVotes (numVotes = 10) {
   var driveUrls = Array.from(debugDrives)
   for (let i = 0; i < numVotes; i++) {
     for (let driveUrl of driveUrls) {
@@ -94,14 +94,14 @@ async function getRandomPost () {
 }
 
 async function getRandomCommentOnPost (post) {
-  var comments = await uwg.comments.list({limit: 50, href: post.url})
+  var comments = await uwg.comments.list({limit: 50, href: post.url}, {includeContent: false})
   return comments[Math.floor(Math.random() * comments.length)]
 }
 
 async function getRandomPostOrComment () {
   var [posts, comments] = await Promise.all([
-    uwg.posts.list({limit: 50}, {includeProfiles: true}),
-    await uwg.comments.list({limit: 50})
+    uwg.posts.list({}, {includeContent: false}),
+    uwg.comments.list({}, {includeContent: false})
   ])
   var candidates = posts.concat(comments)
   return candidates[Math.floor(Math.random() * candidates.length)]

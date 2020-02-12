@@ -19,6 +19,7 @@ ${votectrlCSS}
   --header-color: #888;
 
   display: block;
+  margin-bottom: 50px;
 }
 
 a {
@@ -88,5 +89,9 @@ a:hover {
   background: #eaeaef;
 }
 
+beaker-paginator {
+  font-size: 16px;
+  margin: 20px 10px;
+}
 `
 export default cssStr

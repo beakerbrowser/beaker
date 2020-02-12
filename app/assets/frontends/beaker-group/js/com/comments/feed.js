@@ -40,7 +40,7 @@ export class CommentsFeed extends LitElement {
       limit: PAGE_SIZE,
       sort: 'name',
       reverse: true
-    })
+    }, {includeProfiles: true})
     /* dont await */ this.loadFeedAnnotations(comments)
     this.comments = comments
     console.log(this.comments)
@@ -103,13 +103,6 @@ export class CommentsFeed extends LitElement {
                   </div>
                 </div>
               </div>
-              ${this.page > 0 || this.comments.length === PAGE_SIZE ? html`
-                <beaker-paginator
-                  page=${this.page}
-                  label="Showing comments ${(this.page * PAGE_SIZE) + 1} - ${(this.page + 1) * PAGE_SIZE}"
-                  @change-page=${this.onChangePage}
-                ></beaker-paginator>
-              ` : ''}
             `
           })}
           ${this.comments.length === 0
@@ -123,6 +116,13 @@ export class CommentsFeed extends LitElement {
                 </div>
               </div>
             ` : ''}
+          ${this.page > 0 || this.comments.length === PAGE_SIZE ? html`
+            <beaker-paginator
+              page=${this.page}
+              label="Showing comments ${(this.page * PAGE_SIZE) + 1} - ${(this.page + 1) * PAGE_SIZE}"
+              @change-page=${this.onChangePage}
+            ></beaker-paginator>
+          ` : ''}
         `}
       </div>
     `

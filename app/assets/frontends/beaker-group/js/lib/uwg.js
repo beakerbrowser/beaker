@@ -375,12 +375,19 @@ export const comments = {
    * @param {boolean} [query.reverse]
    * @param {number} [query.offset]
    * @param {number} [query.limit]
+   * @param {Object} [opts]
+   * @param {boolean} [opts.includeProfiles]
+   * @param {boolean} [opts.includeContent]
    * @returns {Promise<Comment[]>}
    */
-  async list ({author, href, sort, reverse, offset, limit} = {author: undefined, href: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined}) {
+  async list (
+    {author, href, sort, reverse, offset, limit} = {author: undefined, href: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined},
+    {includeProfiles, includeContent} = {includeProfiles: false, includeContent: true}
+  ) {
     var drive = new Hyperdrive(author || location)
     href = href ? normalizeUrl(href) : undefined
-    var comments = await queryRead({
+    var queryFn = includeContent ? queryRead : (q, drive) => drive.query(q)
+    var comments = await queryFn({
       path: getCommentsPaths(author),
       metadata: href ? {href} : undefined,
       sort,
@@ -388,8 +395,12 @@ export const comments = {
       offset,
       limit
     }, drive)
-    comments = comments.filter(c => isNonemptyString(c.content))
-    await profiles.readAllProfiles(comments)
+    if (includeContent) {
+      comments = comments.filter(c => isNonemptyString(c.content))
+    }
+    if (includeProfiles) {
+      await profiles.readAllProfiles(comments)
+    }
     return comments
   },
 

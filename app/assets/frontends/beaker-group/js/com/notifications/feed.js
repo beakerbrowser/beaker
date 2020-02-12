@@ -70,11 +70,14 @@ export class NotificationsFeed extends LitElement {
 
   getHref (notification) {
     if (notification.event === 'comment' || notification.event === 'vote') {
+      let urlp = new URL(notification.detail.href)
+      let author = urlp.hostname
+      let filename = urlp.pathname.split('/').pop()
       if (notification.detail.href.includes('/comments/')) {
-        return `/${notification.detail.href.slice('hyper://'.length)}`
+        return `/${author}/comments/${filename}`
       }
       if (notification.detail.href.includes('/posts/')) {
-        return `/${notification.detail.href.slice('hyper://'.length)}`
+        return `/${author}/posts/${filename}`
       }
     }
   }

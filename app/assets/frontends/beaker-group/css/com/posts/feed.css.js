@@ -8,11 +8,17 @@ ${spinnerCSS}
 
 :host {
   display: block;
+  margin-bottom: 40px;
 }
 
 beaker-post {
   padding: 8px 6px;
   margin: 0;
+}
+
+beaker-paginator {
+  font-size: 16px;
+  margin: 20px 10px;
 }
 `
 export default cssStr

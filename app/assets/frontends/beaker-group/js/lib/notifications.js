@@ -16,6 +16,7 @@
 import { openDB } from '../../vendor/idb/index.js'
 import '../../vendor/idb/async-iterators.js'
 import { lock } from './lock.js'
+import * as uwg from './uwg.js'
 
 // typedefs
 // =
@@ -47,7 +48,7 @@ export const events = new EventTarget()
 export const STORED_EVENT_LIMIT = 300 // TODO
 export const INDEXES = /** @type IndexDefinition[] */([
   {
-    path: '/votes/',
+    path: '/beaker-forum/votes/',
     filterFn (change, {userUrl}) {
       if (change.type !== 'put') return false
       if (!change.value.stat) return false
@@ -67,7 +68,7 @@ export const INDEXES = /** @type IndexDefinition[] */([
     }
   },
   {
-    path: '/comments/',
+    path: '/beaker-forum/comments/',
     filterFn (change, {userUrl}) {
       if (change.type !== 'put') return false
       if (!change.value.stat) return false
@@ -176,13 +177,8 @@ export async function updateIndex (userUrl) {
   var release = await lock('notifications-update')
   try {
     var filterOpts = {userUrl}
-    var groupUsers = []/* TODO await navigator.filesystem.query({
-      type: 'mount',
-      path: [
-        '/profile/follows/*',
-      ]
-    })*/
-    var userKeySet = new Set(groupUsers.map(f => f.mount))
+    var groupUsers = await uwg.users.list()
+    var userKeySet = new Set(groupUsers.map(f => f.url))
     userKeySet.delete(userUrl)
 
     for (let userKey of userKeySet) {

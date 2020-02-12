@@ -69,6 +69,11 @@ export class App extends LitElement {
     }
     console.log(this.route, this.routeParams)
 
+    if (this.route === 'comment') {
+      await this.doCommentRedirect()
+      return
+    }
+
     // reroute from user keys to their id
     if (this.routeParams?.groups?.id && /[0-9a-f]{64}/i.test(this.routeParams.groups.id)) {
       try {
@@ -92,10 +97,6 @@ export class App extends LitElement {
     }
     console.log(this.session)
 
-    if (this.route === 'comment') {
-      await this.doCommentRedirect()
-    }
-
     await this.requestUpdate()
     Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
 
@@ -117,7 +118,7 @@ export class App extends LitElement {
 
   async doCommentRedirect () {
     try {
-      var comment = await uwg.comments.get(this.routeParams.groups.id, `/comments/${this.routeParams.groups.filename}`)
+      var comment = await uwg.comments.get(this.routeParams.groups.id, `/beaker-forum/comments/${this.routeParams.groups.filename}`)
       window.location = fromPostUrlToAppRoute(comment.stat.metadata.href)
     } catch (e) {
       console.error('Failed to load comment', e)
