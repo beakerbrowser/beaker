@@ -93,6 +93,7 @@ export class PostView extends LitElement {
             <a href="/users" title="Users">Users</a>
           </nav>
           <beaker-post
+            fullpage
             expanded
             .post=${this.post}
             user-url="${this.user ? this.user.url : ''}"

@@ -12,7 +12,7 @@ ${spinnerCSS}
 }
 
 beaker-post {
-  padding: 8px 6px;
+  padding: 10px 6px;
   margin: 0;
 }
 

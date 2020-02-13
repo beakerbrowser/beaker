@@ -84,6 +84,7 @@ export class Post extends LitElement {
     var karma = this.getKarma()
     var author = this.post.drive
     var ctime = this.post.stat.ctime // TODO replace with rtime
+    var isFullpage = this.hasAttribute('fullpage')
     var isExpanded = this.hasAttribute('expanded')
     var icon = isLink ? 'fas fa-link' : isTextPost ? 'far fa-comment-alt' : 'far fa-file'
     if (isFile) {
@@ -123,6 +124,9 @@ export class Post extends LitElement {
           <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
         <div>
+          ${isFullpage ? '' : html`
+            <button class="expander transparent" @click=${this.onClickExpander}><span class="fas fa-${isLink ? 'external-link-alt' : isExpanded ? 'compress' : 'expand'}"></span></button>
+          `}
           by <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
           | posted <a href=${viewPostUrl}>${timeDifference(ctime, true, 'ago')}</a>
           | <a class="comments" href=${viewPostUrl}>
@@ -187,6 +191,31 @@ export class Post extends LitElement {
       this.post.votes.downvotes.push({url: this.userUrl})
     }
     this.requestUpdate()
+  }
+
+  async onClickExpander (e) {
+    e.preventDefault()
+    var isLink = this.post.path.endsWith('.goto')
+    var isTextPost = /\.(md|txt)$/.test(this.post.path)
+    if (isLink) {
+      window.open(this.post.stat.metadata.href)
+    } else {
+      if (this.hasAttribute('expanded')) {
+        this.removeAttribute('expanded')
+      } else {
+        try {
+          if (isTextPost && !this.post.content) {
+            let drive = new Hyperdrive(location)
+            let filename = this.post.path.split('/').pop()
+            this.post.content = await drive.readFile(`/users/${this.post.drive.id}/beaker-forum/posts/${filename}`)
+          }
+          this.setAttribute('expanded', '')
+        } catch (e) {
+          console.log(e)
+          toast.create('Failed to load post', 'error')
+        }
+      }
+    }
   }
 
   onClickMenu (e) {

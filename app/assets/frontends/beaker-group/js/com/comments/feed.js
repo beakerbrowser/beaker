@@ -40,7 +40,7 @@ export class CommentsFeed extends LitElement {
       limit: PAGE_SIZE,
       sort: 'name',
       reverse: true
-    }, {includeProfiles: true})
+    }, {includeProfiles: true, includeContent: true})
     /* dont await */ this.loadFeedAnnotations(comments)
     this.comments = comments
     console.log(this.comments)

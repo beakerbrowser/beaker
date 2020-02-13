@@ -24,7 +24,7 @@ body {
   --banner-background-repeat: no-repeat;
 
   --header-background: #f5f5fb;
-  --header-color: #556;
+  --header-color: #445;
   --header-search-color: #889;
   --header-search-background: #fff;
   --header-search-border-color: #aab;
@@ -46,9 +46,9 @@ body {
   --button-background--primary--hover: #3d74e3;
   --button-color--primary--hover: #fff;
 
-  --post-color: #667;
-  --post-title-color: #555;
-  --post-link-color: #667;
+  --post-color: #889;
+  --post-title-color: #444;
+  --post-link-color: #778;
 
   --vote-color: var(--red);
 

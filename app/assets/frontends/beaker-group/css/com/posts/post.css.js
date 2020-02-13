@@ -11,15 +11,14 @@ ${votectrlCSS}
 :host {
   display: grid;
   grid-template-columns: 30px 50px minmax(0, 1fr);
-  align-items: center;
+  align-items: flex-start;
   letter-spacing: 0.5px;
   font-size: 14px;
   margin-bottom: 10px;
   color: var(--post-color);
 }
 
-:host([expanded]) {
-  align-items: flex-start;
+:host([singlepage]) {
   grid-template-columns: 30px 50px minmax(0, 1fr);
 }
 
@@ -34,14 +33,14 @@ a:hover {
   text-decoration: underline;
 }
 
-:host([expanded]) .votectrl {
+:host([singlepage]) .votectrl {
   top: -4px;
 }
 
-:host([expanded]) .votectrl .fas {
+:host([singlepage]) .votectrl .fas {
   font-size: 20px;
 }
-:host([expanded]) .votectrl .karma {
+:host([singlepage]) .votectrl .karma {
   font-size: 18px;
 }
 
@@ -49,6 +48,7 @@ a:hover {
   text-align: center;
   margin-right: 8px;
   font-size: 21px;
+  line-height: 44px;
 }
 
 .icon .fa-file,
@@ -56,17 +56,17 @@ a:hover {
   font-size: 24px;
 }
 
-:host([expanded]) .icon {
-  line-height: 44px;
+.content > div {
+  margin-bottom: 2px;
 }
 
 .title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 500;
   color: var(--post-title-color);
 }
 
-:host([expanded]) .title {
+:host([singlepage]) .title {
   font-size: 22px;
 }
 
@@ -88,16 +88,36 @@ button.menu {
   padding: 0;
 }
 
+button.expander {
+  position: relative;
+  top: -1px;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  margin-right: 2px;
+  opacity: 0.75;
+}
+
 .text-post-content {
+  color: #333;
+  font-size: 15px;
+  letter-spacing: 0.25px;
+  max-width: 50em;
+}
+
+:host([singlepage]) .text-post-content {
   border: 1px dashed #dde;
   border-left: 0;
   border-right: 0;
   padding: 24px 0;
   margin-top: 24px;
-  color: #333;
-  font-size: 15px;
-  letter-spacing: 0.25px;
-  max-width: 50em;
+}
+
+:host(:not([singlepage])) .text-post-content {
+  border: 1px solid #ccd;
+  padding: 16px;
+  border-radius: 4px;
+  margin-top: 10px;
 }
 
 .text-post-content > :first-child {
