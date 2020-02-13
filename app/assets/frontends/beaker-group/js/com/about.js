@@ -25,7 +25,7 @@ export class About extends LitElement {
     super()
     this.info = undefined
     this.userCount = undefined
-    this.rules = undefined
+    this.sidebarMd = undefined
   }
 
   async load () {
@@ -34,7 +34,7 @@ export class About extends LitElement {
     this.requestUpdate()
     this.userCount = await uwg.users.count()
     this.requestUpdate()
-    this.rules = await drive.readFile('/rules.md').catch(e => undefined)
+    this.sidebarMd = await drive.readFile('/beaker-forum/sidebar.md').catch(e => undefined)
     this.requestUpdate()
   }
 
@@ -51,10 +51,9 @@ export class About extends LitElement {
           </a>
         `}
       </div>
-      ${this.rules ? html`
-        <h4>${this.info.title || 'Gropu'} Rules</h4>
-        <div class="rules">
-          ${unsafeHTML(md.render(this.rules))}
+      ${this.sidebarMd ? html`
+        <div class="sidebar-md">
+          ${unsafeHTML(md.render(this.sidebarMd))}
         </div>
       ` : ''}
       ${this.info?.writable ? html`

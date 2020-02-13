@@ -154,9 +154,11 @@ button.expander {
 .text-post-content ol {
   line-height: 1.5;
 }
+
 .text-post-content table {
   margin: 1em 0;
 }
+
 .text-post-content blockquote {
   border-left: 10px solid #f3f3f7;
   margin: 1em 0;

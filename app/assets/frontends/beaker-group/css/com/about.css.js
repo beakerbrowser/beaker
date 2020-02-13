@@ -8,7 +8,9 @@ ${buttonsCSS}
   display: block;
 }
 
-h4 {
+:host > h4,
+.sidebar-md h1 {
+  font-size: 14px;
   margin: 0;
   padding: 0 4px;
   border-bottom: 1px solid #ccd;
@@ -18,14 +20,14 @@ h4 {
 }
 
 .description,
-.rules,
 .admin {
   padding: 12px 4px;
   font-size: 15px;
 }
 
 .description,
-.rules {
+.sidebar-md p,
+.sidebar-md ul {
   opacity: 0.75;
   letter-spacing: 0.4px;
 }
@@ -64,12 +66,63 @@ h4 {
   letter-spacing: 0.5px;
 }
 
-.rules > :first-child {
-  margin-top: 0;
+.sidebar-md h2 {
+  font-size: 14px;
 }
 
-.rules > :last-child {
-  margin-bottom: 0;
+.sidebar-md h3 {
+  font-size: 13px;
+}
+
+.sidebar-md h4 {
+  font-size: 12px;
+}
+
+.sidebar-md a {
+  text-decoration: none;
+}
+
+.sidebar-md a:hover {
+  text-decoration: underline;
+}
+
+.sidebar-md blockquote {
+  border-left: 5px solid var(--header-background);
+  padding: 1px 1em;
+  margin-left: 0;
+}
+
+.sidebar-md pre {
+  background: #f3f3f7;
+  padding: 1em;
+  overflow: auto;
+  max-width: 100%;
+}
+
+.sidebar-md code {
+  background: #f3f3f7;
+  padding: 0 4px;
+}
+
+.sidebar-md hr {
+  border: 0;
+  border-top: 1px solid #ccd;
+}
+
+.sidebar-md table {
+  margin: 1em 0;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sidebar-md table th {
+  background: var(--header-background);
+}
+
+.sidebar-md table th,
+.sidebar-md table td {
+  border: 1px solid #ccd;
+  padding: 5px;
 }
 `
 export default cssStr

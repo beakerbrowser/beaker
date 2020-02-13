@@ -17,6 +17,7 @@ export class GroupSettingsPopup extends BasePopup {
       bannerExt: {type: String},
       title: {type: String},
       description: {type: String},
+      sidebarMd: {type: String},
       errors: {type: Object}
     }
   }
@@ -83,13 +84,13 @@ export class GroupSettingsPopup extends BasePopup {
   async load () {
     var self = new Hyperdrive(location)
     var info = await self.getInfo()
-    var rules = await self.readFile('/rules.md').catch(e => '')
+    var sidebarMd = await self.readFile('/beaker-forum/sidebar.md').catch(e => '')
     
     this.thumbDataURL = undefined
     this.bannerDataURL = undefined
     this.title = info?.title
     this.description = info?.description
-    this.rules = rules
+    this.sidebarMd = sidebarMd
   }
 
   // management
@@ -160,9 +161,9 @@ export class GroupSettingsPopup extends BasePopup {
         <input name="description" tabindex="3" placeholder="Group Description" @change=${this.onChangeDescription} class=${this.errors.description ? 'has-error' : ''} value=${this.description || ''}>
         ${this.errors.description ? html`<div class="error">${this.errors.description}</div>` : ''}
 
-        <label for="rules">Rules</label>
-        <textarea name="rules" tabindex="4" placeholder="Group Rules (Markdown supported)" @change=${this.onChangeRules} class=${this.errors.rules ? 'has-error' : ''}>${this.rules || ''}</textarea>
-        ${this.errors.rules ? html`<div class="error">${this.errors.rules}</div>` : ''}
+        <label for="sidebar">Sidebar Text</label>
+        <textarea name="sidebarMd" tabindex="4" placeholder="Write your rules, instructions, etc here. (Markdown supported)" @change=${this.onChangeSidebarMd} class=${this.errors.sidebarMd ? 'has-error' : ''}>${this.sidebarMd || ''}</textarea>
+        ${this.errors.sidebarMd ? html`<div class="error">${this.errors.sidebarMd}</div>` : ''}
 
         <div class="form-actions">
           <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
@@ -225,8 +226,8 @@ export class GroupSettingsPopup extends BasePopup {
     this.description = e.target.value.trim()
   }
 
-  onChangeRules (e) {
-    this.rules = e.target.value
+  onChangeSidebarMd (e) {
+    this.sidebarMd = e.target.value
   }
 
   onClickCancel (e) {
@@ -250,10 +251,11 @@ export class GroupSettingsPopup extends BasePopup {
         title: this.title,
         description: this.description
       })
-      if (this.rules) {
-        await drive.writeFile('/rules.md', this.rules)
+      if (this.sidebarMd) {
+        await drive.mkdir('/beaker-forum').catch(e => undefined)
+        await drive.writeFile('/beaker-forum/sidebar.md', this.sidebarMd)
       } else {
-        await drive.unlink('/rules.md').catch(e => undefined)
+        await drive.unlink('/beaker-forum/sidebar.md').catch(e => undefined)
       }
       if (this.bannerDataURL) {
         await Promise.all([
