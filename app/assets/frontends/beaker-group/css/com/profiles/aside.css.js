@@ -30,6 +30,12 @@ a:hover {
   text-decoration: underline;
 }
 
+button.menu {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
 img {
   display: block;
   margin: 0 auto;
@@ -71,22 +77,22 @@ img {
   margin: 14px 0 0;
 }
 
-button {
+button:not(.menu) {
   display: block;
   font-size: 14px;
   width: 100%;
   padding: 8px 12px !important;
 }
 
-button .fa-fw {
+button:not(.menu) .fa-fw {
   margin-right: 4px;
 }
 
-button:hover {
+button:not(.menu):hover {
   background: #eef !important;
 }
 
-button + button {
+button:not(.menu) + button {
   margin-top: 5px;
 }
 

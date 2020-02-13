@@ -1,5 +1,7 @@
 import { LitElement, html } from '../../../vendor/lit-element/lit-element.js'
 import * as uwg from '../../lib/uwg.js'
+import { writeToClipboard } from '../../lib/clipboard.js'
+import * as contextMenu from '../context-menu.js'
 import { EditProfilePopup } from '../popups/edit-profile.js'
 import * as toast from '../toast.js'
 import headerCSS from '../../../css/com/profiles/header.css.js'
@@ -34,6 +36,7 @@ export class ProfileHeader extends LitElement {
     if (!this.profile) return html`<span class="spinner"></span>`
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
+      <button class="transparent menu" @click=${this.onClickMenu}><span class="fas fa-ellipsis-h"></span></button>
       <a class="avatar" href="/${this.profile.id}">
         <beaker-img-fallbacks>
           <img src="/users/${this.profile.id}/thumb" slot="img1">
@@ -73,6 +76,31 @@ export class ProfileHeader extends LitElement {
 
   // events
   // =
+
+  onClickMenu (e) {
+    e.preventDefault()
+    e.stopPropagation()
+
+    var rect = e.currentTarget.getClientRects()[0]
+    contextMenu.create({
+      x: rect.right,
+      y: rect.bottom,
+      right: true,
+      roomy: true,
+      noBorders: true,
+      style: `padding: 4px 0`,
+      items: [
+        {
+          icon: 'fas fa-fw fa-link',
+          label: 'Copy profile URL',
+          click: () => {
+            writeToClipboard(this.profile.url)
+            toast.create('Copied to your clipboard')
+          }
+        }
+      ]
+    })
+  }
 
   async onEditProfile (e) {
     try {

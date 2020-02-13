@@ -165,7 +165,15 @@ export const users = {
     if (!isValidUserID(id)) throw new Error(`The user ID "${id}" is not valid`)
 
     var st = await groupDrive.stat(`/users/${id}`).catch(e => undefined)
-    if (st) throw new Error(`The usernaame "${id}" is already taken`)
+    if (st) throw new Error(`The user ID "${id}" is already taken`)
+
+    var mounts = await groupDrive.query({
+      path: '/users/*',
+      mount: key
+    })
+    if (mounts[0]) {
+      throw new Error(`This user is already a member of the group`)
+    }
 
     await ensureDir('/users', groupDrive)
     await groupDrive.mount(`/users/${id}`, key)
