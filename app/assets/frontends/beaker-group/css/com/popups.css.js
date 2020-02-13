@@ -21,7 +21,7 @@ ${inputscss}
   background: #fff;
   box-shadow: 0 2px 25px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.55);
-  border-radius: 8px;
+  border-radius: 4px;
   width: 450px;
   margin: 80px auto;
   overflow: hidden;

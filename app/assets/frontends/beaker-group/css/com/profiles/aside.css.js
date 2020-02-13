@@ -62,6 +62,11 @@ img {
   font-size: 15px;
 }
 
+.description {
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
 .ctrls {
   margin: 14px 0 0;
 }

@@ -43,6 +43,7 @@ body {
 
   --button-background--primary: #4d84f3;
   --button-color--primary: #fff;
+  --button-border-color--primary: #3d74e3;
   --button-background--primary--hover: #3d74e3;
   --button-color--primary--hover: #fff;
 

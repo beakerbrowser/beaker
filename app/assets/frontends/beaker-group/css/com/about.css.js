@@ -24,6 +24,12 @@ h4 {
   font-size: 15px;
 }
 
+.description,
+.rules {
+  opacity: 0.75;
+  letter-spacing: 0.4px;
+}
+
 .counts {
   display: flex;
   padding: 0 2px;
