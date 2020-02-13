@@ -29,8 +29,15 @@ ${inputscss}
 
 .popup-inner .error {
   color: #d80b00 !important;
-  margin: 10px 0 !important;
-  font-style: italic;
+  margin: -12px 0 10px !important;
+}
+
+.popup-inner .help {
+  margin: -6px 0 14px;
+  opacity: 0.75;
+  letter-spacing: 0.4px;
+  margin-bottom: 14px;
+  font-size: 11px;
 }
 
 .popup-inner .head {

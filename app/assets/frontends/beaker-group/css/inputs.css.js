@@ -66,15 +66,15 @@ select:focus {
   box-shadow: 0 0 0 2px rgba(41, 95, 203, 0.2);
 }
 
-input.error,
-textarea.error,
-select.error {
+input.has-error,
+textarea.has-error,
+select.has-error {
   border: 1px solid rgba(209, 48, 39, 0.75);
 }
 
-input.error:focus,
-textarea.error:focus,
-select.error:focus {
+input.has-error:focus,
+textarea.has-error:focus,
+select.has-error:focus {
   box-shadow: 0 0 0 2px rgba(204, 47, 38, 0.15);
 }
 

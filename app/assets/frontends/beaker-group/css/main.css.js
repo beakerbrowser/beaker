@@ -249,6 +249,7 @@ nav.pills a.selected:after {
   cursor: pointer;
   box-shadow: 0 1px 2px #0002;
   transition: box-shadow 0.2s;
+  max-width: 640px;
 }
 
 .flash-message a.copy-btn:hover {

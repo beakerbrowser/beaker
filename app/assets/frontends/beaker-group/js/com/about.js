@@ -1,11 +1,11 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { GroupSettingsPopup } from './popups/group-settings.js'
+import { AddUserPopup } from './popups/add-user.js'
 import css from '../../css/com/about.css.js'
 import * as uwg from '../lib/uwg.js'
 import { pluralize } from '../lib/strings.js'
 import MarkdownIt from '../../vendor/markdown-it.js'
-import * as toast from './toast.js'
 
 const md = MarkdownIt({
   html: false, // Enable HTML tags in source
@@ -81,18 +81,7 @@ export class About extends LitElement {
   }
 
   async onAddUser () {
-    var url = prompt('URL of the user to add')
-    if (!url) return
-    var id = prompt('Choose an ID (username) for the new user')
-    if (!id) return
-    try {
-      await uwg.users.add(url, id)
-      toast.create('User added', 'success')
-      setTimeout(() => {window.location = `/${id}`}, 1e3)
-    } catch (e) {
-      console.log(e)
-      toast.create(e.toString(), 'error')
-    }
+    AddUserPopup.create(document.body)
   }
 }
 

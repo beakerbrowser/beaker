@@ -56,7 +56,7 @@ export class ProfileHeader extends LitElement {
             </button>
           ` : ''}
           ${this.showAdminCtrls ? html`
-            <h4>Admin</h4>
+            <h4>Admin Tools</h4>
             <button @click=${this.onChangeUserId}>
               <span class="fas fa-fw fa-i-cursor"></span>
               Change User ID

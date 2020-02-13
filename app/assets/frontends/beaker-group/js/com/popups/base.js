@@ -67,12 +67,13 @@ export class BasePopup extends LitElement {
   render () {
     let title = this.renderTitle()
     return html`
+    <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
       <div class="popup-wrapper" @click=${this.onClickWrapper}>
         <div class="popup-inner">
           ${title ? html`
             <div class="head">
               <span class="title">${title}</span>
-              <span title="Cancel" @click=${this.onReject} class="close-btn square">&times;</span>
+              <span title="Cancel" @click=${this.onReject} class="close-btn square"><span class="fas fa-times"></span></span>
             </div>
           ` : ''}
           <div class="body">
