@@ -65,11 +65,10 @@ class UserSelectModal extends LitElement {
     .user .create-img {
       border-radius: 50%;
       object-fit: cover;
-      width: 130px;
-      height: 130px;
+      width: 100px;
+      height: 100px;
       margin-bottom: 10px;
       box-sizing: border-box;
-      border: 1px solid #bbb;
     }
 
     .user .create-img {
@@ -77,12 +76,7 @@ class UserSelectModal extends LitElement {
       background: #f3f3f8;
       color: #0003;
       font-size: 30px;
-      padding: 50px 0;
-    }
-
-    .user.selected img,
-    .user.selected .create-img {
-      border: 1px solid #2864dc;
+      padding: 36px 0;
     }
 
     .user.selected .title span {
