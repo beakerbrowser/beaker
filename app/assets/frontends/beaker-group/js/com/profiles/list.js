@@ -57,7 +57,7 @@ export class ProfileList extends LitElement {
             <a href="/${profile.id}">${profile.title}</a>
           </h1>
           <p class="info">
-            <span class="description">${shorten(profile.description, 200)}</span>
+            <span class="description">${shorten(profile.description, 100)}</span>
           </p>
         </div>
       </div>

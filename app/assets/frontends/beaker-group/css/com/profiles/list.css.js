@@ -6,6 +6,11 @@ const cssStr = css`
 ${buttonsCSS}
 ${spinnerCSS}
 
+:host {
+  display: block;
+  margin: 20px 10px 40px;
+}
+
 a {
   color: var(--color-link);
   text-decoration: none;
@@ -55,6 +60,7 @@ img {
   font-size: 17px;
   font-weight: 500;
   letter-spacing: 0.65px;
+  margin-bottom: 4px;
 }
 
 .title a {
@@ -64,6 +70,7 @@ img {
 .info {
   font-size: 13px;
   letter-spacing: 0.35px;
+  opacity: 0.85;
 }
 
 .info .fa-fw {

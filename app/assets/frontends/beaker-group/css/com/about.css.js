@@ -32,28 +32,36 @@ h4 {
 
 .counts {
   display: flex;
-  padding: 0 2px;
+  padding: 8px 12px;
+  background: var(--header-background);
+  border-radius: 4px;
   margin-bottom: 10px;
 }
 
 .counts a {
   display: flex;
+  flex-direction: column-reverse;
   align-items: baseline;
   color: inherit;
   font-weight: 500;
   text-decoration: none;
-  background: #f3f3f8;
-  border-radius: 4px;
-  padding: 5px 10px;
+  padding: 0 0px;
+}
+
+.counts a:hover {
+  color: var(--link-color);
 }
 
 .counts a .number {
-  font-size: 14px;
+  font-size: 16px;
   margin-right: 4px;
+  letter-spacing: 2px;
 }
 
 .counts a .label {
-  font-size: 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .rules > :first-child {
