@@ -27,14 +27,11 @@ import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
 import { DRIVE_KEY_REGEX, slugify } from '../../lib/strings'
 import { findWebContentsParentWindow } from '../lib/electron'
-import { findImageBounds } from '../lib/image'
 import * as sitedataDb from '../dbs/sitedata'
 import * as settingsDb from '../dbs/settings'
 import * as historyDb from '../dbs/history'
 import * as filesystem from '../filesystem/index'
-import { query as fsquery } from '../filesystem/query'
 import * as bookmarks from '../filesystem/bookmarks'
-import * as users from '../filesystem/users'
 import hyper from '../hyper/index'
 
 const ERR_ABORTED = -3
@@ -504,59 +501,9 @@ class Tab {
 
         // capture the page
         var image = await this.browserView.webContents.capturePage()
-        var orgsize = image.getSize()
-        var bounds = findImageBounds(image.toBitmap(), orgsize)
-
-        // set a minimum size of 200x160
-        if (bounds.width < 200) {
-          let incDiv2 = ((200 - bounds.width) / 2)|0
-          bounds.left -= incDiv2
-          bounds.right += incDiv2
-        }
-        if (bounds.height < 160) {
-          let incDiv2 = ((160 - bounds.height) / 2)|0
-          bounds.top -= incDiv2
-          bounds.bottom += incDiv2
-        }
-
-        // give some margin
-        bounds.left = Math.max(0, bounds.left - 20)
-        bounds.right = Math.min(orgsize.width, bounds.right + 20)
-        bounds.top = Math.max(0, bounds.top - 20)
-        bounds.bottom = Math.min(orgsize.height, bounds.bottom + 20)
-
-        // adjust the bounds to match the 100x80 aspect ratio
-        if (bounds.width < bounds.height) {
-          bounds.right = bounds.left + (bounds.height / 0.8)|0
-        } else {
-          bounds.bottom = bounds.top + (bounds.width * 0.8)|0
-        }
-
-        // ensure the bounds are still within the viewport
-        if (bounds.left < 0) {
-          let inc = 0 - bounds.left
-          bounds.left += inc
-          bounds.right += inc
-        }
-        if (bounds.right > orgsize.width) {
-          let inc = orgsize.width - bounds.right
-          bounds.left -= inc
-          bounds.right -= inc
-        }
-        if (bounds.top < 0) {
-          let inc = 0 - bounds.top
-          bounds.top += inc
-          bounds.bottom += inc
-        }
-        if (bounds.bottom > orgsize.height) {
-          let inc = orgsize.height - bounds.bottom
-          bounds.top -= inc
-          bounds.bottom -= inc
-        }
-
-        image = image
-          .crop(bounds)
-          .resize({width: 200, height: 160})
+        var bounds = image.getSize()
+        if (bounds.width === 0) return
+        if (bounds.height === 0) return
         await sitedataDb.set(this.url, 'screenshot', image.toDataURL(), {dontExtractOrigin: true, normalizeUrl: true})
       } catch (e) {
         // ignore, can happen if the tab was closed during wait
