@@ -3,7 +3,7 @@ import path from 'path'
 import * as tabManager from './tab-manager'
 import { download } from './downloads'
 import { getDriveConfig, configDrive, removeDrive, getDriveIdent } from '../filesystem/index'
-import { runCloneFlow, runDiffMergeFlow, runDrivePropertiesFlow } from './util'
+import { runCloneFlow, runDrivePropertiesFlow } from './util'
 import * as spellChecker from '../web-apis/bg/spell-checker'
 
 // NOTE
@@ -177,7 +177,7 @@ export default function registerContextMenu () {
                   tabManager.create(win, url, {setActive: true})
                 }
               },
-              { label: 'Diff / Merge', click: (item, win) => runDiffMergeFlow(win, props.pageURL) },
+              { label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://compare/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } },
               { type: 'separator' },
               { label: 'Drive Properties', click: (item, win) => runDrivePropertiesFlow(win, key) }
             ]

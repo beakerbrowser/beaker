@@ -218,11 +218,7 @@ export class DrivesApp extends LitElement {
   }
 
   async compareDrive (drive) {
-    var target = await navigator.selectFileDialog({
-      title: 'Select a folder to compare against',
-      select: ['folder']
-    })
-    window.open(`beaker://compare/?base=${drive.url}&target=${target[0].url}`)
+    window.open(`beaker://compare/?base=${drive.url}`)
   }
 
   async driveProps (drive) {

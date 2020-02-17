@@ -208,14 +208,8 @@ class SiteMenu extends LitElement {
   }
 
   async onDiffMergeDrive (e) {
-    var base = this.url
-    bg.shellMenus.close()
-    var target = await bg.navigator.selectFileDialog({
-      title: 'Select a folder to compare against',
-      select: ['folder']
-    })
-    var url = `beaker://compare/?base=${base}&target=${target[0].url}`
-    bg.shellMenus.createTab(url)
+    bg.shellMenus.close()    
+    bg.shellMenus.createTab(`beaker://compare/?base=${this.url}`)
   }
 
   onDriveProperties (e) {

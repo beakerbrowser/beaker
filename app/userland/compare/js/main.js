@@ -2,12 +2,11 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
-import { joinPath, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
+import { pluralize, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as QP from 'beaker://app-stdlib/js/query-params.js'
 import * as compare from './lib/compare.js'
-import mainCSS from '../css/main.css.js'
 
 export class CompareApp extends LitElement {
   static get properties () {
@@ -17,25 +16,27 @@ export class CompareApp extends LitElement {
     }
   }
 
-  static get styles () {
-    return mainCSS
-  }
-
   constructor () {
     super()
     this.base = QP.getParam('base')
     this.target = QP.getParam('target')
     this.selectedItem = undefined
+    this.checkedItems = []
     this.load()
   }
 
+  createRenderRoot () {
+    return this // dont use shadow dom
+  }
+
   async load () {
-    this.baseDrive = new Hyperdrive(this.base)
-    this.targetDrive = new Hyperdrive(this.target)
-    this.baseInfo = await this.baseDrive.getInfo()
-    this.targetInfo = await this.targetDrive.getInfo()
-    this.basePath = (new URL(this.base)).pathname
-    this.targetPath = (new URL(this.target)).pathname
+    this.baseDrive = this.base ? new Hyperdrive(this.base) : undefined
+    this.targetDrive = this.target ? new Hyperdrive(this.target) : undefined
+    this.baseInfo = await this.baseDrive?.getInfo?.().catch(e => undefined)
+    this.targetInfo = await this.targetDrive?.getInfo?.().catch(e => undefined)
+    this.basePath = getUrlPathname(this.base)
+    this.targetPath = getUrlPathname(this.target)
+    this.checkedItems = []
     this.selectedItem = undefined
     this.requestUpdate()
 
@@ -44,8 +45,13 @@ export class CompareApp extends LitElement {
       target: this.target
     }, false, true)
 
-    const filter = path => path !== '/index.json'
-    this.diff = await compare.diff(this.baseDrive, this.basePath, this.targetDrive, this.targetPath, {compareContent: true, shallow: false, filter})
+    if (this.baseInfo && this.targetInfo) {
+      const filter = path => path !== '/index.json'
+      this.diff = await compare.diff(this.baseDrive, this.basePath, this.targetDrive, this.targetPath, {compareContent: true, shallow: false, filter})
+    } else {
+      this.diff = []
+    }
+    this.checkedItems = this.diff.slice()
     console.log(this.diff)
     this.requestUpdate()
   }
@@ -66,46 +72,25 @@ export class CompareApp extends LitElement {
   // =
 
   render () {
-    if (!this.baseInfo || !this.targetInfo) return html``
     let lastDiffType = undefined
     const diffSortFn = (a, b) => (a.change).localeCompare(b.change) || (a.path || '').localeCompare(b.path || '')
+    var numChecked = this.checkedItems?.length === this.diff?.length
+      ? 'all changes'
+      : `${this.checkedItems?.length} ${pluralize(this.checkedItems?.length, 'change')}`
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      <nav>
-        ${!this.diff ? html`<div style="padding: 5px">Comparing...</div>` : ''}
-        ${this.diff && !this.diff.length ? html`
-          <div class="empty">No differences found.</div>
-        ` : ''}
-        ${repeat((this.diff || []).slice().sort(diffSortFn), diff => {
-          let heading = lastDiffType !== diff.change ? html`
-            <h4>${({'add': 'Add', 'del': 'Delete', 'mod': 'Change'})[diff.change]}</h4>
-          ` : ''
-          lastDiffType = diff.change
-          return html`
-            ${heading}
-            <compare-diff-item
-              .diff=${diff}
-              .rightPath=${this.targetPath}
-              ?can-merge=${this.targetInfo.writable}
-              ?selected=${this.selectedItem === diff}
-              @select=${this.onSelectItem}
-            ></compare-diff-item>
-          `
-        })}
-      </nav>
-      <main>
-        <div class="header">
+      <header>
+        <h1>Diff / Merge Tool</h1>
+        <div class="toolbar">
           <div class="title">
             Comparing
             <button @click=${this.onClickBase}>
-              <span class="fas fa-fw fa-folder"></span>
-              ${this.baseInfo.title} ${this.basePath}
+              ${this.baseInfo?.title} ${this.basePath}
               <span class="fas fa-fw fa-caret-down"></span>
             </button>
             to
             <button @click=${this.onClickTarget}>
-              <span class="fas fa-fw fa-folder"></span>
-              ${this.targetInfo.title} ${this.targetPath}
+              ${this.targetInfo?.title} ${this.targetPath}
               <span class="fas fa-fw fa-caret-down"></span>
             </button>
           </div>
@@ -113,22 +98,60 @@ export class CompareApp extends LitElement {
             <span class="fas fa-fw fa-sync"></span> Reverse
           </button>
           <div style="flex: 1"></div>
-          ${this.targetInfo.writable ? html`
-            <button class="primary" @click=${this.onClickMergeAll}>Merge all</button>
+          ${this.targetInfo?.writable ? html`
+            <button class="primary" ?disabled=${this.checkedItems?.length === 0} @click=${this.onClickBulkMerge}>Merge ${numChecked}</button>
           ` : ''}
         </div>
-        ${this.selectedItem ? html`
-          <compare-diff-item-content
-            .leftOrigin=${this.baseDrive.url}
-            .rightOrigin=${this.targetDrive.url}
-            .leftPath=${this.basePath}
-            .rightPath=${this.targetPath}
-            .diff=${this.selectedItem}
-            @merge=${this.onClickMergeItem}
-          ></compare-diff-item-content>
-        ` : ''}
-      </main>
+      </header>
+      <div class="layout">
+        <nav>
+          <div class="nav-header">
+            <label><input type="checkbox" @change=${this.onToggleAllChecked}> Select / Deselect All</label>
+          </div>
+          ${!this.diff ? html`<div style="padding: 5px">Comparing...</div>` : ''}
+          ${this.diff && !this.diff.length ? html`
+            <div class="empty">No differences found.</div>
+          ` : ''}
+          ${repeat((this.diff || []).slice().sort(diffSortFn), diff => {
+            let heading = lastDiffType !== diff.change ? html`
+              <h4>${({'add': 'Add', 'del': 'Delete', 'mod': 'Change'})[diff.change]}</h4>
+            ` : ''
+            lastDiffType = diff.change
+            return html`
+              ${heading}
+              <compare-diff-item
+                .diff=${diff}
+                .rightPath=${this.targetPath}
+                ?can-merge=${this.targetInfo?.writable}
+                ?selected=${this.selectedItem === diff}
+                ?checked=${this.checkedItems.includes(diff)}
+                @select=${this.onSelectItem}
+                @check=${this.onCheckItem}
+              ></compare-diff-item>
+            `
+          })}
+        </nav>
+        <main>
+          ${this.selectedItem ? html`
+            <compare-diff-item-content
+              .leftOrigin=${this.baseDrive.url}
+              .rightOrigin=${this.targetDrive.url}
+              .leftPath=${this.basePath}
+              .rightPath=${this.targetPath}
+              .diff=${this.selectedItem}
+              @merge=${this.onClickMergeItem}
+            ></compare-diff-item-content>
+          ` : ''}
+        </main>
+      </div>
     `
+  }
+
+  updated () {
+    var allToggle = this.querySelector('.nav-header input')
+    var checked = this.diff?.length > 0 && this.checkedItems?.length === this.diff?.length
+    allToggle.checked = checked
+    allToggle.indeterminate = !checked && this.checkedItems?.length > 0
   }
 
   // events
@@ -157,7 +180,7 @@ export class CompareApp extends LitElement {
           click: async () => {
             // TODO this modal needs to be in "select folder" mode
             let sel = await navigator.selectFileDialog({
-              drive: this.baseDrive.url,
+              drive: this.baseDrive?.url,
               defaultPath: this.basePath,
               select: ['folder']
             })
@@ -192,11 +215,11 @@ export class CompareApp extends LitElement {
           click: async () => {
             // TODO this modal needs to be in "select folder" mode
             let sel = await navigator.selectFileDialog({
-              drive: this.targetDrive.url,
+              drive: this.targetDrive?.url,
               defaultPath: this.targetPath,
               select: ['folder']
             })
-            this.target = sel.url
+            this.target = sel[0].url
             this.load()
           }
         }
@@ -206,6 +229,26 @@ export class CompareApp extends LitElement {
 
   onSelectItem (e) {
     this.selectedItem = e.detail.diff
+    this.requestUpdate()
+  }
+
+  onCheckItem (e) {
+    var {diff} = e.detail
+    if (!this.checkedItems.includes(diff)) {
+      this.checkedItems.push(diff)
+    } else {
+      this.checkedItems.splice(this.checkedItems.indexOf(diff), 1)
+    }
+    this.requestUpdate()
+  }
+
+  onToggleAllChecked (e) {
+    if (this.checkedItems.length === this.diff.length) {
+      this.checkedItems.length = 0
+    } else {
+      this.checkedItems = this.diff.slice()
+    }
+    console.log(this.checkedItems)
     this.requestUpdate()
   }
 
@@ -220,9 +263,9 @@ export class CompareApp extends LitElement {
     this.load()
   }
 
-  onClickMergeAll (e) {
-    if (!confirm('Merge all changes?')) return
-    this.doMerge(this.diff)
+  onClickBulkMerge (e) {
+    if (!confirm('Merge selected changes?')) return
+    this.doMerge(this.checkedItems)
   }
 }
 
@@ -231,6 +274,7 @@ class CompareDiffItem extends LitElement {
     return {
       diff: {type: Object},
       selected: {type: Boolean},
+      checked: {type: Boolean},
       rightPath: {type: String},
       canMerge: {type: Boolean, attribute: 'can-merge'}
     }
@@ -239,7 +283,7 @@ class CompareDiffItem extends LitElement {
   constructor () {
     super()
     this.diff = null
-    this.selected = false
+    this.checked = false
     this.canMerge = false
   }
 
@@ -253,6 +297,7 @@ class CompareDiffItem extends LitElement {
     if (this.diff.type === 'dir') icon = 'folder'
     return html`
       <div class="item ${this.diff.change} ${this.selected ? 'selected' : ''}" @click=${this.onSelect}>
+        <input type="checkbox" @click=${this.onCheck}>
         <div class="revision-indicator ${this.diff.change}"></div>
         <div class="icon"><span class="fas fa-fw fa-${icon}"></span></div>
         <div class="path">${relativePath(this.rightPath, this.diff.rightPath)}</div>
@@ -260,7 +305,15 @@ class CompareDiffItem extends LitElement {
     `
   }
 
-  async onSelect () {
+  updated () {
+    this.querySelector('input').checked = this.checked
+  }
+
+  onCheck (e) {
+    emit(this, 'check', {detail: {diff: this.diff}})
+  }
+
+  onSelect () {
     emit(this, 'select', {detail: {diff: this.diff}})
   }
 }
@@ -371,4 +424,12 @@ function relativePath (basePath, fullPath) {
     return fullPath.slice(basePath.length)
   }
   return fullPath
+}
+
+function getUrlPathname (url) {
+  try {
+    return (new URL(url)).pathname
+  } catch (e) {
+    return ''
+  }
 }
