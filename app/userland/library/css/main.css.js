@@ -12,7 +12,7 @@ ${spinnerCSS}
 
 :host {
   display: flex;
-  padding-left: 204px;
+  padding-left: 200px;
   min-height: 100vh;
   background: #fafafd;
 }
@@ -29,10 +29,10 @@ a:hover {
 nav {
   position: fixed;
   top: 0;
-  left: 4px;
+  left: 0;
   height: 100vh;
   width: 200px;
-  border-right: 1px solid #dde;
+  border-right: 1px solid #ccd;
   white-space: nowrap;
 }
 
@@ -48,7 +48,10 @@ section {
 nav .top-ctrl {
   display: flex;
   align-items: center;
-  padding: 5px 5px 0;
+  background: rgba(0,0,16,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin: 10px 10px;
 }
 
 nav .top-ctrl input {
@@ -64,15 +67,21 @@ nav .categories {
   margin: 5px 0;
 }
 
+nav .categories h4 {
+  margin: 16px 8px 4px;
+  font-weight: 500;
+  color: #0059;
+  font-size: 12px;
+}
+
 nav .categories a {
   display: block;
   position: relative;
-  padding: 14px 16px;
-  color: #556;
+  padding: 8px 16px;
+  font-weight: 400;
+  letter-spacing: 0.35px;
+  color: #223;
   user-select: none;
-  border-top: 1px solid transparent;
-  border-left: 1px solid transparent;
-  border-bottom: 1px solid transparent;
   cursor: pointer;
 }
 
@@ -80,71 +89,64 @@ nav .categories a:hover {
   text-decoration: none;
 }
 
-nav .categories > a {
-  border-top: 1px solid #dde;
-  border-left: 1px solid #dde;
-  border-bottom: 1px solid #dde;
-  background: #fff;
-  font-weight: 500;
+nav .categories a.selected {
+  background: rgba(0,0,16,0.05);
 }
 
-nav .categories > a.selected {
+nav .categories a .fa-fw {
+  background: rgba(0,0,80,0.1);
   color: #333;
-  background: #fff;
-  font-weight: bold;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  margin-right: 4px;
 }
 
-
-nav .categories > a.selected.partially {
-  font-weight: 500;
+nav .categories a.selected .fa-fw {
+  background: rgba(0,0,80,0.12);
 }
 
-nav .categories > a:after {
-  content: '';
-  position: absolute;
-  top: 0;
-  height: 100%;
-  right: -1px;
-  width: 2px;
-  background: #fff;
+/*nav .categories a .fa-fw.fa-desktop {
+  background: linear-gradient(#E91E63, #9C27B0);
+  color: #fff;
 }
 
-nav .categories .subcategory {
-  position: relative;
-  padding-left: 16px;
+nav .categories a .fa-fw.fa-folder-open {
+  background: linear-gradient(rgb(156, 39, 176), #3F51B5);
+  color: #fff;
 }
 
-nav .categories > a.selected + .subcategory:before {
-  content: '';
-  position: absolute;
-  left: 12px;
-  top: 0;
-  width: 1px;
-  height: calc(100% - 22px);
-  background: #0002;
+nav .categories a .fa-fw.fa-users {
+  background: linear-gradient(#8BC34A, #4CAF50);
+  color: #fff;
 }
 
-nav .categories > a.selected + .subcategory a:before {
-  content: '';
-  position: absolute;
-  left: -4px;
-  top: 50%;
-  width: 16px;
-  height: 1px;
-  background: #0002;
+nav .categories a .fa-fw.fa-user {
+  background: linear-gradient(#4CAF50, #009688);
+  color: #fff;
 }
 
-nav .categories .subcategory a.selected {
-  color: #333;
-  font-weight: bold;
+nav .categories a .fa-fw.fa-cube {
+  background: linear-gradient(#FFC107, #FF9800);
+  color: #fff;
 }
+
+nav .categories a .fa-fw.fa-code {
+  background: linear-gradient(rgb(255, 152, 0), #FF5722);
+  color: #fff;
+}
+
+nav .categories a .fa-fw.fa-terminal {
+  background: linear-gradient(#444, #333);
+  color: #fff;
+}*/
 
 .drives {
   font-size: 13px;
   padding-top: 6px;
   min-height: 100vh;
   box-sizing: border-box;
-  border-right: 1px solid #dde;
+  border-right: 1px solid #ccd;
 }
 
 .drives .empty {
@@ -155,9 +157,24 @@ nav .categories .subcategory a.selected {
 }
 
 .drive {
+  display: flex;
   padding: 18px 24px;
   color: #555;
   border-bottom: 1px solid #eef;
+}
+
+.drive .thumb {
+  display: block;
+  width: 200px;
+  height: 160px;
+  margin-right: 20px;
+  border-radius: 4px;
+  border: 1px solid #ccd;
+  object-fit: cover;
+}
+
+.drive .info {
+  flex: 1;
 }
 
 .drive .ctrls {
@@ -167,7 +184,7 @@ nav .categories .subcategory a.selected {
 .drive .title {
   font-size: 18px;
   font-weight: bold;
-  padding: 4px;
+  padding: 4px 0;
 }
 
 .drive .title a {
@@ -179,16 +196,14 @@ nav .categories .subcategory a.selected {
 }
 
 .drive .group {
-  margin-left: 33px;
 }
 
 .drive .details {
   display: flex;
-  margin-left: 29px;
 }
 
 .drive .details > * {
-  padding: 4px 4px;
+  padding: 4px 4px 4px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -202,23 +217,19 @@ nav .categories .subcategory a.selected {
 
 .drive .description {
   letter-spacing: -0.2px;
-  color: #777;
 }
 
-.drive .network {
-  color: #777;
-  letter-spacing: -0.2px;
+.drive .host-toggle {
+  color: inherit;
+  cursor: pointer;
 }
 
-.drive .fa-circle {
-  animation: glow 2s infinite;
-  margin-right: 2px;
+.drive .host-toggle:hover {
+  text-decoration: none;
 }
 
-@keyframes glow {
-  0%    { color: #5bf; text-shadow: 0 0 2px #09f; }
-  50%  { color: #09f; text-shadow: 0 0 0px #09f; }
-  100%  { color: #5bf; text-shadow: 0 0 2px #09f; }
+.drive .host-toggle:hover span:last-child {
+  text-decoration: underline;
 }
 
 .help {
@@ -251,36 +262,6 @@ nav .categories .subcategory a.selected {
 @media (max-width: 1100px) {
   .help {
     display: none;
-  }
-}
-
-@media (min-width: 1400px) {
-  :host {
-    padding-left: 301px;
-  }
-  nav {
-    left: 50px;
-    width: 250px;
-  }
-}
-
-@media (min-width: 1600px) {
-  :host {
-    padding-left: 401px;
-  }
-  nav {
-    left: 150px;
-    width: 250px;
-  }
-}
-
-@media (min-width: 1800px) {
-  :host {
-    padding-left: 501px;
-  }
-  nav {
-    left: 250px;
-    width: 250px;
   }
 }
 
