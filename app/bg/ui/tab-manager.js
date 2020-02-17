@@ -494,16 +494,18 @@ class Tab {
   async captureScreenshot () {
     // capture screenshot on the root page of dat & http sites
     var urlp = parseDriveUrl(this.url)
-    if (['hyper:', 'http:', 'https:'].includes(urlp.protocol)) {
+    if (['hyper:', 'http:', 'https:'].includes(urlp.protocol) && (urlp.pathname === '/' || /^\/index.(md|html)$/.test(urlp.pathname))) {
       try {
         // wait a sec to allow loading to finish
         await new Promise(r => setTimeout(r, 1e3))
 
         // capture the page
+        this.browserView.webContents.incrementCapturerCount({width: 1000, height: 800}, !this.isActive)
         var image = await this.browserView.webContents.capturePage()
+        this.browserView.webContents.decrementCapturerCount(!this.isActive)
         var bounds = image.getSize()
-        if (bounds.width === 0) return
-        if (bounds.height === 0) return
+        if (bounds.width === 0 || bounds.height === 0) return
+        if (bounds.width <= bounds.height) return // only save if it's a useful image
         await sitedataDb.set(this.url, 'screenshot', image.toDataURL(), {dontExtractOrigin: true, normalizeUrl: true})
       } catch (e) {
         // ignore, can happen if the tab was closed during wait

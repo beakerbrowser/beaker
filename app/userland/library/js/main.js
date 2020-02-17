@@ -282,7 +282,7 @@ export class DrivesApp extends LitElement {
                 class="${classMap({drive: true})}"
                 @contextmenu=${e => this.onContextmenuDrive(e, drive)}
               >
-                <img class="thumb" src="asset:thumb:${drive.url}">
+                <img class="thumb" src="asset:thumb:${drive.url}?cache_buster=${Date.now()}">
                 <div class="info">
                   <div class="ctrls">
                     <button class="transparent" @click=${e => this.onClickDriveMenuBtn(e, drive)}><span class="fas fa-fw fa-ellipsis-h"></span></button>

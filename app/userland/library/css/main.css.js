@@ -171,6 +171,7 @@ nav .categories a .fa-fw.fa-terminal {
   border-radius: 4px;
   border: 1px solid #ccd;
   object-fit: cover;
+  object-position: top center;
 }
 
 .drive .info {
