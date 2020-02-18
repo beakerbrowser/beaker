@@ -6,6 +6,11 @@ ${buttonsCSS}
 
 :host {
   display: block;
+  margin: 10px;
+  background: #fafafd;
+  border-radius: 4px;
+  border: 1px solid #dde;
+  overflow: hidden;
 }
 
 .list {
@@ -25,6 +30,10 @@ ${buttonsCSS}
   border-bottom: 1px solid #dde;
   letter-spacing: 0.5px;
   cursor: pointer;
+}
+
+.fork.current {
+  background: #fff;
 }
 
 .fork.current small {

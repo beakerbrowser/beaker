@@ -140,7 +140,6 @@ class SiteInfoApp extends LitElement {
           drive.getInfo(),
           beaker.drives.getForks(this.url)
         ])
-        console.log(this.forks)
         this.readOnly = !this.info.writable
 
         // watch for network events

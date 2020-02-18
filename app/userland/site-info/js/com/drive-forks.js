@@ -8,7 +8,6 @@ class DriveForks extends LitElement {
     return {
       url: {type: String},
       origin: {type: String},
-      forkOf: {type: String},
       forks: {type: Array}
     }
   }
@@ -21,7 +20,6 @@ class DriveForks extends LitElement {
     super()
     this.url = ''
     this.origin = ''
-    this.forkOf = ''
     this.forks = []
   }
 
