@@ -1,7 +1,7 @@
 import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { repeat } from '../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { pluralize, ucfirst, toNiceUrl, toNiceDomain } from '../../app-stdlib/js/strings.js'
+import { pluralize, toNiceDomain } from '../../app-stdlib/js/strings.js'
+import _get from 'lodash.get'
 import mainCSS from '../css/main.css.js'
 import './com/drive-history.js'
 import './com/drive-forks.js'
@@ -20,8 +20,8 @@ class SiteInfoApp extends LitElement {
       isLoading: {type: Boolean},
       readOnly: {type: Boolean},
       info: {type: Object},
-      manifest: {type: Object},
       requestedPerms: {type: Object},
+      driveCfg: {type: Object},
       forks: {type: Array}
     }
   }
@@ -124,6 +124,7 @@ class SiteInfoApp extends LitElement {
     this.isLoading = true
     this.readOnly = true
     this.info = undefined
+    this.driveCfg = undefined
     this.forks = undefined
     this.requestedPerms = undefined
   }
@@ -136,8 +137,9 @@ class SiteInfoApp extends LitElement {
       if (this.isDrive) {
         // get drive info
         let drive = this.drive
-        ;[this.info, this.forks] = await Promise.all([
+        ;[this.info, this.driveCfg, this.forks] = await Promise.all([
           drive.getInfo(),
+          beaker.drives.get(this.url),
           beaker.drives.getForks(this.url)
         ])
         this.readOnly = !this.info.writable
@@ -212,9 +214,18 @@ class SiteInfoApp extends LitElement {
     if (this.isDrive) protocol = html`<p class="protocol">Accessed using the Hyper protocol</p>`
     if (this.isHttps) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
     if (this.isBeaker) protocol = html`<p class="protocol">This page is served by Beaker</p>`
+    var isSaved = _get(this.driveCfg, 'saved')
     return html`
       <div class="site-info">
         <div class="details">
+          ${this.isDrive ? html`
+            <div class="floating-right">
+              <button class="transparent" title=${isSaved ? 'Saved to My Library' : 'Save to My Library'} @click=${this.onClickToggleSaved}>
+                ${isSaved ? html`<span class="far fa-check-square"></span> Saved` : html`<span class="far fa-square"></span> Saved`}
+              </button>
+              <button class="transparent" title="Drive Properties" @click=${this.onClickDriveProperties}><span class="far fa-list-alt"></span></button>
+            </div>
+          ` : ''}
           <h1>${this.info.title}</h1>
           ${this.isDrive && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
           ${protocol}
@@ -317,6 +328,20 @@ class SiteInfoApp extends LitElement {
     this.url = e.detail.url
     beaker.browser.gotoUrl(this.url)
     this.load()
+  }
+
+  async onClickToggleSaved (e) {
+    if (_get(this.driveCfg, 'saved')) {
+      await beaker.drives.remove(this.origin)
+    } else {
+      await beaker.drives.configure(this.origin)
+    }
+    this.load()
+  }
+
+  onClickDriveProperties (e) {
+    beaker.browser.toggleSiteInfo(false)
+    navigator.drivePropertiesDialog(this.origin)
   }
 }
 
