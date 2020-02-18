@@ -130,6 +130,7 @@ customElements.define('wiki-page', class extends HTMLElement {
         })
         let discardChanges = h('button', {}, 'Discard Changes')
         discardChanges.addEventListener('click', async (e) => {
+          if (!confirm('Discard changes?')) return
           location.search = ''
         })
         this.append(h('div', {class: 'buttons'}, savePage, discardChanges))
