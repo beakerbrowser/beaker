@@ -2,7 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { HELP } from 'beaker://app-stdlib/js/const.js'
-import { toNiceDriveType, getDriveTypeIcon, pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { toNiceDriveType, getDriveTypeIcon, pluralize, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
@@ -31,6 +31,7 @@ export class DrivesApp extends LitElement {
   static get properties () {
     return {
       drives: {type: Array},
+      viewingForksOf: {type: Object},
       filter: {type: String}
     }
   }
@@ -43,6 +44,7 @@ export class DrivesApp extends LitElement {
     super()
     this.drives = undefined
     this.category = 'website'
+    this.viewingForksOf = undefined
     this.filter = undefined
     this.load()
     this.addEventListener('contextmenu', this.onContextmenu.bind(this))
@@ -51,6 +53,20 @@ export class DrivesApp extends LitElement {
   async load () {
     var drives = await beaker.drives.list({includeSystem: true})
 
+    // move forks onto their parents
+    drives = drives.filter(drive => {
+      if (drive.forkOf) {
+        let parent = drives.find(d => d.key === drive.forkOf.key)
+        if (parent) {
+          parent.forks = parent.forks || []
+          parent.forks.push(drive)
+          return false
+        }
+      }
+      return true
+    })
+
+    // filter
     const categorizeDrive = (drive) => {
       if (drive.info.type === 'website') return ['general', 'website']
       if (!drive.info.type && !drive.ident.system) return ['general', 'files']
@@ -85,6 +101,7 @@ export class DrivesApp extends LitElement {
 
   setCategory (cat) {
     this.category = cat
+    this.viewingForksOf = undefined
     this.load()
   }
 
@@ -166,9 +183,9 @@ export class DrivesApp extends LitElement {
         },
         '-',
         {
-          icon: 'far fa-fw fa-clone',
-          label: 'Clone this Drive',
-          click: () => this.cloneDrive(drive)
+          icon: 'fas fa-fw fa-code-branch',
+          label: 'Fork this Drive',
+          click: () => this.forkDrive(drive)
         },
         {
           icon: html`<i style="padding-left: 2px; font-size: 16px; box-sizing: border-box">◨</i>`,
@@ -197,10 +214,11 @@ export class DrivesApp extends LitElement {
     window.location = drive.url
   }
 
-  async cloneDrive (drive) {
-    var drive = await Hyperdrive.clone(drive.url)
+  async forkDrive (drive) {
+    var drive = await Hyperdrive.fork(drive.url)
     toast.create('Drive created')
-    window.location = drive.url
+    window.open(drive.url)
+    this.load()
   }
 
   async compareDrive (drive) {
@@ -259,59 +277,84 @@ export class DrivesApp extends LitElement {
         </div>
       </nav>
       <main>
-        ${drives ? html`
-          <div
-            class="drives"
-          >
-            ${repeat(drives, drive => html`
-              <div
-                class="${classMap({drive: true})}"
-                @contextmenu=${e => this.onContextmenuDrive(e, drive)}
-              >
-                <img class="thumb" src="asset:thumb:${drive.url}?cache_buster=${Date.now()}">
-                <div class="info">
-                  <div class="ctrls">
-                    <button class="transparent" @click=${e => this.onClickDriveMenuBtn(e, drive)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
-                  </div>
-                  <div class="title">
-                    <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
-                      ${drive.info.title || html`<em>Untitled</em>`}
-                    </a>
-                  </div>
-                  ${drive.groupInfo ? html`
-                    <div class="group">Member of <a href=${drive.groupInfo.url} target="_blank" title=${drive.groupInfo.title || 'Unnamed Group'}>${drive.groupInfo.title || 'Unnamed Group'}</pre>
-                  ` : ''}
-                  <div class="details">
-                    <div class="type">${toNiceDriveType(drive.info.type)}</div>
-                    <div class="description">${drive.info.description}</div>
-                  </div>
-                  <div>
-                    ${drive.info.peers} ${pluralize(drive.info.peers, 'peer')} connected
-                    ${''/*<a class="host-toggle" ?disabled=${drive.ident.system} @click=${e => this.onToggleHosting(e, drive)}>
-                      ${drive.url === navigator.filesystem.url ? html`
-                        <span class="fas fa-fw fa-lock"></span> Private
-                      ` : drive.seeding ? html`
-                        <span class="fas fa-toggle-on"></span> <span>${drive.info.writable ? 'Hosting' : 'Co-hosting'} (${drive.info.peers} ${pluralize(drive.info.peers, 'peer')})</span>
-                      ` : html`
-                        <span class="fas fa-toggle-off"></span> <span>Not hosting</span>
-                      `}
-                    </a>*/}
-                  </div>
-                </div>
-              </div>
-            `)}
+        ${this.viewingForksOf ? html`
+          <div class="drives">
+            <header>
+              <button><span class="fas fa-chevron-left"></span></button>
+              Forks of "${this.viewingForksOf.info.title || 'Untitled'}" (${toNiceDomain(this.viewingForksOf.url)})
+            </header>
+            ${this.renderDrive(this.viewingForksOf, true)}
+          </div>
+        ` : drives ? html`
+          <div class="drives">
+            ${repeat(drives, drive => this.renderDrive(drive))}
             ${drives.length === 0 ? html`
-              <div class="empty">No drives found</div>
+              <div class="empty">No items found</div>
             ` : ''}
-            </div>
-          ` : html`
-            <div class="loading"><span class="spinner"></span></div>
-          `
-        }
+          </div>
+        ` : html`
+          <div class="loading"><span class="spinner"></span></div>
+        `}
       </main>
       <section>
         ${this.renderHelp()}
       </section>
+    `
+  }
+
+  renderDrive (drive, showForks = false) {
+    var numForks = drive.forks?.length || 0
+    return html`
+      <div
+        class="${classMap({drive: true})}"
+        @contextmenu=${e => this.onContextmenuDrive(e, drive)}
+      >
+        <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
+          <img class="thumb" src="asset:thumb:${drive.url}?cache_buster=${Date.now()}">
+        </a>
+        <div class="info">
+          <div class="ctrls">
+            <button class="transparent" @click=${e => this.onClickDriveMenuBtn(e, drive)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
+          </div>
+          <div class="title">
+            <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
+              ${drive.info.title || html`<em>Untitled</em>`}
+            </a>
+          </div>
+          ${drive.forkOf ? html`
+            <div><span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
+          ` : ''}
+          ${drive.groupInfo ? html`
+            <div class="group">Member of <a href=${drive.groupInfo.url} target="_blank" title=${drive.groupInfo.title || 'Unnamed Group'}>${drive.groupInfo.title || 'Unnamed Group'}</pre>
+          ` : ''}
+          <div class="details">
+            <div class="type">${toNiceDriveType(drive.info.type)}</div>
+            <div class="description">${drive.info.description}</div>
+          </div>
+          <div>
+            <span class="fas fa-fw fa-share-alt"></span> ${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}
+            ${numForks > 0 ? html`
+              <a @click=${e => this.onClickViewForksOf(e, drive)}>
+                <span class="fas fa-fw fa-code-branch"></span> ${numForks} ${pluralize(numForks, 'fork')}
+              </a>
+            ` : ''}
+            ${''/*<a class="host-toggle" ?disabled=${drive.ident.system} @click=${e => this.onToggleHosting(e, drive)}>
+              ${drive.url === navigator.filesystem.url ? html`
+                <span class="fas fa-fw fa-lock"></span> Private
+              ` : drive.seeding ? html`
+                <span class="fas fa-toggle-on"></span> <span>${drive.info.writable ? 'Hosting' : 'Co-hosting'} (${drive.info.peers} ${pluralize(drive.info.peers, 'peer')})</span>
+              ` : html`
+                <span class="fas fa-toggle-off"></span> <span>Not hosting</span>
+              `}
+            </a>*/}
+          </div>
+        </div>
+      </div>
+      ${showForks && numForks > 0 ? html`
+        <div class="forks">
+          ${repeat(drive.forks, fork => this.renderDrive(fork))}
+        </div>
+      ` : ''}
     `
   }
 
@@ -422,6 +465,10 @@ export class DrivesApp extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     this.newDriveMenu(e.clientX, e.clientY)
+  }
+
+  onClickViewForksOf (e, drive) {
+    this.viewingForksOf = drive
   }
 
   async onToggleHosting (e, drive) {

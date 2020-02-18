@@ -15,8 +15,8 @@ ${formCSS}
   flex-direction: column;
   background: #fff;
   border: 1px solid #bbb;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,.4);
+  border-radius: 0;
+  box-shadow: 0 2px 3px rgba(0,0,0,.1);
   margin: 0 10px 10px;
   max-height: 355px;
   overflow-x: hidden;
@@ -69,14 +69,11 @@ hr {
 }
 
 .site-info {
-  display: flex;
-  align-items: flex-start;
   padding: 12px 16px 10px;
   border-bottom: 1px solid #ccc;
 }
 
 .site-info .details {
-  flex: 1;
   word-break: break-word;
 }
 

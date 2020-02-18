@@ -208,7 +208,7 @@ export async function createNewDrive (manifest = {}) {
  * @param {Object} [manifest]
  * @returns {Promise<DaemonHyperdrive>}
  */
-export async function cloneDrive (srcDriveUrl, manifest = {}) {
+export async function forkDrive (srcDriveUrl, manifest = {}) {
   srcDriveUrl = fromKeyToURL(srcDriveUrl)
 
   // get the source drive

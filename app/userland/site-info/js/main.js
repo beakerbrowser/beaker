@@ -4,6 +4,7 @@ import { repeat } from '../../app-stdlib/vendor/lit-element/lit-html/directives/
 import { pluralize, ucfirst, toNiceUrl, toNiceDomain } from '../../app-stdlib/js/strings.js'
 import mainCSS from '../css/main.css.js'
 import './com/drive-history.js'
+import './com/drive-forks.js'
 import './com/user-session.js'
 import './com/requested-perms.js'
 
@@ -123,6 +124,7 @@ class SiteInfoApp extends LitElement {
     this.isLoading = true
     this.readOnly = true
     this.info = undefined
+    this.forks = undefined
     this.requestedPerms = undefined
   }
 
@@ -134,7 +136,11 @@ class SiteInfoApp extends LitElement {
       if (this.isDrive) {
         // get drive info
         let drive = this.drive
-        this.info = await drive.getInfo()
+        ;[this.info, this.forks] = await Promise.all([
+          drive.getInfo(),
+          beaker.drives.getForks(this.url)
+        ])
+        console.log(this.forks)
         this.readOnly = !this.info.writable
 
         // watch for network events
@@ -155,7 +161,11 @@ class SiteInfoApp extends LitElement {
 
       // choose default view
       if (!this.view) {
-        this.view = 'permissions'
+        if (this.isDrive) {
+          this.view = 'forks'
+        } else {
+          this.view = 'permissions'
+        }
       }
 
       // all sites: get requested perms
@@ -189,42 +199,7 @@ class SiteInfoApp extends LitElement {
       <div>
         ${this.renderSiteInfo()}
         ${this.renderNav()}
-        <div class="inner">
-          ${this.isDriveDomainUnconfirmed ? html`
-            <div class="notice">
-              <p><span class="fas fa-fw fa-exclamation-triangle"></span> Domain issue</p>
-              <p>
-                This site has not confirmed <code>${this.hostname}</code> as its primary domain.
-                It's safe to view but you will not be able to follow it or use its advanced features.
-              </p>
-            </div>
-          ` : ''}
-
-          ${this.isHttp ? html`
-            <div class="notice">
-              <p class="warning">
-                <span class="fas fa-exclamation-triangle"></span> Your connection to this site is not secure.
-              </p>
-              <p>
-                You should not enter any sensitive information on this site (for example, passwords or credit cards) because it could be stolen by attackers.
-              </p>
-            </div>
-          ` : ''}
-
-          ${this.view === 'permissions' ? html`
-            <user-session
-              origin=${this.origin}
-            ></user-session>
-            <requested-perms
-              origin=${this.origin}
-              .perms=${this.requestedPerms}
-            ></requested-perms>
-          ` : ''}
-
-          ${this.view === 'history' ? html`
-            <drive-history url=${this.url} origin=${this.origin} .info=${this.info}></drive-history>
-          ` : ''}
-        </div>
+        ${this.renderView()}
       </div>
     `
   }
@@ -243,23 +218,9 @@ class SiteInfoApp extends LitElement {
         <div class="details">
           <h1>${this.info.title}</h1>
           ${this.isDrive && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
-          ${this.isDrive ? this.renderAuthor() : ''}
-          ${this.isDrive && this.info.forkOf ? html`
-            <p class="fork-of"><span class="fas fa-fw fa-code-branch"></span> Fork of <a href=${this.info.forkOf}>${toNiceUrl(this.info.forkOf)}</a></p>
-          ` : ''}
           ${protocol}
         </div>
       </div>
-    `
-  }
-
-  renderAuthor () {
-    return '' // TODO
-    if (!this.info.author) return ''
-    return html`
-      <p class="author">
-        by <a href="${this.info.author}" target="_blank">${this.info.author}</a>
-      </p>
     `
   }
 
@@ -268,21 +229,70 @@ class SiteInfoApp extends LitElement {
     return html`
       <div class="nav">
         <div class="tabs">
-          <a class=${classMap({active: this.view === 'permissions'})} @click=${e => this.onSetView(e, 'permissions')}>
-            <span class="fas fa-fw fa-key"></span>
-            Permissions
-          </a>
           ${this.isDrive ? html`
+            <a class=${classMap({active: this.view === 'forks'})} @click=${e => this.onSetView(e, 'forks')}>
+              <span class="fas fa-fw fa-code-branch"></span>
+              Forks
+            </a>
+            <a class=${classMap({active: this.view === 'revisions'})} @click=${e => this.onSetView(e, 'revisions')}>
+              <span class="fas fa-fw fa-history"></span>
+              Revisions
+            </a>
             <a class=${classMap({active: this.view === 'peers'})} @click=${e => this.onSetView(e, 'peers')}>
               <span class="fas fa-fw fa-share-alt"></span>
               ${this.info.peers} ${pluralize(this.info.peers, 'peer')}
             </a>
-            <a class=${classMap({active: this.view === 'history'})} @click=${e => this.onSetView(e, 'history')}>
-              <span class="fas fa-fw fa-history"></span>
-              Version History
-            </a>
           ` : ''}
+          <a class=${classMap({active: this.view === 'permissions'})} @click=${e => this.onSetView(e, 'permissions')}>
+            <span class="fas fa-fw fa-key"></span>
+            Permissions
+          </a>
         </div>
+      </div>
+    `
+  }
+
+  renderView () {
+    return html`
+      <div class="inner">
+        ${this.isDriveDomainUnconfirmed ? html`
+          <div class="notice">
+            <p><span class="fas fa-fw fa-exclamation-triangle"></span> Domain issue</p>
+            <p>
+              This site has not confirmed <code>${this.hostname}</code> as its primary domain.
+              It's safe to view but you will not be able to follow it or use its advanced features.
+            </p>
+          </div>
+        ` : ''}
+
+        ${this.isHttp ? html`
+          <div class="notice">
+            <p class="warning">
+              <span class="fas fa-exclamation-triangle"></span> Your connection to this site is not secure.
+            </p>
+            <p>
+              You should not enter any sensitive information on this site (for example, passwords or credit cards) because it could be stolen by attackers.
+            </p>
+          </div>
+        ` : ''}
+
+        ${this.view === 'permissions' ? html`
+          <user-session
+            origin=${this.origin}
+          ></user-session>
+          <requested-perms
+            origin=${this.origin}
+            .perms=${this.requestedPerms}
+          ></requested-perms>
+        ` : ''}
+ 
+        ${this.view === 'forks' ? html`
+          <drive-forks url=${this.url} origin=${this.origin} .info=${this.info} .forks=${this.forks} @change-url=${this.onChangeUrl}></drive-forks>
+        ` : ''}
+
+        ${this.view === 'revisions' ? html`
+          <drive-history url=${this.url} origin=${this.origin} .info=${this.info}></drive-history>
+        ` : ''}
       </div>
     `
   }
@@ -302,6 +312,12 @@ class SiteInfoApp extends LitElement {
   onSetView (e, view) {
     e.preventDefault()
     this.view = view
+  }
+
+  onChangeUrl (e) {
+    this.url = e.detail.url
+    beaker.browser.gotoUrl(this.url)
+    this.load()
   }
 }
 

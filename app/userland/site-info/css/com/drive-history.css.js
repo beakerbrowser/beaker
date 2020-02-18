@@ -22,7 +22,7 @@ input {
 }
 
 .ctrls label {
-  font-weight: bold;
+  font-weight: normal;
 }
 `
 export default cssStr

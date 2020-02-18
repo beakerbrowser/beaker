@@ -2,6 +2,7 @@ export default {
   status: 'promise',
   get: 'promise',
   list: 'promise',
+  getForks: 'promise',
   configure: 'promise',
   remove: 'promise',
   listTrash: 'promise',

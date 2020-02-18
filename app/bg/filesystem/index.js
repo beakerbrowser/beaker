@@ -18,6 +18,9 @@ import lock from '../../lib/lock'
  * @typedef {Object} DriveConfig
  * @property {string} key
  * @property {boolean} seeding
+ * @property {Object} [forkOf]
+ * @property {string} [forkOf.key]
+ * @property {string} [forkOf.label]
  * 
  * @typedef {Object} DriveIdent
  * @property {boolean} system
@@ -142,10 +145,11 @@ export function getDriveConfig (key) {
 /**
  * @param {string} url
  * @param {Object} [opts]
- * @param {Boolean} [opts.seeding]
+ * @param {boolean} [opts.seeding]
+ * @param {Object} [opts.forkOf]
  * @returns {Promise<void>}
  */
-export async function configDrive (url, {seeding} = {seeding: undefined}) {
+export async function configDrive (url, {seeding, forkOf} = {seeding: undefined, forkOf: undefined}) {
   var release = await lock('filesystem:drives')
   try {
     var key = await hyper.drives.fromURLToKey(url, true)
@@ -155,10 +159,20 @@ export async function configDrive (url, {seeding} = {seeding: undefined}) {
         seeding = true
       }
       drive = /** @type DriveConfig */({key, seeding})
+      if (forkOf && typeof forkOf === 'object') {
+        drive.forkOf = forkOf
+      }
       drives.push(drive)
     } else {
       if (typeof seeding !== 'undefined') {
         drive.seeding = seeding
+      }
+      if (typeof forkOf !== 'undefined') {
+        if (forkOf && typeof forkOf === 'object') {
+          drive.forkOf = forkOf
+        } else {
+          delete drive.forkOf
+        }
       }
     }
     await rootDrive.pda.writeFile(PATHS.SYSTEM_NS('drives.json'), JSON.stringify({drives}, null, 2))

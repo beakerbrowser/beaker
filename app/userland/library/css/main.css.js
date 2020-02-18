@@ -149,6 +149,20 @@ nav .categories a .fa-fw.fa-terminal {
   border-right: 1px solid #ccd;
 }
 
+.drives header {
+  display: flex;
+  align-items: center;
+  margin-top: -6px;
+  padding: 8px;
+  color: #556;
+  background: #f3f3f7;
+  font-size: 14px;
+}
+
+.drives header > * {
+  margin-right: 8px;
+}
+
 .drives .empty {
   font-size: 17px;
   letter-spacing: 0.75px;
@@ -165,13 +179,17 @@ nav .categories a .fa-fw.fa-terminal {
 
 .drive .thumb {
   display: block;
-  width: 200px;
-  height: 160px;
+  width: 140px;
+  height: 100px;
   margin-right: 20px;
   border-radius: 4px;
-  border: 1px solid #ccd;
+  border: 1px solid #bbc;
   object-fit: cover;
-  object-position: top center;
+  object-position: center center;
+}
+
+.drive .thumb:hover {
+  border-color: #99a;
 }
 
 .drive .info {
@@ -231,6 +249,46 @@ nav .categories a .fa-fw.fa-terminal {
 
 .drive .host-toggle:hover span:last-child {
   text-decoration: underline;
+}
+
+.forks {
+  position: relative;
+}
+
+.forks:before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: -20px;
+  left: 60px;
+  width: 1px;
+  height: calc(100% - 68px);
+  background: #bbc;
+}
+
+.forks .drive {
+  position: relative;
+  padding-left: 100px;
+}
+
+.forks .drive:before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 50px;
+  left: 60px;
+  width: 40px;
+  height: 1px;
+  background: #bbc;
+}
+
+.fork-label {
+  display: inline-block;
+  padding: 1px 5px;
+  background: #4CAF50;
+  color: #fff;
+  text-shadow: 0 1px 0px #0004;
+  border-radius: 4px;
 }
 
 .help {

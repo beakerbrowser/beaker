@@ -14,13 +14,11 @@ const STATES = {
   CLONING: 2
 }
 
-class CloneDriveModal extends LitElement {
+class ForkDriveModal extends LitElement {
   static get properties () {
     return {
       state: {type: Number},
-      title: {type: String},
-      description: {type: String},
-      visibility: {type: String}
+      label: {type: String}
     }
   }
 
@@ -48,10 +46,9 @@ class CloneDriveModal extends LitElement {
       border-color: #bbb;
     }
 
-    textarea {
-      font-size: 14px;
-      padding: 7px 10px;
-      border-color: #bbb;
+    .help {
+      margin-top: -8px;
+      opacity: 0.6;
     }
     
     hr {
@@ -64,6 +61,10 @@ class CloneDriveModal extends LitElement {
       display: flex;
       align-items: center;
       justify-content: space-between;
+    }
+
+    .fork-dat-progress {
+      font-size: 14px;
     }
     `]
   }
@@ -78,34 +79,19 @@ class CloneDriveModal extends LitElement {
     // params
     this.cbs = null
     this.url = ''
-    this.title = ''
-    this.description = ''
-    this.type = null
-    this.links = null
-    this.author = null
-
-    // export interface
-    window.cloneDriveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
-    window.cloneDriveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
+    this.label = ''
   }
 
   async init (params, cbs) {
     // store params
     this.cbs = cbs
     this.url = params.url
-    this.title = params.title || ''
-    this.description = params.description || ''
-    this.type = params.type
-    this.author = this.author
-    this.links = params.links
-    this.networked = ('networked' in params) ? params.networked : true
+    this.label = params.label || ''
     await this.requestUpdate()
 
     // fetch drive info
     this.url = await bg.hyperdrive.resolveName(params.url)
     this.driveInfo = await bg.hyperdrive.getInfo(this.url)
-    if (!this.title) this.title = this.driveInfo.title
-    if (!this.description) this.description = this.driveInfo.description
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -127,15 +113,15 @@ class CloneDriveModal extends LitElement {
     var actionBtn
     switch (this.state) {
       case STATES.READY:
-        progressEl = html`<div class="clone-dat-progress">Ready to clone.</div>`
-        actionBtn = html`<button type="submit" class="btn primary" tabindex="5">Create copy</button>`
+        progressEl = html`<div class="fork-dat-progress">Ready to fork.</div>`
+        actionBtn = html`<button type="submit" class="btn primary" tabindex="5">Create fork</button>`
         break
       case STATES.DOWNLOADING:
-        progressEl = html`<div class="clone-dat-progress">Downloading remaining files...</div>`
+        progressEl = html`<div class="fork-dat-progress">Downloading remaining files...</div>`
         actionBtn = html`<button type="submit" class="btn" disabled tabindex="5"><span class="spinner"></span></button>`
         break
       case STATES.CLONING:
-        progressEl = html`<div class="clone-dat-progress">Copying...</div>`
+        progressEl = html`<div class="fork-dat-progress">Copying...</div>`
         actionBtn = html`<button type="submit" class="btn" disabled tabindex="5"><span class="spinner"></span></button>`
         break
     }
@@ -143,17 +129,13 @@ class CloneDriveModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">Make a copy of ${this.driveInfo.title ? `"${this.driveInfo.title}"` : prettyHash(this.driveInfo.key)}</h1>
+        <h1 class="title">Make a Fork of ${this.driveInfo.title ? `"${this.driveInfo.title}"` : prettyHash(this.driveInfo.key)}</h1>
 
         <form @submit=${this.onSubmit}>
-          <label for="title">Title</label>
-          <input name="title" tabindex="2" value="${this.title}" @change=${this.onChangeTitle} />
+          <label for="label">Label</label>
+          <input name="label" tabindex="1" value="${this.label}" @change=${this.onChangeLabel} placeholder="E.g. 'dev' or 'my-new-feature'" required autofocus />
+          <p class="help">The label will be used privately to help you identify the fork.</p>
           
-          <details @toggle=${e => this.adjustHeight()}>
-            <summary><label for="desc">Description</label></summary>
-            <textarea name="desc" tabindex="3" @change=${this.onChangeDescription}>${this.description}</textarea>
-          </details>
-
           <hr>
 
           <div class="form-actions">
@@ -171,16 +153,12 @@ class CloneDriveModal extends LitElement {
   renderLoading () {
     return html`
       <div class="wrapper">
-        <h1 class="title">Make a copy</h1>
+        <h1 class="title">Make a Fork</h1>
         <p class="help-text">Loading...</p>
         <form>
-          <label for="title">Title</label>
-          <input name="title" tabindex="2" placeholder="Title" disabled />
-
-          <details @toggle=${e => this.adjustHeight()}>
-            <summary><label for="desc">Description</label></summary>
-            <textarea name="desc" tabindex="3" placeholder="Description (optional)" disabled></textarea>
-          </details>
+          <label for="label">Label</label>
+          <input name="label" tabindex="1" value="${this.label}" @change=${this.onChangeLabel} placeholder="E.g. 'dev' or 'my-new-feature'" required />
+          <p class="help">The label will be used privately to help you identify the fork.</p>
 
           <hr>
 
@@ -188,7 +166,7 @@ class CloneDriveModal extends LitElement {
             <div></div>
             <div>
               <button type="button" class="btn cancel" @click=${this.onClickCancel} tabindex="4">Cancel</button>
-              <button type="submit" class="btn" tabindex="5" disabled>Create copy</button>
+              <button type="submit" class="btn" tabindex="5" disabled>Create fork</button>
             </div>
           </div>
         </form>
@@ -199,12 +177,8 @@ class CloneDriveModal extends LitElement {
   // event handlers
   // =
 
-  onChangeTitle (e) {
-    this.title = e.target.value
-  }
-
-  onChangeDescription (e) {
-    this.description = e.target.value
+  onChangeLabel (e) {
+    this.label = e.target.value
   }
 
   onClickCancel (e) {
@@ -215,17 +189,17 @@ class CloneDriveModal extends LitElement {
   async onSubmit (e) {
     e.preventDefault()
 
+    if (!this.label) {
+      return
+    }
+
     this.state = STATES.DOWNLOADING
     await bg.hyperdrive.download(this.url)
 
     this.state = STATES.CLONING
     try {
-      var url = await bg.hyperdrive.cloneDrive(this.url, {
-        title: this.title,
-        description: this.description,
-        type: this.type,
-        author: this.author,
-        links: this.links,
+      var url = await bg.hyperdrive.forkDrive(this.url, {
+        label: this.label,
         prompt: false
       })
       this.cbs.resolve({url})
@@ -235,4 +209,4 @@ class CloneDriveModal extends LitElement {
   }
 }
 
-customElements.define('clone-drive-modal', CloneDriveModal)
+customElements.define('fork-drive-modal', ForkDriveModal)

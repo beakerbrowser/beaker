@@ -1,7 +1,7 @@
 export default {
   loadDrive: 'promise',
   createDrive: 'promise',
-  cloneDrive: 'promise',
+  forkDrive: 'promise',
 
   getInfo: 'promise',
   configure: 'promise',

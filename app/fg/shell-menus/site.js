@@ -133,9 +133,9 @@ class SiteMenu extends LitElement {
           </div>
         </div>
         <div class="section">
-          <div class="menu-item" @click=${this.onCloneDrive}>
-            <i class="far fa-clone"></i>
-            <span class="label">Clone This Drive</span>
+          <div class="menu-item" @click=${this.onForkDrive}>
+            <i class="fas fa-code-branch"></i>
+            <span class="label">Fork This Drive</span>
           </div>
           <div class="menu-item" @click=${this.onDiffMergeDrive}>
             <i style="padding-left: 4px; font-size: 19px; box-sizing: border-box; margin-top: -3px; margin-right: 5px">◨</i>
@@ -201,9 +201,9 @@ class SiteMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-  async onCloneDrive (e) {
+  async onForkDrive (e) {
     bg.shellMenus.close()
-    var url = await bg.hyperdrive.cloneDrive(this.url)
+    var url = await bg.hyperdrive.forkDrive(this.url)
     bg.shellMenus.createTab(url)
   }
 

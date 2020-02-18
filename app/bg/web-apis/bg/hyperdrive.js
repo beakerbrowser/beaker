@@ -82,23 +82,22 @@ export default {
     return newDriveUrl
   },
 
-  async cloneDrive (url, {title, description, type, author, visibility, links, prompt} = {}) {
+  async forkDrive (url, {label, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
-      visibility = undefined
-      author = undefined // TODO _get(windows.getUserSessionFor(this.sender), 'url')
+      label = prompt = undefined
     }
 
     if (prompt !== false) {
-      // run the clone modal
+      // run the fork modal
       let key1 = await lookupUrlDriveKey(url)
       let key2 = await lookupUrlDriveKey(this.sender.getURL())
-      let isSelfClone = key1 === key2
+      let isSelfFork = key1 === key2
       let res
       try {
-        res = await modals.create(this.sender, 'clone-drive', {url, title, description, type, author, visibility, links, isSelfClone})
+        res = await modals.create(this.sender, 'fork-drive', {url, label, isSelfFork})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error
@@ -112,16 +111,14 @@ export default {
 
       // create
       let key = await lookupUrlDriveKey(url)
-      let newDrive = await drives.cloneDrive(key, {title, description, type, /* TODO author,*/ links})
-      await filesystem.configDrive(newDrive.url, {seeding: true})
+      let newDrive = await drives.forkDrive(key)
+      await filesystem.configDrive(newDrive.url, {
+        seeding: true,
+        forkOf: {key, label}
+      })
       newDriveUrl = newDrive.url
     }
 
-    if (!isSenderBeaker(this.sender)) {
-      // grant write permissions to the creating app
-      let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
-      permissions.grantPermission('modifyDat:' + newDriveKey, this.sender.getURL())
-    }
     return newDriveUrl
   },
 

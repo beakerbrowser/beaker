@@ -3,7 +3,7 @@ import path from 'path'
 import * as tabManager from './tab-manager'
 import { download } from './downloads'
 import { getDriveConfig, configDrive, removeDrive, getDriveIdent } from '../filesystem/index'
-import { runCloneFlow, runDrivePropertiesFlow } from './util'
+import { runForkFlow, runDrivePropertiesFlow } from './util'
 import * as spellChecker from '../web-apis/bg/spell-checker'
 
 // NOTE
@@ -171,9 +171,9 @@ export default function registerContextMenu () {
               },
               { type: 'separator' },
               {
-                label: 'Clone This Drive',
+                label: 'Fork This Drive',
                 click: async (item, win) => {
-                  var url = await runCloneFlow(win, key)
+                  var url = await runForkFlow(win, key)
                   tabManager.create(win, url, {setActive: true})
                 }
               },

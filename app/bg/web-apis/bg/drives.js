@@ -32,25 +32,41 @@ export default {
       info,
       saved: !!drive,
       seeding: ident.user || (drive ? drive.seeding : false),
+      forkOf: drive.forkOf,
       ident
     }
   },
 
   async list (opts) {
-    var records = []
-    for (let drive of listDrives(opts)) {
-      let url = `hyper://${drive.key}`
-      let ident = getDriveIdent(url)
-      records.push({
-        key: drive.key,
-        url,
-        info: await drives.getDriveInfo(drive.key).catch(e => {}),
-        saved: true,
-        seeding: ident.user || drive.seeding,
-        ident
-      })
+    return assembleRecords(listDrives(opts))
+  },
+
+  async getForks (key) {
+    key = await drives.fromURLToKey(key, true)
+    var drivesList = listDrives()
+    var rootDrive = drivesList.find(drive => drive.key === key)
+
+    // find root of the tree
+    var seenKeys = new Set() // used to break cycles
+    while (rootDrive.forkOf && rootDrive.forkOf.key && !seenKeys.has(rootDrive.forkOf.key)) {
+      seenKeys.add(rootDrive.key)
+      rootDrive = drivesList.find(drive2 => drive2.key === rootDrive.forkOf.key)
     }
-    return records
+
+    // build the tree
+    var forks = []
+    function addForksOf (drive) {
+      if (forks.includes(drive)) return // cycle
+      forks.push(drive)
+      for (let drive2 of drivesList) {
+        if (drive2.forkOf && drive2.forkOf.key === drive.key) {
+          addForksOf(drive2)
+        }
+      }
+    }
+    addForksOf(rootDrive)
+
+    return assembleRecords(forks)
   },
 
   async configure (key, opts) {
@@ -102,3 +118,21 @@ export default {
 
 // internal methods
 // =
+
+async function assembleRecords (drivesList) {
+  var records = []
+  for (let drive of drivesList) {
+    let url = `hyper://${drive.key}`
+    let ident = getDriveIdent(url)
+    records.push({
+      key: drive.key,
+      url,
+      info: await drives.getDriveInfo(drive.key).catch(e => {}),
+      saved: true,
+      seeding: ident.user || drive.seeding,
+      forkOf: drive.forkOf,
+      ident
+    })
+  }
+  return records
+}

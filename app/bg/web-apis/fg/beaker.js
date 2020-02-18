@@ -45,6 +45,7 @@ export const setup = function (rpc) {
     beaker.drives.status = drivesRPC.status
     beaker.drives.get = drivesRPC.get
     beaker.drives.list = drivesRPC.list
+    beaker.drives.getForks = drivesRPC.getForks
     beaker.drives.configure = drivesRPC.configure
     beaker.drives.remove = drivesRPC.remove
     beaker.drives.listTrash = drivesRPC.listTrash
