@@ -168,15 +168,6 @@ class DesktopApp extends LitElement {
                 <span class="fas fa-info"></span> ${HELP.websites()}
               </div>
             </div>
-            <div class="dropdown-item" @click=${() => this.onCreateDrive('group')}>
-              <div class="label">
-                <i class="fas fa-fw fa-users"></i>
-                User Group
-              </div>
-              <div class="hover-help">
-                <span class="fas fa-info"></span> ${HELP.groups()}
-              </div>
-            </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive()}>
               <div class="label">
                 <i class="far fa-fw fa-hdd"></i>
@@ -186,13 +177,13 @@ class DesktopApp extends LitElement {
                 <span class="fas fa-info"></span> ${HELP.files()}
               </div>
             </div>
-            <div class="dropdown-item" @click=${() => this.onCreateDrive('wiki')}>
+            <div class="dropdown-item" @click=${() => this.onCreateDrive('group')}>
               <div class="label">
-                <i class="far fa-fw fa-file-word"></i>
-                Wiki Site
+                <i class="fas fa-fw fa-users"></i>
+                User Group
               </div>
               <div class="hover-help">
-                <span class="fas fa-info"></span> ${HELP.wikis()}
+                <span class="fas fa-info"></span> ${HELP.groups()}
               </div>
             </div>
             <div class="dropdown-item" @click=${() => this.onCreateDrive('module')}>
@@ -202,15 +193,6 @@ class DesktopApp extends LitElement {
               </div>
               <div class="hover-help">
                 <span class="fas fa-info"></span> ${HELP.modules()}
-              </div>
-            </div>
-            <div class="dropdown-item" @click=${() => this.onCreateDrive('code-snippet')}>
-              <div class="label">
-                <i class="fas fa-fw fa-code"></i>
-                Code Snippet
-              </div>
-              <div class="hover-help">
-                <span class="fas fa-info"></span> ${HELP.codeSnippets()}
               </div>
             </div>
             <hr>

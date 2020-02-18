@@ -13,7 +13,6 @@ const CATEGORIES = {
   general: [
     {id: 'website', icon: getDriveTypeIcon('website'), label: 'Websites' },
     {id: 'files', icon: getDriveTypeIcon('files'), label: 'Files drives' },
-    {id: 'wiki', icon: getDriveTypeIcon('wiki'), label: 'Wikis' },
     {id: 'other', icon: 'fas fa-asterisk', label: 'Other' }
   ],
   groups: [
@@ -21,8 +20,7 @@ const CATEGORIES = {
     {id: 'user', icon: getDriveTypeIcon('user'), label: 'My Users'},
   ],
   code: [
-    {id: 'module', icon: getDriveTypeIcon('module'), label: 'Modules' },
-    {id: 'code-snippet', icon: getDriveTypeIcon('code-snippet'), label: 'Code Snippets' }
+    {id: 'module', icon: getDriveTypeIcon('module'), label: 'Modules' }
   ],
   system: [
     {id: 'webterm.sh/cmd-pkg', icon: getDriveTypeIcon('webterm.sh/cmd-pkg'), label: 'Webterm commands'}
@@ -56,11 +54,9 @@ export class DrivesApp extends LitElement {
     const categorizeDrive = (drive) => {
       if (drive.info.type === 'website') return ['general', 'website']
       if (!drive.info.type && !drive.ident.system) return ['general', 'files']
-      if (drive.info.type === 'wiki') return ['general', 'wiki']
       if (drive.ident.user || drive.info.type === 'user') return ['groups', 'user']
       if (drive.info.type === 'group') return ['groups', 'group']
       if (drive.info.type === 'module') return ['code', 'module']
-      if (drive.info.type === 'code-snippet') return ['code', 'code-snippet']
       if (drive.ident.home) return ['system']
       if (drive.info.type === 'webterm.sh/cmd-pkg') return ['system', 'webterm.sh/cmd-pkg']
       return ['general', 'other']
@@ -120,19 +116,9 @@ export class DrivesApp extends LitElement {
           click: () => this.newDrive()
         },
         {
-          icon: 'far fa-fw fa-file-word',
-          label: 'Wiki Site',
-          click: () => this.newDrive('wiki')
-        },
-        {
           icon: 'fas fa-fw fa-cube',
           label: 'Module',
           click: () => this.newDrive('module')
-        },
-        {
-          icon: 'fas fa-fw fa-code',
-          label: 'Code Snippet',
-          click: () => this.newDrive('code-snippet')
         }
       ]
     })
@@ -363,27 +349,11 @@ export class DrivesApp extends LitElement {
         </div>
       `
     }
-    if (this.category === 'wiki') {
-      return html`
-        <div class="help">
-          <h3><span class="fas fa-fw fa-info"></span> Wiki Sites</h3>
-          ${HELP.wikis()}
-        </div>
-      `
-    }
     if (this.category === 'module') {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Modules</h3>
           ${HELP.modules()}
-        </div>
-      `
-    }
-    if (this.category === 'code-snippet') {
-      return html`
-        <div class="help">
-          <h3><span class="fas fa-fw fa-info"></span> Code Snippets</h3>
-          ${HELP.codeSnippets()}
         </div>
       `
     }
