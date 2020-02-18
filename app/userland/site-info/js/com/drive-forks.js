@@ -27,6 +27,7 @@ class DriveForks extends LitElement {
   // =
 
   render () {
+    var currentFork = this.forks.find(f => f.url === this.origin)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="list">
@@ -36,24 +37,24 @@ class DriveForks extends LitElement {
             <a class="fork ${isCurrent ? 'current' : ''}" href=${fork.url} @click=${this.onClickFork}>
               <div>
                 ${isCurrent ? html`<span class="fas fa-fw fa-caret-right"></span>` : ''}
-                <span>${fork.forkOf ? fork.forkOf.label : 'Master'}</span>
+                <span class="fork-label">${fork.forkOf ? fork.forkOf.label : 'Master'}</span>
               </div>
-                <div>
-                ${isCurrent ? html`
-                  <small>Currently Viewing</small>
-                `: html`
-                  ${fork.forkOf ? html`
-                    <button @click=${e => this.onClickDelete(e, fork)}><span class="far fa-trash-alt"></span></button>
-                  ` : ''}
-                  <button @click=${e => this.onClickCompare(e, fork)}>Compare</button>
-                `}
+              <div>
+                ${fork.forkOf ? html`
+                  <button class="transparent" @click=${e => this.onClickDelete(e, fork)}><span class="far fa-trash-alt"></span></button>
+                ` : ''}
               </div>
             </a>
           `
         })}
-        <a class="fork" @click=${this.onClickNewFork}>
-          <div>+ New Fork</div>
-        </a>
+      </div>
+      <div>
+        <button class="transparent" @click=${this.onClickNewFork}>+ New Fork</button>
+        ${currentFork.forkOf ? html`
+          <button class="transparent" @click=${e => this.onClickCompare(e, currentFork)}><span class="diff-merge-icon">◨</span> Diff / Merge Master</button>
+        ` : html`
+          <button class="transparent" disabled><span class="diff-merge-icon">◨</span> Diff / Merge Master</button>
+        `}
       </div>
     `
   }
@@ -77,7 +78,7 @@ class DriveForks extends LitElement {
   onClickCompare (e, fork) {
     e.preventDefault()
     e.stopPropagation()
-    beaker.browser.openUrl(`beaker://compare/?base=${fork.url}&target=${this.origin}`, {setActive: true})
+    beaker.browser.openUrl(`beaker://compare/?base=${fork.url}&target=${this.forks[0].url}`, {setActive: true})
     beaker.browser.toggleSiteInfo(false)
   }
 

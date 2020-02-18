@@ -6,14 +6,24 @@ ${buttonsCSS}
 
 :host {
   display: block;
-  margin: 10px;
-  background: #fafafd;
-  border-radius: 4px;
-  border: 1px solid #dde;
-  overflow: hidden;
+  padding: 10px;
+}
+
+button {
+  padding: 5px;
+}
+
+.diff-merge-icon {
+  font-size: 12px;
+  line-height: 1;
 }
 
 .list {
+  margin: 0 0 8px;
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #dde;
+  overflow: hidden;
   max-height: 180px;
   overflow: auto;
 }
@@ -24,16 +34,12 @@ ${buttonsCSS}
   justify-content: space-between;
   height: 36px;
   box-sizing: border-box;
-  padding: 5px 5px 5px 10px;
+  padding: 5px 10px;
   text-decoration: none;
   color: inherit;
   border-bottom: 1px solid #dde;
   letter-spacing: 0.5px;
   cursor: pointer;
-}
-
-.fork.current {
-  background: #fff;
 }
 
 .fork.current small {
@@ -43,10 +49,6 @@ ${buttonsCSS}
 
 .fork:last-child {
   border-bottom: 0;
-}
-
-.fork:hover {
-  background: #f8f8fa;
 }
 `
 export default cssStr

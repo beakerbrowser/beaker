@@ -77,6 +77,14 @@ hr {
   word-break: break-word;
 }
 
+.site-info .floating-right {
+  float: right;
+}
+
+.site-info .floating-right button {
+  padding: 5px;
+}
+
 .site-info .editable:hover {
   cursor: pointer;
   text-decoration: underline;
@@ -115,11 +123,11 @@ hr {
 }
 
 .nav .tabs a.active {
-  background: #e5e5e7;
+  background: #f0f0f4;
 }
 
 .nav .tabs a:not(.active):hover {
-  background: rgb(245, 245, 245);
+  background: #f0f0f4;
 }
 
 .inner > div {
