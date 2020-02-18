@@ -121,7 +121,9 @@ export class CompareApp extends LitElement {
           </button>
           ${this.targetInfo?.writable ? html`
             <button class="primary" ?disabled=${this.checkedItems?.length === 0} @click=${this.onClickBulkMerge}>Merge ${numChecked}</button>
-          ` : ''}
+            ` : html`
+            <button class="primary" disabled data-tooltip="Can't merge into a drive you don't own">Merge ${numChecked}</button>
+          `}
         </div>
       </header>
       <div class="layout">
@@ -143,7 +145,6 @@ export class CompareApp extends LitElement {
               <compare-diff-item
                 .diff=${diff}
                 .targetPath=${this.targetPath}
-                ?can-merge=${this.targetInfo?.writable}
                 ?selected=${this.selectedItem === diff}
                 ?checked=${this.checkedItems.includes(diff)}
                 @select=${this.onSelectItem}
@@ -160,6 +161,7 @@ export class CompareApp extends LitElement {
               .basePath=${this.basePath}
               .targetPath=${this.targetPath}
               .diff=${this.selectedItem}
+              ?can-merge=${this.targetInfo?.writable}
               @merge=${this.onClickMergeItem}
             ></compare-diff-item-content>
           ` : html`
@@ -317,8 +319,7 @@ class CompareDiffItem extends LitElement {
       diff: {type: Object},
       selected: {type: Boolean},
       checked: {type: Boolean},
-      targetPath: {type: String},
-      canMerge: {type: Boolean, attribute: 'can-merge'}
+      targetPath: {type: String}
     }
   }
 
@@ -326,7 +327,6 @@ class CompareDiffItem extends LitElement {
     super()
     this.diff = null
     this.checked = false
-    this.canMerge = false
   }
 
   createRenderRoot () {
@@ -365,6 +365,7 @@ class CompareDiffItemContent extends LitElement {
     return {
       baseOrigin: {type: String},
       targetOrigin: {type: String},
+      canMerge: {type: Boolean, attribute: 'can-merge'},
       diff: {type: Object}
     }
   }
@@ -373,6 +374,7 @@ class CompareDiffItemContent extends LitElement {
     super()
     this.baseOrigin = null
     this.targetOrigin = null
+    this.canMerge = false
     this.diff = null
   }
 
@@ -390,7 +392,11 @@ class CompareDiffItemContent extends LitElement {
           ${this.diff.change === 'mod' ? 'Change' : ''}
           ${this.diff.targetPath}
         </span>
-        <button @click=${this.onClickMerge}>Merge</button>
+        ${this.canMerge ? html`
+          <button @click=${this.onClickMerge}>Merge</button>
+        ` : html`
+          <button disabled data-tooltip="Can't merge into a drive you don't own">Merge</button>
+        `}
         ${['del', 'mod'].includes(this.diff.change) ? html`
           <a href="${this.targetOrigin}${this.diff?.targetPath}" target="_blank"><span class="fas fa-fw fa-external-link-alt"></span> View current</a>
         ` : ''}
