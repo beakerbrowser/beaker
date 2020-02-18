@@ -20,78 +20,6 @@ async function ensureParentDir (p) {
   }
 }
 
-customElements.define('wiki-header', class extends HTMLElement {
-  constructor () {
-    super()
-    this.load()
-  }
-
-  async load () {
-    this.info = await self.getInfo()
-    this.render()
-  }
-
-  render () {
-    this.append(h('h1', {}, h('a', {href: '/'}, this.info.title)))
-    if (this.info.description) {
-      this.append(h('p', {}, this.info.description))
-    }
-
-    if (this.info.writable) {
-      let buttons = []
-
-      if (!isEditing) {
-        let newPage = h('button', {}, 'New Page')
-        newPage.addEventListener('click', async (e) => {
-          var newPathname = prompt('Enter the path of the new page')
-          if (!newPathname) return
-          if (!newPathname.endsWith('.md')) newPathname += '.md'
-          await ensureParentDir(newPathname)
-          if ((await self.stat(newPathname).catch(e => undefined)) === undefined) {
-            await self.writeFile(newPathname, `# ${newPathname}`)
-          }
-          location = newPathname + '?edit'
-        })
-        buttons.push(newPage)
-
-        if (/\.(png|jpe?g|gif|mp4|mp3|ogg|webm|mov)$/.test(pathname) === false) {
-          let editPage = h('button', {}, 'Edit Page')
-          editPage.addEventListener('click', async (e) => {
-            location.search = '?edit'
-          })
-          buttons.push(editPage)
-        }
-      } else {
-        let savePage = h('button', {class: 'primary'}, 'Save Page')
-        savePage.addEventListener('click', async (e) => {
-          let value = document.body.querySelector('textarea.editor').value
-          await self.writeFile(pathname, value)
-          location.search = ''
-        })
-        buttons.push(savePage)
-      }
-
-      let deletePage = h('button', {}, 'Delete Page')
-      deletePage.addEventListener('click', async (e) => {
-        if (!confirm('Delete this page?')) return
-        await self.unlink(pathname)
-        if (isEditing) location.search = ''
-        else location.reload()
-      })
-      buttons.push(deletePage)
-
-      let editProps = h('button', {}, 'Edit Drive Properties')
-      editProps.addEventListener('click', async (e) => {
-        await navigator.drivePropertiesDialog(self.url)
-        if (!isEditing) location.reload()
-      })
-      buttons.push(editProps)
-
-      this.append(h('div', {class: 'admin'}, ...buttons))
-    }
-  }
-})
-
 customElements.define('wiki-nav', class extends HTMLElement {
   constructor () {
     super()
@@ -99,6 +27,8 @@ customElements.define('wiki-nav', class extends HTMLElement {
   }
 
   async load () {
+    this.innerHTML = ''
+    this.info = await self.getInfo()
     this.files = await self.readdir('/', {recursive: true})
     this.files = this.files.filter(file => file.endsWith('.md'))
     this.files.sort()
@@ -109,10 +39,48 @@ customElements.define('wiki-nav', class extends HTMLElement {
     for (let file of this.files) {
       let href = `/${file}`
       let cls = pathname === href ? 'active' : ''
-      this.append(h('a', {href, class: cls}, file.slice(0, -3)))
+      let buttons = []
+
+      if (this.info.writable) {
+        if (/\.(png|jpe?g|gif|mp4|mp3|ogg|webm|mov)$/.test(file) === false) {
+          let editPage = h('img', {src: '/.ui/pencil.svg', alt: 'Edit', title: 'Edit'})
+          editPage.addEventListener('click', async (e) => {
+            e.preventDefault()
+            location = `${href}?edit`
+          })
+          buttons.push(editPage)
+        }
+        let deletePage = h('img', {src: '/.ui/trash.svg', alt: 'Delete', title: 'Delete'})
+        deletePage.addEventListener('click', async (e) => {
+          e.preventDefault()
+          if (!confirm('Delete this page?')) return
+          await self.unlink(href)
+          if (href === pathname) location.reload()
+          else this.load()
+        })
+        buttons.push(deletePage)
+      }
+
+      this.append(h('a', {href, class: cls}, h('span', {}, file.slice(0, -3)), h('span', {class: 'buttons'}, ...buttons)))
     }
     if (this.files.length === 0) {
       this.append(h('div', {class: 'empty'}, 'This Wiki has no pages'))
+    }
+
+    if (this.info.writable) {
+      let newPage = h('a', {href: '#'}, '+ New Page')
+      newPage.addEventListener('click', async (e) => {
+        e.preventDefault()
+        var newPathname = prompt('Enter the path of the new page')
+        if (!newPathname) return
+        if (!newPathname.endsWith('.md')) newPathname += '.md'
+        await ensureParentDir(newPathname)
+        if ((await self.stat(newPathname).catch(e => undefined)) === undefined) {
+          await self.writeFile(newPathname, `# ${newPathname}`)
+        }
+        this.load()
+      })
+      this.append(newPage)
     }
   }
 })
@@ -130,7 +98,7 @@ customElements.define('wiki-page', class extends HTMLElement {
       // 404
       let canEdit = (await self.getInfo()).writable
       if (canEdit) {
-        let btn = h('button', {}, 'Create Page')
+        let btn = h('button', {class: 'primary'}, 'Create Page')
         btn.addEventListener('click', async (e) => {
           await ensureParentDir(pathname)
           await self.writeFile(pathname, `# ${pathname}`)
@@ -154,7 +122,19 @@ customElements.define('wiki-page', class extends HTMLElement {
       let content = await self.readFile(pathname)
       if (isEditing) {
         // render editor
-        let textarea = h('textarea', {class: 'editor'}, content)
+        let savePage = h('button', {}, 'Save Changes')
+        savePage.addEventListener('click', async (e) => {
+          let value = document.body.querySelector('textarea.editor').value
+          await self.writeFile(pathname, value)
+          location.search = ''
+        })
+        let discardChanges = h('button', {}, 'Discard Changes')
+        discardChanges.addEventListener('click', async (e) => {
+          location.search = ''
+        })
+        this.append(h('div', {class: 'buttons'}, savePage, discardChanges))
+
+        let textarea = h('textarea', {class: 'editor', autofocus: true}, content)
         this.append(textarea)
       } else {
         // render content

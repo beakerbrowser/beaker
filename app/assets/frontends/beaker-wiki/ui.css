@@ -4,9 +4,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   margin: 0;
   display: grid;
-  grid-gap: 10px;
   grid-template-columns: 300px 1fr;
-  grid-template-rows: 100px 1fr;
   min-height: 100vh;
   min-width: 100vh;
 }
@@ -22,11 +20,11 @@ a:hover {
 button {
   padding: 0.5rem 1rem;
   background: #fff;
-  border: 1px solid #88f;
+  border: 1px solid #ccd;
   border-radius: 4px;
-  color: blue;
   outline: 0;
   font-size: 12px;
+  cursor: pointer;
 }
 
 button:active {
@@ -34,9 +32,8 @@ button:active {
 }
 
 button.primary {
-  color: #fff;
-  background: blue;
-  border-color: blue;
+  color: #1073ca;
+  border: 1px solid #1E88E5;
 }
 
 header {
@@ -50,36 +47,6 @@ nav {
 }
 
 main {
-  padding-left: 20px;
-}
-
-wiki-header {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  height: 100px;
-  padding: 0 20px;
-}
-
-wiki-header h1,
-wiki-header p {
-  margin: 0.25rem 0;
-  line-height: 1;
-}
-
-wiki-header h1 a {
-  color: inherit;
-}
-
-wiki-header .admin {
-  position: absolute;
-  top: 30px;
-  right: 20px;
-}
-
-wiki-header .admin button {
-  margin-left: 5px;
 }
 
 wiki-nav {
@@ -88,14 +55,12 @@ wiki-nav {
 }
 
 wiki-nav a {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   color: #445;
   padding: 0.5rem 1rem;
   margin: 0;
-}
-
-wiki-nav a:last-child {
-  border-bottom: 0;
 }
 
 wiki-nav a:hover {
@@ -107,13 +72,29 @@ wiki-nav a.active {
   background: var(--light-gray);
 }
 
+wiki-nav a img {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  opacity: 0.35;
+}
+
+wiki-nav a img:hover {
+  opacity: 1;
+}
+
 wiki-nav .empty {
   padding: 0.6rem 1rem;
   color: #667;
 }
 
+.content {
+  padding: 20px;
+}
+
 .content > :first-child {
-  margin-top: 1rem;
+  margin-top: 0;
 }
 .content hr {
   border: 0;
@@ -161,14 +142,23 @@ wiki-page .empty button {
 }
 
 wiki-page textarea.editor {
-  width: calc(100% - 20px);
-  height: calc(100vh - 130px);
-  margin-top: 10px;
+  width: 100%;
+  height: calc(100vh - 66px);
   padding: 20px;
   box-sizing: border-box;
-  border: 1px solid #ccd;
+  border: 0;
   font-size: 17px;
   letter-spacing: 0.75px;
   line-height: 1.4;
   outline: 0;
+  resize: none;
+}
+
+wiki-page .buttons {
+  padding: 16px;
+  border-bottom: 1px solid #ccd;
+}
+
+wiki-page .buttons button {
+  margin-right: 5px;
 }
