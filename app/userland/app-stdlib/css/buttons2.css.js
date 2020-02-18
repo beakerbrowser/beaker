@@ -87,6 +87,10 @@ button.transparent {
   box-shadow: none; 
 }
 
+button.transparent[disabled] {
+  border-color: transparent !important;
+}
+
 button.transparent:hover {
   background: #f5f5fa;
 }
