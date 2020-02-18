@@ -76,6 +76,7 @@ const STATE_VARS = [
   'url',
   'title',
   'siteTitle',
+  'siteSubtitle',
   'siteIcon',
   'driveDomain',
   'isHomeDrive',
@@ -230,7 +231,7 @@ class Tab {
         hostname = hostname.replace(DRIVE_KEY_REGEX, v => `${v.slice(0, 4)}..${v.slice(-2)}`)
       }
       if (hostname.includes('+')) {
-        hostname = hostname.replace(/\+[\d]+/, v => ` (v${v.slice(1)})`)
+        hostname = hostname.replace(/\+[\d]+/, '')
       }
       var origin = urlp.protocol + '//' + (hostname)
       if (this.driveInfo) {
@@ -245,6 +246,16 @@ class Tab {
     } catch (e) {
       return ''
     }
+  }
+
+  get siteSubtitle () {
+    if (this.driveInfo) {
+      var origin = this.origin
+      var version = /\+([\d]+)/.exec(origin) ? `v${/\+([\d]+)/.exec(origin)[1]}` : ''
+      var forkLabel = _get(filesystem.listDrives().find(d => d.key === this.driveInfo.key), 'forkOf.label')
+      return [forkLabel, version].filter(Boolean).join(' ')
+    }
+    return false
   }
 
   get siteIcon () {

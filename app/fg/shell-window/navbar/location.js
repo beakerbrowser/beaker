@@ -17,6 +17,7 @@ class NavbarLocation extends LitElement {
       url: {type: String},
       title: {type: String},
       siteTitle: {type: String},
+      siteSubtitle: {type: String},
       driveDomain: {type: String},
       isHomeDrive: {type: Boolean, attribute: 'is-home-drive'},
       isUserDrive: {type: Boolean, attribute: 'is-user-drive'},
@@ -42,6 +43,7 @@ class NavbarLocation extends LitElement {
     this.url = ''
     this.title = ''
     this.siteTitle = ''
+    this.siteSubtitle = ''
     this.driveDomain = ''
     this.isHomeDrive = false
     this.isUserDrive = false
@@ -106,6 +108,7 @@ class NavbarLocation extends LitElement {
       <shell-window-navbar-site-info
         url=${this.url}
         siteTitle=${this.siteTitle}
+        siteSubtitle="${this.siteSubtitle}"
         driveDomain=${this.driveDomain}
         ?writable=${this.writable}
         peers=${this.peers}

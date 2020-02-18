@@ -10,6 +10,7 @@ class NavbarSiteInfo extends LitElement {
     return {
       url: {type: String},
       siteTitle: {type: String},
+      siteSubtitle: {type: String},
       driveDomain: {type: String},
       writable: {type: Boolean},
       peers: {type: Number},
@@ -23,6 +24,7 @@ class NavbarSiteInfo extends LitElement {
     super()
     this.url = ''
     this.siteTitle = ''
+    this.siteSubtitle = ''
     this.driveDomain = ''
     this.writable = false
     this.peers = 0
@@ -83,6 +85,7 @@ class NavbarSiteInfo extends LitElement {
             <span class="fas fa-check-circle certified"></span>
           ` : ''}
           <span class="label">${this.siteTitle}</span>
+          ${this.siteSubtitle ? html`<span class="label sublabel">${this.siteSubtitle}</span>` : ''}
         `
       }
     }
@@ -185,6 +188,16 @@ button.hidden {
   font-size: 12.5px;
   line-height: 27px;
   letter-spacing: 0.5px;
+}
+
+.label.sublabel {
+  display: inline-block;
+  height: 18px;
+  line-height: 20px;
+  border-radius: 4px;
+  padding: 0 5px;
+  background: #4fb1ff;
+  color: #fff;
 }
 
 .certified {

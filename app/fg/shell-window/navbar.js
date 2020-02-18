@@ -79,6 +79,7 @@ class ShellWindowNavbar extends LitElement {
         url="${_get(this, 'activeTab.url', '')}"
         title="${_get(this, 'activeTab.title', '')}"
         siteTitle="${_get(this, 'activeTab.siteTitle', '')}"
+        siteSubtitle="${_get(this, 'activeTab.siteSubtitle', '')}"
         driveDomain="${_get(this, 'activeTab.driveDomain', '')}"
         ?is-home-drive=${_get(this, 'activeTab.isHomeDrive', false)}
         ?is-user-drive=${_get(this, 'activeTab.isUserDrive', false)}
