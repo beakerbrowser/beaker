@@ -45,6 +45,7 @@ export default {
     key = await drives.fromURLToKey(key, true)
     var drivesList = listDrives()
     var rootDrive = drivesList.find(drive => drive.key === key)
+    if (!rootDrive) return assembleRecords([{key, seeding: false}])
 
     // find root of the tree
     var seenKeys = new Set() // used to break cycles
