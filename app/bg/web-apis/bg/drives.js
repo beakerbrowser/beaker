@@ -32,7 +32,7 @@ export default {
       info,
       saved: !!drive,
       seeding: ident.user || (drive ? drive.seeding : false),
-      forkOf: drive.forkOf,
+      forkOf: drive ? drive.forkOf : undefined,
       ident
     }
   },
@@ -131,7 +131,7 @@ async function assembleRecords (drivesList) {
       info: await drives.getDriveInfo(drive.key).catch(e => {}),
       saved: true,
       seeding: ident.user || drive.seeding,
-      forkOf: drive.forkOf,
+      forkOf: drive ? drive.forkOf : undefined,
       ident
     })
   }
