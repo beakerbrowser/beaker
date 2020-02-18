@@ -194,7 +194,7 @@ class CreateDriveModal extends LitElement {
             
           <div class="frontend">
             <label>Frontend</label>
-            <select name="frontend" @change=${this.onChangeFrontend} ?disabled=${matchingFrontends.length <= 1}>
+            <select name="frontend" @change=${this.onChangeFrontend}>
               ${repeat(matchingFrontends, fe => feopt(fe.url, fe.title))}
             </select>
             <img class="preview" src="beaker://assets/img/frontends/${frontendImg}.png">
