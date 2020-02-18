@@ -270,7 +270,7 @@ class NavbarLocation extends LitElement {
       return html`<span class="label">My User Profile</span>`
     }
     if (this.writable) {
-      return html`<span class="label">My Hyperdrive</span>`
+      return html`<span class="label">Editable</span>`
     }
   }
 
