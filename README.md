@@ -81,7 +81,7 @@ To build:
 ```bash
 git clone https://github.com/beakerbrowser/beaker.git
 cd beaker
-npm install
+npm install # v8 api errors expected building native modules
 npm run rebuild # see https://github.com/electron/electron/issues/5851
 npm start
 ```
