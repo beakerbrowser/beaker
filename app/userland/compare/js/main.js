@@ -3,10 +3,13 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import { pluralize, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
+import { isFilenameBinary } from 'beaker://app-stdlib/js/is-ext-binary.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as QP from 'beaker://app-stdlib/js/query-params.js'
 import * as compare from './lib/compare.js'
+
+var isMonacoLoaded = false
 
 export class CompareApp extends LitElement {
   static get properties () {
@@ -34,8 +37,8 @@ export class CompareApp extends LitElement {
     this.targetDrive = this.target ? new Hyperdrive(this.target) : undefined
     this.baseInfo = await this.baseDrive?.getInfo?.().catch(e => undefined)
     this.targetInfo = await this.targetDrive?.getInfo?.().catch(e => undefined)
-    this.basePath = getUrlPathname(this.base)
-    this.targetPath = getUrlPathname(this.target)
+    this.basePath = '/' //getUrlPathname(this.base)
+    this.targetPath = '/' // getUrlPathname(this.target)
     this.checkedItems = []
     this.selectedItem = undefined
     this.requestUpdate()
@@ -51,9 +54,18 @@ export class CompareApp extends LitElement {
     } else {
       this.diff = []
     }
-    this.checkedItems = this.diff.slice()
     console.log(this.diff)
     this.requestUpdate()
+
+    if (!isMonacoLoaded) {
+      await new Promise((resolve, reject) => {
+        window.require.config({ baseUrl: 'beaker://assets/' })
+        window.require(['vs/editor/editor.main'], () => {
+          isMonacoLoaded = true
+          resolve()
+        })
+      })
+    }
   }
 
   async doMerge (diff) {
@@ -83,28 +95,27 @@ export class CompareApp extends LitElement {
         <h1>Diff / Merge Tool</h1>
         <div class="toolbar">
           <div class="title">
-            Comparing
+            Merging
             <button @click=${this.onClickBase}>
-              ${this.baseInfo?.title} ${this.basePath}
+              ${this.baseInfo?.title}
               <span class="fas fa-fw fa-caret-down"></span>
             </button>
-            to
+            into
             <button @click=${this.onClickTarget}>
-              ${this.targetInfo?.title} ${this.targetPath}
+              ${this.targetInfo?.title}
               <span class="fas fa-fw fa-caret-down"></span>
             </button>
           </div>
           <button class="transparent" @click=${this.onClickReverse}>
             <span class="fas fa-fw fa-sync"></span> Reverse
           </button>
-          <div style="flex: 1"></div>
           ${this.targetInfo?.writable ? html`
             <button class="primary" ?disabled=${this.checkedItems?.length === 0} @click=${this.onClickBulkMerge}>Merge ${numChecked}</button>
           ` : ''}
         </div>
       </header>
       <div class="layout">
-        <nav>
+        <nav @click=${this.onClickOutside}>
           <div class="nav-header">
             <label><input type="checkbox" @change=${this.onToggleAllChecked}> Select / Deselect All</label>
           </div>
@@ -121,7 +132,7 @@ export class CompareApp extends LitElement {
               ${heading}
               <compare-diff-item
                 .diff=${diff}
-                .rightPath=${this.targetPath}
+                .targetPath=${this.targetPath}
                 ?can-merge=${this.targetInfo?.writable}
                 ?selected=${this.selectedItem === diff}
                 ?checked=${this.checkedItems.includes(diff)}
@@ -134,10 +145,10 @@ export class CompareApp extends LitElement {
         <main>
           ${this.selectedItem ? html`
             <compare-diff-item-content
-              .leftOrigin=${this.baseDrive.url}
-              .rightOrigin=${this.targetDrive.url}
-              .leftPath=${this.basePath}
-              .rightPath=${this.targetPath}
+              .baseOrigin=${this.baseDrive.url}
+              .targetOrigin=${this.targetDrive.url}
+              .basePath=${this.basePath}
+              .targetPath=${this.targetPath}
               .diff=${this.selectedItem}
               @merge=${this.onClickMergeItem}
             ></compare-diff-item-content>
@@ -157,6 +168,16 @@ export class CompareApp extends LitElement {
   // events
   // =
 
+  onClickOutside (e) {
+    for (let el of e.path) {
+      if (el && el.tagName === 'A' || el.tagName === 'BUTTON' || el.tagName === 'COMPARE-DIFF-ITEM') {
+        return
+      }
+    }
+    this.selectedItem = undefined
+    this.requestUpdate()
+  }
+
   onClickBase (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -174,17 +195,12 @@ export class CompareApp extends LitElement {
           label: 'Open in new tab',
           click: () => window.open(this.base)
         },
+        '-',
         {
-          icon: 'far fa-fw fa-folder-open',
-          label: 'Change folder',
+          icon: 'far fa-fw fa-hdd',
+          label: 'Select different drive',
           click: async () => {
-            // TODO this modal needs to be in "select folder" mode
-            let sel = await navigator.selectFileDialog({
-              drive: this.baseDrive?.url,
-              defaultPath: this.basePath,
-              select: ['folder']
-            })
-            this.base = sel[0].url
+            this.base = await navigator.selectDriveDialog()
             this.load()
           }
         }
@@ -209,17 +225,12 @@ export class CompareApp extends LitElement {
           label: 'Open in new tab',
           click: () => window.open(this.target)
         },
+        '-',
         {
-          icon: 'far fa-fw fa-folder-open',
-          label: 'Change folder',
+          icon: 'far fa-fw fa-hdd',
+          label: 'Select different drive',
           click: async () => {
-            // TODO this modal needs to be in "select folder" mode
-            let sel = await navigator.selectFileDialog({
-              drive: this.targetDrive?.url,
-              defaultPath: this.targetPath,
-              select: ['folder']
-            })
-            this.target = sel[0].url
+            this.target = await navigator.selectDriveDialog()
             this.load()
           }
         }
@@ -275,7 +286,7 @@ class CompareDiffItem extends LitElement {
       diff: {type: Object},
       selected: {type: Boolean},
       checked: {type: Boolean},
-      rightPath: {type: String},
+      targetPath: {type: String},
       canMerge: {type: Boolean, attribute: 'can-merge'}
     }
   }
@@ -300,7 +311,7 @@ class CompareDiffItem extends LitElement {
         <input type="checkbox" @click=${this.onCheck}>
         <div class="revision-indicator ${this.diff.change}"></div>
         <div class="icon"><span class="fas fa-fw fa-${icon}"></span></div>
-        <div class="path">${relativePath(this.rightPath, this.diff.rightPath)}</div>
+        <div class="path">${relativePath(this.targetPath, this.diff.targetPath)}</div>
       </div>
     `
   }
@@ -321,38 +332,74 @@ class CompareDiffItem extends LitElement {
 class CompareDiffItemContent extends LitElement {
   static get properties () {
     return {
-      leftOrigin: {type: String},
-      rightOrigin: {type: String},
-      leftPath: {type: String},
-      rightPath: {type: String},
-      diff: {type: Object},
-      leftText: {type: String},
-      rightText: {type: String}
+      baseOrigin: {type: String},
+      targetOrigin: {type: String},
+      diff: {type: Object}
     }
   }
 
   constructor () {
     super()
-    this.leftOrigin = null
-    this.rightOrigin = null
+    this.baseOrigin = null
+    this.targetOrigin = null
     this.diff = null
   }
 
   createRenderRoot () {
     return this // dont use shadow dom
   }
+  
+  render () {
+    return html`
+      <div class="info">
+        <span class="path">
+          <div class="revision-indicator ${this.diff.change}"></div>
+          ${this.diff.change === 'add' ? 'Add' : ''}
+          ${this.diff.change === 'del' ? 'Delete' : ''}
+          ${this.diff.change === 'mod' ? 'Change' : ''}
+          ${this.diff.targetPath}
+        </span>
+        <button @click=${this.onClickMerge}>Merge</button>
+        ${['del', 'mod'].includes(this.diff.change) ? html`
+          <a href="${this.targetOrigin}${this.diff?.targetPath}" target="_blank"><span class="fas fa-fw fa-external-link-alt"></span> View current</a>
+        ` : ''}
+        ${['add', 'mod'].includes(this.diff.change) ? html`
+          <a href="${this.baseOrigin}${this.diff?.basePath}" target="_blank"><span class="fas fa-fw fa-external-link-alt"></span> View new file</a>
+        ` : ''}
+      </div>
+      ${this.renderDiff()}
+    `
+  }
+
+  renderDiff () {
+    if (isFilenameBinary(this.diff?.basePath || this.diff?.targetPath)) {
+      if (this.diff.change === 'mod') {
+        return html`
+          <div class="container split">
+            <div><div class="action">From</div><div class="wrap">${this.renderLeftColumn()}</div></div>
+            <div><div class="action">To</div><div class="wrap">${this.renderRightColumn()}</div></div>
+          </div>
+        `
+      } else if (this.diff.change === 'add') {
+        return html`<div class="container"><div><div class="wrap">${this.renderRightColumn()}</div></div></div>`
+      } else if (this.diff.change === 'del') {
+        return html`<div class="container"><div><div class="wrap">${this.renderLeftColumn()}</div></div></div>`
+      }
+    } else if (this.diff) {
+      return html`<div class="editor"></div>`
+    }
+  }
 
   renderLeftColumn () {
     if (this.diff.change === 'del' || this.diff.change === 'mod') {
-      return this.renderFileContent(new Hyperdrive(this.rightOrigin), this.diff.rightPath, this.diff.rightMountKey)
+      return this.renderFileContent(new Hyperdrive(this.targetOrigin), this.diff.targetPath, this.diff.targetMountKey)
     }
     return ''
   }
 
   renderRightColumn () {
-    var right = new Hyperdrive(this.rightOrigin)
     if (this.diff.change === 'add' || this.diff.change === 'mod') {
-      return this.renderFileContent(new Hyperdrive(this.leftOrigin), this.diff.leftPath, this.diff.leftMountKey)
+      return this.renderFileContent(new Hyperdrive(this.baseOrigin), this.diff.basePath, this.diff.baseMountKey)
     }
     return ''
   }
@@ -374,38 +421,17 @@ class CompareDiffItemContent extends LitElement {
     if (/\.(mp3|ogg)$/.test(path)) {
       return html`<audio controls><source src=${drive.url + path}></audio>`
     }
-    return html`<div class="text">${until(drive.readFile(path), 'Loading...')}`
-  }
-  
-  render () {
-    return html`
-      <div class="info">
-        <span class="path">
-          <div class="revision-indicator ${this.diff.change}"></div>
-          ${this.diff.change === 'add' ? 'Add' : ''}
-          ${this.diff.change === 'del' ? 'Delete' : ''}
-          ${this.diff.change === 'mod' ? 'Change' : ''}
-          ${this.diff.rightPath}
-        </span>
-        <button class="transparent" @click=${this.onClickMerge}>Merge</button>
-      </div>
-      ${this.renderContainer()}
-    `
+    return html`<div class="unknown">Unknown binary format</div>`
   }
 
-  renderContainer () {
-    if (this.diff.change === 'mod') {
-      return html`
-        <div class="container split">
-          <div><div class="action">From</div><div class="wrap">${this.renderLeftColumn()}</div></div>
-          <div><div class="action">To</div><div class="wrap">${this.renderRightColumn()}</div></div>
-        </div>
-      `
-    } else if (this.diff.change === 'add') {
-      return html`<div class="container"><div><div class="wrap">${this.renderRightColumn()}</div></div></div>`
-    } else if (this.diff.change === 'del') {
-      return html`<div class="container"><div><div class="wrap">${this.renderLeftColumn()}</div></div></div>`
-    }
+  async updated () {
+    var editorEl = this.querySelector('.editor')
+    if (!editorEl) return
+    var [baseContent, targetContent] = await Promise.all([
+      this.diff.change === 'del' || this.diff.change === 'mod' ? (new Hyperdrive(this.targetOrigin)).readFile(this.diff.targetPath).catch(e => '') : '',
+      this.diff.change === 'add' || this.diff.change === 'mod' ? (new Hyperdrive(this.baseOrigin)).readFile(this.diff.basePath).catch(e => '') : '',
+    ])
+    createDiffEditor(editorEl, baseContent, targetContent)
   }
 
   onClickMerge (e) {
@@ -426,10 +452,21 @@ function relativePath (basePath, fullPath) {
   return fullPath
 }
 
-function getUrlPathname (url) {
-  try {
-    return (new URL(url)).pathname
-  } catch (e) {
-    return ''
+var diffEditor
+async function createDiffEditor (el, baseContent, targetContent) {
+  if (diffEditor) diffEditor.dispose()
+  var opts = {
+    folding: false,
+    renderLineHighlight: 'all',
+    lineNumbersMinChars: 4,
+    automaticLayout: true,
+    fixedOverflowWidgets: true,
+    roundedSelection: false,
+    minimap: {enabled: false}
   }
+  diffEditor = monaco.editor.createDiffEditor(el, opts)
+  diffEditor.setModel({
+    original: monaco.editor.createModel(baseContent, 'text/plain'),
+    modified: monaco.editor.createModel(targetContent, 'text/plain')
+  })
 }

@@ -60,9 +60,14 @@ header .primary {
 }
 
 header button {
-  padding: 4px 6px;
+  padding: 4px 6px 4px 10px;
+  margin: 0 4px;
   font-size: 12px;
   white-space: nowrap;
+}
+
+header button.transparent {
+  padding: 4px 6px;
 }
 
 header button.primary {
@@ -218,12 +223,34 @@ compare-diff-item-content {
 compare-diff-item-content .info {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 36px;
   line-height: 35px;
   padding: 0 12px;
   border-bottom: 1px solid var(--border-color);
   color: #60606c;
+}
+
+compare-diff-item-content .info button {
+  margin-left: 14px;
+  padding: 4px 8px;
+}
+
+compare-diff-item-content .info a {
+  margin-left: 14px;
+  color: inherit;
+  font-size: 12px;
+}
+
+compare-diff-item-content .info a:hover {
+  text-decoration: underline;
+}
+
+compare-diff-item-content .info a span {
+  font-size: 10px;
+}
+
+compare-diff-item-content .editor {
+  height: calc(100vh - 131px);
 }
 
 compare-diff-item-content .container {

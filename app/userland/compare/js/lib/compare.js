@@ -1,33 +1,33 @@
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 
-export async function diff (leftDrive, initLeftPath, rightDrive, initRightPath, opts) {
+export async function diff (baseDrive, initBasePath, targetDrive, initTargetPath, opts) {
   opts = opts || {}
   var compareContentCache = opts.compareContentCache
   var seen = new Set()
   var changes = []
-  await walk(initLeftPath, initRightPath)
+  await walk(initBasePath, initTargetPath)
   return changes
 
-  async function walk (leftPath, rightPath) {
+  async function walk (basePath, targetPath) {
     // get files in folder
-    var [leftNames, rightNames] = await Promise.all([
-      leftDrive.readdir(leftPath),
-      rightDrive.readdir(rightPath)
+    var [baseNames, targetNames] = await Promise.all([
+      baseDrive.readdir(basePath),
+      targetDrive.readdir(targetPath)
     ])
 
     // run ops based on set membership
     var ps = []
-    console.debug('walk', leftPath, leftNames, rightPath, rightNames)
-    leftNames.forEach(name => {
-      if (rightNames.indexOf(name) === -1) {
-        ps.push(addRecursive(joinPath(leftPath, name), joinPath(rightPath, name)))
+    console.debug('walk', basePath, baseNames, targetPath, targetNames)
+    baseNames.forEach(name => {
+      if (targetNames.indexOf(name) === -1) {
+        ps.push(addRecursive(joinPath(basePath, name), joinPath(targetPath, name)))
       } else {
-        ps.push(diff(joinPath(leftPath, name), joinPath(rightPath, name)))
+        ps.push(diff(joinPath(basePath, name), joinPath(targetPath, name)))
       }
     })
-    rightNames.forEach(name => {
-      if (leftNames.indexOf(name) === -1) {
-        ps.push(delRecursive(joinPath(leftPath, name), joinPath(rightPath, name)))
+    targetNames.forEach(name => {
+      if (baseNames.indexOf(name) === -1) {
+        ps.push(delRecursive(joinPath(basePath, name), joinPath(targetPath, name)))
       } else {
         // already handled
       }
@@ -35,51 +35,51 @@ export async function diff (leftDrive, initLeftPath, rightDrive, initRightPath, 
     return Promise.all(ps)
   }
 
-  async function diff (leftPath, rightPath) {
-    console.debug('diff', leftPath, rightPath)
-    if (opts.filter && !(opts.filter(leftPath) || opts.filter(rightPath))) {
+  async function diff (basePath, targetPath) {
+    console.debug('diff', basePath, targetPath)
+    if (opts.filter && !(opts.filter(basePath) || opts.filter(targetPath))) {
       return
     }
     // stat the entry
-    var [leftStat, rightStat] = await Promise.all([
-      leftDrive.stat(leftPath),
-      rightDrive.stat(rightPath)
+    var [baseStat, targetStat] = await Promise.all([
+      baseDrive.stat(basePath),
+      targetDrive.stat(targetPath)
     ])
     // check for cycles
-    checkForCycle(leftStat, leftPath)
-    checkForCycle(rightStat, rightPath)
+    checkForCycle(baseStat, basePath)
+    checkForCycle(targetStat, targetPath)
     // both a file
-    if (leftStat.isFile() && rightStat.isFile()) {
-      return diffFile(leftPath, leftStat, rightPath, rightStat)
+    if (baseStat.isFile() && targetStat.isFile()) {
+      return diffFile(basePath, baseStat, targetPath, targetStat)
     }
     // both a dir
-    if (leftStat.isDirectory() && !leftStat.mount && rightStat.isDirectory() && !rightStat.mount) {
-      return walk(leftPath, rightPath)
+    if (baseStat.isDirectory() && !baseStat.mount && targetStat.isDirectory() && !targetStat.mount) {
+      return walk(basePath, targetPath)
     }
     // both a mount
-    if (leftStat.mount && rightStat.mount) {
-      if (leftStat.mount.key !== rightStat.mount.key) {
-        changes.push({change: 'mod', type: 'mount', leftPath, rightPath, leftMountKey: leftStat.mount.key, rightMountKey: rightStat.mount.key})
+    if (baseStat.mount && targetStat.mount) {
+      if (baseStat.mount.key !== targetStat.mount.key) {
+        changes.push({change: 'mod', type: 'mount', basePath, targetPath, baseMountKey: baseStat.mount.key, targetMountKey: targetStat.mount.key})
       }
       return
     }
     // incongruous, remove all in left then add all in right
-    await delRecursive(leftPath, rightPath, true)
-    await addRecursive(leftPath, rightPath, true)
+    await delRecursive(basePath, targetPath, true)
+    await addRecursive(basePath, targetPath, true)
   }
 
-  async function diffFile (leftPath, leftStat, rightPath, rightStat) {
-    console.debug('diffFile', leftPath, rightPath)
+  async function diffFile (basePath, baseStat, targetPath, targetStat) {
+    console.debug('diffFile', basePath, targetPath)
     var isEq = (
-      (leftStat.size === rightStat.size) &&
-      (isTimeEqual(leftStat.mtime, rightStat.mtime))
+      (baseStat.size === targetStat.size) &&
+      (isTimeEqual(baseStat.mtime, targetStat.mtime))
     )
     if (!isEq && opts.compareContent) {
       // try the cache
       let cacheHit = false
       if (compareContentCache) {
-        let cacheEntry = compareContentCache[leftPath]
-        if (cacheEntry && cacheEntry.leftMtime === +leftStat.mtime && cacheEntry.rightMtime === +rightStat.mtime) {
+        let cacheEntry = compareContentCache[basePath]
+        if (cacheEntry && cacheEntry.baseMtime === +baseStat.mtime && cacheEntry.targetMtime === +targetStat.mtime) {
           isEq = cacheEntry.isEq
           cacheHit = true
         }
@@ -88,75 +88,75 @@ export async function diff (leftDrive, initLeftPath, rightDrive, initRightPath, 
       // actually compare the files
       if (!cacheHit) {
         let [ls, rs] = await Promise.all([
-          leftDrive.readFile(leftPath, 'utf8'),
-          rightDrive.readFile(rightPath, 'utf8')
+          baseDrive.readFile(basePath, 'utf8'),
+          targetDrive.readFile(targetPath, 'utf8')
         ])
         isEq = ls === rs
       }
 
       // store in the cache
       if (compareContentCache && !cacheHit) {
-        compareContentCache[leftPath] = {
-          leftMtime: +leftStat.mtime,
-          rightMtime: +rightStat.mtime,
+        compareContentCache[basePath] = {
+          baseMtime: +baseStat.mtime,
+          targetMtime: +targetStat.mtime,
           isEq
         }
       }
     }
     if (!isEq) {
-      changes.push({change: 'mod', type: 'file', leftPath, rightPath})
+      changes.push({change: 'mod', type: 'file', basePath, targetPath})
     }
   }
 
-  async function addRecursive (leftPath, rightPath, isFirstRecursion = false) {
-    console.debug('addRecursive', leftPath, rightPath)
-    if (opts.filter && !(opts.filter(leftPath) || opts.filter(rightPath))) {
+  async function addRecursive (basePath, targetPath, isFirstRecursion = false) {
+    console.debug('addRecursive', basePath, targetPath)
+    if (opts.filter && !(opts.filter(basePath) || opts.filter(targetPath))) {
       return
     }
     // find everything at and below the current path in staging
     // they should be added
-    var st = await leftDrive.stat(leftPath)
+    var st = await baseDrive.stat(basePath)
     if (!isFirstRecursion /* when first called from diff(), dont check for a cycle again */) {
-      checkForCycle(st, leftPath)
+      checkForCycle(st, basePath)
     }
     if (st.mount) {
-      changes.push({change: 'add', type: 'mount', leftPath, rightPath, leftMountKey: st.mount.key})
+      changes.push({change: 'add', type: 'mount', basePath, targetPath, baseMountKey: st.mount.key})
     } else if (st.isFile()) {
-      changes.push({change: 'add', type: 'file', leftPath, rightPath})
+      changes.push({change: 'add', type: 'file', basePath, targetPath})
     } else if (st.isDirectory()) {
       // add dir first
-      changes.push({change: 'add', type: 'dir', leftPath, rightPath})
+      changes.push({change: 'add', type: 'dir', basePath, targetPath})
       // add children second
       if (!opts.shallow) {
-        var children = await leftDrive.readdir(leftPath)
-        await Promise.all(children.map(name => addRecursive(joinPath(leftPath, name), joinPath(rightPath, name))))
+        var children = await baseDrive.readdir(basePath)
+        await Promise.all(children.map(name => addRecursive(joinPath(basePath, name), joinPath(targetPath, name))))
       }
     }
   }
 
-  async function delRecursive (leftPath, rightPath, isFirstRecursion = false) {
-    console.debug('delRecursive', leftPath, rightPath)
-    if (opts.filter && !(opts.filter(leftPath) || opts.filter(rightPath))) {
+  async function delRecursive (basePath, targetPath, isFirstRecursion = false) {
+    console.debug('delRecursive', basePath, targetPath)
+    if (opts.filter && !(opts.filter(basePath) || opts.filter(targetPath))) {
       return
     }
     // find everything at and below the current path in the drive
     // they should be removed
-    var st = await rightDrive.stat(rightPath)
+    var st = await targetDrive.stat(targetPath)
     if (!isFirstRecursion /* when first called from diff(), dont check for a cycle again */) {
-      checkForCycle(st, rightPath)
+      checkForCycle(st, targetPath)
     }
     if (st.mount) {
-      changes.push({change: 'del', type: 'mount', leftPath, rightPath, rightMountKey: st.mount.key})
+      changes.push({change: 'del', type: 'mount', basePath, targetPath, targetMountKey: st.mount.key})
     } else if (st.isFile()) {
-      changes.push({change: 'del', type: 'file', leftPath, rightPath})
+      changes.push({change: 'del', type: 'file', basePath, targetPath})
     } else if (st.isDirectory()) {
       // del children first
       if (!opts.shallow) {
-        var children = await rightDrive.readdir(rightPath)
-        await Promise.all(children.map(name => delRecursive(joinPath(leftPath, name), joinPath(rightPath, name))))
+        var children = await targetDrive.readdir(targetPath)
+        await Promise.all(children.map(name => delRecursive(joinPath(basePath, name), joinPath(targetPath, name))))
       }
       // del dir second
-      changes.push({change: 'del', type: 'dir', leftPath, rightPath})
+      changes.push({change: 'del', type: 'dir', basePath, targetPath})
     }
   }
 
@@ -171,7 +171,7 @@ export async function diff (leftDrive, initLeftPath, rightDrive, initRightPath, 
   }
 }
 
-export async function applyRight (leftDrive, rightDrive, changes) {
+export async function applyRight (baseDrive, targetDrive, changes) {
   // copies can be done in parallel
   var promises = []
 
@@ -181,39 +181,39 @@ export async function applyRight (leftDrive, rightDrive, changes) {
     let d = changes[i]
     let op = d.change + d.type
     if (op === 'adddir') {
-      console.debug('mkdir', d.rightPath)
-      await rightDrive.mkdir(d.rightPath)
+      console.debug('mkdir', d.targetPath)
+      await targetDrive.mkdir(d.targetPath)
     }
     if (op === 'deldir') {
-      console.debug('rmdir', d.rightPath)
-      await rightDrive.rmdir(d.rightPath)
+      console.debug('rmdir', d.targetPath)
+      await targetDrive.rmdir(d.targetPath)
     }
     if (op === 'addfile' || op === 'modfile') {
-      console.debug('copy', d.leftPath, d.rightPath)
-      promises.push(copy(leftDrive, d.leftPath, rightDrive, d.rightPath))
+      console.debug('copy', d.basePath, d.targetPath)
+      promises.push(copy(baseDrive, d.basePath, targetDrive, d.targetPath))
     }
     if (op === 'addmount') {
-      console.debug('mount', d.rightPath)
-      await rightDrive.mount(d.rightPath, d.leftMountKey)
+      console.debug('mount', d.targetPath)
+      await targetDrive.mount(d.targetPath, d.baseMountKey)
     }
     if (op === 'modmount') {
-      console.debug('mount', d.rightPath)
-      await rightDrive.unmount(d.rightPath)
-      await rightDrive.mount(d.rightPath, d.leftMountKey)
+      console.debug('mount', d.targetPath)
+      await targetDrive.unmount(d.targetPath)
+      await targetDrive.mount(d.targetPath, d.baseMountKey)
     }
     if (op === 'delfile') {
-      console.debug('unlink', d.rightPath)
-      await rightDrive.unlink(d.rightPath)
+      console.debug('unlink', d.targetPath)
+      await targetDrive.unlink(d.targetPath)
     }
     if (op === 'delmount') {
-      console.debug('unmount', d.rightPath)
-      await rightDrive.unmount(d.rightPath)
+      console.debug('unmount', d.targetPath)
+      await targetDrive.unmount(d.targetPath)
     }
   }
   return Promise.all(promises)
 }
 
-export async function applyLeft (leftDrive, rightDrive, changes) {
+export async function applyLeft (baseDrive, targetDrive, changes) {
   // copies can be done in parallel
   var promises = []
 
@@ -223,33 +223,33 @@ export async function applyLeft (leftDrive, rightDrive, changes) {
     let d = changes[i]
     let op = d.change + d.type
     if (op === 'adddir') {
-      console.debug('rmdir', d.leftPath)
-      await leftDrive.rmdir(d.leftPath)
+      console.debug('rmdir', d.basePath)
+      await baseDrive.rmdir(d.basePath)
     }
     if (op === 'deldir') {
-      console.debug('mkdir', d.leftPath)
-      await leftDrive.mkdir(d.leftPath)
+      console.debug('mkdir', d.basePath)
+      await baseDrive.mkdir(d.basePath)
     }
     if (op === 'addfile') {
-      console.debug('unlink', d.leftPath)
-      await leftDrive.unlink(d.leftPath)
+      console.debug('unlink', d.basePath)
+      await baseDrive.unlink(d.basePath)
     }
     if (op === 'addmount') {
-      console.debug('unmount', d.leftPath)
-      await leftDrive.unmount(d.leftPath)
+      console.debug('unmount', d.basePath)
+      await baseDrive.unmount(d.basePath)
     }
     if (op === 'modmount') {
-      console.debug('mount', d.leftPath)
-      await leftDrive.unmount(d.leftPath)
-      await leftDrive.mount(d.leftPath, d.rightMountKey)
+      console.debug('mount', d.basePath)
+      await baseDrive.unmount(d.basePath)
+      await baseDrive.mount(d.basePath, d.targetMountKey)
     }
     if (op === 'delmount') {
-      console.debug('mount', d.leftPath)
-      await leftDrive.mount(d.leftPath, d.rightMountKey)
+      console.debug('mount', d.basePath)
+      await baseDrive.mount(d.basePath, d.targetMountKey)
     }
     if (op === 'modfile' || op === 'delfile') {
       console.debug('copy', d.path)
-      promises.push(copy(rightDrive, d.rightPath, leftDrive, d.leftPath))
+      promises.push(copy(targetDrive, d.targetPath, baseDrive, d.basePath))
     }
   }
   return Promise.all(promises)
