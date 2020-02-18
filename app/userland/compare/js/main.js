@@ -25,6 +25,7 @@ export class CompareApp extends LitElement {
     this.target = QP.getParam('target')
     this.selectedItem = undefined
     this.checkedItems = []
+    this.otherDrives = undefined
     this.load()
   }
 
@@ -66,6 +67,10 @@ export class CompareApp extends LitElement {
         })
       })
     }
+
+    if (!this.otherDrives) {
+      this.otherDrives = await beaker.drives.list({includeSystem: false})
+    }
   }
 
   async doMerge (diff) {
@@ -89,6 +94,11 @@ export class CompareApp extends LitElement {
     var numChecked = this.checkedItems?.length === this.diff?.length
       ? 'all changes'
       : `${this.checkedItems?.length} ${pluralize(this.checkedItems?.length, 'change')}`
+    var counts = {
+      additions: this.diff?.filter?.(d => d.change === 'add')?.length,
+      modifications: this.diff?.filter?.(d => d.change === 'mod')?.length,
+      deletions: this.diff?.filter?.(d => d.change === 'del')?.length
+    }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <header>
@@ -152,7 +162,24 @@ export class CompareApp extends LitElement {
               .diff=${this.selectedItem}
               @merge=${this.onClickMergeItem}
             ></compare-diff-item-content>
-          ` : ''}
+          ` : html`
+            <div class="summary">
+              <h2>${this.diff?.length} ${pluralize(this.diff?.length, 'Difference')} Found</h2>
+              <div><span class="revision-indicator add"></span> ${counts.additions} ${pluralize(counts.additions, 'addition')}</div>
+              <div><span class="revision-indicator mod"></span> ${counts.modifications} ${pluralize(counts.modifications, 'modification')}</div>
+              <div><span class="revision-indicator del"></span> ${counts.deletions} ${pluralize(counts.deletions, 'deletion')}</div>
+              <p>
+                Merging
+                ${this.baseInfo ? html`
+                  <a href="${this.baseInfo.url}" target="_blank">${this.baseInfo.title || 'Base'}</a>
+                ` : '?'}
+                into
+                ${this.targetInfo ? html`
+                  <a href="${this.targetInfo.url}" target="_blank">${this.targetInfo.title || 'Target'}</a>
+                ` : '?'}
+              </p>
+            </div>
+          `}
         </main>
       </div>
     `
@@ -189,22 +216,24 @@ export class CompareApp extends LitElement {
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       noBorders: true,
       style: `padding: 4px 0`,
-      items: [
-        {
-          icon: 'fas fa-fw fa-external-link-alt',
-          label: 'Open in new tab',
-          click: () => window.open(this.base)
-        },
+      items: this.otherDrives.slice(0, 10).map(drive => ({
+        icon: false,
+        label: drive.info.title,
+        click: () => {
+          this.base = drive.url
+          this.load()
+        }
+      })).concat([
         '-',
         {
           icon: 'far fa-fw fa-hdd',
-          label: 'Select different drive',
+          label: 'Browse...',
           click: async () => {
             this.base = await navigator.selectDriveDialog()
             this.load()
           }
         }
-      ]
+      ])
     })
   }
 
@@ -219,22 +248,24 @@ export class CompareApp extends LitElement {
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       noBorders: true,
       style: `padding: 4px 0`,
-      items: [
-        {
-          icon: 'fas fa-fw fa-external-link-alt',
-          label: 'Open in new tab',
-          click: () => window.open(this.target)
-        },
+      items: this.otherDrives.slice(0, 10).map(drive => ({
+        icon: false,
+        label: drive.info.title,
+        click: () => {
+          this.target = drive.url
+          this.load()
+        }
+      })).concat([
         '-',
         {
           icon: 'far fa-fw fa-hdd',
-          label: 'Select different drive',
+          label: 'Browse...',
           click: async () => {
             this.target = await navigator.selectDriveDialog()
             this.load()
           }
         }
-      ]
+      ])
     })
   }
 
@@ -372,7 +403,7 @@ class CompareDiffItemContent extends LitElement {
   }
 
   renderDiff () {
-    if (isFilenameBinary(this.diff?.basePath || this.diff?.targetPath)) {
+    if (this.diff.type === 'mount' || this.diff.type === 'dir' || isFilenameBinary(this.diff?.basePath || this.diff?.targetPath)) {
       if (this.diff.change === 'mod') {
         return html`
           <div class="container split">
