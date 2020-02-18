@@ -11,6 +11,7 @@ body {
 
 a {
   text-decoration: none;
+  color: #2864dc;
 }
 
 a:hover {
@@ -78,6 +79,11 @@ wiki-nav a img {
   height: 12px;
   margin-left: 8px;
   opacity: 0.35;
+  visibility: hidden;
+}
+
+wiki-nav a:hover img {
+  visibility: visible;
 }
 
 wiki-nav a img:hover {

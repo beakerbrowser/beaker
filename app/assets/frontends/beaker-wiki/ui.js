@@ -141,12 +141,13 @@ customElements.define('wiki-page', class extends HTMLElement {
         // render content
         if (/\.(md|html)$/i.test(pathname)) {
           if (pathname.endsWith('.md')) {
-            let md = new MarkdownIt()
+            let md = new MarkdownIt({html: true})
             content = md.render(content)
           }
           let contentEl = h('div', {class: 'content'})
           contentEl.innerHTML = content
           this.append(contentEl)
+          executeJs(this)
         } else {
           this.append(h('pre', {class: 'content'}, content))
         }
@@ -154,3 +155,21 @@ customElements.define('wiki-page', class extends HTMLElement {
     }
   }
 })
+
+
+function executeJs (container) {
+  const scripts = container.getElementsByTagName('script')
+  const scriptsInitialLength = scripts.length
+  for (let i = 0; i < scriptsInitialLength; i++) {
+    const script = scripts[i]
+    const scriptCopy = document.createElement('script')
+    scriptCopy.type = script.type ? script.type : 'text/javascript'
+    if (script.innerHTML) {
+      scriptCopy.innerHTML = script.innerHTML
+    } else if (script.src) {
+      scriptCopy.src = script.src
+    }
+    scriptCopy.async = false
+    script.parentNode.replaceChild(scriptCopy, script)
+  }
+}
