@@ -2,6 +2,7 @@ import { UserDeniedError } from 'beaker-error-constants'
 import * as drives from '../../hyper/drives'
 import * as modals from '../../ui/subwindows/modals'
 import * as users from '../../filesystem/users'
+import * as bookmarks from '../../filesystem/bookmarks'
 import * as userSiteSessions from '../../filesystem/site-sessions'
 import * as sessionPerms from '../../lib/session-perms'
 
@@ -112,6 +113,15 @@ export default {
       await userDrive.pda.writeFile(`/thumb.${newUserConfig.thumbExt}`, newUserConfig.thumbBase64, 'base64')
       await userDrive.pda.mount('/group', opts.group)
       user = await users.add(userDrive.url, newUserConfig.title, groupInfo.title)
+
+      // create a start-page bookmark for the group
+      if (!(await bookmarks.get(opts.group))) {
+        await bookmarks.add({
+          location: '/desktop',
+          href: `hyper://${opts.group}`,
+          title: groupInfo.title || 'Untitled Group'
+        })
+      }
     } else {
       // select existing user
       user = availableUsers.find(u => selectedUser.url === u.url)

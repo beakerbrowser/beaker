@@ -18,11 +18,12 @@ export async function list () {
 
 /**
  * @param {string} href
+ * @param {string} [location]
  * @returns {Promise<Object>}
  */
-export async function get (href) {
+export async function get (href, location='/library/bookmarks') {
   var file = (await query(filesystem.get(), {
-    path: '/library/bookmarks/*.goto',
+    path: joinPath(location, '*.goto'),
     metadata: {href}
   }))[0]
   if (!file) return null
