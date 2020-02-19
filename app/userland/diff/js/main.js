@@ -141,7 +141,7 @@ export class CompareApp extends LitElement {
                 ${this.baseInfo?.title || html`<em>None Selected</em>`}
                 <span class="fas fa-fw fa-caret-down"></span>
               </button>
-              ${this.baseInfo ? html`
+              ${this.baseInfo && this.baseForks && this.baseForks.length > 1 ? html`
                 <button @click=${this.onClickBaseForks}>
                   ${this.baseFork?.forkOf?.label || 'Master'}
                   <span class="fas fa-fw fa-caret-down"></span>
@@ -154,7 +154,7 @@ export class CompareApp extends LitElement {
                 ${this.targetInfo?.title || html`<em>None Selected</em>`}
                 <span class="fas fa-fw fa-caret-down"></span>
               </button>
-              ${this.targetInfo ? html`
+              ${this.targetInfo && this.targetForks && this.targetForks.length > 1 ? html`
                 <button @click=${this.onClickTargetForks}>
                   ${this.targetFork?.forkOf?.label || 'Master'}
                   <span class="fas fa-fw fa-caret-down"></span>
