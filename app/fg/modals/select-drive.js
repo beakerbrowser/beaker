@@ -5,11 +5,22 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
 import spinnerCSS from './spinner.css'
-import { shortenHash } from '../../lib/strings'
+
+function categorizeDrive (drive) {
+  if (drive.info.type === 'website') return ['general', 'website']
+  if (!drive.info.type && !drive.ident.system) return ['general', 'files']
+  if (drive.ident.user || drive.info.type === 'user') return ['groups', 'user']
+  if (drive.info.type === 'group') return ['groups', 'group']
+  if (drive.info.type === 'module') return ['code', 'module']
+  if (drive.ident.home) return ['system']
+  if (drive.info.type === 'webterm.sh/cmd-pkg') return ['system', 'webterm.sh/cmd-pkg']
+  return ['general', 'other']
+}
 
 class SelectDriveModal extends LitElement {
   static get properties () {
     return {
+      currentCategory: {type: String},
       currentTitleFilter: {type: String},
       title: {type: String},
       description: {type: String},
@@ -21,12 +32,6 @@ class SelectDriveModal extends LitElement {
     return [commonCSS, inputsCSS, buttonsCSS, spinnerCSS, css`
       .wrapper,
       form {
-        padding: 0;
-        margin: 0;
-      }
-
-      ul {
-        list-style: none;
         padding: 0;
         margin: 0;
       }
@@ -58,9 +63,9 @@ class SelectDriveModal extends LitElement {
 
       .drive-picker .filter-container {
         position: relative;
-        margin: 0 0 10px;
         overflow: visible;
-        height: 40px;
+        height: 35px;
+        margin-bottom: 4px;
       }
 
       .drive-picker .filter-container i {
@@ -75,7 +80,6 @@ class SelectDriveModal extends LitElement {
         margin-bottom: 10px;
         background: #eee;
         padding: 10px;
-        border-radius: 4px;
       }
 
       .drive-picker .filter {
@@ -86,9 +90,7 @@ class SelectDriveModal extends LitElement {
         margin: 0;
         height: 35px;
         padding: 0 35px;
-        border-radius: 0;
-        background: #fafafa;
-        border: 1px solid #ddd;
+        border: 1px solid #dde;
         border-radius: 4px;
       }
 
@@ -98,10 +100,43 @@ class SelectDriveModal extends LitElement {
         box-shadow: none;
       }
 
+      .drives-container {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        border: 1px solid #dde;
+      }
+
+      .drive-categories {
+        background: #fafafd;
+        border-right: 1px solid #dde;
+        letter-spacing: 0.3px;
+      }
+
+      .drive-categories h4 {
+        padding: 4px 10px;
+        margin: 6px 0px 0px;
+        font-weight: bold;
+        color: rgba(0, 0, 25, 0.35);
+        font-size: 12px;
+      }
+
+      .drive-category {
+        padding: 4px 10px;
+        cursor: pointer;
+      }
+
+      .drive-category:hover {
+        background: #0001;
+      }
+
+      .drive-category.selected {
+        background: #286cf5;
+        color: #fff;
+      }
+
       .drives-list {
         height: 350px;
         overflow-y: auto;
-        border: 1px solid #ddd;
       }
 
       .drives-list .loading {
@@ -121,53 +156,63 @@ class SelectDriveModal extends LitElement {
       }
 
       .drives-list .drive {
+        display: flex;
+        align-items: center;
         padding: 4px 10px;
+        border-bottom: 1px solid #eef;
       }
 
-      .drives-list .drive:nth-child(even) {
-        background: #f7f7f7;
+      .drive .thumb {
+        display: block;
+        width: 80px;
+        height: 60px;
+        margin-right: 10px;
+        border-radius: 4px;
+        border: 1px solid #bbc;
+        object-fit: cover;
       }
 
       .drives-list .drive .info {
-        display: flex;
-        width: 100%;
-        align-items: center;
-      }
-
-      .drives-list .drive .info .favicon {
-        width: 16px;
-        height: 16px;
-        margin-right: 5px;
-      }
-
-      .drives-list .drive .info .title {
         flex: 1;
       }
-
-      .drives-list .drive .info .readonly {
-        font-size: 9.5px;
-        padding: 0 5px;
-        margin-right: 5px;
-        border: 1px solid #d9d9d9;
-        border-radius: 2px;
-        text-transform: uppercase;
-        color: #707070;
+      
+      .drives-list .drive .title {
+        font-size: 15px;
+        font-weight: 500;
+      }
+      
+      .drives-list .drive .details {
+        display: flex;
+      }
+      
+      .drives-list .drive .details > * {
+        padding: 4px 4px 4px 0;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
-
-      .drives-list .drive .info .hash {
-        color: rgba(0, 0, 0, 0.55);
-        margin-left: auto;
-        width: 100px;
+      
+      .drives-list .drive .type {
+        letter-spacing: -0.2px;
+        color: green;
+        overflow: visible;
       }
-
-      .drives-list .drive:hover {
-        background: #f0f0f0;
+      
+      .drives-list .drive .description {
+        letter-spacing: -0.2px;
       }
 
       .drives-list .drive.selected {
         background: #2864dc;
         color: #fff;
+      }
+
+      .drives-list .drive.selected .thumb {
+        border-color: #fff;
+      }
+
+      .drives-list .drive.selected .type {
+        color: #fff9;
       }
 
       .drives-list .drive.selected .info .hash,
@@ -182,6 +227,7 @@ class SelectDriveModal extends LitElement {
     super()
 
     // state
+    this.currentCategory = 'website'
     this.currentTitleFilter = ''
     this.selectedDriveUrl = ''
     this.drives = undefined
@@ -190,6 +236,7 @@ class SelectDriveModal extends LitElement {
     this.customTitle = ''
     this.buttonLabel = 'Select'
     this.type = null
+    this.writable = undefined
     this.cbs = null
   }
 
@@ -198,14 +245,26 @@ class SelectDriveModal extends LitElement {
     this.customTitle = params.title || ''
     this.buttonLabel = params.buttonLabel || 'Select'
     this.type = params.type
+    this.writable = params.writable
     await this.requestUpdate()
     this.adjustHeight()
 
     this.drives = await bg.drives.list({includeSystem: true})
-    if (params.type) this.drives = this.drives.filter(drive => drive.info.type === params.type)
-    if (typeof params.writable === 'boolean') {
-      this.drives = this.drives.filter(drive => drive.info.writable === params.writable)
-    }
+
+    // move forks onto their parents
+    this.drives = this.drives.filter(drive => {
+      if (drive.forkOf) {
+        let parent = this.drives.find(d => d.key === drive.forkOf.key)
+        if (parent) {
+          parent.forks = parent.forks || []
+          parent.forks.push(drive)
+          return false
+        }
+      }
+      return true
+    })
+    this.drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
+
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -231,12 +290,18 @@ class SelectDriveModal extends LitElement {
           <h1 class="title">${this.customTitle || 'Select a drive'}</h1>
 
           <div class="view drive-picker">
-            ${this.renderTypeFilter()}
+            ${this.renderFilters()}
             <div class="filter-container">
               <i class="fa fa-search"></i>
-              <input autofocus @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a drive">
+              <input @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a drive">
             </div>
-            ${this.renderDrivesList()}
+            ${isDriveUrl(this.currentTitleFilter) ? html`
+            ` : html`
+              <div class="drives-container">
+                ${this.renderDriveCategories()}
+                ${this.renderDrivesList()}
+              </div>
+            `}
           </div>
 
           <div class="form-actions">
@@ -257,13 +322,44 @@ class SelectDriveModal extends LitElement {
     `
   }
 
-  renderTypeFilter () {
-    if (!this.type) return ''
-    var types = Array.isArray(this.type) ? this.type : [this.type]
+  renderFilters () {
+    if (!this.type && typeof this.writable === 'undefined') return ''
     return html`
       <div class="type-container">
-        <strong>Type:</strong> ${types.join(', ')}
+        <strong>
+          ${typeof this.writable !== 'undefined' ? html`
+            ${this.writable ? 'Editable' : 'Read-only'}
+          ` : ''}
+          ${this.type ? Array.isArray(this.type) ? this.type.join(', ') : this.type : ''}
+          only
+        </strong>
       </div>`
+  }
+
+  renderDriveCategories () {
+    const cat = (id, label) => html`
+      <div
+        class="drive-category ${this.currentCategory === id ? 'selected' : ''}"
+        @click=${e => this.onClickCategory(e, id)}
+      >
+        ${label}
+      </div>
+    `
+    return html`
+      <div class="drive-categories">
+        <h4>General</h4>
+        ${cat('website', 'Websites')}
+        ${cat('files', 'Files drives')}
+        ${cat('other', 'Other')}
+        <h4>Groups</h4>
+        ${cat('group', 'User Groups')}
+        ${cat('user', 'My Users')}
+        <h4>Code</h4>
+        ${cat('module', 'Modules')}
+        <h4>System</h4>
+        ${cat('webterm.sh/cmd-pkg', 'Webterm Commands')}
+      </div>
+    `
   }
 
   renderDrivesList () {
@@ -272,60 +368,51 @@ class SelectDriveModal extends LitElement {
     }
 
     var filtered = this.drives
+    if (this.type) filtered = filtered.filter(drive => drive.info.type === this.type)
+    filtered = filtered.filter(drive => categorizeDrive(drive).includes(this.currentCategory))
+    if (typeof this.writable === 'boolean') {
+      filtered = filtered.filter(drive => drive.info.writable === this.writable)
+    }
     if (this.currentTitleFilter) {
       filtered = filtered.filter(a => a.info.title && a.info.title.toLowerCase().includes(this.currentTitleFilter))
     }
 
     if (!filtered.length) {
-      if (isDriveUrl(this.currentTitleFilter)) {
-        return html`
-          <ul class="drives-list">
-            <li
-              class="drive selected"
-              @dblclick=${this.onDblClickdrive}
-            >
-              <div class="info">
-                <img class="favicon" src="beaker-favicon:${this.currentTitleFilter}" />
-
-                <span class="title" title="${toOrigin(this.currentTitleFilter)}">
-                  ${toOrigin(this.currentTitleFilter).slice(0, 60)}...
-                </span>
-              </div>
-            </li>
-          </ul>`
-      }
-      return html`<ul class="drives-list"><li class="empty">No drives found</li></ul>`
+      return html`<div class="drives-list"><div class="empty">No drives found</div></div>`
     }
 
-    return html`<ul class="drives-list">${filtered.map(a => this.renderDrive(a))}</ul>`
+    return html`<div class="drives-list">${filtered.map(a => this.renderDrive(a))}</div>`
   }
 
   renderDrive (drive) {
     var isSelected = this.selectedDriveUrl === drive.url
     return html`
-      <li
+      <div
         class="drive ${isSelected ? 'selected' : ''}"
         @click=${this.onChangeSelecteddrive}
         @dblclick=${this.onDblClickdrive}
         data-url=${drive.url}
       >
+        <img class="thumb" src="asset:thumb:${drive.url}">
         <div class="info">
-          <img class="favicon" src="beaker-favicon:${drive.url}" />
-
-          <span class="title" title="${drive.info.title} ${drive.info.writable ? '' : '(Read-only)'}">
-            ${drive.info.title || 'Untitled'}
-          </span>
-
-          ${drive.info.writable ? '' : html`<span class="readonly">read-only</span>`}
-
-          <span class="hash">${shortenHash(drive.url)}</span>
+          <div class="title">
+            ${drive.info.title || html`<em>Untitled</em>`}
+          </div>
+          <div class="details">
+            <div class="type">${drive.info.type || 'files drive'}</div>
+            <div class="description">${drive.info.description}</div>
+          </div>
         </div>
-      </li>
+      </div>
     `
   }
 
   // event handlers
   // =
+
+  onClickCategory (e, id) {
+    this.currentCategory = id
+  }
 
   onChangeTitleFilter (e) {
     this.currentTitleFilter = e.target.value.toLowerCase()
@@ -375,6 +462,6 @@ function toOrigin (v = '') {
     var urlp = new URL(v)
     return urlp.protocol + '//' + urlp.hostname
   } catch (e) {
-    return false
+    return ''
   }
 }

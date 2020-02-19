@@ -164,6 +164,7 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
 
 function getDefaultWidth (view) {
   if (view.modalName === 'select-file') return 800
+  if (view.modalName === 'select-drive') return 600
   return 500
 }
 
