@@ -94,17 +94,22 @@ nav .categories a.selected {
 }
 
 nav .categories a .fa-fw {
-  background: rgba(0,0,80,0.1);
+/*  background: rgba(0,0,80,0.1);*/
   color: #333;
   padding: 6px;
   border-radius: 4px;
   font-size: 9px;
   margin-right: 4px;
+
+  font-size: 12px;
+  padding: 0;
+  margin-right: 6px;
+  color: #555;
 }
 
-nav .categories a.selected .fa-fw {
+/*nav .categories a.selected .fa-fw {
   background: rgba(0,0,80,0.12);
-}
+}*/
 
 /*nav .categories a .fa-fw.fa-desktop {
   background: linear-gradient(#E91E63, #9C27B0);
@@ -219,13 +224,32 @@ nav .categories a .fa-fw.fa-terminal {
 
 .drive .details {
   display: flex;
+  align-items: center;
+  margin: 4px 0;
 }
 
 .drive .details > * {
-  padding: 4px 4px 4px 0;
+  padding-right: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.drive .details .fa-share-alt {
+  position: relative;
+  top: -1px;
+  font-size: 9px;
+}
+
+.drive .details .fa-code-branch {
+  position: relative;
+  top: -1px;
+  font-size: 10px;
+}
+
+.drive .details a {
+  color: inherit;
+  cursor: pointer;
 }
 
 .drive .type {

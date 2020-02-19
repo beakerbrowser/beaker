@@ -280,7 +280,7 @@ export class DrivesApp extends LitElement {
         ${this.viewingForksOf ? html`
           <div class="drives">
             <header>
-              <button><span class="fas fa-chevron-left"></span></button>
+              <button @click=${this.onClickGoBackForks}><span class="fas fa-chevron-left"></span></button>
               Forks of "${this.viewingForksOf.info.title || 'Untitled'}" (${toNiceDomain(this.viewingForksOf.url)})
             </header>
             ${this.renderDrive(this.viewingForksOf, true)}
@@ -331,8 +331,10 @@ export class DrivesApp extends LitElement {
             <div class="type">${toNiceDriveType(drive.info.type)}</div>
             <div class="description">${drive.info.description}</div>
           </div>
-          <div>
-            <span class="fas fa-fw fa-share-alt"></span> ${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}
+          <div class="details">
+            <span>
+              <span class="fas fa-fw fa-share-alt"></span> ${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}
+            </span>
             ${numForks > 0 ? html`
               <a @click=${e => this.onClickViewForksOf(e, drive)}>
                 <span class="fas fa-fw fa-code-branch"></span> ${numForks} ${pluralize(numForks, 'fork')}
@@ -359,6 +361,14 @@ export class DrivesApp extends LitElement {
   }
 
   renderHelp () {
+    if (this.viewingForksOf) {
+      return html`
+      <div class="help">
+        <h3><span class="fas fa-fw fa-info"></span> Forks</h3>
+        <p>Forks are copies of a site which you can create to make changes, then merge back into the original.</p>
+      </div>
+      `
+    }
     if (this.category === 'content') {
       return html`
         <div class="help">
@@ -412,7 +422,7 @@ export class DrivesApp extends LitElement {
       return html`
         <div class="help">
           <h3><span class="fas fa-fw fa-info"></span> Users</h3>
-          <p><em>Users</em> are hyperdrives created by <em>User Groups</em>. They contain all the content which you create for the group and represent your profile.</p>
+          <p><em>Users</em> are created by <em>User Groups</em>. They contain all your content for the group and represent your profile.</p>
         </div>
       `
     }
@@ -469,6 +479,14 @@ export class DrivesApp extends LitElement {
 
   onClickViewForksOf (e, drive) {
     this.viewingForksOf = drive
+  }
+
+  onClickGoBackForks (e) {
+    if (this.viewingForksOf.forkOf?.key) {
+      this.viewingForksOf = this.drives.find(d => d.key === this.viewingForksOf.forkOf.key)
+    } else {
+      this.viewingForksOf = undefined
+    }
   }
 
   async onToggleHosting (e, drive) {
