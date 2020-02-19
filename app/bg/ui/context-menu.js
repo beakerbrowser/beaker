@@ -177,7 +177,7 @@ export default function registerContextMenu () {
                   tabManager.create(win, url, {setActive: true})
                 }
               },
-              { label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://compare/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } },
+              { label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://diff/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } },
               { type: 'separator' },
               { label: 'Drive Properties', click: (item, win) => runDrivePropertiesFlow(win, key) }
             ]

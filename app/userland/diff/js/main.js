@@ -55,6 +55,7 @@ export class CompareApp extends LitElement {
     } else {
       this.diff = []
     }
+    this.checkedItems = this.diff.slice()
     console.log(this.diff)
     this.requestUpdate()
 
@@ -102,7 +103,6 @@ export class CompareApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <header>
-        <h1>Diff / Merge Tool</h1>
         <div class="toolbar">
           <div class="title">
             Merging
@@ -423,7 +423,7 @@ class CompareDiffItemContent extends LitElement {
         return html`<div class="container"><div><div class="wrap">${this.renderLeftColumn()}</div></div></div>`
       }
     } else if (this.diff) {
-      return html`<div class="editor"></div>`
+      return html`<div class="editor-container"></div>`
     }
   }
 
@@ -462,7 +462,7 @@ class CompareDiffItemContent extends LitElement {
   }
 
   async updated () {
-    var editorEl = this.querySelector('.editor')
+    var editorEl = this.querySelector('.editor-container')
     if (!editorEl) return
     var [baseContent, targetContent] = await Promise.all([
       this.diff.change === 'del' || this.diff.change === 'mod' ? (new Hyperdrive(this.targetOrigin)).readFile(this.diff.targetPath).catch(e => '') : '',

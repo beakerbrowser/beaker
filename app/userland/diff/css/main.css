@@ -28,10 +28,7 @@ input[type="checkbox"] {
 header {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border-color);
-}
-
-header h1 {
-  margin-top: 0;
+  background: #fafafd;
 }
 
 header .toolbar {
@@ -78,7 +75,7 @@ header button.primary {
 
 .layout {
   display: flex;
-  height: calc(100vh - 95px);
+  height: calc(100vh - 48px);
 }
 
 nav {
@@ -277,8 +274,8 @@ compare-diff-item-content .info a span {
   font-size: 10px;
 }
 
-compare-diff-item-content .editor {
-  height: calc(100vh - 131px);
+compare-diff-item-content .editor-container {
+  height: calc(100vh - 84px);
 }
 
 compare-diff-item-content .container {

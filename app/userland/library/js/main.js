@@ -190,7 +190,7 @@ export class DrivesApp extends LitElement {
         {
           icon: html`<i style="padding-left: 2px; font-size: 16px; box-sizing: border-box">◨</i>`,
           label: 'Diff / Merge',
-          click: () => this.compareDrive(drive)
+          click: () => this.diffDrive(drive)
         },
         '-',
         {
@@ -221,8 +221,8 @@ export class DrivesApp extends LitElement {
     this.load()
   }
 
-  async compareDrive (drive) {
-    window.open(`beaker://compare/?base=${drive.url}`)
+  async diffDrive (drive) {
+    window.open(`beaker://diff/?base=${drive.url}`)
   }
 
   async driveProps (drive) {

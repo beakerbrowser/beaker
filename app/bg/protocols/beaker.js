@@ -203,8 +203,8 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://app-stdlib' || requestUrl.startsWith('beaker://app-stdlib/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'app-stdlib'), cb)
   }
-  if (requestUrl === 'beaker://compare' || requestUrl.startsWith('beaker://compare/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'compare'), cb)
+  if (requestUrl === 'beaker://diff' || requestUrl.startsWith('beaker://diff/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'diff'), cb)
   }
   if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'library'), cb)

@@ -209,7 +209,7 @@ class SiteMenu extends LitElement {
 
   async onDiffMergeDrive (e) {
     bg.shellMenus.close()    
-    bg.shellMenus.createTab(`beaker://compare/?base=${this.url}`)
+    bg.shellMenus.createTab(`beaker://diff/?base=${this.url}`)
   }
 
   onDriveProperties (e) {
