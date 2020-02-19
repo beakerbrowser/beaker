@@ -442,6 +442,7 @@ class EditorApp extends LitElement {
   }
 
   renderToolbar () {
+    var isDrive = this.url && this.url.startsWith('hyper://')
     return html`
       <div class="toolbar" @contextmenu=${this.onContextmenuToolbar}>
         <button class="transparent" @click=${this.onToggleFilesOpen}>
@@ -452,9 +453,11 @@ class EditorApp extends LitElement {
           `}
         </button>
         <span class="divider"></span>
-        <button id="save-btn" title="Save" @click=${this.onClickSave} ?disabled=${this.readOnly || this.dne || !this.hasChanges}>
-          <span class="fas fa-fw fa-save"></span> Save
-        </button>
+        ${!this.readOnly ? html`
+          <button id="save-btn" title="Save" @click=${this.onClickSave} ?disabled=${this.dne || !this.hasChanges}>
+            <span class="fas fa-fw fa-save"></span> Save
+          </button>
+        ` : ''}
         <button title="View file" @click=${this.onClickView} ?disabled=${this.dne}>
           <span class="far fa-fw fa-window-maximize"></span> View file
         </button>
@@ -463,16 +466,24 @@ class EditorApp extends LitElement {
           <div><span class="fas fa-fw fa-info-circle"></span> Loading...</div>
           <span class="divider"></span>
         ` : this.readOnly ? html`
-          <div><span class="fas fa-fw fa-info-circle"></span> This page is read-only</div>
+          <div><span class="fas fa-fw fa-info-circle"></span> This site is read-only</div>
           <span class="divider"></span>
+          ${isDrive ? html`
+            <button class="primary" title="Fork this site to make changes" @click=${this.onClickFork}>
+              <span class="fas fa-fw fa-code-branch"></span> Fork this site to make changes
+            </button>
+            <span class="divider"></span>
+          ` : ''}
         ` : ''}
         <span class="spacer"></span>
-        <button title="Settings" @click=${this.onClickSettings}>
-          <span class="fas fa-fw fa-cog"></span> Settings
-        </button>
-        <button class="primary" title="Actions" @click=${this.onClickActions}>
-          Actions <span class="fas fa-caret-down"></span>
-        </button>
+        ${!this.readOnly ? html`
+          <button title="Settings" @click=${this.onClickSettings}>
+            <span class="fas fa-fw fa-cog"></span> Settings
+          </button>
+          <button class="primary" title="Actions" @click=${this.onClickActions}>
+            Actions <span class="fas fa-caret-down"></span>
+          </button>
+        ` : ''}
       </div>
     `
   }
@@ -662,6 +673,16 @@ class EditorApp extends LitElement {
       console.log(e)
       toast.create(e.toString(), 'error')
     }
+  }
+
+  async onClickFork (e) {
+    var urlp = new URL(this.url)
+    var newDrive =await Hyperdrive.fork(this.url)
+    var newDriveUrlp = new URL(newDrive.url)
+    urlp.hostname = newDriveUrlp.hostname
+    
+    beaker.browser.gotoUrl(urlp.toString())
+    this.load(urlp.toString())
   }
 }
 
