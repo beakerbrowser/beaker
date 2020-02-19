@@ -26,11 +26,21 @@ export class CompareApp extends LitElement {
     this.selectedItem = undefined
     this.checkedItems = []
     this.otherDrives = undefined
+    this.baseForks = undefined
+    this.targetForks = undefined
     this.load()
   }
 
   createRenderRoot () {
     return this // dont use shadow dom
+  }
+
+  get baseFork () {
+    return this.baseForks?.find(fork => fork.url === this.baseInfo.url)
+  }
+
+  get targetFork () {
+    return this.targetForks?.find(fork => fork.url === this.targetInfo.url)
   }
 
   async load () {
@@ -48,6 +58,9 @@ export class CompareApp extends LitElement {
       base: this.base,
       target: this.target
     }, false, true)
+
+    this.baseForks = this.baseInfo ? await beaker.drives.getForks(this.baseInfo.url) : undefined
+    this.targetForks = this.targetInfo ? await beaker.drives.getForks(this.targetInfo.url) : undefined
 
     if (this.baseInfo && this.targetInfo) {
       const filter = path => path !== '/index.json'
@@ -71,6 +84,25 @@ export class CompareApp extends LitElement {
 
     if (!this.otherDrives) {
       this.otherDrives = await beaker.drives.list({includeSystem: false})
+
+      // move forks onto their parents
+      this.otherDrives = this.otherDrives.filter(drive => {
+        if (drive.forkOf) {
+          let parent = this.otherDrives.find(d => d.key === drive.forkOf.key)
+          if (parent) {
+            parent.forks = parent.forks || []
+            parent.forks.push(drive)
+            return false
+          }
+        }
+        return true
+      })
+    }
+
+    if (this.baseInfo && !this.targetInfo) {
+      // default to master as target
+      this.target = this.baseForks[0].url
+      if (this.target) this.load()
     }
   }
 
@@ -92,13 +124,11 @@ export class CompareApp extends LitElement {
   render () {
     let lastDiffType = undefined
     const diffSortFn = (a, b) => (a.change).localeCompare(b.change) || (a.path || '').localeCompare(b.path || '')
-    var numChecked = this.checkedItems?.length === this.diff?.length
-      ? 'all changes'
-      : `${this.checkedItems?.length} ${pluralize(this.checkedItems?.length, 'change')}`
+    var numChecked = `${this.checkedItems?.length} ${pluralize(this.checkedItems?.length, 'Change')}`
     var counts = {
-      additions: this.diff?.filter?.(d => d.change === 'add')?.length,
-      modifications: this.diff?.filter?.(d => d.change === 'mod')?.length,
-      deletions: this.diff?.filter?.(d => d.change === 'del')?.length
+      additions: this.checkedItems?.filter?.(d => d.change === 'add')?.length,
+      modifications: this.checkedItems?.filter?.(d => d.change === 'mod')?.length,
+      deletions: this.checkedItems?.filter?.(d => d.change === 'del')?.length
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
@@ -106,24 +136,35 @@ export class CompareApp extends LitElement {
         <div class="toolbar">
           <div class="title">
             Merging
-            <button @click=${this.onClickBase}>
-              ${this.baseInfo?.title}
-              <span class="fas fa-fw fa-caret-down"></span>
-            </button>
+            <div class="btn-group">
+              <button @click=${this.onClickBase}>
+                ${this.baseInfo?.title || html`<em>None Selected</em>`}
+                <span class="fas fa-fw fa-caret-down"></span>
+              </button>
+              ${this.baseInfo ? html`
+                <button @click=${this.onClickBaseForks}>
+                  ${this.baseFork?.forkOf?.label || 'Master'}
+                  <span class="fas fa-fw fa-caret-down"></span>
+                </button>
+              ` : ''}
+            </div>
             into
-            <button @click=${this.onClickTarget}>
-              ${this.targetInfo?.title}
-              <span class="fas fa-fw fa-caret-down"></span>
-            </button>
+            <div class="btn-group">
+              <button @click=${this.onClickTarget}>
+                ${this.targetInfo?.title || html`<em>None Selected</em>`}
+                <span class="fas fa-fw fa-caret-down"></span>
+              </button>
+              ${this.targetInfo ? html`
+                <button @click=${this.onClickTargetForks}>
+                  ${this.targetFork?.forkOf?.label || 'Master'}
+                  <span class="fas fa-fw fa-caret-down"></span>
+                </button>
+              ` : ''}
+            </div>
           </div>
           <button class="transparent" @click=${this.onClickReverse}>
             <span class="fas fa-fw fa-sync"></span> Reverse
           </button>
-          ${this.targetInfo?.writable ? html`
-            <button class="primary" ?disabled=${this.checkedItems?.length === 0} @click=${this.onClickBulkMerge}>Merge ${numChecked}</button>
-            ` : html`
-            <button class="primary" disabled data-tooltip="Can't merge into a drive you don't own">Merge ${numChecked}</button>
-          `}
         </div>
       </header>
       <div class="layout">
@@ -137,7 +178,7 @@ export class CompareApp extends LitElement {
           ` : ''}
           ${repeat((this.diff || []).slice().sort(diffSortFn), diff => {
             let heading = lastDiffType !== diff.change ? html`
-              <h4>${({'add': 'Add', 'del': 'Delete', 'mod': 'Change'})[diff.change]}</h4>
+              <h4>${({'add': 'Add', 'del': 'Delete', 'mod': 'Modification'})[diff.change]}</h4>
             ` : ''
             lastDiffType = diff.change
             return html`
@@ -166,19 +207,36 @@ export class CompareApp extends LitElement {
             ></compare-diff-item-content>
           ` : html`
             <div class="summary">
-              <h2>${this.diff?.length} ${pluralize(this.diff?.length, 'Difference')} Found</h2>
+              ${this.diff?.length > 0 ? html`
+                <h2>Merging ${this.checkedItems?.length} ${pluralize(this.checkedItems?.length, 'Change')}</h2>
+              ` : html`
+                <h2><span class="fas fa-check"></span> No Differences Found</h2>
+              `}
               <div><span class="revision-indicator add"></span> ${counts.additions} ${pluralize(counts.additions, 'addition')}</div>
               <div><span class="revision-indicator mod"></span> ${counts.modifications} ${pluralize(counts.modifications, 'modification')}</div>
               <div><span class="revision-indicator del"></span> ${counts.deletions} ${pluralize(counts.deletions, 'deletion')}</div>
               <p>
                 Merging
                 ${this.baseInfo ? html`
-                  <a href="${this.baseInfo.url}" target="_blank">${this.baseInfo.title || 'Base'}</a>
+                  <a href="${this.baseInfo.url}" target="_blank">
+                    ${this.baseInfo.title || 'Base'}
+                   ${this.baseFork?.forkOf?.label ? html`<span class="fork-label">${this.baseFork?.forkOf?.label}</span>` : ''}
+                  </a>
                 ` : '?'}
                 into
                 ${this.targetInfo ? html`
-                  <a href="${this.targetInfo.url}" target="_blank">${this.targetInfo.title || 'Target'}</a>
+                  <a href="${this.targetInfo.url}" target="_blank">
+                    ${this.targetInfo.title || 'Target'}
+                    ${this.targetFork?.forkOf?.label ? html`<span class="fork-label">${this.targetFork?.forkOf?.label}</span>` : ''}
+                  </a>
                 ` : '?'}
+              </p>
+              <p>
+                ${this.targetInfo?.writable ? html`
+                  <button class="primary" ?disabled=${this.checkedItems?.length === 0} @click=${this.onClickBulkMerge}>Merge ${numChecked}</button>
+                  ` : html`
+                  <button class="primary" disabled data-tooltip="Can't merge into a drive you don't own">Merge ${numChecked}</button>
+                `}
               </p>
             </div>
           `}
@@ -239,6 +297,28 @@ export class CompareApp extends LitElement {
     })
   }
 
+  onClickBaseForks (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    var rect = e.currentTarget.getClientRects()[0]
+    contextMenu.create({
+      x: rect.left,
+      y: rect.bottom,
+      left: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      noBorders: true,
+      style: `padding: 4px 0`,
+      items: this.baseForks.map(fork => ({
+        icon: false,
+        label: fork?.forkOf?.label || 'Master',
+        click: () => {
+          this.base = fork.url
+          this.load()
+        }
+      }))
+    })
+  }
+
   onClickTarget (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -268,6 +348,28 @@ export class CompareApp extends LitElement {
           }
         }
       ])
+    })
+  }
+
+  onClickTargetForks (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    var rect = e.currentTarget.getClientRects()[0]
+    contextMenu.create({
+      x: rect.left,
+      y: rect.bottom,
+      left: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      noBorders: true,
+      style: `padding: 4px 0`,
+      items: this.targetForks.map(fork => ({
+        icon: false,
+        label: fork?.forkOf?.label || 'Master',
+        click: () => {
+          this.target = fork.url
+          this.load()
+        }
+      }))
     })
   }
 
@@ -352,6 +454,7 @@ class CompareDiffItem extends LitElement {
   }
 
   onCheck (e) {
+    e.stopPropagation()
     emit(this, 'check', {detail: {diff: this.diff}})
   }
 
@@ -389,7 +492,7 @@ class CompareDiffItemContent extends LitElement {
           <div class="revision-indicator ${this.diff.change}"></div>
           ${this.diff.change === 'add' ? 'Add' : ''}
           ${this.diff.change === 'del' ? 'Delete' : ''}
-          ${this.diff.change === 'mod' ? 'Change' : ''}
+          ${this.diff.change === 'mod' ? 'Modify' : ''}
           ${this.diff.targetPath}
         </span>
         ${this.canMerge ? html`
@@ -499,7 +602,8 @@ async function createDiffEditor (el, baseContent, targetContent) {
     automaticLayout: true,
     fixedOverflowWidgets: true,
     roundedSelection: false,
-    minimap: {enabled: false}
+    minimap: {enabled: false},
+    renderSideBySide: false
   }
   diffEditor = monaco.editor.createDiffEditor(el, opts)
   diffEditor.setModel({

@@ -28,7 +28,6 @@ input[type="checkbox"] {
 header {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border-color);
-  background: #fafafd;
 }
 
 header .toolbar {
@@ -58,9 +57,18 @@ header .primary {
 
 header button {
   padding: 4px 6px 4px 10px;
-  margin: 0 4px;
   font-size: 12px;
   white-space: nowrap;
+  border-color: #aab;
+  margin: 0 4px;
+}
+
+header .btn-group {
+  margin: 0 4px;
+}
+
+header .btn-group button {
+  margin: 0;
 }
 
 header button.transparent {
@@ -113,7 +121,7 @@ nav h4 {
   color: #60606c;
   font-weight: normal;
   background: #fff;
-  padding: 5px;
+  padding: 5px 10px;
   margin: 0;
   user-select: none;
   border-top: 1px solid var(--border-color);
@@ -129,9 +137,7 @@ main {
 }
 
 .empty {
-  margin-left: 10px;
   padding: 24px;
-  border-radius: 8px;
   background: rgb(241, 241, 246);
   color: #667;
 }
@@ -143,10 +149,6 @@ compare-diff-item .item {
   padding: 8px 14px;
   user-select: none;
   white-space: nowrap;
-}
-
-compare-diff-item:nth-child(odd) .item {
-  background: #fafafd;
 }
 
 compare-diff-item .item input[type="checkbox"] {
@@ -205,8 +207,8 @@ compare-diff-item .item.selected .path {
 
 .summary {
   padding: 4px 24px;
-  font-size: 15px;
-  letter-spacing: 1px;
+  font-size: 19px;
+  letter-spacing: 1.2px;
   color: #445;
 }
 
@@ -223,13 +225,25 @@ compare-diff-item .item.selected .path {
   display: inline-block;
 }
 
-.summary a span {
-  font-size: 11px;
-  color: #667;
+.summary a .fork-label {
+  position: relative;
+  top: -2px;
+  display: inline-block;
+  color: #fff;
+  background: var(--blue);
+  font-size: 70%;
+  border-radius: 4px;
+  padding: 1px 4px 2px;
 }
 
 .summary a:hover {
   text-decoration: underline;
+}
+
+.summary button {
+  font-size: 16px;
+  padding: 8px 12px;
+  letter-spacing: 0.5px;
 }
 
 compare-diff-item .item.selected .icon span {
@@ -252,7 +266,7 @@ compare-diff-item-content .info {
   line-height: 35px;
   padding: 0 12px;
   border-bottom: 1px solid var(--border-color);
-  color: #60606c;
+  color: #445;
 }
 
 compare-diff-item-content .info button {
