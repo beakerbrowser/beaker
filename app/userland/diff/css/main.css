@@ -246,6 +246,40 @@ compare-diff-item .item.selected .path {
   letter-spacing: 0.5px;
 }
 
+.summary .share-link-instructions {
+  font-size: 14px;
+}
+
+.summary a.copy-btn {
+  display: flex;
+  justify-content: space-between;
+  white-space: nowrap;
+  font-size: 15px;
+  background: #eaeaed;
+  color: inherit;
+  padding: 10px 20px;
+  margin: 10px 0 0;
+  border-radius: 24px;
+  box-sizing: border-box;
+  color: #556;
+  cursor: pointer;
+  max-width: 640px;
+}
+
+.summary a.copy-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.summary a.copy-btn span:last-child {
+  width: 40px;
+}
+
+.summary a.copy-btn:hover {
+  background: #e2e2e7;
+  text-decoration: none;
+}
+
 compare-diff-item .item.selected .icon span {
   text-shadow: 0 1px 2px #0006;
 }

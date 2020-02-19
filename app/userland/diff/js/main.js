@@ -1,12 +1,12 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { until } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/until.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import { pluralize, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
 import { isFilenameBinary } from 'beaker://app-stdlib/js/is-ext-binary.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as QP from 'beaker://app-stdlib/js/query-params.js'
+import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as compare from './lib/compare.js'
 
 var isMonacoLoaded = false
@@ -231,13 +231,20 @@ export class CompareApp extends LitElement {
                   </a>
                 ` : '?'}
               </p>
-              <p>
-                ${this.targetInfo?.writable ? html`
+              ${this.targetInfo?.writable ? html`
+                <p>
                   <button class="primary" ?disabled=${this.checkedItems?.length === 0} @click=${this.onClickBulkMerge}>Merge ${numChecked}</button>
-                  ` : html`
-                  <button class="primary" disabled data-tooltip="Can't merge into a drive you don't own">Merge ${numChecked}</button>
-                `}
-              </p>
+                </p>
+              ` : html`
+                  <h2>Instructions</h2>
+                <div class="share-link-instructions">
+                  <div>Send this link to the author and ask them to merge:</div>
+                  <a class="copy-btn" @click=${this.onClickCopyUrl}>
+                    <span>${location.toString()}</span>
+                    <span class="fas fa-paste"></span>
+                  </a>
+                </div>
+              `}
             </div>
           `}
         </main>
@@ -263,6 +270,12 @@ export class CompareApp extends LitElement {
     }
     this.selectedItem = undefined
     this.requestUpdate()
+  }
+
+  onClickCopyUrl (e) {
+    e.preventDefault()
+    writeToClipboard(location.toString())
+    toast.create('Copied to your clipboard')
   }
 
   onClickBase (e) {
