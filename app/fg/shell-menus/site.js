@@ -202,9 +202,11 @@ class SiteMenu extends LitElement {
   }
 
   async onForkDrive (e) {
+    var urlp = new URL(this.url)
     bg.shellMenus.close()
-    var url = await bg.hyperdrive.forkDrive(this.url)
-    bg.shellMenus.createTab(url)
+    var newDriveUrlp = new URL(await bg.hyperdrive.forkDrive(urlp.toString()))
+    urlp.hostname = newDriveUrlp.hostname
+    bg.shellMenus.createTab(urlp.toString())
   }
 
   async onDiffMergeDrive (e) {

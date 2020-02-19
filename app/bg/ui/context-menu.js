@@ -173,8 +173,10 @@ export default function registerContextMenu () {
               {
                 label: 'Fork This Drive',
                 click: async (item, win) => {
-                  var url = await runForkFlow(win, key)
-                  tabManager.create(win, url, {setActive: true})
+                  var driveUrlp = new URL(await runForkFlow(win, key))
+                  var pageUrlp = new URL(props.pageURL)
+                  pageUrlp.hostname = driveUrlp.hostname
+                  tabManager.create(win, pageUrlp.toString(), {setActive: true})
                 }
               },
               { label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://diff/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } },
