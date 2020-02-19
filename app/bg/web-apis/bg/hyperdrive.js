@@ -106,8 +106,14 @@ export default {
       // no modal, ask for permission
       await assertCreateDrivePermission(this.sender)
 
-      // create
       let key = await lookupUrlDriveKey(url)
+
+      // save the parent if needed
+      if (!filesystem.getDriveConfig(key)) {
+        await filesystem.configDrive(key)
+      }
+
+      // create
       let newDrive = await drives.forkDrive(key)
       await filesystem.configDrive(newDrive.url, {
         seeding: true,
