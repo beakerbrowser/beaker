@@ -28,7 +28,7 @@ const cssStr = css`
   z-index: 3000;
   background: #fff;
   border: 1px solid #dadada;
-  border-radius: 10px;
+  border-radius: 0px;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
