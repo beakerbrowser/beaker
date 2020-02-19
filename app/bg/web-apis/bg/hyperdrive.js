@@ -1,7 +1,6 @@
 import path from 'path'
 import { parseDriveUrl } from '../../../lib/urls'
 import pda from 'pauls-dat-api2'
-import concat from 'concat-stream'
 import pick from 'lodash.pick'
 import _get from 'lodash.get'
 import * as modals from '../../ui/subwindows/modals'
@@ -14,7 +13,7 @@ import { timer } from '../../../lib/time'
 import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
 import * as users from '../../filesystem/users'
-import * as windows from '../../ui/windows'
+import drivesAPI from './drives'
 import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DRIVE_VALID_PATH_REGEX, DEFAULT_DRIVE_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
 
@@ -92,12 +91,10 @@ export default {
 
     if (prompt !== false) {
       // run the fork modal
-      let key1 = await lookupUrlDriveKey(url)
-      let key2 = await lookupUrlDriveKey(this.sender.getURL())
-      let isSelfFork = key1 === key2
       let res
+      let forks = await drivesAPI.getForks(url)
       try {
-        res = await modals.create(this.sender, 'fork-drive', {url, label, isSelfFork})
+        res = await modals.create(this.sender, 'fork-drive', {url, forks, label})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error

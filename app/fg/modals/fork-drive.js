@@ -1,6 +1,6 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
+import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import prettyHash from 'pretty-hash'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
@@ -39,11 +39,36 @@ class ForkDriveModal extends LitElement {
       margin: 0;
     }
 
+    .loading {
+      padding: 20px 22px 20px;
+      font-size: 15px;
+      font-style: normal;
+      border-bottom: 1px solid #ccd;
+      color: rgba(0, 0, 0, 0.6);
+    }
+
     input {
       font-size: 14px;
       height: 34px;
       padding: 0 10px;
       border-color: #bbb;
+    }
+    
+    select {
+      -webkit-appearance: none;
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 5px 30px 5px 10px;
+      max-width: 100%;
+      border: 1px solid #bbc;
+      border-radius: 4px;
+      outline: 0;
+      background-color: #fff;
+      background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAARVBMVEUAAAAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAz1sU3AAAAFnRSTlMAAwQMERkbIikuVWl0dXeDtLXF5PH5X4+8lwAAAIxJREFUSInt0TcCwjAQRNFvE5dkwKD7H5WGINsKszWa+r9qoO1ftjqc1B0N2DyDYwNcPX0Ia0Yf2HFx9Y+e7u4Be6B3CAOXsPcTqrDvd5qw6G1FxL0ipn1dzPuaWPZlkepLIt3nRa7PiXyfFqU+Jcr9UtT6uaj3U6H0sdD6n1D7j9B76M7jbevo29rgBddTP/7iwZL3AAAAAElFTkSuQmCC);
+      background-repeat: no-repeat;
+      background-position: right .7em top 50%, 0 0;
+      background-size: .65em auto, 100%;
     }
 
     .help {
@@ -78,20 +103,22 @@ class ForkDriveModal extends LitElement {
 
     // params
     this.cbs = null
-    this.url = ''
+    this.forks = []
+    this.base = undefined
     this.label = ''
   }
 
   async init (params, cbs) {
     // store params
     this.cbs = cbs
-    this.url = params.url
+    this.forks = params.forks
+    console.log(this.forks)
+    this.base = this.forks.find(fork => fork.url === params.url) || this.forks[0]
     this.label = params.label || ''
     await this.requestUpdate()
 
     // fetch drive info
-    this.url = await bg.hyperdrive.resolveName(params.url)
-    this.driveInfo = await bg.hyperdrive.getInfo(this.url)
+    this.driveInfo = await bg.hyperdrive.getInfo(this.base.url)
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -126,15 +153,32 @@ class ForkDriveModal extends LitElement {
         break
     }
 
+    const baseOpt = (fork) => {
+      return html`
+        <option value=${fork.url} ?selected=${this.base === fork}>
+          ${fork.forkOf && fork.forkOf.label ? fork.forkOf.label : 'Master'}
+        </option>
+      `
+    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">Make a Fork of ${this.driveInfo.title ? `"${this.driveInfo.title}"` : prettyHash(this.driveInfo.key)}</h1>
 
         <form @submit=${this.onSubmit}>
+          <label for="base">Base</label>
+          <div style="margin: 4px 0 8px">
+            <select name="base" tabindex="1" @change=${this.onChangeBase}>
+              ${baseOpt(this.forks[0])}
+              <optgroup label="Forks">
+                ${repeat(this.forks.slice(1), fork => baseOpt(fork))}
+              </optgroup>
+            </select>
+          </div>
+
           <label for="label">Label</label>
-          <input name="label" tabindex="1" value="${this.label}" @change=${this.onChangeLabel} placeholder="E.g. 'dev' or 'my-new-feature'" required autofocus />
-          <p class="help">The label will be used privately to help you identify the fork.</p>
+          <input name="label" tabindex="2" value="${this.label}" @change=${this.onChangeLabel} placeholder="e.g. 'dev' or 'my-new-feature'" required autofocus />
+          <p class="help">The label will help you identify the fork.</p>
           
           <hr>
 
@@ -154,14 +198,8 @@ class ForkDriveModal extends LitElement {
     return html`
       <div class="wrapper">
         <h1 class="title">Make a Fork</h1>
-        <p class="help-text">Loading...</p>
+        <div class="loading">Loading...</div>
         <form>
-          <label for="label">Label</label>
-          <input name="label" tabindex="1" value="${this.label}" @change=${this.onChangeLabel} placeholder="E.g. 'dev' or 'my-new-feature'" required />
-          <p class="help">The label will be used privately to help you identify the fork.</p>
-
-          <hr>
-
           <div class="form-actions">
             <div></div>
             <div>
@@ -176,6 +214,12 @@ class ForkDriveModal extends LitElement {
 
   // event handlers
   // =
+
+  async onChangeBase (e) {
+    this.base = this.forks.find(fork => fork.url === e.currentTarget.value)
+    this.driveInfo = await bg.hyperdrive.getInfo(this.base.url)
+    this.requestUpdate()
+  }
 
   onChangeLabel (e) {
     this.label = e.target.value
@@ -194,11 +238,11 @@ class ForkDriveModal extends LitElement {
     }
 
     this.state = STATES.DOWNLOADING
-    await bg.hyperdrive.download(this.url)
+    await bg.hyperdrive.download(this.base.url)
 
     this.state = STATES.CLONING
     try {
-      var url = await bg.hyperdrive.forkDrive(this.url, {
+      var url = await bg.hyperdrive.forkDrive(this.base.url, {
         label: this.label,
         prompt: false
       })
