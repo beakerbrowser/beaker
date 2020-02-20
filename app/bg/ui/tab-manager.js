@@ -1190,6 +1190,9 @@ export function setActive (win, tab) {
   // deactivate the old tab
   var active = getActive(win)
   if (active) {
+    if (active === tab) {
+      return
+    }
     active.deactivate()
     lastSelectedTabIndex[win.id] = getAll(win).indexOf(active)
   }
