@@ -139,11 +139,6 @@ export class App extends LitElement {
         </a>
         <span class="spacer"></span>
         <beaker-search-input placeholder="Search this group"></beaker-search-input>
-        ${/*this.groupInfo.writable ? html`
-          <a href="#" @click=${this.onClickAdminMenu}>
-            <span class="fas fa-toolbox"></span> Admin <span class="fas fa-caret-down"></span>
-          </a>
-        ` : */''}
         ${this.session?.user?.group?.isMember ? html`
           <a class="compose-btn" href="/compose">New Post</a>
           <a
@@ -156,6 +151,9 @@ export class App extends LitElement {
           </a>
           <a href="/users/${this.session.user.group.userid}">
             <img class="avatar" src="${this.session.user.url}/thumb">
+          </a>
+          <a class="logout tooltip-left" data-tooltip="End session" title="End session" @click=${this.onClickLogout}>
+            <span class="fas fa-sign-out-alt"></span>
           </a>
         ` : this.session?.user ? html`
         ` : html`
@@ -230,9 +228,17 @@ export class App extends LitElement {
 
     var session = await navigator.session.request()
     if (this.groupInfo.writable) {
-      await uwg.users.add(session.user.url, slugify(session.user.title))
+      if (!(await uwg.users.getByKey(session.user.url).catch(e => undefined))) {
+        await uwg.users.add(session.user.url, slugify(session.user.title))
+      }
     }
 
+    location.reload()
+  }
+
+  async onClickLogout (e) {
+    e.preventDefault()
+    await navigator.session.destroy()
     location.reload()
   }
 

@@ -170,6 +170,11 @@ header .compose-btn:hover {
   color: var(--button-color--primary--hover);
 }
 
+header .logout {
+  cursor: pointer;
+  color: var(--header-search-color);
+}
+
 header .spacer {
   flex: 1;
 }
