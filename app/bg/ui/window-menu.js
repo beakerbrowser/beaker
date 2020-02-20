@@ -184,7 +184,7 @@ export function buildWindowMenu (opts = {}) {
             let active = tabManager.getActive(win)
             if (active) {
               if (active.isSidebarActive) {
-                active.executeSidebarCommand('hide-panel', 'focused')
+                active.closeSidebar()
               } else {
                 tabManager.remove(win, active)
               }
