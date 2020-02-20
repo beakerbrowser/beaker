@@ -2,6 +2,7 @@ import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-elemen
 import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { pluralize, toNiceDomain } from '../../app-stdlib/js/strings.js'
 import _get from 'lodash.get'
+import * as beakerPermissions from '@beaker/permissions'
 import mainCSS from '../css/main.css.js'
 import './com/drive-history.js'
 import './com/drive-forks.js'

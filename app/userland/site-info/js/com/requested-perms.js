@@ -1,4 +1,5 @@
 import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
+import * as beakerPermissions from '@beaker/permissions'
 import requestedPermsCSS from '../../css/com/requested-perms.css.js'
 
 class RequestedPerms extends LitElement {
