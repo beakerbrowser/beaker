@@ -350,6 +350,15 @@ class NavbarLocation extends LitElement {
     this.shadowRoot.querySelector('.input-container input').value = this.url // reset value
     this.isLocationFocused = false
     this.hasExpanded = false
+
+    // HACK
+    // Sometimes the input is blurred by the user clicking on a separate webContents (eg the current page).
+    // For some reason, this correctly triggers the blur event (this function) but it does not put the
+    // input into a fully blurred state. I assume it's similar to when you click out of a browser window
+    // when an input is focused, it maintains some amount of "focused" state for when you focus the browser
+    // window again. We explicitly blur it here to fully enter blurred state.
+    // -prf
+    this.shadowRoot.querySelector('.input-container input').blur()
   }
 
   onInputLocation (e) {
