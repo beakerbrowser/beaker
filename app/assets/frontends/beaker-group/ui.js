@@ -26,11 +26,11 @@ const ROUTES = {
   'users': /^\/users\/?$/i,
   'notifications': /^\/notifications\/?$/i,
   'search': /^\/search\/?$/i,
-  'userProfile': /^\/(?<id>[^\/]+)\/?$/i,
-  'userPosts': /^\/(?<id>[^\/]+)\/posts\/?$/i,
-  'userComments': /^\/(?<id>[^\/]+)\/comments\/?$/i,
-  'post': /^\/(?<id>[^\/]+)\/posts\/(?<filename>[^\/]+)$/i,
-  'comment': /^\/(?<id>[^\/]+)\/comments\/(?<filename>[^\/]+)$/i
+  'userProfile': /^\/users\/(?<id>[^\/]+)\/?$/i,
+  'userPosts': /^\/users\/(?<id>[^\/]+)\/posts\/?$/i,
+  'userComments': /^\/users\/(?<id>[^\/]+)\/comments\/?$/i,
+  'post': /^\/users\/(?<id>[^\/]+)\/posts\/(?<filename>[^\/]+)$/i,
+  'comment': /^\/users\/(?<id>[^\/]+)\/comments\/(?<filename>[^\/]+)$/i
 }
 
 window.tutil = tutil
@@ -154,7 +154,7 @@ export class App extends LitElement {
           >
             ${this.notificationCount ? this.notificationCount : html`<span class="far fa-fw fa-bell"></span>`}
           </a>
-          <a href="/${this.session.user.group.userid}">
+          <a href="/users/${this.session.user.group.userid}">
             <img class="avatar" src="${this.session.user.url}/thumb">
           </a>
         ` : this.session?.user ? html`

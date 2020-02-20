@@ -9,7 +9,7 @@ export function init () {
 }
 
 export function listDrives () {
-  return Array.from(debugDrives, url => `/${url.slice('hyper://'.length)}`)
+  return Array.from(debugDrives)
 }
 
 export async function generateDrives (num = 10) {

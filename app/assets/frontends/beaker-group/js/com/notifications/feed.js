@@ -74,10 +74,10 @@ export class NotificationsFeed extends LitElement {
       let author = urlp.hostname
       let filename = urlp.pathname.split('/').pop()
       if (notification.detail.href.includes('/comments/')) {
-        return `/${author}/comments/${filename}`
+        return `/users/${author}/comments/${filename}`
       }
       if (notification.detail.href.includes('/posts/')) {
-        return `/${author}/posts/${filename}`
+        return `/users/${author}/posts/${filename}`
       }
     }
   }

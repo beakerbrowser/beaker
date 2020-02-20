@@ -263,7 +263,7 @@ export class AddUserPopup extends BasePopup {
     try {
       await uwg.users.add(this.userUrl, this.userId)
       toast.create('User added', 'success')
-      setTimeout(() => {window.location = `/${this.userId}`}, 1e3)
+      setTimeout(() => {window.location = `/users/${this.userId}`}, 1e3)
       emit(this, 'resolve')
     } catch (e) {
       console.log(e)

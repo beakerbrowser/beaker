@@ -37,16 +37,16 @@ export class ProfileHeader extends LitElement {
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
       <button class="transparent menu" @click=${this.onClickMenu}><span class="fas fa-ellipsis-h"></span></button>
-      <a class="avatar" href="/${this.profile.id}">
+      <a class="avatar" href="/users/${this.profile.id}">
         <beaker-img-fallbacks>
           <img src="/users/${this.profile.id}/thumb" slot="img1">
           <img src="/.ui/img/default-user-thumb.jpg" slot="img2">
         </beaker-img-fallbacks>
       </a>
       <div class="main">
-        <h1 class="title"><a href="/${this.profile.id}">${this.profile.title}</a></h1>
+        <h1 class="title"><a href="/users/${this.profile.id}">${this.profile.title}</a></h1>
         <p class="info">
-          <a class="id" href="/${this.profile.id}">${this.profile.id}</a>
+          <a class="id" href="/users/${this.profile.id}">${this.profile.id}</a>
         </p>
         <p class="info">
           <span class="description">${this.profile.description}</span>
@@ -117,7 +117,7 @@ export class ProfileHeader extends LitElement {
     try {
       await uwg.users.rename(this.id, newId)
       toast.create('User renamed', 'success')
-      setTimeout(() => {window.location = `/${newId}`}, 1e3)
+      setTimeout(() => {window.location = `/users/${newId}`}, 1e3)
     } catch (e) {
       console.log(e)
       toast.create(e.toString(), 'error')

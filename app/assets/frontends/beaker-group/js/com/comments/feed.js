@@ -93,7 +93,7 @@ export class CommentsFeed extends LitElement {
                 </div>
                 <div class="content">
                   <div class="header">
-                    <a class="title" href="/${comment.drive.id}">${comment.drive.title}</a>
+                    <a class="title" href="/users/${comment.drive.id}">${comment.drive.title}</a>
                     <a class="permalink" href="${contextUrl}">${timeDifference(comment.stat.ctime, true, 'ago')}</a>
                     <button class="menu transparent" @click=${e => this.onClickMenu(e, comment)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
                   </div>

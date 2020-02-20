@@ -46,7 +46,7 @@ export class ProfileList extends LitElement {
   renderProfile (profile) {
     return html`
       <div class="profile">
-        <a class="avatar" href="/${profile.id}">
+        <a class="avatar" href="/users/${profile.id}">
           <beaker-img-fallbacks>
             <img src="/users/${profile.id}/thumb" slot="img1">
             <img src="/.ui/img/default-user-thumb.jpg" slot="img2">
@@ -54,7 +54,7 @@ export class ProfileList extends LitElement {
         </a>
         <div class="main">
           <h1 class="title">
-            <a href="/${profile.id}">${profile.title}</a>
+            <a href="/users/${profile.id}">${profile.title}</a>
           </h1>
           <p class="info">
             <span class="description">${shorten(profile.description, 100)}</span>

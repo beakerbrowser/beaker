@@ -126,14 +126,14 @@ export class SearchResults extends LitElement {
         ` : html`
           ${repeat(this.results, result => {
             if (result.type === 'post') {
-              let viewProfileUrl = `/${result.postMeta.author.id}`
+              let viewProfileUrl = `/users/${result.postMeta.author.id}`
               let numComments = result.postMeta.numComments || 0
               let votes = result.postMeta.votes
               return html`
                 <div class="result">
                   <h4>
                     <a class="title" href=${result.url}>${facetize(result.title, queryRe, this.query)}</a>
-                    <small><a href=${result.url}>${toNiceUrl(result.url)}</a></small>
+                    <small><a href=${result.url}>${toNiceUrl(result.postMeta.url)}</a></small>
                   </h4>
                   <div class="details">
                     by <a class="author" href=${viewProfileUrl} title=${result.postMeta.author.title}>${result.postMeta.author.title}</a>
@@ -189,7 +189,7 @@ export class SearchResults extends LitElement {
       let profile = users[i]
       let comma = (i !== users.length - 1) ? ', ' : ''
       els.push(html`
-        <a href=${'/' + profile.id} title=${profile.title}>${profile.title}</a>${comma}
+        <a href=${'/users/' + profile.id} title=${profile.title}>${profile.title}</a>${comma}
       `)
     }
     return els
@@ -209,12 +209,14 @@ customElements.define('beaker-search-results', SearchResults)
 
 function fromPostToResult (post) {
   var metadata = post.stat.metadata
+  var viewUrl = `/users/${post.drive.id}/posts/${post.url.split('/').pop()}`
   return {
     type: 'post',
-    viewUrl: `/${post.url.slice('hyper://'.length)}`,
-    url: metadata.href || post.url,
+    viewUrl,
+    url: metadata.href || viewUrl,
     title: metadata.title,
     postMeta: {
+      href: metadata.href,
       ctime: post.stat.ctime, // TODO replace with rtime
       'drive-type': metadata['drive-type'],
       author: post.drive,
@@ -227,7 +229,7 @@ function fromPostToResult (post) {
 function fromProfileToResult (profile) {
   return {
     type: 'user',
-    viewUrl: `/${profile.id}`,
+    viewUrl: `/users/${profile.id}`,
     url: profile.url,
     title: profile.title,
     userMeta: {

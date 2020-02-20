@@ -119,5 +119,5 @@ export function fromPostUrlToAppRoute (postUrl) {
   var url = new URL(postUrl)
   var pathParts = url.pathname.split('/')
   var filename = pathParts[3]
-  return `/${url.hostname}/posts/${filename}`
+  return `/users/${url.hostname}/posts/${filename}`
 }

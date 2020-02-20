@@ -37,7 +37,7 @@ export class ProfileView extends LitElement {
     const navItem = (id, label) => html`
       <a
         class=${this.subview === id ? 'selected' : ''}
-        href="/${this.profileId}/${id}"
+        href="/users/${this.profileId}/${id}"
       >${label}</a>
     `
     return html`
