@@ -18,6 +18,7 @@ export class GroupSettingsPopup extends BasePopup {
       title: {type: String},
       description: {type: String},
       sidebarMd: {type: String},
+      pinnedMessageMd: {type: String},
       errors: {type: Object}
     }
   }
@@ -85,12 +86,14 @@ export class GroupSettingsPopup extends BasePopup {
     var self = new Hyperdrive(location)
     var info = await self.getInfo()
     var sidebarMd = await self.readFile('/beaker-forum/sidebar.md').catch(e => '')
+    var pinnedMessageMd = await self.readFile('/beaker-forum/pinned-message.md').catch(e => '')
     
     this.thumbDataURL = undefined
     this.bannerDataURL = undefined
     this.title = info?.title
     this.description = info?.description
     this.sidebarMd = sidebarMd
+    this.pinnedMessageMd = pinnedMessageMd
   }
 
   // management
@@ -161,13 +164,17 @@ export class GroupSettingsPopup extends BasePopup {
         <input name="description" tabindex="3" placeholder="Group Description" @change=${this.onChangeDescription} class=${this.errors.description ? 'has-error' : ''} value=${this.description || ''}>
         ${this.errors.description ? html`<div class="error">${this.errors.description}</div>` : ''}
 
-        <label for="sidebar">Sidebar Text</label>
+        <label for="sidebarMd">Sidebar Text</label>
         <textarea name="sidebarMd" tabindex="4" placeholder="Write your rules, instructions, etc here. (Markdown supported)" @change=${this.onChangeSidebarMd} class=${this.errors.sidebarMd ? 'has-error' : ''}>${this.sidebarMd || ''}</textarea>
         ${this.errors.sidebarMd ? html`<div class="error">${this.errors.sidebarMd}</div>` : ''}
 
+        <label for="pinnedMessageMd">Pinned Message Text</label>
+        <textarea name="pinnedMessageMd" tabindex="5" placeholder="Write an introduction message here. (Markdown supported)" @change=${this.onChangePinnedMessageMd} class=${this.errors.pinnedMessageMd ? 'has-error' : ''}>${this.pinnedMessageMd || ''}</textarea>
+        ${this.errors.pinnedMessageMd ? html`<div class="error">${this.errors.pinnedMessageMd}</div>` : ''}
+
         <div class="form-actions">
-          <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="5">Save</button>
+          <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="7">Cancel</button>
+          <button type="submit" class="btn primary" tabindex="6">Save</button>
         </div>
       </form>
     `
@@ -230,6 +237,10 @@ export class GroupSettingsPopup extends BasePopup {
     this.sidebarMd = e.target.value
   }
 
+  onChangePinnedMessageMd (e) {
+    this.pinnedMessageMd = e.target.value
+  }
+
   onClickCancel (e) {
     e.preventDefault()
     emit(this, 'reject')
@@ -256,6 +267,12 @@ export class GroupSettingsPopup extends BasePopup {
         await drive.writeFile('/beaker-forum/sidebar.md', this.sidebarMd)
       } else {
         await drive.unlink('/beaker-forum/sidebar.md').catch(e => undefined)
+      }
+      if (this.pinnedMessageMd) {
+        await drive.mkdir('/beaker-forum').catch(e => undefined)
+        await drive.writeFile('/beaker-forum/pinned-message.md', this.pinnedMessageMd)
+      } else {
+        await drive.unlink('/beaker-forum/pinned-message.md').catch(e => undefined)
       }
       if (this.bannerDataURL) {
         await Promise.all([

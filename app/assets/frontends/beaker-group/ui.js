@@ -159,7 +159,7 @@ export class App extends LitElement {
           </a>
         ` : this.session?.user ? html`
         ` : html`
-          <a href="#" @click=${this.onClickJoin}><span class="fas fa-user-plus"></span> Join This Group</a>
+          <a href="#" @click=${this.onClickJoin}><span class="fas fa-user-plus"></span> Login / Join This Group</a>
         `}
       </header>
       ${this.session?.user && !this.session?.user?.group?.isMember ? html`

@@ -1,6 +1,7 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import '../com/posts/feed.js'
 import '../com/about.js'
+import '../com/pinned-message.js'
 
 export class PostsView extends LitElement {
   static get properties () {
@@ -32,6 +33,7 @@ export class PostsView extends LitElement {
             <a href="/comments" title="Comments">Comments</a>
             <a href="/users" title="Users">Users</a>
           </nav>
+          <beaker-pinned-message loadable></beaker-pinned-message>
           <beaker-posts-feed loadable .user=${this.user}></beaker-posts-feed>
         </main>
         <nav>
