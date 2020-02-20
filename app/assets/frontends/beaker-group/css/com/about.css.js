@@ -80,6 +80,7 @@ ${buttonsCSS}
 
 .sidebar-md a {
   text-decoration: none;
+  color: var(--link-color);
 }
 
 .sidebar-md a:hover {

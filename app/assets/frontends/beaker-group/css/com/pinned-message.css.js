@@ -30,6 +30,7 @@ const cssStr = css`
 
 a {
   text-decoration: none;
+  color: var(--link-color);
 }
 
 a:hover {
