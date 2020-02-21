@@ -61,12 +61,14 @@ export async function setup () {
   trash.setup()
 
   // create the root drive as needed
+  var isInitialCreation = false
   browsingProfile = await db.get(`SELECT * FROM profiles WHERE id = 0`)
   if (!browsingProfile.url) {
     let drive = await hyper.drives.createNewRootDrive()
     logger.info('Root drive created', {url: drive.url})
     await db.run(`UPDATE profiles SET url = ? WHERE id = 0`, [drive.url])
     browsingProfile.url = drive.url
+    isInitialCreation = true
   }
 
   // load root drive
@@ -89,8 +91,10 @@ export async function setup () {
     await ensureDir(PATHS.SYSTEM)
 
     // default bookmarks
-    await bookmarks.add({location: '/desktop', href: `https://hyperdrive.network/${browsingProfile.url.slice('hyper://'.length)}`, title: 'My Home Drive'})
-    await bookmarks.add({location: '/desktop', href: 'beaker://library/', title: 'My Library'})
+    if (isInitialCreation) {
+      await bookmarks.add({location: '/desktop', href: `https://hyperdrive.network/${browsingProfile.url.slice('hyper://'.length)}`, title: 'My Home Drive'})
+      await bookmarks.add({location: '/desktop', href: 'beaker://library/', title: 'My Library'})
+    }
 
     // ensure all user mounts are set
     // TODO
