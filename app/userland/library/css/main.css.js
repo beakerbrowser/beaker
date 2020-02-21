@@ -40,7 +40,7 @@ main {
 
 nav .search-ctrl {
   position: relative;
-  border: 1px solid #eef;
+  border: 1px solid #dde;
 }
 
 nav .search-ctrl .fa-search {
@@ -65,8 +65,8 @@ nav .search-ctrl input {
   padding-top: 6px;
   min-height: 100vh;
   box-sizing: border-box;
-  border-left: 1px solid #eef;
-  border-right: 1px solid #eef;
+  border-left: 1px solid #dde;
+  border-right: 1px solid #dde;
 }
 
 .drives header {
@@ -96,7 +96,7 @@ nav .search-ctrl input {
   align-items: center;
   padding: 18px 24px;
   color: #555;
-  border-bottom: 1px solid #eef;
+  border-bottom: 1px solid #dde;
 }
 
 .drive a {

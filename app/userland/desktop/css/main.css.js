@@ -14,16 +14,15 @@ ${tooltipCSS}
 
 .top-right-ctrls {
   position: fixed;
-  top: 10px;
+  top: 8px;
   right: 10px;
 }
 
 .top-right-ctrls a {
   display: inline-block;
-  color: #fff;
-  background: var(--blue);
-  border: 1px solid var(--blue);
-  transition: background 0.1s ease 0s;
+  color: #556;
+  background: #fff;
+  border: 1px solid #ccd;
   font-size: 13px;
   line-height: 26px;
   letter-spacing: 0.25px;
@@ -35,12 +34,11 @@ ${tooltipCSS}
 }
 
 .top-right-ctrls a:hover {
-  background: #1c50b9;
+  background: #fafafd;
 }
 
 .top-right-ctrls a.pressed {
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.85);
-  background: #1c50b9;
+  background: #fafafd;
 }
 
 .top-right-ctrls a span {
@@ -121,12 +119,11 @@ ${tooltipCSS}
 
 .dock-wrapper {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 8px;
+  left: 12px;
 }
 
 .dock {
-  padding: 5px 10px 20px;
 }
 
 .dock-separator {

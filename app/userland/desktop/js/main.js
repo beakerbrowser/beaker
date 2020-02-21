@@ -106,7 +106,7 @@ class DesktopApp extends LitElement {
     btn.classList.add('pressed')
     await contextMenu.create({
       x: rect.left - 5,
-      y: 5,
+      y: 8,
       render: () => {
         return html`
           <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -114,6 +114,8 @@ class DesktopApp extends LitElement {
             .dropdown-items {
               padding: 6px 0 4px;
               overflow: visible !important;
+              box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 15px !important;
+              border-color: #bbc;
             }
             .dropdown-item {
               position: relative;
@@ -128,8 +130,9 @@ class DesktopApp extends LitElement {
               background: #fff;
               color: #556;
               padding: 16px;
+              border: 1px solid #bbc;
               border-radius: 8px;
-              box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+              box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
               width: 280px;
               white-space: normal;
               line-height: 1.3;
