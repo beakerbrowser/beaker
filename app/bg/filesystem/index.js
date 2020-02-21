@@ -3,6 +3,7 @@ import * as logLib from '../logger'
 const logger = logLib.category('filesystem')
 import hyper from '../hyper/index'
 import * as db from '../dbs/profile-data-db'
+import * as bookmarks from './bookmarks'
 import * as users from './users'
 import * as trash from './trash'
 import { PATHS } from '../../lib/const'
@@ -86,6 +87,10 @@ export async function setup () {
     await ensureDir(PATHS.LIBRARY_NS('projects'))
     await ensureDir(PATHS.PROFILES)
     await ensureDir(PATHS.SYSTEM)
+
+    // default bookmarks
+    await bookmarks.add({location: '/desktop', href: `https://hyperdrive.network/${browsingProfile.url.slice('hyper://'.length)}`, title: 'My Home Drive'})
+    await bookmarks.add({location: '/desktop', href: 'beaker://library/', title: 'My Library'})
 
     // ensure all user mounts are set
     // TODO

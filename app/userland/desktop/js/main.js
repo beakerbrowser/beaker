@@ -56,14 +56,14 @@ class DesktopApp extends LitElement {
           <a class="dock-item" href="beaker://history">
             History
           </a>
-          <a class="dock-item" href="${navigator.filesystem.url}/library/bookmarks">
-            Bookmarks
-          </a>
           <a class="dock-item" href="beaker://downloads">
             Downloads
           </a>
           <a class="dock-item" href="beaker://library">
             My Library
+          </a>
+          <a class="dock-item" href="https://hyperdrive.network/${navigator.filesystem.url.slice('hyper://'.length)}">
+            My Home Drive
           </a>
         </div>
       </div>

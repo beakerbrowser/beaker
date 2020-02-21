@@ -3,11 +3,11 @@ import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 // exported
 // =
 
-const EXPLORER_APP = 'https://hyperdrive.network/'
-export const FIXED_FILES = [
-  makeFixedLink('.home-drive.goto', `${EXPLORER_APP}${navigator.filesystem.url.slice('hyper://'.length)}`, 'Home Drive'),
-  makeFixedLink('.library.goto', 'beaker://library/', 'My Library'),
-]
+// const EXPLORER_APP = 'https://hyperdrive.network/'
+// export const FIXED_FILES = [
+//   makeFixedLink('.home-drive.goto', `${EXPLORER_APP}${navigator.filesystem.url.slice('hyper://'.length)}`, 'Home Drive'),
+//   makeFixedLink('.library.goto', 'beaker://library/', 'My Library'),
+// ]
 
 export async function load () {
   var userFiles = []
@@ -17,10 +17,7 @@ export async function load () {
   } catch (e) {
     console.log('Failed to load desktop files', e)
   }
-  return [
-    FIXED_FILES[0],
-    FIXED_FILES[1]
-  ].concat(userFiles)
+  return userFiles
 }
 
 export async function createLink ({href, title}) {
