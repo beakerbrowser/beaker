@@ -89,7 +89,7 @@ class CreateDriveModal extends LitElement {
     img.preview {
       display: block;
       width: 450px;
-      height: 230px;
+      height: 100%;
       border: 1px solid #bbc;
       border-radius: 4px;
       object-fit: cover;
