@@ -7,20 +7,18 @@ import buttonsCSS from './buttons.css'
 import spinnerCSS from './spinner.css'
 
 function categorizeDrive (drive) {
-  if (drive.info.type === 'website') return ['general', 'website']
-  if (!drive.info.type && !drive.ident.system) return ['general', 'files']
-  if (drive.ident.user || drive.info.type === 'user') return ['groups', 'user']
-  if (drive.info.type === 'group') return ['groups', 'group']
-  if (drive.info.type === 'module') return ['code', 'module']
-  if (drive.ident.home) return ['system']
-  if (drive.info.type === 'webterm.sh/cmd-pkg') return ['system', 'webterm.sh/cmd-pkg']
-  return ['general', 'other']
+  if (drive.info.type === 'website') return 'website'
+  if (!drive.info.type) return 'files'
+  if (drive.ident.user || drive.info.type === 'user') return 'user'
+  if (drive.info.type === 'group') return 'group'
+  if (drive.info.type === 'module') return 'module'
+  if (drive.info.type === 'webterm.sh/cmd-pkg') return 'webterm-sh-cmd-pkg'
+  return 'other'
 }
 
 class SelectDriveModal extends LitElement {
   static get properties () {
     return {
-      currentCategory: {type: String},
       currentTitleFilter: {type: String},
       title: {type: String},
       description: {type: String},
@@ -91,7 +89,7 @@ class SelectDriveModal extends LitElement {
         height: 35px;
         padding: 0 35px;
         border: 1px solid #dde;
-        border-radius: 4px;
+        border-radius: 0;
       }
 
       .drive-picker .filter:focus {
@@ -100,43 +98,10 @@ class SelectDriveModal extends LitElement {
         box-shadow: none;
       }
 
-      .drives-container {
-        display: grid;
-        grid-template-columns: 160px 1fr;
-        border: 1px solid #dde;
-      }
-
-      .drive-categories {
-        background: #fafafd;
-        border-right: 1px solid #dde;
-        letter-spacing: 0.3px;
-      }
-
-      .drive-categories h4 {
-        padding: 4px 10px;
-        margin: 6px 0px 0px;
-        font-weight: bold;
-        color: rgba(0, 0, 25, 0.35);
-        font-size: 12px;
-      }
-
-      .drive-category {
-        padding: 4px 10px;
-        cursor: pointer;
-      }
-
-      .drive-category:hover {
-        background: #0001;
-      }
-
-      .drive-category.selected {
-        background: #286cf5;
-        color: #fff;
-      }
-
       .drives-list {
         height: 350px;
         overflow-y: auto;
+        border: 1px solid #dde;
       }
 
       .drives-list .loading {
@@ -158,18 +123,19 @@ class SelectDriveModal extends LitElement {
       .drives-list .drive {
         display: flex;
         align-items: center;
-        padding: 4px 10px;
-        border-bottom: 1px solid #eef;
+        padding: 10px;
+        border-bottom: 1px solid #dde;
+      }
+
+      .drives-list .drive:last-child {
+        border-bottom: 0;
       }
 
       .drive .thumb {
         display: block;
-        width: 80px;
-        height: 60px;
-        margin-right: 10px;
-        border-radius: 4px;
-        border: 1px solid #bbc;
-        object-fit: cover;
+        width: 32px;
+        height: 32px;
+        margin-right: 16px;
       }
 
       .drives-list .drive .info {
@@ -179,23 +145,6 @@ class SelectDriveModal extends LitElement {
       .drives-list .drive .title {
         font-size: 15px;
         font-weight: 500;
-      }
-      
-      .drives-list .drive .details {
-        display: flex;
-      }
-      
-      .drives-list .drive .details > * {
-        padding: 4px 4px 4px 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      
-      .drives-list .drive .type {
-        letter-spacing: -0.2px;
-        color: green;
-        overflow: visible;
       }
       
       .drives-list .drive .description {
@@ -208,11 +157,8 @@ class SelectDriveModal extends LitElement {
       }
 
       .drives-list .drive.selected .thumb {
-        border-color: #fff;
-      }
-
-      .drives-list .drive.selected .type {
-        color: #fff9;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px #0003;
       }
 
       .drives-list .drive.selected .info .hash,
@@ -227,7 +173,6 @@ class SelectDriveModal extends LitElement {
     super()
 
     // state
-    this.currentCategory = 'website'
     this.currentTitleFilter = ''
     this.selectedDriveUrl = ''
     this.drives = undefined
@@ -297,10 +242,7 @@ class SelectDriveModal extends LitElement {
             </div>
             ${isDriveUrl(this.currentTitleFilter) ? html`
             ` : html`
-              <div class="drives-container">
-                ${this.renderDriveCategories()}
-                ${this.renderDrivesList()}
-              </div>
+              ${this.renderDrivesList()}
             `}
           </div>
 
@@ -336,32 +278,6 @@ class SelectDriveModal extends LitElement {
       </div>`
   }
 
-  renderDriveCategories () {
-    const cat = (id, label) => html`
-      <div
-        class="drive-category ${this.currentCategory === id ? 'selected' : ''}"
-        @click=${e => this.onClickCategory(e, id)}
-      >
-        ${label}
-      </div>
-    `
-    return html`
-      <div class="drive-categories">
-        <h4>General</h4>
-        ${cat('website', 'Websites')}
-        ${cat('files', 'Files drives')}
-        ${cat('other', 'Other')}
-        <h4>Groups</h4>
-        ${cat('group', 'User Groups')}
-        ${cat('user', 'My Users')}
-        <h4>Code</h4>
-        ${cat('module', 'Modules')}
-        <h4>System</h4>
-        ${cat('webterm.sh/cmd-pkg', 'Webterm Commands')}
-      </div>
-    `
-  }
-
   renderDrivesList () {
     if (!this.drives) {
       return html`<ul class="drives-list"><li class="loading"><span class="spinner"></span> Loading...</li></ul>`
@@ -369,7 +285,6 @@ class SelectDriveModal extends LitElement {
 
     var filtered = this.drives
     if (this.type) filtered = filtered.filter(drive => drive.info.type === this.type)
-    filtered = filtered.filter(drive => categorizeDrive(drive).includes(this.currentCategory))
     if (typeof this.writable === 'boolean') {
       filtered = filtered.filter(drive => drive.info.writable === this.writable)
     }
@@ -393,14 +308,19 @@ class SelectDriveModal extends LitElement {
         @dblclick=${this.onDblClickdrive}
         data-url=${drive.url}
       >
-        <img class="thumb" src="asset:thumb:${drive.url}">
+        <img
+          class="thumb"
+          srcset="
+            beaker://assets/img/drive-types/${categorizeDrive(drive)}.png 1x,
+            beaker://assets/img/drive-types/${categorizeDrive(drive)}-64.png 2x
+          "
+        >
         <div class="info">
           <div class="title">
             ${drive.info.title || html`<em>Untitled</em>`}
           </div>
           <div class="details">
-            <div class="type">${drive.info.type || 'files drive'}</div>
-            <div class="description">${drive.info.description}</div>
+            <div class="description">${drive.info.description.slice(0, 60)}</div>
           </div>
         </div>
       </div>
@@ -409,10 +329,6 @@ class SelectDriveModal extends LitElement {
 
   // event handlers
   // =
-
-  onClickCategory (e, id) {
-    this.currentCategory = id
-  }
 
   onChangeTitleFilter (e) {
     this.currentTitleFilter = e.target.value.toLowerCase()
