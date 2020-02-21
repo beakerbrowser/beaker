@@ -11,10 +11,8 @@ ${tooltipCSS}
 ${spinnerCSS}
 
 :host {
-  display: flex;
-  padding-left: 200px;
   min-height: 100vh;
-  background: #fafafd;
+  background: #fff;
 }
 
 a {
@@ -27,131 +25,48 @@ a:hover {
 }
 
 nav {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  height: 100vh;
-  width: 200px;
-  border-right: 1px solid #ccd;
-  white-space: nowrap;
+  z-index: 1;
+  background: #fff;
+  margin: 0 auto;
+  max-width: 800px;
 }
 
 main {
-  flex: 1;
+  margin: 0 auto;
   max-width: 800px;
+}
+
+nav .search-ctrl {
+  position: relative;
+  border: 1px solid #eef;
+}
+
+nav .search-ctrl .fa-search {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  color: #bbc;
+}
+
+nav .search-ctrl input {
   background: #fff;
-}
-
-section {
-}
-
-nav .top-ctrl {
-  display: flex;
-  align-items: center;
-  background: rgba(0,0,16,0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin: 10px 10px;
-}
-
-nav .top-ctrl input {
-  flex: 1;
-  margin-right: 5px;
-  height: 24px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  padding: 0 0 0 38px;
   border: 0;
-  background: none;
   box-shadow: none;
 }
-
-nav .categories {
-  margin: 5px 0;
-}
-
-nav .categories h4 {
-  margin: 16px 8px 4px;
-  font-weight: 500;
-  color: #0059;
-  font-size: 12px;
-}
-
-nav .categories a {
-  display: block;
-  position: relative;
-  padding: 8px 16px;
-  font-weight: 400;
-  letter-spacing: 0.35px;
-  color: #223;
-  user-select: none;
-  cursor: pointer;
-}
-
-nav .categories a:hover {
-  text-decoration: none;
-}
-
-nav .categories a.selected {
-  background: rgba(0,0,16,0.05);
-}
-
-nav .categories a .fa-fw {
-/*  background: rgba(0,0,80,0.1);*/
-  color: #333;
-  padding: 6px;
-  border-radius: 4px;
-  font-size: 9px;
-  margin-right: 4px;
-
-  font-size: 12px;
-  padding: 0;
-  margin-right: 6px;
-  color: #555;
-}
-
-/*nav .categories a.selected .fa-fw {
-  background: rgba(0,0,80,0.12);
-}*/
-
-/*nav .categories a .fa-fw.fa-desktop {
-  background: linear-gradient(#E91E63, #9C27B0);
-  color: #fff;
-}
-
-nav .categories a .fa-fw.fa-folder-open {
-  background: linear-gradient(rgb(156, 39, 176), #3F51B5);
-  color: #fff;
-}
-
-nav .categories a .fa-fw.fa-users {
-  background: linear-gradient(#8BC34A, #4CAF50);
-  color: #fff;
-}
-
-nav .categories a .fa-fw.fa-user {
-  background: linear-gradient(#4CAF50, #009688);
-  color: #fff;
-}
-
-nav .categories a .fa-fw.fa-cube {
-  background: linear-gradient(#FFC107, #FF9800);
-  color: #fff;
-}
-
-nav .categories a .fa-fw.fa-code {
-  background: linear-gradient(rgb(255, 152, 0), #FF5722);
-  color: #fff;
-}
-
-nav .categories a .fa-fw.fa-terminal {
-  background: linear-gradient(#444, #333);
-  color: #fff;
-}*/
 
 .drives {
   font-size: 13px;
   padding-top: 6px;
   min-height: 100vh;
   box-sizing: border-box;
-  border-right: 1px solid #ccd;
+  border-left: 1px solid #eef;
+  border-right: 1px solid #eef;
 }
 
 .drives header {
@@ -176,21 +91,26 @@ nav .categories a .fa-fw.fa-terminal {
 }
 
 .drive {
+  position: relative;
   display: flex;
+  align-items: center;
   padding: 18px 24px;
   color: #555;
   border-bottom: 1px solid #eef;
 }
 
+.drive a {
+  color: #99a;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: -0.5px;
+}
+
 .drive .thumb {
   display: block;
-  width: 140px;
-  height: 100px;
+  width: 32x;
+  height: 32px;
   margin-right: 20px;
-  border-radius: 4px;
-  border: 1px solid #bbc;
-  object-fit: cover;
-  object-position: center center;
 }
 
 .drive .thumb:hover {
@@ -201,55 +121,47 @@ nav .categories a .fa-fw.fa-terminal {
   flex: 1;
 }
 
-.drive .ctrls {
-  float: right;
+.drive .info .title {
+  font-size: 15px;
+  line-height: 1;
 }
 
-.drive .title {
-  font-size: 18px;
-  font-weight: bold;
-  padding: 4px 0;
+.drive .info .title a {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: #333;
 }
 
-.drive .title a {
-  color: inherit;
-}
-
-.drive .title .fa-fw {
+.drive .info .title .fa-fw {
   margin-right: 3px;
 }
 
-.drive .group {
+.drive .info .description {
+  letter-spacing: -0.2px;
 }
 
-.drive .details {
-  display: flex;
-  align-items: center;
-  margin: 4px 0;
+.drive .forks {
+  width: 100px;
 }
 
-.drive .details > * {
-  padding-right: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.drive .peers {
+  width: 90px;
 }
 
-.drive .details .fa-share-alt {
+.drive .ctrls {
+  width: 40px;
+}
+
+.drive .fa-share-alt {
   position: relative;
   top: -1px;
   font-size: 9px;
 }
 
-.drive .details .fa-code-branch {
+.drive .fa-code-branch {
   position: relative;
   top: -1px;
   font-size: 10px;
-}
-
-.drive .details a {
-  color: inherit;
-  cursor: pointer;
 }
 
 .drive .type {
@@ -258,53 +170,37 @@ nav .categories a .fa-fw.fa-terminal {
   overflow: visible;
 }
 
-.drive .description {
-  letter-spacing: -0.2px;
-}
-
-.drive .host-toggle {
-  color: inherit;
-  cursor: pointer;
-}
-
-.drive .host-toggle:hover {
-  text-decoration: none;
-}
-
-.drive .host-toggle:hover span:last-child {
-  text-decoration: underline;
-}
-
-.forks {
+.forks-container {
   position: relative;
+  border-left: 40px solid #f3f3f8;
 }
 
+/*
 .forks:before {
   content: '';
   display: block;
   position: absolute;
   top: -20px;
-  left: 60px;
+  left: 42px;
   width: 1px;
-  height: calc(100% - 68px);
-  background: #bbc;
+  height: calc(100% - 18px);
+  background: #ccd;
 }
 
 .forks .drive {
   position: relative;
-  padding-left: 100px;
 }
 
 .forks .drive:before {
   content: '';
   display: block;
   position: absolute;
-  top: 50px;
-  left: 60px;
-  width: 40px;
+  top: 34px;
+  left: 42px;
+  width: 36px;
   height: 1px;
-  background: #bbc;
-}
+  background: #ccd;
+}*/
 
 .fork-label {
   display: inline-block;
@@ -313,6 +209,7 @@ nav .categories a .fa-fw.fa-terminal {
   color: #fff;
   text-shadow: 0 1px 0px #0004;
   border-radius: 4px;
+  font-size: 10px;
 }
 
 .help {

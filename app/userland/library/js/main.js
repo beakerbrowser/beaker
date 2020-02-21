@@ -9,29 +9,20 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../css/main.css.js'
 
 const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hyper://'.length)}`
-const CATEGORIES = {
-  general: [
-    {id: 'website', icon: getDriveTypeIcon('website'), label: 'Websites' },
-    {id: 'files', icon: getDriveTypeIcon('files'), label: 'Files drives' },
-    {id: 'other', icon: 'fas fa-asterisk', label: 'Other' }
-  ],
-  groups: [
-    {id: 'group', icon: getDriveTypeIcon('group'), label: 'User Groups' },
-    {id: 'user', icon: getDriveTypeIcon('user'), label: 'My Users'},
-  ],
-  code: [
-    {id: 'module', icon: getDriveTypeIcon('module'), label: 'Modules' }
-  ],
-  system: [
-    {id: 'webterm.sh/cmd-pkg', icon: getDriveTypeIcon('webterm.sh/cmd-pkg'), label: 'Webterm commands'}
-  ]
+const categorizeDrive = (drive) => {
+  if (drive.info.type === 'website') return 'website'
+  if (!drive.info.type) return 'files'
+  if (drive.ident.user || drive.info.type === 'user') return 'user'
+  if (drive.info.type === 'group') return 'group'
+  if (drive.info.type === 'module') return 'module'
+  if (drive.info.type === 'webterm.sh/cmd-pkg') return 'webterm-sh-cmd-pkg'
+  return 'other'
 }
 
 export class DrivesApp extends LitElement {
   static get properties () {
     return {
       drives: {type: Array},
-      viewingForksOf: {type: Object},
       filter: {type: String}
     }
   }
@@ -43,8 +34,6 @@ export class DrivesApp extends LitElement {
   constructor () {
     super()
     this.drives = undefined
-    this.category = 'website'
-    this.viewingForksOf = undefined
     this.filter = undefined
     this.load()
     this.addEventListener('contextmenu', this.onContextmenu.bind(this))
@@ -65,19 +54,6 @@ export class DrivesApp extends LitElement {
       }
       return true
     })
-
-    // filter
-    const categorizeDrive = (drive) => {
-      if (drive.info.type === 'website') return ['general', 'website']
-      if (!drive.info.type && !drive.ident.system) return ['general', 'files']
-      if (drive.ident.user || drive.info.type === 'user') return ['groups', 'user']
-      if (drive.info.type === 'group') return ['groups', 'group']
-      if (drive.info.type === 'module') return ['code', 'module']
-      if (drive.ident.home) return ['system']
-      if (drive.info.type === 'webterm.sh/cmd-pkg') return ['system', 'webterm.sh/cmd-pkg']
-      return ['general', 'other']
-    }
-    drives = drives.filter(drive => categorizeDrive(drive).includes(this.category))
     drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
     console.log(drives)
 
@@ -97,12 +73,6 @@ export class DrivesApp extends LitElement {
         this.requestUpdate()
       }
     }
-  }
-
-  setCategory (cat) {
-    this.category = cat
-    this.viewingForksOf = undefined
-    this.load()
   }
 
   newDriveMenu (x, y, right = false) {
@@ -245,15 +215,6 @@ export class DrivesApp extends LitElement {
   // =
 
   render () {
-    var currentParentCategoryId = (this.category in CATEGORIES)
-      ? false
-      : Object.entries(CATEGORIES).find(([parentId, items]) => items.find(item => item.id === this.category))[0]
-    const navItem = (id, icon, label) => html`
-      <a
-        class=${classMap({selected: id === this.category || id === currentParentCategoryId, partially: id === currentParentCategoryId})}
-        @click=${e => { this.setCategory(id) }}
-      ><span class="fa-fw ${icon}"></span> ${label}</a>
-    `
     var drives = this.drives
     if (drives && this.filter) {
       drives = drives.filter(drive => drive.info.title.toLowerCase().includes(this.filter))
@@ -261,19 +222,9 @@ export class DrivesApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <nav>
-        <div class="top-ctrl">
+        <div class="search-ctrl">
           <span class="fas fa-search"></span>
           <input placeholder="Search" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
-        </div>
-        <div class="categories">
-          <h4>General</h4>
-          ${CATEGORIES.general.map(item => navItem(item.id, item.icon, item.label))}
-          <h4>Groups</h4>
-          ${CATEGORIES.groups.map(item => navItem(item.id, item.icon, item.label))}
-          <h4>Code</h4>
-          ${CATEGORIES.code.map(item => navItem(item.id, item.icon, item.label))}
-          <h4>System</h4>
-          ${CATEGORIES.system.map(item => navItem(item.id, item.icon, item.label))}
         </div>
       </nav>
       <main>
@@ -296,9 +247,6 @@ export class DrivesApp extends LitElement {
           <div class="loading"><span class="spinner"></span></div>
         `}
       </main>
-      <section>
-        ${this.renderHelp()}
-      </section>
     `
   }
 
@@ -310,57 +258,49 @@ export class DrivesApp extends LitElement {
         @contextmenu=${e => this.onContextmenuDrive(e, drive)}
       >
         <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
-          <img class="thumb" src="asset:thumb:${drive.url}?cache_buster=${Date.now()}">
+          <img class="thumb" src="beaker://assets/img/favicons/${categorizeDrive(drive)}.png">
         </a>
         <div class="info">
-          <div class="ctrls">
-            <button class="transparent" @click=${e => this.onClickDriveMenuBtn(e, drive)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
-          </div>
           <div class="title">
             <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
               ${drive.info.title || html`<em>Untitled</em>`}
             </a>
           </div>
-          ${drive.forkOf ? html`
-            <div><span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
-          ` : ''}
-          ${drive.groupInfo ? html`
-            <div class="group">Member of <a href=${drive.groupInfo.url} target="_blank" title=${drive.groupInfo.title || 'Unnamed Group'}>${drive.groupInfo.title || 'Unnamed Group'}</pre>
-          ` : ''}
-          <div class="details">
-            <div class="type">${toNiceDriveType(drive.info.type)}</div>
-            <div class="description">${drive.info.description}</div>
-          </div>
-          <div class="details">
-            <span>
-              <span class="fas fa-fw fa-share-alt"></span> ${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}
-            </span>
-            ${numForks > 0 ? html`
-              <a @click=${e => this.onClickViewForksOf(e, drive)}>
-                <span class="fas fa-fw fa-code-branch"></span> ${numForks} ${pluralize(numForks, 'fork')}
-              </a>
+          <div class="description">
+            ${drive.forkOf ? html`
+              <span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
             ` : ''}
-            ${''/*<a class="host-toggle" ?disabled=${drive.ident.system} @click=${e => this.onToggleHosting(e, drive)}>
-              ${drive.url === navigator.filesystem.url ? html`
-                <span class="fas fa-fw fa-lock"></span> Private
-              ` : drive.seeding ? html`
-                <span class="fas fa-toggle-on"></span> <span>${drive.info.writable ? 'Hosting' : 'Co-hosting'} (${drive.info.peers} ${pluralize(drive.info.peers, 'peer')})</span>
-              ` : html`
-                <span class="fas fa-toggle-off"></span> <span>Not hosting</span>
-              `}
-            </a>*/}
+            ${drive.info.description.slice(0, 50)}
           </div>
         </div>
-      </div>
-      ${showForks && numForks > 0 ? html`
         <div class="forks">
+          ${numForks > 0 ? html`
+            <a @click=${e => this.onClickViewForksOf(e, drive)}>
+              ${numForks} ${pluralize(numForks, 'fork')}
+              ${drive.showForks ? html`<span class="fas fa-fw fa-caret-down"></span>` : ''} 
+            </a>
+          ` : ''}
+        </div>
+        <div class="peers">
+          ${drive.ident.home ? html`
+            <a href="#todo"><span class="fas fa-lock"></span></a>
+          ` : html`
+            <a href="#todo">${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}</a>
+          `}
+        </div>
+        <div class="ctrls">
+          <button class="transparent" @click=${e => this.onClickDriveMenuBtn(e, drive)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
+        </div>
+      </div>
+      ${drive.showForks && numForks > 0 ? html`
+        <div class="forks-container">
           ${repeat(drive.forks, fork => this.renderDrive(fork))}
         </div>
       ` : ''}
     `
   }
 
-  renderHelp () {
+  /*renderHelp () {
     if (this.viewingForksOf) {
       return html`
       <div class="help">
@@ -443,7 +383,7 @@ export class DrivesApp extends LitElement {
         </div>
       `
     }
-  }
+  }*/
 
   // events
   // =
@@ -478,15 +418,8 @@ export class DrivesApp extends LitElement {
   }
 
   onClickViewForksOf (e, drive) {
-    this.viewingForksOf = drive
-  }
-
-  onClickGoBackForks (e) {
-    if (this.viewingForksOf.forkOf?.key) {
-      this.viewingForksOf = this.drives.find(d => d.key === this.viewingForksOf.forkOf.key)
-    } else {
-      this.viewingForksOf = undefined
-    }
+    drive.showForks = !drive.showForks
+    this.requestUpdate()
   }
 
   async onToggleHosting (e, drive) {
