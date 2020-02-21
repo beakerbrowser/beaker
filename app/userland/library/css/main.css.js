@@ -24,49 +24,129 @@ a:hover {
   text-decoration: underline;
 }
 
-nav {
+header {
+  display: grid;
+  grid-template-columns: 200px 1fr 100px;
+  padding: 10px;
   position: sticky;
   top: 0;
   z-index: 1;
   background: #fff;
-  margin: 0 auto;
-  max-width: 800px;
+  border-bottom: 1px solid #dde;
 }
 
-main {
-  margin: 0 auto;
-  max-width: 800px;
+header .brand {
+  font-size: 18px;
+  line-height: 35px;
+  padding-left: 7px;
+  color: #556;
 }
 
-nav .search-ctrl {
+header .brand .fas {
+  margin-right: 2px;
+  font-size: 17px;
+  color: #2196F3;
+}
+
+header .search-ctrl {
   position: relative;
-  border: 1px solid #dde;
 }
 
-nav .search-ctrl .fa-search {
+header .search-ctrl .fa-search {
   position: absolute;
   left: 14px;
-  top: 14px;
+  top: 11px;
+  font-size: 16px;
   color: #bbc;
 }
 
-nav .search-ctrl input {
-  background: #fff;
+header .search-ctrl input {
+  background: #f6f6fa;
   box-sizing: border-box;
   width: 100%;
-  height: 40px;
-  padding: 0 0 0 38px;
+  max-width: 800px;
+  height: 36px;
+  padding: 0 0 0 42px;
   border: 0;
+  border-radius: 6px;
   box-shadow: none;
+}
+
+header .search-ctrl input::placeholder {
+  letter-spacing: 1px;
+}
+
+header .new-btn {
+  display: block;
+  background: #fff;
+  border: 1px solid #ccd;
+  border-top: 1px solid #2196F3;
+  color: #667;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  border-radius: 4px;
+  height: 32px;
+  line-height: 32px;
+  margin: 0 10px;
+  padding-right: 4px;
+  cursor: pointer;
+}
+
+header .new-btn .fa-fw {
+  font-size: 12px;
+}
+
+header .new-btn.pressed,
+header .new-btn:hover {
+  background: #fafafd;
+  text-decoration: none;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+}
+
+nav {
+
+}
+
+nav .page-nav a {
+  display: block;
+  padding: 10px 20px;
+  color: #556;
+  margin: 10px;
+  border-radius: 26px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+nav .page-nav a:hover {
+  background: #f3f3f8;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+nav .page-nav a.current {
+  background: #E3F2FD;
+  color: #2187f3;
+  font-weight: bold;
+}
+
+nav .page-nav a .fa-fw {
+  margin-right: 5px;
+}
+
+main {
+  max-height: calc(100vh - 58px);
+  overflow-y: auto;
 }
 
 .drives {
   font-size: 13px;
-  padding-top: 6px;
   min-height: 100vh;
   box-sizing: border-box;
-  border-left: 1px solid #dde;
-  border-right: 1px solid #dde;
 }
 
 .drives header {
@@ -118,7 +198,7 @@ nav .search-ctrl input {
 }
 
 .drive .info {
-  flex: 1;
+  flex: 5;
 }
 
 .drive .info .title {
@@ -141,11 +221,13 @@ nav .search-ctrl input {
 }
 
 .drive .forks {
-  width: 100px;
+  flex: 1;
+  min-width: 100px;
 }
 
 .drive .peers {
-  width: 90px;
+  flex: 1;
+  min-width: 90px;
 }
 
 .drive .ctrls {

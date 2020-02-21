@@ -23,6 +23,7 @@ ${tooltipCSS}
   color: #556;
   background: #fff;
   border: 1px solid #ccd;
+  border-top: 1px solid #2196F3;
   font-size: 13px;
   line-height: 26px;
   letter-spacing: 0.25px;

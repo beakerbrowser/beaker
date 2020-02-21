@@ -2,10 +2,11 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { HELP } from 'beaker://app-stdlib/js/const.js'
-import { toNiceDriveType, getDriveTypeIcon, pluralize, toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
+import { pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
+import * as newDriveDropdown from 'beaker://app-stdlib/js/com/new-drive-dropdown.js'
 import mainCSS from '../css/main.css.js'
 
 const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hyper://'.length)}`
@@ -221,32 +222,43 @@ export class DrivesApp extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      <nav>
+      <header>
+        <div class="brand">
+          <span class="fas fa-fw fa-list"></span>
+          My Library
+        </div>
         <div class="search-ctrl">
           <span class="fas fa-search"></span>
-          <input placeholder="Search" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
+          <input placeholder="Search my drives" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
         </div>
-      </nav>
-      <main>
-        ${this.viewingForksOf ? html`
-          <div class="drives">
-            <header>
-              <button @click=${this.onClickGoBackForks}><span class="fas fa-chevron-left"></span></button>
-              Forks of "${this.viewingForksOf.info.title || 'Untitled'}" (${toNiceDomain(this.viewingForksOf.url)})
-            </header>
-            ${this.renderDrive(this.viewingForksOf, true)}
+        <a class="new-btn" @click=${this.onClickNew}>
+          <span class="fas fa-fw fa-plus"></span> New
+        </a>
+      </header>
+      <div class="layout">
+        <nav>
+          <div class="page-nav">
+            <a class="current">
+            <span class="far fa-fw fa-hdd"></span> Drives
+            </a>
+            <a>
+              <span class="far fa-fw fa-star"></span> Bookmarks
+            </a>
           </div>
-        ` : drives ? html`
-          <div class="drives">
-            ${repeat(drives, drive => this.renderDrive(drive))}
-            ${drives.length === 0 ? html`
-              <div class="empty">No items found</div>
-            ` : ''}
-          </div>
-        ` : html`
-          <div class="loading"><span class="spinner"></span></div>
-        `}
-      </main>
+        </nav>
+        <main>
+          ${drives ? html`
+            <div class="drives">
+              ${repeat(drives, drive => this.renderDrive(drive))}
+              ${drives.length === 0 ? html`
+                <div class="empty">No items found</div>
+              ` : ''}
+            </div>
+          ` : html`
+            <div class="loading"><span class="spinner"></span></div>
+          `}
+        </main>
+      </div>
     `
   }
 
@@ -285,13 +297,13 @@ export class DrivesApp extends LitElement {
               ${numForks} ${pluralize(numForks, 'fork')}
               ${drive.showForks ? html`<span class="fas fa-fw fa-caret-down"></span>` : ''} 
             </a>
-          ` : ''}
+          ` : html`<a>-</a>`}
         </div>
         <div class="peers">
           ${drive.ident.home ? html`
-            <a href="#todo"><span class="fas fa-lock"></span></a>
+            <a><span class="fas fa-lock"></span></a>
           ` : html`
-            <a href="#todo">${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}</a>
+            <a>${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}</a>
           `}
         </div>
         <div class="ctrls">
@@ -410,11 +422,18 @@ export class DrivesApp extends LitElement {
     this.driveMenu(drive, rect.right, rect.bottom, true)
   }
 
-  onClickNew (e) {
+  async onClickNew (e) {
     e.preventDefault()
     e.stopPropagation()
-    var rect = e.currentTarget.getClientRects()[0]
-    this.newDriveMenu(rect.right, rect.bottom, true)
+
+    var btn = e.currentTarget
+    var rect = btn.getClientRects()[0]
+    btn.classList.add('pressed')
+    await newDriveDropdown.create({
+      x: rect.left - 5,
+      y: 8
+    })
+    btn.classList.remove('pressed')
   }
 
   onContextmenu (e) {
