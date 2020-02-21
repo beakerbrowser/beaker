@@ -198,9 +198,9 @@ async function beakerProtocol (request, respond) {
     let imgPath = requestUrl.slice('beaker://assets/img/frontends/'.length)
     return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/frontends/${imgPath}`))
   }
-  if (requestUrl.startsWith('beaker://assets/img/favicons/')) {
-    let imgPath = requestUrl.slice('beaker://assets/img/favicons/'.length)
-    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/favicons/${imgPath}`))
+  if (requestUrl.startsWith('beaker://assets/img/drive-types/')) {
+    let imgPath = requestUrl.slice('beaker://assets/img/drive-types/'.length)
+    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/drive-types/${imgPath}`))
   }
 
   // userland

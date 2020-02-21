@@ -258,7 +258,13 @@ export class DrivesApp extends LitElement {
         @contextmenu=${e => this.onContextmenuDrive(e, drive)}
       >
         <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
-          <img class="thumb" src="beaker://assets/img/favicons/${categorizeDrive(drive)}.png">
+          <img
+            class="thumb"
+            srcset="
+              beaker://assets/img/drive-types/${categorizeDrive(drive)}.png 1x,
+              beaker://assets/img/drive-types/${categorizeDrive(drive)}-64.png 2x
+            "
+          >
         </a>
         <div class="info">
           <div class="title">
