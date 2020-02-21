@@ -503,9 +503,9 @@ class Tab {
   }
 
   async captureScreenshot () {
-    // capture screenshot on the root page of dat & http sites
     var urlp = parseDriveUrl(this.url)
-    if (['hyper:', 'http:', 'https:'].includes(urlp.protocol) && (urlp.pathname === '/' || /^\/index.(md|html)$/.test(urlp.pathname))) {
+    // TODO only capture screenshot when needed -prf
+    if (true) { //['hyper:', 'http:', 'https:'].includes(urlp.protocol) && (urlp.pathname === '/' || /^\/index.(md|html)$/.test(urlp.pathname))) {
       try {
         // wait a sec to allow loading to finish
         await new Promise(r => setTimeout(r, 1e3))

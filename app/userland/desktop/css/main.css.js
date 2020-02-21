@@ -51,11 +51,11 @@ ${tooltipCSS}
 .files {
   display: grid;
   padding: 10vh 15px 5px 15px;
-  margin: 0 auto;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  margin: 50px auto 0;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   grid-gap: 15px;
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   user-select: none;
 }
 
@@ -75,33 +75,23 @@ ${tooltipCSS}
   text-decoration: none;
 }
 
-.file .favicon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1;
-  border-radius: 50%;
-  background: #f2f2f8;
-  width: 36px;
-  height: 36px;
-}
-
-.file:hover .favicon-wrapper {
-  background: #e6e6ea;
-}
-
-.file .favicon {
+.file .thumb {
+  display: block;
+  margin: 0 auto;
   border-radius: 4px;
-  width: 20px;
-  height: 20px;
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  object-position: top center;
+  border: 1px solid #ccd;
+}
+
+.file:hover .thumb {
+  border-color: #889;
 }
 
 .file .details {
-  padding: 60px 2px 20px;
+  padding: 10px 2px 20px;
 }
 
 .file .details > * {
@@ -119,7 +109,7 @@ ${tooltipCSS}
 .file.add span {
   position: absolute;
   left: 50%;
-  top: 45%;
+  top: 40%;
   transform: translate(-50%, -50%);
   font-size: 22px;
   color: rgba(0, 0, 150, 0.15);
@@ -130,16 +120,13 @@ ${tooltipCSS}
 }
 
 .dock-wrapper {
-  position: fixed;
-  bottom: 0;
+  position: absolute;
+  top: 0;
   left: 0;
-  width: 100%;
-  text-align: center;
-  background: #fff;
 }
 
 .dock {
-  padding: 5px 15px 30px;
+  padding: 5px 10px 20px;
 }
 
 .dock-separator {
@@ -157,40 +144,18 @@ ${tooltipCSS}
   padding: 3px 7px;
   font-weight: 400;
   font-size: .7rem;
-  text-transform: uppercase;
-  letter-spacing: .15px;
-  color: rgba(0,0,0,.75);
+  letter-spacing: .5px;
+  color: rgba(0,0,0,.65);
 }
 
 .dock-item:not(:last-child) {
-  margin-right: 25px;
+  margin-right: 10px;
 }
 
 .dock-item:hover {
   color: @color-text;
   background: rgba(0,0,0,.075);
   border-radius: 2px;
-}
-
-.beta-notice {
-  position: fixed;
-  bottom: 75px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  width: 370px;
-  padding: 0 12px 6px;
-  border: 1px solid var(--blue);
-  border-radius: 8px;
-  box-shadow: 0 0 2px #2864dc;
-}
-
-.beta-notice a {
-  color: var(--blue);
-}
-
-.beta-notice a:hover {
-  text-decoration: underline;
 }
 `
 export default cssStr

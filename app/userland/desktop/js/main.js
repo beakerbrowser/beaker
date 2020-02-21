@@ -67,10 +67,6 @@ class DesktopApp extends LitElement {
           </a>
         </div>
       </div>
-      <div class="beta-notice">
-        <h3>Welcome to the Beaker Private Beta</h3>
-        <p>All of your data is temporary, so don't get too attached to it! <a href="https://beaker-browser.gitbook.io/docs/">Documentation</a></p>
-      </div>
     `
   }
 
@@ -83,8 +79,8 @@ class DesktopApp extends LitElement {
             href=${getHref(file)}
             @contextmenu=${e => this.onContextmenuFile(e, file)}
           >
-            <div class="favicon-wrapper">
-              <img src=${'asset:favicon:' + getHref(file) + '?cache_buster=' + Date.now()} class="favicon"/>
+            <div class="thumb-wrapper">
+              <img src=${'asset:screenshot:' + getHref(file) + '?cache_buster=' + Date.now()} class="thumb"/>
             </div>
             <div class="details">
               <div class="title">${getTitle(file)}</div>

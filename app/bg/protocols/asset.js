@@ -26,13 +26,17 @@ export function setup () {
   var DEFAULTS = {
     favicon: {type: 'image/png', data: NOT_FOUND},
     thumb: {type: 'image/jpeg', data: NOT_FOUND},
-    cover: {type: 'image/jpeg', data: NOT_FOUND}
+    cover: {type: 'image/jpeg', data: NOT_FOUND},
+    screenshot: {type: 'image/png', data: NOT_FOUND}
   }
 
   // load defaults
   fs.readFile(path.join(__dirname, './assets/img/favicons/default.png'), (err, buf) => {
     if (err) { console.error('Failed to load default favicon', path.join(__dirname, './assets/img/default-favicon.png'), err) }
-    if (buf) { DEFAULTS.favicon.data = buf }
+    if (buf) {
+      DEFAULTS.favicon.data = buf
+      DEFAULTS.screenshot.data = buf
+    }
   })
   fs.readFile(path.join(__dirname, './assets/img/default-user-thumb.jpg'), (err, buf) => {
     if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-thumb.jpg'), err) }
@@ -56,25 +60,33 @@ export function setup () {
     }
 
     // validate
-    if (asset !== 'favicon' && asset !== 'thumb' && asset !== 'cover') {
+    if (asset !== 'favicon' && asset !== 'thumb' && asset !== 'cover' && asset !== 'screenshot') {
       return cb({data: NOT_FOUND})
     }
 
     // hardcoded assets
-    if (url.startsWith('beaker://')) {
+    if (asset !== 'screenshot' && url.startsWith('beaker://')) {
       let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
       return servePng(path.join(__dirname, `./assets/img/favicons/${name}.png`), DEFAULTS[asset], cb)
     }
 
     try {
       // look up in db
-      let data = await sitedata.get(url, asset)
-      if (!data && asset === 'thumb') {
-        // try fallback to screenshot
+      let data
+      if (asset === 'screenshot') {
         data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
         if (!data) {
-          // try fallback to favicon
-          data = await sitedata.get(url, 'favicon')
+          return serveJgg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
+        }
+      } else {
+        data = await sitedata.get(url, asset)
+        if (!data && asset === 'thumb') {
+          // try fallback to screenshot
+          data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
+          if (!data) {
+            // try fallback to favicon
+            data = await sitedata.get(url, 'favicon')
+          }
         }
       }
       if (data) {
@@ -127,6 +139,13 @@ function parseAssetUrl (str) {
 function servePng (p, fallback, cb) {
   return fs.readFile(p, (err, buf) => {
     if (buf) cb({mimeType: 'image/png', data: buf})
+    else cb(fallback)
+  })
+}
+
+function serveJgg (p, fallback, cb) {
+  return fs.readFile(p, (err, buf) => {
+    if (buf) cb({mimeType: 'image/jpeg', data: buf})
     else cb(fallback)
   })
 }
