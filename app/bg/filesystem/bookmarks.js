@@ -11,7 +11,7 @@ import { URL } from 'url'
  */
 export async function list () {
   var files = (await query(filesystem.get(), {
-    path: '/library/bookmarks/*.goto',
+    path: ['/desktop/*.goto', '/library/bookmarks/*.goto'],
   }))
   return files.map(massageBookmark)
 }
