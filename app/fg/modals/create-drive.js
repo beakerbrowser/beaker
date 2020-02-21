@@ -31,44 +31,53 @@ class CreateDriveModal extends LitElement {
       margin: 0;
       border-color: #bbb;
     }
-
-    select {
-      -webkit-appearance: none;
-      display: inline-block;
-      font-size: 13px;
-      font-weight: 500;
-      padding: 5px 30px 5px 10px;
-      max-width: 100%;
-      border: 1px solid #bbc;
-      border-radius: 4px;
-      outline: 0;
-      background-color: #fff;
-      background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAARVBMVEUAAAAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAsPlAz1sU3AAAAFnRSTlMAAwQMERkbIikuVWl0dXeDtLXF5PH5X4+8lwAAAIxJREFUSInt0TcCwjAQRNFvE5dkwKD7H5WGINsKszWa+r9qoO1ftjqc1B0N2DyDYwNcPX0Ia0Yf2HFx9Y+e7u4Be6B3CAOXsPcTqrDvd5qw6G1FxL0ipn1dzPuaWPZlkepLIt3nRa7PiXyfFqU+Jcr9UtT6uaj3U6H0sdD6n1D7j9B76M7jbevo29rgBddTP/7iwZL3AAAAAElFTkSuQmCC);
-      background-repeat: no-repeat;
-      background-position: right .7em top 50%, 0 0;
-      background-size: .65em auto, 100%;
-    }
-
-    h1.title select {
-      position: relative;
-      top: -1px;
-      left: 5px;
-      font-size: 14px;
-      font-weight: 700;
-      color: #444;
-      letter-spacing: 0.5px;
-    }
     
     form {
       padding: 14px 20px;
       margin: 0;
     }
 
-    input {
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 450px;
+      margin-bottom: 10px;
+    }
+
+    form input {
       font-size: 14px;
       height: 34px;
       padding: 0 10px;
       border-color: #bbb;
+      margin-top: 0;
+    }
+
+    select {
+      width: 100%;
+      display: block;
+      height: 130px;
+      border-radius: 4px;
+      border: 1px solid #bbc;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+      padding: 10px 0 5px;
+    }
+
+    select:focus {
+      outline: 0;
+      border: 1px solid rgba(41, 95, 203, 0.8);
+      box-shadow: 0 0 0 2px rgba(41, 95, 203, 0.2);
+    }
+
+    select option {
+      padding: 5px;
+    }
+
+    select option:first-of-type {
+      margin-top: 4px;
+    }
+
+    select option:last-of-type {
+      margin-bottom: 8px;
     }
     
     hr {
@@ -77,33 +86,18 @@ class CreateDriveModal extends LitElement {
       margin: 20px 0;
     }
 
-    .frontend select {
-      display: block;
-      padding: 7px 30px 7px 10px;
-      background-color: #fafafd;
-      width: 100%;
-      margin-top: 5px;
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-
-    .frontend select:disabled {
-      color: inherit;
-      background-image: none;
-    }
-
     img.preview {
       display: block;
-      width: 100%;
+      width: 450px;
       height: 230px;
-      border: 1px solid #ccd;
-      border-top: 0;
+      border: 1px solid #bbc;
       border-radius: 4px;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      margin: 0 0 15px;
       object-fit: cover;
       box-sizing: border-box;
+    }
+
+    .ctrls {
+      padding-right: 10px;
     }
 
     .form-actions {
@@ -142,8 +136,14 @@ class CreateDriveModal extends LitElement {
     this.frontend = params.frontend
     this.author = undefined // this.author = params.author
 
-    if (!this.frontend || !this.matchingFrontends.find(fe => fe.url === this.frontend)) {
-      this.frontend = this.matchingFrontends[0].url
+    if (!this.frontend || !this.availableFrontends.find(fe => fe.url === this.frontend)) {
+      if (this.type) {
+        let fe = this.getMatchingFrontends(this.type)
+        this.frontend = fe[0] ? fe[0].url : ''
+      }
+      if (!this.type) {
+        this.frontend = this.availableFrontends[0].url
+      }
     }
 
     await this.requestUpdate()
@@ -162,41 +162,40 @@ class CreateDriveModal extends LitElement {
     return BUILTIN_FRONTENDS
   }
 
-  get matchingFrontends () {
-    return this.availableFrontends.filter(t => filterFrontendByType(t.manifest, this.type))
+  getMatchingFrontends (type) {
+    return this.availableFrontends.filter(t => filterFrontendByType(t.manifest, type))
   }
 
   // rendering
   // =
 
   render () {
-    const matchingFrontends = this.matchingFrontends
     var currentFrontend = this.availableFrontends.find(fe => fe.url === this.frontend)
     var frontendImg = currentFrontend ? currentFrontend.img : 'none'
-    const typeopt = (id, label) => html`<option value=${id} ?selected=${id === this.type}>${label}</option>`
     const feopt = (id, label) => html`<option value=${id} ?selected=${id === this.frontend}>${label}</option>`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">
-          Create new 
-          <select name="type" @change=${this.onChangeType}>
-            ${repeat(BUILTIN_TYPES, t => typeopt(t.type, t.title))}
-          </select>
+          Create New Hyperdrive
         </h1>
-        <form @submit=${this.onSubmit}>          
-          <label for="title">Title</label>
-          <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" />
-          ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
+        <form @submit=${this.onSubmit}>
+          <div class="layout">
+            <div class="ctrls">
+              <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" placeholder="Title" />
+              ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
-          <label for="desc">Description</label>
-          <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Optional">
-            
-          <div class="frontend">
-            <label>Frontend</label>
-            <select name="frontend" @change=${this.onChangeFrontend}>
-              ${repeat(matchingFrontends, fe => feopt(fe.url, fe.title))}
-            </select>
+              <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
+                
+              <select name="frontend" multiple @change=${this.onChangeFrontend}>
+                ${repeat(BUILTIN_TYPES, ({type, title}) => html`
+                  <optgroup label="&nbsp;&nbsp;${title}">
+                    ${repeat(this.getMatchingFrontends(type), fe => feopt(fe.url, fe.title))}
+                  </optgroup>
+                `)}
+              </select>
+            </div>
+
             <img class="preview" src="beaker://assets/img/frontends/${frontendImg}.png">
           </div>
 

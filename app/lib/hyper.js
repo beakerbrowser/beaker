@@ -124,19 +124,19 @@ describe('My Module', () => {
 }
 
 export const BUILTIN_TYPES = [
-  {type: '', title: 'Files Drive'},
   {type: 'website', title: 'Website'},
-  {type: 'module', title: 'Module'},
-  {type: 'group', title: 'User Group'}
+  {type: '', title: 'Files Drive'},
+  {type: 'group', title: 'User Group'},
+  {type: 'module', title: 'Module'}
 ]
 
 export const BUILTIN_FRONTENDS = [
-  {url: 'null:files', title: 'Beaker Files Listing UI', img: 'files-drive', manifest: {frontend: {drive_types: undefined}}},
+  {url: 'null:files', title: 'File-share', img: 'files-drive', manifest: {frontend: {drive_types: undefined}}},
   {url: 'null:website', title: 'Website Starter Template', img: 'website', scaffold: WEBSITE_SCAFFOLD, manifest: {frontend: {drive_types: 'website'}}},
-  {url: 'builtin:beaker-wiki', title: 'Beaker Simple Wiki UI', img: 'beaker-wiki',  manifest: {frontend: {drive_types: 'website'}}},
-  {url: 'builtin:beaker-code-snippet', title: 'Beaker Code Snippet UI', img: 'beaker-code-snippet', manifest: {frontend: {drive_types: 'website'}}},
-  {url: 'builtin:beaker-module', title: 'Beaker Module UI', img: 'beaker-module', scaffold: MODULE_SCAFFOLD, manifest: {frontend: {drive_types: 'module'}}},
-  {url: 'builtin:beaker-group', title: 'Beaker User Group UI', img: 'beaker-group', manifest: {frontend: {drive_types: 'group'}}}
+  {url: 'builtin:beaker-wiki', title: 'Markdown Wiki', img: 'beaker-wiki',  manifest: {frontend: {drive_types: 'website'}}},
+  {url: 'builtin:beaker-code-snippet', title: 'Code Snippet', img: 'beaker-code-snippet', manifest: {frontend: {drive_types: 'website'}}},
+  {url: 'builtin:beaker-module', title: 'Code Module', img: 'beaker-module', scaffold: MODULE_SCAFFOLD, manifest: {frontend: {drive_types: 'module'}}},
+  {url: 'builtin:beaker-group', title: 'Link-sharing Forum', img: 'beaker-group', manifest: {frontend: {drive_types: 'group'}}}
 ]
 
 export function filterFrontendByType (manifest, targetType) {
