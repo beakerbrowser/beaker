@@ -4,12 +4,15 @@ import { parseDriveUrl } from '../../lib/urls'
 import knex from '../lib/knex'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../lib/db'
+import EventEmitter from 'events'
+import { Readable } from 'stream'
 
 // globals
 // =
 
 var db
 var migrations
+var events = new EventEmitter()
 
 // exported methods
 // =
@@ -58,6 +61,17 @@ export async function list ({keys, offset, limit} = {keys: [], offset: 0, limit:
   return cbPromise(cb => db.all(queryAsSql.sql, queryAsSql.bindings, cb))
 }
 
+export async function stream () {
+  var s = new Readable({
+    read () {},
+    objectMode: true
+  })
+  const onData = detail => s.push(['data', {detail}])
+  events.on('insert', onData)
+  s.on('close', e => events.removeListener('insert', onData))
+  return s
+}
+
 // internal methods
 // =
 
@@ -65,6 +79,7 @@ function insert (table, data) {
   var query = knex(table).insert(data)
   var queryAsSql = query.toSQL()
   db.run(queryAsSql.sql, queryAsSql.bindings)
+  events.emit('insert', data)
 }
 
 /**

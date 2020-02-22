@@ -69,7 +69,7 @@ import experimentalGlobalFetchAPI from './bg/experimental/global-fetch'
 
 export const setup = function () {
   // internal apis
-  rpc.exportAPI('logger', loggerManifest, Object.assign({}, {listAuditLog: auditLog.list}, loggerAPI), internalOnly)
+  rpc.exportAPI('logger', loggerManifest, Object.assign({}, {listAuditLog: auditLog.list, streamAuditLog: auditLog.stream}, loggerAPI), internalOnly)
   rpc.exportAPI('beaker-browser', beakerBrowserManifest, beakerBrowserAPI, internalOnly)
   rpc.exportAPI('bookmarks', bookmarksManifest, bookmarksAPI, internalOnly)
   rpc.exportAPI('downloads', downloadsManifest, downloadsAPI, internalOnly)

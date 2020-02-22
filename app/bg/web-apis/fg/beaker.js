@@ -35,11 +35,12 @@ export const setup = function (rpc) {
     beaker.history = Object.assign({}, historyRPC)
     beaker.logger = Object.assign({}, loggerRPC)
     beaker.logger.stream = (opts) => fromEventStream(loggerRPC.stream(opts))
+    beaker.logger.streamAuditLog = () => fromEventStream(loggerRPC.streamAuditLog())
     beaker.sitedata = Object.assign({}, sitedataRPC)
     beaker.users = Object.assign({}, usersRPC)
     beaker.watchlist = Object.assign({}, watchlistRPC)
     beaker.watchlist.createEventsStream = () => fromEventStream(watchlistRPC.createEventsStream())
-
+    
     // beaker.drives
     beaker.drives = new EventTarget()
     beaker.drives.status = drivesRPC.status

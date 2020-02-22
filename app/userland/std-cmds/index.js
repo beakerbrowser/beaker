@@ -311,3 +311,57 @@ export const page = {
     return this.page.uninject(''+id)
   }
 }
+
+// system
+// =
+
+export const system = {
+  async fs_audit_stream (opts = {}) {
+    var containerEl = document.createElement('div')
+    containerEl.classList.add('border-default')
+    containerEl.style.height = '50vh'
+    containerEl.style.minHeight = '150px'
+    containerEl.style.overflow = 'auto'
+    containerEl.style.padding = '5px 0'
+
+    function isOriginEq (a, b) {
+      try {
+        return (new URL(a)).origin === (new URL(b)).origin
+      } catch (e) {
+        return false
+      }
+    }
+
+    var stream = await beaker.logger.streamAuditLog()
+    stream.addEventListener('data', e => {
+      if (opts.caller && !isOriginEq(opts.caller, e.detail.caller)) return
+      if (opts.target && !isOriginEq(opts.target, e.detail.target)) return
+      if (opts.method && e.detail.method !== opts.method) return
+      if (opts.longerthan && e.detail.runtime < +opts.longerthan) return
+
+      var entry = document.createElement('div')
+      var ts = (new Date(e.detail.ts)).toLocaleTimeString()
+      html.render(html`
+        <div><small style="padding: 0 5px; width: 50px; display: inline-block">caller</small> <a href="${e.detail.caller}">${e.detail.caller}</a></div>
+        <div><small style="padding: 0 5px; width: 50px; display: inline-block">target</small> <a href="hyper://${e.detail.target}">hyper://${e.detail.target}</a></div>
+        <div><small style="padding: 0 5px; width: 50px; display: inline-block">ts</small> ${ts}</div>
+        <div><small style="padding: 0 5px; width: 50px; display: inline-block">runtime</small> ${e.detail.runtime}ms</div>
+        <div><small style="padding: 0 5px; width: 50px; display: inline-block">method</small> ${e.detail.method}</div>
+        <div><small style="padding: 0 5px; width: 50px; display: inline-block">args</small> ${e.detail.args}</div>
+        <hr style="border: 0; border-top: 1px solid var(--lightgray)">
+      `, entry)
+      containerEl.prepend(entry)
+    })
+    function onStopStream (e) {
+      e.preventDefault()
+      e.stopPropagation()
+      e.currentTarget.parentNode.textContent = 'Stream stopped'
+      stream.close()
+    }
+
+    this.out(
+      html`<p>Streaming <button @click=${onStopStream}>&times;</button></p>`,
+      containerEl
+    )
+  }
+}

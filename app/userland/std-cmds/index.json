@@ -215,6 +215,39 @@
           "usage": "commands install {name|url}"
         }
       ]
+    },
+    {
+      "name": "system",
+      "help": "Beaker system info commands",
+      "subcommands": [
+        {
+          "name": "fs_audit_stream",
+          "help": "Stream the filesystem audit log",
+          "usage": "system fs-audit-stream [-c caller] [-t target] [-m method] [-l ms]",
+          "options": [
+            {
+              "name": "caller",
+              "abbr": "c",
+              "help": "Filter to the given caller (URL)"
+            },
+            {
+              "name": "target",
+              "abbr": "t",
+              "help": "Filter to the given target (URL)"
+            },
+            {
+              "name": "method",
+              "abbr": "m",
+              "help": "Filter to the given method"
+            },
+            {
+              "name": "longerthan",
+              "abbr": "l",
+              "help": "Filter to calls that took longer than the given time (ms)"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
