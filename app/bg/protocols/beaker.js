@@ -211,7 +211,7 @@ async function beakerProtocol (request, respond) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'diff'), cb)
   }
   if (requestUrl === 'beaker://library' || requestUrl.startsWith('beaker://library/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'library'), cb)
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'library'), cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://drive-view' || requestUrl.startsWith('beaker://drive-view/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'drive-view'), cb)
