@@ -29,7 +29,7 @@ ${tooltipCSS}
   letter-spacing: 0.25px;
   font-weight: 400;
   padding: 0px 10px;
-  border-radius: 4px;
+  border-radius: 2px;
   text-decoration: none;
   cursor: pointer;
 }

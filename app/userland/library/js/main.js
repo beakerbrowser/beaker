@@ -112,7 +112,7 @@ export class LibraryApp extends LitElement {
           <input placeholder="Search my drives" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
         </div>
         <a class="new-btn" @click=${this.onClickNew}>
-          <span class="fas fa-fw fa-plus"></span> New
+          New <span class="fas fa-fw fa-plus"></span>
         </a>
       </header>
       <div class="layout">

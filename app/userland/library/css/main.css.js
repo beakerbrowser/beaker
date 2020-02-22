@@ -85,11 +85,11 @@ header .new-btn {
   font-size: 13px;
   font-weight: 600;
   text-align: center;
-  border-radius: 4px;
+  border-radius: 2px;
   height: 32px;
   line-height: 32px;
   margin: 0 10px;
-  padding-right: 4px;
+  padding-left: 4px;
   cursor: pointer;
 }
 
