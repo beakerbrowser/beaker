@@ -10,47 +10,76 @@ ${tooltipCSS}
 
 :host {
   display: block;
+  padding: 0 15px;
 }
 
-.top-right-ctrls {
-  position: fixed;
-  top: 8px;
-  right: 10px;
+header {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  max-width: 1000px;
+  margin: 50px auto;
 }
 
-.top-right-ctrls a {
-  display: inline-block;
-  color: #556;
-  background: #fff;
-  border: 1px solid #ccd;
-  border-top: 1px solid #2196F3;
-  font-size: 13px;
-  line-height: 26px;
-  letter-spacing: 0.25px;
+header .search-ctrl {
+  position: relative;
+}
+
+header .search-ctrl .fa-search {
+  position: absolute;
+  top: 12px;
+  left: 15px;
+  font-size: 16px;
+  color: #99a;
+}
+
+header .search-ctrl input {
+  background: #f0f0f6;
+  box-sizing: border-box;
+  width: 100%;
+  height: 40px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  padding: 0 0 0 42px;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+header .search-ctrl input::placeholder {
+  letter-spacing: 1px;
+  font-size: 14px;
   font-weight: 400;
-  padding: 0px 10px;
+}
+
+header .new-btn {
+  display: block;
+  background: #2864dc;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
   border-radius: 2px;
-  text-decoration: none;
+  height: 38px;
+  line-height: 38px;
+  margin: 1px 10px;
   cursor: pointer;
 }
 
-.top-right-ctrls a:hover {
-  background: #fafafd;
-}
-
-.top-right-ctrls a.pressed {
-  background: #fafafd;
-}
-
-.top-right-ctrls a span {
+header .new-btn .fas {
+  font-size: 13px;
   margin-left: 4px;
-  font-size: 11px;
+}
+
+header .new-btn.pressed,
+header .new-btn:hover {
+  background: #1957d2;
+  text-decoration: none;
 }
 
 .files {
   display: grid;
-  padding: 10vh 15px 5px 15px;
-  margin: 50px auto 0;
+  margin: 0 auto;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   grid-gap: 15px;
   width: 100%;
@@ -116,6 +145,13 @@ ${tooltipCSS}
 
 .file.add:hover span {
   color: rgba(0, 0, 150, 0.25);
+}
+
+drives-view {
+  display: block;
+  max-width: 1000px;
+  margin: 30px auto;
+  border-top: 1px solid #dde;
 }
 `
 export default cssStr

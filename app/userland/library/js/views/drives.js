@@ -189,7 +189,7 @@ export class DrivesView extends LitElement {
     `
   }
 
-  renderDrive (drive, showForks = false) {
+  renderDrive (drive) {
     var numForks = drive.forks?.length || 0
     return html`
       <div

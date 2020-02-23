@@ -7,12 +7,14 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as newDriveDropdown from 'beaker://app-stdlib/js/com/new-drive-dropdown.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as desktop from './lib/desktop.js'
+import 'beaker://library/js/views/drives.js'
 import css from '../css/main.css.js'
 
 class DesktopApp extends LitElement {
   static get properties () {
     return {
-      files: {type: Array}
+      files: {type: Array},
+      filter: {type: String}
     }
   }
 
@@ -23,6 +25,7 @@ class DesktopApp extends LitElement {
   constructor () {
     super()
     this.files = []
+    this.filter = ''
     this.load()
 
     window.addEventListener('focus', e => {
@@ -33,6 +36,7 @@ class DesktopApp extends LitElement {
   async load () {
     this.files = await desktop.load()
     console.log(this.files)
+    Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
   }
 
   // rendering
@@ -44,34 +48,51 @@ class DesktopApp extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="top-right-ctrls">
-        <a @click=${this.onClickNew}>New <span class="fas fa-plus"></span></a>
-      </div>
+      <header>
+        <div class="search-ctrl">
+          <span class="fas fa-search"></span>
+          <input placeholder="Search my library" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
+        </div>
+        <a class="new-btn" @click=${this.onClickNew}>New <span class="fas fa-plus"></span></a>
+      </header>
       ${this.renderFiles()}
+      <drives-view loadable .filter=${this.filter}></drives-view>
       </div>
     `
   }
 
   renderFiles () {
+    var files = this.files
+    if (this.filter) {
+      files = files.filter(file => (
+        getHref(file).toLowerCase().includes(this.filter)
+        || getTitle(file).toLowerCase().includes(this.filter)
+      ))
+    }
+    if (this.filter && files.length === 0) {
+      return ''
+    }
     return html`
       <div class="files">
-        ${repeat(this.files, file => html`
+        ${repeat(files, file => html`
           <a
             class="file"
             href=${getHref(file)}
             @contextmenu=${e => this.onContextmenuFile(e, file)}
           >
             <div class="thumb-wrapper">
-              <img src=${'asset:screenshot:' + getHref(file) + '?cache_buster=' + Date.now()} class="thumb"/>
+              <img src=${'asset:screenshot:' + getHref(file)} class="thumb"/>
             </div>
             <div class="details">
               <div class="title">${getTitle(file)}</div>
             </div>
           </a>
         `)}
-        <a class="file add" @click=${this.onClickAdd}>
-          <span class="fas fa-fw fa-plus"></span>
-        </a>
+        ${!this.filter ? html`
+          <a class="file add" @click=${this.onClickAdd}>
+            <span class="fas fa-fw fa-plus"></span>
+          </a>
+        ` : ''}
       </div>
     `
   }
@@ -88,7 +109,7 @@ class DesktopApp extends LitElement {
     btn.classList.add('pressed')
     await newDriveDropdown.create({
       x: rect.left - 5,
-      y: 8
+      y: 50
     })
     btn.classList.remove('pressed')
   }
