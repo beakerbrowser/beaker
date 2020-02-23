@@ -59,8 +59,10 @@ class BrowserMenu extends LitElement {
       return this.renderBookmarks()
     }
 
-    if (this.submenu === 'tools') {
-      return this.renderTools()
+    // render the progress bar if downloading anything
+    var progressEl = ''
+    if (this.shouldPersistDownloadsIndicator && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
+      progressEl = html`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
 
     // auto-updater
@@ -111,11 +113,27 @@ class BrowserMenu extends LitElement {
             <span class="label">Bookmarks</span>
             <i class="more fa fa-angle-right"></i>
           </div>
+            
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+            <img class="favicon" src="asset:favicon:beaker://library">
+            <span class="label">My Library</span>
+          </div>
 
-          <div class="menu-item" @click=${e => this.onShowSubmenu('tools')}>
-            <i class="fas fa-tools"></i>
-            <span class="label">Tools</span>
-            <i class="more fa fa-angle-right"></i>
+          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
+            <img class="favicon" src="asset:favicon:beaker://downloads">
+            <span class="label">Downloads</span>
+            ${progressEl}
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
+            <img class="favicon" src="asset:favicon:beaker://history">
+            <span class="label">History</span>
+            <span class="shortcut">${this.accelerators.history}</span>
+          </div>
+            
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+            <img class="favicon" src="asset:favicon:beaker://settings">
+            <span class="label">Settings</span>
           </div>
         </div>
 
@@ -168,49 +186,6 @@ class BrowserMenu extends LitElement {
               <span class="label">${b.title}</span>
             </div>
           `)}
-        </div>
-      </div>`
-  }
-
-  renderTools () {
-    // render the progress bar if downloading anything
-    var progressEl = ''
-    if (this.shouldPersistDownloadsIndicator && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
-      progressEl = html`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
-    }
-
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
-        <div class="header">
-          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
-            <i class="fa fa-angle-left"></i>
-          </button>
-          <h2>Tools</h2>
-        </div>
-
-        <div class="section">
-          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
-            <img class="favicon" src="asset:favicon:beaker://downloads">
-            <span class="label">Downloads</span>
-            ${progressEl}
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
-            <img class="favicon" src="asset:favicon:beaker://history">
-            <span class="label">History</span>
-            <span class="shortcut">${this.accelerators.history}</span>
-          </div>
-            
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-            <img class="favicon" src="asset:favicon:beaker://library">
-            <span class="label">My Library</span>
-          </div>
-            
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-            <img class="favicon" src="asset:favicon:beaker://settings">
-            <span class="label">Settings</span>
-          </div>
         </div>
       </div>`
   }
