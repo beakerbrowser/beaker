@@ -117,43 +117,5 @@ ${tooltipCSS}
 .file.add:hover span {
   color: rgba(0, 0, 150, 0.25);
 }
-
-.dock-wrapper {
-  position: absolute;
-  top: 8px;
-  left: 12px;
-}
-
-.dock {
-}
-
-.dock-separator {
-  width: auto;
-  padding: 3px 7px;
-  margin-right: 25px;
-  color: #bbb;
-}
-
-.dock-item {
-  display: inline-block;
-  width: auto;
-  cursor: pointer;
-  margin-bottom: 0;
-  padding: 3px 7px;
-  font-weight: 400;
-  font-size: .7rem;
-  letter-spacing: .5px;
-  color: rgba(0,0,0,.65);
-}
-
-.dock-item:not(:last-child) {
-  margin-right: 10px;
-}
-
-.dock-item:hover {
-  color: @color-text;
-  background: rgba(0,0,0,.075);
-  border-radius: 2px;
-}
 `
 export default cssStr

@@ -48,24 +48,6 @@ class DesktopApp extends LitElement {
         <a @click=${this.onClickNew}>New <span class="fas fa-plus"></span></a>
       </div>
       ${this.renderFiles()}
-      <div class="dock-wrapper">
-        <div class="dock">
-          <a class="dock-item" href="beaker://settings">
-            Settings
-          </a>
-          <a class="dock-item" href="beaker://history">
-            History
-          </a>
-          <a class="dock-item" href="beaker://downloads">
-            Downloads
-          </a>
-          <a class="dock-item" href="beaker://library">
-            My Library
-          </a>
-          <a class="dock-item" href="https://hyperdrive.network/${navigator.filesystem.url.slice('hyper://'.length)}">
-            My Home Drive
-          </a>
-        </div>
       </div>
     `
   }
