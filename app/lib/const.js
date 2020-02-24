@@ -13,9 +13,7 @@ export const PATHS = {
   DESKTOP: '/desktop',
   LIBRARY: '/library',
   LIBRARY_NS: (ns) => `/library/${ns}`,
-  PROFILES: '/profiles',
-  SYSTEM: '/system',
-  SYSTEM_NS: (ns) => `/system/${ns}`
+  PROFILES: '/profiles'
 }
 
 // hyperdrive trash management

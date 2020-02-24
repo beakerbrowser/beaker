@@ -86,7 +86,6 @@ export async function setup () {
     await ensureDir(PATHS.LIBRARY_NS('media'))
     await ensureDir(PATHS.LIBRARY_NS('projects'))
     await ensureDir(PATHS.PROFILES)
-    await ensureDir(PATHS.SYSTEM)
 
     // default bookmarks
     if (isInitialCreation) {
@@ -104,10 +103,10 @@ export async function setup () {
 
   // load drive config
   try {
-    drives = JSON.parse(await rootDrive.pda.readFile(PATHS.SYSTEM_NS('drives.json'))).drives
+    drives = JSON.parse(await rootDrive.pda.readFile('/drives.json')).drives
   } catch (e) {
-    console.error('Error while reading the drive configuration at /system/drives.json', e.toString())
-    logger.error('Error while reading the drive configuration at /system/drives.json', {error: e.toString()})
+    console.error('Error while reading the drive configuration at /drives.json', e.toString())
+    logger.error('Error while reading the drive configuration at /drives.json', {error: e.toString()})
   }
 }
 
@@ -176,7 +175,7 @@ export async function configDrive (url, {seeding, forkOf} = {seeding: undefined,
         }
       }
     }
-    await rootDrive.pda.writeFile(PATHS.SYSTEM_NS('drives.json'), JSON.stringify({drives}, null, 2))
+    await rootDrive.pda.writeFile('/drives.json', JSON.stringify({drives}, null, 2))
   } finally {
     release()
   }
@@ -193,7 +192,7 @@ export async function removeDrive (url) {
     var driveIndex = drives.findIndex(drive => drive.key === key)
     if (driveIndex === -1) return
     drives.splice(driveIndex, 1)
-    await rootDrive.pda.writeFile(PATHS.SYSTEM_NS('drives.json'), JSON.stringify({drives}, null, 2))
+    await rootDrive.pda.writeFile('/drives.json', JSON.stringify({drives}, null, 2))
   } finally {
     release()
   }
