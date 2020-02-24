@@ -18,7 +18,7 @@ export class BookmarksView extends LitElement {
   static get properties () {
     return {
       desktopBookmarks: {type: Array},
-      libraryBookmarks: {type: Array},
+      otherBookmarks: {type: Array},
       filter: {type: String}
     }
   }
@@ -30,7 +30,7 @@ export class BookmarksView extends LitElement {
   constructor () {
     super()
     this.desktopBookmarks = undefined
-    this.libraryBookmarks = undefined
+    this.otherBookmarks = undefined
     this.filter = undefined
   }
 
@@ -39,13 +39,13 @@ export class BookmarksView extends LitElement {
       type: 'file',
       path: ['/desktop/*.goto']
     })
-    var libraryBookmarks = await navigator.filesystem.query({
+    var otherBookmarks = await navigator.filesystem.query({
       type: 'file',
-      path: ['/library/bookmarks/*.goto']
+      path: ['/bookmarks/*.goto']
     })
     this.desktopBookmarks = desktopBookmarks
-    this.libraryBookmarks = libraryBookmarks
-    console.log(this.desktopBookmarks, this.libraryBookmarks)
+    this.otherBookmarks = otherBookmarks
+    console.log(this.desktopBookmarks, this.otherBookmarks)
   }
 
   bookmarkMenu (bookmark, x, y, right = false) {
@@ -78,9 +78,9 @@ export class BookmarksView extends LitElement {
         || _title(bookmark).toLowerCase().includes(this.filter)
       ))
     }
-    var libraryBookmarks = this.libraryBookmarks
-    if (libraryBookmarks && this.filter) {
-      libraryBookmarks = libraryBookmarks.filter(bookmark => (
+    var otherBookmarks = this.otherBookmarks
+    if (otherBookmarks && this.filter) {
+      otherBookmarks = otherBookmarks.filter(bookmark => (
         _href(bookmark).toLowerCase().includes(this.filter)
         || _title(bookmark).toLowerCase().includes(this.filter)
       ))
@@ -95,8 +95,8 @@ export class BookmarksView extends LitElement {
             <div class="empty">No items found</div>
           ` : ''}
           <h3>Other</h3>
-          ${repeat(libraryBookmarks, bookmark => this.renderBookmark(bookmark))}
-          ${libraryBookmarks.length === 0 ? html`
+          ${repeat(otherBookmarks, bookmark => this.renderBookmark(bookmark))}
+          ${otherBookmarks.length === 0 ? html`
             <div class="empty">No items found</div>
           ` : ''}
         </div>

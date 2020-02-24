@@ -11,7 +11,7 @@ import { URL } from 'url'
  */
 export async function list () {
   var files = (await query(filesystem.get(), {
-    path: ['/desktop/*.goto', '/library/bookmarks/*.goto'],
+    path: ['/desktop/*.goto', '/bookmarks/*.goto'],
   }))
   return files.map(massageBookmark)
 }
@@ -21,7 +21,7 @@ export async function list () {
  * @param {string} [location]
  * @returns {Promise<Object>}
  */
-export async function get (href, location='/library/bookmarks') {
+export async function get (href, location='/bookmarks') {
   var file = (await query(filesystem.get(), {
     path: joinPath(location, '*.goto'),
     metadata: {href}
@@ -38,7 +38,7 @@ export async function get (href, location='/library/bookmarks') {
  * @returns {Promise<string>}
  */
 export async function add ({location, href, title}) {
-  location = location || '/library/bookmarks'
+  location = location || '/bookmarks'
   var slug
   
   try {

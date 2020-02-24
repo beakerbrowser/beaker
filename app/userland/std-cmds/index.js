@@ -209,7 +209,7 @@ export async function bookmark (opts = {}, href = '.') {
   href = this.env.resolve(href || '.')
   var name = opts.filename || href.split('/').filter(Boolean).pop()
   if (!name.endsWith('.goto')) name += '.goto'
-  await navigator.filesystem.writeFile(`/library/bookmarks/${name}`, '', {metadata: {href}})
+  await navigator.filesystem.writeFile(`/bookmarks/${name}`, '', {metadata: {href}})
 }
 
 // utilities
@@ -232,7 +232,7 @@ export async function cat (opts = {}, location = '') {
 
 export async function go (opts = {}, location = '') {
   if (opts.bookmark) {
-    location = `~/library/bookmarks/${location}`
+    location = `~/bookmarks/${location}`
     if (!location.endsWith('.goto')) location += '.goto'
   }
   location = this.env.resolve(location)

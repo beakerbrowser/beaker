@@ -5,7 +5,7 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
 
-const DEFAULT_LOCATIONS = ['/library/bookmarks', '/desktop']
+const DEFAULT_LOCATIONS = ['/bookmarks', '/desktop']
 
 class BookmarkMenu extends LitElement {
   static get properties () {
@@ -22,7 +22,7 @@ class BookmarkMenu extends LitElement {
 
   reset () {
     this.bookmark = null
-    this.location = '/library/bookmarks'
+    this.location = '/bookmarks'
     this.href = ''
     this.title = ''
   }

@@ -11,8 +11,7 @@ export const ANALYTICS_CHECKIN_INTERVAL = ms('1w')
 export const PATHS = {
   // private fs
   DESKTOP: '/desktop',
-  LIBRARY: '/library',
-  LIBRARY_NS: (ns) => `/library/${ns}`,
+  BOOKMARKS: '/bookmarks',
   PROFILES: '/profiles'
 }
 

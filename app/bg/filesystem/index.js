@@ -80,11 +80,7 @@ export async function setup () {
   try {
     // ensure common dirs
     await ensureDir(PATHS.DESKTOP)
-    await ensureDir(PATHS.LIBRARY)
-    await ensureDir(PATHS.LIBRARY_NS('bookmarks'))
-    await ensureDir(PATHS.LIBRARY_NS('documents'))
-    await ensureDir(PATHS.LIBRARY_NS('media'))
-    await ensureDir(PATHS.LIBRARY_NS('projects'))
+    await ensureDir(PATHS.BOOKMARKS)
     await ensureDir(PATHS.PROFILES)
 
     // default bookmarks
