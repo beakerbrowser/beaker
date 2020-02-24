@@ -252,10 +252,10 @@ class Tab {
     if (this.driveInfo) {
       var origin = this.origin
       var version = /\+([\d]+)/.exec(origin) ? `v${/\+([\d]+)/.exec(origin)[1]}` : ''
-      var forkLabel = _get(filesystem.listDrives().find(d => d.key === this.driveInfo.key), 'forkOf.label')
+      var forkLabel = _get(filesystem.listDrives().find(d => d.key === this.driveInfo.key), 'forkOf.label', '')
       return [forkLabel, version].filter(Boolean).join(' ')
     }
-    return false
+    return ''
   }
 
   get siteIcon () {
