@@ -66,15 +66,18 @@ class DrivePropertiesModal extends LitElement {
       background: #fafafa;
     }
 
-    .prop .img-input:hover,
-    .prop .other-input:hover,
-    .prop input[type="text"]:hover {
+    .prop.writable .img-input:hover,
+    .prop.writable .other-input:hover,
+    .prop.writable input[type="text"]:hover {
       background: #f0f0f0;
     }
 
     .prop input[type="text"]:focus {
-      background: #f0f0f0;
       box-shadow: none;
+    }
+
+    .prop.writable input[type="text"]:focus {
+      background: #f0f0f0;
     }
 
     .prop .img-input {
@@ -154,7 +157,7 @@ class DrivePropertiesModal extends LitElement {
               <div class="key">Thumbnail</div>
               <div class="img-input">
                 <img src="${this.url}/thumb">
-                <input id="thumb-input" type="file" accept=".jpg,.jpeg,.png">
+                <input id="thumb-input" type="file" accept=".jpg,.jpeg,.png" ?disabled=${!this.writable}>
               </div>
             </div>
           </div>
@@ -175,10 +178,10 @@ class DrivePropertiesModal extends LitElement {
       let frontends = USABLE_BUILTIN_FRONTENDS.concat(this.frontends).filter(t => filterFrontendByType(t.manifest, currentType))
       let opt = (id, label) => html`<option value=${id} ?selected=${id === value}>${label}</option>`
       return html`
-        <div class="prop">
+        <div class="prop ${this.writable ? '.writable' : ''}">
           <div class="key">${ucfirst(key)}</div>
           <div class="other-input">
-            <select name=${key}>
+            <select name=${key} ?disabled=${!this.writable}>
               ${opt('', 'None')}
               ${value === 'custom' ? opt('custom', 'Custom') : ''}
               ${frontends.map(frontend => opt(frontend.url, frontend.title))}
@@ -188,7 +191,7 @@ class DrivePropertiesModal extends LitElement {
       `
     }
     return html`
-      <div class="prop">
+      <div class="prop ${this.writable ? '.writable' : ''}">
         <div class="key">${ucfirst(key)}</div>
         <input type="text" name=${key} value=${value} ?readonly=${!this.writable} @change=${this.onInputChange}>
       </div>
