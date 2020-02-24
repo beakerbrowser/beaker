@@ -51,7 +51,14 @@ export function register (protocol) {
 
 export const protocolHandler = async function (request, respond) {
   respond = once(respond)
-  var respondError = (code, status, errorPageInfo) => {
+  const respondRedirect = (url) => {
+    respond({
+      statusCode: 200,
+      headers: {'Content-Type': 'text/html'},
+      data: intoStream(`<!doctype html><meta http-equiv="refresh" content="0; url=${url}}">`)
+    })
+  }
+  const respondError = (code, status, errorPageInfo) => {
     if (errorPageInfo) {
       errorPageInfo.validatedURL = request.url
       errorPageInfo.errorCode = code
@@ -220,11 +227,7 @@ export const protocolHandler = async function (request, respond) {
 
     // make sure there's a trailing slash
     if (!hasTrailingSlash) {
-      return respond({
-        statusCode: 200,
-        headers: {'Content-Type': 'text/html'},
-        data: intoStream(`<!doctype html><meta http-equiv="refresh" content="0; url=hyper://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}">`)
-      })
+      return respondRedirect(`hyper://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}`)
     }
 
     // frontend
@@ -267,6 +270,16 @@ export const protocolHandler = async function (request, respond) {
       errorInfo: `Beaker could not find the file ${urlp.path}`,
       title: 'File Not Found'
     })
+  }
+
+  // handle .goto redirects
+  if (entry.path.endsWith('.goto') && entry.metadata.href) {
+    try {
+      let u = new URL(entry.metadata.href) // make sure it's a valid url
+      return respondRedirect(entry.metadata.href)
+    } catch (e) {
+      // pass through
+    }
   }
 
   // TODO
