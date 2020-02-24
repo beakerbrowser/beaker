@@ -130,10 +130,17 @@ class BrowserMenu extends LitElement {
             <span class="label">History</span>
             <span class="shortcut">${this.accelerators.history}</span>
           </div>
-            
+        </div>
+
+        <div class="section">            
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
             <img class="favicon" src="asset:favicon:beaker://settings">
             <span class="label">Settings</span>
+          </div>
+            
+          <div class="menu-item" @click=${this.onOpenSystemDrive}>
+            <i class="far fa-hdd"></i>
+            <span class="label">My System Drive</span>
           </div>
         </div>
 
@@ -245,6 +252,11 @@ class BrowserMenu extends LitElement {
 
   onOpenPage (e, url) {
     bg.shellMenus.createTab(url)
+    bg.shellMenus.close()
+  }
+
+  onOpenSystemDrive (e) {
+    bg.shellMenus.createTab(bg.navigatorFs.get().url)
     bg.shellMenus.close()
   }
 

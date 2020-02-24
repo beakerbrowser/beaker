@@ -37,7 +37,7 @@ export class DrivesView extends LitElement {
   }
 
   async load () {
-    var drives = await beaker.drives.list({includeSystem: true})
+    var drives = await beaker.drives.list({includeSystem: false})
 
     // move forks onto their parents
     drives = drives.filter(drive => {
