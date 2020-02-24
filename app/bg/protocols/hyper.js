@@ -55,7 +55,7 @@ export const protocolHandler = async function (request, respond) {
     respond({
       statusCode: 200,
       headers: {'Content-Type': 'text/html'},
-      data: intoStream(`<!doctype html><meta http-equiv="refresh" content="0; url=${url}}">`)
+      data: intoStream(`<!doctype html><meta http-equiv="refresh" content="0; url=${url}">`)
     })
   }
   const respondError = (code, status, errorPageInfo) => {
