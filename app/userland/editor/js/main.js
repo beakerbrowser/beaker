@@ -126,6 +126,7 @@ class EditorApp extends LitElement {
           automaticLayout: true,
           fixedOverflowWidgets: true,
           roundedSelection: false,
+          links: false,
           minimap: {enabled: false},
           theme: 'custom-dark',
           value: ''
