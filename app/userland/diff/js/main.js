@@ -14,6 +14,7 @@ var isMonacoLoaded = false
 export class CompareApp extends LitElement {
   static get properties () {
     return {
+      taskState: {type: Object},
       base: {type: String},
       target: {type: String}
     }
@@ -21,6 +22,7 @@ export class CompareApp extends LitElement {
 
   constructor () {
     super()
+    this.taskState = undefined
     this.base = QP.getParam('base')
     this.target = QP.getParam('target')
     this.selectedItem = undefined
@@ -35,6 +37,23 @@ export class CompareApp extends LitElement {
     return this // dont use shadow dom
   }
 
+  async attempt (task, fn) {
+    this.taskState = {task, error: false}
+    try {
+      var res = await fn()
+      this.taskState = undefined
+      return res
+    } catch (e) {
+      this.taskState = {task, error: e}
+      this.requestUpdate()
+      if (e.name === 'TimeoutError') {
+        return this.attempt(task, fn)
+      } else {
+        throw e
+      }
+    }
+  }
+
   get baseFork () {
     return this.baseForks?.find(fork => fork.url === this.baseInfo.url)
   }
@@ -44,10 +63,40 @@ export class CompareApp extends LitElement {
   }
 
   async load () {
+    if (!this.otherDrives) {
+      ;(async () => {
+        this.otherDrives = await beaker.drives.list({includeSystem: false})
+
+        // move forks onto their parents
+        this.otherDrives = this.otherDrives.filter(drive => {
+          if (drive.forkOf) {
+            let parent = this.otherDrives.find(d => d.key === drive.forkOf.key)
+            if (parent) {
+              parent.forks = parent.forks || []
+              parent.forks.push(drive)
+              return false
+            }
+          }
+          return true
+        })
+      })()
+    }
+
     this.baseDrive = this.base ? new Hyperdrive(this.base) : undefined
     this.targetDrive = this.target ? new Hyperdrive(this.target) : undefined
-    this.baseInfo = await this.baseDrive?.getInfo?.().catch(e => undefined)
-    this.targetInfo = await this.targetDrive?.getInfo?.().catch(e => undefined)
+    await this.attempt(
+      'Reading information about the drives',
+      async () => {
+        let [baseInfo, targetInfo] = await Promise.allSettled([
+          this.baseDrive?.getInfo?.(),
+          this.targetDrive?.getInfo?.()
+        ])
+        this.baseInfo = baseInfo.value
+        this.targetInfo = targetInfo.value
+        if (baseInfo.status === 'rejected') throw baseInfo.reason
+        if (targetInfo.status === 'rejected') throw targetInfo.reason
+      }
+    )
     this.basePath = '/' //getUrlPathname(this.base)
     this.targetPath = '/' // getUrlPathname(this.target)
     this.checkedItems = []
@@ -59,12 +108,23 @@ export class CompareApp extends LitElement {
       target: this.target
     }, false, true)
 
-    this.baseForks = this.baseInfo ? await beaker.drives.getForks(this.baseInfo.url) : undefined
-    this.targetForks = this.targetInfo ? await beaker.drives.getForks(this.targetInfo.url) : undefined
+    this.baseForks = this.baseInfo
+      ? await this.attempt(
+        'Fetching known forks of the base drive',
+        () => beaker.drives.getForks(this.baseInfo.url)
+       ) : undefined
+    this.targetForks = this.targetInfo
+      ? await this.attempt(
+        'Fetching known forks of the target drive',
+        () => beaker.drives.getForks(this.targetInfo.url)
+       ) : undefined
 
     if (this.baseInfo && this.targetInfo) {
       const filter = path => path !== '/index.json'
-      this.diff = await compare.diff(this.baseDrive, this.basePath, this.targetDrive, this.targetPath, {compareContent: true, shallow: false, filter})
+      this.diff = await this.attempt(
+        'Comparing files',
+        () => compare.diff(this.baseDrive, this.basePath, this.targetDrive, this.targetPath, {compareContent: true, shallow: false, filter})
+      )
     } else {
       this.diff = []
     }
@@ -79,23 +139,6 @@ export class CompareApp extends LitElement {
           isMonacoLoaded = true
           resolve()
         })
-      })
-    }
-
-    if (!this.otherDrives) {
-      this.otherDrives = await beaker.drives.list({includeSystem: false})
-
-      // move forks onto their parents
-      this.otherDrives = this.otherDrives.filter(drive => {
-        if (drive.forkOf) {
-          let parent = this.otherDrives.find(d => d.key === drive.forkOf.key)
-          if (parent) {
-            parent.forks = parent.forks || []
-            parent.forks.push(drive)
-            return false
-          }
-        }
-        return true
       })
     }
 
@@ -195,7 +238,23 @@ export class CompareApp extends LitElement {
           })}
         </nav>
         <main>
-          ${this.selectedItem ? html`
+          ${this.taskState ? html`
+            ${this.taskState.error ? html`
+              <div class="summary error">
+                <h2><span class="fas fa-fw fa-exclamation-triangle"></span> Something has gone wrong</h2>
+                <p>While ${this.taskState.task.toLowerCase()}</p>
+                <details>
+                  <summary>${this.taskState.error.toString().split(':').slice(1).join(':').trim()}</summary>
+                  <pre>${this.taskState.error.stack}</pre>
+                </details>
+              </div>
+            ` : html`
+              <div class="summary">
+                <h2>Loading...</h2>
+                <div class="task"><span class="spinner"></span> ${this.taskState.task}</div>
+              </div>
+            `}
+          ` : this.selectedItem ? html`
             <compare-diff-item-content
               .baseOrigin=${this.baseDrive.url}
               .targetOrigin=${this.targetDrive.url}
