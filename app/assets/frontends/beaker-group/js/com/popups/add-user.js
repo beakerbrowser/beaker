@@ -2,6 +2,7 @@
 import { html, css } from '../../../vendor/lit-element/lit-element.js'
 import { BasePopup } from './base.js'
 import popupsCSS from '../../../css/com/popups.css.js'
+import spinnerCSS from '../../../css/com/spinner.css.js'
 import { emit } from '../../lib/dom.js'
 import * as toast from '../toast.js'
 import * as uwg from '../../lib/uwg.js'
@@ -16,12 +17,13 @@ export class AddUserPopup extends BasePopup {
       page: {type: Number},
       userUrl: {type: String},
       userId: {type: String},
-      errors: {type: Object}
+      errors: {type: Object},
+      currentTask: {type: String}
     }
   }
 
   static get styles () {
-    return [popupsCSS, css`
+    return [popupsCSS, spinnerCSS, css`
     .popup-inner .body {
       padding: 0;
     }
@@ -117,6 +119,19 @@ export class AddUserPopup extends BasePopup {
       padding: 16px;
       text-align: left;
     }
+    
+    .task {
+      display: flex;
+      align-items: center;
+      background: #f1f1f6;
+      padding: 10px;
+      border-top: 1px solid #ccd;
+    }
+
+    .task .spinner {
+      margin-left: 5px;
+      margin-right: 10px;
+    }
     `]
   }
 
@@ -126,8 +141,56 @@ export class AddUserPopup extends BasePopup {
     this.userUrl = ''
     this.userId = ''
     this.errors = {}
+    this.currentTask = ''
   }
 
+  async attempt (task, fn) {
+    this.currentTask = task
+    try {
+      return await fn()
+    } finally {
+      this.currentTask = undefined
+    }
+  }
+
+  async validateUserDrive (url) {
+    var urlp
+    try {
+      urlp = new URL(url)
+    } catch (e) {
+      return {success: false, message: 'This is not a valid URL. Make sure you input it correctly.'}
+    }
+    if (urlp.protocol !== 'hyper:') {
+      return {success: false, message: `You must provide a "hyper:" URL. This is "${urlp.protocol}".`}
+    }
+
+    var drive = new Hyperdrive(url)
+    var info
+    try {
+      info = await this.attempt(
+        'Finding the profile on the network (this may take a moment)...',
+        () => drive.readFile('/index.json').then(JSON.parse)
+      )
+    } catch (e) {
+      console.log('Failed to read manifest', e)
+      return {success: false, message: 'This profile does not have a valid manifest (the index.json file). Ask your friend to make sure they sent the correct URL.'}
+    }
+    
+    if (info.type !== 'user') {
+      return {success: false, message: `This profile is not a "user" type (found "${info.type}"). Ask your friend to make sure they sent the correct URL.`}
+    }
+
+    var st = await this.attempt(
+      'Reading profile information...',
+      () => drive.stat('/group').catch(e => undefined)
+    )
+    var groupKey = st?.mount?.key
+    if (groupKey !== location.hostname) {
+      return {success: false, message: `This profile was not created for this group. Ask your friend to make sure they sent the correct URL and that they joined the correct group.`}
+    }
+
+    return {success: true}
+  }
 
   // management
   //
@@ -204,10 +267,15 @@ export class AddUserPopup extends BasePopup {
           </section>
 
           <div class="form-actions">
-            <button type="button" @click=${this.onClickBack} class="btn cancel" tabindex="4">Back</button>
-            <button type="submit" class="btn primary" tabindex="5">Save</button>
+            <button type="button" @click=${this.onClickBack} class="btn cancel" tabindex="4" ?disabled=${!!this.currentTask}>Back</button>
+            <button type="submit" class="btn primary" tabindex="5" ?disabled=${!!this.currentTask}>Save</button>
           </div>
         `}
+        ${this.currentTask ? html`
+          <div class="task">
+            <span class="spinner"></span>${this.currentTask}</span>
+          </div>
+        ` : ''}
       </form>
     `
   }
@@ -254,7 +322,7 @@ export class AddUserPopup extends BasePopup {
     if (Object.keys(this.errors).length > 0) {
       return this.requestUpdate()
     }
-    var userDriveValidation = await validateUserDrive(this.userUrl)
+    var userDriveValidation = await this.validateUserDrive(this.userUrl)
     if (!userDriveValidation.success) {
       this.errors.userDrive = userDriveValidation.message
       return this.requestUpdate()
@@ -273,36 +341,3 @@ export class AddUserPopup extends BasePopup {
 }
 
 customElements.define('beaker-add-user-popup', AddUserPopup)
-
-async function validateUserDrive (url) {
-  var urlp
-  try {
-    urlp = new URL(url)
-  } catch (e) {
-    return {success: false, message: 'This is not a valid URL. Make sure you input it correctly.'}
-  }
-  if (urlp.protocol !== 'hyper:') {
-    return {success: false, message: `You must provide a "hyper:" URL. This is "${urlp.protocol}".`}
-  }
-
-  var drive = new Hyperdrive(url)
-  var info
-  try {
-    info = await drive.readFile('/index.json').then(JSON.parse)
-  } catch (e) {
-    console.log('Failed to read manifest', e)
-    return {success: false, message: 'This profile does not have a valid manifest (the index.json file). Ask your friend to make sure they sent the correct URL.'}
-  }
-  
-  if (info.type !== 'user') {
-    return {success: false, message: `This profile is not a "user" type (found "${info.type}"). Ask your friend to make sure they sent the correct URL.`}
-  }
-
-  var st = await drive.stat('/group').catch(e => undefined)
-  var groupKey = st?.mount?.key
-  if (groupKey !== location.hostname) {
-    return {success: false, message: `This profile was not created for this group. Ask your friend to make sure they sent the correct URL and that they joined the correct group.`}
-  }
-
-  return {success: true}
-}
