@@ -125,7 +125,9 @@ export async function rm (opts, dst) {
   if (!dst) throw new Error('dst is required')
   var {drive, pathname} = resolveParse(this.env, dst)
   var st = await drive.stat(pathname)
-  if (st.isDirectory()) {
+  if (st.mount && st.mount.key) {
+    await drive.unmount(pathname)
+  } else if (st.isDirectory()) {
     await drive.rmdir(pathname, {recursive: true})
   } else {
     await drive.unlink(pathname)
