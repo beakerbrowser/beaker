@@ -12,7 +12,8 @@ export class PostsFeed extends LitElement {
     return {
       user: {type: Object},
       author: {type: String},
-      posts: {type: Array}
+      posts: {type: Array},
+      error: {type: String}
     }
   }
 
@@ -25,20 +26,25 @@ export class PostsFeed extends LitElement {
     this.user = undefined
     this.author = undefined
     this.posts = undefined
+    this.error = false
     this.page = 0
   }
 
   async load () {
-    var authorProfile = this.author ? await uwg.users.getByUserID(this.author) : undefined
-    var posts = await uwg.posts.list({
-      author: this.author ? authorProfile.url : undefined,
-      offset: this.page * PAGE_SIZE,
-      limit: PAGE_SIZE,
-      sort: 'name',
-      reverse: true
-    }, {includeProfiles: true})
-    /* dont await */ this.loadFeedAnnotations(posts)
-    this.posts = posts
+    try {
+      var authorProfile = this.author ? await uwg.users.getByUserID(this.author) : undefined
+      var posts = await uwg.posts.list({
+        author: this.author ? authorProfile.url : undefined,
+        offset: this.page * PAGE_SIZE,
+        limit: PAGE_SIZE,
+        sort: 'name',
+        reverse: true
+      }, {includeProfiles: true})
+      /* dont await */ this.loadFeedAnnotations(posts)
+      this.posts = posts
+    } catch (e) {
+      this.error = e.toString()
+    }
     console.log(this.posts)
   }
 
@@ -64,7 +70,11 @@ export class PostsFeed extends LitElement {
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
       <div class="feed">
-        ${typeof this.posts === 'undefined' ? html`
+        ${this.error ? html`
+          <div class="error">
+            ${this.error}
+          </div>
+        ` : typeof this.posts === 'undefined' ? html`
           <div class="empty">
             <span class="spinner"></span>
           </div>

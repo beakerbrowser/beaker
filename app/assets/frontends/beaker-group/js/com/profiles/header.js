@@ -12,7 +12,8 @@ export class ProfileHeader extends LitElement {
     return {
       showAdminCtrls: {type: Boolean, attribute: 'admin-ctrls'},
       id: {type: String},
-      profile: {type: Object}
+      profile: {type: Object},
+      error: {type: String}
     }
   }
 
@@ -25,14 +26,22 @@ export class ProfileHeader extends LitElement {
     this.showAdminCtrls = false
     this.id = undefined
     this.profile = undefined
+    this.error = undefined
   }
 
   async load () {
-    this.profile = await uwg.users.getByUserID(this.id)
+    try {
+      this.profile = await uwg.users.getByUserID(this.id)
+    } catch (e) {
+      this.error = e.toString()
+    }
     await this.requestUpdate()
   }
 
   render () {
+    if (this.error) {
+      return html`<div class="error">${this.error}</div>`
+    }
     if (!this.profile) return html`<span class="spinner"></span>`
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">

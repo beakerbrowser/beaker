@@ -16,7 +16,8 @@ export class CommentsFeed extends LitElement {
     return {
       user: {type: Object},
       author: {type: String},
-      comments: {type: Array}
+      comments: {type: Array},
+      error: {type: String}
     }
   }
 
@@ -29,21 +30,26 @@ export class CommentsFeed extends LitElement {
     this.user = undefined
     this.author = undefined
     this.comments = undefined
+    this.error = false
     this.page = 0
   }
 
   async load () {
-    var authorProfile = this.author ? await uwg.users.getByUserID(this.author) : undefined
-    var comments = await uwg.comments.list({
-      author: this.author ? authorProfile.url : undefined,
-      offset: this.page * PAGE_SIZE,
-      limit: PAGE_SIZE,
-      sort: 'name',
-      reverse: true
-    }, {includeProfiles: true, includeContent: true})
-    /* dont await */ this.loadFeedAnnotations(comments)
-    this.comments = comments
-    console.log(this.comments)
+    try {
+      var authorProfile = this.author ? await uwg.users.getByUserID(this.author) : undefined
+      var comments = await uwg.comments.list({
+        author: this.author ? authorProfile.url : undefined,
+        offset: this.page * PAGE_SIZE,
+        limit: PAGE_SIZE,
+        sort: 'name',
+        reverse: true
+      }, {includeProfiles: true, includeContent: true})
+      /* dont await */ this.loadFeedAnnotations(comments)
+      this.comments = comments
+      console.log(this.comments)
+    } catch (e) {
+      this.error = e.toString()
+    }
   }
 
   async loadFeedAnnotations (comments) {
@@ -71,7 +77,11 @@ export class CommentsFeed extends LitElement {
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
       <div class="feed">
-        ${typeof this.comments === 'undefined' ? html`
+        ${this.error ? html`
+          <div class="error">
+            ${this.error}
+          </div>
+        ` : typeof this.comments === 'undefined' ? html`
           <div class="empty">
             <span class="spinner"></span>
           </div>

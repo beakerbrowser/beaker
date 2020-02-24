@@ -20,5 +20,13 @@ beaker-paginator {
   font-size: 16px;
   margin: 20px 10px;
 }
+
+.error {
+  padding: 30px;
+  color: red;
+  background: #fff7f7;
+  letter-spacing: 0.5px;
+  font-size: 16px;
+}
 `
 export default cssStr
