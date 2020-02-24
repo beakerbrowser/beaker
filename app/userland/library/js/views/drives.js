@@ -215,8 +215,17 @@ export class DrivesView extends LitElement {
             ${drive.forkOf ? html`
               <span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
             ` : ''}
+            ${!drive.info.writable ? html`<span class="readonly">readonly</span>` : ''}
             ${drive.info.description.slice(0, 50)}
           </div>
+        </div>
+        <div class="group">
+          ${drive.groupInfo ? html`
+            <div>Member of</div>
+            <div>
+              <a href=${drive.groupInfo.url} title=${drive.groupInfo.title}>${drive.groupInfo.title}</a>
+            </div>
+          ` : '-'}
         </div>
         <div class="forks">
           ${numForks > 0 ? html`

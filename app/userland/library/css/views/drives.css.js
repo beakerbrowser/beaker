@@ -95,6 +95,27 @@ a[href]:hover {
   letter-spacing: -0.2px;
 }
 
+.drive .readonly {
+  display: inline-block;
+  background: #f3f3f7;
+  color: #667;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 0 4px 2px;
+  border-radius: 2px;
+}
+
+.drive .group {
+  flex: 1;
+  min-width: 160px;
+}
+
+.drive .group a {
+  font-weight: normal;
+  color: var(--blue);
+  letter-spacing: 0;
+}
+
 .drive .forks {
   flex: 1;
   min-width: 100px;
