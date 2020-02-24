@@ -81,9 +81,7 @@ class NavbarSiteInfo extends LitElement {
       } else if (scheme === 'hyper:') {
         certified = true
         innerHTML = html`
-          ${this.writable ? html`
-            <span class="fas fa-check-circle certified"></span>
-          ` : ''}
+          <span class="fas fa-check-circle certified"></span>
           <span class="label">${this.siteTitle}</span>
           ${this.siteSubtitle ? html`<span class="label sublabel">${this.siteSubtitle}</span>` : ''}
         `
