@@ -1,4 +1,3 @@
-import * as users from '../filesystem/users'
 import * as userSiteSessions from '../filesystem/site-sessions'
 import * as drives from '../hyper/drives'
 import * as archivesDb from '../dbs/archives'
@@ -14,12 +13,6 @@ import libTools from '@beaker/library-tools'
 
 // exported api
 // =
-
-export async function getSessionUserId (sender) {
-  var userSession = undefined // TODO windows.getUserSessionFor(sender)
-  if (!userSession) throw new Error('No active user session')
-  return (await users.get(userSession.url)).id
-}
 
 export async function getSessionUserDrive (sender) {
   var userSession = undefined // TODO windows.getUserSessionFor(sender)
@@ -45,7 +38,7 @@ export async function toDriveOrigin (url) {
  */
 export async function getSessionOrThrow (sender) {
   if (await isTrustedApp(sender)) return
-  var userId = await getSessionUserId(sender)
+  var userId = undefined // TODO await getSessionUserId(sender)
   var session = await userSiteSessions.get(userId, await toDriveOrigin(sender.getURL()))
   if (!session) {
     throw new PermissionsError()

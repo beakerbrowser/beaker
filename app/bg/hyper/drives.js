@@ -22,7 +22,6 @@ import datDns from './dns'
 
 // fs modules
 import * as filesystem from '../filesystem/index'
-import * as users from '../filesystem/users'
 
 // constants
 // =
@@ -312,11 +311,6 @@ async function loadDriveInner (key, settingsOverride) {
 
   // fetch library settings
   var userSettings = null // TODO uwg datLibrary.getConfig(keyStr)
-  if (!userSettings) {
-    if (users.isUser(drive.url)) {
-      userSettings = {key: keyStr, isSaved: true, isHosting: true, visibility: 'unlisted', savedAt: null, meta: null}
-    }
-  }
   if (settingsOverride) {
     userSettings = Object.assign(userSettings || {}, settingsOverride)
   }

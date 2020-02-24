@@ -1,6 +1,5 @@
 import * as rpc from 'pauls-electron-rpc'
 import browserManifest from '../../bg/web-apis/manifests/internal/browser'
-import usersManifest from '../../bg/web-apis/manifests/internal/users'
 import drivesManifest from '../../bg/web-apis/manifests/internal/drives'
 import bookmarksManifest from '../../bg/web-apis/manifests/internal/bookmarks'
 import historyManifest from '../../bg/web-apis/manifests/internal/history'
@@ -13,7 +12,6 @@ import shellMenusManifest from '../../bg/rpc-manifests/shell-menus'
 import viewsManifest from '../../bg/rpc-manifests/views'
 
 export const beakerBrowser = rpc.importAPI('beaker-browser', browserManifest)
-export const users = rpc.importAPI('users', usersManifest)
 export const drives = rpc.importAPI('drives', drivesManifest)
 export const bookmarks = rpc.importAPI('bookmarks', bookmarksManifest)
 export const history = rpc.importAPI('history', historyManifest)

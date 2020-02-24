@@ -12,7 +12,6 @@ import * as auditLog from '../../dbs/audit-log'
 import { timer } from '../../../lib/time'
 import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
-import * as users from '../../filesystem/users'
 import drivesAPI from './drives'
 import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DRIVE_VALID_PATH_REGEX, DEFAULT_DRIVE_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
@@ -674,13 +673,6 @@ async function assertDeleteDrivePermission (drive, sender) {
   var allowed = await permissions.requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true
-}
-
-function assertDriveDeletable (drive) {
-  var driveUrl = 'hyper://' + drive.key.toString('hex')
-  if (users.isUser(driveUrl)) {
-    throw new PermissionsError('Unable to delete the user profile.')
-  }
 }
 
 async function assertQuotaPermission (drive, senderOrigin, byteLength) {

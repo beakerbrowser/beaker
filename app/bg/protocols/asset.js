@@ -14,7 +14,6 @@ import { screen } from 'electron'
 import { parseDriveUrl } from '../../lib/urls'
 import * as sitedata from '../dbs/sitedata'
 import * as filesystem from '../filesystem/index'
-import * as users from '../filesystem/users'
 import fs from 'fs'
 import path from 'path'
 
@@ -109,9 +108,6 @@ export function setup () {
       let urlp = parseDriveUrl(url)
       if (filesystem.isRootUrl(`hyper://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
         return servePng(path.join(__dirname, `./assets/img/favicons/drive.png`), DEFAULTS[asset], cb)
-      }
-      if (users.isUser(`hyper://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
-        return servePng(path.join(__dirname, `./assets/img/favicons/people.png`), DEFAULTS[asset], cb)
       }
       if (!urlp.pathname || urlp.pathname.endsWith('/')) {
         return servePng(path.join(__dirname, `./assets/img/favicons/folder.png`), DEFAULTS[asset], cb)

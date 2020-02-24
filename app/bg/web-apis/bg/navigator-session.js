@@ -1,7 +1,9 @@
 import { UserDeniedError } from 'beaker-error-constants'
 import * as drives from '../../hyper/drives'
+import * as filesystem from '../../filesystem/index'
+import { query } from '../../filesystem/query'
+import * as archivesDb from '../../dbs/archives'
 import * as modals from '../../ui/subwindows/modals'
-import * as users from '../../filesystem/users'
 import * as bookmarks from '../../filesystem/bookmarks'
 import * as userSiteSessions from '../../filesystem/site-sessions'
 import * as sessionPerms from '../../lib/session-perms'
@@ -10,20 +12,22 @@ import * as sessionPerms from '../../lib/session-perms'
 // =
 
 /**
- * @typedef {import('../../filesystem/users').User} User
  * @typedef {import('../../filesystem/site-sessions').UserSiteSession} UserSiteSession
+ * @typedef {import('../../dbs/archives').LibraryArchiveMeta} LibraryArchiveMeta
+
+ * @typedef {Object} User
+ * @prop {string} url
+ * @prop {string} title
+ * @prop {string} description
+ * @prop {Object} [group]
+ * @prop {string} [group.url]
+ * @prop {string} [group.title]
+ * @prop {string} [group.description]
+ * @prop {boolean} [group.isMember]
+ * @prop {string} [group.userid]
  *
  * @typedef {Object} NavigatorSessionPublicAPIRecord
- * @prop {Object} user
- * @prop {string} user.url
- * @prop {string} user.title
- * @prop {string} user.description
- * @prop {Object} [user.group]
- * @prop {string} [user.group.url]
- * @prop {string} [user.group.title]
- * @prop {string} [user.group.description]
- * @prop {boolean} [user.group.isMember]
- * @prop {string} [user.group.userid]
+ * @prop {User} user
  */
 
 // exported api
@@ -69,7 +73,7 @@ export default {
 
     // run modal
     var user
-    var availableUsers = await users.list({group: opts.group})
+    var availableUsers = await listUsers({group: opts.group})
     var newUserConfig = undefined
     var selectedUser = undefined
     if (availableUsers.length > 0) {
@@ -112,16 +116,7 @@ export default {
       })
       await userDrive.pda.writeFile(`/thumb.${newUserConfig.thumbExt}`, newUserConfig.thumbBase64, 'base64')
       await userDrive.pda.mount('/group', opts.group)
-      user = await users.add(userDrive.url, newUserConfig.title, groupInfo.title)
-
-      // create a start-page bookmark for the group
-      if (!(await bookmarks.get(opts.group))) {
-        await bookmarks.add({
-          location: '/desktop',
-          href: `hyper://${opts.group}`,
-          title: groupInfo.title || 'Untitled Group'
-        })
-      }
+      user = await fetchUserInfo(userDrive.url)
     } else {
       // select existing user
       user = availableUsers.find(u => selectedUser.url === u.url)
@@ -145,7 +140,7 @@ export default {
       siteOrigin = await sessionPerms.toDriveOrigin(this.sender.getURL())
     }
     var session = await userSiteSessions.get(siteOrigin)
-    if (session) return massageSessionRecord(await users.get(session.userUrl))
+    if (session) return massageSessionRecord(await fetchUserInfo(session.userUrl))
   },
 
   /**
@@ -180,5 +175,65 @@ function massageSessionRecord (user) {
       description: user.description,
       group: user.group
     }
+  }
+}
+
+/**
+ * @param {Object} [opts]
+ * @param {string} [opts.group]
+ * @returns {Promise<User[]>}
+ */
+async function listUsers (opts = {group: undefined}) {
+  var groupFilter = opts && opts.group
+  var driveMetas = await filesystem.listDriveMetas()
+  driveMetas = driveMetas.filter(drive => drive.type === 'user' && drive.writable)
+
+  var users = await Promise.all(driveMetas.map(fetchUserInfo))
+  if (groupFilter) {
+    users = users.filter(user => (
+      user.group
+      && drives.fromURLToKey(user.group.url) === groupFilter)
+    )
+  }
+  return users
+}
+
+/**
+ * 
+ * @param {string|LibraryArchiveMeta} urlOrDriveMeta 
+ * @returns {Promise<User>}
+ */
+async function fetchUserInfo (urlOrDriveMeta) {
+  var driveMeta
+  if (typeof urlOrDriveMeta === 'string') {
+    driveMeta = await archivesDb.getMeta(urlOrDriveMeta)
+  } else {
+    driveMeta = urlOrDriveMeta
+  }
+  var drive = await drives.getOrLoadDrive(driveMeta.key)
+
+  var group
+  var groupStat = await drive.pda.stat('/group').catch(e => undefined)
+  if (groupStat && groupStat.mount) {
+    let groupInfo = await drive.pda.readFile('/group/index.json').then(JSON.parse).catch(e => undefined)
+    group = {
+      url: `hyper://${groupStat.mount.key.toString('hex')}`,
+      title: groupInfo ? groupInfo.title : '',
+      description: groupInfo ? groupInfo.description : '',
+      isMember: false,
+      userid: undefined
+    }
+    let registrationRes = await query(drive, {path: '/group/users/*', mount: driveMeta.key})
+    if (registrationRes[0]) {
+      group.isMember = true
+      group.userid = registrationRes[0].path.split('/').pop()
+    }
+  }
+
+  return {
+    url: driveMeta.url,
+    title: driveMeta.title,
+    description: driveMeta.description,
+    group
   }
 }

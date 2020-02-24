@@ -3,8 +3,8 @@ import * as logLib from '../logger'
 const logger = logLib.category('filesystem')
 import hyper from '../hyper/index'
 import * as db from '../dbs/profile-data-db'
+import * as archivesDb from '../dbs/archives'
 import * as bookmarks from './bookmarks'
-import * as users from './users'
 import * as trash from './trash'
 import { PATHS } from '../../lib/const'
 import lock from '../../lib/lock'
@@ -13,8 +13,8 @@ import lock from '../../lib/lock'
 // =
 
 /**
- * @typedef {import('../dat/daemon').DaemonHyperdrive} DaemonHyperdrive
- * @typedef {import('./users').User} User
+ * @typedef {import('../hyper/daemon').DaemonHyperdrive} DaemonHyperdrive
+ * @typedef {import('../dbs/archives').LibraryArchiveMeta} LibraryArchiveMeta
  * 
  * @typedef {Object} DriveConfig
  * @property {string} key
@@ -72,9 +72,6 @@ export async function setup () {
   // load root drive
   rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url)
   
-  // setup users
-  await users.setup()
-
   // enforce root files structure
   logger.info('Loading root drive', {url: browsingProfile.url})
   try {
@@ -122,12 +119,16 @@ export function getDriveIdent (url) {
 export function listDrives ({includeSystem} = {includeSystem: false}) {
   var d = drives.slice()
   if (includeSystem) {
-    for (let userUrl of users.listUrls()) {
-      d.unshift({key: userUrl.slice('hyper://'.length)})
-    }
     d.unshift({key: rootDrive.url.slice('hyper://'.length)})
   }
   return d
+}
+
+/**
+ * @returns {Promise<Array<LibraryArchiveMeta>>}
+ */
+export async function listDriveMetas () {
+  return Promise.all(drives.map(d => archivesDb.getMeta(d.key)))
 }
 
 /**
