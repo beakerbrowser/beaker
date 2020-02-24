@@ -330,7 +330,7 @@ export default {
 
         pause() // dont count against timeout, there may be user prompts
         await assertWritePermission(dst.drive, this.sender)
-        assertValidFilePath(dstpath)
+        assertValidPath(dstpath)
         assertUnprotectedFilePath(srcpath, this.sender)
         assertUnprotectedFilePath(dstpath, this.sender)
         resume()
