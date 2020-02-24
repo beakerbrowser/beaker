@@ -98,6 +98,5 @@ async function watch (site) {
   if (site.resolved === 0) {
     watchlistEvents.emit('resolved', site)
   }
-  drive.pda.download('/').catch(e => { /* ignore cancels */ }) // download the site to make sure it's available
   await updateWatchlist(0, site, {resolved: 1})
 }

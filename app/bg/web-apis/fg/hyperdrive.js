@@ -175,15 +175,6 @@ export const setup = function (rpc) {
       }
     }
 
-    async download (path = '/', opts = {}) {
-      var errStack = (new Error()).stack
-      try {
-        return await hyperdriveRPC.download(this.url, path, opts)
-      } catch (e) {
-        throwWithFixedStack(e, errStack)
-      }
-    }
-
     async updateMetadata (path, metadata, opts = {}) {
       var errStack = (new Error()).stack
       try {

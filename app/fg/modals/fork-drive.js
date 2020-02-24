@@ -148,7 +148,7 @@ class ForkDriveModal extends LitElement {
         actionBtn = html`<button type="submit" class="btn" disabled tabindex="5"><span class="spinner"></span></button>`
         break
       case STATES.CLONING:
-        progressEl = html`<div class="fork-dat-progress">Copying...</div>`
+        progressEl = html`<div class="fork-dat-progress">Downloading and copying...</div>`
         actionBtn = html`<button type="submit" class="btn" disabled tabindex="5"><span class="spinner"></span></button>`
         break
     }
@@ -237,8 +237,8 @@ class ForkDriveModal extends LitElement {
       return
     }
 
-    this.state = STATES.DOWNLOADING
-    await bg.hyperdrive.download(this.base.url)
+    // this.state = STATES.DOWNLOADING
+    // await bg.hyperdrive.download(this.base.url)
 
     this.state = STATES.CLONING
     try {

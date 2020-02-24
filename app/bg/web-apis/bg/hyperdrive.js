@@ -341,23 +341,6 @@ export default {
     ))
   },
 
-  async download (url, filepath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
-    return auditLog.record(this.sender.getURL(), 'download', {url, filepath}, undefined, () => (
-      timer(to(opts), async (checkin, pause, resume) => {
-        checkin('searching for drive')
-        const {drive, version} = await lookupDrive(this.sender, url)
-        if (version) throw new Error('Not yet supported: can\'t download() old versions yet. Sorry!') // TODO
-        if (drive.writable) {
-          return // no need to download
-        }
-
-        checkin('downloading file')
-        await drive.pda.download(filepath)
-      })
-    ))
-  },
-
   async updateMetadata (url, filepath, metadata, opts = {}) {
     filepath = normalizeFilepath(filepath || '')
     return auditLog.record(this.sender.getURL(), 'updateMetadata', {url, filepath, metadata}, undefined, () => (
@@ -593,7 +576,7 @@ export default {
       dstPath: opts.dst,
       ignore: opts.ignore,
       overwriteExisting: opts.overwriteExisting,
-      skipUndownloadedFiles: opts.skipUndownloadedFiles !== false
+      skipUndownloadedFiles: opts.skipUndownloadedFiles
     })
   },
 
@@ -608,7 +591,7 @@ export default {
       dstArchive: dst.checkoutFS.session ? dst.checkoutFS.session.drive : dst.checkoutFS,
       dstPath: dst.filepath,
       ignore: opts.ignore,
-      skipUndownloadedFiles: opts.skipUndownloadedFiles !== false
+      skipUndownloadedFiles: opts.skipUndownloadedFiles
     })
   }
 }

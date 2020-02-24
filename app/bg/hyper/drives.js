@@ -219,7 +219,7 @@ export async function forkDrive (srcDriveUrl, manifest = {}) {
       if (!srcDrive) {
         throw new Error('Invalid drive key')
       }
-      return srcDrive.pda.download('/')
+      // return srcDrive.session.drive.download('/') TODO needed?
     })(),
     new Promise(r => setTimeout(() => r('timeout'), 60e3))
   ])
@@ -253,7 +253,7 @@ export async function forkDrive (srcDriveUrl, manifest = {}) {
   await pda.exportArchiveToArchive({
     srcArchive: srcDrive.session.drive,
     dstArchive: dstDrive.session.drive,
-    skipUndownloadedFiles: true,
+    skipUndownloadedFiles: false,
     ignore
   })
 

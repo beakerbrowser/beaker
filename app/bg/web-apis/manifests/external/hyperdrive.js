@@ -13,7 +13,6 @@ export default {
   unlink: 'promise',
   copy: 'promise',
   rename: 'promise',
-  download: 'promise',
   updateMetadata: 'promise',
   deleteMetadata: 'promise',
 
