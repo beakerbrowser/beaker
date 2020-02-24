@@ -460,7 +460,7 @@ export async function getDriveInfo (key) {
   ])
   manifest = manifest || {}
   if (filesystem.isRootUrl(drive.url) && !meta.title) {
-    meta.title = 'My Home Drive'
+    meta.title = 'My System Drive'
   }
   meta.key = key
   meta.url = drive.url

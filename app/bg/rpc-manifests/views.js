@@ -12,7 +12,6 @@ export default {
   reorderTab: 'promise',
   showTabContextMenu: 'promise',
   showLocationBarContextMenu: 'promise',
-  showNavbarShortcutContextMenu: 'promise',
   goBack: 'promise',
   goForward: 'promise',
   stop: 'promise',

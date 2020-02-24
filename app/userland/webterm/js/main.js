@@ -129,8 +129,6 @@ class WebTerm extends LitElement {
     }
     this.url = url
 
-    this.envVars.home = navigator.filesystem.url
-
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {
       try {

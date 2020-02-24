@@ -36,7 +36,6 @@ class LocationBar extends LitElement {
   constructor () {
     super()
     this.reset()
-    this.homeDriveUrl = undefined
     this.fetchBrowserInfo()
 
     // disallow right click
@@ -323,12 +322,7 @@ class LocationBar extends LitElement {
     var inputDriveUrl = undefined
     var inputDriveUrlp = undefined
     var isDriveUrlRe = /^hyper:\/\//i
-    if (this.inputValue.startsWith('~')) {
-      if (!this.homeDriveUrl) {
-        this.homeDriveUrl = bg.navigatorFs.get().url
-      }
-      inputDriveUrl = joinPath(this.homeDriveUrl, this.inputValue.slice(1))
-    } else if (this.inputValue.startsWith('/')) {
+    if (this.inputValue.startsWith('/')) {
       if (!this.currentTabLocation) {
         this.currentTabLocation = (await bg.views.getTabState('active').catch(e => ({url: ''}))).url
       }

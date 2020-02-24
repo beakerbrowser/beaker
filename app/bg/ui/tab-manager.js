@@ -79,8 +79,7 @@ const STATE_VARS = [
   'siteSubtitle',
   'siteIcon',
   'driveDomain',
-  'isHomeDrive',
-  'isUserDrive',
+  'isSystemDrive',
   'writable',
   'peers',
   'favicons',
@@ -235,8 +234,8 @@ class Tab {
       }
       var origin = urlp.protocol + '//' + (hostname)
       if (this.driveInfo) {
-        if (_get(this.driveInfo, 'ident.home', false)) {
-          return 'My Home Drive'
+        if (_get(this.driveInfo, 'ident.system', false)) {
+          return 'My System Drive'
         }
       }
       if (urlp.protocol === 'beaker:') {
@@ -269,12 +268,8 @@ class Tab {
     return _get(this.driveInfo, 'domain', '')
   }
 
-  get isHomeDrive () {
-    return _get(this.driveInfo, 'ident.home', false)
-  }
-
-  get isUserDrive () {
-    return _get(this.driveInfo, 'ident.user', false)
+  get isSystemDrive () {
+    return _get(this.driveInfo, 'ident.system', false)
   }
 
   get writable () {
@@ -1517,17 +1512,6 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       var url = clipInfo.isProbablyUrl ? clipInfo.vWithProtocol : clipInfo.vSearch
       tab.loadURL(url)
     }
-  },
-
-  async showNavbarShortcutContextMenu (index) {
-    var win = getWindow(this.sender)
-    var tab = getByIndex(win, index)
-    var fsUrl = filesystem.get().url
-    var menu = Menu.buildFromTemplate([
-      { label: 'Start Page', click: () => tab.loadURL('beaker://desktop/') },
-      { label: 'My Home Drive', click: () => tab.loadURL(fsUrl) }
-    ])
-    menu.popup({window: win})
   },
 
   async goBack (index) {

@@ -227,7 +227,7 @@ export class DrivesView extends LitElement {
           ` : html`<a>-</a>`}
         </div>
         <div class="peers">
-          ${drive.ident.home ? html`
+          ${drive.ident.system ? html`
             <a><span class="fas fa-lock"></span></a>
           ` : html`
             <a>${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}</a>

@@ -81,8 +81,7 @@ class ShellWindowNavbar extends LitElement {
         siteTitle="${_get(this, 'activeTab.siteTitle', '')}"
         siteSubtitle="${_get(this, 'activeTab.siteSubtitle', '')}"
         driveDomain="${_get(this, 'activeTab.driveDomain', '')}"
-        ?is-home-drive=${_get(this, 'activeTab.isHomeDrive', false)}
-        ?is-user-drive=${_get(this, 'activeTab.isUserDrive', false)}
+        ?is-system-drive=${_get(this, 'activeTab.isSystemDrive', false)}
         ?writable=${_get(this, 'activeTab.writable', false)}
         peers="${_get(this, 'activeTab.peers', 0)}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
@@ -239,7 +238,6 @@ class ShellWindowNavbar extends LitElement {
   }
 
   onClickShortcut (e) {
-    // bg.views.showNavbarShortcutContextMenu('active')
     bg.views.loadURL('active', 'beaker://desktop/')
   }
 

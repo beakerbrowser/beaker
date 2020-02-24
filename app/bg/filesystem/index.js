@@ -25,8 +25,6 @@ import lock from '../../lib/lock'
  * 
  * @typedef {Object} DriveIdent
  * @property {boolean} system
- * @property {boolean} user
- * @property {boolean} home
  */
 
 // globals
@@ -92,7 +90,6 @@ export async function setup () {
 
     // default bookmarks
     if (isInitialCreation) {
-      await bookmarks.add({location: '/desktop', href: `https://hyperdrive.network/${browsingProfile.url.slice('hyper://'.length)}`, title: 'My Home Drive'})
       await bookmarks.add({location: '/desktop', href: 'beaker://library/', title: 'My Library'})
     }
 
@@ -119,9 +116,7 @@ export async function setup () {
  * @returns {DriveIdent}
  */
 export function getDriveIdent (url) {
-  var home = isRootUrl(url)
-  var user = users.isUser(url)
-  return {system: home || user, home, user}
+  return {system: isRootUrl(url)}
 }
 
 /**

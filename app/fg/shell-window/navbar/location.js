@@ -19,8 +19,7 @@ class NavbarLocation extends LitElement {
       siteTitle: {type: String},
       siteSubtitle: {type: String},
       driveDomain: {type: String},
-      isHomeDrive: {type: Boolean, attribute: 'is-home-drive'},
-      isUserDrive: {type: Boolean, attribute: 'is-user-drive'},
+      isSystemDrive: {type: Boolean, attribute: 'is-system-drive'},
       writable: {type: Boolean},
       peers: {type: Number},
       zoom: {type: Number},
@@ -45,8 +44,7 @@ class NavbarLocation extends LitElement {
     this.siteTitle = ''
     this.siteSubtitle = ''
     this.driveDomain = ''
-    this.isHomeDrive = false
-    this.isUserDrive = false
+    this.isSystemDrive = false
     this.writable = false
     this.peers = 0
     this.zoom = 0
@@ -266,11 +264,8 @@ class NavbarLocation extends LitElement {
     if (!this.isHyperdrive) {
       return ''
     }
-    if (this.isHomeDrive) {
-      return html`<span class="label">My Home Drive</span>`
-    }
-    if (this.isUserDrive) {
-      return html`<span class="label">My User Profile</span>`
+    if (this.isSystemDrive) {
+      return html`<span class="label">My System Drive</span>`
     }
     if (this.writable) {
       return html`<span class="label">Editable</span>`

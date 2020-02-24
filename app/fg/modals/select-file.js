@@ -269,8 +269,8 @@ class SelectFileModal extends LitElement {
       }
     }
 
-    var homeDriveUrl = bg.navigatorFs.get().url
-    this.drives.push(await bg.hyperdrive.getInfo(homeDriveUrl))
+    var systemDriveUrl = bg.navigatorFs.get().url
+    this.drives.push(await bg.hyperdrive.getInfo(systemDriveUrl))
     this.driveInfo = await bg.hyperdrive.getInfo(this.drive)
     await this.readdir()
     this.updateComplete.then(_ => {

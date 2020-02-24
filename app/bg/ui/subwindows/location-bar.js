@@ -122,9 +122,6 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
     if (url.startsWith('/')) {
       // relative to current origin
       url = active.origin + url
-    } else if (url.startsWith('~')) {
-      // relative to home drive
-      url = joinPath(filesystem.get().url, url.slice(1))
     }
     active.loadURL(url)
     get(win).webContents.send('command', 'unfocus-location') // we have to manually unfocus the location bar
