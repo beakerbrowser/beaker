@@ -240,7 +240,7 @@ class BrowserMenu extends LitElement {
 
   onClickDownloads (e) {
     this.shouldPersistDownloadsIndicator = false
-    bg.shellMenus.createTab('beaker://downloads')
+    bg.shellMenus.createTab('beaker://library/downloads')
     bg.shellMenus.close()
   }
 

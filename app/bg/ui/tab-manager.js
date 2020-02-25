@@ -1358,9 +1358,9 @@ export function getPreviousTabIndex (win) {
 export function openOrFocusDownloadsPage (win) {
   win = getTopWindow(win)
   var tabs = getAll(win)
-  var downloadsTab = tabs.find(v => v.url.startsWith('beaker://downloads'))
+  var downloadsTab = tabs.find(v => v.url.startsWith('beaker://library/downloads'))
   if (!downloadsTab) {
-    downloadsTab = create(win, 'beaker://downloads')
+    downloadsTab = create(win, 'beaker://library/downloads')
   }
   setActive(win, downloadsTab)
 }

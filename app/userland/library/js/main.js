@@ -1,14 +1,11 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { pluralize } from 'beaker://app-stdlib/js/strings.js'
-import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import * as newDriveDropdown from 'beaker://app-stdlib/js/com/new-drive-dropdown.js'
 import mainCSS from '../css/main.css.js'
 import './views/drives.js'
 import './views/bookmarks.js'
+import './views/downloads.js'
 
 export class LibraryApp extends LitElement {
   static get properties () {
@@ -120,6 +117,7 @@ export class LibraryApp extends LitElement {
           <div class="page-nav">
             ${pageNav('drives', html`<span class="far fa-fw fa-hdd"></span> Drives`)}
             ${pageNav('bookmarks', html`<span class="far fa-fw fa-star"></span> Bookmarks`)}
+            ${pageNav('downloads', html`<span class="fas fa-fw fa-arrow-down"></span> Downloads`)}
           </div>
         </nav>
         <main>
@@ -128,6 +126,9 @@ export class LibraryApp extends LitElement {
           ` : ''}
           ${this.view === 'bookmarks' ? html`
             <bookmarks-view .filter=${this.filter} loadable></bookmarks-view>
+          ` : ''}
+          ${this.view === 'downloads' ? html`
+            <downloads-view .filter=${this.filter} loadable></downloads-view>
           ` : ''}
         </main>
       </div>

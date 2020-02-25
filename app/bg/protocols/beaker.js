@@ -264,12 +264,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://search' || requestUrl.startsWith('beaker://search/')) {
     return serveAppAsset(requestUrl, SEARCH_APP_PATH, cb)
   }
-  if (requestUrl === 'beaker://downloads/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/downloads.html'))
-  }
-  if (requestUrl === 'beaker://downloads/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/downloads.build.js'))
-  }
   if (requestUrl === 'beaker://swarm-debugger/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/swarm-debugger.css'))
   }

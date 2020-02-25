@@ -141,7 +141,7 @@ function createEventsStream () {
 }
 
 function getDownloads () {
-  return Promise.resolve(downloads.map(toJSON))
+  return Promise.resolve(downloads.map(d => toJSON(d)))
 }
 
 function pause (id) {
