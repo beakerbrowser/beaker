@@ -148,10 +148,10 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
       archivesDb.getMeta(key),
       0//drive.pda.readSize('/')
     ])
-    var {title, description, type, author} = (manifest || {})
+    var {title, description, type, author, forkOf} = (manifest || {})
     var writable = drive.writable
     var mtime = updateMTime ? Date.now() : oldMeta.mtime
-    var details = {title, description, type, mtime, size, author, writable}
+    var details = {title, description, type, forkOf, mtime, size, author, writable}
 
     // check for changes
     if (!hasMetaChanged(details, oldMeta)) {
@@ -235,6 +235,7 @@ export async function forkDrive (srcDriveUrl, manifest = {}) {
     title: (manifest.title) ? manifest.title : srcManifest.title,
     description: (manifest.description) ? manifest.description : srcManifest.description,
     type: (manifest.type) ? manifest.type : srcManifest.type,
+    forkOf: fromKeyToURL(srcDriveUrl)
     // author: manifest.author
   }
   for (let k in srcManifest) {
@@ -567,7 +568,7 @@ export function fromKeyToURL (key) {
 }
 
 function hasMetaChanged (m1, m2) {
-  for (let k of ['title', 'description', 'type', 'size', 'author', 'writable', 'mtime']) {
+  for (let k of ['title', 'description', 'type', 'forkOf', 'size', 'author', 'writable', 'mtime']) {
     if (!m1[k]) m1[k] = undefined
     if (!m2[k]) m2[k] = undefined
     if (m1[k] !== m2[k]) {
