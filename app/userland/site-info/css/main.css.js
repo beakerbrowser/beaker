@@ -97,6 +97,20 @@ hr {
   top: 20px;
 }
 
+.site-info .fork-of {
+  color: #667;
+}
+
+.site-info .fork-of a {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.site-info .fork-of a:hover {
+  text-decoration: underline;
+}
+
 .nav {
   display: flex;
   align-items: center;

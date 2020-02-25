@@ -212,7 +212,6 @@ class SiteInfoApp extends LitElement {
       return ''
     }
     var protocol = ''
-    if (this.isDrive) protocol = html`<p class="protocol">Accessed using the Hyper protocol</p>`
     if (this.isHttps) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
     if (this.isBeaker) protocol = html`<p class="protocol">This page is served by Beaker</p>`
     var isSaved = _get(this.driveCfg, 'saved')
@@ -230,6 +229,7 @@ class SiteInfoApp extends LitElement {
           <h1>${this.info.title}</h1>
           ${this.isDrive && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
           ${protocol}
+          ${this.isDrive && this.info.forkOf ? html`<p class="fork-of">Fork of <a href=${this.info.forkOf}>${toNiceDomain(this.info.forkOf)}</a>` : ''}
         </div>
       </div>
     `
