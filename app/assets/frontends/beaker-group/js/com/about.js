@@ -1,4 +1,5 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
+import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
 import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { GroupSettingsPopup } from './popups/group-settings.js'
 import { AddUserPopup } from './popups/add-user.js'
@@ -24,6 +25,7 @@ export class About extends LitElement {
   constructor () {
     super()
     this.info = undefined
+    this.groupware = undefined
     this.userCount = undefined
     this.sidebarMd = undefined
   }
@@ -31,6 +33,8 @@ export class About extends LitElement {
   async load () {
     var drive = new Hyperdrive(location)
     this.info = await drive.getInfo()
+    this.requestUpdate()
+    this.groupware = await drive.readFile('/beaker-forum/groupware.json').then(JSON.parse).catch(e => undefined)
     this.requestUpdate()
     this.userCount = await uwg.users.count()
     this.requestUpdate()
@@ -41,6 +45,17 @@ export class About extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
+      ${this.groupware?.applications?.length ? html`
+        <h4>Groupware</h4>
+        <div class="groupware-grid">
+          ${repeat(this.groupware.applications, app => html`
+            <a href=${app.url} title=${app.title}>
+              <img src=${app.icon || '/.ui/img/default-icon'}>
+              <span>${app.title}</span>
+            </a>
+          `)}
+        </div>
+      ` : ''}
       <h4>About This Group</h4>
       <div class="description">${this.info ? (this.info.description || html`<em>No description<em>`) : ''}</div>
       <div class="counts">

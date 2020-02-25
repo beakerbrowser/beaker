@@ -32,6 +32,41 @@ ${buttonsCSS}
   letter-spacing: 0.4px;
 }
 
+.groupware-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 10px;
+  padding: 15px 5px 10px;
+}
+
+.groupware-grid a {
+  display: block;
+  text-align: center;
+  padding: 5px 0;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 4px;
+}
+
+.groupware-grid a:hover {
+  text-decoration: underline;
+}
+
+.groupware-grid a img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 8px;
+  border-radius: 4px;
+}
+
+.groupware-grid a span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
 .counts {
   display: flex;
   padding: 8px 12px;
