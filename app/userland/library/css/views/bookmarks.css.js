@@ -55,6 +55,7 @@ a {
 
 .bookmark .title {
   font-size: 13px;
+  font-weight: 600;
   margin-right: 20px;
 }
 
