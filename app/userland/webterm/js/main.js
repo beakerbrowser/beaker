@@ -129,6 +129,8 @@ class WebTerm extends LitElement {
     }
     this.url = url
 
+    this.envVars.sys = beaker.filesystem.url
+
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {
       try {
@@ -269,7 +271,7 @@ class WebTerm extends LitElement {
   }
 
   outputHeader (thenCwd, cmd) {
-    let host = this.isFSRoot(thenCwd.host) ? '~' : shortenHash(thenCwd.host)
+    let host = shortenHash(thenCwd.host)
     let pathname = shortenAllKeys(thenCwd.pathname || '').replace(/\/$/, '')
     this.outputHist.push(html`<div class="header"><strong>${host}${pathname}&gt;</strong> <span>${cmd || ''}</span></div>`)
   }
@@ -487,12 +489,6 @@ class WebTerm extends LitElement {
     }
   }
 
-  isFSRoot (url) {
-    let a = (url || '').match(DRIVE_KEY_REGEX)
-    let b = beaker.filesystem.url.match(DRIVE_KEY_REGEX)
-    return a && a[0] === b[0]
-  }
-
   lookupCommand (input) {
     let cmd = undefined
     if (input.startsWith('@')) {
@@ -600,11 +596,6 @@ class WebTerm extends LitElement {
   resolve (location) {
     const cwd = this.cwd
 
-    // home
-    if (location.startsWith('~')) {
-      location = joinPath(beaker.filesystem.url, location.slice(1))
-    }
-
     // relative paths
     if (location === '.') {
       return cwd.toString()
@@ -698,7 +689,7 @@ class WebTerm extends LitElement {
 
   render () {
     if (!this.cwd) return html`<div></div>`
-    var host = this.isFSRoot(this.cwd.host) ? '~' : shortenHash(this.cwd.host)
+    var host = shortenHash(this.cwd.host)
     var pathname = shortenAllKeys(this.cwd.pathname).replace(/\/$/, '')
     var additionalTabCompleteOptions = this.tabCompletion ? this.tabCompletion.length - TAB_COMPLETION_RENDER_LIMIT : 0
     let endOfInput = this.promptInput.split(' ').pop().split('/').pop()

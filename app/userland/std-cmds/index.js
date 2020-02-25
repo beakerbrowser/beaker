@@ -232,7 +232,7 @@ export async function cat (opts = {}, location = '') {
 
 export async function go (opts = {}, location = '') {
   if (opts.bookmark) {
-    location = `~/bookmarks/${location}`
+    location = `${beaker.filesystem.url}/bookmarks/${location}`
     if (!location.endsWith('.goto')) location += '.goto'
   }
   location = this.env.resolve(location)
