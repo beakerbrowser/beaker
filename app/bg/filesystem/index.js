@@ -1,3 +1,4 @@
+import { BrowserWindow } from 'electron'
 import { join as joinPath } from 'path'
 import * as logLib from '../logger'
 const logger = logLib.category('filesystem')
@@ -6,6 +7,7 @@ import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
 import * as bookmarks from './bookmarks'
 import * as trash from './trash'
+import * as modals from '../ui/subwindows/modals'
 import { PATHS } from '../../lib/const'
 import lock from '../../lib/lock'
 
@@ -150,25 +152,49 @@ export async function configDrive (url, {seeding, forkOf} = {seeding: undefined,
   var release = await lock('filesystem:drives')
   try {
     var key = await hyper.drives.fromURLToKey(url, true)
-    var drive = drives.find(drive => drive.key === key)
-    if (!drive) {
+    var driveCfg = drives.find(d => d.key === key)
+    if (!driveCfg) {
+      let drive = await hyper.drives.getOrLoadDrive(url)
+      let manifest = await drive.pda.readManifest().catch(_ => {})
+
       if (typeof seeding === 'undefined') {
-        seeding = true
+        seeding = false
       }
-      drive = /** @type DriveConfig */({key, seeding})
+      driveCfg = /** @type DriveConfig */({key, seeding})
       if (forkOf && typeof forkOf === 'object') {
-        drive.forkOf = forkOf
+        driveCfg.forkOf = forkOf
       }
-      drives.push(drive)
+
+      // for forks, we need to ensure:
+      // 1. the drives.json forkOf.key is the same as index.json forkOf value
+      // 2. there's a local forkOf.label
+      // 3. the parent is saved
+      if (manifest.forkOf && typeof manifest.forkOf === 'string') {
+        if (!driveCfg.forkOf) driveCfg.forkOf = {key: undefined, label: undefined}
+        driveCfg.forkOf.key = await hyper.drives.fromURLToKey(manifest.forkOf, true)
+        if (!driveCfg.forkOf.label) {
+          let message = 'Choose a label to save this fork under (e.g. "dev" or "bobs-changes")'
+          let promptRes = await modals.create(BrowserWindow.getFocusedWindow().webContents, 'prompt', {message}).catch(e => false)
+          if (!promptRes || !promptRes.value) return
+          driveCfg.forkOf.label = promptRes.value
+        }
+
+        let parentDriveCfg = drives.find(d => d.key === driveCfg.forkOf.key)
+        if (!parentDriveCfg) {
+          drives.push({key: driveCfg.forkOf.key, seeding: false})
+        }
+      }
+
+      drives.push(driveCfg)
     } else {
       if (typeof seeding !== 'undefined') {
-        drive.seeding = seeding
+        driveCfg.seeding = seeding
       }
       if (typeof forkOf !== 'undefined') {
         if (forkOf && typeof forkOf === 'object') {
-          drive.forkOf = forkOf
+          driveCfg.forkOf = forkOf
         } else {
-          delete drive.forkOf
+          delete driveCfg.forkOf
         }
       }
     }
