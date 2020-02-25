@@ -73,7 +73,7 @@ export class EditBookmarkPopup extends BasePopup {
     e.preventDefault()
     e.stopPropagation()
 
-    await navigator.filesystem.updateMetadata(this.bookmark.path, {
+    await beaker.filesystem.updateMetadata(this.bookmark.path, {
       href: e.target.href.value,
       title: e.target.title.value
     })

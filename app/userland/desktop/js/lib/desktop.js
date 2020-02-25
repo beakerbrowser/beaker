@@ -5,14 +5,14 @@ import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 
 // const EXPLORER_APP = 'https://hyperdrive.network/'
 // export const FIXED_FILES = [
-//   makeFixedLink('.home-drive.goto', `${EXPLORER_APP}${navigator.filesystem.url.slice('hyper://'.length)}`, 'Home Drive'),
+//   makeFixedLink('.home-drive.goto', `${EXPLORER_APP}${beaker.filesystem.url.slice('hyper://'.length)}`, 'Home Drive'),
 //   makeFixedLink('.library.goto', 'beaker://library/', 'My Library'),
 // ]
 
 export async function load () {
   var userFiles = []
   try {
-    userFiles = await navigator.filesystem.readdir('/desktop', {includeStats: true})
+    userFiles = await beaker.filesystem.readdir('/desktop', {includeStats: true})
     userFiles.sort((a, b) => a.name.localeCompare(b.name))
   } catch (e) {
     console.log('Failed to load desktop files', e)
@@ -21,12 +21,12 @@ export async function load () {
 }
 
 export async function createLink ({href, title}) {
-  var name = await getAvailableName('/desktop', title, navigator.filesystem, 'goto')
-  await navigator.filesystem.writeFile(`/desktop/${name}`, '', {metadata: {href, title}})
+  var name = await getAvailableName('/desktop', title, beaker.filesystem, 'goto')
+  await beaker.filesystem.writeFile(`/desktop/${name}`, '', {metadata: {href, title}})
 }
 
 export async function remove (file) {
-  await navigator.filesystem.unlink(`/desktop/${file.name}`)
+  await beaker.filesystem.unlink(`/desktop/${file.name}`)
 }
 
 // internal

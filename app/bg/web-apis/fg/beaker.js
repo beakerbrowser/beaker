@@ -5,6 +5,7 @@ import beakerBrowserManifest from '../manifests/internal/browser'
 import bookmarksManifest from '../manifests/internal/bookmarks'
 import downloadsManifest from '../manifests/internal/downloads'
 import drivesManifest from '../manifests/internal/drives'
+import filesystemManifest from '../manifests/internal/beaker-filesystem'
 import historyManifest from '../manifests/internal/history'
 import sitedataManifest from '../manifests/internal/sitedata'
 import watchlistManifest from '../manifests/internal/watchlist'
@@ -37,6 +38,19 @@ export const setup = function (rpc) {
     beaker.sitedata = Object.assign({}, sitedataRPC)
     beaker.watchlist = Object.assign({}, watchlistRPC)
     beaker.watchlist.createEventsStream = () => fromEventStream(watchlistRPC.createEventsStream())
+
+    var filesystemApi = rpc.importAPI('beaker-filesystem', filesystemManifest, opts)
+    try {
+      let fsUrl = undefined
+      Object.defineProperty(beaker, 'filesystem', {
+        get () {
+          if (!fsUrl) fsUrl = filesystemApi.get().url
+          return new Hyperdrive(fsUrl)
+        }
+      })
+    } catch (e) {
+      // not supported
+    }
     
     // beaker.drives
     beaker.drives = new EventTarget()

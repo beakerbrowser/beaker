@@ -107,7 +107,7 @@ class WebTerm extends LitElement {
       }
     })
 
-    this.url = navigator.filesystem.url
+    this.url = beaker.filesystem.url
   }
 
   teardown () {
@@ -122,9 +122,9 @@ class WebTerm extends LitElement {
   async load (url) {
     if (url.startsWith('beaker://')) {
       if (url.startsWith('beaker://desktop/')) {
-        url = navigator.filesystem.url + '/desktop'
+        url = beaker.filesystem.url + '/desktop'
       } else {
-        url = navigator.filesystem.url
+        url = beaker.filesystem.url
       }
     }
     this.url = url
@@ -489,7 +489,7 @@ class WebTerm extends LitElement {
 
   isFSRoot (url) {
     let a = (url || '').match(DRIVE_KEY_REGEX)
-    let b = navigator.filesystem.url.match(DRIVE_KEY_REGEX)
+    let b = beaker.filesystem.url.match(DRIVE_KEY_REGEX)
     return a && a[0] === b[0]
   }
 
@@ -602,7 +602,7 @@ class WebTerm extends LitElement {
 
     // home
     if (location.startsWith('~')) {
-      location = joinPath(navigator.filesystem.url, location.slice(1))
+      location = joinPath(beaker.filesystem.url, location.slice(1))
     }
 
     // relative paths

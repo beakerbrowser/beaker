@@ -45,13 +45,13 @@ import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
 // exported api
 // =
 
-// navigator.filesystem.query({type: 'mount', path: ['/profile', '/profile/follows/*', '/profile/follows/*/follows/*']})
+// query({type: 'mount', path: ['/profile', '/profile/follows/*', '/profile/follows/*/follows/*']})
 // => [{type: 'mount', path: '/profile', stat, mount, drive}, {type: 'mount', path: '/profile/friend/bob', stat, mount, drive}, ...]
 
-// navigator.filesystem.query({type: 'mount', mount: url, path: ['/profile/follows/*', '/profile/follows/*/follows/*']})
+// query({type: 'mount', mount: url, path: ['/profile/follows/*', '/profile/follows/*/follows/*']})
 // => [{type: 'mount', path: '/profile/friend/bob', stat, mount, drive}, ...]
 
-// navigator.filesystem.query({type: 'file', metadata: {href: url}, path: ['/profile/comments', '/profile/follows/*/comments', '/profile/follows/*/follows/*/comments']})
+// query({type: 'file', metadata: {href: url}, path: ['/profile/comments', '/profile/follows/*/comments', '/profile/follows/*/follows/*/comments']})
 // => [{type: 'folder', path: '/profile/comments/foo.txt', stat, drive}]
 
 /**

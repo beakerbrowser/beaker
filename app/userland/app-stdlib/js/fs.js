@@ -41,14 +41,15 @@ import { joinPath, slugify } from './strings.js'
 // =
 
 /**
+ * @param {Hyperdrive} fs
  * @param {FSQueryOpts} query
  * @returns {Promise<FSQueryResult[]>}
  */
-export async function queryRead (query) {
-  var files = await navigator.filesystem.query(query)
+export async function queryRead (fs, query) {
+  var files = await fs.query(query)
   for (let file of files) {
     if (isFilenameBinary(file.path)) continue
-    file.content = await navigator.filesystem.readFile(file.path, 'utf8').catch(err => undefined)
+    file.content = await fs.readFile(file.path, 'utf8').catch(err => undefined)
     if (file.path.endsWith('.json')) {
       try {
         file.content = JSON.parse(file.content)
@@ -61,22 +62,24 @@ export async function queryRead (query) {
 }
 
 /**
+ * @param {Hyperdrive} fs
  * @param {FSQueryOpts} query
  * @returns {Promise<boolean>}
  */
-export async function queryHas (query) {
-  var files = await navigator.filesystem.query(query)
+export async function queryHas (fs, query) {
+  var files = await fs.query(query)
   return files.length > 0
 }
 
 /**
+ * @param {Hyperdrive} fs
  * @param {string} path
  */
-export async function ensureDir (path) {
+export async function ensureDir (fs, path) {
   try {
-    let st = await navigator.filesystem.stat(path).catch(e => null)
+    let st = await fs.stat(path).catch(e => null)
     if (!st) {
-      await navigator.filesystem.mkdir(path)
+      await fs.mkdir(path)
     } else if (!st.isDirectory()) {
       console.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
     }
@@ -86,29 +89,31 @@ export async function ensureDir (path) {
 }
 
 /**
+ * @param {Hyperdrive} fs
  * @param {string} path
  */
-export async function ensureParentDir (path) {
-  return ensureDir(path.split('/').slice(0, -1).join('/'))
+export async function ensureParentDir (fs, path) {
+  return ensureDir(fs, path.split('/').slice(0, -1).join('/'))
 }
 
 /**
+ * @param {Hyperdrive} fs
  * @param {string} path 
  * @param {string} url 
  * @return {Promise<void>}
  */
-export async function ensureMount (path, url) {
+export async function ensureMount (fs, path, url) {
   try {
-    let st = await navigator.filesystem.stat(path).catch(e => null)
+    let st = await fs.stat(path).catch(e => null)
     let key = await Hyperdrive.resolveName(url)
     if (!st) {
       // add mount
-      await navigator.filesystem.mount(path, key)
+      await fs.mount(path, key)
     } else if (st.mount) {
       if (st.mount.key !== key) {
         // change mount
-        await navigator.filesystem.unmount(path)
-        await navigator.filesystem.mount(path, key)
+        await fs.unmount(path)
+        await fs.mount(path, key)
       }
     } else {
       console.error('Warning! Filesystem expects a mount but an unexpected file exists at this location.', {path})
@@ -119,15 +124,16 @@ export async function ensureMount (path, url) {
 }
 
 /**
+ * @param {Hyperdrive} fs
  * @param {string} path 
  * @return {Promise<void>}
  */
-export async function ensureUnmount (path) {
+export async function ensureUnmount (fs, path) {
   try {
-    let st = await navigator.filesystem.stat(path).catch(e => null)
+    let st = await fs.stat(path).catch(e => null)
     if (st && st.mount) {
       // remove mount
-      await navigator.filesystem.unmount(path)
+      await fs.unmount(path)
     }
   } catch (e) {
     console.error('Filesystem failed to unmount drive', {path, error: e})
@@ -137,10 +143,10 @@ export async function ensureUnmount (path) {
 /**
  * @param {string} pathSelector 
  * @param {string} url
- * @param {Object} [drive]
+ * @param {Object} drive
  * @return {Promise<void>}
  */
-export async function ensureUnmountByUrl (pathSelector, url, drive = navigator.filesystem) {
+export async function ensureUnmountByUrl (pathSelector, url, drive) {
   try {
     let mounts = await drive.query({
       path: pathSelector,
@@ -164,7 +170,7 @@ export async function ensureUnmountByUrl (pathSelector, url, drive = navigator.f
  * @param {string} ext
  * @returns {Promise<string>}
  */
-export async function getAvailableName (containingPath, title, fs = navigator.filesystem, ext = '') {
+export async function getAvailableName (containingPath, title, fs, ext = '') {
   var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
   for (let i = 1; i < 1e9; i++) {
     let name = ((i === 1) ? basename : `${basename}-${i}`) + (ext ? `.${ext}` : '')

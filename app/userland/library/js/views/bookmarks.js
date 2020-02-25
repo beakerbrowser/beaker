@@ -35,11 +35,11 @@ export class BookmarksView extends LitElement {
   }
 
   async load () {
-    var desktopBookmarks = await navigator.filesystem.query({
+    var desktopBookmarks = await beaker.filesystem.query({
       type: 'file',
       path: ['/desktop/*.goto']
     })
-    var otherBookmarks = await navigator.filesystem.query({
+    var otherBookmarks = await beaker.filesystem.query({
       type: 'file',
       path: ['/bookmarks/*.goto']
     })
@@ -156,7 +156,7 @@ export class BookmarksView extends LitElement {
 
   async onClickRemove (file) {
     if (!confirm('Are you sure?')) return
-    await navigator.filesystem.unlink(file.path)
+    await beaker.filesystem.unlink(file.path)
     toast.create('Bookmark removed', '', 10e3)
     this.load()
   }

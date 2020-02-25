@@ -48,7 +48,7 @@ class SiteInfoApp extends LitElement {
   }
 
   get isRootDrive () {
-    return this.origin === navigator.filesystem.url
+    return this.origin === beaker.filesystem.url
   }
 
   get drive () {

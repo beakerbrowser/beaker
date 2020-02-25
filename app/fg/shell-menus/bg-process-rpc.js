@@ -7,7 +7,7 @@ import sitedataManifest from '../../bg/web-apis/manifests/internal/sitedata'
 import downloadsManifest from '../../bg/web-apis/manifests/internal/downloads'
 import hyperdriveManifest from '../../bg/web-apis/manifests/external/hyperdrive'
 import navigatorManifest from '../../bg/web-apis/manifests/external/navigator'
-import navigatorManifestFs from '../../bg/web-apis/manifests/external/navigator-filesystem'
+import beakerFsManifest from '../../bg/web-apis/manifests/internal/beaker-filesystem'
 import shellMenusManifest from '../../bg/rpc-manifests/shell-menus'
 import viewsManifest from '../../bg/rpc-manifests/views'
 
@@ -19,6 +19,6 @@ export const sitedata = rpc.importAPI('sitedata', sitedataManifest)
 export const downloads = rpc.importAPI('downloads', downloadsManifest)
 export const hyperdrive = rpc.importAPI('hyperdrive', hyperdriveManifest)
 export const navigator = rpc.importAPI('navigator', navigatorManifest)
-export const navigatorFs = rpc.importAPI('navigator-filesystem', navigatorManifestFs)
+export const beakerFs = rpc.importAPI('beaker-filesystem', beakerFsManifest)
 export const shellMenus = rpc.importAPI('background-process-shell-menus', shellMenusManifest)
 export const views = rpc.importAPI('background-process-views', viewsManifest)

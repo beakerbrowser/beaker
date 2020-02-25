@@ -240,7 +240,7 @@ class BrowserMenu extends LitElement {
   }
 
   onOpenSystemDrive (e) {
-    bg.shellMenus.createTab(bg.navigatorFs.get().url)
+    bg.shellMenus.createTab(bg.beakerFs.get().url)
     bg.shellMenus.close()
   }
 

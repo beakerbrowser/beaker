@@ -11,7 +11,7 @@ import browserManifest from '../../bg/web-apis/manifests/internal/browser'
 import hyperdriveManifest from '../../bg/web-apis/manifests/external/hyperdrive'
 import historyManifest from '../../bg/web-apis/manifests/internal/history'
 import locationBarManifest from '../../bg/rpc-manifests/location-bar'
-import navigatorManifestFs from '../../bg/web-apis/manifests/external/navigator-filesystem'
+import beakerFsManifest from '../../bg/web-apis/manifests/internal/beaker-filesystem'
 import viewsManifest from '../../bg/rpc-manifests/views'
 
 const bg = {
@@ -19,7 +19,7 @@ const bg = {
   hyperdrive: rpc.importAPI('hyperdrive', hyperdriveManifest),
   history: rpc.importAPI('history', historyManifest),
   locationBar: rpc.importAPI('background-process-location-bar', locationBarManifest),
-  navigatorFs: rpc.importAPI('navigator-filesystem', navigatorManifestFs),
+  beakerFs: rpc.importAPI('beaker-filesystem', beakerFsManifest),
   views: rpc.importAPI('background-process-views', viewsManifest)
 }
 

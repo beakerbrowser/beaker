@@ -1,7 +1,6 @@
 import errors from 'beaker-error-constants'
 import manifest from '../manifests/external/navigator'
 import sessionManifest from '../manifests/external/navigator-session'
-import filesystemManifest from '../manifests/external/navigator-filesystem'
 
 const RPC_OPTS = { timeout: false, errors }
 
@@ -19,19 +18,6 @@ export const setup = function (rpc) {
     if (typeof sessionApi[k] === 'function') {
       navigator.session[k] = sessionApi[k].bind(sessionApi)
     }
-  }
-
-  var filesystemApi = rpc.importAPI('navigator-filesystem', filesystemManifest, RPC_OPTS)
-  try {
-    let fsUrl = undefined
-    Object.defineProperty(navigator, 'filesystem', {
-      get () {
-        if (!fsUrl) fsUrl = filesystemApi.get().url
-        return new Hyperdrive(fsUrl)
-      }
-    })
-  } catch (e) {
-    // not supported
   }
 
   var _terminalCommands = []

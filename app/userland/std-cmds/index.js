@@ -209,7 +209,7 @@ export async function bookmark (opts = {}, href = '.') {
   href = this.env.resolve(href || '.')
   var name = opts.filename || href.split('/').filter(Boolean).pop()
   if (!name.endsWith('.goto')) name += '.goto'
-  await navigator.filesystem.writeFile(`/bookmarks/${name}`, '', {metadata: {href}})
+  await beaker.filesystem.writeFile(`/bookmarks/${name}`, '', {metadata: {href}})
 }
 
 // utilities
