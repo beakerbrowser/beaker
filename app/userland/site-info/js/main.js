@@ -194,7 +194,7 @@ class SiteInfoApp extends LitElement {
 
   render () {
     if (this.isLoading) {
-      return html`<div></div>`
+      return html`<div class="loading"><span class="spinner"></span> Loading...</div>`
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">

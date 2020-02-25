@@ -2,6 +2,7 @@ import {css} from '../../app-stdlib/vendor/lit-element/lit-element.js'
 import buttonsCSS from '../../app-stdlib/css/buttons2.css.js'
 import inputsCSS from '../../app-stdlib/css/inputs.css.js'
 import tooltipCSS from '../../app-stdlib/css/tooltip.css.js'
+import spinnerCSS from '../../app-stdlib/css/com/spinner.css.js'
 import formCSS from './form.css.js'
 
 const cssStr = css`
@@ -9,6 +10,7 @@ ${buttonsCSS}
 ${inputsCSS}
 ${tooltipCSS}
 ${formCSS}
+${spinnerCSS}
 
 :host {
   display: flex;
@@ -66,6 +68,16 @@ hr {
   margin: 0;
   border: 0;
   border-top: 1px solid #ddd;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+}
+
+.loading .spinner {
+  margin-right: 10px;
 }
 
 .site-info {
