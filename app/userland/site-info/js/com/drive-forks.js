@@ -31,32 +31,34 @@ class DriveForks extends LitElement {
 
   render () {
     var currentFork = this.forks.find(f => f.url === this.origin)
+    if (this.info && this.info.forkOf && this.forks.length <= 1) {
+      return html`This drive is a fork of <a href=${this.info.forkOf}>${toNiceDomain(this.info.forkOf)}</a>`
+    }
     if (!currentFork) {
-      if (this.info && this.info.forkOf) {
-        return html`This drive is a fork of <a href=${this.info.forkOf}>${toNiceDomain(this.info.forkOf)}</a>`
-      }
       return html``
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="list">
-        ${repeat(this.forks, fork => {
-          var isCurrent = fork.url === this.origin
-          return html`
-            <a class="fork ${isCurrent ? 'current' : ''}" href=${fork.url} @click=${this.onClickFork}>
-              <div>
-                ${isCurrent ? html`<span class="fas fa-fw fa-caret-right"></span>` : ''}
-                <span class="fork-label">${fork.forkOf ? fork.forkOf.label : 'Master'}</span>
-              </div>
-              <div>
-                ${fork.forkOf ? html`
-                  <button class="transparent" @click=${e => this.onClickDelete(e, fork)}><span class="far fa-trash-alt"></span></button>
-                ` : ''}
-              </div>
-            </a>
-          `
-        })}
-      </div>
+      ${this.forks.length > 1 ? html`
+        <div class="list">
+          ${repeat(this.forks, fork => {
+            var isCurrent = fork.url === this.origin
+            return html`
+              <a class="fork ${isCurrent ? 'current' : ''}" href=${fork.url} @click=${this.onClickFork}>
+                <div>
+                  ${isCurrent ? html`<span class="fas fa-fw fa-caret-right"></span>` : ''}
+                  <span class="fork-label">${fork.forkOf ? fork.forkOf.label : 'Master'}</span>
+                </div>
+                <div>
+                  ${fork.forkOf ? html`
+                    <button class="transparent" @click=${e => this.onClickDelete(e, fork)}><span class="far fa-trash-alt"></span></button>
+                  ` : ''}
+                </div>
+              </a>
+            `
+          })}
+        </div>
+      ` : ''}
       <div>
         <button class="transparent" @click=${this.onClickNewFork}>+ New Fork</button>
         ${currentFork.forkOf ? html`

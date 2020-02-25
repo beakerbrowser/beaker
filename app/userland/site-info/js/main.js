@@ -229,7 +229,6 @@ class SiteInfoApp extends LitElement {
           <h1>${this.info.title}</h1>
           ${this.isDrive && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
           ${protocol}
-          ${this.isDrive && this.info.forkOf ? html`<p class="fork-of">Fork of <a href=${this.info.forkOf}>${toNiceDomain(this.info.forkOf)}</a>` : ''}
         </div>
       </div>
     `
