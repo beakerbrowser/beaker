@@ -17,7 +17,7 @@ const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).repl
 // content security policies
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src beaker-favicon: beaker: asset: data: hyper: http: https;
+  img-src beaker: asset: data: hyper: http: https;
   script-src 'self' beaker: 'unsafe-eval';
   media-src 'self' beaker: hyper:;
   style-src 'self' 'unsafe-inline' beaker:;
@@ -25,7 +25,7 @@ const BEAKER_CSP = `
 `.replace(/\n/g, '')
 const SIDEBAR_CSP = `
 default-src 'self' beaker:;
-img-src beaker-favicon: beaker: asset: data: hyper: http: https;
+img-src beaker: asset: data: hyper: http: https;
 script-src 'self' beaker: hyper: blob: 'unsafe-eval';
 media-src 'self' beaker: hyper:;
 style-src 'self' 'unsafe-inline' beaker:;

@@ -93,7 +93,7 @@ export class HistoryAutocomplete extends LitElement {
     })
     return html`
       <a href="${res.url}" class="${cls}" @click=${this.onClickResult}>
-        <img class="icon favicon" src="beaker-favicon:32,${res.url}"/>
+        <img class="icon favicon" src="asset:favicon:32,${res.url}"/>
         <span class="title">${res.title}</span>
         <span class="label">${res.url}</span>
       </a>

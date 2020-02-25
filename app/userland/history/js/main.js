@@ -91,7 +91,7 @@ export class HistoryApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <nav>
-        <h1><img src="beaker-favicon:beaker://history/"> History</h1>
+        <h1><img src="asset:favicon:beaker://history/"> History</h1>
         <div class="section">
           <a @click=${this.onUpdatePeriodFilter} data-period="all" class="${this.currentPeriodFilter === 'all' ? 'active' : ''}">
             <i class="fas fa-angle-right"></i>
@@ -172,7 +172,7 @@ export class HistoryApp extends LitElement {
     return html`
       <div class="row">
         <a class="link" href=${row.url} title=${row.title}>
-          <img class="favicon" src=${'beaker-favicon:' + row.url}/>
+          <img class="favicon" src=${'asset:favicon:' + row.url}/>
           <span class="title">${row.title.replace(/[^\x00-\x7F]/g, '')}</span>
           <span class="url">${getHostname(row.url)}</span>
         </a>

@@ -199,7 +199,7 @@ function renderRow (row, i) {
   return yo`
     <div class="ll-row">
       <a class="link" href=${row.url} title=${row.title}>
-        <img class="favicon" src=${'beaker-favicon:' + row.url}/>
+        <img class="favicon" src=${'asset:favicon:' + row.url}/>
         <span class="title">${row.title.replace(/[^\x00-\x7F]/g, '')}</span>
         <span class="url">${getHostname(row.url)}</span>
       </a>

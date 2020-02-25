@@ -59,7 +59,7 @@ class PeersMenu extends LitElement {
       <div class="wrapper">
         <div class="header">
           <div class="header-info">
-            <img class="favicon" src="beaker-favicon: ${this.url}"/>
+            <img class="favicon" src="asset:favicon:${this.url}"/>
             <h1 class="page-title">
               ${_get(this, 'driveInfo.title', html`<em>Untitled</em>`)}
             </h1>

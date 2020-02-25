@@ -32,7 +32,6 @@ import * as downloads from './bg/ui/downloads'
 import * as permissions from './bg/ui/permissions'
 
 import * as beakerProtocol from './bg/protocols/beaker'
-import * as beakerFaviconProtocol from './bg/protocols/beaker-favicon'
 import * as assetProtocol from './bg/protocols/asset'
 import * as hyperProtocol from './bg/protocols/hyper'
 import * as datProtocol from './bg/protocols/dat'
@@ -118,7 +117,6 @@ app.on('ready', async function () {
 
   // protocols
   beakerProtocol.register(protocol)
-  beakerFaviconProtocol.setup() // TODO deprecateme
   assetProtocol.setup()
   assetProtocol.register(protocol)
   hyperProtocol.register(protocol)
