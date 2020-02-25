@@ -26,7 +26,6 @@ export class ProfileHeader extends LitElement {
     this.showAdminCtrls = false
     this.id = undefined
     this.profile = undefined
-    this.error = undefined
   }
 
   async load () {

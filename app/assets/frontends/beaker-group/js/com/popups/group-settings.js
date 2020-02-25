@@ -25,6 +25,12 @@ export class GroupSettingsPopup extends BasePopup {
 
   static get styles () {
     return [popupsCSS, css`
+    hr {
+      border: 0;
+      border-top: 1px solid #ccd;
+      margin: 25px 0;
+    }
+
     .img-ctrls {
       display: flex;
       align-items: center;
@@ -156,6 +162,8 @@ export class GroupSettingsPopup extends BasePopup {
           </div>
         </div>
 
+        <hr>
+
         <label for="title">Title</label>
         <input autofocus name="title" tabindex="2" value=${this.title || ''} placeholder="Group Title" @change=${this.onChangeTitle} class=${this.errors.title ? 'has-error' : ''} />
         ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
@@ -164,13 +172,19 @@ export class GroupSettingsPopup extends BasePopup {
         <input name="description" tabindex="3" placeholder="Group Description" @change=${this.onChangeDescription} class=${this.errors.description ? 'has-error' : ''} value=${this.description || ''}>
         ${this.errors.description ? html`<div class="error">${this.errors.description}</div>` : ''}
 
+        <hr>
+
         <label for="sidebarMd">Sidebar Text</label>
         <textarea name="sidebarMd" tabindex="4" placeholder="Write your rules, instructions, etc here. (Markdown supported)" @change=${this.onChangeSidebarMd} class=${this.errors.sidebarMd ? 'has-error' : ''}>${this.sidebarMd || ''}</textarea>
         ${this.errors.sidebarMd ? html`<div class="error">${this.errors.sidebarMd}</div>` : ''}
 
+        <hr>
+
         <label for="pinnedMessageMd">Pinned Message Text</label>
         <textarea name="pinnedMessageMd" tabindex="5" placeholder="Write an introduction message here. (Markdown supported)" @change=${this.onChangePinnedMessageMd} class=${this.errors.pinnedMessageMd ? 'has-error' : ''}>${this.pinnedMessageMd || ''}</textarea>
         ${this.errors.pinnedMessageMd ? html`<div class="error">${this.errors.pinnedMessageMd}</div>` : ''}
+
+        <hr>
 
         <div class="form-actions">
           <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="7">Cancel</button>

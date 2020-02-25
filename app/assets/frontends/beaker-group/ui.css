@@ -19,9 +19,9 @@ body {
 
   --banner-height: 150px;
   --banner-background-image: url("/banner");
-  --banner-background-color: #3085ef;
+  --banner-background-color: #000;
   --banner-background-position: center center;
-  --banner-background-size: cover;
+  --banner-background-size: contain;
   --banner-background-repeat: no-repeat;
 
   --header-background: #f5f5fb;

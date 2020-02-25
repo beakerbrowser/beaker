@@ -8,15 +8,18 @@ const cssStr = css`
 
 .md {
   display: block;
-  padding: 16px 18px;
+  padding: 20px 24px 22px;
   margin-bottom: 10px;
-  background: var(--header-background);
+  background: var(--body-background);
+  border: 1px solid var(--button-border-color);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px #0001;
 }
 
 .hide-btn {
   position: absolute;
-  top: 5px;
-  right: 12px;
+  top: 6px;
+  right: 10px;
   color: rgba(0,0,0,.5);
 }
 
