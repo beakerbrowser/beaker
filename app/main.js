@@ -35,7 +35,7 @@ import * as beakerProtocol from './bg/protocols/beaker'
 import * as assetProtocol from './bg/protocols/asset'
 import * as hyperProtocol from './bg/protocols/hyper'
 import * as datProtocol from './bg/protocols/dat'
-import * as intentProtocol from './bg/protocols/intent'
+// import * as intentProtocol from './bg/protocols/intent'
 
 import * as testDriver from './bg/test-driver'
 import * as openURL from './bg/open-url'

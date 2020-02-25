@@ -103,17 +103,6 @@ export function setup () {
       console.log(e)
     }
 
-    // try standard icons
-    if (url.startsWith('hyper://')) {
-      let urlp = parseDriveUrl(url)
-      if (filesystem.isRootUrl(`hyper://${urlp.host}`) && (!urlp.pathname || urlp.pathname === '/')) {
-        return servePng(path.join(__dirname, `./assets/img/favicons/drive.png`), DEFAULTS[asset], cb)
-      }
-      if (!urlp.pathname || urlp.pathname.endsWith('/')) {
-        return servePng(path.join(__dirname, `./assets/img/favicons/folder.png`), DEFAULTS[asset], cb)
-      }
-    }
-
     cb(DEFAULTS[asset])
   }
 }
