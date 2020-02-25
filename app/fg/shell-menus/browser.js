@@ -14,8 +14,6 @@ class BrowserMenu extends LitElement {
   constructor () {
     super()
     this.submenu = ''
-    this.sumProgress = null // null means no active downloads
-    this.shouldPersistDownloadsIndicator = false
     this.accelerators = {
       newWindow: '',
       print: '',
@@ -23,7 +21,6 @@ class BrowserMenu extends LitElement {
       history: '',
       openFile: ''
     }
-    fromEventStream(bg.downloads.createEventsStream()).addEventListener('sum-progress', this.onDownloadsSumProgress.bind(this))
     this.fetchBrowserInfo()
   }
 
@@ -57,12 +54,6 @@ class BrowserMenu extends LitElement {
 
     if (this.submenu === 'bookmarks') {
       return this.renderBookmarks()
-    }
-
-    // render the progress bar if downloading anything
-    var progressEl = ''
-    if (this.shouldPersistDownloadsIndicator && this.sumProgress && this.sumProgress.receivedBytes <= this.sumProgress.totalBytes) {
-      progressEl = html`<progress value=${this.sumProgress.receivedBytes} max=${this.sumProgress.totalBytes}></progress>`
     }
 
     // auto-updater
@@ -122,7 +113,6 @@ class BrowserMenu extends LitElement {
           <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
             <img class="favicon" src="asset:favicon:beaker://downloads">
             <span class="label">Downloads</span>
-            ${progressEl}
           </div>
 
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
@@ -244,12 +234,6 @@ class BrowserMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-  onDownloadsSumProgress (sumProgress) {
-    this.shouldPersistDownloadsIndicator = true
-    this.sumProgress = sumProgress
-    this.requestUpdate()
-  }
-
   onOpenPage (e, url) {
     bg.shellMenus.createTab(url)
     bg.shellMenus.close()
@@ -348,11 +332,6 @@ BrowserMenu.styles = [commonCSS, css`
 .menu-item .shortcut {
   font-size: 12px;
   -webkit-font-smoothing: antialiased;
-}
-
-.menu-item.downloads progress {
-  margin-left: 20px;
-  width: 100px;
 }
 `]
 
