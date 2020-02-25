@@ -48,10 +48,11 @@ export default {
 
     // find root of the tree
     var seenKeys = new Set() // used to break cycles
-    while (rootDrive.forkOf && rootDrive.forkOf.key && !seenKeys.has(rootDrive.forkOf.key)) {
+    while (rootDrive && rootDrive.forkOf && rootDrive.forkOf.key && !seenKeys.has(rootDrive.forkOf.key)) {
       seenKeys.add(rootDrive.key)
       rootDrive = drivesList.find(drive2 => drive2.key === rootDrive.forkOf.key)
     }
+    if (!rootDrive) return []
 
     // build the tree
     var forks = []

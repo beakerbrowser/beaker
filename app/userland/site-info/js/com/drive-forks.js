@@ -1,6 +1,7 @@
 import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from '../../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { emit } from '../../../app-stdlib/js/dom.js'
+import { toNiceDomain } from '../../../app-stdlib/js/strings.js'
 import css from '../../css/com/drive-forks.css.js'
 
 class DriveForks extends LitElement {
@@ -8,6 +9,7 @@ class DriveForks extends LitElement {
     return {
       url: {type: String},
       origin: {type: String},
+      info: {type: Object},
       forks: {type: Array}
     }
   }
@@ -20,6 +22,7 @@ class DriveForks extends LitElement {
     super()
     this.url = ''
     this.origin = ''
+    this.info = undefined
     this.forks = []
   }
 
@@ -28,6 +31,12 @@ class DriveForks extends LitElement {
 
   render () {
     var currentFork = this.forks.find(f => f.url === this.origin)
+    if (!currentFork) {
+      if (this.info && this.info.forkOf) {
+        return html`This drive is a fork of <a href=${this.info.forkOf}>${toNiceDomain(this.info.forkOf)}</a>`
+      }
+      return html``
+    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="list">
