@@ -4,10 +4,7 @@ import once from 'once'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'hyper', subcategory: 'hyper-scheme'})
 // import intoStream from 'into-stream'
-import { toZipStream } from '../lib/zip'
-import slugify from 'slugify'
 import markdown from '../../lib/markdown'
-import hyperDns from '../hyper/dns'
 import * as drives from '../hyper/drives'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
@@ -106,6 +103,7 @@ export const protocolHandler = async function (request, respond) {
   //     errorInfo: `No DNS record found for hyper://${urlp.host}`
   //   })
   // }
+  var driveKey = await drives.fromURLToKey(urlp.host)
 
   // setup a timeout
   var timeout
