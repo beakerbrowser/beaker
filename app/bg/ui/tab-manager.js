@@ -390,6 +390,7 @@ class Tab {
     permPrompt.hide(this.browserView)
     modals.hide(this.browserView)
     sidebars.hide(this)
+    siteInfo.hide(this.browserWindow)
     this.isActive = false
   }
 
