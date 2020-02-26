@@ -136,7 +136,7 @@ export const BUILTIN_FRONTENDS = [
   {url: 'builtin:beaker-wiki', title: 'Markdown Wiki', img: 'beaker-wiki',  manifest: {frontend: {drive_types: 'website'}}},
   {url: 'builtin:beaker-code-snippet', title: 'Code Snippet', img: 'beaker-code-snippet', manifest: {frontend: {drive_types: 'website'}}},
   {url: 'builtin:beaker-module', title: 'Code Module', img: 'beaker-module', scaffold: MODULE_SCAFFOLD, manifest: {frontend: {drive_types: 'module'}}},
-  {url: 'builtin:beaker-group', title: 'Link-sharing Forum', img: 'beaker-group', manifest: {frontend: {drive_types: 'group'}}}
+  {url: 'builtin:beaker-forum', title: 'Link-sharing Forum', img: 'beaker-forum', manifest: {frontend: {drive_types: 'group'}}}
 ]
 
 export function filterFrontendByType (manifest, targetType) {
