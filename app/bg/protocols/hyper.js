@@ -179,43 +179,6 @@ export const protocolHandler = async function (request, respond) {
     })
   }
 
-  // handle zip download
-  if (urlp.query.download_as === 'zip') {
-    cleanup()
-
-    // (try to) get the title from the manifest
-    let zipname = false
-    if (manifest) {
-      zipname = slugify(manifest.title || '').toLowerCase()
-    }
-    zipname = zipname || 'drive'
-
-    let headers = {
-      'Content-Type': 'application/zip',
-      'Content-Disposition': `attachment; filename="${zipname}.zip"`,
-      'Content-Security-Policy': cspHeader,
-      'Access-Control-Allow-Origin': '*'
-    }
-
-    if (request.method === 'HEAD') {
-      // serve the headers
-      return respond({
-        statusCode: 204,
-        headers,
-        data: intoStream('')
-      })
-    } else {
-      // serve the zip
-      var zs = toZipStream(checkoutFS, filepath)
-      zs.on('error', err => logger.error('Error while producing .zip file', err))
-      return respond({
-        statusCode: 200,
-        headers,
-        data: zs
-      })
-    }
-  }
-
   // lookup entry
   var statusCode = 200
   var headers = {}
