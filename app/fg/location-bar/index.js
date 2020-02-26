@@ -65,6 +65,7 @@ class LocationBar extends LitElement {
     this.currentSelection = 0
     this.hoveredSearch = ''
     this.hasExpanded = false
+    this.queryIdCounter = 0
   }
 
   selectResult (result) {
@@ -142,43 +143,27 @@ class LocationBar extends LitElement {
     if (r.search) {
       return html`
         <div class="icon"><i class="fa fa-search"></i></div>
-        <div class="info"><div class="row"><span class="search-column">${r.search} - ${r.title}</span></div></div>
+        <div class="title">${r.search} - ${r.title}</div>
       `
     }
     if (r.isGoto) {
       return html`
         <div class="icon"><i class="fas fa-arrow-right"></i></div>
-        <div class="info"><div class="row"><span class="content-column"><span class="title">${r.title}</span></span></div></div>
+        <div class="title">${r.title}</div>
       `
     }
     if (r.isDriveEntry) {
       return html`
         <div class="icon"><i class="far fa-${isFolder(r) ? 'folder' : 'file'}"></i></div>
-        <div class="info">
-          <div class="row">
-            <span class="content-column">
-              <span class="title">${r.nameDecorated}</span>
-            </span>
-          </div>
-          <div class="row provenance">
-            ${r.path}
-          </div>
-        </div>
+        <div class="title">${r.nameDecorated}</div>
+        <div class="provenance">${r.path}</div>
       `
     }
     return html`
       <div class="icon"><img src=${'asset:favicon-32:' + r.url}></div>
-      <div class="info">
-        <div class="row">
-          <span class="content-column">
-            <span class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</span>
-            ${r.descriptionDecorated ? html`<span class="description">| ${unsafeHTML(r.descriptionDecorated)}</span>` : ''}
-          </span>
-        </div>
-        <div class="row provenance">
-          ${''/*<span class="fas fa-fw fa-history"></span>*/}
-          ${toNiceUrl(r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url)}
-        </div>
+      <div class="title">${r.titleDecorated ? unsafeHTML(r.titleDecorated) : r.title}</div>
+      <div class="provenance">
+        ${toNiceUrl(r.urlDecorated ? unsafeHTML(r.urlDecorated) : r.url)}
       </div>
     `
   }
@@ -316,7 +301,27 @@ class LocationBar extends LitElement {
   }
 
   async queryAutocomplete () {
+    var queryId = ++this.queryIdCounter
     this.inputValue = this.inputValue.trim()
+    var finalResults
+
+    // figure out what we're looking at
+    var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue || '/')
+
+    // set the top results accordingly
+    var gotoResult = { url: vWithProtocol, title: 'Go to ' + (this.inputValue || '/'), isGuessingTheScheme, isGoto: true }
+    var searchResult = {
+      search: this.inputValue,
+      title: `Search DuckDuckGo for "${this.inputValue}"`,
+      url: vSearch
+    }
+    if (isProbablyUrl) finalResults = [gotoResult, searchResult]
+    else finalResults = [searchResult, gotoResult]
+
+    // optimistically update the first two results
+    this.autocompleteResults = finalResults.concat(this.autocompleteResults.slice(2))
+    this.requestUpdate()
+    this.updateComplete.then(() => this.resize())
 
     // determine the URL that the user is targeting (only if it references a drive)
     var inputDriveUrl = undefined
@@ -345,33 +350,17 @@ class LocationBar extends LitElement {
       }
     }
 
-    var finalResults
     var [driveResults, historyResults] = await Promise.all([
       inputDriveUrlp ? searchDrive(inputDriveUrlp) : [],
       this.inputValue ? bg.history.search(this.inputValue) : []
     ])
 
-    // console.log({
-      // historyResults,
-      // driveResults
-    // })
+    // abort if changes to the input have occurred since triggering these queries
+    if (queryId !== this.queryIdCounter) return
 
     // decorate results with bolded regions
     var searchTerms = this.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
     historyResults.forEach(r => highlightHistoryResult(searchTerms, r))
-
-    // figure out what we're looking at
-    var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue || '/')
-
-    // set the top results accordingly
-    var gotoResult = { url: vWithProtocol, title: 'Go to ' + (this.inputValue || '/'), isGuessingTheScheme, isGoto: true }
-    var searchResult = {
-      search: this.inputValue,
-      title: `Search DuckDuckGo for "${this.inputValue}"`,
-      url: vSearch
-    }
-    if (isProbablyUrl) finalResults = [gotoResult, searchResult]
-    else finalResults = [searchResult, gotoResult]
 
     // add search results
     finalResults = finalResults.concat(driveResults)
@@ -444,24 +433,21 @@ input:focus {
   line-height: 20px;
   width: calc(100vw - 46px);
   overflow: hidden;
+  border-top: 1px solid #eef;
+}
+
+.result:last-child {
+  border-bottom: 1px solid #eef;
 }
 
 .result .icon {
   flex: 0 0 42px;
 }
 
-.result .info {
-  flex: 1;
-}
-
 .result .icon img {
-  width: 32px;
-  height: 32px;
-}
-
-.result .icon .avatar {
-  border-radius: 50%;
-  object-fit: cover;
+  width: 16px;
+  height: 16px;
+  margin-left: 7px;
 }
 
 .result .icon .fa,
@@ -472,62 +458,23 @@ input:focus {
   margin-left: 9px;
 }
 
-.result .icon .fa-folder {
-  -webkit-text-stroke: 1px #fff;
-  font-size: 26px;
-  margin-left: 3px;
-  color: #889;
-}
-
-.result .icon .fa-file {
-  -webkit-text-stroke: 1px #fff;
-  font-size: 26px;
-  margin-left: 6px;
-  color: #889;
-}
-
-.result .content-column,
-.result .search-column {
-  font-size: 15px;
-}
-
-.result .content-column,
-.result .search-column {
+.result .title,
+.result .provenance {
+  font-size: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
-}
-
-.result .title,
-.result .description {
   color: #1f55c1;
 }
 
-.result .description {
-  margin-left: 2px;
+.result .title,
+.result .provenance {
+  flex: 1;
 }
 
-.result .tags {
-  margin-left: 5px;
-}
-
-.provenance {
-  font-size: 13px;
-  color: #555;
-}
-
-.provenance .fas,
-.provenance .far {
-  font-size: 11px;
-  position: relative;
-  top: -1px;
-  margin-right: 2px;
-  color: gray;
-}
-
-.provenance .url {
-  margin-left: 5px;
+.result .provenance {
+  color: #778;
 }
 
 .result.selected {
@@ -539,7 +486,7 @@ input:focus {
 }
 
 .result:hover {
-  background: #eee;
+  background: #f6f6fd;
 }
 
 .search-engines {
@@ -548,7 +495,7 @@ input:focus {
 }
 
 .search-engines .label {
-  padding: 6px 8px 4px;
+  padding: 12px 18px 8px;
   font-size: 11px;
 }
 
