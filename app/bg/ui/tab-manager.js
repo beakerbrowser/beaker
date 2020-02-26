@@ -399,6 +399,7 @@ class Tab {
     prompts.close(this.browserView)
     permPrompt.close(this.browserView)
     modals.close(this.browserView)
+    sidebars.close(this)
     this.browserView.destroy()
   }
 
