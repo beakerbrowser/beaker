@@ -261,5 +261,11 @@ nav.pills a.selected:after {
   box-shadow: 0 2px 4px #0002;
 }
 
+@media(max-width: 840px) {
+  header beaker-search-input {
+    display: none;
+  }
+}
+
 `
 export default cssStr
