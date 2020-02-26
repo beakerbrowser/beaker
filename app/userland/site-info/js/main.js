@@ -196,6 +196,16 @@ class SiteInfoApp extends LitElement {
     if (this.isLoading) {
       return html`<div class="loading"><span class="spinner"></span> Loading...</div>`
     }
+    if (this.isDrive && this.info && this.info.version === 0) {
+      return html`
+        <div class="site-info">
+          <div class="details">
+            <h1>Site not found</h1>
+            <p class="protocol">Make sure the address is correct and try again</p>
+          </div>
+        </div>
+      `
+    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div>
