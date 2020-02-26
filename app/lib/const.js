@@ -11,8 +11,7 @@ export const ANALYTICS_CHECKIN_INTERVAL = ms('1w')
 export const PATHS = {
   // private fs
   DESKTOP: '/desktop',
-  BOOKMARKS: '/bookmarks',
-  PROFILES: '/profiles'
+  BOOKMARKS: '/bookmarks'
 }
 
 // hyperdrive trash management

@@ -80,7 +80,6 @@ export async function setup () {
     // ensure common dirs
     await ensureDir(PATHS.DESKTOP)
     await ensureDir(PATHS.BOOKMARKS)
-    await ensureDir(PATHS.PROFILES)
 
     // default bookmarks
     if (isInitialCreation) {
