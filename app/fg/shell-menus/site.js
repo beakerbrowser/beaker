@@ -39,7 +39,6 @@ class SiteMenu extends LitElement {
   async init (params) {
     this.url = params.url
     this.requestUpdate()
-    console.log(this.url)
 
     if (this.url.startsWith('hyper://')) {
       try {

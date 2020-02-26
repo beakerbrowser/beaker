@@ -175,6 +175,7 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
 
   async resizeSelf (dimensions) {
     var view = BrowserView.fromWebContents(this.sender)
+    if (!view.isVisible) return
     // HACK view.currentBounds is set in reposition() -prf
     dimensions = Object.assign({}, view.currentBounds || {}, dimensions)
     view.setBounds(adjustBounds(view, getParentWindow(this.sender), dimensions))
