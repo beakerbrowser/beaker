@@ -152,6 +152,12 @@ export const protocolHandler = async function (request, respond) {
   var manifest
   try { manifest = await checkoutFS.pda.readManifest() } catch (e) { manifest = null }
 
+  // check to see if we actually have data from the drive
+  var version = await checkoutFS.session.drive.version()
+  if (version === 0) {
+    return respondError(404, 'Site not found')
+  }
+
   // read type and configure
   const canExecuteHTML = true // TODO may need to be false for mounts
 
