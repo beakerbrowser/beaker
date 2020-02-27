@@ -230,6 +230,10 @@ export async function cat (opts = {}, location = '') {
   return {toHTML: () => html`<pre>${content}</pre>`}
 }
 
+export async function echo (opts, ...args) {
+  return args.join(' ')
+}
+
 export async function go (opts = {}, location = '') {
   if (opts.bookmark) {
     location = `${beaker.filesystem.url}/bookmarks/${location}`
