@@ -253,7 +253,7 @@ export async function go (opts = {}, location = '') {
     // will fail if not a directory, don't worry about it
     if (!e.notADirectory) throw e
   }
-  await this.page.goto(location, {newTab: opts.n})
+  await this.page.goto(location, {newTab: opts['new-tab']})
 }
 
 export async function edit (opts = {}, location = '') {
