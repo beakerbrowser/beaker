@@ -76,7 +76,7 @@ export function reposition (parentWindow) {
         x: parentBounds.width - view.boundsOpt.left,
         y: view.boundsOpt.top,
         width: 250,
-        height: 278
+        height: 200
       })
     } else if (view.menuId === 'donate') {
       setBounds({

@@ -11,34 +11,32 @@ import { URL } from 'url'
  */
 export async function list () {
   var files = (await query(filesystem.get(), {
-    path: ['/desktop/*.goto', '/bookmarks/*.goto'],
+    path: '/bookmarks/*.goto'
   }))
   return files.map(massageBookmark)
 }
 
 /**
  * @param {string} href
- * @param {string} [location]
  * @returns {Promise<Object>}
  */
-export async function get (href, location='/bookmarks') {
+export async function get (href) {
   var file = (await query(filesystem.get(), {
-    path: joinPath(location, '*.goto'),
+    path: '/bookmarks/*.goto',
     metadata: {href}
   }))[0]
   if (!file) return null
-  return massageBookmark(file)  
+  return massageBookmark(file)
 }
 
 /**
  * @param {Object} bookmark
- * @param {string} bookmark.location
  * @param {string} bookmark.href
  * @param {string} bookmark.title
+ * @param {Boolean} bookmark.pinned
  * @returns {Promise<string>}
  */
-export async function add ({location, href, title}) {
-  location = location || '/bookmarks'
+export async function add ({href, title, pinned}) {
   var slug
   
   try {
@@ -59,52 +57,11 @@ export async function add ({location, href, title}) {
   }
   slug = slug.toLowerCase()
 
-  var filename = await filesystem.getAvailableName(location, slug, 'goto') // avoid collisions
-  var path = joinPath(location, filename)
-  await filesystem.get().pda.writeFile(path, '', {metadata: {href, title}})
-  return path
-}
+  await remove(href) // in case this is an edit
 
-/**
- * @param {string} oldHref
- * @param {Object} bookmark
- * @param {string} [bookmark.href]
- * @param {string} [bookmark.title]
- * @param {string} [bookmark.description]
- * @param {boolean} [bookmark.isPublic]
- * @returns {Promise<string>}
- */
-export async function update (oldHref, {href, title, description, isPublic}) {
-  return // TODO - is this function needed?
-
-  // read existing
-  var oldBookmark = await get(oldHref)
-  if (!oldBookmark) return add({href, title, description, isPublic})
-
-  var slug = slugify(href || oldBookmark.href)
-  var path = isPublic ? `/profile/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
-
-  // remove old if changing isPublic
-  if (typeof isPublic !== 'undefined' && oldBookmark.isPublic !== isPublic) {
-    try {
-      let oldSlug = slugify(oldBookmark.href)
-      let oldPath = oldBookmark.isPublic ? `/profile/data/unwalled.garden/bookmarks/${oldSlug}.json` : `/data/unwalled.garden/bookmarks/${oldSlug}.json`
-      await filesystem.get().pda.unlink(oldPath)
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  // write new
-  await filesystem.get().pda.writeFile(path, JSON.stringify({
-    type: 'unwalled.garden/bookmark',
-    href: typeof href === 'string' ? href : oldBookmark.href,
-    title: typeof title === 'string' ? title : oldBookmark.title,
-    description: typeof description === 'string' ? description : oldBookmark.description,
-    createdAt: oldBookmark.createdAt || (new Date()).toISOString(),
-    updatedAt: (new Date()).toISOString()
-  }, null, 2))
-
+  var filename = await filesystem.getAvailableName('/bookmarks', slug, 'goto') // avoid collisions
+  var path = joinPath('/bookmarks', filename)
+  await filesystem.get().pda.writeFile(path, '', {metadata: {href, title, pinned: pinned ? '1' : undefined}})
   return path
 }
 
@@ -113,13 +70,12 @@ export async function update (oldHref, {href, title, description, isPublic}) {
  * @returns {Promise<void>}
  */
 export async function remove (href) {
-  return // TODO - is this function needed?
-  var oldBookmark = await get(href)
-  if (!oldBookmark) return
-
-  let slug = slugify(oldBookmark.href)
-  let path = oldBookmark.isPublic ? `/profile/data/unwalled.garden/bookmarks/${slug}.json` : `/data/unwalled.garden/bookmarks/${slug}.json`
-  await filesystem.get().pda.unlink(path)
+  var file = (await query(filesystem.get(), {
+    path: '/bookmarks/*.goto',
+    metadata: {href}
+  }))[0]
+  if (!file) return
+  await filesystem.get().pda.unlink(file.path)
 }
 
 // internal
@@ -128,6 +84,7 @@ export async function remove (href) {
 function massageBookmark (file) {
   return {
     href: file.stat.metadata.href,
-    title: file.stat.metadata.title || file.stat.metadata.href
+    title: file.stat.metadata.title || file.stat.metadata.href,
+    pinned: !!file.stat.metadata.pinned
   }
 }

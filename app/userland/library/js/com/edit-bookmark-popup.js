@@ -21,6 +21,17 @@ export class EditBookmarkPopup extends BasePopup {
     .popup-inner label {
       font-size: 11px;
     }
+
+    .popup-inner label[for="pinned-input"] {
+      margin: 16px 0;
+    }
+
+    .popup-inner input[type="checkbox"] {
+      display: inline;
+      height: auto;
+      width: auto;
+      margin: 0 5px;
+    }
     `]
   }
 
@@ -52,6 +63,11 @@ export class EditBookmarkPopup extends BasePopup {
 
           <label for="href-input">URL</label>
           <input required type="text" id="href-input" name="href" value="${this.bookmark.stat.metadata.href}" placeholder="E.g. beakerbrowser.com" />
+
+          <label for="pinned-input">
+            <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark.stat.metadata.pinned} />
+            Pin to start page
+          </label>
         </div>
 
         <div class="actions">
@@ -73,10 +89,13 @@ export class EditBookmarkPopup extends BasePopup {
     e.preventDefault()
     e.stopPropagation()
 
+    var pinned = e.target.pinned.checked
     await beaker.filesystem.updateMetadata(this.bookmark.path, {
       href: e.target.href.value,
-      title: e.target.title.value
+      title: e.target.title.value,
+      pinned: pinned ? '1' : undefined
     })
+    if (!pinned) await beaker.filesystem.deleteMetadata(this.bookmark.path, ['pinned'])
 
     this.dispatchEvent(new CustomEvent('resolve'))
   }

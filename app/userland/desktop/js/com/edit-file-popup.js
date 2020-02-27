@@ -95,12 +95,13 @@ export class EditFilePopup extends BasePopup {
     e.stopPropagation()
 
     if (this.isLink) {
-      await beaker.filesystem.updateMetadata(`/desktop/${this.file.name}`, {
+      await beaker.filesystem.updateMetadata(`/bookmarks/${this.file.name}`, {
         href: e.target.href.value,
-        title: e.target.title.value
+        title: e.target.title.value,
+        pinned: '1'
       })
     } else {
-      await beaker.filesystem.rename(`/desktop/${this.file.name}`, `/desktop/${e.target.name.value}`)
+      await beaker.filesystem.rename(`/bookmarks/${this.file.name}`, `/bookmarks/${e.target.name.value}`)
     }
 
     this.dispatchEvent(new CustomEvent('resolve'))

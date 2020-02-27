@@ -121,11 +121,7 @@ class WebTerm extends LitElement {
 
   async load (url) {
     if (url.startsWith('beaker://')) {
-      if (url.startsWith('beaker://desktop/')) {
-        url = beaker.filesystem.url + '/desktop'
-      } else {
-        url = beaker.filesystem.url
-      }
+      url = beaker.filesystem.url
     }
     this.url = url
 

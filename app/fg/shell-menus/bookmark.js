@@ -5,13 +5,12 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
 
-const DEFAULT_LOCATIONS = ['/bookmarks', '/desktop']
-
 class BookmarkMenu extends LitElement {
   static get properties () {
     return {
       href: {type: String},
-      title: {type: String}
+      title: {type: String},
+      pinned: {type: Boolean}
     }
   }
 
@@ -22,14 +21,22 @@ class BookmarkMenu extends LitElement {
 
   reset () {
     this.bookmark = null
-    this.location = '/bookmarks'
     this.href = ''
     this.title = ''
+    this.pinned = false
+    this.existingBookmark = undefined
   }
 
   async init (params) {
-    this.href = params.url
-    this.title = params.metadata.title || ''
+    this.existingBookmark = await bg.bookmarks.get(params.url)
+    if (this.existingBookmark) {
+      this.href = this.existingBookmark.href || params.url
+      this.title = this.existingBookmark.title || params.metadata.title || ''
+      this.pinned = this.existingBookmark.pinned
+    } else {
+      this.href = params.url
+      this.title = params.metadata.title || ''
+    }
     await this.requestUpdate()
 
     // focus and highlight input
@@ -42,23 +49,10 @@ class BookmarkMenu extends LitElement {
   // =
 
   render () {
-    const locopt = (v, label) => {
-      return html`<option value=${v} ?selected=${this.location === v}>${label}</option>`
-    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <form @submit=${this.onSaveBookmark}>
-          <div class="input-group">
-            <label for="location">Save link to</label>
-            <select name="location" @change=${this.onChangeLocation}>
-              ${!DEFAULT_LOCATIONS.includes(this.location) ? locopt(this.location, this.location) : ''}
-              ${DEFAULT_LOCATIONS.map(loc => locopt(loc, loc))}
-              <option disabled>──────────</option>
-              ${locopt('!other', 'Choose folder...')}
-            </select>
-          </div>
-
           <div class="input-group">
             <label for="title">Title</label>
             <input type="text" name="title" placeholder="Title" value="${this.title}" @keyup=${this.onChangeTitle}/>
@@ -69,12 +63,19 @@ class BookmarkMenu extends LitElement {
             <input type="text" name="href" placeholder="Title" value="${this.href}" @keyup=${this.onChangeHref}/>
           </div>
 
+          <div class="input-group" style="margin: 15px 0">
+            <label for="pinned">
+              <input type="checkbox" name="pinned" value="1" ?checked=${this.pinned} @change=${this.onChangePinned}/>
+              Pin to start page
+            </label>
+          </div>
+
           <div class="buttons">
             <button type="button" class="btn remove" @click=${this.onClickCancel}>
-              Cancel
+              ${this.existingBookmark ? 'Delete' : 'Cancel'}
             </button>
             <button class="btn primary" type="submit">
-              Done
+              ${this.existingBookmark ? 'Save' : 'Done'}
             </button>
           </div>
         </form>
@@ -88,31 +89,21 @@ class BookmarkMenu extends LitElement {
   async onSaveBookmark (e) {
     e.preventDefault()
     await bg.bookmarks.add({
-      location: this.location,
       href: this.href,
-      title: this.title
+      title: this.title,
+      pinned: this.pinned
     })
+    bg.views.refreshState('active')
     bg.shellMenus.close()
   }
 
   async onClickCancel (e) {
-    bg.shellMenus.close()
-  }
-
-  async onChangeLocation (e) {
-    var value = e.target.value
-    if (value === '!other') {
-      this.setAttribute('stay-open', 1)
-      value = (await bg.navigator.selectFileDialog({
-        title: 'Select the folder to save to'
-      }).catch(e => ([this.location])))[0].path
-      this.removeAttribute('stay-open')
+    e.preventDefault()
+    if (this.existingBookmark) {
+      await bg.bookmarks.remove(this.href)
+      bg.views.refreshState('active')
     }
-    this.location = value
-   
-    // if canceled, we need to manually revert the selection
-    await this.requestUpdate()
-    this.shadowRoot.querySelector('[name="location"]').value = this.location
+    bg.shellMenus.close()
   }
 
   onChangeHref (e) {
@@ -122,14 +113,18 @@ class BookmarkMenu extends LitElement {
   onChangeTitle (e) {
     this.title = e.target.value
   }
+
+  onChangePinned (e) {
+    this.pinned = !this.pinned
+  }
 }
 BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`
 .wrapper {
   box-sizing: border-box;
-  padding: 15px;
+  padding: 15px 15px 0;
   color: #333;
   background: #fff;
-  height: 215px;
+  height: 200px;
   overflow: hidden;
 }
 
@@ -169,7 +164,10 @@ form {
 }
 
 .input-group input[type=checkbox] {
+  display: inline;
+  width: auto;
   height: auto;
+  margin: 0 5px;
 }
 
 .input-group.public {

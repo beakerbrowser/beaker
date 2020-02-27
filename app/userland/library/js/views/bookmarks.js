@@ -17,8 +17,7 @@ function _title (bookmark) {
 export class BookmarksView extends LitElement {
   static get properties () {
     return {
-      desktopBookmarks: {type: Array},
-      otherBookmarks: {type: Array},
+      bookmarks: {type: Array},
       filter: {type: String}
     }
   }
@@ -29,23 +28,17 @@ export class BookmarksView extends LitElement {
 
   constructor () {
     super()
-    this.desktopBookmarks = undefined
-    this.otherBookmarks = undefined
+    this.bookmarks = undefined
     this.filter = undefined
   }
 
   async load () {
-    var desktopBookmarks = await beaker.filesystem.query({
-      type: 'file',
-      path: ['/desktop/*.goto']
-    })
-    var otherBookmarks = await beaker.filesystem.query({
+    var bookmarks = await beaker.filesystem.query({
       type: 'file',
       path: ['/bookmarks/*.goto']
     })
-    this.desktopBookmarks = desktopBookmarks
-    this.otherBookmarks = otherBookmarks
-    console.log(this.desktopBookmarks, this.otherBookmarks)
+    this.bookmarks = bookmarks
+    console.log(this.bookmarks)
   }
 
   bookmarkMenu (bookmark, x, y, right = false) {
@@ -71,14 +64,14 @@ export class BookmarksView extends LitElement {
   // =
 
   render () {
-    var desktopBookmarks = this.desktopBookmarks
-    if (desktopBookmarks && this.filter) {
-      desktopBookmarks = desktopBookmarks.filter(bookmark => (
+    var pinnedBookmarks = this.bookmarks ? this.bookmarks.filter(b => b.stat.metadata.pinned) : undefined
+    if (pinnedBookmarks && this.filter) {
+      pinnedBookmarks = pinnedBookmarks.filter(bookmark => (
         _href(bookmark).toLowerCase().includes(this.filter)
         || _title(bookmark).toLowerCase().includes(this.filter)
       ))
     }
-    var otherBookmarks = this.otherBookmarks
+    var otherBookmarks = this.bookmarks ? this.bookmarks.filter(b => !b.stat.metadata.pinned) : undefined
     if (otherBookmarks && this.filter) {
       otherBookmarks = otherBookmarks.filter(bookmark => (
         _href(bookmark).toLowerCase().includes(this.filter)
@@ -87,11 +80,11 @@ export class BookmarksView extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${desktopBookmarks ? html`
+      ${pinnedBookmarks ? html`
         <div class="bookmarks">
           <h3>Start Page</h3>
-          ${repeat(desktopBookmarks, bookmark => this.renderBookmark(bookmark))}
-          ${desktopBookmarks.length === 0 ? html`
+          ${repeat(pinnedBookmarks, bookmark => this.renderBookmark(bookmark))}
+          ${pinnedBookmarks.length === 0 ? html`
             <div class="empty">No items found</div>
           ` : ''}
           <h3>Other</h3>

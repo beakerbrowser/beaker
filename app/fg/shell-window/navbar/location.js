@@ -281,7 +281,7 @@ class NavbarLocation extends LitElement {
         data-tooltip="Bookmark this page"
         title="Bookmark this page"
       >
-        <span class="far fa-star"></span>
+        <span class="${this.isBookmarked ? 'fas' : 'far'} fa-star"></span>
       </button>
     `
   }
@@ -496,6 +496,10 @@ button.text .fa-info-circle {
 
 button.bookmark .fa-star {
   font-size: 14px;
+}
+
+button.bookmark .fas.fa-star {
+  color: #2196F3;
 }
 
 button .fa-link {

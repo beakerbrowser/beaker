@@ -12,21 +12,22 @@ import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 export async function load () {
   var userFiles = []
   try {
-    userFiles = await beaker.filesystem.readdir('/desktop', {includeStats: true})
+    userFiles = await beaker.filesystem.readdir('/bookmarks', {includeStats: true})
+    userFiles = userFiles.filter(file => file.stat.metadata.pinned)
     userFiles.sort((a, b) => a.name.localeCompare(b.name))
   } catch (e) {
-    console.log('Failed to load desktop files', e)
+    console.log('Failed to load bookmarks files', e)
   }
   return userFiles
 }
 
 export async function createLink ({href, title}) {
-  var name = await getAvailableName('/desktop', title, beaker.filesystem, 'goto')
-  await beaker.filesystem.writeFile(`/desktop/${name}`, '', {metadata: {href, title}})
+  var name = await getAvailableName('/bookmarks', title, beaker.filesystem, 'goto')
+  await beaker.filesystem.writeFile(`/bookmarks/${name}`, '', {metadata: {href, title}})
 }
 
 export async function remove (file) {
-  await beaker.filesystem.unlink(`/desktop/${file.name}`)
+  await beaker.filesystem.unlink(`/bookmarks/${file.name}`)
 }
 
 // internal

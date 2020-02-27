@@ -9,8 +9,6 @@ export const ANALYTICS_CHECKIN_INTERVAL = ms('1w')
 
 // hyperdrive FS file paths
 export const PATHS = {
-  // private fs
-  DESKTOP: '/desktop',
   BOOKMARKS: '/bookmarks'
 }
 

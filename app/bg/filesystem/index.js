@@ -78,12 +78,12 @@ export async function setup () {
   logger.info('Loading root drive', {url: browsingProfile.url})
   try {
     // ensure common dirs
-    await ensureDir(PATHS.DESKTOP)
     await ensureDir(PATHS.BOOKMARKS)
 
     // default bookmarks
     if (isInitialCreation) {
-      await bookmarks.add({location: '/desktop', href: 'beaker://library/', title: 'My Library'})
+      await bookmarks.add({href: 'beaker://library/', title: 'My Library', pinned: true})
+      await bookmarks.add({href: 'https://beaker-browser.gitbook.io/docs/', title: 'Beaker Documentation', pinned: true})
     }
 
     // ensure all user mounts are set
