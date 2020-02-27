@@ -143,7 +143,7 @@ export class CompareApp extends LitElement {
     }
 
     if (this.baseInfo && !this.targetInfo) {
-      // default to master as target
+      // default to original as target
       this.target = this.baseForks[0].url
       if (this.target) this.load()
     }
@@ -186,7 +186,7 @@ export class CompareApp extends LitElement {
               </button>
               ${this.baseInfo && this.baseForks && this.baseForks.length > 1 ? html`
                 <button @click=${this.onClickBaseForks}>
-                  ${this.baseFork?.forkOf?.label || 'Master'}
+                  ${this.baseFork?.forkOf?.label || 'Original'}
                   <span class="fas fa-fw fa-caret-down"></span>
                 </button>
               ` : ''}
@@ -199,7 +199,7 @@ export class CompareApp extends LitElement {
               </button>
               ${this.targetInfo && this.targetForks && this.targetForks.length > 1 ? html`
                 <button @click=${this.onClickTargetForks}>
-                  ${this.targetFork?.forkOf?.label || 'Master'}
+                  ${this.targetFork?.forkOf?.label || 'Original'}
                   <span class="fas fa-fw fa-caret-down"></span>
                 </button>
               ` : ''}
@@ -382,7 +382,7 @@ export class CompareApp extends LitElement {
       style: `padding: 4px 0`,
       items: this.baseForks.map(fork => ({
         icon: false,
-        label: fork?.forkOf?.label || 'Master',
+        label: fork?.forkOf?.label || 'Original',
         click: () => {
           this.base = fork.url
           this.load()
@@ -436,7 +436,7 @@ export class CompareApp extends LitElement {
       style: `padding: 4px 0`,
       items: this.targetForks.map(fork => ({
         icon: false,
-        label: fork?.forkOf?.label || 'Master',
+        label: fork?.forkOf?.label || 'Original',
         click: () => {
           this.target = fork.url
           this.load()

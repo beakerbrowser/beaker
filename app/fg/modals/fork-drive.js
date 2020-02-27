@@ -156,7 +156,7 @@ class ForkDriveModal extends LitElement {
     const baseOpt = (fork) => {
       return html`
         <option value=${fork.url} ?selected=${this.base === fork}>
-          ${fork.forkOf && fork.forkOf.label ? fork.forkOf.label : 'Master'}
+          ${fork.forkOf && fork.forkOf.label ? fork.forkOf.label : 'Original'}
         </option>
       `
     }

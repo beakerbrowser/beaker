@@ -47,7 +47,7 @@ class DriveForks extends LitElement {
               <a class="fork ${isCurrent ? 'current' : ''}" href=${fork.url} @click=${this.onClickFork}>
                 <div>
                   ${isCurrent ? html`<span class="fas fa-fw fa-caret-right"></span>` : ''}
-                  <span class="fork-label">${fork.forkOf ? fork.forkOf.label : 'Master'}</span>
+                  <span class="fork-label">${fork.forkOf ? fork.forkOf.label : 'Original'}</span>
                 </div>
                 <div>
                   ${fork.forkOf ? html`
@@ -62,9 +62,9 @@ class DriveForks extends LitElement {
       <div>
         <button class="transparent" @click=${this.onClickNewFork}>+ New Fork</button>
         ${currentFork.forkOf ? html`
-          <button class="transparent" @click=${e => this.onClickDiff(e, currentFork)}><span class="diff-merge-icon">◨</span> Diff / Merge Master</button>
+          <button class="transparent" @click=${e => this.onClickDiff(e, currentFork)}><span class="diff-merge-icon">◨</span> Diff / Merge Original</button>
         ` : html`
-          <button class="transparent" disabled><span class="diff-merge-icon">◨</span> Diff / Merge Master</button>
+          <button class="transparent" disabled><span class="diff-merge-icon">◨</span> Diff / Merge Original</button>
         `}
       </div>
     `
