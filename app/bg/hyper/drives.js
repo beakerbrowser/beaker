@@ -571,9 +571,24 @@ function hasMetaChanged (m1, m2) {
   for (let k of ['title', 'description', 'type', 'forkOf', 'size', 'author', 'writable', 'mtime']) {
     if (!m1[k]) m1[k] = undefined
     if (!m2[k]) m2[k] = undefined
-    if (m1[k] !== m2[k]) {
-      return true
+    if (k === 'forkOf') {
+      if (!isUrlsEq(m1[k], m2[k])) {
+        return true
+      }
+    } else {
+      if (m1[k] !== m2[k]) {
+        return true
+      }
     }
   }
   return false
+}
+
+var isUrlsEqRe = /^hyper:\/\/[0-9a-f]{64}/i
+function isUrlsEq (a, b) {
+  if (!a && !b) return true
+  if (typeof a !== typeof b) return false
+  var ma = isUrlsEqRe.exec(a)
+  var mb = isUrlsEqRe.exec(b)
+  return ma && mb && ma[0] === mb[0]
 }
