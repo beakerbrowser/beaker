@@ -1,7 +1,7 @@
 import { LitElement, html, TemplateResult } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { render } from 'beaker://app-stdlib/vendor/lit-element/lit-html/lit-html.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import minimist from './lib/minimist.1.2.0.js'
+import { parser } from './lib/parser.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
 import { createDrive } from './lib/term-drive-wrapper.js'
 import { importModule } from './lib/import-module.js'
@@ -340,11 +340,55 @@ class WebTerm extends LitElement {
     this.envVars[key] = value
   }
 
-  applySubstitutions (str = '') {
-    return str.replace(/\$([a-z@]+|\([a-z@]+\))/ig, (val) => {
+  applySubstitutions (inputParsed) {
+    const doReplace = str => str.replace(/\$([a-z@0-9]+)/ig, (val) => {
       var key = val.slice(1).toLowerCase()
       return this.getEnv(key)
     })
+    inputParsed.forEach(term => {
+      if (typeof term.value === 'string') {
+        term.value = doReplace(term.value)
+      }
+    })
+  }
+
+  toArgv (inputParsed, optsDesc) {
+    var opts = {}
+    var positional = []
+    
+    // used to map aliased names (eg -f becomes --foo)
+    const resolveKey = key => {
+      var match = Object.entries(optsDesc.alias).find(([longName, aliases]) => aliases.includes(key))
+      return match ? match[0] : key
+    }
+
+    inputParsed.forEach(token => {
+      if (token.type === 'param') {
+        var key = resolveKey(token.key)
+        var value = token.value
+
+        // if a boolean arg has a non-boolean value, move the value to the positional args
+        if (optsDesc.boolean.includes(key)) {
+          if (typeof value !== 'boolean') {
+            positional.push(value)
+            value = true
+          }
+        }
+
+        opts[key] = value
+      } else {
+        positional.push(token.value)
+      }
+    })
+
+    for (let key in optsDesc.default) {
+      key = resolveKey(key)
+      if (typeof opts[key] === 'undefined') {
+        opts[key] = optsDesc.default[key]
+      }
+    }
+
+    return [opts].concat(positional)
   }
 
   async evalPrompt () {
@@ -357,13 +401,13 @@ class WebTerm extends LitElement {
     this.envVars['@'] = await beaker.browser.getPageUrl()
 
     var inputValue = prompt.value
-    var args = this.applySubstitutions(prompt.value).match(/[^'"\s]+|"[^"]+"|'[^']+'/ig)
-    args = args.map(arg => arg.replace(/(^['"])|(['"]$)/gi, ''))
+    var inputParsed = parser.parse(inputValue)
+    this.applySubstitutions(inputParsed)
     var paramsIndex = 1
     prompt.value = ''
 
     var command
-    var commandName = args[0]
+    var commandName = inputParsed[0].value
     if (commandName.startsWith('@')) {
       await this.loadPageCommands()
       command = this.pageCommands[commandName.slice(1)]
@@ -380,8 +424,8 @@ class WebTerm extends LitElement {
     } else {
       command = this.commands[commandName]
       if (command && command.subcommands) {
-        if (command.subcommands[args[1]]) {
-          command = command.subcommands[args[1]]
+        if (command.subcommands[inputParsed[1]?.value]) {
+          command = command.subcommands[inputParsed[1].value]
           paramsIndex = 2
         } else {
           command = this.commands.help
@@ -396,9 +440,7 @@ class WebTerm extends LitElement {
     }
 
     var cliclopts = new Cliclopts(command.options)
-    var argv = minimist(args.slice(paramsIndex), cliclopts.options())
-    var restArgs = argv._
-    delete argv._
+    var argv = this.toArgv(inputParsed.slice(paramsIndex), cliclopts.options())
     try {
       var oldCWD = new URL(this.cwd.toString())
       this.outputHeader(oldCWD, inputValue)
@@ -468,7 +510,7 @@ class WebTerm extends LitElement {
         }
       }
 
-      var res = command.fn.call(ctx, argv, ...restArgs)
+      var res = command.fn.call(ctx, ...argv)
       this.output(res)
     } catch (err) {
       this.outputError('Command error', err)
