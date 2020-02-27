@@ -507,28 +507,32 @@ export async function getPrimaryUrl (url) {
  * @returns {Promise<boolean>}
  */
 export async function confirmDomain (key) {
-  // fetch the current domain from the manifest
-  try {
-    var drive = await getOrLoadDrive(key)
-    var datJson = await drive.pda.readManifest()
-  } catch (e) {
-    return false
-  }
-  if (!datJson.domain) {
-    await datDnsDb.unset(key)
-    return false
-  }
+  // DISABLED
+  // hyper: does not currently use DNS
+  // -prf
 
-  // confirm match with current DNS
-  var dnsKey = await datDns.resolveName(datJson.domain)
-  if (key !== dnsKey) {
-    await datDnsDb.unset(key)
-    return false
-  }
+  // // fetch the current domain from the manifest
+  // try {
+  //   var drive = await getOrLoadDrive(key)
+  //   var datJson = await drive.pda.readManifest()
+  // } catch (e) {
+  //   return false
+  // }
+  // if (!datJson.domain) {
+  //   await datDnsDb.unset(key)
+  //   return false
+  // }
 
-  // update mapping
-  await datDnsDb.update({name: datJson.domain, key})
-  return true
+  // // confirm match with current DNS
+  // var dnsKey = await datDns.resolveName(datJson.domain)
+  // if (key !== dnsKey) {
+  //   await datDnsDb.unset(key)
+  //   return false
+  // }
+
+  // // update mapping
+  // await datDnsDb.update({name: datJson.domain, key})
+  // return true
 }
 
 // helpers
