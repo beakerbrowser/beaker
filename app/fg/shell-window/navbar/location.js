@@ -112,6 +112,7 @@ class NavbarLocation extends LitElement {
         peers=${this.peers}
         .loadError=${this.loadError}
         ?hide-origin=${this.hasExpanded}
+        ?rounded=${this.url.startsWith('beaker://desktop')}
       >
       </shell-window-navbar-site-info>
       ${this.renderLocation()}

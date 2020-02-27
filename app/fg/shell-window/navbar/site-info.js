@@ -16,7 +16,8 @@ class NavbarSiteInfo extends LitElement {
       peers: {type: Number},
       loadError: {type: Object},
       isPressed: {type: Boolean},
-      hideOrigin: {type: Boolean, attribute: 'hide-origin'}
+      hideOrigin: {type: Boolean, attribute: 'hide-origin'},
+      rounded: {type: Boolean}
     }
   }
 
@@ -31,6 +32,7 @@ class NavbarSiteInfo extends LitElement {
     this.loadError = null
     this.isPressed = false
     this.hideOrigin = false
+    this.rounded = false
   }
 
   get scheme () {
@@ -94,7 +96,7 @@ class NavbarSiteInfo extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <button class=${classMap({certified, insecure, pressed: this.isPressed, 'hide-origin': this.hideOrigin})} @click=${this.onClickButton}>
+      <button class=${classMap({certified, insecure, pressed: this.isPressed, 'hide-origin': this.hideOrigin, rounded: this.rounded})} @click=${this.onClickButton}>
         ${innerHTML}
       </button>
     `
@@ -154,6 +156,13 @@ button.insecure:hover {
 
 button.hide-origin .label {
   display: none;
+}
+
+button.rounded {
+  clip-path: none;
+  border-radius: 16px;
+  padding: 0 10px 0 10px;
+  margin-right: 2px;
 }
 
 button.hidden {
