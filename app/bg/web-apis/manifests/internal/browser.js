@@ -8,6 +8,7 @@ export default {
   getSetting: 'promise',
   setSetting: 'promise',
   updateSetupState: 'promise',
+  migrate08to09: 'promise',
   setStartPageBackgroundImage: 'promise',
   getDefaultProtocolSettings: 'promise',
   setAsDefaultProtocolClient: 'promise',

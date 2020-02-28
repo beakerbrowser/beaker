@@ -1,6 +1,7 @@
 import './intro.js'
-import './grid-explainer.js'
-import './fs-explainer.js'
+import './migrating.js'
+// import './grid-explainer.js'
+// import './fs-explainer.js'
 
 customElements.define('setup-app', class extends HTMLElement {
   constructor () {
@@ -16,27 +17,30 @@ customElements.define('setup-app', class extends HTMLElement {
         this.innerHTML = `<intro-view></intro-view>`
         break
       case 2:
-        this.innerHTML = `<grid-explainer-view></grid-explainer-view>`
+        this.innerHTML = `<migrating-view></migrating-view>`
         break
-      case 3:
-        this.innerHTML = `<fs-explainer-view></fs-explainer-view>`
-        break
-      case 4:
-        this.querySelector('fs-explainer-view').setPhase(2)
-        break
-      case 5:
-        this.querySelector('fs-explainer-view').setPhase(3)
-        break
+      // case 2:
+      //   this.innerHTML = `<grid-explainer-view></grid-explainer-view>`
+      //   break
+      // case 3:
+      //   this.innerHTML = `<fs-explainer-view></fs-explainer-view>`
+      //   break
+      // case 4:
+      //   this.querySelector('fs-explainer-view').setPhase(2)
+      //   break
+      // case 5:
+      //   this.querySelector('fs-explainer-view').setPhase(3)
+      //   break
     }
   }
 
   async onNext () {
     document.body.style.background = '#fff' // switch away from dark bg after first stage
     this.stage++
-    if (this.stage <= 5) {
-      this.render()
-    } else {
-      await beaker.browser.updateSetupState({profileCreated: 1})
+    this.render()
+    if (this.stage > 1) {
+      await beaker.browser.migrate08to09()
+      await beaker.browser.updateSetupState({migrated08to09: 1})
     }
   }
 })

@@ -22,6 +22,7 @@ import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from './lib/electron'
 import { getEnvVar } from './lib/env'
 import * as hyperDaemon from './hyper/daemon'
+import * as bookmarks from './filesystem/bookmarks'
 
 // constants
 // =
@@ -143,6 +144,7 @@ export const WEBAPI = {
   getSettings,
   setSetting,
   updateSetupState,
+  migrate08to09,
   setStartPageBackgroundImage,
   getDefaultProtocolSettings,
   setAsDefaultProtocolClient,
@@ -504,6 +506,10 @@ export function getSettings () {
 
 export function setSetting (key, value) {
   return settingsDb.set(key, value)
+}
+
+export async function migrate08to09 () {
+  await bookmarks.migrateBookmarksFromSqlite()
 }
 
 const SCROLLBAR_WIDTH = 16

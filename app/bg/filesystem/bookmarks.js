@@ -2,6 +2,7 @@ import { joinPath, slugify } from '../../lib/strings.js'
 import { query } from './query.js'
 import * as filesystem from './index'
 import { URL } from 'url'
+import * as profileDb from '../dbs/profile-data-db'
 
 // exported
 // =
@@ -76,6 +77,17 @@ export async function remove (href) {
   }))[0]
   if (!file) return
   await filesystem.get().pda.unlink(file.path)
+}
+
+export async function migrateBookmarksFromSqlite () {
+  var bookmarks = await profileDb.all(`SELECT * FROM bookmarks`)
+  for (let bookmark of bookmarks) {
+    await add({
+      href: bookmark.url,
+      title: bookmark.title,
+      pinned: bookmark.pinned
+    })
+  }
 }
 
 // internal

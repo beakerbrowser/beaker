@@ -1,6 +1,6 @@
 export default `
 CREATE TABLE setup_state (
-  profileCreated INTEGER DEFAULT 0
+  migrated08to09 INTEGER DEFAULT 0
 );
 
 CREATE TABLE profiles (
@@ -146,5 +146,5 @@ CREATE TABLE archives (
 -- default profile
 INSERT INTO profiles (id) VALUES (0);
 
-PRAGMA user_version = 46;
+PRAGMA user_version = 47;
 `
