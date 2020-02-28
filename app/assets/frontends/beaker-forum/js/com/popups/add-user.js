@@ -180,12 +180,12 @@ export class AddUserPopup extends BasePopup {
       return {success: false, message: `This profile is not a "user" type (found "${info.type}"). Ask your friend to make sure they sent the correct URL.`}
     }
 
-    var st = await this.attempt(
-      'Reading profile information...',
-      () => drive.stat('/group').catch(e => undefined)
-    )
-    var groupKey = st?.mount?.key
-    if (groupKey !== location.hostname) {
+    var isRightMemberOf = false
+    try {
+      let memberOf = new URL(info.memberOf)
+      isRightMemberOf = memberOf.hostname === location.hostname
+    } catch (e) {}
+    if (isRightMemberOf) {
       return {success: false, message: `This profile was not created for this group. Ask your friend to make sure they sent the correct URL and that they joined the correct group.`}
     }
 

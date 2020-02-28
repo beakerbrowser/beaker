@@ -22,6 +22,7 @@ import hyperDns from '../hyper/dns'
  * @prop {string} title
  * @prop {string} description
  * @prop {string} type
+ * @prop {string} memberOf
  * @prop {number} mtime
  * @prop {number} size
  * @prop {string} author
@@ -186,6 +187,7 @@ export async function getMeta (key, {noDefault} = {noDefault: false}) {
   meta.url = `hyper://${meta.dnsName || meta.key}`
   delete meta.dnsName
   meta.writable = !!meta.isOwner
+  meta.memberOf = meta.memberOf || undefined
 
   // remove old attrs
   delete meta.isOwner
@@ -217,10 +219,11 @@ export async function setMeta (key, value) {
   }
 
   // extract the desired values
-  var {title, description, type, size, author, forkOf, mtime, writable} = value
+  var {title, description, type, memberOf, size, author, forkOf, mtime, writable} = value
   title = typeof title === 'string' ? title : ''
   description = typeof description === 'string' ? description : ''
   type = typeof type === 'string' ? type : ''
+  memberOf = typeof memberOf === 'string' ? memberOf : ''
   var isOwnerFlag = flag(writable)
   if (typeof author === 'string') author = normalizeDriveUrl(author)
   if (typeof forkOf === 'string') forkOf = normalizeDriveUrl(forkOf)
@@ -231,9 +234,9 @@ export async function setMeta (key, value) {
   try {
     await db.run(`
       INSERT OR REPLACE INTO
-        archives_meta (key, title, description, type, mtime, size, author, forkOf, isOwner, lastAccessTime, lastLibraryAccessTime)
-        VALUES        (?,   ?,     ?,           ?,    ?,     ?,    ?,      ?,      ?,       ?,              ?)
-    `, [keyStr, title, description, type, mtime, size, author, forkOf, isOwnerFlag, lastAccessTime, lastLibraryAccessTime])
+        archives_meta (key, title, description, type, memberOf, mtime, size, author, forkOf, isOwner, lastAccessTime, lastLibraryAccessTime)
+        VALUES        (?,   ?,     ?,           ?,    ?,        ?,     ?,    ?,      ?,      ?,       ?,              ?)
+    `, [keyStr, title, description, type, memberOf, mtime, size, author, forkOf, isOwnerFlag, lastAccessTime, lastLibraryAccessTime])
   } finally {
     release()
   }
@@ -255,6 +258,7 @@ function defaultMeta (key, name) {
     title: undefined,
     description: undefined,
     type: undefined,
+    memberOf: undefined,
     author: undefined,
     forkOf: undefined,
     mtime: 0,

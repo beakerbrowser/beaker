@@ -22,6 +22,7 @@ CREATE TABLE archives_meta (
   title TEXT,
   description TEXT,
   type TEXT,
+  memberOf TEXT,
   mtime INTEGER,
   size INTEGER,
   author TEXT,
@@ -145,5 +146,5 @@ CREATE TABLE archives (
 -- default profile
 INSERT INTO profiles (id) VALUES (0);
 
-PRAGMA user_version = 45;
+PRAGMA user_version = 46;
 `

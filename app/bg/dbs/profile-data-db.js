@@ -49,6 +49,7 @@ import V42 from './schemas/profile-data.v42.sql'
 import V43 from './schemas/profile-data.v43.sql'
 import V44 from './schemas/profile-data.v44.sql'
 import V45 from './schemas/profile-data.v45.sql'
+import V46 from './schemas/profile-data.v46.sql'
 
 // typedefs
 // =
@@ -179,7 +180,8 @@ migrations = [
   migration(V42),
   migration(V43),
   migration(V44),
-  migration(V45)
+  migration(V45),
+  migration(V46)
 ]
 function migration (file, opts = {}) {
   return cb => {

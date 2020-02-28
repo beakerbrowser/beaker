@@ -61,16 +61,6 @@ export default {
     }
     opts.permissions = (opts.permissions || []).filter(p => typeof p === 'string')
 
-    // fetch info about the group
-    var groupDrive = await drives.getOrLoadDrive(opts.group)
-    var groupInfo
-    try {
-      groupInfo = await groupDrive.pda.readFile('/index.json').then(JSON.parse)
-    } catch (e) {
-      console.log(e)
-      throw new Error('Invalid group: the index.json of the group has not been configured correctly')
-    }
-
     // run modal
     var user
     var availableUsers = await listUsers({group: opts.group})
@@ -112,10 +102,10 @@ export default {
       let userDrive = await drives.createNewDrive({
         title: newUserConfig.title || 'Anonymous',
         description: newUserConfig.description,
-        type: 'user'
+        type: 'user',
+        memberOf: opts.group
       })
       await userDrive.pda.writeFile(`/thumb.${newUserConfig.thumbExt}`, newUserConfig.thumbBase64, 'base64')
-      await userDrive.pda.mount('/group', opts.group)
       user = await fetchUserInfo(userDrive.url)
     } else {
       // select existing user
@@ -204,26 +194,25 @@ async function listUsers (opts = {group: undefined}) {
  * @returns {Promise<User>}
  */
 async function fetchUserInfo (urlOrDriveMeta) {
-  var driveMeta
+  var userMeta
   if (typeof urlOrDriveMeta === 'string') {
-    driveMeta = await archivesDb.getMeta(urlOrDriveMeta)
+    userMeta = await archivesDb.getMeta(urlOrDriveMeta)
   } else {
-    driveMeta = urlOrDriveMeta
+    userMeta = urlOrDriveMeta
   }
-  var drive = await drives.getOrLoadDrive(driveMeta.key)
+  var groupDrive = userMeta.memberOf ? await drives.getOrLoadDrive(userMeta.memberOf) : undefined
 
   var group
-  var groupStat = await drive.pda.stat('/group').catch(e => undefined)
-  if (groupStat && groupStat.mount) {
-    let groupInfo = await drive.pda.readFile('/group/index.json').then(JSON.parse).catch(e => undefined)
+  if (groupDrive) {
+    let groupInfo = await groupDrive.pda.readFile('/index.json').then(JSON.parse).catch(e => undefined)
     group = {
-      url: `hyper://${groupStat.mount.key.toString('hex')}`,
+      url: groupDrive.url,
       title: groupInfo ? groupInfo.title : '',
       description: groupInfo ? groupInfo.description : '',
       isMember: false,
       userid: undefined
     }
-    let registrationRes = await query(drive, {path: '/group/users/*', mount: driveMeta.key})
+    let registrationRes = await query(groupDrive, {path: '/users/*', mount: userMeta.key})
     if (registrationRes[0]) {
       group.isMember = true
       group.userid = registrationRes[0].path.split('/').pop()
@@ -231,9 +220,9 @@ async function fetchUserInfo (urlOrDriveMeta) {
   }
 
   return {
-    url: driveMeta.url,
-    title: driveMeta.title,
-    description: driveMeta.description,
+    url: userMeta.url,
+    title: userMeta.title,
+    description: userMeta.description,
     group
   }
 }

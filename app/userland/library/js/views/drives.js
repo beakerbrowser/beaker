@@ -57,14 +57,11 @@ export class DrivesView extends LitElement {
     this.drives = drives
 
     for (let drive of drives) {
-      if (drive.info.type === 'user') {
-        let userDrive = new Hyperdrive(drive.url)
-        let [groupStat, groupInfo] = await Promise.all([
-          userDrive.stat('/group').catch(e => undefined),
-          userDrive.readFile('/group/index.json').then(JSON.parse).catch(e => undefined)
-        ])
-        if (groupStat?.mount?.key && groupInfo) {
-          groupInfo.url = `hyper://${groupStat.mount.key}`
+      if (drive.info.type === 'user' && drive.info.memberOf) {
+        let groupDrive = new Hyperdrive(drive.info.memberOf)
+        let groupInfo = await groupDrive.readFile('/index.json').then(JSON.parse).catch(e => undefined)
+        if (groupInfo) {
+          groupInfo.url = groupDrive.url
           drive.groupInfo = groupInfo
         }
         this.requestUpdate()
