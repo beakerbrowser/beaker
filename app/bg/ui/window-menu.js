@@ -594,7 +594,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'F1',
         click: function (item) {
           var win = getWin()
-          if (win) tabManager.create(win, 'https://beakerbrowser.com/docs/', {setActive: true})
+          if (win) tabManager.create(win, 'https://beaker-browser.gitbook.io/docs/', {setActive: true})
         }
       },
       {
@@ -602,13 +602,6 @@ export function buildWindowMenu (opts = {}) {
         click: function (item) {
           var win = getWin()
           if (win) tabManager.create(win, 'https://github.com/beakerbrowser/beaker/issues', {setActive: true})
-        }
-      },
-      {
-        label: 'Mailing List',
-        click: function (item) {
-          var win = getWin()
-          if (win) tabManager.create(win, 'https://groups.google.com/forum/#!forum/beaker-browser', {setActive: true})
         }
       }
     ]
