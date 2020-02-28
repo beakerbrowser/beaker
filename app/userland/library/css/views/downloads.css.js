@@ -18,7 +18,6 @@ a[href]:hover {
 
 .downloads {
   font-size: 13px;
-  min-height: 100vh;
   box-sizing: border-box;
 }
 

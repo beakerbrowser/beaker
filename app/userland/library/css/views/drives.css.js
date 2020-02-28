@@ -20,22 +20,7 @@ a[href]:hover {
 
 .drives {
   font-size: 13px;
-  min-height: 100vh;
   box-sizing: border-box;
-}
-
-.drives header {
-  display: flex;
-  align-items: center;
-  margin-top: -6px;
-  padding: 8px;
-  color: #556;
-  background: #f3f3f7;
-  font-size: 14px;
-}
-
-.drives header > * {
-  margin-right: 8px;
 }
 
 .drives .empty {
@@ -43,6 +28,10 @@ a[href]:hover {
   letter-spacing: 0.75px;
   color: #667;
   padding: 28px 40px;
+}
+
+.drive:first-child {
+  border-top: 1px solid #dde;
 }
 
 .drive {

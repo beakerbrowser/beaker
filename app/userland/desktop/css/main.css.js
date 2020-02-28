@@ -13,6 +13,10 @@ ${tooltipCSS}
   padding: 0 15px;
 }
 
+.hidden {
+  display: none !important;
+}
+
 header {
   display: grid;
   grid-template-columns: 1fr 100px;
@@ -93,7 +97,6 @@ header .new-btn:hover {
   border-radius: 3px;
   color: inherit;
   border-radius: 3px;
-  background: #fff;
   overflow: hidden;
   user-select: none;
   min-height: 100px;
@@ -147,11 +150,15 @@ header .new-btn:hover {
   color: rgba(0, 0, 150, 0.25);
 }
 
-drives-view {
+drives-view,
+bookmarks-view {
   display: block;
   max-width: 1000px;
   margin: 30px auto;
-  border-top: 1px solid #dde;
+}
+
+drives-view + bookmarks-view {
+  margin-top: -31px;
 }
 `
 export default cssStr

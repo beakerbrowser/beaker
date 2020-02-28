@@ -18,7 +18,9 @@ export class BookmarksView extends LitElement {
   static get properties () {
     return {
       bookmarks: {type: Array},
-      filter: {type: String}
+      filter: {type: String},
+      hideEmpty: {type: Boolean, attribute: 'hide-empty'},
+      otherOnly: {type: Boolean, attribute: 'other-only'}
     }
   }
 
@@ -30,6 +32,8 @@ export class BookmarksView extends LitElement {
     super()
     this.bookmarks = undefined
     this.filter = undefined
+    this.hideEmpty = false
+    this.otherOnly = false
   }
 
   async load () {
@@ -82,14 +86,16 @@ export class BookmarksView extends LitElement {
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       ${pinnedBookmarks ? html`
         <div class="bookmarks">
-          <h3>Start Page</h3>
-          ${repeat(pinnedBookmarks, bookmark => this.renderBookmark(bookmark))}
-          ${pinnedBookmarks.length === 0 ? html`
-            <div class="empty">No items found</div>
+          ${!this.otherOnly ? html`
+            <h3>Start Page</h3>
+            ${repeat(pinnedBookmarks, bookmark => this.renderBookmark(bookmark))}
+            ${pinnedBookmarks.length === 0 && !this.hideEmpty ? html`
+              <div class="empty">No items found</div>
+            ` : ''}
+            <h3>Other</h3>
           ` : ''}
-          <h3>Other</h3>
           ${repeat(otherBookmarks, bookmark => this.renderBookmark(bookmark))}
-          ${otherBookmarks.length === 0 ? html`
+          ${otherBookmarks.length === 0&& !this.hideEmpty ? html`
             <div class="empty">No items found</div>
           ` : ''}
         </div>

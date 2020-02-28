@@ -22,7 +22,8 @@ export class DrivesView extends LitElement {
   static get properties () {
     return {
       drives: {type: Array},
-      filter: {type: String}
+      filter: {type: String},
+      hideEmpty: {type: Boolean, attribute: 'hide-empty'}
     }
   }
 
@@ -34,6 +35,7 @@ export class DrivesView extends LitElement {
     super()
     this.drives = undefined
     this.filter = undefined
+    this.hideEmpty = false
   }
 
   async load () {
@@ -176,7 +178,7 @@ export class DrivesView extends LitElement {
       ${drives ? html`
         <div class="drives">
           ${repeat(drives, drive => this.renderDrive(drive))}
-          ${drives.length === 0 ? html`
+          ${drives.length === 0 && !this.hideEmpty ? html`
             <div class="empty">No items found</div>
           ` : ''}
         </div>

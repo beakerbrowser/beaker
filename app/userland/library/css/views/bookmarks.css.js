@@ -14,7 +14,6 @@ a {
 
 .bookmarks {
   font-size: 13px;
-  min-height: 100vh;
   box-sizing: border-box;
 }
 
@@ -39,6 +38,10 @@ a {
   padding: 18px 24px;
   color: #555;
   border-bottom: 1px solid #dde;
+}
+
+.bookmark:first-child {
+  border-top: 1px solid #dde;
 }
 
 .bookmark:hover {
