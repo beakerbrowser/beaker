@@ -42,7 +42,6 @@ import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 
 var drives = {} // in-memory cache of drive objects. key -> drive
 var driveLoadPromises = {} // key -> promise
-var driveSessionCheckouts = {} // key+version -> DaemonHyperdrive
 var drivesEvents = new EventEmitter()
 
 // var daemonEvents TODO
@@ -306,7 +305,7 @@ async function loadDriveInner (key, settingsOverride) {
   // mkdirp.sync(metaPath)
 
   // create the drive session with the daemon
-  var drive = await daemon.createHyperdriveSession({key})
+  var drive = await daemon.getHyperdriveSession({key})
   key = drive.key
   var keyStr = datEncoding.toStr(drive.key)
 
@@ -387,15 +386,11 @@ export async function getDriveCheckout (drive, version) {
     } else {
       let latestVersion = await drive.session.drive.version()
       if (version <= latestVersion) {
-        let checkoutKey = `${drive.key}+${version}`
-        if (!(checkoutKey in driveSessionCheckouts)) {
-          driveSessionCheckouts[checkoutKey] = await daemon.createHyperdriveSession({
-            key: drive.key,
-            version,
-            writable: false
-          })
-        }
-        checkoutFS = driveSessionCheckouts[checkoutKey]
+        checkoutFS = await daemon.getHyperdriveSession({
+          key: drive.key,
+          version,
+          writable: false
+        })
         checkoutFS.domain = drive.domain
         isHistoric = true
       }

@@ -6,9 +6,12 @@ import constants from 'hyperdrive-daemon-client/lib/constants'
 import { HyperdriveClient } from 'hyperdrive-daemon-client'
 import datEncoding from 'dat-encoding'
 import * as pda from 'pauls-dat-api2'
+import pm2 from 'pm2'
+import EventEmitter from 'events'
 import { getEnvVar } from '../lib/env'
 
 const SETUP_RETRIES = 100
+const CHECK_DAEMON_INTERVAL = 5e3
 
 // typedefs
 // =
@@ -53,23 +56,54 @@ const SETUP_RETRIES = 100
 // =
 
 var client // client object created by hyperdrive-daemon-client
+var isCheckingDaemon = false
+var isDaemonActive = false
+var sessions = {} // map of keyStr => DaemonHyperdrive
+var events = new EventEmitter()
 
 // exported apis
 // =
 
+export const on = events.on.bind(events)
+
 export const setup = async function () {
-  // instantiate the daemon
-  // TODO the daemon should be managed in an external process
+  if (!isCheckingDaemon) {
+    // watch for the daemon process to die/revive
+    let interval = setInterval(() => {
+      pm2.list((err, processes) => {
+        var isActive = !!processes.find(p => p.name === 'hyperdrive')
+        if (isActive && !isDaemonActive) {
+          events.emit('daemon-restored')
+        } else if (!isActive && isDaemonActive) {
+          events.emit('daemon-stopped')
+        }
+        isDaemonActive = isActive
+      })
+    }, CHECK_DAEMON_INTERVAL)
+    interval.unref()
+    isCheckingDaemon = true
+
+    events.on('daemon-restored', async () => {
+      console.log('Hyperdrive daemon has been restored')
+      await attemptConnect()
+      for (let sessionKey in sessions) {
+        await reconnectDriveSession(sessions[sessionKey])
+      }
+    })
+    events.on('daemon-stopped', async () => {
+      console.log('Hyperdrive daemon has been lost')
+    })
+  }
 
   try {
     client = new HyperdriveClient()
     await client.ready()
-    process.hyperdriveDaemonClient = client
-    process.hyperdriveDaemon = null
     console.log('Connected to an external daemon.')
+    isDaemonActive = true
     return
   } catch (err) {
     console.log('Failed to connect to an external daemon. Launching the daemon...')
+    client = false
   }
 
   if (getEnvVar('EMBED_HYPERDRIVE_DAEMON')) {
@@ -87,21 +121,8 @@ export const setup = async function () {
     })
   }
 
-  var connectBackoff = 100
-  for (let i = 0; i < SETUP_RETRIES; i++) {
-    try {
-      client = new HyperdriveClient()
-      await client.ready()
-    } catch (e) {
-      console.log('Failed to connect to daemon, retrying', e)
-      await new Promise(r => setTimeout(r, connectBackoff))
-      connectBackoff += 100
-    }
-  }
-
-  // attach to the process for debugging
-  process.hyperdriveDaemon = daemon
-  process.hyperdriveDaemonClient = client
+  await attemptConnect()
+  isDaemonActive = true
 }
 
 /**
@@ -114,7 +135,10 @@ export const setup = async function () {
  * @param {boolean} [opts.writable]
  * @returns {Promise<DaemonHyperdrive>}
  */
-export const createHyperdriveSession = async function (opts) {
+export async function getHyperdriveSession (opts) {
+  const sessionKey = createSessionKey(opts)
+  if (sessions[sessionKey]) return sessions[sessionKey]
+
   const drive = await client.drive.get(opts)
   const key = datEncoding.toStr(drive.key)
   var driveObj = {
@@ -125,18 +149,22 @@ export const createHyperdriveSession = async function (opts) {
 
     session: {
       drive,
+      opts,
+      networkConfig: undefined,
       async close () {
-        return drive.close()
+        delete sessions[key]
+        return this.drive.close()
       },
-      async configureNetwork (opts) {
-        return drive.configureNetwork(opts)
+      async configureNetwork (cfg) {
+        this.networkConfig = cfg
+        return this.drive.configureNetwork(cfg)
       }
     },
 
     async getInfo () {
       var [version, stats] = await Promise.all([
-        drive.version(),
-        drive.stats()
+        this.session.drive.version(),
+        this.session.drive.stats()
       ])
       return {
         version,
@@ -150,11 +178,46 @@ export const createHyperdriveSession = async function (opts) {
 
     pda: createHyperdriveSessionPDA(drive)
   }
+  sessions[sessionKey] = driveObj
   return /** @type DaemonHyperdrive */(driveObj)
 }
 
 // internal methods
 // =
+
+function createSessionKey (opts) {
+  var key = opts.key.toString('hex')
+  if (opts.version) {
+    key += `+${opts.version}`
+  }
+  if ('writable' in opts) {
+    key += `+${opts.writable ? 'w' : 'ro'}`
+  }
+  return key
+}
+
+async function attemptConnect () {
+  var connectBackoff = 100
+  for (let i = 0; i < SETUP_RETRIES; i++) {
+    try {
+      client = new HyperdriveClient()
+      await client.ready()
+    } catch (e) {
+      console.log('Failed to connect to daemon, retrying', e)
+      await new Promise(r => setTimeout(r, connectBackoff))
+      connectBackoff += 100
+    }
+  }
+}
+
+async function reconnectDriveSession (driveObj) {
+  const drive = await client.drive.get(driveObj.session.opts)
+  driveObj.session.drive = drive
+  driveObj.pda = createHyperdriveSessionPDA(drive)
+  if (driveObj.session.networkConfig) {
+    driveObj.session.configureNetwork(driveObj.session.networkConfig)
+  }
+}
 
 /**
  * Provides a pauls-dat-api2 object for the given drive

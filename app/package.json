@@ -78,6 +78,7 @@
     "pauls-dat-api2": "github:beakerbrowser/pauls-dat-api2",
     "pauls-electron-rpc": "^5.0.3",
     "pify": "^3.0.0",
+    "pm2": "^4.2.3",
     "pretty-bytes": "^3.0.1",
     "pretty-hash": "^1.0.0",
     "pump": "^3.0.0",
