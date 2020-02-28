@@ -1,5 +1,5 @@
-import {app, dialog, BrowserWindow, BrowserView, webContents, ipcMain, shell, Menu, screen, session, nativeImage} from 'electron'
-import {autoUpdater} from 'electron-updater'
+import { app, dialog, BrowserWindow, BrowserView, webContents, ipcMain, shell, Menu, screen, session, nativeImage } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import os from 'os'
 import path from 'path'
 import fs from 'fs'
@@ -14,13 +14,14 @@ import * as logLib from './logger'
 const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
 import { convertDatArchive } from './dat/index'
-import {open as openUrl} from './open-url'
+import { open as openUrl } from './open-url'
 import * as tabManager from './ui/tab-manager'
 import { updateSetupState } from './ui/setup-flow'
 import * as modals from './ui/subwindows/modals'
 import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from './lib/electron'
 import { getEnvVar } from './lib/env'
+import * as hyperDaemon from './hyper/daemon'
 
 // constants
 // =
@@ -157,6 +158,10 @@ export const WEBAPI = {
   getBuiltinFavicon,
   uploadFavicon,
   imageToIco,
+
+  reconnectHyperdriveDaemon () {
+    return hyperDaemon.setup()
+  },
 
   executeSidebarCommand,
   toggleSiteInfo,
@@ -453,7 +458,8 @@ export function getInfo () {
     },
     paths: {
       userData: app.getPath('userData')
-    }
+    },
+    isDaemonActive: hyperDaemon.isActive()
   }
 }
 

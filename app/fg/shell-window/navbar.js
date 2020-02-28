@@ -14,6 +14,7 @@ class ShellWindowNavbar extends LitElement {
       activeTab: {type: Object},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
+      isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -24,6 +25,7 @@ class ShellWindowNavbar extends LitElement {
     this.activeTab = null
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
+    this.isDaemonActive = false
     this.isBrowserMenuOpen = false
   }
 
@@ -100,6 +102,7 @@ class ShellWindowNavbar extends LitElement {
       ></shell-window-navbar-inpage-find>
       <div class="buttons" style="padding-left: 4px">
         ${this.watchlistBtn}
+        ${this.daemonInactiveBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -207,6 +210,15 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get daemonInactiveBtn () {
+    if (this.isDaemonActive) return ''
+    return html`
+      <button class="daemon-inactive-btn" @click=${this.onClickDaemonInactiveBtn} style="margin: 0px 2px">
+        <span class="fas fa-exclamation-triangle"></span>
+      </button>
+    `
+  }
+
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
@@ -257,6 +269,10 @@ class ShellWindowNavbar extends LitElement {
   onClickWatchlistBtn (e) {
     this.numWatchlistNotifications = 0
     bg.views.createTab('beaker://watchlist', {setActive: true})
+  }
+
+  onClickDaemonInactiveBtn (e) {
+    bg.views.createTab('beaker://settings', {setActive: true})
   }
 
   async onClickBrowserMenu (e) {
@@ -311,6 +327,10 @@ svg.icon.refresh {
   position: relative;
   top: -1px;
   color: #555;
+}
+
+.fas.fa-exclamation-triangle {
+  color: #FF9800;
 }
 
 .fas.fa-arrow-alt-circle-up {

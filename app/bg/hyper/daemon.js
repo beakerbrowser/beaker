@@ -66,18 +66,23 @@ var events = new EventEmitter()
 
 export const on = events.on.bind(events)
 
-export const setup = async function () {
+export function isActive () {
+  return isDaemonActive
+}
+
+export async function setup () {
   if (!isCheckingDaemon) {
     // watch for the daemon process to die/revive
     let interval = setInterval(() => {
       pm2.list((err, processes) => {
-        var isActive = !!processes.find(p => p.name === 'hyperdrive')
-        if (isActive && !isDaemonActive) {
+        var processExists = !!processes.find(p => p.name === 'hyperdrive')
+        if (processExists && !isDaemonActive) {
+          isDaemonActive = true
           events.emit('daemon-restored')
-        } else if (!isActive && isDaemonActive) {
+        } else if (!processExists && isDaemonActive) {
+          isDaemonActive = false
           events.emit('daemon-stopped')
         }
-        isDaemonActive = isActive
       })
     }, CHECK_DAEMON_INTERVAL)
     interval.unref()
@@ -85,10 +90,6 @@ export const setup = async function () {
 
     events.on('daemon-restored', async () => {
       console.log('Hyperdrive daemon has been restored')
-      await attemptConnect()
-      for (let sessionKey in sessions) {
-        await reconnectDriveSession(sessions[sessionKey])
-      }
     })
     events.on('daemon-stopped', async () => {
       console.log('Hyperdrive daemon has been lost')
@@ -99,7 +100,7 @@ export const setup = async function () {
     client = new HyperdriveClient()
     await client.ready()
     console.log('Connected to an external daemon.')
-    isDaemonActive = true
+    reconnectAllDriveSessions()
     return
   } catch (err) {
     console.log('Failed to connect to an external daemon. Launching the daemon...')
@@ -122,7 +123,7 @@ export const setup = async function () {
   }
 
   await attemptConnect()
-  isDaemonActive = true
+  reconnectAllDriveSessions()
 }
 
 /**
@@ -207,6 +208,12 @@ async function attemptConnect () {
       await new Promise(r => setTimeout(r, connectBackoff))
       connectBackoff += 100
     }
+  }
+}
+
+async function reconnectAllDriveSessions () {
+  for (let sessionKey in sessions) {
+    await reconnectDriveSession(sessions[sessionKey])
   }
 }
 

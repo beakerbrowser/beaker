@@ -22,6 +22,7 @@ class ShellWindowUI extends LitElement {
       tabs: {type: Array},
       isUpdateAvailable: {type: Boolean},
       numWatchlistNotifications: {type: Number},
+      isDaemonActive: {type: Boolean},
       isShellInterfaceHidden: {type: Boolean},
       isFullscreen: {type: Boolean},
       hasLocationExpanded: {type: Boolean}
@@ -33,6 +34,7 @@ class ShellWindowUI extends LitElement {
     this.tabs = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
+    this.isDaemonActive = true
     this.isShellInterfaceHidden = false
     this.isFullscreen = false
     this.hasLocationExpanded = false
@@ -64,10 +66,11 @@ class ShellWindowUI extends LitElement {
 
     // listen to state updates to the window's tabs states
     var viewEvents = fromEventStream(bg.views.createEventStream())
-    viewEvents.addEventListener('replace-state', ({tabs, isFullscreen, isShellInterfaceHidden}) => {
+    viewEvents.addEventListener('replace-state', ({tabs, isFullscreen, isDaemonActive, isShellInterfaceHidden}) => {
       this.tabs = tabs
       this.isFullscreen = isFullscreen
       this.isShellInterfaceHidden = isShellInterfaceHidden
+      this.isDaemonActive = isDaemonActive
       this.stateHasChanged()
     })
     viewEvents.addEventListener('update-state', ({index, state}) => {
@@ -124,6 +127,7 @@ class ShellWindowUI extends LitElement {
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
           ?is-update-available=${this.isUpdateAvailable}
+          ?is-daemon-active=${this.isDaemonActive}
           num-watchlist-notifications="${this.numWatchlistNotifications}"
         ></shell-window-navbar>
       `}

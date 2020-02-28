@@ -18,6 +18,8 @@ export default {
   uploadFavicon: 'promise',
   imageToIco: 'promise',
 
+  reconnectHyperdriveDaemon: 'promise',
+
   fetchBody: 'promise',
   downloadURL: 'promise',
   readFile: 'promise',

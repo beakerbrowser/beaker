@@ -27,5 +27,25 @@ a:hover {
 .section {
   margin-bottom: 30px;
 }
+
+.section.warning {
+  color: red;
+  background: #ffdddd;
+  border: 1px solid transparent;
+  padding: 0 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.section.warning button {
+  color: rgb(255, 255, 255);
+  background: rgb(255, 59, 48);
+  border: 0;
+}
+
+.section.warning button .spinner {
+  border-color: #fff !important;
+  border-right-color: transparent !important;
+}
 `
 export default cssStr

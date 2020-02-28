@@ -937,6 +937,10 @@ export function setup () {
     e.returnValue = false
   })
 
+  // track daemon connectivity
+  hyper.daemon.on('daemon-restored', () => emitReplaceStateAllWindows())
+  hyper.daemon.on('daemon-stopped', () => emitReplaceStateAllWindows())
+
   // track peer-counts
   function iterateTabs (cb) {
     for (let winId in activeTabs) {
@@ -1367,9 +1371,20 @@ export function openOrFocusDownloadsPage (win) {
   setActive(win, downloadsTab)
 }
 
+export function emitReplaceStateAllWindows () {
+  for (let win of BrowserWindow.getAllWindows()) {
+    emitReplaceState(win)
+  }
+}
+
 export function emitReplaceState (win) {
   win = getTopWindow(win)
-  var state = {tabs: getWindowTabState(win), isFullscreen: win.isFullScreen(), isShellInterfaceHidden: win.isShellInterfaceHidden}
+  var state = {
+    tabs: getWindowTabState(win),
+    isFullscreen: win.isFullScreen(),
+    isShellInterfaceHidden: win.isShellInterfaceHidden,
+    isDaemonActive: hyper.daemon.isActive()
+  }
   emit(win, 'replace-state', state)
   win.emit('custom-pages-updated', takeSnapshot(win))
 }

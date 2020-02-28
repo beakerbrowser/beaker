@@ -53,11 +53,28 @@ class GeneralSettingsView extends LitElement {
     if (!this.browserInfo) return html``
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      ${this.renderDaemonStatus()}
       ${this.renderAutoUpdater()}
       ${this.renderOnStartupSettings()}
       ${this.renderProtocolSettings()}
       ${this.renderAnalyticsSettings()}
     `
+  }
+
+  renderDaemonStatus () {
+    if (this.browserInfo && !this.browserInfo.isDaemonActive) {
+      return html`
+        <div class="section warning">
+          <h2><span class="fas fa-exclamation-triangle"></span> The Hyperdrive Daemon is Not Active</h2>
+          <p>
+            The "daemon" runs Beaker's Hyperdrive networking.
+          </p>
+          <p>
+            <button @click=${this.onClickRestartDaemon}>Restart the Daemon</button>
+          </p>
+        </div>
+      `
+    }
   }
 
   renderAutoUpdater () {
@@ -324,6 +341,14 @@ class GeneralSettingsView extends LitElement {
     this.settings.custom_start_page = e.target.value
     beaker.browser.setSetting('custom_start_page', this.settings.custom_start_page)
     toast.create('Setting updated')
+  }
+
+  async onClickRestartDaemon (e) {
+    let el = e.currentTarget
+    el.innerHTML = '<span class="spinner"></span>'
+    await beaker.browser.reconnectHyperdriveDaemon()
+    this.browserInfo = await beaker.browser.getInfo()
+    this.requestUpdate()
   }
 }
 customElements.define('general-settings-view', GeneralSettingsView)
