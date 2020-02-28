@@ -61,9 +61,6 @@ class SettingsApp extends LitElement {
     return html`
       ${item('general', 'fas fa-cog', 'General')}
       <hr>
-      ${item('cloud-peers', 'fas fa-cloud', 'Cloud Peers')}
-      ${item('users', 'fas fa-users', 'Users')}
-      <hr>
       ${item('general-logs', 'fas fa-clipboard-list', 'General Logs')}
       ${item('fs-audit-log', 'fas fa-clipboard-check', 'Filesystem Audit Log')}
       ${''/*DISABLEDitem('daemon-log', 'fas fa-clipboard-list', 'Daemon Log')*/}
