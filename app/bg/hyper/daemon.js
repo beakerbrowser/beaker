@@ -130,18 +130,20 @@ export async function setup () {
  * Creates a hyperdrives interface to the daemon for the given key
  *
  * @param {Object} opts
- * @param {Buffer} opts.key
+ * @param {Buffer} [opts.key]
  * @param {number} [opts.version]
  * @param {Buffer} [opts.hash]
  * @param {boolean} [opts.writable]
  * @returns {Promise<DaemonHyperdrive>}
  */
 export async function getHyperdriveSession (opts) {
-  const sessionKey = createSessionKey(opts)
-  if (sessions[sessionKey]) return sessions[sessionKey]
+  if (opts.key) {
+    let sessionKey = createSessionKey(opts)
+    if (sessions[sessionKey]) return sessions[sessionKey]
+  }
 
   const drive = await client.drive.get(opts)
-  const key = datEncoding.toStr(drive.key)
+  const key = opts.key = datEncoding.toStr(drive.key)
   var driveObj = {
     key: datEncoding.toBuf(key),
     url: `hyper://${key}`,
@@ -179,7 +181,7 @@ export async function getHyperdriveSession (opts) {
 
     pda: createHyperdriveSessionPDA(drive)
   }
-  sessions[sessionKey] = driveObj
+  sessions[createSessionKey(opts)] = driveObj
   return /** @type DaemonHyperdrive */(driveObj)
 }
 
