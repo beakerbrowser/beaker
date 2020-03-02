@@ -4,7 +4,6 @@ import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
 import * as archivesDb from '../../dbs/archives'
 import * as modals from '../../ui/subwindows/modals'
-import * as bookmarks from '../../filesystem/bookmarks'
 import * as userSiteSessions from '../../filesystem/site-sessions'
 import * as sessionPerms from '../../lib/session-perms'
 
@@ -105,6 +104,7 @@ export default {
         type: 'user',
         memberOf: opts.group
       })
+      await filesystem.configDrive(userDrive.url, {seeding: true})
       await userDrive.pda.writeFile(`/thumb.${newUserConfig.thumbExt}`, newUserConfig.thumbBase64, 'base64')
       user = await fetchUserInfo(userDrive.url)
     } else {
