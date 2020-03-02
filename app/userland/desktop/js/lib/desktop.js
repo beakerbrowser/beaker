@@ -15,6 +15,7 @@ export async function load () {
     userFiles = await beaker.filesystem.readdir('/bookmarks', {includeStats: true})
     userFiles = userFiles.filter(file => file.stat.metadata.pinned)
     userFiles.sort((a, b) => a.name.localeCompare(b.name))
+    userFiles.forEach(b => { b.path = `/bookmarks/${b.name}` })
   } catch (e) {
     console.log('Failed to load bookmarks files', e)
   }
@@ -22,8 +23,9 @@ export async function load () {
 }
 
 export async function createLink ({href, title}) {
-  var name = await getAvailableName('/bookmarks', title, beaker.filesystem, 'goto')
-  await beaker.filesystem.writeFile(`/bookmarks/${name}`, '', {metadata: {href, title}})
+  await beaker.bookmarks.add({href, title, pinned: true})
+  // var name = await getAvailableName('/bookmarks', title, beaker.filesystem, 'goto')
+  // await beaker.filesystem.writeFile(`/bookmarks/${name}`, '', {metadata: {href, title}})
 }
 
 export async function remove (file) {

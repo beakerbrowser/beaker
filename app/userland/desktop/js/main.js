@@ -1,7 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import { EditFilePopup } from './com/edit-file-popup.js'
+import { EditBookmarkPopup } from 'beaker://library/js/com/edit-bookmark-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as newDriveDropdown from 'beaker://app-stdlib/js/com/new-drive-dropdown.js'
@@ -140,7 +140,7 @@ class DesktopApp extends LitElement {
 
   async onClickEdit (file) {
     try {
-      await EditFilePopup.create(file)
+      await EditBookmarkPopup.create(file)
       this.load()
     } catch (e) {
       // ignore

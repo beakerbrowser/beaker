@@ -22,6 +22,7 @@ export async function list () {
  * @returns {Promise<Object>}
  */
 export async function get (href) {
+  href = normalizeUrl(href)
   var file = (await query(filesystem.get(), {
     path: '/bookmarks/*.goto',
     metadata: {href}
@@ -39,6 +40,7 @@ export async function get (href) {
  */
 export async function add ({href, title, pinned}) {
   var slug
+  href = normalizeUrl(href)
   
   try {
     var hrefp = new URL(href)
@@ -71,6 +73,7 @@ export async function add ({href, title, pinned}) {
  * @returns {Promise<void>}
  */
 export async function remove (href) {
+  href = normalizeUrl(href)
   var file = (await query(filesystem.get(), {
     path: '/bookmarks/*.goto',
     metadata: {href}
@@ -95,8 +98,16 @@ export async function migrateBookmarksFromSqlite () {
 
 function massageBookmark (file) {
   return {
-    href: file.stat.metadata.href,
+    href: normalizeUrl(file.stat.metadata.href),
     title: file.stat.metadata.title || file.stat.metadata.href,
     pinned: !!file.stat.metadata.pinned
   }
+}
+
+function normalizeUrl (url) {
+  try {
+    var urlp = new URL(url)
+    return (urlp.protocol + '//' + urlp.hostname + (urlp.port ? `:${urlp.port}` : '') + urlp.pathname).replace(/([/]$)/g, '')
+  } catch (e) {}
+  return url
 }
