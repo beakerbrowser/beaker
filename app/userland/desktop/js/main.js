@@ -57,7 +57,7 @@ class DesktopApp extends LitElement {
         <a class="new-btn" @click=${this.onClickNew}>New <span class="fas fa-plus"></span></a>
       </header>
       ${this.renderFiles()}
-      <drives-view loadable hide-empty .filter=${this.filter}></drives-view>
+      <drives-view class="top-border" loadable hide-empty .filter=${this.filter}></drives-view>
       <bookmarks-view class=${!this.filter ? 'hidden' : ''} loadable hide-empty other-only .filter=${this.filter}></bookmarks-view>
       </div>
     `

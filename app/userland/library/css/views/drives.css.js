@@ -30,7 +30,7 @@ a[href]:hover {
   padding: 28px 40px;
 }
 
-.drive:first-child {
+:host(.top-border) .drive:first-child {
   border-top: 1px solid #dde;
 }
 
