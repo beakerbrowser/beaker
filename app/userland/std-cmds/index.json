@@ -232,7 +232,7 @@
         {
           "name": "uninstall",
           "help": "Uninstall a command-package",
-          "usage": "commands install {name|url}"
+          "usage": "commands install {url}"
         }
       ]
     },

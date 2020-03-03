@@ -159,16 +159,16 @@ class WebTerm extends LitElement {
       manifest: JSON.parse(await beaker.browser.readFile('beaker://std-cmds/index.json', 'utf8'))
     }]
 
-    var cmdPkgDrives = (await beaker.drives.list()).map(drive => drive.info).filter(info => info.type === 'webterm.sh/cmd-pkg')
-    for (let drive of cmdPkgDrives) {
+    var cmdPkgDrives = await beaker.filesystem.readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
+    for (let driveUrl of cmdPkgDrives) {
       try {
         packages.push({
-          url: drive.url,
-          manifest: JSON.parse(await (new Hyperdrive(drive.url).readFile(`index.json`)))
+          url: driveUrl,
+          manifest: JSON.parse(await (new Hyperdrive(driveUrl).readFile(`index.json`)))
         })
       } catch (e) {
         console.log(e)
-        this.outputError(`Failed to read ${drive.title} manifest (${drive.url})`, e.toString())
+        this.outputError(`Failed to read manifest for command package (${driveUrl})`, e.toString())
       }
     }
     console.log(packages)

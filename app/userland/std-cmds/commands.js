@@ -1,10 +1,13 @@
 import { ensureDir, ensureMount, ensureUnmount, ensureUnmountByUrl, getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 
 export async function ls () {
-  let drives = await beaker.drives.list()
-  let driveInfos = drives.map(drive => drive.info).filter(info => info.type === 'webterm.sh/cmd-pkg')
+  var drives = await readInstalled()
+  var driveInfos = []
+  for (let drive of drives) {
+    driveInfos.push(await (new Hyperdrive(drive)).getInfo())
+  }
   driveInfos.toHTML = () => {
-  return driveInfos.map(info => html`<p><a href=${info.url}><strong>${info.title}</strong></a> ${info.description}</p>`)
+    return driveInfos.map(info => html`<p><a href=${info.url}><strong>${info.title}</strong></a> ${info.description}</p>`)
   }
   return driveInfos
 }
@@ -33,12 +36,21 @@ export async function create () {
 }
 
 export async function install (opts = {}, url) {
-  await beaker.drives.configure(url)
+  url = toUrl(url)
+  var urls = await readInstalled()
+  if (urls.indexOf(url) !== -1) throw new Error('This command-package is already installed')
+  urls.push(url)
+  await saveInstalled(urls)
   return {url, toHTML: () => html`Installed <a href=${url}>${url}</a>`}
 }
 
 export async function uninstall (opts = {}, url) {
-  await beaker.drives.remove(url)
+  url = toUrl(url)
+  var urls = await readInstalled()
+  var index = urls.indexOf(url)
+  if (index === -1) throw new Error('This command-package was not installed')
+  urls.splice(index, 1)
+  await saveInstalled(urls)
   return {url, toHTML: () => html`Uninstalled <a href=${url}>${url}</a>`}
 }
 
@@ -70,3 +82,28 @@ export async function example (opts = {}, arg1, arg2) {
   return arg1 + ' ' + arg2
 }
 `
+
+async function readInstalled () {
+  return beaker.filesystem.readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
+}
+
+async function saveInstalled (urls) {
+  await beaker.filesystem.mkdir('/webterm').catch(e => undefined)
+  await beaker.filesystem.writeFile('/webterm/command-packages.json', JSON.stringify(urls, null, 2))
+}
+
+function toUrl (str = '') {
+  if (!str.startsWith('hyper://')) {
+    str = `hyper://${str}`
+  }
+  var urlp
+  try {
+    urlp = new URL(str)
+  } catch (e) {
+    throw new Error(`${str} is not a valid URL`)
+  }
+  if (!/^[0-9a-f]{64}/i.test(urlp.hostname)) {
+    throw new Error(`${str} is not a valid hyper:// URL`)
+  }
+  return `${urlp.protocol}//${urlp.hostname}`
+}
