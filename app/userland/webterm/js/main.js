@@ -301,7 +301,9 @@ class WebTerm extends LitElement {
     } else if (output.toHTML) {
       output = output.toHTML()
     } else if (typeof output !== 'string' && !(output instanceof TemplateResult)) {
-      output = JSON.stringify(output)
+      output = html`<pre>${JSON.stringify(output)}</pre>`
+    } else {
+      output = html`<pre>${output}</pre>`
     }
     buffer.splice(index, 1, html`
       <div class="entry">${output}</div>
