@@ -173,7 +173,7 @@ class EditorApp extends LitElement {
 
       var body = ''
       if (url.startsWith('hyper:')) {
-        body = await this.loadDat(url)
+        body = await this.loadDrive(url)
       } else if (url.startsWith('http:') || url.startsWith('https:')) {
         this.isFilesOpen = false
         try {
@@ -243,7 +243,7 @@ class EditorApp extends LitElement {
     }
   }
 
-  async loadDat (url) {
+  async loadDrive (url) {
     var body
 
     // load drive meta
@@ -273,6 +273,23 @@ class EditorApp extends LitElement {
     var entry = await datServeResolvePath(drive, manifest, url, '*/*')
     this.resolvedPath = entry ? entry.path : this.pathname
     this.stat = await drive.stat(this.resolvedPath).catch(e => undefined)
+
+    // check for mount information
+    this.mountInfo = undefined
+    {
+      let pathParts = this.resolvedPath.split('/').filter(Boolean)
+      let realPathParts = [pathParts.pop()]
+      while (pathParts.length) {
+        let path = '/' + pathParts.join('/')
+        let stat = await drive.stat(path).catch(e => undefined)
+        if (stat && stat.mount) {
+          this.mountInfo = await (new Hyperdrive(stat.mount.key)).getInfo()
+          this.mountInfo.resolvedPath = '/' + realPathParts.join('/')
+          break
+        }
+        realPathParts.unshift(pathParts.pop())
+      }
+    }
 
     // figure out if it's binary
     {
@@ -443,7 +460,6 @@ class EditorApp extends LitElement {
   }
 
   renderToolbar () {
-    var isDrive = this.url && this.url.startsWith('hyper://')
     return html`
       <div class="toolbar" @contextmenu=${this.onContextmenuToolbar}>
         <button class="transparent" @click=${this.onToggleFilesOpen}>
@@ -469,11 +485,11 @@ class EditorApp extends LitElement {
         ` : this.readOnly ? html`
           <div><span class="fas fa-fw fa-info-circle"></span> This site is read-only</div>
           <span class="divider"></span>
-          ${isDrive ? html`
-            <button class="primary" title="Fork this site to make changes" @click=${this.onClickFork}>
-              <span class="fas fa-fw fa-code-branch"></span> Fork this site to make changes
+          ${this.mountInfo && this.mountInfo.writable ? html`
+            <span style="margin-left: 8px">You own this file</span>
+            <button class="primary" @click=${this.onClickEditReal}>
+              Edit it in New Tab
             </button>
-            <span class="divider"></span>
           ` : ''}
         ` : ''}
         <span class="spacer"></span>
@@ -542,6 +558,14 @@ class EditorApp extends LitElement {
           click: () => this.onClickExportFiles(this.resolvedPath)
         }
       ]
+    })
+  }
+
+  onClickEditReal (e) {
+    beaker.browser.openUrl(this.mountInfo.url + this.mountInfo.resolvedPath, {
+      setActive: true,
+      adjacentActive: true,
+      sidebarPanels: ['editor-app']
     })
   }
 
