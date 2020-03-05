@@ -399,7 +399,13 @@ class WebTerm extends LitElement {
     this.envVars['@'] = await beaker.browser.getPageUrl()
 
     var inputValue = prompt.value
-    var inputParsed = parser.parse(inputValue)
+    try {
+      var inputParsed = parser.parse(inputValue)
+    } catch (e) {
+      this.outputError('There was an issue with parsing your input', e.toString(), this.cwd, inputValue)
+      this.readTabCompletionOptions()
+      return false
+    }
     this.applySubstitutions(inputParsed)
     var paramsIndex = 1
     prompt.value = ''

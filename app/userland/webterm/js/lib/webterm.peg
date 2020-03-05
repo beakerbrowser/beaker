@@ -16,7 +16,7 @@ NonSwitch "non-switch"
   = !'-' value:String { return value }
 
 String "string"
-  = Char+ { return text() }
+  = head:Char rest:CharOrQuote* { return head + rest.join('') }
   / '"' value:CharOr_OrSingleQuote* '"' { return value.join('') }
   / '\'' value:CharOr_OrDoubleQuote* '\'' { return value.join('') }
 
@@ -32,8 +32,14 @@ CharOr_ "character or whitespace"
   = Char
   / _
 
+CharOrQuote "character, single quote, or double quote"
+  = Char
+  / '\''
+  / '"'
+
 Char "character"
-  = [^ "'\f\n\r\t\v\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]i
+  = '\\ ' { return ' ' } // escaped space
+  / [^ "'\f\n\r\t\v\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]i // regular characters
 
 _ "whitespace"
   = [ \t]+
