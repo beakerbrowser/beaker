@@ -163,6 +163,7 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
     // emit the updated event
     details.url = 'hyper://' + key
     drivesEvents.emit('updated', {key, details, oldMeta})
+    logger.info('Updated recorded metadata for hyperdrive', {key, details})
     return details
   } catch (e) {
     console.error('Error pulling meta', e)
@@ -583,11 +584,11 @@ function hasMetaChanged (m1, m2) {
   return false
 }
 
-var isUrlsEqRe = /^hyper:\/\/[0-9a-f]{64}/i
+var isUrlsEqRe = /([0-9a-f]{64})/i
 function isUrlsEq (a, b) {
   if (!a && !b) return true
   if (typeof a !== typeof b) return false
   var ma = isUrlsEqRe.exec(a)
   var mb = isUrlsEqRe.exec(b)
-  return ma && mb && ma[0] === mb[0]
+  return ma && mb && ma[1] === mb[1]
 }
