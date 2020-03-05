@@ -140,14 +140,14 @@ class EditorApp extends LitElement {
     })
   }
 
-  async load (url) {
+  async load (url, forceLoad = false) {
     var release = await lock('editor-load')
     try {
       this.isLoading = true
       if (!this.editor) {
         await this.createEditor()
       }
-      if (this.url === url || !url) {
+      if (!forceLoad && (this.url === url || !url)) {
         this.isLoading = false
         return
       }
@@ -640,6 +640,9 @@ class EditorApp extends LitElement {
       let path = joinPath(folderPath, name)
       await this.drive.writeFile(path, '')
       this.loadExplorer()
+      if (this.resolvedPath === path) {
+        this.load(this.drive.url + path, true)
+      }
     }
   }
 
