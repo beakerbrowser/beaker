@@ -381,6 +381,7 @@ export async function maximizeWindow () {
 
 export function resizeSiteInfo (bounds) {
   var win = findWebContentsParentWindow(this.sender)
+  if (!win) return
   siteInfo.resize(win, bounds)
 }
 
