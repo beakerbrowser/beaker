@@ -38,8 +38,8 @@ async function checkin () {
     }
   }
 
-  // schedule another ping check in 12 hours
-  var to = setTimeout(checkin, ms('12h'))
+  // schedule another ping check in 3 hours
+  var to = setTimeout(checkin, ms('3h'))
   to.unref()
 }
 
