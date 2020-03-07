@@ -103,8 +103,7 @@ export class SearchResults extends LitElement {
   async loadResultAnnotations (results) {
     for (let result of results) {
       if (result.type === 'post') {
-        ;[result.postMeta.votes, result.postMeta.numComments] = await Promise.all([
-          uwg.votes.tabulate(result.url, undefined, {includeProfiles: true}),
+        ;[result.postMeta.numComments] = await Promise.all([
           uwg.comments.count({href: result.url})
         ])
       } else if (result.type === 'user') {
@@ -128,7 +127,6 @@ export class SearchResults extends LitElement {
             if (result.type === 'post') {
               let viewProfileUrl = `/users/${result.postMeta.author.id}`
               let numComments = result.postMeta.numComments || 0
-              let votes = result.postMeta.votes
               return html`
                 <div class="result">
                   <h4>
@@ -136,18 +134,12 @@ export class SearchResults extends LitElement {
                     <small><a href=${result.url}>${toNiceUrl(result.postMeta.url)}</a></small>
                   </h4>
                   <div class="details">
-                    by <a class="author" href=${viewProfileUrl} title=${result.postMeta.author.title}>${result.postMeta.author.title}</a>
-                    | posted <a href=${result.viewUrl}>${timeDifference(result.postMeta.ctime, true, 'ago')}</a>
+                    <a class="author" href=${viewProfileUrl} title=${result.postMeta.author.title}>${result.postMeta.author.title}</a>
+                    | <a href=${result.viewUrl}>${timeDifference(result.postMeta.ctime, true, 'ago')}</a>
                     | <a class="comments" href=${result.viewUrl}>
                       ${numComments} ${pluralize(numComments, 'comment')}
                     </a>
                   </div>
-                  ${votes && (votes.upvotes.length || votes.downvotes.length) ? html`
-                    <div class="voters">
-                      ${votes.upvotes.length ? html`<span>Upvoted by ${this.renderUsersList(votes.upvotes)}</span>` : ''}
-                      ${votes.downvotes.length ? html`<span>Downvoted by ${this.renderUsersList(votes.downvotes)}</span>` : ''}
-                    </div>
-                  ` : ''}
                 </div>
               `
             }
@@ -220,7 +212,6 @@ function fromPostToResult (post) {
       ctime: post.stat.ctime, // TODO replace with rtime
       'drive-type': metadata['drive-type'],
       author: post.drive,
-      votes: undefined,
       numComments: undefined
     }
   }

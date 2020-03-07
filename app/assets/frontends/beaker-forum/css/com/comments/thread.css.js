@@ -1,10 +1,8 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
 import buttonsCSS from '../../buttons.css.js'
-import votectrlCSS from '../votectrl.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
-${votectrlCSS}
 
 :host {
   --body-font-size: 15px;
@@ -20,7 +18,8 @@ ${votectrlCSS}
   --comment-left-margin: 2px;
   --composer-padding: 14px 18px;
   --composer-margin: 0;
-  --composer-border: 1px solid #ccd;
+  --composer-border: 1px solid #eef;
+  --composer-border--focused: 1px solid #bbc;
 
   display: block;
   border-radius: 4px;
@@ -41,6 +40,10 @@ beaker-comment-composer {
   margin: var(--composer-margin);
 }
 
+beaker-comment-composer.focused {
+  border: var(--composer-border--focused);
+}
+
 .comments {
 }
 
@@ -49,9 +52,7 @@ beaker-comment-composer {
 }
 
 .comment {
-  display: grid;
-  grid-template-columns: 20px 1fr;
-  align-items: baseline;
+  display: block;
   margin-top: var(--comment-top-margin);
   margin-left: var(--comment-left-margin);
   border-left: 2px solid #f5f5f5;
@@ -81,10 +82,10 @@ beaker-comment-composer {
   color: rgba(0, 0, 0, 0.9);
   padding: 0 16px;
   margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 50em;
   font-size: var(--body-font-size);
   line-height: 1.4;
+  letter-spacing: 0.25px;
   white-space: pre-line;
 }
 
@@ -94,19 +95,14 @@ beaker-comment-composer {
   font-size: var(--footer-font-size);
   color: var(--footer-color);
   background: var(--footer-background);
-  padding: 4px 14px;
-}
-
-beaker-reactions {
-  display: flex;
-  flex-wrap: wrap;
-  margin-left: 4px;
+  padding: 8px 14px 4px;
 }
 
 .footer > a,
 .footer > span {
   margin: 0 5px;
   color: inherit;
+  font-weight: 500;
 }
 
 .footer > a:first-child,

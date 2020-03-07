@@ -2,13 +2,11 @@ import {css} from '../../../vendor/lit-element/lit-element.js'
 import emptyCSS from '../empty.css.js'
 import spinnerCSS from '../spinner.css.js'
 import buttonsCSS from '../../buttons.css.js'
-import votectrlCSS from '../votectrl.css.js'
 
 const cssStr = css`
 ${emptyCSS}
 ${spinnerCSS}
 ${buttonsCSS}
-${votectrlCSS}
 
 :host {
   --body-font-size: 15px;
@@ -20,6 +18,7 @@ ${votectrlCSS}
 
   display: block;
   margin-bottom: 50px;
+  margin-top: -10px;
 }
 
 a {
@@ -31,10 +30,9 @@ a:hover {
 }
 
 .comment {
-  display: grid;
-  grid-template-columns: 20px 1fr;
-  align-items: baseline;
+  display: block;
   padding: 8px 14px 12px;
+  border-bottom: 1px solid #eef;
 }
 
 .header {
@@ -65,9 +63,8 @@ a:hover {
   color: rgba(0, 0, 0, 0.9);
   padding: 0 16px;
   margin: 0 0 4px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   font-size: var(--body-font-size);
+  letter-spacing: 0.25px;
   line-height: 1.4;
   white-space: pre-line;
 }

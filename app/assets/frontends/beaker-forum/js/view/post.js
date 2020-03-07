@@ -35,8 +35,7 @@ export class PostView extends LitElement {
   async load () {
     var authorProfile = await uwg.users.getByUserID(this.author)
     var post = await uwg.posts.get(authorProfile.url, this.path)
-    ;[post.votes, post.numComments] = await Promise.all([
-      uwg.votes.tabulate(post.url, undefined, {includeProfiles: true}),
+    ;[post.numComments] = await Promise.all([
       uwg.comments.count({href: post.url})
     ])
     this.post = post
@@ -58,30 +57,12 @@ export class PostView extends LitElement {
         beaker-post {
           margin: 20px 0 16px;
         }
-        .votes {
-          margin: 0 0 10px 78px;
-          color: #667;
-          font-size: 12px;
-          background: #f8f8fc;
-          padding: 6px 10px;
-          border-radius: 4px;
-        }
-        .votes strong {
-          font-weight: 500;
-        }
-        .votes a {
-          color: inherit;
-          text-decoration: none;
-        }
-        .votes a:hover {
-          text-decoration: underline;
-        }
         beaker-profile-aside {
           width: 260px;
           margin: 0 auto 16px;
         }
         beaker-comments-thread {
-          margin-left: 78px;
+          margin-left: 50px;
           margin-bottom: 100px;
         }
       </style>
@@ -99,22 +80,6 @@ export class PostView extends LitElement {
             user-url="${this.user ? this.user.url : ''}"
             @deleted=${this.onPostDeleted}
           ></beaker-post>
-          ${this.post.votes.upvotes.length || this.post.votes.downvotes.length ? html`
-            <div class="votes">
-              ${this.post.votes.upvotes.length ? html`
-                <div>
-                  <strong>Upvoted by:</strong>
-                  ${this.renderVoters(this.post.votes.upvotes)}
-                </div>
-              ` : ''}
-              ${this.post.votes.downvotes.length ? html`
-                <div>
-                  <strong>Downvoted by:</strong>
-                  ${this.renderVoters(this.post.votes.downvotes)}
-                </div>
-              ` : ''}
-            </div>
-          ` : ''}
           ${this.post.comments ? html`
             <beaker-comments-thread
               .comments=${this.post ? this.post.comments : undefined}
@@ -126,23 +91,10 @@ export class PostView extends LitElement {
           ` : html`<div class="spinner" style="margin-left: 40px"></div>`}
         </main>
         <nav>
-          <beaker-profile-aside loadable id=${this.author}></beaker-profile-aside>
           <beaker-about loadable></beaker-about>
         </nav>
       </div>
     `
-  }
-
-  renderVoters (voters) {
-    var els = []
-    for (let i = 0; i < voters.length; i++) {
-      let profile = voters[i]
-      let comma = (i !== voters.length - 1) ? ', ' : ''
-      els.push(html`
-        <a href=${'/users/' + profile.id} title=${profile.title}>${profile.title}</a>${comma}
-      `)
-    }
-    return els
   }
 
   // events
@@ -197,10 +149,6 @@ customElements.define('beaker-post-view', PostView)
 
 async function loadCommentAnnotations (comments) {
   await Promise.all(comments.map(async (comment) => {
-    comment.votes = await uwg.votes.tabulate(comment.url)
     if (comment.replies) await loadCommentAnnotations(comment.replies)
   }))
-  comments.sort((a, b) => {
-    return (b.votes.upvotes.length - b.votes.downvotes.length) - (a.votes.upvotes.length - a.votes.downvotes.length)
-  })
 }

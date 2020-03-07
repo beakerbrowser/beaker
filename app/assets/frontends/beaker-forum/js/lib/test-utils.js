@@ -62,17 +62,6 @@ export async function generateComments (numComments = 10) {
   }
 }
 
-export async function generateVotes (numVotes = 10) {
-  var driveUrls = Array.from(debugDrives)
-  for (let i = 0; i < numVotes; i++) {
-    for (let driveUrl of driveUrls) {
-      let drive = new Hyperdrive(driveUrl)
-      let target = await getRandomPostOrComment()
-      await uwg.votes.put(target.url, (Math.random() > 0.7) ? -1 : 1, drive)
-    }
-  }
-}
-
 export async function deleteDrives () {
   if (!confirm('Delete all test drives?')) {
     return

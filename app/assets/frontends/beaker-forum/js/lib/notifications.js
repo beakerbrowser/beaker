@@ -48,26 +48,6 @@ export const events = new EventTarget()
 export const STORED_EVENT_LIMIT = 300 // TODO
 export const INDEXES = /** @type IndexDefinition[] */([
   {
-    path: '/beaker-forum/votes/',
-    filterFn (change, {userUrl}) {
-      if (change.type !== 'put') return false
-      if (!change.value.stat) return false
-      var {href} = change.value.stat.metadata
-      if (typeof href !== 'string') return false
-      return href.startsWith(userUrl)
-    },
-    toEvent (change, drive) {
-      var {href, vote} = change.value.stat.metadata
-      return {
-        event: 'vote',
-        author: drive.url,
-        timestamp: basename(change.name),
-        detail: {href, vote},
-        isRead: false
-      }
-    }
-  },
-  {
     path: '/beaker-forum/comments/',
     filterFn (change, {userUrl}) {
       if (change.type !== 'put') return false

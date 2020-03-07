@@ -70,7 +70,7 @@ ${buttonsCSS}
 .counts {
   display: flex;
   padding: 8px 12px;
-  background: var(--header-background);
+  background: var(--gray-background);
   border-radius: 4px;
   margin-bottom: 10px;
 }
@@ -123,7 +123,7 @@ ${buttonsCSS}
 }
 
 .sidebar-md blockquote {
-  border-left: 5px solid var(--header-background);
+  border-left: 5px solid var(--gray-background);
   padding: 1px 1em;
   margin-left: 0;
 }
@@ -152,7 +152,7 @@ ${buttonsCSS}
 }
 
 .sidebar-md table th {
-  background: var(--header-background);
+  background: var(--gray-background);
 }
 
 .sidebar-md table th,

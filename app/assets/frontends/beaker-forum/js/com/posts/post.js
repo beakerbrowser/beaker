@@ -33,8 +33,7 @@ export class Post extends LitElement {
   static get properties () {
     return {
       post: {type: Object},
-      userUrl: {type: String, attribute: 'user-url'},
-      expanded: {type: Boolean}
+      userUrl: {type: String, attribute: 'user-url'}
     }
   }
 
@@ -46,16 +45,6 @@ export class Post extends LitElement {
     super()
     this.post = null
     this.userUrl = ''
-  }
-
-  getUserVote () {
-    return uwg.votes.getVoteBy(this.post && this.post.votes, this.userUrl)
-  }
-
-  getKarma () {
-    var votes = this.post && this.post.votes
-    if (!votes) return undefined
-    return votes.upvotes.length - votes.downvotes.length
   }
 
   getDriveTypeIcon (dt) {
@@ -80,12 +69,9 @@ export class Post extends LitElement {
     var viewProfileUrl = '/users/' + this.post.drive.id
     var viewPostUrl = viewProfileUrl + '/posts/' + this.post.url.split('/').pop()
     var href = isLink ? postMeta.href : viewPostUrl
-    var userVote = this.getUserVote()
-    var karma = this.getKarma()
     var author = this.post.drive
     var ctime = this.post.stat.ctime // TODO replace with rtime
     var isFullpage = this.hasAttribute('fullpage')
-    var isExpanded = this.hasAttribute('expanded')
     var icon = isLink ? 'fas fa-link' : isTextPost ? 'far fa-comment-alt' : 'far fa-file'
     if (isFile) {
       if (/\.(png|jpe?g|gif)$/i.test(this.post.path)) {
@@ -99,15 +85,6 @@ export class Post extends LitElement {
 
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
-      <div class="votectrl">
-        <a class="upvote ${userVote === 1 ? 'selected' : ''}" @click=${this.onClickUpvote}>
-          <span class="fas fa-caret-up"></span>
-        </a>
-        <div class="karma ${userVote === 1 ? 'upvoted' : userVote === -1 ? 'downvoted' : ''}">${karma}</div>
-        <a class="downvote ${userVote === -1 ? 'selected' : ''}" @click=${this.onClickDownvote}>
-          <span class="fas fa-caret-down"></span>
-        </a>
-      </div>
       <div class="icon"><span class=${icon}></span></div>
       <div class="content">
         <div>
@@ -124,21 +101,18 @@ export class Post extends LitElement {
           <button class="menu transparent" @click=${this.onClickMenu}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
         <div>
-          ${isFullpage ? '' : html`
-            <button class="expander transparent" @click=${this.onClickExpander}><span class="fas fa-${isLink ? 'external-link-alt' : isExpanded ? 'compress' : 'expand'}"></span></button>
-          `}
-          by <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
-          | posted <a href=${viewPostUrl}>${timeDifference(ctime, true, 'ago')}</a>
+          <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
+          | <a href=${viewPostUrl}>${timeDifference(ctime, true, 'ago')}</a>
           | <a class="comments" href=${viewPostUrl}>
             ${this.post.numComments} ${pluralize(this.post.numComments, 'comment')}
           </a>
         </div>
-        ${isExpanded && isTextPost ? html`
+        ${isFullpage && isTextPost ? html`
           <div class="text-post-content">
             ${isMarkdown ? unsafeHTML(md.render(this.post.content)) : html`<pre>${this.post.content}</pre>`}
           </div>
         ` : ''}
-        ${isExpanded && isFile ? html`
+        ${isFullpage && isFile ? html`
           <div class="file-content">
             ${this.renderFile()}
           </div>
@@ -162,61 +136,6 @@ export class Post extends LitElement {
 
   // events
   // =
-
-  async onClickUpvote (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!this.userUrl) return
-    
-    var userVote = this.getUserVote()
-    await uwg.votes.put(this.post.url, userVote === 1 ? 0 : 1)
-    if (userVote === 1) {
-      this.post.votes.upvotes = this.post.votes.upvotes.filter(url => (url.url || url) !== this.userUrl)
-    } else {
-      this.post.votes.upvotes.push({url: this.userUrl})
-    }
-    this.requestUpdate()
-  }
-
-  async onClickDownvote (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!this.userUrl) return
-    
-    var userVote = this.getUserVote()
-    await uwg.votes.put(this.post.url, userVote === -1 ? 0 : -1)
-    if (userVote === -1) {
-      this.post.votes.downvotes = this.post.votes.downvotes.filter(url => (url.url || url) !== this.userUrl)
-    } else {
-      this.post.votes.downvotes.push({url: this.userUrl})
-    }
-    this.requestUpdate()
-  }
-
-  async onClickExpander (e) {
-    e.preventDefault()
-    var isLink = this.post.path.endsWith('.goto')
-    var isTextPost = /\.(md|txt)$/.test(this.post.path)
-    if (isLink) {
-      window.open(this.post.stat.metadata.href)
-    } else {
-      if (this.hasAttribute('expanded')) {
-        this.removeAttribute('expanded')
-      } else {
-        try {
-          if (isTextPost && !this.post.content) {
-            let drive = new Hyperdrive(location)
-            let filename = this.post.path.split('/').pop()
-            this.post.content = await drive.readFile(`/users/${this.post.drive.id}/beaker-forum/posts/${filename}`)
-          }
-          this.setAttribute('expanded', '')
-        } catch (e) {
-          console.log(e)
-          toast.create('Failed to load post', 'error')
-        }
-      }
-    }
-  }
 
   onClickMenu (e) {
     e.preventDefault()

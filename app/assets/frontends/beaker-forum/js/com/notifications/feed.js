@@ -55,7 +55,7 @@ export class NotificationsFeed extends LitElement {
   }
 
   fetchTargetContent (notification) {
-    if (notification.event === 'comment' || notification.event === 'vote') {
+    if (notification.event === 'comment') {
       if (notification.detail.href.includes('/comments/')) {
         let urlp = new URL(notification.detail.href)
         return uwg.comments.get(urlp.origin, urlp.pathname).catch(err => notification.detail.href)
@@ -69,7 +69,7 @@ export class NotificationsFeed extends LitElement {
   }
 
   getHref (notification) {
-    if (notification.event === 'comment' || notification.event === 'vote') {
+    if (notification.event === 'comment') {
       let urlp = new URL(notification.detail.href)
       let author = urlp.hostname
       let filename = urlp.pathname.split('/').pop()
@@ -86,12 +86,6 @@ export class NotificationsFeed extends LitElement {
     if (notification.event === 'comment') {
       return 'far fa-comment'
     }
-    if (notification.event === 'vote') {
-      if (notification.detail.vote == -1) {
-        return 'fas fa-arrow-down'
-      }
-      return 'fas fa-arrow-up'
-    }
     return ''
   }
 
@@ -99,17 +93,11 @@ export class NotificationsFeed extends LitElement {
     if (notification.event === 'comment') {
       return 'replied to'
     }
-    if (notification.event === 'vote') {
-      if (notification.detail.vote == -1) {
-        return 'downvoted'
-      }
-      return 'upvoted'
-    }
     return 'did something? to'
   }
 
   getContentType (notification) {
-    if (notification.event === 'comment' || notification.event === 'vote') {
+    if (notification.event === 'comment') {
       if (notification.detail.href.includes('/comments/')) {
         return 'your comment'
       }

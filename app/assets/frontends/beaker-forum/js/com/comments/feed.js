@@ -44,33 +44,11 @@ export class CommentsFeed extends LitElement {
         sort: 'name',
         reverse: true
       }, {includeProfiles: true, includeContent: true})
-      /* dont await */ this.loadFeedAnnotations(comments)
       this.comments = comments
       console.log(this.comments)
     } catch (e) {
       this.error = e.toString()
     }
-  }
-
-  async loadFeedAnnotations (comments) {
-    for (let comment of comments) {
-      comment.votes = await uwg.votes.tabulate(comment.url)
-      this.requestUpdate()
-    }
-  }
-
-  getUserVote (comment) {
-    var votes = comment && comment.votes
-    if (!votes || !this.user) return 0
-    if (votes.upvotes.find(u => u.url === this.user.url)) return 1
-    if (votes.downvotes.find(u => u.url === this.user.url)) return -1
-    return 0
-  }
-
-  getKarma (comment) {
-    var votes = comment && comment.votes
-    if (!votes) return undefined
-    return votes.upvotes.length - votes.downvotes.length
   }
 
   render () {
@@ -88,19 +66,8 @@ export class CommentsFeed extends LitElement {
         ` : html`
           ${repeat(this.comments, comment => {
             var contextUrl = fromPostUrlToAppRoute(comment.stat.metadata.href)
-            var userVote = this.getUserVote(comment)
-            var karma = this.getKarma(comment)
             return html`
               <div class="comment">
-                <div class="votectrl">
-                  <a class="upvote ${userVote === 1 ? 'selected' : ''}" @click=${e => this.onClickUpvote(e, comment)}>
-                    <span class="fas fa-caret-up"></span>
-                  </a>
-                  <div class="karma ${userVote === 1 ? 'upvoted' : userVote === -1 ? 'downvoted' : ''}">${karma}</div>
-                  <a class="downvote ${userVote === -1 ? 'selected' : ''}" @click=${e => this.onClickDownvote(e, comment)}>
-                    <span class="fas fa-caret-down"></span>
-                  </a>
-                </div>
                 <div class="content">
                   <div class="header">
                     <a class="title" href="/users/${comment.drive.id}">${comment.drive.title}</a>
@@ -140,26 +107,6 @@ export class CommentsFeed extends LitElement {
 
   // events
   // =
-
-  async onClickUpvote (e, comment) {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    var userVote = this.getUserVote(comment)
-    await uwg.votes.put(comment.url, userVote === 1 ? 0 : 1)
-    comment.votes = await uwg.votes.tabulate(comment.url)
-    this.requestUpdate()
-  }
-
-  async onClickDownvote (e, comment) {
-    e.preventDefault()
-    e.stopPropagation()
-    
-    var userVote = this.getUserVote(comment)
-    await uwg.votes.put(comment.url, userVote === -1 ? 0 : -1)
-    comment.votes = await uwg.votes.tabulate(comment.url)
-    this.requestUpdate()
-  }
 
   onClickMenu (e, comment) {
     e.preventDefault()

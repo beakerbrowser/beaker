@@ -18,7 +18,7 @@ ${spinnerCSS}
 .search-container {
   position: relative;
   height: 36px;
-  width: 240px;
+  width: 210px;
   font-size: 13px;
 }
 

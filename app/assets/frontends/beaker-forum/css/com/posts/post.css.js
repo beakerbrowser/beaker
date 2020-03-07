@@ -1,16 +1,14 @@
 import {css} from '../../../vendor/lit-element/lit-element.js'
 import buttonsCSS from '../../buttons.css.js'
 import tooltipCSS from '../tooltip.css.js'
-import votectrlCSS from '../votectrl.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
 ${tooltipCSS}
-${votectrlCSS}
 
 :host {
   display: grid;
-  grid-template-columns: 30px 50px minmax(0, 1fr);
+  grid-template-columns: 50px minmax(0, 1fr);
   align-items: flex-start;
   letter-spacing: 0.5px;
   font-size: 14px;
@@ -19,7 +17,7 @@ ${votectrlCSS}
 }
 
 :host([singlepage]) {
-  grid-template-columns: 30px 50px minmax(0, 1fr);
+  grid-template-columns: 50px minmax(0, 1fr);
 }
 
 a {
@@ -31,17 +29,6 @@ a {
 
 a:hover {
   text-decoration: underline;
-}
-
-:host([singlepage]) .votectrl {
-  top: -4px;
-}
-
-:host([singlepage]) .votectrl .fas {
-  font-size: 20px;
-}
-:host([singlepage]) .votectrl .karma {
-  font-size: 18px;
 }
 
 .icon {
@@ -62,7 +49,7 @@ a:hover {
 
 .title {
   font-size: 17px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--post-title-color);
 }
 
@@ -88,36 +75,19 @@ button.menu {
   padding: 0;
 }
 
-button.expander {
-  position: relative;
-  top: -1px;
-  left: 0;
-  margin: 0;
-  padding: 0;
-  margin-right: 2px;
-  opacity: 0.75;
+.author {
+  color: green;
 }
 
 .text-post-content {
   color: #333;
   font-size: 15px;
   letter-spacing: 0.25px;
-  max-width: 50em;
-}
-
-:host([singlepage]) .text-post-content {
-  border: 1px dashed #dde;
-  border-left: 0;
-  border-right: 0;
-  padding: 24px 0;
-  margin-top: 24px;
-}
-
-:host(:not([singlepage])) .text-post-content {
-  border: 1px solid #ccd;
-  padding: 16px;
-  border-radius: 4px;
   margin-top: 10px;
+}
+
+.text-post-content > * {
+  max-width: 50em;
 }
 
 .text-post-content > :first-child {

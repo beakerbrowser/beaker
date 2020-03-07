@@ -58,8 +58,7 @@ export class PostsFeed extends LitElement {
 
   async loadFeedAnnotations (posts) {
     for (let post of posts) {
-      ;[post.votes, post.numComments] = await Promise.all([
-        uwg.votes.tabulate(post.url),
+      ;[post.numComments] = await Promise.all([
         uwg.comments.count({href: post.url})
       ])
       this.requestFeedPostsUpdate()

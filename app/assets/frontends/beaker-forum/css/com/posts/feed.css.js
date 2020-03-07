@@ -9,11 +9,13 @@ ${spinnerCSS}
 :host {
   display: block;
   margin-bottom: 40px;
+  margin-top: -10px;
 }
 
 beaker-post {
-  padding: 10px 6px;
+  padding: 16px 6px 10px;
   margin: 0;
+  border-bottom: 1px solid #eef;
 }
 
 beaker-paginator {

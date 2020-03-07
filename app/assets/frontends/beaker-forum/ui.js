@@ -131,23 +131,22 @@ export class App extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
-      <div class="banner"></div>
       <header>
         <a class="brand" href="/">
           <img src="/thumb" @error=${this.onErrorBrandThumb}>
           <strong>${this.groupInfo.title}</strong>
         </a>
         <span class="spacer"></span>
-        <beaker-search-input placeholder="Search this group"></beaker-search-input>
         ${this.session?.user?.group?.isMember ? html`
           <a class="compose-btn" href="/compose">New Post</a>
+          <beaker-search-input placeholder="Search this group"></beaker-search-input>
           <a
             class=${classMap({'circle-btn': true, highlighted: !!this.notificationCount})}
             href="/notifications"
             title="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
             data-tooltip="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
           >
-            ${this.notificationCount ? this.notificationCount : html`<span class="far fa-fw fa-bell"></span>`}
+            ${this.notificationCount ? this.notificationCount : html`<span class="fas fa-fw fa-bell"></span>`}
           </a>
           <a href="/users/${this.session.user.group.userid}">
             <img class="avatar" src="${this.session.user.url}/thumb">

@@ -31,16 +31,6 @@ export class CommentsThread extends LitElement {
     this.composerPlaceholder = undefined
   }
 
-  getUserVote (comment) {
-    return uwg.votes.getVoteBy(comment && comment.votes, this.userUrl)
-  }
-
-  getKarma (comment) {
-    var votes = comment && comment.votes
-    if (!votes) return undefined
-    return votes.upvotes.length - votes.downvotes.length
-  }
-
   render () {
     return html`
       <link rel="stylesheet" href="/.ui/webfonts/fontawesome.css">
@@ -62,19 +52,8 @@ export class CommentsThread extends LitElement {
   }
 
   renderComment (comment) {
-    var userVote = this.getUserVote(comment)
-    var karma = this.getKarma(comment)
     return html`
       <div class="comment">
-        <div class="votectrl">
-          <a class="upvote ${userVote === 1 ? 'selected' : ''}" @click=${e => this.onClickUpvote(e, comment)}>
-            <span class="fas fa-caret-up"></span>
-          </a>
-          <div class="karma ${userVote === 1 ? 'upvoted' : userVote === -1 ? 'downvoted' : ''}">${karma}</div>
-          <a class="downvote ${userVote === -1 ? 'selected' : ''}" @click=${e => this.onClickDownvote(e, comment)}>
-            <span class="fas fa-caret-down"></span>
-          </a>
-        </div>
         <div class="content">
           <div class="header">
             <a class="title" href="/users/${comment.drive.id}">${comment.drive.title}</a>
@@ -87,13 +66,13 @@ export class CommentsThread extends LitElement {
               <a href="#" @click=${e => this.onClickToggleReply(e, comment.url)}>
                 ${this.activeReplies[comment.url]
                   ? html`<span class="fas fa-fw fa-times"></span> Cancel reply`
-                  : html`<span class="fas fa-fw fa-reply"></span> Reply`}
+                  : html`<span class="fas fa-fw fa-comment-alt"></span> Reply`}
               </a>
               ${comment.drive.url === this.userUrl ? html`
                 <a href="#" @click=${e => this.onClickToggleEdit(e, comment.url)}>
                   ${this.activeEdits[comment.url]
                     ? html`<span class="fas fa-fw fa-times"></span> Cancel edit`
-                    : html`<span class="fas fa-fw fa-pencil-alt"></span> Edit`}
+                    : html`<span class="fas fa-fw fa-pen-square"></span> Edit`}
                 </a>
               ` : ''}
             ` : ''}
@@ -148,36 +127,6 @@ export class CommentsThread extends LitElement {
 
   onSubmitEdit (e, url) {
     this.activeEdits[url] = false
-    this.requestUpdate()
-  }
-
-  async onClickUpvote (e, comment) {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!this.userUrl) return
-    
-    var userVote = this.getUserVote(comment)
-    await uwg.votes.put(comment.url, userVote === 1 ? 0 : 1)
-    if (userVote === 1) {
-      comment.votes.upvotes = comment.votes.upvotes.filter(url => url !== this.userUrl)
-    } else {
-      comment.votes.upvotes.push(this.userUrl)
-    }
-    this.requestUpdate()
-  }
-
-  async onClickDownvote (e, comment) {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!this.userUrl) return
-    
-    var userVote = this.getUserVote(comment)
-    await uwg.votes.put(comment.url, userVote === -1 ? 0 : -1)
-    if (userVote === -1) {
-      comment.votes.downvotes = comment.votes.downvotes.filter(url => url !== this.userUrl)
-    } else {
-      comment.votes.downvotes.push(this.userUrl)
-    }
     this.requestUpdate()
   }
 

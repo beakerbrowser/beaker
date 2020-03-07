@@ -17,18 +17,13 @@ body {
   --body-background: #fff;
   --body-color: #333;
 
-  --banner-height: 150px;
-  --banner-background-image: url("/banner");
-  --banner-background-color: #0072ff;
-  --banner-background-position: center center;
-  --banner-background-size: contain;
-  --banner-background-repeat: no-repeat;
+  --gray-background: #f5f5fb;
 
-  --header-background: #f5f5fb;
+  --header-background: #fff;
   --header-color: #445;
   --header-search-color: #889;
   --header-search-background: #fff;
-  --header-search-border-color: #aab;
+  --header-search-border-color: #ccd;
   --header-notifications-color: #889;
   --header-notifications-border-color: #aab;
   --header-notifications-color--highlighted: red;
@@ -51,8 +46,6 @@ body {
   --post-color: #889;
   --post-title-color: #444;
   --post-link-color: #778;
-
-  --vote-color: var(--red);
 
   background: var(--body-background);
   color: var(--body-color);

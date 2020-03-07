@@ -63,16 +63,6 @@ ${tooltipCSS}
   }
 }
 
-.banner {
-  height: var(--banner-height);
-  width: 100%;
-  background-color: var(--banner-background-color);
-  background-image: var(--banner-background-image);
-  background-position: var(--banner-background-position);
-  background-size: var(--banner-background-size);
-  background-repeat: var(--banner-background-repeat);
-}
-
 header {
   display: flex;
   align-items: center;
@@ -81,7 +71,7 @@ header {
   background: var(--header-background);
   color: var(--header-color);
   padding: 0 20px 0 10px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 header a {
@@ -105,18 +95,18 @@ header a:hover {
 header .brand {
   display: flex;
   align-items: center;
+  font-family: "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
   font-size: 23px;
   line-height: 1;
 }
 
 header .brand img {
   display: block;
-  margin-right: 10px;
-  width: 70px;
-  height: 70px;
+  margin: 0 10px 0 4px;
+  width: 38px;
+  height: 38px;
   object-fit: cover;
   border-radius: 50%;
-  border: 5px solid #fff;
 }
 
 header .avatar {
@@ -130,19 +120,14 @@ header .circle-btn {
   display: block;
   box-sizing: border-box;
   padding: 0;
-  width: 28px;
-  height: 28px;
   line-height: 26px;
-  font-size: 13px;
+  font-size: 18px;
   text-align: center;
-  border-radius: 50%;
   color: var(--header-notifications-color);
-  border: 1px solid var(--header-notifications-border-color);
-  background: transparent;
 }
 
 header .circle-btn:hover {
-  border-color: var(--link-color);
+  color: var(--link-color);
 }
 
 header .circle-btn.highlighted {

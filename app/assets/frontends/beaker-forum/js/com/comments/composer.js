@@ -58,6 +58,8 @@ export class CommentComposer extends LitElement {
         placeholder="Enter your comment here"
         @keydown=${this.onKeydownTextarea}
         @keyup=${this.onChangeTextarea}
+        @focus=${e => { this.classList.add('focused') }}
+        @blur=${e => { this.classList.remove('focused') }}
       >${this.draftText}</textarea>
       <div class="actions">
         <button
