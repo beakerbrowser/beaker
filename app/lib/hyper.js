@@ -130,22 +130,25 @@ export const BUILTIN_TYPES = [
   {type: 'module', title: 'Module'}
 ]
 
+export const FRONTEND_CATEGORIES = [
+  {id: 'media', title: 'Media'},
+  {id: 'groups', title: 'Groups'},
+  {id: 'code', title: 'Code'},
+  {id: 'templates', title: 'Templates'}
+]
+
 export const BUILTIN_FRONTENDS = [
-  {url: 'null:files', title: 'File-share', img: 'files-drive', manifest: {frontend: {drive_types: undefined}}},
-  {url: 'null:website', title: 'Website Starter Template', img: 'website', scaffold: WEBSITE_SCAFFOLD, manifest: {frontend: {drive_types: 'website'}}},
-  {url: 'builtin:beaker-wiki', title: 'Markdown Wiki', img: 'beaker-wiki',  manifest: {frontend: {drive_types: 'website'}}},
-  {url: 'builtin:beaker-code-snippet', title: 'Code Snippet', img: 'beaker-code-snippet', manifest: {frontend: {drive_types: 'website'}}},
-  {url: 'builtin:beaker-module', title: 'Code Module', img: 'beaker-module', scaffold: MODULE_SCAFFOLD, manifest: {frontend: {drive_types: 'module'}}},
-  {url: 'builtin:beaker-forum', title: 'Link-sharing Forum', img: 'beaker-forum', manifest: {frontend: {drive_types: 'group'}}}
+  {category: 'media', url: 'builtin:beaker-wiki', title: 'Markdown Wiki', img: 'beaker-wiki',  manifest: {frontend: {drive_type: 'website'}}},
+  {category: 'code', url: 'builtin:beaker-code-snippet', title: 'Code Snippet', img: 'beaker-code-snippet', manifest: {frontend: {drive_type: 'website'}}},
+  {category: 'code', url: 'builtin:beaker-module', title: 'Module Repository', img: 'beaker-module', scaffold: MODULE_SCAFFOLD, manifest: {frontend: {drive_type: 'module'}}},
+  {category: 'groups', url: 'builtin:beaker-forum', title: 'Discussion Group', img: 'beaker-forum', manifest: {frontend: {drive_type: 'group'}}},
+  {category: 'templates', url: 'null:simple-website', title: 'Simple Website', img: 'website', scaffold: WEBSITE_SCAFFOLD, manifest: {frontend: {drive_type: 'website'}}},
+  {category: 'templates', url: 'null:empty-website', title: 'Empty Website', img: 'none', scaffold: {}, manifest: {frontend: {drive_type: 'website'}}}
 ]
 
 export function filterFrontendByType (manifest, targetType) {
-  var matchingTypes = _get(manifest, 'frontend.drive_types')
-  matchingTypes = Array.isArray(matchingTypes) ? matchingTypes : [matchingTypes]
-  for (let matchingType of matchingTypes) {
-    if (matchingType === '*') return true
-    if (!matchingType && !targetType) return true
-    if (matchingType === targetType) return true
-  }
+  var matchingType = _get(manifest, 'frontend.drive_type')
+  if (!matchingType && !targetType) return true
+  if (matchingType === targetType) return true
   return false
 }

@@ -170,6 +170,7 @@ function getDefaultWidth (view) {
 }
 
 function getDefaultHeight (view) {
+  if (view.modalName === 'create-drive') return 432
   if (view.modalName === 'select-file') return 460
   return 300
 }

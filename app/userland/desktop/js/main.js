@@ -4,7 +4,6 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { EditBookmarkPopup } from 'beaker://library/js/com/edit-bookmark-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
-import * as newDriveDropdown from 'beaker://app-stdlib/js/com/new-drive-dropdown.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as desktop from './lib/desktop.js'
 import 'beaker://library/js/views/drives.js'
@@ -103,17 +102,8 @@ class DesktopApp extends LitElement {
   // =
 
   async onClickNew (e) {
-    e.preventDefault()
-    e.stopPropagation()
-
-    var btn = e.currentTarget
-    var rect = btn.getClientRects()[0]
-    btn.classList.add('pressed')
-    await newDriveDropdown.create({
-      x: rect.left - 5,
-      y: 50
-    })
-    btn.classList.remove('pressed')
+    var drive = await Hyperdrive.create()
+    window.location = drive.url
   }
 
   async onClickAdd () {

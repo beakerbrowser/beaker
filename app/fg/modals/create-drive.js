@@ -7,7 +7,7 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
 import _groupBy from 'lodash.groupby'
-import { BUILTIN_TYPES, BUILTIN_FRONTENDS, filterFrontendByType } from '../../lib/hyper'
+import { FRONTEND_CATEGORIES, BUILTIN_FRONTENDS, filterFrontendByType } from '../../lib/hyper'
 
 class CreateDriveModal extends LitElement {
   static get properties () {
@@ -39,7 +39,8 @@ class CreateDriveModal extends LitElement {
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 450px;
+      grid-template-columns: 1fr 540px;
+      grid-gap: 10px;
       margin-bottom: 10px;
     }
 
@@ -54,7 +55,7 @@ class CreateDriveModal extends LitElement {
     select {
       width: 100%;
       display: block;
-      height: 130px;
+      height: 378px;
       border-radius: 4px;
       border: 1px solid #bbc;
       font-size: 13px;
@@ -88,26 +89,29 @@ class CreateDriveModal extends LitElement {
 
     img.preview {
       display: block;
-      width: 450px;
-      height: 100%;
+      width: 540px;
+      height: 280px;
       border: 1px solid #bbc;
       border-radius: 4px;
       object-fit: cover;
       box-sizing: border-box;
     }
 
-    .ctrls {
-      padding-right: 10px;
-    }
-
     .form-actions {
       display: flex;
-      justify-content: space-between;
     }
     
     .form-actions button {
       padding: 6px 12px;
       font-size: 12px;
+    }
+
+    .form-actions button:first-child {
+      margin-right: 5px;
+    }
+
+    .form-actions button:last-child {
+      margin-left: auto;
     }
     `]
   }
@@ -138,8 +142,8 @@ class CreateDriveModal extends LitElement {
 
     if (!this.frontend || !this.availableFrontends.find(fe => fe.url === this.frontend)) {
       if (this.type) {
-        let fe = this.getMatchingFrontends(this.type)
-        this.frontend = fe[0] ? fe[0].url : ''
+        let fe = this.availableFrontends.filter(fe => filterFrontendByType(fe.manifest, this.type))[0]
+        this.frontend = fe ? fe.url : ''
       }
       if (!this.type) {
         this.frontend = this.availableFrontends[0].url
@@ -162,8 +166,8 @@ class CreateDriveModal extends LitElement {
     return BUILTIN_FRONTENDS
   }
 
-  getMatchingFrontends (type) {
-    return this.availableFrontends.filter(t => filterFrontendByType(t.manifest, type))
+  getMatchingFrontends (cat) {
+    return this.availableFrontends.filter(fe => fe.category === cat)
   }
 
   // rendering
@@ -177,30 +181,32 @@ class CreateDriveModal extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">
-          Create New Hyperdrive
+          Create New Website
         </h1>
         <form @submit=${this.onSubmit}>
           <div class="layout">
-            <div class="ctrls">
-              <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" placeholder="Title" />
-              ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
-
-              <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
-                
+            <div class="left">             
               <select name="frontend" multiple @change=${this.onChangeFrontend}>
-                ${repeat(BUILTIN_TYPES, ({type, title}) => html`
+                ${repeat(FRONTEND_CATEGORIES, ({id, title}) => html`
                   <optgroup label="&nbsp;&nbsp;${title}">
-                    ${repeat(this.getMatchingFrontends(type), fe => feopt(fe.url, fe.title))}
+                    ${repeat(this.getMatchingFrontends(id), fe => feopt(fe.url, fe.title))}
                   </optgroup>
                 `)}
               </select>
             </div>
+            <div class="right">
+              <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" placeholder="Title" />
+              ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
 
-            <img class="preview" src="beaker://assets/img/frontends/${frontendImg}.png">
+              <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
+
+              <img class="preview" src="beaker://assets/img/frontends/${frontendImg}.png">
+            </div>
           </div>
 
           <div class="form-actions">
-            <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="5">Cancel</button>
+            <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="6">Cancel</button>
+            <button type="button" @click=${this.onClickFromFolder} class="cancel" tabindex="5">From Folder</button>
             <button type="submit" class="primary" tabindex="4">Create</button>
           </div>
         </form>
@@ -217,11 +223,6 @@ class CreateDriveModal extends LitElement {
 
   onChangeDescription (e) {
     this.description = e.target.value.trim()
-  }
-
-  onChangeType (e) {
-    this.type = e.target.value.trim()
-    this.frontend = this.matchingFrontends[0].url
   }
 
   onChangeFrontend (e) {
@@ -244,6 +245,9 @@ class CreateDriveModal extends LitElement {
       this.errors = {title: 'Required'}
       return
     }
+    if (!this.frontend) {
+      return
+    }
 
     this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div>`
 
@@ -252,10 +256,10 @@ class CreateDriveModal extends LitElement {
       var info = {
         title: this.title,
         description: this.description,
-        type: this.type !== '' ? this.type : undefined,
+        type: frontend.manifest.frontend.drive_type,
         author: this.author,
         links: this.links,
-        frontend: frontend && !frontend.url.startsWith('null:') ? frontend.url : undefined,
+        frontend: !frontend.url.startsWith('null:') ? frontend.url : undefined,
         prompt: false
       }
       var url = await bg.hyperdrive.createDrive(info)
@@ -268,6 +272,32 @@ class CreateDriveModal extends LitElement {
           }
         }
       }
+      this.cbs.resolve({url})
+    } catch (e) {
+      this.cbs.reject(e.message || e.toString())
+    }
+  }
+
+  async onClickFromFolder (e) {
+    let btn = e.currentTarget
+    e.preventDefault()
+
+    var folder = await bg.beakerBrowser.showOpenDialog({
+      title: 'Select folder',
+      buttonLabel: 'Use folder',
+      properties: ['openDirectory']
+    })
+    if (!folder || !folder.length) return
+
+    btn.innerHTML = `<span class="spinner"></span>`
+    Array.from(this.shadowRoot.querySelectorAll('button'), b => b.setAttribute('disabled', 'disabled'))
+  
+    try {
+      var url = await bg.hyperdrive.createDrive({
+        title: folder[0].split('/').pop(),
+        prompt: false
+      })
+      await bg.hyperdrive.importFromFilesystem({src: folder[0], dst: url})
       this.cbs.resolve({url})
     } catch (e) {
       this.cbs.reject(e.message || e.toString())
