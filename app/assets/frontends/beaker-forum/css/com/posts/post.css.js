@@ -50,7 +50,12 @@ a:hover {
 .title {
   font-size: 17px;
   font-weight: 600;
-  color: var(--post-title-color);
+  color: var(--post-title-color--unread);
+}
+
+:host(.read) .title {
+  font-weight: 500;
+  color: var(--post-title-color--read);
 }
 
 :host([singlepage]) .title {

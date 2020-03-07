@@ -1,6 +1,7 @@
 import { LitElement, html } from '../../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../../vendor/lit-element/lit-html/directives/repeat.js'
 import * as uwg from '../../lib/uwg.js'
+import * as isreadDb from '../../lib/isread-db.js'
 import feedCSS from '../../../css/com/posts/feed.css.js'
 import './post.js'
 import '../paginator.js'
@@ -40,6 +41,9 @@ export class PostsFeed extends LitElement {
         sort: 'name',
         reverse: true
       }, {includeProfiles: true})
+      for (let post of posts) {
+        post.isRead = await isreadDb.get(`${post.drive.id}:${post.path.split('/').pop()}`)
+      }
       /* dont await */ this.loadFeedAnnotations(posts)
       this.posts = posts
     } catch (e) {
@@ -80,6 +84,7 @@ export class PostsFeed extends LitElement {
         ` : html`
           ${repeat(this.posts, post => html`
             <beaker-post
+              class="${post.isRead ? 'read' : 'unread'}"
               .post=${post}
               user-url="${this.user ? this.user.url : ''}"
               @deleted=${this.onPostDeleted}

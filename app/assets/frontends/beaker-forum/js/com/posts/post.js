@@ -7,6 +7,7 @@ import { writeToClipboard } from '../../lib/clipboard.js'
 import { toNiceDomain, toNiceDriveType, pluralize } from '../../lib/strings.js'
 import MarkdownIt from '../../../vendor/markdown-it.js'
 import * as uwg from '../../lib/uwg.js'
+import * as isreadDb from '../../lib/isread-db.js'
 import * as contextMenu from '../context-menu.js'
 import * as toast from '../toast.js'
 
@@ -89,6 +90,9 @@ export class Post extends LitElement {
       <div class="content">
         <div>
           <a class="title" href=${href} title=${postMeta.title}>${postMeta.title}</a>
+          ${isFullpage ? '' : html`
+            <a @click=${this.onToggleIsread}><span class="far fa${this.post.isRead ? '-check' : ''}-square"></span></a>
+          `}
           ${postMeta['drive-type'] ? html`
             <span class="drive-type">
               <span class=${this.getDriveTypeIcon(postMeta['drive-type'])}></span>
@@ -103,9 +107,7 @@ export class Post extends LitElement {
         <div>
           <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
           | <a href=${viewPostUrl}>${timeDifference(ctime, true, 'ago')}</a>
-          | <a class="comments" href=${viewPostUrl}>
-            ${this.post.numComments} ${pluralize(this.post.numComments, 'comment')}
-          </a>
+          | <a class="comments" href=${viewPostUrl}> ${this.post.numComments} ${pluralize(this.post.numComments, 'comment')}</a>
         </div>
         ${isFullpage && isTextPost ? html`
           <div class="text-post-content">
@@ -170,6 +172,20 @@ export class Post extends LitElement {
       style: `padding: 4px 0`,
       items
     })
+  }
+
+  async onToggleIsread () {
+    this.post.isRead = !this.post.isRead
+    if (this.post.isRead) {
+      await isreadDb.put(`${this.post.drive.id}:${this.post.path.split('/').pop()}`)
+      this.classList.add('read')
+      this.classList.remove('unread')
+    } else {
+      await isreadDb.remove(`${this.post.drive.id}:${this.post.path.split('/').pop()}`)
+      this.classList.remove('read')
+      this.classList.add('unread')
+    }
+    this.requestUpdate()
   }
 
   async onClickChangeTitle () {

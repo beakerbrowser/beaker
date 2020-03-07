@@ -44,7 +44,8 @@ body {
   --button-color--primary--hover: #fff;
 
   --post-color: #889;
-  --post-title-color: #444;
+  --post-title-color--read: #778;
+  --post-title-color--unread: #444;
   --post-link-color: #778;
 
   background: var(--body-background);

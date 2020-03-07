@@ -1,5 +1,6 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import * as uwg from '../lib/uwg.js'
+import * as isreadDb from '../lib/isread-db.js'
 import * as toast from '../com/toast.js'
 import '../com/profiles/aside.js'
 import '../com/posts/post.js'
@@ -48,6 +49,8 @@ export class PostView extends LitElement {
     await loadCommentAnnotations(comments)
     post.comments = comments
     await this.requestUpdate()
+
+    /* dont await */ isreadDb.put(`${post.drive.id}:${post.path.split('/').pop()}`)
   }
 
   render () {
