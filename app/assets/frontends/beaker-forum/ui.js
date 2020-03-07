@@ -146,7 +146,8 @@ export class App extends LitElement {
             title="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
             data-tooltip="${this.notificationCount || 'No'} ${pluralize(this.notificationCount || 0, 'notification')}"
           >
-            ${this.notificationCount ? this.notificationCount : html`<span class="fas fa-fw fa-bell"></span>`}
+            <span class="fas fa-fw fa-bell"></span>
+            ${this.notificationCount ? html`<small class="fas fa-circle"></small>` : ''}
           </a>
           <a href="/users/${this.session.user.group.userid}">
             <img class="avatar" src="${this.session.user.url}/thumb">

@@ -26,8 +26,7 @@ body {
   --header-search-border-color: #ccd;
   --header-notifications-color: #889;
   --header-notifications-border-color: #aab;
-  --header-notifications-color--highlighted: red;
-  --header-notifications-border-color--highlighted: red;
+  --header-notifications-color--highlighted: var(--blue);
 
   --link-color: var(--blue);
 

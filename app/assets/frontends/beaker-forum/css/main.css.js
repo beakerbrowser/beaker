@@ -117,6 +117,7 @@ header .avatar {
 }
 
 header .circle-btn {
+  position: relative;
   display: block;
   box-sizing: border-box;
   padding: 0;
@@ -131,8 +132,15 @@ header .circle-btn:hover {
 }
 
 header .circle-btn.highlighted {
+}
+
+header .circle-btn small {
+  position: absolute;
+  right: -1px;
+  top: 0px;
   color: var(--header-notifications-color--highlighted);
-  border-color: var(--header-notifications-border-color--highlighted);
+  line-height: 1;
+  font-size: 8px;
 }
 
 header beaker-search-input {
