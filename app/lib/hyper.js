@@ -139,6 +139,7 @@ export const FRONTEND_CATEGORIES = [
 
 export const BUILTIN_FRONTENDS = [
   {category: 'media', url: 'builtin:beaker-wiki', title: 'Markdown Wiki', img: 'beaker-wiki',  manifest: {frontend: {drive_type: 'website'}}},
+  {category: 'media', url: 'builtin:beaker-photo-album', title: 'Photo Album', img: 'beaker-photo-album',  manifest: {frontend: {drive_type: 'website'}}},
   {category: 'code', url: 'builtin:beaker-code-snippet', title: 'Code Snippet', img: 'beaker-code-snippet', manifest: {frontend: {drive_type: 'website'}}},
   {category: 'code', url: 'builtin:beaker-module', title: 'Module Repository', img: 'beaker-module', scaffold: MODULE_SCAFFOLD, manifest: {frontend: {drive_type: 'module'}}},
   {category: 'groups', url: 'builtin:beaker-forum', title: 'Discussion Group', img: 'beaker-forum', manifest: {frontend: {drive_type: 'group'}}},
