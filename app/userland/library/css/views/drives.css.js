@@ -12,10 +12,12 @@ ${spinnerCSS}
 
 a {
   text-decoration: none;
+  cursor: initial;
 }
 
-a:hover {
+a[href]:hover {
   text-decoration: underline;
+  cursor: pointer;
 }
 
 .drives {
@@ -46,7 +48,6 @@ a:hover {
 .drive a {
   color: #99a;
   font-weight: 600;
-  cursor: pointer;
   letter-spacing: -0.5px;
 }
 

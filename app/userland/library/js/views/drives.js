@@ -228,7 +228,7 @@ export class DrivesView extends LitElement {
         </div>
         <div class="forks">
           ${numForks > 0 ? html`
-            <a @click=${e => this.onClickViewForksOf(e, drive)}>
+            <a @click=${e => this.onClickViewForksOf(e, drive)} href="#">
               ${numForks} ${pluralize(numForks, 'fork')}
               ${drive.showForks ? html`<span class="fas fa-fw fa-caret-down"></span>` : ''} 
             </a>
@@ -273,6 +273,7 @@ export class DrivesView extends LitElement {
   }
 
   onClickViewForksOf (e, drive) {
+    e.preventDefault()
     drive.showForks = !drive.showForks
     this.requestUpdate()
   }
