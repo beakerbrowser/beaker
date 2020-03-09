@@ -107,7 +107,7 @@ export class Post extends LitElement {
         <div>
           <a class="author" href=${viewProfileUrl} title=${author.title}>${author.title}</a>
           | <a href=${viewPostUrl}>${timeDifference(ctime, true, 'ago')}</a>
-          | <a class="comments" href=${viewPostUrl}> ${this.post.numComments} ${pluralize(this.post.numComments, 'comment')}</a>
+          | <a class="comments" href=${viewPostUrl} @click=${isFullpage ? this.onClickComments : undefined}> ${this.post.numComments} ${pluralize(this.post.numComments, 'comment')}</a>
         </div>
         ${isFullpage && isTextPost ? html`
           <div class="text-post-content">
@@ -209,6 +209,11 @@ export class Post extends LitElement {
     }
     toast.create('Post deleted')
     emit(this, 'deleted', {bubbles: true, composed: true, detail: {post: this.post}})
+  }
+
+  onClickComments (e) {
+    e.preventDefault()
+    this.parentNode.querySelector('beaker-comments-thread').scrollIntoView()
   }
 }
 
