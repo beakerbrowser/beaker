@@ -119,10 +119,9 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+O',
         click: function (item) {
           var win = getWin()
-          createWindowIfNone(win, (win) => {
-            dialog.showOpenDialog({ title: 'Open file...', properties: ['openFile', 'createDirectory'] }, files => {
-              if (files && files[0]) { tabManager.create(win, 'file://' + files[0], {setActive: true}) }
-            })
+          createWindowIfNone(win, async (win) => {
+            var {filePaths} = await dialog.showOpenDialog({ title: 'Open file...', properties: ['openFile', 'createDirectory'] })
+            if (filePaths && filePaths[0]) { tabManager.create(win, 'file://' + filePaths[0], {setActive: true}) }
           })
         }
       },
@@ -147,9 +146,8 @@ export function buildWindowMenu (opts = {}) {
           if (!tab) return
           const url = tab.url
           const title = tab.title
-          dialog.showSaveDialog({ title: `Save ${title} as...`, defaultPath: app.getPath('downloads') }, filepath => {
-            if (filepath) download(win, win.webContents, url, { saveAs: filepath, suppressNewDownloadEvent: true })
-          })
+          var {filePath} = await dialog.showSaveDialog({ title: `Save ${title} as...`, defaultPath: app.getPath('downloads') })
+          if (filePath) download(win, win.webContents, url, { saveAs: filePath, suppressNewDownloadEvent: true })
         }
       },
       {
