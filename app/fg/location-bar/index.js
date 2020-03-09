@@ -8,6 +8,7 @@ import { examineLocationInput } from '../../lib/urls'
 import { joinPath } from '../../lib/strings'
 import _uniqWith from 'lodash.uniqwith'
 import browserManifest from '../../bg/web-apis/manifests/internal/browser'
+import bookmarksManifest from '../../bg/web-apis/manifests/internal/bookmarks'
 import hyperdriveManifest from '../../bg/web-apis/manifests/external/hyperdrive'
 import historyManifest from '../../bg/web-apis/manifests/internal/history'
 import locationBarManifest from '../../bg/rpc-manifests/location-bar'
@@ -16,6 +17,7 @@ import viewsManifest from '../../bg/rpc-manifests/views'
 
 const bg = {
   beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
+  bookmarks: rpc.importAPI('bookmarks', bookmarksManifest),
   hyperdrive: rpc.importAPI('hyperdrive', hyperdriveManifest),
   history: rpc.importAPI('history', historyManifest),
   locationBar: rpc.importAPI('background-process-location-bar', locationBarManifest),
@@ -66,6 +68,7 @@ class LocationBar extends LitElement {
     this.hoveredSearch = ''
     this.hasExpanded = false
     this.queryIdCounter = 0
+    this.bookmarksFetch = bg.bookmarks.list()
   }
 
   selectResult (result) {
@@ -157,6 +160,13 @@ class LocationBar extends LitElement {
         <div class="icon"><i class="far fa-${isFolder(r) ? 'folder' : 'file'}"></i></div>
         <div class="title">${r.nameDecorated}</div>
         <div class="provenance">${r.path}</div>
+      `
+    }
+    if (r.isBookmark) {
+      return html`
+        <div class="icon"><i class="fas fa-star"></i></div>
+        <div class="title">${r.titleDecorated}</div>
+        <div class="provenance">${r.urlDecorated}</div>
       `
     }
     return html`
@@ -350,10 +360,46 @@ class LocationBar extends LitElement {
       }
     }
 
-    var [driveResults, historyResults] = await Promise.all([
+    var [driveResults, historyResults, bookmarks] = await Promise.all([
       inputDriveUrlp ? searchDrive(inputDriveUrlp) : [],
-      this.inputValue ? bg.history.search(this.inputValue) : []
+      this.inputValue ? bg.history.search(this.inputValue) : [],
+      this.bookmarksFetch
     ])
+
+    var bookmarkResults = []
+    {
+      let query = this.inputValue.toLowerCase()
+      for (let bookmark of bookmarks) {
+        let titleIndex = bookmark.title.toLowerCase().indexOf(query)
+        let hrefIndex = bookmark.href.indexOf(query)
+        if (titleIndex === -1 && hrefIndex === -1) {
+          continue
+        }
+
+        var titleDecorated = bookmark.title
+        if (titleIndex !== -1) {
+          let t = bookmark.title
+          let start = titleIndex
+          let end = start + query.length
+          titleDecorated = html`${t.slice(0, start)}<strong>${t.slice(start, end)}</strong>${t.slice(end)}`
+        }
+
+        var urlDecorated = bookmark.href
+        if (hrefIndex !== -1) {
+          let h = bookmark.href
+          let start = hrefIndex
+          let end = start + query.length
+          urlDecorated = html`${h.slice(0, start)}<strong>${h.slice(start, end)}</strong>${h.slice(end)}`
+        }
+
+        bookmarkResults.push({
+          isBookmark: true,
+          url: bookmark.href,
+          urlDecorated,
+          titleDecorated
+        })
+      }
+    }
 
     // abort if changes to the input have occurred since triggering these queries
     if (queryId !== this.queryIdCounter) return
@@ -364,6 +410,7 @@ class LocationBar extends LitElement {
 
     // add search results
     finalResults = finalResults.concat(driveResults)
+    finalResults = finalResults.concat(bookmarkResults)
     finalResults = finalResults.concat(historyResults)
 
     // remove duplicates
