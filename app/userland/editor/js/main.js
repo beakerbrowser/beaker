@@ -442,9 +442,9 @@ class EditorApp extends LitElement {
         <div class="empty">
           This file is not editable here.
           <div class="binary-render">
-            ${(/\.(png|jpe?g|gif)$/.test(this.pathname)) ? html`<img src=${this.url}>` : ''}
-            ${(/\.(mp4|webm|mov)$/.test(this.pathname)) ? html`<video controls><source src=${this.url}></video>` : ''}
-            ${(/\.(mp3|ogg)$/.test(this.pathname)) ? html`<audio controls><source src=${this.url}></audio>` : ''}
+            ${(/\.(png|jpe?g|gif)$/.test(this.pathname)) ? html`<img src="${this.url}?cache_buster=${Date.now}">` : ''}
+            ${(/\.(mp4|webm|mov)$/.test(this.pathname)) ? html`<video controls><source src="${this.url}?cache_buster=${Date.now}"></video>` : ''}
+            ${(/\.(mp3|ogg)$/.test(this.pathname)) ? html`<audio controls><source src="${this.url}?cache_buster=${Date.now}"></audio>` : ''}
           </div>
         </div>
       ` : this.dne ? html`
