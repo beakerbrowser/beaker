@@ -94,6 +94,23 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
+          <div class="menu-item" @click=${e => this.onNewHyperdrive()}>
+            <i class="fas fa-plus"></i>
+            <span class="label">New Website...</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onNewHyperdriveFromFolder(e)}>
+            <i class="fas fa-file-upload"></i>
+            <span class="label">New Site From Folder...</span>
+          </div>
+
+          ${''/*<div class="menu-item" @click=${this.onClickSavePage}>
+            <i class="fas fa-file-export"></i>
+            Export page as file
+          </div>*/}
+        </div>
+
+        <div class="section">
           ${''/* TODO <div class="menu-item" @click=${e => this.onShowSubmenu('applications')}>
             <span class="label">Applications</span>
             <i class="more fa fa-angle-right"></i>
@@ -226,6 +243,31 @@ class BrowserMenu extends LitElement {
     var tabState = await bg.views.getTabState('active')
     bg.beakerBrowser.downloadURL(tabState.url)
     bg.shellMenus.close()
+  }
+
+  async onNewHyperdrive () {
+    bg.shellMenus.close()
+    const url = await bg.hyperdrive.createDrive()
+    bg.beakerBrowser.openUrl(url, {setActive: true})
+  }
+
+  async onNewHyperdriveFromFolder (e) {
+    bg.shellMenus.close()
+
+    var folder = await bg.beakerBrowser.showOpenDialog({
+      title: 'Select folder',
+      buttonLabel: 'Use folder',
+      properties: ['openDirectory']
+    })
+    if (!folder || !folder.length) return
+
+    var url = await bg.hyperdrive.createDrive({
+      title: folder[0].split('/').pop(),
+      prompt: false
+    })
+    await bg.hyperdrive.importFromFilesystem({src: folder[0], dst: url})
+    
+    bg.beakerBrowser.openUrl(url, {setActive: true})
   }
 
   onClickDownloads (e) {
