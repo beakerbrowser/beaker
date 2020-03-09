@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
+import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 
 class DriveView extends LitElement {
   static get styles () {
@@ -85,10 +86,20 @@ class DriveView extends LitElement {
     }
 
     .entries > div {
+      display: flex;
+      justify-content: space-between;
       line-height: 30px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .entries > div:hover {
+      background: #fafafd;
+    }
+
+    .entries .size {
+      color: #556;
     }
 
     .entries .fa-fw {
@@ -189,6 +200,9 @@ class DriveView extends LitElement {
           <span class="fa-fw ${icon}"></span>
           ${entry.name}
         </a>
+        ${entry.stat.size ? html`
+          <span class="size">${bytes(entry.stat.size)}</span>
+        ` : ''}
       </div>
     `
   }
