@@ -14,7 +14,7 @@ a {
   text-decoration: none;
 }
 
-a[href]:hover {
+a:hover {
   text-decoration: underline;
 }
 
