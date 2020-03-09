@@ -52,35 +52,48 @@ class CreateDriveModal extends LitElement {
       margin-top: 0;
     }
 
-    select {
-      width: 100%;
-      display: block;
-      height: 378px;
+    .fe-selector {
+      height: 364px;
+      overflow-y: auto;
       border-radius: 4px;
-      border: 1px solid #bbc;
+      background: #f3f3f8;
       font-size: 13px;
       letter-spacing: 0.3px;
       padding: 10px 0 5px;
     }
 
-    select:focus {
-      outline: 0;
-      border: 1px solid rgba(41, 95, 203, 0.8);
-      box-shadow: 0 0 0 2px rgba(41, 95, 203, 0.2);
-    }
-
-    select option {
-      padding: 5px;
-    }
-
-    select option:first-of-type {
-      margin-top: 4px;
-    }
-
-    select option:last-of-type {
+    .fe-selector-group {
       margin-bottom: 8px;
     }
-    
+
+    .fe-selector-group > .label {
+      padding: 5px 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .fe-selector-group > .label .far {
+      font-size: 11px;
+      position: relative;
+      top: -1px;
+      margin-right: 1px;
+    }
+
+    .fe-selector-item {
+      padding: 5px 25px;
+      cursor: pointer;
+    }
+
+    .fe-selector-group > .label:hover,
+    .fe-selector-item:hover {
+      background: #eaeaef;
+    }
+
+    .fe-selector-item[selected] {
+      background: #0072ec;
+      color: #fff;
+    }
+  
     hr {
       border: 0;
       border-top: 1px solid #ddd;
@@ -125,6 +138,7 @@ class CreateDriveModal extends LitElement {
     this.links = undefined
     this.author = undefined
     this.errors = {}
+    this.feCatOpen = {[FRONTEND_CATEGORIES[0].id]: true}
 
     // export interface
     window.createDriveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
@@ -176,7 +190,13 @@ class CreateDriveModal extends LitElement {
   render () {
     var currentFrontend = this.availableFrontends.find(fe => fe.url === this.frontend)
     var frontendImg = currentFrontend ? currentFrontend.img : 'none'
-    const feopt = (id, label) => html`<option value=${id} ?selected=${id === this.frontend}>${label}</option>`
+    const feopt = (id, label) => html`
+      <div
+        class="fe-selector-item"
+        ?selected=${id === this.frontend}
+        @click=${e => this.onChangeFrontend(id)}
+      >${label}</div>
+    `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -185,14 +205,22 @@ class CreateDriveModal extends LitElement {
         </h1>
         <form @submit=${this.onSubmit}>
           <div class="layout">
-            <div class="left">             
-              <select name="frontend" multiple @change=${this.onChangeFrontend}>
+            <div class="left">      
+              <div class="fe-selector">
                 ${repeat(FRONTEND_CATEGORIES, ({id, title}) => html`
-                  <optgroup label="&nbsp;&nbsp;${title}">
-                    ${repeat(this.getMatchingFrontends(id), fe => feopt(fe.url, fe.title))}
-                  </optgroup>
+                  <div class="fe-selector-group">
+                    <div class="label" @click=${e => this.onToggleFeCatOpen(id)}>
+                      <span class="far fa-${this.feCatOpen[id] ? 'minus' : 'plus'}-square"></span>
+                      ${title}
+                    </div>
+                    ${this.feCatOpen[id] ? html`
+                      <div class="fe-selector-options">
+                        ${repeat(this.getMatchingFrontends(id), fe => feopt(fe.url, fe.title))}
+                      </div>
+                    ` : ''}
+                  </div>
                 `)}
-              </select>
+              </div>
             </div>
             <div class="right">
               <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" placeholder="Title" />
@@ -225,8 +253,14 @@ class CreateDriveModal extends LitElement {
     this.description = e.target.value.trim()
   }
 
-  onChangeFrontend (e) {
-    this.frontend = e.target.value.trim()
+  onToggleFeCatOpen (id) {
+    this.feCatOpen[id] = !this.feCatOpen[id]
+    this.requestUpdate()
+  }
+
+  onChangeFrontend (id) {
+    this.frontend = id
+    this.shadowRoot.querySelector('input[name=title]').focus()
   }
 
   onFrontendImgError (e) {
