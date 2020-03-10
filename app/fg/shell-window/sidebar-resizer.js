@@ -23,6 +23,10 @@ class ShellWindowSidebarResizer extends LitElement {
       cursor: ew-resize;
       background: #334;
     }
+
+    :host(.fullheight) #resizer {
+      top: 0;
+    }
     `
   }
 

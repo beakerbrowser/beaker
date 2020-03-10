@@ -136,13 +136,16 @@ class ShellWindowUI extends LitElement {
         ></shell-window-navbar>
       `}
       <shell-window-sidebar-resizer
+        class="${this.isShellInterfaceHidden ? 'fullheight' : ''}"
         .activeTabIndex=${this.activeTabIndex}
         .activeTab=${this.activeTab}
       ></shell-window-sidebar-resizer>
-      <shell-window-footer-menu
-        .activeTabIndex=${this.activeTabIndex}
-        .activeTab=${this.activeTab}
-      ></shell-window-footer-menu>
+      ${this.isShellInterfaceHidden ? '' : html`
+        <shell-window-footer-menu
+          .activeTabIndex=${this.activeTabIndex}
+          .activeTab=${this.activeTab}
+        ></shell-window-footer-menu>
+      `}
     `
   }
 

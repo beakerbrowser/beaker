@@ -338,7 +338,9 @@ class Tab {
       x = (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
       width -= (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
     }
-    height -= FOOTER_HEIGHT
+    if (!this.browserWindow.isShellInterfaceHidden) {
+      height -= FOOTER_HEIGHT
+    }
     return {x, y: y, width, height: height - y}
   }
 
