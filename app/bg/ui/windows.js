@@ -356,7 +356,6 @@ export function toggleShellInterface (win) {
   if (win.setWindowButtonVisibility) {
     win.setWindowButtonVisibility(!isShellInterfaceHidden)
   }
-  sessionWatcher.updateState(win, {isShellInterfaceHidden})
 
   tabManager.emitReplaceState(win)
   win.emit('resize')
