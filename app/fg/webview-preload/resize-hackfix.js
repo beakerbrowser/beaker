@@ -12,8 +12,8 @@ export default function () {
   var to = undefined
 
   function queueHackfix () {
-    if (to) clearTimeout(to)
-    to = setTimeout(() => {
+    if (to) clearTimeoutFn(to)
+    to = setTimeoutFn(() => {
       ipcRenderer.send('resize-hackfix')
       to = undefined
     }, 500)

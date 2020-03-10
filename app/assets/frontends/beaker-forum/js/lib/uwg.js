@@ -34,11 +34,11 @@ import { isFilenameBinary } from './is-ext-binary.js'
 
 var user = undefined
 var userDrive = undefined
-var groupDrive = new Hyperdrive(location)
+var groupDrive = hyperdrive.self
 var profileCache = {}
 export const profiles = {
   async setUser (url) {
-    userDrive = new Hyperdrive(url)
+    userDrive = hyperdrive.load(url)
     user = await profiles.get(url)
     user.isUser = true
     return user
@@ -61,7 +61,7 @@ export const profiles = {
     }
 
     profileCache[key] = (async function () {
-      var drive = new Hyperdrive(key)
+      var drive = hyperdrive.load(key)
       var profile = await drive.getInfo()
       profile.isUser = false
       profile.id = await groupDrive.query({path: '/users/*', mount: profile.url})
@@ -240,7 +240,7 @@ export const posts = {
     {author, driveType, sort, reverse, offset, limit} = {author: undefined, driveType: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined},
     {includeProfiles, includeContent} = {includeProfiles: false, includeContent: true}
   ) {
-    var drive = new Hyperdrive(author || location)
+    var drive = hyperdrive.load(author || location)
     var queryFn = includeContent ? queryRead : (q, drive) => drive.query(q)
     var posts = await queryFn({
       path: getPostsPaths(author),
@@ -278,7 +278,7 @@ export const posts = {
    * @returns {Promise<Post>}
    */
   async get (author, path) {
-    let drive = new Hyperdrive(author)
+    let drive = hyperdrive.load(author)
     let url = drive.url + path
     return {
       type: 'file',
@@ -392,7 +392,7 @@ export const comments = {
     {author, href, sort, reverse, offset, limit} = {author: undefined, href: undefined, sort: undefined, reverse: undefined, offset: undefined, limit: undefined},
     {includeProfiles, includeContent} = {includeProfiles: false, includeContent: true}
   ) {
-    var drive = new Hyperdrive(author || location)
+    var drive = hyperdrive.load(author || location)
     href = href ? normalizeUrl(href) : undefined
     var queryFn = includeContent ? queryRead : (q, drive) => drive.query(q)
     var comments = await queryFn({
@@ -422,7 +422,7 @@ export const comments = {
    */
   async count ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
     href = href ? normalizeUrl(href) : undefined
-    let drive = new Hyperdrive(author || location)
+    let drive = hyperdrive.load(author || location)
     // commented out in favor of the cache
     // var comments = await drive.query({
     //   path: getCommentsPaths(author),
@@ -451,7 +451,7 @@ export const comments = {
    */
   async thread (href, {author, parent, depth} = {author: undefined, parent: undefined, depth: undefined}) {
     href = normalizeUrl(href)
-    var drive = new Hyperdrive(author || location)
+    var drive = hyperdrive.load(author || location)
     var comments = await queryRead({
       path: getCommentsPaths(author),
       metadata: href ? {href} : undefined
@@ -516,7 +516,7 @@ export const comments = {
    * @returns {Promise<Comment>}
    */
   async get (author, path) {
-    let drive = new Hyperdrive(author)
+    let drive = hyperdrive.load(author)
     let url = drive.url + path
     return {
       type: 'file',
@@ -593,7 +593,7 @@ export const votes = {
    */
   async list ({author, href, sort, reverse} = {author: undefined, href: undefined, sort: undefined, reverse: undefined}) {
     href = href ? normalizeUrl(href) : undefined
-    var drive = new Hyperdrive(author || location)
+    var drive = hyperdrive.load(author || location)
     var res = await drive.query({
       path: getVotesPaths(author),
       metadata: href ? {href} : undefined,
@@ -615,7 +615,7 @@ export const votes = {
    */
   async tabulate (href, {author} = {author: undefined}, {includeProfiles, noCache} = {includeProfiles: false, noCache: false}) {
     href = normalizeUrl(href)
-    var drive = new Hyperdrive(author || location)
+    var drive = hyperdrive.load(author || location)
     // commented out in favor of the cache
     // var votes = await drive.query({
     //   path: getVotesPaths(author),
@@ -657,7 +657,7 @@ export const votes = {
    */
   async get (author, href) {
     href = normalizeUrl(href)
-    var drive = new Hyperdrive(author || location)
+    var drive = hyperdrive.load(author || location)
     var votes = await drive.query({
       path: getVotesPaths(author),
       metadata: {href}
@@ -723,9 +723,8 @@ function isValidUserID (v) {
 
 async function toKey (key) {
   var match = DRIVE_KEY_REGEX.exec(key)
-  if (match) key = match[0]
-  else key = await Hyperdrive.resolveName(key)
-  return key
+  if (match) return match[0]
+  return ''
 }
 
 /**

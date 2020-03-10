@@ -121,7 +121,7 @@ class DriveView extends LitElement {
 
   constructor () {
     super()
-    this.drive = new Hyperdrive(location)
+    this.drive = hyperdrive.load(location)
     this.info = undefined
     this.entries = []
     this.load()
@@ -229,7 +229,7 @@ class DriveView extends LitElement {
 </html>`)
     }
     // TEMPORARY API please do not depend on this in your applications
-    window.__beakerOpenEditor()
+    window.__internalBeakerEditor.open()
     location.reload()
   }
 }

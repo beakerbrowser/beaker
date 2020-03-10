@@ -60,8 +60,16 @@ export function create (tab) {
   // create the view
   var view = views[tab.id] = new BrowserView({
     webPreferences: {
+      preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
+      nodeIntegrationInSubFrames: true,
+      contextIsolation: true,
+      webviewTag: false,
+      sandbox: true,
       defaultEncoding: 'utf-8',
-      preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js')
+      nativeWindowOpen: true,
+      nodeIntegration: false,
+      scrollBounce: true,
+      navigateOnDragDrop: true
     }
   })
   view.webContents.on('console-message', (e, level, message) => {

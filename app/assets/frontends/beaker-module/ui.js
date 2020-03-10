@@ -1,6 +1,6 @@
 import MarkdownIt from './vendor/markdown-it.js'
 
-var self = new Hyperdrive(location)
+var self = hyperdrive.self
 var infoPromise = self.getInfo()
 
 function h (tag, attrs, ...children) {

@@ -89,7 +89,7 @@ export class GroupSettingsPopup extends BasePopup {
   }
 
   async load () {
-    var self = new Hyperdrive(location)
+    var self = hyperdrive.self
     var info = await self.getInfo()
     var sidebarMd = await self.readFile('/beaker-forum/sidebar.md').catch(e => '')
     var pinnedMessageMd = await self.readFile('/beaker-forum/pinned-message.md').catch(e => '')
@@ -271,7 +271,7 @@ export class GroupSettingsPopup extends BasePopup {
     }
 
     try {
-      let drive = new Hyperdrive(location)
+      let drive = hyperdrive.self
       await drive.configure({
         title: this.title,
         description: this.description

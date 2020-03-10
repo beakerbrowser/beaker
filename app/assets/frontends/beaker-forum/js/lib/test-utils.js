@@ -5,7 +5,6 @@ import * as uwg from './uwg.js'
 var debugDrives = createPersistedArray('debug-drives')
 
 export function init () {
-  instrument(Hyperdrive.prototype)
 }
 
 export function listDrives () {
@@ -19,7 +18,7 @@ export async function generateDrives (num = 10) {
 
   for (let i = 0; i < num; i++) {
     let profile = FAKE_PROFILES[(i + debugDrives.length) % FAKE_PROFILES.length]
-    let drive = await Hyperdrive.create(Object.assign(profile, {type: 'user', prompt: false}))
+    let drive = hyperdrive.create(Object.assign(profile, {type: 'user', prompt: false}))
     debugDrives.push(drive.url)
     await uwg.users.add(drive.url, slugify(profile.title))
   }
@@ -30,7 +29,7 @@ export async function generatePosts (numPosts = 10) {
   var fake_post_words = FAKE_POST.split(' ')
   for (let i = 0; i < numPosts; i++) {
     for (let driveUrl of driveUrls) {
-      let drive = new Hyperdrive(driveUrl)
+      let drive = hyperdrive.load(driveUrl)
       let numWords = Math.min(Math.floor(Math.random() * fake_post_words.length), 30) + 1
       let startWord = Math.floor(Math.random() * numWords)
       let title = fake_post_words.slice(startWord, numWords).join(' ')
@@ -47,7 +46,7 @@ export async function generateComments (numComments = 10) {
   var fake_post_words = FAKE_POST.split(' ')
   for (let i = 0; i < numComments; i++) {
     for (let driveUrl of driveUrls) {
-      let drive = new Hyperdrive(driveUrl)
+      let drive = hyperdrive.load(driveUrl)
       let numWords = Math.min(Math.floor(Math.random() * fake_post_words.length)) + 1
       let startWord = Math.floor(Math.random() * numWords)
       let content = fake_post_words.slice(startWord, numWords).join(' ')
@@ -116,20 +115,6 @@ function createPersistedArray (id) {
     set (obj, k, v) { var values = read(); values[k] = v; write(values); return true },
     deleteProperty (obj, k) { var values = read(); delete values[k]; write(values); return true }
   }))
-}
-
-function instrument (obj) {
-  Object.getOwnPropertyNames(obj).forEach(k => {
-    if (typeof obj[k] !== 'function') return
-    let fn = obj[k]
-    obj[k] = async function (...args) {
-      let t = Date.now()
-      console.debug(`➡️${k}(`, ...args, ')')
-      var res = await fn.apply(this, args)
-      console.debug(`🏁${(Date.now() - t)}ms`, `${k}(`, ...args, ')')
-      return res
-    }
-  })
 }
 
 const FAKE_POST = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."

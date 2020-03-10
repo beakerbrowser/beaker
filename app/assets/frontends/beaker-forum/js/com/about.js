@@ -31,7 +31,7 @@ export class About extends LitElement {
   }
 
   async load () {
-    var drive = new Hyperdrive(location)
+    var drive = hyperdrive.self
     this.info = await drive.getInfo()
     this.requestUpdate()
     this.groupware = await drive.readFile('/beaker-forum/groupware.json').then(JSON.parse).catch(e => undefined)

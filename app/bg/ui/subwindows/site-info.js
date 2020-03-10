@@ -26,8 +26,16 @@ var views = {} // map of {[parentWindow.id] => BrowserView}
 export function setup (parentWindow) {
   var view = views[parentWindow.id] = new BrowserView({
     webPreferences: {
+      preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
+      nodeIntegrationInSubFrames: true,
+      contextIsolation: true,
+      webviewTag: false,
+      sandbox: true,
       defaultEncoding: 'utf-8',
-      preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js')
+      nativeWindowOpen: true,
+      nodeIntegration: false,
+      scrollBounce: true,
+      navigateOnDragDrop: true
     }
   })
   view.webContents.on('console-message', (e, level, message) => {

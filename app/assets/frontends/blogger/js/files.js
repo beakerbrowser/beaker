@@ -3,13 +3,12 @@ import { h } from './util.js'
 export class DriveFiles extends HTMLElement {
   constructor () {
     super()
-    this.self = new Hyperdrive(location)
     this.load()
   }
 
   async load () {
-    this.info = await this.self.getInfo()
-    this.entries = await this.self.readdir(location.pathname, {includeStats: true})
+    this.info = await hyperdrive.self.getInfo()
+    this.entries = await hyperdrive.self.readdir(location.pathname, {includeStats: true})
     this.entries.sort((a, b) => a.name.localeCompare(b.name))
     this.render()
   }

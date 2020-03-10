@@ -16,7 +16,7 @@ export class CommandViewer extends LitElement {
   }
 
   async load () {
-    var drive = new Hyperdrive(location)
+    var drive = hyperdrive.load(location)
     this.info = await drive.getInfo()
     await this.requestUpdate()
   }

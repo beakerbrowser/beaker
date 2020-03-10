@@ -24,7 +24,7 @@ export class PinnedMessage extends LitElement {
 
   async load () {
     if (localStorage.pinnedMessageHidden) return
-    var drive = new Hyperdrive(location)
+    var drive = hyperdrive.self
     this.md = await drive.readFile('/beaker-forum/pinned-message.md').catch(e => undefined)
     this.requestUpdate()
   }

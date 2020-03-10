@@ -96,7 +96,7 @@ export class LibraryApp extends LitElement {
   async onClickNew (e) {
     e.preventDefault()
     e.stopPropagation()
-    var drive = await Hyperdrive.create()
+    var drive = await hyperdrive.create()
     toast.create('Drive created')
     window.location = drive.url
   }

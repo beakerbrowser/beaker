@@ -62,33 +62,25 @@ so that errors can be smoothly generated
 
 export function createDrive (url) {
   if (url.startsWith('hyper:')) {
-    return new Hyperdrive(url)
+    return hyperdrive.load(url)
   }
-  return new OtherOrigin(url)
-}
-
-class OtherOrigin {
-  constructor (url) {
-    this.url = url
-    for (let k of Object.getOwnPropertyNames(Hyperdrive.prototype)) {
-      console.log(k)
-      if (!this[k] && typeof Hyperdrive.prototype[k] === 'function') {
-        this[k] = this.doThrow.bind(this)
+  return new Proxy({}, {
+    get (obj, k) {
+      if (k === 'url') return url
+      if (k === 'stat') {
+        return () => {
+          // fake response to just let stat() callers pass through
+          return {
+            isUnsupportedProtocol: true,
+            isDirectory: () => true,
+            isFile: () => true
+          }
+        }
+      }
+      return () => {
+        let urlp = new URL(url)
+        throw new Error(`${urlp.protocol} does not support this command`)
       }
     }
-  }
-
-  stat () {
-    // fake response to just let stat() callers pass through
-    return {
-      isUnsupportedProtocol: true,
-      isDirectory: () => true,
-      isFile: () => true
-    }
-  }
-
-  doThrow () {
-    let urlp = new URL(this.url)
-    throw new Error(`${urlp.protocol} does not support this command`)
-  }
+  })
 }

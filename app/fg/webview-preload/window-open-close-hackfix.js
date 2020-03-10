@@ -4,17 +4,33 @@
 // - if the page was opened by a script, then close the tab
 // - otherwise, do nothing
 
-import {ipcRenderer} from 'electron'
+import { ipcRenderer, contextBridge, webFrame } from 'electron'
 
 export default function () {
-  var origOpen = window.open
-  window.open = function (...args) {
-    if (args[1] !== '_self') ipcRenderer.sendSync('BEAKER_MARK_NEXT_TAB_SCRIPTCLOSEABLE')
-    return origOpen.apply(window, args)
-  }
-  window.close = function () {
-    if (!ipcRenderer.sendSync('BEAKER_SCRIPTCLOSE_SELF')) {
-      console.warn('Scripts may not close windows that were not opened by script.')
+  contextBridge.exposeInMainWorld('__internalOpen__', {
+    markNextTabScriptClosable: () => {
+      ipcRenderer.sendSync('BEAKER_MARK_NEXT_TAB_SCRIPTCLOSEABLE')
+    },
+    tryClose: () => {
+      return ipcRenderer.sendSync('BEAKER_SCRIPTCLOSE_SELF')
     }
-  }
+  })
+  webFrame.executeJavaScript(`
+  var origOpen = window.open
+  Object.defineProperty(window, 'open', {
+    get: () => function (...args) {
+      if (args[1] !== '_self') window.__internalOpen__.markNextTabScriptClosable()
+      return origOpen.apply(window, args)
+    },
+    set: () => {}
+  })
+  Object.defineProperty(window, 'close', {
+    get: () => function () {
+      if (!window.__internalOpen__.tryClose()) {
+        console.warn('Scripts may not close windows that were not opened by script.')
+      }
+    },
+    set: () => {}
+  })
+  `)
 }

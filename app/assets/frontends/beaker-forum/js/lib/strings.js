@@ -3,6 +3,13 @@ export const KNOWN_DRIVE_TYPES = {
   'webterm.sh/cmd-pkg': 'webterm command'
 }
 
+export function urlToKey (str) {
+  try {
+    return DRIVE_KEY_REGEX.exec(str)[0]
+  } catch (e) {
+    return ''
+  }
+}
 export function ucfirst (str) {
   if (!str) str = ''
   if (typeof str !== 'string') str = '' + str

@@ -164,7 +164,7 @@ export class AddUserPopup extends BasePopup {
       return {success: false, message: `You must provide a "hyper:" URL. This is "${urlp.protocol}".`}
     }
 
-    var drive = new Hyperdrive(url)
+    var drive = hyperdrive.load(url)
     var info
     try {
       info = await this.attempt(

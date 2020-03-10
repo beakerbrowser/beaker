@@ -126,14 +126,15 @@ class Tab {
       webPreferences: {
         preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
         nodeIntegrationInSubFrames: true,
-        contextIsolation: false,
+        contextIsolation: true,
         webviewTag: false,
         sandbox: true,
         defaultEncoding: 'utf-8',
         nativeWindowOpen: true,
         nodeIntegration: false,
         scrollBounce: true,
-        navigateOnDragDrop: true
+        navigateOnDragDrop: true,
+        enableRemoteModule: false
       }
     })
     this.browserView.setBackgroundColor('#fff')

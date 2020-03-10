@@ -9,7 +9,7 @@ export class FileView extends LitElement {
 
   async readFile () {
     try {
-      var drive = new Hyperdrive(location)
+      var drive = new hyperdrive.load(location)
       return await drive.readFile(location.pathname, 'utf8')
     } catch (e) {
       return e.toString()

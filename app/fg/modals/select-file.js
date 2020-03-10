@@ -2,7 +2,7 @@
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import { joinPath } from '../../lib/strings'
-import Stat from '../../bg/web-apis/fg/stat'
+import { createStat } from '../../bg/web-apis/fg/stat'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
@@ -314,7 +314,7 @@ class SelectFileModal extends LitElement {
   async readdir () {
     var files = await bg.hyperdrive.readdir(this.drive, this.path, {includeStats: true})
     files.forEach(file => {
-      file.stat = new Stat(file.stat)
+      file.stat = createStat(file.stat)
       file.path = joinPath(this.path, file.name)
     })
     files.sort(sortFiles)

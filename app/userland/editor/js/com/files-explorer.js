@@ -25,7 +25,7 @@ class FilesExplorer extends LitElement {
   }
 
   get drive () {
-    return new Hyperdrive(this.url)
+    return hyperdrive.load(this.url)
   }
 
   get origin () {
@@ -86,16 +86,11 @@ class FilesExplorer extends LitElement {
       this.folderPath = folderPath
 
       var parentDrive = await this.getParentDriveInfo()
-      var canShare = parentDrive.info.url !== beaker.filesystem.url
       items = await drive.readdir(folderPath, {includeStats: true})
       items.forEach(item => {
         item.path = joinPath(this.folderPath, item.name)
         item.url = joinPath(drive.url, item.path)
-        if (canShare) {
-          item.shareUrl = joinPath(parentDrive.info.url, item.path.replace(parentDrive.path, ''))
-        } else {
-          item.shareUrl = undefined
-        }
+        item.shareUrl = joinPath(parentDrive.info.url, item.path.replace(parentDrive.path, ''))
       })
       items.sort((a, b) => {
         if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
@@ -121,7 +116,7 @@ class FilesExplorer extends LitElement {
       if (stat.mount) {
         return {
           path,
-          info: await (new Hyperdrive(stat.mount.key)).getInfo()
+          info: await hyperdrive.load(stat.mount.key).getInfo()
         }
       }
       pathParts.pop()

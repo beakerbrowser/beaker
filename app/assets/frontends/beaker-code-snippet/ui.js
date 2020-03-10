@@ -1,4 +1,4 @@
-var self = new Hyperdrive(location)
+var self = hyperdrive.self
 
 var editors = {
   js: ace.edit('js'),

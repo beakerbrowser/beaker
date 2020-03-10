@@ -3,12 +3,11 @@ import { h } from './util.js'
 export class DriveHeader extends HTMLElement {
   constructor () {
     super()
-    this.self = new Hyperdrive(location)
     this.load()
   }
 
   async load () {
-    this.info = await this.self.getInfo()
+    this.info = await hyperdrive.self.getInfo()
     this.render()
   }
 

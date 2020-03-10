@@ -60,7 +60,7 @@ export class DrivesView extends LitElement {
 
     for (let drive of drives) {
       if (drive.info.type === 'user' && drive.info.memberOf) {
-        let groupDrive = new Hyperdrive(drive.info.memberOf)
+        let groupDrive = hyperdrive.load(drive.info.memberOf)
         let groupInfo = await groupDrive.readFile('/index.json').then(JSON.parse).catch(e => undefined)
         if (groupInfo) {
           groupInfo.url = groupDrive.url
@@ -139,7 +139,7 @@ export class DrivesView extends LitElement {
   }
 
   async forkDrive (drive) {
-    var drive = await Hyperdrive.fork(drive.url)
+    var drive = await hyperdrive.fork(drive.url)
     toast.create('Drive created')
     window.open(drive.url)
     this.load()

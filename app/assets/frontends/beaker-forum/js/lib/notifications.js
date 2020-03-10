@@ -162,7 +162,7 @@ export async function updateIndex (userUrl) {
     userKeySet.delete(userUrl)
 
     for (let userKey of userKeySet) {
-      let drive = new Hyperdrive(userKey)
+      let drive = hyperdrive.load(userKey)
       let driveMeta = await db.get('drives', drive.url)
       let lastVersion = driveMeta ? driveMeta.version : undefined
       let currentVersion = (await drive.getInfo()).version

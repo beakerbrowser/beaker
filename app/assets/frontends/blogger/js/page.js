@@ -22,8 +22,7 @@ export class DrivePage extends HTMLElement {
 
   async load () {
     var {pathname} = location
-    this.self = new Hyperdrive(location)
-    this.stat = await this.self.stat(pathname).catch(e => undefined)
+    this.stat = await hyperdrive.self.stat(pathname).catch(e => undefined)
 
     if (this.stat && this.stat.isFile()) {
       if (this.stat.metadata.title) {
@@ -36,7 +35,7 @@ export class DrivePage extends HTMLElement {
       } else if (/\.(mp3|ogg)/i.test(pathname)) {
         this.append(h('audio', {className: 'content', controls: true}, h('source', {src: pathname})))
       } else {
-        let text = await this.self.readFile(pathname)
+        let text = await hyperdrive.self.readFile(pathname)
         if (pathname.endsWith('.md')) {
           let content = h('div', {className: 'content'})
           content.innerHTML = md.render(text)

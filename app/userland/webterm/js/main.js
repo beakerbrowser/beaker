@@ -107,7 +107,7 @@ class WebTerm extends LitElement {
       }
     })
 
-    this.url = beaker.filesystem.url
+    this.url = hyperdrive.getSystemDrive().url
   }
 
   teardown () {
@@ -121,18 +121,20 @@ class WebTerm extends LitElement {
 
   async load (url) {
     if (url.startsWith('beaker://')) {
-      url = beaker.filesystem.url
+      url = hyperdrive.getSystemDrive().url
     }
     this.url = url
 
-    this.envVars.sys = beaker.filesystem.url
+    this.envVars.sys = hyperdrive.getSystemDrive().url
 
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {
       try {
         let st = await (createDrive(cwd.origin)).stat(cwd.pathname)
         if (st.isDirectory()) break
-      } catch (e) { /* ignore */ }
+      } catch (e) { 
+        /* ignore */
+      }
       cwd.pathname = cwd.pathname.split('/').slice(0, -1).join('/')
     }
     this.cwd = cwd
@@ -159,12 +161,12 @@ class WebTerm extends LitElement {
       manifest: JSON.parse(await beaker.browser.readFile('beaker://std-cmds/index.json', 'utf8'))
     }]
 
-    var cmdPkgDrives = await beaker.filesystem.readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
+    var cmdPkgDrives = await hyperdrive.getSystemDrive().readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
     for (let driveUrl of cmdPkgDrives) {
       try {
         packages.push({
           url: driveUrl,
-          manifest: JSON.parse(await (new Hyperdrive(driveUrl).readFile(`index.json`)))
+          manifest: JSON.parse(await hyperdrive.load(driveUrl).readFile(`index.json`))
         })
       } catch (e) {
         console.log(e)

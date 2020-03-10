@@ -1,6 +1,6 @@
 import MarkdownIt from './markdown-it.js'
 
-var self = new Hyperdrive(location)
+var self = hyperdrive.self
 var pathname = location.pathname.endsWith('/') ? location.pathname + 'index.md' : location.pathname
 var isEditing = location.search === '?edit'
 

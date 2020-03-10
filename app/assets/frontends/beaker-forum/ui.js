@@ -89,7 +89,7 @@ export class App extends LitElement {
     }
 
     // load group data
-    var self = new Hyperdrive(location)
+    var self = hyperdrive.self
     this.groupInfo = await self.getInfo()
     this.session = await navigator.session.get()
     if (this.session) {

@@ -3,7 +3,6 @@ import { h } from './util.js'
 export class DrivePosts extends HTMLElement {
   constructor () {
     super()
-    this.self = new Hyperdrive(location)
     this.load()
   }
 
@@ -20,9 +19,9 @@ export class DrivePosts extends HTMLElement {
   }
 
   async load () {
-    this.info = await this.self.getInfo()
+    this.info = await hyperdrive.self.getInfo()
     var path = this.mode === 'topic' ? `/posts/${this.topic}/*` : '/posts/*/*'
-    this.posts = await this.self.query({
+    this.posts = await hyperdrive.self.query({
       type: 'file',
       path,
       sort: 'ctime',

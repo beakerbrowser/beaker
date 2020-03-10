@@ -53,7 +53,7 @@ export const electronHandler = async function (request, respond) {
       btn.addEventListener('click', async (e) => {
         btn.textContent = 'Converting...'
         btn.setAttribute('disabled', '')
-        __beakerConvertDatArchive("${key}")
+        __internalBeakerDatArchive.convert("${key}")
       })
     </script>
   </body>

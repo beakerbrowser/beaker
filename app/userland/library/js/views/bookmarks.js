@@ -37,7 +37,7 @@ export class BookmarksView extends LitElement {
   }
 
   async load () {
-    var bookmarks = await beaker.filesystem.query({
+    var bookmarks = await hyperdrive.getSystemDrive().query({
       type: 'file',
       path: ['/bookmarks/*.goto']
     })
@@ -155,7 +155,7 @@ export class BookmarksView extends LitElement {
 
   async onClickRemove (file) {
     if (!confirm('Are you sure?')) return
-    await beaker.filesystem.unlink(file.path)
+    await hyperdrive.getSystemDrive().unlink(file.path)
     toast.create('Bookmark removed', '', 10e3)
     this.load()
   }

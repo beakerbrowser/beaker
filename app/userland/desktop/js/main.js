@@ -102,7 +102,7 @@ class DesktopApp extends LitElement {
   // =
 
   async onClickNew (e) {
-    var drive = await Hyperdrive.create()
+    var drive = await hyperdrive.create()
     window.location = drive.url
   }
 
@@ -153,7 +153,7 @@ customElements.define('desktop-app', DesktopApp)
 
 function getHref (file) {
   if (file.name.endsWith('.goto')) return file.stat.metadata.href
-  return `${beaker.filesystem.url}/bookmarks/${file.name}`
+  return `${hyperdrive.getSystemDrive().url}/bookmarks/${file.name}`
 }
 
 function getTitle (file) {

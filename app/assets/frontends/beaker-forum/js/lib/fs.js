@@ -1,5 +1,5 @@
 import { isFilenameBinary } from './is-ext-binary.js'
-import { joinPath, slugify } from './strings.js'
+import { urlToKey, joinPath, slugify } from './strings.js'
 import { chunkMapAsync } from './functions.js'
 
 // typedefs
@@ -111,7 +111,7 @@ export async function ensureParentDir (path, drive = navigator.filesystem) {
 export async function ensureMount (path, url, drive = navigator.filesystem) {
   try {
     let st = await drive.stat(path).catch(e => null)
-    let key = await Hyperdrive.resolveName(url)
+    let key = urlToKey(url)
     if (!st) {
       // add mount
       await drive.mount(path, key)

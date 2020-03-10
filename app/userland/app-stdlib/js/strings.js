@@ -1,5 +1,13 @@
 export const DRIVE_KEY_REGEX = /[0-9a-f]{64}/i
 
+export function urlToKey (str) {
+  try {
+    return DRIVE_KEY_REGEX.exec(str)[0]
+  } catch (e) {
+    return ''
+  }
+}
+
 export function ucfirst (str) {
   if (!str) str = ''
   if (typeof str !== 'string') str = '' + str

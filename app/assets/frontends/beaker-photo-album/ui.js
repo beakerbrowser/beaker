@@ -1,4 +1,4 @@
-var self = new Hyperdrive(location)
+var self = hyperdrive.self
 
 function h (tag, attrs, ...children) {
   var el = document.createElement(tag)

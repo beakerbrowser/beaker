@@ -112,7 +112,7 @@ export async function create ({x, y}) {
 
 async function onCreateDrive (type) {
   contextMenu.destroy()
-  var drive = await Hyperdrive.create({type})
+  var drive = await hyperdrive.create({type})
   window.location = drive.url
 }
 
@@ -125,11 +125,11 @@ async function onCreateDriveFromFolder () {
   })
   if (!folder || !folder.length) return
 
-  var drive = await Hyperdrive.create({
+  var drive = await hyperdrive.create({
     title: folder[0].split('/').pop(),
     prompt: false
   })
   toast.create('Importing...')
-  await Hyperdrive.importFromFilesystem({src: folder[0], dst: drive.url})
+  await hyperdrive.importFromFilesystem({src: folder[0], dst: drive.url})
   window.location = drive.url
 }

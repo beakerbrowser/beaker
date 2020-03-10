@@ -36,7 +36,7 @@ export class PostComposer extends LitElement {
       } else if (params.get('file')) {
         let url = params.get('file')
         let urlp = new URL(url)
-        let drive = new Hyperdrive(urlp.hostname)
+        let drive = hyperdrive.load(urlp.hostname)
         let base64buf = await drive.readFile(urlp.pathname, 'base64')
         this.file = {source: 'hyperdrive', name: urlp.pathname.split('/').pop(), base64buf}
       }
@@ -116,7 +116,7 @@ export class PostComposer extends LitElement {
     if (urlp.protocol === 'hyper:') {
       if (urlp.pathname === '/') {
         try {
-          let info = await (new Hyperdrive(urlp.hostname)).getInfo({timeout: 10e3})
+          let info = await hyperdrive.load(urlp.hostname).getInfo({timeout: 10e3})
           this.linkMetadata = {
             success: true,
             driveType: info.type
@@ -257,7 +257,7 @@ export class PostComposer extends LitElement {
       allowMultiple: false,
       disallowCreate: true
     })
-    var base64buf = await (new Hyperdrive(sels[0].origin)).readFile(sels[0].path, 'base64')
+    var base64buf = await hyperdrive.load(sels[0].origin).readFile(sels[0].path, 'base64')
     this.file = {source: 'hyperdrive', name: sels[0].path.split('/').pop(), base64buf}
     this.runValidation()
   }

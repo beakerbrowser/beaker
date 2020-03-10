@@ -4,7 +4,7 @@ export async function ls () {
   var drives = await readInstalled()
   var driveInfos = []
   for (let drive of drives) {
-    driveInfos.push(await (new Hyperdrive(drive)).getInfo())
+    driveInfos.push(await hyperdrive.load(drive).getInfo())
   }
   driveInfos.toHTML = () => {
     return driveInfos.map(info => html`<p><a href=${info.url}><strong>${info.title}</strong></a> ${info.description}</p>`)
@@ -18,7 +18,7 @@ export async function create () {
   while (!title) title = await this.prompt('Package title')
   description = await this.prompt('Package description')
 
-  var drive = await Hyperdrive.create({
+  var drive = await hyperdrive.create({
     type: 'webterm.sh/cmd-pkg',
     title,
     description,
@@ -84,12 +84,12 @@ export async function example (opts = {}, arg1, arg2) {
 `
 
 async function readInstalled () {
-  return beaker.filesystem.readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
+  return hyperdrive.getSystemDrive().readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
 }
 
 async function saveInstalled (urls) {
-  await beaker.filesystem.mkdir('/webterm').catch(e => undefined)
-  await beaker.filesystem.writeFile('/webterm/command-packages.json', JSON.stringify(urls, null, 2))
+  await hyperdrive.getSystemDrive().mkdir('/webterm').catch(e => undefined)
+  await hyperdrive.getSystemDrive().writeFile('/webterm/command-packages.json', JSON.stringify(urls, null, 2))
 }
 
 function toUrl (str = '') {

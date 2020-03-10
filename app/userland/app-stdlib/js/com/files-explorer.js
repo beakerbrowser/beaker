@@ -28,7 +28,7 @@ class FilesExplorer extends LitElement {
   }
 
   get drive () {
-    return new Hyperdrive(this.url)
+    return hyperdrive.load(this.url)
   }
 
   get origin () {
@@ -469,7 +469,7 @@ class FilesExplorer extends LitElement {
     })
     if (files) {
       for (let src of files) {
-        await Hyperdrive.importFromFilesystem({
+        await hyperdrive.importFromFilesystem({
           src,
           dst: joinPath(this.origin, this.folderPath),
           ignore: ['index.json'],
