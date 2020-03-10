@@ -107,11 +107,15 @@ class ShellWindowUI extends LitElement {
     this.activeTabIndex = this.tabs.findIndex(tab => tab.isActive)
 
     this.requestUpdate()
-    this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
+    if (!this.isShellInterfaceHidden) {
+      this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
+      if (this.activeTab) {
+        this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
+        this.shadowRoot.querySelector('shell-window-footer-menu').requestUpdate()
+      }
+    }
     if (this.activeTab) {
-      this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
       this.shadowRoot.querySelector('shell-window-sidebar-resizer').requestUpdate()
-      this.shadowRoot.querySelector('shell-window-footer-menu').requestUpdate()
     }
   }
 
