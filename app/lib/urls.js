@@ -58,6 +58,7 @@ export function parseDriveUrl (str, parseQS) {
     parsed.query = Object.fromEntries(parsed.searchParams) // to match node
   }
   parsed.version = version // add version segment
+  if (!parsed.origin) parsed.origin = `hyper://${parsed.hostname}`
   return parsed
 }
 

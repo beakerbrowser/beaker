@@ -107,7 +107,7 @@ class WebTerm extends LitElement {
       }
     })
 
-    this.url = hyperdrive.getSystemDrive().url
+    this.url = beaker.hyperdrive.getSystemDrive().url
   }
 
   teardown () {
@@ -121,11 +121,11 @@ class WebTerm extends LitElement {
 
   async load (url) {
     if (url.startsWith('beaker://')) {
-      url = hyperdrive.getSystemDrive().url
+      url = beaker.hyperdrive.getSystemDrive().url
     }
     this.url = url
 
-    this.envVars.sys = hyperdrive.getSystemDrive().url
+    this.envVars.sys = beaker.hyperdrive.getSystemDrive().url
 
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {
@@ -161,12 +161,12 @@ class WebTerm extends LitElement {
       manifest: JSON.parse(await beaker.browser.readFile('beaker://std-cmds/index.json', 'utf8'))
     }]
 
-    var cmdPkgDrives = await hyperdrive.getSystemDrive().readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
+    var cmdPkgDrives = await beaker.hyperdrive.getSystemDrive().readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
     for (let driveUrl of cmdPkgDrives) {
       try {
         packages.push({
           url: driveUrl,
-          manifest: JSON.parse(await hyperdrive.load(driveUrl).readFile(`index.json`))
+          manifest: JSON.parse(await beaker.hyperdrive.drive(driveUrl).readFile(`index.json`))
         })
       } catch (e) {
         console.log(e)

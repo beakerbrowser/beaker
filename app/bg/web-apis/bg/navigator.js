@@ -1,12 +1,12 @@
 import { BrowserView, dialog } from 'electron'
 import os from 'os'
 import pda from 'pauls-dat-api2'
-import * as windows from '../../ui/windows'
 import * as tabManager from '../../ui/tab-manager'
 import * as modals from '../../ui/subwindows/modals'
 import * as filesystem from '../../filesystem/index'
 import * as drives from '../../hyper/drives'
 import { lookupDrive, getFrontend } from './hyperdrive'
+import { parseDriveUrl } from '../../../lib/urls'
 import { joinPath } from '../../../lib/strings'
 import assert from 'assert'
 import { UserDeniedError, ArchiveNotWritableError } from 'beaker-error-constants'
@@ -188,13 +188,14 @@ export default {
       properties: ['openFile', OS_CAN_IMPORT_FOLDERS_AND_FILES ? 'openDirectory' : false, 'multiSelections', 'createDirectory'].filter(Boolean)
     })
     if (res.filePaths.length) {
-      var {checkoutFS, filepath, isHistoric} = await lookupDrive(this.sender, url)
+      var urlp = parseDriveUrl(url)
+      var {checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
       if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
       for (let srcPath of res.filePaths) {
         await pda.exportFilesystemToArchive({
           srcPath,
           dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
-          dstPath: filepath,
+          dstPath: urlp.pathname,
           ignore: ['index.json'],
           inplaceImport: false,
           dryRun: false
@@ -215,11 +216,12 @@ export default {
       var baseDstPath = res.filePaths[0]
       urls = Array.isArray(urls) ? urls : [urls]
       for (let srcUrl of urls) {
-        let {checkoutFS, filepath} = await lookupDrive(this.sender, srcUrl)
+        var urlp = parseDriveUrl(srcUrl)
+        let {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         let dstPath = joinPath(baseDstPath, filepath.split('/').pop())
         await pda.exportArchiveToFilesystem({
           srcArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
-          srcPath: filepath,
+          srcPath: urlp.pathname,
           dstPath,
           overwriteExisting: false,
           skipUndownloadedFiles: false

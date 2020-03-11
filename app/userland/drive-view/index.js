@@ -121,7 +121,7 @@ class DriveView extends LitElement {
 
   constructor () {
     super()
-    this.drive = hyperdrive.load(location)
+    this.drive = beaker.hyperdrive.drive(location)
     this.info = undefined
     this.entries = []
     this.load()

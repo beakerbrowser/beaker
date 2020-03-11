@@ -60,7 +60,7 @@ export async function cd (opts = {}, location = '') {
   if (cwd.startsWith('hyper://')) {
     // make sure the target location can be visited
     let urlp = new URL(cwd)
-    let drive = hyperdrive.load(urlp.origin)
+    let drive = beaker.hyperdrive.drive(urlp.origin)
     let st
     try { st = await drive.stat(urlp.pathname) }
     catch (e) {
@@ -209,7 +209,7 @@ export async function bookmark (opts = {}, href = '.') {
   href = this.env.resolve(href || '.')
   var name = opts.filename || href.split('/').filter(Boolean).pop()
   if (!name.endsWith('.goto')) name += '.goto'
-  await hyperdrive.getSystemDrive().writeFile(`/bookmarks/${name}`, '', {metadata: {href}})
+  await beaker.hyperdrive.getSystemDrive().writeFile(`/bookmarks/${name}`, '', {metadata: {href}})
 }
 
 // utilities

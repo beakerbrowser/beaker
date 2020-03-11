@@ -48,11 +48,11 @@ class SiteInfoApp extends LitElement {
   }
 
   get isRootDrive () {
-    return this.origin === hyperdrive.getSystemDrive().url
+    return this.origin === beaker.hyperdrive.getSystemDrive().url
   }
 
   get drive () {
-    return hyperdrive.load(this.url)
+    return beaker.hyperdrive.drive(this.url)
   }
 
   get origin () {
@@ -177,7 +177,7 @@ class SiteInfoApp extends LitElement {
         var permParam = beakerPermissions.getPermParam(perm)
         if (isDatHashRegex.test(permParam)) {
           let driveInfo
-          try { driveInfo = await hyperdrive.load(permParam).getInfo() }
+          try { driveInfo = await beaker.beaker.hyperdrive.drive(permParam).getInfo() }
           catch (e) { /* ignore */ }
           opts.title = driveInfo && driveInfo.title ? driveInfo.title : toNiceDomain(permParam)
         }

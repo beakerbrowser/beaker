@@ -28,7 +28,7 @@ class FilesExplorer extends LitElement {
   }
 
   get drive () {
-    return hyperdrive.load(this.url)
+    return beaker.hyperdrive.drive(this.url)
   }
 
   get origin () {
@@ -469,7 +469,7 @@ class FilesExplorer extends LitElement {
     })
     if (files) {
       for (let src of files) {
-        await hyperdrive.importFromFilesystem({
+        await beaker.hyperdrive.importFromFilesystem({
           src,
           dst: joinPath(this.origin, this.folderPath),
           ignore: ['index.json'],

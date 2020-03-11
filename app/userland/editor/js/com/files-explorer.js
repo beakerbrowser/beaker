@@ -25,7 +25,7 @@ class FilesExplorer extends LitElement {
   }
 
   get drive () {
-    return hyperdrive.load(this.url)
+    return beaker.hyperdrive.drive(this.url)
   }
 
   get origin () {
@@ -116,7 +116,7 @@ class FilesExplorer extends LitElement {
       if (stat.mount) {
         return {
           path,
-          info: await hyperdrive.load(stat.mount.key).getInfo()
+          info: await beaker.hyperdrive.drive(stat.mount.key).getInfo()
         }
       }
       pathParts.pop()

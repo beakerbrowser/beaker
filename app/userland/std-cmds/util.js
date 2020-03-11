@@ -62,7 +62,7 @@ so that errors can be smoothly generated
 
 export function createDrive (url) {
   if (url.startsWith('hyper:')) {
-    return hyperdrive.load(url)
+    return beaker.hyperdrive.drive(url)
   }
   return new Proxy({}, {
     get (obj, k) {

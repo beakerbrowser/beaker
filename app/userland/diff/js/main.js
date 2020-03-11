@@ -82,8 +82,8 @@ export class CompareApp extends LitElement {
       })()
     }
 
-    this.baseDrive = this.base ? hyperdrive.load(this.base) : undefined
-    this.targetDrive = this.target ? hyperdrive.load(this.target) : undefined
+    this.baseDrive = this.base ? beaker.hyperdrive.drive(this.base) : undefined
+    this.targetDrive = this.target ? beaker.hyperdrive.drive(this.target) : undefined
     await this.attempt(
       'Reading information about the drives',
       async () => {
@@ -604,14 +604,14 @@ class CompareDiffItemContent extends LitElement {
 
   renderLeftColumn () {
     if (this.diff.change === 'del' || this.diff.change === 'mod') {
-      return this.renderFileContent(hyperdrive.load(this.targetOrigin), this.diff.targetPath, this.diff.targetMountKey)
+      return this.renderFileContent(beaker.hyperdrive.drive(this.targetOrigin), this.diff.targetPath, this.diff.targetMountKey)
     }
     return ''
   }
 
   renderRightColumn () {
     if (this.diff.change === 'add' || this.diff.change === 'mod') {
-      return this.renderFileContent(hyperdrive.load(this.baseOrigin), this.diff.basePath, this.diff.baseMountKey)
+      return this.renderFileContent(beaker.hyperdrive.drive(this.baseOrigin), this.diff.basePath, this.diff.baseMountKey)
     }
     return ''
   }
@@ -640,8 +640,8 @@ class CompareDiffItemContent extends LitElement {
     var editorEl = this.querySelector('.editor-container')
     if (!editorEl) return
     var [baseContent, targetContent] = await Promise.all([
-      this.diff.change === 'del' || this.diff.change === 'mod' ? (hyperdrive.load(this.targetOrigin)).readFile(this.diff.targetPath).catch(e => '') : '',
-      this.diff.change === 'add' || this.diff.change === 'mod' ? (hyperdrive.load(this.baseOrigin)).readFile(this.diff.basePath).catch(e => '') : '',
+      this.diff.change === 'del' || this.diff.change === 'mod' ? (beaker.hyperdrive.drive(this.targetOrigin)).readFile(this.diff.targetPath).catch(e => '') : '',
+      this.diff.change === 'add' || this.diff.change === 'mod' ? (beaker.hyperdrive.drive(this.baseOrigin)).readFile(this.diff.basePath).catch(e => '') : '',
     ])
     createDiffEditor(editorEl, baseContent, targetContent)
   }

@@ -22,7 +22,7 @@ export class BeakerEditProfile extends BasePopup {
   static async runFlow (profiles) {
     var profile = await profiles.me()
     var newValues = await BeakerEditProfile.create(profile)
-    await hyperdrive.load(profile.url).configure(newValues)
+    await beaker.hyperdrive.drive(profile.url).configure(newValues)
     return profiles.me()
   }
 

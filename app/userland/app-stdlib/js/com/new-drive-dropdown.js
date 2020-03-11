@@ -112,7 +112,7 @@ export async function create ({x, y}) {
 
 async function onCreateDrive (type) {
   contextMenu.destroy()
-  var drive = await hyperdrive.create({type})
+  var drive = await beaker.hyperdrive.createDrive({type})
   window.location = drive.url
 }
 
@@ -125,11 +125,11 @@ async function onCreateDriveFromFolder () {
   })
   if (!folder || !folder.length) return
 
-  var drive = await hyperdrive.create({
+  var drive = await beaker.hyperdrive.createDrive({
     title: folder[0].split('/').pop(),
     prompt: false
   })
   toast.create('Importing...')
-  await hyperdrive.importFromFilesystem({src: folder[0], dst: drive.url})
+  await beaker.hyperdrive.importFromFilesystem({src: folder[0], dst: drive.url})
   window.location = drive.url
 }

@@ -3,6 +3,7 @@ import { parseDriveUrl } from '../../../lib/urls'
 import pda from 'pauls-dat-api2'
 import pick from 'lodash.pick'
 import _get from 'lodash.get'
+import _flattenDeep from 'lodash.flattendeep'
 import * as modals from '../../ui/subwindows/modals'
 import * as permissions from '../../ui/permissions'
 import hyperDns from '../../hyper/dns'
@@ -128,7 +129,6 @@ export default {
     if (!url || typeof url !== 'string') {
       return Promise.reject(new InvalidURLError())
     }
-    url = await hyperDns.resolveName(url)
     await drives.getOrLoadDrive(url)
     return Promise.resolve(true)
   },
@@ -168,7 +168,8 @@ export default {
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
 
-        var {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url, opts)
+        var urlp = parseDriveUrl(url)
+        var {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
         if (!settings || typeof settings !== 'object') throw new Error('Invalid argument')
 
@@ -210,48 +211,57 @@ export default {
     ))
   },
 
-  async diff (url, other, prefix, opts = {}) {
+  async diff (url, other, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var prefix = urlp.pathname
     return auditLog.record(this.sender.getURL(), 'diff', {url, other, prefix}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
-        const {checkoutFS} = await lookupDrive(this.sender, url, opts)
+        const {checkoutFS} = await lookupDrive(this.sender, url, urlp.version)
         checkin('diffing')
         return checkoutFS.pda.diff(other, prefix)
       })
     ))
   },
 
-  async stat (url, filepath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async stat (url, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'stat', {url, filepath}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
-        const {checkoutFS} = await lookupDrive(this.sender, url, opts)
+        const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         checkin('stating file')
         return checkoutFS.pda.stat(filepath)
       })
     ))
   },
 
-  async readFile (url, filepath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async readFile (url, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'readFile', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
-        const {checkoutFS} = await lookupDrive(this.sender, url, opts)
+        const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         checkin('reading file')
         return checkoutFS.pda.readFile(filepath, opts)
       })
     ))
   },
 
-  async writeFile (url, filepath, data, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async writeFile (url, data, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     const sourceSize = Buffer.byteLength(data, opts.encoding)
     return auditLog.record(this.sender.getURL(), 'writeFile', {url, filepath}, sourceSize, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url, opts)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -268,12 +278,14 @@ export default {
     ))
   },
 
-  async unlink (url, filepath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async unlink (url, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'unlink', {url, filepath}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -287,10 +299,12 @@ export default {
     ))
   },
 
-  async copy (url, srcpath, dstpath, opts = {}) {
-    srcpath = normalizeFilepath(srcpath || '')
+  async copy (url, dstpath, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var srcpath = normalizeFilepath(urlp.pathname || '')
     dstpath = normalizeFilepath(dstpath || '')
-    const src = await lookupDrive(this.sender, srcpath.includes('://') ? srcpath : url)
+    const src = await lookupDrive(this.sender, urlp.hostname, urlp.version)
     const sourceSize = await src.drive.pda.readSize(srcpath)
     return auditLog.record(this.sender.getURL(), 'copy', {url, srcpath, dstpath}, sourceSize, () => (
       timer(to(opts), async (checkin, pause, resume) => {
@@ -314,14 +328,16 @@ export default {
     ))
   },
 
-  async rename (url, srcpath, dstpath, opts = {}) {
-    srcpath = normalizeFilepath(srcpath || '')
+  async rename (url, dstpath, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var srcpath = normalizeFilepath(urlp.pathname || '')
     dstpath = normalizeFilepath(dstpath || '')
     return auditLog.record(this.sender.getURL(), 'rename', {url, srcpath, dstpath}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
 
-        const src = await lookupDrive(this.sender, srcpath.includes('://') ? srcpath : url)
+        const src = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         const dst = await lookupDrive(this.sender, dstpath.includes('://') ? dstpath : url)
 
         if (srcpath.includes('://')) srcpath = (new URL(srcpath)).pathname
@@ -340,12 +356,14 @@ export default {
     ))
   },
 
-  async updateMetadata (url, filepath, metadata, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async updateMetadata (url, metadata, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'updateMetadata', {url, filepath, metadata}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url, opts)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -359,12 +377,14 @@ export default {
     ))
   },
 
-  async deleteMetadata (url, filepath, keys, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async deleteMetadata (url, keys, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'deleteMetadata', {url, filepath, keys}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url, opts)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -378,12 +398,14 @@ export default {
     ))
   },
 
-  async readdir (url, filepath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async readdir (url, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'readdir', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
-        const {checkoutFS} = await lookupDrive(this.sender, url, opts)
+        const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
 
         checkin('reading directory')
         var names = await checkoutFS.pda.readdir(filepath, opts)
@@ -395,12 +417,14 @@ export default {
     ))
   },
 
-  async mkdir (url, filepath, opts) {
-    filepath = normalizeFilepath(filepath || '')
+  async mkdir (url, opts) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'mkdir', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -415,12 +439,14 @@ export default {
     ))
   },
 
-  async rmdir (url, filepath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async rmdir (url, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'rmdir', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url, opts)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -434,13 +460,15 @@ export default {
     ))
   },
 
-  async symlink (url, target, linkname, opts) {
-    target = normalizeFilepath(target || '')
+  async symlink (url, linkname, opts) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var target = normalizeFilepath(urlp.pathname || '')
     linkname = normalizeFilepath(linkname || '')
     return auditLog.record(this.sender.getURL(), 'symlink', {url, target, linkname}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -455,12 +483,14 @@ export default {
     ))
   },
 
-  async mount (url, filepath, mount, opts) {
-    filepath = normalizeFilepath(filepath || '')
+  async mount (url, mount, opts) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'mount', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -475,12 +505,14 @@ export default {
     ))
   },
 
-  async unmount (url, filepath, opts = {}) {
-    filepath = normalizeFilepath(filepath || '')
+  async unmount (url, opts = {}) {
+    var urlp = parseDriveUrl(url)
+    var url = urlp.origin
+    var filepath = normalizeFilepath(urlp.pathname || '')
     return auditLog.record(this.sender.getURL(), 'unmount', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
-        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, url, opts)
+        const {drive, checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
@@ -494,13 +526,19 @@ export default {
     ))
   },
 
-  async query (url, opts) {
-    return auditLog.record(this.sender.getURL(), 'query', {url, ...opts}, undefined, () => (
+  async query (opts) {
+    if (!opts.drive) return []
+    if (!Array.isArray(opts.drive)) opts.drive = [opts.drive]
+    return auditLog.record(this.sender.getURL(), 'query', opts, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
-        checkin('looking up drive')
-        const {checkoutFS} = await lookupDrive(this.sender, url, opts)
+        checkin('looking up drives')
+        for (let i = 0; i < opts.drive.length; i++) {
+          let urlp = parseDriveUrl(opts.drive[i])
+          opts.drive[i] = (await lookupDrive(this.sender, urlp.hostname, urlp.version)).checkoutFS
+        }
         checkin('running query')
-        return query(checkoutFS, opts)
+        var queriesResults = await Promise.all(opts.drive.map(drive => query(drive, opts)))
+        return _flattenDeep(queriesResults)
       })
     ))
   },
@@ -515,18 +553,13 @@ export default {
     return drive.pda.createNetworkActivityStream()
   },
 
-  async resolveName (name) {
-    if (HYPERDRIVE_HASH_REGEX.test(name)) return name
-    return hyperDns.resolveName(name)
-  },
-
   async beakerDiff (srcUrl, dstUrl, opts) {
     assertBeakerOnly(this.sender)
     if (!srcUrl || typeof srcUrl !== 'string') {
-      throw new InvalidURLError('The first parameter of diff() must be a dat URL')
+      throw new InvalidURLError('The first parameter of diff() must be a hyperdrive URL')
     }
     if (!dstUrl || typeof dstUrl !== 'string') {
-      throw new InvalidURLError('The second parameter of diff() must be a dat URL')
+      throw new InvalidURLError('The second parameter of diff() must be a hyperdrive URL')
     }
     var [src, dst] = await Promise.all([lookupDrive(this.sender, srcUrl), lookupDrive(this.sender, dstUrl)])
     return pda.diff(src.checkoutFS.pda, src.filepath, dst.checkoutFS.pda, dst.filepath, opts)
@@ -535,10 +568,10 @@ export default {
   async beakerMerge (srcUrl, dstUrl, opts) {
     assertBeakerOnly(this.sender)
     if (!srcUrl || typeof srcUrl !== 'string') {
-      throw new InvalidURLError('The first parameter of merge() must be a dat URL')
+      throw new InvalidURLError('The first parameter of merge() must be a hyperdrive URL')
     }
     if (!dstUrl || typeof dstUrl !== 'string') {
-      throw new InvalidURLError('The second parameter of merge() must be a dat URL')
+      throw new InvalidURLError('The second parameter of merge() must be a hyperdrive URL')
     }
     var [src, dst] = await Promise.all([lookupDrive(this.sender, srcUrl), lookupDrive(this.sender, dstUrl)])
     if (!dst.drive.writable) throw new ArchiveNotWritableError('The destination drive is not writable')
@@ -746,16 +779,13 @@ function normalizeFilepath (str) {
 }
 
 // helper to handle the URL argument that's given to most args
-// - can get a dat hash, or dat url
-// - returns {drive, filepath, version}
+// - can get a hyperdrive hash, or hyperdrive url
 // - sets checkoutFS to what's requested by version
-// - throws if the filepath is invalid
-export async function lookupDrive (sender, url, opts = {}) {
-  var {driveKey, filepath, version} = await parseUrlParts(url)
+export async function lookupDrive (sender, driveKey, version) {
   var drive = drives.getDrive(driveKey)
   if (!drive) drive = await drives.loadDrive(driveKey)
   var {checkoutFS, isHistoric} = await drives.getDriveCheckout(drive, version)
-  return {drive, filepath, version, isHistoric, checkoutFS}
+  return {drive, version, isHistoric, checkoutFS}
 }
 
 async function lookupUrlDriveKey (url) {

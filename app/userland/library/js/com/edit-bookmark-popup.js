@@ -90,12 +90,12 @@ export class EditBookmarkPopup extends BasePopup {
     e.stopPropagation()
 
     var pinned = e.target.pinned.checked
-    await hyperdrive.getSystemDrive().updateMetadata(this.bookmark.path, {
+    await beaker.hyperdrive.getSystemDrive().updateMetadata(this.bookmark.path, {
       href: e.target.href.value,
       title: e.target.title.value,
       pinned: pinned ? '1' : undefined
     })
-    if (!pinned) await hyperdrive.getSystemDrive().deleteMetadata(this.bookmark.path, ['pinned'])
+    if (!pinned) await beaker.hyperdrive.getSystemDrive().deleteMetadata(this.bookmark.path, ['pinned'])
 
     this.dispatchEvent(new CustomEvent('resolve'))
   }

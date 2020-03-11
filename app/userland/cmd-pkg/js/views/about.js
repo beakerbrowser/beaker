@@ -20,7 +20,7 @@ export class AboutView extends LitElement {
   async renderCommands () {
     var manifest
     try {
-      var drive = new hyperdrive.load(location)
+      var drive = new beaker.hyperdrive.drive(location)
       manifest = JSON.parse(await drive.readFile('/index.json', 'utf8'))
     } catch (e) {
       return e.toString()

@@ -79,7 +79,7 @@ class TopRightControls extends LitElement {
       setTimeout(() => toast.create('Still loading, is your Internet connected?...', '', 10e3), 40e3)
       setTimeout(() => toast.create('Lets give it 10 more seconds...', '', 10e3), 50e3)
       try {
-        var newSite = await hyperdrive.fork(templateUrl, {title, description, prompt: false})
+        var newSite = await beaker.hyperdrive.forkDrive(templateUrl, {title, description, prompt: false})
         window.location = urlModifyFn ? urlModifyFn(newSite.url) : newSite.url
       } catch (e) {
         console.error(e)

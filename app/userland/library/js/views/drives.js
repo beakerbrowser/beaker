@@ -7,7 +7,7 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import drivesCSS from '../../css/views/drives.css.js'
 
-const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hyper://'.length)}`
+const EXPLORER_URL = drive => `https://beaker.hyperdrive.network/${drive.url.slice('hyper://'.length)}`
 const categorizeDrive = (drive) => {
   if (drive.info.type === 'website') return 'website'
   if (!drive.info.type) return 'files'
@@ -60,7 +60,7 @@ export class DrivesView extends LitElement {
 
     for (let drive of drives) {
       if (drive.info.type === 'user' && drive.info.memberOf) {
-        let groupDrive = hyperdrive.load(drive.info.memberOf)
+        let groupDrive = beaker.hyperdrive.drive(drive.info.memberOf)
         let groupInfo = await groupDrive.readFile('/index.json').then(JSON.parse).catch(e => undefined)
         if (groupInfo) {
           groupInfo.url = groupDrive.url
@@ -139,7 +139,7 @@ export class DrivesView extends LitElement {
   }
 
   async forkDrive (drive) {
-    var drive = await hyperdrive.fork(drive.url)
+    var drive = await beaker.hyperdrive.forkDrive(drive.url)
     toast.create('Drive created')
     window.open(drive.url)
     this.load()

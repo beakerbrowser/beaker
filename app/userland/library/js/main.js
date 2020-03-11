@@ -96,7 +96,7 @@ export class LibraryApp extends LitElement {
   async onClickNew (e) {
     e.preventDefault()
     e.stopPropagation()
-    var drive = await hyperdrive.create()
+    var drive = await beaker.hyperdrive.createDrive()
     toast.create('Drive created')
     window.location = drive.url
   }

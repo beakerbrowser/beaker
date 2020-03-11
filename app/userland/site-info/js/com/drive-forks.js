@@ -76,7 +76,7 @@ class DriveForks extends LitElement {
   async onClickNewFork (e) {
     e.preventDefault()
     e.stopPropagation()
-    var drive = await hyperdrive.fork(this.origin)
+    var drive = await beaker.hyperdrive.forkDrive(this.origin)
     emit(this, 'change-url', {detail: {url: this.url.replace(this.origin, drive.url)}})
   }
 

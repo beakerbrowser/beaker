@@ -27,7 +27,7 @@ class EditorApp extends LitElement {
   }
 
   get drive () {
-    return hyperdrive.load(this.url)
+    return beaker.hyperdrive.drive(this.url)
   }
 
   get origin () {
@@ -247,7 +247,7 @@ class EditorApp extends LitElement {
     var body
 
     // load drive meta
-    let drive = hyperdrive.load(url)
+    let drive = beaker.hyperdrive.drive(url)
     let [info, manifest] = await Promise.all([
       drive.getInfo(),
       drive.readFile('/index.json', 'utf8').catch(e => '')
@@ -283,7 +283,7 @@ class EditorApp extends LitElement {
         let path = '/' + pathParts.join('/')
         let stat = await drive.stat(path).catch(e => undefined)
         if (stat && stat.mount) {
-          this.mountInfo = await hyperdrive.load(stat.mount.key).getInfo()
+          this.mountInfo = await beaker.hyperdrive.drive(stat.mount.key).getInfo()
           this.mountInfo.resolvedPath = '/' + realPathParts.join('/')
           break
         }
@@ -705,7 +705,7 @@ class EditorApp extends LitElement {
 
   async onClickFork (e) {
     var urlp = new URL(this.url)
-    var newDrive = await hyperdrive.fork(this.url)
+    var newDrive = await beaker.hyperdrive.forkDrive(this.url)
     var newDriveUrlp = new URL(newDrive.url)
     urlp.hostname = newDriveUrlp.hostname
     

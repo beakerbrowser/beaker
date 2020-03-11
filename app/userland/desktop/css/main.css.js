@@ -18,6 +18,9 @@ ${tooltipCSS}
 }
 
 header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-gap: 14px;
   max-width: 1000px;
   margin: 50px auto;
 }
@@ -52,6 +55,13 @@ header .search-ctrl input::placeholder {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 400;
+}
+
+header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .files {

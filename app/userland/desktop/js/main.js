@@ -57,6 +57,12 @@ class DesktopApp extends LitElement {
           <span class="fas fa-search"></span>
           <input placeholder="Search my library" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
         </div>
+        <div style="display: flex; align-items: center">
+          <img src="hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39/thumb.jpeg">
+          <span style="padding: 0 10px; letter-spacing: 0.4px">
+            Paul Frazee
+          </span>
+        </div>
       </header>
       ${this.renderFiles()}
       ${!this.filter ? html`
@@ -112,7 +118,7 @@ class DesktopApp extends LitElement {
   // =
 
   async onClickNew (e) {
-    var drive = await hyperdrive.create()
+    var drive = await beaker.hyperdrive.createDrive()
     window.location = drive.url
   }
 
@@ -163,7 +169,7 @@ customElements.define('desktop-app', DesktopApp)
 
 function getHref (file) {
   if (file.name.endsWith('.goto')) return file.stat.metadata.href
-  return `${hyperdrive.getSystemDrive().url}/bookmarks/${file.name}`
+  return `${beaker.hyperdrive.getSystemDrive().url}/bookmarks/${file.name}`
 }
 
 function getTitle (file) {

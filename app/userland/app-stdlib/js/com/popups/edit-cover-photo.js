@@ -34,7 +34,7 @@ export class BeakerEditCoverPhoto extends BasePopup {
 
   static async runFlow (profiles) {
     var profile = await profiles.me()
-    var drive = hyperdrive.load(profile.url)
+    var drive = beaker.hyperdrive.drive(profile.url)
 
     // find the existing cover
     var existingCoverPath = null
