@@ -143,11 +143,12 @@ nav a {
 nav a:hover,
 nav a.active {
   background: #f0f0f6;
-  color: #556;
+  color: #445;
 }
 
 nav .new-btn {
   margin-left: auto;
+  color: #556;
 }
 
 nav .new-btn .fas {
