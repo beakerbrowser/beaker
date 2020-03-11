@@ -169,7 +169,7 @@ customElements.define('desktop-app', DesktopApp)
 
 function getHref (file) {
   if (file.name.endsWith('.goto')) return file.stat.metadata.href
-  return `${beaker.hyperdrive.getSystemDrive().url}/bookmarks/${file.name}`
+  return `${beaker.hyperdrive.drive('sys').url}/bookmarks/${file.name}`
 }
 
 function getTitle (file) {

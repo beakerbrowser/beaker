@@ -84,12 +84,12 @@ export async function example (opts = {}, arg1, arg2) {
 `
 
 async function readInstalled () {
-  return beaker.hyperdrive.getSystemDrive().readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
+  return beaker.hyperdrive.drive('sys').readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
 }
 
 async function saveInstalled (urls) {
-  await beaker.hyperdrive.getSystemDrive().mkdir('/webterm').catch(e => undefined)
-  await beaker.hyperdrive.getSystemDrive().writeFile('/webterm/command-packages.json', JSON.stringify(urls, null, 2))
+  await beaker.hyperdrive.drive('sys').mkdir('/webterm').catch(e => undefined)
+  await beaker.hyperdrive.drive('sys').writeFile('/webterm/command-packages.json', JSON.stringify(urls, null, 2))
 }
 
 function toUrl (str = '') {

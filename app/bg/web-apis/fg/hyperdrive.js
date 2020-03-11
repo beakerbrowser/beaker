@@ -182,8 +182,12 @@ export function setup (rpc) {
     }
   }
 
+  let filesystemApi = rpc.importAPI('beaker-filesystem', filesystemManifest, {timeout: false, errors})
   var api = {
     drive (url) {
+      if (url === 'sys' && location.protocol === 'beaker:') {
+        url = filesystemApi.get().url
+      }
       return createScopedAPI(url)
     },
 
@@ -332,12 +336,6 @@ export function setup (rpc) {
 
   // add internal methods
   if (window.location.protocol === 'beaker:') {
-    let filesystemApi = rpc.importAPI('beaker-filesystem', filesystemManifest, {timeout: false, errors})
-    let fsUrl = undefined
-    api.getSystemDrive = () => {
-      if (!fsUrl) fsUrl = filesystemApi.get().url
-      return createScopedAPI(fsUrl)
-    }
     api.importFromFilesystem = async function (opts = {}) {
       return hyperdriveRPC.importFromFilesystem(opts)
     }

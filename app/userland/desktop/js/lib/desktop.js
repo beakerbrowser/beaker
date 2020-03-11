@@ -5,14 +5,14 @@ import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 
 // const EXPLORER_APP = 'https://hyperdrive.network/'
 // export const FIXED_FILES = [
-//   makeFixedLink('.home-drive.goto', `${EXPLORER_APP}${beaker.hyperdrive.getSystemDrive().url.slice('hyper://'.length)}`, 'Home Drive'),
+//   makeFixedLink('.home-drive.goto', `${EXPLORER_APP}${beaker.hyperdrive.drive('sys').url.slice('hyper://'.length)}`, 'Home Drive'),
 //   makeFixedLink('.library.goto', 'beaker://library/', 'My Library'),
 // ]
 
 export async function load () {
   var userFiles = []
   try {
-    userFiles = await beaker.hyperdrive.getSystemDrive().readdir('/bookmarks', {includeStats: true})
+    userFiles = await beaker.hyperdrive.drive('sys').readdir('/bookmarks', {includeStats: true})
     userFiles = userFiles.filter(file => file.stat.metadata.pinned)
     userFiles.sort((a, b) => a.name.localeCompare(b.name))
     userFiles.forEach(b => { b.path = `/bookmarks/${b.name}` })
@@ -24,12 +24,12 @@ export async function load () {
 
 export async function createLink ({href, title}) {
   await beaker.bookmarks.add({href, title, pinned: true})
-  // var name = await getAvailableName('/bookmarks', title, beaker.hyperdrive.getSystemDrive(), 'goto')
-  // await beaker.hyperdrive.getSystemDrive().writeFile(`/bookmarks/${name}`, '', {metadata: {href, title}})
+  // var name = await getAvailableName('/bookmarks', title, beaker.hyperdrive.drive('sys'), 'goto')
+  // await beaker.hyperdrive.drive('sys').writeFile(`/bookmarks/${name}`, '', {metadata: {href, title}})
 }
 
 export async function remove (file) {
-  await beaker.hyperdrive.getSystemDrive().unlink(`/bookmarks/${file.name}`)
+  await beaker.hyperdrive.drive('sys').unlink(`/bookmarks/${file.name}`)
 }
 
 // internal
