@@ -28,14 +28,14 @@ header .search-ctrl {
 
 header .search-ctrl .fa-search {
   position: absolute;
-  top: 12px;
-  left: 15px;
-  font-size: 16px;
+  font-size: 15px;
+  top: 14px;
+  left: 18px;
   color: #99a;
 }
 
 header .search-ctrl input {
-  background: #f0f0f6;
+  background: #fff;
   box-sizing: border-box;
   width: 100%;
   height: 40px;
@@ -43,9 +43,9 @@ header .search-ctrl input {
   letter-spacing: 0.5px;
   font-weight: 500;
   padding: 0 0 0 42px;
-  border: 0;
-  border-radius: 4px;
-  box-shadow: none;
+  border: 1px solid #dde;
+  border-radius: 24px;
+  box-shadow: 0 1px 2px #0001;
 }
 
 header .search-ctrl input::placeholder {
@@ -126,7 +126,7 @@ header .search-ctrl input::placeholder {
 nav {
   display: flex;
   max-width: 1000px;
-  margin: 26px auto 0px;
+  margin: 30px auto 0px;
 }
 
 nav a {
@@ -137,7 +137,7 @@ nav a {
   cursor: pointer;
   padding: 4px 10px;
   margin: 0 10px;
-  border-radius: 2px;
+  border-radius: 24px;
 }
 
 nav a:hover,
