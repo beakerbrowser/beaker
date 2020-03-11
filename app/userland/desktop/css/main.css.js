@@ -18,8 +18,6 @@ ${tooltipCSS}
 }
 
 header {
-  display: grid;
-  grid-template-columns: 1fr 100px;
   max-width: 1000px;
   margin: 50px auto;
 }
@@ -54,31 +52,6 @@ header .search-ctrl input::placeholder {
   letter-spacing: 1px;
   font-size: 14px;
   font-weight: 400;
-}
-
-header .new-btn {
-  display: block;
-  background: #2864dc;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  text-align: center;
-  border-radius: 2px;
-  height: 38px;
-  line-height: 38px;
-  margin: 1px 10px;
-  cursor: pointer;
-}
-
-header .new-btn .fas {
-  font-size: 13px;
-  margin-left: 4px;
-}
-
-header .new-btn.pressed,
-header .new-btn:hover {
-  background: #1957d2;
-  text-decoration: none;
 }
 
 .files {
@@ -150,15 +123,47 @@ header .new-btn:hover {
   color: rgba(0, 0, 150, 0.25);
 }
 
+nav {
+  display: flex;
+  max-width: 1000px;
+  margin: 26px auto 0px;
+}
+
+nav a {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  color: #889;
+  cursor: pointer;
+  padding: 4px 10px;
+  margin: 0 10px;
+  border-radius: 2px;
+}
+
+nav a:hover,
+nav a.active {
+  background: #f0f0f6;
+  color: #556;
+}
+
+nav .new-btn {
+  margin-left: auto;
+}
+
+nav .new-btn .fas {
+  font-size: 13px;
+  margin-left: 4px;
+}
+
 drives-view,
 bookmarks-view {
   display: block;
   max-width: 1000px;
-  margin: 30px auto;
+  margin: 26px auto;
 }
 
-drives-view + bookmarks-view {
-  margin-top: -31px;
+drives-view:not(.hidden) + bookmarks-view {
+  margin-top: -27px;
 }
 `
 export default cssStr

@@ -14,6 +14,7 @@ class DesktopApp extends LitElement {
   static get properties () {
     return {
       files: {type: Array},
+      currentNav: {type: String},
       filter: {type: String}
     }
   }
@@ -25,6 +26,7 @@ class DesktopApp extends LitElement {
   constructor () {
     super()
     this.files = []
+    this.currentNav = 'drives'
     this.filter = ''
     this.load()
 
@@ -46,6 +48,8 @@ class DesktopApp extends LitElement {
     if (!this.files) {
       return html`<div></div>`
     }
+    const navItem = (id, label) => html`<a class=${id === this.currentNav ? 'active' : ''} @click=${e => {this.currentNav = id}}>${label}</a>`
+    const hiddenCls = id => this.filter || this.currentNav === id ? '' : 'hidden'
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <header>
@@ -53,11 +57,17 @@ class DesktopApp extends LitElement {
           <span class="fas fa-search"></span>
           <input placeholder="Search my library" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
         </div>
-        <a class="new-btn" @click=${this.onClickNew}>New <span class="fas fa-plus"></span></a>
       </header>
       ${this.renderFiles()}
-      <drives-view class="top-border" loadable hide-empty .filter=${this.filter}></drives-view>
-      <bookmarks-view class=${!this.filter ? 'hidden' : ''} loadable hide-empty other-only .filter=${this.filter}></bookmarks-view>
+      ${!this.filter ? html`
+        <nav>
+          ${navItem('drives', 'Drives')}
+          ${navItem('bookmarks', 'Bookmarks')}
+          <a class="new-btn" @click=${this.onClickNew}>New Drive <span class="fas fa-plus"></span></a>
+        </nav>
+      ` : ''}
+      <drives-view class="top-border ${hiddenCls('drives')}" loadable hide-empty .filter=${this.filter}></drives-view>
+      <bookmarks-view class=${hiddenCls('bookmarks')} loadable hide-empty other-only .filter=${this.filter}></bookmarks-view>
       </div>
     `
   }
