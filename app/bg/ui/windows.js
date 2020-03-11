@@ -169,7 +169,8 @@ export function createShellWindow (windowState) {
   let state = ensureVisibleOnSomeDisplay(Object.assign({}, defaultWindowState(), windowState))
   var { x, y, width, height, minWidth, minHeight } = state
   var win = new BrowserWindow({
-    titleBarStyle: 'hiddenInset',
+    titleBarStyle: 'hidden',
+    trafficLightPosition: {x: 12, y: 19},
     autoHideMenuBar: !IS_LINUX,
     fullscreenable: true,
     fullscreenWindowTitle: true,
