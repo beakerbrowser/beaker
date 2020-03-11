@@ -89,7 +89,7 @@ class ShellWindowToolbarMenu extends LitElement {
       <a
         class=${classMap({disabled: !isHyper})}
         @click=${isHyper ? this.onClickFilesExplorer : undefined}
-      ><span class="far fa-folder"></span> Files Explorer</a>
+      ><span class="far fa-folder"></span> Explore Files</a>
     `
   }
 
