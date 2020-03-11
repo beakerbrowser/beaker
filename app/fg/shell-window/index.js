@@ -8,7 +8,7 @@ import './win32'
 import './tabs'
 import './navbar'
 import './sidebar-resizer'
-import './footer-menu'
+import './toolbar-menu'
 import './resize-hackfix'
 
 // setup
@@ -111,7 +111,7 @@ class ShellWindowUI extends LitElement {
       this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
       if (this.activeTab) {
         this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
-        this.shadowRoot.querySelector('shell-window-footer-menu').requestUpdate()
+        this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
       }
     }
     if (this.activeTab) {
@@ -141,10 +141,10 @@ class ShellWindowUI extends LitElement {
         .activeTab=${this.activeTab}
       ></shell-window-sidebar-resizer>
       ${this.isShellInterfaceHidden ? '' : html`
-        <shell-window-footer-menu
+        <shell-window-toolbar-menu
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
-        ></shell-window-footer-menu>
+        ></shell-window-toolbar-menu>
       `}
     `
   }

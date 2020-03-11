@@ -112,8 +112,8 @@ export function close (tab) {
 
 function setBounds (sidebarView, tab) {
   var parentBounds = tab.browserWindow.getContentBounds()
-  var y = tab.browserWindow.isShellInterfaceHidden ? 0 : SIDEBAR_Y
-  var height = parentBounds.height - y - (tab.browserWindow.isShellInterfaceHidden ? 0 : tabManager.FOOTER_HEIGHT)
+  var y = tab.browserWindow.isShellInterfaceHidden ? 0 : (SIDEBAR_Y + tabManager.TOOLBAR_HEIGHT)
+  var height = parentBounds.height - y
   sidebarView.setBounds({
     x: 0,
     y,

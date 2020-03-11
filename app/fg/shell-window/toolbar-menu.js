@@ -3,7 +3,7 @@ import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import * as bg from './bg-process-rpc'
 
-class ShellWindowFooterMenu extends LitElement {
+class ShellWindowToolbarMenu extends LitElement {
   static get properties () {
     return {
       activeTabIndex: {type: Number},
@@ -16,33 +16,41 @@ class ShellWindowFooterMenu extends LitElement {
     :host {
       position: fixed;
       left: 0;
-      bottom: 0;
+      top: 69px;
       width: 100vw;
       height: 25px;
 
       display: flex;
       font-size: 11px;
       letter-spacing: 0.4px;
-      padding: 0 5px;
+      padding: 1px 5px;
       box-sizing: border-box;
-      border-top: 1px solid var(--color-footer-border);
-      background: var(--bg-footer);
-      color: var(--color-footer);
+      border-bottom: 1px solid var(--color-toolbar-border);
+      background: var(--bg-toolbar);
+      color: var(--color-toolbar);
       user-select: none;
     }
     a {
       padding: 0 8px;
       margin-right: 1px;
-      height: 24px;
+      height: 20px;
+      line-height: 22px;
       box-sizing: border-box;
       text-align: center;
-      line-height: 24px;
       cursor: pointer;
     }
     a.pressed,
     a:hover {
-      background: var(--bg-footer--hover);
-      color: var(--color-footer--hover);
+      background: var(--bg-toolbar--hover);
+      color: var(--color-toolbar--hover);
+    }
+    a.disabled {
+      cursor: default;
+      opacity: 0.5;
+    }
+    a.disabled:hover {
+      color: var(--color-toolbar);
+      background: none;
     }
     a .fas {
       font-size: 10px;
@@ -62,12 +70,14 @@ class ShellWindowFooterMenu extends LitElement {
   // =
 
   render () {
-    const sidebarBtn = (panel, label) => {
+    const isHyper = this.activeTab ? this.activeTab.url.startsWith('hyper://') : false
+    const sidebarBtn = (panel, label, hyperOnly = false) => {
       var panels = this.activeTab ? this.activeTab.sidebarPanels : []
+      var disabled = hyperOnly && !isHyper
       return html`
         <a
-          class=${classMap({pressed: panels.includes(panel)})}
-          @click=${e => this.onClickSidebarToggle(e, panel)}
+          class=${classMap({pressed: panels.includes(panel), disabled})}
+          @click=${disabled ? undefined : e => this.onClickSidebarToggle(e, panel)}
         >${label}</a>
       `
     }
@@ -75,7 +85,11 @@ class ShellWindowFooterMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
-      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`)}
+      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`, true)}
+      <a
+        class=${classMap({disabled: !isHyper})}
+        @click=${isHyper ? this.onClickFilesExplorer : undefined}
+      ><span class="far fa-folder"></span> Files Explorer</a>
     `
   }
 
@@ -85,5 +99,10 @@ class ShellWindowFooterMenu extends LitElement {
   onClickSidebarToggle (e, panel) {
     bg.views.executeSidebarCommand('active', 'toggle-panel', panel)
   }
+
+  onClickFilesExplorer (e) {
+    if (!this.activeTab) return
+    bg.views.loadURL('active', `https://hyperdrive.network/${this.activeTab.url.slice('hyper://'.length)}`)
+  }
 }
-customElements.define('shell-window-footer-menu', ShellWindowFooterMenu)
+customElements.define('shell-window-toolbar-menu', ShellWindowToolbarMenu)

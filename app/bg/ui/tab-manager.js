@@ -67,7 +67,7 @@ const TLS_ERROR_CODES = Object.values({
 const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
 
 const Y_POSITION = 76
-export const FOOTER_HEIGHT = 25
+export const TOOLBAR_HEIGHT = 18
 const DEFAULT_URL = 'beaker://desktop'
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
@@ -329,7 +329,7 @@ class Tab {
 
   calculateBounds (windowBounds) {
     var x = 0
-    var y = Y_POSITION
+    var y = Y_POSITION + TOOLBAR_HEIGHT
     var {width, height} = windowBounds
     if (this.browserWindow.isShellInterfaceHidden) {
       y = 0
@@ -338,9 +338,6 @@ class Tab {
       // sidebar takes left side of the screen
       x = (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
       width -= (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
-    }
-    if (!this.browserWindow.isShellInterfaceHidden) {
-      height -= FOOTER_HEIGHT
     }
     return {x, y: y, width, height: height - y}
   }
