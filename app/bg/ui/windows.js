@@ -170,7 +170,7 @@ export function createShellWindow (windowState) {
   var { x, y, width, height, minWidth, minHeight } = state
   var win = new BrowserWindow({
     titleBarStyle: 'hidden',
-    trafficLightPosition: {x: 12, y: 19},
+    trafficLightPosition: {x: 12, y: 20},
     autoHideMenuBar: !IS_LINUX,
     fullscreenable: true,
     fullscreenWindowTitle: true,
