@@ -52,6 +52,7 @@ if (getEnvVar('BEAKER_USER_DATA_PATH')) {
 if (getEnvVar('BEAKER_TEST_DRIVER')) {
   testDriver.setup()
 }
+process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = '1' // we know, we know
 
 // enable the sandbox
 app.enableSandbox()
