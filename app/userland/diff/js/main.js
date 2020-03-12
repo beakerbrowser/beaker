@@ -361,7 +361,7 @@ export class CompareApp extends LitElement {
           icon: 'far fa-fw fa-hdd',
           label: 'Browse...',
           click: async () => {
-            this.base = await navigator.selectDriveDialog()
+            this.base = await beaker.shell.selectDriveDialog()
             this.load()
           }
         }
@@ -415,7 +415,7 @@ export class CompareApp extends LitElement {
           icon: 'far fa-fw fa-hdd',
           label: 'Browse...',
           click: async () => {
-            this.target = await navigator.selectDriveDialog()
+            this.target = await beaker.shell.selectDriveDialog()
             this.load()
           }
         }

@@ -487,7 +487,7 @@ class FilesExplorer extends LitElement {
   async onClickMount (e) {
     if (this.readOnly) return
 
-    var url = await navigator.selectDriveDialog()
+    var url = await beaker.shell.selectDriveDialog()
     if (!url) return
     var name = await prompt('Enter the mount name')
     if (!name) return

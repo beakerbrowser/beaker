@@ -672,7 +672,7 @@ class EditorApp extends LitElement {
 
   async onClickNewLink (folderPath) {
     if (this.readOnly) return
-    var url = await navigator.selectDriveDialog()
+    var url = await beaker.shell.selectDriveDialog()
     if (!url) return
     var name = await prompt('Enter the new link name')
     if (!name) return
@@ -683,7 +683,7 @@ class EditorApp extends LitElement {
   async onClickImportFiles (folderPath) {
     toast.create('Importing...')
     try {
-      await navigator.importFilesDialog(joinPath(this.drive.url, folderPath))
+      await beaker.shell.importFilesDialog(joinPath(this.drive.url, folderPath))
       toast.create('Import complete', 'success')
     } catch (e) {
       console.log(e)
@@ -695,7 +695,7 @@ class EditorApp extends LitElement {
   async onClickExportFiles (urls) {
     toast.create('Exporting...')
     try {
-      await navigator.exportFilesDialog(urls)
+      await beaker.shell.exportFilesDialog(urls)
       toast.create('Export complete', 'success')
     } catch (e) {
       console.log(e)

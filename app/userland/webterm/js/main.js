@@ -227,8 +227,8 @@ class WebTerm extends LitElement {
     this.pageCommands = await beaker.browser.executeJavaScriptInPage(`
       ;(() => {
         let commands = {}
-        if (navigator.terminal.commands.length) {
-          for (let command of navigator.terminal.commands) {
+        if (beaker.terminal.getCommands().length) {
+          for (let command of beaker.terminal.getCommands()) {
             commands[command.name] = {
               package: 'page commands',
               name: '@' + command.name,
@@ -420,7 +420,7 @@ class WebTerm extends LitElement {
       if (command) {
         command.fn = (...args) => beaker.browser.executeJavaScriptInPage(`
           ;(() => {
-            let command = navigator.terminal.commands.find(c => c.name === ${JSON.stringify(commandName.slice(1))});
+            let command = beaker.terminal.getCommands().find(c => c.name === ${JSON.stringify(commandName.slice(1))});
             if (command) {
               return command.handle.apply(command, ${JSON.stringify(args)})
             }

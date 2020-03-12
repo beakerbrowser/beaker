@@ -21,7 +21,7 @@ class UserSession extends LitElement {
   }
 
   async connectedCallback () {
-    this.session = await navigator.session.get(this.origin)
+    this.session = undefined // TODO await navigator.session.get(this.origin)
     super.connectedCallback()
   }
 

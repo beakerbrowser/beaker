@@ -215,7 +215,7 @@ class SiteMenu extends LitElement {
 
   onDriveProperties (e) {
     bg.shellMenus.close()
-    bg.navigator.drivePropertiesDialog(this.url)
+    bg.shell.drivePropertiesDialog(this.url)
   }
 }
 SiteMenu.styles = [commonCSS, css`

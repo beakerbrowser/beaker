@@ -1,5 +1,5 @@
 import * as modals from './subwindows/modals'
-import navigatorWebAPI from '../web-apis/bg/navigator'
+import shellWebAPI from '../web-apis/bg/shell'
 import drivesWebAPI from '../web-apis/bg/drives'
 import { UserDeniedError } from 'beaker-error-constants'
 
@@ -18,5 +18,5 @@ export async function runForkFlow (win, url) {
 }
 
 export async function runDrivePropertiesFlow (win, key) {
-  await navigatorWebAPI.drivePropertiesDialog.call({sender: win}, key)
+  await shellWebAPI.drivePropertiesDialog.call({sender: win}, key)
 }

@@ -150,7 +150,7 @@ export class DrivesView extends LitElement {
   }
 
   async driveProps (drive) {
-    await navigator.drivePropertiesDialog(drive.url)
+    await beaker.shell.drivePropertiesDialog(drive.url)
     this.load()
   }
 

@@ -347,7 +347,7 @@ class SiteInfoApp extends LitElement {
 
   onClickDriveProperties (e) {
     beaker.browser.toggleSiteInfo(false)
-    navigator.drivePropertiesDialog(this.origin)
+    beaker.shell.drivePropertiesDialog(this.origin)
   }
 }
 

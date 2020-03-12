@@ -209,7 +209,7 @@ class DriveView extends LitElement {
 
   async onClickEditProperties (e) {
     e.preventDefault()
-    await navigator.drivePropertiesDialog(location.origin)
+    await beaker.shell.drivePropertiesDialog(location.origin)
     this.load()
   }
 
