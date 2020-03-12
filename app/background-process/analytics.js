@@ -30,9 +30,9 @@ async function checkin () {
       var pingData = await readPingData()
       if ((Date.now() - (pingData.lastPingTime || 0)) > ANALYTICS_CHECKIN_INTERVAL) {
         await sendPing(pingData)
+        pingData.lastPingTime = Date.now()
+        await writePingData(pingData)
       }
-      pingData.lastPingTime = Date.now()
-      await writePingData(pingData)
     } catch (e) {
       // failed, we'll reschedule another ping in 24 hours
     }
