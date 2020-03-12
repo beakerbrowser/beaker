@@ -4,7 +4,7 @@
   "devDependencies": {
     "browserify": "^13.0.1",
     "electron": "8.1.1",
-    "electron-builder": "~20.38.5",
+    "electron-builder": "~22.4.1",
     "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-node": "^5.1.1",
@@ -76,7 +76,7 @@
     "burnthemall": "node ./tasks/burnthemall.js",
     "lint": "eslint --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern 'app/vendor' --ignore-pattern '*.build.js' --ignore-pattern 'assets' --fix app",
     "rebuild": "gulp rebuild",
-    "release": "npm run build && build -p never && gulp postbuild",
+    "release": "npm run build && electron-builder -p never && gulp postbuild",
     "start": "gulp start",
     "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
