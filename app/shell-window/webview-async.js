@@ -49,7 +49,6 @@ const methods = [
   'selectAll',
   'unselect',
   'replace',
-  'replaceMisspelling',
   'findInPage',
   'stopFindInPage',
   'getId',

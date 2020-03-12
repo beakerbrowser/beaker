@@ -13,8 +13,6 @@ export default function registerContextMenu () {
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
       const isDat = props.pageURL.startsWith('dat://')
-      const isMisspelled = props.selectionText && beakerCore.spellChecker.isMisspelled(props.selectionText)
-      const spellingSuggestions = isMisspelled && beakerCore.spellChecker.getSuggestions(props.selectionText).slice(0, 5)
 
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
@@ -76,14 +74,6 @@ export default function registerContextMenu () {
         menuItems.push({ label: 'Save Audio As...', click: downloadPrompt('srcURL') })
         menuItems.push({ label: 'Copy Audio URL', click: () => clipboard.writeText(props.srcURL) })
         menuItems.push({ label: 'Open Audio in New Tab', click: (item, win) => viewManager.create(win, props.srcURL) })
-        menuItems.push({ type: 'separator' })
-      }
-
-      // spell check
-      if (props.isMisspelled !== '' && props.isEditable) {
-        for (let i in spellingSuggestions) {
-          menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label) })
-        }
         menuItems.push({ type: 'separator' })
       }
 
