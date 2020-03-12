@@ -29,12 +29,11 @@ export default function registerContextMenu () {
       `)
 
       // helper to run a download prompt for media
-      const downloadPrompt = (field, ext) => (item, win) => {
+      const downloadPrompt = (field, ext) => async (item, win) => {
         var defaultPath = path.join(app.getPath('downloads'), path.basename(props[field]))
         if (ext && defaultPath.split('/').pop().indexOf('.') === -1) defaultPath += ext
-        dialog.showSaveDialog({ title: `Save ${props.mediaType} as...`, defaultPath }, filepath => {
-          if (filepath) { download(win, webContents, props[field], { saveAs: filepath }) }
-        })
+        var {filePath} = await dialog.showSaveDialog({ title: `Save ${props.mediaType} as...`, defaultPath })
+        if (filePath) { download(win, webContents, props[field], { saveAs: filePath }) }
       }
 
       // links

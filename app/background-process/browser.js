@@ -190,7 +190,7 @@ export async function getBuiltinFavicon (name) {
 }
 
 export async function uploadFavicon () {
-  let favicon = dialog.showOpenDialog({
+  let favicon = dialog.showOpenDialogSync({
     title: 'Upload Favicon...',
     defaultPath: app.getPath('home'),
     buttonLabel: 'Upload Favicon',
@@ -375,7 +375,7 @@ export async function capturePage (url, opts) {
     width: width + SCROLLBAR_WIDTH,
     height,
     show: false,
-    defaultEncoding: 'UTF-8',
+    defaultEncoding: 'utf-8',
     partition: 'session-' + Date.now() + Math.random(),
     preload: 'file://' + path.join(app.getAppPath(), 'webview-preload.build.js'),
     webPreferences: {
@@ -424,13 +424,15 @@ function showOpenDialog (opts = {}) {
       filters: opts.filters,
       properties: opts.properties,
       defaultPath: opts.defaultPath
-    }, filenames => {
+    }).then(({filePaths}) => {
       // return focus back to the the webview
       wc.executeJavaScript(`
         var wv = document.querySelector('webview:not(.hidden)')
         if (wv) wv.focus()
       `)
-      resolve(filenames)
+      resolve(filePaths)
+    }, err => {
+      resolve([])
     })
   })
 }
@@ -575,8 +577,8 @@ function onWebContentsCreated (e, webContents) {
   })
 }
 
-function onWillPreventUnload (e) {
-  var choice = dialog.showMessageBox({
+async function onWillPreventUnload (e) {
+  var {response} = await dialog.showMessageBox({
     type: 'question',
     buttons: ['Leave', 'Stay'],
     title: 'Do you want to leave this site?',
@@ -584,7 +586,7 @@ function onWillPreventUnload (e) {
     defaultId: 0,
     cancelId: 1
   })
-  var leave = (choice === 0)
+  var leave = (response === 0)
   if (leave) {
     e.preventDefault()
   }

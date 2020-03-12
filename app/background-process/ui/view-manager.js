@@ -105,7 +105,7 @@ class View {
     this.browserView = new BrowserView({
       webPreferences: {
         preload: path.join(__dirname, 'webview-preload.build.js'),
-        contextIsolation: false,
+        contextIsolation: true,
         webviewTag: false,
         sandbox: true,
         defaultEncoding: 'utf-8',
@@ -763,7 +763,7 @@ export async function remove (win, view) {
   // give the 'onbeforeunload' a chance to run
   var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(view.webContents)
   if (onBeforeUnloadReturnValue) {
-    var choice = dialog.showMessageBox({
+    var {response} = await dialog.showMessageBox({
       type: 'question',
       buttons: ['Leave', 'Stay'],
       title: 'Do you want to leave this site?',
@@ -771,7 +771,7 @@ export async function remove (win, view) {
       defaultId: 0,
       cancelId: 1
     })
-    var leave = (choice === 0)
+    var leave = (response === 0)
     if (!leave) return
   }
 
