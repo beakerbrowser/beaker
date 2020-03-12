@@ -17,7 +17,9 @@ function main () {
   rmPackageLock(appDir)
   run('npm install', {shell: true}, function () {
     run('npm run rebuild', {shell: true}, function () {
-      process.exit(0)
+      run('npm run build', {shell: true}, function () {
+        process.exit(0)
+      })
     })
   })
 }
