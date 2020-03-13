@@ -78,6 +78,24 @@ export async function create (webContents, modalName, params = {}) {
     throw new ModalActiveError()
   }
 
+  // wait for tab to be actives
+  if (!tab.isActive) {
+    await new Promise((resolve, reject) => {
+      const activated = () => {
+        tab.removeListener('activated', activated)
+        tab.removeListener('destroyed', destroyed)
+        resolve()
+      }
+      const destroyed = () => {
+        tab.removeListener('activated', activated)
+        tab.removeListener('destroyed', destroyed)
+        reject()
+      }
+      tab.on('activated', activated)
+      tab.on('destroyed', destroyed)
+    })
+  }
+
   // create the view
   var view = views[tab.id] = new BrowserView({
     webPreferences: {

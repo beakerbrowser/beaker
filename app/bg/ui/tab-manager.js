@@ -3,7 +3,7 @@ import errorPage from '../lib/error-page'
 import * as libTools from '@beaker/library-tools'
 import path from 'path'
 import { promises as fs } from 'fs'
-import Events from 'events'
+import { EventEmitter } from 'events'
 import _throttle from 'lodash.throttle'
 import { parseDriveUrl } from '../../lib/urls'
 import emitStream from 'emit-stream'
@@ -112,15 +112,16 @@ var activeTabs = {} // map of {[win.id]: Array<Tab>}
 var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var lastSelectedTabIndex = {} // map of {[win.id]: Number}
 var closedURLs = {} // map of {[win.id]: Array<string>}
-var windowEvents = {} // mapof {[win.id]: Events}
+var windowEvents = {} // mapof {[win.id]: EventEmitter}
 var noRedirectHostnames = new Set() // set of hostnames which have drive-redirection disabled
 var nextTabIsScriptCloseable = false // will the next tab created be "script closable"?
 
 // classes
 // =
 
-class Tab {
+class Tab extends EventEmitter {
   constructor (win, opts = {isPinned: false, isHidden: false}) {
+    super()
     this.browserWindow = win
     this.browserView = new BrowserView({
       webPreferences: {
@@ -369,6 +370,7 @@ class Tab {
     } else {
       this.webContents.focus()
     }
+    this.emit('activated')
   }
 
   focus () {
@@ -391,7 +393,11 @@ class Tab {
     modals.hide(this.browserView)
     sidebars.hide(this)
     siteInfo.hide(this.browserWindow)
+    var wasActive = this.isActive
     this.isActive = false
+    if (wasActive) {
+      this.emit('deactivated')
+    }
   }
 
   destroy () {
@@ -401,6 +407,7 @@ class Tab {
     modals.close(this.browserView)
     sidebars.close(this)
     this.browserView.destroy()
+    this.emit('destroyed')
   }
 
   transferWindow (targetWindow) {
@@ -1651,7 +1658,7 @@ function getTopWindow (win) {
 
 function getEvents (win) {
   if (!(win.id in windowEvents)) {
-    windowEvents[win.id] = new Events()
+    windowEvents[win.id] = new EventEmitter()
   }
   return windowEvents[win.id]
 }
