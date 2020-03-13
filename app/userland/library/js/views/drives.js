@@ -8,15 +8,6 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import drivesCSS from '../../css/views/drives.css.js'
 
 const EXPLORER_URL = drive => `https://beaker.hyperdrive.network/${drive.url.slice('hyper://'.length)}`
-const categorizeDrive = (drive) => {
-  if (drive.info.type === 'website') return 'website'
-  if (!drive.info.type) return 'files'
-  if (drive.ident.user || drive.info.type === 'user') return 'user'
-  if (drive.info.type === 'group') return 'group'
-  if (drive.info.type === 'module') return 'module'
-  if (drive.info.type === 'webterm.sh/cmd-pkg') return 'webterm-sh-cmd-pkg'
-  return 'other'
-}
 
 export class DrivesView extends LitElement {
   static get properties () {
@@ -199,8 +190,8 @@ export class DrivesView extends LitElement {
           <img
             class="thumb"
             srcset="
-              beaker://assets/img/drive-types/${categorizeDrive(drive)}.png 1x,
-              beaker://assets/img/drive-types/${categorizeDrive(drive)}-64.png 2x
+              beaker://assets/img/drive-types/files.png 1x,
+              beaker://assets/img/drive-types/files-64.png 2x
             "
           >
         </a>

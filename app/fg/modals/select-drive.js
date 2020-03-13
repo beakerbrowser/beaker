@@ -6,16 +6,6 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons.css'
 import spinnerCSS from './spinner.css'
 
-function categorizeDrive (drive) {
-  if (drive.info.type === 'website') return 'website'
-  if (!drive.info.type) return 'files'
-  if (drive.ident.user || drive.info.type === 'user') return 'user'
-  if (drive.info.type === 'group') return 'group'
-  if (drive.info.type === 'module') return 'module'
-  if (drive.info.type === 'webterm.sh/cmd-pkg') return 'webterm-sh-cmd-pkg'
-  return 'other'
-}
-
 class SelectDriveModal extends LitElement {
   static get properties () {
     return {
@@ -311,8 +301,8 @@ class SelectDriveModal extends LitElement {
         <img
           class="thumb"
           srcset="
-            beaker://assets/img/drive-types/${categorizeDrive(drive)}.png 1x,
-            beaker://assets/img/drive-types/${categorizeDrive(drive)}-64.png 2x
+            beaker://assets/img/drive-types/files.png 1x,
+            beaker://assets/img/drive-types/files-64.png 2x
           "
         >
         <div class="info">
