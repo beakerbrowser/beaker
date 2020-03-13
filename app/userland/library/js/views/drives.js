@@ -179,7 +179,7 @@ export class DrivesView extends LitElement {
         <div class="drives">
           ${repeat(drives, drive => this.renderDrive(drive))}
           ${drives.length === 0 && !this.hideEmpty ? html`
-            <div class="empty">No items found</div>
+            <div class="empty"><span class="fas fa-hdd"></span><div>Click "New Drive" to create a Hyperdrive</div></div>
           ` : ''}
         </div>
       ` : html`

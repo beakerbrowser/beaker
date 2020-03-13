@@ -26,10 +26,18 @@ a {
 }
 
 .bookmarks .empty {
-  font-size: 17px;
-  letter-spacing: 0.75px;
-  color: #667;
-  padding: 28px 40px;
+  font-size: 16px;
+  letter-spacing: 0.7px;
+  color: #a3a3a8;
+  padding: 120px 0px;
+  background: #fafafd;
+  text-align: center;
+}
+
+.bookmarks .empty .far {
+  font-size: 120px;
+  margin-bottom: 30px;
+  color: #d3d3d8;
 }
 
 .bookmark {

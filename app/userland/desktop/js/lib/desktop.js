@@ -22,8 +22,8 @@ export async function load () {
   return userFiles
 }
 
-export async function createLink ({href, title}) {
-  await beaker.bookmarks.add({href, title, pinned: true})
+export async function createLink ({href, title}, pinned) {
+  await beaker.bookmarks.add({href, title, pinned})
   // var name = await getAvailableName('/bookmarks', title, beaker.hyperdrive.drive('sys'), 'goto')
   // await beaker.hyperdrive.drive('sys').writeFile(`/bookmarks/${name}`, '', {metadata: {href, title}})
 }

@@ -69,11 +69,16 @@ class DesktopApp extends LitElement {
         <nav>
           ${navItem('drives', 'Drives')}
           ${navItem('bookmarks', 'Bookmarks')}
-          <a class="new-btn" @click=${this.onClickNew}>New Drive <span class="fas fa-plus"></span></a>
+          ${this.currentNav === 'drives' ? html`
+            <a class="new-btn" @click=${this.onClickNewDrive}>New Drive <span class="fas fa-plus"></span></a>
+          ` : ''}
+          ${this.currentNav === 'bookmarks' ? html`
+            <a class="new-btn" @click=${e => this.onClickNewBookmark(e, false)}>New Bookmark <span class="fas fa-plus"></span></a>
+          ` : ''}
         </nav>
       ` : ''}
-      <drives-view class="top-border ${hiddenCls('drives')}" loadable hide-empty .filter=${this.filter}></drives-view>
-      <bookmarks-view class=${hiddenCls('bookmarks')} loadable hide-empty other-only .filter=${this.filter}></bookmarks-view>
+      <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
+      <bookmarks-view class=${hiddenCls('bookmarks')} loadable ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></bookmarks-view>
       </div>
     `
   }
@@ -106,7 +111,7 @@ class DesktopApp extends LitElement {
           </a>
         `)}
         ${!this.filter ? html`
-          <a class="file add" @click=${this.onClickAdd}>
+          <a class="file add" @click=${e => this.onClickNewBookmark(e, true)}>
             <span class="fas fa-fw fa-plus"></span>
           </a>
         ` : ''}
@@ -117,14 +122,14 @@ class DesktopApp extends LitElement {
   // events
   // =
 
-  async onClickNew (e) {
+  async onClickNewDrive (e) {
     var drive = await beaker.hyperdrive.createDrive()
     window.location = drive.url
   }
 
-  async onClickAdd () {
+  async onClickNewBookmark (e, pinned) {
     try {
-      await desktop.createLink(await AddLinkPopup.create())
+      await desktop.createLink(await AddLinkPopup.create(), pinned)
       toast.create('Link added', '', 10e3)
     } catch (e) {
       // ignore

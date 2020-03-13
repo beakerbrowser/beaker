@@ -89,14 +89,11 @@ export class BookmarksView extends LitElement {
           ${!this.otherOnly ? html`
             <h3>Start Page</h3>
             ${repeat(pinnedBookmarks, bookmark => this.renderBookmark(bookmark))}
-            ${pinnedBookmarks.length === 0 && !this.hideEmpty ? html`
-              <div class="empty">No items found</div>
-            ` : ''}
             <h3>Other</h3>
           ` : ''}
           ${repeat(otherBookmarks, bookmark => this.renderBookmark(bookmark))}
-          ${otherBookmarks.length === 0&& !this.hideEmpty ? html`
-            <div class="empty">No items found</div>
+          ${otherBookmarks.length === 0 && !this.hideEmpty && this.otherOnly ? html`
+            <div class="empty"><span class="far fa-star"></span><div>Click "New Bookmark" to create a bookmark</div></div>
           ` : ''}
         </div>
       ` : html`

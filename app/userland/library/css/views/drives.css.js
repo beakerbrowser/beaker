@@ -26,10 +26,18 @@ a[href]:hover {
 }
 
 .drives .empty {
-  font-size: 17px;
-  letter-spacing: 0.75px;
-  color: #667;
-  padding: 28px 40px;
+  font-size: 16px;
+  letter-spacing: 0.7px;
+  color: #a3a3a8;
+  padding: 120px 0px;
+  background: #fafafd;
+  text-align: center;
+}
+
+.drives .empty .fas {
+  font-size: 120px;
+  margin-bottom: 10px;
+  color: #d3d3d8;
 }
 
 :host(.top-border) .drive:first-child {
