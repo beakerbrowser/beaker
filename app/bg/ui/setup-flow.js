@@ -40,7 +40,7 @@ export async function runSetupFlow () {
         preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
         defaultEncoding: 'utf-8',
         nodeIntegration: false,
-        contextIsolation: false,
+        contextIsolation: true,
         webviewTag: false,
         sandbox: true,
         webSecurity: true,
