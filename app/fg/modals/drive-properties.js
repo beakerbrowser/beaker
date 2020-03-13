@@ -121,7 +121,6 @@ class DrivePropertiesModal extends LitElement {
     this.props = params.props || {}
     this.props.title = this.props.title || ''
     this.props.description = this.props.description || ''
-    this.props.type = this.props.type || ''
     this.props.frontend = this.props.frontend || ''
     this.frontends = await this.readFrontends()
     await this.requestUpdate()
@@ -130,7 +129,7 @@ class DrivePropertiesModal extends LitElement {
 
   async readFrontends () {
     var drives = await bg.drives.list()
-    return drives.map(drive => drive.info).filter(info => info.type === 'frontend')
+    return drives.map(drive => drive.info)
   }
 
   adjustHeight () {
@@ -173,9 +172,7 @@ class DrivePropertiesModal extends LitElement {
 
   renderProp (key, value) {
     if (key === 'frontend') {
-      let typeInput = this.shadowRoot.querySelector('input[name="type"]')
-      let currentType = typeInput ? typeInput.value : this.props.type
-      let frontends = USABLE_BUILTIN_FRONTENDS.concat(this.frontends).filter(t => filterFrontendByType(t.manifest, currentType))
+      let frontends = USABLE_BUILTIN_FRONTENDS.concat(this.frontends)
       let opt = (id, label) => html`<option value=${id} ?selected=${id === value}>${label}</option>`
       return html`
         <div class="prop ${this.writable ? '.writable' : ''}">

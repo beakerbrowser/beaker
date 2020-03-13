@@ -31,7 +31,7 @@ export default {
     await modals.create(this.sender, 'drive-properties', {
       url: info.url,
       writable: info.writable,
-      props: Object.assign(_pick(info, ['title', 'description', 'type']), {frontend})
+      props: Object.assign(_pick(info, ['title', 'description']), {frontend})
     })
   },
 
