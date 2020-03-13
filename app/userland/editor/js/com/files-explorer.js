@@ -54,6 +54,7 @@ class FilesExplorer extends LitElement {
     this.folderPath = ''
     this.currentFolder = null
     this.items = []
+    this.watcher = undefined
     this.load()
   }
 
@@ -66,6 +67,11 @@ class FilesExplorer extends LitElement {
 
   async load () {
     this.isLoading = true
+
+    if (this.watcher) {
+      this.watcher.close()
+      this.watcher = undefined
+    }
 
     var items = []
     if (this.isDrive) {
@@ -101,6 +107,16 @@ class FilesExplorer extends LitElement {
       this.currentFolder = await drive.stat(folderPath)
       this.currentFolder.path = folderPath
       this.currentFolder.name = folderPath.split('/').pop() || '/'
+
+      var hackSetupTime = Date.now()
+      this.watcher = drive.watch(e => {
+        // HACK
+        // for some reason, the watchstream is firing 'changed' immediately
+        // ignore if the event fires within 1s of setup
+        // -prf
+        if (Date.now() - hackSetupTime <= 1000) return
+        this.load()
+      })
     }
 
     this.items = items

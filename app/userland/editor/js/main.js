@@ -358,6 +358,12 @@ class EditorApp extends LitElement {
       })
       items.push('-')
       items.push({
+        icon: 'fas fa-fw fa-sync',
+        label: 'Refresh files',
+        click: () => this.loadExplorer()
+      })
+      items.push('-')
+      items.push({
         icon: 'fa fa-fw fa-i-cursor',
         label: 'Rename',
         disabled: this.readOnly,
@@ -393,6 +399,12 @@ class EditorApp extends LitElement {
         label: 'New link',
         disabled: this.readOnly,
         click: () => this.onClickNewLink(folderPath)
+      })
+      items.push('-')
+      items.push({
+        icon: 'fas fa-fw fa-sync',
+        label: 'Refresh files',
+        click: () => this.loadExplorer()
       })
       items.push('-')
       items.push({
