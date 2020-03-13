@@ -85,6 +85,7 @@ class ShellWindowToolbarMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
+      ${sidebarBtn('drive-info-app', html`<span class="fas fa-info-circle"></span> Drive Info`, true)}
       ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`, true)}
       <a
         class=${classMap({disabled: !isHyper})}

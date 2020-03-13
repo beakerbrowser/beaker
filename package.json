@@ -94,5 +94,6 @@
   "bugs": {
     "url": "https://github.com/beakerbrowser/beaker/issues"
   },
-  "homepage": "https://beakerbrowser.com/"
+  "homepage": "https://beakerbrowser.com/",
+  "dependencies": {}
 }

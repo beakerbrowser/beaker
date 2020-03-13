@@ -1,5 +1,6 @@
 import 'beaker://editor/js/main.build.js'
 import 'beaker://webterm/js/main.js'
+import './drive-info.js'
 
 /**
  * NOTE
@@ -9,6 +10,7 @@ import 'beaker://webterm/js/main.js'
  * be kept in sync with the frontend.
  */
 
+const PANELS_ORDER = ['drive-info-app', 'editor-app', 'web-term']
 const MIN_PANEL_HEIGHT = 50
 
 class SidebarApp extends HTMLElement {
@@ -43,14 +45,14 @@ class SidebarApp extends HTMLElement {
   }
 
   async addPanel (tagName, url, opts) {
-    // NOTE for now, there are only 2 panels 
+    // NOTE for now, there are only 3 panels 
     // and they are hardcoded with specific orders
 
     // no duplicates
     if (!this.panels.find(p => p.tagName === tagName)) {
       var panel = {tagName, height: 0}
-      if (tagName === 'web-term') this.panels.push(panel)
-      else this.panels.unshift(panel)
+      this.panels.push(panel)
+      this.panels.sort((a, b) => PANELS_ORDER.indexOf(a.tagName) - PANELS_ORDER.indexOf(b.tagName))
       var panelIndex = this.panels.indexOf(panel)
 
       await this.addPanelEls(panelIndex)
@@ -63,7 +65,6 @@ class SidebarApp extends HTMLElement {
     try {
       this.querySelector(tagName).setFocus()
     } catch (e) {
-      console.log('Unexpected error when setting focus', e)
     }
   }
 
