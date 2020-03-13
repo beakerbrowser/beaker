@@ -10,6 +10,8 @@ import 'beaker://library/js/views/drives.js'
 import 'beaker://library/js/views/bookmarks.js'
 import css from '../css/main.css.js'
 
+var cacheBuster = Date.now()
+
 class DesktopApp extends LitElement {
   static get properties () {
     return {
@@ -36,6 +38,7 @@ class DesktopApp extends LitElement {
   }
 
   async load () {
+    cacheBuster = Date.now()
     this.files = await desktop.load()
     console.log(this.files)
     Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
@@ -103,7 +106,7 @@ class DesktopApp extends LitElement {
             @contextmenu=${e => this.onContextmenuFile(e, file)}
           >
             <div class="thumb-wrapper">
-              <img src=${'asset:screenshot:' + getHref(file)} class="thumb"/>
+              <img src=${'asset:screenshot:' + getHref(file) + '?cache_buster=' + cacheBuster} class="thumb"/>
             </div>
             <div class="details">
               <div class="title">${getTitle(file)}</div>
