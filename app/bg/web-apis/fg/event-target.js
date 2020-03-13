@@ -9,6 +9,9 @@ const PREP_EVENT = Symbol() // eslint-disable-line
 export class EventTarget {
   constructor () {
     this[LISTENERS] = {}
+    this.addEventListener = this.addEventListener.bind(this)
+    this.removeEventListener = this.removeEventListener.bind(this)
+    this.dispatchEvent = this.dispatchEvent.bind(this)
   }
 
   addEventListener (type, callback) {
