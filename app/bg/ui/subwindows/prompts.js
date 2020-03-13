@@ -67,6 +67,10 @@ export async function create (webContents, promptName, params = {}) {
     return
   }
 
+  if (!tab.isActive) {
+    await tab.awaitActive()
+  }
+
   // create the view
   var view = views[tab.id] = new BrowserView({
     webPreferences: {

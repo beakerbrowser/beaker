@@ -51,6 +51,11 @@ export async function create (parentWindow, parentView, params) {
     return false // abort
   }
 
+  var tab = tabManager.findTab(parentView)
+  if (tab && !tab.isActive) {
+    await tab.awaitActive()
+  }
+
   // create the window
   var view = views[parentView.id] = new BrowserView({
     webPreferences: {

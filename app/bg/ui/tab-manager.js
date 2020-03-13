@@ -410,6 +410,23 @@ class Tab extends EventEmitter {
     this.emit('destroyed')
   }
 
+  awaitActive () {
+    return new Promise((resolve, reject) => {
+      const activated = () => {
+        this.removeListener('activated', activated)
+        this.removeListener('destroyed', destroyed)
+        resolve()
+      }
+      const destroyed = () => {
+        this.removeListener('activated', activated)
+        this.removeListener('destroyed', destroyed)
+        reject()
+      }
+      this.on('activated', activated)
+      this.on('destroyed', destroyed)
+    })
+  }
+
   transferWindow (targetWindow) {
     this.deactivate()
     prompts.close(this.browserView)

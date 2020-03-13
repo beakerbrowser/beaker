@@ -80,20 +80,7 @@ export async function create (webContents, modalName, params = {}) {
 
   // wait for tab to be actives
   if (!tab.isActive) {
-    await new Promise((resolve, reject) => {
-      const activated = () => {
-        tab.removeListener('activated', activated)
-        tab.removeListener('destroyed', destroyed)
-        resolve()
-      }
-      const destroyed = () => {
-        tab.removeListener('activated', activated)
-        tab.removeListener('destroyed', destroyed)
-        reject()
-      }
-      tab.on('activated', activated)
-      tab.on('destroyed', destroyed)
-    })
+    await tab.awaitActive()
   }
 
   // create the view
