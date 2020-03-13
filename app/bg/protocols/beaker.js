@@ -92,6 +92,11 @@ async function beakerProtocol (request, respond) {
     if (i !== -1) requestUrl = requestUrl.slice(0, i)
   }
 
+  // redirects from old pages
+  if (requestUrl.startsWith('beaker://start/')) {
+    return cb(200, 'OK', 'text/html', () => `<!doctype html><meta http-equiv="refresh" content="0; url=beaker://desktop/">`)
+  }
+
   // browser ui
   if (requestUrl === 'beaker://shell-window/') {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg', 'shell-window', 'index.html'))
