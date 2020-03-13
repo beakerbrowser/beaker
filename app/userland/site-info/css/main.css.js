@@ -89,92 +89,10 @@ hr {
   word-break: break-word;
 }
 
-.site-info .floating-right {
-  float: right;
-}
-
-.site-info .floating-right button {
-  padding: 5px;
-}
-
-.site-info .editable:hover {
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.site-info .desc .editable:before {
-  top: 25px;
-}
-.site-info .desc .editable:after {
-  top: 20px;
-}
-
-.nav {
-  display: flex;
-  align-items: center;
-  padding: 8px 6px;
-  border-bottom: 1px solid #ccc;
-}
-
-.nav .desc {
-  display: flex;
-  align-items: center;
-}
-
-.nav .tabs {
-  display: flex;
-}
-
-.nav .tabs a {
-  text-align: center; /* for when stacking occurs in narrow views */
-  border-radius: 16px;
-  font-size: 11px;
-  padding: 6px 12px;
-  cursor: pointer;
-  margin-left: 2px;
-}
-
-.nav .tabs a.active {
-  background: #f0f0f4;
-}
-
-.nav .tabs a:not(.active):hover {
-  background: #f0f0f4;
-}
-
 .inner > div {
   display: block;
   padding: 10px;
   border-bottom: 1px solid #ccc;
-}
-
-.inner > .handlers {
-  padding: 8px 10px;
-}
-
-.handler {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  height: 30px;
-}
-
-.handler:hover {
-  background: rgb(245, 245, 245);
-}
-
-.handler > * {
-  margin-left: 5px;
-}
-
-.handler .favicon {
-  width: 16px;
-  height: 16px;
-}
-
-.handler .title {
-  font-size: 14px;
-  margin-left: 8px;
 }
 `
 export default cssStr

@@ -4,8 +4,6 @@ import { pluralize, toNiceDomain } from '../../app-stdlib/js/strings.js'
 import _get from 'lodash.get'
 import * as beakerPermissions from '@beaker/permissions'
 import mainCSS from '../css/main.css.js'
-import './com/drive-history.js'
-import './com/drive-forks.js'
 import './com/user-session.js'
 import './com/requested-perms.js'
 
@@ -15,15 +13,10 @@ class SiteInfoApp extends LitElement {
   static get properties () {
     return {
       url: {type: String},
-      view: {type: String},
       user: {type: Object},
-      feedAuthors: {type: Array},
       isLoading: {type: Boolean},
-      readOnly: {type: Boolean},
       info: {type: Object},
-      requestedPerms: {type: Object},
-      driveCfg: {type: Object},
-      forks: {type: Array}
+      requestedPerms: {type: Object}
     }
   }
 
@@ -68,12 +61,6 @@ class SiteInfoApp extends LitElement {
   get pathname () {
     let urlp = new URL(this.url)
     return urlp.pathname
-  }
-
-  get isDriveDomainUnconfirmed () {
-    // viewing a dat at a hostname but no domain is confirmed
-    var hostname = this.hostname.replace(/\+.*$/i, '')
-    return this.isDrive && !isDatHashRegex.test(hostname) && this.info.domain !== hostname
   }
 
   constructor () {
@@ -121,12 +108,8 @@ class SiteInfoApp extends LitElement {
 
   reset () {
     this.url = ''
-    this.view = undefined
     this.isLoading = true
-    this.readOnly = true
     this.info = undefined
-    this.driveCfg = undefined
-    this.forks = undefined
     this.requestedPerms = undefined
   }
 
@@ -138,35 +121,11 @@ class SiteInfoApp extends LitElement {
       if (this.isDrive) {
         // get drive info
         let drive = this.drive
-        ;[this.info, this.driveCfg, this.forks] = await Promise.all([
-          drive.getInfo(),
-          beaker.drives.get(this.url),
-          beaker.drives.getForks(this.url)
-        ])
-        this.readOnly = !this.info.writable
-
-        // watch for network events
-        if (!this.onNetworkChanged) {
-          // TODO
-          // this.onNetworkChanged = (e) => {
-          //   this.info.peers = e.peers
-          //   this.requestUpdate()
-          // }
-          // drive.addEventListener('network-changed', this.onNetworkChanged)
-        }
+        this.info = await drive.getInfo()
       } else {
         this.info = {
           title: this.hostname,
           domain: this.isHttps ? this.hostname : undefined
-        }
-      }
-
-      // choose default view
-      if (!this.view) {
-        if (this.isDrive) {
-          this.view = 'forks'
-        } else {
-          this.view = 'permissions'
         }
       }
 
@@ -210,7 +169,6 @@ class SiteInfoApp extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div>
         ${this.renderSiteInfo()}
-        ${this.renderNav()}
         ${this.renderView()}
       </div>
     `
@@ -224,14 +182,6 @@ class SiteInfoApp extends LitElement {
     return html`
       <div class="site-info">
         <div class="details">
-          ${this.isDrive ? html`
-            <div class="floating-right">
-              <button class="transparent" title=${isSaved ? 'Saved to My Library' : 'Save to My Library'} @click=${this.onClickToggleSaved}>
-                ${isSaved ? html`<span class="far fa-check-square"></span> Saved` : html`<span class="far fa-square"></span> Saved`}
-              </button>
-              <button class="transparent" title="Drive Properties" @click=${this.onClickDriveProperties}><span class="far fa-list-alt"></span></button>
-            </div>
-          ` : ''}
           <h1>${this.info.title}</h1>
           ${this.isDrive && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
           ${protocol}
@@ -240,47 +190,9 @@ class SiteInfoApp extends LitElement {
     `
   }
 
-  renderNav () {
-    if (this.isRootDrive) return ''
-    return html`
-      <div class="nav">
-        <div class="tabs">
-          ${this.isDrive ? html`
-            <a class=${classMap({active: this.view === 'forks'})} @click=${e => this.onSetView(e, 'forks')}>
-              <span class="fas fa-fw fa-code-branch"></span>
-              Forks
-            </a>
-            <a class=${classMap({active: this.view === 'revisions'})} @click=${e => this.onSetView(e, 'revisions')}>
-              <span class="fas fa-fw fa-history"></span>
-              Revisions
-            </a>
-            <a class=${classMap({active: this.view === 'peers'})} @click=${e => this.onSetView(e, 'peers')}>
-              <span class="fas fa-fw fa-share-alt"></span>
-              ${this.info.peers} ${pluralize(this.info.peers, 'peer')}
-            </a>
-          ` : ''}
-          <a class=${classMap({active: this.view === 'permissions'})} @click=${e => this.onSetView(e, 'permissions')}>
-            <span class="fas fa-fw fa-key"></span>
-            Permissions
-          </a>
-        </div>
-      </div>
-    `
-  }
-
   renderView () {
     return html`
       <div class="inner">
-        ${this.isDriveDomainUnconfirmed ? html`
-          <div class="notice">
-            <p><span class="fas fa-fw fa-exclamation-triangle"></span> Domain issue</p>
-            <p>
-              This site has not confirmed <code>${this.hostname}</code> as its primary domain.
-              It's safe to view but you will not be able to follow it or use its advanced features.
-            </p>
-          </div>
-        ` : ''}
-
         ${this.isHttp ? html`
           <div class="notice">
             <p class="warning">
@@ -292,23 +204,14 @@ class SiteInfoApp extends LitElement {
           </div>
         ` : ''}
 
-        ${this.view === 'permissions' ? html`
-          <user-session
-            origin=${this.origin}
-          ></user-session>
-          <requested-perms
-            origin=${this.origin}
-            .perms=${this.requestedPerms}
-          ></requested-perms>
-        ` : ''}
- 
-        ${this.view === 'forks' ? html`
-          <drive-forks url=${this.url} origin=${this.origin} .info=${this.info} .forks=${this.forks} @change-url=${this.onChangeUrl}></drive-forks>
-        ` : ''}
+        <user-session
+          origin=${this.origin}
+        ></user-session>
 
-        ${this.view === 'revisions' ? html`
-          <drive-history url=${this.url} origin=${this.origin} .info=${this.info}></drive-history>
-        ` : ''}
+        <requested-perms
+          origin=${this.origin}
+          .perms=${this.requestedPerms}
+        ></requested-perms>
       </div>
     `
   }
@@ -325,29 +228,10 @@ class SiteInfoApp extends LitElement {
   // events
   // =
 
-  onSetView (e, view) {
-    e.preventDefault()
-    this.view = view
-  }
-
   onChangeUrl (e) {
     this.url = e.detail.url
     beaker.browser.gotoUrl(this.url)
     this.load()
-  }
-
-  async onClickToggleSaved (e) {
-    if (_get(this.driveCfg, 'saved')) {
-      await beaker.drives.remove(this.origin)
-    } else {
-      await beaker.drives.configure(this.origin)
-    }
-    this.load()
-  }
-
-  onClickDriveProperties (e) {
-    beaker.browser.toggleSiteInfo(false)
-    beaker.shell.drivePropertiesDialog(this.origin)
   }
 }
 
