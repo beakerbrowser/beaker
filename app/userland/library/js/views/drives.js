@@ -7,7 +7,7 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import drivesCSS from '../../css/views/drives.css.js'
 
-const EXPLORER_URL = drive => `https://beaker.hyperdrive.network/${drive.url.slice('hyper://'.length)}`
+const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hyper://'.length)}`
 
 export class DrivesView extends LitElement {
   static get properties () {
@@ -85,7 +85,7 @@ export class DrivesView extends LitElement {
               <span class="fas fa-fw fa-search fa-stack-1x" style="margin-left: -1px; margin-top: -2px; font-size: 9px"></span>
             </i>
           `,
-          label: 'Open with Files Explorer',
+          label: 'Explore Files',
           click: () => window.open(EXPLORER_URL(drive))
         },
         '-',
