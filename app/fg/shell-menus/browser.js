@@ -282,7 +282,7 @@ class BrowserMenu extends LitElement {
   }
 
   onOpenSystemDrive (e) {
-    bg.shellMenus.createTab(bg.beakerFs.get().url)
+    bg.shellMenus.createTab(`https://hyperdrive.network/${bg.beakerFs.get().url.slice('hyper://'.length)}`)
     bg.shellMenus.close()
   }
 
