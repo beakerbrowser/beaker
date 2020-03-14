@@ -11,6 +11,8 @@ import './prompt'
 import './basic-auth'
 import './user-editor'
 import './user-select'
+import './add-contact'
+import './select-contact'
 
 class ModalsWrapper extends LitElement {
   static get properties () {
@@ -86,6 +88,10 @@ class ModalsWrapper extends LitElement {
         return html`<user-editor-modal></user-editor-modal>`
       case 'user-select':
         return html`<user-select-modal></user-select-modal>`
+      case 'add-contact':
+        return html`<add-contact-modal></add-contact-modal>`
+      case 'select-contact':
+        return html`<select-contact-modal></select-contact-modal>`
     }
     return html`<div></div>`
   }

@@ -1,12 +1,13 @@
 import { contextBridge, webFrame } from 'electron'
 import errors from 'beaker-error-constants'
+import contactsManifest from '../manifests/external/contacts'
 import shellManifest from '../manifests/external/shell'
 
 const RPC_OPTS = { timeout: false, errors }
 
 export const setup = function (rpc) {
   var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
-
+  var contacts = rpc.importAPI('contacts', contactsManifest, RPC_OPTS)
 
   var _terminalCommands = []
   var terminal = {
@@ -35,5 +36,5 @@ export const setup = function (rpc) {
     }
   }
 
-  return {shell, terminal}
+  return {contacts, shell, terminal}
 }

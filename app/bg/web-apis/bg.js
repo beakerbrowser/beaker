@@ -41,11 +41,12 @@ import { WEBAPI as downloadsAPI } from '../ui/downloads'
 import { WEBAPI as beakerBrowserAPI } from '../browser'
 
 // external manifests
+import contactsManifest from './manifests/external/contacts'
 import shellManifest from './manifests/external/shell'
 import hyperdriveManifest from './manifests/external/hyperdrive'
-import spellCheckerManifest from './manifests/external/spell-checker'
 
 // external apis
+import contactsAPI from './bg/contacts'
 import shellAPI from './bg/shell'
 import hyperdriveAPI from './bg/hyperdrive'
 
@@ -75,9 +76,9 @@ export const setup = function () {
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
 
   // external apis
+  rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
   rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
-  // rpc.exportAPI('spell-checker', spellCheckerManifest, spellCheckerAPI) TODO
 
   // experimental apis
   rpc.exportAPI('experimental-capture-page', experimentalCapturePageManifest, experimentalCapturePageAPI, secureOnly)

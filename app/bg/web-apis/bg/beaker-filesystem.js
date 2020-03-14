@@ -5,7 +5,7 @@ import * as filesystem from '../../filesystem/index'
 // =
 
 /**
- * @typedef {Object} BeakereFilesystemPublicAPIRootRecord
+ * @typedef {Object} BeakerFilesystemPublicAPIRootRecord
  * @prop {string} url
  */
 
@@ -14,7 +14,7 @@ import * as filesystem from '../../filesystem/index'
 
 export default {
   /**
-   * @returns {BeakereFilesystemPublicAPIRootRecord}
+   * @returns {BeakerFilesystemPublicAPIRootRecord}
    */
   get () {
     if (!this.sender.getURL().startsWith('beaker:')) {

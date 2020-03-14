@@ -119,7 +119,6 @@ export class AddContactPopup extends BasePopup {
     this.isLoadingContactInfo = false
     this.contactInfo = info
     this.contactLoadError = error
-    console.log('loadContactInfo succeeded', info)
   }
 
   // management
