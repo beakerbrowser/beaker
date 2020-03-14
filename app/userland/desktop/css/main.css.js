@@ -167,13 +167,18 @@ nav .new-btn .fas {
 }
 
 drives-view,
-bookmarks-view {
+bookmarks-view,
+address-book-view {
   display: block;
   max-width: 1000px;
   margin: 26px auto;
 }
 
 drives-view:not(.hidden) + bookmarks-view {
+  margin-top: -27px;
+}
+
+bookmarks-view:not(.hidden) + address-book-view {
   margin-top: -27px;
 }
 `

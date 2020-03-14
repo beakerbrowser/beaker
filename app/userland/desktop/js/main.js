@@ -2,12 +2,14 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { EditBookmarkPopup } from 'beaker://library/js/com/edit-bookmark-popup.js'
+import { AddContactPopup } from 'beaker://library/js/com/add-contact-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as desktop from './lib/desktop.js'
 import 'beaker://library/js/views/drives.js'
 import 'beaker://library/js/views/bookmarks.js'
+import 'beaker://library/js/views/address-book.js'
 import css from '../css/main.css.js'
 
 var cacheBuster = Date.now()
@@ -72,16 +74,21 @@ class DesktopApp extends LitElement {
         <nav>
           ${navItem('drives', 'Drives')}
           ${navItem('bookmarks', 'Bookmarks')}
+          ${navItem('address-book', 'Address Book')}
           ${this.currentNav === 'drives' ? html`
             <a class="new-btn" @click=${this.onClickNewDrive}>New Drive <span class="fas fa-plus"></span></a>
           ` : ''}
           ${this.currentNav === 'bookmarks' ? html`
             <a class="new-btn" @click=${e => this.onClickNewBookmark(e, false)}>New Bookmark <span class="fas fa-plus"></span></a>
           ` : ''}
+          ${this.currentNav === 'address-book' ? html`
+            <a class="new-btn" @click=${this.onClickNewContact}>New Contact <span class="fas fa-plus"></span></a>
+          ` : ''}
         </nav>
       ` : ''}
       <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
       <bookmarks-view class=${hiddenCls('bookmarks')} loadable ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></bookmarks-view>
+      <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></address-book-view>
       </div>
     `
   }
@@ -134,6 +141,17 @@ class DesktopApp extends LitElement {
     try {
       await desktop.createLink(await AddLinkPopup.create(), pinned)
       toast.create('Link added', '', 10e3)
+    } catch (e) {
+      // ignore
+      console.log(e)
+    }
+    this.load()
+  }
+
+  async onClickNewContact (e) {
+    try {
+      await AddContactPopup.create()
+      toast.create('Contact added', '', 10e3)
     } catch (e) {
       // ignore
       console.log(e)

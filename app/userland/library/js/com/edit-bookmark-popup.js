@@ -59,13 +59,13 @@ export class EditBookmarkPopup extends BasePopup {
       <form @submit=${this.onSubmit}>
         <div>
           <label for="title-input">Title</label>
-          <input required type="text" id="title-input" name="title" value="${this.bookmark.stat.metadata.title}" placeholder="E.g. Beaker Browser" />
+          <input required type="text" id="title-input" name="title" value="${this.bookmark?.stat.metadata.title || ''}" placeholder="E.g. Beaker Browser" />
 
           <label for="href-input">URL</label>
-          <input required type="text" id="href-input" name="href" value="${this.bookmark.stat.metadata.href}" placeholder="E.g. beakerbrowser.com" />
+          <input required type="text" id="href-input" name="href" value="${this.bookmark?.stat.metadata.href || ''}" placeholder="E.g. beakerbrowser.com" />
 
           <label for="pinned-input">
-            <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark.stat.metadata.pinned} />
+            <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.stat.metadata.pinned} />
             Pin to start page
           </label>
         </div>
@@ -90,12 +90,20 @@ export class EditBookmarkPopup extends BasePopup {
     e.stopPropagation()
 
     var pinned = e.target.pinned.checked
-    await beaker.hyperdrive.drive('sys').updateMetadata(this.bookmark.path, {
-      href: e.target.href.value,
-      title: e.target.title.value,
-      pinned: pinned ? '1' : undefined
-    })
-    if (!pinned) await beaker.hyperdrive.drive('sys').deleteMetadata(this.bookmark.path, ['pinned'])
+    if (this.bookmark) {
+      await beaker.hyperdrive.drive('sys').updateMetadata(this.bookmark.path, {
+        href: e.target.href.value,
+        title: e.target.title.value,
+        pinned: pinned ? '1' : undefined
+      })
+      if (!pinned) await beaker.hyperdrive.drive('sys').deleteMetadata(this.bookmark.path, ['pinned'])
+    } else {
+      await beaker.bookmarks.add({
+        href: e.target.href.value,
+        title: e.target.title.value,
+        pinned
+      })
+    }
 
     this.dispatchEvent(new CustomEvent('resolve'))
   }
