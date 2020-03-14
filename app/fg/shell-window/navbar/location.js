@@ -437,6 +437,9 @@ class NavbarLocation extends LitElement {
   }
 
   async onClickSiteMenu () {
+    if (Date.now() - (this.lastSiteMenuClick||0) < 100) {
+      return
+    }
     this.isSiteMenuOpen = true
     var rect = this.shadowRoot.querySelector('.site').getClientRects()[0]
     // show menu
@@ -450,6 +453,7 @@ class NavbarLocation extends LitElement {
       }
     })
     this.isSiteMenuOpen = false
+    this.lastSiteMenuClick = Date.now()
   }
 }
 NavbarLocation.styles = [buttonResetCSS, tooltipCSS, css`

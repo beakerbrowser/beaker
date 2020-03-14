@@ -106,6 +106,9 @@ class NavbarSiteInfo extends LitElement {
   // =
 
   async onClickButton (e) {
+    if (Date.now() - (this.lastButtonClick||0) < 100) {
+      return
+    }
     this.isPressed = true
     var rect = e.currentTarget.getClientRects()[0]
     await bg.views.toggleSiteInfo({
@@ -115,6 +118,7 @@ class NavbarSiteInfo extends LitElement {
       }
     })
     this.isPressed = false
+    this.lastButtonClick = Date.now()
   }
 }
 NavbarSiteInfo.styles = [buttonResetCSS, css`

@@ -276,9 +276,13 @@ class ShellWindowNavbar extends LitElement {
   }
 
   async onClickBrowserMenu (e) {
+    if (Date.now() - (this.lastBrowserMenuClick||0) < 100) {
+      return
+    }
     this.isBrowserMenuOpen = true
     await bg.views.toggleMenu('browser')
     this.isBrowserMenuOpen = false
+    this.lastBrowserMenuClick = Date.now()
   }
 }
 ShellWindowNavbar.styles = css`
