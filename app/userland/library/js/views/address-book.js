@@ -64,8 +64,7 @@ export class AddressBookView extends LitElement {
     var contacts = this.contacts
     if (contacts && this.filter) {
       contacts = contacts.filter(contact => (
-        (contact.key || '').toLowerCase().includes(this.filter)
-        || (contact.title).toLowerCase().includes(this.filter)
+        (contact.title).toLowerCase().includes(this.filter)
         || (contact.description).toLowerCase().includes(this.filter)
       ))
     }
@@ -74,10 +73,10 @@ export class AddressBookView extends LitElement {
       ${contacts ? html`
         <div class="contacts">
           ${repeat(contacts, contact => this.renderContact(contact))}
+        </div>
           ${contacts.length === 0 && !this.hideEmpty ? html`
             <div class="empty"><span class="far fa-address-card"></span><div>Click "New Contact" to create a Contact</div></div>
           ` : ''}
-        </div>
       ` : html`
         <div class="loading"><span class="spinner"></span></div>
       `}

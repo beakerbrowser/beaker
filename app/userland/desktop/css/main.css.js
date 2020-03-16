@@ -174,12 +174,5 @@ address-book-view {
   margin: 26px auto;
 }
 
-drives-view:not(.hidden) + bookmarks-view {
-  margin-top: -27px;
-}
-
-bookmarks-view:not(.hidden) + address-book-view {
-  margin-top: -27px;
-}
 `
 export default cssStr

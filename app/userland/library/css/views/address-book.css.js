@@ -13,11 +13,16 @@ a {
 }
 
 .contacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 180px);
+  grid-gap: 25px;
+  padding: 10px 0;
   font-size: 13px;
   box-sizing: border-box;
+  user-select: none;
 }
 
-.contacts .empty {
+.empty {
   font-size: 16px;
   letter-spacing: 0.7px;
   color: #a3a3a8;
@@ -26,22 +31,23 @@ a {
   text-align: center;
 }
 
-.contacts .empty .far {
+.empty .far {
   font-size: 120px;
   margin-bottom: 30px;
   color: #d3d3d8;
 }
 
-:host(.top-border) .contact:first-child {
-  border-top: 1px solid #dde;
+:host(.top-border) .contacts {
+  padding-top: 0;
 }
 
 .contact {
-  display: flex;
-  align-items: center;
-  padding: 18px 24px;
+  position: relative;
+  text-align: center;
+  padding: 30px 5px 25px;
   color: #555;
-  border-bottom: 1px solid #dde;
+  border: 1px solid #dde;
+  border-radius: 4px;
 }
 
 .contact:hover {
@@ -50,12 +56,12 @@ a {
 }
 
 .contact .thumb {
-  display: block;
-  width: 50px;
-  height: 50px;
+  display: inline-block;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: 50%;
-  margin-right: 20px;
+  margin-bottom: 20px;
 }
 
 .contact .info {
@@ -66,15 +72,19 @@ a {
   font-size: 15px;
   line-height: 1;
   font-weight: 600;
-  margin-right: 10px;
 }
 
 .contact .description {
   color: #99a;
+  margin-top: 5px;
+  max-height: 48px; /* 3 lines of text */
+  overflow: hidden;
 }
 
 .contact .ctrls {
-  width: 40px;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 `
