@@ -65,10 +65,6 @@ class DriveView extends LitElement {
       font-size: 14px;
     }
 
-    header .type {
-      color: green;
-    }
-
     main h4 {
       font-family: var(--monospace);
       margin: 0;
@@ -154,7 +150,7 @@ class DriveView extends LitElement {
           <img src="/thumb" @error=${e => {e.currentTarget.style.display = 'none'}}>
           ${this.info.title}
         </h1>
-        <p><span class="type">${this.info.type || 'files drive'}</span> ${this.info.description || ''}</p>
+        <p>${this.info.description || ''}</p>
       </header>
       <main>
         <h4>${location.pathname}</h4>

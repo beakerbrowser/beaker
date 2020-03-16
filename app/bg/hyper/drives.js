@@ -568,7 +568,7 @@ export function fromKeyToURL (key) {
 }
 
 function hasMetaChanged (m1, m2) {
-  for (let k of ['title', 'description', 'type', 'memberOf', 'forkOf', 'size', 'author', 'writable', 'mtime']) {
+  for (let k of ['title', 'description', 'memberOf', 'forkOf', 'size', 'author', 'writable', 'mtime']) {
     if (!m1[k]) m1[k] = undefined
     if (!m2[k]) m2[k] = undefined
     if (k === 'memberOf' || k === 'forkOf') {
