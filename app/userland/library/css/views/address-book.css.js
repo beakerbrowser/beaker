@@ -16,7 +16,7 @@ a {
   display: grid;
   grid-template-columns: repeat(auto-fill, 180px);
   grid-gap: 25px;
-  padding: 10px 0;
+  padding: 14px 10px;
   font-size: 13px;
   box-sizing: border-box;
   user-select: none;
@@ -38,7 +38,7 @@ a {
 }
 
 :host(.top-border) .contacts {
-  padding-top: 0;
+  padding: 0;
 }
 
 .contact {

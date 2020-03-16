@@ -7,6 +7,7 @@ import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as desktop from './lib/desktop.js'
+import * as addressBook from './lib/address-book.js'
 import 'beaker://library/js/views/drives.js'
 import 'beaker://library/js/views/bookmarks.js'
 import 'beaker://library/js/views/address-book.js'
@@ -18,6 +19,7 @@ class DesktopApp extends LitElement {
   static get properties () {
     return {
       files: {type: Array},
+      profile: {type: Object},
       currentNav: {type: String},
       filter: {type: String}
     }
@@ -29,6 +31,7 @@ class DesktopApp extends LitElement {
 
   constructor () {
     super()
+    this.profile = undefined
     this.files = []
     this.currentNav = 'drives'
     this.filter = ''
@@ -41,7 +44,10 @@ class DesktopApp extends LitElement {
 
   async load () {
     cacheBuster = Date.now()
-    this.files = await desktop.load()
+    ;[this.profile, this.files] = await Promise.all([
+      addressBook.loadProfile(),
+      desktop.load()
+    ])
     console.log(this.files)
     Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
   }
@@ -62,12 +68,12 @@ class DesktopApp extends LitElement {
           <span class="fas fa-search"></span>
           <input placeholder="Search my library" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
         </div>
-        <div style="display: flex; align-items: center">
-          <img src="hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39/thumb.jpeg">
-          <span style="padding: 0 10px; letter-spacing: 0.4px">
-            Paul Frazee
-          </span>
-        </div>
+        ${this.profile ? html`
+          <a class="profile-ctrl" href=${this.profile.url}>
+            <img src="asset:thumb:${this.profile.url}">
+            <span>${this.profile.title}</span>
+          </a>
+        ` : ''}
       </header>
       ${this.renderFiles()}
       ${!this.filter ? html`

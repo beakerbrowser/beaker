@@ -20,7 +20,6 @@ ${tooltipCSS}
 header {
   display: grid;
   grid-template-columns: 1fr auto;
-  grid-gap: 14px;
   max-width: 1000px;
   margin: 50px auto;
 }
@@ -48,7 +47,6 @@ header .search-ctrl input {
   padding: 0 0 0 42px;
   border: 1px solid #dde;
   border-radius: 24px;
-  box-shadow: 0 1px 2px #0001;
 }
 
 header .search-ctrl input::placeholder {
@@ -57,7 +55,25 @@ header .search-ctrl input::placeholder {
   font-weight: 400;
 }
 
-header img {
+header .profile-ctrl {
+  display: flex;
+  align-items: center;
+  border-radius: 20px;
+  color: #556;
+  margin-left: 14px;
+}
+
+header .profile-ctrl:hover {
+  background: #fafafd;
+  color: #445;
+}
+
+header .profile-ctrl span {
+  padding: 0 10px;
+  letter-spacing: 0.4px;
+}
+
+header .profile-ctrl img {
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -140,7 +156,7 @@ nav {
 }
 
 nav a {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
   letter-spacing: 0.5px;
   color: #889;
