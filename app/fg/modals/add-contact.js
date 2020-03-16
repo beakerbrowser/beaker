@@ -120,7 +120,7 @@ class AddContactModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">Add Contact</h1>
+        <h1 class="title">Add to Address Book</h1>
 
         <form @submit=${this.onSubmit}>
           ${this.info ? html`
