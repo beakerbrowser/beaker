@@ -201,7 +201,9 @@ export default {
           dryRun: false
         })
       }
+      return {numImported: res.filePaths.length}
     }
+    return {numImported: 0}
   },
 
   async exportFilesDialog (urls) {
@@ -227,7 +229,9 @@ export default {
           skipUndownloadedFiles: false
         })
       }
+      return {numExported: res.filePaths.length}
     }
+    return {numExported: 0}
   }
 }
 
