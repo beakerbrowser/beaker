@@ -396,9 +396,9 @@ class EditorApp extends LitElement {
       })
       items.push({
         icon: 'fas fa-fw fa-long-arrow-alt-right custom-link-icon',
-        label: 'New link',
+        label: 'New mount',
         disabled: this.readOnly,
-        click: () => this.onClickNewLink(folderPath)
+        click: () => this.onClickNewMount(folderPath)
       })
       items.push('-')
       items.push({
@@ -682,11 +682,11 @@ class EditorApp extends LitElement {
     }
   }
 
-  async onClickNewLink (folderPath) {
+  async onClickNewMount (folderPath) {
     if (this.readOnly) return
     var url = await beaker.shell.selectDriveDialog()
     if (!url) return
-    var name = await prompt('Enter the new link name')
+    var name = await prompt('Enter the new mount name')
     if (!name) return
     await this.drive.mount(joinPath(folderPath, name), url)
     this.loadExplorer()
