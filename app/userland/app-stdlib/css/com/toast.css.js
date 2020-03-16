@@ -6,7 +6,7 @@ const cssStr = css`
   top: 20px;
   right: 20px;
   z-index: 20000;
-  transition: opacity 0.1s ease;
+  transition: opacity 0.5s ease;
 }
 .toast-wrapper.hidden {
   opacity: 0;

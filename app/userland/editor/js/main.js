@@ -695,8 +695,9 @@ class EditorApp extends LitElement {
   async onClickImportFiles (folderPath) {
     toast.create('Importing...')
     try {
-      await beaker.shell.importFilesDialog(joinPath(this.drive.url, folderPath))
-      toast.create('Import complete', 'success')
+      var {numImported} = await beaker.shell.importFilesDialog(joinPath(this.drive.url, folderPath))
+      if (numImported > 0) toast.create('Import complete', 'success')
+      else toast.destroy()
     } catch (e) {
       console.log(e)
       toast.create(e.toString(), 'error')
@@ -707,8 +708,9 @@ class EditorApp extends LitElement {
   async onClickExportFiles (urls) {
     toast.create('Exporting...')
     try {
-      await beaker.shell.exportFilesDialog(urls)
-      toast.create('Export complete', 'success')
+      var {numExported} = await beaker.shell.exportFilesDialog(urls)
+      if (numExported > 0) toast.create('Export complete', 'success')
+      else toast.destroy()
     } catch (e) {
       console.log(e)
       toast.create(e.toString(), 'error')

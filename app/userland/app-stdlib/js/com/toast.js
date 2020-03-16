@@ -13,18 +13,18 @@ export function create (message, type = '', time = 5000, button = null) {
   setTimeout(destroy, time)
 }
 
-// internal
-// =
-
-function destroy () {
+export function destroy () {
   var toast = document.querySelector('beaker-toast')
 
   if (toast) {
     // fadeout before removing element
-    toast.classList.add('hidden')
+    toast.shadowRoot.querySelector('.toast-wrapper').classList.add('hidden')
     setTimeout(() => toast.remove(), 500)
   }
 }
+
+// internal
+// =
 
 class BeakerToast extends LitElement {
   constructor ({message, type, button}) {
