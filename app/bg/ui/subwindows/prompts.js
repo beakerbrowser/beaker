@@ -164,7 +164,7 @@ function setBounds (view, tab, parentWindow, {width, height} = {}) {
   var parentBounds = parentWindow.getContentBounds()
   width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
-  var y = parentWindow.isShellInterfaceHidden ? 10 : 85
+  var y = parentWindow.isShellInterfaceHidden ? 10 : 105
   view.setBounds({
     x: tab.isSidebarActive ? tab.sidebarWidth : 0,
     y,
