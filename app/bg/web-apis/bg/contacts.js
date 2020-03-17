@@ -19,6 +19,25 @@ export default {
   /**
    * @returns {Promise<BeakerContactPublicAPIContactRecord>}
    */
+  async requestProfile () {
+    const sysDrive = filesystem.get().pda
+    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
+
+    var res
+    try {
+      res = await modals.create(this.sender, 'select-contact', {multiple: false, showProfilesOnly: true, addressBook})
+    } catch (e) {
+      if (e.name !== 'Error') {
+        throw e // only rethrow if a specific error
+      }
+    }
+    if (!res) throw new UserDeniedError()
+    return res && res.contacts ? res.contacts[0] : undefined
+  },
+
+  /**
+   * @returns {Promise<BeakerContactPublicAPIContactRecord>}
+   */
   async requestContact () {
     const sysDrive = filesystem.get().pda
     var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))

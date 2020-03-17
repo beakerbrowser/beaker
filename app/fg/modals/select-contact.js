@@ -119,23 +119,31 @@ class SelectContactModal extends LitElement {
 
   constructor () {
     super()
-    this.cbs = null
+    this.cbs = undefined
     this.contacts = []
     this.selection = []
     this.multiple = undefined
+    this.showProfilesOnly = undefined
   }
 
   async init (params, cbs) {
     this.cbs = cbs
+    this.multiple = params.multiple
+    this.showProfilesOnly = !!params.showProfilesOnly
 
     var contacts = params.addressBook.contacts || []
     if (params.addressBook.profiles && params.addressBook.profiles.length) {
-      contacts = contacts.concat(params.addressBook.profiles.map(p => Object.assign(p, {isProfile: true})))
+      var profiles = params.addressBook.profiles.map(p => Object.assign(p, {isProfile: true}))
+      if (this.showProfilesOnly) {
+        contacts = profiles
+      } else {
+        contacts = contacts.concat(profiles)
+      }
     }
     contacts.sort((a, b) => a.title.localeCompare(b.title))
 
     this.contacts = contacts
-    this.multiple = params.multiple
+
     this.selection = []
     await this.requestUpdate()
   }
@@ -147,7 +155,13 @@ class SelectContactModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">Select Contact${this.multiple ? 's' : ''}</h1>
+        <h1 class="title">
+          ${this.showProfilesOnly ? `
+            Select Profile
+          ` : `
+            Select Contact${this.multiple ? 's' : ''}
+          `}
+        </h1>
 
         <form @submit=${this.onSubmit}>
           <div class="contacts">
