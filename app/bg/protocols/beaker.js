@@ -29,7 +29,7 @@ img-src beaker: asset: data: hyper: http: https;
 script-src 'self' beaker: hyper: blob: 'unsafe-eval';
 media-src 'self' beaker: hyper:;
 style-src 'self' 'unsafe-inline' beaker:;
-child-src 'self';
+child-src 'self' http://dev.hyperdrive.network:5000 https://hyperdrive.network;
 `.replace(/\n/g, '')
 
 // exported api

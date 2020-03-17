@@ -87,10 +87,7 @@ class ShellWindowToolbarMenu extends LitElement {
       ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
       ${sidebarBtn('drive-info-app', html`<span class="fas fa-info-circle"></span> Drive Info`, true)}
       ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`, true)}
-      <a
-        class=${classMap({disabled: !isHyper})}
-        @click=${isHyper ? this.onClickFilesExplorer : undefined}
-      ><span class="far fa-folder"></span> Explore Files</a>
+      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`, true)}
     `
   }
 

@@ -1,6 +1,7 @@
 import 'beaker://editor/js/main.build.js'
 import 'beaker://webterm/js/main.js'
 import './drive-info.js'
+import './files-explorer.js'
 
 /**
  * NOTE
@@ -10,7 +11,7 @@ import './drive-info.js'
  * be kept in sync with the frontend.
  */
 
-const PANELS_ORDER = ['drive-info-app', 'editor-app', 'web-term']
+const PANELS_ORDER = ['drive-info-app', 'files-explorer-app', 'editor-app', 'web-term']
 const MIN_PANEL_HEIGHT = 50
 
 class SidebarApp extends HTMLElement {
