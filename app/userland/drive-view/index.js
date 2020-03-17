@@ -60,11 +60,6 @@ class DriveView extends LitElement {
       top: 1px;
     }
 
-    header .ctrls {
-      float: right;
-      font-size: 14px;
-    }
-
     main h4 {
       font-family: var(--monospace);
       margin: 0;
@@ -139,13 +134,6 @@ class DriveView extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <header>
-        <div class="ctrls">
-          <span class="fas fa-fw fa-folder"></span>
-          <a href="http://hyperdrive.network/${location.hostname}${location.pathname}" target="_blank">Open in files explorer</a>
-          &nbsp;
-          <span class="fas fa-fw fa-list-alt"></span>
-          <a href="#" @click=${this.onClickEditProperties}>Properties</a>
-        </div>
         <h1>
           <img src="/thumb" @error=${e => {e.currentTarget.style.display = 'none'}}>
           ${this.info.title}
