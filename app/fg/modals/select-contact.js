@@ -25,7 +25,7 @@ class SelectContactModal extends LitElement {
     h1.title {
       font-size: 17px;
       padding: 14px 20px;
-      border-color: #f0f0f7;
+      border-color: #dddde0;
       margin: 0;
     }
 
@@ -38,15 +38,16 @@ class SelectContactModal extends LitElement {
       max-height: 500px;
       overflow: auto;
       box-sizing: border-box;
-      border-bottom: 1px solid #f0f0f7;
+      border-bottom: 1px solid #dddde0;
+      background: #f3f3f8;
     }
 
     .contact {
       display: flex;
       align-items: center;
-      border-bottom: 1px solid #f0f0f6;
-      padding: 10px 20px;
-      height: 71px;
+      border-bottom: 1px solid #dddde0;
+      padding: 12px 20px;
+      height: 55px;
       box-sizing: border-box;
     }
 
@@ -54,25 +55,51 @@ class SelectContactModal extends LitElement {
       border-bottom: 0;
     }
 
+    .contact .checkmark {
+      width: 30px;
+    }
+
+    .contact .checkmark .fa-circle {
+      color: #0002;
+    }
+
     .contact img {
       border-radius: 50%;
       object-fit: cover;
-      width: 50px;
-      height: 50px;
+      width: 32px;
+      height: 32px;
       margin-right: 16px;
       box-sizing: border-box;
+      border: 1px solid #fff;
     }
 
     .contact .title {
-      font-size: 17px;
-      max-width: 150px;
+      flex: 1;
+      font-size: 14px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .contact .description {
+      flex: 1;
+      font-size: 14px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     
-    .contact .info {
-      flex: 1;
+    .contact .profile-badge {
+      width: 80px;
+    }
+
+    .contact .profile-badge span {
+      font-size: 10px;
+      background: #fff;
+      color: #778;
+      padding: 2px 8px;
+      border-radius: 8px;
     }
 
     .contact.selected {
@@ -100,7 +127,14 @@ class SelectContactModal extends LitElement {
 
   async init (params, cbs) {
     this.cbs = cbs
-    this.contacts = params.contacts || []
+
+    var contacts = params.addressBook.contacts || []
+    if (params.addressBook.profiles && params.addressBook.profiles.length) {
+      contacts = contacts.concat(params.addressBook.profiles.map(p => Object.assign(p, {isProfile: true})))
+    }
+    contacts.sort((a, b) => a.title.localeCompare(b.title))
+
+    this.contacts = contacts
     this.multiple = params.multiple
     this.selection = []
     await this.requestUpdate()
@@ -133,14 +167,16 @@ class SelectContactModal extends LitElement {
     var selected = this.selection.includes(contact)
     return html`
       <div class=${classMap({contact: true, selected})} @click=${e => this.onClickContact(e, contact)}>
+        <div class="checkmark">
+          <span class="${selected ? 'fas fa-check' : 'fas fa-circle'}"></span>
+        </div>
         <beaker-img-fallbacks>
           <img src="hyper://${contact.key}/thumb" slot="img1">
           <img src="beaker://assets/default-user-thumb" slot="img2">
         </beaker-img-fallbacks>
-        <div class="info">
-          <div class="title"><span>${contact.title}</span></div>
-          <div class="description"><span>${contact.description}</span></div>
-        </div>
+        <div class="title"><span>${contact.title}</span></div>
+        <div class="description"><span>${contact.description}</span></div>
+        <div class="profile-badge">${contact.isProfile ? html`<span>My Profile</span>` : ''}</div>
       </div>
     `
   }

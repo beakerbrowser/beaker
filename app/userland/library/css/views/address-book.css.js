@@ -13,10 +13,6 @@ a {
 }
 
 .contacts {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, 180px);
-  grid-gap: 25px;
-  padding: 14px 10px;
   font-size: 13px;
   box-sizing: border-box;
   user-select: none;
@@ -38,16 +34,15 @@ a {
 }
 
 :host(.top-border) .contacts {
-  padding: 0;
+  border-top: 1px solid #dde;
 }
 
 .contact {
-  position: relative;
-  text-align: center;
-  padding: 30px 5px 25px;
+  display: flex;
+  align-items: center;
   color: #555;
-  border: 1px solid #dde;
-  border-radius: 4px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #dde;
 }
 
 .contact:hover {
@@ -57,34 +52,35 @@ a {
 
 .contact .thumb {
   display: inline-block;
-  width: 60px;
-  height: 60px;
+  width: 30px;
+  height: 30px;
   object-fit: cover;
   border-radius: 50%;
-  margin-bottom: 20px;
-}
-
-.contact .info {
-  flex: 1;
+  margin-right: 16px;
 }
 
 .contact .title {
-  font-size: 15px;
-  line-height: 1;
+  flex: 1;
+  font-size: 14px;
   font-weight: 600;
 }
 
 .contact .description {
+  flex: 1;
   color: #99a;
-  margin-top: 5px;
-  max-height: 48px; /* 3 lines of text */
   overflow: hidden;
 }
 
-.contact .ctrls {
-  position: absolute;
-  top: 0;
-  right: 0;
+.profile-badge {
+  width: 80px;
+}
+
+.profile-badge span {
+  font-size: 10px;
+  background: #f3f3f8;
+  color: #778;
+  padding: 2px 8px;
+  border-radius: 8px;
 }
 
 `

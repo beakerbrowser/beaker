@@ -43,7 +43,7 @@ a {
 .bookmark {
   display: flex;
   align-items: center;
-  padding: 18px 24px;
+  padding: 14px 24px;
   color: #555;
   border-bottom: 1px solid #dde;
 }
@@ -65,7 +65,7 @@ a {
 }
 
 .bookmark .title {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   margin-right: 20px;
 }

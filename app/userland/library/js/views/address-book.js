@@ -36,6 +36,10 @@ export class AddressBookView extends LitElement {
   async load () {
     var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
     this.contacts = addressBook?.contacts || []
+    if (addressBook?.profiles) {
+      this.contacts = addressBook.profiles.map(p => Object.assign(p, {isProfile: true})).concat(this.contacts)
+    }
+    this.contacts.sort((a, b) => a.title.localeCompare(b.title))
     console.log(this.contacts)
   }
 
@@ -94,10 +98,9 @@ export class AddressBookView extends LitElement {
         @contextmenu=${e => this.onContextmenuContact(e, contact)}
       >
        <img class="thumb" src="asset:thumb:${href}">
-       <div class="info">
-         <div class="title">${title}</div>
-         <div class="description">${description}</div>
-        </div>
+       <div class="title">${title}</div>
+       <div class="description">${description}</div>
+       <div class="profile-badge">${contact.isProfile ? html`<span>My Profile</span>` : ''}</div>
         <div class="ctrls">
           <button class="transparent" @click=${e => this.onClickContactMenuBtn(e, contact)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>

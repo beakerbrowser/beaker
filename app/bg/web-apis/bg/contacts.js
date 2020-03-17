@@ -25,7 +25,7 @@ export default {
 
     var res
     try {
-      res = await modals.create(this.sender, 'select-contact', {multiple: false, contacts: addressBook.contacts || []})
+      res = await modals.create(this.sender, 'select-contact', {multiple: false, addressBook})
     } catch (e) {
       if (e.name !== 'Error') {
         throw e // only rethrow if a specific error
@@ -44,7 +44,7 @@ export default {
 
     var res
     try {
-      res = await modals.create(this.sender, 'select-contact', {multiple: true, contacts: addressBook.contacts || []})
+      res = await modals.create(this.sender, 'select-contact', {multiple: true, addressBook})
     } catch (e) {
       if (e.name !== 'Error') {
         throw e // only rethrow if a specific error
