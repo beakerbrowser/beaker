@@ -145,45 +145,48 @@ export default function registerContextMenu () {
           let driveCfg = getDriveConfig(key)
           let driveIdent = getDriveIdent(`hyper://${key}`)
           menuItems.push({
-            label: 'Hyperdrive',
-            submenu: [
-              { label: 'Open with Files Explorer', click: (item, win) => tabManager.create(win, `https://hyperdrive.network/${props.pageURL.slice('hyper://'.length)}`, {setActive: true, adjacentActive: true}) },
-              { type: 'separator' },
-              { 
-                label: 'Host This Drive',
-                type: 'checkbox',
-                checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
-                enabled: !driveIdent.system,
-                click: (item, win) => {
-                  configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
-                }
-              },
-              {
-                label: 'Save to My Library',
-                type: 'checkbox',
-                checked: !!driveCfg || driveIdent.system,
-                enabled: !driveIdent.system,
-                click: (item, win) => {
-                  if (!driveCfg) configDrive(key, {seeding: false})
-                  else removeDrive(key)
-                }
-              },
-              { type: 'separator' },
-              {
-                label: 'Fork This Drive',
-                click: async (item, win) => {
-                  var driveUrlp = new URL(await runForkFlow(win, key))
-                  var pageUrlp = new URL(props.pageURL)
-                  pageUrlp.hostname = driveUrlp.hostname
-                  tabManager.create(win, pageUrlp.toString(), {setActive: true})
-                }
-              },
-              { label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://diff/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } },
-              { type: 'separator' },
-              { label: 'Drive Properties', click: (item, win) => runDrivePropertiesFlow(win, key) }
-            ]
+            label: 'Host This Drive',
+            type: 'checkbox',
+            checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
+            enabled: !driveIdent.system,
+            click: (item, win) => {
+              configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
+            }
+          })
+          menuItems.push({
+            label: 'Save to My Library',
+            type: 'checkbox',
+            checked: !!driveCfg || driveIdent.system,
+            enabled: !driveIdent.system,
+            click: (item, win) => {
+              if (!driveCfg) configDrive(key, {seeding: false})
+              else removeDrive(key)
+            }
           })
           menuItems.push({ type: 'separator' })
+          menuItems.push({
+            label: 'Fork This Drive',
+            click: async (item, win) => {
+              var driveUrlp = new URL(await runForkFlow(win, key))
+              var pageUrlp = new URL(props.pageURL)
+              pageUrlp.hostname = driveUrlp.hostname
+              tabManager.create(win, pageUrlp.toString(), {setActive: true})
+            }
+          })
+          menuItems.push({ label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://diff/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } })
+          menuItems.push({ type: 'separator' })
+          menuItems.push({
+            label: 'Sidebar: Drive Info',
+            click: async (item, win) => {
+              tabManager.getActive(win).executeSidebarCommand('show-panel', 'drive-info-app')
+            }
+          })
+          menuItems.push({
+            label: 'Sidebar: Explore Files',
+            click: async (item, win) => {
+              tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
+            }
+          })
         }
         menuItems.push({
           label: 'Sidebar: Editor',
