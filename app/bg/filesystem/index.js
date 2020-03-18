@@ -242,6 +242,18 @@ export async function setupDefaultProfile ({title, description, thumbBase64, thu
   if (thumbBase64) {
     await drive.pda.writeFile(`/thumb.${thumbExt || 'png'}`, thumbBase64, 'base64')
   }
+  await drive.pda.writeFile('/index.html', `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="/index.css">
+  </head>
+  <body>
+    <img src="/thumb">
+    <h1>${title}</h1>
+    ${description ? `<p>${description}</p>` : ''}
+  </body>
+</html>`)
 
   var addressBook
   try { addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse) }
