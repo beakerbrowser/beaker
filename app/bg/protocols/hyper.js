@@ -158,9 +158,6 @@ export const protocolHandler = async function (request, respond) {
     return respondError(404, 'Site not found')
   }
 
-  // read type and configure
-  const canExecuteHTML = true // TODO may need to be false for mounts
-
   // read manifest CSP
   if (manifest && manifest.content_security_policy && typeof manifest.content_security_policy === 'string') {
     cspHeader = manifest.content_security_policy
@@ -187,6 +184,22 @@ export const protocolHandler = async function (request, respond) {
   var statusCode = 200
   var headers = {}
   var entry = await datServeResolvePath(checkoutFS.pda, manifest, urlp, request.headers.Accept)
+
+  var canExecuteHTML = true
+  if (entry && !frontend) {
+    // dont execute HTML if in a mount and no frontend is running
+    let pathParts = entry.path.split('/').filter(Boolean)
+    pathParts.pop() // skip target, just need to check parent dirs
+    while (pathParts.length) {
+      let path = '/' + pathParts.join('/')
+      let stat = await checkoutFS.pda.stat(path).catch(e => undefined)
+      if (stat && stat.mount) {
+        canExecuteHTML = false
+        break
+      }
+      pathParts.pop()
+    }
+  }
 
   // handle folder
   if (entry && entry.isDirectory()) {
@@ -307,9 +320,11 @@ export const protocolHandler = async function (request, respond) {
   // fetch the entry and stream the response
   // HACK solution until electron issue resolved -prf
   headersSent = true
-  Object.assign(headers, {
-    'Content-Type': mime.identify(entry.path)
-  })
+  var mimeType = mime.identify(entry.path)
+  if (!canExecuteHTML && mimeType.includes('text/html')) {
+    mimeType = 'text/plain'
+  }
+  Object.assign(headers, {'Content-Type': mimeType})
   var data = await checkoutFS.pda.readFile(entry.path, 'binary')
   if (range) {
     data = data.slice(range.start, range.end + 1)
