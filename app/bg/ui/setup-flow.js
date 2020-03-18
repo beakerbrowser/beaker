@@ -1,4 +1,5 @@
 import * as path from 'path'
+import { URLSearchParams } from 'url'
 import { BrowserWindow } from 'electron'
 import { ICON_PATH } from './windows'
 import * as profileDb from '../dbs/profile-data-db'
@@ -21,11 +22,12 @@ var setupWindow
 export async function runSetupFlow () {
   var setupState = await profileDb.get('SELECT * FROM setup_state')
   if (!setupState) {
-    setupState = {migrated08to09: 0}
+    setupState = {migrated08to09: 0, profileSetup: 0}
     await profileDb.run(knex('setup_state').insert(setupState))
   }
 
-  if (!setupState.migrated08to09) {
+  var needsSetup = Object.values(setupState).includes(0)
+  if (needsSetup) {
     setupWindow = new BrowserWindow({
       // titleBarStyle: 'hiddenInset',
       autoHideMenuBar: true,
@@ -50,7 +52,7 @@ export async function runSetupFlow () {
       icon: ICON_PATH,
       show: true
     })
-    setupWindow.loadURL('beaker://setup/')
+    setupWindow.loadURL(`beaker://setup/?${(new URLSearchParams(setupState)).toString()}`)
     await new Promise(r => setupWindow.once('close', r))
     setupWindow = undefined
   }

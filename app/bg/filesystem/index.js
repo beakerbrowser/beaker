@@ -237,6 +237,24 @@ export async function getAvailableName (containingPath, basename, ext = undefine
   throw new Error('Unable to find an available name for ' + basename)
 }
 
+export async function setupDefaultProfile ({title, description, thumbBase64, thumbExt}) {
+  var drive = await hyper.drives.createNewDrive({title, description})
+  if (thumbBase64) {
+    await drive.pda.writeFile(`/thumb.${thumbExt || 'png'}`, thumbBase64, 'base64')
+  }
+
+  var addressBook
+  try { addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse) }
+  catch (e) { addressBook = {} }
+  addressBook.profiles = addressBook.profiles || []
+  addressBook.profiles.push({
+    key: drive.key.toString('hex'),
+    title,
+    description
+  })
+  await rootDrive.pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
+}
+
 // internal methods
 // =
 

@@ -56,7 +56,7 @@ export class AddressBookView extends LitElement {
       items: [
         {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open('hyper://' + contact.key)},
         {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard('hyper://' + contact.key)},
-        {icon: 'fa fa-times', label: 'Delete', click: () => this.onClickRemove(contact)}
+        {icon: 'fa fa-times', label: 'Remove from Address Book', click: () => this.onClickRemove(contact)}
       ]
     })
   }
@@ -130,7 +130,11 @@ export class AddressBookView extends LitElement {
   async onClickRemove (contact) {
     if (!confirm('Are you sure?')) return
     await updateAddressBook(addressBook => {
-      addressBook.contacts = addressBook.contacts.filter(c2 => c2.key !== contact.key)
+      if (contact.isProfile) {
+        addressBook.profiles = addressBook.profiles.filter(c2 => c2.key !== contact.key)
+      } else {
+        addressBook.contacts = addressBook.contacts.filter(c2 => c2.key !== contact.key)
+      }
     })
     toast.create('Contact removed', '', 10e3)
     this.load()
