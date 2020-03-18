@@ -165,11 +165,14 @@ async function expandPaths (root, patterns) {
         if (isLastOp) {
           newWorkingPaths = await Promise.all(workingPaths.map(async (workingPath) => {
             var bname = basename(op[1])
-            let item = (await root.pda.readdir(workingPath.name, {includeStats: true})).find(item => item.name === bname)
+            var folderpath = op[1].slice(0, bname.length * -1)
+            let item = (await root.pda.readdir(joinPath(workingPath.name, folderpath), {includeStats: true})).find(item => item.name === bname)
+            if (!item) return undefined
             item.localDriveKey = item.mount ? item.mount.key.toString('hex') : workingPath.localDriveKey
-            item.name = joinPath(workingPath.name, item.name)
+            item.name = joinPath(workingPath.name, folderpath, item.name)
             return item
           }))
+          newWorkingPaths = newWorkingPaths.filter(Boolean)
         } else {
           newWorkingPaths = workingPaths.map(v => ({
             name: joinPath(v.name, op[1]),
