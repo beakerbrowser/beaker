@@ -58,6 +58,7 @@ const CHECK_DAEMON_INTERVAL = 5e3
 var client // client object created by hyperdrive-daemon-client
 var isCheckingDaemon = false
 var isDaemonActive = false
+var isInitialSetup = true
 var sessions = {} // map of keyStr => DaemonHyperdrive
 var events = new EventEmitter()
 
@@ -67,6 +68,10 @@ var events = new EventEmitter()
 export const on = events.on.bind(events)
 
 export function isActive () {
+  if (isInitialSetup) {
+    // the "inactive daemon" indicator during setup
+    return true
+  }
   return isDaemonActive
 }
 
@@ -101,6 +106,7 @@ export async function setup () {
     await client.ready()
     console.log('Connected to an external daemon.')
     reconnectAllDriveSessions()
+    isInitialSetup = false
     return
   } catch (err) {
     console.log('Failed to connect to an external daemon. Launching the daemon...')
@@ -124,6 +130,7 @@ export async function setup () {
 
   await attemptConnect()
   reconnectAllDriveSessions()
+  isInitialSetup = false
 }
 
 /**
