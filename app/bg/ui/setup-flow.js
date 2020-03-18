@@ -65,5 +65,6 @@ export async function updateSetupState (obj) {
   // window.close() isnt working within the UI thread for some reason
   // so use this as a cue to close the window
   // -prf
-  if (setupWindow) setupWindow.close()
+  var setupState = await profileDb.get('SELECT * FROM setup_state')
+  if (!Object.values(setupState).includes(0)) setupWindow.close()
 }

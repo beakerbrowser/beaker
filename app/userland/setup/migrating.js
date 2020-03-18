@@ -1,7 +1,12 @@
 import { BaseSlideView } from './base-slide-view.js'
 
 customElements.define('migrating-view', class extends BaseSlideView {
-  async connectedCallback () {
+  constructor () {
+    super()
+    this.doMigration()
+  }
+
+  async doMigration () {
     await beaker.browser.migrate08to09()
     await beaker.browser.updateSetupState({migrated08to09: 1})
     this.dispatchEvent(new CustomEvent('next', {bubbles: true, composed: true}))

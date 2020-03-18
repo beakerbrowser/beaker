@@ -16,7 +16,7 @@ customElements.define('setup-app', class extends HTMLElement {
       this.stages.push('profile-view')
     }
     if (!isStageDone('migrated08to09')) {
-      this.stages.push('migrate-view')
+      this.stages.push('migrating-view')
     }
     if (this.stages.length === 2) {
       this.stages.unshift('intro-view')

@@ -4,12 +4,16 @@ export class BaseSlideView extends HTMLElement {
     this.shadow = this.attachShadow({mode: 'open'})
     this.outerRender()
     setTimeout(() => this.setAttribute('fadein', true), 1)
-    this.shadow.querySelector('a').addEventListener('click', e => {
-      this.setAttribute('fadeout', true)
-      setTimeout(() => {
-        this.dispatchEvent(new CustomEvent('next', {bubbles: true, composed: true}))
-      }, 500)
-    })
+
+    var nextAnchor = this.shadow.querySelector('a')
+    if (nextAnchor) {
+      nextAnchor.addEventListener('click', e => {
+        this.setAttribute('fadeout', true)
+        setTimeout(() => {
+          this.dispatchEvent(new CustomEvent('next', {bubbles: true, composed: true}))
+        }, 500)
+      })
+    }
   }
 
   outerRender () {
