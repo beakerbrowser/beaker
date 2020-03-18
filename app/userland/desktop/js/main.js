@@ -70,7 +70,10 @@ class DesktopApp extends LitElement {
         </div>
         ${this.profile ? html`
           <a class="profile-ctrl" href=${this.profile.url}>
-            <img src="asset:thumb:${this.profile.url}">
+            <beaker-img-fallbacks>
+              <img src="${this.profile.url}/thumb?cache_buster=${cacheBuster}" slot="img1">
+              <img src="beaker://assets/default-user-thumb" slot="img2">
+            </beaker-img-fallbacks>
             <span>${this.profile.title}</span>
           </a>
         ` : ''}
