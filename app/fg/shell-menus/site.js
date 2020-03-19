@@ -72,6 +72,12 @@ class SiteMenu extends LitElement {
             <i class="fas fa-link"></i>
             <span class="label">Copy URL</span>
           </div>
+          ${this.driveInfo ? html`
+            <div class="menu-item" @click=${this.onCopyDriveKey}>
+              <i class="fas fa-link"></i>
+              <span class="label">Copy Drive Key</span>
+            </div>
+          ` : ''}
         </div>
 
         ${this.driveInfo ? html`
@@ -173,6 +179,11 @@ class SiteMenu extends LitElement {
 
   onCopyURL () {
     writeToClipboard(this.url)
+    bg.shellMenus.close()
+  }
+
+  onCopyDriveKey () {
+    writeToClipboard(this.driveInfo.key)
     bg.shellMenus.close()
   }
 
