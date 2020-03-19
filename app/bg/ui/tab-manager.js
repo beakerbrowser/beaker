@@ -358,10 +358,10 @@ class Tab extends EventEmitter {
 
     const win = this.browserWindow
     win.addBrowserView(this.browserView)
+    sidebars.show(this)
     prompts.show(this.browserView)
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
-    sidebars.show(this)
 
     this.resize()
     if (this.previouslyFocusedWebcontents && !this.previouslyFocusedWebcontents.isDestroyed()) {
