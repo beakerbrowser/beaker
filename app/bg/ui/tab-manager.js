@@ -364,12 +364,12 @@ class Tab extends EventEmitter {
     sidebars.show(this)
 
     this.resize()
-    if (this.previouslyFocusedWebcontents) {
+    if (this.previouslyFocusedWebcontents && !this.previouslyFocusedWebcontents.isDestroyed()) {
       this.previouslyFocusedWebcontents.focus()
-      this.previouslyFocusedWebcontents = undefined
     } else {
       this.webContents.focus()
     }
+    this.previouslyFocusedWebcontents = undefined
     this.emit('activated')
   }
 
