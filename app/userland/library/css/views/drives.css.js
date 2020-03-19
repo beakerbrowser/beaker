@@ -103,17 +103,6 @@ a[href]:hover {
   border-radius: 2px;
 }
 
-.drive .group {
-  flex: 1;
-  min-width: 160px;
-}
-
-.drive .group a {
-  font-weight: normal;
-  color: var(--blue);
-  letter-spacing: 0;
-}
-
 .drive .forks {
   flex: 1;
   min-width: 100px;

@@ -48,18 +48,6 @@ export class DrivesView extends LitElement {
     console.log(drives)
 
     this.drives = drives
-
-    for (let drive of drives) {
-      if (drive.info.type === 'user' && drive.info.memberOf) {
-        let groupDrive = beaker.hyperdrive.drive(drive.info.memberOf)
-        let groupInfo = await groupDrive.readFile('/index.json').then(JSON.parse).catch(e => undefined)
-        if (groupInfo) {
-          groupInfo.url = groupDrive.url
-          drive.groupInfo = groupInfo
-        }
-        this.requestUpdate()
-      }
-    }
   }
 
   driveMenu (drive, x, y, right = false) {
@@ -208,14 +196,6 @@ export class DrivesView extends LitElement {
             ${!drive.info.writable ? html`<span class="readonly">readonly</span>` : ''}
             ${drive.info.description.slice(0, 50)}
           </div>
-        </div>
-        <div class="group">
-          ${drive.groupInfo ? html`
-            <div>Member of</div>
-            <div>
-              <a href=${drive.groupInfo.url} title=${drive.groupInfo.title}>${drive.groupInfo.title}</a>
-            </div>
-          ` : '-'}
         </div>
         <div class="forks">
           ${numForks > 0 ? html`
