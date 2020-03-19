@@ -321,7 +321,10 @@ class NavbarLocation extends LitElement {
 
   onContextMenuLocation (e) {
     e.preventDefault()
-    this.focusLocation()
+    e.stopPropagation()
+    if (!this.isLocationFocused) {
+      this.focusLocation()
+    }
     bg.views.showLocationBarContextMenu('active')
   }
 

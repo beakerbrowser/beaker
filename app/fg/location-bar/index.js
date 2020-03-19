@@ -293,6 +293,7 @@ class LocationBar extends LitElement {
 
   onContextMenu (e) {
     e.preventDefault()
+    e.stopPropagation()
     bg.views.showLocationBarContextMenu('active')
   }
 
