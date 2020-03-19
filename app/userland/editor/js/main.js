@@ -297,6 +297,8 @@ class EditorApp extends LitElement {
       let filename = this.resolvedPath.split('/').pop()
       if (filename.includes('.') && isFilenameBinary(filename)) {
         this.isBinary = true
+      } else if (filename.endsWith('.goto')) {
+        this.isBinary = true
       }
     }
 
@@ -461,7 +463,16 @@ class EditorApp extends LitElement {
           @show-menu=${this.onShowMenu}
         ></files-explorer>
       ` : ''}
-      ${this.isBinary ? html`
+      ${this.isBinary && this.pathname.endsWith('.goto') ? html`
+        <div class="empty">
+          .goto files store their information in
+          <a href="#" @click=${e => {
+            e.preventDefault()
+            e.stopPropagation()
+            this.querySelector('#file-metadata-btn').click()
+          }} style="text-decoration: underline">file metadata</a>.
+        </div>
+      ` : this.isBinary ? html`
         <div class="empty">
           This file is not editable here.
           <div class="binary-render">
@@ -516,7 +527,7 @@ class EditorApp extends LitElement {
           ` : ''}
         ` : ''}
         <span class="spacer"></span>
-        <button title="File Metadata" ?disabled=${!this.stat} @click=${this.onClickFileMetadata}>
+        <button id="file-metadata-btn" title="File Metadata" ?disabled=${!this.stat} @click=${this.onClickFileMetadata}>
           File Metadata <span class="fas fa-fw fa-caret-down"></span>
         </button>
         ${!this.readOnly ? html`
