@@ -1,6 +1,7 @@
 /* globals monaco */
 
 import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
+import { repeat } from '../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { isFilenameBinary } from '../../app-stdlib/js/is-ext-binary.js'
 import lock from '../../../lib/lock.js'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
@@ -515,7 +516,11 @@ class EditorApp extends LitElement {
           ` : ''}
         ` : ''}
         <span class="spacer"></span>
+        <button title="File Metadata" ?disabled=${!this.stat} @click=${this.onClickFileMetadata}>
+          File Metadata <span class="fas fa-fw fa-caret-down"></span>
+        </button>
         ${!this.readOnly ? html`
+          <span class="divider"></span>
           <button title="Settings" @click=${this.onClickSettings}>
             <span class="fas fa-fw fa-cog"></span> Settings
           </button>
@@ -547,12 +552,14 @@ class EditorApp extends LitElement {
     e.stopPropagation()
   }
 
-  onClickActions (e) {
+  async onClickActions (e) {
+    let el = e.currentTarget
+    if (el.classList.contains('active')) return
     e.preventDefault()
     e.stopPropagation()
-
     let rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({
+    el.classList.add('active')
+    await contextMenu.create({
       x: rect.right,
       y: rect.bottom,
       right: true,
@@ -581,6 +588,7 @@ class EditorApp extends LitElement {
         }
       ]
     })
+    el.classList.remove('active')
   }
 
   onClickEditReal (e) {
@@ -591,12 +599,109 @@ class EditorApp extends LitElement {
     })
   }
 
-  onClickSettings (e) {
+  async onClickFileMetadata (e) {
+    let el = e.currentTarget
+    if (el.classList.contains('active')) return
     e.preventDefault()
     e.stopPropagation()
-
     let rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({
+    el.classList.add('active')
+    await contextMenu.create({
+      x: rect.right,
+      y: rect.bottom,
+      render: () => {
+        var entries = Object.entries(this.stat.metadata)
+        if (!this.readOnly) entries = entries.concat([['', '']])
+        const onClickSaveMetadata = async (e) => {
+          var metadataEl = e.currentTarget.parentNode
+          var newMetadata = {}
+          for (let entryEl of Array.from(metadataEl.querySelectorAll('.entry'))) {
+            let k = entryEl.querySelector('[name="key"]').value.trim()
+            let v = entryEl.querySelector('[name="value"]').value.trim()
+            if (k && v) newMetadata[k] = v
+          }
+          var deletedKeys = []
+          for (let k in this.stat.metadata) {
+            if (!(k in newMetadata)) deletedKeys.push(k)
+          }
+          await this.drive.updateMetadata(this.resolvedPath, newMetadata)
+          if (deletedKeys.length) {
+            await this.drive.deleteMetadata(this.resolvedPath, deletedKeys)
+          }
+          this.stat.metadata = newMetadata
+          contextMenu.destroy()
+        }
+        return html`
+          <style>
+          .dropdown-items {
+            padding: 6px;
+            border: 0;
+          }
+          .metadata {
+            width: 100%;
+            border-bottom: 1px solid #ccd;
+          }
+          .metadata .entry {
+            display: flex;
+            border: 1px solid #ccd;
+            border-bottom: 0;
+          }
+          .metadata input {
+            box-sizing: border-box;
+            border: 0;
+            border-radius: 0;
+            height: 22px;
+            padding: 0 4px;
+          }
+          .metadata input[name="key"] {
+            border-right: 1px solid #ccd;
+            flex: 0 0 120px;
+          }
+          .metadata input[name="value"] {
+            flex: 1;
+            box-sizing: border-box;
+          }
+          button {
+            display: block;
+            width: 100%;
+            cursor: pointer;
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+            padding: 5px 10px;
+            outline: 0px;
+            color: rgb(255, 255, 255);
+            box-shadow: rgba(0, 0, 0, 0.1) 0px 1px 1px;
+            background: rgb(82, 137, 247);
+            border: 1px solid rgb(40, 100, 220);
+          }
+          </style>
+          <div class="dropdown-items right">
+            <div class="metadata">
+              ${repeat(entries, entry => `meta-${entry[0]}`, ([k, v]) => html`
+                <div class="entry">
+                  <input type="text" name="key" value=${k} ?disabled=${this.readOnly} placeholder="Key">
+                  <input type="text" name="value" value=${v} ?disabled=${this.readOnly} placeholder="Value">
+                </div>
+              `)}
+              ${!this.readOnly ? html`
+                <button class="primary" @click=${onClickSaveMetadata}><span class="fas fa-fw fa-check"></span> Save</button>
+              ` : ''}
+            </div>
+          </div>
+        `
+      }
+    })
+    el.classList.remove('active')
+  }
+
+  async onClickSettings (e) {
+    let el = e.currentTarget
+    if (el.classList.contains('active')) return
+    e.preventDefault()
+    e.stopPropagation()
+    let rect = e.currentTarget.getClientRects()[0]
+    el.classList.add('active')
+    await contextMenu.create({
       x: rect.right,
       y: rect.bottom,
       right: true,
@@ -613,6 +718,7 @@ class EditorApp extends LitElement {
         }
       ]
     })
+    el.classList.remove('active')
   }
 
   onClickView () {

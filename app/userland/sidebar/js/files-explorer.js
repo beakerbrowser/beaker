@@ -49,7 +49,7 @@ class FilesExplorer extends LitElement {
       console.error('Failed to parse url', this.url, e)
     }
     return html`
-      <iframe src="https://hyperdrive.network/${target}?embed"></iframe>
+      <iframe src="https://hyperdrive.network/${target}"></iframe>
     `
   }
 }
