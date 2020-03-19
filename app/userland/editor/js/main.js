@@ -340,14 +340,24 @@ class EditorApp extends LitElement {
         }
       })
       items.push({
-        icon: 'fas fa-fw fa-share-square',
-        label: 'Copy share link',
+        icon: 'fas fa-fw fa-link',
+        label: `Copy ${item.stat.isFile() ? 'file' : 'folder'} link`,
         disabled: !item.shareUrl,
         click () {
           writeToClipboard(item.shareUrl)
           toast.create('Copied to your clipboard')
         }
       })
+      if (item.stat.mount && item.stat.mount.key) {
+        items.push({
+          icon: 'fas fa-fw fa-link',
+          label: 'Copy mount link',
+          click () {
+            writeToClipboard(`hyper://${item.stat.mount.key}`)
+            toast.create('Copied to your clipboard')
+          }
+        })
+      }
       items.push({
         icon: 'custom-path-icon',
         label: `Copy ${item.stat.isFile() ? 'file' : 'folder'} path`,
