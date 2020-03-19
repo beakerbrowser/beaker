@@ -246,7 +246,6 @@ export async function setupDefaultProfile ({title, description, thumbBase64, thu
 <html>
   <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="/index.css">
   </head>
   <body>
     <img src="/thumb">
