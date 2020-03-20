@@ -31,7 +31,6 @@ async function openPort () {
       var to = setTimeout(openPort, ms('30m'))
       to.unref()
     } else {
-      console.log(err)
       // assuming errorCode 725 OnlyPermanentLeasesSupported and retry without a TTL
       opts.ttl = '0'  // string not int
       client.portMapping(opts)
