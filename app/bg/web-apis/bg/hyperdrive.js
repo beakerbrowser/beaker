@@ -665,11 +665,6 @@ async function assertWritePermission (drive, sender) {
   var details = await drives.getDriveInfo(newDriveKey)
   const perm = ('modifyDrive:' + newDriveKey)
 
-  // ensure we have the drive's private key
-  if (!drive.writable) {
-    throw new ArchiveNotWritableError()
-  }
-
   // beaker: always allowed
   if (isSenderBeaker(sender)) {
     return true
