@@ -524,25 +524,21 @@ class Tab extends EventEmitter {
   }
 
   async captureScreenshot () {
-    var urlp = parseDriveUrl(this.url)
-    // TODO only capture screenshot when needed -prf
-    if (true) { //['hyper:', 'http:', 'https:'].includes(urlp.protocol) && (urlp.pathname === '/' || /^\/index.(md|html)$/.test(urlp.pathname))) {
-      try {
-        // wait a sec to allow loading to finish
-        await new Promise(r => setTimeout(r, 1e3))
+    try {
+      // wait a sec to allow loading to finish
+      await new Promise(r => setTimeout(r, 1e3))
 
-        // capture the page
-        this.browserView.webContents.incrementCapturerCount({width: 1000, height: 800}, !this.isActive)
-        var image = await this.browserView.webContents.capturePage()
-        this.browserView.webContents.decrementCapturerCount(!this.isActive)
-        var bounds = image.getSize()
-        if (bounds.width === 0 || bounds.height === 0) return
-        if (bounds.width <= bounds.height) return // only save if it's a useful image
-        await sitedataDb.set(this.url, 'screenshot', image.toDataURL(), {dontExtractOrigin: true, normalizeUrl: true})
-      } catch (e) {
-        // ignore, can happen if the tab was closed during wait
-        console.log('Failed to capture page screenshot', e)
-      }
+      // capture the page
+      this.browserView.webContents.incrementCapturerCount({width: 1000, height: 800}, !this.isActive)
+      var image = await this.browserView.webContents.capturePage()
+      this.browserView.webContents.decrementCapturerCount(!this.isActive)
+      var bounds = image.getSize()
+      if (bounds.width === 0 || bounds.height === 0) return
+      if (bounds.width <= bounds.height) return // only save if it's a useful image
+      await sitedataDb.set(this.url, 'screenshot', image.toDataURL(), {dontExtractOrigin: true, normalizeUrl: true})
+    } catch (e) {
+      // ignore, can happen if the tab was closed during wait
+      console.log('Failed to capture page screenshot', e)
     }
   }
 
@@ -708,7 +704,11 @@ class Tab extends EventEmitter {
   }
 
   async fetchIsBookmarked (noEmit = false) {
+    var wasBookmarked = this.isBookmarked
     this.isBookmarked = !!(await bookmarks.get(this.url))
+    if (this.isBookmarked && !wasBookmarked) {
+      this.captureScreenshot()
+    }
     if (!noEmit) {
       this.emitUpdateState()
     }
@@ -840,9 +840,6 @@ class Tab extends EventEmitter {
   }
 
   onDomReady (e) {
-    // capture screenshot
-    this.captureScreenshot()
-
     // HACK
     // sometimes 'did-stop-loading' doesnt get fired
     // not sure why, but 'dom-ready' indicates that loading is done
