@@ -23,12 +23,8 @@ export async function list () {
  */
 export async function get (href) {
   href = normalizeUrl(href)
-  var file = (await query(filesystem.get(), {
-    path: '/bookmarks/*.goto',
-    metadata: {href}
-  }))[0]
-  if (!file) return null
-  return massageBookmark(file)
+  var bookmarks = await list()
+  return bookmarks.find(b => b.href === href)
 }
 
 /**
