@@ -3,6 +3,7 @@ import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import _get from 'lodash.get'
 import buttonsCSS from './buttons.css'
 import * as bg from './bg-process-rpc'
+import { joinPath } from '../../lib/strings'
 
 class CreatePagePrompt extends LitElement {
   static get properties () {
@@ -72,14 +73,14 @@ class CreatePagePrompt extends LitElement {
     for (let pathPart of pathParts) {
       try {
         pathAgg.push(pathPart)
-        await bg.hyperdrive.mkdir(urlp.hostname, pathAgg.join('/'))
+        await bg.hyperdrive.mkdir(joinPath(urlp.hostname, pathAgg.join('/')))
       } catch (e) {
         // ignore, dir already exists (probably)
       }
     }
 
     // create the file
-    await bg.hyperdrive.writeFile(urlp.hostname, path, '')
+    await bg.hyperdrive.writeFile(joinPath(urlp.hostname, path, ''))
     let newUrl = `${urlp.origin}${path}`
     bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
     bg.prompts.executeSidebarCommand('set-context', 'editor-app', newUrl)

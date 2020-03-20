@@ -5,7 +5,7 @@ import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
-import { ucfirst } from '../../lib/strings'
+import { ucfirst, joinPath } from '../../lib/strings'
 
 class DrivePropertiesModal extends LitElement {
   static get styles () {
@@ -203,11 +203,11 @@ class DrivePropertiesModal extends LitElement {
       reader.readAsArrayBuffer(file)
 
       await Promise.all([
-        bg.hyperdrive.unlink(this.url, '/thumb.png').catch(e => null),
-        bg.hyperdrive.unlink(this.url, '/thumb.jpg').catch(e => null),
-        bg.hyperdrive.unlink(this.url, '/thumb.jpeg').catch(e => null)
+        bg.hyperdrive.unlink(joinPath(this.url, '/thumb.png')).catch(e => null),
+        bg.hyperdrive.unlink(joinPath(this.url, '/thumb.jpg')).catch(e => null),
+        bg.hyperdrive.unlink(joinPath(this.url, '/thumb.jpeg')).catch(e => null)
       ])
-      await bg.hyperdrive.writeFile(this.url, `/thumb.${ext}`, await bufPromise)
+      await bg.hyperdrive.writeFile(joinPath(this.url, `/thumb.${ext}`), await bufPromise)
     }
 
     // handle props

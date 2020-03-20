@@ -602,7 +602,7 @@ async function searchDrive (urlp) {
       parentFolderPath = parts.join('/')
     }
 
-    var items = await bg.hyperdrive.readdir(urlp.origin, parentFolderPath, {timeout: 2e3, includeStats: true})
+    var items = await bg.hyperdrive.readdir(joinPath(urlp.origin, parentFolderPath), {timeout: 2e3, includeStats: true})
     if (nameFilter) {
       nameFilter = nameFilter.toLowerCase()
       items = items.filter(item => item.name.toLowerCase().startsWith(nameFilter))

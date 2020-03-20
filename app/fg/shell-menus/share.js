@@ -4,6 +4,7 @@ import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
+import { joinPath } from '../../lib/strings'
 
 class ShareMenu extends LitElement {
   static get properties () {
@@ -87,7 +88,7 @@ class ShareMenu extends LitElement {
                
         // find the drive that owns the location
         while (pathParts.length > 0) {
-          let st = await bg.hyperdrive.stat(urlp.origin, pathParts.join('/'))
+          let st = await bg.hyperdrive.stat(joinPath(urlp.origin, pathParts.join('/')))
           if (st.mount) {
             driveInfo = await bg.hyperdrive.getInfo(st.mount.key)
             break

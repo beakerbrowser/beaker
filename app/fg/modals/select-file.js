@@ -312,7 +312,7 @@ class SelectFileModal extends LitElement {
   }
 
   async readdir () {
-    var files = await bg.hyperdrive.readdir(this.drive, this.path, {includeStats: true})
+    var files = await bg.hyperdrive.readdir(joinPath(this.drive, this.path), {includeStats: true})
     files.forEach(file => {
       file.stat = createStat(file.stat)
       file.path = joinPath(this.path, file.name)
