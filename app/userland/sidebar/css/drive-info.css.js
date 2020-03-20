@@ -34,6 +34,11 @@ ${spinnerCSS}
   animation: entry-reveal 0.5s forwards;
 }
 
+:host([loaded]) section {
+  animation: none;
+  opacity: 1;
+}
+
 @keyframes entry-reveal {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -56,6 +61,11 @@ ${spinnerCSS}
   width: 0;
 }
 
+:host([loaded]) .heading {
+  animation: none;
+  width: 130px;
+}
+
 @keyframes heading-reveal {
   from { width: 0; }
   to { width: 130px; }
@@ -69,7 +79,7 @@ ${spinnerCSS}
 :host > .in4 .heading { animation-delay: 0.6s; }
 
 .content {
-  padding: 14px 14px 18px;
+  padding: 24px 14px 28px;
 }
 
 a {

@@ -99,6 +99,8 @@ class DriveInfo extends LitElement {
       console.error(e)
     }
     this.isLoading = false
+
+    setTimeout(() => this.setAttribute('loaded', ''), 1e3)
   }
 
   goto (url) {
