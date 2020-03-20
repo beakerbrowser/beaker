@@ -39,10 +39,7 @@ export const DEFAULT_DRIVE_API_TIMEOUT = ms('60s')
 export const DRIVE_CONFIGURABLE_FIELDS = [
   'title',
   'description',
-  'type',
-  'author',
-  'links',
-  'frontend'
+  'author'
 ]
 
 // workspace settings

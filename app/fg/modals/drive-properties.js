@@ -5,10 +5,7 @@ import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
-import { BUILTIN_FRONTENDS, filterFrontendByType } from '../../lib/hyper'
 import { ucfirst } from '../../lib/strings'
-
-const USABLE_BUILTIN_FRONTENDS = BUILTIN_FRONTENDS.filter(fe => fe.url.startsWith('builtin:'))
 
 class DrivePropertiesModal extends LitElement {
   static get styles () {
@@ -121,15 +118,8 @@ class DrivePropertiesModal extends LitElement {
     this.props = params.props || {}
     this.props.title = this.props.title || ''
     this.props.description = this.props.description || ''
-    this.props.frontend = this.props.frontend || ''
-    this.frontends = await this.readFrontends()
     await this.requestUpdate()
     this.adjustHeight()
-  }
-
-  async readFrontends () {
-    var drives = await bg.drives.list()
-    return drives.map(drive => drive.info)
   }
 
   adjustHeight () {
@@ -171,22 +161,6 @@ class DrivePropertiesModal extends LitElement {
   }
 
   renderProp (key, value) {
-    if (key === 'frontend') {
-      let frontends = USABLE_BUILTIN_FRONTENDS.concat(this.frontends)
-      let opt = (id, label) => html`<option value=${id} ?selected=${id === value}>${label}</option>`
-      return html`
-        <div class="prop ${this.writable ? '.writable' : ''}">
-          <div class="key">${ucfirst(key)}</div>
-          <div class="other-input">
-            <select name=${key} ?disabled=${!this.writable}>
-              ${opt('', 'None')}
-              ${value === 'custom' ? opt('custom', 'Custom') : ''}
-              ${frontends.map(frontend => opt(frontend.url, frontend.title))}
-            </select>
-          </div>
-        </div>
-      `
-    }
     return html`
       <div class="prop ${this.writable ? '.writable' : ''}">
         <div class="key">${ucfirst(key)}</div>

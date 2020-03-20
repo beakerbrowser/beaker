@@ -5,7 +5,7 @@ import * as tabManager from '../../ui/tab-manager'
 import * as modals from '../../ui/subwindows/modals'
 import * as filesystem from '../../filesystem/index'
 import * as drives from '../../hyper/drives'
-import { lookupDrive, getFrontend } from './hyperdrive'
+import { lookupDrive } from './hyperdrive'
 import { parseDriveUrl } from '../../../lib/urls'
 import { joinPath } from '../../../lib/strings'
 import assert from 'assert'
@@ -27,11 +27,10 @@ export default {
     assert(url && typeof url === 'string', '`url` must be a string')
     var drive = await drives.getOrLoadDrive(url)
     var info = await drives.getDriveInfo(url)
-    var frontend = await getFrontend(drive)
     await modals.create(this.sender, 'drive-properties', {
       url: info.url,
       writable: info.writable,
-      props: Object.assign(_pick(info, ['title', 'description']), {frontend})
+      props: _pick(info, ['title', 'description'])
     })
   },
 

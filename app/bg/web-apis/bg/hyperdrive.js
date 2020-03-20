@@ -28,12 +28,12 @@ const to = (opts) =>
     : DEFAULT_DRIVE_API_TIMEOUT
 
 export default {
-  async createDrive ({title, description, type, author, visibility, links, frontend, prompt} = {}) {
+  async createDrive ({title, description, author, visibility, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
-      visibility = frontend = undefined
+      visibility = undefined
       author = undefined // TODO _get(windows.getUserSessionFor(this.sender), 'url')
     }
 
@@ -41,7 +41,7 @@ export default {
       // run the creation modal
       let res
       try {
-        res = await modals.create(this.sender, 'create-drive', {title, description, type, author, visibility, links})
+        res = await modals.create(this.sender, 'create-drive', {title, description, author, visibility})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error
@@ -56,10 +56,7 @@ export default {
       // create
       let newDrive
       try {
-        let manifest = {title, description, type, /*TODO author,*/ links}
-        if (type === 'frontend') {
-          manifest.frontend = {drive_types: ['website']}
-        }
+        let manifest = {title, description, /*TODO author,*/}
         newDrive = await drives.createNewDrive(manifest)
         await filesystem.configDrive(newDrive.url, {seeding: true})
       } catch (e) {
@@ -69,10 +66,6 @@ export default {
       newDriveUrl = newDrive.url
     }
     let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
-
-    if (frontend) {
-      await setFrontend(drives.getDrive(newDriveKey), frontend)
-    }
 
     if (!isSenderBeaker(this.sender)) {
       // grant write permissions to the creating app
@@ -156,8 +149,7 @@ export default {
 
           // manifest
           title: info.title,
-          description: info.description,
-          type: info.type
+          description: info.description
         }
       })
     ))
@@ -200,13 +192,6 @@ export default {
         checkin('updating drive')
         await checkoutFS.pda.updateManifest(manifestUpdates)
         await drives.pullLatestDriveMeta(drive)
-
-        if ('frontend' in settings) {
-          var oldFrontend = await getFrontend(checkoutFS)
-          if (settings.frontend !== oldFrontend) {
-            await setFrontend(drive, settings.frontend)
-          }
-        }
       })
     ))
   },
@@ -813,37 +798,5 @@ async function lookupUrlDriveKey (url) {
     return await hyperDns.resolveName(urlp.hostname)
   } catch (e) {
     return false
-  }
-}
-
-export async function getFrontend (drive) {
-  var uiStat = await drive.pda.stat('/.ui').catch(e => undefined)
-  if (uiStat) {
-    if (uiStat.mount) {
-      return `hyper://${uiStat.mount.key.toString('hex')}`
-    } else {
-      return drive.pda.readFile('/.ui/.beaker-ui').catch(e => 'custom')
-    }
-  }
-  return undefined
-}
-
-export async function setFrontend (drive, frontend) {
-  try {
-    await drive.pda.rmdir('/.ui', {recursive: true}).catch(e => undefined)
-    await drive.pda.unmount('/.ui').catch(e => undefined)
-    if (frontend.startsWith('builtin:')) {
-      let frontendPath = path.join(__dirname, 'assets', 'frontends', frontend.slice('builtin:'.length))
-      await pda.exportFilesystemToArchive({
-        srcPath: frontendPath,
-        dstArchive: drive.session.drive,
-        dstPath: '/.ui/',
-        inplaceImport: true
-      })
-    } else if (frontend.startsWith('hyper:')) {
-      await drive.pda.mount('/.ui', frontend)
-    }
-  } catch (e) {
-    console.error('Failed to set frontend', e)
   }
 }
