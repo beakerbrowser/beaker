@@ -136,6 +136,7 @@ class DriveInfo extends LitElement {
 
   renderInfo () {
     var isSaved = this.driveCfg?.saved
+    var isSeeding = this.driveCfg?.seeding
     if (this.info && this.info.version === 0) {
       return html`
         <h1>Site not found</h1>
@@ -148,6 +149,9 @@ class DriveInfo extends LitElement {
       <div style="margin-top: 10px">
         <button class="transparent" title=${isSaved ? 'Saved to My Library' : 'Save to My Library'} @click=${this.onClickToggleSaved}>
           ${isSaved ? html`<span class="far fa-check-square"></span> Saved` : html`<span class="far fa-square"></span> Saved`}
+        </button>
+        <button class="transparent" title=${isSeeding ? 'Seeding' : 'Seed'} @click=${this.onClickToggleSeeding}>
+          ${isSeeding ? html`<span class="far fa-check-square"></span> Seeding` : html`<span class="far fa-square"></span> Seeding`}
         </button>
         <button class="transparent" title="Drive Properties" @click=${this.onClickDriveProperties}><span class="far fa-list-alt"></span> Properties</button>
       </div>
@@ -230,6 +234,15 @@ class DriveInfo extends LitElement {
       await beaker.drives.remove(this.origin)
     } else {
       await beaker.drives.configure(this.origin)
+    }
+    this.load(this.url)
+  }
+
+  async onClickToggleSeeding (e) {
+    if (this.driveCfg?.seeding) {
+      await beaker.drives.configure(this.origin, {seeding: false})
+    } else {
+      await beaker.drives.configure(this.origin, {seeding: true})
     }
     this.load(this.url)
   }

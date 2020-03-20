@@ -249,13 +249,13 @@ export class DrivesView extends LitElement {
     this.requestUpdate()
   }
 
-  async onToggleHosting (e, drive) {
+  async onToggleSeeding (e, drive) {
     drive.seeding = !drive.seeding
     await beaker.drives.configure(drive.url, {seeding: drive.seeding})
     if (drive.seeding) {
-      toast.create('Now hosting on the network')
+      toast.create('Now seeding on the network')
     } else {
-      toast.create('No longer hosting on the network')
+      toast.create('No longer seeding on the network')
     }
     this.requestUpdate()
   }

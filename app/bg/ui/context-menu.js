@@ -145,15 +145,6 @@ export default function registerContextMenu () {
           let driveCfg = getDriveConfig(key)
           let driveIdent = getDriveIdent(`hyper://${key}`)
           menuItems.push({
-            label: 'Host This Drive',
-            type: 'checkbox',
-            checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
-            enabled: !driveIdent.system,
-            click: (item, win) => {
-              configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
-            }
-          })
-          menuItems.push({
             label: 'Save to My Library',
             type: 'checkbox',
             checked: !!driveCfg || driveIdent.system,
@@ -161,6 +152,15 @@ export default function registerContextMenu () {
             click: (item, win) => {
               if (!driveCfg) configDrive(key, {seeding: false})
               else removeDrive(key)
+            }
+          })
+          menuItems.push({
+            label: 'Seed This Drive',
+            type: 'checkbox',
+            checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
+            enabled: !driveIdent.system,
+            click: (item, win) => {
+              configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
             }
           })
           menuItems.push({ type: 'separator' })
