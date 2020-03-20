@@ -37,7 +37,7 @@ export const removeListener = events.removeListener.bind(events)
  * @param {string[]?} filenames - which files to check.
  * @returns {Promise<void>}
  */
-export const update = async function (drive, filenames = null) {
+export async function update (drive, filenames = null) {
   // list target assets
   if (!filenames) {
     filenames = await drive.pda.readdir('/')
@@ -55,6 +55,24 @@ export const update = async function (drive, filenames = null) {
       console.log('Failed to update asset', filename, e)
     }
   }
+}
+
+/**
+ * @description
+ * Check the drive history for changes to an asset
+ * 
+ * @param {DaemonHyperdrive} drive 
+ * @param {Number} startVersion 
+ * @returns {Promise<Boolean>}
+ */
+export async function hasUpdates (drive, startVersion = 0) {
+  var changes = await drive.pda.diff(startVersion, '/')
+  for (let change of changes) {
+    if (ASSET_PATH_REGEX.test(change.name)) {
+      return true
+    }
+  }
+  return false
 }
 
 // internal

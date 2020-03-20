@@ -35,6 +35,7 @@ const CHECK_DAEMON_INTERVAL = 5e3
 * @prop {function(string, Object=): Promise<any>} readFile
 * @prop {function(string, Object=): Promise<Array<Object>>} readdir
 * @prop {function(string): Promise<number>} readSize
+* @prop {function(number, string?): Promise<Array<Object>>} diff
 * @prop {function(string, any, Object=): Promise<void>} writeFile
 * @prop {function(string): Promise<void>} mkdir
 * @prop {function(string, string): Promise<void>} copy

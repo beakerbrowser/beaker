@@ -15,10 +15,10 @@ import * as settingsDb from '../dbs/settings'
 import * as archivesDb from '../dbs/archives'
 import * as datDnsDb from '../dbs/dat-dns'
 
-// dat modules
+// hyperdrive modules
 import * as daemon from './daemon'
-import * as datAssets from './assets'
-import datDns from './dns'
+import * as driveAssets from './assets'
+import hyperDns from './dns'
 
 // fs modules
 import * as filesystem from '../filesystem/index'
@@ -139,7 +139,22 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
     var key = drive.key.toString('hex')
 
     // trigger DNS update
-    confirmDomain(key)
+    // confirmDomain(key) DISABLED
+
+    var version = await drive.session.drive.version()
+    if (version === drive.lastMetaPullVersion) {
+      return
+    }
+    var lastMetaPullVersion = drive.lastMetaPullVersion
+    drive.lastMetaPullVersion = version
+
+    if (lastMetaPullVersion) {
+      driveAssets.hasUpdates(drive, lastMetaPullVersion).then(hasAssetUpdates => {
+        if (hasAssetUpdates) {
+          driveAssets.update(drive)
+        }
+      })
+    }
 
     // read the drive meta and size on disk
     var [manifest, oldMeta, size] = await Promise.all([
@@ -335,16 +350,8 @@ async function loadDriveInner (key, settingsOverride) {
     await downloadHack(drive, DRIVE_MANIFEST_FILENAME)
   }
   await pullLatestDriveMeta(drive)
-  datAssets.update(drive)
-
-  // wire up events
+  driveAssets.update(drive)
   drive.pullLatestDriveMeta = opts => pullLatestDriveMeta(drive, opts)
-  // drive.fileActStream = drive.pda.watch('/')
-  // drive.fileActStream.on('data',  _debounce(([event, {path}]) => {
-  //   if (event !== 'changed') return
-  //   drive.pullLatestDriveMeta({updateMTime: true})
-  //   datAssets.update(drive)
-  // }), 1e3)
 
   // now store in main drives listing, as loaded
   drives[keyStr] = drive
@@ -520,7 +527,7 @@ export async function confirmDomain (key) {
   // }
 
   // // confirm match with current DNS
-  // var dnsKey = await datDns.resolveName(datJson.domain)
+  // var dnsKey = await hyperDns.resolveName(datJson.domain)
   // if (key !== dnsKey) {
   //   await datDnsDb.unset(key)
   //   return false
@@ -551,7 +558,7 @@ export function fromURLToKey (url, lookupDns = false) {
     if (!lookupDns) {
       throw new InvalidURLError('Hostname is not a valid hash')
     }
-    return datDns.resolveName(urlp.host)
+    return hyperDns.resolveName(urlp.host)
   }
 
   return urlp.host
