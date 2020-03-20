@@ -538,7 +538,21 @@ export default {
         }
         checkin('running query')
         var queriesResults = await Promise.all(opts.drive.map(drive => query(drive, opts)))
-        return _flattenDeep(queriesResults)
+        var results = _flattenDeep(queriesResults)
+        if (opts.drive.length > 1) {
+          // HACK resort and slice here because each query was run separately -prf
+          if (opts.sort === 'name') {
+            results.sort((a, b) => (opts.reverse) ? path.basename(b.path).toLowerCase().localeCompare(path.basename(a.path).toLowerCase()) : path.basename(a.path).toLowerCase().localeCompare(path.basename(b.path).toLowerCase()))
+          } else if (opts.sort === 'mtime') {
+            results.sort((a, b) => (opts.reverse) ? b.stat.mtime - a.stat.mtime : a.stat.mtime - b.stat.mtime)
+          } else if (opts.sort === 'ctime') {
+            results.sort((a, b) => (opts.reverse) ? b.stat.ctime - a.stat.ctime : a.stat.ctime - b.stat.ctime)
+          }
+          if (opts.offset && opts.limit) results = results.slice(opts.offset, opts.offset + opts.limit)
+          else if (opts.offset) results = results.slice(opts.offset)
+          else if (opts.limit) results = results.slice(0, opts.limit)
+        }
+        return results
       })
     ))
   },
