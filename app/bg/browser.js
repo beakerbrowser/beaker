@@ -516,7 +516,7 @@ export async function migrate08to09 () {
 }
 
 const SCROLLBAR_WIDTH = 16
-export async function capturePage (url, opts) {
+export async function capturePage (url, opts = {}) {
   var width = opts.width || 1024
   var height = opts.height || 768
 
@@ -524,15 +524,17 @@ export async function capturePage (url, opts) {
     width: width + SCROLLBAR_WIDTH,
     height,
     show: false,
-    defaultEncoding: 'UTF-8',
-    partition: 'session-' + Date.now() + Math.random(),
-    preload: 'file://' + path.join(app.getAppPath(), 'fg', 'webview-preload', 'index.build.js'),
     webPreferences: {
-      webSecurity: true,
-      allowRunningInsecureContent: false,
+      preload: 'file://' + path.join(app.getAppPath(), 'fg', 'webview-preload', 'index.build.js'),
+      nodeIntegrationInSubFrames: true,
+      contextIsolation: true,
+      webviewTag: false,
+      sandbox: true,
+      defaultEncoding: 'utf-8',
       nativeWindowOpen: true,
-      enableRemoteModule: false,
-      sandbox: true
+      nodeIntegration: false,
+      navigateOnDragDrop: true,
+      enableRemoteModule: false
     }
   })
   win.loadURL(url)
@@ -544,16 +546,14 @@ export async function capturePage (url, opts) {
   await new Promise(r => setTimeout(r, 200)) // give an extra 200ms for rendering
 
   // capture the page
-  var image = await new Promise((resolve, reject) => {
-    win.webContents.capturePage({x: 0, y: 0, width, height}, resolve)
-  })
+  var image = await win.webContents.capturePage({x: 0, y: 0, width, height})
 
   // resize if asked
   if (opts.resizeTo) {
     image = image.resize(opts.resizeTo)
   }
 
-  return image.toPNG()
+  return image
 }
 
 // rpc methods

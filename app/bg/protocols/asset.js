@@ -11,15 +11,15 @@
  **/
 
 import { screen } from 'electron'
-import { parseDriveUrl } from '../../lib/urls'
 import * as sitedata from '../dbs/sitedata'
-import * as filesystem from '../filesystem/index'
+import { capturePage } from '../browser'
 import fs from 'fs'
 import path from 'path'
 
 const NOT_FOUND = -6 // TODO I dont think this is the right code -prf
 
 var handler
+var activeCaptures = {} // [url] => Promise<NativeImage>
 
 export function setup () {
   var DEFAULTS = {
@@ -75,7 +75,19 @@ export function setup () {
       if (asset === 'screenshot') {
         data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
         if (!data) {
-          return serveJgg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
+          // try to fetch the screenshot
+          let p = activeCaptures[url]
+          if (!p) {
+            p = activeCaptures[url] = capturePage(url)
+          }
+          let nativeImg = await p
+          delete activeCaptures[url]
+          if (nativeImg) {
+            data = nativeImg.toDataURL()
+            await sitedata.set(url, 'screenshot', data, {dontExtractOrigin: true, normalizeUrl: true})
+          } else {
+            return serveJpg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
+          }
         }
       } else {
         data = await sitedata.get(url, asset)
@@ -114,10 +126,17 @@ export function register (protocol) {
 const ASSET_URL_RE = /^asset:([a-z]+)(-\d+)?:(.*)/
 function parseAssetUrl (str) {
   const match = ASSET_URL_RE.exec(str)
+  var url
+  try {
+    let urlp = new URL(match[3])
+    url = urlp.protocol + '//' + urlp.hostname + urlp.pathname
+  } catch (e) {
+    url = match[3]
+  }
   return {
     asset: match[1],
     size: (+match[2]) || 16,
-    url: match[3]
+    url
   }
 }
 
@@ -128,7 +147,7 @@ function servePng (p, fallback, cb) {
   })
 }
 
-function serveJgg (p, fallback, cb) {
+function serveJpg (p, fallback, cb) {
   return fs.readFile(p, (err, buf) => {
     if (buf) cb({mimeType: 'image/jpeg', data: buf})
     else cb(fallback)

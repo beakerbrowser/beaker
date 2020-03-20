@@ -61,6 +61,7 @@ export default {
     })
 
     // run method
-    return beakerBrowser.capturePage(url, opts)
+    var img = await beakerBrowser.capturePage(url, opts)
+    return img.toPNG()
   }
 }
