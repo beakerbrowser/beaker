@@ -1,5 +1,5 @@
 import { session, BrowserView } from 'electron'
-import { PERMS, getPermId } from '@beaker/permissions'
+import { PERMS, getPermId } from '../../lib/permissions'
 import hyper from '../hyper/index'
 import * as sitedata from '../dbs/sitedata'
 import _get from 'lodash.get'
@@ -116,6 +116,11 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   if (!PERM) return cb(false)
   if (PERM && PERM.alwaysAllow) return cb(true)
   if (PERM && PERM.alwaysDisallow) return cb(false)
+
+  // special cases
+  if (permission === 'openExternal' && opts.externalURL.startsWith('mailto:')) {
+    return cb(true)
+  }
 
   // check the sitedatadb
   var res = await sitedata.getPermission(url, permission).catch(err => undefined)

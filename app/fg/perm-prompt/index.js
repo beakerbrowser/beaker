@@ -1,5 +1,5 @@
 /* globals customElements */
-import { PERMS, PERM_ICONS, renderPermDesc, getPermId, getPermParam } from '@beaker/permissions'
+import { PERMS, PERM_ICONS, renderPermDesc, getPermId, getPermParam } from '../../lib/permissions'
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import prettyHash from 'pretty-hash'
 import * as bg from './bg-process-rpc'

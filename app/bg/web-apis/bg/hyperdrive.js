@@ -76,7 +76,7 @@ export default {
 
     if (!isSenderBeaker(this.sender)) {
       // grant write permissions to the creating app
-      permissions.grantPermission('modifyDat:' + newDriveKey, this.sender.getURL())
+      permissions.grantPermission('modifyDrive:' + newDriveKey, this.sender.getURL())
     }
     return newDriveUrl
   },
@@ -655,7 +655,7 @@ async function assertCreateDrivePermission (sender) {
   }
 
   // ask the user
-  let allowed = await permissions.requestPermission('createDat', sender)
+  let allowed = await permissions.requestPermission('createDrive', sender)
   if (!allowed) {
     throw new UserDeniedError()
   }
@@ -664,7 +664,7 @@ async function assertCreateDrivePermission (sender) {
 async function assertWritePermission (drive, sender) {
   var newDriveKey = drive.key.toString('hex')
   var details = await drives.getDriveInfo(newDriveKey)
-  const perm = ('modifyDat:' + newDriveKey)
+  const perm = ('modifyDrive:' + newDriveKey)
 
   // ensure we have the drive's private key
   if (!drive.writable) {
@@ -694,7 +694,7 @@ async function assertWritePermission (drive, sender) {
 
 async function assertDeleteDrivePermission (drive, sender) {
   var driveKey = drive.key.toString('hex')
-  const perm = ('deleteDat:' + driveKey)
+  const perm = ('deleteDrive:' + driveKey)
 
   // beaker: always allowed
   if (isSenderBeaker(sender)) {
