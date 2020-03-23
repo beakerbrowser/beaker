@@ -269,6 +269,10 @@ export async function edit (opts = {}, location = '') {
   await this.panel.focus('editor-app')
 }
 
+export function clear () {
+  this.env.clearHistory()
+}
+
 // env vars
 // =
 

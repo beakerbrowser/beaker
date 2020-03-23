@@ -169,6 +169,11 @@
       "usage": "edit {path}"
     },
     {
+      "name": "clear",
+      "help": "Clear the webterm history",
+      "usage": "clear"
+    },
+    {
       "name": "env",
       "help": "Get and set environment variables",
       "subcommands": [
