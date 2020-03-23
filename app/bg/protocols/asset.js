@@ -74,7 +74,7 @@ export function setup () {
       let data
       if (asset === 'screenshot') {
         data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
-        if (!data) {
+        if (!data && !url.startsWith('dat:')) {
           // try to fetch the screenshot
           let p = activeCaptures[url]
           if (!p) {
