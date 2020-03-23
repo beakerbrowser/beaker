@@ -44,7 +44,7 @@ export class DrivesView extends LitElement {
       }
       return true
     })
-    drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
+    drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
     console.log(drives)
 
     this.drives = drives

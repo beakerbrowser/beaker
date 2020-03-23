@@ -10,6 +10,10 @@ ${inputsCSS}
 ${tooltipCSS}
 ${spinnerCSS}
 
+:host {
+  display: block;
+}
+
 a {
   text-decoration: none;
   cursor: initial;

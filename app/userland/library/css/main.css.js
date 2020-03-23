@@ -142,5 +142,12 @@ main {
   max-height: calc(100vh - 58px);
   overflow-y: auto;
 }
+
+address-book-view,
+bookmarks-view,
+downloads-view,
+drives-view {
+  padding-bottom: 100px;
+}
 `
 export default cssStr

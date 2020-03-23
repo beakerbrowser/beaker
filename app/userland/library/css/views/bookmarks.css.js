@@ -8,6 +8,10 @@ ${buttonsCSS}
 ${tooltipCSS}
 ${spinnerCSS}
 
+:host {
+  display: block;
+}
+
 a {
   text-decoration: none;
 }
@@ -15,14 +19,6 @@ a {
 .bookmarks {
   font-size: 13px;
   box-sizing: border-box;
-}
-
-.bookmarks h3 {
-  padding: 20px 14px;
-  margin: 0;
-  border-bottom: 1px solid #dde;
-  color: #778;
-  letter-spacing: 1px;
 }
 
 .bookmarks .empty {
@@ -48,7 +44,7 @@ a {
   border-bottom: 1px solid #dde;
 }
 
-.bookmark:first-child {
+:host(.top-border) .bookmark:first-child {
   border-top: 1px solid #dde;
 }
 
@@ -76,7 +72,11 @@ a {
 }
 
 .bookmark .ctrls {
-  width: 40px;
+  width: 70px;
+}
+
+.bookmark button.transparent:hover {
+  background: #eaeaed;
 }
 
 `

@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
+import { emit } from 'beaker://app-stdlib/js/dom.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { EditBookmarkPopup } from '../com/edit-bookmark-popup.js'
@@ -14,13 +15,16 @@ function _title (bookmark) {
   return bookmark?.stat?.metadata?.title
 }
 
+function _pinned (bookmark) {
+  return bookmark?.stat?.metadata?.pinned
+}
+
 export class BookmarksView extends LitElement {
   static get properties () {
     return {
       bookmarks: {type: Array},
       filter: {type: String},
-      hideEmpty: {type: Boolean, attribute: 'hide-empty'},
-      otherOnly: {type: Boolean, attribute: 'other-only'}
+      hideEmpty: {type: Boolean, attribute: 'hide-empty'}
     }
   }
 
@@ -33,7 +37,6 @@ export class BookmarksView extends LitElement {
     this.bookmarks = undefined
     this.filter = undefined
     this.hideEmpty = false
-    this.otherOnly = false
   }
 
   async load () {
@@ -41,6 +44,7 @@ export class BookmarksView extends LitElement {
       type: 'file',
       path: ['/bookmarks/*.goto']
     })
+    bookmarks.sort((a, b) => _title(a).localeCompare(_title(b)))
     this.bookmarks = bookmarks
     console.log(this.bookmarks)
   }
@@ -68,31 +72,19 @@ export class BookmarksView extends LitElement {
   // =
 
   render () {
-    var pinnedBookmarks = this.bookmarks ? this.bookmarks.filter(b => b.stat.metadata.pinned) : undefined
-    if (pinnedBookmarks && this.filter) {
-      pinnedBookmarks = pinnedBookmarks.filter(bookmark => (
-        _href(bookmark).toLowerCase().includes(this.filter)
-        || _title(bookmark).toLowerCase().includes(this.filter)
-      ))
-    }
-    var otherBookmarks = this.bookmarks ? this.bookmarks.filter(b => !b.stat.metadata.pinned) : undefined
-    if (otherBookmarks && this.filter) {
-      otherBookmarks = otherBookmarks.filter(bookmark => (
+    var bookmarks = this.bookmarks
+    if (bookmarks && this.filter) {
+      bookmarks = bookmarks.filter(bookmark => (
         _href(bookmark).toLowerCase().includes(this.filter)
         || _title(bookmark).toLowerCase().includes(this.filter)
       ))
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${pinnedBookmarks ? html`
+      ${bookmarks ? html`
         <div class="bookmarks">
-          ${!this.otherOnly ? html`
-            <h3>Start Page</h3>
-            ${repeat(pinnedBookmarks, bookmark => this.renderBookmark(bookmark))}
-            <h3>Other</h3>
-          ` : ''}
-          ${repeat(otherBookmarks, bookmark => this.renderBookmark(bookmark))}
-          ${otherBookmarks.length === 0 && !this.hideEmpty && this.otherOnly ? html`
+          ${repeat(bookmarks, bookmark => this.renderBookmark(bookmark))}
+          ${bookmarks.length === 0 && !this.hideEmpty ? html`
             <div class="empty"><span class="far fa-star"></span><div>Click "New Bookmark" to create a bookmark</div></div>
           ` : ''}
         </div>
@@ -103,7 +95,7 @@ export class BookmarksView extends LitElement {
   }
 
   renderBookmark (bookmark) {
-    var {href, title} = bookmark.stat.metadata
+    var {href, title, pinned} = bookmark.stat.metadata
     return html`
       <a
         class="bookmark"
@@ -115,6 +107,7 @@ export class BookmarksView extends LitElement {
        <div class="title">${title}</div>
        <div class="href">${href}</div>
         <div class="ctrls">
+          <button class="transparent ${pinned ? 'pressed' : ''}" title="Toggle pinned" @click=${e => this.onToggleBookmarkPinned(e, bookmark)}><span class="fas fa-thumbtack"></span></button>
           <button class="transparent" @click=${e => this.onClickBookmarkMenuBtn(e, bookmark)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
       </div>
@@ -138,6 +131,18 @@ export class BookmarksView extends LitElement {
     e.stopPropagation()
     var rect = e.currentTarget.getClientRects()[0]
     this.bookmarkMenu(bookmark, rect.right, rect.bottom, true)
+  }
+
+  async onToggleBookmarkPinned (e, bookmark) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (_pinned(bookmark)) {
+      await beaker.hyperdrive.drive('sys').deleteMetadata(bookmark.path, ['pinned'])
+    } else {
+      await beaker.hyperdrive.drive('sys').updateMetadata(bookmark.path, {pinned: '1'})
+    }
+    this.load()
+    emit(this, 'update-pins')
   }
 
   async onClickEdit (file) {

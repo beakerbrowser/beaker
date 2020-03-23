@@ -8,6 +8,10 @@ ${buttonsCSS}
 ${tooltipCSS}
 ${spinnerCSS}
 
+:host {
+  display: block;
+}
+
 a {
   text-decoration: none;
 }
