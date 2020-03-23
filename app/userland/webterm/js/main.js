@@ -461,7 +461,8 @@ class WebTerm extends LitElement {
           set: this.setEnv.bind(this),
           goto: this.setCWD.bind(this),
           focus: this.setFocus.bind(this),
-          resolve: this.resolve.bind(this)
+          resolve: this.resolve.bind(this),
+          clearHistory: this.clearHistory.bind(this)
         },
         page: {
           goto (url, opts = {}) {
