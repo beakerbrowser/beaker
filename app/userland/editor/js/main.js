@@ -353,7 +353,7 @@ class EditorApp extends LitElement {
       })
       if (item.stat.mount && item.stat.mount.key) {
         items.push({
-          icon: 'fas fa-fw fa-link',
+          icon: 'fas fa-fw fa-external-link-square-alt',
           label: 'Copy mount target',
           click () {
             writeToClipboard(`hyper://${item.stat.mount.key}`)
