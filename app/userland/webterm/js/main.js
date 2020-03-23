@@ -120,9 +120,6 @@ class WebTerm extends LitElement {
   }
 
   async load (url) {
-    if (url.startsWith('beaker://')) {
-      url = beaker.hyperdrive.drive('sys').url
-    }
     this.url = url
 
     this.envVars.sys = beaker.hyperdrive.drive('sys').url
