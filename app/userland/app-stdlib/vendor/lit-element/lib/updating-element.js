@@ -557,4 +557,4 @@ export class UpdatingElement extends HTMLElement {
  * Marks class as having finished creating properties.
  */
 UpdatingElement.finalized = true;
-//# sourceMappingURL=updating-element.js.map
+//# =updating-element.js.map

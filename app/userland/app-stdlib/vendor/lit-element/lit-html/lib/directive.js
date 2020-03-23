@@ -41,4 +41,4 @@ export const directive = (f) => ((...args) => {
 export const isDirective = (o) => {
     return typeof o === 'function' && directives.has(o);
 };
-//# sourceMappingURL=directive.js.map
+//# =directive.js.map

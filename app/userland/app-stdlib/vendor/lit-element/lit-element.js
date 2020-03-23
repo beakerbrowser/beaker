@@ -196,4 +196,3 @@ LitElement.finalized = true;
  * @nocollapse
  */
 LitElement.render = render;
-//# sourceMappingURL=lit-element.js.map

@@ -86,4 +86,4 @@ export class SVGTemplateResult extends TemplateResult {
         return template;
     }
 }
-//# sourceMappingURL=template-result.js.map
+//# =template-result.js.map

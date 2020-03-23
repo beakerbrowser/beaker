@@ -185,4 +185,4 @@ export const eventOptions = (options) =>
 ((protoOrDescriptor, name) => (name !== undefined) ?
     legacyEventOptions(options, protoOrDescriptor, name) :
     standardEventOptions(options, protoOrDescriptor));
-//# sourceMappingURL=decorators.js.map
+//# =decorators.js.map

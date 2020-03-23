@@ -20,4 +20,4 @@ export const noChange = {};
  * A sentinel value that signals a NodePart to fully clear its content.
  */
 export const nothing = {};
-//# sourceMappingURL=part.js.map
+//# =part.js.map
