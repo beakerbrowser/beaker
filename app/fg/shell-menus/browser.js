@@ -1,6 +1,5 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import { fromEventStream } from '../../bg/web-apis/fg/event-target'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 
@@ -111,20 +110,15 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          ${''/* TODO <div class="menu-item" @click=${e => this.onShowSubmenu('applications')}>
-            <span class="label">Applications</span>
-            <i class="more fa fa-angle-right"></i>
-          </div>*/}
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+            <img class="favicon" src="asset:favicon:beaker://library">
+            <span class="label">My Library</span>
+          </div>
 
           <div class="menu-item" @click=${e => this.onShowSubmenu('bookmarks')}>
             <i class="far fa-star"></i>
             <span class="label">Bookmarks</span>
             <i class="more fa fa-angle-right"></i>
-          </div>
-            
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-            <img class="favicon" src="asset:favicon:beaker://library">
-            <span class="label">My Library</span>
           </div>
 
           <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
@@ -139,15 +133,20 @@ class BrowserMenu extends LitElement {
           </div>
         </div>
 
-        <div class="section">            
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-            <img class="favicon" src="asset:favicon:beaker://settings">
-            <span class="label">Settings</span>
-          </div>
+        <div class="section">   
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://webterm')}>
+            <img class="favicon" src="asset:favicon:beaker://webterm">
+            <span class="label">Webterm</span>
+          </div> 
             
           <div class="menu-item" @click=${this.onOpenSystemDrive}>
             <i class="far fa-hdd"></i>
             <span class="label">My System Drive</span>
+          </div>
+                    
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+            <img class="favicon" src="asset:favicon:beaker://settings">
+            <span class="label">Settings</span>
           </div>
         </div>
 

@@ -108,6 +108,10 @@ class WebTerm extends LitElement {
     })
 
     this.url = beaker.hyperdrive.drive('sys').url
+
+    if (this.hasAttribute('standalone')) {
+      this.load(beaker.hyperdrive.drive('sys').url)
+    }
   }
 
   teardown () {
