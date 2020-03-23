@@ -308,7 +308,9 @@ export const page = {
       toHTML: () => html`<pre>${result}</pre>`
     }
   },
-  async inject (opts, css) {
+  async inject (opts, ...cssArgs) {
+    var css = cssArgs.join(' ')
+    if (!css) throw new Error('Please specify the CSS you want to inject')
     var id = await this.page.inject(css)
     const uninject = e => {
       e.preventDefault()
