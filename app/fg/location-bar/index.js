@@ -298,7 +298,7 @@ class LocationBar extends LitElement {
   }
 
   onInputBlur (e) {
-    setTimeout(() => bg.locationBar.close(), 100)
+    setTimeout(() => bg.locationBar.close(), 200)
   }
 
   onClickResult (e) {
