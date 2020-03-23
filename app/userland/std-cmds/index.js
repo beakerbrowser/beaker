@@ -314,6 +314,8 @@ export const page = {
     var id = await this.page.inject(css)
     const uninject = e => {
       e.preventDefault()
+      e.currentTarget.insertAdjacentText('beforeBegin', 'Uninjected')
+      e.currentTarget.remove()
       this.page.uninject(id)
     } 
     this.out(html`<button @click=${uninject}>Uninject</button>`)
