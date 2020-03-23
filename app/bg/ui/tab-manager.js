@@ -100,7 +100,7 @@ const STATE_VARS = [
   'isInpageFindActive',
   'currentInpageFindString',
   'currentInpageFindResults',
-  'availableAlternative',
+  // 'availableAlternative',
   'donateLinkHref',
   'isLiveReloading'
 ]

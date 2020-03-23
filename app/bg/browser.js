@@ -23,7 +23,7 @@ import { findWebContentsParentWindow } from './lib/electron'
 import { getEnvVar } from './lib/env'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
-import { setupDefaultProfile } from './filesystem/index'
+import { setupDefaultProfile, getProfile } from './filesystem/index'
 
 // constants
 // =
@@ -138,6 +138,7 @@ export async function setup () {
 export const WEBAPI = {
   createEventsStream,
   getInfo,
+  getProfile,
   checkForUpdates,
   restartBrowser,
 
@@ -148,6 +149,7 @@ export const WEBAPI = {
   setupDefaultProfile,
   migrate08to09,
   setStartPageBackgroundImage,
+
   getDefaultProtocolSettings,
   setAsDefaultProtocolClient,
   removeAsDefaultProtocolClient,

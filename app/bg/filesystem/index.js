@@ -266,6 +266,13 @@ export async function setupDefaultProfile ({title, description, thumbBase64, thu
   await rootDrive.pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
 }
 
+export async function getProfile () {
+  var addressBook
+  try { addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse) }
+  catch (e) { console.error(e); addressBook = {} }
+  return addressBook.profiles ? addressBook.profiles[0] : undefined
+}
+
 // internal methods
 // =
 

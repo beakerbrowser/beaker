@@ -1,6 +1,7 @@
 export default {
   createEventsStream: 'readable',
   getInfo: 'promise',
+  getProfile: 'promise',
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
@@ -11,6 +12,7 @@ export default {
   setupDefaultProfile: 'promise',
   migrate08to09: 'promise',
   setStartPageBackgroundImage: 'promise',
+  
   getDefaultProtocolSettings: 'promise',
   setAsDefaultProtocolClient: 'promise',
   removeAsDefaultProtocolClient: 'promise',

@@ -25,7 +25,8 @@ class ShellWindowUI extends LitElement {
       isDaemonActive: {type: Boolean},
       isShellInterfaceHidden: {type: Boolean},
       isFullscreen: {type: Boolean},
-      hasLocationExpanded: {type: Boolean}
+      hasLocationExpanded: {type: Boolean},
+      userProfileUrl: {type: String}
     }
   }
 
@@ -39,6 +40,7 @@ class ShellWindowUI extends LitElement {
     this.isFullscreen = false
     this.hasLocationExpanded = false
     this.activeTabIndex = -1
+    this.userProfileUrl = undefined
     this.setup()
   }
 
@@ -91,11 +93,24 @@ class ShellWindowUI extends LitElement {
     })
 
     // fetch initial tab state
-    bg.views.getState().then(state => {
-      this.tabs = state
-      this.stateHasChanged()
-    })
     this.isUpdateAvailable = browserInfo.updater.state === 'downloaded'
+    ;[this.tabs, this.userProfileUrl] = await Promise.all([
+      bg.views.getState(),
+      bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}` : undefined)
+    ])
+    this.stateHasChanged()
+
+    // HACK
+    // periodically check to see if the user profile URL has changed
+    // (would be better too have an event trigger this!)
+    // -prf
+    setInterval(async () => {
+      var userProfileUrl = await bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}` : undefined)
+      if (this.userProfileUrl !== userProfileUrl) {
+        this.userProfileUrl = userProfileUrl
+        this.stateHasChanged()
+      }
+    }, 15e3)
   }
 
   get activeTab () {
@@ -130,6 +145,7 @@ class ShellWindowUI extends LitElement {
         <shell-window-navbar
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
+          .userProfileUrl=${this.userProfileUrl}
           ?is-update-available=${this.isUpdateAvailable}
           ?is-daemon-active=${this.isDaemonActive}
           num-watchlist-notifications="${this.numWatchlistNotifications}"

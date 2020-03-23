@@ -15,6 +15,7 @@ class ShellWindowNavbar extends LitElement {
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
+      userProfileUrl: {type: String},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -26,6 +27,7 @@ class ShellWindowNavbar extends LitElement {
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
     this.isDaemonActive = false
+    this.userProfileUrl = undefined
     this.isBrowserMenuOpen = false
   }
 
@@ -68,7 +70,7 @@ class ShellWindowNavbar extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="buttons" style="padding-right: 0">
+      <div class="buttons" style="padding-right: 6px">
         ${this.backBtn}
         ${this.forwardBtn}
         ${this.reloadBtn}
@@ -100,9 +102,10 @@ class ShellWindowNavbar extends LitElement {
         active-match="${_get(this, 'activeTab.currentInpageFindResults.activeMatchOrdinal', '0')}"
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
-      <div class="buttons" style="padding-left: 4px">
+      <div class="buttons" style="padding-left: 6px">
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
+        ${this.profileBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -219,6 +222,15 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get profileBtn () {
+    if (!this.userProfileUrl) return html``
+    return html`
+      <button class="user-profile-btn" @click=${this.onClickUserProfile}>
+        <img src="asset:thumb:${this.userProfileUrl}?cache_buster=${Date.now()}">
+      </button>
+    `
+  }
+
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
@@ -273,6 +285,10 @@ class ShellWindowNavbar extends LitElement {
 
   onClickDaemonInactiveBtn (e) {
     bg.views.createTab('beaker://settings', {setActive: true})
+  }
+
+  onClickUserProfile (e) {
+    bg.views.createTab(this.userProfileUrl, {setActive: true})
   }
 
   async onClickBrowserMenu (e) {
@@ -356,6 +372,19 @@ svg.icon.refresh {
   color: #fff;
   font-weight: bold;
   padding: 0 3px;
+}
+
+.user-profile-btn {
+  margin: 0 2px;
+}
+
+.user-profile-btn img {
+  position: relative;
+  top: 1px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 `
 customElements.define('shell-window-navbar', ShellWindowNavbar)
