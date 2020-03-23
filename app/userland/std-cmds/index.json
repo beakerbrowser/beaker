@@ -5,7 +5,7 @@
     {
       "name": "ls",
       "help": "List files in the directory or information about a file",
-      "usage": "ls"
+      "usage": "ls [{path}]"
     },
     {
       "name": "cd",
