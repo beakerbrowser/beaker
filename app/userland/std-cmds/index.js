@@ -301,7 +301,9 @@ export const env = {
 // =
 
 export const page = {
-  async exec (opts, js) {
+  async exec (opts, ...jsArgs) {
+    var js = jsArgs.join(' ')
+    if (!js) throw new Error('Please specify the JS you want to execute')
     var result = await this.page.exec(js)
     return {
       result,
