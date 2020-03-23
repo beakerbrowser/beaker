@@ -82,6 +82,10 @@ class EditorApp extends LitElement {
     this.isBinary = false
     this.resolvedPath = ''
     this.setFocusOnLoad = false
+
+    if (this.hasAttribute('standalone')) {
+      this.load(beaker.hyperdrive.drive('sys').url)
+    }
   }
 
   teardown () {
