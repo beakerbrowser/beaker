@@ -198,7 +198,6 @@ export function createShellWindow (windowState) {
     icon: ICON_PATH,
     show: false // will show when ready
   })
-  win.isShellInterfaceHidden = state.isShellInterfaceHidden
   win.once('ready-to-show', () => {
     win.show()
     if (!hasFirstWindowLoaded) {
@@ -235,6 +234,9 @@ export function createShellWindow (windowState) {
         tabManager.loadPins(win)
       }
       tabManager.initializeFromSnapshot(win, state.pages)
+      if (state.isShellInterfaceHidden) {
+        setShellInterfaceHidden(win, true)
+      }
       win.emit('custom-pages-ready')
 
       // DISABLED
@@ -352,7 +354,10 @@ export function ensureOneWindowExists () {
 }
 
 export function toggleShellInterface (win) {
-  var isShellInterfaceHidden = !win.isShellInterfaceHidden
+  setShellInterfaceHidden(win, !win.isShellInterfaceHidden)
+}
+
+export function setShellInterfaceHidden (win, isShellInterfaceHidden) {
   win.isShellInterfaceHidden = isShellInterfaceHidden
   if (win.setWindowButtonVisibility) {
     win.setWindowButtonVisibility(!isShellInterfaceHidden)

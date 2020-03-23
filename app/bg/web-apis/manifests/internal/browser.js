@@ -42,6 +42,7 @@ export default {
   showOpenDialog: 'promise',
   showContextMenu: 'promise',
   showModal: 'promise',
+  newWindow: 'promise',
   openUrl: 'promise',
   gotoUrl: 'promise',
   getPageUrl: 'promise',

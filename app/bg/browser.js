@@ -15,6 +15,7 @@ const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
 import { convertDatArchive } from './dat/index'
 import { open as openUrl } from './open-url'
+import * as windows from './ui/windows'
 import * as tabManager from './ui/tab-manager'
 import { updateSetupState } from './ui/setup-flow'
 import * as modals from './ui/subwindows/modals'
@@ -183,6 +184,7 @@ export const WEBAPI = {
   async showModal (name, opts) {
     return modals.create(this.sender, name, opts)
   },
+  newWindow,
   gotoUrl,
   getPageUrl,
   refreshPage,
@@ -615,9 +617,14 @@ function showContextMenu (menuDefinition) {
     // show the menu
     var win = findWebContentsParentWindow(this.sender)
     var menu = Menu.buildFromTemplate(menuDefinition)
-    menu.popup({window: win})
-    resolve(selection)
+    menu.popup({window: win, callback () {
+      resolve(selection)
+    }})
   })
+}
+
+async function newWindow (state = {}) {
+  windows.createShellWindow(state)
 }
 
 async function gotoUrl (url) {
