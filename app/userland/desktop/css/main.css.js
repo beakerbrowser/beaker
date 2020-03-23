@@ -10,7 +10,7 @@ ${tooltipCSS}
 
 :host {
   display: block;
-  padding: 0 15px;
+  padding: 0 15px 100px;
 }
 
 .hidden {
