@@ -19,13 +19,11 @@ export async function create () {
   description = await this.prompt('Package description')
 
   var drive = await beaker.hyperdrive.createDrive({
-    type: 'webterm.sh/cmd-pkg',
     title,
     description,
     prompt: false
   })
   await drive.writeFile('/index.json', JSON.stringify({
-    type: 'webterm.sh/cmd-pkg',
     title,
     description,
     commands: STARTER_MANIFEST_CMDS
