@@ -271,7 +271,7 @@ class WebTerm extends LitElement {
   outputHeader (thenCwd, cmd) {
     let host = shortenHash(thenCwd.host)
     let pathname = shortenAllKeys(thenCwd.pathname || '').replace(/\/$/, '')
-    this.outputHist.push(html`<div class="header"><strong>${host}${pathname}&gt;</strong> <span>${cmd || ''}</span></div>`)
+    this.outputHist.push(html`<div class="header"><strong><a href=${thenCwd.toString()}>${host}${pathname}</a>&gt;</strong> <span>${cmd || ''}</span></div>`)
   }
 
   async output (output) {
@@ -749,7 +749,7 @@ class WebTerm extends LitElement {
           ${this.outputHist}
         </div>
         <div class="prompt">
-          <strong>${host}${pathname}&gt;</strong> <input @keyup=${this.onPromptKeyUp} />
+          <strong><a href=${this.cwd.toString()}>${host}${pathname}</a>&gt;</strong> <input @keyup=${this.onPromptKeyUp} />
         </div>
         <div class="floating-help-outer">
           <div class="floating-help-inner">

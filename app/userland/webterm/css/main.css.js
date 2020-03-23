@@ -80,12 +80,12 @@ pre {
   padding-left: 5px;
 }
 
-.output .header *:first-child {
+.output .header > *:first-child {
   max-width: 50vw;
   word-break: break-all;
 }
 
-.output .header *:last-child {
+.output .header > *:last-child {
   flex: 1;
   word-break: break-all;
   padding: 0 0 0 3px;
