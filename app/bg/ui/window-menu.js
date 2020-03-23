@@ -533,7 +533,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Next Tab',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+PageDown',
+        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+Right' : 'CmdOrCtrl+PageDown',
         click: function (item) {
           var win = getWin()
           if (win) tabManager.changeActiveBy(win, 1)
@@ -542,7 +542,7 @@ export function buildWindowMenu (opts = {}) {
       {
         label: 'Previous Tab',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+PageUp',
+        accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+Left' : 'CmdOrCtrl+PageUp',
         click: function (item) {
           var win = getWin()
           if (win) tabManager.changeActiveBy(win, -1)
