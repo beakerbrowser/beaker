@@ -1,6 +1,7 @@
 import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import * as tabManager from './tab-manager'
+import { getAddedWindowSettings } from './windows'
 import { download } from './downloads'
 import { getDriveConfig, configDrive, removeDrive, getDriveIdent } from '../filesystem/index'
 import { runForkFlow, runDrivePropertiesFlow } from './util'
@@ -31,6 +32,7 @@ export default function registerContextMenu () {
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
       var targetWindow = BrowserWindow.getFocusedWindow()
       if (!targetWindow) { return }
+      const addedWindowSettings = getAddedWindowSettings(targetWindow)
 
       // ignore clicks on the shell window
       if (props.pageURL == 'beaker://shell-window/') { return }
@@ -139,68 +141,70 @@ export default function registerContextMenu () {
           click: () => webContents.reload()
         })
         menuItems.push({ type: 'separator' })
-        if (isHyperdrive) {
-          let driveInfo = tabManager.getActive(targetWindow).driveInfo
-          let key = driveInfo ? driveInfo.key : undefined
-          let driveCfg = getDriveConfig(key)
-          let driveIdent = getDriveIdent(`hyper://${key}`)
+        if (!addedWindowSettings.isAppWindow) {
+          if (isHyperdrive) {
+            let driveInfo = tabManager.getActive(targetWindow).driveInfo
+            let key = driveInfo ? driveInfo.key : undefined
+            let driveCfg = getDriveConfig(key)
+            let driveIdent = getDriveIdent(`hyper://${key}`)
+            menuItems.push({
+              label: 'Save to My Library',
+              type: 'checkbox',
+              checked: !!driveCfg || driveIdent.system,
+              enabled: !driveIdent.system,
+              click: (item, win) => {
+                if (!driveCfg) configDrive(key, {seeding: false})
+                else removeDrive(key)
+              }
+            })
+            menuItems.push({
+              label: 'Seed This Drive',
+              type: 'checkbox',
+              checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
+              enabled: !driveIdent.system,
+              click: (item, win) => {
+                configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
+              }
+            })
+            menuItems.push({ type: 'separator' })
+            menuItems.push({
+              label: 'Fork This Drive',
+              click: async (item, win) => {
+                var driveUrlp = new URL(await runForkFlow(win, key))
+                var pageUrlp = new URL(props.pageURL)
+                pageUrlp.hostname = driveUrlp.hostname
+                tabManager.create(win, pageUrlp.toString(), {setActive: true})
+              }
+            })
+            menuItems.push({ label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://diff/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } })
+            menuItems.push({ type: 'separator' })
+            menuItems.push({
+              label: 'Sidebar: Site Info',
+              click: async (item, win) => {
+                tabManager.getActive(win).executeSidebarCommand('show-panel', 'site-info-app')
+              }
+            })
+            menuItems.push({
+              label: 'Sidebar: Explore Files',
+              click: async (item, win) => {
+                tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
+              }
+            })
+          }
           menuItems.push({
-            label: 'Save to My Library',
-            type: 'checkbox',
-            checked: !!driveCfg || driveIdent.system,
-            enabled: !driveIdent.system,
-            click: (item, win) => {
-              if (!driveCfg) configDrive(key, {seeding: false})
-              else removeDrive(key)
+            label: 'Sidebar: Editor',
+            click: async (item, win) => {
+              tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
             }
           })
           menuItems.push({
-            label: 'Seed This Drive',
-            type: 'checkbox',
-            checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
-            enabled: !driveIdent.system,
-            click: (item, win) => {
-              configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
+            label: 'Sidebar: Terminal',
+            click: async (item, win) => {
+              tabManager.getActive(win).executeSidebarCommand('show-panel', 'web-term')
             }
           })
           menuItems.push({ type: 'separator' })
-          menuItems.push({
-            label: 'Fork This Drive',
-            click: async (item, win) => {
-              var driveUrlp = new URL(await runForkFlow(win, key))
-              var pageUrlp = new URL(props.pageURL)
-              pageUrlp.hostname = driveUrlp.hostname
-              tabManager.create(win, pageUrlp.toString(), {setActive: true})
-            }
-          })
-          menuItems.push({ label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://diff/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } })
-          menuItems.push({ type: 'separator' })
-          menuItems.push({
-            label: 'Sidebar: Drive Info',
-            click: async (item, win) => {
-              tabManager.getActive(win).executeSidebarCommand('show-panel', 'drive-info-app')
-            }
-          })
-          menuItems.push({
-            label: 'Sidebar: Explore Files',
-            click: async (item, win) => {
-              tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
-            }
-          })
         }
-        menuItems.push({
-          label: 'Sidebar: Editor',
-          click: async (item, win) => {
-            tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
-          }
-        })
-        menuItems.push({
-          label: 'Sidebar: Terminal',
-          click: async (item, win) => {
-            tabManager.getActive(win).executeSidebarCommand('show-panel', 'web-term')
-          }
-        })
-        menuItems.push({ type: 'separator' })
         menuItems.push({
           label: 'Save Page As...',
           click: downloadPrompt('pageURL', '.html')

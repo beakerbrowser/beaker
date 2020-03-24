@@ -21,7 +21,7 @@ import * as modals from './subwindows/modals'
 import * as sidebars from './subwindows/sidebars'
 import * as siteInfo from './subwindows/site-info'
 import * as windowMenu from './window-menu'
-import { createShellWindow } from './windows'
+import { createShellWindow, getAddedWindowSettings, getOrCreateNonAppWindow } from './windows'
 import { getResourceContentType } from '../browser'
 import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
@@ -174,6 +174,7 @@ class Tab extends EventEmitter {
     this.wasDriveTimeout = false // did the last navigation result in a timed-out hyperdrive?
 
     // wire up events
+    this.webContents.on('will-navigate', this.onWillNavigate.bind(this))
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
     this.webContents.on('did-start-navigation', this.onDidStartNavigation.bind(this))
     this.webContents.on('did-navigate', this.onDidNavigate.bind(this))
@@ -325,14 +326,22 @@ class Tab extends EventEmitter {
   // =
 
   loadURL (url, opts) {
-    this.browserView.webContents.loadURL(url, opts)
+    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
+      if (this.url && toOrigin(this.url) !== toOrigin(url)) {
+        // we never navigate out of app windows
+        // instead, create a new tab, which will cause it to open in a normal window
+        create(this.browserWindow, url, {setActive: true})
+      }
+    } else {
+      this.browserView.webContents.loadURL(url, opts)
+    }
   }
 
   calculateBounds (windowBounds) {
     var x = 0
     var y = Y_POSITION + TOOLBAR_HEIGHT
     var {width, height} = windowBounds
-    if (this.browserWindow.isShellInterfaceHidden) {
+    if (getAddedWindowSettings(this.browserWindow).isShellInterfaceHidden) {
       y = 0
     }
     if (this.isSidebarActive) {
@@ -757,6 +766,17 @@ class Tab extends EventEmitter {
     emitUpdateState(this.browserWindow, this, state)
   }
 
+  onWillNavigate (e, url) {
+    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
+      if (this.url && toOrigin(this.url) !== toOrigin(url)) {
+        // we never navigate out of app windows
+        // instead, create a new tab, which will cause it to open in a normal window
+        e.preventDefault()
+        create(this.browserWindow, url, {setActive: true})
+      }
+    }
+  }
+
   onDidStartLoading (e) {
     // update state
     this.isLoading = true
@@ -1060,6 +1080,12 @@ export function create (
   ) {
   url = url || DEFAULT_URL
   win = getTopWindow(win)
+  if (getAddedWindowSettings(win).isAppWindow) {
+    // app-windows cant have multiple tabs, so find another window
+    win = getOrCreateNonAppWindow()
+    win.focus()
+    win.moveTop()
+  }
   var tabs = activeTabs[win.id] = activeTabs[win.id] || []
 
   var tab
@@ -1403,7 +1429,7 @@ export function emitReplaceState (win) {
   var state = {
     tabs: getWindowTabState(win),
     isFullscreen: win.isFullScreen(),
-    isShellInterfaceHidden: win.isShellInterfaceHidden,
+    isShellInterfaceHidden: getAddedWindowSettings(win).isShellInterfaceHidden,
     isDaemonActive: hyper.daemon.isActive()
   }
   emit(win, 'replace-state', state)

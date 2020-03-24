@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
-import { createShellWindow, toggleShellInterface, getFocusedDevToolsHost } from './windows'
+import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost, getAddedWindowSettings } from './windows'
 import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
 import {download} from './downloads'
@@ -14,13 +14,8 @@ export function setup () {
   // watch for changes to the currently active window
   app.on('browser-window-focus', async (e, win) => {
     try {
-      // fetch the current url
       const url = tabManager.getActive(win).url
-
-      // rebuild as needed
-      if (requiresRebuild(url)) {
-        setApplicationMenu({url})
-      }
+      setApplicationMenu({url})
     } catch (e) {
       // `pages` not set yet
     }
@@ -57,6 +52,8 @@ export function buildWindowMenu (opts = {}) {
   const isDriveSite = opts.url && opts.url.startsWith('hyper://')
   const noWindows = opts.noWindows === true
   const getWin = () => BrowserWindow.getFocusedWindow()
+  const addedWindowSettings = getAddedWindowSettings(getActiveWindow())
+  const isAppWindow = addedWindowSettings.isAppWindow
 
   var darwinMenu = {
     label: 'Beaker',
@@ -138,7 +135,7 @@ export function buildWindowMenu (opts = {}) {
       { type: 'separator' },
       {
         label: 'Save Page As...',
-        enabled: !noWindows,
+        enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+S',
         click: async (item) => {
           var win = getWin()
@@ -212,7 +209,7 @@ export function buildWindowMenu (opts = {}) {
       { label: 'Select All', enabled: !noWindows, accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
       {
         label: 'Find in Page',
-        enabled: !noWindows,
+        enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+F',
         click: function (item) {
           var tab = tabManager.getActive(getWin())
@@ -221,7 +218,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Find Next',
-        enabled: !noWindows,
+        enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+G',
         click: function (item) {
           var tab = tabManager.getActive(getWin())
@@ -230,7 +227,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Find Previous',
-        enabled: !noWindows,
+        enabled: !noWindows && !isAppWindow,
         accelerator: 'Shift+CmdOrCtrl+G',
         click: function (item) {
           var tab = tabManager.getActive(getWin())
@@ -285,7 +282,7 @@ export function buildWindowMenu (opts = {}) {
         submenu: [
           {
             label: 'Open Editor',
-            enabled: !noWindows,
+            enabled: !noWindows && !isAppWindow,
             accelerator: 'CmdOrCtrl+b',
             click: async function (item) {
               var win = getWin()
@@ -297,7 +294,7 @@ export function buildWindowMenu (opts = {}) {
           },
           {
             label: 'Open Terminal',
-            enabled: !noWindows,
+            enabled: !noWindows && !isAppWindow,
             accelerator: 'Ctrl+`',
             click: function (item) {
               var win = getWin()
@@ -311,7 +308,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Toggle Browser UI',
-        enabled: !noWindows,
+        enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+Shift+H',
         click: function (item) {
           var win = getWin()
@@ -321,7 +318,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         label: 'Pop Out Tab',
-        enabled: !noWindows,
+        enabled: !noWindows && !isAppWindow,
         accelerator: 'Shift+CmdOrCtrl+P',
         click: function (item) {
           var win = getWin()

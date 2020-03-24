@@ -50,6 +50,7 @@ var sessionWatcher = null
 var focusedDevtoolsHost
 var hasFirstWindowLoaded = false
 var isTabSwitcherActive = {} // map of {[window.id] => Boolean}
+var windowAddedSettings = {} // map of {[window.id] => Object}
 const BROWSING_SESSION_PATH = './shell-window-state.json'
 export const ICON_PATH = path.join(__dirname, (process.platform === 'win32') ? './assets/img/logo.ico' : './assets/img/logo.png')
 export const PRELOAD_PATH = path.join(__dirname, 'fg', 'shell-window', 'index.build.js')
@@ -164,17 +165,25 @@ export async function setup () {
   }
 }
 
-export function createShellWindow (windowState) {
+export function createShellWindow (windowState, createOpts = {dontInitPages: false}) {
   // create window
   let state = ensureVisibleOnSomeDisplay(Object.assign({}, defaultWindowState(), windowState))
   var { x, y, width, height, minWidth, minHeight } = state
-  var win = new BrowserWindow({
+  var frameSettings = {
     titleBarStyle: 'hidden',
     trafficLightPosition: {x: 12, y: 20},
+    frame: !IS_WIN,
+    title: undefined
+  }
+  if (state.isAppWindow) {
+    frameSettings.titleBarStyle = 'default'
+    frameSettings.trafficLightPosition = undefined
+    frameSettings.frame = true
+  }
+  var win = new BrowserWindow(Object.assign({
     autoHideMenuBar: !IS_LINUX,
     fullscreenable: true,
     fullscreenWindowTitle: true,
-    frame: !IS_WIN,
     alwaysOnTop: state.isAlwaysOnTop,
     x,
     y,
@@ -197,7 +206,7 @@ export function createShellWindow (windowState) {
     },
     icon: ICON_PATH,
     show: false // will show when ready
-  })
+  }, frameSettings))
   win.once('ready-to-show', () => {
     win.show()
     if (!hasFirstWindowLoaded) {
@@ -233,7 +242,13 @@ export function createShellWindow (windowState) {
         // if this is the first window opened (since app start or since all windows closing)
         tabManager.loadPins(win)
       }
-      tabManager.initializeFromSnapshot(win, state.pages)
+      if (!createOpts.dontInitPages) {
+        tabManager.initializeFromSnapshot(win, state.pages)
+      }
+      if (state.isAppWindow) {
+        setIsAppWindow(win, true)
+        state.isShellInterfaceHidden = true // must be hidden
+      }
       if (state.isShellInterfaceHidden) {
         setShellInterfaceHidden(win, true)
       }
@@ -347,22 +362,49 @@ export async function getFocusedWebContents (win) {
   }
 }
 
+export function getOrCreateNonAppWindow () {
+  var nonAppWin = BrowserWindow.getAllWindows().filter(win => !getAddedWindowSettings(win).isAppWindow).pop()
+  if (!nonAppWin) {
+    nonAppWin = createShellWindow({pages: []}, {dontInitPages: true})
+  }
+  return nonAppWin
+}
+
+export function getAddedWindowSettings (win) {
+  if (!win || !win.id) return {}
+  return windowAddedSettings[win.id] || {}
+}
+
+export function updateAddedWindowSettings (win, settings) {
+  windowAddedSettings[win.id] = Object.assign(getAddedWindowSettings(win), settings)
+}
+
 export function ensureOneWindowExists () {
   if (numActiveWindows === 0) {
     createShellWindow()
   }
 }
 
+export function setIsAppWindow (win, isAppWindow) {
+  updateAddedWindowSettings(win, {isAppWindow})
+  sessionWatcher.updateState(win, {isAppWindow})
+}
+
 export function toggleShellInterface (win) {
-  setShellInterfaceHidden(win, !win.isShellInterfaceHidden)
+  setShellInterfaceHidden(win, !getAddedWindowSettings(win).isShellInterfaceHidden)
 }
 
 export function setShellInterfaceHidden (win, isShellInterfaceHidden) {
-  win.isShellInterfaceHidden = isShellInterfaceHidden
-  if (win.setWindowButtonVisibility) {
-    win.setWindowButtonVisibility(!isShellInterfaceHidden)
+  if (getAddedWindowSettings(win).isAppWindow) {
+    // app-window-mode forces the interface to be hidden
+    isShellInterfaceHidden = true
   }
 
+  updateAddedWindowSettings(win, {isShellInterfaceHidden})
+  if (win.setWindowButtonVisibility && !getAddedWindowSettings(win).isAppWindow) {
+    win.setWindowButtonVisibility(!isShellInterfaceHidden)
+  }
+  sessionWatcher.updateState(win, {isShellInterfaceHidden})
   tabManager.emitReplaceState(win)
   win.emit('resize')
 }

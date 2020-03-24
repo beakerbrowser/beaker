@@ -13,6 +13,7 @@ import * as rpc from 'pauls-electron-rpc'
 import * as tabManager from '../tab-manager'
 import promptsRPCManifest from '../../rpc-manifests/prompts'
 import { findWebContentsParentWindow } from '../../lib/electron'
+import { getAddedWindowSettings } from '../windows'
 
 // globals
 // =
@@ -164,7 +165,7 @@ function setBounds (view, tab, parentWindow, {width, height} = {}) {
   var parentBounds = parentWindow.getContentBounds()
   width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
-  var y = parentWindow.isShellInterfaceHidden ? 10 : 105
+  var y = getAddedWindowSettings(parentWindow).isShellInterfaceHidden ? 10 : 105
   view.setBounds({
     x: tab.isSidebarActive ? tab.sidebarWidth : 0,
     y,

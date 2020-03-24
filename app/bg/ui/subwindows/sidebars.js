@@ -11,6 +11,7 @@ import path from 'path'
 import { BrowserView } from 'electron'
 import * as tabManager from '../tab-manager'
 import { findWebContentsParentWindow } from '../../lib/electron'
+import { getAddedWindowSettings } from '../windows'
 
 // globals
 // =
@@ -112,7 +113,7 @@ export function close (tab) {
 
 function setBounds (sidebarView, tab) {
   var parentBounds = tab.browserWindow.getContentBounds()
-  var y = tab.browserWindow.isShellInterfaceHidden ? 0 : (SIDEBAR_Y + tabManager.TOOLBAR_HEIGHT)
+  var y = getAddedWindowSettings(tab.browserWindow).isShellInterfaceHidden ? 0 : (SIDEBAR_Y + tabManager.TOOLBAR_HEIGHT)
   var height = parentBounds.height - y
   sidebarView.setBounds({
     x: 0,

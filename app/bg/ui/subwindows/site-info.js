@@ -12,6 +12,7 @@ import path from 'path'
 import Events from 'events'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as tabManager from '../tab-manager'
+import { getAddedWindowSettings } from '../windows'
 
 // globals
 // =
@@ -68,7 +69,7 @@ export function reposition (parentWindow) {
     }
     setBounds({
       x: view.boundsOpt ? view.boundsOpt.left : 170,
-      y: parentWindow.isShellInterfaceHidden ? 10 : 72,
+      y: getAddedWindowSettings(parentWindow).isShellInterfaceHidden ? 10 : 72,
       width: 400,
       height: 350
     })
