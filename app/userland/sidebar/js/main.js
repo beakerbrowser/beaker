@@ -181,7 +181,7 @@ class SidebarApp extends HTMLElement {
     if (newWindow) {
       let width = panel.tagName === 'files-explorer-app' ? 1000 : 600
       let height = panel.tagName === 'files-explorer-app' ? 800 : 500
-      beaker.browser.newWindow({pages: [url], width, height: 500, isAppWindow: true})
+      beaker.browser.newWindow({pages: [url], width, height, isAppWindow: true})
     } else {
       beaker.browser.openUrl(url, {setActive: true, adjacentActive: true})
     }
