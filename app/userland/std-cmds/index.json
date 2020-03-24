@@ -144,9 +144,9 @@
       ]
     },
     {
-      "name": "go",
-      "help": "Go to the target in the browser",
-      "usage": "go [-bn] {path}",
+      "name": "open",
+      "help": "Open the target in the browser",
+      "usage": "open [-bn] {path}",
       "options": [
         {
           "name": "bookmark",

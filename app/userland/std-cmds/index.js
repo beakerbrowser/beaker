@@ -234,7 +234,7 @@ export async function echo (opts, ...args) {
   return args.join(' ')
 }
 
-export async function go (opts = {}, location = '') {
+export async function open (opts = {}, location = '') {
   if (opts.bookmark) {
     location = `${beaker.hyperdrive.getSystemDrive().url}/bookmarks/${location}`
     if (!location.endsWith('.goto')) location += '.goto'
