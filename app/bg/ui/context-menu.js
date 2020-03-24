@@ -1,10 +1,10 @@
 import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import * as tabManager from './tab-manager'
-import { getAddedWindowSettings } from './windows'
+import { getAddedWindowSettings, toggleShellInterface } from './windows'
 import { download } from './downloads'
 import { getDriveConfig, configDrive, removeDrive, getDriveIdent } from '../filesystem/index'
-import { runForkFlow, runDrivePropertiesFlow } from './util'
+import { runForkFlow } from './util'
 import * as spellChecker from '../web-apis/bg/spell-checker'
 
 // NOTE
@@ -207,6 +207,20 @@ export default function registerContextMenu () {
                 }
               }
             ]
+          })
+          menuItems.push({
+            type: 'checkbox',
+            label: 'Always on Top',
+            checked: targetWindow.isAlwaysOnTop(),
+            click: function () {
+              targetWindow.setAlwaysOnTop(!targetWindow.isAlwaysOnTop())
+            }
+          })
+          menuItems.push({
+            label: 'Toggle Browser UI',
+            click: function () {
+              toggleShellInterface(targetWindow)
+            }
           })
           menuItems.push({ type: 'separator' })
         }
