@@ -53,6 +53,7 @@ class WebTerm extends LitElement {
 
   constructor () {
     super()
+    this.isDetached = this.hasAttribute('detached')
     this.isLoaded = false
     this.startUrl = ''
     this.url = ''
@@ -107,15 +108,18 @@ class WebTerm extends LitElement {
       }
     })
 
-    this.url = beaker.hyperdrive.drive('sys').url
-
-    if (this.hasAttribute('standalone')) {
-      this.load(beaker.hyperdrive.drive('sys').url)
+    if (this.isDetached) {
+      let ctx = (new URLSearchParams(location.search)).get('url')
+      this.load(ctx || beaker.hyperdrive.drive('sys').url)
     }
   }
 
   teardown () {
 
+  }
+
+  getContext () {
+    return this.url
   }
 
   get promptInput () {
@@ -262,6 +266,11 @@ class WebTerm extends LitElement {
 
     this.url = location
     this.cwd = locationParsed
+    if (this.isDetached) {
+      history.replaceState({}, '', `/?url=${locationParsed.toString()}`)
+    } else {
+      beaker.browser.gotoUrl(locationParsed.toString())
+    }
   }
 
   parseURL (url) {

@@ -10,8 +10,9 @@ editor-app {
   user-select: none;
 }
 
-editor-app[standalone] {
+editor-app[detached] {
   height: 100vh;
+  overflow: hidden;
 }
 
 editor-app a,

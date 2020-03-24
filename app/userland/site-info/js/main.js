@@ -177,7 +177,6 @@ class SiteInfoApp extends LitElement {
     var protocol = ''
     if (this.isHttps) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
     if (this.isBeaker) protocol = html`<p class="protocol">This page is served by Beaker</p>`
-    var isSaved = _get(this.driveCfg, 'saved')
     return html`
       <div class="site-info">
         <div class="details">

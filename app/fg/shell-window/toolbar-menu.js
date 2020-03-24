@@ -39,18 +39,13 @@ class ShellWindowToolbarMenu extends LitElement {
       text-align: center;
       cursor: pointer;
     }
-    a.pressed,
     a:hover {
       background: var(--bg-toolbar--hover);
       color: var(--color-toolbar--hover);
     }
-    a.disabled {
-      cursor: default;
-      opacity: 0.5;
-    }
-    a.disabled:hover {
-      color: var(--color-toolbar);
-      background: none;
+    a.pressed {
+      background: var(--bg-toolbar--pressed);
+      color: var(--color-toolbar--pressed);
     }
     a .fas {
       font-size: 10px;
@@ -71,23 +66,22 @@ class ShellWindowToolbarMenu extends LitElement {
 
   render () {
     const isHyper = this.activeTab ? this.activeTab.url.startsWith('hyper://') : false
-    const sidebarBtn = (panel, label, hyperOnly = false) => {
+    const sidebarBtn = (panel, label) => {
       var panels = this.activeTab ? this.activeTab.sidebarPanels : []
-      var disabled = hyperOnly && !isHyper
       return html`
         <a
-          class=${classMap({pressed: panels.includes(panel), disabled})}
-          @click=${disabled ? undefined : e => this.onClickSidebarToggle(e, panel)}
+          class=${classMap({pressed: panels.includes(panel)})}
+          @click=${e => this.onClickSidebarToggle(e, panel)}
         >${label}</a>
       `
     }
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      ${sidebarBtn('site-info-app', html`<span class="fas fa-info-circle"></span> Site Info`)}
+      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)}
+      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`)}
       ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
-      ${sidebarBtn('drive-info-app', html`<span class="fas fa-info-circle"></span> Drive Info`, true)}
-      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`, true)}
-      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`, true)}
     `
   }
 

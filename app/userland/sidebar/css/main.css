@@ -44,10 +44,9 @@ sidebar-app .panel:focus-within {
   border: 1px solid #eef;
 }
 
-.close-btn {
+.panel-btn {
   position: absolute;
   top: 5px;
-  right: 5px;
   z-index: 1;
   background: transparent;
   border: 0;
@@ -55,6 +54,18 @@ sidebar-app .panel:focus-within {
   cursor: pointer;
 }
 
-sidebar-app .panel > :not(.close-btn) {
+.panel.for-files-explorer-app .panel-btn {
+  top: 8px;
+}
+
+.close-btn {
+  right: 5px;
+}
+
+.detach-btn {
+  right: 25px;
+}
+
+sidebar-app .panel > :not(.panel-btn) {
   height: 100%;
 }

@@ -68,14 +68,13 @@ class EditorApp extends LitElement {
 
   constructor () {
     super()
+    this.isDetached = this.hasAttribute('detached')
     this.editorEl = undefined
     this.editor = undefined // monaco instance
     this.url = ''
     this.stat = undefined
-    this.currentTabUrl = ''
     this.isLoading = true
-    this.isFilesOpen = true
-    this.liveReloadMode = false
+    this.isFilesOpen = this.isDetached // expanded by default in detacheds mode
     this.readOnly = true
     this.lastSavedVersionId = undefined
     this.dne = false
@@ -83,8 +82,9 @@ class EditorApp extends LitElement {
     this.resolvedPath = ''
     this.setFocusOnLoad = false
 
-    if (this.hasAttribute('standalone')) {
-      this.load(beaker.hyperdrive.drive('sys').url)
+    if (this.isDetached) {
+      let ctx = (new URLSearchParams(location.search)).get('url')
+      this.load(ctx || beaker.hyperdrive.drive('sys').url)
     }
   }
 
@@ -92,6 +92,10 @@ class EditorApp extends LitElement {
     if (this.editor) {
       this.editor.dispose()
     }
+  }
+
+  getContext () {
+    return this.url
   }
 
   setFocus () {
@@ -157,12 +161,13 @@ class EditorApp extends LitElement {
         return
       }
       if (this.hasChanges) {
-        if (!confirm('You have unsaved changes. Are you sure you want to change files?')) {
+        if (!confirm('You have unsaved changes. Are you sure you want to navigate away?')) {
           this.isLoading = false
           return
         }
       }
       this.url = url
+      history.replaceState({}, '', `/?url=${url}`)
 
       // reset the editor
       for (let model of monaco.editor.getModels()) {
@@ -499,24 +504,24 @@ class EditorApp extends LitElement {
 
   renderToolbar () {
     return html`
-      <div class="toolbar" @contextmenu=${this.onContextmenuToolbar}>
+      <div class="toolbar ${this.isDetached ? 'detached' : ''}" @contextmenu=${this.onContextmenuToolbar}>
         <button class="transparent" @click=${this.onToggleFilesOpen}>
-          ${this.isFilesOpen ? html`
-            <span class="far fa-fw fa-folder-open"></span>
-          ` : html`
-            <span class="far fa-fw fa-folder"></span>
-          `}
+          <span class="far fa-fw fa-folder"></span>
         </button>
         <span class="divider"></span>
+        <button title="Open..." @click=${this.onClickOpen}>
+          <span class="far fa-fw fa-folder-open"></span> Open...
+        </button>
         ${!this.readOnly ? html`
           <button id="save-btn" title="Save" @click=${this.onClickSave} ?disabled=${this.dne || !this.hasChanges}>
             <span class="fas fa-fw fa-save"></span> Save
           </button>
         ` : ''}
-        <button title="View file" @click=${this.onClickView} ?disabled=${this.dne}>
-          <span class="far fa-fw fa-window-maximize"></span> View file
-        </button>
-        <span class="divider"></span>
+        ${this.isDetached ? html`
+          <button title="View file" @click=${this.onClickView} ?disabled=${this.dne}>
+            <span class="far fa-fw fa-window-maximize"></span> View file
+          </button>
+        ` : ''}
         ${this.isLoading ? html`
           <div><span class="fas fa-fw fa-info-circle"></span> Loading...</div>
           <span class="divider"></span>
@@ -535,10 +540,6 @@ class EditorApp extends LitElement {
           File Metadata <span class="fas fa-fw fa-caret-down"></span>
         </button>
         ${!this.readOnly ? html`
-          <span class="divider"></span>
-          <button title="Settings" @click=${this.onClickSettings}>
-            <span class="fas fa-fw fa-cog"></span> Settings
-          </button>
           <button class="primary" title="Actions" @click=${this.onClickActions}>
             Actions <span class="fas fa-caret-down"></span>
           </button>
@@ -555,7 +556,11 @@ class EditorApp extends LitElement {
   }
 
   onOpenFile (e) {
-    this.load(e.detail.url)
+    if (!this.isDetached && !e.detail.url.endsWith('.goto')) {
+      beaker.browser.gotoUrl(e.detail.url)
+    } else {
+      this.load(e.detail.url)
+    }
   }
 
   onShowMenu (e) {
@@ -709,36 +714,19 @@ class EditorApp extends LitElement {
     el.classList.remove('active')
   }
 
-  async onClickSettings (e) {
-    let el = e.currentTarget
-    if (el.classList.contains('active')) return
-    e.preventDefault()
-    e.stopPropagation()
-    let rect = e.currentTarget.getClientRects()[0]
-    el.classList.add('active')
-    await contextMenu.create({
-      x: rect.right,
-      y: rect.bottom,
-      right: true,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
-      noBorders: true,
-      roomy: true,
-      items: [
-        {
-          icon: 'fas fa-fw fa-bolt',
-          label: `${this.liveReloadMode ? 'Disable' : 'Enable'} live reload`,
-          click: () => {
-            this.liveReloadMode = !this.liveReloadMode
-          }
-        }
-      ]
-    })
-    el.classList.remove('active')
+  onClickView () {
+    window.open(this.url)
   }
 
-  onClickView () {
-    this.currentTabUrl = this.url
-    beaker.browser.gotoUrl(this.url)
+  async onClickOpen () {
+    var origin = this.origin
+    var res = await beaker.shell.selectFileDialog({
+      drive: origin.startsWith('hyper:') ? origin : undefined,
+      allowMultiple: false
+    })
+    if (res && res[0]) {
+      this.load(res[0].url)
+    }
   }
 
   async onClickSave () {
@@ -749,7 +737,7 @@ class EditorApp extends LitElement {
     await this.drive.writeFile(this.resolvedPath, model.getValue(), {metadata})
     this.lastSavedVersionId = model.getAlternativeVersionId()
     this.setSaveBtnState()
-    if (this.liveReloadMode) beaker.browser.gotoUrl(this.url)
+    if (!this.isDetached) beaker.browser.gotoUrl(this.url)
   }
 
   async onClickRename (oldpath) {
@@ -766,7 +754,7 @@ class EditorApp extends LitElement {
       var urlp = new URL(this.url)
       urlp.pathname = newpath
       this.load(urlp.toString())
-      if (this.liveReloadMode) beaker.browser.gotoUrl(urlp.toString())
+      if (!this.isDetached) beaker.browser.gotoUrl(urlp.toString())
     }
   }
 
@@ -785,7 +773,7 @@ class EditorApp extends LitElement {
       this.loadExplorer()
       if (this.resolvedPath === path) {
         this.load(this.url)
-        if (this.liveReloadMode) beaker.browser.gotoUrl(this.url)
+        if (!this.isDetached) beaker.browser.gotoUrl(this.url)
       }
     }
   }

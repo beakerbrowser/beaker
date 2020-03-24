@@ -492,6 +492,23 @@ class Tab extends EventEmitter {
   }
 
   async executeSidebarCommand (cmd, ...args) {
+    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
+      // if in appwindow mode, open 'show-panel' as a new tab and ignore any other commands
+      if (cmd === 'show-panel') {
+        let url
+        let ctx = args[1] || this.url
+        switch (args[0]) {
+          case 'editor-app': url = `beaker://editor/?url=${encodeURI(ctx)}`; break
+          case 'files-explorer-app': url = `https://hyperdrive.network/${encodeURI(ctx.slice('hyper://'.length))}`; break
+          case 'web-term': url = `beaker://webterm/?url=${encodeURI(ctx)}`; break
+        }
+        if (url) {
+          create(this.browserWindow, url, {setActive: true})
+        }
+      }
+      return
+    }
+
     const wc = () => sidebars.get(this).webContents
     const execJs = (js) => wc().executeJavaScript(js)
     switch (cmd) {
@@ -502,12 +519,13 @@ class Tab extends EventEmitter {
         await this.openSidebar()
     }
     switch (cmd) {
-      case 'show-panel':   wc().focus(); await execJs(`showPanel("${args[0]}", "${args[1] || this.url}")`); break
-      case 'toggle-panel': wc().focus(); await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`); break
-      case 'hide-panel':   await execJs(`hidePanel("${args[0]}")`); break
-      case 'set-context':  await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
-      case 'focus-panel':  wc().focus(); await execJs(`setFocus("${args[0]}")`); break
-      case 'close':        this.closeSidebar(); break
+      case 'show-panel':        wc().focus(); await execJs(`showPanel("${args[0]}", "${args[1] || this.url}")`); break
+      case 'toggle-panel':      wc().focus(); await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`); break
+      case 'hide-panel':        await execJs(`hidePanel("${args[0]}")`); break
+      case 'set-context':       await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
+      case 'set-all-contexts':  await execJs(`setAllContexts("${args[0] || this.url}")`); break
+      case 'focus-panel':       wc().focus(); await execJs(`setFocus("${args[0]}")`); break
+      case 'close':             this.closeSidebar(); break
     }
     switch (cmd) {
       case 'show-panel': this.sidebarPanels.add(args[0]); this.emitUpdateState(); break
@@ -818,6 +836,9 @@ class Tab extends EventEmitter {
     this.isReceivingAssets = true
     this.favicons = null
     this.frameUrls = {[this.mainFrameId]: url} // drop all non-main-frame URLs
+    if (this.isSidebarActive) {
+      this.executeSidebarCommand('set-all-contexts', this.url)
+    }
     await this.fetchIsBookmarked()
     await this.fetchDriveInfo()
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {
@@ -901,6 +922,9 @@ class Tab extends EventEmitter {
   }
 
   onPageTitleUpdated (e, title) {
+    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
+      this.browserWindow.setTitle(title)
+    }
     this.emitUpdateState()
   }
 

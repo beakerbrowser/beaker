@@ -1,6 +1,6 @@
 import 'beaker://editor/js/main.build.js'
 import 'beaker://webterm/js/main.js'
-import './drive-info.js'
+import './site-info.js'
 import './files-explorer.js'
 
 /**
@@ -11,7 +11,7 @@ import './files-explorer.js'
  * be kept in sync with the frontend.
  */
 
-const PANELS_ORDER = ['drive-info-app', 'files-explorer-app', 'editor-app', 'web-term']
+const PANELS_ORDER = ['site-info-app', 'files-explorer-app', 'editor-app', 'web-term']
 const MIN_PANEL_HEIGHT = 50
 
 class SidebarApp extends HTMLElement {
@@ -32,6 +32,7 @@ class SidebarApp extends HTMLElement {
     window.hidePanel = panel => this.removePanel(panel)
     window.setFocus = panel => this.hasPanel(panel) ? this.querySelector(panel).setFocus() : undefined
     window.setContext = (panel, url) => this.hasPanel(panel) ? this.querySelector(panel).load(url) : undefined
+    window.setAllContexts = (url) => this.panels.forEach(panel => this.querySelector(panel.tagName).load(url))
 
     this.addEventListener('mousemove', this.onMousemove.bind(this))
     window.addEventListener('resize', this.onWindowResize.bind(this))
@@ -108,13 +109,32 @@ class SidebarApp extends HTMLElement {
     appEl.classList.add('sidebar')
 
     let closeBtnEl = document.createElement('button')
-    closeBtnEl.className = 'close-btn'
+    closeBtnEl.className = 'panel-btn close-btn'
+    closeBtnEl.setAttribute('title', 'Close panel')
     closeBtnEl.innerHTML = '<span class="fas fa-times"></span>'
     closeBtnEl.addEventListener('click', e => beaker.browser.executeSidebarCommand('hide-panel', panel.tagName))
 
+    let detachBtnEl
+    if (panel.tagName !== 'site-info-app') {
+      detachBtnEl = document.createElement('button')
+      detachBtnEl.className = 'panel-btn detach-btn'
+      detachBtnEl.setAttribute('title', 'Detach panel')
+      detachBtnEl.innerHTML = '<span class="far fa-clone"></span>'
+      detachBtnEl.addEventListener('click', async (e) => {
+        var choice = await beaker.browser.showContextMenu([
+          {id: 'tab', label: 'New Tab'},
+          {id: 'window', label: 'New Window'}
+        ])
+        if (!choice) return
+        this.openDetached(panel, choice === 'window')
+        beaker.browser.executeSidebarCommand('hide-panel', panel.tagName)
+      })
+    }
+
     let panelEl = document.createElement('div')
-    panelEl.className = 'panel'
+    panelEl.className = `panel for-${panel.tagName}`
     panelEl.append(closeBtnEl)
+    if (detachBtnEl) panelEl.append(detachBtnEl)
     panelEl.append(appEl)
 
     this.insertBefore(panelEl, this.getPanelEl(panelIndex))
@@ -146,6 +166,24 @@ class SidebarApp extends HTMLElement {
         el.style.flex = 'initial'
         el.style.height = this.panels[i].height + 'px'
       }
+    }
+  }
+
+  openDetached (panel, newWindow) {
+    var ctx = this.querySelector(panel.tagName).getContext()
+    var url
+    switch (panel.tagName) {
+      case 'editor-app': url = `beaker://editor/?url=${encodeURI(ctx)}`; break
+      case 'files-explorer-app': url = `https://hyperdrive.network/${encodeURI(ctx.slice('hyper://'.length))}`; break
+      case 'web-term': url = `beaker://webterm/?url=${encodeURI(ctx)}`; break
+    }
+    if (!url) return
+    if (newWindow) {
+      let width = panel.tagName === 'files-explorer-app' ? 1000 : 600
+      let height = panel.tagName === 'files-explorer-app' ? 800 : 500
+      beaker.browser.newWindow({pages: [url], width, height: 500, isAppWindow: true})
+    } else {
+      beaker.browser.openUrl(url, {setActive: true, adjacentActive: true})
     }
   }
 

@@ -1,9 +1,9 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import css from '../css/drive-info.css.js'
+import css from '../css/site-info.css.js'
 import { toNiceDomain } from 'beaker://app-stdlib/js/strings.js'
 
-class DriveInfo extends LitElement {
+class SiteInfo extends LitElement {
   static get properties () {
     return {
       url: {type: String},
@@ -73,30 +73,31 @@ class DriveInfo extends LitElement {
 
   async load (url) {
     this.url = url
-    if (!this.isDrive) return
-    this.isLoading = true
+    if (this.isDrive) {
+      this.isLoading = true
 
-    try {
-      this.info = {}
-      // get drive info
-      let drive = beaker.hyperdrive.drive(this.url)
-      ;[this.info, this.driveCfg, this.forks] = await Promise.all([
-        drive.getInfo(),
-        beaker.drives.get(this.url),
-        beaker.drives.getForks(this.url)
-      ])
+      try {
+        this.info = {}
+        // get drive info
+        let drive = beaker.hyperdrive.drive(this.url)
+        ;[this.info, this.driveCfg, this.forks] = await Promise.all([
+          drive.getInfo(),
+          beaker.drives.get(this.url),
+          beaker.drives.getForks(this.url)
+        ])
 
-      // watch for network events
-      if (!this.onNetworkChanged) {
-        // TODO
-        // this.onNetworkChanged = (e) => {
-        //   this.info.peers = e.peers
-        //   this.requestUpdate()
-        // }
-        // drive.addEventListener('network-changed', this.onNetworkChanged)
+        // watch for network events
+        if (!this.onNetworkChanged) {
+          // TODO
+          // this.onNetworkChanged = (e) => {
+          //   this.info.peers = e.peers
+          //   this.requestUpdate()
+          // }
+          // drive.addEventListener('network-changed', this.onNetworkChanged)
+        }
+      } catch (e) {
+        console.error(e)
       }
-    } catch (e) {
-      console.error(e)
     }
     this.isLoading = false
 
@@ -114,6 +115,15 @@ class DriveInfo extends LitElement {
   render () {
     if (this.isLoading) {
       return html`<div class="loading"><span class="spinner"></span></div>`
+    }
+    if (!this.isDrive) {
+      return html`
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <section class="in1">
+          <div class="heading"><span class="fas fa-fw fa-info"></span> About</div>
+          <div class="content">${this.renderInfo()}</div>
+        </section>
+      `
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -137,6 +147,16 @@ class DriveInfo extends LitElement {
   }
 
   renderInfo () {
+    if (!this.isDrive) {
+      let protocol = ''
+      if (this.url.startsWith('https:')) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
+      if (this.url.startsWith('http:')) protocol = html`<p class="protocol">Accessed using an insecure connection</p>`
+      if (this.url.startsWith('beaker:')) protocol = html`<p class="protocol">This page is served by Beaker</p>`
+      return html`
+        <h1>${this.hostname}</h1>
+        ${protocol ? html`<p class="description">${protocol}</p>` : ''}
+      `
+    }
     var isSaved = this.driveCfg?.saved
     var isSeeding = this.driveCfg?.seeding
     if (this.info && this.info.version === 0) {
@@ -299,4 +319,4 @@ class DriveInfo extends LitElement {
   }
 }
 
-customElements.define('drive-info-app', DriveInfo)
+customElements.define('site-info-app', SiteInfo)
