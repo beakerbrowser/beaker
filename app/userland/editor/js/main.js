@@ -10,6 +10,7 @@ import * as contextMenu from '../../app-stdlib/js/com/context-menu.js'
 import { writeToClipboard } from '../../app-stdlib/js/clipboard.js'
 import * as toast from '../../app-stdlib/js/com/toast.js'
 import './com/files-explorer.js'
+import { ResizeImagePopup } from './com/resize-image-popup.js'
 
 class EditorApp extends LitElement {
   static get properties () {
@@ -479,15 +480,17 @@ class EditorApp extends LitElement {
             e.preventDefault()
             e.stopPropagation()
             this.querySelector('#file-metadata-btn').click()
-          }} style="text-decoration: underline">file metadata</a>.
+          }}>file metadata</a>.
         </div>
       ` : this.isBinary ? html`
         <div class="empty">
-          This file is not editable here.
+          ${(/\.(png|jpe?g)$/.test(this.pathname)) ? html`
+            <button class="primary btn" @click=${this.onClickResizeImage}>Resize Image</button>
+          ` : 'This file is not editable here.'}
           <div class="binary-render">
-            ${(/\.(png|jpe?g|gif)$/.test(this.pathname)) ? html`<img src="${this.url}?cache_buster=${Date.now}">` : ''}
-            ${(/\.(mp4|webm|mov)$/.test(this.pathname)) ? html`<video controls><source src="${this.url}?cache_buster=${Date.now}"></video>` : ''}
-            ${(/\.(mp3|ogg)$/.test(this.pathname)) ? html`<audio controls><source src="${this.url}?cache_buster=${Date.now}"></audio>` : ''}
+            ${(/\.(png|jpe?g|gif)$/.test(this.pathname)) ? html`<img src="${this.url}?cache_buster=${Date.now()}">` : ''}
+            ${(/\.(mp4|webm|mov)$/.test(this.pathname)) ? html`<video controls><source src="${this.url}?cache_buster=${Date.now()}"></video>` : ''}
+            ${(/\.(mp3|ogg)$/.test(this.pathname)) ? html`<audio controls><source src="${this.url}?cache_buster=${Date.now()}"></audio>` : ''}
           </div>
         </div>
       ` : this.dne ? html`
@@ -712,6 +715,14 @@ class EditorApp extends LitElement {
       }
     })
     el.classList.remove('active')
+  }
+
+  async onClickResizeImage (e) {
+    e.preventDefault()
+    var dataUrl = await ResizeImagePopup.create(this.url)
+    var base64buf = dataUrl.split(',').pop()
+    await this.drive.writeFile(this.resolvedPath, base64buf, 'base64')
+    if (!this.isDetached) beaker.browser.gotoUrl(this.url)
   }
 
   onClickView () {

@@ -28,7 +28,7 @@ editor-app .empty {
   padding: 10px 16px;
 }
 
-editor-app .empty a:hover {
+editor-app .empty a {
   cursor: pointer;
   text-decoration: underline;
 }
