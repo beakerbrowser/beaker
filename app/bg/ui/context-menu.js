@@ -178,30 +178,35 @@ export default function registerContextMenu () {
             })
             menuItems.push({ label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://diff/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } })
             menuItems.push({ type: 'separator' })
-            menuItems.push({
-              label: 'Sidebar: Site Info',
-              click: async (item, win) => {
-                tabManager.getActive(win).executeSidebarCommand('show-panel', 'site-info-app')
-              }
-            })
-            menuItems.push({
-              label: 'Sidebar: Explore Files',
-              click: async (item, win) => {
-                tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
-              }
-            })
           }
           menuItems.push({
-            label: 'Sidebar: Editor',
-            click: async (item, win) => {
-              tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
-            }
-          })
-          menuItems.push({
-            label: 'Sidebar: Terminal',
-            click: async (item, win) => {
-              tabManager.getActive(win).executeSidebarCommand('show-panel', 'web-term')
-            }
+            label: 'Sidebar',
+            submenu: [
+              {
+                label: 'Site Info',
+                click: async (item, win) => {
+                  tabManager.getActive(win).executeSidebarCommand('show-panel', 'site-info-app')
+                }
+              },
+              {
+                label: 'Explore Files',
+                click: async (item, win) => {
+                  tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
+                }
+              },
+              {
+                label: 'Editor',
+                click: async (item, win) => {
+                  tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
+                }
+              },
+              {
+                label: 'Terminal',
+                click: async (item, win) => {
+                  tabManager.getActive(win).executeSidebarCommand('show-panel', 'web-term')
+                }
+              }
+            ]
           })
           menuItems.push({ type: 'separator' })
         }
