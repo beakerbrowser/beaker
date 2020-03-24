@@ -736,7 +736,11 @@ class EditorApp extends LitElement {
       allowMultiple: false
     })
     if (res && res[0]) {
-      this.load(res[0].url)
+      if (!this.isDetached && !res[0].url.endsWith('.goto')) {
+        beaker.browser.gotoUrl(res[0].url)
+      } else {
+        this.load(res[0].url)
+      }
     }
   }
 
