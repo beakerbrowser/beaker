@@ -97,7 +97,7 @@ export class AddressBookView extends LitElement {
         title=${title || ''}
         @contextmenu=${e => this.onContextmenuContact(e, contact)}
       >
-       <img class="thumb" src="asset:thumb:${href}">
+       <img class="thumb" src="asset:thumb-30:${href}">
        <div class="title">${title}</div>
        <div class="description">${description}</div>
        <div class="profile-badge">${contact.isProfile ? html`<span>My Profile</span>` : ''}</div>

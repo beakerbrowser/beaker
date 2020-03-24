@@ -47,21 +47,19 @@ class DesktopApp extends LitElement {
 
   async load () {
     cacheBuster = Date.now()
+    await this.requestUpdate()
+    Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
     ;[this.profile, this.files] = await Promise.all([
       addressBook.loadProfile(),
       desktop.load()
     ])
     console.log(this.files)
-    Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
   }
 
   // rendering
   // =
 
   render () {
-    if (!this.files) {
-      return html`<div></div>`
-    }
     const navItem = (id, label) => html`<a class=${id === this.currentNav ? 'active' : ''} @click=${e => {this.currentNav = id}}>${label}</a>`
     const hiddenCls = id => this.filter || this.currentNav === id ? '' : 'hidden'
     return html`
@@ -106,7 +104,7 @@ class DesktopApp extends LitElement {
   }
 
   renderFiles () {
-    var files = this.files
+    var files = this.files || []
     if (this.filter) {
       files = files.filter(file => (
         getHref(file).toLowerCase().includes(this.filter)
@@ -125,7 +123,7 @@ class DesktopApp extends LitElement {
             @contextmenu=${e => this.onContextmenuFile(e, file)}
           >
             <div class="thumb-wrapper">
-              <img src=${'asset:screenshot:' + getHref(file) + '?cache_buster=' + cacheBuster} class="thumb"/>
+              <img src=${'asset:screenshot-180:' + getHref(file)} class="thumb"/>
             </div>
             <div class="details">
               <div class="title">${getTitle(file)}</div>

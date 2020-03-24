@@ -10,7 +10,7 @@
  *  - asset:cover:hyper://beakerbrowser.com
  **/
 
-import { screen } from 'electron'
+import { screen, nativeImage } from 'electron'
 import * as sitedata from '../dbs/sitedata'
 import { capturePage } from '../browser'
 import fs from 'fs'
@@ -101,6 +101,11 @@ export function setup () {
         }
       }
       if (data) {
+        if (size) {
+          let img = nativeImage.createFromDataURL(data)
+          data = img.resize({width: size}).toDataURL()
+        }
+        
         // `data` is a data url ('data:image/png;base64,...')
         // so, skip the beginning and pull out the data
         let parts = data.split(',')
@@ -135,7 +140,7 @@ function parseAssetUrl (str) {
   }
   return {
     asset: match[1],
-    size: (+match[2]) || 16,
+    size: Math.abs(Number(match[2])),
     url
   }
 }
