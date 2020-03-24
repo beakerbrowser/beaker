@@ -5,7 +5,7 @@ import { parser } from './lib/parser.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
 import { createDrive } from './lib/term-drive-wrapper.js'
 import { importModule } from './lib/import-module.js'
-import { joinPath, DRIVE_KEY_REGEX, shortenAllKeys } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, shortenAllKeys } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import css from '../css/main.css.js'
 import './lib/term-icon.js'
@@ -95,7 +95,7 @@ class WebTerm extends LitElement {
       if (anchor) {
         e.stopPropagation()
         e.preventDefault()
-        if (e.metaKey) {
+        if (e.metaKey || anchor.getAttribute('target') === '_blank') {
           beaker.browser.openUrl(anchor.getAttribute('href'), {setActive: true})
         } else {
           beaker.browser.gotoUrl(anchor.getAttribute('href'))
@@ -727,10 +727,16 @@ class WebTerm extends LitElement {
           ${heading}
           ${commands.map(command => {
             var name = parentCmdName + command.name
+            var pkg
+            if (command.package.startsWith('beaker://')) {
+              pkg = html`std-cmds`
+            } else {
+              pkg = html`<a href=${command.package} target="_blank">${shortenHash(command.package)}</a>`
+            }
             var summary = html`
               <strong style="white-space: pre">${name.padEnd(commandNameLen + 2)}</strong>
               ${command.help || ''}
-              <small class="color-gray">package: ${command.package}</small>
+              <small class="color-gray">package: ${pkg}</small>
               <br>
             `
             if (!includeDetails || (!command.usage && !command.options)) return summary
