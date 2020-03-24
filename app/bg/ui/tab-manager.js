@@ -1103,6 +1103,9 @@ export function create (
     }
   ) {
   url = url || DEFAULT_URL
+  if (url.startsWith('devtools://')) {
+    return // dont create tabs for this
+  }
   win = getTopWindow(win)
   if (getAddedWindowSettings(win).isAppWindow) {
     // app-windows cant have multiple tabs, so find another window
