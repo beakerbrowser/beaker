@@ -157,8 +157,13 @@ class EditorApp extends LitElement {
       if (!this.editor) {
         await this.createEditor()
       }
+      if (this.editor.hasTextFocus()) {
+        this.setFocusOnLoad = true
+      }
       if (!forceLoad && (this.url === url || !url)) {
         this.isLoading = false
+        setTimeout(() => this.editor.focus(), 1)
+        this.setFocusOnLoad = false
         return
       }
       if (this.hasChanges) {
@@ -753,6 +758,7 @@ class EditorApp extends LitElement {
     this.lastSavedVersionId = model.getAlternativeVersionId()
     this.setSaveBtnState()
     if (!this.isDetached) beaker.browser.gotoUrl(this.url)
+    this.setFocus()
   }
 
   async onClickRename (oldpath) {

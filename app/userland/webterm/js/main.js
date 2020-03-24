@@ -150,7 +150,6 @@ class WebTerm extends LitElement {
       this.isLoaded = true
     }
 
-    this.setFocus()
     this.requestUpdate()
   }
 
@@ -537,7 +536,11 @@ class WebTerm extends LitElement {
   }
 
   setFocus () {
-    this.shadowRoot.querySelector('.prompt input').focus()
+    try {
+      this.shadowRoot.querySelector('.prompt input').focus()
+    } catch (e) {
+      this.focus()
+    }
   }
 
   setFocusSubprompt () {

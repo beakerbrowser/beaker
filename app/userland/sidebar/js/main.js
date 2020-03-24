@@ -61,7 +61,7 @@ class SidebarApp extends HTMLElement {
       this.redistributeHeights()
       this.updateElementHeights()
 
-      if (url) this.querySelector(tagName).load(url)
+      if (url) await this.querySelector(tagName).load(url)
     }
 
     try {
