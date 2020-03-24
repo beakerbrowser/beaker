@@ -35,7 +35,7 @@ class SelectContactModal extends LitElement {
     }
 
     .contacts {
-      max-height: 500px;
+      height: 500px;
       overflow: auto;
       box-sizing: border-box;
       border-bottom: 1px solid #dddde0;
@@ -49,10 +49,6 @@ class SelectContactModal extends LitElement {
       padding: 12px 20px;
       height: 55px;
       box-sizing: border-box;
-    }
-
-    .contact:last-child {
-      border-bottom: 0;
     }
 
     .contact .checkmark {
@@ -185,7 +181,7 @@ class SelectContactModal extends LitElement {
           <span class="${selected ? 'fas fa-check' : 'fas fa-circle'}"></span>
         </div>
         <beaker-img-fallbacks>
-          <img src="hyper://${contact.key}/thumb" slot="img1">
+          <img src="asset:thumb-30:hyper://${contact.key}/" slot="img1">
           <img src="beaker://assets/default-user-thumb" slot="img2">
         </beaker-img-fallbacks>
         <div class="title"><span>${contact.title}</span></div>
