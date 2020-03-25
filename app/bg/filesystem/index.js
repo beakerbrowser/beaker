@@ -99,7 +99,6 @@ export async function setup () {
   try {
     drives = JSON.parse(await rootDrive.pda.readFile('/drives.json')).drives
   } catch (e) {
-    console.error('Error while reading the drive configuration at /drives.json', e.toString())
     logger.error('Error while reading the drive configuration at /drives.json', {error: e.toString()})
   }
 }
