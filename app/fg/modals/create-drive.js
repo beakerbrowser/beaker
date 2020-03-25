@@ -12,6 +12,7 @@ class CreateDriveModal extends LitElement {
     return {
       title: {type: String},
       description: {type: String},
+      fromFolderPath: {type: String},
       errors: {type: Object}
     }
   }
@@ -47,14 +48,11 @@ class CreateDriveModal extends LitElement {
       margin: 20px 0;
     }
 
-    img.preview {
-      display: block;
-      width: 540px;
-      height: 280px;
-      border: 1px solid #bbc;
+    .from-folder-path {
+      background: #f3f3f8;
+      padding: 10px 12px;
+      margin-bottom: 10px;
       border-radius: 4px;
-      object-fit: cover;
-      box-sizing: border-box;
     }
 
     .form-actions {
@@ -82,11 +80,8 @@ class CreateDriveModal extends LitElement {
     this.title = ''
     this.description = ''
     this.author = undefined
+    this.fromFolderPath = undefined
     this.errors = {}
-
-    // export interface
-    window.createDriveClickSubmit = () => this.shadowRoot.querySelector('button[type="submit"]').click()
-    window.createDriveClickCancel = () => this.shadowRoot.querySelector('.cancel').click()
   }
 
   async init (params, cbs) {
@@ -121,6 +116,11 @@ class CreateDriveModal extends LitElement {
             <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" placeholder="Title" />
             ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
             <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
+            ${this.fromFolderPath ? html`
+              <div class="from-folder-path">
+                <strong>Import from folder:</strong> ${this.fromFolderPath} <a href="#" @click=${this.onClickCancelFromFolder}>Cancel</a>
+              </div>
+            ` : ''}
           </div>
 
           <div class="form-actions">
@@ -158,15 +158,18 @@ class CreateDriveModal extends LitElement {
     }
 
     this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div>`
+    Array.from(this.shadowRoot.querySelectorAll('button'), b => b.setAttribute('disabled', 'disabled'))
 
     try {
-      var info = {
+      var url = await bg.hyperdrive.createDrive({
         title: this.title,
         description: this.description,
         author: this.author,
         prompt: false
+      })
+      if (this.fromFolderPath) {
+        await bg.hyperdrive.importFromFilesystem({src: this.fromFolderPath, dst: url})
       }
-      var url = await bg.hyperdrive.createDrive(info)
       this.cbs.resolve({url})
     } catch (e) {
       this.cbs.reject(e.message || e.toString())
@@ -183,20 +186,12 @@ class CreateDriveModal extends LitElement {
       properties: ['openDirectory']
     })
     if (!folder || !folder.length) return
+    this.fromFolderPath = folder[0]
+  }
 
-    btn.innerHTML = `<span class="spinner"></span>`
-    Array.from(this.shadowRoot.querySelectorAll('button'), b => b.setAttribute('disabled', 'disabled'))
-  
-    try {
-      var url = await bg.hyperdrive.createDrive({
-        title: folder[0].split('/').pop(),
-        prompt: false
-      })
-      await bg.hyperdrive.importFromFilesystem({src: folder[0], dst: url})
-      this.cbs.resolve({url})
-    } catch (e) {
-      this.cbs.reject(e.message || e.toString())
-    }
+  onClickCancelFromFolder (e) {
+    e.preventDefault()
+    this.fromFolderPath = undefined
   }
 }
 

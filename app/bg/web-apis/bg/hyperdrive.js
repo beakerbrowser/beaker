@@ -580,7 +580,7 @@ export default {
 
   async importFromFilesystem (opts) {
     assertBeakerOnly(this.sender)
-    var {checkoutFS, filepath, isHistoric} = await lookupDrive(this.sender, opts.dst, opts)
+    var {checkoutFS, filepath, isHistoric} = await lookupDrive(this.sender, opts.dst)
     if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
     return pda.exportFilesystemToArchive({
       srcPath: opts.src,
@@ -600,7 +600,7 @@ export default {
     // return
     // }
 
-    var {checkoutFS, filepath} = await lookupDrive(this.sender, opts.src, opts)
+    var {checkoutFS, filepath} = await lookupDrive(this.sender, opts.src)
     return pda.exportArchiveToFilesystem({
       srcArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
       srcPath: filepath,
@@ -613,8 +613,8 @@ export default {
 
   async exportToDrive (opts) {
     assertBeakerOnly(this.sender)
-    var src = await lookupDrive(this.sender, opts.src, opts)
-    var dst = await lookupDrive(this.sender, opts.dst, opts)
+    var src = await lookupDrive(this.sender, opts.src)
+    var dst = await lookupDrive(this.sender, opts.dst)
     if (dst.isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
     return pda.exportArchiveToArchive({
       srcArchive: src.checkoutFS.session ? src.checkoutFS.session.drive : src.checkoutFS,
