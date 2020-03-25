@@ -22,7 +22,6 @@ import dbs from './bg/dbs/index'
 import hyper from './bg/hyper/index'
 import * as filesystem from './bg/filesystem/index'
 import * as webapis from './bg/web-apis/bg'
-import * as spellCheckerLib from './bg/lib/spell-checker'
 
 import { runSetupFlow } from './bg/ui/setup-flow'
 import * as windows from './bg/ui/windows'
@@ -108,7 +107,6 @@ app.on('ready', async function () {
   await hyper.setup(commonOpts)
   await filesystem.setup()
   webapis.setup()
-  spellCheckerLib.setup()
   await beakerBrowser.setup()
   adblocker.setup()
   analytics.setup()

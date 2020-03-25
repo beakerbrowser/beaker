@@ -5,7 +5,6 @@ import { getAddedWindowSettings, toggleShellInterface } from './windows'
 import { download } from './downloads'
 import { getDriveConfig, configDrive, removeDrive, getDriveIdent } from '../filesystem/index'
 import { runForkFlow } from './util'
-import * as spellChecker from '../web-apis/bg/spell-checker'
 
 // NOTE
 // subtle but important!!
@@ -92,12 +91,13 @@ export default function registerContextMenu () {
       }
 
       // spell check
-      if (props.isMisspelled !== '' && props.isEditable) {
-        for (let i in spellingSuggestions) {
-          menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label, {adjacentActive: true}) })
-        }
-        menuItems.push({ type: 'separator' })
-      }
+      // TODO
+      // if (props.isMisspelled !== '' && props.isEditable) {
+      //   for (let i in spellingSuggestions) {
+      //     menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label, {adjacentActive: true}) })
+      //   }
+      //   menuItems.push({ type: 'separator' })
+      // }
 
       // clipboard
       if (props.isEditable) {
