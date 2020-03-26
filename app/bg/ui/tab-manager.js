@@ -674,12 +674,14 @@ class Tab extends EventEmitter {
   async injectCustomRenderers () {
     // determine content type
     let contentType = getResourceContentType(this.url) || ''
-    let isJSON = contentType.startsWith('application/json')
     let isPlainText = contentType.startsWith('text/plain')
+    let isJSON = contentType.startsWith('application/json') || (isPlainText && this.url.endsWith('.json'))
+    let isJS = contentType.includes('/javascript') || (isPlainText && this.url.endsWith('.js'))
+    let isCSS = contentType.startsWith('text/css') || (isPlainText && this.url.endsWith('.css'))
 
     // json rendering
     // inject the json render script
-    if (isJSON || (isPlainText && this.url.endsWith('.json'))) {
+    if (isJSON) {
       this.webContents.insertCSS(`
         .hidden { display: none !important; }
         .json-formatter-row {
@@ -710,6 +712,34 @@ class Tab extends EventEmitter {
       jsonpath = jsonpath.replace('app.asar', 'app.asar.unpacked') // fetch from unpacked dir
       try {
         await this.webContents.executeJavaScript(await fs.readFile(jsonpath, 'utf8'))
+      } catch (e) {
+        // ignore
+      }
+    }
+    // js/css syntax highlighting
+    if (isJS || isCSS) {
+      this.webContents.insertCSS(`
+      .hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 0.5em;
+        background: white;
+        color: black;
+      }
+      .hljs-comment, .hljs-quote, .hljs-variable { color: #008000; }
+      .hljs-keyword, .hljs-selector-tag, .hljs-built_in, .hljs-name, .hljs-tag { color: #00f; }
+      .hljs-string, .hljs-title, .hljs-section, .hljs-attribute, .hljs-literal, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-addition { color: #a31515; }
+      .hljs-deletion, .hljs-selector-attr, .hljs-selector-pseudo, .hljs-meta { color: #2b91af; }
+      .hljs-doctag { color: #808080; }
+      .hljs-attr { color: #f00; }
+      .hljs-symbol, .hljs-bullet, .hljs-link { color: #00b0e8; }
+      .hljs-emphasis { font-style: italic; }
+      .hljs-strong { font-weight: bold; }
+      `)
+      let scriptpath = path.join(app.getAppPath(), 'fg', 'syntax-highlighter', 'index.js')
+      scriptpath = scriptpath.replace('app.asar', 'app.asar.unpacked') // fetch from unpacked dir
+      try {
+        await this.webContents.executeJavaScript(await fs.readFile(scriptpath, 'utf8'))
       } catch (e) {
         // ignore
       }

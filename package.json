@@ -32,6 +32,7 @@
     "asar": true,
     "asarUnpack": [
       "./fg/json-renderer/index.build.js",
+      "./fg/syntax-highlighter/index.js",
       "./node_modules/sodium-native/**",
       "./node_modules/hyperdrive-daemon/**",
       "./node_modules/@beaker/search-app/**"
