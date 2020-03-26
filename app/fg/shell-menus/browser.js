@@ -156,7 +156,7 @@ class BrowserMenu extends LitElement {
             <span class="label">Help</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues/new')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
             <i class="far fa-flag"></i>
             <span class="label">Report an Issue</span>
           </div>
