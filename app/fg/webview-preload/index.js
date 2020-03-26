@@ -1,3 +1,4 @@
+import { ipcRenderer } from 'electron'
 import { setup as setupWebAPIs } from '../../bg/web-apis/fg.js'
 import { setup as setupPrompt } from './prompt'
 import { setup as setupExecuteJavascript } from './execute-javascript'
@@ -17,3 +18,8 @@ resizeHackfix()
 setupWebAPIs()
 setupPrompt()
 setupExecuteJavascript()
+
+window.addEventListener('focus', e => {
+  // track focus
+  ipcRenderer.sendSync('BEAKER_WC_FOCUSED')
+})
