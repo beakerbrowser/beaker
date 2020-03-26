@@ -122,8 +122,8 @@ class SidebarApp extends HTMLElement {
       detachBtnEl.innerHTML = '<span class="far fa-clone"></span>'
       detachBtnEl.addEventListener('click', async (e) => {
         var choice = await beaker.browser.showContextMenu([
-          {id: 'tab', label: 'New Tab'},
-          {id: 'window', label: 'New Window'}
+          {id: 'tab', label: 'Undock into new tab'},
+          {id: 'window', label: 'Undock into new window'}
         ])
         if (!choice) return
         this.openDetached(panel, choice === 'window')
