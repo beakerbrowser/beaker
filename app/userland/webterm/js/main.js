@@ -110,7 +110,9 @@ class WebTerm extends LitElement {
 
     if (this.isDetached) {
       let ctx = (new URLSearchParams(location.search)).get('url')
-      this.load(ctx || beaker.hyperdrive.drive('sys').url)
+      this.load(ctx || beaker.hyperdrive.drive('sys').url).then(_ => {
+        this.setFocus()
+      })
     }
   }
 
