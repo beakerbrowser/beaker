@@ -194,8 +194,8 @@ export default function (e) {
         break
       case 504:
         icon = 'fa-share-alt'
-        title = `It doesn${"'"}t seem like anybody is sharing this ${e.resource} right now.`
-        errorDescription = `The p2p ${e.resource} was not found on the network.`
+        title = `Beaker is unable to access this ${e.resource} right now.`
+        errorDescription = `The p2p ${e.resource} was not reachable on the network.`
         break
     }
   } else {

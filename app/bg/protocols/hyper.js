@@ -110,7 +110,7 @@ export const protocolHandler = async function (request, respond) {
   const cleanup = () => clearTimeout(timeout)
   timeout = setTimeout(() => {
     // cleanup
-    logger.debug('Timed out searching for', {url: driveKey})
+    logger.debug('Timed out attempting to fetch', {url: driveKey})
     if (fileReadStream) {
       fileReadStream.destroy()
       fileReadStream = null
@@ -118,7 +118,7 @@ export const protocolHandler = async function (request, respond) {
 
     // error page
     var resource = drive ? 'page' : 'site'
-    respondError(504, `Timed out searching for ${resource}`, {
+    respondError(504, `Timed out attempting to fetch ${resource}`, {
       resource,
       validatedURL: urlp.href
     })
