@@ -519,10 +519,11 @@ class WebTerm extends LitElement {
                 e.currentTarget.value = e.currentTarget.value || defValue
                 resolve(e.currentTarget.value)
                 e.currentTarget.setAttribute('disabled', 1)
+                e.currentTarget.parentNode.classList.remove('active-prompt')
                 this.setFocus()
               }
             }
-            additionalOutput.push(html`<div class="entry subprompt">
+            additionalOutput.push(html`<div class="entry subprompt active-prompt">
               <strong>${txt}</strong>
               ${defValue ? html`<span class="def">[${defValue}]</span>` : ''}:
               <input @keydown=${onKeydown}>

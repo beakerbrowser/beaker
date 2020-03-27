@@ -157,6 +157,10 @@ pre {
   margin-left: 5px;
 }
 
+.subprompt.active-prompt + .entry .spinner {
+  display: none;
+}
+
 .floating-help-outer {
   position: relative;
   min-height: 140px;
