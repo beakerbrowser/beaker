@@ -135,7 +135,8 @@ class Tab extends EventEmitter {
         nodeIntegration: false,
         scrollBounce: true,
         navigateOnDragDrop: true,
-        enableRemoteModule: false
+        enableRemoteModule: false,
+        safeDialogs: true
       }
     })
     this.browserView.setBackgroundColor('#fff')
