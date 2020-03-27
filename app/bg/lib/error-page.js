@@ -195,12 +195,7 @@ export default function (e) {
       case 504:
         icon = 'fa-share-alt'
         title = `It doesn${"'"}t seem like anybody is sharing this ${e.resource} right now.`
-        info = `
-          <p class="big">Would you like Beaker to watch for it to reappear?</p>
-          <p><a href="beaker://watchlist/?url=${e.validatedURL}" class="btn big primary" target="_blank"><i class="fa fa-eye"></i> Add to watchlist</a></p>
-        `
         errorDescription = `The p2p ${e.resource} was not found on the network.`
-        button = `<a class="link right" href="beaker://swarm-debugger/${e.validatedURL}" target="_blank">Network debugger</a>`
         break
     }
   } else {
