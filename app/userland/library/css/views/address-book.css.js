@@ -75,13 +75,19 @@ a {
 }
 
 :host(.full-size) .contact .title {
+  flex: 1;
   font-size: 14px;
+  margin-right: 0px;
 }
 
 .contact .description {
   flex: 1;
   color: #99a;
   overflow: hidden;
+}
+
+:host(.full-size) .contact .description {
+  flex: 2;
 }
 
 .profile-badge {

@@ -72,12 +72,18 @@ a {
 }
 
 :host(.full-size) .bookmark .title {
+  flex: 1;
   font-size: 14px;
+  margin-right: 0px;
 }
 
 .bookmark .href {
   flex: 1;
   color: #99a;
+}
+
+:host(.full-size) .bookmark .href {
+  flex: 2;
 }
 
 .bookmark .ctrls {

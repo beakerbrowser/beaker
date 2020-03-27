@@ -88,7 +88,9 @@ a[href]:hover {
 }
 
 :host(.full-size) .drive .title {
+  flex: 1;
   font-size: 14px;
+  margin-right: 0px;
 }
 
 .drive .title a {
@@ -100,6 +102,10 @@ a[href]:hover {
   flex: 1;
   color: #99a;
   overflow: hidden;
+}
+
+:host(.full-size) .drive .description {
+  flex: 2;
 }
 
 .drive .readonly {
