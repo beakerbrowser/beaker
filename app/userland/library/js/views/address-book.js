@@ -18,6 +18,7 @@ export class AddressBookView extends LitElement {
     return {
       contacts: {type: Array},
       filter: {type: String},
+      showHeader: {type: Boolean, attribute: 'show-header'},
       hideEmpty: {type: Boolean, attribute: 'hide-empty'}
     }
   }
@@ -30,6 +31,7 @@ export class AddressBookView extends LitElement {
     super()
     this.contacts = undefined
     this.filter = undefined
+    this.showHeader = false
     this.hideEmpty = false
   }
 
@@ -75,6 +77,9 @@ export class AddressBookView extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       ${contacts ? html`
+        ${this.showHeader && !(this.hideEmpty && contacts.length === 0) ? html`
+          <h4>Address Book</h4>
+        ` : ''}
         <div class="contacts">
           ${repeat(contacts, contact => this.renderContact(contact))}
         </div>

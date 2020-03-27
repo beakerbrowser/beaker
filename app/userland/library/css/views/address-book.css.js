@@ -37,7 +37,7 @@ a {
   color: #d3d3d8;
 }
 
-:host(.top-border) .contacts {
+:host(.top-border) .contact:first-child {
   border-top: 1px solid #dde;
 }
 

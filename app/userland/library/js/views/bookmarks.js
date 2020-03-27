@@ -24,6 +24,7 @@ export class BookmarksView extends LitElement {
     return {
       bookmarks: {type: Array},
       filter: {type: String},
+      showHeader: {type: Boolean, attribute: 'show-header'},
       hideEmpty: {type: Boolean, attribute: 'hide-empty'}
     }
   }
@@ -36,6 +37,7 @@ export class BookmarksView extends LitElement {
     super()
     this.bookmarks = undefined
     this.filter = undefined
+    this.showHeader = false
     this.hideEmpty = false
   }
 
@@ -82,6 +84,9 @@ export class BookmarksView extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       ${bookmarks ? html`
+        ${this.showHeader && !(this.hideEmpty && bookmarks.length === 0) ? html`
+          <h4>Bookmarks</h4>
+        ` : ''}
         <div class="bookmarks">
           ${repeat(bookmarks, bookmark => this.renderBookmark(bookmark))}
           ${bookmarks.length === 0 && !this.hideEmpty ? html`

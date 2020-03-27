@@ -14,6 +14,7 @@ export class DrivesView extends LitElement {
     return {
       drives: {type: Array},
       filter: {type: String},
+      showHeader: {type: Boolean, attribute: 'show-header'},
       hideEmpty: {type: Boolean, attribute: 'hide-empty'}
     }
   }
@@ -26,6 +27,7 @@ export class DrivesView extends LitElement {
     super()
     this.drives = undefined
     this.filter = undefined
+    this.showHeader = false
     this.hideEmpty = false
   }
 
@@ -155,6 +157,9 @@ export class DrivesView extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       ${drives ? html`
+        ${this.showHeader && !(this.hideEmpty && drives.length === 0) ? html`
+          <h4>Drives</h4>
+        ` : ''}
         <div class="drives">
           ${repeat(drives, drive => this.renderDrive(drive))}
           ${drives.length === 0 && !this.hideEmpty ? html`

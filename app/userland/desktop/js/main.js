@@ -96,9 +96,9 @@ class DesktopApp extends LitElement {
           ` : ''}
         </nav>
       ` : ''}
-      <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
-      <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></bookmarks-view>
-      <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></address-book-view>
+      <drives-view class="top-border ${hiddenCls('drives')}" loadable ?show-header=${!!this.filter} ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
+      <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?show-header=${!!this.filter} ?hide-empty=${!!this.filter} .filter=${this.filter}></bookmarks-view>
+      <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?show-header=${!!this.filter} ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></address-book-view>
       </div>
     `
   }
