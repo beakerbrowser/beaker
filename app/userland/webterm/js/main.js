@@ -206,6 +206,7 @@ class WebTerm extends LitElement {
           path: [command.name],
           help: command.help,
           usage: command.usage,
+          autocomplete: command.autocomplete,
           options: command.options,
           subcommands: subcommandsMap(pkg, this.commandModules[pkgId], command)
         }
@@ -241,6 +242,7 @@ class WebTerm extends LitElement {
               path: ['@' + command.name],
               help: command.help,
               usage: command.usage,
+              autocomplete: command.autocomplete,
               options: command.options,
               subcommands: undefined
             }
@@ -577,7 +579,7 @@ class WebTerm extends LitElement {
     var input = this.promptInput
     var cmd = this.lookupCommand(input)
 
-    if (cmd && !cmd.subcommands) {
+    if (cmd && !cmd.subcommands && cmd.autocomplete === 'files') {
       // resolve input + pwd to a directory
       let location = this.resolve(input.split(' ').pop())
       let lp = new URL(location)
@@ -605,7 +607,7 @@ class WebTerm extends LitElement {
         this.tabCompletion = Object.values(cmd.subcommands)
       } else if (input.startsWith('@')) {
         this.tabCompletion = Object.values(this.pageCommands)
-      } else {
+      } else if (!cmd || cmd.name === 'help') {
         this.tabCompletion = Object.values(this.commands)
       }
       this.liveHelp = undefined

@@ -5,12 +5,14 @@
     {
       "name": "ls",
       "help": "List files in the directory or information about a file",
-      "usage": "ls [{path}]"
+      "usage": "ls [{path}]",
+      "autocomplete": "files"
     },
     {
       "name": "cd",
       "help": "Change the current directory",
-      "usage": "cd {path}"
+      "usage": "cd {path}",
+      "autocomplete": "files"
     },
     {
       "name": "pwd",
@@ -20,32 +22,38 @@
     {
       "name": "mkdir",
       "help": "Make a new directory",
-      "usage": "mkdir {path}"
+      "usage": "mkdir {path}",
+      "autocomplete": "files"
     },
     {
       "name": "mv",
       "help": "Move a file or folder",
-      "usage": "mv {src} {dst}"
+      "usage": "mv {src} {dst}",
+      "autocomplete": "files"
     },
     {
       "name": "cp",
       "help": "Copy a file or folder",
-      "usage": "cp {src} {dst}"
+      "usage": "cp {src} {dst}",
+      "autocomplete": "files"
     },
     {
       "name": "rm",
       "help": "Remove a file or folder",
-      "usage": "rm {path}"
+      "usage": "rm {path}",
+      "autocomplete": "files"
     },
     {
       "name": "mount",
       "help": "Mount a hyperdrive as a subfolder",
-      "usage": "mount {mount-url} {dst}"
+      "usage": "mount {mount-url} {dst}",
+      "autocomplete": "files"
     },
     {
       "name": "query",
       "help": "Run a query across the filesystem",
       "usage": "query [{path...}] [-t file|folder|mount] [-m {url}] [-s name|ctime|mtime] [-r] [--limit n] [--offset n]",
+      "autocomplete": "files",
       "options": [
         {
           "name": "type",
@@ -84,6 +92,7 @@
       "name": "meta",
       "help": "Get/set metadata on a file or folder",
       "usage": "meta {path} [key] [value] [-d/--delete]",
+      "autocomplete": "files",
       "options": [
         {
           "name": "delete",
@@ -98,6 +107,7 @@
       "name": "mkgoto",
       "help": "Create a .goto file",
       "usage": "mkgoto {goto-path} {href} [-t/--title title]",
+      "autocomplete": "files",
       "options": [
         {
           "name": "title",
@@ -110,6 +120,7 @@
       "name": "bookmark",
       "help": "Bookmark the current working directory or current page",
       "usage": "bookmark [-f {name}] [{href}]",
+      "autocomplete": "files",
       "options": [
         {
           "name": "filename",
@@ -121,7 +132,8 @@
     {
       "name": "cat",
       "help": "Output the contents of a file into the terminal",
-      "usage": "cat {path}"
+      "usage": "cat {path}",
+      "autocomplete": "files"
     },
     {
       "name": "echo",
@@ -147,6 +159,7 @@
       "name": "open",
       "help": "Open the target in the browser",
       "usage": "open [-bn] {path}",
+      "autocomplete": "files",
       "options": [
         {
           "name": "bookmark",
@@ -166,7 +179,8 @@
     {
       "name": "edit",
       "help": "Edit the target using the browser editor",
-      "usage": "edit {path}"
+      "usage": "edit {path}",
+      "autocomplete": "files"
     },
     {
       "name": "clear",
