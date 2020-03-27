@@ -458,6 +458,10 @@ class WebTerm extends LitElement {
 
     var cliclopts = new Cliclopts(command.options)
     var argv = this.toArgv(inputParsed.slice(paramsIndex), cliclopts.options())
+    if ('h' in argv[0] || 'help' in argv[0]) {
+      command = this.commands.help
+      argv = [argv[0]].concat(inputParsed.slice(0, paramsIndex).map(v => v.value)).concat(argv.slice(1))
+    }
     try {
       var oldCWD = new URL(this.cwd.toString())
       this.outputHeader(oldCWD, inputValue)
