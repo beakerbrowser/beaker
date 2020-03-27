@@ -39,7 +39,7 @@ a {
 .bookmark {
   display: flex;
   align-items: center;
-  padding: 14px 24px;
+  padding: 12px 20px;
   color: #555;
   border-bottom: 1px solid #dde;
 }
@@ -53,6 +53,12 @@ a {
   background: #fafafd;
 }
 
+.bookmark > * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .bookmark .favicon {
   display: block;
   width: 16px;
@@ -62,7 +68,7 @@ a {
 
 .bookmark .title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   margin-right: 20px;
 }
 

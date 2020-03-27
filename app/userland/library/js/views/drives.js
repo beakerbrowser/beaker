@@ -175,32 +175,22 @@ export class DrivesView extends LitElement {
   renderDrive (drive) {
     var numForks = drive.forks?.length || 0
     return html`
-      <div
+      <a
+        href=${drive.url}
+        title=${drive.info.title || 'Untitled'}
         class="${classMap({drive: true})}"
         @contextmenu=${e => this.onContextmenuDrive(e, drive)}
       >
-        <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
-          <img
-            class="thumb"
-            srcset="
-              beaker://assets/img/drive-types/files.png 1x,
-              beaker://assets/img/drive-types/files-64.png 2x
-            "
-          >
-        </a>
-        <div class="info">
-          <div class="title">
-            <a href=${drive.url} title=${drive.info.title || 'Untitled'}>
-              ${drive.info.title || html`<em>Untitled</em>`}
-            </a>
-          </div>
-          <div class="description">
-            ${drive.forkOf ? html`
-              <span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
-            ` : ''}
-            ${!drive.info.writable ? html`<span class="readonly">readonly</span>` : ''}
-            ${drive.info.description.slice(0, 50)}
-          </div>
+        <img class="favicon" src="asset:favicon:${drive.url}">
+        <div class="title">
+          ${drive.info.title || html`<em>Untitled</em>`}
+        </div>
+        <div class="description">
+          ${drive.forkOf ? html`
+            <span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
+          ` : ''}
+          ${!drive.info.writable ? html`<span class="readonly">readonly</span>` : ''}
+          ${drive.info.description.slice(0, 50)}
         </div>
         <div class="forks">
           ${numForks > 0 ? html`
@@ -220,7 +210,7 @@ export class DrivesView extends LitElement {
         <div class="ctrls">
           <button class="transparent" @click=${e => this.onClickDriveMenuBtn(e, drive)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
-      </div>
+      </a>
       ${drive.showForks && numForks > 0 ? html`
         <div class="forks-container">
           ${repeat(drive.forks, fork => this.renderDrive(fork))}

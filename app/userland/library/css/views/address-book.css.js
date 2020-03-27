@@ -54,10 +54,16 @@ a {
   background: #fafafd;
 }
 
+.contact > * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .contact .thumb {
   display: inline-block;
-  width: 30px;
-  height: 30px;
+  width: 16px;
+  height: 16px;
   object-fit: cover;
   border-radius: 50%;
   margin-right: 16px;
@@ -66,7 +72,7 @@ a {
 .contact .title {
   flex: 1;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .contact .description {

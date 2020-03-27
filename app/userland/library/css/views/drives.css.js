@@ -52,49 +52,50 @@ a[href]:hover {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 18px 24px;
+  padding: 12px 20px;
   color: #555;
   border-bottom: 1px solid #dde;
 }
 
+.drive:hover {
+  text-decoration: none !important;
+  background: #fafafd;
+}
+
+.drive > * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .drive a {
   color: #99a;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: -0.5px;
 }
 
-.drive .thumb {
+.drive .favicon {
   display: block;
-  width: 32x;
-  height: 32px;
+  width: 16px;
+  height: 16px;
   margin-right: 20px;
 }
 
-.drive .thumb:hover {
-  border-color: #99a;
-}
-
-.drive .info {
-  flex: 5;
-}
-
-.drive .info .title {
-  font-size: 15px;
-  line-height: 1;
-}
-
-.drive .info .title a {
+.drive .title {
+  flex: 1;
+  font-size: 14px;
   font-weight: 500;
-  letter-spacing: 0.5px;
-  color: #333;
 }
 
-.drive .info .title .fa-fw {
-  margin-right: 3px;
+.drive .title a {
+  color: #555;
+  letter-spacing: 0;
 }
 
-.drive .info .description {
-  letter-spacing: -0.2px;
+.drive .description {
+  flex: 1;
+  color: #99a;
+  overflow: hidden;
 }
 
 .drive .readonly {
@@ -108,12 +109,11 @@ a[href]:hover {
 }
 
 .drive .forks {
-  flex: 1;
-  min-width: 100px;
+  flex: 0 0 100px;
 }
 
 .drive .peers {
-  flex: 1;
+  flex: 0 0 100px;
   min-width: 90px;
 }
 
