@@ -56,6 +56,7 @@ class GeneralSettingsView extends LitElement {
       ${this.renderDaemonStatus()}
       ${this.renderAutoUpdater()}
       ${this.renderOnStartupSettings()}
+      ${this.renderNewTabSettings()}
       ${this.renderProtocolSettings()}
       ${this.renderAnalyticsSettings()}
     `
@@ -81,7 +82,7 @@ class GeneralSettingsView extends LitElement {
     if (this.browserInfo && !this.browserInfo.updater.isBrowserUpdatesSupported) {
       return html`
         <div class="section">
-          <h2 id="auto-updater">Auto updater</h2>
+          <h2 id="auto-updater">Auto Updater</h2>
   
           <div class="message info">
             Sorry! Beaker auto-updates are only supported on the production build for macOS and Windows.
@@ -101,7 +102,7 @@ class GeneralSettingsView extends LitElement {
         return html`
         <div class="section">
           <h2 id="auto-updater">
-            Auto updater
+            Auto Updater
           </h2>
   
           ${this.browserInfo.updater.error ? html`
@@ -138,7 +139,7 @@ class GeneralSettingsView extends LitElement {
         return html`
         <div class="section">
           <h2 id="auto-updater">
-            Auto updater
+            Auto Updater
           </h2>
   
           <div class="auto-updater">
@@ -166,7 +167,7 @@ class GeneralSettingsView extends LitElement {
       case 'downloading':
         return html`
         <div class="section">
-          <h2 id="auto-updater">Auto updater</h2>
+          <h2 id="auto-updater">Auto Updater</h2>
   
           <div class="auto-updater">
             <button class="btn" disabled>Updating</button>
@@ -181,7 +182,7 @@ class GeneralSettingsView extends LitElement {
       case 'downloaded':
         return html`
         <div class="section">
-          <h2 id="auto-updater">Auto updater</h2>
+          <h2 id="auto-updater">Auto Updater</h2>
   
           <div class="auto-updater">
             <button class="btn" @click=${this.onClickRestart}>Restart now</button>
@@ -204,7 +205,7 @@ class GeneralSettingsView extends LitElement {
   renderOnStartupSettings () {
     return html`
       <div class="section on-startup">
-        <h2 id="on-startup">Startup settings</h2>
+        <h2 id="on-startup">Startup Settings</h2>
   
         <p>When Beaker starts</p>
   
@@ -230,6 +231,27 @@ class GeneralSettingsView extends LitElement {
     `
   }
 
+  renderNewTabSettings () {
+    return html`
+      <div class="section new-tab">
+        <h2 id="new-tab">Start Page</h2>
+  
+        <p>When you create a new tab, show</p>
+  
+        <div>
+          <input name="new-tab"
+                 id="newTab"
+                 type="text"
+                 value=${this.settings.new_tab || 'beaker://desktop/'}
+                 @input=${this.onNewTabChange}
+                 style="width: 300px" />
+          <button @click=${this.onClickBrowseNewTab}>Browse...</button>
+          <button @click=${this.onClickDefaultNewTab}>Use Default</button>
+        </div>
+      </div>
+    `
+  }
+
   renderProtocolSettings () {
     const toggleRegistered = (protocol) => {
       // update and optimistically render
@@ -246,7 +268,7 @@ class GeneralSettingsView extends LitElement {
 
     return html`
       <div class="section default-browser">
-        <h2 id="protocol" class="subtitle-heading">Default browser settings</h2>
+        <h2 id="protocol" class="subtitle-heading">Default Browser Settings</h2>
   
         <p>Set Beaker as the default browser for:</p>
   
@@ -341,6 +363,31 @@ class GeneralSettingsView extends LitElement {
     this.settings.custom_start_page = e.target.value
     beaker.browser.setSetting('custom_start_page', this.settings.custom_start_page)
     toast.create('Setting updated')
+  }
+
+  onNewTabChange (e) {
+    this.settings.new_tab = e.target.value
+    beaker.browser.setSetting('new_tab', this.settings.new_tab)
+    toast.create('Setting updated')
+  }
+
+  async onClickBrowseNewTab (e) {
+    var sel = await beaker.shell.selectFileDialog({
+      allowMultiple: false
+    })
+    if (sel) {
+      this.settings.new_tab = sel[0].url
+      beaker.browser.setSetting('new_tab', this.settings.new_tab)
+      toast.create('Setting updated')
+      this.requestUpdate()
+    }
+  }
+
+  onClickDefaultNewTab (e) {
+    this.settings.new_tab = 'beaker://desktop/'
+    beaker.browser.setSetting('new_tab', this.settings.new_tab)
+    toast.create('Setting updated')
+    this.requestUpdate()
   }
 
   async onClickRestartDaemon (e) {

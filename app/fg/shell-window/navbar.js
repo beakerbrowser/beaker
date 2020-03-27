@@ -262,7 +262,7 @@ class ShellWindowNavbar extends LitElement {
   }
 
   onClickHome (e) {
-    bg.views.loadURL('active', 'beaker://desktop/')
+    bg.views.loadURL('active', '$new_tab')
   }
 
   onClickUpdog (e) {

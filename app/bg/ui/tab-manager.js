@@ -68,7 +68,6 @@ const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR
 
 const Y_POSITION = 76
 export const TOOLBAR_HEIGHT = 18
-const DEFAULT_URL = 'beaker://desktop'
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
 // the variables which are automatically sent to the shell-window for rendering
@@ -115,6 +114,7 @@ var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: EventEmitter}
 var noRedirectHostnames = new Set() // set of hostnames which have drive-redirection disabled
 var nextTabIsScriptCloseable = false // will the next tab created be "script closable"?
+var defaultUrl = 'beaker://desktop/'
 
 // classes
 // =
@@ -327,6 +327,9 @@ class Tab extends EventEmitter {
   // =
 
   loadURL (url, opts) {
+    if (url === '$new_tab') {
+      url = defaultUrl
+    }
     if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
       if (this.url && toOrigin(this.url) !== toOrigin(url)) {
         // we never navigate out of app windows
@@ -1013,7 +1016,18 @@ class Tab extends EventEmitter {
 // exported api
 // =
 
-export function setup () {
+export async function setup () {
+  defaultUrl = String(await settingsDb.get('new_tab'))
+  settingsDb.on('set:new_tab', newValue => {
+    defaultUrl = newValue
+
+    // reset preloaded tabs since they are now on the wrong URL
+    for (let k in preloadedNewTabs) {
+      preloadedNewTabs[k].destroy()
+    }
+    preloadedNewTabs = {}
+  })
+
   // listen for webContents messages
   ipcMain.on('BEAKER_MARK_NEXT_TAB_SCRIPTCLOSEABLE', e => {
     nextTabIsScriptCloseable = true
@@ -1138,7 +1152,7 @@ export function create (
       sidebarPanels: undefined
     }
   ) {
-  url = url || DEFAULT_URL
+  url = url || defaultUrl
   if (url.startsWith('devtools://')) {
     return // dont create tabs for this
   }
@@ -1154,7 +1168,7 @@ export function create (
   var tab
   var preloadedNewTab = preloadedNewTabs[win.id]
   var loadWhenReady = false
-  if (url === DEFAULT_URL && !opts.isPinned && preloadedNewTab) {
+  if (url === defaultUrl && !opts.isPinned && preloadedNewTab) {
     // use the preloaded tab
     tab = preloadedNewTab
     tab.isHidden = false // no longer hidden
@@ -1210,7 +1224,7 @@ export function create (
   // create a new preloaded tab if needed
   if (!preloadedNewTab) {
     preloadedNewTabs[win.id] = preloadedNewTab = new Tab(win, {isHidden: true})
-    preloadedNewTab.loadURL(DEFAULT_URL)
+    preloadedNewTab.loadURL(defaultUrl)
   }
 
   return tab

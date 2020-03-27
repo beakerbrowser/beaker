@@ -31,6 +31,7 @@ export const setup = function (opts) {
     auto_update_enabled: 1,
     auto_redirect_to_dat: 1,
     custom_start_page: 'blank',
+    new_tab: 'beaker://desktop/',
     start_page_background_image: '',
     workspace_default_path: path.join(opts.homePath, 'Sites'),
     default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n**/.DS_Store\nThumbs.db\n',

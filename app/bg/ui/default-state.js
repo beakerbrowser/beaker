@@ -32,5 +32,5 @@ export function defaultWindowState () {
 }
 
 export function defaultPageState () {
-  return [ 'beaker://desktop' ]
+  return []
 }

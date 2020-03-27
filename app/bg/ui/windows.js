@@ -79,7 +79,7 @@ export async function setup () {
   })
 
   openURL.setup()
-  tabManager.setup()
+  await tabManager.setup()
 
   app.on('before-quit', async e => {
     sessionWatcher.stopRecording()
@@ -244,6 +244,9 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
       }
       if (!createOpts.dontInitPages) {
         tabManager.initializeFromSnapshot(win, state.pages)
+        if (tabManager.getAll(win).length === 0) {
+          tabManager.create(win) // create new_tab
+        }
       }
       if (state.isAppWindow) {
         setIsAppWindow(win, true)
