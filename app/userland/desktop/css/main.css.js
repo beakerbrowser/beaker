@@ -21,7 +21,7 @@ header {
   display: grid;
   grid-template-columns: 1fr auto;
   max-width: 1000px;
-  margin: 50px auto;
+  margin: 50px auto 30px;
 }
 
 header .search-ctrl {
@@ -152,7 +152,7 @@ header .profile-ctrl img {
 nav {
   display: flex;
   max-width: 1000px;
-  margin: 30px auto 0px;
+  margin: 20px auto 0px;
 }
 
 nav a {
