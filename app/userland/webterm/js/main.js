@@ -156,9 +156,12 @@ class WebTerm extends LitElement {
   }
 
   async importEnvironment () {
-    this.loadCommands()
-    this.loadBuiltins()
-    this.loadPageCommands()
+    this.commands = {}
+    this.commandModules = {}
+    this.pageCommands = {}
+    await this.loadCommands()
+    await this.loadBuiltins()
+    await this.loadPageCommands()
   }
 
   async loadCommands () {
@@ -479,7 +482,8 @@ class WebTerm extends LitElement {
           goto: this.setCWD.bind(this),
           focus: this.setFocus.bind(this),
           resolve: this.resolve.bind(this),
-          clearHistory: this.clearHistory.bind(this)
+          clearHistory: this.clearHistory.bind(this),
+          reload: this.importEnvironment.bind(this)
         },
         page: {
           goto (url, opts = {}) {

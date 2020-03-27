@@ -30,7 +30,7 @@ export async function create () {
   }, null, 2))
   await drive.writeFile('/index.js', STARTER_INDEX_JS)
 
-  return install(undefined, drive.url)
+  return install.call(this, undefined, drive.url)
 }
 
 export async function install (opts = {}, url) {
@@ -39,6 +39,7 @@ export async function install (opts = {}, url) {
   if (urls.indexOf(url) !== -1) throw new Error('This command-package is already installed')
   urls.push(url)
   await saveInstalled(urls)
+  await this.env.reload()
   return {url, toHTML: () => html`Installed <a href=${url}>${url}</a>`}
 }
 
@@ -49,6 +50,7 @@ export async function uninstall (opts = {}, url) {
   if (index === -1) throw new Error('This command-package was not installed')
   urls.splice(index, 1)
   await saveInstalled(urls)
+  await this.env.reload()
   return {url, toHTML: () => html`Uninstalled <a href=${url}>${url}</a>`}
 }
 
