@@ -67,9 +67,12 @@ a {
 }
 
 .bookmark .title {
-  font-size: 14px;
   font-weight: 500;
   margin-right: 20px;
+}
+
+:host(.full-size) .bookmark .title {
+  font-size: 14px;
 }
 
 .bookmark .href {

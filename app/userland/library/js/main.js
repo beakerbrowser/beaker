@@ -82,16 +82,16 @@ export class LibraryApp extends LitElement {
         </nav>
         <main>
           ${this.view === 'drives' ? html`
-            <drives-view .filter=${this.filter} loadable></drives-view>
+            <drives-view class="full-size" .filter=${this.filter} loadable></drives-view>
           ` : ''}
           ${this.view === 'bookmarks' ? html`
-            <bookmarks-view .filter=${this.filter} loadable></bookmarks-view>
+            <bookmarks-view class="full-size" .filter=${this.filter} loadable></bookmarks-view>
           ` : ''}
           ${this.view === 'address-book' ? html`
-            <address-book-view .filter=${this.filter} loadable></address-book-view>
+            <address-book-view class="full-size" .filter=${this.filter} loadable></address-book-view>
           ` : ''}
           ${this.view === 'downloads' ? html`
-            <downloads-view .filter=${this.filter} loadable></downloads-view>
+            <downloads-view class="full-size" .filter=${this.filter} loadable></downloads-view>
           ` : ''}
         </main>
       </div>

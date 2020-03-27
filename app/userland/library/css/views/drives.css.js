@@ -83,9 +83,12 @@ a[href]:hover {
 }
 
 .drive .title {
-  flex: 1;
-  font-size: 14px;
   font-weight: 500;
+  margin-right: 20px;
+}
+
+:host(.full-size) .drive .title {
+  font-size: 14px;
 }
 
 .drive .title a {
