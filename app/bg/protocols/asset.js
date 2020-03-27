@@ -99,6 +99,10 @@ export function setup () {
             data = await sitedata.get(url, 'favicon')
           }
         }
+        if (!data && asset === 'favicon') {
+          // try fallback to thumb
+          data = await sitedata.get(url, 'thumb')
+        }
       }
       if (data) {
         if (size) {

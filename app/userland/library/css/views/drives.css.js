@@ -78,6 +78,7 @@ a[href]:hover {
   display: block;
   width: 16px;
   height: 16px;
+  object-fit: cover;
   margin-right: 20px;
 }
 
