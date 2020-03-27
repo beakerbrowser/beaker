@@ -17,6 +17,12 @@ ${tooltipCSS}
   display: none !important;
 }
 
+#topright {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
 header {
   display: grid;
   grid-template-columns: 1fr auto;

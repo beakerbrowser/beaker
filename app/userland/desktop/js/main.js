@@ -64,6 +64,9 @@ class DesktopApp extends LitElement {
     const hiddenCls = id => this.filter || this.currentNav === id ? '' : 'hidden'
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div id="topright">
+        <a href="beaker://settings/" title="Settings"><span class="fas fa-cog"></span></a>
+      </div>
       <header>
         <div class="search-ctrl">
           <span class="fas fa-search"></span>
