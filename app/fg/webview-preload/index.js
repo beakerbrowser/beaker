@@ -21,5 +21,5 @@ setupExecuteJavascript()
 
 window.addEventListener('focus', e => {
   // track focus
-  ipcRenderer.sendSync('BEAKER_WC_FOCUSED')
+  ipcRenderer.send('BEAKER_WC_FOCUSED')
 })

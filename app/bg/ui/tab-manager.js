@@ -1046,7 +1046,6 @@ export async function setup () {
     e.returnValue = false
   })
   ipcMain.on('BEAKER_WC_FOCUSED', e => {
-    e.returnValue = false
     var browserView = BrowserView.fromWebContents(e.sender)
     var tab = browserView ? findTab(browserView) : undefined
     if (tab) tab.previouslyFocusedWebcontents = e.sender
