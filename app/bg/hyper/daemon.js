@@ -84,6 +84,7 @@ export async function setup () {
         var processExists = !!processes.find(p => p.name === 'hyperdrive')
         if (processExists && !isDaemonActive) {
           isDaemonActive = true
+          isInitialSetup = false
           events.emit('daemon-restored')
         } else if (!processExists && isDaemonActive) {
           isDaemonActive = false
@@ -107,7 +108,6 @@ export async function setup () {
     await client.ready()
     console.log('Connected to an external daemon.')
     reconnectAllDriveSessions()
-    isInitialSetup = false
     return
   } catch (err) {
     console.log('Failed to connect to an external daemon. Launching the daemon...')
@@ -131,7 +131,6 @@ export async function setup () {
 
   await attemptConnect()
   reconnectAllDriveSessions()
-  isInitialSetup = false
 }
 
 /**
