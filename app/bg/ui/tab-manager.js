@@ -1223,8 +1223,7 @@ export function create (
 
   // create a new preloaded tab if needed
   if (!preloadedNewTab) {
-    preloadedNewTabs[win.id] = preloadedNewTab = new Tab(win, {isHidden: true})
-    preloadedNewTab.loadURL(defaultUrl)
+    createPreloadedNewTab(win)
   }
 
   return tab
@@ -1841,4 +1840,25 @@ function takeIsScriptClosable () {
   var b = nextTabIsScriptCloseable
   nextTabIsScriptCloseable = false
   return b
+}
+
+/**
+ * NOTE
+ * preloading a tab generates a slight performance cost which was interrupting the UI
+ * (it manifested as a noticeable delay in the location bar)
+ * by delaying before creating the preloaded tab, we avoid overloading any threads
+ * and disguise the performance overhead
+ * -prf
+ */
+var _createPreloadedNewTabTOs = {} // map of {[win.id] => timeout}
+function createPreloadedNewTab (win) {
+  var id = win.id
+  if (_createPreloadedNewTabTOs[id]) {
+    clearTimeout(_createPreloadedNewTabTOs[id])
+  }
+  _createPreloadedNewTabTOs[id] = setTimeout(() => {
+    _createPreloadedNewTabTOs[id] = null
+    preloadedNewTabs[id] = new Tab(win, {isHidden: true})
+    preloadedNewTabs[id].loadURL(defaultUrl)
+  }, 1e3)
 }
