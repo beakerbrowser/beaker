@@ -1,12 +1,13 @@
 import { commonCSS } from './common-css.js'
 
+const THUMB_SIZE = 256
+
 customElements.define('profile-view', class extends HTMLElement {
   constructor () {
     super()
     this.title = ''
     this.description = ''
     this.thumbDataURL = ''
-    this.thumbExt = ''
     this.errors = {}
 
     this.attachShadow({mode: 'open'})
@@ -19,7 +20,7 @@ customElements.define('profile-view', class extends HTMLElement {
 <h1>New user</h1>
 <form>
   <div class="img-ctrl">
-    <img src="${this.thumbDataURL || 'beaker://assets/default-user-thumb'}">
+    <img class="thumb" src="${this.thumbDataURL || 'beaker://assets/default-user-thumb'}">
     <input type="file" accept=".jpg,.jpeg,.png">
     <button type="button" class="btn choose-image" tabindex="4">Choose Picture</button>
   </div>
@@ -109,7 +110,6 @@ customElements.define('profile-view', class extends HTMLElement {
     if (!file) return
     var fr = new FileReader()
     fr.onload = () => {
-      this.thumbExt = file.name.split('.').pop()
       this.thumbDataURL = /** @type string */(fr.result)
       this.shadowRoot.querySelector('img').setAttribute('src', this.thumbDataURL)
     }
@@ -131,16 +131,19 @@ customElements.define('profile-view', class extends HTMLElement {
       return this.render()
     }
 
-    if (!this.thumbDataURL) {
-      // use default thumb
-      let blob = await (await fetch('beaker://setup/default-user-thumb')).blob()
-      this.thumbDataURL = await new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onerror = reject
-        reader.onload = () => resolve(reader.result)
-        reader.readAsDataURL(blob)
-      })
-    }
+    // resize the thumb to 256x256
+    var img = this.shadowRoot.querySelector('img.thumb')
+    var canvas = document.createElement('canvas')
+    canvas.setAttribute('width', String(THUMB_SIZE))
+    canvas.setAttribute('height', String(THUMB_SIZE))
+    var ctx = canvas.getContext('2d')
+    ctx.globalCompositeOperation = 'source-over'
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, THUMB_SIZE, THUMB_SIZE)
+    var smallestDimension = (img.naturalWidth < img.naturalHeight) ? img.naturalWidth : img.naturalHeight
+    ctx.scale(THUMB_SIZE / smallestDimension, THUMB_SIZE / smallestDimension)
+    ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight)
+    this.thumbDataURL = canvas.toDataURL('image/png')
 
     try {
       var thumbBase64 = this.thumbDataURL ? this.thumbDataURL.split(',').pop() : undefined
@@ -148,7 +151,7 @@ customElements.define('profile-view', class extends HTMLElement {
         title: this.title,
         description: this.description,
         thumbBase64,
-        thumbExt: this.thumbExt
+        thumbExt: 'png'
       })
     } catch (e) {
       this.errors.general = e.message || e.toString()
