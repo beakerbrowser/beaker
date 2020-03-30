@@ -66,7 +66,6 @@ class LocationBar extends LitElement {
     this.autocompleteResults = []
     this.currentSelection = 0
     this.hoveredSearch = ''
-    this.hasExpanded = false
     this.queryIdCounter = 0
     this.bookmarksFetch = bg.bookmarks.list()
   }
@@ -187,9 +186,6 @@ class LocationBar extends LitElement {
         if (!opts.value || opts.value !== this.inputValue) {
           this.inputQuery = this.inputValue = opts.value
           this.currentSelection = 0
-          if (this.inputValue.startsWith('beaker://library')) {
-            this.inputQuery = this.inputValue = ''
-          }
 
           // update the input
           var input = this.shadowRoot.querySelector('input')
@@ -222,9 +218,6 @@ class LocationBar extends LitElement {
     var value = e.currentTarget.value.trim()
     if (!value || this.inputValue !== value) {
       this.inputQuery = this.inputValue = value // update the current value
-      if (value.indexOf('://') !== -1) {
-        this.hasExpanded = true // dont expand on leftmost
-      }
       this.currentSelection = 0 // reset the selection
       this.queryAutocomplete()
     }
@@ -270,24 +263,6 @@ class LocationBar extends LitElement {
       if (up && this.currentSelection > 0) { this.currentSelection = this.currentSelection - 1 }
       if (down && this.currentSelection < this.autocompleteResults.length - 1) { this.currentSelection = this.currentSelection + 1 }
       this.shadowRoot.querySelector('input').value = this.inputValue = this.autocompleteResults[this.currentSelection].url
-    }
-
-    var left = (e.key === 'ArrowLeft' || (e.ctrlKey && e.key === 'b'))
-    if (left) {
-      let input = this.shadowRoot.querySelector('input')
-      if (!this.hasExpanded && !/^([a-z]+):\/\//i.test(this.inputValue) && input.selectionStart === 0) {
-        this.hasExpanded = true
-        if (!this.currentTabLocation) {
-          this.currentTabLocation = (await bg.views.getTabState('active').catch(e => ({url: ''}))).url
-        }
-        try {
-          let currentTabLocationp = new URL(this.currentTabLocation)
-          input.value = this.inputValue = joinPath(currentTabLocationp.origin, this.inputValue)
-          input.selectionStart = input.selectionEnd = currentTabLocationp.origin.length
-        } catch (e) {
-          // ignore
-        }
-      }
     }
   }
 
