@@ -142,7 +142,14 @@ export const PERMS = {
     alwaysDisallow: false,
     requiresRefresh: false,
     experimental: true
-  }
+  },
+  contactsList: {
+    persist: 'allow', // dont persist 'deny'
+    idempotent: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: false
+  },
 }
 
 export const PERM_ICONS = {
@@ -165,7 +172,8 @@ export const PERM_ICONS = {
   experimentalGlobalFetch: 'fas fa-download',
   experimentalDatPeers: 'fas fa-exchange-alt',
   experimentalCapturePage: 'fas fa-camera',
-  dangerousAppControl: 'fas fa-flask'
+  dangerousAppControl: 'fas fa-flask',
+  contactsList: 'fas fa-user-friends'
 }
 
 export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
@@ -189,6 +197,7 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
     case 'experimentalLibrary': return 'Read and modify your Library'
     case 'experimentalDatPeers': return 'Send and receive messages with peers'
     case 'dangerousAppControl': return 'Read and write your data, including bookmarks, archives, and files'
+    case 'contactsList': return 'Read your address-book contacts'
 
     case 'network':
       if (permParam === '*') return 'Access the network freely'
