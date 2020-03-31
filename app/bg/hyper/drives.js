@@ -219,10 +219,10 @@ export async function createNewDrive (manifest = {}) {
 
 /**
  * @param {string} srcDriveUrl
- * @param {Object} [manifest]
+ * @param {Object} [opts]
  * @returns {Promise<DaemonHyperdrive>}
  */
-export async function forkDrive (srcDriveUrl, manifest = {}) {
+export async function forkDrive (srcDriveUrl, opts = {}) {
   srcDriveUrl = fromKeyToURL(srcDriveUrl)
 
   // get the source drive
@@ -245,12 +245,11 @@ export async function forkDrive (srcDriveUrl, manifest = {}) {
   var srcManifest = await srcDrive.pda.readManifest().catch(_ => {})
   srcManifest = srcManifest || {}
 
-  // override any manifest data
+  // override any opts data
   var dstManifest = {
-    title: (manifest.title) ? manifest.title : srcManifest.title,
-    description: (manifest.description) ? manifest.description : srcManifest.description,
-    type: (manifest.type) ? manifest.type : srcManifest.type,
-    forkOf: fromKeyToURL(srcDriveUrl)
+    title: (opts.title) ? opts.title : srcManifest.title,
+    description: (opts.description) ? opts.description : srcManifest.description,
+    forkOf: opts.detached ? undefined : fromKeyToURL(srcDriveUrl)
     // author: manifest.author
   }
   for (let k in srcManifest) {

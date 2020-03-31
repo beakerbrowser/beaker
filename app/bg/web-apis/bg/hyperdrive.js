@@ -74,12 +74,12 @@ export default {
     return newDriveUrl
   },
 
-  async forkDrive (url, {label, prompt} = {}) {
+  async forkDrive (url, {detached, title, description, label, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
-      label = prompt = undefined
+      title = description = detached = label = prompt = undefined
     }
 
     if (prompt !== false) {
@@ -107,10 +107,14 @@ export default {
       }
 
       // create
-      let newDrive = await drives.forkDrive(key)
+      let newDrive = await drives.forkDrive(key, {
+        title: detached ? title : undefined,
+        description: detached ? description : undefined,
+        detached
+      })
       await filesystem.configDrive(newDrive.url, {
         seeding: true,
-        forkOf: {key, label}
+        forkOf: detached ? undefined : {key, label}
       })
       newDriveUrl = newDrive.url
     }

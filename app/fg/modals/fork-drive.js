@@ -18,7 +18,10 @@ class ForkDriveModal extends LitElement {
   static get properties () {
     return {
       state: {type: Number},
-      label: {type: String}
+      label: {type: String},
+      title: {type: String},
+      description: {type: String},
+      isDetached: {type: Boolean}
     }
   }
 
@@ -47,6 +50,31 @@ class ForkDriveModal extends LitElement {
       color: rgba(0, 0, 0, 0.6);
     }
 
+    .columns {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      grid-gap: 12px;
+    }
+
+    .toggle {
+      justify-content: unset;
+      background: #fafafd;
+      padding: 14px 20px;
+      margin: -14px -20px 12px;
+      border-bottom: 1px solid #bbb;
+    }
+
+    .toggle .switch {
+      margin-right: 8px;
+    }
+
+    .toggle .text {
+      font-weight: 500;
+      font-size: 13px;
+      letter-spacing: 0.15px;
+      line-height: 1;
+    }
+
     input {
       font-size: 14px;
       height: 34px;
@@ -59,7 +87,7 @@ class ForkDriveModal extends LitElement {
       display: inline-block;
       font-size: 13px;
       font-weight: 500;
-      padding: 5px 30px 5px 10px;
+      padding: 8px 30px 8px 10px;
       max-width: 100%;
       border: 1px solid #bbc;
       border-radius: 4px;
@@ -79,7 +107,7 @@ class ForkDriveModal extends LitElement {
     hr {
       border: 0;
       border-top: 1px solid #ddd;
-      margin: 20px 0;
+      margin: 10px 0;
     }
 
     .form-actions {
@@ -106,19 +134,23 @@ class ForkDriveModal extends LitElement {
     this.forks = []
     this.base = undefined
     this.label = ''
+    this.title = ''
+    this.description = ''
+    this.isDetached = false
   }
 
   async init (params, cbs) {
     // store params
     this.cbs = cbs
     this.forks = params.forks
-    console.log(this.forks)
     this.base = this.forks.find(fork => fork.url === params.url) || this.forks[0]
     this.label = params.label || ''
     await this.requestUpdate()
 
     // fetch drive info
     this.driveInfo = await bg.hyperdrive.getInfo(this.base.url)
+    this.title = this.driveInfo.title || ''
+    this.description = this.driveInfo.description || ''
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -166,19 +198,49 @@ class ForkDriveModal extends LitElement {
         <h1 class="title">Make a Fork of ${this.driveInfo.title ? `"${this.driveInfo.title}"` : prettyHash(this.driveInfo.key)}</h1>
 
         <form @submit=${this.onSubmit}>
-          <label for="base">Base</label>
-          <div style="margin: 4px 0 8px">
-            <select name="base" tabindex="1" @change=${this.onChangeBase}>
-              ${baseOpt(this.forks[0])}
-              <optgroup label="Forks">
-                ${repeat(this.forks.slice(1), fork => baseOpt(fork))}
-              </optgroup>
-            </select>
-          </div>
+          <label class="toggle">
+            <input
+              type="checkbox"
+              name="detach"
+              .checked=${this.isDetached}
+              @click=${this.onToggleDetached}
+            >
+            <div class="switch"></div>
+            <span class="text">Make independent copy</span>
+          </label>
+          
+          ${this.isDetached ? html`
+            <input autofocus name="title" tabindex="1" value=${this.title || ''} @change=${this.onChangeTitle} required placeholder="Title" />
+            <input name="desc" tabindex="2" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
+          ` : html`
+            <div class="columns">
+              <div>
+                <label for="base">Base</label>
+                <div style="margin: 5px 0 8px">
+                  <select name="base" tabindex="1" @change=${this.onChangeBase}>
+                    ${baseOpt(this.forks[0])}
+                    <optgroup label="Forks">
+                      ${repeat(this.forks.slice(1), fork => baseOpt(fork))}
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
 
-          <label for="label">Label</label>
-          <input name="label" tabindex="2" value="${this.label}" @change=${this.onChangeLabel} placeholder="e.g. 'dev' or 'my-new-feature'" required autofocus />
-          <p class="help">The label will help you identify the fork.</p>
+              <div>
+                <label for="label">Label</label>
+                <input
+                  name="label"
+                  tabindex="2"
+                  value="${this.label}"
+                  @change=${this.onChangeLabel}
+                  placeholder="e.g. 'dev' or 'my-new-feature'"
+                  autofocus
+                  required
+                />
+                <p class="help">The label will help you identify the fork.</p>
+              </div>
+            </div>
+          `}
           
           <hr>
 
@@ -215,6 +277,10 @@ class ForkDriveModal extends LitElement {
   // event handlers
   // =
 
+  onToggleDetached (e) {
+    this.isDetached = !this.isDetached
+  }
+
   async onChangeBase (e) {
     this.base = this.forks.find(fork => fork.url === e.currentTarget.value)
     this.driveInfo = await bg.hyperdrive.getInfo(this.base.url)
@@ -225,6 +291,14 @@ class ForkDriveModal extends LitElement {
     this.label = e.target.value
   }
 
+  onChangeTitle (e) {
+    this.title = e.target.value
+  }
+
+  onChangeDescription (e) {
+    this.description = e.target.value
+  }
+
   onClickCancel (e) {
     e.preventDefault()
     this.cbs.reject(new Error('Canceled'))
@@ -233,8 +307,10 @@ class ForkDriveModal extends LitElement {
   async onSubmit (e) {
     e.preventDefault()
 
-    if (!this.label) {
-      return
+    if (this.isDetached) {
+      if (!this.title.trim()) return
+    } else {
+      if (!this.label.trim()) return
     }
 
     // this.state = STATES.DOWNLOADING
@@ -243,6 +319,9 @@ class ForkDriveModal extends LitElement {
     this.state = STATES.CLONING
     try {
       var url = await bg.hyperdrive.forkDrive(this.base.url, {
+        detached: this.isDetached,
+        title: this.title,
+        description: this.description,
         label: this.label,
         prompt: false
       })
