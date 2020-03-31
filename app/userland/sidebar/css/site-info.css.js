@@ -1,8 +1,10 @@
 import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import spinnerCSS from 'beaker://app-stdlib/css/com/spinner.css.js'
+import tooltipCSS from 'beaker://app-stdlib/css/tooltip.css.js'
 
 const cssStr = css`
 ${spinnerCSS}
+${tooltipCSS}
 
 :host {
   --black: #223;
@@ -164,9 +166,6 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   background: #fff;
   border-radius: 4px;
   border: 1px solid var(--darkgray);
-  overflow: hidden;
-  max-height: 180px;
-  overflow: auto;
 }
 
 .fork {

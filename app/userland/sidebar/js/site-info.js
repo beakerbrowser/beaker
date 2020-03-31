@@ -201,7 +201,8 @@ class SiteInfo extends LitElement {
                 </div>
                 <div>
                   ${fork.forkOf ? html`
-                    <button @click=${e => this.onClickDelete(e, fork)}><span class="far fa-trash-alt"></span></button>
+                    <button @click=${e => this.onClickDetach(e, fork)} data-tooltip="Detach"><span class="fas fa-unlink"></span></button>
+                    <button @click=${e => this.onClickDelete(e, fork)} data-tooltip="Remove From Library"><span class="far fa-trash-alt"></span></button>
                   ` : ''}
                 </div>
               </a>
@@ -291,6 +292,20 @@ class SiteInfo extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     beaker.browser.openUrl(`beaker://diff/?base=${fork.url}&target=${this.forks[0].url}`, {setActive: true})
+  }
+
+  async onClickDetach (e, fork) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!confirm(`Make "${fork.forkOf.label}" an independent drive?`)) {
+      return
+    }
+
+    var manifest = await beaker.hyperdrive.drive(fork.url).readFile('/index.json').then(JSON.parse).catch(e => {})
+    delete manifest.forkOf
+    await beaker.hyperdrive.drive(fork.url).writeFile('/index.json', JSON.stringify(manifest, null, 2))
+    await beaker.drives.configure(fork.url, {forkOf: false})
+    this.load(this.url)
   }
 
   async onClickDelete (e, fork) {
