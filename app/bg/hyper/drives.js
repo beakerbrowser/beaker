@@ -443,35 +443,45 @@ export function isDriveLoaded (key) {
 // drive fetch/query
 // =
 
-export async function getDriveInfo (key) {
+export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
   // get the drive
   key = await fromURLToKey(key, true)
-  var drive = await getOrLoadDrive(key)
+  var drive = getDrive(key)
+  if (!drive && ignoreCache) {
+    drive = await loadDrive(key)
+  }
+  var url = `hyper://${key}/`
 
   // fetch drive data
-  await drive.pullLatestDriveMeta()
-  var userSettings = null // TODO uwg datLibrary.getConfig(key)
-  var [meta, manifest, driveInfo] = await Promise.all([
-    archivesDb.getMeta(key),
-    drive.pda.readManifest().catch(_ => {}),
-    drive.getInfo()
-  ])
+  var meta, manifest, driveInfo
+  if (drive) {
+    await drive.pullLatestDriveMeta()
+    ;[meta, manifest, driveInfo] = await Promise.all([
+      archivesDb.getMeta(key),
+      drive.pda.readManifest().catch(_ => {}),
+      drive.getInfo()
+    ])
+  } else {
+    meta = await archivesDb.getMeta(key)
+    driveInfo = {
+      version: 0,
+      peers: undefined,
+      networkStats: {
+        uploadTotal: undefined,
+        downloadTotal: undefined
+      }
+    }
+  }
   manifest = manifest || {}
-  if (filesystem.isRootUrl(drive.url) && !meta.title) {
+  if (filesystem.isRootUrl(url) && !meta.title) {
     meta.title = 'My System Drive'
   }
   meta.key = key
-  meta.url = drive.url
-  meta.domain = drive.domain
+  meta.url = url
+  // meta.domain = drive.domain TODO
   meta.links = manifest.links || {}
   meta.manifest = manifest
   meta.version = driveInfo.version
-  meta.userSettings = {
-    isSaved: userSettings ? true : false,
-    isHosting: userSettings ? userSettings.isHosting : false,
-    visibility: userSettings ? userSettings.visibility : undefined,
-    savedAt: userSettings ? userSettings.savedAt : null
-  }
   meta.peers = driveInfo.peers
   meta.networkStats = driveInfo.networkStats
 

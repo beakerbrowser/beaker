@@ -203,6 +203,8 @@ export class DrivesView extends LitElement {
         <div class="peers">
           ${drive.ident.system ? html`
             <a><span class="fas fa-lock"></span></a>
+          ` : typeof drive.info.peers === 'undefined' ? html`
+            <a>-</a>
           ` : html`
             <a>${drive.info.peers} ${pluralize(drive.info.peers, 'peer')}</a>
           `}
