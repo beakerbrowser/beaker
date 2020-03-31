@@ -16,40 +16,39 @@ export async function ls (opts = {}, location = '') {
   var st = await drive.stat(pathname)
   if (st.isUnsupportedProtocol) {
     throw new Error(`ls() is not supported on ${protocol} addresses`)
-  } else if (st.isFile()) {
-    return {
-      listing: [{name: pathname.split('/').pop(), stat: st}],
-      toHTML: () => html`Is a file.\nSize: ${st.size}`
-    }
   } else {
     listing = await drive.readdir(pathname, {includeStats: true})
     return {
       listing,
       toHTML () {
-        return listing
-          .sort((a, b) => {
-            // dirs on top
-            if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
-            if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1
-            return a.name.localeCompare(b.name)
-          })
-          .map(entry => {
-            // coloring
-            var color = 'default'
-            if (entry.name.startsWith('.')) {
-              color = 'gray'
-            }
+        return html`
+          ${st.isFile() ? html`Is a file. Size: ${st.size}<br><br>` : ''}
+          ${listing
+            .sort((a, b) => {
+              // dirs on top
+              if (a.stat.isDirectory() && !b.stat.isDirectory()) return -1
+              if (!a.stat.isDirectory() && b.stat.isDirectory()) return 1
+              return a.name.localeCompare(b.name)
+            })
+            .map(entry => {
+              // coloring
+              var color = 'default'
+              if (entry.name.startsWith('.')) {
+                color = 'gray'
+              }
 
-            // render
-            const icon = entry.stat.isDirectory() ? 'folder' : 'file'
-            const mountInfo = entry.stat.mount
-              ? html` <a href="hyper://${entry.stat.mount.key}" class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</a>`
-              : ''
-            return html`<div><a
-              href="${joinPath(joinPath(drive.url, pathname), entry.name)}"
-              class="color-${color}"
-            ><term-icon icon="${icon}"></term-icon> ${entry.name}</a>${mountInfo}</div>`
-          })
+              // render
+              const icon = entry.stat.isDirectory() ? 'folder' : 'file'
+              const mountInfo = entry.stat.mount
+                ? html` <a href="hyper://${entry.stat.mount.key}" class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</a>`
+                : ''
+              return html`<div><a
+                href="${joinPath(joinPath(drive.url, pathname), entry.name)}"
+                class="color-${color}"
+              ><term-icon icon="${icon}"></term-icon> ${entry.name}</a>${mountInfo}</div>`
+            })
+          }
+        `
       }
     }
   }
