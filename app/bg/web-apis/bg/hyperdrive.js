@@ -419,7 +419,7 @@ export default {
         resume()
 
         checkin('making directory')
-        return checkoutFS.pda.mkdir(filepath)
+        return checkoutFS.pda.mkdir(filepath, opts)
       })
     ))
   },
