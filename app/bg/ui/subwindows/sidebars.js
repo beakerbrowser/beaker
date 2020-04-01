@@ -73,9 +73,6 @@ export function create (tab) {
       navigateOnDragDrop: true
     }
   })
-  view.webContents.on('console-message', (e, level, message) => {
-    console.log('Sidebar window says:', message)
-  })
   return view
 }
 
