@@ -141,7 +141,7 @@ class SidebarApp extends HTMLElement {
 
     let dividerEl = document.createElement('div')
     dividerEl.className = 'divider'
-    dividerEl.addEventListener('mousedown', e => this.onMousedownDivider(e, panelIndex))
+    dividerEl.addEventListener('mousedown', e => this.onMousedownDivider(e, panel))
     this.insertBefore(dividerEl, panelEl.nextElementSibling)
     // await new Promise(r => setTimeout(r, 30)) // wait for dom to update
   }
@@ -190,7 +190,8 @@ class SidebarApp extends HTMLElement {
   // events
   // =
 
-  onMousedownDivider (e, panelIndex) {
+  onMousedownDivider (e, panel) {
+    var panelIndex = this.panels.indexOf(panel)
     this.dragmode = {
       panelIndex,
       startY: e.clientY,
