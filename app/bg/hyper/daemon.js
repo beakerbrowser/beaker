@@ -213,7 +213,7 @@ async function attemptConnect () {
       client = new HyperdriveClient()
       await client.ready()
     } catch (e) {
-      console.log('Failed to connect to daemon, retrying', e)
+      console.log('Failed to connect to daemon, retrying')
       await new Promise(r => setTimeout(r, connectBackoff))
       connectBackoff += 100
     }
