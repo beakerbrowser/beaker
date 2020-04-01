@@ -24,7 +24,7 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var bookmarks = await list()
-  return bookmarks.find(b => b.href === href)
+  return bookmarks.find(b => isSameUrl(b.href, href))
 }
 
 /**
@@ -106,4 +106,10 @@ function normalizeUrl (url) {
     return (urlp.protocol + '//' + urlp.hostname + (urlp.port ? `:${urlp.port}` : '') + urlp.pathname).replace(/([/]$)/g, '')
   } catch (e) {}
   return url
+}
+
+var indexFileRe = /\/(index\.(htm|html|md))?$/i
+function isSameUrl (a, b) {
+  if (a === b) return true
+  return a.replace(indexFileRe, '') === b.replace(indexFileRe, '')
 }
