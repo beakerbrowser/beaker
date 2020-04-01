@@ -174,15 +174,11 @@ export async function getHyperdriveSession (opts) {
     async getInfo () {
       var [version, stats] = await Promise.all([
         this.session.drive.version(),
-        this.session.drive.stats()
+        this.session.drive.stats({networkingOnly: true})
       ])
       return {
         version,
-        peers: stats.stats[0].metadata.peers,
-        networkStats: {
-          uploadTotal: stats.stats[0].metadata.uploadedBytes + stats.stats[0].content.uploadedBytes,
-          downloadTotal: stats.stats[0].metadata.downloadedBytes + stats.stats[0].content.downloadedBytes
-        }
+        peers: stats.stats[0].metadata.peers
       }
     },
 

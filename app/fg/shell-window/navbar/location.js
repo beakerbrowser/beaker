@@ -9,6 +9,7 @@ import tooltipCSS from './tooltip.css'
 import './site-info'
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
+const NETWORK_STATS_POLL_INTERVAL = 5000 // ms
 
 class NavbarLocation extends LitElement {
   static get properties () {
@@ -57,6 +58,13 @@ class NavbarLocation extends LitElement {
     this.isBookmarked = false
     this.isLocationFocused = false
     this.hasExpanded = false
+
+    setInterval(async () => {
+      if (!this.url.startsWith('hyper://')) return
+      var {peers} = await bg.views.getNetworkState('active')
+      this.peers = peers
+      this.requestUpdate()
+    }, NETWORK_STATS_POLL_INTERVAL)
 
     // listen for commands from the main process
     ipcRenderer.on('command', this.onCommand.bind(this))
@@ -109,7 +117,6 @@ class NavbarLocation extends LitElement {
         siteSubtitle="${this.siteSubtitle}"
         driveDomain=${this.driveDomain}
         ?writable=${this.writable}
-        peers=${this.peers}
         .loadError=${this.loadError}
         ?hide-origin=${this.hasExpanded}
         ?rounded=${this.url.startsWith('beaker://desktop')}
@@ -120,6 +127,7 @@ class NavbarLocation extends LitElement {
       ${this.renderLiveReloadingBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderIdentLabel()}
+      ${this.renderPeers()}
       ${this.renderSiteBtn()}
       ${this.renderDonateBtn()}
       ${''/* DISABLED this.renderShareBtn()*/}
@@ -271,6 +279,15 @@ class NavbarLocation extends LitElement {
     if (this.writable) {
       return html`<span class="label">My Hyperdrive</span>`
     }
+  }
+
+  renderPeers () {
+    if (!this.isHyperdrive) {
+      return ''
+    }
+    return html`
+      <span class="peers"><span class="fas fa-share-alt"></span> ${this.peers}</span>
+    `
   }
 
   renderBookmarkBtn () {
@@ -608,13 +625,28 @@ input::-webkit-input-placeholder {
   font-weight: 400;
 }
 
+.peers {
+  letter-spacing: 0.5px;
+  height: 18px;
+  line-height: 18px;
+  margin: 4px 3px;
+  font-size: 13px;
+  color: #666;
+}
+
+.peers .fas {
+  font-size: 11px;
+  position: relative;
+  top: -1px;
+}
+
 .label {
   font-size: 11px;
   background: #f1f9ff;
   color: #4d98d4;
   letter-spacing: 0.5px;
   height: 18px;
-  margin: 4px 4px;
+  margin: 4px 6px;
   line-height: 18px;
   padding: 0 6px;
   border-radius: 4px;

@@ -13,7 +13,6 @@ class NavbarSiteInfo extends LitElement {
       siteSubtitle: {type: String},
       driveDomain: {type: String},
       writable: {type: Boolean},
-      peers: {type: Number},
       loadError: {type: Object},
       isPressed: {type: Boolean},
       hideOrigin: {type: Boolean, attribute: 'hide-origin'},
@@ -28,7 +27,6 @@ class NavbarSiteInfo extends LitElement {
     this.siteSubtitle = ''
     this.driveDomain = ''
     this.writable = false
-    this.peers = 0
     this.loadError = null
     this.isPressed = false
     this.hideOrigin = false

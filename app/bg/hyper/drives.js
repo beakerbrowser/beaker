@@ -464,11 +464,7 @@ export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
     meta = await archivesDb.getMeta(key)
     driveInfo = {
       version: 0,
-      peers: undefined,
-      networkStats: {
-        uploadTotal: undefined,
-        downloadTotal: undefined
-      }
+      peers: undefined
     }
   }
   manifest = manifest || {}
@@ -482,19 +478,13 @@ export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
   meta.manifest = manifest
   meta.version = driveInfo.version
   meta.peers = driveInfo.peers
-  meta.networkStats = driveInfo.networkStats
 
   return meta
-};
-
-export async function getDriveNetworkStats (key) {
-  key = await fromURLToKey(key, true)
-  return {} // TODO daemon.getDriveNetworkStats(key)
-};
+}
 
 export async function clearFileCache (key) {
   return {} // TODO daemon.clearFileCache(key, userSettings)
-};
+}
 
 /**
  * @desc

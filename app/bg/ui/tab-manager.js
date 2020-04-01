@@ -1551,7 +1551,6 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       var state = Object.assign({}, tab.state)
       if (opts) {
         if (opts.driveInfo) state.driveInfo = tab.driveInfo
-        if (opts.networkStats) state.networkStats = tab.driveInfo ? tab.driveInfo.networkStats : {}
         if (opts.sitePerms) state.sitePerms = await sitedataDb.getPermissions(tab.url)
       }
       return state
@@ -1562,10 +1561,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
     if (tab && tab.driveInfo) {
-      var networkStats = await hyper.drives.getDriveNetworkStats(tab.driveInfo.key)
-      return {
-        peers: tab.peers,
-        networkStats
+      let drive = hyper.drives.getDrive(tab.driveInfo.key)
+      if (drive) {
+        let {peers} = await drive.getInfo()
+        return {peers}
       }
     }
   },
