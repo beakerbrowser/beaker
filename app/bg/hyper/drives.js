@@ -340,8 +340,8 @@ async function loadDriveInner (key, settingsOverride) {
   }
 
   // fetch dns name if known
-  let dnsRecord = await datDnsDb.getCurrentByKey(datEncoding.toStr(key))
-  drive.domain = dnsRecord ? dnsRecord.name : undefined
+  // let dnsRecord = await datDnsDb.getCurrentByKey(datEncoding.toStr(key))
+  // drive.domain = dnsRecord ? dnsRecord.name : undefined
 
   // update db
   archivesDb.touch(drive.key).catch(err => console.error('Failed to update lastAccessTime for drive', drive.key, err))
@@ -398,7 +398,7 @@ export async function getDriveCheckout (drive, version) {
           version,
           writable: false
         })
-        checkoutFS.domain = drive.domain
+        // checkoutFS.domain = drive.domain
         isHistoric = true
       }
     }
