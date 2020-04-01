@@ -228,7 +228,7 @@ class Tab extends EventEmitter {
 
   get siteTitle () {
     try {
-      var urlp = new URL(this.url)
+      var urlp = new URL(this.loadingURL || this.url)
       var hostname = urlp.hostname
       if (DRIVE_KEY_REGEX.test(hostname)) {
         hostname = hostname.replace(DRIVE_KEY_REGEX, v => `${v.slice(0, 4)}..${v.slice(-2)}`)

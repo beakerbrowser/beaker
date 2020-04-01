@@ -30,6 +30,20 @@ class ShellWindowToolbarMenu extends LitElement {
       color: var(--color-toolbar);
       user-select: none;
     }
+    .loading-bar {
+      position: fixed;
+      left: 0;
+      top: 93px;
+      width: 100vw;
+      height: 1px;
+      background: linear-gradient(to right, #2196F3 0%, #E3F2FD 50%, #2196F3 100%);
+      background-size: 50% 50%;
+      animation: loading-bar-anim 1s infinite linear;
+    }
+    @keyframes loading-bar-anim {
+      0%    { background-position: 0% 0%; }
+      100%  { background-position: 100% 0%; }
+    }
     a {
       padding: 0 8px;
       margin-right: 1px;
@@ -82,6 +96,7 @@ class ShellWindowToolbarMenu extends LitElement {
       ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)}
       ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`)}
       ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
+      ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
     `
   }
 
