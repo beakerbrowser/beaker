@@ -48,6 +48,12 @@
         ]
       },
       {
+        "name": "hyper",
+        "schemes": [
+          "hyper"
+        ]
+      },
+      {
         "name": "dat",
         "schemes": [
           "dat"

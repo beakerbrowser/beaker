@@ -416,21 +416,24 @@ export async function getDefaultProtocolSettings () {
     // we can just use xdg-mime directly instead
     // see https://github.com/beakerbrowser/beaker/issues/915
     // -prf
-    let [httpHandler, datHandler] = await Promise.all([
+    let [httpHandler, hyperHandler, datHandler] = await Promise.all([
       // If there is no default specified, be sure to catch any error
       // from exec and return '' otherwise Promise.all errors out.
       exec('xdg-mime query default "x-scheme-handler/http"').catch(err => ''),
+      exec('xdg-mime query default "x-scheme-handler/hyper"').catch(err => ''),
       exec('xdg-mime query default "x-scheme-handler/dat"').catch(err => '')
     ])
     if (httpHandler && httpHandler.stdout) httpHandler = httpHandler.stdout
+    if (hyperHandler && hyperHandler.stdout) hyperHandler = hyperHandler.stdout
     if (datHandler && datHandler.stdout) datHandler = datHandler.stdout
     return {
       http: (httpHandler || '').toString().trim() === DOT_DESKTOP_FILENAME,
+      hyper: (hyperHandler || '').toString().trim() === DOT_DESKTOP_FILENAME,
       dat: (datHandler || '').toString().trim() === DOT_DESKTOP_FILENAME
     }
   }
 
-  return Promise.resolve(['http', 'dat'].reduce((res, x) => {
+  return Promise.resolve(['http', 'hyper', 'dat'].reduce((res, x) => {
     res[x] = app.isDefaultProtocolClient(x)
     return res
   }, {}))
