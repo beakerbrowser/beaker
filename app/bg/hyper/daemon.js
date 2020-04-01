@@ -81,7 +81,7 @@ export async function setup () {
     // watch for the daemon process to die/revive
     let interval = setInterval(() => {
       pm2.list((err, processes) => {
-        var processExists = !!processes.find(p => p.name === 'hyperdrive')
+        var processExists = !!processes.find(p => p.name === 'hyperdrive' && p.pm2_env.status === 'online')
         if (processExists && !isDaemonActive) {
           isDaemonActive = true
           isInitialSetup = false
