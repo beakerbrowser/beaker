@@ -3,6 +3,7 @@ import buttonsCSS from '../../app-stdlib/css/buttons2.css.js'
 import inputsCSS from '../../app-stdlib/css/inputs.css.js'
 import tooltipCSS from '../../app-stdlib/css/tooltip.css.js'
 import spinnerCSS from '../../app-stdlib/css/com/spinner.css.js'
+import toastCSS from '../../app-stdlib/css/com/toast.css.js'
 import formCSS from './form.css.js'
 
 const cssStr = css`
@@ -11,6 +12,7 @@ ${inputsCSS}
 ${tooltipCSS}
 ${formCSS}
 ${spinnerCSS}
+${toastCSS}
 
 :host {
   display: flex;
@@ -87,6 +89,11 @@ hr {
 
 .site-info .details {
   word-break: break-word;
+}
+
+
+.site-info .details .buttons {
+  margin-top: 10px;
 }
 
 .inner > div {

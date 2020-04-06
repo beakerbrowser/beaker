@@ -1,5 +1,7 @@
 import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
 import { toNiceDomain } from '../../app-stdlib/js/strings.js'
+import { writeToClipboard } from '../../app-stdlib/js/clipboard.js'
+import * as toast from '../../app-stdlib/js/com/toast.js'
 import _get from 'lodash.get'
 import * as beakerPermissions from '../../../lib/permissions'
 import mainCSS from '../css/main.css.js'
@@ -183,6 +185,13 @@ class SiteInfoApp extends LitElement {
           <h1>${this.info.title}</h1>
           ${this.isDrive && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
           ${protocol}
+          <p class="buttons">
+            <button @click=${this.onCopyUrl}><span class="fas fa-fw fa-link"></span> Copy URL</button>
+            ${this.isDrive ? html`
+              <button @click=${this.onCloneDrive}><span class="far fa-fw fa-clone"></span> Clone Drive</button>
+              <button @click=${this.onForkDrive}><span class="fas fa-fw fa-code-branch"></span> Fork Drive</button>
+            ` : ''}
+          </p>
         </div>
       </div>
     `
@@ -230,6 +239,21 @@ class SiteInfoApp extends LitElement {
     this.url = e.detail.url
     beaker.browser.gotoUrl(this.url)
     this.load()
+  }
+
+  onCopyUrl (e) {
+    writeToClipboard(this.url)
+    toast.create('URL Copied', '', 2e3)
+  }
+
+  async onCloneDrive (e) {
+    var drive = await beaker.hyperdrive.forkDrive(this.url, {detached: true})
+    beaker.browser.openUrl(drive.url, {setActive: true})
+  }
+
+  async onForkDrive (e) {
+    var drive = await beaker.hyperdrive.forkDrive(this.url, {detached: false})
+    beaker.browser.openUrl(drive.url, {setActive: true})
   }
 }
 
