@@ -84,7 +84,7 @@ export async function migrateBookmarksFromSqlite () {
     await add({
       href: bookmark.url,
       title: bookmark.title,
-      pinned: bookmark.pinned
+      pinned: false // pinned: bookmark.pinned - DONT migrate this because 0.8 pinned bookmarks are often dat://
     })
   }
 }
