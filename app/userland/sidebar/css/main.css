@@ -11,6 +11,10 @@ body {
   border-right: 1px solid #445;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 beaker-context-menu {
   color: #333;
 }

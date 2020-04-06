@@ -28,6 +28,10 @@ ${tooltipCSS}
   overflow-y: auto;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 :host section {
   position: relative;
   border-top: 1px solid var(--lightgray);
