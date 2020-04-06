@@ -87,7 +87,7 @@ export default {
       let res
       let forks = await drivesAPI.getForks(url)
       try {
-        res = await modals.create(this.sender, 'fork-drive', {url, forks, label})
+        res = await modals.create(this.sender, 'fork-drive', {url, forks, detached, label})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error

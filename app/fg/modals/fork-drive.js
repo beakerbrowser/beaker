@@ -30,13 +30,7 @@ class ForkDriveModal extends LitElement {
     .wrapper {
       padding: 0;
     }
-    
-    h1.title {
-      padding: 14px 20px;
-      margin: 0;
-      border-color: #bbb;
-    }
-    
+        
     form {
       padding: 14px 20px;
       margin: 0;
@@ -50,29 +44,44 @@ class ForkDriveModal extends LitElement {
       color: rgba(0, 0, 0, 0.6);
     }
 
+    .tabbed-nav {
+      display: flex;
+      align-items: center;
+      font-size: 17px;
+      letter-spacing: 0.5px;
+      margin: -4px -16px 14px;
+    }
+    
+    .tabbed-nav span {
+      min-width: 5px;
+      border: 1px solid transparent;
+      border-bottom: 1px solid #bbb;
+      height: 28px;
+    }
+
+    .tabbed-nav span.spacer {
+      flex: 1;
+    }
+
+    .tabbed-nav a {
+      color: inherit;
+      border: 1px solid transparent;
+      border-bottom: 1px solid #bbb;
+      cursor: pointer;
+      border-top-left-radius: 2px;
+      border-top-right-radius: 2px;
+      padding: 4px 18px;
+    }
+    
+    .tabbed-nav a.active {
+      border: 1px solid #bbb;
+      border-bottom: 1px solid transparent;
+    }
+
     .columns {
       display: grid;
       grid-template-columns: auto 1fr;
       grid-gap: 12px;
-    }
-
-    .toggle {
-      justify-content: unset;
-      background: #fafafd;
-      padding: 14px 20px;
-      margin: -14px -20px 12px;
-      border-bottom: 1px solid #bbb;
-    }
-
-    .toggle .switch {
-      margin-right: 8px;
-    }
-
-    .toggle .text {
-      font-weight: 500;
-      font-size: 13px;
-      letter-spacing: 0.15px;
-      line-height: 1;
     }
 
     input {
@@ -100,8 +109,23 @@ class ForkDriveModal extends LitElement {
     }
 
     .help {
-      margin-top: -8px;
       opacity: 0.6;
+    }
+
+    .help.with-icon {
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .help.with-icon .fas {
+      position: absolute;
+      left: -2px;
+      top: 1px;
+      font-size: 11px;
+    }
+
+    input + .help {
+      margin-top: -8px;
     }
     
     hr {
@@ -144,6 +168,7 @@ class ForkDriveModal extends LitElement {
     this.cbs = cbs
     this.forks = params.forks
     this.base = this.forks.find(fork => fork.url === params.url) || this.forks[0]
+    this.isDetached = params.detached || false
     this.label = params.label || ''
     await this.requestUpdate()
 
@@ -152,6 +177,10 @@ class ForkDriveModal extends LitElement {
     this.title = this.driveInfo.title || ''
     this.description = this.driveInfo.description || ''
     await this.requestUpdate()
+    this.adjustHeight()
+  }
+
+  updated () {
     this.adjustHeight()
   }
 
@@ -172,8 +201,8 @@ class ForkDriveModal extends LitElement {
     var actionBtn
     switch (this.state) {
       case STATES.READY:
-        progressEl = html`<div class="fork-dat-progress">Ready to fork.</div>`
-        actionBtn = html`<button type="submit" class="btn primary" tabindex="5">Create fork</button>`
+        progressEl = html`<div class="fork-dat-progress">Ready to ${this.isDetached ? 'clone' : 'fork'}.</div>`
+        actionBtn = html`<button type="submit" class="btn primary" tabindex="5">Create ${this.isDetached ? 'clone' : 'fork'}</button>`
         break
       case STATES.DOWNLOADING:
         progressEl = html`<div class="fork-dat-progress">Downloading remaining files...</div>`
@@ -185,6 +214,9 @@ class ForkDriveModal extends LitElement {
         break
     }
 
+    const navItem = (v, label) => html`
+      <a class=${this.isDetached === v ? 'active' : ''} @click=${e => this.onSetDetached(v)}>${label}</a>
+    `
     const baseOpt = (fork) => {
       return html`
         <option value=${fork.url} ?selected=${this.base === fork}>
@@ -195,24 +227,22 @@ class ForkDriveModal extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <h1 class="title">Make a Fork of ${this.driveInfo.title ? `"${this.driveInfo.title}"` : prettyHash(this.driveInfo.key)}</h1>
-
         <form @submit=${this.onSubmit}>
-          <label class="toggle">
-            <input
-              type="checkbox"
-              name="detach"
-              .checked=${this.isDetached}
-              @click=${this.onToggleDetached}
-            >
-            <div class="switch"></div>
-            <span class="text">Make independent copy</span>
-          </label>
+          <div class="tabbed-nav">
+            <span></span>
+            ${navItem(false, 'Fork')}
+            ${navItem(true, 'Clone')}
+            <span class="spacer"></span>
+          </div>
           
           ${this.isDetached ? html`
+            <p class="help with-icon"><span class="fas fa-fw fa-info"></span> A clone is an independent copy of the drive.</p>
+            <label for="title">Title</label>
             <input autofocus name="title" tabindex="1" value=${this.title || ''} @change=${this.onChangeTitle} required placeholder="Title" />
+            <label for="desc">Description</label>
             <input name="desc" tabindex="2" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
           ` : html`
+            <p class="help with-icon"><span class="fas fa-fw fa-info"></span> A fork is a linked copy of the drive which is used for making changes and then merging into the original.</p>
             <div class="columns">
               <div>
                 <label for="base">Base</label>
@@ -259,14 +289,13 @@ class ForkDriveModal extends LitElement {
   renderLoading () {
     return html`
       <div class="wrapper">
-        <h1 class="title">Make a Fork</h1>
         <div class="loading">Loading...</div>
         <form>
           <div class="form-actions">
             <div></div>
             <div>
               <button type="button" class="btn cancel" @click=${this.onClickCancel} tabindex="4">Cancel</button>
-              <button type="submit" class="btn" tabindex="5" disabled>Create fork</button>
+              <button type="submit" class="btn" tabindex="5" disabled>Create</button>
             </div>
           </div>
         </form>
@@ -277,8 +306,8 @@ class ForkDriveModal extends LitElement {
   // event handlers
   // =
 
-  onToggleDetached (e) {
-    this.isDetached = !this.isDetached
+  onSetDetached (v) {
+    this.isDetached = v
   }
 
   async onChangeBase (e) {
