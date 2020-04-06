@@ -76,6 +76,7 @@ class DesktopApp extends LitElement {
         ` : ''}
       </div>
       <div id="topright">
+        <a href="https://beaker-browser.gitbook.io/docs/" title="Help"><span class="far fa-question-circle"></span> Help</a>
         <a href="beaker://settings/" title="Settings"><span class="fas fa-cog"></span></a>
       </div>
       ${this.renderFiles()}

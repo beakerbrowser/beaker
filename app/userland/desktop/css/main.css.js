@@ -29,10 +29,14 @@ ${tooltipCSS}
   right: 10px;
 }
 
+#topright a {
+  margin-left: 5px;
+}
+
 .profile-ctrl {
   display: flex;
   align-items: center;
-  color: #556;
+  color: inherit;
 }
 
 .profile-ctrl span {
