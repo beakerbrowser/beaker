@@ -3,6 +3,7 @@ import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directive
 import * as QP from './lib/query-params.js'
 import css from '../css/main.css.js'
 import './views/general.js'
+import './views/devices.js'
 import './views/info.js'
 import './views/fs-audit-log.js'
 import './views/daemon-log.js'
@@ -21,7 +22,7 @@ class SettingsApp extends LitElement {
 
   constructor () {
     super()
-    this.currentSubview = QP.getParam('subview') || 'general'
+    this.currentSubview = QP.getParam('view') || 'general'
     this.load()
   }
 
@@ -60,6 +61,7 @@ class SettingsApp extends LitElement {
     }
     return html`
       ${item('general', 'fas fa-cog', 'General')}
+      ${item('devices', 'fas fa-sync', 'Sync Devices')}
       <hr>
       ${item('general-logs', 'fas fa-clipboard-list', 'General Logs')}
       ${item('fs-audit-log', 'fas fa-clipboard-check', 'Filesystem Audit Log')}
@@ -73,6 +75,8 @@ class SettingsApp extends LitElement {
     switch (this.currentSubview) {
       case 'general':
         return html`<general-settings-view loadable></general-settings-view>`
+      case 'devices':
+        return html`<devices-view loadable></devices-view>`
       case 'info':
         return html`<info-settings-view loadable></info-settings-view>`
       case 'general-logs':
@@ -91,7 +95,7 @@ class SettingsApp extends LitElement {
 
   onClickSubview (e, id) {
     this.currentSubview = id
-    QP.setParams({subview: id})
+    QP.setParams({view: id})
     this.load()
   }
 }

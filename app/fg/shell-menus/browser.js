@@ -133,20 +133,20 @@ class BrowserMenu extends LitElement {
           </div>
         </div>
 
-        <div class="section">   
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://webterm')}>
-            <img class="favicon" src="asset:favicon:beaker://webterm">
-            <span class="label">Webterm</span>
-          </div> 
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+            <img class="favicon" src="asset:favicon:beaker://settings">
+            <span class="label">Settings</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings/?view=devices')}>
+            <i class="fas fa-sync"></i>
+            <span class="label">Sync Devices</span>
+          </div>
             
           <div class="menu-item" @click=${this.onOpenSystemDrive}>
             <i class="far fa-hdd"></i>
             <span class="label">My System Drive</span>
-          </div>
-                    
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-            <img class="favicon" src="asset:favicon:beaker://settings">
-            <span class="label">Settings</span>
           </div>
         </div>
 

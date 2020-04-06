@@ -642,14 +642,13 @@ input::-webkit-input-placeholder {
 
 .label {
   font-size: 11px;
-  background: #f1f9ff;
-  color: #4d98d4;
+  background: none;
+  color: #555;
   letter-spacing: 0.5px;
   height: 18px;
   margin: 4px 6px;
   line-height: 18px;
-  padding: 0 6px;
-  border-radius: 4px;
+  padding: 0 2px;
 }
 `]
 customElements.define('shell-window-navbar-location', NavbarLocation)

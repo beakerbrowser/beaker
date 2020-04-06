@@ -84,9 +84,9 @@ class GeneralSettingsView extends LitElement {
         <div class="section">
           <h2 id="auto-updater">Auto Updater</h2>
   
-          <div class="message info">
+          <p class="message info">
             Sorry! Beaker auto-updates are only supported on the production build for macOS and Windows.
-          </div>
+          </p>
   
           <p>
             To get the most recent version of Beaker, you'll need to <a href="https://github.com/beakerbrowser/beaker">
@@ -209,7 +209,7 @@ class GeneralSettingsView extends LitElement {
   
         <p>When Beaker starts</p>
   
-        <div>
+        <div style="margin-bottom: 2px">
           <input type="radio" id="customStartPage1" name="custom-start-page"
                  value="blank"
                  ?checked=${this.settings.custom_start_page === 'blank'}

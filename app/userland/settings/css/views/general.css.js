@@ -48,6 +48,21 @@ a:hover {
   border-right-color: transparent !important;
 }
 
+.message {
+  margin: 1em 0;
+  background: #f3f3f8;
+  padding: 10px;
+  border-radius: 2px;
+}
+
+.message > :first-child {
+  margin-top: 0;
+}
+
+.message > :last-child {
+  margin-bottom: 0;
+}
+
 input[type="text"] {
   height: 24px;
   padding: 0 7px;
@@ -61,6 +76,14 @@ input[type="text"]:focus {
   outline: 0;
   border: 1px solid rgba(41, 95, 203, 0.8);
   box-shadow: 0 0 0 2px rgba(41, 95, 203, 0.2);
+}
+
+input[type="radio"] {
+  margin: 0 7px;
+}
+
+input[type="checkbox"] {
+  margin: 0 4px;
 }
 `
 export default cssStr
