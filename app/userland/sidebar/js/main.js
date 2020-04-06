@@ -121,12 +121,7 @@ class SidebarApp extends HTMLElement {
       detachBtnEl.setAttribute('title', 'Detach panel')
       detachBtnEl.innerHTML = '<span class="far fa-clone"></span>'
       detachBtnEl.addEventListener('click', async (e) => {
-        var choice = await beaker.browser.showContextMenu([
-          {id: 'tab', label: 'Undock into new tab'},
-          {id: 'window', label: 'Undock into new window'}
-        ])
-        if (!choice) return
-        this.openDetached(panel, choice === 'window')
+        this.openDetached(panel, true)
         beaker.browser.executeSidebarCommand('hide-panel', panel.tagName)
       })
     }
