@@ -61,17 +61,10 @@ class DesktopApp extends LitElement {
 
   render () {
     const navItem = (id, label) => html`<a class=${id === this.currentNav ? 'active' : ''} @click=${e => {this.currentNav = id}}>${label}</a>`
-    const hiddenCls = id => this.filter || this.currentNav === id ? '' : 'hidden'
+    const hiddenCls = id => this.currentNav === id ? '' : 'hidden'
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div id="topright">
-        <a href="beaker://settings/" title="Settings"><span class="fas fa-cog"></span></a>
-      </div>
-      <header>
-        <div class="search-ctrl">
-          <span class="fas fa-search"></span>
-          <input placeholder="Search my library" @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
-        </div>
+      <div id="topleft">
         ${this.profile ? html`
           <a class="profile-ctrl" href=${this.profile.url}>
             <beaker-img-fallbacks>
@@ -81,41 +74,37 @@ class DesktopApp extends LitElement {
             <span>${this.profile.title}</span>
           </a>
         ` : ''}
-      </header>
+      </div>
+      <div id="topright">
+        <a href="beaker://settings/" title="Settings"><span class="fas fa-cog"></span></a>
+      </div>
       ${this.renderFiles()}
-      ${!this.filter ? html`
-        <nav>
-          ${navItem('drives', 'Drives')}
-          ${navItem('bookmarks', 'Bookmarks')}
-          ${navItem('address-book', 'Address Book')}
-          ${this.currentNav === 'drives' ? html`
-            <a class="new-btn" @click=${this.onClickNewDrive}>New Drive <span class="fas fa-plus"></span></a>
-          ` : ''}
-          ${this.currentNav === 'bookmarks' ? html`
-            <a class="new-btn" @click=${e => this.onClickNewBookmark(e, false)}>New Bookmark <span class="fas fa-plus"></span></a>
-          ` : ''}
-          ${this.currentNav === 'address-book' ? html`
-            <a class="new-btn" @click=${this.onClickNewContact}>New Contact <span class="fas fa-plus"></span></a>
-          ` : ''}
-        </nav>
-      ` : ''}
-      <drives-view class="top-border ${hiddenCls('drives')}" loadable ?show-header=${!!this.filter} ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
-      <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?show-header=${!!this.filter} ?hide-empty=${!!this.filter} .filter=${this.filter}></bookmarks-view>
-      <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?show-header=${!!this.filter} ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></address-book-view>
+      <nav>
+        ${navItem('drives', 'My Drives')}
+        ${navItem('bookmarks', 'Bookmarks')}
+        ${navItem('address-book', 'Address Book')}
+        <div class="search-ctrl">
+          <span class="fas fa-search"></span>
+          <input @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
+        </div>
+        ${this.currentNav === 'drives' ? html`
+          <a class="new-btn" @click=${this.onClickNewDrive}>New Drive <span class="fas fa-plus"></span></a>
+        ` : ''}
+        ${this.currentNav === 'bookmarks' ? html`
+          <a class="new-btn" @click=${e => this.onClickNewBookmark(e, false)}>New Bookmark <span class="fas fa-plus"></span></a>
+        ` : ''}
+        ${this.currentNav === 'address-book' ? html`
+          <a class="new-btn" @click=${this.onClickNewContact}>New Contact <span class="fas fa-plus"></span></a>
+        ` : ''}
+      </nav>
+      <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
+      <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></bookmarks-view>
+      <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></address-book-view>
     `
   }
 
   renderFiles () {
     var files = this.files || []
-    if (this.filter) {
-      files = files.filter(file => (
-        getHref(file).toLowerCase().includes(this.filter)
-        || getTitle(file).toLowerCase().includes(this.filter)
-      ))
-    }
-    if (this.filter && files.length === 0) {
-      return ''
-    }
     return html`
       <div class="files">
         ${repeat(files, file => html`

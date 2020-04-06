@@ -92,6 +92,9 @@ export class BookmarksView extends LitElement {
           ${bookmarks.length === 0 && !this.hideEmpty ? html`
             <div class="empty"><span class="far fa-star"></span><div>Click "New Bookmark" to create a bookmark</div></div>
           ` : ''}
+          ${bookmarks.length === 0 && this.filter ? html`
+            <div class="empty"><div>No matches found for "${this.filter}".</div></div>
+          ` : ''}
         </div>
       ` : html`
         <div class="loading"><span class="spinner"></span></div>

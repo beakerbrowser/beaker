@@ -86,6 +86,9 @@ export class AddressBookView extends LitElement {
           ${contacts.length === 0 && !this.hideEmpty ? html`
             <div class="empty"><span class="far fa-address-card"></span><div>Click "New Contact" to create a Contact</div></div>
           ` : ''}
+          ${contacts.length === 0 && this.filter ? html`
+            <div class="empty"><div>No matches found for "${this.filter}".</div></div>
+          ` : ''}
       ` : html`
         <div class="loading"><span class="spinner"></span></div>
       `}

@@ -165,6 +165,9 @@ export class DrivesView extends LitElement {
           ${drives.length === 0 && !this.hideEmpty ? html`
             <div class="empty"><span class="fas fa-hdd"></span><div>Click "New Drive" to create a Hyperdrive</div></div>
           ` : ''}
+          ${drives.length === 0 && this.filter ? html`
+            <div class="empty"><div>No matches found for "${this.filter}".</div></div>
+          ` : ''}
         </div>
       ` : html`
         <div class="loading"><span class="spinner"></span></div>

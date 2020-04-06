@@ -17,78 +17,40 @@ ${tooltipCSS}
   display: none !important;
 }
 
+#topleft {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
 #topright {
   position: absolute;
   top: 10px;
   right: 10px;
 }
 
-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  max-width: 1000px;
-  margin: 50px auto 30px;
-}
-
-header .search-ctrl {
-  position: relative;
-}
-
-header .search-ctrl .fa-search {
-  position: absolute;
-  font-size: 15px;
-  top: 14px;
-  left: 18px;
-  color: #99a;
-}
-
-header .search-ctrl input {
-  background: #fff;
-  box-sizing: border-box;
-  width: 100%;
-  height: 40px;
-  font-size: 14px;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-  padding: 0 0 0 42px;
-  border: 1px solid #dde;
-  border-radius: 24px;
-}
-
-header .search-ctrl input::placeholder {
-  letter-spacing: 1px;
-  font-size: 14px;
-  font-weight: 400;
-}
-
-header .profile-ctrl {
+.profile-ctrl {
   display: flex;
   align-items: center;
-  border-radius: 20px;
   color: #556;
-  margin-left: 14px;
 }
 
-header .profile-ctrl:hover {
-  background: #fafafd;
-  color: #445;
-}
-
-header .profile-ctrl span {
-  padding: 0 10px;
+.profile-ctrl span {
+  padding: 0 0 0 8px;
   letter-spacing: 0.4px;
 }
 
-header .profile-ctrl img {
-  width: 40px;
-  height: 40px;
+.profile-ctrl img {
+  display: block;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .files {
   display: grid;
-  margin: 0 auto;
+  margin: 100px auto 0;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   grid-gap: 15px;
   width: 100%;
@@ -178,8 +140,38 @@ nav a.active {
   color: #445;
 }
 
-nav .new-btn {
+nav .search-ctrl {
   margin-left: auto;
+  position: relative;
+  height: 24px;
+}
+
+nav .search-ctrl .fa-search {
+  position: absolute;
+  z-index: 2;
+  top: 7px;
+  left: 10px;
+  font-size: 12px;
+  color: #99a;
+}
+
+nav .search-ctrl input {
+  position: relative;
+  top: -1px;
+  z-index: 1;
+  background: #fff;
+  box-sizing: border-box;
+  height: 26px;
+  width: 120px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  padding: 0 0 0 26px;
+  border: 1px solid #dde;
+  border-radius: 24px;
+}
+
+nav .new-btn {
   color: #556;
 }
 
