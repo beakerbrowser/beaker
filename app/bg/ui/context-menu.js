@@ -148,7 +148,7 @@ export default function registerContextMenu () {
             let driveCfg = getDriveConfig(key)
             let driveIdent = getDriveIdent(`hyper://${key}`)
             menuItems.push({
-              label: 'Save to My Library',
+              label: driveInfo.writable ? 'Save to My Library' : 'Seed This Drive',
               type: 'checkbox',
               checked: !!driveCfg || driveIdent.system,
               enabled: !driveIdent.system,

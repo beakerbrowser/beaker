@@ -130,7 +130,7 @@ class SiteMenu extends LitElement {
         <div class="section">
           <div class="menu-item" @click=${this.onToggleSaved} ?disabled=${this.driveConfig.ident.system}>
             <i class="far fa${this.driveConfig.ident.system || this.driveConfig.saved ? '-check' : ''}-square"></i>
-            <span class="label">Save to My Library</span>
+            <span class="label">${this.driveInfo.writable ? 'Save To My Library' : 'Seed This Drive'}</span>
           </div>
         </div>
         <div class="section">

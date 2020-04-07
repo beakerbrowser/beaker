@@ -72,11 +72,13 @@ hr {
   height: 35px;
   line-height: 35px;
   text-align: center;
+  border-bottom: 1px solid #ccc;
 }
 
 .header h2 {
   font-size: 12.5px;
   margin: 0;
+  padding-right: 10px;
 }
 
 .header .btn {
