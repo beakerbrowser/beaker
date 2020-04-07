@@ -116,7 +116,8 @@ export default {
     }
 
     const sysDrive = filesystem.get().pda
-    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
+    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => undefined)
+    if (!addressBook || !Array.isArray(addressBook.contacts)) return []
     return massageContacts(addressBook.contacts)
   },
 }
