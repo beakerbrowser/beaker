@@ -1189,7 +1189,7 @@ export function create (
       let lastPinIndex = indexOfLastPinnedTab(win)
       tabIndex = active ? tabs.indexOf(active) : undefined
       if (tabIndex === -1) tabIndex = undefined
-      else if (tabIndex <= lastPinIndex) tabIndex = lastPinIndex
+      else if (tabIndex < lastPinIndex) tabIndex = lastPinIndex
       else tabIndex++
     }
     if (typeof tabIndex !== 'undefined') {

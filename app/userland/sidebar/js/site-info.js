@@ -263,15 +263,6 @@ class SiteInfo extends LitElement {
     this.load(this.url)
   }
 
-  async onClickToggleSeeding (e) {
-    if (this.driveCfg?.seeding) {
-      await beaker.drives.configure(this.origin, {seeding: false})
-    } else {
-      await beaker.drives.configure(this.origin, {seeding: true})
-    }
-    this.load(this.url)
-  }
-
   async onClickDriveProperties (e) {
     await beaker.shell.drivePropertiesDialog(this.origin)
     this.load(this.url)
