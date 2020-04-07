@@ -1186,8 +1186,10 @@ export function create (
     let tabIndex = (typeof opts.tabIndex !== 'undefined' && opts.tabIndex !== -1) ? opts.tabIndex : undefined
     if (opts.adjacentActive) {
       let active = getActive(win)
+      let lastPinIndex = indexOfLastPinnedTab(win)
       tabIndex = active ? tabs.indexOf(active) : undefined
       if (tabIndex === -1) tabIndex = undefined
+      else if (tabIndex <= lastPinIndex) tabIndex = lastPinIndex
       else tabIndex++
     }
     if (typeof tabIndex !== 'undefined') {
