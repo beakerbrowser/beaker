@@ -188,25 +188,20 @@ class EditorApp extends LitElement {
       this.resolvedPath = ''
 
       var body = ''
-      if (url.startsWith('hyper:')) {
-        body = await this.loadDrive(url)
-      } else if (url.startsWith('http:') || url.startsWith('https:')) {
-        this.isFilesOpen = false
-        try {
+      try {
+        if (url.startsWith('hyper:')) {
+          body = await this.loadDrive(url)
+        } else if (url.startsWith('http:') || url.startsWith('https:')) {
+          this.isFilesOpen = false
           body = await beaker.browser.fetchBody(url)
-        } catch (e) {
-          this.dne = true
-          body = ''
-        }
-      } else {
-        this.isFilesOpen = false
-        try {
+        } else {
+          this.isFilesOpen = false
           let res = await fetch(url)
           body = await res.text()
-        } catch (e) {
-          this.dne = true
-          body = ''
         }
+      } catch (e) {
+        this.dne = true
+        body = ''
       }
 
       if (!this.dne && !this.isBinary) {
@@ -288,7 +283,9 @@ class EditorApp extends LitElement {
     // determine the entry to load
     var entry = await datServeResolvePath(drive, manifest, url, '*/*')
     this.resolvedPath = entry ? entry.path : this.pathname
-    this.stat = await drive.stat(this.resolvedPath).catch(e => undefined)
+    var stat = await drive.stat(this.resolvedPath)
+    if (!stat.isFile()) throw new Error('Not a file')
+    this.stat = stat
 
     // check for mount information
     this.mountInfo = undefined
@@ -500,7 +497,7 @@ class EditorApp extends LitElement {
         </div>
       ` : this.dne ? html`
         <div class="empty">
-          <a @click=${e => { this.isFilesOpen = true }}>Select a file to edit</a>
+          <a @click=${e => { this.isFilesOpen = true }}>Select a file</a>
         </div>
       ` : ''}
     `
