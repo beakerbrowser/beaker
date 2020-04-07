@@ -158,7 +158,6 @@ class SiteInfo extends LitElement {
       `
     }
     var isSaved = this.driveCfg?.saved
-    var isSeeding = this.driveCfg?.seeding
     if (this.info && this.info.version === 0) {
       return html`
         <h1>Site not found</h1>
@@ -169,12 +168,15 @@ class SiteInfo extends LitElement {
       <h1>${this.info.title}</h1>
       ${this.info.description ? html`<p class="description">${this.info.description}</p>` : ''}
       <div style="margin-top: 10px">
-        <button class="transparent" title=${isSaved ? 'Saved to My Library' : 'Save to My Library'} @click=${this.onClickToggleSaved}>
-          ${isSaved ? html`<span class="far fa-check-square"></span> Saved` : html`<span class="far fa-square"></span> Saved`}
-        </button>
-        <button class="transparent" title=${isSeeding ? 'Seeding' : 'Seed'} @click=${this.onClickToggleSeeding}>
-          ${isSeeding ? html`<span class="far fa-check-square"></span> Seeding` : html`<span class="far fa-square"></span> Seeding`}
-        </button>
+        ${this.info.writable ? html`
+          <button class="transparent" title=${isSaved ? 'Remove From My Library' : 'Restore To My Library'} @click=${this.onClickToggleSaved}>
+            ${isSaved ? html`<span class="fas fa-trash"></span> Remove From My Library` : html`<span class="fas fa-trash-restore"></span> Readd To My Library`}
+          </button>
+        ` : html`
+          <button class="transparent" title=${isSaved ? 'Stop Seeding' : 'Seed This Drive'} @click=${this.onClickToggleSaved}>
+            ${isSaved ? html`<span class="fas fa-times"></span> Stop Seeding` : html`<span class="fas fa-share-alt"></span> Seed This Drive`}
+          </button>
+        `}
         <button class="transparent" title="Drive Properties" @click=${this.onClickDriveProperties}><span class="far fa-list-alt"></span> Properties</button>
       </div>
     `

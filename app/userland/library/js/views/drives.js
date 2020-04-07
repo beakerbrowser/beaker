@@ -116,8 +116,8 @@ export class DrivesView extends LitElement {
           click: () => this.driveProps(drive)
         },
         {
-          icon: 'fas fa-fw fa-trash-alt',
-          label: 'Remove from My Library',
+          icon: drive.info.writable ? 'fas fa-fw fa-trash-alt' : 'fas fa-fw fa-times',
+          label: drive.info.writable ? 'Remove from My Library' : 'Stop seeding',
           disabled: drive.ident.system,
           click: () => this.removeDrive(drive)
         }

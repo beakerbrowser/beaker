@@ -111,6 +111,7 @@ class SiteInfoApp extends LitElement {
     this.url = ''
     this.isLoading = true
     this.info = undefined
+    this.driveCfg = undefined
     this.requestedPerms = undefined
   }
 
@@ -119,10 +120,12 @@ class SiteInfoApp extends LitElement {
     if (!this.url) return
     try {
       this.info = {}
+      this.driveCfg = undefined
       if (this.isDrive) {
         // get drive info
         let drive = this.drive
         this.info = await drive.getInfo()
+        this.driveCfg = await beaker.drives.get(this.url)
       } else {
         this.info = {
           title: this.hostname,
@@ -176,6 +179,8 @@ class SiteInfoApp extends LitElement {
   }
 
   renderSiteInfo () {
+    var writable = this.info ? this.info.writable : false
+    var isSaved = this.driveCfg ? this.driveCfg.saved : false
     var protocol = ''
     if (this.isHttps) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
     if (this.isBeaker) protocol = html`<p class="protocol">This page is served by Beaker</p>`
@@ -187,10 +192,22 @@ class SiteInfoApp extends LitElement {
           ${protocol}
           <p class="buttons">
             <button @click=${this.onCopyUrl}><span class="fas fa-fw fa-link"></span> Copy URL</button>
-            ${this.isDrive ? html`
+          </p>
+          ${this.isDrive ? html`
+            <p class="buttons">
+              ${writable ? html`
+                <button @click=${this.onToggleSaveDrive}>
+                  ${isSaved ? html`<span class="fas fa-fw fa-trash"></span> Remove From My Library` : html`<span class="fas fa-fw fa-trash-restore"></span> Readd To My Library`}
+                </button>
+              ` : html`
+                <button @click=${this.onToggleSaveDrive}>
+                  ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Seeding` : html`<span class="fas fa-fw fa-share-alt"></span> Seed This Drive`}
+                </button>
+              `}
               <button @click=${this.onCloneDrive}><span class="far fa-fw fa-clone"></span> Clone Drive</button>
               <button @click=${this.onForkDrive}><span class="fas fa-fw fa-code-branch"></span> Fork Drive</button>
-            ` : ''}
+            </p>
+          ` : ''}
           </p>
         </div>
       </div>
@@ -244,6 +261,15 @@ class SiteInfoApp extends LitElement {
   onCopyUrl (e) {
     writeToClipboard(this.url)
     toast.create('URL Copied', '', 2e3)
+  }
+
+  async onToggleSaveDrive (e) {
+    if (this.driveCfg && this.driveCfg.saved) {
+      await beaker.drives.remove(this.origin)
+    } else {
+      await beaker.drives.configure(this.origin)
+    }
+    this.load()
   }
 
   async onCloneDrive (e) {
