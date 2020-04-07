@@ -84,6 +84,7 @@ class DesktopApp extends LitElement {
         ${navItem('drives', 'My Drives')}
         ${navItem('bookmarks', 'Bookmarks')}
         ${navItem('address-book', 'Address Book')}
+        <a @click=${this.onClickNavMore} title="More"><span class="fas fa-fw fa-ellipsis-h"></span></a>
         <div class="search-ctrl">
           <span class="fas fa-search"></span>
           <input @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
@@ -133,6 +134,16 @@ class DesktopApp extends LitElement {
 
   // events
   // =
+
+  onClickNavMore (e) {
+    var rect = e.currentTarget.getClientRects()[0]
+    e.preventDefault()
+    e.stopPropagation()
+    const items = [
+      {icon: 'fas fa-share-alt', label: 'Seeding', click: () => { window.location = `beaker://library/seeding` }}
+    ]
+    contextMenu.create({x: rect.left, y: rect.bottom, noBorders: true, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
+  }
 
   async onClickNewDrive (e) {
     var drive = await beaker.hyperdrive.createDrive()

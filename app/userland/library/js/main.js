@@ -74,7 +74,8 @@ export class LibraryApp extends LitElement {
       <div class="layout">
         <nav>
           <div class="page-nav">
-            ${pageNav('drives', html`<span class="far fa-fw fa-hdd"></span> Drives`)}
+            ${pageNav('drives', html`<span class="far fa-fw fa-hdd"></span> My Drives`)}
+            ${pageNav('seeding', html`<span class="fas fa-fw fa-share-alt"></span> Seeding`)}
             ${pageNav('bookmarks', html`<span class="far fa-fw fa-star"></span> Bookmarks`)}
             ${pageNav('address-book', html`<span class="far fa-fw fa-address-card"></span> Address Book`)}
             ${pageNav('downloads', html`<span class="fas fa-fw fa-arrow-down"></span> Downloads`)}
@@ -89,6 +90,9 @@ export class LibraryApp extends LitElement {
           ` : ''}
           ${this.view === 'address-book' ? html`
             <address-book-view class="full-size" .filter=${this.filter} loadable></address-book-view>
+          ` : ''}
+          ${this.view === 'seeding' ? html`
+            <drives-view class="full-size" readonly .filter=${this.filter} loadable></drives-view>
           ` : ''}
           ${this.view === 'downloads' ? html`
             <downloads-view class="full-size" .filter=${this.filter} loadable></downloads-view>

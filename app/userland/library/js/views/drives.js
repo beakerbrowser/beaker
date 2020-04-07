@@ -13,6 +13,7 @@ export class DrivesView extends LitElement {
   static get properties () {
     return {
       drives: {type: Array},
+      readonly: {type: Boolean},
       filter: {type: String},
       showHeader: {type: Boolean, attribute: 'show-header'},
       hideEmpty: {type: Boolean, attribute: 'hide-empty'}
@@ -26,6 +27,7 @@ export class DrivesView extends LitElement {
   constructor () {
     super()
     this.drives = undefined
+    this.readonly = false
     this.filter = undefined
     this.showHeader = false
     this.hideEmpty = false
@@ -34,8 +36,12 @@ export class DrivesView extends LitElement {
   async load () {
     var drives = await beaker.drives.list({includeSystem: false})
 
-    // move forks onto their parents
     drives = drives.filter(drive => {
+      if (drive.info.writable !== !this.readonly) {
+        return false
+      }
+
+      // move forks onto their parents
       if (drive.forkOf) {
         let parent = drives.find(d => d.key === drive.forkOf.key)
         if (parent) {
