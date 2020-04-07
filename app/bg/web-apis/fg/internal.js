@@ -38,7 +38,6 @@ export const setup = function (rpc) {
   
   // internal.drives
   internal.drives = new EventTarget()
-  internal.drives.status = drivesRPC.status
   internal.drives.get = drivesRPC.get
   internal.drives.list = drivesRPC.list
   internal.drives.getForks = drivesRPC.getForks

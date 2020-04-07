@@ -71,7 +71,7 @@ export async function setup () {
   }
 
   // load root drive
-  rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url)
+  rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url, {persistSession: true})
   
   // enforce root files structure
   logger.info('Loading root drive', {url: browsingProfile.url})

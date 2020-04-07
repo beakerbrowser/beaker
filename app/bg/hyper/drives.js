@@ -11,7 +11,6 @@ const baseLogger = logLib.get()
 const logger = baseLogger.child({category: 'hyper', subcategory: 'drives'})
 
 // dbs
-import * as settingsDb from '../dbs/settings'
 import * as archivesDb from '../dbs/archives'
 import * as datDnsDb from '../dbs/dat-dns'
 
@@ -27,7 +26,6 @@ import * as filesystem from '../filesystem/index'
 // =
 
 import { HYPERDRIVE_HASH_REGEX, DRIVE_MANIFEST_FILENAME } from '../../lib/const'
-
 import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 
 // typedefs
@@ -40,17 +38,13 @@ import { InvalidURLError, TimeoutError } from 'beaker-error-constants'
 // globals
 // =
 
-var drives = {} // in-memory cache of drive objects. key -> drive
 var driveLoadPromises = {} // key -> promise
 var drivesEvents = new EventEmitter()
-
-// var daemonEvents TODO
 
 // exported API
 // =
 
 export const on = drivesEvents.on.bind(drivesEvents)
-
 export const addListener = drivesEvents.addListener.bind(drivesEvents)
 export const removeListener = drivesEvents.removeListener.bind(drivesEvents)
 
@@ -68,21 +62,6 @@ export async function setup () {
       drive.domain = name
     }
   })
-
-  // re-export events
-  // TODO
-  // daemonEvents.on('network-changed', evt => drivesEvents.emit('network-changed', evt))
-
-  // configure the bandwidth throttle
-  // TODO
-  // settingsDb.getAll().then(({dat_bandwidth_limit_up, dat_bandwidth_limit_down}) => {
-  //   daemon.setBandwidthThrottle({
-  //     up: dat_bandwidth_limit_up,
-  //     down: dat_bandwidth_limit_down
-  //   })
-  // })
-  // settingsDb.on('set:dat_bandwidth_limit_up', up => daemon.setBandwidthThrottle({up}))
-  // settingsDb.on('set:dat_bandwidth_limit_down', down => daemon.setBandwidthThrottle({down}))
 
   logger.info('Initialized dat daemon')
 };
@@ -254,7 +233,7 @@ export async function forkDrive (srcDriveUrl, opts = {}) {
 // drive management
 // =
 
-export async function loadDrive (key, settingsOverride) {
+export async function loadDrive (key, opts) {
   // validate key
   if (key) {
     if (!Buffer.isBuffer(key)) {
@@ -274,7 +253,7 @@ export async function loadDrive (key, settingsOverride) {
   }
 
   // run and cache the promise
-  var p = loadDriveInner(key, settingsOverride)
+  var p = loadDriveInner(key, opts)
   if (key) driveLoadPromises[keyStr] = p
   p.catch(err => {
     console.error('Failed to load drive', keyStr, err.toString())
@@ -290,22 +269,20 @@ export async function loadDrive (key, settingsOverride) {
 }
 
 // main logic, separated out so we can capture the promise
-async function loadDriveInner (key, settingsOverride) {
-  // ensure the folders exist
-  // TODO needed?
-  // var metaPath = archivesDb.getArchiveMetaPath(key)
-  // mkdirp.sync(metaPath)
-
+async function loadDriveInner (key, opts) {
   // create the drive session with the daemon
-  var drive = await daemon.getHyperdriveSession({key})
+  var drive = await daemon.createHyperdriveSession({key})
   key = drive.key
-  var keyStr = datEncoding.toStr(drive.key)
+
+  if (opts && opts.persistSession) {
+    drive.persistSession = true
+  }
 
   // fetch library settings
   var userSettings = null // TODO uwg datLibrary.getConfig(keyStr)
-  if (settingsOverride) {
-    userSettings = Object.assign(userSettings || {}, settingsOverride)
-  }
+  // if (settingsOverride) {
+  //   userSettings = Object.assign(userSettings || {}, settingsOverride)
+  // }
 
   // put the drive on the network
   if (!userSettings || userSettings.visibility !== 'private') {
@@ -329,8 +306,6 @@ async function loadDriveInner (key, settingsOverride) {
   driveAssets.update(drive)
   drive.pullLatestDriveMeta = opts => pullLatestDriveMeta(drive, opts)
 
-  // now store in main drives listing, as loaded
-  drives[keyStr] = drive
   return drive
 }
 
@@ -353,7 +328,7 @@ async function downloadHack (drive, path) {
 
 export function getDrive (key) {
   key = fromURLToKey(key)
-  return drives[key]
+  return daemon.getHyperdriveSession({key})
 }
 
 export async function getDriveCheckout (drive, version) {
@@ -370,7 +345,7 @@ export async function getDriveCheckout (drive, version) {
     } else {
       let latestVersion = await drive.session.drive.version()
       if (version <= latestVersion) {
-        checkoutFS = await daemon.getHyperdriveSession({
+        checkoutFS = await daemon.createHyperdriveSession({
           key: drive.key,
           version,
           writable: false
@@ -383,37 +358,21 @@ export async function getDriveCheckout (drive, version) {
   return {isHistoric, checkoutFS}
 };
 
-export function getActiveDrives () {
-  return drives
-};
-
-export async function getOrLoadDrive (key) {
+export async function getOrLoadDrive (key, opts) {
   key = await fromURLToKey(key, true)
   var drive = getDrive(key)
   if (drive) return drive
-  return loadDrive(key)
+  return loadDrive(key, opts)
 }
 
 export async function unloadDrive (key) {
-  key = await fromURLToKey(key, true)
-  var drive = drives[key]
-  if (!drive) return
-  if (drive.fileActStream) {
-    drive.fileActStream.close()
-    drive.fileActStream = null
-  }
-  delete drives[key]
-  drive.session.configureNetwork({
-    announce: false,
-    lookup: false,
-    remember: false
-  })
-  drive.session.close()
+  key =  fromURLToKey(key, false)
+  daemon.closeHyperdriveSession({key})
 };
 
 export function isDriveLoaded (key) {
   key = fromURLToKey(key)
-  return key in drives
+  return !!daemon.getHyperdriveSession({key})
 }
 
 // drive fetch/query

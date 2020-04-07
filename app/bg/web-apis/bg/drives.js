@@ -9,16 +9,6 @@ import { PermissionsError } from 'beaker-error-constants'
 // =
 
 export default {
-  async status () {
-    var status = {drives: 0, peers: 0}
-    var drives = drives.getActiveDrives()
-    for (var k in drives) {
-      status.drives++
-      status.peers += drives[k].metadata.peers.length
-    }
-    return status
-  },
-
   async get (key) {
     key = await drives.fromURLToKey(key, true)
     var drive = listDrives().find(drive => drive.key === key)

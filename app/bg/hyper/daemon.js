@@ -12,6 +12,8 @@ import { getEnvVar } from '../lib/env'
 
 const SETUP_RETRIES = 100
 const CHECK_DAEMON_INTERVAL = 5e3
+const GARBAGE_COLLECT_SESSIONS_INTERVAL = 15e3
+const MAX_SESSION_AGE = 70e3 // 60s is the typical operation timeout, so +10s for safety
 
 // typedefs
 // =
@@ -23,6 +25,7 @@ const CHECK_DAEMON_INTERVAL = 5e3
 * @prop {string} url
 * @prop {string} domain
 * @prop {boolean} writable
+* @prop {Boolean} persistSession
 * @prop {Object} session
 * @prop {Object} session.drive
 * @prop {function(): Promise<void>} session.close
@@ -31,6 +34,8 @@ const CHECK_DAEMON_INTERVAL = 5e3
 * @prop {DaemonHyperdrivePDA} pda
 *
 * @typedef {Object} DaemonHyperdrivePDA
+* @prop {Number} lastCallTime
+* @prop {Number} numActiveStreams
 * @prop {function(string): Promise<Object>} stat
 * @prop {function(string, Object=): Promise<any>} readFile
 * @prop {function(string, Object=): Promise<Array<Object>>} readdir
@@ -57,9 +62,9 @@ const CHECK_DAEMON_INTERVAL = 5e3
 // =
 
 var client // client object created by hyperdrive-daemon-client
-var isCheckingDaemon = false
+var isSettingUp = true
 var isDaemonActive = false
-var isInitialSetup = true
+var isFirstConnect = true
 var sessions = {} // map of keyStr => DaemonHyperdrive
 var events = new EventEmitter()
 
@@ -69,7 +74,7 @@ var events = new EventEmitter()
 export const on = events.on.bind(events)
 
 export function isActive () {
-  if (isInitialSetup) {
+  if (isFirstConnect) {
     // the "inactive daemon" indicator during setup
     return true
   }
@@ -77,14 +82,16 @@ export function isActive () {
 }
 
 export async function setup () {
-  if (!isCheckingDaemon) {
+  if (isSettingUp) {
+    isSettingUp = false
+
     // watch for the daemon process to die/revive
     let interval = setInterval(() => {
       pm2.list((err, processes) => {
         var processExists = !!processes.find(p => p.name === 'hyperdrive' && p.pm2_env.status === 'online')
         if (processExists && !isDaemonActive) {
           isDaemonActive = true
-          isInitialSetup = false
+          isFirstConnect = false
           events.emit('daemon-restored')
         } else if (!processExists && isDaemonActive) {
           isDaemonActive = false
@@ -93,7 +100,6 @@ export async function setup () {
       })
     }, CHECK_DAEMON_INTERVAL)
     interval.unref()
-    isCheckingDaemon = true
 
     events.on('daemon-restored', async () => {
       console.log('Hyperdrive daemon has been restored')
@@ -101,6 +107,18 @@ export async function setup () {
     events.on('daemon-stopped', async () => {
       console.log('Hyperdrive daemon has been lost')
     })
+
+    // periodically close sessions
+    let interval2 = setInterval(() => {
+      let now = Date.now()
+      for (let key in sessions) {
+        if (sessions[key].persistSession) continue
+        if (sessions[key].pda.numActiveStreams > 0) continue
+        if (now - sessions[key].pda.lastCallTime < MAX_SESSION_AGE) continue
+        closeHyperdriveSession(key)
+      }
+    }, GARBAGE_COLLECT_SESSIONS_INTERVAL)
+    interval2.unref()
   }
 
   try {
@@ -134,6 +152,20 @@ export async function setup () {
 }
 
 /**
+ * Gets a hyperdrives interface to the daemon for the given key
+ *
+ * @param {Object|string} opts
+ * @param {Buffer} [opts.key]
+ * @param {number} [opts.version]
+ * @param {Buffer} [opts.hash]
+ * @param {boolean} [opts.writable]
+ * @returns {DaemonHyperdrive}
+ */
+export function getHyperdriveSession (opts) {
+  return sessions[createSessionKey(opts)]
+}
+
+/**
  * Creates a hyperdrives interface to the daemon for the given key
  *
  * @param {Object} opts
@@ -143,7 +175,7 @@ export async function setup () {
  * @param {boolean} [opts.writable]
  * @returns {Promise<DaemonHyperdrive>}
  */
-export async function getHyperdriveSession (opts) {
+export async function createHyperdriveSession (opts) {
   if (opts.key) {
     let sessionKey = createSessionKey(opts)
     if (sessions[sessionKey]) return sessions[sessionKey]
@@ -156,6 +188,7 @@ export async function getHyperdriveSession (opts) {
     url: `hyper://${key}`,
     writable: drive.writable,
     domain: undefined,
+    persistSession: false,
 
     session: {
       drive,
@@ -188,10 +221,31 @@ export async function getHyperdriveSession (opts) {
   return /** @type DaemonHyperdrive */(driveObj)
 }
 
+/**
+ * Closes a hyperdrives interface to the daemon for the given key
+ *
+ * @param {Object|string} opts
+ * @param {Buffer} [opts.key]
+ * @param {number} [opts.version]
+ * @param {Buffer} [opts.hash]
+ * @param {boolean} [opts.writable]
+ * @returns {void}
+ */
+export function closeHyperdriveSession (opts) {
+  var key = createSessionKey(opts)
+  if (sessions[key]) {
+    sessions[key].session.close()
+    delete sessions[key]
+  }
+}
+
 // internal methods
 // =
 
 function createSessionKey (opts) {
+  if (typeof opts === 'string') {
+    return opts // assume it's already a session key
+  }
   var key = opts.key.toString('hex')
   if (opts.version) {
     key += `+${opts.version}`
@@ -237,24 +291,23 @@ async function reconnectDriveSession (driveObj) {
  * @returns {DaemonHyperdrivePDA}
  */
 function createHyperdriveSessionPDA (drive) {
-  var obj = {}
+  var obj = {
+    lastCallTime: Date.now(),
+    numActiveStreams: 0
+  }
   for (let k in pda) {
     if (typeof pda[k] === 'function') {
-      if (getEnvVar('LOG_HYPERDRIVE_DAEMON_CALLS')) {
-        obj[k] = async (...args) => {
-          let t = Date.now()
-          console.log('->', k, ...args)
-          try {
-            var res = await pda[k].call(pda, drive, ...args)
-            console.log(`:: ${Date.now() - t} ms`, k, ...args)
-            return res
-          } catch (e) {
-            console.log(`:: ${Date.now() - t} ms`, k, ...args)
-            throw e
-          }
+      obj[k] = async (...args) => {
+        obj.lastCallTime = Date.now()
+        if (k === 'watch') {
+          obj.numActiveStreams++
+          let stream = pda.watch.call(pda, drive, ...args)
+          stream.on('close', () => {
+            obj.numActiveStreams--
+          })
+          return stream
         }
-      } else {
-        obj[k] = pda[k].bind(pda, drive)
+        return pda[k].call(pda, drive, ...args)
       }
     }
   }

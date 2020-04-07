@@ -1,5 +1,4 @@
 export default {
-  status: 'promise',
   get: 'promise',
   list: 'promise',
   getForks: 'promise',

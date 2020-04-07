@@ -1,11 +1,10 @@
-import { getActiveDrives } from './drives'
 import datDns from './dns'
 
 /**
  * @returns {string}
  */
 export const drivesDebugPage = function () {
-  var drives = getActiveDrives()
+  var drives = [] // TODO getActiveDrives()
   return `<html>
     <body>
       ${Object.keys(drives).map(key => {
