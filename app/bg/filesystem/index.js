@@ -20,7 +20,6 @@ import lock from '../../lib/lock'
  * 
  * @typedef {Object} DriveConfig
  * @property {string} key
- * @property {boolean} seeding
  * @property {Object} [forkOf]
  * @property {string} [forkOf.key]
  * @property {string} [forkOf.label]
@@ -142,11 +141,10 @@ export function getDriveConfig (key) {
 /**
  * @param {string} url
  * @param {Object} [opts]
- * @param {boolean} [opts.seeding]
  * @param {Object} [opts.forkOf]
  * @returns {Promise<void>}
  */
-export async function configDrive (url, {seeding, forkOf} = {seeding: undefined, forkOf: undefined}) {
+export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
   var release = await lock('filesystem:drives')
   try {
     var key = await hyper.drives.fromURLToKey(url, true)
@@ -155,10 +153,7 @@ export async function configDrive (url, {seeding, forkOf} = {seeding: undefined,
       let drive = await hyper.drives.getOrLoadDrive(url)
       let manifest = await drive.pda.readManifest().catch(_ => {})
 
-      if (typeof seeding === 'undefined') {
-        seeding = false
-      }
-      driveCfg = /** @type DriveConfig */({key, seeding})
+      driveCfg = /** @type DriveConfig */({key})
       if (forkOf && typeof forkOf === 'object') {
         driveCfg.forkOf = forkOf
       }
@@ -179,15 +174,12 @@ export async function configDrive (url, {seeding, forkOf} = {seeding: undefined,
 
         let parentDriveCfg = drives.find(d => d.key === driveCfg.forkOf.key)
         if (!parentDriveCfg) {
-          drives.push({key: driveCfg.forkOf.key, seeding: false})
+          drives.push({key: driveCfg.forkOf.key})
         }
       }
 
       drives.push(driveCfg)
     } else {
-      if (typeof seeding !== 'undefined') {
-        driveCfg.seeding = seeding
-      }
       if (typeof forkOf !== 'undefined') {
         if (forkOf && typeof forkOf === 'object') {
           driveCfg.forkOf = forkOf

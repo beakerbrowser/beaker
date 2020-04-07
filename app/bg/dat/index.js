@@ -61,6 +61,6 @@ export async function convertDatArchive (key) {
     dstPath: '/',
     inplaceImport: true
   })
-  await filesystem.configDrive(drive.url, {seeding: true})
+  await filesystem.configDrive(drive.url)
   return drive.url
 }

@@ -144,7 +144,7 @@ export class DrivesView extends LitElement {
   async removeDrive (drive) {
     await beaker.drives.remove(drive.url)
     const undo = async () => {
-      await beaker.drives.configure(drive.url, {seeding: drive.seeding})
+      await beaker.drives.configure(drive.url)
       this.drives.push(drive)
       this.requestUpdate()
     }
@@ -252,17 +252,6 @@ export class DrivesView extends LitElement {
   onClickViewForksOf (e, drive) {
     e.preventDefault()
     drive.showForks = !drive.showForks
-    this.requestUpdate()
-  }
-
-  async onToggleSeeding (e, drive) {
-    drive.seeding = !drive.seeding
-    await beaker.drives.configure(drive.url, {seeding: drive.seeding})
-    if (drive.seeding) {
-      toast.create('Now seeding on the network')
-    } else {
-      toast.create('No longer seeding on the network')
-    }
     this.requestUpdate()
   }
 }

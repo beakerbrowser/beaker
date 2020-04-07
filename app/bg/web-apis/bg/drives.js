@@ -30,7 +30,6 @@ export default {
       url,
       info,
       saved: !!drive,
-      seeding: ident.user || (drive ? drive.seeding : false),
       forkOf: drive ? drive.forkOf : undefined,
       ident
     }
@@ -44,7 +43,7 @@ export default {
     key = await drives.fromURLToKey(key, true)
     var drivesList = listDrives()
     var rootDrive = drivesList.find(drive => drive.key === key)
-    if (!rootDrive) return assembleRecords([{key, seeding: false}])
+    if (!rootDrive) return assembleRecords([{key}])
 
     // find root of the tree
     var seenKeys = new Set() // used to break cycles
@@ -130,7 +129,6 @@ async function assembleRecords (drivesList) {
       url,
       info: await drives.getDriveInfo(drive.key).catch(e => {}),
       saved: true,
-      seeding: ident.user || drive.seeding,
       forkOf: drive ? drive.forkOf : undefined,
       ident
     })

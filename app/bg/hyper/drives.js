@@ -88,29 +88,6 @@ export async function setup () {
 };
 
 /**
- * @returns {Promise<void>}
- */
-export async function loadSavedDrives () {
-  // load all saved drives
-  var drives = listDrives()
-
-  // HACK
-  // load the drives one at a time and give 5 seconds between each
-  // why: the purpose of loading saved drives is to seed them
-  // loading them all at once can bog down the user's device
-  // if the user tries to access an drive, Beaker will load it immediately
-  // so spacing out the loads has no visible impact on the user
-  // (except for reducing the overall load for the user)
-  // -prf
-  for (let drive of drives) {
-    if (drive.seeding) {
-      loadDrive(drive.key)
-      await new Promise(r => setTimeout(r, 5e3)) // wait 5s
-    }
-  }
-};
-
-/**
  * @returns {NodeJS.ReadableStream}
  */
 export function createEventStream () {

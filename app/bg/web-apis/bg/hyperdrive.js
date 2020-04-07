@@ -58,7 +58,7 @@ export default {
       try {
         let manifest = {title, description, /*TODO author,*/}
         newDrive = await drives.createNewDrive(manifest)
-        await filesystem.configDrive(newDrive.url, {seeding: true})
+        await filesystem.configDrive(newDrive.url)
       } catch (e) {
         console.log(e)
         throw e
@@ -113,7 +113,6 @@ export default {
         detached
       })
       await filesystem.configDrive(newDrive.url, {
-        seeding: true,
         forkOf: detached ? undefined : {key, label}
       })
       newDriveUrl = newDrive.url

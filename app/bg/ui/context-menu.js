@@ -153,17 +153,8 @@ export default function registerContextMenu () {
               checked: !!driveCfg || driveIdent.system,
               enabled: !driveIdent.system,
               click: (item, win) => {
-                if (!driveCfg) configDrive(key, {seeding: false})
+                if (!driveCfg) configDrive(key)
                 else removeDrive(key)
-              }
-            })
-            menuItems.push({
-              label: 'Seed This Drive',
-              type: 'checkbox',
-              checked: (driveCfg && driveCfg.seeding) || driveIdent.user,
-              enabled: !driveIdent.system,
-              click: (item, win) => {
-                configDrive(key, {seeding: !(driveCfg && driveCfg.seeding)})
               }
             })
             menuItems.push({ type: 'separator' })
