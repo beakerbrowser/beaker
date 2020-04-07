@@ -140,7 +140,6 @@ app.on('quit', () => {
 
 app.on('custom-ready-to-show', () => {
   // our first window is ready to show, do any additional setup
-  hyper.drives.loadSavedDrives()
 })
 
 // only run one instance
