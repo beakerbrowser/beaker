@@ -43,6 +43,11 @@ export class FeedView extends LitElement {
       limit: 30
     })
 
+    if (this.posts && this.posts[0] && this.posts[0].url === files[0].url) {
+      // no new posts
+      return
+    }
+
     this.posts = []
     for (let file of files) {
       let filename = file.path.split('/').pop()
