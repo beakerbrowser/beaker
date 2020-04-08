@@ -107,7 +107,7 @@ export async function query (root, opts) {
       if (!metaMatch) return
     }
 
-    var drive = `hyper://${localDriveKey}`
+    var drive = `hyper://${localDriveKey}/`
     results.push({
       type,
       path,
