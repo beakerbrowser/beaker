@@ -166,7 +166,7 @@ class AddContactModal extends LitElement {
   async onSubmit (e) {
     e.preventDefault()
     if (this.info) {
-      this.cbs.resolve({key: this.info.key, title: this.info.title, description: this.info.description})
+      this.cbs.resolve({key: this.info.key})
     } else {
       this.cbs.reject(new Error('Canceled'))
     }

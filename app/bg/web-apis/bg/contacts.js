@@ -1,4 +1,5 @@
 import * as modals from '../../ui/subwindows/modals'
+import * as drives from '../../hyper/drives'
 import * as filesystem from '../../filesystem/index'
 import * as permissions from '../../ui/permissions'
 import { UserDeniedError } from 'beaker-error-constants'
@@ -22,8 +23,8 @@ export default {
    * @returns {Promise<BeakerContactPublicAPIContactRecord>}
    */
   async requestProfile () {
-    const sysDrive = filesystem.get().pda
-    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
+    var addressBook = await readAddressBook()
+    addressBook.profiles = await assembleRecords(addressBook.profiles)
 
     var res
     try {
@@ -41,8 +42,9 @@ export default {
    * @returns {Promise<BeakerContactPublicAPIContactRecord>}
    */
   async requestContact () {
-    const sysDrive = filesystem.get().pda
-    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
+    var addressBook = await readAddressBook()
+    addressBook.profiles = await assembleRecords(addressBook.profiles)
+    addressBook.contacts = await assembleRecords(addressBook.contacts)
 
     var res
     try {
@@ -60,8 +62,9 @@ export default {
    * @returns {Promise<Array<BeakerContactPublicAPIContactRecord>>}
    */
   async requestContacts () {
-    const sysDrive = filesystem.get().pda
-    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
+    var addressBook = await readAddressBook()
+    addressBook.profiles = await assembleRecords(addressBook.profiles)
+    addressBook.contacts = await assembleRecords(addressBook.contacts)
 
     var res
     try {
@@ -90,21 +93,12 @@ export default {
     }
     if (!res) throw new UserDeniedError()
 
-    const sysDrive = filesystem.get().pda
-    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
-    addressBook.contacts = addressBook.contacts || []
+    var addressBook = await readAddressBook()
     var existingContact = addressBook.contacts.find(contact => contact.key === res.key)
-    if (existingContact) {
-      existingContact.title = res.title
-      existingContact.description = res.description
-    } else {
-      addressBook.contacts.push({
-        key: res.key,
-        title: res.title,
-        description: res.description
-      })
+    if (!existingContact) {
+      addressBook.contacts.push({key: res.key})
     }
-    await sysDrive.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
+    await filesystem.get().pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
   },
 
   /**
@@ -115,27 +109,34 @@ export default {
       throw new UserDeniedError()
     }
 
-    const sysDrive = filesystem.get().pda
-    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => undefined)
-    if (!addressBook || !Array.isArray(addressBook.contacts)) return []
-    return massageContacts(addressBook.contacts)
+    var addressBook = await readAddressBook()
+    return assembleRecords(addressBook.contacts)
   },
 }
 
-/**
- * @param {Object[]} contacts 
- * @returns {BeakerContactPublicAPIContactRecord[]}
- */
-function massageContacts (contacts) {
-  var res = []
-  for (let contact of contacts) {
-    if (!contact || typeof contact !== 'object') continue
+// internal methods
+// =
+
+async function readAddressBook () {
+  const sysDrive = filesystem.get().pda
+  var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => undefined)
+  if (!addressBook || typeof addressBook !== 'object') addressBook = {}
+  if (!addressBook.contacts || !Array.isArray(addressBook.contacts)) addressBook.contacts = []
+  if (!addressBook.profiles || !Array.isArray(addressBook.profiles)) addressBook.profiles = []
+  return addressBook
+}
+
+async function assembleRecords (contactsList) {
+  var records = []
+  for (let contact of contactsList) {
     if (typeof contact.key !== 'string' || !HYPERDRIVE_HASH_REGEX.test(contact.key)) continue
-    res.push({
-      url: `hyper://${contact.key}/`,
-      title: contact.title,
-      description: contact.description
+    let url = `hyper://${contact.key}/`
+    let info = await drives.getDriveInfo(contact.key).catch(e => {})
+    records.push({
+      url,
+      title: info.title,
+      description: info.description
     })
   }
-  return res
+  return records
 }

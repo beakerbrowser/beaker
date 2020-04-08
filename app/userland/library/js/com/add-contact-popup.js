@@ -226,17 +226,10 @@ export class AddContactPopup extends BasePopup {
     var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
     addressBook.contacts = addressBook.contacts || []
     var existingContact = addressBook.contacts.find(contact => contact.key === this.contactInfo.key)
-    if (existingContact) {
-      existingContact.title = this.contactInfo.title
-      existingContact.description = this.contactInfo.description
-    } else {
-      addressBook.contacts.push({
-        key: this.contactInfo.key,
-        title: this.contactInfo.title,
-        description: this.contactInfo.description
-      })
+    if (!existingContact) {
+      addressBook.contacts.push({key: this.contactInfo.key})
+      await sysDrive.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
     }
-    await sysDrive.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
 
     this.dispatchEvent(new CustomEvent('resolve'))
   }

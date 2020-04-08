@@ -181,10 +181,10 @@ class SelectContactModal extends LitElement {
           <span class="${selected ? 'fas fa-check' : 'fas fa-circle'}"></span>
         </div>
         <beaker-img-fallbacks>
-          <img src="asset:thumb-30:hyper://${contact.key}/" slot="img1">
+          <img src="asset:thumb-30:${contact.url}" slot="img1">
           <img src="beaker://assets/default-user-thumb" slot="img2">
         </beaker-img-fallbacks>
-        <div class="title"><span>${contact.title}</span></div>
+        <div class="title"><span>${contact.title || 'Anonymous'}</span></div>
         <div class="description"><span>${contact.description}</span></div>
         <div class="profile-badge">${contact.isProfile ? html`<span>My Profile</span>` : ''}</div>
       </div>
@@ -221,7 +221,7 @@ class SelectContactModal extends LitElement {
   async onSubmit (e) {
     e.preventDefault()
     this.cbs.resolve({contacts: this.selection.map(contact => ({
-      url: `hyper://${contact.key}`,
+      url: contact.url,
       title: contact.title,
       description: contact.description
     }))})

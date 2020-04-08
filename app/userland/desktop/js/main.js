@@ -90,13 +90,13 @@ class DesktopApp extends LitElement {
           <input @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
         </div>
         ${this.currentNav === 'drives' ? html`
-          <a class="new-btn" @click=${this.onClickNewDrive}>New Drive <span class="fas fa-plus"></span></a>
+          <a class="new-btn" @click=${this.onClickNewDrive}><span class="fas fa-plus"></span> New Drive</a>
         ` : ''}
         ${this.currentNav === 'bookmarks' ? html`
-          <a class="new-btn" @click=${e => this.onClickNewBookmark(e, false)}>New Bookmark <span class="fas fa-plus"></span></a>
+          <a class="new-btn" @click=${e => this.onClickNewBookmark(e, false)}><span class="fas fa-plus"></span> New Bookmark</a>
         ` : ''}
         ${this.currentNav === 'address-book' ? html`
-          <a class="new-btn" @click=${this.onClickNewContact}>New Contact <span class="fas fa-plus"></span></a>
+          <a class="new-btn" @click=${this.onClickNewContact}><span class="fas fa-plus"></span> New Contact</a>
         ` : ''}
       </nav>
       <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>

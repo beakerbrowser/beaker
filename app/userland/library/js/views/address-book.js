@@ -36,11 +36,7 @@ export class AddressBookView extends LitElement {
   }
 
   async load () {
-    var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
-    this.contacts = addressBook?.contacts || []
-    if (addressBook?.profiles) {
-      this.contacts = addressBook.profiles.map(p => Object.assign(p, {isProfile: true})).concat(this.contacts)
-    }
+    this.contacts = await beaker.contacts.list()
     this.contacts.sort((a, b) => a.title.localeCompare(b.title))
     console.log(this.contacts)
   }
@@ -56,8 +52,8 @@ export class AddressBookView extends LitElement {
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
       style: `padding: 4px 0`,
       items: [
-        {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open('hyper://' + contact.key)},
-        {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard('hyper://' + contact.key)},
+        {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(contact.url)},
+        {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(contact.url)},
         {icon: 'fa fa-times', label: 'Remove from Address Book', click: () => this.onClickRemove(contact)}
       ]
     })
@@ -96,17 +92,16 @@ export class AddressBookView extends LitElement {
   }
 
   renderContact (contact) {
-    var {key, title, description} = contact
-    var href = `hyper://${key}`
+    var {url, title, description} = contact
     return html`
       <a
         class="contact"
-        href="${href}"
+        href="${url}"
         title=${title || ''}
         @contextmenu=${e => this.onContextmenuContact(e, contact)}
       >
-       <img class="thumb" src="asset:thumb-30:${href}">
-       <div class="title">${title}</div>
+       <img class="thumb" src="asset:thumb-30:${url}">
+       <div class="title">${title || 'Anonymous'}</div>
        <div class="description">${description}</div>
        <div class="profile-badge">${contact.isProfile ? html`<span>My Profile</span>` : ''}</div>
         <div class="ctrls">
@@ -137,11 +132,12 @@ export class AddressBookView extends LitElement {
 
   async onClickRemove (contact) {
     if (!confirm('Are you sure?')) return
+    var key = toHostname(contact.url)
     await updateAddressBook(addressBook => {
       if (contact.isProfile) {
-        addressBook.profiles = addressBook.profiles.filter(c2 => c2.key !== contact.key)
+        addressBook.profiles = addressBook.profiles.filter(c2 => c2.key !== key)
       } else {
-        addressBook.contacts = addressBook.contacts.filter(c2 => c2.key !== contact.key)
+        addressBook.contacts = addressBook.contacts.filter(c2 => c2.key !== key)
       }
     })
     toast.create('Contact removed', '', 10e3)
@@ -150,3 +146,12 @@ export class AddressBookView extends LitElement {
 }
 
 customElements.define('address-book-view', AddressBookView)
+
+function toHostname (str) {
+  try {
+    var urlp = new URL(str)
+    return urlp.hostname
+  } catch (e) {
+    return str
+  }
+}

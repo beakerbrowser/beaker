@@ -3,7 +3,6 @@ import * as drives from '../../hyper/drives'
 import * as archivesDb from '../../dbs/archives'
 import { listDrives, configDrive, removeDrive, getDriveIdent } from '../../filesystem/index'
 import * as trash from '../../filesystem/trash'
-import { PermissionsError } from 'beaker-error-constants'
 
 // exported api
 // =
