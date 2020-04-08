@@ -21,7 +21,7 @@ import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 // =
 
 const MARGIN_SIZE = 10
-const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'peers', 'share', 'site', 'donate']
+const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'bookmarks', 'peers', 'share', 'site', 'donate']
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -77,6 +77,13 @@ export function reposition (parentWindow) {
         y: view.boundsOpt.top,
         width: 250,
         height: 200
+      })
+    } else if (view.menuId === 'bookmarks') {
+      setBounds({
+        x: 35,
+        y: 72,
+        width: 250,
+        height: 550
       })
     } else if (view.menuId === 'donate') {
       setBounds({

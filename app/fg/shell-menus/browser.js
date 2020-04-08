@@ -42,17 +42,12 @@ class BrowserMenu extends LitElement {
   }
 
   async init () {
-    this.bookmarks = await bg.bookmarks.list({sortBy: 'title'})
     await this.requestUpdate()
   }
 
   render () {
     if (this.submenu === 'applications') {
       return this.renderApplications()
-    }
-
-    if (this.submenu === 'bookmarks') {
-      return this.renderBookmarks()
     }
 
     // auto-updater
@@ -115,10 +110,9 @@ class BrowserMenu extends LitElement {
             <span class="label">My Library</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onShowSubmenu('bookmarks')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/bookmarks')}>
             <i class="far fa-star"></i>
             <span class="label">Bookmarks</span>
-            <i class="more fa fa-angle-right"></i>
           </div>
 
           <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
@@ -177,28 +171,6 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-        </div>
-      </div>`
-  }
-
-  renderBookmarks () {
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
-        <div class="header">
-          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
-            <i class="fa fa-angle-left"></i>
-          </button>
-          <h2>Bookmarks</h2>
-        </div>
-
-        <div class="section scrollable">
-          ${this.bookmarks.map(b => html`
-            <div class="menu-item" @click=${e => this.onOpenPage(e, b.href)}>
-              <img class="favicon" src="asset:favicon:${b.href}">
-              <span class="label">${b.title}</span>
-            </div>
-          `)}
         </div>
       </div>`
   }
