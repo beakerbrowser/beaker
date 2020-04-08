@@ -18,12 +18,13 @@ class PeersMenu extends LitElement {
 
   constructor () {
     super()
-    this.pollInterval = null
+    this.pollInterval = undefined
     this.reset()
   }
 
   reset () {
-    this.driveInfo = null
+    this.driveInfo = undefined
+    this.driveCfg = undefined
     if (this.pollInterval) {
       clearInterval(this.pollInterval)
     }
@@ -32,11 +33,13 @@ class PeersMenu extends LitElement {
   async init (params) {
     this.url = params.url
     this.driveInfo = (await bg.views.getTabState('active', {driveInfo: true})).driveInfo
+    this.driveCfg = await bg.drives.get(this.url)
     await this.requestUpdate()
 
     // periodically fetch updates
     this.pollInterval = setInterval(async () => {
-      this.driveInfo.networkStats = await bg.views.getTabState('active', {networkStats: true})
+      var {peers} = await bg.views.getNetworkState('active')
+      this.driveInfo.peers = peers
       this.requestUpdate()
     }, NETWORK_STATS_POLL_INTERVAL)
 
@@ -50,10 +53,10 @@ class PeersMenu extends LitElement {
 
   render () {
     var writable = _get(this, 'driveInfo.writable', false)
-    var isSaved = _get(this, 'driveInfo.userSettings.isSaved', false)
+    var isSaved = _get(this, 'driveCfg.saved', false)
     var peers = _get(this, 'driveInfo.peers', 0)
-    var downloadTotal = _get(this, 'driveInfo.networkStats.downloadTotal', 0)
-    var uploadTotal = _get(this, 'driveInfo.networkStats.uploadTotal', 0)
+    // var downloadTotal = _get(this, 'driveInfo.networkStats.downloadTotal', 0)
+    // var uploadTotal = _get(this, 'driveInfo.networkStats.uploadTotal', 0)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -66,14 +69,13 @@ class PeersMenu extends LitElement {
           </div>
 
           <div class="peer-count">
-            ${peers} ${pluralize(peers, 'peer')} seeding these files.
-            <a class="link" @click=${() => this.onOpenPage(HELP_DOCS_URL)}>Learn more.</a>
+            ${peers} ${pluralize(peers, 'peer')} connected.
           </div>
 
-          <div class="net-stats">
+          ${''/*<div class="net-stats">
             <div><span class="fa fa-arrow-down"></span> ${prettyBytes(downloadTotal)}</div>
             <div><span class="fa fa-arrow-up"></span> ${prettyBytes(uploadTotal)}</div>
-          </div>
+            </div>*/}
         </div>
 
         ${writable
@@ -88,15 +90,15 @@ class PeersMenu extends LitElement {
                 @click=${this.onToggleSeeding}
               >
               <div class="switch"></div>
-              <span class="text">Seed this site${"'"}s files</span>
+              <span class="text">Seed This Drive</span>
             </label>
           `}
 
-        <div class="network-url">
+        ${''/*<div class="network-url">
           <a @click=${e => this.onOpenPage(`beaker://swarm-debugger/${this.url}`)}>
             <i class="fa fa-cog"></i>
             View network activity
-          </a>
+          </a>*/}
         </div>
       </div>
     `
@@ -111,8 +113,13 @@ class PeersMenu extends LitElement {
   }
 
   async onToggleSeeding () {
-    this.driveInfo.userSettings.isSaved = !this.driveInfo.userSettings.isSaved
-    await bg.drives.setUserSettings(this.driveInfo.key, {isSaved: this.driveInfo.userSettings.isSaved})
+    if (!this.driveCfg || !this.driveCfg.saved) {
+      this.driveCfg = {saved: true}
+      await bg.drives.configure(this.url)
+    } else {
+      this.driveCfg = {saved: false}
+      await bg.drives.remove(this.url)
+    }
     bg.views.refreshState('active')
   }
 }

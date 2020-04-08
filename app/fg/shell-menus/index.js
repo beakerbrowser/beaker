@@ -6,6 +6,7 @@ import * as bg from './bg-process-rpc'
 import './browser'
 import './bookmark'
 import './donate'
+import './peers'
 import './share'
 import './site'
 
@@ -91,6 +92,8 @@ class MenusWrapper extends LitElement {
         return html`<bookmark-menu active-menu></bookmark-menu>`
       case 'donate':
         return html`<donate-menu active-menu></donate-menu>`
+      case 'peers':
+        return html`<peers-menu active-menu></peers-menu>`
       case 'share':
         return html`<share-menu active-menu></share-menu>`
       case 'site':

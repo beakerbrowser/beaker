@@ -102,7 +102,7 @@ class ShellWindowUI extends LitElement {
 
     // HACK
     // periodically check to see if the user profile URL has changed
-    // (would be better too have an event trigger this!)
+    // (would be better to have an event trigger this!)
     // -prf
     setInterval(async () => {
       var userProfileUrl = await bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}` : undefined)

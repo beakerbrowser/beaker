@@ -29,6 +29,7 @@ class NavbarLocation extends LitElement {
       availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
       isShareMenuOpen: {type: Boolean},
+      isPeersMenuOpen: {type: Boolean},
       isSiteMenuOpen: {type: Boolean},
       isDonateMenuOpen: {type: Boolean},
       isBookmarked: {type: Boolean, attribute: 'is-bookmarked'},
@@ -53,6 +54,7 @@ class NavbarLocation extends LitElement {
     this.donateLinkHref = false
     this.availableAlternative = ''
     this.isShareMenuOpen = false
+    this.isPeersMenuOpen = false
     this.isSiteMenuOpen = false
     this.isDonateMenuOpen = false
     this.isBookmarked = false
@@ -285,8 +287,11 @@ class NavbarLocation extends LitElement {
     if (!this.isHyperdrive) {
       return ''
     }
+    var cls = classMap({peers: true, pressed: this.isPeersMenuOpen})
     return html`
-      <span class="peers"><span class="fas fa-share-alt"></span> ${this.peers}</span>
+      <button class="${cls}" @click=${this.onClickPeersMenu}>
+        <span class="fas fa-share-alt"></span> ${this.peers}
+      </button>
     `
   }
 
@@ -454,6 +459,26 @@ class NavbarLocation extends LitElement {
         metadata: {title: this.title} // DISABLED was causing issues -prf await bg.views.getPageMetadata(this.activeTabIndex)
       }
     })
+  }
+
+  async onClickPeersMenu () {
+    if (Date.now() - (this.lastPeersMenuClick||0) < 100) {
+      return
+    }
+    this.isPeersMenuOpen = true
+    var rect = this.shadowRoot.querySelector('.peers').getClientRects()[0]
+    // show menu
+    await bg.views.toggleMenu('peers', {
+      bounds: {
+        top: Number(rect.bottom),
+        left: Number(rect.right)
+      },
+      params: {
+        url: this.url
+      }
+    })
+    this.isPeersMenuOpen = false
+    this.lastPeersMenuClick = Date.now()
   }
 
   async onClickSiteMenu () {
@@ -627,9 +652,9 @@ input::-webkit-input-placeholder {
 
 .peers {
   letter-spacing: 0.5px;
-  height: 18px;
-  line-height: 18px;
-  margin: 4px 3px;
+  height: 27px;
+  line-height: 27px;
+  width: 32px;
   font-size: 13px;
   color: #666;
 }
