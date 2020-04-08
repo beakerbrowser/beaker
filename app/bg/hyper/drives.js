@@ -6,7 +6,6 @@ import _debounce from 'lodash.debounce'
 import pda from 'pauls-dat-api2'
 import { wait } from '../../lib/functions'
 import * as logLib from '../logger'
-import { listDrives } from '../filesystem/index'
 const baseLogger = logLib.get()
 const logger = baseLogger.child({category: 'hyper', subcategory: 'drives'})
 
@@ -161,6 +160,12 @@ export async function createNewDrive (manifest = {}) {
   // create the drive
   var drive = await loadDrive(null)
 
+  // seed the drive
+  drive.session.drive.configureNetwork({
+    announce: true,
+    lookup: true
+  })
+
   // write the manifest and default datignore
   await Promise.all([
     drive.pda.writeManifest(manifest)
@@ -276,21 +281,6 @@ async function loadDriveInner (key, opts) {
 
   if (opts && opts.persistSession) {
     drive.persistSession = true
-  }
-
-  // fetch library settings
-  var userSettings = null // TODO uwg datLibrary.getConfig(keyStr)
-  // if (settingsOverride) {
-  //   userSettings = Object.assign(userSettings || {}, settingsOverride)
-  // }
-
-  // put the drive on the network
-  if (!userSettings || userSettings.visibility !== 'private') {
-    drive.session.configureNetwork({
-      announce: true,
-      lookup: true,
-      remember: false
-    })
   }
 
   // fetch dns name if known

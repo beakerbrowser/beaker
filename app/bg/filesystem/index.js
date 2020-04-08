@@ -158,6 +158,14 @@ export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
         driveCfg.forkOf = forkOf
       }
 
+      if (!drive.writable) {
+        // seed the drive
+        drive.session.drive.configureNetwork({
+          announce: true,
+          lookup: true
+        })
+      }
+
       // for forks, we need to ensure:
       // 1. the drives.json forkOf.key is the same as index.json forkOf value
       // 2. there's a local forkOf.label
@@ -204,6 +212,14 @@ export async function removeDrive (url) {
     var key = await hyper.drives.fromURLToKey(url, true)
     var driveIndex = drives.findIndex(drive => drive.key === key)
     if (driveIndex === -1) return
+    let drive = await hyper.drives.getOrLoadDrive(url)
+    if (!drive.writable) {
+      // unseed the drive
+      drive.session.drive.configureNetwork({
+        announce: false,
+        lookup: true
+      })
+    }
     drives.splice(driveIndex, 1)
     await rootDrive.pda.writeFile('/drives.json', JSON.stringify({drives}, null, 2))
   } finally {

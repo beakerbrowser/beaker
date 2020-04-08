@@ -12,8 +12,8 @@ import { getEnvVar } from '../lib/env'
 
 const SETUP_RETRIES = 100
 const CHECK_DAEMON_INTERVAL = 5e3
-const GARBAGE_COLLECT_SESSIONS_INTERVAL = 15e3
-const MAX_SESSION_AGE = 70e3 // 60s is the typical operation timeout, so +10s for safety
+const GARBAGE_COLLECT_SESSIONS_INTERVAL = 30e3
+const MAX_SESSION_AGE = 300e3 // 5min
 
 // typedefs
 // =
@@ -193,14 +193,9 @@ export async function createHyperdriveSession (opts) {
     session: {
       drive,
       opts,
-      networkConfig: undefined,
       async close () {
         delete sessions[key]
         return this.drive.close()
-      },
-      async configureNetwork (cfg) {
-        this.networkConfig = cfg
-        return this.drive.configureNetwork(cfg)
       }
     },
 
@@ -280,9 +275,6 @@ async function reconnectDriveSession (driveObj) {
   const drive = await client.drive.get(driveObj.session.opts)
   driveObj.session.drive = drive
   driveObj.pda = createHyperdriveSessionPDA(drive)
-  if (driveObj.session.networkConfig) {
-    driveObj.session.configureNetwork(driveObj.session.networkConfig)
-  }
 }
 
 /**
