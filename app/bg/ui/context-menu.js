@@ -150,8 +150,8 @@ export default function registerContextMenu () {
             menuItems.push({
               label: driveInfo.writable ? 'Save to My Library' : 'Seed This Drive',
               type: 'checkbox',
-              checked: !!driveCfg || driveIdent.system,
-              enabled: !driveIdent.system,
+              checked: !!driveCfg || driveIdent.internal,
+              enabled: !driveIdent.internal,
               click: (item, win) => {
                 if (!driveCfg) configDrive(key)
                 else removeDrive(key)

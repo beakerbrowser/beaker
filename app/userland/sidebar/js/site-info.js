@@ -168,15 +168,17 @@ class SiteInfo extends LitElement {
       <h1>${this.info.title}</h1>
       ${this.info.description ? html`<p class="description">${this.info.description}</p>` : ''}
       <div style="margin-top: 10px">
-        ${this.info.writable ? html`
-          <button class="transparent" title=${isSaved ? 'Remove From My Library' : 'Restore To My Library'} @click=${this.onClickToggleSaved}>
-            ${isSaved ? html`<span class="fas fa-trash"></span> Remove From My Library` : html`<span class="fas fa-trash-restore"></span> Readd To My Library`}
-          </button>
-        ` : html`
-          <button class="transparent" title=${isSaved ? 'Stop Seeding' : 'Seed This Drive'} @click=${this.onClickToggleSaved}>
-            ${isSaved ? html`<span class="fas fa-times"></span> Stop Seeding` : html`<span class="fas fa-share-alt"></span> Seed This Drive`}
-          </button>
-        `}
+        ${!this.driveCfg.ident.internal ? html`
+          ${this.info.writable ? html`
+            <button class="transparent" title=${isSaved ? 'Remove From My Library' : 'Restore To My Library'} @click=${this.onClickToggleSaved}>
+              ${isSaved ? html`<span class="fas fa-trash"></span> Remove From My Library` : html`<span class="fas fa-trash-restore"></span> Readd To My Library`}
+            </button>
+          ` : html`
+            <button class="transparent" title=${isSaved ? 'Stop Seeding' : 'Seed This Drive'} @click=${this.onClickToggleSaved}>
+              ${isSaved ? html`<span class="fas fa-times"></span> Stop Seeding` : html`<span class="fas fa-share-alt"></span> Seed This Drive`}
+            </button>
+          `}
+        ` : ``}
         <button class="transparent" title="Drive Properties" @click=${this.onClickDriveProperties}><span class="far fa-list-alt"></span> Properties</button>
       </div>
     `

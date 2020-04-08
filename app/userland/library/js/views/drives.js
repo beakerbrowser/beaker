@@ -118,7 +118,7 @@ export class DrivesView extends LitElement {
         {
           icon: drive.info.writable ? 'fas fa-fw fa-trash-alt' : 'fas fa-fw fa-times',
           label: drive.info.writable ? 'Remove from My Library' : 'Stop seeding',
-          disabled: drive.ident.system,
+          disabled: drive.ident.internal,
           click: () => this.removeDrive(drive)
         }
       ]

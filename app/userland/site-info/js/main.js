@@ -181,6 +181,7 @@ class SiteInfoApp extends LitElement {
   renderSiteInfo () {
     var writable = this.info ? this.info.writable : false
     var isSaved = this.driveCfg ? this.driveCfg.saved : false
+    var isInternal = this.driveCfg ? this.driveCfg.ident.internal : false
     var protocol = ''
     if (this.isHttps) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
     if (this.isBeaker) protocol = html`<p class="protocol">This page is served by Beaker</p>`
@@ -195,15 +196,17 @@ class SiteInfoApp extends LitElement {
           </p>
           ${this.isDrive ? html`
             <p class="buttons">
-              ${writable ? html`
-                <button @click=${this.onToggleSaveDrive}>
-                  ${isSaved ? html`<span class="fas fa-fw fa-trash"></span> Remove From My Library` : html`<span class="fas fa-fw fa-trash-restore"></span> Readd To My Library`}
-                </button>
-              ` : html`
-                <button @click=${this.onToggleSaveDrive}>
-                  ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Seeding` : html`<span class="fas fa-fw fa-share-alt"></span> Seed This Drive`}
-                </button>
-              `}
+              ${!isInternal ? html`
+                ${writable ? html`
+                  <button @click=${this.onToggleSaveDrive}>
+                    ${isSaved ? html`<span class="fas fa-fw fa-trash"></span> Remove From My Library` : html`<span class="fas fa-fw fa-trash-restore"></span> Readd To My Library`}
+                  </button>
+                ` : html`
+                  <button @click=${this.onToggleSaveDrive}>
+                    ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Seeding` : html`<span class="fas fa-fw fa-share-alt"></span> Seed This Drive`}
+                  </button>
+                `}
+              ` : ''}
               <button @click=${this.onCloneDrive}><span class="far fa-fw fa-clone"></span> Clone Drive</button>
               <button @click=${this.onForkDrive}><span class="fas fa-fw fa-code-branch"></span> Fork Drive</button>
             </p>

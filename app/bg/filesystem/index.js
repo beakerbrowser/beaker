@@ -25,7 +25,9 @@ import lock from '../../lib/lock'
  * @property {string} [forkOf.label]
  * 
  * @typedef {Object} DriveIdent
+ * @property {boolean} internal
  * @property {boolean} system
+ * @property {boolean} profile
  */
 
 // globals
@@ -33,6 +35,7 @@ import lock from '../../lib/lock'
 
 var browsingProfile
 var rootDrive
+var profileDriveUrl
 var drives = []
 
 // exported api
@@ -96,6 +99,8 @@ export async function setup () {
   }
 
   // load drive config
+  let profileObj = await getProfile()
+  if (profileObj) profileDriveUrl = `hyper://${profileObj.key}/`
   try {
     drives = JSON.parse(await rootDrive.pda.readFile('/drives.json')).drives
   } catch (e) {
@@ -108,7 +113,9 @@ export async function setup () {
  * @returns {DriveIdent}
  */
 export function getDriveIdent (url) {
-  return {system: isRootUrl(url)}
+  var system = isRootUrl(url)
+  var profile = url === profileDriveUrl
+  return {system, profile, internal: system || profile}
 }
 
 /**
@@ -271,14 +278,18 @@ export async function setupDefaultProfile ({title, description, thumbBase64, thu
     title,
     description
   })
+  profileDriveUrl = drive.url
   await rootDrive.pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
 }
 
 export async function getProfile () {
-  var addressBook
-  try { addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse) }
-  catch (e) { console.error(e); addressBook = {} }
-  return addressBook.profiles ? addressBook.profiles[0] : undefined
+  try {
+    var addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse)
+    return addressBook.profiles ? addressBook.profiles[0] : undefined
+  } catch (e) {
+    console.error(e)
+    return undefined
+  }
 }
 
 // internal methods

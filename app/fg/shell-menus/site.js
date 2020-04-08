@@ -128,8 +128,8 @@ class SiteMenu extends LitElement {
           <h2>Hyperdrive</h2>
         </div>
         <div class="section">
-          <div class="menu-item" @click=${this.onToggleSaved} ?disabled=${this.driveConfig.ident.system}>
-            <i class="far fa${this.driveConfig.ident.system || this.driveConfig.saved ? '-check' : ''}-square"></i>
+          <div class="menu-item" @click=${this.onToggleSaved} ?disabled=${this.driveConfig.ident.internal}>
+            <i class="far fa${this.driveConfig.ident.internal || this.driveConfig.saved ? '-check' : ''}-square"></i>
             <span class="label">${this.driveInfo.writable ? 'Save To My Library' : 'Seed This Drive'}</span>
           </div>
         </div>
@@ -188,7 +188,7 @@ class SiteMenu extends LitElement {
   }
 
   onToggleSaved (e) {
-    if (this.driveConfig.ident.system) return
+    if (this.driveConfig.ident.internal) return
     if (!this.driveConfig || !this.driveConfig.saved) {
       bg.drives.configure(this.url)
     } else {
