@@ -184,6 +184,12 @@ nav .new-btn .fas {
   margin-left: 4px;
 }
 
+feed-view {
+  display: block;
+  max-width: 1000px;
+  margin: 26px auto;
+}
+
 drives-view,
 bookmarks-view,
 address-book-view {
