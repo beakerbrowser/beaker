@@ -368,7 +368,7 @@ class EditorApp extends LitElement {
           icon: 'fas fa-fw fa-external-link-square-alt',
           label: 'Copy mount target',
           click () {
-            writeToClipboard(`hyper://${item.stat.mount.key}`)
+            writeToClipboard(`hyper://${item.stat.mount.key}/`)
             toast.create('Copied to your clipboard')
           }
         })

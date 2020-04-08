@@ -12,7 +12,7 @@ export default {
     key = await drives.fromURLToKey(key, true)
     var drive = listDrives().find(drive => drive.key === key)
     var info = await drives.getDriveInfo(key).catch(e => {})
-    var url = `hyper://${key}`
+    var url = `hyper://${key}/`
     var ident = getDriveIdent(url)
     return {
       key,
@@ -111,7 +111,7 @@ export default {
 async function assembleRecords (drivesList) {
   var records = []
   for (let drive of drivesList) {
-    let url = `hyper://${drive.key}`
+    let url = `hyper://${drive.key}/`
     let ident = getDriveIdent(url)
     records.push({
       key: drive.key,

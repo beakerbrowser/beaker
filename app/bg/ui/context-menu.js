@@ -146,7 +146,7 @@ export default function registerContextMenu () {
             let driveInfo = tabManager.getActive(targetWindow).driveInfo
             let key = driveInfo ? driveInfo.key : undefined
             let driveCfg = getDriveConfig(key)
-            let driveIdent = getDriveIdent(`hyper://${key}`)
+            let driveIdent = getDriveIdent(`hyper://${key}/`)
             menuItems.push({
               label: driveInfo.writable ? 'Save to My Library' : 'Seed This Drive',
               type: 'checkbox',

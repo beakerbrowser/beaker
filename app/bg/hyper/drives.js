@@ -131,7 +131,7 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
     await archivesDb.setMeta(key, details)
 
     // emit the updated event
-    details.url = 'hyper://' + key
+    details.url = 'hyper://' + key + '/'
     drivesEvents.emit('updated', {key, details, oldMeta})
     logger.info('Updated recorded metadata for hyperdrive', {key, details})
     return details
@@ -422,8 +422,8 @@ export async function clearFileCache (key) {
 export async function getPrimaryUrl (url) {
   var key = await fromURLToKey(url, true)
   var datDnsRecord = await datDnsDb.getCurrentByKey(key)
-  if (!datDnsRecord) return `hyper://${key}`
-  return `hyper://${datDnsRecord.name}`
+  if (!datDnsRecord) return `hyper://${key}/`
+  return `hyper://${datDnsRecord.name}/`
 }
 
 /**

@@ -61,7 +61,7 @@ export function setup (rpc) {
   function createScopedAPI (url) {
     url = massageUrl(url)
     const urlParsed = parseDriveUrl(url)
-    url = 'hyper://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '')
+    url = 'hyper://' + urlParsed.hostname + (urlParsed.version ? `+${urlParsed.version}` : '') + '/'
 
     // instruct backend to load
     hyperdriveRPC.loadDrive(url)
@@ -80,7 +80,7 @@ export function setup (rpc) {
 
       checkout (version) {
         version = version ? `+${version}` : ''
-        return createScopedAPI(`hyper://${urlParsed.hostname}${version}`)
+        return createScopedAPI(`hyper://${urlParsed.hostname}${version}/`)
       },
 
       async diff (prefix, other, opts = {}) {
@@ -229,7 +229,7 @@ export function setup (rpc) {
       url = massageUrl(url)
       const urlParsed = parseDriveUrl(url)
       version = version ? `+${version}` : ''
-      return createScopedAPI(`hyper://${urlParsed.hostname}${version}`)
+      return createScopedAPI(`hyper://${urlParsed.hostname}${version}/`)
     },
 
     async diff (url, other, opts = {}) {

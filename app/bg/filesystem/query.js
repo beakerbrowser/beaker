@@ -114,7 +114,7 @@ export async function query (root, opts) {
       url: joinPath(drive, innerPath),
       stat,
       drive,
-      mount: type === 'mount' ? `hyper://${stat.mount.key.toString('hex')}` : undefined
+      mount: type === 'mount' ? `hyper://${stat.mount.key.toString('hex')}/` : undefined
     })
   })
 

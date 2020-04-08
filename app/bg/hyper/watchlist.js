@@ -41,7 +41,7 @@ export async function addSite (profileId, url, opts) {
     throw new Error('seedWhenResolved must be a boolean')
   }
   if (!url.startsWith('hyper://')) {
-    url = 'hyper://' + url
+    url = 'hyper://' + url + '/'
   }
 
   try {

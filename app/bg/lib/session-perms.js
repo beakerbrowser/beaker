@@ -29,7 +29,7 @@ export async function toDriveOrigin (url) {
   if (!url.startsWith('hyper://')) {
     throw new Error('Can only create sessions with hyperdrive sites')
   }
-  return `hyper://${await drives.fromURLToKey(url, true)}`
+  return `hyper://${await drives.fromURLToKey(url, true)}/`
 }
 
 /**

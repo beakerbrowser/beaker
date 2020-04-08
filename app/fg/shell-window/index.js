@@ -96,7 +96,7 @@ class ShellWindowUI extends LitElement {
     this.isUpdateAvailable = browserInfo.updater.state === 'downloaded'
     ;[this.tabs, this.userProfileUrl] = await Promise.all([
       bg.views.getState(),
-      bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}` : undefined)
+      bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}/` : undefined)
     ])
     this.stateHasChanged()
 
@@ -105,7 +105,7 @@ class ShellWindowUI extends LitElement {
     // (would be better to have an event trigger this!)
     // -prf
     setInterval(async () => {
-      var userProfileUrl = await bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}` : undefined)
+      var userProfileUrl = await bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}/` : undefined)
       if (this.userProfileUrl !== userProfileUrl) {
         this.userProfileUrl = userProfileUrl
         this.stateHasChanged()

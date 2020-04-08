@@ -165,7 +165,7 @@ class DriveView extends LitElement {
     if (entry.stat.mount && entry.stat.mount.key) {
       return html`
         <div>
-          <a href="hyper://${entry.stat.mount.key}" title=${entry.name}>
+          <a href="hyper://${entry.stat.mount.key}/" title=${entry.name}>
             <span class="fa-fw fas fa-external-link-square-alt"></span>
             ${entry.name}
           </a>

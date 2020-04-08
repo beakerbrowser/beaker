@@ -40,7 +40,7 @@ export async function ls (opts = {}, location = '') {
               // render
               const icon = entry.stat.isDirectory() ? 'folder' : 'file'
               const mountInfo = entry.stat.mount
-                ? html` <a href="hyper://${entry.stat.mount.key}" class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</a>`
+                ? html` <a href="hyper://${entry.stat.mount.key}/" class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</a>`
                 : ''
               return html`<div><a
                 href="${joinPath(joinPath(drive.url, pathname), entry.name)}"
@@ -358,7 +358,7 @@ export const system = {
       var ts = (new Date(e.detail.ts)).toLocaleTimeString()
       html.render(html`
         <div><small style="padding: 0 5px; width: 50px; display: inline-block">caller</small> <a href="${e.detail.caller}">${e.detail.caller}</a></div>
-        <div><small style="padding: 0 5px; width: 50px; display: inline-block">target</small> <a href="hyper://${e.detail.target}">hyper://${e.detail.target}</a></div>
+        <div><small style="padding: 0 5px; width: 50px; display: inline-block">target</small> <a href="hyper://${e.detail.target}/">hyper://${e.detail.target}</a></div>
         <div><small style="padding: 0 5px; width: 50px; display: inline-block">ts</small> ${ts}</div>
         <div><small style="padding: 0 5px; width: 50px; display: inline-block">runtime</small> ${e.detail.runtime}ms</div>
         <div><small style="padding: 0 5px; width: 50px; display: inline-block">method</small> ${e.detail.method}</div>

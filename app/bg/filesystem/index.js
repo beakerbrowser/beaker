@@ -69,6 +69,7 @@ export async function setup () {
     browsingProfile.url = drive.url
     isInitialCreation = true
   }
+  if (!browsingProfile.url.endsWith('/')) browsingProfile.url += '/'
 
   // load root drive
   rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url, {persistSession: true})

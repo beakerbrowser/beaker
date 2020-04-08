@@ -269,7 +269,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-external-link-alt',
           label: `Open mount in new tab`,
           click: () => {
-            beaker.browser.openUrl(`hyper://${item.stat.mount.key}`, {
+            beaker.browser.openUrl(`hyper://${item.stat.mount.key}/`, {
               setActive: true,
               sidebarPanels: ['editor-app']
             })
@@ -279,7 +279,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-link',
           label: `Copy Mount URL`,
           click () {
-            writeToClipboard(`hyper://${item.stat.mount.key}`)
+            writeToClipboard(`hyper://${item.stat.mount.key}/`)
             toast.create('Copied to your clipboard')
           }
         },
@@ -409,7 +409,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-external-link-alt',
           label: `Open mount in new tab`,
           click: () => {
-            beaker.browser.openUrl(`hyper://${this.currentFolder.mount.key}`, {
+            beaker.browser.openUrl(`hyper://${this.currentFolder.mount.key}/`, {
               setActive: true,
               sidebarPanels: ['editor-app']
             })
@@ -419,7 +419,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-link',
           label: `Copy Mount URL`,
           click () {
-            writeToClipboard(`hyper://${this.currentFolder.mount.key}`)
+            writeToClipboard(`hyper://${this.currentFolder.mount.key}/`)
             toast.create('Copied to your clipboard')
           }
         }
