@@ -393,7 +393,7 @@ export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
   } else {
     meta = await archivesDb.getMeta(key)
     driveInfo = {
-      version: 0,
+      version: undefined,
       peers: undefined
     }
   }
