@@ -269,8 +269,7 @@ class SelectFileModal extends LitElement {
       }
     }
 
-    var systemDriveUrl = bg.beakerFs.get().url
-    this.drives.push(await bg.hyperdrive.getInfo(systemDriveUrl))
+    this.drives.push(await bg.hyperdrive.getInfo('hyper://system/'))
     this.driveInfo = await bg.hyperdrive.getInfo(this.drive)
     await this.readdir()
     this.updateComplete.then(_ => {

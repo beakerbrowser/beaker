@@ -222,7 +222,7 @@ export class AddContactPopup extends BasePopup {
       return
     }
 
-    const sysDrive = beaker.hyperdrive.drive('sys')
+    const sysDrive = beaker.hyperdrive.drive('hyper://system/')
     var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))
     addressBook.contacts = addressBook.contacts || []
     var existingContact = addressBook.contacts.find(contact => contact.key === this.contactInfo.key)

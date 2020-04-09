@@ -208,7 +208,7 @@ export async function bookmark (opts = {}, href = '.') {
   href = this.env.resolve(href || '.')
   var name = opts.filename || href.split('/').filter(Boolean).pop()
   if (!name.endsWith('.goto')) name += '.goto'
-  await beaker.hyperdrive.drive('sys').writeFile(`/bookmarks/${name}`, '', {metadata: {href}})
+  await beaker.hyperdrive.drive('hyper://system/').writeFile(`/bookmarks/${name}`, '', {metadata: {href}})
 }
 
 // utilities

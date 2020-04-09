@@ -42,7 +42,7 @@ export class BookmarksView extends LitElement {
   }
 
   async load () {
-    var bookmarks = await beaker.hyperdrive.drive('sys').query({
+    var bookmarks = await beaker.hyperdrive.drive('hyper://system/').query({
       type: 'file',
       path: ['/bookmarks/*.goto']
     })
@@ -145,9 +145,9 @@ export class BookmarksView extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     if (_pinned(bookmark)) {
-      await beaker.hyperdrive.drive('sys').deleteMetadata(bookmark.path, ['pinned'])
+      await beaker.hyperdrive.drive('hyper://system/').deleteMetadata(bookmark.path, ['pinned'])
     } else {
-      await beaker.hyperdrive.drive('sys').updateMetadata(bookmark.path, {pinned: '1'})
+      await beaker.hyperdrive.drive('hyper://system/').updateMetadata(bookmark.path, {pinned: '1'})
     }
     this.load()
     emit(this, 'update-pins')
@@ -165,7 +165,7 @@ export class BookmarksView extends LitElement {
 
   async onClickRemove (file) {
     if (!confirm('Are you sure?')) return
-    await beaker.hyperdrive.drive('sys').unlink(file.path)
+    await beaker.hyperdrive.drive('hyper://system/').unlink(file.path)
     toast.create('Bookmark removed', '', 10e3)
     this.load()
   }

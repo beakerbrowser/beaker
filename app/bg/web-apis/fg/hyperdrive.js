@@ -181,12 +181,8 @@ export function setup (rpc) {
     }
   }
 
-  let filesystemApi = rpc.importAPI('beaker-filesystem', filesystemManifest, {timeout: false, errors})
   var api = {
     drive (url) {
-      if (url === 'sys' && location.protocol === 'beaker:') {
-        url = filesystemApi.get().url
-      }
       return createScopedAPI(url)
     },
 

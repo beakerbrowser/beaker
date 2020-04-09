@@ -100,7 +100,7 @@ class ShareMenu extends LitElement {
         }
 
         // make sure it can be shared
-        if (driveInfo && driveInfo.url !== bg.beakerFs.get().url) {
+        if (driveInfo && driveInfo.url !== 'hyper://system/') {
           shareableUrl = driveInfo.url + '/' + pathAcc.join('/') + urlp.search + urlp.hash
         }
       } catch (e) {

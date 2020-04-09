@@ -138,7 +138,7 @@ class BrowserMenu extends LitElement {
             <span class="label">Sync Devices</span>
           </div>
             
-          <div class="menu-item" @click=${this.onOpenSystemDrive}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'hyper://system')}>
             <i class="far fa-hdd"></i>
             <span class="label">My System Drive</span>
           </div>
@@ -249,11 +249,6 @@ class BrowserMenu extends LitElement {
 
   onOpenPage (e, url) {
     bg.shellMenus.createTab(url)
-    bg.shellMenus.close()
-  }
-
-  onOpenSystemDrive (e) {
-    bg.shellMenus.createTab(`https://hyperdrive.network/${bg.beakerFs.get().url.slice('hyper://'.length)}`)
     bg.shellMenus.close()
   }
 

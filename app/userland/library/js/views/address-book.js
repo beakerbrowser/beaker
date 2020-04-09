@@ -5,7 +5,7 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import addessBookCSS from '../../css/views/address-book.css.js'
 
-const sysDrive = beaker.hyperdrive.drive('sys')
+const sysDrive = beaker.hyperdrive.drive('hyper://system/')
 
 async function updateAddressBook (updateFn) {
   var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => ({contacts: []}))

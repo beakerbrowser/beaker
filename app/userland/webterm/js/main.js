@@ -110,7 +110,7 @@ class WebTerm extends LitElement {
 
     if (this.isDetached) {
       let ctx = (new URLSearchParams(location.search)).get('url')
-      this.load(ctx || beaker.hyperdrive.drive('sys').url).then(_ => {
+      this.load(ctx || beaker.hyperdrive.drive('hyper://system/').url).then(_ => {
         this.setFocus()
       })
     }
@@ -131,8 +131,6 @@ class WebTerm extends LitElement {
 
   async load (url) {
     this.url = url
-
-    this.envVars.sys = beaker.hyperdrive.drive('sys').url
 
     var cwd = this.parseURL(this.url)
     while (cwd.pathame !== '/') {
@@ -170,7 +168,7 @@ class WebTerm extends LitElement {
       manifest: JSON.parse(await beaker.browser.readFile('beaker://std-cmds/index.json', 'utf8'))
     }]
 
-    var cmdPkgDrives = await beaker.hyperdrive.drive('sys').readFile('/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
+    var cmdPkgDrives = await beaker.hyperdrive.readFile('hyper://system/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
     for (let driveUrl of cmdPkgDrives) {
       try {
         packages.push({

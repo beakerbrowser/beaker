@@ -85,7 +85,7 @@ class EditorApp extends LitElement {
 
     if (this.isDetached) {
       let ctx = (new URLSearchParams(location.search)).get('url')
-      this.load(ctx || beaker.hyperdrive.drive('sys').url)
+      this.load(ctx || 'hyper://system/')
     }
   }
 
