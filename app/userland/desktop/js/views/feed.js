@@ -104,6 +104,7 @@ export class FeedView extends LitElement {
 
   async loadFeed (contacts) {
     console.debug('Running feed query')
+    localStorage.lastFeedUpdate = Date.now()
     var files = await beaker.hyperdrive.query({
       path: '/microblog/*',
       drive: contacts.map(c => c.url),
@@ -155,7 +156,6 @@ export class FeedView extends LitElement {
       this.requestUpdate()
     }
     localStorage.cachedFeed = JSON.stringify(this.posts)
-    localStorage.lastFeedUpdate = Date.now()
   }
 
   // rendering

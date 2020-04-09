@@ -4,8 +4,10 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { EditBookmarkPopup } from 'beaker://library/js/com/edit-bookmark-popup.js'
 import { AddContactPopup } from 'beaker://library/js/com/add-contact-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
+import { AddPostPopup } from './com/add-post-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
+import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import '/js/views/feed.js'
@@ -87,11 +89,16 @@ class DesktopApp extends LitElement {
         ${navItem('bookmarks', 'Bookmarks')}
         ${navItem('address-book', 'Address Book')}
         <a @click=${this.onClickNavMore} title="More"><span class="fas fa-fw fa-ellipsis-h"></span></a>
+        <span class="spacer"></span>
         ${this.currentNav !== 'feed' ? html`
           <div class="search-ctrl">
             <span class="fas fa-search"></span>
             <input @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
           </div>
+        ` : ''}
+        ${this.currentNav === 'feed' ? html`
+          <a class="new-btn" @click=${this.onClickSyncFeed}><span class="fas fa-sync"></span> Sync Feed</a>
+          <a class="new-btn" @click=${this.onClickNewPost}><span class="fas fa-plus"></span> New Post</a>
         ` : ''}
         ${this.currentNav === 'drives' ? html`
           <a class="new-btn" @click=${this.onClickNewDrive}><span class="fas fa-plus"></span> New Drive</a>
@@ -150,6 +157,28 @@ class DesktopApp extends LitElement {
     contextMenu.create({x: rect.left, y: rect.bottom, noBorders: true, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
   }
 
+  async onClickSyncFeed (e) {
+    toast.create('Syncing...')
+    await this.shadowRoot.querySelector('feed-view').forceLoad()
+    toast.destroy()
+    toast.create('Feed Synced', '', 2e3)
+  }
+
+  async onClickNewPost (e) {
+    try {
+      let post = await AddPostPopup.create()
+      post.filename = post.filename || `${Date.now()}.md`
+      if (/\.(md|txt|htm|html)$/i.test(post.filename) === false) post.filename += '.md'
+      await beaker.hyperdrive.drive(this.profile.url).writeFile(joinPath('microblog', post.filename), post.body)
+      toast.create('Post published', '', 3e3)
+    } catch (e) {
+      // ignore, user probably cancelled
+      console.log(e)
+      return
+    }
+    await this.shadowRoot.querySelector('feed-view').forceLoad()
+  }
+
   async onClickNewDrive (e) {
     var drive = await beaker.hyperdrive.createDrive()
     window.location = drive.url
@@ -160,8 +189,9 @@ class DesktopApp extends LitElement {
       await desktop.createLink(await AddLinkPopup.create(), pinned)
       toast.create('Link added', '', 10e3)
     } catch (e) {
-      // ignore
+      // ignore, user probably cancelled
       console.log(e)
+      return
     }
     this.load()
   }

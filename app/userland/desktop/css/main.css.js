@@ -144,8 +144,11 @@ nav a.active {
   color: #445;
 }
 
+nav .spacer {
+  flex: 1;
+}
+
 nav .search-ctrl {
-  margin-left: auto;
   position: relative;
   height: 24px;
 }

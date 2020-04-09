@@ -55,7 +55,7 @@ a[href]:hover {
   grid-gap: 0;
   grid-template-columns: 65px 1fr;
   grid-template-rows: auto auto;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   padding: 10px 50px 10px 20px;
 }
 
