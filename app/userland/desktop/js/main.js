@@ -103,7 +103,7 @@ class DesktopApp extends LitElement {
           <a class="new-btn" @click=${this.onClickNewContact}><span class="fas fa-plus"></span> New Contact</a>
         ` : ''}
       </nav>
-      <feed-view class="${hiddenCls('feed')}" loadable .profile=${this.profile}></feed-view>
+      <feed-view class="${hiddenCls('feed')}" loadable></feed-view>
       <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
       <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></bookmarks-view>
       <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></address-book-view>
