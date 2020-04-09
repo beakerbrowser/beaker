@@ -1,4 +1,4 @@
-import hyperDns from '../../hyper/dns'
+import * as hyperDns from '../../hyper/dns'
 import * as drives from '../../hyper/drives'
 import * as archivesDb from '../../dbs/archives'
 import { listDrives, configDrive, removeDrive, getDriveIdent } from '../../filesystem/index'

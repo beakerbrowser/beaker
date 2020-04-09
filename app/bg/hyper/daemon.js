@@ -173,6 +173,7 @@ export function getHyperdriveSession (opts) {
  * @param {number} [opts.version]
  * @param {Buffer} [opts.hash]
  * @param {boolean} [opts.writable]
+ * @param {String} [opts.domain]
  * @returns {Promise<DaemonHyperdrive>}
  */
 export async function createHyperdriveSession (opts) {
@@ -185,9 +186,9 @@ export async function createHyperdriveSession (opts) {
   const key = opts.key = datEncoding.toStr(drive.key)
   var driveObj = {
     key: datEncoding.toBuf(key),
-    url: `hyper://${key}/`,
+    url: `hyper://${opts.domain || key}/`,
     writable: drive.writable,
-    domain: undefined,
+    domain: opts.domain,
     persistSession: false,
 
     session: {

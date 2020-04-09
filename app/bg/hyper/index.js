@@ -1,7 +1,7 @@
 import * as drives from './drives'
 import * as assets from './assets'
 import * as debug from './debugging'
-import dns from './dns'
+import * as dns from './dns'
 import * as watchlist from './watchlist'
 import * as daemon from './daemon'
 

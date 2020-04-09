@@ -94,16 +94,14 @@ export const protocolHandler = async function (request, respond) {
   }
 
   // resolve the name
-  // (if it's a hostname, do a DNS lookup)
-  // try {
-  //   var driveKey = await hyperDns.resolveName(urlp.host, {ignoreCachedMiss: true})
-  // } catch (err) {
-  //   return respondError(404, 'No DNS record found for ' + urlp.host, {
-  //     errorDescription: 'No DNS record found',
-  //     errorInfo: `No DNS record found for hyper://${urlp.host}`
-  //   })
-  // }
-  var driveKey = await drives.fromURLToKey(urlp.host)
+  try {
+    var driveKey = await drives.fromURLToKey(urlp.host, true)
+  } catch (err) {
+    return respondError(404, 'No DNS record found for ' + urlp.host, {
+      errorDescription: 'No DNS record found',
+      errorInfo: `No DNS record found for hyper://${urlp.host}`
+    })
+  }
 
   // setup a timeout
   var timeout

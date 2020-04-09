@@ -1,4 +1,4 @@
-import datDns from './dns'
+import * as hyperDns from './dns'
 
 /**
  * @returns {string}
@@ -27,7 +27,7 @@ export const drivesDebugPage = function () {
  * @returns {string}
  */
 export const datDnsCachePage = function () {
-  var cache = datDns.listCache()
+  var cache = hyperDns.listCache()
   return `<html>
     <body>
       <h1>Dat DNS cache</h1>

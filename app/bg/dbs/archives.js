@@ -8,7 +8,7 @@ import { InvalidArchiveKeyError } from 'beaker-error-constants'
 import * as db from './profile-data-db'
 import lock from '../../lib/lock'
 import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
-import hyperDns from '../hyper/dns'
+import * as hyperDns from '../hyper/dns'
 
 // typedefs
 // =

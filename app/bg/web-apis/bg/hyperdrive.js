@@ -6,7 +6,7 @@ import _get from 'lodash.get'
 import _flattenDeep from 'lodash.flattendeep'
 import * as modals from '../../ui/subwindows/modals'
 import * as permissions from '../../ui/permissions'
-import hyperDns from '../../hyper/dns'
+import * as hyperDns from '../../hyper/dns'
 import * as drives from '../../hyper/drives'
 import * as archivesDb from '../../dbs/archives'
 import * as auditLog from '../../dbs/audit-log'
@@ -778,7 +778,8 @@ function normalizeFilepath (str) {
 // helper to handle the URL argument that's given to most args
 // - can get a hyperdrive hash, or hyperdrive url
 // - sets checkoutFS to what's requested by version
-export async function lookupDrive (sender, driveKey, version) {
+export async function lookupDrive (sender, driveHostname, version) {
+  var driveKey = await drives.fromURLToKey(driveHostname, true)
   var drive = drives.getDrive(driveKey)
   if (!drive) drive = await drives.loadDrive(driveKey)
   var {checkoutFS, isHistoric} = await drives.getDriveCheckout(drive, version)

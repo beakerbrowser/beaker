@@ -1,5 +1,5 @@
 import { basename } from 'path'
-import hyperDns from '../hyper/dns'
+import * as hyperDns from '../hyper/dns'
 import { joinPath } from '../../lib/strings'
 import { chunkMapAsync } from '../../lib/functions'
 import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
@@ -81,6 +81,15 @@ export async function query (root, opts) {
     opts.mount = HYPERDRIVE_HASH_REGEX.exec(opts.mount)[0]
   }
 
+  var keyToUrlCache = {}
+  async function keyToUrl (key) {
+    if (keyToUrlCache[key]) return keyToUrlCache[key]
+    var domain = await hyperDns.reverseResolve(key)
+    if (!domain) domain = key
+    keyToUrlCache[key] = `hyper://${domain}/`
+    return keyToUrlCache[key]
+  }
+
   // iterate all matching paths and match against the query
   var candidates = await expandPaths(root, opts.path)
   var results = []
@@ -107,14 +116,14 @@ export async function query (root, opts) {
       if (!metaMatch) return
     }
 
-    var drive = `hyper://${localDriveKey}/`
+    var drive = await keyToUrl(localDriveKey)
     results.push({
       type,
       path,
       url: joinPath(drive, innerPath),
       stat,
       drive,
-      mount: type === 'mount' ? `hyper://${stat.mount.key.toString('hex')}/` : undefined
+      mount: type === 'mount' ? await keyToUrl(stat.mount.key.toString('hex')) : undefined
     })
   })
 

@@ -5,7 +5,7 @@ import filesystemManifest from '../manifests/internal/beaker-filesystem'
 import { EventTarget, Event, fromEventStream } from './event-target'
 import { createStat } from './stat'
 
-const isDriveUrlRe = /^(hyper:\/\/)?[0-9a-f]{64}/i
+const isDriveUrlRe = /^(hyper:\/\/)?[^\/]+/i
 
 export function setup (rpc) {
   // create the rpc apis
@@ -28,8 +28,7 @@ export function setup (rpc) {
       if (!isDriveUrlRe.test(url)) {
         url = joinPath('hyper://' + location.hostname, url)
       }
-    }
-    if (!url.startsWith('hyper://')) {
+    } else if (!url.startsWith('hyper://')) {
       // didnt include the scheme
       url = 'hyper://' + url
     }

@@ -6,7 +6,7 @@ const logger = logLib.child({category: 'hyper', subcategory: 'watchlist'})
 // dat modules
 import * as drives from './drives'
 
-import datDns from './dns'
+import * as hyperDns from './dns'
 import * as watchlistDb from '../dbs/watchlist'
 
 // globals
@@ -85,7 +85,7 @@ async function watch (site) {
   // resolve DNS
   var key
   try {
-    key = await datDns.resolveName(site.url)
+    key = await hyperDns.resolveName(site.url)
   } catch (e) {}
   if (!key) {
     // try again in 30s

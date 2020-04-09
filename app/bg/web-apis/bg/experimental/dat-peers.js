@@ -2,7 +2,7 @@ import { parseDriveUrl } from '../../../../lib/urls'
 import { PermissionsError } from 'beaker-error-constants'
 import * as permissions from '../../../ui/permissions'
 import * as drives from '../../../hyper/drives'
-import hyperDns from '../../../hyper/dns'
+import * as hyperDns from '../../../hyper/dns'
 import { HYPERDRIVE_HASH_REGEX } from '../../../../lib/const'
 
 // constants

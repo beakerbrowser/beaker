@@ -53,7 +53,7 @@ export function get () {
  * @returns {boolean}
  */
 export function isRootUrl (url) {
-  return url === browsingProfile.url
+  return url === browsingProfile.url || url === 'hyper://system/'
 }
 
 /**
@@ -75,6 +75,7 @@ export async function setup () {
   if (!browsingProfile.url.endsWith('/')) browsingProfile.url += '/'
 
   // load root drive
+  hyper.dns.setLocal('system', browsingProfile.url)
   rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url, {persistSession: true})
   
   // enforce root files structure

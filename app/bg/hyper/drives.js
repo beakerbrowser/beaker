@@ -11,12 +11,12 @@ const logger = baseLogger.child({category: 'hyper', subcategory: 'drives'})
 
 // dbs
 import * as archivesDb from '../dbs/archives'
-import * as datDnsDb from '../dbs/dat-dns'
+import * as hyperDnsDb from '../dbs/dat-dns'
 
 // hyperdrive modules
 import * as daemon from './daemon'
 import * as driveAssets from './assets'
-import hyperDns from './dns'
+import * as hyperDns from './dns'
 
 // fs modules
 import * as filesystem from '../filesystem/index'
@@ -55,12 +55,13 @@ export async function setup () {
   // connect to the daemon
   await daemon.setup()
 
-  datDnsDb.on('updated', ({key, name}) => {
-    var drive = getDrive(key)
-    if (drive) {
-      drive.domain = name
-    }
-  })
+  // TODO
+  // hyperDnsDb.on('updated', ({key, name}) => {
+  //   var drive = getDrive(key)
+  //   if (drive) {
+  //     drive.domain = name
+  //   }
+  // })
 
   logger.info('Initialized dat daemon')
 };
@@ -275,17 +276,18 @@ export async function loadDrive (key, opts) {
 
 // main logic, separated out so we can capture the promise
 async function loadDriveInner (key, opts) {
+  // fetch dns name if known
+  var domain = await hyperDns.reverseResolve(key)
+  // let dnsRecord = await hyperDnsDb.getCurrentByKey(datEncoding.toStr(key)) TODO
+  // drive.domain = dnsRecord ? dnsRecord.name : undefined
+  
   // create the drive session with the daemon
-  var drive = await daemon.createHyperdriveSession({key})
+  var drive = await daemon.createHyperdriveSession({key, domain})
   key = drive.key
 
   if (opts && opts.persistSession) {
     drive.persistSession = true
   }
-
-  // fetch dns name if known
-  // let dnsRecord = await datDnsDb.getCurrentByKey(datEncoding.toStr(key))
-  // drive.domain = dnsRecord ? dnsRecord.name : undefined
 
   // update db
   archivesDb.touch(drive.key).catch(err => console.error('Failed to update lastAccessTime for drive', drive.key, err))
@@ -338,9 +340,9 @@ export async function getDriveCheckout (drive, version) {
         checkoutFS = await daemon.createHyperdriveSession({
           key: drive.key,
           version,
-          writable: false
+          writable: false,
+          domain: drive.domain
         })
-        // checkoutFS.domain = drive.domain
         isHistoric = true
       }
     }
@@ -375,7 +377,9 @@ export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
   if (!drive && ignoreCache) {
     drive = await loadDrive(key)
   }
-  var url = `hyper://${key}/`
+
+  var domain = drive ? drive.domain : await hyperDns.reverseResolve(key)
+  var url = `hyper://${domain || key}/`
 
   // fetch drive data
   var meta, manifest, driveInfo
@@ -404,7 +408,7 @@ export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
   meta.manifest = manifest
   meta.version = driveInfo.version
   meta.peers = driveInfo.peers
-
+  
   return meta
 }
 
@@ -421,7 +425,7 @@ export async function clearFileCache (key) {
  */
 export async function getPrimaryUrl (url) {
   var key = await fromURLToKey(url, true)
-  var datDnsRecord = await datDnsDb.getCurrentByKey(key)
+  var datDnsRecord = await hyperDnsDb.getCurrentByKey(key)
   if (!datDnsRecord) return `hyper://${key}/`
   return `hyper://${datDnsRecord.name}/`
 }
@@ -447,19 +451,19 @@ export async function confirmDomain (key) {
   //   return false
   // }
   // if (!datJson.domain) {
-  //   await datDnsDb.unset(key)
+  //   await hyperDnsDb.unset(key)
   //   return false
   // }
 
   // // confirm match with current DNS
   // var dnsKey = await hyperDns.resolveName(datJson.domain)
   // if (key !== dnsKey) {
-  //   await datDnsDb.unset(key)
+  //   await hyperDnsDb.unset(key)
   //   return false
   // }
 
   // // update mapping
-  // await datDnsDb.update({name: datJson.domain, key})
+  // await hyperDnsDb.update({name: datJson.domain, key})
   // return true
 }
 

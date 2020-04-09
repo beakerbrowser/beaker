@@ -199,7 +199,7 @@ class SiteInfoApp extends LitElement {
               ${!isInternal ? html`
                 ${writable ? html`
                   <button @click=${this.onToggleSaveDrive}>
-                    ${isSaved ? html`<span class="fas fa-fw fa-trash"></span> Remove From My Library` : html`<span class="fas fa-fw fa-trash-restore"></span> Readd To My Library`}
+                    ${isSaved ? html`<span class="fas fa-fw fa-trash"></span> Remove From Library` : html`<span class="fas fa-fw fa-trash-restore"></span> Readd To Library`}
                   </button>
                 ` : html`
                   <button @click=${this.onToggleSaveDrive}>
