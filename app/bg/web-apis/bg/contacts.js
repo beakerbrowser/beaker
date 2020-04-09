@@ -99,6 +99,10 @@ export default {
       addressBook.contacts.push({key: res.key})
     }
     await filesystem.get().pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
+
+    if (res.seed) {
+      await filesystem.configDrive(res.key)
+    }
   },
 
   /**

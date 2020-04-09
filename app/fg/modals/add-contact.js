@@ -18,6 +18,7 @@ class AddContactModal extends LitElement {
     return [commonCSS, inputsCSS, buttonsCSS, spinnerCSS, css`
     .wrapper {
       padding: 0;
+      height: 254px;
     }
 
     h1.title {
@@ -47,7 +48,7 @@ class AddContactModal extends LitElement {
     .contact {
       display: flex;
       align-items: center;
-      height: 100px;
+      height: 108px;
       padding: 10px 20px;
       border-bottom: 1px solid #f0f0f7;
       box-sizing: border-box;
@@ -82,6 +83,22 @@ class AddContactModal extends LitElement {
       color: #fff;
     }
 
+    .seed-prompt {
+      background: #f3f3f8;
+      padding: 12px 24px;
+    }
+
+    .seed-prompt label {
+      margin: 0;
+    }
+
+    .seed-prompt input {
+      display: inline;
+      margin: 0 5px 0 0;
+      width: auto;
+      height: auto;
+    }
+
     .form-actions {
       display: flex;
       justify-content: space-between;
@@ -113,6 +130,15 @@ class AddContactModal extends LitElement {
     }
   }
 
+
+  get seedChecked () {
+    try {
+      return this.shadowRoot.querySelector('[name=seed]').checked
+    } catch (e) {
+      return false
+    }
+  }
+
   // rendering
   // =
 
@@ -140,6 +166,17 @@ class AddContactModal extends LitElement {
             </div>
           `}
 
+          <div class="seed-prompt">
+            ${this.info ? html`
+              <label>
+                ${!this.info.writable ? html`
+                  <input type="checkbox" name="seed" checked>
+                  Seed this drive to help keep it online.
+                ` : 'Note: This is your drive'}
+              </label>
+            ` : ''}
+          </div>
+
           <div class="form-actions">
             <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
             <button type="submit" class="btn primary" tabindex="5" ?disabled=${!this.info}>OK</button>
@@ -166,7 +203,7 @@ class AddContactModal extends LitElement {
   async onSubmit (e) {
     e.preventDefault()
     if (this.info) {
-      this.cbs.resolve({key: this.info.key})
+      this.cbs.resolve({key: this.info.key, seed: this.seedChecked})
     } else {
       this.cbs.reject(new Error('Canceled'))
     }
