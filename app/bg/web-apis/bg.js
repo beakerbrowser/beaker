@@ -42,13 +42,15 @@ import { WEBAPI as beakerBrowserAPI } from '../browser'
 
 // external manifests
 import contactsManifest from './manifests/external/contacts'
-import shellManifest from './manifests/external/shell'
 import hyperdriveManifest from './manifests/external/hyperdrive'
+import peersocketsManifest from './manifests/external/peersockets'
+import shellManifest from './manifests/external/shell'
 
 // external apis
 import contactsAPI from './bg/contacts'
-import shellAPI from './bg/shell'
 import hyperdriveAPI from './bg/hyperdrive'
+import peersocketsAPI from './bg/peersockets'
+import shellAPI from './bg/shell'
 
 // experimental manifests
 import experimentalCapturePageManifest from './manifests/external/experimental/capture-page'
@@ -77,8 +79,9 @@ export const setup = function () {
 
   // external apis
   rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
-  rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
+  rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
+  rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
 
   // experimental apis
   rpc.exportAPI('experimental-capture-page', experimentalCapturePageManifest, experimentalCapturePageAPI, secureOnly)

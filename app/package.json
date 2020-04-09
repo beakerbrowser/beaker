@@ -90,6 +90,7 @@
     "split2": "^2.2.0",
     "sqlite3": "^4.1.0",
     "stream-throttle": "^0.1.3",
+    "streamx": "^2.6.0",
     "supports-sparse-files": "^1.0.2",
     "textextensions": "^2.5.0",
     "through2": "^2.0.5",

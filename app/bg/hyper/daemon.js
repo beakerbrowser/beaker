@@ -22,6 +22,7 @@ const MAX_SESSION_AGE = 300e3 // 5min
 * @typedef {Object} DaemonHyperdrive
 * @prop {number} sessionId
 * @prop {Buffer} key
+* @prop {Buffer} discoveryKey
 * @prop {string} url
 * @prop {string} domain
 * @prop {boolean} writable
@@ -72,6 +73,10 @@ var events = new EventEmitter()
 // =
 
 export const on = events.on.bind(events)
+
+export function getClient () {
+  return client
+}
 
 export function isActive () {
   if (isFirstConnect) {
@@ -185,7 +190,8 @@ export async function createHyperdriveSession (opts) {
   const drive = await client.drive.get(opts)
   const key = opts.key = datEncoding.toStr(drive.key)
   var driveObj = {
-    key: datEncoding.toBuf(key),
+    key: drive.key,
+    discoveryKey: drive.discoveryKey,
     url: `hyper://${opts.domain || key}/`,
     writable: drive.writable,
     domain: opts.domain,

@@ -1,6 +1,7 @@
-import { contextBridge, webFrame } from 'electron'
+import { fromEventStream } from './event-target'
 import errors from 'beaker-error-constants'
 import contactsManifest from '../manifests/external/contacts'
+import peersocketsManifest from '../manifests/external/peersockets'
 import shellManifest from '../manifests/external/shell'
 
 const RPC_OPTS = { timeout: false, errors }
@@ -8,6 +9,22 @@ const RPC_OPTS = { timeout: false, errors }
 export const setup = function (rpc) {
   var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
   var contacts = rpc.importAPI('contacts', contactsManifest, RPC_OPTS)
+
+  var peersocketsRPC = rpc.importAPI('peersockets', peersocketsManifest, RPC_OPTS)
+  var peersockets = {
+    info: peersocketsRPC.info,
+    join (topic) {
+      var stream = peersocketsRPC.join(topic)
+      var obj = fromEventStream(stream)
+      obj.send = (peerId, msg) => {
+        stream.write([peerId, msg])
+      }
+      return obj
+    },
+    watch () {
+      return fromEventStream(peersocketsRPC.watch())
+    }
+  }
 
   var _terminalCommands = []
   var terminal = {
@@ -36,5 +53,5 @@ export const setup = function (rpc) {
     }
   }
 
-  return {contacts, shell, terminal}
+  return {contacts, peersockets, shell, terminal}
 }
