@@ -86,11 +86,37 @@ export class AddContactPopup extends BasePopup {
       margin: 0 !important;
       font-style: normal;
     }
+
+    .seed-prompt {
+      background: #f3f3f8;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+    }
+
+    .seed-prompt label {
+      margin: 0;
+    }
+
+    .seed-prompt input {
+      display: inline;
+      margin: 0 5px 0 0;
+      width: auto;
+      height: auto;
+    }
     `]
   }
 
   get urlValue () {
     return this.shadowRoot.querySelector('[name=url]').value
+  }
+
+  get seedChecked () {
+    try {
+      return this.shadowRoot.querySelector('[name=seed]').checked
+    } catch (e) {
+      return false
+    }
   }
 
   async loadContactInfo () {
@@ -182,6 +208,15 @@ export class AddContactPopup extends BasePopup {
           `}
         </div>
 
+        ${!this.isLoadingContactInfo && this.contactInfo && !this.contactInfo.writable ? html`
+          <div class="seed-prompt">
+            <label>
+              <input type="checkbox" name="seed" checked>
+              Seed this drive to help keep it online.
+            </label>
+          </div>
+        ` : ''}
+
         <div class="actions">
           <button type="button" class="btn" @click=${this.onReject} tabindex="2">Cancel</button>
           <button
@@ -229,6 +264,10 @@ export class AddContactPopup extends BasePopup {
     if (!existingContact) {
       addressBook.contacts.push({key: this.contactInfo.key})
       await sysDrive.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
+    }
+
+    if (this.seedChecked) {
+      await beaker.drives.configure(this.contactInfo.key)
     }
 
     this.dispatchEvent(new CustomEvent('resolve'))
