@@ -12,7 +12,6 @@ export const setup = function (rpc) {
 
   var peersocketsRPC = rpc.importAPI('peersockets', peersocketsManifest, RPC_OPTS)
   var peersockets = {
-    info: peersocketsRPC.info,
     join (topic) {
       var stream = peersocketsRPC.join(topic)
       var obj = fromEventStream(stream)
