@@ -1,4 +1,4 @@
-import { Duplex, Writable } from 'streamx'
+import { Duplex, Readable } from 'streamx'
 import { getClient } from '../../hyper/daemon'
 import * as drives from '../../hyper/drives'
 import { PermissionsError } from 'beaker-error-constants'
@@ -24,6 +24,7 @@ export default {
     var stream = new Duplex()
     var topicHandle = getClient().peersockets.join(topic, {
       onmessage (peerId, message) {
+        console.log('got message', peerId, message)
         stream.write(['message', {peerId, message}])
       }
     })
@@ -32,6 +33,7 @@ export default {
         console.debug('Incorrectly formed message from peersockets send API', data)
         return
       }
+      console.log('sending message', ...data)
       topicHandle.send(data[0], data[1])
     })
     stream.on('close', () => {
@@ -44,11 +46,17 @@ export default {
 
   async watch () {
     var drive = await getSenderDrive(this.sender)
-    var stream = new Writable()
+    var stream = new Readable()
     console.debug('Watching peers', drive.discoveryKey)
     var stopwatch = getClient().peers.watchPeers(drive.discoveryKey, {
-      onjoin: (peer) => stream.write(['join', {peerId: peer.id}]),
-      onleave: (peer) => stream.write(['leave', {peerId: peer.id}])
+      onjoin: async (peerId) => {
+        console.log('onjoin', peerId)
+        stream.push(['join', {peerId}])
+      },
+      onleave: (peerId) => {
+        console.log('onleave', peerId)
+        stream.push(['leave', {peerId}])
+      }
     })
     stream.on('close', () => {
       console.debug('Unwatching peers', drive.discoveryKey)
