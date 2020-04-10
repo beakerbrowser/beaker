@@ -423,10 +423,7 @@ class NavbarLocation extends LitElement {
     this.isShareMenuOpen = true
     var rect = this.shadowRoot.querySelector('.share').getClientRects()[0]
     await bg.views.toggleMenu('share', {
-      bounds: {
-        top: Number(rect.bottom),
-        left: Number(rect.right)
-      },
+      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
       params: {url: this.url}
     })
     this.isShareMenuOpen = false
@@ -434,13 +431,9 @@ class NavbarLocation extends LitElement {
 
   async onClickDonateMenu (e) {
     this.isDonateMenuOpen = true
-    var rect1 = this.getClientRects()[0]
-    var rect2 = e.currentTarget.getClientRects()[0]
+    var rect = e.currentTarget.getClientRects()[0]
     await bg.views.toggleMenu('donate', {
-      bounds: {
-        top: (rect1.bottom|0),
-        left: (rect2.right|0)
-      },
+      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
       params: {url: this.url}
     })
     this.isDonateMenuOpen = false
@@ -450,10 +443,7 @@ class NavbarLocation extends LitElement {
     var rect = this.shadowRoot.querySelector('.bookmark').getClientRects()[0]
     // show menu
     bg.views.toggleMenu('bookmark', {
-      bounds: {
-        top: Number(rect.bottom),
-        left: Number(rect.right)
-      },
+      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
       params: {
         url: this.url,
         metadata: {title: this.title} // DISABLED was causing issues -prf await bg.views.getPageMetadata(this.activeTabIndex)
@@ -469,10 +459,7 @@ class NavbarLocation extends LitElement {
     var rect = this.shadowRoot.querySelector('.peers').getClientRects()[0]
     // show menu
     await bg.views.toggleMenu('peers', {
-      bounds: {
-        top: Number(rect.bottom),
-        left: Number(rect.right)
-      },
+      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
       params: {
         url: this.url
       }
@@ -489,10 +476,7 @@ class NavbarLocation extends LitElement {
     var rect = this.shadowRoot.querySelector('.site').getClientRects()[0]
     // show menu
     await bg.views.toggleMenu('site', {
-      bounds: {
-        top: Number(rect.bottom),
-        left: Number(rect.right)
-      },
+      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
       params: {
         url: this.url
       }

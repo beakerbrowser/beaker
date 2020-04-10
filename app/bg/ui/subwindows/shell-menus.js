@@ -55,61 +55,61 @@ export function get (parentWindow) {
 export function reposition (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    let parentBounds = parentWindow.getContentBounds()
     const setBounds = (b) => {
-      // HACK workaround the lack of view.getBounds() -prf
-      if (view.currentBounds) {
-        b = view.currentBounds // use existing bounds
+      if (view.currentDimensions) {
+        Object.assign(b, view.currentDimensions)
+      } else {
+        adjustDimensions(b)
       }
-      view.currentBounds = b // store new bounds
-      view.setBounds(adjustBounds(view, parentWindow, b))
+      adjustPosition(b, view, parentWindow)
+      view.setBounds(b)
     }
     if (view.menuId === 'browser') {
       setBounds({
-        x: 5,
+        x: 10,
         y: 72,
         width: 230,
         height: 350
       })
     } else if (view.menuId === 'bookmark') {
       setBounds({
-        x: parentBounds.width - view.boundsOpt.left,
-        y: view.boundsOpt.top,
+        x: view.boundsOpt.rightOffset,
+        y: 72,
         width: 250,
         height: 200
       })
     } else if (view.menuId === 'bookmarks') {
       setBounds({
-        x: 35,
+        x: 40,
         y: 72,
         width: 250,
         height: 550
       })
     } else if (view.menuId === 'donate') {
       setBounds({
-        x: parentBounds.width - view.boundsOpt.left,
-        y: view.boundsOpt.top,
+        x: view.boundsOpt.rightOffset,
+        y: 72,
         width: 350,
         height: 90
       })
     } else if (view.menuId === 'share') {
       setBounds({
-        x: parentBounds.width - view.boundsOpt.left,
-        y: view.boundsOpt.top,
+        x: view.boundsOpt.rightOffset,
+        y: 72,
         width: 310,
         height: 120
       })
     } else if (view.menuId === 'peers') {
       setBounds({
-        x: parentBounds.width - view.boundsOpt.left,
-        y: view.boundsOpt.top,
+        x: view.boundsOpt.rightOffset,
+        y: 72,
         width: 250,
         height: 350
       })
     } else if (view.menuId === 'site') {
       setBounds({
-        x: parentBounds.width - view.boundsOpt.left,
-        y: view.boundsOpt.top,
+        x: view.boundsOpt.rightOffset,
+        y: 72,
         width: 250,
         height: 350
       })
@@ -153,7 +153,7 @@ export function hide (parentWindow) {
   if (view) {
     view.webContents.executeJavaScript(`reset('${view.menuId}')`)
     parentWindow.removeBrowserView(view)
-    view.currentBounds = null
+    view.currentDimensions = null
     view.isVisible = false
     events.emit('hide')
   }
@@ -190,10 +190,9 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   async resizeSelf (dimensions) {
     var view = BrowserView.fromWebContents(this.sender)
     if (!view.isVisible) return
-    // HACK view.currentBounds is set in reposition() -prf
-    dimensions = Object.assign({}, view.currentBounds || {}, dimensions)
-    view.setBounds(adjustBounds(view, getParentWindow(this.sender), dimensions))
-    view.currentBounds = dimensions
+    adjustDimensions(dimensions)
+    view.currentDimensions = dimensions
+    reposition(getParentWindow(this.sender))
   },
 
   async showInpageFind () {
@@ -206,21 +205,18 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
 // internal methods
 // =
 
-/**
- * @description
- * Ajust the bounds for margin and for right-alignment (as needed)
- */
-function adjustBounds (view, parentWindow, bounds) {
-  let parentBounds = parentWindow.getContentBounds()
-  var isRightAligned = IS_RIGHT_ALIGNED.includes(view.menuId)
-  return {
-    x: isRightAligned
-      ? (parentBounds.width - bounds.width - bounds.x - MARGIN_SIZE)
-      : (bounds.x - MARGIN_SIZE),
-    y: bounds.y,
-    width: bounds.width + (MARGIN_SIZE * 2),
-    height: bounds.height + MARGIN_SIZE
+function adjustPosition (bounds, view, parentWindow) {
+  if (IS_RIGHT_ALIGNED.includes(view.menuId)) {
+    let parentBounds = parentWindow.getContentBounds()
+    bounds.x = (parentBounds.width - bounds.width - bounds.x) + MARGIN_SIZE
+  } else {
+    bounds.x = bounds.x - MARGIN_SIZE
   }
+}
+
+function adjustDimensions (bounds) {
+  bounds.width = bounds.width + (MARGIN_SIZE * 2),
+  bounds.height = bounds.height + MARGIN_SIZE
 }
 
 function getParentWindow (sender) {

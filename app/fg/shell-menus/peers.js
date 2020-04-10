@@ -44,8 +44,9 @@ class PeersMenu extends LitElement {
     }, NETWORK_STATS_POLL_INTERVAL)
 
     // adjust height based on rendering
+    var width = this.shadowRoot.querySelector('div').clientWidth
     var height = this.shadowRoot.querySelector('div').clientHeight
-    bg.shellMenus.resizeSelf({height})
+    bg.shellMenus.resizeSelf({width, height})
   }
 
   // rendering
