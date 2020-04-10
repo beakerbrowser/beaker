@@ -1799,7 +1799,7 @@ function indexOfLastPinnedTab (win) {
 function toOrigin (str) {
   try {
     var u = new URL(str)
-    return u.protocol + '//' + u.hostname + (u.port ? `:${u.port}` : '')
+    return u.protocol + '//' + u.hostname + (u.port ? `:${u.port}` : '') + '/'
   } catch (e) { return '' }
 }
 

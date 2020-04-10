@@ -25,7 +25,7 @@ class SiteInfo extends LitElement {
 
   get origin () {
     let urlp = new URL(this.url)
-    return urlp.origin
+    return urlp.origin + '/'
   }
 
   get hostname () {
