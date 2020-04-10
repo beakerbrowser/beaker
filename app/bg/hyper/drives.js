@@ -283,6 +283,7 @@ async function loadDriveInner (key, opts) {
   
   // create the drive session with the daemon
   var drive = await daemon.createHyperdriveSession({key, domain})
+  drive.pullLatestDriveMeta = opts => pullLatestDriveMeta(drive, opts)
   key = drive.key
 
   if (opts && opts.persistSession) {
@@ -294,9 +295,8 @@ async function loadDriveInner (key, opts) {
   if (!drive.writable) {
     await downloadHack(drive, DRIVE_MANIFEST_FILENAME)
   }
-  await pullLatestDriveMeta(drive)
+  await drive.pullLatestDriveMeta()
   driveAssets.update(drive)
-  drive.pullLatestDriveMeta = opts => pullLatestDriveMeta(drive, opts)
 
   return drive
 }
