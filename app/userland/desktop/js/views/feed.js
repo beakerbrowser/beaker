@@ -1,7 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
-import { hashFnv32a } from 'beaker://app-stdlib/js/strings.js'
 import MarkdownIt from 'beaker://app-stdlib/vendor/markdown-it.js'
 import * as addressBook from '../lib/address-book.js'
 import feedCSS from '../../css/views/feed.css.js'
@@ -22,16 +21,6 @@ const FEED_UPDATE_INTERVAL = 30 * 60e3 // every 30 minutes
 const FEED_CHECK_INTERVAL = 10 * 60e3 // every 10 minutes
 
 var md = new MarkdownIt({html: false, breaks: true})
-
-function needsQuery (sourceHash) {
-  if (!('cachedFeed' in localStorage)) {
-    return true
-  }
-
-  if (localStorage.feedSourceHash !== String(sourceHash)) {
-    return true // sources changed
-  }
-}
 
 export class FeedView extends LitElement {
   static get properties () {
@@ -55,12 +44,11 @@ export class FeedView extends LitElement {
   }
 
   async load () {
-    await this.loadFeedPossiblyCached()
+    await this.loadFeedFromCache()
   }
 
   async forceLoad () {
-    let contacts = await this.getContacts()
-    this.loadFeed(contacts)
+    this.loadFeed()
   }
 
   async getContacts () {
@@ -79,32 +67,29 @@ export class FeedView extends LitElement {
 
     var lastFeedUpdate = localStorage.lastFeedUpdate || 0
     if (Date.now() - lastFeedUpdate < FEED_UPDATE_INTERVAL) {
-      this.loadFeedPossiblyCached()
+      this.loadFeedFromCache()
     } else {
-      localStorage.lastFeedUpdate = Date.now() // set immediately to avoid colliding with other active tabs
-      let contacts = await this.getContacts()
-      this.loadFeed(contacts)
+      this.loadFeed()
     }
   }
 
-  async loadFeedPossiblyCached () {
-    // do a full load if sources havent changed
-    // otherwise pull latest from the cache
-
-    var contacts = await this.getContacts()
-    var sourceHash = hashFnv32a(JSON.stringify(contacts.map(c => c.url)))
-    if (!needsQuery(sourceHash)) {
-      console.debug('Using cached feed')
-      this.posts = JSON.parse(localStorage.cachedFeed)
-      return // use cache
+  async loadFeedFromCache () {
+    try {
+      if (localStorage.cachedFeed) {
+        console.debug('Using cached feed')
+        this.posts = JSON.parse(localStorage.cachedFeed)
+        return
+      }
+    } catch (e) {
+      console.log('Failed to load cached feed, running query', e)
     }
-    localStorage.feedSourceHash = sourceHash
-    this.loadFeed(contacts) // run query
+    this.loadFeed()
   }
 
-  async loadFeed (contacts) {
+  async loadFeed () {
     console.debug('Running feed query')
     localStorage.lastFeedUpdate = Date.now()
+    var contacts = await this.getContacts()
     var files = await beaker.hyperdrive.query({
       path: '/microblog/*',
       drive: contacts.map(c => c.url),
