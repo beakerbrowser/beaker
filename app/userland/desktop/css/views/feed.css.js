@@ -32,6 +32,7 @@ a[href]:hover {
   font-size: 14px;
   line-height: 1.5;
   box-sizing: border-box;
+  padding: 10px;
 }
 
 .posts .empty {
