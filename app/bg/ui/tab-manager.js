@@ -219,7 +219,7 @@ class Tab extends EventEmitter {
 
   get title () {
     var title = this.webContents.getTitle()
-    if (this.driveInfo && this.driveInfo.title && (!title || title.startsWith(this.origin))) {
+    if (this.driveInfo && this.driveInfo.title && (!title || toOrigin(title) === this.origin)) {
       // fallback to the index.json title field if the page doesnt provide a title
       title = this.driveInfo.title
     }
