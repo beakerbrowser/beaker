@@ -1565,7 +1565,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     if (tab && tab.driveInfo) {
       let drive = hyper.drives.getDrive(tab.driveInfo.key)
       if (drive) {
-        let {peers} = await drive.getInfo()
+        let peers = await hyper.daemon.getPeerCount(drive.key)
         return {peers}
       }
     }

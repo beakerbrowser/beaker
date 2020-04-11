@@ -392,10 +392,7 @@ export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
     ])
   } else {
     meta = await archivesDb.getMeta(key)
-    driveInfo = {
-      version: undefined,
-      peers: undefined
-    }
+    driveInfo = {version: undefined}
   }
   manifest = manifest || {}
   if (filesystem.isRootUrl(url) && !meta.title) {
@@ -407,7 +404,7 @@ export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
   meta.links = manifest.links || {}
   meta.manifest = manifest
   meta.version = driveInfo.version
-  meta.peers = driveInfo.peers
+  meta.peers = await daemon.getPeerCount(drive ? drive.key : new Buffer(key, 'hex'))
   
   return meta
 }

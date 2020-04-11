@@ -207,14 +207,8 @@ export async function createHyperdriveSession (opts) {
     },
 
     async getInfo () {
-      var [version, stats] = await Promise.all([
-        this.session.drive.version(),
-        this.session.drive.stats({networkingOnly: true})
-      ])
-      return {
-        version,
-        peers: stats.stats[0].metadata.peers
-      }
+      var version = await this.session.drive.version()
+      return {version}
     },
 
     pda: createHyperdriveSessionPDA(drive)
@@ -239,6 +233,12 @@ export function closeHyperdriveSession (opts) {
     sessions[key].session.close()
     delete sessions[key]
   }
+}
+
+export async function getPeerCount (key) {
+  if (!client) return 0
+  var res = await client.drive.peerCounts([key])
+  return res[0]
 }
 
 // internal methods
