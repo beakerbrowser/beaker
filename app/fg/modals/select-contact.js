@@ -35,7 +35,7 @@ class SelectContactModal extends LitElement {
     }
 
     .contacts {
-      height: 500px;
+      height: 400px;
       overflow: auto;
       box-sizing: border-box;
       border-bottom: 1px solid #dddde0;
