@@ -40,7 +40,7 @@ export class BeakerEditCoverPhoto extends BasePopup {
     var existingCoverPath = null
     const test = async (path) => {
       if (existingCoverPath) return
-      var res = await drive.stat(path).catch(e => {})
+      var res = await drive.stat(path).catch(e => undefined)
       if (res) existingCoverPath = path
     }
     await test('/cover.jpg')

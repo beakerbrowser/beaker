@@ -11,7 +11,7 @@ export default {
   async get (key) {
     key = await drives.fromURLToKey(key, true)
     var drive = listDrives().find(drive => drive.key === key)
-    var info = await drives.getDriveInfo(key).catch(e => {})
+    var info = await drives.getDriveInfo(key).catch(e => ({}))
     var url = `hyper://${key}/`
     var ident = getDriveIdent(url)
     return {
@@ -116,7 +116,7 @@ async function assembleRecords (drivesList) {
     records.push({
       key: drive.key,
       url,
-      info: await drives.getDriveInfo(drive.key).catch(e => {}),
+      info: await drives.getDriveInfo(drive.key).catch(e => ({})),
       saved: true,
       forkOf: drive ? drive.forkOf : undefined,
       ident

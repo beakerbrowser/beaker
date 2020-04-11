@@ -32,7 +32,7 @@ export class BeakerEditThumb extends BasePopup {
     var existingThumbPath = null
     const test = async (path) => {
       if (existingThumbPath) return
-      var res = await drive.stat(path).catch(e => {})
+      var res = await drive.stat(path).catch(e => undefined)
       if (res) existingThumbPath = path
     }
     await test('/thumb.jpg')

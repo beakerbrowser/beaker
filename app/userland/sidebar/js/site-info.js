@@ -296,7 +296,7 @@ class SiteInfo extends LitElement {
       return
     }
 
-    var manifest = await beaker.hyperdrive.drive(fork.url).readFile('/index.json').then(JSON.parse).catch(e => {})
+    var manifest = await beaker.hyperdrive.drive(fork.url).readFile('/index.json').then(JSON.parse).catch(e => ({}))
     delete manifest.forkOf
     await beaker.hyperdrive.drive(fork.url).writeFile('/index.json', JSON.stringify(manifest, null, 2))
     await beaker.drives.configure(fork.url, {forkOf: false})
