@@ -42,6 +42,10 @@ class SelectContactModal extends LitElement {
       background: #f3f3f8;
     }
 
+    .profiles-only.contacts {
+      height: 200px;
+    }
+
     .contact {
       display: flex;
       align-items: center;
@@ -160,7 +164,7 @@ class SelectContactModal extends LitElement {
         </h1>
 
         <form @submit=${this.onSubmit}>
-          <div class="contacts">
+          <div class="contacts ${this.showProfilesOnly ? 'profiles-only' : ''}">
             ${repeat(this.contacts, contact => this.renderContact(contact))}
           </div>
 
