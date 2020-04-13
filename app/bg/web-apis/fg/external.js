@@ -1,5 +1,6 @@
 import { fromEventStream } from './event-target'
 import errors from 'beaker-error-constants'
+import capabilitiesManifest from '../manifests/external/capabilities'
 import contactsManifest from '../manifests/external/contacts'
 import peersocketsManifest from '../manifests/external/peersockets'
 import shellManifest from '../manifests/external/shell'
@@ -7,8 +8,9 @@ import shellManifest from '../manifests/external/shell'
 const RPC_OPTS = { timeout: false, errors }
 
 export const setup = function (rpc) {
-  var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
+  var capabilities = rpc.importAPI('capabilities', capabilitiesManifest, RPC_OPTS)
   var contacts = rpc.importAPI('contacts', contactsManifest, RPC_OPTS)
+  var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
 
   var peersocketsRPC = rpc.importAPI('peersockets', peersocketsManifest, RPC_OPTS)
   var peersockets = {
@@ -52,5 +54,5 @@ export const setup = function (rpc) {
     }
   }
 
-  return {contacts, peersockets, shell, terminal}
+  return {capabilities, contacts, peersockets, shell, terminal}
 }

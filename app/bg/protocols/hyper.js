@@ -6,6 +6,7 @@ const logger = logLib.child({category: 'hyper', subcategory: 'hyper-scheme'})
 // import intoStream from 'into-stream'
 import markdown from '../../lib/markdown'
 import * as drives from '../hyper/drives'
+import * as capabilities from '../hyper/capabilities'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
@@ -94,13 +95,28 @@ export const protocolHandler = async function (request, respond) {
   }
 
   // resolve the name
-  try {
-    var driveKey = await drives.fromURLToKey(urlp.host, true)
-  } catch (err) {
-    return respondError(404, 'No DNS record found for ' + urlp.host, {
-      errorDescription: 'No DNS record found',
-      errorInfo: `No DNS record found for hyper://${urlp.host}`
-    })
+  var driveKey
+  var driveVersion
+  if (urlp.host.endsWith('.cap')) {
+    let cap = capabilities.lookupCap(urlp.host)
+    if (!cap) {
+      return respondError(404, 'No record found for ' + urlp.host, {
+        errorDescription: 'Invalid capability record',
+        errorInfo: `No record found for hyper://${urlp.host}`
+      })
+    }
+    driveKey = cap.target.key
+    driveVersion = cap.target.version
+  } else {
+    try {
+      driveKey = await drives.fromURLToKey(urlp.host, true)
+      driveVersion = urlp.version
+    } catch (err) {
+      return respondError(404, 'No DNS record found for ' + urlp.host, {
+        errorDescription: 'No DNS record found',
+        errorInfo: `No DNS record found for hyper://${urlp.host}`
+      })
+    }
   }
 
   // setup a timeout
@@ -139,7 +155,7 @@ export const protocolHandler = async function (request, respond) {
 
   // checkout version if needed
   try {
-    var {checkoutFS} = await drives.getDriveCheckout(drive, urlp.version)
+    var {checkoutFS} = await drives.getDriveCheckout(drive, driveVersion)
   } catch (err) {
     logger.warn('Failed to open drive checkout', {url: driveKey, err})
     cleanup()

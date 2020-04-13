@@ -3,6 +3,7 @@ import datDnsFactory from 'dat-dns'
 import * as datDnsDb from '../dbs/dat-dns'
 import * as drives from './drives'
 import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
+import * as capabilities from './capabilities'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'hyper', subcategory: 'dns'})
 

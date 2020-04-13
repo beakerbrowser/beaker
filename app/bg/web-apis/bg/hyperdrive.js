@@ -7,6 +7,7 @@ import _flattenDeep from 'lodash.flattendeep'
 import * as modals from '../../ui/subwindows/modals'
 import * as permissions from '../../ui/permissions'
 import * as hyperDns from '../../hyper/dns'
+import * as capabilities from '../../hyper/capabilities'
 import * as drives from '../../hyper/drives'
 import * as archivesDb from '../../dbs/archives'
 import * as auditLog from '../../dbs/audit-log'
@@ -125,14 +126,18 @@ export default {
     if (!url || typeof url !== 'string') {
       return Promise.reject(new InvalidURLError())
     }
-    await drives.getOrLoadDrive(url)
+    var urlp = parseDriveUrl(url)
+    await lookupDrive(this.sender, urlp.hostname, urlp.version)
     return Promise.resolve(true)
   },
 
   async getInfo (url, opts = {}) {
     return auditLog.record(this.sender.getURL(), 'getInfo', {url}, undefined, () => (
       timer(to(opts), async () => {
-        var info = await drives.getDriveInfo(url)
+        var urlp = parseDriveUrl(url)
+        var {driveKey, version} = await lookupDrive(this.sender, urlp.hostname, urlp.version, true)
+        var info = await drives.getDriveInfo(driveKey)
+        var isCap = urlp.hostname.endsWith('.cap')
 
         // request from beaker internal sites: give all data
         if (isSenderBeaker(this.sender)) {
@@ -141,8 +146,8 @@ export default {
 
         // request from userland: return a subset of the data
         return {
-          key: info.key,
-          url: info.url,
+          key: isCap ? urlp.hostname : info.key,
+          url: isCap ? urlp.origin : info.url,
           // domain: info.domain, TODO
           writable: info.writable,
 
@@ -475,6 +480,7 @@ export default {
     var urlp = parseDriveUrl(url)
     var url = urlp.origin
     var filepath = normalizeFilepath(urlp.pathname || '')
+    if (mount.includes('.cap')) throw new Error('Unable to mount capability URLs')
     return auditLog.record(this.sender.getURL(), 'mount', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
@@ -497,6 +503,7 @@ export default {
     var urlp = parseDriveUrl(url)
     var url = urlp.origin
     var filepath = normalizeFilepath(urlp.pathname || '')
+    if (mount.includes('.cap')) throw new Error('Unable to unmount capability URLs')
     return auditLog.record(this.sender.getURL(), 'unmount', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
@@ -520,9 +527,13 @@ export default {
     return auditLog.record(this.sender.getURL(), 'query', opts, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drives')
+        var capUrls = {}
         for (let i = 0; i < opts.drive.length; i++) {
           let urlp = parseDriveUrl(opts.drive[i])
           opts.drive[i] = (await lookupDrive(this.sender, urlp.hostname, urlp.version)).checkoutFS
+          if (urlp.hostname.endsWith('.cap')) {
+            capUrls[opts.drive[i].key.toString('hex')] = urlp.hostname
+          }
         }
         checkin('running query')
         var queriesResults = await Promise.all(opts.drive.map(drive => query(drive, opts)))
@@ -539,6 +550,15 @@ export default {
           if (opts.offset && opts.limit) results = results.slice(opts.offset, opts.offset + opts.limit)
           else if (opts.offset) results = results.slice(opts.offset)
           else if (opts.limit) results = results.slice(0, opts.limit)
+        }
+        if (Object.keys(capUrls).length > 0) {
+          // mask capability URLs
+          for (let res of results) {
+            for (let key in capUrls) {
+              res.drive = res.drive.replace(key, capUrls[key])
+              res.url = res.url.replace(key, capUrls[key])
+            }
+          }
         }
         return results
       })
@@ -737,36 +757,6 @@ function assertValidPath (fileOrFolderPath) {
   }
 }
 
-// async function assertSenderIsFocused (sender) {
-//   if (!sender.isFocused()) {
-//     throw new UserDeniedError('Application must be focused to spawn a prompt')
-//   }
-// }
-
-async function parseUrlParts (url) {
-  var driveKey, filepath, version
-  if (HYPERDRIVE_HASH_REGEX.test(url)) {
-    // simple case: given the key
-    driveKey = url
-    filepath = '/'
-  } else {
-    var urlp = parseDriveUrl(url)
-
-    // validate
-    if (urlp.protocol !== 'hyper:') {
-      throw new InvalidURLError('URL must be a hyper: scheme')
-    }
-    if (!HYPERDRIVE_HASH_REGEX.test(urlp.host)) {
-      urlp.host = await hyperDns.resolveName(url)
-    }
-
-    driveKey = urlp.host
-    filepath = decodeURIComponent(urlp.pathname || '') || '/'
-    version = urlp.version
-  }
-  return {driveKey, filepath, version}
-}
-
 function normalizeFilepath (str) {
   str = decodeURIComponent(str)
   if (!str.includes('://') && str.charAt(0) !== '/') {
@@ -778,8 +768,27 @@ function normalizeFilepath (str) {
 // helper to handle the URL argument that's given to most args
 // - can get a hyperdrive hash, or hyperdrive url
 // - sets checkoutFS to what's requested by version
-export async function lookupDrive (sender, driveHostname, version) {
-  var driveKey = await drives.fromURLToKey(driveHostname, true)
+export async function lookupDrive (sender, driveHostname, version, dontGetDrive = false) {
+  var driveKey
+  
+  if (driveHostname.endsWith('.cap')) {
+    let cap = capabilities.lookupCap(driveHostname)
+    if (cap) {
+      driveKey = cap.target.key
+      version = cap.target.version
+    } else {
+      throw new Error('Capability does not exist')
+    }
+  }
+  
+  if (!driveKey) {
+    driveKey = await drives.fromURLToKey(driveHostname, true)
+  }
+
+  if (dontGetDrive) {
+    return {driveKey, version}
+  }
+
   var drive = drives.getDrive(driveKey)
   if (!drive) drive = await drives.loadDrive(driveKey)
   var {checkoutFS, isHistoric} = await drives.getDriveCheckout(drive, version)
