@@ -193,6 +193,9 @@ class SiteInfoApp extends LitElement {
           ${protocol}
           <p class="buttons">
             <button @click=${this.onCopyUrl}><span class="fas fa-fw fa-link"></span> Copy URL</button>
+            ${this.isDrive ? html`
+              <button @click=${this.onClickDriveProperties}><span class="far fa-fw fa-list-alt"></span> Drive Properties</button>
+            ` : ''}
           </p>
           ${this.isDrive ? html`
             <p class="buttons">
@@ -264,6 +267,11 @@ class SiteInfoApp extends LitElement {
   onCopyUrl (e) {
     writeToClipboard(this.url)
     toast.create('URL Copied', '', 2e3)
+  }
+
+  async onClickDriveProperties (e) {
+    await beaker.shell.drivePropertiesDialog(this.url)
+    this.load()
   }
 
   async onToggleSaveDrive (e) {
