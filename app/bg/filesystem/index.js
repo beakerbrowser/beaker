@@ -107,6 +107,7 @@ export async function setup () {
   } catch (e) {
     logger.info('Error while reading the drive configuration at /drives.json', {error: e.toString()})
   }
+  await hyper.drives.ensureSeeding([profileObj.key].concat(drives.map(drive => drive.key)))
 }
 
 /**

@@ -48,7 +48,6 @@ export const addListener = drivesEvents.addListener.bind(drivesEvents)
 export const removeListener = drivesEvents.removeListener.bind(drivesEvents)
 
 /**
- * @param {Object} opts
  * @return {Promise<void>}
  */
 export async function setup () {
@@ -64,7 +63,26 @@ export async function setup () {
   // })
 
   logger.info('Initialized dat daemon')
-};
+}
+
+/**
+ * @param {String[]} keys 
+ * @returns {Promise<void>}
+ */
+export async function ensureSeeding (keys) {
+  var configs = await daemon.getClient().drive.allNetworkConfigurations()
+  for (let key of keys) {
+    let cfg = configs.get(key)
+    if (!cfg || !cfg.announce || !cfg.lookup) {
+      let drive = await getOrLoadDrive(key)
+      console.log('fixing network config for', key)
+      await drive.session.drive.configureNetwork({
+        announce: true,
+        lookup: true
+      })
+    }
+  }
+}
 
 /**
  * @returns {NodeJS.ReadableStream}
