@@ -503,7 +503,6 @@ export default {
     var urlp = parseDriveUrl(url)
     var url = urlp.origin
     var filepath = normalizeFilepath(urlp.pathname || '')
-    if (mount.includes('.cap')) throw new Error('Unable to unmount capability URLs')
     return auditLog.record(this.sender.getURL(), 'unmount', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
