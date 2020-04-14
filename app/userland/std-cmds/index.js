@@ -133,6 +133,19 @@ export async function rm (opts, dst) {
   }
 }
 
+export async function ln (opts, target, linkname) {
+  if (!target) throw new Error('target is required')
+  if (!linkname) throw new Error('linkname is required')
+  var targetp = resolveParse(this.env, target)
+  var linknamep = resolveParse(this.env, linkname)
+  if (targetp.hostname !== linknamep.hostname) throw new Error('target and link must be on the same drive')
+  
+  let st = await targetp.drive.stat(targetp.pathname).catch(e => undefined)
+  if (!st) throw new Error('target does not exist')
+
+  await targetp.drive.symlink(targetp.pathname, linknamep.pathname)
+}
+
 export async function mount (opts, mountUrl, dst) {
   if (!mountUrl) throw new Error('mount-url is required')
   if (!dst) throw new Error('dst is required')

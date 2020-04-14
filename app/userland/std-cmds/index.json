@@ -44,6 +44,12 @@
       "autocomplete": "files"
     },
     {
+      "name": "ln",
+      "help": "Create a symlink",
+      "usage": "ln {target} {linkname}",
+      "autocomplete": "files"
+    },
+    {
       "name": "mount",
       "help": "Mount a hyperdrive as a subfolder",
       "usage": "mount {mount-url} {dst}",
