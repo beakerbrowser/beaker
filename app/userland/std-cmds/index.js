@@ -153,6 +153,12 @@ export async function mount (opts, mountUrl, dst) {
   await drive.mount(pathname, mountUrl)
 }
 
+export async function unmount (opts, dst) {
+  if (!dst) throw new Error('dst is required')
+  var {drive, pathname} = resolveParse(this.env, dst)
+  await drive.unmount(pathname)
+}
+
 export async function query (opts = {}, ...paths) {
   var queriesMap = {}
   for (let path of paths) {

@@ -56,6 +56,12 @@
       "autocomplete": "files"
     },
     {
+      "name": "unmount",
+      "help": "Unmount a mounted hyperdrive",
+      "usage": "unmount {dst}",
+      "autocomplete": "files"
+    },
+    {
       "name": "query",
       "help": "Run a query across the filesystem",
       "usage": "query [{path...}] [-t file|folder|mount] [-m {url}] [-s name|ctime|mtime] [-r] [--limit n] [--offset n]",
