@@ -41,12 +41,14 @@ import { WEBAPI as downloadsAPI } from '../ui/downloads'
 import { WEBAPI as beakerBrowserAPI } from '../browser'
 
 // external manifests
+import capabilitiesManifest from './manifests/external/capabilities'
 import contactsManifest from './manifests/external/contacts'
 import hyperdriveManifest from './manifests/external/hyperdrive'
 import peersocketsManifest from './manifests/external/peersockets'
 import shellManifest from './manifests/external/shell'
 
 // external apis
+import capabilitiesAPI from './bg/capabilities'
 import contactsAPI from './bg/contacts'
 import hyperdriveAPI from './bg/hyperdrive'
 import peersocketsAPI from './bg/peersockets'
@@ -78,6 +80,7 @@ export const setup = function () {
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
 
   // external apis
+  rpc.exportAPI('capabilities', capabilitiesManifest, capabilitiesAPI, secureOnly('capabilities'))
   rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
