@@ -20,7 +20,7 @@ export async function ls (opts = {}, location = '') {
     listing = await drive.readdir(pathname, {includeStats: true})
     return {
       listing,
-      toHTML () {
+      toHTML: () => {
         return html`
           ${st.isFile() ? html`Is a file. Size: ${st.size}<br><br>` : ''}
           ${listing
@@ -42,10 +42,13 @@ export async function ls (opts = {}, location = '') {
               const mountInfo = entry.stat.mount
                 ? html` <a href="hyper://${entry.stat.mount.key}/" class="color-lightgray" style="font-weight: lighter">(<term-icon solid fw icon="external-link-square-alt"></term-icon>${entry.stat.mount.key.slice(0, 4)}..${entry.stat.mount.key.slice(-2)})</a>`
                 : ''
+              const symlinkInfo = entry.stat.linkname
+                ? html` <a href=${this.env.resolve(entry.stat.linkname)} class="color-lightgray" style="font-weight: lighter"><term-icon solid fw icon="long-arrow-alt-right"></term-icon> ${entry.stat.linkname}</a>`
+                : ''
               return html`<div><a
                 href="${joinPath(joinPath(drive.url, pathname), entry.name)}"
                 class="color-${color}"
-              ><term-icon icon="${icon}"></term-icon> ${entry.name}</a>${mountInfo}</div>`
+              ><term-icon icon="${icon}"></term-icon> ${entry.name}</a>${mountInfo}${symlinkInfo}</div>`
             })
           }
         `
