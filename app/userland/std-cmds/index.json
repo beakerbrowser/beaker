@@ -50,6 +50,12 @@
       "autocomplete": "files"
     },
     {
+      "name": "readlink",
+      "help": "Get the link target of a symlink",
+      "usage": "readlink {target}",
+      "autocomplete": "files"
+    },
+    {
       "name": "mount",
       "help": "Mount a hyperdrive as a subfolder",
       "usage": "mount {mount-url} {dst}",

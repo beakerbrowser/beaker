@@ -149,6 +149,16 @@ export async function ln (opts, target, linkname) {
   await targetp.drive.symlink(targetp.pathname, linknamep.pathname)
 }
 
+export async function readlink (opts, target) {
+  if (!target) throw new Error('target is required')
+  var targetp = resolveParse(this.env, target)
+  
+  let st = await targetp.drive.stat(targetp.pathname, {lstat: true}).catch(e => undefined)
+  if (!st) throw new Error('target does not exist')
+  if (!st.linkname) throw new Error('not a symlink')
+  return st.linkname
+}
+
 export async function mount (opts, mountUrl, dst) {
   if (!mountUrl) throw new Error('mount-url is required')
   if (!dst) throw new Error('dst is required')
