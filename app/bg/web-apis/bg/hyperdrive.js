@@ -227,7 +227,7 @@ export default {
         checkin('looking up drive')
         const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         checkin('stating file')
-        return checkoutFS.pda.stat(filepath)
+        return checkoutFS.pda.stat(filepath, opts)
       })
     ))
   },
