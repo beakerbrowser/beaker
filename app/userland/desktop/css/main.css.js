@@ -33,6 +33,13 @@ ${tooltipCSS}
   margin-left: 5px;
 }
 
+#topright a:not(:last-child) {
+  background: #f3f3f8;
+  padding: 3px 7px;
+  border-radius: 4px;
+  margin-left: 0;
+}
+
 .profile-ctrl {
   display: flex;
   align-items: center;
