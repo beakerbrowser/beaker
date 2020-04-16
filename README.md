@@ -40,6 +40,7 @@ Backers support this project by contributing $2 to $99 a month. [Become a backer
   - [Building from source](#building-from-source)
 - [Documentation](#documentation)
   - [Env Vars](#env-vars)
+- [Vulnerability disclosure](#vulnerability-disclosure)
 - [Known issues](#known-issues)
   - [tmux](#tmux)
 - [Contributors](#contributors)
@@ -114,6 +115,9 @@ Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=Yu
 - `BEAKER_USER_DATA_PATH`: override the user-data path, therefore changing where data is read/written. Useful for testing. For default value see `userData` in the [electron docs](https://electron.atom.io/docs/api/app/#appgetpathname).
 - `BEAKER_DAT_QUOTA_DEFAULT_BYTES_ALLOWED`: override the default max-quota for bytes allowed to be written by a dat site. Useful for testing. Default value is `'500mb'`. This can be a Number or a String. Check [bytes.parse](https://github.com/visionmedia/bytes.js/tree/a4b9af2bf289175f12b3538eb172f2489844b1ec#bytesparsestringnumber-value-numbernull) for supported units and abbreviations.
 
+## Vulnerability disclosure
+
+See [SECURITY.md](./SECURITY.md) for reporting security issues and vulnerabilities.
 
 ## Known issues
 
