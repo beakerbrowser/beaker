@@ -135,13 +135,9 @@ class SiteInfo extends LitElement {
         <div class="heading"><span class="fas fa-fw fa-code-branch"></span> Forks</div>
         <div class="content">${this.renderForks()}</div>
       </section>
-      <section class="in3">
+      ${''/* DISABLED until version tags land -prf <section class="in3">
         <div class="heading"><span class="fas fa-fw fa-history"></span> History</div>
         <div class="content">${this.renderHistory()}</div>
-      </section>
-      ${''/*<section class="in4">
-        <div class="heading"><span class="fas fa-fw fa-share-alt"></span> Peers</div>
-        <div class="content">todo</div>
       </section>*/}
     `
   }
