@@ -88,7 +88,7 @@ a {
 }
 
 .bookmark .ctrls {
-  width: 70px;
+  width: 75px;
 }
 
 .bookmark button.transparent:hover {
