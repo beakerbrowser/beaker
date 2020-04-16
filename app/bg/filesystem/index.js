@@ -101,13 +101,18 @@ export async function setup () {
 
   // load drive config
   let profileObj = await getProfile()
-  if (profileObj) profileDriveUrl = `hyper://${profileObj.key}/`
+  let seedKeys = []
+  if (profileObj) {
+    seedKeys.push(profileObj.key)
+    profileDriveUrl = `hyper://${profileObj.key}/`
+  }
   try {
     drives = JSON.parse(await rootDrive.pda.readFile('/drives.json')).drives
+    seedKeys = seedKeys.concat(drives.map(drive => drive.key))
   } catch (e) {
     logger.info('Error while reading the drive configuration at /drives.json', {error: e.toString()})
   }
-  await hyper.drives.ensureSeeding([profileObj.key].concat(drives.map(drive => drive.key)))
+  await hyper.drives.ensureSeeding(seedKeys)
 }
 
 /**
