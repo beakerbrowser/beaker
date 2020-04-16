@@ -37,20 +37,26 @@ export class DrivesView extends LitElement {
     var drives = await beaker.drives.list({includeSystem: false})
 
     drives = drives.filter(drive => {
-      if (drive.info.writable !== !this.readonly) {
-        return false
-      }
-
       // move forks onto their parents
       if (drive.forkOf) {
         let parent = drives.find(d => d.key === drive.forkOf.key)
         if (parent) {
           parent.forks = parent.forks || []
           parent.forks.push(drive)
+          if (drive.info.writable) {
+            parent.hasWritableFork = true
+          }
           return false
         }
       }
       return true
+    })
+    drives = drives.filter(drive => {
+      if (this.readonly) {
+        return !drive.info.writable
+      } else {
+        return drive.info.writable || drive.hasWritableFork
+      }
     })
     drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
     console.log(drives)
