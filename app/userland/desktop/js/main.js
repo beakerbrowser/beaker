@@ -215,7 +215,7 @@ class DesktopApp extends LitElement {
       {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(getHref(file))},
       (file.isFixed) ? undefined : '-',
       (file.isFixed) ? undefined : {icon: 'fa fa-pencil-alt', label: 'Edit', click: () => this.onClickEdit(file)},
-      (file.isFixed) ? undefined : {icon: 'fa fa-times', label: 'Delete', click: () => this.onClickRemove(file)}
+      (file.isFixed) ? undefined : {icon: 'fa fa-times', label: 'Unpin', click: () => this.onClickRemove(file)}
     ].filter(Boolean)
     await contextMenu.create({x: e.clientX, y: e.clientY, noBorders: true, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
   }
@@ -231,9 +231,8 @@ class DesktopApp extends LitElement {
   }
 
   async onClickRemove (file) {
-    if (!confirm('Are you sure?')) return
-    await desktop.remove(file)
-    toast.create('Item removed', '', 10e3)
+    await beaker.hyperdrive.deleteMetadata(`hyper://system/bookmarks/${file.name}`, 'pinned')
+    toast.create('Bookmark unpinned', '', 10e3)
     this.load()
   }
 }
