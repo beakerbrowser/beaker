@@ -1,4 +1,4 @@
-const isDatHashRegex = /^[a-z0-9]{64}/i
+const isDriveRegex = /^[a-z0-9]{64}/i
 
 export const PERMS = {
   js: {
@@ -37,7 +37,7 @@ export const PERMS = {
     experimental: false
   },
   media: {
-    persist: true,
+    persist: false,
     idempotent: true,
     alwaysDisallow: false,
     requiresRefresh: false,
@@ -181,13 +181,14 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
   const openUrl = url => e => {
     e.preventDefault()
     e.stopPropagation()
-    url = isDatHashRegex.test(url) ? `dat://${url}` : url
+    url = isDriveRegex.test(url) ? `hyper://${url}/` : url
     if (api) api.createTab(url)
     else beaker.browser.openUrl(url, {setActive: true})
   }
+  const mediaTypeToTool = v => ({video: 'camera', audio: 'microphone'})[v]
   switch (permId) {
     case 'js': return 'Run Javascript'
-    case 'media': return 'Use your camera and microphone'
+    case 'media': return `Use your ${(permOpts.mediaTypes || ['video', 'audio']).map(mediaTypeToTool).join(' and ')}`
     case 'geolocation': return 'Know your location'
     case 'notifications': return 'Create desktop notifications'
     case 'midiSysex': return 'Access your MIDI devices'
