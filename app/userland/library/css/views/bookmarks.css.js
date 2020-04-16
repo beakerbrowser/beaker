@@ -19,6 +19,7 @@ a {
 .bookmarks {
   font-size: 13px;
   box-sizing: border-box;
+  user-select: none;
 }
 
 .bookmarks .empty {

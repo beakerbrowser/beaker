@@ -27,6 +27,7 @@ a[href]:hover {
 .drives {
   font-size: 13px;
   box-sizing: border-box;
+  user-select: none;
 }
 
 .drives .empty {
