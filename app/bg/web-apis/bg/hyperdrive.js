@@ -133,7 +133,7 @@ export default {
 
   async getInfo (url, opts = {}) {
     return auditLog.record(this.sender.getURL(), 'getInfo', {url}, undefined, () => (
-      timer(to(opts), async () => {
+      timer(to(opts), async (checkin, pause, resume) => {
         var urlp = parseDriveUrl(url)
         var {driveKey, version} = await lookupDrive(this.sender, urlp.hostname, urlp.version, true)
         var info = await drives.getDriveInfo(driveKey)
@@ -143,6 +143,10 @@ export default {
         if (isSenderBeaker(this.sender)) {
           return info
         }
+
+        pause() // dont count against timeout, there may be user prompts
+        await assertReadPermission(driveKey, this.sender)
+        resume()
 
         // request from userland: return a subset of the data
         return {
@@ -212,6 +216,9 @@ export default {
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
         const {checkoutFS} = await lookupDrive(this.sender, url, urlp.version)
+        pause() // dont count against timeout, there may be user prompts
+        await assertReadPermission(checkoutFS, this.sender)
+        resume()
         checkin('diffing')
         return checkoutFS.pda.diff(other, prefix)
       })
@@ -226,6 +233,9 @@ export default {
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
         const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
+        pause() // dont count against timeout, there may be user prompts
+        await assertReadPermission(checkoutFS, this.sender)
+        resume()
         checkin('stating file')
         return checkoutFS.pda.stat(filepath, opts)
       })
@@ -240,6 +250,9 @@ export default {
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drive')
         const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
+        pause() // dont count against timeout, there may be user prompts
+        await assertReadPermission(checkoutFS, this.sender)
+        resume()
         checkin('reading file')
         return checkoutFS.pda.readFile(filepath, opts)
       })
@@ -400,6 +413,10 @@ export default {
         checkin('searching for drive')
         const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
 
+        pause() // dont count against timeout, there may be user prompts
+        await assertReadPermission(checkoutFS, this.sender)
+        resume()
+
         checkin('reading directory')
         var names = await checkoutFS.pda.readdir(filepath, opts)
         if (opts.includeStats) {
@@ -534,6 +551,11 @@ export default {
             capUrls[opts.drive[i].key.toString('hex')] = urlp.hostname
           }
         }
+        pause() // dont count against timeout, there may be user prompts
+        for (let drive of opts.drive) {
+          await assertReadPermission(drive, this.sender)
+        }
+        resume()
         checkin('running query')
         var queriesResults = await Promise.all(opts.drive.map(drive => query(drive, opts)))
         var results = _flattenDeep(queriesResults)
@@ -566,11 +588,13 @@ export default {
 
   async watch (url, pathPattern) {
     var {drive} = await lookupDrive(this.sender, url)
+    await assertReadPermission(drive, this.sender)
     return drive.pda.watch(pathPattern)
   },
 
   async createNetworkActivityStream (url) {
     var {drive} = await lookupDrive(this.sender, url)
+    await assertReadPermission(drive, this.sender)
     return drive.pda.createNetworkActivityStream()
   },
 
@@ -680,6 +704,24 @@ async function assertCreateDrivePermission (sender) {
   if (!allowed) {
     throw new UserDeniedError()
   }
+}
+
+async function assertReadPermission (drive, sender) {
+  var driveUrl
+  if (typeof drive === 'string') {
+    driveUrl = `hyper://${await drives.fromURLToKey(drive, true)}/`
+  } else {
+    driveUrl = drive.url
+  }
+
+  if (filesystem.isRootUrl(driveUrl)) {
+    if (isSenderBeaker(sender)) {
+      return true
+    }
+    throw new PermissionsError('Cannot read the system drive')
+  }
+
+  return true
 }
 
 async function assertWritePermission (drive, sender) {

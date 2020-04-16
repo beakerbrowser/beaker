@@ -6,6 +6,7 @@ const logger = logLib.child({category: 'hyper', subcategory: 'hyper-scheme'})
 // import intoStream from 'into-stream'
 import markdown from '../../lib/markdown'
 import * as drives from '../hyper/drives'
+import * as filesystem from '../filesystem/index'
 import * as capabilities from '../hyper/capabilities'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
@@ -117,6 +118,16 @@ export const protocolHandler = async function (request, respond) {
         errorInfo: `No DNS record found for hyper://${urlp.host}`
       })
     }
+  }
+
+  // protect the system drive
+  if (filesystem.isRootUrl(`hyper://${driveKey}/`)) {
+    // HACK
+    // electron's CORS protection doesnt seem to be working
+    // so we're going to handle all system-drive requests by redirecting
+    // to the files explorer
+    // -prf
+    return respondRedirect(`https://hyperdrive.network/${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}`)
   }
 
   // setup a timeout
