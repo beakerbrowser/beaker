@@ -48,7 +48,7 @@ export class FeedView extends LitElement {
   }
 
   async forceLoad () {
-    this.loadFeed()
+    this.loadFeed(true)
   }
 
   async getContacts () {
@@ -86,7 +86,7 @@ export class FeedView extends LitElement {
     this.loadFeed()
   }
 
-  async loadFeed () {
+  async loadFeed (fresh = false) {
     console.debug('Running feed query')
     localStorage.lastFeedUpdate = Date.now()
     var contacts = await this.getContacts()
@@ -98,7 +98,7 @@ export class FeedView extends LitElement {
       limit: 30
     })
 
-    if (this.posts && this.posts[0] && this.posts[0].url === files[0].url) {
+    if (!fresh && this.posts && this.posts[0] && this.posts[0].url === files[0].url) {
       // no new posts
       return
     }
