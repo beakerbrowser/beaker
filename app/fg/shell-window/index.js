@@ -20,6 +20,7 @@ class ShellWindowUI extends LitElement {
   static get properties () {
     return {
       tabs: {type: Array},
+      isWindows: {type: Boolean},
       isUpdateAvailable: {type: Boolean},
       numWatchlistNotifications: {type: Number},
       isDaemonActive: {type: Boolean},
@@ -53,6 +54,7 @@ class ShellWindowUI extends LitElement {
     }
     if (browserInfo.platform === 'win32') {
       document.body.classList.add('win32')
+      this.isWindows = true
     }
 
     // handle drag/drop of files
@@ -139,7 +141,7 @@ class ShellWindowUI extends LitElement {
 
   render () {
     return html`
-      <shell-window-win32></shell-window-win32>
+      ${this.isWindows ? html`<shell-window-win32></shell-window-win32>` : ''}
       ${this.isShellInterfaceHidden ? '' : html`
         <shell-window-tabs .tabs=${this.tabs} ?is-fullscreen=${this.isFullscreen}></shell-window-tabs>
         <shell-window-navbar

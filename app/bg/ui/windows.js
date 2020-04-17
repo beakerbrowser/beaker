@@ -172,7 +172,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   var frameSettings = {
     titleBarStyle: 'hidden',
     trafficLightPosition: {x: 12, y: 20},
-    frame: !IS_WIN,
+    frame: IS_LINUX,
     title: undefined
   }
   if (state.isAppWindow) {
@@ -181,7 +181,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     frameSettings.frame = true
   }
   var win = new BrowserWindow(Object.assign({
-    autoHideMenuBar: !IS_LINUX,
+    autoHideMenuBar: false,
     fullscreenable: true,
     fullscreenWindowTitle: true,
     alwaysOnTop: state.isAlwaysOnTop,

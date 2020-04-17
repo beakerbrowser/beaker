@@ -8,9 +8,6 @@ class ShellWindowWin32 extends LitElement {
   // =
 
   render () {
-    if (window.platform !== 'win32') {
-      return html``
-    }
     return html`
       <div>
         <a class="minimize" @click=${this.onClickMinimize}></a>
@@ -48,7 +45,7 @@ div {
   top: 0;
   right: 0;
   width: 150px;
-  height: 36px;
+  height: 32px;
 }
 
 a {
@@ -80,7 +77,7 @@ a:hover {
   width: 8px;
   height: 8px;
   left: 20px;
-  top: 13px;
+  top: 12px;
 }
 
 .close:hover {
@@ -93,7 +90,7 @@ a:hover {
   font-size: 29px;
   font-weight: 100;
   font-family: -webkit-body;
-  line-height: 36px;
+  line-height: 34px;
 }
 `
 customElements.define('shell-window-win32', ShellWindowWin32)
