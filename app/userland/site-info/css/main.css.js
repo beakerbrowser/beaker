@@ -43,6 +43,11 @@ h1 {
   font-size: 19px;
 }
 
+button {
+  font-size: 11px;
+  border-color: #bbb;
+}
+
 .warning {
   color: #cc1010;
 }
@@ -90,7 +95,6 @@ hr {
 .site-info .details {
   word-break: break-word;
 }
-
 
 .site-info .details .buttons {
   margin-top: 10px;

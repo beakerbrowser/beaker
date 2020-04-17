@@ -18,8 +18,8 @@ a {
 
 .field-group {
   display: block;
-  padding: 10px;
-  border-bottom: 1px solid #ccc;
+  padding: 12px 18px;
+  border: 0;
 }
 
 .field-group > div {
