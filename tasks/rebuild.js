@@ -24,8 +24,9 @@ gulp.task('rebuild', gulp.series(async () => {
       LDFLAGS: '-mmacosx-version-min=10.10'
     }
   }
+  env.HOME = '~/.electron-gyp'
   for (let mod of MODULES_NEEDING_REBUILD) {
-    await runAsync(`HOME=~/.electron-gyp npm rebuild ${mod} --runtime=electron --target=9.0.0-beta.16 --disturl=https://atom.io/download/atom-shell --build-from-source`, {cwd, env, shell: true})
+    await runAsync(`npm rebuild ${mod} --runtime=electron --target=9.0.0-beta.16 --disturl=https://atom.io/download/atom-shell --build-from-source`, {cwd, env, shell: true})
   }
   await runAsync(`npm run build`, {shell: true})
 }))
