@@ -40,13 +40,12 @@ a[href]:hover {
   letter-spacing: 0.7px;
   color: #a3a3a8;
   padding: 120px 0px;
-  background: #fafafd;
   text-align: center;
 }
 
 .posts .empty .fas {
   font-size: 120px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   color: #d3d3d8;
 }
 
