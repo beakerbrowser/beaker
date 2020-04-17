@@ -75,7 +75,6 @@ export async function ensureSeeding (keys) {
     let cfg = configs.get(key)
     if (!cfg || !cfg.announce || !cfg.lookup) {
       let drive = await getOrLoadDrive(key)
-      console.log('fixing network config for', key)
       await drive.session.drive.configureNetwork({
         announce: true,
         lookup: true
