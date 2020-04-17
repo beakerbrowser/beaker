@@ -27,11 +27,11 @@ customElements.define('profile-view', class extends HTMLElement {
 
   ${this.errors.general ? `<div class="error">${this.errors.general}</div>` : ''}
 
-  <label for="title">Name</label>
+  <label for="title">Display Name</label>
   <input autofocus name="title" tabindex="2" value="${this.title || ''}" class="${this.errors.title ? 'has-error' : ''}">
   ${this.errors.title ? `<div class="error">${this.errors.title}</div>` : ''}
 
-  <label for="description">Description</label>
+  <label for="description">Bio / Description</label>
   <input name="description" tabindex="3" value="${this.description || ''}" placeholder="Optional" class="${this.errors.description ? 'has-error' : ''}">
   ${this.errors.description ? `<div class="error">${this.errors.description}</div>` : ''}
 
