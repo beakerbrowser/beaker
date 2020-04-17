@@ -28,6 +28,7 @@ import lock from '../../lib/lock'
  * @property {boolean} internal
  * @property {boolean} system
  * @property {boolean} profile
+ * @property {boolean?} contact
  */
 
 // globals
@@ -120,12 +121,20 @@ export async function setup () {
 
 /**
  * @param {string} url 
- * @returns {DriveIdent}
+ * @param {boolean} [includeContacts]
+ * @returns {DriveIdent | Promise<DriveIdent>}
  */
-export function getDriveIdent (url) {
+export function getDriveIdent (url, includeContacts = false) {
   var system = isRootUrl(url)
   var profile = url === profileDriveUrl
-  return {system, profile, internal: system || profile}
+  if (includeContacts) {
+    return getAddressBook().then(addressBook => {
+      var key = /[0-9a-f]{64}/.exec(url)[0]
+      var contact = !!addressBook.contacts.find(c => c.key === key)
+      return {system, profile, internal: system || profile, contact}
+    })
+  }
+  return {system, profile, internal: system || profile, contact: undefined}
 }
 
 /**
@@ -283,11 +292,17 @@ export async function setupDefaultProfile ({title, description, thumbBase64, thu
   profileDriveUrl = drive.url
 }
 
-export async function ensureAddressBook (profileKey) {
+export async function getAddressBook () {
   var addressBook
   try { addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse) }
   catch (e) { addressBook = {} }
-  addressBook.profiles = addressBook.profiles || []
+  addressBook.profiles = addressBook.profiles && Array.isArray(addressBook.profiles) ? addressBook.profiles : []
+  addressBook.contacts = addressBook.contacts && Array.isArray(addressBook.contacts) ? addressBook.contacts : []
+  return addressBook
+}
+
+export async function ensureAddressBook (profileKey) {
+  var addressBook = await getAddressBook()
   if (!addressBook.profiles.find(p => p.key === profileKey)) {
     addressBook.profiles.push({key: profileKey})
   }
@@ -322,41 +337,5 @@ async function ensureDir (path) {
     }
   } catch (e) {
     logger.error('Filesystem failed to make directory', {path: '' + path, error: e.toString()})
-  }
-}
-
-async function ensureMount (path, url) {
-  try {
-    let st = await stat(path)
-    let key = await hyper.drives.fromURLToKey(url, true)
-    if (!st) {
-      // add mount
-      logger.info(`Adding mount ${path}`, {key})
-      await rootDrive.pda.mount(path, key)
-    } else if (st.mount) {
-      if (st.mount.key.toString('hex') !== key) {
-        // change mount
-        logger.info('Reassigning mount', {path, key, oldKey: st.mount.key.toString('hex')})
-        await rootDrive.pda.unmount(path)
-        await rootDrive.pda.mount(path, key)
-      }
-    } else {
-      logger.error('Warning! Filesystem expects a mount but an unexpected file exists at this location.', {path})
-    }
-  } catch (e) {
-    logger.error('Filesystem failed to mount drive', {path, url, error: e.toString()})
-  }
-}
-
-async function ensureUnmount (path) {
-  try {
-    let st = await stat(path)
-    if (st && st.mount) {
-      // remove mount
-      logger.info('Removing mount', {path})
-      await rootDrive.pda.unmount(path)
-    }
-  } catch (e) {
-    logger.error('Filesystem failed to unmount drive', {path, error: e.toString()})
   }
 }

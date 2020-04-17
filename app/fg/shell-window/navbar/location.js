@@ -19,6 +19,8 @@ class NavbarLocation extends LitElement {
       title: {type: String},
       siteTitle: {type: String},
       siteSubtitle: {type: String},
+      siteIcon: {type: String},
+      siteTrust: {type: String},
       driveDomain: {type: String},
       isSystemDrive: {type: Boolean, attribute: 'is-system-drive'},
       writable: {type: Boolean},
@@ -45,6 +47,8 @@ class NavbarLocation extends LitElement {
     this.title = ''
     this.siteTitle = ''
     this.siteSubtitle = ''
+    this.siteIcon = ''
+    this.siteTrust = ''
     this.driveDomain = ''
     this.isSystemDrive = false
     this.writable = false
@@ -117,6 +121,8 @@ class NavbarLocation extends LitElement {
         url=${this.url}
         siteTitle=${this.siteTitle}
         siteSubtitle="${this.siteSubtitle}"
+        siteIcon=${this.siteIcon}
+        siteTrust=${this.siteTrust}
         driveDomain=${this.driveDomain}
         ?writable=${this.writable}
         .loadError=${this.loadError}
@@ -182,11 +188,11 @@ class NavbarLocation extends LitElement {
           }
         }
         var cls = 'protocol'
-        // if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
-        // if (['https:'].includes(protocol) && !this.loadError) cls += ' protocol-secure'
-        if (['https:'].includes(protocol) && this.loadError && this.loadError.isInsecureResponse) cls += ' protocol-insecure'
-        // if (['dat:'].includes(protocol)) cls += ' protocol-secure'
-        // if (['beaker:'].includes(protocol)) cls += ' protocol-secure'
+        // if (['beaker:'].includes(protocol)) cls += ' protocol-trusted'
+        // if (['https:'].includes(protocol) && !this.loadError) cls += ' protocol-trusted'
+        if (['https:'].includes(protocol) && this.loadError && this.loadError.isInsecureResponse) cls += ' protocol-untrusted'
+        // if (['dat:'].includes(protocol)) cls += ' protocol-trusted'
+        // if (['beaker:'].includes(protocol)) cls += ' protocol-trusted'
         return html`
           <div class="input-pretty" @mouseup=${this.onClickLocation}>
             ${''/*<span class=${cls}>${protocol.slice(0, -1)}</span><span class="syntax">://</span><span class="host">${host}</span>*/}
@@ -496,8 +502,12 @@ NavbarLocation.styles = [buttonResetCSS, tooltipCSS, css`
   user-select: none;
 }
 
-:host(.insecure) {
-  border: 1px solid var(--color-border-input--insecure);
+:host(.trusted) {
+  border: 1px solid var(--color-border-input--trusted);
+}
+
+:host(.untrusted) {
+  border: 1px solid var(--color-border-input--untrusted);
 }
 
 button {
@@ -618,12 +628,12 @@ input::-webkit-input-placeholder {
   color: var(--color-text--light);
 }
 
-.input-pretty .protocol-secure {
-  color: var(--color-secure);
+.input-pretty .protocol-trusted {
+  color: var(--color-trusted);
 }
 
-.input-pretty .protocol-insecure {
-  color: var(--color-insecure);
+.input-pretty .protocol-untrusted {
+  color: var(--color-untrusted);
 }
 
 .input-pretty .host-version,

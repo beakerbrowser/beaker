@@ -77,6 +77,7 @@ const STATE_VARS = [
   'siteTitle',
   'siteSubtitle',
   'siteIcon',
+  'siteTrust',
   'driveDomain',
   'isSystemDrive',
   'writable',
@@ -236,16 +237,21 @@ class Tab extends EventEmitter {
       if (hostname.includes('+')) {
         hostname = hostname.replace(/\+[\d]+/, '')
       }
-      var origin = urlp.protocol + '//' + (hostname)
       if (this.driveInfo) {
-        if (_get(this.driveInfo, 'ident.system', false)) {
+        var ident = _get(this.driveInfo, 'ident', {})
+        if (ident.system) {
           return 'My System Drive'
+        }
+        if (this.driveInfo.writable || ident.contact) {
+          if (this.driveInfo.title) {
+            return this.driveInfo.title
+          }
         }
       }
       if (urlp.protocol === 'beaker:') {
         return 'Beaker'
       }
-      return origin + (urlp.port ? `:${urlp.port}` : '')
+      return hostname + (urlp.port ? `:${urlp.port}` : '')
     } catch (e) {
       return ''
     }
@@ -263,9 +269,44 @@ class Tab extends EventEmitter {
 
   get siteIcon () {
     if (this.driveInfo) {
-      return libTools.getFAIcon(libTools.typeToCategory(this.driveInfo.type))
+      var ident = this.driveInfo.ident || {}
+      if (ident.contact || ident.profile) {
+        return 'fas fa-user-check'
+      }
+      if (this.driveInfo.writable) {
+        return 'fas fa-check-circle'
+      }
+    }
+    var url = this.loadingURL || this.url
+    if (url.startsWith('https:') && !(this.loadError && this.loadError.isInsecureResponse)) {
+      return 'fas fa-check-circle'
+    }
+    if (url.startsWith('beaker:')) {
+      return 'beaker-logo'
     }
     return ''
+  }
+
+  get siteTrust () {
+    try {
+      var urlp = new URL(this.loadingURL || this.url)
+      if (this.loadError && this.loadError.isInsecureResponse) {
+        return 'untrusted'
+      }
+      if (['https:', 'beaker:'].includes(urlp.protocol)) {
+        return 'trusted'
+      }
+      if (urlp.protocol === 'http:') {
+        return 'untrusted'
+      }
+      if (urlp.protocol === 'hyper:' && this.driveInfo) {
+        if (this.driveInfo.writable || this.driveInfo.ident.internal || this.driveInfo.ident.contact) {
+          return 'trusted'
+        }
+      }
+    } catch (e) {
+    }
+    return 'notrust'
   }
 
   get driveDomain () {
@@ -790,7 +831,7 @@ class Tab extends EventEmitter {
     try {
       key = await hyper.dns.resolveName(this.url)
       this.driveInfo = await hyper.drives.getDriveInfo(key)
-      this.driveInfo.ident = filesystem.getDriveIdent(this.driveInfo.url)
+      this.driveInfo.ident = await filesystem.getDriveIdent(this.driveInfo.url, true)
       this.peers = this.driveInfo.peers
       this.donateLinkHref = _get(this, 'driveInfo.links.payment.0.href')
     } catch (e) {

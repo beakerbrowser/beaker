@@ -58,10 +58,6 @@ class ShellWindowNavbar extends LitElement {
     return _get(this, 'activeTab.isLoading')
   }
 
-  get isInsecure () {
-    return _get(this, 'activeTab.url', '').startsWith('http:') || _get(this, 'activeTab.loadError.isInsecureResponse')
-  }
-
   focusLocation () {
     this.shadowRoot.querySelector('shell-window-navbar-location').focusLocation()
   }
@@ -80,12 +76,14 @@ class ShellWindowNavbar extends LitElement {
         ${this.homeBtn}
       </div>
       <shell-window-navbar-location
-        class=${classMap({insecure: this.isInsecure})}
+        class=${classMap({[_get(this.activeTab, 'siteTrust', 'notrust')]: true})}
         .activeTabIndex="${this.activeTabIndex}"
         url="${_get(this, 'activeTab.url', '')}"
         title="${_get(this, 'activeTab.title', '')}"
         siteTitle="${_get(this, 'activeTab.siteTitle', '')}"
         siteSubtitle="${_get(this, 'activeTab.siteSubtitle', '')}"
+        siteIcon="${_get(this, 'activeTab.siteIcon', '')}"
+        siteTrust="${_get(this, 'activeTab.siteTrust', '')}"
         driveDomain="${_get(this, 'activeTab.driveDomain', '')}"
         ?is-system-drive=${_get(this, 'activeTab.isSystemDrive', false)}
         ?writable=${_get(this, 'activeTab.writable', false)}
