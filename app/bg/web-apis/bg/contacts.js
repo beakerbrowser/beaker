@@ -135,7 +135,7 @@ async function assembleRecords (contactsList) {
   for (let contact of contactsList) {
     if (typeof contact.key !== 'string' || !HYPERDRIVE_HASH_REGEX.test(contact.key)) continue
     let url = `hyper://${contact.key}/`
-    let info = await drives.getDriveInfo(contact.key).catch(e => ({}))
+    let info = await drives.getDriveInfo(contact.key, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
     records.push({
       url,
       title: info.title,

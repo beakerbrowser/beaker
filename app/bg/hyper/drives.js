@@ -387,12 +387,15 @@ export function isDriveLoaded (key) {
 // drive fetch/query
 // =
 
-export async function getDriveInfo (key, {ignoreCache} = {ignoreCache: false}) {
+export async function getDriveInfo (key, {ignoreCache, onlyCache} = {ignoreCache: false, onlyCache: false}) {
   // get the drive
   key = await fromURLToKey(key, true)
-  var drive = getDrive(key)
-  if (!drive && ignoreCache) {
-    drive = await loadDrive(key)
+  var drive
+  if (!onlyCache) {
+    drive = getDrive(key)
+    if (!drive && ignoreCache) {
+      drive = await loadDrive(key)
+    }
   }
 
   var domain = drive ? drive.domain : await hyperDns.reverseResolve(key)
