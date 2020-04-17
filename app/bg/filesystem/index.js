@@ -110,7 +110,9 @@ export async function setup () {
     drives = JSON.parse(await rootDrive.pda.readFile('/drives.json')).drives
     seedKeys = seedKeys.concat(drives.map(drive => drive.key))
   } catch (e) {
-    logger.info('Error while reading the drive configuration at /drives.json', {error: e.toString()})
+    if (e.name !== 'NotFoundError') {
+      logger.info('Error while reading the drive configuration at /drives.json', {error: e.toString()})
+    }
   }
   await hyper.drives.ensureSeeding(seedKeys)
 }
