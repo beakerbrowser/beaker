@@ -278,16 +278,18 @@ export async function setupDefaultProfile ({title, description, thumbBase64, thu
   </body>
 </html>`)
 
+  await ensureAddressBook(drive.key.toString('hex'))
+  profileDriveUrl = drive.url
+}
+
+export async function ensureAddressBook (profileKey) {
   var addressBook
   try { addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse) }
   catch (e) { addressBook = {} }
   addressBook.profiles = addressBook.profiles || []
-  addressBook.profiles.push({
-    key: drive.key.toString('hex'),
-    title,
-    description
-  })
-  profileDriveUrl = drive.url
+  if (!addressBook.profiles.find(p => p.key === profileKey)) {
+    addressBook.profiles.push({key: profileKey})
+  }
   await rootDrive.pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
 }
 
@@ -296,7 +298,6 @@ export async function getProfile () {
     var addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse)
     return addressBook.profiles ? addressBook.profiles[0] : undefined
   } catch (e) {
-    console.error(e)
     return undefined
   }
 }

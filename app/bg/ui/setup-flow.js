@@ -3,6 +3,7 @@ import { URLSearchParams } from 'url'
 import { BrowserWindow } from 'electron'
 import { ICON_PATH } from './windows'
 import * as profileDb from '../dbs/profile-data-db'
+import * as filesystem from '../filesystem/index'
 import knex from '../lib/knex'
 
 // globals
@@ -24,6 +25,19 @@ export async function runSetupFlow () {
   if (!setupState) {
     setupState = {migrated08to09: 0, profileSetup: 0}
     await profileDb.run(knex('setup_state').insert(setupState))
+  }
+
+  // TODO
+  // do we even need to track profileSetup in setup_state?
+  // might be better to just use the address-book.json state
+  // -prf
+  var hasProfile = !!(await filesystem.getProfile())
+  if (setupState.profileSetup && !hasProfile) {
+    setupState.profileSetup = 0
+    await profileDb.run(knex('setup_state').update(setupState))
+  } else if (!setupState.profileSetup && hasProfile) {
+    setupState.profileSetup = 1
+    await profileDb.run(knex('setup_state').update(setupState))
   }
 
   var needsSetup = Object.values(setupState).includes(0)
