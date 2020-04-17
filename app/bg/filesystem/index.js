@@ -87,6 +87,7 @@ export async function setup () {
     // default bookmarks
     if (isInitialCreation) {
       await bookmarks.add({href: 'https://beaker-browser.gitbook.io/docs/', title: 'Beaker Documentation', pinned: true})
+      await bookmarks.add({href: 'https://beaker.dev/', title: 'Beaker Developer Portal', pinned: true})
       await bookmarks.add({href: 'https://www.reddit.com/r/beakerbrowser/', title: 'Beaker Community Reddit', pinned: true})
     }
 
