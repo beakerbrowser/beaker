@@ -7,7 +7,8 @@ class ShellWindowToolbarMenu extends LitElement {
   static get properties () {
     return {
       activeTabIndex: {type: Number},
-      activeTab: {type: Object}
+      activeTab: {type: Object},
+      openMenu: {type: String}
     }
   }
 
@@ -45,7 +46,7 @@ class ShellWindowToolbarMenu extends LitElement {
       100%  { background-position: 100% 0%; }
     }
     a {
-      padding: 0 8px;
+      padding: 0 10px;
       margin-right: 1px;
       height: 20px;
       line-height: 22px;
@@ -73,13 +74,13 @@ class ShellWindowToolbarMenu extends LitElement {
     super()
     this.activeTabIndex = -1
     this.activeTab = undefined
+    this.openMenu = undefined
   }
 
   // rendering
   // =
 
   render () {
-    const isHyper = this.activeTab ? this.activeTab.url.startsWith('hyper://') : false
     const sidebarBtn = (panel, label) => {
       var panels = this.activeTab ? this.activeTab.sidebarPanels : []
       return html`
@@ -92,11 +93,28 @@ class ShellWindowToolbarMenu extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${sidebarBtn('site-info-app', html`<span class="fas fa-info-circle"></span> Site Info`)}
-      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)}
-      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`)}
-      ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
+      ${''/*sidebarBtn('site-info-app', html`<span class="fas fa-info-circle"></span> Site Info`)*/}
+      ${''/*sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)*/}
+      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span>`)}
+      ${''/*sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)*/}
+      ${this.renderMenuButton('file', 'File')}
+      ${this.renderMenuButton('edit', 'Edit')}
+      ${this.renderMenuButton('view', 'View')}
+      ${this.renderMenuButton('drive', 'Drive')}
+      ${this.renderMenuButton('history', 'History')}
+      ${this.renderMenuButton('bookmarks', 'Bookmarks')}
+      ${this.renderMenuButton('developer', 'Developer')}
+      ${this.renderMenuButton('help', 'Help')}
       ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
+    `
+  }
+
+  renderMenuButton (id, label) {
+    const cls = classMap({pressed: this.openMenu === id})
+    return html`
+      <a class=${cls} @click=${this.onClickMenu(id)} @mouseover=${this.onMouseoverMenu(id)}>
+        ${label}
+      </a>
     `
   }
 
@@ -110,6 +128,36 @@ class ShellWindowToolbarMenu extends LitElement {
   onClickFilesExplorer (e) {
     if (!this.activeTab) return
     bg.views.loadURL('active', `https://hyperdrive.network/${this.activeTab.url.slice('hyper://'.length)}`)
+  }
+
+  onClickMenu (id) {
+    return async (e) => {
+      if (Date.now() - (this.lastMenuClick||0) < 100) {
+        return
+      }
+      this.openMenu = id
+      var rect = e.currentTarget.getClientRects()[0]
+      await bg.views.toggleMenu('toolbar', {
+        bounds: {left: (rect.left|0) + 1, top: (rect.bottom|0) + 1},
+        params: {menu: id}
+      })
+      this.openMenu = undefined
+      this.lastMenuClick = Date.now()
+    }
+  }
+
+  onMouseoverMenu (id) {
+    return async (e) => {
+      if (!this.openMenu || this.openMenu === id) {
+        return
+      }
+      var rect = e.currentTarget.getClientRects()[0]
+      bg.views.updateMenu({
+        bounds: {left: (rect.left|0) + 1, top: (rect.bottom|0) + 1},
+        params: {menu: id}
+      })
+      this.openMenu = id
+    }
   }
 }
 customElements.define('shell-window-toolbar-menu', ShellWindowToolbarMenu)

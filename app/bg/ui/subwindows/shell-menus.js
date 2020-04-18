@@ -15,13 +15,14 @@ import * as rpc from 'pauls-electron-rpc'
 import { createShellWindow } from '../windows'
 import * as tabManager from '../tab-manager'
 import * as modals from './modals'
+import { getToolbarMenu, triggerMenuItemById } from '../window-menu'
 import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 
 // globals
 // =
 
 const MARGIN_SIZE = 10
-const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'bookmarks', 'peers', 'share', 'site', 'donate']
+const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'peers', 'share', 'site', 'donate']
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -78,10 +79,10 @@ export function reposition (parentWindow) {
         width: 250,
         height: 200
       })
-    } else if (view.menuId === 'bookmarks') {
+    } else if (view.menuId === 'toolbar') {
       setBounds({
-        x: 40,
-        y: 72,
+        x: view.boundsOpt.left,
+        y: view.boundsOpt.top,
         width: 250,
         height: 550
       })
@@ -125,6 +126,16 @@ export async function toggle (parentWindow, menuId, opts) {
     } else {
       return show(parentWindow, menuId, opts)
     }
+  }
+}
+
+export async function update (parentWindow, opts) {
+  var view = get(parentWindow)
+  if (view && view.isVisible) {
+    view.boundsOpt = opts && opts.bounds ? opts.bounds : view.boundsOpt
+    reposition(parentWindow)
+    var params = opts && opts.params ? opts.params : {}
+    await view.webContents.executeJavaScript(`updateMenu(${JSON.stringify(params)})`)
   }
 }
 
@@ -199,6 +210,14 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
     var win = getParentWindow(this.sender)
     var tab = tabManager.getActive(win)
     if (tab) tab.showInpageFind()
+  },
+
+  async getWindowMenu () {
+    return getToolbarMenu()
+  },
+
+  async triggerWindowMenuItemById (menu, id) {
+    return triggerMenuItemById(menu, id)
   }
 })
 

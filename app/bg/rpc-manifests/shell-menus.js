@@ -5,5 +5,7 @@ export default {
   createModal: 'promise',
   loadURL: 'promise',
   resizeSelf: 'promise',
-  showInpageFind: 'promise'
+  showInpageFind: 'promise',
+  getWindowMenu: 'promise',
+  triggerWindowMenuItemById: 'promise'
 }

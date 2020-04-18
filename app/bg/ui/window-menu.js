@@ -1,9 +1,15 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
 import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost, getAddedWindowSettings } from './windows'
+import { runNewDriveFlow, runNewDriveFromFolderFlow, runForkFlow, runCloneFlow, runDrivePropertiesFlow } from './util'
 import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
-import {download} from './downloads'
+import { download } from './downloads'
 import hyper from '../hyper/index'
+
+// globals
+// =
+
+var currentMenuTemplate
 
 // exported APIs
 // =
@@ -45,7 +51,8 @@ export function onSetCurrentLocation (win, url) {
 }
 
 export function setApplicationMenu (opts = {}) {
-  Menu.setApplicationMenu(Menu.buildFromTemplate(buildWindowMenu(opts)))
+  currentMenuTemplate = buildWindowMenu(opts)
+  Menu.setApplicationMenu(Menu.buildFromTemplate(currentMenuTemplate))
 }
 
 export function buildWindowMenu (opts = {}) {
@@ -60,7 +67,7 @@ export function buildWindowMenu (opts = {}) {
     submenu: [
       {
         label: 'Preferences',
-        accelerator: 'Command+,',
+        accelerator: 'Cmd+,',
         click (item) {
           var win = getWin()
           if (win) tabManager.create(win, 'beaker://settings', {setActive: true})
@@ -70,11 +77,11 @@ export function buildWindowMenu (opts = {}) {
       { type: 'separator' },
       { label: 'Services', role: 'services', submenu: [] },
       { type: 'separator' },
-      { label: 'Hide Beaker', accelerator: 'Command+H', role: 'hide' },
-      { label: 'Hide Others', accelerator: 'Command+Alt+H', role: 'hideothers' },
+      { label: 'Hide Beaker', accelerator: 'Cmd+H', role: 'hide' },
+      { label: 'Hide Others', accelerator: 'Cmd+Alt+H', role: 'hideothers' },
       { label: 'Show All', role: 'unhide' },
       { type: 'separator' },
-      { label: 'Quit', accelerator: 'Command+Q', click () { app.quit() }, reserved: true }
+      { label: 'Quit', accelerator: 'Cmd+Q', click () { app.quit() }, reserved: true }
     ]
   }
 
@@ -82,6 +89,7 @@ export function buildWindowMenu (opts = {}) {
     label: 'File',
     submenu: [
       {
+        id: 'newTab',
         label: 'New Tab',
         accelerator: 'CmdOrCtrl+T',
         click: function (item) {
@@ -95,12 +103,14 @@ export function buildWindowMenu (opts = {}) {
         reserved: true
       },
       {
+        id: 'newWindow',
         label: 'New Window',
         accelerator: 'CmdOrCtrl+N',
         click: function () { createShellWindow() },
         reserved: true
       },
       {
+        id: 'reopenClosedTab',
         label: 'Reopen Closed Tab',
         accelerator: 'CmdOrCtrl+Shift+T',
         click: function (item) {
@@ -111,29 +121,9 @@ export function buildWindowMenu (opts = {}) {
         },
         reserved: true
       },
-      {
-        label: 'Open File',
-        accelerator: 'CmdOrCtrl+O',
-        click: function (item) {
-          var win = getWin()
-          createWindowIfNone(win, async (win) => {
-            var {filePaths} = await dialog.showOpenDialog({ title: 'Open file...', properties: ['openFile', 'createDirectory'] })
-            if (filePaths && filePaths[0]) { tabManager.create(win, 'file://' + filePaths[0], {setActive: true}) }
-          })
-        }
-      },
-      {
-        label: 'Open Location',
-        accelerator: 'CmdOrCtrl+L',
-        click: function (item) {
-          var win = getWin()
-          createWindowIfNone(win, (win) => {
-            win.webContents.send('command', 'focus-location')
-          })
-        }
-      },
       { type: 'separator' },
       {
+        id: 'savePageAs',
         label: 'Save Page As...',
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+S',
@@ -148,6 +138,7 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'print',
         label: 'Print...',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+P',
@@ -159,16 +150,7 @@ export function buildWindowMenu (opts = {}) {
       },
       { type: 'separator' },
       {
-        label: 'Close Window',
-        enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+Shift+W',
-        click: function (item) {
-          var win = getWin()
-          if (win) win.close()
-        },
-        reserved: true
-      },
-      {
+        id: 'closeTab',
         label: 'Close Tab',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+W',
@@ -193,6 +175,17 @@ export function buildWindowMenu (opts = {}) {
           }
         },
         reserved: true
+      },
+      {
+        id: 'closeWindow',
+        label: 'Close Window',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+Shift+W',
+        click: function (item) {
+          var win = getWin()
+          if (win) win.close()
+        },
+        reserved: true
       }
     ]
   }
@@ -200,14 +193,16 @@ export function buildWindowMenu (opts = {}) {
   var editMenu = {
     label: 'Edit',
     submenu: [
-      { label: 'Undo', enabled: !noWindows, accelerator: 'CmdOrCtrl+Z', selector: 'undo:', reserved: true },
-      { label: 'Redo', enabled: !noWindows, accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:', reserved: true },
+      { id: 'undo', label: 'Undo', enabled: !noWindows, accelerator: 'CmdOrCtrl+Z', selector: 'undo:', reserved: true },
+      { id: 'redo', label: 'Redo', enabled: !noWindows, accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:', reserved: true },
       { type: 'separator' },
-      { label: 'Cut', enabled: !noWindows, accelerator: 'CmdOrCtrl+X', selector: 'cut:', reserved: true },
-      { label: 'Copy', enabled: !noWindows, accelerator: 'CmdOrCtrl+C', selector: 'copy:', reserved: true },
-      { label: 'Paste', enabled: !noWindows, accelerator: 'CmdOrCtrl+V', selector: 'paste:', reserved: true },
-      { label: 'Select All', enabled: !noWindows, accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
+      { id: 'cut', label: 'Cut', enabled: !noWindows, accelerator: 'CmdOrCtrl+X', selector: 'cut:', reserved: true },
+      { id: 'copy', label: 'Copy', enabled: !noWindows, accelerator: 'CmdOrCtrl+C', selector: 'copy:', reserved: true },
+      { id: 'paste', label: 'Paste', enabled: !noWindows, accelerator: 'CmdOrCtrl+V', selector: 'paste:', reserved: true },
+      { id: 'selectAll', label: 'Select All', enabled: !noWindows, accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' },
+      { type: 'separator' },
       {
+        id: 'findInPage',
         label: 'Find in Page',
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+F',
@@ -217,6 +212,7 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'findNext',
         label: 'Find Next',
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+G',
@@ -226,6 +222,7 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'findPrevious',
         label: 'Find Previous',
         enabled: !noWindows && !isAppWindow,
         accelerator: 'Shift+CmdOrCtrl+G',
@@ -239,22 +236,25 @@ export function buildWindowMenu (opts = {}) {
 
   var viewMenu = {
     label: 'View',
-    submenu: [{
-      label: 'Reload',
-      enabled: !noWindows,
-      accelerator: 'CmdOrCtrl+R',
-      click: function (item) {
-        var win = getWin()
-        if (win) {
-          let active = tabManager.getActive(win)
-          if (active) {
-            active.webContents.reload()
-          }
-        }
-      },
-      reserved: true
-    },
+    submenu: [
       {
+        id: 'reload',
+        label: 'Reload',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+R',
+        click: function (item) {
+          var win = getWin()
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) {
+              active.webContents.reload()
+            }
+          }
+        },
+        reserved: true
+      },
+      {
+        id: 'hardReload',
         label: 'Hard Reload (Clear Cache)',
         accelerator: 'CmdOrCtrl+Shift+R',
         click: function (item) {
@@ -275,67 +275,60 @@ export function buildWindowMenu (opts = {}) {
         },
         reserved: true
       },
-      { type: 'separator' },
+      { type: 'separator' },        
       {
-        type: 'submenu',
-        label: 'Sidebar',
-        submenu: [
-          {
-            label: 'Open Editor',
-            enabled: !noWindows && !isAppWindow,
-            accelerator: 'CmdOrCtrl+b',
-            click: async function (item) {
-              var win = getWin()
-              if (win) {
-                let active = tabManager.getActive(win)
-                if (active) active.executeSidebarCommand('show-panel', 'editor-app')
-              }
-            }
-          },
-          {
-            label: 'Open Terminal',
-            enabled: !noWindows && !isAppWindow,
-            accelerator: 'Ctrl+`',
-            click: function (item) {
-              var win = getWin()
-              if (win) {
-                let active = tabManager.getActive(win)
-                if (active) active.executeSidebarCommand('show-panel', 'web-term')
-              }
-            }
-          },
-        ]
-      },
-      {
-        label: 'Toggle Browser UI',
+        id: 'toggleSiteInfo',
+        label: 'Site Information',
         enabled: !noWindows && !isAppWindow,
-        accelerator: 'CmdOrCtrl+Shift+H',
-        click: function (item) {
+        click: async function (item) {
           var win = getWin()
-          if (!win) return
-          toggleShellInterface(win)
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.executeSidebarCommand('show-panel', 'site-info-app')
+          }
         }
       },
       {
-        label: 'Pop Out Tab',
+        id: 'toggleEditor',
+        label: 'Editor',
         enabled: !noWindows && !isAppWindow,
-        accelerator: 'Shift+CmdOrCtrl+P',
-        click: function (item) {
+        accelerator: 'CmdOrCtrl+B',
+        click: async function (item) {
           var win = getWin()
-          if (!win) return
-          var active = tabManager.getActive(win)
-          if (!active) return
-          tabManager.popOutTab(active)
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.executeSidebarCommand('show-panel', 'editor-app')
+          }
         }
       },
       {
-        label: 'Full Screen',
-        enabled: !noWindows,
-        accelerator: (process.platform === 'darwin') ? 'Ctrl+Cmd+F' : 'F11',
-        role: 'toggleFullScreen'
+        id: 'toggleFilesExplorer',
+        label: 'Files Explorer',
+        enabled: !noWindows && !isAppWindow || !!isDriveSite,
+        click: async function (item) {
+          var win = getWin()
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.executeSidebarCommand('show-panel', 'files-explorer-app')
+          }
+        }
       },
-    { type: 'separator' },
       {
+        id: 'toggleTerminal',
+        label: 'Terminal',
+        enabled: !noWindows && !isAppWindow,
+        accelerator: 'Ctrl+`',
+        click: function (item) {
+          var win = getWin()
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.executeSidebarCommand('show-panel', 'web-term')
+          }
+        }
+      },
+      {type: 'separator'},
+      {
+        id: 'zoomIn',
         label: 'Zoom In',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Plus',
@@ -348,6 +341,7 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'zoomOut',
         label: 'Zoom Out',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+-',
@@ -360,6 +354,7 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'actualSize',
         label: 'Actual Size',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+0',
@@ -373,10 +368,85 @@ export function buildWindowMenu (opts = {}) {
     ]
   }
 
-  var showHistoryAccelerator = 'Ctrl+h'
+  var driveMenu = {
+    label: 'Drive',
+    submenu: [
+      {
+        id: 'newDrive',
+        label: 'New Hyperdrive',
+        async click (item) {
+          var win = getWin()
+          createWindowIfNone(win, async (win) => {
+            let newUrl = await runNewDriveFlow(win)
+            tabManager.create(win, newUrl, {setActive: true})
+          })
+        }
+      },
+      {
+        id: 'newDriveFromFolder',
+        label: 'New Drive from Folder...',
+        async click (item) {
+          var win = getWin()
+          createWindowIfNone(win, async (win) => {
+            var {filePaths} = await dialog.showOpenDialog({title: 'Select folder', buttonLabel: 'Use folder', properties: ['openDirectory'] })
+            if (filePaths && filePaths[0]) {
+              let newUrl = await runNewDriveFromFolderFlow(filePaths[0])
+              tabManager.create(win, newUrl, {setActive: true})
+            }
+          })
+        }
+      },
+      {type: 'separator'},
+      {
+        id: 'cloneDrive',
+        label: 'Clone Drive',
+        enabled: !!isDriveSite,
+        async click (item) {
+          var win = getWin()
+          if (win) {
+            let newUrl = await runCloneFlow(win, opts.url)
+            tabManager.create(win, newUrl, {setActive: true})
+          }
+        }
+      },
+      {
+        id: 'forkDrive',
+        label: 'Fork Drive',
+        enabled: !!isDriveSite,
+        async click (item) {
+          var win = getWin()
+          if (win) {
+            let newUrl = await runForkFlow(win, opts.url)
+            tabManager.create(win, newUrl, {setActive: true})
+          }
+        }
+      },
+      {
+        id: 'diffMerge',
+        label: 'Diff / Merge',
+        enabled: !!isDriveSite,
+        async click (item) {
+          var win = getWin()
+          if (win) tabManager.create(win, `beaker://diff/?base=${opts.url}`, {setActive: true})
+        }
+      },
+      {type: 'separator'},
+      {
+        id: 'driveProperties',
+        label: 'Drive Properties',
+        enabled: !!isDriveSite,
+        async click (item) {
+          var win = getWin()
+          if (win) runDrivePropertiesFlow(win, hyper.drives.fromURLToKey(opts.url))
+        }
+      }
+    ]
+  }
+
+  var showHistoryAccelerator = 'Ctrl+H'
 
   if (process.platform === 'darwin') {
-    showHistoryAccelerator = 'Cmd+y'
+    showHistoryAccelerator = 'Cmd+Y'
   }
 
   var historyMenu = {
@@ -384,6 +454,7 @@ export function buildWindowMenu (opts = {}) {
     role: 'history',
     submenu: [
       {
+        id: 'back',
         label: 'Back',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Left',
@@ -396,6 +467,7 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'forward',
         label: 'Forward',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Right',
@@ -408,6 +480,7 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'showFullHistory',
         label: 'Show Full History',
         accelerator: showHistoryAccelerator,
         click: function (item) {
@@ -418,6 +491,7 @@ export function buildWindowMenu (opts = {}) {
       },
       { type: 'separator' },
       {
+        id: 'bookmarkThisPage',
         label: 'Bookmark this Page',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+D',
@@ -435,20 +509,22 @@ export function buildWindowMenu (opts = {}) {
       {
         type: 'submenu',
         label: 'Advanced Tools',
-        submenu: [{
-          label: 'Reload Shell-Window',
-          enabled: !noWindows,
-          click: function () {
-            getWin().webContents.reloadIgnoringCache()
-          }
-        }, {
-          label: 'Toggle Shell-Window DevTools',
-          enabled: !noWindows,
-          click: function () {
-            getWin().webContents.openDevTools({mode: 'detach'})
-          }
-        },
-      { type: 'separator' },
+        submenu: [
+          {
+            label: 'Reload Shell-Window',
+            enabled: !noWindows,
+            click: function () {
+              getWin().webContents.reloadIgnoringCache()
+            }
+          },
+          {
+            label: 'Toggle Shell-Window DevTools',
+            enabled: !noWindows,
+            click: function () {
+              getWin().webContents.openDevTools({mode: 'detach'})
+            }
+          },
+          { type: 'separator' },
           {
             label: 'Open Hyperdrives Debug Page',
             enabled: !noWindows,
@@ -470,9 +546,11 @@ export function buildWindowMenu (opts = {}) {
               var win = getWin()
               if (win) tabManager.create(win, 'beaker://debug-log/', {setActive: true})
             }
-          }]
+          }
+        ]
       },
       {
+        id: 'toggleDevTools',
         label: 'Toggle DevTools',
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
@@ -486,6 +564,7 @@ export function buildWindowMenu (opts = {}) {
         reserved: true
       },
       {
+        id: 'toggleLiveReloading',
         label: 'Toggle Live Reloading',
         enabled: !!isDriveSite,
         click: function (item) {
@@ -528,6 +607,34 @@ export function buildWindowMenu (opts = {}) {
         role: 'minimize'
       },
       {
+        label: 'Full Screen',
+        enabled: !noWindows,
+        accelerator: (process.platform === 'darwin') ? 'Ctrl+Cmd+F' : 'F11',
+        role: 'toggleFullScreen'
+      },
+      {
+        label: 'Toggle Browser UI',
+        enabled: !noWindows && !isAppWindow,
+        accelerator: 'CmdOrCtrl+Shift+H',
+        click: function (item) {
+          var win = getWin()
+          if (!win) return
+          toggleShellInterface(win)
+        }
+      },
+      {type: 'separator'},
+      {
+        label: 'Focus Location Bar',
+        accelerator: 'CmdOrCtrl+L',
+        click: function (item) {
+          var win = getWin()
+          createWindowIfNone(win, (win) => {
+            win.webContents.send('command', 'focus-location')
+          })
+        }
+      },
+      {type: 'separator'},
+      {
         label: 'Next Tab',
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+Right' : 'CmdOrCtrl+PageDown',
@@ -567,6 +674,18 @@ export function buildWindowMenu (opts = {}) {
             }
           }
         ]
+      },
+      {
+        label: 'Pop Out Tab',
+        enabled: !noWindows && !isAppWindow,
+        accelerator: 'Shift+CmdOrCtrl+P',
+        click: function (item) {
+          var win = getWin()
+          if (!win) return
+          var active = tabManager.getActive(win)
+          if (!active) return
+          tabManager.popOutTab(active)
+        }
       }
     ]
   }
@@ -585,7 +704,8 @@ export function buildWindowMenu (opts = {}) {
     role: 'help',
     submenu: [
       {
-        label: 'Help',
+        id: 'beakerHelp',
+        label: 'Beaker Help',
         accelerator: 'F1',
         click: function (item) {
           var win = getWin()
@@ -593,7 +713,17 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
-        label: 'Report Bug',
+        id: 'developerPortal',
+        label: 'Developer Portal',
+        click: function (item) {
+          var win = getWin()
+          if (win) tabManager.create(win, 'https://beaker.dev/', {setActive: true})
+        }
+      },
+      {type: 'separator'},
+      {
+        id: 'reportIssue',
+        label: 'Report Issue',
         click: function (item) {
           var win = getWin()
           if (win) tabManager.create(win, 'https://github.com/beakerbrowser/beaker/issues', {setActive: true})
@@ -614,9 +744,45 @@ export function buildWindowMenu (opts = {}) {
   }
 
   // assemble final menu
-  var menus = [fileMenu, editMenu, viewMenu, historyMenu, developerMenu, windowMenu, helpMenu]
+  var menus = [fileMenu, editMenu, viewMenu, driveMenu, historyMenu, developerMenu, windowMenu, helpMenu]
   if (process.platform === 'darwin') menus.unshift(darwinMenu)
   return menus
+}
+
+export function getToolbarMenu () {
+  if (!currentMenuTemplate) return {}
+  const get = label => toToolbarItems(currentMenuTemplate.find(menu => menu.label === label).submenu)
+  function toToolbarItems (items){
+    return items.map(item => {
+      if (item.type === 'separator') {
+        return {separator: true}
+      }
+      if (!item.id) return false
+      return {
+        id: item.id,
+        label: item.label,
+        accelerator: item.accelerator,
+        enabled: typeof item.enabled === 'boolean' ? item.enabled : true
+      }
+    }).filter(Boolean)
+  }
+  return {
+    File: get('File'),
+    Edit: get('Edit'),
+    View: get('View'),
+    History: get('History'),
+    Drive: get('Drive'),
+    Developer: get('Developer'),
+    Help: get('Help')
+  }
+}
+
+export function triggerMenuItemById (menuLabel, id) {
+  if (!currentMenuTemplate) return
+  var items = currentMenuTemplate.find(menu => menu.label === menuLabel).submenu
+  if (!items) return
+  var item = items.find(item => item.id === id)
+  return item.click()
 }
 
 // internal helpers

@@ -13,28 +13,6 @@ class BrowserMenu extends LitElement {
   constructor () {
     super()
     this.submenu = ''
-    this.accelerators = {
-      newWindow: '',
-      print: '',
-      findInPage: '',
-      history: '',
-      openFile: ''
-    }
-    this.fetchBrowserInfo()
-  }
-
-  async fetchBrowserInfo () {
-    this.browserInfo = await bg.beakerBrowser.getInfo()
-    const isDarwin = this.browserInfo.platform === 'darwin'
-    const cmdOrCtrlChar = isDarwin ? '⌘' : '^'
-    this.accelerators = {
-      newWindow: cmdOrCtrlChar + 'N',
-      print: cmdOrCtrlChar + 'P',
-      findInPage: cmdOrCtrlChar + 'F',
-      history: cmdOrCtrlChar + (isDarwin ? 'Y' : 'H'),
-      openFile: cmdOrCtrlChar + 'O'
-    }
-
   }
 
   reset () {
@@ -67,25 +45,6 @@ class BrowserMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         ${autoUpdaterEl}
-
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenNewWindow()}>
-            <i class="far fa-window-restore"></i>
-            <span class="label">New Window</span>
-            <span class="shortcut">${this.accelerators.newWindow}</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenFile()}>
-            <i class="far fa-folder-open"></i>
-            <span class="label">Open File...</span>
-            <span class="shortcut">${this.accelerators.openFile}</span>
-          </div>
-
-          ${''/*<div class="menu-item" @click=${this.onClickSavePage}>
-            <i class="fas fa-file-export"></i>
-            Export page as file
-          </div>*/}
-        </div>
 
         <div class="section">
           <div class="menu-item" @click=${e => this.onNewHyperdrive()}>
@@ -123,7 +82,6 @@ class BrowserMenu extends LitElement {
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
             <img class="favicon" src="asset:favicon:beaker://history">
             <span class="label">History</span>
-            <span class="shortcut">${this.accelerators.history}</span>
           </div>
         </div>
 
@@ -189,30 +147,8 @@ class BrowserMenu extends LitElement {
     this.submenu = v
   }
 
-  onOpenNewWindow () {
-    bg.shellMenus.createWindow()
-    bg.shellMenus.close()
-  }
-
   onOpenNewTab () {
     bg.shellMenus.createTab()
-    bg.shellMenus.close()
-  }
-
-  async onOpenFile () {
-    bg.shellMenus.close()
-    var files = await bg.beakerBrowser.showOpenDialog({
-       title: 'Open file...',
-       properties: ['openFile', 'createDirectory']
-    })
-    if (files && files[0]) {
-      bg.shellMenus.createTab('file://' + files[0])
-    }
-  }
-
-  async onClickSavePage () {
-    var tabState = await bg.views.getTabState('active')
-    bg.beakerBrowser.downloadURL(tabState.url)
     bg.shellMenus.close()
   }
 

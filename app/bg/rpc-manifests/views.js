@@ -30,6 +30,7 @@ export default {
   runLocationBarCmd: 'promise',
   showMenu: 'promise',
   toggleMenu: 'promise',
+  updateMenu: 'promise',
   toggleSiteInfo: 'promise',
   focusShellWindow: 'promise',
   onFaviconLoadSuccess: 'promise',

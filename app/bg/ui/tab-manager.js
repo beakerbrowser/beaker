@@ -1767,6 +1767,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     await shellMenus.toggle(getWindow(this.sender), id, opts)
   },
 
+  async updateMenu (opts) {
+    await shellMenus.update(getWindow(this.sender), opts)
+  },
+
   async toggleSiteInfo (opts) {
     await siteInfo.toggle(getWindow(this.sender), opts)
   },

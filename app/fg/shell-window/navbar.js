@@ -16,7 +16,6 @@ class ShellWindowNavbar extends LitElement {
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
       userProfileUrl: {type: String},
-      isBookmarksMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -29,7 +28,6 @@ class ShellWindowNavbar extends LitElement {
     this.numWatchlistNotifications = 0
     this.isDaemonActive = false
     this.userProfileUrl = undefined
-    this.isBookmarksMenuOpen = false
     this.isBrowserMenuOpen = false
   }
 
@@ -106,7 +104,6 @@ class ShellWindowNavbar extends LitElement {
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
         ${this.profileBtn}
-        ${this.bookmarksMenuBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -232,15 +229,6 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get bookmarksMenuBtn () {
-    const cls = classMap({pressed: this.isBookmarksMenuOpen})
-    return html`
-      <button class=${cls} @click=${this.onClickBookmarksMenu} style="margin: 0px 2px">
-        <span class="fas fa-star"></span>
-      </button>
-    `
-  }
-
   get browserMenuBtn () {
     const cls = classMap({pressed: this.isBrowserMenuOpen})
     return html`
@@ -301,15 +289,6 @@ class ShellWindowNavbar extends LitElement {
     bg.views.createTab(this.userProfileUrl, {setActive: true})
   }
 
-  async onClickBookmarksMenu (e) {
-    if (Date.now() - (this.lastBookmarksMenuClick||0) < 100) {
-      return
-    }
-    this.isBookmarksMenuOpen = true
-    await bg.views.toggleMenu('bookmarks')
-    this.isBookmarksMenuOpen = false
-    this.lastBookmarksMenuClick = Date.now()
-  }
 
   async onClickBrowserMenu (e) {
     if (Date.now() - (this.lastBrowserMenuClick||0) < 100) {
