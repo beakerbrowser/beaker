@@ -87,6 +87,7 @@ class ShellWindowToolbarMenu extends LitElement {
         <a
           class=${classMap({pressed: panels.includes(panel)})}
           @click=${e => this.onClickSidebarToggle(e, panel)}
+          style="padding: 0 6px 0 7px; margin-right: -2px;"
         >${label}</a>
       `
     }
