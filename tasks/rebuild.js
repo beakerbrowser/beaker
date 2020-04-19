@@ -1,6 +1,7 @@
 var gulp = require('gulp')
 var path = require('path')
 var run = require('./util-run')
+var homedir = require('os').homedir()
 
 function runAsync (...args) {
   return new Promise(resolve => {
@@ -24,7 +25,7 @@ gulp.task('rebuild', gulp.series(async () => {
       LDFLAGS: '-mmacosx-version-min=10.10'
     }
   }
-  env.HOME = '~/.electron-gyp'
+  env.HOME = path.join(homedir, '.electron-gyp')
   for (let mod of MODULES_NEEDING_REBUILD) {
     await runAsync(`npm rebuild ${mod} --runtime=electron --target=9.0.0-beta.16 --disturl=https://atom.io/download/atom-shell --build-from-source`, {cwd, env, shell: true})
   }
