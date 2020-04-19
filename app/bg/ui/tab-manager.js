@@ -691,7 +691,7 @@ class Tab extends EventEmitter {
 
       let {version} = parseDriveUrl(this.url)
       let {checkoutFS} = await hyper.drives.getDriveCheckout(drive, version)
-      this.liveReloadEvents = checkoutFS.pda.watch()
+      this.liveReloadEvents = await checkoutFS.pda.watch()
 
       const reload = _throttle(() => {
         this.browserView.webContents.reload()

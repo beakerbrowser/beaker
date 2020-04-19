@@ -132,9 +132,9 @@ class NavbarLocation extends LitElement {
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
       ${this.renderZoom()}
-      ${this.renderLiveReloadingBtn()}
       ${this.renderAvailableAlternativeBtn()}
       ${this.renderIdentLabel()}
+      ${this.renderLiveReloadingBtn()}
       ${this.renderPeers()}
       ${this.renderSiteBtn()}
       ${this.renderDonateBtn()}
@@ -259,7 +259,7 @@ class NavbarLocation extends LitElement {
       return ''
     }
     return html`
-      <button class="live-reload" @click=${this.onClickLiveReloadingBtn} title="Toggle live reloading">
+      <button class="live-reload" @click=${this.onClickLiveReloadingBtn} title="Live reloading enabled">
         <i class="fa fa-bolt"></i>
       </button>
     `
@@ -573,12 +573,20 @@ button.available-alternative {
 
 button.live-reload {
   width: 24px;
-  margin-right: 2px;
 }
 
 button.live-reload .fa {
+  font-size: 14px;
   color: #ffff91;
   -webkit-text-stroke: 1px #daba47;
+  text-shadow: 0 0 8px gold;
+  animation: bolt-glow 2s infinite linear;
+}
+
+@keyframes bolt-glow {
+  0% { text-shadow: 0 0 8px gold; }
+  50% { text-shadow: 0 0 0px gold; }
+  100% { text-shadow: 0 0 8px gold; }
 }
 
 .input-container {
