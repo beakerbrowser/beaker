@@ -153,6 +153,7 @@ class NavbarLocation extends LitElement {
           @focus=${this.onFocusLocation}
           @blur=${this.onBlurLocation}
           @input=${this.onInputLocation}
+          @keydown=${this.onKeydownLocation}
         >
         ${this.isLocationFocused ? '' : this.renderInputPretty()}
       </div>
@@ -404,6 +405,12 @@ class NavbarLocation extends LitElement {
     e.currentTarget.blur()
   }
 
+  onKeydownLocation (e) {
+    if (e.key === 'Enter') {
+      bg.views.reload('active')
+      e.currentTarget.blur()
+    }
+  }
 
   onClickZoom (e) {
     bg.views.resetZoom(this.activeTabIndex)
