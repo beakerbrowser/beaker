@@ -280,6 +280,7 @@ export async function setupDefaultProfile ({title, description, thumbBase64, thu
 <html>
   <head>
     <meta charset="utf-8">
+    <link rel="icon" type="image/png" sizes="32x32" href="/thumb">
   </head>
   <body>
     <img src="/thumb">
