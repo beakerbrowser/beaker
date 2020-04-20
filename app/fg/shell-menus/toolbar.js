@@ -20,105 +20,6 @@ class ToolbarMenu extends LitElement {
     this.menuItems = {}
   }
 
-  async fetchBrowserInfo () {
-    // REMOVEME
-    var browserInfo = await bg.beakerBrowser.getInfo()
-    const isDarwin = browserInfo.platform === 'darwin'
-    const c = isDarwin ? '⌘' : '^'
-    const ctrl = '^'
-    const s = '⇧'
-    const opt = '⌥'
-
-    this.menuItems = {
-      file: [
-        [
-          {id: 'newTab', label: 'New Tab', accel: `${c}T`},
-          {id: 'newWindow', label: 'New Window', accel: `${c}N`},
-          {id: 'reopenClosedTab', label: 'Re-open Closed Tab', accel: `${s}${c}T`}
-        ],
-        [
-          {id: 'openFile', label: 'Open File...', accel: `${c}O`}
-        ],
-        [
-          {id: 'savePage', label: 'Save Page As...', accel: `${c}S`},
-          {id: 'print', /*icon: 'fas fa-print',*/ label: 'Print', accel: `${c}P`}
-        ],
-        [
-          {id: 'closeTab', label: 'Close Tab', accel: `${c}W`},
-          {id: 'closeWindow', label: 'Close Window', accel: `${s}${c}W`}
-        ]
-      ],
-      edit: [
-        [
-          {id: 'undo', label: 'Undo', accel: `${c}Z`},
-          {id: 'redo', label: 'Redo', accel: `${s}${c}Z`}
-        ],
-        [
-          {id: 'cut', label: 'Cut', accel: `${c}X`},
-          {id: 'copy', label: 'Copy', accel: `${c}C`},
-          {id: 'paste', label: 'Paste', accel: `${c}V`},
-          {id: 'selectAll', label: 'Select All', accel: `${c}A`},
-        ],
-        [
-          {id: 'findInPage', label: 'Find in Page', accel: `${c}F`},
-          {id: 'findNext', label: 'Find Next', accel: `${c}G`},
-          {id: 'findPrev', label: 'Find Previous', accel: `${s}${c}G`},
-        ]
-      ],
-      view: [
-        [
-          {id: 'reload', label: 'Reload', accel: `${c}R`},
-          {id: 'hardReload', label: 'Hard Reload', accel: `${s}${c}R`},
-        ],
-        [
-          {id: 'toggleSiteInfo', label: 'Site Information', icon: 'fas fa-info-circle'},
-          {id: 'toggleEditor', label: 'Editor', icon: 'fas fa-edit'},
-          {id: 'toggleFilesExplorer', label: 'Files Explorer', icon: 'far fa-folder', hyperOnly: true},
-          {id: 'toggleTerminal', label: 'Terminal', icon: 'fas fa-terminal'},
-        ],
-        [
-          {id: 'toggleBrowserUi', label: 'Toggle Browser UI', accel: `${s}${c}H`},
-          {id: 'popOutTab', label: 'Pop Out Tab', accel: `${s}${c}P`},
-          {id: 'fullScreen', label: 'Full Screen', accel: `${ctrl}${c}F`},
-        ],
-        [
-          {id: 'zoomIn', label: 'Zoom In', accel: `${c}+`},
-          {id: 'zoomOut', label: 'Zoom Out', accel: `${c}-`},
-          {id: 'actualSize', label: 'Actual Size', accel: `${c}0`},
-        ]
-      ],
-      drive: [
-        [
-          {id: 'newDrive', label: 'New Hyperdrive'},
-          {id: 'newDriveFromFolder', label: 'New Drive from Folder...'},
-        ],
-        [
-          {id: 'cloneDrive', label: 'Clone Drive', hyperOnly: true},
-          {id: 'forkDrive', label: 'Fork Drive', hyperOnly: true},
-        ],
-        [
-          {id: 'diffMerge', label: 'Diff / Merge', hyperOnly: true},
-        ],
-        [
-          {id: 'driveProperties', label: 'Drive Properties', hyperOnly: true},
-        ]
-      ],
-      developer: [
-        [
-          {id: 'toggleDevTools', label: 'Toggle Dev Tools', accel: `${opt}${c}I`},
-          {id: 'toggleLiveReloading', label: 'Toggle Live Reloading', hyperOnly: true}
-        ]
-      ],
-      help: [
-        [
-          {id: 'help', label: 'Beaker Help', icon: 'fas fa-question-circle'},
-          {id: 'devPortal', label: 'Developer\'s Portal', icon: 'fas fa-code'},
-          {id: 'githubRepo', label: 'GitHub Repo', icon: 'fab fa-github'},
-        ]
-      ]
-    }
-  }
-
   reset () {
     this.menu = undefined
     this.menuItems = {}
@@ -176,6 +77,7 @@ class ToolbarMenu extends LitElement {
       .replace('Plus', '+')
       .replace('Left', '←')
       .replace('Right', '→')
+      .replace('`', '~')
   }
 
   renderMenuItems (menu) {
@@ -203,16 +105,8 @@ class ToolbarMenu extends LitElement {
     return this.renderMenuItems('File')
   }
 
-  render_edit () {
-    return this.renderMenuItems('Edit')
-  }
-
-  render_view () {
-    return this.renderMenuItems('View')
-  }
-
-  render_history () {
-    return this.renderMenuItems('History')
+  render_drive () {
+    return this.renderMenuItems('Drive')
   }
 
   render_bookmarks () {
@@ -230,11 +124,6 @@ class ToolbarMenu extends LitElement {
       </div>
     `
   }
-
-  render_drive () {
-    return this.renderMenuItems('Drive')
-  }
-
   render_developer () {
     return this.renderMenuItems('Developer')
   }

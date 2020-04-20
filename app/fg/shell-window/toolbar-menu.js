@@ -87,22 +87,18 @@ class ShellWindowToolbarMenu extends LitElement {
         <a
           class=${classMap({pressed: panels.includes(panel)})}
           @click=${e => this.onClickSidebarToggle(e, panel)}
-          style="padding: 0 6px 0 7px; margin-right: -2px;"
+          style="padding: 0 6px 0 7px"
         >${label}</a>
       `
     }
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${''/*sidebarBtn('site-info-app', html`<span class="fas fa-info-circle"></span> Site Info`)*/}
-      ${''/*sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)*/}
       ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span>`)}
-      ${''/*sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)*/}
+      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span>`)}
+      ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span>`)}
       ${this.renderMenuButton('file', 'File')}
-      ${this.renderMenuButton('edit', 'Edit')}
-      ${this.renderMenuButton('view', 'View')}
       ${this.renderMenuButton('drive', 'Drive')}
-      ${this.renderMenuButton('history', 'History')}
       ${this.renderMenuButton('bookmarks', 'Bookmarks')}
       ${this.renderMenuButton('developer', 'Developer')}
       ${this.renderMenuButton('help', 'Help')}

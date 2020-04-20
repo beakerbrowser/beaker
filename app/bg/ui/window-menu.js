@@ -288,44 +288,6 @@ export function buildWindowMenu (opts = {}) {
           }
         }
       },
-      {
-        id: 'toggleEditor',
-        label: 'Editor',
-        enabled: !noWindows && !isAppWindow,
-        accelerator: 'CmdOrCtrl+B',
-        click: async function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'editor-app')
-          }
-        }
-      },
-      {
-        id: 'toggleFilesExplorer',
-        label: 'Files Explorer',
-        enabled: !noWindows && !isAppWindow || !!isDriveSite,
-        click: async function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'files-explorer-app')
-          }
-        }
-      },
-      {
-        id: 'toggleTerminal',
-        label: 'Terminal',
-        enabled: !noWindows && !isAppWindow,
-        accelerator: 'Ctrl+`',
-        click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'web-term')
-          }
-        }
-      },
       {type: 'separator'},
       {
         id: 'zoomIn',
@@ -394,6 +356,19 @@ export function buildWindowMenu (opts = {}) {
               tabManager.create(win, newUrl, {setActive: true})
             }
           })
+        }
+      },
+      {type: 'separator'},
+      {
+        id: 'toggleFilesExplorer',
+        label: 'Explore Files',
+        enabled: !noWindows && !isAppWindow && !!isDriveSite,
+        click: async function (item) {
+          var win = getWin()
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.executeSidebarCommand('show-panel', 'files-explorer-app')
+          }
         }
       },
       {type: 'separator'},
@@ -562,6 +537,32 @@ export function buildWindowMenu (opts = {}) {
           }
         },
         reserved: true
+      },
+      {
+        id: 'toggleEditor',
+        label: 'Toggle Editor',
+        enabled: !noWindows && !isAppWindow,
+        accelerator: 'CmdOrCtrl+B',
+        click: async function (item) {
+          var win = getWin()
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.executeSidebarCommand('show-panel', 'editor-app')
+          }
+        }
+      },
+      {
+        id: 'toggleTerminal',
+        label: 'Toggle Terminal',
+        enabled: !noWindows && !isAppWindow,
+        accelerator: 'Ctrl+`',
+        click: function (item) {
+          var win = getWin()
+          if (win) {
+            let active = tabManager.getActive(win)
+            if (active) active.executeSidebarCommand('show-panel', 'web-term')
+          }
+        }
       },
       {
         id: 'toggleLiveReloading',
