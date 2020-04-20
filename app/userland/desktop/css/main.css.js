@@ -30,14 +30,14 @@ ${tooltipCSS}
 }
 
 #topright a {
-  margin-left: 5px;
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.85;
 }
 
-#topright a:not(:last-child) {
-  background: #f3f3f8;
-  padding: 3px 7px;
-  border-radius: 4px;
-  margin-left: 0;
+#topright a span {
+  opacity: 0.8;
+  font-size: 11px;
 }
 
 .profile-ctrl {
