@@ -66,11 +66,6 @@ export default {
     assert(!opts.allowMultiple || typeof opts.allowMultiple === 'boolean', '.filters.allowMultiple must be a boolean')
     assert(!opts.disallowCreate || typeof opts.disallowCreate === 'boolean', '.filters.disallowCreate must be a boolean')
 
-    // set defaults
-    if (!opts.drive) {
-      opts.drive = filesystem.get().url
-    }
-
     // initiate the modal
     var res
     try {

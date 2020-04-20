@@ -8,6 +8,13 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 
+const SHORTCUTS = [
+  {url: 'virtual:my-device', title: 'My Device', icon: 'fas fa-laptop'},
+  {url: 'virtual:my-drives', title: 'My Drives', icon: 'far fa-hdd'},
+  {url: 'virtual:seeding', title: 'Currently Seeding', icon: 'fas fa-share-alt'},
+  {url: 'virtual:contacts', title: 'Contacts', icon: 'fas fa-users'},
+]
+
 class SelectFileModal extends LitElement {
   static get properties () {
     return {
@@ -56,19 +63,25 @@ class SelectFileModal extends LitElement {
         margin-right: 5px;
       }
 
-      .drives-list {
+      .shortcuts-list {
         background: #f5f5fa;
+        box-sizing: border-box;
+        padding: 5px 0;
         height: 379px;
         overflow-y: auto;
       }
 
-      .drives-list .drive {
-        padding: 5px 10px;
+      .shortcuts-list .shortcut {
+        padding: 8px 10px;
       }
 
-      .drives-list .drive.selected {
+      .shortcuts-list .shortcut.selected {
         background: #0031;
         font-weight: 500;
+      }
+
+      .shortcuts-list .shortcut .fa-fw {
+        margin-right: 5px;
       }
 
       .path {
@@ -94,11 +107,6 @@ class SelectFileModal extends LitElement {
         text-decoration: underline;
       }
 
-      .view {
-        overflow: hidden;
-        margin-bottom: 10px;
-      }
-
       .filename {
         display: flex;
         align-items: center;
@@ -121,16 +129,38 @@ class SelectFileModal extends LitElement {
 
       .files-list {
         border-radius: 4px;
-        height: 350px;
+        height: 378px;
+        box-sizing: border-box;
         overflow-y: scroll;
         border: 1px solid #ccc;
         user-select: none;
         cursor: default;
         padding: 4px 0;
+        margin-bottom: 10px;
+      }
+
+      .path + .files-list {
+        height: 358px;
+      }
+
+      .files-list.grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 120px);
+        grid-template-rows: repeat(auto-fill, 74px);
+        gap: 15px;
+        padding: 12px;
       }
 
       .files-list .item {
+        display: flex;
+        width: 100%;
+        align-items: center;
         padding: 6px 10px;
+      }
+
+      .files-list.grid .item {
+        flex-direction: column;
+        box-sizing: border-box;
       }
 
       .files-list .item.disabled {
@@ -138,26 +168,33 @@ class SelectFileModal extends LitElement {
         color: #aaa;
       }
 
-      .files-list .item .info {
-        display: flex;
-        width: 100%;
-        align-items: center;
-      }
-
-      .files-list .item .info .fa-fw {
+      .files-list .item .fa-fw,
+      .files-list .item .favicon {
         margin-right: 5px;
       }
 
-      .files-list .item .info .fa-folder {
+      .files-list.grid .item .fa-fw {
+        font-size: 28px;
+        margin: 5px 0 10px;
+      }
+
+      .files-list.grid .item .favicon {
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+        margin: 5px 0 10px;
+      }
+
+      .files-list .item .fa-folder {
         color: #9ec2e0;
       }
 
-      .files-list .item .info .fa-file {
+      .files-list .item .fa-file {
         -webkit-text-stroke: 1px #9a9aab;
         color: #fff;
       }
 
-      .files-list .item .info .name {
+      .files-list .item .name {
         flex: 1;
         white-space: nowrap;
         overflow: hidden;
@@ -201,11 +238,21 @@ class SelectFileModal extends LitElement {
       `]
   }
 
+  get isVirtualListing () {
+    return this.drive && this.drive.startsWith('virtual:')
+  }
+
+  get virtualTitle () {
+    var s = SHORTCUTS.find(s => s.url === this.drive)
+    return s ? s.title : ''
+  }
+
   constructor () {
     super()
 
     // state
     this.drives = []
+    this.contacts = []
     this.path = '/'
     this.files = []
     this.selectedPaths = []
@@ -232,7 +279,7 @@ class SelectFileModal extends LitElement {
   async init (params, cbs) {
     this.cbs = cbs
     this.saveMode = params.saveMode
-    this.drive = params.drive
+    this.drive = params.drive || 'virtual:my-device'
     this.path = params.defaultPath || '/'
     this.defaultFilename = params.defaultFilename || ''
     this.title = params.title || ''
@@ -269,8 +316,7 @@ class SelectFileModal extends LitElement {
       }
     }
 
-    this.drives.push(await bg.hyperdrive.getInfo('hyper://system/'))
-    this.driveInfo = await bg.hyperdrive.getInfo(this.drive)
+    this.driveInfo = !this.isVirtualListing ? await bg.hyperdrive.getInfo(this.drive) : undefined
     await this.readdir()
     this.updateComplete.then(_ => {
       this.adjustHeight()
@@ -281,11 +327,15 @@ class SelectFileModal extends LitElement {
       }
     })
 
-    var savedDrives = await bg.drives.list()
-    for (let drive of savedDrives) {
-      this.drives.push(drive.info)
+    this.drives = await bg.drives.list()
+    this.drives.push({url: 'hyper://system/', info: {title: 'System Drive', writable: true}})
+    this.drives.sort((a, b) => (a.info.title || '').toLowerCase().localeCompare(b.info.title || ''))
+    this.contacts = await bg.contacts.list()
+    this.contacts.push(await bg.hyperdrive.getInfo((await bg.beakerBrowser.getProfile()).key))
+    this.contacts.sort((a, b) => (a.title || '').toLowerCase().localeCompare(b.title || ''))
+    if (this.isVirtualListing) {
+      this.readvirtual()
     }
-    this.requestUpdate()
   }
 
   adjustHeight () {
@@ -310,7 +360,43 @@ class SelectFileModal extends LitElement {
     }
   }
 
+  async readvirtual () {
+    const vfile = (url, icon, name) => ({
+      isVirtual: true,
+      path: url,
+      icon: url.startsWith('hyper:')
+        ? url === 'hyper://system/'
+          ? html`<img class="favicon" srcset="beaker://assets/img/drive-types/files.png 1x, beaker://assets/img/drive-types/files-64.png 2x">`
+          : html`<img class="favicon" src="asset:favicon:${url}">`
+        : html`<span class="fa-fw ${icon}"></span>`,
+      name,
+      stat: {isFile: () => true, isDirectory: () => false},
+    })
+    switch (this.drive) {
+      case 'virtual:my-device':
+        this.files = [
+          vfile('virtual:my-drives', 'far fa-hdd', 'My Drives'),
+          vfile('virtual:seeding', 'fas fa-share-alt', 'Currently Seeding'),
+          vfile('virtual:contacts', 'fas fa-users', 'Contacts')
+        ]
+        break
+      case 'virtual:my-drives':
+        this.files = this.drives.filter(d => d.info.writable).map(drive => vfile(drive.url, undefined, drive.info.title))
+        break
+      case 'virtual:seeding':
+        this.files = this.drives.filter(d => !d.info.writable).map(drive => vfile(drive.url, undefined, drive.info.title))
+        break
+      case 'virtual:contacts':
+        this.files = this.contacts.map(contact => vfile(contact.url, undefined, contact.title || 'Anonymous'))
+        break
+    }
+  }
+
   async readdir () {
+    if (this.isVirtualListing) {
+      return this.readvirtual()
+    }
+
     var files = await bg.hyperdrive.readdir(joinPath(this.drive, this.path), {includeStats: true})
     files.forEach(file => {
       file.stat = createStat(file.stat)
@@ -325,6 +411,9 @@ class SelectFileModal extends LitElement {
   }
 
   canSelectFile (file) {
+    if (this.isVirtualListing) {
+      return true // can always select items in virtual lists
+    }
     if (defined(this.filters.networked) && this.filters.networked !== this.driveInfo.networked) {
       return false
     }
@@ -395,16 +484,16 @@ class SelectFileModal extends LitElement {
               : ''}
 
             <div class="layout">
-              <div class="column-drives">
-                ${this.renderDrivesList()}
+              <div class="column-shortcuts">
+                <div class="shortcuts-list">
+                  ${SHORTCUTS.map(shortcut => this.renderShortcut(shortcut))}
+                </div>
               </div>
               <div class="column-files">
                 <div class="path">
                   ${this.renderPath()}
                 </div>
-                <div class="view">
-                  ${this.renderFilesList()}
-                </div>
+                ${this.renderFilesList()}
               </div>
             </div>
 
@@ -423,27 +512,20 @@ class SelectFileModal extends LitElement {
     `
   }
 
-  renderDrivesList () {
-    return html`
-      <div class="drives-list">
-        ${this.drives.map(drive => this.renderDrive(drive))}
-      </div>
-    `
-  }
-
-  renderDrive (driveInfo) {
+  renderShortcut (shortcut) {
     const cls = classMap({
-      drive: true,
-      selected: this.drive === driveInfo.url
+      shortcut: true,
+      selected: this.drive === shortcut.url
     })
     return html`
       <div
         class="${cls}"
-        @click=${this.onSelectDrive}
-        data-url=${driveInfo.url}
+        @click=${this.onSelectShortcut}
+        data-url=${shortcut.url}
       >
         <div class="info">
-          <span class="name" title="${driveInfo.title}">${driveInfo.title}</span>
+          <span class="fa-fw ${shortcut.icon}"></span>
+          <span class="name" title="${shortcut.title}">${shortcut.title}</span>
         </div>
       </div>
     `
@@ -452,8 +534,9 @@ class SelectFileModal extends LitElement {
   renderPath () {
     var pathParts = this.path.split('/').filter(Boolean)
     var pathAcc = []
+    var topTitle = this.driveInfo ? (this.driveInfo.title || 'Untitled') : this.virtualTitle
     return [html`
-      <div @click=${e => this.onClickPath(e, '/')}>${this.driveInfo && this.driveInfo.title || 'Untitled'}</div>
+      <div @click=${e => this.onClickPath(e, '/')}>${topTitle}</div>
       <span class="fa-fw fas fa-angle-right"></span>
     `].concat(pathParts.map(part => {
       pathAcc.push(part)
@@ -467,7 +550,7 @@ class SelectFileModal extends LitElement {
 
   renderFilesList () {
     return html`
-      <div class="files-list">
+      <div class="files-list ${this.isVirtualListing ? 'grid' : ''}">
         ${this.files.map(file => this.renderFile(file))}
       </div>
     `
@@ -491,10 +574,10 @@ class SelectFileModal extends LitElement {
         @dblclick=${disabled && !file.stat.isDirectory() ? undefined : this.onDblClickFile}
         data-path=${file.path}
       >
-        <div class="info">
+        ${file.icon ? file.icon : html`
           <span class="fa-fw ${file.stat.isFile() ? 'fas fa-file' : 'fas fa-folder'}"></span>
-          <span class="name" title="${file.name}">${file.name}</span>
-        </div>
+        `}
+        <span class="name" title="${file.name}">${file.name}</span>
       </div>
     `
   }
@@ -502,19 +585,11 @@ class SelectFileModal extends LitElement {
   // event handlers
   // =
 
-  async onSelectDrive (e) {
+  async onSelectShortcut (e) {
     e.preventDefault()
     e.stopPropagation()
-
-    try {
-      var drive = e.currentTarget.dataset.url
-      var driveInfo = await bg.hyperdrive.getInfo(drive)
-    } catch (e) {
-      return this.requestUpdate()
-    }
-
-    this.drive = driveInfo.url
-    this.driveInfo = driveInfo
+    this.drive = e.currentTarget.dataset.url
+    this.driveInfo = undefined
     this.goto('/')
   }
 
@@ -525,7 +600,7 @@ class SelectFileModal extends LitElement {
 
   onSelectFile (e) {
     var path = e.currentTarget.dataset.path
-    if (this.allowMultiple && (e.ctrlKey || e.metaKey)) {
+    if (this.allowMultiple && (e.ctrlKey || e.metaKey) && !this.isVirtualListing) {
       this.selectedPaths = this.selectedPaths.concat([path])
     } else {
       this.selectedPaths = [path]
@@ -551,8 +626,17 @@ class SelectFileModal extends LitElement {
     this.cbs.reject(new Error('Canceled'))
   }
 
-  onSubmit (e) {
+  async onSubmit (e) {
     if (e) e.preventDefault()
+
+    if (this.isVirtualListing) {
+      this.drive = this.selectedPaths[0]
+      if (this.drive.startsWith('hyper://')) {
+        this.driveInfo = await bg.hyperdrive.getInfo(this.drive)
+      }
+      return this.goto('/')
+    }
+
     const makeSelectionObj = path => ({path, origin: this.drive, url: joinPath(this.drive, path)})
     if (this.saveMode) {
       let path = joinPath(this.path, this.filenameInput.value)
