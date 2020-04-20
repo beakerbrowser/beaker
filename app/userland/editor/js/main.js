@@ -511,7 +511,7 @@ class EditorApp extends LitElement {
     return html`
       <div class="toolbar ${this.isDetached ? 'detached' : ''}" @contextmenu=${this.onContextmenuToolbar}>
         <button class="transparent" @click=${this.onToggleFilesOpen}>
-          <span class="far fa-fw fa-folder"></span>
+          <span class="fas fa-fw fa-ellipsis-h"></span>
         </button>
         <span class="divider"></span>
         <button title="Open..." @click=${this.onClickOpen}>

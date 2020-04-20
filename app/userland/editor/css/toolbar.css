@@ -23,6 +23,7 @@ editor-app .toolbar button {
   padding: 0 8px;
   height: 26px;
   line-height: 24px;
+  font-size: 11px;
   color: inherit;
   border-radius: 0;
 }
