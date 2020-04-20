@@ -62,10 +62,24 @@ class ShellWindowToolbarMenu extends LitElement {
       background: var(--bg-toolbar--pressed);
       color: var(--color-toolbar--pressed);
     }
-    a .fas {
-      font-size: 10px;
+    a .fa-edit,
+    a .fa-terminal {
+      font-size: 9px;
       position: relative;
       top: -1px;
+    }
+    a .fa-folder {
+      font-size: 10px;
+    }
+    a + a .far,
+    a + a .fas {
+      margin-left: -4px;
+    }
+    .divider {
+      margin: 6px 8px 2px 4px;
+      width: 1px;
+      height: 10px;
+      background-color: var(--color-tab-border);
     }
     `
   }
@@ -87,21 +101,21 @@ class ShellWindowToolbarMenu extends LitElement {
         <a
           class=${classMap({pressed: panels.includes(panel)})}
           @click=${e => this.onClickSidebarToggle(e, panel)}
-          style="padding: 0 6px 0 7px"
         >${label}</a>
       `
     }
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span>`)}
-      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span>`)}
-      ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span>`)}
       ${this.renderMenuButton('file', 'File')}
       ${this.renderMenuButton('drive', 'Drive')}
       ${this.renderMenuButton('bookmarks', 'Bookmarks')}
       ${this.renderMenuButton('developer', 'Developer')}
       ${this.renderMenuButton('help', 'Help')}
+      <span class="divider"></span>
+      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Edit`)}
+      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore`)}
+      ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
       ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
     `
   }
