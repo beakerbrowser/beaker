@@ -271,7 +271,7 @@ class Tab extends EventEmitter {
     if (this.driveInfo) {
       var ident = this.driveInfo.ident || {}
       if (ident.contact || ident.profile) {
-        return 'fas fa-user-check'
+        return 'fas fa-user-circle'
       }
       if (this.driveInfo.writable) {
         return 'fas fa-check-circle'
