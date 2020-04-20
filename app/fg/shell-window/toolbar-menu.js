@@ -73,10 +73,10 @@ class ShellWindowToolbarMenu extends LitElement {
     }
     a + a .far,
     a + a .fas {
-      margin-left: -4px;
+      margin-left: -2px;
     }
     .divider {
-      margin: 6px 8px 2px 4px;
+      margin: 6px 10px 2px 6px;
       width: 1px;
       height: 10px;
       background-color: var(--color-tab-border);
