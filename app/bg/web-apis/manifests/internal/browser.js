@@ -29,6 +29,7 @@ export default {
   readFile: 'promise',
 
   getResourceContentType: 'sync',
+  getCertificate: 'promise',
 
   executeSidebarCommand: 'promise',
   toggleSiteInfo: 'promise',

@@ -24,7 +24,7 @@ import { findWebContentsParentWindow } from './lib/electron'
 import { getEnvVar } from './lib/env'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
-import { setupDefaultProfile, getProfile } from './filesystem/index'
+import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
 
 // constants
 // =
@@ -55,6 +55,9 @@ var updaterError = false // has there been an error?
 
 // content-type tracker
 var resourceContentTypes = new LRU(100) // URL -> Content-Type
+
+// certificate tracker
+var originCerts = new LRU(100) // hostname -> {issuerName, subjectName, validExpiry}
 
 // events emitted to rpc clients
 var browserEvents = new EventEmitter()
@@ -131,9 +134,18 @@ export async function setup () {
 
   // HACK
   // Electron doesn't give us a convenient way to check the content-types of responses
+  // or to fetch the certs of a hostname
   // so we track the last 100 responses' headers to accomplish this
   // -prf
   session.defaultSession.webRequest.onCompleted(onCompleted)
+  session.defaultSession.setCertificateVerifyProc((request, cb) => {
+    originCerts.set('https://' + request.hostname + '/', {
+      issuerName: request.certificate.issuerName,
+      subjectName: request.certificate.subjectName,
+      validExpiry: request.certificate.validExpiry
+    })
+    cb(request.errorCode)
+  })
 }
 
 export const WEBAPI = {
@@ -160,6 +172,7 @@ export const WEBAPI = {
   readFile,
 
   getResourceContentType,
+  getCertificate,
 
   listBuiltinFavicons,
   getBuiltinFavicon,
@@ -234,6 +247,26 @@ export function getResourceContentType (url) {
   let i = url.indexOf('#')
   if (i !== -1) url = url.slice(0, i) // strip the fragment
   return resourceContentTypes.get(url)
+}
+
+export async function getCertificate (url) {
+  try {
+    let urlp = new URL(url)
+    url = urlp.protocol + '//' + urlp.hostname + '/'
+  } catch (e) {}
+  var cert = originCerts.get(url)
+  if (cert) {
+    return Object.assign({type: 'tls'}, cert)
+  } else if (url.startsWith('beaker:')) {
+    return {type: 'beaker'}
+  } else if (url.startsWith('hyper://')) {
+    let ident = await getDriveIdent(url, true)
+    if (!ident.internal && !ident.contact) return undefined
+    return {
+      type: 'hyperdrive',
+      ident
+    }
+  }
 }
 
 export async function listBuiltinFavicons ({filter, offset, limit} = {}) {

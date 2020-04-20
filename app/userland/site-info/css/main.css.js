@@ -53,7 +53,8 @@ button {
 }
 
 .notice {
-  padding: 10px;
+  padding: 8px 14px 12px;
+  background: #fafafd;
 }
 
 .notice > :last-child {
@@ -100,10 +101,29 @@ hr {
   margin-top: 10px;
 }
 
-.inner > div {
-  display: block;
-  padding: 10px;
+.nav {
+  display: flex;
+  align-items: center;
+  padding: 8px 6px;
   border-bottom: 1px solid #ccc;
+}
+
+.nav .tabs {
+  display: flex;
+}
+.nav .tabs a {
+  text-align: center; /* for when stacking occurs in narrow views */
+  border-radius: 16px;
+  font-size: 11px;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin-left: 2px;
+}
+.nav .tabs a.active {
+  background: #f0f0f4;
+}
+.nav .tabs a:not(.active):hover {
+  background: #f0f0f4;
 }
 `
 export default cssStr

@@ -70,7 +70,7 @@ export function reposition (parentWindow) {
     setBounds({
       x: view.boundsOpt ? view.boundsOpt.left : 170,
       y: getAddedWindowSettings(parentWindow).isShellInterfaceHidden ? 10 : 72,
-      width: 400,
+      width: 420,
       height: 350
     })
   }

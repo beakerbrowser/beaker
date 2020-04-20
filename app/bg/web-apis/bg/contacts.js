@@ -2,7 +2,7 @@ import * as modals from '../../ui/subwindows/modals'
 import * as drives from '../../hyper/drives'
 import * as filesystem from '../../filesystem/index'
 import * as permissions from '../../ui/permissions'
-import { UserDeniedError } from 'beaker-error-constants'
+import { UserDeniedError, PermissionsError } from 'beaker-error-constants'
 import { HYPERDRIVE_HASH_REGEX } from '../../../lib/const'
 
 // typedefs
@@ -116,6 +116,19 @@ export default {
     var addressBook = await readAddressBook()
     return assembleRecords(addressBook.contacts)
   },
+
+  async remove (url) {
+    if (!isBeakerApp(this.sender)) {
+      throw new PermissionsError()
+    }
+    var key = await drives.fromURLToKey(url, true)
+    var addressBook = await readAddressBook()
+    var index = addressBook.contacts.findIndex(contact => contact.key === key)
+    if (index !== -1) {
+      addressBook.contacts.splice(index, 1)
+    }
+    await filesystem.get().pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
+  }
 }
 
 // internal methods
@@ -143,4 +156,11 @@ async function assembleRecords (contactsList) {
     })
   }
   return records
+}
+
+function isBeakerApp (sender) {
+  if (/^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/.test(sender.getURL())) {
+    return true
+  }
+  return false
 }

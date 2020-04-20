@@ -1,5 +1,6 @@
 import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
-import { toNiceDomain } from '../../app-stdlib/js/strings.js'
+import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
+import { toNiceDomain, pluralize } from '../../app-stdlib/js/strings.js'
 import { writeToClipboard } from '../../app-stdlib/js/clipboard.js'
 import * as toast from '../../app-stdlib/js/com/toast.js'
 import _get from 'lodash.get'
@@ -7,6 +8,8 @@ import * as beakerPermissions from '../../../lib/permissions'
 import mainCSS from '../css/main.css.js'
 import './com/user-session.js'
 import './com/requested-perms.js'
+import './com/identity.js'
+import './com/drive-forks.js'
 
 const isDatHashRegex = /^[a-z0-9]{64}/i
 
@@ -14,10 +17,13 @@ class SiteInfoApp extends LitElement {
   static get properties () {
     return {
       url: {type: String},
+      view: {type: String},
       user: {type: Object},
       isLoading: {type: Boolean},
       info: {type: Object},
-      requestedPerms: {type: Object}
+      cert: {type: Object},
+      requestedPerms: {type: Object},
+      forks: {type: Array}
     }
   }
 
@@ -51,7 +57,7 @@ class SiteInfoApp extends LitElement {
 
   get origin () {
     let urlp = new URL(this.url)
-    return urlp.origin
+    return urlp.origin + '/'
   }
 
   get hostname () {
@@ -109,10 +115,13 @@ class SiteInfoApp extends LitElement {
 
   reset () {
     this.url = ''
+    this.view = undefined
     this.isLoading = true
     this.info = undefined
+    this.cert = undefined
     this.driveCfg = undefined
     this.requestedPerms = undefined
+    this.forks = undefined
   }
 
   async load () {
@@ -124,8 +133,11 @@ class SiteInfoApp extends LitElement {
       if (this.isDrive) {
         // get drive info
         let drive = this.drive
-        this.info = await drive.getInfo()
-        this.driveCfg = await beaker.drives.get(this.url)
+        ;[this.info, this.driveCfg, this.forks] = await Promise.all([
+          drive.getInfo(),
+          beaker.drives.get(this.url),
+          beaker.drives.getForks(this.url)
+        ])
       } else {
         this.info = {
           title: this.hostname,
@@ -133,8 +145,16 @@ class SiteInfoApp extends LitElement {
         }
       }
 
-      // all sites: get requested perms
-      var perms = await beaker.sitedata.getPermissions(this.origin)
+      if (!this.view) {
+        this.view = 'identity'
+      }
+
+      // all sites: get cert and requested perms
+      var perms
+      ;[perms, this.cert]= await Promise.all([
+        beaker.sitedata.getPermissions(this.origin),
+        beaker.browser.getCertificate(this.url)
+      ])
       this.requestedPerms = await Promise.all(Object.entries(perms).map(async ([perm, value]) => {
         var opts = {}
         var permParam = beakerPermissions.getPermParam(perm)
@@ -173,6 +193,7 @@ class SiteInfoApp extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div>
         ${this.renderSiteInfo()}
+        ${this.renderNav()}
         ${this.renderView()}
       </div>
     `
@@ -182,9 +203,9 @@ class SiteInfoApp extends LitElement {
     var writable = this.info ? this.info.writable : false
     var isSaved = this.driveCfg ? this.driveCfg.saved : false
     var isInternal = this.driveCfg ? this.driveCfg.ident.internal : false
+    var isContact = this.cert && this.cert.ident ? this.cert.ident.contact : false
     var protocol = ''
     if (this.isHttps) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
-    if (this.isBeaker) protocol = html`<p class="protocol">This page is served by Beaker</p>`
     return html`
       <div class="site-info">
         <div class="details">
@@ -193,28 +214,48 @@ class SiteInfoApp extends LitElement {
           ${protocol}
           <p class="buttons">
             <button @click=${this.onCopyUrl}><span class="fas fa-fw fa-link"></span> Copy URL</button>
-            ${this.isDrive ? html`
-              <button @click=${this.onClickDriveProperties}><span class="far fa-fw fa-list-alt"></span> Drive Properties</button>
+            ${this.isDrive && !isInternal ? html`
+              ${writable ? html`
+                <button @click=${this.onToggleSaveDrive}>
+                  ${isSaved ? html`<span class="fas fa-fw fa-trash"></span> Remove From Library` : html`<span class="fas fa-fw fa-trash-restore"></span> Readd To Library`}
+                </button>
+              ` : html`
+                <button @click=${this.onToggleSaveDrive}>
+                  ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Seeding` : html`<span class="fas fa-fw fa-share-alt"></span> Seed This Drive`}
+                </button>
+              `}
+              <button @click=${this.onToggleSaveContact}>
+                ${isContact ? html`<span class="fas fa-fw fa-user-times"></span> Remove from Address Book` : html`<span class="fas fa-fw fa-user-plus"></span> Add to Address Book`}
+              </button>
             ` : ''}
           </p>
+        </div>
+      </div>
+    `
+  }
+
+  renderNav () {
+    return html`
+      <div class="nav">
+        <div class="tabs">
+          <a class=${classMap({active: this.view === 'identity'})} @click=${e => this.onSetView(e, 'identity')}>
+            <span class="fas fa-fw fa-user"></span>
+            Identity
+          </a>
+          <a class=${classMap({active: this.view === 'permissions'})} @click=${e => this.onSetView(e, 'permissions')}>
+            <span class="fas fa-fw fa-key"></span>
+            Permissions
+          </a>
           ${this.isDrive ? html`
-            <p class="buttons">
-              ${!isInternal ? html`
-                ${writable ? html`
-                  <button @click=${this.onToggleSaveDrive}>
-                    ${isSaved ? html`<span class="fas fa-fw fa-trash"></span> Remove From Library` : html`<span class="fas fa-fw fa-trash-restore"></span> Readd To Library`}
-                  </button>
-                ` : html`
-                  <button @click=${this.onToggleSaveDrive}>
-                    ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Seeding` : html`<span class="fas fa-fw fa-share-alt"></span> Seed This Drive`}
-                  </button>
-                `}
-              ` : ''}
-              <button @click=${this.onCloneDrive}><span class="far fa-fw fa-clone"></span> Clone Drive</button>
-              <button @click=${this.onForkDrive}><span class="fas fa-fw fa-code-branch"></span> Fork Drive</button>
-            </p>
+            <a class=${classMap({active: this.view === 'forks'})} @click=${e => this.onSetView(e, 'forks')}>
+              <span class="fas fa-fw fa-code-branch"></span>
+              Forks
+            </a>
+            ${''/* TODO <a class=${classMap({active: this.view === 'peers'})} @click=${e => this.onSetView(e, 'peers')}>
+              <span class="fas fa-fw fa-share-alt"></span>
+              ${this.info.peers} ${pluralize(this.info.peers, 'peer')}
+            </a>*/}
           ` : ''}
-          </p>
         </div>
       </div>
     `
@@ -223,6 +264,21 @@ class SiteInfoApp extends LitElement {
   renderView () {
     return html`
       <div class="inner">
+        ${this.view === 'identity' ? html`
+          <identity-signals .cert=${this.cert}></identity-signals>
+        ` : ''}
+
+        ${this.view === 'permissions' ? html`
+          <requested-perms
+            origin=${this.origin}
+            .perms=${this.requestedPerms}
+          ></requested-perms>
+        ` : ''}
+
+        ${this.view === 'forks' ? html`
+          <drive-forks url=${this.url} origin=${this.origin} .info=${this.info} .forks=${this.forks} @change-url=${this.onChangeUrl}></drive-forks>
+        ` : ''}
+
         ${this.isHttp ? html`
           <div class="notice">
             <p class="warning">
@@ -233,15 +289,6 @@ class SiteInfoApp extends LitElement {
             </p>
           </div>
         ` : ''}
-
-        <user-session
-          origin=${this.origin}
-        ></user-session>
-
-        <requested-perms
-          origin=${this.origin}
-          .perms=${this.requestedPerms}
-        ></requested-perms>
       </div>
     `
   }
@@ -257,6 +304,11 @@ class SiteInfoApp extends LitElement {
 
   // events
   // =
+
+  onSetView (e, view) {
+    e.preventDefault()
+    this.view = view
+  }
 
   onChangeUrl (e) {
     this.url = e.detail.url
@@ -279,6 +331,16 @@ class SiteInfoApp extends LitElement {
       await beaker.drives.remove(this.origin)
     } else {
       await beaker.drives.configure(this.origin)
+    }
+    this.load()
+  }
+
+  async onToggleSaveContact (e) {
+    var isContact = this.cert && this.cert.ident ? this.cert.ident.contact : false
+    if (isContact) {
+      await beaker.contacts.remove(this.url)
+    } else {
+      await beaker.contacts.requestAddContact(this.url)
     }
     this.load()
   }
