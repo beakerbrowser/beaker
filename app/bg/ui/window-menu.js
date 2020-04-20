@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
 import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost, getAddedWindowSettings } from './windows'
-import { runNewDriveFlow, runNewDriveFromFolderFlow, runForkFlow, runCloneFlow, runDrivePropertiesFlow } from './util'
+import { runSelectFileDialog, runNewDriveFlow, runNewDriveFromFolderFlow, runForkFlow, runCloneFlow, runDrivePropertiesFlow, exportDriveToFilesystem, importFilesystemToDrive } from './util'
 import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
 import { download } from './downloads'
@@ -59,8 +59,14 @@ export function buildWindowMenu (opts = {}) {
   const isDriveSite = opts.url && opts.url.startsWith('hyper://')
   const noWindows = opts.noWindows === true
   const getWin = () => BrowserWindow.getFocusedWindow()
-  const addedWindowSettings = getAddedWindowSettings(getActiveWindow())
+  const activeWindow = getActiveWindow()
+  const addedWindowSettings = getAddedWindowSettings(activeWindow)
   const isAppWindow = addedWindowSettings.isAppWindow
+  var driveInfo
+  try {
+    driveInfo = !noWindows && isDriveSite ? tabManager.getActive(activeWindow).driveInfo : undefined
+  } catch (e) {}
+  const isWritable = driveInfo && driveInfo.writable
 
   var darwinMenu = {
     label: 'Beaker',
@@ -110,23 +116,84 @@ export function buildWindowMenu (opts = {}) {
         reserved: true
       },
       {
-        id: 'reopenClosedTab',
-        label: 'Reopen Closed Tab',
-        accelerator: 'CmdOrCtrl+Shift+T',
+        id: 'newFile',
+        label: 'New File',
+        enabled: !noWindows && !isAppWindow,
         click: function (item) {
-          var win = getWin()
-          createWindowIfNone(win, (win) => {
-            tabManager.reopenLastRemoved(win)
+          createWindowIfNone(getWin(), async (win) => {
+            var res = await runSelectFileDialog(win, {
+              saveMode: true,
+              title: 'New File',
+              buttonLabel: 'Create File',
+              drive: opts && opts.url && opts.url.startsWith('hyper:') ? opts.url : undefined
+            })
+            let drive = await hyper.drives.getOrLoadDrive(res.origin)
+            await drive.pda.writeFile(res.path, '')
+            tabManager.create(win, res.url, {setActive: true, adjacentActive: true, sidebarPanels: ['editor-app']})
           })
-        },
-        reserved: true
+        }
+      },
+      {
+        id: 'newFolder',
+        label: 'New Folder',
+        enabled: !noWindows && !isAppWindow,
+        click: function (item) {
+          createWindowIfNone(getWin(), async (win) => {
+            var res = await runSelectFileDialog(win, {
+              saveMode: true,
+              title: 'New Folder',
+              buttonLabel: 'Create Folder',
+              drive: opts && opts.url && opts.url.startsWith('hyper:') ? opts.url : undefined
+            })
+            let drive = await hyper.drives.getOrLoadDrive(res.origin)
+            await drive.pda.mkdir(res.path)
+            tabManager.create(win, res.url, {setActive: true, adjacentActive: true})
+          })
+        }
       },
       { type: 'separator' },
       {
-        id: 'savePageAs',
-        label: 'Save Page As...',
+        id: 'openFile',
+        label: 'Open File',
+        accelerator: 'CmdOrCtrl+O',
+        click: item => {
+          createWindowIfNone(getWin(), async (win) => {
+            var res = await runSelectFileDialog(win, {
+              buttonLabel: 'Open File'
+            })
+            tabManager.create(win, res[0].url, {setActive: true, adjacentActive: true})
+          })
+        }
+      },
+      { type: 'separator' },
+      // TODO
+      // {
+      //   id: 'savePageAs',
+      //   label: 'Save Page As...',
+      //   enabled: !noWindows && !isAppWindow,
+      //   accelerator: 'CmdOrCtrl+Shift+S',
+      //   click: async (item) => {
+      //     createWindowIfNone(getWin(), async (win) => {
+      //       var tab = tabManager.getActive(win)
+      //       if (!tab) return
+      //       const {url, title} = tab
+      //       var res = await runSelectFileDialog(win, {
+      //         saveMode: true,
+      //         title: `Save ${title} as...`,
+      //         buttonLabel: 'Save Page',
+      //         defaultFilename: url.split('/').filter(Boolean).pop() || 'index.html',
+      //         drive: url.startsWith('hyper:') ? url : undefined
+      //       })
+      //       let drive = await hyper.drives.getOrLoadDrive(res.origin)
+      //       await drive.pda.writeFile(res.path, await fetch(url))
+      //       tabManager.create(win, res.url, {setActive: true, adjacentActive: true})
+      //     })
+      //   }
+      // },
+      {
+        id: 'exportAs',
+        label: 'Export As...',
         enabled: !noWindows && !isAppWindow,
-        accelerator: 'CmdOrCtrl+S',
         click: async (item) => {
           var win = getWin()
           var tab = tabManager.getActive(win)
@@ -139,7 +206,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {
         id: 'print',
-        label: 'Print...',
+        label: 'Print',
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+P',
         click: (item) => {
@@ -149,6 +216,18 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       { type: 'separator' },
+      {
+        id: 'reopenClosedTab',
+        label: 'Reopen Closed Tab',
+        accelerator: 'CmdOrCtrl+Shift+T',
+        click: function (item) {
+          var win = getWin()
+          createWindowIfNone(win, (win) => {
+            tabManager.reopenLastRemoved(win)
+          })
+        },
+        reserved: true
+      },
       {
         id: 'closeTab',
         label: 'Close Tab',
@@ -392,6 +471,91 @@ export function buildWindowMenu (opts = {}) {
           if (win) tabManager.create(win, `beaker://diff/?base=${opts.url}`, {setActive: true})
         }
       },
+      { type: 'separator' },
+      {
+        id: 'importFiles',
+        label: 'Import Files',
+        enabled: !noWindows && !isAppWindow && isWritable,
+        click: async (item) => {
+          if (!driveInfo || !driveInfo.writable) return
+          var {filePaths} = await dialog.showOpenDialog({
+            title: `Import Files`,
+            buttonLabel: 'Select File(s)',
+            properties: ['openFile', 'multiSelections']
+          })
+          if (!filePaths[0]) return
+          var res = await runSelectFileDialog(activeWindow, {
+            title: 'Choose where to import to',
+            buttonLabel: 'Import File(s)',
+            drive: driveInfo.url,
+            select: 'folder'
+          })
+          var targetUrl = res[0].url
+          let confirmation = await dialog.showMessageBox({
+            type: 'question',
+            message: `Import ${filePaths.length > 1 ? `${filePaths.length} files` : filePaths[0]} to ${targetUrl}? Any conflicting files will be overwritten.`,
+            buttons: ['OK', 'Cancel']
+          })
+          if (confirmation.response !== 0) return
+          for (let filePath of filePaths) {
+            await importFilesystemToDrive(filePath, targetUrl)
+          }
+          dialog.showMessageBox({message: 'Import complete'})
+        }
+      },
+      {
+        id: 'importFolder',
+        label: 'Import Folder',
+        enabled: !noWindows && !isAppWindow && isWritable,
+        click: async (item) => {
+          if (!driveInfo || !driveInfo.writable) return
+          var {filePaths} = await dialog.showOpenDialog({
+            title: `Import Folder`,
+            buttonLabel: 'Select Folder(s)',
+            properties: ['openDirectory', 'multiSelections']
+          })
+          if (!filePaths[0]) return
+          var res = await runSelectFileDialog(activeWindow, {
+            title: 'Choose where to import to',
+            buttonLabel: 'Import Folder(s)',
+            drive: driveInfo.url,
+            select: 'folder'
+          })
+          var targetUrl = res[0].url
+          let confirmation = await dialog.showMessageBox({
+            type: 'question',
+            message: `Import ${filePaths.length > 1 ? `${filePaths.length} folders` : filePaths[0]} to ${targetUrl}? Any conflicting files will be overwritten.`,
+            buttons: ['OK', 'Cancel']
+          })
+          if (confirmation.response !== 0) return
+          for (let filePath of filePaths) {
+            await importFilesystemToDrive(filePath, targetUrl, {preserveFolder: true})
+          }
+          dialog.showMessageBox({message: 'Import complete'})
+        }
+      },
+      {
+        id: 'exportFiles',
+        label: 'Export Files',
+        enabled: !noWindows && !isAppWindow,
+        click: async (item) => {
+          if (!driveInfo) return
+          var {filePaths} = await dialog.showOpenDialog({
+            title: `Export Drive Files`,
+            buttonLabel: 'Export',
+            properties: ['openDirectory', 'createDirectory']
+          })
+          if (!filePaths[0]) return
+          let confirmation = await dialog.showMessageBox({
+            type: 'question',
+            message: `Export ${driveInfo.title || driveInfo.key} to ${filePaths[0]}? Any conflicting files will be overwritten.`,
+            buttons: ['OK', 'Cancel']
+          })
+          if (confirmation.response !== 0) return
+          await exportDriveToFilesystem(driveInfo.url, filePaths[0])
+          dialog.showMessageBox({message: 'Export complete'})
+        }
+      },
       {type: 'separator'},
       {
         id: 'driveProperties',
@@ -594,6 +758,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+M',
         role: 'minimize'
       },
+      {type: 'separator'},
       {
         label: 'Full Screen',
         enabled: !noWindows,
@@ -756,9 +921,6 @@ export function getToolbarMenu () {
   }
   return {
     File: get('File'),
-    Edit: get('Edit'),
-    View: get('View'),
-    History: get('History'),
     Drive: get('Drive'),
     Developer: get('Developer'),
     Help: get('Help')

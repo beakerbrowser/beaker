@@ -414,6 +414,9 @@ class SelectFileModal extends LitElement {
     if (this.isVirtualListing) {
       return true // can always select items in virtual lists
     }
+    if (!this.driveInfo) {
+      return false // probably still loading
+    }
     if (defined(this.filters.networked) && this.filters.networked !== this.driveInfo.networked) {
       return false
     }
@@ -445,6 +448,7 @@ class SelectFileModal extends LitElement {
 
   get hasValidSelection () {
     if (this.saveMode) {
+      if (!this.driveInfo || !this.driveInfo.writable) return false
       let inputValue = this.filenameInput && this.filenameInput.value
       if (!inputValue) return false
       let file = this.getFile(joinPath(this.path, inputValue))

@@ -6,6 +6,17 @@ import * as filesystem from '../filesystem/index'
 import pda from 'pauls-dat-api2'
 import { UserDeniedError } from 'beaker-error-constants'
 
+export async function runSelectFileDialog (win, opts = {}) {
+    var res
+    try {
+      res = await modals.create(win.webContents, 'select-file', opts)
+    } catch (e) {
+      if (e.name !== 'Error') throw e // only rethrow if a specific error
+    }
+    if (!res) throw new UserDeniedError()
+    return res
+}
+
 export async function runNewDriveFlow (win) {
   let res
   try {
@@ -70,4 +81,26 @@ export async function runForkFlow (win, url) {
 
 export async function runDrivePropertiesFlow (win, key) {
   await shellWebAPI.drivePropertiesDialog.call({sender: win}, key)
+}
+
+export async function exportDriveToFilesystem (sourceUrl, targetPath) {
+  var drive = await hyper.drives.getOrLoadDrive(sourceUrl)
+  return pda.exportArchiveToFilesystem({
+    srcArchive: drive.session.drive,
+    srcPath: '/',
+    dstPath: targetPath,
+    overwriteExisting: true,
+    skipUndownloadedFiles: false
+  })
+}
+
+export async function importFilesystemToDrive (srcPath, targetUrl, {preserveFolder} = {preserveFolder: false}) {
+  var targetUrlp = new URL(targetUrl)
+  var drive = await hyper.drives.getOrLoadDrive(targetUrlp.hostname)
+  return pda.exportFilesystemToArchive({
+    srcPath,
+    dstArchive: drive.session.drive,
+    dstPath: targetUrlp.pathname,
+    inplaceImport: !preserveFolder
+  })
 }
