@@ -1,5 +1,6 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
+import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 
@@ -87,7 +88,7 @@ class ToolbarMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <div class="section">
-          ${items.map(item => item.separator
+          ${repeat(items, (item, i) => item.id || i, item => item.separator
             ? html`<hr>`
             : html`
               <div class="menu-item" @click=${this.onClickMenuItem(menu, item.id)} ?disabled=${!item.enabled}>
