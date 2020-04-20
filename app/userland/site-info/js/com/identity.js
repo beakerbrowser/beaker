@@ -44,7 +44,9 @@ class Identity extends LitElement {
               <div class="identity"><span class="fa-fw fas fa-user-check"></span> This drive is in your address book</div>
             ` : this.cert.ident.system ? html`
               <div class="identity">This is your system drive</div>
-            ` : ''}
+            ` : this.cert.ident.writable ? html`
+              <div class="identity"><span class="fa-fw fas fa-pen"></span> You created this drive</div>
+            ` : 'No identity information found'}
           ` : ''}
         ` : html`
           No identity information found

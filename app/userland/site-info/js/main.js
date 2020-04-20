@@ -151,10 +151,13 @@ class SiteInfoApp extends LitElement {
 
       // all sites: get cert and requested perms
       var perms
-      ;[perms, this.cert]= await Promise.all([
+      ;[perms, this.cert] = await Promise.all([
         beaker.sitedata.getPermissions(this.origin),
         beaker.browser.getCertificate(this.url)
       ])
+      if (this.cert && this.cert.type === 'hyperdrive' && this.info.writable) {
+        this.cert.ident.writable = true // add a little more info
+      }
       this.requestedPerms = await Promise.all(Object.entries(perms).map(async ([perm, value]) => {
         var opts = {}
         var permParam = beakerPermissions.getPermParam(perm)

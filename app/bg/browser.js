@@ -261,7 +261,6 @@ export async function getCertificate (url) {
     return {type: 'beaker'}
   } else if (url.startsWith('hyper://')) {
     let ident = await getDriveIdent(url, true)
-    if (!ident.internal && !ident.contact) return undefined
     return {
       type: 'hyperdrive',
       ident
