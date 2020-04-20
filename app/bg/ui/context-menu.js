@@ -174,12 +174,6 @@ export default function registerContextMenu () {
             label: 'Sidebar',
             submenu: [
               {
-                label: 'Site Info',
-                click: async (item, win) => {
-                  tabManager.getActive(win).executeSidebarCommand('show-panel', 'site-info-app')
-                }
-              },
-              {
                 label: 'Explore Files',
                 click: async (item, win) => {
                   tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')

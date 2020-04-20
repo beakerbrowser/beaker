@@ -275,19 +275,6 @@ export function buildWindowMenu (opts = {}) {
         },
         reserved: true
       },
-      { type: 'separator' },        
-      {
-        id: 'toggleSiteInfo',
-        label: 'Site Information',
-        enabled: !noWindows && !isAppWindow,
-        click: async function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'site-info-app')
-          }
-        }
-      },
       {type: 'separator'},
       {
         id: 'zoomIn',

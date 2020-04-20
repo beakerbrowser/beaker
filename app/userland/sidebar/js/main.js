@@ -1,6 +1,5 @@
 import 'beaker://editor/js/main.build.js'
 import 'beaker://webterm/js/main.js'
-import './site-info.js'
 import './files-explorer.js'
 
 /**
@@ -11,7 +10,7 @@ import './files-explorer.js'
  * be kept in sync with the frontend.
  */
 
-const PANELS_ORDER = ['site-info-app', 'files-explorer-app', 'editor-app', 'web-term']
+const PANELS_ORDER = ['files-explorer-app', 'editor-app', 'web-term']
 const MIN_PANEL_HEIGHT = 50
 
 class SidebarApp extends HTMLElement {
@@ -114,17 +113,14 @@ class SidebarApp extends HTMLElement {
     closeBtnEl.innerHTML = '<span class="fas fa-times"></span>'
     closeBtnEl.addEventListener('click', e => beaker.browser.executeSidebarCommand('hide-panel', panel.tagName))
 
-    let detachBtnEl
-    if (panel.tagName !== 'site-info-app') {
-      detachBtnEl = document.createElement('button')
-      detachBtnEl.className = 'panel-btn detach-btn'
-      detachBtnEl.setAttribute('title', 'Detach panel')
-      detachBtnEl.innerHTML = '<span class="far fa-clone"></span>'
-      detachBtnEl.addEventListener('click', async (e) => {
-        this.openDetached(panel, true)
-        beaker.browser.executeSidebarCommand('hide-panel', panel.tagName)
-      })
-    }
+    let detachBtnEl = document.createElement('button')
+    detachBtnEl.className = 'panel-btn detach-btn'
+    detachBtnEl.setAttribute('title', 'Detach panel')
+    detachBtnEl.innerHTML = '<span class="far fa-clone"></span>'
+    detachBtnEl.addEventListener('click', async (e) => {
+      this.openDetached(panel, true)
+      beaker.browser.executeSidebarCommand('hide-panel', panel.tagName)
+    })
 
     let panelEl = document.createElement('div')
     panelEl.className = `panel for-${panel.tagName}`
