@@ -212,6 +212,10 @@ button.hidden {
   color: #fff;
 }
 
+.notrust {
+  color: var(--color-notrust);
+}
+
 .trusted {
   color: var(--color-trusted);
 }

@@ -232,7 +232,7 @@ class Tab extends EventEmitter {
       var urlp = new URL(this.loadingURL || this.url)
       var hostname = urlp.hostname
       if (DRIVE_KEY_REGEX.test(hostname)) {
-        hostname = hostname.replace(DRIVE_KEY_REGEX, v => `${v.slice(0, 4)}..${v.slice(-2)}`)
+        hostname = hostname.replace(DRIVE_KEY_REGEX, v => `${v.slice(0, 6)}..${v.slice(-2)}`)
       }
       if (hostname.includes('+')) {
         hostname = hostname.replace(/\+[\d]+/, '')
@@ -284,7 +284,7 @@ class Tab extends EventEmitter {
     if (url.startsWith('beaker:')) {
       return 'beaker-logo'
     }
-    return ''
+    return 'fas fa-info-circle'
   }
 
   get siteTrust () {
