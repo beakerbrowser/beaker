@@ -3,6 +3,8 @@ import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import * as bg from './bg-process-rpc'
 
+const WINDOW_MENU_ENABLED = false
+
 class ShellWindowToolbarMenu extends LitElement {
   static get properties () {
     return {
@@ -107,14 +109,16 @@ class ShellWindowToolbarMenu extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${this.renderMenuButton('file', 'File')}
-      ${this.renderMenuButton('drive', 'Drive')}
-      ${this.renderMenuButton('bookmarks', 'Bookmarks')}
-      ${this.renderMenuButton('developer', 'Developer')}
-      ${this.renderMenuButton('help', 'Help')}
-      <span class="divider"></span>
-      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Edit`)}
-      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore`)}
+      ${WINDOW_MENU_ENABLED ? html`
+        ${this.renderMenuButton('file', 'File')}
+        ${this.renderMenuButton('drive', 'Drive')}
+        ${this.renderMenuButton('bookmarks', 'Bookmarks')}
+        ${this.renderMenuButton('developer', 'Developer')}
+        ${this.renderMenuButton('help', 'Help')}
+        <span class="divider"></span>
+      ` : ''}
+      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`)}
+      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)}
       ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
       ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
     `

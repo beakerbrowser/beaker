@@ -115,42 +115,42 @@ export function buildWindowMenu (opts = {}) {
         click: function () { createShellWindow() },
         reserved: true
       },
-      {
-        id: 'newFile',
-        label: 'New File',
-        enabled: !noWindows && !isAppWindow,
-        click: function (item) {
-          createWindowIfNone(getWin(), async (win) => {
-            var res = await runSelectFileDialog(win, {
-              saveMode: true,
-              title: 'New File',
-              buttonLabel: 'Create File',
-              drive: opts && opts.url && opts.url.startsWith('hyper:') ? opts.url : undefined
-            })
-            let drive = await hyper.drives.getOrLoadDrive(res.origin)
-            await drive.pda.writeFile(res.path, '')
-            tabManager.create(win, res.url, {setActive: true, adjacentActive: true, sidebarPanels: ['editor-app']})
-          })
-        }
-      },
-      {
-        id: 'newFolder',
-        label: 'New Folder',
-        enabled: !noWindows && !isAppWindow,
-        click: function (item) {
-          createWindowIfNone(getWin(), async (win) => {
-            var res = await runSelectFileDialog(win, {
-              saveMode: true,
-              title: 'New Folder',
-              buttonLabel: 'Create Folder',
-              drive: opts && opts.url && opts.url.startsWith('hyper:') ? opts.url : undefined
-            })
-            let drive = await hyper.drives.getOrLoadDrive(res.origin)
-            await drive.pda.mkdir(res.path)
-            tabManager.create(win, res.url, {setActive: true, adjacentActive: true})
-          })
-        }
-      },
+      // {
+      //   id: 'newFile',
+      //   label: 'New File',
+      //   enabled: !noWindows && !isAppWindow,
+      //   click: function (item) {
+      //     createWindowIfNone(getWin(), async (win) => {
+      //       var res = await runSelectFileDialog(win, {
+      //         saveMode: true,
+      //         title: 'New File',
+      //         buttonLabel: 'Create File',
+      //         drive: opts && opts.url && opts.url.startsWith('hyper:') ? opts.url : undefined
+      //       })
+      //       let drive = await hyper.drives.getOrLoadDrive(res.origin)
+      //       await drive.pda.writeFile(res.path, '')
+      //       tabManager.create(win, res.url, {setActive: true, adjacentActive: true, sidebarPanels: ['editor-app']})
+      //     })
+      //   }
+      // },
+      // {
+      //   id: 'newFolder',
+      //   label: 'New Folder',
+      //   enabled: !noWindows && !isAppWindow,
+      //   click: function (item) {
+      //     createWindowIfNone(getWin(), async (win) => {
+      //       var res = await runSelectFileDialog(win, {
+      //         saveMode: true,
+      //         title: 'New Folder',
+      //         buttonLabel: 'Create Folder',
+      //         drive: opts && opts.url && opts.url.startsWith('hyper:') ? opts.url : undefined
+      //       })
+      //       let drive = await hyper.drives.getOrLoadDrive(res.origin)
+      //       await drive.pda.mkdir(res.path)
+      //       tabManager.create(win, res.url, {setActive: true, adjacentActive: true})
+      //     })
+      //   }
+      // },
       { type: 'separator' },
       {
         id: 'openFile',
@@ -191,8 +191,8 @@ export function buildWindowMenu (opts = {}) {
       //   }
       // },
       {
-        id: 'exportAs',
-        label: 'Export As...',
+        id: 'exportPageAs',
+        label: 'Export Page As...',
         enabled: !noWindows && !isAppWindow,
         click: async (item) => {
           var win = getWin()
@@ -400,32 +400,6 @@ export function buildWindowMenu (opts = {}) {
     label: 'Drive',
     submenu: [
       {
-        id: 'newDrive',
-        label: 'New Hyperdrive',
-        async click (item) {
-          var win = getWin()
-          createWindowIfNone(win, async (win) => {
-            let newUrl = await runNewDriveFlow(win)
-            tabManager.create(win, newUrl, {setActive: true})
-          })
-        }
-      },
-      {
-        id: 'newDriveFromFolder',
-        label: 'New Drive from Folder...',
-        async click (item) {
-          var win = getWin()
-          createWindowIfNone(win, async (win) => {
-            var {filePaths} = await dialog.showOpenDialog({title: 'Select folder', buttonLabel: 'Use folder', properties: ['openDirectory'] })
-            if (filePaths && filePaths[0]) {
-              let newUrl = await runNewDriveFromFolderFlow(filePaths[0])
-              tabManager.create(win, newUrl, {setActive: true})
-            }
-          })
-        }
-      },
-      {type: 'separator'},
-      {
         id: 'toggleFilesExplorer',
         label: 'Explore Files',
         enabled: !noWindows && !isAppWindow && !!isDriveSite,
@@ -475,7 +449,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'importFiles',
         label: 'Import Files',
-        enabled: !noWindows && !isAppWindow && isWritable,
+        enabled: !noWindows && !isAppWindow && isDriveSite && isWritable,
         click: async (item) => {
           if (!driveInfo || !driveInfo.writable) return
           var {filePaths} = await dialog.showOpenDialog({
@@ -506,7 +480,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'importFolder',
         label: 'Import Folder',
-        enabled: !noWindows && !isAppWindow && isWritable,
+        enabled: !noWindows && !isAppWindow && isDriveSite && isWritable,
         click: async (item) => {
           if (!driveInfo || !driveInfo.writable) return
           var {filePaths} = await dialog.showOpenDialog({
@@ -537,7 +511,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'exportFiles',
         label: 'Export Files',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows && !isAppWindow && isDriveSite,
         click: async (item) => {
           if (!driveInfo) return
           var {filePaths} = await dialog.showOpenDialog({

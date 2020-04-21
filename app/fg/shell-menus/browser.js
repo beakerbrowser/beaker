@@ -1,5 +1,6 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
+import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 
@@ -13,6 +14,9 @@ class BrowserMenu extends LitElement {
   constructor () {
     super()
     this.submenu = ''
+    this.isDarwin = false
+    this.windowMenuItems = undefined
+    this.bookmarks = []
   }
 
   reset () {
@@ -21,11 +25,24 @@ class BrowserMenu extends LitElement {
 
   async init () {
     await this.requestUpdate()
+    let [browserInfo, menuItems, bookmarks] = await Promise.all([
+      bg.beakerBrowser.getInfo(),
+      bg.shellMenus.getWindowMenu(),
+      bg.bookmarks.list({sortBy: 'title'})
+    ])
+    bookmarks.sort((a, b) => (a.title || '').toLowerCase().localeCompare((b.title || '').toLowerCase()))
+    this.isDarwin = browserInfo.platform === 'darwin'
+    this.windowMenuItems = menuItems
+    this.bookmarks = bookmarks 
   }
 
   render () {
-    if (this.submenu === 'applications') {
-      return this.renderApplications()
+    if (this.submenu === 'bookmarks') {
+      return this.renderBookmarks()
+    } else if (this.submenu === 'library') {
+      return this.renderLibrary()
+    } else if (this.submenu) {
+      return this.renderWindowMenu(this.submenu)
     }
 
     // auto-updater
@@ -64,9 +81,90 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-            <img class="favicon" src="asset:favicon:beaker://library">
-            <span class="label">My Library</span>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('File')}>
+            <span class="label">File</span>
+            <span class="more"><span class="fas fa-caret-right"></span></span>
+          </div>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('library')}>
+            <span class="label">Library</span>
+            <span class="more"><span class="fas fa-caret-right"></span></span>
+          </div>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('bookmarks')}>
+            <span class="label">Bookmarks</span>
+            <span class="more"><span class="fas fa-caret-right"></span></span>
+          </div>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('Developer')}>
+            <span class="label">Developer</span>
+            <span class="more"><span class="fas fa-caret-right"></span></span>
+          </div>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('Help')}>
+            <span class="label">Help</span>
+            <span class="more"><span class="fas fa-caret-right"></span></span>
+          </div>
+        </div>
+
+        <div class="section">          
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+            <img class="favicon" src="asset:favicon:beaker://settings">
+            <span class="label">Settings</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings/?view=devices')}>
+            <i class="fas fa-sync"></i>
+            <span class="label">Sync Devices</span>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  renderBookmarks () {
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="header">
+          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+            <i class="fa fa-angle-left"></i>
+          </button>
+          <h2>Bookmarks</h2>
+        </div>
+
+        <div class="section scrollable">
+          ${repeat(this.bookmarks, b => b.href, b => html`
+            <div class="menu-item" @click=${e => this.onOpenPage(e, b.href)}>
+              <img class="favicon" src="asset:favicon:${b.href}">
+              <span class="label">${b.title}</span>
+            </div>
+          `)}
+        </div>
+      </div>`
+  }
+
+  renderLibrary () {
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="header">
+          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+            <i class="fa fa-angle-left"></i>
+          </button>
+          <h2>My Library</h2>
+        </div>
+
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/drives')}>
+            <i class="far fa-star"></i>
+            <span class="label">My Drives</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/seeding')}>
+            <i class="fas fa-share-alt"></i>
+            <span class="label">Currently Seeding</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/address-book')}>
+            <i class="far fa-address-card"></i>
+            <span class="label">Address Book</span>
           </div>
 
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/bookmarks')}>
@@ -86,38 +184,17 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-            <img class="favicon" src="asset:favicon:beaker://settings">
-            <span class="label">Settings</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings/?view=devices')}>
-            <i class="fas fa-sync"></i>
-            <span class="label">Sync Devices</span>
-          </div>
-            
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'hyper://system')}>
             <i class="far fa-hdd"></i>
             <span class="label">My System Drive</span>
           </div>
         </div>
-
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://beaker-browser.gitbook.io/docs/')}>
-            <i class="far fa-question-circle"></i>
-            <span class="label">Help</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://github.com/beakerbrowser/beaker/issues')}>
-            <i class="far fa-flag"></i>
-            <span class="label">Report an Issue</span>
-          </div>
-        </div>
-      </div>
-    `
+      </div>`
   }
 
-  renderApplications () {
+  renderWindowMenu (menu) {
+    var items = this.windowMenuItems[menu]
+    if (!items) return html``
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -125,12 +202,38 @@ class BrowserMenu extends LitElement {
           <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
             <i class="fa fa-angle-left"></i>
           </button>
-          <h2>Applications</h2>
+          <h2>${menu}</h2>
         </div>
-
         <div class="section">
+          ${repeat(items, (item, i) => item.id || i, item => item.separator
+            ? html`<hr>`
+            : html`
+              <div class="menu-item" @click=${this.onClickMenuItem(menu, item.id)} ?disabled=${!item.enabled}>
+                <span class="label">${item.label}</span>
+                ${item.accelerator ? html`<span class="shortcut">${this.renderAccelerator(item.accelerator)}</span>` : ''}
+              </div>
+            `
+          )}
         </div>
       </div>`
+  }
+
+  renderAccelerator (accel) {
+    if (!accel) return
+    const command = '⌘'
+    const control = '^'
+    const commandOrControl = this.isDarwin ? command : control
+    return accel
+      .replace(/\+/g, '')
+      .replace('CmdOrCtrl', commandOrControl)
+      .replace('Alt', '⌥')
+      .replace('Cmd', command)
+      .replace('Ctrl', control)
+      .replace('Shift', '⇧')
+      .replace('Plus', '+')
+      .replace('Left', '←')
+      .replace('Right', '→')
+      .replace('`', '~')
   }
 
   // events
@@ -150,6 +253,13 @@ class BrowserMenu extends LitElement {
   onOpenNewTab () {
     bg.shellMenus.createTab()
     bg.shellMenus.close()
+  }
+
+  onClickMenuItem (menu, id) {
+    return async (e) => {
+      bg.shellMenus.triggerWindowMenuItemById(menu, id)
+      bg.shellMenus.close()
+    }
   }
 
   async onNewHyperdrive () {
@@ -242,7 +352,15 @@ BrowserMenu.styles = [commonCSS, css`
 }
 
 .menu-item {
-  height: 40px;
+  height: 32px;
+}
+
+.menu-item[disabled] {
+  color: #99a;
+}
+
+.menu-item[disabled]:hover {
+  background: none;
 }
 
 .menu-item.auto-updater {

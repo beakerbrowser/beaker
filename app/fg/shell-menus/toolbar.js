@@ -115,7 +115,7 @@ class ToolbarMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper wide">
         <div class="section scrollable">
-          ${this.bookmarks.map(b => html`
+          ${repeat(this.bookmarks, b => b.href, b => html`
             <div class="menu-item" @click=${e => this.onOpenPage(e, b.href)}>
               <img class="favicon" src="asset:favicon:${b.href}">
               <span class="label">${b.title}</span>
