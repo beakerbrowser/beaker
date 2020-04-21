@@ -12,7 +12,7 @@ ${spinnerCSS}
 
 :host {
   display: block;
-  background: #fafafd;
+  background: #fff;
 }
 
 a {
@@ -32,13 +32,14 @@ a[href]:hover {
   font-size: 14px;
   line-height: 1.5;
   box-sizing: border-box;
-  padding: 14px 10px;
+  padding: 6px 10px;
 }
 
 .posts .empty {
   font-size: 16px;
   letter-spacing: 0.7px;
   color: #a3a3a8;
+  background: #fafafd;
   padding: 120px 0px;
   text-align: center;
 }
@@ -55,7 +56,9 @@ a[href]:hover {
   grid-template-columns: 65px 1fr;
   grid-template-rows: auto auto;
   margin-bottom: 10px;
-  padding: 10px 50px 10px 20px;
+  border: 1px solid #d3d3e6;
+  padding: 12px 50px 16px 16px;
+  border-radius: 3px;
 }
 
 .post h1 { font-size: 21px; }
@@ -95,6 +98,10 @@ a[href]:hover {
 
 .post .content > * + * {
   margin-top: 1rem;
+}
+
+.post .content ul {
+  padding-inline-start: 28px;
 }
 
 .post .content img,
