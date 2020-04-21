@@ -2,6 +2,7 @@ import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-elemen
 import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { toNiceDomain, pluralize } from '../../app-stdlib/js/strings.js'
 import { writeToClipboard } from '../../app-stdlib/js/clipboard.js'
+import * as contextMenu from '../../app-stdlib/js/com/context-menu.js'
 import * as toast from '../../app-stdlib/js/com/toast.js'
 import _get from 'lodash.get'
 import * as beakerPermissions from '../../../lib/permissions'
@@ -227,6 +228,9 @@ class SiteInfoApp extends LitElement {
                   ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Seeding` : html`<span class="fas fa-fw fa-share-alt"></span> Seed This Drive`}
                 </button>
               `}
+              <button @click=${this.onClickDriveTools}>
+                Tools <span class="fa-fw fa fa-caret-down"></span>
+              </button>
             ` : ''}
           </p>
         </div>
@@ -335,14 +339,40 @@ class SiteInfoApp extends LitElement {
     this.load()
   }
 
-  async onCloneDrive (e) {
-    var drive = await beaker.hyperdrive.forkDrive(this.url, {detached: true})
+  async onClickDriveTools (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    let rect = e.currentTarget.getClientRects()[0]
+    return contextMenu.create({
+      x: rect.left,
+      y: rect.bottom,
+      roomy: false,
+      noBorders: true,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+      style: `padding: 4px 0`,
+      items: [
+        {
+          icon: 'fas fa-fw fa-code-branch',
+          label: 'Fork Drive',
+          click: () => this.onForkDrive()
+        },
+        {
+          icon: 'far fa-fw fa-list-alt',
+          label: 'Drive Properties',
+          click: () => this.onDriveProps()
+        }
+      ]
+    })
+  }
+
+  async onForkDrive () {
+    var drive = await beaker.hyperdrive.forkDrive(this.url, {detached: false})
     beaker.browser.openUrl(drive.url, {setActive: true})
   }
 
-  async onForkDrive (e) {
-    var drive = await beaker.hyperdrive.forkDrive(this.url, {detached: false})
-    beaker.browser.openUrl(drive.url, {setActive: true})
+  async onDriveProps () {
+    await beaker.shell.drivePropertiesDialog(this.url)
+    this.load()
   }
 }
 
