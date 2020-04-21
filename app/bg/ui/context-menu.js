@@ -3,8 +3,7 @@ import path from 'path'
 import * as tabManager from './tab-manager'
 import { getAddedWindowSettings, toggleShellInterface } from './windows'
 import { download } from './downloads'
-import { getDriveConfig, configDrive, removeDrive, getDriveIdent } from '../filesystem/index'
-import { runForkFlow } from './util'
+import { runDrivePropertiesFlow } from './util'
 
 // NOTE
 // subtle but important!!
@@ -142,57 +141,6 @@ export default function registerContextMenu () {
         })
         menuItems.push({ type: 'separator' })
         if (!addedWindowSettings.isAppWindow) {
-          if (isHyperdrive) {
-            let driveInfo = tabManager.getActive(targetWindow).driveInfo
-            let key = driveInfo ? driveInfo.key : undefined
-            let driveCfg = getDriveConfig(key)
-            let driveIdent = getDriveIdent(`hyper://${key}/`)
-            menuItems.push({
-              label: driveInfo.writable ? 'Save to My Library' : 'Seed This Drive',
-              type: 'checkbox',
-              checked: !!driveCfg || driveIdent.internal,
-              enabled: !driveIdent.internal,
-              click: (item, win) => {
-                if (!driveCfg) configDrive(key)
-                else removeDrive(key)
-              }
-            })
-            menuItems.push({ type: 'separator' })
-            menuItems.push({
-              label: 'Fork This Drive',
-              click: async (item, win) => {
-                var driveUrlp = new URL(await runForkFlow(win, key))
-                var pageUrlp = new URL(props.pageURL)
-                pageUrlp.hostname = driveUrlp.hostname
-                tabManager.create(win, pageUrlp.toString(), {setActive: true})
-              }
-            })
-            menuItems.push({ label: 'Diff / Merge', click: (item, win) => { tabManager.create(win, `beaker://diff/?base=${props.pageURL}`, {setActive: true, adjacentActive: true}) } })
-            menuItems.push({ type: 'separator' })
-          }
-          menuItems.push({
-            label: 'Sidebar',
-            submenu: [
-              {
-                label: 'Explore Files',
-                click: async (item, win) => {
-                  tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
-                }
-              },
-              {
-                label: 'Editor',
-                click: async (item, win) => {
-                  tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
-                }
-              },
-              {
-                label: 'Terminal',
-                click: async (item, win) => {
-                  tabManager.getActive(win).executeSidebarCommand('show-panel', 'web-term')
-                }
-              }
-            ]
-          })
           menuItems.push({
             type: 'checkbox',
             label: 'Always on Top',
@@ -210,7 +158,7 @@ export default function registerContextMenu () {
           menuItems.push({ type: 'separator' })
         }
         menuItems.push({
-          label: 'Save Page As...',
+          label: 'Export Page As...',
           click: downloadPrompt('pageURL', '.html')
         })
         menuItems.push({
@@ -218,6 +166,23 @@ export default function registerContextMenu () {
           click: () => webContents.print()
         })
         menuItems.push({ type: 'separator' })
+        if (isHyperdrive) {
+          let driveInfo = tabManager.getActive(targetWindow).driveInfo
+          let key = driveInfo ? driveInfo.key : undefined
+          menuItems.push({
+            label: 'Explore Files',
+            click: async (item, win) => {
+              tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
+            }
+          })
+          menuItems.push({
+            label: 'Drive Properties',
+            click: async (item, win) => {
+              runDrivePropertiesFlow(win, key)
+            }
+          })
+          menuItems.push({ type: 'separator' })
+        }
       }
 
       menuItems.push({ type: 'separator' })
