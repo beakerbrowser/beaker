@@ -23,6 +23,7 @@ class ShellWindowUI extends LitElement {
       isWindows: {type: Boolean},
       isUpdateAvailable: {type: Boolean},
       numWatchlistNotifications: {type: Number},
+      isHolepunchable: {type: Boolean},
       isDaemonActive: {type: Boolean},
       isShellInterfaceHidden: {type: Boolean},
       isFullscreen: {type: Boolean},
@@ -36,6 +37,7 @@ class ShellWindowUI extends LitElement {
     this.tabs = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
+    this.isHolepunchable = true
     this.isDaemonActive = true
     this.isShellInterfaceHidden = false
     this.isFullscreen = false
@@ -94,6 +96,14 @@ class ShellWindowUI extends LitElement {
       this.numWatchlistNotifications++
     })
 
+    const getDaemonStatus = async () => {
+      var status = await bg.beakerBrowser.getDaemonStatus()
+      if (this.isHolepunchable !== status.holepunchable) {
+        this.isHolepunchable = status.holepunchable
+        this.stateHasChanged()
+      }
+    }
+
     // fetch initial tab state
     this.isUpdateAvailable = browserInfo.updater.state === 'downloaded'
     ;[this.tabs, this.userProfileUrl] = await Promise.all([
@@ -101,12 +111,15 @@ class ShellWindowUI extends LitElement {
       bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}/` : undefined)
     ])
     this.stateHasChanged()
+    getDaemonStatus()
 
     // HACK
     // periodically check to see if the user profile URL has changed
+    // or the hole-punchability has changed
     // (would be better to have an event trigger this!)
     // -prf
     setInterval(async () => {
+      getDaemonStatus()
       var userProfileUrl = await bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}/` : undefined)
       if (this.userProfileUrl !== userProfileUrl) {
         this.userProfileUrl = userProfileUrl
@@ -149,6 +162,7 @@ class ShellWindowUI extends LitElement {
           .activeTab=${this.activeTab}
           .userProfileUrl=${this.userProfileUrl}
           ?is-update-available=${this.isUpdateAvailable}
+          ?is-holepunchable=${this.isHolepunchable}
           ?is-daemon-active=${this.isDaemonActive}
           num-watchlist-notifications="${this.numWatchlistNotifications}"
         ></shell-window-navbar>

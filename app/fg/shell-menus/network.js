@@ -105,6 +105,9 @@ table tr td:last-child {
   letter-spacing: 0.5px;
 }
 
+.fa-exclamation-triangle {
+  color: #FF8F00;
+}
 `]
 
 customElements.define('network-menu', NetworkMenu)

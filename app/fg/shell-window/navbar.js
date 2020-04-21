@@ -14,6 +14,7 @@ class ShellWindowNavbar extends LitElement {
       activeTab: {type: Object},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
+      isHolepunchable: {type: Boolean, attribute: 'is-holepunchable'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
       userProfileUrl: {type: String},
       isNetworkMenuOpen: {type: Boolean},
@@ -27,6 +28,7 @@ class ShellWindowNavbar extends LitElement {
     this.activeTab = null
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
+    this.isHolepunchable = true
     this.isDaemonActive = false
     this.userProfileUrl = undefined
     this.isNetworkMenuOpen = false
@@ -224,10 +226,11 @@ class ShellWindowNavbar extends LitElement {
   }
   
   get networkMenuBtn () {
-    const cls = classMap({pressed: this.isNetworkMenuOpen})
+    const cls = classMap({'network-btn': true, pressed: this.isNetworkMenuOpen})
     return html`
       <button class=${cls} @click=${this.onClickNetworkMenu} style="margin: 0px 2px">
         <span class="fas fa-cloud-upload-alt"></span>
+        ${!this.isHolepunchable ? html`<span class="fas fa-circle"></span>` : ''}
       </button>
     `
   }
@@ -392,6 +395,15 @@ svg.icon.refresh {
   color: #fff;
   font-weight: bold;
   padding: 0 3px;
+}
+
+.network-btn .fa-circle {
+  position: absolute;
+  font-size: 8px;
+  right: 2px;
+  bottom: 4px;
+  color: #FF8F00;
+  -webkit-text-stroke: 2px #fff;
 }
 
 .user-profile-btn {
