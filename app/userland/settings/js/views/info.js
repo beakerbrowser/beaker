@@ -64,14 +64,6 @@ class InfoSettingsView extends LitElement {
         ` : ''}
         <p><strong>User data</strong>: ${this.browserInfo.paths.userData}</p>
       </div>
-      <div class="section">
-        <h2 class="subtitle-heading">Get help</h2>
-        <ul>
-          <li><a href="https://beakerbrowser.com/docs/using-beaker">Take a tour of Beaker</a></li>
-          <li><a href="https://beakerbrowser.com/docs">Read the documentation</a></li>
-          <li><a href="https://github.com/beakerbrowser/beaker/issues/new">Report an issue</a></li>
-        </ul>
-      </div>
     `
   }
 }

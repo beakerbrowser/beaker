@@ -9,17 +9,20 @@ ${buttonsCSS}
 ${emptyCSS}
 
 :host {
-  display: grid;
-  grid-template-columns: 190px 1fr;
-  grid-gap: 20px;
-  margin: 0px 10px;
+  display: block;
+  margin: 10px 10px 10px 230px;
 }
 
 .subnav {
+  position: fixed;
+  left: 10px;
+  top: 10px;
+  width: 190px;
+  height: calc(100vh - 20px);
+  box-sizing: border-box;
   background: #f5f5fa;
   border-radius: 8px;
   padding: 10px 0;
-  height: 99vh;
   overflow-y: auto;
   font-size: 12px;
   user-select: none;

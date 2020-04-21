@@ -79,16 +79,24 @@ input[type="text"]:focus {
 }
 
 input[type="radio"] {
-  margin: 0 7px;
+  margin: 1px 7px 0 1px;
 }
 
 input[type="checkbox"] {
-  margin: 0 4px;
+  margin: 1px 7px 0 1px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+}
+
+.radio-item + .radio-item {
+  margin-top: 4px;
 }
 
 .versions {
-  font-size: 12px;
-  color: #555;
+  font-size: 13px;
   background: #f3f3f8;
   margin-top: -10px;
   padding: 12px 35px;

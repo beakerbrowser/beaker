@@ -209,7 +209,7 @@ class GeneralSettingsView extends LitElement {
   
         <p>When Beaker starts</p>
   
-        <div style="margin-bottom: 2px">
+        <div class="radio-item">
           <input type="radio" id="customStartPage1" name="custom-start-page"
                  value="blank"
                  ?checked=${this.settings.custom_start_page === 'blank'}
@@ -218,7 +218,7 @@ class GeneralSettingsView extends LitElement {
             Show a new tab
           </label>
         </div>
-        <div>
+        <div class="radio-item">
           <input type="radio" id="customStartPage2" name="custom-start-page"
                  value="previous"
                  ?checked=${this.settings.custom_start_page === 'previous'}
@@ -273,10 +273,9 @@ class GeneralSettingsView extends LitElement {
         <p>Set Beaker as the default browser for:</p>
   
         ${Object.keys(this.defaultProtocolSettings).map(proto => html`
-          <div>
-            <label>
-              <input ?checked=${this.defaultProtocolSettings[proto]} type="checkbox" @change=${() => toggleRegistered(proto)} />
-    
+          <div class="radio-item">
+            <input id="proto-${proto}" ?checked=${this.defaultProtocolSettings[proto]} type="checkbox" @change=${() => toggleRegistered(proto)} />
+            <label for="proto-${proto}">
               <span class="text">
                 ${proto}://
               </span>
@@ -299,9 +298,9 @@ class GeneralSettingsView extends LitElement {
       <div class="section analytics">
         <h2 class="subtitle-heading">Beaker Analytics</h2>
   
-        <div>
-          <label>
-            <input ?checked=${this.settings.analytics_enabled == 1} type="checkbox" @change=${toggle} />
+        <div class="radio-item">
+          <input id="enable-analytics" ?checked=${this.settings.analytics_enabled == 1} type="checkbox" @change=${toggle} />
+          <label for="enable-analytics">
             <span>
               Enable analytics
             </span>

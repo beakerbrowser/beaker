@@ -66,7 +66,7 @@ class SettingsApp extends LitElement {
       ${item('general-logs', 'fas fa-clipboard-list', 'General Logs')}
       ${item('fs-audit-log', 'fas fa-clipboard-check', 'Filesystem Audit Log')}
       ${''/*DISABLEDitem('daemon-log', 'fas fa-clipboard-list', 'Daemon Log')*/}
-      ${item('info', 'far fa-question-circle', 'Information & Help')}
+      ${item('info', 'fas fa-info-circle', 'Information')}
       <hr>
     `
   }
