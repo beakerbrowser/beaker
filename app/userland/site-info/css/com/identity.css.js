@@ -20,7 +20,12 @@ a:hover {
   text-decoration: underline;
 }
 
+button {
+  font-size: 11px;
+}
+
 .field-group {
+  position: relative;
   display: block;
   padding: 12px 18px;
   border: 0;
@@ -37,6 +42,12 @@ a:hover {
 .verifier,
 .verifier a {
   color: #889;
+}
+
+.toggle-save-contact-btn {
+  position: absolute;
+  top: 8px;
+  right: 5px;
 }
 `
 export default cssStr

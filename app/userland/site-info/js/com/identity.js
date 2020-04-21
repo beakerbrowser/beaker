@@ -1,10 +1,12 @@
 import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from '../../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
+import { emit } from '../../../app-stdlib/js/dom.js'
 import identityCSS from '../../css/com/identity.css.js'
 
 class Identity extends LitElement {
   static get properties () {
     return {
+      url: {type: String},
       cert: {type: Object}
     }
   }
@@ -15,6 +17,7 @@ class Identity extends LitElement {
 
   constructor () {
     super()
+    this.url = undefined
     this.cert = undefined
   }
   // rendering
@@ -39,14 +42,24 @@ class Identity extends LitElement {
           ` : ''}
           ${this.cert.type === 'hyperdrive' ? html`
             ${this.cert.ident.profile ? html`
-            <div class="identity"><span class="fa-fw fas fa-user-circle"></span> This is your profile</div>
+              <div class="identity"><span class="fa-fw fas fa-user-circle"></span> This is your profile</div>
             ` : this.cert.ident.contact ? html`
-              <div class="identity"><span class="fa-fw fas fa-user-check"></span> This drive is in your address book</div>
+              <div class="identity">
+                <span class="fa-fw fas fa-user-check"></span> This drive is in your address book
+                <button class="transparent toggle-save-contact-btn" @click=${this.onToggleSaveContact}>
+                  <span class="fas fa-fw fa-user-times"></span> Remove
+                </button>
+              </div>
             ` : this.cert.ident.system ? html`
               <div class="identity">This is your system drive</div>
             ` : this.cert.ident.writable ? html`
               <div class="identity"><span class="fa-fw fas fa-pen"></span> You created this drive</div>
-            ` : 'No identity information found'}
+            ` : html`
+              No identity information found
+              <button class="transparent toggle-save-contact-btn" @click=${this.onToggleSaveContact}>
+                <span class="fas fa-fw fa-user-plus"></span> Add to Address Book
+              </button>
+            `}
           ` : ''}
         ` : html`
           No identity information found
@@ -72,6 +85,15 @@ class Identity extends LitElement {
   // events
   // =
 
+  async onToggleSaveContact (e) {
+    var isContact = this.cert && this.cert.ident ? this.cert.ident.contact : false
+    if (isContact) {
+      await beaker.contacts.remove(this.url)
+    } else {
+      await beaker.contacts.requestAddContact(this.url)
+    }
+    emit(this, 'change-url', {detail: {url: this.url}})
+  }
 }
 
 customElements.define('identity-signals', Identity)

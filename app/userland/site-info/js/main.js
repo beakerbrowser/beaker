@@ -227,9 +227,6 @@ class SiteInfoApp extends LitElement {
                   ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Seeding` : html`<span class="fas fa-fw fa-share-alt"></span> Seed This Drive`}
                 </button>
               `}
-              <button @click=${this.onToggleSaveContact}>
-                ${isContact ? html`<span class="fas fa-fw fa-user-times"></span> Remove from Address Book` : html`<span class="fas fa-fw fa-user-plus"></span> Add to Address Book`}
-              </button>
             ` : ''}
           </p>
         </div>
@@ -268,7 +265,7 @@ class SiteInfoApp extends LitElement {
     return html`
       <div class="inner">
         ${this.view === 'identity' ? html`
-          <identity-signals .cert=${this.cert}></identity-signals>
+          <identity-signals url=${this.url} .cert=${this.cert} @change-url=${this.onChangeUrl}></identity-signals>
         ` : ''}
 
         ${this.view === 'permissions' ? html`
@@ -334,16 +331,6 @@ class SiteInfoApp extends LitElement {
       await beaker.drives.remove(this.origin)
     } else {
       await beaker.drives.configure(this.origin)
-    }
-    this.load()
-  }
-
-  async onToggleSaveContact (e) {
-    var isContact = this.cert && this.cert.ident ? this.cert.ident.contact : false
-    if (isContact) {
-      await beaker.contacts.remove(this.url)
-    } else {
-      await beaker.contacts.requestAddContact(this.url)
     }
     this.load()
   }
