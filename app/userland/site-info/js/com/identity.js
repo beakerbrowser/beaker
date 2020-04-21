@@ -45,7 +45,7 @@ class Identity extends LitElement {
               <div class="identity"><span class="fa-fw fas fa-user-circle"></span> This is your profile</div>
             ` : this.cert.ident.contact ? html`
               <div class="identity">
-                <span class="fa-fw fas fa-user-check"></span> This drive is in your address book
+                <span class="fa-fw far fa-address-card"></span> This drive is in your address book
                 <button class="transparent toggle-save-contact-btn" @click=${this.onToggleSaveContact}>
                   <span class="fas fa-fw fa-user-times"></span> Remove
                 </button>
