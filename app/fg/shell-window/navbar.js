@@ -16,6 +16,7 @@ class ShellWindowNavbar extends LitElement {
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
       userProfileUrl: {type: String},
+      isNetworkMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -28,6 +29,7 @@ class ShellWindowNavbar extends LitElement {
     this.numWatchlistNotifications = 0
     this.isDaemonActive = false
     this.userProfileUrl = undefined
+    this.isNetworkMenuOpen = false
     this.isBrowserMenuOpen = false
   }
 
@@ -103,6 +105,7 @@ class ShellWindowNavbar extends LitElement {
       <div class="buttons" style="padding-left: 6px">
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
+        ${this.networkMenuBtn}
         ${this.profileBtn}
         ${this.browserMenuBtn}
       </div>
@@ -219,6 +222,15 @@ class ShellWindowNavbar extends LitElement {
       </button>
     `
   }
+  
+  get networkMenuBtn () {
+    const cls = classMap({pressed: this.isNetworkMenuOpen})
+    return html`
+      <button class=${cls} @click=${this.onClickNetworkMenu} style="margin: 0px 2px">
+        <span class="fas fa-cloud-upload-alt"></span>
+      </button>
+    `
+  }
 
   get profileBtn () {
     if (!this.userProfileUrl) return html``
@@ -289,15 +301,20 @@ class ShellWindowNavbar extends LitElement {
     bg.views.createTab(this.userProfileUrl, {setActive: true})
   }
 
+  async onClickNetworkMenu (e) {
+    if (Date.now() - (this.lastMenuClick||0) < 100) return
+    this.isNetworkMenuOpen = true
+    await bg.views.toggleMenu('network')
+    this.isNetworkMenuOpen = false
+    this.lastMenuClick = Date.now()
+  }
 
   async onClickBrowserMenu (e) {
-    if (Date.now() - (this.lastBrowserMenuClick||0) < 100) {
-      return
-    }
+    if (Date.now() - (this.lastMenuClick||0) < 100) return
     this.isBrowserMenuOpen = true
     await bg.views.toggleMenu('browser')
     this.isBrowserMenuOpen = false
-    this.lastBrowserMenuClick = Date.now()
+    this.lastMenuClick = Date.now()
   }
 }
 ShellWindowNavbar.styles = css`
@@ -350,6 +367,10 @@ svg.icon.refresh {
 
 .fas.fa-exclamation-triangle {
   color: #FF9800;
+}
+
+.fas.fa-cloud-upload-alt {
+  color: #555;
 }
 
 .fas.fa-arrow-alt-circle-up {

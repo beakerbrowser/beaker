@@ -1,6 +1,7 @@
 export default {
   createEventsStream: 'readable',
   getInfo: 'promise',
+  getDaemonStatus: 'promise',
   getProfile: 'promise',
   checkForUpdates: 'promise',
   restartBrowser: 'sync',

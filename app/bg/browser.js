@@ -151,6 +151,7 @@ export async function setup () {
 export const WEBAPI = {
   createEventsStream,
   getInfo,
+  getDaemonStatus,
   getProfile,
   checkForUpdates,
   restartBrowser,
@@ -505,6 +506,10 @@ export function getInfo () {
     },
     isDaemonActive: hyperDaemon.isActive()
   }
+}
+
+export async function getDaemonStatus () {
+  return hyperDaemon.getClient().status()
 }
 
 export function checkForUpdates (opts = {}) {
