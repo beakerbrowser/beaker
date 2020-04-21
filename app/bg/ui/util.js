@@ -51,25 +51,11 @@ export async function runNewDriveFromFolderFlow (folderPath) {
   return newDrive.url
 }
 
-export async function runCloneFlow (win, url) {
+export async function runForkFlow (win, url, {detached} = {detached: false}) {
   var res
   try {
     let forks = await drivesWebAPI.getForks(url)
-    res = await modals.create(win.webContents, 'fork-drive', {url, forks, detached: true})
-  } catch (e) {
-    if (e.name !== 'Error') {
-      throw e // only rethrow if a specific error
-    }
-  }
-  if (!res || !res.url) throw new UserDeniedError()
-  return res.url
-}
-
-export async function runForkFlow (win, url) {
-  var res
-  try {
-    let forks = await drivesWebAPI.getForks(url)
-    res = await modals.create(win.webContents, 'fork-drive', {url, forks})
+    res = await modals.create(win.webContents, 'fork-drive', {url, forks, detached})
   } catch (e) {
     if (e.name !== 'Error') {
       throw e // only rethrow if a specific error

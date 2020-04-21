@@ -201,8 +201,8 @@ class ForkDriveModal extends LitElement {
     var actionBtn
     switch (this.state) {
       case STATES.READY:
-        progressEl = html`<div class="fork-dat-progress">Ready to ${this.isDetached ? 'clone' : 'fork'}.</div>`
-        actionBtn = html`<button type="submit" class="btn primary" tabindex="5">Create ${this.isDetached ? 'clone' : 'fork'}</button>`
+        progressEl = html`<div class="fork-dat-progress">Ready to ${this.isDetached ? 'make a copy' : 'fork'}.</div>`
+        actionBtn = html`<button type="submit" class="btn primary" tabindex="5">${this.isDetached ? 'Copy drive' : 'Create fork'}</button>`
         break
       case STATES.DOWNLOADING:
         progressEl = html`<div class="fork-dat-progress">Downloading remaining files...</div>`
@@ -231,12 +231,12 @@ class ForkDriveModal extends LitElement {
           <div class="tabbed-nav">
             <span></span>
             ${navItem(false, 'Fork')}
-            ${navItem(true, 'Clone')}
+            ${navItem(true, 'Copy')}
             <span class="spacer"></span>
           </div>
           
           ${this.isDetached ? html`
-            <p class="help with-icon"><span class="fas fa-fw fa-info"></span> A clone is an independent copy of the drive.</p>
+            <p class="help with-icon"><span class="fas fa-fw fa-info"></span> Make an independent copy of the drive.</p>
             <label for="title">Title</label>
             <input autofocus name="title" tabindex="1" value=${this.title || ''} @change=${this.onChangeTitle} required placeholder="Title" />
             <label for="desc">Description</label>

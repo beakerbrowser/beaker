@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
 import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost, getAddedWindowSettings } from './windows'
-import { runSelectFileDialog, runNewDriveFlow, runNewDriveFromFolderFlow, runForkFlow, runCloneFlow, runDrivePropertiesFlow, exportDriveToFilesystem, importFilesystemToDrive } from './util'
+import { runSelectFileDialog, runForkFlow, runDrivePropertiesFlow, exportDriveToFilesystem, importFilesystemToDrive } from './util'
 import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
 import { download } from './downloads'
@@ -412,18 +412,6 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {type: 'separator'},
-      {
-        id: 'cloneDrive',
-        label: 'Clone Drive',
-        enabled: !!isDriveSite,
-        async click (item) {
-          var win = getWin()
-          if (win) {
-            let newUrl = await runCloneFlow(win, opts.url)
-            tabManager.create(win, newUrl, {setActive: true})
-          }
-        }
-      },
       {
         id: 'forkDrive',
         label: 'Fork Drive',
