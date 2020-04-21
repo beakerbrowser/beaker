@@ -69,7 +69,7 @@ export async function setup () {
  * @param {String[]} keys 
  * @returns {Promise<void>}
  */
-export async function ensureSeeding (keys) {
+export async function ensureHosting (keys) {
   var configs = await daemon.getClient().drive.allNetworkConfigurations()
   for (let key of keys) {
     let cfg = configs.get(key)
@@ -178,7 +178,7 @@ export async function createNewDrive (manifest = {}) {
   // create the drive
   var drive = await loadDrive(null)
 
-  // seed the drive
+  // announce the drive
   drive.session.drive.configureNetwork({
     announce: true,
     lookup: true

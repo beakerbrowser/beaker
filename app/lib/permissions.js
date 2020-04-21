@@ -226,13 +226,13 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
     case 'experimentalLibraryRequestAdd':
       {
         let viewArchive = openUrl(permParam)
-        return html`<span>Seed <a @click=${viewArchive}>${permOpts.title}</a></span>`
+        return html`<span>Host <a @click=${viewArchive}>${permOpts.title}</a></span>`
       }
 
     case 'experimentalLibraryRequestRemove':
       {
         let viewArchive = openUrl(permParam)
-        return html`<span>Stop seeding <a @click=${viewArchive}>${permOpts.title}</a></span>`
+        return html`<span>Stop hosting <a @click=${viewArchive}>${permOpts.title}</a></span>`
       }
 
     case 'experimentalGlobalFetch':

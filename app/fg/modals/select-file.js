@@ -11,7 +11,7 @@ import buttonsCSS from './buttons2.css'
 const SHORTCUTS = [
   {url: 'virtual:my-device', title: 'My Device', icon: 'fas fa-laptop'},
   {url: 'virtual:my-drives', title: 'My Drives', icon: 'far fa-hdd'},
-  {url: 'virtual:seeding', title: 'Currently Seeding', icon: 'fas fa-share-alt'},
+  {url: 'virtual:hosting', title: 'Hosting', icon: 'fas fa-share-alt'},
   {url: 'virtual:contacts', title: 'Contacts', icon: 'fas fa-users'},
 ]
 
@@ -376,14 +376,14 @@ class SelectFileModal extends LitElement {
       case 'virtual:my-device':
         this.files = [
           vfile('virtual:my-drives', 'far fa-hdd', 'My Drives'),
-          vfile('virtual:seeding', 'fas fa-share-alt', 'Currently Seeding'),
+          vfile('virtual:hosting', 'fas fa-share-alt', 'Hosting'),
           vfile('virtual:contacts', 'fas fa-users', 'Contacts')
         ]
         break
       case 'virtual:my-drives':
         this.files = this.drives.filter(d => d.info.writable).map(drive => vfile(drive.url, undefined, drive.info.title))
         break
-      case 'virtual:seeding':
+      case 'virtual:hosting':
         this.files = this.drives.filter(d => !d.info.writable).map(drive => vfile(drive.url, undefined, drive.info.title))
         break
       case 'virtual:contacts':

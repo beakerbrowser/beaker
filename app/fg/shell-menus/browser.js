@@ -157,9 +157,9 @@ class BrowserMenu extends LitElement {
             <span class="label">My Drives</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/seeding')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/hosting')}>
             <i class="fas fa-share-alt"></i>
-            <span class="label">Currently Seeding</span>
+            <span class="label">Hosting</span>
           </div>
 
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/address-book')}>

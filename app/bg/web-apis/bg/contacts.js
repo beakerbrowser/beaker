@@ -100,7 +100,7 @@ export default {
     }
     await filesystem.get().pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
 
-    if (res.seed) {
+    if (res.host) {
       await filesystem.configDrive(res.key)
     }
   },

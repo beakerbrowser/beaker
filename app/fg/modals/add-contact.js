@@ -83,16 +83,16 @@ class AddContactModal extends LitElement {
       color: #fff;
     }
 
-    .seed-prompt {
+    .host-prompt {
       background: #f3f3f8;
       padding: 12px 24px;
     }
 
-    .seed-prompt label {
+    .host-prompt label {
       margin: 0;
     }
 
-    .seed-prompt input {
+    .host-prompt input {
       display: inline;
       margin: 0 5px 0 0;
       width: auto;
@@ -131,9 +131,9 @@ class AddContactModal extends LitElement {
   }
 
 
-  get seedChecked () {
+  get hostChecked () {
     try {
-      return this.shadowRoot.querySelector('[name=seed]').checked
+      return this.shadowRoot.querySelector('[name=host]').checked
     } catch (e) {
       return false
     }
@@ -166,12 +166,12 @@ class AddContactModal extends LitElement {
             </div>
           `}
 
-          <div class="seed-prompt">
+          <div class="host-prompt">
             ${this.info ? html`
               <label>
                 ${!this.info.writable ? html`
-                  <input type="checkbox" name="seed" checked>
-                  Seed this drive to help keep it online.
+                  <input type="checkbox" name="host" checked>
+                  Host this drive to help keep it online.
                 ` : 'Note: This is your drive'}
               </label>
             ` : ''}
@@ -203,7 +203,7 @@ class AddContactModal extends LitElement {
   async onSubmit (e) {
     e.preventDefault()
     if (this.info) {
-      this.cbs.resolve({key: this.info.key, seed: this.seedChecked})
+      this.cbs.resolve({key: this.info.key, host: this.hostChecked})
     } else {
       this.cbs.reject(new Error('Canceled'))
     }

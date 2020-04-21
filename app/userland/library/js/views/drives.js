@@ -123,7 +123,7 @@ export class DrivesView extends LitElement {
         },
         {
           icon: drive.info.writable ? 'fas fa-fw fa-trash-alt' : 'fas fa-fw fa-times',
-          label: drive.info.writable ? 'Remove from My Library' : 'Stop seeding',
+          label: drive.info.writable ? 'Remove from My Library' : 'Stop hosting',
           disabled: drive.ident.internal,
           click: () => this.removeDrive(drive)
         }
@@ -176,7 +176,7 @@ export class DrivesView extends LitElement {
           ${repeat(drives, drive => this.renderDrive(drive))}
           ${drives.length === 0 && !this.hideEmpty ? html`
             ${this.readonly ? html`
-              <div class="empty"><span class="fas fa-share-alt" style="margin-bottom: 30px"></span><div>Not currently seeding any Hyperdrives</div></div>
+              <div class="empty"><span class="fas fa-share-alt" style="margin-bottom: 30px"></span><div>Not currently hosting any Hyperdrives</div></div>
             ` : html`
               <div class="empty"><span class="fas fa-hdd"></span><div>Click "New Drive" to create a Hyperdrive</div></div>
             `}

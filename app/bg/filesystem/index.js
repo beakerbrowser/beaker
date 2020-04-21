@@ -103,20 +103,20 @@ export async function setup () {
 
   // load drive config
   let profileObj = await getProfile()
-  let seedKeys = []
+  let hostKeys = []
   if (profileObj) {
-    seedKeys.push(profileObj.key)
+    hostKeys.push(profileObj.key)
     profileDriveUrl = `hyper://${profileObj.key}/`
   }
   try {
     drives = JSON.parse(await rootDrive.pda.readFile('/drives.json')).drives
-    seedKeys = seedKeys.concat(drives.map(drive => drive.key))
+    hostKeys = hostKeys.concat(drives.map(drive => drive.key))
   } catch (e) {
     if (e.name !== 'NotFoundError') {
       logger.info('Error while reading the drive configuration at /drives.json', {error: e.toString()})
     }
   }
-  await hyper.drives.ensureSeeding(seedKeys)
+  await hyper.drives.ensureHosting(hostKeys)
 }
 
 /**
@@ -186,7 +186,7 @@ export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
       }
 
       if (!drive.writable) {
-        // seed the drive
+        // announce the drive
         drive.session.drive.configureNetwork({
           announce: true,
           lookup: true
@@ -241,7 +241,7 @@ export async function removeDrive (url) {
     if (driveIndex === -1) return
     let drive = await hyper.drives.getOrLoadDrive(url)
     if (!drive.writable) {
-      // unseed the drive
+      // unannounce the drive
       drive.session.drive.configureNetwork({
         announce: false,
         lookup: true

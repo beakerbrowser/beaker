@@ -87,18 +87,18 @@ export class AddContactPopup extends BasePopup {
       font-style: normal;
     }
 
-    .seed-prompt {
+    .host-prompt {
       background: #f3f3f8;
       padding: 10px;
       margin-top: 10px;
       border-radius: 4px;
     }
 
-    .seed-prompt label {
+    .host-prompt label {
       margin: 0;
     }
 
-    .seed-prompt input {
+    .host-prompt input {
       display: inline;
       margin: 0 5px 0 0;
       width: auto;
@@ -111,9 +111,9 @@ export class AddContactPopup extends BasePopup {
     return this.shadowRoot.querySelector('[name=url]').value
   }
 
-  get seedChecked () {
+  get hostChecked () {
     try {
-      return this.shadowRoot.querySelector('[name=seed]').checked
+      return this.shadowRoot.querySelector('[name=host]').checked
     } catch (e) {
       return false
     }
@@ -209,10 +209,10 @@ export class AddContactPopup extends BasePopup {
         </div>
 
         ${!this.isLoadingContactInfo && this.contactInfo && !this.contactInfo.writable ? html`
-          <div class="seed-prompt">
+          <div class="host-prompt">
             <label>
-              <input type="checkbox" name="seed" checked>
-              Seed this drive to help keep it online.
+              <input type="checkbox" name="host" checked>
+              Host this drive to help keep it online.
             </label>
           </div>
         ` : ''}
@@ -266,7 +266,7 @@ export class AddContactPopup extends BasePopup {
       await sysDrive.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
     }
 
-    if (this.seedChecked) {
+    if (this.hostChecked) {
       await beaker.drives.configure(this.contactInfo.key)
     }
 

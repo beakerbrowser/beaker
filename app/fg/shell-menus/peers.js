@@ -85,13 +85,13 @@ class PeersMenu extends LitElement {
             <label class="toggle">
               <input
                 type="checkbox"
-                name="seed"
-                value="seed"
+                name="host"
+                value="host"
                 .checked=${isSaved}
-                @click=${this.onToggleSeeding}
+                @click=${this.onToggleHosting}
               >
               <div class="switch"></div>
-              <span class="text">Seed This Drive</span>
+              <span class="text">Host This Drive</span>
             </label>
           `}
 
@@ -113,7 +113,7 @@ class PeersMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-  async onToggleSeeding () {
+  async onToggleHosting () {
     if (!this.driveCfg || !this.driveCfg.saved) {
       this.driveCfg = {saved: true}
       await bg.drives.configure(this.url)

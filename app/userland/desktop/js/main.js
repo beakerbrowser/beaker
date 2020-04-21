@@ -153,7 +153,7 @@ class DesktopApp extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     const items = [
-      {icon: 'fas fa-share-alt', label: 'Seeding', click: () => { window.location = `beaker://library/seeding` }}
+      {icon: 'fas fa-share-alt', label: 'Hosting', click: () => { window.location = `beaker://library/hosting` }}
     ]
     contextMenu.create({x: rect.left, y: rect.bottom, noBorders: true, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
   }
