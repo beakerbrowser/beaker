@@ -85,5 +85,23 @@ input[type="radio"] {
 input[type="checkbox"] {
   margin: 0 4px;
 }
+
+.versions {
+  font-size: 12px;
+  color: #555;
+  background: #f3f3f8;
+  margin-top: -10px;
+  padding: 12px 35px;
+  border-radius: 4px;
+  line-height: 1.4;
+}
+
+.versions ul {
+  padding-inline-start: 15px;
+}
+
+.versions strong {
+  font-weight: 600;
+}
 `
 export default cssStr
