@@ -25,7 +25,7 @@ class RequestedPerms extends LitElement {
   render () {
     var perms = this.perms.map(perm => this.renderPerm(perm)).filter(el => typeof el !== 'undefined')
     if (!perms.length) {
-      return html`<div></div>`
+      return html`<div class="field-group">No permissions assigned</div>`
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
