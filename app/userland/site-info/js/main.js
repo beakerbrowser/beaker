@@ -123,6 +123,7 @@ class SiteInfoApp extends LitElement {
     this.driveCfg = undefined
     this.requestedPerms = undefined
     this.forks = undefined
+    contextMenu.destroy()
   }
 
   async load () {
