@@ -38,8 +38,8 @@ class PeersMenu extends LitElement {
 
     // periodically fetch updates
     this.pollInterval = setInterval(async () => {
-      var {peers} = await bg.views.getNetworkState('active')
-      this.driveInfo.peers = peers
+      var state = await bg.views.getNetworkState('active')
+      this.driveInfo.peers = state ? state.peers : 0
       this.requestUpdate()
     }, NETWORK_STATS_POLL_INTERVAL)
 

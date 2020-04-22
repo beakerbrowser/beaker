@@ -67,8 +67,8 @@ class NavbarLocation extends LitElement {
 
     setInterval(async () => {
       if (!this.url.startsWith('hyper://')) return
-      var {peers} = await bg.views.getNetworkState('active')
-      this.peers = peers
+      var state = await bg.views.getNetworkState('active')
+      this.peers = state ? state.peers : 0
       this.requestUpdate()
     }, NETWORK_STATS_POLL_INTERVAL)
 
