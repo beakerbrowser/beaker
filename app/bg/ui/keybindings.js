@@ -8,10 +8,9 @@ import _flattenDeep from 'lodash.flattendeep'
 import isAccelerator from 'electron-is-accelerator'
 import equals from 'keyboardevents-areequal'
 import {toKeyEvent} from 'keyboardevent-from-electron-accelerator'
-import {buildWindowMenu} from './window-menu'
+import {buildWindowMenu, triggerMenuItemById} from './window-menu'
 
 const IS_DARWIN = process.platform === 'darwin'
-const KEYBINDINGS = extractKeybindings(buildWindowMenu())
 const registeredKBs = {} // map of [window.id] => keybindings
 
 // exported api
@@ -60,6 +59,7 @@ export function createGlobalKeybindingsHandler (win) {
 // this is used, for instance, to reserve "Cmd/Ctrl + T" so that an app cannot pre-empt it
 // (the window-menu's accelerators are typically handled *after* the active view's input handlers)
 export function createKeybindingProtectionsHandler (win) {
+  const KEYBINDINGS = extractKeybindings(buildWindowMenu({win}))
   return (e, input) => {
     if (input.type !== 'keyDown') return
     var key = input.key
@@ -77,7 +77,7 @@ export function createKeybindingProtectionsHandler (win) {
     }
     if (match) {
       e.preventDefault()
-      match.cmd(null, win)
+      triggerMenuItemById(match.menuLabel, match.id)
     }
   }
 }
@@ -86,14 +86,15 @@ export function createKeybindingProtectionsHandler (win) {
 // =
 
 // recurse the window menu and extract all 'accelerator' values with reserved=true
-function extractKeybindings (menuNode) {
+function extractKeybindings (menuNode, menuLabel) {
   if (menuNode.accelerator && menuNode.click && menuNode.reserved) {
     return {
       binding: convertAcceleratorToBinding(menuNode.accelerator),
-      cmd: menuNode.click
+      id: menuNode.id,
+      menuLabel
     }
   } else if (menuNode.submenu) {
-    return menuNode.submenu.map(extractKeybindings).filter(Boolean)
+    return menuNode.submenu.map(item => extractKeybindings(item, menuNode.label)).filter(Boolean)
   } else if (Array.isArray(menuNode)) {
     return _flattenDeep(menuNode.map(extractKeybindings).filter(Boolean))
   }

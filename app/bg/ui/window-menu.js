@@ -15,13 +15,12 @@ var currentMenuTemplate
 // =
 
 export function setup () {
-  setApplicationMenu({ noWindows: true })
+  setApplicationMenu({noWindows: true})
 
   // watch for changes to the currently active window
   app.on('browser-window-focus', async (e, win) => {
     try {
-      const url = tabManager.getActive(win).url
-      setApplicationMenu({url})
+      setApplicationMenu()
     } catch (e) {
       // `pages` not set yet
     }
@@ -29,7 +28,7 @@ export function setup () {
 
   // watch for all windows to be closed
   app.on('custom-window-all-closed', () => {
-    setApplicationMenu({ noWindows: true })
+    setApplicationMenu({noWindows: true})
   })
 
   // watch for any window to be opened
@@ -38,16 +37,12 @@ export function setup () {
   })
 }
 
-export function onSetCurrentLocation (win, url) {
+export function onSetCurrentLocation (win) {
   // check if this is the currently focused window
-  if (!url || win !== BrowserWindow.getFocusedWindow()) {
+  if (win !== BrowserWindow.getFocusedWindow()) {
     return
   }
-
-  // rebuild as needed
-  if (requiresRebuild(url)) {
-    setApplicationMenu({url})
-  }
+  setApplicationMenu()
 }
 
 export function setApplicationMenu (opts = {}) {
@@ -56,16 +51,15 @@ export function setApplicationMenu (opts = {}) {
 }
 
 export function buildWindowMenu (opts = {}) {
-  const isDriveSite = opts.url && opts.url.startsWith('hyper://')
-  const noWindows = opts.noWindows === true
-  const getWin = () => BrowserWindow.getFocusedWindow()
-  const activeWindow = getActiveWindow()
-  const addedWindowSettings = getAddedWindowSettings(activeWindow)
+  var win = opts.noWindows ? undefined : opts.win ? opts.win : getActiveWindow()
+  if (win && win.isDestroyed()) win = undefined
+  const noWindows = !win
+  const addedWindowSettings = getAddedWindowSettings(win)
   const isAppWindow = addedWindowSettings.isAppWindow
-  var driveInfo
-  try {
-    driveInfo = !noWindows && isDriveSite ? tabManager.getActive(activeWindow).driveInfo : undefined
-  } catch (e) {}
+  const tab = !noWindows && win ? tabManager.getActive(win) : undefined
+  const url = tab ? (tab.url || tab.loadingURL) : ''
+  const isDriveSite = url.startsWith('hyper://')
+  const driveInfo = isDriveSite ? tab.driveInfo : undefined
   const isWritable = driveInfo && driveInfo.writable
 
   var darwinMenu = {
@@ -75,7 +69,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Preferences',
         accelerator: 'Cmd+,',
         click (item) {
-          var win = getWin()
           if (win) tabManager.create(win, 'beaker://settings', {setActive: true})
           else createShellWindow({ pages: ['beaker://settings'] })
         }
@@ -87,7 +80,7 @@ export function buildWindowMenu (opts = {}) {
       { label: 'Hide Others', accelerator: 'Cmd+Alt+H', role: 'hideothers' },
       { label: 'Show All', role: 'unhide' },
       { type: 'separator' },
-      { label: 'Quit', accelerator: 'Cmd+Q', click () { app.quit() }, reserved: true }
+      { id: 'quit', label: 'Quit', accelerator: 'Cmd+Q', click () { app.quit() }, reserved: true }
     ]
   }
 
@@ -99,7 +92,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'New Tab',
         accelerator: 'CmdOrCtrl+T',
         click: function (item) {
-          var win = getWin()
           if (win) {
             tabManager.create(win, undefined, {setActive: true, focusLocationBar: true})
           } else {
@@ -120,12 +112,12 @@ export function buildWindowMenu (opts = {}) {
       //   label: 'New File',
       //   enabled: !noWindows && !isAppWindow,
       //   click: function (item) {
-      //     createWindowIfNone(getWin(), async (win) => {
+      //     createWindowIfNone(win, async (win) => {
       //       var res = await runSelectFileDialog(win, {
       //         saveMode: true,
       //         title: 'New File',
       //         buttonLabel: 'Create File',
-      //         drive: opts && opts.url && opts.url.startsWith('hyper:') ? opts.url : undefined
+      //         drive: opts && url && url.startsWith('hyper:') ? url : undefined
       //       })
       //       let drive = await hyper.drives.getOrLoadDrive(res.origin)
       //       await drive.pda.writeFile(res.path, '')
@@ -138,12 +130,12 @@ export function buildWindowMenu (opts = {}) {
       //   label: 'New Folder',
       //   enabled: !noWindows && !isAppWindow,
       //   click: function (item) {
-      //     createWindowIfNone(getWin(), async (win) => {
+      //     createWindowIfNone(win, async (win) => {
       //       var res = await runSelectFileDialog(win, {
       //         saveMode: true,
       //         title: 'New Folder',
       //         buttonLabel: 'Create Folder',
-      //         drive: opts && opts.url && opts.url.startsWith('hyper:') ? opts.url : undefined
+      //         drive: opts && url && url.startsWith('hyper:') ? url : undefined
       //       })
       //       let drive = await hyper.drives.getOrLoadDrive(res.origin)
       //       await drive.pda.mkdir(res.path)
@@ -157,7 +149,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Open File',
         accelerator: 'CmdOrCtrl+O',
         click: item => {
-          createWindowIfNone(getWin(), async (win) => {
+          createWindowIfNone(win, async (win) => {
             var res = await runSelectFileDialog(win, {
               buttonLabel: 'Open File'
             })
@@ -174,7 +166,6 @@ export function buildWindowMenu (opts = {}) {
       //   accelerator: 'CmdOrCtrl+Shift+S',
       //   click: async (item) => {
       //     createWindowIfNone(getWin(), async (win) => {
-      //       var tab = tabManager.getActive(win)
       //       if (!tab) return
       //       const {url, title} = tab
       //       var res = await runSelectFileDialog(win, {
@@ -195,11 +186,8 @@ export function buildWindowMenu (opts = {}) {
         label: 'Export Page As...',
         enabled: !noWindows && !isAppWindow,
         click: async (item) => {
-          var win = getWin()
-          var tab = tabManager.getActive(win)
           if (!tab) return
-          const url = tab.url
-          const title = tab.title
+          const {url, title} = tab
           var {filePath} = await dialog.showSaveDialog({ title: `Save ${title} as...`, defaultPath: app.getPath('downloads') })
           if (filePath) download(win, win.webContents, url, { saveAs: filePath, suppressNewDownloadEvent: true })
         }
@@ -210,7 +198,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+P',
         click: (item) => {
-          var tab = tabManager.getActive(getWin())
           if (!tab) return
           tab.webContents.print()
         }
@@ -221,7 +208,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Reopen Closed Tab',
         accelerator: 'CmdOrCtrl+Shift+T',
         click: function (item) {
-          var win = getWin()
           createWindowIfNone(win, (win) => {
             tabManager.reopenLastRemoved(win)
           })
@@ -234,7 +220,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+W',
         click: function (item) {
-          var win = getWin()
           if (win) {
             // a regular browser window
             let active = tabManager.getActive(win)
@@ -261,7 +246,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Shift+W',
         click: function (item) {
-          var win = getWin()
           if (win) win.close()
         },
         reserved: true
@@ -286,7 +270,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+F',
         click: function (item) {
-          var tab = tabManager.getActive(getWin())
           if (tab) tab.showInpageFind()
         }
       },
@@ -296,7 +279,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+G',
         click: function (item) {
-          var tab = tabManager.getActive(getWin())
           if (tab) tab.moveInpageFind(1)
         }
       },
@@ -306,7 +288,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'Shift+CmdOrCtrl+G',
         click: function (item) {
-          var tab = tabManager.getActive(getWin())
           if (tab) tab.moveInpageFind(-1)
         }
       }
@@ -322,13 +303,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+R',
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) {
-              active.webContents.reload()
-            }
-          }
+          if (tab) tab.webContents.reload()
         },
         reserved: true
       },
@@ -336,6 +311,7 @@ export function buildWindowMenu (opts = {}) {
         id: 'hardReload',
         label: 'Hard Reload (Clear Cache)',
         accelerator: 'CmdOrCtrl+Shift+R',
+        enabled: !noWindows,
         click: function (item) {
           // HACK
           // this is *super* lazy but it works
@@ -343,14 +319,7 @@ export function buildWindowMenu (opts = {}) {
           // load is fresh
           // -prf
           hyper.dns.flushCache()
-
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) {
-              active.webContents.reloadIgnoringCache()
-            }
-          }
+          if (tab) tab.webContents.reloadIgnoringCache()
         },
         reserved: true
       },
@@ -362,10 +331,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+Plus',
         reserved: true,
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            viewZoom.zoomIn(tabManager.getActive(win))
-          }
+          if (tab) viewZoom.zoomIn(tab)
         }
       },
       {
@@ -375,10 +341,7 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+-',
         reserved: true,
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            viewZoom.zoomOut(tabManager.getActive(win))
-          }
+          if (tab) viewZoom.zoomOut(tab)
         }
       },
       {
@@ -387,10 +350,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+0',
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            viewZoom.zoomReset(tabManager.getActive(win))
-          }
+          if (tab) viewZoom.zoomReset(tab)
         }
       }
     ]
@@ -404,11 +364,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Explore Files',
         enabled: !noWindows && !isAppWindow && !!isDriveSite,
         click: async function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'files-explorer-app')
-          }
+          if (tab) tab.executeSidebarCommand('show-panel', 'files-explorer-app')
         }
       },
       {type: 'separator'},
@@ -417,9 +373,8 @@ export function buildWindowMenu (opts = {}) {
         label: 'Fork Drive',
         enabled: !!isDriveSite,
         async click (item) {
-          var win = getWin()
           if (win) {
-            let newUrl = await runForkFlow(win, opts.url)
+            let newUrl = await runForkFlow(win, url)
             tabManager.create(win, newUrl, {setActive: true})
           }
         }
@@ -429,8 +384,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Diff / Merge',
         enabled: !!isDriveSite,
         async click (item) {
-          var win = getWin()
-          if (win) tabManager.create(win, `beaker://diff/?base=${opts.url}`, {setActive: true})
+          if (win) tabManager.create(win, `beaker://diff/?base=${url}`, {setActive: true})
         }
       },
       { type: 'separator' },
@@ -446,7 +400,7 @@ export function buildWindowMenu (opts = {}) {
             properties: ['openFile', 'multiSelections']
           })
           if (!filePaths[0]) return
-          var res = await runSelectFileDialog(activeWindow, {
+          var res = await runSelectFileDialog(win, {
             title: 'Choose where to import to',
             buttonLabel: 'Import File(s)',
             drive: driveInfo.url,
@@ -477,7 +431,7 @@ export function buildWindowMenu (opts = {}) {
             properties: ['openDirectory', 'multiSelections']
           })
           if (!filePaths[0]) return
-          var res = await runSelectFileDialog(activeWindow, {
+          var res = await runSelectFileDialog(win, {
             title: 'Choose where to import to',
             buttonLabel: 'Import Folder(s)',
             drive: driveInfo.url,
@@ -524,8 +478,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Drive Properties',
         enabled: !!isDriveSite,
         async click (item) {
-          var win = getWin()
-          if (win) runDrivePropertiesFlow(win, hyper.drives.fromURLToKey(opts.url))
+          if (win) runDrivePropertiesFlow(win, hyper.drives.fromURLToKey(url))
         }
       }
     ]
@@ -547,11 +500,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Left',
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.webContents.goBack()
-          }
+          if (tab) tab.webContents.goBack()
         }
       },
       {
@@ -560,11 +509,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Right',
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.webContents.goForward()
-          }
+          if (tab) tab.webContents.goForward()
         }
       },
       {
@@ -572,7 +517,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Show Full History',
         accelerator: showHistoryAccelerator,
         click: function (item) {
-          var win = getWin()
           if (win) tabManager.create(win, 'beaker://history', {setActive: true})
           else createShellWindow({ pages: ['beaker://history'] })
         }
@@ -584,7 +528,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+D',
         click: function (item) {
-          var win = getWin()
           if (win) win.webContents.send('command', 'create-bookmark')
         }
       }
@@ -602,14 +545,14 @@ export function buildWindowMenu (opts = {}) {
             label: 'Reload Shell-Window',
             enabled: !noWindows,
             click: function () {
-              getWin().webContents.reloadIgnoringCache()
+              win.webContents.reloadIgnoringCache()
             }
           },
           {
             label: 'Toggle Shell-Window DevTools',
             enabled: !noWindows,
             click: function () {
-              getWin().webContents.openDevTools({mode: 'detach'})
+              win.webContents.openDevTools({mode: 'detach'})
             }
           },
           { type: 'separator' },
@@ -617,21 +560,18 @@ export function buildWindowMenu (opts = {}) {
             label: 'Open Hyperdrives Debug Page',
             enabled: !noWindows,
             click: function (item) {
-              var win = getWin()
               if (win) tabManager.create(win, 'beaker://active-drives/', {setActive: true})
             }
           }, {
             label: 'Open Dat-DNS Cache Page',
             enabled: !noWindows,
             click: function (item) {
-              var win = getWin()
               if (win) tabManager.create(win, 'beaker://hyper-dns-cache/', {setActive: true})
             }
           }, {
             label: 'Open Debug Log Page',
             enabled: !noWindows,
             click: function (item) {
-              var win = getWin()
               if (win) tabManager.create(win, 'beaker://debug-log/', {setActive: true})
             }
           }
@@ -643,11 +583,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+I' : 'Shift+CmdOrCtrl+I',
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.webContents.toggleDevTools()
-          }
+          if (tab) tab.webContents.toggleDevTools()
         },
         reserved: true
       },
@@ -657,11 +593,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+B',
         click: async function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'editor-app')
-          }
+          if (tab) tab.executeSidebarCommand('show-panel', 'editor-app')
         }
       },
       {
@@ -670,11 +602,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'Ctrl+`',
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.executeSidebarCommand('show-panel', 'web-term')
-          }
+          if (tab) tab.executeSidebarCommand('show-panel', 'web-term')
         }
       },
       {
@@ -682,11 +610,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Toggle Live Reloading',
         enabled: !!isDriveSite,
         click: function (item) {
-          var win = getWin()
-          if (win) {
-            let active = tabManager.getActive(win)
-            if (active) active.toggleLiveReloading()
-          }
+          if (tab) tab.toggleLiveReloading()
         }
       }
     ]
@@ -697,7 +621,6 @@ export function buildWindowMenu (opts = {}) {
     enabled: !noWindows,
     accelerator: `CmdOrCtrl+${index}`,
     click: function (item) {
-      var win = getWin()
       if (win) tabManager.setActive(win, index - 1)
     }
   })
@@ -708,11 +631,9 @@ export function buildWindowMenu (opts = {}) {
       {
         type: 'checkbox',
         label: 'Always on Top',
-        checked: (getWin() ? getWin().isAlwaysOnTop() : false),
+        checked: (win ? win.isAlwaysOnTop() : false),
         click: function () {
-          var win = getWin()
-          if (!win) return
-          win.setAlwaysOnTop(!win.isAlwaysOnTop())
+          if (win) win.setAlwaysOnTop(!win.isAlwaysOnTop())
         }
       },
       {
@@ -732,9 +653,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+Shift+H',
         click: function (item) {
-          var win = getWin()
-          if (!win) return
-          toggleShellInterface(win)
+          if (win) toggleShellInterface(win)
         }
       },
       {type: 'separator'},
@@ -742,7 +661,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Focus Location Bar',
         accelerator: 'CmdOrCtrl+L',
         click: function (item) {
-          var win = getWin()
           createWindowIfNone(win, (win) => {
             win.webContents.send('command', 'focus-location')
           })
@@ -754,7 +672,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+Right' : 'CmdOrCtrl+PageDown',
         click: function (item) {
-          var win = getWin()
           if (win) tabManager.changeActiveBy(win, 1)
         }
       },
@@ -763,7 +680,6 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+Left' : 'CmdOrCtrl+PageUp',
         click: function (item) {
-          var win = getWin()
           if (win) tabManager.changeActiveBy(win, -1)
         }
       },
@@ -784,7 +700,6 @@ export function buildWindowMenu (opts = {}) {
             enabled: !noWindows,
             accelerator: `CmdOrCtrl+9`,
             click: function (item) {
-              var win = getWin()
               if (win) tabManager.setActive(win, tabManager.getAll(win).slice(-1)[0])
             }
           }
@@ -795,11 +710,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'Shift+CmdOrCtrl+P',
         click: function (item) {
-          var win = getWin()
-          if (!win) return
-          var active = tabManager.getActive(win)
-          if (!active) return
-          tabManager.popOutTab(active)
+          if (tab) tabManager.popOutTab(tab)
         }
       }
     ]
@@ -823,7 +734,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Beaker Help',
         accelerator: 'F1',
         click: function (item) {
-          var win = getWin()
           if (win) tabManager.create(win, 'https://beaker-browser.gitbook.io/docs/', {setActive: true})
         }
       },
@@ -831,7 +741,6 @@ export function buildWindowMenu (opts = {}) {
         id: 'developerPortal',
         label: 'Developer Portal',
         click: function (item) {
-          var win = getWin()
           if (win) tabManager.create(win, 'https://beaker.dev/', {setActive: true})
         }
       },
@@ -840,7 +749,6 @@ export function buildWindowMenu (opts = {}) {
         id: 'reportIssue',
         label: 'Report Issue',
         click: function (item) {
-          var win = getWin()
           if (win) tabManager.create(win, 'https://github.com/beakerbrowser/beaker/issues', {setActive: true})
         }
       }
@@ -852,7 +760,6 @@ export function buildWindowMenu (opts = {}) {
       label: 'About',
       role: 'about',
       click: function (item) {
-        var win = getWin()
         if (win) tabManager.create(win, 'beaker://settings', {setActive: true})
       }
     })
@@ -899,15 +806,6 @@ export function triggerMenuItemById (menuLabel, id) {
 
 // internal helpers
 // =
-
-var lastURLProtocol = false
-function requiresRebuild (url) {
-  const urlProtocol = url ? url.split(':')[0] : false
-  // check if this is a change of protocol
-  const b = (lastURLProtocol !== urlProtocol)
-  lastURLProtocol = urlProtocol
-  return b
-}
 
 function createWindowIfNone (win, onShow) {
   if (win) return onShow(win)

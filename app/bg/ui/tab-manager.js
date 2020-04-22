@@ -993,10 +993,12 @@ class Tab extends EventEmitter {
   }
 
   onUpdateTargetUrl (e, url) {
+    if (this.browserWindow.isDestroyed()) return
     statusBar.set(this.browserWindow, url)
   }
 
   onPageTitleUpdated (e, title) {
+    if (this.browserWindow.isDestroyed()) return
     if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
       this.browserWindow.setTitle(title)
     }
@@ -1366,7 +1368,7 @@ export function setActive (win, tab) {
 
   // activate the new tab
   tab.activate()
-  windowMenu.onSetCurrentLocation(win, tab.url) // give the window-menu a chance to handle the change
+  windowMenu.onSetCurrentLocation(win) // give the window-menu a chance to handle the change
   emitReplaceState(win)
 }
 
