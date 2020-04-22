@@ -229,7 +229,7 @@ class ShellWindowNavbar extends LitElement {
     const cls = classMap({'network-btn': true, pressed: this.isNetworkMenuOpen})
     return html`
       <button class=${cls} @click=${this.onClickNetworkMenu} style="margin: 0px 2px">
-        <span class="fas fa-cloud-upload-alt"></span>
+        <span class="fas fa-wifi"></span>
         ${!this.isHolepunchable ? html`<span class="fas fa-circle"></span>` : ''}
       </button>
     `
@@ -372,7 +372,7 @@ svg.icon.refresh {
   color: #FF9800;
 }
 
-.fas.fa-cloud-upload-alt {
+.fas.fa-wifi {
   color: #555;
 }
 
