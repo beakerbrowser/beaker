@@ -928,6 +928,7 @@ class Tab extends EventEmitter {
   }
 
   onDidNavigateInPage (e) {
+    this.fetchIsBookmarked()
     this.updateHistory()
   }
 
