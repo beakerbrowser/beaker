@@ -344,18 +344,16 @@ class EditorApp extends LitElement {
     }
   }
 
-  showMenu (x, y, folderPath, item, folderItemUrls) {
+  async showMenu (x, y, folderPath, item, folderItemUrls) {
     var items = []
     if (item) {
       items.push({
-        icon: 'fas fa-fw fa-external-link-alt',
         label: 'Open in new tab',
         click () {
           beaker.browser.openUrl(item.url)
         }
       })
       items.push({
-        icon: 'fas fa-fw fa-link',
         label: `Copy ${item.stat.isFile() ? 'file' : 'folder'} link`,
         disabled: !item.shareUrl,
         click () {
@@ -365,7 +363,6 @@ class EditorApp extends LitElement {
       })
       if (item.stat.mount && item.stat.mount.key) {
         items.push({
-          icon: 'fas fa-fw fa-external-link-square-alt',
           label: 'Copy mount target',
           click () {
             writeToClipboard(`hyper://${item.stat.mount.key}/`)
@@ -374,85 +371,76 @@ class EditorApp extends LitElement {
         })
       }
       items.push({
-        icon: 'custom-path-icon',
         label: `Copy ${item.stat.isFile() ? 'file' : 'folder'} path`,
         click () {
           writeToClipboard(item.path)
           toast.create('Copied to your clipboard')
         }
       })
-      items.push('-')
+      items.push({type: 'separator'})
       items.push({
-        icon: 'fas fa-fw fa-sync',
         label: 'Refresh files',
         click: () => this.loadExplorer()
       })
-      items.push('-')
+      items.push({type: 'separator'})
       items.push({
-        icon: 'fa fa-fw fa-i-cursor',
         label: 'Rename',
         disabled: this.readOnly,
         click: () => this.onClickRename(item.path)
       })
       items.push({
-        icon: 'fa fa-fw fa-trash',
         label: 'Delete',
         disabled: this.readOnly,
         click: () => this.onClickDelete(item.path)
       })
-      items.push('-')
+      items.push({type: 'separator'})
       items.push({
-        icon: 'fas fa-fw fa-file-export',
         label: 'Export file',
         click: () => this.onClickExportFiles([item.url])
       })
     } else {
       items.push({
-        icon: 'far fa-fw fa-folder',
         label: 'New folder',
         disabled: this.readOnly,
         click: () => this.onClickNewFolder(folderPath)
       })
       items.push({
-        icon: 'far fa-fw fa-file',
         label: 'New file',
         disabled: this.readOnly,
         click: () => this.onClickNewFile(folderPath)
       })
       items.push({
-        icon: 'fas fa-fw fa-long-arrow-alt-right custom-link-icon',
         label: 'New mount',
         disabled: this.readOnly,
         click: () => this.onClickNewMount(folderPath)
       })
-      items.push('-')
+      items.push({type: 'separator'})
       items.push({
-        icon: 'fas fa-fw fa-sync',
         label: 'Refresh files',
         click: () => this.loadExplorer()
       })
-      items.push('-')
+      items.push({type: 'separator'})
       items.push({
-        icon: 'fas fa-fw fa-file-import',
         label: 'Import files',
         disabled: this.readOnly,
         click: () => this.onClickImportFiles(folderPath)
       })
       items.push({
-        icon: 'fas fa-fw fa-file-export',
         label: 'Export files',
         click: () => this.onClickExportFiles(folderItemUrls)
       })
     }
 
-    contextMenu.create({
-      x,
-      y,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
-      noBorders: true,
-      roomy: true,
-      items
-    })
+    var fns = {}
+    for (let i = 0; i < items.length; i++) {
+      let id = `item=${i}`
+      items[i].id = id
+      fns[id] = items[i].click
+      delete items[i].click
+    }
+
+    var choice = await beaker.browser.showContextMenu(items)
+    if (fns[choice]) fns[choice]()
   }
 
   // rendering
