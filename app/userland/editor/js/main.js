@@ -421,9 +421,14 @@ class EditorApp extends LitElement {
       })
       items.push({type: 'separator'})
       items.push({
-        label: 'Import files',
+        label: 'Import file(s)',
         disabled: this.readOnly,
         click: () => this.onClickImportFiles(folderPath)
+      })
+      items.push({
+        label: 'Import folder(s)',
+        disabled: this.readOnly,
+        click: () => this.onClickImportFolders(folderPath)
       })
       items.push({
         label: 'Export files',
@@ -821,6 +826,19 @@ class EditorApp extends LitElement {
     toast.create('Importing...')
     try {
       var {numImported} = await beaker.shell.importFilesDialog(joinPath(this.drive.url, folderPath))
+      if (numImported > 0) toast.create('Import complete', 'success')
+      else toast.destroy()
+    } catch (e) {
+      console.log(e)
+      toast.create(e.toString(), 'error')
+    }
+    this.loadExplorer()
+  }
+
+  async onClickImportFolders (folderPath) {
+    toast.create('Importing...')
+    try {
+      var {numImported} = await beaker.shell.importFoldersDialog(joinPath(this.drive.url, folderPath))
       if (numImported > 0) toast.create('Import complete', 'success')
       else toast.destroy()
     } catch (e) {

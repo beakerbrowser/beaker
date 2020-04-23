@@ -170,11 +170,10 @@ export default {
   async importFilesDialog (url) {
     if (!(await isBeakerApp(this.sender))) return
 
-    var OS_CAN_IMPORT_FOLDERS_AND_FILES = os.platform() === 'darwin'
     var res = await dialog.showOpenDialog({
       title: 'Import files',
       buttonLabel: 'Import',
-      properties: ['openFile', OS_CAN_IMPORT_FOLDERS_AND_FILES ? 'openDirectory' : false, 'multiSelections', 'createDirectory'].filter(Boolean)
+      properties: ['openFile', 'multiSelections', 'createDirectory']
     })
     if (res.filePaths.length) {
       var urlp = parseDriveUrl(url)
@@ -186,6 +185,32 @@ export default {
           dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
           dstPath: urlp.pathname,
           ignore: ['index.json'],
+          inplaceImport: false,
+          dryRun: false
+        })
+      }
+      return {numImported: res.filePaths.length}
+    }
+    return {numImported: 0}
+  },
+
+  async importFoldersDialog (url) {
+    if (!(await isBeakerApp(this.sender))) return
+
+    var res = await dialog.showOpenDialog({
+      title: 'Import folders',
+      buttonLabel: 'Import',
+      properties: ['openDirectory', 'multiSelections', 'createDirectory']
+    })
+    if (res.filePaths.length) {
+      var urlp = parseDriveUrl(url)
+      var {checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
+      if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
+      for (let srcPath of res.filePaths) {
+        await pda.exportFilesystemToArchive({
+          srcPath,
+          dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
+          dstPath: urlp.pathname,
           inplaceImport: false,
           dryRun: false
         })
