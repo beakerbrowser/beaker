@@ -176,7 +176,7 @@ nav .search-ctrl input {
   background: #fff;
   box-sizing: border-box;
   height: 26px;
-  width: 120px;
+  width: 180px;
   font-size: 12px;
   letter-spacing: 0.5px;
   font-weight: 500;
