@@ -597,7 +597,7 @@ class Tab extends EventEmitter {
   async captureScreenshot () {
     try {
       // wait a sec to allow loading to finish
-      await new Promise(r => setTimeout(r, 1e3))
+      await new Promise(r => setTimeout(r, 2e3))
 
       // capture the page
       this.browserView.webContents.incrementCapturerCount({width: 1000, height: 800}, !this.isActive)
