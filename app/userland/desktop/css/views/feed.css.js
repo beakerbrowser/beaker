@@ -109,5 +109,22 @@ a[href]:hover {
   max-width: 100%;
 }
 
+.post iframe {
+  width: 100%;
+  border: 0;
+}
+
+.post .run-embed {
+  background: #f3f3f8;
+  color: #556;
+  border-radius: 3px;
+  padding: 18px 24px;
+}
+
+.post .run-embed:hover {
+  cursor: pointer;
+  background: #eaeaef;
+}
+
 `
 export default cssStr

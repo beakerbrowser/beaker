@@ -23,6 +23,14 @@ const BEAKER_CSP = `
   style-src 'self' 'unsafe-inline' beaker:;
   child-src 'self';
 `.replace(/\n/g, '')
+const BEAKER_DESKTOP_CSP = `
+  default-src 'self' beaker:;
+  img-src beaker: asset: data: hyper: http: https;
+  script-src 'self' beaker: 'unsafe-eval';
+  media-src 'self' beaker: hyper:;
+  style-src 'self' 'unsafe-inline' beaker:;
+  child-src 'self' hyper:;
+`.replace(/\n/g, '')
 const SIDEBAR_CSP = `
 default-src 'self' beaker:;
 img-src beaker: asset: data: hyper: http: https;
@@ -249,7 +257,10 @@ async function beakerProtocol (request, respond) {
     })
   }
   if (requestUrl === 'beaker://desktop' || requestUrl.startsWith('beaker://desktop/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'desktop'), cb)
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'desktop'), cb, {
+      CSP: BEAKER_DESKTOP_CSP,
+      fallbackToIndexHTML: true,
+    })
   }
   if (requestUrl === 'beaker://history' || requestUrl.startsWith('beaker://history/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'history'), cb)

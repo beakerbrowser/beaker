@@ -20,6 +20,10 @@ import feedCSS from '../../css/views/feed.css.js'
 const FEED_UPDATE_INTERVAL = 30 * 60e3 // every 30 minutes
 const FEED_CHECK_INTERVAL = 10 * 60e3 // every 10 minutes
 
+const IFRAME_CSP = `default-src 'self' 'unsafe-inline';`
+const IFRAME_SANDBOX = `allow-forms allow-scripts`
+const enabledIframes = {}
+
 var md = new MarkdownIt({html: false, breaks: true})
 
 export class FeedView extends LitElement {
@@ -118,9 +122,10 @@ export class FeedView extends LitElement {
         } else {
           let txt = await beaker.hyperdrive.readFile(file.url)
           // render content
-          if (/\.md$/i.test(file.path)) {
-            txt = md.render(txt)
-            content = {html: txt}
+          if (/\.html?$/i.test(file.path)) {
+            content = {iframe: file.url}
+          } else if (/\.md$/i.test(file.path)) {
+            content = {html: md.render(txt)}
           } else {
             content = {txt}
           }
@@ -188,6 +193,15 @@ export class FeedView extends LitElement {
           ${post.content.audio ? html`<audio controls src=${post.content.audio}></audio>` : ''}
           ${post.content.html ? html`${unsafeHTML(post.content.html)}` : ''}
           ${post.content.txt ? html`<pre>${post.content.txt}</pre>` : ''}
+          ${post.content.iframe
+            ? enabledIframes[post.url]
+              ? html`<iframe src=${post.content.iframe} csp=${IFRAME_CSP} sandbox=${IFRAME_SANDBOX}></iframe>`
+              : html`
+                <div class="run-embed" @click=${e => {enabledIframes[post.url] = true; this.requestUpdate()}}>
+                  <span class="fas fa-fw fa-play"></span> Click to run this app
+                </div>`
+            : ''
+          }
         </div>
       </div>
     `
