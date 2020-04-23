@@ -53,7 +53,7 @@ export const protocolHandler = async function (request, respond) {
   const respondRedirect = (url) => {
     respond({
       statusCode: 200,
-      headers: {'Content-Type': 'text/html'},
+      headers: {'Content-Type': 'text/html', 'Allow-CSP-From': '*'},
       data: intoStream(`<!doctype html><meta http-equiv="refresh" content="0; url=${url}">`)
     })
   }
@@ -69,7 +69,8 @@ export const protocolHandler = async function (request, respond) {
         headers: {
           'Content-Type': 'text/html',
           'Content-Security-Policy': "default-src 'unsafe-inline' beaker:;",
-          'Access-Control-Allow-Origin': '*'
+          'Access-Control-Allow-Origin': '*',
+          'Allow-CSP-From': '*'
         },
         data: intoStream(errorPage(errorPageInfo || (code + ' ' + status)))
       })
@@ -199,6 +200,7 @@ export const protocolHandler = async function (request, respond) {
       headers: {
         'Content-Type': 'text/html',
         'Access-Control-Allow-Origin': '*',
+        'Allow-CSP-From': '*',
         'Content-Security-Policy': cspHeader
       },
       data: intoStream(await checkoutFS.pda.readFile('/.ui/ui.html')) // TODO use stream
@@ -246,6 +248,7 @@ export const protocolHandler = async function (request, respond) {
       headers: {
         'Content-Type': 'text/html',
         'Access-Control-Allow-Origin': '*',
+        'Allow-CSP-From': '*',
         'Cache-Control': 'no-cache',
         'Content-Security-Policy': `default-src 'self' beaker:`
       },
@@ -315,6 +318,7 @@ export const protocolHandler = async function (request, respond) {
   Object.assign(headers, {
     'Content-Security-Policy': cspHeader,
     'Access-Control-Allow-Origin': '*',
+    'Allow-CSP-From': '*',
     'Cache-Control': 'no-cache'
   })
 
