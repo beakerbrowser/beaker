@@ -73,7 +73,7 @@ ${tooltipCSS}
 .files .add {
   position: absolute;
   left: 0.2em;
-  top: -1.7em;
+  top: -2em;
   font-size: 14px;
   color: rgba(0, 0, 150, 0.25);
   cursor: pointer;
