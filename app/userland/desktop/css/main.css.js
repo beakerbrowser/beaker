@@ -60,6 +60,7 @@ ${tooltipCSS}
 }
 
 .files {
+  position: relative;
   display: grid;
   margin: 100px auto 0;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -67,6 +68,19 @@ ${tooltipCSS}
   width: 100%;
   max-width: 1000px;
   user-select: none;
+}
+
+.files .add {
+  position: absolute;
+  left: 0.2em;
+  top: -1.7em;
+  font-size: 14px;
+  color: rgba(0, 0, 150, 0.25);
+  cursor: pointer;
+}
+
+.files .add:hover {
+  color: rgba(0, 0, 150, 0.5);
 }
 
 .file {
@@ -113,19 +127,6 @@ ${tooltipCSS}
   font-size: 12px;
   line-height: 20px;
   text-align: center;
-}
-
-.file.add span {
-  position: absolute;
-  left: 50%;
-  top: 40%;
-  transform: translate(-50%, -50%);
-  font-size: 22px;
-  color: rgba(0, 0, 150, 0.15);
-}
-
-.file.add:hover span {
-  color: rgba(0, 0, 150, 0.25);
 }
 
 nav {

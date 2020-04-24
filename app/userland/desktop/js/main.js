@@ -123,7 +123,10 @@ class DesktopApp extends LitElement {
     var files = this.files || []
     return html`
       <div class="files">
-        ${repeat(files, file => html`
+        <a class="add" @click=${e => this.onClickNewBookmark(e, true)}>
+          <span class="fas fa-fw fa-plus"></span>
+        </a>
+        ${repeat(files, file => getHref(file), file => html`
           <a
             class="file"
             href=${getHref(file)}
@@ -137,11 +140,6 @@ class DesktopApp extends LitElement {
             </div>
           </a>
         `)}
-        ${!this.filter ? html`
-          <a class="file add" @click=${e => this.onClickNewBookmark(e, true)}>
-            <span class="fas fa-fw fa-plus"></span>
-          </a>
-        ` : ''}
       </div>
     `
   }
