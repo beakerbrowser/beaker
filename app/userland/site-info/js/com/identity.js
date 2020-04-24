@@ -42,18 +42,33 @@ class Identity extends LitElement {
           ` : ''}
           ${this.cert.type === 'hyperdrive' ? html`
             ${this.cert.ident.profile ? html`
-              <div class="identity"><span class="fa-fw fas fa-user-circle"></span> This is your profile</div>
+              <div class="identity">
+                <span class="fa-fw fas fa-address-card"></span>
+                ${this.cert.driveInfo.title || 'Untitled'}
+              </div>
+              <div class="verifier">
+                This is your profile
+              </div>
             ` : this.cert.ident.contact ? html`
               <div class="identity">
-                <span class="fa-fw far fa-address-card"></span> This drive is in your address book
+                <span class="fa-fw fas fa-address-card"></span>
+                ${this.cert.driveInfo.title || 'Untitled'}
+              </div>
+              <div class="verifier">
+                This drive is in your address book
                 <button class="transparent toggle-save-contact-btn" @click=${this.onToggleSaveContact}>
                   <span class="fas fa-fw fa-user-times"></span> Remove
                 </button>
               </div>
             ` : this.cert.ident.system ? html`
               <div class="identity">This is your system drive</div>
-            ` : this.cert.ident.writable ? html`
-              <div class="identity"><span class="fa-fw fas fa-pen"></span> You created this drive</div>
+            ` : this.cert.driveInfo.writable ? html`
+              <div class="identity">
+                ${this.cert.driveInfo.title || 'Untitled'}
+              </div>
+              <div class="verifier">
+                <span class="fa-fw fas fa-pen"></span> You created this drive</div>
+              </div>
             ` : html`
               No identity information found
               <button class="transparent toggle-save-contact-btn" @click=${this.onToggleSaveContact}>

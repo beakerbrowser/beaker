@@ -97,10 +97,6 @@ hr {
   word-break: break-word;
 }
 
-.site-info .details .buttons {
-  margin-top: 10px;
-}
-
 .nav {
   display: flex;
   align-items: center;

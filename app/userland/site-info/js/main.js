@@ -157,8 +157,8 @@ class SiteInfoApp extends LitElement {
         beaker.sitedata.getPermissions(this.origin),
         beaker.browser.getCertificate(this.url)
       ])
-      if (this.cert && this.cert.type === 'hyperdrive' && this.info.writable) {
-        this.cert.ident.writable = true // add a little more info
+      if (this.cert && this.cert.type === 'hyperdrive') {
+        this.cert.driveInfo = this.info
       }
       this.requestedPerms = await Promise.all(Object.entries(perms).map(async ([perm, value]) => {
         var opts = {}
@@ -208,15 +208,9 @@ class SiteInfoApp extends LitElement {
     var writable = this.info ? this.info.writable : false
     var isSaved = this.driveCfg ? this.driveCfg.saved : false
     var isInternal = this.driveCfg ? this.driveCfg.ident.internal : false
-    var isContact = this.cert && this.cert.ident ? this.cert.ident.contact : false
-    var protocol = ''
-    if (this.isHttps) protocol = html`<p class="protocol">Accessed using a secure connection</p>`
     return html`
       <div class="site-info">
         <div class="details">
-          <h1>${this.info.title}</h1>
-          ${this.isDrive && this.info.description ? html`<p class="desc">${this.info.description}</p>` : ''}
-          ${protocol}
           <p class="buttons">
             <button @click=${this.onCopyUrl}><span class="fas fa-fw fa-link"></span> Copy URL</button>
             ${this.isDrive && !isInternal ? html`
