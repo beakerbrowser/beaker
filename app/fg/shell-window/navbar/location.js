@@ -133,7 +133,6 @@ class NavbarLocation extends LitElement {
       ${this.renderLocation()}
       ${this.renderZoom()}
       ${this.renderAvailableAlternativeBtn()}
-      ${this.renderIdentLabel()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderPeers()}
       ${this.renderSiteBtn()}
@@ -276,18 +275,6 @@ class NavbarLocation extends LitElement {
         <i class="fa fa-donate"></i>
       </button>
     `
-  }
-  
-  renderIdentLabel () {
-    if (!this.isHyperdrive) {
-      return ''
-    }
-    if (this.isSystemDrive) {
-      return html`<span class="label">My System Drive</span>`
-    }
-    if (this.writable) {
-      return html`<span class="label">My Hyperdrive</span>`
-    }
   }
 
   renderPeers () {
