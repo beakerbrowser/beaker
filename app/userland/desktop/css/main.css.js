@@ -30,7 +30,7 @@ ${tooltipCSS}
 }
 
 #topright a {
-  margin-left: 6px;
+  margin-left: 10px;
   font-size: 12px;
   opacity: 0.85;
 }
