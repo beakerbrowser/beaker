@@ -47,6 +47,9 @@ class ShellWindowToolbarMenu extends LitElement {
       0%    { background-position: 0% 0%; }
       100%  { background-position: 100% 0%; }
     }
+    .spacer {
+      flex: 1;
+    }
     a {
       padding: 0 10px;
       margin-right: 1px;
@@ -55,6 +58,8 @@ class ShellWindowToolbarMenu extends LitElement {
       box-sizing: border-box;
       text-align: center;
       cursor: pointer;
+      text-decoration: none;
+      color: inherit;
     }
     a:hover {
       background: var(--bg-toolbar--hover);
@@ -120,6 +125,10 @@ class ShellWindowToolbarMenu extends LitElement {
       ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`)}
       ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)}
       ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
+      <span class="spacer"></span>
+      <a href="https://userlist.beakerbrowser.com/" title="Beaker User Directory" @click=${this.onClickLink}>User Directory</a>
+      <a href="https://beaker.dev/" title="Developer Portal" @click=${this.onClickLink}>Dev Portal</a>
+      <a href="https://beaker-browser.gitbook.io/docs/" title="Help" @click=${this.onClickLink}>Help</a>
       ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
     `
   }
@@ -143,6 +152,11 @@ class ShellWindowToolbarMenu extends LitElement {
   onClickFilesExplorer (e) {
     if (!this.activeTab) return
     bg.views.loadURL('active', `https://hyperdrive.network/${this.activeTab.url.slice('hyper://'.length)}`)
+  }
+
+  onClickLink (e) {
+    e.preventDefault()
+    bg.views.loadURL('active', e.currentTarget.getAttribute('href'))
   }
 
   onClickMenu (id) {
