@@ -21,6 +21,34 @@ ${tooltipCSS}
   position: absolute;
   top: 10px;
   left: 10px;
+  display: flex;
+  align-items: center;
+}
+
+#topleft a {
+  font-size: 12px;
+  margin-right: 10px;
+  color: inherit;
+  opacity: 0.85;
+}
+
+#topleft .profile-ctrl {
+  display: inline-flex;
+  align-items: center;
+  opacity: 1;
+}
+
+#topleft .profile-ctrl span {
+  padding: 0 0 0 8px;
+  opacity: 0.85;
+}
+
+#topleft .profile-ctrl img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 #topright {
@@ -40,25 +68,6 @@ ${tooltipCSS}
   font-size: 11px;
 }
 
-.profile-ctrl {
-  display: flex;
-  align-items: center;
-  color: inherit;
-}
-
-.profile-ctrl span {
-  padding: 0 0 0 8px;
-  letter-spacing: 0.4px;
-}
-
-.profile-ctrl img {
-  display: block;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 .files {
   position: relative;
   display: grid;
@@ -75,7 +84,7 @@ ${tooltipCSS}
   left: 0.2em;
   top: -2em;
   font-size: 14px;
-  color: rgba(0, 0, 150, 0.25);
+  color: rgba(0, 0, 150, 0.35);
   cursor: pointer;
 }
 

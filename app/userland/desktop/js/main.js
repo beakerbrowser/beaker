@@ -10,7 +10,7 @@ import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
-import '/js/views/feed.js'
+
 import 'beaker://library/js/views/drives.js'
 import 'beaker://library/js/views/bookmarks.js'
 import 'beaker://library/js/views/address-book.js'
@@ -36,7 +36,7 @@ class DesktopApp extends LitElement {
     super()
     this.profile = undefined
     this.files = []
-    this.currentNav = 'feed'
+    this.currentNav = 'drives'
     this.filter = ''
     this.load()
 
@@ -83,7 +83,6 @@ class DesktopApp extends LitElement {
       </div>
       ${this.renderFiles()}
       <nav>
-        ${navItem('feed', 'Feed')}
         ${navItem('drives', 'My Drives')}
         ${navItem('bookmarks', 'Bookmarks')}
         ${navItem('address-book', 'Address Book')}
@@ -109,7 +108,6 @@ class DesktopApp extends LitElement {
           <a class="new-btn" @click=${this.onClickNewContact}><span class="fas fa-plus"></span> New Contact</a>
         ` : ''}
       </nav>
-      <feed-view class="${hiddenCls('feed')}" loadable></feed-view>
       <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
       <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></bookmarks-view>
       <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></address-book-view>
