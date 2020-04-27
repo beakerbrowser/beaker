@@ -44,6 +44,7 @@ import { WEBAPI as beakerBrowserAPI } from '../browser'
 import capabilitiesManifest from './manifests/external/capabilities'
 import contactsManifest from './manifests/external/contacts'
 import hyperdriveManifest from './manifests/external/hyperdrive'
+import markdownManifest from './manifests/external/markdown'
 import peersocketsManifest from './manifests/external/peersockets'
 import shellManifest from './manifests/external/shell'
 
@@ -51,6 +52,7 @@ import shellManifest from './manifests/external/shell'
 import capabilitiesAPI from './bg/capabilities'
 import contactsAPI from './bg/contacts'
 import hyperdriveAPI from './bg/hyperdrive'
+import markdownAPI from './bg/markdown'
 import peersocketsAPI from './bg/peersockets'
 import shellAPI from './bg/shell'
 
@@ -83,6 +85,7 @@ export const setup = function () {
   rpc.exportAPI('capabilities', capabilitiesManifest, capabilitiesAPI, secureOnly('capabilities'))
   rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
+  rpc.exportAPI('markdown', markdownManifest, markdownAPI)
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
   rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
 
