@@ -49,7 +49,7 @@ class NetworkMenu extends LitElement {
                 }
               </td>
             </tr>
-            <tr><td>Remote Address:</td> <td>${this.daemonStatus.remoteAddress}</td></tr>
+            <tr><td>Remote Address:</td> <td>${this.daemonStatus.remoteAddress || html`<em>Not hole-punchable</em>`}</td></tr>
           </table>
         </div>
       </div>
