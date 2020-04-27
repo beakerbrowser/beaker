@@ -49,8 +49,15 @@ class NetworkMenu extends LitElement {
                 }
               </td>
             </tr>
-            <tr><td>Remote Address:</td> <td>${this.daemonStatus.remoteAddress || html`<em>Not hole-punchable</em>`}</td></tr>
+            <tr><td>Remote Address:</td> <td>${this.daemonStatus.remoteAddress || 'Unknown'}</td></tr>
           </table>
+          ${!this.daemonStatus.holepunchable ? html`
+            <div class="help">
+              <a @click=${this.onClickLink} href="https://beaker-browser.gitbook.io/docs/help/hole-punchability">
+                <span class="far fa-fw fa-question-circle"></span> What does this mean?
+              </a>
+           </div>
+          ` : ''}
         </div>
       </div>
     `
@@ -66,6 +73,10 @@ class NetworkMenu extends LitElement {
     bg.shellMenus.resizeSelf({width, height})
   }
 
+  onClickLink (e) {
+    e.preventDefault()
+    bg.beakerBrowser.openUrl(e.currentTarget.getAttribute('href'), {setActive: true})
+  }
 }
 NetworkMenu.styles = [inputsCSS, css`
 .wrapper {
@@ -108,6 +119,19 @@ table tr td:last-child {
 
 .fa-exclamation-triangle {
   color: #FF8F00;
+}
+
+.help {
+  padding: 2px 3px 0;
+}
+
+.help a {
+  text-decoration: none;
+  color: gray;
+}
+
+.help a:hover {
+  text-decoration: underline;
 }
 `]
 
