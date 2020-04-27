@@ -88,6 +88,7 @@ h1.page-title {
 
 .body {
   padding: 8px;
+  user-select: text;
 }
 
 table {
