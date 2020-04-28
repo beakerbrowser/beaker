@@ -185,8 +185,8 @@ export const protocolHandler = async function (request, respond) {
   }
 
   // read manifest CSP
-  if (manifest && manifest.content_security_policy && typeof manifest.content_security_policy === 'string') {
-    cspHeader = manifest.content_security_policy
+  if (manifest && manifest.csp && typeof manifest.csp === 'string') {
+    cspHeader = manifest.csp
   }
 
   // check for the presence of a frontend
