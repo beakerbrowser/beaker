@@ -16,6 +16,8 @@ import 'beaker://library/js/views/bookmarks.js'
 import 'beaker://library/js/views/address-book.js'
 import css from '../css/main.css.js'
 
+const INTRO_DOCS_URL = 'https://beaker-browser.gitbook.io/docs/getting-started-with-beaker'
+
 var cacheBuster = Date.now()
 
 class DesktopApp extends LitElement {
@@ -42,6 +44,11 @@ class DesktopApp extends LitElement {
 
     window.addEventListener('focus', e => {
       this.load()
+
+      if (!('hasOpenedIntro' in localStorage)) {
+        localStorage.hasOpenedIntro = 1
+        window.open(INTRO_DOCS_URL)
+      }
     })
     this.addEventListener('update-pins', async (e) => {
       this.files = await desktop.load()
