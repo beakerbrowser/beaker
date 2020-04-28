@@ -223,6 +223,8 @@ class SiteInfoApp extends LitElement {
                   ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Hosting` : html`<span class="fas fa-fw fa-share-alt"></span> Host This Drive`}
                 </button>
               `}
+            ` : ''}
+            ${this.isDrive ? html`
               <button @click=${this.onClickDriveTools}>
                 Tools <span class="fa-fw fa fa-caret-down"></span>
               </button>
