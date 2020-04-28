@@ -71,6 +71,22 @@ class CreateDriveModal extends LitElement {
     .form-actions button:last-child {
       margin-left: auto;
     }
+
+    .tip {
+      background: #fafafd;
+      margin: 10px -20px -14px;
+      padding: 10px 18px;
+      color: gray;
+    }
+
+    .tip a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .tip a:hover {
+      text-decoration: underline;
+    }
     `]
   }
 
@@ -127,6 +143,13 @@ class CreateDriveModal extends LitElement {
             <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="6">Cancel</button>
             <button type="button" @click=${this.onClickFromFolder} class="cancel" tabindex="5">From Folder</button>
             <button type="submit" class="primary" tabindex="4">Create</button>
+          </div>
+
+          <div class="tip">
+            <span class="fas fa-fw fa-info"></span>
+            <a href="https://beaker.dev/#templates" @click=${this.onClickLink}>
+              Find templates for Hyperdrives at Beaker.dev
+            </a>
           </div>
         </form>
       </div>
@@ -192,6 +215,11 @@ class CreateDriveModal extends LitElement {
   onClickCancelFromFolder (e) {
     e.preventDefault()
     this.fromFolderPath = undefined
+  }
+
+  onClickLink (e) {
+    e.preventDefault()
+    bg.beakerBrowser.openUrl(e.currentTarget.getAttribute('href'), {setActive: true})
   }
 }
 
