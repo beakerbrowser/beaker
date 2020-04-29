@@ -1,6 +1,7 @@
 import { LitElement, html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from '../../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { pluralize } from '../../../app-stdlib/js/strings.js'
+import bytes from '../../../app-stdlib/vendor/bytes/index.js'
 import viewCSS from '../../css/views/general.css.js'
 
 class NetworkView extends LitElement {
@@ -17,13 +18,18 @@ class NetworkView extends LitElement {
       max-width: none;
     }
 
-    summary {
-      border-top: 1px solid #dde;
-      padding: 12px 16px;
+    table {
+      width: 100%;
     }
 
-    summary a {
-      font-size: 17px;
+    td {
+      border-top: 1px solid #dde;
+      padding: 12px 16px;
+      font-family: monospace;
+    }
+
+    progress {
+      width: 40px;
     }
     `]
   }
@@ -49,7 +55,9 @@ class NetworkView extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${repeat(this.networkStatus, (v, i) => i, drive => this.renderDriveStatus(drive))}
+      <table>
+        ${repeat(this.networkStatus, (v, i) => i, drive => this.renderDriveStatus(drive))}
+      </table>
     `
   }
 
@@ -57,19 +65,39 @@ class NetworkView extends LitElement {
     var key = stats[0].metadata.key
     var peers = stats[0].metadata.peers
     var drive = this.drives.find(d => d.key === key)
+    var uploadedBytes = stats.reduce((acc, v) => acc + v.metadata.uploadedBytes + v.content.uploadedBytes, 0)
+    var downloadedBytes = stats.reduce((acc, v) => acc + v.metadata.downloadedBytes + v.content.downloadedBytes, 0)
+    var downloadedBlocks = stats.reduce((acc, v) => acc + v.metadata.downloadedBlocks + v.content.downloadedBlocks, 0)
+    var totalBlocks = stats.reduce((acc, v) => acc + v.metadata.totalBlocks + v.content.totalBlocks, 0)
     return html`
-      <summary>
-        <div>
+      <tr>
+        <td>
           <a href="hyper://${key}/" target="_blank">
-            <code>${key.slice(0, 6)}..${key.slice(-2)}</code>
+            ${key.slice(0, 6)}..${key.slice(-2)}
             ${drive ? `(${drive.info.title})` : ''}
           </a>
-        </div>
-        <div>${peers} ${pluralize(peers, 'peer')}
-        <details>
-          <pre>${JSON.stringify(stats, null, 2)}</pre>
-        </details>
-      </summary>
+        </td>
+        <td>
+          ${peers} ${pluralize(peers, 'peer')}
+        </td>
+        <td>
+          ${bytes(uploadedBytes)} uploaded
+        </td>
+        <td>
+          ${bytes(downloadedBytes)} downloaded
+        </td>
+        <td>
+          <progress value="${downloadedBlocks / totalBlocks}" max="1"></progress>
+          ${(downloadedBlocks / totalBlocks * 100)|0}% synced
+        </td>
+        <td>
+          <summary>
+            <details>
+              <pre>${JSON.stringify(stats, null, 2)}</pre>
+            </details>
+          </summary>
+        </td>
+      </tr>
     `
   }
 
