@@ -118,7 +118,6 @@ export async function setup () {
 
     // periodically close sessions
     let interval2 = setInterval(() => {
-      logger.debug('Sweeping out old drive sessions')
       let numClosed = 0
       let now = Date.now()
       for (let key in sessions) {
@@ -128,7 +127,7 @@ export async function setup () {
         closeHyperdriveSession(key)
         numClosed++
       }
-      logger.debug(`Closed ${numClosed} session(s)`)
+      logger.debug(`Closed ${numClosed} session(s) due to inactivity`)
     }, GARBAGE_COLLECT_SESSIONS_INTERVAL)
     interval2.unref()
   }

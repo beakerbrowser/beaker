@@ -3,11 +3,6 @@ import { getClient } from '../../hyper/daemon'
 import * as drives from '../../hyper/drives'
 import { PermissionsError } from 'beaker-error-constants'
 
-// globals
-// =
-
-var activeNamespaces = {} // map of {[origin]: Object}
-
 // exported api
 // =
 
@@ -32,7 +27,9 @@ export default {
         stream.push(['message', {peerId, message}])
       }
     })
+    drive.pda.numActiveStreams++
     stream.on('close', () => {
+      drive.pda.numActiveStreams--
       topicHandle.close()
     })
     
