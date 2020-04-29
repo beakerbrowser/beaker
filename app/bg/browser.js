@@ -152,6 +152,7 @@ export const WEBAPI = {
   createEventsStream,
   getInfo,
   getDaemonStatus,
+  getDaemonNetworkStatus,
   getProfile,
   checkForUpdates,
   restartBrowser,
@@ -510,6 +511,17 @@ export function getInfo () {
 
 export async function getDaemonStatus () {
   return hyperDaemon.getClient().status()
+}
+
+export async function getDaemonNetworkStatus () {
+  var allStats = await hyperDaemon.getClient().drive.allStats()
+  for (let stats of allStats) {
+    for (let stat of stats) {
+      stat.metadata.key = stat.metadata.key.toString('hex')
+      stat.content.key = stat.content.key.toString('hex')
+    }
+  }
+  return allStats
 }
 
 export function checkForUpdates (opts = {}) {
