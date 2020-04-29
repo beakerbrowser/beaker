@@ -1114,19 +1114,6 @@ export async function setup () {
       }
     })
   })
-  hyper.drives.on('network-changed', ({details}) => {
-    iterateTabs(tab => {
-      if (tab.driveInfo && tab.driveInfo.url === details.url) {
-        // update peer count
-        tab.peers = details.connections
-        tab.emitUpdateState()
-      }
-      if (tab.wasDriveTimeout && tab.url.startsWith(details.url)) {
-        // refresh if this was a timed-out hyperdrive site (peers have been found)
-        tab.webContents.reload()
-      }
-    })
-  })
 }
 
 export function getAll (win) {
@@ -1607,11 +1594,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
     if (tab && tab.driveInfo) {
-      let drive = hyper.drives.getDrive(tab.driveInfo.key)
-      if (drive) {
-        let peers = await hyper.daemon.getPeerCount(drive.key)
-        return {peers}
-      }
+      let peers = await hyper.daemon.getPeerCount(Buffer.from(tab.driveInfo.key, 'hex'))
+      return {peers}
     }
   },
 

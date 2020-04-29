@@ -111,7 +111,7 @@ export function reposition (parentWindow) {
       setBounds({
         x: view.boundsOpt.rightOffset,
         y: 72,
-        width: 250,
+        width: 200,
         height: 350
       })
     } else if (view.menuId === 'site') {

@@ -7,7 +7,6 @@ import * as bg from './bg-process-rpc'
 import inputsCSS from './inputs.css'
 
 const NETWORK_STATS_POLL_INTERVAL = 500 // ms
-const HELP_DOCS_URL = 'https://beakerbrowser.com/docs/how-beaker-works/peer-to-peer-websites'
 
 class PeersMenu extends LitElement {
   static get properties () {
@@ -34,14 +33,15 @@ class PeersMenu extends LitElement {
     this.url = params.url
     this.driveInfo = (await bg.views.getTabState('active', {driveInfo: true})).driveInfo
     this.driveCfg = await bg.drives.get(this.url)
-    await this.requestUpdate()
-
-    // periodically fetch updates
-    this.pollInterval = setInterval(async () => {
+    const getPeers = async () => {
       var state = await bg.views.getNetworkState('active')
       this.driveInfo.peers = state ? state.peers : 0
-      this.requestUpdate()
-    }, NETWORK_STATS_POLL_INTERVAL)
+      return this.requestUpdate()
+    }
+    await getPeers()
+
+    // periodically fetch updates
+    this.pollInterval = setInterval(getPeers, NETWORK_STATS_POLL_INTERVAL)
 
     // adjust height based on rendering
     var width = this.shadowRoot.querySelector('div').clientWidth
