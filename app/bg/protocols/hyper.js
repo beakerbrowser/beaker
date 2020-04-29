@@ -131,31 +131,11 @@ export const protocolHandler = async function (request, respond) {
     return respondRedirect(`https://hyperdrive.network/${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}`)
   }
 
-  // setup a timeout
-  var timeout
-  const cleanup = () => clearTimeout(timeout)
-  timeout = setTimeout(() => {
-    // cleanup
-    logger.debug('Timed out attempting to fetch', {url: driveKey})
-    if (fileReadStream) {
-      fileReadStream.destroy()
-      fileReadStream = null
-    }
-
-    // error page
-    var resource = drive ? 'page' : 'site'
-    respondError(504, `Timed out attempting to fetch ${resource}`, {
-      resource,
-      validatedURL: urlp.href
-    })
-  }, REQUEST_TIMEOUT_MS)
-
   try {
     // start searching the network
     drive = await drives.getOrLoadDrive(driveKey)
   } catch (err) {
-    logger.warn('Failed to open drive', {url: driveKey, err})
-    cleanup()
+    logger.warn(`Failed to open drive ${driveKey}`, {err})
     return respondError(500, 'Failed')
   }
 
@@ -169,8 +149,7 @@ export const protocolHandler = async function (request, respond) {
   try {
     var {checkoutFS} = await drives.getDriveCheckout(drive, driveVersion)
   } catch (err) {
-    logger.warn('Failed to open drive checkout', {url: driveKey, err})
-    cleanup()
+    logger.warn(`Failed to open drive checkout ${driveKey}`, {err})
     return respondError(500, 'Failed')
   }
 
@@ -230,7 +209,6 @@ export const protocolHandler = async function (request, respond) {
 
   // handle folder
   if (entry && entry.isDirectory()) {
-    cleanup()
 
     // make sure there's a trailing slash
     if (!hasTrailingSlash) {
@@ -270,7 +248,6 @@ export const protocolHandler = async function (request, respond) {
 
   // handle not found
   if (!entry) {
-    cleanup()
 
     // error page
     return respondError(404, 'File Not Found', {
@@ -366,8 +343,6 @@ export const protocolHandler = async function (request, respond) {
   /*fileReadStream = checkoutFS.pda.createReadStream(entry.path, range)
   var dataStream = fileReadStream
     .pipe(mime.identifyStream(entry.path, mimeType => {
-      // cleanup the timeout now, as bytes have begun to stream
-      cleanup()
 
       // disable html as needed
       if (!canExecuteHTML && mimeType.includes('html')) {
@@ -400,7 +375,6 @@ export const protocolHandler = async function (request, respond) {
   // handle empty files
   fileReadStream.once('end', () => {
     if (!headersSent) {
-      cleanup()
       respond({
         statusCode: 200,
         headers: {
