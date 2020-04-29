@@ -147,7 +147,7 @@ class CreateDriveModal extends LitElement {
 
           <div class="tip">
             <span class="fas fa-fw fa-info"></span>
-            <a href="https://beaker.dev/#templates" @click=${this.onClickLink}>
+            <a data-href="https://beaker.dev/#templates" @click=${this.onClickLink}>
               Find templates for Hyperdrives at Beaker.dev
             </a>
           </div>
@@ -219,7 +219,7 @@ class CreateDriveModal extends LitElement {
 
   onClickLink (e) {
     e.preventDefault()
-    bg.beakerBrowser.openUrl(e.currentTarget.getAttribute('href'), {setActive: true})
+    bg.beakerBrowser.openUrl(e.currentTarget.dataset.href, {setActive: true})
   }
 }
 

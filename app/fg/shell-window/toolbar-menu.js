@@ -126,9 +126,9 @@ class ShellWindowToolbarMenu extends LitElement {
       ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)}
       ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
       <span class="spacer"></span>
-      <a href="https://userlist.beakerbrowser.com/" title="Beaker User Directory" @click=${this.onClickLink}>User Directory</a>
-      <a href="https://beaker.dev/" title="Developer Portal" @click=${this.onClickLink}>Dev Portal</a>
-      <a href="https://beaker-browser.gitbook.io/docs/" title="Help" @click=${this.onClickLink}>Help</a>
+      <a data-href="https://userlist.beakerbrowser.com/" title="Beaker User Directory" @mousedown=${this.onMousedownLink}>User Directory</a>
+      <a data-href="https://beaker.dev/" title="Developer Portal" @mousedown=${this.onMousedownLink}>Dev Portal</a>
+      <a data-href="https://beaker-browser.gitbook.io/docs/" title="Help" @mousedown=${this.onMousedownLink}>Help</a>
       ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
     `
   }
@@ -154,9 +154,13 @@ class ShellWindowToolbarMenu extends LitElement {
     bg.views.loadURL('active', `https://hyperdrive.network/${this.activeTab.url.slice('hyper://'.length)}`)
   }
 
-  onClickLink (e) {
+  onMousedownLink (e) {
     e.preventDefault()
-    bg.views.loadURL('active', e.currentTarget.getAttribute('href'))
+    if (e.button === 1) {
+      bg.views.createTab(e.currentTarget.dataset.href, {setActive: true, adjacentActive: true})
+    } else {
+      bg.views.loadURL('active', e.currentTarget.dataset.href)
+    }
   }
 
   onClickMenu (id) {
