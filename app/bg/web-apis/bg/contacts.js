@@ -151,8 +151,8 @@ async function assembleRecords (contactsList) {
     let info = await drives.getDriveInfo(contact.key, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
     records.push({
       url,
-      title: info.title,
-      description: info.description
+      title: info.title || '',
+      description: info.description || ''
     })
   }
   return records
