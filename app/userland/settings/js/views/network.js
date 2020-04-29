@@ -18,10 +18,8 @@ class NetworkView extends LitElement {
     }
 
     summary {
-      border: 1px solid #dde;
-      border-radius: 3px;
-      padding: 10px;
-      margin-bottom: 10px;
+      border-top: 1px solid #dde;
+      padding: 12px 16px;
     }
 
     summary a {
