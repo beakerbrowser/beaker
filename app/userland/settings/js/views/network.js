@@ -87,10 +87,6 @@ class NetworkView extends LitElement {
           ${bytes(downloadedBytes)} downloaded
         </td>
         <td>
-          <progress value="${downloadedBlocks / totalBlocks}" max="1"></progress>
-          ${(downloadedBlocks / totalBlocks * 100)|0}% synced
-        </td>
-        <td>
           <summary>
             <details>
               <pre>${JSON.stringify(stats, null, 2)}</pre>
