@@ -511,7 +511,7 @@ export function getInfo () {
 }
 
 export async function getDaemonStatus () {
-  return hyperDaemon.getClient().status()
+  return hyperDaemon.getDaemonStatus()
 }
 
 export async function getDaemonNetworkStatus () {

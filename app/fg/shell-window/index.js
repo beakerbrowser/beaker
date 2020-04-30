@@ -98,8 +98,10 @@ class ShellWindowUI extends LitElement {
 
     const getDaemonStatus = async () => {
       var status = await bg.beakerBrowser.getDaemonStatus()
-      if (this.isHolepunchable !== status.holepunchable) {
-        this.isHolepunchable = status.holepunchable
+      // HACK: don't indicate 'not holepunchable' if the daemon isnt active to tell us
+      var isHolepunchable = status.holepunchable || !status.active
+      if (this.isHolepunchable !== isHolepunchable) {
+        this.isHolepunchable = isHolepunchable
         this.stateHasChanged()
       }
     }

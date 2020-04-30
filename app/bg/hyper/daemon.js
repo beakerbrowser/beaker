@@ -83,10 +83,17 @@ export function getClient () {
 
 export function isActive () {
   if (isFirstConnect) {
-    // the "inactive daemon" indicator during setup
+    // avoid the "inactive daemon" indicator during setup
     return true
   }
   return isDaemonActive
+}
+
+export async function getDaemonStatus () {
+  if (isDaemonActive) {
+    return Object.assign(await client.status(), {active: true})
+  }
+  return {active: false}
 }
 
 export async function setup () {
