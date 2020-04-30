@@ -55,6 +55,10 @@ class NetworkView extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <h3>Active Drives</h3>
+      ${this.networkStatus.length === 0 ? html`
+        <p><em>No active drives</em></p>
+      ` : ''}
       <table>
         ${repeat(this.networkStatus, (v, i) => i, drive => this.renderDriveStatus(drive))}
       </table>
