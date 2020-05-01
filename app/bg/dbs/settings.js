@@ -32,6 +32,7 @@ export const setup = function (opts) {
     auto_redirect_to_dat: 1,
     custom_start_page: 'blank',
     new_tab: 'beaker://desktop/',
+    run_background: 1,
     start_page_background_image: '',
     workspace_default_path: path.join(opts.homePath, 'Sites'),
     default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n**/.DS_Store\nThumbs.db\n',
@@ -49,16 +50,16 @@ export const once = events.once.bind(events)
  * @param {string | number} value
  * @returns {Promise<void>}
  */
-export const set = function (key, value) {
-  events.emit('set', key, value)
-  events.emit('set:' + key, value)
-  return setupPromise.then(() => cbPromise(cb => {
+export async function set (key, value) {
+  await setupPromise.then(() => cbPromise(cb => {
     db.run(`
       INSERT OR REPLACE
         INTO settings (key, value, ts)
         VALUES (?, ?, ?)
     `, [key, value, Date.now()], cb)
   }))
+  events.emit('set', key, value)
+  events.emit('set:' + key, value)
 }
 
 /**

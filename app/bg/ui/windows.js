@@ -74,8 +74,13 @@ export async function setup () {
     else app.on('ready', ensureOneWindowExists)
   })
   ipcMain.on('new-window', () => createShellWindow())
-  app.on('custom-window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
+  app.on('custom-window-all-closed', async () => {
+    if (process.platform !== 'darwin') {
+      var runBackground = await settingsDb.get('run_background')
+      if (runBackground != 1) {
+        app.quit()
+      }
+    }
   })
 
   openURL.setup()

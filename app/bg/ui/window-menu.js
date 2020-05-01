@@ -5,6 +5,7 @@ import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
 import { download } from './downloads'
 import hyper from '../hyper/index'
+import * as settingsDb from '../dbs/settings'
 
 // globals
 // =
@@ -80,7 +81,22 @@ export function buildWindowMenu (opts = {}) {
       { label: 'Hide Others', accelerator: 'Cmd+Alt+H', role: 'hideothers' },
       { label: 'Show All', role: 'unhide' },
       { type: 'separator' },
-      { id: 'quit', label: 'Quit', accelerator: 'Cmd+Q', click () { app.quit() }, reserved: true }
+      {
+        id: 'quit',
+        label: 'Quit',
+        accelerator: 'Cmd+Q',
+        async click () {
+          var runBackground = await settingsDb.get('run_background')
+          if (runBackground == 1) {
+            for (let win of BrowserWindow.getAllWindows()) {
+              win.close()
+            }
+          } else {
+            app.quit()
+          }
+        },
+        reserved: true
+      }
     ]
   }
 

@@ -56,6 +56,7 @@ class GeneralSettingsView extends LitElement {
       ${this.renderDaemonStatus()}
       ${this.renderAutoUpdater()}
       ${this.renderOnStartupSettings()}
+      ${this.renderRunBackgroundSettings()}
       ${this.renderNewTabSettings()}
       ${this.renderProtocolSettings()}
       ${this.renderAnalyticsSettings()}
@@ -231,6 +232,27 @@ class GeneralSettingsView extends LitElement {
     `
   }
 
+  renderRunBackgroundSettings () {
+    return html`
+      <div class="section on-startup">
+        <h2 id="on-startup">Background</h2>
+  
+        <p>
+          Running in the background helps keep your data online even if you're not using Beaker.
+        </p>
+  
+        <div class="radio-item">
+          <input type="checkbox" id="runBackground"
+                 ?checked=${this.settings.run_background == 1}
+                 @change=${this.onRunBackgroundToggle} />
+          <label for="runBackground">
+            Let Beaker run in the background
+          </label>
+        </div>
+      </div>
+    `
+  }
+
   renderNewTabSettings () {
     return html`
       <div class="section new-tab">
@@ -361,6 +383,12 @@ class GeneralSettingsView extends LitElement {
   onCustomStartPageChange (e) {
     this.settings.custom_start_page = e.target.value
     beaker.browser.setSetting('custom_start_page', this.settings.custom_start_page)
+    toast.create('Setting updated')
+  }
+
+  onRunBackgroundToggle (e) {
+    this.settings.run_background = this.settings.run_background == 1 ? 0 : 1
+    beaker.browser.setSetting('run_background', this.settings.run_background)
     toast.create('Setting updated')
   }
 

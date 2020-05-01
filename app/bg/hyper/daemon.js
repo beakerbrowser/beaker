@@ -66,7 +66,9 @@ const MAX_SESSION_AGE = 300e3 // 5min
 // =
 
 var client // client object created by hyperdrive-daemon-client
+var isControllingDaemonProcess = false // did we start the process?
 var isSettingUp = true
+var isShuttingDown = false
 var isDaemonActive = false
 var isFirstConnect = true
 var sessions = {} // map of keyStr => DaemonHyperdrive
@@ -121,6 +123,7 @@ export async function setup () {
     })
     events.on('daemon-stopped', async () => {
       logger.info('Hyperdrive daemon has been lost')
+      isControllingDaemonProcess = false
     })
 
     // periodically close sessions
@@ -156,6 +159,8 @@ export async function setup () {
     await daemon.start()
     process.on('exit', () => daemon.stop())
   } else {
+    isControllingDaemonProcess = true
+    logger.info('Starting daemon process, assuming process control')
     await HyperdriveDaemonManager.start({
       interpreter: app.getPath('exe'),
       env: Object.assign({}, process.env, {ELECTRON_RUN_AS_NODE: 1}),
@@ -167,6 +172,17 @@ export async function setup () {
 
   await attemptConnect()
   reconnectAllDriveSessions()
+}
+
+export function requiresShutdown () {
+  return isControllingDaemonProcess && !isShuttingDown
+}
+
+export async function shutdown () {
+  if (isControllingDaemonProcess) {
+    isShuttingDown = true
+    return HyperdriveDaemonManager.stop()
+  }
 }
 
 /**

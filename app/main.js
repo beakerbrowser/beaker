@@ -27,6 +27,7 @@ import { runSetupFlow } from './bg/ui/setup-flow'
 import * as windows from './bg/ui/windows'
 import * as windowMenu from './bg/ui/window-menu'
 import registerContextMenu from './bg/ui/context-menu'
+import * as trayIcon from './bg/ui/tray-icon'
 import * as downloads from './bg/ui/downloads'
 import * as permissions from './bg/ui/permissions'
 
@@ -125,6 +126,7 @@ app.on('ready', async function () {
   // ui
   windowMenu.setup()
   registerContextMenu()
+  trayIcon.setup()
   windows.setup()
   downloads.setup()
   permissions.setup()
@@ -132,6 +134,14 @@ app.on('ready', async function () {
 
 app.on('window-all-closed', () => {
   // do nothing
+})
+
+app.on('will-quit', async (e) => {
+  if (hyper.daemon.requiresShutdown()) {
+    e.preventDefault()
+    await hyper.daemon.shutdown()
+    app.quit()
+  }
 })
 
 app.on('quit', () => {
