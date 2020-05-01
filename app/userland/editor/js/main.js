@@ -395,7 +395,7 @@ class EditorApp extends LitElement {
       })
       items.push({type: 'separator'})
       items.push({
-        label: 'Export file',
+        label: 'Export',
         click: () => this.onClickExportFiles([item.url])
       })
     } else {
@@ -600,7 +600,7 @@ class EditorApp extends LitElement {
         '-',
         {
           icon: 'fas fa-fw fa-file-export',
-          label: 'Export file',
+          label: 'Export',
           disabled: this.dne,
           click: () => this.onClickExportFiles(this.resolvedPath)
         }
