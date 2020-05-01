@@ -24,6 +24,7 @@ class PeersMenu extends LitElement {
   reset () {
     this.driveInfo = undefined
     this.driveCfg = undefined
+    this.peers = []
     if (this.pollInterval) {
       clearInterval(this.pollInterval)
     }
@@ -34,8 +35,8 @@ class PeersMenu extends LitElement {
     this.driveInfo = (await bg.views.getTabState('active', {driveInfo: true})).driveInfo
     this.driveCfg = await bg.drives.get(this.url)
     const getPeers = async () => {
-      var state = await bg.views.getNetworkState('active')
-      this.driveInfo.peers = state ? state.peers : 0
+      var state = await bg.views.getNetworkState('active', {includeAddresses: true})
+      this.peers = state ? state.peerAddresses : 0
       return this.requestUpdate()
     }
     await getPeers()
@@ -55,7 +56,7 @@ class PeersMenu extends LitElement {
   render () {
     var writable = _get(this, 'driveInfo.writable', false)
     var isSaved = _get(this, 'driveCfg.saved', false)
-    var peers = _get(this, 'driveInfo.peers', 0)
+    var peers = this.peers
     // var downloadTotal = _get(this, 'driveInfo.networkStats.downloadTotal', 0)
     // var uploadTotal = _get(this, 'driveInfo.networkStats.uploadTotal', 0)
     return html`
@@ -70,7 +71,7 @@ class PeersMenu extends LitElement {
           </div>
 
           <div class="peer-count">
-            ${peers} ${pluralize(peers, 'peer')} connected.
+            ${peers.length} ${pluralize(peers.length, 'peer')} connected.
           </div>
 
           ${''/*<div class="net-stats">
@@ -94,6 +95,12 @@ class PeersMenu extends LitElement {
               <span class="text">Host This Drive</span>
             </label>
           `}
+
+        ${peers.length > 0 ? html`
+          <div class="addresses">
+            ${peers.map(p => html`<div>${p}</div>`)}
+          </div>
+        ` : ''}
 
         ${''/*<div class="network-url">
           <a @click=${e => this.onOpenPage(`beaker://swarm-debugger/${this.url}`)}>
@@ -201,6 +208,16 @@ h1.page-title {
 
 .network-url:hover {
   text-decoration: underline;
+}
+
+.addresses {
+  padding: 5px 10px;
+  color: #707070;
+  line-height: 1.6;
+  font-family: monospace;
+  font-size: 0.9em;
+  overflow: auto;
+  max-height: 100px;
 }
 `]
 

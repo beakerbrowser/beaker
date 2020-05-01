@@ -1590,12 +1590,16 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     }
   },
 
-  async getNetworkState (tab) {
+  async getNetworkState (tab, opts) {
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
     if (tab && tab.driveInfo) {
       let peers = await hyper.daemon.getPeerCount(Buffer.from(tab.driveInfo.key, 'hex'))
-      return {peers}
+      let peerAddresses = undefined
+      if (opts && opts.includeAddresses) {
+        peerAddresses = await hyper.daemon.listPeerAddresses(tab.driveInfo.discoveryKey)
+      }
+      return {peers, peerAddresses}
     }
   },
 

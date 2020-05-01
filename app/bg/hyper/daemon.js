@@ -275,6 +275,12 @@ export async function getPeerCount (key) {
   return res[0]
 }
 
+export async function listPeerAddresses (discoveryKey) {
+  if (!client) return []
+  var peers = await client.peers.listPeers(discoveryKey)
+  return peers.map(p => p.address)
+}
+
 // internal methods
 // =
 

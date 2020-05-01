@@ -68,11 +68,10 @@ class NetworkView extends LitElement {
   renderDriveStatus (stats) {
     var key = stats[0].metadata.key
     var peers = stats[0].metadata.peers
+    var peerAddresses = stats[0].peerAddresses
     var drive = this.drives.find(d => d.key === key)
     var uploadedBytes = stats.reduce((acc, v) => acc + v.metadata.uploadedBytes + v.content.uploadedBytes, 0)
     var downloadedBytes = stats.reduce((acc, v) => acc + v.metadata.downloadedBytes + v.content.downloadedBytes, 0)
-    var downloadedBlocks = stats.reduce((acc, v) => acc + v.metadata.downloadedBlocks + v.content.downloadedBlocks, 0)
-    var totalBlocks = stats.reduce((acc, v) => acc + v.metadata.totalBlocks + v.content.totalBlocks, 0)
     return html`
       <tr>
         <td>
@@ -82,7 +81,10 @@ class NetworkView extends LitElement {
           </a>
         </td>
         <td>
-          ${peers} ${pluralize(peers, 'peer')}
+          <details>
+            <summary>${peers} ${pluralize(peers, 'peer')}</summary>
+            ${peerAddresses.map(addr => html`<div>${addr}</div>`)}
+          </details>
         </td>
         <td>
           ${bytes(uploadedBytes)} uploaded
@@ -91,11 +93,9 @@ class NetworkView extends LitElement {
           ${bytes(downloadedBytes)} downloaded
         </td>
         <td>
-          <summary>
-            <details>
-              <pre>${JSON.stringify(stats, null, 2)}</pre>
-            </details>
-          </summary>
+          <details>
+            <pre>${JSON.stringify(stats, null, 2)}</pre>
+          </details>
         </td>
       </tr>
     `

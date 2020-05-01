@@ -420,6 +420,7 @@ export async function getDriveInfo (key, {ignoreCache, onlyCache} = {ignoreCache
     meta.title = 'My System Drive'
   }
   meta.key = key
+  meta.discoveryKey = drive ? drive.discoveryKey : undefined
   meta.url = url
   // meta.domain = drive.domain TODO
   meta.links = manifest.links || {}
