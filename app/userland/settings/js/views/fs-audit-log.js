@@ -18,6 +18,7 @@ class FsAuditLogView extends LitElement {
     super()
 
     this.isLoading = false
+    this.stats = undefined
     this.rows = undefined
   }
 
@@ -28,6 +29,9 @@ class FsAuditLogView extends LitElement {
     this.rows = await beaker.logger.listAuditLog({keys: [], limit: 5e3})
 
     this.isLoading = false
+    this.requestUpdate()
+
+    this.stats = await beaker.logger.getAuditLogStats()
     this.requestUpdate()
   }
 
@@ -47,6 +51,25 @@ class FsAuditLogView extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="stats">
+        ${this.stats ? html`
+          <table>
+            <tr><th>Average:</th><td>${this.stats.runtime.avg|0}ms</td></tr>
+            <tr><th>Std Deviation:</th><td>${this.stats.runtime.stdDev|0}ms</td></tr>
+            <tr>
+              <th>10 longest:</th>
+              <td>
+                <details>
+                  <summary>${this.stats.runtime.longest10.map(row => row.runtime + 'ms').join(', ')}</summary>
+                  <pre>${JSON.stringify(this.stats.runtime.longest10, null, 2)}</pre>
+                </details>
+              </td>
+            </tr>
+          </table>
+        ` : html`
+          <span class="spinner"></span>
+        `}
+      </div>
       <div class="logger">
         <table class="rows">
           <thead>
@@ -68,7 +91,11 @@ class FsAuditLogView extends LitElement {
   renderRow (row, i) {
     return html`
       <tr class="logger-row">
-        <td class="caller"><a href=${row.caller} target="_blank">${toNiceDomain(row.caller)}</a></td>
+        <td class="caller">
+          ${!row.caller.startsWith('-') ? html`
+            <a href=${row.caller} target="_blank">${toNiceDomain(row.caller)}</a>
+          ` : row.caller}
+        </td>
         <td class="target"><a href=${'hyper://' + row.target} target="_blank">${toNiceDomain(row.target)}</a></td>
         <td class="ts"><code>${timeDifference(row.ts, true)}</code></td>
         <td class="runtime"><code>${row.runtime}ms</code></td>

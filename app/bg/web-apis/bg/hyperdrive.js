@@ -546,7 +546,11 @@ export default {
         var capUrls = {}
         for (let i = 0; i < opts.drive.length; i++) {
           let urlp = parseDriveUrl(opts.drive[i])
-          opts.drive[i] = (await lookupDrive(this.sender, urlp.hostname, urlp.version)).checkoutFS
+          opts.drive[i] = (await
+            auditLog.record('-query', 'lookupDrive', {url: opts.drive[i]}, undefined, () => (
+              lookupDrive(this.sender, urlp.hostname, urlp.version)
+            ), {ignoreFast: true})
+          ).checkoutFS
           if (urlp.hostname.endsWith('.cap')) {
             capUrls[opts.drive[i].key.toString('hex')] = urlp.hostname
           }

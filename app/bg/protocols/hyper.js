@@ -11,6 +11,7 @@ import * as capabilities from '../hyper/capabilities'
 import datServeResolvePath from '@beaker/dat-serve-resolve-path'
 import errorPage from '../lib/error-page'
 import * as mime from '../lib/mime'
+import * as auditLog from '../dbs/audit-log'
 
 const md = markdown({
   allowHTML: true,
@@ -131,106 +132,107 @@ export const protocolHandler = async function (request, respond) {
     return respondRedirect(`https://hyperdrive.network/${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}`)
   }
 
-  try {
-    // start searching the network
-    drive = await drives.getOrLoadDrive(driveKey)
-  } catch (err) {
-    logger.warn(`Failed to open drive ${driveKey}`, {err})
-    return respondError(500, 'Failed')
-  }
+  auditLog.record('-browser', 'serve', {url: urlp.origin, path: urlp.pathname}, undefined, async () => {
+    try {
+      // start searching the network
+      drive = await drives.getOrLoadDrive(driveKey)
+    } catch (err) {
+      logger.warn(`Failed to open drive ${driveKey}`, {err})
+      return respondError(500, 'Failed')
+    }
 
-  // parse path
-  var filepath = decodeURIComponent(urlp.path)
-  if (!filepath) filepath = '/'
-  if (filepath.indexOf('?') !== -1) filepath = filepath.slice(0, filepath.indexOf('?')) // strip off any query params
-  var hasTrailingSlash = filepath.endsWith('/')
+    // parse path
+    var filepath = decodeURIComponent(urlp.path)
+    if (!filepath) filepath = '/'
+    if (filepath.indexOf('?') !== -1) filepath = filepath.slice(0, filepath.indexOf('?')) // strip off any query params
+    var hasTrailingSlash = filepath.endsWith('/')
 
-  // checkout version if needed
-  try {
-    var {checkoutFS} = await drives.getDriveCheckout(drive, driveVersion)
-  } catch (err) {
-    logger.warn(`Failed to open drive checkout ${driveKey}`, {err})
-    return respondError(500, 'Failed')
-  }
+    // checkout version if needed
+    try {
+      var {checkoutFS} = await drives.getDriveCheckout(drive, driveVersion)
+    } catch (err) {
+      logger.warn(`Failed to open drive checkout ${driveKey}`, {err})
+      return respondError(500, 'Failed')
+    }
 
-  // read the manifest (it's needed in a couple places)
-  var manifest
-  try { manifest = await checkoutFS.pda.readManifest() } catch (e) { manifest = null }
+    // read the manifest (it's needed in a couple places)
+    var manifest
+    try { manifest = await checkoutFS.pda.readManifest() } catch (e) { manifest = null }
 
-  // check to see if we actually have data from the drive
-  var version = await checkoutFS.session.drive.version()
-  if (version === 0) {
-    return respondError(404, 'Site not found')
-  }
+    // check to see if we actually have data from the drive
+    var version = await checkoutFS.session.drive.version()
+    if (version === 0) {
+      return respondError(404, 'Site not found')
+    }
 
-  // read manifest CSP
-  if (manifest && manifest.csp && typeof manifest.csp === 'string') {
-    cspHeader = manifest.csp
-  }
+    // read manifest CSP
+    if (manifest && manifest.csp && typeof manifest.csp === 'string') {
+      cspHeader = manifest.csp
+    }
 
-  // check for the presence of a frontend
-  var frontend = false
-  if (await checkoutFS.pda.stat('/.ui/ui.html').catch(e => false)) {
-    frontend = true
-  }
-  const serveFrontendHTML = async () => {
-    return respond({
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/html',
-        'Access-Control-Allow-Origin': '*',
-        'Allow-CSP-From': '*',
-        'Content-Security-Policy': cspHeader
-      },
-      data: intoStream(await checkoutFS.pda.readFile('/.ui/ui.html')) // TODO use stream
-    })
-  }
+    // check for the presence of a frontend
+    var frontend = false
+    if (await checkoutFS.pda.stat('/.ui/ui.html').catch(e => false)) {
+      frontend = true
+    }
+    const serveFrontendHTML = async () => {
+      return respond({
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'text/html',
+          'Access-Control-Allow-Origin': '*',
+          'Allow-CSP-From': '*',
+          'Content-Security-Policy': cspHeader
+        },
+        data: intoStream(await checkoutFS.pda.readFile('/.ui/ui.html')) // TODO use stream
+      })
+    }
 
-  // lookup entry
-  var statusCode = 200
-  var headers = {}
-  var entry = await datServeResolvePath(checkoutFS.pda, manifest, urlp, request.headers.Accept)
+    // lookup entry
+    var statusCode = 200
+    var headers = {}
+    var entry = await datServeResolvePath(checkoutFS.pda, manifest, urlp, request.headers.Accept)
 
-  var canExecuteHTML = true
-  if (entry && !frontend) {
-    // dont execute HTML if in a mount and no frontend is running
-    let pathParts = entry.path.split('/').filter(Boolean)
-    pathParts.pop() // skip target, just need to check parent dirs
-    while (pathParts.length) {
-      let path = '/' + pathParts.join('/')
-      let stat = await checkoutFS.pda.stat(path).catch(e => undefined)
-      if (stat && stat.mount) {
-        canExecuteHTML = false
-        break
+    var canExecuteHTML = true
+    if (entry && !frontend) {
+      // dont execute HTML if in a mount and no frontend is running
+      let pathParts = entry.path.split('/').filter(Boolean)
+      pathParts.pop() // skip target, just need to check parent dirs
+      while (pathParts.length) {
+        let path = '/' + pathParts.join('/')
+        let stat = await checkoutFS.pda.stat(path).catch(e => undefined)
+        if (stat && stat.mount) {
+          canExecuteHTML = false
+          break
+        }
+        pathParts.pop()
       }
-      pathParts.pop()
-    }
-  }
-
-  // handle folder
-  if (entry && entry.isDirectory()) {
-
-    // make sure there's a trailing slash
-    if (!hasTrailingSlash) {
-      return respondRedirect(`hyper://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}`)
     }
 
-    // frontend
-    if (frontend) {
-      return serveFrontendHTML()
-    }
+    // handle folder
+    if (entry && entry.isDirectory()) {
 
-    // directory listing
-    return respond({
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'text/html',
-        'Access-Control-Allow-Origin': '*',
-        'Allow-CSP-From': '*',
-        'Cache-Control': 'no-cache',
-        'Content-Security-Policy': `default-src 'self' beaker:`
-      },
-      data: intoStream(`<!doctype html>
+      // make sure there's a trailing slash
+      if (!hasTrailingSlash) {
+        return respondRedirect(`hyper://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}`)
+      }
+
+      // frontend
+      if (frontend) {
+        return serveFrontendHTML()
+      }
+
+      // directory listing
+      return respond({
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'text/html',
+          'Access-Control-Allow-Origin': '*',
+          'Allow-CSP-From': '*',
+          'Cache-Control': 'no-cache',
+          'Content-Security-Policy': `default-src 'self' beaker:`
+        },
+        data: intoStream(`<!doctype html>
 <html>
   <head>
     <meta charset="utf-8">
@@ -238,73 +240,73 @@ export const protocolHandler = async function (request, respond) {
     <script type="module" src="beaker://drive-view/index.js"></script>
   </head>
 </html>`)
-    })
-  }
-
-  // frontend
-  if (mime.acceptHeaderWantsHTML(request.headers.Accept) && frontend) {
-    return serveFrontendHTML()
-  }
-
-  // handle not found
-  if (!entry) {
-
-    // error page
-    return respondError(404, 'File Not Found', {
-      errorDescription: 'File Not Found',
-      errorInfo: `Beaker could not find the file ${urlp.path}`,
-      title: 'File Not Found'
-    })
-  }
-
-  // handle .goto redirects
-  if (entry.path.endsWith('.goto') && entry.metadata.href) {
-    try {
-      let u = new URL(entry.metadata.href) // make sure it's a valid url
-      return respondRedirect(entry.metadata.href)
-    } catch (e) {
-      // pass through
+      })
     }
-  }
 
-  // TODO
-  // Electron is being really aggressive about caching and not following the headers correctly
-  // caching is disabled till we can figure out why
-  // -prf
-  // caching if-match
-  // const ETag = 'block-' + entry.offset
-  // if (request.headers['if-none-match'] === ETag) {
-  //   return respondError(304, 'Not Modified')
-  // }
-
-  // handle range
-  headers['Accept-Ranges'] = 'bytes'
-  var range = request.headers.Range || request.headers.range
-  if (range) range = parseRange(entry.size, range)
-  if (range && range.type === 'bytes') {
-    range = range[0] // only handle first range given
-    statusCode = 206
-    headers['Content-Range'] = 'bytes ' + range.start + '-' + range.end + '/' + entry.size
-    headers['Content-Length'] = '' + (range.end - range.start + 1)
-  } else {
-    if (entry.size) {
-      headers['Content-Length'] = '' + (entry.size)
+    // frontend
+    if (mime.acceptHeaderWantsHTML(request.headers.Accept) && frontend) {
+      return serveFrontendHTML()
     }
-  }
 
-  Object.assign(headers, {
-    'Content-Security-Policy': cspHeader,
-    'Access-Control-Allow-Origin': '*',
-    'Allow-CSP-From': '*',
-    'Cache-Control': 'no-cache'
-  })
+    // handle not found
+    if (!entry) {
 
-  // markdown rendering
-  if (!range && entry.path.endsWith('.md') && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
-    let content = await checkoutFS.pda.readFile(entry.path, 'utf8')
-    let contentType = canExecuteHTML ? 'text/html' : 'text/plain'
-    content = canExecuteHTML
-      ? `<!doctype html>
+      // error page
+      return respondError(404, 'File Not Found', {
+        errorDescription: 'File Not Found',
+        errorInfo: `Beaker could not find the file ${urlp.path}`,
+        title: 'File Not Found'
+      })
+    }
+
+    // handle .goto redirects
+    if (entry.path.endsWith('.goto') && entry.metadata.href) {
+      try {
+        let u = new URL(entry.metadata.href) // make sure it's a valid url
+        return respondRedirect(entry.metadata.href)
+      } catch (e) {
+        // pass through
+      }
+    }
+
+    // TODO
+    // Electron is being really aggressive about caching and not following the headers correctly
+    // caching is disabled till we can figure out why
+    // -prf
+    // caching if-match
+    // const ETag = 'block-' + entry.offset
+    // if (request.headers['if-none-match'] === ETag) {
+    //   return respondError(304, 'Not Modified')
+    // }
+
+    // handle range
+    headers['Accept-Ranges'] = 'bytes'
+    var range = request.headers.Range || request.headers.range
+    if (range) range = parseRange(entry.size, range)
+    if (range && range.type === 'bytes') {
+      range = range[0] // only handle first range given
+      statusCode = 206
+      headers['Content-Range'] = 'bytes ' + range.start + '-' + range.end + '/' + entry.size
+      headers['Content-Length'] = '' + (range.end - range.start + 1)
+    } else {
+      if (entry.size) {
+        headers['Content-Length'] = '' + (entry.size)
+      }
+    }
+
+    Object.assign(headers, {
+      'Content-Security-Policy': cspHeader,
+      'Access-Control-Allow-Origin': '*',
+      'Allow-CSP-From': '*',
+      'Cache-Control': 'no-cache'
+    })
+
+    // markdown rendering
+    if (!range && entry.path.endsWith('.md') && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
+      let content = await checkoutFS.pda.readFile(entry.path, 'utf8')
+      let contentType = canExecuteHTML ? 'text/html' : 'text/plain'
+      content = canExecuteHTML
+        ? `<!doctype html>
 <html>
   <head>
     <meta charset="utf8">
@@ -313,32 +315,33 @@ export const protocolHandler = async function (request, respond) {
     ${md.render(content)}
   </body>
 </html>`
-      : content
-    return respond({
-      statusCode: 200,
-      headers: Object.assign(headers, {
-        'Content-Type': contentType
-      }),
-      data: intoStream(content)
-    })
-  }
+        : content
+      return respond({
+        statusCode: 200,
+        headers: Object.assign(headers, {
+          'Content-Type': contentType
+        }),
+        data: intoStream(content)
+      })
+    }
 
-  // fetch the entry and stream the response
-  // HACK solution until electron issue resolved -prf
-  headersSent = true
-  var mimeType = mime.identify(entry.path)
-  if (!canExecuteHTML && mimeType.includes('text/html')) {
-    mimeType = 'text/plain'
-  }
-  Object.assign(headers, {'Content-Type': mimeType})
-  var data = await checkoutFS.pda.readFile(entry.path, 'binary')
-  if (range) {
-    data = data.slice(range.start, range.end + 1)
-  }
-  respond({
-    statusCode,
-    headers,
-    data: intoStream(data)
+    // fetch the entry and stream the response
+    // HACK solution until electron issue resolved -prf
+    headersSent = true
+    var mimeType = mime.identify(entry.path)
+    if (!canExecuteHTML && mimeType.includes('text/html')) {
+      mimeType = 'text/plain'
+    }
+    Object.assign(headers, {'Content-Type': mimeType})
+    var data = await checkoutFS.pda.readFile(entry.path, 'binary')
+    if (range) {
+      data = data.slice(range.start, range.end + 1)
+    }
+    respond({
+      statusCode,
+      headers,
+      data: intoStream(data)
+    })
   })
   /*fileReadStream = checkoutFS.pda.createReadStream(entry.path, range)
   var dataStream = fileReadStream

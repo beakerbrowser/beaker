@@ -30,7 +30,7 @@ import watchlistManifest from './manifests/internal/watchlist'
 
 // internal apis
 import { WEBAPI as loggerAPI } from '../logger'
-import * as auditLog from '../dbs/audit-log'
+import { WEBAPI as auditLogAPI } from '../dbs/audit-log'
 import drivesAPI from './bg/drives'
 import * as bookmarksAPI from '../filesystem/bookmarks'
 import beakerFilesystemAPI from './bg/beaker-filesystem'
@@ -71,7 +71,7 @@ import experimentalGlobalFetchAPI from './bg/experimental/global-fetch'
 
 export const setup = function () {
   // internal apis
-  rpc.exportAPI('logger', loggerManifest, Object.assign({}, {listAuditLog: auditLog.list, streamAuditLog: auditLog.stream}, loggerAPI), internalOnly)
+  rpc.exportAPI('logger', loggerManifest, Object.assign({}, auditLogAPI, loggerAPI), internalOnly)
   rpc.exportAPI('beaker-browser', beakerBrowserManifest, beakerBrowserAPI, internalOnly)
   rpc.exportAPI('beaker-filesystem', beakerFilesystemManifest, beakerFilesystemAPI, internalOnly)
   rpc.exportAPI('bookmarks', bookmarksManifest, bookmarksAPI, internalOnly)

@@ -3,6 +3,7 @@ import * as hyperDns from '../hyper/dns'
 import { joinPath } from '../../lib/strings'
 import { chunkMapAsync } from '../../lib/functions'
 import { HYPERDRIVE_HASH_REGEX } from '../../lib/const'
+import * as auditLog from '../dbs/audit-log'
 
 // typedefs
 // =
@@ -175,10 +176,15 @@ async function expandPaths (root, patterns) {
           newWorkingPaths = await Promise.all(workingPaths.map(async (workingPath) => {
             var bname = basename(op[1])
             var folderpath = op[1].slice(0, bname.length * -1)
-            let items = await root.pda.readdir(
-              joinPath(workingPath.name, folderpath),
-              {includeStats: true}
-            ).catch(err => ([]))
+            let readdirpath = joinPath(workingPath.name, folderpath)
+            let readdiropts = {includeStats: true}
+            let items = await auditLog.record(
+              '-query',
+              'readdir',
+              Object.assign({url: root.url, path: readdirpath}, readdiropts),
+              undefined,
+              () => root.pda.readdir(readdirpath, readdiropts).catch(err => ([]))
+            )
             let item = items.find(item => item.name === bname)
             if (!item) return undefined
             item.localDriveKey = item.mount ? item.mount.key.toString('hex') : workingPath.localDriveKey
@@ -201,7 +207,14 @@ async function expandPaths (root, patterns) {
         
         // read the files at each working path
         for (let workingPath of workingPaths) {
-          for (let item of await root.pda.readdir(workingPath.name, {includeStats: true}).catch(e => [])) {
+          let items = await auditLog.record(
+            '-query',
+            'readdir',
+            {url: root.url, path: workingPath.name, includeStats: true},
+            undefined,
+            () => root.pda.readdir(workingPath.name, {includeStats: true}).catch(e => [])
+          )
+          for (let item of items) {
             // add matching names to the working path
             if (re.test(item.name)) {
               item.localDriveKey = item.mount ? item.mount.key.toString('hex') : workingPath.localDriveKey

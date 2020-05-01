@@ -13,6 +13,21 @@ ${buttonsCSS}
   overflow: auto;
 }
 
+.stats {
+  margin-bottom: 10px;
+}
+
+.stats table {
+  width: 100%;
+}
+
+.stats th {
+  width: 100px;
+  min-width: 100px; /* stop table layout from compressing */
+  vertical-align: top;
+  text-align: left;
+}
+
 .logger thead th {
   position: sticky;
   top: 0;

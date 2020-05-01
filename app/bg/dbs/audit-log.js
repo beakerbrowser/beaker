@@ -17,6 +17,12 @@ var events = new EventEmitter()
 // exported methods
 // =
 
+export const WEBAPI = {
+  listAuditLog: list,
+  streamAuditLog: stream,
+  getAuditLogStats: stats
+}
+
 /**
  * @param {Object} opts
  * @param {string} opts.userDataPath
@@ -29,29 +35,40 @@ export async function setup (opts) {
   db.run('delete from hyperdrive_ops;') // clear history
 }
 
-export async function record (caller, method, args, writeSize, fn) {
+export async function record (caller, method, args, writeSize, fn, opts) {
   var ts = Date.now()
   try {
     var res = await fn()
     return res
   } finally {
     var runtime = Date.now() - ts
-    var target
-    if (args.url) {
-      target = extractHostname(args.url)
-      delete args.url
+    if (!opts || !opts.ignoreFast || runtime > 100) {
+      var target
+      if (args.url) {
+        target = extractHostname(args.url)
+        delete args.url
+      }
+      caller = extractOrigin(caller)
+      if (method === 'query' && args.drive) {
+        // massage the opts
+        args = Object.assign({}, args)
+        if (Array.isArray(args.drive)) {
+          args.drive = args.drive.map(d => d.url)
+        } else {
+          args.drive = args.drive.url
+        }
+      }
+      insert('hyperdrive_ops', {
+        caller,
+        method,
+        target,
+        args: args ? JSON.stringify(args) : args,
+        writeSize,
+        ts,
+        runtime
+      })
+      if (writeSize) insert('hyperdrive_write_stats', {caller, writeSize})
     }
-    caller = extractOrigin(caller)
-    insert('hyperdrive_ops', {
-      caller,
-      method,
-      target,
-      args: args ? JSON.stringify(args) : args,
-      writeSize,
-      ts,
-      runtime
-    })
-    if (writeSize) insert('hyperdrive_write_stats', {caller, writeSize})
   }
 }
 
@@ -72,6 +89,26 @@ export async function stream () {
   return s
 }
 
+export async function stats () {
+  var query = knex('hyperdrive_ops').select().orderBy('runtime', 'desc').toSQL()
+  var rows = await cbPromise(cb => db.all(query.sql, query.bindings, cb))
+  var stats = {
+    runtime: {
+      avg: 0,
+      stdDev: 0,
+      longest10: rows.slice(0, 10)
+    }
+  }
+  stats.runtime.avg = rows.reduce((acc, row) => acc + row.runtime, 0) / rows.length
+  stats.runtime.stdDev = Math.sqrt(
+   (rows
+      .map(row => Math.pow(row.runtime - stats.runtime.avg, 2)) // (v-mean)^2
+      .reduce((acc, v) => acc + v, 0)
+    ) / rows.length // averaged
+  )
+  return stats
+}
+
 // internal methods
 // =
 
@@ -87,6 +124,7 @@ function insert (table, data) {
  * @returns {string}
  */
 function extractOrigin (originURL) {
+  if (!originURL || !originURL.includes('://')) return originURL
   var urlp = parseDriveUrl(originURL)
   if (!urlp || !urlp.host || !urlp.protocol) return
   return (urlp.protocol + '//' + urlp.host + (urlp.port ? `:${urlp.port}` : ''))

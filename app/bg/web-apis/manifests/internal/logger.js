@@ -3,5 +3,6 @@ export default {
   query: 'promise',
   listDaemonLog: 'promise',
   listAuditLog: 'promise',
-  streamAuditLog: 'readable'
+  streamAuditLog: 'readable',
+  getAuditLogStats: 'promise',
 }
