@@ -43,6 +43,8 @@ import * as openURL from './bg/open-url'
 // setup
 // =
 
+const log = logger.get().child({category: 'browser', subcategory: 'init'})
+
 // read config from env vars
 if (getEnvVar('BEAKER_USER_DATA_PATH')) {
   console.log('User data path set by environment variables')
@@ -97,6 +99,7 @@ app.on('ready', async function () {
   await logger.setup(join(commonOpts.userDataPath, 'beaker.log'))
 
   // setup databases
+  log.info('Initializing databases')
   for (let k in dbs) {
     if (dbs[k].setup) {
       dbs[k].setup(commonOpts)
@@ -105,14 +108,19 @@ app.on('ready', async function () {
 
   // start subsystems
   // (order is important)
+  log.info('Starting hyperdrive')
   await hyper.setup(commonOpts)
+  log.info('Initializing hyperdrive filesystem')
   await filesystem.setup()
+  log.info('Initializing Web APIs')
   webapis.setup()
+  log.info('Initializing browser')
   await beakerBrowser.setup()
   adblocker.setup()
   analytics.setup()
 
   // protocols
+  log.info('Registering protocols')
   beakerProtocol.register(protocol)
   assetProtocol.setup()
   assetProtocol.register(protocol)
@@ -121,15 +129,23 @@ app.on('ready', async function () {
   // intentProtocol.setup() TODO
 
   // setup flow
+  log.info('Running setup flow')
   await runSetupFlow()
 
   // ui
+  log.info('Initializing window menu')
   windowMenu.setup()
+  log.info('Initializing context menus')
   registerContextMenu()
+  log.info('Initializing tray icon')
   trayIcon.setup()
+  log.info('Initializing browser windows')
   windows.setup()
+  log.info('Initializing downloads manager')
   downloads.setup()
+  log.info('Initializing permissions manager')
   permissions.setup()
+  log.info('Program setup complete')
 })
 
 app.on('window-all-closed', () => {
@@ -139,12 +155,14 @@ app.on('window-all-closed', () => {
 app.on('will-quit', async (e) => {
   if (hyper.daemon.requiresShutdown()) {
     e.preventDefault()
+    log.info('Delaying shutdown to teardown the daemon')
     await hyper.daemon.shutdown()
     app.quit()
   }
 })
 
 app.on('quit', () => {
+  log.info('Program quit')
   portForwarder.closePort()
 })
 

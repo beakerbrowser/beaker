@@ -57,7 +57,7 @@ export async function setup (p) {
     format: combine(colorize(), padLevels(), simple())
   }))
 
-  logger.info('Program start')
+  logger.info('Logger started')
 }
 
 export const get = () => logger

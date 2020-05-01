@@ -3,7 +3,7 @@ import { join as joinPath } from 'path'
 import * as filesystem from './index'
 import { PATHS, TRASH_FIRST_COLLECT_WAIT, TRASH_REGULAR_COLLECT_WAIT, TRASH_EXPIRATION_AGE } from '../../lib/const'
 import * as logLib from '../logger'
-const logger = logLib.child({category: 'filesystem', subcategory: 'trash-collector'})
+const logger = logLib.child({category: 'hyper', subcategory: 'trash-collector'})
 
 // typedefs
 // =

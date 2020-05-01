@@ -1,10 +1,8 @@
 import { InvalidDomainName } from 'beaker-error-constants'
 import * as logLib from '../logger'
-const logger = logLib.child({category: 'hyper', subcategory: 'dns'})
 
 const DNS_PROVIDERS = [['cloudflare-dns.com', '/dns-query'], ['dns.google.com', '/resolve']]
 const DNS_PROVIDER = DNS_PROVIDERS[Math.random() > 0.5 ? 1 : 0]
-logger.info(`Using ${DNS_PROVIDER[0]} to resolve DNS lookups`)
 
 // instantate a dns cache and export it
 import datDnsFactory from 'dat-dns'

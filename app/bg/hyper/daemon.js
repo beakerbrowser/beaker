@@ -137,7 +137,9 @@ export async function setup () {
         closeHyperdriveSession(key)
         numClosed++
       }
-      logger.debug(`Closed ${numClosed} session(s) due to inactivity`)
+      if (numClosed > 0) {
+        logger.debug(`Closed ${numClosed} session(s) due to inactivity`)
+      }
     }, GARBAGE_COLLECT_SESSIONS_INTERVAL)
     interval2.unref()
   }
