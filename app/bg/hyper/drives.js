@@ -75,6 +75,7 @@ export async function ensureHosting (keys) {
     let cfg = configs.get(key)
     if (!cfg || !cfg.announce || !cfg.lookup) {
       let drive = await getOrLoadDrive(key)
+      logger.info(`Reconfiguring network behavior for drive ${key}`)
       await drive.session.drive.configureNetwork({
         announce: true,
         lookup: true
