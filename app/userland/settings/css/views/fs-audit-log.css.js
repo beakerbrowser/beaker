@@ -35,9 +35,22 @@ ${buttonsCSS}
   background: #f5f5fa;
 }
 
+.logger .gap-row td {
+  height: 8px;
+  background: #f5f5fa;
+}
+
 .logger .logger-row > * {
   white-space: nowrap;
   border: 1px solid #dde;
+}
+
+.logger .logger-row.badish {
+  background: #fc03;
+}
+
+.logger .logger-row.bad {
+  background: #f003;
 }
 
 .logger .logger-row td {

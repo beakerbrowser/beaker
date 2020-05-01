@@ -49,6 +49,7 @@ class FsAuditLogView extends LitElement {
       `
     }
 
+    var lastRow
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="stats">
@@ -82,27 +83,32 @@ class FsAuditLogView extends LitElement {
               <th class="args">args</th>
             </tr>
           </thead>
-          <tbody>${this.rows.map((row, i) => this.renderRow(row, i))}</tbody>
+          <tbody>${this.rows.map((row, i) => {
+            var tsDiff = lastRow ? (lastRow.ts - row.ts) : 0
+            console.log(tsDiff)
+            lastRow = row
+            return html`
+              ${tsDiff > 5e3 ? html`<tr class="gap-row"><td colspan="6"></td></tr>` : ''}
+              <tr class="logger-row ${row.runtime > 250 ? 'badish' : ''} ${row.runtime > 1e3 ? 'bad' : ''}">
+                <td class="caller">
+                  ${!row.caller.startsWith('-') ? html`
+                    <a href=${row.caller} target="_blank">${toNiceDomain(row.caller)}</a>
+                  ` : row.caller}
+                </td>
+                <td class="target"><a href=${'hyper://' + row.target} target="_blank">${toNiceDomain(row.target)}</a></td>
+                <td class="ts"><code>${timeDifference(row.ts, true)}</code></td>
+                <td class="runtime"><code>${row.runtime}ms</code></td>
+                <td class="method"><code>${row.method}</code></td>
+                <td class="args"><code>${row.args}</code></td>
+              </tr>
+            `
+          })}</tbody>
         </table>
       </div>
     `
   }
 
   renderRow (row, i) {
-    return html`
-      <tr class="logger-row">
-        <td class="caller">
-          ${!row.caller.startsWith('-') ? html`
-            <a href=${row.caller} target="_blank">${toNiceDomain(row.caller)}</a>
-          ` : row.caller}
-        </td>
-        <td class="target"><a href=${'hyper://' + row.target} target="_blank">${toNiceDomain(row.target)}</a></td>
-        <td class="ts"><code>${timeDifference(row.ts, true)}</code></td>
-        <td class="runtime"><code>${row.runtime}ms</code></td>
-        <td class="method"><code>${row.method}</code></td>
-        <td class="args"><code>${row.args}</code></td>
-      </tr>
-    `
   }
 
   // events
