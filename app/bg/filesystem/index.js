@@ -116,7 +116,7 @@ export async function setup () {
       logger.info('Error while reading the drive configuration at /drives.json', {error: e.toString()})
     }
   }
-  await hyper.drives.ensureHosting(hostKeys)
+  hyper.drives.ensureHosting(hostKeys)
 }
 
 /**
