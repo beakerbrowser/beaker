@@ -381,7 +381,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow && !!isDriveSite,
         accelerator: 'CmdOrCtrl+E',
         click: async function (item) {
-          if (tab) tab.executeSidebarCommand('show-panel', 'files-explorer-app')
+          if (tab) tab.executeSidebarCommand('toggle-panel', 'files-explorer-app')
         }
       },
       {type: 'separator'},
@@ -610,7 +610,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+B',
         click: async function (item) {
-          if (tab) tab.executeSidebarCommand('show-panel', 'editor-app')
+          if (tab) tab.executeSidebarCommand('toggle-panel', 'editor-app')
         }
       },
       {
@@ -619,7 +619,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'Ctrl+`',
         click: function (item) {
-          if (tab) tab.executeSidebarCommand('show-panel', 'web-term')
+          if (tab) tab.executeSidebarCommand('toggle-panel', 'web-term')
         }
       },
       {
