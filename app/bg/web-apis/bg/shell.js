@@ -234,7 +234,7 @@ export default {
       for (let srcUrl of urls) {
         var urlp = parseDriveUrl(srcUrl)
         let {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
-        let dstPath = joinPath(baseDstPath, filepath.split('/').pop())
+        let dstPath = joinPath(baseDstPath, urlp.pathname.split('/').pop())
         await pda.exportArchiveToFilesystem({
           srcArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
           srcPath: urlp.pathname,
