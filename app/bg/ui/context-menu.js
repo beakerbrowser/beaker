@@ -170,6 +170,12 @@ export default function registerContextMenu () {
           let driveInfo = tabManager.getActive(targetWindow).driveInfo
           let key = driveInfo ? driveInfo.key : undefined
           menuItems.push({
+            label: 'Edit Source',
+            click: async (item, win) => {
+              tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
+            }
+          })
+          menuItems.push({
             label: 'Explore Files',
             click: async (item, win) => {
               tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
