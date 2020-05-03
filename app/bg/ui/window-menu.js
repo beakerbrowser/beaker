@@ -379,6 +379,7 @@ export function buildWindowMenu (opts = {}) {
         id: 'toggleFilesExplorer',
         label: 'Explore Files',
         enabled: !noWindows && !isAppWindow && !!isDriveSite,
+        accelerator: 'CmdOrCtrl+E',
         click: async function (item) {
           if (tab) tab.executeSidebarCommand('show-panel', 'files-explorer-app')
         }
