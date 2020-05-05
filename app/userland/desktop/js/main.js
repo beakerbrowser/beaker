@@ -41,14 +41,14 @@ class DesktopApp extends LitElement {
     this.currentNav = 'drives'
     this.filter = ''
     this.load()
+    
+    if (!('hasOpenedIntro' in localStorage)) {
+      localStorage.hasOpenedIntro = 1
+      window.open(INTRO_DOCS_URL)
+    }
 
     window.addEventListener('focus', e => {
       this.load()
-
-      if (!('hasOpenedIntro' in localStorage)) {
-        localStorage.hasOpenedIntro = 1
-        window.open(INTRO_DOCS_URL)
-      }
     })
     this.addEventListener('update-pins', async (e) => {
       this.files = await desktop.load()
