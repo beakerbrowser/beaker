@@ -32,14 +32,14 @@ export function setup () {
   // load defaults
   fs.readFile(path.join(__dirname, './assets/img/favicons/default.png'), (err, buf) => {
     if (err) { console.error('Failed to load default favicon', path.join(__dirname, './assets/img/default-favicon.png'), err) }
+    if (buf) { DEFAULTS.favicon.data = buf }
+  })
+  fs.readFile(path.join(__dirname, './assets/img/default-screenshot.jpg'), (err, buf) => {
+    if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-screenshot.jpg'), err) }
     if (buf) {
-      DEFAULTS.favicon.data = buf
+      DEFAULTS.thumb.data = buf
       DEFAULTS.screenshot.data = buf
     }
-  })
-  fs.readFile(path.join(__dirname, './assets/img/default-user-thumb.jpg'), (err, buf) => {
-    if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-thumb.jpg'), err) }
-    if (buf) { DEFAULTS.thumb.data = buf }
   })
   fs.readFile(path.join(__dirname, './assets/img/default-cover.jpg'), (err, buf) => {
     if (err) { console.error('Failed to load default cover', path.join(__dirname, './assets/img/default-cover.jpg'), err) }
