@@ -90,6 +90,14 @@ a {
   flex: 2;
 }
 
+.contact .peers {
+  flex: 0 0 100px;
+  min-width: 90px;
+  color: #99a;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+
 .profile-badge {
   width: 80px;
 }

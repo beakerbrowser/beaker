@@ -1,4 +1,4 @@
-import * as hyperDns from '../../hyper/dns'
+import hyper from '../../hyper/index'
 import * as drives from '../../hyper/drives'
 import * as archivesDb from '../../dbs/archives'
 import { listDrives, configDrive, removeDrive, getDriveIdent } from '../../filesystem/index'
@@ -26,6 +26,11 @@ export default {
 
   async list (opts) {
     return assembleRecords(listDrives(opts))
+  },
+
+  async getPeerCount (url) {
+    var key = hyper.drives.fromURLToKey(url)
+    return hyper.daemon.getPeerCount(Buffer.from(key, 'hex'))
   },
 
   async getForks (key) {
@@ -89,7 +94,7 @@ export default {
   },
 
   clearDnsCache () {
-    hyperDns.flushCache()
+    hyper.dns.flushCache()
   },
 
   createEventStream () {

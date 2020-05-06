@@ -1,5 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
+import { pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
@@ -39,6 +40,11 @@ export class AddressBookView extends LitElement {
     this.contacts = await beaker.contacts.list()
     this.contacts.sort((a, b) => a.title.localeCompare(b.title))
     console.log(this.contacts)
+
+    await Promise.all(this.contacts.map(async c => {
+      c.peers = await beaker.drives.getPeerCount(c.url)
+    }))
+    this.requestUpdate()
   }
 
   contactMenu (contact, x, y, right = false) {
@@ -93,6 +99,7 @@ export class AddressBookView extends LitElement {
 
   renderContact (contact) {
     var {url, title, description} = contact
+    var peers = contact.peers || 0
     return html`
       <a
         class="contact"
@@ -100,10 +107,11 @@ export class AddressBookView extends LitElement {
         title=${title || ''}
         @contextmenu=${e => this.onContextmenuContact(e, contact)}
       >
-       <img class="thumb" src="asset:thumb-30:${url}">
-       <div class="title">${title || 'Anonymous'}</div>
-       <div class="description">${description}</div>
-       <div class="profile-badge">${contact.isProfile ? html`<span>My Profile</span>` : ''}</div>
+        <img class="thumb" src="asset:thumb-30:${url}">
+        <div class="title">${title || 'Anonymous'}</div>
+        <div class="description">${description}</div>
+        <div class="profile-badge">${contact.isProfile ? html`<span>My Profile</span>` : ''}</div>
+        <div class="peers">${peers} ${pluralize(peers, 'peer')}</div>
         <div class="ctrls">
           <button class="transparent" @click=${e => this.onClickContactMenuBtn(e, contact)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>

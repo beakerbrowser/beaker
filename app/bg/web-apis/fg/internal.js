@@ -40,6 +40,7 @@ export const setup = function (rpc) {
   internal.drives = new EventTarget()
   internal.drives.get = drivesRPC.get
   internal.drives.list = drivesRPC.list
+  internal.drives.getPeerCount = drivesRPC.getPeerCount
   internal.drives.getForks = drivesRPC.getForks
   internal.drives.configure = drivesRPC.configure
   internal.drives.remove = drivesRPC.remove

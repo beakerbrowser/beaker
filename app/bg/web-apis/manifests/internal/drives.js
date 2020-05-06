@@ -1,6 +1,7 @@
 export default {
   get: 'promise',
   list: 'promise',
+  getPeerCount: 'promise',
   getForks: 'promise',
   configure: 'promise',
   remove: 'promise',
