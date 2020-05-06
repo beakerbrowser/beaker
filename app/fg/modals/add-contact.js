@@ -10,7 +10,8 @@ import './img-fallbacks.js'
 class AddContactModal extends LitElement {
   static get properties () {
     return {
-      info: {type: Object}
+      info: {type: Object},
+      error: {type: String}
     }
   }
 
@@ -18,7 +19,6 @@ class AddContactModal extends LitElement {
     return [commonCSS, inputsCSS, buttonsCSS, spinnerCSS, css`
     .wrapper {
       padding: 0;
-      height: 254px;
     }
 
     h1.title {
@@ -43,6 +43,14 @@ class AddContactModal extends LitElement {
 
     .loading .spinner {
       margin-right: 10px;
+    }
+
+    .error {
+      padding: 20px;
+      margin: 0;
+      font-size: 15px;
+      color: #555;
+      border-bottom: 1px solid #f0f0f7;
     }
 
     .contact {
@@ -115,23 +123,31 @@ class AddContactModal extends LitElement {
     super()
     this.cbs = undefined
     this.info = undefined
+    this.error = undefined
   }
 
-  async init (params, cbs) {
+  init (params, cbs) {
+    this.url = params.url
     this.cbs = cbs
     this.info = undefined
-    await this.requestUpdate()
-    
+    this.error = undefined
+    this.requestUpdate()
+    this.tryFetch()
+  }
+
+  async tryFetch () {
     try {
-      this.info = await bg.hyperdrive.getInfo(params.url)
-      if (this.info.version === 0) {
-        throw new Error('Unable to find this hyperdrive on the network')
+      this.error = undefined
+      var info = await bg.hyperdrive.getInfo(this.url)
+      if (info.version === 0) {
+        this.error = 'Unable to find this hyperdrive on the network'
+      } else {
+        this.info = info
       }
     } catch (e) {
       this.cbs.reject(e.message)
     }
   }
-
 
   get hostChecked () {
     try {
@@ -151,7 +167,11 @@ class AddContactModal extends LitElement {
         <h1 class="title">Add to Address Book</h1>
 
         <form @submit=${this.onSubmit}>
-          ${this.info ? html`
+          ${this.error ? html`
+            <div class="error">
+              <span class="fas fa-fw fa-exclamation-circle"></span> ${this.error}
+            </div>
+          ` : this.info ? html`
             <div class="contact">
               <beaker-img-fallbacks>
                 <img src="${this.info.url}/thumb" slot="img1">
@@ -168,20 +188,24 @@ class AddContactModal extends LitElement {
             </div>
           `}
 
-          <div class="host-prompt">
-            ${this.info ? html`
+          ${this.info ? html`
+            <div class="host-prompt">
               <label>
                 ${!this.info.writable ? html`
                   <input type="checkbox" name="host" checked>
                   Host this drive to help keep it online.
                 ` : 'Note: This is your drive'}
               </label>
-            ` : ''}
-          </div>
+            </div>
+          ` : ''}
 
           <div class="form-actions">
             <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-            <button type="submit" class="btn primary" tabindex="5" ?disabled=${!this.info}>OK</button>
+            ${this.error ? html`
+              <button type="submit" class="btn primary" tabindex="5">Try Again</button>
+            ` : html`
+              <button type="submit" class="btn primary" tabindex="5" ?disabled=${!this.info}>OK</button>
+            `}
           </div>
         </form>
       </div>
@@ -207,7 +231,7 @@ class AddContactModal extends LitElement {
     if (this.info) {
       this.cbs.resolve({key: this.info.key, host: this.hostChecked})
     } else {
-      this.cbs.reject(new Error('Canceled'))
+      this.tryFetch()
     }
   }
 }
