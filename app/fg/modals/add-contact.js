@@ -90,11 +90,13 @@ class AddContactModal extends LitElement {
 
     .host-prompt label {
       margin: 0;
+      display: flex;
+      align-items: center;
     }
 
     .host-prompt input {
       display: inline;
-      margin: 0 5px 0 0;
+      margin: 0 8px 0 0;
       width: auto;
       height: auto;
     }
