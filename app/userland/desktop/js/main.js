@@ -23,7 +23,7 @@ var cacheBuster = Date.now()
 class DesktopApp extends LitElement {
   static get properties () {
     return {
-      files: {type: Array},
+      pins: {type: Array},
       profile: {type: Object},
       currentNav: {type: String},
       filter: {type: String}
@@ -37,7 +37,7 @@ class DesktopApp extends LitElement {
   constructor () {
     super()
     this.profile = undefined
-    this.files = []
+    this.pins = []
     this.currentNav = 'drives'
     this.filter = ''
     this.load()
@@ -51,7 +51,7 @@ class DesktopApp extends LitElement {
       this.load()
     })
     this.addEventListener('update-pins', async (e) => {
-      this.files = await desktop.load()
+      this.pins = await desktop.load()
     })
   }
 
@@ -59,11 +59,11 @@ class DesktopApp extends LitElement {
     cacheBuster = Date.now()
     await this.requestUpdate()
     Array.from(this.shadowRoot.querySelectorAll('[loadable]'), el => el.load())
-    ;[this.profile, this.files] = await Promise.all([
+    ;[this.profile, this.pins] = await Promise.all([
       addressBook.loadProfile(),
       desktop.load()
     ])
-    console.log(this.files)
+    console.log(this.pins)
   }
 
   // rendering
@@ -122,23 +122,23 @@ class DesktopApp extends LitElement {
   }
 
   renderFiles () {
-    var files = this.files || []
+    var pins = this.pins || []
     return html`
-      <div class="files">
+      <div class="pins">
         <a class="add" @click=${e => this.onClickNewBookmark(e, true)}>
           <span class="fas fa-fw fa-plus"></span>
         </a>
-        ${repeat(files, file => getHref(file), file => html`
+        ${repeat(pins, pin => getHref(pin), pin => html`
           <a
-            class="file"
-            href=${getHref(file)}
-            @contextmenu=${e => this.onContextmenuFile(e, file)}
+            class="pin"
+            href=${getHref(pin)}
+            @contextmenu=${e => this.onContextmenuFile(e, pin)}
           >
             <div class="thumb-wrapper">
-              <img src=${'asset:screenshot-180:' + getHref(file)} class="thumb"/>
+              <img src=${'asset:screenshot-180:' + getHref(pin)} class="thumb"/>
             </div>
             <div class="details">
-              <div class="title">${getTitle(file)}</div>
+              <div class="title">${getTitle(pin)}</div>
             </div>
           </a>
         `)}

@@ -68,7 +68,7 @@ ${tooltipCSS}
   font-size: 11px;
 }
 
-.files {
+.pins {
   position: relative;
   display: grid;
   margin: 100px auto 0;
@@ -79,7 +79,7 @@ ${tooltipCSS}
   user-select: none;
 }
 
-.files .add {
+.pins .add {
   position: absolute;
   left: 0.2em;
   top: -2em;
@@ -88,11 +88,11 @@ ${tooltipCSS}
   cursor: pointer;
 }
 
-.files .add:hover {
+.pins .add:hover {
   color: rgba(0, 0, 150, 0.5);
 }
 
-.file {
+.pin {
   cursor: pointer;
   position: relative;
   border-radius: 3px;
@@ -103,11 +103,11 @@ ${tooltipCSS}
   min-height: 100px;
 }
 
-.file:hover {
+.pin:hover {
   text-decoration: none;
 }
 
-.file .thumb {
+.pin .thumb {
   display: block;
   margin: 0 auto;
   border-radius: 4px;
@@ -115,24 +115,24 @@ ${tooltipCSS}
   height: 120px;
   object-fit: cover;
   object-position: top center;
-  border: 1px solid #ccd;
+  border: 1px solid #bbc;
 }
 
-.file:hover .thumb {
+.pin:hover .thumb {
   border-color: #889;
 }
 
-.file .details {
+.pin .details {
   padding: 10px 2px 20px;
 }
 
-.file .details > * {
+.pin .details > * {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.file .title {
+.pin .title {
   font-size: 12px;
   line-height: 20px;
   text-align: center;
@@ -145,12 +145,12 @@ nav {
 }
 
 nav a {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.5px;
-  color: #889;
+  color: #667;
   cursor: pointer;
-  padding: 4px 10px;
+  padding: 4px 10px 3px 10px;
   margin: 0 10px;
   border-radius: 24px;
 }
@@ -191,7 +191,7 @@ nav .search-ctrl input {
   letter-spacing: 0.5px;
   font-weight: 500;
   padding: 0 0 0 26px;
-  border: 1px solid #dde;
+  border: 1px solid #ccd;
   border-radius: 24px;
 }
 
@@ -215,7 +215,7 @@ bookmarks-view,
 address-book-view {
   display: block;
   max-width: 1000px;
-  margin: 26px auto;
+  margin: 16px auto;
 }
 
 `
