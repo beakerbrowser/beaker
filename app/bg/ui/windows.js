@@ -505,28 +505,6 @@ function onClose (win) {
   }
 }
 
-function onTabSelect (tabIndex) {
-  return () => {
-    var win = BrowserWindow.getFocusedWindow()
-    tabManager.setActive(win, tabIndex)
-  }
-}
-
-function onLastTab () {
-  var win = BrowserWindow.getFocusedWindow()
-  tabManager.setActive(win, tabManager.getAll(win).slice(-1)[0])
-}
-
-function onNextTab () {
-  var win = BrowserWindow.getFocusedWindow()
-  tabManager.changeActiveBy(win, 1)
-}
-
-function onPrevTab () {
-  var win = BrowserWindow.getFocusedWindow()
-  tabManager.changeActiveBy(win, -1)
-}
-
 function onGoBack () {
   var win = BrowserWindow.getFocusedWindow()
   tabManager.getActive(win).webContents.goBack()
