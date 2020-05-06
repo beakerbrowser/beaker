@@ -5,6 +5,7 @@ import _isEqual from 'lodash.isequal'
 import {defaultPageState} from './default-state'
 
 const SNAPSHOT_PATH = 'shell-window-state.json'
+var lastRecordedPositioning = {}
 
 // exported api
 // =
@@ -84,6 +85,10 @@ export default class SessionWatcher {
   }
 }
 
+export function getLastRecordedPositioning () {
+  return lastRecordedPositioning
+}
+
 // internal methods
 // =
 
@@ -131,23 +136,13 @@ class WindowWatcher extends EventEmitter {
   }
 
   handlePositionChange () {
-    Object.assign(this.snapshot, getCurrentPosition(this.getWindow()))
+    lastRecordedPositioning = this.getWindow().getBounds()
+    Object.assign(this.snapshot, lastRecordedPositioning)
     this.emit('change', this.snapshot)
   }
 
   handleAlwaysOnTopChanged (e, isAlwaysOnTop) {
     this.snapshot.isAlwaysOnTop = isAlwaysOnTop
     this.emit('change', this.snapshot)
-  }
-}
-
-function getCurrentPosition (win) {
-  var position = win.getPosition()
-  var size = win.getSize()
-  return {
-    x: position[0],
-    y: position[1],
-    width: size[0],
-    height: size[1]
   }
 }

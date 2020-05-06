@@ -1,6 +1,6 @@
 import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'electron'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
-import SessionWatcher from './session-watcher'
+import SessionWatcher, { getLastRecordedPositioning } from './session-watcher'
 import jetpack from 'fs-jetpack'
 import * as tabManager from './tab-manager'
 import {
@@ -172,7 +172,7 @@ export async function setup () {
 
 export function createShellWindow (windowState, createOpts = {dontInitPages: false}) {
   // create window
-  let state = ensureVisibleOnSomeDisplay(Object.assign({}, defaultWindowState(), windowState))
+  let state = ensureVisibleOnSomeDisplay(Object.assign({}, defaultWindowState(), lastWindowPositioning(), windowState))
   var { x, y, width, height, minWidth, minHeight } = state
   var frameSettings = {
     titleBarStyle: 'hidden',
@@ -464,6 +464,14 @@ function getPreviousBrowsingSession () {
   return Object.assign({}, defaultBrowsingSessionState(), restoredState)
 }
 
+function lastWindowPositioning () {
+  var activeWin = getActiveWindow()
+  if (activeWin) {
+    return activeWin.getBounds()
+  }
+  return getLastRecordedPositioning()
+}
+
 function ensureVisibleOnSomeDisplay (windowState) {
   // HACK
   // for some reason, electron.screen comes back null sometimes
@@ -579,26 +587,6 @@ function globalTabSwitcherKeyHandler (e, input) {
     isTabSwitcherActive[win.id] = false
     tabSwitcherSubwindow.hide(win)
   }
-}
-
-// window event handlers
-// =
-
-function sendToWebContents (event) {
-  return e => e.sender.webContents.send('window-event', event)
-}
-
-function sendScrollTouchBegin (e) {
-  // get the cursor x/y within the window
-  const screen = getScreenAPI()
-  if (!screen) return
-  var cursorPos = screen.getCursorScreenPoint()
-  var winPos = e.sender.getBounds()
-  cursorPos.x -= winPos.x; cursorPos.y -= winPos.y
-  e.sender.webContents.send('window-event', 'scroll-touch-begin', {
-    cursorX: cursorPos.x,
-    cursorY: cursorPos.y
-  })
 }
 
 // helpers
