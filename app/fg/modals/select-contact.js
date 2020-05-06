@@ -170,7 +170,7 @@ class SelectContactModal extends LitElement {
 
           <div class="form-actions">
             <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
-            <button type="submit" class="btn primary" tabindex="5" ?disabled=${!this.selection}>OK</button>
+            <button type="submit" class="btn primary" tabindex="5" ?disabled=${this.selection.length === 0}>OK</button>
           </div>
         </form>
       </div>
