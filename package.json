@@ -33,6 +33,7 @@
     "asarUnpack": [
       "./fg/json-renderer/index.build.js",
       "./fg/syntax-highlighter/index.js",
+      "./node_modules/@beaker/dat-legacy-tools/**",
       "./node_modules/sodium-native/**",
       "./node_modules/hyperdrive-daemon/**"
     ],
