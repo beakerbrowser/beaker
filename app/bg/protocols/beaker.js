@@ -9,8 +9,6 @@ import jetpack from 'fs-jetpack'
 import intoStream from 'into-stream'
 import ICO from 'icojs'
 
-const SEARCH_APP_PATH = path.dirname(require.resolve('@beaker/search-app')).replace('app.asar', 'app.asar.unpacked')
-
 // constants
 // =
 
@@ -276,9 +274,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
-  }
-  if (requestUrl === 'beaker://search' || requestUrl.startsWith('beaker://search/')) {
-    return serveAppAsset(requestUrl, SEARCH_APP_PATH, cb)
   }
   if (requestUrl === 'beaker://swarm-debugger/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/swarm-debugger.css'))

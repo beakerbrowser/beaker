@@ -1,7 +1,6 @@
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'dat', subcategory: 'protocol'})
-import Dat from 'dat-node'
-import mirror from 'mirror-folder'
+import * as childProcess from 'child_process'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import mkdirp from 'mkdirp'
@@ -24,28 +23,11 @@ export async function downloadDat (key) {
   rimraf.sync(storagePath)
   mkdirp.sync(storagePath)
 
-  downloadPromises[key] = new Promise((resolve, reject) => {
-    Dat(storagePath, {key}, (err, dat) => {
-      if (err) return reject(err)
-      
-      var network = dat.joinNetwork()
-      network.on('connection', function () {
-        logger.log('info', `Peer connected for ${key}`)
-      })
-
-      dat.archive.metadata.update(() => {
-        logger.log('info', `Initiating sync for ${key}`)
-        mirror({fs: dat.archive, name: '/'}, storagePath, (err) => {
-          dat.leave()
-          dat.close()
-          logger.log('info', `Finished syncing ${key}`, {error: err ? err.toString() : false})
-
-          if (err) reject(err)
-          else resolve()
-        })
-      })
-    })
-  })
+  downloadPromises[key] = runConvertProcess(
+    '/Users/paulfrazee/work/beaker-dat-legacy-tools/test-data',
+    key,
+    storagePath
+  )
 
   return downloadPromises[key]
 }
@@ -63,4 +45,20 @@ export async function convertDatArchive (key) {
   })
   await filesystem.configDrive(drive.url)
   return drive.url
+}
+
+async function runConvertProcess (...args) {
+  var fullModulePath = require.resolve('@beaker/dat-legacy-tools/bin.js')
+  const opts = {
+    stdio: 'inherit',
+    env: Object.assign({}, process.env, {
+      ELECTRON_RUN_AS_NODE: 1
+    })
+  }
+  var proc = childProcess.fork(fullModulePath, args, opts)
+
+  return new Promise((resolve, reject) => {
+    proc.on('error', reject)
+    proc.on('close', resolve)
+  })
 }
