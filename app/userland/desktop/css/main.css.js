@@ -218,5 +218,89 @@ address-book-view {
   margin: 16px auto;
 }
 
+.intro {
+  position: relative;
+  max-width: 1000px;
+  margin: 16px auto;
+  text-align: center;
+  border: 1px solid #bbc;
+  border-radius: 4px;
+}
+
+.intro .close {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  font-size: 16px;
+}
+
+.intro h3 {
+  font-size: 46px;
+  font-weight: 500;
+  letter-spacing: 0.7px;
+  margin-bottom: 0;
+}
+
+.intro h4 {
+  font-size: 18px;
+}
+
+.intro h5 {
+  font-size: 17px;
+  font-weight: 500;
+  margin-bottom: 40px;
+}
+
+.intro a {
+  color: var(--blue);
+  cursor: pointer;
+}
+
+.intro a:hover {
+  text-decoration: underline;
+}
+
+.intro .col1,
+.intro .col3 {
+  margin: 30px 0;
+}
+
+.intro .col3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 860px;
+  margin: 30px auto;
+}
+
+.intro .col1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafd;
+  margin: 30px;
+  border-radius: 4px;
+}
+
+.intro .avatar img,
+.intro .icon {
+  display: block;
+  margin: 0 auto 10px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.intro .icon {
+  background: #fafafd;
+  font-size: 36px;
+  line-height: 100px;
+  color: initial;
+}
+
+.intro .col1 .icon {
+  margin: 0; 
+}
+
 `
 export default cssStr

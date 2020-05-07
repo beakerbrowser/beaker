@@ -16,8 +16,6 @@ import 'beaker://library/js/views/bookmarks.js'
 import 'beaker://library/js/views/address-book.js'
 import css from '../css/main.css.js'
 
-const INTRO_DOCS_URL = 'https://beaker-browser.gitbook.io/docs/getting-started-with-beaker'
-
 var cacheBuster = Date.now()
 
 class DesktopApp extends LitElement {
@@ -26,7 +24,8 @@ class DesktopApp extends LitElement {
       pins: {type: Array},
       profile: {type: Object},
       currentNav: {type: String},
-      filter: {type: String}
+      filter: {type: String},
+      isIntroActive: {type: Boolean}
     }
   }
 
@@ -40,11 +39,11 @@ class DesktopApp extends LitElement {
     this.pins = []
     this.currentNav = 'drives'
     this.filter = ''
+    this.isIntroActive = false
     this.load()
     
-    if (!('hasOpenedIntro' in localStorage)) {
-      localStorage.hasOpenedIntro = 1
-      window.open(INTRO_DOCS_URL)
+    if (!('isIntroHidden' in localStorage)) {
+      this.isIntroActive = true
     }
 
     window.addEventListener('focus', e => {
@@ -115,9 +114,10 @@ class DesktopApp extends LitElement {
           <a class="new-btn" @click=${this.onClickNewContact}><span class="fas fa-plus"></span> New Contact</a>
         ` : ''}
       </nav>
-      <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></drives-view>
-      <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter} .filter=${this.filter}></bookmarks-view>
-      <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter} other-only .filter=${this.filter}></address-book-view>
+      <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></drives-view>
+      <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></bookmarks-view>
+      <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} other-only .filter=${this.filter}></address-book-view>
+      ${this.renderIntro()}
     `
   }
 
@@ -146,8 +146,72 @@ class DesktopApp extends LitElement {
     `
   }
 
+  renderIntro () {
+    if (!this.isIntroActive) {
+      return ''
+    }
+    return html`
+      <div class="intro">
+        <a class="close" @click=${this.onClickCloseIntro}><span class="fas fa-times"></span></a>
+        <h3>Welcome to Beaker!</h3>
+        <h5>Let's set up your network and get you familiar with Beaker.</h5>
+        <div class="col3">
+          <div>
+            ${this.profile ? html`
+              <a href=${this.profile.url} target="_blank">
+                <beaker-img-fallbacks class="avatar">
+                  <img src="${this.profile.url}/thumb?cache_buster=${cacheBuster}" slot="img1">
+                  <img src="beaker://assets/default-user-thumb" slot="img2">
+                </beaker-img-fallbacks>
+              </a>
+            ` : ''}
+            <h4>1. Customize your profile</h4>
+            <p class="help-link">
+              <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#customizing-your-profile-drive" target="_blank">
+                <span class="fas fa-fw fa-info-circle"></span> Get help with this step
+              </a>
+            </p>
+          </div>
+          <div>
+            <a class="icon" href="https://userlist.beakerbrowser.com" target="_blank">
+              <span class="fas fa-user-plus"></span>
+            </a>
+            <h4>2. Add yourself to the directory</h4>
+            <p class="help-link">
+              <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#finding-other-users" target="_blank">
+                <span class="fas fa-fw fa-info-circle"></span> Get help with this step
+              </a>
+            </p>
+          </div>
+          <div>
+            <a class="icon" href="https://beaker.dev/docs/templates/microblog-feed/" target="_blank">
+              <span class="fas fa-stream"></span>
+            </a>
+            <h4>3. Set up your feed app</h4>
+            <p class="help-link">
+              <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#set-up-your-feed-app" target="_blank">
+                <span class="fas fa-fw fa-info-circle"></span> Get help with this step
+              </a>
+            </p>
+          </div>
+        </div>
+        <div class="col1">
+          <a class="icon" href="https://beaker-browser.gitbook.io/docs/getting-started-with-beaker" target="_blank">
+            <span class="fas fa-book"></span>
+          </a>
+          <h4>4. Read the <a href="https://beaker-browser.gitbook.io/docs/getting-started-with-beaker" target="_blank">Getting Started Guide</a>.</h4>
+        </div>
+      </div>
+    `
+  }
+
   // events
   // =
+
+  onClickCloseIntro (e) {
+    this.isIntroActive = false
+    localStorage.isIntroHidden = 1
+  }
 
   onClickNavMore (e) {
     var rect = e.currentTarget.getClientRects()[0]
