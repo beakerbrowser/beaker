@@ -7,7 +7,7 @@ import { AddLinkPopup } from './com/add-link-popup.js'
 import { AddPostPopup } from './com/add-post-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
-import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 
@@ -25,7 +25,8 @@ class DesktopApp extends LitElement {
       profile: {type: Object},
       currentNav: {type: String},
       filter: {type: String},
-      isIntroActive: {type: Boolean}
+      isIntroActive: {type: Boolean},
+      legacyArchives: {type: Array}
     }
   }
 
@@ -40,6 +41,7 @@ class DesktopApp extends LitElement {
     this.currentNav = 'drives'
     this.filter = ''
     this.isIntroActive = false
+    this.legacyArchives = []
     this.load()
     
     if (!('isIntroHidden' in localStorage)) {
@@ -63,6 +65,7 @@ class DesktopApp extends LitElement {
       desktop.load()
     ])
     console.log(this.pins)
+    this.legacyArchives = await beaker.datLegacy.list()
   }
 
   // rendering
@@ -118,6 +121,7 @@ class DesktopApp extends LitElement {
       <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></bookmarks-view>
       <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} other-only .filter=${this.filter}></address-book-view>
       ${this.renderIntro()}
+      ${this.renderLegacyArchivesNotice()}
     `
   }
 
@@ -201,6 +205,28 @@ class DesktopApp extends LitElement {
           </a>
           <h4>4. Read the <a href="https://beaker-browser.gitbook.io/docs/getting-started-with-beaker" target="_blank">Getting Started Guide</a>.</h4>
         </div>
+      </div>
+    `
+  }
+
+  renderLegacyArchivesNotice () {
+    if (this.legacyArchives.length === 0) {
+      return ''
+    }
+    console.log(this.legacyArchives)
+    return html`
+      <div class="legacy-archives-notice">
+        <details>
+          <summary>You have ${this.legacyArchives.length} legacy Dat ${pluralize(this.legacyArchives.length, 'archive')} which can be converted to Hyperdrive.</summary>
+          <div class="archives">
+          ${this.legacyArchives.map(archive => html`
+            <div class="archive">
+              <a href="dat://${archive.key}" title=${archive.title} target="_blank">${archive.title || archive.key}</a>
+              <button @click=${e => this.onClickRemoveLegacyArchive(e, archive)}>Remove</button>
+            </div>
+          `)}
+          </div>
+        </details>
       </div>
     `
   }
@@ -299,6 +325,14 @@ class DesktopApp extends LitElement {
     await beaker.hyperdrive.deleteMetadata(`hyper://system/bookmarks/${file.name}`, 'pinned')
     toast.create('Bookmark unpinned', '', 10e3)
     this.load()
+  }
+
+  async onClickRemoveLegacyArchive (e, archive) {
+    e.preventDefault()
+    await beaker.datLegacy.remove(archive.key)
+    this.legacyArchives.splice(this.legacyArchives.indexOf(archive), 1)
+    toast.create('Archive removed')
+    this.requestUpdate()
   }
 }
 

@@ -3,6 +3,7 @@ import errors from 'beaker-error-constants'
 import loggerManifest from '../manifests/internal/logger'
 import beakerBrowserManifest from '../manifests/internal/browser'
 import bookmarksManifest from '../manifests/internal/bookmarks'
+import datLegacyManifest from '../manifests/internal/dat-legacy'
 import downloadsManifest from '../manifests/internal/downloads'
 import drivesManifest from '../manifests/internal/drives'
 import historyManifest from '../manifests/internal/history'
@@ -18,6 +19,7 @@ export const setup = function (rpc) {
   const bookmarksRPC = rpc.importAPI('bookmarks', bookmarksManifest, opts)
   const downloadsRPC = rpc.importAPI('downloads', downloadsManifest, opts)
   const drivesRPC = rpc.importAPI('drives', drivesManifest, opts)
+  const datLegacyRPC = rpc.importAPI('dat-legacy', datLegacyManifest, opts)
   const historyRPC = rpc.importAPI('history', historyManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
   const watchlistRPC = rpc.importAPI('watchlist', watchlistManifest, opts)
@@ -26,6 +28,7 @@ export const setup = function (rpc) {
   internal.browser = Object.assign({}, beakerBrowserRPC)
   internal.browser.createEventsStream = () => fromEventStream(beakerBrowserRPC.createEventsStream())
   internal.bookmarks = Object.assign({}, bookmarksRPC)
+  internal.datLegacy = datLegacyRPC
   internal.downloads = Object.assign({}, downloadsRPC)
   internal.downloads.createEventsStream = () => fromEventStream(downloadsRPC.createEventsStream())
   internal.history = Object.assign({}, historyRPC)

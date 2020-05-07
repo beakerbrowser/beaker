@@ -243,6 +243,14 @@ export async function setMeta (key, value) {
   events.emit('update:archive-meta', keyStr, value)
 }
 
+export function listLegacyArchives () {
+  return db.all(`SELECT archives.*, archives_meta.title from archives JOIN archives_meta ON archives_meta.key = archives.key WHERE archives.isSaved = 1`)
+}
+
+export function removeLegacyArchive (key) {
+  return db.all(`UPDATE archives SET isSaved = 0 WHERE key = ?`, [key])
+}
+
 // internal methods
 // =
 

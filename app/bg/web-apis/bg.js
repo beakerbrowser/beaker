@@ -23,6 +23,7 @@ import drivesManifest from './manifests/internal/drives'
 import beakerBrowserManifest from './manifests/internal/browser'
 import beakerFilesystemManifest from './manifests/internal/beaker-filesystem'
 import bookmarksManifest from './manifests/internal/bookmarks'
+import datLegacyManifest from './manifests/internal/dat-legacy'
 import downloadsManifest from './manifests/internal/downloads'
 import historyManifest from './manifests/internal/history'
 import sitedataManifest from './manifests/internal/sitedata'
@@ -34,6 +35,7 @@ import { WEBAPI as auditLogAPI } from '../dbs/audit-log'
 import drivesAPI from './bg/drives'
 import * as bookmarksAPI from '../filesystem/bookmarks'
 import beakerFilesystemAPI from './bg/beaker-filesystem'
+import datLegacyAPI from './bg/dat-legacy'
 import historyAPI from './bg/history'
 import { WEBAPI as sitedataAPI } from '../dbs/sitedata'
 import watchlistAPI from './bg/watchlist'
@@ -75,6 +77,7 @@ export const setup = function () {
   rpc.exportAPI('beaker-browser', beakerBrowserManifest, beakerBrowserAPI, internalOnly)
   rpc.exportAPI('beaker-filesystem', beakerFilesystemManifest, beakerFilesystemAPI, internalOnly)
   rpc.exportAPI('bookmarks', bookmarksManifest, bookmarksAPI, internalOnly)
+  rpc.exportAPI('dat-legacy', datLegacyManifest, datLegacyAPI, internalOnly)
   rpc.exportAPI('downloads', downloadsManifest, downloadsAPI, internalOnly)
   rpc.exportAPI('drives', drivesManifest, drivesAPI, internalOnly)
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)

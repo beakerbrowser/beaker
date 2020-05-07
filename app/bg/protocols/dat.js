@@ -42,7 +42,7 @@ export const electronHandler = async function (request, respond) {
 <html>
   <head></head>
   <body>
-    <h1>Dat legacy mode</h1>
+    <h1>Dat legacy converter</h1>
     <p><strong>Dat has been upgraded to the <a href="https://hypercore-protocol.org/" target="_blank">Hypercore Protocol</a></strong>. Old dat archives are no longer compatible with Beaker.</p>
     <p>You can convert this dat into a Hyperdrive to continue using its content.</p>
     <p><button>Convert to Hyperdrive</button></p>
@@ -50,7 +50,7 @@ export const electronHandler = async function (request, respond) {
     <pre>${files.join('\n')}</pre>
     <style>
     body {
-      margin: 10px;
+      margin: 30px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
     }
     </style>

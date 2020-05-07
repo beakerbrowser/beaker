@@ -302,5 +302,47 @@ address-book-view {
   margin: 0; 
 }
 
+.legacy-archives-notice {
+  max-width: 1000px;
+  margin: 16px auto;
+  padding: 18px 22px;
+  font-size: 15px;
+  border: 1px solid #bbc;
+  border-radius: 4px;
+}
+
+.legacy-archives-notice summary {
+  cursor: pointer;
+  outline: 0;
+}
+
+.legacy-archives-notice a {
+  color: var(--blue);
+  cursor: pointer;
+}
+
+.legacy-archives-notice a:hover {
+  text-decoration: underline;
+}
+
+.legacy-archives-notice .archives {
+  margin-top: 10px;
+}
+
+.legacy-archives-notice .archive {
+  display: flex;
+  align-items: center;
+  padding: 5px 0;
+  border-top: 1px solid #ccd;
+}
+
+.legacy-archives-notice .archive:hover {
+  background: #fafafd;
+}
+
+.legacy-archives-notice .archive a {
+  margin-right: auto;
+}
+
 `
 export default cssStr
