@@ -14,6 +14,7 @@ import * as tabManager from '../tab-manager'
 import promptsRPCManifest from '../../rpc-manifests/prompts'
 import { findWebContentsParentWindow } from '../../lib/electron'
 import { getAddedWindowSettings } from '../windows'
+import * as setupFlow from '../setup-flow'
 
 // globals
 // =
@@ -80,6 +81,7 @@ export async function create (webContents, promptName, params = {}) {
     }
   })
   view.promptName = promptName
+  view.tab = tab
   if (tabManager.getActive(parentWindow).id === tab.id) {
     parentWindow.addBrowserView(view)
   }
@@ -131,7 +133,12 @@ export function close (tab) {
 
 rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
   async close () {
-    close(this.sender)
+    close(getTabForSender(this.sender))
+  },
+
+  async closeEditProfilePromptForever () {
+    close(getTabForSender(this.sender))
+    await setupFlow.setHasVisitedProfile()
   },
 
   async createTab (url) {
@@ -153,7 +160,20 @@ rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
 // internal methods
 // =
 
+function getTabForSender (sender) {
+  var view = BrowserView.fromWebContents(sender)
+  for (let id in views) {
+    if (views[id] === view) {
+      return view.tab
+    }
+  }
+  return undefined
+}
+
 function getDefaultWidth (view) {
+  if (view.promptName === 'edit-profile') {
+    return 450
+  }
   return 380
 }
 

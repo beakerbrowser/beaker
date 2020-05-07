@@ -23,6 +23,7 @@ import * as siteInfo from './subwindows/site-info'
 import * as windowMenu from './window-menu'
 import { createShellWindow, getAddedWindowSettings, getOrCreateNonAppWindow } from './windows'
 import { getResourceContentType } from '../browser'
+import * as setupFlow from './setup-flow'
 import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
 import { DRIVE_KEY_REGEX, slugify } from '../../lib/strings'
@@ -921,6 +922,8 @@ class Tab extends EventEmitter {
     if (httpResponseCode === 404 && this.writable) {
       // prompt to create a page on 404 for owned sites
       prompts.create(this.browserView.webContents, 'create-page', {url: this.url})
+    } else if (!setupFlow.hasVisitedProfile && this.driveInfo && this.driveInfo.ident.profile) {
+      prompts.create(this.browserView.webContents, 'edit-profile', {url: this.url})
     }
 
     // emit

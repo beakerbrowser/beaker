@@ -13,19 +13,16 @@ var setupWindow
 
 // exported api
 // =
-/**
- * TODOS
- * 
- * disable resize
- * figure out window close
- */
+
+export var hasVisitedProfile = false
 
 export async function runSetupFlow () {
   var setupState = await profileDb.get('SELECT * FROM setup_state')
   if (!setupState) {
-    setupState = {migrated08to09: 0, profileSetup: 0}
+    setupState = {migrated08to09: 0, profileSetup: 0, hasVisitedProfile: 0}
     await profileDb.run(knex('setup_state').insert(setupState))
   }
+  hasVisitedProfile = setupState.hasVisitedProfile === 1
 
   // TODO
   // do we even need to track profileSetup in setup_state?
@@ -40,7 +37,7 @@ export async function runSetupFlow () {
     await profileDb.run(knex('setup_state').update(setupState))
   }
 
-  var needsSetup = Object.values(setupState).includes(0)
+  var needsSetup = !setupState.profileSetup || !setupState.migrated08to09
   if (needsSetup) {
     setupWindow = new BrowserWindow({
       // titleBarStyle: 'hiddenInset',
@@ -80,5 +77,10 @@ export async function updateSetupState (obj) {
   // so use this as a cue to close the window
   // -prf
   var setupState = await profileDb.get('SELECT * FROM setup_state')
-  if (!Object.values(setupState).includes(0)) setupWindow.close()
+  if (setupWindow && !Object.values(setupState).includes(0)) setupWindow.close()
+}
+
+export async function setHasVisitedProfile () {
+  hasVisitedProfile = true
+  await profileDb.run(knex('setup_state').update({hasVisitedProfile: 1}))
 }

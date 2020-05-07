@@ -1,6 +1,7 @@
 /* globals customElements */
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import './create-page'
+import './edit-profile'
 
 class PromptsWrapper extends LitElement {
   static get properties () {
@@ -41,6 +42,8 @@ class PromptsWrapper extends LitElement {
     switch (this.currentPrompt) {
       case 'create-page':
         return html`<create-page-prompt></create-page-prompt>`
+      case 'edit-profile':
+        return html`<edit-profile-prompt></edit-profile-prompt>`
     }
     return html`<div></div>`
   }
