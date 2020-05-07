@@ -918,7 +918,7 @@ class Tab extends EventEmitter {
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {
       this.wasDriveTimeout = true
     }
-    if (httpResponseCode === 404 && this.writable && (this.driveInfo.type === 'website' || this.driveInfo.type === 'application')) {
+    if (httpResponseCode === 404 && this.writable) {
       // prompt to create a page on 404 for owned sites
       prompts.create(this.browserView.webContents, 'create-page', {url: this.url})
     }

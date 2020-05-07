@@ -154,7 +154,7 @@ rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
 // =
 
 function getDefaultWidth (view) {
-  return 360
+  return 380
 }
 
 function getDefaultHeight (view) {

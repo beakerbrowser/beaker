@@ -67,20 +67,8 @@ class CreatePagePrompt extends LitElement {
       path = `${path}.${ext}`
     }
 
-    // ensure the parent directory exists
-    var pathParts = path.split('/').filter(Boolean).slice(0, -1)
-    var pathAgg = []
-    for (let pathPart of pathParts) {
-      try {
-        pathAgg.push(pathPart)
-        await bg.hyperdrive.mkdir(joinPath(urlp.hostname, pathAgg.join('/')))
-      } catch (e) {
-        // ignore, dir already exists (probably)
-      }
-    }
-
     // create the file
-    await bg.hyperdrive.writeFile(joinPath(urlp.hostname, path, ''))
+    await bg.hyperdrive.writeFile(joinPath(urlp.hostname, path), '')
     let newUrl = joinPath(urlp.origin, path)
     bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
     bg.prompts.executeSidebarCommand('set-context', 'editor-app', newUrl)
