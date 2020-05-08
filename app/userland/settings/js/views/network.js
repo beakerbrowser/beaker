@@ -7,8 +7,7 @@ import viewCSS from '../../css/views/general.css.js'
 class NetworkView extends LitElement {
   static get properties () {
     return {
-      networkStatus: {type: Array},
-      drives: {type: Array}
+      networkStatus: {type: Array}
     }
   }
 
@@ -37,13 +36,15 @@ class NetworkView extends LitElement {
   constructor () {
     super()
     this.networkStatus = []
-    this.drives = []
   }
 
   async load () {
-    this.networkStatus = await beaker.browser.getDaemonNetworkStatus()
-    this.drives = await beaker.drives.list()
-    console.log(this.networkStatus, this.drives)
+    var networkStatus = await beaker.browser.getDaemonNetworkStatus()
+    for (let stats of networkStatus) {
+      stats[0].drive = await beaker.drives.get(stats[0].metadata.key)
+    }
+    this.networkStatus = networkStatus
+    console.log(this.networkStatus)
   }
 
   unload () {
@@ -69,14 +70,15 @@ class NetworkView extends LitElement {
     var key = stats[0].metadata.key
     var peers = stats[0].metadata.peers
     var peerAddresses = stats[0].peerAddresses
-    var drive = this.drives.find(d => d.key === key)
+    var drive = stats[0].drive
     var uploadedBytes = stats.reduce((acc, v) => acc + v.metadata.uploadedBytes + v.content.uploadedBytes, 0)
     var downloadedBytes = stats.reduce((acc, v) => acc + v.metadata.downloadedBytes + v.content.downloadedBytes, 0)
+    var title = drive && drive.ident.system ? 'system' : `${key.slice(0, 6)}..${key.slice(-2)}`
     return html`
       <tr>
         <td>
-          <a href="hyper://${key}/" target="_blank">
-            ${key.slice(0, 6)}..${key.slice(-2)}
+          <a href="hyper://${drive && drive.ident.system ? 'system' : key}/" target="_blank">
+            ${title}
             ${drive ? `(${drive.info.title})` : ''}
           </a>
         </td>
