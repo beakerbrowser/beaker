@@ -60,6 +60,9 @@ class ShellWindowToolbarMenu extends LitElement {
       cursor: pointer;
       text-decoration: none;
       color: inherit;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     a:hover {
       background: var(--bg-toolbar--hover);

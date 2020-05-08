@@ -120,6 +120,9 @@ button {
   padding: 0 12px 0 10px;
   background: var(--bg-cert-default);
   clip-path: polygon(0% 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 button:not(:disabled):hover {
