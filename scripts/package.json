@@ -1,10 +1,9 @@
 {
-  "bin": "./tasks/start-cli.js",
   "name": "beakerbrowser",
   "devDependencies": {
-    "browserify": "^13.0.1",
-    "electron": "9.0.0-beta.16",
-    "electron-builder": "^21.2.0",
+    "browserify": "^16.0.0",
+    "electron": "9.0.0-beta.22",
+    "electron-builder": "^22.6.0",
     "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-node": "^5.1.1",
@@ -29,7 +28,7 @@
   },
   "build": {
     "appId": "com.bluelinklabs.beaker-browser",
-    "asar": true,
+    "asar": false,
     "asarUnpack": [
       "./fg/json-renderer/index.build.js",
       "./fg/syntax-highlighter/index.js",
@@ -38,6 +37,11 @@
       "./node_modules/hyperdrive-daemon/**"
     ],
     "copyright": "© 2020, Blue Link Labs",
+    "directories": {
+      "app": "../app",
+      "buildResources": "../build",
+      "output": "../dist"
+    },
     "npmRebuild": false,
     "protocols": [
       {
@@ -83,14 +87,13 @@
     }
   },
   "scripts": {
-    "postinstall": "cd app && npm install",
+    "postinstall": "cd ../app && npm install",
     "build": "gulp build",
     "burnthemall": "node ./tasks/burnthemall.js",
     "lint": "eslint --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern 'vendor' --ignore-pattern '*.build.js' --ignore-pattern 'assets' --fix app",
     "rebuild": "gulp rebuild",
     "release": "electron-builder -p never && gulp postbuild",
     "start": "gulp start",
-    "start-logging": "DEBUG=*,-bittorrent-dht $(node -e \"console.log(require('electron'))\") -r trace ./app",
     "watch": "gulp start-watch"
   },
   "collective": {

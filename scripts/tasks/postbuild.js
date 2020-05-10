@@ -7,7 +7,7 @@ gulp.task('postbuild', gulp.series(function () {
   // but the auto updater expects 'beaker-browser-{version}{ext}'
   // couldnt figure out how to reconfig the builder, so just rename the output assets
 
-  var cwd = jetpack.cwd('dist')
+  var cwd = jetpack.cwd('../dist')
   var names = cwd.list()
   names.forEach(function (name) {
     // windows assets:

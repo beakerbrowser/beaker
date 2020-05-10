@@ -15,7 +15,7 @@ var generateSpecImportsFile = require('./generate_spec_imports');
 var utils = require('../utils');
 
 var projectDir = jetpack;
-var srcDir = projectDir.cwd('./app');
+var srcDir = projectDir.cwd('../app');
 
 // -------------------------------------
 // Tasks
@@ -95,10 +95,10 @@ var buildLess = function (src, dest) {
 }
 var lessTask = function () {
   return  Q.all([
-    buildLess('app/fg/builtin-pages/stylesheets/*.less', srcDir.path('fg/builtin-pages/stylesheets')),
-    buildLess('app/fg/builtin-pages/stylesheets/builtin-pages/*.less', srcDir.path('fg/builtin-pages/stylesheets/builtin-pages')),
-    buildLess('app/fg/builtin-pages/stylesheets/builtin-pages.less', srcDir.path('fg/builtin-pages/stylesheets')),
-    buildLess('app/fg/builtin-pages/stylesheets/icons.less', srcDir.path('fg/builtin-pages/stylesheets'))
+    buildLess('../app/fg/builtin-pages/stylesheets/*.less', srcDir.path('fg/builtin-pages/stylesheets')),
+    buildLess('../app/fg/builtin-pages/stylesheets/builtin-pages/*.less', srcDir.path('fg/builtin-pages/stylesheets/builtin-pages')),
+    buildLess('../app/fg/builtin-pages/stylesheets/builtin-pages.less', srcDir.path('fg/builtin-pages/stylesheets')),
+    buildLess('../app/fg/builtin-pages/stylesheets/icons.less', srcDir.path('fg/builtin-pages/stylesheets'))
   ])
 };
 gulp.task('less', gulp.series(['burnthemall-maybe'], lessTask));

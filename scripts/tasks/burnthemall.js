@@ -9,11 +9,12 @@ var timeout = 0
 var isWindows = (process.platform === "win32")
 
 function main () {
-  var projectDir = process.cwd()
+  var projectDir = process.cwd('..')
   var appDir = path.join(projectDir, 'app')
-  rmNodeModules(projectDir)
+  var scriptsDir = path.join(projectDir, 'scripts')
+  rmNodeModules(scriptsDir)
   rmNodeModules(appDir)
-  rmPackageLock(projectDir)
+  rmPackageLock(scriptsDir)
   rmPackageLock(appDir)
   run('npm install', {shell: true}, function () {
     run('npm run rebuild', {shell: true}, function () {

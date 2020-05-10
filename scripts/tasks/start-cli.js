@@ -4,9 +4,9 @@ const NODE_FLAGS = `--js-flags="--throw-deprecation"`
 
 var childProcess = require('child_process')
 var electron = require('electron')
-var path = require('path')
+var jetpack = require('fs-jetpack');
 
-var app = path.join(__dirname, '../app')
+var app = jetpack.cwd('../app').cwd()
 
 module.exports = function () {
   if (process.env.ELECTRON_PATH) {

@@ -16,7 +16,7 @@ var nodeBuiltInModules = ['assert', 'buffer', 'child_process', 'cluster',
 var electronBuiltInModules = ['electron'];
 
 var npmModulesUsedInApp = function () {
-  var appManifest = require('../../app/package.json');
+  var appManifest = require('../../../app/package.json');
   return Object.keys(appManifest.dependencies);
 };
 
