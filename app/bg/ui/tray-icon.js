@@ -4,6 +4,10 @@ import { createShellWindow } from './windows'
 import * as tabManager from './tab-manager'
 import * as settingsDb from '../dbs/settings'
 
+const IS_WIN = process.platform === 'win32'
+const IS_LINUX = process.platform === 'linux'
+const ICON = IS_LINUX || IS_WIN ? 'assets/img/tray-icon-white.png' : 'assets/img/tray-icon.png'
+
 // globals
 // =
 
@@ -13,7 +17,7 @@ var tray
 // =
 
 export function setup () {
-  tray = new Tray(path.join(__dirname, 'assets/img/tray-icon.png'))
+  tray = new Tray(path.join(__dirname, ICON))
   tray.setToolTip('Beaker daemon')
   settingsDb.on('set:run_background', buildMenu)
   buildMenu()
