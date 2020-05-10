@@ -169,7 +169,7 @@ class DesktopApp extends LitElement {
                 </beaker-img-fallbacks>
               </a>
             ` : ''}
-            <h4>1. Customize your profile</h4>
+            <h4>1. Customize your <a href=${this.profile ? this.profile.url : ''} target="_blank">profile</a></h4>
             <p class="help-link">
               <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#customizing-your-profile-drive" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
@@ -180,7 +180,7 @@ class DesktopApp extends LitElement {
             <a class="icon" href="https://userlist.beakerbrowser.com" target="_blank">
               <span class="fas fa-user-plus"></span>
             </a>
-            <h4>2. Add yourself to the directory</h4>
+            <h4>2. Add yourself to <a href="https://userlist.beakerbrowser.com" target="_blank">the directory</a></h4>
             <p class="help-link">
               <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#finding-other-users" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
@@ -191,7 +191,7 @@ class DesktopApp extends LitElement {
             <a class="icon" href="https://beaker.dev/docs/templates/microblog-feed/" target="_blank">
               <span class="fas fa-stream"></span>
             </a>
-            <h4>3. Set up your feed app</h4>
+            <h4>3. Set up your <a href="https://beaker.dev/docs/templates/microblog-feed/" target="_blank">feed app</a></h4>
             <p class="help-link">
               <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#set-up-your-feed-app" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
