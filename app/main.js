@@ -1,4 +1,5 @@
 require('tls').DEFAULT_ECDH_CURVE = 'auto' // HACK (prf) fix Node 8.9.x TLS issues, see https://github.com/nodejs/node/issues/19359
+process.noAsar = true
 
 // DEBUG
 // Error.stackTraceLimit = Infinity

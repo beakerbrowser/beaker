@@ -52,7 +52,8 @@ async function runConvertProcess (...args) {
   const opts = {
     stdio: 'inherit',
     env: Object.assign({}, process.env, {
-      ELECTRON_RUN_AS_NODE: 1
+      ELECTRON_RUN_AS_NODE: 1,
+      ELECTRON_NO_ASAR: 1
     })
   }
   var proc = childProcess.fork(fullModulePath, args, opts)
