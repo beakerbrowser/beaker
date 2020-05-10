@@ -1,3 +1,4 @@
+import './background-run.js'
 import './intro.js'
 import './migrating.js'
 import './profile.js'
@@ -13,15 +14,14 @@ customElements.define('setup-app', class extends HTMLElement {
     this.stages = []
 
     if (!isStageDone('profileSetup')) {
+      this.stages.push('intro-view')
       this.stages.push('profile-view')
+      this.stages.push('background-run-view')
+      document.body.style.background = '#334'
+      document.body.style.transition = 'background 0.5s'
     }
     if (!isStageDone('migrated08to09')) {
       this.stages.push('migrating-view')
-    }
-    if (this.stages.length === 2) {
-      this.stages.unshift('intro-view')
-      document.body.style.background = '#334'
-      document.body.style.transition = 'background 0.5s'
     }
 
     this.stage = 0

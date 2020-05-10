@@ -273,7 +273,7 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
-    return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
+    return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
   }
   if (requestUrl === 'beaker://swarm-debugger/main.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/swarm-debugger.css'))
