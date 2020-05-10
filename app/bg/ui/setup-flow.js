@@ -77,7 +77,7 @@ export async function updateSetupState (obj) {
   // so use this as a cue to close the window
   // -prf
   var setupState = await profileDb.get('SELECT * FROM setup_state')
-  if (setupWindow && !Object.values(setupState).includes(0)) setupWindow.close()
+  if (setupWindow && setupState.profileSetup && setupState.migrated08to09) setupWindow.close()
 }
 
 export async function setHasVisitedProfile () {
