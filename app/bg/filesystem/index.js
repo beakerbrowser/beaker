@@ -89,7 +89,7 @@ export async function setup () {
     if (isInitialCreation) {
       await bookmarks.add({href: 'https://beaker-browser.gitbook.io/docs/', title: 'Beaker Documentation', pinned: true})
       await bookmarks.add({href: 'https://beaker.dev/', title: 'Beaker Developer Portal', pinned: true})
-      await bookmarks.add({href: 'https://www.reddit.com/r/beakerbrowser/', title: 'Beaker Community Reddit', pinned: true})
+      await bookmarks.add({href: 'https://github.com/beakerbrowser/beaker/discussions', title: 'Beaker Discussions', pinned: true})
     }
 
     // ensure all user mounts are set

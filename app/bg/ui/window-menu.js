@@ -768,6 +768,13 @@ export function buildWindowMenu (opts = {}) {
         click: function (item) {
           if (win) tabManager.create(win, 'https://github.com/beakerbrowser/beaker/issues', {setActive: true})
         }
+      },
+      {
+        id: 'beakerDiscussions',
+        label: 'Discussion Forum',
+        click: function (item) {
+          if (win) tabManager.create(win, 'https://github.com/beakerbrowser/beaker/discussions', {setActive: true})
+        }
       }
     ]
   }
