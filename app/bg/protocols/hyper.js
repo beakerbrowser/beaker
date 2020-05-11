@@ -162,7 +162,11 @@ export const protocolHandler = async function (request, respond) {
     // check to see if we actually have data from the drive
     var version = await checkoutFS.session.drive.version()
     if (version === 0) {
-      return respondError(404, 'Site not found')
+      return respondError(404, 'Hyperdrive not found', {
+        title: 'Hyperdrive Not Found',
+        errorDescription: 'No peers hosting this drive were found',
+        errorInfo: 'You may still be connecting to peers - try reloading the page.'
+      })
     }
 
     // read manifest CSP
