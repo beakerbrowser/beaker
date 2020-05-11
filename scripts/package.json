@@ -79,8 +79,8 @@
       "category": "public.app-category.productivity",
       "hardenedRuntime": true,
       "type": "distribution",
-      "entitlements": "build/entitlements.plist",
-      "entitlementsInherit": "build/entitlements.plist"
+      "entitlements": "../build/entitlements.plist",
+      "entitlementsInherit": "../build/entitlements.plist"
     },
     "publish": {
       "provider": "github"
