@@ -25,6 +25,8 @@ import { findWebContentsParentWindow } from '../lib/electron'
 import * as settingsDb from '../dbs/settings'
 import { getEnvVar } from '../lib/env'
 import _pick from 'lodash.pick'
+import * as logLib from '../logger'
+const logger = logLib.child({category: 'browser'})
 
 const IS_WIN = process.platform === 'win32'
 const IS_LINUX = process.platform === 'linux'
@@ -171,6 +173,10 @@ export async function setup () {
 }
 
 export function createShellWindow (windowState, createOpts = {dontInitPages: false}) {
+  if (!sessionWatcher) {
+    logger.error('Attempted to create a shell window prior to setup', {stack: (new Error()).stack})
+    return
+  }
   // create window
   let state = ensureVisibleOnSomeDisplay(Object.assign({}, defaultWindowState(), lastWindowPositioning(), windowState))
   var { x, y, width, height, minWidth, minHeight } = state

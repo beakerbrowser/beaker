@@ -178,11 +178,11 @@ if (!isFirstInstance) {
 } else {
   handleArgv(process.argv)
   app.on('second-instance', (event, argv, workingDirectory) => {
+    log.info('Second instance opened', {argv})
     handleArgv(argv)
 
     // focus/create a window
     windows.ensureOneWindowExists()
-    windows.getActiveWindow().focus()
   })
 }
 function handleArgv (argv) {

@@ -166,6 +166,7 @@ export async function setup () {
     await HyperdriveDaemonManager.start({
       interpreter: app.getPath('exe'),
       env: Object.assign({}, process.env, {ELECTRON_RUN_AS_NODE: 1, ELECTRON_NO_ASAR: 1}),
+      noPM2DaemonMode: true,
       memoryOnly: false,
       heapSize: 4096, // 4GB heap
       storage: constants.root
