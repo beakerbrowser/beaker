@@ -3,7 +3,6 @@ import path from 'path'
 import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB, handleQueryBuilder } from '../lib/db'
 
-import FULL_SCHEMA from './schemas/profile-data.sql'
 import V1 from './schemas/profile-data.v1.sql'
 import V2 from './schemas/profile-data.v2.sql'
 import V3 from './schemas/profile-data.v3.sql'
@@ -80,7 +79,7 @@ export const setup = function (opts) {
   // open database
   var dbPath = path.join(opts.userDataPath, 'Profiles')
   db = new sqlite3.Database(dbPath)
-  setupPromise = setupSqliteDB(db, {setup: setupDb, migrations}, '[PROFILES]')
+  setupPromise = setupSqliteDB(db, {migrations}, '[PROFILES]')
 }
 
 /**
