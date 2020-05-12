@@ -5,11 +5,11 @@ export default `
 
 
 -- remove the old bookmarks tabes
-DROP TRIGGER crawl_bookmarks_ai;
-DROP TRIGGER crawl_bookmarks_ad;
-DROP TRIGGER crawl_bookmarks_au;
-DROP TABLE crawl_bookmarks_fts_index;
-DROP TABLE crawl_bookmarks;
+DROP TRIGGER IF EXISTS crawl_bookmarks_ai;
+DROP TRIGGER IF EXISTS crawl_bookmarks_ad;
+DROP TRIGGER IF EXISTS crawl_bookmarks_au;
+DROP TABLE IF EXISTS crawl_bookmarks_fts_index;
+DROP TABLE IF EXISTS crawl_bookmarks;
 
 
 -- add crawled tags

@@ -1,7 +1,6 @@
 export default `
 
 ALTER TABLE archives_meta ADD COLUMN type TEXT;
-DROP TABLE IF EXISTS archives_meta_type;
 
 -- crawled dats
 CREATE TABLE crawl_dats (

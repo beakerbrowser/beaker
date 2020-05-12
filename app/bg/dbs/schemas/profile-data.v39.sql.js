@@ -1,7 +1,7 @@
 export default `
-DROP TRIGGER crawl_posts_ai;
-DROP TRIGGER crawl_posts_ad;
-DROP TRIGGER crawl_posts_au;
+DROP TRIGGER IF EXISTS crawl_posts_ai;
+DROP TRIGGER IF EXISTS crawl_posts_ad;
+DROP TRIGGER IF EXISTS crawl_posts_au;
 DROP TABLE IF EXISTS crawl_posts;
 
 -- crawled statuses
