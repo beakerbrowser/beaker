@@ -239,6 +239,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://setup' || requestUrl.startsWith('beaker://setup/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'setup'), cb, {fallbackToIndexHTML: true})
   }
+  if (requestUrl === 'beaker://init' || requestUrl.startsWith('beaker://init/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'init'), cb, {fallbackToIndexHTML: true})
+  }
   if (requestUrl === 'beaker://sidebar' || requestUrl.startsWith('beaker://sidebar/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'sidebar'), cb, {
       fallbackToIndexHTML: true,

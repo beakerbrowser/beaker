@@ -24,6 +24,7 @@ import hyper from './bg/hyper/index'
 import * as filesystem from './bg/filesystem/index'
 import * as webapis from './bg/web-apis/bg'
 
+import * as initWindow from './bg/ui/init-window'
 import { runSetupFlow } from './bg/ui/setup-flow'
 import * as windows from './bg/ui/windows'
 import * as windowMenu from './bg/ui/window-menu'
@@ -36,7 +37,6 @@ import * as beakerProtocol from './bg/protocols/beaker'
 import * as assetProtocol from './bg/protocols/asset'
 import * as hyperProtocol from './bg/protocols/hyper'
 import * as datProtocol from './bg/protocols/dat'
-// import * as intentProtocol from './bg/protocols/intent'
 
 import * as testDriver from './bg/test-driver'
 import * as openURL from './bg/open-url'
@@ -88,6 +88,8 @@ app.on('open-file', (e, filepath) => {
 })
 
 app.on('ready', async function () {
+  beakerProtocol.register(protocol)
+  initWindow.open()
   portForwarder.setup()
 
   // record some common opts
@@ -122,12 +124,12 @@ app.on('ready', async function () {
 
   // protocols
   log.info('Registering protocols')
-  beakerProtocol.register(protocol)
   assetProtocol.setup()
   assetProtocol.register(protocol)
   hyperProtocol.register(protocol)
   datProtocol.register(protocol)
-  // intentProtocol.setup() TODO
+
+  initWindow.close()
 
   // setup flow
   log.info('Running setup flow')
