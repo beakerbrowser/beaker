@@ -18,7 +18,8 @@ var tray
 
 export function setup () {
   tray = new Tray(path.join(__dirname, ICON))
-  tray.setToolTip('Beaker daemon')
+  tray.setToolTip('Beaker Browser')
+  tray.on('click', e => tray.popupContextMenu())
   settingsDb.on('set:run_background', buildMenu)
   buildMenu()
 }
