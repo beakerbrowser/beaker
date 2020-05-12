@@ -36,7 +36,7 @@
     "fs-reverse": "0.0.3",
     "function-queue": "0.0.12",
     "hyperdrive-daemon": "^1.12.1",
-    "hyperdrive-daemon-client": "beta",
+    "hyperdrive-daemon-client": "^1.14.1",
     "icojs": "^0.12.3",
     "identify-filetype": "^1.0.0",
     "into-stream": "^3.1.0",
