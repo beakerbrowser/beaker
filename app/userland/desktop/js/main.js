@@ -16,6 +16,10 @@ import 'beaker://library/js/views/bookmarks.js'
 import 'beaker://library/js/views/address-book.js'
 import css from '../css/main.css.js'
 
+const DOCS_URL = 'https://beaker-browser.gitbook.io'
+const USERLIST_URL = 'https://userlist.beakerbrowser.com'
+const BLAHBITY_BLOG_URL = 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/'
+
 var cacheBuster = Date.now()
 
 class DesktopApp extends LitElement {
@@ -171,39 +175,39 @@ class DesktopApp extends LitElement {
             ` : ''}
             <h4>1. Customize your <a href=${this.profile ? this.profile.url : ''} target="_blank">profile</a></h4>
             <p class="help-link">
-              <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#customizing-your-profile-drive" target="_blank">
+              <a href="${DOCS_URL}/docs/joining-the-social-network#customizing-your-profile-drive" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
               </a>
             </p>
           </div>
           <div>
-            <a class="icon" href="https://userlist.beakerbrowser.com" target="_blank">
+            <a class="icon" href="${USERLIST_URL}" target="_blank">
               <span class="fas fa-user-plus"></span>
             </a>
-            <h4>2. Add yourself to <a href="https://userlist.beakerbrowser.com" target="_blank">the directory</a></h4>
+            <h4>2. Add yourself to <a href="${USERLIST_URL}" target="_blank">the directory</a></h4>
             <p class="help-link">
-              <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#finding-other-users" target="_blank">
+              <a href="${DOCS_URL}/docs/joining-the-social-network#finding-other-users" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
               </a>
             </p>
           </div>
           <div>
-            <a class="icon" href="https://beaker.dev/docs/templates/microblog-feed/" target="_blank">
+            <a class="icon" href=${BLAHBITY_BLOG_URL} target="_blank">
               <span class="fas fa-stream"></span>
             </a>
-            <h4>3. Set up your <a href="https://beaker.dev/docs/templates/microblog-feed/" target="_blank">feed app</a></h4>
+            <h4>3. Say hello on <a href=${BLAHBITY_BLOG_URL} target="_blank">your feed</a></h4>
             <p class="help-link">
-              <a href="https://beaker-browser.gitbook.io/docs/joining-the-social-network#set-up-your-feed-app" target="_blank">
+              <a href="${DOCS_URL}/docs/joining-the-social-network#say-hello-on-your-feed" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
               </a>
             </p>
           </div>
         </div>
         <div class="col1">
-          <a class="icon" href="https://beaker-browser.gitbook.io/docs/getting-started-with-beaker" target="_blank">
+          <a class="icon" href="${DOCS_URL}/docs/getting-started-with-beaker" target="_blank">
             <span class="fas fa-book"></span>
           </a>
-          <h4>4. Read the <a href="https://beaker-browser.gitbook.io/docs/getting-started-with-beaker" target="_blank">Getting Started Guide</a>.</h4>
+          <h4>4. Read the <a href="${DOCS_URL}/docs/getting-started-with-beaker" target="_blank">Getting Started Guide</a>.</h4>
         </div>
       </div>
     `
