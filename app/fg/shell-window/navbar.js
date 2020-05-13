@@ -379,7 +379,6 @@ svg.icon.refresh {
 .fas.fa-arrow-alt-circle-up {
   font-size: 20px;
   color: #67bf6b;
-  -webkit-text-stroke: 1px #0eab0e;
 }
 
 .badge {

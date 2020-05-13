@@ -171,12 +171,16 @@ class GeneralSettingsView extends LitElement {
           <h2 id="auto-updater">Auto Updater</h2>
   
           <div class="auto-updater">
-            <button class="btn" disabled>Updating</button>
-            <span class="version-info">
-              <div class="spinner"></div>
-              Downloading the latest version of Beaker...
-            </span>
-            ${this.renderAutoUpdateCheckbox()}
+            <p>
+              <button class="btn" disabled>Updating</button>
+              <span class="version-info">
+                <span class="spinner"></span>
+                Downloading the latest version of Beaker...
+              </span>
+            </p>
+            <p>
+              ${this.renderAutoUpdateCheckbox()}
+            </p>
           </div>
         </div>`
 
@@ -186,12 +190,16 @@ class GeneralSettingsView extends LitElement {
           <h2 id="auto-updater">Auto Updater</h2>
   
           <div class="auto-updater">
-            <button class="btn" @click=${this.onClickRestart}>Restart now</button>
-            <span class="version-info">
-              <i class="fa fa-arrow-circle-o-up"></i>
-              <strong>New version available.</strong> Restart Beaker to install.
-            </span>
-            ${this.renderAutoUpdateCheckbox()}
+            <p>
+              <button class="btn" @click=${this.onClickRestart}>Restart now</button>
+              <span class="version-info">
+                <i class="fa fa-arrow-circle-o-up"></i>
+                <strong>New version available.</strong> Restart Beaker to install.
+              </span>
+            </p>
+            <p>
+              ${this.renderAutoUpdateCheckbox()}
+            </p>
           </div>
         </div>`
     }

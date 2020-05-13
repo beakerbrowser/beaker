@@ -31,9 +31,11 @@ class BrowserMenu extends LitElement {
       bg.bookmarks.list({sortBy: 'title'})
     ])
     bookmarks.sort((a, b) => (a.title || '').toLowerCase().localeCompare((b.title || '').toLowerCase()))
+    this.browserInfo = browserInfo
     this.isDarwin = browserInfo.platform === 'darwin'
     this.windowMenuItems = menuItems
     this.bookmarks = bookmarks 
+    await this.requestUpdate()
   }
 
   render () {

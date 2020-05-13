@@ -111,5 +111,11 @@ input[type="checkbox"] {
 .versions strong {
   font-weight: 600;
 }
+
+.version-info .spinner {
+  position: relative;
+  top: 4px;
+  margin: 0 4px 0 6px;
+}
 `
 export default cssStr
