@@ -48,7 +48,7 @@ export async function convertDatArchive (key) {
 }
 
 async function runConvertProcess (...args) {
-  var fullModulePath = require.resolve('@beaker/dat-legacy-tools/bin.js')
+  var fullModulePath = join(__dirname, 'converter', 'bin.js')
   const opts = {
     stdio: 'inherit',
     env: Object.assign({}, process.env, {
