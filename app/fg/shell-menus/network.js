@@ -53,7 +53,7 @@ class NetworkMenu extends LitElement {
           </table>
           ${!this.daemonStatus.holepunchable ? html`
             <div class="help">
-              <a @click=${this.onClickLink} href="https://beaker-browser.gitbook.io/docs/help/hole-punchability">
+              <a @click=${this.onClickLink} href="https://docs.beakerbrowser.com/help/hole-punchability">
                 <span class="far fa-fw fa-question-circle"></span> What does this mean?
               </a>
            </div>

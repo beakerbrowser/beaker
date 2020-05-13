@@ -751,7 +751,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Beaker Help',
         accelerator: 'F1',
         click: function (item) {
-          if (win) tabManager.create(win, 'https://beaker-browser.gitbook.io/docs/', {setActive: true})
+          if (win) tabManager.create(win, 'https://docs.beakerbrowser.com/', {setActive: true})
         }
       },
       {

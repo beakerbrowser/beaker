@@ -16,7 +16,7 @@ import 'beaker://library/js/views/bookmarks.js'
 import 'beaker://library/js/views/address-book.js'
 import css from '../css/main.css.js'
 
-const DOCS_URL = 'https://beaker-browser.gitbook.io'
+const DOCS_URL = 'https://docs.beakerbrowser.com'
 const USERLIST_URL = 'https://userlist.beakerbrowser.com'
 const BLAHBITY_BLOG_URL = 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/'
 
@@ -175,7 +175,7 @@ class DesktopApp extends LitElement {
             ` : ''}
             <h4>1. Customize your <a href=${this.profile ? this.profile.url : ''} target="_blank">profile</a></h4>
             <p class="help-link">
-              <a href="${DOCS_URL}/docs/joining-the-social-network#customizing-your-profile-drive" target="_blank">
+              <a href="${DOCS_URL}/joining-the-social-network#customizing-your-profile-drive" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
               </a>
             </p>
@@ -186,7 +186,7 @@ class DesktopApp extends LitElement {
             </a>
             <h4>2. Add yourself to <a href="${USERLIST_URL}" target="_blank">the directory</a></h4>
             <p class="help-link">
-              <a href="${DOCS_URL}/docs/joining-the-social-network#finding-other-users" target="_blank">
+              <a href="${DOCS_URL}/joining-the-social-network#finding-other-users" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
               </a>
             </p>
@@ -197,17 +197,17 @@ class DesktopApp extends LitElement {
             </a>
             <h4>3. Say hello on <a href=${BLAHBITY_BLOG_URL} target="_blank">your feed</a></h4>
             <p class="help-link">
-              <a href="${DOCS_URL}/docs/joining-the-social-network#say-hello-on-your-feed" target="_blank">
+              <a href="${DOCS_URL}/joining-the-social-network#say-hello-on-your-feed" target="_blank">
                 <span class="fas fa-fw fa-info-circle"></span> Get help with this step
               </a>
             </p>
           </div>
         </div>
         <div class="col1">
-          <a class="icon" href="${DOCS_URL}/docs/getting-started-with-beaker" target="_blank">
+          <a class="icon" href="${DOCS_URL}/getting-started-with-beaker" target="_blank">
             <span class="fas fa-book"></span>
           </a>
-          <h4>4. Read the <a href="${DOCS_URL}/docs/getting-started-with-beaker" target="_blank">Getting Started Guide</a>.</h4>
+          <h4>4. Read the <a href="${DOCS_URL}/getting-started-with-beaker" target="_blank">Getting Started Guide</a>.</h4>
         </div>
       </div>
     `

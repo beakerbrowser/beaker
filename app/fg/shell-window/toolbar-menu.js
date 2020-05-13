@@ -131,7 +131,7 @@ class ShellWindowToolbarMenu extends LitElement {
       <span class="spacer"></span>
       <a data-href="https://userlist.beakerbrowser.com/" title="Beaker User Directory" @mousedown=${this.onMousedownLink}>User Directory</a>
       <a data-href="https://beaker.dev/" title="Developer Portal" @mousedown=${this.onMousedownLink}>Dev Portal</a>
-      <a data-href="https://beaker-browser.gitbook.io/docs/" title="Help" @mousedown=${this.onMousedownLink}>Help</a>
+      <a data-href="https://docs.beakerbrowser.com/" title="Help" @mousedown=${this.onMousedownLink}>Help</a>
       ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
     `
   }
