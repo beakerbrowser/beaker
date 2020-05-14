@@ -1,0 +1,96 @@
+.logger {
+  .controls {
+    position: sticky;
+    top: 0;
+    background: #fff;
+  }
+  .standard-controls {
+    display: flex;
+    align-items: center;
+    color: #555;
+    padding: 6px 0;
+
+    input {
+      display: none; // because of a rendering error in Electron 3, we're using icons to manually present the checkbox
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .divider {
+      margin-left: 20px;
+      margin-right: 5px;
+      border-right: 1px solid #ccc;
+      height: 14px;
+
+      &.thin {
+        margin-left: 5px;
+      }
+    }
+
+    label {
+      margin-left: 15px;
+      margin-bottom: 0;
+      font-weight: normal;
+    }
+
+    .status {
+      margin-left: 8px;
+    }
+  }
+
+  .logger-row {
+    td {
+      padding: 4px;
+      border-top: 1px solid #fff;
+    }
+
+    &.purple {
+      background: #fdf3ff;
+      color: #9C27B0;
+    }
+    &.blue {
+      background: #e6f4ff;
+      color: #2196F3;
+    }
+    &.cyan {
+      background: #e7fcff;
+      color: #00BCD4;
+    }
+    &.green {
+      background: #f1f9f1;
+      color: #4CAF50;
+    }
+    &.yellow {
+      background: #fff3cc;
+      color: #FFC107;
+    }
+    &.red {
+      background: #fddee9;
+      color: #E91E63;
+    }
+    &:hover {
+      background: #fff;
+    }
+
+    .msg {
+      color: #111;
+    }
+
+    .level,
+    .category,
+    .subcategory,
+    .timestamp {
+      white-space: nowrap;
+    }
+
+    .level {
+      font-weight: 500;
+    }
+
+    small {
+      color: rgba(0,0,0,.5);
+    }
+  }
+}

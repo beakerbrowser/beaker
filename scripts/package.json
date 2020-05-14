@@ -1,0 +1,119 @@
+{
+  "name": "beakerbrowser",
+  "devDependencies": {
+    "browserify": "^16.0.0",
+    "electron": "9.0.0-beta.24",
+    "electron-builder": "^22.6.0",
+    "electron-notarize": "^0.3.0",
+    "eslint": "^4.5.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.1",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "fs-jetpack": "^1.2.0",
+    "gulp": "^4.0.0",
+    "gulp-batch": "^1.0.5",
+    "gulp-less": "^4.0.1",
+    "gulp-plumber": "^1.1.0",
+    "gulp-util": "^3.0.6",
+    "gulp-watch": "^4.3.5",
+    "into-stream": "^2.0.1",
+    "pre-commit": "^1.2.2",
+    "q": "^1.4.1",
+    "rollup": "^1.23.0",
+    "yargs": "^4.2.0"
+  },
+  "optionalDependencies": {
+    "appdmg": "^0.4.5",
+    "rcedit": "^0.5.0"
+  },
+  "build": {
+    "afterSign": "./afterSignHook.js",
+    "appId": "com.bluelinklabs.beaker-browser",
+    "asar": false,
+    "asarUnpack": [
+      "./fg/json-renderer/index.build.js",
+      "./fg/syntax-highlighter/index.js",
+      "./node_modules/@beaker/dat-legacy-tools/**",
+      "./node_modules/sodium-native/**",
+      "./node_modules/hyperdrive-daemon/**"
+    ],
+    "copyright": "© 2020, Blue Link Labs",
+    "directories": {
+      "app": "../app",
+      "buildResources": "../build",
+      "output": "../dist"
+    },
+    "npmRebuild": false,
+    "protocols": [
+      {
+        "name": "URL",
+        "schemes": [
+          "http",
+          "https"
+        ]
+      },
+      {
+        "name": "hyper",
+        "schemes": [
+          "hyper"
+        ]
+      },
+      {
+        "name": "dat",
+        "schemes": [
+          "dat"
+        ]
+      }
+    ],
+    "appImage": {
+      "category": "Network",
+      "desktop": {
+        "Name": "Beaker Browser",
+        "GenericName": "Web Browser",
+        "Type": "Application",
+        "Terminal": false,
+        "MimeType": "text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/dat;video/webm;application/x-xpinstall;",
+        "Categories": "GNOME;GTK;Network;WebBrowser;"
+      }
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "type": "distribution",
+      "entitlements": "../build/entitlements.plist",
+      "entitlementsInherit": "../build/entitlements.plist"
+    },
+    "publish": {
+      "provider": "github"
+    }
+  },
+  "scripts": {
+    "postinstall": "cd ../app && npm install && cd bg/dat/converter && npm install",
+    "build": "gulp build",
+    "burnthemall": "node ./tasks/burnthemall.js",
+    "lint": "eslint --ignore-pattern 'color-thief.js' --ignore-pattern 'app/node_modules' --ignore-pattern 'vendor' --ignore-pattern '*.build.js' --ignore-pattern 'assets' --fix app",
+    "rebuild": "gulp rebuild",
+<<<<<<< HEAD:package.json
+    "release": "npm run build && electron-builder -p never && gulp postbuild",
+=======
+    "release": "electron-builder -p never && gulp postbuild",
+>>>>>>> blue-hyperdrive10:scripts/package.json
+    "start": "gulp start",
+    "watch": "gulp start-watch"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/beaker",
+    "logo": "https://opencollective.com/opencollective/logo.txt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beakerbrowser/beaker"
+  },
+  "bugs": {
+    "url": "https://github.com/beakerbrowser/beaker/issues"
+  },
+  "homepage": "https://beakerbrowser.com/",
+  "dependencies": {}
+}

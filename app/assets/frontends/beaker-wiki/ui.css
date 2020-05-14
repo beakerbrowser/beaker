@@ -1,0 +1,170 @@
+body {
+  --light-gray: #f7f7fc;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  min-height: 100vh;
+  min-width: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: #2864dc;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid #ccd;
+  border-radius: 4px;
+  outline: 0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+button:active {
+  background: var(--light-gray);
+}
+
+button.primary {
+  color: #1073ca;
+  border: 1px solid #1E88E5;
+}
+
+header {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  background: var(--light-gray);
+}
+
+nav {
+  border-right: 1px solid #ccd;
+}
+
+main {
+}
+
+wiki-nav {
+  display: block;
+  overflow: hidden;
+}
+
+wiki-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #445;
+  padding: 0.5rem 1rem;
+  margin: 0;
+}
+
+wiki-nav a:hover {
+  text-decoration: none;
+  background: var(--light-gray);
+}
+
+wiki-nav a.active {
+  background: var(--light-gray);
+}
+
+wiki-nav a img {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  opacity: 0.35;
+  visibility: hidden;
+}
+
+wiki-nav a:hover img {
+  visibility: visible;
+}
+
+wiki-nav a img:hover {
+  opacity: 1;
+}
+
+wiki-nav .empty {
+  padding: 0.6rem 1rem;
+  color: #667;
+}
+
+.content {
+  padding: 20px;
+}
+
+.content > :first-child {
+  margin-top: 0;
+}
+.content hr {
+  border: 0;
+  border-top: 1px solid #ccd;
+}
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5 { margin: 1.5rem 0; }
+.content h1 { font-size: 2em; }
+.content h2 { font-size: 1.7em; }
+.content h3 { font-size: 1.4em; }
+.content h4 { font-size: 1.3em; }
+.content h5 { font-size: 1.1em; }
+.content pre {
+  background: var(--light-gray);
+  padding: 1em;
+  overflow: auto;
+}
+.content p,
+.content ul,
+.content ol {
+  line-height: 1.5;
+}
+.content table {
+  margin: 1em 0;
+}
+.content blockquote {
+  border-left: 10px solid var(--light-gray);
+  margin: 1em 0;
+  padding: 1px 1.5em;
+  color: #667;
+}
+
+wiki-page .empty {
+  padding: 20vh 5vw 40vh 0;
+  text-align: center;
+  font-size: 23px;
+  color: #667;
+}
+
+wiki-page .empty button {
+  font-size: 18px;
+}
+
+wiki-page textarea.editor {
+  width: 100%;
+  height: calc(100vh - 66px);
+  padding: 20px;
+  box-sizing: border-box;
+  border: 0;
+  font-size: 17px;
+  letter-spacing: 0.75px;
+  line-height: 1.4;
+  outline: 0;
+  resize: none;
+}
+
+wiki-page .buttons {
+  padding: 16px;
+  border-bottom: 1px solid #ccd;
+}
+
+wiki-page .buttons button {
+  margin-right: 5px;
+}

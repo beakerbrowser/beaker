@@ -1,0 +1,55 @@
+.editor-tabs {
+  display: flex;
+  height: 39px;
+  padding-top: 4px;
+  overflow-x: scroll;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tab {
+    height: 100%;
+    line-height: 35px;
+    z-index: 1;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    // border behaviors
+    border-bottom: 1px solid #ccc;
+    padding: 1px 11px 0 11px; // adjust spacing so that when top & side borders show, our content is in the same place
+
+    &.active {
+      padding: 0 10px; // normal padding, the border is visible
+      border: 1px solid #ccc;
+      border-bottom-color: transparent;
+    }
+
+    i {
+      opacity: 0;
+      padding-left: 10px;
+      z-index: 100;
+      cursor: pointer;
+    }
+    &:hover i,
+    &.active i {
+      opacity: 1;
+    }
+
+    &.new-file {
+      color: #666;
+      flex: 0 0 35px;
+
+      &:hover {
+        background: #eee;
+      }
+    }
+  }
+
+  .unused-space {
+    flex: 1;
+    border-bottom: 1px solid #ccc;
+  }
+}

@@ -1,0 +1,77 @@
+@import "../base/colors";
+@import "../utils/flex";
+@import "../components/link";
+
+.builtin-wrapper.builtin-wrapper.downloads-wrapper {
+
+  .builtin-main {
+    max-width: 900px;
+  }
+
+  .ll-row.download {
+
+    .title {
+      max-width: 375px;
+    }
+
+    .metadata {
+      &:extend(.flex);
+      align-items: center;
+
+      > *:not(:first-child) {
+        margin-left: 5px;
+      }
+
+      > * {
+        margin-right: 3px;
+      }
+    }
+
+    .buttons.controls {
+      opacity: 1;
+    }
+
+    .link {
+      color: @blue;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .btn.trash {
+      opacity: 0;
+
+      &:hover {
+        color: shade(@red, 17%);
+      }
+    }
+
+    &:hover {
+
+      .btn.trash {
+        opacity: 1;
+      }
+    }
+  }
+
+  .ll-row.download.progressing {
+    height: auto;
+    padding: 8px 15px;
+
+    .progress-ui {
+      flex: 1;
+      margin-right: 20px;
+    }
+
+    .controls {
+      margin-left: 0;
+      margin-right: 20px;
+    }
+
+    .metadata {
+      margin-left: auto;
+    }
+  }
+}

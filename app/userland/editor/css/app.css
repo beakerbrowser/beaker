@@ -1,0 +1,64 @@
+@import "../../app-stdlib/css/buttons2.css";
+@import "./toolbar.css";
+@import "../../app-stdlib/css/tooltip.css";
+
+editor-app {
+  display: block;
+  position: relative;
+  background: var(--background);
+  color: var(--default);
+  user-select: none;
+}
+
+editor-app[detached] {
+  height: 100vh;
+  overflow: hidden;
+}
+
+editor-app a,
+editor-app button {
+  outline: 0;
+}
+
+editor-app .empty {
+  height: 100vh;
+  background: #223;
+  font-style: italic;
+  color: #eef7;
+  padding: 10px 16px;
+}
+
+editor-app .empty a {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+editor-app .empty .binary-render > * {
+  margin: 10px 0;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+editor-app .divider {
+  border-left: 1px solid rgba(255, 255, 255, .4);
+  height: 21px;
+}
+
+editor-app files-explorer {
+  position: absolute;
+  left: 0;
+  top: 26px;
+  bottom: 0;
+  width: 200px;
+  z-index: 1;
+  background: var(--background);
+}
+
+editor-app.files-open #monaco-editor,
+editor-app.files-open .empty {
+  margin-left: 200px;
+}
+
+editor-app #monaco-editor {
+  height: 100%;
+}

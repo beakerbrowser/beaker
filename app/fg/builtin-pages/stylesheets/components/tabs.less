@@ -1,0 +1,23 @@
+@import "../base/colors.less";
+
+.tabs {
+  display: flex;
+
+  .tab {
+    padding: 5px 10px;
+    margin-left: 5px;
+    cursor: pointer;
+    color: rgba(0,0,0,.5);
+    min-width: 40px;
+    text-align: center;
+
+    &:hover {
+      color: #000;
+    }
+
+    &.active {
+      border-bottom: 2px solid @blue;
+      color: #000;
+    }
+  }
+}

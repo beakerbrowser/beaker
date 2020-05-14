@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Type Registry",
+  "type": "object",
+  "required": [
+    "type"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "type-registry"
+    },
+    "installed": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url", "manifest"],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "url"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "version": {
+            "type": ["number", "string"]
+          },
+          "manifest": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "defaultDriveHandlers": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

@@ -1,0 +1,174 @@
+@import "../utils/flex";
+
+.links-list {
+  user-select: none;
+
+  .link:not(button) {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+    color: @color-text;
+    margin-right: 5px;
+    max-width: ~"calc(100% - 45px)";
+
+    &:hover {
+      // TODO: This is necessary because @import "components/link" from other
+      // builtin pages are being included here. Ulitmately each builtin page
+      // should request its own CSS and nothing else, instead of having a global
+      // builtin pages stylesheet. I sure am missing Sass placeholders right
+      // now! -tbv
+      text-decoration: none;
+    }
+  }
+
+  .ll-progressbar {
+    flex: 0 0 100px;
+    padding: 6px 8px;
+    progress {
+      width: 80px;
+      position: relative;
+      top: 3px;
+    }
+  }
+  .ll-progress {
+    padding: 6px 8px;
+    color: #999;
+    min-width: 45px;
+    text-align: right;
+  }
+  .ll-status {
+    padding: 6px 8px;
+    color: #999;
+    text-align: right;
+  }
+  .ll-serve {
+    padding: 6px 0;
+    flex: 0 0 90px;
+    text-align: right;
+  }
+}
+
+.ll-heading {
+  font-size: 18px;
+}
+
+.ll-sticky-heading {
+  position: sticky;
+  top: 0px;
+  z-index: 1;
+  padding: 5px 0;
+  margin: 0;
+  background: #f7f7f7;
+  border-bottom: 1px solid rgb(230, 230, 230);
+  margin-bottom: -1px;
+}
+
+.ll-row {
+  &:extend(.flex);
+  user-select: none;
+  flex-wrap: nowrap;
+  position: relative;
+  height: 33px;
+  padding: 0 5px;
+  justify-content: space-between;
+
+  * {
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+
+  .title, .url {
+    margin-right: @margin-icon;
+  }
+
+  .favicon {
+    display: inline;
+    flex-basis: 20px;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+
+    &.rounded {
+      border-radius: 50%;
+    }
+  }
+
+  i.favicon {
+    width: auto;
+    height: auto;
+    margin-left: 1px;
+  }
+
+  .url {
+    color: @color-text--light;
+  }
+
+  .buttons,
+  .actions {
+
+    .action {
+      display: inline-block;
+      opacity: 0;
+
+      &.pinned {
+        opacity: 1;
+
+        .icon {
+          color: @blue;
+        }
+      }
+    }
+
+    .btn.trash {
+
+      &:hover {
+
+        .fa-trash-o {
+          color: shade(@red, 15%);
+        }
+      }
+    }
+
+    .action.plain:not(.toggleable) i {
+      font-size: 14.25px;
+      text-align: center;
+      margin-left: 12px;
+      color: #aaa;
+
+      &:hover {
+        color: @color-text;
+      }
+
+      &.fa-star {
+        color: @yellow;
+        -webkit-text-stroke: 1px shade(@yellow, 3%);
+      }
+
+      &.pin {
+        width: 10px;
+        margin-right: -1px;
+      }
+
+      &.fa-trash-o {
+        color: shade(@red, 10%);
+      }
+    }
+  }
+
+  .inputs {
+
+    input {
+      display: inline-block;
+      height: 20px;
+    }
+  }
+
+  &:hover, .editing {
+    background: @background-highlight;
+
+    .action {
+      opacity: 1;
+    }
+  }
+}

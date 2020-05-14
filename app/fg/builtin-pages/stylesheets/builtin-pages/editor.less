@@ -1,0 +1,237 @@
+@import "../components/editor/sidebar.less";
+@import "../components/editor/tabs.less";
+@import "../components/editor/home.less";
+@import "../components/editor/settings-form.less";
+@import "../components/archive-history.less";
+@import "../components/revision-indicator.less";
+@import "../components/share-dropdown.less";
+@import "../components/markdown.less";
+
+.muted {
+  color: gray;
+}
+
+.thin {
+  font-weight: 300;
+}
+
+.icon-info {
+  color: transparent;
+  -webkit-text-stroke: 1px #333;
+}
+
+.editor-wrapper {
+  display: flex;
+  height: 100%;
+  flex-flow: row nowrap;
+  user-select: none;
+}
+
+.editor-container {
+  flex: 1;
+  margin-right: 5px;
+
+  #editor, #diffEditor, #imageViewer, #genericViewer {
+    height: calc(100% - 70px);
+    background-color: white;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
+
+  #imageViewer {
+    position: relative;
+
+    img {
+      max-width: 100%;
+      height: auto;
+      position: absolute;
+      top: 25px;
+      left: 25px;
+    }
+  }
+
+  #genericViewer {
+    height: calc(100% - 40px); // there's no toolbar
+
+    .opaque-binary {
+      text-align: left;
+      padding: 20px 30px;
+    }
+
+    .deleted-filediff {
+      padding: 20px 40px;
+
+      .path {
+        color: #c37b7b;
+        font-style: italic;
+
+        .revision-indicator {
+          margin: 0 4px 0 0;
+        }
+      }
+    }
+  }
+}
+
+.editor-settings-sidebar {
+  flex: 0 0 340px;
+  margin-right: 5px;
+  margin-top: 34px;
+
+  .ctrls {
+    margin: 4px 0;
+    display: flex;
+    flex: 0 0 auto;
+    
+    & > * {
+      margin-right: 4px;
+    }
+
+    .readonly {
+      height: 30px;
+      line-height: 30px;
+      padding: 0 10px;
+    }
+  }
+
+  &.collapsed {
+    flex: 0 0 34px;
+
+    .ctrls {
+      flex-direction: column;
+
+      .btn {
+        width: 34px;
+      }
+
+      & > * {
+        margin-right: 0;
+        margin-bottom: 4px;
+      }
+    }
+  }
+}
+
+.editor-toolbar {
+  display: flex;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ddd;
+  padding: 0 4px;
+
+  &:empty {
+    display: none;
+  }
+
+  .btn {
+    border-radius: 0;
+    line-height: 28px;
+
+    i {
+      font-size: 11px;
+      position: relative;
+      top: -1px;
+    }
+  }
+
+  .divider {
+    width: 1px;
+    border-left: 1px solid #ddd;
+    margin: 4px;
+  }
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+h3 {
+  font-size: 1.2em;
+  font-weight: 300;
+  margin-bottom: 10px;
+  line-height: 1;
+}
+
+.quick-link {
+  margin-bottom: 30px;
+
+  div {
+    color: rgba(0,0,0,.65);
+  }
+}
+
+.cover-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  background: #fff;
+  font-size: 18px;
+  font-weight: 300;
+  color: #333;
+
+  &.gray {
+    background: #fafafa;
+  }
+
+  .cover-screen-centered {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .cover-screen-leftpane {
+    position: absolute;
+    background: #fff;
+    padding: 30px 80px 20px 70px;
+    height: 100%;
+  }
+
+  .loading {
+    font-size: 20px;
+    
+    .spinner {
+      margin-right: 5px;
+    }
+  }
+
+  .load-error {
+    width: 550px;
+
+    & > div {
+      margin-bottom: 16px;
+    }
+
+    small {
+      font-size: 14px;
+      color: #999;
+    }
+  }
+}
+
+.loading-notice {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  padding: 20px;
+  
+  .spinner {
+    margin-right: 5px;
+  }
+}
+
+.error-notice {
+  padding: 20px;
+  color: #b55757;
+}
+
+// editor style tweaks
+.monaco-editor .line-numbers {
+  color: #999 !important;
+}
+.monaco-editor .current-line ~ .line-numbers {
+  color: #222 !important;
+}

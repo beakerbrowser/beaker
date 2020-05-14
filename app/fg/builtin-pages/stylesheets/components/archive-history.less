@@ -1,0 +1,73 @@
+.archive-history-dropdown {
+
+  .dropdown-items {
+    width: 275px !important;
+  }
+}
+.archive-history {
+  font-size: 12.5px;
+
+  .archive-history-header {
+    padding: 5px 10px;
+    border-bottom: 1px solid #ddd;
+    font-weight: 500;
+  }
+
+  .archive-history-body {
+    max-height: 350px;
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    &.error {
+      padding: 10px;
+    }
+  }
+
+  hr {
+    margin: 0 0 5px;
+  }
+
+  .archive-history-item {
+    &:extend(.flex);
+    flex-wrap: nowrap;
+    align-items: center;
+    height: 35px;
+    padding: 0 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+
+    &.no-border {
+      border-color: transparent;
+    }
+
+    .fa {
+      margin-right: 5px;
+    }
+
+    .version {
+      min-width: 32px;
+      margin-left: auto;
+    }
+
+    .path {
+      &:extend(.overflow-ellipsis);
+      max-width: 145px;
+      margin-left: 3px;
+    }
+
+    .sync-path {
+      &:extend(.overflow-ellipsis);
+      max-width: 123px;
+      margin-left: 5px;
+    }
+
+    &:hover {
+      background: #f0f0f0;
+    }
+
+    &.selected {
+      background: @blue;
+      color: #fff;
+    }
+  }
+}

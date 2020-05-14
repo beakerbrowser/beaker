@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Beaker</title>
+  <link rel="stylesheet" href="beaker://assets/icons.css">
+  <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+  <style>
+  body {
+    --color-border: transparent;
+    --color-border-input: #bbc;
+    --color-border-input--trusted: #91b9d6;
+    --color-border-input--untrusted: #e6aaaa;
+    --color-border-input--focused: #1d59c7;
+    --color-tab: #555;
+    --color-tab-close: #333;
+    --color-tab-add: #666;
+    --color-tab-add--hover: #333;
+    --color-tab-border: #ccc;
+    --color-current-tab-highlight: #008eff;
+    --color-notrust: #333;
+    --color-trusted: #0A7AD6;
+    --color-secure: #3c943c;
+    --color-warning: #e2b206;
+    --color-untrusted: #D11A1A;
+    --color-input: #222;
+    --color-toolbar: #555;
+    --color-toolbar-border: #bbb;
+    --color-toolbar--hover: #444;
+    --color-toolbar--pressed: #444;
+    --color-text--light: #777;
+    --bg-foreground: #fff;
+    --bg-background: #eaeaf2;
+    --bg-input: #fff;
+    --bg-cert-default: #eeeef3;
+    --bg-cert-trusted: #e6f1ff;
+    --bg-cert-untrusted: #ffe6e6;
+    --bg-cert-default--hover: #e3e3e7;
+    --bg-cert-trusted--hover: #d9e8fb;
+    --bg-cert-untrusted--hover: #f5d1d1;
+    --bg-tab--current: var(--bg-foreground);
+    --bg-tab--hover: #f3f3f8;
+    --bg-tab--drag-over: #ddddea;
+    --bg-tab-add--hover: #fafafd;
+    --bg-tab-close--hover: #eee;
+    --bg-tab-close--current--hover: #eee;
+    --bg-toolbar: #fff;
+    --bg-toolbar--hover: #f3f3f7;
+    --bg-toolbar--pressed: #eaeaed;
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+  </style>
+</head>
+<body>
+  <shell-window></shell-window>
+  <div id="svgs">
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <defs>
+        <g id="svg-padlock" fill="none" stroke-width="1" fill-rule="evenodd">
+          <g transform="translate(0.000000, 13.000000)">
+            <rect x="0" y="89" width="180" height="119" rx="8" fill="#3c943c" />
+            <path d="M32.9765625,89.125 C32.9704162,88.7923789 33,55.3340372 33,55 C33,24.6243388 58.5197693,0 90,0 C121.480231,0 147,24.6243388 147,55 C147,55.3340372 146.144818,88.9427695 146.138672,89.2753906" stroke="#3c943c" stroke-width="25"/>
+          </g>
+        </g>
+      </defs>
+    </svg>
+  </div>
+</body>
+</html>

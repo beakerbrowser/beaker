@@ -1,0 +1,42 @@
+@import "../components/link";
+@import "../base/spacing";
+
+.protip {
+  border-radius: 2px;
+  border: 1px solid @border-menu;
+
+  .summary {
+    border-bottom: 1px solid @border-menu;
+    padding: @padding-component--tight;
+    margin: 0;
+    background: @background-menu;
+  }
+
+  .content {
+    padding: @padding-component--tight;
+    margin: 0;
+  }
+
+  i {
+    margin-right: @margin-icon;
+  }
+
+  pre, code {
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  code {
+    background: none;
+    padding: none;
+    border: none;
+  }
+
+  a {
+    &:extend(.link);
+
+    &:hover {
+      &:extend(.link:hover);
+    }
+  }
+}

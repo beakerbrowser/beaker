@@ -81,9 +81,9 @@ To build:
 
 ```bash
 git clone https://github.com/beakerbrowser/beaker.git
-cd beaker
-npm install
-npm run rebuild # see https://github.com/electron/electron/issues/5851
+cd beaker/scripts
+npm install # don't worry about v8 api errors building native modules - rebuild will fix
+npm run rebuild # needed after each install. see https://github.com/electron/electron/issues/5851
 npm start
 ```
 
@@ -94,6 +94,7 @@ npm run burnthemall
 ```
 
 This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-mad-king-game-of-thrones.jpg), who will torch your `node_modules/`, and do the full install/rebuild process for you.
+(We chose that command name when GoT was still cool.)
 `npm start` should work afterward.
 
 If you're doing development, `npm run watch` to have assets build automatically.

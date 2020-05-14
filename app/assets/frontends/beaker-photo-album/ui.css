@@ -1,0 +1,158 @@
+body {
+  margin: 0 10px;
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+button {
+  border: 1px solid #6899fb;
+  border-radius: 4px;
+  padding: 5px 10px;
+  color: #2864dc;
+  outline: 0;
+  background: #fff;
+}
+
+button:hover {
+  background: #fafafd;
+  cursor: pointer;
+}
+
+button.red {
+  color: red;
+  border-color: red;
+}
+
+button.noborder {
+  border: 0;
+}
+
+photo-album-app {
+  display: block;
+  max-width: 770px;
+  margin: 0 auto;
+}
+
+photo-album-app header {
+  position: relative;
+  padding: 16px 0 20px;
+}
+
+photo-album-app header h1,
+photo-album-app header p {
+  line-height: 1;
+  margin: 0;
+  letter-spacing: 0.5px
+}
+
+photo-album-app header h1 {
+  font-weight: 500;
+}
+
+photo-album-app header h1 small a {
+  font-size: 15px;
+  text-decoration: none;
+}
+
+photo-album-app header h1 small a:hover {
+  text-decoration: underline;
+}
+
+photo-album-app header p {
+  margin-top: 5px;
+}
+
+photo-album-app header button {
+  position: absolute;
+  bottom: 20px;
+  right: 0;
+}
+
+photo-album-app input[type="file"] {
+  display: none;
+}
+
+photo-album-app .photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 380px);
+  grid-gap: 10px;
+}
+
+photo-album-app .photos img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+photo-album-app .photos .empty {
+  grid-column-end: 3;
+  grid-column-start: 1;
+  padding: 130px 0;
+  text-align: center;
+  background: #f3f3f8;
+  color: #667;
+}
+
+photo-album-app dialog[open] {
+  border: 0;
+  padding: 0;
+}
+
+photo-album-app dialog > div {
+  display: grid;
+  grid-template-columns: auto 300px;
+}
+
+photo-album-app dialog img {
+  max-width: 60vw;
+  height: 80vh;
+  object-fit: contain;
+  background: #f3f3f8;
+}
+
+photo-album-app dialog .ctrls {
+  padding: 15px;
+  background: #fafafd;
+  text-align: right;
+  position: absolute;
+  bottom: 0;
+  width: 270px;
+}
+
+photo-album-app dialog .description {
+  margin: 15px;
+  letter-spacing: 0.5px;
+  max-height: 70vh;
+  overflow-y: auto;
+  font-size: 13px;
+  white-space: pre-line;
+}
+
+photo-album-app dialog .edit-description {
+  padding: 15px;
+  display: none;
+}
+
+photo-album-app dialog .edit-description textarea {
+  width: 100%;
+  height: 50vh;
+  margin-bottom: 10px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  resize: none;
+  outline: 0;
+}
+
+photo-album-app dialog .edit-description .form-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+photo-album-app dialog.editing-description .description {
+  display: none;
+}
+
+photo-album-app dialog.editing-description .edit-description {
+  display: block;
+}

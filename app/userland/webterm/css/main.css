@@ -1,0 +1,9 @@
+@import "beaker://app-stdlib/css/common.css";
+@import "beaker://assets/font-awesome.css";
+
+body {
+  font-size: 12px;
+  background: #222;
+  --border-color: #d4d7dc;
+  min-height: 100vh;
+}

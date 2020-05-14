@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "allOf": [{"$ref": "index.json"}],
+  "type": "object",
+  "required": ["type"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "webterm.sh/cmd-pkg",
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {"type": "string"},
+          "help": {"type": "string"},
+          "usage": {"type": "string"},
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {"type": "string"},
+                "abbr": {"type": "string"},
+                "help": {"type": "string"},
+                "boolean": {"type": "boolean"},
+                "default": {"type": ["boolean", "number", "string"]},
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

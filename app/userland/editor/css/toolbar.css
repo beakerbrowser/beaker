@@ -1,0 +1,73 @@
+editor-app .toolbar {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  background: var(--background);
+  color: var(--default);
+  border-bottom: 1px solid #445;
+}
+
+editor-app .toolbar:not(.detached) {
+  padding-right: 46px;
+}
+
+editor-app .toolbar > * {
+  margin-left: 5px;
+}
+
+editor-app .toolbar > :last-child {
+  margin-right: 5px;
+}
+
+editor-app .toolbar button {
+  padding: 0 8px;
+  height: 26px;
+  line-height: 24px;
+  font-size: 11px;
+  color: inherit;
+  border-radius: 0;
+}
+
+editor-app .toolbar button:not([disabled]):hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+editor-app .toolbar button[disabled] {
+  opacity: 0.5;
+}
+
+editor-app .toolbar button .fa-fw {
+  font-size: 10px;
+}
+
+editor-app .toolbar button.primary {
+  background: rgb(82, 137, 247);
+  border-radius: 18px;
+  color: #fff;
+  height: 19px;
+  line-height: 17px;
+  border: 1px solid rgb(11, 27, 58);
+  font-size: 10px;
+}
+
+editor-app .toolbar .text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+editor-app .toolbar .spacer {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  editor-app .toolbar .btn-label {
+    display: none;
+  }
+}
+
+@media (min-width: 601px) {
+  editor-app .tooltip-onsmall[data-tooltip]:hover:after,
+  editor-app .tooltip-onsmall[data-tooltip]:hover:before {
+    display: none;
+  }
+}

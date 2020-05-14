@@ -1,0 +1,75 @@
+@import "beaker://app-stdlib/css/common.css";
+@import "beaker://assets/font-awesome.css";
+@import "beaker://editor/css/app.css";
+
+body {
+  height: 100vh;
+  overflow: hidden;
+  color: #eee;
+  font-size: 12px;
+  background: #334;
+  border-right: 1px solid #445;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+beaker-context-menu {
+  color: #333;
+}
+
+sidebar-app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+}
+
+sidebar-app .divider {
+  height: 6px;
+  border-top: 1px solid #445;
+  border-bottom: 1px solid #445;
+  box-sizing: border-box;
+  cursor: ns-resize;
+}
+
+sidebar-app .divider:last-child {
+  display: none;
+}
+
+sidebar-app .panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+sidebar-app .panel:focus-within {
+  border: 1px solid #eef;
+}
+
+.panel-btn {
+  position: absolute;
+  top: 5px;
+  z-index: 1;
+  background: transparent;
+  border: 0;
+  color: #eee;
+  cursor: pointer;
+}
+
+.panel.for-files-explorer-app .panel-btn {
+  top: 8px;
+}
+
+.close-btn {
+  right: 5px;
+}
+
+.detach-btn {
+  right: 25px;
+}
+
+sidebar-app .panel > :not(.panel-btn) {
+  height: 100%;
+}

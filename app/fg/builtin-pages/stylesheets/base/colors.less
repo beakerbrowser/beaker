@@ -1,0 +1,97 @@
+// System colors
+@red: rgb(255, 59, 48);
+@orange: rgb(255, 149, 0);
+@yellow: rgb(255, 204, 0);
+@lime: #E6EE9C;
+@green: rgb(76, 217, 100);
+@teal: rgb(90, 200, 250);
+@blue: #2864dc;
+@purple: rgb(88, 86, 214);
+@pink: rgb(255, 45, 85);
+@beaker-blue: #0065e8;
+
+@color-text: #333;
+@color-text--muted: tint(@color-text, 30%);
+@color-text--midlight: tint(@color-text, 50%);
+@color-text--light: tint(@color-text, 65%);
+@color-text--transparent: fadeout(#000, 80%);
+@color-text--subtle: fadeout(#000, 90%);
+@color-link: mix(@color-text, @blue, 10%);
+
+// Buttons
+@color-button: tint(@color-text, 20%);
+@color-button--disabled: tint(@color-text, 50%);
+@color-button--success: #fff;
+
+@border-button: shade(#fff, 15%);
+@border-button--disabled: shade(#fff, 15%);
+@background-button: shade(#fff, 2%);
+@background-button--disabled: shade(#fff, 2%);
+@background-button--success: shade(@green, 14%);
+@background-button--active: shade(#fff, 6%);
+@background-button--gray: shade(#fff, 10%);
+@background-button--gray--hover: shade(#fff, 20%);
+
+// Messages
+
+@background-message: #eee;
+
+@background-message--primary: tint(@blue, 85%);
+@color-message--primary: mix(@color-text, tint(@blue, 5%), 45%);
+@border-message--primary: fadeout(@blue, 40%);
+
+@background-message--success: tint(@green, 75%);
+@color-message--success: mix(@color-text, tint(@green, 5%), 65%);
+@border-message--success: mix(@color-text, tint(@green, 50%), 15%);
+
+@background-message--info: tint(@orange, 80%);
+@color-message--info : mix(@color-text, tint(@orange, 5%), 65%);
+@border-message--info : mix(@color-text, tint(@orange, 60%), 5%);
+
+@background-message--error: tint(@red, 80%);
+@color-message--error: mix(@color-text, tint(@red, 5%), 50%);
+@border-message--error: mix(@color-text, fadeout(@red, 65%), 5%);
+
+// Selections
+@background-highlight: tint(@blue, 95%);
+@background-highlight-grayed: @border-menu;
+
+// Menus
+@border-menu: shade(#fff, 15%);
+@background-menu: shade(#fff, 5%);
+@background-menu--hover: shade(#fff, 15%);
+
+// Dropdown menu bar
+@border-dropdown-menu-bar: shade(#fff, 25%);
+@background-dropdown-menu-bar: #fff;
+@background-dropdown-menu-bar--hover: shade(#fff, 10%);
+
+// Popups
+@border-popup: shade(#fff, 25%);
+
+// Changes
+@color-change--add: mix(@color-text, @green, 15%);
+@color-change--mod: mix(@color-text, @yellow, 10%);
+@color-change--del: mix(@color-text, @red, 15%);
+
+// Custom progress bar
+@background-progressbar: shade(#fff, 25%);
+@background-progressbar--value: mix(#fff, @blue, 15%);
+
+// Shell window
+@background-shell-window: shade(#fff, 3%);// #fafafa;
+@background-shell-window--unfocused: shade(#fff, 3%);
+@background-url-input: #fff;
+@background-tab: shade(#fff, 13%);
+@background-tab--unfocused: shade(#fff, 8%);
+@background-tab--current: @background-shell-window;
+@background-tab--hover: #f0f0f0;
+@background-toolbar-btn--hover: #e0e0e0;
+@background-close-tab--active: #f17649;
+@border-shell-window: #bbb;
+@color-toolbar-btn: #666;
+@color-toolbar-btn--disabled: #aaa;
+@color-tab: #555;
+
+// builtin pages
+@background-builtin-page: #f9f9f9;

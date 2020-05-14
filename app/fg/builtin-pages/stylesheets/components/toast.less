@@ -1,0 +1,79 @@
+@import "../base/colors.less";
+@import "../base/spacing.less";
+
+.toast-wrapper {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 20000;
+  transition: opacity 0.1s ease;
+
+  &.hidden {
+    opacity: 0;
+  }
+}
+
+.toast {
+  position: relative;
+  min-width: 350px;
+  max-width: 450px;
+  background: #ddd;
+  margin: 0;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #fff;
+  background: rgba(0,0,0,.75);
+  -webkit-font-smoothing: antialiased;
+  font-weight: 600;
+
+  &.error {
+    padding-left: 38px;
+  }
+
+  &.success {
+    padding-left: 48px;
+  }
+
+  &.success,
+  &.error {
+
+    &:before {
+      position: absolute;
+      left: 18px;
+      top: 5px;
+      display: block;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+      font-size: 22px;
+      font-weight: bold;
+    }
+  }
+
+  &.primary {
+    background: @blue;
+  }
+
+  &.success {
+    background: darken(@green, 15%);
+
+    &:before {
+      content: '✓';
+    }
+  }
+
+  &.error {
+    background: shade(@red, 22%);
+
+    &:before {
+      content: '!';
+    }
+  }
+
+  .toast-btn {
+    position: absolute;
+    right: 15px;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}

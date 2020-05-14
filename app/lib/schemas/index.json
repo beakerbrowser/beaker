@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "index.json",
+  "title": "Index.json",
+  "description": "The common fields in every index.json",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string",
+      "format": "url"
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["object", "array"],
+        "items": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}

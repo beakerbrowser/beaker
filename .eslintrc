@@ -23,7 +23,22 @@
   "globals": {
     "document": true,
     "navigator": true,
-    "window": true
+    "window": true,
+    "customElements": true,
+    "alert": true,
+    "uwg": true,
+    "DatArchive": true,
+    "location": true,
+    "beaker": true,
+    "prompt": true,
+    "CSSStyleSheet": true,
+    "confirm": true,
+    "fetch": true,
+    "HTMLElement": true,
+    "CustomEvent": true,
+    "localStorage": true,
+    "FileReader": true,
+    "Blob": true
   },
 
   "rules": {
@@ -88,14 +103,7 @@
     "no-label-var": "error",
     "no-labels": ["error", { "allowLoop": false, "allowSwitch": false }],
     "no-lone-blocks": "error",
-    "no-mixed-operators": ["error", {
-      "groups": [
-        ["==", "!=", "===", "!==", ">", ">=", "<", "<="],
-        ["&&", "||"],
-        ["in", "instanceof"]
-      ],
-      "allowSamePrecedence": true
-    }],
+    "no-mixed-operators": "off",
     "no-mixed-spaces-and-tabs": "error",
     "no-multi-spaces": "off",
     "no-multi-str": "error",
@@ -127,7 +135,7 @@
     "no-throw-literal": "error",
     "no-trailing-spaces": "error",
     "no-undef": "error",
-    "no-undef-init": "error",
+    "no-undef-init": "off",
     "no-unexpected-multiline": "error",
     "no-unmodified-loop-condition": "error",
     "no-unneeded-ternary": ["off", { "defaultAssignment": false }],
@@ -140,7 +148,7 @@
     "no-useless-call": "error",
     "no-useless-computed-key": "error",
     "no-useless-constructor": "error",
-    "no-useless-escape": "error",
+    "no-useless-escape": "off",
     "no-useless-rename": "error",
     "no-useless-return": "off",
     "no-whitespace-before-property": "error",
@@ -186,6 +194,6 @@
     "standard/array-bracket-even-spacing": ["error", "either"],
     "standard/computed-property-even-spacing": ["error", "even"],
     "standard/no-callback-literal": "off",
-    "standard/object-curly-even-spacing": ["error", "either"]
+    "standard/object-curly-even-spacing": "off"
   }
 }

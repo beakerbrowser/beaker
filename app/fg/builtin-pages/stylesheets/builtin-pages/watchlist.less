@@ -1,0 +1,274 @@
+@import "../components/link.less";
+@import "../components/inputs.less";
+@import "../components/messages.less";
+@import "../components/popups.less";
+@import "../components/dropdown";
+@import "../components/progress";
+@import "../components/context-input";
+@import "../components/badge";
+@import "../components/rehost-slider.less";
+@import "../components/hover-swapper.less";
+
+// builtin pages components
+@import "../components/tooltip.less";
+
+.window-content.builtin.watchlist {
+  // position relative so that popups stay in place
+  position: relative;
+}
+
+.drag-hint {
+  box-sizing: border-box;
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  padding-top: 30vh;
+  background: fadeout(tint(mix(@blue, @teal), 92%), 5%);
+  color: rgba(0,0,0,.5);
+  color: @color-text--muted;
+  text-align: center;
+
+  &:before {
+    display: block;
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 15px;
+    width: ~"calc(100% - 30px)";
+    height: ~"calc(100% - 30px)";
+    border: 5px dashed rgba(0,0,0,.15);
+  }
+
+  .icons {
+    &:extend(.flex);
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+
+    .fa {
+      font-size: 34px;
+
+      &:nth-child(2),
+      &:nth-child(4) {
+        font-size: 40px;
+      }
+
+      &:nth-of-type(3) {
+        font-size: 48px;
+      }
+
+      &:not(:last-child) {
+        margin-right: 10px;
+      }
+    }
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+
+  p {
+    margin: 0;
+    font-size: .9rem;
+  }
+}
+
+body.drag {
+
+  .drag-hint {
+    display: block;
+  }
+}
+
+.builtin-wrapper.watchlist {
+
+  @media (min-width: 1050px) {
+    .builtin-main {
+      max-width: none;
+      margin: 0 100px 0 200px;
+    }
+  }
+
+  .group {
+    margin-bottom: 10px;
+  }
+
+  // column sizings
+  .ll-row.watchlist-item,
+  .ll-column-headings {
+
+    .watchlist-item-status {
+      width: 90px;
+    }
+
+    .watchlist-item-title {
+      flex: 3;
+      max-width: none;
+    }
+
+    .date {
+      min-width: 120px;
+      flex: 0.9;
+    }
+
+    .buttons {
+      width: 45px;
+    }
+  }
+
+  .ll-column-headings {
+    padding: 0 20px 10px;
+  }
+
+  .ll-row.watchlist-item {
+    height: 50px;
+    padding: 0 20px;
+
+    &.menu-open,
+    &:hover {
+      .buttons,
+      .btn,
+      .btn.trash {
+        opacity: 1;
+      }
+
+      &.resolved .watchlist-item-title {
+        text-decoration: underline;
+      }
+    }
+
+    &:not(.resolved):hover {
+      cursor: default;
+      background: #fff;
+
+      span,
+      img {
+        cursor: default;
+      }
+    }
+
+    .watchlist-item-status {
+      text-align: right;
+      padding-right: 15px;
+    }
+
+    .watchlist-item-title {
+      font-size: 13.5px;
+      color: gray;
+
+      &.empty {
+        overflow: initial;
+      }
+    }
+
+    .date {
+      font-weight: 300;
+      font-size: 12.5px;
+      color: @color-text--muted;
+    }
+
+    .buttons {
+      opacity: 1;
+
+      .trash {
+        margin-right: 4px;
+        opacity: 0;
+      }
+    }
+
+    .toggle {
+      justify-content: flex-end;
+      margin: 0;
+
+      label {
+        margin: 0;
+      }
+    }
+
+    &.resolved {
+      .description {
+        color: @blue;
+      }
+    }
+  }
+  .watchlist-modal {
+    position: relative;
+  }
+  .watchlist-modal .modal-container {
+    display: none;
+  }
+  .watchlist-modal.open .modal-container {
+    display: block;
+  }
+
+  .modal-container {
+    position: absolute;
+    right: 0;
+    width: 300px;
+    margin-top: 5px;
+    background: white;
+    z-index: 3000;
+    border: 1px solid #dadada;
+    border-radius: 4px;
+    padding: 10px;
+
+    .watchlist-input {
+      position: relative;
+
+      input {
+        width: 280px;
+        cursor: text;
+      }
+
+      .validate {
+        display: block;
+        font-size: 12px;
+        text-align: right;
+        color: #cc0000;
+        opacity: 0;
+        transition: opacity 1s;
+      }
+
+      #description {
+        padding-right: 40px;
+      }
+
+      #counter {
+        position: absolute;
+        top: 2px;
+        right: 0;
+      }
+    }
+
+    .toggle {
+      width: 280px;
+      margin-bottom: 10px;
+    }
+
+    .subtle-shadow {
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+.revision-header,
+.files-browser-header {
+  &:extend(.flex);
+  align-items: center;
+  height: 50px;
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+
+  .path {
+    &:extend(.overflow-ellipsis);
+    max-width: 250px;
+    margin-right: 10px;
+  }
+}

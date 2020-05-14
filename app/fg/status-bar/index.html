@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <style>
+      html, body {
+        background: transparent;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: none;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+        font-size: 12px;
+        overflow: hidden;
+      }
+      #text {
+        white-space: pre;
+        margin-top: 1px;
+        padding: 0 8px 0;
+        height: 25px;
+        line-height: 22px;
+        background: #f1f1f6;
+        color: #555;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border-top: 1px solid #ddd;
+        letter-spacing: 0.5px;
+        background: #fff;
+      }
+    </style>
+    <script>
+      window.set = v => {
+        if (v) {
+          text.textContent = v
+          document.body.style.display = 'block'
+        } else {
+          document.body.style.display = 'none'
+        }
+      }
+    </script>
+  </head>
+  <body><div id="text"></div></body>
+</html>

@@ -1,0 +1,16 @@
+@import "beaker://app-stdlib/css/common.css";
+@import "beaker://assets/font-awesome.css";
+
+body {
+  margin: 0;
+  background: transparent;
+  font-size: 12px;
+  --border-color: #d4d7dc;
+  overflow: hidden;
+}
+
+beaker-toast {
+  --toast-min-width: 150px;
+  --toast-padding: 5px 10px;
+  --toast-font-size: 13px;
+}

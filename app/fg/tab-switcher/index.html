@@ -1,0 +1,126 @@
+<html>
+  <head>
+    <style>
+      body {
+        background: transparent;
+        border: 1px solid #aab;
+        border-radius: 8px;
+        margin: 10px;
+        user-select: none;
+        overflow: hidden;
+      }
+      main {
+        display: grid;
+        background: #fff;
+        grid-auto-flow: column;
+        grid-gap: 10px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+        font-size: 12px;
+        padding: 10px;
+        box-sizing: border-box;
+        border-radius: 8px;
+        overflow-x: hidden;
+        overflow-y: hidden;
+      }
+      main > div {
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 6px 6px 12px;
+        width: 120px;
+        box-sizing: border-box;
+      }
+      main > div.selected {
+        background: #f0f0f7;
+      }
+      main > div img {
+        display: block;
+        width: 32px;
+        height: 32px;
+        margin: 10px auto 15px;
+      }
+      main > div .title {
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+    </main>
+  </body>
+  <script>
+    var currentTabs
+    var currentSelection = 0
+
+    document.body.addEventListener('contextmenu', function (e) {
+      e.preventDefault()
+    })
+
+    var mainEl = document.querySelector('main')
+    window.setTabs = function (tabs, defaultCurrentSelection = 0) {
+      mainEl.innerHTML = ''
+      
+      currentTabs = tabs
+      
+      var i = 0
+      for (let tab of tabs) {
+        let imgEl = document.createElement('img')
+        imgEl.setAttribute('src', `asset:favicon:${tab.url}`)
+        
+        let titleEl = document.createElement('div')
+        titleEl.classList.add('title')
+        titleEl.textContent = tab.title
+        
+        let tabEl = document.createElement('div')
+        tabEl.classList.add('tab')
+        tabEl.dataset.index = i++
+        tabEl.append(imgEl)
+        tabEl.append(titleEl)
+        mainEl.append(tabEl)
+      }
+
+      currentSelection = defaultCurrentSelection
+      highlightCurrentSelection()
+
+      // HACK
+      // wait 100ms before attaching the hover listeners
+      // (otherwise the event gets picked up during initial render)
+      // -prf
+      setTimeout(function () {
+        for (let tabEl of Array.from(mainEl.querySelectorAll('.tab'))) {
+          tabEl.addEventListener('mouseover', onMouseOverTab)
+        }
+      }, 100)
+    }
+
+    window.moveSelection = function (dir) {
+      currentSelection += dir
+      if (currentSelection < 0) {
+        currentSelection = currentTabs.length - 1
+      } else if (currentSelection >= currentTabs.length) {
+        currentSelection = 0
+      }
+      highlightCurrentSelection()
+    }
+
+    window.getSelection = function () {
+      return currentSelection
+    }
+
+    function onMouseOverTab (e) {
+      currentSelection = Number(e.currentTarget.dataset.index)
+      highlightCurrentSelection()
+    }
+
+    function highlightCurrentSelection () {
+      try {
+        mainEl.querySelector('.selected').classList.remove('selected')
+      } catch (e) {}
+      var el = mainEl.querySelectorAll('.tab')[currentSelection]
+      el.classList.add('selected')
+      el.scrollIntoView({behavior: 'smooth'})
+    }
+  </script>
+</html>
