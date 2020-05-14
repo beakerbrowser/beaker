@@ -1,3 +1,4 @@
+import { app } from 'electron'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'dat', subcategory: 'protocol'})
 import * as childProcess from 'child_process'
@@ -24,7 +25,7 @@ export async function downloadDat (key) {
   mkdirp.sync(storagePath)
 
   downloadPromises[key] = runConvertProcess(
-    '/Users/paulfrazee/work/beaker-dat-legacy-tools/test-data',
+    app.getPath('userData'),
     key,
     storagePath
   )
@@ -48,7 +49,7 @@ export async function convertDatArchive (key) {
 }
 
 async function runConvertProcess (...args) {
-  var fullModulePath = join(__dirname, 'converter', 'bin.js')
+  var fullModulePath = join(__dirname, 'bg', 'dat', 'converter', 'index.js')
   const opts = {
     stdio: 'inherit',
     env: Object.assign({}, process.env, {

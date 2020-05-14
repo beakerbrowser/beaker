@@ -217,7 +217,6 @@ class DesktopApp extends LitElement {
     if (this.legacyArchives.length === 0) {
       return ''
     }
-    console.log(this.legacyArchives)
     return html`
       <div class="legacy-archives-notice">
         <details>
@@ -226,6 +225,7 @@ class DesktopApp extends LitElement {
           ${this.legacyArchives.map(archive => html`
             <div class="archive">
               <a href="dat://${archive.key}" title=${archive.title} target="_blank">${archive.title || archive.key}</a>
+              <button @click=${e => {window.location = `dat://${archive.key}`}}>Convert</button>
               <button @click=${e => this.onClickRemoveLegacyArchive(e, archive)}>Remove</button>
             </div>
           `)}
@@ -333,6 +333,7 @@ class DesktopApp extends LitElement {
 
   async onClickRemoveLegacyArchive (e, archive) {
     e.preventDefault()
+    if (!confirm('Are you sure?')) return
     await beaker.datLegacy.remove(archive.key)
     this.legacyArchives.splice(this.legacyArchives.indexOf(archive), 1)
     toast.create('Archive removed')
