@@ -41,7 +41,7 @@
     "into-stream": "^3.1.0",
     "keyboardevent-from-electron-accelerator": "^1.1.0",
     "keyboardevents-areequal": "^0.2.2",
-    "knex": "^0.17.6",
+    "knex": "^0.21.1",
     "lodash.clonedeep": "^4.5.0",
     "lodash.debounce": "^4.0.8",
     "lodash.difference": "^4.5.0",
