@@ -58,7 +58,7 @@ Backers support this project by contributing $2 to $99 a month. [Become a backer
 
 ### Building from source
 
-Requires node 6 or higher. On Windows, you may need to use npm version 4, due to a bug in npm 5.
+Requires node 12 or higher.
 
 In Linux (and in some cases macOS) you need libtool, m4, autoconf, and automake:
 
