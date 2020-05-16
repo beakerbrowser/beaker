@@ -46,15 +46,20 @@ export async function setup (p) {
     await rotateLogFile(i)
   }
 
+  const shortenKeys = winston.format((info, opts) => {
+    shortenObjKeys(info)
+    return info;
+  });
+
   logger.add(new winston.transports.File({
     filename: logPath,
-    format: combine(timestamp(), json())
+    format: combine(shortenKeys(), timestamp(), json())
   }))
 
   // TODO if debug (pick an env var for this)
   logger.add(new winston.transports.Console({
     level: 'verbose',
-    format: combine(colorize(), padLevels(), simple())
+    format: combine(shortenKeys(), colorize(), padLevels(), simple())
   }))
 
   logger.info('Logger started')
@@ -131,6 +136,17 @@ export const WEBAPI = {
 
 // internal methods
 // =
+
+function shortenObjKeys (obj) {
+  for (let key in obj) {
+    if (obj[key] && typeof obj[key] === 'object') {
+      shortenObjKeys(obj[key])
+    }
+    if (typeof obj[key] === 'string') {
+      obj[key] = obj[key].replace(/[0-9a-f]{64}/ig, k => `${k.slice(0, 4)}..${k.slice(-2)}`)
+    }
+  }
+}
 
 function massageFilters (filter) {
   if (filter && typeof filter === 'object') {
