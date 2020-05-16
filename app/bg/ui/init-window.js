@@ -1,6 +1,7 @@
 import * as path from 'path'
 import { BrowserWindow } from 'electron'
 import { ICON_PATH } from './windows'
+import * as logger from '../logger'
 
 // globals
 // =

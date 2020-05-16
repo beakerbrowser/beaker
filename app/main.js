@@ -88,18 +88,17 @@ app.on('open-file', (e, filepath) => {
 })
 
 app.on('ready', async function () {
-  beakerProtocol.register(protocol)
-  initWindow.open()
-  portForwarder.setup()
-
-  // record some common opts
   var commonOpts = {
     userDataPath: app.getPath('userData'),
     homePath: app.getPath('home')
   }
 
-  // initiate log
   await logger.setup(join(commonOpts.userDataPath, 'beaker.log'))
+  log.info('Welcome to Beaker')
+  beakerProtocol.register(protocol)
+  webapis.setup()
+  initWindow.open()
+  portForwarder.setup()
 
   // setup databases
   log.info('Initializing databases')
@@ -115,8 +114,6 @@ app.on('ready', async function () {
   await hyper.setup(commonOpts)
   log.info('Initializing hyperdrive filesystem')
   await filesystem.setup()
-  log.info('Initializing Web APIs')
-  webapis.setup()
   log.info('Initializing browser')
   await beakerBrowser.setup()
   adblocker.setup()

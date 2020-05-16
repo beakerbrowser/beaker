@@ -5,12 +5,15 @@
      -webkit-app-region: drag;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
       background: #fff;
-      display: flex;
-      height: 95vh;
+      margin: 0;
       overflow: hidden;
+    }
+    #info {
+      height: 50vh;
+      display: flex;
       align-items: center;
+      flex-direction: column;
       justify-content: center;
-      text-align: center;
     }
     .spinner {
       margin-right: 4px;
@@ -25,11 +28,22 @@
       font-size: 15px;
       color: gray;
     }
+    #log {
+      background: #fafafa;
+      border-top: 1px solid #ccd;
+      width: 100vw;
+      height: 50vh;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow: auto;
+      font-size: 12px;
+      word-break: break-word;
+    }
   </style>
   <link rel="stylesheet" href="beaker://app-stdlib/css/com/spinner.css">
 </head>
 <body>
-  <div>
+  <div id="info">
     <div class="top">
       <span class="spinner"></span> Initializing Beaker...
     </div>
@@ -37,4 +51,6 @@
       This may take a moment
     </div>
   </div>
+  <div id="log"></div>
+  <script src="/index.js"></script>
 </body>
