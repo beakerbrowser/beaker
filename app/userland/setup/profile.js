@@ -17,7 +17,7 @@ customElements.define('profile-view', class extends HTMLElement {
 
   render () {
     this.shadowRoot.innerHTML = `
-<h1>New user</h1>
+<h1>New profile site</h1>
 <form>
   <div class="img-ctrl">
     <img class="thumb" src="${this.thumbDataURL || 'beaker://assets/default-user-thumb'}">
