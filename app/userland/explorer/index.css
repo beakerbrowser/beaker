@@ -1,0 +1,34 @@
+@import "/css/font-awesome.css";
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #223; /* default to dark-mode background so that loading is smoother in the beaker sidebar */
+  color: #333;
+  --system-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+  --code-font: Consolas, 'Lucida Console', Monaco, monospace;
+  font-family: var(--system-font);
+  font-size: 12px;
+  --border-color: #d4d7dc;
+}
+
+code {
+  font-family: var(--code-font);
+  font-style: normal;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  background: none;
+  outline-color: transparent;
+  border: none;
+}

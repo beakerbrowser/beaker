@@ -35,7 +35,7 @@ img-src beaker: asset: data: hyper: http: https;
 script-src 'self' beaker: hyper: blob: 'unsafe-eval';
 media-src 'self' beaker: hyper:;
 style-src 'self' 'unsafe-inline' beaker:;
-child-src 'self' http://dev.hyperdrive.network:5000 https://hyperdrive.network;
+child-src 'self' beaker:;
 `.replace(/\n/g, '')
 
 // exported api
@@ -250,6 +250,9 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl === 'beaker://editor' || requestUrl.startsWith('beaker://editor/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'editor'), cb, {fallbackToIndexHTML: true})
+  }
+  if (requestUrl === 'beaker://explorer' || requestUrl.startsWith('beaker://explorer/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'explorer'), cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://webterm' || requestUrl.startsWith('beaker://webterm/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'webterm'), cb, {

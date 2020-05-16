@@ -78,7 +78,7 @@ class FilesExplorer extends LitElement {
       `
     }
     return html`
-      <iframe src="https://hyperdrive.network/${target}"></iframe>
+      <iframe src="beaker://explorer/${target}"></iframe>
     `
   }
 }

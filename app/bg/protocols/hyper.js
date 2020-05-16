@@ -129,7 +129,7 @@ export const protocolHandler = async function (request, respond) {
     // so we're going to handle all system-drive requests by redirecting
     // to the files explorer
     // -prf
-    return respondRedirect(`https://hyperdrive.network/${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}`)
+    return respondRedirect(`beaker://explorer/${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}`)
   }
 
   auditLog.record('-browser', 'serve', {url: urlp.origin, path: urlp.pathname}, undefined, async () => {

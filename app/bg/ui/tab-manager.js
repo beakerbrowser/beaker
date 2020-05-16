@@ -544,7 +544,7 @@ class Tab extends EventEmitter {
         let ctx = args[1] || this.url
         switch (args[0]) {
           case 'editor-app': url = `beaker://editor/?url=${encodeURI(ctx)}`; break
-          case 'files-explorer-app': url = `https://hyperdrive.network/${encodeURI(ctx.slice('hyper://'.length))}`; break
+          case 'files-explorer-app': url = `beaker://explorer/${encodeURI(ctx.slice('hyper://'.length))}`; break
           case 'web-term': url = `beaker://webterm/?url=${encodeURI(ctx)}`; break
         }
         if (url) {

@@ -154,7 +154,7 @@ class ShellWindowToolbarMenu extends LitElement {
 
   onClickFilesExplorer (e) {
     if (!this.activeTab) return
-    bg.views.loadURL('active', `https://hyperdrive.network/${this.activeTab.url.slice('hyper://'.length)}`)
+    bg.views.loadURL('active', `beaker://explorer/${this.activeTab.url.slice('hyper://'.length)}`)
   }
 
   onMousedownLink (e) {

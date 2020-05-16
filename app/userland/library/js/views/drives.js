@@ -7,7 +7,7 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import drivesCSS from '../../css/views/drives.css.js'
 
-const EXPLORER_URL = drive => `https://hyperdrive.network/${drive.url.slice('hyper://'.length)}`
+const EXPLORER_URL = drive => `beaker://explorer/${drive.url.slice('hyper://'.length)}`
 
 export class DrivesView extends LitElement {
   static get properties () {

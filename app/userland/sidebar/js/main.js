@@ -165,7 +165,7 @@ class SidebarApp extends HTMLElement {
     var url
     switch (panel.tagName) {
       case 'editor-app': url = `beaker://editor/?url=${encodeURI(ctx)}`; break
-      case 'files-explorer-app': url = `https://hyperdrive.network/${encodeURI(ctx.slice('hyper://'.length))}`; break
+      case 'files-explorer-app': url = `beaker://explorer/${encodeURI(ctx.slice('hyper://'.length))}`; break
       case 'web-term': url = `beaker://webterm/?url=${encodeURI(ctx)}`; break
     }
     if (!url) return
