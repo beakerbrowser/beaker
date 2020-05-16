@@ -198,7 +198,7 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
     case 'experimentalLibrary': return 'Read and modify your Library'
     case 'experimentalDatPeers': return 'Send and receive messages with peers'
     case 'dangerousAppControl': return 'Read and write your data, including bookmarks, archives, and files'
-    case 'contactsList': return 'Read your address-book contacts'
+    case 'contactsList': return 'Read your address-book in Beaker'
 
     case 'network':
       if (permParam === '*') return 'Access the network freely'
