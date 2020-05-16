@@ -8,9 +8,7 @@ ${buttonsCSS}
 
 :host {
   display: block;
-  height: calc(100vh - 2px);
-  width: calc(100vw - 220px);
-  overflow: auto;
+  width: calc(100vw - 250px);
 }
 
 .stats {
@@ -41,8 +39,15 @@ ${buttonsCSS}
 }
 
 .logger .logger-row > * {
-  white-space: nowrap;
   border: 1px solid #dde;
+}
+
+.logger .logger-row > *:not(.args) {
+  white-space: nowrap;
+}
+
+.logger .logger-row > .args {
+  word-break: break-word;
 }
 
 .logger .logger-row.badish {

@@ -85,7 +85,6 @@ class FsAuditLogView extends LitElement {
           </thead>
           <tbody>${this.rows.map((row, i) => {
             var tsDiff = lastRow ? (lastRow.ts - row.ts) : 0
-            console.log(tsDiff)
             lastRow = row
             return html`
               ${tsDiff > 5e3 ? html`<tr class="gap-row"><td colspan="6"></td></tr>` : ''}
