@@ -33,6 +33,7 @@ export const setup = function (opts) {
     custom_start_page: 'blank',
     new_tab: 'beaker://desktop/',
     run_background: 1,
+    default_zoom: 0,
     start_page_background_image: '',
     workspace_default_path: path.join(opts.homePath, 'Sites'),
     default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n**/.DS_Store\nThumbs.db\n',

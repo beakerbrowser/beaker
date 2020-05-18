@@ -1,6 +1,7 @@
 import {URL} from 'url'
 import * as tabManager from '../tab-manager'
 import * as sitedataDb from '../../dbs/sitedata'
+import * as settingsDb from '../../dbs/settings'
 
 const ZOOM_STEP = 0.5
 
@@ -13,7 +14,7 @@ export async function setZoomFromSitedata (view, origin) {
   if (!origin) return
 
   var v = await sitedataDb.get(origin, 'zoom')
-  view.zoom = +v || 0
+  view.zoom = +v || (await settingsDb.get('default_zoom'))
   view.emitUpdateState()
   view.webContents.setZoomLevel(view.zoom)
 }

@@ -58,6 +58,7 @@ class GeneralSettingsView extends LitElement {
       ${this.renderOnStartupSettings()}
       ${this.renderRunBackgroundSettings()}
       ${this.renderNewTabSettings()}
+      ${this.renderDefaultZoomSettings()}
       ${this.renderProtocolSettings()}
       ${this.renderAnalyticsSettings()}
     `
@@ -282,6 +283,40 @@ class GeneralSettingsView extends LitElement {
     `
   }
 
+  renderDefaultZoomSettings () {
+    const opt = (v, label) => html`
+      <option value=${v} ?selected=${v === this.settings.default_zoom}>${label}</option>
+    `
+    return html`
+      <div class="section new-tab">
+        <h2 id="new-tab">Default Zoom</h2>
+  
+        <p>Pages should use the following "zoom" setting by default:</p>
+  
+        <div>
+          <select @change=${this.onChangeDefaultZoom}>
+            ${opt(-3, '25%')}
+            ${opt(-2.5, '33%')}
+            ${opt(-2, '50%')}
+            ${opt(-1.5, '67%')}
+            ${opt(-1, '75%')}
+            ${opt(-0.5, '90%')}
+            ${opt(0, '100%')}
+            ${opt(0.5, '110%')}
+            ${opt(1, '125%')}
+            ${opt(1.5, '150%')}
+            ${opt(2, '175%')}
+            ${opt(2.5, '200%')}
+            ${opt(3, '250%')}
+            ${opt(3.5, '300%')}
+            ${opt(4, '400%')}
+            ${opt(4.5, '500%')}
+          </select>
+        </div>
+      </div>
+    `
+  }
+
   renderProtocolSettings () {
     const toggleRegistered = (protocol) => {
       // update and optimistically render
@@ -423,6 +458,12 @@ class GeneralSettingsView extends LitElement {
     beaker.browser.setSetting('new_tab', this.settings.new_tab)
     toast.create('Setting updated')
     this.requestUpdate()
+  }
+
+  onChangeDefaultZoom (e) {
+    this.settings.default_zoom = +(e.currentTarget.value)
+    beaker.browser.setSetting('default_zoom', this.settings.default_zoom)
+    toast.create('Setting updated')
   }
 
   async onClickRestartDaemon (e) {
