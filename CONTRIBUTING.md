@@ -14,7 +14,7 @@ Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=Yu
 
 ## Building from source
 
-Requires node 6 or higher. On Windows, you may need to use npm version 4, due to a bug in npm 5.
+Requires node 12 or higher.
 
 In Linux (and in some cases macOS) you need libtool, m4, and automake:
 
@@ -36,7 +36,7 @@ To build:
 
 ```bash
 git clone https://github.com/beakerbrowser/beaker.git
-cd beaker
+cd beaker/scripts
 npm install
 npm run rebuild # see https://github.com/electron/electron/issues/5851
 npm start
