@@ -9,7 +9,7 @@ var timeout = 0
 var isWindows = (process.platform === "win32")
 
 function main () {
-  var projectDir = __dirname.split('/').filter(Boolean).slice(0, -2).join('/')
+  var projectDir = __dirname.split(path.sep).filter(Boolean).slice(0, -2).join(path.sep)
   var appDir = path.join(projectDir, 'app')
   var scriptsDir = path.join(projectDir, 'scripts')
   rmNodeModules(scriptsDir)
