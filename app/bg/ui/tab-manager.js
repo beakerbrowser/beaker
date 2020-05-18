@@ -103,7 +103,8 @@ const STATE_VARS = [
   'currentInpageFindResults',
   // 'availableAlternative',
   'donateLinkHref',
-  'isLiveReloading'
+  'isLiveReloading',
+  'tabCreationTime'
 ]
 
 // globals
@@ -175,6 +176,7 @@ class Tab extends EventEmitter {
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDriveTimeout = false // did the last navigation result in a timed-out hyperdrive?
+    this.tabCreationTime = 0 // when was the tab created?
 
     // wire up events
     this.webContents.on('will-navigate', this.onWillNavigate.bind(this))
@@ -1189,6 +1191,7 @@ export function create (
     // tab.loadURL(url)
     loadWhenReady = true
   }
+  tab.tabCreationTime = Date.now()
 
   // add to active tabs
   if (opts.isPinned) {
