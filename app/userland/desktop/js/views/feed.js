@@ -24,7 +24,7 @@ const IFRAME_CSP = `default-src 'self' 'unsafe-inline';`
 const IFRAME_SANDBOX = `allow-forms allow-scripts`
 const enabledIframes = {}
 
-var md = new MarkdownIt({html: false, breaks: true})
+var md = new MarkdownIt({html: false, breaks: false})
 
 export class FeedView extends LitElement {
   static get properties () {
