@@ -80,17 +80,20 @@ export const setupSqliteDB = function (db, {setup, migrations}, logTag) {
       if (neededMigrations.length == 0) { return resolve() }
 
       logger.info(`${logTag} Database at version ${version}; Running ${neededMigrations.length} migrations`)
+      db.run('PRAGMA SYNCHRONOUS = OFF;') // turn off fsync to speed up migrations
       runNeededMigrations()
       function runNeededMigrations (err) {
         if (err) {
           logger.error(`${logTag} Failed migration`)
           console.log(err)
+          db.run('PRAGMA SYNCHRONOUS = FULL;') // turn fsync back on
           return reject(err)
         }
 
         var migration = neededMigrations.shift()
         if (!migration) {
           // done
+          db.run('PRAGMA SYNCHRONOUS = FULL;') // turn fsync back on
           resolve()
           return logger.info(`${logTag} Database migrations completed without error`)
         }
