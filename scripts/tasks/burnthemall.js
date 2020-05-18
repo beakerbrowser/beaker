@@ -10,6 +10,7 @@ var isWindows = (process.platform === "win32")
 
 function main () {
   var projectDir = __dirname.split(path.sep).filter(Boolean).slice(0, -2).join(path.sep)
+  if (!isWindows) projectDir = path.sep + projectDir
   var appDir = path.join(projectDir, 'app')
   var scriptsDir = path.join(projectDir, 'scripts')
   rmNodeModules(scriptsDir)
