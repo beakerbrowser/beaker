@@ -4,8 +4,6 @@ The process is currently *insane*. This is because in the 11th hour I ran into a
 
 Run npm install. Make sure ./app/bg/dat/converter has its node_modules installed.
 
-On macOS, delete `/app/node_modules/fuse-shared-library-darwin`. This module is a bastard-man and will cause notarization to fail.
-
 ## Build
 
 `npm run build`
@@ -52,8 +50,6 @@ On MacOS you'll need to supply two env vars:
 appleId=pfrazee@gmail.com
 appleIdPassword={be paul to have this}
 ```
-
-Note, notarization will take fkin forever and then it will fail because you included FUSE.
 
 ## It's just that easy
 
