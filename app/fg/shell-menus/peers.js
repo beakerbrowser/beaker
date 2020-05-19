@@ -5,12 +5,14 @@ import _get from 'lodash.get'
 import {pluralize} from '../../lib/strings'
 import * as bg from './bg-process-rpc'
 import inputsCSS from './inputs.css'
+import spinnerCSS from './spinner.css'
 
 const NETWORK_STATS_POLL_INTERVAL = 500 // ms
 
 class PeersMenu extends LitElement {
   static get properties () {
     return {
+      isLoading: {type: Boolean},
       url: {type: String}
     }
   }
@@ -22,6 +24,7 @@ class PeersMenu extends LitElement {
   }
 
   reset () {
+    this.isLoading = false
     this.driveInfo = undefined
     this.driveCfg = undefined
     this.peers = []
@@ -31,12 +34,14 @@ class PeersMenu extends LitElement {
   }
 
   async init (params) {
+    this.isLoading = true
     this.url = params.url
     this.driveInfo = (await bg.views.getTabState('active', {driveInfo: true})).driveInfo
     this.driveCfg = await bg.drives.get(this.url)
     const getPeers = async () => {
       var state = await bg.views.getNetworkState('active', {includeAddresses: true})
       this.peers = state ? state.peerAddresses : 0
+      this.isLoading = false
       return this.requestUpdate()
     }
     await getPeers()
@@ -54,6 +59,12 @@ class PeersMenu extends LitElement {
     var peers = this.peers
     // var downloadTotal = _get(this, 'driveInfo.networkStats.downloadTotal', 0)
     // var uploadTotal = _get(this, 'driveInfo.networkStats.uploadTotal', 0)
+    if (this.isLoading) {
+      return html`
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <div class="wrapper"><span class="spinner"></span></div>
+      `
+    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
@@ -132,9 +143,13 @@ class PeersMenu extends LitElement {
     bg.views.refreshState('active')
   }
 }
-PeersMenu.styles = [inputsCSS, css`
+PeersMenu.styles = [inputsCSS, spinnerCSS, css`
 .wrapper {
   color: #333;
+}
+
+.spinner {
+  margin: 20px;
 }
 
 .header {
