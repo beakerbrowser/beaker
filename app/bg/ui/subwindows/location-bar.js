@@ -58,7 +58,7 @@ export async function show (parentWindow, opts) {
   var view = get(parentWindow)
   if (view) {
     view.opts = opts
-    view.webContents.executeJavaScript(`setup()`)
+    view.webContents.executeJavaScript(`setup(); undefined`)
     parentWindow.addBrowserView(view)
     view.setBounds({
       x: opts.bounds.x - MARGIN_SIZE,

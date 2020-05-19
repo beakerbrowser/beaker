@@ -557,7 +557,7 @@ class Tab extends EventEmitter {
     }
 
     const wc = () => sidebars.get(this).webContents
-    const execJs = (js) => wc().executeJavaScript(js)
+    const execJs = (js) => wc().executeJavaScript(js + '; undefined')
     switch (cmd) {
       case 'hide-panel':
       case 'close':

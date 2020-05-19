@@ -85,7 +85,7 @@ export function show (parentWindow) {
     // render
     parentWindow.addBrowserView(view)
     view.webContents.executeJavaScript(`
-      window.setTabs(${JSON.stringify(tabs)}, ${defaultCurrentSelection})
+      window.setTabs(${JSON.stringify(tabs)}, ${defaultCurrentSelection}); undefined
     `)
     reposition(parentWindow)
   }
