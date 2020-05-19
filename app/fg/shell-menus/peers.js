@@ -43,11 +43,6 @@ class PeersMenu extends LitElement {
 
     // periodically fetch updates
     this.pollInterval = setInterval(getPeers, NETWORK_STATS_POLL_INTERVAL)
-
-    // adjust height based on rendering
-    var width = this.shadowRoot.querySelector('div').clientWidth
-    var height = this.shadowRoot.querySelector('div').clientHeight
-    bg.shellMenus.resizeSelf({width, height})
   }
 
   // rendering
@@ -114,6 +109,12 @@ class PeersMenu extends LitElement {
 
   // events
   // =
+
+  updated () {
+    // adjust height based on rendering
+    var height = this.shadowRoot.querySelector('div').clientHeight
+    bg.shellMenus.resizeSelf({width: 200, height: height|0})
+  }
 
   onOpenPage (href) {
     bg.shellMenus.createTab(href)
