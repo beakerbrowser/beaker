@@ -149,7 +149,7 @@ PeersMenu.styles = [inputsCSS, spinnerCSS, css`
 }
 
 .spinner {
-  margin: 20px;
+  margin: 12px;
 }
 
 .header {

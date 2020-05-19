@@ -650,7 +650,9 @@ input::-webkit-input-placeholder {
   letter-spacing: 0.5px;
   height: 27px;
   line-height: 27px;
-  width: 32px;
+  width: auto;
+  min-width: 32px;
+  padding: 0 5px;
   font-size: 13px;
   color: #666;
 }
