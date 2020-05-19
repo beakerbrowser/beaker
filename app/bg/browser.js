@@ -90,7 +90,6 @@ export async function setup () {
   }
 
   // wire up events
-  app.on('browser-window-created', onBrowserWindowCreated)
   app.on('web-contents-created', onWebContentsCreated)
 
   // window.prompt handling
@@ -585,7 +584,6 @@ export async function capturePage (url, opts = {}) {
     show: false,
     webPreferences: {
       preload: 'file://' + path.join(app.getAppPath(), 'fg', 'webview-preload', 'index.build.js'),
-      nodeIntegrationInSubFrames: true,
       contextIsolation: true,
       webviewTag: false,
       sandbox: true,
@@ -792,16 +790,6 @@ function onUpdateError (e) {
   setUpdaterState(UPDATER_STATUS_IDLE)
   updaterError = {message: (e.toString() || '').split('\n')[0]}
   browserEvents.emit('updater-error', updaterError)
-}
-
-function onBrowserWindowCreated (e, window) {
-  window.webContents.on('did-start-navigation', (e, url) => {
-    if (!url.startsWith('beaker://')) {
-      // never ever navigate the browser window out of trusted addresses
-      logger.info(`Destroyed browser window that attempted to navigate to ${url}`)
-      window.destroy()
-    }
-  })
 }
 
 function onWebContentsCreated (e, webContents) {
