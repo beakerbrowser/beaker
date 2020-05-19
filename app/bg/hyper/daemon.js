@@ -70,6 +70,7 @@ var isControllingDaemonProcess = false // did we start the process?
 var isSettingUp = true
 var isShuttingDown = false
 var isDaemonActive = false
+var isConnectionActive = false
 var isFirstConnect = true
 var sessions = {} // map of keyStr => DaemonHyperdrive
 var events = new EventEmitter()
@@ -101,6 +102,7 @@ export async function getDaemonStatus () {
 export async function setup () {
   if (isSettingUp) {
     isSettingUp = false
+    pda.setInvalidAuthHandler(onInvalidAuthToken)
 
     // watch for the daemon process to die/revive
     let interval = setInterval(() => {
@@ -112,6 +114,7 @@ export async function setup () {
           events.emit('daemon-restored')
         } else if (!processExists && isDaemonActive) {
           isDaemonActive = false
+          isConnectionActive = false
           events.emit('daemon-stopped')
         }
       })
@@ -148,6 +151,7 @@ export async function setup () {
     client = new HyperdriveClient()
     await client.ready()
     logger.info('Connected to an external daemon.')
+    isConnectionActive = true
     reconnectAllDriveSessions()
     return
   } catch (err) {
@@ -285,6 +289,16 @@ export async function listPeerAddresses (discoveryKey) {
 // internal methods
 // =
 
+async function onInvalidAuthToken () {
+  if (!isConnectionActive) return
+  isConnectionActive = false
+  logger.info('A daemon reset was detected. Refreshing all drive sessions.')
+  // daemon is online but our connection is outdated, reset the connection
+  await attemptConnect()
+  reconnectAllDriveSessions()
+  logger.info('Connection re-established.')
+}
+
 function createSessionKey (opts) {
   if (typeof opts === 'string') {
     return opts // assume it's already a session key
@@ -311,6 +325,7 @@ async function attemptConnect () {
       connectBackoff += 100
     }
   }
+  isConnectionActive = true
 }
 
 async function reconnectAllDriveSessions () {
