@@ -243,8 +243,8 @@ class BrowserMenu extends LitElement {
 
   updated () {
     // adjust dimensions based on rendering
-    var width = this.shadowRoot.querySelector('div').clientWidth
-    var height = this.shadowRoot.querySelector('div').clientHeight
+    var width = this.shadowRoot.querySelector('div').clientWidth|0
+    var height = this.shadowRoot.querySelector('div').clientHeight|0
     bg.shellMenus.resizeSelf({width, height})
   }
 

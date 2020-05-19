@@ -131,7 +131,7 @@ class UserEditorModal extends LitElement {
 
   updated () {
     // adjust size based on rendering
-    var height = this.shadowRoot.querySelector('div').clientHeight
+    var height = this.shadowRoot.querySelector('div').clientHeight|0
     bg.modals.resizeSelf({height})
   }
 

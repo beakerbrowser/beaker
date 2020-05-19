@@ -185,7 +185,7 @@ class ForkDriveModal extends LitElement {
   }
 
   adjustHeight () {
-    var height = this.shadowRoot.querySelector('div').clientHeight
+    var height = this.shadowRoot.querySelector('div').clientHeight|0
     bg.modals.resizeSelf({height})
   }
 
