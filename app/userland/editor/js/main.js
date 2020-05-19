@@ -17,6 +17,7 @@ class EditorApp extends LitElement {
     return {
       url: {type: String},
       isLoading: {type: Boolean},
+      showLoadingNotice: {type: Boolean},
       isFilesOpen: {type: Boolean},
       readOnly: {type: Boolean},
       dne: {type: Boolean},
@@ -75,6 +76,7 @@ class EditorApp extends LitElement {
     this.url = ''
     this.stat = undefined
     this.isLoading = true
+    this.showLoadingNotice = true
     this.isFilesOpen = this.isDetached // expanded by default in detacheds mode
     this.readOnly = true
     this.lastSavedVersionId = undefined
@@ -150,6 +152,19 @@ class EditorApp extends LitElement {
     })
   }
 
+  resetEditor () {
+    for (let model of monaco.editor.getModels()) {
+      model.dispose()
+    }
+
+    this.editor.setValue('')
+    this.readOnly = true
+    this.dne = false
+    this.isBinary = false
+    this.resolvedPath = ''
+    this.showLoadingNotice = true
+  }
+
   async load (url, forceLoad = false) {
     var release = await lock('editor-load')
     try {
@@ -175,17 +190,8 @@ class EditorApp extends LitElement {
       this.url = url
       history.replaceState({}, '', `/?url=${url}`)
 
-      // reset the editor
-      for (let model of monaco.editor.getModels()) {
-        model.dispose()
-      }
-
+      this.resetEditor()
       console.log('Loading', url)
-      this.editor.setValue('')
-      this.readOnly = true
-      this.dne = false
-      this.isBinary = false
-      this.resolvedPath = ''
 
       var body = ''
       try {
@@ -243,6 +249,7 @@ class EditorApp extends LitElement {
       }
 
       this.isLoading = false
+      this.showLoadingNotice = false
       this.requestUpdate()
 
       if (this.setFocusOnLoad) {
@@ -493,6 +500,7 @@ class EditorApp extends LitElement {
           <a @click=${e => { this.isFilesOpen = true }}>Select a file</a>
         </div>
       ` : ''}
+      ${this.showLoadingNotice ? html`<div id="loading-notice">Loading...</div>` : ''}
     `
   }
 
@@ -554,7 +562,13 @@ class EditorApp extends LitElement {
   }
 
   onOpenFile (e) {
-    if (!this.isDetached && !e.detail.url.endsWith('.goto')) {
+    if (this.hasChanges) {
+      if (!confirm('You have unsaved changes. Are you sure you want to navigate away?')) {
+        return
+      }
+    }
+    if (!this.isDetached && !e.detail.url.endsWith('.goto') && e.detail.url !== this.url) {
+      this.resetEditor()
       beaker.browser.gotoUrl(e.detail.url)
     } else {
       this.load(e.detail.url)

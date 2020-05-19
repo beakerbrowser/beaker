@@ -62,3 +62,15 @@ editor-app.files-open .empty {
 editor-app #monaco-editor {
   height: 100%;
 }
+
+editor-app #loading-notice {
+  position: fixed;
+  right: 10px;
+  top: 40px;
+  display: inline-block;
+  background: #223;
+  color: #fff;
+  padding: 7px 16px;
+  border: 1px solid #fff4;
+  border-radius: 8px;
+}
