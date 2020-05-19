@@ -423,7 +423,7 @@ class NavbarLocation extends LitElement {
     this.isShareMenuOpen = true
     var rect = this.shadowRoot.querySelector('.share').getClientRects()[0]
     await bg.views.toggleMenu('share', {
-      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
+      bounds: {rightOffset: (window.innerWidth - rect.right)|0},
       params: {url: this.url}
     })
     this.isShareMenuOpen = false
@@ -433,7 +433,7 @@ class NavbarLocation extends LitElement {
     this.isDonateMenuOpen = true
     var rect = e.currentTarget.getClientRects()[0]
     await bg.views.toggleMenu('donate', {
-      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
+      bounds: {rightOffset: (window.innerWidth - rect.right)|0},
       params: {url: this.url}
     })
     this.isDonateMenuOpen = false
@@ -443,7 +443,7 @@ class NavbarLocation extends LitElement {
     var rect = this.shadowRoot.querySelector('.bookmark').getClientRects()[0]
     // show menu
     bg.views.toggleMenu('bookmark', {
-      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
+      bounds: {rightOffset: (window.innerWidth - rect.right)|0},
       params: {
         url: this.url,
         metadata: {title: this.title} // DISABLED was causing issues -prf await bg.views.getPageMetadata(this.activeTabIndex)
@@ -459,7 +459,7 @@ class NavbarLocation extends LitElement {
     var rect = this.shadowRoot.querySelector('.peers').getClientRects()[0]
     // show menu
     await bg.views.toggleMenu('peers', {
-      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
+      bounds: {rightOffset: (window.innerWidth - rect.right)|0},
       params: {
         url: this.url
       }
@@ -476,7 +476,7 @@ class NavbarLocation extends LitElement {
     var rect = this.shadowRoot.querySelector('.site').getClientRects()[0]
     // show menu
     await bg.views.toggleMenu('site', {
-      bounds: {rightOffset: Number(window.innerWidth - rect.right)},
+      bounds: {rightOffset: (window.innerWidth - rect.right)|0},
       params: {
         url: this.url
       }
