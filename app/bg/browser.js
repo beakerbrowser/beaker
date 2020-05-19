@@ -63,8 +63,8 @@ var originCerts = new LRU(100) // hostname -> {issuerName, subjectName, validExp
 var browserEvents = new EventEmitter()
 
 process.on('unhandledRejection', (reason, p) => {
-  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason)
-  logger.error(`Unhandled Rejection at: Promise ${p.toString()} reason: ${reason.toString()}`)
+  console.error('Unhandled Rejection at: Promise', p, 'reason:', reason, reason.stack)
+  logger.error(`Unhandled Rejection at: Promise ${p.toString()} reason: ${reason.toString()} ${reason.stack}`)
 })
 process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err)
