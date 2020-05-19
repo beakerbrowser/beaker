@@ -991,7 +991,7 @@ class Tab extends EventEmitter {
     // render failure page
     var errorPageHTML = errorPage(this.loadError)
     try {
-      await this.webContents.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'')
+      await this.webContents.executeJavaScript('document.documentElement.innerHTML = \'' + errorPageHTML + '\'; undefined')
     } catch (e) {
       // ignore
     }

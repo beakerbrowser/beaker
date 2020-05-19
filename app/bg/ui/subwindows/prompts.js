@@ -91,6 +91,7 @@ export async function create (webContents, promptName, params = {}) {
   })
   view.webContents.loadURL('beaker://prompts/')
   await view.webContents.executeJavaScript(`showPrompt("${promptName}", ${JSON.stringify(params)})`)
+  return view
 }
 
 export function get (tab) {

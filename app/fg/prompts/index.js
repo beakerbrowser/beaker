@@ -2,6 +2,7 @@
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import './create-page'
 import './edit-profile'
+import './progress'
 
 class PromptsWrapper extends LitElement {
   static get properties () {
@@ -44,6 +45,8 @@ class PromptsWrapper extends LitElement {
         return html`<create-page-prompt></create-page-prompt>`
       case 'edit-profile':
         return html`<edit-profile-prompt></edit-profile-prompt>`
+      case 'progress':
+        return html`<progress-prompt></progress-prompt>`
     }
     return html`<div></div>`
   }
