@@ -68,7 +68,7 @@ class FilesExplorer extends LitElement {
   async load () {
     this.isLoading = true
 
-    if (this.watcher) {
+    if (this.watcher && this.watchingDriveUrl !== this.origin) {
       this.watcher.close()
       this.watcher = undefined
     }
@@ -108,15 +108,21 @@ class FilesExplorer extends LitElement {
       this.currentFolder.path = folderPath
       this.currentFolder.name = folderPath.split('/').pop() || '/'
 
-      var hackSetupTime = Date.now()
-      this.watcher = drive.watch(e => {
-        // HACK
-        // for some reason, the watchstream is firing 'changed' immediately
-        // ignore if the event fires within 1s of setup
-        // -prf
-        if (Date.now() - hackSetupTime <= 1000) return
-        this.load()
-      })
+      if (!this.watcher) {
+        let isFirstWatchEvent = true
+        this.watchingDriveUrl = this.origin
+        this.watcher = drive.watch(e => {
+          // HACK
+          // for some reason, the watchstream is firing 'changed' immediately
+          // ignore the first emit
+          // -prf
+          if (isFirstWatchEvent) {
+            isFirstWatchEvent = false
+            return
+          }
+          this.load()
+        })
+      }
     }
 
     this.items = items
