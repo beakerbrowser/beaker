@@ -131,7 +131,7 @@ export async function setup () {
     // -prf
     wc.on('devtools-opened', () => {
       if (wc.devToolsWebContents) {
-        wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url)')
+        wc.devToolsWebContents.executeJavaScript('InspectorFrontendHost.openInNewTab = (url) => window.open(url); undefined')
         wc.devToolsWebContents.on('new-window', (e, url) => {
           if (url.startsWith('chrome-devtools://')) return // ignore
           tabManager.create(parentWindow, url, {setActive: true, adjacentActive: true})
