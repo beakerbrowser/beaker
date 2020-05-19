@@ -179,7 +179,7 @@ export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
     var driveCfg = drives.find(d => d.key === key)
     if (!driveCfg) {
       let drive = await hyper.drives.getOrLoadDrive(url)
-      let manifest = await drive.pda.readManifest().catch(_ => {})
+      let manifest = await drive.pda.readManifest().catch(_ => ({}))
 
       driveCfg = /** @type DriveConfig */({key})
       if (forkOf && typeof forkOf === 'object') {
