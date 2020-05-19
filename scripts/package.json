@@ -82,7 +82,11 @@
       "hardenedRuntime": true,
       "type": "distribution",
       "entitlements": "../build/entitlements.plist",
-      "entitlementsInherit": "../build/entitlements.plist"
+      "entitlementsInherit": "../build/entitlements.plist",
+      "extendInfo": {
+        "NSCameraUsageDescription": "This app requires camera access to record video.",
+        "NSMicrophoneUsageDescription": "This app requires microphone access to record audio."
+      }
     },
     "publish": {
       "provider": "github"
