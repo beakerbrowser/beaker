@@ -66,7 +66,7 @@ export async function setup () {
   // create the root drive as needed
   var isInitialCreation = false
   browsingProfile = await db.get(`SELECT * FROM profiles WHERE id = 0`)
-  if (!browsingProfile.url) {
+  if (!browsingProfile.url || (typeof browsingProfile.url === 'string' && browsingProfile.url.startsWith('dat:'))) {
     let drive = await hyper.drives.createNewRootDrive()
     logger.info('Root drive created', {url: drive.url})
     await db.run(`UPDATE profiles SET url = ? WHERE id = 0`, [drive.url])
