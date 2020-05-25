@@ -64,8 +64,8 @@ class BookmarkMenu extends LitElement {
           </div>
 
           <div class="input-group" style="margin: 15px 0">
-            <label for="pinned">
-              <input type="checkbox" name="pinned" value="1" ?checked=${this.pinned} @change=${this.onChangePinned}/>
+            <label for="pinned-checkbox">
+              <input id="pinned-checkbox" type="checkbox" name="pinned" value="1" ?checked=${this.pinned} @change=${this.onChangePinned}/>
               Pin to start page
             </label>
           </div>
@@ -168,6 +168,8 @@ form {
   width: auto;
   height: auto;
   margin: 0 5px;
+  position: relative;
+  top: 2px;
 }
 
 .input-group.public {
