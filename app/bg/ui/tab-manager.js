@@ -381,7 +381,7 @@ class Tab extends EventEmitter {
         create(this.browserWindow, url, {setActive: true})
       }
     } else {
-      this.browserView.webContents.loadURL(url, opts)
+      this.webContents.loadURL(url, opts)
     }
   }
 
@@ -916,6 +916,7 @@ class Tab extends EventEmitter {
     if (this.isSidebarActive) {
       this.executeSidebarCommand('set-all-contexts', this.url)
     }
+    this.focus()
     await this.fetchIsBookmarked()
     await this.fetchDriveInfo()
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {
@@ -1751,6 +1752,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async focusShellWindow () {
     getWindow(this.sender).webContents.focus()
+  },
+
+  async focusPage () {
+    getActive(this.sender).focus()
   },
 
   async onFaviconLoadSuccess (index, dataUrl) {

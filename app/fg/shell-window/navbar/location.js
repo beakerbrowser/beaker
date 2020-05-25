@@ -104,7 +104,7 @@ class NavbarLocation extends LitElement {
     this.shouldSelectAllOnFocus = true
     var input = this.shadowRoot.querySelector('.input-container input')
     input.focus()
-    bg.views.focusShellWindow() // focus the shell-window UI
+    bg.views.focusShellWindow()
   }
 
   unfocusLocation () {
