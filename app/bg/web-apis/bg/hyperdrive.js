@@ -318,8 +318,8 @@ export default {
 
         const dst = await lookupDrive(this.sender, dstpath.includes('://') ? dstpath : url)
 
-        if (srcpath.includes('://')) srcpath = (new URL(srcpath)).pathname
-        if (dstpath.includes('://')) dstpath = (new URL(dstpath)).pathname
+        if (srcpath.includes('://')) srcpath = normalizeFilepath((new URL(srcpath)).pathname)
+        if (dstpath.includes('://')) dstpath = normalizeFilepath((new URL(dstpath)).pathname)
 
         pause() // dont count against timeout, there may be user prompts
         const senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
@@ -346,8 +346,8 @@ export default {
         const src = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         const dst = await lookupDrive(this.sender, dstpath.includes('://') ? dstpath : url)
 
-        if (srcpath.includes('://')) srcpath = (new URL(srcpath)).pathname
-        if (dstpath.includes('://')) dstpath = (new URL(dstpath)).pathname
+        if (srcpath.includes('://')) srcpath = normalizeFilepath((new URL(srcpath)).pathname)
+        if (dstpath.includes('://')) dstpath = normalizeFilepath((new URL(dstpath)).pathname)
 
         pause() // dont count against timeout, there may be user prompts
         await assertWritePermission(dst.drive, this.sender)
