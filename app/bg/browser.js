@@ -813,7 +813,7 @@ function onWillPreventUnload (e) {
     defaultId: 0,
     cancelId: 1
   })
-  var leave = (response === 0)
+  var leave = (choice === 0)
   if (leave) {
     e.preventDefault()
   }
