@@ -329,12 +329,6 @@ export function buildWindowMenu (opts = {}) {
         accelerator: 'CmdOrCtrl+Shift+R',
         enabled: !noWindows,
         click: function (item) {
-          // HACK
-          // this is *super* lazy but it works
-          // clear all hyper-dns cache on hard reload, to make sure the next
-          // load is fresh
-          // -prf
-          hyper.dns.flushCache()
           if (tab) tab.webContents.reloadIgnoringCache()
         },
         reserved: true
