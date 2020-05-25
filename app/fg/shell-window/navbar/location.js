@@ -64,6 +64,7 @@ class NavbarLocation extends LitElement {
     this.isBookmarked = false
     this.isLocationFocused = false
     this.hasExpanded = false
+    this.shouldSelectAllOnFocus = false
 
     setInterval(async () => {
       if (!this.url.startsWith('hyper://')) return
@@ -100,10 +101,10 @@ class NavbarLocation extends LitElement {
   }
 
   focusLocation () {
+    this.shouldSelectAllOnFocus = true
     var input = this.shadowRoot.querySelector('.input-container input')
     input.focus()
     bg.views.focusShellWindow() // focus the shell-window UI
-    input.setSelectionRange(0, input.value.length)
   }
 
   unfocusLocation () {
@@ -349,14 +350,20 @@ class NavbarLocation extends LitElement {
     this.focusLocation()
   }
 
-  onFocusLocation (e) {
+  async onFocusLocation (e) {
+    var input = e.currentTarget
     if (!this.url.startsWith('beaker://desktop')) {
-      e.currentTarget.value = this.url
+      input.value = this.url
       this.hasExpanded = true
     } else {
-      e.currentTarget.value = ''
+      input.value = ''
     }
     this.isLocationFocused = true
+    await this.requestUpdate()
+    if (this.shouldSelectAllOnFocus) {
+      input.setSelectionRange(0, input.value.length)
+      this.shouldSelectAllOnFocus = false
+    }
   }
 
   onBlurLocation (e) {
