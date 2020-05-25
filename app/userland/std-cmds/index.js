@@ -412,3 +412,10 @@ export const system = {
     )
   }
 }
+
+// etc
+// =
+
+export function exit () {
+  this.env.close()
+}

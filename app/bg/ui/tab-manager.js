@@ -1064,7 +1064,7 @@ export async function setup () {
     var browserView = BrowserView.fromWebContents(e.sender)
     if (browserView) {
       var tab = findTab(browserView)
-      if (tab && tab.isScriptClosable) {
+      if (tab && (tab.isScriptClosable || tab.url.startsWith('beaker:'))) {
         remove(tab.browserWindow, tab)
         e.returnValue = true
         return

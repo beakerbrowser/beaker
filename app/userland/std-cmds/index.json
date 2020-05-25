@@ -305,6 +305,11 @@
           ]
         }
       ]
+    },
+    {
+      "name": "exit",
+      "help": "Close webterm",
+      "usage": "exit"
     }
   ]
 }

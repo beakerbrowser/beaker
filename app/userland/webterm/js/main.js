@@ -481,7 +481,8 @@ class WebTerm extends LitElement {
           focus: this.setFocus.bind(this),
           resolve: this.resolve.bind(this),
           clearHistory: this.clearHistory.bind(this),
-          reload: this.importEnvironment.bind(this)
+          reload: this.importEnvironment.bind(this),
+          close: this.close.bind(this)
         },
         page: {
           goto (url, opts = {}) {
@@ -496,7 +497,7 @@ class WebTerm extends LitElement {
         },
         panel: {
           open (panel, ...args) { return beaker.browser.executeSidebarCommand('show-panel', panel, ...args) },
-          close (panel) { return beaker.browser.executeSidebarCommand('close-panel', panel) },
+          close (panel) { return beaker.browser.executeSidebarCommand('hide-panel', panel) },
           focus (panel) { return beaker.browser.executeSidebarCommand('focus-panel', panel) },
           goto (panel, url) { return beaker.browser.executeSidebarCommand('set-context', panel, url) }
         },
@@ -559,6 +560,14 @@ class WebTerm extends LitElement {
       Array.from(this.shadowRoot.querySelectorAll('.subprompt input')).pop().focus()
     } catch (e) {
       this.setFocus()
+    }
+  }
+
+  close () {
+    if (this.isDetached) {
+      window.close()
+    } else {
+      beaker.browser.executeSidebarCommand('hide-panel', 'web-term')
     }
   }
 
