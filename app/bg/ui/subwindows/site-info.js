@@ -36,7 +36,7 @@ export function setup (parentWindow) {
       nativeWindowOpen: true,
       nodeIntegration: false,
       scrollBounce: true,
-      navigateOnDragDrop: true
+      navigateOnDragDrop: false
     }
   })
   view.webContents.on('console-message', (e, level, message) => {

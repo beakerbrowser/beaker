@@ -70,7 +70,7 @@ export function create (tab) {
       nativeWindowOpen: true,
       nodeIntegration: false,
       scrollBounce: true,
-      navigateOnDragDrop: true
+      navigateOnDragDrop: false
     }
   })
   return view
