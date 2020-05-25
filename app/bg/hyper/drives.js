@@ -389,45 +389,58 @@ export function isDriveLoaded (key) {
 // =
 
 export async function getDriveInfo (key, {ignoreCache, onlyCache} = {ignoreCache: false, onlyCache: false}) {
-  // get the drive
-  key = await fromURLToKey(key, true)
-  var drive
-  if (!onlyCache) {
-    drive = getDrive(key)
-    if (!drive && ignoreCache) {
-      drive = await loadDrive(key)
+  var meta
+  try {
+    // get the drive
+    key = await fromURLToKey(key, true)
+    var drive
+    if (!onlyCache) {
+      drive = getDrive(key)
+      if (!drive && ignoreCache) {
+        drive = await loadDrive(key)
+      }
+    }
+
+    var domain = drive ? drive.domain : await hyperDns.reverseResolve(key)
+    var url = `hyper://${domain || key}/`
+
+    // fetch drive data
+    var manifest, driveInfo
+    if (drive) {
+      await drive.pullLatestDriveMeta()
+      ;[meta, manifest, driveInfo] = await Promise.all([
+        archivesDb.getMeta(key),
+        drive.pda.readManifest().catch(_ => {}),
+        drive.getInfo()
+      ])
+    } else {
+      meta = await archivesDb.getMeta(key)
+      driveInfo = {version: undefined}
+    }
+    manifest = manifest || {}
+    if (filesystem.isRootUrl(url) && !meta.title) {
+      meta.title = 'My System Drive'
+    }
+    meta.key = key
+    meta.discoveryKey = drive ? drive.discoveryKey : undefined
+    meta.url = url
+    // meta.domain = drive.domain TODO
+    meta.links = manifest.links || {}
+    meta.manifest = manifest
+    meta.version = driveInfo.version
+    meta.peers = await daemon.getPeerCount(drive ? drive.key : new Buffer(key, 'hex'))    
+  } catch (e) {
+    meta = {
+      key,
+      url: `hyper://${key}/`,
+      writable: false,
+      version: 0,
+      title: '',
+      description: ''
     }
   }
-
-  var domain = drive ? drive.domain : await hyperDns.reverseResolve(key)
-  var url = `hyper://${domain || key}/`
-
-  // fetch drive data
-  var meta, manifest, driveInfo
-  if (drive) {
-    await drive.pullLatestDriveMeta()
-    ;[meta, manifest, driveInfo] = await Promise.all([
-      archivesDb.getMeta(key),
-      drive.pda.readManifest().catch(_ => {}),
-      drive.getInfo()
-    ])
-  } else {
-    meta = await archivesDb.getMeta(key)
-    driveInfo = {version: undefined}
-  }
-  manifest = manifest || {}
-  if (filesystem.isRootUrl(url) && !meta.title) {
-    meta.title = 'My System Drive'
-  }
-  meta.key = key
-  meta.discoveryKey = drive ? drive.discoveryKey : undefined
-  meta.url = url
-  // meta.domain = drive.domain TODO
-  meta.links = manifest.links || {}
-  meta.manifest = manifest
-  meta.version = driveInfo.version
-  meta.peers = await daemon.getPeerCount(drive ? drive.key : new Buffer(key, 'hex'))
-  
+  meta.title = meta.title || ''
+  meta.description = meta.description || ''
   return meta
 }
 
