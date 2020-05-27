@@ -54,6 +54,10 @@ class EditorApp extends LitElement {
     return (this.resolvedPath || '').split('/').pop()
   }
 
+  get resolvedUrl () {
+    return this.origin + this.resolvedPath
+  }
+
   get hasFileExt () {
     var path = this.pathname
     return path.split('/').pop().includes('.')
@@ -616,7 +620,7 @@ class EditorApp extends LitElement {
           icon: 'fas fa-fw fa-file-export',
           label: 'Export',
           disabled: this.dne,
-          click: () => this.onClickExportFiles(this.resolvedPath)
+          click: () => this.onClickExportFiles(this.resolvedUrl)
         }
       ]
     })
