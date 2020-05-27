@@ -346,6 +346,10 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   return win
 }
 
+export function restoreLastShellWindow () {
+  return createShellWindow(sessionWatcher.popLastClosedWindow())
+}
+
 export function getActiveWindow () {
   // try to pull the `focus`ed window; if there isnt one, fallback to the last created
   var win = BrowserWindow.getFocusedWindow()

@@ -1,6 +1,6 @@
 import { app, Tray, Menu, BrowserWindow, nativeTheme } from 'electron'
 import path from 'path'
-import { createShellWindow } from './windows'
+import { restoreLastShellWindow } from './windows'
 import * as tabManager from './tab-manager'
 import * as settingsDb from '../dbs/settings'
 
@@ -41,6 +41,7 @@ async function buildMenu () {
   var runBackground = !!(await settingsDb.get('run_background'))
   const contextMenu = Menu.buildFromTemplate([
     {label: 'Open new tab', click: onClickOpen},
+    {label: 'Restore last window', click: onClickRestore},
     {type: 'separator'},
     {type: 'checkbox', label: 'Let Beaker run in the background', checked: runBackground, click: () => onTogglePersist(!runBackground)},
     {label: 'Quit Beaker', click: () => app.quit()}
@@ -54,8 +55,15 @@ function onClickOpen () {
     win.show()
     tabManager.create(win, undefined, {setActive: true})
   } else {
-    createShellWindow()
+    win = restoreLastShellWindow()
+    win.on('custom-pages-ready', () => {
+      tabManager.create(win, undefined, {setActive: true})
+    })
   }
+}
+
+function onClickRestore () {
+  restoreLastShellWindow()
 }
 
 function onTogglePersist (v) {

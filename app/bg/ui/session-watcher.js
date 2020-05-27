@@ -24,6 +24,7 @@ export default class SessionWatcher {
   constructor (userDataDir) {
     this.userDataDir = userDataDir
     this.snapshot = SessionWatcher.emptySnapshot
+    this.closedWindowStates = []
     this.recording = true
     this.watchers = {}
   }
@@ -53,6 +54,7 @@ export default class SessionWatcher {
         let i = this.snapshot.windows.indexOf(state)
         this.snapshot.windows.splice(i, 1)
         this.writeSnapshot()
+        this.closedWindowStates.push(state)
       }
       delete this.watchers[winId]
       watcher.removeAllListeners()
@@ -82,6 +84,10 @@ export default class SessionWatcher {
       winId = winId.id
     }
     return this.watchers[winId].update(state)
+  }
+
+  popLastClosedWindow () {
+    return this.closedWindowStates.pop()
   }
 }
 
