@@ -395,7 +395,7 @@ class GeneralSettingsView extends LitElement {
     this.requestUpdate()
   }
 
-  onUpdaterError (err) {
+  async onUpdaterError (err) {
     console.debug('onUpdaterError', err)
     if (!this.browserInfo) { return }
     this.browserInfo = await beaker.browser.getInfo()
