@@ -102,11 +102,10 @@ class PeersMenu extends LitElement {
             </label>
           `}
 
-        ${peers.length > 0 ? html`
-          <div class="addresses">
-            ${peers.map(p => html`<div>${p}</div>`)}
-          </div>
-        ` : ''}
+        <div class="addresses">
+          ${peers.map(p => html`<div>${p}</div>`)}
+          ${peers.length === 0 ? html`<em>No peers connected</em>` : ''}
+        </div>
 
         ${''/*<div class="network-url">
           <a @click=${e => this.onOpenPage(`beaker://swarm-debugger/${this.url}`)}>
@@ -120,12 +119,6 @@ class PeersMenu extends LitElement {
 
   // events
   // =
-
-  updated () {
-    // adjust height based on rendering
-    var height = this.shadowRoot.querySelector('div').clientHeight
-    bg.shellMenus.resizeSelf({width: 200, height: height|0})
-  }
 
   onOpenPage (href) {
     bg.shellMenus.createTab(href)
@@ -233,7 +226,7 @@ h1.page-title {
   font-family: monospace;
   font-size: 0.9em;
   overflow: auto;
-  max-height: 100px;
+  height: 100px;
 }
 `]
 
