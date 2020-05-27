@@ -51,7 +51,7 @@ autoUpdater.autoDownload = false
 
 // what's the updater doing?
 var updaterState = UPDATER_STATUS_IDLE
-var updaterError = false // has there been an error?
+var updaterError = undefined // has there been an error?
 
 // content-type tracker
 var resourceContentTypes = new LRU(100) // URL -> Content-Type
@@ -532,7 +532,7 @@ export function checkForUpdates (opts = {}) {
 
   // update global state
   logger.info('[AUTO-UPDATE] Checking for a new version.')
-  updaterError = false
+  updaterError = undefined
   setUpdaterState(UPDATER_STATUS_CHECKING)
   if (opts.prerelease) {
     logger.info('[AUTO-UPDATE] Jumping to pre-releases.')
@@ -788,7 +788,12 @@ function onUpdateError (e) {
   console.error(e)
   logger.error(`[AUTO-UPDATE] error: ${e.toString()}`)
   setUpdaterState(UPDATER_STATUS_IDLE)
-  updaterError = {message: (e.toString() || '').split('\n')[0]}
+
+  var message = (e.toString() || '').split('\n')[0]
+  if (message.includes('[object Object]')) {
+    message = typeof e.message === 'string' ? e.message : 'Updater failed to contact the server'
+  }
+  updaterError = {message}
   browserEvents.emit('updater-error', updaterError)
 }
 
