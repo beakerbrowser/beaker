@@ -566,25 +566,31 @@ class Tab extends EventEmitter {
         await this.openSidebar()
     }
     switch (cmd) {
-      case 'show-panel':        wc().focus(); await execJs(`showPanel("${args[0]}", "${args[1] || this.url}")`); break
-      case 'toggle-panel':      wc().focus(); await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`); break
-      case 'hide-panel':        await execJs(`hidePanel("${args[0]}")`); break
-      case 'set-context':       await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
-      case 'set-all-contexts':  await execJs(`setAllContexts("${args[0] || this.url}")`); break
-      case 'focus-panel':       wc().focus(); await execJs(`setFocus("${args[0]}")`); break
-      case 'close':             this.closeSidebar(); break
-    }
-    switch (cmd) {
-      case 'show-panel': this.sidebarPanels.add(args[0]); this.emitUpdateState(); break
-      case 'hide-panel': this.sidebarPanels.delete(args[0]); this.emitUpdateState(); break
-      case 'toggle-panel': 
+      case 'show-panel':
+        this.sidebarPanels.add(args[0])
+        this.emitUpdateState()
+        wc().focus()
+        await execJs(`showPanel("${args[0]}", "${args[1] || this.url}")`)
+        break
+      case 'toggle-panel':
         if (!this.sidebarPanels.has(args[0])) {
           this.sidebarPanels.add(args[0])
         } else {
           this.sidebarPanels.delete(args[0])
         }
         this.emitUpdateState()
+        wc().focus()
+        await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`)
         break
+      case 'hide-panel':
+        this.sidebarPanels.delete(args[0])
+        this.emitUpdateState()
+        await execJs(`hidePanel("${args[0]}")`)
+        break
+      case 'set-context':       await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
+      case 'set-all-contexts':  await execJs(`setAllContexts("${args[0] || this.url}")`); break
+      case 'focus-panel':       wc().focus(); await execJs(`setFocus("${args[0]}")`); break
+      case 'close':             this.closeSidebar(); break
     }
   }
 
