@@ -565,26 +565,6 @@ export function buildWindowMenu (opts = {}) {
             click: function () {
               win.webContents.openDevTools({mode: 'detach'})
             }
-          },
-          { type: 'separator' },
-          {
-            label: 'Open Hyperdrives Debug Page',
-            enabled: !noWindows,
-            click: function (item) {
-              if (win) tabManager.create(win, 'beaker://active-drives/', {setActive: true})
-            }
-          }, {
-            label: 'Open Dat-DNS Cache Page',
-            enabled: !noWindows,
-            click: function (item) {
-              if (win) tabManager.create(win, 'beaker://hyper-dns-cache/', {setActive: true})
-            }
-          }, {
-            label: 'Open Debug Log Page',
-            enabled: !noWindows,
-            click: function (item) {
-              if (win) tabManager.create(win, 'beaker://debug-log/', {setActive: true})
-            }
           }
         ]
       },
