@@ -1,4 +1,4 @@
-The process is currently *insane*. This is because in the 11th hour I ran into a number of ridiculous issues with electron-builder.
+The process is currently a little silly. This file is getting progressively less awful.
 
 ## Check the deps installation
 
