@@ -126,6 +126,13 @@ class EditorApp extends LitElement {
     return new Promise((resolve, reject) => {
       window.require.config({ baseUrl: 'beaker://assets/' })
       window.require(['vs/editor/editor.main'], () => {
+        // update monaco to syntax-highlight <script type="module">
+        var jsLang = monaco.languages.getLanguages().find(lang => lang.id === 'javascript')
+        if (jsLang) {
+          jsLang.mimetypes.push('module')
+          monaco.languages.register(jsLang)
+        }
+
         // we have load monaco outside of the shadow dom
         monaco.editor.defineTheme('custom-dark', {
           base: 'vs-dark',
