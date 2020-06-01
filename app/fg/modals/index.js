@@ -63,7 +63,7 @@ class ModalsWrapper extends LitElement {
   }
 
   render () {
-    return html`<div @contextmenu=${this.onContextMenu}>${this.renderMenu()}</div>`
+    return html`<div>${this.renderMenu()}</div>`
   }
 
   renderMenu () {
@@ -94,10 +94,6 @@ class ModalsWrapper extends LitElement {
         return html`<select-contact-modal></select-contact-modal>`
     }
     return html`<div></div>`
-  }
-
-  onContextMenu (e) {
-    e.preventDefault() // disable context menu
   }
 }
 

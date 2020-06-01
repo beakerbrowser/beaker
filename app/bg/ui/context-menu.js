@@ -1,6 +1,7 @@
 import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import * as tabManager from './tab-manager'
+import * as modals from './subwindows/modals'
 import { getAddedWindowSettings, toggleShellInterface } from './windows'
 import { download } from './downloads'
 import { runDrivePropertiesFlow } from './util'
@@ -32,8 +33,11 @@ export default function registerContextMenu () {
       if (!targetWindow) { return }
       const addedWindowSettings = getAddedWindowSettings(targetWindow)
 
-      // ignore clicks on the shell window
+      // handle shell UI specially
       if (props.pageURL == 'beaker://shell-window/') { return }
+      if (props.pageURL.startsWith('beaker://modals')) {
+        return modals.handleContextMenu(webContents, targetWindow, can, props)
+      }
 
       // helper to call code on the element under the cursor
       const callOnElement = js => webContents.executeJavaScript(`

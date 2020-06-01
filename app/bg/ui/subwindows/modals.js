@@ -8,7 +8,7 @@
  */
 
 import path from 'path'
-import { app, BrowserWindow, BrowserView } from 'electron'
+import { app, BrowserWindow, BrowserView, Menu, clipboard } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { ModalActiveError } from 'beaker-error-constants'
 import * as tabManager from '../tab-manager'
@@ -146,6 +146,30 @@ export function close (tab) {
     view.destroy()
     delete views[tab.id]
   }
+}
+
+export function handleContextMenu (webContents, targetWindow, can, props) {
+  var menuItems = []
+  if (props.linkURL) {
+    menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => tabManager.create(win, props.linkURL, {setActive: true, adjacentActive: true}) })
+    menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
+  }
+  if (props.mediaType == 'image') {
+    menuItems.push({ label: 'Copy Image', click: () => webContents.copyImageAt(props.x, props.y) })
+    menuItems.push({ label: 'Copy Image URL', click: () => clipboard.writeText(props.srcURL) })
+    menuItems.push({ label: 'Open Image in New Tab', click: (item, win) => tabManager.create(win, props.srcURL, {adjacentActive: true}) })
+  }
+  if (props.isEditable) {
+    menuItems.push({ label: 'Cut', role: 'cut', enabled: can('Cut') })
+    menuItems.push({ label: 'Copy', role: 'copy', enabled: can('Copy') })
+    menuItems.push({ label: 'Paste', role: 'paste', enabled: props.editFlags.canPaste })
+  } else if (props.selectionText.trim().length > 0) {
+    menuItems.push({ label: 'Copy', role: 'copy', enabled: can('Copy') })
+  }
+  if (menuItems.length === 0) return
+
+  var menuInstance = Menu.buildFromTemplate(menuItems)
+  menuInstance.popup({ window: targetWindow })
 }
 
 // rpc api
