@@ -30,6 +30,8 @@ export default {
   downloadURL: 'promise',
   readFile: 'promise',
 
+  convertDat: 'promise',
+
   getResourceContentType: 'sync',
   getCertificate: 'promise',
 

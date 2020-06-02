@@ -14,6 +14,7 @@ import * as logLib from './logger'
 const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
 import { convertDatArchive } from './dat/index'
+import datDns from './dat/dns'
 import { open as openUrl } from './open-url'
 import * as windows from './ui/windows'
 import * as tabManager from './ui/tab-manager'
@@ -122,16 +123,6 @@ export async function setup () {
     }
   })
 
-  // TEMPORARY HACK
-  // method to convert dats to hyperdrives
-  // -prf
-  ipcMain.on('temp-convert-dat', async (e, key) => {
-    var win = findWebContentsParentWindow(e.sender)
-    if (!win) return
-    var driveUrl = await convertDatArchive(key)
-    tabManager.create(win, driveUrl, {setActive: true})
-  })
-
   // HACK
   // Electron doesn't give us a convenient way to check the content-types of responses
   // or to fetch the certs of a hostname
@@ -172,6 +163,8 @@ export const WEBAPI = {
   fetchBody,
   downloadURL,
   readFile,
+
+  convertDat,
 
   getResourceContentType,
   getCertificate,
@@ -243,6 +236,13 @@ function readFile (obj, opts) {
       else resolve(res)
     })
   })
+}
+
+export async function convertDat (url) {
+  var win = findWebContentsParentWindow(this.sender)
+  var key = await datDns.resolveName(url)
+  var driveUrl = await convertDatArchive(win, key)
+  tabManager.create(win, driveUrl, {setActive: true})
 }
 
 export function getResourceContentType (url) {

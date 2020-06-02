@@ -28,7 +28,6 @@ class NavbarLocation extends LitElement {
       zoom: {type: Number},
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
-      availableAlternative: {type: String, attribute: 'available-alternative'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
       isShareMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
@@ -56,7 +55,6 @@ class NavbarLocation extends LitElement {
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
-    this.availableAlternative = ''
     this.isShareMenuOpen = false
     this.isPeersMenuOpen = false
     this.isSiteMenuOpen = false
@@ -133,7 +131,7 @@ class NavbarLocation extends LitElement {
       </shell-window-navbar-site-info>
       ${this.renderLocation()}
       ${this.renderZoom()}
-      ${this.renderAvailableAlternativeBtn()}
+      ${this.renderDatConverterBtn()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderPeers()}
       ${this.renderSiteBtn()}
@@ -168,7 +166,7 @@ class NavbarLocation extends LitElement {
         </div>
       `
     }
-    if (/^(hyper|http|https|beaker):\/\//.test(this.url)) {
+    if (/^(hyper|http|https|beaker|dat):\/\//.test(this.url)) {
       try {
         var { protocol, host, pathname, search, hash } = new URL(this.url)
         // TODO just show path?
@@ -236,19 +234,11 @@ class NavbarLocation extends LitElement {
     `
   }
 
-  renderAvailableAlternativeBtn () {
-    const aa = this.availableAlternative
-    if (aa === 'dat:') {
+  renderDatConverterBtn () {
+    if (this.url.startsWith('dat:')) {
       return html`
-        <button class="available-alternative" title="Go to Dat Version of this Site" @click=${this.onClickAvailableAlternative}>
-          P2P version available
-        </button>
-      `
-    }
-    if (aa === 'http:' || aa === 'https:') {
-      return html`
-        <button class="available-alternative" title="Go to HTTP/S Version of this Site" @click=${this.onClickAvailableAlternative}>
-          HTTP/S version available
+        <button class="dat-converter" title="Convert to Hyperdrive" @click=${this.onClickConvertDat}>
+          Convert this site to Hyperdrive
         </button>
       `
     }
@@ -410,15 +400,9 @@ class NavbarLocation extends LitElement {
     bg.views.resetZoom(this.activeTabIndex)
   }
 
-  onClickAvailableAlternative (e) {
-    var url = new URL(this.url)
-    url.protocol = this.availableAlternative
-
-    if (e.metaKey || e.ctrlKey) {
-      bg.views.createTab(url.toString(), {setActive: true, addToNoRedirects: true})
-    } else {
-      bg.views.loadURL(this.activeTabIndex, url.toString(), {addToNoRedirects: true})
-    }
+  onClickConvertDat (e) {
+    var { host } = new URL(this.url)
+    bg.beakerBrowser.convertDat(host)
   }
 
   onClickLiveReloadingBtn (e) {
@@ -566,10 +550,21 @@ button.zoom:hover {
   background: #eaeaea;
 }
 
-button.available-alternative {
+button.dat-converter {
   width: auto;
-  line-height: 26px;
-  padding: 0 6px;
+  font-size: 13px;
+  line-height: 23px;
+  background: #008dff;
+  border-radius: 5px;
+  margin: 2px;
+  padding: 0 9px;
+  font-weight: 500;
+  color: #fff;
+}
+
+button.dat-converter:hover {
+  cursor: pointer;
+  background: #0076d6;
 }
 
 button.live-reload {

@@ -7,9 +7,13 @@ import rimraf from 'rimraf'
 import pda from 'pauls-dat-api2'
 import hyper from '../hyper/index'
 import * as filesystem from '../filesystem/index'
+import * as prompts from '../ui/subwindows/prompts'
 
+var tmpdirs = {}
 export function getStoragePathFor (key) {
-  return join(tmpdir(), 'dat', key)
+  if (tmpdirs[key]) return tmpdirs[key]
+  tmpdirs[key] = join(tmpdir(), 'dat', key)
+  return tmpdirs[key]
 }
 
 var downloadPromises = {}
@@ -31,28 +35,41 @@ export async function downloadDat (key) {
   return downloadPromises[key]
 }
 
-var convertPromises = {}
-export function convertDatArchive (key) {
-  if (convertPromises[key]) {
-    return convertPromises[key]
-  }
-  
-  convertPromises[key] = (async () => {
-    await downloadDat(key)
+export async function convertDatArchive (win, key) {
+  await downloadDat(key)
 
-    var storagePath = getStoragePathFor(key)
-    var drive = await hyper.drives.createNewDrive()
+  var storagePath = getStoragePathFor(key)
+  var drive = await hyper.drives.createNewDrive()
+
+  // calculate size of import for progress
+  var numFilesToImport = 0
+  let stats = await pda.exportFilesystemToArchive({
+    srcPath: storagePath,
+    dstArchive: drive.session.drive,
+    dstPath: '/',
+    inplaceImport: true,
+    dryRun: true
+  })
+  numFilesToImport += stats.fileCount
+
+  var prompt = await prompts.create(win.webContents, 'progress', {label: 'Converting dat...'})
+  try {
     await pda.exportFilesystemToArchive({
       srcPath: storagePath,
       dstArchive: drive.session.drive,
       dstPath: '/',
-      inplaceImport: true
+      inplaceImport: true,
+      progress (stats) {
+        prompt.webContents.executeJavaScript(`updateProgress(${stats.fileCount / numFilesToImport}); undefined`)
+      }
     })
-    await filesystem.configDrive(drive.url)
-    return drive.url
-  })()
+  } finally {
+    prompts.close(prompt.tab)
+  }
 
-  return convertPromises[key]
+  await drive.pda.rename('/dat.json', drive.session.drive, '/index.json').catch(e => undefined)
+  await filesystem.configDrive(drive.url)
+  return drive.url
 }
 
 async function runConvertProcess (...args) {

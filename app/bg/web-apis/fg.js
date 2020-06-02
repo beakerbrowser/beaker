@@ -24,10 +24,4 @@ export const setup = function () {
     Object.assign(beaker, internal.setup(rpc))
   }
   contextBridge.exposeInMainWorld('beaker', beaker)
-  if (window.location.protocol === 'dat:') {
-    // TEMPORARY
-    contextBridge.exposeInMainWorld('__internalBeakerDatArchive', {
-      convert: key => ipcRenderer.send('temp-convert-dat', key)
-    })
-  }
 }

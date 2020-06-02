@@ -1,5 +1,4 @@
 import { BrowserView, dialog } from 'electron'
-import os from 'os'
 import pda from 'pauls-dat-api2'
 import * as tabManager from '../../ui/tab-manager'
 import * as modals from '../../ui/subwindows/modals'
