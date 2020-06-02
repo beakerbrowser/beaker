@@ -1,6 +1,4 @@
 import { app } from 'electron'
-import * as logLib from '../logger'
-const logger = logLib.child({category: 'dat', subcategory: 'protocol'})
 import * as childProcess from 'child_process'
 import { tmpdir } from 'os'
 import { join } from 'path'
@@ -33,19 +31,28 @@ export async function downloadDat (key) {
   return downloadPromises[key]
 }
 
-export async function convertDatArchive (key) {
-  await downloadDat(key)
+var convertPromises = {}
+export function convertDatArchive (key) {
+  if (convertPromises[key]) {
+    return convertPromises[key]
+  }
+  
+  convertPromises[key] = (async () => {
+    await downloadDat(key)
 
-  var storagePath = getStoragePathFor(key)
-  var drive = await hyper.drives.createNewDrive()
-  await pda.exportFilesystemToArchive({
-    srcPath: storagePath,
-    dstArchive: drive.session.drive,
-    dstPath: '/',
-    inplaceImport: true
-  })
-  await filesystem.configDrive(drive.url)
-  return drive.url
+    var storagePath = getStoragePathFor(key)
+    var drive = await hyper.drives.createNewDrive()
+    await pda.exportFilesystemToArchive({
+      srcPath: storagePath,
+      dstArchive: drive.session.drive,
+      dstPath: '/',
+      inplaceImport: true
+    })
+    await filesystem.configDrive(drive.url)
+    return drive.url
+  })()
+
+  return convertPromises[key]
 }
 
 async function runConvertProcess (...args) {

@@ -1,7 +1,28 @@
+import { join as joinPath } from 'path'
 import { getStoragePathFor, downloadDat } from '../dat/index'
 import { URL } from 'url'
+import { promisify } from 'util'
 import datDns from '../dat/dns'
-import { promises as fsp } from 'fs'
+import datServeResolvePath from '@beaker/dat-serve-resolve-path'
+import ScopedFS from 'scoped-fs'
+import * as mime from '../lib/mime'
+import * as logLib from '../logger'
+const logger = logLib.child({category: 'dat', subcategory: 'protocol'})
+
+// globals
+// =
+
+var scopedFSes = {} // map of scoped filesystems, kept in memory to reduce allocations
+function getFS (path) {
+  if (!(path in scopedFSes)) {
+    let fs = scopedFSes[path] = new ScopedFS(path)
+    fs.isLocalFS = true
+    fs.stat = promisify(fs.stat).bind(fs)
+    fs.readdir = promisify(fs.readdir).bind(fs)
+    fs.readFile = promisify(fs.readFile).bind(fs)
+  }
+  return scopedFSes[path]
+}
 
 /**
  * HACK
@@ -30,44 +51,48 @@ export const electronHandler = async function (request, respond) {
     var urlp = new URL(request.url)
     var key = await datDns.resolveName(urlp.hostname)
 
-    let path = getStoragePathFor (key)
+    var path = getStoragePathFor(key)
     await downloadDat(key)
+    var fs = getFS(path)
 
-    var files = await fsp.readdir(path)
+    var manifest = {}
+    try {
+      manifest = JSON.parse(await fs.readFile('/dat.json'))
+    } catch (e) {
+      logger.warn('Failed to fetch dat:// manifest', {key, error: e})
+    }
 
-    respond({
+    var entry = await datServeResolvePath(fs, manifest, request.url, request.headers.Accept)
+
+    if (!entry) {
+      return respond({
+        statusCode: 404,
+        headers: {'Content-Type': 'text/html'},
+        data: intoStream(`<h1>File not found</h1>`)
+      })
+    }
+
+    if (entry.isFile()) {
+      return respond({
+        statusCode: 200,
+        headers: {'Content-Type': mime.identify(entry.path)},
+        data: fs.createReadStream(entry.path)
+      })
+    }
+
+    var files = await fs.readdir(entry.path)
+    return respond({
       statusCode: 200,
       headers: {'Content-Type': 'text/html'},
       data: intoStream(`<!doctype html>
 <html>
-  <head></head>
   <body>
-    <h1>Dat legacy converter</h1>
-    <p><strong>Dat has been upgraded to the <a href="https://hypercore-protocol.org/" target="_blank">Hypercore Protocol</a></strong>. Old dat archives are no longer compatible with Beaker.</p>
-    <p>You can convert this dat into a Hyperdrive to continue using its content.</p>
-    <p><button>Convert to Hyperdrive</button></p>
-    <h3>Files</h3>
-    <pre>${files.join('\n')}</pre>
-    <style>
-    body {
-      margin: 30px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
-    }
-    </style>
-    <script>
-      var btn = document.body.querySelector('button')
-      btn.addEventListener('click', async (e) => {
-        btn.textContent = 'Converting...'
-        btn.setAttribute('disabled', '')
-        __internalBeakerDatArchive.convert("${key}")
-      })
-    </script>
+    ${files.map(file => `<a href="${joinPath(entry.path, file)}">${file}</a>`).join('<br>\n')}
   </body>
 </html>
-`)
-    })
+`)})
   } catch (e) {
-    console.log('failed', e)
+    logger.error('Failed to access dat', {error: e, url: request.url})
     respond({
       statusCode: 400,
       headers: {'Content-Type': 'text/html'},
