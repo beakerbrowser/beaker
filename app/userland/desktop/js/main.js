@@ -228,7 +228,7 @@ class DesktopApp extends LitElement {
           ${this.legacyArchives.map(archive => html`
             <div class="archive">
               <a href="dat://${archive.key}" title=${archive.title} target="_blank">${archive.title || archive.key}</a>
-              <button @click=${e => {window.location = `dat://${archive.key}`}}>Convert</button>
+              <button @click=${e => {window.location = `dat://${archive.key}`}}>View</button>
               <button @click=${e => this.onClickRemoveLegacyArchive(e, archive)}>Remove</button>
             </div>
           `)}
