@@ -175,6 +175,7 @@ class FilesExplorer extends LitElement {
           <span class="fa-fw ${this.currentFolder.mount ? 'fas fa-external-link-square-alt' : 'far fa-folder'}"></span>
           ${this.currentFolder.name} ${this.currentFolder.mount ? html`(<code>${this.currentFolder.mount.key.slice(0, 4)}..${this.currentFolder.mount.key.slice(-2)}</code>)` : ''}
         </a>
+        ${this.isLoading ? html`<span class="spinner"></span>` : ''}
       </div>
       <div class="listing" @contextmenu=${this.onContextmenuListing}>
         ${this.folderPath !== '/' ? html`

@@ -1,8 +1,10 @@
 import {css} from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import buttons2css from '../../../app-stdlib/css/buttons2.css.js'
+import spinnercss from '../../../app-stdlib/css/com/spinner.css.js'
 
 const cssStr = css`
 ${buttons2css}
+${spinnercss}
 
 :host {
   display: block;
@@ -16,6 +18,7 @@ ${buttons2css}
 }
 
 .path {
+  position: relative;
   padding: 0 4px;
   font-size: 12px;
   color: #bbb;
@@ -36,6 +39,14 @@ ${buttons2css}
 
 .path .fa-angle-right {
   padding: 2px;
+}
+
+.path .spinner {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: 4px;
+  right: 5px;
 }
 
 .listing {
