@@ -14,6 +14,7 @@ import * as addressBook from './lib/address-book.js'
 import 'beaker://library/js/views/drives.js'
 import 'beaker://library/js/views/bookmarks.js'
 import 'beaker://library/js/views/address-book.js'
+import './views/recent.js'
 import css from '../css/main.css.js'
 
 const DOCS_URL = 'https://docs.beakerbrowser.com'
@@ -97,6 +98,7 @@ class DesktopApp extends LitElement {
       ${this.renderFiles()}
       <nav>
         ${navItem('drives', 'My Drives')}
+        ${navItem('recent', 'Recent')}
         ${navItem('bookmarks', 'Bookmarks')}
         ${navItem('address-book', 'Address Book')}
         <a @click=${this.onClickNavMore} title="More"><span class="fas fa-fw fa-ellipsis-h"></span></a>
@@ -122,6 +124,7 @@ class DesktopApp extends LitElement {
         ` : ''}
       </nav>
       <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></drives-view>
+      <recent-view class="top-border ${hiddenCls('recent')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} filter=${this.filter}></recent-view>
       <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></bookmarks-view>
       <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} other-only .filter=${this.filter}></address-book-view>
       ${this.renderIntro()}

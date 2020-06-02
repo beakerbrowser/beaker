@@ -210,6 +210,7 @@ feed-view {
   margin: 26px auto;
 }
 
+recent-view,
 drives-view,
 bookmarks-view,
 address-book-view {
