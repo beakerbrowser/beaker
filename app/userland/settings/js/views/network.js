@@ -35,16 +35,22 @@ class NetworkView extends LitElement {
 
   constructor () {
     super()
-    this.networkStatus = []
+    this.networkStatus = undefined
+    this.error = undefined
   }
 
   async load () {
-    var networkStatus = await beaker.browser.getDaemonNetworkStatus()
-    for (let stats of networkStatus) {
-      stats[0].drive = await beaker.drives.get(stats[0].metadata.key)
+    this.error = undefined
+    try {
+      var networkStatus = await beaker.browser.getDaemonNetworkStatus()
+      for (let stats of networkStatus) {
+        stats[0].drive = await beaker.drives.get(stats[0].metadata.key)
+      }
+      this.networkStatus = networkStatus
+      console.log(this.networkStatus)
+    } catch (e) {
+      this.error = e
     }
-    this.networkStatus = networkStatus
-    console.log(this.networkStatus)
   }
 
   unload () {
@@ -57,12 +63,16 @@ class NetworkView extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <h3>Active Drives</h3>
-      ${this.networkStatus.length === 0 ? html`
-        <p><em>No active drives</em></p>
-      ` : ''}
-      <table>
-        ${repeat(this.networkStatus, (v, i) => i, drive => this.renderDriveStatus(drive))}
-      </table>
+      ${this.error ? html`
+        <pre>${this.error.toString()}</pre>
+      ` : this.networkStatus ? html `
+        ${this.networkStatus.length === 0 ? html`
+          <p><em>No active drives</em></p>
+        ` : ''}
+        <table>
+          ${repeat(this.networkStatus, (v, i) => i, drive => this.renderDriveStatus(drive))}
+        </table>
+      ` : html`<p><span class="spinner"></span></p>`}
     `
   }
 
