@@ -270,6 +270,11 @@
           "name": "uninstall",
           "help": "Uninstall a command-package",
           "usage": "commands install {url}"
+        },
+        {
+          "name" : "reload",
+          "help": "Reloads all command-packages from their source.",
+          "usage": "commands reload"
         }
       ]
     },

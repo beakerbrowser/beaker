@@ -54,6 +54,11 @@ export async function uninstall (opts = {}, url) {
   return {url, toHTML: () => html`Uninstalled <a href=${url}>${url}</a>`}
 }
 
+export async function reload () {
+  await this.env.reload()
+  this.out('Commands reloaded')
+}
+
 // internal
 // =
 
