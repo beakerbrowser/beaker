@@ -561,10 +561,18 @@ export default {
         }
         resume()
         checkin('running query')
-        var queriesResults = await Promise.all(opts.drive.map(drive => query(drive, opts)))
+        var queryOpts = opts
+        if (opts.drive.length > 1) {
+          // HACK we need to get more results in the individual drive queries so that we can correctly
+          // merge, re-sort, and slice after -prf
+          queryOpts = Object.assign({}, opts)
+          queryOpts.limit = queryOpts.offset + queryOpts.limit
+          queryOpts.offset = 0
+        }
+        var queriesResults = await Promise.all(opts.drive.map(drive => query(drive, queryOpts)))
         var results = _flattenDeep(queriesResults)
         if (opts.drive.length > 1) {
-          // HACK resort and slice here because each query was run separately -prf
+          // HACK re-sort and slice here because each query was run separately -prf
           if (opts.sort === 'name') {
             results.sort((a, b) => (opts.reverse) ? path.basename(b.path).toLowerCase().localeCompare(path.basename(a.path).toLowerCase()) : path.basename(a.path).toLowerCase().localeCompare(path.basename(b.path).toLowerCase()))
           } else if (opts.sort === 'mtime') {
