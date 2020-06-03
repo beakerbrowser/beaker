@@ -11,7 +11,7 @@ function runAsync (...args) {
 
 const MODULES_NEEDING_REBUILD = ['sqlite3']
 
-//(cd app && HOME=~/.electron-gyp npm rebuild --runtime=electron --target=9.0.2 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build
+//(cd app && HOME=~/.electron-gyp npm rebuild --runtime=electron --target=10.0.0-beta.2 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build
 
 gulp.task('rebuild', gulp.series(async () => {
   // TODO read electron version
@@ -27,7 +27,7 @@ gulp.task('rebuild', gulp.series(async () => {
   }
   env.HOME = path.join(homedir, '.electron-gyp')
   for (let mod of MODULES_NEEDING_REBUILD) {
-    await runAsync(`npm rebuild ${mod} --runtime=electron --target=9.0.2 --disturl=https://atom.io/download/atom-shell --build-from-source`, {cwd, env, shell: true})
+    await runAsync(`npm rebuild ${mod} --runtime=electron --target=10.0.0-beta.2 --disturl=https://atom.io/download/atom-shell --build-from-source`, {cwd, env, shell: true})
   }
   await runAsync(`npm run build`, {shell: true})
 }))
