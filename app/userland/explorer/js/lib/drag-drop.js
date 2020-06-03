@@ -10,19 +10,8 @@ export async function handleDragDrop (targetEl, x, y, targetPath, dataTransfer) 
     if (dataTransfer.files && dataTransfer.files.length) {
       // files dragged into the window
       let targetUrl = joinPath(loc.getOrigin(), targetPath)
-      let n = 0
-      for (let item of dataTransfer.items) {
-        try {
-          await doImport(targetUrl, item)
-          n++
-        } catch (e) {
-          console.error(e)
-          let niceError = e.toString().split(':').slice(1).join(':').trim()
-          toast.create(`${niceError}. ${n} ${pluralize(n, 'item')} imported.`, 'error')
-          return
-        }
-        toast.create(`Imported ${n} ${pluralize(n, 'item')}`)          
-      }
+      var res = await beaker.shell.importFilesAndFolders(targetUrl, Array.from(dataTransfer.files, f => f.path))
+      toast.create(`Imported ${res.numImported} ${pluralize(res.numImported, 'item')}`)
       return
     }
     // TODO:

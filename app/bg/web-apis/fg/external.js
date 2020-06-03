@@ -14,6 +14,14 @@ export const setup = function (rpc) {
   var markdown = rpc.importAPI('markdown', markdownManifest, RPC_OPTS)
   var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
 
+  if (window.location.protocol !== 'beaker:') {
+    delete shell.executeSidebarCommand
+    delete shell.importFilesAndFolders
+    delete shell.importFilesDialog
+    delete shell.importFoldersDialog
+    delete shell.exportFilesDialog
+  }
+
   var peersocketsRPC = rpc.importAPI('peersockets', peersocketsManifest, RPC_OPTS)
   var peersockets = {
     join (topic) {

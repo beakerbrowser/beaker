@@ -166,6 +166,11 @@ export default {
     }
   },
 
+  async importFilesAndFolders (url, filePaths) {
+    if (!(await isBeakerApp(this.sender))) return
+    return doImport(this.sender, url, filePaths)
+  },
+
   async importFilesDialog (url) {
     if (!(await isBeakerApp(this.sender))) return
 
@@ -175,46 +180,7 @@ export default {
       properties: ['openFile', 'multiSelections', 'createDirectory']
     })
     if (res.filePaths.length) {
-      var urlp = parseDriveUrl(url)
-      var {checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
-      if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
-
-      // calculate size of import for progress
-      var numFilesToImport = 0
-      for (let srcPath of res.filePaths) {
-        let stats = await pda.exportFilesystemToArchive({
-          srcPath,
-          dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
-          dstPath: urlp.pathname,
-          ignore: ['index.json'],
-          inplaceImport: false,
-          dryRun: true
-        })
-        numFilesToImport += stats.fileCount
-      }
-
-      var prompt = await prompts.create(this.sender, 'progress', {label: 'Importing files...'})
-      let numImported = 0
-      try {
-        for (let srcPath of res.filePaths) {
-          let stats = await pda.exportFilesystemToArchive({
-            srcPath,
-            dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
-            dstPath: urlp.pathname,
-            ignore: ['index.json'],
-            inplaceImport: false,
-            dryRun: false,
-            progress (stats) {
-              prompt.webContents.executeJavaScript(`updateProgress(${(numImported + stats.fileCount) / numFilesToImport}); undefined`)
-            }
-          })
-          numImported += stats.fileCount
-        }
-      } finally {
-        prompts.close(prompt.tab)
-      }
-
-      return {numImported}
+      return doImport(this.sender, url, res.filePaths)
     }
     return {numImported: 0}
   },
@@ -228,44 +194,7 @@ export default {
       properties: ['openDirectory', 'multiSelections', 'createDirectory']
     })
     if (res.filePaths.length) {
-      var urlp = parseDriveUrl(url)
-      var {checkoutFS, isHistoric} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
-      if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
-
-      // calculate size of import for progress
-      var numFilesToImport = 0
-      for (let srcPath of res.filePaths) {
-        let stats = await pda.exportFilesystemToArchive({
-          srcPath,
-          dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
-          dstPath: urlp.pathname,
-          inplaceImport: false,
-          dryRun: true
-        })
-        numFilesToImport += stats.fileCount
-      }
-
-      var prompt = await prompts.create(this.sender, 'progress', {label: 'Importing files...'})
-      let numImported = 0
-      try {
-        for (let srcPath of res.filePaths) {
-          let stats = await pda.exportFilesystemToArchive({
-            srcPath,
-            dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
-            dstPath: urlp.pathname,
-            inplaceImport: false,
-            dryRun: false,
-            progress (stats) {
-              prompt.webContents.executeJavaScript(`updateProgress(${(numImported + stats.fileCount) / numFilesToImport}); undefined`)
-            }
-          })
-          numImported += stats.fileCount
-        }
-      } finally {
-        prompts.close(prompt.tab)
-      }
-
-      return {numImported}
+      return doImport(this.sender, url, res.filePaths)
     }
     return {numImported: 0}
   },
@@ -308,4 +237,47 @@ async function isBeakerApp (sender) {
 
 function isStrArray (v) {
   return (Array.isArray(v) && v.every(el => typeof el === 'string'))
+}
+
+async function doImport (wc, url, filePaths) {
+  var urlp = parseDriveUrl(url)
+  var {checkoutFS, isHistoric} = await lookupDrive(wc, urlp.hostname, urlp.version)
+  if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
+
+  // calculate size of import for progress
+  var numFilesToImport = 0
+  for (let srcPath of filePaths) {
+    let stats = await pda.exportFilesystemToArchive({
+      srcPath,
+      dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
+      dstPath: urlp.pathname,
+      ignore: ['index.json'],
+      inplaceImport: false,
+      dryRun: true
+    })
+    numFilesToImport += stats.fileCount
+  }
+
+  var prompt = await prompts.create(wc, 'progress', {label: 'Importing files...'})
+  let numImported = 0
+  try {
+    for (let srcPath of filePaths) {
+      let stats = await pda.exportFilesystemToArchive({
+        srcPath,
+        dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
+        dstPath: urlp.pathname,
+        ignore: ['index.json'],
+        inplaceImport: false,
+        dryRun: false,
+        progress (stats) {
+          prompt.webContents.executeJavaScript(`updateProgress(${(numImported + stats.fileCount) / numFilesToImport}); undefined`)
+        }
+      })
+      numImported += stats.fileCount
+    }
+  } finally {
+    prompts.close(prompt.tab)
+  }
+
+  return {numImported}
 }
