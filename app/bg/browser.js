@@ -436,12 +436,12 @@ export function resizeSiteInfo (bounds) {
   siteInfo.resize(win, bounds)
 }
 
-export function refreshTabState () {
+export async function refreshTabState () {
   var win = findWebContentsParentWindow(this.sender)
   if (!win) return
   var tab = tabManager.getActive(win)
   if (!tab) return
-  tab.refreshState()
+  await tab.refreshState()
 }
 
 export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {
