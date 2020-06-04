@@ -1,7 +1,6 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-// import * as bg from './bg-process-rpc'
-import { remote } from 'electron'
+import * as bg from './bg-process-rpc'
 
 class ShellWindowWin32 extends LitElement {
   // rendering
@@ -21,20 +20,15 @@ class ShellWindowWin32 extends LitElement {
   // =
 
   onClickMinimize () {
-    remote.getCurrentWindow().minimize()
+    bg.beakerBrowser.minimizeWindow()
   }
 
   onClickMaximize () {
-    var win = remote.getCurrentWindow()
-    if (win.isMaximized()) {
-      win.unmaximize()
-    } else {
-      win.maximize()
-    }
+    bg.beakerBrowser.toggleWindowMaximized()
   }
 
   onClickClose () {
-    remote.getCurrentWindow().close()
+    bg.beakerBrowser.closeWindow()
   }
 }
 ShellWindowWin32.styles = css`

@@ -44,6 +44,9 @@ export default {
   setSidebarResizeModeEnabled: 'promise',
   moveWindow: 'promise',
   maximizeWindow: 'promise',
+  toggleWindowMaximized: 'promise',
+  minimizeWindow: 'promise',
+  closeWindow: 'promise',
   resizeSiteInfo: 'promise',
   refreshTabState: 'promise',
 

@@ -189,6 +189,9 @@ export const WEBAPI = {
   setSidebarResizeModeEnabled,
   moveWindow,
   maximizeWindow,
+  toggleWindowMaximized,
+  minimizeWindow,
+  closeWindow,
   resizeSiteInfo,
   refreshTabState,
 
@@ -428,6 +431,25 @@ export async function moveWindow (x, y) {
 export async function maximizeWindow () {
   var win = findWebContentsParentWindow(this.sender)
   win.maximize()
+}
+
+async function toggleWindowMaximized () {
+  var win = findWebContentsParentWindow(this.sender)
+  if (win.isMaximized()) {
+    win.unmaximize()
+  } else {
+    win.maximize()
+  }
+}
+
+async function minimizeWindow () {
+  var win = findWebContentsParentWindow(this.sender)
+  win.minimize()
+}
+
+async function closeWindow () {
+  var win = findWebContentsParentWindow(this.sender)
+  win.close()
 }
 
 export function resizeSiteInfo (bounds) {
