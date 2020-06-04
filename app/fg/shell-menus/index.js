@@ -7,6 +7,7 @@ import './browser'
 import './toolbar'
 import './bookmark'
 import './donate'
+import './folder-sync'
 import './network'
 import './peers'
 import './share'
@@ -101,6 +102,8 @@ class MenusWrapper extends LitElement {
         return html`<bookmark-menu active-menu></bookmark-menu>`
       case 'donate':
         return html`<donate-menu active-menu></donate-menu>`
+      case 'folder-sync':
+        return html`<folder-sync-menu active-menu></folder-sync-menu>`
       case 'network':
         return html`<network-menu active-menu></network-menu>`
       case 'peers':

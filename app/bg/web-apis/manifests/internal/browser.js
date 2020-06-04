@@ -36,6 +36,7 @@ export default {
   getCertificate: 'promise',
 
   executeSidebarCommand: 'promise',
+  executeShellWindowCommand: 'promise',
   toggleSiteInfo: 'promise',
   toggleLiveReloading: 'promise',
   setWindowDimensions: 'promise',
@@ -44,6 +45,8 @@ export default {
   moveWindow: 'promise',
   maximizeWindow: 'promise',
   resizeSiteInfo: 'promise',
+  refreshTabState: 'promise',
+
   showOpenDialog: 'promise',
   showContextMenu: 'promise',
   showModal: 'promise',

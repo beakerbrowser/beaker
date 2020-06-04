@@ -89,11 +89,11 @@ class ShellWindowNavbar extends LitElement {
         driveDomain="${_get(this, 'activeTab.driveDomain', '')}"
         ?is-system-drive=${_get(this, 'activeTab.isSystemDrive', false)}
         ?writable=${_get(this, 'activeTab.writable', false)}
+        folder-sync-path="${_get(this, 'activeTab.folderSyncPath') || ''}"
         peers="${_get(this, 'activeTab.peers', 0)}"
         zoom="${_get(this, 'activeTab.zoom', '')}"
         .loadError=${_get(this, 'activeTab.loadError', null)}
         donate-link-href="${_get(this, 'activeTab.donateLinkHref') || ''}"
-        available-alternative="${_get(this, 'activeTab.availableAlternative') || ''}"
         ?is-live-reloading=${_get(this, 'activeTab.isLiveReloading')}
         ?is-bookmarked=${_get(this, 'activeTab.isBookmarked', false)}
       ></shell-window-navbar-location>

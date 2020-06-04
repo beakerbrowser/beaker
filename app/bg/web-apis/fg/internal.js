@@ -6,6 +6,7 @@ import bookmarksManifest from '../manifests/internal/bookmarks'
 import datLegacyManifest from '../manifests/internal/dat-legacy'
 import downloadsManifest from '../manifests/internal/downloads'
 import drivesManifest from '../manifests/internal/drives'
+import folderSyncManifest from '../manifests/internal/folder-sync'
 import historyManifest from '../manifests/internal/history'
 import sitedataManifest from '../manifests/internal/sitedata'
 import watchlistManifest from '../manifests/internal/watchlist'
@@ -20,6 +21,7 @@ export const setup = function (rpc) {
   const downloadsRPC = rpc.importAPI('downloads', downloadsManifest, opts)
   const drivesRPC = rpc.importAPI('drives', drivesManifest, opts)
   const datLegacyRPC = rpc.importAPI('dat-legacy', datLegacyManifest, opts)
+  const folderSyncRPC = rpc.importAPI('folder-sync', folderSyncManifest, opts)
   const historyRPC = rpc.importAPI('history', historyManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
   const watchlistRPC = rpc.importAPI('watchlist', watchlistManifest, opts)
@@ -31,6 +33,7 @@ export const setup = function (rpc) {
   internal.datLegacy = datLegacyRPC
   internal.downloads = Object.assign({}, downloadsRPC)
   internal.downloads.createEventsStream = () => fromEventStream(downloadsRPC.createEventsStream())
+  internal.folderSync = Object.assign({}, folderSyncRPC)
   internal.history = Object.assign({}, historyRPC)
   internal.logger = Object.assign({}, loggerRPC)
   internal.logger.stream = (opts) => fromEventStream(loggerRPC.stream(opts))

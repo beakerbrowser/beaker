@@ -24,11 +24,13 @@ class NavbarLocation extends LitElement {
       driveDomain: {type: String},
       isSystemDrive: {type: Boolean, attribute: 'is-system-drive'},
       writable: {type: Boolean},
+      folderSyncPath: {type: String, attribute: 'folder-sync-path'},
       peers: {type: Number},
       zoom: {type: Number},
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
+      isFolderSyncMenuOpen: {type: Boolean},
       isShareMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
       isSiteMenuOpen: {type: Boolean},
@@ -51,10 +53,12 @@ class NavbarLocation extends LitElement {
     this.driveDomain = ''
     this.isSystemDrive = false
     this.writable = false
+    this.folderSyncPath = undefined
     this.peers = 0
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
+    this.isFolderSyncMenuOpen = false
     this.isShareMenuOpen = false
     this.isPeersMenuOpen = false
     this.isSiteMenuOpen = false
@@ -133,6 +137,7 @@ class NavbarLocation extends LitElement {
       ${this.renderZoom()}
       ${this.renderDatConverterBtn()}
       ${this.renderLiveReloadingBtn()}
+      ${this.renderFolderSyncBtn()}
       ${this.renderPeers()}
       ${this.renderSiteBtn()}
       ${this.renderDonateBtn()}
@@ -256,6 +261,19 @@ class NavbarLocation extends LitElement {
     `
   }
 
+  renderFolderSyncBtn () {
+    if (!this.folderSyncPath) {
+      return ''
+    }
+    var cls = classMap({'folder-sync': true, pressed: this.isFolderSyncMenuOpen})
+    return html`
+      <button class=${cls} @click=${this.onClickFolderSyncBtn} title="Folder Sync">
+        <i class="fas fa-sync"></i>
+        <i class="far fa-folder-open"></i>
+      </button>
+    `
+  }
+
   renderDonateBtn () {
     if (!this.donateLinkHref) {
       return ''
@@ -323,6 +341,9 @@ class NavbarLocation extends LitElement {
     }
     if (cmd === 'unfocus-location') {
       this.unfocusLocation()
+    }
+    if (cmd === 'show-folder-sync-menu') {
+      this.onClickFolderSyncBtn()
     }
   }
 
@@ -408,6 +429,16 @@ class NavbarLocation extends LitElement {
   onClickLiveReloadingBtn (e) {
     bg.views.toggleLiveReloading('active')
     this.isLiveReloading = false
+  }
+
+  async onClickFolderSyncBtn () {
+    this.isFolderSyncMenuOpen = true
+    var rect = this.shadowRoot.querySelector('.folder-sync').getClientRects()[0]
+    await bg.views.toggleMenu('folder-sync', {
+      bounds: {rightOffset: (window.innerWidth - rect.right)|0},
+      params: {url: this.url, folderSyncPath: this.folderSyncPath}
+    })
+    this.isFolderSyncMenuOpen = false
   }
 
   async onClickShareMenu (e) {
@@ -583,6 +614,16 @@ button.live-reload .fa {
   0% { text-shadow: 0 0 8px gold; }
   50% { text-shadow: 0 0 0px gold; }
   100% { text-shadow: 0 0 8px gold; }
+}
+
+button.folder-sync {
+  width: 40px;
+}
+
+button.folder-sync .fa-sync {
+  font-size: 8px;
+  position: relative;
+  top: -3px;
 }
 
 .input-container {

@@ -31,6 +31,7 @@ import { findWebContentsParentWindow } from '../lib/electron'
 import * as sitedataDb from '../dbs/sitedata'
 import * as settingsDb from '../dbs/settings'
 import * as historyDb from '../dbs/history'
+import * as folderSyncDb from '../dbs/folder-sync'
 import * as filesystem from '../filesystem/index'
 import * as bookmarks from '../filesystem/bookmarks'
 import hyper from '../hyper/index'
@@ -82,6 +83,7 @@ const STATE_VARS = [
   'driveDomain',
   'isSystemDrive',
   'writable',
+  'folderSyncPath',
   'peers',
   'favicons',
   'zoom',
@@ -169,6 +171,7 @@ class Tab extends EventEmitter {
     this.isScriptClosable = takeIsScriptClosable() // can this tab be closed by `window.close` ?
 
     // helper state
+    this.folderSyncPath = undefined // current folder sync path
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
     this.driveInfo = null // metadata about the site if viewing a hyperdrive
@@ -832,6 +835,7 @@ class Tab extends EventEmitter {
 
   async fetchDriveInfo (noEmit = false) {
     // clear existing state
+    this.folderSyncPath = undefined
     this.peers = 0
     this.confirmedAuthorTitle = undefined
     this.donateLinkHref = null
@@ -847,6 +851,7 @@ class Tab extends EventEmitter {
       key = await hyper.dns.resolveName(this.url)
       this.driveInfo = await hyper.drives.getDriveInfo(key)
       this.driveInfo.ident = await filesystem.getDriveIdent(this.driveInfo.url, true)
+      this.folderSyncPath = await folderSyncDb.getPath(this.driveInfo.key)
       this.peers = this.driveInfo.peers
       this.donateLinkHref = _get(this, 'driveInfo.links.payment.0.href')
     } catch (e) {

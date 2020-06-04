@@ -192,6 +192,7 @@ class CreateDriveModal extends LitElement {
       })
       if (this.fromFolderPath) {
         await bg.hyperdrive.importFromFilesystem({src: this.fromFolderPath, dst: url})
+        await bg.folderSync.set(url, {localPath: this.fromFolderPath})
       }
       this.cbs.resolve({url})
     } catch (e) {

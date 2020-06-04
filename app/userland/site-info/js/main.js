@@ -341,8 +341,9 @@ class SiteInfoApp extends LitElement {
     e.stopPropagation()
     let rect = e.currentTarget.getClientRects()[0]
     return contextMenu.create({
-      x: rect.left,
+      x: rect.right,
       y: rect.bottom,
+      right: true,
       roomy: false,
       noBorders: true,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
@@ -353,12 +354,21 @@ class SiteInfoApp extends LitElement {
           label: 'Fork Drive',
           click: () => this.onForkDrive()
         },
+        this.info && this.info.writable ? {
+          icon: 'far fa-fw fa-folder-open',
+          label: 'Sync with local folder',
+          click: async () => {
+            await beaker.folderSync.configureDialog(this.info.url)
+            beaker.browser.refreshTabState()
+            beaker.browser.executeShellWindowCommand('show-folder-sync-menu')
+          }
+        } : undefined,
         {
           icon: 'far fa-fw fa-list-alt',
           label: 'Drive Properties',
           click: () => this.onDriveProps()
         }
-      ]
+      ].filter(Boolean)
     })
   }
 

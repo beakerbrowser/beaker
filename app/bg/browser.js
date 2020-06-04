@@ -181,6 +181,7 @@ export const WEBAPI = {
   },
 
   executeSidebarCommand,
+  executeShellWindowCommand,
   toggleSiteInfo,
   toggleLiveReloading,
   setWindowDimensions,
@@ -189,6 +190,8 @@ export const WEBAPI = {
   moveWindow,
   maximizeWindow,
   resizeSiteInfo,
+  refreshTabState,
+
   showOpenDialog,
   showContextMenu,
   async showModal (name, opts) {
@@ -332,6 +335,12 @@ async function executeSidebarCommand (...args) {
   return getSenderTab(this.sender).executeSidebarCommand(...args)
 }
 
+async function executeShellWindowCommand (...args) {
+  var win = findWebContentsParentWindow(this.sender)
+  if (!win) return
+  win.webContents.send('command', ...args)
+}
+
 async function toggleSiteInfo (override) {
   var win = findWebContentsParentWindow(this.sender)
   if (override === true) {
@@ -425,6 +434,14 @@ export function resizeSiteInfo (bounds) {
   var win = findWebContentsParentWindow(this.sender)
   if (!win) return
   siteInfo.resize(win, bounds)
+}
+
+export function refreshTabState () {
+  var win = findWebContentsParentWindow(this.sender)
+  if (!win) return
+  var tab = tabManager.getActive(win)
+  if (!tab) return
+  tab.refreshState()
 }
 
 export function setStartPageBackgroundImage (srcPath, appendCurrentDir) {

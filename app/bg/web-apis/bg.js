@@ -25,6 +25,7 @@ import beakerFilesystemManifest from './manifests/internal/beaker-filesystem'
 import bookmarksManifest from './manifests/internal/bookmarks'
 import datLegacyManifest from './manifests/internal/dat-legacy'
 import downloadsManifest from './manifests/internal/downloads'
+import folderSyncManifest from './manifests/internal/folder-sync'
 import historyManifest from './manifests/internal/history'
 import sitedataManifest from './manifests/internal/sitedata'
 import watchlistManifest from './manifests/internal/watchlist'
@@ -36,6 +37,7 @@ import drivesAPI from './bg/drives'
 import * as bookmarksAPI from '../filesystem/bookmarks'
 import beakerFilesystemAPI from './bg/beaker-filesystem'
 import datLegacyAPI from './bg/dat-legacy'
+import folderSyncAPI from './bg/folder-sync'
 import historyAPI from './bg/history'
 import { WEBAPI as sitedataAPI } from '../dbs/sitedata'
 import watchlistAPI from './bg/watchlist'
@@ -80,6 +82,7 @@ export const setup = function () {
   rpc.exportAPI('dat-legacy', datLegacyManifest, datLegacyAPI, internalOnly)
   rpc.exportAPI('downloads', downloadsManifest, downloadsAPI, internalOnly)
   rpc.exportAPI('drives', drivesManifest, drivesAPI, internalOnly)
+  rpc.exportAPI('folder-sync', folderSyncManifest, folderSyncAPI, internalOnly)
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
