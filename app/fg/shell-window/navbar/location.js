@@ -432,6 +432,9 @@ class NavbarLocation extends LitElement {
   }
 
   async onClickFolderSyncBtn () {
+    if (Date.now() - (this.lastFolderSyncMenuClick||0) < 100) {
+      return
+    }
     this.isFolderSyncMenuOpen = true
     var rect = this.shadowRoot.querySelector('.folder-sync').getClientRects()[0]
     await bg.views.toggleMenu('folder-sync', {
@@ -439,6 +442,7 @@ class NavbarLocation extends LitElement {
       params: {url: this.url, folderSyncPath: this.folderSyncPath}
     })
     this.isFolderSyncMenuOpen = false
+    this.lastFolderSyncMenuClick = Date.now()
   }
 
   async onClickShareMenu (e) {
