@@ -73,7 +73,7 @@
         "GenericName": "Web Browser",
         "Type": "Application",
         "Terminal": false,
-        "MimeType": "text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/dat;video/webm;application/x-xpinstall;",
+        "MimeType": "text/html;text/xml;application/xhtml+xml;application/xml;application/rss+xml;application/rdf+xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/hyper;x-scheme-handler/dat;video/webm;application/x-xpinstall;",
         "Categories": "GNOME;GTK;Network;WebBrowser;"
       }
     },
