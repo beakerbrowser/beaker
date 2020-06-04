@@ -80,7 +80,7 @@ export default {
 
     // only allow these vars to be set by beaker, for now
     if (!isSenderBeaker(this.sender)) {
-      title = description = detached = label = prompt = undefined
+      label = undefined
     }
 
     if (prompt !== false) {
@@ -88,7 +88,7 @@ export default {
       let res
       let forks = await drivesAPI.getForks(url)
       try {
-        res = await modals.create(this.sender, 'fork-drive', {url, forks, detached, label})
+        res = await modals.create(this.sender, 'fork-drive', {url, title, description, forks, detached, label})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error

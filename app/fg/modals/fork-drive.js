@@ -174,8 +174,8 @@ class ForkDriveModal extends LitElement {
 
     // fetch drive info
     this.driveInfo = await bg.hyperdrive.getInfo(this.base.url)
-    this.title = this.driveInfo.title || ''
-    this.description = this.driveInfo.description || ''
+    this.title =  params.title || this.driveInfo.title || ''
+    this.description = params.description || this.driveInfo.description || ''
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -349,8 +349,8 @@ class ForkDriveModal extends LitElement {
     try {
       var url = await bg.hyperdrive.forkDrive(this.base.url, {
         detached: this.isDetached,
-        title: this.title,
-        description: this.description,
+        title: this.isDetached ? this.title : this.driveInfo.title,
+        description: this.isDetached ? this.description : this.driveInfo.description,
         label: this.label,
         prompt: false
       })
