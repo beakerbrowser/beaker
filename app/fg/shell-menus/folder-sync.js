@@ -16,6 +16,7 @@ class FolderSyncMenu extends LitElement {
   reset () {
     this.url = undefined
     this.folderSyncPath = undefined
+    this.isAutoSyncing = false
     this.ignoredFiles = []
     this.changes = undefined
   }
@@ -31,6 +32,7 @@ class FolderSyncMenu extends LitElement {
     var settings = await bg.folderSync.get(this.url)
     if (settings) {
       this.ignoredFiles = settings.ignoredFiles
+      this.isAutoSyncing = settings.isAutoSyncing
     }
 
     this.changes = await bg.folderSync.compare(this.url)
@@ -84,9 +86,9 @@ class FolderSyncMenu extends LitElement {
             ?disabled=${!canSync}
             @click=${this.onClickSync}
           >Sync</button>
-          ${'' /* TODO <label>
-            <input type="checkbox"> Autosync
-          </label>*/}
+          <label>
+            <input type="checkbox" @click=${this.onToggleAutosync} ?checked=${this.isAutoSyncing}> Autosync
+          </label>
         </div>
       </div>
     `
@@ -115,7 +117,7 @@ class FolderSyncMenu extends LitElement {
     bg.shellMenus.close()
   }
 
-  async onClickSync (e) {
+  async onClickSync () {
     this.changes = undefined
     this.requestUpdate()
 
@@ -133,6 +135,18 @@ class FolderSyncMenu extends LitElement {
     }
     await bg.folderSync.updateIgnoredFiles(this.url, this.ignoredFiles)
     this.requestUpdate()
+  }
+
+  async onToggleAutosync () {
+    if (this.isAutoSyncing) {
+      await bg.folderSync.disableAutoSync(this.url)
+      this.isAutoSyncing = false
+      this.requestUpdate()
+    } else {
+      await bg.folderSync.enableAutoSync(this.url)
+      this.isAutoSyncing = true
+      this.onClickSync()
+    }
   }
 }
 FolderSyncMenu.styles = [inputsCSS, buttonsCSS, spinnerCSS, css`

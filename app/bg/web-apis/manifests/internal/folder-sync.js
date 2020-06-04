@@ -5,5 +5,7 @@ export default {
   updateIgnoredFiles: 'promise',
   remove: 'promise',
   compare: 'promise',
-  sync: 'promise'
+  sync: 'promise',
+  enableAutoSync: 'promise',
+  disableAutoSync: 'promise',
 }
