@@ -99,6 +99,10 @@ class BrowserMenu extends LitElement {
             <span class="label">Developer</span>
             <span class="more"><span class="fas fa-caret-right"></span></span>
           </div>
+          <div class="menu-item" @click=${e => this.onShowSubmenu('Window')}>
+            <span class="label">Window</span>
+            <span class="more"><span class="fas fa-caret-right"></span></span>
+          </div>
           <div class="menu-item" @click=${e => this.onShowSubmenu('Help')}>
             <span class="label">Help</span>
             <span class="more"><span class="fas fa-caret-right"></span></span>

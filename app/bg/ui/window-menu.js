@@ -620,6 +620,7 @@ export function buildWindowMenu (opts = {}) {
     role: 'window',
     submenu: [
       {
+        id: 'toggleAlwaysOnTop',
         type: 'checkbox',
         label: 'Always on Top',
         checked: (win ? win.isAlwaysOnTop() : false),
@@ -634,12 +635,19 @@ export function buildWindowMenu (opts = {}) {
       },
       {type: 'separator'},
       {
+        id: 'toggleFullScreen',
         label: 'Full Screen',
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Ctrl+Cmd+F' : 'F11',
-        role: 'toggleFullScreen'
+        role: 'toggleFullScreen',
+        click: function () {
+          if (win) {
+            win.setFullScreen(!win.isFullScreen())
+          }
+        }
       },
       {
+        id: 'toggleBrowserUi',
         label: 'Toggle Browser UI',
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+Shift+H',
@@ -647,8 +655,8 @@ export function buildWindowMenu (opts = {}) {
           if (win) toggleShellInterface(win)
         }
       },
-      {type: 'separator'},
       {
+        id: 'focusLocationBar',
         label: 'Focus Location Bar',
         accelerator: 'CmdOrCtrl+L',
         click: function (item) {
@@ -659,6 +667,7 @@ export function buildWindowMenu (opts = {}) {
       },
       {type: 'separator'},
       {
+        id: 'nextTab',
         label: 'Next Tab',
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+Right' : 'CmdOrCtrl+PageDown',
@@ -667,6 +676,7 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'previousTab',
         label: 'Previous Tab',
         enabled: !noWindows,
         accelerator: (process.platform === 'darwin') ? 'Alt+CmdOrCtrl+Left' : 'CmdOrCtrl+PageUp',
@@ -697,6 +707,7 @@ export function buildWindowMenu (opts = {}) {
         ]
       },
       {
+        id: 'popOutTab',
         label: 'Pop Out Tab',
         enabled: !noWindows && !isAppWindow,
         accelerator: 'Shift+CmdOrCtrl+P',
@@ -773,7 +784,7 @@ export function getToolbarMenu () {
   if (!currentMenuTemplate) return {}
   const get = label => toToolbarItems(currentMenuTemplate.find(menu => menu.label === label).submenu)
   function toToolbarItems (items){
-    return items.map(item => {
+    items = items.map(item => {
       if (item.type === 'separator') {
         return {separator: true}
       }
@@ -785,11 +796,15 @@ export function getToolbarMenu () {
         enabled: typeof item.enabled === 'boolean' ? item.enabled : true
       }
     }).filter(Boolean)
+    while (items[0].separator) items.shift()
+    while (items[items.length - 1].separator) items.pop()
+    return items
   }
   return {
     File: get('File'),
     Drive: get('Drive'),
     Developer: get('Developer'),
+    Window: get('Window'),
     Help: get('Help')
   }
 }
