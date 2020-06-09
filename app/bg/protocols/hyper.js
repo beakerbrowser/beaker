@@ -1,8 +1,7 @@
 import { parseDriveUrl } from '../../lib/urls'
-import { PassThrough, Transform } from 'stream'
+import { Readable } from 'stream'
 import parseRange from 'range-parser'
 import once from 'once'
-import pump from 'pump'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'hyper', subcategory: 'hyper-scheme'})
 import markdown from '../../lib/markdown'
@@ -374,8 +373,10 @@ export const protocolHandler = async function (request, respond) {
 }
 
 function intoStream (text) {
-  const rv = new PassThrough()
-  rv.push(text)
-  rv.push(null)
-  return rv
+  return new Readable({
+    read () {
+      this.push(text)
+      this.push(null)
+    }
+  })
 }
