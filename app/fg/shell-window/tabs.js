@@ -373,7 +373,7 @@ ${spinnerCSS}
   top: 8px;
   width: 16px;
   height: 16px;
-  z-index: 2;
+  z-index: 4;
   border-radius: 2px;
   text-align: center;
   color: var(--color-tab-close);
