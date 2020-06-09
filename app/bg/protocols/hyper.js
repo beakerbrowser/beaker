@@ -22,6 +22,64 @@ const md = markdown({
   highlight: undefined
 })
 
+class WhackAMoleStream {
+  constructor (stream) {
+    this.onreadable = noop
+    this.ended = false
+    this.stream = stream
+    this.needsDeferredReadable = false
+
+    stream.on('end', () => {
+      this.ended = true
+    })
+
+    stream.on('readable', () => {
+      if (this.needsDeferredReadable) {
+        setImmediate(this.onreadable)
+        this.needsDeferredReadable = false
+        return
+      }
+
+      this.onreadable()
+    })
+  }
+
+  read (...args) {
+    const buf = this.stream.read(...args)
+    this.needsDeferredReadable = buf === null
+    return buf
+  }
+
+  on (name, fn) {
+    if (name === 'readable') {
+      this.onreadable = fn
+      return this.stream.on('readable', noop) // readable has sideeffects
+    }
+
+    return this.stream.on(name, fn)
+  }
+
+  destroy () {
+    this.stream.on('error', noop)
+    this.stream.destroy()
+  }
+
+  removeListener (name, fn) {
+    this.stream.removeListener(name, fn)
+
+    if (name === 'readable') {
+      this.onreadable = noop
+      this.stream.removeListener('readable', noop)
+    }
+
+    if (name === 'end' && !this.ended) {
+      this.destroy()
+    }
+  }
+}
+
+function noop () {}
+
 // exported api
 // =
 
@@ -309,10 +367,7 @@ export const protocolHandler = async function (request, respond) {
       respond({
         statusCode,
         headers,
-        data: pump(
-          checkoutFS.session.drive.createReadStream(entry.path, range),
-          chunkLogger(entry.path, length)
-        )
+        data: new WhackAMoleStream(checkoutFS.session.drive.createReadStream(entry.path, range))
       })
     }
   })
@@ -323,20 +378,4 @@ function intoStream (text) {
   rv.push(text)
   rv.push(null)
   return rv
-}
-
-// DEBUG
-function chunkLogger (path, len) {
-  var n = 0
-  return new Transform({
-    transform (chunk, encoding, callback) {
-      console.log(path, 'len', len, 'n', n, 'chunk', chunk.length)
-      n += chunk.length
-      return callback(null, chunk)
-      this.push(chunk)
-      n += chunk.length
-      if (len && n >= len) this.push(null)
-      callback()
-    }
-  })
 }
