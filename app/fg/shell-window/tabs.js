@@ -43,10 +43,10 @@ class ShellWindowTabs extends LitElement {
         class="${shellCls}"
         @mousedown=${this.onMousedownShell}
         @dblclick=${this.onDblclickShell}
-        >
+      >
         <div class="tabs">
-        ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
-        <div
+          ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
+          <div
             class="unused-space"
             @dragover=${e => this.onDragoverTab(e, this.tabs.length)}
             @dragleave=${e => this.onDragleaveTab(e, this.tabs.length)}
