@@ -110,7 +110,9 @@ class ShellWindowTabs extends LitElement {
               : tab.isCurrentlyAudible
                 ? html`<span class="fas fa-volume-up"></span>`
                 : ''}
-            <div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>
+            ${tab.isActive ?
+              html`<div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>`
+              : ''}
           `}
       </div>
     `
