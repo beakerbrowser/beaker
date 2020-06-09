@@ -248,7 +248,7 @@ class ShellWindowTabs extends LitElement {
     if (is('shell') || is('tabs') || is('unused-space')) {
       this.isDraggingWindow = false
       bg.beakerBrowser.setWindowDragModeEnabled(false)
-      bg.beakerBrowser.maximizeWindow()
+      bg.beakerBrowser.toggleWindowMaximized()
     }
   }
 }
@@ -271,6 +271,7 @@ ${spinnerCSS}
   display: flex;
   padding-left: 10px;
   height: 34px;
+  max-width: calc(100% - 38px);
 }
 
 .unused-space {
