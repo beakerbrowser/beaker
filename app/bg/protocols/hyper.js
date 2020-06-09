@@ -1,9 +1,9 @@
 import { parseDriveUrl } from '../../lib/urls'
+import { Readable } from 'stream'
 import parseRange from 'range-parser'
 import once from 'once'
 import * as logLib from '../logger'
 const logger = logLib.child({category: 'hyper', subcategory: 'hyper-scheme'})
-// import intoStream from 'into-stream'
 import markdown from '../../lib/markdown'
 import * as drives from '../hyper/drives'
 import * as filesystem from '../filesystem/index'
@@ -21,26 +21,63 @@ const md = markdown({
   highlight: undefined
 })
 
-/**
- * HACK
- * Electron has an issue that's causing file read streams to fail to serve
- * Reading into memory seems to resolve the issue
- * https://github.com/electron/electron/issues/21018
- * -prf
- */
-import { PassThrough } from 'stream'
-function intoStream (text) {
-  const rv = new PassThrough()
-  rv.push(text)
-  rv.push(null)
-  return rv
+class WhackAMoleStream {
+  constructor (stream) {
+    this.onreadable = noop
+    this.ended = false
+    this.stream = stream
+    this.needsDeferredReadable = false
+
+    stream.on('end', () => {
+      this.ended = true
+    })
+
+    stream.on('readable', () => {
+      if (this.needsDeferredReadable) {
+        setImmediate(this.onreadable)
+        this.needsDeferredReadable = false
+        return
+      }
+
+      this.onreadable()
+    })
+  }
+
+  read (...args) {
+    const buf = this.stream.read(...args)
+    this.needsDeferredReadable = buf === null
+    return buf
+  }
+
+  on (name, fn) {
+    if (name === 'readable') {
+      this.onreadable = fn
+      return this.stream.on('readable', noop) // readable has sideeffects
+    }
+
+    return this.stream.on(name, fn)
+  }
+
+  destroy () {
+    this.stream.on('error', noop)
+    this.stream.destroy()
+  }
+
+  removeListener (name, fn) {
+    this.stream.removeListener(name, fn)
+
+    if (name === 'readable') {
+      this.onreadable = noop
+      this.stream.removeListener('readable', noop)
+    }
+
+    if (name === 'end' && !this.ended) {
+      this.destroy()
+    }
+  }
 }
 
-// constants
-// =
-
-// how long till we give up?
-const REQUEST_TIMEOUT_MS = 30e3 // 30 seconds
+function noop () {}
 
 // exported api
 // =
@@ -79,8 +116,6 @@ export const protocolHandler = async function (request, respond) {
       respond({statusCode: code})
     }
   }
-  var fileReadStream
-  var headersSent = false
   var drive
   var cspHeader = undefined
 
@@ -273,28 +308,21 @@ export const protocolHandler = async function (request, respond) {
       }
     }
 
-    // TODO
-    // Electron is being really aggressive about caching and not following the headers correctly
-    // caching is disabled till we can figure out why
-    // -prf
-    // caching if-match
-    // const ETag = 'block-' + entry.offset
-    // if (request.headers['if-none-match'] === ETag) {
-    //   return respondError(304, 'Not Modified')
-    // }
-
     // handle range
     headers['Accept-Ranges'] = 'bytes'
+    var length
     var range = request.headers.Range || request.headers.range
     if (range) range = parseRange(entry.size, range)
     if (range && range.type === 'bytes') {
       range = range[0] // only handle first range given
       statusCode = 206
+      length = (range.end - range.start + 1)
+      headers['Content-Length'] = '' + length
       headers['Content-Range'] = 'bytes ' + range.start + '-' + range.end + '/' + entry.size
-      headers['Content-Length'] = '' + (range.end - range.start + 1)
     } else {
       if (entry.size) {
-        headers['Content-Length'] = '' + (entry.size)
+        length = entry.size
+        headers['Content-Length'] = '' + length
       }
     }
 
@@ -322,80 +350,33 @@ export const protocolHandler = async function (request, respond) {
         : content
       return respond({
         statusCode: 200,
-        headers: Object.assign(headers, {
-          'Content-Type': contentType
-        }),
+        headers: Object.assign(headers, {'Content-Type': contentType}),
         data: intoStream(content)
       })
     }
 
-    // fetch the entry and stream the response
-    // HACK solution until electron issue resolved -prf
-    headersSent = true
     var mimeType = mime.identify(entry.path)
     if (!canExecuteHTML && mimeType.includes('text/html')) {
       mimeType = 'text/plain'
     }
-    Object.assign(headers, {'Content-Type': mimeType})
-    var data = await checkoutFS.pda.readFile(entry.path, 'binary')
-    if (range) {
-      data = data.slice(range.start, range.end + 1)
-    }
-    respond({
-      statusCode,
-      headers,
-      data: intoStream(data)
-    })
-  })
-  /*fileReadStream = checkoutFS.pda.createReadStream(entry.path, range)
-  var dataStream = fileReadStream
-    .pipe(mime.identifyStream(entry.path, mimeType => {
-
-      // disable html as needed
-      if (!canExecuteHTML && mimeType.includes('html')) {
-        mimeType = 'text/plain'
-      }
-
-      // send headers, now that we can identify the data
-      headersSent = true
-      Object.assign(headers, {
-        'Content-Type': mimeType
-      })
-      // TODO
-      // Electron is being really aggressive about caching and not following the headers correctly
-      // caching is disabled till we can figure out why
-      // -prf
-      // if (ETag) {
-      //   Object.assign(headers, {ETag})
-      // } else {
-      //   Object.assign(headers, {'Cache-Control': 'no-cache'})
-      // }
-
-      if (request.method === 'HEAD') {
-        dataStream.destroy() // stop reading data
-        respond({statusCode: 204, headers, data: intoStream('')})
-      } else {
-        respond({statusCode, headers, data: dataStream})
-      }
-    }))
-
-  // handle empty files
-  fileReadStream.once('end', () => {
-    if (!headersSent) {
+    headers['Content-Type'] = mimeType
+    if (request.method === 'HEAD') {
+      respond({statusCode: 204, headers, data: intoStream('')})
+    } else {
       respond({
-        statusCode: 200,
-        headers: {
-          'Content-Security-Policy': cspHeader,
-          'Access-Control-Allow-Origin': '*'
-        },
-        data: intoStream('')
+        statusCode,
+        headers,
+        data: new WhackAMoleStream(checkoutFS.session.drive.createReadStream(entry.path, range))
       })
     }
   })
+}
 
-  // handle read-stream errors
-  fileReadStream.once('error', err => {
-    logger.warn('Error reading file', {url: drive.url, path: entry.path, err})
-    if (!headersSent) respondError(500, 'Failed to read file')
-  })*/
+function intoStream (text) {
+  return new Readable({
+    read () {
+      this.push(text)
+      this.push(null)
+    }
+  })
 }
