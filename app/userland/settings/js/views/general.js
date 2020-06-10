@@ -59,9 +59,66 @@ class GeneralSettingsView extends LitElement {
       ${this.renderRunBackgroundSettings()}
       ${this.renderNewTabSettings()}
       ${this.renderDefaultZoomSettings()}
+      ${this.renderSearchSettings()}
       ${this.renderProtocolSettings()}
       ${this.renderAnalyticsSettings()}
     `
+  }
+  renderSearchSettings() {
+    const DEFAULT_SEARCH = [
+        {name:'DuckDuckGo',url:'https://www.duckduckgo.com/'},
+        {name:'Google',url:'https://www.google.com/search'}
+      ]
+
+      return html`
+        <div class="section new-tab">
+          <h2 id='search-settings class='subtitle-heading>Default Search Settings</h2>
+            ${DEFAULT_SEARCH.map((engine,i)=>{
+
+              return html`
+                        <div class="radio-item">
+                          <input type="radio"
+                                 id="engine${i}"
+                                 name="search-engine"
+                                 value="${i}"
+                                 ?checked="${this.settings.default_search_engine === i}"
+                                 @change="${this.onSearchEngineChange}"/>
+                          <label for="engine${i}">
+                            ${engine.name} (${engine.url})
+                          </label>
+                        </div>`
+
+            })}
+            <div class="radio-item">
+              <input type="radio"
+                               id="custom-engine"
+                               name="search-engine"
+                               value=-1
+                               @change="${this.onSearchEngineChange}"
+                               ?checked="${this.settings.default_search_engine === -1}"
+                               />
+              <label for="custom-engine">
+                  Custom
+              </label>
+
+
+            <input type="text"
+                   placeholder="name"
+                   id="CustomEngineName"
+                   value="${this.settings.default_search_engine_name}"
+                   @change="${this.onSearchEngineChange}"
+                   ?disabled="${(this.settings.default_search_engine != -1)}">
+            </input>
+
+            <input type="text"
+                   placeholder="url"
+                   id="CustomEngineUrl"
+                   value="${this.settings.default_search_engine_url}"
+                   @change="${this.onSearchEngineChange}"
+                  ?disabled="${(this.settings.default_search_engine != -1)}">
+            </input>
+          </div>
+        </div>`
   }
 
   renderDaemonStatus () {
@@ -85,11 +142,11 @@ class GeneralSettingsView extends LitElement {
       return html`
         <div class="section">
           <h2 id="auto-updater">Auto Updater</h2>
-  
+
           <p class="message info">
             Sorry! Beaker auto-updates are only supported on the production build for macOS and Windows.
           </p>
-  
+
           <p>
             To get the most recent version of Beaker, you'll need to <a href="https://github.com/beakerbrowser/beaker">
             build Beaker from source</a>.
@@ -106,28 +163,28 @@ class GeneralSettingsView extends LitElement {
           <h2 id="auto-updater">
             Auto Updater
           </h2>
-  
+
           ${this.browserInfo.updater.error ? html`
             <div class="message error">
               <i class="fa fa-exclamation-triangle"></i>
               ${this.browserInfo.updater.error}
             </div>
           ` : ''}
-  
+
           <div class="auto-updater">
             <p>
               <button class="btn btn-default" @click=${this.onClickCheckUpdates}>Check for updates</button>
-  
+
               <span class="up-to-date">
                 <span class="fa fa-check"></span>
                 Beaker v${this.browserInfo.version} is up-to-date
               </span>
             </p>
-  
+
             <p>
               ${this.renderAutoUpdateCheckbox()}
             </p>
-  
+
             <div class="prereleases">
               <h3>Advanced</h3>
               <button class="btn" @click=${this.onClickCheckPrereleases}>
@@ -143,7 +200,7 @@ class GeneralSettingsView extends LitElement {
           <h2 id="auto-updater">
             Auto Updater
           </h2>
-  
+
           <div class="auto-updater">
             <p>
               <button class="btn" disabled>Checking for updates</button>
@@ -152,11 +209,11 @@ class GeneralSettingsView extends LitElement {
                 Checking for updates...
               </span>
             </p>
-  
+
             <p>
               ${this.renderAutoUpdateCheckbox()}
             </p>
-  
+
             <div class="prereleases">
               <h3>Advanced</h3>
               <button class="btn" @click=${this.onClickCheckPrereleases}>
@@ -170,7 +227,7 @@ class GeneralSettingsView extends LitElement {
         return html`
         <div class="section">
           <h2 id="auto-updater">Auto Updater</h2>
-  
+
           <div class="auto-updater">
             <p>
               <button class="btn" disabled>Updating</button>
@@ -189,7 +246,7 @@ class GeneralSettingsView extends LitElement {
         return html`
         <div class="section">
           <h2 id="auto-updater">Auto Updater</h2>
-  
+
           <div class="auto-updater">
             <p>
               <button class="btn" @click=${this.onClickRestart}>Restart now</button>
@@ -216,9 +273,9 @@ class GeneralSettingsView extends LitElement {
     return html`
       <div class="section on-startup">
         <h2 id="on-startup">Startup Settings</h2>
-  
+
         <p>When Beaker starts</p>
-  
+
         <div class="radio-item">
           <input type="radio" id="customStartPage1" name="custom-start-page"
                  value="blank"
@@ -245,11 +302,11 @@ class GeneralSettingsView extends LitElement {
     return html`
       <div class="section on-startup">
         <h2 id="on-startup">Background</h2>
-  
+
         <p>
           Running in the background helps keep your data online even if you're not using Beaker.
         </p>
-  
+
         <div class="radio-item">
           <input type="checkbox" id="runBackground"
                  ?checked=${this.settings.run_background == 1}
@@ -266,9 +323,9 @@ class GeneralSettingsView extends LitElement {
     return html`
       <div class="section new-tab">
         <h2 id="new-tab">Start Page</h2>
-  
+
         <p>When you create a new tab, show</p>
-  
+
         <div>
           <input name="new-tab"
                  id="newTab"
@@ -290,9 +347,9 @@ class GeneralSettingsView extends LitElement {
     return html`
       <div class="section new-tab">
         <h2 id="new-tab">Default Zoom</h2>
-  
+
         <p>Pages should use the following "zoom" setting by default:</p>
-  
+
         <div>
           <select @change=${this.onChangeDefaultZoom}>
             ${opt(-3, '25%')}
@@ -334,9 +391,9 @@ class GeneralSettingsView extends LitElement {
     return html`
       <div class="section default-browser">
         <h2 id="protocol" class="subtitle-heading">Default Browser Settings</h2>
-  
+
         <p>Set Beaker as the default browser for:</p>
-  
+
         ${Object.keys(this.defaultProtocolSettings).map(proto => html`
           <div class="radio-item">
             <input id="proto-${proto}" ?checked=${this.defaultProtocolSettings[proto]} type="checkbox" @change=${() => toggleRegistered(proto)} />
@@ -362,7 +419,7 @@ class GeneralSettingsView extends LitElement {
     return html`
       <div class="section analytics">
         <h2 class="subtitle-heading">Beaker Analytics</h2>
-  
+
         <div class="radio-item">
           <input id="enable-analytics" ?checked=${this.settings.analytics_enabled == 1} type="checkbox" @change=${toggle} />
           <label for="enable-analytics">
@@ -371,10 +428,10 @@ class GeneralSettingsView extends LitElement {
             </span>
           </label>
         </div>
-  
+
         <div class="message">
           <p>Help us know how we${"'"}re doing! Enabling analytics will send us the following information once a week:</p>
-  
+
           <ul>
             <li>An anonymous ID</li>
             <li>Your Beaker version, e.g. ${this.browserInfo.version}</li>
@@ -457,6 +514,24 @@ class GeneralSettingsView extends LitElement {
     this.settings.new_tab = 'beaker://desktop/'
     beaker.browser.setSetting('new_tab', this.settings.new_tab)
     toast.create('Setting updated')
+    this.requestUpdate()
+  }
+
+  onSearchEngineChange (e) {
+    const newValue = e.target.value
+
+    if(e.target.id === 'CustomEngineName'){
+      this.settings.default_search_engine_name = newValue
+      beaker.browser.setSetting('default_search_engine_name', this.settings.default_search_engine_name)
+
+    } else if(e.target.id === 'CustomEngineUrl'){
+      this.settings.default_search_engine_url = newValue
+      beaker.browser.setSetting('default_search_engine_url', this.settings.default_search_engine_url)
+
+    } else {
+        this.settings.default_search_engine = parseInt(newValue)
+        beaker.browser.setSetting('default_search_engine', this.settings.default_search_engine)
+    }
     this.requestUpdate()
   }
 

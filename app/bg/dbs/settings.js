@@ -39,7 +39,10 @@ export const setup = function (opts) {
     default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n**/.DS_Store\nThumbs.db\n',
     analytics_enabled: 1,
     dat_bandwidth_limit_up: 0,
-    dat_bandwidth_limit_down: 0
+    dat_bandwidth_limit_down: 0,
+    default_search_engine: 0,
+    default_search_engine_name: '',
+    default_search_engine_url: ''
   }
 }
 
