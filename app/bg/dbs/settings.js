@@ -13,10 +13,6 @@ var setupPromise
 var defaultSettings
 var events = new EventEmitter()
 
-export const DEFAULT_SEARCH_ENGINES = [
-    {name:'DuckDuckGo',url:'https://www.duckduckgo.com/'},
-    {name:'Google',url:'https://www.google.com/search'}
-  ]
 
 // exported methods
 // =
