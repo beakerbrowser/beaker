@@ -31,7 +31,7 @@ export function examineLocationInput (v) {
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
     }
   }
-  var vSearch = 'https://duckduckgo.com/?q=' + v.split(' ').map(encodeURIComponent).join('+')
+  var vSearch = '?q=' + v.split(' ').map(encodeURIComponent).join('+')
   return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
 }
 

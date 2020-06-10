@@ -13,6 +13,11 @@ var setupPromise
 var defaultSettings
 var events = new EventEmitter()
 
+export const DEFAULT_SEARCH_ENGINES = [
+    {name:'DuckDuckGo',url:'https://www.duckduckgo.com/'},
+    {name:'Google',url:'https://www.google.com/search'}
+  ]
+
 // exported methods
 // =
 
@@ -40,9 +45,13 @@ export const setup = function (opts) {
     analytics_enabled: 1,
     dat_bandwidth_limit_up: 0,
     dat_bandwidth_limit_down: 0,
-    default_search_engine: 0,
-    default_search_engine_name: '',
-    default_search_engine_url: ''
+    selected_search_engine: 0,
+    custom_search_engine_name: '',
+    custom_search_engine_url: '',
+    default_search_engines: [
+        {name:'DuckDuckGo',url:'https://www.duckduckgo.com/'},
+        {name:'Google',url:'https://www.google.com/search'}
+      ]
   }
 }
 

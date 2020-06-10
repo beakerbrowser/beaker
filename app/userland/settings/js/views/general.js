@@ -1,7 +1,6 @@
 import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import viewCSS from '../../css/views/general.css.js'
 import * as toast from '../../../app-stdlib/js/com/toast.js'
-
 class GeneralSettingsView extends LitElement {
   static get properties () {
     return {
@@ -65,15 +64,12 @@ class GeneralSettingsView extends LitElement {
     `
   }
   renderSearchSettings() {
-    const DEFAULT_SEARCH = [
-        {name:'DuckDuckGo',url:'https://www.duckduckgo.com/'},
-        {name:'Google',url:'https://www.google.com/search'}
-      ]
+
 
       return html`
         <div class="section new-tab">
           <h2 id='search-settings class='subtitle-heading>Default Search Settings</h2>
-            ${DEFAULT_SEARCH.map((engine,i)=>{
+            ${this.settings.default_search_engines.map((engine,i)=>{
 
               return html`
                         <div class="radio-item">
@@ -81,7 +77,7 @@ class GeneralSettingsView extends LitElement {
                                  id="engine${i}"
                                  name="search-engine"
                                  value="${i}"
-                                 ?checked="${this.settings.default_search_engine === i}"
+                                 ?checked="${this.settings.selected_search_engine === i}"
                                  @change="${this.onSearchEngineChange}"/>
                           <label for="engine${i}">
                             ${engine.name} (${engine.url})
@@ -95,7 +91,7 @@ class GeneralSettingsView extends LitElement {
                                name="search-engine"
                                value=-1
                                @change="${this.onSearchEngineChange}"
-                               ?checked="${this.settings.default_search_engine === -1}"
+                               ?checked="${this.settings.selected_search_engine === -1}"
                                />
               <label for="custom-engine">
                   Custom
@@ -105,17 +101,17 @@ class GeneralSettingsView extends LitElement {
             <input type="text"
                    placeholder="name"
                    id="CustomEngineName"
-                   value="${this.settings.default_search_engine_name}"
+                   value="${this.settings.custom_search_engine_name}"
                    @change="${this.onSearchEngineChange}"
-                   ?disabled="${(this.settings.default_search_engine != -1)}">
+                   ?disabled="${(this.settings.selected_search_engine != -1)}">
             </input>
 
             <input type="text"
                    placeholder="url"
                    id="CustomEngineUrl"
-                   value="${this.settings.default_search_engine_url}"
+                   value="${this.settings.custom_search_engine_url}"
                    @change="${this.onSearchEngineChange}"
-                  ?disabled="${(this.settings.default_search_engine != -1)}">
+                  ?disabled="${(this.settings.selected_search_engine != -1)}">
             </input>
           </div>
         </div>`
@@ -521,16 +517,16 @@ class GeneralSettingsView extends LitElement {
     const newValue = e.target.value
 
     if(e.target.id === 'CustomEngineName'){
-      this.settings.default_search_engine_name = newValue
-      beaker.browser.setSetting('default_search_engine_name', this.settings.default_search_engine_name)
+      this.settings.custom_search_engine_name = newValue
+      beaker.browser.setSetting('custom_search_engine_name', this.settings.custom_search_engine_name)
 
     } else if(e.target.id === 'CustomEngineUrl'){
-      this.settings.default_search_engine_url = newValue
-      beaker.browser.setSetting('default_search_engine_url', this.settings.default_search_engine_url)
+      this.settings.custom_search_engine_url = newValue
+      beaker.browser.setSetting('custom_search_engine_url', this.settings.custom_search_engine_url)
 
     } else {
-        this.settings.default_search_engine = parseInt(newValue)
-        beaker.browser.setSetting('default_search_engine', this.settings.default_search_engine)
+        this.settings.selected_search_engine = parseInt(newValue)
+        beaker.browser.setSetting('selected_search_engine', this.settings.selected_search_engine)
     }
     this.requestUpdate()
   }
