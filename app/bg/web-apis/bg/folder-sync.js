@@ -4,6 +4,8 @@ import watch from 'recursive-watch'
 import _debounce from 'lodash.debounce'
 import hyper from '../../hyper/index'
 import * as folderSyncDb from '../../dbs/folder-sync'
+import * as modals from '../../ui/subwindows/modals'
+import { UserDeniedError } from 'beaker-error-constants'
 
 const DEFAULT_IGNORED_FILES = '/index.json'
 
@@ -16,7 +18,7 @@ var activeAutoSyncs = {} // {[key]: {stopwatch, ignoredFiles}
 // =
 
 export default {
-  async configureDialog (url) {
+  async chooseFolderDialog (url) {
     var drive = await getDrive(url)
     var key = drive.key.toString('hex')
     var current = await folderSyncDb.get(key)
@@ -39,6 +41,20 @@ export default {
       })
     }
     return res.filePaths[0]
+  },
+
+  async syncDialog (url) {
+    var drive = await getDrive(url)
+    var res
+    try {
+      res = await modals.create(this.sender, 'folder-sync', {url: drive.url})
+    } catch (e) {
+      if (e.name !== 'Error') {
+        throw e // only rethrow if a specific error
+      }
+    }
+    if (!res) throw new UserDeniedError()
+    return res && res.contacts ? res.contacts[0] : undefined
   },
 
   async get (url) {
@@ -91,7 +107,7 @@ export default {
     return dft.diff(
       current.localPath,
       {fs: drive.session.drive, path: '/'},
-      {shallow: true, compareContent: true}
+      {compareContent: true}
     )
   },
 

@@ -5,7 +5,6 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
-import _groupBy from 'lodash.groupby'
 
 class CreateDriveModal extends LitElement {
   static get properties () {

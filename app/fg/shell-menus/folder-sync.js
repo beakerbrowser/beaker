@@ -1,7 +1,6 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
-import _get from 'lodash.get'
 import * as bg from './bg-process-rpc'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
@@ -44,9 +43,14 @@ class FolderSyncMenu extends LitElement {
 
   render () {
     var canSync = false
+    let changeCounts = {total: 0, add: 0, mod: 0, del: 0}
     if (this.changes) {
-      let numChanges = this.changes.filter(c => !this.ignoredFiles.includes(c.path)).length
-      canSync = numChanges > 0
+      let changes = this.changes.filter(c => !this.ignoredFiles.includes(c.path))
+      changeCounts.total = changes.length
+      for (let c of changes) {
+        changeCounts[c.change]++
+      }
+      canSync = changeCounts.total > 0
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -61,21 +65,10 @@ class FolderSyncMenu extends LitElement {
           <div class="changes"><div class="empty"><span class="spinner"></span></div></div>
         ` : html`
           <div class="changes">
-            ${repeat(this.changes, change => {
-              var isIgnored = this.ignoredFiles.includes(change.path)
-              return html`
-                <div class="change ${isIgnored ? 'ignored' : ''}">
-                  <input
-                    type="checkbox"
-                    ?checked=${!isIgnored}
-                    @click=${e => this.onToggleIgnore(change.path)}
-                  >
-                  ${isIgnored ? '' : html`<span class="revision-indicator ${change.change}"></span>`}
-                  <span class="path">${change.path}</span>
-                </div>
-              `
-            })}
-            ${this.changes.length === 0 ? html`
+            ${changeCounts.add > 0 ? html`<span class="revision-indicator add"></span> ${changeCounts.add} new files` : ''}
+            ${changeCounts.mod > 0 ? html`<span class="revision-indicator mod"></span> ${changeCounts.mod} changes` : ''}
+            ${changeCounts.del > 0 ? html`<span class="revision-indicator del"></span> ${changeCounts.del} deleted files` : ''}
+            ${changeCounts.total === 0 ? html`
               <div class="empty">No changes found</div>
             ` : ''}
           </div>
@@ -105,7 +98,7 @@ class FolderSyncMenu extends LitElement {
   }
 
   async onChangeFolder (e) {
-    this.folderSyncPath = await bg.folderSync.configureDialog(this.url)
+    this.folderSyncPath = await bg.folderSync.chooseFolderDialog(this.url)
     this.changes = undefined
     this.requestUpdate()
     this.load()
@@ -118,13 +111,8 @@ class FolderSyncMenu extends LitElement {
   }
 
   async onClickSync () {
-    this.changes = undefined
-    this.requestUpdate()
-
-    await bg.folderSync.sync(this.url)
-
-    bg.views.reload('active')
-    this.load()
+    bg.folderSync.syncDialog(this.url)
+    bg.shellMenus.close()
   }
 
   async onToggleIgnore (path) {
@@ -192,36 +180,11 @@ input[type="checkbox"] {
 }
 
 .changes {
-  max-height: 100px;
-  overflow: auto;
-  border: 1px solid #ccd;
-  border-radius: 4px;
+  padding: 0;
 }
 
 .changes .empty {
-  padding: 6px 8px;
   color: #778;
-}
-
-.change {
-  white-space: nowrap;
-  padding: 4px;
-  border-bottom: 1px solid #eef;
-}
-
-.change:last-child {
-  border-bottom: 0;
-}
-
-.change.ignored {
-  background: #fafafd;
-  color: #778;
-}
-
-.change input {
-  margin: 0;
-  position: relative;
-  top: 2px;
 }
 
 .revision-indicator {

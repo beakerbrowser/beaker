@@ -98,6 +98,7 @@ export async function create (webContents, modalName, params = {}) {
   })
   view.webContents.loadURL('beaker://modals/')
   view.webContents.focus()
+  view.webContents.openDevTools({mode: 'detach'})
 
   // run the modal flow
   var result
@@ -195,6 +196,7 @@ function getDefaultWidth (view) {
   if (view.modalName === 'select-drive') return 600
   if (view.modalName === 'select-file') return 800
   if (view.modalName === 'select-contact') return 700
+  if (view.modalName === 'folder-sync') return 700
   return 500
 }
 

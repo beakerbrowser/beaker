@@ -4,6 +4,7 @@ import * as bg from './bg-process-rpc'
 import './setup'
 import './create-drive'
 import './fork-drive'
+import './folder-sync'
 import './drive-properties'
 import './select-drive'
 import './select-file'
@@ -74,6 +75,8 @@ class ModalsWrapper extends LitElement {
         return html`<create-drive-modal></create-drive-modal>`
       case 'fork-drive':
         return html`<fork-drive-modal></fork-drive-modal>`
+      case 'folder-sync':
+        return html`<folder-sync-modal></folder-sync-modal>`
       case 'drive-properties':
         return html`<drive-properties-modal></drive-properties-modal>`
       case 'select-drive':

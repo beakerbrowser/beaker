@@ -1,5 +1,6 @@
 export default {
-  configureDialog: 'promise',
+  chooseFolderDialog: 'promise',
+  syncDialog: 'promise',
   get: 'promise',
   set: 'promise',
   updateIgnoredFiles: 'promise',

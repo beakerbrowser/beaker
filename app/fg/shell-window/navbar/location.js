@@ -30,7 +30,6 @@ class NavbarLocation extends LitElement {
       loadError: {type: Object},
       donateLinkHref: {type: String, attribute: 'donate-link-href'},
       isLiveReloading: {type: Boolean, attribute: 'is-live-reloading'},
-      isFolderSyncMenuOpen: {type: Boolean},
       isShareMenuOpen: {type: Boolean},
       isPeersMenuOpen: {type: Boolean},
       isSiteMenuOpen: {type: Boolean},
@@ -58,7 +57,6 @@ class NavbarLocation extends LitElement {
     this.zoom = 0
     this.loadError = null
     this.donateLinkHref = false
-    this.isFolderSyncMenuOpen = false
     this.isShareMenuOpen = false
     this.isPeersMenuOpen = false
     this.isSiteMenuOpen = false
@@ -265,7 +263,7 @@ class NavbarLocation extends LitElement {
     if (!this.folderSyncPath) {
       return ''
     }
-    var cls = classMap({'folder-sync': true, pressed: this.isFolderSyncMenuOpen})
+    var cls = classMap({'folder-sync': true})
     return html`
       <button class=${cls} @click=${this.onClickFolderSyncBtn} title="Folder Sync">
         <i class="fas fa-sync"></i>
@@ -432,17 +430,7 @@ class NavbarLocation extends LitElement {
   }
 
   async onClickFolderSyncBtn () {
-    if (Date.now() - (this.lastFolderSyncMenuClick||0) < 100) {
-      return
-    }
-    this.isFolderSyncMenuOpen = true
-    var rect = this.shadowRoot.querySelector('.folder-sync').getClientRects()[0]
-    await bg.views.toggleMenu('folder-sync', {
-      bounds: {rightOffset: (window.innerWidth - rect.right)|0},
-      params: {url: this.url, folderSyncPath: this.folderSyncPath}
-    })
-    this.isFolderSyncMenuOpen = false
-    this.lastFolderSyncMenuClick = Date.now()
+    bg.folderSync.syncDialog(this.url)
   }
 
   async onClickShareMenu (e) {
