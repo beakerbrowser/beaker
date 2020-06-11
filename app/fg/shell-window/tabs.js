@@ -218,7 +218,14 @@ class ShellWindowTabs extends LitElement {
     }
     e.stopPropagation()
     e.currentTarget.classList.remove('drag-hover')
-
+    
+    const url = e.dataTransfer.getData("text")
+    if (url && (url.startsWith("https://") || url.startsWith("dat://") || url.startsWith("hyper://"))) {
+      e.preventDefault()
+      bg.views.createTab(url, {focusLocationBar: true, setActive: true})
+      bg.views.reorderTab(this.tabs.length, index)
+      return false;
+    }
     if (this.draggedTabIndex !== null && this.canDrop(index)) {
       bg.views.reorderTab(this.draggedTabIndex, index)
     }
@@ -250,7 +257,7 @@ class ShellWindowTabs extends LitElement {
     if (is('shell') || is('tabs') || is('unused-space')) {
       this.isDraggingWindow = false
       bg.beakerBrowser.setWindowDragModeEnabled(false)
-      bg.beakerBrowser.maximizeWindow()
+      bg.beakerBrowser.toggleWindowMaximized()
     }
   }
 }
@@ -273,6 +280,7 @@ ${spinnerCSS}
   display: flex;
   padding-left: 10px;
   height: 34px;
+  max-width: calc(100% - 38px);
 }
 
 .unused-space {
@@ -374,7 +382,7 @@ ${spinnerCSS}
   top: 8px;
   width: 16px;
   height: 16px;
-  z-index: 2;
+  z-index: 4;
   border-radius: 2px;
   text-align: center;
   color: var(--color-tab-close);
