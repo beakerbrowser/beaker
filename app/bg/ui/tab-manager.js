@@ -1667,7 +1667,8 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var win = getWindow(this.sender)
     var tab = getByIndex(win, index)
     var clipboardContent = clipboard.readText()
-    var clipInfo = examineLocationInput(clipboardContent)
+    const defaultSearchEngine = JSON.parse(await settingsDb.get('default_search_engine'))
+    var clipInfo = examineLocationInput(clipboardContent, defaultSearchEngine.url)
     var menu = Menu.buildFromTemplate([
       { label: 'Cut', role: 'cut' },
       { label: 'Copy', role: 'copy' },

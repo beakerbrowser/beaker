@@ -57,6 +57,7 @@ class GeneralSettingsView extends LitElement {
       ${this.renderAutoUpdater()}
       ${this.renderOnStartupSettings()}
       ${this.renderRunBackgroundSettings()}
+      ${this.renderDefaultSearchEngineSettings()}
       ${this.renderNewTabSettings()}
       ${this.renderDefaultZoomSettings()}
       ${this.renderProtocolSettings()}
@@ -262,6 +263,51 @@ class GeneralSettingsView extends LitElement {
     `
   }
 
+  renderDefaultSearchEngineSettings () {
+    const searchEngines = [
+      {
+        name: "DuckDuckGo",
+        url: "https://duckduckgo.com/?q=",
+        id: "ddg",
+      },
+      {
+        name: "Ecosia",
+        url: "https://www.ecosia.org/search?q=",
+        id: "ecosia",
+      },
+      {
+        name: "Google",
+        url: "https://google.com/search?q=",
+        id: "google",
+      },
+      {
+        name: "Bing",
+        url: "https://www.bing.com/search?q=",
+        id: "bing",
+      },
+    ];
+    const currentSearchEngine = JSON.parse(this.settings.default_search_engine);
+    return html`
+      <div class="section on-startup">
+        <h2 id="on-startup">Default Search Engine</h2>
+  
+        <p>
+          Select your default search engine.
+        </p>
+        <div>
+          <label for="engines">Choose search engine</label>
+          <select name="engines" id="defaultSearchEngine"
+                 @change=${(e) => this.setDefaultSearchEngine(e, searchEngines)} >
+                  ${searchEngines.map((engine) =>
+                    currentSearchEngine.id === engine.id ? 
+                      html`<option selected value=${engine.id} > ${engine.name}</option>`
+                      : html`<option value=${engine.id} > ${engine.name}</option>`)}
+          </select>
+        </div>
+      </div>
+    `
+  }
+
   renderNewTabSettings () {
     return html`
       <div class="section new-tab">
@@ -414,6 +460,15 @@ class GeneralSettingsView extends LitElement {
 
   onClickRestart () {
     beaker.browser.restartBrowser()
+  }
+
+  setDefaultSearchEngine(e, engines) {
+    const newEngine = engines.find((engine) => e.target.value === engine.id);
+    if (newEngine) {
+      this.settings.default_search_engine = JSON.stringify(newEngine);
+      beaker.browser.setSetting('default_search_engine', this.settings.default_search_engine)
+      toast.create('Setting updated')
+    }
   }
 
   onToggleAutoUpdate () {

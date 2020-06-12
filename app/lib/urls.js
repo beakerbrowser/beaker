@@ -6,7 +6,7 @@ const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 const isPath = /^\//
 
 // helper to determine what the user may be inputting into the locaiton bar
-export function examineLocationInput (v) {
+export function examineLocationInput (v, quryUrl) {
   // does the value look like a url?
   var isProbablyUrl = (!v.includes(' ') && (
     isPath.test(v) ||
@@ -31,7 +31,7 @@ export function examineLocationInput (v) {
       isGuessingTheScheme = true // note that we're guessing so that, if this fails, we can try http://
     }
   }
-  var vSearch = 'https://duckduckgo.com/?q=' + v.split(' ').map(encodeURIComponent).join('+')
+  var vSearch = quryUrl + v.split(' ').map(encodeURIComponent).join('+')
   return {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme}
 }
 

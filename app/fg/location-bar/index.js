@@ -287,19 +287,21 @@ class LocationBar extends LitElement {
   }
 
   async queryAutocomplete () {
+    const settings = await bg.beakerBrowser.getSettings()
+    const defaultSearchEngine = JSON.parse(settings.default_search_engine)
     var queryId = ++this.queryIdCounter
     this.inputValue = this.inputValue.trim()
     var finalResults
 
     // figure out what we're looking at
-    var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue || '/')
+    var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue || '/', defaultSearchEngine.url)
 
     // set the top results accordingly
     var gotoResult = { url: vWithProtocol, title: 'Go to ' + (this.inputValue || '/'), isGuessingTheScheme, isGoto: true }
     var searchResult = {
       search: this.inputValue,
-      title: `Search DuckDuckGo for "${this.inputValue}"`,
-      url: vSearch
+      title: `Search ${defaultSearchEngine.name} for "${this.inputValue}"`,
+      url: vSearch,
     }
     if (isProbablyUrl) finalResults = [gotoResult, searchResult]
     else finalResults = [searchResult, gotoResult]

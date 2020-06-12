@@ -34,6 +34,11 @@ export const setup = function (opts) {
     new_tab: 'beaker://desktop/',
     run_background: 1,
     default_zoom: 0,
+    default_search_engine: JSON.stringify({
+      name: "DuckDuckGo",
+      url: "https://duckduckgo.com/?q=",
+      id: "ddg",
+    }),
     start_page_background_image: '',
     workspace_default_path: path.join(opts.homePath, 'Sites'),
     default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n**/.DS_Store\nThumbs.db\n',
