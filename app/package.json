@@ -25,7 +25,7 @@
     "dat-encoding": "^5.0.1",
     "data-urls": "^1.0.0",
     "diff": "^3.5.0",
-    "diff-file-tree": "^2.3.2",
+    "diff-file-tree": "^2.4.0",
     "discovery-swarm": "^6.0.0",
     "electron-is-accelerator": "^0.1.2",
     "electron-updater": "^4.0.0",

@@ -21,6 +21,9 @@ export async function runNewDriveFlow (win) {
   let res
   try {
     res = await modals.create(win.webContents, 'create-drive', {})
+    if (res && res.gotoSync) {
+      await modals.create(win.webContents, 'folder-sync', {url: res.url, closeAfterSync: true})
+    }
   } catch (e) {
     if (e.name !== 'Error') {
       throw e // only rethrow if a specific error

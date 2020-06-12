@@ -98,7 +98,6 @@ export async function create (webContents, modalName, params = {}) {
   })
   view.webContents.loadURL('beaker://modals/')
   view.webContents.focus()
-  view.webContents.openDevTools({mode: 'detach'})
 
   // run the modal flow
   var result

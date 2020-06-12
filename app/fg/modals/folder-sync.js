@@ -7,6 +7,8 @@ import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
 import tooltipCSS from './tooltip.css'
+import { globToRegex } from '../../lib/strings'
+import _debounce from 'lodash.debounce'
 
 class FolderSyncModal extends LitElement {
   static get styles () {
@@ -19,6 +21,22 @@ class FolderSyncModal extends LitElement {
       padding: 14px 20px;
       margin: 0;
       border-color: #bbb;
+    }
+
+    .refresh {
+      position: absolute;
+      right: 53px;
+      top: 18px;      
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .close {
+      position: absolute;
+      right: 30px;
+      top: 17px;
+      font-size: 13px;
+      cursor: pointer;
     }
     
     main {
@@ -85,8 +103,8 @@ class FolderSyncModal extends LitElement {
     }
     
     .changes .empty {
-      color: #778;
-      padding: 4px 8px;
+      padding: 6px 8px;
+      color: #555;
     }
     
     .change {
@@ -155,6 +173,14 @@ class FolderSyncModal extends LitElement {
       font-size: 13px;
     }
 
+    summary label {
+      float: right;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      font-weight: normal;
+    }
+
     textarea {
       padding: 5px;
     }
@@ -181,6 +207,11 @@ class FolderSyncModal extends LitElement {
       margin-right: auto;
     }
 
+    .form-actions button .spinner {
+      width: 6px;
+      height: 6px;
+    }
+
     .form-actions label {
       display: flex;
       align-items: center;
@@ -196,12 +227,16 @@ class FolderSyncModal extends LitElement {
     this.folderSyncPath = undefined
     this.isAutoSyncing = false
     this.ignoredFiles = []
+    this.ignoreRegexes = []
     this.changes = undefined
+    this.showSkippedFiles = false
+    this.closeAfterSync = false
   }
 
   async init (params, cbs) {
     this.cbs = cbs
     this.url = params.url
+    this.closeAfterSync = params.closeAfterSync
     await this.requestUpdate()
     this.load()
   }
@@ -211,6 +246,7 @@ class FolderSyncModal extends LitElement {
     if (settings) {
       this.folderSyncPath = settings.localPath
       this.ignoredFiles = settings.ignoredFiles
+      this.ignoreRegexes = this.ignoredFiles.map(globToRegex)
       this.isAutoSyncing = settings.isAutoSyncing
       this.changes = await bg.folderSync.compare(this.url)
       this.changes.sort(sortAlphaAndFolders)
@@ -253,7 +289,10 @@ class FolderSyncModal extends LitElement {
   }
 
   isIgnored (path) {
-    return this.ignoredFiles.includes(path)
+    for (let re of this.ignoreRegexes) {
+      if (re.test(path)) return true
+    }
+    return false
   }
 
   updated () {
@@ -269,29 +308,45 @@ class FolderSyncModal extends LitElement {
   // =
 
   render () {
-    let hasChanges = this.isAutoSyncing || (this.changes && !!this.changes.find(change => !this.isIgnored(change.path)))
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">
           Sync with local folder
+          <a class="refresh" @click=${this.onClickRefresh} title="Refresh">
+            <span class="fas fa-sync"></span>
+          </a>
+          <a class="close" @click=${this.onClickClose} title="Close">
+            <span class="fas fa-times"></span>
+          </a>
         </h1>
         <main>
           <div class="folder-path">
             <input value=${this.folderSyncPath || ''} readonly placeholder="No local folder chosen">
             <button title="Change" @click=${this.onChangeFolder}><span class="far fa-fw fa-folder-open"></span></button>
-            <button title="Remove" @click=${this.onRemoveFolder}><span class="fas fa-fw fa-times"></span></button>
+            <button title="Remove" @click=${this.onRemoveFolder}><span class="fas fa-fw fa-ban"></span></button>
           </div>
           ${this.renderSyncUI()}
         </main>
         <div class="form-actions">
           <button type="button" @click=${this.onClickClose} class="cancel" tabindex="6">Close</button>
-          <label>
-            <input type="checkbox" @click=${this.onToggleAutosync} ?checked=${this.isAutoSyncing}> Autosync
-          </label>
-          <button type="submit" class="primary" tabindex="4" ?disabled=${!hasChanges} @click=${this.onClickSync}>
-            Sync
-          </button>
+          <span>
+            ${this.isAutoSyncing ? html`
+              <button tabindex="5" @click=${this.onClickStopAutosync}>
+                Stop Autosync
+              </button>
+              <button type="submit" class="primary" tabindex="4" disabled>
+                <span class="spinner"></span> Syncing
+              </button>
+            ` : html`
+              <button tabindex="5" @click=${this.onClickStartAutosync}>
+                Start Autosync
+              </button>
+              <button type="submit" class="primary" tabindex="4" @click=${this.onClickSync}>
+                Sync
+              </button>
+            `}
+          </span>
         </div>
       </div>
     `
@@ -302,13 +357,20 @@ class FolderSyncModal extends LitElement {
     if (!this.changes) {
       return html`<div class="empty"><span class="spinner"></span></div>`
     }
-    if (!this.changes.length) {
-      return html`<div class="empty">No changes found</div>`
+    let hasChanges = true
+    if (this.showSkippedFiles && this.changes.length === 0) {
+      hasChanges = false
+    } else if (!this.showSkippedFiles && !this.changes.find(change => !this.isIgnored(change.path))) {
+      hasChanges = false
+    }
+    if (!hasChanges) {
+      return html`<div class="changes"><div class="empty">All files are synced</div></div>`
     }
     return html`
       <div class="changes">
         ${repeat(this.changes.filter(c => !c.hidden), change => {
           let isIgnored = this.isIgnored(change.path)
+          if (isIgnored && !this.showSkippedFiles) return ''
           let pathParts = change.path.split('/').filter(Boolean)
           let filename = pathParts.pop()
           const icon = () => change.type === 'dir'
@@ -332,7 +394,7 @@ class FolderSyncModal extends LitElement {
                 ${filename}
               </span>
               ${change.change === 'del' ? html`
-                <a class="revert tooltip-left" data-tooltip="Restore to local folder">
+                <a class="revert tooltip-left" data-tooltip="Restore to local folder" @click=${e => this.onClickRestoreFile(change)}>
                   <span class="fas fa-fw fa-undo"></span>
                 </a>
               ` : ''}
@@ -341,8 +403,18 @@ class FolderSyncModal extends LitElement {
         })}
       </div>
       <details @toggle=${this.adjustHeight}>
-        <summary>Skip items matching these rules</summary>
-        <textarea class="ignores" @change=${this.onChangeIgnores}>${this.ignoredFiles.join('\n')}</textarea>
+        <summary>
+          Skip items matching these rules
+          <label>
+            <input type="checkbox" ?checked=${this.showSkippedFiles} @click=${this.onToggleShowSkippedFiles}>
+            Show skipped files
+          </label>
+        </summary>
+        <textarea
+          class="ignores"
+          @input=${_debounce(this.onChangeIgnores, 1e3)}
+          ?disabled=${this.isAutoSyncing}
+        >${this.ignoredFiles.join('\n')}</textarea>
       </details>
     `
   }
@@ -362,41 +434,56 @@ class FolderSyncModal extends LitElement {
     this.load()
   }
 
+  async onClickRestoreFile (change) {
+    await bg.folderSync.restoreFile(this.url, change.path)
+    this.changes.splice(this.changes.indexOf(change), 1)
+    this.requestUpdate()
+  }
+
   async onChangeIgnores (e) {
-    this.ignoredFiles = e.currentTarget.value.split('\n').map(str => str.trim()).filter(Boolean)
+    this.ignoredFiles = this.shadowRoot.querySelector('.ignores').value.split('\n').map(str => str.trim()).filter(Boolean)
+    this.ignoreRegexes = this.ignoredFiles.map(globToRegex)
     await bg.folderSync.updateIgnoredFiles(this.url, this.ignoredFiles)
     this.requestUpdate()
   }
 
-  async onToggleAutosync () {
-    this.isAutoSyncing = !this.isAutoSyncing
+  onToggleShowSkippedFiles (e) {
+    e.stopPropagation()
+    this.showSkippedFiles = !this.showSkippedFiles
     this.requestUpdate()
   }
 
-  onClickClose (e) {
-    e.preventDefault()
-    this.cbs.reject(new Error('Canceled'))
+  onClickRefresh () {
+    this.changes = undefined
+    this.requestUpdate()
+    this.load()
   }
 
-  async onClickSync (e) {
-    e.preventDefault()
+  async onClickSync () {
+    this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div> Syncing`
+    await bg.folderSync.sync(this.url)
+    this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `Sync`
+    if (this.closeAfterSync) return this.cbs.resolve()
+    this.changes = []
+    this.requestUpdate()
+    this.load()
+  }
 
-    this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div>`
-    Array.from(this.shadowRoot.querySelectorAll('button'), b => b.setAttribute('disabled', 'disabled'))
+  async onClickStartAutosync () {
+    await bg.folderSync.sync(this.url)
+    await bg.folderSync.enableAutoSync(this.url)
+    if (this.closeAfterSync) return this.cbs.resolve()
+    this.load()
+  }
 
-    try {
-      await bg.folderSync.sync(this.url)
+  async onClickStopAutosync () {
+    await bg.folderSync.disableAutoSync(this.url)
+    this.isAutoSyncing = false
+    this.requestUpdate()
+  }
 
-      if (this.isAutoSyncing) {
-        await bg.folderSync.disableAutoSync(this.url)
-      } else {
-        await bg.folderSync.enableAutoSync(this.url)
-      }
-
-      this.cbs.resolve()
-    } catch (e) {
-      this.cbs.reject(e.message || e.toString())
-    }
+  onClickClose () {
+    this.cbs.resolve()
   }
 }
 

@@ -43,6 +43,9 @@ export default {
       let res
       try {
         res = await modals.create(this.sender, 'create-drive', {title, description, author, visibility})
+        if (res && res.gotoSync) {
+          await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
+        }
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error
