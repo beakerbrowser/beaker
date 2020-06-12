@@ -218,7 +218,7 @@ class ShellWindowTabs extends LitElement {
     e.currentTarget.classList.remove('drag-hover')
     
     const url = e.dataTransfer.getData("text")
-    if (url && (url.startsWith("https://") || url.startsWith("dat://") || url.startsWith("hyper://"))) {
+    if (url && (url.startsWith("https://") || url.startsWith("dat://") || url.startsWith("hyper://") || url.startsWith("beaker://"))) {
       e.preventDefault()
       bg.views.createTab(url, {focusLocationBar: true, setActive: true})
       bg.views.reorderTab(this.tabs.length, index)
