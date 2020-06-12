@@ -23,5 +23,7 @@ export const setup = function () {
   if (window.location.protocol === 'beaker:' || /* TEMPRARY */ window.location.hostname.endsWith('hyperdrive.network')) {
     Object.assign(beaker, internal.setup(rpc))
   }
-  contextBridge.exposeInMainWorld('beaker', beaker)
+  if (Object.keys(beaker).length > 0) {
+    contextBridge.exposeInMainWorld('beaker', beaker)
+  }
 }
