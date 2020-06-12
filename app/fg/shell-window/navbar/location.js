@@ -340,9 +340,6 @@ class NavbarLocation extends LitElement {
     if (cmd === 'unfocus-location') {
       this.unfocusLocation()
     }
-    if (cmd === 'show-folder-sync-menu') {
-      this.onClickFolderSyncBtn()
-    }
   }
 
   onContextMenuLocation (e) {

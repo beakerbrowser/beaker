@@ -360,7 +360,6 @@ class SiteInfoApp extends LitElement {
           click: async () => {
             await beaker.folderSync.syncDialog(this.info.url)
             await beaker.browser.refreshTabState()
-            beaker.browser.executeShellWindowCommand('show-folder-sync-menu')
           }
         } : undefined,
         {
