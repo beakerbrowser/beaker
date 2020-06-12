@@ -248,6 +248,13 @@ class FolderSyncModal extends LitElement {
       this.ignoredFiles = settings.ignoredFiles
       this.ignoreRegexes = this.ignoredFiles.map(globToRegex)
       this.isAutoSyncing = settings.isAutoSyncing
+    } else {
+      this.folderSyncPath = undefined
+      this.changes = []
+    }
+    this.requestUpdate()
+
+    if (settings) {
       this.changes = await bg.folderSync.compare(this.url)
       this.changes.sort(sortAlphaAndFolders)
       this.changes.forEach(c => {
@@ -255,11 +262,7 @@ class FolderSyncModal extends LitElement {
           this.setDirCollapsed(c, true)
         }
       })
-    } else {
-      this.folderSyncPath = undefined
-      this.changes = []
     }
-
     this.requestUpdate()
   }
 
