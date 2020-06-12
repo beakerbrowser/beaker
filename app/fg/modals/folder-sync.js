@@ -282,6 +282,25 @@ class FolderSyncModal extends LitElement {
     })
   }
 
+  splitChangePath (change) {
+    // NOTE
+    // sometimes a file will get "orphaned"
+    // this is where the parent dirs are all merged but the file itself isnt
+    // when this happens, we need to find the parent. If it's not rendered, 
+    // then show the full path
+    // -prf
+    var pathParts = change.path.split('/')
+    var filename = pathParts.pop()
+    var parentPath = pathParts.join('/')
+    var parentChange = this.changes.find(c => c.path === parentPath)
+    if (parentChange) {
+      if (this.showSkippedFiles || !this.isIgnored(parentPath)) {
+        return {pathParts: pathParts.filter(Boolean), filename} // not orphaned
+      }
+    }
+    return {pathParts: [], filename: change.path}
+  }
+
   setDirCollapsed (change, collapsed) {
     change.collapsed = collapsed
     this.iterateChildChanges(change.path, c => {
@@ -390,8 +409,7 @@ class FolderSyncModal extends LitElement {
         ${repeat(this.changes.filter(c => !c.hidden), change => {
           let isIgnored = this.isIgnored(change.path)
           if (isIgnored && !this.showSkippedFiles) return ''
-          let pathParts = change.path.split('/').filter(Boolean)
-          let filename = pathParts.pop()
+          let {pathParts, filename} = this.splitChangePath(change)
           const icon = () => change.type === 'dir'
             ? html`
               <span class="icon">
