@@ -330,6 +330,22 @@ class FolderSyncModal extends LitElement {
             <button title="Remove" @click=${this.onRemoveFolder}><span class="fas fa-fw fa-ban"></span></button>
           </div>
           ${this.renderSyncUI()}
+          ${this.folderSyncPath ? html`
+            <details @toggle=${this.adjustHeight}>
+              <summary>
+                Skip items matching these rules
+                <label>
+                  <input type="checkbox" ?checked=${this.showSkippedFiles} @click=${this.onToggleShowSkippedFiles}>
+                  Show skipped files
+                </label>
+              </summary>
+              <textarea
+                class="ignores"
+                @input=${_debounce(this.onChangeIgnores, 1e3)}
+                ?disabled=${this.isAutoSyncing}
+              >${this.ignoredFiles.join('\n')}</textarea>
+            </details>
+          ` : ''}
         </main>
         <div class="form-actions">
           <button type="button" @click=${this.onClickClose} class="cancel" tabindex="6">Close</button>
@@ -405,20 +421,6 @@ class FolderSyncModal extends LitElement {
           `
         })}
       </div>
-      <details @toggle=${this.adjustHeight}>
-        <summary>
-          Skip items matching these rules
-          <label>
-            <input type="checkbox" ?checked=${this.showSkippedFiles} @click=${this.onToggleShowSkippedFiles}>
-            Show skipped files
-          </label>
-        </summary>
-        <textarea
-          class="ignores"
-          @input=${_debounce(this.onChangeIgnores, 1e3)}
-          ?disabled=${this.isAutoSyncing}
-        >${this.ignoredFiles.join('\n')}</textarea>
-      </details>
     `
   }
 
