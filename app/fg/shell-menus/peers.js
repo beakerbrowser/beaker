@@ -1,8 +1,7 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import prettyBytes from 'pretty-bytes'
 import _get from 'lodash.get'
-import {pluralize} from '../../lib/strings'
+import { pluralize } from '../../lib/strings'
 import * as bg from './bg-process-rpc'
 import inputsCSS from './inputs.css'
 import spinnerCSS from './spinner.css'

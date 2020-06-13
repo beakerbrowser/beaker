@@ -3,6 +3,7 @@ import _debounce from 'lodash.debounce'
 import { ipcRenderer } from 'electron'
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
+import './background-tray'
 import './browser'
 import './toolbar'
 import './bookmark'
@@ -93,6 +94,8 @@ class MenusWrapper extends LitElement {
 
   renderMenu () {
     switch (this.currentMenu) {
+      case 'background-tray':
+        return html`<background-tray-menu active-menu></background-tray-menu>`
       case 'browser':
         return html`<browser-menu active-menu></browser-menu>`
       case 'toolbar':

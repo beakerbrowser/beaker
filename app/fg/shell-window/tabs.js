@@ -1,4 +1,5 @@
 /* globals customElements */
+import { ipcRenderer } from 'electron'
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
@@ -29,6 +30,10 @@ class ShellWindowTabs extends LitElement {
         this.isDraggingWindow = false
       }
     })
+
+    // listen for commands from the main process
+    ipcRenderer.on('command', this.onCommand.bind(this))
+    window.doMinimizeToBgAnim = this.doMinimizeToBgAnim.bind(this)
   }
 
   render () {
@@ -110,9 +115,10 @@ class ShellWindowTabs extends LitElement {
               : tab.isCurrentlyAudible
                 ? html`<span class="fas fa-volume-up"></span>`
                 : ''}
-            ${tab.isActive ?
-              html`<div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>`
-              : ''}
+            ${tab.isActive ? html`
+              <div class="tab-minimize" title="Minimize to background" @click=${e => this.onClickMinimize(e, index)}></div>
+              <div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>
+            ` : ''}
           `}
       </div>
     `
@@ -144,6 +150,31 @@ class ShellWindowTabs extends LitElement {
     }
   }
 
+  doMinimizeToBgAnim () {
+    var srcEl = this.shadowRoot.querySelector('.tab.current')
+    var dstEl = this.parentNode.querySelector('shell-window-navbar').shadowRoot.querySelector('.background-tray-btn')
+    if (!srcEl) return console.warn('Minimize anim aborted; source element not found')
+    if (!dstEl) return console.warn('Minimize anim aborted; target element not found')
+
+    var src = srcEl.getClientRects()[0]
+    var dst = dstEl.getClientRects()[0]
+    var animElem = document.createElement('div')
+    animElem.classList.add('minimize-to-bg-anim-elem')
+    this.shadowRoot.append(animElem)
+    const px = v => `${v}px`
+    animElem.animate([
+      {left: px(src.left), top: px(src.top), width: px(src.width), height: px(src.height)},
+      {left: px(dst.left), top: px(dst.top), width: px(dst.width), height: px(dst.height)}
+    ], {iterations: 1, duration: 200}).onfinish = () => {
+      animElem.remove()
+      dstEl.animate([
+        { transform: 'scale(1)', transformOrigin: 'bottom center' },
+        { transform: 'scale(1.25)', transformOrigin: 'bottom center' },
+        { transform: 'scale(1)', transformOrigin: 'bottom center' }
+      ], {duration: 300, iterations: 1})
+    }
+  }
+
   // events
   // =
 
@@ -164,6 +195,12 @@ class ShellWindowTabs extends LitElement {
     if (e.which === 2) {
       bg.views.closeTab(index)
     }
+  }
+
+  onClickMinimize (e, index) {
+    e.preventDefault()
+    e.stopPropagation()
+    bg.views.minimizeTab(index)
   }
 
   onClickClose (e, index) {
@@ -258,6 +295,12 @@ class ShellWindowTabs extends LitElement {
       this.isDraggingWindow = false
       bg.beakerBrowser.setWindowDragModeEnabled(false)
       bg.beakerBrowser.toggleWindowMaximized()
+    }
+  }
+
+  onCommand (e, cmd) {
+    if (cmd === 'minimize-to-bg-anim') {
+      this.doMinimizeToBgAnim()
     }
   }
 }
@@ -375,10 +418,10 @@ ${spinnerCSS}
   padding-left: 16px;
 }
 
-.tab-close {
+.tab-close,
+.tab-minimize {
   opacity: 0;
   position: absolute;
-  right: 8px;
   top: 8px;
   width: 16px;
   height: 16px;
@@ -387,7 +430,20 @@ ${spinnerCSS}
   text-align: center;
   color: var(--color-tab-close);
   background: var(--bg-background);
-  transition: background 0.3s, opacity 0.3s;
+  transition: background 0.3s;
+}
+
+.tab-close {
+  right: 8px;
+}
+
+.tab-minimize {
+  right: 25px;
+}
+
+.tab-close:before,
+.tab-minimize:before {
+  opacity: 0;
 }
 
 .tab-close:before {
@@ -395,18 +451,28 @@ ${spinnerCSS}
   content: "\\00D7";
   font-size: 20px;
   font-weight: 200;
-  opacity: 0;
   line-height: .71;
-  transition: opacity 0.3s;
+}
+
+.tab-minimize:before {
+  display: block;
+  content: "_";
+  font-size: 20px;
+  font-weight: 600;
+  line-height: .5;
 }
 
 .tab-close:hover:before,
-.tab-close:active:before {
+.tab-close:active:before,
+.tab-minimize:hover:before,
+.tab-minimize:active:before {
   opacity: 1;
 }
 
 .tab-close:hover,
-.tab-close:active {
+.tab-close:active,
+.tab-minimize:hover,
+.tab-minimize:active  {
   background: var(--bg-tab-close--hover);
 }
 
@@ -416,20 +482,28 @@ ${spinnerCSS}
   background: var(--bg-tab--hover);
 }
 
-.tab:hover .tab-close {
+.tab.current:hover .tab-title {
+  padding-right: 40px;
+}
+
+.tab:hover .tab-close,
+.tab:hover .tab-minimize {
   opacity: 1;
   background: var(--bg-tab--hover);
 }
 
-.tab:hover .tab-close:hover {
+.tab:hover .tab-close:hover,
+.tab:hover .tab-minimize:hover {
   background: var(--bg-tab-close--hover);
 }
 
-.tab.current:hover .tab-close:hover {
+.tab.current:hover .tab-close:hover,
+.tab.current:hover .tab-minimize:hover {
   background: var(--bg-tab-close--current--hover);
 }
 
-.tab:hover .tab-close:before {
+.tab:hover .tab-close:before,
+.tab:hover .tab-minimize:before {
   opacity: 1;
 }
 
@@ -447,7 +521,8 @@ ${spinnerCSS}
   background: var(--color-current-tab-highlight);
 }
 
-.tab.current .tab-close {
+.tab.current .tab-close,
+.tab.current .tab-minimize {
   background: var(--bg-tab--current);
 }
 
@@ -487,6 +562,12 @@ ${spinnerCSS}
 }
 .darwin.fullscreen .tabs {
   padding-left: 10px; /* not during fullscreen */
+}
+
+.minimize-to-bg-anim-elem {
+  position: fixed;
+  z-index: 100;
+  background: #0002;
 }
 `
 customElements.define('shell-window-tabs', ShellWindowTabs)

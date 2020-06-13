@@ -17,6 +17,7 @@ class ShellWindowNavbar extends LitElement {
       isHolepunchable: {type: Boolean, attribute: 'is-holepunchable'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
       userProfileUrl: {type: String},
+      isBackgroundTrayOpen: {type: Boolean},
       isNetworkMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
@@ -31,6 +32,7 @@ class ShellWindowNavbar extends LitElement {
     this.isHolepunchable = true
     this.isDaemonActive = false
     this.userProfileUrl = undefined
+    this.isBackgroundTrayOpen = false
     this.isNetworkMenuOpen = false
     this.isBrowserMenuOpen = false
   }
@@ -107,6 +109,7 @@ class ShellWindowNavbar extends LitElement {
       <div class="buttons" style="padding-left: 6px">
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
+        ${this.backgroundTrayBtn}
         ${this.networkMenuBtn}
         ${this.profileBtn}
         ${this.browserMenuBtn}
@@ -224,6 +227,15 @@ class ShellWindowNavbar extends LitElement {
       </button>
     `
   }
+
+  get backgroundTrayBtn () {
+    const cls = classMap({'background-tray-btn': true, pressed: this.isBackgroundTrayOpen})
+    return html`
+      <button class=${cls} @click=${this.onClickBackgroundTray} style="margin: 0px 2px">
+        <span class="far fa-window-restore"></span>
+      </button>
+    `
+  }
   
   get networkMenuBtn () {
     const cls = classMap({'network-btn': true, pressed: this.isNetworkMenuOpen})
@@ -302,6 +314,14 @@ class ShellWindowNavbar extends LitElement {
 
   onClickUserProfile (e) {
     bg.views.createTab(this.userProfileUrl, {setActive: true})
+  }
+
+  async onClickBackgroundTray (e) {
+    if (Date.now() - (this.lastMenuClick||0) < 100) return
+    this.isBackgroundTrayOpen = true
+    await bg.views.toggleMenu('background-tray')
+    this.isBackgroundTrayOpen = false
+    this.lastMenuClick = Date.now()
   }
 
   async onClickNetworkMenu (e) {

@@ -113,6 +113,7 @@ const STATE_VARS = [
 // =
 
 var activeTabs = {} // map of {[win.id]: Array<Tab>}
+var backgroundTabs = [] // Array<Tab>
 var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var lastSelectedTabIndex = {} // map of {[win.id]: Number}
 var closedURLs = {} // map of {[win.id]: Array<string>}
@@ -467,6 +468,7 @@ class Tab extends EventEmitter {
 
   destroy () {
     this.deactivate()
+    this.stopLiveReloading()
     prompts.close(this.browserView)
     permPrompt.close(this.browserView)
     modals.close(this.browserView)
@@ -1266,6 +1268,55 @@ export function create (
   return tab
 }
 
+export async function minimizeToBg (win, tab) {
+  win = getTopWindow(win)
+  var tabs = getAll(win)
+  var i = tabs.indexOf(tab)
+  if (i == -1) {
+    return console.warn('tab-manager minimize() called for missing tab', tab)
+  }
+
+  // do minimize animation
+  win.webContents.send('command', 'minimize-to-bg-anim')
+
+  // set new active if that was
+  if (tab.isActive && tabs.length > 1) {
+    setActive(win, tabs[i + 1] || tabs[i - 1])
+  }
+
+  // move to background
+  tabs.splice(i, 1)
+  tab.deactivate()
+  backgroundTabs.push(tab)
+
+  // persist pins w/o this one, if that was
+  if (tab.isPinned) savePins(win)
+
+  tab.isPinned = false
+  tab.browserWindow = undefined
+
+  // create a new empty tab if that was the last one
+  if (tabs.length === 0) return create(win, undefined, {setActive: true})
+  emitReplaceState(win)
+}
+
+export async function restoreBgTabByIndex (win, index) {
+  win = getTopWindow(win)
+  var tabs = getAll(win)
+  
+  var tab = backgroundTabs[index]
+  if (!tab) return
+  backgroundTabs.splice(index, 1)
+
+  if (tab.isPinned) {
+    tabs.splice(indexOfLastPinnedTab(win), 0, tab)
+  } else {
+    tabs.push(tab)
+  }
+  tab.browserWindow = win
+  setActive(win, tab)
+}
+
 export async function remove (win, tab) {
   win = getTopWindow(win)
   // find
@@ -1305,16 +1356,10 @@ export async function remove (win, tab) {
   tab.destroy()
 
   // persist pins w/o this one, if that was
-  if (tab.isPinned) {
-    savePins(win)
-  }
+  if (tab.isPinned) savePins(win)
 
   // close the window if that was the last tab
-  if (tabs.length === 0) {
-    return win.close()
-  }
-
-  // emit
+  if (tabs.length === 0) return win.close()
   emitReplaceState(win)
 }
 
@@ -1615,6 +1660,13 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     return {}
   },
 
+  async getBackgroundTabs () {
+    return backgroundTabs.map(tab => ({
+      url: tab.url,
+      title: tab.title
+    }))
+  },
+
   async createTab (url, opts = {focusLocationBar: false, setActive: false, addToNoRedirects: false}) {
     if (opts.addToNoRedirects) {
       addToNoRedirects(url)
@@ -1633,6 +1685,11 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     getByIndex(getWindow(this.sender), index).loadURL(url)
   },
 
+  async minimizeTab (index) {
+    var win = getWindow(this.sender)
+    minimizeToBg(win, getByIndex(win, index))
+  },
+
   async closeTab (index) {
     var win = getWindow(this.sender)
     remove(win, getByIndex(win, index))
@@ -1648,6 +1705,18 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     reorder(win, oldIndex, newIndex)
   },
 
+  restoreBgTab (index) {
+    if (!backgroundTabs[index]) return
+    var win = getWindow(this.sender)
+    restoreBgTabByIndex(win, index)
+  },
+
+  closeBgTab (index) {
+    if (!backgroundTabs[index]) return
+    backgroundTabs[index].destroy()
+    backgroundTabs.splice(index, 1)
+  },
+
   async showTabContextMenu (index) {
     var win = getWindow(this.sender)
     var tab = getByIndex(win, index)
@@ -1656,6 +1725,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       { label: 'Pop Out Tab', click: () => popOutTab(tab) },
       { label: 'Duplicate Tab', click: () => create(win, tab.url, {adjacentActive: true}) },
       { label: (tab.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => tab.toggleMuted() },
+      { label: 'Minimize to Background', click: () => minimizeToBg(win, tab) },
       { type: 'separator' },
       { label: 'Close Tab', click: () => remove(win, tab) },
       { label: 'Close Other Tabs', click: () => removeAllExcept(win, tab) },
