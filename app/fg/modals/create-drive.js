@@ -192,7 +192,7 @@ class CreateDriveModal extends LitElement {
       if (this.fromFolderPath) {
         await bg.folderSync.set(url, {localPath: this.fromFolderPath})
       }
-      this.cbs.resolve({url, gotoSync: true})
+      this.cbs.resolve({url, gotoSync: !!this.fromFolderPath})
     } catch (e) {
       this.cbs.reject(e.message || e.toString())
     }
