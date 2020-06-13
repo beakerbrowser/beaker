@@ -55,6 +55,7 @@ class GeneralSettingsView extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${this.renderDaemonStatus()}
       ${this.renderAutoUpdater()}
+      ${this.renderTabSettings()}
       ${this.renderOnStartupSettings()}
       ${this.renderRunBackgroundSettings()}
       ${this.renderNewTabSettings()}
@@ -210,6 +211,23 @@ class GeneralSettingsView extends LitElement {
     return html`<label>
       <input type="checkbox" ?checked=${this.isAutoUpdateEnabled} @click=${this.onToggleAutoUpdate} /> Check for updates automatically
     </label>`
+  }
+
+  renderTabSettings () {
+    return html`
+      <div class="section tabs">
+        <h2 id="tabs">Tabs</h2>
+    
+        <div class="radio-item">
+          <input type="checkbox" id="newTabsInForeground"
+                 ?checked=${this.settings.new_tabs_in_foreground == 1}
+                 @change=${this.onNewTabsInForegroundToggle} />
+          <label for="newTabsInForeground">
+            When you open a link in a new tab, switch to it immediately
+          </label>
+        </div>
+      </div>
+    `
   }
 
   renderOnStartupSettings () {
@@ -426,6 +444,12 @@ class GeneralSettingsView extends LitElement {
   onCustomStartPageChange (e) {
     this.settings.custom_start_page = e.target.value
     beaker.browser.setSetting('custom_start_page', this.settings.custom_start_page)
+    toast.create('Setting updated')
+  }
+
+  onNewTabsInForegroundToggle (e) {
+    this.settings.new_tabs_in_foreground = this.settings.new_tabs_in_foreground == 1 ? 0 : 1
+    beaker.browser.setSetting('new_tabs_in_foreground', this.settings.new_tabs_in_foreground)
     toast.create('Setting updated')
   }
 

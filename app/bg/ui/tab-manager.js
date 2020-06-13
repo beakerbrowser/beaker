@@ -1036,8 +1036,7 @@ class Tab extends EventEmitter {
   onNewWindow (e, url, frameName, disposition, options) {
     e.preventDefault()
     if (!this.isActive) return // only open if coming from the active tab
-    var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
-    var newTab = create(this.browserWindow, url, {setActive, adjacentActive: true})
+    create(this.browserWindow, url, {setActiveBySettings: true, adjacentActive: true})
   }
 
   onMediaChange (e) {
@@ -1175,6 +1174,7 @@ export function create (
     url,
     opts = {
       setActive: false,
+      setActiveBySettings: false,
       isPinned: false,
       focusLocationBar: false,
       adjacentActive: false,
@@ -1240,7 +1240,11 @@ export function create (
   }
 
   // make active if requested, or if none others are
-  if (opts.setActive || !getActive(win)) {
+  let shouldSetActive = opts.setActive
+  if (opts.setActiveBySettings) {
+    shouldSetActive = Boolean(Number(settingsDb.getCached('new_tabs_in_foreground')))
+  }
+  if (shouldSetActive || !getActive(win)) {
     setActive(win, tab)
   }
   emitReplaceState(win)

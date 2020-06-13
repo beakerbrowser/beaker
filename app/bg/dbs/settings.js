@@ -5,13 +5,17 @@ import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../lib/db'
 import { getEnvVar } from '../lib/env'
 
+const CACHED_VALUES = ['new_tabs_in_foreground']
+
 // globals
 // =
+
 var db
 var migrations
 var setupPromise
 var defaultSettings
 var events = new EventEmitter()
+var cachedValues = {}
 
 // exported methods
 // =
@@ -21,7 +25,7 @@ var events = new EventEmitter()
  * @param {string} opts.userDataPath
  * @param {string} opts.homePath
  */
-export const setup = function (opts) {
+export const setup = async function (opts) {
   // open database
   var dbPath = path.join(opts.userDataPath, 'Settings')
   db = new sqlite3.Database(dbPath)
@@ -32,6 +36,7 @@ export const setup = function (opts) {
     auto_redirect_to_dat: 1,
     custom_start_page: 'blank',
     new_tab: 'beaker://desktop/',
+    new_tabs_in_foreground: 0,
     run_background: 1,
     default_zoom: 0,
     start_page_background_image: '',
@@ -40,6 +45,10 @@ export const setup = function (opts) {
     analytics_enabled: 1,
     dat_bandwidth_limit_up: 0,
     dat_bandwidth_limit_down: 0
+  }
+
+  for (let k of CACHED_VALUES) {
+    cachedValues[k] = await get(k)
   }
 }
 
@@ -59,8 +68,17 @@ export async function set (key, value) {
         VALUES (?, ?, ?)
     `, [key, value, Date.now()], cb)
   }))
+  if (CACHED_VALUES.includes(key)) cachedValues[key] = value
   events.emit('set', key, value)
   events.emit('set:' + key, value)
+}
+
+/**
+ * @param {string} key
+ * @returns {string | number}
+ */
+export function getCached (key) {
+  return cachedValues[key]
 }
 
 /**

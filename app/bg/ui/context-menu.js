@@ -55,7 +55,7 @@ export default function registerContextMenu () {
 
       // links
       if (props.linkURL) {
-        menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => tabManager.create(win, props.linkURL, {setActive: true, adjacentActive: true}) })
+        menuItems.push({ label: 'Open Link in New Tab', click: (item, win) => tabManager.create(win, props.linkURL, {setActiveBySettings: true, adjacentActive: true}) })
         menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
         menuItems.push({ label: 'Save Link As...', click: downloadPrompt('linkURL', '.html') })
         menuItems.push({ type: 'separator' })
