@@ -41,6 +41,10 @@ import * as auditLog from '../dbs/audit-log'
  * @prop {Stat} stat
  * @prop {string} drive
  * @prop {string} [mount]
+ * @prop {Object} origin
+ * @prop {string} origin.path
+ * @prop {string} origin.drive
+ * @prop {string} origin.url
  */
 
 // exported api
@@ -95,10 +99,7 @@ export async function query (root, opts) {
   var candidates = await expandPaths(root, opts.path)
   var results = []
   await chunkMapAsync(candidates, 100, async (item) => {
-    let path = item.name
-    let stat = item.stat
-    let localDriveKey = item.localDriveKey
-    let innerPath = item.innerPath
+    let {path, stat, originDriveKey, originPath} = item
 
     var type = 'file'
     if (stat.mount && stat.mount.key) type = 'mount'
@@ -117,14 +118,19 @@ export async function query (root, opts) {
       if (!metaMatch) return
     }
 
-    var drive = await keyToUrl(localDriveKey)
+    var originDrive = await keyToUrl(originDriveKey)
     results.push({
       type,
       path,
-      url: joinPath(drive, innerPath),
+      drive: root.url,
+      url: joinPath(root.url, path),
       stat,
-      drive,
-      mount: type === 'mount' ? await keyToUrl(stat.mount.key.toString('hex')) : undefined
+      mount: type === 'mount' ? await keyToUrl(stat.mount.key.toString('hex')) : undefined,
+      origin: {
+        path: originPath,
+        drive: originDrive,
+        url: joinPath(originDrive, originPath)
+      }
     })
   })
 
@@ -151,56 +157,38 @@ async function expandPaths (root, patterns) {
   patterns = Array.isArray(patterns) ? patterns : [patterns]
   await Promise.all(patterns.map(async (pattern) => {
     // parse the pattern into a set of ops
-    let acc = []
     let ops = []
     for (let part of pattern.split('/')) {
-      if (part.includes('*')) {
-        ops.push(['push', acc.filter(Boolean).join('/')])
-        ops.push(['match', part])
-        acc = []
-      } else {
-        acc.push(part)
-      }
+      ops.push([part.includes('*') ? 'match' : 'push', part])
     }
-    if (acc.length) ops.push(['push', acc.join('/')])
 
     // run the ops to assemble a list of matching paths
-    var workingPaths = [{name: '/', innerPath: '/', localDriveKey: root.key.toString('hex')}]
+    var workingPaths = [{path: '/', originPath: '/', originDriveKey: root.key.toString('hex'), stat: undefined}]
     for (let i = 0; i < ops.length; i++) {
       let op = ops[i]
-      let isLastOp = i === ops.length - 1
       let newWorkingPaths = []
       if (op[0] === 'push') {
         // add the given segment to all working paths
-        if (isLastOp) {
-          newWorkingPaths = await Promise.all(workingPaths.map(async (workingPath) => {
-            var bname = basename(op[1])
-            var folderpath = op[1].slice(0, bname.length * -1)
-            let readdirpath = joinPath(workingPath.name, folderpath)
-            let readdiropts = {includeStats: true}
-            let items = await auditLog.record(
-              '-query',
-              'readdir',
-              Object.assign({url: root.url, path: readdirpath}, readdiropts),
-              undefined,
-              () => root.pda.readdir(readdirpath, readdiropts).catch(err => ([]))
-            )
-            let item = items.find(item => item.name === bname)
-            if (!item) return undefined
-            item.localDriveKey = item.mount ? item.mount.key.toString('hex') : workingPath.localDriveKey
-            item.name = joinPath(workingPath.name, folderpath, item.name)
-            return item
-          }))
-          newWorkingPaths = newWorkingPaths.filter(Boolean)
-        } else {
-          newWorkingPaths = workingPaths.map(v => ({
-            name: joinPath(v.name, op[1]),
-            innerPath: v.innerPath,
-            localDriveKey: v.localDriveKey,
-            stat: v.stat,
-            mount: v.mount
-          }))
-        }
+        newWorkingPaths = await Promise.all(workingPaths.map(async (workingPath) => {
+          let statpath = joinPath(workingPath.path, op[1])
+          let stat = await auditLog.record(
+            '-query',
+            'stat',
+            {url: root.url, path: statpath},
+            undefined,
+            () => root.pda.stat(statpath).catch(err => undefined)
+          )
+          if (!stat) return undefined
+          let statMountKey = stat.mount && stat.mount.key ? stat.mount.key.toString('hex') : undefined
+          let isNewMount = statMountKey && statMountKey !== workingPath.originDriveKey
+          return {
+            path: statpath,
+            originPath: isNewMount ? '/' : joinPath(workingPath.originPath, op[1]),
+            originDriveKey: isNewMount ? statMountKey : workingPath.originDriveKey,
+            stat: stat
+          }
+        }))
+        newWorkingPaths = newWorkingPaths.filter(Boolean)
       } else if (op[0] === 'match') {
         // compile a glob-matching regex from the segment
         var re = new RegExp(`^${op[1].replace(/\*/g, '[^/]*')}$`, 'i')
@@ -210,16 +198,21 @@ async function expandPaths (root, patterns) {
           let items = await auditLog.record(
             '-query',
             'readdir',
-            {url: root.url, path: workingPath.name, includeStats: true},
+            {url: root.url, path: workingPath.path, includeStats: true},
             undefined,
-            () => root.pda.readdir(workingPath.name, {includeStats: true}).catch(e => [])
+            () => root.pda.readdir(workingPath.path, {includeStats: true}).catch(e => [])
           )
           for (let item of items) {
             // add matching names to the working path
             if (re.test(item.name)) {
-              item.localDriveKey = item.mount ? item.mount.key.toString('hex') : workingPath.localDriveKey
-              item.name = joinPath(workingPath.name, item.name)
-              newWorkingPaths.push(item)
+              let statMountKey = item.stat.mount && item.stat.mount.key ? item.stat.mount.key.toString('hex') : undefined
+              let isNewMount = statMountKey && statMountKey !== workingPath.originDriveKey
+              newWorkingPaths.push({
+                path: joinPath(workingPath.path, item.name),
+                originPath: isNewMount ? '/' : joinPath(workingPath.originPath, item.name),
+                originDriveKey: isNewMount ? item.stat.mount.key.toString('hex') : workingPath.originDriveKey,
+                stat: item.stat
+              })
             }
           }
         }
