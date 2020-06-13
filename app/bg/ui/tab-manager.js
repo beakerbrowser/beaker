@@ -450,6 +450,7 @@ class Tab extends EventEmitter {
   }
 
   deactivate () {
+    if (!this.browserWindow) return
     this.browserWindow.removeBrowserView(this.browserView)
     if (this.isActive) {
       shellMenus.hide(this.browserWindow) // this will close the location menu if it's open

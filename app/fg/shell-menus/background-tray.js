@@ -82,6 +82,8 @@ class BackgroundTrayMenu extends LitElement {
   }
 
   onClickClose (e, index) {
+    e.preventDefault()
+    e.stopPropagation()
     bg.views.closeBgTab(index)
     this.tabs.splice(index, 1)
     this.requestUpdate()
@@ -154,6 +156,14 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 
 .tab .info .url {
   color: #778;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  background: #fafafd;
 }
 `]
 
