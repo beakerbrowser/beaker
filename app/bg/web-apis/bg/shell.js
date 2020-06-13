@@ -140,7 +140,7 @@ export default {
     try {
       res = await modals.create(this.sender, 'select-drive', opts)
       if (res && res.gotoCreate) {
-        res = await modals.create(this.sender, 'create-drive', opts)
+        res = await modals.create(this.sender, 'create-drive')
         if (res && res.gotoSync) {
           await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
         }
