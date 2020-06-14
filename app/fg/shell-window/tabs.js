@@ -311,7 +311,6 @@ ${spinnerCSS}
   font-family: sans-serif;
   background: var(--bg-background);
   position: relative;
-  padding: 0 18px 0 0px;
   height: 34px;
 }
 
@@ -321,8 +320,9 @@ ${spinnerCSS}
 
 .tabs {
   display: flex;
-  padding-left: 10px;
-  height: 34px;
+  padding: 0 18px 0 10px;
+  border-bottom: 1px solid var(--color-tab-border);
+  height: 33px;
   max-width: calc(100% - 38px);
 }
 
@@ -330,7 +330,7 @@ ${spinnerCSS}
   flex: 1;
   position: relative;
   top: 0px;
-  height: 34px;
+  height: 33px;
 }
 
 .tabs * {
@@ -344,7 +344,7 @@ ${spinnerCSS}
   display: inline-block;
   position: relative;
   top: 3px;
-  height: 31px;
+  height: 30px;
   width: 235px;
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
   background: var(--bg-background);
@@ -509,6 +509,7 @@ ${spinnerCSS}
 
 .tab.current {
   background: var(--bg-tab--current);
+  height: 31px;
 }
 
 .tab.current:before {
