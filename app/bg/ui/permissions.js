@@ -104,13 +104,6 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
     return cb(true)
   }
 
-  // look up the containing window
-  var {win, view} = getContaining(webContents)
-  if (!win || !view) {
-    console.error('Warning: failed to find containing window of permission request, ' + permission)
-    return cb(false)
-  }
-
   // check if the perm is auto-allowed or auto-disallowed
   const PERM = PERMS[getPermId(permission)]
   if (!PERM) return cb(false)
@@ -126,6 +119,13 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   var res = await sitedata.getPermission(url, permission).catch(err => undefined)
   if (res === 1) return cb(true)
   if (res === 0) return cb(false)
+
+  // look up the containing window
+  var {win, view} = getContaining(webContents)
+  if (!win || !view) {
+    console.error('Warning: failed to find containing window of permission request, ' + permission)
+    return cb(false)
+  }
 
   // if we're already tracking this kind of permission request, and the perm is idempotent, then bundle them
   var req = PERM.idempotent ? activeRequests.find(req => req.view === view && req.permission === permission) : false

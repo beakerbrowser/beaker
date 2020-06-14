@@ -1155,6 +1155,11 @@ export function findTab (browserView) {
       }
     }
   }
+  for (let tab of backgroundTabs) {
+    if (tab.browserView === browserView) {
+      return tab
+    }
+  }
 }
 
 export function findContainingWindow (browserView) {
