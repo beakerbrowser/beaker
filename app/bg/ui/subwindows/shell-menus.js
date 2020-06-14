@@ -67,8 +67,8 @@ export function reposition (parentWindow) {
     }
     if (view.menuId === 'background-tray') {
       setBounds({
-        x: 10,
-        y: 36,
+        x: 40,
+        y: 40,
         width: 350,
         height: 350
       })
