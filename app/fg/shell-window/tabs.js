@@ -11,7 +11,8 @@ class ShellWindowTabs extends LitElement {
   static get properties () {
     return {
       tabs: {type: Array},
-      isFullscreen: {type: Boolean, attribute: 'is-fullscreen'}
+      isFullscreen: {type: Boolean, attribute: 'is-fullscreen'},
+      isBackgroundTrayOpen: {type: Boolean}
     }
   }
 
@@ -21,6 +22,7 @@ class ShellWindowTabs extends LitElement {
     this.isFullscreen = false
     this.draggedTabIndex = null
     this.isDraggingWindow = false
+    this.isBackgroundTrayOpen = false
 
     // use mousemove to ensure that dragging stops if the mouse button isnt pressed
     // (we use this instead of mouseup because mouseup could happen outside the window)
@@ -50,6 +52,7 @@ class ShellWindowTabs extends LitElement {
         @dblclick=${this.onDblclickShell}
       >
         <div class="tabs">
+          ${this.backgroundTrayBtn}
           ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
           <div
             class="unused-space"
@@ -124,6 +127,15 @@ class ShellWindowTabs extends LitElement {
     `
   }
 
+  get backgroundTrayBtn () {
+    const cls = classMap({'background-tray-btn': true, pressed: this.isBackgroundTrayOpen})
+    return html`
+      <button class=${cls} @click=${this.onClickBackgroundTray}>
+        <span class="fas fa-caret-down"></span>
+      </button>
+    `
+  }
+
   updated (changedProperties) {
     if (changedProperties.has('tabs')) {
       let oldVal = changedProperties.get('tabs') || []
@@ -152,12 +164,13 @@ class ShellWindowTabs extends LitElement {
 
   doMinimizeToBgAnim () {
     var srcEl = this.shadowRoot.querySelector('.tab.current')
-    var dstEl = this.parentNode.querySelector('shell-window-navbar').shadowRoot.querySelector('.background-tray-btn')
+    var dstEl = this.shadowRoot.querySelector('.background-tray-btn')
     if (!srcEl) return console.warn('Minimize anim aborted; source element not found')
     if (!dstEl) return console.warn('Minimize anim aborted; target element not found')
 
     var src = srcEl.getClientRects()[0]
     var dst = dstEl.getClientRects()[0]
+    var dist = Math.abs(src.left - dst.left)
     var animElem = document.createElement('div')
     animElem.classList.add('minimize-to-bg-anim-elem')
     this.shadowRoot.append(animElem)
@@ -165,18 +178,26 @@ class ShellWindowTabs extends LitElement {
     animElem.animate([
       {left: px(src.left), top: px(src.top), width: px(src.width), height: px(src.height)},
       {left: px(dst.left), top: px(dst.top), width: px(dst.width), height: px(dst.height)}
-    ], {iterations: 1, duration: 200}).onfinish = () => {
+    ], {iterations: 1, duration: Math.max(Math.min(dist / 6, 400), 100)}).onfinish = () => {
       animElem.remove()
       dstEl.animate([
-        { transform: 'scale(1)', transformOrigin: 'bottom center' },
-        { transform: 'scale(1.25)', transformOrigin: 'bottom center' },
-        { transform: 'scale(1)', transformOrigin: 'bottom center' }
-      ], {duration: 300, iterations: 1})
+        {background: 'var(--bg-background)'},
+        {background: 'var(--bg-tab--hover)'},
+        {background: 'var(--bg-background)'}
+      ], {duration: 250, iterations: 1})
     }
   }
 
   // events
   // =
+
+  async onClickBackgroundTray (e) {
+    if (Date.now() - (this.lastMenuClick||0) < 100) return
+    this.isBackgroundTrayOpen = true
+    await bg.views.toggleMenu('background-tray')
+    this.isBackgroundTrayOpen = false
+    this.lastMenuClick = Date.now()
+  }
 
   onClickNew (e) {
     bg.views.createTab(undefined, {focusLocationBar: true, setActive: true})
@@ -324,6 +345,26 @@ ${spinnerCSS}
   border-bottom: 1px solid var(--color-tab-border);
   height: 33px;
   max-width: calc(100% - 38px);
+}
+
+.background-tray-btn {
+  width: 38px;
+  height: 30px;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--color-tab-border);
+  margin-top: 3px;
+  outline: 0;
+}
+
+.background-tray-btn:hover,
+.background-tray-btn.pressed {
+  background: var(--bg-tab--hover);
+}
+
+.background-tray-btn span {
+  font-size: 14px;
+  line-height: 16px;
 }
 
 .unused-space {
@@ -568,7 +609,7 @@ ${spinnerCSS}
 .minimize-to-bg-anim-elem {
   position: fixed;
   z-index: 100;
-  background: #0002;
+  background: #fffc;
 }
 `
 customElements.define('shell-window-tabs', ShellWindowTabs)

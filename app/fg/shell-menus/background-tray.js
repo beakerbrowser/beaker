@@ -92,17 +92,17 @@ class BackgroundTrayMenu extends LitElement {
 BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 .wrapper {
   color: #333;
-  width: 400px;
+  width: 350px;
 }
 
 .header {
-  padding: 10px;
+  padding: 6px 12px;
   border-bottom: 1px solid #dde;
-  text-align: center;
+  background: #fafafa;
 }
 
 .header h1 {
-  font-size: 0.825rem;
+  font-size: 0.725rem;
   font-weight: 500;
   margin: 0;
 }
@@ -112,7 +112,7 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 }
 
 .empty {
-  padding: 10px 12px;
+  padding: 10px 22px 10px 12px;
   color: #778;
 }
 
@@ -145,7 +145,7 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 320px;
+  width: 270px;
 }
 
 .tab .info .title {
