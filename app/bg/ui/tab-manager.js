@@ -1,6 +1,5 @@
 import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, webContents } from 'electron'
 import errorPage from '../lib/error-page'
-import * as libTools from '@beaker/library-tools'
 import path from 'path'
 import { promises as fs } from 'fs'
 import { EventEmitter } from 'events'
@@ -159,7 +158,7 @@ class Tab extends EventEmitter {
     this.frameUrls = {} // map of frameRoutingId -> string (url)
 
     // browser state
-    this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab
+    this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab and background tabs
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
     this.isSidebarActive = false // is the sidebar open?
@@ -384,7 +383,7 @@ class Tab extends EventEmitter {
     if (url === '$new_tab') {
       url = defaultUrl
     }
-    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
+    if (this.browserWindow && getAddedWindowSettings(this.browserWindow).isAppWindow) {
       if (this.url && toOrigin(this.url) !== toOrigin(url)) {
         // we never navigate out of app windows
         // instead, create a new tab, which will cause it to open in a normal window
@@ -396,6 +395,7 @@ class Tab extends EventEmitter {
   }
 
   calculateBounds (windowBounds) {
+    if (this.isHidden) return
     var x = 0
     var y = Y_POSITION + TOOLBAR_HEIGHT
     var {width, height} = windowBounds
@@ -411,6 +411,7 @@ class Tab extends EventEmitter {
   }
 
   resize () {
+    if (this.isHidden) return
     var {width, height} = this.browserWindow.getContentBounds()
     if (this.isSidebarActive && width < this.sidebarWidth + 100) {
       // shrink the sidebar to ensure the content stays visible
@@ -421,6 +422,7 @@ class Tab extends EventEmitter {
   }
 
   activate () {
+    if (this.isHidden) return
     this.isActive = true
 
     const win = this.browserWindow
@@ -441,6 +443,7 @@ class Tab extends EventEmitter {
   }
 
   focus () {
+    if (this.isHidden) return
     if (this.isSidebarActive) {
       let sidebar = sidebars.get(this)
       if (sidebar) sidebar.webContents.focus()
@@ -450,6 +453,7 @@ class Tab extends EventEmitter {
   }
 
   deactivate () {
+    if (this.isHidden) return
     if (!this.browserWindow) return
     this.browserWindow.removeBrowserView(this.browserView)
     if (this.isActive) {
@@ -522,6 +526,7 @@ class Tab extends EventEmitter {
   }
 
   async openSidebar () {
+    if (this.isHidden) return
     if (this.isSidebarActive) return
     
     let v = sidebars.create(this)
@@ -551,6 +556,7 @@ class Tab extends EventEmitter {
   }
 
   async executeSidebarCommand (cmd, ...args) {
+    if (this.isHidden) return
     if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
       // if in appwindow mode, open 'show-panel' as a new tab and ignore any other commands
       if (cmd === 'show-panel') {
@@ -607,6 +613,7 @@ class Tab extends EventEmitter {
   }
 
   setSidebarWidth (v) {
+    if (this.isHidden) return
     if (this.isSidebarActive) {
       this.sidebarWidth = clamp(v|0, 100, this.browserWindow.getContentBounds().width - 100)
       this.resize()
@@ -638,6 +645,7 @@ class Tab extends EventEmitter {
   // =
 
   showInpageFind () {
+    if (this.isHidden) return
     if (this.isInpageFindActive) {
       // go to next result on repeat "show" commands
       this.moveInpageFind(1)
@@ -882,6 +890,7 @@ class Tab extends EventEmitter {
   }
 
   onWillNavigate (e, url) {
+    if (this.isHidden) return
     if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
       if (this.url && toOrigin(this.url) !== toOrigin(url)) {
         // we never navigate out of app windows
@@ -977,7 +986,9 @@ class Tab extends EventEmitter {
     this.injectCustomRenderers()
 
     // emit
-    windowMenu.onSetCurrentLocation(this.browserWindow, this.url)
+    if (!this.isHidden) {
+      windowMenu.onSetCurrentLocation(this.browserWindow, this.url)
+    }
     this.emitUpdateState()
   }
 
@@ -1019,14 +1030,17 @@ class Tab extends EventEmitter {
   }
 
   onUpdateTargetUrl (e, url) {
+    if (this.isHidden) return
     if (this.browserWindow.isDestroyed()) return
     statusBar.set(this.browserWindow, url)
   }
 
   onPageTitleUpdated (e, title) {
-    if (this.browserWindow.isDestroyed()) return
-    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
-      this.browserWindow.setTitle(title)
+    if (this.browserWindow) {
+      if (this.browserWindow.isDestroyed()) return
+      if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
+        this.browserWindow.setTitle(title)
+      }
     }
     this.emitUpdateState()
   }
@@ -1274,6 +1288,13 @@ export function create (
   return tab
 }
 
+export function createBg (url) {
+  var tab = new Tab(undefined, {isHidden: true})
+  tab.loadURL(url)
+  backgroundTabs.push(tab)
+  app.emit('custom-background-tabs-update', backgroundTabs)
+}
+
 export async function minimizeToBg (win, tab) {
   win = getTopWindow(win)
   var tabs = getAll(win)
@@ -1294,11 +1315,13 @@ export async function minimizeToBg (win, tab) {
   tabs.splice(i, 1)
   tab.deactivate()
   backgroundTabs.push(tab)
+  app.emit('custom-background-tabs-update', backgroundTabs)
 
   // persist pins w/o this one, if that was
   if (tab.isPinned) savePins(win)
 
   tab.isPinned = false
+  tab.isHidden = true
   tab.browserWindow = undefined
 
   // create a new empty tab if that was the last one
@@ -1313,6 +1336,7 @@ export async function restoreBgTabByIndex (win, index) {
   var tab = backgroundTabs[index]
   if (!tab) return
   backgroundTabs.splice(index, 1)
+  app.emit('custom-background-tabs-update', backgroundTabs)
 
   if (tab.isPinned) {
     tabs.splice(indexOfLastPinnedTab(win), 0, tab)
@@ -1320,6 +1344,7 @@ export async function restoreBgTabByIndex (win, index) {
     tabs.push(tab)
   }
   tab.tabCreationTime = Date.now()
+  tab.isHidden = false
   tab.browserWindow = win
   setActive(win, tab)
 }
@@ -1461,7 +1486,6 @@ export function transferTabToWindow (tab, targetWindow) {
     shouldCloseSource = true
   } else {
     if (tab.isActive) {
-      // console.log('changing active', (sourceTabs[i + 1] || sourceTabs[i - 1]).url)
       // setActive(sourceWindow, sourceTabs[i + 1] || sourceTabs[i - 1])
       changeActiveToLast(sourceWindow)
     }

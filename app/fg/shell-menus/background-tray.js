@@ -55,8 +55,8 @@ class BackgroundTrayMenu extends LitElement {
           ${repeat(this.tabs, (tab, i) => html`
             <div class="tab" @click=${e => this.onClickRestore(e, i)}>
               <div class="info">
-                <div class="title">${tab.title}</div>
-                <div class="url">${tab.url}</div>
+                <div class="title">${tab.title || '-'}</div>
+                <div class="url">${tab.url || html`<em>Loading...</em>`}</div>
               </div>
               <button @click=${e => this.onClickClose(e, i)}><span class="fas fa-times"></span></button>
             </div>
@@ -93,12 +93,12 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 .wrapper {
   color: #333;
   width: 350px;
+  background: #fafafa;
 }
 
 .header {
   padding: 6px 12px;
   border-bottom: 1px solid #dde;
-  background: #fafafa;
 }
 
 .header h1 {
@@ -130,7 +130,7 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 }
 
 .tab:hover {
-  background: #fafafd;
+  background: #fff;
 }
 
 .tab:last-child {
@@ -160,10 +160,11 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 
 button {
   cursor: pointer;
+  background: #fafafa;
 }
 
 button:hover {
-  background: #fafafd;
+  background: #fff;
 }
 `]
 

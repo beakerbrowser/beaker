@@ -14,6 +14,7 @@ export default class SessionWatcher {
   static get emptySnapshot () {
     return {
       windows: [],
+      backgroundTabs: [],
       // We set this to false by default and clean this up when the session
       // exits. If we ever open up a snapshot and this isn't cleaned up assume
       // there was a crash
@@ -31,6 +32,13 @@ export default class SessionWatcher {
 
   startRecording () { this.recording = true }
   stopRecording () { this.recording = false }
+
+  updateBackgroundTabs (tabs) {
+    this.snapshot.backgroundTabs = tabs.map(tab => ({
+      url: tab.url
+    }))
+    this.writeSnapshot()
+  }
 
   watchWindow (win, initialState) {
     const winId = win.id
@@ -84,6 +92,10 @@ export default class SessionWatcher {
       winId = winId.id
     }
     return this.watchers[winId].update(state)
+  }
+
+  getBackgroundTabsState () {
+    return this.snapshot.backgroundTabs || []
   }
 
   popLastClosedWindow () {
