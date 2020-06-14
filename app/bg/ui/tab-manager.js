@@ -926,6 +926,7 @@ class Tab extends EventEmitter {
     // update state
     this.loadingURL = url
     this.emitUpdateState()
+    if (this.isHidden) app.emit('custom-background-tabs-update', backgroundTabs)
   }
 
   async onDidNavigate (e, url, httpResponseCode) {
