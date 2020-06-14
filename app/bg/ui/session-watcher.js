@@ -35,7 +35,7 @@ export default class SessionWatcher {
 
   updateBackgroundTabs (tabs) {
     this.snapshot.backgroundTabs = tabs.map(tab => ({
-      url: tab.url
+      url: tab.loadingURL || tab.url
     }))
     this.writeSnapshot()
   }

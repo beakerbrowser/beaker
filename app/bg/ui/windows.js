@@ -92,7 +92,6 @@ export async function setup () {
     sessionWatcher.updateBackgroundTabs(backgroundTabs)
   })
   app.on('custom-ready-to-show', () => {
-    console.log(JSON.stringify(previousSessionState.backgroundTabs))
     if (!previousSessionState.backgroundTabs) return
     for (let tab of previousSessionState.backgroundTabs) {
       if (tab.url) tabManager.createBg(tab.url)
