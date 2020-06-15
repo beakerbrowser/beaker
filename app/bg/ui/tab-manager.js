@@ -903,7 +903,6 @@ class Tab extends EventEmitter {
 
   onDidStartLoading (e) {
     // update state
-    this.isLoading = true
     this.loadingURL = null
     this.isReceivingAssets = false
     this.wasDriveTimeout = false
@@ -925,6 +924,7 @@ class Tab extends EventEmitter {
 
     // update state
     this.loadingURL = url
+    this.isLoading = true
     this.emitUpdateState()
     if (this.isHidden) app.emit('custom-background-tabs-update', backgroundTabs)
   }
