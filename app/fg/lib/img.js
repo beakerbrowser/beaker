@@ -23,6 +23,7 @@ export async function urlsToData (urls) {
   var imgs = await Promise.all(urls.map(url => {
     return new Promise(resolve => {
       var img = new Image()
+      img.crossOrigin = 'Anonymous'
       img.onload = e => resolve(img)
       img.onerror = () => resolve(false)
       img.src = url

@@ -25,7 +25,7 @@ import { getResourceContentType } from '../browser'
 import * as setupFlow from './setup-flow'
 import { examineLocationInput } from '../../lib/urls'
 import { clamp } from '../../lib/math'
-import { DRIVE_KEY_REGEX, slugify } from '../../lib/strings'
+import { DRIVE_KEY_REGEX } from '../../lib/strings'
 import { findWebContentsParentWindow } from '../lib/electron'
 import * as sitedataDb from '../dbs/sitedata'
 import * as settingsDb from '../dbs/settings'
@@ -1048,6 +1048,39 @@ class Tab extends EventEmitter {
 
   onPageFaviconUpdated (e, favicons) {
     this.favicons = favicons && favicons[0] ? favicons : null
+
+    if (this.favicons) {
+      let url = this.url
+      this.webContents.executeJavaScriptInIsolatedWorld(998, [{code: `
+        (async function () {
+          var img = await new Promise(resolve => {
+            var img = new Image()
+            img.crossOrigin = 'Anonymous'
+            img.onload = e => resolve(img)
+            img.onerror = () => resolve(false)
+            img.src = "${this.favicons[0]}"
+          })
+          if (!img) return
+            
+          let {width, height} = img
+          var ratio = width / height
+          if (width / height > ratio) { height = width / ratio } else { width = height * ratio }
+        
+          var canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          var ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0, width, height)
+          return canvas.toDataURL('image/png')
+        })()
+      `}]).then((dataUrl, err) => {
+        if (err) console.log(err)
+        else {
+          sitedataDb.set(url, 'favicon', dataUrl)
+        }
+      })
+    }
+    
     this.emitUpdateState()
   }
 
@@ -1879,25 +1912,6 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async focusPage () {
     getActive(this.sender).focus()
-  },
-
-  async onFaviconLoadSuccess (index, dataUrl) {
-    var tab = getByIndex(getWindow(this.sender), index)
-    if (tab) {
-      // if not a hyperdrive site, store the favicon
-      // (hyperdrive caches favicons through the hyperdrive/assets.js process)
-      if (!tab.url.startsWith('hyper:')) {
-        sitedataDb.set(tab.url, 'favicon', dataUrl)
-      }
-    }
-  },
-
-  async onFaviconLoadError (index) {
-    var tab = getByIndex(getWindow(this.sender), index)
-    if (tab) {
-      tab.favicons = null
-      tab.emitUpdateState()
-    }
   }
 })
 

@@ -3,7 +3,6 @@ import { ipcRenderer } from 'electron'
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
-import { urlsToData } from '../lib/img.js'
 import spinnerCSS from './spinner.css'
 import * as bg from './bg-process-rpc'
 
@@ -100,8 +99,7 @@ class ShellWindowTabs extends LitElement {
               : tab.favicons && tab.favicons[0]
                 ? html`
                   <img
-                    src="${tab.favicons[tab.favicons.length - 1]}"
-                    @load=${e => this.onFaviconLoad(e, index, tab.favicons)}
+                    src="${tab.favicons[0]}"
                     @error=${e => this.onFaviconError(e, index)}
                   >
                 `
@@ -230,15 +228,8 @@ class ShellWindowTabs extends LitElement {
     bg.views.closeTab(index)
   }
 
-  async onFaviconLoad (e, index, favicons) {
-    // favicon loaded successfuly, capture for cache
-    var {dataUrl} = await urlsToData(favicons)
-    bg.views.onFaviconLoadSuccess(index, dataUrl)
-  }
-
   onFaviconError (e, index) {
     this.tabs[index].favicons = null
-    bg.views.onFaviconLoadError(index)
     this.requestUpdate()
   }
 

@@ -37,7 +37,5 @@ export default {
   updateMenu: 'promise',
   toggleSiteInfo: 'promise',
   focusShellWindow: 'promise',
-  focusPage: 'promise',
-  onFaviconLoadSuccess: 'promise',
-  onFaviconLoadError: 'promise'
+  focusPage: 'promise'
 }
