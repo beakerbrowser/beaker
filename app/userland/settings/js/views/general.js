@@ -8,17 +8,7 @@ class GeneralSettingsView extends LitElement {
   }
 
   static get styles () {
-    return css`
-      ${viewCSS}
-      .option-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-      }
-      .add-grid {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-      }
-    `
+    return viewCSS
   }
 
   constructor () {
@@ -68,62 +58,11 @@ class GeneralSettingsView extends LitElement {
       ${this.renderOnStartupSettings()}
       ${this.renderRunBackgroundSettings()}
       ${this.renderNewTabSettings()}
-      ${this.renderDefaultZoomSettings()}
       ${this.renderSearchSettings()}
+      ${this.renderDefaultZoomSettings()}
       ${this.renderProtocolSettings()}
       ${this.renderAnalyticsSettings()}
     `
-  }
-
-  renderSearchSettings() {
-      return html`
-        <div class="section new-tab">
-          <h2 id="search-settings" class="subtitle-heading">Default Search Settings</h2>
-          <div class="option-grid">
-            ${this.settings.search_engines.map((engine,i)=>{
-              return html`
-                <div class="radio-item">
-                  <input type="radio"
-                         id="engine${i}"
-                         name="search-engine"
-                         value="${i}"
-                         ?checked="${this.settings.selected_search_engine === i}"
-                         @change="${this.onSearchEngineChange}"/>
-                  <label for="engine${i}">
-                    ${engine.name} (${engine.url})
-                  </label>
-
-                </div>
-                <div>
-                  <button type="button"
-                          @click="${()=>this.removeSearchEngine(i)}"
-                          ?disabled=${this.settings.selected_search_engine === i}>
-                    Remove
-                  </button>
-                </div>`
-              })}
-          </div>
-          <div id="add-search-engine">
-            <h3>Add Search Engine</h3>
-            <form @submit=${this.onAddSearchEngine}>
-              <div class="add-grid">
-                <label for="custom-engine-name">Name:</label>
-                <input type="text"
-                       placeholder="name"
-                       id="custom-engine-name"
-                       required
-                </input>
-                <label for="custom-engine-url">URL:</label>
-                <input type="url"
-                       placeholder="url"
-                       id="custom-engine-url"
-                       required
-                </input>
-              </div>
-              <button type="submit">Add Search Engine</button>
-            </form>
-          </div>
-        </div>`
   }
 
   renderDaemonStatus () {
@@ -362,6 +301,42 @@ class GeneralSettingsView extends LitElement {
     `
   }
 
+  renderSearchSettings() {
+    return html`
+      <div class="section search-settings">
+        <h2 id="search-settings" class="subtitle-heading">Default Search Settings</h2>
+        <div class="search-settings-list">
+          ${this.settings.search_engines.map((engine,i)=>{
+            return html`
+              <div class="radio-item">
+                <input type="radio"
+                  id="engine${i}"
+                  name="search-engine"
+                  value="${i}"
+                  ?checked="${engine.selected}"
+                  @change="${this.onSearchEngineChange}"
+                >
+                <label for="engine${i}">
+                  ${engine.name} (${engine.url})
+                  ${this.settings.search_engines.length === 1 ? '' : html`
+                    <a @click="${()=>this.removeSearchEngine(i)}" data-tooltip="Remove" title="Remove Search Engine">
+                      <span class="fas fa-fw fa-times"></span>
+                    </a>
+                  `}
+                </label>
+              </div>`
+            })
+          }
+        </div>
+        <form @submit=${this.onAddSearchEngine}>
+          <input type="text" placeholder="Name" id="custom-engine-name" required>
+          <input type="url" placeholder="URL" id="custom-engine-url" required>
+          <button type="submit">Add</button>
+        </form>
+      </div>
+    `
+  }
+
   renderDefaultZoomSettings () {
     const opt = (v, label) => html`
       <option value=${v} ?selected=${v === this.settings.default_zoom}>${label}</option>
@@ -546,20 +521,23 @@ class GeneralSettingsView extends LitElement {
   }
 
   onSearchEngineChange (e) {
-    const newValue = e.target.value
-    this.settings.selected_search_engine = parseInt(newValue)
-    beaker.browser.setSetting('selected_search_engine', this.settings.selected_search_engine)
+    const index = e.target.value
+    for (let se of this.settings.search_engines) {
+      delete se.selected
+    }
+    this.settings.search_engines[index].selected = true
+    beaker.browser.setSetting('search_engines', this.settings.search_engines)
     toast.create('Setting updated')
     this.requestUpdate()
   }
 
   removeSearchEngine (i) {
     // decrement selected search engine so it points to the same one if the removed index is less than current one
-    if (i < this.settings.selected_search_engine) {
-      this.settings.selected_search_engine--
-      beaker.browser.setSetting('selected_search_engine', this.settings.selected_search_engine)
+    let wasSelected = this.settings.search_engines[i].selected
+    this.settings.search_engines.splice(i, 1)
+    if (wasSelected) {
+      this.settings.search_engines[0].selected = true
     }
-    this.settings.search_engines.splice(i,1)
     beaker.browser.setSetting('search_engines', this.settings.search_engines)
     this.requestUpdate()
   }

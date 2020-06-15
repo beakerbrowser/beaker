@@ -47,9 +47,8 @@ export const setup = async function (opts) {
     analytics_enabled: 1,
     dat_bandwidth_limit_up: 0,
     dat_bandwidth_limit_down: 0,
-    selected_search_engine: 0,
     search_engines: [
-      {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/'},
+      {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/', selected: true},
       {name: 'Google', url: 'https://www.google.com/search'}
     ]
   }

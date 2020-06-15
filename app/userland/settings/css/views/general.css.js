@@ -117,5 +117,15 @@ input[type="checkbox"] {
   top: 4px;
   margin: 0 4px 0 6px;
 }
+
+.search-settings-list {
+  margin-bottom: 10px;
+}
+
+.search-settings-list a {
+  color: gray;
+  cursor: pointer;
+}
+
 `
 export default cssStr

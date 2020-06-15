@@ -5,7 +5,7 @@ import * as modals from './subwindows/modals'
 import { getAddedWindowSettings, toggleShellInterface } from './windows'
 import { download } from './downloads'
 import { runDrivePropertiesFlow } from './util'
-import { getAll } from '../dbs/settings'
+import * as settingsDb from '../dbs/settings'
 
 // NOTE
 // subtle but important!!
@@ -125,8 +125,8 @@ export default function registerContextMenu () {
         } else {
           searchPreviewStr += '"'
         }
-        var settings = await getAll()
-        var searchEngine = settings.search_engines[settings.selected_search_engine]
+        var searchEngines = await settingsDb.get('search_engines')
+        var searchEngine = searchEngines.find(se => se.selected) || searchEngine[0]
         var query = searchEngine.url+ '?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
         menuItems.push({ label: 'Search ' + searchEngine.name + ' for "' + searchPreviewStr, click: (item, win) => tabManager.create(win, query, {adjacentActive: true}) })
         menuItems.push({ type: 'separator' })
