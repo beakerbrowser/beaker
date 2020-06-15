@@ -67,6 +67,7 @@ class LocationBar extends LitElement {
     this.hoveredSearch = ''
     this.queryIdCounter = 0
     this.bookmarksFetch = bg.bookmarks.list()
+    this.settingsPromise = bg.beakerBrowser.getSettings()
   }
 
   selectResult (result) {
@@ -289,10 +290,10 @@ class LocationBar extends LitElement {
     var queryId = ++this.queryIdCounter
     this.inputValue = this.inputValue.trim()
     var finalResults
-    var settings = await bg.beakerBrowser.getSettings()
+    var settings = await this.settingsPromise
     var searchEngine
     //get search engine to use
-    searchEngine = settings.default_search_engines[settings.selected_search_engine]
+    searchEngine = settings.search_engines[settings.selected_search_engine]
 
     // figure out what we're looking at
     var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue || '/')

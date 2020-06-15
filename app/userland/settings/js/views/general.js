@@ -80,7 +80,7 @@ class GeneralSettingsView extends LitElement {
         <div class="section new-tab">
           <h2 id="search-settings" class="subtitle-heading">Default Search Settings</h2>
           <div class="option-grid">
-            ${this.settings.default_search_engines.map((engine,i)=>{
+            ${this.settings.search_engines.map((engine,i)=>{
               return html`
                 <div class="radio-item">
                   <input type="radio"
@@ -278,7 +278,7 @@ class GeneralSettingsView extends LitElement {
     return html`
       <div class="section tabs">
         <h2 id="tabs">Tabs</h2>
-    
+
         <div class="radio-item">
           <input type="checkbox" id="newTabsInForeground"
                  ?checked=${this.settings.new_tabs_in_foreground == 1}
@@ -549,17 +549,18 @@ class GeneralSettingsView extends LitElement {
     const newValue = e.target.value
     this.settings.selected_search_engine = parseInt(newValue)
     beaker.browser.setSetting('selected_search_engine', this.settings.selected_search_engine)
+    toast.create('Setting updated')
     this.requestUpdate()
   }
 
   removeSearchEngine (i) {
     // decrement selected search engine so it points to the same one if the removed index is less than current one
-    if (i<this.settings.selected_search_engine){
+    if (i < this.settings.selected_search_engine) {
       this.settings.selected_search_engine--
       beaker.browser.setSetting('selected_search_engine', this.settings.selected_search_engine)
     }
-    this.settings.default_search_engines.splice(i,1)
-    beaker.browser.setSetting('default_search_engines', this.settings.default_search_engines)
+    this.settings.search_engines.splice(i,1)
+    beaker.browser.setSetting('search_engines', this.settings.search_engines)
     this.requestUpdate()
   }
 
@@ -567,8 +568,8 @@ class GeneralSettingsView extends LitElement {
     e.preventDefault()
     const name = this.shadowRoot.getElementById('custom-engine-name')
     const url  = this.shadowRoot.getElementById('custom-engine-url')
-    this.settings.default_search_engines.push({name: name.value, url: url.value})
-    beaker.browser.setSetting('default_search_engines', this.settings.default_search_engines)
+    this.settings.search_engines.push({name: name.value, url: url.value})
+    beaker.browser.setSetting('search_engines', this.settings.search_engines)
     name.value =""
     url.value=""
     this.requestUpdate()
