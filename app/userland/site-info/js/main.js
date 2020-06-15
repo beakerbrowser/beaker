@@ -358,9 +358,8 @@ class SiteInfoApp extends LitElement {
           icon: 'far fa-fw fa-folder-open',
           label: 'Sync with local folder',
           click: async () => {
-            await beaker.folderSync.configureDialog(this.info.url)
+            await beaker.folderSync.syncDialog(this.info.url)
             await beaker.browser.refreshTabState()
-            beaker.browser.executeShellWindowCommand('show-folder-sync-menu')
           }
         } : undefined,
         {

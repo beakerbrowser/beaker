@@ -17,11 +17,12 @@ export function examineLocationInput (v) {
     v.includes('://') ||
     v.startsWith('beaker:') ||
     v.startsWith('data:') ||
-    v.startsWith('intent:')
+    v.startsWith('intent:') ||
+    v.startsWith('about:')
   ))
   var vWithProtocol = v
   var isGuessingTheScheme = false
-  if (isProbablyUrl && !isPath.test(v) && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:'))) {
+  if (isProbablyUrl && !isPath.test(v) && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:') || v.startsWith('about:'))) {
     if (isDatHashRegex.test(v)) {
       vWithProtocol = 'hyper://' + v
     } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {

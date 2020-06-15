@@ -88,6 +88,16 @@ export async function setup () {
   openURL.setup()
   await tabManager.setup()
 
+  app.on('custom-background-tabs-update', backgroundTabs => {
+    sessionWatcher.updateBackgroundTabs(backgroundTabs)
+  })
+  app.on('custom-ready-to-show', () => {
+    if (!previousSessionState.backgroundTabs) return
+    for (let tab of previousSessionState.backgroundTabs) {
+      if (tab.url) tabManager.createBg(tab.url)
+    }
+  })
+
   app.on('before-quit', async e => {
     sessionWatcher.stopRecording()
     sessionWatcher.exit()

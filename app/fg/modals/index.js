@@ -1,9 +1,12 @@
 /* globals customElements */
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
+import _debounce from 'lodash.debounce'
+import { ipcRenderer } from 'electron'
 import './setup'
 import './create-drive'
 import './fork-drive'
+import './folder-sync'
 import './drive-properties'
 import './select-drive'
 import './select-file'
@@ -74,6 +77,8 @@ class ModalsWrapper extends LitElement {
         return html`<create-drive-modal></create-drive-modal>`
       case 'fork-drive':
         return html`<fork-drive-modal></fork-drive-modal>`
+      case 'folder-sync':
+        return html`<folder-sync-modal></folder-sync-modal>`
       case 'drive-properties':
         return html`<drive-properties-modal></drive-properties-modal>`
       case 'select-drive':
@@ -98,3 +103,13 @@ class ModalsWrapper extends LitElement {
 }
 
 customElements.define('modals-wrapper', ModalsWrapper)
+
+// HACK
+// Electron has an issue where browserviews fail to calculate click regions after a resize
+// https://github.com/electron/electron/issues/14038
+// we can solve this by forcing a recalculation after every resize
+// -prf
+
+const forceUpdateDragRegions = _debounce(() => ipcRenderer.send('resize-hackfix'), 100, {leading: true})
+window.addEventListener('resize', forceUpdateDragRegions)
+document.addEventListener('DOMContentLoaded', forceUpdateDragRegions)

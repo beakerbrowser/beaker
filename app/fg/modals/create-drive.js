@@ -5,7 +5,6 @@ import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
 import buttonsCSS from './buttons2.css'
 import spinnerCSS from './spinner.css'
-import _groupBy from 'lodash.groupby'
 
 class CreateDriveModal extends LitElement {
   static get properties () {
@@ -191,10 +190,9 @@ class CreateDriveModal extends LitElement {
         prompt: false
       })
       if (this.fromFolderPath) {
-        await bg.hyperdrive.importFromFilesystem({src: this.fromFolderPath, dst: url})
         await bg.folderSync.set(url, {localPath: this.fromFolderPath})
       }
-      this.cbs.resolve({url})
+      this.cbs.resolve({url, gotoSync: !!this.fromFolderPath})
     } catch (e) {
       this.cbs.reject(e.message || e.toString())
     }

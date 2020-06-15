@@ -50,6 +50,14 @@ class SiteMenu extends LitElement {
             </div>
           ` : ''}
         </div>
+        ${this.driveInfo && this.driveInfo.writable ? html`
+          <div class="section">
+            <div class="menu-item" @click=${this.onSync}>
+              <i class="far fa-folder-open"></i>
+              <span class="label">Sync with Local Folder</span>
+            </div>
+          </div>
+        ` : ''}
       </div>
     `
   }
@@ -77,6 +85,11 @@ class SiteMenu extends LitElement {
   onCopyDriveKey () {
     writeToClipboard(this.driveInfo.key)
     bg.shellMenus.close()
+  }
+
+  async onSync () {
+    await bg.folderSync.syncDialog(this.driveInfo.url)
+    await bg.beakerBrowser.refreshTabState()
   }
 }
 SiteMenu.styles = [commonCSS, css`

@@ -102,3 +102,14 @@ export function toHex (buf) {
     memo + ('0' + i.toString(16)).slice(-2) // pad with leading 0 if <16
   ), '')
 }
+
+export function globToRegex (str = '') {
+  if (!str.startsWith('/')) {
+    str = `**/${str}`
+  }
+  str = str.replace(/(\*\*?)/g, match => {
+    if (match === '**') return '.*'
+    return '[^/]*'
+  })
+  return new RegExp(`^${str}(/.*)?$`)
+}

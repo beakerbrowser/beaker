@@ -1,6 +1,5 @@
 import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, webContents } from 'electron'
 import errorPage from '../lib/error-page'
-import * as libTools from '@beaker/library-tools'
 import path from 'path'
 import { promises as fs } from 'fs'
 import { EventEmitter } from 'events'
@@ -113,6 +112,7 @@ const STATE_VARS = [
 // =
 
 var activeTabs = {} // map of {[win.id]: Array<Tab>}
+var backgroundTabs = [] // Array<Tab>
 var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var lastSelectedTabIndex = {} // map of {[win.id]: Number}
 var closedURLs = {} // map of {[win.id]: Array<string>}
@@ -158,7 +158,7 @@ class Tab extends EventEmitter {
     this.frameUrls = {} // map of frameRoutingId -> string (url)
 
     // browser state
-    this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab
+    this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab and background tabs
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
     this.isSidebarActive = false // is the sidebar open?
@@ -383,7 +383,7 @@ class Tab extends EventEmitter {
     if (url === '$new_tab') {
       url = defaultUrl
     }
-    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
+    if (this.browserWindow && getAddedWindowSettings(this.browserWindow).isAppWindow) {
       if (this.url && toOrigin(this.url) !== toOrigin(url)) {
         // we never navigate out of app windows
         // instead, create a new tab, which will cause it to open in a normal window
@@ -395,6 +395,7 @@ class Tab extends EventEmitter {
   }
 
   calculateBounds (windowBounds) {
+    if (this.isHidden) return
     var x = 0
     var y = Y_POSITION + TOOLBAR_HEIGHT
     var {width, height} = windowBounds
@@ -410,6 +411,7 @@ class Tab extends EventEmitter {
   }
 
   resize () {
+    if (this.isHidden) return
     var {width, height} = this.browserWindow.getContentBounds()
     if (this.isSidebarActive && width < this.sidebarWidth + 100) {
       // shrink the sidebar to ensure the content stays visible
@@ -420,6 +422,7 @@ class Tab extends EventEmitter {
   }
 
   activate () {
+    if (this.isHidden) return
     this.isActive = true
 
     const win = this.browserWindow
@@ -440,6 +443,7 @@ class Tab extends EventEmitter {
   }
 
   focus () {
+    if (this.isHidden) return
     if (this.isSidebarActive) {
       let sidebar = sidebars.get(this)
       if (sidebar) sidebar.webContents.focus()
@@ -449,6 +453,8 @@ class Tab extends EventEmitter {
   }
 
   deactivate () {
+    if (this.isHidden) return
+    if (!this.browserWindow) return
     this.browserWindow.removeBrowserView(this.browserView)
     if (this.isActive) {
       shellMenus.hide(this.browserWindow) // this will close the location menu if it's open
@@ -467,6 +473,7 @@ class Tab extends EventEmitter {
 
   destroy () {
     this.deactivate()
+    this.stopLiveReloading()
     prompts.close(this.browserView)
     permPrompt.close(this.browserView)
     modals.close(this.browserView)
@@ -519,6 +526,7 @@ class Tab extends EventEmitter {
   }
 
   async openSidebar () {
+    if (this.isHidden) return
     if (this.isSidebarActive) return
     
     let v = sidebars.create(this)
@@ -548,6 +556,7 @@ class Tab extends EventEmitter {
   }
 
   async executeSidebarCommand (cmd, ...args) {
+    if (this.isHidden) return
     if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
       // if in appwindow mode, open 'show-panel' as a new tab and ignore any other commands
       if (cmd === 'show-panel') {
@@ -604,6 +613,7 @@ class Tab extends EventEmitter {
   }
 
   setSidebarWidth (v) {
+    if (this.isHidden) return
     if (this.isSidebarActive) {
       this.sidebarWidth = clamp(v|0, 100, this.browserWindow.getContentBounds().width - 100)
       this.resize()
@@ -635,6 +645,7 @@ class Tab extends EventEmitter {
   // =
 
   showInpageFind () {
+    if (this.isHidden) return
     if (this.isInpageFindActive) {
       // go to next result on repeat "show" commands
       this.moveInpageFind(1)
@@ -879,6 +890,7 @@ class Tab extends EventEmitter {
   }
 
   onWillNavigate (e, url) {
+    if (this.isHidden) return
     if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
       if (this.url && toOrigin(this.url) !== toOrigin(url)) {
         // we never navigate out of app windows
@@ -914,6 +926,7 @@ class Tab extends EventEmitter {
     // update state
     this.loadingURL = url
     this.emitUpdateState()
+    if (this.isHidden) app.emit('custom-background-tabs-update', backgroundTabs)
   }
 
   async onDidNavigate (e, url, httpResponseCode) {
@@ -974,7 +987,9 @@ class Tab extends EventEmitter {
     this.injectCustomRenderers()
 
     // emit
-    windowMenu.onSetCurrentLocation(this.browserWindow, this.url)
+    if (!this.isHidden) {
+      windowMenu.onSetCurrentLocation(this.browserWindow, this.url)
+    }
     this.emitUpdateState()
   }
 
@@ -1016,14 +1031,17 @@ class Tab extends EventEmitter {
   }
 
   onUpdateTargetUrl (e, url) {
+    if (this.isHidden) return
     if (this.browserWindow.isDestroyed()) return
     statusBar.set(this.browserWindow, url)
   }
 
   onPageTitleUpdated (e, title) {
-    if (this.browserWindow.isDestroyed()) return
-    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
-      this.browserWindow.setTitle(title)
+    if (this.browserWindow) {
+      if (this.browserWindow.isDestroyed()) return
+      if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
+        this.browserWindow.setTitle(title)
+      }
     }
     this.emitUpdateState()
   }
@@ -1036,8 +1054,7 @@ class Tab extends EventEmitter {
   onNewWindow (e, url, frameName, disposition, options) {
     e.preventDefault()
     if (!this.isActive) return // only open if coming from the active tab
-    var setActive = (disposition === 'foreground-tab' || disposition === 'new-window')
-    var newTab = create(this.browserWindow, url, {setActive, adjacentActive: true})
+    create(this.browserWindow, url, {setActiveBySettings: true, adjacentActive: true})
   }
 
   onMediaChange (e) {
@@ -1153,6 +1170,11 @@ export function findTab (browserView) {
       }
     }
   }
+  for (let tab of backgroundTabs) {
+    if (tab.browserView === browserView) {
+      return tab
+    }
+  }
 }
 
 export function findContainingWindow (browserView) {
@@ -1175,6 +1197,7 @@ export function create (
     url,
     opts = {
       setActive: false,
+      setActiveBySettings: false,
       isPinned: false,
       focusLocationBar: false,
       adjacentActive: false,
@@ -1240,7 +1263,11 @@ export function create (
   }
 
   // make active if requested, or if none others are
-  if (opts.setActive || !getActive(win)) {
+  let shouldSetActive = opts.setActive
+  if (opts.setActiveBySettings) {
+    shouldSetActive = Boolean(Number(settingsDb.getCached('new_tabs_in_foreground')))
+  }
+  if (shouldSetActive || !getActive(win)) {
     setActive(win, tab)
   }
   emitReplaceState(win)
@@ -1260,6 +1287,67 @@ export function create (
   }
 
   return tab
+}
+
+export function createBg (url) {
+  var tab = new Tab(undefined, {isHidden: true})
+  tab.loadURL(url)
+  backgroundTabs.push(tab)
+  app.emit('custom-background-tabs-update', backgroundTabs)
+}
+
+export async function minimizeToBg (win, tab) {
+  win = getTopWindow(win)
+  var tabs = getAll(win)
+  var i = tabs.indexOf(tab)
+  if (i == -1) {
+    return console.warn('tab-manager minimize() called for missing tab', tab)
+  }
+
+  // do minimize animation
+  win.webContents.send('command', 'minimize-to-bg-anim')
+
+  // set new active if that was
+  if (tab.isActive && tabs.length > 1) {
+    setActive(win, tabs[i + 1] || tabs[i - 1])
+  }
+
+  // move to background
+  tabs.splice(i, 1)
+  tab.deactivate()
+  backgroundTabs.push(tab)
+  app.emit('custom-background-tabs-update', backgroundTabs)
+
+  // persist pins w/o this one, if that was
+  if (tab.isPinned) savePins(win)
+
+  tab.isPinned = false
+  tab.isHidden = true
+  tab.browserWindow = undefined
+
+  // create a new empty tab if that was the last one
+  if (tabs.length === 0) return create(win, undefined, {setActive: true})
+  emitReplaceState(win)
+}
+
+export async function restoreBgTabByIndex (win, index) {
+  win = getTopWindow(win)
+  var tabs = getAll(win)
+  
+  var tab = backgroundTabs[index]
+  if (!tab) return
+  backgroundTabs.splice(index, 1)
+  app.emit('custom-background-tabs-update', backgroundTabs)
+
+  if (tab.isPinned) {
+    tabs.splice(indexOfLastPinnedTab(win), 0, tab)
+  } else {
+    tabs.push(tab)
+  }
+  tab.tabCreationTime = Date.now()
+  tab.isHidden = false
+  tab.browserWindow = win
+  setActive(win, tab)
 }
 
 export async function remove (win, tab) {
@@ -1301,16 +1389,10 @@ export async function remove (win, tab) {
   tab.destroy()
 
   // persist pins w/o this one, if that was
-  if (tab.isPinned) {
-    savePins(win)
-  }
+  if (tab.isPinned) savePins(win)
 
   // close the window if that was the last tab
-  if (tabs.length === 0) {
-    return win.close()
-  }
-
-  // emit
+  if (tabs.length === 0) return win.close()
   emitReplaceState(win)
 }
 
@@ -1405,7 +1487,6 @@ export function transferTabToWindow (tab, targetWindow) {
     shouldCloseSource = true
   } else {
     if (tab.isActive) {
-      // console.log('changing active', (sourceTabs[i + 1] || sourceTabs[i - 1]).url)
       // setActive(sourceWindow, sourceTabs[i + 1] || sourceTabs[i - 1])
       changeActiveToLast(sourceWindow)
     }
@@ -1611,6 +1692,13 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     return {}
   },
 
+  async getBackgroundTabs () {
+    return backgroundTabs.map(tab => ({
+      url: tab.url,
+      title: tab.title
+    }))
+  },
+
   async createTab (url, opts = {focusLocationBar: false, setActive: false, addToNoRedirects: false}) {
     if (opts.addToNoRedirects) {
       addToNoRedirects(url)
@@ -1629,6 +1717,11 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     getByIndex(getWindow(this.sender), index).loadURL(url)
   },
 
+  async minimizeTab (index) {
+    var win = getWindow(this.sender)
+    minimizeToBg(win, getByIndex(win, index))
+  },
+
   async closeTab (index) {
     var win = getWindow(this.sender)
     remove(win, getByIndex(win, index))
@@ -1644,6 +1737,18 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     reorder(win, oldIndex, newIndex)
   },
 
+  restoreBgTab (index) {
+    if (!backgroundTabs[index]) return
+    var win = getWindow(this.sender)
+    restoreBgTabByIndex(win, index)
+  },
+
+  closeBgTab (index) {
+    if (!backgroundTabs[index]) return
+    backgroundTabs[index].destroy()
+    backgroundTabs.splice(index, 1)
+  },
+
   async showTabContextMenu (index) {
     var win = getWindow(this.sender)
     var tab = getByIndex(win, index)
@@ -1652,6 +1757,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
       { label: 'Pop Out Tab', click: () => popOutTab(tab) },
       { label: 'Duplicate Tab', click: () => create(win, tab.url, {adjacentActive: true}) },
       { label: (tab.isAudioMuted) ? 'Unmute Tab' : 'Mute Tab', click: () => tab.toggleMuted() },
+      { label: 'Minimize to Background', click: () => minimizeToBg(win, tab) },
       { type: 'separator' },
       { label: 'Close Tab', click: () => remove(win, tab) },
       { label: 'Close Other Tabs', click: () => removeAllExcept(win, tab) },

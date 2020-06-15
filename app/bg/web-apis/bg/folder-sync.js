@@ -4,8 +4,13 @@ import watch from 'recursive-watch'
 import _debounce from 'lodash.debounce'
 import hyper from '../../hyper/index'
 import * as folderSyncDb from '../../dbs/folder-sync'
+import * as modals from '../../ui/subwindows/modals'
+import { UserDeniedError } from 'beaker-error-constants'
+import bytes from 'bytes'
+import { globToRegex } from '../../../lib/strings'
 
 const DEFAULT_IGNORED_FILES = '/index.json'
+const COMPARE_SIZE_LIMIT = {maxSize: bytes('5mb'), assumeEq: false}
 
 // globals
 // =
@@ -16,7 +21,7 @@ var activeAutoSyncs = {} // {[key]: {stopwatch, ignoredFiles}
 // =
 
 export default {
-  async configureDialog (url) {
+  async chooseFolderDialog (url) {
     var drive = await getDrive(url)
     var key = drive.key.toString('hex')
     var current = await folderSyncDb.get(key)
@@ -29,8 +34,7 @@ export default {
     if (res.filePaths.length !== 1) return current ? current.localPath : undefined
     if (current) {
       await folderSyncDb.update(key, {
-        localPath: res.filePaths[0],
-        ignoredFiles: DEFAULT_IGNORED_FILES
+        localPath: res.filePaths[0]
       })
     } else {
       await folderSyncDb.insert(key, {
@@ -39,6 +43,20 @@ export default {
       })
     }
     return res.filePaths[0]
+  },
+
+  async syncDialog (url) {
+    var drive = await getDrive(url)
+    var res
+    try {
+      res = await modals.create(this.sender, 'folder-sync', {url: drive.url})
+    } catch (e) {
+      if (e.name !== 'Error') {
+        throw e // only rethrow if a specific error
+      }
+    }
+    if (!res) throw new UserDeniedError()
+    return res && res.contacts ? res.contacts[0] : undefined
   },
 
   async get (url) {
@@ -57,10 +75,10 @@ export default {
     var drive = await getDrive(url)
     var key = drive.key.toString('hex')
     var current = await folderSyncDb.get(key)
-    if (!values.ignoredFiles) values.ignoredFiles = DEFAULT_IGNORED_FILES
     if (current) {
       await folderSyncDb.update(key, values)
     } else {
+      values.ignoredFiles = values.ignoredFiles || DEFAULT_IGNORED_FILES
       await folderSyncDb.insert(key, values)
     }
     stopAutosync(key)
@@ -91,8 +109,29 @@ export default {
     return dft.diff(
       current.localPath,
       {fs: drive.session.drive, path: '/'},
-      {shallow: true, compareContent: true}
+      {compareContent: true, sizeLimit: COMPARE_SIZE_LIMIT}
     )
+  },
+
+  async restoreFile (url, filepath) {
+    var drive = await getDrive(url)
+    var current = await folderSyncDb.get(drive.key.toString('hex'))
+    if (!current || !current.localPath) throw new Error('No local path set')
+    var diff = await dft.diff(
+      current.localPath,
+      {fs: drive.session.drive, path: '/'},
+      {
+        compareContent: true,
+        sizeLimit: COMPARE_SIZE_LIMIT,
+        filter: p => {
+          if (filepath === p) return false // direct match
+          if (filepath.startsWith(p) && filepath.charAt(p.length) === '/') return false // parent folder
+          if (p.startsWith(filepath) && p.charAt(filepath.length) === '/') return false // child file
+          return true
+        }
+      }
+    )
+    return dft.applyLeft(current.localPath, {fs: drive.session.drive, path: '/'}, diff)
   },
 
   sync,
@@ -129,7 +168,11 @@ async function sync (url) {
   var diff = await dft.diff(
     current.localPath,
     {fs: drive.session.drive, path: '/'},
-    {compareContent: true, filter: createIgnoreFilter(current.ignoredFiles)}
+    {
+      compareContent: true,
+      sizeLimit: COMPARE_SIZE_LIMIT,
+      filter: createIgnoreFilter(current.ignoredFiles)
+    }
   )
   return dft.applyRight(current.localPath, {fs: drive.session.drive, path: '/'}, diff)
 }
@@ -155,14 +198,11 @@ function stopAutosync (key) {
 }
 
 function createIgnoreFilter (ignoredFiles) {
-  ignoredFiles = (ignoredFiles || '').split('\n').filter(Boolean)
-  if (ignoredFiles.length === 0) return
+  var ignoreRegexes = (ignoredFiles || '').split('\n').filter(Boolean).map(globToRegex)
+  if (ignoreRegexes.length === 0) return
   return (filepath) => {
-    for (let ignoredFile of ignoredFiles) {
-      if (filepath === ignoredFile) return true
-      if (filepath.startsWith(ignoredFile) && filepath.charAt(ignoredFile.length) === '/') {
-        return true // a parent folder
-      }
+    for (let re of ignoreRegexes) {
+      if (re.test(filepath)) return true
     }
     return false
   }

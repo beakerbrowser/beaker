@@ -5,13 +5,17 @@ import { cbPromise } from '../../lib/functions'
 import { setupSqliteDB } from '../lib/db'
 import { getEnvVar } from '../lib/env'
 
+const CACHED_VALUES = ['new_tabs_in_foreground']
+
 // globals
 // =
+
 var db
 var migrations
 var setupPromise
 var defaultSettings
 var events = new EventEmitter()
+var cachedValues = {}
 
 
 // exported methods
@@ -22,7 +26,7 @@ var events = new EventEmitter()
  * @param {string} opts.userDataPath
  * @param {string} opts.homePath
  */
-export const setup = function (opts) {
+export const setup = async function (opts) {
   // open database
   var dbPath = path.join(opts.userDataPath, 'Settings')
   db = new sqlite3.Database(dbPath)
@@ -33,6 +37,7 @@ export const setup = function (opts) {
     auto_redirect_to_dat: 1,
     custom_start_page: 'blank',
     new_tab: 'beaker://desktop/',
+    new_tabs_in_foreground: 0,
     run_background: 1,
     default_zoom: 0,
     start_page_background_image: '',
@@ -46,6 +51,10 @@ export const setup = function (opts) {
       {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/'},
       {name: 'Google', url: 'https://www.google.com/search'}
     ]
+  }
+
+  for (let k of CACHED_VALUES) {
+    cachedValues[k] = await get(k)
   }
 }
 
@@ -67,8 +76,17 @@ export async function set (key, value) {
         VALUES (?, ?, ?)
     `, [key, value, Date.now()], cb)
   }))
+  if (CACHED_VALUES.includes(key)) cachedValues[key] = value
   events.emit('set', key, value)
   events.emit('set:' + key, value)
+}
+
+/**
+ * @param {string} key
+ * @returns {string | number}
+ */
+export function getCached (key) {
+  return cachedValues[key]
 }
 
 /**
@@ -105,7 +123,7 @@ export const getAll = function () {
       rows.forEach(row => { obj[row.key] = row.value })
       // parse non-string values
       if (obj.default_search_engines) obj.default_search_engines = JSON.parse(obj.default_search_engines)
-      if (obj.selected_search_engine) obj.selected_search_engine = Number.parseInt(obj.selected_search_engine)
+      if (obj.selected_search_engine) obj.selected_search_engine = JSON.parse(obj.selected_search_engine)
 
       obj = Object.assign({}, defaultSettings, obj)
       obj.no_welcome_tab = (Number(getEnvVar('BEAKER_NO_WELCOME_TAB')) === 1)
