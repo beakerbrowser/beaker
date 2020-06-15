@@ -3,6 +3,7 @@ import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDev
 import { runSelectFileDialog, runForkFlow, runDrivePropertiesFlow, exportDriveToFilesystem, importFilesystemToDrive } from './util'
 import * as tabManager from './tab-manager'
 import * as viewZoom from './tabs/zoom'
+import * as shellMenus from './subwindows/shell-menus'
 import { download } from './downloads'
 import hyper from '../hyper/index'
 import * as settingsDb from '../dbs/settings'
@@ -610,9 +611,12 @@ export function buildWindowMenu (opts = {}) {
   const gotoTabShortcut = index => ({
     label: `Tab ${index}`,
     enabled: !noWindows,
-    accelerator: `CmdOrCtrl+${index}`,
+    accelerator: `CmdOrCtrl+${index + 1}`,
     click: function (item) {
-      if (win) tabManager.setActive(win, index - 1)
+      if (win) {
+        shellMenus.hide(win) // HACK: closes the background tray if it's open
+        tabManager.setActive(win, index - 1)
+      }
     }
   })
   var windowMenu = {
@@ -688,6 +692,14 @@ export function buildWindowMenu (opts = {}) {
         label: 'Tab Shortcuts',
         type: 'submenu',
         submenu: [
+          {
+            label: `Background Tabs`,
+            enabled: !noWindows,
+            accelerator: `CmdOrCtrl+1`,
+            click: function (item) {
+              if (win) shellMenus.show(win, 'background-tray')
+            }
+          },
           gotoTabShortcut(1),
           gotoTabShortcut(2),
           gotoTabShortcut(3),
@@ -695,7 +707,6 @@ export function buildWindowMenu (opts = {}) {
           gotoTabShortcut(5),
           gotoTabShortcut(6),
           gotoTabShortcut(7),
-          gotoTabShortcut(8),
           {
             label: `Last Tab`,
             enabled: !noWindows,

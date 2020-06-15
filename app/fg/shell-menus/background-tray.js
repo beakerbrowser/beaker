@@ -33,7 +33,7 @@ class BackgroundTrayMenu extends LitElement {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="wrapper">
-          <div class="header"><h1>Background Tray</h1></div>
+          <div class="header"><h1>Minimized Tabs</h1></div>
           <span class="spinner"></span>
         </div>
       `
@@ -42,7 +42,7 @@ class BackgroundTrayMenu extends LitElement {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="wrapper">
-          <div class="header"><h1>Background Tray</h1></div>
+          <div class="header"><h1>Minimized Tabs</h1></div>
           <div class="empty">You can minimize tabs to this tray and they will run in the background.</div>
         </div>
       `
@@ -50,7 +50,7 @@ class BackgroundTrayMenu extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
-        <div class="header"><h1>Background Tray</h1></div>
+        <div class="header"><h1>Minimized Tabs</h1></div>
         <div class="tabs">
           ${repeat(this.tabs, (tab, i) => html`
             <div class="tab" @click=${e => this.onClickRestore(e, i)}>
