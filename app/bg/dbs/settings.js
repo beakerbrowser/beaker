@@ -6,6 +6,7 @@ import { setupSqliteDB } from '../lib/db'
 import { getEnvVar } from '../lib/env'
 
 const CACHED_VALUES = ['new_tabs_in_foreground']
+const JSON_ENCODED_SETTINGS = ['search_engines']
 
 // globals
 // =
@@ -16,6 +17,7 @@ var setupPromise
 var defaultSettings
 var events = new EventEmitter()
 var cachedValues = {}
+
 
 // exported methods
 // =
@@ -44,7 +46,11 @@ export const setup = async function (opts) {
     default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n**/.DS_Store\nThumbs.db\n',
     analytics_enabled: 1,
     dat_bandwidth_limit_up: 0,
-    dat_bandwidth_limit_down: 0
+    dat_bandwidth_limit_down: 0,
+    search_engines: [
+      {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/', selected: true},
+      {name: 'Google', url: 'https://www.google.com/search'}
+    ]
   }
 
   for (let k of CACHED_VALUES) {
@@ -57,10 +63,13 @@ export const once = events.once.bind(events)
 
 /**
  * @param {string} key
- * @param {string | number} value
+ * @param {string | number | object} value
  * @returns {Promise<void>}
  */
 export async function set (key, value) {
+  if (JSON_ENCODED_SETTINGS.includes(key)) {
+    value = JSON.stringify(value)
+  }
   await setupPromise.then(() => cbPromise(cb => {
     db.run(`
       INSERT OR REPLACE
@@ -83,7 +92,7 @@ export function getCached (key) {
 
 /**
  * @param {string} key
- * @returns {boolean | Promise<string | number>}
+ * @returns {boolean | Promise<string | number | object>}
  */
 export const get = function (key) {
   // env variables
@@ -93,7 +102,16 @@ export const get = function (key) {
   // stored values
   return setupPromise.then(() => cbPromise(cb => {
     db.get(`SELECT value FROM settings WHERE key = ?`, [key], (err, row) => {
-      if (row) { row = row.value }
+      if (row) {
+        row = row.value
+        if (JSON_ENCODED_SETTINGS.includes(key)) {
+          try {
+            row = JSON.parse(row)
+          } catch (e) {
+            row = defaultSettings[key]
+          }
+        }
+      }
       if (typeof row === 'undefined') { row = defaultSettings[key] }
       cb(err, row)
     })
@@ -107,9 +125,19 @@ export const getAll = function () {
   return setupPromise.then(v => cbPromise(cb => {
     db.all(`SELECT key, value FROM settings`, (err, rows) => {
       if (err) { return cb(err) }
-
       var obj = {}
-      rows.forEach(row => { obj[row.key] = row.value })
+      rows.forEach(row => {
+        // parse non-string values
+        if (JSON_ENCODED_SETTINGS.includes(row.key)) {
+          try {
+            row.value = JSON.parse(row.value)
+          } catch (e) {
+            row.value = defaultSettings[key.value]
+          }
+        }
+        obj[row.key] = row.value
+      })
+
       obj = Object.assign({}, defaultSettings, obj)
       obj.no_welcome_tab = (Number(getEnvVar('BEAKER_NO_WELCOME_TAB')) === 1)
       cb(null, obj)
