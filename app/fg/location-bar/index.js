@@ -292,11 +292,7 @@ class LocationBar extends LitElement {
     var settings = await bg.beakerBrowser.getSettings()
     var searchEngine
     //get search engine to use
-    if (settings.selected_search_engine == -1) {
-      searchEngine = {name:settings.custom_search_engine_name,url:settings.custom_search_engine_url}
-    } else {
-      searchEngine = settings.default_search_engines[settings.selected_search_engine]
-    }
+    searchEngine = settings.default_search_engines[settings.selected_search_engine]
 
     // figure out what we're looking at
     var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue || '/')
@@ -307,7 +303,7 @@ class LocationBar extends LitElement {
     var searchResult = {
       search: this.inputValue,
       title: `Search ${searchEngine.name} for "${this.inputValue}"`,
-      url: searchEngine.url+vSearch
+      url: searchEngine.url + vSearch
     }
     if (isProbablyUrl) finalResults = [gotoResult, searchResult]
     else finalResults = [searchResult, gotoResult]

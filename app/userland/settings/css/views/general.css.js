@@ -63,7 +63,7 @@ a:hover {
   margin-bottom: 0;
 }
 
-input[type="text"] {
+input[type="text"], input[type="url"] {
   height: 24px;
   padding: 0 7px;
   border-radius: 4px;
@@ -72,7 +72,7 @@ input[type="text"] {
   box-shadow: inset 0 1px 2px #0001;
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus, input[type="url"]:focus {
   outline: 0;
   border: 1px solid rgba(41, 95, 203, 0.8);
   box-shadow: 0 0 0 2px rgba(41, 95, 203, 0.2);

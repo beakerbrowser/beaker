@@ -42,12 +42,10 @@ export const setup = function (opts) {
     dat_bandwidth_limit_up: 0,
     dat_bandwidth_limit_down: 0,
     selected_search_engine: 0,
-    custom_search_engine_name: '',
-    custom_search_engine_url: '',
     default_search_engines: [
-        {name:'DuckDuckGo',url:'https://www.duckduckgo.com/'},
-        {name:'Google',url:'https://www.google.com/search'}
-      ]
+      {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/'},
+      {name: 'Google', url: 'https://www.google.com/search'}
+    ]
   }
 }
 
@@ -56,10 +54,12 @@ export const once = events.once.bind(events)
 
 /**
  * @param {string} key
- * @param {string | number} value
+ * @param {string | number | object} value
  * @returns {Promise<void>}
  */
 export async function set (key, value) {
+  if (['default_search_engines', 'selected_search_engine'].includes(key))
+    value = JSON.stringify(value)
   await setupPromise.then(() => cbPromise(cb => {
     db.run(`
       INSERT OR REPLACE
@@ -83,7 +83,11 @@ export const get = function (key) {
   // stored values
   return setupPromise.then(() => cbPromise(cb => {
     db.get(`SELECT value FROM settings WHERE key = ?`, [key], (err, row) => {
-      if (row) { row = row.value }
+      if (row) {
+        row = row.value
+        if (['default_search_engines', 'selected_search_engine'].includes(key))
+          row = JSON.parse(row)
+      }
       if (typeof row === 'undefined') { row = defaultSettings[key] }
       cb(err, row)
     })
@@ -97,9 +101,12 @@ export const getAll = function () {
   return setupPromise.then(v => cbPromise(cb => {
     db.all(`SELECT key, value FROM settings`, (err, rows) => {
       if (err) { return cb(err) }
-
       var obj = {}
       rows.forEach(row => { obj[row.key] = row.value })
+      // parse non-string values
+      if (obj.default_search_engines) obj.default_search_engines = JSON.parse(obj.default_search_engines)
+      if (obj.selected_search_engine) obj.selected_search_engine = Number.parseInt(obj.selected_search_engine)
+
       obj = Object.assign({}, defaultSettings, obj)
       obj.no_welcome_tab = (Number(getEnvVar('BEAKER_NO_WELCOME_TAB')) === 1)
       cb(null, obj)

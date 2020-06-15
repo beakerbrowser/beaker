@@ -1,4 +1,4 @@
-import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
+import { LitElement, html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import viewCSS from '../../css/views/general.css.js'
 import * as toast from '../../../app-stdlib/js/com/toast.js'
 class GeneralSettingsView extends LitElement {
@@ -8,7 +8,17 @@ class GeneralSettingsView extends LitElement {
   }
 
   static get styles () {
-    return viewCSS
+    return css`
+      ${viewCSS}
+      .option-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+      }
+      .add-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+      }
+    `
   }
 
   constructor () {
@@ -63,56 +73,54 @@ class GeneralSettingsView extends LitElement {
       ${this.renderAnalyticsSettings()}
     `
   }
+
   renderSearchSettings() {
-
-
       return html`
         <div class="section new-tab">
-          <h2 id='search-settings class='subtitle-heading>Default Search Settings</h2>
+          <h2 id="search-settings" class="subtitle-heading">Default Search Settings</h2>
+          <div class="option-grid">
             ${this.settings.default_search_engines.map((engine,i)=>{
-
               return html`
-                        <div class="radio-item">
-                          <input type="radio"
-                                 id="engine${i}"
-                                 name="search-engine"
-                                 value="${i}"
-                                 ?checked="${this.settings.selected_search_engine === i}"
-                                 @change="${this.onSearchEngineChange}"/>
-                          <label for="engine${i}">
-                            ${engine.name} (${engine.url})
-                          </label>
-                        </div>`
+                <div class="radio-item">
+                  <input type="radio"
+                         id="engine${i}"
+                         name="search-engine"
+                         value="${i}"
+                         ?checked="${this.settings.selected_search_engine === i}"
+                         @change="${this.onSearchEngineChange}"/>
+                  <label for="engine${i}">
+                    ${engine.name} (${engine.url})
+                  </label>
 
-            })}
-            <div class="radio-item">
-              <input type="radio"
-                               id="custom-engine"
-                               name="search-engine"
-                               value=-1
-                               @change="${this.onSearchEngineChange}"
-                               ?checked="${this.settings.selected_search_engine === -1}"
-                               />
-              <label for="custom-engine">
-                  Custom
-              </label>
-
-
-            <input type="text"
-                   placeholder="name"
-                   id="CustomEngineName"
-                   value="${this.settings.custom_search_engine_name}"
-                   @change="${this.onSearchEngineChange}"
-                   ?disabled="${(this.settings.selected_search_engine != -1)}">
-            </input>
-
-            <input type="text"
-                   placeholder="url"
-                   id="CustomEngineUrl"
-                   value="${this.settings.custom_search_engine_url}"
-                   @change="${this.onSearchEngineChange}"
-                  ?disabled="${(this.settings.selected_search_engine != -1)}">
-            </input>
+                </div>
+                <div>
+                  <button type="button"
+                          @click="${()=>this.removeSearchEngine(i)}"
+                          ?disabled=${this.settings.selected_search_engine === i}>
+                    Remove
+                  </button>
+                </div>`
+              })}
+          </div>
+          <div id="add-search-engine">
+            <h3>Add Search Engine</h3>
+            <form @submit=${this.onAddSearchEngine}>
+              <div class="add-grid">
+                <label for="custom-engine-name">Name:</label>
+                <input type="text"
+                       placeholder="name"
+                       id="custom-engine-name"
+                       required
+                </input>
+                <label for="custom-engine-url">URL:</label>
+                <input type="url"
+                       placeholder="url"
+                       id="custom-engine-url"
+                       required
+                </input>
+              </div>
+              <button type="submit">Add Search Engine</button>
+            </form>
           </div>
         </div>`
   }
@@ -515,19 +523,30 @@ class GeneralSettingsView extends LitElement {
 
   onSearchEngineChange (e) {
     const newValue = e.target.value
+    this.settings.selected_search_engine = parseInt(newValue)
+    beaker.browser.setSetting('selected_search_engine', this.settings.selected_search_engine)
+    this.requestUpdate()
+  }
 
-    if(e.target.id === 'CustomEngineName'){
-      this.settings.custom_search_engine_name = newValue
-      beaker.browser.setSetting('custom_search_engine_name', this.settings.custom_search_engine_name)
-
-    } else if(e.target.id === 'CustomEngineUrl'){
-      this.settings.custom_search_engine_url = newValue
-      beaker.browser.setSetting('custom_search_engine_url', this.settings.custom_search_engine_url)
-
-    } else {
-        this.settings.selected_search_engine = parseInt(newValue)
-        beaker.browser.setSetting('selected_search_engine', this.settings.selected_search_engine)
+  removeSearchEngine (i) {
+    // decrement selected search engine so it points to the same one if the removed index is less than current one
+    if (i<this.settings.selected_search_engine){
+      this.settings.selected_search_engine--
+      beaker.browser.setSetting('selected_search_engine', this.settings.selected_search_engine)
     }
+    this.settings.default_search_engines.splice(i,1)
+    beaker.browser.setSetting('default_search_engines', this.settings.default_search_engines)
+    this.requestUpdate()
+  }
+
+  onAddSearchEngine (e) {
+    e.preventDefault()
+    const name = this.shadowRoot.getElementById('custom-engine-name')
+    const url  = this.shadowRoot.getElementById('custom-engine-url')
+    this.settings.default_search_engines.push({name: name.value, url: url.value})
+    beaker.browser.setSetting('default_search_engines', this.settings.default_search_engines)
+    name.value =""
+    url.value=""
     this.requestUpdate()
   }
 
