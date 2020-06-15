@@ -697,7 +697,7 @@ export function buildWindowMenu (opts = {}) {
             enabled: !noWindows,
             accelerator: `CmdOrCtrl+1`,
             click: function (item) {
-              if (win) shellMenus.show(win, 'background-tray')
+              if (win) shellMenus.toggle(win, 'background-tray')
             }
           },
           gotoTabShortcut(1),

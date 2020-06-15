@@ -8,20 +8,25 @@ import spinnerCSS from './spinner.css'
 class BackgroundTrayMenu extends LitElement {
   static get properties () {
     return {
-      tabs: {type: String}
+      tabs: {type: String},
+      keyboardFocused: {type: Number}
     }
   }
 
   constructor () {
     super()
+    this.$onGlobalKeyup = this.onGlobalKeyup.bind(this)
     this.reset()
   }
 
   reset () {
     this.tabs = undefined
+    this.keyboardFocused = -1
+    window.removeEventListener('keyup', this.$onGlobalKeyup)
   }
 
   async init (params) {
+    window.addEventListener('keyup', this.$onGlobalKeyup)
     this.tabs = await bg.views.getBackgroundTabs()
   }
 
@@ -53,7 +58,11 @@ class BackgroundTrayMenu extends LitElement {
         <div class="header"><h1>Minimized Tabs</h1></div>
         <div class="tabs">
           ${repeat(this.tabs, (tab, i) => html`
-            <div class="tab" @click=${e => this.onClickRestore(e, i)} @contextmenu=${e => this.onContextMenuTab(e, i)}>
+            <div
+              class="tab ${this.keyboardFocused === i ? 'keyboard-focus' : ''}"
+              @click=${e => this.onClickRestore(e, i)}
+              @contextmenu=${e => this.onContextMenuTab(e, i)}
+            >
               <img src="asset:favicon:${tab.url}">
               <div class="title">${tab.title || '-'}</div>
               <div class="url">${tab.url || html`<em>Loading...</em>`}</div>
@@ -72,6 +81,25 @@ class BackgroundTrayMenu extends LitElement {
     var width = this.shadowRoot.querySelector('div').clientWidth|0
     var height = this.shadowRoot.querySelector('div').clientHeight|0
     bg.shellMenus.resizeSelf({width, height})
+  }
+
+  onGlobalKeyup (e) {
+    if (!this.tabs) return
+    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && this.keyboardFocused === -1) {
+      this.keyboardFocused = 0
+      return
+    }
+    if (e.key === 'ArrowUp') {
+      if (this.keyboardFocused > 0) {
+        this.keyboardFocused--
+      }
+    } else if (e.key === 'ArrowDown') {
+      if (this.keyboardFocused < this.tabs.length - 1) {
+        this.keyboardFocused++
+      }
+    } else if (e.key === 'Enter') {
+      this.onClickRestore(undefined, this.keyboardFocused)
+    }
   }
 
   async onContextMenuTab (e, index) {
@@ -135,8 +163,13 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
   cursor: pointer;
 }
 
+.tab.keyboard-focus,
 .tab:hover {
   background: #fff;
+}
+
+.tab.keyboard-focus {
+  box-shadow: 0 0 3px #0005;
 }
 
 .tab:last-child {
