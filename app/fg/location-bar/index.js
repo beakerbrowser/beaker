@@ -14,7 +14,6 @@ import historyManifest from '../../bg/web-apis/manifests/internal/history'
 import locationBarManifest from '../../bg/rpc-manifests/location-bar'
 import beakerFsManifest from '../../bg/web-apis/manifests/internal/beaker-filesystem'
 import viewsManifest from '../../bg/rpc-manifests/views'
-
 const bg = {
   beakerBrowser: rpc.importAPI('beaker-browser', browserManifest),
   bookmarks: rpc.importAPI('bookmarks', bookmarksManifest),
@@ -68,6 +67,7 @@ class LocationBar extends LitElement {
     this.hoveredSearch = ''
     this.queryIdCounter = 0
     this.bookmarksFetch = bg.bookmarks.list()
+    this.settingsPromise = bg.beakerBrowser.getSettings()
   }
 
   selectResult (result) {
@@ -290,16 +290,21 @@ class LocationBar extends LitElement {
     var queryId = ++this.queryIdCounter
     this.inputValue = this.inputValue.trim()
     var finalResults
+    var settings = await this.settingsPromise
+    var searchEngine
+    //get search engine to use
+    searchEngine = settings.search_engines[settings.selected_search_engine]
 
     // figure out what we're looking at
     var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(this.inputValue || '/')
 
     // set the top results accordingly
     var gotoResult = { url: vWithProtocol, title: 'Go to ' + (this.inputValue || '/'), isGuessingTheScheme, isGoto: true }
+
     var searchResult = {
       search: this.inputValue,
-      title: `Search DuckDuckGo for "${this.inputValue}"`,
-      url: vSearch
+      title: `Search ${searchEngine.name} for "${this.inputValue}"`,
+      url: searchEngine.url + vSearch
     }
     if (isProbablyUrl) finalResults = [gotoResult, searchResult]
     else finalResults = [searchResult, gotoResult]

@@ -5,6 +5,7 @@ import * as modals from './subwindows/modals'
 import { getAddedWindowSettings, toggleShellInterface } from './windows'
 import { download } from './downloads'
 import { runDrivePropertiesFlow } from './util'
+import { getAll } from '../dbs/settings'
 
 // NOTE
 // subtle but important!!
@@ -124,8 +125,10 @@ export default function registerContextMenu () {
         } else {
           searchPreviewStr += '"'
         }
-        var query = 'https://duckduckgo.com/?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
-        menuItems.push({ label: 'Search DuckDuckGo for "' + searchPreviewStr, click: (item, win) => tabManager.create(win, query, {adjacentActive: true}) })
+        var settings = await getAll()
+        var searchEngine = settings.search_engines[settings.selected_search_engine]
+        var query = searchEngine.url+ '?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
+        menuItems.push({ label: 'Search ' + searchEngine.name + ' for "' + searchPreviewStr, click: (item, win) => tabManager.create(win, query, {adjacentActive: true}) })
         menuItems.push({ type: 'separator' })
       }
 
