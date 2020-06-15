@@ -69,7 +69,7 @@ export function reposition (parentWindow) {
       setBounds({
         x: 75,
         y: 33,
-        width: 350,
+        width: 400,
         height: 350
       })
     } else if (view.menuId === 'browser') {

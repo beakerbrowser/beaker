@@ -53,12 +53,10 @@ class BackgroundTrayMenu extends LitElement {
         <div class="header"><h1>Minimized Tabs</h1></div>
         <div class="tabs">
           ${repeat(this.tabs, (tab, i) => html`
-            <div class="tab" @click=${e => this.onClickRestore(e, i)}>
-              <div class="info">
-                <div class="title">${tab.title || '-'}</div>
-                <div class="url">${tab.url || html`<em>Loading...</em>`}</div>
-              </div>
-              <button @click=${e => this.onClickClose(e, i)}><span class="fas fa-times"></span></button>
+            <div class="tab" @click=${e => this.onClickRestore(e, i)} @contextmenu=${e => this.onContextMenuTab(e, i)}>
+              <img src="asset:favicon:${tab.url}">
+              <div class="title">${tab.title || '-'}</div>
+              <div class="url">${tab.url || html`<em>Loading...</em>`}</div>
             </div>
           `)}
         </div>
@@ -76,14 +74,22 @@ class BackgroundTrayMenu extends LitElement {
     bg.shellMenus.resizeSelf({width, height})
   }
 
+  async onContextMenuTab (e, index) {
+    var menu = [
+      {id: 'restore', label: 'Restore tab'},
+      {id: 'close', label: 'Close tab'}
+    ]
+    var choice = await bg.beakerBrowser.showContextMenu(menu)
+    if (choice === 'restore') this.onClickRestore(undefined, index)
+    if (choice === 'close') this.onClickClose(undefined, index)
+  }
+
   onClickRestore (e, index) {
     bg.views.restoreBgTab(index)
     bg.shellMenus.close()
   }
 
   onClickClose (e, index) {
-    e.preventDefault()
-    e.stopPropagation()
     bg.views.closeBgTab(index)
     this.tabs.splice(index, 1)
     this.requestUpdate()
@@ -97,7 +103,7 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 }
 
 .header {
-  padding: 6px 12px;
+  padding: 6px 7px;
   border-bottom: 1px solid #dde;
 }
 
@@ -124,7 +130,7 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 .tab {
   display: flex;
   align-items: center;
-  padding: 10px 12px;
+  padding: 10px 6px;
   border-bottom: 1px solid #ccd;
   cursor: pointer;
 }
@@ -137,24 +143,26 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
   border-bottom: 0;
 }
 
-.tab .info {
-  flex: 1;
-}
-
-.tab .info * {
+.tab * {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 270px;
 }
 
-.tab .info .title {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 1px;
+.tab img {
+  width: 16px;
+  height: 16px;
+  object-fit: cover;
+  margin-right: 5px;
 }
 
-.tab .info .url {
+.tab .title {
+  flex: 1;
+  font-weight: 500;
+}
+
+.tab .url {
+  flex: 1;
   color: #778;
 }
 
