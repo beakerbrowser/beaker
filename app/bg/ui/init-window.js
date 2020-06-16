@@ -11,7 +11,7 @@ var initWindow
 // exported api
 // =
 
-export function open () {
+export function open ({isShutdown} = {isShutdown: false}) {
   initWindow = new BrowserWindow({
     autoHideMenuBar: true,
     fullscreenable: false,
@@ -35,7 +35,7 @@ export function open () {
     icon: ICON_PATH,
     show: true
   })
-  initWindow.loadURL(`beaker://init/`)
+  initWindow.loadURL(`beaker://init/${isShutdown ? 'shutdown.html' : ''}`)
 }
 
 export function close () {
