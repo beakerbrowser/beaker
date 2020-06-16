@@ -73,6 +73,7 @@ const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by thi
 
 // the variables which are automatically sent to the shell-window for rendering
 const STATE_VARS = [
+  'id',
   'url',
   'title',
   'siteTitle',

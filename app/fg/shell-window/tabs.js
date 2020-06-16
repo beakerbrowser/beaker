@@ -18,6 +18,7 @@ class ShellWindowTabs extends LitElement {
   constructor () {
     super()
     this.tabs = []
+    this.tabsTransitionState = undefined // used for 'close animations'
     this.isFullscreen = false
     this.draggedTabIndex = null
     this.isDraggingWindow = false
@@ -38,8 +39,12 @@ class ShellWindowTabs extends LitElement {
     window.doMinimizeToBgAnim = this.doMinimizeToBgAnim.bind(this)
   }
 
+  get tabsState () {
+    return this.tabsTransitionState || this.tabs
+  }
+
   getFavicon (index) {
-    var tab = this.tabs[index]
+    var tab = this.tabsState[index]
     if (!tab) return
     var cache
     try {
@@ -71,12 +76,12 @@ class ShellWindowTabs extends LitElement {
       >
         <div class="tabs">
           ${this.backgroundTrayBtn}
-          ${repeat(this.tabs, (tab, index) => this.renderTab(tab, index))}
+          ${repeat(this.tabsState, (tab, index) => this.renderTab(tab, index))}
           <div
             class="unused-space"
-            @dragover=${e => this.onDragoverTab(e, this.tabs.length)}
-            @dragleave=${e => this.onDragleaveTab(e, this.tabs.length)}
-            @drop=${e => this.onDropTab(e, this.tabs.length)}
+            @dragover=${e => this.onDragoverTab(e, this.tabsState.length)}
+            @dragleave=${e => this.onDragleaveTab(e, this.tabsState.length)}
+            @drop=${e => this.onDropTab(e, this.tabsState.length)}
           >
             <div class="tab tab-add-btn" @click=${this.onClickNew} title="Open new tab">
               <span class="plus">+</span>
@@ -181,6 +186,31 @@ class ShellWindowTabs extends LitElement {
     }
   }
 
+  async shouldUpdate (changedProperties) {
+    if (changedProperties.has('tabs')) {
+      let oldVal = changedProperties.get('tabs') || []
+      let [oldLen, newLen] = [oldVal.length, this.tabs.length]
+      if (newLen < oldLen) {
+        // closed tab
+        if (!this.tabsTransitionState) {
+          this.tabsTransitionState = oldVal
+        }
+        let closingTabIndex = this.tabsTransitionState.findIndex(t1 => !this.tabs.find(t2 => t2.id === t1.id))
+        if (closingTabIndex === -1) return true
+        let el = Array.from(this.shadowRoot.querySelectorAll('.tabs > .tab'))[closingTabIndex]
+        let rect = el.getClientRects()[0]
+        el.animate([{ width: `${rect.width}px` }, {width: '0px'}], {
+          duration: 100,
+          iterations: 1
+        }).onfinish = () => {
+          this.tabsTransitionState = undefined
+          this.requestUpdate()
+        }
+        return false
+      }
+    }
+  }
+
   doMinimizeToBgAnim () {
     var srcEl = this.shadowRoot.querySelector('.tab.current')
     var dstEl = this.shadowRoot.querySelector('.background-tray-btn')
@@ -250,19 +280,19 @@ class ShellWindowTabs extends LitElement {
   }
 
   onFaviconLoad (e, index) {
-    var favicons = this.tabs[index].favicons
+    var favicons = this.tabsState[index].favicons
     var url = favicons && favicons[0] ? favicons[0] : null
-    var origin = (new URL(this.tabs[index].url)).origin
+    var origin = (new URL(this.tabsState[index].url)).origin
     this.faviconCache[origin] = {url}
   }
 
   onFaviconError (e, index) {
-    var origin = (new URL(this.tabs[index].url)).origin
+    var origin = (new URL(this.tabsState[index].url)).origin
     this.faviconCache[origin] = {
-      lastTried: this.tabs[index].favicons ? this.tabs[index].favicons[0] : null,
+      lastTried: this.tabsState[index].favicons ? this.tabsState[index].favicons[0] : null,
       url: null // serve null from cache always
     }
-    this.tabs[index].favicons = null
+    this.tabsState[index].favicons = null
     this.requestUpdate()
   }
 
@@ -305,7 +335,7 @@ class ShellWindowTabs extends LitElement {
     if (url && (url.startsWith("https://") || url.startsWith("dat://") || url.startsWith("hyper://"))) {
       e.preventDefault()
       bg.views.createTab(url, {focusLocationBar: true, setActive: true})
-      bg.views.reorderTab(this.tabs.length, index)
+      bg.views.reorderTab(this.tabsState.length, index)
       return false;
     }
     if (this.draggedTabIndex !== null && this.canDrop(index)) {
@@ -317,8 +347,8 @@ class ShellWindowTabs extends LitElement {
 
   canDrop (index) {
     if (this.draggedTabIndex === null) return false
-    var draggingTab = this.tabs[this.draggedTabIndex]
-    var targetTab = this.tabs[index]
+    var draggingTab = this.tabsState[this.draggedTabIndex]
+    var targetTab = this.tabsState[index]
     if (draggingTab.isPinned !== targetTab.isPinned) {
       // only allow tabs to drag within their own pinned/unpinned groups
       return false
