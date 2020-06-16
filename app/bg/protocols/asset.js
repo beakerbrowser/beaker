@@ -113,10 +113,12 @@ export function setup () {
         // `data` is a data url ('data:image/png;base64,...')
         // so, skip the beginning and pull out the data
         let parts = data.split(',')
-        let mimeType = /data:([^;]+);base64/.exec(parts[0])[1]
-        data = parts[1]
-        if (data) {
-          return cb({ mimeType, data: Buffer.from(data, 'base64') })
+        if (parts[1]) {
+          let mimeType = /data:([^;]+);base64/.exec(parts[0])[1]
+          data = parts[1]
+          if (data) {
+            return cb({ mimeType, data: Buffer.from(data, 'base64') })
+          }
         }
       }
     } catch (e) {
