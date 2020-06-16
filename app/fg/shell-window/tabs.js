@@ -41,14 +41,19 @@ class ShellWindowTabs extends LitElement {
   getFavicon (index) {
     var tab = this.tabs[index]
     if (!tab) return
-    if (tab.favicons && tab.favicons[0]) {
-      return tab.favicons[0]
-    }
+    var cache
     try {
-      return this.faviconCache[(new URL(tab.url)).origin]
+      cache = this.faviconCache[(new URL(tab.url)).origin]
     } catch (e) {
       // invalid URL
     }
+    if (tab.favicons && tab.favicons[0]) {
+      if (cache && cache.lastTried === tab.favicons[0]) {
+        return null // this favicon has been tried and failed
+      }
+      return tab.favicons[0]
+    }
+    if (cache) return cache.url // fallback to cache
   }
 
   render () {
@@ -248,13 +253,16 @@ class ShellWindowTabs extends LitElement {
     var favicons = this.tabs[index].favicons
     var url = favicons && favicons[0] ? favicons[0] : null
     var origin = (new URL(this.tabs[index].url)).origin
-    this.faviconCache[origin] = url
+    this.faviconCache[origin] = {url}
   }
 
   onFaviconError (e, index) {
     var origin = (new URL(this.tabs[index].url)).origin
+    this.faviconCache[origin] = {
+      lastTried: this.tabs[index].favicons ? this.tabs[index].favicons[0] : null,
+      url: null // serve null from cache always
+    }
     this.tabs[index].favicons = null
-    this.faviconCache[origin] = undefined
     this.requestUpdate()
   }
 
