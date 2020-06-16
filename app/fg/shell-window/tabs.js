@@ -22,6 +22,7 @@ class ShellWindowTabs extends LitElement {
     this.draggedTabIndex = null
     this.isDraggingWindow = false
     this.isBackgroundTrayOpen = false
+    this.faviconCache = {}
 
     // use mousemove to ensure that dragging stops if the mouse button isnt pressed
     // (we use this instead of mouseup because mouseup could happen outside the window)
@@ -35,6 +36,15 @@ class ShellWindowTabs extends LitElement {
     // listen for commands from the main process
     ipcRenderer.on('command', this.onCommand.bind(this))
     window.doMinimizeToBgAnim = this.doMinimizeToBgAnim.bind(this)
+  }
+
+  getFavicon (index) {
+    var tab = this.tabs[index]
+    if (!tab) return
+    if (tab.favicons && tab.favicons[0]) {
+      return tab.favicons[0]
+    }
+    return this.faviconCache[(new URL(tab.url)).origin]
   }
 
   render () {
@@ -69,10 +79,11 @@ class ShellWindowTabs extends LitElement {
   }
 
   renderTab (tab, index) {
+    const faviconUrl = this.getFavicon(index)
     const showFavicon = Boolean(
       tab.isLoading
       || tab.isPinned
-      || (tab.favicons && tab.favicons[0])
+      || faviconUrl
       || tab.url.startsWith('beaker:')
     )
     const cls = classMap({tab: true, current: tab.isActive, pinned: tab.isPinned, 'no-favicon': !showFavicon})
@@ -96,10 +107,11 @@ class ShellWindowTabs extends LitElement {
               ? tab.isReceivingAssets
                 ? html`<div class="spinner"></div>`
                 : html`<div class="spinner reverse"></div>`
-              : tab.favicons && tab.favicons[0]
+              : faviconUrl
                 ? html`
                   <img
-                    src="${tab.favicons[0]}"
+                    src="${faviconUrl}"
+                    @load=${e => this.onFaviconLoad(e, index)}
                     @error=${e => this.onFaviconError(e, index)}
                   >
                 `
@@ -139,6 +151,7 @@ class ShellWindowTabs extends LitElement {
       let oldVal = changedProperties.get('tabs') || []
       let [oldLen, newLen] = [oldVal.length, this.tabs.length]
       if (newLen > oldLen) {
+        // new tab
         let highestCtime = 0
         let newTabIndex = -1
         for (let i = 0; i < this.tabs.length; i++) {
@@ -148,7 +161,6 @@ class ShellWindowTabs extends LitElement {
           }
         }
         if (newTabIndex === -1) return
-        // animate new tabs
         Array.from(this.shadowRoot.querySelectorAll('.tabs > .tab'))[newTabIndex].animate([
           { transform: 'scaleX(0)', transformOrigin: 'center left' },
           { transform: 'scaleX(1)', transformOrigin: 'center left' }
@@ -228,8 +240,15 @@ class ShellWindowTabs extends LitElement {
     bg.views.closeTab(index)
   }
 
+  onFaviconLoad (e, index) {
+    var origin = (new URL(this.tabs[index].url)).origin
+    this.faviconCache[origin] = this.tabs[index].favicons[0]
+  }
+
   onFaviconError (e, index) {
+    var origin = (new URL(this.tabs[index].url)).origin
     this.tabs[index].favicons = null
+    this.faviconCache[origin] = undefined
     this.requestUpdate()
   }
 
