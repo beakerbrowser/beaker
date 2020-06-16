@@ -44,7 +44,11 @@ class ShellWindowTabs extends LitElement {
     if (tab.favicons && tab.favicons[0]) {
       return tab.favicons[0]
     }
-    return this.faviconCache[(new URL(tab.url)).origin]
+    try {
+      return this.faviconCache[(new URL(tab.url)).origin]
+    } catch (e) {
+      // invalid URL
+    }
   }
 
   render () {
