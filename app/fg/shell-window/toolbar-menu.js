@@ -110,7 +110,7 @@ class ShellWindowToolbarMenu extends LitElement {
       return html`
         <a
           class=${classMap({pressed: panels.includes(panel)})}
-          @click=${e => this.onClickSidebarToggle(e, panel)}
+          @mousedown=${e => this.onMousedownSidebarToggle(e, panel)}
         >${label}</a>
       `
     }
@@ -148,8 +148,21 @@ class ShellWindowToolbarMenu extends LitElement {
   // events
   // =
 
-  onClickSidebarToggle (e, panel) {
-    bg.views.executeSidebarCommand('active', 'toggle-panel', panel)
+  onMousedownSidebarToggle (e, panel) {
+    if (e.button === 1 || e.metaKey) {
+      var url
+      switch (panel) {
+        case 'editor-app': url = `beaker://editor/?url=${encodeURI(this.activeTab.url)}`; break
+        case 'files-explorer-app': url = `beaker://explorer/${encodeURI(this.activeTab.url.slice('hyper://'.length))}`; break
+        case 'web-term': url = `beaker://webterm/?url=${encodeURI(this.activeTab.url)}`; break
+      }
+      if (!url) return
+      let width = panel === 'files-explorer-app' ? 1000 : 600
+      let height = panel === 'files-explorer-app' ? 800 : 500
+      bg.beakerBrowser.newWindow({pages: [url], width, height, isAppWindow: true})
+    } else {
+      bg.views.executeSidebarCommand('active', 'toggle-panel', panel)
+    }
   }
 
   onClickFilesExplorer (e) {
@@ -159,7 +172,7 @@ class ShellWindowToolbarMenu extends LitElement {
 
   onMousedownLink (e) {
     e.preventDefault()
-    if (e.button === 1) {
+    if (e.button === 1 || e.metaKey) {
       bg.views.createTab(e.currentTarget.dataset.href, {setActive: true, adjacentActive: true})
     } else {
       bg.views.loadURL('active', e.currentTarget.dataset.href)
