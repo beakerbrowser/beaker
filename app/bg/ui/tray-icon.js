@@ -1,6 +1,6 @@
 import { app, Tray, Menu, BrowserWindow, nativeTheme } from 'electron'
 import path from 'path'
-import { restoreLastShellWindow } from './windows'
+import { createShellWindow, restoreLastShellWindow } from './windows'
 import * as tabManager from './tab-manager'
 import * as settingsDb from '../dbs/settings'
 
@@ -55,10 +55,7 @@ function onClickOpen () {
     win.show()
     tabManager.create(win, undefined, {setActive: true})
   } else {
-    win = restoreLastShellWindow()
-    win.on('custom-pages-ready', () => {
-      tabManager.create(win, undefined, {setActive: true})
-    })
+    createShellWindow()
   }
 }
 
