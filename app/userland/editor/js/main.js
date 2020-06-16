@@ -515,8 +515,13 @@ class EditorApp extends LitElement {
     `
   }
 
-  updated () {
+  updated (changedProperties) {
     this.ensureEditorEl()
+    if (changedProperties.has('isFilesOpen')) {
+      if (this.editor) {
+        this.editor.layout()
+      }
+    }
   }
 
   renderToolbar () {

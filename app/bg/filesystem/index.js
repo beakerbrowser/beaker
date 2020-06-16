@@ -93,11 +93,6 @@ export async function setup () {
       await bookmarks.add({href: 'https://beaker.dev/', title: 'Beaker Developer Portal', pinned: true})
       await bookmarks.add({href: 'https://github.com/beakerbrowser/beaker/discussions', title: 'Beaker Discussions', pinned: true})
     }
-
-    // ensure all user mounts are set
-    // TODO
-    // for (let user of userList) {
-    // }
   } catch (e) {
     console.error('Error while constructing the root drive', e.toString())
     logger.error('Error while constructing the root drive', {error: e.toString()})
