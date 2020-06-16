@@ -57,6 +57,13 @@ export const PERMS = {
     requiresRefresh: false,
     experimental: false
   },
+  midi: {
+    persist: false,
+    idempotent: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: false
+  },
   midiSysex: {
     persist: false,
     idempotent: true,
@@ -161,6 +168,7 @@ export const PERM_ICONS = {
   media: 'fas fa-video',
   geolocation: 'fas fa-map-marked',
   notifications: 'fas fa-bell',
+  midi: 'fas fa-headphones',
   midiSysex: 'fas fa-headphones',
   pointerLock: 'fas fa-mouse-pointer',
   fullscreen: 'fas fa-arrows-alt',
@@ -191,6 +199,7 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
     case 'media': return `Use your ${(permOpts.mediaTypes || ['video', 'audio']).map(mediaTypeToTool).join(' and ')}`
     case 'geolocation': return 'Know your location'
     case 'notifications': return 'Create desktop notifications'
+    case 'midi': return 'Access your MIDI devices'
     case 'midiSysex': return 'Access your MIDI devices'
     case 'pointerLock': return 'Lock your cursor'
     case 'fullscreen': return 'Go fullscreen'
