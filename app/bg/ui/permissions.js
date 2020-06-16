@@ -97,7 +97,6 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
 // =
 
 async function onPermissionRequestHandler (webContents, permission, cb, opts) {
-  console.log(permission)
   const url = webContents.getURL()
 
   // always allow beaker:// origins
