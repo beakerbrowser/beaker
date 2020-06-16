@@ -241,8 +241,10 @@ class ShellWindowTabs extends LitElement {
   }
 
   onFaviconLoad (e, index) {
+    var favicons = this.tabs[index].favicons
+    var url = favicons && favicons[0] ? favicons[0] : null
     var origin = (new URL(this.tabs[index].url)).origin
-    this.faviconCache[origin] = this.tabs[index].favicons[0]
+    this.faviconCache[origin] = url
   }
 
   onFaviconError (e, index) {
