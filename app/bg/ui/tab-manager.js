@@ -426,7 +426,7 @@ class Tab extends EventEmitter {
     this.isActive = true
 
     const win = this.browserWindow
-    win.addBrowserView(this.browserView)
+    win.setBrowserView(this.browserView)
     sidebars.show(this)
     prompts.show(this.browserView)
     permPrompt.show(this.browserView)
@@ -1465,12 +1465,14 @@ export function setActive (win, tab) {
     if (active === tab) {
       return
     }
-    active.deactivate()
-    lastSelectedTabIndex[win.id] = getAll(win).indexOf(active)
   }
 
-  // activate the new tab
   tab.activate()
+  if (active) {
+    active.deactivate()
+  }
+  lastSelectedTabIndex[win.id] = getAll(win).indexOf(active)
+
   windowMenu.onSetCurrentLocation(win) // give the window-menu a chance to handle the change
   emitReplaceState(win)
 }
