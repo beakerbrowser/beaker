@@ -25,9 +25,8 @@ export default function registerContextMenu () {
       const isHyperdrive = props.pageURL.startsWith('hyper://')
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
-      const isMisspelled = false//TODOprops.selectionText && spellChecker.isMisspelled(props.selectionText)
-      const spellingSuggestions = false//TODOisMisspelled && spellChecker.getSuggestions(props.selectionText).slice(0, 5)
-
+      const isMisspelled = props.misspelledWord
+      const spellingSuggestions = props.dictionarySuggestions
       // get the focused window, ignore if not available (not in focus)
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
       var targetWindow = BrowserWindow.getFocusedWindow()
@@ -96,13 +95,15 @@ export default function registerContextMenu () {
       }
 
       // spell check
-      // TODO
-      // if (props.isMisspelled !== '' && props.isEditable) {
-      //   for (let i in spellingSuggestions) {
-      //     menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label, {adjacentActive: true}) })
-      //   }
-      //   menuItems.push({ type: 'separator' })
-      // }
+       if (props.isMisspelled !== '' && props.isEditable) {
+         menuItems.push({label: 'Add to dictionary', click: () => webContents.session.addWordToSpellCheckerDictionary(isMisspelled)})
+         if (spellingSuggestions) {
+           for (let i in spellingSuggestions) {
+             menuItems.push({ label: spellingSuggestions[i], click: (item, win) => webContents.replaceMisspelling(item.label, {adjacentActive: true}) })
+           }
+         }
+         menuItems.push({ type: 'separator' })
+       }
 
       // clipboard
       if (props.isEditable) {
@@ -126,7 +127,7 @@ export default function registerContextMenu () {
           searchPreviewStr += '"'
         }
         var searchEngines = await settingsDb.get('search_engines')
-        var searchEngine = searchEngines.find(se => se.selected) || searchEngine[0]
+        var searchEngine = searchEngines.find(se => se.selected) || searchEngines[0]
         var query = searchEngine.url+ '?q=' + encodeURIComponent(props.selectionText.substr(0, 500)) // Limit query to prevent too long query error from DDG
         menuItems.push({ label: 'Search ' + searchEngine.name + ' for "' + searchPreviewStr, click: (item, win) => tabManager.create(win, query, {adjacentActive: true}) })
         menuItems.push({ type: 'separator' })
