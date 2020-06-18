@@ -21,6 +21,7 @@ import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 // globals
 // =
 
+const IS_WIN = process.platform === 'win32'
 const MARGIN_SIZE = 10
 const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'network', 'peers', 'share', 'site', 'donate']
 var events = new Events()
@@ -67,7 +68,7 @@ export function reposition (parentWindow) {
     }
     if (view.menuId === 'background-tray') {
       setBounds({
-        x: 75,
+        x: IS_WIN ? 10 : 75,
         y: 33,
         width: 400,
         height: 350
