@@ -390,7 +390,7 @@ ${spinnerCSS}
 }
 
 .shell.win32 {
-  padding-right: 150px;
+  padding-right: 140px;
 }
 
 .tabs {
