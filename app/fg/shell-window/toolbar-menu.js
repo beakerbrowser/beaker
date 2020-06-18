@@ -149,7 +149,7 @@ class ShellWindowToolbarMenu extends LitElement {
   // =
 
   onMousedownSidebarToggle (e, panel) {
-    if (e.button === 1 || e.metaKey) {
+    if (e.button === 1 || e.metaKey || e.ctrlKey) {
       var url
       switch (panel) {
         case 'editor-app': url = `beaker://editor/?url=${encodeURI(this.activeTab.url)}`; break
@@ -172,7 +172,7 @@ class ShellWindowToolbarMenu extends LitElement {
 
   onMousedownLink (e) {
     e.preventDefault()
-    if (e.button === 1 || e.metaKey) {
+    if (e.button === 1 || e.metaKey || e.ctrlKey) {
       bg.views.createTab(e.currentTarget.dataset.href, {setActive: true, adjacentActive: true})
     } else {
       bg.views.loadURL('active', e.currentTarget.dataset.href)
