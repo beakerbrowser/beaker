@@ -106,11 +106,11 @@ export default {
     var drive = await getDrive(url)
     var current = await folderSyncDb.get(drive.key.toString('hex'))
     if (!current || !current.localPath) return []
-    return dft.diff(
+    return normalizeCompare(await dft.diff(
       current.localPath,
       {fs: drive.session.drive, path: '/'},
       {compareContent: true, sizeLimit: COMPARE_SIZE_LIMIT}
-    )
+    ))
   },
 
   async restoreFile (url, filepath) {
@@ -124,6 +124,7 @@ export default {
         compareContent: true,
         sizeLimit: COMPARE_SIZE_LIMIT,
         filter: p => {
+          p = normalizePath(p)
           if (filepath === p) return false // direct match
           if (filepath.startsWith(p) && filepath.charAt(p.length) === '/') return false // parent folder
           if (p.startsWith(filepath) && p.charAt(filepath.length) === '/') return false // child file
@@ -201,9 +202,22 @@ function createIgnoreFilter (ignoredFiles) {
   var ignoreRegexes = (ignoredFiles || '').split('\n').filter(Boolean).map(globToRegex)
   if (ignoreRegexes.length === 0) return
   return (filepath) => {
+    filepath = normalizePath(filepath)
     for (let re of ignoreRegexes) {
       if (re.test(filepath)) return true
     }
     return false
   }
+}
+
+const slashRe = /\\/g
+function normalizePath (path = '') {
+  return path.replace(slashRe, '/')
+}
+
+function normalizeCompare (compare) {
+  for (let c of compare) {
+    c.path = normalizePath(c.path)
+  }
+  return compare
 }
