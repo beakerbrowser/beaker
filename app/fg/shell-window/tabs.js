@@ -551,10 +551,12 @@ ${spinnerCSS}
 
 .tab-minimize:before {
   display: block;
-  content: "_";
-  font-size: 20px;
-  font-weight: 600;
-  line-height: .5;
+  content: "";
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border-bottom: 1.5px solid;
 }
 
 .tab-close:hover:before,
