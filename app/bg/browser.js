@@ -26,6 +26,7 @@ import { getEnvVar } from './lib/env'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
 import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
+const AutoLaunch = require('auto-launch');
 
 // constants
 // =
@@ -139,6 +140,10 @@ export async function setup () {
     })
     cb(request.errorCode)
   })
+
+  // Ensure run on startup is set correctly
+  const runOnStartup = getSetting('launch_on_startup')
+  await setRunOnStartup(runOnStartup)
 }
 
 export const WEBAPI = {
@@ -149,6 +154,7 @@ export const WEBAPI = {
   getProfile,
   checkForUpdates,
   restartBrowser,
+  setRunOnStartup,
 
   getSetting,
   getSettings,
@@ -167,7 +173,6 @@ export const WEBAPI = {
   readFile,
 
   convertDat,
-
   getResourceContentType,
   getCertificate,
 
@@ -739,7 +744,7 @@ async function focusPage () {
 
 async function executeJavaScriptInPage (js) {
   return getSenderTab(this.sender).webContents.executeJavaScript(js, true)
-    .catch(err => { 
+    .catch(err => {
       if (err.toString().includes('Script failed to execute')) {
         throw "Injected script failed to execute"
       }
@@ -874,5 +879,39 @@ function onCompleted (details) {
     set(details.responseHeaders['Content-Type'])
   } else if ('content-type' in details.responseHeaders) {
     set(details.responseHeaders['content-type'])
+  }
+}
+
+async function setRunOnStartup (desiredState) {
+  if (IS_LINUX) {
+    const autoLauncher = new AutoLaunch({
+      name: 'Beaker',
+      path: process.execPath
+    })
+    const currentState = await autoLauncher.isEnabled()
+    if (currentState !== desiredState) {
+      if (desiredState === true){
+        await autoLauncher.enable()
+      } else {
+        await autoLauncher.disable()
+      }
+    }
+    return
+  }
+  //using setLoginItems
+  const opts = {}
+  if (process.platform !== 'darwin') {
+    // mac
+    opts.path = path.resolve(path.dirname(process.execPath), '..', 'Update.exe')
+    opts.args =  [
+      '--processStart', `"${path.basename(process.execPath)}"`,
+      '--process-start-args', `"--hidden"`
+    ]
+  }
+  const currentState = app.getLoginItemSettings(opts)
+
+  if (currentState !== desiredState) {
+    opts.openAtLogin = desiredState
+    app.setLoginItemSettings(opts)
   }
 }

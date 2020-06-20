@@ -262,23 +262,36 @@ class GeneralSettingsView extends LitElement {
   renderRunBackgroundSettings () {
     return html`
       <div class="section on-startup">
-        <h2 id="on-startup">Background</h2>
+        <h2 id="on-startup">Background & Startup</h2>
 
         <p>
           Running in the background helps keep your data online even if you're not using Beaker.
         </p>
-
-        <div class="radio-item">
-          <input type="checkbox" id="runBackground"
-                 ?checked=${this.settings.run_background == 1}
-                 @change=${this.onRunBackgroundToggle} />
-          <label for="runBackground">
-            Let Beaker run in the background
-          </label>
+        <div>
+          <div class="radio-item">
+            <input type="checkbox" id="runBackground"
+                   ?checked=${this.settings.run_background == 1}
+                   @change=${this.onRunBackgroundToggle} />
+            <label for="runBackground">
+              Let Beaker run in the background
+            </label>
+          </div>
+          <div>
+            <div class="radio-item">
+              <input type="checkbox" id="onStart"
+                     ?checked=${this.settings.launch_on_startup == 1}
+                     @change=${this.onLaunchOnStartupToggle} />
+              <label for=onStart">
+                Launch Beaker on computer startup
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     `
   }
+
+
 
   renderNewTabSettings () {
     return html`
@@ -336,6 +349,8 @@ class GeneralSettingsView extends LitElement {
       </div>
     `
   }
+
+
 
   renderDefaultZoomSettings () {
     const opt = (v, label) => html`
@@ -492,6 +507,13 @@ class GeneralSettingsView extends LitElement {
   onRunBackgroundToggle (e) {
     this.settings.run_background = this.settings.run_background == 1 ? 0 : 1
     beaker.browser.setSetting('run_background', this.settings.run_background)
+    toast.create('Setting updated')
+  }
+
+  async onLaunchOnStartupToggle (e) {
+    const desiredState = e.target.checked
+    beaker.browser.setSetting('launch_on_startup', desiredState?1:0)
+    await beaker.browser.setRunOnStartup(desiredState)
     toast.create('Setting updated')
   }
 

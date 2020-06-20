@@ -12,6 +12,7 @@
     "@beaker/library-tools": "^1.0.0",
     "ajv": "^6.10.2",
     "anymatch": "^2.0.0",
+    "auto-launch": "^5.0.5",
     "await-lock": "^1.2.1",
     "base32.js": "^0.1.0",
     "beaker-error-constants": "^1.4.0",

@@ -41,6 +41,7 @@ export const setup = async function (opts) {
     new_tabs_in_foreground: 0,
     run_background: 1,
     default_zoom: 0,
+    launch_on_startup: 0,
     start_page_background_image: '',
     workspace_default_path: path.join(opts.homePath, 'Sites'),
     default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n**/.DS_Store\nThumbs.db\n',
