@@ -1,4 +1,5 @@
 import { parseDriveUrl } from '../../lib/urls'
+import { toNiceUrl } from '../../lib/strings'
 import { Readable } from 'stream'
 import parseRange from 'range-parser'
 import once from 'once'
@@ -118,8 +119,10 @@ export const protocolHandler = async function (request, respond) {
   }
   var drive
   var cspHeader = undefined
+  const logUrl = toNiceUrl(request.url)
 
   // validate request
+  logger.silly(`Starting ${logUrl}`, {url: request.url})
   var urlp = parseDriveUrl(request.url, true)
   if (!urlp.host) {
     return respondError(404, 'Drive Not Found', {
@@ -164,12 +167,14 @@ export const protocolHandler = async function (request, respond) {
     // so we're going to handle all system-drive requests by redirecting
     // to the files explorer
     // -prf
+    logger.silly(`Redirecting to explorer ${logUrl}`, {url: request.url})
     return respondRedirect(`beaker://explorer/${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}`)
   }
 
   auditLog.record('-browser', 'serve', {url: urlp.origin, path: urlp.pathname}, undefined, async () => {
     try {
       // start searching the network
+      logger.silly(`Loading drive for ${logUrl}`, {url: request.url})
       drive = await drives.getOrLoadDrive(driveKey)
     } catch (err) {
       logger.warn(`Failed to open drive ${driveKey}`, {err})
@@ -197,6 +202,7 @@ export const protocolHandler = async function (request, respond) {
     // check to see if we actually have data from the drive
     var version = await checkoutFS.session.drive.version()
     if (version === 0) {
+      logger.silly(`Drive not found ${logUrl}`, {url: request.url})
       return respondError(404, 'Hyperdrive not found', {
         title: 'Hyperdrive Not Found',
         errorDescription: 'No peers hosting this drive were found',
@@ -253,15 +259,18 @@ export const protocolHandler = async function (request, respond) {
 
       // make sure there's a trailing slash
       if (!hasTrailingSlash) {
+        logger.silly(`Redirecting to trailing slash ${logUrl}`, {url: request.url})
         return respondRedirect(`hyper://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}`)
       }
 
       // frontend
       if (frontend) {
+        logger.silly(`Serving frontend ${logUrl}`, {url: request.url})
         return serveFrontendHTML()
       }
 
       // directory listing
+      logger.silly(`Serving directory ${logUrl}`, {url: request.url})
       return respond({
         statusCode: 200,
         headers: {
@@ -284,13 +293,13 @@ export const protocolHandler = async function (request, respond) {
 
     // frontend
     if (mime.acceptHeaderWantsHTML(request.headers.Accept) && frontend) {
+      logger.silly(`Serving frontend ${logUrl}`, {url: request.url})
       return serveFrontendHTML()
     }
 
     // handle not found
     if (!entry) {
-
-      // error page
+      logger.silly('Not found', {url: request.url})
       return respondError(404, 'File Not Found', {
         errorDescription: 'File Not Found',
         errorInfo: `Beaker could not find the file ${urlp.path}`,
@@ -302,6 +311,7 @@ export const protocolHandler = async function (request, respond) {
     if (entry.path.endsWith('.goto') && entry.metadata.href) {
       try {
         let u = new URL(entry.metadata.href) // make sure it's a valid url
+        logger.silly(`Redirecting for .goto ${logUrl} to ${entry.metadata.href}`, {url: request.url, href: entry.metadata.href})
         return respondRedirect(entry.metadata.href)
       } catch (e) {
         // pass through
@@ -348,6 +358,7 @@ export const protocolHandler = async function (request, respond) {
   </body>
 </html>`
         : content
+      logger.silly(`Serving markdown ${logUrl}`, {url: request.url})
       return respond({
         statusCode: 200,
         headers: Object.assign(headers, {'Content-Type': contentType}),
@@ -360,6 +371,7 @@ export const protocolHandler = async function (request, respond) {
       mimeType = 'text/plain'
     }
     headers['Content-Type'] = mimeType
+    logger.silly(`Serving file ${logUrl}`, {url: request.url})
     if (request.method === 'HEAD') {
       respond({statusCode: 204, headers, data: intoStream('')})
     } else {
