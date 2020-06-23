@@ -1088,7 +1088,9 @@ class Tab extends EventEmitter {
   onNewWindow (e, url, frameName, disposition, options) {
     e.preventDefault()
     if (!this.isActive) return // only open if coming from the active tab
-    create(this.browserWindow, url, {setActiveBySettings: true, adjacentActive: true})
+    var setActive = disposition === 'foreground-tab'
+    var setActiveBySettings = !setActive
+    create(this.browserWindow, url, {setActive, setActiveBySettings, adjacentActive: true})
   }
 
   onMediaChange (e) {
