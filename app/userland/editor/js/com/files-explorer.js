@@ -195,6 +195,12 @@ class FilesExplorer extends LitElement {
             </span>
           </div>
         `)}
+        ${!this.readOnly ? html`
+          <div class=${classMap({item: true, 'new-file': true})} @click=${this.onClickNewFile}>
+            <span class="icon"><span class="fas fa-fw fa-plus"></span></span>
+            <span class="name">New file</span>
+          </div>
+        ` : ''}
       </div>
     `
   }
@@ -229,6 +235,12 @@ class FilesExplorer extends LitElement {
       // navigate in-UI to the folder
       this.url = joinPath(this.origin, this.folderPath, item.name)
     }
+  }
+
+  onClickNewFile (e, item) {
+    e.preventDefault()
+    e.stopPropagation()
+    emit(this, 'new-file', {detail: {folderPath: this.folderPath}})
   }
 }
 

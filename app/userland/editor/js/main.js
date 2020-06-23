@@ -484,6 +484,7 @@ class EditorApp extends LitElement {
           open-file-path=${this.resolvedPath}
           @open=${this.onOpenFile}
           @show-menu=${this.onShowMenu}
+          @new-file=${this.onFilesExplorerNewFile}
         ></files-explorer>
       ` : ''}
       ${this.isBinary && this.pathname.endsWith('.goto') ? html`
@@ -509,6 +510,7 @@ class EditorApp extends LitElement {
       ` : this.dne ? html`
         <div class="empty">
           <a @click=${e => { this.isFilesOpen = true }}>Select a file</a>
+          ${!this.readOnly ? html` or <a @click=${e => { this.onClickNewFile(this.resolvedPath) }}>Create a file</a>` : ''}
         </div>
       ` : ''}
       ${this.showLoadingNotice ? html`<div id="loading-notice">Loading...</div>` : ''}
@@ -593,6 +595,10 @@ class EditorApp extends LitElement {
 
   onShowMenu (e) {
     this.showMenu(e.detail.x, e.detail.y, e.detail.folderPath, e.detail.item, e.detail.folderItemUrls)
+  }
+
+  onFilesExplorerNewFile (e) {
+    this.onClickNewFile(e.detail.folderPath)
   }
 
   onContextmenuToolbar (e) {
@@ -836,8 +842,10 @@ class EditorApp extends LitElement {
       let path = joinPath(folderPath, name)
       await this.drive.writeFile(path, '')
       this.loadExplorer()
-      if (this.resolvedPath === path) {
-        this.load(this.drive.url + path, true)
+      if (!this.isDetached && this.resolvedPath !== path) {
+        beaker.browser.gotoUrl(joinPath(this.drive.url, path))
+      } else {
+        this.load(joinPath(this.drive.url, path), true)
       }
     }
   }

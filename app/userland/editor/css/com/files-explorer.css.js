@@ -69,6 +69,10 @@ ${spinnercss}
   color: #fff;
 }
 
+.listing .item.new-file {
+  opacity: 0.5;
+}
+
 .listing .item .icon {
   padding-right: 6px;
 }
