@@ -266,6 +266,13 @@ export default {
     var urlp = parseDriveUrl(url)
     var url = urlp.origin
     var filepath = normalizeFilepath(urlp.pathname || '')
+    if (typeof opts === 'string') {
+      opts = {encoding: opts}
+    }
+    if (opts.encoding === 'json') {
+      data = JSON.stringify(data, null, 2)
+      opts.encoding = 'utf8'
+    }
     const sourceSize = Buffer.byteLength(data, opts.encoding)
     return auditLog.record(this.sender.getURL(), 'writeFile', {url, filepath}, sourceSize, () => (
       timer(to(opts), async (checkin, pause, resume) => {
