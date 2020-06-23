@@ -1,4 +1,4 @@
-import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, webContents } from 'electron'
+import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain } from 'electron'
 import errorPage from '../lib/error-page'
 import path from 'path'
 import { promises as fs } from 'fs'
@@ -198,6 +198,7 @@ class Tab extends EventEmitter {
     this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
     this.webContents.on('media-paused', this.onMediaChange.bind(this))
     this.webContents.on('found-in-page', this.onFoundInPage.bind(this))
+    this.webContents.on('zoom-changed', this.onZoomChanged.bind(this))
 
     // security - deny these events
     const deny = e => e.preventDefault()
@@ -1108,6 +1109,12 @@ class Tab extends EventEmitter {
     }
     this.emitUpdateState()
   }
+
+  onZoomChanged (e, zoomDirection) {
+    console.log('zoom changed', zoomDirection)
+    if (zoomDirection === 'in') zoom.zoomIn(this)
+    if (zoomDirection === 'out') zoom.zoomOut(this)
+  }
 }
 
 // exported api
@@ -1146,6 +1153,14 @@ export async function setup () {
     var browserView = BrowserView.fromWebContents(e.sender)
     var tab = browserView ? findTab(browserView) : undefined
     if (tab) tab.previouslyFocusedWebcontents = e.sender
+  })
+  ipcMain.on('BEAKER_ZOOM_CHANGE', (e, dir) => {
+    var browserView = BrowserView.fromWebContents(e.sender)
+    var tab = browserView ? findTab(browserView) : undefined
+    if (tab) {
+      if (dir === 1) zoom.zoomIn(tab)
+      else zoom.zoomOut(tab)
+    }
   })
 
   // track daemon connectivity
