@@ -1,9 +1,5 @@
 import { app } from 'electron'
-import HyperdriveDaemon from 'hyperdrive-daemon'
-import * as HyperdriveDaemonManager from 'hyperdrive-daemon/manager'
-import { createMetadata } from 'hyperdrive-daemon/lib/metadata'
-import constants from 'hyperdrive-daemon-client/lib/constants'
-import { HyperdriveClient } from 'hyperdrive-daemon-client'
+import HyperdriveClient from 'hyperdrive-daemon-client'
 import datEncoding from 'dat-encoding'
 import * as pda from 'pauls-dat-api2'
 import pm2 from 'pm2'
@@ -102,33 +98,6 @@ export async function getDaemonStatus () {
 export async function setup () {
   if (isSettingUp) {
     isSettingUp = false
-    pda.setInvalidAuthHandler(onInvalidAuthToken)
-
-    // watch for the daemon process to die/revive
-    let interval = setInterval(() => {
-      pm2.list((err, processes) => {
-        var processExists = !!processes.find(p => p.name === 'hyperdrive' && p.pm2_env.status === 'online')
-        if (processExists && !isDaemonActive) {
-          isDaemonActive = true
-          isFirstConnect = false
-          events.emit('daemon-restored')
-        } else if (!processExists && isDaemonActive) {
-          isDaemonActive = false
-          isConnectionActive = false
-          events.emit('daemon-stopped')
-        }
-      })
-    }, CHECK_DAEMON_INTERVAL)
-    interval.unref()
-
-    events.on('daemon-restored', async () => {
-      logger.info('Hyperdrive daemon has been restored')
-    })
-    events.on('daemon-stopped', async () => {
-      logger.info('Hyperdrive daemon has been lost')
-      isControllingDaemonProcess = false
-    })
-
     // periodically close sessions
     let interval2 = setInterval(() => {
       let numClosed = 0
@@ -152,13 +121,14 @@ export async function setup () {
     await client.ready()
     logger.info('Connected to an external daemon.')
     isConnectionActive = true
-    reconnectAllDriveSessions()
+    // reconnectAllDriveSessions()
     return
   } catch (err) {
     logger.info('Failed to connect to an external daemon. Launching the daemon...')
     client = false
   }
 
+  /*
   if (getEnvVar('EMBED_HYPERDRIVE_DAEMON')) {
     await createMetadata(`localhost:${constants.port}`)
     var daemon = new HyperdriveDaemon()
@@ -176,6 +146,7 @@ export async function setup () {
       storage: constants.root
     })
   }
+  */
 
   await attemptConnect()
   reconnectAllDriveSessions()
@@ -186,6 +157,7 @@ export function requiresShutdown () {
 }
 
 export async function shutdown () {
+  return
   if (isControllingDaemonProcess) {
     isShuttingDown = true
     return HyperdriveDaemonManager.stop()

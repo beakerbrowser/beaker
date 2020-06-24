@@ -132,7 +132,7 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
 
     // read the drive meta and size on disk
     var [manifest, oldMeta, size] = await Promise.all([
-      drive.pda.readManifest().catch(_ => {}),
+      drive.pda.readManifest().catch(() => {}),
       archivesDb.getMeta(key),
       0//drive.pda.readSize('/')
     ])
