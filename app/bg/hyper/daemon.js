@@ -1,5 +1,3 @@
-import { app } from 'electron'
-import { join as joinPath } from 'path'
 import * as childProcess from 'child_process'
 import HyperdriveClient from 'hyperdrive-daemon-client'
 import datEncoding from 'dat-encoding'
@@ -125,20 +123,19 @@ export async function setup () {
     })
   }
 
-  // TODO
-  // try {
-  //   client = new HyperdriveClient()
-  //   await client.ready()
-  //   logger.info('Connected to an external daemon.')
-  //   isDaemonActive = true
-  //   isFirstConnect = false
-  //   events.emit('daemon-restored')
-  //   // reconnectAllDriveSessions()
-  //   return
-  // } catch (err) {
-  //   logger.info('Failed to connect to an external daemon. Launching the daemon...')
-  //   client = false
-  // }
+  try {
+    client = new HyperdriveClient()
+    await client._client.network.listPeers() // TODO use a better method to detect readiness
+    logger.info('Connected to an external daemon.')
+    isDaemonActive = true
+    isFirstConnect = false
+    events.emit('daemon-restored')
+    reconnectAllDriveSessions()
+    return
+  } catch (err) {
+    logger.info('Failed to connect to an external daemon. Launching the daemon...')
+    client = false
+  }
 
   isControllingDaemonProcess = true
   logger.info('Starting daemon process, assuming process control')
@@ -302,7 +299,8 @@ async function attemptConnect () {
   for (let i = 0; i < SETUP_RETRIES; i++) {
     try {
       client = new HyperdriveClient()
-      await client.ready()
+      await client._client.network.listPeers() // TODO use a better method to detect readiness
+      break
     } catch (e) {
       logger.info('Failed to connect to daemon, retrying')
       await new Promise(r => setTimeout(r, connectBackoff))
