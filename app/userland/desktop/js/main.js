@@ -17,6 +17,15 @@ import 'beaker://library/js/views/address-book.js'
 import './views/recent.js'
 import css from '../css/main.css.js'
 
+const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
+const CURRENT_VERSION = VERSION_ID(1, 0, 0, 5)
+const RELEASES = [
+  { label: '1.0, Beta 5', url: 'https://beakerbrowser.com/2020/06/19/beaker-1-0-beta-5.html' },
+  { label: '1.0, Beta 4', url: 'https://beakerbrowser.com/2020/06/04/beaker-1-0-beta-4.html' },
+  { label: '1.0, Beta 3', url: 'https://beakerbrowser.com/2020/05/28/beaker-1-0-beta-3.html' },
+  { label: '1.0, Beta 2', url: 'https://beakerbrowser.com/2020/05/20/beaker-1-0-beta-2.html' },
+  { label: '1.0, Beta 1', url: 'https://beakerbrowser.com/2020/05/14/beaker-1-0-beta.html' }
+]
 const DOCS_URL = 'https://docs.beakerbrowser.com'
 const USERLIST_URL = 'https://userlist.beakerbrowser.com'
 const BLAHBITY_BLOG_URL = 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/'
@@ -93,8 +102,10 @@ class DesktopApp extends LitElement {
         ` : ''}
       </div>
       <div id="topright">
+        <a href="#" title="Release Notes" @click=${this.onClickReleaseNotes}><span class="fas fa-fw fa-rocket"></span> What's new in Beaker<span class="fas fa-fw fa-caret-down"></span></a>
         <a href="beaker://settings/" title="Settings"><span class="fas fa-cog"></span></a>
       </div>
+      ${this.renderReleaseNotice()}
       ${this.renderFiles()}
       <nav>
         ${navItem('drives', 'My Drives')}
@@ -129,6 +140,22 @@ class DesktopApp extends LitElement {
       <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} other-only .filter=${this.filter}></address-book-view>
       ${this.renderIntro()}
       ${this.renderLegacyArchivesNotice()}
+    `
+  }
+
+  renderReleaseNotice () {
+    if (localStorage.lastDismissedReleaseNotice >= CURRENT_VERSION) {
+      return ''
+    }
+    return html`
+      <div class="release-notice">
+        <a href=${RELEASES[0].url} class="view-release-notes" @click=${this.onCloseReleaseNotes} target="_blank">
+          <span class="fas fa-fw fa-rocket"></span>
+          <strong>Welcome to Beaker ${RELEASES[0].label}!</strong>
+          Click here to see what's new.
+        </a>
+        <a class="close" @click=${this.onCloseReleaseNotes}><span class="fas fa-times"></span></a>
+      </div>
     `
   }
 
@@ -244,6 +271,23 @@ class DesktopApp extends LitElement {
   onClickCloseIntro (e) {
     this.isIntroActive = false
     localStorage.isIntroHidden = 1
+  }
+
+  onClickReleaseNotes (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    const items = RELEASES.map(({label, url}) => ({
+      icon: false,
+      label: `Beaker ${label}`,
+      click: () => window.open(url)
+    }))
+    var rect = e.currentTarget.getClientRects()[0]
+    contextMenu.create({x: rect.left, y: rect.bottom + 10, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
+  }
+
+  onCloseReleaseNotes (e) {
+    localStorage.lastDismissedReleaseNotice = CURRENT_VERSION
+    this.requestUpdate()
   }
 
   onClickNavMore (e) {

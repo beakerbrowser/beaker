@@ -10,7 +10,7 @@ ${tooltipCSS}
 
 :host {
   display: block;
-  padding: 0 15px 100px;
+  padding: 100px 15px 100px;
 }
 
 .hidden {
@@ -68,10 +68,35 @@ ${tooltipCSS}
   font-size: 11px;
 }
 
+.release-notice {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto 60px;
+  padding: 12px 18px;
+  border: 1px solid #bbc;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  border-radius: 4px;
+}
+
+.release-notice .view-release-notes:hover {
+  text-decoration: underline;
+}
+
+.release-notice .fa-rocket {
+  margin-right: 5px;
+}
+
+.release-notice .close {
+  color: #bbc;
+  float: right;
+}
+
 .pins {
   position: relative;
   display: grid;
-  margin: 100px auto 0;
+  margin: 0 auto 0;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   grid-gap: 15px;
   width: 100%;
