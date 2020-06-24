@@ -430,7 +430,7 @@ class FolderSyncModal extends LitElement {
                 ${icon()}
                 ${filename}
               </span>
-              ${change.change === 'del' ? html`
+              ${change.change !== 'add' ? html`
                 <a class="revert tooltip-left" data-tooltip="Restore to local folder" @click=${e => this.onClickRestoreFile(change)}>
                   <span class="fas fa-fw fa-undo"></span>
                 </a>
