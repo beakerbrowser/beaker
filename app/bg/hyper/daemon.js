@@ -1,18 +1,19 @@
 import { app } from 'electron'
+import { join as joinPath } from 'path'
+import * as childProcess from 'child_process'
 import HyperdriveClient from 'hyperdrive-daemon-client'
 import datEncoding from 'dat-encoding'
 import * as pda from 'pauls-dat-api2'
-import pm2 from 'pm2'
 import EventEmitter from 'events'
-import { getEnvVar } from '../lib/env'
 import * as logLib from '../logger'
 const baseLogger = logLib.get()
 const logger = baseLogger.child({category: 'hyper', subcategory: 'daemon'})
 
 const SETUP_RETRIES = 100
-const CHECK_DAEMON_INTERVAL = 5e3
 const GARBAGE_COLLECT_SESSIONS_INTERVAL = 30e3
 const MAX_SESSION_AGE = 300e3 // 5min
+const HYPERSPACE_BIN_PATH = require.resolve('hyperspace/bin.js')
+
 
 // typedefs
 // =
@@ -66,8 +67,8 @@ var isControllingDaemonProcess = false // did we start the process?
 var isSettingUp = true
 var isShuttingDown = false
 var isDaemonActive = false
-var isConnectionActive = false
 var isFirstConnect = true
+var daemonProcess = undefined
 var sessions = {} // map of keyStr => DaemonHyperdrive
 var events = new EventEmitter()
 
@@ -114,41 +115,52 @@ export async function setup () {
       }
     }, GARBAGE_COLLECT_SESSIONS_INTERVAL)
     interval2.unref()
-  }
 
-  try {
-    client = new HyperdriveClient()
-    await client.ready()
-    logger.info('Connected to an external daemon.')
-    isConnectionActive = true
-    // reconnectAllDriveSessions()
-    return
-  } catch (err) {
-    logger.info('Failed to connect to an external daemon. Launching the daemon...')
-    client = false
-  }
-
-  /*
-  if (getEnvVar('EMBED_HYPERDRIVE_DAEMON')) {
-    await createMetadata(`localhost:${constants.port}`)
-    var daemon = new HyperdriveDaemon()
-    await daemon.start()
-    process.on('exit', () => daemon.stop())
-  } else {
-    isControllingDaemonProcess = true
-    logger.info('Starting daemon process, assuming process control')
-    await HyperdriveDaemonManager.start({
-      interpreter: app.getPath('exe'),
-      env: Object.assign({}, process.env, {ELECTRON_RUN_AS_NODE: 1, ELECTRON_NO_ASAR: 1}),
-      noPM2DaemonMode: true,
-      memoryOnly: false,
-      heapSize: 4096, // 4GB heap
-      storage: constants.root
+    events.on('daemon-restored', async () => {
+      logger.info('Hyperdrive daemon has been restored')
+    })
+    events.on('daemon-stopped', async () => {
+      logger.info('Hyperdrive daemon has been lost')
+      isControllingDaemonProcess = false
     })
   }
-  */
+
+  // TODO
+  // try {
+  //   client = new HyperdriveClient()
+  //   await client.ready()
+  //   logger.info('Connected to an external daemon.')
+  //   isDaemonActive = true
+  //   isFirstConnect = false
+  //   events.emit('daemon-restored')
+  //   // reconnectAllDriveSessions()
+  //   return
+  // } catch (err) {
+  //   logger.info('Failed to connect to an external daemon. Launching the daemon...')
+  //   client = false
+  // }
+
+  isControllingDaemonProcess = true
+  logger.info('Starting daemon process, assuming process control')
+  var daemonProcessArgs = ['-s', '~/tmp/hyperspace']
+  daemonProcess = childProcess.spawn(HYPERSPACE_BIN_PATH, daemonProcessArgs, {
+    stdio: [process.stdin, process.stdout, process.stderr], // DEBUG
+    env: Object.assign({}, process.env, {
+      ELECTRON_RUN_AS_NODE: 1,
+      ELECTRON_NO_ASAR: 1
+    })
+  })
+  daemonProcess.on('error', (err) => logger.error(`Hyperspace Daemon error: ${err.toString()}`))
+  daemonProcess.on('close', () => {
+    isDaemonActive = false
+    daemonProcess = undefined
+    events.emit('daemon-stopped')
+  })
 
   await attemptConnect()
+  isDaemonActive = true
+  isFirstConnect = false
+  events.emit('daemon-restored')
   reconnectAllDriveSessions()
 }
 
@@ -157,10 +169,9 @@ export function requiresShutdown () {
 }
 
 export async function shutdown () {
-  return
   if (isControllingDaemonProcess) {
     isShuttingDown = true
-    return HyperdriveDaemonManager.stop()
+    daemonProcess.kill()
   }
 }
 
@@ -262,13 +273,14 @@ export async function listPeerAddresses (discoveryKey) {
 // =
 
 async function onInvalidAuthToken () {
-  if (!isConnectionActive) return
-  isConnectionActive = false
-  logger.info('A daemon reset was detected. Refreshing all drive sessions.')
-  // daemon is online but our connection is outdated, reset the connection
-  await attemptConnect()
-  reconnectAllDriveSessions()
-  logger.info('Connection re-established.')
+  // TODO replaceme
+  // if (!isConnectionActive) return
+  // isConnectionActive = false
+  // logger.info('A daemon reset was detected. Refreshing all drive sessions.')
+  // // daemon is online but our connection is outdated, reset the connection
+  // await attemptConnect()
+  // reconnectAllDriveSessions()
+  // logger.info('Connection re-established.')
 }
 
 function createSessionKey (opts) {
@@ -297,7 +309,6 @@ async function attemptConnect () {
       connectBackoff += 100
     }
   }
-  isConnectionActive = true
 }
 
 async function reconnectAllDriveSessions () {
