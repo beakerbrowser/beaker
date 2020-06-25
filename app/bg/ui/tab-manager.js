@@ -1189,6 +1189,10 @@ export function getAll (win) {
   return activeTabs[win.id] || []
 }
 
+export function getAllAcrossWindows () {
+  return activeTabs
+}
+
 export function getByIndex (win, index) {
   win = getTopWindow(win)
   if (index === 'active') return getActive(win)

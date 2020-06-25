@@ -1,17 +1,14 @@
 /**
- * Prompts
+ * Tab Switchers
  *
  * NOTES
  * - There is one tab-switcher per BrowserWindow instance
- * - Status Bar views are created with each browser window and then shown/hidden as needed
+ * - Switcher views are created with each browser window and then shown/hidden as needed
  */
 
 import path from 'path'
-import { BrowserWindow, BrowserView } from 'electron'
-import * as rpc from 'pauls-electron-rpc'
+import { BrowserView, BrowserWindow } from 'electron'
 import * as tabManager from '../tab-manager'
-// import promptsRPCManifest from '../../rpc-manifests/prompts'
-import { findWebContentsParentWindow } from '../../lib/electron'
 
 // constants
 // =
@@ -76,16 +73,23 @@ export function show (parentWindow) {
   if (view) {
     // read the current tabs state
     var defaultCurrentSelection = tabManager.getPreviousTabIndex(parentWindow)
-    var tabs = tabManager.getAll(parentWindow).map(tab => ({
-      url: tab.url,
-      title: tab.title
-    }))
-    view.tabs = tabs
+    var allTabs = tabManager.getAllAcrossWindows()
+    var tabInfos = []
+    for (let winId in allTabs) {
+      for (let tab of allTabs[winId]) {
+        tabInfos.push({
+          winId: +winId,
+          url: tab.url,
+          title: tab.title
+        })
+      }
+    }
+    view.tabs = tabInfos
 
     // render
     parentWindow.addBrowserView(view)
     view.webContents.executeJavaScript(`
-      window.setTabs(${JSON.stringify(tabs)}, ${defaultCurrentSelection}); undefined
+      window.setTabs(${JSON.stringify(tabInfos)}, ${defaultCurrentSelection}); undefined
     `)
     reposition(parentWindow)
   }
@@ -94,11 +98,13 @@ export function show (parentWindow) {
 export async function hide (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    var selectedTabIndex = await view.webContents.executeJavaScript(`
+    var selectedTab = await view.webContents.executeJavaScript(`
       window.getSelection()
     `)
-    if (typeof selectedTabIndex === 'number') {
-      tabManager.setActive(parentWindow, selectedTabIndex)
+    if (selectedTab && typeof selectedTab === 'object') {
+      let win = BrowserWindow.fromId(selectedTab.winId)
+      win.show()
+      tabManager.setActive(win, selectedTab.tabIndex)
     }
     parentWindow.removeBrowserView(view)
   }

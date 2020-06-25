@@ -106,7 +106,7 @@
     }
 
     window.getSelection = function () {
-      return currentSelection
+      return {winId: currentTabs[currentSelection].winId, tabIndex: currentSelection}
     }
 
     function onMouseOverTab (e) {
