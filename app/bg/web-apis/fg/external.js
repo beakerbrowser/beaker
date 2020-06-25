@@ -48,6 +48,7 @@ export const setup = function (rpc) {
       if (!command.name || typeof command.name !== 'string') throw new Error('Command must have a \`name\` string')
       if (command.help && typeof command.help !== 'string') throw new Error('The \`help\` attribute on a command must be a string')
       if (command.usage && typeof command.usage !== 'string') throw new Error('The \`usage\` attribute on a command must be a string')
+      if (command.options && !Array.isArray(command.options)) throw new Error('The \`options\` attribute on a command must be an array')
 
       let i = _terminalCommands.findIndex(c => c.name === command.name)
       if (i !== -1) throw new Error('A "' + command.name + '" command has already been registered')
@@ -55,7 +56,8 @@ export const setup = function (rpc) {
         handle: command.handle,
         name: command.name,
         help: command.help,
-        usage: command.usage
+        usage: command.usage,
+        options: command.options
       })
     },
     unregisterCommand (name) {
