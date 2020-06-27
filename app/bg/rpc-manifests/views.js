@@ -4,7 +4,6 @@ export default {
   getState: 'promise',
   getTabState: 'promise',
   getNetworkState: 'promise',
-  getPageMetadata: 'promise',
   getBackgroundTabs: 'promise',
   createTab: 'promise',
   loadURL: 'promise',

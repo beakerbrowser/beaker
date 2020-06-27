@@ -941,17 +941,10 @@ export async function setup () {
     e.returnValue = false
   })
   ipcMain.on('BEAKER_WC_FOCUSED', e => {
-    var browserView = BrowserView.fromWebContents(e.sender)
-    var tab = browserView ? findTab(browserView) : undefined
-    if (tab) tab.previouslyFocusedWebcontents = e.sender
-  })
-  ipcMain.on('BEAKER_ZOOM_CHANGE', (e, dir) => {
-    var browserView = BrowserView.fromWebContents(e.sender)
-    var tab = browserView ? findTab(browserView) : undefined
-    if (tab) {
-      if (dir === 1) zoom.zoomIn(tab)
-      else zoom.zoomOut(tab)
-    }
+    // TODO- needed?
+    // var browserView = BrowserView.fromWebContents(e.sender)
+    // var tab = browserView ? findTab(browserView) : undefined
+    // if (tab) tab.previouslyFocusedWebcontents = e.sender
   })
 
   // track daemon connectivity
