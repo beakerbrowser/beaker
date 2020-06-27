@@ -112,7 +112,6 @@ var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var lastSelectedTabIndex = {} // map of {[win.id]: Number}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: EventEmitter}
-var nextTabIsScriptCloseable = false // will the next tab created be "script closable"?
 var defaultUrl = 'beaker://desktop/'
 
 // classes
@@ -159,7 +158,6 @@ class Tab extends EventEmitter {
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
-    this.isScriptClosable = takeIsScriptClosable() // can this tab be closed by `window.close` ?
 
     // helper state
     this.folderSyncPath = undefined // current folder sync path
@@ -934,19 +932,11 @@ export async function setup () {
   })
 
   // listen for webContents messages
-  ipcMain.on('BEAKER_MARK_NEXT_TAB_SCRIPTCLOSEABLE', e => {
-    nextTabIsScriptCloseable = true
-    e.returnValue = true
-  })
   ipcMain.on('BEAKER_SCRIPTCLOSE_SELF', e => {
     var browserView = BrowserView.fromWebContents(e.sender)
     if (browserView) {
       var tab = findTab(browserView)
-      if (tab && (tab.isScriptClosable || tab.url.startsWith('beaker:'))) {
-        remove(tab.browserWindow, tab)
-        e.returnValue = true
-        return
-      }
+      if (tab) remove(tab.browserWindow, tab)
     }
     e.returnValue = false
   })
@@ -1785,14 +1775,6 @@ async function fireBeforeUnloadEvent (wc) {
     } catch (e) {
       // ignore
     }
-}
-
-// `nextTabIsScriptCloseable` is set by a message received prior to window.open() being called
-// we capture the state of the flag on the next created tab, then reset it
-function takeIsScriptClosable () {
-  var b = nextTabIsScriptCloseable
-  nextTabIsScriptCloseable = false
-  return b
 }
 
 /**
