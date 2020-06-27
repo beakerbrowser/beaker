@@ -19,7 +19,7 @@ import * as permPrompt from '../subwindows/perm-prompt'
 import * as modals from '../subwindows/modals'
 import * as siteInfo from '../subwindows/site-info'
 import * as windowMenu from '../window-menu'
-import { createShellWindow, getAddedWindowSettings, getOrCreateNonAppWindow } from '../windows'
+import { createShellWindow, getAddedWindowSettings } from '../windows'
 import { getResourceContentType } from '../../browser'
 import * as setupFlow from '../setup-flow'
 import { examineLocationInput } from '../../../lib/urls'
@@ -175,7 +175,6 @@ class Tab extends EventEmitter {
     this.tabCreationTime = 0 // when was the tab created?
 
     // wire up events
-    this.webContents.on('will-navigate', this.onWillNavigate.bind(this))
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
     this.webContents.on('did-start-navigation', this.onDidStartNavigation.bind(this))
     this.webContents.on('did-navigate', this.onDidNavigate.bind(this))
@@ -367,15 +366,7 @@ class Tab extends EventEmitter {
   // =
 
   loadURL (url, opts) {
-    if (this.browserWindow && getAddedWindowSettings(this.browserWindow).isAppWindow) {
-      if (this.url && toOrigin(this.url) !== toOrigin(url)) {
-        // we never navigate out of app windows
-        // instead, create a new tab, which will cause it to open in a normal window
-        create(this.browserWindow, url, {setActive: true})
-      }
-    } else {
-      this.webContents.loadURL(url, opts)
-    }
+    this.webContents.loadURL(url, opts)
   }
 
   calculateBounds (windowBounds) {
@@ -759,18 +750,6 @@ class Tab extends EventEmitter {
     emitUpdateState(this.browserWindow, this, state)
   }
 
-  onWillNavigate (e, url) {
-    if (this.isHidden) return
-    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
-      if (this.url && toOrigin(this.url) !== toOrigin(url)) {
-        // we never navigate out of app windows
-        // instead, create a new tab, which will cause it to open in a normal window
-        e.preventDefault()
-        create(this.browserWindow, url, {setActive: true})
-      }
-    }
-  }
-
   onDidStartLoading (e) {
     // update state
     this.loadingURL = null
@@ -904,12 +883,7 @@ class Tab extends EventEmitter {
   }
 
   onPageTitleUpdated (e, title) {
-    if (this.browserWindow) {
-      if (this.browserWindow.isDestroyed()) return
-      if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
-        this.browserWindow.setTitle(title)
-      }
-    }
+    if (this.browserWindow && this.browserWindow.isDestroyed()) return
     this.emitUpdateState()
   }
 
@@ -1126,12 +1100,6 @@ export function create (
     return // dont create tabs for this
   }
   win = getTopWindow(win)
-  if (getAddedWindowSettings(win).isAppWindow) {
-    // app-windows cant have multiple tabs, so find another window
-    win = getOrCreateNonAppWindow()
-    win.focus()
-    win.moveTop()
-  }
   var tabs = activeTabs[win.id] = activeTabs[win.id] || []
 
   var tab

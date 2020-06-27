@@ -149,23 +149,21 @@ export default function registerContextMenu () {
           click: () => webContents.reload()
         })
         menuItems.push({ type: 'separator' })
-        if (!addedWindowSettings.isAppWindow) {
-          menuItems.push({
-            type: 'checkbox',
-            label: 'Always on Top',
-            checked: targetWindow.isAlwaysOnTop(),
-            click: function () {
-              targetWindow.setAlwaysOnTop(!targetWindow.isAlwaysOnTop())
-            }
-          })
-          menuItems.push({
-            label: 'Toggle Browser UI',
-            click: function () {
-              toggleShellInterface(targetWindow)
-            }
-          })
-          menuItems.push({ type: 'separator' })
-        }
+        menuItems.push({
+          type: 'checkbox',
+          label: 'Always on Top',
+          checked: targetWindow.isAlwaysOnTop(),
+          click: function () {
+            targetWindow.setAlwaysOnTop(!targetWindow.isAlwaysOnTop())
+          }
+        })
+        menuItems.push({
+          label: 'Toggle Browser UI',
+          click: function () {
+            toggleShellInterface(targetWindow)
+          }
+        })
+        menuItems.push({ type: 'separator' })
         menuItems.push({
           label: 'Export Page As...',
           click: downloadPrompt('pageURL', '.html')

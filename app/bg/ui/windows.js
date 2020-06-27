@@ -191,11 +191,6 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     frame: IS_LINUX,
     title: undefined
   }
-  if (state.isAppWindow) {
-    frameSettings.titleBarStyle = 'default'
-    frameSettings.trafficLightPosition = undefined
-    frameSettings.frame = true
-  }
   var win = new BrowserWindow(Object.assign({
     autoHideMenuBar: false,
     fullscreenable: true,
@@ -263,10 +258,6 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
         if (tabManager.getAll(win).length === 0) {
           tabManager.create(win) // create new_tab
         }
-      }
-      if (state.isAppWindow) {
-        setIsAppWindow(win, true)
-        state.isShellInterfaceHidden = true // must be hidden
       }
       if (state.isShellInterfaceHidden) {
         setShellInterfaceHidden(win, true)
@@ -385,14 +376,6 @@ export async function getFocusedWebContents (win) {
   }
 }
 
-export function getOrCreateNonAppWindow () {
-  var nonAppWin = BrowserWindow.getAllWindows().filter(win => !getAddedWindowSettings(win).isAppWindow).pop()
-  if (!nonAppWin) {
-    nonAppWin = createShellWindow({pages: []}, {dontInitPages: true})
-  }
-  return nonAppWin
-}
-
 export function getAddedWindowSettings (win) {
   if (!win || !win.id) return {}
   return windowAddedSettings[win.id] || {}
@@ -408,23 +391,13 @@ export function ensureOneWindowExists () {
   }
 }
 
-export function setIsAppWindow (win, isAppWindow) {
-  updateAddedWindowSettings(win, {isAppWindow})
-  sessionWatcher.updateState(win, {isAppWindow})
-}
-
 export function toggleShellInterface (win) {
   setShellInterfaceHidden(win, !getAddedWindowSettings(win).isShellInterfaceHidden)
 }
 
 export function setShellInterfaceHidden (win, isShellInterfaceHidden) {
-  if (getAddedWindowSettings(win).isAppWindow) {
-    // app-window-mode forces the interface to be hidden
-    isShellInterfaceHidden = true
-  }
-
   updateAddedWindowSettings(win, {isShellInterfaceHidden})
-  if (win.setWindowButtonVisibility && !getAddedWindowSettings(win).isAppWindow) {
+  if (win.setWindowButtonVisibility) {
     win.setWindowButtonVisibility(!isShellInterfaceHidden)
   }
   sessionWatcher.updateState(win, {isShellInterfaceHidden})

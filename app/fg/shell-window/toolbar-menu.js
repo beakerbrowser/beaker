@@ -159,7 +159,7 @@ class ShellWindowToolbarMenu extends LitElement {
       if (!url) return
       let width = panel === 'files-explorer-app' ? 1000 : 600
       let height = panel === 'files-explorer-app' ? 800 : 500
-      bg.beakerBrowser.newWindow({pages: [url], width, height, isAppWindow: true})
+      bg.beakerBrowser.newWindow({pages: [url], width, height})
     } else {
       // TODO
       // bg.views.executeSidebarCommand('active', 'toggle-panel', panel)

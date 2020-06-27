@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
-import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost, getAddedWindowSettings } from './windows'
+import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost } from './windows'
 import { runSelectFileDialog, runForkFlow, runDrivePropertiesFlow, exportDriveToFilesystem, importFilesystemToDrive } from './util'
 import * as tabManager from './tabs/manager'
 import * as viewZoom from './tabs/zoom'
@@ -56,8 +56,6 @@ export function buildWindowMenu (opts = {}) {
   var win = opts.noWindows ? undefined : opts.win ? opts.win : getActiveWindow()
   if (win && win.isDestroyed()) win = undefined
   const noWindows = !win
-  const addedWindowSettings = getAddedWindowSettings(win)
-  const isAppWindow = addedWindowSettings.isAppWindow
   const tab = !noWindows && win ? tabManager.getActive(win) : undefined
   const url = tab ? (tab.url || tab.loadingURL) : ''
   const isDriveSite = url.startsWith('hyper://')
@@ -127,7 +125,7 @@ export function buildWindowMenu (opts = {}) {
       // {
       //   id: 'newFile',
       //   label: 'New File',
-      //   enabled: !noWindows && !isAppWindow,
+      //   enabled: !noWindows,
       //   click: function (item) {
       //     createWindowIfNone(win, async (win) => {
       //       var res = await runSelectFileDialog(win, {
@@ -145,7 +143,7 @@ export function buildWindowMenu (opts = {}) {
       // {
       //   id: 'newFolder',
       //   label: 'New Folder',
-      //   enabled: !noWindows && !isAppWindow,
+      //   enabled: !noWindows,
       //   click: function (item) {
       //     createWindowIfNone(win, async (win) => {
       //       var res = await runSelectFileDialog(win, {
@@ -179,7 +177,7 @@ export function buildWindowMenu (opts = {}) {
       // {
       //   id: 'savePageAs',
       //   label: 'Save Page As...',
-      //   enabled: !noWindows && !isAppWindow,
+      //   enabled: !noWindows,
       //   accelerator: 'CmdOrCtrl+Shift+S',
       //   click: async (item) => {
       //     createWindowIfNone(getWin(), async (win) => {
@@ -201,7 +199,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'exportPageAs',
         label: 'Export Page As...',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows,
         click: async (item) => {
           if (!tab) return
           const {url, title} = tab
@@ -280,7 +278,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'findInPage',
         label: 'Find in Page',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+F',
         click: function (item) {
           if (tab) tab.showInpageFind()
@@ -289,7 +287,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'findNext',
         label: 'Find Next',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+G',
         click: function (item) {
           if (tab) tab.moveInpageFind(1)
@@ -298,7 +296,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'findPrevious',
         label: 'Find Previous',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows,
         accelerator: 'Shift+CmdOrCtrl+G',
         click: function (item) {
           if (tab) tab.moveInpageFind(-1)
@@ -369,7 +367,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'toggleFilesExplorer',
         label: 'Explore Files',
-        enabled: !noWindows && !isAppWindow && !!isDriveSite,
+        enabled: !noWindows && !!isDriveSite,
         accelerator: 'CmdOrCtrl+E',
         click: async function (item) {
           // TODO
@@ -400,7 +398,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'importFiles',
         label: 'Import Files',
-        enabled: !noWindows && !isAppWindow && isDriveSite && isWritable,
+        enabled: !noWindows && isDriveSite && isWritable,
         click: async (item) => {
           if (!driveInfo || !driveInfo.writable) return
           var {filePaths} = await dialog.showOpenDialog({
@@ -431,7 +429,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'importFolder',
         label: 'Import Folder',
-        enabled: !noWindows && !isAppWindow && isDriveSite && isWritable,
+        enabled: !noWindows && isDriveSite && isWritable,
         click: async (item) => {
           if (!driveInfo || !driveInfo.writable) return
           var {filePaths} = await dialog.showOpenDialog({
@@ -462,7 +460,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'exportFiles',
         label: 'Export Files',
-        enabled: !noWindows && !isAppWindow && isDriveSite,
+        enabled: !noWindows && isDriveSite,
         click: async (item) => {
           if (!driveInfo) return
           var {filePaths} = await dialog.showOpenDialog({
@@ -579,7 +577,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'toggleEditor',
         label: 'Toggle Editor',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+B',
         click: async function (item) {
           // TODO
@@ -589,7 +587,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'toggleTerminal',
         label: 'Toggle Terminal',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows,
         accelerator: 'Ctrl+`',
         click: function (item) {
           // TODO
@@ -652,7 +650,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'toggleBrowserUi',
         label: 'Toggle Browser UI',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows,
         accelerator: 'CmdOrCtrl+Shift+H',
         click: function (item) {
           if (win) toggleShellInterface(win)
@@ -719,7 +717,7 @@ export function buildWindowMenu (opts = {}) {
       {
         id: 'popOutTab',
         label: 'Pop Out Tab',
-        enabled: !noWindows && !isAppWindow,
+        enabled: !noWindows,
         accelerator: 'Shift+CmdOrCtrl+P',
         click: function (item) {
           if (tab) tabManager.popOutTab(tab)
