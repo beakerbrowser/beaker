@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
 import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost, getAddedWindowSettings } from './windows'
 import { runSelectFileDialog, runForkFlow, runDrivePropertiesFlow, exportDriveToFilesystem, importFilesystemToDrive } from './util'
-import * as tabManager from './tab-manager'
+import * as tabManager from './tabs/manager'
 import * as viewZoom from './tabs/zoom'
 import * as shellMenus from './subwindows/shell-menus'
 import { download } from './downloads'

@@ -1,38 +1,37 @@
 import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain } from 'electron'
-import errorPage from '../lib/error-page'
+import errorPage from '../../lib/error-page'
 import path from 'path'
 import { promises as fs } from 'fs'
 import { EventEmitter } from 'events'
 import _throttle from 'lodash.throttle'
-import { parseDriveUrl } from '../../lib/urls'
+import { parseDriveUrl } from '../../../lib/urls'
 import emitStream from 'emit-stream'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
-import viewsRPCManifest from '../rpc-manifests/views'
-import * as zoom from './tabs/zoom'
-import * as shellMenus from './subwindows/shell-menus'
-import * as locationBar from './subwindows/location-bar'
-import * as statusBar from './subwindows/status-bar'
-import * as prompts from './subwindows/prompts'
-import * as permPrompt from './subwindows/perm-prompt'
-import * as modals from './subwindows/modals'
-import * as siteInfo from './subwindows/site-info'
-import * as windowMenu from './window-menu'
-import { createShellWindow, getAddedWindowSettings, getOrCreateNonAppWindow } from './windows'
-import { getResourceContentType } from '../browser'
-import * as setupFlow from './setup-flow'
-import { examineLocationInput } from '../../lib/urls'
-import { clamp } from '../../lib/math'
-import { DRIVE_KEY_REGEX } from '../../lib/strings'
-import { findWebContentsParentWindow } from '../lib/electron'
-import * as sitedataDb from '../dbs/sitedata'
-import * as settingsDb from '../dbs/settings'
-import * as historyDb from '../dbs/history'
-import * as folderSyncDb from '../dbs/folder-sync'
-import * as filesystem from '../filesystem/index'
-import * as bookmarks from '../filesystem/bookmarks'
-import hyper from '../hyper/index'
+import viewsRPCManifest from '../../rpc-manifests/views'
+import * as zoom from './zoom'
+import * as shellMenus from '../subwindows/shell-menus'
+import * as locationBar from '../subwindows/location-bar'
+import * as statusBar from '../subwindows/status-bar'
+import * as prompts from '../subwindows/prompts'
+import * as permPrompt from '../subwindows/perm-prompt'
+import * as modals from '../subwindows/modals'
+import * as siteInfo from '../subwindows/site-info'
+import * as windowMenu from '../window-menu'
+import { createShellWindow, getAddedWindowSettings, getOrCreateNonAppWindow } from '../windows'
+import { getResourceContentType } from '../../browser'
+import * as setupFlow from '../setup-flow'
+import { examineLocationInput } from '../../../lib/urls'
+import { DRIVE_KEY_REGEX } from '../../../lib/strings'
+import { findWebContentsParentWindow } from '../../lib/electron'
+import * as sitedataDb from '../../dbs/sitedata'
+import * as settingsDb from '../../dbs/settings'
+import * as historyDb from '../../dbs/history'
+import * as folderSyncDb from '../../dbs/folder-sync'
+import * as filesystem from '../../filesystem/index'
+import * as bookmarks from '../../filesystem/bookmarks'
+import hyper from '../../hyper/index'
 
 const ERR_ABORTED = -3
 const ERR_CONNECTION_REFUSED = -102
@@ -1216,7 +1215,7 @@ export async function minimizeToBg (win, tab) {
   var tabs = getAll(win)
   var i = tabs.indexOf(tab)
   if (i == -1) {
-    return console.warn('tab-manager minimize() called for missing tab', tab)
+    return console.warn('tabs/manager minimize() called for missing tab', tab)
   }
 
   // do minimize animation
@@ -1271,7 +1270,7 @@ export async function remove (win, tab) {
   var tabs = getAll(win)
   var i = tabs.indexOf(tab)
   if (i == -1) {
-    return console.warn('tab-manager remove() called for missing tab', tab)
+    return console.warn('tabs/manager remove() called for missing tab', tab)
   }
 
   // give the 'onbeforeunload' a chance to run
@@ -1393,7 +1392,7 @@ export function transferTabToWindow (tab, targetWindow) {
   var sourceTabs = getAll(sourceWindow)
   var i = sourceTabs.indexOf(tab)
   if (i == -1) {
-    return console.warn('tab-manager transferTabToWindow() called for missing tab', tab)
+    return console.warn('tabs/manager transferTabToWindow() called for missing tab', tab)
   }
 
   // remove

@@ -1,6 +1,6 @@
 import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
-import * as tabManager from './tab-manager'
+import * as tabManager from './tabs/manager'
 import * as modals from './subwindows/modals'
 import { getAddedWindowSettings, toggleShellInterface } from './windows'
 import { download } from './downloads'

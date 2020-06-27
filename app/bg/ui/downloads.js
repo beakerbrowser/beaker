@@ -5,7 +5,7 @@ import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
 import parseDataURL from 'data-urls'
-import { openOrFocusDownloadsPage, findTab, remove as removeTab } from './tab-manager'
+import { openOrFocusDownloadsPage, findTab, remove as removeTab } from './tabs/manager'
 
 // globals
 // =

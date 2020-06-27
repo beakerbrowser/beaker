@@ -1,7 +1,7 @@
 import dgram from 'dgram'
 import { ipcMain } from 'electron'
 import * as windows from './ui/windows'
-import * as tabManager from './ui/tab-manager'
+import * as tabManager from './ui/tabs/manager'
 import * as permPrompt from './ui/subwindows/perm-prompt'
 import * as modals from './ui/subwindows/modals'
 import { getEnvVar } from './lib/env'

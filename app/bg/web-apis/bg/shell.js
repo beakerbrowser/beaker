@@ -1,6 +1,5 @@
-import { BrowserView, dialog } from 'electron'
+import { dialog } from 'electron'
 import pda from 'pauls-dat-api2'
-import * as tabManager from '../../ui/tab-manager'
 import * as modals from '../../ui/subwindows/modals'
 import * as prompts from '../../ui/subwindows/prompts'
 import * as drives from '../../hyper/drives'

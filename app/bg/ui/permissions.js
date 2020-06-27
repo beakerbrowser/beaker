@@ -5,7 +5,7 @@ import * as sitedata from '../dbs/sitedata'
 import _get from 'lodash.get'
 import { parseDriveUrl } from '../../lib/urls'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
-import * as tabManager from './tab-manager'
+import * as tabManager from './tabs/manager'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
 
 // globals

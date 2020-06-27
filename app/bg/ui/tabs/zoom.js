@@ -1,5 +1,5 @@
 import {URL} from 'url'
-import * as tabManager from '../tab-manager'
+import * as tabManager from '../tabs/manager'
 import * as sitedataDb from '../../dbs/sitedata'
 import * as settingsDb from '../../dbs/settings'
 

@@ -10,7 +10,7 @@
 import path from 'path'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
-import * as tabManager from '../tab-manager'
+import * as tabManager from '../tabs/manager'
 import permPromptRPCManifest from '../../rpc-manifests/perm-prompt'
 import { findWebContentsParentWindow } from '../../lib/electron'
 

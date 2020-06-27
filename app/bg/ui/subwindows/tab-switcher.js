@@ -8,7 +8,7 @@
 
 import path from 'path'
 import { BrowserView, BrowserWindow } from 'electron'
-import * as tabManager from '../tab-manager'
+import * as tabManager from '../tabs/manager'
 
 // constants
 // =

@@ -3,7 +3,7 @@ import * as hyperdrive from './fg/hyperdrive'
 import * as internal from './fg/internal'
 import * as external from './fg/external'
 import * as experimental from './fg/experimental'
-import { ipcRenderer, contextBridge } from 'electron'
+import { contextBridge } from 'electron'
 
 export const setup = function () {
   // setup APIs

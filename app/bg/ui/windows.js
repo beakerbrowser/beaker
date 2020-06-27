@@ -2,7 +2,7 @@ import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'ele
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher, { getLastRecordedPositioning } from './session-watcher'
 import jetpack from 'fs-jetpack'
-import * as tabManager from './tab-manager'
+import * as tabManager from './tabs/manager'
 import {
   createGlobalKeybindingsHandler,
   createKeybindingProtectionsHandler,

@@ -1,7 +1,7 @@
 // handle OSX open-url event
 import {BrowserWindow, ipcMain} from 'electron'
 import * as windows from './ui/windows'
-import * as tabManager from './ui/tab-manager'
+import * as tabManager from './ui/tabs/manager'
 var queue = []
 var isLoaded = false
 var isSetup = false

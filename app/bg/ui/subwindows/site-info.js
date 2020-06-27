@@ -11,7 +11,7 @@
 import path from 'path'
 import Events from 'events'
 import { BrowserWindow, BrowserView } from 'electron'
-import * as tabManager from '../tab-manager'
+import * as tabManager from '../tabs/manager'
 import { getAddedWindowSettings } from '../windows'
 
 // globals

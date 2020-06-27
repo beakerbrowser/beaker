@@ -1,7 +1,7 @@
 import { app, Tray, Menu, BrowserWindow, nativeTheme } from 'electron'
 import path from 'path'
 import { createShellWindow, restoreLastShellWindow } from './windows'
-import * as tabManager from './tab-manager'
+import * as tabManager from './tabs/manager'
 import * as settingsDb from '../dbs/settings'
 
 const IS_MAC = process.platform === 'darwin'
