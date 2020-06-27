@@ -242,12 +242,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://init' || requestUrl.startsWith('beaker://init/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'init'), cb, {fallbackToIndexHTML: true})
   }
-  if (requestUrl === 'beaker://sidebar' || requestUrl.startsWith('beaker://sidebar/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'sidebar'), cb, {
-      fallbackToIndexHTML: true,
-      CSP: SIDEBAR_CSP
-    })
-  }
   if (requestUrl === 'beaker://editor' || requestUrl.startsWith('beaker://editor/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'editor'), cb, {fallbackToIndexHTML: true})
   }

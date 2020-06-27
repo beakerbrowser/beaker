@@ -181,13 +181,15 @@ export default function registerContextMenu () {
           menuItems.push({
             label: 'Edit Source',
             click: async (item, win) => {
-              tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
+              // TODO
+              // tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
             }
           })
           menuItems.push({
             label: 'Explore Files',
             click: async (item, win) => {
-              tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
+              // TODO
+              // tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
             }
           })
           menuItems.push({

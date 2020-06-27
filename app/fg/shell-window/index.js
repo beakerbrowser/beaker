@@ -7,7 +7,6 @@ import { fromEventStream } from '../../bg/web-apis/fg/event-target'
 import './win32'
 import './tabs'
 import './navbar'
-import './sidebar-resizer'
 import './toolbar-menu'
 import './resize-hackfix'
 
@@ -146,9 +145,6 @@ class ShellWindowUI extends LitElement {
         this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
       }
     }
-    if (this.activeTab) {
-      this.shadowRoot.querySelector('shell-window-sidebar-resizer').requestUpdate()
-    }
   }
 
   // rendering
@@ -169,11 +165,6 @@ class ShellWindowUI extends LitElement {
           num-watchlist-notifications="${this.numWatchlistNotifications}"
         ></shell-window-navbar>
       `}
-      <shell-window-sidebar-resizer
-        class="${this.isShellInterfaceHidden ? 'fullheight' : ''}"
-        .activeTabIndex=${this.activeTabIndex}
-        .activeTab=${this.activeTab}
-      ></shell-window-sidebar-resizer>
       ${this.isShellInterfaceHidden ? '' : html`
         <shell-window-toolbar-menu
           .activeTabIndex=${this.activeTabIndex}

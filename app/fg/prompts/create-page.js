@@ -70,8 +70,9 @@ class CreatePagePrompt extends LitElement {
     // create the file
     await bg.hyperdrive.writeFile(joinPath(urlp.hostname, path), '')
     let newUrl = joinPath(urlp.origin, path)
-    bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
-    bg.prompts.executeSidebarCommand('set-context', 'editor-app', newUrl)
+    // TODO
+    // bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
+    // bg.prompts.executeSidebarCommand('set-context', 'editor-app', newUrl)
     bg.prompts.loadURL(newUrl)
   }
 }

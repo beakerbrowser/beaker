@@ -495,12 +495,6 @@ class WebTerm extends LitElement {
           inject (css) { return beaker.browser.injectCssInPage(css) },
           uninject (id) { return beaker.browser.uninjectCssInPage(id) }
         },
-        panel: {
-          open (panel, ...args) { return beaker.browser.executeSidebarCommand('show-panel', panel, ...args) },
-          close (panel) { return beaker.browser.executeSidebarCommand('hide-panel', panel) },
-          focus (panel) { return beaker.browser.executeSidebarCommand('focus-panel', panel) },
-          goto (panel, url) { return beaker.browser.executeSidebarCommand('set-context', panel, url) }
-        },
         out: (...args) => {
           args = args.map(arg => {
             if (arg && typeof arg === 'object' && !(arg instanceof TemplateResult) && !(arg instanceof HTMLElement)) { 
@@ -564,11 +558,7 @@ class WebTerm extends LitElement {
   }
 
   close () {
-    if (this.isDetached) {
-      window.close()
-    } else {
-      beaker.browser.executeSidebarCommand('hide-panel', 'web-term')
-    }
+    window.close()
   }
 
   lookupCommand (input) {

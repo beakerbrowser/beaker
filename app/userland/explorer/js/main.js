@@ -770,8 +770,9 @@ export class ExplorerApp extends LitElement {
         return
       }
       var url = joinPath(loc.getUrl(), filename)
-      await beaker.shell.executeSidebarCommand('show-panel', 'editor-app')
-      await beaker.shell.executeSidebarCommand('set-context', 'editor-app', url)
+      // TODO
+      // await beaker.shell.executeSidebarCommand('show-panel', 'editor-app')
+      // await beaker.shell.executeSidebarCommand('set-context', 'editor-app', url)
     }
   }
 

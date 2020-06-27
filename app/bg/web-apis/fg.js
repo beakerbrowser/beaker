@@ -15,10 +15,6 @@ export const setup = function () {
   }
   if (['beaker:', 'hyper:'].includes(window.location.protocol)) {
     contextBridge.exposeInMainWorld('experimental', experimental.setup(rpc)) // TODO remove?
-    // TEMPORARY
-    contextBridge.exposeInMainWorld('__internalBeakerEditor', {
-      open: () => ipcRenderer.send('temp-open-editor-sidebar')
-    })
   }
   if (window.location.protocol === 'beaker:' || /* TEMPRARY */ window.location.hostname.endsWith('hyperdrive.network')) {
     Object.assign(beaker, internal.setup(rpc))

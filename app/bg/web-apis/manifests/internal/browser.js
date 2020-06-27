@@ -35,13 +35,11 @@ export default {
   getResourceContentType: 'sync',
   getCertificate: 'promise',
 
-  executeSidebarCommand: 'promise',
   executeShellWindowCommand: 'promise',
   toggleSiteInfo: 'promise',
   toggleLiveReloading: 'promise',
   setWindowDimensions: 'promise',
   setWindowDragModeEnabled: 'promise',
-  setSidebarResizeModeEnabled: 'promise',
   moveWindow: 'promise',
   maximizeWindow: 'promise',
   toggleWindowMaximized: 'promise',

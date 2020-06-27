@@ -5,7 +5,6 @@ export default {
   selectDriveDialog: 'promise',
 
   // internal
-  executeSidebarCommand: 'promise',
   importFilesAndFolders: 'promise',
   importFilesDialog: 'promise',
   importFoldersDialog: 'promise',

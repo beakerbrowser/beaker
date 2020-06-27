@@ -646,11 +646,12 @@ class EditorApp extends LitElement {
   }
 
   onClickEditReal (e) {
-    beaker.browser.openUrl(this.mountInfo.url + this.mountInfo.resolvedPath, {
-      setActive: true,
-      adjacentActive: true,
-      sidebarPanels: ['editor-app']
-    })
+    // TODO
+    // beaker.browser.openUrl(this.mountInfo.url + this.mountInfo.resolvedPath, {
+    //   setActive: true,
+    //   adjacentActive: true,
+    //   sidebarPanels: ['editor-app']
+    // })
   }
 
   async onClickFileMetadata (e) {

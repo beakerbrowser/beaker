@@ -241,11 +241,7 @@ export function buildWindowMenu (opts = {}) {
             // a regular browser window
             let active = tabManager.getActive(win)
             if (active) {
-              if (active.isSidebarActive) {
-                active.closeSidebar()
-              } else {
-                tabManager.remove(win, active)
-              }
+              tabManager.remove(win, active)
             }
           } else {
             // devtools
@@ -376,7 +372,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow && !!isDriveSite,
         accelerator: 'CmdOrCtrl+E',
         click: async function (item) {
-          if (tab) tab.executeSidebarCommand('toggle-panel', 'files-explorer-app')
+          // TODO
+          // if (tab) tab.executeSidebarCommand('toggle-panel', 'files-explorer-app')
         }
       },
       {type: 'separator'},
@@ -585,7 +582,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'CmdOrCtrl+B',
         click: async function (item) {
-          if (tab) tab.executeSidebarCommand('toggle-panel', 'editor-app')
+          // TODO
+          // if (tab) tab.executeSidebarCommand('toggle-panel', 'editor-app')
         }
       },
       {
@@ -594,7 +592,8 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows && !isAppWindow,
         accelerator: 'Ctrl+`',
         click: function (item) {
-          if (tab) tab.executeSidebarCommand('toggle-panel', 'web-term')
+          // TODO
+          // if (tab) tab.executeSidebarCommand('toggle-panel', 'web-term')
         }
       },
       {

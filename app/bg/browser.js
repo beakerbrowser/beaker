@@ -115,16 +115,6 @@ export async function setup () {
     }
   })
 
-  // TEMPORARY HACK
-  // method to open the editor sidebar from untrusted pages
-  // -prf
-  ipcMain.on('temp-open-editor-sidebar', (e) => {
-    var win = findWebContentsParentWindow(e.sender)
-    if (win) {
-      tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
-    }
-  })
-
   // HACK
   // Electron doesn't give us a convenient way to check the content-types of responses
   // or to fetch the certs of a hostname
@@ -180,13 +170,11 @@ export const WEBAPI = {
     return hyperDaemon.setup()
   },
 
-  executeSidebarCommand,
   executeShellWindowCommand,
   toggleSiteInfo,
   toggleLiveReloading,
   setWindowDimensions,
   setWindowDragModeEnabled,
-  setSidebarResizeModeEnabled,
   moveWindow,
   maximizeWindow,
   toggleWindowMaximized,
@@ -334,10 +322,6 @@ export async function imageToIco (image) {
   return toIco(imageToPng, {resize: true})
 }
 
-async function executeSidebarCommand (...args) {
-  return getSenderTab(this.sender).executeSidebarCommand(...args)
-}
-
 async function executeShellWindowCommand (...args) {
   var win = findWebContentsParentWindow(this.sender)
   if (!win) return
@@ -399,26 +383,6 @@ export async function setWindowDragModeEnabled (enabled) {
     if (!_windowDragInterval) return
     clearInterval(_windowDragInterval)
     _windowDragInterval = undefined
-  }
-}
-
-var _sidebarResizeInterval = undefined
-export async function setSidebarResizeModeEnabled (enabled) {
-  var win = findWebContentsParentWindow(this.sender)
-  var tab = tabManager.getActive(win)
-  if (!win || !tab) return
-  if (enabled) {
-    if (_sidebarResizeInterval) return
-    // poll the mouse cursor every 15ms
-    _sidebarResizeInterval = setInterval(() => {
-      var bounds = win.getBounds()
-      var pt = screen.getCursorScreenPoint()
-      tab.setSidebarWidth(pt.x - bounds.x)
-    }, 15)
-  } else {
-    if (!_sidebarResizeInterval) return
-    clearInterval(_sidebarResizeInterval)
-    _sidebarResizeInterval = undefined
   }
 }
 

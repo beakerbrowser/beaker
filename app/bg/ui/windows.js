@@ -18,7 +18,6 @@ import * as locationBarSubwindow from './subwindows/location-bar'
 import * as promptsSubwindow from './subwindows/prompts'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
-import * as sidebarsSubwindow from './subwindows/sidebars'
 import * as siteInfoSubwindow from './subwindows/site-info'
 import * as tabSwitcherSubwindow from './subwindows/tab-switcher'
 import { findWebContentsParentWindow } from '../lib/electron'
@@ -37,7 +36,6 @@ const subwindows = {
   prompts: promptsSubwindow,
   permPrompt: permPromptSubwindow,
   modals: modalsSubwindow,
-  sidebars: sidebarsSubwindow,
   siteInfo: siteInfoSubwindow,
   tabSwitcher: tabSwitcherSubwindow
 }
@@ -116,17 +114,14 @@ export async function setup () {
       return
     }
 
-    // handle tab & sidebar webcontents
+    // handle tab webcontents
     var parentView = BrowserView.fromWebContents(wc)
     if (!parentView) return
     var parentWindow = findWebContentsParentWindow(parentView)
     if (!parentWindow) {
       parentWindow = tabManager.findContainingWindow(parentView)
       if (!parentWindow) {
-        parentWindow = sidebarsSubwindow.findContainingWindow(parentView)
-        if (!parentWindow) {
-          return
-        }
+        return
       }
     }
 

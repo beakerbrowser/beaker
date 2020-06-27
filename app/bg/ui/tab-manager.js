@@ -17,7 +17,6 @@ import * as statusBar from './subwindows/status-bar'
 import * as prompts from './subwindows/prompts'
 import * as permPrompt from './subwindows/perm-prompt'
 import * as modals from './subwindows/modals'
-import * as sidebars from './subwindows/sidebars'
 import * as siteInfo from './subwindows/site-info'
 import * as windowMenu from './window-menu'
 import { createShellWindow, getAddedWindowSettings, getOrCreateNonAppWindow } from './windows'
@@ -97,9 +96,6 @@ const STATE_VARS = [
   'canGoForward',
   'isAudioMuted',
   'isCurrentlyAudible',
-  'isSidebarActive',
-  'sidebarPanels',
-  'sidebarWidth',
   'isInpageFindActive',
   'currentInpageFindString',
   'currentInpageFindResults',
@@ -162,9 +158,6 @@ class Tab extends EventEmitter {
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab and background tabs
     this.isActive = false // is this the active page in the window?
     this.isPinned = Boolean(opts.isPinned) // is this page pinned?
-    this.isSidebarActive = false // is the sidebar open?
-    this.sidebarPanels = new Set() // the active sidebar panels
-    this.sidebarWidth = undefined // what is the current sidebar width?
     this.liveReloadEvents = null // live-reload event stream
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
@@ -357,7 +350,6 @@ class Tab extends EventEmitter {
 
   get state () {
     var state = _pick(this, STATE_VARS)
-    state.sidebarPanels = Array.from(state.sidebarPanels) // convert from a set to an array
     if (this.loadingURL) state.url = this.loadingURL
     return state
   }
@@ -367,12 +359,6 @@ class Tab extends EventEmitter {
       return {
         url: this.frameUrls[event.frameId],
         isMainFrame: event.frameId === this.mainFrameId
-      }
-    }
-    if (sidebars.get(this) && event.sender === sidebars.get(this).webContents) {
-      return {
-        url: sidebars.get(this).webContents.getURL(),
-        isMainFrame: true
       }
     }
     return {url: '', isMainFrame: false}
@@ -404,21 +390,12 @@ class Tab extends EventEmitter {
     if (getAddedWindowSettings(this.browserWindow).isShellInterfaceHidden) {
       y = 0
     }
-    if (this.isSidebarActive) {
-      // sidebar takes left side of the screen
-      x = (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
-      width -= (this.sidebarWidth + sidebars.HALF_SIDEBAR_EDGE_PADDING)
-    }
     return {x, y: y, width, height: height - y}
   }
 
   resize () {
     if (this.isHidden) return
     var {width, height} = this.browserWindow.getContentBounds()
-    if (this.isSidebarActive && width < this.sidebarWidth + 100) {
-      // shrink the sidebar to ensure the content stays visible
-      this.setSidebarWidth(width - 100)
-    }
     this.browserView.setBounds(this.calculateBounds({width, height}))
     prompts.reposition(this.browserWindow)
   }
@@ -429,7 +406,6 @@ class Tab extends EventEmitter {
 
     const win = this.browserWindow
     win.setBrowserView(this.browserView)
-    sidebars.show(this)
     prompts.show(this.browserView)
     permPrompt.show(this.browserView)
     modals.show(this.browserView)
@@ -446,12 +422,7 @@ class Tab extends EventEmitter {
 
   focus () {
     if (this.isHidden) return
-    if (this.isSidebarActive) {
-      let sidebar = sidebars.get(this)
-      if (sidebar) sidebar.webContents.focus()
-    } else {
-      this.webContents.focus()
-    }
+    this.webContents.focus()
   }
 
   deactivate () {
@@ -464,7 +435,6 @@ class Tab extends EventEmitter {
     prompts.hide(this.browserView)
     permPrompt.hide(this.browserView)
     modals.hide(this.browserView)
-    sidebars.hide(this)
     siteInfo.hide(this.browserWindow)
     var wasActive = this.isActive
     this.isActive = false
@@ -479,7 +449,6 @@ class Tab extends EventEmitter {
     prompts.close(this.browserView)
     permPrompt.close(this.browserView)
     modals.close(this.browserView)
-    sidebars.close(this)
     this.browserView.destroy()
     this.emit('destroyed')
   }
@@ -525,103 +494,6 @@ class Tab extends EventEmitter {
   toggleMuted () {
     this.webContents.setAudioMuted(!this.isAudioMuted)
     this.emitUpdateState()
-  }
-
-  async openSidebar () {
-    if (this.isHidden) return
-    if (this.isSidebarActive) return
-    
-    let v = sidebars.create(this)
-    v.webContents.loadURL('beaker://sidebar/')
-    var onDidFinishLoad = new Promise(r => v.webContents.on('did-finish-load', r))
-
-    this.sidebarWidth = clamp((this.browserWindow.getContentBounds().width / 2)|0, 100, 800)
-    if (this.isActive) {
-      sidebars.show(this)
-      v.webContents.focus()
-    }
-
-    this.isSidebarActive = true
-    this.sidebarPanels.clear()
-    this.resize()
-    this.emitUpdateState()
-    await onDidFinishLoad
-  }
-
-  async closeSidebar () {
-    if (!this.isSidebarActive) return
-    sidebars.close(this)
-    this.isSidebarActive = false
-    this.sidebarPanels.clear()
-    this.resize()
-    this.emitUpdateState()
-  }
-
-  async executeSidebarCommand (cmd, ...args) {
-    if (this.isHidden) return
-    if (getAddedWindowSettings(this.browserWindow).isAppWindow) {
-      // if in appwindow mode, open 'show-panel' as a new tab and ignore any other commands
-      if (cmd === 'show-panel') {
-        let url
-        let ctx = args[1] || this.url
-        switch (args[0]) {
-          case 'editor-app': url = `beaker://editor/?url=${encodeURI(ctx)}`; break
-          case 'files-explorer-app': url = `beaker://explorer/${encodeURI(ctx.slice('hyper://'.length))}`; break
-          case 'web-term': url = `beaker://webterm/?url=${encodeURI(ctx)}`; break
-        }
-        if (url) {
-          create(this.browserWindow, url, {setActive: true})
-        }
-      }
-      return
-    }
-
-    const wc = () => sidebars.get(this).webContents
-    const execJs = (js) => wc().executeJavaScript(js + '; undefined')
-    switch (cmd) {
-      case 'hide-panel':
-      case 'close':
-        if (!this.isSidebarActive) return
-      default:
-        await this.openSidebar()
-    }
-    switch (cmd) {
-      case 'show-panel':
-        this.sidebarPanels.add(args[0])
-        this.emitUpdateState()
-        wc().focus()
-        await execJs(`showPanel("${args[0]}", "${args[1] || this.url}")`)
-        break
-      case 'toggle-panel':
-        if (!this.sidebarPanels.has(args[0])) {
-          this.sidebarPanels.add(args[0])
-        } else {
-          this.sidebarPanels.delete(args[0])
-        }
-        this.emitUpdateState()
-        wc().focus()
-        await execJs(`togglePanel("${args[0]}", "${args[1] || this.url}")`)
-        break
-      case 'hide-panel':
-        this.sidebarPanels.delete(args[0])
-        this.emitUpdateState()
-        await execJs(`hidePanel("${args[0]}")`)
-        break
-      case 'set-context':       await execJs(`setContext("${args[0]}", "${args[1] || this.url}")`); break
-      case 'set-all-contexts':  await execJs(`setAllContexts("${args[0] || this.url}")`); break
-      case 'focus-panel':       wc().focus(); await execJs(`setFocus("${args[0]}")`); break
-      case 'close':             this.closeSidebar(); break
-    }
-  }
-
-  setSidebarWidth (v) {
-    if (this.isHidden) return
-    if (this.isSidebarActive) {
-      this.sidebarWidth = clamp(v|0, 100, this.browserWindow.getContentBounds().width - 100)
-      this.resize()
-      sidebars.repositionOne(this)
-      this.emitUpdateState({sidebarWidth: this.sidebarWidth})
-    }
   }
 
   async captureScreenshot () {
@@ -945,9 +817,6 @@ class Tab extends EventEmitter {
     this.isReceivingAssets = true
     this.favicons = null
     this.frameUrls = {[this.mainFrameId]: url} // drop all non-main-frame URLs
-    if (this.isSidebarActive) {
-      this.executeSidebarCommand('set-all-contexts', this.url)
-    }
     this.focus()
     await this.fetchIsBookmarked()
     await this.fetchDriveInfo()
@@ -1220,9 +1089,6 @@ export function findTab (browserView) {
       if (tab.browserView === browserView) {
         return tab
       }
-      if (tab.isSidebarActive && sidebars.get(tab) === browserView) {
-        return tab
-      }
     }
   }
   for (let tab of backgroundTabs) {
@@ -1256,8 +1122,7 @@ export function create (
       isPinned: false,
       focusLocationBar: false,
       adjacentActive: false,
-      tabIndex: undefined,
-      sidebarPanels: undefined
+      tabIndex: undefined
     }
   ) {
   url = url || defaultUrl
@@ -1329,11 +1194,6 @@ export function create (
 
   if (opts.focusLocationBar) {
     win.webContents.send('command', 'focus-location')
-  }
-  if (opts.sidebarPanels) {
-    for (let p of opts.sidebarPanels) {
-      tab.executeSidebarCommand('show-panel', p)
-    }
   }
 
   // create a new preloaded tab if needed
@@ -1872,10 +1732,6 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async toggleLiveReloading (index, enabled) {
     getByIndex(getWindow(this.sender), index).toggleLiveReloading(enabled)
-  },
-
-  async executeSidebarCommand (index, ...args) {
-    getByIndex(getWindow(this.sender), index).executeSidebarCommand(...args)
   },
 
   async toggleDevTools (index) {

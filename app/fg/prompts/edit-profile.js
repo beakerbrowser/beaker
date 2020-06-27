@@ -54,8 +54,9 @@ class EditProfilePrompt extends LitElement {
   // =
 
   async onClickEdit () {
-    await bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
-    await bg.prompts.executeSidebarCommand('set-context', 'editor-app', this.url)
+    // TODO
+    // await bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
+    // await bg.prompts.executeSidebarCommand('set-context', 'editor-app', this.url)
     await bg.prompts.closeEditProfilePromptForever()
   }
 }

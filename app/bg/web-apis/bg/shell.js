@@ -154,21 +154,6 @@ export default {
     return res.url
   },
 
-  /**
-   * Can only be used by beaker:// sites
-   * 
-   * @returns {Promise<void>}
-   */
-  async executeSidebarCommand (...args) {
-    var tab = tabManager.findTab(BrowserView.fromWebContents(this.sender))
-    if (!tab) return
-
-    var isAllowed = isBeakerApp(this.sender)
-    if (isAllowed) {
-      return tab.executeSidebarCommand(...args)
-    }
-  },
-
   async importFilesAndFolders (url, filePaths) {
     if (!(await isBeakerApp(this.sender))) return
     return doImport(this.sender, url, filePaths)
