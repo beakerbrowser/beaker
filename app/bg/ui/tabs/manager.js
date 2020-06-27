@@ -6,6 +6,7 @@ import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as rpc from 'pauls-electron-rpc'
 import { Pane } from './pane'
+import { PaneLayout } from './pane-layout'
 import viewsRPCManifest from '../../rpc-manifests/views'
 import * as zoom from './zoom'
 import * as shellMenus from '../subwindows/shell-menus'
@@ -21,6 +22,8 @@ import { findWebContentsParentWindow } from '../../lib/electron'
 import * as sitedataDb from '../../dbs/sitedata'
 import * as settingsDb from '../../dbs/settings'
 import hyper from '../../hyper/index'
+
+const Y_POSITION = 94
 
 // globals
 // =
@@ -43,6 +46,8 @@ class Tab extends EventEmitter {
     this.id = tabIdCounter++
     this.browserWindow = win
     this.panes = []
+    this.layout = new PaneLayout()
+    this.layout.on('changed', this.resize.bind(this))
 
     defineActivePanePassthroughGetter(this, 'url')
     defineActivePanePassthroughGetter(this, 'loadingURL')
@@ -81,6 +86,16 @@ class Tab extends EventEmitter {
     return this.panes.find(p => p.isActive)
   }
 
+  get tabBounds () {
+    var x = 0
+    var y = Y_POSITION
+    var {width, height} = this.browserWindow.getContentBounds()
+    if (getAddedWindowSettings(this.browserWindow).isShellInterfaceHidden) {
+      y = 0
+    }
+    return {x, y: y, width, height: height - y}
+  }
+
   getIPCSenderInfo (event) {
     for (let pane of this.panes) {
       let info = pane.getIPCSenderInfo(event)
@@ -93,9 +108,11 @@ class Tab extends EventEmitter {
   // =
 
   resize () {
-    if (this.isHidden) return
-    var {width, height} = this.browserWindow.getContentBounds()
-    // TODO
+    if (this.isHidden || !this.isActive) return
+    this.layout.computePanesBounds(this.tabBounds)
+    for (let pane of this.panes) {
+      pane.resize(this.layout.getBoundsForPane(pane))
+    }
   }
 
   activate () {
@@ -123,11 +140,12 @@ class Tab extends EventEmitter {
     }
 
     if (this.isActive) {
-      shellMenus.hide(this) // this will close the location menu if it's open
+      shellMenus.hide(this.browserWindow) // this will close the location menu if it's open
     }
-    permPrompt.hide(this)
-    modals.hide(this)
-    siteInfo.hide(this)
+    // TODO
+    // permPrompt.hide(this)
+    // modals.hide(this)
+    // siteInfo.hide(this)
 
     var wasActive = this.isActive
     this.isActive = false
@@ -172,16 +190,35 @@ class Tab extends EventEmitter {
   // panes
   // =
 
-  createPane () {
+  setActivePane (pane) {
+    if (this.activePane) this.activePane.isActive = false
+    pane.isActive = true
+  }
+
+  createPane ({after, splitDir} = {after: undefined, splitDir: 'vert'}) {
     var pane = new Pane(this)
     if (!this.activePane) this.setActivePane(pane)
     this.panes.push(pane)
     pane.show()
+
+    if (after) {
+      if (splitDir === 'vert') {
+        let stack = this.layout.findStack(after)
+        this.layout.addPane(pane, {after: stack})
+      } else {
+        var stack = this.layout.findStack(after)
+        this.layout.addPaneToStack(stack, pane, {after: after})
+      }
+    } else {
+      this.layout.addPane(pane)
+    }
+
+    return pane
   }
 
-  setActivePane (pane) {
-    if (this.activePane) this.activePane = false
-    pane.isActive = true
+  splitPane (origPane, splitDir = 'vert') {
+    var pane = this.createPane({after: origPane, splitDir})
+    pane.loadURL(origPane.url)
   }
 
   removePane (pane) {
@@ -191,6 +228,7 @@ class Tab extends EventEmitter {
       return
     }
     pane.destroy()
+    this.layout.removePane(pane)
     this.panes.splice(i, 1)
     if (this.panes.length === 0) {
       // always have one pane

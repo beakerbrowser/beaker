@@ -15,7 +15,6 @@ import * as permPrompt from '../subwindows/perm-prompt'
 import * as modals from '../subwindows/modals'
 import * as siteInfo from '../subwindows/site-info'
 import * as windowMenu from '../window-menu'
-import {  getAddedWindowSettings } from '../windows'
 import { getResourceContentType } from '../../browser'
 import * as setupFlow from '../setup-flow'
 import { DRIVE_KEY_REGEX } from '../../../lib/strings'
@@ -58,8 +57,6 @@ const TLS_ERROR_CODES = Object.values({
 })
 const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
 
-const Y_POSITION = 76
-export const TOOLBAR_HEIGHT = 18
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
 // the variables which are automatically sent to the shell-window for rendering
@@ -341,22 +338,9 @@ export class Pane extends EventEmitter {
     this.webContents.loadURL(url, opts)
   }
 
-  calculateBounds (windowBounds) {
-    if (this.tab.isHidden) return
-    var x = 0
-    var y = Y_POSITION + TOOLBAR_HEIGHT
-    var {width, height} = windowBounds
-    if (getAddedWindowSettings(this.browserWindow).isShellInterfaceHidden) {
-      y = 0
-    }
-    return {x, y: y, width, height: height - y}
-  }
-
-  resize () {
-    if (this.tab.isHidden) return
-    var {width, height} = this.browserWindow.getContentBounds()
-    this.browserView.setBounds(this.calculateBounds({width, height}))
-    prompts.reposition(this.browserWindow)
+  resize (bounds) {
+    this.browserView.setBounds(bounds)
+    // prompts.reposition(this.browserWindow) TODO
   }
 
   show () {
@@ -365,7 +349,6 @@ export class Pane extends EventEmitter {
     this.browserWindow.addBrowserView(this.browserView)
     prompts.show(this.browserView)
 
-    this.resize()
     this.webContents.focus()
     this.emit('showed')
   }

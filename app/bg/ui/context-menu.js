@@ -1,8 +1,8 @@
-import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
+import { app, Menu, clipboard, BrowserWindow, BrowserView, dialog } from 'electron'
 import path from 'path'
 import * as tabManager from './tabs/manager'
 import * as modals from './subwindows/modals'
-import { getAddedWindowSettings, toggleShellInterface } from './windows'
+import { toggleShellInterface } from './windows'
 import { download } from './downloads'
 import { runDrivePropertiesFlow } from './util'
 import * as settingsDb from '../dbs/settings'
@@ -31,7 +31,6 @@ export default function registerContextMenu () {
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
       var targetWindow = BrowserWindow.getFocusedWindow()
       if (!targetWindow) { return }
-      const addedWindowSettings = getAddedWindowSettings(targetWindow)
 
       // handle shell UI specially
       if (props.pageURL == 'beaker://shell-window/') { return }
@@ -161,6 +160,23 @@ export default function registerContextMenu () {
           label: 'Toggle Browser UI',
           click: function () {
             toggleShellInterface(targetWindow)
+          }
+        })
+        menuItems.push({ type: 'separator' })
+        menuItems.push({
+          label: 'Split Pane Vertically',
+          click () {
+            var tab = tabManager.getActive(targetWindow)
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.splitPane(pane, 'vert')
+          }
+        })
+        menuItems.push({
+          label: 'Split Pane Horizontally',
+          click () {
+            var tab = tabManager.getActive(targetWindow)
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.splitPane(pane, 'horz')
           }
         })
         menuItems.push({ type: 'separator' })
