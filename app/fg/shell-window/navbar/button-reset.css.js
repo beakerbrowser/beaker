@@ -15,6 +15,11 @@ button:focus {
 button:not(:disabled):hover {
   background: rgba(0,0,0,.05);
 }
+@media (prefers-color-scheme: dark) {
+  button:not(:disabled):hover {
+    background: rgba(0,0,0,.2);
+  }
+}
 
 button:disabled {
   opacity: 0.5;
@@ -23,5 +28,10 @@ button:disabled {
 button.pressed {
   background: rgba(0,0,0,.1);
   box-shadow: inset 0 2px 3px rgba(0,0,0,.2);
+}
+@media (prefers-color-scheme: dark) {
+  button.pressed {
+    background: rgba(0,0,0,.25);
+  }
 }
 `

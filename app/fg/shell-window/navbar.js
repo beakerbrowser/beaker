@@ -323,10 +323,10 @@ class ShellWindowNavbar extends LitElement {
 ShellWindowNavbar.styles = css`
 :host {
   display: flex;
-  background: var(--bg-foreground);
+  background: var(--bg-color--foreground);
   height: 28px;
   padding: 6px 0;
-  border-bottom: 1px solid var(--bg-background);
+  border-bottom: 1px solid var(--bg-color--background);
 }
 
 ${buttonResetCSS}
@@ -340,16 +340,11 @@ button .fa,
 button .far,
 button .fas {
   font-size: 16px;
-  color: #333;
-}
-
-button .fa-th {
-  -webkit-text-stroke: 1px #fff;
-  font-size: 14px;
+  color: var(--text-color--navbar-btn);
 }
 
 svg.icon * {
-  stroke: #666;
+  stroke: var(--stroke-color--navbar-btn);
 }
 
 svg.icon.refresh {
@@ -365,20 +360,20 @@ svg.icon.refresh {
   font-size: 15px;
   position: relative;
   top: -1px;
-  color: #555;
+  color: var(--text-color--navbar-btn--lighter);
 }
 
 .fas.fa-exclamation-triangle {
-  color: #FF9800;
+  color: var(--text-color--navbar-btn--warning);
 }
 
 .fas.fa-wifi {
-  color: #555;
+  color: var(--text-color--navbar-btn--lighter);
 }
 
 .fas.fa-arrow-alt-circle-up {
   font-size: 20px;
-  color: #67bf6b;
+  color: var(--text-color--navbar-btn--success);
 }
 
 .badge {
@@ -401,8 +396,8 @@ svg.icon.refresh {
   font-size: 8px;
   right: 2px;
   bottom: 4px;
-  color: #FF8F00;
-  -webkit-text-stroke: 2px #fff;
+  color: var(--text-color--navbar-btn--warning);
+  -webkit-text-stroke: 2px var(--bg-color--foreground);
 }
 
 .user-profile-btn {

@@ -40,7 +40,7 @@ div {
   right: 0;
   width: 150px;
   height: 33px;
-  border-bottom: 1px solid var(--color-tab-border);
+  border-bottom: 1px solid var(--border-color--tab);
 }
 
 a {

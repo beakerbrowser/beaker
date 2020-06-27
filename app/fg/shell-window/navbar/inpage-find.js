@@ -98,7 +98,8 @@ NavbarInpageFind.styles = [buttonResetCSS, css`
 
 input {
   flex: 1;
-  border: 1px solid var(--color-border-input);
+  background: var(--bg-color--input);
+  border: 1px solid var(--border-color--input);
   border-top-left-radius: 4px;
   border-bottom-left-radius: 4px;
   padding: 0 8px;
@@ -107,7 +108,7 @@ input {
   width: 100%;
   height: 26px;
 
-  color: #222;
+  color: var(--text-color--input);
   font-size: 13.5px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
   font-weight: 500;
@@ -116,11 +117,11 @@ input {
 
 input:focus {
   outline: 0;
-  border-color: var(--color-border-input--focused);
+  border-color: var(--border-color--input--focused);
 }
 
 button {
-  border: 1px solid var(--color-border-input);
+  border: 1px solid var(--border-color--input);
   border-left-width: 0;
   border-radius: 0;
   width: 30px;
@@ -136,9 +137,10 @@ button:last-child {
   position: absolute;
   right: 91px;
   font-size: 13px;
-  color: #bbb;
+  color: var(--text-color--input);
+  opacity: 0.7;
   top: 1px;
-  background: #fff;
+  background: var(--bg-color--input);
   height: 26px;
   line-height: 26px;
   padding: 0 9px;

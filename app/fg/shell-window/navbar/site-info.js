@@ -118,7 +118,7 @@ button {
   height: 26px;
   line-height: 27px;
   padding: 0 12px 0 10px;
-  background: var(--bg-cert-default);
+  background: var(--bg-color--cert--default);
   clip-path: polygon(0% 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
   white-space: nowrap;
   overflow: hidden;
@@ -126,23 +126,23 @@ button {
 }
 
 button:not(:disabled):hover {
-  background: var(--bg-cert-default--hover);
+  background: var(--bg-color--cert--default--hover);
 }
 
 button.trusted {
-  background: var(--bg-cert-trusted);
+  background: var(--bg-color--cert--trusted);
 }
 
 button.trusted:hover {
-  background: var(--bg-cert-trusted--hover);
+  background: var(--bg-color--cert--trusted--hover);
 }
 
 button.untrusted {
-  background: var(--bg-cert-untrusted);
+  background: var(--bg-color--cert--untrusted);
 }
 
 button.untrusted:hover {
-  background: var(--bg-cert-untrusted--hover);
+  background: var(--bg-color--cert--untrusted--hover);
 }
 
 button.hide-origin .label {
@@ -158,12 +158,6 @@ button.rounded {
 
 button.hidden {
   display: none;
-}
-
-.fa {
-  font-size: 11px;
-  line-height: 25px;
-  color: gray;
 }
 
 .fa-exclamation-triangle,
@@ -186,7 +180,7 @@ button.hidden {
 }
 
 .beaker-logo path {
-  fill: var(--color-trusted);
+  fill: var(--text-color--cert--trusted);
 }
 
 .fa-user {
@@ -211,28 +205,28 @@ button.hidden {
   line-height: 20px;
   border-radius: 4px;
   padding: 0 5px;
-  background: #4fb1ff;
-  color: #fff;
+  background: var(--bg-color--cert-sublabel);
+  color: var(--text-color--cert-sublabel);
 }
 
 .notrust {
-  color: var(--color-notrust);
+  color: var(--text-color--cert--notrust);
 }
 
 .trusted {
-  color: var(--color-trusted);
+  color: var(--text-color--cert--trusted);
 }
 
 .secure {
-  color: var(--color-secure);
+  color: var(--text-color--cert--secure);
 }
 
 .warning {
-  color: var(--color-warning);
+  color: var(--text-color--cert--warning);
 }
 
 .untrusted {
-  color: var(--color-untrusted);
+  color: var(--text-color--cert--untrusted);
 }
 `]
 customElements.define('shell-window-navbar-site-info', NavbarSiteInfo)

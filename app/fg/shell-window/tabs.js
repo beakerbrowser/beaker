@@ -230,9 +230,9 @@ class ShellWindowTabs extends LitElement {
     ], {iterations: 1, duration: Math.max(Math.min(dist / 6, 400), 100)}).onfinish = () => {
       animElem.remove()
       dstEl.animate([
-        {background: 'var(--bg-background)'},
-        {background: 'var(--bg-tab--hover)'},
-        {background: 'var(--bg-background)'}
+        {background: 'var(--bg-color--background)'},
+        {background: 'var(--bg-color--tab--hover)'},
+        {background: 'var(--bg-color--background)'}
       ], {duration: 250, iterations: 1})
     }
   }
@@ -384,7 +384,7 @@ ${spinnerCSS}
 
 .shell {
   font-family: sans-serif;
-  background: var(--bg-background);
+  background: var(--bg-color--background);
   position: relative;
   height: 34px;
 }
@@ -396,7 +396,7 @@ ${spinnerCSS}
 .tabs {
   display: flex;
   padding: 0 18px 0 10px;
-  border-bottom: 1px solid var(--color-tab-border);
+  border-bottom: 1px solid var(--border-color--tab);
   height: 33px;
   max-width: calc(100% - 38px);
 }
@@ -405,15 +405,16 @@ ${spinnerCSS}
   width: 38px;
   height: 30px;
   background: transparent;
+  color: var(--text-color--bg-tabs-btn);
   border: 0;
-  border-left: 1px solid var(--color-tab-border);
+  border-left: 1px solid var(--border-color--tab);
   margin-top: 3px;
   outline: 0;
 }
 
 .background-tray-btn:hover,
 .background-tray-btn.pressed {
-  background: var(--bg-tab--hover);
+  background: var(--bg-color--tab--hover);
 }
 
 .background-tray-btn span {
@@ -442,9 +443,9 @@ ${spinnerCSS}
   height: 30px;
   width: 235px;
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
-  background: var(--bg-background);
+  background: var(--bg-color--background);
   transition: background 0.3s;
-  border-left: 1px solid var(--color-tab-border);
+  border-left: 1px solid var(--border-color--tab);
 }
 
 .tab.pinned {
@@ -479,7 +480,7 @@ ${spinnerCSS}
 }
 
 .tab-title {
-  color: var(--color-tab);
+  color: var(--text-color--tab--title);
   font-size: 11.5px;
   letter-spacing: 0.2px;
   padding: 9px 11px 9px 30px;
@@ -500,13 +501,13 @@ ${spinnerCSS}
   right: 10px;
   font-size: 12px;
   color: rgba(0,0,0,.6);
-  background: var(--bg-background);
+  background: var(--bg-color--background);
   padding: 2px 0 2px 4px;
 }
 
 .tab.current .fa-volume-up,
 .tab.current .fa-volume-mute {
-  background: var(--bg-foreground);
+  background: var(--bg-color--foreground);
 }
 
 .tab-nofavicon .tab-title {
@@ -523,8 +524,8 @@ ${spinnerCSS}
   z-index: 4;
   border-radius: 2px;
   text-align: center;
-  color: var(--color-tab-close);
-  background: var(--bg-background);
+  color: var(--text-color--tab--close);
+  background: var(--bg-color--background);
   transition: background 0.3s;
 }
 
@@ -570,13 +571,13 @@ ${spinnerCSS}
 .tab-close:active,
 .tab-minimize:hover,
 .tab-minimize:active  {
-  background: var(--bg-tab-close--hover);
+  background: var(--bg-color--tab-close--hover);
 }
 
 .tab:not(.current):hover,
 .tab:not(.current):hover .fa-volume-up,
 .tab:not(.current):hover .fa-volume-mute {
-  background: var(--bg-tab--hover);
+  background: var(--bg-color--tab--hover);
 }
 
 .tab.current:hover .tab-title {
@@ -586,17 +587,17 @@ ${spinnerCSS}
 .tab:hover .tab-close,
 .tab:hover .tab-minimize {
   opacity: 1;
-  background: var(--bg-tab--hover);
+  background: var(--bg-color--tab--hover);
 }
 
 .tab:hover .tab-close:hover,
 .tab:hover .tab-minimize:hover {
-  background: var(--bg-tab-close--hover);
+  background: var(--bg-color--tab-close--hover);
 }
 
 .tab.current:hover .tab-close:hover,
 .tab.current:hover .tab-minimize:hover {
-  background: var(--bg-tab-close--current--hover);
+  background: var(--bg-color--tab-close--current--hover);
 }
 
 .tab:hover .tab-close:before,
@@ -605,7 +606,7 @@ ${spinnerCSS}
 }
 
 .tab.current {
-  background: var(--bg-tab--current);
+  background: var(--bg-color--tab--current);
   height: 31px;
 }
 
@@ -616,16 +617,16 @@ ${spinnerCSS}
   top: -3px;
   width: calc(100% + 2px);
   height: 3px;
-  background: var(--color-current-tab-highlight);
+  background: var(--highlight-color--tab--current);
 }
 
 .tab.current .tab-close,
 .tab.current .tab-minimize {
-  background: var(--bg-tab--current);
+  background: var(--bg-color--tab--current);
 }
 
 .tab.drag-hover {
-  background: var(--bg-tab--drag-over);
+  background: var(--bg-color--tab--dragover);
 }
 
 .tab.tab-add-btn {
@@ -638,7 +639,7 @@ ${spinnerCSS}
   display: block;
   font-size: 22px;
   font-weight: 300;
-  color: var(--color-tab-add);
+  color: var(--text-color--tab--add);
   margin: 3px 7px;
   width: 26px;
   height: 25px;
@@ -651,7 +652,7 @@ ${spinnerCSS}
 }
 
 .tab-add-btn:hover .plus {
-  color: var(--color-tab-add--hover);
+  color: var(--text-color--tab--add--hover);
 }
 
 /* make room for traffic lights */

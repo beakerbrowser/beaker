@@ -28,9 +28,9 @@ class ShellWindowToolbarMenu extends LitElement {
       letter-spacing: 0.4px;
       padding: 1px 5px;
       box-sizing: border-box;
-      border-bottom: 1px solid var(--color-toolbar-border);
-      background: var(--bg-toolbar);
-      color: var(--color-toolbar);
+      border-bottom: 1px solid var(--border-color--toolbar);
+      background: var(--bg-color--toolbar);
+      color: var(--text-color--toolbar);
       user-select: none;
     }
     .loading-bar {
@@ -65,12 +65,12 @@ class ShellWindowToolbarMenu extends LitElement {
       text-overflow: ellipsis;
     }
     a:hover {
-      background: var(--bg-toolbar--hover);
-      color: var(--color-toolbar--hover);
+      background: var(--bg-color--toolbar--hover);
+      color: var(--text-color--toolbar--hover);
     }
     a.pressed {
-      background: var(--bg-toolbar--pressed);
-      color: var(--color-toolbar--pressed);
+      background: var(--bg-color--toolbar--pressed);
+      color: var(--text-color--toolbar--pressed);
     }
     a .fa-edit,
     a .fa-terminal {
@@ -89,7 +89,7 @@ class ShellWindowToolbarMenu extends LitElement {
       margin: 6px 10px 2px 6px;
       width: 1px;
       height: 10px;
-      background-color: var(--color-tab-border);
+      background-color: var(--border-color--tab);
     }
     `
   }

@@ -500,25 +500,25 @@ NavbarLocation.styles = [buttonResetCSS, tooltipCSS, css`
 :host {
   display: flex;
   flex: 1;
-  background: var(--bg-input);
-  border: 1px solid var(--color-border-input);
+  background: var(--bg-color--location-input);
+  border: 1px solid var(--border-color--location-input);
   border-radius: 16px;
   padding-right: 8px;
   user-select: none;
 }
 
 :host(.trusted) {
-  border: 1px solid var(--color-border-input--trusted);
+  border: 1px solid var(--border-color--location-input--trusted);
 }
 
 :host(.untrusted) {
-  border: 1px solid var(--color-border-input--untrusted);
+  border: 1px solid var(--border-color--location-input--untrusted);
 }
 
 button {
   width: 27px;
   border-radius: 0;
-  color: #666;
+  color: var(--text-color--location-btn);
 }
 
 button.text {
@@ -547,7 +547,7 @@ button.bookmark .fa-star {
 }
 
 button.bookmark .fas.fa-star {
-  color: #2196F3;
+  color: var(--text-color--location-bookmark--pressed);
 }
 
 button .fa-link {
@@ -558,33 +558,33 @@ button.zoom {
   width: auto;
   font-size: 11px;
   line-height: 10px;
-  background: #f5f5f5;
+  background: var(--bg-color--location-zoom);
   border-radius: 10px;
   margin: 4px;
   padding: 0 9px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color--location-zoom);
   font-weight: 500;
 }
 
 button.zoom:hover {
-  background: #eaeaea;
+  background: var(--bg-color--location-zoom--hover);
 }
 
 button.dat-converter {
   width: auto;
   font-size: 13px;
   line-height: 23px;
-  background: #008dff;
+  background: var(--bg-color--location-dat-convert-btn);
   border-radius: 5px;
   margin: 2px;
   padding: 0 9px;
   font-weight: 500;
-  color: #fff;
+  color: var(--text-color--location-dat-convert-btn);
 }
 
 button.dat-converter:hover {
   cursor: pointer;
-  background: #0076d6;
+  background: var(--bg-color--location-dat-convert-btn--hover);
 }
 
 button.live-reload {
@@ -593,16 +593,16 @@ button.live-reload {
 
 button.live-reload .fa {
   font-size: 14px;
-  color: #ffff91;
-  -webkit-text-stroke: 1px #daba47;
-  text-shadow: 0 0 8px gold;
+  color: var(--text-color--location-live-reload-btn);
+  -webkit-text-stroke: 1px var(--text-stroke-color--location-live-reload-btn);
+  text-shadow: 0 0 8px var(--text-shadow-color--location-live-reload-btn);
   animation: bolt-glow 2s infinite linear;
 }
 
 @keyframes bolt-glow {
-  0% { text-shadow: 0 0 8px gold; }
-  50% { text-shadow: 0 0 0px gold; }
-  100% { text-shadow: 0 0 8px gold; }
+  0% { text-shadow: 0 0 8px var(--text-shadow-color--location-live-reload-btn); }
+  50% { text-shadow: 0 0 0px var(--text-shadow-color--location-live-reload-btn); }
+  100% { text-shadow: 0 0 8px var(--text-shadow-color--location-live-reload-btn); }
 }
 
 button.folder-sync {
@@ -635,8 +635,8 @@ input {
   height: 26px;
   overflow: hidden;
 
-  color: var(--color-input);
-  background: var(--bg-input);
+  color: var(--text-color--location-input);
+  background: var(--bg-color--location-input);
   font-size: 12.5px;
   line-height: 27px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
@@ -659,21 +659,21 @@ input::-webkit-input-placeholder {
 }
 
 .input-pretty .protocol {
-  color: var(--color-text--light);
+  color: var(--text-color--location-input--light);
 }
 
 .input-pretty .protocol-trusted {
-  color: var(--color-trusted);
+  color: var(--text-color--cert--trusted);
 }
 
 .input-pretty .protocol-untrusted {
-  color: var(--color-untrusted);
+  color: var(--text-color--cert--untrusted);
 }
 
 .input-pretty .host-version,
 .input-pretty .syntax,
 .input-pretty .path {
-  color: var(--color-text--light);
+  color: var(--text-color--location-input--light);
   white-space: nowrap;
   font-weight: 400;
 }
@@ -686,24 +686,12 @@ input::-webkit-input-placeholder {
   min-width: 32px;
   padding: 0 5px;
   font-size: 13px;
-  color: #666;
 }
 
 .peers .fas {
   font-size: 11px;
   position: relative;
   top: -1px;
-}
-
-.label {
-  font-size: 11px;
-  background: none;
-  color: #555;
-  letter-spacing: 0.5px;
-  height: 18px;
-  margin: 4px 6px;
-  line-height: 18px;
-  padding: 0 2px;
 }
 `]
 customElements.define('shell-window-navbar-location', NavbarLocation)
