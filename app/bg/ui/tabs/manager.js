@@ -98,7 +98,6 @@ const STATE_VARS = [
   'isInpageFindActive',
   'currentInpageFindString',
   'currentInpageFindResults',
-  // 'availableAlternative',
   'donateLinkHref',
   'isLiveReloading',
   'tabCreationTime'
@@ -113,7 +112,6 @@ var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var lastSelectedTabIndex = {} // map of {[win.id]: Number}
 var closedURLs = {} // map of {[win.id]: Array<string>}
 var windowEvents = {} // mapof {[win.id]: EventEmitter}
-var noRedirectHostnames = new Set() // set of hostnames which have drive-redirection disabled
 var nextTabIsScriptCloseable = false // will the next tab created be "script closable"?
 var defaultUrl = 'beaker://desktop/'
 
@@ -170,7 +168,6 @@ class Tab extends EventEmitter {
     this.driveInfo = null // metadata about the site if viewing a hyperdrive
     this.confirmedAuthorTitle = undefined // the title of the confirmed author of the site
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
-    this.availableAlternative = '' // tracks if there's alternative protocol available for the site
     this.wasDriveTimeout = false // did the last navigation result in a timed-out hyperdrive?
     this.tabCreationTime = 0 // when was the tab created?
 
@@ -537,34 +534,6 @@ class Tab extends EventEmitter {
     this.webContents.findInPage(this.currentInpageFindString, {findNext: false, forward: dir !== -1})
   }
 
-  // alternative protocols
-  // =
-
-  async checkForHyperdriveAlternative (url) {
-    return // DISABLED
-/*
-    let u = (new URL(url))
-    // try to do a name lookup
-    var siteHasDatAlternative = await hyper.dns.resolveName(u.hostname).then(
-      res => Boolean(res),
-      err => false
-    )
-    if (siteHasDatAlternative) {
-      var autoRedirectToDat = !!await settingsDb.get('auto_redirect_to_dat')
-      if (autoRedirectToDat && !noRedirectHostnames.has(u.hostname)) {
-        // automatically redirect
-        let datUrl = url.replace(u.protocol, 'dat:')
-        this.loadURL(datUrl)
-      } else {
-        // track that dat is available
-        this.availableAlternative = 'dat:'
-      }
-    } else {
-      this.availableAlternative = ''
-    }
-    this.emitUpdateState()*/
-  }
-
   // live reloading
   // =
 
@@ -821,13 +790,6 @@ class Tab extends EventEmitter {
     this.isLoading = false
     this.loadingURL = null
     this.isReceivingAssets = false
-
-    // check for hyperdrive alternatives
-    if (this.url.startsWith('https://')) {
-      this.checkForHyperdriveAlternative(this.url)
-    } else {
-      this.availableAlternative = ''
-    }
 
     // run custom renderer apps
     this.injectCustomRenderers()
@@ -1580,20 +1542,13 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     }))
   },
 
-  async createTab (url, opts = {focusLocationBar: false, setActive: false, addToNoRedirects: false}) {
-    if (opts.addToNoRedirects) {
-      addToNoRedirects(url)
-    }
-
+  async createTab (url, opts = {focusLocationBar: false, setActive: false}) {
     var win = getWindow(this.sender)
     var tab = create(win, url, opts)
     return getAll(win).indexOf(tab)
   },
 
-  async loadURL (index, url, opts = {addToNoRedirects: false}) {
-    if (opts.addToNoRedirects) {
-      addToNoRedirects(url)
-    }
+  async loadURL (index, url) {
     if (url === '$new_tab') {
       url = defaultUrl
     }
@@ -1808,15 +1763,6 @@ function toOrigin (str) {
     var u = new URL(str)
     return u.protocol + '//' + u.hostname + (u.port ? `:${u.port}` : '') + '/'
   } catch (e) { return '' }
-}
-
-function addToNoRedirects (url) {
-  try {
-    var u = new URL(url)
-    noRedirectHostnames.add(u.hostname)
-  } catch (e) {
-    console.log('Failed to add URL to noRedirectHostnames', url, e)
-  }
 }
 
 async function fireBeforeUnloadEvent (wc) {
