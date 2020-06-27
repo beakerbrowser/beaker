@@ -367,9 +367,6 @@ class Tab extends EventEmitter {
   // =
 
   loadURL (url, opts) {
-    if (url === '$new_tab') {
-      url = defaultUrl
-    }
     if (this.browserWindow && getAddedWindowSettings(this.browserWindow).isAppWindow) {
       if (this.url && toOrigin(this.url) !== toOrigin(url)) {
         // we never navigate out of app windows
@@ -1629,7 +1626,9 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     if (opts.addToNoRedirects) {
       addToNoRedirects(url)
     }
-
+    if (url === '$new_tab') {
+      url = defaultUrl
+    }
     getByIndex(getWindow(this.sender), index).loadURL(url)
   },
 
