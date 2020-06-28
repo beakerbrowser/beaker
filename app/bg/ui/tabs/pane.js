@@ -57,6 +57,7 @@ const TLS_ERROR_CODES = Object.values({
 })
 const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
 
+const PANE_BORDER_WIDTH = 2
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
 // the variables which are automatically sent to the shell-window for rendering
@@ -135,6 +136,7 @@ export class Pane extends EventEmitter {
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
+    this.fadeoutCssId = undefined // injected CSS id to fade out the page content
 
     // helper state
     this.folderSyncPath = undefined // current folder sync path
@@ -339,7 +341,12 @@ export class Pane extends EventEmitter {
   }
 
   resize (bounds) {
-    this.browserView.setBounds(bounds)
+    this.browserView.setBounds({
+      x: bounds.x + PANE_BORDER_WIDTH,
+      y: bounds.y + PANE_BORDER_WIDTH,
+      width: bounds.width - PANE_BORDER_WIDTH * 2,
+      height: bounds.height - PANE_BORDER_WIDTH * 2
+    })
     // prompts.reposition(this.browserWindow) TODO
   }
 
@@ -388,6 +395,17 @@ export class Pane extends EventEmitter {
       this.on('showed', showed)
       this.on('destroyed', destroyed)
     })
+  }
+
+  async fadeout () {
+    if (this.fadeoutCssId) return
+    this.fadeoutCssId = await this.webContents.insertCSS(`body { opacity: 0.5 }`)
+  }
+
+  async fadein () {
+    if (!this.fadeoutCssId) return
+    await this.webContents.removeInsertedCSS(this.fadeoutCssId)
+    this.fadeoutCssId = undefined
   }
 
   transferWindow (targetWindow) {

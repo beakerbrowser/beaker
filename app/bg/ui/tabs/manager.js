@@ -79,7 +79,8 @@ class Tab extends EventEmitter {
     var state = activePane ? this.activePane.state : {}
     return Object.assign(state, {
       isActive: this.isActive,
-      isPinned: this.isPinned
+      isPinned: this.isPinned,
+      paneLayout: this.layout.state
     })
   }
 
@@ -192,8 +193,13 @@ class Tab extends EventEmitter {
   // =
 
   setActivePane (pane) {
-    if (this.activePane) this.activePane.isActive = false
+    if (this.activePane === pane) return
+    if (this.activePane) {
+      this.activePane.fadeout()
+      this.activePane.isActive = false
+    }
     pane.isActive = true
+    pane.fadein()
     emitUpdateState(this)
   }
 

@@ -106,12 +106,8 @@ class ShellWindowToolbarMenu extends LitElement {
 
   render () {
     const sidebarBtn = (panel, label) => {
-      var panels = this.activeTab ? this.activeTab.sidebarPanels : []
       return html`
-        <a
-          class=${classMap({pressed: panels.includes(panel)})}
-          @mousedown=${e => this.onMousedownSidebarToggle(e, panel)}
-        >${label}</a>
+        <a @mousedown=${e => this.onMousedownSidebarToggle(e, panel)}>${label}</a>
       `
     }
 

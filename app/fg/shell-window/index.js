@@ -7,6 +7,7 @@ import { fromEventStream } from '../../bg/web-apis/fg/event-target'
 import './win32'
 import './tabs'
 import './navbar'
+import './panes'
 import './toolbar-menu'
 import './resize-hackfix'
 
@@ -145,6 +146,7 @@ class ShellWindowUI extends LitElement {
         this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
       }
     }
+    this.shadowRoot.querySelector('shell-window-panes').requestUpdate()
   }
 
   // rendering
@@ -171,6 +173,7 @@ class ShellWindowUI extends LitElement {
           .activeTab=${this.activeTab}
         ></shell-window-toolbar-menu>
       `}
+      <shell-window-panes .activeTab=${this.activeTab}></shell-window-panes>
     `
   }
 

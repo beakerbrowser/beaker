@@ -8,13 +8,14 @@ export class PaneLayout extends EventEmitter {
   }
 
   get state () {
-    let state = {}
+    let state = []
     for (let id in this.bounds) {
       let b = this.bounds[id]
-      state[id] = {
-        title: b.pane.title,
+      state.push({
+        id,
+        isActive: b.pane.isActive,
         bounds: {x: b.x, y: b.y, width: b.width, height: b.height}
-      }
+      })
     }
     return state
   }
