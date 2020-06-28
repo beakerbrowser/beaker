@@ -238,9 +238,7 @@ export function buildWindowMenu (opts = {}) {
           if (win) {
             // a regular browser window
             let active = tabManager.getActive(win)
-            if (active) {
-              tabManager.remove(win, active)
-            }
+            if (active) active.removePane(active.activePane)
           } else {
             // devtools
             let wc = getFocusedDevToolsHost()

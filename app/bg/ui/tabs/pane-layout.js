@@ -99,7 +99,7 @@ class PaneLayoutStack {
 function insert (arr, item, after = undefined) {
   if (after) {
     let i = arr.indexOf(after)
-    if (i !== -1) arr.splice(i, 0, item)
+    if (i !== -1) arr.splice(i + 1, 0, item)
     else arr.push(item)
   } else {
     arr.push(item)

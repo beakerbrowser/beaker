@@ -75,7 +75,8 @@ class Tab extends EventEmitter {
   }
 
   get state () {
-    var state = this.activePane.state
+    var activePane = this.activePane
+    var state = activePane ? this.activePane.state : {}
     return Object.assign(state, {
       isActive: this.isActive,
       isPinned: this.isPinned
@@ -532,41 +533,42 @@ export async function restoreBgTabByIndex (win, index) {
 
 export async function remove (win, tab) {
   win = getTopWindow(win)
-  // find
+  var wasActive = tab.isActive
+
   var tabs = getAll(win)
   var i = tabs.indexOf(tab)
   if (i == -1) {
     return console.warn('tabs/manager remove() called for missing tab', tab)
   }
 
+  // TODO
   // give the 'onbeforeunload' a chance to run
-  var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(tab.webContents)
-  if (onBeforeUnloadReturnValue) {
-    var choice = dialog.showMessageBoxSync({
-      type: 'question',
-      buttons: ['Leave', 'Stay'],
-      title: 'Do you want to leave this site?',
-      message: 'Changes you made may not be saved.',
-      defaultId: 0,
-      cancelId: 1
-    })
-    var leave = (choice === 0)
-    if (!leave) return
-  }
+  // var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(tab.webContents)
+  // if (onBeforeUnloadReturnValue) {
+  //   var choice = dialog.showMessageBoxSync({
+  //     type: 'question',
+  //     buttons: ['Leave', 'Stay'],
+  //     title: 'Do you want to leave this site?',
+  //     message: 'Changes you made may not be saved.',
+  //     defaultId: 0,
+  //     cancelId: 1
+  //   })
+  //   var leave = (choice === 0)
+  //   if (!leave) return
+  // }
 
+  // TODO
   // save, in case the user wants to restore it
-  closedURLs[win.id] = closedURLs[win.id] || []
-  closedURLs[win.id].push(tab.url)
+  // closedURLs[win.id] = closedURLs[win.id] || []
+  // closedURLs[win.id].push(tab.url)
 
-  // set new active if that was
-  if (tab.isActive && tabs.length > 1) {
-    setActive(win, tabs[i + 1] || tabs[i - 1])
-  }
-
-  // remove
-  tab.stopLiveReloading()
   tabs.splice(i, 1)
   tab.destroy()
+
+  // set new active if that was
+  if (tabs.length >= 1 && wasActive) {
+    setActive(win, tabs[i] || tabs[i - 1])
+  }
 
   // persist pins w/o this one, if that was
   if (tab.isPinned) savePins(win)
@@ -1093,7 +1095,8 @@ function defineActivePanePassthroughGetter (obj, name) {
   Object.defineProperty(obj, name, {
     enumerable: true,
     get () {
-      return obj.activePane[name]
+      var pane = obj.activePane
+      return pane ? pane[name] : undefined
     }
   })
 }
