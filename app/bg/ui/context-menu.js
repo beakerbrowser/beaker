@@ -58,6 +58,23 @@ export default function registerContextMenu () {
         menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
         menuItems.push({ label: 'Save Link As...', click: downloadPrompt('linkURL', '.html') })
         menuItems.push({ type: 'separator' })
+        menuItems.push({
+          label: 'Open in Pane Right',
+          click () {
+            var tab = tabManager.getActive(targetWindow)
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'vert'})
+          }
+        })
+        menuItems.push({
+          label: 'Open in Pane Below',
+          click () {
+            var tab = tabManager.getActive(targetWindow)
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'horz'})
+          }
+        })
+        menuItems.push({ type: 'separator' })
       }
 
       // images
@@ -66,6 +83,23 @@ export default function registerContextMenu () {
         menuItems.push({ label: 'Copy Image', click: () => webContents.copyImageAt(props.x, props.y) })
         menuItems.push({ label: 'Copy Image URL', click: () => clipboard.writeText(props.srcURL) })
         menuItems.push({ label: 'Open Image in New Tab', click: (item, win) => tabManager.create(win, props.srcURL, {adjacentActive: true}) })
+        menuItems.push({ type: 'separator' })
+        menuItems.push({
+          label: 'Open in Pane Right',
+          click () {
+            var tab = tabManager.getActive(targetWindow)
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'vert'})
+          }
+        })
+        menuItems.push({
+          label: 'Open in Pane Below',
+          click () {
+            var tab = tabManager.getActive(targetWindow)
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'horz'})
+          }
+        })
         menuItems.push({ type: 'separator' })
       }
 

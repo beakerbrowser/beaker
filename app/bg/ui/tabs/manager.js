@@ -203,7 +203,7 @@ class Tab extends EventEmitter {
     emitUpdateState(this)
   }
 
-  createPane ({after, splitDir} = {after: undefined, splitDir: 'vert'}) {
+  createPane ({url, setActive, after, splitDir} = {url: undefined, setActive: false, after: undefined, splitDir: 'vert'}) {
     var pane = new Pane(this)
     this.panes.push(pane)
     if (!this.activePane) this.setActivePane(pane)
@@ -220,6 +220,9 @@ class Tab extends EventEmitter {
     } else {
       this.layout.addPane(pane)
     }
+
+    if (url) pane.loadURL(url)
+    if (setActive) this.setActivePane(pane)
 
     return pane
   }
