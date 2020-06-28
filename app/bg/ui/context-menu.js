@@ -179,6 +179,14 @@ export default function registerContextMenu () {
             if (tab && pane) tab.splitPane(pane, 'horz')
           }
         })
+        menuItems.push({
+          label: 'Close Pane',
+          click () {
+            var tab = tabManager.getActive(targetWindow)
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.removePane(pane)
+          }
+        })
         menuItems.push({ type: 'separator' })
         menuItems.push({
           label: 'Export Page As...',

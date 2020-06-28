@@ -193,12 +193,13 @@ class Tab extends EventEmitter {
   setActivePane (pane) {
     if (this.activePane) this.activePane.isActive = false
     pane.isActive = true
+    emitUpdateState(this)
   }
 
   createPane ({after, splitDir} = {after: undefined, splitDir: 'vert'}) {
     var pane = new Pane(this)
-    if (!this.activePane) this.setActivePane(pane)
     this.panes.push(pane)
+    if (!this.activePane) this.setActivePane(pane)
     pane.show()
 
     if (after) {
@@ -227,12 +228,15 @@ class Tab extends EventEmitter {
       console.warn('Tried to remove pane that is not on tab', pane, this)
       return
     }
-    pane.destroy()
-    this.layout.removePane(pane)
     this.panes.splice(i, 1)
+    this.layout.removePane(pane)
+    pane.destroy()
     if (this.panes.length === 0) {
       // always have one pane
       remove(this.browserWindow, this)
+    } else if (!this.activePane) {
+      // choose a new active pane
+      this.setActivePane(this.panes[0])
     }
   }
 
@@ -255,7 +259,7 @@ class Tab extends EventEmitter {
   emitPaneUpdateState (pane) {
     if (this.isHidden) return
     if (!pane.isActive) return
-    emitUpdateState(this, this.state)
+    emitUpdateState(this)
   }
 }
 
@@ -284,10 +288,21 @@ export async function setup () {
     e.returnValue = false
   })
   ipcMain.on('BEAKER_WC_FOCUSED', e => {
-    // TODO- needed?
-    // var browserView = BrowserView.fromWebContents(e.sender)
-    // var tab = browserView ? findTab(browserView) : undefined
-    // if (tab) tab.previouslyFocusedWebcontents = e.sender
+    // when a pane is focused, we want to set it as the
+    // active pane of its tab
+    var browserView = BrowserView.fromWebContents(e.sender)
+    if (!browserView) return
+    for (let winId in activeTabs) {
+      for (let tab of activeTabs[winId]) {
+        var pane = tab.findPane(browserView)
+        if (pane) {
+          if (tab.activePane !== pane) {
+            tab.setActivePane(pane)
+          }
+          return
+        }
+      }
+    }
   })
 
   // track daemon connectivity
@@ -344,13 +359,13 @@ export function getActive (win) {
 export function findTab (browserView) {
   for (let winId in activeTabs) {
     for (let tab of activeTabs[winId]) {
-      if (tab.browserView === browserView) {
+      if (tab.findPane(browserView)) {
         return tab
       }
     }
   }
   for (let tab of backgroundTabs) {
-    if (tab.browserView === browserView) {
+    if (tab.findPane(browserView)) {
       return tab
     }
   }
