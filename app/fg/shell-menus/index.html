@@ -4,23 +4,50 @@
     <link rel="stylesheet" href="beaker://assets/font-awesome.css">
     <style>
     body {
+      --bg-color--menus-wrapper: #fff;
+      --bg-color--menu-item--hover: #ededf2;
+      --bg-color--header-btn--hover: #eee;
+      --text-color--menus-wrapper: rgba(0, 0, 0, 0.8);
+      --text-color--menus-wrapper--light: #707070;
+      --text-color--menu-item-icon: rgba(51, 51, 51, 0.97);
+      --text-color--menu-item-icon--light: #777;
+      --border-color--default: #ccc;
+      --border-color--light: #eee;
+      --border-color--menus-wrapper: #bbb;
+      --box-shadow-color--menus-wrapper: rgba(0,0,0,.1);
+
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
       margin: 0;
       font-size: 12px;
       background: transparent;
-      color: rgba(0, 0, 0, 0.8);
       overflow: hidden;
       user-select: none;
       -webkit-user-drag: none;
     }
     menus-wrapper {
       display: block;
-      background: #fff;
-      border: 1px solid #bbb;
+      background: var(--bg-color--menus-wrapper);
+      color: var(--text-color--menus-wrapper);
+      border: 1px solid var(--border-color--menus-wrapper);
       border-radius: 0;
-      box-shadow: 0 2px 3px rgba(0,0,0,.1);
+      box-shadow: 0 2px 3px var(--box-shadow-color--menus-wrapper);
       margin: 0 10px 10px;
       overflow: hidden;
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        --bg-color--menus-wrapper: #334;
+        --bg-color--menu-item--hover: #445;
+        --bg-color--header-btn--hover: #445;
+        --text-color--menus-wrapper: #ccd;
+        --text-color--menus-wrapper--light: #bbc;
+        --text-color--menu-item-icon: #bbc;
+        --text-color--menu-item-icon--light: #dde;
+        --border-color--default: #668;
+        --border-color--light: #668;
+        --border-color--menus-wrapper: #668;
+        --box-shadow-color--menus-wrapper: rgba(0,0,0,.4);
+      }
     }
     </style>
   </head>

@@ -393,7 +393,7 @@ BrowserMenu.styles = [commonCSS, css`
 
 .menu-item .more,
 .menu-item .shortcut {
-  color: #777;
+  color: var(--text-color--menu-item-icon--light);
   margin-left: auto;
 }
 

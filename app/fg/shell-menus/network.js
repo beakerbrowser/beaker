@@ -80,7 +80,6 @@ class NetworkMenu extends LitElement {
 }
 NetworkMenu.styles = [inputsCSS, css`
 .wrapper {
-  color: #333;
   width: 300px;
 }
 
@@ -88,7 +87,7 @@ NetworkMenu.styles = [inputsCSS, css`
   font-size: 12px;
   font-weight: 500;
   padding: 10px;
-  border-bottom: 1px solid #dde;
+  border-bottom: 1px solid var(--border-color--default);
 }
 
 h1.page-title {
@@ -105,6 +104,7 @@ h1.page-title {
 table {
   font-size: 12px;
   white-space: nowrap;
+  color: inherit;
 }
 
 table tr td:first-child {

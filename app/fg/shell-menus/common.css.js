@@ -3,12 +3,12 @@ import {css} from '../vendor/lit-element/lit-element'
 export default css`
 hr {
   border: 0;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border-color--default);
 }
 
 .section {
   padding: 6px 0;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border-color--default);
 }
 
 .menu-item {
@@ -26,11 +26,11 @@ hr {
 }
 
 .menu-item:hover {
-  background: #ededf2;
+  background: var(--bg-color--menu-item--hover);
 }
 
 .menu-item i {
-  color: rgba(51, 51, 51, 0.97);
+  color: var(--text-color--menu-item-icon);
   width: 28px;
   font-size: 13px;
   padding-right: 5px;
@@ -63,7 +63,7 @@ hr {
   margin-left: auto;
   padding-right: 0;
   text-align: right;
-  color: #777;
+  color: var(--text-color--menu-item-icon--light);
 }
 
 .header {
@@ -72,7 +72,7 @@ hr {
   height: 35px;
   line-height: 35px;
   text-align: center;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border-color--default);
 }
 
 .header h2 {
@@ -94,7 +94,7 @@ hr {
 
 .header .btn i {
   font-size: 18px;
-  color: #333;
+  color: var(--text-color--menus-wrapper);
   line-height: 27px;
 }
 
@@ -103,6 +103,6 @@ hr {
 }
 
 .header .btn:hover {
-  background: #eee;
+  background: var(--bg-color--header-btn--hover);
 }
 `

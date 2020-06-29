@@ -137,7 +137,6 @@ class PeersMenu extends LitElement {
 }
 PeersMenu.styles = [inputsCSS, spinnerCSS, css`
 .wrapper {
-  color: #333;
 }
 
 .spinner {
@@ -152,7 +151,7 @@ PeersMenu.styles = [inputsCSS, spinnerCSS, css`
 .header,
 .toggle {
   padding: 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color--light);
 }
 
 .header-info {
@@ -176,7 +175,7 @@ h1.page-title {
 
 .peer-count,
 .net-stats {
-  color: #707070;
+  color: var(--text-color--menus-wrapper--light);
   font-weight: 300;
   margin-top: 8px
 }
@@ -210,7 +209,7 @@ h1.page-title {
 }
 
 .network-url i {
-  color: #707070;
+  color: var(--text-color--menus-wrapper--light);
   margin-right: 3px;
 }
 
@@ -220,7 +219,7 @@ h1.page-title {
 
 .addresses {
   padding: 5px 10px;
-  color: #707070;
+  color: var(--text-color--menus-wrapper--light);
   line-height: 1.6;
   font-family: monospace;
   font-size: 0.9em;
