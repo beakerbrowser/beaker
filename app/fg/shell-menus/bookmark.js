@@ -122,8 +122,6 @@ BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`
 .wrapper {
   box-sizing: border-box;
   padding: 15px 15px 0;
-  color: #333;
-  background: #fff;
   height: 200px;
   overflow: hidden;
 }
@@ -160,7 +158,6 @@ form {
 .input-group input[type=text] {
   height: 28px;
   line-height: 28px;
-  color: rgba(0, 0, 0, 0.75);
 }
 
 .input-group input[type=checkbox] {

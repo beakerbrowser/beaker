@@ -6,8 +6,9 @@ textarea {
   height: 30px;
   padding: 0 7px;
   border-radius: 4px;
-  color: rgba(51, 51, 51, 0.95);
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--border-color--default);
+  background: inherit;
+  color: inherit;
 }
 
 input:focus,
