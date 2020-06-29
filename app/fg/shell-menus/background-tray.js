@@ -125,14 +125,13 @@ class BackgroundTrayMenu extends LitElement {
 }
 BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 .wrapper {
-  color: #333;
   width: 350px;
-  background: #fafafa;
+  background: var(--bg-color--bgtabs--main);
 }
 
 .header {
   padding: 6px 7px;
-  border-bottom: 1px solid #dde;
+  border-bottom: 1px solid var(--border-color--default);
 }
 
 .header h1 {
@@ -147,7 +146,7 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 
 .empty {
   padding: 10px 22px 10px 12px;
-  color: #778;
+  color: var(--text-color--menus-wrapper--light);
 }
 
 .tabs {
@@ -159,13 +158,13 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
   display: flex;
   align-items: center;
   padding: 10px 6px;
-  border-bottom: 1px solid #ccd;
+  border-bottom: 1px solid var(--border-color--default);
   cursor: pointer;
 }
 
 .tab.keyboard-focus,
 .tab:hover {
-  background: #fff;
+  background: var(--bg-color--bgtabs--active);
 }
 
 .tab.keyboard-focus {
@@ -196,16 +195,7 @@ BackgroundTrayMenu.styles = [buttonsCSS, spinnerCSS, css`
 
 .tab .url {
   flex: 1;
-  color: #778;
-}
-
-button {
-  cursor: pointer;
-  background: #fafafa;
-}
-
-button:hover {
-  background: #fff;
+  color: var(--text-color--menus-wrapper--light);
 }
 `]
 
