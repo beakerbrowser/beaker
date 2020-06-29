@@ -17,10 +17,11 @@ ${toastCSS}
 :host {
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border: 1px solid #bbb;
+  background: var(--bg-color--main);
+  color: var(--text-color--default);
+  border: 1px solid var(--border-color--main);
   border-radius: 0;
-  box-shadow: 0 2px 3px rgba(0,0,0,.1);
+  box-shadow: 0 2px 3px var(--box-shadow-color--main);
   margin: 0 10px 10px;
   max-height: 355px;
   overflow-x: hidden;
@@ -45,7 +46,6 @@ h1 {
 
 button {
   font-size: 11px;
-  border-color: #bbb;
 }
 
 .warning {
@@ -90,7 +90,7 @@ hr {
 
 .site-info {
   padding: 12px 16px 10px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border-color--default);
 }
 
 .site-info .details {
@@ -101,7 +101,7 @@ hr {
   display: flex;
   align-items: center;
   padding: 8px 6px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--border-color--default);
 }
 
 .nav .tabs {
@@ -116,10 +116,10 @@ hr {
   margin-left: 2px;
 }
 .nav .tabs a.active {
-  background: #f0f0f4;
+  background: var(--bg-color--nav--selected);
 }
 .nav .tabs a:not(.active):hover {
-  background: #f0f0f4;
+  background: var(--bg-color--nav--selected);
 }
 `
 export default cssStr

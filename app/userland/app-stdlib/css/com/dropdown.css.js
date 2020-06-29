@@ -3,10 +3,38 @@ import {css} from '../../vendor/lit-element/lit-element.js'
 const cssStr = css`
 .dropdown {
   position: relative;
+
+  --text-color--dropdown-default: #333;
+  --text-color--dropdown-section: #aaa;
+  --text-color--dropdown-icon: rgba(0, 0, 0, 0.65);
+  --text-color--dropdown-btn--pressed: #dadada;
+  --text-color--title: gray;
+  --bg-color--dropdown: #fff;
+  --bg-color--dropdown-item--hover: #eee;
+  --border-color--dropdown: #dadada;
+  --border-color--dropdown-item: #eee;
+  --border-color--dropdown-section: rgba(0,0,0,.1);
+  --border-color--dropdown-separator: #ddd;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dropdown {
+    --text-color--dropdown-default: #ccd;
+    --text-color--dropdown-section: #aaa;
+    --text-color--dropdown-icon: #eef;
+    --text-color--dropdown-btn--pressed: #2c2c31;
+    --text-color--title: gray;
+    --bg-color--dropdown: #334;
+    --bg-color--dropdown-item--hover: #445;
+    --border-color--dropdown: #556;
+    --border-color--dropdown-item: #669;
+    --border-color--dropdown-section: rgba(0,0,0,.1);
+    --border-color--dropdown-separator: #ddd;
+  }
 }
 
 .dropdown.open .toggleable:not(.primary) {
-  background: #dadada;
+  background: var(--text-color--dropdown-btn--pressed);
   box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
   border-color: transparent;
   outline: 0;
@@ -26,15 +54,16 @@ const cssStr = css`
   position: absolute;
   right: 0px;
   z-index: 3000;
-  background: #fff;
-  border: 1px solid #dadada;
+  background: var(--bg-color--dropdown);
+  color: var(--text-color--dropdown-default);
+  border: 1px solid var(--border-color--dropdown);
   border-radius: 0px;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
 .dropdown-items .section {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border-color--dropdown-section);
   padding: 5px 0;
 }
 
@@ -46,7 +75,7 @@ const cssStr = css`
 }
 
 .dropdown-items .section-header.light {
-  color: var(--color-text--light);
+  color: var(--text-color--dropdown-section);
   font-weight: 500;
 }
 
@@ -56,7 +85,7 @@ const cssStr = css`
 
 .dropdown-items hr {
   border: 0;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color--dropdown-separator);
 }
 
 .dropdown-items.thin {
@@ -123,7 +152,7 @@ const cssStr = css`
   height: 0;
   border-left: 8px solid transparent;
   border-right: 8px solid transparent;
-  border-bottom: 8px solid #fff;
+  border-bottom: 8px solid var(--bg-color--dropdown);
 }
 
 .dropdown-items.with-triangle.left:before {
@@ -135,33 +164,20 @@ const cssStr = css`
 }
 
 .dropdown-title {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color--dropdown-item);
   padding: 2px 8px;
   font-size: 11px;
-  color: gray;
+  color: var(--text-color--title);
 }
 
 .dropdown-item {
   display: block;
   padding: 7px 15px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color--dropdown-item);
 }
 
 .dropdown-item.disabled {
   opacity: 0.25;
-}
-
-.dropdown-item .fa-check-square {
-  color: var(--color-blue);
-}
-
-.dropdown-item .fa-check-square,
-.dropdown-item .fa-square-o {
-  font-size: 14px;
-}
-
-.dropdown-item .fa-check {
-  font-size: 11.5px;
 }
 
 .dropdown-item.no-border {
@@ -169,16 +185,16 @@ const cssStr = css`
 }
 
 .dropdown-item:hover:not(.no-hover) {
-  background: #eee;
+  background: var(--bg-color--dropdown-item--hover);
   cursor: pointer;
 }
 
 .dropdown-item:hover:not(.no-hover) i:not(.fa-check-square) {
-  color: var(--color-text);
+  color: var(--text-color--dropdown-default);
 }
 
 .dropdown-item:hover:not(.no-hover) .description {
-  color: var(--color-text);
+  color: var(--text-color--dropdown-default);
 }
 
 .dropdown-item:hover:not(.no-hover).disabled {
@@ -190,7 +206,7 @@ const cssStr = css`
 .dropdown-item i {
   display: inline-block;
   width: 20px;
-  color: rgba(0, 0, 0, 0.65);
+  color: var(--text-color--dropdown-icon);
 }
 
 .dropdown-item .fa-fw {
@@ -216,7 +232,7 @@ const cssStr = css`
 }
 
 .dropdown-item .description {
-  color: var(--color-text--muted);
+  color: var(--text-color--muted);
   margin: 0;
   margin-left: 23px;
   margin-bottom: 3px;

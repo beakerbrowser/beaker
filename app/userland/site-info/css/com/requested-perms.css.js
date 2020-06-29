@@ -12,7 +12,7 @@ p {
 
 a {
   cursor: pointer;
-  color: blue;
+  color: var(--text-color--link);
   text-decoration: underline;
 }
 

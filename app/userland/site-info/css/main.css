@@ -2,11 +2,35 @@
 @import "beaker://assets/font-awesome.css";
 
 body {
+  --bg-color--main: #fff;
+  --bg-color--nav--selected: #f0f0f4;
+  --text-color--default: #333;
+  --text-color--link: blue;
+  --text-color--verifier: #889;
+  --border-color--default: #ccc;
+  --border-color--main: #bbb;
+  --border-color--forks: #dde;
+  --box-shadow-color--main: rgba(0,0,0,.1);
+
   margin: 0;
   background: transparent;
   font-size: 12px;
-  --border-color: #d4d7dc;
   overflow: hidden;
+  color: var(--text-color--default);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --bg-color--main: #334;
+    --bg-color--nav--selected: #446;
+    --text-color--default: #ccd;
+    --text-color--link: #88c;
+    --text-color--verifier: #88a;
+    --border-color--default: #668;
+    --border-color--main: #557;
+    --border-color--forks: #557;
+    --box-shadow-color--main: rgba(0,0,0,.3);
+  }
 }
 
 beaker-toast {

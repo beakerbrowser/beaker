@@ -12,7 +12,7 @@ p {
 
 a {
   cursor: pointer;
-  color: blue;
+  color: var(--text-color--link);
   text-decoration: none;
 }
 
@@ -41,7 +41,7 @@ button {
 
 .verifier,
 .verifier a {
-  color: #889;
+  color: var(--text-color--verifier);
 }
 
 .toggle-save-contact-btn {
