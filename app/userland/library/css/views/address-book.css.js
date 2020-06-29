@@ -25,33 +25,33 @@ a {
 .empty {
   font-size: 16px;
   letter-spacing: 0.7px;
-  color: #a3a3a8;
+  color: var(--text-color--light);
   padding: 120px 0px;
-  background: #fafafd;
+  background: var(--bg-color--light);
   text-align: center;
 }
 
 .empty .far {
   font-size: 120px;
   margin-bottom: 30px;
-  color: #d3d3d8;
+  color: var(--text-color--light);
 }
 
 :host(.top-border) .contact:first-child {
-  border-top: 1px solid #dde;
+  border-top: 1px solid var(--border-color--light);
 }
 
 .contact {
   display: flex;
   align-items: center;
-  color: #555;
   padding: 12px 20px;
-  border-bottom: 1px solid #dde;
+  color: var(--text-color--lightish);
+  border-bottom: 1px solid var(--border-color--light);
 }
 
 .contact:hover {
   text-decoration: none;
-  background: #fafafd;
+  background: var(--bg-color--light);
 }
 
 .contact > * {

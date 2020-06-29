@@ -21,33 +21,33 @@ a {
 .links .empty {
   font-size: 16px;
   letter-spacing: 0.7px;
-  color: #a3a3a8;
+  color: var(--text-color--light);
   padding: 120px 0px;
-  background: #fafafd;
+  background: var(--bg-color--light);
   text-align: center;
 }
 
-.links .empty .far {
+.links .empty .fas {
   font-size: 120px;
   margin-bottom: 30px;
-  color: #d3d3d8;
+  color: var(--text-color--light);
 }
 
 .link {
   display: flex;
   align-items: center;
   padding: 18px 20px;
-  color: #555;
-  border-bottom: 1px solid #dde;
+  color: var(--text-color--lightish);
+  border-bottom: 1px solid var(--border-color--light);
 }
 
 :host(.top-border) .link:first-child {
-  border-top: 1px solid #dde;
+  border-top: 1px solid var(--border-color--light);
 }
 
 .link:hover {
   text-decoration: none;
-  background: #fafafd;
+  background: var(--bg-color--light);
 }
 
 .link > * {

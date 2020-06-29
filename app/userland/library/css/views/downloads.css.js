@@ -36,8 +36,8 @@ a[href]:hover {
   display: flex;
   align-items: center;
   padding: 18px 24px;
-  color: #555;
-  border-bottom: 1px solid #dde;
+  color: inherit;
+  border-bottom: 1px solid var(--border-color--light);
 }
 
 .download .title {

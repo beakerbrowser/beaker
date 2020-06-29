@@ -2,6 +2,40 @@
 @import "beaker://app-stdlib/css/fontawesome.css";
 
 body {
+  --border-color--default: #bbc;
+  --border-color--light: #ccd;
+  --text-color--default: #333;
+  --text-color--lightish: #555;
+  --text-color--light: #667;
+  --text-color--very-light: #bbc;
+  --text-color--nav--highlight: #445;
+  --bg-color--default: #fff;
+  --bg-color--light: #f6f6fa;
+  --bg-color--header-search: #fafafd;
+  --bg-color--new-btn--highlight: #fafafd;
+  --bg-color--nav--highlight: #e3f2fd;
+
   font-size: 13px;
   background: #fff;
+  color: #333;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --border-color--default: #669;
+    --border-color--light: #558;
+    --text-color--default: #ccd;
+    --text-color--lightish: #bbc;
+    --text-color--light: #aab;
+    --text-color--very-light: #557;
+    --text-color--nav--highlight: #bbc;
+    --bg-color--default: #223;
+    --bg-color--light: #334;
+    --bg-color--header-search: #303040;
+    --bg-color--new-btn--highlight: #303040;
+    --bg-color--nav--highlight: #334;
+
+    background: #223;
+    color: #ccd;
+  }
 }

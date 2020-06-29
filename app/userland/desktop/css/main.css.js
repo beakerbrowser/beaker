@@ -74,7 +74,7 @@ ${tooltipCSS}
   max-width: 1000px;
   margin: 0 auto 60px;
   padding: 12px 18px;
-  border: 1px solid #bbc;
+  border: 1px solid var(--border-color--default);
   font-size: 14px;
   letter-spacing: 0.5px;
   border-radius: 4px;
@@ -89,7 +89,7 @@ ${tooltipCSS}
 }
 
 .release-notice .close {
-  color: #bbc;
+  color: var(--text-color--very-light);
   float: right;
 }
 
@@ -140,7 +140,7 @@ ${tooltipCSS}
   height: 120px;
   object-fit: cover;
   object-position: top center;
-  border: 1px solid #bbc;
+  border: 1px solid var(--border-color--default);
 }
 
 .pin:hover .thumb {
@@ -173,7 +173,7 @@ nav a {
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.5px;
-  color: #667;
+  color: var(--text-color--light);
   cursor: pointer;
   padding: 4px 10px 3px 10px;
   margin: 0 10px;
@@ -182,8 +182,8 @@ nav a {
 
 nav a:hover,
 nav a.active {
-  background: #f0f0f6;
-  color: #445;
+  background: var(--bg-color--nav--highlight);
+  color: var(--text-color--nav--highlight);
 }
 
 nav .spacer {
@@ -208,7 +208,8 @@ nav .search-ctrl input {
   position: relative;
   top: -1px;
   z-index: 1;
-  background: #fff;
+  background: inherit;
+  color: inherit;
   box-sizing: border-box;
   height: 26px;
   width: 180px;
@@ -216,12 +217,12 @@ nav .search-ctrl input {
   letter-spacing: 0.5px;
   font-weight: 500;
   padding: 0 0 0 26px;
-  border: 1px solid #ccd;
+  border: 1px solid var(--border-color--light);
   border-radius: 24px;
 }
 
 nav .new-btn {
-  color: #556;
+  color: var(--text-color--light);
 }
 
 nav .new-btn .fas {
@@ -249,7 +250,7 @@ address-book-view {
   max-width: 1000px;
   margin: 16px auto;
   text-align: center;
-  border: 1px solid #bbc;
+  border: 1px solid var(--border-color--default);
   border-radius: 4px;
 }
 
@@ -302,7 +303,7 @@ address-book-view {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fafafd;
+  background: var(--bg-color--light);
   margin: 30px;
   border-radius: 4px;
 }
@@ -318,10 +319,10 @@ address-book-view {
 }
 
 .intro .icon {
-  background: #fafafd;
+  background: var(--bg-color--light);
   font-size: 36px;
   line-height: 100px;
-  color: initial;
+  color: inherit;
 }
 
 .intro .col1 .icon {
@@ -333,7 +334,7 @@ address-book-view {
   margin: 16px auto;
   padding: 18px 22px;
   font-size: 15px;
-  border: 1px solid #bbc;
+  border: 1px solid var(--border-color--default);
   border-radius: 4px;
 }
 

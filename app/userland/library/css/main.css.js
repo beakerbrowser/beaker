@@ -12,7 +12,7 @@ ${spinnerCSS}
 
 :host {
   min-height: 100vh;
-  background: #fff;
+  background: var(--bg-color--default);
 }
 
 a {
@@ -31,15 +31,14 @@ header {
   position: sticky;
   top: 0;
   z-index: 1;
-  background: #fff;
-  border-bottom: 1px solid #dde;
+  border-bottom: 1px solid var(--border-color--light);
 }
 
 header .brand {
   font-size: 18px;
   line-height: 35px;
   padding-left: 7px;
-  color: #556;
+  color: var(--text-color--lightish);
 }
 
 header .brand .fas {
@@ -61,7 +60,8 @@ header .search-ctrl .fa-search {
 }
 
 header .search-ctrl input {
-  background: #f6f6fa;
+  background: var(--bg-color--header-search);
+  color: inherit;
   box-sizing: border-box;
   width: 100%;
   max-width: 800px;
@@ -74,14 +74,15 @@ header .search-ctrl input {
 
 header .search-ctrl input::placeholder {
   letter-spacing: 1px;
+  color: inherit;
 }
 
 header .new-btn {
   display: block;
-  background: #fff;
-  border: 1px solid #ccd;
+  background: var(--bg-color--default);
+  border: 1px solid var(--border-color--light);
   border-top: 1px solid #2196F3;
-  color: #667;
+  color: var(--text-color--light);
   font-size: 13px;
   font-weight: 600;
   text-align: center;
@@ -99,7 +100,7 @@ header .new-btn .fa-fw {
 
 header .new-btn.pressed,
 header .new-btn:hover {
-  background: #fafafd;
+  background: var(--bg-color--new-btn--highlight);
   text-decoration: none;
 }
 
@@ -115,7 +116,7 @@ nav {
 nav .page-nav a {
   display: block;
   padding: 10px 20px;
-  color: #556;
+  color: var(--text-color--lightish);
   margin: 10px;
   border-radius: 26px;
   font-weight: 500;
@@ -123,13 +124,13 @@ nav .page-nav a {
 }
 
 nav .page-nav a:hover {
-  background: #f3f3f8;
+  background: var(--bg-color--light);
   cursor: pointer;
   text-decoration: none;
 }
 
 nav .page-nav a.current {
-  background: #E3F2FD;
+  background: var(--bg-color--nav--highlight);
   color: #2187f3;
   font-weight: bold;
 }

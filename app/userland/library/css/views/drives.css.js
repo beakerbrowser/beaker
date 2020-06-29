@@ -33,20 +33,20 @@ a[href]:hover {
 .drives .empty {
   font-size: 16px;
   letter-spacing: 0.7px;
-  color: #a3a3a8;
+  color: var(--text-color--light);
   padding: 120px 0px;
-  background: #fafafd;
+  background: var(--bg-color--light);
   text-align: center;
 }
 
 .drives .empty .fas {
   font-size: 120px;
   margin-bottom: 10px;
-  color: #d3d3d8;
+  color: var(--text-color--light);
 }
 
 :host(.top-border) .drive:first-child {
-  border-top: 1px solid #dde;
+  border-top: 1px solid var(--border-color--light);
 }
 
 .drive {
@@ -54,13 +54,13 @@ a[href]:hover {
   display: flex;
   align-items: center;
   padding: 12px 20px;
-  color: #555;
-  border-bottom: 1px solid #dde;
+  color: var(--text-color--lightish);
+  border-bottom: 1px solid var(--border-color--light);
 }
 
 .drive:hover {
   text-decoration: none !important;
-  background: #fafafd;
+  background: var(--bg-color--light);
 }
 
 .drive > * {
@@ -111,8 +111,8 @@ a[href]:hover {
 
 .drive .readonly {
   display: inline-block;
-  background: #f3f3f7;
-  color: #667;
+  background: var(--bg-color--light);
+  color: var(--text-color--light);
   font-size: 11px;
   font-weight: 500;
   padding: 0 4px 2px;
@@ -152,7 +152,7 @@ a[href]:hover {
 
 .forks-container {
   position: relative;
-  border-left: 40px solid #f3f3f8;
+  border-left: 40px solid var(--bg-color--light);
 }
 
 .fork-label {
