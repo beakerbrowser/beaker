@@ -28,12 +28,15 @@ class WhackAMoleStream {
     this.ended = false
     this.stream = stream
     this.needsDeferredReadable = false
+    this.readableOnce = false
 
     stream.on('end', () => {
       this.ended = true
     })
 
     stream.on('readable', () => {
+      this.readableOnce = true
+
       if (this.needsDeferredReadable) {
         setImmediate(this.onreadable)
         this.needsDeferredReadable = false
@@ -53,6 +56,7 @@ class WhackAMoleStream {
   on (name, fn) {
     if (name === 'readable') {
       this.onreadable = fn
+      if (this.readableOnce) fn()
       return this.stream.on('readable', noop) // readable has sideeffects
     }
 
