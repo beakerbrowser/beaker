@@ -123,8 +123,9 @@ class Tab extends EventEmitter {
     this.isActive = true
 
     for (let pane of this.panes) {
-      pane.show()
+      pane.show({noFocus: true})
     }
+    this.activePane.focus()
 
     prompts.show(this)
     permPrompt.show(this)

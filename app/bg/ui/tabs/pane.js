@@ -350,13 +350,13 @@ export class Pane extends EventEmitter {
     // prompts.reposition(this.browserWindow) TODO
   }
 
-  show () {
+  show ({noFocus} = {noFocus: false}) {
     if (this.tab.isHidden) return
 
     this.browserWindow.addBrowserView(this.browserView)
     prompts.show(this.browserView)
 
-    this.webContents.focus()
+    if (!noFocus) this.webContents.focus()
     this.emit('showed')
   }
 
