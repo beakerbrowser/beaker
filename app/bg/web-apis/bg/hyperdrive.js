@@ -507,7 +507,8 @@ export default {
     var urlp = parseDriveUrl(url)
     var url = urlp.origin
     var filepath = normalizeFilepath(urlp.pathname || '')
-    if (mount.includes('.cap')) throw new Error('Unable to mount capability URLs')
+    var mountKey = typeof mount === "object" ? mount.key : mount
+    if (mountKey.includes('.cap')) throw new Error('Unable to mount capability URLs')
     return auditLog.record(this.sender.getURL(), 'mount', {url, filepath, opts}, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('searching for drive')
