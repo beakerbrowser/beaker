@@ -355,6 +355,74 @@ export function buildWindowMenu (opts = {}) {
         click: function (item) {
           if (tab) viewZoom.zoomReset(tab)
         }
+      },
+      {type: 'separator'},
+      {
+        id: 'splitPaneVertical',
+        label: 'Split Pane Vertically',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+E',
+        click () {
+          if (tab && tab.activePane) {
+            tab.splitPane(tab.activePane, 'vert')
+          }
+        }
+      },
+      {
+        id: 'splitPaneHorizontal',
+        label: 'Split Pane Horizontally',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+Shift+E',
+        click () {
+          if (tab && tab.activePane) {
+            tab.splitPane(tab.activePane, 'horz')
+          }
+        }
+      },
+      {type: 'separator'},
+      {
+        id: 'selectPaneUp',
+        label: 'Select Pane Up',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+Shift+Up',
+        click () {
+          if (tab && tab.activePane) {
+            tab.activateAdjacentPane('up')
+          }
+        }
+      },
+      {
+        id: 'selectPaneDown',
+        label: 'Select Pane Down',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+Shift+Down',
+        click () {
+          if (tab && tab.activePane) {
+            tab.activateAdjacentPane('down')
+          }
+        }
+      },
+      {
+        id: 'selectPaneLeft',
+        label: 'Select Pane Left',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+Shift+Left',
+        click () {
+          if (tab && tab.activePane) {
+            tab.activateAdjacentPane('left')
+          }
+        }
+      },
+      {
+        id: 'selectPaneRight',
+        label: 'Select Pane Right',
+        enabled: !noWindows,
+        accelerator: 'CmdOrCtrl+Shift+Right',
+        click () {
+          if (tab && tab.activePane) {
+            tab.activateAdjacentPane('right')
+          }
+        }
       }
     ]
   }
@@ -366,7 +434,6 @@ export function buildWindowMenu (opts = {}) {
         id: 'toggleFilesExplorer',
         label: 'Explore Files',
         enabled: !noWindows && !!isDriveSite,
-        accelerator: 'CmdOrCtrl+E',
         click: async function (item) {
           // TODO
           // if (tab) tab.executeSidebarCommand('toggle-panel', 'files-explorer-app')

@@ -72,6 +72,28 @@ export class PaneLayout extends EventEmitter {
     remove(this.stacks, stack)
     this.emit('changed')
   }
+
+  getAdjacentPane (pane, dir) {
+    var stack = this.findStack(pane)
+    if (dir === 'up') {
+      return stack.panes[stack.panes.indexOf(pane) - 1]
+    }
+    if (dir === 'down') {
+      return stack.panes[stack.panes.indexOf(pane) + 1]
+    }
+    if (dir === 'left') {
+      let stack2 = this.stacks[this.stacks.indexOf(stack) - 1]
+      if (!stack2) return
+      let i = Math.min(stack.panes.indexOf(pane), stack2.panes.length - 1)
+      return stack2.panes[i]
+    }
+    if (dir === 'right') {
+      let stack2 = this.stacks[this.stacks.indexOf(stack) + 1]
+      if (!stack2) return
+      let i = Math.min(stack.panes.indexOf(pane), stack2.panes.length - 1)
+      return stack2.panes[i]
+    }
+  }
 }
 
 class PaneLayoutStack {
