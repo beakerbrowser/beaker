@@ -1,4 +1,4 @@
-import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain } from 'electron'
+import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, screen } from 'electron'
 import { EventEmitter } from 'events'
 import _throttle from 'lodash.throttle'
 import emitStream from 'emit-stream'
@@ -69,6 +69,9 @@ class Tab extends EventEmitter {
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab and background tabs
     this.isActive = false // is this the active taba in the window?
     this.isPinned = Boolean(opts.isPinned) // is this tab pinned?
+
+    // helper state
+    this.activePaneResize = undefined // used to track pane resizing
 
     // always have one pane
     this.createPane()
@@ -252,6 +255,10 @@ class Tab extends EventEmitter {
     }
   }
 
+  getPaneById (id) {
+    return this.panes.find(p => p.id == id)
+  }
+
   findPane (browserView) {
     return this.panes.find(p => p.browserView === browserView)
   }
@@ -259,6 +266,90 @@ class Tab extends EventEmitter {
   activateAdjacentPane (dir) {
     var pane = this.layout.getAdjacentPane(this.activePane, dir)
     if (pane) this.setActivePane(pane)
+  }
+
+  setPaneResizeModeEnabled (enabled, paneId, edge) {
+    // NOTE
+    // this works by tracking the mouse move by increments of 1% of the bounds
+    // every time the mouse moves by the # of pixels in 1% of the bound,
+    // the pane is resized by that %
+    // -prf
+    if (enabled) {
+      if (this.activePaneResize) return
+      let pane = this.getPaneById(paneId)
+      if (!pane) return
+
+      // always adjust using the bottom or right edge of panes
+      if (edge === 'top') pane = this.layout.getAdjacentPane(pane, 'up')
+      if (edge === 'left') pane = this.layout.getAdjacentPane(pane, 'left')
+      if (!pane) return
+
+      // track if the mouse goes outside the window
+      let winBounds = this.browserWindow.getBounds()
+      let isOutsideBounds = (pt) => (
+        pt.x < winBounds.x
+        || pt.y < winBounds.y
+        || pt.x > (winBounds.x + winBounds.width)
+        || pt.y > (winBounds.y + winBounds.height)
+      )
+
+      // track the mouse movement
+      let tabBounds = this.tabBounds
+      let pxInPct
+      if (edge === 'top' || edge === 'bottom') {
+        pxInPct = Math.round(tabBounds.height / 100)
+      } else {
+        pxInPct = Math.round(tabBounds.width / 100)
+      }
+      let startPt = screen.getCursorScreenPoint()
+      let lastDiff = 0
+
+      // hide all panes during drag
+      // this is MAINLY so that we can register the mouseup, which
+      // the browserviews interrupt our shell-window from receiving
+      // but it also improves perf
+      for (let pane of this.panes) {
+        pane.hide()
+      }
+      this.browserWindow.webContents.focus()
+
+      // poll the mouse cursor every 15ms
+      this.activePaneResize = {
+        interval: setInterval(() => {
+          var pt = screen.getCursorScreenPoint()
+          if (isOutsideBounds(pt)) {
+            // mouse went outside window
+            return this.setPaneResizeModeEnabled(false)
+          }
+
+          if (edge === 'top' || edge === 'bottom') {
+            let diff = Math.round((pt.y - startPt.y) / pxInPct)
+            if (diff !== lastDiff) {
+              this.layout.changePaneHeight(pane, diff - lastDiff)
+              lastDiff = diff
+              this.resize()
+            }
+          } else {
+            let diff = Math.round((pt.x - startPt.x) / pxInPct)
+            if (diff !== 0) {
+              this.layout.changePaneWidth(pane, diff - lastDiff)
+              lastDiff = diff
+              this.resize()
+            }
+          }
+        }, 15),
+      }
+    } else {
+      if (!this.activePaneResize) return
+      clearInterval(this.activePaneResize.interval)
+      this.activePaneResize = undefined
+
+      // reshow our panes
+      for (let pane of this.panes) {
+        pane.show({noFocus: true})
+        pane.resize(this.layout.getBoundsForPane(pane))
+      }
+    }
   }
 
   // state fetching
@@ -1051,6 +1142,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async focusPage () {
     getActive(this.sender).focus()
+  },
+  
+  async setPaneResizeModeEnabled (enabled, paneId, edge) {
+    getActive(getWindow(this.sender)).setPaneResizeModeEnabled(enabled, paneId, edge)
   }
 })
 

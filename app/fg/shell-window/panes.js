@@ -21,13 +21,13 @@ class ShellWindowPanes extends LitElement {
       height: 2px;
     }
     .pane-border.horz.movable {
-      cursor: ew-resize;
+      cursor: ns-resize;
     }
     .pane-border.vert {
       width: 2px;
     }
     .pane-border.vert.movable {
-      cursor: ns-resize;
+      cursor: ew-resize;
     }
     .pane-border.active {
       background: var(--bg-color--paneborder--active);
@@ -40,6 +40,7 @@ class ShellWindowPanes extends LitElement {
     super()
     this.activeTab = undefined
     this.isResizing = false
+    document.body.addEventListener('mousemove', this.onMouseMove.bind(this))
   }
 
   // rendering
@@ -49,26 +50,28 @@ class ShellWindowPanes extends LitElement {
     if (!this.activeTab) {
       return html``
     }
-    const horzLine = (pane, y) => html`
-      <div class="pane-border horz ${pane.isActive ? 'active' : ''}"
+    const horzLine = (pane, y, edge) => html`
+      <div class="pane-border horz ${pane.isActive ? 'active' : ''} ${!pane.isEdge[edge] ? 'movable' : ''}"
         style="left: ${pane.bounds.x}px; top: ${y}px; width: ${pane.bounds.width}px"
-        @mousedown=${this.onMouseDown}
+        @mousedown=${e => this.onMouseDown(e, pane, edge)}
         @mousemove=${this.onMouseMove}
+        @mouseup=${this.onMouseUp}
       ></div>
     `
-    const vertLine = (pane, x) => html`
-      <div class="pane-border vert ${pane.isActive ? 'active' : ''}"
+    const vertLine = (pane, x, edge) => html`
+      <div class="pane-border vert ${pane.isActive ? 'active' : ''} ${!pane.isEdge[edge] ? 'movable' : ''}"
         style="left: ${x}px; top: ${pane.bounds.y}px; height: ${pane.bounds.height}px"
-        @mousedown=${this.onMouseDown}
+        @mousedown=${e => this.onMouseDown(e, pane, edge)}
         @mousemove=${this.onMouseMove}
+        @mouseup=${this.onMouseUp}
       ></div>
     `
     return html`
       ${repeat(this.activeTab.paneLayout, pane => pane.id, pane => html`
-        ${horzLine(pane, pane.bounds.y)}
-        ${horzLine(pane, pane.bounds.y + pane.bounds.height - 2)}
-        ${vertLine(pane, pane.bounds.x)}
-        ${vertLine(pane, pane.bounds.x + pane.bounds.width - 2)}
+        ${horzLine(pane, pane.bounds.y, 'top')}
+        ${horzLine(pane, pane.bounds.y + pane.bounds.height - 2, 'bottom')}
+        ${vertLine(pane, pane.bounds.x, 'left')}
+        ${vertLine(pane, pane.bounds.x + pane.bounds.width - 2, 'right')}
       `)}
     `
   }
@@ -76,14 +79,23 @@ class ShellWindowPanes extends LitElement {
   // events
   // =
 
-  onMouseDown (e) {
+  onMouseDown (e, pane, edge) {
+    e.preventDefault()
+    e.stopPropagation()
     this.isResizing = true
-    bg.beakerBrowser.setSidebarResizeModeEnabled(true)
+    bg.views.setPaneResizeModeEnabled(true, pane.id, edge)
   }
 
   onMouseMove (e) {
     if (this.isResizing && !e.buttons) {
-      bg.beakerBrowser.setSidebarResizeModeEnabled(false)
+      bg.views.setPaneResizeModeEnabled(false)
+      this.isResizing = false
+    }
+  }
+
+  onMouseUp (e) {
+    if (this.isResizing) {
+      bg.views.setPaneResizeModeEnabled(false)
       this.isResizing = false
     }
   }

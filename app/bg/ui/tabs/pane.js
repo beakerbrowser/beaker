@@ -145,6 +145,7 @@ export class Pane extends EventEmitter {
     this.driveInfo = null // metadata about the site if viewing a hyperdrive
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.wasDriveTimeout = false // did the last navigation result in a timed-out hyperdrive?
+    this.layoutHeight = undefined // used by pane-layout to track height
 
     // wire up events
     this.webContents.on('did-start-loading', this.onDidStartLoading.bind(this))
