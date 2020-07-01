@@ -43,7 +43,7 @@ const cssStr = css`
   left: 18px;
   top: 5px;
   display: block;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
   font-size: 22px;
   font-weight: bold;
 }

@@ -639,7 +639,7 @@ input {
   background: var(--bg-color--location-input);
   font-size: 12.5px;
   line-height: 27px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
   font-weight: 400;
   letter-spacing: 0.5px;
 }

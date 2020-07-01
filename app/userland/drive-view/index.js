@@ -6,7 +6,7 @@ class DriveView extends LitElement {
   static get styles () {
     return css`
     :host {
-      --sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+      --sans-serif: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
       --monospace: Consolas, 'Lucida Console', Monaco, monospace;
 
       display: block;
