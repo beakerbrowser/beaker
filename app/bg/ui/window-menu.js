@@ -384,7 +384,7 @@ export function buildWindowMenu (opts = {}) {
         id: 'selectPaneUp',
         label: 'Select Pane Up',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+Shift+Up',
+        accelerator: `${(process.platform !== 'darwin') ? 'Ctrl+Alt' : 'Ctrl+Cmd'}+Up`,
         click () {
           if (tab && tab.activePane) {
             tab.activateAdjacentPane('up')
@@ -395,7 +395,7 @@ export function buildWindowMenu (opts = {}) {
         id: 'selectPaneDown',
         label: 'Select Pane Down',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+Shift+Down',
+        accelerator: `${(process.platform !== 'darwin') ? 'Ctrl+Alt' : 'Ctrl+Cmd'}+Down`,
         click () {
           if (tab && tab.activePane) {
             tab.activateAdjacentPane('down')
@@ -406,7 +406,7 @@ export function buildWindowMenu (opts = {}) {
         id: 'selectPaneLeft',
         label: 'Select Pane Left',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+Shift+Left',
+        accelerator: `${(process.platform !== 'darwin') ? 'Ctrl+Alt' : 'Ctrl+Cmd'}+Left`,
         click () {
           if (tab && tab.activePane) {
             tab.activateAdjacentPane('left')
@@ -417,7 +417,7 @@ export function buildWindowMenu (opts = {}) {
         id: 'selectPaneRight',
         label: 'Select Pane Right',
         enabled: !noWindows,
-        accelerator: 'CmdOrCtrl+Shift+Right',
+        accelerator: `${(process.platform !== 'darwin') ? 'Ctrl+Alt' : 'Ctrl+Cmd'}+Right`,
         click () {
           if (tab && tab.activePane) {
             tab.activateAdjacentPane('right')
