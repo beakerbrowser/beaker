@@ -6,6 +6,7 @@ export default {
   getProfile: 'promise',
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
+  setRunOnStartup: 'promise',
 
   getSettings: 'promise',
   getSetting: 'promise',
@@ -14,7 +15,7 @@ export default {
   setupDefaultProfile: 'promise',
   migrate08to09: 'promise',
   setStartPageBackgroundImage: 'promise',
-  
+
   getDefaultProtocolSettings: 'promise',
   setAsDefaultProtocolClient: 'promise',
   removeAsDefaultProtocolClient: 'promise',
@@ -34,7 +35,6 @@ export default {
 
   getResourceContentType: 'sync',
   getCertificate: 'promise',
-
   executeSidebarCommand: 'promise',
   executeShellWindowCommand: 'promise',
   toggleSiteInfo: 'promise',
