@@ -85,6 +85,12 @@ class ShellWindowUI extends LitElement {
       }
       this.stateHasChanged()
     })
+    viewEvents.addEventListener('update-panes-state', ({index, paneLayout}) => {
+      if (this.tabs[index]) {
+        this.tabs[index].paneLayout = paneLayout
+      }
+      this.shadowRoot.querySelector('shell-window-panes').requestUpdate()
+    })
 
     // listen to state updates on the auto-updater
     var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())

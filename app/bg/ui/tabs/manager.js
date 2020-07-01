@@ -115,6 +115,7 @@ class Tab extends EventEmitter {
     for (let pane of this.panes) {
       pane.resize(this.layout.getBoundsForPane(pane))
     }
+    emitUpdatePanesState(this)
   }
 
   activate () {
@@ -1064,6 +1065,13 @@ function emitUpdateState (tab) {
   }
   emit(win, 'update-state', {index, state: tab.state})
   win.emit('custom-pages-updated', takeSnapshot(win))
+}
+
+function emitUpdatePanesState (tab) {
+  var win = getTopWindow(tab.browserWindow)
+  var index = typeof tab === 'number' ? tab : getAll(win).indexOf(tab)
+  if (index === -1) return
+  emit(win, 'update-panes-state', {index, paneLayout: tab.layout.state})
 }
 
 function getWindow (sender) {
