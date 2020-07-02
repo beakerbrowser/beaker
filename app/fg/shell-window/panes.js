@@ -47,7 +47,7 @@ class ShellWindowPanes extends LitElement {
   // =
 
   render () {
-    if (!this.activeTab) {
+    if (!this.activeTab || this.activeTab.paneLayout.length <= 1) {
       return html``
     }
     const horzLine = (pane, y, edge) => html`

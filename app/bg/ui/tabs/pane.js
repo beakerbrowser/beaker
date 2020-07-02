@@ -346,12 +346,12 @@ export class Pane extends EventEmitter {
     this.webContents.loadURL(url, opts)
   }
 
-  resize (bounds) {
+  setBounds (bounds, includeBorder = false) {
     this.browserView.setBounds({
-      x: bounds.x + PANE_BORDER_WIDTH,
-      y: bounds.y + PANE_BORDER_WIDTH,
-      width: bounds.width - PANE_BORDER_WIDTH * 2,
-      height: bounds.height - PANE_BORDER_WIDTH * 2
+      x: bounds.x + (includeBorder ? PANE_BORDER_WIDTH : 0),
+      y: bounds.y + (includeBorder ? PANE_BORDER_WIDTH : 0),
+      width: bounds.width - (includeBorder ? PANE_BORDER_WIDTH * 2 : 0),
+      height: bounds.height - (includeBorder ? PANE_BORDER_WIDTH * 2 : 0)
     })
   }
 

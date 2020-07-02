@@ -123,7 +123,7 @@ class Tab extends EventEmitter {
     if (this.isHidden || !this.isActive) return
     this.layout.computePanesBounds(this.tabBounds)
     for (let pane of this.panes) {
-      pane.resize(this.layout.getBoundsForPane(pane))
+      pane.setBounds(this.layout.getBoundsForPane(pane), this.panes.length > 1)
     }
     emitUpdatePanesState(this)
   }
@@ -368,7 +368,7 @@ class Tab extends EventEmitter {
       // reshow our panes
       for (let pane of this.panes) {
         pane.show({noFocus: true})
-        pane.resize(this.layout.getBoundsForPane(pane))
+        pane.setBounds(this.layout.getBoundsForPane(pane), this.panes.length > 1)
       }
     }
   }
