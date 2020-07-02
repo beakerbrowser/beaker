@@ -1013,6 +1013,11 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     return getAll(win).indexOf(tab)
   },
 
+  async createPane (index, url) {
+    var tab = getByIndex(getWindow(this.sender), index)
+    return tab.createPane({url, setActive: true})
+  },
+
   async loadURL (index, url) {
     if (url === '$new_tab') {
       url = defaultUrl

@@ -1,6 +1,7 @@
 import { joinPath, slugify } from '../../lib/strings.js'
 import { query } from './query.js'
 import * as filesystem from './index'
+import { includesList as toolbarIncludesList, add as addToToolbar, remove as removeFromToolbar } from './toolbar'
 import { URL } from 'url'
 import * as profileDb from '../dbs/profile-data-db'
 
@@ -14,6 +15,10 @@ export async function list () {
   var files = (await query(filesystem.get(), {
     path: '/bookmarks/*.goto'
   }))
+  let inToolbars = await toolbarIncludesList(files.map(f => f.path.split('/').pop()))
+  for (let i = 0; i < files.length; i++) {
+    files[i].inToolbar = inToolbars[i]
+  }
   return files.map(massageBookmark)
 }
 
@@ -32,9 +37,10 @@ export async function get (href) {
  * @param {string} bookmark.href
  * @param {string} bookmark.title
  * @param {Boolean} bookmark.pinned
+ * @param {Boolean} bookmark.toolbar
  * @returns {Promise<string>}
  */
-export async function add ({href, title, pinned}) {
+export async function add ({href, title, pinned, toolbar}) {
   var slug
   href = normalizeUrl(href)
   
@@ -61,6 +67,7 @@ export async function add ({href, title, pinned}) {
   var filename = await filesystem.getAvailableName('/bookmarks', slug, 'goto') // avoid collisions
   var path = joinPath('/bookmarks', filename)
   await filesystem.get().pda.writeFile(path, '', {metadata: {href, title, pinned: pinned ? '1' : undefined}})
+  if (toolbar) await addToToolbar({filename})
   return path
 }
 
@@ -76,6 +83,24 @@ export async function remove (href) {
   }))[0]
   if (!file) return
   await filesystem.get().pda.unlink(file.path)
+  await removeFromToolbar({filename: file.path.split('/').pop()})
+}
+
+/**
+ * @param {Object} bookmark
+ * @param {string} bookmark.href
+ * @param {string} bookmark.title
+ * @param {Boolean} bookmark.pinned
+ * @returns {Promise<string>}
+ */
+export async function ensure ({href, title, pinned}) {
+  href = normalizeUrl(href)
+  var files = (await query(filesystem.get(), {
+    path: '/bookmarks/*.goto',
+    metadata: {href}
+  }))
+  if (files[0]) return files[0].path
+  return add({href, title, pinned})
 }
 
 export async function migrateBookmarksFromSqlite () {
@@ -96,7 +121,8 @@ function massageBookmark (file) {
   return {
     href: normalizeUrl(file.stat.metadata.href),
     title: file.stat.metadata.title || file.stat.metadata.href,
-    pinned: !!file.stat.metadata.pinned
+    pinned: !!file.stat.metadata.pinned,
+    toolbar: file.inToolbar
   }
 }
 

@@ -9,6 +9,7 @@ import {
   registerGlobalKeybinding
 } from './keybindings'
 import path from 'path'
+import { updateWindowToolbar } from '../browser'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
@@ -89,6 +90,7 @@ export async function setup () {
   app.on('custom-background-tabs-update', backgroundTabs => {
     sessionWatcher.updateBackgroundTabs(backgroundTabs)
   })
+
   app.on('custom-ready-to-show', () => {
     if (!previousSessionState.backgroundTabs) return
     for (let tab of previousSessionState.backgroundTabs) {
@@ -220,6 +222,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   }, frameSettings))
   win.once('ready-to-show', () => {
     win.show()
+    updateWindowToolbar(win)
     if (!hasFirstWindowLoaded) {
       hasFirstWindowLoaded = true
       app.emit('custom-ready-to-show')

@@ -1,6 +1,7 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
+import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import * as bg from './bg-process-rpc'
 
 const WINDOW_MENU_ENABLED = false
@@ -10,6 +11,7 @@ class ShellWindowToolbarMenu extends LitElement {
     return {
       activeTabIndex: {type: Number},
       activeTab: {type: Object},
+      toolbar: {type: Object},
       openMenu: {type: String}
     }
   }
@@ -85,6 +87,13 @@ class ShellWindowToolbarMenu extends LitElement {
     a + a .fas {
       margin-left: -2px;
     }
+    .favicon {
+      object-fit: contain;
+      width: 12px;
+      height: 12px;
+      position: relative;
+      top: 2px;
+    }
     .divider {
       margin: 6px 10px 2px 6px;
       width: 1px;
@@ -98,6 +107,7 @@ class ShellWindowToolbarMenu extends LitElement {
     super()
     this.activeTabIndex = -1
     this.activeTab = undefined
+    this.toolbar = undefined
     this.openMenu = undefined
   }
 
@@ -105,9 +115,12 @@ class ShellWindowToolbarMenu extends LitElement {
   // =
 
   render () {
-    const sidebarBtn = (panel, label) => {
+    const btn = (item, index) => {
       return html`
-        <a @mousedown=${e => this.onMousedownSidebarToggle(e, panel)}>${label}</a>
+        <a @mousedown=${e => this.onMousedownSidebarToggle(e, index)}>
+          <img class="favicon" src="asset:favicon:${item.href}">
+          ${item.title}
+        </a>
       `
     }
 
@@ -121,9 +134,7 @@ class ShellWindowToolbarMenu extends LitElement {
         ${this.renderMenuButton('help', 'Help')}
         <span class="divider"></span>
       ` : ''}
-      ${sidebarBtn('editor-app', html`<span class="fas fa-edit"></span> Editor`)}
-      ${sidebarBtn('files-explorer-app', html`<span class="far fa-folder"></span> Explore Files`)}
-      ${sidebarBtn('web-term', html`<span class="fas fa-terminal"></span> Terminal`)}
+      ${this.toolbar ? repeat(this.toolbar, btn) : ''}
       <span class="spacer"></span>
       <a data-href="https://userlist.beakerbrowser.com/" title="Beaker User Directory" @mousedown=${this.onMousedownLink}>User Directory</a>
       <a data-href="https://beaker.dev/" title="Developer Portal" @mousedown=${this.onMousedownLink}>Dev Portal</a>
@@ -144,21 +155,46 @@ class ShellWindowToolbarMenu extends LitElement {
   // events
   // =
 
-  onMousedownSidebarToggle (e, panel) {
-    if (e.button === 1 || e.metaKey || e.ctrlKey) {
-      var url
-      switch (panel) {
-        case 'editor-app': url = `beaker://editor/?url=${encodeURI(this.activeTab.url)}`; break
-        case 'files-explorer-app': url = `beaker://explorer/${encodeURI(this.activeTab.url.slice('hyper://'.length))}`; break
-        case 'web-term': url = `beaker://webterm/?url=${encodeURI(this.activeTab.url)}`; break
+  async onMousedownSidebarToggle (e, index) {
+    var item = this.toolbar[index]
+    let rect = e.currentTarget.getClientRects()[0]
+    var menuChoice
+    if (e.button === 2 || (e.button === 1 && (e.metaKey || e.ctrlKey))) {
+      var menu = [
+        {id: 'window', label: 'Open in New Window'},
+        {id: 'tab', label: 'Open in New Tab'},
+        {id: 'pane', label: 'Open in New Pane'},
+        {type: 'separator'},
+        {id: 'togglePaneDefault', label: 'Always Open in New Pane', type: 'checkbox', checked: item.openInPane},
+        {type: 'separator'},
+        {id: 'edit', label: 'Edit Bookmark'},
+        {id: 'remove', label: 'Remove from Toolbar'}
+      ]
+      menuChoice = await bg.beakerBrowser.showContextMenu(menu)
+    } 
+    if (menuChoice === 'tab' || e.button === 1) {
+      bg.views.createTab(item.href)
+    } else if (menuChoice === 'goto') {
+      bg.views.loadURL('active', item.href)
+    } else if (menuChoice === 'pane') {
+      bg.views.createPane('active', item.href)
+    } else if (menuChoice === 'window') {
+      bg.beakerBrowser.newWindow({pages: [item.href]})
+    } else if (menuChoice === 'togglePaneDefault') {
+      bg.toolbar.update({filename: item.filename, openInPane: !item.openInPane})
+    } else if (menuChoice === 'edit') {
+      bg.views.toggleMenu('bookmark-edit', {
+        bounds: {left: rect.left|0, top: rect.bottom|0},
+        params: {url: item.href}
+      })
+    } else if (menuChoice === 'remove') {
+      bg.toolbar.remove(item)
+    } else if (e.button === 0) {
+      if (item.openInPane) {
+        bg.views.createPane('active', item.href)
+      } else {
+        bg.views.loadURL('active', item.href)
       }
-      if (!url) return
-      let width = panel === 'files-explorer-app' ? 1000 : 600
-      let height = panel === 'files-explorer-app' ? 800 : 500
-      bg.beakerBrowser.newWindow({pages: [url], width, height})
-    } else {
-      // TODO
-      // bg.views.executeSidebarCommand('active', 'toggle-panel', panel)
     }
   }
 

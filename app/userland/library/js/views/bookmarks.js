@@ -46,6 +46,12 @@ export class BookmarksView extends LitElement {
       type: 'file',
       path: ['/bookmarks/*.goto']
     })
+    var toolbar = await beaker.hyperdrive.readFile('hyper://system/toolbar.json', 'json').catch(e => undefined)
+    if (toolbar && toolbar.bookmarks && Array.isArray(toolbar.bookmarks)) {
+      for (let bookmark of bookmarks) {
+        bookmark.toolbar = !!toolbar.bookmarks.find(item => item && typeof item === 'object' && bookmark.path.split('/').pop() === item.filename)
+      }
+    }
     bookmarks.sort((a, b) => _title(a).localeCompare(_title(b)))
     this.bookmarks = bookmarks
     console.log(this.bookmarks)
@@ -65,6 +71,10 @@ export class BookmarksView extends LitElement {
         {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(bookmark.stat.metadata.href)},
         {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(bookmark.stat.metadata.href)},
         {icon: 'fa fa-pencil-alt', label: 'Edit', click: () => this.onClickEdit(bookmark)},
+        '-',
+        {icon: _pinned(bookmark) ? 'fas fa-check-square' : 'far fa-square', label: 'Pin to start page', click: () => this.onToggleBookmarkPinned(null, bookmark)},
+        {icon: bookmark.toolbar ? 'fas fa-check-square' : 'far fa-square', label: 'Show on toolbar', click: () => this.onToggleBookmarToolbar(bookmark)},
+        '-',
         {icon: 'fa fa-times', label: 'Delete', click: () => this.onClickRemove(bookmark)}
       ]
     })
@@ -142,8 +152,10 @@ export class BookmarksView extends LitElement {
   }
 
   async onToggleBookmarkPinned (e, bookmark) {
-    e.preventDefault()
-    e.stopPropagation()
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
     if (_pinned(bookmark)) {
       await beaker.hyperdrive.drive('hyper://system/').deleteMetadata(bookmark.path, ['pinned'])
     } else {
@@ -151,6 +163,22 @@ export class BookmarksView extends LitElement {
     }
     this.load()
     emit(this, 'update-pins')
+  }
+
+  async onToggleBookmarToolbar (bookmark) {
+    var filename = bookmark.path.split('/').pop()
+    var toolbar = await beaker.hyperdrive.readFile('hyper://system/toolbar.json', 'json').catch(e => undefined)
+    toolbar = toolbar || {}
+    toolbar.bookmarks = toolbar.bookmarks && Array.isArray(toolbar.bookmarks) ? toolbar.bookmarks : []
+    if (bookmark.toolbar) {
+      toolbar.bookmarks = toolbar.bookmarks.filter(item => item && typeof item === 'object' && item.filename !== filename)
+    } else {
+      toolbar.bookmarks = toolbar.bookmarks.filter(item => item && typeof item === 'object' && item.filename !== filename)
+      toolbar.bookmarks.push({filename})
+    }
+    await beaker.hyperdrive.writeFile('hyper://system/toolbar.json', toolbar, 'json')
+    beaker.browser.updateWindowToolbar()
+    this.load()
   }
 
   async onClickEdit (file) {

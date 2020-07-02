@@ -6,6 +6,7 @@ export default {
   getNetworkState: 'promise',
   getBackgroundTabs: 'promise',
   createTab: 'promise',
+  createPane: 'promise',
   loadURL: 'promise',
   minimizeTab: 'promise',
   closeTab: 'promise',

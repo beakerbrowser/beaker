@@ -35,6 +35,7 @@ class ShellWindowUI extends LitElement {
   constructor () {
     super()
     this.tabs = []
+    this.toolbar = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
     this.isHolepunchable = true
@@ -95,6 +96,7 @@ class ShellWindowUI extends LitElement {
     // listen to state updates on the auto-updater
     var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())
     browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))
+    browserEvents.addEventListener('toolbar-changed', this.onToolbarChange.bind(this))
 
     // listen to state updates on the watchlist
     var wlEvents = fromEventStream(bg.watchlist.createEventsStream())
@@ -149,7 +151,6 @@ class ShellWindowUI extends LitElement {
       this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
       if (this.activeTab) {
         this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
-        this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
       }
     }
     this.shadowRoot.querySelector('shell-window-panes').requestUpdate()
@@ -177,6 +178,7 @@ class ShellWindowUI extends LitElement {
         <shell-window-toolbar-menu
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
+          .toolbar=${this.toolbar}
         ></shell-window-toolbar-menu>
       `}
       <shell-window-panes .activeTab=${this.activeTab}></shell-window-panes>
@@ -188,6 +190,12 @@ class ShellWindowUI extends LitElement {
 
   onUpdaterStateChange (e) {
     this.isUpdateAvailable = (e && e.state === 'downloaded')
+  }
+
+  onToolbarChange (e) {
+    var el = this.shadowRoot.querySelector('shell-window-toolbar-menu')
+    this.toolbar = el.toolbar = e && e.toolbar
+    el.requestUpdate()
   }
 }
 

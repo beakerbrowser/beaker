@@ -36,6 +36,7 @@ export default {
   getCertificate: 'promise',
 
   executeShellWindowCommand: 'promise',
+  updateWindowToolbar: 'promise',
   toggleSiteInfo: 'promise',
   toggleLiveReloading: 'promise',
   setWindowDimensions: 'promise',

@@ -10,7 +10,8 @@ class BookmarkMenu extends LitElement {
     return {
       href: {type: String},
       title: {type: String},
-      pinned: {type: Boolean}
+      pinned: {type: Boolean},
+      toolbar: {type: Boolean}
     }
   }
 
@@ -24,6 +25,7 @@ class BookmarkMenu extends LitElement {
     this.href = ''
     this.title = ''
     this.pinned = false
+    this.toolbar = false
     this.existingBookmark = undefined
   }
 
@@ -33,6 +35,7 @@ class BookmarkMenu extends LitElement {
       this.href = this.existingBookmark.href || params.url
       this.title = this.existingBookmark.title || params.metadata.title || ''
       this.pinned = this.existingBookmark.pinned
+      this.toolbar = this.existingBookmark.toolbar
     } else {
       this.href = params.url
       this.title = params.metadata.title || ''
@@ -63,10 +66,17 @@ class BookmarkMenu extends LitElement {
             <input type="text" name="href" placeholder="Title" value="${this.href}" @keyup=${this.onChangeHref}/>
           </div>
 
-          <div class="input-group" style="margin: 15px 0">
+          <div class="input-group" style="margin: 15px 0 5px">
             <label for="pinned-checkbox">
               <input id="pinned-checkbox" type="checkbox" name="pinned" value="1" ?checked=${this.pinned} @change=${this.onChangePinned}/>
               Pin to start page
+            </label>
+          </div>
+
+          <div class="input-group" style="margin: 5px 0 15px">
+            <label for="toolbar-checkbox">
+              <input id="toolbar-checkbox" type="checkbox" name="toolbar" value="1" ?checked=${this.toolbar} @change=${this.onChangeToolbar}/>
+              Add to toolbar
             </label>
           </div>
 
@@ -91,7 +101,8 @@ class BookmarkMenu extends LitElement {
     await bg.bookmarks.add({
       href: this.href,
       title: this.title,
-      pinned: this.pinned
+      pinned: this.pinned,
+      toolbar: this.toolbar
     })
     bg.views.refreshState('active')
     bg.shellMenus.close()
@@ -117,12 +128,16 @@ class BookmarkMenu extends LitElement {
   onChangePinned (e) {
     this.pinned = !this.pinned
   }
+
+  onChangeToolbar (e) {
+    this.toolbar = !this.toolbar
+  }
 }
 BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`
 .wrapper {
   box-sizing: border-box;
   padding: 15px 15px 0;
-  height: 200px;
+  height: 225px;
   overflow: hidden;
 }
 
@@ -189,3 +204,6 @@ form {
 `]
 
 customElements.define('bookmark-menu', BookmarkMenu)
+
+class BookmarkEditMenu extends BookmarkMenu {}
+customElements.define('bookmark-edit-menu', BookmarkEditMenu)
