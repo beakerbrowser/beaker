@@ -642,9 +642,6 @@ export async function minimizeToBg (win, tab) {
   backgroundTabs.push(tab)
   app.emit('custom-background-tabs-update', backgroundTabs)
 
-  // persist pins w/o this one, if that was
-  if (tab.isPinned) savePins(win)
-
   tab.isPinned = false
   tab.isHidden = true
   tab.browserWindow = undefined
@@ -713,9 +710,6 @@ export async function remove (win, tab) {
     setActive(win, tabs[i] || tabs[i - 1])
   }
 
-  // persist pins w/o this one, if that was
-  if (tab.isPinned) savePins(win)
-
   // close the window if that was the last tab
   if (tabs.length === 0) return win.close()
   emitReplaceState(win)
@@ -776,17 +770,18 @@ export function resize (win) {
 
 export function initializeFromSnapshot (win, snapshot) {
   win = getTopWindow(win)
-  for (let url of snapshot) {
-    create(win, url)
+  for (let page of snapshot) {
+    page = typeof page === 'string' ? {url: page} : page // legacy compat
+    create(win, page.url, {isPinned: page.isPinned})
   }
 }
 
 export function takeSnapshot (win) {
   win = getTopWindow(win)
-  return getAll(win)
-    .filter(v => !v.isPinned)
-    .map(v => v.url)
-    .filter(Boolean)
+  return getAll(win).map(v => ({
+    url: v.url,
+    isPinned: v.isPinned
+  }))
 }
 
 export async function popOutTab (tab) {
@@ -809,7 +804,6 @@ export function transferTabToWindow (tab, targetWindow) {
   // remove
   var shouldCloseSource = false
   sourceTabs.splice(i, 1)
-  if (tab.isPinned) savePins(sourceWindow)
   if (sourceTabs.length === 0) {
     shouldCloseSource = true
   } else {
@@ -825,7 +819,6 @@ export function transferTabToWindow (tab, targetWindow) {
   var targetTabs = getAll(targetWindow)
   if (tab.isPinned) {
     targetTabs.splice(indexOfLastPinnedTab(targetWindow), 0, tab)
-    savePins(targetWindow)
   } else {
     targetTabs.push(tab)
   }
@@ -849,21 +842,18 @@ export function togglePinned (win, tab) {
   // update tab state
   tab.isPinned = !tab.isPinned
   emitReplaceState(win)
-
-  // persist
-  savePins(win)
-}
-
-export function savePins (win) {
-  win = getTopWindow(win)
-  return settingsDb.set('pinned_tabs', JSON.stringify(getAllPinned(win).map(p => p.url)))
 }
 
 export async function loadPins (win) {
+  // NOTE
+  // this is the legacy code
+  // it's here to load the old pins then remove the entry
+  // pins are now stored in session state
   win = getTopWindow(win)
   var json = await settingsDb.get('pinned_tabs')
   try { JSON.parse(json).forEach(url => create(win, url, {isPinned: true})) }
   catch (e) {}
+  await settingsDb.set('pinned_tabs', undefined)
 }
 
 export function reopenLastRemoved (win) {

@@ -254,6 +254,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     if (sender === win.webContents) {
       if (win.webContents.id === firstWindow) {
         // if this is the first window opened (since app start or since all windows closing)
+        // NOTE this is legacy compat- the pins are now stored in the session state
         tabManager.loadPins(win)
       }
       if (!createOpts.dontInitPages) {
