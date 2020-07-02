@@ -9,6 +9,8 @@ const ZOOM_STEP = 0.5
 // =
 
 export async function setZoomFromSitedata (view, origin) {
+  if (view.panes) view = view.activePane
+
   // load zoom from sitedata
   origin = origin || view.origin
   if (!origin) return
@@ -20,6 +22,8 @@ export async function setZoomFromSitedata (view, origin) {
 }
 
 export function setZoom (view, z) {
+  if (view.panes) view = view.activePane
+
   // clamp
   if (z > 4.5) z = 4.5
   if (z < -3) z = -3
@@ -43,13 +47,16 @@ export function setZoom (view, z) {
 }
 
 export function zoomIn (view) {
+  if (view.panes) view = view.activePane
   setZoom(view, view.zoom + ZOOM_STEP)
 }
 
 export function zoomOut (view) {
+  if (view.panes) view = view.activePane
   setZoom(view, view.zoom - ZOOM_STEP)
 }
 
 export function zoomReset (view) {
+  if (view.panes) view = view.activePane
   setZoom(view, 0)
 }
