@@ -828,7 +828,7 @@ export class Pane extends EventEmitter {
     if (!this.isActive) return // only open if coming from the active pane
     var setActive = disposition === 'foreground-tab'
     var setActiveBySettings = !setActive
-    create(this.browserWindow, url, {setActive, setActiveBySettings, adjacentActive: true})
+    this.emit('create-pane', url, {setActive, setActiveBySettings, adjacentActive: true})
   }
 
   onMediaChange (e) {

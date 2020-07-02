@@ -210,6 +210,7 @@ class Tab extends EventEmitter {
 
   createPane ({url, setActive, after, splitDir} = {url: undefined, setActive: false, after: undefined, splitDir: 'vert'}) {
     var pane = new Pane(this)
+    pane.on('create-pane', this.onCreatePane.bind(this))
     this.panes.push(pane)
     if (!this.activePane) this.setActivePane(pane)
     pane.show()
@@ -368,6 +369,10 @@ class Tab extends EventEmitter {
     if (this.isHidden) return
     if (!pane.isActive) return
     emitUpdateState(this)
+  }
+
+  onCreatePane (url, opts) {
+    create(this.browserWindow, url, opts)
   }
 }
 
