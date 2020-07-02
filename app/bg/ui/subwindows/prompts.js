@@ -167,9 +167,6 @@ function getTabForSender (sender) {
 }
 
 function getDefaultWidth (view) {
-  if (view.promptName === 'edit-profile') {
-    return 450
-  }
   return 380
 }
 
