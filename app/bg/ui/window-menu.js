@@ -122,42 +122,6 @@ export function buildWindowMenu (opts = {}) {
         click: function () { createShellWindow() },
         reserved: true
       },
-      // {
-      //   id: 'newFile',
-      //   label: 'New File',
-      //   enabled: !noWindows,
-      //   click: function (item) {
-      //     createWindowIfNone(win, async (win) => {
-      //       var res = await runSelectFileDialog(win, {
-      //         saveMode: true,
-      //         title: 'New File',
-      //         buttonLabel: 'Create File',
-      //         drive: opts && url && url.startsWith('hyper:') ? url : undefined
-      //       })
-      //       let drive = await hyper.drives.getOrLoadDrive(res.origin)
-      //       await drive.pda.writeFile(res.path, '')
-      //       tabManager.create(win, res.url, {setActive: true, adjacentActive: true, sidebarPanels: ['editor-app']})
-      //     })
-      //   }
-      // },
-      // {
-      //   id: 'newFolder',
-      //   label: 'New Folder',
-      //   enabled: !noWindows,
-      //   click: function (item) {
-      //     createWindowIfNone(win, async (win) => {
-      //       var res = await runSelectFileDialog(win, {
-      //         saveMode: true,
-      //         title: 'New Folder',
-      //         buttonLabel: 'Create Folder',
-      //         drive: opts && url && url.startsWith('hyper:') ? url : undefined
-      //       })
-      //       let drive = await hyper.drives.getOrLoadDrive(res.origin)
-      //       await drive.pda.mkdir(res.path)
-      //       tabManager.create(win, res.url, {setActive: true, adjacentActive: true})
-      //     })
-      //   }
-      // },
       { type: 'separator' },
       {
         id: 'openFile',
@@ -435,8 +399,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Explore Files',
         enabled: !noWindows && !!isDriveSite,
         click: async function (item) {
-          // TODO
-          // if (tab) tab.executeSidebarCommand('toggle-panel', 'files-explorer-app')
+          if (tab) tab.createPane({url: 'beaker://explorer/'})
         }
       },
       {type: 'separator'},
@@ -645,8 +608,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+B',
         click: async function (item) {
-          // TODO
-          // if (tab) tab.executeSidebarCommand('toggle-panel', 'editor-app')
+          if (tab) tab.createPane({url: 'beaker://editor/'})
         }
       },
       {
@@ -655,8 +617,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'Ctrl+`',
         click: function (item) {
-          // TODO
-          // if (tab) tab.executeSidebarCommand('toggle-panel', 'web-term')
+          if (tab) tab.createPane({url: 'beaker://webterm/'})
         }
       },
       {

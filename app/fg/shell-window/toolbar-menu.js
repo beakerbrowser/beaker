@@ -117,7 +117,7 @@ class ShellWindowToolbarMenu extends LitElement {
   render () {
     const btn = (item, index) => {
       return html`
-        <a @mousedown=${e => this.onMousedownSidebarToggle(e, index)}>
+        <a @mousedown=${e => this.onMousedownBookmark(e, index)}>
           <img class="favicon" src="asset:favicon:${item.href}">
           ${item.title}
         </a>
@@ -155,7 +155,7 @@ class ShellWindowToolbarMenu extends LitElement {
   // events
   // =
 
-  async onMousedownSidebarToggle (e, index) {
+  async onMousedownBookmark (e, index) {
     var item = this.toolbar[index]
     let rect = e.currentTarget.getClientRects()[0]
     var menuChoice
