@@ -519,6 +519,16 @@ export function findContainingWindow (browserView) {
   }
 }
 
+export function findContainingTab (browserView) {
+  for (let winId in activeTabs) {
+    for (let tab of activeTabs[winId]) {
+      if (tab.findPane(browserView)) {
+        return tab
+      }
+    }
+  }
+}
+
 export function create (
     win,
     url,
