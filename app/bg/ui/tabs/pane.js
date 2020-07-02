@@ -10,13 +10,11 @@ import _pick from 'lodash.pick'
 import * as zoom from './zoom'
 import * as shellMenus from '../subwindows/shell-menus'
 import * as statusBar from '../subwindows/status-bar'
-import * as prompts from '../subwindows/prompts'
 import * as permPrompt from '../subwindows/perm-prompt'
 import * as modals from '../subwindows/modals'
 import * as siteInfo from '../subwindows/site-info'
 import * as windowMenu from '../window-menu'
 import { getResourceContentType } from '../../browser'
-import * as setupFlow from '../setup-flow'
 import { DRIVE_KEY_REGEX } from '../../../lib/strings'
 import * as sitedataDb from '../../dbs/sitedata'
 import * as historyDb from '../../dbs/history'
@@ -355,15 +353,11 @@ export class Pane extends EventEmitter {
       width: bounds.width - PANE_BORDER_WIDTH * 2,
       height: bounds.height - PANE_BORDER_WIDTH * 2
     })
-    // prompts.reposition(this.browserWindow) TODO
   }
 
   show ({noFocus} = {noFocus: false}) {
     if (this.tab.isHidden) return
-
     this.browserWindow.addBrowserView(this.browserView)
-    prompts.show(this.browserView)
-
     if (!noFocus) this.webContents.focus()
     this.emit('showed')
   }
@@ -376,13 +370,11 @@ export class Pane extends EventEmitter {
   hide () {
     if (!this.browserWindow) return
     this.browserWindow.removeBrowserView(this.browserView)
-    prompts.hide(this.browserView)
   }
 
   destroy () {
     this.hide()
     this.stopLiveReloading()
-    prompts.close(this.browserView)
     this.browserView.destroy()
     this.emit('destroyed')
   }
@@ -417,7 +409,6 @@ export class Pane extends EventEmitter {
 
   transferWindow (targetWindow) {
     this.deactivate()
-    prompts.close(this.browserView)
     this.browserWindow = targetWindow
   }
 
@@ -691,7 +682,6 @@ export class Pane extends EventEmitter {
 
   async onDidNavigate (e, url, httpResponseCode) {
     // remove any active subwindows
-    prompts.close(this.browserView)
     modals.close(this.browserView)
 
     // read zoom
@@ -708,12 +698,6 @@ export class Pane extends EventEmitter {
     await this.fetchDriveInfo()
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {
       this.wasDriveTimeout = true
-    }
-    if (httpResponseCode === 404 && this.writable) {
-      // prompt to create a page on 404 for owned sites
-      prompts.create(this.browserView.webContents, 'create-page', {url: this.url})
-    } else if (!setupFlow.hasVisitedProfile && this.driveInfo && this.driveInfo.ident.profile) {
-      prompts.create(this.browserView.webContents, 'edit-profile', {url: this.url})
     }
 
     // emit
