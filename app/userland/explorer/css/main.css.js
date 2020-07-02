@@ -76,55 +76,57 @@ ${spinnerCSS}
   color: var(--primary-color);
 }
 
-.layout.attached-mode {  
-  --primary-bg: #223;
-  --primary-color: #eef;
-  --header-color: #f5f5ff;
-  --button-color: #eee;
-  --empty-bg: #334;
-  --loading-color: #dde;
-  --empty-color: #dde;
-  --error-bg: #ffeeee0d;
-  --error-color: #ff1010;
-  --error-pre-bg: rgba(0, 0, 0, 0.29);
+@media (prefers-color-scheme: dark) {
+  .layout {  
+    --primary-bg: #223;
+    --primary-color: #eef;
+    --header-color: #f5f5ff;
+    --button-color: #eee;
+    --empty-bg: #334;
+    --loading-color: #dde;
+    --empty-color: #dde;
+    --error-bg: #ffeeee0d;
+    --error-color: #ff1010;
+    --error-pre-bg: rgba(0, 0, 0, 0.29);
 
-  --base-files-view--h4-border-color: #6e6e80;
-  --base-files-view--h4-color: #babac5;
-  --base-files-view--drag-bg: #334;
+    --base-files-view--h4-border-color: #6e6e80;
+    --base-files-view--h4-color: #babac5;
+    --base-files-view--drag-bg: #334;
 
-  --file-list--item-border-color: #223;
-  --file-list--color-drive: #ccd;
-  --file-list--color-folder: #9ec2e0;
-  --file-list--color-file: none;
-  --file-list--color-goto: #fff;
-  --file-list--color-subicon: #fff;
-  --file-list--color-itemname: #f5f5ff;
-  --file-list--color-itemprop: #dde;
-  --file-list--color-viewfile: #ffffff;
-  --file-list--color-viewfile-outline: none;
-  --file-list--color-subicon-selected: #fff;
-  --file-list--color-itemname-selected: #fff;
-  --file-list--color-itemprop-selected: rgba(255, 255, 255, 0.7);
-  --file-list--color-selected-bg: #4379e4;
-  --inline-file-list--color-selected-bg: #445;
-  --inline-file-list--color-iteminfo: #99a;
-  --inline-file-list--color-itemprop: #f5f5ff;
-  --inline-file-list--color-border: #333;
+    --file-list--item-border-color: #223;
+    --file-list--color-drive: #ccd;
+    --file-list--color-folder: #9ec2e0;
+    --file-list--color-file: none;
+    --file-list--color-goto: #fff;
+    --file-list--color-subicon: #fff;
+    --file-list--color-itemname: #f5f5ff;
+    --file-list--color-itemprop: #dde;
+    --file-list--color-viewfile: #ffffff;
+    --file-list--color-viewfile-outline: none;
+    --file-list--color-subicon-selected: #fff;
+    --file-list--color-itemname-selected: #fff;
+    --file-list--color-itemprop-selected: rgba(255, 255, 255, 0.7);
+    --file-list--color-selected-bg: #4379e4;
+    --inline-file-list--color-selected-bg: #445;
+    --inline-file-list--color-iteminfo: #99a;
+    --inline-file-list--color-itemprop: #f5f5ff;
+    --inline-file-list--color-border: #333;
 
-  --file-grid--color-drive: #ccd;
-  --file-grid--color-folder: #9ec2e0;
-  --file-grid--color-file: #bbbbcc;
-  --file-grid--color-goto: #ccccde;
-  --file-grid--color-itemname: #f5f5ff;
-  --file-grid--color-itemdrive: #99a;
-  --file-grid--color-viewfile: #ffffff;
-  --file-grid--color-viewfile-outline: none;
-  --file-grid--color-selected-fg: #fff;
-  --file-grid--color-selected-bg: #4379e4;
-  --file-grid--color-selected-bg-icon: #445;
-  --inline-file-grid--color-selected-bg: #445;
-  --inline-file-grid--color-itemname: #f5f5ff;
-  --inline-file-grid--color-itemauthor: #99a;
+    --file-grid--color-drive: #ccd;
+    --file-grid--color-folder: #9ec2e0;
+    --file-grid--color-file: #bbbbcc;
+    --file-grid--color-goto: #ccccde;
+    --file-grid--color-itemname: #f5f5ff;
+    --file-grid--color-itemdrive: #99a;
+    --file-grid--color-viewfile: #ffffff;
+    --file-grid--color-viewfile-outline: none;
+    --file-grid--color-selected-fg: #fff;
+    --file-grid--color-selected-bg: #4379e4;
+    --file-grid--color-selected-bg-icon: #445;
+    --inline-file-grid--color-selected-bg: #445;
+    --inline-file-grid--color-itemname: #f5f5ff;
+    --inline-file-grid--color-itemauthor: #99a;
+  }
 }
 
 .layout.attached-mode::-webkit-scrollbar {
