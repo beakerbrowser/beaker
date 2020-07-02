@@ -374,7 +374,6 @@ export class Pane extends EventEmitter {
   }
 
   hide () {
-    if (this.tab.isHidden) return
     if (!this.browserWindow) return
     this.browserWindow.removeBrowserView(this.browserView)
     prompts.hide(this.browserView)

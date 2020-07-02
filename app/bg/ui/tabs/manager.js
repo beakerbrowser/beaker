@@ -75,9 +75,7 @@ class Tab extends EventEmitter {
     this.activePaneResize = undefined // used to track pane resizing
 
     // always have one pane
-    console.log('here', JSON.stringify(opts))
     if (opts.initialPanes) {
-      console.log('setting initial panes', opts.initialPanes)
       for (let pane of opts.initialPanes) {
         this.attachPane(pane)
       }
@@ -534,7 +532,6 @@ export function create (
       initialPanes: undefined
     }
   ) {
-  console.log(JSON.stringify(opts))
   url = url || defaultUrl
   if (url.startsWith('devtools://')) {
     return // dont create tabs for this
@@ -581,7 +578,6 @@ export function create (
     // which need to be handled *after* the tab is added to the listing
     // thus this `loadWhenReady` logic
     // -prf
-    console.log('loading url')
     tab.loadURL(url)
   }
 
