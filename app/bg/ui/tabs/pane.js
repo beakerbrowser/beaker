@@ -101,7 +101,6 @@ export class Pane extends EventEmitter {
   constructor (tab) {
     super()
     this.tab = tab
-    this.browserWindow = tab.browserWindow
     this.browserView = new BrowserView({
       webPreferences: {
         preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
@@ -180,6 +179,10 @@ export class Pane extends EventEmitter {
 
   get webContents () {
     return this.browserView.webContents
+  }
+
+  get browserWindow () {
+    return this.tab && this.tab.browserWindow
   }
 
   get url () {
@@ -332,6 +335,10 @@ export class Pane extends EventEmitter {
         isMainFrame: event.frameId === this.mainFrameId
       }
     }
+  }
+
+  setTab (tab) {
+    this.tab = tab
   }
 
   // management

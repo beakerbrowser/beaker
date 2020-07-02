@@ -41,13 +41,14 @@ var defaultUrl = 'beaker://desktop/'
 // =
 
 class Tab extends EventEmitter {
-  constructor (win, opts = {isPinned: false, isHidden: false}) {
+  constructor (win, opts = {isPinned: false, isHidden: false, initialPanes: undefined}) {
     super()
     this.id = tabIdCounter++
     this.browserWindow = win
     this.panes = []
     this.layout = new PaneLayout()
     this.layout.on('changed', this.resize.bind(this))
+    this.onCreatePaneBound = this.onCreatePane.bind(this)
 
     defineActivePanePassthroughGetter(this, 'url')
     defineActivePanePassthroughGetter(this, 'loadingURL')
@@ -67,14 +68,22 @@ class Tab extends EventEmitter {
 
     // browser state
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab and background tabs
-    this.isActive = false // is this the active taba in the window?
+    this.isActive = false // is this the active tab in the window?
     this.isPinned = Boolean(opts.isPinned) // is this tab pinned?
 
     // helper state
     this.activePaneResize = undefined // used to track pane resizing
 
     // always have one pane
-    this.createPane()
+    console.log('here', JSON.stringify(opts))
+    if (opts.initialPanes) {
+      console.log('setting initial panes', opts.initialPanes)
+      for (let pane of opts.initialPanes) {
+        this.attachPane(pane)
+      }
+    } else {
+      this.createPane()
+    }
   }
 
   get state () {
@@ -210,10 +219,24 @@ class Tab extends EventEmitter {
 
   createPane ({url, setActive, after, splitDir} = {url: undefined, setActive: false, after: undefined, splitDir: 'vert'}) {
     var pane = new Pane(this)
-    pane.on('create-pane', this.onCreatePane.bind(this))
+    this.attachPane(pane, {after, splitDir})
+    if (url) pane.loadURL(url)
+    if (setActive) this.setActivePane(pane)
+    return pane
+  }
+
+  splitPane (origPane, splitDir = 'vert') {
+    var pane = this.createPane({after: origPane, splitDir})
+    pane.loadURL(origPane.url)
+  }
+
+  attachPane (pane, {after, splitDir} = {after: undefined, splitDir: 'vert'}) {
     this.panes.push(pane)
+    pane.setTab(this)
     if (!this.activePane) this.setActivePane(pane)
-    pane.show()
+    if (this.isActive) pane.show()
+
+    pane.on('create-pane', this.onCreatePaneBound)
 
     if (after) {
       if (splitDir === 'vert') {
@@ -225,20 +248,14 @@ class Tab extends EventEmitter {
       }
     } else {
       this.layout.addPane(pane)
-    }
-
-    if (url) pane.loadURL(url)
-    if (setActive) this.setActivePane(pane)
-
-    return pane
+    }    
   }
 
-  splitPane (origPane, splitDir = 'vert') {
-    var pane = this.createPane({after: origPane, splitDir})
-    pane.loadURL(origPane.url)
-  }
+  detachPane (pane) {
+    pane.hide()
+    pane.setTab(undefined)
+    pane.removeListener('create-pane', this.onCreatePaneBound)
 
-  removePane (pane) {
     let i = this.panes.indexOf(pane)
     if (i === -1) {
       console.warn('Tried to remove pane that is not on tab', pane, this)
@@ -246,7 +263,7 @@ class Tab extends EventEmitter {
     }
     this.panes.splice(i, 1)
     this.layout.removePane(pane)
-    pane.destroy()
+
     if (this.panes.length === 0) {
       // always have one pane
       remove(this.browserWindow, this)
@@ -254,6 +271,11 @@ class Tab extends EventEmitter {
       // choose a new active pane
       this.setActivePane(this.panes[0])
     }
+  }
+
+  removePane (pane) {
+    this.detachPane(pane)
+    pane.destroy()
   }
 
   getPaneById (id) {
@@ -508,9 +530,11 @@ export function create (
       isPinned: false,
       focusLocationBar: false,
       adjacentActive: false,
-      tabIndex: undefined
+      tabIndex: undefined,
+      initialPanes: undefined
     }
   ) {
+  console.log(JSON.stringify(opts))
   url = url || defaultUrl
   if (url.startsWith('devtools://')) {
     return // dont create tabs for this
@@ -521,14 +545,14 @@ export function create (
   var tab
   var preloadedNewTab = preloadedNewTabs[win.id]
   var loadWhenReady = false
-  if (url === defaultUrl && !opts.isPinned && preloadedNewTab) {
+  if (!opts.initialPanes && url === defaultUrl && !opts.isPinned && preloadedNewTab) {
     // use the preloaded tab
     tab = preloadedNewTab
     tab.isHidden = false // no longer hidden
     preloadedNewTab = preloadedNewTabs[win.id] = null
   } else {
     // create a new tab
-    tab = new Tab(win, {isPinned: opts.isPinned})
+    tab = new Tab(win, {isPinned: opts.isPinned, initialPanes: opts.initialPanes})
     loadWhenReady = true
   }
 
@@ -551,12 +575,13 @@ export function create (
       tabs.push(tab)
     }
   }
-  if (loadWhenReady) {
+  if (loadWhenReady && !opts.initialPanes) {
     // NOTE
     // `loadURL()` triggers some events (eg app.on('web-contents-created'))
     // which need to be handled *after* the tab is added to the listing
     // thus this `loadWhenReady` logic
     // -prf
+    console.log('loading url')
     tab.loadURL(url)
   }
 

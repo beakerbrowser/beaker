@@ -2,9 +2,8 @@ import { app, Menu, clipboard, BrowserWindow, BrowserView, dialog } from 'electr
 import path from 'path'
 import * as tabManager from './tabs/manager'
 import * as modals from './subwindows/modals'
-import { toggleShellInterface } from './windows'
+import { toggleShellInterface, getAddedWindowSettings } from './windows'
 import { download } from './downloads'
-import { runDrivePropertiesFlow } from './util'
 import * as settingsDb from '../dbs/settings'
 
 // NOTE
@@ -22,7 +21,6 @@ export default function registerContextMenu () {
     webContents.on('context-menu', async (e, props) => {
       var menuItems = []
       const { mediaFlags, editFlags } = props
-      const isHyperdrive = props.pageURL.startsWith('hyper://')
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
       const isMisspelled = props.misspelledWord
@@ -31,6 +29,7 @@ export default function registerContextMenu () {
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
       var targetWindow = BrowserWindow.getFocusedWindow()
       if (!targetWindow) { return }
+      var targetTab = tabManager.getActive(targetWindow)
 
       // handle shell UI specially
       if (props.pageURL == 'beaker://shell-window/') { return }
@@ -61,17 +60,19 @@ export default function registerContextMenu () {
         menuItems.push({
           label: 'Open in Pane Right',
           click () {
-            var tab = tabManager.getActive(targetWindow)
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
-            if (tab && pane) tab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'vert'})
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) {
+              targetTab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'vert'})
+            }
           }
         })
         menuItems.push({
           label: 'Open in Pane Below',
           click () {
-            var tab = tabManager.getActive(targetWindow)
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
-            if (tab && pane) tab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'horz'})
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) {
+              targetTab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'horz'})
+            }
           }
         })
         menuItems.push({ type: 'separator' })
@@ -87,17 +88,19 @@ export default function registerContextMenu () {
         menuItems.push({
           label: 'Open in Pane Right',
           click () {
-            var tab = tabManager.getActive(targetWindow)
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
-            if (tab && pane) tab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'vert'})
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) {
+              targetTab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'vert'})
+            }
           }
         })
         menuItems.push({
           label: 'Open in Pane Below',
           click () {
-            var tab = tabManager.getActive(targetWindow)
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
-            if (tab && pane) tab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'horz'})
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) {
+              targetTab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'horz'})
+            }
           }
         })
         menuItems.push({ type: 'separator' })
@@ -182,43 +185,46 @@ export default function registerContextMenu () {
           click: () => webContents.reload()
         })
         menuItems.push({ type: 'separator' })
-        menuItems.push({
-          type: 'checkbox',
-          label: 'Always on Top',
-          checked: targetWindow.isAlwaysOnTop(),
-          click: function () {
-            targetWindow.setAlwaysOnTop(!targetWindow.isAlwaysOnTop())
-          }
-        })
-        menuItems.push({
-          label: 'Toggle Browser UI',
-          click: function () {
-            toggleShellInterface(targetWindow)
-          }
-        })
-        menuItems.push({ type: 'separator' })
+        if (getAddedWindowSettings(targetWindow).isShellInterfaceHidden) {
+          menuItems.push({
+            label: 'Restore Browser UI',
+            click: function () {
+              toggleShellInterface(targetWindow)
+            }
+          })
+          menuItems.push({ type: 'separator' })
+        }
         menuItems.push({
           label: 'Split Pane Vertically',
           click () {
-            var tab = tabManager.getActive(targetWindow)
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
-            if (tab && pane) tab.splitPane(pane, 'vert')
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) targetTab.splitPane(pane, 'vert')
           }
         })
         menuItems.push({
           label: 'Split Pane Horizontally',
           click () {
-            var tab = tabManager.getActive(targetWindow)
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
-            if (tab && pane) tab.splitPane(pane, 'horz')
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) targetTab.splitPane(pane, 'horz')
           }
         })
+        if (targetTab.panes.length > 1) {
+          menuItems.push({
+            label: 'Move Pane to New Tab',
+            click () {
+              var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+              if (targetTab && pane) {
+                targetTab.detachPane(pane)
+                tabManager.create(targetWindow, null, {setActive: true, initialPanes: [pane]})
+              }
+            }
+          })
+        }
         menuItems.push({
           label: 'Close Pane',
           click () {
-            var tab = tabManager.getActive(targetWindow)
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
-            if (tab && pane) tab.removePane(pane)
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) targetTab.removePane(pane)
           }
         })
         menuItems.push({ type: 'separator' })
@@ -231,31 +237,6 @@ export default function registerContextMenu () {
           click: () => webContents.print()
         })
         menuItems.push({ type: 'separator' })
-        if (isHyperdrive) {
-          let driveInfo = tabManager.getActive(targetWindow).driveInfo
-          let key = driveInfo ? driveInfo.key : undefined
-          menuItems.push({
-            label: 'Edit Source',
-            click: async (item, win) => {
-              // TODO
-              // tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
-            }
-          })
-          menuItems.push({
-            label: 'Explore Files',
-            click: async (item, win) => {
-              // TODO
-              // tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
-            }
-          })
-          menuItems.push({
-            label: 'Drive Properties',
-            click: async (item, win) => {
-              runDrivePropertiesFlow(win, key)
-            }
-          })
-          menuItems.push({ type: 'separator' })
-        }
       }
 
       menuItems.push({ type: 'separator' })
