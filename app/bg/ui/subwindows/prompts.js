@@ -180,7 +180,7 @@ function setBounds (view, tab, parentWindow, {width, height} = {}) {
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
   var y = getAddedWindowSettings(parentWindow).isShellInterfaceHidden ? 10 : 105
   view.setBounds({
-    x: 0,
+    x: parentBounds.width - width - (MARGIN_SIZE * 2),
     y,
     width: width + (MARGIN_SIZE * 2),
     height: height + MARGIN_SIZE

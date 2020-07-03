@@ -157,6 +157,7 @@ class Tab extends EventEmitter {
       shellMenus.hide(this.browserWindow) // this will close the location menu if it's open
     }
 
+    prompts.hide(this)
     permPrompt.hide(this)
     modals.hide(this)
     if (this.browserWindow) siteInfo.hide(this.browserWindow)
