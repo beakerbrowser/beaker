@@ -208,11 +208,9 @@ class Tab extends EventEmitter {
   setActivePane (pane) {
     if (this.activePane === pane) return
     if (this.activePane) {
-      this.activePane.fadeout()
       this.activePane.isActive = false
     }
     pane.isActive = true
-    pane.fadein()
     emitUpdateState(this)
   }
 
