@@ -156,10 +156,10 @@ class Tab extends EventEmitter {
     if (this.isActive) {
       shellMenus.hide(this.browserWindow) // this will close the location menu if it's open
     }
-    // TODO
-    // permPrompt.hide(this)
-    // modals.hide(this)
-    // siteInfo.hide(this)
+
+    permPrompt.hide(this)
+    modals.hide(this)
+    if (this.browserWindow) siteInfo.hide(this.browserWindow)
 
     var wasActive = this.isActive
     this.isActive = false
@@ -271,7 +271,11 @@ class Tab extends EventEmitter {
     }
   }
 
-  removePane (pane) {
+  async removePane (pane) {
+    if (!(await runBeforeUnload(pane.webContents))) {
+      return
+    }
+
     this.detachPane(pane)
     pane.destroy()
   }
@@ -681,21 +685,11 @@ export async function remove (win, tab) {
     return console.warn('tabs/manager remove() called for missing tab', tab)
   }
 
-  // TODO
-  // give the 'onbeforeunload' a chance to run
-  // var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(tab.webContents)
-  // if (onBeforeUnloadReturnValue) {
-  //   var choice = dialog.showMessageBoxSync({
-  //     type: 'question',
-  //     buttons: ['Leave', 'Stay'],
-  //     title: 'Do you want to leave this site?',
-  //     message: 'Changes you made may not be saved.',
-  //     defaultId: 0,
-  //     cancelId: 1
-  //   })
-  //   var leave = (choice === 0)
-  //   if (!leave) return
-  // }
+  for (let pane of tab.panes) {
+    if (!(await runBeforeUnload(pane.webContents))) {
+      return
+    }
+  }
 
   // TODO
   // save, in case the user wants to restore it
@@ -1268,17 +1262,34 @@ async function fireBeforeUnloadEvent (wc) {
       wc.executeJavaScript(`
         (function () {
           let unloadEvent = new Event('beforeunload', {bubbles: false, cancelable: true})
-          unloadEvent.returnValue = false
-          return window.dispatchEvent(unloadEvent)
+          window.dispatchEvent(unloadEvent)
+          return unloadEvent.defaultPrevented
         })()
       `),
       new Promise(r => {
         setTimeout(r, 500) // thread may be locked, so abort after 500ms
       })
     ])
-    } catch (e) {
-      // ignore
-    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+async function runBeforeUnload (wc) {
+  var onBeforeUnloadReturnValue = await fireBeforeUnloadEvent(wc)
+  if (onBeforeUnloadReturnValue) {
+    var choice = dialog.showMessageBoxSync({
+      type: 'question',
+      buttons: ['Leave', 'Stay'],
+      title: 'Do you want to leave this site?',
+      message: 'Changes you made may not be saved.',
+      defaultId: 0,
+      cancelId: 1
+    })
+    var leave = (choice === 0)
+    if (!leave) return false
+  }
+  return true
 }
 
 /**
