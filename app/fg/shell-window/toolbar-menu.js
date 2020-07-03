@@ -164,7 +164,7 @@ class ShellWindowToolbarMenu extends LitElement {
         {id: 'tab', label: 'Open in New Tab'},
         {id: 'window', label: 'Open in New Window'},
         {type: 'separator'},
-        {id: 'togglePaneDefault', label: 'Always Open in New Pane', type: 'checkbox', checked: item.openInPane},
+        {id: 'togglePaneDefault', label: 'Always Open as Pane', type: 'checkbox', checked: item.openInPane},
         {type: 'separator'},
         {id: 'edit', label: 'Edit Bookmark'},
         {id: 'remove', label: 'Remove from Toolbar'}
