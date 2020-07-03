@@ -160,9 +160,9 @@ class ShellWindowToolbarMenu extends LitElement {
     var menuChoice
     if (e.button === 2 || (e.button === 1 && (e.metaKey || e.ctrlKey))) {
       var menu = [
-        {id: 'window', label: 'Open in New Window'},
-        {id: 'tab', label: 'Open in New Tab'},
         {id: 'pane', label: 'Open in New Pane'},
+        {id: 'tab', label: 'Open in New Tab'},
+        {id: 'window', label: 'Open in New Window'},
         {type: 'separator'},
         {id: 'togglePaneDefault', label: 'Always Open in New Pane', type: 'checkbox', checked: item.openInPane},
         {type: 'separator'},
