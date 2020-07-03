@@ -10,17 +10,10 @@ export function constructItems (app) {
     let sel = app.selection[0] || app.locationAsItem
     let writable = app.selection.reduce((acc, v) => acc && v.drive.writable, true)
     items.push({
-      icon: 'fas fa-fw fa-external-link-alt',
-      label: `${app.attachedMode ? 'Open' : 'Explore'} in new tab`,
-      click: () => app.goto(sel, true)
+      icon: 'fas fa-fw fa-desktop',
+      label: 'Open',
+      click: () => app.goto(app.getShareUrl(sel), true, true)
     })
-    if (!app.attachedMode) {
-      items.push({
-        icon: 'fas fa-fw fa-desktop',
-        label: 'Open',
-        click: () => app.goto(app.getShareUrl(sel), true, true)
-      })
-    }
     items.push({
       icon: html`
         <i class="fa-stack" style="font-size: 6px">
@@ -122,14 +115,12 @@ export function constructItems (app) {
       click: () => app.onNewMount()
     })
     items.push('-')
-    if (!app.attachedMode) {
-      items.push({
-        icon: 'fas fa-fw fa-desktop',
-        label: 'Open',
-        disabled: !app.canShare(app.locationAsItem),
-        click: () => app.goto(app.getShareUrl(app.locationAsItem), true, true)
-      })
-    }
+    items.push({
+      icon: 'fas fa-fw fa-desktop',
+      label: 'Open',
+      disabled: !app.canShare(app.locationAsItem),
+      click: () => app.goto(app.getShareUrl(app.locationAsItem), true, true)
+    })
     items.push({
       icon: html`
         <i class="fa-stack" style="font-size: 6px">

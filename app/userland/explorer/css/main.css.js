@@ -25,10 +25,22 @@ ${spinnerCSS}
   --header-date-color: #99a;
 
   --primary-bg: #fff;
-  --nav-bg: #f1f1f6;
   --label-bg: #f1f1f6;
   --empty-bg: #f8f8fc;
   --empty-color: #667;
+
+  --nav-bg: #f1f1f6;
+  --nav-section-bg: #fff;
+  --nav-border-color: #b7b7d0;
+  --nav-hr-color: #eef;
+  --nav-help-color: #85859e;
+  --nav-help-input-bg: #e1e1e8;
+  --nav-help-input-color: #778;
+  --nav-kv-input-bg: #fff;
+  --nav-kv-input-color: rgba(51, 51, 51, 0.95);
+  --nav-kv-input-placeholder-color: gray;
+  --nav-drives-list--link-current: #fff;
+  --nav-drives-list--link-hover: #fafafd;
 
   --base-files-view--h4-border-color: #e3e3ee;
   --base-files-view--h4-color: #b0b0bc;
@@ -89,6 +101,19 @@ ${spinnerCSS}
     --error-color: #ff1010;
     --error-pre-bg: rgba(0, 0, 0, 0.29);
 
+    --nav-bg: #334;
+    --nav-section-bg: #223;
+    --nav-border-color: #556;
+    --nav-hr-color: #445;
+    --nav-help-color: #889;
+    --nav-help-input-bg: #556;
+    --nav-help-input-color: #ccd;
+    --nav-kv-input-bg: #223;
+    --nav-kv-input-color: #eef;
+    --nav-kv-input-placeholder-color: #889;
+    --nav-drives-list--link-current: #223;
+    --nav-drives-list--link-hover: #223;
+
     --base-files-view--h4-border-color: #6e6e80;
     --base-files-view--h4-color: #babac5;
     --base-files-view--drag-bg: #334;
@@ -145,11 +170,6 @@ button {
   color: var(--button-color);
 }
 
-.layout.attached-mode button.transparent:hover,
-.layout.attached-mode button.transparent.active {
-  background: #fff3;
-}
-
 table {
   font-size: inherit;
   color: inherit;
@@ -185,14 +205,16 @@ table {
 }
 
 main {
-  margin: 0px 370px 0px 300px;
+  margin: 0px 370px 0px 210px;
   position: relative;
 }
 
-.hide-nav-left main { margin-left: 16px; }
-.hide-nav-right main { margin-right: 16px; }
-.layout.attached-mode.hide-nav-left main { margin-left: 12px; }
-.layout.attached-mode.hide-nav-right main { margin-right: 12px; }
+@media(max-width: 1000px) {
+  main {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+}
 
 .loading-view {
   background: var(--empty-bg);
@@ -282,13 +304,19 @@ main .error-view {
 nav {
   position: fixed;
   z-index: 2;
-  top: 4px;
-  width: 270px;
+  top: 0;
+  width: 200px;
   height: 100vh;
   box-sizing: border-box;
   background: var(--nav-bg);
-  padding: 10px;
+  padding: 6px 8px;
   overflow-y: auto;
+}
+
+@media(max-width: 1000px) {
+  nav {
+    display: none
+  }
 }
 
 nav.left {
@@ -298,7 +326,6 @@ nav.left {
 nav.right {
   right: 0px;
   width: 360px;
-  border-top-left-radius: 8px;
 }
 
 nav section h1,
@@ -357,8 +384,8 @@ nav button .fa-caret-down {
 
 nav section {
   display: block;
-  background: #fff;
-  border-radius: 8px;
+  background: var(--nav-section-bg);
+  border-radius: 4px;
   padding: 12px;
   margin-bottom: 10px;
   width: 100%;
@@ -385,6 +412,38 @@ nav section.transparent {
   background: transparent;
 }
 
+nav section.drives-list {
+  padding: 0;
+  border-radius: 0;
+}
+
+nav section.drives-list h5 {
+  margin: 16px 10px 4px;
+  font-size: 11px;
+}
+
+nav section.drives-list a {
+  display: block;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+}
+
+nav section.drives-list span {
+  display: block;
+  padding: 8px 10px;
+}
+
+nav section.drives-list a.current {
+  background: var(--nav-drives-list--link-current);
+  font-weight: 500;
+}
+
+nav section.drives-list a:hover {
+  background: var(--nav-drives-list--link-hover);
+  text-decoration: none;
+}
+
 nav file-display {
   max-height: 360px;
   overflow: hidden;
@@ -396,7 +455,7 @@ nav selection-info[full-view] file-display {
 
 nav section .bottom-ctrls {
   margin: 0 -8px -8px;
-  border-top: 1px solid #eef;
+  border-top: 1px solid var(--nav-hr-color);
   padding-top: 4px;
 }
 
@@ -425,8 +484,8 @@ nav .facts > span {
 
 nav .help {
  background: transparent;
- border: 1px solid #b7b7d0;
- color: #85859e;
+ border: 1px solid var(--nav-border-color);
+ color: var(--nav-help-color);
 }
 
 nav .help table {
@@ -450,10 +509,11 @@ nav .help input {
   height: 22px;
   width: 100%;
   border-radius: 10px;
-  background: #e1e1e8;
-  color: #778;
+  background: var(--nav-help-input-bg);
+  color: var(--nav-help-input-color);
   border: 0;
   text-overflow: ellipsis;
+  box-sizing: border-box;
 }
 
 nav .metadata {
@@ -472,6 +532,12 @@ nav .metadata input {
   box-sizing: border-box;
   border: 0;
   border-radius: 0;
+  background: var(--nav-kv-input-bg);
+  color: var(--nav-kv-input-color);
+}
+
+nav .metadata input::placeholder {
+  color: var(--nav-kv-input-placeholder-color);
 }
 
 nav .metadata input[name="key"] {
