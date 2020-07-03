@@ -74,14 +74,12 @@ class ShellWindowToolbarMenu extends LitElement {
       background: var(--bg-color--toolbar--pressed);
       color: var(--text-color--toolbar--pressed);
     }
-    a .fa-edit,
-    a .fa-terminal {
-      font-size: 9px;
+    a .fa-window-maximize {
       position: relative;
-      top: -1px;
-    }
-    a .fa-folder {
-      font-size: 10px;
+      font-size: 6px;
+      position: relative;
+      left: 1px;
+      top: -4px;
     }
     a + a .far,
     a + a .fas {
@@ -120,6 +118,7 @@ class ShellWindowToolbarMenu extends LitElement {
         <a @mousedown=${e => this.onMousedownBookmark(e, index)}>
           <img class="favicon" src="asset:favicon:${item.href}">
           ${item.title}
+          ${item.openInPane ? html`<span class="far fa-window-maximize"></span>` : ''}
         </a>
       `
     }
