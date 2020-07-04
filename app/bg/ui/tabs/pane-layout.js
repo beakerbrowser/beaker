@@ -78,6 +78,45 @@ export class PaneLayout extends EventEmitter {
     }
   }
 
+  movePane (pane, dir) {
+    var stack = this.findStack(pane)
+    var i = stack.panes.indexOf(pane)
+    if (dir === 'up' || dir === 'down') {
+      if (dir === 'up' && i > 0) {
+        stack.panes.splice(i, 1)
+        stack.panes.splice(i - 1, 0, pane)
+      } else if (dir === 'down' && i < stack.panes.length - 1) {
+        stack.panes.splice(i, 1)
+        stack.panes.splice(i + 1, 0, pane)
+      } else {
+        return
+      }
+    }
+    if (dir === 'left' || dir === 'right') {
+      let stackIndex = this.stacks.indexOf(stack)
+      let stack2 = this.stacks[stackIndex + (dir === 'left' ? -1 : 1)]
+      if (!stack2) {
+        if (stack.panes.length === 1) {
+          return // dont create a new stack if this is the only pane in the stack
+        }
+        stack2 = new PaneLayoutStack(this)
+        stack2.layoutWidth = stack.layoutWidth
+        if (dir === 'left') this.stacks.splice(0, 0, stack2)
+        else this.stacks.push(stack2)
+      }
+      stack.panes.splice(i, 1)
+      stack2.panes.splice(Math.max(i, stack2.panes.length), 0, pane)
+      if (stack.empty) {
+        remove(this.stacks, stack)
+      } else {
+        stack.rebalanceHeights()
+      }
+      this.rebalanceWidths()
+      stack2.rebalanceHeights()
+    }
+    this.emit('changed')
+  }
+
   // bounds
   // =
 

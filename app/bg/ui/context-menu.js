@@ -210,14 +210,44 @@ export default function registerContextMenu () {
         })
         if (targetTab.panes.length > 1) {
           menuItems.push({
-            label: 'Move Pane to New Tab',
-            click () {
-              var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-              if (targetTab && pane) {
-                targetTab.detachPane(pane)
-                tabManager.create(targetWindow, null, {setActive: true, initialPanes: [pane]})
+            type: 'submenu',
+            label: 'Move Pane',
+            submenu: [{
+              label: 'To a New Tab',
+              click () {
+                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+                if (targetTab && pane) {
+                  targetTab.detachPane(pane)
+                  tabManager.create(targetWindow, null, {setActive: true, initialPanes: [pane]})
+                }
               }
-            }
+            }, {
+              type: 'separator'
+            }, {
+              label: 'Up',
+              click () {
+                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+                if (targetTab && pane) targetTab.movePane(pane, 'up')
+              }
+            }, {
+              label: 'Down',
+              click () {
+                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+                if (targetTab && pane) targetTab.movePane(pane, 'down')
+              }
+            }, {
+              label: 'Left',
+              click () {
+                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+                if (targetTab && pane) targetTab.movePane(pane, 'left')
+              }
+            }, {
+              label: 'Right',
+              click () {
+                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+                if (targetTab && pane) targetTab.movePane(pane, 'right')
+              }
+            }]
           })
         }
         menuItems.push({

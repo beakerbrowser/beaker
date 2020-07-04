@@ -292,6 +292,10 @@ class Tab extends EventEmitter {
     if (pane) this.setActivePane(pane)
   }
 
+  movePane (pane, dir) {
+    this.layout.movePane(pane, dir)
+  }
+
   setPaneResizeModeEnabled (enabled, paneId, edge) {
     // NOTE
     // this works by tracking the mouse move by increments of 1% of the bounds

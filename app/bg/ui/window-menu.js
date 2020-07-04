@@ -387,6 +387,51 @@ export function buildWindowMenu (opts = {}) {
             tab.activateAdjacentPane('right')
           }
         }
+      },
+      {type: 'separator'},
+      {
+        id: 'movePaneUp',
+        label: 'Move Pane Up',
+        enabled: !noWindows,
+        accelerator: `Shift+${(process.platform !== 'darwin') ? 'Ctrl+Alt' : 'Ctrl+Cmd'}+Up`,
+        click () {
+          if (tab && tab.activePane) {
+            tab.movePane(tab.activePane, 'up')
+          }
+        }
+      },
+      {
+        id: 'movePaneDown',
+        label: 'Move Pane Down',
+        enabled: !noWindows,
+        accelerator: `Shift+${(process.platform !== 'darwin') ? 'Ctrl+Alt' : 'Ctrl+Cmd'}+Down`,
+        click () {
+          if (tab && tab.activePane) {
+            tab.movePane(tab.activePane, 'down')
+          }
+        }
+      },
+      {
+        id: 'movePaneLeft',
+        label: 'Move Pane Left',
+        enabled: !noWindows,
+        accelerator: `Shift+${(process.platform !== 'darwin') ? 'Ctrl+Alt' : 'Ctrl+Cmd'}+Left`,
+        click () {
+          if (tab && tab.activePane) {
+            tab.movePane(tab.activePane, 'left')
+          }
+        }
+      },
+      {
+        id: 'movePaneRight',
+        label: 'Move Pane Right',
+        enabled: !noWindows,
+        accelerator: `Shift+${(process.platform !== 'darwin') ? 'Ctrl+Alt' : 'Ctrl+Cmd'}+Right`,
+        click () {
+          if (tab && tab.activePane) {
+            tab.movePane(tab.activePane, 'right')
+          }
+        }
       }
     ]
   }
