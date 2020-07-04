@@ -8,5 +8,6 @@ export default {
   importFilesAndFolders: 'promise',
   importFilesDialog: 'promise',
   importFoldersDialog: 'promise',
-  exportFilesDialog: 'promise'
+  exportFilesDialog: 'promise',
+  getContext: 'promise'
 }

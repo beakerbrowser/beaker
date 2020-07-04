@@ -149,7 +149,10 @@ export class ExplorerApp extends LitElement {
 
   async load () {
     if (!loc.getUrl()) {
-      return loc.setUrl('hyper://system/')
+      let ctx = await beaker.shell.getContext()
+      let url = ctx && ctx.lastActivePane
+      if (!url.startsWith('hyper://')) url = 'hyper://system/'
+      return loc.setUrl(url)
     }
 
     // read helper state

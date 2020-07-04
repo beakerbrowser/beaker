@@ -89,9 +89,13 @@ class EditorApp extends LitElement {
     this.resolvedPath = ''
     this.setFocusOnLoad = false
 
-    if (this.isDetached) {
-      let ctx = (new URLSearchParams(location.search)).get('url')
-      this.load(ctx || 'hyper://system/')
+    let ctx = (new URLSearchParams(location.search)).get('url')
+    if (ctx) this.load(ctx)
+    else {
+      beaker.shell.getContext().then(res => {
+        console.log(res)
+        this.load(res.lastActivePane || 'hyper://system/')
+      })
     }
   }
 

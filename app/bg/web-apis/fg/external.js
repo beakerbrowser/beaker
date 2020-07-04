@@ -19,6 +19,7 @@ export const setup = function (rpc) {
     delete shell.importFilesDialog
     delete shell.importFoldersDialog
     delete shell.exportFilesDialog
+    delete shell.getContext
   }
 
   var peersocketsRPC = rpc.importAPI('peersockets', peersocketsManifest, RPC_OPTS)

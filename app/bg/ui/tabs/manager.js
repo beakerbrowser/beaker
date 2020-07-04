@@ -70,8 +70,9 @@ class Tab extends EventEmitter {
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab and background tabs
     this.isActive = false // is this the active tab in the window?
     this.isPinned = Boolean(opts.isPinned) // is this tab pinned?
-
+    
     // helper state
+    this.lastActivePane = undefined
     this.activePaneResize = undefined // used to track pane resizing
 
     if (opts.fromSnapshot) {
@@ -250,6 +251,7 @@ class Tab extends EventEmitter {
   setActivePane (pane) {
     if (this.activePane === pane) return
     if (this.activePane) {
+      this.lastActivePane = this.activePane
       this.activePane.isActive = false
     }
     pane.isActive = true
@@ -308,6 +310,9 @@ class Tab extends EventEmitter {
     }
     this.panes.splice(i, 1)
     this.layout.removePane(pane)
+    if (this.lastActivePane === pane) {
+      this.lastActivePane = undefined
+    }
 
     if (this.panes.length === 0) {
       // always have one pane
@@ -329,6 +334,10 @@ class Tab extends EventEmitter {
 
   getPaneById (id) {
     return this.panes.find(p => p.id == id)
+  }
+
+  getLastActivePane () {
+    return this.lastActivePane || this.activePane
   }
 
   findPane (browserView) {

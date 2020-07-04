@@ -1,4 +1,4 @@
-import { dialog } from 'electron'
+import { dialog, BrowserView } from 'electron'
 import pda from 'pauls-dat-api2'
 import * as modals from '../../ui/subwindows/modals'
 import * as prompts from '../../ui/subwindows/prompts'
@@ -6,6 +6,7 @@ import * as drives from '../../hyper/drives'
 import { lookupDrive } from './hyperdrive'
 import { parseDriveUrl } from '../../../lib/urls'
 import { joinPath } from '../../../lib/strings'
+import { findTab } from '../../ui/tabs/manager'
 import assert from 'assert'
 import { UserDeniedError, ArchiveNotWritableError } from 'beaker-error-constants'
 import _pick from 'lodash.pick'
@@ -212,6 +213,14 @@ export default {
       return {numExported: res.filePaths.length}
     }
     return {numExported: 0}
+  },
+
+  async getContext () {
+    if (!(await isBeakerApp(this.sender))) return
+    var tab = findTab(BrowserView.fromWebContents(this.sender))
+    return {
+      lastActivePane: tab.getLastActivePane().url
+    }
   }
 }
 
