@@ -166,14 +166,7 @@ class ShellWindowTabs extends LitElement {
       let [oldLen, newLen] = [oldVal.length, this.tabs.length]
       if (newLen > oldLen) {
         // new tab
-        let highestCtime = 0
-        let newTabIndex = -1
-        for (let i = 0; i < this.tabs.length; i++) {
-          if (this.tabs[i].tabCreationTime > highestCtime) {
-            newTabIndex = i
-            highestCtime = this.tabs[i].tabCreationTime
-          }
-        }
+        let newTabIndex = this.tabs.findIndex(t1 => !oldVal.find(t2 => t2.id === t1.id))
         if (newTabIndex === -1) return
         Array.from(this.shadowRoot.querySelectorAll('.tabs > .tab'))[newTabIndex].animate([
           { transform: 'scaleX(0)', transformOrigin: 'center left' },
