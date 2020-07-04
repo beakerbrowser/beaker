@@ -1177,6 +1177,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 // =
 
 function emitUpdateState (tab) {
+  if (!tab.browserWindow) return
   var win = getTopWindow(tab.browserWindow)
   var index = typeof tab === 'number' ? tab : getAll(win).indexOf(tab)
   if (index === -1) {
