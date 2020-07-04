@@ -428,6 +428,7 @@ export class Pane extends EventEmitter {
   async captureScreenshot () {
     try {
       // wait a sec to allow loading to finish
+      var url = this.url
       await new Promise(r => setTimeout(r, 2e3))
 
       // capture the page
@@ -437,7 +438,7 @@ export class Pane extends EventEmitter {
       var bounds = image.getSize()
       if (bounds.width === 0 || bounds.height === 0) return
       if (bounds.width <= bounds.height) return // only save if it's a useful image
-      await sitedataDb.set(this.url, 'screenshot', image.toDataURL(), {dontExtractOrigin: true, normalizeUrl: true})
+      await sitedataDb.set(url, 'screenshot', image.toDataURL(), {dontExtractOrigin: true, normalizeUrl: true})
     } catch (e) {
       // ignore, can happen if the pane was closed during wait
       console.log('Failed to capture page screenshot', e)
