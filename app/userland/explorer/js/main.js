@@ -942,7 +942,7 @@ export class ExplorerApp extends LitElement {
         noBorders: true,
         fontAwesomeCSSUrl: '/css/font-awesome.css',
         style: `padding: 4px 0`,
-        items
+        items: items.filter(item => !item.ctxOnly)
       })
     }
   }

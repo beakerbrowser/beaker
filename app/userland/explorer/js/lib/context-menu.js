@@ -38,15 +38,17 @@ export function constructItems (app) {
       }
     })
     if (!app.isViewingQuery) {
-      items.push('-')
+      items.push({type: 'separator', ctxOnly: true})
       items.push({
         label: 'Open in Pane Right',
+        ctxOnly: true,
         click: () => {
           beaker.browser.newPane(sel.shareUrl, {splitDir: 'vert'})
         }
       })
       items.push({
         label: 'Open in Pane Below',
+        ctxOnly: true,
         click: () => {
           beaker.browser.newPane(sel.shareUrl, {splitDir: 'horz'})
         }
@@ -109,15 +111,15 @@ export function constructItems (app) {
     })
   } else {
     let writable = app.currentDriveInfo.writable
-    items.push({id: 'builtin:back'})
-    items.push({id: 'builtin:forward'})
-    items.push({id: 'builtin:reload'})
-    items.push('-')
-    items.push({id: 'builtin:split-pane-vert'})
-    items.push({id: 'builtin:split-pane-horz'})
-    items.push({id: 'builtin:move-pane'})
-    items.push({id: 'builtin:close-pane'})
-    items.push('-')
+    items.push({ctxOnly: true, id: 'builtin:back'})
+    items.push({ctxOnly: true, id: 'builtin:forward'})
+    items.push({ctxOnly: true, id: 'builtin:reload'})
+    items.push({type: 'separator', ctxOnly: true})
+    items.push({ctxOnly: true, id: 'builtin:split-pane-vert'})
+    items.push({ctxOnly: true, id: 'builtin:split-pane-horz'})
+    items.push({ctxOnly: true, id: 'builtin:move-pane'})
+    items.push({ctxOnly: true, id: 'builtin:close-pane'})
+    items.push({type: 'separator', ctxOnly: true})
 
     items.push({
       icon: 'far fa-fw fa-file',
@@ -167,7 +169,7 @@ export function constructItems (app) {
       click: () => app.onExport()
     })
   }
-  items.push('-')
-  items.push({id: 'builtin:inspect-element'})
+  items.push({type: 'separator', ctxOnly: true})
+  items.push({id: 'builtin:inspect-element', ctxOnly: true})
   return items
 }

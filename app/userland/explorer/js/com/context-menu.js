@@ -154,7 +154,7 @@ export class BeakerContextMenu extends LitElement {
           : html`
             <div class="${cls}" style="${ifDefined(this.customStyle)}">
               ${this.items.map(item => {
-                if (item === '-') {
+                if (item === '-' || item.type === 'separator') {
                   return html`<hr />`
                 }
                 if (item.type === 'html') {
