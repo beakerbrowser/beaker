@@ -17,6 +17,7 @@ import { convertDatArchive } from './dat/index'
 import datDns from './dat/dns'
 import { open as openUrl } from './open-url'
 import * as windows from './ui/windows'
+import { createMenuItem as createContextMenuItem, shouldShowMenuItem as shouldShowContextMenuItem } from './ui/context-menu'
 import * as tabManager from './ui/tabs/manager'
 import { updateSetupState } from './ui/setup-flow'
 import * as modals from './ui/subwindows/modals'
@@ -192,6 +193,7 @@ export const WEBAPI = {
     return modals.create(this.sender, name, opts)
   },
   newWindow,
+  newPane,
   gotoUrl,
   getPageUrl,
   refreshPage,
@@ -647,31 +649,29 @@ async function showOpenDialog (opts = {}) {
 }
 
 function showContextMenu (menuDefinition) {
+  var webContents = this.sender
+  var tab = tabManager.findTab(BrowserView.fromWebContents(webContents))
   return new Promise(resolve => {
     var cursorPos = screen.getCursorScreenPoint()
 
     // add a click item to all menu items
-    addClickHandler(menuDefinition)
-    function addClickHandler (items) {
-      items.forEach(item => {
-        if (item.type === 'submenu' && Array.isArray(item.submenu)) {
-          addClickHandler(item.submenu)
+    menuDefinition = massageItems(menuDefinition)
+    function massageItems (items) {
+      return items.map(item => {
+        if (item.id && item.id.startsWith('builtin:')) {
+          let id = item.id.slice('builtin:'.length)
+          let opts = {webContents, tab, x: cursorPos.x, y: cursorPos.y}
+          if (shouldShowContextMenuItem(id, opts)) {
+            return createContextMenuItem(id, opts)
+          }
+          return false
+        } else if (item.type === 'submenu' && Array.isArray(item.submenu)) {
+          item.submenu = massageItems(item.submenu)
         } else if (item.type !== 'separator' && item.id) {
           item.click = clickHandler
         }
-      })
-    }
-
-    // add 'inspect element' in development
-    if (getEnvVar('NODE_ENV') === 'develop' || getEnvVar('NODE_ENV') === 'test') {
-      menuDefinition.push({type: 'separator'})
-      menuDefinition.push({
-        label: 'Inspect Element',
-        click: () => {
-          this.sender.inspectElement(cursorPos.x, cursorPos.y)
-          if (this.sender.isDevToolsOpened()) { this.sender.devToolsWebContents.focus() }
-        }
-      })
+        return item
+      }).filter(Boolean)
     }
 
     // track the selection
@@ -691,6 +691,15 @@ function showContextMenu (menuDefinition) {
 
 async function newWindow (state = {}) {
   windows.createShellWindow(state)
+}
+
+async function newPane (url, opts = {}) {
+  var senderView = BrowserView.fromWebContents(this.sender)
+  var tab = tabManager.findContainingTab(senderView)
+  var pane = tab && tab.findPane(senderView)
+  if (tab && pane) {
+    tab.createPane({url, setActive: true, after: pane, splitDir: opts.splitDir || 'vert'})
+  }
 }
 
 async function gotoUrl (url) {

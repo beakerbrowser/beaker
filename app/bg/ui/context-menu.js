@@ -170,20 +170,9 @@ export default function registerContextMenu () {
       }
 
       if (!props.linkURL && props.mediaType === 'none' && !hasText) {
-        menuItems.push({
-          label: 'Back',
-          enabled: webContents.canGoBack(),
-          click: () => webContents.goBack()
-        })
-        menuItems.push({
-          label: 'Forward',
-          enabled: webContents.canGoForward(),
-          click: () => webContents.goForward()
-        })
-        menuItems.push({
-          label: 'Reload',
-          click: () => webContents.reload()
-        })
+        menuItems.push(createMenuItem('back', {webContents, tab: targetTab}))
+        menuItems.push(createMenuItem('forward', {webContents, tab: targetTab}))
+        menuItems.push(createMenuItem('reload', {webContents, tab: targetTab}))
         menuItems.push({ type: 'separator' })
         if (getAddedWindowSettings(targetWindow).isShellInterfaceHidden) {
           menuItems.push({
@@ -194,69 +183,12 @@ export default function registerContextMenu () {
           })
           menuItems.push({ type: 'separator' })
         }
-        menuItems.push({
-          label: 'Split Pane Vertically',
-          click () {
-            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-            if (targetTab && pane) targetTab.splitPane(pane, 'vert')
-          }
-        })
-        menuItems.push({
-          label: 'Split Pane Horizontally',
-          click () {
-            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-            if (targetTab && pane) targetTab.splitPane(pane, 'horz')
-          }
-        })
-        if (targetTab.panes.length > 1) {
-          menuItems.push({
-            type: 'submenu',
-            label: 'Move Pane',
-            submenu: [{
-              label: 'To a New Tab',
-              click () {
-                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-                if (targetTab && pane) {
-                  targetTab.detachPane(pane)
-                  tabManager.create(targetWindow, null, {setActive: true, initialPanes: [pane]})
-                }
-              }
-            }, {
-              type: 'separator'
-            }, {
-              label: 'Up',
-              click () {
-                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-                if (targetTab && pane) targetTab.movePane(pane, 'up')
-              }
-            }, {
-              label: 'Down',
-              click () {
-                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-                if (targetTab && pane) targetTab.movePane(pane, 'down')
-              }
-            }, {
-              label: 'Left',
-              click () {
-                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-                if (targetTab && pane) targetTab.movePane(pane, 'left')
-              }
-            }, {
-              label: 'Right',
-              click () {
-                var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-                if (targetTab && pane) targetTab.movePane(pane, 'right')
-              }
-            }]
-          })
+        menuItems.push(createMenuItem('split-pane-vert', {webContents, tab: targetTab}))
+        menuItems.push(createMenuItem('split-pane-horz', {webContents, tab: targetTab}))
+        if (shouldShowMenuItem('move-pane', {tab: targetTab})) {
+          menuItems.push(createMenuItem('move-pane', {webContents, tab: targetTab}))
         }
-        menuItems.push({
-          label: 'Close Pane',
-          click () {
-            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
-            if (targetTab && pane) targetTab.removePane(pane)
-          }
-        })
+        menuItems.push(createMenuItem('close-pane', {webContents, tab: targetTab}))
         menuItems.push({ type: 'separator' })
         menuItems.push({
           label: 'Export Page As...',
@@ -270,17 +202,115 @@ export default function registerContextMenu () {
       }
 
       menuItems.push({ type: 'separator' })
-      menuItems.push({
-        label: 'Inspect Element',
-        click: item => {
-          webContents.inspectElement(props.x, props.y)
-          if (webContents.isDevToolsOpened()) { webContents.devToolsWebContents.focus() }
-        }
-      })
+      menuItems.push(createMenuItem('inspect-element', {webContents, tab: targetTab, x: props.x, y: props.y}))
 
       // show menu
       menuInstance = Menu.buildFromTemplate(menuItems)
       menuInstance.popup({ window: targetWindow })
     })
   })
+}
+
+export function shouldShowMenuItem (id, {tab, webContents}) {
+  switch (id) {
+    case 'move-pane':
+      return (tab.panes.length > 1)
+    default:
+      return true
+  }
+}
+
+export function createMenuItem (id, {tab, webContents, x, y}) {
+  switch (id) {
+    case 'back':
+      return {
+        label: 'Back',
+        enabled: webContents.canGoBack(),
+        click: () => webContents.goBack()
+      }
+    case 'forward':
+      return {
+        label: 'Forward',
+        enabled: webContents.canGoForward(),
+        click: () => webContents.goForward()
+      }
+    case 'reload':
+      return {
+        label: 'Reload',
+        click: () => webContents.reload()
+      }
+    case 'split-pane-vert':
+      return {
+        label: 'Split Pane Vertically',
+        click () {
+          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          if (tab && pane) tab.splitPane(pane, 'vert')
+        }
+      }
+    case 'split-pane-horz':
+      return {
+        label: 'Split Pane Horizontally',
+        click () {
+          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          if (tab && pane) tab.splitPane(pane, 'horz')
+        }
+      }
+    case 'move-pane':
+      return {
+        type: 'submenu',
+        label: 'Move Pane',
+        submenu: [{
+          label: 'To a New Tab',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) {
+              tab.detachPane(pane)
+              tabManager.create(tab.browserWindow, null, {setActive: true, initialPanes: [pane]})
+            }
+          }
+        }, {
+          type: 'separator'
+        }, {
+          label: 'Up',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.movePane(pane, 'up')
+          }
+        }, {
+          label: 'Down',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.movePane(pane, 'down')
+          }
+        }, {
+          label: 'Left',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.movePane(pane, 'left')
+          }
+        }, {
+          label: 'Right',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.movePane(pane, 'right')
+          }
+        }]
+      }
+    case 'close-pane':
+      return {
+        label: 'Close Pane',
+        click () {
+          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          if (tab && pane) tab.removePane(pane)
+        }
+      }
+    case 'inspect-element':
+      return {
+        label: 'Inspect Element',
+        click: item => {
+          webContents.inspectElement(x, y)
+          if (webContents.isDevToolsOpened()) { webContents.devToolsWebContents.focus() }
+        }
+      }
+  }
 }

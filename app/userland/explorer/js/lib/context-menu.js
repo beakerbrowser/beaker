@@ -11,7 +11,7 @@ export function constructItems (app) {
     let writable = app.selection.reduce((acc, v) => acc && v.drive.writable, true)
     items.push({
       icon: 'fas fa-fw fa-desktop',
-      label: 'Open',
+      label: 'Open in New Tab',
       click: () => app.goto(app.getShareUrl(sel), true, true)
     })
     items.push({
@@ -21,7 +21,7 @@ export function constructItems (app) {
           <span class="fas fa-fw fa-share fa-stack-1x" style="margin-left: -10px; margin-top: -5px; font-size: 7px"></span>
         </i>
       `,
-      label: 'Copy URL',
+      label: 'Copy Address',
       disabled: !app.canShare(sel),
       click: () => {
         writeToClipboard(sel.shareUrl)
@@ -30,7 +30,7 @@ export function constructItems (app) {
     })
     items.push({
       icon: 'custom-path-icon',
-      label: `Copy ${sel.stat.isFile() ? 'file' : 'folder'} path`,
+      label: `Copy Path`,
       click: () => {
         var path = app.selection[0] ? sel.path : loc.getPath()
         writeToClipboard(path)
@@ -38,6 +38,19 @@ export function constructItems (app) {
       }
     })
     if (!app.isViewingQuery) {
+      items.push('-')
+      items.push({
+        label: 'Open in Pane Right',
+        click: () => {
+          beaker.browser.newPane(sel.shareUrl, {splitDir: 'vert'})
+        }
+      })
+      items.push({
+        label: 'Open in Pane Below',
+        click: () => {
+          beaker.browser.newPane(sel.shareUrl, {splitDir: 'horz'})
+        }
+      })
       items.push('-')
       if (sel.stat.isFile()) {
         items.push({
@@ -96,6 +109,16 @@ export function constructItems (app) {
     })
   } else {
     let writable = app.currentDriveInfo.writable
+    items.push({id: 'builtin:back'})
+    items.push({id: 'builtin:forward'})
+    items.push({id: 'builtin:reload'})
+    items.push('-')
+    items.push({id: 'builtin:split-pane-vert'})
+    items.push({id: 'builtin:split-pane-horz'})
+    items.push({id: 'builtin:move-pane'})
+    items.push({id: 'builtin:close-pane'})
+    items.push('-')
+
     items.push({
       icon: 'far fa-fw fa-file',
       label: 'New file',
@@ -113,35 +136,6 @@ export function constructItems (app) {
       label: 'New mount',
       disabled: !writable,
       click: () => app.onNewMount()
-    })
-    items.push('-')
-    items.push({
-      icon: 'fas fa-fw fa-desktop',
-      label: 'Open',
-      disabled: !app.canShare(app.locationAsItem),
-      click: () => app.goto(app.getShareUrl(app.locationAsItem), true, true)
-    })
-    items.push({
-      icon: html`
-        <i class="fa-stack" style="font-size: 6px">
-          <span class="far fa-fw fa-hdd fa-stack-2x"></span>
-          <span class="fas fa-fw fa-share fa-stack-1x" style="margin-left: -10px; margin-top: -5px; font-size: 7px"></span>
-        </i>
-      `,
-      label: `Copy URL`,
-      disabled: !app.canShare(app.locationAsItem),
-      click: () => {
-        writeToClipboard(app.getShareUrl(app.locationAsItem))
-        toast.create('Copied to clipboard')
-      }
-    })
-    items.push({
-      icon: 'custom-path-icon',
-      label: `Copy path`,
-      click: () => {
-        writeToClipboard(loc.getPath())
-        toast.create('Copied to clipboard')
-      }
     })
     items.push('-')
     items.push({
@@ -173,5 +167,7 @@ export function constructItems (app) {
       click: () => app.onExport()
     })
   }
+  items.push('-')
+  items.push({id: 'builtin:inspect-element'})
   return items
 }

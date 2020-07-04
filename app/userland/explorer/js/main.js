@@ -922,6 +922,7 @@ export class ExplorerApp extends LitElement {
     if (!useAppMenuAlways && typeof beaker !== 'undefined' && typeof beaker.browser !== 'undefined') {
       let fns = {}
       for (let i = 0; i < items.length; i++) {
+        if (items[i].id) continue
         let id = `item=${i}`
         if (items[i] === '-') items[i] = {type: 'separator'}
         items[i].id = id
@@ -929,7 +930,7 @@ export class ExplorerApp extends LitElement {
         delete items[i].icon
         delete items[i].click
       }
-      var choice = await beaker.browser.showContextMenu(items)
+      var choice = await beaker.browser.showContextMenu(items, true)
       if (fns[choice]) fns[choice]()
     } else {
       return contextMenu.create({

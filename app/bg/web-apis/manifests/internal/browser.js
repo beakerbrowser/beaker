@@ -53,6 +53,7 @@ export default {
   showContextMenu: 'promise',
   showModal: 'promise',
   newWindow: 'promise',
+  newPane: 'promise',
   openUrl: 'promise',
   gotoUrl: 'promise',
   getPageUrl: 'promise',

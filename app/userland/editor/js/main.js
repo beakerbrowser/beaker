@@ -366,13 +366,13 @@ class EditorApp extends LitElement {
     var items = []
     if (item) {
       items.push({
-        label: 'Open in new tab',
+        label: 'Open in New Tab',
         click () {
           beaker.browser.openUrl(item.url)
         }
       })
       items.push({
-        label: `Copy ${item.stat.isFile() ? 'file' : 'folder'} link`,
+        label: 'Copy Link Address',
         disabled: !item.shareUrl,
         click () {
           writeToClipboard(item.shareUrl)
@@ -381,7 +381,7 @@ class EditorApp extends LitElement {
       })
       if (item.stat.mount && item.stat.mount.key) {
         items.push({
-          label: 'Copy mount target',
+          label: 'Copy Mount Target',
           click () {
             writeToClipboard(`hyper://${item.stat.mount.key}/`)
             toast.create('Copied to your clipboard')
@@ -397,8 +397,16 @@ class EditorApp extends LitElement {
       })
       items.push({type: 'separator'})
       items.push({
-        label: 'Refresh files',
-        click: () => this.loadExplorer()
+        label: 'Open in Pane Right',
+        click: () => {
+          beaker.browser.newPane(item.shareUrl, {splitDir: 'vert'})
+        }
+      })
+      items.push({
+        label: 'Open in Pane Below',
+        click: () => {
+          beaker.browser.newPane(item.shareUrl, {splitDir: 'horz'})
+        }
       })
       items.push({type: 'separator'})
       items.push({
@@ -413,49 +421,65 @@ class EditorApp extends LitElement {
       })
       items.push({type: 'separator'})
       items.push({
+        label: 'Refresh Files',
+        click: () => this.loadExplorer()
+      })
+      items.push({
         label: 'Export',
         click: () => this.onClickExportFiles([item.url])
       })
     } else {
+      items.push({id: 'builtin:back'})
+      items.push({id: 'builtin:forward'})
+      items.push({id: 'builtin:reload'})
+      items.push({type: 'separator'})
+      items.push({id: 'builtin:split-pane-vert'})
+      items.push({id: 'builtin:split-pane-horz'})
+      items.push({id: 'builtin:move-pane'})
+      items.push({id: 'builtin:close-pane'})
+      items.push({type: 'separator'})
       items.push({
-        label: 'New folder',
+        label: 'New Folder',
         disabled: this.readOnly,
         click: () => this.onClickNewFolder(folderPath)
       })
       items.push({
-        label: 'New file',
+        label: 'New File',
         disabled: this.readOnly,
         click: () => this.onClickNewFile(folderPath)
       })
       items.push({
-        label: 'New mount',
+        label: 'New Mount',
         disabled: this.readOnly,
         click: () => this.onClickNewMount(folderPath)
       })
       items.push({type: 'separator'})
       items.push({
-        label: 'Refresh files',
+        label: 'Refresh Files',
         click: () => this.loadExplorer()
       })
       items.push({type: 'separator'})
       items.push({
-        label: 'Import file(s)',
+        label: 'Import File(s)',
         disabled: this.readOnly,
         click: () => this.onClickImportFiles(folderPath)
       })
       items.push({
-        label: 'Import folder(s)',
+        label: 'Import Folder(s)',
         disabled: this.readOnly,
         click: () => this.onClickImportFolders(folderPath)
       })
       items.push({
-        label: 'Export files',
+        label: 'Export Files',
         click: () => this.onClickExportFiles(folderItemUrls)
       })
     }
+    items.push({type: 'separator'})
+    items.push({id: 'builtin:inspect-element'})
 
     var fns = {}
     for (let i = 0; i < items.length; i++) {
+      if (items[i].id) continue
       let id = `item=${i}`
       items[i].id = id
       fns[id] = items[i].click
@@ -528,7 +552,7 @@ class EditorApp extends LitElement {
 
   renderToolbar () {
     return html`
-      <div class="toolbar ${this.isDetached ? 'detached' : ''}" @contextmenu=${this.onContextmenuToolbar}>
+      <div class="toolbar ${this.isDetached ? 'detached' : ''}">
         <button class="transparent" @click=${this.onToggleFilesOpen}>
           <span class="fas fa-fw fa-ellipsis-h"></span>
         </button>
@@ -599,11 +623,6 @@ class EditorApp extends LitElement {
 
   onFilesExplorerNewFile (e) {
     this.onClickNewFile(e.detail.folderPath)
-  }
-
-  onContextmenuToolbar (e) {
-    e.preventDefault()
-    e.stopPropagation()
   }
 
   async onClickActions (e) {
