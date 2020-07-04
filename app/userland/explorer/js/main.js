@@ -407,7 +407,6 @@ export class ExplorerApp extends LitElement {
           layout: true,
           ['render-mode-' + this.renderMode]: true
         })}
-        @contextmenu=${this.onContextmenuLayout}
         @goto=${this.onGoto}
         @change-selection=${this.onChangeSelection}
         @show-context-menu=${this.onShowMenu}
@@ -425,7 +424,7 @@ export class ExplorerApp extends LitElement {
           ? this.renderInitialLoading()
           : html`
             ${this.renderLeftNav()}
-            <main>
+            <main @contextmenu=${this.onContextmenuLayout}>
               ${this.renderHeader()}
               ${this.loadingState === LOADING_STATES.CONTENT ? html`
                 <div class="loading-notice">Loading...</div>
