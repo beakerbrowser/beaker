@@ -33,7 +33,7 @@ var activeTabs = {} // map of {[win.id]: Array<Tab>}
 var backgroundTabs = [] // Array<Tab>
 var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var lastSelectedTabIndex = {} // map of {[win.id]: Number}
-var closedURLs = {} // map of {[win.id]: Array<string>}
+var closedTabs = {} // map of {[win.id]: Array<Object>}
 var windowEvents = {} // mapof {[win.id]: EventEmitter}
 var defaultUrl = 'beaker://desktop/'
 
@@ -291,6 +291,12 @@ class Tab extends EventEmitter {
   }
 
   detachPane (pane) {
+    if (this.panes.length === 1) {
+      // this is going to close the tab
+      // save, in case the user wants to restore it
+      addToClosedTabs(this)
+    }
+
     pane.hide()
     pane.setTab(undefined)
     pane.removeListener('create-pane', this.onCreatePaneBound)
@@ -738,10 +744,10 @@ export async function remove (win, tab) {
     }
   }
 
-  // TODO
   // save, in case the user wants to restore it
-  // closedURLs[win.id] = closedURLs[win.id] || []
-  // closedURLs[win.id].push(tab.url)
+  if (tab.panes.length) {
+    addToClosedTabs(tab)
+  }
 
   tabs.splice(i, 1)
   tab.destroy()
@@ -920,9 +926,9 @@ export async function loadPins (win) {
 
 export function reopenLastRemoved (win) {
   win = getTopWindow(win)
-  var url = (closedURLs[win.id] || []).pop()
-  if (url) {
-    var tab = create(win, url)
+  var snap = (closedTabs[win.id] || []).pop()
+  if (snap) {
+    var tab = create(win, null, {fromSnapshot: snap})
     setActive(win, tab)
     return tab
   }
@@ -1292,6 +1298,11 @@ function emit (win, ...args) {
 
 function getWindowTabState (win) {
   return getAll(win).map(tab => tab.state)
+}
+
+function addToClosedTabs (tab) {
+  closedTabs[tab.browserWindow.id] = closedTabs[tab.browserWindow.id] || []
+  closedTabs[tab.browserWindow.id].push(tab.getSessionSnapshot())
 }
 
 function indexOfLastPinnedTab (win) {
