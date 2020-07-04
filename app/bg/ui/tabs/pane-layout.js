@@ -26,17 +26,20 @@ export class PaneLayout extends EventEmitter {
   // management
   // =
 
-  addPane (pane, {after} = {after: undefined}) {
+  addPane (pane, {after, layoutWidth, layoutHeight, noRebalance} = {after: undefined, layoutWidth: undefined, layoutHeight: undefined, noRebalance: false}) {
     var stack = new PaneLayoutStack(this)
-    stack.layoutWidth = (after || this.stacks[0]) ? (after || this.stacks[0]).layoutWidth : 100
-    stack.addPane(pane)
+    if (layoutWidth) stack.layoutWidth = layoutWidth
+    else if (after) stack.layoutWidth = after.layoutWidth
+    else if (this.stacks[0]) stack.layoutWidth = this.stacks[0].layoutWidth
+    else stack.layoutWidth = 100
+    stack.addPane(pane, {layoutHeight, noRebalance})
     insert(this.stacks, stack, after)
-    this.rebalanceWidths()
+    if (!noRebalance) this.rebalanceWidths()
     this.emit('changed')
   }
 
-  addPaneToStack (stack, pane, {after} = {after: undefined}) {
-    stack.addPane(pane, {after})
+  addPaneToStack (stack, pane, {after, layoutHeight, noRebalance} = {after: undefined, layoutHeight: undefined, noRebalance: false}) {
+    stack.addPane(pane, {after, layoutHeight, noRebalance})
     this.emit('changed')
   }
 
@@ -173,6 +176,13 @@ export class PaneLayout extends EventEmitter {
     nextPane.layoutHeight -= pct
   }
 
+  rebalanceAll () {
+    this.rebalanceWidths()
+    for (let stack of this.stacks) {
+      stack.rebalanceHeights()
+    }
+  }
+
   rebalanceWidths () {
     if (!this.stacks.length) return
     
@@ -222,10 +232,13 @@ class PaneLayoutStack {
   // management
   // =
 
-  addPane (pane, {after} = {after: undefined}) {
-    pane.layoutHeight = (after || this.panes[0]) ? (after || this.panes[0]).layoutHeight : 100
+  addPane (pane, {after, layoutHeight, noRebalance} = {after: undefined, layoutHeight: undefined, noRebalance: false}) {
+    if (layoutHeight) pane.layoutHeight = layoutHeight
+    else if (after) pane.layoutHeight = after.layoutHeight
+    else if (this.panes[0]) pane.layoutHeight = this.panes[0].layoutHeight
+    else pane.layoutHeight = 100
     insert(this.panes, pane, after)
-    this.rebalanceHeights()
+    if (!noRebalance) this.rebalanceHeights()
   }
 
   removePane (pane) {

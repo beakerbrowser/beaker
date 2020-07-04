@@ -41,7 +41,7 @@ var defaultUrl = 'beaker://desktop/'
 // =
 
 class Tab extends EventEmitter {
-  constructor (win, opts = {isPinned: false, isHidden: false, initialPanes: undefined}) {
+  constructor (win, opts = {isPinned: false, isHidden: false, initialPanes: undefined, fromSnapshot: undefined}) {
     super()
     this.id = tabIdCounter++
     this.browserWindow = win
@@ -74,12 +74,15 @@ class Tab extends EventEmitter {
     // helper state
     this.activePaneResize = undefined // used to track pane resizing
 
-    // always have one pane
-    if (opts.initialPanes) {
+    if (opts.fromSnapshot) {
+      this.loadSnapshot(opts.fromSnapshot)
+    } else if (opts.initialPanes) {
       for (let pane of opts.initialPanes) {
         this.attachPane(pane)
       }
-    } else {
+    }
+    if (this.panes.length === 0) {
+      // always have one pane
       this.createPane()
     }
   }
@@ -92,6 +95,45 @@ class Tab extends EventEmitter {
       isPinned: this.isPinned,
       paneLayout: this.layout.state
     })
+  }
+
+  getSessionSnapshot () {
+    return {
+      isPinned: this.isPinned,
+      stacks: this.layout.stacks.map(stack => ({
+        layoutWidth: stack.layoutWidth,
+        panes: stack.panes.map(pane => ({
+          url: pane.url || pane.loadingURL,
+          layoutHeight: pane.layoutHeight
+        }))
+      }))
+    }
+  }
+
+  loadSnapshot (snapshot) {
+    var stacks = Array.isArray(snapshot.stacks) ? snapshot.stacks : []
+    for (let stackSnapshot of stacks) {
+      let panes = Array.isArray(stackSnapshot.panes) ? stackSnapshot.panes : []
+      let stack = undefined
+      for (let paneSnapshot of panes) {
+        if (typeof paneSnapshot.url !== 'string') continue
+
+        var pane = new Pane(this)
+        this.panes.push(pane)
+        pane.setTab(this)
+
+        if (stack) {
+          this.layout.addPaneToStack(stack, pane, {layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
+        } else {
+          this.layout.addPane(pane, {layoutWidth: stackSnapshot.layoutWidth, layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
+          stack = this.layout.stacks[this.layout.stacks.length - 1]
+        }
+
+        pane.loadURL(paneSnapshot.url)
+      }
+    }
+    if (this.panes[0]) this.setActivePane(this.panes[0])
+    this.layout.rebalanceAll()
   }
 
   get activePane () {
@@ -377,6 +419,7 @@ class Tab extends EventEmitter {
         pane.show({noFocus: true})
         pane.setBounds(this.layout.getBoundsForPane(pane), this.panes.length > 1)
       }
+      triggerSessionSnapshot(this.browserWindow)
     }
   }
 
@@ -393,7 +436,7 @@ class Tab extends EventEmitter {
   // =
 
   emitPaneUpdateState (pane) {
-    if (this.isHidden) return
+    if (this.isHidden || !this.browserWindow) return
     if (!pane.isActive) return
     emitUpdateState(this)
   }
@@ -546,7 +589,8 @@ export function create (
       focusLocationBar: false,
       adjacentActive: false,
       tabIndex: undefined,
-      initialPanes: undefined
+      initialPanes: undefined,
+      fromSnapshot: undefined
     }
   ) {
   url = url || defaultUrl
@@ -559,14 +603,14 @@ export function create (
   var tab
   var preloadedNewTab = preloadedNewTabs[win.id]
   var loadWhenReady = false
-  if (!opts.initialPanes && url === defaultUrl && !opts.isPinned && preloadedNewTab) {
+  if (!opts.initialPanes && !opts.fromSnapshot && url === defaultUrl && !opts.isPinned && preloadedNewTab) {
     // use the preloaded tab
     tab = preloadedNewTab
     tab.isHidden = false // no longer hidden
     preloadedNewTab = preloadedNewTabs[win.id] = null
   } else {
     // create a new tab
-    tab = new Tab(win, {isPinned: opts.isPinned, initialPanes: opts.initialPanes})
+    tab = new Tab(win, {isPinned: opts.isPinned, initialPanes: opts.initialPanes, fromSnapshot: opts.fromSnapshot})
     loadWhenReady = true
   }
 
@@ -589,7 +633,7 @@ export function create (
       tabs.push(tab)
     }
   }
-  if (loadWhenReady && !opts.initialPanes) {
+  if (loadWhenReady && !opts.initialPanes && !opts.fromSnapshot) {
     // NOTE
     // `loadURL()` triggers some events (eg app.on('web-contents-created'))
     // which need to be handled *after* the tab is added to the listing
@@ -620,9 +664,9 @@ export function create (
   return tab
 }
 
-export function createBg (url) {
-  var tab = new Tab(undefined, {isHidden: true})
-  tab.loadURL(url)
+export function createBg (url, opts = {fromSnapshot: undefined}) {
+  var tab = new Tab(undefined, {isHidden: true, fromSnapshot: opts.fromSnapshot})
+  if (url && !opts.fromSnapshot) tab.loadURL(url)
   backgroundTabs.push(tab)
   app.emit('custom-background-tabs-update', backgroundTabs)
 }
@@ -765,20 +809,41 @@ export function resize (win) {
   if (active) active.resize()
 }
 
-export function initializeFromSnapshot (win, snapshot) {
+export function initializeWindowFromSnapshot (win, snapshot) {
   win = getTopWindow(win)
   for (let page of snapshot) {
-    page = typeof page === 'string' ? {url: page} : page // legacy compat
-    create(win, page.url, {isPinned: page.isPinned})
+    if (typeof page === 'string') {
+      // legacy compat- pages were previously just url strings
+      create(win, page)
+    } else {
+      create(win, null, {
+        isPinned: page.isPinned,
+        fromSnapshot: page
+      })
+    }
+  }
+}
+
+export function initializeBackgroundFromSnapshot (snapshot) {
+  for (let tab of snapshot.backgroundTabs) {
+    if (typeof tab === 'string') {
+      // legacy compat- pages were previously just url strings
+      createBg(tab)
+    } else {
+      createBg(null, {
+        fromSnapshot: tab
+      })
+    }
   }
 }
 
 export function takeSnapshot (win) {
   win = getTopWindow(win)
-  return getAll(win).map(v => ({
-    url: v.url,
-    isPinned: v.isPinned
-  }))
+  return getAll(win).map(tab => tab.getSessionSnapshot())
+}
+
+export function triggerSessionSnapshot (win) {
+  win.emit('custom-pages-updated', takeSnapshot(win))
 }
 
 export async function popOutTab (tab) {
@@ -937,7 +1002,7 @@ export function emitReplaceState (win) {
     isDaemonActive: hyper.daemon.isActive()
   }
   emit(win, 'replace-state', state)
-  win.emit('custom-pages-updated', takeSnapshot(win))
+  triggerSessionSnapshot(win)
 }
 
 // rpc api

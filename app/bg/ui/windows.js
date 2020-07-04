@@ -93,9 +93,7 @@ export async function setup () {
 
   app.on('custom-ready-to-show', () => {
     if (!previousSessionState.backgroundTabs) return
-    for (let tab of previousSessionState.backgroundTabs) {
-      if (tab.url) tabManager.createBg(tab.url)
-    }
+    tabManager.initializeBackgroundFromSnapshot(previousSessionState)
   })
 
   app.on('before-quit', async e => {
@@ -258,9 +256,9 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
         tabManager.loadPins(win)
       }
       if (!createOpts.dontInitPages) {
-        tabManager.initializeFromSnapshot(win, state.pages)
+        tabManager.initializeWindowFromSnapshot(win, state.pages)
         if (tabManager.getAll(win).length === 0) {
-          tabManager.create(win) // create new_tab
+          tabManager.create(win) // create default new tab
         }
       }
       if (state.isShellInterfaceHidden) {
