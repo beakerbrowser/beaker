@@ -125,10 +125,7 @@ export class AddressBookView extends LitElement {
   async onContextmenuContact (e, contact) {
     e.preventDefault()
     e.stopPropagation()
-    var el = e.currentTarget
-    el.style.background = '#fafafd'
     await this.contactMenu(contact, e.clientX, e.clientY)
-    el.style.background = 'none'
   }
 
   onClickContactMenuBtn (e, contact) {

@@ -246,10 +246,7 @@ export class DrivesView extends LitElement {
   async onContextmenuDrive (e, drive) {
     e.preventDefault()
     e.stopPropagation()
-    var el = e.currentTarget
-    el.style.background = '#fafafd'
     await this.driveMenu(drive, e.clientX, e.clientY)
-    el.style.background = 'none'
   }
 
   onClickDriveMenuBtn (e, drive) {

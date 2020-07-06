@@ -138,10 +138,7 @@ export class BookmarksView extends LitElement {
   async onContextmenuBookmark (e, bookmark) {
     e.preventDefault()
     e.stopPropagation()
-    var el = e.currentTarget
-    el.style.background = '#fafafd'
     await this.bookmarkMenu(bookmark, e.clientX, e.clientY)
-    el.style.background = 'none'
   }
 
   onClickBookmarkMenuBtn (e, bookmark) {
