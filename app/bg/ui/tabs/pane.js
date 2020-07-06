@@ -8,11 +8,8 @@ import { parseDriveUrl } from '../../../lib/urls'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as zoom from './zoom'
-import * as shellMenus from '../subwindows/shell-menus'
 import * as statusBar from '../subwindows/status-bar'
-import * as permPrompt from '../subwindows/perm-prompt'
 import * as modals from '../subwindows/modals'
-import * as siteInfo from '../subwindows/site-info'
 import * as windowMenu from '../window-menu'
 import { getResourceContentType } from '../../browser'
 import { DRIVE_KEY_REGEX } from '../../../lib/strings'
@@ -156,6 +153,7 @@ export class Pane extends EventEmitter {
     this.webContents.on('page-title-updated', this.onPageTitleUpdated.bind(this)) // NOTE page-title-updated isn't documented on webContents but it is supported
     this.webContents.on('page-favicon-updated', this.onPageFaviconUpdated.bind(this))
     this.webContents.on('new-window', this.onNewWindow.bind(this))
+    this.webContents.on('-will-add-new-contents', this.onWillAddNewContents.bind(this))
     this.webContents.on('media-started-playing', this.onMediaChange.bind(this))
     this.webContents.on('media-paused', this.onMediaChange.bind(this))
     this.webContents.on('found-in-page', this.onFoundInPage.bind(this))
@@ -816,10 +814,20 @@ export class Pane extends EventEmitter {
 
   onNewWindow (e, url, frameName, disposition, options) {
     e.preventDefault()
-    if (!this.isActive) return // only open if coming from the active pane
+    if (!this.isActive || !this.tab) return // only open if coming from the active pane
     var setActive = disposition === 'foreground-tab'
     var setActiveBySettings = !setActive
-    this.emit('create-pane', url, {setActive, setActiveBySettings, adjacentActive: true})
+    this.tab.createTab(url, {setActive, setActiveBySettings, adjacentActive: true})
+  }
+
+  onWillAddNewContents (e, url) {
+    // HACK
+    // this should be handled by new-window, but new-window currently crashes
+    // if you prevent default, so we handle it here
+    // see https://github.com/electron/electron/issues/23859
+    // -prf
+    e.preventDefault()
+    this.tab.createTab(url, {setActiveBySettings: true, adjacentActive: true})
   }
 
   onMediaChange (e) {

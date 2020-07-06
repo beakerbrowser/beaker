@@ -48,7 +48,6 @@ class Tab extends EventEmitter {
     this.panes = []
     this.layout = new PaneLayout()
     this.layout.on('changed', this.resize.bind(this))
-    this.onCreatePaneBound = this.onCreatePane.bind(this)
 
     defineActivePanePassthroughGetter(this, 'url')
     defineActivePanePassthroughGetter(this, 'loadingURL')
@@ -277,8 +276,6 @@ class Tab extends EventEmitter {
     if (!this.activePane) this.setActivePane(pane)
     if (this.isActive) pane.show()
 
-    pane.on('create-pane', this.onCreatePaneBound)
-
     if (after) {
       if (splitDir === 'vert') {
         let stack = this.layout.findStack(after)
@@ -301,7 +298,6 @@ class Tab extends EventEmitter {
 
     pane.hide()
     pane.setTab(undefined)
-    pane.removeListener('create-pane', this.onCreatePaneBound)
 
     let i = this.panes.indexOf(pane)
     if (i === -1) {
@@ -456,7 +452,7 @@ class Tab extends EventEmitter {
     emitUpdateState(this)
   }
 
-  onCreatePane (url, opts) {
+  createTab (url, opts) {
     create(this.browserWindow, url, opts)
   }
 }
