@@ -4,7 +4,6 @@ import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/direct
 import { pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
-import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import drivesCSS from '../../css/views/drives.css.js'
 
 const EXPLORER_URL = drive => `beaker://explorer/${drive.url.slice('hyper://'.length)}`
@@ -64,71 +63,55 @@ export class DrivesView extends LitElement {
     this.drives = drives
   }
 
-  driveMenu (drive, x, y, right = false) {
-    return contextMenu.create({
-      x,
-      y,
-      right: right || (x > document.body.scrollWidth - 300),
-      top: (y > window.innerHeight / 2),
-      roomy: false,
-      noBorders: true,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
-      style: `padding: 4px 0`,
-      items: [
-        {
-          icon: 'fas fa-fw fa-external-link-alt',
-          label: 'Open in a New Tab',
-          click: () => window.open(drive.url)
-        },
-        {
-          icon: html`
-            <i class="fa-stack" style="font-size: 6px">
-              <span class="far fa-fw fa-folder-open fa-stack-2x" style="opacity: 0.4"></span>
-              <span class="fas fa-fw fa-search fa-stack-1x" style="margin-left: -1px; margin-top: -2px; font-size: 9px"></span>
-            </i>
-          `,
-          label: 'Explore Files',
-          click: () => window.open(EXPLORER_URL(drive))
-        },
-        '-',
-        {
-          icon: html`
-            <i class="fa-stack" style="font-size: 6px">
-              <span class="far fa-fw fa-hdd fa-stack-2x"></span>
-              <span class="fas fa-fw fa-share fa-stack-1x" style="margin-left: -10px; margin-top: -5px; font-size: 7px"></span>
-            </i>
-          `,
-          label: 'Copy Drive Link',
-          click: () => {
-            writeToClipboard(drive.url)
-            toast.create('Copied to clipboard')
-          }
-        },
-        '-',
-        {
-          icon: 'fas fa-fw fa-code-branch',
-          label: 'Fork this Drive',
-          click: () => this.forkDrive(drive)
-        },
-        {
-          icon: html`<i style="padding-left: 2px; font-size: 16px; box-sizing: border-box">◨</i>`,
-          label: 'Diff / Merge',
-          click: () => this.diffDrive(drive)
-        },
-        '-',
-        {
-          icon: 'far fa-fw fa-list-alt',
-          label: 'Drive Properties',
-          click: () => this.driveProps(drive)
-        },
-        {
-          icon: drive.info.writable ? 'fas fa-fw fa-trash-alt' : 'fas fa-fw fa-times',
-          label: drive.info.writable ? 'Remove from My Library' : 'Stop hosting',
-          disabled: drive.ident.internal,
-          click: () => this.removeDrive(drive)
+  async driveMenu (drive) {
+    var items = [
+      {
+        label: 'Open in a New Tab',
+        click: () => window.open(drive.url)
+      },
+      {
+        label: 'Explore Files',
+        click: () => window.open(EXPLORER_URL(drive))
+      },
+      {type: 'separator'},
+      {
+        label: 'Copy Drive Link',
+        click: () => {
+          writeToClipboard(drive.url)
+          toast.create('Copied to clipboard')
         }
-      ]
-    })
+      },
+      {type: 'separator'},
+      {
+        label: 'Fork this Drive',
+        click: () => this.forkDrive(drive)
+      },
+      {
+        label: 'Diff / Merge',
+        click: () => this.diffDrive(drive)
+      },
+      {type: 'separator'},
+      {
+        label: 'Drive Properties',
+        click: () => this.driveProps(drive)
+      },
+      {
+        label: drive.info.writable ? 'Remove from My Library' : 'Stop hosting',
+        disabled: drive.ident.internal,
+        click: () => this.removeDrive(drive)
+      }
+    ]
+    var fns = {}
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].id) continue
+      let id = `item=${i}`
+      items[i].id = id
+      fns[id] = items[i].click
+      delete items[i].click
+    }
+
+    var choice = await beaker.browser.showContextMenu(items)
+    if (fns[choice]) fns[choice]()
   }
 
   async forkDrive (drive) {
@@ -246,14 +229,13 @@ export class DrivesView extends LitElement {
   async onContextmenuDrive (e, drive) {
     e.preventDefault()
     e.stopPropagation()
-    await this.driveMenu(drive, e.clientX, e.clientY)
+    await this.driveMenu(drive)
   }
 
   onClickDriveMenuBtn (e, drive) {
     e.preventDefault()
     e.stopPropagation()
-    var rect = e.currentTarget.getClientRects()[0]
-    this.driveMenu(drive, rect.right, rect.bottom, true)
+    this.driveMenu(drive)
   }
 
   onClickViewForksOf (e, drive) {

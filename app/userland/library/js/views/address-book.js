@@ -47,22 +47,23 @@ export class AddressBookView extends LitElement {
     this.requestUpdate()
   }
 
-  contactMenu (contact, x, y, right = false) {
-    return contextMenu.create({
-      x,
-      y,
-      right: right || (x > document.body.scrollWidth - 300),
-      top: (y > window.innerHeight / 2),
-      roomy: false,
-      noBorders: true,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
-      style: `padding: 4px 0`,
-      items: [
-        {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(contact.url)},
-        {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(contact.url)},
-        {icon: 'fa fa-times', label: 'Remove from Address Book', click: () => this.onClickRemove(contact)}
-      ]
-    })
+  async contactMenu (contact) {
+    var items = [
+      {label: 'Open Link in New Tab', click: () => window.open(contact.url)},
+      {label: 'Copy Link Address', click: () => writeToClipboard(contact.url)},
+      {type: 'separator'},
+      {label: 'Remove from Address Book', click: () => this.onClickRemove(contact)}
+    ]
+    var fns = {}
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].id) continue
+      let id = `item=${i}`
+      items[i].id = id
+      fns[id] = items[i].click
+      delete items[i].click
+    }
+    var choice = await beaker.browser.showContextMenu(items)
+    if (fns[choice]) fns[choice]()
   }
 
   // rendering
@@ -125,14 +126,13 @@ export class AddressBookView extends LitElement {
   async onContextmenuContact (e, contact) {
     e.preventDefault()
     e.stopPropagation()
-    await this.contactMenu(contact, e.clientX, e.clientY)
+    await this.contactMenu(contact)
   }
 
   onClickContactMenuBtn (e, contact) {
     e.preventDefault()
     e.stopPropagation()
-    var rect = e.currentTarget.getClientRects()[0]
-    this.contactMenu(contact, rect.right, rect.bottom, true)
+    this.contactMenu(contact)
   }
 
   async onClickRemove (contact) {

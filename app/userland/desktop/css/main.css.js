@@ -117,6 +117,16 @@ ${tooltipCSS}
   color: rgba(0, 0, 150, 0.5);
 }
 
+@media (prefers-color-scheme: dark) {
+  .pins .add {
+    color: #89899e;
+  }
+  
+  .pins .add:hover {
+    color: #aeaec1;
+  }
+}
+
 .pin {
   cursor: pointer;
   position: relative;

@@ -57,27 +57,27 @@ export class BookmarksView extends LitElement {
     console.log(this.bookmarks)
   }
 
-  bookmarkMenu (bookmark, x, y, right = false) {
-    return contextMenu.create({
-      x,
-      y,
-      right: right || (x > document.body.scrollWidth - 300),
-      top: (y > window.innerHeight / 2),
-      roomy: false,
-      noBorders: true,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
-      style: `padding: 4px 0`,
-      items: [
-        {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(bookmark.stat.metadata.href)},
-        {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(bookmark.stat.metadata.href)},
-        {icon: 'fa fa-pencil-alt', label: 'Edit', click: () => this.onClickEdit(bookmark)},
-        '-',
-        {icon: _pinned(bookmark) ? 'fas fa-check-square' : 'far fa-square', label: 'Pin to start page', click: () => this.onToggleBookmarkPinned(null, bookmark)},
-        {icon: bookmark.toolbar ? 'fas fa-check-square' : 'far fa-square', label: 'Show on toolbar', click: () => this.onToggleBookmarToolbar(bookmark)},
-        '-',
-        {icon: 'fa fa-times', label: 'Delete', click: () => this.onClickRemove(bookmark)}
-      ]
-    })
+  async bookmarkMenu (bookmark) {
+    var items = [
+      {label: 'Open Link in New Tab', click: () => window.open(bookmark.stat.metadata.href)},
+      {label: 'Copy Link Address', click: () => writeToClipboard(bookmark.stat.metadata.href)},
+      {label: 'Edit', click: () => this.onClickEdit(bookmark)},
+      {type: 'separator'},
+      {type: 'checkbox', checked: _pinned(bookmark), label: 'Pin to start page', click: () => this.onToggleBookmarkPinned(null, bookmark)},
+      {type: 'checkbox', checked: bookmark.toolbar, label: 'Show on toolbar', click: () => this.onToggleBookmarToolbar(bookmark)},
+      {type: 'separator'},
+      {label: 'Delete', click: () => this.onClickRemove(bookmark)}
+    ]
+    var fns = {}
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].id) continue
+      let id = `item=${i}`
+      items[i].id = id
+      fns[id] = items[i].click
+      delete items[i].click
+    }
+    var choice = await beaker.browser.showContextMenu(items)
+    if (fns[choice]) fns[choice]()
   }
 
   // rendering
@@ -138,14 +138,13 @@ export class BookmarksView extends LitElement {
   async onContextmenuBookmark (e, bookmark) {
     e.preventDefault()
     e.stopPropagation()
-    await this.bookmarkMenu(bookmark, e.clientX, e.clientY)
+    await this.bookmarkMenu(bookmark)
   }
 
   onClickBookmarkMenuBtn (e, bookmark) {
     e.preventDefault()
     e.stopPropagation()
-    var rect = e.currentTarget.getClientRects()[0]
-    this.bookmarkMenu(bookmark, rect.right, rect.bottom, true)
+    this.bookmarkMenu(bookmark)
   }
 
   async onToggleBookmarkPinned (e, bookmark) {

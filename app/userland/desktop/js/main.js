@@ -353,13 +353,22 @@ class DesktopApp extends LitElement {
   async onContextmenuFile (e, file) {
     e.preventDefault()
     const items = [
-      {icon: 'fa fa-external-link-alt', label: 'Open Link in New Tab', click: () => window.open(getHref(file))},
-      {icon: 'fa fa-link', label: 'Copy Link Address', click: () => writeToClipboard(getHref(file))},
-      (file.isFixed) ? undefined : '-',
-      (file.isFixed) ? undefined : {icon: 'fa fa-pencil-alt', label: 'Edit', click: () => this.onClickEdit(file)},
-      (file.isFixed) ? undefined : {icon: 'fa fa-times', label: 'Unpin', click: () => this.onClickRemove(file)}
+      {label: 'Open Link in New Tab', click: () => window.open(getHref(file))},
+      {label: 'Copy Link Address', click: () => writeToClipboard(getHref(file))},
+      (file.isFixed) ? undefined : {type: 'separator'},
+      (file.isFixed) ? undefined : {label: 'Edit', click: () => this.onClickEdit(file)},
+      (file.isFixed) ? undefined : {label: 'Unpin', click: () => this.onClickRemove(file)}
     ].filter(Boolean)
-    await contextMenu.create({x: e.clientX, y: e.clientY, noBorders: true, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
+    var fns = {}
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].id) continue
+      let id = `item=${i}`
+      items[i].id = id
+      fns[id] = items[i].click
+      delete items[i].click
+    }
+    var choice = await beaker.browser.showContextMenu(items)
+    if (fns[choice]) fns[choice]()
   }
 
   async onClickEdit (file) {
