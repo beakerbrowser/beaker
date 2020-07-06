@@ -107,6 +107,7 @@ class ShellWindowToolbarMenu extends LitElement {
     this.activeTab = undefined
     this.toolbar = undefined
     this.openMenu = undefined
+    this.addEventListener('contextmenu', this.onMainContextmenu.bind(this))
   }
 
   // rendering
@@ -155,6 +156,7 @@ class ShellWindowToolbarMenu extends LitElement {
   // =
 
   async onMousedownBookmark (e, index) {
+    e.stopPropagation()
     var item = this.toolbar[index]
     let rect = e.currentTarget.getClientRects()[0]
     var menuChoice
@@ -197,16 +199,27 @@ class ShellWindowToolbarMenu extends LitElement {
     }
   }
 
-  onClickFilesExplorer (e) {
-    if (!this.activeTab) return
-    bg.views.loadURL('active', `beaker://explorer/${this.activeTab.url.slice('hyper://'.length)}`)
+  async onMainContextmenu (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    var x = e.clientX
+    var y = e.clientY
+    var menuChoice = await bg.beakerBrowser.showContextMenu([
+      {id: 'new-bookmark', label: 'New Bookmark'}
+    ])
+    if (menuChoice === 'new-bookmark') {
+      bg.views.toggleMenu('bookmark-edit', {
+        bounds: {left: x|0, top: y|0},
+        params: {url: '', toolbar: true}
+      })
+    }
   }
 
   onMousedownLink (e) {
     e.preventDefault()
     if (e.button === 1 || e.metaKey || e.ctrlKey) {
       bg.views.createTab(e.currentTarget.dataset.href, {setActive: true, adjacentActive: true})
-    } else {
+    } else if (e.button === 0) {
       bg.views.loadURL('active', e.currentTarget.dataset.href)
     }
   }

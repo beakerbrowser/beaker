@@ -38,7 +38,8 @@ class BookmarkMenu extends LitElement {
       this.toolbar = this.existingBookmark.toolbar
     } else {
       this.href = params.url
-      this.title = params.metadata.title || ''
+      this.title = params.metadata && params.metadata.title ? params.metadata.title : ''
+      this.toolbar = params.toolbar || false
     }
     await this.requestUpdate()
 
