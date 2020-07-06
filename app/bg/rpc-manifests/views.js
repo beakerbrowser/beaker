@@ -4,9 +4,9 @@ export default {
   getState: 'promise',
   getTabState: 'promise',
   getNetworkState: 'promise',
-  getPageMetadata: 'promise',
   getBackgroundTabs: 'promise',
   createTab: 'promise',
+  createPane: 'promise',
   loadURL: 'promise',
   minimizeTab: 'promise',
   closeTab: 'promise',
@@ -22,7 +22,6 @@ export default {
   reload: 'promise',
   resetZoom: 'promise',
   toggleLiveReloading: 'promise',
-  executeSidebarCommand: 'promise',
   toggleDevTools: 'promise',
   print: 'promise',
   showInpageFind: 'promise',
@@ -37,5 +36,6 @@ export default {
   updateMenu: 'promise',
   toggleSiteInfo: 'promise',
   focusShellWindow: 'promise',
-  focusPage: 'promise'
+  focusPage: 'promise',
+  setPaneResizeModeEnabled: 'promise'
 }

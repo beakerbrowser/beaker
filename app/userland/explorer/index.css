@@ -8,7 +8,6 @@
 
 body {
   margin: 0;
-  background: #223; /* default to dark-mode background so that loading is smoother in the beaker sidebar */
   color: #333;
   --system-font: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
   --code-font: Consolas, 'Lucida Console', Monaco, monospace;

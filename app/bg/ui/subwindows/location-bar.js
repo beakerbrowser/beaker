@@ -11,7 +11,7 @@ import Events from 'events'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import locationBarRPCManifest from '../../rpc-manifests/location-bar'
-import * as tabManager from '../tab-manager'
+import * as tabManager from '../tabs/manager'
 import * as filesystem from '../../filesystem/index'
 import { joinPath } from '../../../lib/strings'
 

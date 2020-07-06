@@ -382,7 +382,7 @@ export const protocolHandler = async function (request, respond) {
       respond({
         statusCode,
         headers,
-        data: new WhackAMoleStream(checkoutFS.session.drive.createReadStream(entry.path, range))
+        data: intoStream(await checkoutFS.pda.readFile(entry.path, 'binary'))//new WhackAMoleStream(checkoutFS.session.drive.createReadStream(entry.path, range))
       })
     }
   })

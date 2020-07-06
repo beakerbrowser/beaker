@@ -2,13 +2,14 @@ import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'ele
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher, { getLastRecordedPositioning } from './session-watcher'
 import jetpack from 'fs-jetpack'
-import * as tabManager from './tab-manager'
+import * as tabManager from './tabs/manager'
 import {
   createGlobalKeybindingsHandler,
   createKeybindingProtectionsHandler,
   registerGlobalKeybinding
 } from './keybindings'
 import path from 'path'
+import { updateWindowToolbar } from '../browser'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
@@ -18,7 +19,6 @@ import * as locationBarSubwindow from './subwindows/location-bar'
 import * as promptsSubwindow from './subwindows/prompts'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
-import * as sidebarsSubwindow from './subwindows/sidebars'
 import * as siteInfoSubwindow from './subwindows/site-info'
 import * as tabSwitcherSubwindow from './subwindows/tab-switcher'
 import { findWebContentsParentWindow } from '../lib/electron'
@@ -37,7 +37,6 @@ const subwindows = {
   prompts: promptsSubwindow,
   permPrompt: permPromptSubwindow,
   modals: modalsSubwindow,
-  sidebars: sidebarsSubwindow,
   siteInfo: siteInfoSubwindow,
   tabSwitcher: tabSwitcherSubwindow
 }
@@ -91,11 +90,10 @@ export async function setup () {
   app.on('custom-background-tabs-update', backgroundTabs => {
     sessionWatcher.updateBackgroundTabs(backgroundTabs)
   })
+
   app.on('custom-ready-to-show', () => {
     if (!previousSessionState.backgroundTabs) return
-    for (let tab of previousSessionState.backgroundTabs) {
-      if (tab.url) tabManager.createBg(tab.url)
-    }
+    tabManager.initializeBackgroundFromSnapshot(previousSessionState)
   })
 
   app.on('before-quit', async e => {
@@ -116,17 +114,14 @@ export async function setup () {
       return
     }
 
-    // handle tab & sidebar webcontents
+    // handle tab webcontents
     var parentView = BrowserView.fromWebContents(wc)
     if (!parentView) return
     var parentWindow = findWebContentsParentWindow(parentView)
     if (!parentWindow) {
       parentWindow = tabManager.findContainingWindow(parentView)
       if (!parentWindow) {
-        parentWindow = sidebarsSubwindow.findContainingWindow(parentView)
-        if (!parentWindow) {
-          return
-        }
+        return
       }
     }
 
@@ -196,11 +191,6 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     frame: IS_LINUX,
     title: undefined
   }
-  if (state.isAppWindow) {
-    frameSettings.titleBarStyle = 'default'
-    frameSettings.trafficLightPosition = undefined
-    frameSettings.frame = true
-  }
   var win = new BrowserWindow(Object.assign({
     autoHideMenuBar: false,
     fullscreenable: true,
@@ -230,6 +220,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   }, frameSettings))
   win.once('ready-to-show', () => {
     win.show()
+    updateWindowToolbar(win)
     if (!hasFirstWindowLoaded) {
       hasFirstWindowLoaded = true
       app.emit('custom-ready-to-show')
@@ -261,17 +252,14 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     if (sender === win.webContents) {
       if (win.webContents.id === firstWindow) {
         // if this is the first window opened (since app start or since all windows closing)
+        // NOTE this is legacy compat- the pins are now stored in the session state
         tabManager.loadPins(win)
       }
       if (!createOpts.dontInitPages) {
-        tabManager.initializeFromSnapshot(win, state.pages)
+        tabManager.initializeWindowFromSnapshot(win, state.pages)
         if (tabManager.getAll(win).length === 0) {
-          tabManager.create(win) // create new_tab
+          tabManager.create(win) // create default new tab
         }
-      }
-      if (state.isAppWindow) {
-        setIsAppWindow(win, true)
-        state.isShellInterfaceHidden = true // must be hidden
       }
       if (state.isShellInterfaceHidden) {
         setShellInterfaceHidden(win, true)
@@ -390,14 +378,6 @@ export async function getFocusedWebContents (win) {
   }
 }
 
-export function getOrCreateNonAppWindow () {
-  var nonAppWin = BrowserWindow.getAllWindows().filter(win => !getAddedWindowSettings(win).isAppWindow).pop()
-  if (!nonAppWin) {
-    nonAppWin = createShellWindow({pages: []}, {dontInitPages: true})
-  }
-  return nonAppWin
-}
-
 export function getAddedWindowSettings (win) {
   if (!win || !win.id) return {}
   return windowAddedSettings[win.id] || {}
@@ -413,23 +393,13 @@ export function ensureOneWindowExists () {
   }
 }
 
-export function setIsAppWindow (win, isAppWindow) {
-  updateAddedWindowSettings(win, {isAppWindow})
-  sessionWatcher.updateState(win, {isAppWindow})
-}
-
 export function toggleShellInterface (win) {
   setShellInterfaceHidden(win, !getAddedWindowSettings(win).isShellInterfaceHidden)
 }
 
 export function setShellInterfaceHidden (win, isShellInterfaceHidden) {
-  if (getAddedWindowSettings(win).isAppWindow) {
-    // app-window-mode forces the interface to be hidden
-    isShellInterfaceHidden = true
-  }
-
   updateAddedWindowSettings(win, {isShellInterfaceHidden})
-  if (win.setWindowButtonVisibility && !getAddedWindowSettings(win).isAppWindow) {
+  if (win.setWindowButtonVisibility) {
     win.setWindowButtonVisibility(!isShellInterfaceHidden)
   }
   sessionWatcher.updateState(win, {isShellInterfaceHidden})

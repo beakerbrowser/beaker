@@ -17,7 +17,8 @@ import { convertDatArchive } from './dat/index'
 import datDns from './dat/dns'
 import { open as openUrl } from './open-url'
 import * as windows from './ui/windows'
-import * as tabManager from './ui/tab-manager'
+import { createMenuItem as createContextMenuItem, shouldShowMenuItem as shouldShowContextMenuItem } from './ui/context-menu'
+import * as tabManager from './ui/tabs/manager'
 import { updateSetupState } from './ui/setup-flow'
 import * as modals from './ui/subwindows/modals'
 import * as siteInfo from './ui/subwindows/site-info'
@@ -25,6 +26,7 @@ import { findWebContentsParentWindow } from './lib/electron'
 import { getEnvVar } from './lib/env'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
+import * as toolbar from './filesystem/toolbar'
 import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
 
 // constants
@@ -92,6 +94,7 @@ export async function setup () {
 
   // wire up events
   app.on('web-contents-created', onWebContentsCreated)
+  toolbar.on('changed', updateWindowToolbar)
 
   // window.prompt handling
   //  - we have use ipc directly instead of using rpc, because we need custom
@@ -112,16 +115,6 @@ export async function setup () {
     var win = findWebContentsParentWindow(e.sender)
     if (win) {
       win.webContents.executeJavaScript(`if (window.forceUpdateDragRegions) { window.forceUpdateDragRegions() }`)
-    }
-  })
-
-  // TEMPORARY HACK
-  // method to open the editor sidebar from untrusted pages
-  // -prf
-  ipcMain.on('temp-open-editor-sidebar', (e) => {
-    var win = findWebContentsParentWindow(e.sender)
-    if (win) {
-      tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
     }
   })
 
@@ -180,13 +173,12 @@ export const WEBAPI = {
     return hyperDaemon.setup()
   },
 
-  executeSidebarCommand,
   executeShellWindowCommand,
+  updateWindowToolbar,
   toggleSiteInfo,
   toggleLiveReloading,
   setWindowDimensions,
   setWindowDragModeEnabled,
-  setSidebarResizeModeEnabled,
   moveWindow,
   maximizeWindow,
   toggleWindowMaximized,
@@ -201,6 +193,7 @@ export const WEBAPI = {
     return modals.create(this.sender, name, opts)
   },
   newWindow,
+  newPane,
   gotoUrl,
   getPageUrl,
   refreshPage,
@@ -334,10 +327,6 @@ export async function imageToIco (image) {
   return toIco(imageToPng, {resize: true})
 }
 
-async function executeSidebarCommand (...args) {
-  return getSenderTab(this.sender).executeSidebarCommand(...args)
-}
-
 async function executeShellWindowCommand (...args) {
   var win = findWebContentsParentWindow(this.sender)
   if (!win) return
@@ -399,26 +388,6 @@ export async function setWindowDragModeEnabled (enabled) {
     if (!_windowDragInterval) return
     clearInterval(_windowDragInterval)
     _windowDragInterval = undefined
-  }
-}
-
-var _sidebarResizeInterval = undefined
-export async function setSidebarResizeModeEnabled (enabled) {
-  var win = findWebContentsParentWindow(this.sender)
-  var tab = tabManager.getActive(win)
-  if (!win || !tab) return
-  if (enabled) {
-    if (_sidebarResizeInterval) return
-    // poll the mouse cursor every 15ms
-    _sidebarResizeInterval = setInterval(() => {
-      var bounds = win.getBounds()
-      var pt = screen.getCursorScreenPoint()
-      tab.setSidebarWidth(pt.x - bounds.x)
-    }, 15)
-  } else {
-    if (!_sidebarResizeInterval) return
-    clearInterval(_sidebarResizeInterval)
-    _sidebarResizeInterval = undefined
   }
 }
 
@@ -654,6 +623,11 @@ export async function capturePage (url, opts = {}) {
   return image
 }
 
+export async function updateWindowToolbar () {
+  let current = await toolbar.getCurrent()
+  browserEvents.emit('toolbar-changed', {toolbar: current})
+}
+
 // rpc methods
 // =
 
@@ -675,31 +649,29 @@ async function showOpenDialog (opts = {}) {
 }
 
 function showContextMenu (menuDefinition) {
+  var webContents = this.sender
+  var tab = tabManager.findTab(BrowserView.fromWebContents(webContents))
   return new Promise(resolve => {
     var cursorPos = screen.getCursorScreenPoint()
 
     // add a click item to all menu items
-    addClickHandler(menuDefinition)
-    function addClickHandler (items) {
-      items.forEach(item => {
-        if (item.type === 'submenu' && Array.isArray(item.submenu)) {
-          addClickHandler(item.submenu)
+    menuDefinition = massageItems(menuDefinition)
+    function massageItems (items) {
+      return items.map(item => {
+        if (item.id && item.id.startsWith('builtin:')) {
+          let id = item.id.slice('builtin:'.length)
+          let opts = {webContents, tab, x: cursorPos.x, y: cursorPos.y}
+          if (shouldShowContextMenuItem(id, opts)) {
+            return createContextMenuItem(id, opts)
+          }
+          return false
+        } else if (item.type === 'submenu' && Array.isArray(item.submenu)) {
+          item.submenu = massageItems(item.submenu)
         } else if (item.type !== 'separator' && item.id) {
           item.click = clickHandler
         }
-      })
-    }
-
-    // add 'inspect element' in development
-    if (getEnvVar('NODE_ENV') === 'develop' || getEnvVar('NODE_ENV') === 'test') {
-      menuDefinition.push({type: 'separator'})
-      menuDefinition.push({
-        label: 'Inspect Element',
-        click: () => {
-          this.sender.inspectElement(cursorPos.x, cursorPos.y)
-          if (this.sender.isDevToolsOpened()) { this.sender.devToolsWebContents.focus() }
-        }
-      })
+        return item
+      }).filter(Boolean)
     }
 
     // track the selection
@@ -719,6 +691,15 @@ function showContextMenu (menuDefinition) {
 
 async function newWindow (state = {}) {
   windows.createShellWindow(state)
+}
+
+async function newPane (url, opts = {}) {
+  var senderView = BrowserView.fromWebContents(this.sender)
+  var tab = tabManager.findContainingTab(senderView)
+  var pane = tab && tab.findPane(senderView)
+  if (tab && pane) {
+    tab.createPane({url, setActive: true, after: pane, splitDir: opts.splitDir || 'vert'})
+  }
 }
 
 async function gotoUrl (url) {

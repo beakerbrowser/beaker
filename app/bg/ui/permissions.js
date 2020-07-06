@@ -5,7 +5,7 @@ import * as sitedata from '../dbs/sitedata'
 import _get from 'lodash.get'
 import { parseDriveUrl } from '../../lib/urls'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
-import * as tabManager from './tab-manager'
+import * as tabManager from './tabs/manager'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
 
 // globals
@@ -56,7 +56,9 @@ export function denyAllRequests (win) {
   // remove all requests in the window, denying as we go
   activeRequests = activeRequests.filter(req => {
     if (req.win === win) {
-      req.cb(false)
+      for (let cb of req.cbs) {
+        cb(false)
+      }
       return false
     }
     return true
@@ -121,7 +123,7 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   if (res === 0) return cb(false)
 
   // look up the containing window
-  var {win, view} = getContaining(webContents)
+  var {win, tab, view} = getContaining(webContents)
   if (!win || !view) {
     console.error('Warning: failed to find containing window of permission request, ' + permission)
     return cb(false)
@@ -130,16 +132,19 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   // if we're already tracking this kind of permission request, and the perm is idempotent, then bundle them
   var req = PERM.idempotent ? activeRequests.find(req => req.view === view && req.permission === permission) : false
   if (req) {
-    var oldCb = req.cb
-    req.cb = decision => { oldCb(decision); cb(decision) }
+    req.cbs.push(cb)
     return
-  } else {
-    // track the new cb
-    req = { id: ++idCounter, view, win, url, permission, cb }
-    activeRequests.push(req)
   }
 
+  // wait for any existing perm requests on the tab to finish
+  await waitForPendingTabRequests(tab)
+  
+  // track the new cb
+  req = { id: ++idCounter, view, tab, win, url, permission, cbs: [cb] }
+  activeRequests.push(req)
+
   // run the UI flow
+  tab.setActivePane(tab.findPane(view))
   var decision = await permPromptSubwindow.create(win, view, {permission, url, opts})
 
   // persist decisions
@@ -157,14 +162,26 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   activeRequests.splice(activeRequests.indexOf(req), 1)
 
   // hand down the decision
-  req.cb(decision)
+  for (let cb of req.cbs) {
+    cb(decision)
+  }
+}
+
+async function waitForPendingTabRequests (tab) {
+  var reqs = activeRequests.filter(req => req.tab === tab)
+  if (reqs.length === 0) return
+  let promises = []
+  for (let req of reqs) {
+    promises.push(new Promise(resolve => req.cbs.push(resolve)))
+  }
+  await Promise.all(promises)
 }
 
 function getContaining (webContents) {
   var view = BrowserView.fromWebContents(webContents)
   if (view) {
-    var win = tabManager.findContainingWindow(view)
-    return {win, view}
+    var tab = tabManager.findContainingTab(view)
+    return {win: tab.browserWindow, tab, view}
   }
   return {}
 }

@@ -72,11 +72,14 @@
     --bg-color--toolbar: #fafafa;
     --bg-color--toolbar--hover: #f3f3f7;
     --bg-color--toolbar--pressed: #eaeaed;
+    --bg-color--paneborder: #eaeaf2;
+    --bg-color--paneborder--active: #4d82e4;
 
     font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
     margin: 0;
     padding: 0;
-    background: #fff;
+    background: var(--bg-color--background);
+    height: 100vh;
   }
   @media (prefers-color-scheme: dark) {
     body {
@@ -145,6 +148,8 @@
       --bg-color--toolbar: #334;
       --bg-color--toolbar--hover: #223;
       --bg-color--toolbar--pressed: #223;
+      --bg-color--paneborder: #334;
+      --bg-color--paneborder--active: #4d82e4;
     }
   }
   </style>

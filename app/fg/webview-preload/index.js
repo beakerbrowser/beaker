@@ -6,7 +6,6 @@ import setupExitFullScreenHackfix from './exit-full-screen-hackfix'
 // import readableStreamAsyncIteratorPolyfill from './readable-stream-async-iterator-polyfill'
 import windowOpenCloseHackfix from './window-open-close-hackfix'
 import resizeHackfix from './resize-hackfix'
-// import './read-page-metadata' DISABLED wasnt working effectively -prf
 
 
 // HACKS

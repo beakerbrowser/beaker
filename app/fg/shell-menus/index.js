@@ -102,6 +102,8 @@ class MenusWrapper extends LitElement {
         return html`<toolbar-menu active-menu></toolbar-menu>`
       case 'bookmark':
         return html`<bookmark-menu active-menu></bookmark-menu>`
+      case 'bookmark-edit':
+        return html`<bookmark-edit-menu active-menu></bookmark-edit-menu>`
       case 'donate':
         return html`<donate-menu active-menu></donate-menu>`
       case 'network':

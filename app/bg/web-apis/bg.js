@@ -1,6 +1,6 @@
 import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
-import { findTab } from '../ui/tab-manager'
+import { findTab } from '../ui/tabs/manager'
 
 // TEMPORARY: hyperdrive.network is trusted
 const INTERNAL_ORIGIN_REGEX = /^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/i

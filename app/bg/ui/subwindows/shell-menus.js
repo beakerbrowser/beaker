@@ -13,7 +13,7 @@ import Events from 'events'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { createShellWindow } from '../windows'
-import * as tabManager from '../tab-manager'
+import * as tabManager from '../tabs/manager'
 import * as modals from './modals'
 import { getToolbarMenu, triggerMenuItemById } from '../window-menu'
 import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
@@ -92,7 +92,14 @@ export function reposition (parentWindow) {
         x: view.boundsOpt.rightOffset,
         y: 72,
         width: 250,
-        height: 200
+        height: 225
+      })
+    } else if (view.menuId === 'bookmark-edit') {
+      setBounds({
+        x: view.boundsOpt.left,
+        y: view.boundsOpt.top,
+        width: 250,
+        height: 225
       })
     } else if (view.menuId === 'toolbar') {
       setBounds({

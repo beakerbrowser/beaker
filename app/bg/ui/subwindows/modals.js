@@ -11,7 +11,7 @@ import path from 'path'
 import { app, BrowserWindow, BrowserView, Menu, clipboard } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { ModalActiveError } from 'beaker-error-constants'
-import * as tabManager from '../tab-manager'
+import * as tabManager from '../tabs/manager'
 import modalsRPCManifest from '../../rpc-manifests/modals'
 import { findWebContentsParentWindow } from '../../lib/electron'
 

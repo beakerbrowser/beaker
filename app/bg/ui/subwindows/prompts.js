@@ -10,7 +10,7 @@
 import path from 'path'
 import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
-import * as tabManager from '../tab-manager'
+import * as tabManager from '../tabs/manager'
 import promptsRPCManifest from '../../rpc-manifests/prompts'
 import { findWebContentsParentWindow } from '../../lib/electron'
 import { getAddedWindowSettings } from '../windows'
@@ -150,11 +150,6 @@ rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
   async loadURL (url) {
     var win = findWebContentsParentWindow(this.sender)
     tabManager.getActive(win).loadURL(url)
-  },
-
-  async executeSidebarCommand (...args) {
-    var win = findWebContentsParentWindow(this.sender)
-    tabManager.getActive(win).executeSidebarCommand(...args)
   }
 })
 
@@ -172,9 +167,6 @@ function getTabForSender (sender) {
 }
 
 function getDefaultWidth (view) {
-  if (view.promptName === 'edit-profile') {
-    return 450
-  }
   return 380
 }
 
@@ -188,7 +180,7 @@ function setBounds (view, tab, parentWindow, {width, height} = {}) {
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
   var y = getAddedWindowSettings(parentWindow).isShellInterfaceHidden ? 10 : 105
   view.setBounds({
-    x: tab.isSidebarActive ? tab.sidebarWidth : 0,
+    x: parentBounds.width - width - (MARGIN_SIZE * 2),
     y,
     width: width + (MARGIN_SIZE * 2),
     height: height + MARGIN_SIZE

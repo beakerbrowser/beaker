@@ -1,10 +1,9 @@
-import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
+import { app, Menu, clipboard, BrowserWindow, BrowserView, dialog } from 'electron'
 import path from 'path'
-import * as tabManager from './tab-manager'
+import * as tabManager from './tabs/manager'
 import * as modals from './subwindows/modals'
-import { getAddedWindowSettings, toggleShellInterface } from './windows'
+import { toggleShellInterface, getAddedWindowSettings } from './windows'
 import { download } from './downloads'
-import { runDrivePropertiesFlow } from './util'
 import * as settingsDb from '../dbs/settings'
 
 // NOTE
@@ -22,7 +21,6 @@ export default function registerContextMenu () {
     webContents.on('context-menu', async (e, props) => {
       var menuItems = []
       const { mediaFlags, editFlags } = props
-      const isHyperdrive = props.pageURL.startsWith('hyper://')
       const hasText = props.selectionText.trim().length > 0
       const can = type => editFlags[`can${type}`] && hasText
       const isMisspelled = props.misspelledWord
@@ -31,7 +29,7 @@ export default function registerContextMenu () {
       // - fromWebContents(webContents) doesnt seem to work, maybe because webContents is often a webview?
       var targetWindow = BrowserWindow.getFocusedWindow()
       if (!targetWindow) { return }
-      const addedWindowSettings = getAddedWindowSettings(targetWindow)
+      var targetTab = tabManager.getActive(targetWindow)
 
       // handle shell UI specially
       if (props.pageURL == 'beaker://shell-window/') { return }
@@ -59,6 +57,25 @@ export default function registerContextMenu () {
         menuItems.push({ label: 'Copy Link Address', click: () => clipboard.writeText(props.linkURL) })
         menuItems.push({ label: 'Save Link As...', click: downloadPrompt('linkURL', '.html') })
         menuItems.push({ type: 'separator' })
+        menuItems.push({
+          label: 'Open in Pane Right',
+          click () {
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) {
+              targetTab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'vert'})
+            }
+          }
+        })
+        menuItems.push({
+          label: 'Open in Pane Below',
+          click () {
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) {
+              targetTab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'horz'})
+            }
+          }
+        })
+        menuItems.push({ type: 'separator' })
       }
 
       // images
@@ -67,6 +84,25 @@ export default function registerContextMenu () {
         menuItems.push({ label: 'Copy Image', click: () => webContents.copyImageAt(props.x, props.y) })
         menuItems.push({ label: 'Copy Image URL', click: () => clipboard.writeText(props.srcURL) })
         menuItems.push({ label: 'Open Image in New Tab', click: (item, win) => tabManager.create(win, props.srcURL, {adjacentActive: true}) })
+        menuItems.push({ type: 'separator' })
+        menuItems.push({
+          label: 'Open in Pane Right',
+          click () {
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) {
+              targetTab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'vert'})
+            }
+          }
+        })
+        menuItems.push({
+          label: 'Open in Pane Below',
+          click () {
+            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            if (targetTab && pane) {
+              targetTab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'horz'})
+            }
+          }
+        })
         menuItems.push({ type: 'separator' })
       }
 
@@ -134,38 +170,26 @@ export default function registerContextMenu () {
       }
 
       if (!props.linkURL && props.mediaType === 'none' && !hasText) {
-        menuItems.push({
-          label: 'Back',
-          enabled: webContents.canGoBack(),
-          click: () => webContents.goBack()
-        })
-        menuItems.push({
-          label: 'Forward',
-          enabled: webContents.canGoForward(),
-          click: () => webContents.goForward()
-        })
-        menuItems.push({
-          label: 'Reload',
-          click: () => webContents.reload()
-        })
+        menuItems.push(createMenuItem('back', {webContents, tab: targetTab}))
+        menuItems.push(createMenuItem('forward', {webContents, tab: targetTab}))
+        menuItems.push(createMenuItem('reload', {webContents, tab: targetTab}))
         menuItems.push({ type: 'separator' })
-        if (!addedWindowSettings.isAppWindow) {
+        if (getAddedWindowSettings(targetWindow).isShellInterfaceHidden) {
           menuItems.push({
-            type: 'checkbox',
-            label: 'Always on Top',
-            checked: targetWindow.isAlwaysOnTop(),
-            click: function () {
-              targetWindow.setAlwaysOnTop(!targetWindow.isAlwaysOnTop())
-            }
-          })
-          menuItems.push({
-            label: 'Toggle Browser UI',
+            label: 'Restore Browser UI',
             click: function () {
               toggleShellInterface(targetWindow)
             }
           })
           menuItems.push({ type: 'separator' })
         }
+        menuItems.push(createMenuItem('split-pane-vert', {webContents, tab: targetTab}))
+        menuItems.push(createMenuItem('split-pane-horz', {webContents, tab: targetTab}))
+        if (shouldShowMenuItem('move-pane', {tab: targetTab})) {
+          menuItems.push(createMenuItem('move-pane', {webContents, tab: targetTab}))
+        }
+        menuItems.push(createMenuItem('close-pane', {webContents, tab: targetTab}))
+        menuItems.push({ type: 'separator' })
         menuItems.push({
           label: 'Export Page As...',
           click: downloadPrompt('pageURL', '.html')
@@ -175,43 +199,118 @@ export default function registerContextMenu () {
           click: () => webContents.print()
         })
         menuItems.push({ type: 'separator' })
-        if (isHyperdrive) {
-          let driveInfo = tabManager.getActive(targetWindow).driveInfo
-          let key = driveInfo ? driveInfo.key : undefined
-          menuItems.push({
-            label: 'Edit Source',
-            click: async (item, win) => {
-              tabManager.getActive(win).executeSidebarCommand('show-panel', 'editor-app')
-            }
-          })
-          menuItems.push({
-            label: 'Explore Files',
-            click: async (item, win) => {
-              tabManager.getActive(win).executeSidebarCommand('show-panel', 'files-explorer-app')
-            }
-          })
-          menuItems.push({
-            label: 'Drive Properties',
-            click: async (item, win) => {
-              runDrivePropertiesFlow(win, key)
-            }
-          })
-          menuItems.push({ type: 'separator' })
-        }
       }
 
       menuItems.push({ type: 'separator' })
-      menuItems.push({
-        label: 'Inspect Element',
-        click: item => {
-          webContents.inspectElement(props.x, props.y)
-          if (webContents.isDevToolsOpened()) { webContents.devToolsWebContents.focus() }
-        }
-      })
+      menuItems.push(createMenuItem('inspect-element', {webContents, tab: targetTab, x: props.x, y: props.y}))
 
       // show menu
       menuInstance = Menu.buildFromTemplate(menuItems)
       menuInstance.popup({ window: targetWindow })
     })
   })
+}
+
+export function shouldShowMenuItem (id, {tab, webContents}) {
+  switch (id) {
+    case 'move-pane':
+      return (tab.panes.length > 1)
+    default:
+      return true
+  }
+}
+
+export function createMenuItem (id, {tab, webContents, x, y}) {
+  switch (id) {
+    case 'back':
+      return {
+        label: 'Back',
+        enabled: webContents.canGoBack(),
+        click: () => webContents.goBack()
+      }
+    case 'forward':
+      return {
+        label: 'Forward',
+        enabled: webContents.canGoForward(),
+        click: () => webContents.goForward()
+      }
+    case 'reload':
+      return {
+        label: 'Reload',
+        click: () => webContents.reload()
+      }
+    case 'split-pane-vert':
+      return {
+        label: 'Split Pane Vertically',
+        click () {
+          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          if (tab && pane) tab.splitPane(pane, 'vert')
+        }
+      }
+    case 'split-pane-horz':
+      return {
+        label: 'Split Pane Horizontally',
+        click () {
+          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          if (tab && pane) tab.splitPane(pane, 'horz')
+        }
+      }
+    case 'move-pane':
+      return {
+        type: 'submenu',
+        label: 'Move Pane',
+        submenu: [{
+          label: 'To a New Tab',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) {
+              tab.detachPane(pane)
+              tabManager.create(tab.browserWindow, null, {setActive: true, initialPanes: [pane]})
+            }
+          }
+        }, {
+          type: 'separator'
+        }, {
+          label: 'Up',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.movePane(pane, 'up')
+          }
+        }, {
+          label: 'Down',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.movePane(pane, 'down')
+          }
+        }, {
+          label: 'Left',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.movePane(pane, 'left')
+          }
+        }, {
+          label: 'Right',
+          click () {
+            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            if (tab && pane) tab.movePane(pane, 'right')
+          }
+        }]
+      }
+    case 'close-pane':
+      return {
+        label: 'Close Pane',
+        click () {
+          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          if (tab && pane) tab.removePane(pane)
+        }
+      }
+    case 'inspect-element':
+      return {
+        label: 'Inspect Element',
+        click: item => {
+          webContents.inspectElement(x, y)
+          if (webContents.isDevToolsOpened()) { webContents.devToolsWebContents.focus() }
+        }
+      }
+  }
 }

@@ -7,7 +7,7 @@ import { fromEventStream } from '../../bg/web-apis/fg/event-target'
 import './win32'
 import './tabs'
 import './navbar'
-import './sidebar-resizer'
+import './panes'
 import './toolbar-menu'
 import './resize-hackfix'
 
@@ -35,6 +35,7 @@ class ShellWindowUI extends LitElement {
   constructor () {
     super()
     this.tabs = []
+    this.toolbar = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
     this.isHolepunchable = true
@@ -85,10 +86,17 @@ class ShellWindowUI extends LitElement {
       }
       this.stateHasChanged()
     })
+    viewEvents.addEventListener('update-panes-state', ({index, paneLayout}) => {
+      if (this.tabs[index]) {
+        this.tabs[index].paneLayout = paneLayout
+      }
+      this.shadowRoot.querySelector('shell-window-panes').requestUpdate()
+    })
 
     // listen to state updates on the auto-updater
     var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())
     browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))
+    browserEvents.addEventListener('toolbar-changed', this.onToolbarChange.bind(this))
 
     // listen to state updates on the watchlist
     var wlEvents = fromEventStream(bg.watchlist.createEventsStream())
@@ -143,12 +151,9 @@ class ShellWindowUI extends LitElement {
       this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
       if (this.activeTab) {
         this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
-        this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
       }
     }
-    if (this.activeTab) {
-      this.shadowRoot.querySelector('shell-window-sidebar-resizer').requestUpdate()
-    }
+    this.shadowRoot.querySelector('shell-window-panes').requestUpdate()
   }
 
   // rendering
@@ -169,17 +174,14 @@ class ShellWindowUI extends LitElement {
           num-watchlist-notifications="${this.numWatchlistNotifications}"
         ></shell-window-navbar>
       `}
-      <shell-window-sidebar-resizer
-        class="${this.isShellInterfaceHidden ? 'fullheight' : ''}"
-        .activeTabIndex=${this.activeTabIndex}
-        .activeTab=${this.activeTab}
-      ></shell-window-sidebar-resizer>
       ${this.isShellInterfaceHidden ? '' : html`
         <shell-window-toolbar-menu
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
+          .toolbar=${this.toolbar}
         ></shell-window-toolbar-menu>
       `}
+      <shell-window-panes .activeTab=${this.activeTab}></shell-window-panes>
     `
   }
 
@@ -188,6 +190,12 @@ class ShellWindowUI extends LitElement {
 
   onUpdaterStateChange (e) {
     this.isUpdateAvailable = (e && e.state === 'downloaded')
+  }
+
+  onToolbarChange (e) {
+    var el = this.shadowRoot.querySelector('shell-window-toolbar-menu')
+    this.toolbar = el.toolbar = e && e.toolbar
+    el.requestUpdate()
   }
 }
 

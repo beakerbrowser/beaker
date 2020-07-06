@@ -1,5 +1,6 @@
 import { LitElement, html } from '../vendor/lit-element/lit-element.js'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map.js'
+import { repeat } from '../vendor/lit-element/lit-html/directives/repeat.js'
 import { joinPath, pluralize, changeURLScheme } from './lib/strings.js'
 import { timeDifference } from './lib/time.js'
 import * as toast from './com/toast.js'
@@ -35,8 +36,8 @@ export class ExplorerApp extends LitElement {
       renderMode: {type: String},
       inlineMode: {type: Boolean},
       sortMode: {type: String},
-      hideNavLeft: {type: Boolean},
-      hideNavRight: {type: Boolean}
+      drives: {type: Array},
+      profiles: {type: Array}
     }
   }
 
@@ -58,20 +59,16 @@ export class ExplorerApp extends LitElement {
     this.mountTitle = undefined
     
     // UI state
-    this.attachedMode = window != window.top // detect if in an iframe
-    this.showHome = false
     this.loadingState = LOADING_STATES.INITIAL
     this.errorState = undefined
     this.selection = []
     this.renderMode = undefined
     this.inlineMode = false
     this.sortMode = undefined
-    this.hideNavLeft = true
-    this.hideNavRight = false
 
-    if (!this.attachedMode) {
-      document.body.style.backgroundColor = '#fff'
-    }
+    // helper state
+    this.drives = undefined
+    this.profiles = undefined
 
     this.load()
   }
@@ -151,11 +148,25 @@ export class ExplorerApp extends LitElement {
   }
 
   async load () {
-    if (typeof beaker === 'undefined' || typeof beaker.hyperdrive === 'undefined' || !loc.getUrl()) {
-      this.showHome = true
-      this.requestUpdate()
-      return
+    if (!loc.getUrl()) {
+      let ctx = await beaker.shell.getContext()
+      let url = ctx && ctx.lastActivePane
+      if (!url.startsWith('hyper://')) url = 'hyper://system/'
+      return loc.setUrl(url)
     }
+
+    // read helper state
+    beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json').then(addressBook => {
+      return Promise.all(addressBook.profiles.map(p => beaker.hyperdrive.getInfo(p.key)))
+    }).then(profiles => {
+      profiles.sort((a, b) => (a.title||'').localeCompare(b.title||''))
+      this.profiles = profiles
+      return beaker.drives.list()
+    }).then(drives => {
+      drives = drives.filter(d => !this.profiles.find(p => p.url === d.url))
+      drives.sort((a, b) => (a.info.title||'').localeCompare(b.info.title||''))
+      this.drives = drives
+    })
 
     // read location information
     var drive = beaker.hyperdrive.drive(loc.getOrigin())
@@ -166,12 +177,6 @@ export class ExplorerApp extends LitElement {
       document.title = this.filename ? `${this.driveTitle} / ${this.filename}` : this.driveTitle
 
       this.pathInfo = await this.attempt(`Reading path information (${loc.getPath()})`, () => drive.stat(loc.getPath()))
-      if (this.attachedMode && this.pathInfo.isFile()) {
-        // go up to a directory
-        loc.setPath(loc.getPath().split('/').slice(0, -1).join('/'))
-        return
-      }
-
       await this.readPathAncestry()
     } catch (e) {
       if (e.message.includes('NotFoundError')) {
@@ -207,8 +212,6 @@ export class ExplorerApp extends LitElement {
     } else {
       this.renderMode = getGlobalSavedConfig('render-mode', 'default')
     }
-    this.hideNavLeft = Boolean(getGlobalSavedConfig('hide-nav-left', true))
-    this.hideNavRight = Boolean(getGlobalSavedConfig('hide-nav-right', false))
 
     // update loading state
     this.loadingState = LOADING_STATES.CONTENT
@@ -400,21 +403,13 @@ export class ExplorerApp extends LitElement {
   // =
 
   render () {
-    if (this.showHome) {
-      return this.renderHome()
-    }
-
     return html`
       <link rel="stylesheet" href="/css/font-awesome.css">
       <div
         class=${classMap({
           layout: true,
-          'attached-mode': this.attachedMode,
-          ['render-mode-' + this.renderMode]: true,
-          'hide-nav-left': this.attachedMode || this.hideNavLeft,
-          'hide-nav-right': this.attachedMode || this.hideNavRight,
+          ['render-mode-' + this.renderMode]: true
         })}
-        @contextmenu=${this.onContextmenuLayout}
         @goto=${this.onGoto}
         @change-selection=${this.onChangeSelection}
         @show-context-menu=${this.onShowMenu}
@@ -428,11 +423,11 @@ export class ExplorerApp extends LitElement {
         @delete=${this.onDelete}
         @update-file-metadata=${this.onUpdateFileMetadata}
       >
-        ${!this.attachedMode ? html`<div class="nav-toggle right" @click=${e => this.toggleNav('right')}><span class="fas fa-caret-${this.hideNavRight ? 'left' : 'right'}"></span></div>` : ''}
         ${this.loadingState === LOADING_STATES.INITIAL
           ? this.renderInitialLoading()
           : html`
-            <main>
+            ${this.renderLeftNav()}
+            <main @contextmenu=${this.onContextmenuLayout}>
               ${this.renderHeader()}
               ${this.loadingState === LOADING_STATES.CONTENT ? html`
                 <div class="loading-notice">Loading...</div>
@@ -440,31 +435,8 @@ export class ExplorerApp extends LitElement {
               ${this.renderErrorState()}
               ${this.renderView()}
             </main>
-            ${!this.attachedMode ? this.renderRightNav() : ''}
+            ${this.renderRightNav()}
           `}
-      </div>
-    `
-  }
-
-  renderHome () {
-    document.title = 'Files Explorer'
-    return html`
-      <link rel="stylesheet" href="/css/font-awesome.css">
-      <div class="home">
-        <section>
-          <h1>Files Explorer</h1>
-        </section>
-        ${typeof beaker === 'undefined' || typeof beaker.hyperdrive === 'undefined' ? html`
-          <aside>
-            <h3>Your browser does not support Hyperdrive.</h3>
-            <p>Your browser needs to support Hyperdrive to use this site. Try <a href="https://beakerbrowser.com">Beaker Browser</a>!</p>
-            <p><button class="primary" @click=${e => {window.location = 'https://beakerbrowser.com/'}}><span class="fas fa-fw fa-download"></span> Download Beaker</button></p>
-          </aside>
-        ` : html`
-          <aside>
-            <button class="primary" @click=${this.onSelectDrive}><span class="fas fa-fw fa-hdd"></span> Open a drive</button>
-          </aside>
-        `}
       </div>
     `
   }
@@ -563,10 +535,34 @@ export class ExplorerApp extends LitElement {
       ></explorer-view-file>
     `
   }
+  
+  renderLeftNav () {
+    const navItem = (url, title) => html`
+      <a
+        class=${classMap({current: url.startsWith(this.currentDriveInfo.url)})}
+        href="/${url.slice('hyper://'.length)}"
+        title=${title}
+      >${title}</a>
+    `
+    return html`
+      <nav class="left">
+        <section class="transparent drives-list">
+          ${navItem('hyper://system/', 'My System Drive')}
+          ${!this.profiles ? html`` : html`
+            ${repeat(this.profiles, profile => navItem(profile.url, profile.title))}
+          `}
+          ${!this.drives ? html`<span>Loading...</span>` : html`
+            <h5>My Drives</h4>
+            ${repeat(this.drives.filter(d => d.info.writable), drive => navItem(drive.url, drive.info.title))}
+            <h5>Cohosting</h4>
+            ${repeat(this.drives.filter(d => !d.info.writable), drive => navItem(drive.url, drive.info.title))}
+          `}
+        </section>
+      </nav>
+    `
+  }
 
   renderRightNav () {
-    if (this.hideNavRight) return ''
-
     const isViewfile = this.pathInfo.isFile() && loc.getPath().endsWith('.view')
     return html`
       <nav class="right">
@@ -656,34 +652,23 @@ export class ExplorerApp extends LitElement {
     var url
     if (typeof item === 'string') {
       url = item
-    } else if (item.name.endsWith('.goto') && item.stat.metadata.href) {
-      url = item.stat.metadata.href
+    } else if (item.stat.isFile()) {
+      if (item.name.endsWith('.goto') && item.stat.metadata.href) {
+        url = item.stat.metadata.href
+      } else {
+        url = item.url
+      }
+      newWindow = true
       leaveExplorer = true
     } else {
       url = joinPath(loc.getOrigin(), item.path)
     }
-    if (this.attachedMode) {
-      if (leaveExplorer) {
-        if (newWindow) beaker.browser.openUrl(url, {setActive: true})
-        else beaker.browser.gotoUrl(url)
-      } else {
-        if (newWindow) {
-          beaker.browser.openUrl(url, {setActive: true})
-          if (!url.startsWith(location.origin)) {
-            url = joinPath(location.origin, url.slice('hyper://'.length))
-          }
-        } else {
-          beaker.browser.gotoUrl(url)
-        }
-      }
+    if (leaveExplorer) {
+      if (newWindow) window.open(url)
+      else window.location = url
     } else {
-      if (leaveExplorer) {
-        if (newWindow) window.open(url)
-        else window.location = url
-      } else {
-        if (newWindow) loc.openUrl(url)
-        else loc.setUrl(url)
-      }
+      if (newWindow) loc.openUrl(url)
+      else loc.setUrl(url)
     }
   }
 
@@ -718,17 +703,6 @@ export class ExplorerApp extends LitElement {
   //   setGlobalSavedConfig('sort-mode', this.sortMode)
   //   toast.create('Default view settings updated')
   // }
-
-  toggleNav (side) {
-    if (side === 'left') {
-      this.hideNavLeft = !this.hideNavLeft
-      setGlobalSavedConfig('hide-nav-left', this.hideNavLeft ? '1' : '')
-    } else {
-      this.hideNavRight = !this.hideNavRight
-      setGlobalSavedConfig('hide-nav-right', this.hideNavRight ? '1' : '')
-    }
-    this.requestUpdate()
-  }
 
   async onClickActions (e) {
     let el = e.currentTarget
@@ -770,8 +744,7 @@ export class ExplorerApp extends LitElement {
         return
       }
       var url = joinPath(loc.getUrl(), filename)
-      await beaker.shell.executeSidebarCommand('show-panel', 'editor-app')
-      await beaker.shell.executeSidebarCommand('set-context', 'editor-app', url)
+      window.open(`beaker://editor/?url=${url}`)
     }
   }
 
@@ -951,6 +924,7 @@ export class ExplorerApp extends LitElement {
     if (!useAppMenuAlways && typeof beaker !== 'undefined' && typeof beaker.browser !== 'undefined') {
       let fns = {}
       for (let i = 0; i < items.length; i++) {
+        if (items[i].id) continue
         let id = `item=${i}`
         if (items[i] === '-') items[i] = {type: 'separator'}
         items[i].id = id
@@ -958,7 +932,7 @@ export class ExplorerApp extends LitElement {
         delete items[i].icon
         delete items[i].click
       }
-      var choice = await beaker.browser.showContextMenu(items)
+      var choice = await beaker.browser.showContextMenu(items, true)
       if (fns[choice]) fns[choice]()
     } else {
       return contextMenu.create({
@@ -970,7 +944,7 @@ export class ExplorerApp extends LitElement {
         noBorders: true,
         fontAwesomeCSSUrl: '/css/font-awesome.css',
         style: `padding: 4px 0`,
-        items
+        items: items.filter(item => !item.ctxOnly)
       })
     }
   }

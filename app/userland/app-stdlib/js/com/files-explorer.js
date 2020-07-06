@@ -221,10 +221,7 @@ class FilesExplorer extends LitElement {
       icon: 'fas fa-fw fa-external-link-alt',
       label: `Open in new tab`,
       click: () => {
-        beaker.browser.openUrl(url, {
-          setActive: true,
-          sidebarPanels: ['editor-app']
-        })
+        beaker.browser.openUrl(url, {setActive: true})
       }
     })
     if (item.stat.isFile()) {
@@ -232,9 +229,7 @@ class FilesExplorer extends LitElement {
         icon: 'fas fa-fw fa-edit',
         label: `Edit file`,
         click: () => {
-          beaker.browser.gotoUrl(url)
-          beaker.browser.executeSidebarCommand('show-panel', 'editor-app')
-          beaker.browser.executeSidebarCommand('set-context', 'editor-app', url)
+          beaker.browser.openUrl(`beaker://editor/?url=${url}`, {setActive: true})
         }
       })
     }
@@ -269,10 +264,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-external-link-alt',
           label: `Open mount in new tab`,
           click: () => {
-            beaker.browser.openUrl(`hyper://${item.stat.mount.key}/`, {
-              setActive: true,
-              sidebarPanels: ['editor-app']
-            })
+            beaker.browser.openUrl(`hyper://${item.stat.mount.key}/`, {setActive: true})
           }
         },
         {
@@ -388,10 +380,7 @@ class FilesExplorer extends LitElement {
       icon: 'fas fa-fw fa-external-link-alt',
       label: `Open in new tab`,
       click: () => {
-        beaker.browser.openUrl(url, {
-          setActive: true,
-          sidebarPanels: ['editor-app']
-        })
+        beaker.browser.openUrl(url, {setActive: true})
       }
     })
     items.push({
@@ -409,10 +398,7 @@ class FilesExplorer extends LitElement {
           icon: 'fas fa-fw fa-external-link-alt',
           label: `Open mount in new tab`,
           click: () => {
-            beaker.browser.openUrl(`hyper://${this.currentFolder.mount.key}/`, {
-              setActive: true,
-              sidebarPanels: ['editor-app']
-            })
+            beaker.browser.openUrl(`hyper://${this.currentFolder.mount.key}/`, {setActive: true})
           }
         },
         {

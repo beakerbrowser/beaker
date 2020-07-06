@@ -57,15 +57,6 @@ class ProgressPrompt extends LitElement {
       </div>
     `
   }
-
-  // events
-  // =
-
-  async onClickEdit () {
-    await bg.prompts.executeSidebarCommand('show-panel', 'editor-app')
-    await bg.prompts.executeSidebarCommand('set-context', 'editor-app', this.url)
-    await bg.prompts.closeEditProfilePromptForever()
-  }
 }
 
 customElements.define('progress-prompt', ProgressPrompt)

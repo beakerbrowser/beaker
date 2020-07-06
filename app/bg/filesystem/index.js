@@ -6,6 +6,7 @@ import hyper from '../hyper/index'
 import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
 import * as bookmarks from './bookmarks'
+import { ensure as ensureToolbar } from './toolbar'
 import * as trash from './trash'
 import * as modals from '../ui/subwindows/modals'
 import { PATHS } from '../../lib/const'
@@ -82,16 +83,18 @@ export async function setup () {
   // enforce root files structure
   logger.info('Loading root drive', {url: browsingProfile.url})
   try {
-    // ensure common dirs
+    // ensure common dirs & data
     await ensureDir(PATHS.BOOKMARKS)
+    await ensureToolbar()
 
     // default bookmarks
     if (isInitialCreation) {
+      await bookmarks.add({href: 'beaker://explorer/', title: 'Explore Files', pinned: true})
+      await bookmarks.add({href: 'beaker://webterm/', title: 'Terminal', pinned: true})
       await bookmarks.add({href: 'https://userlist.beakerbrowser.com/', title: 'User Directory', pinned: true})
       await bookmarks.add({href: 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/', title: 'Blahbity Blog', pinned: true})
       await bookmarks.add({href: 'https://docs.beakerbrowser.com/', title: 'Beaker Documentation', pinned: true})
       await bookmarks.add({href: 'https://beaker.dev/', title: 'Beaker Developer Portal', pinned: true})
-      await bookmarks.add({href: 'https://github.com/beakerbrowser/beaker/discussions', title: 'Beaker Discussions', pinned: true})
     }
   } catch (e) {
     console.error('Error while constructing the root drive', e.toString())

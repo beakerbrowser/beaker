@@ -15,11 +15,11 @@ export const setup = function (rpc) {
   var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
 
   if (window.location.protocol !== 'beaker:') {
-    delete shell.executeSidebarCommand
     delete shell.importFilesAndFolders
     delete shell.importFilesDialog
     delete shell.importFoldersDialog
     delete shell.exportFilesDialog
+    delete shell.getContext
   }
 
   var peersocketsRPC = rpc.importAPI('peersockets', peersocketsManifest, RPC_OPTS)

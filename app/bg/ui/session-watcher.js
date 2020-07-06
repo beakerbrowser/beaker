@@ -34,9 +34,7 @@ export default class SessionWatcher {
   stopRecording () { this.recording = false }
 
   updateBackgroundTabs (tabs) {
-    this.snapshot.backgroundTabs = tabs.map(tab => ({
-      url: tab.loadingURL || tab.url
-    }))
+    this.snapshot.backgroundTabs = tabs.map(tab => tab.getSessionSnapshot())
     this.writeSnapshot()
   }
 
