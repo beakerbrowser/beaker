@@ -230,10 +230,6 @@ class Tab extends EventEmitter {
     prompts.close(this)
     permPrompt.close(this)
     modals.close(this)
-
-    for (let pane of this.panes) {
-      pane.browserWindow = this.browserWindow
-    }
     this.browserWindow = targetWindow
   }
 
