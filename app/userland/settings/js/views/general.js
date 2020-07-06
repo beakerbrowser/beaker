@@ -53,15 +53,31 @@ class GeneralSettingsView extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${this.renderDaemonStatus()}
-      ${this.renderAutoUpdater()}
-      ${this.renderTabSettings()}
-      ${this.renderOnStartupSettings()}
-      ${this.renderRunBackgroundSettings()}
-      ${this.renderNewTabSettings()}
-      ${this.renderSearchSettings()}
-      ${this.renderDefaultZoomSettings()}
-      ${this.renderProtocolSettings()}
-      ${this.renderAnalyticsSettings()}
+      <div class="form-group">
+        <h2>Auto Updater</h2>
+        ${this.renderAutoUpdater()}
+      </div>
+      <div class="form-group">
+        <h2>Tab Settings</h2>
+        ${this.renderOnStartupSettings()}
+        ${this.renderNewTabSettings()}
+        ${this.renderTabSettings()}
+        ${this.renderDefaultZoomSettings()}
+      </div>
+      <div class="form-group">
+        <h2>Browser Settings</h2>
+        ${this.renderRunBackgroundSettings()}
+        ${this.renderProtocolSettings()}
+        ${this.renderThemeSettings()}
+      </div>
+      <div class="form-group">
+        <h2>Search Settings</h2>
+        ${this.renderSearchSettings()}
+      </div>
+      <div class="form-group">
+        <h2>Beaker Analytics</h2>
+        ${this.renderAnalyticsSettings()}
+      </div>
     `
   }
 
@@ -85,8 +101,6 @@ class GeneralSettingsView extends LitElement {
     if (this.browserInfo && !this.browserInfo.updater.isBrowserUpdatesSupported) {
       return html`
         <div class="section">
-          <h2 id="auto-updater">Auto Updater</h2>
-
           <p class="message info">
             Sorry! Beaker auto-updates are only supported on the production build for macOS and Windows.
           </p>
@@ -215,9 +229,7 @@ class GeneralSettingsView extends LitElement {
 
   renderTabSettings () {
     return html`
-      <div class="section tabs">
-        <h2 id="tabs">Tabs</h2>
-
+      <div class="section">
         <div class="radio-item">
           <input type="checkbox" id="newTabsInForeground"
                  ?checked=${this.settings.new_tabs_in_foreground == 1}
@@ -232,9 +244,7 @@ class GeneralSettingsView extends LitElement {
 
   renderOnStartupSettings () {
     return html`
-      <div class="section on-startup">
-        <h2 id="on-startup">Startup Settings</h2>
-
+      <div class="section">
         <p>When Beaker starts</p>
 
         <div class="radio-item">
@@ -262,8 +272,6 @@ class GeneralSettingsView extends LitElement {
   renderRunBackgroundSettings () {
     return html`
       <div class="section on-startup">
-        <h2 id="on-startup">Background</h2>
-
         <p>
           Running in the background helps keep your data online even if you're not using Beaker.
         </p>
@@ -282,9 +290,7 @@ class GeneralSettingsView extends LitElement {
 
   renderNewTabSettings () {
     return html`
-      <div class="section new-tab">
-        <h2 id="new-tab">Start Page</h2>
-
+      <div class="section">
         <p>When you create a new tab, show</p>
 
         <div>
@@ -303,8 +309,7 @@ class GeneralSettingsView extends LitElement {
 
   renderSearchSettings() {
     return html`
-      <div class="section search-settings">
-        <h2 id="search-settings" class="subtitle-heading">Default Search Settings</h2>
+      <div class="section">
         <div class="search-settings-list">
           ${this.settings.search_engines.map((engine,i)=>{
             return html`
@@ -342,9 +347,7 @@ class GeneralSettingsView extends LitElement {
       <option value=${v} ?selected=${v === this.settings.default_zoom}>${label}</option>
     `
     return html`
-      <div class="section new-tab">
-        <h2 id="new-tab">Default Zoom</h2>
-
+      <div class="section">
         <p>Pages should use the following "zoom" setting by default:</p>
 
         <div>
@@ -386,9 +389,7 @@ class GeneralSettingsView extends LitElement {
     }
 
     return html`
-      <div class="section default-browser">
-        <h2 id="protocol" class="subtitle-heading">Default Browser Settings</h2>
-
+      <div class="section">
         <p>Set Beaker as the default browser for:</p>
 
         ${Object.keys(this.defaultProtocolSettings).map(proto => html`
@@ -404,6 +405,42 @@ class GeneralSettingsView extends LitElement {
       </div>`
   }
 
+  renderThemeSettings () {
+    return html`
+      <div class="section">
+        <p>Browser theme:</p>
+
+        <div class="radio-item">
+          <input type="radio" id="browserTheme1" name="browser-theme"
+                 value="system"
+                 ?checked=${this.settings.browser_theme === 'system'}
+                 @change=${this.onBrowserThemeChange} />
+          <label for="browserTheme1">
+            Default (use system value)
+          </label>
+        </div>
+        <div class="radio-item">
+          <input type="radio" id="browserTheme2" name="browser-theme"
+                 value="light"
+                 ?checked=${this.settings.browser_theme === 'light'}
+                 @change=${this.onBrowserThemeChange} />
+          <label for="browserTheme2">
+            Light mode
+          </label>
+        </div>
+        <div class="radio-item">
+          <input type="radio" id="browserTheme3" name="browser-theme"
+                 value="dark"
+                 ?checked=${this.settings.browser_theme === 'dark'}
+                 @change=${this.onBrowserThemeChange} />
+          <label for="browserTheme3">
+            Dark mode
+          </label>
+        </div>
+      </div>
+    `
+  }
+
   renderAnalyticsSettings () {
     const toggle = () => {
       // update and optimistically render
@@ -415,8 +452,6 @@ class GeneralSettingsView extends LitElement {
 
     return html`
       <div class="section analytics">
-        <h2 class="subtitle-heading">Beaker Analytics</h2>
-
         <div class="radio-item">
           <input id="enable-analytics" ?checked=${this.settings.analytics_enabled == 1} type="checkbox" @change=${toggle} />
           <label for="enable-analytics">
@@ -480,6 +515,12 @@ class GeneralSettingsView extends LitElement {
   onCustomStartPageChange (e) {
     this.settings.custom_start_page = e.target.value
     beaker.browser.setSetting('custom_start_page', this.settings.custom_start_page)
+    toast.create('Setting updated')
+  }
+
+  onBrowserThemeChange (e) {
+    this.settings.browser_theme = e.target.value
+    beaker.browser.setSetting('browser_theme', this.settings.browser_theme)
     toast.create('Setting updated')
   }
 

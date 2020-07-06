@@ -48,6 +48,34 @@ a:hover {
   border-right-color: transparent !important;
 }
 
+.form-group {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.form-group .section {
+  margin-bottom: 0;
+  padding: 0 10px 4px;
+}
+
+.form-group .section:not(:last-child) {
+  margin-bottom: 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e5e5ea;
+}
+
+.form-group .section > :first-child {
+  margin-top: 16px;
+}
+
+.form-group h2 {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e5ea;
+}
+
 .message {
   margin: 1em 0;
   background: #f3f3f8;

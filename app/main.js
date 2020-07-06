@@ -10,7 +10,7 @@ process.noAsar = true
 // It doesn't have any windows which you can see on screen, but we can open
 // window from here.
 
-import { app, protocol } from 'electron'
+import { app, protocol, nativeTheme } from 'electron'
 import { join } from 'path'
 
 import { getEnvVar } from './bg/lib/env'
@@ -146,6 +146,12 @@ app.on('ready', async function () {
   log.info('Initializing permissions manager')
   permissions.setup()
   log.info('Program setup complete')
+
+  // theming
+  nativeTheme.themeSource = await dbs.settings.get('browser_theme')
+  dbs.settings.on('set:browser_theme', v => {
+    nativeTheme.themeSource = v
+  })
 })
 
 app.on('window-all-closed', () => {

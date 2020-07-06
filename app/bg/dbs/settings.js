@@ -41,12 +41,8 @@ export const setup = async function (opts) {
     new_tabs_in_foreground: 0,
     run_background: 1,
     default_zoom: 0,
-    start_page_background_image: '',
-    workspace_default_path: path.join(opts.homePath, 'Sites'),
-    default_dat_ignore: '.git\n.dat\nnode_modules\n*.log\n**/.DS_Store\nThumbs.db\n',
+    browser_theme: 'system',
     analytics_enabled: 1,
-    dat_bandwidth_limit_up: 0,
-    dat_bandwidth_limit_down: 0,
     search_engines: [
       {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/', selected: true},
       {name: 'Google', url: 'https://www.google.com/search'}
