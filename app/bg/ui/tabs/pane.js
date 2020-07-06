@@ -692,7 +692,6 @@ export class Pane extends EventEmitter {
     this.isReceivingAssets = true
     this.favicons = null
     this.frameUrls = {[this.mainFrameId]: url} // drop all non-main-frame URLs
-    this.focus()
     await this.fetchIsBookmarked()
     await this.fetchDriveInfo()
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {
@@ -827,6 +826,7 @@ export class Pane extends EventEmitter {
     // see https://github.com/electron/electron/issues/23859
     // -prf
     e.preventDefault()
+    if (!this.tab) return
     this.tab.createTab(url, {setActiveBySettings: true, adjacentActive: true})
   }
 
