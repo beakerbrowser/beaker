@@ -111,7 +111,7 @@ class BrowserMenu extends LitElement {
 
         <div class="section">          
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-            <img class="favicon" src="asset:favicon:beaker://settings">
+            <i class="fas fa-cog"></i>
             <span class="label">Settings</span>
           </div>
 
@@ -179,12 +179,12 @@ class BrowserMenu extends LitElement {
           </div>
 
           <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
-            <img class="favicon" src="asset:favicon:beaker://downloads">
+            <i class="fas fa-arrow-down"></i>
             <span class="label">Downloads</span>
           </div>
 
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
-            <img class="favicon" src="asset:favicon:beaker://history">
+            <i class="fas fa-history"></i>
             <span class="label">History</span>
           </div>
         </div>
