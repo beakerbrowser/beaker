@@ -8,9 +8,6 @@ editor-app {
   background: var(--background);
   color: var(--default);
   user-select: none;
-}
-
-editor-app[detached] {
   height: 100vh;
   overflow: hidden;
 }

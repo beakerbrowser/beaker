@@ -7,10 +7,6 @@ editor-app .toolbar {
   border-bottom: 1px solid #445;
 }
 
-editor-app .toolbar:not(.detached) {
-  padding-right: 46px;
-}
-
 editor-app .toolbar > * {
   margin-left: 5px;
 }

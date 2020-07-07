@@ -16,6 +16,7 @@ class EditorApp extends LitElement {
   static get properties () {
     return {
       url: {type: String},
+      isUnloaded: {type: Boolean},
       isLoading: {type: Boolean},
       showLoadingNotice: {type: Boolean},
       isFilesOpen: {type: Boolean},
@@ -74,14 +75,14 @@ class EditorApp extends LitElement {
 
   constructor () {
     super()
-    this.isDetached = this.hasAttribute('detached')
     this.editorEl = undefined
     this.editor = undefined // monaco instance
     this.url = ''
+    this.isUnloaded = true
     this.stat = undefined
-    this.isLoading = true
-    this.showLoadingNotice = true
-    this.isFilesOpen = this.isDetached // expanded by default in detacheds mode
+    this.isLoading = false
+    this.showLoadingNotice = false
+    this.isFilesOpen = true
     this.readOnly = true
     this.lastSavedVersionId = undefined
     this.dne = false
@@ -93,8 +94,9 @@ class EditorApp extends LitElement {
     if (ctx) this.load(ctx)
     else {
       beaker.shell.getContext().then(res => {
-        console.log(res)
-        this.load(res.lastActivePane || 'hyper://system/')
+        if (res.lastActivePane && !res.lastActivePane.startsWith('beaker://editor/')) {
+          this.load(res.lastActivePane)
+        }
       })
     }
   }
@@ -183,6 +185,7 @@ class EditorApp extends LitElement {
   async load (url, forceLoad = false) {
     var release = await lock('editor-load')
     try {
+      this.isUnloaded = false
       this.isLoading = true
       if (!this.editor) {
         await this.createEditor()
@@ -506,7 +509,7 @@ class EditorApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${this.renderToolbar()}
-      ${this.isFilesOpen ? html`
+      ${!this.isUnloaded && this.isFilesOpen ? html`
         <files-explorer
           url=${this.url}
           open-file-path=${this.resolvedPath}
@@ -556,8 +559,8 @@ class EditorApp extends LitElement {
 
   renderToolbar () {
     return html`
-      <div class="toolbar ${this.isDetached ? 'detached' : ''}">
-        <button class="transparent" @click=${this.onToggleFilesOpen}>
+      <div class="toolbar">
+        <button class="transparent" @click=${this.onToggleFilesOpen} ?disabled=${this.isUnloaded}>
           <span class="fas fa-fw fa-ellipsis-h"></span>
         </button>
         <span class="divider"></span>
@@ -569,15 +572,13 @@ class EditorApp extends LitElement {
             <span class="fas fa-fw fa-save"></span> Save
           </button>
         ` : ''}
-        ${this.isDetached ? html`
-          <button title="View file" @click=${this.onClickView} ?disabled=${this.dne}>
-            <span class="far fa-fw fa-window-maximize"></span> View file
-          </button>
-        ` : ''}
+        <button title="View file" @click=${this.onClickView} ?disabled=${this.dne || this.isUnloaded}>
+          <span class="far fa-fw fa-window-maximize"></span> View file
+        </button>
         ${this.isLoading ? html`
           <div><span class="fas fa-fw fa-info-circle"></span> Loading...</div>
           <span class="divider"></span>
-        ` : this.readOnly ? html`
+        ` : this.readOnly && !this.isUnloaded ? html`
           <div><span class="fas fa-fw fa-info-circle"></span> This site is read-only</div>
           <span class="divider"></span>
           ${this.mountInfo && this.mountInfo.writable ? html`
@@ -613,12 +614,7 @@ class EditorApp extends LitElement {
         return
       }
     }
-    if (!this.isDetached && !e.detail.url.endsWith('.goto') && e.detail.url !== this.url) {
-      this.resetEditor()
-      beaker.browser.gotoUrl(e.detail.url)
-    } else {
-      this.load(e.detail.url)
-    }
+    this.load(e.detail.url)
   }
 
   onShowMenu (e) {
@@ -775,7 +771,6 @@ class EditorApp extends LitElement {
     var dataUrl = await ResizeImagePopup.create(this.url)
     var base64buf = dataUrl.split(',').pop()
     await this.drive.writeFile(this.resolvedPath, base64buf, 'base64')
-    if (!this.isDetached) beaker.browser.gotoUrl(this.url)
   }
 
   onClickView () {
@@ -783,18 +778,8 @@ class EditorApp extends LitElement {
   }
 
   async onClickOpen () {
-    var origin = this.origin
-    var res = await beaker.shell.selectFileDialog({
-      drive: origin.startsWith('hyper:') ? origin : undefined,
-      allowMultiple: false
-    })
-    if (res && res[0]) {
-      if (!this.isDetached && !res[0].url.endsWith('.goto')) {
-        beaker.browser.gotoUrl(res[0].url)
-      } else {
-        this.load(res[0].url)
-      }
-    }
+    var url = await beaker.shell.selectDriveDialog()
+    if (url) this.load(url)
   }
 
   async onClickSave () {
@@ -805,7 +790,6 @@ class EditorApp extends LitElement {
     await this.drive.writeFile(this.resolvedPath, model.getValue(), {metadata})
     this.lastSavedVersionId = model.getAlternativeVersionId()
     this.setSaveBtnState()
-    if (!this.isDetached) beaker.browser.gotoUrl(this.url)
     this.setFocus()
   }
 
@@ -823,7 +807,6 @@ class EditorApp extends LitElement {
       var urlp = new URL(this.url)
       urlp.pathname = newpath
       this.load(urlp.toString())
-      if (!this.isDetached) beaker.browser.gotoUrl(urlp.toString())
     }
   }
 
@@ -842,7 +825,6 @@ class EditorApp extends LitElement {
       this.loadExplorer()
       if (this.resolvedPath === path) {
         this.load(this.url)
-        if (!this.isDetached) beaker.browser.gotoUrl(this.url)
       }
     }
   }
@@ -864,11 +846,7 @@ class EditorApp extends LitElement {
       let path = joinPath(folderPath, name)
       await this.drive.writeFile(path, '')
       this.loadExplorer()
-      if (!this.isDetached && this.resolvedPath !== path) {
-        beaker.browser.gotoUrl(joinPath(this.drive.url, path))
-      } else {
-        this.load(joinPath(this.drive.url, path), true)
-      }
+      this.load(joinPath(this.drive.url, path), true)
     }
   }
 
