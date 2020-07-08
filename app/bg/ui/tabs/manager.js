@@ -250,6 +250,9 @@ class Tab extends EventEmitter {
       this.activePane.isActive = false
     }
     pane.isActive = true
+    if (this.isActive) {
+      windowMenu.onSetCurrentLocation(this.browserWindow)
+    }
     emitUpdateState(this)
   }
 
@@ -807,7 +810,7 @@ export function setActive (win, tab) {
   }
   lastSelectedTabIndex[win.id] = getAll(win).indexOf(active)
 
-  windowMenu.onSetCurrentLocation(win) // give the window-menu a chance to handle the change
+  windowMenu.onSetCurrentLocation(win)
   emitReplaceState(win)
 }
 
