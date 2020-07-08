@@ -142,11 +142,11 @@ class ShellWindowUI extends LitElement {
     return this.tabs[this.activeTabIndex]
   }
 
-  stateHasChanged () {
+  async stateHasChanged () {
     // update active index
     this.activeTabIndex = this.tabs.findIndex(tab => tab.isActive)
 
-    this.requestUpdate()
+    await this.requestUpdate()
     if (!this.isShellInterfaceHidden) {
       this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
       if (this.activeTab) {
