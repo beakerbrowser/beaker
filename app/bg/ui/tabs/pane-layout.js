@@ -128,7 +128,7 @@ export class PaneLayout extends EventEmitter {
     this.bounds = {}
     let stackX = x
     let stackWidths = this.computeStackWidths(width)
-    let isMultiplePanes = this.stacks.length > 1 || this.stacks[0].panes.length > 1
+    let isMultiplePanes = this.stacks.length > 1 || (this.stacks[0] && this.stacks[0].panes.length > 1)
     for (let i = 0; i < this.stacks.length; i++) {
       let stack = this.stacks[i]
       let stackWidth = stackWidths[i]
