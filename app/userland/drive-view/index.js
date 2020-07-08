@@ -212,9 +212,7 @@ class DriveView extends LitElement {
   </body>
 </html>`)
     }
-    // TEMPORARY API please do not depend on this in your applications
-    window.__internalBeakerEditor.open()
-    location.reload()
+    window.location = `beaker://editor/?url=${location.origin}${location.pathname}index.${ext}`
   }
 }
 
