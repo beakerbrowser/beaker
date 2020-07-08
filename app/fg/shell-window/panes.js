@@ -52,7 +52,7 @@ class ShellWindowPanes extends LitElement {
     }
     const horzLine = (pane, y, edge) => html`
       <div class="pane-border horz ${pane.isActive ? 'active' : ''} ${!pane.isEdge[edge] ? 'movable' : ''}"
-        style="left: ${pane.bounds.x}px; top: ${y}px; width: ${pane.bounds.width}px"
+        style="left: ${pane.bounds.x - 2}px; top: ${y}px; width: ${pane.bounds.width + 4}px"
         @mousedown=${e => this.onMouseDown(e, pane, edge)}
         @mousemove=${this.onMouseMove}
         @mouseup=${this.onMouseUp}
@@ -60,7 +60,7 @@ class ShellWindowPanes extends LitElement {
     `
     const vertLine = (pane, x, edge) => html`
       <div class="pane-border vert ${pane.isActive ? 'active' : ''} ${!pane.isEdge[edge] ? 'movable' : ''}"
-        style="left: ${x}px; top: ${pane.bounds.y}px; height: ${pane.bounds.height}px"
+        style="left: ${x}px; top: ${pane.bounds.y - 2}px; height: ${pane.bounds.height + 4}px"
         @mousedown=${e => this.onMouseDown(e, pane, edge)}
         @mousemove=${this.onMouseMove}
         @mouseup=${this.onMouseUp}
@@ -68,10 +68,10 @@ class ShellWindowPanes extends LitElement {
     `
     return html`
       ${repeat(this.activeTab.paneLayout, pane => pane.id, pane => html`
-        ${horzLine(pane, pane.bounds.y, 'top')}
-        ${horzLine(pane, pane.bounds.y + pane.bounds.height - 2, 'bottom')}
-        ${vertLine(pane, pane.bounds.x, 'left')}
-        ${vertLine(pane, pane.bounds.x + pane.bounds.width - 2, 'right')}
+        ${horzLine(pane, pane.bounds.y - 2, 'top')}
+        ${horzLine(pane, pane.bounds.y + pane.bounds.height, 'bottom')}
+        ${vertLine(pane, pane.bounds.x - 2, 'left')}
+        ${vertLine(pane, pane.bounds.x + pane.bounds.width, 'right')}
       `)}
     `
   }

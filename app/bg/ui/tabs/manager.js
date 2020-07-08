@@ -165,7 +165,7 @@ class Tab extends EventEmitter {
     if (this.isHidden || !this.isActive) return
     this.layout.computePanesBounds(this.tabBounds)
     for (let pane of this.panes) {
-      pane.setBounds(this.layout.getBoundsForPane(pane), this.panes.length > 1)
+      pane.setBounds(this.layout.getBoundsForPane(pane))
     }
     emitUpdatePanesState(this)
   }
@@ -424,7 +424,7 @@ class Tab extends EventEmitter {
       // reshow our panes
       for (let pane of this.panes) {
         pane.show({noFocus: true})
-        pane.setBounds(this.layout.getBoundsForPane(pane), this.panes.length > 1)
+        pane.setBounds(this.layout.getBoundsForPane(pane))
       }
       triggerSessionSnapshot(this.browserWindow)
     }

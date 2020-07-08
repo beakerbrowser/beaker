@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events'
 
 const MIN_DIM_PCT = 5 // stacks and panes can't be smaller than this %
+const PANE_BORDER_WIDTH = 2
 
 export class PaneLayout extends EventEmitter {
   constructor () {
@@ -127,6 +128,7 @@ export class PaneLayout extends EventEmitter {
     this.bounds = {}
     let stackX = x
     let stackWidths = this.computeStackWidths(width)
+    let isMultiplePanes = this.stacks.length > 1 || this.stacks[0].panes.length > 1
     for (let i = 0; i < this.stacks.length; i++) {
       let stack = this.stacks[i]
       let stackWidth = stackWidths[i]
@@ -135,18 +137,24 @@ export class PaneLayout extends EventEmitter {
       for (let j = 0; j < stack.panes.length; j++) {
         let pane = stack.panes[j]
         let paneHeight = paneHeights[j]
-        this.bounds[pane.id] = {
-          pane,
-          isEdge: {
-            top: j === 0,
-            bottom: j === stack.panes.length - 1,
-            left: i === 0,
-            right: i === this.stacks.length - 1
-          },
-          x: stackX,
-          y: paneY,
-          width: stackWidth,
-          height: paneHeight
+        let isEdge = {
+          top: j === 0,
+          bottom: j === stack.panes.length - 1,
+          left: i === 0,
+          right: i === this.stacks.length - 1
+        }
+        this.bounds[pane.id] = {pane, isEdge, x: stackX, y: paneY, width: stackWidth, height: paneHeight}
+        if (isMultiplePanes) {
+          if (isEdge.left) {
+            this.bounds[pane.id].x += PANE_BORDER_WIDTH
+            this.bounds[pane.id].width -= PANE_BORDER_WIDTH
+          }
+          if (isEdge.top) {
+            this.bounds[pane.id].y += PANE_BORDER_WIDTH
+            this.bounds[pane.id].height -= PANE_BORDER_WIDTH
+          }
+          this.bounds[pane.id].width -= PANE_BORDER_WIDTH
+          this.bounds[pane.id].height -= PANE_BORDER_WIDTH
         }
         paneY += paneHeight
       }

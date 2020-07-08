@@ -52,7 +52,6 @@ const TLS_ERROR_CODES = Object.values({
 })
 const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
 
-const PANE_BORDER_WIDTH = 2
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
 
 // the variables which are automatically sent to the shell-window for rendering
@@ -344,13 +343,8 @@ export class Pane extends EventEmitter {
     this.webContents.loadURL(url, opts)
   }
 
-  setBounds (bounds, includeBorder = false) {
-    this.browserView.setBounds({
-      x: bounds.x + (includeBorder ? PANE_BORDER_WIDTH : 0),
-      y: bounds.y + (includeBorder ? PANE_BORDER_WIDTH : 0),
-      width: bounds.width - (includeBorder ? PANE_BORDER_WIDTH * 2 : 0),
-      height: bounds.height - (includeBorder ? PANE_BORDER_WIDTH * 2 : 0)
-    })
+  setBounds (bounds) {
+    this.browserView.setBounds(bounds)
   }
 
   show ({noFocus} = {noFocus: false}) {
