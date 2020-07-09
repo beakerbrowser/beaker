@@ -33,7 +33,7 @@ var activeTabs = {} // map of {[win.id]: Array<Tab>}
 var backgroundTabs = [] // Array<Tab>
 var preloadedNewTabs = {} // map of {[win.id]: Tab}
 var lastSelectedTabIndex = {} // map of {[win.id]: Number}
-var closedTabs = {} // map of {[win.id]: Array<Object>}
+var closedItems = {} // map of {[win.id]: Array<Object>}
 var windowEvents = {} // mapof {[win.id]: EventEmitter}
 var defaultUrl = 'beaker://desktop/'
 
@@ -292,9 +292,10 @@ class Tab extends EventEmitter {
     if (this.panes.length === 1) {
       // this is going to close the tab
       // save, in case the user wants to restore it
-      addToClosedTabs(this)
+      addTabToClosedItems(this)
     }
 
+    let url = pane.url
     pane.hide()
     pane.setTab(undefined)
 
@@ -314,6 +315,7 @@ class Tab extends EventEmitter {
       remove(this.browserWindow, this)
     } else if (!this.activePane) {
       // choose a new active pane
+      addPaneToClosedItems(this, url)
       this.setActivePane(this.panes[0])
     }
   }
@@ -750,7 +752,7 @@ export async function remove (win, tab) {
 
   // save, in case the user wants to restore it
   if (tab.panes.length) {
-    addToClosedTabs(tab)
+    addTabToClosedItems(tab)
   }
 
   tabs.splice(i, 1)
@@ -798,10 +800,8 @@ export function setActive (win, tab) {
 
   // deactivate the old tab
   var active = getActive(win)
-  if (active) {
-    if (active === tab) {
-      return
-    }
+  if (active && active === tab) {
+    return
   }
 
   tab.activate()
@@ -930,11 +930,14 @@ export async function loadPins (win) {
 
 export function reopenLastRemoved (win) {
   win = getTopWindow(win)
-  var snap = (closedTabs[win.id] || []).pop()
+  var snap = (closedItems[win.id] || []).pop()
   if (snap) {
-    var tab = create(win, null, {fromSnapshot: snap})
-    setActive(win, tab)
-    return tab
+    if (snap.isTab) {
+      setActive(win, create(win, null, {fromSnapshot: snap}))
+    } else if (snap.isPane) {
+      snap.tab.createPane({url: snap.url})
+      setActive(snap.tab.browserWindow, snap.tab)
+    }
   }
 }
 
@@ -1304,9 +1307,14 @@ function getWindowTabState (win) {
   return getAll(win).map(tab => tab.state)
 }
 
-function addToClosedTabs (tab) {
-  closedTabs[tab.browserWindow.id] = closedTabs[tab.browserWindow.id] || []
-  closedTabs[tab.browserWindow.id].push(tab.getSessionSnapshot())
+function addTabToClosedItems (tab) {
+  closedItems[tab.browserWindow.id] = closedItems[tab.browserWindow.id] || []
+  closedItems[tab.browserWindow.id].push(Object.assign({isTab: true}, tab.getSessionSnapshot()))
+}
+
+function addPaneToClosedItems (tab, url) {
+  closedItems[tab.browserWindow.id] = closedItems[tab.browserWindow.id] || []
+  closedItems[tab.browserWindow.id].push({isPane: true, tab, url})
 }
 
 function indexOfLastPinnedTab (win) {
