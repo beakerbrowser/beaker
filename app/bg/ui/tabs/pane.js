@@ -520,9 +520,6 @@ export class Pane extends EventEmitter {
     let isJSON = contentType.startsWith('application/json') || (isPlainText && this.url.endsWith('.json'))
     let isJS = contentType.includes('/javascript') || (isPlainText && this.url.endsWith('.js'))
     let isCSS = contentType.startsWith('text/css') || (isPlainText && this.url.endsWith('.css'))
-    
-    // dont allow the background to be transparent
-    this.webContents.insertCSS(`html { background: #fff }`)
 
     // json rendering
     // inject the json render script

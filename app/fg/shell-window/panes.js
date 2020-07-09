@@ -12,6 +12,10 @@ class ShellWindowPanes extends LitElement {
 
   static get styles () {
     return css`
+    .pane-background {
+      position: fixed;
+      background: #fff;
+    }
     .pane-border {
       position: fixed;
       background: var(--bg-color--paneborder);
@@ -47,9 +51,14 @@ class ShellWindowPanes extends LitElement {
   // =
 
   render () {
-    if (!this.activeTab || this.activeTab.paneLayout.length <= 1) {
+    if (!this.activeTab) {
       return html``
     }
+    const background = (pane) => this.isResizing ? '' : html`
+      <div class="pane-background"
+        style="left: ${pane.bounds.x}px; top: ${pane.bounds.y}px; width: ${pane.bounds.width}px; height: ${pane.bounds.height}px"
+      ></div>
+    `
     const horzLine = (pane, y, edge) => html`
       <div class="pane-border horz ${pane.isActive ? 'active' : ''} ${!pane.isEdge[edge] ? 'movable' : ''}"
         style="left: ${pane.bounds.x - 2}px; top: ${y}px; width: ${pane.bounds.width + 4}px"
@@ -66,8 +75,16 @@ class ShellWindowPanes extends LitElement {
         @mouseup=${this.onMouseUp}
       ></div>
     `
+    if (this.activeTab.paneLayout.length <= 1) {
+      return html`
+        ${repeat(this.activeTab.paneLayout, pane => pane.id, pane => html`
+          ${background(pane)}
+        `)}
+      `
+    }
     return html`
       ${repeat(this.activeTab.paneLayout, pane => pane.id, pane => html`
+        ${background(pane)}
         ${horzLine(pane, pane.bounds.y - 2, 'top')}
         ${horzLine(pane, pane.bounds.y + pane.bounds.height, 'bottom')}
         ${vertLine(pane, pane.bounds.x - 2, 'left')}
