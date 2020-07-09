@@ -89,7 +89,7 @@ export async function setup () {
 
     // default bookmarks
     if (isInitialCreation) {
-      await bookmarks.add({href: 'beaker://explorer/', title: 'Files Explorer', pinned: true})
+      await bookmarks.add({href: 'beaker://explorer/', title: 'Explore Files', pinned: true})
       await bookmarks.add({href: 'beaker://webterm/', title: 'Terminal', pinned: true})
       await bookmarks.add({href: 'https://userlist.beakerbrowser.com/', title: 'User Directory', pinned: true})
       await bookmarks.add({href: 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/', title: 'Blahbity Blog', pinned: true})

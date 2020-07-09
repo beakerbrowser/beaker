@@ -1,7 +1,12 @@
 import { joinPath, slugify } from '../../lib/strings.js'
 import { query } from './query.js'
 import * as filesystem from './index'
-import { includesList as toolbarIncludesList, add as addToToolbar, remove as removeFromToolbar } from './toolbar'
+import {
+  includesList as toolbarIncludesList,
+  add as addToToolbar,
+  remove as removeFromToolbar,
+  getCurrentBookmark as getToolbarCurrentBookmark
+} from './toolbar'
 import { URL } from 'url'
 import * as profileDb from '../dbs/profile-data-db'
 
@@ -62,12 +67,23 @@ export async function add ({href, title, pinned, toolbar}) {
   }
   slug = slug.toLowerCase()
 
-  await remove(href) // in case this is an edit
+  let openInPane = undefined
+  let existing = await get(href)
+  if (existing) {
+    if (existing.toolbar) {
+      let existingToolbar = await getToolbarCurrentBookmark(href)
+      openInPane = existingToolbar ? existingToolbar.openInPane : undefined
+    }
+    if (typeof title === 'undefined') title = existing.title
+    if (typeof pinned === 'undefined') pinned = existing.pinned
+    if (typeof toolbar === 'undefined') toolbar = existing.toolbar
+    await remove(href)
+  }
 
   var filename = await filesystem.getAvailableName('/bookmarks', slug, 'goto') // avoid collisions
   var path = joinPath('/bookmarks', filename)
   await filesystem.get().pda.writeFile(path, '', {metadata: {href, title, pinned: pinned ? '1' : undefined}})
-  if (toolbar) await addToToolbar({bookmark: filename})
+  if (toolbar) await addToToolbar({bookmark: filename, openInPane})
   return path
 }
 

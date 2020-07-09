@@ -36,6 +36,11 @@ export async function getCurrent () {
   return items
 }
 
+export async function getCurrentBookmark (href) {
+  var current = await getCurrent()
+  return current.find(item => item.href === href)
+}
+
 export async function includesList (bookmarks) {
   var data = await read()
   return bookmarks.map(bookmark => {
