@@ -182,7 +182,7 @@ class ShellWindowToolbarMenu extends LitElement {
     } else if (menuChoice === 'window') {
       bg.beakerBrowser.newWindow({pages: [item.href]})
     } else if (menuChoice === 'togglePaneDefault') {
-      bg.toolbar.update({filename: item.filename, openInPane: !item.openInPane})
+      bg.toolbar.update({bookmark: item.bookmark, openInPane: !item.openInPane})
     } else if (menuChoice === 'edit') {
       bg.views.toggleMenu('bookmark-edit', {
         bounds: {left: rect.left|0, top: rect.bottom|0},

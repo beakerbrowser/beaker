@@ -18,12 +18,12 @@ export const removeListener = events.removeListener.bind(events)
 
 export async function getCurrent () {
   var data = await read()
-  var bookmarks = []
-  for (let item of data.bookmarks) {
+  var items = []
+  for (let item of data.items) {
     try {
-      let st = await filesystem.get().pda.stat(`/bookmarks/${item.filename}`)
-      bookmarks.push({
-        filename: item.filename,
+      let st = await filesystem.get().pda.stat(`/bookmarks/${item.bookmark}`)
+      items.push({
+        bookmark: item.bookmark,
         href: st.metadata.href,
         title: st.metadata.title,
         openInPane: item.openInPane
@@ -33,28 +33,28 @@ export async function getCurrent () {
     }
   }
 
-  return bookmarks
+  return items
 }
 
-export async function includesList (filenames) {
+export async function includesList (bookmarks) {
   var data = await read()
-  return filenames.map(filename => {
-    return !!data.bookmarks.find(item => item.filename === filename)
+  return bookmarks.map(bookmark => {
+    return !!data.items.find(item => item.bookmark === bookmark)
   })
 }
 
-export async function add ({filename, openInPane}) {
+export async function add ({bookmark, openInPane}) {
   var data = await read()
-  if (!data.bookmarks.find(item => item.filename === filename)) {
-    data.bookmarks.push({filename, openInPane})
+  if (!data.items.find(item => item.bookmark === bookmark)) {
+    data.items.push({bookmark, openInPane})
     await write(data)
     events.emit('changed')
   }
 }
 
-export async function update ({filename, openInPane}) {
+export async function update ({bookmark, openInPane}) {
   var data = await read()
-  var item = data.bookmarks.find(item => item.filename === filename)
+  var item = data.items.find(item => item.bookmark === bookmark)
   if (item) {
     item.openInPane = openInPane
     await write(data)
@@ -62,9 +62,9 @@ export async function update ({filename, openInPane}) {
   }
 }
 
-export async function remove ({filename}) {
+export async function remove ({bookmark}) {
   var data = await read()
-  data.bookmarks = data.bookmarks.filter(item => item.filename !== filename)
+  data.items = data.items.filter(item => item.bookmark !== bookmark)
   await write(data)
   events.emit('changed')
 }
@@ -79,10 +79,10 @@ export async function ensure () {
       bookmarks.ensure({href: 'beaker://webterm/', title: 'Terminal'}),
     ])
     await write({
-      bookmarks: [
-        {filename: basename(paths[0]), openInPane: true},
-        {filename: basename(paths[1]), openInPane: true},
-        {filename: basename(paths[2]), openInPane: true}
+      items: [
+        {bookmark: basename(paths[0]), openInPane: true},
+        {bookmark: basename(paths[1]), openInPane: true},
+        {bookmark: basename(paths[2]), openInPane: true}
       ]
     })
   }
@@ -95,20 +95,20 @@ async function read () {
   var data
   try { data = await filesystem.get().pda.readFile('/toolbar.json').then(JSON.parse) }
   catch (e) { data = {} }
-  data.bookmarks = data.bookmarks && Array.isArray(data.bookmarks) ? data.bookmarks : []
-  data.bookmarks = data.bookmarks.filter(b => b && typeof b === 'object' && typeof b.filename === 'string')
+  data.items = data.items && Array.isArray(data.items) ? data.items : []
+  data.items = data.items.filter(b => b && typeof b === 'object' && typeof b.bookmark === 'string')
   return data
 }
 
 async function write (data) {
-  data.bookmarks = data.bookmarks && Array.isArray(data.bookmarks) ? data.bookmarks : []
-  data.bookmarks = data.bookmarks.filter(b => b && typeof b === 'object' && typeof b.filename === 'string')
-  for (let item of data.bookmarks.slice()) {
+  data.items = data.items && Array.isArray(data.items) ? data.items : []
+  data.items = data.items.filter(b => b && typeof b === 'object' && typeof b.bookmark === 'string')
+  for (let item of data.items.slice()) {
     try {
-      let st = await filesystem.get().pda.stat(`/bookmarks/${item.filename}`)
+      let st = await filesystem.get().pda.stat(`/bookmarks/${item.bookmark}`)
     } catch (e) {
       // remove
-      data.bookmarks = data.bookmarks.filter(item2 => item !== item2)
+      data.items = data.items.filter(item2 => item !== item2)
     }
   }
 

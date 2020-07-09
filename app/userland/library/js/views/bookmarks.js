@@ -47,9 +47,9 @@ export class BookmarksView extends LitElement {
       path: ['/bookmarks/*.goto']
     })
     var toolbar = await beaker.hyperdrive.readFile('hyper://system/toolbar.json', 'json').catch(e => undefined)
-    if (toolbar && toolbar.bookmarks && Array.isArray(toolbar.bookmarks)) {
+    if (toolbar && toolbar.items && Array.isArray(toolbar.items)) {
       for (let bookmark of bookmarks) {
-        bookmark.toolbar = !!toolbar.bookmarks.find(item => item && typeof item === 'object' && bookmark.path.split('/').pop() === item.filename)
+        bookmark.toolbar = !!toolbar.items.find(item => item && typeof item === 'object' && bookmark.path.split('/').pop() === item.bookmark)
       }
     }
     bookmarks.sort((a, b) => _title(a).localeCompare(_title(b)))
@@ -165,12 +165,12 @@ export class BookmarksView extends LitElement {
     var filename = bookmark.path.split('/').pop()
     var toolbar = await beaker.hyperdrive.readFile('hyper://system/toolbar.json', 'json').catch(e => undefined)
     toolbar = toolbar || {}
-    toolbar.bookmarks = toolbar.bookmarks && Array.isArray(toolbar.bookmarks) ? toolbar.bookmarks : []
+    toolbar.items = toolbar.items && Array.isArray(toolbar.items) ? toolbar.items : []
     if (bookmark.toolbar) {
-      toolbar.bookmarks = toolbar.bookmarks.filter(item => item && typeof item === 'object' && item.filename !== filename)
+      toolbar.items = toolbar.items.filter(item => item && typeof item === 'object' && item.bookmark !== filename)
     } else {
-      toolbar.bookmarks = toolbar.bookmarks.filter(item => item && typeof item === 'object' && item.filename !== filename)
-      toolbar.bookmarks.push({filename})
+      toolbar.items = toolbar.items.filter(item => item && typeof item === 'object' && item.bookmark !== filename)
+      toolbar.items.push({bookmark: filename})
     }
     await beaker.hyperdrive.writeFile('hyper://system/toolbar.json', toolbar, 'json')
     beaker.browser.updateWindowToolbar()

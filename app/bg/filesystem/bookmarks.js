@@ -67,7 +67,7 @@ export async function add ({href, title, pinned, toolbar}) {
   var filename = await filesystem.getAvailableName('/bookmarks', slug, 'goto') // avoid collisions
   var path = joinPath('/bookmarks', filename)
   await filesystem.get().pda.writeFile(path, '', {metadata: {href, title, pinned: pinned ? '1' : undefined}})
-  if (toolbar) await addToToolbar({filename})
+  if (toolbar) await addToToolbar({bookmark: filename})
   return path
 }
 
@@ -83,7 +83,7 @@ export async function remove (href) {
   }))[0]
   if (!file) return
   await filesystem.get().pda.unlink(file.path)
-  await removeFromToolbar({filename: file.path.split('/').pop()})
+  await removeFromToolbar({bookmark: file.path.split('/').pop()})
 }
 
 /**
