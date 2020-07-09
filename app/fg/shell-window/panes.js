@@ -100,6 +100,7 @@ class ShellWindowPanes extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     this.isResizing = true
+    this.requestUpdate()
     bg.views.setPaneResizeModeEnabled(true, pane.id, edge)
   }
 
@@ -107,6 +108,7 @@ class ShellWindowPanes extends LitElement {
     if (this.isResizing && !e.buttons) {
       bg.views.setPaneResizeModeEnabled(false)
       this.isResizing = false
+      this.requestUpdate()
     }
   }
 
@@ -114,6 +116,7 @@ class ShellWindowPanes extends LitElement {
     if (this.isResizing) {
       bg.views.setPaneResizeModeEnabled(false)
       this.isResizing = false
+      this.requestUpdate()
     }
   }
 }
