@@ -4,6 +4,10 @@ The process is currently a little silly. This file is getting progressively less
 
 Run npm install. Make sure ./app/bg/dat/converter has its node_modules installed.
 
+## Make sure to update the desktop versions and release-notes links
+
+SO HELP ME GOD if you forget this I'll kill you.
+
 ## Build
 
 `npm run build`
