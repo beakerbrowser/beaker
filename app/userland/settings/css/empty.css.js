@@ -2,10 +2,10 @@ import { css } from '../../app-stdlib/vendor/lit-element/lit-element.js'
 
 const cssStr = css`
 .empty {
-  background: #f5f5fa;
+  background: var(--bg-color--light);
   padding: 20px;
   text-align: center;
-  color: #666;
+  color: var(--text-color--light);
   font-size: 16px;
   line-height: 2;
   box-sizing: content-box;

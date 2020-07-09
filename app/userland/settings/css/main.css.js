@@ -20,7 +20,7 @@ ${emptyCSS}
   width: 190px;
   height: calc(100vh - 20px);
   box-sizing: border-box;
-  background: #f5f5fa;
+  background: var(--bg-color--light);
   border-radius: 8px;
   padding: 10px 0;
   overflow-y: auto;
@@ -35,7 +35,7 @@ ${emptyCSS}
 .subnav .item {
   padding: 8px 15px;
   margin-bottom: 2px;
-  color: #34495e;
+  color: var(--text-color--subnav-item);
   text-decoration: none;
   box-sizing: border-box;
   cursor: pointer;
@@ -46,17 +46,17 @@ ${emptyCSS}
 }
 
 .subnav .item:hover {
-  background: #f0f0f5;
+  background: var(--bg-color--subnav-item--hover);
 }
 
 .subnav .item.current {
-  background: #dde;
+  background: var(--bg-color--subnav-item--current);
   font-weight: 600;
 }
 
 .subnav hr {
   border: 0;
-  border-top: 1px solid #dde;
+  border-top: 1px solid var(--border-color--light);
   margin: 15px 0;
 }
 `

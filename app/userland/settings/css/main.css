@@ -2,7 +2,44 @@
 @import "beaker://assets/font-awesome.css";
 
 body {
+  --border-color--default: #bbc;
+  --border-color--light: #ccd;
+  --border-color: var(--border-color--default);
+  --text-color--default: #333;
+  --text-color--dark: #111;
+  --text-color--lightish: #555;
+  --text-color--light: #667;
+  --text-color--very-light: #bbc;
+  --text-color--subnav-item: #34495e;
+  --bg-color--default: #fff;
+  --bg-color--light: #fafafd;
+  --bg-color--message: #f3f3f8;
+  --bg-color--subnav-item--hover: #f0f0f5;
+  --bg-color--subnav-item--current: #dde;
+
   font-size: 13px;
   background: #fff;
-  --border-color: #d4d7dc;
+  color: #333;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --blue: #88c;
+    --border-color--default: #669;
+    --border-color--light: #558;
+    --text-color--default: #ccd;
+    --text-color--dark: #eef;
+    --text-color--lightish: #bbc;
+    --text-color--light: #aab;
+    --text-color--very-light: #557;
+    --text-color--subnav-item: #bbc;
+    --bg-color--default: #223;
+    --bg-color--light: #334;
+    --bg-color--message: #334;
+    --bg-color--subnav-item--hover: #445;
+    --bg-color--subnav-item--current: #556;
+
+    background: #223;
+    color: #ccd;
+  }
 }

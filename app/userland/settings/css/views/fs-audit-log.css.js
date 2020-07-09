@@ -11,6 +11,10 @@ ${buttonsCSS}
   width: calc(100vw - 250px);
 }
 
+a {
+  color: var(--blue);
+}
+
 .stats {
   margin-bottom: 10px;
 }
@@ -30,16 +34,16 @@ ${buttonsCSS}
   position: sticky;
   top: 0;
   text-align: left;
-  background: #f5f5fa;
+  background: var(--bg-color--light);
 }
 
 .logger .gap-row td {
   height: 8px;
-  background: #f5f5fa;
+  background: var(--bg-color--light);
 }
 
 .logger .logger-row > * {
-  border: 1px solid #dde;
+  border: 1px solid var(--border-color--light);
 }
 
 .logger .logger-row > *:not(.args) {
@@ -63,7 +67,7 @@ ${buttonsCSS}
 }
 
 .logger .logger-row:hover {
-  background: #f5f5f5;
+  background: var(--bg-color--light);
 }
 
 .logger .logger-row small {

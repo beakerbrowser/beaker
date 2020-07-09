@@ -63,7 +63,7 @@ a:hover {
 .form-group .section:not(:last-child) {
   margin-bottom: 0;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e5e5ea;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .form-group .section > :first-child {
@@ -73,12 +73,12 @@ a:hover {
 .form-group h2 {
   margin: 0;
   padding-bottom: 10px;
-  border-bottom: 1px solid #e5e5ea;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .message {
   margin: 1em 0;
-  background: #f3f3f8;
+  background: var(--bg-color--message);
   padding: 10px;
   border-radius: 2px;
 }
@@ -125,7 +125,7 @@ input[type="checkbox"] {
 
 .versions {
   font-size: 13px;
-  background: #f3f3f8;
+  background: var(--bg-color--message);
   margin-top: -10px;
   padding: 12px 35px;
   border-radius: 4px;

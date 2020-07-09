@@ -13,13 +13,13 @@ ${buttonsCSS}
 .logger .controls {
   position: sticky;
   top: 0;
-  background: #fff;
+  background: var(--bg-color--default);
 }
 
 .logger .standard-controls {
   display: flex;
   align-items: center;
-  color: #555;
+  color: var(--text-color--lightish);
   padding: 6px 0;
 }
 
@@ -34,7 +34,7 @@ ${buttonsCSS}
 .logger .standard-controls .divider {
   margin-left: 20px;
   margin-right: 5px;
-  border-right: 1px solid #ccc;
+  border-right: 1px solid var(--border-color--light);
   height: 14px;
 }
 
@@ -54,45 +54,45 @@ ${buttonsCSS}
 
 .logger .logger-row td {
   padding: 4px;
-  border-top: 1px solid #fff;
+  border-top: 1px solid var(--bg-color--default);
 }
 
 .logger .logger-row.purple {
-  background: #fdf3ff;
+  /*background: #fdf3ff;*/
   color: #9C27B0;
 }
 
 .logger .logger-row.blue {
-  background: #e6f4ff;
+  /*background: #e6f4ff;*/
   color: #2196F3;
 }
 
 .logger .logger-row.cyan {
-  background: #e7fcff;
+  /*background: #e7fcff;*/
   color: #00BCD4;
 }
 
 .logger .logger-row.green {
-  background: #f1f9f1;
+  /*background: #f1f9f1;*/
   color: #4CAF50;
 }
 
 .logger .logger-row.yellow {
-  background: #fff3cc;
+  /*background: #fff3cc;*/
   color: #FFC107;
 }
 
 .logger .logger-row.red {
-  background: #fddee9;
+  /*background: #fddee9;*/
   color: #E91E63;
 }
 
 .logger .logger-row:hover {
-  background: #fff;
+  background: var(--bg-color--default);
 }
 
 .logger .logger-row .msg {
-  color: #111;
+  color: var(--text-color--dark);
 }
 
 .logger .logger-row .level,
