@@ -87,5 +87,17 @@ a:hover {
   font-family: -webkit-body;
   line-height: 34px;
 }
+
+@media (prefers-color-scheme: dark) {
+  a:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  .close {
+    color: gray;
+  }
+  .close:hover {
+    color: #fff;
+  }
+}
 `
 customElements.define('shell-window-win32', ShellWindowWin32)
