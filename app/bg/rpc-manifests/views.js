@@ -37,5 +37,6 @@ export default {
   toggleSiteInfo: 'promise',
   focusShellWindow: 'promise',
   focusPage: 'promise',
-  setPaneResizeModeEnabled: 'promise'
+  setPaneResizeModeEnabled: 'promise',
+  openPaneMenu: 'promise'
 }

@@ -71,7 +71,7 @@ export function toNiceUrl (str) {
   try {
     var urlParsed = new URL(str)
     if (DRIVE_KEY_REGEX.test(urlParsed.hostname)) {
-      urlParsed.hostname = `${urlParsed.hostname.slice(0, 4)}..${urlParsed.hostname.slice(-2)}`
+      urlParsed.hostname = `${urlParsed.hostname.slice(0, 6)}..${urlParsed.hostname.slice(-2)}`
     }
     return urlParsed.toString()
   } catch (e) {

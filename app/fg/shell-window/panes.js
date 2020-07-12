@@ -3,6 +3,8 @@ import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import * as bg from './bg-process-rpc'
 
+const STATUS_BAR_HEIGHT = 22
+
 class ShellWindowPanes extends LitElement {
   static get properties () {
     return {
@@ -15,11 +17,12 @@ class ShellWindowPanes extends LitElement {
     .pane-background {
       position: fixed;
       background: #fff;
+      z-index: 1;
     }
     .pane-border {
       position: fixed;
       background: var(--bg-color--paneborder);
-      z-index: 1;
+      z-index: 2;
     }
     .pane-border.horz {
       height: 2px;
@@ -35,7 +38,32 @@ class ShellWindowPanes extends LitElement {
     }
     .pane-border.active {
       background: var(--bg-color--paneborder--active);
+      z-index: 3;
+    }
+    .pane-status-bar {
+      position: fixed;
+      font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+      background: var(--bg-color--pane-status-bar);
+      color: var(--text-color--pane-status-bar);
       z-index: 2;
+      box-sizing: border-box;
+      padding: 0 4px;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+      line-height: 23px;
+    }
+    .pane-status-bar.active {
+      color: var(--text-color--pane-status-bar--active);
+    }
+    .pane-status-bar button {
+      border: 0;
+      font-size: 11px;
+      background: transparent;
+      padding: 2px 4px;
+      border-radius: 2px;
+    }
+    .pane-status-bar button:hover {
+      background: var(--bg-color--pane-status-bar-button--hover);
     }
     `
   }
@@ -75,20 +103,34 @@ class ShellWindowPanes extends LitElement {
         @mouseup=${this.onMouseUp}
       ></div>
     `
+    const statusBar = (pane) => html`
+      <div class="pane-status-bar ${pane.isActive ? 'active' : ''}"
+        style="left: ${pane.bounds.x}px; top: ${pane.bounds.y + pane.bounds.height - STATUS_BAR_HEIGHT}px; width: ${pane.bounds.width}px; height: ${STATUS_BAR_HEIGHT}px"
+      >
+        <button @click=${e => this.onClickPaneMenu(e, pane)}>
+          <span class="fa fa-bars"></span>
+        </button>
+        <span class="status">${pane.status || pane.title}</span>
+      </div>
+    `
     if (this.activeTab.paneLayout.length <= 1) {
       return html`
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         ${repeat(this.activeTab.paneLayout, pane => pane.id, pane => html`
           ${background(pane)}
+          ${statusBar(pane)}
         `)}
       `
     }
     return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${repeat(this.activeTab.paneLayout, pane => pane.id, pane => html`
         ${background(pane)}
         ${horzLine(pane, pane.bounds.y - 2, 'top')}
         ${horzLine(pane, pane.bounds.y + pane.bounds.height, 'bottom')}
         ${vertLine(pane, pane.bounds.x - 2, 'left')}
         ${vertLine(pane, pane.bounds.x + pane.bounds.width, 'right')}
+        ${statusBar(pane)}
       `)}
     `
   }
@@ -118,6 +160,10 @@ class ShellWindowPanes extends LitElement {
       this.isResizing = false
       this.requestUpdate()
     }
+  }
+
+  onClickPaneMenu (e, pane) {
+    bg.views.openPaneMenu(pane.id)
   }
 }
 customElements.define('shell-window-panes', ShellWindowPanes)

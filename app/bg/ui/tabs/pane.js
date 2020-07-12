@@ -5,10 +5,10 @@ import { promises as fs } from 'fs'
 import { EventEmitter } from 'events'
 import _throttle from 'lodash.throttle'
 import { parseDriveUrl } from '../../../lib/urls'
+import { toNiceUrl } from '../../../lib/strings'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as zoom from './zoom'
-import * as statusBar from '../subwindows/status-bar'
 import * as modals from '../subwindows/modals'
 import * as windowMenu from '../window-menu'
 import { getResourceContentType } from '../../browser'
@@ -53,6 +53,7 @@ const TLS_ERROR_CODES = Object.values({
 const IS_CODE_INSECURE_RESPONSE = x => x === ERR_CONNECTION_REFUSED || x === ERR_INSECURE_RESPONSE || (x <= -200 && x > -300) || TLS_ERROR_CODES.includes(x)
 
 const TRIGGER_LIVE_RELOAD_DEBOUNCE = 500 // throttle live-reload triggers by this amount
+const STATUS_BAR_HEIGHT = 22
 
 // the variables which are automatically sent to the shell-window for rendering
 const STATE_VARS = [
@@ -125,6 +126,7 @@ export class Pane extends EventEmitter {
 
     // browser state
     this.isActive = false // is this the active pane in the tab?
+    this.currentStatus = false // the status-bar value
     this.liveReloadEvents = null // live-reload event stream
     this.isInpageFindActive = false // is the inpage-finder UI active?
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
@@ -344,7 +346,12 @@ export class Pane extends EventEmitter {
   }
 
   setBounds (bounds) {
-    this.browserView.setBounds(bounds)
+    this.browserView.setBounds({
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height - STATUS_BAR_HEIGHT
+    })
   }
 
   show ({noFocus} = {noFocus: false}) {
@@ -642,7 +649,7 @@ export class Pane extends EventEmitter {
   // =
 
   emitUpdateState () {
-    this.tab.emitPaneUpdateState(this)
+    this.tab.emitTabUpdateState(this)
   }
 
   onDidStartLoading (e) {
@@ -759,7 +766,8 @@ export class Pane extends EventEmitter {
   onUpdateTargetUrl (e, url) {
     if (this.tab.isHidden) return
     if (this.browserWindow.isDestroyed()) return
-    statusBar.set(this.browserWindow, url)
+    this.currentStatus = url ? toNiceUrl(url) : url
+    this.tab.emitPaneUpdateState()
   }
 
   onPageTitleUpdated (e, title) {

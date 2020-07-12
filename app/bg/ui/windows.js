@@ -13,7 +13,6 @@ import { updateWindowToolbar } from '../browser'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
-import * as statusBarSubwindow from './subwindows/status-bar'
 import * as shellMenusSubwindow from './subwindows/shell-menus'
 import * as locationBarSubwindow from './subwindows/location-bar'
 import * as promptsSubwindow from './subwindows/prompts'
@@ -31,7 +30,6 @@ const logger = logLib.child({category: 'browser'})
 const IS_WIN = process.platform === 'win32'
 const IS_LINUX = process.platform === 'linux'
 const subwindows = {
-  statusBar: statusBarSubwindow,
   locationBar: locationBarSubwindow,
   menu: shellMenusSubwindow,
   prompts: promptsSubwindow,
@@ -298,10 +296,6 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     // sendToWebContents('focus')(e) TODO readd?
     var active = tabManager.getActive(win)
     if (active) active.focus()
-  })
-  win.on('blur', e => {
-    statusBarSubwindow.set(win, false) // hide the statusbar on blur
-    // sendToWebContents('blur')(e) TODO readd?
   })
   win.on('app-command', (e, cmd) => { onAppCommand(win, e, cmd) })
   win.on('enter-full-screen', e => {

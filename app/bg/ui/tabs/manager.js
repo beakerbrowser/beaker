@@ -15,6 +15,7 @@ import * as prompts from '../subwindows/prompts'
 import * as permPrompt from '../subwindows/perm-prompt'
 import * as modals from '../subwindows/modals'
 import * as siteInfo from '../subwindows/site-info'
+import * as contextMenu from '../context-menu'
 import * as windowMenu from '../window-menu'
 import { createShellWindow, getAddedWindowSettings } from '../windows'
 import { examineLocationInput } from '../../../lib/urls'
@@ -435,6 +436,28 @@ class Tab extends EventEmitter {
     }
   }
 
+  openPaneMenu (paneId) {
+    let pane = this.getPaneById(paneId)
+    if (!pane) return
+    var webContents = pane.webContents
+    var tab = this
+
+    var menuItems = []
+    menuItems.push(contextMenu.createMenuItem('split-pane-vert', {webContents, tab}))
+    menuItems.push(contextMenu.createMenuItem('split-pane-horz', {webContents, tab}))
+    if (contextMenu.shouldShowMenuItem('move-pane', {tab})) {
+      menuItems.push(contextMenu.createMenuItem('move-pane', {webContents, tab}))
+    }
+    menuItems.push({type: 'separator'})
+    menuItems.push(contextMenu.createMenuItem('close-pane', {webContents, tab}))
+    var menu = Menu.buildFromTemplate(menuItems)
+    let bounds = this.layout.getBoundsForPane(pane)
+    menu.popup({
+      x: bounds.x,
+      y: bounds.y + bounds.height - 20
+    })
+  }
+
   // state fetching
   // =
 
@@ -447,10 +470,15 @@ class Tab extends EventEmitter {
   // events
   // =
 
-  emitPaneUpdateState (pane) {
+  emitTabUpdateState (pane) {
     if (this.isHidden || !this.browserWindow) return
     if (!pane.isActive) return
     emitUpdateState(this)
+  }
+
+  emitPaneUpdateState () {
+    if (this.isHidden || !this.browserWindow) return
+    emitUpdatePanesState(this)
   }
 
   createTab (url, opts) {
@@ -1252,6 +1280,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   
   async setPaneResizeModeEnabled (enabled, paneId, edge) {
     getActive(getWindow(this.sender)).setPaneResizeModeEnabled(enabled, paneId, edge)
+  },
+
+  async openPaneMenu (paneId) {
+    getActive(getWindow(this.sender)).openPaneMenu(paneId)
   }
 })
 

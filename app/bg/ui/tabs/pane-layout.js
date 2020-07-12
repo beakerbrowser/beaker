@@ -18,7 +18,9 @@ export class PaneLayout extends EventEmitter {
         id,
         isActive: b.pane.isActive,
         isEdge: b.isEdge,
-        bounds: {x: b.x, y: b.y, width: b.width, height: b.height}
+        bounds: {x: b.x, y: b.y, width: b.width, height: b.height},
+        title: b.pane.title,
+        status: b.pane.currentStatus
       })
     }
     return state
