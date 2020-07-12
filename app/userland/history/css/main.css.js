@@ -16,7 +16,7 @@ nav {
   position: fixed;
   top: 25px;
   left: 15px;
-  width: 200px;
+  width: 185px;
   z-index: 1;
 }
 
@@ -59,6 +59,12 @@ nav a.active .fas {
 main {
   max-width: 700px;
   margin: 20px auto;
+}
+
+@media screen and (max-width: 1115px) {
+  main {
+    margin-left: 200px;
+  }
 }
 
 .search-container {
