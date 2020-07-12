@@ -147,16 +147,12 @@ export class PaneLayout extends EventEmitter {
         }
         this.bounds[pane.id] = {pane, isEdge, x: stackX, y: paneY, width: stackWidth, height: paneHeight}
         if (isMultiplePanes) {
-          if (isEdge.left) {
-            this.bounds[pane.id].x += PANE_BORDER_WIDTH
+          if (!isEdge.right) {
             this.bounds[pane.id].width -= PANE_BORDER_WIDTH
           }
-          if (isEdge.top) {
-            this.bounds[pane.id].y += PANE_BORDER_WIDTH
+          if (!isEdge.bottom) {
             this.bounds[pane.id].height -= PANE_BORDER_WIDTH
           }
-          this.bounds[pane.id].width -= PANE_BORDER_WIDTH
-          this.bounds[pane.id].height -= PANE_BORDER_WIDTH
         }
         paneY += paneHeight
       }
