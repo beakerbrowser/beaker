@@ -224,6 +224,7 @@ class EditorApp extends LitElement {
       }
       this.url = url
       history.replaceState({}, '', `/?url=${url}`)
+      this.attachedPane = beaker.panes.getAttachedPane()
       if (this.attachedPane && this.attachedPane.url !== this.url) {
         beaker.panes.navigate(this.attachedPane.id, this.url)
       }
@@ -793,8 +794,13 @@ class EditorApp extends LitElement {
     await this.drive.writeFile(this.resolvedPath, base64buf, 'base64')
   }
 
-  onClickView () {
-    window.open(this.url)
+  async onClickView () {
+    this.attachedPane = beaker.panes.getAttachedPane()
+    if (!this.attachedPane) {
+      this.attachedPane = await beaker.panes.create(this.url, {attach: true})
+    } else {
+      beaker.panes.navigate(this.attachedPane.id, this.url)
+    }
   }
 
   async onClickOpen () {
