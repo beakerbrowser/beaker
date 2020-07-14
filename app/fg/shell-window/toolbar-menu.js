@@ -74,11 +74,10 @@ class ShellWindowToolbarMenu extends LitElement {
       background: var(--bg-color--toolbar--pressed);
       color: var(--text-color--toolbar--pressed);
     }
-    a .fa-window-maximize {
+    a .attach-icon {
       position: relative;
-      font-size: 6px;
-      position: relative;
-      left: 1px;
+      font-size: 8px;
+      left: -1px;
       top: -4px;
     }
     a + a .far,
@@ -119,7 +118,7 @@ class ShellWindowToolbarMenu extends LitElement {
         <a @mousedown=${e => this.onMousedownBookmark(e, index)}>
           <img class="favicon" src="asset:favicon:${item.href}">
           ${item.title}
-          ${item.openInPane ? html`<span class="far fa-window-maximize"></span>` : ''}
+          ${item.openInPane ? html`<span class="attach-icon">⚯</span>` : ''}
         </a>
       `
     }
@@ -167,7 +166,7 @@ class ShellWindowToolbarMenu extends LitElement {
         {id: 'tab', label: 'Open in New Tab'},
         {id: 'window', label: 'Open in New Window'},
         {type: 'separator'},
-        {id: 'togglePaneDefault', label: 'Always Open as Attached Pane', type: 'checkbox', checked: item.openInPane},
+        {id: 'togglePaneDefault', label: 'Open as Attached Pane by Default', type: 'checkbox', checked: item.openInPane},
         {type: 'separator'},
         {id: 'edit', label: 'Edit Bookmark'},
         {id: 'remove', label: 'Remove from Toolbar'}
