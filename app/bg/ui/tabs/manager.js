@@ -509,7 +509,7 @@ class Tab extends EventEmitter {
     }
     if (menuItems.length === 0) {
       this.panes.forEach(pane2 => {
-        if (pane2 !== pane && !pane2.attachedPane) {
+        if (pane2 !== pane) {
           menuItems.push({
             label: `Attach to ${pane2.title}`,
             click: () => {

@@ -107,13 +107,15 @@ class EditorApp extends LitElement {
       }
     })
 
-    this.attachedPane = beaker.panes.attachToLastActivePane()
-    if (this.attachedPane) {
-      this.load(this.attachedPane.url)
-    } else {
-      let ctx = (new URLSearchParams(location.search)).get('url')
-      if (ctx) this.load(ctx)
-    }
+    ;(async () => {
+      this.attachedPane = await beaker.panes.attachToLastActivePane()
+      if (this.attachedPane) {
+        this.load(this.attachedPane.url)
+      } else {
+        let ctx = (new URLSearchParams(location.search)).get('url')
+        if (ctx) this.load(ctx)
+      }
+    })()
   }
 
   teardown () {

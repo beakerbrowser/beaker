@@ -1,7 +1,8 @@
 import { BrowserView } from 'electron'
 import emitStream from 'emit-stream'
 import * as tabManager from '../../ui/tabs/manager'
-import { PermissionsError } from 'beaker-error-constants'
+import * as permissions from '../../ui/permissions'
+import { PermissionsError, UserDeniedError } from 'beaker-error-constants'
 
 export default {
   createEventStream () {
@@ -21,8 +22,11 @@ export default {
     return toPaneResponse(attachedPane)
   },
 
-  attachToLastActivePane () {
-    // TODO perms prompt
+  async attachToLastActivePane () {
+    if (!(await permissions.requestPermission('panesAttach', this.sender))) {
+      throw new UserDeniedError()
+    }
+
     var {tab, senderPane} = getPaneObjects(this.sender)
 
     var attachedPane = senderPane.attachedPane
@@ -45,12 +49,18 @@ export default {
     return toPaneResponse(candidatePane)
   },
 
-  create (url, opts) {
-    // TODO perms prompt
+  async create (url, opts) {
+    if (!(await permissions.requestPermission('panesCreate', this.sender))) {
+      throw new UserDeniedError()
+    }
+
     opts = opts && typeof opts === 'object' ? opts : {}
     var {tab, senderPane} = getPaneObjects(this.sender)
     var newPane = tab.createPane({url, setActive: true})
     if (opts.attach) {
+      if (!(await permissions.requestPermission('panesAttach', this.sender))) {
+        throw new UserDeniedError()
+      }
       senderPane.setAttachedPane(newPane)
       return toPaneResponse(newPane)
     }
@@ -69,19 +79,25 @@ export default {
   },
 
   async executeJavaScript (paneId, script) {
-    // TODO perms prompt
+    if (!(await permissions.requestPermission('panesInject', this.sender))) {
+      throw new UserDeniedError()
+    }
     var {attachedPane} = getAttachedPaneById(this.sender, paneId)
     return attachedPane.webContents.executeJavaScript(script)
   },
 
   async injectCss (paneId, css) {
-    // TODO perms prompt
+    if (!(await permissions.requestPermission('panesInject', this.sender))) {
+      throw new UserDeniedError()
+    }
     var {attachedPane} = getAttachedPaneById(this.sender, paneId)
     return attachedPane.webContents.insertCSS(css)
   },
 
   async uninjectCss (paneId, cssId) {
-    // TODO perms prompt
+    if (!(await permissions.requestPermission('panesInject', this.sender))) {
+      throw new UserDeniedError()
+    }
     var {attachedPane} = getAttachedPaneById(this.sender, paneId)
     await attachedPane.webContents.removeInsertedCSS(cssId)
   }

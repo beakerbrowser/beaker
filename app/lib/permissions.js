@@ -157,6 +157,27 @@ export const PERMS = {
     requiresRefresh: false,
     experimental: false
   },
+  panesCreate: {
+    persist: 'allow', // dont persist 'deny'
+    idempotent: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    dangerous: true
+  },
+  panesAttach: {
+    persist: 'allow', // dont persist 'deny'
+    idempotent: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    dangerous: true
+  },
+  panesInject: {
+    persist: 'allow', // dont persist 'deny'
+    idempotent: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    dangerous: true
+  },
 }
 
 export const PERM_ICONS = {
@@ -181,7 +202,10 @@ export const PERM_ICONS = {
   experimentalDatPeers: 'fas fa-exchange-alt',
   experimentalCapturePage: 'fas fa-camera',
   dangerousAppControl: 'fas fa-flask',
-  contactsList: 'fas fa-user-friends'
+  contactsList: 'fas fa-user-friends',
+  panesCreate: 'fas fa-columns',
+  panesAttach: 'fas fa-columns',
+  panesInject: 'fas fa-columns'
 }
 
 export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
@@ -208,6 +232,9 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
     case 'experimentalDatPeers': return 'Send and receive messages with peers'
     case 'dangerousAppControl': return 'Read and write your data, including bookmarks, archives, and files'
     case 'contactsList': return 'Read your address-book in Beaker'
+    case 'panesCreate': return 'Open a page in a new pane'
+    case 'panesAttach': return 'Attach to other open pages and navigate them'
+    case 'panesInject': return 'Inject code into other open pages'
 
     case 'network':
       if (permParam === '*') return 'Access the network freely'

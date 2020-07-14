@@ -49,6 +49,7 @@ class PermPrompt extends LitElement {
     const PERM = PERMS[this.permId]
     if (!PERM) return false
     this.isPermExperimental = PERM.experimental
+    this.isPermDangerous = !!PERM.dangerous
 
     // fetch dat title if needed
     if (!this.permOpts.title && IS_DRIVE_KEY_REGEX.test(this.permParam)) {
@@ -95,6 +96,13 @@ class PermPrompt extends LitElement {
             <div class="perm-experimental">
               <i class="fa fa-info-circle"></i>
               <span>This page is requesting an experimental feature. Only click 'Allow' if you trust this page.</span>
+            </div>`
+          : ''}
+        ${this.isPermDangerous
+          ? html`
+            <div class="perm-experimental">
+              <i class="fa fa-info-circle"></i>
+              <span>Only click 'Allow' if you trust this page.</span>
             </div>`
           : ''}
       </div>

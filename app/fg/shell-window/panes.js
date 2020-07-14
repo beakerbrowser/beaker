@@ -149,7 +149,7 @@ class ShellWindowPanes extends LitElement {
         <span class="status">
           ${pane.status || pane.title}
         </span>
-        ${hasMultiple && !attachTargets[Number(pane.id)] ? html`
+        ${hasMultiple ? html`
           <button
             class="attachment"
             @click=${e => this.onClickAttachMenu(e, pane)}

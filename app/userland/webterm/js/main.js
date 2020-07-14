@@ -125,15 +125,17 @@ class WebTerm extends LitElement {
       this.setCWD(e.detail.url)
     })
 
-    let ctx = (new URLSearchParams(location.search)).get('url')
-    if (ctx && ctx.startsWith('beaker://webterm')) ctx = undefined
-    this.attachedPane = beaker.panes.attachToLastActivePane()
-    if (this.attachedPane) {
-      ctx = this.attachedPane.url
-    }
-    this.load(ctx || 'hyper://system/').then(_ => {
-      this.setFocus()
-    })
+    ;(async () => {
+      let ctx = (new URLSearchParams(location.search)).get('url')
+      if (ctx && ctx.startsWith('beaker://webterm')) ctx = undefined
+      this.attachedPane = await beaker.panes.attachToLastActivePane()
+      if (this.attachedPane) {
+        ctx = this.attachedPane.url
+      }
+      this.load(ctx || 'hyper://system/').then(_ => {
+        this.setFocus()
+      })
+    })()
   }
 
   teardown () {

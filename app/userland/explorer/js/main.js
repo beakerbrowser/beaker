@@ -87,23 +87,24 @@ export class ExplorerApp extends LitElement {
       }
     })
 
-    this.attachedPane = beaker.panes.getAttachedPane()
-    if (this.attachedPane) {
-      // already attached, drive them
-      if (loc.getUrl() && loc.getUrl() !== this.attachedPane.url) {
-        console.log(loc.getUrl())
-        beaker.panes.navigate(this.attachedPane.id, loc.getUrl())
+    ;(async () => {
+      this.attachedPane = beaker.panes.getAttachedPane()
+      if (this.attachedPane) {
+        // already attached, drive them
+        if (loc.getUrl() && loc.getUrl() !== this.attachedPane.url) {
+          beaker.panes.navigate(this.attachedPane.id, loc.getUrl())
+        }
+      } else {
+        // try to attach and then follow their url
+        this.attachedPane = await beaker.panes.attachToLastActivePane()
+        if (this.attachedPane && loc.getUrl() !== this.attachedPane.url) {
+          loc.setUrl(this.attachedPane.url)
+          return
+        }
       }
-    } else {
-      // try to attach and then follow their url
-      this.attachedPane = beaker.panes.attachToLastActivePane()
-      if (this.attachedPane && loc.getUrl() !== this.attachedPane.url) {
-        loc.setUrl(this.attachedPane.url)
-        return
-      }
-    }
 
-    this.load()
+      this.load()
+    })()
   }
 
   getRealPathname (pathname) {

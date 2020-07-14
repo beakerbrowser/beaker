@@ -2,7 +2,7 @@ export default {
   createEventStream: 'readable',
   setAttachable: 'sync',
   getAttachedPane: 'sync',
-  attachToLastActivePane: 'sync',
+  attachToLastActivePane: 'promise',
   create: 'promise',
   navigate: 'promise',
   focus: 'promise',
