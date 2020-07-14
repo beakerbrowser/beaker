@@ -218,7 +218,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   }, frameSettings))
   win.once('ready-to-show', () => {
     win.show()
-    updateWindowToolbar(win)
+    updateWindowToolbar()
     if (!hasFirstWindowLoaded) {
       hasFirstWindowLoaded = true
       app.emit('custom-ready-to-show')

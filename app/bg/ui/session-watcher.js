@@ -117,7 +117,7 @@ class WindowWatcher extends EventEmitter {
     this.handleAlwaysOnTopChanged = this.handleAlwaysOnTopChanged.bind(this)
 
     // right now this class trusts that the initial state is correctly formed by this point
-    this.snapshot = initialState
+    this.snapshot = JSON.parse(JSON.stringify(initialState))
     this.winId = win.id
     win.on('closed', this.handleClosed)
     win.on('resize', debounce(this.handlePositionChange, 1000))
