@@ -97,9 +97,13 @@ class WebTerm extends LitElement {
         e.stopPropagation()
         e.preventDefault()
         if (e.metaKey || anchor.getAttribute('target') === '_blank') {
-          beaker.browser.openUrl(anchor.getAttribute('href'), {setActive: true})
+          window.open(anchor.getAttribute('href'))
         } else {
-          beaker.browser.gotoUrl(anchor.getAttribute('href'))
+          if (this.attachedPane) {
+            beaker.panes.navigate(this.attachedPane.id, anchor.getAttribute('href'))
+          } else {
+            window.location = anchor.getAttribute('href')
+          }
         }
         return
       }
@@ -205,7 +209,6 @@ class WebTerm extends LitElement {
         this.outputError(`Failed to read manifest for command package (${driveUrl})`, e.toString())
       }
     }
-    console.log(packages)
 
     for (let pkg of packages) {
       var pkgId = pkg.url
@@ -257,7 +260,12 @@ class WebTerm extends LitElement {
   }
 
   async loadPageCommands () {
-    this.pageCommands = await beaker.browser.executeJavaScriptInPage(`
+    this.attachedPane = beaker.panes.getAttachedPane()
+    if (!this.attachedPane) {
+      this.pageCommands = {}
+      return
+    }
+    this.pageCommands = await beaker.panes.executeJavaScript(this.attachedPane.id, `
       ;(() => {
         let commands = {}
         if (beaker.terminal.getCommands().length) {
@@ -277,6 +285,7 @@ class WebTerm extends LitElement {
         return commands
       })();
     `)
+    this.pageCommands = this.pageCommands || {}
   }
 
   setCWD (location) {
@@ -440,7 +449,8 @@ class WebTerm extends LitElement {
     }
     this.commandHist.add(prompt.value)
 
-    this.envVars['@'] = await beaker.browser.getPageUrl()
+    this.attachedPane = beaker.panes.getAttachedPane()
+    this.envVars['@'] = this.attachedPane ? this.attachedPane.url : this.cwd.toString()
 
     var inputValue = prompt.value
     try {
@@ -460,7 +470,7 @@ class WebTerm extends LitElement {
       await this.loadPageCommands()
       command = this.pageCommands[commandName.slice(1)]
       if (command) {
-        command.fn = (...args) => beaker.browser.executeJavaScriptInPage(`
+        command.fn = (...args) => beaker.panes.executeJavaScript(this.attachedPane.id, `
           ;(() => {
             let command = beaker.terminal.getCommands().find(c => c.name === ${JSON.stringify(commandName.slice(1))});
             if (command) {
@@ -514,14 +524,38 @@ class WebTerm extends LitElement {
         },
         page: {
           goto (url, opts = {}) {
-            if (opts.newTab) beaker.browser.openUrl(url, {setActive: true})
-            else beaker.browser.gotoUrl(url)
+            if (opts.newTab) window.open(url)
+            else {
+              var pane = beaker.panes.getAttachedPane()
+              if (!pane) throw new Error('No attached pane')
+              beaker.panes.navigate(pane.id, url)
+            }
           },
-          refresh () { beaker.browser.refreshPage() },
-          focus () { beaker.browser.focusPage() },
-          exec (js) { return beaker.browser.executeJavaScriptInPage(js) },
-          inject (css) { return beaker.browser.injectCssInPage(css) },
-          uninject (id) { return beaker.browser.uninjectCssInPage(id) }
+          refresh () {
+            var pane = beaker.panes.getAttachedPane()
+            if (!pane) throw new Error('No attached pane')
+            beaker.panes.navigate(pane.id, pane.url)
+          },
+          focus () {
+            var pane = beaker.panes.getAttachedPane()
+            if (!pane) throw new Error('No attached pane')
+            beaker.panes.focus(pane.id)
+          },
+          exec (js) {
+            var pane = beaker.panes.getAttachedPane()
+            if (!pane) throw new Error('No attached pane')
+            return beaker.panes.executeJavaScript(pane.id, js)
+          },
+          inject (css) {
+            var pane = beaker.panes.getAttachedPane()
+            if (!pane) throw new Error('No attached pane')
+            return beaker.panes.injectCss(pane.id, css)
+          },
+          uninject (id) {
+            var pane = beaker.panes.getAttachedPane()
+            if (!pane) throw new Error('No attached pane')
+            return beaker.panes.uninjectCss(pane.id, id)
+          }
         },
         out: (...args) => {
           args = args.map(arg => {

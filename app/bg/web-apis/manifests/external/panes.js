@@ -5,6 +5,7 @@ export default {
   attachToLastActivePane: 'sync',
   create: 'promise',
   navigate: 'promise',
+  focus: 'promise',
   executeJavaScript: 'promise',
   injectCss: 'promise',
   uninjectCss: 'promise'

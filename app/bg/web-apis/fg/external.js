@@ -44,6 +44,7 @@ export const setup = function (rpc) {
   panes.attachToLastActivePane = panesRPC.attachToLastActivePane
   panes.create = panesRPC.create
   panes.navigate = panesRPC.navigate
+  panes.focus = panesRPC.focus
   panes.executeJavaScript = panesRPC.executeJavaScript
   panes.injectCss = panesRPC.injectCss
   panes.uninjectCss = panesRPC.uninjectCss

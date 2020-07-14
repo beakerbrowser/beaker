@@ -62,22 +62,28 @@ export default {
     await attachedPane.loadURL(url)
   },
 
+  async focus (paneId) {
+    var {tab, attachedPane} = getAttachedPaneById(this.sender, paneId)
+    tab.setActivePane(attachedPane)
+    attachedPane.focus()
+  },
+
   async executeJavaScript (paneId, script) {
     // TODO perms prompt
     var {attachedPane} = getAttachedPaneById(this.sender, paneId)
-    await attachedPane.webContents.executeJavaScript(script)
+    return attachedPane.webContents.executeJavaScript(script)
   },
 
   async injectCss (paneId, css) {
     // TODO perms prompt
     var {attachedPane} = getAttachedPaneById(this.sender, paneId)
-    return attachedPane.webContents.injectCss(css)
+    return attachedPane.webContents.insertCSS(css)
   },
 
   async uninjectCss (paneId, cssId) {
     // TODO perms prompt
     var {attachedPane} = getAttachedPaneById(this.sender, paneId)
-    await attachedPane.webContents.uninjectCss(cssId)
+    await attachedPane.webContents.removeInsertedCSS(cssId)
   }
 }
 
