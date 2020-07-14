@@ -49,6 +49,7 @@ import capabilitiesManifest from './manifests/external/capabilities'
 import contactsManifest from './manifests/external/contacts'
 import hyperdriveManifest from './manifests/external/hyperdrive'
 import markdownManifest from './manifests/external/markdown'
+import panesManifest from './manifests/external/panes'
 import peersocketsManifest from './manifests/external/peersockets'
 import shellManifest from './manifests/external/shell'
 
@@ -57,6 +58,7 @@ import capabilitiesAPI from './bg/capabilities'
 import contactsAPI from './bg/contacts'
 import hyperdriveAPI from './bg/hyperdrive'
 import markdownAPI from './bg/markdown'
+import panesAPI from './bg/panes'
 import peersocketsAPI from './bg/peersockets'
 import shellAPI from './bg/shell'
 
@@ -92,6 +94,7 @@ export const setup = function () {
   rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
   rpc.exportAPI('markdown', markdownManifest, markdownAPI)
+  rpc.exportAPI('panes', panesManifest, panesAPI, secureOnly('panes'))
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
   rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
 

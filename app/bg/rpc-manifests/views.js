@@ -7,6 +7,7 @@ export default {
   getBackgroundTabs: 'promise',
   createTab: 'promise',
   createPane: 'promise',
+  togglePaneByOrigin: 'promise',
   loadURL: 'promise',
   minimizeTab: 'promise',
   closeTab: 'promise',
@@ -38,5 +39,6 @@ export default {
   focusShellWindow: 'promise',
   focusPage: 'promise',
   setPaneResizeModeEnabled: 'promise',
-  openPaneMenu: 'promise'
+  openPaneMenu: 'promise',
+  openAttachMenu: 'promise'
 }

@@ -53,10 +53,11 @@ class WebTerm extends LitElement {
 
   constructor () {
     super()
-    this.isDetached = this.hasAttribute('detached')
+    beaker.panes.setAttachable()
+    this.attachedPane = undefined
     this.isLoaded = false
     this.startUrl = ''
-    this.url = ''
+    this._url = ''
     this.commands = {}
     this.commandModules = {}
     this.pageCommands = {}
@@ -108,20 +109,40 @@ class WebTerm extends LitElement {
       }
     })
 
-    if (this.isDetached) {
-      let ctx = (new URLSearchParams(location.search)).get('url')
-      ;(ctx ? Promise.resolve(ctx) : beaker.shell.getContext()).then(res => {
-        ctx = typeof res === 'string' ? res : res.lastActivePane
-        if (ctx.startsWith('beaker://webterm')) ctx = 'hyper://system/'
-        return this.load(ctx || 'hyper://system/')
-      }).then(_ => {
-        this.setFocus()
-      })
+    beaker.panes.addEventListener('pane-attached', e => {
+      this.attachedPane = beaker.panes.getAttachedPane()
+      this.setCWD(this.attachedPane.url)
+    })
+    beaker.panes.addEventListener('pane-detached', e => {
+      this.attachedPane = undefined
+    })
+    beaker.panes.addEventListener('pane-navigated', e => {
+      this.attachedPane.url = e.detail.url
+      this.setCWD(e.detail.url)
+    })
+
+    let ctx = (new URLSearchParams(location.search)).get('url')
+    if (ctx && ctx.startsWith('beaker://webterm')) ctx = undefined
+    this.attachedPane = beaker.panes.attachToLastActivePane()
+    if (this.attachedPane) {
+      ctx = this.attachedPane.url
     }
+    this.load(ctx || 'hyper://system/').then(_ => {
+      this.setFocus()
+    })
   }
 
   teardown () {
 
+  }
+
+  get url () {
+    return this._url
+  }
+
+  set url (v) {
+    history.replaceState({}, '', `/?url=${v}`)
+    this._url = v
   }
 
   getContext () {
@@ -272,13 +293,16 @@ class WebTerm extends LitElement {
       locationParsed = new URL(location)
     }
 
+    if (this.url === locationParsed.toString()) {
+      return
+    }
+
     this.url = location
     this.cwd = locationParsed
-    if (this.isDetached) {
-      history.replaceState({}, '', `/?url=${locationParsed.toString()}`)
-    } else {
-      beaker.browser.gotoUrl(locationParsed.toString())
+    if (this.attachedPane && this.attachedPane.url !== locationParsed.toString()) {
+      beaker.panes.navigate(this.attachedPane.id, locationParsed.toString())
     }
+    this.requestUpdate()
   }
 
   parseURL (url) {

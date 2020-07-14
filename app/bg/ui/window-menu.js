@@ -444,7 +444,7 @@ export function buildWindowMenu (opts = {}) {
         label: 'Explore Files',
         enabled: !noWindows && !!isDriveSite,
         click: async function (item) {
-          if (tab) tab.createPane({url: 'beaker://explorer/'})
+          if (tab) tab.togglePaneByOrigin({url: 'beaker://explorer/'})
         }
       },
       {type: 'separator'},
@@ -653,7 +653,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'CmdOrCtrl+B',
         click: async function (item) {
-          if (tab) tab.createPane({url: 'beaker://editor/'})
+          if (tab) tab.togglePaneByOrigin({url: 'beaker://editor/'})
         }
       },
       {
@@ -662,7 +662,7 @@ export function buildWindowMenu (opts = {}) {
         enabled: !noWindows,
         accelerator: 'Ctrl+`',
         click: function (item) {
-          if (tab) tab.createPane({url: 'beaker://webterm/'})
+          if (tab) tab.togglePaneByOrigin({url: 'beaker://webterm/'})
         }
       },
       {

@@ -132,6 +132,10 @@ export class Pane extends EventEmitter {
     this.currentInpageFindString = undefined // what's the current inpage-finder query string?
     this.currentInpageFindResults = undefined // what's the current inpage-finder query results?
     this.fadeoutCssId = undefined // injected CSS id to fade out the page content
+    this.attachedPane = undefined // pane which this pane is currently attached to
+    this.wantsAttachedPane = false // has the app asked for attached panes?
+    this.attachedPaneEvents = new EventEmitter() // emitter for events specifically realted to the attached pane
+    this.onAttachedPaneNavigated = (e, url) => this.attachedPaneEvents.emit('pane-navigated', {detail: {url}})
 
     // helper state
     this.folderSyncPath = undefined // current folder sync path
@@ -645,6 +649,24 @@ export class Pane extends EventEmitter {
     if (!noEmit) this.emitUpdateState()
   }
 
+  // attached pane
+  // =
+
+  setAttachedPane (pane) {
+    if (this.attachedPane) {
+      if (!this.attachedPane.webContents.isDestroyed()) {
+        this.attachedPane.webContents.removeListener('did-navigate', this.onAttachedPaneNavigated)
+      }
+      this.attachedPaneEvents.emit('pane-detached')
+    }
+    this.attachedPane = pane
+    if (pane) {
+      this.attachedPaneEvents.emit('pane-attached', {detail: {id: pane.id}})
+      this.attachedPane.webContents.on('did-navigate', this.onAttachedPaneNavigated)
+    }
+    this.tab.emitPaneUpdateState()
+  }
+
   // events
   // =
 
@@ -668,9 +690,11 @@ export class Pane extends EventEmitter {
     this.mainFrameId = frameRoutingId
     var origin = toOrigin(url)
 
-    // turn off live reloading if we're leaving the domain
+    // handle origin changes
     if (origin !== toOrigin(this.url)) {
       this.stopLiveReloading()
+      this.setAttachedPane(undefined)
+      this.wantsAttachedPane = false
     }
 
     // update state

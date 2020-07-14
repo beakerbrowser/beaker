@@ -261,8 +261,32 @@ class Tab extends EventEmitter {
     var pane = new Pane(this)
     this.attachPane(pane, {after, splitDir})
     if (url) pane.loadURL(url)
-    if (setActive) this.setActivePane(pane)
+    if (setActive) {
+      this.setActivePane(pane)
+      pane.focus()
+    }
     return pane
+  }
+
+  createOrFocusPaneByOrigin ({url}) {
+    var origin = toOrigin(url)
+    var existingPane = this.panes.find(p => p.origin === origin)
+    if (existingPane) {
+      setActive(existingPane)
+      existingPane.focus()
+    } else {
+      return this.createPane({url, setActive: true})
+    }
+  }
+
+  togglePaneByOrigin ({url}) {
+    var origin = toOrigin(url)
+    var existingPane = this.panes.find(p => p.origin === origin)
+    if (existingPane && this.panes.length > 1) {
+      return this.removePane(existingPane)
+    } else {
+      return this.createPane({url, setActive: true})
+    }
   }
 
   splitPane (origPane, splitDir = 'vert') {
@@ -275,6 +299,13 @@ class Tab extends EventEmitter {
     pane.setTab(this)
     if (!this.activePane) this.setActivePane(pane)
     if (this.isActive) pane.show()
+
+    // default to vertical stacking once there are two columns
+    if (!after && this.layout.stacks.length > 1) {
+      let lastStack = this.layout.stacks[this.layout.stacks.length - 1]
+      after = lastStack.panes[lastStack.panes.length - 1]
+      splitDir = 'horz'
+    }
 
     if (after) {
       if (splitDir === 'vert') {
@@ -307,6 +338,11 @@ class Tab extends EventEmitter {
     }
     this.panes.splice(i, 1)
     this.layout.removePane(pane)
+    for (let pane2 of this.panes) {
+      if (pane2.attachedPane === pane) {
+        pane2.setAttachedPane(undefined)
+      }
+    }
     if (this.lastActivePane === pane) {
       this.lastActivePane = undefined
     }
@@ -335,7 +371,7 @@ class Tab extends EventEmitter {
   }
 
   getLastActivePane () {
-    return this.lastActivePane || this.activePane
+    return this.lastActivePane
   }
 
   findPane (browserView) {
@@ -456,6 +492,35 @@ class Tab extends EventEmitter {
       x: bounds.x,
       y: bounds.y + bounds.height - 20
     })
+  }
+
+  openAttachMenu (paneId) {
+    let pane = this.getPaneById(paneId)
+    if (!pane) return
+
+    var menuItems = []
+    if (pane.attachedPane) {
+      menuItems.push({
+        label: `Detach from ${pane.attachedPane.title}`,
+        click: () => {
+          pane.setAttachedPane(undefined)
+        }
+      })
+    }
+    if (menuItems.length === 0) {
+      this.panes.forEach(pane2 => {
+        if (pane2 !== pane && !pane2.attachedPane) {
+          menuItems.push({
+            label: `Attach to ${pane2.title}`,
+            click: () => {
+              pane.setAttachedPane(pane2)
+            }
+          })
+        }
+      })
+    }
+    var menu = Menu.buildFromTemplate(menuItems)
+    menu.popup()
   }
 
   // state fetching
@@ -1111,6 +1176,11 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     return tab.createPane({url, setActive: true})
   },
 
+  async togglePaneByOrigin (index, url) {
+    var tab = getByIndex(getWindow(this.sender), index)
+    return tab.togglePaneByOrigin({url})
+  },
+
   async loadURL (index, url) {
     if (url === '$new_tab') {
       url = defaultUrl
@@ -1284,6 +1354,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async openPaneMenu (paneId) {
     getActive(getWindow(this.sender)).openPaneMenu(paneId)
+  },
+
+  async openAttachMenu (paneId) {
+    getActive(getWindow(this.sender)).openAttachMenu(paneId)
   }
 })
 
@@ -1435,4 +1509,11 @@ function createPreloadedNewTab (win) {
     preloadedNewTabs[id] = new Tab(win, {isHidden: true})
     preloadedNewTabs[id].loadURL(defaultUrl)
   }, 1e3)
+}
+
+function toOrigin (str) {
+  try {
+    var u = new URL(str)
+    return u.protocol + '//' + u.hostname + (u.port ? `:${u.port}` : '') + '/'
+  } catch (e) { return '' }
 }

@@ -162,11 +162,12 @@ class ShellWindowToolbarMenu extends LitElement {
     var menuChoice
     if (e.button === 2 || (e.button === 1 && (e.metaKey || e.ctrlKey))) {
       var menu = [
+        {id: 'goto', label: 'Open in Current Pane'},
         {id: 'pane', label: 'Open in New Pane'},
         {id: 'tab', label: 'Open in New Tab'},
         {id: 'window', label: 'Open in New Window'},
         {type: 'separator'},
-        {id: 'togglePaneDefault', label: 'Always Open as Pane', type: 'checkbox', checked: item.openInPane},
+        {id: 'togglePaneDefault', label: 'Always Open as Attached Pane', type: 'checkbox', checked: item.openInPane},
         {type: 'separator'},
         {id: 'edit', label: 'Edit Bookmark'},
         {id: 'remove', label: 'Remove from Toolbar'}
@@ -192,7 +193,7 @@ class ShellWindowToolbarMenu extends LitElement {
       bg.toolbar.remove(item)
     } else if (e.button === 0) {
       if (item.openInPane) {
-        bg.views.createPane('active', item.href)
+        bg.views.togglePaneByOrigin('active', item.href)
       } else {
         bg.views.loadURL('active', item.href)
       }

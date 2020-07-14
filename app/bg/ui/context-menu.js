@@ -64,7 +64,14 @@ export default function registerContextMenu () {
           click () {
             var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
             if (targetTab && pane) {
-              targetTab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'vert'})
+              let lastStack = targetTab.layout.stacks[targetTab.layout.stacks.length - 1]
+              if (targetTab.layout.stacks.length > 1 && !lastStack.panes.find(p => p === pane)) {
+                // stack in the adjacent stack
+                targetTab.createPane({url: props.linkURL, setActive: true, after: lastStack.panes[lastStack.panes.length - 1], splitDir: 'horz'})
+              } else {
+                // open in a new rightmost stack
+                targetTab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'vert'})
+              }
             }
           }
         })
@@ -176,43 +183,46 @@ export default function registerContextMenu () {
         menuItems.push(createMenuItem('forward', {webContents, tab: targetTab}))
         menuItems.push(createMenuItem('reload', {webContents, tab: targetTab}))
         menuItems.push({ type: 'separator' })
-        if (getAddedWindowSettings(targetWindow).isShellInterfaceHidden) {
-          menuItems.push({
-            label: 'Restore Browser UI',
-            click: function () {
-              toggleShellInterface(targetWindow)
-            }
-          })
-          menuItems.push({ type: 'separator' })
-        }
-        menuItems.push(createMenuItem('split-pane-vert', {webContents, tab: targetTab}))
-        menuItems.push(createMenuItem('split-pane-horz', {webContents, tab: targetTab}))
-        if (shouldShowMenuItem('move-pane', {tab: targetTab})) {
-          menuItems.push(createMenuItem('move-pane', {webContents, tab: targetTab}))
-        }
-        menuItems.push(createMenuItem('close-pane', {webContents, tab: targetTab}))
-        menuItems.push({ type: 'separator' })
+      }
+      
+      if (getAddedWindowSettings(targetWindow).isShellInterfaceHidden) {
         menuItems.push({
-          label: 'Export Page As...',
-          click: downloadPrompt('pageURL', '.html')
-        })
-        menuItems.push({
-          label: 'Print...',
-          click: () => webContents.print()
+          label: 'Restore Browser UI',
+          click: function () {
+            toggleShellInterface(targetWindow)
+          }
         })
         menuItems.push({ type: 'separator' })
       }
+
+      menuItems.push(createMenuItem('split-pane-vert', {webContents, tab: targetTab}))
+      menuItems.push(createMenuItem('split-pane-horz', {webContents, tab: targetTab}))
+      if (shouldShowMenuItem('move-pane', {tab: targetTab})) {
+        menuItems.push(createMenuItem('move-pane', {webContents, tab: targetTab}))
+      }
+      menuItems.push(createMenuItem('close-pane', {webContents, tab: targetTab}))
+      menuItems.push({ type: 'separator' })
+      menuItems.push({
+        label: 'Export Page As...',
+        click: downloadPrompt('pageURL', '.html')
+      })
+      menuItems.push({
+        label: 'Print...',
+        click: () => webContents.print()
+      })
+      menuItems.push({ type: 'separator' })
+
       if (isHyperdrive) {
         menuItems.push({
           label: 'Edit Source',
           click: async (item, win) => {
-            if (targetTab) targetTab.createPane({url: 'beaker://editor/'})
+            if (targetTab) targetTab.createOrFocusPaneByOrigin({url: 'beaker://editor/', setActive: true})
           }
         })
         menuItems.push({
           label: 'Explore Files',
           click: async (item, win) => {
-            if (targetTab) targetTab.createPane({url: 'beaker://explorer/'})
+            if (targetTab) targetTab.createOrFocusPaneByOrigin({url: 'beaker://explorer/', setActive: true})
           }
         })
       }

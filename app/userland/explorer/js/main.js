@@ -47,6 +47,7 @@ export class ExplorerApp extends LitElement {
 
   constructor () {
     super()
+    beaker.panes.setAttachable()
 
     // location information
     this.driveInfo = undefined
@@ -61,6 +62,7 @@ export class ExplorerApp extends LitElement {
     // UI state
     this.loadingState = LOADING_STATES.INITIAL
     this.errorState = undefined
+    this.attachedPane = undefined
     this.selection = []
     this.renderMode = undefined
     this.inlineMode = false
@@ -69,6 +71,37 @@ export class ExplorerApp extends LitElement {
     // helper state
     this.drives = undefined
     this.profiles = undefined
+
+    beaker.panes.addEventListener('pane-attached', e => {
+      this.attachedPane = beaker.panes.getAttachedPane()
+      if (loc.getUrl() !== this.attachedPane.url) {
+        loc.setUrl(this.attachedPane.url)
+      }
+    })
+    beaker.panes.addEventListener('pane-detached', e => {
+      this.attachedPane = undefined
+    })
+    beaker.panes.addEventListener('pane-navigated', e => {
+      if (loc.getUrl() !== e.detail.url) {
+        loc.setUrl(e.detail.url)
+      }
+    })
+
+    this.attachedPane = beaker.panes.getAttachedPane()
+    if (this.attachedPane) {
+      // already attached, drive them
+      if (loc.getUrl() && loc.getUrl() !== this.attachedPane.url) {
+        console.log(loc.getUrl())
+        beaker.panes.navigate(this.attachedPane.id, loc.getUrl())
+      }
+    } else {
+      // try to attach and then follow their url
+      this.attachedPane = beaker.panes.attachToLastActivePane()
+      if (this.attachedPane && loc.getUrl() !== this.attachedPane.url) {
+        loc.setUrl(this.attachedPane.url)
+        return
+      }
+    }
 
     this.load()
   }
@@ -148,11 +181,13 @@ export class ExplorerApp extends LitElement {
   }
 
   async load () {
-    if (!loc.getUrl()) {
-      let ctx = await beaker.shell.getContext()
-      let url = ctx && ctx.lastActivePane
-      if (!url.startsWith('hyper://')) url = 'hyper://system/'
-      return loc.setUrl(url)
+    if (this.attachedPane) {
+      if (!loc.getUrl() || !loc.getUrl().startsWith('hyper://')) {
+        this.errorState = {task: 'Attempting to load', error: new Error('Failed to load this address: not a hyperdrive')}
+        return
+      }
+    } else if (!loc.getUrl()) {
+      return loc.setUrl('hyper://system/')
     }
 
     // read helper state
@@ -251,7 +286,7 @@ export class ExplorerApp extends LitElement {
     var pathParts = loc.getPath().split('/').filter(Boolean)
     while (pathParts.length) {
       let name = pathParts[pathParts.length - 1]
-      let path = '/' + pathParts.join('/')
+      let path = '/' + pathParts.join('/') + '/'
       let stat = undefined
       let mount = undefined
       if (path === loc.getPath()) {
@@ -655,20 +690,25 @@ export class ExplorerApp extends LitElement {
     } else if (item.stat.isFile()) {
       if (item.name.endsWith('.goto') && item.stat.metadata.href) {
         url = item.stat.metadata.href
+        newWindow = true
+        leaveExplorer = true
       } else {
         url = item.url
       }
-      newWindow = true
-      leaveExplorer = true
     } else {
-      url = joinPath(loc.getOrigin(), item.path)
+      url = joinPath(loc.getOrigin(), item.path) + '/'
     }
-    if (leaveExplorer) {
+    if (this.attachedPane) {
       if (newWindow) window.open(url)
-      else window.location = url
+      else beaker.panes.navigate(this.attachedPane.id, url)
     } else {
-      if (newWindow) loc.openUrl(url)
-      else loc.setUrl(url)
+      if (leaveExplorer) {
+        if (newWindow) window.open(url)
+        else window.location = url
+      } else {
+        if (newWindow) loc.openUrl(url)
+        else loc.setUrl(url)
+      }
     }
   }
 

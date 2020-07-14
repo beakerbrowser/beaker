@@ -213,14 +213,6 @@ export default {
       return {numExported: res.filePaths.length}
     }
     return {numExported: 0}
-  },
-
-  async getContext () {
-    if (!(await isBeakerApp(this.sender))) return
-    var tab = findTab(BrowserView.fromWebContents(this.sender))
-    return {
-      lastActivePane: tab.getLastActivePane().url
-    }
   }
 }
 

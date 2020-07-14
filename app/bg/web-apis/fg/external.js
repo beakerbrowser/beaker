@@ -1,8 +1,9 @@
-import { fromEventStream } from './event-target'
+import { fromEventStream, EventTargetFromStream } from './event-target'
 import errors from 'beaker-error-constants'
 import capabilitiesManifest from '../manifests/external/capabilities'
 import contactsManifest from '../manifests/external/contacts'
 import markdownManifest from '../manifests/external/markdown'
+import panesManifest from '../manifests/external/panes'
 import peersocketsManifest from '../manifests/external/peersockets'
 import shellManifest from '../manifests/external/shell'
 
@@ -19,7 +20,6 @@ export const setup = function (rpc) {
     delete shell.importFilesDialog
     delete shell.importFoldersDialog
     delete shell.exportFilesDialog
-    delete shell.getContext
   }
 
   var peersocketsRPC = rpc.importAPI('peersockets', peersocketsManifest, RPC_OPTS)
@@ -36,6 +36,17 @@ export const setup = function (rpc) {
       return fromEventStream(peersocketsRPC.watch())
     }
   }
+
+  var panesRPC = rpc.importAPI('panes', panesManifest, RPC_OPTS)
+  var panes = new EventTargetFromStream(panesRPC.createEventStream, ['pane-attached', 'pane-detached', 'pane-navigated'])
+  panes.setAttachable = panesRPC.setAttachable
+  panes.getAttachedPane = panesRPC.getAttachedPane
+  panes.attachToLastActivePane = panesRPC.attachToLastActivePane
+  panes.create = panesRPC.create
+  panes.navigate = panesRPC.navigate
+  panes.executeJavaScript = panesRPC.executeJavaScript
+  panes.injectCss = panesRPC.injectCss
+  panes.uninjectCss = panesRPC.uninjectCss
 
   var _terminalCommands = []
   var terminal = {
@@ -66,5 +77,5 @@ export const setup = function (rpc) {
     }
   }
 
-  return {capabilities, contacts, markdown, peersockets, shell, terminal}
+  return {capabilities, contacts, markdown, panes, peersockets, shell, terminal}
 }

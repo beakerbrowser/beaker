@@ -2,7 +2,7 @@ var url = location.pathname.slice(1) // slice past the '/'
 if (url && url.startsWith('hyper://')) {
   // remove the 'hyper://'
   history.replaceState(undefined, document.title, window.location.origin + '/' + url.slice('hyper://'.length))
-} else if (url) {
+} else if (url && !url.includes('://')) {
   url = 'hyper://' + url
 }
 var urlp

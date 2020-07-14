@@ -75,8 +75,10 @@ class EditorApp extends LitElement {
 
   constructor () {
     super()
+    beaker.panes.setAttachable()
     this.editorEl = undefined
     this.editor = undefined // monaco instance
+    this.attachedPane = undefined
     this.url = ''
     this.isUnloaded = true
     this.stat = undefined
@@ -90,14 +92,27 @@ class EditorApp extends LitElement {
     this.resolvedPath = ''
     this.setFocusOnLoad = false
 
-    let ctx = (new URLSearchParams(location.search)).get('url')
-    if (ctx) this.load(ctx)
-    else {
-      beaker.shell.getContext().then(res => {
-        if (res.lastActivePane && !res.lastActivePane.startsWith('beaker://editor/')) {
-          this.load(res.lastActivePane)
-        }
-      })
+    beaker.panes.addEventListener('pane-attached', e => {
+      this.attachedPane = beaker.panes.getAttachedPane()
+      if (this.url !== this.attachedPane.url) {
+        this.load(this.attachedPane.url)
+      }
+    })
+    beaker.panes.addEventListener('pane-detached', e => {
+      this.attachedPane = undefined
+    })
+    beaker.panes.addEventListener('pane-navigated', e => {
+      if (this.url !== e.detail.url) {
+        this.load(e.detail.url)
+      }
+    })
+
+    this.attachedPane = beaker.panes.attachToLastActivePane()
+    if (this.attachedPane) {
+      this.load(this.attachedPane.url)
+    } else {
+      let ctx = (new URLSearchParams(location.search)).get('url')
+      if (ctx) this.load(ctx)
     }
   }
 
@@ -207,6 +222,9 @@ class EditorApp extends LitElement {
       }
       this.url = url
       history.replaceState({}, '', `/?url=${url}`)
+      if (this.attachedPane && this.attachedPane.url !== this.url) {
+        beaker.panes.navigate(this.attachedPane.id, this.url)
+      }
 
       this.resetEditor()
       console.log('Loading', url)
@@ -789,6 +807,9 @@ class EditorApp extends LitElement {
     let metadata = st && st.metadata ? st.metadata : undefined
     await this.drive.writeFile(this.resolvedPath, model.getValue(), {metadata})
     this.lastSavedVersionId = model.getAlternativeVersionId()
+    if (this.attachedPane) {
+      beaker.panes.navigate(this.attachedPane.id, this.url)
+    }
     this.setSaveBtnState()
     this.setFocus()
   }
