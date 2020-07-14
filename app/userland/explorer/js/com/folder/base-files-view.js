@@ -195,7 +195,7 @@ export class BaseFilesView extends LitElement {
 
     this.stopDragSelection()
     var items = this.selection.length ? this.selection : [item]
-    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/uri-list', items.map(item => item.url).join(`\n`))
     e.dataTransfer.setData('text/plain', items.map(item => item.url).join(`\n`))
     e.dataTransfer.setDragImage(this.createDragGhost(items), 0, 0)
     this.startDragDropMode()
