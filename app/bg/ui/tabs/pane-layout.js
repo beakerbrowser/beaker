@@ -171,7 +171,7 @@ export class PaneLayout extends EventEmitter {
     if (!stack) return
     var nextStack = this.stacks[this.stacks.indexOf(stack) + 1]
     if (!nextStack) return
-    if (nextStack.layoutWidth + pct < MIN_DIM_PCT) return
+    if (stack.layoutWidth + pct < MIN_DIM_PCT) return
     if (nextStack.layoutWidth - pct < MIN_DIM_PCT) return
     stack.layoutWidth += pct
     nextStack.layoutWidth -= pct
