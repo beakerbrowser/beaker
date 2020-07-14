@@ -491,7 +491,7 @@ ${spinnerCSS}
 .fa-volume-up,
 .fa-volume-mute {
   position: absolute;
-  top: 8px;
+  top: 6px;
   right: 10px;
   font-size: 12px;
   color: rgba(0,0,0,.6);

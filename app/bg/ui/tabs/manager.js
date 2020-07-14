@@ -235,10 +235,8 @@ class Tab extends EventEmitter {
   }
 
   toggleMuted () {
-    let isMuted = this.panes.reduce((v, pane) => v || pane.isAudioMuted, false)
-    for (let pane of this.panes) {
-      pane.setAudioMuted(!isMuted)
-    }
+    this.activePane.toggleMuted()
+    this.emitTabUpdateState(this.activePane)
   }
 
   // panes

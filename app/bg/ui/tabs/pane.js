@@ -425,7 +425,6 @@ export class Pane extends EventEmitter {
 
   toggleMuted () {
     this.webContents.setAudioMuted(!this.isAudioMuted)
-    this.emitUpdateState()
   }
 
   async captureScreenshot () {
