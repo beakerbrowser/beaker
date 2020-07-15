@@ -18,8 +18,9 @@ import './views/recent.js'
 import css from '../css/main.css.js'
 
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
-const CURRENT_VERSION = VERSION_ID(1, 0, 0, 6)
+const CURRENT_VERSION = VERSION_ID(1, 0, 0, 7)
 const RELEASES = [
+  { label: '1.0, Beta 7', url: 'https://beakerbrowser.com/2020/07/15/beaker-1-0-beta-7.html' },
   { label: '1.0, Beta 6', url: 'https://beakerbrowser.com/2020/07/10/beaker-1-0-beta-6.html' },
   { label: '1.0, Beta 5', url: 'https://beakerbrowser.com/2020/06/19/beaker-1-0-beta-5.html' },
   { label: '1.0, Beta 4', url: 'https://beakerbrowser.com/2020/06/04/beaker-1-0-beta-4.html' },
