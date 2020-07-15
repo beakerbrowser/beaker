@@ -125,7 +125,7 @@ export async function setup () {
 
   try {
     client = new HyperdriveClient()
-    await client._client.network.listPeers() // TODO use a better method to detect readiness
+    await client.ready()
     logger.info('Connected to an external daemon.')
     isDaemonActive = true
     isFirstConnect = false
