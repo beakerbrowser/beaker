@@ -10,7 +10,7 @@ ${tooltipCSS}
 
 :host {
   display: block;
-  padding: 100px 15px 100px;
+  padding: 40px 0 0;
 }
 
 .hidden {
@@ -93,10 +93,43 @@ ${tooltipCSS}
   float: right;
 }
 
+.search-ctrl {
+  position: relative;
+  height: 34px;
+  margin: 0 auto 0;
+  max-width: 800px;
+  z-index: 5;
+}
+
+.search-ctrl .fa-search {
+  position: absolute;
+  z-index: 2;
+  font-size: 13px;
+  top: 11px;
+  left: 12px;
+  color: #99a;
+}
+
+.search-ctrl input {
+  position: relative;
+  top: -1px;
+  background: var(--bg-color--default);
+  color: inherit;
+  box-sizing: border-box;
+  height: 36px;
+  width: 100%;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  padding: 0 0 0 30px;
+  border: 1px solid var(--border-color--default);
+  border-radius: 24px;
+}
+
 .pins {
   position: relative;
   display: grid;
-  margin: 0 auto 0;
+  margin: 50px auto 0;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   grid-gap: 15px;
   width: 100%;
@@ -175,8 +208,13 @@ ${tooltipCSS}
 
 nav {
   display: flex;
-  max-width: 1000px;
   margin: 20px auto 0px;
+}
+
+nav:before,
+nav:after {
+  content: '';
+  flex: 1;
 }
 
 nav a {
@@ -196,41 +234,6 @@ nav a.active {
   color: var(--text-color--nav--highlight);
 }
 
-nav .spacer {
-  flex: 1;
-}
-
-nav .search-ctrl {
-  position: relative;
-  height: 24px;
-}
-
-nav .search-ctrl .fa-search {
-  position: absolute;
-  z-index: 2;
-  top: 7px;
-  left: 10px;
-  font-size: 12px;
-  color: #99a;
-}
-
-nav .search-ctrl input {
-  position: relative;
-  top: -1px;
-  z-index: 1;
-  background: inherit;
-  color: inherit;
-  box-sizing: border-box;
-  height: 26px;
-  width: 180px;
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-  padding: 0 0 0 26px;
-  border: 1px solid var(--border-color--light);
-  border-radius: 24px;
-}
-
 nav .new-btn {
   color: var(--text-color--light);
 }
@@ -246,13 +249,23 @@ feed-view {
   margin: 26px auto;
 }
 
-recent-view,
-drives-view,
-bookmarks-view,
-address-book-view {
+.views {
+  background: var(--bg-color--light);
+  border-top: 1px solid var(--border-color--default);
+  margin-top: 16px;
+}
+
+.views > * {
   display: block;
   max-width: 1000px;
-  margin: 16px auto;
+  margin: 0 auto;
+  height: calc(100vh - 133px);
+  overflow: auto;
+}
+
+.views > query-view {
+  max-width: none;
+  overflow: initial;
 }
 
 .intro {

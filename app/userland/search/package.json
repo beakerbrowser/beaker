@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "dev": "serve -s",
+    "prod": "cd build && serve -s",
+    "build": "sh ./scripts/build.sh"
+  },
+  "devDependencies": {
+    "rollup": "^1.29.0",
+    "serve": "^11.3.0"
+  }
+}

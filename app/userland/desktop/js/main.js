@@ -11,6 +11,7 @@ import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 
+import 'beaker://library/js/views/query.js'
 import 'beaker://library/js/views/drives.js'
 import 'beaker://library/js/views/bookmarks.js'
 import 'beaker://library/js/views/address-book.js'
@@ -54,7 +55,7 @@ class DesktopApp extends LitElement {
     super()
     this.profile = undefined
     this.pins = []
-    this.currentNav = 'drives'
+    this.currentNav = 'recent'
     this.filter = ''
     this.isIntroActive = false
     this.legacyArchives = []
@@ -108,38 +109,30 @@ class DesktopApp extends LitElement {
         <a href="beaker://settings/" title="Settings"><span class="fas fa-cog"></span></a>
       </div>
       ${this.renderReleaseNotice()}
-      ${this.renderFiles()}
+      <div class="search-ctrl">
+        <span class="fas fa-search"></span>
+        <input @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
+      </div>
+      ${!this.filter && false ? this.renderFiles() : ''}
       <nav>
-        ${navItem('drives', 'My Drives')}
         ${navItem('recent', 'Recent')}
         ${navItem('bookmarks', 'Bookmarks')}
+        ${navItem('feed', 'Feed')}
+        ${navItem('blogposts', 'Blog Posts')}
+        ${navItem('modules', 'Modules')}
+        ${navItem('apps', 'Apps')}
+        ${navItem('users', 'Users')}
+        ${navItem('drives', 'My Drives')}
         ${navItem('address-book', 'Address Book')}
         <a @click=${this.onClickNavMore} title="More"><span class="fas fa-fw fa-ellipsis-h"></span></a>
-        <span class="spacer"></span>
-        ${this.currentNav !== 'feed' ? html`
-          <div class="search-ctrl">
-            <span class="fas fa-search"></span>
-            <input @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
-          </div>
-        ` : ''}
-        ${this.currentNav === 'feed' ? html`
-          <a class="new-btn" @click=${this.onClickSyncFeed}><span class="fas fa-sync"></span> Sync Feed</a>
-          <a class="new-btn" @click=${this.onClickNewPost}><span class="fas fa-plus"></span> New Post</a>
-        ` : ''}
-        ${this.currentNav === 'drives' ? html`
-          <a class="new-btn" @click=${this.onClickNewDrive}><span class="fas fa-plus"></span> New Drive</a>
-        ` : ''}
-        ${this.currentNav === 'bookmarks' ? html`
-          <a class="new-btn" @click=${e => this.onClickNewBookmark(e, false)}><span class="fas fa-plus"></span> New Bookmark</a>
-        ` : ''}
-        ${this.currentNav === 'address-book' ? html`
-          <a class="new-btn" @click=${this.onClickNewContact}><span class="fas fa-plus"></span> New Contact</a>
-        ` : ''}
       </nav>
-      <drives-view class="top-border ${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></drives-view>
-      <recent-view class="top-border ${hiddenCls('recent')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} filter=${this.filter}></recent-view>
-      <bookmarks-view class="top-border ${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></bookmarks-view>
-      <address-book-view class="top-border ${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} other-only .filter=${this.filter}></address-book-view>
+      <div class="views">
+        <query-view query-id="0" class="${hiddenCls('feed')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></query-view>
+        <drives-view class="${hiddenCls('drives')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></drives-view>
+        <recent-view class="${hiddenCls('recent')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} filter=${this.filter}></recent-view>
+        <bookmarks-view class="${hiddenCls('bookmarks')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></bookmarks-view>
+        <address-book-view class="${hiddenCls('address-book')}" loadable ?hide-empty=${!!this.filter || this.isIntroActive} other-only .filter=${this.filter}></address-book-view>
+      </div>
       ${this.renderIntro()}
       ${this.renderLegacyArchivesNotice()}
     `
@@ -300,28 +293,6 @@ class DesktopApp extends LitElement {
       {icon: 'fas fa-share-alt', label: 'Hosting', click: () => { window.location = `beaker://library/hosting` }}
     ]
     contextMenu.create({x: rect.left, y: rect.bottom, noBorders: true, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
-  }
-
-  async onClickSyncFeed (e) {
-    toast.create('Syncing...')
-    await this.shadowRoot.querySelector('feed-view').forceLoad()
-    toast.destroy()
-    toast.create('Feed Synced', '', 2e3)
-  }
-
-  async onClickNewPost (e) {
-    try {
-      let post = await AddPostPopup.create()
-      post.filename = post.filename || `${Date.now()}.md`
-      if (/\.(md|txt|htm|html)$/i.test(post.filename) === false) post.filename += '.md'
-      await beaker.hyperdrive.drive(this.profile.url).writeFile(joinPath('microblog', post.filename), post.body)
-      toast.create('Post published', '', 3e3)
-    } catch (e) {
-      // ignore, user probably cancelled
-      console.log(e)
-      return
-    }
-    await this.shadowRoot.querySelector('feed-view').forceLoad()
   }
 
   async onClickNewDrive (e) {
