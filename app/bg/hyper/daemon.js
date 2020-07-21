@@ -139,7 +139,10 @@ export async function setup () {
 
   isControllingDaemonProcess = true
   logger.info('Starting daemon process, assuming process control')
-  var daemonProcessArgs = ['-s', '~/tmp/hyperspace']
+
+  // TODO: Enable migration before release.
+  var daemonProcessArgs = ['--no-migrate']
+
   daemonProcess = childProcess.spawn(HYPERSPACE_BIN_PATH, daemonProcessArgs, {
     stdio: [process.stdin, process.stdout, process.stderr], // DEBUG
     env: Object.assign({}, process.env, {
