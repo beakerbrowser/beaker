@@ -554,7 +554,7 @@ var crypto = require('hypercore-crypto')
 export async function getDaemonNetworkStatus () {
   var allStats = await hyperDaemon.getClient().drive.allStats()
   for (let stats of allStats) {
-    stats[0].peerAddresses = await hyperDaemon.listPeerAddresses(crypto.discoveryKey(stats[0].metadata.key))
+    stats[0].peerAddresses = await hyperDaemon.listPeerAddresses(stats[0].metadata.key)
     for (let stat of stats) {
       stat.metadata.key = stat.metadata.key.toString('hex')
       stat.content.key = stat.content.key.toString('hex')

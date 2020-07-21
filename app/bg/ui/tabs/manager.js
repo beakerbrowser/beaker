@@ -1170,10 +1170,11 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
     if (tab && tab.driveInfo) {
-      let peers = await hyper.daemon.getPeerCount(Buffer.from(tab.driveInfo.key, 'hex'))
+      const keyBuf = Buffer.from(tab.driveInfo.key)
+      let peers = await hyper.daemon.getPeerCount(keyBuf)
       let peerAddresses = undefined
       if (opts && opts.includeAddresses) {
-        peerAddresses = await hyper.daemon.listPeerAddresses(tab.driveInfo.discoveryKey)
+        peerAddresses = await hyper.daemon.listPeerAddresses(keyBuf)
       }
       return {peers, peerAddresses}
     }

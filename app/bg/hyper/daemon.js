@@ -260,10 +260,10 @@ export async function getPeerCount (key) {
   return res[0]
 }
 
-export async function listPeerAddresses (discoveryKey) {
+export async function listPeerAddresses (key) {
   if (!client) return []
-  var peers = await client.peers.listPeers(discoveryKey)
-  return peers.map(p => p.address)
+  var peers = await client.peers.listPeers(key)
+  return peers.map(p => p.remoteAddress)
 }
 
 // internal methods
@@ -299,7 +299,7 @@ async function attemptConnect () {
   for (let i = 0; i < SETUP_RETRIES; i++) {
     try {
       client = new HyperdriveClient()
-      await client._client.network.listPeers() // TODO use a better method to detect readiness
+      await client.ready()
       break
     } catch (e) {
       logger.info('Failed to connect to daemon, retrying')
