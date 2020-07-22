@@ -370,11 +370,14 @@ export const protocolHandler = async function (request, respond) {
       })
     }
 
-    var chunk;
-    for await (const part of checkoutFS.session.drive.createReadStream(entry.path, { start: 0, length: 512 })) {
-      chunk = chunk ? Buffer.concat(chunk, part) : part;
+    var mimeType = entry.metadata.mimeType;
+    if (!mimeType) {
+      let chunk;
+      for await (const part of checkoutFS.session.drive.createReadStream(entry.path, { start: 0, length: 512 })) {
+        chunk = chunk ? Buffer.concat(chunk, part) : part;
+      }
+      mimeType = mime.identify(entry.path, chunk)
     }
-    var mimeType = mime.identify(entry.path, chunk)
     if (!canExecuteHTML && mimeType.includes('text/html')) {
       mimeType = 'text/plain'
     }
