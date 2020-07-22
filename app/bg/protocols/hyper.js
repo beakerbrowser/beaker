@@ -362,6 +362,49 @@ export const protocolHandler = async function (request, respond) {
       'Cache-Control': 'no-cache'
     })
 
+    // markdown rendering
+    if (!range && entry.path.endsWith('.md') && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
+      let content = await checkoutFS.pda.readFile(entry.path, 'utf8')
+      let contentType = canExecuteHTML ? 'text/html' : 'text/plain'
+      content = canExecuteHTML
+        ? `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf8">
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 10px;
+        line-height: 1.4;
+      }
+      body * {
+        max-width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    ${md.render(content)}
+  </body>
+</html>`
+        : content
+      logger.silly(`Serving markdown ${logUrl}`, {url: request.url})
+      return respond({
+        statusCode: 200,
+        headers: Object.assign(headers, {'Content-Type': contentType}),
+        data: intoStream(content)
+      })
+    }
+
+    var chunk;
+    for await (const part of checkoutFS.session.drive.createReadStream(entry.path, { start: 0, length: 512 })) {
+      chunk = chunk ? Buffer.concat(chunk, part) : part;
+    }
+    var mimeType = mime.identify(entry.path, chunk)
+    if (!canExecuteHTML && mimeType.includes('text/html')) {
+      mimeType = 'text/plain'
+    }
     headers['Content-Type'] = mimeType
     logger.silly(`Serving file ${logUrl}`, {url: request.url})
     if (request.method === 'HEAD') {
