@@ -54,9 +54,12 @@ export class QueryView extends LitElement {
   }
 
   updated (changedProperties) {
-    if (typeof this.results === 'undefined' && this.sources) {
-      this.queueQuery()
-    } else if (changedProperties.has('filter') || changedProperties.get('filter') !== this.filter) {
+    if (typeof this.results === 'undefined') {
+      if (!this.activeQuery && this.sources.length) {
+        this.queueQuery()
+      }
+      return
+    } else if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
       this.queueQuery()
     } else if (changedProperties.has('sources') && !isArrayEq(this.sources, changedProperties.get('sources'))) {
       this.queueQuery()
@@ -78,12 +81,12 @@ export class QueryView extends LitElement {
 
   async query () {
     this.abortController = new AbortController()
-    this.results = []/*await this[`query_${this.contentType}`]({
+    this.results = await this[`query_${this.contentType}`]({
       sources: this.sources,
       filter: this.filter,
       limit: this.limit,
       signal: this.abortController.signal
-    })*/
+    })
     this.activeQuery = undefined
     emit(this, 'load-finished')
   }

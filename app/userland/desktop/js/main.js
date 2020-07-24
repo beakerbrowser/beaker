@@ -104,7 +104,7 @@ class DesktopApp extends LitElement {
   }
 
   get isLoading () {
-    return Array.from(this.shadowRoot.querySelectorAll('query-view')).reduce((el, acc) => el.isLoading || acc, false)
+    return !!Array.from(this.shadowRoot.querySelectorAll('query-view')).find(el => el.isLoading)
   }
 
   // rendering
@@ -180,6 +180,7 @@ class DesktopApp extends LitElement {
             .filter=${this.filter}
             .sources=${this.sources}
             @view-more=${e => {this.currentNav = e.detail.contentType}}
+            @load-finished=${e => this.requestUpdate()}
           ></query-view>
           <query-view
             class="subview top-border"
@@ -194,6 +195,7 @@ class DesktopApp extends LitElement {
             .filter=${this.filter}
             .sources=${this.sources}
             @view-more=${e => {this.currentNav = e.detail.contentType}}
+            @load-finished=${e => this.requestUpdate()}
           ></query-view>
           <query-view
             class="subview top-border"
@@ -208,6 +210,7 @@ class DesktopApp extends LitElement {
             .filter=${this.filter}
             .sources=${this.sources}
             @view-more=${e => {this.currentNav = e.detail.contentType}}
+            @load-finished=${e => this.requestUpdate()}
           ></query-view>
           <query-view
             class="subview top-border"
@@ -222,6 +225,7 @@ class DesktopApp extends LitElement {
             .filter=${this.filter}
             .sources=${this.sources}
             @view-more=${e => {this.currentNav = e.detail.contentType}}
+            @load-finished=${e => this.requestUpdate()}
           ></query-view>
           <h2>
             <span>Sites</span>
@@ -242,7 +246,7 @@ class DesktopApp extends LitElement {
           render-mode="compact-row"
           .filter=${this.filter}
           .sources=${this.sources}
-          @load-finished=${e => {console.log('hit'); this.requestUpdate()}}
+          @load-finished=${e => this.requestUpdate()}
         ></query-view>
       `
       return html`
@@ -260,6 +264,7 @@ class DesktopApp extends LitElement {
           render-mode=${hasFilter ? 'row' : 'compact-row'}
           .filter=${this.filter}
           .sources=${this.sources}
+          @load-finished=${e => this.requestUpdate()}
         ></query-view>
     `
     if (this.currentNav === 'pages') {
@@ -273,6 +278,7 @@ class DesktopApp extends LitElement {
           render-mode=${hasFilter ? 'row' : 'compact-row'}
           .filter=${this.filter}
           .sources=${this.sources}
+          @load-finished=${e => this.requestUpdate()}
         ></query-view>
       `
     }
@@ -287,6 +293,7 @@ class DesktopApp extends LitElement {
           render-mode="simple-grid"
           .filter=${this.filter}
           .sources=${this.sources}
+          @load-finished=${e => this.requestUpdate()}
         ></query-view>
       `
     }

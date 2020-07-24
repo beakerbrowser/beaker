@@ -126,7 +126,7 @@ ${spinnerCSS}
   font-size: 12px;
   letter-spacing: 0.5px;
   font-weight: 500;
-  padding: 0 0 0 30px;
+  padding: 0 0 0 36px;
   border: 1px solid var(--border-color--default);
   border-radius: 24px;
 }
