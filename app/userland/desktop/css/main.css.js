@@ -2,15 +2,16 @@ import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import commonCSS from 'beaker://app-stdlib/css/common.css.js'
 import buttonsCSS from 'beaker://app-stdlib/css/buttons2.css.js'
 import tooltipCSS from 'beaker://app-stdlib/css/tooltip.css.js'
+import spinnerCSS from 'beaker://app-stdlib/css/com/spinner.css.js'
 
 const cssStr = css`
 ${commonCSS}
 ${buttonsCSS}
 ${tooltipCSS}
+${spinnerCSS}
 
 :host {
   display: block;
-  padding: 40px 0 0;
 }
 
 .hidden {
@@ -19,17 +20,16 @@ ${tooltipCSS}
 
 #topleft {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 60px;
+  left: calc(50vw - 685px);
+  z-index: 11;
   display: flex;
   align-items: center;
 }
 
 #topleft a {
-  font-size: 12px;
-  margin-right: 10px;
-  color: inherit;
-  opacity: 0.85;
+  font-size: 14px;
+  color: var(--text-color--default);
 }
 
 #topleft .profile-ctrl {
@@ -96,18 +96,23 @@ ${tooltipCSS}
 .search-ctrl {
   position: relative;
   height: 34px;
-  margin: 0 auto 0;
-  max-width: 800px;
+  margin: 16px auto;
+  max-width: 1000px;
   z-index: 5;
 }
 
-.search-ctrl .fa-search {
+.search-ctrl .fa-search,
+.search-ctrl .spinner {
   position: absolute;
   z-index: 2;
   font-size: 13px;
   top: 11px;
-  left: 12px;
+  left: 14px;
   color: #99a;
+}
+
+.search-ctrl .spinner {
+  top: 10px;
 }
 
 .search-ctrl input {
@@ -126,10 +131,28 @@ ${tooltipCSS}
   border-radius: 24px;
 }
 
+.sources-ctrl {
+  margin: 16px auto;
+  max-width: 1000px;
+}
+
+.sources-ctrl label {
+  display: inline-flex;
+  align-items: center;
+  font-weight: normal;
+  font-size: 13px;
+  margin-left: 14px;
+}
+
+.sources-ctrl input[type="radio"] {
+  margin: 0 5px 0 0;
+  background: var(--bg-color--default);
+}
+
 .pins {
   position: relative;
   display: grid;
-  margin: 50px auto 0;
+  margin: 30px auto 0;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   grid-gap: 15px;
   width: 100%;
@@ -206,25 +229,29 @@ ${tooltipCSS}
   text-align: center;
 }
 
-nav {
-  display: flex;
-  margin: 20px auto 0px;
+main {
 }
 
-nav:before,
-nav:after {
-  content: '';
-  flex: 1;
+nav {
+  position: fixed;
+  z-index: 10;
+  top: 58px;
+  left: calc(50vw - 690px);
+}
+
+nav button {
+  padding: 8px 14px;
 }
 
 nav a {
-  font-size: 12px;
+  display: block;
   font-weight: 400;
   letter-spacing: 0.5px;
   color: var(--text-color--light);
   cursor: pointer;
-  padding: 4px 10px 3px 10px;
-  margin: 0 10px;
+  font-size: 14px;
+  padding: 6px 10px 6px;
+  margin: 0 0 6px;
   border-radius: 24px;
 }
 
@@ -234,38 +261,54 @@ nav a.active {
   color: var(--text-color--nav--highlight);
 }
 
-nav .new-btn {
+nav a :-webkit-any(.fas, .far) {
   color: var(--text-color--light);
+  margin-right: 5px;
 }
 
-nav .new-btn .fas {
-  font-size: 13px;
-  margin-left: 4px;
-}
-
-feed-view {
-  display: block;
-  max-width: 1000px;
-  margin: 26px auto;
-}
-
-.views {
-  background: var(--bg-color--light);
-  border-top: 1px solid var(--border-color--default);
-  margin-top: 16px;
+nav hr {
+  border: 0;
+  border-top: 1px solid var(--border-color--very-light);
+  margin: 15px 5px;
 }
 
 .views > * {
   display: block;
-  max-width: 1000px;
-  margin: 0 auto;
-  height: calc(100vh - 133px);
+  height: calc(100vh - 100px);
   overflow: auto;
 }
 
-.views > query-view {
-  max-width: none;
-  overflow: initial;
+.recent-view h2 {
+  display: flex;
+  align-items: center;
+  max-width: 1000px;
+  height: 27px;
+  margin: 0 auto 2px;
+  font-weight: 500;
+  color: var(--text-color--light);
+  letter-spacing: 0.7px;
+  font-size: 18px;
+}
+
+.recent-view h2 .create {
+  margin-left: auto;
+}
+
+.recent-view h2 .create button {
+  color: var(--blue);
+  padding: 2px;
+}
+
+.recent-view h2 .create .fas {
+  font-size: 10px;
+  position: relative;
+  top: -1px;
+}
+
+.recent-view .subview {
+  margin-bottom: 20px;
+  margin: 0 auto 20px;
+  max-width: 1000px;
 }
 
 .intro {

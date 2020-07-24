@@ -216,7 +216,7 @@ export class Pane extends EventEmitter {
       if (this.driveInfo) {
         var ident = _get(this.driveInfo, 'ident', {})
         if (ident.system) {
-          return 'My System Drive'
+          return 'My Private Site'
         }
         if (this.driveInfo.writable || ident.contact) {
           if (this.driveInfo.title) {

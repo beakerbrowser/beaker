@@ -150,7 +150,7 @@ export class BeakerContextMenu extends LitElement {
       ${this.fontAwesomeCSSUrl ? html`<link rel="stylesheet" href="${this.fontAwesomeCSSUrl}">` : ''}
       <div class="context-menu dropdown" style="${style}">
         ${this.customRender
-          ? this.customRender()
+          ? this.customRender.call(this)
           : html`
             <div class="${cls}" style="${ifDefined(this.customStyle)}">
               ${this.items.map(item => {

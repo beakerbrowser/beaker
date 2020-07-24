@@ -192,7 +192,7 @@ class BrowserMenu extends LitElement {
         <div class="section">
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'hyper://system')}>
             <i class="far fa-hdd"></i>
-            <span class="label">My System Drive</span>
+            <span class="label">My Private Site</span>
           </div>
         </div>
       </div>`

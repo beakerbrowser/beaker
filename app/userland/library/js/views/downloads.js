@@ -21,6 +21,7 @@ export class DownloadsView extends LitElement {
     super()
     this.downloads = undefined
     this.filter = undefined
+    this.load()
   }
 
   async load () {

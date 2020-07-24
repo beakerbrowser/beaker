@@ -583,7 +583,7 @@ export class ExplorerApp extends LitElement {
     return html`
       <nav class="left">
         <section class="transparent drives-list">
-          ${navItem('hyper://system/', 'My System Drive')}
+          ${navItem('hyper://system/', 'My Private Site')}
           ${!this.profiles ? html`` : html`
             ${repeat(this.profiles, profile => navItem(profile.url, profile.title))}
           `}

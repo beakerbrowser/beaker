@@ -419,7 +419,7 @@ export async function getDriveInfo (key, {ignoreCache, onlyCache} = {ignoreCache
     }
     manifest = manifest || {}
     if (filesystem.isRootUrl(url) && !meta.title) {
-      meta.title = 'My System Drive'
+      meta.title = 'My Private Site'
     }
     meta.key = key
     meta.discoveryKey = drive ? drive.discoveryKey : undefined

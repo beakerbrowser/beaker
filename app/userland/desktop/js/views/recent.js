@@ -18,6 +18,7 @@ export class RecentView extends LitElement {
     super()
     this.links = undefined
     this.filter = undefined
+    this.load()
   }
 
   attributeChangedCallback (name, oldval, newval) {

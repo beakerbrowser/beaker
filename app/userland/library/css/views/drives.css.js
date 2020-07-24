@@ -30,6 +30,11 @@ a[href]:hover {
   user-select: none;
 }
 
+:host(:not(.full-size)) .drives {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 .drives .empty {
   font-size: 16px;
   letter-spacing: 0.7px;
@@ -53,7 +58,7 @@ a[href]:hover {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 6px 4px;
   color: var(--text-color--lightish);
   border-bottom: 1px solid var(--border-color--light);
 }

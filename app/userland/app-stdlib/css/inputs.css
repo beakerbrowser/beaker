@@ -45,12 +45,12 @@ textarea[type="radio"] {
 
 input[type="radio"]:hover,
 textarea[type="radio"]:hover {
-  border: 1px solid var(--color-blue);
+  border: 1px solid var(--blue);
 }
 
 input[type="radio"]:checked,
 textarea[type="radio"]:checked {
-  border: 4.5px solid var(--color-blue);
+  border: 4.5px solid var(--blue);
 }
 
 input[type="file"],

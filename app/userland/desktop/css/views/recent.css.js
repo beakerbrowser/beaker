@@ -18,6 +18,11 @@ a {
   user-select: none;
 }
 
+:host(:not(.full-size)) .links {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 .links .empty {
   font-size: 16px;
   letter-spacing: 0.7px;

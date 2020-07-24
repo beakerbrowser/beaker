@@ -22,6 +22,11 @@ a {
   user-select: none;
 }
 
+:host(:not(.full-size)) .bookmarks {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 .bookmarks .empty {
   font-size: 16px;
   letter-spacing: 0.7px;

@@ -4,34 +4,41 @@
 body {
   --border-color--default: #bbc;
   --border-color--light: #ccd;
+  --border-color--semi-light: #dde;
+  --border-color--very-light: #eef;
+  --border-color--focused: #7599ff;
   --text-color--default: #333;
   --text-color--lightish: #555;
   --text-color--light: #667;
+  --text-color--pretty-light: #99a;
   --text-color--very-light: #bbc;
   --text-color--nav--highlight: #445;
   --bg-color--default: #fff;
   --bg-color--light: #fafafd;
+  --bg-color--semi-light: #f0f0f6;
   --bg-color--nav--highlight: #f0f0f6;
 
   font-size: 13px;
-  background: #fff;
-  color: #333;
+  background: var(--bg-color--default);
+  color: var(--text-color--default);
 }
 
 @media (prefers-color-scheme: dark) {
   body {
     --border-color--default: #669;
     --border-color--light: #558;
+    --border-color--semi-light: #447;
+    --border-color--very-light: #334;
+    --border-color--focused: #7599ff;
     --text-color--default: #ccd;
     --text-color--lightish: #bbc;
     --text-color--light: #aab;
+    --text-color--pretty-light: #99a;
     --text-color--very-light: #557;
     --text-color--nav--highlight: #bbc;
     --bg-color--default: #223;
     --bg-color--light: #334;
+    --bg-color--semi-light: #445;
     --bg-color--nav--highlight: #446;
-
-    background: #223;
-    color: #ccd;
   }
 }

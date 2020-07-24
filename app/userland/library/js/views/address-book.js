@@ -34,6 +34,7 @@ export class AddressBookView extends LitElement {
     this.filter = undefined
     this.showHeader = false
     this.hideEmpty = false
+    this.load()
   }
 
   async load () {
