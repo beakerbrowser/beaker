@@ -839,7 +839,7 @@ export class Pane extends EventEmitter {
   onNewWindow (e, url, frameName, disposition, options) {
     e.preventDefault()
     if (!this.isActive || !this.tab) return // only open if coming from the active pane
-    var setActive = disposition === 'foreground-tab'
+    var setActive = disposition === 'foreground-tab' || disposition === 'new-window'
     var setActiveBySettings = !setActive
     this.tab.createTab(url, {setActive, setActiveBySettings, adjacentActive: true})
   }
@@ -852,7 +852,7 @@ export class Pane extends EventEmitter {
     // -prf
     e.preventDefault()
     if (!this.tab) return
-    this.tab.createTab(url, {setActiveBySettings: true, adjacentActive: true})
+    this.tab.createTab(url, {setActive: true, adjacentActive: true})
   }
 
   onMediaChange (e) {
