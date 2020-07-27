@@ -92,6 +92,11 @@ export function register (protocol) {
 }
 
 export const protocolHandler = async function (request, respond) {
+  var drive
+  var cspHeader = undefined
+  var corsHeader = '*'
+  const logUrl = toNiceUrl(request.url)
+
   respond = once(respond)
   const respondRedirect = (url) => {
     respond({
@@ -112,7 +117,7 @@ export const protocolHandler = async function (request, respond) {
         headers: {
           'Content-Type': 'text/html',
           'Content-Security-Policy': "default-src 'unsafe-inline' beaker:;",
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': corsHeader,
           'Allow-CSP-From': '*'
         },
         data: intoStream(errorPage(errorPageInfo || (code + ' ' + status)))
@@ -121,9 +126,6 @@ export const protocolHandler = async function (request, respond) {
       respond({statusCode: code})
     }
   }
-  var drive
-  var cspHeader = undefined
-  const logUrl = toNiceUrl(request.url)
 
   // validate request
   logger.silly(`Starting ${logUrl}`, {url: request.url})
@@ -166,13 +168,7 @@ export const protocolHandler = async function (request, respond) {
 
   // protect the system drive
   if (filesystem.isRootUrl(`hyper://${driveKey}/`)) {
-    // HACK
-    // electron's CORS protection doesnt seem to be working
-    // so we're going to handle all system-drive requests by redirecting
-    // to the files explorer
-    // -prf
-    logger.silly(`Redirecting to explorer ${logUrl}`, {url: request.url})
-    return respondRedirect(`beaker://explorer/${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}`)
+    corsHeader = undefined
   }
 
   auditLog.record('-browser', 'serve', {url: urlp.origin, path: urlp.pathname}, undefined, async () => {
@@ -229,7 +225,7 @@ export const protocolHandler = async function (request, respond) {
         statusCode: 200,
         headers: {
           'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': corsHeader,
           'Allow-CSP-From': '*',
           'Content-Security-Policy': cspHeader
         },
@@ -279,7 +275,7 @@ export const protocolHandler = async function (request, respond) {
         statusCode: 200,
         headers: {
           'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': corsHeader,
           'Allow-CSP-From': '*',
           'Cache-Control': 'no-cache',
           'Content-Security-Policy': `default-src 'self' beaker:`
@@ -342,7 +338,7 @@ export const protocolHandler = async function (request, respond) {
 
     Object.assign(headers, {
       'Content-Security-Policy': cspHeader,
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': corsHeader,
       'Allow-CSP-From': '*',
       'Cache-Control': 'no-cache'
     })

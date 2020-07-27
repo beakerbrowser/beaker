@@ -609,7 +609,7 @@ class DesktopApp extends LitElement {
       {icon: 'fa-fw fas fa-sitemap', label: 'New Site', click: this.onClickNewSite.bind(this)},
       {icon: 'fa-fw fas fa-file-upload', label: 'New Site from Folder', click: this.onClickNewSiteFromFolder.bind(this)},
       '-',
-      {icon: 'fa-fw far fa-file', label: 'New Page'},
+      {icon: 'fa-fw far fa-file-alt', label: 'New Page'},
       {icon: 'fa-fw fas fa-blog', label: 'New Blog Post'},
       {icon: 'fa-fw far fa-star', label: 'New Bookmark'}
     ]

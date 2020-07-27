@@ -196,9 +196,9 @@ export class Pane extends EventEmitter {
 
   get title () {
     var title = this.webContents.getTitle()
-    if (this.driveInfo && this.driveInfo.title && (!title || toOrigin(title) === this.origin)) {
+    if (this.driveInfo && (!title || toOrigin(title) === this.origin)) {
       // fallback to the index.json title field if the page doesnt provide a title
-      title = this.driveInfo.title
+      title = this.siteTitle
     }
     return title
   }

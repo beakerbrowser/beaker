@@ -118,6 +118,25 @@ export async function setup () {
     }
   })
 
+  session.defaultSession.webRequest.onBeforeRequest({urls: ['hyper://system/*']}, (details, cb) => {
+    if (!details.webContentsId) {
+      if (details.resourceType === 'mainFrame') {
+        // allow toplevel navigation
+        return cb({cancel: false})
+      } else {
+        // not enough info, cancel
+        return cb({cancel: true})
+      }
+    }
+    var wc = webContents.fromId(details.webContentsId)
+    if (/^(beaker:\/\/|hyper:\/\/system\/)/.test(wc.getURL())) {
+      // allow access from self and from beaker
+      cb({cancel: false})
+    } else {
+      cb({cancel: true})
+    }
+  })
+
   // HACK
   // Electron doesn't give us a convenient way to check the content-types of responses
   // or to fetch the certs of a hostname

@@ -750,14 +750,12 @@ function removeFirstMdHeader (str = '') {
 const today = (new Date()).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
 const yesterday = (new Date(Date.now() - 8.64e7)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
 const lastWeekTs = Date.now() - 6.048e+8
-const lastMonthTs = Date.now() - 2.628e+9
 function niceDate (ts, {largeIntervals} = {largeIntervals: false}) {
   var date = (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
   if (date === today) return 'Today'
   if (date === yesterday) return 'Yesterday'
   if (largeIntervals) {
-    if (ts > lastWeekTs) return 'Last Week'
-    if (ts > lastMonthTs) return 'Last Month'
+    if (ts > lastWeekTs) return 'This Week'
     return (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'long' })
   }
   return date

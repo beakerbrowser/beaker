@@ -738,7 +738,8 @@ async function assertReadPermission (drive, sender) {
   }
 
   if (filesystem.isRootUrl(driveUrl)) {
-    if (isSenderBeaker(sender)) {
+    let origin = archivesDb.extractOrigin(sender.getURL()) + '/'
+    if (isSenderBeaker(sender) || filesystem.isRootUrl(origin)) {
       return true
     }
     throw new PermissionsError('Cannot read the system drive')

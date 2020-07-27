@@ -127,7 +127,7 @@ export async function setup () {
 export function getDriveIdent (url, includeContacts = false) {
   var system = isRootUrl(url)
   var profile = url === profileDriveUrl
-  if (includeContacts) {
+  if (!system && includeContacts) {
     return getAddressBook().then(addressBook => {
       var key = /[0-9a-f]{64}/.exec(url)[0]
       var contact = !!addressBook.contacts.find(c => c.key === key)
