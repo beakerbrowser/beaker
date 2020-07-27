@@ -271,7 +271,7 @@ class BrowserMenu extends LitElement {
   async onNewHyperdrive () {
     bg.shellMenus.close()
     const url = await bg.hyperdrive.createDrive()
-    bg.beakerBrowser.openUrl(url, {setActive: true})
+    bg.beakerBrowser.openUrl(url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
   }
 
   async onNewHyperdriveFromFolder (e) {

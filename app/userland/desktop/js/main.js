@@ -650,7 +650,7 @@ class DesktopApp extends LitElement {
 
   async onClickNewSite (e) {
     var drive = await beaker.hyperdrive.createDrive()
-    window.open(drive.url)
+    beaker.browser.openUrl(drive.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
   }
 
   async onClickNewBookmark (e, pinned) {

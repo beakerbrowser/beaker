@@ -693,7 +693,8 @@ export function create (
       adjacentActive: false,
       tabIndex: undefined,
       initialPanes: undefined,
-      fromSnapshot: undefined
+      fromSnapshot: undefined,
+      addedPaneUrls: undefined
     }
   ) {
   url = url || defaultUrl
@@ -757,6 +758,12 @@ export function create (
 
   if (opts.focusLocationBar) {
     win.webContents.send('command', 'focus-location')
+  }
+
+  if (opts.addedPaneUrls) {
+    for (let addedUrl of opts.addedPaneUrls) {
+      tab.createPane({url: addedUrl})
+    }
   }
 
   // create a new preloaded tab if needed
