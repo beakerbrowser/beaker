@@ -314,6 +314,7 @@ export class QueryView extends LitElement {
       blogpost: 'published',
       microblogpost: 'posted',
       page: 'created',
+      comment: 'commented on',
       unknown: 'published'
     })[type]
     return html`
@@ -342,7 +343,9 @@ export class QueryView extends LitElement {
               ${action}
             </div>
             <div class="title">
-              <a href=${result.href}>${result.title ? unsafeHTML(shorten(result.title, 50)) : niceDate(result.ctime)}</a>
+              <a href=${result.href}>
+                ${result.title ? unsafeHTML(shorten(result.title, 50)) : this.renderResultGenericActionTitle(result)}
+              </a>
             </div>
           </div>
         </div>
@@ -407,6 +410,7 @@ export class QueryView extends LitElement {
       case 'page': icon = 'far fa-file-alt'; break
       case 'bookmark': icon = 'far fa-star'; break
       case 'microblogpost': icon = 'fas fa-stream'; break
+      case 'comment': icon = 'far fa-comment'; break
     }
     return html`
       <span class="icon">
@@ -422,7 +426,20 @@ export class QueryView extends LitElement {
       blogpost: 'Blog Post',
       microblogpost: `Post on ${(new Date(result.ctime)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })}`,
       page: 'Page',
+      comment: `Comment on ${toNiceUrl(result.href)}`,
       unknown: 'File'
+    })[type]
+  }
+
+  renderResultGenericActionTitle (result) {
+    var type = this.getTypeByUrl(result.url)
+    return ({
+      bookmark: niceDate(result.ctime),
+      blogpost: niceDate(result.ctime),
+      microblogpost: niceDate(result.ctime),
+      page: niceDate(result.ctime),
+      comment: toNiceUrl(result.href),
+      unknown: niceDate(result.ctime)
     })[type]
   }
 
@@ -440,6 +457,8 @@ export class QueryView extends LitElement {
       return 'bookmark'
     } else if (path.startsWith('/microblog/')) {
       return 'microblogpost'
+    } else if (path.startsWith('/comments/')) {
+      return 'comment'
     }
     return 'unknown'
   }
@@ -451,7 +470,7 @@ export class QueryView extends LitElement {
     var results = (await Promise.all([
       this.query_bookmarks(opts),
       this.query_blogposts(opts),
-      // this.query_microblogposts(opts),
+      this.query_comments(opts),
       this.query_pages(opts)
     ])).flat()
     results.sort((a, b) => b.ctime - a.ctime)
@@ -592,6 +611,58 @@ export class QueryView extends LitElement {
       results.push({
         url: makeSafe(candidate.url),
         href: makeSafe(candidate.url),
+        excerpt,
+        ctime: candidate.stat.ctime,
+        author: {
+          url: candidate.drive,
+          title: await getDriveTitle(candidate.drive)
+        }
+      })
+    }
+  
+    if (filter && (offset || limit)) {
+      offset = offset || 0
+      results = results.slice(offset, offset + limit)
+    }
+  
+    return results
+  }
+
+  async query_comments ({sources, filter, limit, offset, sort, signal}) {
+    var filterRegexp = filter ? new RegExp(filter, 'gi') : undefined
+    var candidates = await beaker.hyperdrive.query({
+      type: 'file',
+      drive: sources,
+      path: '/comments/*.md',
+      sort: sort || 'ctime',
+      reverse: true,
+      limit: filter ? undefined : limit,
+      offset: filter ? undefined : offset
+    })
+  
+    var results = []
+    for (let candidate of candidates) {
+      if (signal && signal.aborted) throw new AbortError()
+      let excerpt = ''
+      let href = candidate.stat.metadata.href
+      if (!href) continue
+      if (candidate.path.endsWith('md')) {
+        excerpt = await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => '')
+        excerpt = makeSafe(removeMarkdown(excerpt))
+      } else if (candidate.path.endsWith('txt')) {
+        excerpt = makeSafe(await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => ''))
+      }
+      if (filterRegexp) {
+        let matches = {
+          excerpt: matchAndSliceString(filter, filterRegexp, excerpt)
+        }
+        if (!Object.values(matches).reduce((acc, v) => v || acc, false)) continue
+        excerpt = matches.excerpt || excerpt
+      }
+      results.push({
+        class: 'beaker/comment',
+        url: makeSafe(candidate.url),
+        href: makeSafe(href),
         excerpt,
         ctime: candidate.stat.ctime,
         author: {

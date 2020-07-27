@@ -207,6 +207,16 @@ class DesktopApp extends LitElement {
                 ></query-view>
                 <query-view
                   class="subview"
+                  content-type="comments"
+                  render-mode="row"
+                  hide-empty
+                  limit="5"
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  @load-state-updated=${e => this.requestUpdate()}
+                ></query-view>
+                <query-view
+                  class="subview"
                   content-type="microblogposts"
                   render-mode="row"
                   hide-empty
@@ -321,6 +331,23 @@ class DesktopApp extends LitElement {
             <query-view
               ?show-date-titles=${!hasSearchQuery}
               content-type="microblogposts"
+              render-mode=${hasSearchQuery ? 'row' : 'action'}
+              .filter=${this.searchQuery}
+              .sources=${this.sources}
+              limit="50"
+              @load-state-updated=${e => this.requestUpdate()}
+            ></query-view>
+          </div>
+        </div>
+      `
+    }
+    if (this.currentNav === 'comments') {
+      return html`
+        <div class="content-view">
+          <div class="twocol">
+            <query-view
+              ?show-date-titles=${!hasSearchQuery}
+              content-type="comments"
               render-mode=${hasSearchQuery ? 'row' : 'action'}
               .filter=${this.searchQuery}
               .sources=${this.sources}
