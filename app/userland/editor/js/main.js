@@ -236,6 +236,7 @@ class EditorApp extends LitElement {
       try {
         if (url.startsWith('hyper:')) {
           body = await this.loadDrive(url)
+          this.isFilesOpen = !body
         } else if (url.startsWith('http:') || url.startsWith('https:')) {
           this.isFilesOpen = false
           body = await beaker.browser.fetchBody(url)
