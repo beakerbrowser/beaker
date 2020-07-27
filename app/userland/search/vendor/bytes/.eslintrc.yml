@@ -1,9 +1,0 @@
-root: true
-extends: eslint:recommended
-env:
-  node: true
-rules:
-  eol-last: error
-  indent: ["error", 2, { "SwitchCase": 1 }]
-  no-mixed-spaces-and-tabs: error
-  no-trailing-spaces: error
