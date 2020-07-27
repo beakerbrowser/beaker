@@ -212,7 +212,7 @@ class DriveView extends LitElement {
   </body>
 </html>`)
     }
-    window.location = `beaker://editor/?url=${location.origin}${location.pathname}index.${ext}`
+    window.location = `${location.origin}${location.pathname}index.${ext}`
   }
 }
 
