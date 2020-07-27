@@ -607,12 +607,11 @@ class DesktopApp extends LitElement {
     e.stopPropagation()
     const items = [
       {icon: 'fa-fw fas fa-sitemap', label: 'New Site', click: this.onClickNewSite.bind(this)},
+      {icon: 'fa-fw fas fa-file-upload', label: 'New Site from Folder', click: this.onClickNewSiteFromFolder.bind(this)},
       '-',
       {icon: 'fa-fw far fa-file', label: 'New Page'},
       {icon: 'fa-fw fas fa-blog', label: 'New Blog Post'},
-      {icon: 'fa-fw far fa-star', label: 'New Bookmark'},
-      '-',
-      {icon: 'fa-fw fas fa-upload', label: 'Import files...'}
+      {icon: 'fa-fw far fa-star', label: 'New Bookmark'}
     ]
     contextMenu.create({
       x: (rect.left + rect.right) / 2,
@@ -651,6 +650,22 @@ class DesktopApp extends LitElement {
   async onClickNewSite (e) {
     var drive = await beaker.hyperdrive.createDrive()
     beaker.browser.openUrl(drive.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
+  }
+
+  async onClickNewSiteFromFolder (e) {
+    var folder = await beaker.browser.showOpenDialog({
+      title: 'Select folder',
+      buttonLabel: 'Use folder',
+      properties: ['openDirectory']
+    })
+    if (!folder || !folder.length) return
+
+    var drive = await beaker.hyperdrive.createDrive({
+      title: folder[0].split('/').pop(),
+      prompt: false
+    })
+    await beaker.hyperdrive.importFromFilesystem({src: folder[0], dst: drive.url})
+    window.open(drive.url)
   }
 
   async onClickNewBookmark (e, pinned) {
