@@ -300,7 +300,7 @@ export class ExplorerApp extends LitElement {
       }
       if (stat.mount) {
         mount = await this.attempt(
-          `Reading drive information (${stat.mount.key}) for parent mount at ${path}`,
+          `Reading site information (${stat.mount.key}) for parent mount at ${path}`,
           () => beaker.hyperdrive.drive(stat.mount.key).getInfo()
         )
       }
@@ -329,7 +329,7 @@ export class ExplorerApp extends LitElement {
       item.realUrl = joinPath(item.drive.url, item.realPath)
       if (item.stat.mount) {
         item.mount = await this.attempt(
-          `Reading drive information (${item.stat.mount.key}) for mounted drive at ${item.path}`,
+          `Reading site information (${item.stat.mount.key}) for mounted site at ${item.path}`,
           () => beaker.hyperdrive.drive(item.stat.mount.key).getInfo()
         )
       }
@@ -807,7 +807,7 @@ export class ExplorerApp extends LitElement {
   async onNewMount (e) {
     if (!this.currentDriveInfo.writable) return
     var drive = beaker.hyperdrive.drive(this.currentDriveInfo.url)
-    var targetUrl = await beaker.shell.selectDriveDialog({title: 'Select a drive'})
+    var targetUrl = await beaker.shell.selectDriveDialog({title: 'Select a site'})
     var target = beaker.hyperdrive.drive(targetUrl)
     var info = await target.getInfo()
     var name = await getAvailableName(drive, this.realPathname, info.title)
@@ -823,7 +823,7 @@ export class ExplorerApp extends LitElement {
 
   async onForkDrive (e) {
     var drive = await beaker.hyperdrive.forkDrive(this.currentDriveInfo.url)
-    toast.create('Drive created')
+    toast.create('Site created')
     loc.setUrl(drive.url)
   }
 

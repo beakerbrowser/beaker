@@ -124,7 +124,7 @@ class CreateDriveModal extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">
-          Create New Hyperdrive
+          Create New Site
         </h1>
         <form @submit=${this.onSubmit}>
           <div>
@@ -147,7 +147,7 @@ class CreateDriveModal extends LitElement {
           <div class="tip">
             <span class="fas fa-fw fa-info"></span>
             <a data-href="https://beaker.dev/docs/templates/" @click=${this.onClickLink}>
-              Find templates for Hyperdrives at Beaker.dev
+              Find templates for sites at Beaker.dev
             </a>
           </div>
         </form>

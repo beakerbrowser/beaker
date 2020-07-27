@@ -222,13 +222,13 @@ class SelectDriveModal extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <form @submit=${this.onSubmit}>
-          <h1 class="title">${this.customTitle || 'Select a drive'}</h1>
+          <h1 class="title">${this.customTitle || 'Select a site'}</h1>
 
           <div class="view drive-picker">
             ${this.renderFilters()}
             <div class="filter-container">
               <i class="fa fa-search"></i>
-              <input @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a drive">
+              <input @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a site">
             </div>
             ${isDriveUrl(this.currentTitleFilter) ? html`
             ` : html`

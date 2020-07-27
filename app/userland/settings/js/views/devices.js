@@ -39,7 +39,7 @@ class DevicesView extends LitElement {
         </p>
 
         <p style="font-size: 14px">
-          <strong>Device-sync will enable you to share your hyperdrives between
+          <strong>Device-sync will enable you to share your data between
           devices.</strong> We're working on protocol updates to support the feature.
           We added this placeholder interface so that you can quickly
           find the status of this feature. Sorry for the fake-out.

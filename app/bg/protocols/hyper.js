@@ -207,9 +207,9 @@ export const protocolHandler = async function (request, respond) {
     var version = await checkoutFS.session.drive.version()
     if (version === 0) {
       logger.silly(`Drive not found ${logUrl}`, {url: request.url})
-      return respondError(404, 'Hyperdrive not found', {
-        title: 'Hyperdrive Not Found',
-        errorDescription: 'No peers hosting this drive were found',
+      return respondError(404, 'Site not found', {
+        title: 'Site Not Found',
+        errorDescription: 'No peers hosting this site were found',
         errorInfo: 'You may still be connecting to peers - try reloading the page.'
       })
     }

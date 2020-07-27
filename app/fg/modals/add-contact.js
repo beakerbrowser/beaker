@@ -140,7 +140,7 @@ class AddContactModal extends LitElement {
       this.error = undefined
       var info = await bg.hyperdrive.getInfo(this.url)
       if (info.version === 0) {
-        this.error = 'Unable to find this hyperdrive on the network'
+        this.error = 'Unable to find this site on the network'
       } else {
         this.info = info
       }

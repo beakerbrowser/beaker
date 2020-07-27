@@ -570,7 +570,7 @@ class CompareDiffItemContent extends LitElement {
         ${this.canMerge ? html`
           <button @click=${this.onClickMerge}>Merge</button>
         ` : html`
-          <button disabled data-tooltip="Can't merge into a drive you don't own">Merge</button>
+          <button disabled data-tooltip="Can't merge into a site you don't own">Merge</button>
         `}
         ${['del', 'mod'].includes(this.diff.change) ? html`
           <a href="${this.targetOrigin}${this.diff?.targetPath}" target="_blank"><span class="fas fa-fw fa-external-link-alt"></span> View current</a>
