@@ -114,7 +114,11 @@ const cssStr = css`
 }
 
 .dropdown-items.very-roomy .dropdown-item {
-  padding: 20px 30px;
+  padding: 16px 40px 16px 20px;
+}
+
+.dropdown-items.rounded {
+  border-radius: 16px;
 }
 
 .dropdown-items.no-border .dropdown-item {

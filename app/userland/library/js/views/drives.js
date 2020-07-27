@@ -170,13 +170,28 @@ export class DrivesView extends LitElement {
           ` : ''}
         </div>
       ` : html`
-        <div class="loading"><span class="spinner"></span></div>
+        ${''/*<div class="loading"><span class="spinner"></span></div>*/}
       `}
     `
   }
 
   renderDrive (drive) {
     var numForks = drive.forks?.length || 0
+    if (this.hasAttribute('simple')) {
+      return html`
+        <a
+          href=${drive.url}
+          title=${drive.info.title || 'Untitled'}
+          class="${classMap({drive: true})}"
+          @contextmenu=${e => this.onContextmenuDrive(e, drive)}
+        >
+          <img class="favicon" src="asset:favicon:${drive.url}">
+          <div class="title">
+            ${drive.info.title || html`<em>Untitled</em>`}
+          </div>
+        </a>
+      `
+    }
     return html`
       <a
         href=${drive.url}

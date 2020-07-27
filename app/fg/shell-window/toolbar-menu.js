@@ -74,12 +74,6 @@ class ShellWindowToolbarMenu extends LitElement {
       background: var(--bg-color--toolbar--pressed);
       color: var(--text-color--toolbar--pressed);
     }
-    a .attach-icon {
-      position: relative;
-      font-size: 8px;
-      left: -1px;
-      top: -4px;
-    }
     a + a .far,
     a + a .fas {
       margin-left: -2px;
@@ -118,7 +112,6 @@ class ShellWindowToolbarMenu extends LitElement {
         <a @mousedown=${e => this.onMousedownBookmark(e, index)}>
           <img class="favicon" src="asset:favicon:${item.href}">
           ${item.title}
-          ${item.openInPane ? html`<span class="attach-icon">⚯</span>` : ''}
         </a>
       `
     }

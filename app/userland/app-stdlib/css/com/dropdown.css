@@ -114,6 +114,10 @@
   padding: 20px 30px;
 }
 
+.dropdown-items.rounded {
+  border-radius: 16px;
+}
+
 .dropdown-items.no-border .dropdown-item {
   border-bottom: 0;
 }

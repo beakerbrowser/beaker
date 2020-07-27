@@ -3,7 +3,7 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
 import queryCSS from '../../css/views/query.css.js'
 import { removeMarkdown } from 'beaker://app-stdlib/vendor/remove-markdown.js'
-import { shorten, makeSafe, toNiceUrl } from 'beaker://app-stdlib/js/strings.js'
+import { shorten, makeSafe, toNiceUrl, DRIVE_KEY_REGEX } from 'beaker://app-stdlib/js/strings.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 
 export class QueryView extends LitElement {
@@ -11,9 +11,9 @@ export class QueryView extends LitElement {
     return {
       contentType: {type: String, attribute: 'content-type'},
       title: {type: String},
-      createIcon: {type: String, attribute: 'create-icon'},
-      createLabel: {type: String, attribute: 'create-label'},
+      showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       renderMode: {type: String, attribute: 'render-mode'},
+      sort: {type: String},
       limit: {type: Number},
       filter: {type: String},
       sources: {type: Array},
@@ -32,10 +32,10 @@ export class QueryView extends LitElement {
     super()
     this.contentType = undefined
     this.title = ''
-    this.createIcon = ''
-    this.createLabel = ''
+    this.showDateTitles = false
     this.renderMode = 'row'
-    this.limit = 50
+    this.sort = 'ctime'
+    this.limit = undefined
     this.filter = undefined
     this.sources = []
     this.results = undefined
@@ -46,7 +46,7 @@ export class QueryView extends LitElement {
   }
 
   get isLoading () {
-    return !!this.activeQuery
+    return !this.results || !!this.activeQuery
   }
 
   async load () {
@@ -80,15 +80,17 @@ export class QueryView extends LitElement {
   }
 
   async query () {
+    emit(this, 'load-state-updated')
     this.abortController = new AbortController()
     this.results = await this[`query_${this.contentType}`]({
       sources: this.sources,
       filter: this.filter,
       limit: this.limit,
+      sort: this.sort,
       signal: this.abortController.signal
     })
     this.activeQuery = undefined
-    emit(this, 'load-finished')
+    emit(this, 'load-state-updated')
   }
 
   // rendering
@@ -102,7 +104,7 @@ export class QueryView extends LitElement {
       if (this.hideEmpty) return html``
       return html`
         <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-        <h2>
+        ${this.title ? html`<h2>
           ${this.showViewMore ? html`
             <a @click=${e => emit(this, 'view-more', {detail: {contentType: this.contentType}})}>
               ${this.title}
@@ -110,7 +112,7 @@ export class QueryView extends LitElement {
           ` : html`
             <span>${this.title}</span>
           `}
-        </h2>
+        </h2>` : ''}
         <div class="results empty">
           ${this.filter ? html`
             <span>No matches found for "${this.filter}".</div></span>
@@ -122,7 +124,7 @@ export class QueryView extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      <h2>
+      ${this.title ? html`<h2>
         ${this.showViewMore ? html`
           <a @click=${e => emit(this, 'view-more', {detail: {contentType: this.contentType}})}>
             ${this.title}
@@ -130,12 +132,13 @@ export class QueryView extends LitElement {
         ` : html`
           <span>${this.title}</span>
         `}
-      </h2>
+      </h2>` : ''}
       ${this.renderResults()}
     `
   }
 
   renderResults() {
+    this.lastResultNiceDate = undefined // used by renderDateTitle
     if (this.renderMode === 'simple-list') {
       return html`
         <div class="results simple-list">
@@ -157,6 +160,20 @@ export class QueryView extends LitElement {
         </div>
       `
     }
+    if (this.renderMode === 'action') {
+      return html`
+        <div class="results actions">
+          ${repeat(this.results, result => result.href, result => this.renderResultAsAction(result))}
+        </div>
+      `
+    }
+    if (this.renderMode === 'card') {
+      return html`
+        <div class="results cards">
+          ${repeat(this.results, result => result.href, result => this.renderResultAsCard(result))}
+        </div>
+      `
+    }
     return html`
       <div class="results rows">
         ${repeat(this.results, result => result.href, result => this.renderResultAsRow(result))}
@@ -164,7 +181,23 @@ export class QueryView extends LitElement {
     `
   }
 
+  renderDateTitle (result) {
+    if (!this.showDateTitles) return ''
+    var resultNiceDate = niceDate(result.ctime, {largeIntervals: true})
+    if (this.lastResultNiceDate === resultNiceDate) return ''
+    this.lastResultNiceDate = resultNiceDate
+    return html`
+      <h2><span>${resultNiceDate}</span></h2>
+    `
+  }
+
   renderResultAsRow (result) {
+    var isBookmark = (new URL(result.url)).pathname.startsWith('/bookmarks/')
+    var urlp
+    try { urlp = new URL(result.href) }
+    catch (e) { return '' }
+    var hostname = DRIVE_KEY_REGEX.test(urlp.hostname) ? `${urlp.hostname.slice(0,6)}..${urlp.hostname.slice(-2)}` : urlp.hostname
+
     var excerpt = result.excerpt || result.description
     return html`
       <div class="result row">
@@ -172,21 +205,40 @@ export class QueryView extends LitElement {
           ${this.renderResultThumb(result)}
         </a>
         <div class="info">
-          <div class="title"><a href=${result.href}>${unsafeHTML(result.title)}</a></div>
-          ${result.href !== result.url ? html`
-            <div class="href"><a href=${result.href}>${unsafeHTML(toNiceUrl(result.href))}</a></div>
-          ` : ''}
-          <div class="origin">
-            ${result.author.url === 'hyper://system/' ? html`
-              <span class="sysicon fas fa-fw fa-lock"></span>
-            ` : html`
-              <img class="favicon" src="${result.author.url}thumb">
-            `}
-            <a class="author" href=${result.author.url} title=${result.author.title}>
-              ${result.author.title}
+          <div class="href">
+            <a href=${result.href}>
+              ${hostname}
+              ${repeat(urlp.pathname.split('/').filter(Boolean), seg => html`
+                <span class="fas fa-fw fa-angle-right"></span> ${seg}
+              `)}
             </a>
-            <a class="path" href=${result.href}>
-              ${(new URL(result.url)).pathname}
+          </div>
+          ${result.title ? html`
+            <div class="title"><a href=${result.href}>${unsafeHTML(result.title)}</a></div>
+          ` : html`
+            <div class="title"><a href=${result.href}>${this.renderResultGenericTitle(result)}</a></div>
+          `}
+          <div class="origin">
+            ${isBookmark ? html`
+              <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
+              <a class="author" href=${result.author.url} title=${result.author.title}>
+                ${result.author.url === 'hyper://system/' ? 'Me (Private)' : result.author.title}
+              </a>
+            ` : (
+              result.author.url === 'hyper://system/' ? html`
+                <span class="sysicon fas fa-fw fa-lock"></span>
+                <a class="author" href=${result.author.url} title=${result.author.title}>
+                  Me (Private)
+                </a>
+              ` : html`
+                <img class="favicon" src="${result.author.url}thumb">
+                <a class="author" href=${result.author.url} title=${result.author.title}>
+                  ${result.author.title}
+                </a>
+              `)
+            }
+            <a class="date" href=${result.href}>
+              ${niceDate(result.ctime)}
             </a>
           </div>
           ${excerpt ? html`<div class="excerpt">${unsafeHTML(excerpt)}</div>` : ''}
@@ -196,9 +248,23 @@ export class QueryView extends LitElement {
   }
 
   renderResultAsCompactRow (result) {
+    var isBookmark = (new URL(result.url)).pathname.startsWith('/bookmarks/')
     var excerpt = result.excerpt || result.description
     return html`
       <div class="result compact-row">
+        <div class="origin">
+          ${result.author.url === 'hyper://system/' ? html`
+            <span class="sysicon fas fa-fw fa-lock"></span>
+            <a class="author" href=${result.author.url} title=${result.author.title}>
+              Me (Private)
+            </a>
+          ` : html`
+            <img class="favicon" src="${result.author.url}thumb">
+            <a class="author" href=${result.author.url} title=${result.author.title}>
+              ${result.author.title}
+            </a>
+          `}
+        </div>
         <a class="thumb" href=${result.href} title=${result.title}>
           ${this.renderResultThumb(result)}
         </a>
@@ -208,40 +274,30 @@ export class QueryView extends LitElement {
         ` : html`
           <div class="excerpt">${unsafeHTML(excerpt)}</div>
         `}
-        <div class="origin">
-          ${result.author.url === 'hyper://system/' ? html`
-            <span class="sysicon fas fa-fw fa-lock"></span>
-          ` : html`
-            <img class="favicon" src="${result.author.url}thumb">
-          `}
-          <a class="author" href=${result.author.url} title=${result.author.title}>
-            ${result.author.title}
-          </a>
-        </div>
         <div class="date">${niceDate(result.ctime)}</div>
+        <div class="ctrls">
+          ${!isBookmark ? html`<a>
+            <span class="far fa-fw fa-star"></span>
+            <span class="count">0</span>
+          </a>` : ''}
+          <a><span class="fas fa-fw fa-ellipsis-h"></span></a>
+        </div>
       </a>
     `
   }
 
   renderResultAsSimpleList (result) {
-    var excerpt = result.excerpt || result.description
     return html`
-      <div class="result simple-list-item">
-        <a class="thumb" href=${result.href} title=${result.title}>
-          ${this.renderResultThumb(result)}
-        </a>
-        <div class="title"><a href=${result.href}>${unsafeHTML(result.title)}</a></div>
-        ${result.href !== result.url ? html`
-          <div class="href"><a href=${result.href}>${unsafeHTML(toNiceUrl(result.href))}</a></div>
-        ` : html`
-          <div class="excerpt">${unsafeHTML(excerpt)}</div>
-        `}
+      <a class="result simple-list-item" href=${result.href} title=${result.title}>
+        <span class="thumb"><img src="asset:favicon:${result.href}"></span>
+        <span class="title">${unsafeHTML(result.title)}</span>
       </a>
     `
   }
 
   renderResultAsSimpleGrid (result) {
     return html`
+      ${this.renderDateTitle(result)}
       <div class="result simple-grid-item">
         <a class="thumb" href=${result.href} title=${result.title}>
           ${this.renderResultThumb(result)}
@@ -251,61 +307,164 @@ export class QueryView extends LitElement {
     `
   }
 
-  renderResultAsCard (result) {
-    var excerpt = result.excerpt || result.description
+  renderResultAsAction (result) {
+    var type = this.getTypeByUrl(result.url)
+    var action = ({
+      bookmark: 'bookmarked',
+      blogpost: 'published',
+      microblogpost: 'posted',
+      page: 'created',
+      unknown: 'published'
+    })[type]
     return html`
-      <div class="result card">
-        <a class="thumb" href=${result.href} title=${result.title}>
-          ${this.renderResultThumb(result)}
-        </a>
+      ${this.renderDateTitle(result)}
+      <div class="result action">
         <div class="info">
-          <div class="title"><a href=${result.href}>${unsafeHTML(result.title)}</a></div>
-          <div class="origin">
+          <a class="thumb" href=${result.author.url} title=${result.author.title}>
             ${result.author.url === 'hyper://system/' ? html`
-              <span class="sysicon fas fa-fw fa-lock"></span>
+              <span class="icon fas fa-fw fa-lock"></span>
             ` : html`
               <img class="favicon" src="${result.author.url}thumb">
             `}
-            <a class="author" href=${result.author.url} title=${result.author.title}>
-              ${result.author.title}
-            </a>
+          </a>
+          <div class="action-description">
+            ${this.renderResultThumb(result, result.url)}
+            <div class="origin">
+              ${result.author.url === 'hyper://system/' ? html`
+                <a class="author" href=${result.author.url} title=${result.author.title}>I privately</a>
+              ` : html`
+                <a class="author" href=${result.author.url} title=${result.author.title}>
+                  ${result.author.title}
+                </a>
+              `}
+            </div>
+            <div class="action">
+              ${action}
+            </div>
+            <div class="title">
+              <a href=${result.href}>${result.title ? unsafeHTML(shorten(result.title, 50)) : niceDate(result.ctime)}</a>
+            </div>
           </div>
-          ${excerpt ? html`<div class="excerpt">${unsafeHTML(excerpt)}</div>` : ''}
         </div>
-      </a>
+        ${result.excerpt ? html`
+            <div class="excerpt">
+              ${unsafeHTML(shorten(result.excerpt, 200))}
+            </div>
+          ` : ''}
+      </div>
     `
   }
 
-  renderResultThumb (result) {
-    if (/\.(png|jpe?g|gif)$/.test(result.href)) {
-      return html`<img src=${result.href}>`
+  renderResultAsCard (result) {
+    var urlp
+    try { urlp = new URL(result.href) }
+    catch (e) { return '' }
+
+    var excerpt = result.excerpt || result.description
+    return html`
+      <div class="result card">
+        <div class="origin">
+          ${result.author.url === 'hyper://system/' ? html`
+            <span class="sysicon fas fa-fw fa-lock"></span>
+            <a class="author" href=${result.author.url} title=${result.author.title}>
+              Me (Private)
+            </a>
+          ` : html`
+            <img class="favicon" src="${result.author.url}thumb">
+            <a class="author" href=${result.author.url} title=${result.author.title}>
+              ${result.author.title}
+            </a>
+          `}
+          <span class="href">
+            <a href=${result.href}>
+              ${repeat(urlp.pathname.split('/').filter(Boolean), seg => html`
+                <span class="fas fa-fw fa-angle-right"></span> ${seg}
+              `)}
+            </a>
+          </span>
+          <a class="date" href=${result.href}>
+            ${niceDate(result.ctime)}
+          </a>
+        </div>
+        ${excerpt ? html`<div class="excerpt">${unsafeHTML(excerpt)}</div>` : ''}
+        <div class="ctrls">
+          <a><span class="fas fa-fw fa-reply"></span> Reply</a>
+          <a><span class="far fa-fw fa-star"></span> Bookmark</a>
+          <a><span class="far fa-fw fa-sticky-note"></span> Annotations (0)</a>
+        </div>
+      </div>
+    `
+  }
+
+  renderResultThumb (result, url = undefined) {
+    url = url || result.href
+    if (/\.(png|jpe?g|gif)$/.test(url)) {
+      return html`<img src=${url}>`
     }
-    var path = (new URL(result.url)).pathname
-    var icon = 'far fa-file'
-    if (path.startsWith('/blog/')) {
-      icon = 'fas fa-blog'
-    } else if (path.startsWith('/pages/')) {
-      icon = 'far fa-file'
-    } else if (path.startsWith('/bookmarks/')) {
-      icon = 'far fa-star'
+    var icon = 'far fa-file-alt'
+    switch (this.getTypeByUrl(url)) {
+      case 'blogpost': icon = 'fas fa-blog'; break
+      case 'page': icon = 'far fa-file-alt'; break
+      case 'bookmark': icon = 'far fa-star'; break
+      case 'microblogpost': icon = 'fas fa-stream'; break
     }
     return html`
       <span class="icon">
-        <span class=${icon}></span>
+        <span class="fa-fw ${icon}"></span>
       </span>
     `
+  }
+  
+  renderResultGenericTitle (result) {
+    var type = this.getTypeByUrl(result.url)
+    return ({
+      bookmark: 'Bookmark',
+      blogpost: 'Blog Post',
+      microblogpost: `Post on ${(new Date(result.ctime)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })}`,
+      page: 'Page',
+      unknown: 'File'
+    })[type]
+  }
+
+  getTypeByUrl (url) {
+    try {
+      var path = (new URL(url)).pathname
+    } catch (e) {
+      path = '/'
+    }
+    if (path.startsWith('/blog/')) {
+      return 'blogpost'
+    } else if (path.startsWith('/pages/')) {
+      return 'page'
+    } else if (path.startsWith('/bookmarks/')) {
+      return 'bookmark'
+    } else if (path.startsWith('/microblog/')) {
+      return 'microblogpost'
+    }
+    return 'unknown'
   }
 
   // queries
   // =
 
-  async query_bookmarks ({sources, filter, limit, offset, signal}) {
+  async query_all (opts) {
+    var results = (await Promise.all([
+      this.query_bookmarks(opts),
+      this.query_blogposts(opts),
+      // this.query_microblogposts(opts),
+      this.query_pages(opts)
+    ])).flat()
+    results.sort((a, b) => b.ctime - a.ctime)
+    return results
+  }
+
+  async query_bookmarks ({sources, filter, limit, offset, sort, signal}) {
     var filterRegexp = filter ? new RegExp(filter, 'gi') : undefined
     var candidates = await beaker.hyperdrive.query({
       type: 'file',
       drive: sources,
       path: ['/bookmarks/*.goto'],
-      sort: 'ctime',
+      sort: sort || 'ctime',
       reverse: true,
       limit: filter ? undefined : limit,
       offset: filter ? undefined : offset
@@ -342,13 +501,13 @@ export class QueryView extends LitElement {
     return results
   }
 
-  async query_plaintext (path, {sources, filter, limit, offset, signal}) {
+  async query_plaintext (path, {sources, filter, limit, offset, sort, signal}) {
     var filterRegexp = filter ? new RegExp(filter, 'gi') : undefined
     var candidates = await beaker.hyperdrive.query({
       type: 'file',
       drive: sources,
       path,
-      sort: 'ctime',
+      sort: sort || 'ctime',
       reverse: true,
       limit: filter ? undefined : limit,
       offset: filter ? undefined : offset
@@ -374,9 +533,7 @@ export class QueryView extends LitElement {
         if (!Object.values(matches).reduce((acc, v) => v || acc, false)) continue
         title = matches.title || title
         description = matches.description
-        excerpt = matches.excerpt || shorten(excerpt, 200)
-      } else {
-        excerpt = shorten(excerpt, 200)
+        excerpt = matches.excerpt || excerpt
       }
       results.push({
         url: makeSafe(candidate.url),
@@ -397,20 +554,68 @@ export class QueryView extends LitElement {
     }
   
     return results
-
   }
 
   async query_blogposts (opts) {
     return this.query_plaintext('/blog/*.md', opts)
   }
 
-  async query_images ({sources, filter, limit, offset, signal}) {
+  async query_microblogposts ({sources, filter, limit, offset, sort, signal}) {
+    var filterRegexp = filter ? new RegExp(filter, 'gi') : undefined
+    var candidates = await beaker.hyperdrive.query({
+      type: 'file',
+      drive: sources,
+      path: '/microblog/*',
+      sort: sort || 'ctime',
+      reverse: true,
+      limit: filter ? undefined : limit,
+      offset: filter ? undefined : offset
+    })
+  
+    var results = []
+    for (let candidate of candidates) {
+      if (signal && signal.aborted) throw new AbortError()
+      let excerpt = ''
+      if (candidate.path.endsWith('md')) {
+        excerpt = await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => '')
+        excerpt = makeSafe(removeMarkdown(excerpt))
+      } else if (candidate.path.endsWith('txt')) {
+        excerpt = makeSafe(await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => ''))
+      }
+      if (filterRegexp) {
+        let matches = {
+          excerpt: matchAndSliceString(filter, filterRegexp, excerpt)
+        }
+        if (!Object.values(matches).reduce((acc, v) => v || acc, false)) continue
+        excerpt = matches.excerpt || excerpt
+      }
+      results.push({
+        url: makeSafe(candidate.url),
+        href: makeSafe(candidate.url),
+        excerpt,
+        ctime: candidate.stat.ctime,
+        author: {
+          url: candidate.drive,
+          title: await getDriveTitle(candidate.drive)
+        }
+      })
+    }
+  
+    if (filter && (offset || limit)) {
+      offset = offset || 0
+      results = results.slice(offset, offset + limit)
+    }
+  
+    return results
+  }
+
+  async query_images ({sources, filter, limit, offset, sort, signal}) {
     var filterRegexp = filter ? new RegExp(filter, 'gi') : undefined
     var candidates = await beaker.hyperdrive.query({
       type: 'file',
       drive: sources,
       path: ['/images/*.png', '/images/*.jpg', '/images/*.jpeg', '/images/*.gif'],
-      sort: 'ctime',
+      sort: sort || 'ctime',
       reverse: true,
       limit: filter ? undefined : limit,
       offset: filter ? undefined : offset
@@ -468,15 +673,22 @@ function filterToRegex (filter) {
 }
 
 function removeFirstMdHeader (str = '') {
-  return str.replace(/(^#\s.*\r?\n)/, '')
+  return str.replace(/(^#\s.*\r?\n)/, '').trim()
 }
 
-var today = (new Date()).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
-var yesterday = (new Date(Date.now() - 8.64e7)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
-function niceDate (ts) {
+const today = (new Date()).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
+const yesterday = (new Date(Date.now() - 8.64e7)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
+const lastWeekTs = Date.now() - 6.048e+8
+const lastMonthTs = Date.now() - 2.628e+9
+function niceDate (ts, {largeIntervals} = {largeIntervals: false}) {
   var date = (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
   if (date === today) return 'Today'
   if (date === yesterday) return 'Yesterday'
+  if (largeIntervals) {
+    if (ts > lastWeekTs) return 'Last Week'
+    if (ts > lastMonthTs) return 'Last Month'
+    return (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'long' })
+  }
   return date
 }
 
@@ -496,7 +708,7 @@ function matchAndSliceString (filter, re, str) {
   let phraseStart = matchStart - 80
   let phraseEnd = matchEnd + 130
   let strLen = str.length
-  str = str.slice(Math.max(0, phraseStart), matchStart) + `<mark>${str.slice(matchStart, matchEnd)}</mark>` + str.slice(matchEnd, Math.min(phraseEnd, strLen))
+  str = str.slice(Math.max(0, phraseStart), matchStart) + `<strong>${str.slice(matchStart, matchEnd)}</strong>` + str.slice(matchEnd, Math.min(phraseEnd, strLen))
   if (phraseStart > 0) str = '...' + str
   if (phraseEnd < strLen) str = str + '...'
   return str

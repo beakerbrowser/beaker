@@ -107,7 +107,7 @@ function onClickAnywhere (e) {
 // =
 
 export class BeakerContextMenu extends LitElement {
-  constructor ({x, y, right, center, top, withTriangle, roomy, noBorders, style, items, fontAwesomeCSSUrl, render}) {
+  constructor ({x, y, right, center, top, withTriangle, roomy, veryRoomy, rounded, noBorders, style, items, fontAwesomeCSSUrl, render}) {
     super()
     this.x = x
     this.y = y
@@ -116,6 +116,8 @@ export class BeakerContextMenu extends LitElement {
     this.top = top || false
     this.withTriangle = withTriangle || false
     this.roomy = roomy || false
+    this.veryRoomy = veryRoomy || false
+    this.rounded = rounded || false
     this.noBorders = noBorders || false
     this.customStyle = style || undefined
     this.items = items
@@ -141,6 +143,8 @@ export class BeakerContextMenu extends LitElement {
       top: this.top,
       'with-triangle': this.withTriangle,
       roomy: this.roomy,
+      'very-roomy': this.veryRoomy,
+      rounded: this.rounded,
       'no-border': this.noBorders
     })
     var style = ''

@@ -13,6 +13,7 @@ body {
   --text-color--pretty-light: #99a;
   --text-color--very-light: #bbc;
   --text-color--nav--highlight: #445;
+  --text-color--result-link: blue;
   --bg-color--default: #fff;
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;
@@ -36,6 +37,7 @@ body {
     --text-color--pretty-light: #99a;
     --text-color--very-light: #557;
     --text-color--nav--highlight: #bbc;
+    --text-color--result-link: #1043da;
     --bg-color--default: #223;
     --bg-color--light: #334;
     --bg-color--semi-light: #445;

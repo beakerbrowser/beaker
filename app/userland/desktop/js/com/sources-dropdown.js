@@ -1,7 +1,7 @@
 import { html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 
-export function create ({x, y, items}) {
+export function create ({x, y, items, fixedClick}) {
   console.log(items)
   return contextMenu.create({
     x,
@@ -55,6 +55,15 @@ export function create ({x, y, items}) {
         </style>
         <div class="sources-dropdown dropdown-items with-triangle no-border center">
           <input placeholder="Filter..." autofocus @keyup=${onChangeFilter}>
+          <div class="dropdown-item" @click=${() => { contextMenu.destroy(); fixedClick('all') }}>
+            All Sources
+          </div>
+          <div class="dropdown-item" @click=${() => { contextMenu.destroy(); fixedClick('mine') }}>
+            My Data
+          </div>
+          <div class="dropdown-item" @click=${() => { contextMenu.destroy(); fixedClick('others') }}>
+            Others' Data
+          </div>
           <div class="sub-items">
             ${items.map(item => {
               if (item === '-') {

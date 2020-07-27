@@ -66,7 +66,7 @@ a[href]:hover {
 }
 
 .download .controls {
-  width: 70px;
+  width: 80px;
   text-align: right;
 }
 

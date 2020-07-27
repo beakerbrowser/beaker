@@ -41,7 +41,7 @@ class DesktopApp extends LitElement {
       pins: {type: Array},
       profile: {type: Object},
       currentNav: {type: String},
-      filter: {type: String},
+      searchQuery: {type: String},
       sourceOptions: {type: Array},
       currentSource: {type: String},
       isIntroActive: {type: Boolean},
@@ -57,8 +57,8 @@ class DesktopApp extends LitElement {
     super()
     this.profile = undefined
     this.pins = []
-    this.currentNav = 'recent'
-    this.filter = ''
+    this.currentNav = 'all'
+    this.searchQuery = ''
     this.sourceOptions = []
     this.currentSource = 'all'
     this.isIntroActive = false
@@ -85,7 +85,7 @@ class DesktopApp extends LitElement {
       desktop.load(),
       beaker.contacts.list()
     ])
-    this.sourceOptions = [{url: 'hyper://system/', title: 'My Private Data'}, {url: this.profile.url, title: 'My Profile (Public)'}].concat(sourceOptions)
+    this.sourceOptions = [{url: 'hyper://system/', title: 'My Private Data'}, {url: this.profile.url, title: this.profile.title}].concat(sourceOptions)
     console.log(this.pins)
     this.legacyArchives = await beaker.datLegacy.list()
   }
@@ -104,14 +104,15 @@ class DesktopApp extends LitElement {
   }
 
   get isLoading () {
-    return !!Array.from(this.shadowRoot.querySelectorAll('query-view')).find(el => el.isLoading)
+    let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('query-view'))
+    return !!queryViewEls.find(el => el.isLoading)
   }
 
   // rendering
   // =
 
   render () {
-    const navItem = (id, label) => html`<a class=${id === this.currentNav ? 'active' : ''} @click=${e => {this.currentNav = id}}>${label}</a>`
+    const navItem = (id, label) => html`<a class="nav-item ${id === this.currentNav ? 'active' : ''}" @click=${e => {this.currentNav = id}}>${label}</a>`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${''/*<div id="topleft">
@@ -125,32 +126,28 @@ class DesktopApp extends LitElement {
           </a>
         ` : ''}
       </div>*/}
+      <div id="topright">
+        <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
+      </div>
       ${this.renderReleaseNotice()}
       <div class="search-ctrl">
         ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
-        <input @keyup=${e => {this.filter = e.currentTarget.value.toLowerCase()}}>
+        <input @keyup=${this.onKeyupSearch}>
+        <button class="rounded primary" @click=${this.onClickNew}>New <span class="fas fa-fw fa-plus"></span></button>
       </div>
-      ${this.renderSourcesCtrl()}
+      <nav>
+        ${navItem('all', html`<span class="fas fa-fw fa-search"></span> All`)}
+        ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> Bookmarks`)}
+        ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> Blog Posts`)}
+        ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> Pages`)}
+        ${navItem('images', html`<span class="far fa-fw fa-images"></span> Images`)}
+        <a class="nav-item" @click=${this.onClickNavMore} title="More">
+          More...
+        </a>
+        <hr>
+        ${this.renderSourcesCtrl()}
+      </nav>
       <main>
-        <nav>
-          <button class="rounded block"><span class="fas fa-fw fa-plus"></span> Create New</button>
-          <hr>
-          ${navItem('recent', html`<span class="fas fa-fw fa-home"></span> Home`)}
-          ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> Bookmarks`)}
-          ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> Blog Posts`)}
-          ${navItem('pages', html`<span class="far fa-fw fa-file"></span> Pages`)}
-          ${navItem('images', html`<span class="far fa-fw fa-images"></span> Images`)}
-          <hr>
-          ${navItem('drives', html`<span class="fas fa-fw fa-sitemap"></span> Sites`)}
-          <hr>
-          ${navItem('downloads', html`<span class="fas fa-fw fa-history"></span> History`)}
-          ${navItem('downloads', html`<span class="fas fa-fw fa-download"></span> Downloads`)}
-          <hr>
-          ${navItem('help', html`<span class="fas fa-fw fa-cog"></span> Settings`)}
-          <a href="#" title="Release Notes" @click=${this.onClickReleaseNotes}><span class="fas fa-fw fa-rocket"></span> What's new <span class="fas fa-fw fa-caret-down"></span></a>
-          ${navItem('help', html`<span class="far fa-fw fa-life-ring"></span> Help`)}
-          ${''/*navItem('address-book', 'Sources')*/}
-        </nav>
         <div class="views">
           ${this.renderCurrentView()}
         </div>
@@ -161,179 +158,242 @@ class DesktopApp extends LitElement {
   }
 
   renderCurrentView () {
-    let hasFilter = !!this.filter
-    let titlePrefix = !hasFilter ? 'Recent ' : ''
-    if (this.currentNav === 'recent') {
-      return html`
-        <div class="recent-view">
-          ${hasFilter ? '' : this.renderFiles()}
-          <query-view
-            class="subview top-border"
-            content-type="bookmarks"
-            title="${titlePrefix}Bookmarks"
-            create-icon="plus"
-            create-label="New Bookmark"
-            render-mode="simple-list"
-            hide-empty
-            show-view-more
-            limit="5"
-            .filter=${this.filter}
-            .sources=${this.sources}
-            @view-more=${e => {this.currentNav = e.detail.contentType}}
-            @load-finished=${e => this.requestUpdate()}
-          ></query-view>
-          <query-view
-            class="subview top-border"
-            content-type="blogposts"
-            title="${titlePrefix}Blog Posts"
-            create-icon="plus"
-            create-label="New Blog Post"
-            render-mode=${hasFilter ? 'row' : 'simple-list'}
-            hide-empty
-            show-view-more
-            limit="5"
-            .filter=${this.filter}
-            .sources=${this.sources}
-            @view-more=${e => {this.currentNav = e.detail.contentType}}
-            @load-finished=${e => this.requestUpdate()}
-          ></query-view>
-          <query-view
-            class="subview top-border"
-            content-type="pages"
-            title="${titlePrefix}Pages"
-            create-icon="plus"
-            create-label="New Page"
-            render-mode=${hasFilter ? 'row' : 'simple-list'}
-            hide-empty
-            show-view-more
-            limit="5"
-            .filter=${this.filter}
-            .sources=${this.sources}
-            @view-more=${e => {this.currentNav = e.detail.contentType}}
-            @load-finished=${e => this.requestUpdate()}
-          ></query-view>
-          <query-view
-            class="subview top-border"
-            content-type="images"
-            title="${titlePrefix}Images"
-            create-icon="upload"
-            create-label="Import Image"
-            render-mode="simple-grid"
-            hide-empty
-            show-view-more
-            limit="5"
-            .filter=${this.filter}
-            .sources=${this.sources}
-            @view-more=${e => {this.currentNav = e.detail.contentType}}
-            @load-finished=${e => this.requestUpdate()}
-          ></query-view>
-          <h2>
-            <span>Sites</span>
-            <span class="create"><button class="transparent"><span class="fas fa-fw fa-plus"></span> New Site</button></span>
-          </h2>
-          <drives-view class="top-border" ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></drives-view>
-        </div>
-      `
+    let hasSearchQuery = !!this.searchQuery
+    if (this.currentNav === 'all') {
+      if (hasSearchQuery) {
+        return html`
+          <div class="all-view">
+            <query-view
+              class="subview"
+              content-type="images"
+              render-mode="simple-grid"
+              hide-empty
+              limit="5"
+              .filter=${this.searchQuery}
+              .sources=${this.sources}
+              @load-state-updated=${e => this.requestUpdate()}
+            ></query-view>
+            <div class="twocol">
+              <div>
+                <query-view
+                  class="subview"
+                  content-type="bookmarks"
+                  render-mode="row"
+                  hide-empty
+                  limit="5"
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  @load-state-updated=${e => this.requestUpdate()}
+                ></query-view>
+                <query-view
+                  class="subview"
+                  content-type="blogposts"
+                  render-mode="row"
+                  hide-empty
+                  limit="5"
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  @load-state-updated=${e => this.requestUpdate()}
+                ></query-view>
+                <query-view
+                  class="subview"
+                  content-type="pages"
+                  render-mode="row"
+                  hide-empty
+                  limit="5"
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  @load-state-updated=${e => this.requestUpdate()}
+                ></query-view>
+                <query-view
+                  class="subview"
+                  content-type="microblogposts"
+                  render-mode="row"
+                  hide-empty
+                  limit="5"
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  @load-state-updated=${e => this.requestUpdate()}
+                ></query-view>
+              </div>
+            </div>
+          </div>
+        `
+      } else {
+        return html`
+          <div class="all-view">
+            ${this.currentSource !== 'all' ? '' : this.renderPins()}
+            <div class="twocol">
+              <query-view
+                content-type="all"
+                show-date-titles
+                render-mode="action"
+                show-view-more
+                .sources=${this.sources}
+                limit="50"
+                @view-more=${e => {this.currentNav = e.detail.contentType}}
+                @load-state-updated=${e => this.requestUpdate()}
+              ></query-view>
+              <div class="sidebar">
+                <section>
+                  <h3>Sites</h3>
+                  <input placeholder="Filter...">
+                  <drives-view simple ?hide-empty=${!!this.searchQuery || this.isIntroActive} .filter=${this.searchQuery}></drives-view>
+                </section>
+              </div>
+            </div>
+          </div>
+        `
+      }
     }
     if (this.currentNav === 'bookmarks') {
       return html`
-        <query-view
-          class="top-border"
-          content-type="bookmarks"
-          title="Bookmarks"
-          create-icon="plus"
-          create-label="New Bookmark"
-          render-mode="compact-row"
-          .filter=${this.filter}
-          .sources=${this.sources}
-          @load-finished=${e => this.requestUpdate()}
-        ></query-view>
-      `
-      return html`
-        <bookmarks-view class="top-border" ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></bookmarks-view>
+        <div class="content-view">
+          <div class="twocol">
+            <query-view
+              ?show-date-titles=${!hasSearchQuery}
+              content-type="bookmarks"
+              render-mode=${hasSearchQuery ? 'row' : 'action'}
+              .filter=${this.searchQuery}
+              .sources=${this.sources}
+              limit="50"
+              @load-state-updated=${e => this.requestUpdate()}
+            ></query-view>
+            ${hasSearchQuery ? '' : html`
+              <div class="sidebar">
+                <section>
+                  <h3>My Private Bookmarks</h3>
+                  <input placeholder="Filter...">
+                  <query-view
+                    content-type="bookmarks"
+                    render-mode="simple-list"
+                    hide-empty
+                    show-view-more
+                    .sources=${this.sources.slice(0, 1)}
+                    @view-more=${e => {this.currentNav = e.detail.contentType}}
+                    @load-state-updated=${e => this.requestUpdate()}
+                  ></query-view>
+                </section>
+              </div>
+            `}
+          </div>
+        </div>
       `
     }
-    if (this.currentNav === 'blogposts')
+    if (this.currentNav === 'blogposts') {
       return html`
-        <query-view
-          class="top-border"
-          content-type="blogposts"
-          title="Blog Posts"
-          create-icon="plus"
-          create-label="New Blog Post"
-          render-mode=${hasFilter ? 'row' : 'compact-row'}
-          .filter=${this.filter}
-          .sources=${this.sources}
-          @load-finished=${e => this.requestUpdate()}
-        ></query-view>
-    `
+        <div class="content-view">
+          <div class="twocol">
+            <query-view
+              ?show-date-titles=${!hasSearchQuery}
+              content-type="blogposts"
+              render-mode=${hasSearchQuery ? 'row' : 'action'}
+              .filter=${this.searchQuery}
+              .sources=${this.sources}
+              limit="50"
+              @load-state-updated=${e => this.requestUpdate()}
+            ></query-view>
+            ${hasSearchQuery ? '' : html`
+              <div class="sidebar">
+                <section>
+                  <h3>My Blogposts</h3>
+                  <input placeholder="Filter...">
+                  <query-view
+                    content-type="blogposts"
+                    render-mode="simple-list"
+                    hide-empty
+                    show-view-more
+                    .sources=${this.sources.slice(0, 2)}
+                    @view-more=${e => {this.currentNav = e.detail.contentType}}
+                    @load-state-updated=${e => this.requestUpdate()}
+                  ></query-view>
+                </section>
+              </div>
+            `}
+          </div>
+      </div>
+      `
+    }
+    if (this.currentNav === 'microblogposts') {
+      return html`
+        <div class="content-view">
+          <div class="twocol">
+            <query-view
+              ?show-date-titles=${!hasSearchQuery}
+              content-type="microblogposts"
+              render-mode=${hasSearchQuery ? 'row' : 'action'}
+              .filter=${this.searchQuery}
+              .sources=${this.sources}
+              limit="50"
+              @load-state-updated=${e => this.requestUpdate()}
+            ></query-view>
+          </div>
+        </div>
+      `
+    }
     if (this.currentNav === 'pages') {
       return html`
-        <query-view
-          class="top-border"
-          content-type="pages"
-          title="Pages"
-          create-icon="plus"
-          create-label="New Page"
-          render-mode=${hasFilter ? 'row' : 'compact-row'}
-          .filter=${this.filter}
-          .sources=${this.sources}
-          @load-finished=${e => this.requestUpdate()}
-        ></query-view>
+        <div class="content-view">
+          <div class="twocol">
+            <query-view
+              ?show-date-titles=${!hasSearchQuery}
+              content-type="pages"
+              render-mode=${hasSearchQuery ? 'row' : 'action'}
+              .filter=${this.searchQuery}
+              .sources=${this.sources}
+              limit="50"
+              @load-state-updated=${e => this.requestUpdate()}
+            ></query-view>
+            ${hasSearchQuery ? '' : html`
+              <div class="sidebar">
+                <section>
+                  <h3>My Pages</h3>
+                  <input placeholder="Filter...">
+                  <query-view
+                    content-type="pages"
+                    render-mode="simple-list"
+                    hide-empty
+                    show-view-more
+                    .sources=${this.sources.slice(0, 2)}
+                    @view-more=${e => {this.currentNav = e.detail.contentType}}
+                    @load-state-updated=${e => this.requestUpdate()}
+                  ></query-view>
+                </section>
+              </div>
+            `}
+          </div>
+        </div>
       `
     }
     if (this.currentNav === 'images') {
       return html`
-        <query-view
-          class="top-border"
-          content-type="images"
-          title="Images"
-          create-icon="upload"
-          create-label="Import Image"
-          render-mode="simple-grid"
-          .filter=${this.filter}
-          .sources=${this.sources}
-          @load-finished=${e => this.requestUpdate()}
-        ></query-view>
-      `
-    }
-    if (this.currentNav === 'drives') {
-      return html`
-        <drives-view class="top-border" ?hide-empty=${!!this.filter || this.isIntroActive} .filter=${this.filter}></drives-view>
-      `
-    }
-    if (this.currentNav === 'address-book') {
-      return html`
-        <address-book-view class="top-border" ?hide-empty=${!!this.filter || this.isIntroActive} other-only .filter=${this.filter}></address-book-view>
+        <div class="content-view">
+          <div class="onecol">
+            <query-view
+              ?show-date-titles=${!hasSearchQuery}
+              content-type="images"
+              render-mode="simple-grid"
+              .filter=${this.searchQuery}
+              .sources=${this.sources}
+              limit="50"
+              @load-state-updated=${e => this.requestUpdate()}
+            ></query-view>
+          </div>
+        </div>
       `
     }
   }
 
   renderSourcesCtrl () {
-    var customLabel = 'Custom'
-    var isCustom = !['all', 'mine', 'others'].includes(this.currentSource)
-    if (isCustom) {
-      customLabel = this.sourceOptions.find(opt => opt.url === this.currentSource).title
+    var label = 'Custom'
+    switch (this.currentSource) {
+      case 'all': label = 'All Sources'; break
+      case 'mine': label = 'My Data'; break
+      case 'others': label = 'Others\' Data'; break
+      default: label = this.sourceOptions.find(opt => opt.url === this.currentSource).title
     }
     return html`
-      <div class="sources-ctrl">
-        <label @click=${e => { this.currentSource = 'all' }}><input type="radio" name="source" ?checked=${this.currentSource === 'all'}> All Sources</label>
-        <label @click=${e => { this.currentSource = 'mine' }}><input type="radio" name="source" ?checked=${this.currentSource === 'mine'}> My Data</label>
-        <label @click=${e => { this.currentSource = 'others' }}><input type="radio" name="source" ?checked=${this.currentSource === 'others'}> Others' Data</label>
-        <label @click=${this.onClickSources}><input type="radio" name="source" ?checked=${isCustom}> ${customLabel} <span class="fas fa-fw fa-caret-down"></span></label>
-      </div>
-    `
-  }
-
-  renderCreateCtrls () {
-    return html`
-      <section class="create-actions">
-        <button class="block transparent" href="#"><span class="fas fa-fw fa-plus"></span> New Page</button>
-        <button class="block transparent" href="#"><span class="fas fa-fw fa-plus"></span> New Blog Post</button>
-        <button class="block transparent" href="#"><span class="fas fa-fw fa-plus"></span> New Bookmark</button>
-        <button class="block transparent" href="#"><span class="fas fa-fw fa-plus"></span> New Site</button>
-        <button class="block transparent" href="#"><span class="fas fa-fw fa-upload"></span> Import files...</button>
-      </section>
+      <a class="nav-item sources-ctrl" @click=${this.onClickSources}>${label} <span class="fas fa-fw fa-caret-down"></span></a>
     `
   }
 
@@ -353,13 +413,10 @@ class DesktopApp extends LitElement {
     `
   }
 
-  renderFiles () {
+  renderPins () {
     var pins = this.pins || []
     return html`
       <div class="pins">
-        <a class="add" @click=${e => this.onClickNewBookmark(e, true)}>
-          <span class="fas fa-fw fa-plus"></span>
-        </a>
         ${repeat(pins, pin => getHref(pin), pin => html`
           <a
             class="pin"
@@ -374,6 +431,9 @@ class DesktopApp extends LitElement {
             </div>
           </a>
         `)}
+        <a class="pin add" @click=${e => this.onClickNewBookmark(e, true)}>
+          <span class="fas fa-fw fa-plus thumb"></span>
+        </a>
       </div>
     `
   }
@@ -482,7 +542,11 @@ class DesktopApp extends LitElement {
   onClickSources (e) {
     e.preventDefault()
     e.stopPropagation()
-    const items = this.sourceOptions.slice(2).map(({url, title}) => ({
+    const fixedClick = (v) => {
+      this.currentSource = v
+      this.load()
+    }
+    const items = this.sourceOptions.slice(1).map(({url, title}) => ({
       icon: false,
       label: title,
       click: () => {
@@ -491,7 +555,7 @@ class DesktopApp extends LitElement {
       }
     }))
     var rect = e.currentTarget.getClientRects()[0]
-    sourcesDropdown.create({x: (rect.left + rect.right) / 2, y: rect.bottom + 10, items})
+    sourcesDropdown.create({x: (rect.left + rect.right) / 2, y: rect.bottom, items, fixedClick})
   }
 
   onCloseReleaseNotes (e) {
@@ -499,19 +563,67 @@ class DesktopApp extends LitElement {
     this.requestUpdate()
   }
 
+  onKeyupSearch (e) {
+    var value = e.currentTarget.value.toLowerCase()
+    if (this.keyupSearchTo) {
+      clearTimeout(this.keyupSearchTo)
+    }
+    this.keyupSearchTo = setTimeout(() => {
+      this.searchQuery = value
+      this.keyupSearchTo = undefined
+    }, 500)
+  }
+
+  onClickNew (e) {
+    var rect = e.currentTarget.getClientRects()[0]
+    e.preventDefault()
+    e.stopPropagation()
+    const items = [
+      {icon: 'fa-fw fas fa-sitemap', label: 'New Site', click: this.onClickNewSite.bind(this)},
+      '-',
+      {icon: 'fa-fw far fa-file', label: 'New Page'},
+      {icon: 'fa-fw fas fa-blog', label: 'New Blog Post'},
+      {icon: 'fa-fw far fa-star', label: 'New Bookmark'},
+      '-',
+      {icon: 'fa-fw fas fa-upload', label: 'Import files...'}
+    ]
+    contextMenu.create({
+      x: (rect.left + rect.right) / 2,
+      y: rect.bottom + 10,
+      center: true,
+      noBorders: true,
+      roomy: true,
+      style: `padding: 8px 0`,
+      rounded: true,
+      items,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
+    })
+  }
+
   onClickNavMore (e) {
     var rect = e.currentTarget.getClientRects()[0]
     e.preventDefault()
     e.stopPropagation()
     const items = [
-      {icon: 'fas fa-share-alt', label: 'Hosting', click: () => { window.location = `beaker://library/hosting` }}
+      {icon: 'fas fa-stream', label: 'Micro Blog Posts', click: () => { this.currentNav = 'microblogposts' }},
+      {icon: 'far fa-comments', label: 'Comments', click: () => { this.currentNav = 'comments' }}
     ]
-    contextMenu.create({x: rect.left, y: rect.bottom, noBorders: true, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
+    contextMenu.create({
+      x: (rect.left + rect.right) / 2,
+      y: rect.bottom,
+      center: true,
+      noBorders: true,
+      roomy: true,
+      rounded: true,
+      style: `padding: 6px 0`,
+      items,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
+    })
   }
 
-  async onClickNewDrive (e) {
+  async onClickNewSite (e) {
     var drive = await beaker.hyperdrive.createDrive()
-    window.location = drive.url
+    window.open(drive.url)
   }
 
   async onClickNewBookmark (e, pinned) {

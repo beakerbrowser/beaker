@@ -63,6 +63,11 @@ a[href]:hover {
   border-bottom: 1px solid var(--border-color--light);
 }
 
+:host([simple]) .drive {
+  border: 0;
+  padding: 8px 4px;
+}
+
 .drive:hover {
   text-decoration: none !important;
   background: var(--bg-color--light);
@@ -86,6 +91,10 @@ a[href]:hover {
   height: 16px;
   object-fit: cover;
   margin-right: 20px;
+}
+
+:host([simple]) .drive .favicon {
+  margin-right: 10px;
 }
 
 .drive .title {
