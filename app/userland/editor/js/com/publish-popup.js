@@ -98,10 +98,6 @@ export class PublishPopup extends BasePopup {
           <label>Path</label>
           <input name="path" class="small" value=${this.path} @keyup=${this.onKeyupPath}>
         </div>
-        <div class="inline">
-          <label>Tags</label>
-          <input class="small">
-        </div>
 
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
 

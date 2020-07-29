@@ -242,11 +242,11 @@ export class QueryView extends LitElement {
             </a>
           </div>
           ${excerpt ? html`<div class="excerpt">${unsafeHTML(excerpt)}</div>` : ''}
-          <div class="tags">
+          ${''/*TODO<div class="tags">
             <a href="#">#beaker</a>
             <a href="#">#hyperspace</a>
             <a href="#">#p2p</a>
-          </div>
+          </div>*/}
         </div>
       </a>
     `
@@ -359,11 +359,11 @@ export class QueryView extends LitElement {
             ${unsafeHTML(shorten(result.excerpt, 200))}
           </div>
         ` : ''}
-        <div class="tags">
+        ${''/*TODO<div class="tags">
           <a href="#">#beaker</a>
           <a href="#">#hyperspace</a>
           <a href="#">#p2p</a>
-        </div>
+        </div>*/}
       </div>
     `
   }

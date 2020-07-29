@@ -383,6 +383,8 @@ class DesktopApp extends LitElement {
   }
 
   renderTagsList () {
+    // TODO
+    return ''
     return html`
       <section>
         <h3>Popular Tags</h3>
