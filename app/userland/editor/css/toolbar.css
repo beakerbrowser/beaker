@@ -7,12 +7,16 @@ editor-app .toolbar {
   border-bottom: 1px solid #445;
 }
 
-editor-app .toolbar > * {
+editor-app .toolbar > :first-child {
   margin-left: 5px;
 }
 
 editor-app .toolbar > :last-child {
   margin-right: 5px;
+}
+
+editor-app .toolbar .divider {
+  margin: 0 5px;
 }
 
 editor-app .toolbar button {
@@ -44,11 +48,14 @@ editor-app .toolbar button.primary {
   line-height: 17px;
   border: 1px solid rgb(11, 27, 58);
   font-size: 10px;
+  margin: 0 5px;
 }
 
 editor-app .toolbar .text {
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 11px;
+  margin: 0 8px;
 }
 
 editor-app .toolbar .spacer {

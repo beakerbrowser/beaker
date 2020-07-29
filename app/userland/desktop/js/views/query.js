@@ -242,6 +242,11 @@ export class QueryView extends LitElement {
             </a>
           </div>
           ${excerpt ? html`<div class="excerpt">${unsafeHTML(excerpt)}</div>` : ''}
+          <div class="tags">
+            <a href="#">#beaker</a>
+            <a href="#">#hyperspace</a>
+            <a href="#">#p2p</a>
+          </div>
         </div>
       </a>
     `
@@ -314,14 +319,14 @@ export class QueryView extends LitElement {
       blogpost: 'published',
       microblogpost: 'posted',
       page: 'created',
-      comment: 'commented on',
+      comment: 'commented',
       unknown: 'published'
     })[type]
     return html`
       ${this.renderDateTitle(result)}
       <div class="result action">
         <div class="info">
-          <a class="thumb" href=${result.author.url} title=${result.author.title}>
+          <a class="thumb" href=${result.author.url} title=${result.author.title} data-tooltip=${result.author.title}>
             ${result.author.url === 'hyper://system/' ? html`
               <span class="icon fas fa-fw fa-lock"></span>
             ` : html`
@@ -350,10 +355,15 @@ export class QueryView extends LitElement {
           </div>
         </div>
         ${result.excerpt ? html`
-            <div class="excerpt">
-              ${unsafeHTML(shorten(result.excerpt, 200))}
-            </div>
-          ` : ''}
+          <div class="excerpt">
+            ${unsafeHTML(shorten(result.excerpt, 200))}
+          </div>
+        ` : ''}
+        <div class="tags">
+          <a href="#">#beaker</a>
+          <a href="#">#hyperspace</a>
+          <a href="#">#p2p</a>
+        </div>
       </div>
     `
   }
@@ -436,9 +446,9 @@ export class QueryView extends LitElement {
     return ({
       bookmark: niceDate(result.ctime),
       blogpost: niceDate(result.ctime),
-      microblogpost: niceDate(result.ctime),
+      microblogpost: shorten(result.excerpt, 50),
       page: niceDate(result.ctime),
-      comment: toNiceUrl(result.href),
+      comment: shorten(result.excerpt, 50),
       unknown: niceDate(result.ctime)
     })[type]
   }
@@ -470,6 +480,7 @@ export class QueryView extends LitElement {
     var results = (await Promise.all([
       this.query_bookmarks(opts),
       this.query_blogposts(opts),
+      // this.query_microblogposts(opts),
       this.query_comments(opts),
       this.query_pages(opts)
     ])).flat()
@@ -660,7 +671,7 @@ export class QueryView extends LitElement {
         excerpt = matches.excerpt || excerpt
       }
       results.push({
-        class: 'beaker/comment',
+        type: 'beaker/comment',
         url: makeSafe(candidate.url),
         href: makeSafe(href),
         excerpt,

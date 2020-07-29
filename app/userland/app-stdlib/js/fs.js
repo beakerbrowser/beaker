@@ -174,7 +174,7 @@ export async function getAvailableName (containingPath, title, fs, ext = '') {
   var basename = slugify((title || '').trim() || 'untitled').toLowerCase()
   for (let i = 1; i < 1e9; i++) {
     let name = ((i === 1) ? basename : `${basename}-${i}`) + (ext ? `.${ext}` : '')
-    let st = await fs.stat(joinPath(containingPath, name), fs).catch(e => null)
+    let st = await fs.stat(joinPath(containingPath, name)).catch(e => null)
     if (!st) return name
   }
   // yikes if this happens

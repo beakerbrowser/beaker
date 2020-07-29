@@ -192,6 +192,17 @@ h2 a:hover {
   letter-spacing: 0.4px;
 }
 
+.result.row .tags {
+  margin: 5px 0 0;
+  line-height: 1.3;
+  font-size: 12px;
+}
+  
+.result.row .tags a {
+  letter-spacing: 0.3px;
+  margin-right: 3px;
+}
+
 /** COMPACT ROW STYLES **/
 
 .result.compact-row {
@@ -346,7 +357,7 @@ h2 a:hover {
 
 .results.simple-grid h2 {
   grid-column-start: 1;
-  grid-column-end: 6;
+  grid-column-end: 4;
   width: 100%;
 }
 
@@ -405,7 +416,6 @@ h2 a:hover {
   height: 20px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
-  overflow: hidden;
   margin-right: 10px;
   position: relative;
   top: 1px;
@@ -428,25 +438,18 @@ h2 a:hover {
   font-size: 8px;
 }
 
-.result.action .info > * {
+.result.action .action-description {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  height: 30px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.result.action .action-description {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  color: var(--text-color--default);
-  height: 30px;
-}
-
 .result.action .action-description > * {
   margin-right: 5px;
-}
-
-.result.action .origin {
 }
 
 .result.action .origin .icon {
@@ -468,12 +471,23 @@ h2 a:hover {
   color: var(--text-color--result-link);
 }
 
-.result.action .excerpt {
-  white-space: initial;
+.result.action .tags {
+  margin: 0 0 0 54px;
+  line-height: 1.3;
+  font-size: 12px;
+}
+
+.result.action .tags a {
   color: var(--text-color--light);
-  background: var(--bg-color--light);
-  margin: 5px 0px 20px 52px;
-  padding: 8px 10px;
+  letter-spacing: 0.3px;
+  margin-right: 3px;
+}
+
+.result.action .excerpt {
+  display: none;
+  white-space: initial;
+  color: var(--text-color--default);
+  margin: 10px 14px 14px 56px;
   line-height: 1.3;
   font-size: 14px;
 }

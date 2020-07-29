@@ -50,7 +50,7 @@ export class EditBookmarkPopup extends BasePopup {
   // =
 
   renderTitle () {
-    return `Edit bookmark`
+    return this.bookmark ? 'Edit bookmark' : 'New bookmark'
   }
 
   renderBody () {

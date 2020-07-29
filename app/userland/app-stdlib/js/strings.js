@@ -99,7 +99,7 @@ export function slugifyUrl (str = '') {
   return slugify(str)
 }
 
-const reservedChars = /[ <>:"/\\|?*\x00-\x1F]/g
+const reservedChars = /[^\w]/g
 const endingDashes = /([-]+$)/g
 export function slugify (str = '') {
   return str.replace(reservedChars, '-').replace(endingDashes, '')

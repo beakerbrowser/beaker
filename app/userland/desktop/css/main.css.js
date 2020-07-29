@@ -158,7 +158,7 @@ nav a.nav-item {
   font-weight: 400;
   color: var(--text-color--light);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   padding: 10px 8px;
   margin-right: 10px;
   border-bottom: 2px solid transparent;
@@ -253,16 +253,12 @@ nav .sources-ctrl {
 }
 
 .pin.add .thumb {
-  background: var(--bg-color--light);
+  background: var(--bg-color--semi-light);
   border: 0;
 }
 
 .pin.add:hover {
   color: rgba(0, 0, 150, 0.5);
-}
-
-.pin.add:hover .thumb {
-  background: var(--bg-color--semi-light);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -315,7 +311,7 @@ main {
   margin: 10px auto 20px;
   max-width: 1000px;
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: minmax(0, 1fr) 300px;
   gap: 30px;
 }
 
@@ -325,7 +321,7 @@ main {
 }
 
 .twocol .sidebar section h3 {
-  margin: 0;
+  margin: 0 0 3px;
   color: var(--text-color--light);
   font-size: 13px;
   font-weight: bold;
@@ -335,6 +331,29 @@ main {
 .twocol .sidebar section input {
   width: 100%;
   margin: 4px 0;
+}
+
+.tags {
+  line-height: 1.5;
+}
+
+.tags a {
+  margin-right: 5px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  color: var(--text-color--result-link);
+}
+
+.tags a:hover {
+  text-decoration: underline;
+}
+
+.tags a sub {
+  font-size: 10px;
+  position: relative;
+  top: -2px;
+  left: -1px;
+  color: var(--text-color--light);
 }
 
 .intro {

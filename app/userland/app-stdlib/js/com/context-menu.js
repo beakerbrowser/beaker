@@ -121,7 +121,7 @@ export class BeakerContextMenu extends LitElement {
     this.noBorders = noBorders || false
     this.customStyle = style || undefined
     this.items = items
-    this.fontAwesomeCSSUrl = fontAwesomeCSSUrl
+    this.fontAwesomeCSSUrl = fontAwesomeCSSUrl || 'beaker://assets/font-awesome.css'
     this.customRender = render
   }
 
@@ -178,14 +178,14 @@ export class BeakerContextMenu extends LitElement {
                 }
                 if (item.href) {
                   return html`
-                    <a class="dropdown-item" href=${item.href}>
+                    <a class="dropdown-item ${item.selected ? 'selected' : ''}" href=${item.href}>
                       ${icon !== false ? html`<i class="${icon}"></i>` : ''}
                       ${item.label}
                     </a>
                   `
                 }
                 return html`
-                  <div class="dropdown-item" @click=${() => { destroy(); item.click() }}>
+                  <div class="dropdown-item ${item.selected ? 'selected' : ''}" @click=${() => { destroy(); item.click() }}>
                     ${typeof icon === 'string'
                       ? html`<i class="${icon}"></i>`
                       : icon ? icon : ''}

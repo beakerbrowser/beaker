@@ -4,6 +4,7 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { EditBookmarkPopup } from 'beaker://library/js/com/edit-bookmark-popup.js'
 import { AddContactPopup } from 'beaker://library/js/com/add-contact-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
+import { NewPagePopup } from './com/new-page-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
@@ -163,18 +164,18 @@ class DesktopApp extends LitElement {
       if (hasSearchQuery) {
         return html`
           <div class="all-view">
-            <query-view
-              class="subview"
-              content-type="images"
-              render-mode="simple-grid"
-              hide-empty
-              limit="5"
-              .filter=${this.searchQuery}
-              .sources=${this.sources}
-              @load-state-updated=${e => this.requestUpdate()}
-            ></query-view>
             <div class="twocol">
               <div>
+                <query-view
+                  class="subview"
+                  content-type="images"
+                  render-mode="simple-grid"
+                  hide-empty
+                  limit="5"
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  @load-state-updated=${e => this.requestUpdate()}
+                ></query-view>
                 <query-view
                   class="subview"
                   content-type="bookmarks"
@@ -226,6 +227,9 @@ class DesktopApp extends LitElement {
                   @load-state-updated=${e => this.requestUpdate()}
                 ></query-view>
               </div>
+              <div class="sidebar">
+                ${this.renderTagsList()}
+              </div>
             </div>
           </div>
         `
@@ -245,9 +249,9 @@ class DesktopApp extends LitElement {
                 @load-state-updated=${e => this.requestUpdate()}
               ></query-view>
               <div class="sidebar">
+                ${this.renderTagsList()}
                 <section>
                   <h3>Sites</h3>
-                  <input placeholder="Filter...">
                   <drives-view simple ?hide-empty=${!!this.searchQuery || this.isIntroActive} .filter=${this.searchQuery}></drives-view>
                 </section>
               </div>
@@ -269,23 +273,9 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            ${hasSearchQuery ? '' : html`
-              <div class="sidebar">
-                <section>
-                  <h3>My Private Bookmarks</h3>
-                  <input placeholder="Filter...">
-                  <query-view
-                    content-type="bookmarks"
-                    render-mode="simple-list"
-                    hide-empty
-                    show-view-more
-                    .sources=${this.sources.slice(0, 1)}
-                    @view-more=${e => {this.currentNav = e.detail.contentType}}
-                    @load-state-updated=${e => this.requestUpdate()}
-                  ></query-view>
-                </section>
-              </div>
-            `}
+            <div class="sidebar">
+              ${this.renderTagsList()}
+            </div>
           </div>
         </div>
       `
@@ -303,23 +293,9 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            ${hasSearchQuery ? '' : html`
-              <div class="sidebar">
-                <section>
-                  <h3>My Blogposts</h3>
-                  <input placeholder="Filter...">
-                  <query-view
-                    content-type="blogposts"
-                    render-mode="simple-list"
-                    hide-empty
-                    show-view-more
-                    .sources=${this.sources.slice(0, 2)}
-                    @view-more=${e => {this.currentNav = e.detail.contentType}}
-                    @load-state-updated=${e => this.requestUpdate()}
-                  ></query-view>
-                </section>
-              </div>
-            `}
+            <div class="sidebar">
+              ${this.renderTagsList()}
+            </div>
           </div>
       </div>
       `
@@ -337,6 +313,9 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
+            <div class="sidebar">
+              ${this.renderTagsList()}
+            </div>
           </div>
         </div>
       `
@@ -354,6 +333,9 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
+            <div class="sidebar">
+              ${this.renderTagsList()}
+            </div>
           </div>
         </div>
       `
@@ -371,23 +353,9 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            ${hasSearchQuery ? '' : html`
-              <div class="sidebar">
-                <section>
-                  <h3>My Pages</h3>
-                  <input placeholder="Filter...">
-                  <query-view
-                    content-type="pages"
-                    render-mode="simple-list"
-                    hide-empty
-                    show-view-more
-                    .sources=${this.sources.slice(0, 2)}
-                    @view-more=${e => {this.currentNav = e.detail.contentType}}
-                    @load-state-updated=${e => this.requestUpdate()}
-                  ></query-view>
-                </section>
-              </div>
-            `}
+            <div class="sidebar">
+              ${this.renderTagsList()}
+            </div>
           </div>
         </div>
       `
@@ -395,7 +363,7 @@ class DesktopApp extends LitElement {
     if (this.currentNav === 'images') {
       return html`
         <div class="content-view">
-          <div class="onecol">
+          <div class="twocol">
             <query-view
               ?show-date-titles=${!hasSearchQuery}
               content-type="images"
@@ -405,10 +373,29 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
+            <div class="sidebar">
+              ${this.renderTagsList()}
+            </div>
           </div>
         </div>
       `
     }
+  }
+
+  renderTagsList () {
+    return html`
+      <section>
+        <h3>Popular Tags</h3>
+        <div class="tags">
+          <a href="#">#beaker <sub>150</sub></a>
+          <a href="#">#hyperspace <sub>30</sub></a>
+          <a href="#">#p2p <sub>29</sub></a>
+          <a href="#">#web <sub>12</sub></a>
+          <a href="#">#news <sub>10</sub></a>
+          <a href="#">#politics <sub>8</sub></a>
+        </div>
+      </section>
+    `
   }
 
   renderSourcesCtrl () {
@@ -607,11 +594,26 @@ class DesktopApp extends LitElement {
     e.stopPropagation()
     const items = [
       {icon: 'fa-fw fas fa-sitemap', label: 'New Site', click: this.onClickNewSite.bind(this)},
-      {icon: 'fa-fw fas fa-file-upload', label: 'New Site from Folder', click: this.onClickNewSiteFromFolder.bind(this)},
+      {
+        icon: 'fa-fw fas fa-file-upload',
+        label: 'New Site from Folder',
+        click: this.onClickNewSiteFromFolder.bind(this)
+      },
       '-',
-      {icon: 'fa-fw far fa-file-alt', label: 'New Page'},
-      {icon: 'fa-fw fas fa-blog', label: 'New Blog Post'},
-      {icon: 'fa-fw far fa-star', label: 'New Bookmark'}
+      {icon: 'fa-fw far fa-file-alt', label: 'New Page Draft', click: () => this.onClickNewPage({type: 'beaker/page', draft: true})},
+      {icon: 'fa-fw fas fa-blog', label: 'New Blog Draft', click: () => this.onClickNewPage({type: 'beaker/blogpost', draft: true})},
+      '-',
+      {
+        icon: html`
+          <span class="icon-stack" style="position: relative;">
+            <i class="far fa-file-alt fa-fw" style="position: relative; left: -2px;"></i>
+            <i class="fas fa-lock" style="position: absolute; width: 4px; font-size: 50%; bottom: 0; left: 6px; background: #fff; padding: 0 1px"></i>
+          </span>
+        `,
+        label: 'New Private Page',
+        click: () => this.onClickNewPage({type: 'beaker/page', private: true})
+      },
+      {icon: 'fa-fw far fa-star', label: 'New Bookmark', click: () => this.onClickEditBookmark(undefined)}
     ]
     contextMenu.create({
       x: (rect.left + rect.right) / 2,
@@ -697,8 +699,8 @@ class DesktopApp extends LitElement {
       {label: 'Open Link in New Tab', click: () => window.open(getHref(file))},
       {label: 'Copy Link Address', click: () => writeToClipboard(getHref(file))},
       (file.isFixed) ? undefined : {type: 'separator'},
-      (file.isFixed) ? undefined : {label: 'Edit', click: () => this.onClickEdit(file)},
-      (file.isFixed) ? undefined : {label: 'Unpin', click: () => this.onClickRemove(file)}
+      (file.isFixed) ? undefined : {label: 'Edit', click: () => this.onClickEditBookmark(file)},
+      (file.isFixed) ? undefined : {label: 'Unpin', click: () => this.onClickUnpinBookmark(file)}
     ].filter(Boolean)
     var fns = {}
     for (let i = 0; i < items.length; i++) {
@@ -712,7 +714,17 @@ class DesktopApp extends LitElement {
     if (fns[choice]) fns[choice]()
   }
 
-  async onClickEdit (file) {
+  async onClickNewPage (opts) {
+    try {
+      var res = await NewPagePopup.create(opts)
+      beaker.browser.openUrl(res.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
+    } catch (e) {
+      // ignore
+      console.log(e)
+    }
+  }
+
+  async onClickEditBookmark (file) {
     try {
       await EditBookmarkPopup.create(file)
       this.load()
@@ -722,7 +734,7 @@ class DesktopApp extends LitElement {
     }
   }
 
-  async onClickRemove (file) {
+  async onClickUnpinBookmark (file) {
     await beaker.hyperdrive.deleteMetadata(`hyper://system/bookmarks/${file.name}`, 'pinned')
     toast.create('Bookmark unpinned', '', 10e3)
     this.load()

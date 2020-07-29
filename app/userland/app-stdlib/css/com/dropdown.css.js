@@ -188,6 +188,10 @@ const cssStr = css`
   border-bottom: 0;
 }
 
+.dropdown-item.selected {
+  background: var(--bg-color--dropdown-item--hover);  
+}
+
 .dropdown-item:hover:not(.no-hover) {
   background: var(--bg-color--dropdown-item--hover);
   cursor: pointer;
@@ -254,5 +258,6 @@ const cssStr = css`
 .dropdown-item:last-of-type {
   border-radius: 0 0 2px 2px;
 }
+
 `
 export default cssStr

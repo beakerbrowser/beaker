@@ -87,7 +87,7 @@ class AnnotationsApp extends LitElement {
       let content = await beaker.hyperdrive.readFile(file.url).catch(e => undefined)
       if (!content) continue
       annotations.push({
-        class: 'beaker/comment',
+        type: 'beaker/comment',
         content,
         url: file.url,
         ctime: file.stat.ctime,
