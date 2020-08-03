@@ -65,7 +65,6 @@ export class BookmarksView extends LitElement {
       {label: 'Edit', click: () => this.onClickEdit(bookmark)},
       {type: 'separator'},
       {type: 'checkbox', checked: _pinned(bookmark), label: 'Pin to start page', click: () => this.onToggleBookmarkPinned(null, bookmark)},
-      {type: 'checkbox', checked: bookmark.toolbar, label: 'Show on toolbar', click: () => this.onToggleBookmarToolbar(bookmark)},
       {type: 'separator'},
       {label: 'Delete', click: () => this.onClickRemove(bookmark)}
     ]
@@ -160,22 +159,6 @@ export class BookmarksView extends LitElement {
     }
     this.load()
     emit(this, 'update-pins')
-  }
-
-  async onToggleBookmarToolbar (bookmark) {
-    var filename = bookmark.path.split('/').pop()
-    var toolbar = await beaker.hyperdrive.readFile('hyper://system/toolbar.json', 'json').catch(e => undefined)
-    toolbar = toolbar || {}
-    toolbar.items = toolbar.items && Array.isArray(toolbar.items) ? toolbar.items : []
-    if (bookmark.toolbar) {
-      toolbar.items = toolbar.items.filter(item => item && typeof item === 'object' && item.bookmark !== filename)
-    } else {
-      toolbar.items = toolbar.items.filter(item => item && typeof item === 'object' && item.bookmark !== filename)
-      toolbar.items.push({bookmark: filename})
-    }
-    await beaker.hyperdrive.writeFile('hyper://system/toolbar.json', toolbar, 'json')
-    beaker.browser.updateWindowToolbar()
-    this.load()
   }
 
   async onClickEdit (file) {

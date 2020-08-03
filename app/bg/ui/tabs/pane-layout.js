@@ -294,7 +294,7 @@ function insert (arr, item, after = undefined) {
     if (i !== -1) arr.splice(i + 1, 0, item)
     else arr.push(item)
   } else {
-    arr.push(item)
+    arr.unshift(item)
   }
 }
 

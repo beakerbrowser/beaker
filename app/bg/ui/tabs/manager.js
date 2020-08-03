@@ -24,7 +24,8 @@ import * as sitedataDb from '../../dbs/sitedata'
 import * as settingsDb from '../../dbs/settings'
 import hyper from '../../hyper/index'
 
-const Y_POSITION = 94
+const X_POSITION = 40
+const Y_POSITION = 75
 
 // globals
 // =
@@ -142,13 +143,14 @@ class Tab extends EventEmitter {
   }
 
   get tabBounds () {
-    var x = 0
+    var x = X_POSITION
     var y = Y_POSITION
     var {width, height} = this.browserWindow.getContentBounds()
     if (getAddedWindowSettings(this.browserWindow).isShellInterfaceHidden) {
+      x = 0
       y = 0
     }
-    return {x, y: y, width, height: height - y}
+    return {x, y: y, width: width - x, height: height - y}
   }
 
   getIPCSenderInfo (event) {
@@ -300,8 +302,8 @@ class Tab extends EventEmitter {
 
     // default to vertical stacking once there are two columns
     if (!after && this.layout.stacks.length > 1) {
-      let lastStack = this.layout.stacks[this.layout.stacks.length - 1]
-      after = lastStack.panes[lastStack.panes.length - 1]
+      let stack = this.layout.stacks[0]
+      after = stack.panes[stack.panes.length - 1]
       splitDir = 'horz'
     }
 

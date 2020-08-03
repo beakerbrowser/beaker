@@ -10,8 +10,7 @@ class BookmarkMenu extends LitElement {
     return {
       href: {type: String},
       title: {type: String},
-      pinned: {type: Boolean},
-      toolbar: {type: Boolean}
+      pinned: {type: Boolean}
     }
   }
 
@@ -25,7 +24,6 @@ class BookmarkMenu extends LitElement {
     this.href = ''
     this.title = ''
     this.pinned = false
-    this.toolbar = false
     this.existingBookmark = undefined
   }
 
@@ -35,11 +33,9 @@ class BookmarkMenu extends LitElement {
       this.href = this.existingBookmark.href || params.url
       this.title = this.existingBookmark.title || params.metadata.title || ''
       this.pinned = this.existingBookmark.pinned
-      this.toolbar = this.existingBookmark.toolbar
     } else {
       this.href = params.url
       this.title = params.metadata && params.metadata.title ? params.metadata.title : ''
-      this.toolbar = params.toolbar || false
     }
     await this.requestUpdate()
 
@@ -74,13 +70,6 @@ class BookmarkMenu extends LitElement {
             </label>
           </div>
 
-          <div class="input-group" style="margin: 5px 0 15px">
-            <label for="toolbar-checkbox">
-              <input id="toolbar-checkbox" type="checkbox" name="toolbar" value="1" ?checked=${this.toolbar} @change=${this.onChangeToolbar}/>
-              Add to toolbar
-            </label>
-          </div>
-
           <div class="buttons">
             <button type="button" class="btn remove" @click=${this.onClickCancel}>
               ${this.existingBookmark ? 'Delete' : 'Cancel'}
@@ -102,8 +91,7 @@ class BookmarkMenu extends LitElement {
     await bg.bookmarks.add({
       href: this.href,
       title: this.title,
-      pinned: this.pinned,
-      toolbar: this.toolbar
+      pinned: this.pinned
     })
     bg.views.refreshState('active')
     bg.shellMenus.close()
@@ -128,10 +116,6 @@ class BookmarkMenu extends LitElement {
 
   onChangePinned (e) {
     this.pinned = !this.pinned
-  }
-
-  onChangeToolbar (e) {
-    this.toolbar = !this.toolbar
   }
 }
 BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`

@@ -1,5 +1,4 @@
 export default {
-  update: 'promise',
-  openEditModal: 'promise',
+  add: 'promise',
   remove: 'promise'
 }

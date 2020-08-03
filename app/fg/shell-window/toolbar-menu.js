@@ -1,4 +1,5 @@
 /* globals customElements */
+import { ipcRenderer } from 'electron'
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map'
 import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
@@ -21,16 +22,16 @@ class ShellWindowToolbarMenu extends LitElement {
     :host {
       position: fixed;
       left: 0;
-      top: 69px;
-      width: 100vw;
-      height: 25px;
+      top: 75px;
+      width: 40px;
+      height: calc(100vh - 69px);
 
       display: flex;
+      flex-direction: column;
       font-size: 11px;
       letter-spacing: 0.4px;
-      padding: 1px 5px;
       box-sizing: border-box;
-      border-bottom: 1px solid var(--border-color--toolbar);
+      border-right: 1px solid var(--border-color--toolbar);
       background: var(--bg-color--toolbar);
       color: var(--text-color--toolbar);
       user-select: none;
@@ -38,7 +39,7 @@ class ShellWindowToolbarMenu extends LitElement {
     .loading-bar {
       position: fixed;
       left: 0;
-      top: 93px;
+      top: 74px;
       width: 100vw;
       height: 1px;
       background: linear-gradient(to right, #2196F3 0%, #E3F2FD 50%, #2196F3 100%);
@@ -52,11 +53,14 @@ class ShellWindowToolbarMenu extends LitElement {
     .spacer {
       flex: 1;
     }
-    a {
-      padding: 0 10px;
-      margin-right: 1px;
+    .fa-tags {
       height: 20px;
       line-height: 22px;
+    }
+    a {
+      width: 39px;
+      height: 34px;
+      padding: 6px 0;
       box-sizing: border-box;
       text-align: center;
       cursor: pointer;
@@ -64,7 +68,6 @@ class ShellWindowToolbarMenu extends LitElement {
       color: inherit;
       white-space: nowrap;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
     a:hover {
       background: var(--bg-color--toolbar--hover);
@@ -74,22 +77,25 @@ class ShellWindowToolbarMenu extends LitElement {
       background: var(--bg-color--toolbar--pressed);
       color: var(--text-color--toolbar--pressed);
     }
-    a + a .far,
-    a + a .fas {
-      margin-left: -2px;
+    a .far,
+    a .fas {
+      font-size: 12px;
+      position: relative;
+      top: 5px;
     }
     .favicon {
       object-fit: contain;
-      width: 12px;
-      height: 12px;
+      width: 16px;
+      height: 16px;
       position: relative;
       top: 2px;
+      image-rendering: -webkit-optimize-contrast;
     }
-    .divider {
-      margin: 6px 10px 2px 6px;
-      width: 1px;
-      height: 10px;
-      background-color: var(--border-color--tab);
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border-color--toolbar);
+      width: 70%;
+      margin: 8px 6px;
     }
     `
   }
@@ -108,29 +114,28 @@ class ShellWindowToolbarMenu extends LitElement {
 
   render () {
     const btn = (item, index) => {
+      if (item.type === 'separator') {
+        return html`<hr>`
+      }
       return html`
-        <a @mousedown=${e => this.onMousedownBookmark(e, index)}>
-          <img class="favicon" src="asset:favicon:${item.href}">
-          ${item.title}
+        <a @mousedown=${e => this.onMousedownLink(e, index)}>
+          <img class="favicon" src="asset:favicon:${item.url}">
         </a>
       `
     }
+    console.log(this.toolbar)
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${WINDOW_MENU_ENABLED ? html`
         ${this.renderMenuButton('file', 'File')}
-        ${this.renderMenuButton('drive', 'Drive')}
+        ${this.renderMenuButton('drive', 'Site')}
         ${this.renderMenuButton('bookmarks', 'Bookmarks')}
         ${this.renderMenuButton('developer', 'Developer')}
         ${this.renderMenuButton('help', 'Help')}
         <span class="divider"></span>
       ` : ''}
       ${this.toolbar ? repeat(this.toolbar, btn) : ''}
-      <span class="spacer"></span>
-      <a data-href="https://userlist.beakerbrowser.com/" title="Beaker User Directory" @mousedown=${this.onMousedownLink}>User Directory</a>
-      <a data-href="https://beaker.dev/" title="Developer Portal" @mousedown=${this.onMousedownLink}>Dev Portal</a>
-      <a data-href="https://docs.beakerbrowser.com/" title="Help" @mousedown=${this.onMousedownLink}>Help</a>
       ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
     `
   }
@@ -147,73 +152,55 @@ class ShellWindowToolbarMenu extends LitElement {
   // events
   // =
 
-  async onMousedownBookmark (e, index) {
+  async onMousedownLink (e, index) {
     e.stopPropagation()
     var item = this.toolbar[index]
-    let rect = e.currentTarget.getClientRects()[0]
     var menuChoice
     if (e.button === 2 || (e.button === 1 && (e.metaKey || e.ctrlKey))) {
       var menu = [
         {id: 'goto', label: 'Open in Current Pane'},
-        {id: 'pane', label: 'Open in New Pane'},
         {id: 'tab', label: 'Open in New Tab'},
         {id: 'window', label: 'Open in New Window'},
         {type: 'separator'},
-        {id: 'togglePaneDefault', label: 'Open as Attached Pane by Default', type: 'checkbox', checked: item.openInPane},
-        {type: 'separator'},
-        {id: 'edit', label: 'Edit Bookmark'},
         {id: 'remove', label: 'Remove from Toolbar'}
       ]
       menuChoice = await bg.beakerBrowser.showContextMenu(menu)
     } 
     if (menuChoice === 'tab' || e.button === 1) {
-      bg.views.createTab(item.href)
+      bg.views.createTab(item.url)
     } else if (menuChoice === 'goto') {
-      bg.views.loadURL('active', item.href)
+      bg.views.loadURL('active', item.url)
     } else if (menuChoice === 'pane') {
-      bg.views.createPane('active', item.href)
+      bg.views.createPane('active', item.url)
     } else if (menuChoice === 'window') {
-      bg.beakerBrowser.newWindow({pages: [item.href]})
-    } else if (menuChoice === 'togglePaneDefault') {
-      bg.toolbar.update({bookmark: item.bookmark, openInPane: !item.openInPane})
-    } else if (menuChoice === 'edit') {
-      bg.views.toggleMenu('bookmark-edit', {
-        bounds: {left: rect.left|0, top: rect.bottom|0},
-        params: {url: item.href}
-      })
+      bg.beakerBrowser.newWindow({pages: [item.url]})
     } else if (menuChoice === 'remove') {
-      bg.toolbar.remove(item)
+      bg.toolbar.remove(index)
     } else if (e.button === 0) {
-      if (item.openInPane) {
-        bg.views.togglePaneByOrigin('active', item.href)
-      } else {
-        bg.views.loadURL('active', item.href)
-      }
+      bg.views.togglePaneByOrigin('active', item.url)
     }
   }
 
   async onMainContextmenu (e) {
     e.preventDefault()
     e.stopPropagation()
-    var x = e.clientX
-    var y = e.clientY
     var menuChoice = await bg.beakerBrowser.showContextMenu([
-      {id: 'new-bookmark', label: 'New Bookmark'}
+      {id: 'new-item', label: 'Add Application to Sidebar'}
     ])
-    if (menuChoice === 'new-bookmark') {
-      bg.views.toggleMenu('bookmark-edit', {
-        bounds: {left: x|0, top: y|0},
-        params: {url: '', toolbar: true}
-      })
-    }
-  }
-
-  onMousedownLink (e) {
-    e.preventDefault()
-    if (e.button === 1 || e.metaKey || e.ctrlKey) {
-      bg.views.createTab(e.currentTarget.dataset.href, {setActive: true, adjacentActive: true})
-    } else if (e.button === 0) {
-      bg.views.loadURL('active', e.currentTarget.dataset.href)
+    if (menuChoice === 'new-item') {
+      var first = true
+      while (true) {
+        let url = ipcRenderer.sendSync('page-prompt-dialog', first ? 'URL of the application' : 'Invalid URL, try again')
+        if (!url) return
+        first = false
+        try {
+          new URL(url)
+        } catch (e) {
+          continue
+        }
+        bg.toolbar.add({url})
+        return
+      }
     }
   }
 
