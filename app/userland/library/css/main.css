@@ -18,6 +18,7 @@ body {
   font-size: 13px;
   background: #fff;
   color: #333;
+  overflow: hidden;
 }
 
 @media (prefers-color-scheme: dark) {

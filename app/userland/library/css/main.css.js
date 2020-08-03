@@ -26,7 +26,7 @@ a:hover {
 
 header {
   display: grid;
-  grid-template-columns: 200px 1fr 100px;
+  grid-template-columns: 190px 1fr auto;
   padding: 10px;
   position: sticky;
   top: 0;
@@ -35,15 +35,17 @@ header {
 }
 
 header .brand {
+  display: flex;
+  align-items: center;
   font-size: 18px;
   line-height: 35px;
   padding-left: 7px;
   color: var(--text-color--lightish);
 }
 
-header .brand .fas {
+header .brand img {
   margin-right: 2px;
-  font-size: 17px;
+  width: 18px;
   color: #2196F3;
 }
 
@@ -64,7 +66,6 @@ header .search-ctrl input {
   color: inherit;
   box-sizing: border-box;
   width: 100%;
-  max-width: 800px;
   height: 36px;
   padding: 0 0 0 42px;
   border: 0;
@@ -78,39 +79,12 @@ header .search-ctrl input::placeholder {
 }
 
 header .new-btn {
-  display: block;
-  background: var(--bg-color--default);
-  border: 1px solid var(--border-color--light);
-  border-top: 1px solid #2196F3;
-  color: var(--text-color--light);
-  font-size: 13px;
-  font-weight: 600;
-  text-align: center;
-  border-radius: 2px;
-  height: 32px;
-  line-height: 32px;
-  margin: 0 10px;
-  padding-left: 4px;
-  cursor: pointer;
-}
-
-header .new-btn .fa-fw {
-  font-size: 12px;
-}
-
-header .new-btn.pressed,
-header .new-btn:hover {
-  background: var(--bg-color--new-btn--highlight);
-  text-decoration: none;
+  padding: 4px 4px 4px 12px;
 }
 
 .layout {
   display: grid;
   grid-template-columns: 200px 1fr;
-}
-
-nav {
-
 }
 
 nav .page-nav a {
@@ -119,7 +93,7 @@ nav .page-nav a {
   color: var(--text-color--lightish);
   margin: 10px;
   border-radius: 26px;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0.5px;
 }
 
@@ -147,8 +121,53 @@ main {
 address-book-view,
 bookmarks-view,
 downloads-view,
-drives-view {
+drives-view,
+history-view {
   padding-bottom: 100px;
+}
+
+@media (max-width: 840px) {
+  header {
+    grid-template-columns: 120px 1fr auto;
+    padding: 5px;
+  }
+
+  header .brand {
+    font-size: 16px;
+    line-height: 35px;
+    padding-left: 7px;
+    color: var(--text-color--lightish);
+  }
+
+  header .brand .fas {
+    margin-right: 2px;
+    font-size: 15px;
+    color: #2196F3;
+  }
+  .layout {
+    display: block;
+  }
+  .page-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border-color--light);
+  }
+  nav .page-nav a {
+    margin: 0;
+    border-radius: 0;
+    padding: 8px 14px;
+  }
+  nav .page-nav a.current {
+    font-weight: 500;
+  }
+  nav .page-nav a .fa-fw {
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 660px) {
+  nav .page-nav a .label {
+    display: none;
+  }
 }
 `
 export default cssStr

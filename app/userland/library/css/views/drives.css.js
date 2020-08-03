@@ -58,7 +58,7 @@ a[href]:hover {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 6px 4px;
+  padding: 6px 14px;
   color: var(--text-color--lightish);
   border-bottom: 1px solid var(--border-color--light);
 }
@@ -90,7 +90,7 @@ a[href]:hover {
   width: 16px;
   height: 16px;
   object-fit: cover;
-  margin-right: 20px;
+  margin-right: 12px;
 }
 
 :host([simple]) .drive .favicon {
@@ -98,7 +98,7 @@ a[href]:hover {
 }
 
 .drive .title {
-  font-weight: 500;
+  font-weight: 400;
   margin-right: 20px;
 }
 
@@ -123,14 +123,9 @@ a[href]:hover {
   flex: 2;
 }
 
-.drive .readonly {
-  display: inline-block;
-  background: var(--bg-color--light);
-  color: var(--text-color--light);
-  font-size: 11px;
-  font-weight: 500;
-  padding: 0 4px 2px;
-  border-radius: 2px;
+.drive .owner {
+  flex: 0 0 50px;
+  color: #99a;
 }
 
 .drive .forks {
@@ -177,6 +172,22 @@ a[href]:hover {
   text-shadow: 0 1px 0px #0004;
   border-radius: 4px;
   font-size: 10px;
+}
+
+@media (max-width: 700px) {
+  .drive .title {
+    font-size: 13px !important;
+  }
+  .drive .description {
+    display: none;
+  }
+  .drive .peers {
+    flex: 0 0 60px;
+    min-width: 50px;
+  }
+  .drive .forks {
+    flex: 0 0 50px;
+  }
 }
 
 `

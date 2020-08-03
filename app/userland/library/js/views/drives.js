@@ -26,7 +26,7 @@ export class DrivesView extends LitElement {
   constructor () {
     super()
     this.drives = undefined
-    this.readonly = false
+    this.readonly = undefined
     this.filter = undefined
     this.showHeader = false
     this.hideEmpty = false
@@ -51,13 +51,15 @@ export class DrivesView extends LitElement {
       }
       return true
     })
-    drives = drives.filter(drive => {
-      if (this.readonly) {
-        return !drive.info.writable
-      } else {
-        return drive.info.writable || drive.hasWritableFork
-      }
-    })
+    if (typeof this.readonly !== 'undefined') {
+      drives = drives.filter(drive => {
+        if (this.readonly) {
+          return !drive.info.writable
+        } else {
+          return drive.info.writable || drive.hasWritableFork
+        }
+      })
+    }
     drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
     console.log(drives)
 
@@ -158,13 +160,6 @@ export class DrivesView extends LitElement {
         ` : ''}
         <div class="drives">
           ${repeat(drives, drive => this.renderDrive(drive))}
-          ${drives.length === 0 && !this.hideEmpty ? html`
-            ${this.readonly ? html`
-              <div class="empty"><span class="fas fa-share-alt" style="margin-bottom: 30px"></span><div>Not currently hosting any Hyper sites</div></div>
-            ` : html`
-              <div class="empty"><span class="fas fa-hdd"></span><div>Click "New Site" to create a site</div></div>
-            `}
-          ` : ''}
           ${drives.length === 0 && this.filter ? html`
             <div class="empty"><div>No matches found for "${this.filter}".</div></div>
           ` : ''}
@@ -207,9 +202,9 @@ export class DrivesView extends LitElement {
           ${drive.forkOf ? html`
             <span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
           ` : ''}
-          ${!drive.info.writable ? html`<span class="readonly">readonly</span>` : ''}
           ${drive.info.description.slice(0, 50)}
         </div>
+        <div class="owner">${drive.info.writable ? 'Mine' : ''}</div>
         <div class="forks">
           ${numForks > 0 ? html`
             <a @click=${e => this.onClickViewForksOf(e, drive)} href="#">

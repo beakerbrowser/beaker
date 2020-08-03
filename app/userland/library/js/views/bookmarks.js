@@ -47,12 +47,6 @@ export class BookmarksView extends LitElement {
       type: 'file',
       path: ['/bookmarks/*.goto']
     })
-    var toolbar = await beaker.hyperdrive.readFile('hyper://system/toolbar.json', 'json').catch(e => undefined)
-    if (toolbar && toolbar.items && Array.isArray(toolbar.items)) {
-      for (let bookmark of bookmarks) {
-        bookmark.toolbar = !!toolbar.items.find(item => item && typeof item === 'object' && bookmark.path.split('/').pop() === item.bookmark)
-      }
-    }
     bookmarks.sort((a, b) => _title(a).localeCompare(_title(b)))
     this.bookmarks = bookmarks
     console.log(this.bookmarks)
@@ -99,9 +93,6 @@ export class BookmarksView extends LitElement {
         ` : ''}
         <div class="bookmarks">
           ${repeat(bookmarks, bookmark => this.renderBookmark(bookmark))}
-          ${bookmarks.length === 0 && !this.hideEmpty ? html`
-            <div class="empty"><span class="far fa-star"></span><div>Click "New Bookmark" to create a bookmark</div></div>
-          ` : ''}
           ${bookmarks.length === 0 && this.filter ? html`
             <div class="empty"><div>No matches found for "${this.filter}".</div></div>
           ` : ''}
@@ -125,7 +116,6 @@ export class BookmarksView extends LitElement {
        <div class="title">${title}</div>
        <div class="href">${href}</div>
         <div class="ctrls">
-          <button class="transparent ${pinned ? 'pressed' : ''}" title="Toggle pinned" @click=${e => this.onToggleBookmarkPinned(e, bookmark)}><span class="fas fa-thumbtack"></span></button>
           <button class="transparent" @click=${e => this.onClickBookmarkMenuBtn(e, bookmark)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
       </div>

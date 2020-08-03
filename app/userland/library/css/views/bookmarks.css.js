@@ -45,7 +45,7 @@ a {
 .bookmark {
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 6px 14px;
   color: var(--text-color--lightish);
   border-bottom: 1px solid var(--border-color--light);
 }
@@ -69,11 +69,11 @@ a {
   display: block;
   width: 16px;
   height: 16px;
-  margin-right: 20px;
+  margin-right: 12px;
 }
 
 .bookmark .title {
-  font-weight: 500;
+  font-weight: 400;
   margin-right: 20px;
 }
 
@@ -93,7 +93,13 @@ a {
 }
 
 .bookmark .ctrls {
-  width: 75px;
+  width: 40px;
+}
+
+@media (max-width: 700px) {
+  .bookmark .title {
+    font-size: 13px !important;
+  }
 }
 
 `
