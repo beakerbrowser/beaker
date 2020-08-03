@@ -248,8 +248,8 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://explorer' || requestUrl.startsWith('beaker://explorer/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'explorer'), cb, {fallbackToIndexHTML: true})
   }
-  if (requestUrl === 'beaker://annotations' || requestUrl.startsWith('beaker://annotations/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'annotations'), cb, {fallbackToIndexHTML: true})
+  if (requestUrl === 'beaker://activity' || requestUrl.startsWith('beaker://activity/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'activity'), cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://webterm' || requestUrl.startsWith('beaker://webterm/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'webterm'), cb, {
