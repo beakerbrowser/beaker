@@ -19,6 +19,7 @@ export class PaneLayout extends EventEmitter {
         isActive: b.pane.isActive,
         isEdge: b.isEdge,
         bounds: {x: b.x, y: b.y, width: b.width, height: b.height},
+        url: b.pane.url,
         title: b.pane.title,
         status: b.pane.currentStatus,
         attachedPaneId: b.pane.attachedPane ? b.pane.attachedPane.id : undefined,

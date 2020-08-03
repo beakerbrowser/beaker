@@ -61,6 +61,7 @@ class ShellWindowToolbarMenu extends LitElement {
       width: 39px;
       height: 34px;
       padding: 6px 0;
+      margin: 1px 0;
       box-sizing: border-box;
       text-align: center;
       cursor: pointer;
@@ -109,6 +110,12 @@ class ShellWindowToolbarMenu extends LitElement {
     this.addEventListener('contextmenu', this.onMainContextmenu.bind(this))
   }
 
+  isPaneActive (url) {
+    if (!this.activeTab || this.activeTab?.paneLayout?.length === 1) return false
+    let origin = (new URL(url)).origin
+    return !!this.activeTab.paneLayout.find(pane => pane.url.startsWith(origin))
+  }
+
   // rendering
   // =
 
@@ -118,12 +125,14 @@ class ShellWindowToolbarMenu extends LitElement {
         return html`<hr>`
       }
       return html`
-        <a @mousedown=${e => this.onMousedownLink(e, index)}>
+        <a
+          @mousedown=${e => this.onMousedownLink(e, index)}
+          class=${this.isPaneActive(item.url) ? 'pressed' : ''}
+        >
           <img class="favicon" src="asset:favicon:${item.url}">
         </a>
       `
     }
-    console.log(this.toolbar)
 
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -154,6 +163,7 @@ class ShellWindowToolbarMenu extends LitElement {
 
   async onMousedownLink (e, index) {
     e.stopPropagation()
+    var el = e.currentTarget
     var item = this.toolbar[index]
     var menuChoice
     if (e.button === 2 || (e.button === 1 && (e.metaKey || e.ctrlKey))) {
@@ -177,6 +187,11 @@ class ShellWindowToolbarMenu extends LitElement {
     } else if (menuChoice === 'remove') {
       bg.toolbar.remove(index)
     } else if (e.button === 0) {
+      if (this.isPaneActive(item.url)) {
+        el.classList.remove('pressed')
+      } else {
+        el.classList.add('pressed')
+      }
       bg.views.togglePaneByOrigin('active', item.url)
     }
   }
