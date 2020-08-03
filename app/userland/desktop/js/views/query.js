@@ -3,7 +3,7 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
 import queryCSS from '../../css/views/query.css.js'
 import { removeMarkdown } from 'beaker://app-stdlib/vendor/remove-markdown.js'
-import { shorten, makeSafe, toNiceUrl, DRIVE_KEY_REGEX } from 'beaker://app-stdlib/js/strings.js'
+import { shorten, makeSafe, toNiceUrl, toNiceDomain, DRIVE_KEY_REGEX } from 'beaker://app-stdlib/js/strings.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 
 export class QueryView extends LitElement {
@@ -104,7 +104,7 @@ export class QueryView extends LitElement {
       if (this.hideEmpty) return html``
       return html`
         <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-        ${this.title ? html`<h2>
+        ${this.title ? html`<h2 class="results-header">
           ${this.showViewMore ? html`
             <a @click=${e => emit(this, 'view-more', {detail: {contentType: this.contentType}})}>
               ${this.title}
@@ -124,7 +124,7 @@ export class QueryView extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${this.title ? html`<h2>
+      ${this.title ? html`<h2 class="results-header">
         ${this.showViewMore ? html`
           <a @click=${e => emit(this, 'view-more', {detail: {contentType: this.contentType}})}>
             ${this.title}
@@ -187,7 +187,7 @@ export class QueryView extends LitElement {
     if (this.lastResultNiceDate === resultNiceDate) return ''
     this.lastResultNiceDate = resultNiceDate
     return html`
-      <h2><span>${resultNiceDate}</span></h2>
+      <h2 class="results-header"><span>${resultNiceDate}</span></h2>
     `
   }
 
@@ -319,9 +319,48 @@ export class QueryView extends LitElement {
       blogpost: 'published',
       microblogpost: 'posted',
       page: 'created',
-      comment: 'commented',
+      comment: 'commented on',
       unknown: 'published'
     })[type]
+    if (type === 'comment' || type === 'microblogpost') {
+      return html`
+        ${this.renderDateTitle(result)}
+        <div class="result action comment">
+          <a class="thumb" href=${result.author.url} title=${result.author.title} data-tooltip=${result.author.title}>
+            ${result.author.url === 'hyper://system/' ? html`
+              <span class="icon fas fa-fw fa-lock"></span>
+            ` : html`
+              <img class="favicon" src="${result.author.url}thumb">
+            `}
+          </a>
+          <span class="arrow"></span>
+          <div class="comment-container">
+            <div class="action-description">
+              <div class="origin">
+                ${result.author.url === 'hyper://system/' ? html`
+                  <a class="author" href=${result.author.url} title=${result.author.title}>I privately</a>
+                ` : html`
+                  <a class="author" href=${result.author.url} title=${result.author.title}>
+                    ${result.author.title}
+                  </a>
+                `}
+              </div>
+              <div class="action">
+                ${action}
+              </div>
+              <div class="title">
+                <a href=${result.href}>
+                  ${result.title ? unsafeHTML(shorten(result.title, 50)) : this.renderResultGenericActionTitle(result)}
+                </a>
+              </div>
+            </div>
+            <div class="content">
+              ${unsafeHTML(result.excerpt)}
+            </div>
+          </div>
+        </div>
+      `
+    }
     return html`
       ${this.renderDateTitle(result)}
       <div class="result action">
@@ -354,16 +393,6 @@ export class QueryView extends LitElement {
             </div>
           </div>
         </div>
-        ${result.excerpt ? html`
-          <div class="excerpt">
-            ${unsafeHTML(shorten(result.excerpt, 200))}
-          </div>
-        ` : ''}
-        ${''/*TODO<div class="tags">
-          <a href="#">#beaker</a>
-          <a href="#">#hyperspace</a>
-          <a href="#">#p2p</a>
-        </div>*/}
       </div>
     `
   }
@@ -446,9 +475,9 @@ export class QueryView extends LitElement {
     return ({
       bookmark: niceDate(result.ctime),
       blogpost: niceDate(result.ctime),
-      microblogpost: shorten(result.excerpt, 50),
+      microblogpost: niceDate(result.ctime),
       page: niceDate(result.ctime),
-      comment: shorten(result.excerpt, 50),
+      comment: shorten(fancyUrl(result.href), 50),
       unknown: niceDate(result.ctime)
     })[type]
   }
@@ -608,7 +637,7 @@ export class QueryView extends LitElement {
       let excerpt = ''
       if (candidate.path.endsWith('md')) {
         excerpt = await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => '')
-        excerpt = makeSafe(removeMarkdown(excerpt))
+        excerpt = filter ? makeSafe(removeMarkdown(excerpt)) : beaker.markdown.toHTML(excerpt)
       } else if (candidate.path.endsWith('txt')) {
         excerpt = makeSafe(await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => ''))
       }
@@ -659,7 +688,7 @@ export class QueryView extends LitElement {
       if (!href) continue
       if (candidate.path.endsWith('md')) {
         excerpt = await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => '')
-        excerpt = makeSafe(removeMarkdown(excerpt))
+        excerpt = filter ? makeSafe(removeMarkdown(excerpt)) : beaker.markdown.toHTML(excerpt)
       } else if (candidate.path.endsWith('txt')) {
         excerpt = makeSafe(await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => ''))
       }
@@ -750,12 +779,18 @@ function isArrayEq (a, b) {
   return a.sort().toString() == b.sort().toString() 
 }
 
-function filterToRegex (filter) {
-  return new RegExp(filter, 'gi')
-}
-
 function removeFirstMdHeader (str = '') {
   return str.replace(/(^#\s.*\r?\n)/, '').trim()
+}
+
+function fancyUrl (str) {
+  try {
+    let url = new URL(str)
+    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
+    return parts.join(' › ')
+  } catch (e) {
+    return str
+  }
 }
 
 const today = (new Date()).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
@@ -792,225 +827,4 @@ function matchAndSliceString (filter, re, str) {
   if (phraseStart > 0) str = '...' + str
   if (phraseEnd < strLen) str = str + '...'
   return str
-}
-
-const DEBUG_QUERIES = [
-  {
-    title: 'Feed',
-    async query ({filter, limit, offset}) {
-      let addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
-      let drive = addressBook.profiles.concat(addressBook.contacts).map(item => item.key)
-      var candidates = await beaker.hyperdrive.query({
-        type: 'file',
-        drive,
-        path: '/microblog/*.md',
-        sort: 'mtime',
-        reverse: true,
-        limit: filter ? undefined : limit,
-        offset: filter ? undefined : offset
-      })
-
-
-      var results = []
-      for (let candidate of candidates) {
-        let content = await beaker.hyperdrive.readFile(candidate.url, 'utf8').catch(e => undefined)
-        if (filter) {
-          content = removeMarkdown(content || '')
-          content = matchAndSliceString(filter, content)
-          if (!content) continue
-        } else {
-          content = beaker.markdown.toHTML(content || '')
-        }
-        candidate.driveTitle = await getDriveTitle(candidate.drive)
-        candidate.content = content
-        results.push(candidate)
-      }
-
-      if (filter && (offset || limit)) {
-        offset = offset || 0
-        results = results.slice(offset, offset + limit)
-      }
-
-      return results
-    },
-    views: {
-      card (row) {
-        var dateFormatter = new Intl.DateTimeFormat('en-us', {day: "numeric", month: "short", year: "numeric",})
-        var timeFormatter = new Intl.DateTimeFormat('en-US', {hour12: true, hour: "2-digit", minute: "2-digit"})
-        return `
-          <div style="max-width: 620px; margin: 20px auto; border: 1px solid #ccc; padding: 10px 12px; border-radius: 4px; background: #fff;">
-            <div style="display: flex; align-items: center;">
-              <img src="${row.drive}thumb" style="width: 16px; height: 16px; border-radius: 50%; object-fit: cover; margin-right: 5px;">
-              <a href=${row.drive} style="font-weight: 500; color: #555">${row.driveTitle}</a>
-              <span style="flex: 1"></span>
-              <a href=${row.url} style="color: #555">${dateFormatter.format(row.stat.mtime)} <small>${timeFormatter.format(row.stat.mtime)}</small></a>
-            </div>
-            <div>${row.content}</div>
-          </div>
-        `
-      }
-    },
-  },
-  {
-    title: 'Blog posts',
-    async query ({filter, limit, offset}) {
-      let addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
-      let drive = addressBook.profiles.concat(addressBook.contacts).map(item => item.key)
-      var candidates = await beaker.hyperdrive.query({
-        type: 'file',
-        drive,
-        path: '/blog/*.md',
-        sort: 'mtime',
-        reverse: true,
-        limit: filter ? undefined : limit,
-        offset: filter ? undefined : offset
-      })
-
-      var results = []
-      for (let candidate of candidates) {
-        let title = candidate.stat.metadata.title || candidate.path.split('/').pop()
-        let content = await beaker.hyperdrive.readFile(candidate.url).catch(e => undefined)
-        content = removeMarkdown(content || '')
-        if (filter) {
-          let contentMatch = matchAndSliceString(filter, content)
-          if (contentMatch) content = contentMatch
-          let titleMatch = matchAndSliceString(filter, title)
-          if (titleMatch) title = titleMatch
-          if (!contentMatch && !titleMatch) continue
-        } else {
-          if (content.length > 300) {
-            content = content.slice(0, 300) + '...'
-          }
-        }
-        candidate.driveTitle = await getDriveTitle(candidate.drive)
-        candidate.title = title
-        candidate.content = content
-        results.push(candidate)
-      }
-
-      if (filter && (offset || limit)) {
-        offset = offset || 0
-        results = results.slice(offset, offset + limit)
-      }
-      return results
-    },
-    views: {
-      card (row) {
-        return `
-          <div style="border: 1px solid #ccc; padding: 14px 16px; background: #fff; border-radius: 4px; margin: 16px auto; max-width: 700px">
-            <div><a href=${row.drive} style="color: #777">${row.driveTitle}</a></div>
-            <h2 style="margin: 0"><a href=${row.url} style="color: #555">${row.title}</a></h2>
-            <div style="margin: 0.6em 0 0">${row.content}</div>
-          </div>
-        `
-      }
-    }
-  },
-  DEBUG_LINKS_QUERY('Modules', 'modules'),
-  DEBUG_LINKS_QUERY('Apps', 'apps'),
-  {
-    title: 'Users',
-    async query ({filter, limit, offset}) {
-      let addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
-      let candidates = addressBook.profiles.concat(addressBook.contacts)
-
-      var results = []
-      for (let candidate of candidates) {
-        let {url, title, description} = await beaker.hyperdrive.getInfo(candidate.key)
-        if (filter) {
-          let titleMatch = matchAndSliceString(filter, title)
-          if (titleMatch) title = titleMatch
-          let descriptionMatch = matchAndSliceString(filter, description)
-          if (descriptionMatch) description = descriptionMatch
-          if (!titleMatch && !descriptionMatch) continue
-        } else {
-          if (description.length > 300) {
-            description = description.slice(0, 300) + '...'
-          }
-        }
-        results.push({
-          url,
-          title,
-          description,
-          toHTML: () => `
-            <img src="${url}thumb" style="float: left; border-radius: 50%; width: 40px; height: 40px; object-fit: cover; margin-right: 10px">
-            <h1><a href="${url}">${title}</a></h1>
-            <div><q>${description}</q></div>
-          `
-        })
-      }
-
-      if (filter && (offset || limit)) {
-        offset = offset || 0
-        results = results.slice(offset, offset + limit)
-      }
-      return results
-    }
-  }
-]
-function DEBUG_LINKS_QUERY (title, id) {
-  return {
-    title,
-    async query ({filter, limit, offset}) {
-      let addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
-      let drive = addressBook.profiles.concat(addressBook.contacts).map(item => item.key)
-      var candidates = await beaker.hyperdrive.query({
-        type: 'file',
-        drive,
-        path: `/links/${id}/*.goto`,
-        sort: 'mtime',
-        reverse: true,
-        limit: filter ? undefined : limit,
-        offset: filter ? undefined : offset
-      })
-
-      var results = []
-      var re = filter ? filterToRegex(filter) : undefined
-      for (let candidate of candidates) {
-        let title = candidate.stat.metadata.title || candidate.path.split('/').pop()
-        let description = candidate.stat.metadata.description || ''
-        let href = candidate.stat.metadata.href || ''
-        let hrefDecorated = href
-        if (re) {
-          if (!title || !href) continue
-          let match = false
-          title = title.replace(re, string => {
-            match = true
-            return `<mark>${string}</mark>`
-          })
-          description = description.replace(re, string => {
-            match = true
-            return `<mark>${string}</mark>`
-          })
-          // hrefDecorated = href.replace(re, string => {
-          //   match = true
-          //   return `<mark>${string}</mark>`
-          // })
-          if (!match) continue
-        }
-        candidate.driveTitle = await getDriveTitle(candidate.drive)
-        candidate.href = href
-        candidate.title = title
-        candidate.description = description
-        results.push(candidate)
-      }
-
-      if (filter && (offset || limit)) {
-        offset = offset || 0
-        results = results.slice(offset, offset + limit)
-      }
-      return results
-    },
-    views: {
-      card (row) {
-        return `
-          <div style="border: 1px solid #ccc; padding: 14px 16px; background: #fff; border-radius: 4px; margin: 16px auto; max-width: 700px">
-            <div>Shared by <a href=${row.drive} style="color: #777">${row.driveTitle}</a></div>
-            <h2 style="margin: 5px 0"><a href=${row.url} style="color: #555">${row.title}</a></h2>
-            ${row.description ? `<div>${row.description}</div>` : ''}
-          </div>
-        `
-      }
-    }
-  }
 }

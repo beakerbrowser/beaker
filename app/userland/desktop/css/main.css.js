@@ -32,30 +32,6 @@ input:focus {
   align-items: center;
 }
 
-#topleft a {
-  font-size: 14px;
-  color: var(--text-color--default);
-}
-
-#topleft .profile-ctrl {
-  display: inline-flex;
-  align-items: center;
-  opacity: 1;
-}
-
-#topleft .profile-ctrl span {
-  padding: 0 0 0 8px;
-  opacity: 0.85;
-}
-
-#topleft .profile-ctrl img {
-  display: block;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 #topright {
   position: absolute;
   top: 10px;
@@ -183,9 +159,6 @@ nav hr {
   border: 0;
   border-left: 1px solid var(--border-color--semi-light);
   margin: 10px;
-}
-
-nav .sources-ctrl {
 }
 
 .pins {
@@ -325,12 +298,142 @@ main {
   color: var(--text-color--light);
   font-size: 13px;
   font-weight: bold;
-  letter-spacing: 0.4px;
 }
 
 .twocol .sidebar section input {
   width: 100%;
   margin: 4px 0;
+}
+
+.twocol .sidebar h3 {
+  margin: 0 0 5px;
+  box-sizing: border-box;
+  font-weight: 500;
+  color: var(--text-color--default);
+  letter-spacing: 0.7px;
+  font-size: 13px;
+}
+
+.twocol .sidebar h3 a {
+  color: var(--text-color--result-link);
+  padding: 0 4px;
+}
+
+.twocol .sidebar h3 a:hover {
+  cursor: pointer;
+  background: var(--bg-color--light);
+}
+
+.sources-ctrl {
+  margin-bottom: 20px;
+}
+
+.sources-ctrl label {
+  display: flex;
+  align-items: center;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.sources-ctrl label:-webkit-any(:hover, .selected) {
+  background: var(--bg-color--nav--highlight);
+}
+
+.sources-ctrl label input {
+  margin: 0 8px 0 0;
+}
+
+.quick-links {
+  border: 1px solid var(--border-color--light);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.quick-links div {
+  border-top: 1px solid var(--border-color--very-light);
+}
+
+.quick-links div:hover {
+  background: var(--bg-color--light);
+}
+
+.quick-links div:first-child {
+  border: 0;
+}
+
+.quick-links a {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  padding: 8px 10px;
+  color: var(--text-color--default);
+}
+
+.quick-links a span {
+  padding: 0 0 0 8px;
+}
+
+.quick-links a img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.quick-links a img.favicon {
+  image-rendering: -webkit-optimize-contrast;
+  border-radius: 0;
+}
+
+.notifications {
+  margin-bottom: 20px;
+  background: var(--bg-color--light);
+  border-radius: 8px;
+}
+
+.notifications h3 {
+  padding: 10px;
+  margin: 0 !important;
+}
+
+.notifications .notification {
+  display: grid;
+  border-top: 1px solid var(--border-color--very-light);
+  grid-template-columns: 40px 1fr;
+  grid-template-rows: 20px 20px;
+  padding: 10px;
+}
+
+.notifications .notification:hover {
+  background: var(--bg-color--semi-light);
+}
+
+.notifications .notification img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  margin: 2px;
+  border-radius: 50%;
+  object-fit: cover;
+  grid-row-start: 1;
+  grid-row-end: 3;
+}
+
+.notifications .notification .title {
+  align-self: self-end;
+  padding-left: 10px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+
+.notifications .notification .explanation {
+  padding-left: 10px;
+  grid-column-start: 2;
+  color: var(--text-color--light);
 }
 
 .tags {

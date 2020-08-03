@@ -17,7 +17,7 @@ body {
   --bg-color--default: #fff;
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;
-  --bg-color--nav--highlight: #f0f0f6;
+  --bg-color--nav--highlight: #f5f5fa;
 
   font-size: 13px;
   background: var(--bg-color--default);

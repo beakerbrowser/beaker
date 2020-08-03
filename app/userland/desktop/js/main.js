@@ -3,8 +3,8 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { EditBookmarkPopup } from 'beaker://library/js/com/edit-bookmark-popup.js'
 import { AddContactPopup } from 'beaker://library/js/com/add-contact-popup.js'
+import { NewPagePopup } from 'beaker://library/js/com/new-page-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
-import { NewPagePopup } from './com/new-page-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
@@ -12,11 +12,7 @@ import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
 
-import 'beaker://library/js/views/drives.js'
-import 'beaker://library/js/views/bookmarks.js'
-import 'beaker://library/js/views/address-book.js'
 import './views/query.js'
-import './views/recent.js'
 import css from '../css/main.css.js'
 
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
@@ -116,17 +112,6 @@ class DesktopApp extends LitElement {
     const navItem = (id, label) => html`<a class="nav-item ${id === this.currentNav ? 'active' : ''}" @click=${e => {this.currentNav = id}}>${label}</a>`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${''/*<div id="topleft">
-        ${this.profile ? html`
-          <a class="profile-ctrl" href=${this.profile.url}>
-            <beaker-img-fallbacks>
-              <img src="${this.profile.url}/thumb?cache_buster=${cacheBuster}" slot="img1">
-              <img src="beaker://assets/default-user-thumb" slot="img2">
-            </beaker-img-fallbacks>
-            <span>${this.profile.title}</span>
-          </a>
-        ` : ''}
-      </div>*/}
       <div id="topright">
         <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
       </div>
@@ -142,11 +127,11 @@ class DesktopApp extends LitElement {
         ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> Blog Posts`)}
         ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> Pages`)}
         ${navItem('images', html`<span class="far fa-fw fa-images"></span> Images`)}
-        <a class="nav-item" @click=${this.onClickNavMore} title="More">
+        ${navItem('microblogposts', html`<span class="fas fa-fw fa-stream"></span> Micro Blog Posts`)}
+        ${navItem('comments', html`<span class="far fa-fw fa-comments"></span> Comments`)}
+        ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">
           More...
-        </a>
-        <hr>
-        ${this.renderSourcesCtrl()}
+        </a>*/}
       </nav>
       <main>
         <div class="views">
@@ -155,6 +140,37 @@ class DesktopApp extends LitElement {
       </main>
       ${this.renderIntro()}
       ${this.renderLegacyArchivesNotice()}
+    `
+  }
+
+  renderSidebar () {
+    return html`
+      <div class="sidebar">
+        <h3>Sources</h3>
+        ${this.renderSourcesCtrl()}
+        <h3>Pinned Bookmarks <a @click=${e => this.onClickNewBookmark(e, true)}>+ <small>add</small></a></h3>
+        <div class="quick-links">
+          ${repeat(this.pins, pin => getHref(pin), pin => html`
+            <div>
+              <a href=${getHref(pin)} @contextmenu=${e => this.onContextmenuFile(e, pin)}>
+                <img class="favicon" src="asset:favicon-32:${getHref(pin)}">
+                <span>${getTitle(pin)}</span>
+              </a>
+            </div>
+          `)}
+        </div>
+        <div class="notifications">
+          <h3>Notifications</h3>
+          ${this.sourceOptions.slice(2, 9).map(source => html`
+            <a class="notification" href=${source.url}>
+              <img src="asset:thumb:${source.url}" slot="img1">
+              <div class="title">${source.title}</div>
+              <div class="explanation">Subscribed to you</div>
+            </a>
+          `)}
+        </div>
+        ${this.renderTagsList()}
+      </div>
     `
   }
 
@@ -227,16 +243,14 @@ class DesktopApp extends LitElement {
                   @load-state-updated=${e => this.requestUpdate()}
                 ></query-view>
               </div>
-              <div class="sidebar">
-                ${this.renderTagsList()}
-              </div>
+              ${this.renderSidebar()}
             </div>
           </div>
         `
       } else {
         return html`
           <div class="all-view">
-            ${this.currentSource !== 'all' ? '' : this.renderPins()}
+            ${this.renderPins()}
             <div class="twocol">
               <query-view
                 content-type="all"
@@ -248,13 +262,7 @@ class DesktopApp extends LitElement {
                 @view-more=${e => {this.currentNav = e.detail.contentType}}
                 @load-state-updated=${e => this.requestUpdate()}
               ></query-view>
-              <div class="sidebar">
-                ${this.renderTagsList()}
-                <section>
-                  <h3>Sites</h3>
-                  <drives-view simple ?hide-empty=${!!this.searchQuery || this.isIntroActive} .filter=${this.searchQuery}></drives-view>
-                </section>
-              </div>
+              ${this.renderSidebar()}
             </div>
           </div>
         `
@@ -273,9 +281,7 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            <div class="sidebar">
-              ${this.renderTagsList()}
-            </div>
+            ${this.renderSidebar()}
           </div>
         </div>
       `
@@ -293,9 +299,7 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            <div class="sidebar">
-              ${this.renderTagsList()}
-            </div>
+            ${this.renderSidebar()}
           </div>
       </div>
       `
@@ -313,9 +317,7 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            <div class="sidebar">
-              ${this.renderTagsList()}
-            </div>
+            ${this.renderSidebar()}
           </div>
         </div>
       `
@@ -333,9 +335,7 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            <div class="sidebar">
-              ${this.renderTagsList()}
-            </div>
+            ${this.renderSidebar()}
           </div>
         </div>
       `
@@ -353,9 +353,7 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            <div class="sidebar">
-              ${this.renderTagsList()}
-            </div>
+            ${this.renderSidebar()}
           </div>
         </div>
       `
@@ -373,9 +371,7 @@ class DesktopApp extends LitElement {
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
             ></query-view>
-            <div class="sidebar">
-              ${this.renderTagsList()}
-            </div>
+            ${this.renderSidebar()}
           </div>
         </div>
       `
@@ -401,15 +397,32 @@ class DesktopApp extends LitElement {
   }
 
   renderSourcesCtrl () {
-    var label = 'Custom'
+    var customLabel = 'Custom'
+    var isCustomSelected = false
     switch (this.currentSource) {
-      case 'all': label = 'All Sources'; break
-      case 'mine': label = 'My Data'; break
-      case 'others': label = 'Others\' Data'; break
-      default: label = this.sourceOptions.find(opt => opt.url === this.currentSource).title
+      case 'all':
+      case 'mine':
+      case 'others':
+        break
+      default:
+        isCustomSelected = true
+        customLabel = this.sourceOptions.find(opt => opt.url === this.currentSource).title
     }
+    const item = (v, label) => html`
+      <label class=${this.currentSource === v ? 'selected' : ''} @click=${e => { this.currentSource = v }}>
+        <input name="source" type="radio" .checked=${this.currentSource === v}> ${label}
+      </label>
+    `
     return html`
-      <a class="nav-item sources-ctrl" @click=${this.onClickSources}>${label} <span class="fas fa-fw fa-caret-down"></span></a>
+      <div class="sources-ctrl">
+        ${item('all', 'All Sites')}
+        ${item('mine', 'My Data')}
+        ${item('others', 'Others\' Data')}
+        <label @click=${this.onClickSources} class=${isCustomSelected ? 'selected' : ''}>
+          <input name="source" type="radio" .checked=${isCustomSelected}>
+          ${customLabel} <span class="fas fa-fw fa-caret-down"></span>
+        </label>
+      </div>
     `
   }
 
@@ -430,6 +443,7 @@ class DesktopApp extends LitElement {
   }
 
   renderPins () {
+    return ''
     var pins = this.pins || []
     return html`
       <div class="pins">

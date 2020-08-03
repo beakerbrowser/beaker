@@ -25,7 +25,7 @@ a[href]:hover {
   cursor: pointer;
 }
 
-h2 {
+h2.results-header {
   max-width: 1000px;
   margin: 0 auto;
   padding: 0 4px 4px;
@@ -483,14 +483,67 @@ h2 a:hover {
   margin-right: 3px;
 }
 
-.result.action .excerpt {
-  display: none;
+.result.action.comment {
+  position: relative;
+  display: grid;
+  grid-template-columns: 32px 1fr;
+}
+
+.result.action.comment .thumb {
+  top: 5px;
+}
+
+.result.action.comment .comment-container {
+  border: 1px solid var(--border-color--light);
+  border-radius: 4px;
+}
+
+.result.action.comment .action-description {
+  background: var(--bg-color--light);
+  border-bottom: 1px solid var(--border-color--light);
+  font-size: 13px;
+  padding: 0 12px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.result.action.comment .arrow {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 11px;
+  left: 28px;
+  width: 8px;
+  height: 8px;
+  z-index: 10;
+  background: var(--bg-color--light);
+  border-top: 1px solid var(--border-color--light);
+  border-left: 1px solid var(--border-color--light);
+  transform: rotate(-45deg);
+}
+
+.result.action.comment .author {
+  margin: 0;
+}
+
+.result.action.comment .action-description a {
+  color: var(--text-color--lightish);
+}
+
+.result.action.comment .content {
   white-space: initial;
   color: var(--text-color--default);
-  margin: 10px 14px 14px 56px;
   line-height: 1.3;
   font-size: 14px;
+  padding: 2px 16px;
 }
+
+.result.action.comment .content h1 { font-family: arial; font-size: 21px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--border-color--semi-light); }
+.result.action.comment .content h2 { font-family: arial; font-size: 19px; font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border-color--semi-light); }
+.result.action.comment .content h3 { font-family: arial; font-size: 19px; font-weight: 500; }
+.result.action.comment .content h4 { font-family: arial; font-size: 16px; font-weight: 600; }
+.result.action.comment .content h5 { font-family: arial; font-size: 16px; font-weight: 500; }
+.result.action.comment .content :-webkit-any(video, audio, img) { max-width: 100%; }
 
 /** CARD STYLES **/
 
