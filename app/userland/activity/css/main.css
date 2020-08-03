@@ -12,12 +12,9 @@ body {
   --text-color--light: #667;
   --text-color--pretty-light: #99a;
   --text-color--very-light: #bbc;
-  --text-color--nav--highlight: #445;
-  --text-color--result-link: blue;
   --bg-color--default: #fff;
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;
-  --bg-color--nav--highlight: #f0f0f6;
 
   font-size: 14px;
   background: var(--bg-color--default);
@@ -36,11 +33,8 @@ body {
     --text-color--light: #aab;
     --text-color--pretty-light: #99a;
     --text-color--very-light: #557;
-    --text-color--nav--highlight: #bbc;
-    --text-color--result-link: #1043da;
     --bg-color--default: #223;
     --bg-color--light: #334;
     --bg-color--semi-light: #445;
-    --bg-color--nav--highlight: #446;
   }
 }
