@@ -57,10 +57,15 @@ class ActivityApp extends LitElement {
       }
     })
 
-    ;(async () => {
-      var attachedPane = await beaker.panes.attachToLastActivePane()
-      if (attachedPane) this.load(attachedPane.url)
-    })()
+    var url = new URLSearchParams(location.search).get('url')
+    if (url) {
+      this.load(url)
+    } else {
+      ;(async () => {
+        var attachedPane = await beaker.panes.attachToLastActivePane()
+        if (attachedPane) this.load(attachedPane.url)
+      })()
+    }
   }
 
   get pathname () {
