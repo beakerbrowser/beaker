@@ -95,8 +95,8 @@ export class QueryView extends LitElement {
 
   onOpenActivity (e, url) {
     e.preventDefault()
-    // beaker.browser.newPane(`beaker://activity/?url=${url}`)
-    beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: ['beaker://activity/']})
+    beaker.browser.newPane(`beaker://activity/?url=${url}`)
+    // beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: ['beaker://activity/']})
   }
 
   // rendering
@@ -321,12 +321,11 @@ export class QueryView extends LitElement {
   renderResultAsAction (result) {
     var type = this.getTypeByUrl(result.url)
     var action = ({
-      bookmark: 'bookmarked',
-      blogpost: 'published',
-      microblogpost: '',
-      page: 'created',
-      comment: 'commented on',
-      unknown: 'published'
+      bookmark: 'Bookmarked',
+      blogpost: 'Blogpost created',
+      page: 'Page created',
+      comment: 'Comment created',
+      unknown: 'File created'
     })[type]
     if (type === 'comment' || type === 'microblogpost') {
       return this.renderResultAsCard(result)
@@ -334,33 +333,30 @@ export class QueryView extends LitElement {
     return html`
       ${this.renderDateTitle(result)}
       <div class="result action">
-        <div class="info">
-          <a class="thumb" href=${result.author.url} title=${result.author.title} data-tooltip=${result.author.title}>
-            ${result.author.url === 'hyper://system/' ? html`
-              <span class="icon fas fa-fw fa-lock"></span>
-            ` : html`
-              <img class="favicon" src="${result.author.url}thumb">
-            `}
-          </a>
-          <div class="action-description">
-            ${this.renderResultThumb(result, result.url)}
-            <div class="origin">
-              ${result.author.url === 'hyper://system/' ? html`
-                <a class="author" href=${result.author.url} title=${result.author.title}>I privately</a>
-              ` : html`
-                <a class="author" href=${result.author.url} title=${result.author.title}>
-                  ${result.author.title}
-                </a>
-              `}
-            </div>
-            <div class="action">
-              ${action}
-            </div>
-            <div class="title">
-              <a href=${result.href}>
-                ${result.title ? unsafeHTML(shorten(result.title, 50)) : this.renderResultGenericActionTitle(result)}
+        <a class="thumb" href=${result.author.url} title=${result.author.title} data-tooltip=${result.author.title}>
+          <img class="favicon" src="${result.author.url}thumb">
+        </a>
+        <div class="container">
+          <div class="title">
+            <a href=${result.href}>
+              ${result.title ? unsafeHTML(shorten(result.title, 50)) : this.renderResultGenericActionTitle(result)}
+            </a>
+          </div>
+          ${''/*<div class="tags">
+            <a href="#">beaker</a>
+            <a href="#">hyperspace</a>
+            <a href="#">p2p</a>
+          </div>*/}
+          <div class="ctrls">
+            <span class="action">${action}</span>
+            by
+            <span class="origin">
+              <a class="author" href=${result.author.url} title=${result.author.title}>
+                ${result.author.url === 'hyper://system/' ? 'Me (Private)' : result.author.title}
               </a>
-            </div>
+            </span>
+            <a class="ctrl" @click=${e => this.onOpenActivity(e, result.href)}><span class="far fa-fw fa-comment-alt"></span> <small>Thread</small></a>
+            <a class="ctrl"><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>
           </div>
         </div>
       </div>
@@ -372,11 +368,7 @@ export class QueryView extends LitElement {
       ${this.renderDateTitle(result)}
       <div class="result card">
         <a class="thumb" href=${result.author.url} title=${result.author.title} data-tooltip=${result.author.title}>
-          ${result.author.url === 'hyper://system/' ? html`
-            <span class="icon fas fa-fw fa-lock"></span>
-          ` : html`
-            <img class="favicon" src="${result.author.url}thumb">
-          `}
+          <img class="favicon" src="${result.author.url}thumb">
         </a>
         <span class="arrow"></span>
         <div class="container">
@@ -399,7 +391,7 @@ export class QueryView extends LitElement {
             </div>
             <span>&middot;</span>
             <div class="date">
-              <a href=${result.url} @click=${e => this.onOpenActivity(e, result.href)}>
+              <a href=${result.url}>
                 ${relativeDate(result.ctime)}
               </a>
             </div>
@@ -407,10 +399,14 @@ export class QueryView extends LitElement {
           <div class="content">
             ${unsafeHTML(result.excerpt)}
           </div>
+          ${''/*<div class="tags">
+            <a href="#">beaker</a>
+            <a href="#">hyperspace</a>
+            <a href="#">p2p</a>
+          </div>*/}
           <div class="ctrls">
-            <a @click=${e => this.onOpenActivity(e, result.href)}><span class="fas fa-fw fa-external-link-alt"></span> <small>Open</small></a>
-            <a><span class="far fa-fw fa-star"></span> <small>Bookmark</small> <span class="fas fa-fw fa-caret-down"></span></a>
-            <a><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
+            <a @click=${e => this.onOpenActivity(e, result.href)}><span class="far fa-fw fa-comment-alt"></span> <small>Thread</small></a>
+            <a><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>
           </div>
         </div>
       </div>
@@ -426,7 +422,7 @@ export class QueryView extends LitElement {
     switch (this.getTypeByUrl(url)) {
       case 'blogpost': icon = 'fas fa-blog'; break
       case 'page': icon = 'far fa-file-alt'; break
-      case 'bookmark': icon = 'far fa-star'; break
+      case 'bookmark': icon = 'fas fa-star'; break
       case 'microblogpost': icon = 'fas fa-stream'; break
       case 'comment': icon = 'far fa-comment'; break
     }
@@ -486,11 +482,11 @@ export class QueryView extends LitElement {
 
   async query_all (opts) {
     var results = (await Promise.all([
-      this.query_bookmarks(opts),
-      this.query_blogposts(opts),
-      this.query_microblogposts(Object.assign({}, opts, {limit: 200})),
-      this.query_comments(opts),
-      this.query_pages(opts)
+      this.query_bookmarks(Object.assign({}, opts, {limit: 25})),
+      this.query_blogposts(Object.assign({}, opts, {limit: 25})),
+      this.query_microblogposts(Object.assign({}, opts, {limit: 50})),
+      this.query_comments(Object.assign({}, opts, {limit: 25})),
+      this.query_pages(Object.assign({}, opts, {limit: 25}))
     ])).flat()
     results.sort((a, b) => b.ctime - a.ctime)
     return results

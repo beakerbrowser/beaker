@@ -296,14 +296,11 @@ h2 a:hover {
 
 .result.compact-row .ctrls a {
   display: inline-block;
-  padding: 2px 4px;
-  border-radius: 4px;
   color: var(--text-color--pretty-light);
 }
 
 .result.compact-row .ctrls a:hover {
   cursor: pointer;
-  background: var(--bg-color--semi-light);
   color: var(--text-color--light);
 }
 
@@ -403,23 +400,20 @@ h2 a:hover {
 /** ACTION STYLES **/
 
 .result.action {
+  display: flex;
+  align-items: center;
   color: var(--text-color--lightish);
   margin: 16px 4px;
 }
 
-.result.action .info {
-  display: flex;
-  align-items: center;
-}
-
 .result.action .thumb {
   display: block;
-  width: 20px;
-  flex: 0 0 20px;
-  height: 20px;
+  width: 36px;
+  flex: 0 0 36px;
+  height: 36px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 14px;
   position: relative;
   top: 1px;
 }
@@ -441,72 +435,71 @@ h2 a:hover {
   font-size: 8px;
 }
 
+.result.action .container {
+  flex: 1;
+}
+
 .result.action .action-description {
   display: flex;
   align-items: center;
-  font-size: 14px;
-  height: 30px;
+  font-size: 13px;
+  padding-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.result.action .action-description > * {
-  margin-right: 5px;
-}
-
-.result.action .origin .icon {
-  margin-right: 5px;
-}
-
 .result.action .origin .author {
   color: var(--text-color--lightish);
   font-weight: 600;
-  margin-left: 3px;
 }
 
 .result.action .title {
-  font-weight: normal;
-  letter-spacing: 0.5px;
+  color: var(--text-color--light);
+  padding-bottom: 4px;
 }
 
 .result.action .title a {
+  letter-spacing: 0.5px;
+  font-size: 19px;
+  font-weight: 600;
   color: var(--text-color--result-link);
 }
 
 .result.action .tags {
-  margin: 0 0 0 54px;
-  line-height: 1.3;
-  font-size: 12px;
+  padding: 0 0 4px;
 }
 
 .result.action .tags a {
+  display: inline-block;
   color: var(--text-color--light);
+  background: var(--bg-color--semi-light);
+  padding: 0 6px 1px;
+  font-size: 12px;
+  border-radius: 4px;
   letter-spacing: 0.3px;
   margin-right: 3px;
 }
 
 .result.action .ctrls {
-  padding: 8px;
+  font-size: 13px;
 }
 
-.result.action .ctrls a {
+.result.action .ctrls a.ctrl {
   display: inline-block;
-  padding: 2px 4px;
-  margin-right: 16px;
-  border-radius: 4px;
-  color: var(--text-color--pretty-light);
+  color: var(--text-color--light);
+  font-weight: 500;
+  margin-left: 8px;
 }
 
 .result.action .ctrls a:hover {
   cursor: pointer;
-  background: var(--bg-color--semi-light);
   color: var(--text-color--default);
 }
 
-.result.action .ctrls a small {
+.result.action .ctrls a .fa-comment-alt {
   position: relative;
-  top: -1px;
+  top: 1px;
 }
 
 /** CARD STYLES **/
@@ -614,13 +607,16 @@ h2 a:hover {
 }
 
 .result.card .tags {
-  margin: 0 0 0 54px;
-  line-height: 1.3;
-  font-size: 12px;
+  padding: 8px 12px 0;
 }
 
 .result.card .tags a {
+  display: inline-block;
   color: var(--text-color--light);
+  background: var(--bg-color--semi-light);
+  padding: 0 6px 1px;
+  font-size: 12px;
+  border-radius: 4px;
   letter-spacing: 0.3px;
   margin-right: 3px;
 }
@@ -663,26 +659,32 @@ h2 a:hover {
 .result.card .content a { color: var(--text-color--content-link); }
 
 .result.card .ctrls {
-  padding: 8px;
+  padding: 10px 12px;
 }
 
 .result.card .ctrls a {
   display: inline-block;
-  padding: 2px 4px;
   margin-right: 16px;
-  border-radius: 4px;
-  color: var(--text-color--pretty-light);
+  color: var(--text-color--light);
 }
 
 .result.card .ctrls a:hover {
   cursor: pointer;
-  background: var(--bg-color--semi-light);
   color: var(--text-color--default);
 }
 
 .result.card .ctrls a small {
   position: relative;
   top: -1px;
+}
+
+/** INTERACTIONS BTWN TYPES */
+
+.result.card + .result.action {
+  margin-top: 24px;
+}
+.result.action + .result.card {
+  margin-top: 28px;
 }
 `
 export default cssStr

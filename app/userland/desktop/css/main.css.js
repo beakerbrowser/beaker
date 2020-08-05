@@ -341,13 +341,6 @@ main {
   }
 }
 
-.quick-links {
-  background: var(--bg-color--light);
-  border-radius: 8px;
-  padding: 10px;
-  margin-bottom: 20px;
-}
-
 .quick-links a {
   display: inline-flex;
   align-items: center;
@@ -379,27 +372,19 @@ main {
 }
 
 .tags {
-  line-height: 1.5;
 }
 
 .tags a {
-  margin-right: 5px;
-  letter-spacing: 0.3px;
-  white-space: nowrap;
-  color: var(--text-color--result-link);
-}
-
-.tags a:hover {
-  text-decoration: underline;
-}
-
-.tags a sub {
-  font-size: 10px;
-  position: relative;
-  top: -2px;
-  left: -1px;
+  display: inline-block;
   color: var(--text-color--light);
+  background: var(--bg-color--semi-light);
+  padding: 1px 6px 2px;
+  font-size: 12px;
+  border-radius: 4px;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
 }
+
 
 .intro {
   position: relative;

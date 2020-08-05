@@ -154,7 +154,9 @@ class DesktopApp extends LitElement {
   renderSidebar () {
     return html`
       <div class="sidebar">
-        <div class="quick-links">
+        ${this.renderTagsList()}
+        <section class="quick-links">
+          <h3>Quick Links</h3>
           <div>
             <a href="hyper://system/">
               <img src="asset:favicon-32:hyper://system/">
@@ -176,24 +178,23 @@ class DesktopApp extends LitElement {
               <span>My Library</span>
             </a>
           </div>
-        </div>
-        ${this.renderTagsList()}
+        </section>
       </div>
     `
   }
 
   renderTagsList () {
-    return '' // TODO
+    return ''
     return html`
       <section>
         <h3>Popular Tags</h3>
         <div class="tags">
-          <a href="#">#beaker <sub>150</sub></a>
-          <a href="#">#hyperspace <sub>30</sub></a>
-          <a href="#">#p2p <sub>29</sub></a>
-          <a href="#">#web <sub>12</sub></a>
-          <a href="#">#news <sub>10</sub></a>
-          <a href="#">#politics <sub>8</sub></a>
+          <a href="#">beaker</a>
+          <a href="#">hyperspace</a>
+          <a href="#">p2p</a>
+          <a href="#">web</a>
+          <a href="#">news</a>
+          <a href="#">politics</a>
         </div>
       </section>
     `
