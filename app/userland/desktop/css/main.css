@@ -10,10 +10,11 @@ body {
   --text-color--default: #333;
   --text-color--lightish: #555;
   --text-color--light: #667;
-  --text-color--pretty-light: #99a;
+  --text-color--pretty-light: #889;
   --text-color--very-light: #bbc;
   --text-color--nav--highlight: #445;
   --text-color--result-link: blue;
+  --text-color--content-link: #4040e7;
   --bg-color--default: #fff;
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;

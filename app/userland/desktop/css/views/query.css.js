@@ -26,8 +26,7 @@ a[href]:hover {
 }
 
 h2.results-header {
-  max-width: 1000px;
-  margin: 0 auto;
+  margin: 0 0 20px;
   padding: 0 4px 4px;
   box-sizing: border-box;
   font-weight: 500;
@@ -35,6 +34,10 @@ h2.results-header {
   letter-spacing: 0.7px;
   font-size: 15px;
   border-bottom: 1px solid var(--border-color--light);
+}
+
+h2.results-header:not(:first-child) {
+  margin-top: 30px;
 }
 
 h2 a:hover {
@@ -483,140 +486,203 @@ h2 a:hover {
   margin-right: 3px;
 }
 
-.result.action.comment {
-  position: relative;
-  display: grid;
-  grid-template-columns: 32px 1fr;
+.result.action .ctrls {
+  padding: 8px;
 }
 
-.result.action.comment .thumb {
+.result.action .ctrls a {
+  display: inline-block;
+  padding: 2px 4px;
+  margin-right: 16px;
+  border-radius: 4px;
+  color: var(--text-color--pretty-light);
+}
+
+.result.action .ctrls a:hover {
+  cursor: pointer;
+  background: var(--bg-color--semi-light);
+  color: var(--text-color--default);
+}
+
+.result.action .ctrls a small {
+  position: relative;
+  top: -1px;
+}
+
+/** CARD STYLES **/
+
+.result.card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  margin: 0 4px;
+  color: var(--text-color--lightish);
+}
+
+.result.card .info {
+  display: flex;
+  align-items: center;
+}
+
+.result.card .thumb {
+  display: block;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-color--semi-light);
+  border-radius: 50%;
+  margin-right: 10px;
+  position: relative;
   top: 5px;
 }
 
-.result.action.comment .comment-container {
-  border: 1px solid var(--border-color--light);
-  border-radius: 4px;
+.result.card .thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: scale-down;
 }
 
-.result.action.comment .action-description {
-  background: var(--bg-color--light);
-  border-bottom: 1px solid var(--border-color--light);
-  font-size: 13px;
-  padding: 0 12px;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
+.result.card .thumb .icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: var(--text-color--light);
+  line-height: 20px;
+  font-size: 8px;
 }
 
-.result.action.comment .arrow {
+.result.card .arrow {
   content: '';
   display: block;
   position: absolute;
-  top: 11px;
-  left: 28px;
+  top: 20px;
+  left: 46px;
   width: 8px;
   height: 8px;
   z-index: 10;
-  background: var(--bg-color--light);
+  background: var(--bg-color--default);
   border-top: 1px solid var(--border-color--light);
   border-left: 1px solid var(--border-color--light);
   transform: rotate(-45deg);
 }
 
-.result.action.comment .author {
-  margin: 0;
-}
-
-.result.action.comment .action-description a {
-  color: var(--text-color--lightish);
-}
-
-.result.action.comment .content {
-  white-space: initial;
-  color: var(--text-color--default);
-  line-height: 1.3;
-  font-size: 14px;
-  padding: 2px 16px;
-}
-
-.result.action.comment .content h1 { font-family: arial; font-size: 21px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--border-color--semi-light); }
-.result.action.comment .content h2 { font-family: arial; font-size: 19px; font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border-color--semi-light); }
-.result.action.comment .content h3 { font-family: arial; font-size: 19px; font-weight: 500; }
-.result.action.comment .content h4 { font-family: arial; font-size: 16px; font-weight: 600; }
-.result.action.comment .content h5 { font-family: arial; font-size: 16px; font-weight: 500; }
-.result.action.comment .content :-webkit-any(video, audio, img) { max-width: 100%; }
-
-/** CARD STYLES **/
-
-.result.card {
-  color: var(--text-color--lightish);
-  margin: 22px 6px;
+.result.card .container {
   border: 1px solid var(--border-color--light);
-  border-radius: 4px;
-  padding: 10px 12px;
-  max-width: 660px;
 }
 
-.result.card > * {
+.result.card + .result.card .container {
+  border-top: 0;
+}
+
+.result.card .header {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  height: 24px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 6px 12px 2px;
 }
 
-.result.card .origin {
-  display: flex;
-  align-items: center;
-  font-size: 13px;
+.result.card .header > * {
+  margin-right: 5px;
 }
 
-.result.card .author {
-  color: var(--text-color--lightish);
-  font-weight: 500;
-  margin-right: 6px;
+.result.card .origin .icon {
+  margin-right: 5px;
 }
 
-.result.card .href a {
+.result.card .header a {
   color: var(--text-color--light);
 }
 
-.result.card .href .fa-angle-right {
-  font-size: 11px;
-  width: 8px;
-}
-
-.result.card .date {
-  color: var(--text-color--light);
-  margin-left: auto;
-}
-
-.result.card .excerpt {
-  white-space: initial;
+.result.card .origin .author {
+  font-weight: 600;
+  font-size: 15px;
   color: var(--text-color--default);
-  margin: 10px 0;
-  line-height: 1.4;
-  font-size: 14px;
-  letter-spacing: 0.4px;
 }
 
-.result.card .excerpt > :first-child {
-  margin-top: 0;
+.result.card .title {
+  font-weight: normal;
+  letter-spacing: 0.5px;
 }
 
-.result.card .excerpt > :last-child {
-  margin-bottom: 0;
+.result.card .title a {
+  color: var(--text-color--result-link);
 }
 
-.result.card .excerpt * {
-  max-width: 100%;
-}
-
-.result.card .ctrls {
+.result.card .tags {
+  margin: 0 0 0 54px;
+  line-height: 1.3;
   font-size: 12px;
 }
 
-.result.card .ctrls a {
+.result.card .tags a {
   color: var(--text-color--light);
+  letter-spacing: 0.3px;
+  margin-right: 3px;
+}
+
+.result.card .context {
+  display: block;
+  padding: 8px 12px 0;
+  font-size: 12px;
+  color: var(--text-color--light);
+}
+
+.result.card .context .fa-reply {
+  color: var(--text-color--very-light);
+}
+
+.result.card .context a {
+  color: var(--text-color--light);
+}
+
+.result.card .context + .header {
+  padding-top: 0;
+}
+
+.result.card .content {
+  white-space: initial;
+  color: var(--text-color--default);
+  line-height: 1.3125;
+  font-size: 15px;
+  padding: 0px 12px;
+}
+
+.result.card .content > :first-child { margin-top: 0; }
+.result.card .content > :last-child { margin-bottom: 0; }
+.result.card .content h1 { font-family: arial; font-size: 21px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--border-color--semi-light); }
+.result.card .content h2 { font-family: arial; font-size: 19px; font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border-color--semi-light); }
+.result.card .content h3 { font-family: arial; font-size: 19px; font-weight: 500; }
+.result.card .content h4 { font-family: arial; font-size: 16px; font-weight: 600; }
+.result.card .content h5 { font-family: arial; font-size: 16px; font-weight: 500; }
+.result.card .content :-webkit-any(video, audio, img) { max-width: 100%; }
+.result.card .content a { color: var(--text-color--content-link); }
+
+.result.card .ctrls {
+  padding: 8px;
+}
+
+.result.card .ctrls a {
+  display: inline-block;
+  padding: 2px 4px;
+  margin-right: 16px;
+  border-radius: 4px;
+  color: var(--text-color--pretty-light);
+}
+
+.result.card .ctrls a:hover {
   cursor: pointer;
-  margin-right: 10px;
+  background: var(--bg-color--semi-light);
+  color: var(--text-color--default);
+}
+
+.result.card .ctrls a small {
+  position: relative;
+  top: -1px;
 }
 `
 export default cssStr

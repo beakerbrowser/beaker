@@ -93,6 +93,12 @@ export class QueryView extends LitElement {
     emit(this, 'load-state-updated')
   }
 
+  onOpenActivity (e, url) {
+    e.preventDefault()
+    // beaker.browser.newPane(`beaker://activity/?url=${url}`)
+    beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: ['beaker://activity/']})
+  }
+
   // rendering
   // =
 
@@ -183,7 +189,7 @@ export class QueryView extends LitElement {
 
   renderDateTitle (result) {
     if (!this.showDateTitles) return ''
-    var resultNiceDate = niceDate(result.ctime, {largeIntervals: true})
+    var resultNiceDate = dateHeader(result.ctime)
     if (this.lastResultNiceDate === resultNiceDate) return ''
     this.lastResultNiceDate = resultNiceDate
     return html`
@@ -317,49 +323,13 @@ export class QueryView extends LitElement {
     var action = ({
       bookmark: 'bookmarked',
       blogpost: 'published',
-      microblogpost: 'posted',
+      microblogpost: '',
       page: 'created',
       comment: 'commented on',
       unknown: 'published'
     })[type]
     if (type === 'comment' || type === 'microblogpost') {
-      return html`
-        ${this.renderDateTitle(result)}
-        <div class="result action comment">
-          <a class="thumb" href=${result.author.url} title=${result.author.title} data-tooltip=${result.author.title}>
-            ${result.author.url === 'hyper://system/' ? html`
-              <span class="icon fas fa-fw fa-lock"></span>
-            ` : html`
-              <img class="favicon" src="${result.author.url}thumb">
-            `}
-          </a>
-          <span class="arrow"></span>
-          <div class="comment-container">
-            <div class="action-description">
-              <div class="origin">
-                ${result.author.url === 'hyper://system/' ? html`
-                  <a class="author" href=${result.author.url} title=${result.author.title}>I privately</a>
-                ` : html`
-                  <a class="author" href=${result.author.url} title=${result.author.title}>
-                    ${result.author.title}
-                  </a>
-                `}
-              </div>
-              <div class="action">
-                ${action}
-              </div>
-              <div class="title">
-                <a href=${result.href}>
-                  ${result.title ? unsafeHTML(shorten(result.title, 50)) : this.renderResultGenericActionTitle(result)}
-                </a>
-              </div>
-            </div>
-            <div class="content">
-              ${unsafeHTML(result.excerpt)}
-            </div>
-          </div>
-        </div>
-      `
+      return this.renderResultAsCard(result)
     }
     return html`
       ${this.renderDateTitle(result)}
@@ -398,41 +368,50 @@ export class QueryView extends LitElement {
   }
 
   renderResultAsCard (result) {
-    var urlp
-    try { urlp = new URL(result.href) }
-    catch (e) { return '' }
-
-    var excerpt = result.excerpt || result.description
     return html`
+      ${this.renderDateTitle(result)}
       <div class="result card">
-        <div class="origin">
+        <a class="thumb" href=${result.author.url} title=${result.author.title} data-tooltip=${result.author.title}>
           ${result.author.url === 'hyper://system/' ? html`
-            <span class="sysicon fas fa-fw fa-lock"></span>
-            <a class="author" href=${result.author.url} title=${result.author.title}>
-              Me (Private)
-            </a>
+            <span class="icon fas fa-fw fa-lock"></span>
           ` : html`
             <img class="favicon" src="${result.author.url}thumb">
-            <a class="author" href=${result.author.url} title=${result.author.title}>
-              ${result.author.title}
-            </a>
           `}
-          <span class="href">
-            <a href=${result.href}>
-              ${repeat(urlp.pathname.split('/').filter(Boolean), seg => html`
-                <span class="fas fa-fw fa-angle-right"></span> ${seg}
-              `)}
-            </a>
-          </span>
-          <a class="date" href=${result.href}>
-            ${niceDate(result.ctime)}
-          </a>
-        </div>
-        ${excerpt ? html`<div class="excerpt">${unsafeHTML(excerpt)}</div>` : ''}
-        <div class="ctrls">
-          <a><span class="fas fa-fw fa-reply"></span> Reply</a>
-          <a><span class="far fa-fw fa-star"></span> Bookmark</a>
-          <a><span class="far fa-fw fa-sticky-note"></span> Annotations (0)</a>
+        </a>
+        <span class="arrow"></span>
+        <div class="container">
+          ${result.href !== result.url ? html`
+            <div class="context">
+              <a href=${result.href} @click=${e => this.onOpenActivity(e, result.href)}>
+                <span class="fas fa-fw fa-reply"></span> ${shorten(result.hrefDescription, 50)}
+              </a>
+            </div>
+          ` : ''}
+          <div class="header">
+            <div class="origin">
+              ${result.author.url === 'hyper://system/' ? html`
+                <a class="author" href=${result.author.url} title=${result.author.title}>I privately</a>
+              ` : html`
+                <a class="author" href=${result.author.url} title=${result.author.title}>
+                  ${result.author.title}
+                </a>
+              `}
+            </div>
+            <span>&middot;</span>
+            <div class="date">
+              <a href=${result.url} @click=${e => this.onOpenActivity(e, result.href)}>
+                ${relativeDate(result.ctime)}
+              </a>
+            </div>
+          </div>
+          <div class="content">
+            ${unsafeHTML(result.excerpt)}
+          </div>
+          <div class="ctrls">
+            <a @click=${e => this.onOpenActivity(e, result.href)}><span class="fas fa-fw fa-external-link-alt"></span> <small>Open</small></a>
+            <a><span class="far fa-fw fa-star"></span> <small>Bookmark</small> <span class="fas fa-fw fa-caret-down"></span></a>
+            <a><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
+          </div>
         </div>
       </div>
     `
@@ -509,7 +488,7 @@ export class QueryView extends LitElement {
     var results = (await Promise.all([
       this.query_bookmarks(opts),
       this.query_blogposts(opts),
-      // this.query_microblogposts(opts),
+      this.query_microblogposts(Object.assign({}, opts, {limit: 200})),
       this.query_comments(opts),
       this.query_pages(opts)
     ])).flat()
@@ -624,7 +603,7 @@ export class QueryView extends LitElement {
     var candidates = await beaker.hyperdrive.query({
       type: 'file',
       drive: sources,
-      path: '/microblog/*',
+      path: '/microblog/*.md',
       sort: sort || 'ctime',
       reverse: true,
       limit: filter ? undefined : limit,
@@ -703,6 +682,7 @@ export class QueryView extends LitElement {
         type: 'beaker/comment',
         url: makeSafe(candidate.url),
         href: makeSafe(href),
+        hrefDescription: await veryFancyUrl(href),
         excerpt,
         ctime: candidate.stat.ctime,
         author: {
@@ -793,6 +773,17 @@ function fancyUrl (str) {
   }
 }
 
+async function veryFancyUrl (str) {
+  try {
+    let url = new URL(str)
+    let domain = (url.protocol === 'hyper:' ? await getDriveTitle(url.hostname) : undefined) || toNiceDomain(url.hostname)
+    let parts = [domain].concat(url.pathname.split('/').filter(Boolean))
+    return parts.join(' › ')
+  } catch (e) {
+    return str
+  }
+}
+
 const today = (new Date()).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
 const yesterday = (new Date(Date.now() - 8.64e7)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
 const lastWeekTs = Date.now() - 6.048e+8
@@ -805,6 +796,29 @@ function niceDate (ts, {largeIntervals} = {largeIntervals: false}) {
     return (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'long' })
   }
   return date
+}
+
+function dateHeader (ts) {
+  var date = (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
+  if (date === today) return 'Today'
+  if (date === yesterday) return 'Yesterday'
+  return (new Date(ts)).toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+const todayMs = Date.now()
+const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
+const MINUTE = 1e3 * 60
+const HOUR = 1e3 * 60 * 60
+const DAY = HOUR * 24
+const MONTH = DAY * 30
+function relativeDate (d) {
+  var diff = todayMs - d
+  if (diff < HOUR) return rtf.format(Math.floor(diff / MINUTE * -1), 'minute')
+  if (diff < DAY) return rtf.format(Math.floor(diff / HOUR * -1), 'hour')
+  if (diff < MONTH) return rtf.format(Math.floor(diff / DAY * -1), 'day')
+  if (diff < MONTH * 3) return rtf.format(Math.floor(diff / (DAY * 7) * -1), 'week')
+  if (diff < MONTH * 12) return rtf.format(Math.floor(diff / MONTH * -1), 'month')
+  return rtf.format(Math.floor(diff / (MONTH * -12)), 'year')
 }
 
 let _driveTitleCache = {}

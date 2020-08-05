@@ -109,7 +109,13 @@ class DesktopApp extends LitElement {
   // =
 
   render () {
-    const navItem = (id, label) => html`<a class="nav-item ${id === this.currentNav ? 'active' : ''}" @click=${e => {this.currentNav = id}}>${label}</a>`
+    const navItem = (id, label, count) => html`
+      <a
+        class="nav-item ${id === this.currentNav ? 'active' : ''} ${count ? 'show-count' : ''}"
+        @click=${e => {this.currentNav = id}}
+        data-count=${count}
+      >${label}</a>
+    `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div id="topright">
@@ -123,15 +129,17 @@ class DesktopApp extends LitElement {
       </div>
       <nav>
         ${navItem('all', html`<span class="fas fa-fw fa-search"></span> All`)}
+        ${navItem('comments', html`<span class="far fa-fw fa-comment-alt"></span> Comments`)}
         ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> Bookmarks`)}
         ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> Blog Posts`)}
         ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> Pages`)}
-        ${navItem('images', html`<span class="far fa-fw fa-images"></span> Images`)}
-        ${navItem('microblogposts', html`<span class="fas fa-fw fa-stream"></span> Micro Blog Posts`)}
-        ${navItem('comments', html`<span class="far fa-fw fa-comments"></span> Comments`)}
+        ${navItem('notifications', html`<span class="far fa-fw fa-bell"></span> Notifications`, 10)}
+        ${''/*TODOnavItem('images', html`<span class="far fa-fw fa-images"></span> Images`)*/}
         ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">
           More...
         </a>*/}
+        <hr>
+        ${this.renderSourcesCtrl()}
       </nav>
       <main>
         <div class="views">
@@ -146,31 +154,48 @@ class DesktopApp extends LitElement {
   renderSidebar () {
     return html`
       <div class="sidebar">
-        <h3>Sources</h3>
-        ${this.renderSourcesCtrl()}
-        <h3>Pinned Bookmarks <a @click=${e => this.onClickNewBookmark(e, true)}>+ <small>add</small></a></h3>
         <div class="quick-links">
-          ${repeat(this.pins, pin => getHref(pin), pin => html`
-            <div>
-              <a href=${getHref(pin)} @contextmenu=${e => this.onContextmenuFile(e, pin)}>
-                <img class="favicon" src="asset:favicon-32:${getHref(pin)}">
-                <span>${getTitle(pin)}</span>
-              </a>
-            </div>
-          `)}
-        </div>
-        <div class="notifications">
-          <h3>Notifications</h3>
-          ${this.sourceOptions.slice(2, 9).map(source => html`
-            <a class="notification" href=${source.url}>
-              <img src="asset:thumb:${source.url}" slot="img1">
-              <div class="title">${source.title}</div>
-              <div class="explanation">Subscribed to you</div>
+          <div>
+            <a href="hyper://system/">
+              <img src="asset:favicon-32:hyper://system/">
+              <span>My Private Site</span>
             </a>
-          `)}
+          </div>
+          <div>
+            <a href=${this.profile?.url}>
+              <beaker-img-fallbacks>
+                <img src="asset:favicon-32:${this.profile?.url}" slot="img1">
+                <img src="beaker://assets/default-user-thumb" slot="img2">
+              </beaker-img-fallbacks>
+              <span>${this.profile?.title}</span>
+            </a>
+          </div>
+          <div>
+            <a href="hyper://library/">
+              <img class="favicon" src="asset:favicon-32:beaker://library/">
+              <span>My Library</span>
+            </a>
+          </div>
         </div>
         ${this.renderTagsList()}
       </div>
+    `
+  }
+
+  renderTagsList () {
+    return '' // TODO
+    return html`
+      <section>
+        <h3>Popular Tags</h3>
+        <div class="tags">
+          <a href="#">#beaker <sub>150</sub></a>
+          <a href="#">#hyperspace <sub>30</sub></a>
+          <a href="#">#p2p <sub>29</sub></a>
+          <a href="#">#web <sub>12</sub></a>
+          <a href="#">#news <sub>10</sub></a>
+          <a href="#">#politics <sub>8</sub></a>
+        </div>
+      </section>
     `
   }
 
@@ -378,51 +403,16 @@ class DesktopApp extends LitElement {
     }
   }
 
-  renderTagsList () {
-    // TODO
-    return ''
-    return html`
-      <section>
-        <h3>Popular Tags</h3>
-        <div class="tags">
-          <a href="#">#beaker <sub>150</sub></a>
-          <a href="#">#hyperspace <sub>30</sub></a>
-          <a href="#">#p2p <sub>29</sub></a>
-          <a href="#">#web <sub>12</sub></a>
-          <a href="#">#news <sub>10</sub></a>
-          <a href="#">#politics <sub>8</sub></a>
-        </div>
-      </section>
-    `
-  }
-
   renderSourcesCtrl () {
-    var customLabel = 'Custom'
-    var isCustomSelected = false
+    var label = ''
     switch (this.currentSource) {
-      case 'all':
-      case 'mine':
-      case 'others':
-        break
-      default:
-        isCustomSelected = true
-        customLabel = this.sourceOptions.find(opt => opt.url === this.currentSource).title
+      case 'all': label = 'All'; break
+      case 'mine': label = 'My Data'; break
+      case 'others': label = 'Others\'s Data'; break
+      default: label = this.sourceOptions.find(opt => opt.url === this.currentSource)?.title
     }
-    const item = (v, label) => html`
-      <label class=${this.currentSource === v ? 'selected' : ''} @click=${e => { this.currentSource = v }}>
-        <input name="source" type="radio" .checked=${this.currentSource === v}> ${label}
-      </label>
-    `
     return html`
-      <div class="sources-ctrl">
-        ${item('all', 'All Sites')}
-        ${item('mine', 'My Data')}
-        ${item('others', 'Others\' Data')}
-        <label @click=${this.onClickSources} class=${isCustomSelected ? 'selected' : ''}>
-          <input name="source" type="radio" .checked=${isCustomSelected}>
-          ${customLabel} <span class="fas fa-fw fa-caret-down"></span>
-        </label>
-      </div>
+      <a class="nav-item" @click=${this.onClickSources}>Source: ${label} <span class="fas fa-fw fa-caret-down"></span></a>
     `
   }
 
@@ -443,7 +433,6 @@ class DesktopApp extends LitElement {
   }
 
   renderPins () {
-    return ''
     var pins = this.pins || []
     return html`
       <div class="pins">

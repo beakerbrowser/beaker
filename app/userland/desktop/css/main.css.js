@@ -155,6 +155,18 @@ nav a.nav-item :-webkit-any(.fas, .far) {
   margin-right: 2px;
 }
 
+nav a.nav-item.show-count:after {
+  content: attr(data-count);
+  color: var(--text-color--light);
+  background: var(--bg-color--semi-light);
+  margin-left: 4px;
+  line-height: 1;
+  padding: 2px 5px 3px;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
 nav hr {
   border: 0;
   border-left: 1px solid var(--border-color--semi-light);
@@ -250,6 +262,7 @@ main {
 
 .views > * {
   display: block;
+  padding: 0 10px;
   height: calc(100vh - 93px);
   overflow: auto;
 }
@@ -314,62 +327,38 @@ main {
   font-size: 13px;
 }
 
-.twocol .sidebar h3 a {
-  color: var(--text-color--result-link);
-  padding: 0 4px;
-}
-
-.twocol .sidebar h3 a:hover {
-  cursor: pointer;
-  background: var(--bg-color--light);
-}
-
-.sources-ctrl {
-  margin-bottom: 20px;
-}
-
-.sources-ctrl label {
-  display: flex;
-  align-items: center;
-  font-weight: 400;
-  letter-spacing: 0.5px;
-  padding: 6px 8px;
-  border-radius: 4px;
-}
-
-.sources-ctrl label:-webkit-any(:hover, .selected) {
-  background: var(--bg-color--nav--highlight);
-}
-
-.sources-ctrl label input {
-  margin: 0 8px 0 0;
+@media (max-width: 900px) {
+  .twocol {
+    display: block;
+  }
+  .twocol > :first-child {
+    max-width: 670px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .twocol > :last-child {
+    display: none;
+  }
 }
 
 .quick-links {
-  border: 1px solid var(--border-color--light);
-  border-radius: 4px;
+  background: var(--bg-color--light);
+  border-radius: 8px;
+  padding: 10px;
   margin-bottom: 20px;
 }
 
-.quick-links div {
-  border-top: 1px solid var(--border-color--very-light);
-}
-
-.quick-links div:hover {
-  background: var(--bg-color--light);
-}
-
-.quick-links div:first-child {
-  border: 0;
-}
-
 .quick-links a {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   font-size: 13px;
   letter-spacing: 0.5px;
-  padding: 8px 10px;
+  padding: 4px 4px;
   color: var(--text-color--default);
+}
+
+.quick-links a:hover {
+  text-decoration: underline;
 }
 
 .quick-links a span {
@@ -387,53 +376,6 @@ main {
 .quick-links a img.favicon {
   image-rendering: -webkit-optimize-contrast;
   border-radius: 0;
-}
-
-.notifications {
-  margin-bottom: 20px;
-  background: var(--bg-color--light);
-  border-radius: 8px;
-}
-
-.notifications h3 {
-  padding: 10px;
-  margin: 0 !important;
-}
-
-.notifications .notification {
-  display: grid;
-  border-top: 1px solid var(--border-color--very-light);
-  grid-template-columns: 40px 1fr;
-  grid-template-rows: 20px 20px;
-  padding: 10px;
-}
-
-.notifications .notification:hover {
-  background: var(--bg-color--semi-light);
-}
-
-.notifications .notification img {
-  display: block;
-  width: 36px;
-  height: 36px;
-  margin: 2px;
-  border-radius: 50%;
-  object-fit: cover;
-  grid-row-start: 1;
-  grid-row-end: 3;
-}
-
-.notifications .notification .title {
-  align-self: self-end;
-  padding-left: 10px;
-  font-size: 13px;
-  letter-spacing: 0.5px;
-}
-
-.notifications .notification .explanation {
-  padding-left: 10px;
-  grid-column-start: 2;
-  color: var(--text-color--light);
 }
 
 .tags {
