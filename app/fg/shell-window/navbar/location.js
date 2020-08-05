@@ -136,11 +136,12 @@ class NavbarLocation extends LitElement {
       ${this.renderDatConverterBtn()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderFolderSyncBtn()}
+      ${this.renderSubscribeBtn()}
       ${this.renderPeers()}
-      ${this.renderSiteBtn()}
       ${this.renderDonateBtn()}
       ${''/* DISABLED this.renderShareBtn()*/}
       ${this.renderBookmarkBtn()}
+      ${this.renderSiteBtn()}
     `
   }
 
@@ -272,6 +273,23 @@ class NavbarLocation extends LitElement {
     `
   }
 
+  renderSubscribeBtn () {
+    if (!this.isHyperdrive || this.isSystemDrive) {
+      return ''
+    }
+    var cls = classMap({subscribers: true, pressed: this.isSubscribersMenuOpen})
+    return html`
+      <span class="subscribe-btn-group">
+        <button class="subscribe" @click=${this.onClickSubscribe}>
+          <i class="fa fa-rss"></i> Subscribe
+        </button>
+        <button class="${cls}" @click=${this.onClickSubscriber}>
+          0
+        </button>
+      </span>
+    `
+  }
+
   renderDonateBtn () {
     if (!this.donateLinkHref) {
       return ''
@@ -298,12 +316,7 @@ class NavbarLocation extends LitElement {
 
   renderBookmarkBtn () {
     return html`
-      <button
-        class="bookmark tooltip-left"
-        @click=${this.onClickBookmark}
-        data-tooltip="Bookmark this page"
-        title="Bookmark this page"
-      >
+      <button class="bookmark" @click=${this.onClickBookmark} title="Bookmark this page">
         <span class="${this.isBookmarked ? 'fas' : 'far'} fa-star"></span>
       </button>
     `
@@ -613,6 +626,50 @@ button.folder-sync .fa-sync {
   font-size: 8px;
   position: relative;
   top: -3px;
+}
+
+.subscribe-btn-group {
+  display: flex;
+  border: 1px solid var(--border-color--navbar-subscribe-btn);
+  border-radius: 4px;
+  margin: 3px 4px;
+}
+
+.subscribe-btn-group button {
+  width: auto;
+  font-size: 12px;
+}
+
+.subscribe-btn-group button.subscribe {
+  width: auto;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  line-height: 18px;
+  padding: 0 7px;
+  background: var(--bg-color--navbar-subscribe-btn);
+  color: var(--text-color--navbar-subscribe-btn);
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+.subscribe-btn-group button.subscribe:hover {
+  background: var(--bg-color--navbar-subscribe-btn--hover);
+}
+
+.subscribe-btn-group button i {
+  font-size: 9px;
+  position: relative;
+  top: -1px;
+}
+
+.subscribe-btn-group button.subscribers {
+  font-size: 11px;
+  padding: 0 8px;
+}
+
+button.site .fa-angle-down {
+  position: relative;
+  top: 1px;
 }
 
 .input-container {
