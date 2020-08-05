@@ -1,7 +1,7 @@
 import { LitElement, html } from '../vendor/lit-element/lit-element.js'
 import { classMap } from '../vendor/lit-element/lit-html/directives/class-map.js'
 import { repeat } from '../vendor/lit-element/lit-html/directives/repeat.js'
-import { joinPath, pluralize, changeURLScheme } from './lib/strings.js'
+import { joinPath, pluralize } from './lib/strings.js'
 import { timeDifference } from './lib/time.js'
 import * as toast from './com/toast.js'
 import * as contextMenu from './com/context-menu.js'

@@ -295,9 +295,7 @@ export async function edit (opts = {}, location = '') {
   let st = await urlp.drive.stat(urlp.pathname).catch(e => undefined)
   if (!st) await urlp.drive.writeFile(urlp.pathname, '')
 
-  await this.panel.open('editor-app', location)
-  await this.panel.goto('editor-app', location)
-  await this.panel.focus('editor-app')
+  await this.page.goto(`beaker://editor/?url=${location}`)
 }
 
 export function clear () {
