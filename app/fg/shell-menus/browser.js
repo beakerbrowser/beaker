@@ -87,10 +87,6 @@ class BrowserMenu extends LitElement {
             <span class="label">File</span>
             <span class="more"><span class="fas fa-caret-right"></span></span>
           </div>
-          <div class="menu-item" @click=${e => this.onShowSubmenu('library')}>
-            <span class="label">Library</span>
-            <span class="more"><span class="fas fa-caret-right"></span></span>
-          </div>
           <div class="menu-item" @click=${e => this.onShowSubmenu('bookmarks')}>
             <span class="label">Bookmarks</span>
             <span class="more"><span class="fas fa-caret-right"></span></span>
@@ -109,7 +105,12 @@ class BrowserMenu extends LitElement {
           </div>
         </div>
 
-        <div class="section">          
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+            <img class="favicon" src="asset:favicon:beaker://library/">
+            <span class="label">My Library</span>
+          </div>
+
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
             <i class="fas fa-cog"></i>
             <span class="label">Settings</span>
@@ -142,58 +143,6 @@ class BrowserMenu extends LitElement {
               <span class="label">${b.title}</span>
             </div>
           `)}
-        </div>
-      </div>`
-  }
-
-  renderLibrary () {
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
-        <div class="header">
-          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
-            <i class="fa fa-angle-left"></i>
-          </button>
-          <h2>My Library</h2>
-        </div>
-
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/drives')}>
-            <i class="far fa-star"></i>
-            <span class="label">My Drives</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/hosting')}>
-            <i class="fas fa-share-alt"></i>
-            <span class="label">Hosting</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/address-book')}>
-            <i class="far fa-address-card"></i>
-            <span class="label">Address Book</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library/bookmarks')}>
-            <i class="far fa-star"></i>
-            <span class="label">Bookmarks</span>
-          </div>
-
-          <div class="menu-item downloads" @click=${e => this.onClickDownloads(e)}>
-            <i class="fas fa-arrow-down"></i>
-            <span class="label">Downloads</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
-            <i class="fas fa-history"></i>
-            <span class="label">History</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'hyper://system')}>
-            <i class="far fa-hdd"></i>
-            <span class="label">My Private Site</span>
-          </div>
         </div>
       </div>`
   }
@@ -400,6 +349,10 @@ BrowserMenu.styles = [commonCSS, css`
 .menu-item .shortcut {
   font-size: 12px;
   -webkit-font-smoothing: antialiased;
+}
+
+.favicon {
+  image-rendering: -webkit-optimize-contrast;
 }
 `]
 
