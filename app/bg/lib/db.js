@@ -112,3 +112,33 @@ export const handleQueryBuilder = function (args) {
   }
   return args
 }
+
+export function attachOnConflictDoUpdate (knex) {
+  knex.QueryBuilder.extend('onConflictDoUpdate', function onConflictDoUpdate(uniqueColumn, columns) {
+    if (this._method !== 'insert') {
+      throw new Error('onConflictDoUpdate error: should be used only with insert query.');
+    }
+
+    if (columns.length === 0) {
+      throw new Error('onConflictDoUpdate error: please specify at least one column name.');
+    }
+
+    const { placeholders, bindings } = Object.entries(columns).reduce((result, [key, value]) => {
+      result.placeholders.push(`??=?`);
+      result.bindings.push(key, value);
+      return result;
+    }, { placeholders: [], bindings: [] });
+
+    const {
+      sql: originalSQL,
+      bindings: originalBindings,
+    } = this.toSQL();
+
+    const newBindings = [...originalBindings, ...bindings];
+
+    return this.client.raw(
+      `${originalSQL} on conflict(${uniqueColumn}) do update set ${placeholders.join(', ')}`,
+      newBindings,
+    );
+  });
+}
