@@ -354,16 +354,19 @@ main {
   text-decoration: underline;
 }
 
-.quick-links a span {
-  padding: 0 0 0 8px;
-}
-
 .quick-links a img {
   display: block;
   width: 16px;
   height: 16px;
   border-radius: 50%;
   object-fit: cover;
+  margin-right: 8px;
+}
+
+.quick-links a :-webkit-any(.far, .fas) {
+  width: 16px;
+  margin-right: 8px;
+  color: var(--text-color--light);
 }
 
 .quick-links a img.favicon {

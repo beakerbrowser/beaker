@@ -173,9 +173,15 @@ class DesktopApp extends LitElement {
             </a>
           </div>
           <div>
-            <a href="hyper://library/">
+            <a href="beaker://library/">
               <img class="favicon" src="asset:favicon-32:beaker://library/">
               <span>My Library</span>
+            </a>
+          </div>
+          <div>
+            <a href="https://docs.beakerbrowser.com/">
+              <span class="far fa-fw fa-life-ring"></span>
+              <span>Help</span>
             </a>
           </div>
         </section>
