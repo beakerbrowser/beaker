@@ -571,7 +571,10 @@ export async function setup () {
     var browserView = BrowserView.fromWebContents(e.sender)
     if (browserView) {
       var tab = findTab(browserView)
-      if (tab) remove(tab.browserWindow, tab)
+      if (tab) {
+        var pane = tab.findPane(browserView)
+        if (pane) tab.removePane(pane)
+      }
     }
     e.returnValue = false
   })
