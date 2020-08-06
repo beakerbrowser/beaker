@@ -278,13 +278,13 @@ h2 a:hover {
 
 .result.action .title {
   color: var(--text-color--light);
-  padding-bottom: 4px;
+  padding-bottom: 2px;
 }
 
 .result.action .title a {
   letter-spacing: 0.5px;
-  font-size: 19px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 500;
   color: var(--text-color--result-link);
 }
 
@@ -311,7 +311,7 @@ h2 a:hover {
   display: inline-block;
   color: var(--text-color--light);
   font-weight: 500;
-  margin-left: 8px;
+  margin-left: 2px;
 }
 
 .result.action .ctrls a:hover {
@@ -322,6 +322,7 @@ h2 a:hover {
 .result.action .ctrls a .fa-comment-alt {
   position: relative;
   top: 1px;
+  font-size: 12px;
 }
 
 /** CARD STYLES **/
@@ -399,6 +400,25 @@ h2 a:hover {
 .result.card .container {
   border: 1px solid var(--border-color--light);
   background: var(--bg-color--default);
+  padding: 2px;
+}
+
+.result.card .container:hover {
+  position: relative;
+  cursor: pointer;
+  border: 1px solid var(--border-color--dark);
+}
+
+.result.card .container:hover:before {
+  /* top border */
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--border-color--dark);
+  z-index: 1;
 }
 
 .result.card.unread .container {
@@ -495,7 +515,7 @@ h2 a:hover {
   color: var(--text-color--default);
   line-height: 1.3125;
   font-size: 15px;
-  padding: 0px 12px;
+  padding: 0px 12px 12px;
 }
 
 .result.card .content > :first-child { margin-top: 0; }
@@ -505,6 +525,7 @@ h2 a:hover {
 .result.card .content h3 { font-family: arial; font-size: 19px; font-weight: 500; }
 .result.card .content h4 { font-family: arial; font-size: 16px; font-weight: 600; }
 .result.card .content h5 { font-family: arial; font-size: 16px; font-weight: 500; }
+.result.card .content pre { font-size: 13px; }
 .result.card .content :-webkit-any(video, audio, img) { max-width: 100%; }
 .result.card .content a { color: var(--text-color--content-link); }
 

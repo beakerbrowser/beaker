@@ -42,6 +42,10 @@ export class QueryView extends LitElement {
     this.showViewMore = false
     this.activeQuery = undefined
     this.abortController = undefined
+
+    // helper state
+    this.isMouseDown = false
+    this.isMouseDragging = false
   }
 
   get isLoading () {
@@ -113,12 +117,6 @@ export class QueryView extends LitElement {
     emit(this, 'load-state-updated')
   }
 
-  onOpenActivity (e, url) {
-    e.preventDefault()
-    beaker.browser.newPane(`beaker://activity/?url=${url}`)
-    // beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: ['beaker://activity/']})
-  }
-
   // rendering
   // =
 
@@ -152,13 +150,13 @@ export class QueryView extends LitElement {
     if (!this.filter) {
       return html`
         <div class="results">
-          ${repeat(this.results, result => result.href, result => this.renderNormalResult(result))}
+          ${repeat(this.results, result => result.url, result => this.renderNormalResult(result))}
         </div>
       `
     }
     return html`
       <div class="results">
-        ${repeat(this.results, result => result.href, result => this.renderSearchResult(result))}
+        ${repeat(this.results, result => result.url, result => this.renderSearchResult(result))}
       </div>
     `
   }
@@ -195,7 +193,7 @@ export class QueryView extends LitElement {
       'beaker/index/blogposts': 'Blog Post',
       'beaker/index/microblogposts': undefined,
       'beaker/index/pages': 'Page',
-      'beaker/index/comments': `Comment on ${toNiceUrl(result.href)}`
+      'beaker/index/comments': `Comment on ${toNiceUrl(href)}`
     })[result.index]
 
     return html`
@@ -260,7 +258,7 @@ export class QueryView extends LitElement {
       'beaker/index/blogposts': niceDate(result.ctime),
       'beaker/index/microblogposts': niceDate(result.ctime),
       'beaker/index/pages': niceDate(result.ctime),
-      'beaker/index/comments': shorten(fancyUrl(result.href), 50)
+      'beaker/index/comments': niceDate(result.ctime)
     })[result.index] || niceDate(result.ctime)
 
     var action = ({
@@ -301,8 +299,10 @@ export class QueryView extends LitElement {
                 ${result.site.url === 'hyper://system/' ? 'Me (Private)' : result.site.title}
               </a>
             </span>
-            <a class="ctrl" @click=${e => this.onOpenActivity(e, href)}><span class="far fa-fw fa-comment-alt"></span> <small>Thread</small></a>
-            <a class="ctrl"><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>
+            ${''/*TODO<a class="ctrl"><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>*/}
+            <a class="ctrl" @click=${e => this.onOpenActivity(e, href)} data-tooltip="View Thread">
+              <span class="far fa-fw fa-comment-alt"></span>
+            </a>
           </div>
         </div>
       </div>
@@ -331,11 +331,16 @@ export class QueryView extends LitElement {
           <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
         </a>
         <span class="arrow"></span>
-        <div class="container">
+        <div
+          class="container"
+          @mousedown=${this.onMousedownCard}
+          @mouseup=${e => this.onMouseupCard(e, context || result.url)}
+          @mousemove=${this.onMousemoveCard}
+        >
           ${result.notification ? this.renderNotification(result.notification) : ''}
           ${context ? html`
             <div class="context">
-              <a href=${context} @click=${e => this.onOpenActivity(e, context)}>
+              <a href=${context}>
                 <span class="fas fa-fw fa-reply"></span> ${shorten(fancyUrl(context), 50)}
               </a>
             </div>
@@ -360,15 +365,15 @@ export class QueryView extends LitElement {
           <div class="content">
             ${unsafeHTML(beaker.markdown.toHTML(result.content))}
           </div>
-          ${''/*<div class="tags">
+          ${''/*TODO <div class="tags">
             <a href="#">beaker</a>
             <a href="#">hyperspace</a>
             <a href="#">p2p</a>
-          </div>*/}
-          <div class="ctrls">
-            <a @click=${e => this.onOpenActivity(e, context || result.url)}><span class="far fa-fw fa-comment-alt"></span> <small>Thread</small></a>
-            <a><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>
           </div>
+          <div class="ctrls">
+            <a><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>
+            <a @click=${e => this.onOpenActivity(e, context || result.url)}><span class="far fa-fw fa-comment-alt"></span> <small>Thread</small></a>
+          </div>*/}
         </div>
       </div>
     `
@@ -427,6 +432,34 @@ export class QueryView extends LitElement {
   // events
   // =
 
+  onOpenActivity (e, url) {
+    e.preventDefault()
+    beaker.browser.newPane(`beaker://activity/?url=${url}`)
+    // beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: ['beaker://activity/']})
+  }
+
+  onMousedownCard (e) {
+    for (let el of e.path) {
+      if (el.tagName === 'A') return
+    }
+    this.isMouseDown = true
+    this.isMouseDragging = false
+  }
+
+  onMousemoveCard (e) {
+    if (this.isMouseDown) {
+      this.isMouseDragging = true
+    }
+  }
+
+  onMouseupCard (e, url) {
+    if (!this.isMouseDown) return
+    if (!this.isMouseDragging) {
+      this.onOpenActivity(e, url)
+    }
+    this.isMouseDown = false
+    this.isMouseDragging = false
+  }
 }
 
 customElements.define('query-view', QueryView)

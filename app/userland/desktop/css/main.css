@@ -4,6 +4,7 @@
 body {
   --border-color--default: #bbc;
   --border-color--light: #ccd;
+  --border-color--dark: #99a;
   --border-color--semi-light: #dde;
   --border-color--very-light: #eef;
   --border-color--focused: #7599ff;
@@ -31,6 +32,7 @@ body {
   body {
     --border-color--default: #669;
     --border-color--light: #558;
+    --border-color--dark: #88a;
     --border-color--semi-light: #447;
     --border-color--very-light: #334;
     --border-color--focused: #7599ff;
