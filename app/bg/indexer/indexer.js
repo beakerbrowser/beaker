@@ -76,7 +76,9 @@ export class Indexer {
     }
 
     // index the resource's data
-    if (!isNew) await db('resources_data').del().where({resource_rowid: rowid})
+    if (!isNew) {
+      await db('resources_data').del().where({resource_rowid: rowid})
+    }
     await Promise.all(dataEntries.map(([key, value]) => (
       db('resources_data').insert({resource_rowid: rowid, key, value})
     )))

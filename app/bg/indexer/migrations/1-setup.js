@@ -42,12 +42,12 @@ exports.up = async function (knex) {
   `)
   await knex.schema.raw(`
     CREATE TRIGGER resources_data_ad AFTER DELETE ON resources_data BEGIN
-      INSERT INTO resources_data_fts(resources_data_fts, rowid, value) VALUES('delete', old.value);
+      INSERT INTO resources_data_fts(resources_data_fts, rowid, value) VALUES('delete', old.rowid, old.value);
     END;
   `)
   await knex.schema.raw(`
     CREATE TRIGGER resources_data_au AFTER UPDATE ON resources_data BEGIN
-      INSERT INTO resources_data_fts(resources_data_fts, rowid, value) VALUES('delete', old.value);
+      INSERT INTO resources_data_fts(resources_data_fts, rowid, value) VALUES('delete', old.rowid, old.value);
       INSERT INTO resources_data_fts(rowid, value) VALUES (new.rowid, new.value);
     END;
   `)
