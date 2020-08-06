@@ -590,7 +590,7 @@ async function loadSite (origin) {
     record = {rowid: res[0], last_indexed_version: 0}
   }
 
-  return {
+  var siteRecord = {
     origin,
     rowid: record.rowid,
     last_indexed_version: record.last_indexed_version,
@@ -604,12 +604,12 @@ async function loadSite (origin) {
     async listUpdates () {
       return timer(READ_TIMEOUT, async (checkin) => {
         checkin('fetching recent updates')
-        let changes = await drive.pda.diff(record.last_indexed_version)
-        // TODO removeme
-        if (origin === 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39') {
-          while (changes.length < 200) {
-            changes = await drive.pda.diff(record.last_indexed_version)
-          }
+        // HACK work around the diff stream issue -prf
+        // let changes = await drive.pda.diff(+record.last_indexed_version || 0)
+        let changes = []
+        for (let i = 0; i < 10; i++) {
+          let c = await drive.pda.diff(+record.last_indexed_version || 0)
+          if (c.length > changes.length) changes = c
         }
         return changes.filter(change => ['put', 'del'].includes(change.type)).map(change => ({
           path: '/' + change.name,
@@ -621,6 +621,7 @@ async function loadSite (origin) {
       })
     }
   }
+  return siteRecord
 }
 
 /**
