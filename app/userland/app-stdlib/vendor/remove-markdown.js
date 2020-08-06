@@ -1,4 +1,9 @@
 /*
+Modified by PRF to include:
+
+ - options.keepHtmll
+
+
 https://github.com/stiang/remove-markdown
 
 The MIT License (MIT)
@@ -26,6 +31,7 @@ SOFTWARE.
 
 export function removeMarkdown (md, options) {
   options = options || {};
+  options.keepHtml = options.hasOwnProperty('keepHtml') ? options.keepHtml : false; // ADDITION -prf
   options.listUnicodeChar = options.hasOwnProperty('listUnicodeChar') ? options.listUnicodeChar : false;
   options.stripListLeaders = options.hasOwnProperty('stripListLeaders') ? options.stripListLeaders : true;
   options.gfm = options.hasOwnProperty('gfm') ? options.gfm : true;
@@ -54,9 +60,13 @@ export function removeMarkdown (md, options) {
         // Fenced codeblocks
         .replace(/`{3}.*\n/g, '');
     }
+    if (!options.keepHtml) {
+      // ADDITION -prf
+      output = output
+        // Remove HTML tags
+        .replace(/<[^>]*>/g, '')
+    }
     output = output
-      // Remove HTML tags
-      .replace(/<[^>]*>/g, '')
       // Remove setext-style headers
       .replace(/^[=\-]{2,}\s*$/g, '')
       // Remove footnotes?

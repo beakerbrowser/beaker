@@ -77,7 +77,7 @@ export function toNiceUrl (str) {
 }
 
 export function makeSafe (str = '') {
-  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 // search results are returned from beaker's search APIs with nonces wrapping the highlighted sections

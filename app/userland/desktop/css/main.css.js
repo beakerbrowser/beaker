@@ -307,7 +307,7 @@ main {
 }
 
 .twocol .sidebar section h3 {
-  margin: 0 0 3px;
+  margin: 16px 0 3px;
   color: var(--text-color--light);
   font-size: 13px;
   font-weight: bold;

@@ -164,7 +164,7 @@ export async function list (opts) {
     query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
   }
 
-  if (opts?.sort && ['ctime', 'mtime', 'origin'].includes(opts.sort)) {
+  if (opts?.sort && ['ctime', 'mtime', 'site'].includes(opts.sort)) {
     query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
   } else {
     query = query.orderBy('ctime', 'desc')
@@ -185,8 +185,8 @@ export async function list (opts) {
       links: [],
       content: undefined
     }
-    var dataKeys = row.data_keys.split(sep)
-    var dataValues = row.data_values.split(sep)
+    var dataKeys = (row.data_keys || '').split(sep)
+    var dataValues = (row.data_values || '').split(sep)
     for (let i = 0; i < dataKeys.length; i++) {
       let key = dataKeys[i]
       if (key === METADATA_KEYS.content) {
@@ -219,11 +219,13 @@ export async function search (q = '', opts) {
       'title as siteTitle',
       'resource_rowid',
       'key',
+      'rank',
       db.raw(`snippet(resources_data_fts, 0, '<b>', '</b>', '...', 30) as matchingText`)
     )
     .innerJoin('resources_data', 'resources_data.rowid', 'resources_data_fts.rowid')
     .innerJoin('resources', 'resources.rowid', 'resources_data.resource_rowid')
     .innerJoin('sites', 'sites.rowid', 'resources.site_rowid')
+    .whereIn('resources_data.key', ['content', 'beaker/title'])
     .whereRaw(`resources_data_fts.value MATCH ?`, [q])
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)
@@ -249,33 +251,42 @@ export async function search (q = '', opts) {
     query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
   }
 
-  if (opts?.sort && ['ctime', 'mtime', 'origin'].includes(opts.sort)) {
-    query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
+  if (opts?.sort && ['ctime', 'mtime'].includes(opts.sort)) {
+    query = query.orderBy(opts.sort, opts.reverse ? 'desc' : 'asc')
   } else {
     query = query.orderBy('rank', 'desc')
   }
 
   var hits = await query
-  var results = await Promise.all(hits.map(async hit => {
+
+  // merge hits on the same record
+  var mergedHits = {}
+  for (let hit of hits) {
+    mergedHits[hit.resource_rowid] = mergedHits[hit.resource_rowid] || []
+    mergedHits[hit.resource_rowid].push(hit)
+  }
+
+  var results = await Promise.all(Object.values(mergedHits).map(async mergedHits => {
     var record = {
-      url: hit.origin + hit.path,
-      index: hit.index,
-      ctime: hit.ctime,
-      mtime: hit.mtime,
+      url: mergedHits[0].origin + mergedHits[0].path,
+      index: mergedHits[0].index,
+      ctime: mergedHits[0].ctime,
+      mtime: mergedHits[0].mtime,
       site: {
-        url: hit.origin,
-        title: hit.siteTitle
+        url: mergedHits[0].origin,
+        title: mergedHits[0].siteTitle
       },
       metadata: {},
       links: [],
       content: undefined,
-      match: {
-        key: hit.key,
-        value: hit.matchingText
-      }
+      matches: mergedHits.map(hit => ({key: hit.key, value: hit.matchingText})),
+      // with multiple hits, we just take the best bm25() rank
+      // this basically ignores multiple matching attrs as a signal
+      // which is fine for now -prf
+      rank: Math.max(...mergedHits.map(h => h.rank))
     }
 
-    var rows = await db('resources_data').select('*').where({resource_rowid: hit.resource_rowid})
+    var rows = await db('resources_data').select('*').where({resource_rowid: mergedHits[0].resource_rowid})
     for (let row of rows) {
       if (row.key === METADATA_KEYS.content) {
         record.content = row.value
@@ -288,7 +299,20 @@ export async function search (q = '', opts) {
 
     return record
   }))
-  return results.filter(Boolean)
+
+  // gotta resort due to our merge
+  if (opts?.sort === 'ctime') {
+    results.sort((a, b) => a.ctime - b.ctime)
+  } else if (opts?.sort === 'mtime') {
+    results.sort((a, b) => a.mtime - b.mtime)
+  } else {
+    results.sort((a, b) => a.rank > b.rank ? -1 : 1)
+  }
+  if (opts?.reverse) {
+    results.reverse()
+  }
+
+  return results
 }
 
 export async function listNotifications (opts) {
@@ -354,7 +378,7 @@ export async function listNotifications (opts) {
     query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
   }
 
-  if (opts?.sort && ['ctime', 'mtime', 'origin'].includes(opts.sort)) {
+  if (opts?.sort && ['ctime', 'mtime'].includes(opts.sort)) {
     query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
   } else {
     query = query.orderBy('ctime', 'desc')

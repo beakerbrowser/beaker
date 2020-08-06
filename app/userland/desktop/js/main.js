@@ -87,9 +87,20 @@ class DesktopApp extends LitElement {
     this.legacyArchives = await beaker.datLegacy.list()
   }
 
+  get currentNavAsIndex () {
+    switch (this.currentNav) {
+      case 'microblogposts': return 'beaker/index/microblogposts'
+      case 'comments': return 'beaker/index/comments'
+      case 'bookmarks': return 'beaker/index/bookmarks'
+      case 'blogposts': return 'beaker/index/blogposts'
+      case 'pages': return 'beaker/index/pages'
+      default: return undefined
+    }
+  }
+
   get sources () {
     if (this.currentSource === 'all') {
-      return this.sourceOptions.map(source => source.url)
+      return undefined // all data in the index this.sourceOptions.map(source => source.url)
     }
     if (this.currentSource === 'mine') {
       return ['hyper://system/', this.profile.url]
@@ -129,10 +140,11 @@ class DesktopApp extends LitElement {
       </div>
       <nav>
         ${navItem('all', html`<span class="fas fa-fw fa-search"></span> All`)}
-        ${navItem('comments', html`<span class="far fa-fw fa-comment-alt"></span> Comments`)}
         ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> Bookmarks`)}
         ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> Blog Posts`)}
         ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> Pages`)}
+        ${navItem('microblogposts', html`<span class="fas fa-fw fa-stream"></span> Microblog Posts`)}
+        ${navItem('comments', html`<span class="far fa-fw fa-comment-alt"></span> Comments`)}
         ${navItem('notifications', html`<span class="far fa-fw fa-bell"></span> Notifications`, 10)}
         ${''/*TODOnavItem('images', html`<span class="far fa-fw fa-images"></span> Images`)*/}
         ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">
@@ -208,197 +220,33 @@ class DesktopApp extends LitElement {
 
   renderCurrentView () {
     let hasSearchQuery = !!this.searchQuery
-    if (this.currentNav === 'all') {
-      if (hasSearchQuery) {
-        return html`
-          <div class="all-view">
-            <div class="twocol">
-              <div>
-                <query-view
-                  class="subview"
-                  content-type="images"
-                  render-mode="simple-grid"
-                  hide-empty
-                  limit="5"
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  @load-state-updated=${e => this.requestUpdate()}
-                ></query-view>
-                <query-view
-                  class="subview"
-                  content-type="bookmarks"
-                  render-mode="row"
-                  hide-empty
-                  limit="5"
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  @load-state-updated=${e => this.requestUpdate()}
-                ></query-view>
-                <query-view
-                  class="subview"
-                  content-type="blogposts"
-                  render-mode="row"
-                  hide-empty
-                  limit="5"
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  @load-state-updated=${e => this.requestUpdate()}
-                ></query-view>
-                <query-view
-                  class="subview"
-                  content-type="pages"
-                  render-mode="row"
-                  hide-empty
-                  limit="5"
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  @load-state-updated=${e => this.requestUpdate()}
-                ></query-view>
-                <query-view
-                  class="subview"
-                  content-type="comments"
-                  render-mode="row"
-                  hide-empty
-                  limit="5"
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  @load-state-updated=${e => this.requestUpdate()}
-                ></query-view>
-                <query-view
-                  class="subview"
-                  content-type="microblogposts"
-                  render-mode="row"
-                  hide-empty
-                  limit="5"
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  @load-state-updated=${e => this.requestUpdate()}
-                ></query-view>
-              </div>
-              ${this.renderSidebar()}
-            </div>
-          </div>
-        `
-      } else {
-        return html`
-          <div class="all-view">
-            ${this.renderPins()}
-            <div class="twocol">
+    if (hasSearchQuery) {
+      return html`
+        <div class="all-view">
+          <div class="twocol">
+            <div>
               <query-view
-                content-type="all"
-                show-date-titles
-                render-mode="action"
-                show-view-more
+                class="subview"
+                .index=${this.currentNavAsIndex}
+                .filter=${this.searchQuery}
                 .sources=${this.sources}
                 limit="50"
-                @view-more=${e => {this.currentNav = e.detail.contentType}}
                 @load-state-updated=${e => this.requestUpdate()}
               ></query-view>
-              ${this.renderSidebar()}
             </div>
-          </div>
-        `
-      }
-    }
-    if (this.currentNav === 'bookmarks') {
-      return html`
-        <div class="content-view">
-          <div class="twocol">
-            <query-view
-              ?show-date-titles=${!hasSearchQuery}
-              content-type="bookmarks"
-              render-mode=${hasSearchQuery ? 'row' : 'action'}
-              .filter=${this.searchQuery}
-              .sources=${this.sources}
-              limit="50"
-              @load-state-updated=${e => this.requestUpdate()}
-            ></query-view>
             ${this.renderSidebar()}
           </div>
         </div>
       `
-    }
-    if (this.currentNav === 'blogposts') {
+    } else {
       return html`
-        <div class="content-view">
+        <div class="all-view">
+          ${this.renderPins()}
           <div class="twocol">
             <query-view
-              ?show-date-titles=${!hasSearchQuery}
-              content-type="blogposts"
-              render-mode=${hasSearchQuery ? 'row' : 'action'}
-              .filter=${this.searchQuery}
-              .sources=${this.sources}
-              limit="50"
-              @load-state-updated=${e => this.requestUpdate()}
-            ></query-view>
-            ${this.renderSidebar()}
-          </div>
-      </div>
-      `
-    }
-    if (this.currentNav === 'microblogposts') {
-      return html`
-        <div class="content-view">
-          <div class="twocol">
-            <query-view
-              ?show-date-titles=${!hasSearchQuery}
-              content-type="microblogposts"
-              render-mode=${hasSearchQuery ? 'row' : 'action'}
-              .filter=${this.searchQuery}
-              .sources=${this.sources}
-              limit="50"
-              @load-state-updated=${e => this.requestUpdate()}
-            ></query-view>
-            ${this.renderSidebar()}
-          </div>
-        </div>
-      `
-    }
-    if (this.currentNav === 'comments') {
-      return html`
-        <div class="content-view">
-          <div class="twocol">
-            <query-view
-              ?show-date-titles=${!hasSearchQuery}
-              content-type="comments"
-              render-mode=${hasSearchQuery ? 'row' : 'action'}
-              .filter=${this.searchQuery}
-              .sources=${this.sources}
-              limit="50"
-              @load-state-updated=${e => this.requestUpdate()}
-            ></query-view>
-            ${this.renderSidebar()}
-          </div>
-        </div>
-      `
-    }
-    if (this.currentNav === 'pages') {
-      return html`
-        <div class="content-view">
-          <div class="twocol">
-            <query-view
-              ?show-date-titles=${!hasSearchQuery}
-              content-type="pages"
-              render-mode=${hasSearchQuery ? 'row' : 'action'}
-              .filter=${this.searchQuery}
-              .sources=${this.sources}
-              limit="50"
-              @load-state-updated=${e => this.requestUpdate()}
-            ></query-view>
-            ${this.renderSidebar()}
-          </div>
-        </div>
-      `
-    }
-    if (this.currentNav === 'images') {
-      return html`
-        <div class="content-view">
-          <div class="twocol">
-            <query-view
-              ?show-date-titles=${!hasSearchQuery}
-              content-type="images"
-              render-mode="simple-grid"
-              .filter=${this.searchQuery}
+              content-type="all"
+              show-date-titles
+              .index=${this.currentNavAsIndex}
               .sources=${this.sources}
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
