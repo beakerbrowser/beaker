@@ -256,7 +256,7 @@ class DesktopApp extends LitElement {
     } else {
       return html`
         <div class="all-view">
-          ${this.renderPins()}
+          ${this.currentNav === 'all' ? this.renderPins() : ''}
           <div class="twocol">
             <query-view
               content-type="all"

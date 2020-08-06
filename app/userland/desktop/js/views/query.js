@@ -83,7 +83,15 @@ export class QueryView extends LitElement {
   async query () {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
-    if (this.filter) {
+    if (this.index === 'notifications') {
+      this.results = await beaker.indexer.listNotifications({
+        filter: {search: this.filter},
+        limit: this.limit,
+        sort: 'ctime',
+        reverse: true
+        // signal: this.abortController.signal TODO doable?
+      })
+    } else if (this.filter) {
       this.results = await beaker.indexer.search(this.filter, {
         filter: {index: this.index, site: this.sources},
         limit: this.limit,
@@ -92,22 +100,13 @@ export class QueryView extends LitElement {
         // signal: this.abortController.signal TODO doable?
       })
     } else {
-      if (this.index === 'notifications') {
-        this.results = await beaker.indexer.listNotifications({
-          limit: this.limit,
-          sort: 'ctime',
-          reverse: true
-          // signal: this.abortController.signal TODO doable?
-        })
-      } else {
-        this.results = await beaker.indexer.list({
-          filter: {index: this.index, site: this.sources},
-          limit: this.limit,
-          sort: 'ctime',
-          reverse: true
-          // signal: this.abortController.signal TODO doable?
-        })
-      }
+      this.results = await beaker.indexer.list({
+        filter: {index: this.index, site: this.sources},
+        limit: this.limit,
+        sort: 'ctime',
+        reverse: true
+        // signal: this.abortController.signal TODO doable?
+      })
     }
     console.log(this.results)
     this.activeQuery = undefined
@@ -433,6 +432,7 @@ export class QueryView extends LitElement {
 customElements.define('query-view', QueryView)
 
 function renderMatchText (result, key) {
+  if (!result.matches) return undefined
   var match = result.matches.find(m => m.key === key)
   if (!match) return undefined
   return unsafeHTML(makeSafe(removeMarkdown(match.value, {keepHtml: true})).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>'))

@@ -127,7 +127,7 @@ export async function get (url) {
 export async function list (opts) {
   var sep = `[>${Math.random()}<]`
   var query = db('sites')
-    .leftJoin('resources', 'sites.rowid', 'resources.site_rowid')
+    .innerJoin('resources', 'sites.rowid', 'resources.site_rowid')
     .leftJoin('resources_data', 'resources.rowid', 'resources_data.resource_rowid')
     .select(
       'origin',
@@ -367,6 +367,9 @@ export async function listNotifications (opts) {
     } else {
       query = query.where({type: opts.filter.type})
     }
+  }
+  if (opts?.filter?.search) {
+    query = query.whereRaw(`resources_data.value LIKE ?`, [`%${opts.filter.search}%`])
   }
   if (typeof opts?.filter?.isRead !== 'undefined') {
     query = query.where({is_read: opts.filter.isRead ? 1 : 0})
