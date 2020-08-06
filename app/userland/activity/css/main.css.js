@@ -20,6 +20,38 @@ a:hover {
   text-decoration: underline;
 }
 
+header {
+  display: flex;
+  align-items: center;
+  padding: 6px 9px;
+  background: var(--bg-color--light);
+  color: var(--text-color--light);
+  font-size: 15px;
+}
+
+header a.close {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-right: 3px;
+}
+
+header a.close:hover {
+  background: var(--bg-color--semi-light);
+}
+
+header .title {
+  font-weight: bold;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+header .title a {
+  color: inherit;
+}
+
 nav {
   display: flex;
   font-size: 12px;

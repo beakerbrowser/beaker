@@ -341,7 +341,7 @@ export class QueryView extends LitElement {
           ${context ? html`
             <div class="context">
               <a href=${context}>
-                <span class="fas fa-fw fa-reply"></span> ${shorten(fancyUrl(context), 50)}
+                <span class="fas fa-fw fa-reply"></span> ${shorten(fancyUrl(context), 100)}
               </a>
             </div>
           ` : ''}

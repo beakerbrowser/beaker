@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
+import { toNiceUrl } from 'beaker://app-stdlib/js/strings.js'
 import css from '../css/main.css.js'
 import './com/res-summary.js'
 import './com/action-item.js'
@@ -84,10 +85,10 @@ class ActivityApp extends LitElement {
     if (!this.fileInfo) return undefined
     if (this.fileInfo.isDirectory()) return undefined
     switch (this.fileInfo.metadata.type) {
-      case 'beaker/blogpost': return 'blogpost'
+      case 'beaker/blogpost': return 'blog post'
       case 'beaker/comment': return 'comment'
       case 'beaker/page': return 'webpage'
-      case 'beaker/microblogpost': return 'microblogpost'
+      case 'beaker/microblogpost': return 'microblog post'
       default: return 'file'
     }
   }
@@ -99,7 +100,7 @@ class ActivityApp extends LitElement {
       case 'beaker/blogpost': return 'fas fa-blog'
       case 'beaker/comment': return 'far fa-comment-alt'
       case 'beaker/page': return 'far fa-file-alt'
-      case 'beaker/microblogpost': return 'fas fa-microblog'
+      case 'beaker/microblogpost': return 'fas fa-stream'
       default: return 'far fa-file'
     }
   }
@@ -137,31 +138,8 @@ class ActivityApp extends LitElement {
   async loadAnnotations () {
     var addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
     this.profileUrl = `hyper://${addressBook.profiles[0].key}/`
-    var sources = addressBook.profiles.map(item => item.key).concat(addressBook.contacts.map(item => item.key))
-    var files = await beaker.hyperdrive.query({
-      path: '/comments/*.md',
-      metadata: {href: normalizeUrl(this.url)},
-      drive: sources,
-      sort: 'ctime',
-      reverse: false
-    })
-
-    var annotations = []
-    for (let file of files) {
-      let content = await beaker.hyperdrive.readFile(file.url).catch(e => undefined)
-      if (!content) continue
-      annotations.push({
-        type: 'beaker/comment',
-        content,
-        url: file.url,
-        ctime: file.stat.ctime,
-        author: {
-          title: await getDriveTitle(file.drive),
-          url: file.drive
-        }
-      })
-    }
-    this.annotations = annotations
+    this.annotations = await beaker.indexer.list({filter: {linksTo: this.url}, reverse: false})
+    console.log(this.annotations)
   }
 
   // rendering
@@ -184,6 +162,10 @@ class ActivityApp extends LitElement {
     `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <header>
+        <a class="close" @click=${this.onClickClose}><span class="fas fa-times"></span></a>
+        <span class="title">Thread: <a href=${this.url} target="_blank">${this.renderFileTitle()}</a></span>
+      </header>
       ${this.renderLoading()}
       ${''/*TODO<nav>
         ${navItem('summary', 'Summary')}
@@ -215,29 +197,58 @@ class ActivityApp extends LitElement {
     `
   }
 
+  renderFileTitle () {
+    if (!this.siteInfo) return 'Loading...'
+    var site = this.siteInfo?.title || toNiceUrl(this.siteInfo.url)
+    switch (this.fileInfo?.metadata?.type) {
+      case 'beaker/comment':
+        return `Comment by ${site}`
+      case 'beaker/page':
+        return `Page by ${site}`
+      case 'beaker/blogpost':
+        return `Blog Post by ${site}`
+      case 'beaker/microblogpost':
+        return `Microblog post by ${site}`
+    }
+    return `Page by ${site}`
+  }
+
   renderAnnotations () {
     return html`
-      ${repeat(this.annotations, a => a.url, annotation => html`
-        <action-item
-          author-url=${annotation.author.url}
-          author-title=${annotation.author.title}
-          action="commented"
-          href=${annotation.url}
-          date=${relativeDate(annotation.ctime)}
-          content=${beaker.markdown.toHTML(annotation.content)}
-        ></action-item>
-      `)}
+      ${repeat(this.annotations, a => a.url, a => this.renderAnnotation(a))}
+    `
+  }
+
+  renderAnnotation (annotation) {
+    var authorTitle = annotation.site.url.startsWith('hyper://system') ? 'I (privately)' : annotation.site.title
+    var action = ({
+      'beaker/index/bookmarks': 'bookmarked this',
+      'beaker/index/blogposts': 'mentioned this in',
+      'beaker/index/microblogposts': 'mentioned this in',
+      'beaker/index/pages': 'mentioned this in',
+      'beaker/index/comments': 'commented'
+    })[annotation.index]
+    var title = ({
+      'beaker/index/bookmarks': annotation.metadata['beaker/title'],
+      'beaker/index/blogposts': annotation.metadata['beaker/title'] || 'a blogpost',
+      'beaker/index/microblogposts': 'a microblog post',
+      'beaker/index/pages': annotation.metadata['beaker/title'] || 'a web page'
+    })[annotation.index]
+
+    return html`
+      <action-item
+        author-url=${annotation.site.url}
+        author-title=${authorTitle}
+        .action=${action}
+        .title=${title}
+        href=${annotation.url}
+        date=${relativeDate(annotation.ctime)}
+        .content=${annotation.content ? beaker.markdown.toHTML(annotation.content) : undefined}
+      ></action-item>
     `
   }
 
   renderLoading () {
-    if (this.isLoading) {
-      return html`
-        <div class="loading">
-          <span class="spinner"></span>
-        </div>
-      `
-    }
     return ''
   }
 
@@ -251,10 +262,15 @@ class ActivityApp extends LitElement {
     await drive.mkdir('/comments').catch(e => undefined)
     await drive.writeFile(`/comments/${Date.now()}.md`, e.detail.text, {
       metadata: {
-        href: normalizeUrl(this.url)
+        type: 'beaker/comment',
+        'beaker/subject': normalizeUrl(this.url)
       }
     })
     this.load(this.url)
+  }
+
+  onClickClose (e) {
+    window.close()
   }
 }
 

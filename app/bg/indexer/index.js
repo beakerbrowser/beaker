@@ -139,7 +139,7 @@ export async function list (opts) {
       db.raw(`group_concat(resources_data.key, '${sep}') as data_keys`),
       db.raw(`group_concat(resources_data.value, '${sep}') as data_values`),
     )
-    .groupBy('resource_rowid')
+    .groupBy('resources.rowid')
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)
 
@@ -163,11 +163,18 @@ export async function list (opts) {
   if (opts?.filter?.ctime?.after) {
     query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
   }
+  if (opts?.filter?.linksTo) {
+    query = query.joinRaw(
+      `INNER JOIN resources_data as link ON link.resource_rowid = resources.rowid AND link.value = ?`,
+      [opts.filter.linksTo]
+    )
+  }
 
   if (opts?.sort && ['ctime', 'mtime', 'site'].includes(opts.sort)) {
     query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
   } else {
-    query = query.orderBy('ctime', 'desc')
+    let reverse = (typeof opts?.reverse === 'boolean') ? opts.reverse : true
+    query = query.orderBy('ctime', reverse ? 'desc' : 'asc')
   }
 
   var rows = await query
@@ -384,7 +391,8 @@ export async function listNotifications (opts) {
   if (opts?.sort && ['ctime', 'mtime'].includes(opts.sort)) {
     query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
   } else {
-    query = query.orderBy('ctime', 'desc')
+    let reverse = (typeof opts?.reverse === 'boolean') ? opts.reverse : true
+    query = query.orderBy('ctime', reverse ? 'desc' : 'asc')
   }
 
   var rows = await query
