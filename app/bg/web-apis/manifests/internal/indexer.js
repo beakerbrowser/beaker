@@ -4,5 +4,6 @@ export default {
   list: 'promise',
   search: 'promise',
   listNotifications: 'promise',
+  countNotifications: 'promise',
   setNotificationIsRead: 'promise'
 }

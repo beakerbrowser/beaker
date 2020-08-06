@@ -23,6 +23,10 @@ export default {
   listNotifications (opts) {
     return indexer.listNotifications(opts)
   },
+  
+  countNotifications (opts) {
+    return indexer.countNotifications(opts)
+  },
 
   setNotificationIsRead (rowid, isRead) {
     return indexer.setNotificationIsRead(rowid, isRead)

@@ -218,6 +218,11 @@ h2 a:hover {
   margin: 16px 4px;
 }
 
+.result.action.unread {
+  background: var(--bg-color--unread);
+  padding: 10px;
+}
+
 .result.action .thumb {
   display: block;
   width: 36px;
@@ -259,6 +264,11 @@ h2 a:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.result.action .notification {
+  padding-bottom: 4px;
+  font-size: 13px;
 }
 
 .result.action .origin .author {
@@ -324,6 +334,12 @@ h2 a:hover {
   color: var(--text-color--lightish);
 }
 
+.result.card.unread {
+  background: var(--bg-color--unread);
+  outline: 5px solid var(--bg-color--unread);
+  margin-bottom: 5px;
+}
+
 .result.card .info {
   display: flex;
   align-items: center;
@@ -372,12 +388,34 @@ h2 a:hover {
   transform: rotate(-45deg);
 }
 
-.result.card .container {
-  border: 1px solid var(--border-color--light);
+.result.card.is-notification .arrow {
+  background: var(--bg-color--light);
 }
 
-.result.card + .result.card .container {
+.result.card.unread .arrow {
+  border-color: var(--border-color--unread);
+}
+
+.result.card .container {
+  border: 1px solid var(--border-color--light);
+  background: var(--bg-color--default);
+}
+
+.result.card.unread .container {
+  border-color: var(--border-color--unread);
+}
+
+.result.card + .result.card:not(.unread) .container {
   border-top: 0;
+}
+
+.result.card .notification {
+  padding: 8px 12px;
+  background: var(--bg-color--light);
+}
+
+.result.card .notification a {
+  color: inherit;
 }
 
 .result.card .header {

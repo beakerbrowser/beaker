@@ -54,6 +54,7 @@ class DesktopApp extends LitElement {
     super()
     this.profile = undefined
     this.pins = []
+    this.unreadNotificationsCount = 0
     this.currentNav = 'all'
     this.searchQuery = ''
     this.sourceOptions = []
@@ -77,10 +78,11 @@ class DesktopApp extends LitElement {
   async load () {
     cacheBuster = Date.now()
     let sourceOptions
-    ;[this.profile, this.pins, sourceOptions] = await Promise.all([
+    ;[this.profile, this.pins, sourceOptions, this.unreadNotificationsCount] = await Promise.all([
       addressBook.loadProfile(),
       desktop.load(),
-      beaker.contacts.list()
+      beaker.contacts.list(),
+      beaker.indexer.countNotifications({filter: {isRead: false}})
     ])
     this.sourceOptions = [{url: 'hyper://system/', title: 'My Private Data'}, {url: this.profile.url, title: this.profile.title}].concat(sourceOptions)
     console.log(this.pins)
@@ -94,6 +96,7 @@ class DesktopApp extends LitElement {
       case 'bookmarks': return 'beaker/index/bookmarks'
       case 'blogposts': return 'beaker/index/blogposts'
       case 'pages': return 'beaker/index/pages'
+      case 'notifications': return 'notifications'
       default: return undefined
     }
   }
@@ -116,10 +119,22 @@ class DesktopApp extends LitElement {
     return !!queryViewEls.find(el => el.isLoading)
   }
 
+  markAllNotificationsRead () {
+    setTimeout(async () => {
+      await beaker.indexer.setNotificationIsRead('all', true)
+      this.unreadNotificationsCount = 0
+    }, 3e3)
+  }
+
   // rendering
   // =
 
   render () {
+    // trigger "mark read" of notifications on view
+    if (this.currentNav === 'notifications' && this.unreadNotificationsCount > 0) {
+      this.markAllNotificationsRead()
+    }
+
     const navItem = (id, label, count) => html`
       <a
         class="nav-item ${id === this.currentNav ? 'active' : ''} ${count ? 'show-count' : ''}"
@@ -145,7 +160,7 @@ class DesktopApp extends LitElement {
         ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> Pages`)}
         ${navItem('microblogposts', html`<span class="fas fa-fw fa-stream"></span> Microblog Posts`)}
         ${navItem('comments', html`<span class="far fa-fw fa-comment-alt"></span> Comments`)}
-        ${navItem('notifications', html`<span class="far fa-fw fa-bell"></span> Notifications`, 10)}
+        ${navItem('notifications', html`<span class="far fa-fw fa-bell"></span> Notifications`, this.unreadNotificationsCount)}
         ${''/*TODOnavItem('images', html`<span class="far fa-fw fa-images"></span> Images`)*/}
         ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">
           More...

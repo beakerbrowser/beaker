@@ -1,5 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
+import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
 import queryCSS from '../../css/views/query.css.js'
 import { removeMarkdown } from 'beaker://app-stdlib/vendor/remove-markdown.js'
@@ -86,25 +87,27 @@ export class QueryView extends LitElement {
       this.results = await beaker.indexer.search(this.filter, {
         filter: {index: this.index, site: this.sources},
         limit: this.limit,
-        sort: 'ctime',
+        sort: 'rank',
         reverse: true
         // signal: this.abortController.signal TODO doable?
       })
     } else {
-      console.log({
-        filter: {index: this.index, site: this.sources},
-        limit: this.limit,
-        sort: 'ctime',
-        reverse: true
-        // signal: this.abortController.signal TODO doable?
-      })
-      this.results = await beaker.indexer.list({
-        filter: {index: this.index, site: this.sources},
-        limit: this.limit,
-        sort: 'ctime',
-        reverse: true
-        // signal: this.abortController.signal TODO doable?
-      })
+      if (this.index === 'notifications') {
+        this.results = await beaker.indexer.listNotifications({
+          limit: this.limit,
+          sort: 'ctime',
+          reverse: true
+          // signal: this.abortController.signal TODO doable?
+        })
+      } else {
+        this.results = await beaker.indexer.list({
+          filter: {index: this.index, site: this.sources},
+          limit: this.limit,
+          sort: 'ctime',
+          reverse: true
+          // signal: this.abortController.signal TODO doable?
+        })
+      }
     }
     console.log(this.results)
     this.activeQuery = undefined
@@ -188,18 +191,13 @@ export class QueryView extends LitElement {
     }
     href = href || result.url
 
-    var urlp
-    try { urlp = new URL(href) }
-    catch (e) { return '' }
-    var hostname = DRIVE_KEY_REGEX.test(urlp.hostname) ? `${urlp.hostname.slice(0,6)}..${urlp.hostname.slice(-2)}` : urlp.hostname
-
     var title = result.metadata['beaker/title'] || ({
       'beaker/index/bookmarks': 'Bookmark',
       'beaker/index/blogposts': 'Blog Post',
-      'beaker/index/microblogposts': `Post on ${(new Date(result.ctime)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })}`,
+      'beaker/index/microblogposts': undefined,
       'beaker/index/pages': 'Page',
       'beaker/index/comments': `Comment on ${toNiceUrl(result.href)}`
-    })[result.index] || 'File'
+    })[result.index]
 
     return html`
       <div class="result row">
@@ -207,19 +205,13 @@ export class QueryView extends LitElement {
           ${this.renderResultThumb(result)}
         </a>
         <div class="info">
-          <div class="href">
-            <a href=${href}>
-              ${hostname}
-              ${repeat(urlp.pathname.split('/').filter(Boolean), seg => html`
-                <span class="fas fa-fw fa-angle-right"></span> ${seg}
-              `)}
-            </a>
-          </div>
-          <div class="title">
-            <a href=${result.href}>
-              ${renderMatchText(result, 'beaker/title') || title}
-            </a>
-          </div>
+          ${title ? html`
+            <div class="title">
+              <a href=${href}>
+                ${renderMatchText(result, 'beaker/title') || title}
+              </a>
+            </div>
+          ` : ''}
           <div class="origin">
             ${isBookmark ? html`
               <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
@@ -281,11 +273,19 @@ export class QueryView extends LitElement {
 
     return html`
       ${this.renderDateTitle(result)}
-      <div class="result action">
+      <div
+        class=${classMap({
+          result: true,
+          action: true,
+          'is-notification': !!result.notification,
+          unread: !!result.notification && !result?.notification?.isRead
+        })}
+      >
         <a class="thumb" href=${result.site.url} title=${result.site.title} data-tooltip=${result.site.title}>
           <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
         </a>
         <div class="container">
+          ${result.notification ? this.renderNotification(result.notification) : ''}
           <div class="title">
             <a href=${href}>${title}</a>
           </div>
@@ -320,12 +320,20 @@ export class QueryView extends LitElement {
 
     return html`
       ${this.renderDateTitle(result)}
-      <div class="result card">
+      <div
+        class=${classMap({
+          result: true,
+          card: true,
+          'is-notification': !!result.notification,
+          unread: !!result.notification && !result?.notification?.isRead
+        })}
+      >
         <a class="thumb" href=${result.site.url} title=${result.site.title} data-tooltip=${result.site.title}>
           <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
         </a>
         <span class="arrow"></span>
         <div class="container">
+          ${result.notification ? this.renderNotification(result.notification) : ''}
           ${context ? html`
             <div class="context">
               <a href=${context} @click=${e => this.onOpenActivity(e, context)}>
@@ -386,6 +394,37 @@ export class QueryView extends LitElement {
       </span>
     `
   }
+
+  renderNotification (notification) {
+    var icon = 'far fa-bell'
+    var description = 'linked to'
+    switch (notification.type) {
+      case 'beaker/notification/bookmark':
+        icon = 'fas fa-star'
+        description = 'bookmarked'
+        break
+      case 'beaker/notification/comment':
+        icon = 'far fa-comment-alt'
+        description = 'commented on'
+        break
+      case 'beaker/notification/mention':
+        icon = 'far fa-comment-alt'
+        description = 'mentioned'
+        break
+      case 'beaker/notification/reply':
+        icon = 'fas fa-reply'
+        description = 'replied to'
+        break
+    }
+    return html`
+      <div class="notification">
+        <span class="fa-fw ${icon}"></span>
+        ${description}
+        <a href=${notification.subject}>you</a>
+      </div>
+    `
+  }
+
   // events
   // =
 

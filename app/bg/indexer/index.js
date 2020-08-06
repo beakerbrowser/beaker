@@ -368,8 +368,8 @@ export async function listNotifications (opts) {
       query = query.where({type: opts.filter.type})
     }
   }
-  if (opts?.filter?.is_read) {
-    query = query.where({is_read: opts.filter.is_read})
+  if (typeof opts?.filter?.isRead !== 'undefined') {
+    query = query.where({is_read: opts.filter.isRead ? 1 : 0})
   }
   if (opts?.filter?.ctime?.before) {
     query = query.whereRaw(`ctime < ?`, [opts.filter.ctime.before])
@@ -421,8 +421,58 @@ export async function listNotifications (opts) {
   })
 }
 
+export async function countNotifications (opts) {
+  var query = db('notifications')
+    .select(db.raw(`count(notifications.rowid) as count`))
+
+  if (opts?.filter?.site) {
+    if (Array.isArray(opts.filter.site)) {
+      query = query.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
+    } else {
+      query = query.where({origin: parseUrl(opts.filter.site).origin})
+    }
+  }
+  if (opts?.filter?.subject) {
+    if (Array.isArray(opts.filter.subject)) {
+      query = query.whereIn('subject_origin', opts.filter.subject.map(subject => parseUrl(subject).origin))
+    } else {
+      query = query.where({subject_origin: parseUrl(opts.filter.subject).origin})
+    }
+  }
+  if (opts?.filter?.index) {
+    if (Array.isArray(opts.filter.index)) {
+      query = query.whereIn('index', opts.filter.index)
+    } else {
+      query = query.where({index: opts.filter.index})
+    }
+  }
+  if (opts?.filter?.type) {
+    if (Array.isArray(opts.filter.type)) {
+      query = query.whereIn('type', opts.filter.type)
+    } else {
+      query = query.where({type: opts.filter.type})
+    }
+  }
+  if (typeof opts?.filter?.isRead !== 'undefined') {
+    query = query.where({is_read: opts.filter.isRead ? 1 : 0})
+  }
+  if (opts?.filter?.ctime?.before) {
+    query = query.whereRaw(`ctime < ?`, [opts.filter.ctime.before])
+  }
+  if (opts?.filter?.ctime?.after) {
+    query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
+  }
+
+  var rows = await query
+  return rows[0].count
+}
+
 export async function setNotificationIsRead (rowid, isRead) {
-  await db('notifications').update({is_read: isRead ? 1 : 0}).where({rowid})
+  if (rowid === 'all') {
+    await db('notifications').update({is_read: isRead ? 1 : 0})
+  } else {
+    await db('notifications').update({is_read: isRead ? 1 : 0}).where({rowid})
+  }
 }
 
 // internal methods
