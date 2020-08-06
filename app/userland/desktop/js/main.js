@@ -147,27 +147,30 @@ class DesktopApp extends LitElement {
       <div id="topright">
         <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
       </div>
+      <header>
+        <div class="search-ctrl">
+          ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
+          <input @keyup=${this.onKeyupSearch}>
+          <button class="rounded primary" @click=${this.onClickNew}>New <span class="fas fa-fw fa-plus"></span></button>
+        </div>
+        <nav>
+          ${navItem('all', html`<span class="fas fa-fw fa-search"></span> <span class="label">All</span>`)}
+          ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
+          ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blog Posts</span>`)}
+          ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> <span class="label">Pages</span>`)}
+          ${navItem('microblogposts', html`<span class="fas fa-fw fa-stream"></span> <span class="label">Microblog Posts</span>`)}
+          ${navItem('comments', html`<span class="far fa-fw fa-comment-alt"></span> <span class="label">Comments</span>`)}
+          <hr>
+          ${navItem('notifications', html`<span class="far fa-fw fa-bell"></span> <span class="label">Notifications</span>`, this.unreadNotificationsCount)}
+          ${''/*TODOnavItem('images', html`<span class="far fa-fw fa-images"></span> Images`)*/}
+          ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">
+            More...
+          </a>*/}
+          <hr>
+          ${this.renderSourcesCtrl()}
+        </nav>
+      </header>
       ${this.renderReleaseNotice()}
-      <div class="search-ctrl">
-        ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
-        <input @keyup=${this.onKeyupSearch}>
-        <button class="rounded primary" @click=${this.onClickNew}>New <span class="fas fa-fw fa-plus"></span></button>
-      </div>
-      <nav>
-        ${navItem('all', html`<span class="fas fa-fw fa-search"></span> All`)}
-        ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> Bookmarks`)}
-        ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> Blog Posts`)}
-        ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> Pages`)}
-        ${navItem('microblogposts', html`<span class="fas fa-fw fa-stream"></span> Microblog Posts`)}
-        ${navItem('comments', html`<span class="far fa-fw fa-comment-alt"></span> Comments`)}
-        ${navItem('notifications', html`<span class="far fa-fw fa-bell"></span> Notifications`, this.unreadNotificationsCount)}
-        ${''/*TODOnavItem('images', html`<span class="far fa-fw fa-images"></span> Images`)*/}
-        ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">
-          More...
-        </a>*/}
-        <hr>
-        ${this.renderSourcesCtrl()}
-      </nav>
       <main>
         <div class="views">
           ${this.renderCurrentView()}
@@ -282,7 +285,9 @@ class DesktopApp extends LitElement {
       default: label = this.sourceOptions.find(opt => opt.url === this.currentSource)?.title
     }
     return html`
-      <a class="nav-item" @click=${this.onClickSources}>Source: ${label} <span class="fas fa-fw fa-caret-down"></span></a>
+      <a class="nav-item" @click=${this.onClickSources}>
+        <span class="label">Source: </span>${label} <span class="fas fa-fw fa-caret-down"></span>
+      </a>
     `
   }
 

@@ -49,6 +49,13 @@ input:focus {
   font-size: 11px;
 }
 
+@media (max-width: 1040px) {
+  #topright {
+    right: 15px;
+    top: 62px;
+  }
+}
+
 .release-notice {
   position: relative;
   width: 100%;
@@ -74,12 +81,18 @@ input:focus {
   float: right;
 }
 
+header {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 10px;
+  box-sizing: content-box;
+}
+
 .search-ctrl {
   display: flex;
   position: relative;
   height: 34px;
-  margin: 16px auto 0;
-  max-width: 1000px;
+  margin: 16px 0 0;
   z-index: 5;
 }
 
@@ -125,8 +138,7 @@ input:focus {
 
 nav {
   display: flex;
-  margin: 4px auto 0;
-  max-width: 1000px;
+  margin: 4px 0 0;
 }
 
 nav a.nav-item {
@@ -170,7 +182,13 @@ nav a.nav-item.show-count:after {
 nav hr {
   border: 0;
   border-left: 1px solid var(--border-color--semi-light);
-  margin: 10px;
+  margin: 10px 10px 10px 0;
+}
+
+@media (max-width: 900px) {
+  nav .label {
+    display: none;
+  }
 }
 
 .pins {
