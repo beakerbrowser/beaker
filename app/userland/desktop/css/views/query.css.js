@@ -49,6 +49,11 @@ h2 a:hover {
   margin-top: 20px;
 }
 
+.bragging {
+  color: var(--text-color--pretty-light);
+  margin: -20px 5px 20px;
+}
+
 .results {
   font-size: 14px;
   box-sizing: border-box;

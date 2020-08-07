@@ -40,10 +40,11 @@ export class QueryView extends LitElement {
     this.results = undefined
     this.hideEmpty = false
     this.showViewMore = false
-    this.activeQuery = undefined
-    this.abortController = undefined
 
     // helper state
+    this.lastQueryTime = undefined
+    this.activeQuery = undefined
+    this.abortController = undefined
     this.isMouseDown = false
     this.isMouseDragging = false
   }
@@ -87,6 +88,7 @@ export class QueryView extends LitElement {
   async query () {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
+    var startTs = Date.now()
     if (this.index === 'notifications') {
       this.results = await beaker.indexer.listNotifications({
         filter: {search: this.filter},
@@ -112,6 +114,7 @@ export class QueryView extends LitElement {
         // signal: this.abortController.signal TODO doable?
       })
     }
+    this.lastQueryTime = Date.now() - startTs
     console.log(this.results)
     this.activeQuery = undefined
     emit(this, 'load-state-updated')
@@ -155,6 +158,7 @@ export class QueryView extends LitElement {
       `
     }
     return html`
+      ${this.lastQueryTime ? html`<div class="bragging">Query executed in ${this.lastQueryTime / 1e3} seconds</div>` : ''}
       <div class="results">
         ${repeat(this.results, result => result.url, result => this.renderSearchResult(result))}
       </div>

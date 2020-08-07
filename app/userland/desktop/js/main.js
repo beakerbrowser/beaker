@@ -465,7 +465,7 @@ class DesktopApp extends LitElement {
     this.keyupSearchTo = setTimeout(() => {
       this.searchQuery = value
       this.keyupSearchTo = undefined
-    }, 500)
+    }, 100)
   }
 
   onClickNew (e) {
