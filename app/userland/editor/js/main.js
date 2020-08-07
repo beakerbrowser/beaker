@@ -12,6 +12,7 @@ import * as toast from '../../app-stdlib/js/com/toast.js'
 import './com/files-explorer.js'
 import { PublishPopup } from './com/publish-popup.js'
 import { ResizeImagePopup } from './com/resize-image-popup.js'
+import registerSuggestions from './com/suggestions.js'
 
 class EditorApp extends LitElement {
   static get properties () {
@@ -162,6 +163,9 @@ class EditorApp extends LitElement {
           jsLang.mimetypes.push('module')
           monaco.languages.register(jsLang)
         }
+
+        // enable search suggestions
+        registerSuggestions()
 
         // we have load monaco outside of the shadow dom
         monaco.editor.defineTheme('custom-dark', {
