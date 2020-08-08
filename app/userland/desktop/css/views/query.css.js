@@ -240,7 +240,7 @@ h2 a:hover {
 .result.action .thumb {
   display: block;
   width: 36px;
-  flex: 0 0 36px;
+  flex: 0 0 40px;
   height: 36px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
@@ -345,7 +345,7 @@ h2 a:hover {
   position: relative;
   display: grid;
   grid-template-columns: 50px 1fr;
-  margin: 0 30px 0 4px;
+  margin: 10px 24px 10px 4px;
   color: var(--text-color--lightish);
 }
 
@@ -413,8 +413,9 @@ h2 a:hover {
 
 .result.card .container {
   border: 1px solid var(--border-color--light);
+  border-radius: 4px;
   background: var(--bg-color--default);
-  padding: 4px;
+  padding: 2px;
 }
 
 .result.card .container:hover {
@@ -439,10 +440,6 @@ h2 a:hover {
   border-color: var(--border-color--unread);
 }
 
-.result.card + .result.card:not(.unread) .container {
-  border-top: 0;
-}
-
 .result.card .notification {
   padding: 8px 12px;
   background: var(--bg-color--light);
@@ -454,14 +451,15 @@ h2 a:hover {
 
 .result.card .header {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   font-size: 14px;
-  height: 24px;
-  padding: 6px 12px 2px;
+  max-width: 562px;
+  padding: 8px 12px 4px;
 }
 
 .result.card .header > * {
   margin-right: 5px;
+  white-space: nowrap;
 }
 
 .result.card .origin .icon {
@@ -474,7 +472,7 @@ h2 a:hover {
 
 .result.card .origin .author {
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   color: var(--text-color--default);
 }
 
@@ -503,10 +501,10 @@ h2 a:hover {
 }
 
 .result.card .context {
-  display: block;
-  padding: 8px 12px 0;
   font-size: 12px;
   color: var(--text-color--light);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .result.card .context .fa-reply {
@@ -525,8 +523,8 @@ h2 a:hover {
   white-space: initial;
   color: var(--text-color--default);
   line-height: 1.3125;
-  font-size: 15px;
-  padding: 0px 12px 12px;
+  font-size: 14px;
+  padding: 0px 12px 8px;
 }
 
 .result.card .content > :first-child { margin-top: 0; }
@@ -542,9 +540,12 @@ h2 a:hover {
 
 /** image hack - if it's the last element, try to fill the card **/
 .result.card .content > p:last-child > img:last-child {
-  width: calc(100% + 32px);
-  margin: 10px -16px -20px -16px;
+  width: calc(100% + 28px);
+  margin: 6px -14px -14px -14px;
+  object-fit: cover;
   max-width: none;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
 }
 
 .result.card .ctrls {

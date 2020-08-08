@@ -2,6 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
+import { asyncReplace } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/async-replace.js'
 import queryCSS from '../../css/views/query.css.js'
 import { removeMarkdown } from 'beaker://app-stdlib/vendor/remove-markdown.js'
 import { shorten, makeSafe, toNiceUrl, toNiceDomain, DRIVE_KEY_REGEX, joinPath } from 'beaker://app-stdlib/js/strings.js'
@@ -342,13 +343,6 @@ export class QueryView extends LitElement {
           @mousemove=${this.onMousemoveCard}
         >
           ${result.notification ? this.renderNotification(result.notification) : ''}
-          ${context ? html`
-            <div class="context">
-              <a href=${context}>
-                <span class="fas fa-fw fa-reply"></span> ${shorten(fancyUrl(context), 100)}
-              </a>
-            </div>
-          ` : ''}
           <div class="header">
             <div class="origin">
               ${result.site.url === 'hyper://system/' ? html`
@@ -365,6 +359,14 @@ export class QueryView extends LitElement {
                 ${relativeDate(result.ctime)}
               </a>
             </div>
+            ${context ? html`
+              <div class="context">
+                <span class="fas fa-fw fa-reply"></span>
+                <a href=${context}>
+                  ${asyncReplace(veryFancyUrlStream(context)())}
+                </a>
+              </div>
+            ` : ''}
           </div>
           <div class="content">
             ${unsafeHTML(beaker.markdown.toHTML(result.content))}
@@ -506,6 +508,13 @@ async function veryFancyUrl (str) {
   }
 }
 
+function veryFancyUrlStream (str) {
+  return async function* () {
+    yield fancyUrl(str)
+    yield veryFancyUrl(str)
+  }
+}
+
 const today = (new Date()).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
 const yesterday = (new Date(Date.now() - 8.64e7)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
 const lastWeekTs = Date.now() - 6.048e+8
@@ -526,6 +535,7 @@ const MINUTE = 1e3 * 60
 const HOUR = 1e3 * 60 * 60
 const DAY = HOUR * 24
 const MONTH = DAY * 30
+const endOfTodayMs = todayMs + (todayMs % DAY)
 
 function dateHeader (ts) {
   var diff = todayMs - ts
@@ -538,7 +548,7 @@ function dateHeader (ts) {
 
 const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
 function relativeDate (d) {
-  var diff = todayMs - d
+  var diff = endOfTodayMs - d
   if (diff < HOUR) return rtf.format(Math.ceil(diff / MINUTE * -1), 'minute')
   if (diff < DAY) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
   if (diff < MONTH) return rtf.format(Math.ceil(diff / DAY * -1), 'day')
