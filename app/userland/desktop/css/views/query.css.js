@@ -26,18 +26,27 @@ a[href]:hover {
 }
 
 h2.results-header {
-  margin: 0 0 20px;
+  margin: 0 0 30px;
   padding: 0 4px 4px;
+  text-align: center;
+  color: var(--text-color--default);
   box-sizing: border-box;
   font-weight: 500;
   color: var(--text-color--light);
   letter-spacing: 0.7px;
-  font-size: 15px;
+  font-size: 13px;
   border-bottom: 1px solid var(--border-color--light);
 }
 
 h2.results-header:not(:first-child) {
-  margin-top: 30px;
+  margin-top: 10px;
+}
+
+h2.results-header span {
+  position: relative;
+  top: 11px;
+  background: var(--bg-color--default);
+  padding: 5px;
 }
 
 h2 a:hover {
@@ -336,7 +345,7 @@ h2 a:hover {
   position: relative;
   display: grid;
   grid-template-columns: 50px 1fr;
-  margin: 0 4px;
+  margin: 0 30px 0 4px;
   color: var(--text-color--lightish);
 }
 
@@ -405,7 +414,7 @@ h2 a:hover {
 .result.card .container {
   border: 1px solid var(--border-color--light);
   background: var(--bg-color--default);
-  padding: 2px;
+  padding: 4px;
 }
 
 .result.card .container:hover {
@@ -448,9 +457,6 @@ h2 a:hover {
   align-items: center;
   font-size: 14px;
   height: 24px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   padding: 6px 12px 2px;
 }
 
@@ -533,6 +539,13 @@ h2 a:hover {
 .result.card .content pre { font-size: 13px; }
 .result.card .content :-webkit-any(video, audio, img) { max-width: 100%; }
 .result.card .content a { color: var(--text-color--content-link); }
+
+/** image hack - if it's the last element, try to fill the card **/
+.result.card .content > p:last-child > img:last-child {
+  width: calc(100% + 32px);
+  margin: 10px -16px -20px -16px;
+  max-width: none;
+}
 
 .result.card .ctrls {
   padding: 10px 12px;

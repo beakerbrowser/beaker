@@ -167,16 +167,22 @@ nav a.nav-item :-webkit-any(.fas, .far) {
   margin-right: 2px;
 }
 
-nav a.nav-item.show-count:after {
-  content: attr(data-count);
-  color: var(--text-color--light);
-  background: var(--bg-color--semi-light);
-  margin-left: 4px;
-  line-height: 1;
-  padding: 2px 5px 3px;
-  font-size: 10px;
+nav a.nav-item.notice { 
+  position: relative;
   font-weight: bold;
-  border-radius: 4px;
+}
+
+nav a.nav-item.notice:before {
+  content: '';
+  background: var(--bg-color--nav-count);
+  border: 1px solid var(--bg-color--default);
+  position: absolute;
+  top: 10px;
+  left: 17px;
+  width: 7px;
+  height: 7px;
+  z-index: 1;
+  border-radius: 50%;
 }
 
 nav hr {
@@ -320,6 +326,8 @@ main {
 }
 
 .twocol .sidebar section {
+  position: sticky;
+  top: 0px;
   margin-bottom: 20px;
   overflow: hidden;
 }

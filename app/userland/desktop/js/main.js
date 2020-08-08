@@ -135,13 +135,13 @@ class DesktopApp extends LitElement {
       this.markAllNotificationsRead()
     }
 
-    const navItem = (id, label, count) => html`
+    const navItem = (id, label, notice) => html`
       <a
-        class="nav-item ${id === this.currentNav ? 'active' : ''} ${count ? 'show-count' : ''}"
+        class="nav-item ${id === this.currentNav ? 'active' : ''} ${notice ? 'notice' : ''}"
         @click=${e => {this.currentNav = id}}
-        data-count=${count}
       >${label}</a>
     `
+    const ncount = this.unreadNotificationsCount
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div id="topright">
@@ -158,16 +158,18 @@ class DesktopApp extends LitElement {
           ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
           ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blog Posts</span>`)}
           ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> <span class="label">Pages</span>`)}
-          ${navItem('microblogposts', html`<span class="fas fa-fw fa-stream"></span> <span class="label">Microblog Posts</span>`)}
-          ${navItem('comments', html`<span class="far fa-fw fa-comment-alt"></span> <span class="label">Comments</span>`)}
-          <hr>
-          ${navItem('notifications', html`<span class="far fa-fw fa-bell"></span> <span class="label">Notifications</span>`, this.unreadNotificationsCount)}
-          ${''/*TODOnavItem('images', html`<span class="far fa-fw fa-images"></span> Images`)*/}
-          ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">
-            More...
-          </a>*/}
+          <a class="nav-item" @click=${this.onClickNavMore} title="More">More <span class="fas fa-fw fa-caret-down"></span></a>
           <hr>
           ${this.renderSourcesCtrl()}
+          <hr>
+          ${navItem(
+            'notifications',
+            html`
+              <span class="fa${ncount > 0 ? 's' : 'r'} fa-fw fa-bell"></span>
+              <span class="label">Notifications${ncount > 0 ? ` (${ncount})` : ''}</span>
+            `,
+            ncount > 0
+          )}
         </nav>
       </header>
       ${this.renderReleaseNotice()}

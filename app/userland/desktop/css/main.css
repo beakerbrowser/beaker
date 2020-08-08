@@ -22,6 +22,7 @@ body {
   --bg-color--semi-light: #f0f0f6;
   --bg-color--nav--highlight: #f5f5fa;
   --bg-color--unread: #f2f7ff;
+  --bg-color--nav-count: #E91E63;
 
   font-size: 13px;
   background: var(--bg-color--default);

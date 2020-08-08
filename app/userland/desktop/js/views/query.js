@@ -361,7 +361,7 @@ export class QueryView extends LitElement {
             </div>
             <span>&middot;</span>
             <div class="date">
-              <a href=${result.url}>
+              <a href=${result.url} data-tooltip=${(new Date(result.ctime)).toLocaleString()}>
                 ${relativeDate(result.ctime)}
               </a>
             </div>
@@ -520,27 +520,31 @@ function niceDate (ts, {largeIntervals} = {largeIntervals: false}) {
   return date
 }
 
-function dateHeader (ts) {
-  var date = (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
-  if (date === today) return 'Today'
-  if (date === yesterday) return 'Yesterday'
-  return (new Date(ts)).toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-}
-
 const todayMs = Date.now()
-const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
+const todayDay = (new Date()).getUTCDay() - 1 // -1 to start the week on monday
 const MINUTE = 1e3 * 60
 const HOUR = 1e3 * 60 * 60
 const DAY = HOUR * 24
 const MONTH = DAY * 30
+
+function dateHeader (ts) {
+  var diff = todayMs - ts
+  var date = (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
+  if (date === today) return 'Today'
+  if (diff < DAY * todayDay) return (new Date(ts)).toLocaleDateString('default', { weekday: 'long' })
+  if (diff < DAY * (todayDay + 7)) return 'Last ' + (new Date(ts)).toLocaleDateString('default', { weekday: 'long' })
+  return (new Date(ts)).toLocaleDateString('default', { weekday: 'long', month: 'short', day: 'numeric' })
+}
+
+const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
 function relativeDate (d) {
   var diff = todayMs - d
-  if (diff < HOUR) return rtf.format(Math.floor(diff / MINUTE * -1), 'minute')
-  if (diff < DAY) return rtf.format(Math.floor(diff / HOUR * -1), 'hour')
-  if (diff < MONTH) return rtf.format(Math.floor(diff / DAY * -1), 'day')
-  if (diff < MONTH * 3) return rtf.format(Math.floor(diff / (DAY * 7) * -1), 'week')
-  if (diff < MONTH * 12) return rtf.format(Math.floor(diff / MONTH * -1), 'month')
-  return rtf.format(Math.floor(diff / (MONTH * -12)), 'year')
+  if (diff < HOUR) return rtf.format(Math.ceil(diff / MINUTE * -1), 'minute')
+  if (diff < DAY) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
+  if (diff < MONTH) return rtf.format(Math.ceil(diff / DAY * -1), 'day')
+  if (diff < MONTH * 3) return rtf.format(Math.ceil(diff / (DAY * 7) * -1), 'week')
+  if (diff < MONTH * 12) return rtf.format(Math.ceil(diff / MONTH * -1), 'month')
+  return rtf.format(Math.ceil(diff / (MONTH * -12)), 'year')
 }
 
 let _driveTitleCache = {}
