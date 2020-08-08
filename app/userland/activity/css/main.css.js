@@ -21,12 +21,16 @@ a:hover {
 }
 
 header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   padding: 6px 9px;
-  background: var(--bg-color--light);
+  background: var(--bg-color--default);
   color: var(--text-color--light);
-  font-size: 15px;
+  border-bottom: 1px solid var(--border-color--light);
+  font-size: 14px;
 }
 
 header a.close {
@@ -41,7 +45,7 @@ header a.close:hover {
 }
 
 header .title {
-  font-weight: bold;
+  font-weight: 500;
   font-size: 13px;
   white-space: nowrap;
   overflow: hidden;

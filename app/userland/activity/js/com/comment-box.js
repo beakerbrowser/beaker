@@ -19,15 +19,30 @@ export class CommentBox extends LitElement {
 
   constructor () {
     super()
-    this.currentView = 'edit'
+    this.currentView = 'action-options'
     this.profileUrl = ''
     this.draftText = ''
+  }
+
+  setView (view) {
+    this.currentView = view
   }
 
   // rendering
   // =
 
   render () {
+    if (this.currentView === 'action-options') {
+      return html`
+        <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+        ${this.profileUrl ? html`<img class="thumb" src=${joinPath(this.profileUrl, 'thumb')}>` : ''}
+        <div class="action-options">
+          <button class="transparent" @click=${e => this.setView('edit')}>
+            <span class="far fa-fw fa-comment-alt"></span> Add Comment
+          </button>
+        </div>
+      `
+    }
     const navItem = (id, label) => html`
       <a
         class=${this.currentView === id ? 'current' : ''}
@@ -37,7 +52,7 @@ export class CommentBox extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       ${this.profileUrl ? html`<img class="thumb" src=${joinPath(this.profileUrl, 'thumb')}>` : ''}
-      <form class="container" @submit=${this.onSubmit}>
+      <form class="container comment" @submit=${this.onSubmit}>
         <nav>
           <span></span>
           ${navItem('edit', 'Write')}
@@ -48,12 +63,14 @@ export class CommentBox extends LitElement {
           ${this.currentView === 'edit' ? html`
             <textarea
               placeholder="Add a comment"
+              autofocus
               @keyup=${this.onKeyupTextarea}
             >${this.draftText}</textarea>
           ` : ''}
           ${this.currentView === 'preview' ? this.renderPreview() : ''}
         </div>
         <div class="actions">
+          <button @click=${this.onClickCancel}>Cancel</button>
           <button type="submit" class="primary" ?disabled=${!this.draftText}>Post Comment</button>
         </div>
       </form>
@@ -65,7 +82,7 @@ export class CommentBox extends LitElement {
       return ''
     }
     return html`
-      <div class="preview">
+      <div class="preview markdown">
         ${unsafeHTML(beaker.markdown.toHTML(this.draftText))}
       </div>
     `
@@ -76,6 +93,15 @@ export class CommentBox extends LitElement {
 
   onKeyupTextarea (e) {
     this.draftText = e.currentTarget.value.trim()
+  }
+
+  onClickCancel (e) {
+    e.preventDefault()
+    if (this.draftText && !confirm('Discard this draft?')) {
+      return
+    }
+    this.draftText = ''
+    this.currentView = 'action-options'
   }
 
   onSubmit (e) {

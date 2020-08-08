@@ -2,16 +2,19 @@ import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import inputsCSS from 'beaker://app-stdlib/css/inputs.css.js'
 import buttons2CSS from 'beaker://app-stdlib/css/buttons2.css.js'
 import spinnerCSS from 'beaker://app-stdlib/css/com/spinner.css.js'
+import markdownCSS from './markdown.css.js'
 
 const cssStr = css`
 ${inputsCSS}
 ${buttons2CSS}
 ${spinnerCSS}
+${markdownCSS}
 
 :host {
   display: grid;
   grid-template-columns: 30px 1fr;
   margin: 10px 0;
+  padding-bottom: 100px;
 }
 
 a {
@@ -20,6 +23,26 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+.action-options {
+  padding: 4px;
+  background: var(--bg-color--default);
+  border: 1px solid var(--border-color--light);
+  border-radius: 4px;
+}
+
+.action-options button {
+  padding: 5px;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.action-options button .fa-comment-alt {
+  font-size: 11px;
+}
+
+.comment {
 }
 
 .thumb {
@@ -47,7 +70,7 @@ a:hover {
   width: 8px;
   height: 8px;
   z-index: 1;
-  background: var(--bg-color--light);
+  background: var(--bg-color--default);
   border-top: 1px solid var(--border-color--light);
   border-left: 1px solid var(--border-color--light);
   transform: rotate(-45deg);
@@ -57,7 +80,6 @@ nav {
   display: flex;
   font-size: 12px;
   padding: 6px 0 0;
-  background: var(--bg-color--light);
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
 }
@@ -84,7 +106,6 @@ nav a:hover {
 
 nav span {
   min-width: 10px;
-  background: var(--bg-color--light);
   border-bottom: 1px solid var(--border-color--light);
 }
 
@@ -94,6 +115,7 @@ nav span:last-child {
 
 .content {
   padding: 10px;
+  background: var(--bg-color--default);
 }
 
 textarea {
@@ -113,18 +135,16 @@ textarea {
 }
 
 .preview { font-size: 14px; }
-.preview h1 { font-family: arial; font-size: 21px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--border-color--semi-light); }
-.preview h2 { font-family: arial; font-size: 19px; font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border-color--semi-light); }
-.preview h3 { font-family: arial; font-size: 19px; font-weight: 500; }
-.preview h4 { font-family: arial; font-size: 16px; font-weight: 600; }
-.preview h5 { font-family: arial; font-size: 16px; font-weight: 500; }
 
-.actions {
+.comment .actions {
+  background: var(--bg-color--default);
   text-align: right;
   padding: 0 10px 10px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
 }
 
-.actions button {
+.comment .actions button {
   font-size: 11px;
 }
 `

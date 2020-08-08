@@ -12,12 +12,13 @@ body {
   --text-color--light: #667;
   --text-color--pretty-light: #99a;
   --text-color--very-light: #bbc;
+  --text-color--link: blue;
   --bg-color--default: #fff;
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;
 
   font-size: 14px;
-  background: var(--bg-color--default);
+  background: var(--bg-color--light);
   color: var(--text-color--default);
 }
 
@@ -32,6 +33,7 @@ body {
     --text-color--lightish: #bbc;
     --text-color--light: #aab;
     --text-color--pretty-light: #99a;
+    --text-color--link: blue;
     --text-color--very-light: #557;
     --bg-color--default: #223;
     --bg-color--light: #334;

@@ -1,7 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
-import { toNiceUrl } from 'beaker://app-stdlib/js/strings.js'
+import { toNiceUrl, joinPath } from 'beaker://app-stdlib/js/strings.js'
 import css from '../css/main.css.js'
 import './com/res-summary.js'
 import './com/action-item.js'
@@ -28,14 +28,24 @@ class ActivityApp extends LitElement {
     this.profileUrl = undefined
     this.siteInfo = undefined
     this.fileInfo = undefined
+    this.fileContent = undefined
     this.annotations = []
 
+    var ignoreNextAttachEvent = false
     beaker.panes.addEventListener('pane-attached', e => {
-      this.load(beaker.panes.getAttachedPane().url)
+      if (!ignoreNextAttachEvent) {
+        this.load(beaker.panes.getAttachedPane().url)
+      }
+      ignoreNextAttachEvent = false
     })
     beaker.panes.addEventListener('pane-detached', e => {
     })
     beaker.panes.addEventListener('pane-navigated', e => {
+      if (e.detail.url.startsWith('beaker://desktop')) {
+        // special case- open the original item rather than beaker desktop, if possible
+        var url = new URLSearchParams(location.search).get('url')
+        if (url) return this.load(url)
+      }
       this.load(e.detail.url)
     })
     
@@ -58,15 +68,16 @@ class ActivityApp extends LitElement {
       }
     })
 
-    var url = new URLSearchParams(location.search).get('url')
-    if (url) {
-      this.load(url)
-    } else {
-      ;(async () => {
-        var attachedPane = await beaker.panes.attachToLastActivePane()
+    ;(async () => {
+      var url = new URLSearchParams(location.search).get('url')
+      var attachedPane = await beaker.panes.attachToLastActivePane()
+      ignoreNextAttachEvent = !!attachedPane
+      if (url) {
+        this.load(url)
+      } else {
         if (attachedPane) this.load(attachedPane.url)
-      })()
-    }
+      }
+    })()
   }
 
   get pathname () {
@@ -81,9 +92,15 @@ class ActivityApp extends LitElement {
     return ['', '/', '/index.md', '/index.html', '/index.htm'].includes(this.pathname)
   }
 
+  get fileTitle () {
+    return this.fileInfo?.metadata?.['beaker/title'] || this.fileInfo?.metadata?.title
+  }
+
   get typeLabel () {
-    if (!this.fileInfo) return undefined
-    if (this.fileInfo.isDirectory()) return undefined
+    if (!this.fileInfo || this.fileInfo.isDirectory()) {
+      if (this.isRoot) return 'site'
+      return 'page'
+    }
     switch (this.fileInfo.metadata.type) {
       case 'beaker/blogpost': return 'blog post'
       case 'beaker/comment': return 'comment'
@@ -108,13 +125,15 @@ class ActivityApp extends LitElement {
   async load (url) {
     this.isLoading = true
     this.url = url
+    this.fileInfo = undefined
+    this.fileContent = undefined
     this.siteInfo = undefined
     this.annotations = []
     this.requestUpdate()
 
     if (url) {
       await Promise.all([
-        this.loadResourceInfo(),
+        this.loadResource(),
         this.loadAnnotations()
       ])
     }
@@ -123,10 +142,13 @@ class ActivityApp extends LitElement {
     this.requestUpdate()
   }
 
-  async loadResourceInfo () {
+  async loadResource () {
     if (this.url.startsWith('hyper://')) {
       this.siteInfo = await beaker.hyperdrive.getInfo(this.url).catch(e => undefined)
       this.fileInfo = await beaker.hyperdrive.stat(this.url).catch(e => undefined)
+      if (this.url.endsWith('.md') && !this.fileTitle) {
+        this.fileContent = await beaker.hyperdrive.readFile(this.url, 'utf8')
+      }
     } else {
       this.siteInfo = {
         url: (new URL(this.url)).origin,
@@ -164,7 +186,7 @@ class ActivityApp extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <header>
         <a class="close" @click=${this.onClickClose}><span class="fas fa-times"></span></a>
-        <span class="title">Thread: <a href=${this.url} target="_blank">${this.renderFileTitle()}</a></span>
+        <span class="title">Discussion: ${this.renderFileTitle()}</span>
       </header>
       ${this.renderLoading()}
       ${''/*TODO<nav>
@@ -173,18 +195,19 @@ class ActivityApp extends LitElement {
         <span></span>
       </nav>*/}
       ${this.currentView === 'summary' ? html`
+        ${this.fileInfo && this.fileInfo.isFile() ? html`
+          <res-summary
+            author-url=${this.siteInfo?.url}
+            author-title=${this.siteInfo?.title}
+            .icon=${this.typeIcon}
+            .label=${this.typeLabel}
+            .title=${this.fileTitle}
+            href=${this.url}
+            .date=${this.fileInfo?.ctime}
+            .content=${this.fileContent ? beaker.markdown.toHTML(this.fileContent) : undefined}
+          ></res-summary>
+        ` : ''}
         <div class="activity-feed">
-          ${this.fileInfo && this.fileInfo.isFile() ? html`
-            <action-item
-              author-url=${this.siteInfo?.url}
-              author-title=${this.siteInfo?.title}
-              icon=${this.typeIcon}
-              action="created"
-              title=${this.fileInfo?.metadata?.title || `this ${this.typeLabel}`}
-              href=${this.url}
-              date=${relativeDate(this.fileInfo?.ctime)}
-            ></action-item>
-          ` : ''}
           ${this.renderAnnotations()}
           <comment-box @create-comment=${this.onCreateComment} profile-url=${this.profileUrl}></comment-box>
       </div>
@@ -200,17 +223,16 @@ class ActivityApp extends LitElement {
   renderFileTitle () {
     if (!this.siteInfo) return 'Loading...'
     var site = this.siteInfo?.title || toNiceUrl(this.siteInfo.url)
-    switch (this.fileInfo?.metadata?.type) {
-      case 'beaker/comment':
-        return `Comment by ${site}`
-      case 'beaker/page':
-        return `Page by ${site}`
-      case 'beaker/blogpost':
-        return `Blog Post by ${site}`
-      case 'beaker/microblogpost':
-        return `Microblog post by ${site}`
+    var parts = []
+    parts.push(html`<a href=${this.siteInfo.url}>${site}</a>`)
+    var acc = ''
+    for (let part of this.pathname.split('/').filter(Boolean)) {
+      parts.push(' › ')
+      acc += part
+      parts.push(html`<a href=${joinPath(this.siteInfo.url, acc)}>${part}</a>`)
+      acc += '/'
     }
-    return `Page by ${site}`
+    return parts
   }
 
   renderAnnotations () {
@@ -222,10 +244,10 @@ class ActivityApp extends LitElement {
   renderAnnotation (annotation) {
     var authorTitle = annotation.site.url.startsWith('hyper://system') ? 'I (privately)' : annotation.site.title
     var action = ({
-      'beaker/index/bookmarks': 'bookmarked this',
-      'beaker/index/blogposts': 'mentioned this in',
-      'beaker/index/microblogposts': 'mentioned this in',
-      'beaker/index/pages': 'mentioned this in',
+      'beaker/index/bookmarks': `bookmarked this ${this.typeLabel}`,
+      'beaker/index/blogposts': `mentioned this ${this.typeLabel} in`,
+      'beaker/index/microblogposts': `mentioned this ${this.typeLabel} in`,
+      'beaker/index/pages': `mentioned this ${this.typeLabel} in`,
       'beaker/index/comments': 'commented'
     })[annotation.index]
     var title = ({
@@ -242,7 +264,7 @@ class ActivityApp extends LitElement {
         .action=${action}
         .title=${title}
         href=${annotation.url}
-        date=${relativeDate(annotation.ctime)}
+        .date=${new Date(annotation.ctime)}
         .content=${annotation.content ? beaker.markdown.toHTML(annotation.content) : undefined}
       ></action-item>
     `
@@ -279,33 +301,10 @@ customElements.define('activity-app', ActivityApp)
 // helpers
 // =
 
-let _driveTitleCache = {}
-async function getDriveTitle (url) {
-  if (_driveTitleCache[url]) return _driveTitleCache[url]
-  _driveTitleCache[url] = beaker.hyperdrive.getInfo(url).then(info => info.title)
-  return _driveTitleCache[url]
-}
-
 function normalizeUrl (originURL) {
   try {
     var urlp = new URL(originURL)
     return (urlp.protocol + '//' + urlp.hostname + (urlp.port ? `:${urlp.port}` : '') + urlp.pathname).replace(/([/]$)/g, '')
   } catch (e) {}
   return originURL
-}
-
-const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
-const today = Date.now()
-const MINUTE = 1e3 * 60
-const HOUR = 1e3 * 60 * 60
-const DAY = HOUR * 24
-const MONTH = DAY * 30
-function relativeDate (d) {
-  var diff = today - d
-  if (diff < HOUR) return rtf.format(Math.floor(diff / MINUTE * -1), 'minute')
-  if (diff < DAY) return rtf.format(Math.floor(diff / HOUR * -1), 'hour')
-  if (diff < MONTH) return rtf.format(Math.floor(diff / DAY * -1), 'day')
-  if (diff < MONTH * 3) return rtf.format(Math.floor(diff / (DAY * 7) * -1), 'week')
-  if (diff < MONTH * 12) return rtf.format(Math.floor(diff / MONTH * -1), 'month')
-  return rtf.format(Math.floor(diff / (MONTH * -12)), 'year')
 }

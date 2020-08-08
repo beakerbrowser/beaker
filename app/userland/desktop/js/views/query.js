@@ -441,7 +441,7 @@ export class QueryView extends LitElement {
   onOpenActivity (e, url) {
     e.preventDefault()
     beaker.browser.newPane(`beaker://activity/?url=${url}`)
-    // beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: ['beaker://activity/']})
+    // beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: [`beaker://activity/?url=${url}`]})
   }
 
   onMousedownCard (e) {

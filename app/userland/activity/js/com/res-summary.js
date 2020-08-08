@@ -1,4 +1,5 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
 import css from '../../css/com/res-summary.css.js'
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
@@ -6,9 +7,14 @@ import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 export class ResSummary extends LitElement {
   static get properties () {
     return {
-      url: {type: String},
-      siteInfo: {type: Object},
-      fileInfo: {type: Object}
+      authorUrl: {type: String, attribute: 'author-url'},
+      authorTitle: {type: String, attribute: 'author-title'},
+      icon: {type: String},
+      label: {type: String},
+      title: {type: String},
+      href: {type: String},
+      date: {type: String},
+      content: {type: String}
     }
   }
 
@@ -18,81 +24,69 @@ export class ResSummary extends LitElement {
 
   constructor () {
     super()
-    this.compact = false
-    this.url = undefined
-    this.siteInfo = undefined
-    this.fileInfo = undefined
-  }
-
-  get origin () {
-    try {
-      return (new URL(this.url)).origin
-    } catch (e) {
-      return this.url
-    }
-  }
-
-  get pathname () {
-    try {
-      return (new URL(this.url)).pathname
-    } catch (e) {
-      return this.url
-    }
+    this.authorUrl = undefined
+    this.authorTitle = undefined
+    this.icon = undefined
+    this.label = undefined
+    this.title = undefined
+    this.href = undefined
+    this.date = undefined
+    this.content = undefined
   }
 
   // rendering
   // =
 
   render () {
-    if (!this.siteInfo) {
-      return html``
-    }
-    const st = this.fileInfo
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="site-info">
-        <span class="fas fa-fw fa-sitemap"></span>
-        <div class="info">
-          <h1>
-            <a href=${this.origin}>${this.siteInfo.title || this.origin}</a>
-          </h1>
-        </div>
-        <div class="ctrls">
-          ${this.renderFollowBtn()}
-        </div>
-      </div>
-      ${st ? html`
-        ${''/*TODO<div class="group">
-          <div class="group-title">Summary</div>
-          <div class="group-content">
-            <a href="#" class="provenance tooltip-left" data-tooltip="According to Andrew Osheroff"><span class="fas fa-info-circle"></span></a>
-            <div class="value">A bunch of self-indulgent nonsense</div>
-          </div>
-          <div class="group-content">
-            <a href="#" class="provenance tooltip-left" data-tooltip="According to Paul Frazee"><span class="fas fa-info-circle"></span></a>
-            <div class="value">A brilliant overview of the zeitgeist of technology and politics</div>
-          </div>
-        </div>*/}
-      ` : ''}
-    `
-  }
-
-  renderFollowBtn () {
-    if (this.siteInfo.url.startsWith('hyper://')) {
-      const mine = this.siteInfo.writable
+    if (this.content) {
       return html`
-        <div class="btn-group">
-          <button ?disabled=${mine} data-tooltip=${mine ? 'This is my site' : 'Follow this site'}>
-            <span class="fas fa-fw fa-rss"></span> Follow
-          </button>
-          <button>3</button>
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <div class="summary">
+          <a class="thumb" href=${this.authorUrl} title=${this.authorTitle}><img src=${joinPath(this.authorUrl, 'thumb')}></a>
+          <a class="author" href=${this.authorUrl} title=${this.authorTitle}>${this.authorTitle}</a>
+          ${this.href ? html`
+            <a class="date" href=${this.href} data-tooltip=${this.date.toLocaleString()}>${relativeDate(this.date)}</a>
+          ` : html`
+            <span class="date" data-tooltip=${this.date.toLocaleString()}>${relativeDate(this.date)}</span>
+          `}
         </div>
+        <div class="content markdown">${unsafeHTML(this.content)}</div>
       `
     }
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="title"><a href=${this.href} title=${this.title}>${this.title}</a></div>
+      <div class="summary">
+        ${this.icon ? html`<span class="fa-fw ${this.icon}"></span>` : ''}
+        <span class="label">${this.label} by</span>
+        <a class="thumb" href=${this.authorUrl} title=${this.authorTitle}><img src=${joinPath(this.authorUrl, 'thumb')}></a>
+        <a class="author" href=${this.authorUrl} title=${this.authorTitle}>${this.authorTitle}</a>
+        ${this.href ? html`
+          <a class="date" href=${this.href} data-tooltip=${this.date.toLocaleString()}>${relativeDate(this.date)}</a>
+        ` : html`
+          <span class="date" data-tooltip=${this.date.toLocaleString()}>${relativeDate(this.date)}</span>
+        `}
+      </div>
+    `
   }
-
-  // events
-  // =
 }
 
 customElements.define('res-summary', ResSummary)
+
+const todayMs = Date.now()
+const MINUTE = 1e3 * 60
+const HOUR = 1e3 * 60 * 60
+const DAY = HOUR * 24
+const MONTH = DAY * 30
+const endOfTodayMs = todayMs + (todayMs % DAY)
+
+const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
+function relativeDate (d) {
+  var diff = endOfTodayMs - d
+  if (diff < HOUR) return rtf.format(Math.ceil(diff / MINUTE * -1), 'minute')
+  if (diff < DAY) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
+  if (diff < MONTH) return rtf.format(Math.ceil(diff / DAY * -1), 'day')
+  if (diff < MONTH * 3) return rtf.format(Math.ceil(diff / (DAY * 7) * -1), 'week')
+  if (diff < MONTH * 12) return rtf.format(Math.ceil(diff / MONTH * -1), 'month')
+  return rtf.format(Math.ceil(diff / (MONTH * -12)), 'year')
+}

@@ -1,13 +1,31 @@
 import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import buttons2CSS from 'beaker://app-stdlib/css/buttons2.css.js'
+import markdownCSS from './markdown.css.js'
 import tooltipCSS from 'beaker://app-stdlib/css/tooltip.css.js'
 
 const cssStr = css`
-${buttons2CSS}
+${markdownCSS}
 ${tooltipCSS}
 
 :host {
   display: block;
+  margin: 0 0 15px;
+  border-bottom: 1px solid var(--border-color--light);
+  background: var(--bg-color--default);
+  padding: 10px 15px 10px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-color--light);
+  margin-bottom: 5px;
+}
+
+.summary > *:not(:last-child) {
+  margin-right: 5px;
 }
 
 a {
@@ -18,97 +36,46 @@ a:hover {
   text-decoration: underline;
 }
 
-.group {
-  margin-bottom: 10px;
-  overflow: hidden;
+.thumb img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-.group .group-title {
-  background: var(--bg-color--light);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 6px;
+.icon {
+  margin-right: 8px;
 }
 
-.group .group-content {
-  padding: 6px 8px;
-  border: 1px solid var(--border-color--light);
-  border-radius: 4px;
-}
-
-.group .group-content + .group-content {
-  margin-top: 2px;
-}
-
-.group .group-content .fa-small {
-  font-size: 11px;
-  position: relative;
-  top: -1px;
-}
-
-.group .group-content small {
-  color: var(--text-color--light);
-}
-
-.group .value {
-  font-size: 14px;
-}
-
-.group .provenance {
-  float: right;
-  font-size: 12px;
-  color: var(--text-color--very-light);
-}
-
-.site-info {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  border-bottom: 1px solid var(--border-color--light);
-  background: var(--bg-color--light);
-  padding: 5px 5px;
-}
-
-.site-info a {
+.author {
   color: var(--text-color--default);
-}
-
-.site-info .fa-sitemap {
-  font-size: 12px;
-  margin-left: 2px;
-}
-
-.site-info .info {
-  padding: 0 4px;
-}
-
-.site-info h1 {
   font-weight: 500;
-  font-size: 13px;
-  margin: 0;
-  line-height: 1;
 }
 
-.site-info .ctrls {
-}
-
-.site-info button {
-  font-size: 11px;
-}
-
-.site-info button .fa-fw {
-  font-size: 9px;
-}
-
-.site-info .my-site {
-  font-size: 12px;
+.date {
   color: var(--text-color--light);
-  font-weight: 500;
-  line-height: 20px;
 }
 
-.site-info .my-site .fas {
-  font-size: 10px;
+.container {
+  flex: 1;
+  margin-left: 5px;
 }
+
+.title {
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.7px;
+  margin-bottom: 5px;
+}
+
+.content {
+  color: var(--text-color--default);
+  margin: 5px 0;
+}
+
+.content > :first-child { margin-top: 0; }
+.content > :last-child { margin-bottom: 0; }
+
 `
 export default cssStr

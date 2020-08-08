@@ -13,7 +13,7 @@ export class ActionItem extends LitElement {
       action: {type: String},
       title: {type: String},
       href: {type: String},
-      date: {type: String},
+      date: {type: Object},
       content: {type: String}
     }
   }
@@ -47,7 +47,7 @@ export class ActionItem extends LitElement {
             <div class="header summary">
               ${this.icon ? html`<span class="fa-fw ${this.icon}"></span>` : ''}
               <a class="author" href=${this.authorUrl} title=${this.authorTitle}>${this.authorTitle}</a>
-              <span class="action">${this.action}</span>
+              ${this.action ? html`<span class="action">${this.action}</span>` : ''}
               ${this.title ? html`
                 ${this.href ? html`
                   <a class="item" href=${this.href} title=${this.title}>${this.title}</a>
@@ -56,12 +56,12 @@ export class ActionItem extends LitElement {
                 `}
               ` : ''}
               ${this.href ? html`
-                <a class="date" href=${this.href}>${this.date}</a>
+                <a class="date" href=${this.href} data-tooltip=${this.date.toLocaleString()}>${relativeDate(this.date)}</a>
               ` : html`
-                <span class="date">${this.date}</span>
+                <span class="date" data-tooltip=${this.date.toLocaleString()}>${relativeDate(this.date)}</span>
               `}
             </div>
-            <div class="content">${unsafeHTML(this.content)}</div>
+            <div class="content markdown">${unsafeHTML(this.content)}</div>
           </div>
         </div>
       `
@@ -82,9 +82,9 @@ export class ActionItem extends LitElement {
           `}
         ` : ''}
         ${this.href ? html`
-          <a class="date" href=${this.href}>${this.date}</a>
+          <a class="date" href=${this.href} data-tooltip=${this.date.toLocaleString()}>${relativeDate(this.date)}</a>
         ` : html`
-          <span class="date">${this.date}</span>
+          <span class="date" data-tooltip=${this.date.toLocaleString()}>${relativeDate(this.date)}</span>
         `}
       </div>
     `
@@ -92,3 +92,21 @@ export class ActionItem extends LitElement {
 }
 
 customElements.define('action-item', ActionItem)
+
+const todayMs = Date.now()
+const MINUTE = 1e3 * 60
+const HOUR = 1e3 * 60 * 60
+const DAY = HOUR * 24
+const MONTH = DAY * 30
+const endOfTodayMs = todayMs + (todayMs % DAY)
+
+const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
+function relativeDate (d) {
+  var diff = endOfTodayMs - d
+  if (diff < HOUR) return rtf.format(Math.ceil(diff / MINUTE * -1), 'minute')
+  if (diff < DAY) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
+  if (diff < MONTH) return rtf.format(Math.ceil(diff / DAY * -1), 'day')
+  if (diff < MONTH * 3) return rtf.format(Math.ceil(diff / (DAY * 7) * -1), 'week')
+  if (diff < MONTH * 12) return rtf.format(Math.ceil(diff / MONTH * -1), 'month')
+  return rtf.format(Math.ceil(diff / (MONTH * -12)), 'year')
+}
