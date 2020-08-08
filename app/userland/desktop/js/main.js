@@ -84,6 +84,9 @@ class DesktopApp extends LitElement {
       beaker.contacts.list(),
       beaker.indexer.countNotifications({filter: {isRead: false}})
     ])
+    if (this.shadowRoot.querySelector('query-view')) {
+      this.shadowRoot.querySelector('query-view').load()
+    }
     this.sourceOptions = [{url: 'hyper://system/', title: 'My Private Data'}, {url: this.profile.url, title: this.profile.title}].concat(sourceOptions)
     console.log(this.pins)
     this.legacyArchives = await beaker.datLegacy.list()
