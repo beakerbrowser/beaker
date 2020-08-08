@@ -378,6 +378,11 @@ class Tab extends EventEmitter {
     return this.panes.find(p => p.browserView === browserView)
   }
 
+  findPaneByOrigin (url) {
+    let origin = toOrigin(url)
+    return this.panes.find(p => p.origin === origin)
+  }
+
   activateAdjacentPane (dir) {
     var pane = this.layout.getAdjacentPane(this.activePane, dir)
     if (pane) this.setActivePane(pane)

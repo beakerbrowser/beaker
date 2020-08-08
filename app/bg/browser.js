@@ -717,6 +717,13 @@ async function newPane (url, opts = {}) {
   var tab = tabManager.findContainingTab(senderView)
   var pane = tab && tab.findPane(senderView)
   if (tab && pane) {
+    if (opts.replaceSameOrigin) {
+      let existingPane = tab.findPaneByOrigin(url)
+      if (existingPane) {
+        existingPane.loadURL(url)
+        return
+      }
+    }
     tab.createPane({url, setActive: true, after: pane, splitDir: opts.splitDir || 'vert'})
   }
 }

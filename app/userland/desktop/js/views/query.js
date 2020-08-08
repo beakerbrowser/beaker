@@ -440,7 +440,7 @@ export class QueryView extends LitElement {
 
   onOpenActivity (e, url) {
     e.preventDefault()
-    beaker.browser.newPane(`beaker://activity/?url=${url}`)
+    beaker.browser.newPane(`beaker://activity/?url=${url}`, {replaceSameOrigin: true})
     // beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: [`beaker://activity/?url=${url}`]})
   }
 
