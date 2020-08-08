@@ -42,10 +42,13 @@ export class QueryView extends LitElement {
     this.hideEmpty = false
     this.showViewMore = false
 
-    // helper state
-    this.lastQueryTime = undefined
+    // query state
+    this.currentLimit = undefined // as we scroll down, this grows so that refresh loads keep the same # of records
     this.activeQuery = undefined
     this.abortController = undefined
+
+    // helper state
+    this.lastQueryTime = undefined
     this.isMouseDown = false
     this.isMouseDragging = false
   }
@@ -58,19 +61,32 @@ export class QueryView extends LitElement {
     this.queueQuery()
   }
 
+  loadMore () {
+    if (!this.activeQuery) {
+      this.activeQuery = this.query(this.results?.length)
+    }
+  }
+
   updated (changedProperties) {
     if (typeof this.results === 'undefined') {
       if (!this.activeQuery) {
-        this.queueQuery()
+        this.queueFreshQuery()
       }
       return
     } else if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
-      this.queueQuery()
+      this.queueFreshQuery()
     } else if (changedProperties.has('index') && changedProperties.get('index') != this.index) {
-      this.queueQuery()
+      this.queueFreshQuery()
     } else if (changedProperties.has('sources') && !isArrayEq(this.sources, changedProperties.get('sources'))) {
-      this.queueQuery()
+      this.queueFreshQuery()
     }
+  }
+
+  queueFreshQuery () {
+    // reset state
+    this.currentLimit = undefined
+
+    this.queueQuery()
   }
 
   queueQuery () {
@@ -86,37 +102,47 @@ export class QueryView extends LitElement {
     }
   }
 
-  async query () {
+  async query (offset = 0) {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
     var startTs = Date.now()
+    var results
     if (this.index === 'notifications') {
-      this.results = await beaker.indexer.listNotifications({
+      results = await beaker.indexer.listNotifications({
         filter: {search: this.filter},
-        limit: this.limit,
+        limit: this.currentLimit ? (this.currentLimit - offset) : this.limit,
+        offset,
         sort: 'ctime',
         reverse: true
         // signal: this.abortController.signal TODO doable?
       })
     } else if (this.filter) {
-      this.results = await beaker.indexer.search(this.filter, {
+      results = await beaker.indexer.search(this.filter, {
         filter: {index: this.index, site: this.sources},
-        limit: this.limit,
+        limit: this.currentLimit ? (this.currentLimit - offset) : this.limit,
+        offset,
         sort: 'rank',
         reverse: true
         // signal: this.abortController.signal TODO doable?
       })
     } else {
-      this.results = await beaker.indexer.list({
+      results = await beaker.indexer.list({
         filter: {index: this.index, site: this.sources},
-        limit: this.limit,
+        limit: this.currentLimit ? (this.currentLimit - offset) : this.limit,
+        offset,
         sort: 'ctime',
         reverse: true
         // signal: this.abortController.signal TODO doable?
       })
     }
+    console.log(results)
     this.lastQueryTime = Date.now() - startTs
-    console.log(this.results)
+    if (this.results && offset) {
+      this.results = this.results.concat(results)
+    } else {
+      this.results = results
+    }
+    this.currentLimit = this.results.length
     this.activeQuery = undefined
     emit(this, 'load-state-updated')
   }

@@ -122,6 +122,12 @@ class DesktopApp extends LitElement {
     return !!queryViewEls.find(el => el.isLoading)
   }
 
+  async setCurrentNav (nav) {
+    this.currentNav = nav
+    await this.requestUpdate()
+    this.shadowRoot.querySelector('.all-view').scrollTop = 0
+  }
+
   markAllNotificationsRead () {
     setTimeout(async () => {
       await beaker.indexer.setNotificationIsRead('all', true)
@@ -141,7 +147,7 @@ class DesktopApp extends LitElement {
     const navItem = (id, label, notice) => html`
       <a
         class="nav-item ${id === this.currentNav ? 'active' : ''} ${notice ? 'notice' : ''}"
-        @click=${e => {this.currentNav = id}}
+        @click=${e => this.setCurrentNav(id)}
       >${label}</a>
     `
     const ncount = this.unreadNotificationsCount
@@ -245,7 +251,7 @@ class DesktopApp extends LitElement {
     let hasSearchQuery = !!this.searchQuery
     if (hasSearchQuery) {
       return html`
-        <div class="all-view">
+        <div class="all-view" @scroll=${this.onScroll}>
           <div class="twocol">
             <div>
               <query-view
@@ -263,7 +269,7 @@ class DesktopApp extends LitElement {
       `
     } else {
       return html`
-        <div class="all-view">
+        <div class="all-view" @scroll=${this.onScroll}>
           ${this.currentNav === 'all' ? this.renderPins() : ''}
           <div class="twocol">
             <query-view
@@ -518,8 +524,8 @@ class DesktopApp extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     const items = [
-      {icon: 'fas fa-stream', label: 'Micro Blog Posts', click: () => { this.currentNav = 'microblogposts' }},
-      {icon: 'far fa-comments', label: 'Comments', click: () => { this.currentNav = 'comments' }}
+      {icon: 'fas fa-stream', label: 'Micro Blog Posts', click: () => this.setCurrentNav('microblogposts') },
+      {icon: 'far fa-comments', label: 'Comments', click: () => this.setCurrentNav('comments') }
     ]
     contextMenu.create({
       x: (rect.left + rect.right) / 2,
@@ -632,6 +638,18 @@ class DesktopApp extends LitElement {
     this.legacyArchives.splice(this.legacyArchives.indexOf(archive), 1)
     toast.create('Archive removed')
     this.requestUpdate()
+  }
+
+  async onScroll (e) {
+    var el = e.currentTarget
+    if (el.scrollHeight - el.scrollTop === el.clientHeight) {
+      try {
+        this.shadowRoot.querySelector('query-view').loadMore()
+      } catch (e) {
+        // ignore
+        console.debug(e)
+      }
+    }
   }
 }
 
