@@ -623,8 +623,8 @@ async function loadSite (origin) {
           path: '/' + change.name,
           remove: change.type === 'del',
           metadata: change?.value?.stat?.metadata,
-          ctime: change?.value?.stat?.ctime,
-          mtime: change?.value?.stat?.mtime
+          ctime: Number(change?.value?.stat?.ctime || 0),
+          mtime: Number(change?.value?.stat?.mtime || 0)
         }))
       })
     }
