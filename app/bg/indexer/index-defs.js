@@ -40,7 +40,7 @@ export const INDEXES = [
     title: 'Bookmarks',
     filter (update) {
       return (
-        (update.path.endsWith('.md') && update.metadata.type === FILE_TYPES.bookmark)
+        (update.path.endsWith('.goto') && update.metadata.type === FILE_TYPES.bookmark)
         || (!update.metadata.type && IS_BOOKMARKS_PATH_RE.test(update.path))
       )
     },
