@@ -502,25 +502,29 @@ async function tick () {
     for (let origin of originsToIndex) {
       try {
         let site = await loadSite(origin)
-        if (site.current_version === site.last_indexed_version) continue
-        logger.silly(`Indexing ${origin} [ v${site.last_indexed_version} -> v${site.current_version} ]`)
-        let updates = await site.listUpdates()
-        logger.silly(`${updates.length} updates found for ${origin}`)
-        if (updates.length === 0) continue
-        for (let update of updates) {
-          if (update.remove) {
-            let res = await db('resources').del().where({site_rowid: site.rowid, path: update.path})
-            if (+res > 0) {
-              logger.silly(`Deindexed ${site.origin}${update.path} [${this.id}]`, {site: site.origin, path: update.path})
-            }
-          } else {
-            for (let indexer of INDEXES) {
+        for (let indexer of INDEXES) {
+          let idxState = site.indexes[indexer.id]
+          if (site.current_version === idxState.last_indexed_version) {
+            continue
+          }
+
+          logger.silly(`Indexing ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
+          let updates = await site.listUpdates(indexer.id)
+          logger.silly(`${updates.length} updates found for ${origin} [ ${indexer.id} ]`)
+          if (updates.length === 0) continue
+          for (let update of updates) {
+            if (update.remove) {
+              let res = await db('resources').del().where({site_rowid: site.rowid, path: update.path})
+              if (+res > 0) {
+                logger.silly(`Deindexed ${site.origin}${update.path} [${indexer.id}]`, {site: site.origin, path: update.path})
+              }
+            } else {
               await indexer.index(db, site, update, myOrigins)
             }
           }
+          await updateIndexState(site, indexer.id)
+          logger.debug(`Indexed ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
         }
-        await updateIndexState(site)
-        logger.debug(`Indexed ${origin} [ v${site.last_indexed_version} -> v${site.current_version} ]`)
       } catch (e) {
         logger.error(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
       }
@@ -582,26 +586,41 @@ async function loadSite (origin) {
 
   var record = undefined
   var res = await db('sites')
-    .select('sites.rowid as rowid', 'site_subscriptions.last_indexed_version as last_indexed_version')
-    .leftJoin('site_subscriptions', 'sites.rowid', 'site_subscriptions.site_rowid')
+    .select('sites.rowid as rowid', 'site_indexes.index', 'site_indexes.last_indexed_version as last_indexed_version')
+    .leftJoin('site_indexes', 'sites.rowid', 'site_indexes.site_rowid')
     .where({origin})
-  if (res[0]) {
-    record = {
-      rowid: res[0].rowid,
-      last_indexed_version: res[0].last_indexed_version
-    }
-  } else {
+  if (!res[0]) {
     res = await db('sites').insert({
       origin,
       title: driveInfo.title
     })
-    record = {rowid: res[0], last_indexed_version: 0}
+    record = {rowid: res[0], indexes: {}}
+  } else {
+    record = {
+      rowid: res[0].rowid,
+      indexes: {}
+    }
+    for (let row of res) {
+      record.indexes[row.index] = {
+        index: row.index,
+        last_indexed_version: row.last_indexed_version
+      }
+    }
+  }
+
+  for (let indexer of INDEXES) {
+    if (!record.indexes[indexer.id]) {
+      record.indexes[indexer.id] = {
+        index: indexer.id,
+        last_indexed_version: 0
+      }
+    }
   }
 
   var siteRecord = {
     origin,
     rowid: record.rowid,
-    last_indexed_version: record.last_indexed_version,
+    indexes: record.indexes,
     current_version: driveInfo.version,
     title: driveInfo.title,
 
@@ -609,14 +628,14 @@ async function loadSite (origin) {
       return drive.pda.readFile(path, 'utf8')
     },
 
-    async listUpdates () {
+    async listUpdates (indexId) {
       return timer(READ_TIMEOUT, async (checkin) => {
         checkin('fetching recent updates')
         // HACK work around the diff stream issue -prf
         // let changes = await drive.pda.diff(+record.last_indexed_version || 0)
         let changes = []
         for (let i = 0; i < 10; i++) {
-          let c = await drive.pda.diff(+record.last_indexed_version || 0)
+          let c = await drive.pda.diff(+siteRecord.indexes[indexId].last_indexed_version || 0)
           if (c.length > changes.length) changes = c
         }
         return changes.filter(change => ['put', 'del'].includes(change.type)).map(change => ({
@@ -641,14 +660,16 @@ async function listOriginsToDeindex () {
 
 /**
  * @param {SubscribedSite} site 
+ * @param {String} index
  * @returns {Promise<void>}
  */
-async function updateIndexState (site) {
-  await db('site_subscriptions').insert({
+async function updateIndexState (site, index) {
+  await db('site_indexes').insert({
     site_rowid: site.rowid,
+    index,
     last_indexed_version: site.current_version,
     last_indexed_ts: Date.now()
-  }).onConflictDoUpdate('site_rowid', {
+  }).onConflictDoUpdate('`site_rowid`, `index`', {
     last_indexed_version: site.current_version,
     last_indexed_ts: Date.now()
   })

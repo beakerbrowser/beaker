@@ -5,13 +5,14 @@ exports.up = async function (knex) {
 
     table.index('origin')
   })
-  await knex.schema.createTable('site_subscriptions', table => {
+  await knex.schema.createTable('site_indexes', table => {
     table.integer('site_rowid').unsigned().notNullable()
+    table.string('index')
     table.integer('last_indexed_version')
     table.integer('last_indexed_ts')
 
     table.foreign('site_rowid').references('rowid').inTable('sites').onDelete('CASCADE')
-    table.unique('site_rowid')
+    table.unique(['site_rowid', 'index'])
   })
   await knex.schema.createTable('resources', table => {
     table.integer('site_rowid').unsigned().notNullable()
@@ -74,6 +75,6 @@ exports.down = async function (knex) {
   await knex.schema.dropTableIfExists('resources_data_fts')
   await knex.schema.dropTableIfExists('resources_data')
   await knex.schema.dropTableIfExists('resources')
-  await knex.schema.dropTableIfExists('site_subscriptions')
+  await knex.schema.dropTableIfExists('site_indexess')
   await knex.schema.dropTableIfExists('sites')
 }

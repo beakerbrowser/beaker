@@ -40,11 +40,15 @@ export const NOTIFICATION_TYPES = {
  * @typedef {Object} SubscribedSite
  * @prop {String} origin
  * @prop {Number} rowid
- * @prop {Number} last_indexed_version
+ * @prop {Object<String, IndexerState>} indexes
  * @prop {Number} current_version
  * @prop {String} title
  * @prop {function(String): Promise<String>} fetch
- * @prop {function(): Promise<ResourceUpdate[]>} listUpdates
+ * @prop {function(String): Promise<ResourceUpdate[]>} listUpdates
+ * 
+ * @typedef {Object} IndexerState
+ * @prop {String} index
+ * @prop {Number} last_indexed_version
  * 
  * @typedef {Object} ParsedUrl
  * @prop {String} origin
