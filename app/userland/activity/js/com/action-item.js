@@ -93,20 +93,20 @@ export class ActionItem extends LitElement {
 
 customElements.define('action-item', ActionItem)
 
-const todayMs = Date.now()
 const MINUTE = 1e3 * 60
 const HOUR = 1e3 * 60 * 60
 const DAY = HOUR * 24
-const MONTH = DAY * 30
-const endOfTodayMs = todayMs + (todayMs % DAY)
 
 const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
 function relativeDate (d) {
-  var diff = endOfTodayMs - d
+  const nowMs = Date.now()
+  const endOfTodayMs = +((new Date).setHours(23,59,59,999))
+  var diff = nowMs - d
+  var dayDiff = Math.floor((endOfTodayMs - d) / DAY)
   if (diff < HOUR) return rtf.format(Math.ceil(diff / MINUTE * -1), 'minute')
-  if (diff < DAY) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
-  if (diff < MONTH) return rtf.format(Math.ceil(diff / DAY * -1), 'day')
-  if (diff < MONTH * 3) return rtf.format(Math.ceil(diff / (DAY * 7) * -1), 'week')
-  if (diff < MONTH * 12) return rtf.format(Math.ceil(diff / MONTH * -1), 'month')
-  return rtf.format(Math.ceil(diff / (MONTH * -12)), 'year')
+  if (dayDiff < 1) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
+  if (dayDiff <= 30) return rtf.format(dayDiff * -1, 'day')
+  if (dayDiff <= 90) return rtf.format(Math.floor(dayDiff / 7) * -1, 'week')
+  if (dayDiff <= 365) return rtf.format(Math.floor(dayDiff / 30) * -1, 'month')
+  return rtf.format(Math.floor(dayDiff / 365) * -1, 'year')
 }

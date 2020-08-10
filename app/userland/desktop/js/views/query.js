@@ -543,44 +543,40 @@ function veryFancyUrlStream (str) {
 
 const today = (new Date()).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
 const yesterday = (new Date(Date.now() - 8.64e7)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
-const lastWeekTs = Date.now() - 6.048e+8
 function niceDate (ts, {largeIntervals} = {largeIntervals: false}) {
   var date = (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
   if (date === today) return 'Today'
   if (date === yesterday) return 'Yesterday'
   if (largeIntervals) {
-    if (ts > lastWeekTs) return 'This Week'
     return (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'long' })
   }
   return date
 }
 
-const todayMs = Date.now()
-const todayDay = (new Date()).getUTCDay() - 1 // -1 to start the week on monday
 const MINUTE = 1e3 * 60
 const HOUR = 1e3 * 60 * 60
 const DAY = HOUR * 24
-const MONTH = DAY * 30
-const endOfTodayMs = todayMs + (todayMs % DAY)
 
 function dateHeader (ts) {
-  var diff = todayMs - ts
-  var date = (new Date(ts)).toLocaleDateString('default', { year: 'numeric', month: 'short', day: 'numeric' })
-  if (date === today) return 'Today'
-  if (diff < DAY * todayDay) return (new Date(ts)).toLocaleDateString('default', { weekday: 'long' })
-  if (diff < DAY * (todayDay + 7)) return 'Last ' + (new Date(ts)).toLocaleDateString('default', { weekday: 'long' })
+  const endOfTodayMs = +((new Date).setHours(23,59,59,999))
+  var diff = endOfTodayMs - ts
+  if (diff < DAY) return 'Today'
+  if (diff < DAY * 6) return (new Date(ts)).toLocaleDateString('default', { weekday: 'long' })
   return (new Date(ts)).toLocaleDateString('default', { weekday: 'long', month: 'short', day: 'numeric' })
 }
 
 const rtf = new Intl.RelativeTimeFormat('en', {numeric: 'auto'})
 function relativeDate (d) {
-  var diff = endOfTodayMs - d
+  const nowMs = Date.now()
+  const endOfTodayMs = +((new Date).setHours(23,59,59,999))
+  var diff = nowMs - d
+  var dayDiff = Math.floor((endOfTodayMs - d) / DAY)
   if (diff < HOUR) return rtf.format(Math.ceil(diff / MINUTE * -1), 'minute')
-  if (diff < DAY) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
-  if (diff < MONTH) return rtf.format(Math.ceil(diff / DAY * -1), 'day')
-  if (diff < MONTH * 3) return rtf.format(Math.ceil(diff / (DAY * 7) * -1), 'week')
-  if (diff < MONTH * 12) return rtf.format(Math.ceil(diff / MONTH * -1), 'month')
-  return rtf.format(Math.ceil(diff / (MONTH * -12)), 'year')
+  if (dayDiff < 1) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
+  if (dayDiff <= 30) return rtf.format(dayDiff * -1, 'day')
+  if (dayDiff <= 90) return rtf.format(Math.floor(dayDiff / 7) * -1, 'week')
+  if (dayDiff <= 365) return rtf.format(Math.floor(dayDiff / 30) * -1, 'month')
+  return rtf.format(Math.floor(dayDiff / 365) * -1, 'year')
 }
 
 let _driveTitleCache = {}
