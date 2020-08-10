@@ -20,8 +20,7 @@ export class QueryView extends LitElement {
       sources: {type: Array},
       results: {type: Array},
       hideEmpty: {type: Boolean, attribute: 'hide-empty'},
-      showViewMore: {type: Boolean, attribute: 'show-view-more'},
-      queryId: {type: Number, attribute: 'query-id'}
+      profileUrl: {type: String}
     }
   }
 
@@ -40,7 +39,7 @@ export class QueryView extends LitElement {
     this.sources = undefined
     this.results = undefined
     this.hideEmpty = false
-    this.showViewMore = false
+    this.profileUrl = ''
 
     // query state
     this.currentLimit = undefined // as we scroll down, this grows so that refresh loads keep the same # of records
@@ -292,6 +291,7 @@ export class QueryView extends LitElement {
 
     return html`
       ${this.renderDateTitle(result)}
+      ${result.notification ? this.renderNotification(result) : ''}
       <div
         class=${classMap({
           result: true,
@@ -304,7 +304,6 @@ export class QueryView extends LitElement {
           <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
         </a>
         <div class="container">
-          ${result.notification ? this.renderNotification(result.notification) : ''}
           <div class="title">
             <a href=${href}>${title}</a>
           </div>
@@ -341,6 +340,7 @@ export class QueryView extends LitElement {
 
     return html`
       ${this.renderDateTitle(result)}
+      ${result.notification ? this.renderNotification(result) : ''}
       <div
         class=${classMap({
           result: true,
@@ -359,7 +359,6 @@ export class QueryView extends LitElement {
           @mouseup=${e => this.onMouseupCard(e, context || result.url)}
           @mousemove=${this.onMousemoveCard}
         >
-          ${result.notification ? this.renderNotification(result.notification) : ''}
           <div class="header">
             <div class="origin">
               ${result.site.url === 'hyper://system/' ? html`
@@ -380,7 +379,7 @@ export class QueryView extends LitElement {
               <div class="context">
                 <span class="fas fa-fw fa-reply"></span>
                 <a href=${context}>
-                  ${asyncReplace(veryFancyUrlStream(context)())}
+                  ${asyncReplace(veryFancyUrlStream(context))}
                 </a>
               </div>
             ` : ''}
@@ -422,32 +421,25 @@ export class QueryView extends LitElement {
     `
   }
 
-  renderNotification (notification) {
-    var icon = 'far fa-bell'
-    var description = 'linked to'
-    switch (notification.type) {
-      case 'beaker/notification/bookmark':
-        icon = 'fas fa-star'
-        description = 'bookmarked'
-        break
-      case 'beaker/notification/comment':
-        icon = 'far fa-comment-alt'
-        description = 'commented on'
-        break
-      case 'beaker/notification/mention':
-        icon = 'far fa-comment-alt'
-        description = 'mentioned'
-        break
-      case 'beaker/notification/reply':
-        icon = 'fas fa-reply'
-        description = 'replied to'
-        break
-    }
+  renderNotification (result) {
+    var description = ({
+      'beaker/notification/bookmark': 'bookmarked',
+      'beaker/notification/comment': 'commented on',
+      'beaker/notification/mention': 'mentioned',
+      'beaker/notification/reply': 'replied to'
+    })[result.notification.type] || 'linked to'
+    var where = ({
+      'beaker/index/pages': 'in',
+      'beaker/index/blogpostss': 'in'
+    })[result.index] || ''
     return html`
       <div class="notification">
-        <span class="fa-fw ${icon}"></span>
+        ${result.site.title}
         ${description}
-        <a href=${notification.subject}>you</a>
+        <a href=${result.notification.subject}>
+          ${asyncReplace(getNotificationSubjectStream(result.notification.subject, this.profileUrl))}
+        </a>
+        ${where}
       </div>
     `
   }
@@ -525,10 +517,49 @@ async function veryFancyUrl (str) {
   }
 }
 
-function veryFancyUrlStream (str) {
-  return async function* () {
-    yield fancyUrl(str)
-    yield veryFancyUrl(str)
+async function* veryFancyUrlStream (url) {
+  yield fancyUrl(url)
+  yield veryFancyUrl(url)
+}
+
+var _notificationSubjectCache = {}
+async function getNotificationSubject (url) {
+  if (_notificationSubjectCache[url]) {
+    return _notificationSubjectCache[url]
+  }
+  try {
+    let item = await beaker.indexer.get(url)
+    if (item.metadata['beaker/title']) {
+      return `"${item.metadata['beaker/title']}"`
+    }
+    switch (item.index) {
+      case 'beaker/index/comments': return 'your comment'
+      case 'beaker/index/pages': return 'your page'
+      case 'beaker/index/blogposts': return 'your blog post'
+      case 'beaker/index/microblogposts': return 'your post'
+    }
+  } catch {}
+  return 'your page'
+}
+
+async function* getNotificationSubjectStream (url, profileUrl) {
+  if (isRootUrl(url)) {
+    if (url === profileUrl) {
+      yield 'you'
+    } else {
+      yield 'your site'
+    }
+  } else {
+    yield await getNotificationSubject(url)
+  }
+}
+
+function isRootUrl (url) {
+  try {
+    console.log(url, (new URL(url)).pathname)
+    return (new URL(url)).pathname === '/'
+  } catch {
+    return false
   }
 }
 

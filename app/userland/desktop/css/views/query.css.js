@@ -108,6 +108,21 @@ h2 a:hover {
   color: var(--color-text--default);
 }
 
+.notification {
+  padding: 5px 4px 4px 58px;
+  margin-right: 19px;
+  font-size: 14px;
+  color: var(--text-color--light);
+}
+
+.notification.unread {
+  background: var(--bg-color--unread);
+}
+
+.notification a {
+  color: var(--text-color--light);
+}
+
 /** ROW STYLES **/
 
 .result.row {
@@ -248,22 +263,22 @@ h2 a:hover {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
-  margin: 16px 4px;
+  margin: 10px 24px 10px 4px;
 }
 
 .result.action.unread {
   background: var(--bg-color--unread);
-  padding: 10px;
+  outline: 5px solid var(--bg-color--unread);
 }
 
 .result.action .thumb {
   display: block;
   width: 36px;
-  flex: 0 0 40px;
+  flex: 0 0 36px;
   height: 36px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
-  margin-right: 14px;
+  margin-right: 18px;
   position: relative;
   top: 1px;
 }
@@ -297,11 +312,6 @@ h2 a:hover {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.result.action .notification {
-  padding-bottom: 4px;
-  font-size: 13px;
 }
 
 .result.action .origin .author {
@@ -446,15 +456,6 @@ h2 a:hover {
   border-color: var(--border-color--unread);
 }
 
-.result.card .notification {
-  padding: 8px 12px;
-  background: var(--bg-color--light);
-}
-
-.result.card .notification a {
-  color: inherit;
-}
-
 .result.card .header {
   display: flex;
   align-items: baseline;
@@ -581,6 +582,12 @@ h2 a:hover {
 }
 .result.action + .result.card {
   margin-top: 28px;
+}
+.notification + .result {
+  margin-top: 0;
+}
+.result + .notification {
+  margin-top: 15px;
 }
 `
 export default cssStr

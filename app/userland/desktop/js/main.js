@@ -261,6 +261,7 @@ class DesktopApp extends LitElement {
                 .sources=${this.sources}
                 limit="50"
                 @load-state-updated=${e => this.requestUpdate()}
+                .profileUrl=${this.profile ? this.profile.url : ''}
               ></query-view>
             </div>
             ${this.renderSidebar()}
@@ -279,6 +280,7 @@ class DesktopApp extends LitElement {
               .sources=${this.sources}
               limit="50"
               @load-state-updated=${e => this.requestUpdate()}
+              .profileUrl=${this.profile ? this.profile.url : ''}
             ></query-view>
             ${this.renderSidebar()}
           </div>
