@@ -90,6 +90,12 @@ export class Indexer {
           if (key !== notificationKey) continue
           let subjectp = parseUrl(value, site.origin)
           if (!myOrigins.includes(site.origin) && myOrigins.includes(subjectp.origin)) {
+            if (subjectp.origin === 'hyper://private') {
+              // special case- if somebody publishes something linking to hyper://private,
+              // it's a mistake which should be ingored
+              // -prf
+              continue
+            }
             await db('notifications').insert({
               site_rowid: site.rowid,
               resource_rowid: rowid,
