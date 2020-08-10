@@ -263,7 +263,7 @@ h2 a:hover {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
-  margin: 10px 24px 10px 4px;
+  margin: 20px 24px 20px 4px;
 }
 
 .result.action.unread {

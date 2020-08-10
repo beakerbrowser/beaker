@@ -556,7 +556,6 @@ async function* getNotificationSubjectStream (url, profileUrl) {
 
 function isRootUrl (url) {
   try {
-    console.log(url, (new URL(url)).pathname)
     return (new URL(url)).pathname === '/'
   } catch {
     return false
