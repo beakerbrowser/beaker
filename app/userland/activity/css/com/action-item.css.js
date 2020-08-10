@@ -48,6 +48,10 @@ ${tooltipCSS}
   transform: rotate(-45deg);
 }
 
+.summary:not(.with-content) > * {
+  white-space: nowrap;
+}
+
 .summary > *:not(:last-child) {
   margin-right: 5px;
 }
@@ -83,6 +87,11 @@ a:hover {
 
 .date {
   color: var(--text-color--light);
+}
+
+.item {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .container {
