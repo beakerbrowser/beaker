@@ -29,6 +29,7 @@ class ActivityApp extends LitElement {
     this.siteInfo = undefined
     this.fileInfo = undefined
     this.fileContent = undefined
+    this.privateMode = false
     this.annotations = []
 
     var ignoreNextAttachEvent = false
@@ -164,6 +165,11 @@ class ActivityApp extends LitElement {
     console.log(this.annotations)
   }
 
+  setPrivateMode (isPrivate) {
+    this.privateMode = isPrivate
+    this.requestUpdate()
+  }
+
   // rendering
   // =
 
@@ -207,9 +213,19 @@ class ActivityApp extends LitElement {
             .content=${this.fileContent ? beaker.markdown.toHTML(this.fileContent) : undefined}
           ></res-summary>
         ` : ''}
-        <div class="activity-feed">
-          ${this.renderAnnotations()}
-          <comment-box @create-comment=${this.onCreateComment} profile-url=${this.profileUrl}></comment-box>
+      <nav>
+        <a
+          class="nav-item ${this.privateMode ? 'active' : ''}"
+          @click=${() => this.setPrivateMode(true)}
+        >Private</a>
+        <a
+          class="nav-item ${!this.privateMode ? 'active' : ''}"
+          @click=${() => this.setPrivateMode(false)}
+        >Public</a>
+      </nav>
+      <div class="activity-feed">
+        ${this.renderAnnotations()}
+        <comment-box @create-comment=${this.onCreateComment} profile-url=${this.profileUrl}></comment-box>
       </div>
       ` : ''}
       ${this.currentView === 'advanced' ? html`
@@ -236,8 +252,12 @@ class ActivityApp extends LitElement {
   }
 
   renderAnnotations () {
+    const visibleAnnotations = this.annotations.filter(a => {
+      const isPrivate = a.site.url.startsWith('hyper://private')
+      return (this.privateMode && isPrivate) || (!this.privateMode && !isPrivate)
+    })
     return html`
-      ${repeat(this.annotations, a => a.url, a => this.renderAnnotation(a))}
+      ${repeat(visibleAnnotations, a => a.url, a => this.renderAnnotation(a))}
     `
   }
 
@@ -279,8 +299,13 @@ class ActivityApp extends LitElement {
 
   async onCreateComment (e) {
     this.isLoading = true
-    var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
-    var drive = beaker.hyperdrive.drive(addressBook.profiles[0].key)
+    var drive = null
+    if (this.privateMode) {
+      drive = beaker.hyperdrive.drive('hyper://private')
+    } else {
+      var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
+      drive = beaker.hyperdrive.drive(addressBook.profiles[0].key)
+    }
     await drive.mkdir('/comments').catch(e => undefined)
     await drive.writeFile(`/comments/${Date.now()}.md`, e.detail.text, {
       metadata: {
