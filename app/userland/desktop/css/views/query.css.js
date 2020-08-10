@@ -60,7 +60,7 @@ h2 a:hover {
 
 .bragging {
   color: var(--text-color--pretty-light);
-  margin: -20px 5px 20px;
+  margin: 0 5px 20px;
 }
 
 .results {
@@ -212,6 +212,17 @@ h2 a:hover {
   letter-spacing: 0.4px;
 }
 
+.result.row .ctrl {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--text-color--light);
+  cursor: pointer;
+}
+
+.result.row .ctrl:hover {
+  text-decoration: underline;
+}
+
 .result.row .tags {
   margin: 5px 0 0;
   line-height: 1.3;
@@ -221,6 +232,14 @@ h2 a:hover {
 .result.row .tags a {
   letter-spacing: 0.3px;
   margin-right: 3px;
+}
+
+.result.row.as-card {
+}
+
+.result.row.as-card:hover {
+  cursor: pointer;
+
 }
 
 /** ACTION STYLES **/
@@ -419,21 +438,8 @@ h2 a:hover {
 }
 
 .result.card .container:hover {
-  position: relative;
   cursor: pointer;
   border: 1px solid var(--border-color--dark);
-}
-
-.result.card .container:hover:before {
-  /* top border */
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--border-color--dark);
-  z-index: 1;
 }
 
 .result.card.unread .container {

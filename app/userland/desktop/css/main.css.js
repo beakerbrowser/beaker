@@ -308,11 +308,6 @@ main {
   text-decoration: underline;
 }
 
-.all-view .subview {
-  margin: 20px auto 20px;
-  max-width: 1000px;
-}
-
 .onecol {
   margin-top: 10px;
 }
