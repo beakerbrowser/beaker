@@ -158,7 +158,7 @@ class ActivityApp extends LitElement {
   }
 
   async loadAnnotations () {
-    var addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
+    var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
     this.profileUrl = `hyper://${addressBook.profiles[0].key}/`
     this.annotations = await beaker.indexer.list({filter: {linksTo: this.url}, reverse: false})
     console.log(this.annotations)
@@ -242,7 +242,7 @@ class ActivityApp extends LitElement {
   }
 
   renderAnnotation (annotation) {
-    var authorTitle = annotation.site.url.startsWith('hyper://system') ? 'I (privately)' : annotation.site.title
+    var authorTitle = annotation.site.url.startsWith('hyper://private') ? 'I (privately)' : annotation.site.title
     var action = ({
       'beaker/index/bookmarks': `bookmarked this ${this.typeLabel}`,
       'beaker/index/blogposts': `mentioned this ${this.typeLabel} in`,
@@ -279,7 +279,7 @@ class ActivityApp extends LitElement {
 
   async onCreateComment (e) {
     this.isLoading = true
-    var addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
+    var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
     var drive = beaker.hyperdrive.drive(addressBook.profiles[0].key)
     await drive.mkdir('/comments').catch(e => undefined)
     await drive.writeFile(`/comments/${Date.now()}.md`, e.detail.text, {

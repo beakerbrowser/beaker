@@ -83,13 +83,13 @@ class NetworkView extends LitElement {
     var drive = stats[0].drive
     var uploadedBytes = stats.reduce((acc, v) => acc + v.metadata.uploadedBytes + v.content.uploadedBytes, 0)
     var downloadedBytes = stats.reduce((acc, v) => acc + v.metadata.downloadedBytes + v.content.downloadedBytes, 0)
-    var domain = drive && drive.ident.system ? 'system' : `${key.slice(0, 6)}..${key.slice(-2)}`
+    var domain = drive && drive.ident.system ? 'private' : `${key.slice(0, 6)}..${key.slice(-2)}`
     var title = drive && drive.info && drive.info.title ? `${drive.info.title} (${domain})` : domain
     var forkOf = drive.forkOf ? ` ["${drive.forkOf.label}" fork of ${toNiceDomain(drive.forkOf.key)}]` : ''
     return html`
       <tr>
         <td>
-          <a href="hyper://${drive && drive.ident.system ? 'system' : key}/" target="_blank">
+          <a href="hyper://${drive && drive.ident.system ? 'private' : key}/" target="_blank">
             ${title}
             ${forkOf}
           </a>

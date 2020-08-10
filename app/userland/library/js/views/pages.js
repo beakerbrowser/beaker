@@ -36,10 +36,10 @@ export class PagesView extends LitElement {
   }
 
   async load () {
-    var addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
+    var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
     var pages = await beaker.hyperdrive.query({
       type: 'file',
-      drive: ['hyper://system', addressBook.profiles[0].key],
+      drive: ['hyper://private', addressBook.profiles[0].key],
       path: ['/*', '/*/*', '/*/*/*', '/*/*/*/*'],
       metadata: {type: 'beaker/page'}
     })
@@ -97,7 +97,7 @@ export class PagesView extends LitElement {
 
   renderPage (page) {
     var title = _title(page)
-    var isPrivate = page.origin.url.startsWith('hyper://system/')
+    var isPrivate = page.origin.url.startsWith('hyper://private/')
     return html`
       <a
         class="page"

@@ -132,7 +132,7 @@ class WebTerm extends LitElement {
       if (this.attachedPane) {
         ctx = this.attachedPane.url
       }
-      this.load(ctx || 'hyper://system/').then(_ => {
+      this.load(ctx || 'hyper://private/').then(_ => {
         this.setFocus()
       })
     })()
@@ -199,7 +199,7 @@ class WebTerm extends LitElement {
       manifest: JSON.parse(await beaker.browser.readFile('beaker://std-cmds/index.json', 'utf8'))
     }]
 
-    var cmdPkgDrives = await beaker.hyperdrive.readFile('hyper://system/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
+    var cmdPkgDrives = await beaker.hyperdrive.readFile('hyper://private/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
     for (let driveUrl of cmdPkgDrives) {
       try {
         packages.push({

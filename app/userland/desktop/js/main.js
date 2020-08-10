@@ -87,7 +87,7 @@ class DesktopApp extends LitElement {
     if (this.shadowRoot.querySelector('query-view')) {
       this.shadowRoot.querySelector('query-view').load()
     }
-    this.sourceOptions = [{url: 'hyper://system/', title: 'My Private Data'}, {url: this.profile.url, title: this.profile.title}].concat(sourceOptions)
+    this.sourceOptions = [{url: 'hyper://private/', title: 'My Private Data'}, {url: this.profile.url, title: this.profile.title}].concat(sourceOptions)
     console.log(this.pins)
     this.legacyArchives = await beaker.datLegacy.list()
   }
@@ -109,7 +109,7 @@ class DesktopApp extends LitElement {
       return undefined // all data in the index this.sourceOptions.map(source => source.url)
     }
     if (this.currentSource === 'mine') {
-      return ['hyper://system/', this.profile.url]
+      return ['hyper://private/', this.profile.url]
     }
     if (this.currentSource === 'others') {
       return this.sourceOptions.slice(2).map(source => source.url)
@@ -202,8 +202,8 @@ class DesktopApp extends LitElement {
         <section class="quick-links">
           <h3>Quick Links</h3>
           <div>
-            <a href="hyper://system/">
-              <img src="asset:favicon-32:hyper://system/">
+            <a href="hyper://private/">
+              <img src="asset:favicon-32:hyper://private/">
               <span>My Private Site</span>
             </a>
           </div>
@@ -636,7 +636,7 @@ class DesktopApp extends LitElement {
   }
 
   async onClickUnpinBookmark (file) {
-    await beaker.hyperdrive.deleteMetadata(`hyper://system/bookmarks/${file.name}`, 'pinned')
+    await beaker.hyperdrive.deleteMetadata(`hyper://private/bookmarks/${file.name}`, 'pinned')
     toast.create('Bookmark unpinned', '', 10e3)
     this.load()
   }
@@ -670,7 +670,7 @@ customElements.define('desktop-app', DesktopApp)
 
 function getHref (file) {
   if (file.name.endsWith('.goto')) return file.stat.metadata.href
-  return `hyper://system/bookmarks/${file.name}`
+  return `hyper://private/bookmarks/${file.name}`
 }
 
 function getTitle (file) {

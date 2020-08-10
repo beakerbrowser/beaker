@@ -548,7 +548,7 @@ async function tick () {
  */
 async function listMyOrigins () {
   let driveMetas = await filesystem.listDriveMetas()
-  return ['hyper://system'].concat(driveMetas.filter(dm => dm.writable).map(dm => parseUrl(dm.url).origin))
+  return ['hyper://private'].concat(driveMetas.filter(dm => dm.writable).map(dm => parseUrl(dm.url).origin))
 }
 
 /**
@@ -561,7 +561,7 @@ async function listOriginsToIndex () {
     fs.pda.readFile('/address-book.json', 'json')
   ])
   return [
-    'hyper://system',
+    'hyper://private',
     ...addressBookJson.profiles.map(item => 'hyper://' + item.key),
     ...addressBookJson.contacts.map(item => 'hyper://' + item.key),
     ...drivesJson.drives.map(item => 'hyper://' + item.key)

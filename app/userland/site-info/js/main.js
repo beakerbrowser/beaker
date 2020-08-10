@@ -49,7 +49,7 @@ class SiteInfoApp extends LitElement {
   }
 
   get isRootDrive () {
-    return this.origin === beaker.hyperdrive.drive('hyper://system/').url
+    return this.origin === beaker.hyperdrive.drive('hyper://private/').url
   }
 
   get drive () {

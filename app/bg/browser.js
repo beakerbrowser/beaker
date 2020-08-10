@@ -118,7 +118,7 @@ export async function setup () {
     }
   })
 
-  session.defaultSession.webRequest.onBeforeRequest({urls: ['hyper://system/*']}, (details, cb) => {
+  session.defaultSession.webRequest.onBeforeRequest({urls: ['hyper://private/*']}, (details, cb) => {
     if (!details.webContentsId) {
       if (details.resourceType === 'mainFrame') {
         // allow toplevel navigation
@@ -129,7 +129,7 @@ export async function setup () {
       }
     }
     var wc = webContents.fromId(details.webContentsId)
-    if (/^(beaker:\/\/|hyper:\/\/system\/)/.test(wc.getURL())) {
+    if (/^(beaker:\/\/|hyper:\/\/private\/)/.test(wc.getURL())) {
       // allow access from self and from beaker
       cb({cancel: false})
     } else {

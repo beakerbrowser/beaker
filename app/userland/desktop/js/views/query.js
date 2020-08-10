@@ -231,10 +231,10 @@ export class QueryView extends LitElement {
             ${isBookmark ? html`
               <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
               <a class="author" href=${result.site.url} title=${result.site.title}>
-                ${result.site.url === 'hyper://system/' ? 'Me (Private)' : result.site.title}
+                ${result.site.url === 'hyper://private/' ? 'Me (Private)' : result.site.title}
               </a>
             ` : (
-              result.site.url === 'hyper://system/' ? html`
+              result.site.url === 'hyper://private/' ? html`
                 <span class="sysicon fas fa-fw fa-lock"></span>
                 <a class="author" href=${result.site.url} title=${result.site.title}>
                   Me (Private)
@@ -317,7 +317,7 @@ export class QueryView extends LitElement {
             by
             <span class="origin">
               <a class="author" href=${result.site.url} title=${result.site.title}>
-                ${result.site.url === 'hyper://system/' ? 'Me (Private)' : result.site.title}
+                ${result.site.url === 'hyper://private/' ? 'Me (Private)' : result.site.title}
               </a>
             </span>
             ${''/*TODO<a class="ctrl"><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>*/}
@@ -361,7 +361,7 @@ export class QueryView extends LitElement {
         >
           <div class="header">
             <div class="origin">
-              ${result.site.url === 'hyper://system/' ? html`
+              ${result.site.url === 'hyper://private/' ? html`
                 <a class="author" href=${result.site.url} title=${result.site.title}>I privately</a>
               ` : html`
                 <a class="author" href=${result.site.url} title=${result.site.title}>

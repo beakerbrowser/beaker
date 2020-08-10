@@ -742,7 +742,7 @@ async function assertReadPermission (drive, sender) {
     if (isSenderBeaker(sender) || filesystem.isRootUrl(origin)) {
       return true
     }
-    throw new PermissionsError('Cannot read the system drive')
+    throw new PermissionsError('Cannot read the hyper://private/ drive')
   }
 
   return true

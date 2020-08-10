@@ -12,7 +12,7 @@ import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 export async function load () {
   var userFiles = []
   try {
-    userFiles = await beaker.hyperdrive.readdir('hyper://system/bookmarks', {includeStats: true})
+    userFiles = await beaker.hyperdrive.readdir('hyper://private/bookmarks', {includeStats: true})
     userFiles = userFiles.filter(file => file.stat.metadata.pinned)
     userFiles.sort((a, b) => a.name.localeCompare(b.name))
     userFiles.forEach(b => { b.path = `/bookmarks/${b.name}` })
@@ -24,12 +24,12 @@ export async function load () {
 
 export async function createLink ({href, title}, pinned) {
   await beaker.bookmarks.add({href, title, pinned})
-  // var name = await getAvailableName('/bookmarks', title, beaker.hyperdrive.drive('hyper://system/'), 'goto')
-  // await beaker.hyperdrive.drive('hyper://system/').writeFile(`/bookmarks/${name}`, '', {metadata: {href, title}})
+  // var name = await getAvailableName('/bookmarks', title, beaker.hyperdrive.drive('hyper://private/'), 'goto')
+  // await beaker.hyperdrive.drive('hyper://private/').writeFile(`/bookmarks/${name}`, '', {metadata: {href, title}})
 }
 
 export async function remove (file) {
-  await beaker.hyperdrive.unlink(`hyper://system/bookmarks/${file.name}`)
+  await beaker.hyperdrive.unlink(`hyper://private/bookmarks/${file.name}`)
 }
 
 // internal

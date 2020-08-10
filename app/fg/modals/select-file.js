@@ -328,7 +328,7 @@ class SelectFileModal extends LitElement {
     })
 
     this.drives = await bg.drives.list()
-    this.drives.push({url: 'hyper://system/', info: {title: 'System Drive', writable: true}})
+    this.drives.push({url: 'hyper://private/', info: {title: 'My Private Drive', writable: true}})
     this.drives.sort((a, b) => (a.info.title || '').toLowerCase().localeCompare(b.info.title || ''))
     this.contacts = await bg.contacts.list()
     this.contacts.push(await bg.hyperdrive.getInfo((await bg.beakerBrowser.getProfile()).key))
@@ -365,7 +365,7 @@ class SelectFileModal extends LitElement {
       isVirtual: true,
       path: url,
       icon: url.startsWith('hyper:')
-        ? url === 'hyper://system/'
+        ? url === 'hyper://private/'
           ? html`<img class="favicon" srcset="beaker://assets/img/drive-types/files.png 1x, beaker://assets/img/drive-types/files-64.png 2x">`
           : html`<img class="favicon" src="asset:favicon:${url}">`
         : html`<span class="fa-fw ${icon}"></span>`,

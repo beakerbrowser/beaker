@@ -61,7 +61,7 @@ export class PublishPopup extends BasePopup {
   //
 
   static async create ({type, title, content}) {
-    var addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
+    var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
     var siteOptions = await Promise.all(addressBook.profiles.map(({key}) => beaker.hyperdrive.getInfo(key)))
     var path = getDefaultPath(type)
     var name = await getAvailableName(path, title.toLowerCase(), beaker.hyperdrive.drive(siteOptions[0].url), 'md')

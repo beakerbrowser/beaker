@@ -91,12 +91,12 @@ export class EditBookmarkPopup extends BasePopup {
 
     var pinned = e.target.pinned.checked
     if (this.bookmark) {
-      await beaker.hyperdrive.drive('hyper://system/').updateMetadata(this.bookmark.path, {
+      await beaker.hyperdrive.drive('hyper://private/').updateMetadata(this.bookmark.path, {
         href: e.target.href.value,
         title: e.target.title.value,
         pinned: pinned ? '1' : undefined
       })
-      if (!pinned) await beaker.hyperdrive.drive('hyper://system/').deleteMetadata(this.bookmark.path, ['pinned'])
+      if (!pinned) await beaker.hyperdrive.drive('hyper://private/').deleteMetadata(this.bookmark.path, ['pinned'])
     } else {
       await beaker.bookmarks.add({
         href: e.target.href.value,

@@ -47,7 +47,7 @@ class Identity extends LitElement {
                 ${this.cert.driveInfo.title || 'Untitled'}
               </div>
               <div class="verifier">
-                This is your profile
+                This is your profile site
               </div>
             ` : this.cert.ident.contact ? html`
               <div class="identity">
@@ -55,19 +55,19 @@ class Identity extends LitElement {
                 ${this.cert.driveInfo.title || 'Untitled'}
               </div>
               <div class="verifier">
-                This drive is in your address book
+                This site is in your address book
                 <button class="transparent toggle-save-contact-btn" @click=${this.onToggleSaveContact}>
                   <span class="fas fa-fw fa-user-times"></span> Remove
                 </button>
               </div>
             ` : this.cert.ident.system ? html`
-              <div class="identity">This is your system drive</div>
+              <div class="identity">This is your private site</div>
             ` : this.cert.driveInfo.writable ? html`
               <div class="identity">
                 ${this.cert.driveInfo.title || 'Untitled'}
               </div>
               <div class="verifier">
-                <span class="fa-fw fas fa-pen"></span> You created this drive</div>
+                <span class="fa-fw fas fa-pen"></span> You created this site</div>
               </div>
             ` : html`
               No identity information found

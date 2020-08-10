@@ -64,9 +64,9 @@ export class NewPagePopup extends BasePopup {
 
   static async create (opts) {
     if (opts.private || opts.draft) {
-      opts.drive = beaker.hyperdrive.drive('hyper://system/')
+      opts.drive = beaker.hyperdrive.drive('hyper://private/')
     } else {
-      let addressBook = await beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json')
+      let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
       opts.drive = beaker.hyperdrive.drive(addressBook.profiles[0].key)
     }
     return BasePopup.create(NewPagePopup, opts)

@@ -188,11 +188,11 @@ export class ExplorerApp extends LitElement {
         return
       }
     } else if (!loc.getUrl()) {
-      return loc.setUrl('hyper://system/')
+      return loc.setUrl('hyper://private/')
     }
 
     // read helper state
-    beaker.hyperdrive.readFile('hyper://system/address-book.json', 'json').then(addressBook => {
+    beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').then(addressBook => {
       return Promise.all(addressBook.profiles.map(p => beaker.hyperdrive.getInfo(p.key)))
     }).then(profiles => {
       profiles.sort((a, b) => (a.title||'').localeCompare(b.title||''))
@@ -583,7 +583,7 @@ export class ExplorerApp extends LitElement {
     return html`
       <nav class="left">
         <section class="transparent drives-list">
-          ${navItem('hyper://system/', 'My Private Site')}
+          ${navItem('hyper://private/', 'My Private Site')}
           ${!this.profiles ? html`` : html`
             ${repeat(this.profiles, profile => navItem(profile.url, profile.title))}
           `}
