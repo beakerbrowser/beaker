@@ -159,6 +159,9 @@ class DesktopApp extends LitElement {
       <header>
         <div class="search-ctrl">
           ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
+          ${!!this.searchQuery ? html`
+            <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
+          ` : ''}
           <input @keyup=${this.onKeyupSearch}>
           <button class="rounded primary" @click=${this.onClickNew}>New <span class="fas fa-fw fa-plus"></span></button>
         </div>
@@ -479,6 +482,11 @@ class DesktopApp extends LitElement {
       this.searchQuery = value
       this.keyupSearchTo = undefined
     }, 100)
+  }
+
+  onClickClearSearch (e) {
+    this.searchQuery = ''
+    this.shadowRoot.querySelector('.search-ctrl input').value = ''
   }
 
   onClickNew (e) {

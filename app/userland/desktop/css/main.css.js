@@ -136,6 +136,30 @@ header {
   margin-left: 10px;
 }
 
+.search-ctrl .clear-search {
+  position: absolute;
+  left: -26px;
+  top: 7px;
+  z-index: 1;
+  display: flex;
+  background: var(--bg-color--semi-light);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.search-ctrl .clear-search span {
+  margin: auto;
+}
+
+@media (max-width: 900px) {
+  .search-ctrl .clear-search  {
+    left: unset;
+    right: 98px;
+  }
+}
+
 nav {
   display: flex;
   margin: 4px 0 0;
