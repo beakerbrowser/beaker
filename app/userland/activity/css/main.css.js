@@ -56,43 +56,38 @@ header .title a {
   color: inherit;
 }
 
-nav {
-  display: flex;
-  font-size: 12px;
-  margin-bottom: 10px;
-  border-top: 1px solid var(--border-color--light);
-}
-
 nav a {
   border-bottom: 1px solid var(--border-color--light);
   border-right: 1px solid var(--border-color--light);
   padding: 5px 10px;
 }
 
-nav a.current {
-  border-bottom: 1px solid transparent;
-  border-top-left-radius: 2px;
-  border-top-right-radius: 2px;
-}
-
-nav a:hover {
-  text-decoration: none;
-  cursor: pointer;
-  background: var(--bg-color--light);
-}
-
-nav span {
-  min-width: 10px;
-  background: var(--bg-color--light);
+nav {
+  font-size: 12px;
+  padding: 10px;
+  margin: 10px;
   border-bottom: 1px solid var(--border-color--light);
 }
 
-nav span:last-child {
-  flex: 1;
+nav a.nav-item:hover {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+nav a.nav-item {
+  background: var(--bg-color--light);
+  color: var(--text-color--light);
+  border: 1px solid transparent;
+}
+
+nav a.nav-item.active {
+  background: var(--bg-color--default);
+  color: var(--text-color--default);
 }
 
 .activity-feed {
   padding: 0 15px;
 }
+
 `
 export default cssStr
