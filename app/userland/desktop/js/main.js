@@ -200,7 +200,6 @@ class DesktopApp extends LitElement {
       <div class="sidebar">
         ${this.renderTagsList()}
         <section class="quick-links">
-          <h3>Quick Links</h3>
           <div>
             <a href="hyper://private/">
               <img src="asset:favicon-32:hyper://private/">
