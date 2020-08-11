@@ -47,6 +47,7 @@ import { timer } from '../../lib/time'
 // =
 
 var db
+var abortActiveIndex = false // used to pre-empt active indexing
 
 // exported api
 // =
@@ -554,10 +555,12 @@ export async function setNotificationIsRead (rowid, isRead) {
 
 export async function triggerSiteIndex (origin) {
   try {
+    abortActiveIndex = true // pre-empt the indexer
     var release = await lock('beaker-indexer')
     var myOrigins = await listMyOrigins()
     await indexSite(origin, myOrigins)
   } finally {
+    abortActiveIndex = false
     release()
   }
 }
@@ -576,6 +579,7 @@ async function tick () {
     var originsToIndex = await listOriginsToIndex()
     for (let origin of originsToIndex) {
       await indexSite(origin, myOrigins)
+      if (abortActiveIndex) return
     }
 
     var originsToDeindex = await listOriginsToDeindex()
@@ -588,8 +592,13 @@ async function tick () {
       } catch (e) {
         logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
       }
+      if (abortActiveIndex) return
     }
   } finally {
+    if (abortActiveIndex) {
+      logger.debug('Aborted regular indexing to pre-empt a triggered index')
+      abortActiveIndex = false
+    }
     release()
     setTimeout(tick, TICK_INTERVAL)
   }
@@ -626,6 +635,7 @@ async function indexSite (origin, myOrigins) {
       }
       await updateIndexState(site, indexer.id)
       logger.debug(`Indexed ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
+      if (abortActiveIndex) return
     }
   } catch (e) {
     logger.error(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
