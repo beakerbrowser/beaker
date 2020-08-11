@@ -22,11 +22,6 @@ a {
   user-select: none;
 }
 
-:host(:not(.full-size)) .pages {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
 .pages .empty {
   font-size: 16px;
   letter-spacing: 0.7px;
@@ -74,10 +69,6 @@ a {
 
 .page .title {
   font-weight: 400;
-  margin-right: 20px;
-}
-
-:host(.full-size) .page .title {
   flex: 1;
   font-size: 14px;
   margin-right: 0px;
@@ -93,8 +84,15 @@ a {
 }
 
 @media (max-width: 700px) {
+  .page {
+    font-size: 12px;
+  }
+  .page .favicon {
+    width: 12px;
+    height: 12px;
+  }
   .page .title {
-    font-size: 13px !important;
+    font-size: 12px;
   }
 }
 

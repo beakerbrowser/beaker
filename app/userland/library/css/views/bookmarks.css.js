@@ -95,8 +95,15 @@ a {
 }
 
 @media (max-width: 700px) {
+  .bookmark {
+    font-size: 12px;
+  }
+  .bookmark .favicon {
+    width: 12px;
+    height: 12px;
+  }
   .bookmark .title {
-    font-size: 13px !important;
+    font-size: 12px;
   }
   .bookmark .info {
     flex: 0 0 50px;

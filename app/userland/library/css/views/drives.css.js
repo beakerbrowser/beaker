@@ -30,11 +30,6 @@ a[href]:hover {
   user-select: none;
 }
 
-:host(:not(.full-size)) .drives {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
 .drives .empty {
   font-size: 16px;
   letter-spacing: 0.7px;
@@ -100,9 +95,6 @@ a[href]:hover {
 .drive .title {
   font-weight: 400;
   margin-right: 20px;
-}
-
-:host(.full-size) .drive .title {
   flex: 1;
   font-size: 14px;
   margin-right: 0px;
@@ -114,12 +106,8 @@ a[href]:hover {
 }
 
 .drive .description {
-  flex: 1;
   color: #99a;
   overflow: hidden;
-}
-
-:host(.full-size) .drive .description {
   flex: 2;
 }
 
@@ -175,8 +163,15 @@ a[href]:hover {
 }
 
 @media (max-width: 700px) {
+  .drive {
+    font-size: 12px;
+  }
+  .drive .favicon {
+    width: 12px;
+    height: 12px;
+  }
   .drive .title {
-    font-size: 13px !important;
+    font-size: 12px;
   }
   .drive .description {
     display: none;
