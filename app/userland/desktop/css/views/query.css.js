@@ -296,8 +296,15 @@ h2 a:hover {
   height: 100%;
   text-align: center;
   color: var(--text-color--light);
-  line-height: 20px;
+  line-height: 36px;
+  font-size: 12px;
+}
+
+.result.action .thumb .icon .fa-lock {
   font-size: 8px;
+  position: absolute;
+  right: 3px;
+  bottom: 27px;
 }
 
 .result.action .container {
@@ -320,6 +327,10 @@ h2 a:hover {
 }
 
 .result.action .title {
+  max-width: 590px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--text-color--light);
   padding-bottom: 2px;
 }
@@ -348,6 +359,11 @@ h2 a:hover {
 
 .result.action .ctrls {
   font-size: 13px;
+  color: var(--text-color--light);
+}
+
+.result.action .link-origin {
+  color: var(--text-color--light);
 }
 
 .result.action .ctrls a.ctrl {

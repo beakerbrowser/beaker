@@ -274,6 +274,13 @@ export class QueryView extends LitElement {
     }
     href = href || result.url
 
+    var hrefp
+    if (result.index === 'beaker/index/bookmarks' && href) {
+      try {
+        hrefp = new URL(href)
+      } catch {}
+    }
+
     var title = result.metadata['beaker/title'] || ({
       'beaker/index/bookmarks': niceDate(result.ctime),
       'beaker/index/blogposts': niceDate(result.ctime),
@@ -301,7 +308,14 @@ export class QueryView extends LitElement {
         })}
       >
         <a class="thumb" href=${result.site.url} title=${result.site.title} data-tooltip=${result.site.title}>
-          <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
+          ${result.index === 'beaker/index/bookmarks' ? html`
+            <span class="icon">
+              <span class="far fa-star"></span>
+              ${result.site.url === 'hyper://private' ? html`<span class="fas fa-lock"></span>` : ''}
+            </span>
+          ` : html`
+            <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
+          `}
         </a>
         <div class="container">
           <div class="title">
@@ -313,17 +327,21 @@ export class QueryView extends LitElement {
             <a href="#">p2p</a>
           </div>*/}
           <div class="ctrls">
+            <a class="ctrl" @click=${e => this.onOpenActivity(e, href)} data-tooltip="View Thread">
+              <span class="far fa-fw fa-comment-alt"></span> comments
+            </a>
+            |
+            ${hrefp ? html`
+              <a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a> | 
+            ` : ''}
             <span class="action">${action}</span>
             by
             <span class="origin">
               <a class="author" href=${result.site.url} title=${result.site.title}>
-                ${result.site.url === 'hyper://private/' ? 'Me (Private)' : result.site.title}
+                ${result.site.url === 'hyper://private' ? 'Me (Private)' : result.site.title}
               </a>
             </span>
             ${''/*TODO<a class="ctrl"><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>*/}
-            <a class="ctrl" @click=${e => this.onOpenActivity(e, href)} data-tooltip="View Thread">
-              <span class="far fa-fw fa-comment-alt"></span>
-            </a>
           </div>
         </div>
       </div>
