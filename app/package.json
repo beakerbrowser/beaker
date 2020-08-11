@@ -10,6 +10,7 @@
   "dependencies": {
     "@beaker/dat-serve-resolve-path": "^1.0.0",
     "@beaker/library-tools": "^1.0.0",
+    "abort-controller": "^3.0.0",
     "ajv": "^6.10.2",
     "anymatch": "^2.0.0",
     "await-lock": "^1.2.1",

@@ -238,9 +238,15 @@ export async function mkgoto (opts, location, href) {
 
 export async function bookmark (opts = {}, href = '.') {
   href = this.env.resolve(href || '.')
-  var name = opts.filename || href.split('/').filter(Boolean).pop()
-  if (!name.endsWith('.goto')) name += '.goto'
-  await beaker.hyperdrive.drive('hyper://private/').writeFile(`/bookmarks/${name}`, '', {metadata: {href}})
+  let site = 'hyper://private'
+  if (opts.public) {
+    site = `hyper://${(await beaker.browser.getProfile()).key}`
+  }
+  await beaker.bookmarks.add({
+    href,
+    title: opts.title || href,
+    site
+  })
 }
 
 // utilities

@@ -75,9 +75,6 @@ a {
 .bookmark .title {
   font-weight: 400;
   margin-right: 20px;
-}
-
-:host(.full-size) .bookmark .title {
   flex: 1;
   font-size: 14px;
   margin-right: 0px;
@@ -88,8 +85,9 @@ a {
   color: #99a;
 }
 
-:host(.full-size) .bookmark .href {
-  flex: 2;
+.bookmark .info {
+  flex: 0 0 100px;
+  color: #99a;
 }
 
 .bookmark .ctrls {
@@ -99,6 +97,9 @@ a {
 @media (max-width: 700px) {
   .bookmark .title {
     font-size: 13px !important;
+  }
+  .bookmark .info {
+    flex: 0 0 50px;
   }
 }
 

@@ -23,6 +23,7 @@ export const METADATA_KEYS = {
   draft: 'beaker/draft',
   href: 'beaker/href',
   parent: 'beaker/parent',
+  pinned: 'beaker/pinned',
   subject: 'beaker/subject',
   title: 'beaker/title'
 }

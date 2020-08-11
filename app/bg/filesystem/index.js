@@ -59,6 +59,13 @@ export function isRootUrl (url) {
 }
 
 /**
+ * @returns {String}
+ */
+export function getProfileUrl () {
+  return profileDriveUrl
+}
+
+/**
  * @returns {Promise<void>}
  */
 export async function setup () {
@@ -259,16 +266,31 @@ export async function removeDrive (url) {
  * @param {string} basename
  * @param {string} [ext]
  * @param {string} [joiningChar]
+ * @param {DaemonHyperdrive} [drive]
  * @returns {Promise<string>}
  */
-export async function getAvailableName (containingPath, basename, ext = undefined, joiningChar = '-') {
+export async function getAvailableName (containingPath, basename, ext = undefined, joiningChar = '-', drive = rootDrive) {
   for (let i = 1; i < 1e9; i++) {
     let name = ((i === 1) ? basename : `${basename}${joiningChar}${i}`) + (ext ? `.${ext}` : '')
-    let st = await stat(joinPath(containingPath, name))
+    let st = await stat(joinPath(containingPath, name), drive)
     if (!st) return name
   }
   // yikes if this happens
   throw new Error('Unable to find an available name for ' + basename)
+}
+
+export async function ensureDir (path, drive = rootDrive) {
+  try {
+    let st = await stat(path, drive)
+    if (!st) {
+      logger.info(`Creating directory ${path}`)
+      await drive.pda.mkdir(path)
+    } else if (!st.isDirectory()) {
+      logger.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
+    }
+  } catch (e) {
+    logger.error('Filesystem failed to make directory', {path: '' + path, error: e.toString()})
+  }
 }
 
 export async function setupDefaultProfile ({title, description, thumbBase64, thumbExt}) {
@@ -348,21 +370,7 @@ export async function getProfile () {
 // internal methods
 // =
 
-async function stat (path) {
-  try { return await rootDrive.pda.stat(path) }
+async function stat (path, drive = rootDrive) {
+  try { return await drive.pda.stat(path) }
   catch (e) { return null }
-}
-
-async function ensureDir (path) {
-  try {
-    let st = await stat(path)
-    if (!st) {
-      logger.info(`Creating directory ${path}`)
-      await rootDrive.pda.mkdir(path)
-    } else if (!st.isDirectory()) {
-      logger.error('Warning! Filesystem expects a folder but an unexpected file exists at this location.', {path})
-    }
-  } catch (e) {
-    logger.error('Filesystem failed to make directory', {path: '' + path, error: e.toString()})
-  }
 }

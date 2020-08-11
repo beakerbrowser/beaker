@@ -327,17 +327,17 @@ class DesktopApp extends LitElement {
     var pins = this.pins || []
     return html`
       <div class="pins">
-        ${repeat(pins, pin => getHref(pin), pin => html`
+        ${repeat(pins, pin => pin.href, pin => html`
           <a
             class="pin"
-            href=${getHref(pin)}
-            @contextmenu=${e => this.onContextmenuFile(e, pin)}
+            href=${pin.href}
+            @contextmenu=${e => this.onContextmenuPin(e, pin)}
           >
             <div class="thumb-wrapper">
-              <img src=${'asset:screenshot-180:' + getHref(pin)} class="thumb"/>
+              <img src=${'asset:screenshot-180:' + pin.href} class="thumb"/>
             </div>
             <div class="details">
-              <div class="title">${getTitle(pin)}</div>
+              <div class="title">${pin.title}</div>
             </div>
           </a>
         `)}
@@ -594,14 +594,14 @@ class DesktopApp extends LitElement {
     this.load()
   }
 
-  async onContextmenuFile (e, file) {
+  async onContextmenuPin (e, pin) {
     e.preventDefault()
     const items = [
-      {label: 'Open Link in New Tab', click: () => window.open(getHref(file))},
-      {label: 'Copy Link Address', click: () => writeToClipboard(getHref(file))},
-      (file.isFixed) ? undefined : {type: 'separator'},
-      (file.isFixed) ? undefined : {label: 'Edit', click: () => this.onClickEditBookmark(file)},
-      (file.isFixed) ? undefined : {label: 'Unpin', click: () => this.onClickUnpinBookmark(file)}
+      {label: 'Open Link in New Tab', click: () => window.open(pin.href)},
+      {label: 'Copy Link Address', click: () => writeToClipboard(pin.href)},
+      (pin.isFixed) ? undefined : {type: 'separator'},
+      (pin.isFixed) ? undefined : {label: 'Edit', click: () => this.onClickEditBookmark(pin)},
+      (pin.isFixed) ? undefined : {label: 'Unpin', click: () => this.onClickUnpinBookmark(pin)}
     ].filter(Boolean)
     var fns = {}
     for (let i = 0; i < items.length; i++) {
@@ -635,8 +635,8 @@ class DesktopApp extends LitElement {
     }
   }
 
-  async onClickUnpinBookmark (file) {
-    await beaker.hyperdrive.deleteMetadata(`hyper://private/bookmarks/${file.name}`, 'pinned')
+  async onClickUnpinBookmark (bookmark) {
+    await beaker.bookmarks.add(Object.assign({}, bookmark, {pinned: false}))
     toast.create('Bookmark unpinned', '', 10e3)
     this.load()
   }
@@ -664,15 +664,3 @@ class DesktopApp extends LitElement {
 }
 
 customElements.define('desktop-app', DesktopApp)
-
-// internal
-// =
-
-function getHref (file) {
-  if (file.name.endsWith('.goto')) return file.stat.metadata.href
-  return `hyper://private/bookmarks/${file.name}`
-}
-
-function getTitle (file) {
-  return file.stat.metadata.title || file.name
-}

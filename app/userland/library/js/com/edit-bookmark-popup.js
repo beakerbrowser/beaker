@@ -19,18 +19,24 @@ export class EditBookmarkPopup extends BasePopup {
     }
 
     .popup-inner label {
-      font-size: 11px;
+      font-size: 13px;
     }
 
-    .popup-inner label[for="pinned-input"] {
-      margin: 16px 0;
+    .popup-inner label.checkbox {
+      display: flex;
+      align-items: center;
+      margin: 5px 0;
     }
 
     .popup-inner input[type="checkbox"] {
       display: inline;
       height: auto;
       width: auto;
-      margin: 0 5px;
+      margin: 0 10px 0 2px;
+    }
+
+    .delete {
+      margin-right: auto;
     }
     `]
   }
@@ -54,23 +60,30 @@ export class EditBookmarkPopup extends BasePopup {
   }
 
   renderBody () {
+    var isPublic = this.bookmark && this.bookmark.site.url !== 'hyper://private'
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <form @submit=${this.onSubmit}>
         <div>
-          <label for="title-input">Title</label>
-          <input required type="text" id="title-input" name="title" value="${this.bookmark?.stat.metadata.title || ''}" placeholder="E.g. Beaker Browser" />
-
           <label for="href-input">URL</label>
-          <input required type="text" id="href-input" name="href" value="${this.bookmark?.stat.metadata.href || ''}" placeholder="E.g. beakerbrowser.com" />
+          <input required type="text" id="href-input" name="href" value="${this.bookmark?.href || ''}" placeholder="E.g. beakerbrowser.com" />
 
-          <label for="pinned-input">
-            <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.stat.metadata.pinned} />
+          <label for="title-input">Title</label>
+          <input required type="text" id="title-input" name="title" value="${this.bookmark?.title || ''}" placeholder="E.g. Beaker Browser" />
+
+          <label class="checkbox" for="public-input">
+            <input type="checkbox" id="public-input" name="public" value="1" ?checked=${isPublic} />
+            Public
+          </label>
+
+          <label class="checkbox" for="pinned-input">
+            <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.pinned} />
             Pin to start page
           </label>
         </div>
 
         <div class="actions">
+          ${this.bookmark ? html`<button type="button" class="btn delete" @click=${this.onDelete} tabindex="3">Delete</button>` : ''}
           <button type="button" class="btn" @click=${this.onReject} tabindex="2">Cancel</button>
           <button type="submit" class="btn primary" tabindex="1">Save</button>
         </div>
@@ -89,22 +102,22 @@ export class EditBookmarkPopup extends BasePopup {
     e.preventDefault()
     e.stopPropagation()
 
-    var pinned = e.target.pinned.checked
-    if (this.bookmark) {
-      await beaker.hyperdrive.drive('hyper://private/').updateMetadata(this.bookmark.path, {
-        href: e.target.href.value,
-        title: e.target.title.value,
-        pinned: pinned ? '1' : undefined
-      })
-      if (!pinned) await beaker.hyperdrive.drive('hyper://private/').deleteMetadata(this.bookmark.path, ['pinned'])
-    } else {
-      await beaker.bookmarks.add({
-        href: e.target.href.value,
-        title: e.target.title.value,
-        pinned
-      })
+    let b = {
+      href: e.target.href.value,
+      title: e.target.title.value,
+      pinned: e.target.pinned.checked,
+      site: e.target.public.checked ? `hyper://${(await beaker.browser.getProfile()).key}` : 'hyper://private'
     }
+    console.log(b)
+    await beaker.bookmarks.add(b)
 
+    this.dispatchEvent(new CustomEvent('resolve'))
+  }
+
+  async onDelete (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    await beaker.bookmarks.remove(this.bookmark.href)
     this.dispatchEvent(new CustomEvent('resolve'))
   }
 }

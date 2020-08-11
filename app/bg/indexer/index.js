@@ -25,6 +25,7 @@ import { app } from 'electron'
 import knex from 'knex'
 import { attachOnConflictDoNothing } from 'knex-on-conflict-do-nothing'
 import { attachOnConflictDoUpdate } from '../lib/db'
+import AbortController from 'abort-controller'
 import * as path from 'path'
 import mkdirp from 'mkdirp'
 import * as filesystem from '../filesystem/index'
@@ -47,7 +48,7 @@ import { timer } from '../../lib/time'
 // =
 
 var db
-var abortActiveIndex = false // used to pre-empt active indexing
+var tickController // used to pre-empt active indexing
 
 // exported api
 // =
@@ -555,12 +556,11 @@ export async function setNotificationIsRead (rowid, isRead) {
 
 export async function triggerSiteIndex (origin) {
   try {
-    abortActiveIndex = true // pre-empt the indexer
+    if (tickController) tickController.abort() // pre-empt the indexer
     var release = await lock('beaker-indexer')
     var myOrigins = await listMyOrigins()
     await indexSite(origin, myOrigins)
   } finally {
-    abortActiveIndex = false
     release()
   }
 }
@@ -574,12 +574,13 @@ export async function triggerSiteIndex (origin) {
 async function tick () {
   try {
     var release = await lock('beaker-indexer')
+    tickController = new AbortController()
     var myOrigins = await listMyOrigins()
 
     var originsToIndex = await listOriginsToIndex()
     for (let origin of originsToIndex) {
       await indexSite(origin, myOrigins)
-      if (abortActiveIndex) return
+      if (tickController.signal.aborted) return
     }
 
     var originsToDeindex = await listOriginsToDeindex()
@@ -592,13 +593,13 @@ async function tick () {
       } catch (e) {
         logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
       }
-      if (abortActiveIndex) return
+      if (tickController.signal.aborted) return
     }
   } finally {
-    if (abortActiveIndex) {
+    if (tickController?.signal.aborted) {
       logger.debug('Aborted regular indexing to pre-empt a triggered index')
-      abortActiveIndex = false
     }
+    tickController = undefined
     release()
     setTimeout(tick, TICK_INTERVAL)
   }
@@ -635,7 +636,7 @@ async function indexSite (origin, myOrigins) {
       }
       await updateIndexState(site, indexer.id)
       logger.debug(`Indexed ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
-      if (abortActiveIndex) return
+      if (tickController?.signal.aborted) return
     }
   } catch (e) {
     logger.error(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})

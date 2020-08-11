@@ -136,14 +136,21 @@
     },
     {
       "name": "bookmark",
-      "help": "Bookmark the current working directory or current page",
-      "usage": "bookmark [-f {name}] [{href}]",
+      "help": "Bookmark the current working directory or given url",
+      "usage": "bookmark [{href}] [-p/--public] [-t/--title {title}]",
       "autocomplete": "files",
       "options": [
         {
-          "name": "filename",
-          "abbr": "f",
-          "help": "Specify the name of the .goto file to save in bookmarks"
+          "name": "title",
+          "abbr": "t",
+          "help": "Specify the title of the bookmark"
+        },
+        {
+          "name": "public",
+          "abbr": "p",
+          "help": "Make the bookmark public",
+          "boolean": true,
+          "default": false
         }
       ]
     },

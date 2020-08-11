@@ -7,18 +7,6 @@ import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { EditBookmarkPopup } from '../com/edit-bookmark-popup.js'
 import bookmarksCSS from '../../css/views/bookmarks.css.js'
 
-function _href (bookmark) {
-  return bookmark?.stat?.metadata?.href
-}
-
-function _title (bookmark) {
-  return bookmark?.stat?.metadata?.title
-}
-
-function _pinned (bookmark) {
-  return bookmark?.stat?.metadata?.pinned
-}
-
 export class BookmarksView extends LitElement {
   static get properties () {
     return {
@@ -43,22 +31,19 @@ export class BookmarksView extends LitElement {
   }
 
   async load () {
-    var bookmarks = await beaker.hyperdrive.drive('hyper://private/').query({
-      type: 'file',
-      path: ['/bookmarks/*.goto']
-    })
-    bookmarks.sort((a, b) => _title(a).localeCompare(_title(b)))
+    var bookmarks = await beaker.bookmarks.list()
+    bookmarks.sort((a, b) => a.title.localeCompare(b.title))
     this.bookmarks = bookmarks
     console.log(this.bookmarks)
   }
 
   async bookmarkMenu (bookmark) {
     var items = [
-      {label: 'Open Link in New Tab', click: () => window.open(bookmark.stat.metadata.href)},
-      {label: 'Copy Link Address', click: () => writeToClipboard(bookmark.stat.metadata.href)},
-      {label: 'Edit', click: () => this.onClickEdit(bookmark)},
+      {label: 'Open Link in New Tab', click: () => window.open(bookmark.href)},
+      {label: 'Copy Link Address', click: () => writeToClipboard(bookmark.href)},
       {type: 'separator'},
-      {type: 'checkbox', checked: _pinned(bookmark), label: 'Pin to start page', click: () => this.onToggleBookmarkPinned(null, bookmark)},
+      {label: 'Edit', click: () => this.onClickEdit(bookmark)},
+      {type: 'checkbox', checked: bookmark.pinned, label: 'Pin to start page', click: () => this.onToggleBookmarkPinned(null, bookmark)},
       {type: 'separator'},
       {label: 'Delete', click: () => this.onClickRemove(bookmark)}
     ]
@@ -81,8 +66,8 @@ export class BookmarksView extends LitElement {
     var bookmarks = this.bookmarks
     if (bookmarks && this.filter) {
       bookmarks = bookmarks.filter(bookmark => (
-        _href(bookmark).toLowerCase().includes(this.filter)
-        || _title(bookmark).toLowerCase().includes(this.filter)
+        bookmark.href.toLowerCase().includes(this.filter)
+        || bookmark.title.toLowerCase().includes(this.filter)
       ))
     }
     return html`
@@ -104,7 +89,8 @@ export class BookmarksView extends LitElement {
   }
 
   renderBookmark (bookmark) {
-    var {href, title, pinned} = bookmark.stat.metadata
+    var {href, title} = bookmark
+    var isPrivate = bookmark.site.url.startsWith('hyper://private')
     return html`
       <a
         class="bookmark"
@@ -115,6 +101,9 @@ export class BookmarksView extends LitElement {
        <img class="favicon" src="asset:favicon:${href}">
        <div class="title">${title}</div>
        <div class="href">${href}</div>
+        <div class="info">
+          ${isPrivate ? 'Private' : 'Public'}
+        </div>
         <div class="ctrls">
           <button class="transparent" @click=${e => this.onClickBookmarkMenuBtn(e, bookmark)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>
@@ -142,18 +131,18 @@ export class BookmarksView extends LitElement {
       e.preventDefault()
       e.stopPropagation()
     }
-    if (_pinned(bookmark)) {
-      await beaker.hyperdrive.drive('hyper://private/').deleteMetadata(bookmark.path, ['pinned'])
+    if (bookmark.pinned) {
+      await beaker.bookmarks.add(Object.assign({}, bookmark, {pinned: false}))
     } else {
-      await beaker.hyperdrive.drive('hyper://private/').updateMetadata(bookmark.path, {pinned: '1'})
+      await beaker.bookmarks.add(Object.assign({}, bookmark, {pinned: true}))
     }
     this.load()
     emit(this, 'update-pins')
   }
 
-  async onClickEdit (file) {
+  async onClickEdit (bookmark) {
     try {
-      await EditBookmarkPopup.create(file)
+      await EditBookmarkPopup.create(bookmark)
       this.load()
     } catch (e) {
       // ignore
@@ -161,9 +150,9 @@ export class BookmarksView extends LitElement {
     }
   }
 
-  async onClickRemove (file) {
+  async onClickRemove (bookmark) {
     if (!confirm('Are you sure?')) return
-    await beaker.hyperdrive.drive('hyper://private/').unlink(file.path)
+    await beaker.bookmarks.remove(bookmark.href)
     toast.create('Bookmark removed', '', 10e3)
     this.load()
   }

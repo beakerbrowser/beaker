@@ -73,8 +73,8 @@ export class PagesView extends LitElement {
   render () {
     var pages = this.pages
     if (pages && this.filter) {
-      pages = pages.filter(bookmark => (
-        _title(bookmark).toLowerCase().includes(this.filter)
+      pages = pages.filter(page => (
+        _title(page).toLowerCase().includes(this.filter)
       ))
     }
     return html`
@@ -121,16 +121,16 @@ export class PagesView extends LitElement {
   // events
   // =
 
-  async onContextmenuPage (e, bookmark) {
+  async onContextmenuPage (e, page) {
     e.preventDefault()
     e.stopPropagation()
-    await this.pageMenu(bookmark)
+    await this.pageMenu(page)
   }
 
-  onClickPageMenuBtn (e, bookmark) {
+  onClickPageMenuBtn (e, page) {
     e.preventDefault()
     e.stopPropagation()
-    this.pageMenu(bookmark)
+    this.pageMenu(page)
   }
 
   async onClickRemove (file) {
