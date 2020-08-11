@@ -8,7 +8,6 @@ ${tooltipCSS}
 
 :host {
   display: block;
-  margin: 0 0 15px;
   border-bottom: 1px solid var(--border-color--light);
   background: var(--bg-color--default);
   padding: 10px 15px 10px;

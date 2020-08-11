@@ -56,33 +56,38 @@ header .title a {
   color: inherit;
 }
 
-nav a {
-  border-bottom: 1px solid var(--border-color--light);
-  border-right: 1px solid var(--border-color--light);
-  padding: 5px 10px;
-}
-
 nav {
+  background: var(--bg-color--default);
   font-size: 12px;
   padding: 10px;
-  margin: 10px;
   border-bottom: 1px solid var(--border-color--light);
-}
-
-nav a.nav-item:hover {
-  text-decoration: none;
-  cursor: pointer;
 }
 
 nav a.nav-item {
-  background: var(--bg-color--light);
-  color: var(--text-color--light);
-  border: 1px solid transparent;
+  padding: 2px 10px;
+  color: var(--text-color--default);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+nav a.nav-item:hover {
+  background: var(--bg-color--semi-light);
+  text-decoration: none;
 }
 
 nav a.nav-item.active {
-  background: var(--bg-color--default);
-  color: var(--text-color--default);
+  background: var(--bg-color--nav-highlighted);
+  color: var(--text-color--nav-highlighted);
+}
+
+.empty {
+  color: var(--text-color--light);
+  margin: 15px 5px 20px;
+}
+
+.empty .fas {
+  color: var(--text-color--pretty-light);
+  margin-right: 18px;
 }
 
 .activity-feed {

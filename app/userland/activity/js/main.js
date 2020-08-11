@@ -195,11 +195,6 @@ class ActivityApp extends LitElement {
         <span class="title">Discussion: ${this.renderFileTitle()}</span>
       </header>
       ${this.renderLoading()}
-      ${''/*TODO<nav>
-        ${navItem('summary', 'Summary')}
-        ${navItem('advanced', 'Advanced')}
-        <span></span>
-      </nav>*/}
       ${this.currentView === 'summary' ? html`
         ${this.fileInfo && this.fileInfo.isFile() ? html`
           <res-summary
@@ -215,17 +210,20 @@ class ActivityApp extends LitElement {
         ` : ''}
       <nav>
         <a
-          class="nav-item ${this.privateMode ? 'active' : ''}"
-          @click=${() => this.setPrivateMode(true)}
-        >Private</a>
-        <a
           class="nav-item ${!this.privateMode ? 'active' : ''}"
           @click=${() => this.setPrivateMode(false)}
         >Public</a>
+        <a
+          class="nav-item ${this.privateMode ? 'active' : ''}"
+          @click=${() => this.setPrivateMode(true)}
+        >Private</a>
       </nav>
       <div class="activity-feed">
         ${this.renderAnnotations()}
-        <comment-box @create-comment=${this.onCreateComment} profile-url=${this.profileUrl}></comment-box>
+        <comment-box
+          @create-comment=${this.onCreateComment}
+          profile-url=${this.privateMode ? 'hyper://private/' : this.profileUrl}
+        ></comment-box>
       </div>
       ` : ''}
       ${this.currentView === 'advanced' ? html`
@@ -256,6 +254,17 @@ class ActivityApp extends LitElement {
       const isPrivate = a.site.url.startsWith('hyper://private')
       return (this.privateMode && isPrivate) || (!this.privateMode && !isPrivate)
     })
+    if (visibleAnnotations.length === 0) {
+      if (this.privateMode) {
+        return html`
+          <div class="empty"><span class="fas fa-info"></span> Put whatever you want here, it's totally private.</div>
+        `
+      } else {
+        return html`
+          <div class="empty"><span class="fas fa-info"></span> Be the first to say something!</div>
+        `
+      }
+    }
     return html`
       ${repeat(visibleAnnotations, a => a.url, a => this.renderAnnotation(a))}
     `
