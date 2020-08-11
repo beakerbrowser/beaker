@@ -8,7 +8,7 @@ ${tooltipCSS}
 
 :host {
   display: block;
-  margin: 15px 0;
+  margin: 10px 0;
 }
 
 .summary {
@@ -66,6 +66,10 @@ a:hover {
 
 .thumb {
   margin-right: 8px !important;
+}
+
+.summary:not(.with-content) .thumb {
+  margin-right: 15px !important;
 }
 
 .thumb img {
