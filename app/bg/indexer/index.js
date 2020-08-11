@@ -552,6 +552,17 @@ export async function setNotificationIsRead (rowid, isRead) {
   }
 }
 
+export async function triggerSiteIndex (origin) {
+  try {
+    var release = await lock('beaker-indexer')
+    var myOrigins = await listMyOrigins()
+    await indexSite(origin, myOrigins)
+  } finally {
+    release()
+    setTimeout(tick, TICK_INTERVAL)
+  }
+}
+
 // internal methods
 // =
 
@@ -561,39 +572,11 @@ export async function setNotificationIsRead (rowid, isRead) {
 async function tick () {
   try {
     var release = await lock('beaker-indexer')
-
     var myOrigins = await listMyOrigins()
 
     var originsToIndex = await listOriginsToIndex()
     for (let origin of originsToIndex) {
-      try {
-        let site = await loadSite(origin)
-        for (let indexer of INDEXES) {
-          let idxState = site.indexes[indexer.id]
-          if (site.current_version === idxState.last_indexed_version) {
-            continue
-          }
-
-          logger.silly(`Indexing ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
-          let updates = await site.listUpdates(indexer.id)
-          logger.silly(`${updates.length} updates found for ${origin} [ ${indexer.id} ]`)
-          if (updates.length === 0) continue
-          for (let update of updates) {
-            if (update.remove) {
-              let res = await db('resources').del().where({site_rowid: site.rowid, path: update.path})
-              if (+res > 0) {
-                logger.silly(`Deindexed ${site.origin}${update.path} [${indexer.id}]`, {site: site.origin, path: update.path})
-              }
-            } else {
-              await indexer.index(db, site, update, myOrigins)
-            }
-          }
-          await updateIndexState(site, indexer.id)
-          logger.debug(`Indexed ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
-        }
-      } catch (e) {
-        logger.error(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
-      }
+      await indexSite(origin, myOrigins)
     }
 
     var originsToDeindex = await listOriginsToDeindex()
@@ -610,6 +593,43 @@ async function tick () {
   } finally {
     release()
     setTimeout(tick, TICK_INTERVAL)
+  }
+}
+
+async function indexSite (origin, myOrigins) {
+  origin = normalizeOrigin(origin)
+  try {
+    let site = await loadSite(origin)
+    for (let indexer of INDEXES) {
+      let idxState = site.indexes[indexer.id]
+      if (site.current_version === idxState.last_indexed_version) {
+        continue
+      }
+
+      logger.silly(`Indexing ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
+      let updates = await site.listUpdates(indexer.id)
+      logger.silly(`${updates.length} updates found for ${origin} [ ${indexer.id} ]`)
+      if (updates.length === 0) continue
+      for (let update of updates) {
+        if (update.remove) {
+          let res = await db('resources').select('rowid').where({
+            site_rowid: site.rowid,
+            path: update.path
+          })
+          if (res[0]) await db('resources_data').del().where({resource_rowid: res[0].rowid})
+          res = await db('resources').del().where({site_rowid: site.rowid, path: update.path})
+          if (+res > 0) {
+            logger.silly(`Deindexed ${site.origin}${update.path} [${indexer.id}]`, {site: site.origin, path: update.path})
+          }
+        } else {
+          await indexer.index(db, site, update, myOrigins)
+        }
+      }
+      await updateIndexState(site, indexer.id)
+      logger.debug(`Indexed ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
+    }
+  } catch (e) {
+    logger.error(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   }
 }
 
@@ -739,4 +759,19 @@ async function updateIndexState (site, index) {
     last_indexed_version: site.current_version,
     last_indexed_ts: Date.now()
   })
+}
+
+/**
+ * @param {String} str 
+ * @returns {String}
+ */
+function normalizeOrigin (str) {
+  try {
+    let urlp = new URL(str)
+    return urlp.protocol + '//' + urlp.hostname
+  } catch {
+    // assume hyper, if this fails then bomb out
+    let urlp = new URL('hyper://' + str)
+    return urlp.protocol + '//' + urlp.hostname
+  }
 }
