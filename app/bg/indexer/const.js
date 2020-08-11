@@ -21,11 +21,11 @@ export const METADATA_KEYS = {
   content: 'content',
   link: 'link',
   draft: 'beaker/draft',
-  href: 'beaker/href',
+  href: 'href',
   parent: 'beaker/parent',
   pinned: 'beaker/pinned',
   subject: 'beaker/subject',
-  title: 'beaker/title'
+  title: 'title'
 }
 export const NOTIFICATION_TYPES = {
   bookmark: 'beaker/notification/bookmark',

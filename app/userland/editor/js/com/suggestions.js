@@ -32,7 +32,7 @@ export class MarkdownSuggestions {
     }))
     const suggestions = queryResults.map(s => {
       const type = s.metadata.type ? s.metadata.type.slice(7) : 'unknown'
-      const title = s.metadata['beaker/title'] || ''
+      const title = s.metadata.title || ''
       const detail = s.content ? s.content.slice(0, 250) + '...' : ''
       const prefix = title ? `(${type}) - ${title}` : `(${type})`
       // Render the detail in the label because Intellisense rendering adds too much spacing.

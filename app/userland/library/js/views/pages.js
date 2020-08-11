@@ -5,7 +5,7 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import pagesCSS from '../../css/views/pages.css.js'
 
 function _title (page) {
-  return page?.metadata?.title || page?.metadata?.['beaker/title'] || 'Untitled'
+  return page?.metadata?.title || 'Untitled'
 }
 
 function _draft (page) {

@@ -216,17 +216,17 @@ export class QueryView extends LitElement {
     var isBookmark = result.index === 'beaker/index/bookmarks'
     var href = undefined
     switch (result.index) {
-      case 'beaker/index/bookmarks': href = result.metadata['beaker/href']; break
+      case 'beaker/index/bookmarks': href = result.metadata.href; break
     }
     href = href || result.url
-    var title = result.metadata['beaker/title'] || result.metadata.title || result.url.split('/').pop()
+    var title = result.metadata.title || result.url.split('/').pop()
     return html`
       <div class="result row">
         <a class="thumb" href=${href} title=${result.site.title}>
           ${this.renderResultThumb(result)}
         </a>
         <div class="info">
-          <div class="title"><a href=${href}>${renderMatchText(result, 'beaker/title') || title}</a></div>
+          <div class="title"><a href=${href}>${renderMatchText(result, 'title') || title}</a></div>
           <div class="origin">
             ${isBookmark ? html`
               <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
@@ -270,7 +270,7 @@ export class QueryView extends LitElement {
     var href = undefined
     switch (result.index) {
       case 'beaker/index/comments': href = result.metadata['beaker/subject']; break
-      case 'beaker/index/bookmarks': href = result.metadata['beaker/href']; break
+      case 'beaker/index/bookmarks': href = result.metadata.href; break
     }
     href = href || result.url
 
@@ -281,7 +281,7 @@ export class QueryView extends LitElement {
       } catch {}
     }
 
-    var title = result.metadata['beaker/title'] || ({
+    var title = result.metadata['title'] || ({
       'beaker/index/bookmarks': niceDate(result.ctime),
       'beaker/index/blogposts': niceDate(result.ctime),
       'beaker/index/microblogposts': niceDate(result.ctime),
@@ -547,8 +547,8 @@ async function getNotificationSubject (url) {
   }
   try {
     let item = await beaker.indexer.get(url)
-    if (item.metadata['beaker/title']) {
-      return `"${item.metadata['beaker/title']}"`
+    if (item.metadata.title) {
+      return `"${item.metadata.title}"`
     }
     switch (item.index) {
       case 'beaker/index/comments': return 'your comment'

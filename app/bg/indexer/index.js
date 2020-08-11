@@ -264,7 +264,7 @@ export async function search (q = '', opts) {
     .innerJoin('resources_data', 'resources_data.rowid', 'resources_data_fts.rowid')
     .innerJoin('resources', 'resources.rowid', 'resources_data.resource_rowid')
     .innerJoin('sites', 'sites.rowid', 'resources.site_rowid')
-    .whereIn('resources_data.key', ['content', 'beaker/title'])
+    .whereIn('resources_data.key', ['content', 'title'])
     .whereRaw(`resources_data_fts.value MATCH ?`, [q])
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)

@@ -94,7 +94,7 @@ class ActivityApp extends LitElement {
   }
 
   get fileTitle () {
-    return this.fileInfo?.metadata?.['beaker/title'] || this.fileInfo?.metadata?.title
+    return this.fileInfo?.metadata?.title
   }
 
   get typeLabel () {
@@ -280,10 +280,10 @@ class ActivityApp extends LitElement {
       'beaker/index/comments': 'commented'
     })[annotation.index]
     var title = ({
-      'beaker/index/bookmarks': annotation.metadata['beaker/title'],
-      'beaker/index/blogposts': annotation.metadata['beaker/title'] || 'a blogpost',
+      'beaker/index/bookmarks': annotation.metadata.title,
+      'beaker/index/blogposts': annotation.metadata.title || 'a blogpost',
       'beaker/index/microblogposts': 'a microblog post',
-      'beaker/index/pages': annotation.metadata['beaker/title'] || 'a web page'
+      'beaker/index/pages': annotation.metadata.title || 'a web page'
     })[annotation.index]
 
     return html`

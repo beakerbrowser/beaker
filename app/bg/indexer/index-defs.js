@@ -48,8 +48,6 @@ export const INDEXES = [
       return [
         /* resources_data.key, resources_data.value */
         ...Object.entries(update.metadata).map(([key, value]) => {
-          if (key === 'href') key = METADATA_KEYS.href
-          if (key === 'title') key = METADATA_KEYS.title
           if (key === 'pinned') key = METADATA_KEYS.pinned
           return [key, value]
         })

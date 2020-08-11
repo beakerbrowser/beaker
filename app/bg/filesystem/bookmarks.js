@@ -127,8 +127,8 @@ export async function migrateBookmarksFromSqlite () {
 function massageBookmark (result) {
   return {
     bookmarkUrl: result.url,
-    href: normalizeUrl(result.metadata['beaker/href']),
-    title: result.metadata['beaker/title'] || result.metadata['beaker/href'],
+    href: normalizeUrl(result.metadata.href),
+    title: result.metadata.title || result.metadata.href,
     pinned: result.metadata['beaker/pinned'] === '1',
     site: result.site
   }
