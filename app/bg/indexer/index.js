@@ -559,7 +559,6 @@ export async function triggerSiteIndex (origin) {
     await indexSite(origin, myOrigins)
   } finally {
     release()
-    setTimeout(tick, TICK_INTERVAL)
   }
 }
 
