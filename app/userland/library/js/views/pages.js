@@ -5,11 +5,11 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import pagesCSS from '../../css/views/pages.css.js'
 
 function _title (page) {
-  return page?.stat?.metadata?.title
+  return page?.metadata?.title || page?.metadata?.['beaker/title'] || 'Untitled'
 }
 
 function _draft (page) {
-  return !!page?.stat?.metadata?.['beaker/draft']
+  return !!page?.metadata?.['beaker/draft']
 }
 
 export class PagesView extends LitElement {
@@ -36,22 +36,23 @@ export class PagesView extends LitElement {
   }
 
   async load () {
-    var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
-    var pages = await beaker.hyperdrive.query({
-      type: 'file',
-      drive: ['hyper://private', addressBook.profiles[0].key],
-      path: ['/*', '/*/*', '/*/*/*', '/*/*/*/*'],
-      metadata: {type: 'beaker/page'}
+    var profile = await beaker.browser.getProfile()
+    var pages = await beaker.indexer.list({
+      filter: {
+        index: 'beaker/index/pages',
+        site: ['hyper://private', `hyper://${profile.key}`]
+      },
+      limit: 1e9
     })
+    console.log(pages)
     pages.sort((a, b) => _title(a).localeCompare(_title(b)))
     this.pages = pages
-    console.log(this.pages)
   }
 
   async pageMenu (page) {
     var items = [
-      {label: 'Open Link in New Tab', click: () => window.open(page.stat.metadata.href)},
-      {label: 'Copy Link Address', click: () => writeToClipboard(page.stat.metadata.href)},
+      {label: 'Open Link in New Tab', click: () => window.open(page.metadata.href)},
+      {label: 'Copy Link Address', click: () => writeToClipboard(page.metadata.href)},
       {type: 'separator'},
       {label: 'Delete', click: () => this.onClickRemove(page)}
     ]
@@ -97,7 +98,7 @@ export class PagesView extends LitElement {
 
   renderPage (page) {
     var title = _title(page)
-    var isPrivate = page.origin.url.startsWith('hyper://private/')
+    var isPrivate = page.site.url.startsWith('hyper://private')
     return html`
       <a
         class="page"
@@ -105,7 +106,7 @@ export class PagesView extends LitElement {
         title=${title || ''}
         @contextmenu=${e => this.onContextmenuPage(e, page)}
       >
-        <img class="favicon" src="asset:favicon:${page.origin.url}">
+        <img class="favicon" src="asset:favicon:${page.site.url}">
         <div class="title">${title}</div>
         <div class="info">
           ${isPrivate ? 'Private' : 'Public'}
