@@ -124,6 +124,21 @@ export async function get (url) {
   return result
 }
 
+/**
+ * @param {Object} [opts]
+ * @param {Object} [opts.filter]
+ * @param {String|Array<String>} [opts.filter.site]
+ * @param {String|Array<String>} [opts.filter.index]
+ * @param {Object} [opts.filter.ctime]
+ * @param {Number} [opts.filter.ctime.before]
+ * @param {Number} [opts.filter.ctime.after]
+ * @param {String} [opts.filter.linksTo]
+ * @param {String} [opts.sort]
+ * @param {Number} [opts.offset]
+ * @param {Number} [opts.limit]
+ * @param {Boolean} [opts.reverse]
+ * @returns {Promise<ResourceDescription[]>}
+ */
 export async function list (opts) {
   var sep = `[>${Math.random()}<]`
   var query = db('sites')
@@ -208,6 +223,21 @@ export async function list (opts) {
   })
 }
 
+/**
+ * @param {String} [q]
+ * @param {Object} [opts]
+ * @param {Object} [opts.filter]
+ * @param {String|Array<String>} [opts.filter.site]
+ * @param {String|Array<String>} [opts.filter.index]
+ * @param {Object} [opts.filter.ctime]
+ * @param {Number} [opts.filter.ctime.before]
+ * @param {Number} [opts.filter.ctime.after]
+ * @param {String} [opts.sort]
+ * @param {Number} [opts.offset]
+ * @param {Number} [opts.limit]
+ * @param {Boolean} [opts.reverse]
+ * @returns {Promise<ResourceDescription[]>}
+ */
 export async function search (q = '', opts) {
   // prep search terms
   q = q
@@ -322,6 +352,24 @@ export async function search (q = '', opts) {
   return results
 }
 
+/**
+ * @param {Object} [opts]
+ * @param {Object} [opts.filter]
+ * @param {String|Array<String>} [opts.filter.site]
+ * @param {String|Array<String>} [opts.filter.subject]
+ * @param {String|Array<String>} [opts.filter.index]
+ * @param {String|Array<String>} [opts.filter.type]
+ * @param {Object} [opts.filter.ctime]
+ * @param {Number} [opts.filter.ctime.before]
+ * @param {Number} [opts.filter.ctime.after]
+ * @param {String} [opts.filter.search]
+ * @param {Boolean} [opts.filter.isRead]
+ * @param {String} [opts.sort]
+ * @param {Number} [opts.offset]
+ * @param {Number} [opts.limit]
+ * @param {Boolean} [opts.reverse]
+ * @returns {Promise<ResourceDescription[]>}
+ */
 export async function listNotifications (opts) {
   var sep = `[>${Math.random()}<]`
   var query = db('notifications')
@@ -432,6 +480,19 @@ export async function listNotifications (opts) {
   })
 }
 
+/**
+ * @param {Object} [opts]
+ * @param {Object} [opts.filter]
+ * @param {String|Array<String>} [opts.filter.site]
+ * @param {String|Array<String>} [opts.filter.subject]
+ * @param {String|Array<String>} [opts.filter.index]
+ * @param {String|Array<String>} [opts.filter.type]
+ * @param {Object} [opts.filter.ctime]
+ * @param {Number} [opts.filter.ctime.before]
+ * @param {Number} [opts.filter.ctime.after]
+ * @param {Boolean} [opts.filter.isRead]
+ * @returns {Promise<Number>}
+ */
 export async function countNotifications (opts) {
   var query = db('notifications')
     .select(db.raw(`count(notifications.rowid) as count`))
@@ -478,6 +539,11 @@ export async function countNotifications (opts) {
   return rows[0].count
 }
 
+/**
+ * @param {Number|String} rowid
+ * @param {Boolean} isRead
+ * @returns {Promise<void>}
+ */
 export async function setNotificationIsRead (rowid, isRead) {
   if (rowid === 'all') {
     await db('notifications').update({is_read: isRead ? 1 : 0})

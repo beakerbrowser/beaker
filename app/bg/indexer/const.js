@@ -78,7 +78,12 @@ export const NOTIFICATION_TYPES = {
  * @prop {String} site.title
  * @prop {Object} metadata
  * @prop {String[]} links
- * @prop {String} content
+ * @prop {String} [content]
+ * @prop {Object} [notification]
+ * @prop {Number} [notification.id]
+ * @prop {String} [notification.type]
+ * @prop {String} [notification.subject]
+ * @prop {Boolean} [notification.isRead]
  */
 
  // util funcs
