@@ -6,6 +6,8 @@ import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
 import spinnerCSS from './spinner.css'
 import * as bg from './bg-process-rpc'
 
+const ANIMATIONS_ENABLED = false
+
 class ShellWindowTabs extends LitElement {
   static get properties () {
     return {
@@ -161,7 +163,7 @@ class ShellWindowTabs extends LitElement {
   }
 
   updated (changedProperties) {
-    if (changedProperties.has('tabs')) {
+    if (ANIMATIONS_ENABLED && changedProperties.has('tabs')) {
       let oldVal = changedProperties.get('tabs') || []
       let [oldLen, newLen] = [oldVal.length, this.tabs.length]
       if (newLen > oldLen) {
@@ -180,7 +182,7 @@ class ShellWindowTabs extends LitElement {
   }
 
   async shouldUpdate (changedProperties) {
-    if (changedProperties.has('tabs')) {
+    if (ANIMATIONS_ENABLED && changedProperties.has('tabs')) {
       let oldVal = changedProperties.get('tabs') || []
       let [oldLen, newLen] = [oldVal.length, this.tabs.length]
       if (newLen < oldLen) {
