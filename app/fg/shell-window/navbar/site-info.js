@@ -14,6 +14,8 @@ class NavbarSiteInfo extends LitElement {
       siteIcon: {type: String},
       siteTrust: {type: String},
       driveDomain: {type: String},
+      driveIdent: {type: String},
+      isSubscribed: {type: Boolean, attribute: 'is-subscribed'},
       writable: {type: Boolean},
       isPressed: {type: Boolean},
       hideOrigin: {type: Boolean, attribute: 'hide-origin'},
@@ -29,6 +31,8 @@ class NavbarSiteInfo extends LitElement {
     this.siteIcon = ''
     this.siteTrust = ''
     this.driveDomain = ''
+    this.driveIdent = ''
+    this.isSubscribed = false
     this.writable = false
     this.isPressed = false
     this.hideOrigin = false
@@ -49,6 +53,10 @@ class NavbarSiteInfo extends LitElement {
     } catch (e) {
       return ''
     }
+  }
+
+  get isHyperdrive () {
+    return this.url.startsWith('hyper://')
   }
 
   // rendering
@@ -82,7 +90,23 @@ class NavbarSiteInfo extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <button class=${classMap({[this.siteTrust]: true, pressed: this.isPressed, 'hide-origin': this.hideOrigin, rounded: this.rounded})} @click=${this.onClickButton}>
         ${innerHTML}
+        ${this.renderSubscribeBtn()}
       </button>
+    `
+  }
+
+  renderSubscribeBtn () {
+    if (!this.isHyperdrive || ['system', 'profile'].includes(this.driveIdent)) {
+      return ''
+    }
+    return html`
+      <span class="subscribe-btn" @click=${this.onClickSubscribe}>
+        ${this.isSubscribed ? html`
+          <i class="fa fa-check"></i> Subscribed
+        ` : html`
+          <i class="fa fa-rss"></i> Subscribe
+        `}
+      </span>
     `
   }
 
@@ -103,6 +127,22 @@ class NavbarSiteInfo extends LitElement {
     })
     this.isPressed = false
     this.lastButtonClick = Date.now()
+  }
+
+  async onClickSubscribe (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    if (this.isSubscribed) {
+      await bg.subscriptions.remove(`hyper://${this.hostname}`)
+    } else {
+      let profile = await bg.beakerBrowser.getProfile()
+      await bg.subscriptions.add({
+        href: `hyper://${this.hostname}`,
+        title: this.siteTitle,
+        site: `hyper://${profile.key}`
+      })
+    }
+    bg.views.refreshState('active')
   }
 }
 NavbarSiteInfo.styles = [buttonResetCSS, css`
@@ -233,5 +273,32 @@ button.hidden {
 .untrusted {
   color: var(--text-color--cert--untrusted);
 }
+
+.subscribe-btn {
+  border: 1px solid var(--border-color--location-input);
+  background: var(--bg-color--location-input);
+  border-radius: 4px;
+  line-height: 1;
+  margin: 0 2px;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  padding: 3px 7px 2px;
+  cursor: pointer;
+}
+
+.trusted .subscribe-btn {
+  border-color: var(--border-color--location-input--trusted);
+}
+
+.subscribe-btn:hover {
+  background: var(--)
+}
+
+.subscribe-btn i {
+  font-size: 9px;
+  position: relative;
+  top: -1px;
+}
+
 `]
 customElements.define('shell-window-navbar-site-info', NavbarSiteInfo)

@@ -8,14 +8,16 @@ export const FILE_TYPES = {
   bookmark: 'beaker/bookmark',
   comment: 'beaker/comment',
   microblogpost: 'beaker/microblogpost',
-  page: 'beaker/page'
+  page: 'beaker/page',
+  subscription: 'beaker/subscription'
 }
 export const INDEX_IDS = {
   blogposts: 'beaker/index/blogposts',
   bookmarks: 'beaker/index/bookmarks',
   comments: 'beaker/index/comments',
   microblogposts: 'beaker/index/microblogposts',
-  pages: 'beaker/index/pages'
+  pages: 'beaker/index/pages',
+  subscriptions: 'beaker/index/subscriptions'
 }
 export const METADATA_KEYS = {
   content: 'content',
@@ -31,7 +33,8 @@ export const NOTIFICATION_TYPES = {
   bookmark: 'beaker/notification/bookmark',
   comment: 'beaker/notification/comment',
   mention: 'beaker/notification/mention',
-  reply: 'beaker/notification/reply'
+  reply: 'beaker/notification/reply',
+  subscribe: 'beaker/notification/subscribe'
 }
 
 // typedefs

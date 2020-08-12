@@ -3,6 +3,7 @@
 
 body {
   --bg-color--main: #fff;
+  --bg-color--light: #f8f8fa;
   --bg-color--nav--selected: #f0f0f4;
   --text-color--default: #333;
   --text-color--link: blue;
@@ -22,6 +23,7 @@ body {
 @media (prefers-color-scheme: dark) {
   body {
     --bg-color--main: #334;
+    --bg-color--light: #445;
     --bg-color--nav--selected: #446;
     --text-color--default: #ccd;
     --text-color--link: #88c;

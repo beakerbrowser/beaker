@@ -1,5 +1,6 @@
 const isNode = typeof window === 'undefined'
 const parse = isNode ? require('url').parse : browserParse
+import { slugify } from './strings'
 
 export const isDatHashRegex = /^[a-z0-9]{64}/i
 const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
@@ -65,4 +66,25 @@ export function parseDriveUrl (str, parseQS) {
 
 function browserParse (str) {
   return new URL(str)
+}
+
+export function createResourceSlug (href, title) {
+  var slug
+  try {
+    var hrefp = new URL(href)
+    if (hrefp.pathname === '/' && !hrefp.search && !hrefp.hash) {
+      // at the root path - use the hostname for the filename
+      slug = slugify(hrefp.hostname)
+    } else if (typeof title === 'string' && !!title.trim()) {
+      // use the title if available on subpages
+      slug = slugify(title.trim())
+    } else {
+      // use parts of the url
+      slug = slugify(hrefp.hostname + hrefp.pathname + hrefp.search + hrefp.hash)
+    }
+  } catch (e) {
+    // weird URL, just use slugified version of it
+    slug = slugify(href)
+  }
+  return slug.toLowerCase()
 }

@@ -26,6 +26,7 @@ import { findWebContentsParentWindow } from './lib/electron'
 import { getEnvVar } from './lib/env'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
+import * as subscriptions from './filesystem/subscriptions'
 import * as toolbar from './filesystem/toolbar'
 import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
 
@@ -282,10 +283,14 @@ export async function getCertificate (url) {
   } else if (url.startsWith('beaker:')) {
     return {type: 'beaker'}
   } else if (url.startsWith('hyper://')) {
-    let ident = await getDriveIdent(url, true)
+    let [ident, subscribers] = await Promise.all([
+      getDriveIdent(url, true),
+      subscriptions.listNetworkFor(url)
+    ])
     return {
       type: 'hyperdrive',
-      ident
+      ident,
+      subscribers: subscribers.map(s => s.site)
     }
   }
 }

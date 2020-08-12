@@ -347,12 +347,13 @@ main {
 .twocol .sidebar section {
   position: sticky;
   top: 0px;
+  padding-top: 10px;
   margin-bottom: 20px;
   overflow: hidden;
 }
 
 .twocol .sidebar section h3 {
-  margin: 16px 0 3px;
+  margin: 3px 0 3px;
   color: var(--text-color--light);
   font-size: 13px;
   font-weight: bold;

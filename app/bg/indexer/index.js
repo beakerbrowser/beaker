@@ -32,7 +32,7 @@ import * as filesystem from '../filesystem/index'
 import * as drives from '../hyper/drives'
 import * as logLib from '../logger'
 const logger = logLib.get().child({category: 'indexer'})
-import { TICK_INTERVAL, READ_TIMEOUT, METADATA_KEYS, parseUrl } from './const'
+import { TICK_INTERVAL, READ_TIMEOUT, METADATA_KEYS, INDEX_IDS, parseUrl } from './const'
 import { INDEXES } from './index-defs'
 import lock from '../../lib/lock'
 import { timer } from '../../lib/time'
@@ -466,8 +466,8 @@ export async function listNotifications (opts) {
       links: [],
       content: undefined
     }
-    var dataKeys = row.data_keys.split(sep)
-    var dataValues = row.data_values.split(sep)
+    var dataKeys = row?.data_keys?.split(sep) || []
+    var dataValues = row?.data_values?.split(sep) || []
     for (let i = 0; i < dataKeys.length; i++) {
       let key = dataKeys[i]
       if (key === METADATA_KEYS.content) {
@@ -583,12 +583,17 @@ async function tick () {
       if (tickController.signal.aborted) return
     }
 
-    var originsToDeindex = await listOriginsToDeindex()
+    var originsToDeindex = await listOriginsToDeindex(originsToIndex)
     for (let origin of originsToDeindex) {
       try {
-        let siteRecord = await db('sites').select('*').where({origin})
+        let siteRecord = (await db('sites').select('rowid', 'origin').where({origin}))[0]
+        let resourceRecords = await db('resources').select('rowid').where({site_rowid: siteRecord.rowid})
+        for (let resource of resourceRecords) {
+          await db('resources_data').del().where({resource_rowid: resource.rowid})
+        }
         await db('resources').del().where({site_rowid: siteRecord.rowid})
-        await db('site_subscriptions').del().where({site_rowid: siteRecord.rowid})
+        await db('notifications').del().where({site_rowid: siteRecord.rowid})
+        await db('site_indexes').del().where({site_rowid: siteRecord.rowid})
         logger.debug(`Deindexed ${siteRecord.origin}/*`, {site: siteRecord.origin})
       } catch (e) {
         logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
@@ -657,15 +662,23 @@ async function listMyOrigins () {
 async function listOriginsToIndex () {
   var fs = filesystem.get()
   var [drivesJson, addressBookJson] = await Promise.all([
-    fs.pda.readFile('/drives.json', 'json'),
+    {},//TODO wanted? fs.pda.readFile('/drives.json', 'json'),
     fs.pda.readFile('/address-book.json', 'json')
   ])
-  return [
+  var subscriptions = await list({
+    filter: {
+      index: INDEX_IDS.subscriptions,
+      site: ['hyper://private', ...addressBookJson.profiles.map(item => 'hyper://' + item.key)]
+    },
+    limit: 1e9
+  })
+  var origins = new Set([
     'hyper://private',
     ...addressBookJson.profiles.map(item => 'hyper://' + item.key),
-    ...addressBookJson.contacts.map(item => 'hyper://' + item.key),
-    ...drivesJson.drives.map(item => 'hyper://' + item.key)
-  ]
+    ...subscriptions.map(sub => normalizeOrigin(sub.metadata[METADATA_KEYS.href])),
+    // ...drivesJson.drives.map(item => 'hyper://' + item.key) TODO wanted?
+  ])
+  return Array.from(origins)
 }
 
 /**
@@ -748,10 +761,16 @@ async function loadSite (origin) {
 }
 
 /**
+ * @param {String[]} originsToIndex
  * @returns {Promise<String[]>}
  */
-async function listOriginsToDeindex () {
-  return [] // TODO
+async function listOriginsToDeindex (originsToIndex) {
+  var indexedSites = await db('sites')
+    .select('sites.origin')
+    .innerJoin('site_indexes', 'sites.rowid', 'site_indexes.site_rowid')
+    .groupBy('sites.origin')
+  // ^ we use the inner join to only get sites with indexing state
+  return indexedSites.filter(row => !originsToIndex.includes(row.origin)).map(row => row.origin)
 }
 
 /**

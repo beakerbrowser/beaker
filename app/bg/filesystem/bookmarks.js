@@ -1,4 +1,5 @@
-import { joinPath, slugify } from '../../lib/strings.js'
+import { joinPath } from '../../lib/strings.js'
+import { createResourceSlug } from '../../lib/urls'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
 import { INDEX_IDS, METADATA_KEYS, FILE_TYPES } from '../indexer/const'
@@ -35,7 +36,7 @@ export async function get (href) {
       site: ['hyper://private', filesystem.getProfileUrl()],
       linksTo: href
     },
-    limit: 1e9
+    limit: 1
   })
   if (results[0]) {
     return massageBookmark(results[0])
@@ -84,7 +85,7 @@ export async function add ({href, title, pinned, site}) {
   }
 
   // new bookmark
-  var slug = createBookmarkSlug(href, title)
+  var slug = createResourceSlug(href, title)
   var filename = await filesystem.getAvailableName('/bookmarks', slug, 'goto', drive) // avoid collisions
   var path = joinPath('/bookmarks', filename)
   await filesystem.ensureDir('/bookmarks', drive)
@@ -148,25 +149,4 @@ var indexFileRe = /\/(index\.(htm|html|md))?$/i
 function isSameUrl (a, b) {
   if (a === b) return true
   return a.replace(indexFileRe, '') === b.replace(indexFileRe, '')
-}
-
-function createBookmarkSlug (href, title) {
-  var slug
-  try {
-    var hrefp = new URL(href)
-    if (hrefp.pathname === '/' && !hrefp.search && !hrefp.hash) {
-      // at the root path - use the hostname for the filename
-      slug = slugify(hrefp.hostname)
-    } else if (typeof title === 'string' && !!title.trim()) {
-      // use the title if available on subpages
-      slug = slugify(title.trim())
-    } else {
-      // use parts of the url
-      slug = slugify(hrefp.hostname + hrefp.pathname + hrefp.search + hrefp.hash)
-    }
-  } catch (e) {
-    // weird URL, just use slugified version of it
-    slug = slugify(href)
-  }
-  return slug.toLowerCase()
 }

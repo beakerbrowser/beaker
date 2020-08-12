@@ -131,5 +131,26 @@ export const INDEXES = [
       /* resources_data.key, notification type */
       [METADATA_KEYS.link, NOTIFICATION_TYPES.mention]
     ]
-  })
+  }),
+
+  new Indexer({
+    id: INDEX_IDS.subscriptions,
+    title: 'Subscriptions',
+    filter (update) {
+      return update.path.endsWith('.goto') && update.metadata.type === FILE_TYPES.subscription
+    },
+    async getData (site, update) {
+      return [
+        /* resources_data.key, resources_data.value */
+        ...Object.entries(update.metadata).map(([key, value]) => {
+          if (key === 'title') key = METADATA_KEYS.title
+          return [key, value]
+        })
+      ]
+    },
+    notifications: [
+      /* resources_data.key, notification type */
+      [METADATA_KEYS.href, NOTIFICATION_TYPES.subscribe]
+    ]
+  }),
 ]

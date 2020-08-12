@@ -18,6 +18,7 @@ import * as historyDb from '../../dbs/history'
 import * as folderSyncDb from '../../dbs/folder-sync'
 import * as filesystem from '../../filesystem/index'
 import * as bookmarks from '../../filesystem/bookmarks'
+import * as subscriptions from '../../filesystem/subscriptions'
 import hyper from '../../hyper/index'
 
 const ERR_ABORTED = -3
@@ -65,7 +66,7 @@ const STATE_VARS = [
   'siteIcon',
   'siteTrust',
   'driveDomain',
-  'isSystemDrive',
+  'driveIdent',
   'writable',
   'folderSyncPath',
   'peers',
@@ -75,6 +76,7 @@ const STATE_VARS = [
   // 'isActive', tab sends this
   // 'isPinned', tab sends this
   'isBookmarked',
+  'isSubscribed',
   'isLoading',
   'isReceivingAssets',
   'canGoBack',
@@ -141,6 +143,7 @@ export class Pane extends EventEmitter {
     this.folderSyncPath = undefined // current folder sync path
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
+    this.isSubscribed = false // is the active site subscribed?
     this.driveInfo = null // metadata about the site if viewing a hyperdrive
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.wasDriveTimeout = false // did the last navigation result in a timed-out hyperdrive?
@@ -218,10 +221,8 @@ export class Pane extends EventEmitter {
         if (ident.system) {
           return 'My Private Site'
         }
-        if (this.driveInfo.writable || ident.contact) {
-          if (this.driveInfo.title) {
-            return this.driveInfo.title
-          }
+        if (this.driveInfo.title) {
+          return this.driveInfo.title
         }
       }
       if (urlp.protocol === 'beaker:') {
@@ -252,10 +253,10 @@ export class Pane extends EventEmitter {
   get siteIcon () {
     if (this.driveInfo) {
       var ident = this.driveInfo.ident || {}
-      if (ident.contact || ident.profile) {
+      if (ident.profile) {
         return 'fas fa-user-circle'
       }
-      if (this.driveInfo.writable) {
+      if (this.driveInfo.writable || this.isSubscribed) {
         return 'fas fa-check-circle'
       }
     }
@@ -266,7 +267,7 @@ export class Pane extends EventEmitter {
     if (url.startsWith('beaker:')) {
       return 'beaker-logo'
     }
-    return 'fas fa-info-circle'
+    // return 'fas fa-info-circle'
   }
 
   get siteTrust () {
@@ -282,7 +283,7 @@ export class Pane extends EventEmitter {
         return 'untrusted'
       }
       if (urlp.protocol === 'hyper:' && this.driveInfo) {
-        if (this.driveInfo.writable || this.driveInfo.ident.internal || this.driveInfo.ident.contact) {
+        if (this.driveInfo.writable || this.isSubscribed) {
           return 'trusted'
         }
       }
@@ -295,8 +296,10 @@ export class Pane extends EventEmitter {
     return _get(this.driveInfo, 'domain', '')
   }
 
-  get isSystemDrive () {
-    return _get(this.driveInfo, 'ident.system', false)
+  get driveIdent () {
+    if (this.driveInfo?.ident?.system) return 'system'
+    if (this.driveInfo?.ident?.profile) return 'profile'
+    return ''
   }
 
   get writable () {
@@ -610,6 +613,7 @@ export class Pane extends EventEmitter {
   async refreshState () {
     await Promise.all([
       this.fetchIsBookmarked(true),
+      this.fetchIsSubscribed(true),
       this.fetchDriveInfo(true)
     ])
     this.emitUpdateState()
@@ -620,6 +624,17 @@ export class Pane extends EventEmitter {
     this.isBookmarked = !!(await bookmarks.get(this.url))
     if (this.isBookmarked && !wasBookmarked) {
       this.captureScreenshot()
+    }
+    if (!noEmit) {
+      this.emitUpdateState()
+    }
+  }
+
+  async fetchIsSubscribed (noEmit = false) {
+    if (this.url.startsWith('hyper://')) {
+      this.isSubscribed = !!(await subscriptions.get(this.origin))
+    } else {
+      this.isSubscribed = false
     }
     if (!noEmit) {
       this.emitUpdateState()
@@ -720,8 +735,11 @@ export class Pane extends EventEmitter {
     this.isReceivingAssets = true
     this.favicons = null
     this.frameUrls = {[this.mainFrameId]: url} // drop all non-main-frame URLs
-    await this.fetchIsBookmarked()
-    await this.fetchDriveInfo()
+    await Promise.all([
+      this.fetchIsBookmarked(),
+      this.fetchIsSubscribed(),
+      this.fetchDriveInfo()
+    ])
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {
       this.wasDriveTimeout = true
     }

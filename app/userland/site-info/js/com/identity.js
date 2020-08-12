@@ -26,12 +26,12 @@ class Identity extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="field-group">
-        ${this.cert ? html`
-          ${this.cert.type === 'beaker' ? html`
-            This is a builtin interface of Beaker
-          ` : ''}
-          ${this.cert.type === 'tls' ? html`
+      ${this.cert ? html`
+        ${this.cert.type === 'beaker' ? html`
+          <div class="field-group">This is a builtin interface of Beaker</div>
+        ` : ''}
+        ${this.cert.type === 'tls' ? html`
+          <div class="field-group">
             <div class="identity">
               <span class="fa-fw fas fa-address-card"></span>
               ${this.cert.subjectName}
@@ -39,47 +39,43 @@ class Identity extends LitElement {
             <div class="verifier">
               Issued by ${this.cert.issuerName}
             </div>
-          ` : ''}
-          ${this.cert.type === 'hyperdrive' ? html`
-            ${this.cert.ident.profile ? html`
+          </div>
+        ` : ''}
+        ${this.cert.type === 'hyperdrive' ? html`
+          ${this.cert.ident.profile ? html`
+            <div class="field-group">
               <div class="identity">
-                <span class="fa-fw fas fa-address-card"></span>
-                ${this.cert.driveInfo.title || 'Untitled'}
-              </div>
-              <div class="verifier">
                 This is your profile site
               </div>
-            ` : this.cert.ident.contact ? html`
-              <div class="identity">
-                <span class="fa-fw fas fa-address-card"></span>
-                ${this.cert.driveInfo.title || 'Untitled'}
-              </div>
-              <div class="verifier">
-                This site is in your address book
-                <button class="transparent toggle-save-contact-btn" @click=${this.onToggleSaveContact}>
-                  <span class="fas fa-fw fa-user-times"></span> Remove
-                </button>
-              </div>
-            ` : this.cert.ident.system ? html`
-              <div class="identity">This is your private site</div>
-            ` : this.cert.driveInfo.writable ? html`
-              <div class="identity">
-                ${this.cert.driveInfo.title || 'Untitled'}
-              </div>
-              <div class="verifier">
-                <span class="fa-fw fas fa-pen"></span> You created this site</div>
-              </div>
-            ` : html`
-              No identity information found
-              <button class="transparent toggle-save-contact-btn" @click=${this.onToggleSaveContact}>
-                <span class="fas fa-fw fa-user-plus"></span> Add to Address Book
-              </button>
-            `}
-          ` : ''}
-        ` : html`
-          No identity information found
-        `}
-      </div>
+            </div>
+          ` : this.cert.ident.system ? html`
+            <div class="field-group"><div class="identity">This is your private site</div></div>
+          ` : this.cert.driveInfo.writable ? html`
+            <div class="field-group">
+              <div class="identity">You created this site</div>
+            </div>
+          ` : html`
+            <div class="field-group">No identity information found</div>
+          `}
+        ` : ''}
+      ` : html`
+        <div class="field-group">No identity information found</div>
+      `}
+      ${this.cert?.subscribers && !this.cert.ident.system ? html`
+        <div class="subscribers">
+          <h4>Known Subscribers (${this.cert.subscribers.length})</h4>
+          ${this.cert?.subscribers?.length > 0 ? html`<div>${repeat(this.cert.subscribers, this.renderSubscriber)}</div>` : ''}
+        </div>
+      ` : ''}
+    `
+  }
+
+  renderSubscriber (site) {
+    return html`
+      <a class="subscriber" href=${site.url} title=${site.title || 'Untitled'} target="_blank">
+        <img class="thumb" src="asset:thumb:${site.url}"/>
+        <span class="title">${site.title}</span>
+      </a>
     `
   }
 

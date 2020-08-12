@@ -23,7 +23,8 @@ class NavbarLocation extends LitElement {
       siteIcon: {type: String},
       siteTrust: {type: String},
       driveDomain: {type: String},
-      isSystemDrive: {type: Boolean, attribute: 'is-system-drive'},
+      driveIdent: {type: String},
+      isSubscribed: {type: Boolean, attribute: 'is-subscribed'},
       writable: {type: Boolean},
       folderSyncPath: {type: String, attribute: 'folder-sync-path'},
       peers: {type: Number},
@@ -51,7 +52,8 @@ class NavbarLocation extends LitElement {
     this.siteIcon = ''
     this.siteTrust = ''
     this.driveDomain = ''
-    this.isSystemDrive = false
+    this.driveIdent = ''
+    this.isSubscribed = false
     this.writable = false
     this.folderSyncPath = undefined
     this.peers = 0
@@ -150,6 +152,8 @@ class NavbarLocation extends LitElement {
         siteIcon=${this.siteIcon}
         siteTrust=${this.siteTrust}
         driveDomain=${this.driveDomain}
+        driveIdent=${this.driveIdent}
+        ?is-subscribed=${this.isSubscribed}
         ?writable=${this.writable}
         .loadError=${this.loadError}
         ?hide-origin=${this.hasExpanded}
@@ -162,7 +166,6 @@ class NavbarLocation extends LitElement {
       ${this.renderDatConverterBtn()}
       ${this.renderLiveReloadingBtn()}
       ${this.renderFolderSyncBtn()}
-      ${this.renderSubscribeBtn()}
       ${this.renderPeers()}
       ${this.renderDonateBtn()}
       ${''/* DISABLED this.renderShareBtn()*/}
@@ -297,23 +300,6 @@ class NavbarLocation extends LitElement {
         <i class="fas fa-sync"></i>
         <i class="far fa-folder-open"></i>
       </button>
-    `
-  }
-
-  renderSubscribeBtn () {
-    if (!this.isHyperdrive || this.isSystemDrive) {
-      return ''
-    }
-    var cls = classMap({subscribers: true, pressed: this.isSubscribersMenuOpen})
-    return html`
-      <span class="subscribe-btn-group">
-        <button class="subscribe" @click=${this.onClickSubscribe}>
-          <i class="fa fa-rss"></i> Subscribe
-        </button>
-        <button class="${cls}" @click=${this.onClickSubscriber}>
-          0
-        </button>
-      </span>
     `
   }
 

@@ -271,6 +271,10 @@ h2 a:hover {
   outline: 5px solid var(--bg-color--unread);
 }
 
+.result.action > * {
+  margin-right: 5px;
+}
+
 .result.action .thumb {
   display: block;
   width: 36px;
@@ -307,11 +311,66 @@ h2 a:hover {
   bottom: 27px;
 }
 
-.result.action .container {
+.result.action .author {
+  color: var(--text-color--lightish);
+  font-weight: 600;
+}
+
+/** LINK STYLES **/
+
+.result.link {
+  display: flex;
+  align-items: center;
+  color: var(--text-color--lightish);
+  margin: 20px 24px 20px 4px;
+}
+
+.result.link.unread {
+  background: var(--bg-color--unread);
+  outline: 5px solid var(--bg-color--unread);
+}
+
+.result.link .thumb {
+  display: block;
+  width: 36px;
+  flex: 0 0 36px;
+  height: 36px;
+  background: var(--bg-color--semi-light);
+  border-radius: 50%;
+  margin-right: 18px;
+  position: relative;
+  top: 1px;
+}
+
+.result.link .thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: scale-down;
+}
+
+.result.link .thumb .icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  color: var(--text-color--light);
+  line-height: 36px;
+  font-size: 12px;
+}
+
+.result.link .thumb .icon .fa-lock {
+  font-size: 8px;
+  position: absolute;
+  right: 3px;
+  bottom: 27px;
+}
+
+.result.link .container {
   flex: 1;
 }
 
-.result.action .action-description {
+.result.link .action-description {
   display: flex;
   align-items: center;
   font-size: 13px;
@@ -321,12 +380,12 @@ h2 a:hover {
   text-overflow: ellipsis;
 }
 
-.result.action .origin .author {
+.result.link .origin .author {
   color: var(--text-color--lightish);
   font-weight: 600;
 }
 
-.result.action .title {
+.result.link .title {
   max-width: 590px;
   white-space: nowrap;
   overflow: hidden;
@@ -335,18 +394,18 @@ h2 a:hover {
   padding-bottom: 2px;
 }
 
-.result.action .title a {
+.result.link .title a {
   letter-spacing: 0.5px;
   font-size: 17px;
   font-weight: 500;
   color: var(--text-color--result-link);
 }
 
-.result.action .tags {
+.result.link .tags {
   padding: 0 0 4px;
 }
 
-.result.action .tags a {
+.result.link .tags a {
   display: inline-block;
   color: var(--text-color--light);
   background: var(--bg-color--semi-light);
@@ -357,28 +416,28 @@ h2 a:hover {
   margin-right: 3px;
 }
 
-.result.action .ctrls {
+.result.link .ctrls {
   font-size: 13px;
   color: var(--text-color--light);
 }
 
-.result.action .link-origin {
+.result.link .link-origin {
   color: var(--text-color--light);
 }
 
-.result.action .ctrls a.ctrl {
+.result.link .ctrls a.ctrl {
   display: inline-block;
   color: var(--text-color--light);
   font-weight: 500;
   margin-left: 2px;
 }
 
-.result.action .ctrls a:hover {
+.result.link .ctrls a:hover {
   cursor: pointer;
   color: var(--text-color--default);
 }
 
-.result.action .ctrls a .fa-comment-alt {
+.result.link .ctrls a .fa-comment-alt {
   position: relative;
   top: 1px;
   font-size: 12px;
@@ -593,10 +652,10 @@ h2 a:hover {
 
 /** INTERACTIONS BTWN TYPES */
 
-.result.card + .result.action {
+.result.card + .result.link {
   margin-top: 24px;
 }
-.result.action + .result.card {
+.result.link + .result.card {
   margin-top: 28px;
 }
 .notification + .result {

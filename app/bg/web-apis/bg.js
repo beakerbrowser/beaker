@@ -29,6 +29,7 @@ import folderSyncManifest from './manifests/internal/folder-sync'
 import historyManifest from './manifests/internal/history'
 import indexerManifest from './manifests/internal/indexer'
 import sitedataManifest from './manifests/internal/sitedata'
+import subscriptionsManifest from './manifests/internal/subscriptions'
 import watchlistManifest from './manifests/internal/watchlist'
 
 // internal apis
@@ -42,6 +43,7 @@ import folderSyncAPI from './bg/folder-sync'
 import historyAPI from './bg/history'
 import indexerAPI from './bg/indexer'
 import { WEBAPI as sitedataAPI } from '../dbs/sitedata'
+import * as subscriptionsAPI from '../filesystem/subscriptions'
 import watchlistAPI from './bg/watchlist'
 import { WEBAPI as downloadsAPI } from '../ui/downloads'
 import { WEBAPI as beakerBrowserAPI } from '../browser'
@@ -90,6 +92,7 @@ export const setup = function () {
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)
   rpc.exportAPI('indexer', indexerManifest, indexerAPI, internalOnly)
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
+  rpc.exportAPI('subscriptions', subscriptionsManifest, subscriptionsAPI, internalOnly)
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
 
   // external apis

@@ -200,6 +200,7 @@ class DesktopApp extends LitElement {
       <div class="sidebar">
         ${this.renderTagsList()}
         <section class="quick-links">
+          <h3>Quick Links</h3>
           <div>
             <a href="hyper://private/">
               <img src="asset:favicon-32:hyper://private/">
@@ -253,7 +254,7 @@ class DesktopApp extends LitElement {
     let hasSearchQuery = !!this.searchQuery
     if (hasSearchQuery) {
       return html`
-        <div class="all-view" @scroll=${this.onScroll}>
+        <div class="all-view">
           <div class="twocol">
             <div>
               <query-view
@@ -272,7 +273,7 @@ class DesktopApp extends LitElement {
       `
     } else {
       return html`
-        <div class="all-view" @scroll=${this.onScroll}>
+        <div class="all-view">
           ${this.currentNav === 'all' ? this.renderPins() : ''}
           <div class="twocol">
             <query-view
@@ -492,39 +493,114 @@ class DesktopApp extends LitElement {
     var rect = e.currentTarget.getClientRects()[0]
     e.preventDefault()
     e.stopPropagation()
-    const items = [
-      {icon: 'fa-fw fas fa-sitemap', label: 'New Site', click: this.onClickNewSite.bind(this)},
-      {
-        icon: 'fa-fw fas fa-file-upload',
-        label: 'New Site from Folder',
-        click: this.onClickNewSiteFromFolder.bind(this)
-      },
-      '-',
-      {icon: 'fa-fw far fa-file-alt', label: 'New Page Draft', click: () => this.onClickNewPage({type: 'beaker/page', draft: true})},
-      {icon: 'fa-fw fas fa-blog', label: 'New Blog Draft', click: () => this.onClickNewPage({type: 'beaker/blogpost', draft: true})},
-      '-',
-      {
-        icon: html`
-          <span class="icon-stack" style="position: relative;">
-            <i class="far fa-file-alt fa-fw" style="position: relative; left: -2px;"></i>
-            <i class="fas fa-lock" style="position: absolute; width: 4px; font-size: 50%; bottom: 0; left: 6px; background: #fff; padding: 0 1px"></i>
-          </span>
-        `,
-        label: 'New Private Page',
-        click: () => this.onClickNewPage({type: 'beaker/page', private: true})
-      },
-      {icon: 'fa-fw far fa-star', label: 'New Bookmark', click: () => this.onClickEditBookmark(undefined)}
-    ]
+    var self = this
+    var expandedItem = undefined
     contextMenu.create({
-      x: (rect.left + rect.right) / 2,
+      x: rect.right,
       y: rect.bottom + 10,
-      center: true,
-      noBorders: true,
-      roomy: true,
-      style: `padding: 8px 0`,
-      rounded: true,
-      items,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
+      render () {
+        const onExpand = async v => {
+          if (expandedItem === v) return
+          expandedItem = v
+          await this.requestUpdate()
+          this.shadowRoot.querySelector('.expanded-menu').animate([
+            { transform: 'scaleY(0)', transformOrigin: 'center top' },
+            { transform: 'scaleY(1)', transformOrigin: 'center top' }
+          ], {
+            duration: 100,
+            iterations: 1
+          })
+        }
+        const active = v => !expandedItem ? '' : expandedItem === v ? 'active' : 'inactive'
+        return html`
+          <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+          <style>
+            .dropdown-items .grid {
+              display: grid;
+              grid-template-columns: repeat(4, 1fr);
+              grid-gap: 10px;
+              padding: 10px 10px 8px;
+            }
+            .dropdown-items .grid .dropdown-item {
+              padding: 7px 10px 5px !important;
+              border-radius: 8px !important;
+              width: 60px;
+              text-align: center;
+              transition: opacity 0.2s;
+            }
+            .dropdown-items .grid .dropdown-item.inactive {
+              opacity: 0.5;
+            }
+            .dropdown-items .grid .dropdown-item i {
+              width: auto !important;
+            }
+            .dropdown-items .grid .dropdown-item .icon {
+              font-size: 18px;
+              text-align: center;
+              margin-bottom: 5px;
+            }
+            .expanded-menu {
+              padding: 5px 0;
+              border-top: 1px solid var(--border-color--light);
+              background: var(--bg-color--light);
+            }
+          </style>
+          <div class="dropdown-items no-border rounded">
+            <div class="grid">
+              <div class="dropdown-item ${active('website')}" @click=${() => onExpand('website')}>
+                <div class="icon"><i class="fas fa-sitemap"></i></div>
+                <div class="label">Website</div>
+              </div>
+              <div class="dropdown-item ${active('page')}" @click=${() => onExpand('page')}>
+                <div class="icon"><i class="far fa-file-alt"></i></div>
+                <div class="label">Page</div>
+              </div>
+              <div class="dropdown-item ${active('bookmark')}" @click=${() => onExpand('bookmark')}>
+                <div class="icon"><i class="far fa-star"></i></div>
+                <div class="label">Bookmark</div>
+              </div>
+              <div class="dropdown-item ${active('post')}" @click=${() => onExpand('post')}>
+                <div class="icon"><i class="far fa-comment"></i></div>
+                <div class="label">Post</div>
+              </div>
+            </div>
+            ${expandedItem === 'website' ? html`
+              <div class="expanded-menu">
+                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickNewSite() }}>
+                  <div class="label"><i class="far fa-fw fa-file-alt"></i> New Website (empty)</div>
+                </div>
+                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickNewSiteFromFolder() }}>
+                  <div class="label"><i class="fa-fw fas fa-file-upload"></i> New Website From Folder</div>
+                </div>
+              </div>
+            ` : ''}
+            ${expandedItem === 'bookmark' ? html`
+              <div class="expanded-menu">
+                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickEditBookmark(undefined) }}>
+                  <div class="label"><i class="far fa-fw fa-star"></i> New Bookmark</div>
+                </div>
+              </div>
+            ` : ''}
+            ${expandedItem === 'page' ? html`
+              <div class="expanded-menu">
+                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickNewPage({type: 'beaker/page'}) }}>
+                  <div class="label"><i class="far fa-fw fa-file-alt"></i> New Page</div>
+                </div>
+                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickNewPage({type: 'beaker/blogpost'}) }}>
+                  <div class="label"><i class="fas fa-fw fa-blog"></i> New Blogpost</div>
+                </div>
+              </div>
+            ` : ''}
+            ${expandedItem === 'post' ? html`
+              <div class="expanded-menu">
+                <div class="dropdown-item" @click=${() => alert('todo')}>
+                  <div class="label"><i class="far fa-fw fa-comment"></i> New Text Post</div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `
+      }
     })
   }
 
@@ -647,18 +723,6 @@ class DesktopApp extends LitElement {
     this.legacyArchives.splice(this.legacyArchives.indexOf(archive), 1)
     toast.create('Archive removed')
     this.requestUpdate()
-  }
-
-  async onScroll (e) {
-    var el = e.currentTarget
-    if (el.scrollHeight - el.scrollTop === el.clientHeight) {
-      try {
-        this.shadowRoot.querySelector('query-view').loadMore()
-      } catch (e) {
-        // ignore
-        console.debug(e)
-      }
-    }
   }
 }
 

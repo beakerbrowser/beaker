@@ -14,7 +14,6 @@ export async function load () {
   try {
     bookmarks = await beaker.bookmarks.list()
     bookmarks = bookmarks.filter(b => b.pinned)
-    bookmarks.sort((a, b) => a.name.localeCompare(b.name))
   } catch (e) {
     console.log('Failed to load bookmarks files', e)
   }

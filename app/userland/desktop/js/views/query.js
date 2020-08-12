@@ -3,10 +3,19 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import { classMap } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
 import { unsafeHTML } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { asyncReplace } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/async-replace.js'
+import { SitesListPopup } from '../com/sites-list-popup.js'
 import queryCSS from '../../css/views/query.css.js'
 import { removeMarkdown } from 'beaker://app-stdlib/vendor/remove-markdown.js'
-import { shorten, makeSafe, toNiceUrl, toNiceDomain, DRIVE_KEY_REGEX, joinPath } from 'beaker://app-stdlib/js/strings.js'
+import { shorten, makeSafe, toNiceDomain, pluralize, joinPath } from 'beaker://app-stdlib/js/strings.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
+
+const DEFAULT_SEARCH_INDEXES = [
+  'beaker/index/blogposts',
+  'beaker/index/bookmarks',
+  'beaker/index/comments',
+  'beaker/index/microblogposts',
+  'beaker/index/pages'
+]
 
 export class QueryView extends LitElement {
   static get properties () {
@@ -42,7 +51,6 @@ export class QueryView extends LitElement {
     this.profileUrl = ''
 
     // query state
-    this.currentLimit = undefined // as we scroll down, this grows so that refresh loads keep the same # of records
     this.activeQuery = undefined
     this.abortController = undefined
 
@@ -60,32 +68,20 @@ export class QueryView extends LitElement {
     this.queueQuery()
   }
 
-  loadMore () {
-    if (!this.activeQuery) {
-      this.activeQuery = this.query(this.results?.length)
-    }
-  }
-
   updated (changedProperties) {
     if (typeof this.results === 'undefined') {
       if (!this.activeQuery) {
-        this.queueFreshQuery()
+        this.queueQuery()
       }
       return
     } else if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
-      this.queueFreshQuery()
+      this.queueQuery()
     } else if (changedProperties.has('index') && changedProperties.get('index') != this.index) {
-      this.queueFreshQuery()
+      this.results = undefined // clear results while loading
+      this.queueQuery()
     } else if (changedProperties.has('sources') && !isArrayEq(this.sources, changedProperties.get('sources'))) {
-      this.queueFreshQuery()
+      this.queueQuery()
     }
-  }
-
-  queueFreshQuery () {
-    // reset state
-    this.currentLimit = undefined
-
-    this.queueQuery()
   }
 
   queueQuery () {
@@ -101,47 +97,46 @@ export class QueryView extends LitElement {
     }
   }
 
-  async query (offset = 0) {
+  async query () {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
     var startTs = Date.now()
-    var results
+    var results = []
     if (this.index === 'notifications') {
       results = await beaker.indexer.listNotifications({
         filter: {search: this.filter},
-        limit: this.currentLimit ? (this.currentLimit - offset) : this.limit,
-        offset,
+        limit: this.limit,
         sort: 'ctime',
         reverse: true
-        // signal: this.abortController.signal TODO doable?
       })
     } else if (this.filter) {
       results = await beaker.indexer.search(this.filter, {
-        filter: {index: this.index, site: this.sources},
-        limit: this.currentLimit ? (this.currentLimit - offset) : this.limit,
-        offset,
+        filter: {index: this.index || DEFAULT_SEARCH_INDEXES, site: this.sources},
+        limit: this.limit,
         sort: 'ctime',
         reverse: true
-        // signal: this.abortController.signal TODO doable?
       })
     } else {
-      results = await beaker.indexer.list({
-        filter: {index: this.index, site: this.sources},
-        limit: this.currentLimit ? (this.currentLimit - offset) : this.limit,
-        offset,
-        sort: 'ctime',
-        reverse: true
-        // signal: this.abortController.signal TODO doable?
-      })
+      // because we collapse results, we need to run the query until the limit is fulfilled
+      let offset = 0
+      do {
+        let subresults = await beaker.indexer.list({
+          filter: {index: this.index, site: this.sources},
+          limit: this.limit,
+          offset,
+          sort: 'ctime',
+          reverse: true
+        })
+        if (subresults.length === 0) break
+        
+        subresults = subresults.reduce(reduceMultipleActions, [])
+        results = results.concat(subresults)
+        offset += subresults.length
+      } while (results.length < this.limit)
     }
     console.log(results)
     this.lastQueryTime = Date.now() - startTs
-    if (this.results && offset) {
-      this.results = this.results.concat(results)
-    } else {
-      this.results = results
-    }
-    this.currentLimit = this.results.length
+    this.results = results
     this.activeQuery = undefined
     emit(this, 'load-state-updated')
   }
@@ -202,10 +197,15 @@ export class QueryView extends LitElement {
   }
   
   renderNormalResult (result) {
-    if (['beaker/index/microblogposts', 'beaker/index/comments'].includes(result.index)) {
-      return this.renderResultAsCard(result)
+    switch (result.index) {
+      case 'beaker/index/microblogposts':
+      case 'beaker/index/comments':
+        return this.renderResultAsCard(result)
+      case 'beaker/index/subscriptions':
+        return this.renderResultAsAction(result)
+      default:
+        return this.renderResultAsLink(result)
     }
-    return this.renderResultAsAction(result)
   }
 
   renderSearchResult (result) {
@@ -267,6 +267,44 @@ export class QueryView extends LitElement {
   }
 
   renderResultAsAction (result) {
+    var action = ({
+      'beaker/index/subscriptions': 'subscribed to'
+    })[result.index] || 'did something? to'
+
+    return html`
+      ${this.renderDateTitle(result)}
+      <div
+        class=${classMap({
+          result: true,
+          action: true,
+          'is-notification': !!result.notification,
+          unread: !!result.notification && !result?.notification?.isRead
+        })}
+      >
+        <a class="thumb" href=${result.site.url} title=${result.site.title} data-tooltip=${result.site.title}>
+          <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
+        </a>
+        <a class="author" href=${result.site.url} title=${result.site.title}>
+          ${result.site.url === 'hyper://private' ? 'I (privately)' : result.site.title}
+        </a>
+        <span class="action">${action}</span>
+        <a class="subject" href=${result.metadata.href} title=${result.metadata.title || result.metadata.href}>
+          ${result.metadata.href === this.profileUrl ? 'you' : result.metadata.title || result.metadata.href}
+        </a>
+        ${result.mergedItems ? html`
+          <span>and</span>
+          <a
+            class="others"
+            href="#"
+            data-tooltip=${shorten(result.mergedItems.map(r => r.metadata.title || 'Untitled').join(', '), 100)}
+            @click=${e => this.onClickShowSites(e, result.mergedItems)}
+          >${result.mergedItems.length} other ${pluralize(result.mergedItems.length, 'site')}</a>
+        ` : ''}
+      </div>
+    `
+  }
+
+  renderResultAsLink (result) {
     var href = undefined
     switch (result.index) {
       case 'beaker/index/comments': href = result.metadata['beaker/subject']; break
@@ -292,8 +330,8 @@ export class QueryView extends LitElement {
     var action = ({
       'beaker/index/bookmarks': 'Bookmarked',
       'beaker/index/blogposts': 'Blogpost created',
-      'beaker/index/pages': 'Page created',
-      'beaker/index/comments': 'Comment created'
+      'beaker/index/comments': 'Comment created',
+      'beaker/index/pages': 'Page created'
     })[result.index] || 'File created'
 
     return html`
@@ -302,7 +340,7 @@ export class QueryView extends LitElement {
       <div
         class=${classMap({
           result: true,
-          action: true,
+          link: true,
           'is-notification': !!result.notification,
           unread: !!result.notification && !result?.notification?.isRead
         })}
@@ -493,6 +531,11 @@ export class QueryView extends LitElement {
     this.isMouseDown = false
     this.isMouseDragging = false
   }
+
+  onClickShowSites (e, results) {
+    e.preventDefault()
+    SitesListPopup.create(results)
+  }
 }
 
 customElements.define('query-view', QueryView)
@@ -623,4 +666,17 @@ async function getDriveTitle (url) {
   if (_driveTitleCache[url]) return _driveTitleCache[url]
   _driveTitleCache[url] = beaker.hyperdrive.getInfo(url).then(info => info.title)
   return _driveTitleCache[url]
+}
+
+function reduceMultipleActions (acc, result) {
+  let last = acc[acc.length - 1]
+  if (last) {
+    if (last.site.url === result.site.url && result.index === 'beaker/index/subscriptions') {
+      last.mergedItems = last.mergedItems || []
+      last.mergedItems.push(result)
+      return acc
+    }
+  }
+  acc.push(result)
+  return acc
 }

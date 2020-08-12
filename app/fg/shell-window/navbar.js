@@ -87,7 +87,8 @@ class ShellWindowNavbar extends LitElement {
         siteIcon="${_get(this, 'activeTab.siteIcon', '')}"
         siteTrust="${_get(this, 'activeTab.siteTrust', '')}"
         driveDomain="${_get(this, 'activeTab.driveDomain', '')}"
-        ?is-system-drive=${_get(this, 'activeTab.isSystemDrive', false)}
+        driveIdent=${_get(this, 'activeTab.driveIdent', '')}
+        ?is-subscribed=${_get(this, 'activeTab.isSubscribed', false)}
         ?writable=${_get(this, 'activeTab.writable', false)}
         folder-sync-path="${_get(this, 'activeTab.folderSyncPath') || ''}"
         peers="${_get(this, 'activeTab.peers', 0)}"
