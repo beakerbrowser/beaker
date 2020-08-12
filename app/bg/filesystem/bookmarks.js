@@ -1,7 +1,7 @@
 import { joinPath, slugify } from '../../lib/strings.js'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
-import { INDEX_IDS, METADATA_KEYS } from '../indexer/const'
+import { INDEX_IDS, METADATA_KEYS, FILE_TYPES } from '../indexer/const'
 import * as filesystem from './index'
 import { URL } from 'url'
 import * as profileDb from '../dbs/profile-data-db'
@@ -71,6 +71,7 @@ export async function add ({href, title, pinned, site}) {
     // same site, just update metadata
     let urlp = new URL(existing.bookmarkUrl)
     await drive.pda.updateMetadata(urlp.pathname, {
+      type: FILE_TYPES.bookmark,
       [METADATA_KEYS.href]: href,
       [METADATA_KEYS.title]: title,
       [METADATA_KEYS.pinned]: pinned ? '1' : undefined
@@ -88,6 +89,7 @@ export async function add ({href, title, pinned, site}) {
   var path = joinPath('/bookmarks', filename)
   await filesystem.ensureDir('/bookmarks', drive)
   await drive.pda.writeFile(path, '', {metadata: {
+    type: FILE_TYPES.bookmark,
     [METADATA_KEYS.href]: href,
     [METADATA_KEYS.title]: title,
     [METADATA_KEYS.pinned]: pinned ? '1' : undefined
@@ -127,9 +129,9 @@ export async function migrateBookmarksFromSqlite () {
 function massageBookmark (result) {
   return {
     bookmarkUrl: result.url,
-    href: normalizeUrl(result.metadata.href),
-    title: result.metadata.title || result.metadata.href,
-    pinned: result.metadata['beaker/pinned'] === '1',
+    href: normalizeUrl(result.metadata[METADATA_KEYS.href]),
+    title: result.metadata[METADATA_KEYS.title] || result.metadata[METADATA_KEYS.href],
+    pinned: result.metadata[METADATA_KEYS.pinned] === '1',
     site: result.site
   }
 }
