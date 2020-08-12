@@ -32,7 +32,7 @@ export function shortenHash (str, n = 6) {
 }
 
 export function makeSafe (str = '') {
-  return str.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/&/g, '&amp;').replace(/"/g, '')
+  return str.replace(/&/g, '&amp;').replace(/"/g, '').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 export function highlight (str = '', nonce = 0) {

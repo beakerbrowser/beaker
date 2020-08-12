@@ -125,6 +125,11 @@ button {
   text-overflow: ellipsis;
 }
 
+:host([autocomplete-open]) button {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 0;
+}
+
 button:not(:disabled):hover {
   background: var(--bg-color--cert--default--hover);
 }

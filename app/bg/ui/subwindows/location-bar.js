@@ -67,7 +67,6 @@ export async function show (parentWindow, opts) {
       height: 588 + MARGIN_SIZE
     })
     view.isVisible = true
-    view.webContents.focus()
 
     // await till hidden
     await new Promise(resolve => {
@@ -80,9 +79,14 @@ export async function show (parentWindow, opts) {
 export function hide (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    parentWindow.removeBrowserView(view)
-    view.isVisible = false
-    events.emit('hide') // TODO confirm this works
+    view.webContents.executeJavaScript(`invisibilityCloak()`)
+    setTimeout(() => {
+      parentWindow.removeBrowserView(view)
+      view.isVisible = false
+      events.emit('hide') // TODO confirm this works
+    }, 150)
+    // ^ this delay is how we give click events time to be handled in the UI
+    // without it, the location input's blur event will remove our browserview too quickly
   }
 }
 
@@ -90,7 +94,7 @@ export async function runCmd (parentWindow, cmd, opts) {
   var view = get(parentWindow)
   if (view) {
     if (!view.isVisible) {
-      if (cmd === 'set-value') {
+      if (cmd === 'show') {
         // show first
         show(parentWindow, opts)
       } else {
@@ -118,12 +122,14 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
   async loadURL (url) {
     var win = getParentWindow(this.sender)
     hide(win) // always close the location bar
-    var active = tabManager.getActive(win)
-    if (url.startsWith('/')) {
-      // relative to current origin
-      url = joinPath(active.origin, url)
-    }
-    active.loadURL(url)
+    tabManager.getActive(win).loadURL(url)
+    get(win).webContents.send('command', 'unfocus-location') // we have to manually unfocus the location bar
+  },
+
+  async reload () {
+    var win = getParentWindow(this.sender)
+    hide(win) // always close the location bar
+    tabManager.getActive(win).reload()
     get(win).webContents.send('command', 'unfocus-location') // we have to manually unfocus the location bar
   },
 

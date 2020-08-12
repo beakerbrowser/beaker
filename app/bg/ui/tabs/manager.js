@@ -58,6 +58,7 @@ class Tab extends EventEmitter {
     defineActivePanePassthroughGetter(this, 'webContents')
     defineActivePanePassthroughGetter(this, 'browserView')
     defineActivePanePassthroughFn(this, 'loadURL')
+    defineActivePanePassthroughFn(this, 'reload')
     defineActivePanePassthroughFn(this, 'focus')
     defineActivePanePassthroughFn(this, 'captureScreenshot')
     defineActivePanePassthroughFn(this, 'showInpageFind')

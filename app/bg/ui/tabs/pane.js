@@ -349,6 +349,10 @@ export class Pane extends EventEmitter {
     this.webContents.loadURL(url, opts)
   }
 
+  reload () {
+    this.webContents.reload()
+  }
+
   setBounds (bounds) {
     this.browserView.setBounds({
       x: bounds.x,
