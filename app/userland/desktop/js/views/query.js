@@ -370,7 +370,7 @@ export class QueryView extends LitElement {
         <a class="thumb" href=${result.site.url} title=${result.site.title} data-tooltip=${result.site.title}>
           <span class="icon">
             ${result.index === 'beaker/index/bookmarks' ? html`<span class="fas fa-star"></span>` : ''}
-            ${result.index === 'beaker/index/pages' ? html`<span class="fas fa-file-alt"></span>` : ''}
+            ${result.index === 'beaker/index/pages' ? html`<span class="fas fa-file"></span>` : ''}
             ${result.index === 'beaker/index/blogposts' ? html`<span class="fas fa-blog"></span>` : ''}
             ${result.site.url === 'hyper://private' ? html`
               <span class="fas fa-lock"></span>

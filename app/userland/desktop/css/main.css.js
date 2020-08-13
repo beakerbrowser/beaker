@@ -344,33 +344,24 @@ main {
   gap: 30px;
 }
 
-.twocol .sidebar section {
+.twocol .sidebar > div {
   position: sticky;
   top: 0px;
   padding-top: 10px;
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-
-.twocol .sidebar section h3 {
-  margin: 3px 0 3px;
-  color: var(--text-color--light);
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.twocol .sidebar section input {
-  width: 100%;
-  margin: 4px 0;
 }
 
 .twocol .sidebar h3 {
-  margin: 0 0 5px;
   box-sizing: border-box;
-  font-weight: 500;
-  color: var(--text-color--default);
   letter-spacing: 0.7px;
-  font-size: 13px;
+  margin: 3px 0;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 11px;
+  color: var(--text-color--very-light);
+}
+
+.twocol .sidebar section {
+  margin-bottom: 20px;
 }
 
 @media (max-width: 900px) {
@@ -418,6 +409,30 @@ main {
 .quick-links a img.favicon {
   image-rendering: -webkit-optimize-contrast;
   border-radius: 0;
+}
+
+.suggested-sites .site {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 4px;
+  background: var(--bg-color--light);
+}
+
+.suggested-sites .site .title a {
+  color: var(--text-color--result-link);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.suggested-sites .site .subscribers a {
+  color: var(--text-color--pretty-light);
+}
+
+.suggested-sites .site button {
+  float: right;
+  font-size: 11px;
+  letter-spacing: 0.5px;
 }
 
 .tags {

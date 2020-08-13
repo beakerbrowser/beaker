@@ -7,7 +7,7 @@ import { NewPagePopup } from 'beaker://library/js/com/new-page-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
-import { joinPath, pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { shorten, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
@@ -35,9 +35,10 @@ var cacheBuster = Date.now()
 class DesktopApp extends LitElement {
   static get properties () {
     return {
-      pins: {type: Array},
-      profile: {type: Object},
       currentNav: {type: String},
+      profile: {type: Object},
+      pins: {type: Array},
+      suggestedSites: {type: Array},
       searchQuery: {type: String},
       sourceOptions: {type: Array},
       currentSource: {type: String},
@@ -52,16 +53,19 @@ class DesktopApp extends LitElement {
 
   constructor () {
     super()
+    this.currentNav = 'all'
     this.profile = undefined
     this.pins = []
+    this.suggestedSites = undefined
     this.unreadNotificationsCount = 0
-    this.currentNav = 'all'
     this.searchQuery = ''
     this.sourceOptions = []
     this.currentSource = 'all'
     this.isIntroActive = false
     this.legacyArchives = []
-    this.load()
+    this.load().then(() => {
+      this.loadSuggestions()
+    })
     
     if (!('isIntroHidden' in localStorage)) {
       this.isIntroActive = true
@@ -81,15 +85,43 @@ class DesktopApp extends LitElement {
     ;[this.profile, this.pins, sourceOptions, this.unreadNotificationsCount] = await Promise.all([
       addressBook.loadProfile(),
       desktop.load(),
-      beaker.contacts.list(),
+      beaker.subscriptions.list(),
       beaker.indexer.countNotifications({filter: {isRead: false}})
     ])
     if (this.shadowRoot.querySelector('query-view')) {
       this.shadowRoot.querySelector('query-view').load()
     }
-    this.sourceOptions = [{url: 'hyper://private/', title: 'My Private Data'}, {url: this.profile.url, title: this.profile.title}].concat(sourceOptions)
+    this.sourceOptions = [{href: 'hyper://private/', title: 'My Private Data'}, {href: this.profile.url, title: this.profile.title}].concat(sourceOptions)
     console.log(this.pins)
     this.legacyArchives = await beaker.datLegacy.list()
+  }
+
+  async loadSuggestions () {
+    let allSubscriptions = await beaker.indexer.list({
+      filter: {index: 'beaker/index/subscriptions'},
+      limit: 100,
+      sort: 'ctime',
+      reverse: true
+    })
+    var currentSubs = new Set(this.sourceOptions.map(source => (new URL(source.href)).origin))
+    var candidates = allSubscriptions.filter(sub => !currentSubs.has((new URL(sub.metadata.href)).origin))
+    var suggestedSites = candidates.reduce((acc, candidate) => {
+      if (!candidate.metadata.title) return acc
+      var url = candidate.metadata.href
+      var existing = acc.find(v => v.url === url)
+      if (existing) {
+        existing.subscribers.push(candidate.site)
+      } else {
+        acc.push({
+          url: candidate.metadata.href,
+          title: candidate.metadata.title,
+          subscribers: [candidate.site]
+        })
+      }
+      return acc
+    }, [])
+    suggestedSites.sort(() => Math.random() - 0.5)
+    this.suggestedSites = suggestedSites.slice(0, 3)
   }
 
   get currentNavAsIndex () {
@@ -110,7 +142,7 @@ class DesktopApp extends LitElement {
       return ['hyper://private/', this.profile.url]
     }
     if (this.currentSource === 'others') {
-      return this.sourceOptions.slice(2).map(source => source.url)
+      return this.sourceOptions.slice(2).map(source => source.href)
     }
     return [this.currentSource]
   }
@@ -196,37 +228,61 @@ class DesktopApp extends LitElement {
   renderSidebar () {
     return html`
       <div class="sidebar">
-        ${this.renderTagsList()}
-        <section class="quick-links">
-          <h3>Quick Links</h3>
-          <div>
-            <a href="hyper://private/">
-              <img src="asset:favicon-32:hyper://private/">
-              <span>My Private Site</span>
-            </a>
-          </div>
-          <div>
-            <a href=${this.profile?.url}>
-              <beaker-img-fallbacks>
-                <img src="asset:favicon-32:${this.profile?.url}" slot="img1">
-                <img src="beaker://assets/default-user-thumb" slot="img2">
-              </beaker-img-fallbacks>
-              <span>${this.profile?.title}</span>
-            </a>
-          </div>
-          <div>
-            <a href="beaker://library/">
-              <img class="favicon" src="asset:favicon-32:beaker://library/">
-              <span>My Library</span>
-            </a>
-          </div>
-          <div>
-            <a href="https://docs.beakerbrowser.com/">
-              <span class="far fa-fw fa-life-ring"></span>
-              <span>Help</span>
-            </a>
-          </div>
-        </section>
+        <div>
+          ${this.renderTagsList()}
+          <section class="quick-links">
+            <h3>Quick Links</h3>
+            <div>
+              <a href="hyper://private/">
+                <img src="asset:favicon-32:hyper://private/">
+                <span>My Private Site</span>
+              </a>
+            </div>
+            <div>
+              <a href=${this.profile?.url}>
+                <beaker-img-fallbacks>
+                  <img src="asset:favicon-32:${this.profile?.url}" slot="img1">
+                  <img src="beaker://assets/default-user-thumb" slot="img2">
+                </beaker-img-fallbacks>
+                <span>${this.profile?.title}</span>
+              </a>
+            </div>
+            <div>
+              <a href="beaker://library/">
+                <img class="favicon" src="asset:favicon-32:beaker://library/">
+                <span>My Library</span>
+              </a>
+            </div>
+            <div>
+              <a href="https://docs.beakerbrowser.com/">
+                <span class="far fa-fw fa-life-ring"></span>
+                <span>Help</span>
+              </a>
+            </div>
+          </section>
+          ${this.suggestedSites?.length > 0 ? html`
+            <section class="suggested-sites">
+              <h3>Suggested Sites</h3>
+              ${repeat(this.suggestedSites, site => html`
+                <div class="site">
+                  ${site.subscribed ? html`
+                    <button class="transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
+                  ` : html`
+                    <button @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
+                  `}
+                  <div class="title">
+                    <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
+                  </div>
+                  <div class="subscribers">
+                    <a href="#" data-tooltip=${shorten(site.subscribers.map(s => s.title).join(', '), 100)}>
+                      ${site.subscribers.length} known ${pluralize(site.subscribers.length, 'subscriber')}
+                    </a>
+                  </div>
+                </div>
+              `)}
+            </section>
+          ` : ''}
+        </div>
       </div>
     `
   }
@@ -296,7 +352,7 @@ class DesktopApp extends LitElement {
       case 'all': label = 'All'; break
       case 'mine': label = 'My Data'; break
       case 'others': label = 'Others\'s Data'; break
-      default: label = this.sourceOptions.find(opt => opt.url === this.currentSource)?.title
+      default: label = this.sourceOptions.find(opt => opt.href === this.currentSource)?.title
     }
     return html`
       <a class="nav-item" @click=${this.onClickSources}>
@@ -454,11 +510,11 @@ class DesktopApp extends LitElement {
       this.currentSource = v
       this.load()
     }
-    const items = this.sourceOptions.slice(1).map(({url, title}) => ({
+    const items = this.sourceOptions.slice(1).map(({href, title}) => ({
       icon: false,
       label: title,
       click: () => {
-        this.currentSource = url
+        this.currentSource = href
         this.load()
       }
     }))
@@ -721,6 +777,17 @@ class DesktopApp extends LitElement {
     this.legacyArchives.splice(this.legacyArchives.indexOf(archive), 1)
     toast.create('Archive removed')
     this.requestUpdate()
+  }
+
+  async onClickSuggestedSubscribe (e, site) {
+    e.preventDefault()
+    site.subscribed = true
+    this.requestUpdate()
+    await beaker.subscriptions.add({
+      href: site.url,
+      title: site.title,
+      site: this.profile.url
+    })
   }
 }
 
