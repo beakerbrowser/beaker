@@ -214,7 +214,7 @@ class ShellWindowToolbarMenu extends LitElement {
       bounds: {
         x: rect.right + 5,
         y: rect.top + 2,
-        width: 130,
+        width: 110,
         height: 30
       }
     })

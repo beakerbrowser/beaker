@@ -16,7 +16,7 @@ export class PaneLayout extends EventEmitter {
       let b = this.bounds[id]
       state.push({
         id,
-        isActive: b.pane.isActive,
+        isActive: b.pane?.tab?.primaryPane === b.pane,
         isEdge: b.isEdge,
         bounds: {x: b.x, y: b.y, width: b.width, height: b.height},
         url: b.pane.url,

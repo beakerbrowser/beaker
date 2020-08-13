@@ -91,8 +91,7 @@ class Tab extends EventEmitter {
   }
 
   get state () {
-    var activePane = this.activePane
-    var state = activePane ? this.activePane.state : {}
+    var state = this.primaryPane?.state || {}
     return Object.assign(state, {
       isActive: this.isActive,
       isPinned: this.isPinned,
@@ -141,6 +140,12 @@ class Tab extends EventEmitter {
 
   get activePane () {
     return this.panes.find(p => p.isActive)
+  }
+
+  get primaryPane () {
+    var pane = this.activePane
+    while (pane?.attachedPane) pane = pane.attachedPane
+    return pane
   }
 
   get tabBounds () {
@@ -543,7 +548,7 @@ class Tab extends EventEmitter {
 
   emitTabUpdateState (pane) {
     if (this.isHidden || !this.browserWindow) return
-    if (!pane.isActive) return
+    // if (!pane.isActive) return
     emitUpdateState(this)
   }
 
@@ -1201,7 +1206,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     if (url === '$new_tab') {
       url = defaultUrl
     }
-    getByIndex(getWindow(this.sender), index).loadURL(url)
+    getByIndex(getWindow(this.sender), index)?.primaryPane?.loadURL(url)
   },
 
   async minimizeTab (index) {
@@ -1281,19 +1286,19 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   },
 
   async goBack (index) {
-    getByIndex(getWindow(this.sender), index).webContents.goBack()
+    getByIndex(getWindow(this.sender), index)?.primaryPane?.webContents.goBack()
   },
 
   async goForward (index) {
-    getByIndex(getWindow(this.sender), index).webContents.goForward()
+    getByIndex(getWindow(this.sender), index)?.primaryPane?.webContents.goForward()
   },
 
   async stop (index) {
-    getByIndex(getWindow(this.sender), index).webContents.stop()
+    getByIndex(getWindow(this.sender), index)?.primaryPane?.webContents.stop()
   },
 
   async reload (index) {
-    getByIndex(getWindow(this.sender), index).webContents.reload()
+    getByIndex(getWindow(this.sender), index)?.primaryPane?.webContents.reload()
   },
 
   async resetZoom (index) {
