@@ -20,7 +20,7 @@ const DEFAULT_SEARCH_INDEXES = [
 export class QueryView extends LitElement {
   static get properties () {
     return {
-      index: {type: String},
+      index: {type: Array},
       title: {type: String},
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       sort: {type: String},
@@ -76,7 +76,7 @@ export class QueryView extends LitElement {
       return
     } else if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
       this.queueQuery()
-    } else if (changedProperties.has('index') && changedProperties.get('index') != this.index) {
+    } else if (changedProperties.has('index') && !isArrayEq(this.index, changedProperties.get('index'))) {
       this.results = undefined // clear results while loading
       this.queueQuery()
     } else if (changedProperties.has('sources') && !isArrayEq(this.sources, changedProperties.get('sources'))) {
@@ -102,7 +102,7 @@ export class QueryView extends LitElement {
     this.abortController = new AbortController()
     var startTs = Date.now()
     var results = []
-    if (this.index === 'notifications') {
+    if (this.index?.[0] === 'notifications') {
       results = await beaker.indexer.listNotifications({
         filter: {search: this.filter},
         limit: this.limit,
@@ -129,9 +129,9 @@ export class QueryView extends LitElement {
         })
         if (subresults.length === 0) break
         
+        offset += subresults.length
         subresults = subresults.reduce(reduceMultipleActions, [])
         results = results.concat(subresults)
-        offset += subresults.length
       } while (results.length < this.limit)
     }
     console.log(results)
@@ -325,7 +325,7 @@ export class QueryView extends LitElement {
       'beaker/index/microblogposts': niceDate(result.ctime),
       'beaker/index/pages': niceDate(result.ctime),
       'beaker/index/comments': niceDate(result.ctime)
-    })[result.index] || niceDate(result.ctime)
+    })[result.index] || result.url.split('/').pop() || niceDate(result.ctime)
 
     var action = ({
       'beaker/index/bookmarks': 'Bookmarked',
@@ -346,18 +346,23 @@ export class QueryView extends LitElement {
         })}
       >
         <a class="thumb" href=${result.site.url} title=${result.site.title} data-tooltip=${result.site.title}>
-          ${result.index === 'beaker/index/bookmarks' ? html`
-            <span class="icon">
-              <span class="far fa-star"></span>
-              ${result.site.url === 'hyper://private' ? html`<span class="fas fa-lock"></span>` : ''}
-            </span>
-          ` : html`
-            <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
-          `}
+          <span class="icon">
+            ${result.index === 'beaker/index/bookmarks' ? html`<span class="fas fa-star"></span>` : ''}
+            ${result.index === 'beaker/index/pages' ? html`<span class="fas fa-file-alt"></span>` : ''}
+            ${result.index === 'beaker/index/blogposts' ? html`<span class="fas fa-blog"></span>` : ''}
+            ${result.site.url === 'hyper://private' ? html`
+              <span class="fas fa-lock"></span>
+            ` : html`
+              <img class="small-thumb" src="${joinPath(result.site.url, 'thumb')}">
+            `}
+          </span>
         </a>
         <div class="container">
           <div class="title">
-            <a href=${href}>${title}</a>
+            <a class="link-title" href=${href}>${title}</a>
+            ${hrefp ? html`
+              (<a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a>)
+            ` : ''}
           </div>
           ${''/*<div class="tags">
             <a href="#">beaker</a>
@@ -365,13 +370,6 @@ export class QueryView extends LitElement {
             <a href="#">p2p</a>
           </div>*/}
           <div class="ctrls">
-            <a class="ctrl" @click=${e => this.onOpenActivity(e, href)} data-tooltip="View Thread">
-              <span class="far fa-fw fa-comment-alt"></span> comments
-            </a>
-            |
-            ${hrefp ? html`
-              <a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a> | 
-            ` : ''}
             <span class="action">${action}</span>
             by
             <span class="origin">
@@ -379,6 +377,10 @@ export class QueryView extends LitElement {
                 ${result.site.url === 'hyper://private' ? 'Me (Private)' : result.site.title}
               </a>
             </span>
+            |
+            <a class="ctrl" @click=${e => this.onOpenActivity(e, href)} data-tooltip="View Thread">
+              comments
+            </a>
             ${''/*TODO<a class="ctrl"><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>*/}
           </div>
         </div>

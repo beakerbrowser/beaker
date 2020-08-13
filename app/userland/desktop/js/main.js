@@ -94,12 +94,10 @@ class DesktopApp extends LitElement {
 
   get currentNavAsIndex () {
     switch (this.currentNav) {
-      case 'microblogposts': return 'beaker/index/microblogposts'
-      case 'comments': return 'beaker/index/comments'
-      case 'bookmarks': return 'beaker/index/bookmarks'
-      case 'blogposts': return 'beaker/index/blogposts'
-      case 'pages': return 'beaker/index/pages'
-      case 'notifications': return 'notifications'
+      case 'bookmarks': return ['beaker/index/bookmarks']
+      case 'posts': return ['beaker/index/microblogposts', 'beaker/index/comments']
+      case 'pages': return ['beaker/index/pages', 'beaker/index/blogposts']
+      case 'notifications': return ['notifications']
       default: return undefined
     }
   }
@@ -168,9 +166,9 @@ class DesktopApp extends LitElement {
         <nav>
           ${navItem('all', html`<span class="fas fa-fw fa-search"></span> <span class="label">All</span>`)}
           ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
-          ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blog Posts</span>`)}
+          ${navItem('posts', html`<span class="far fa-fw fa-comment"></span> <span class="label">Posts</span>`)}
           ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> <span class="label">Pages</span>`)}
-          <a class="nav-item" @click=${this.onClickNavMore} title="More">More <span class="fas fa-fw fa-caret-down"></span></a>
+          ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">More <span class="fas fa-fw fa-caret-down"></span></a>*/}
           <hr>
           ${this.renderSourcesCtrl()}
           <hr>
@@ -551,10 +549,6 @@ class DesktopApp extends LitElement {
                 <div class="icon"><i class="fas fa-sitemap"></i></div>
                 <div class="label">Website</div>
               </div>
-              <div class="dropdown-item ${active('page')}" @click=${() => onExpand('page')}>
-                <div class="icon"><i class="far fa-file-alt"></i></div>
-                <div class="label">Page</div>
-              </div>
               <div class="dropdown-item ${active('bookmark')}" @click=${() => onExpand('bookmark')}>
                 <div class="icon"><i class="far fa-star"></i></div>
                 <div class="label">Bookmark</div>
@@ -562,6 +556,10 @@ class DesktopApp extends LitElement {
               <div class="dropdown-item ${active('post')}" @click=${() => onExpand('post')}>
                 <div class="icon"><i class="far fa-comment"></i></div>
                 <div class="label">Post</div>
+              </div>
+              <div class="dropdown-item ${active('page')}" @click=${() => onExpand('page')}>
+                <div class="icon"><i class="far fa-file-alt"></i></div>
+                <div class="label">Page</div>
               </div>
             </div>
             ${expandedItem === 'website' ? html`

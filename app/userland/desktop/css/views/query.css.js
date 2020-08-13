@@ -360,10 +360,21 @@ h2 a:hover {
 }
 
 .result.link .thumb .icon .fa-lock {
-  font-size: 8px;
   position: absolute;
+  font-size: 8px;
   right: 3px;
   bottom: 27px;
+}
+
+.result.link .thumb .icon .small-thumb {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  object-fit: cover;
+  right: -3px;
+  bottom: 23px;
+  border: 2px solid var(--bg-color--default);
 }
 
 .result.link .container {
@@ -394,11 +405,15 @@ h2 a:hover {
   padding-bottom: 2px;
 }
 
-.result.link .title a {
+.result.link .title .link-title {
   letter-spacing: 0.5px;
   font-size: 17px;
   font-weight: 500;
   color: var(--text-color--result-link);
+}
+
+.result.link .title .link-origin {
+  color: var(--text-color--pretty-light);
 }
 
 .result.link .tags {
@@ -418,10 +433,6 @@ h2 a:hover {
 
 .result.link .ctrls {
   font-size: 13px;
-  color: var(--text-color--light);
-}
-
-.result.link .link-origin {
   color: var(--text-color--light);
 }
 
