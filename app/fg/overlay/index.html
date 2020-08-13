@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <style>
+      html, body {
+        background: transparent;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: none;
+        font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
+        font-size: 12px;
+        overflow: hidden;
+      }
+      #text {
+        white-space: pre;
+        margin-top: 1px;
+        padding: 0 8px 0;
+        height: 25px;
+        line-height: 25px;
+        color: #555;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        letter-spacing: 0.5px;
+        background: #fff;
+      }
+    </style>
+    <script>
+      window.set = opts => {
+        if (opts?.value) {
+          text.textContent = opts.value
+          document.body.style.display = 'block'
+        } else {
+          text.textContent = ''
+          document.body.style.display = 'none'
+        }
+      }
+    </script>
+  </head>
+  <body><div id="text"></div></body>
+</html>

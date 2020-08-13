@@ -127,6 +127,8 @@ class ShellWindowToolbarMenu extends LitElement {
       return html`
         <a
           @mousedown=${e => this.onMousedownLink(e, index)}
+          @mouseover=${e => this.onMouseoverLink(e, index)}
+          @mouseleave=${e => this.onMouseleaveLink(e, index)}
           class=${this.isPaneActive(item.url) ? 'pressed' : ''}
         >
           <img class="favicon" src="asset:favicon:${item.url}">
@@ -194,6 +196,32 @@ class ShellWindowToolbarMenu extends LitElement {
       }
       bg.views.togglePaneByOrigin('active', item.url)
     }
+  }
+
+  onMouseoverLink (e, index) {
+    let item = this.toolbar[index]
+    let rect = e.currentTarget.getClientRects()[0]
+    let label = ({
+      'beaker://activity': 'Comments',
+      'beaker://editor': 'Editor',
+      'beaker://explorer': 'Files Explorer',
+      'beaker://library': 'My Library',
+      'beaker://webterm': 'Terminal'
+    })[(new URL(item.url)).origin]
+    if (!label) return
+    bg.overlay.set({
+      value: label,
+      bounds: {
+        x: rect.right + 5,
+        y: rect.top + 2,
+        width: 130,
+        height: 30
+      }
+    })
+  }
+
+  onMouseleaveLink (e, index) {
+    bg.overlay.set(false)
   }
 
   async onMainContextmenu (e) {

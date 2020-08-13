@@ -18,6 +18,7 @@ import * as locationBarSubwindow from './subwindows/location-bar'
 import * as promptsSubwindow from './subwindows/prompts'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
+import * as overlaySubwindow from './subwindows/overlay'
 import * as siteInfoSubwindow from './subwindows/site-info'
 import * as tabSwitcherSubwindow from './subwindows/tab-switcher'
 import { findWebContentsParentWindow } from '../lib/electron'
@@ -35,6 +36,7 @@ const subwindows = {
   prompts: promptsSubwindow,
   permPrompt: permPromptSubwindow,
   modals: modalsSubwindow,
+  overlay: overlaySubwindow,
   siteInfo: siteInfoSubwindow,
   tabSwitcher: tabSwitcherSubwindow
 }

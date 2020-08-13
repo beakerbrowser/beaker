@@ -436,7 +436,7 @@ ${spinnerCSS}
   position: relative;
   top: 3px;
   height: 30px;
-  width: 235px;
+  width: 200px;
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
   background: var(--bg-color--background);
   transition: background 0.3s;
