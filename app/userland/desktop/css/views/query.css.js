@@ -63,6 +63,28 @@ h2 a:hover {
   margin: 0 5px 20px;
 }
 
+.bragging .search-engine {
+  display: inline-block;
+  margin: 0 3px;
+  position: relative;
+  top: 5px;
+}
+
+.bragging .search-engine:first-of-type {
+  margin-left: 4px;
+}
+
+.bragging .search-engine:hover {
+  text-decoration: none;
+}
+
+.bragging .search-engine img {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  object-fit: cover;
+}
+
 .results {
   font-size: 14px;
   box-sizing: border-box;
@@ -216,6 +238,7 @@ h2 a:hover {
 
 .result.row .date {
   color: var(--text-color--light);
+  margin: 0 6px;
 }
 
 .result.row .excerpt {
@@ -228,7 +251,7 @@ h2 a:hover {
 }
 
 .result.row .ctrl {
-  margin-left: 10px;
+  margin-left: 6px;
   font-size: 12px;
   color: var(--text-color--light);
   cursor: pointer;

@@ -178,8 +178,28 @@ export class QueryView extends LitElement {
         </div>
       `
     }
+    const searchLink = (label, url) => {
+      return html`
+        <a class="search-engine" title=${label} href=${url} data-tooltip=${label}>
+          <img src="beaker://assets/search-engines/${label.toLowerCase()}.png">
+        </a>
+      `
+    }
     return html`
-      ${this.lastQueryTime ? html`<div class="bragging">Query executed in ${this.lastQueryTime / 1e3} seconds</div>` : ''}
+      ${this.lastQueryTime ? html`
+        <div class="bragging">
+          Query executed in ${this.lastQueryTime / 1e3} seconds
+          &nbsp;|&nbsp;
+          Try your search on:
+          ${searchLink('DuckDuckGo', `https://duckduckgo.com?q=${encodeURIComponent(this.filter)}`)}
+          ${searchLink('Google', `https://google.com/search?q=${encodeURIComponent(this.filter)}`)}
+          ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.filter)}`)}
+          ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.filter)}`)}
+          ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.filter)}`)}
+          ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.filter)}`)}
+          ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.filter)}`)}
+        </div>
+      ` : ''}
       <div class="results">
         ${repeat(this.results, result => result.url, result => this.renderSearchResult(result))}
       </div>
@@ -246,9 +266,11 @@ export class QueryView extends LitElement {
                 </a>
               `)
             }
+            <span>|</span>
             <a class="date" href=${href}>${niceDate(result.ctime)}</a>
+            <span>|</span>
             <a class="ctrl" @click=${e => this.onOpenActivity(e, href)} data-tooltip="View Thread">
-              <span class="far fa-fw fa-comment-alt"></span> Comments
+              comments
             </a>
           </div>
           ${result.content ? html`

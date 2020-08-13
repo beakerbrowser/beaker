@@ -30,6 +30,8 @@ a:hover {
   background: var(--bg-color--default);
   border: 1px solid var(--border-color--light);
   border-radius: 4px;
+  max-width: 600px;
+  box-sizing: border-box;
 }
 
 .action-options button {
@@ -59,6 +61,7 @@ a:hover {
   position: relative;
   border: 1px solid var(--border-color--light);
   border-radius: 4px;
+  max-width: 600px;
 }
 
 .container:before {

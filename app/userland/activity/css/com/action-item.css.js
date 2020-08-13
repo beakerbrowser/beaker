@@ -30,7 +30,7 @@ ${tooltipCSS}
 .summary.header {
   position: relative;
   padding: 5px 9px 0;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .summary.header:before {
@@ -103,11 +103,12 @@ a:hover {
   background: var(--bg-color--default);
   border-radius: 4px;
   flex: 1;
+  max-width: 600px;
   margin-left: 5px;
 }
 
 .content {
-  padding: 10px;
+  padding: 8px 10px 10px;
   color: var(--text-color--default);
 }
 
