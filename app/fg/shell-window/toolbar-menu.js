@@ -7,13 +7,24 @@ import * as bg from './bg-process-rpc'
 
 const WINDOW_MENU_ENABLED = false
 
+const BASIC_BUILTINS = [
+  {builtin: true, url: 'beaker://library/'},
+  {builtin: true, url: 'beaker://activity/'},
+  {builtin: true, url: 'beaker://editor/'}
+]
+const ADVANCED_BUILTINS = [
+  {builtin: true, url: 'beaker://explorer/'},
+  {builtin: true, url: 'beaker://webterm/'}
+]
+
 class ShellWindowToolbarMenu extends LitElement {
   static get properties () {
     return {
       activeTabIndex: {type: Number},
       activeTab: {type: Object},
       toolbar: {type: Object},
-      openMenu: {type: String}
+      openMenu: {type: String},
+      isExpanded: {type: Boolean}
     }
   }
 
@@ -107,6 +118,7 @@ class ShellWindowToolbarMenu extends LitElement {
     this.activeTab = undefined
     this.toolbar = undefined
     this.openMenu = undefined
+    this.isExpanded = false
     this.addEventListener('contextmenu', this.onMainContextmenu.bind(this))
   }
 
@@ -116,19 +128,26 @@ class ShellWindowToolbarMenu extends LitElement {
     return !!this.activeTab.paneLayout.find(pane => pane.url.startsWith(origin))
   }
 
+  get visibleToolbar () {
+    let arr = BASIC_BUILTINS.concat({type: 'separator'})
+    if (this.toolbar?.length) arr = arr.concat(this.toolbar).concat({type: 'separator'})
+    if (this.isExpanded) arr = arr.concat(ADVANCED_BUILTINS)
+    return arr
+  }
+
   // rendering
   // =
 
   render () {
-    const btn = (item, index) => {
+    const btn = (item) => {
       if (item.type === 'separator') {
         return html`<hr>`
       }
       return html`
         <a
-          @mousedown=${e => this.onMousedownLink(e, index)}
-          @mouseover=${e => this.onMouseoverLink(e, index)}
-          @mouseleave=${e => this.onMouseleaveLink(e, index)}
+          @mousedown=${e => this.onMousedownLink(e, item)}
+          @mouseover=${e => this.onMouseoverLink(e, item)}
+          @mouseleave=${e => this.onMouseleaveLink(e, item)}
           class=${this.isPaneActive(item.url) ? 'pressed' : ''}
         >
           <img class="favicon" src="asset:favicon:${item.url}">
@@ -136,6 +155,16 @@ class ShellWindowToolbarMenu extends LitElement {
       `
     }
 
+    const expanderBtn = () => {
+      if (this.isExpanded) {
+        return html`
+          <a @click=${e => { this.isExpanded = false }}><span class="fas fa-fw fa-caret-up"></span></a>
+        `
+      }
+      return html`
+        <a @click=${e => { this.isExpanded = true }}><span class="fas fa-fw fa-caret-down"></span></a>
+      `
+    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${WINDOW_MENU_ENABLED ? html`
@@ -146,7 +175,8 @@ class ShellWindowToolbarMenu extends LitElement {
         ${this.renderMenuButton('help', 'Help')}
         <span class="divider"></span>
       ` : ''}
-      ${this.toolbar ? repeat(this.toolbar, btn) : ''}
+      ${repeat(this.visibleToolbar, item => item.url, btn)}
+      ${expanderBtn()}
       ${this.activeTab && this.activeTab.isLoading ? html`<div class="loading-bar"></div>` : ''}
     `
   }
@@ -163,19 +193,20 @@ class ShellWindowToolbarMenu extends LitElement {
   // events
   // =
 
-  async onMousedownLink (e, index) {
+  async onMousedownLink (e, item) {
     e.stopPropagation()
     var el = e.currentTarget
-    var item = this.toolbar[index]
     var menuChoice
     if (e.button === 2 || (e.button === 1 && (e.metaKey || e.ctrlKey))) {
       var menu = [
         {id: 'goto', label: 'Open in Current Pane'},
         {id: 'tab', label: 'Open in New Tab'},
         {id: 'window', label: 'Open in New Window'},
-        {type: 'separator'},
-        {id: 'remove', label: 'Remove from Toolbar'}
       ]
+      if (!item.builtin) {
+        menu.push({type: 'separator'})
+        menu.push({id: 'remove', label: 'Remove from Toolbar'})
+      }
       menuChoice = await bg.beakerBrowser.showContextMenu(menu)
     } 
     if (menuChoice === 'tab' || e.button === 1) {
@@ -187,7 +218,7 @@ class ShellWindowToolbarMenu extends LitElement {
     } else if (menuChoice === 'window') {
       bg.beakerBrowser.newWindow({pages: [item.url]})
     } else if (menuChoice === 'remove') {
-      bg.toolbar.remove(index)
+      bg.toolbar.remove(this.toolbar.indexOf(item))
     } else if (e.button === 0) {
       if (this.isPaneActive(item.url)) {
         el.classList.remove('pressed')
@@ -198,8 +229,7 @@ class ShellWindowToolbarMenu extends LitElement {
     }
   }
 
-  onMouseoverLink (e, index) {
-    let item = this.toolbar[index]
+  onMouseoverLink (e, item) {
     let rect = e.currentTarget.getClientRects()[0]
     let label = ({
       'beaker://activity': 'Comments',
@@ -207,20 +237,19 @@ class ShellWindowToolbarMenu extends LitElement {
       'beaker://explorer': 'Files Explorer',
       'beaker://library': 'My Library',
       'beaker://webterm': 'Terminal'
-    })[(new URL(item.url)).origin]
-    if (!label) return
+    })[(new URL(item.url)).origin] || item.url
     bg.overlay.set({
       value: label,
       bounds: {
         x: rect.right + 5,
         y: rect.top + 2,
-        width: 110,
+        width: 50 + label.length * 5, // rough approximation of needed width
         height: 30
       }
     })
   }
 
-  onMouseleaveLink (e, index) {
+  onMouseleaveLink (e, item) {
     bg.overlay.set(false)
   }
 

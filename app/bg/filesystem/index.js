@@ -7,7 +7,6 @@ import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
 import * as bookmarks from './bookmarks'
 import * as subscriptions from './subscriptions'
-import { ensure as ensureToolbar } from './toolbar'
 import * as trash from './trash'
 import * as setupFlow from '../ui/setup-flow'
 import * as modals from '../ui/subwindows/modals'
@@ -94,7 +93,6 @@ export async function setup () {
   try {
     // ensure common dirs & data
     await ensureDir(PATHS.BOOKMARKS)
-    await ensureToolbar()
 
     // default bookmarks
     if (isInitialCreation) {

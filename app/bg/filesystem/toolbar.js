@@ -34,23 +34,6 @@ export async function remove (index) {
   events.emit('changed')
 }
 
-export async function ensure () {
-  try {
-    await filesystem.get().pda.stat('/beaker/toolbar.json')
-  } catch (e) {
-    await write({
-      items: [
-        {url: 'beaker://activity/'},
-        {url: 'beaker://editor/'},
-        {url: 'beaker://explorer/'},
-        {type: 'separator'},
-        {url: 'beaker://library/'},
-        {url: 'beaker://webterm/'}
-      ]
-    })
-  }
-}
-
 // internal methods
 // =
 
