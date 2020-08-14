@@ -300,9 +300,9 @@ h2 a:hover {
 
 .result.action .thumb {
   display: block;
-  width: 36px;
-  flex: 0 0 36px;
-  height: 36px;
+  width: 30px;
+  flex: 0 0 30px;
+  height: 30px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
   margin-right: 18px;
@@ -323,7 +323,7 @@ h2 a:hover {
   height: 100%;
   text-align: center;
   color: var(--text-color--light);
-  line-height: 36px;
+  line-height: 30px;
   font-size: 12px;
 }
 
@@ -355,9 +355,9 @@ h2 a:hover {
 
 .result.link .thumb {
   display: block;
-  width: 36px;
-  flex: 0 0 36px;
-  height: 36px;
+  width: 30px;
+  flex: 0 0 30px;
+  height: 30px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
   margin-right: 18px;
@@ -378,15 +378,15 @@ h2 a:hover {
   height: 100%;
   text-align: center;
   color: var(--text-color--light);
-  line-height: 36px;
+  line-height: 30px;
   font-size: 12px;
 }
 
 .result.link .thumb .icon .fa-lock {
   position: absolute;
   font-size: 8px;
-  right: 3px;
-  bottom: 27px;
+  right: 0px;
+  bottom: 24px;
 }
 
 .result.link .thumb .icon .small-thumb {
@@ -395,8 +395,8 @@ h2 a:hover {
   height: 14px;
   border-radius: 50%;
   object-fit: cover;
-  right: -3px;
-  bottom: 23px;
+  right: -6px;
+  bottom: 20px;
   border: 2px solid var(--bg-color--default);
 }
 
@@ -482,7 +482,7 @@ h2 a:hover {
 .result.card {
   position: relative;
   display: grid;
-  grid-template-columns: 50px 1fr;
+  grid-template-columns: 45px 1fr;
   margin: 10px 24px 10px 4px;
   color: var(--text-color--lightish);
 }
@@ -500,13 +500,13 @@ h2 a:hover {
 
 .result.card .thumb {
   display: block;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
   margin-right: 10px;
   position: relative;
-  top: 5px;
+  top: 8px;
 }
 
 .result.card .thumb img {
@@ -531,7 +531,7 @@ h2 a:hover {
   display: block;
   position: absolute;
   top: 20px;
-  left: 46px;
+  left: 41px;
   width: 8px;
   height: 8px;
   z-index: 10;
@@ -568,7 +568,7 @@ h2 a:hover {
 .result.card .header {
   display: flex;
   align-items: baseline;
-  font-size: 14px;
+  font-size: 13px;
   max-width: 562px;
   padding: 8px 12px 4px;
 }

@@ -378,6 +378,10 @@ main {
   }
 }
 
+.twocol .sidebar .quick-links h3 {
+  margin-bottom: 5px;
+}
+
 .quick-links a {
   display: inline-flex;
   align-items: center;

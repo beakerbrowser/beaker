@@ -108,6 +108,7 @@ a:hover {
 }
 
 .content {
+  font-size: 14px;
   padding: 8px 10px 10px;
   color: var(--text-color--default);
 }
