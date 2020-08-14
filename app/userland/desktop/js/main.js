@@ -130,7 +130,14 @@ class DesktopApp extends LitElement {
       case 'posts': return ['beaker/index/microblogposts', 'beaker/index/comments']
       case 'pages': return ['beaker/index/pages', 'beaker/index/blogposts']
       case 'notifications': return ['notifications']
-      default: return undefined
+      default:
+        return [
+          'beaker/index/blogposts',
+          'beaker/index/bookmarks',
+          'beaker/index/comments',
+          'beaker/index/microblogposts',
+          'beaker/index/pages'
+        ]
     }
   }
 
