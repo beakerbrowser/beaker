@@ -71,7 +71,7 @@ export class EditBookmarkPopup extends BasePopup {
           <label for="title-input">Title</label>
           <input required type="text" id="title-input" name="title" value="${this.bookmark?.title || ''}" placeholder="E.g. Beaker Browser" />
 
-          <label class="checkbox" for="public-input">
+          <label class="checkbox" for="public-input" @click=${this.onTogglePublic}>
             <input type="checkbox" id="public-input" name="public" value="1" ?checked=${isPublic} />
             Public
           </label>
@@ -85,7 +85,7 @@ export class EditBookmarkPopup extends BasePopup {
         <div class="actions">
           ${this.bookmark ? html`<button type="button" class="btn delete" @click=${this.onDelete} tabindex="3">Delete</button>` : ''}
           <button type="button" class="btn" @click=${this.onReject} tabindex="2">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="1">Save</button>
+          <button type="submit" class="btn primary" tabindex="1">${isPublic ? 'Publish' : 'Save'}</button>
         </div>
       </form>
     `
@@ -97,6 +97,11 @@ export class EditBookmarkPopup extends BasePopup {
 
   // events
   // =
+
+  onTogglePublic (e) {
+    var isPublic = this.shadowRoot.querySelector('[name="public"]').checked
+    this.shadowRoot.querySelector('button.primary').textContent = isPublic ? 'Publish' : 'Save'
+  }
 
   async onSubmit (e) {
     e.preventDefault()

@@ -3,58 +3,163 @@ import { html, css } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js
 import { BasePopup } from 'beaker://app-stdlib/js/com/popups/base.js'
 import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
 import { joinPath } from 'beaker://app-stdlib/js/strings.js'
+import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
 
 // exported api
 // =
 
 export class NewPagePopup extends BasePopup {
+  static get properties () {
+    return {
+      type: {type: String},
+      title: {type: String},
+      visibility: {type: String}
+    }
+  }
+
   constructor (opts) {
     super()
-    this.type = opts.type
-    this.private = opts.private
-    this.draft = opts.draft
-    this.drive = opts.drive
+    this.profile = opts.profile
 
+    this.type = 'page'
     this.title = ''
-    this.path = this.getDefaultPath()
+    this.visibility = 'private'
   }
 
-  getDefaultPath () {
-    if (this.draft) {
-      return `/drafts/`
-    }
-    if (this.type === 'beaker/blogpost') {
-      return `/blog/`
-    }
-    return `/pages/`
+  get shouldShowHead () {
+    return false
   }
 
-  async computePath () {
-    var path = this.getDefaultPath()
-    var name = await getAvailableName(path, this.title.toLowerCase(), this.drive, 'md')
-    return `${path}${name}`
+  get drive () {
+    if (this.visibility === 'public') {
+      return beaker.hyperdrive.drive(this.profile.url)
+    }
+    return beaker.hyperdrive.drive('hyper://private')
   }
 
   static get styles () {
     return [popupsCSS, css`
     .popup-inner {
-      width: 500px;
+      width: 520px;
+      border-radius: 8px;
     }
 
-    .popup-inner label {
+    .popup-inner .body {
+      padding: 0;
+    }
+
+    nav {
+      display: flex;
+      background: var(--bg-color--semi-light);
+      padding: 12px 14px 0;
+      border-top-left-radius: 3px;
+      border-top-right-radius: 3px;
+      border-bottom: 1px solid var(--border-color--light);
+    }
+    
+    nav a {
+      border: 1px solid transparent;
+      padding: 5px 14px;
+    }
+    
+    nav a.current {
+      position: relative;
+      background: var(--bg-color--default);
+      border: 1px solid var(--border-color--light);
+      border-bottom: 1px solid transparent;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
+    }
+
+    nav a.current:after {
+      content: '';
+      background: var(--bg-color--default);
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -2px;
+      height: 2px;
+    }
+    
+    nav a:hover:not(.current) {
+      text-decoration: none;
+      cursor: pointer;
+      background: var(--bg-color--light);
+    }
+
+    nav a :-webkit-any(.far, .fas) {
+      font-size: 12px;
+    }
+
+    form {
+      padding: 16px 16px 14px;
+    }
+
+    .where {
+      display: grid;
+      grid-template-columns: 50px 1fr;
+      grid-gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .where img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .where .title {
+      font-size: 15px;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .where .visibility {
+      display: inline-block;
+      background: var(--bg-color--semi-light);
+      border-radius: 4px;
+      padding: 5px;
       font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
     }
 
-    .popup-inner label[for="pinned-input"] {
-      margin: 16px 0;
+    section {
+      margin-left: 60px;
     }
 
-    .popup-inner input[type="checkbox"] {
-      display: inline;
+    label {
+      font-size: 11px;
+      color: var(--text-color--light);
+    }
+
+    .popup-inner input[name="title"] {
+      font-size: 17px;
       height: auto;
-      width: auto;
-      margin: 0 5px;
+      padding: 8px 10px 6px;
+      letter-spacing: 0.7px;
+    }
+
+    input[name="title"]::placeholder {
+      font-size: 17px;
+    }
+
+    .popup-inner select {
+      border: 1px solid var(--border-color--light);
+      border-radius: 4px;
+      padding: 6px 10px;
+      height: auto;
+      width: 100px;
+      -webkit-appearance: unset;
+    }
+
+    .tip {
+      font-size: 12px;
+      margin-top: 12px;
+      color: var(--text-color--light);
     }
     `]
   }
@@ -62,14 +167,10 @@ export class NewPagePopup extends BasePopup {
   // management
   //
 
-  static async create (opts) {
-    if (opts.private || opts.draft) {
-      opts.drive = beaker.hyperdrive.drive('hyper://private/')
-    } else {
-      let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
-      opts.drive = beaker.hyperdrive.drive(addressBook.profiles[0].key)
-    }
-    return BasePopup.create(NewPagePopup, opts)
+  static async create () {
+    var profile = await beaker.browser.getProfile()
+    profile.url = `hyper://${profile.key}`
+    return BasePopup.create(NewPagePopup, {profile})
   }
 
   static destroy () {
@@ -79,32 +180,73 @@ export class NewPagePopup extends BasePopup {
   // rendering
   // =
 
-  renderTitle () {
-    var title = 'page'
-    if (this.type === 'beaker/blogpost') {
-      title = 'blog post'
-    }
-    if (this.draft) title += ' draft'
-    if (this.private) title = 'private ' + title
-    return `New ${title}`
-  }
-
   renderBody () {
+    const navItem = (id, label) => html`
+      <a
+        class=${this.type === id ? 'current' : ''}
+        @click=${e => { this.type = id }}
+      >${label}</a>
+    `
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <nav>
+        ${navItem('page', html`<span class="far fa-fw fa-file"></span> Page`)}
+        ${navItem('blogpost', html`<span class="fas fa-fw fa-blog"></span> Blogpost`)}
+      </nav>
       <form @submit=${this.onSubmit}>
-        <div>
+        <div class="where">
+          <img src=${joinPath(this.profile.url, 'thumb')}>
+          <div>
+            <div class="title">${this.profile.title}</div>
+            <div>
+              <a class="visibility" @click=${this.onClickVisibility}>
+                ${this.visibility === 'private' ? html`
+                  <span class="fas fa-fw fa-lock"></span> Only Me
+                ` : html`
+                  <span class="fas fa-fw fa-globe-africa"></span> Everybody
+                `}
+                <span class="fas fa-fw fa-caret-down"></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <section>
           <label for="title-input">Title</label>
-          <input required type="text" id="title-input" name="title" value=${this.title} @keyup=${this.onKeyupTitle} />
-        </div>
-        <div>
-          <label for="path-input">Location</label>
-          <input type="text" id="path-input" name="path" placeholder="/" value="My Private Site ${this.path}" disabled />
-        </div>
+          <input
+            required
+            type="text"
+            id="title-input"
+            name="title"
+            placeholder="Title"
+            value=${this.title}
+            @keyup=${this.onKeyupTitle}
+          />
+        </section>
+
+        <section>
+          <label for="format-input">Format</label>
+          <select id="format-input" name="format">
+            <option value="markdown">Markdown</option>
+          </select>
+        </section>
+
+        <section class="tip">
+          <span class="fas fa-fw fa-info"></span>
+          You can make a ${this.type} to "public" after working on it privately first.
+        </section>
 
         <div class="actions">
           <button type="button" class="btn" @click=${this.onReject} tabindex="2">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="1">Create</button>
+          <button type="submit" class="btn primary" tabindex="1" ?disabled=${!this.title}>
+            ${this.visibility === 'private' ? html`
+              <span class="fas fa-fw fa-lock"></span>
+            ` : html`
+              <span class="fas fa-fw fa-globe-africa"></span>
+            `}
+            Create ${this.visibility} ${this.type}
+          </button>
         </div>
       </form>
     `
@@ -119,21 +261,41 @@ export class NewPagePopup extends BasePopup {
 
   async onKeyupTitle (e) {
     this.title = e.currentTarget.value.trim()
-    this.path = await this.computePath()
     this.requestUpdate()
+  }
+
+  onClickVisibility (e) {
+    var rect = e.currentTarget.getClientRects()[0]
+    e.preventDefault()
+    e.stopPropagation()
+    const items = [
+      {icon: 'fas fa-lock', label: 'Only Me (Private)', click: () => { this.visibility = 'private' } },
+      {icon: 'fas fa-globe-africa', label: 'Everybody (Public)', click: () => { this.visibility = 'public' } }
+    ]
+    contextMenu.create({
+      x: rect.left,
+      y: rect.bottom,
+      noBorders: true,
+      roomy: true,
+      rounded: true,
+      style: `padding: 6px 0`,
+      items,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
+    })
   }
 
   async onSubmit (e) {
     e.preventDefault()
     e.stopPropagation()
 
+    var path = (this.type === 'blogpost') ? '/blog/' : '/pages/'
+    var name = await getAvailableName(path, this.title.toLowerCase(), this.drive, 'md')
     var metadata = {
-      type: this.type,
+      type: this.type === 'blogpost' ? 'beaker/blogpost' : 'beaker/page',
       title: this.title
     }
-    if (this.draft) metadata['beaker/draft'] = '1'
-    await this.drive.writeFile(this.path, `# ${this.title}`, {metadata})
-    var url = joinPath(this.drive.url, this.path)
+    await this.drive.writeFile(joinPath(path, name), `# ${this.title}`, {metadata})
+    var url = joinPath(this.drive.url, path, name)
     this.dispatchEvent(new CustomEvent('resolve', {detail: {url}}))
   }
 }

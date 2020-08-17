@@ -31,7 +31,6 @@ class PostComposer extends LitElement {
     return [inputsCSS, buttonsCSS, tooltipCSS, css`
     nav {
       display: flex;
-      font-size: 12px;
       border-top-left-radius: 3px;
       border-top-right-radius: 3px;
     }
@@ -46,8 +45,8 @@ class PostComposer extends LitElement {
       background: var(--bg-color--default);
       border: 1px solid var(--border-color--light);
       border-bottom: 1px solid transparent;
-      border-top-left-radius: 2px;
-      border-top-right-radius: 2px;
+      border-top-left-radius: 4px;
+      border-top-right-radius: 4px;
     }
 
     nav a.current:after {
@@ -92,7 +91,7 @@ class PostComposer extends LitElement {
       border-color: var(--border-color--light);
     }
 
-    textarea:placeholder {
+    textarea::placeholder {
       font-family: system-ui;
       font-size: 14px;
     }
@@ -114,7 +113,7 @@ class PostComposer extends LitElement {
     .preview {
       font-size: 14px;
       border: 1px solid var(--border-color--light);
-      border-radius: 2px;
+      border-radius: 4px;
       padding: 14px;
     }
     .preview > :first-child {
@@ -139,10 +138,6 @@ class PostComposer extends LitElement {
       color: var(--text-color--light);
     }
     `]
-  }
-
-  get shouldCloseOnOuterClick () {
-    return false
   }
 
   // rendering
@@ -322,8 +317,46 @@ export class AddPostPopup extends BasePopup {
     return [popupsCSS, css`
     .popup-inner {
       width: 640px;
+      border-radius: 8px;
+    }
+    .popup-inner .body {
+      padding: 14px 12px 10px;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      grid-gap: 10px;
+    }
+    img {
+      margin-top: 36px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    post-composer {
+      display: block;
+      position: relative;
+    }
+    post-composer:before {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 47px;
+      left: -4px;
+      width: 8px;
+      height: 8px;
+      z-index: 1;
+      background: var(--bg-color--default);
+      border-top: 1px solid var(--border-color--light);
+      border-left: 1px solid var(--border-color--light);
+      transform: rotate(-45deg);
     }
     `]
+  }
+
+  get shouldShowHead () {
+    return false
   }
 
   get shouldCloseOnOuterClick () {
@@ -350,11 +383,14 @@ export class AddPostPopup extends BasePopup {
 
   renderBody () {
     return html`
-      <post-composer
-        drive-url=${this.driveUrl}
-        @publish=${this.onPublish}
-        @cancel=${this.onCancel}
-      ></post-composer>
+      <main>
+        <img src=${joinPath(this.driveUrl, 'thumb')}>
+        <post-composer
+          drive-url=${this.driveUrl}
+          @publish=${this.onPublish}
+          @cancel=${this.onCancel}
+        ></post-composer>
+      </main>
     `
   }
 
