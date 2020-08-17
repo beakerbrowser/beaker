@@ -141,6 +141,12 @@ class DesktopApp extends LitElement {
     }
   }
 
+  get currentNavDateTitleRange () {
+    switch (this.currentNav) {
+      case 'pages': return 'month'
+    }
+  }
+
   get sources () {
     if (this.currentSource === 'all') {
       return undefined // all data in the index this.sourceOptions.map(source => source.url)
@@ -337,15 +343,18 @@ class DesktopApp extends LitElement {
         <div class="all-view">
           ${this.currentNav === 'all' ? this.renderPins() : ''}
           <div class="twocol">
-            <query-view
-              content-type="all"
-              show-date-titles
-              .index=${this.currentNavAsIndex}
-              .sources=${this.sources}
-              limit="50"
-              @load-state-updated=${e => this.requestUpdate()}
-              .profileUrl=${this.profile ? this.profile.url : ''}
-            ></query-view>
+            <div>
+              <query-view
+                content-type="all"
+                show-date-titles
+                date-title-range=${this.currentNavDateTitleRange}
+                .index=${this.currentNavAsIndex}
+                .sources=${this.sources}
+                limit="50"
+                @load-state-updated=${e => this.requestUpdate()}
+                .profileUrl=${this.profile ? this.profile.url : ''}
+              ></query-view>
+            </div>
             ${this.renderSidebar()}
           </div>
         </div>

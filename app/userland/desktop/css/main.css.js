@@ -361,7 +361,7 @@ main {
 }
 
 .twocol .sidebar section {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 @media (max-width: 900px) {

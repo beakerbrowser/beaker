@@ -345,7 +345,7 @@ h2 a:hover {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
-  margin: 20px 24px 20px 4px;
+  margin: 24px 24px 24px 4px;
 }
 
 .result.link.unread {
@@ -425,7 +425,7 @@ h2 a:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text-color--light);
-  padding-bottom: 2px;
+  
 }
 
 .result.link .title .link-title {
@@ -437,6 +437,10 @@ h2 a:hover {
 
 .result.link .title .link-origin {
   color: var(--text-color--pretty-light);
+}
+
+.result.link .date a {
+  color: var(--text-color--light);
 }
 
 .result.link .tags {
@@ -457,6 +461,12 @@ h2 a:hover {
 .result.link .ctrls {
   font-size: 13px;
   color: var(--text-color--light);
+}
+
+.result.link .ctrls :-webkit-any(.fas, .far) {
+  font-size: 11px;
+  position: relative;
+  top: -1px;
 }
 
 .result.link .ctrls a.ctrl {
@@ -640,7 +650,7 @@ h2 a:hover {
   color: var(--text-color--default);
   line-height: 1.3125;
   font-size: 14px;
-  padding: 0px 12px 8px;
+  padding: 0px 12px 10px;
 }
 
 .result.card .content > :first-child { margin-top: 0; }
@@ -686,12 +696,6 @@ h2 a:hover {
 
 /** INTERACTIONS BTWN TYPES */
 
-.result.card + .result.link {
-  margin-top: 24px;
-}
-.result.link + .result.card {
-  margin-top: 28px;
-}
 .notification + .result {
   margin-top: 0;
 }

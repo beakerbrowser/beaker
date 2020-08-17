@@ -23,6 +23,7 @@ export class QueryView extends LitElement {
       index: {type: Array},
       title: {type: String},
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
+      dateTitleRange: {type: String, attribute: 'date-title-range'},
       sort: {type: String},
       limit: {type: Number},
       filter: {type: String},
@@ -42,6 +43,7 @@ export class QueryView extends LitElement {
     this.index = undefined
     this.title = ''
     this.showDateTitles = false
+    this.dateTitleRange = undefined
     this.sort = 'ctime'
     this.limit = undefined
     this.filter = undefined
@@ -208,7 +210,7 @@ export class QueryView extends LitElement {
 
   renderDateTitle (result) {
     if (!this.showDateTitles) return ''
-    var resultNiceDate = dateHeader(result.ctime)
+    var resultNiceDate = dateHeader(result.ctime, this.dateTitleRange)
     if (this.lastResultNiceDate === resultNiceDate) return ''
     this.lastResultNiceDate = resultNiceDate
     return html`
@@ -350,10 +352,10 @@ export class QueryView extends LitElement {
     })[result.index] || result.url.split('/').pop() || niceDate(result.ctime)
 
     var action = ({
-      'beaker/index/bookmarks': 'Bookmarked',
-      'beaker/index/blogposts': 'Blogpost created',
-      'beaker/index/comments': 'Comment created',
-      'beaker/index/pages': 'Page created'
+      'beaker/index/bookmarks': 'Bookmark',
+      'beaker/index/blogposts': 'Blogpost',
+      'beaker/index/comments': 'Comment',
+      'beaker/index/pages': 'Page'
     })[result.index] || 'File created'
 
     return html`
@@ -368,42 +370,32 @@ export class QueryView extends LitElement {
         })}
       >
         <a class="thumb" href=${result.site.url} title=${result.site.title} data-tooltip=${result.site.title}>
-          <span class="icon">
-            ${result.index === 'beaker/index/bookmarks' ? html`<span class="fas fa-star"></span>` : ''}
-            ${result.index === 'beaker/index/pages' ? html`<span class="fas fa-file"></span>` : ''}
-            ${result.index === 'beaker/index/blogposts' ? html`<span class="fas fa-blog"></span>` : ''}
-            ${result.site.url === 'hyper://private' ? html`
-              <span class="fas fa-lock"></span>
-            ` : html`
-              <img class="small-thumb" src="${joinPath(result.site.url, 'thumb')}">
-            `}
-          </span>
+          <img class="favicon" src="${joinPath(result.site.url, 'thumb')}">
         </a>
         <div class="container">
           <div class="title">
             <a class="link-title" href=${href}>${title}</a>
             ${hrefp ? html`
-              (<a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a>)
+              <a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a>
             ` : ''}
           </div>
-          ${''/*<div class="tags">
-            <a href="#">beaker</a>
-            <a href="#">hyperspace</a>
-            <a href="#">p2p</a>
-          </div>*/}
           <div class="ctrls">
+            ${result.index === 'beaker/index/bookmarks' ? html`<span class="far fa-star"></span>` : ''}
+            ${result.index === 'beaker/index/pages' ? html`<span class="far fa-file"></span>` : ''}
+            ${result.index === 'beaker/index/blogposts' ? html`<span class="fas fa-blog"></span>` : ''}
             <span class="action">${action}</span>
             by
             <span class="origin">
               <a class="author" href=${result.site.url} title=${result.site.title}>
-                ${result.site.url === 'hyper://private' ? 'Me (Private)' : result.site.title}
+                ${result.site.url === 'hyper://private' ? 'Me (Privately)' : result.site.title}
               </a>
             </span>
-            |
-            <a class="ctrl" @click=${e => this.onOpenActivity(e, href)} data-tooltip="View Thread">
-              comments
-            </a>
-            ${''/*TODO<a class="ctrl"><span class="far fa-fw fa-star"></span><span class="fas fa-fw fa-caret-down"></span></a>*/}
+            &middot;
+            <span class="date">
+              <a href=${result.url} data-tooltip=${(new Date(result.ctime)).toLocaleString()}>
+                ${relativeDate(result.ctime)}
+              </a>
+            </span>
           </div>
         </div>
       </div>
@@ -663,11 +655,12 @@ const MINUTE = 1e3 * 60
 const HOUR = 1e3 * 60 * 60
 const DAY = HOUR * 24
 
-function dateHeader (ts) {
+function dateHeader (ts, range) {
   const endOfTodayMs = +((new Date).setHours(23,59,59,999))
   var diff = endOfTodayMs - ts
   if (diff < DAY) return 'Today'
   if (diff < DAY * 6) return (new Date(ts)).toLocaleDateString('default', { weekday: 'long' })
+  if (range === 'month') return (new Date(ts)).toLocaleDateString('default', { month: 'short', year: 'numeric' })
   return (new Date(ts)).toLocaleDateString('default', { weekday: 'long', month: 'short', day: 'numeric' })
 }
 
@@ -680,7 +673,6 @@ function relativeDate (d) {
   if (diff < HOUR) return rtf.format(Math.ceil(diff / MINUTE * -1), 'minute')
   if (dayDiff < 1) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
   if (dayDiff <= 30) return rtf.format(dayDiff * -1, 'day')
-  if (dayDiff <= 90) return rtf.format(Math.floor(dayDiff / 7) * -1, 'week')
   if (dayDiff <= 365) return rtf.format(Math.floor(dayDiff / 30) * -1, 'month')
   return rtf.format(Math.floor(dayDiff / 365) * -1, 'year')
 }
