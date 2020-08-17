@@ -56,7 +56,7 @@ export default {
 
     opts = opts && typeof opts === 'object' ? opts : {}
     var {tab, senderPane} = getPaneObjects(this.sender)
-    var newPane = tab.createPane({url, setActive: true})
+    var newPane = tab.createPane({url, setActive: true, splitDir: 'vert', after: tab.activePane})
     if (opts.attach) {
       if (!(await permissions.requestPermission('panesAttach', this.sender))) {
         throw new UserDeniedError()
