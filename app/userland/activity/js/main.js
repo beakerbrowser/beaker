@@ -107,7 +107,7 @@ class ActivityApp extends LitElement {
       case 'beaker/comment': return 'comment'
       case 'beaker/page': return 'webpage'
       case 'beaker/microblogpost': return 'microblog post'
-      default: return 'file'
+      default: return 'page'
     }
   }
 
@@ -181,42 +181,18 @@ class ActivityApp extends LitElement {
         todo: detached mode
       `
     }
-    var isRoot = this.isRoot
-    const navItem = (id, label) => html`
-      <a
-        class=${this.currentView === id ? 'current' : ''}
-        @click=${e => { this.currentView = id }}
-      >${label}</a>
-    `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <header>
-        <a class="close" @click=${this.onClickClose}><span class="fas fa-times"></span></a>
-        <span class="title">Discussion: ${this.renderFileTitle()}</span>
-      </header>
       ${this.renderLoading()}
-      ${this.currentView === 'summary' ? html`
-        ${this.fileInfo && this.fileInfo.isFile() ? html`
-          <res-summary
-            author-url=${this.siteInfo?.url}
-            author-title=${this.siteInfo?.title}
-            .icon=${this.typeIcon}
-            .label=${this.typeLabel}
-            .title=${this.fileTitle}
-            href=${this.url}
-            .date=${this.fileInfo?.ctime}
-            .content=${this.fileContent ? beaker.markdown.toHTML(this.fileContent) : undefined}
-          ></res-summary>
-        ` : ''}
       <nav>
         <a
           class="nav-item ${!this.privateMode ? 'active' : ''}"
           @click=${() => this.setPrivateMode(false)}
-        >Public</a>
+        >Posts About This</a>
         <a
           class="nav-item ${this.privateMode ? 'active' : ''}"
           @click=${() => this.setPrivateMode(true)}
-        >Private</a>
+        >Private Notes</a>
       </nav>
       <div class="activity-feed">
         ${this.renderAnnotations()}
@@ -225,12 +201,6 @@ class ActivityApp extends LitElement {
           profile-url=${this.privateMode ? 'hyper://private/' : this.profileUrl}
         ></comment-box>
       </div>
-      ` : ''}
-      ${this.currentView === 'advanced' ? html`
-        ${isRoot ? html`` : html`
-          <file-info url=${this.url} .fileInfo=${this.fileInfo}></file-info>
-        `}
-      ` : ''}
     `
   }
 
@@ -261,7 +231,7 @@ class ActivityApp extends LitElement {
         `
       } else {
         return html`
-          <div class="empty"><span class="fas fa-info"></span> Be the first to say something!</div>
+          <div class="empty"><span class="fas fa-info"></span> Create a post about this ${this.typeLabel} for your subscribers to see.</div>
         `
       }
     }
