@@ -172,7 +172,7 @@ nav a.nav-item {
   cursor: pointer;
   font-size: 12px;
   padding: 10px 8px;
-  margin-right: 10px;
+  margin-right: 12px;
   border-bottom: 2px solid transparent;
 }
 
@@ -212,7 +212,7 @@ nav a.nav-item.notice:before {
 nav hr {
   border: 0;
   border-left: 1px solid var(--border-color--semi-light);
-  margin: 10px 10px 10px 0;
+  margin: 10px 12px 10px 0;
 }
 
 @media (max-width: 600px) {

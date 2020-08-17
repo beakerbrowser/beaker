@@ -129,6 +129,7 @@ class DesktopApp extends LitElement {
       case 'bookmarks': return ['beaker/index/bookmarks']
       case 'posts': return ['beaker/index/microblogposts', 'beaker/index/comments']
       case 'pages': return ['beaker/index/pages', 'beaker/index/blogposts']
+      case 'sites': return ['beaker/index/subscriptions']
       case 'notifications': return ['notifications']
       default:
         return [
@@ -206,13 +207,13 @@ class DesktopApp extends LitElement {
             <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
           ` : ''}
           <input @keyup=${this.onKeyupSearch}>
-          <button class="rounded primary" @click=${this.onClickNew}>New <span class="fas fa-fw fa-plus"></span></button>
         </div>
         <nav>
           ${navItem('all', html`<span class="fas fa-fw fa-search"></span> <span class="label">All</span>`)}
           ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
           ${navItem('posts', html`<span class="far fa-fw fa-comment"></span> <span class="label">Posts</span>`)}
-          ${navItem('pages', html`<span class="far fa-fw fa-file-alt"></span> <span class="label">Pages</span>`)}
+          ${navItem('pages', html`<span class="far fa-fw fa-file"></span> <span class="label">Pages</span>`)}
+          ${navItem('sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Sites</span>`)}
           ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">More <span class="fas fa-fw fa-caret-down"></span></a>*/}
           <hr>
           ${this.renderSourcesCtrl()}
