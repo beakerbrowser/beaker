@@ -15,7 +15,7 @@ import ICO from 'icojs'
 // content security policies
 const BEAKER_CSP = `
   default-src 'self' beaker:;
-  img-src beaker: asset: data: hyper: http: https;
+  img-src beaker: asset: data: blob: hyper: http: https;
   script-src 'self' beaker: 'unsafe-eval';
   media-src 'self' beaker: hyper:;
   style-src 'self' 'unsafe-inline' beaker:;
@@ -23,7 +23,7 @@ const BEAKER_CSP = `
 `.replace(/\n/g, '')
 const BEAKER_DESKTOP_CSP = `
   default-src 'self' beaker:;
-  img-src beaker: asset: data: hyper: http: https;
+  img-src beaker: asset: data: blob: hyper: http: https;
   script-src 'self' beaker: hyper: 'unsafe-eval';
   media-src 'self' beaker: hyper:;
   style-src 'self' 'unsafe-inline' beaker:;
@@ -31,7 +31,7 @@ const BEAKER_DESKTOP_CSP = `
 `.replace(/\n/g, '')
 const SIDEBAR_CSP = `
 default-src 'self' beaker:;
-img-src beaker: asset: data: hyper: http: https;
+img-src beaker: asset: data: blob: hyper: http: https;
 script-src 'self' beaker: hyper: blob: 'unsafe-eval';
 media-src 'self' beaker: hyper:;
 style-src 'self' 'unsafe-inline' beaker:;

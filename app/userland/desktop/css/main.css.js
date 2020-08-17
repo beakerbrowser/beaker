@@ -131,11 +131,6 @@ header {
   box-shadow: 0 0 2px #7599ff77;
 }
 
-.search-ctrl button {
-  padding: 8px 14px;
-  margin-left: 10px;
-}
-
 .search-ctrl .clear-search {
   position: absolute;
   left: -26px;
@@ -346,7 +341,7 @@ main {
 
 .twocol .sidebar > div {
   position: sticky;
-  top: 0px;
+  top: 10px;
   padding-top: 10px;
 }
 
@@ -411,7 +406,6 @@ main {
 }
 
 .quick-links a img.favicon {
-  image-rendering: -webkit-optimize-contrast;
   border-radius: 0;
 }
 
@@ -578,6 +572,64 @@ main {
 
 .legacy-archives-notice .archive a {
   margin-right: auto;
+}
+
+.create-box {
+  position: relative;
+  padding: 30px 0px 0;
+  margin: 10px 0 30px;
+  border-top: 1px solid var(--border-color--light);
+  text-align: center;
+}
+
+.create-box:before {
+  content: 'Create New';
+  background: var(--bg-color--default);
+  color: var(--text-color--light);
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 5px;
+  font-weight: 500;
+  letter-spacing: 0.7px;
+}
+
+.create-box button {
+  padding: 6px 12px;
+  padding: 10px 16px;
+  width: 75px;
+  box-sizing: border-box;
+  font-size: 13px;
+  color: var(--text-color--default);
+  border-color: var(--border-color--light);
+}
+
+.create-box button:before {
+  top: 40px;
+  letter-spacing: 1px;
+}
+.create-box button:after {
+  top: 35px;
+}
+
+.create-box .btn-group button:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.create-box .btn-group button:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.create-box button .label {
+  display: none;
+}
+
+.create-box button .icon {
+  font-size: 13px;
+  color: var(--text-color--light);
 }
 
 `

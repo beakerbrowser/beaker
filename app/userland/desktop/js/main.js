@@ -5,6 +5,7 @@ import { EditBookmarkPopup } from 'beaker://library/js/com/edit-bookmark-popup.j
 import { AddContactPopup } from 'beaker://library/js/com/add-contact-popup.js'
 import { NewPagePopup } from 'beaker://library/js/com/new-page-popup.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
+import { AddPostPopup } from './com/add-post-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import { shorten, pluralize } from 'beaker://app-stdlib/js/strings.js'
@@ -243,7 +244,45 @@ class DesktopApp extends LitElement {
     return html`
       <div class="sidebar">
         <div>
+          <section class="create-box">
+            <div class="btn-group">
+              <button data-tooltip="New Bookmark" @click=${e => this.onClickEditBookmark(undefined)}>
+                <span class="icon"><i class="far fa-star"></i></span>
+              </button>
+              <button data-tooltip="New Post" @click=${this.onClickNewPost}>
+                <span class="icon"><i class="far fa-comment"></i></span>
+              </button>
+              <button data-tooltip="New Page" @click=${e => this.onClickNewPage()}>
+                <span class="icon"><i class="far fa-file"></i></span>
+              </button>
+              <button data-tooltip="New Website" @click=${this.onClickNewSite}>
+                <span class="icon"><i class="fas fa-sitemap"></i></span>
+              </button>
+            </div>
+          </section>
           ${this.renderTagsList()}
+          ${this.suggestedSites?.length > 0 ? html`
+            <section class="suggested-sites">
+              <h3>Suggested Sites</h3>
+              ${repeat(this.suggestedSites, site => html`
+                <div class="site">
+                  ${site.subscribed ? html`
+                    <button class="transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
+                  ` : html`
+                    <button @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
+                  `}
+                  <div class="title">
+                    <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
+                  </div>
+                  <div class="subscribers">
+                    <a href="#" data-tooltip=${shorten(site.subscribers.map(s => s.title).join(', '), 100)}>
+                      ${site.subscribers.length} known ${pluralize(site.subscribers.length, 'subscriber')}
+                    </a>
+                  </div>
+                </div>
+              `)}
+            </section>
+          ` : ''}
           <section class="quick-links">
             <h3>Quick Links</h3>
             <div>
@@ -274,28 +313,6 @@ class DesktopApp extends LitElement {
               </a>
             </div>
           </section>
-          ${this.suggestedSites?.length > 0 ? html`
-            <section class="suggested-sites">
-              <h3>Suggested Sites</h3>
-              ${repeat(this.suggestedSites, site => html`
-                <div class="site">
-                  ${site.subscribed ? html`
-                    <button class="transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
-                  ` : html`
-                    <button @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
-                  `}
-                  <div class="title">
-                    <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
-                  </div>
-                  <div class="subscribers">
-                    <a href="#" data-tooltip=${shorten(site.subscribers.map(s => s.title).join(', '), 100)}>
-                      ${site.subscribers.length} known ${pluralize(site.subscribers.length, 'subscriber')}
-                    </a>
-                  </div>
-                </div>
-              `)}
-            </section>
-          ` : ''}
         </div>
       </div>
     `
@@ -560,121 +577,6 @@ class DesktopApp extends LitElement {
     this.shadowRoot.querySelector('.search-ctrl input').value = ''
   }
 
-  onClickNew (e) {
-    var rect = e.currentTarget.getClientRects()[0]
-    e.preventDefault()
-    e.stopPropagation()
-    var self = this
-    var expandedItem = undefined
-    contextMenu.create({
-      x: rect.right,
-      y: rect.bottom + 10,
-      render () {
-        const onExpand = async v => {
-          if (expandedItem === v) return
-          expandedItem = v
-          await this.requestUpdate()
-          this.shadowRoot.querySelector('.expanded-menu').animate([
-            { transform: 'scaleY(0)', transformOrigin: 'center top' },
-            { transform: 'scaleY(1)', transformOrigin: 'center top' }
-          ], {
-            duration: 100,
-            iterations: 1
-          })
-        }
-        const active = v => !expandedItem ? '' : expandedItem === v ? 'active' : 'inactive'
-        return html`
-          <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-          <style>
-            .dropdown-items .grid {
-              display: grid;
-              grid-template-columns: repeat(4, 1fr);
-              grid-gap: 10px;
-              padding: 10px 10px 8px;
-            }
-            .dropdown-items .grid .dropdown-item {
-              padding: 7px 10px 5px !important;
-              border-radius: 8px !important;
-              width: 60px;
-              text-align: center;
-              transition: opacity 0.2s;
-            }
-            .dropdown-items .grid .dropdown-item.inactive {
-              opacity: 0.5;
-            }
-            .dropdown-items .grid .dropdown-item i {
-              width: auto !important;
-            }
-            .dropdown-items .grid .dropdown-item .icon {
-              font-size: 18px;
-              text-align: center;
-              margin-bottom: 5px;
-            }
-            .expanded-menu {
-              padding: 5px 0;
-              border-top: 1px solid var(--border-color--light);
-              background: var(--bg-color--light);
-            }
-          </style>
-          <div class="dropdown-items no-border rounded">
-            <div class="grid">
-              <div class="dropdown-item ${active('website')}" @click=${() => onExpand('website')}>
-                <div class="icon"><i class="fas fa-sitemap"></i></div>
-                <div class="label">Website</div>
-              </div>
-              <div class="dropdown-item ${active('bookmark')}" @click=${() => onExpand('bookmark')}>
-                <div class="icon"><i class="far fa-star"></i></div>
-                <div class="label">Bookmark</div>
-              </div>
-              <div class="dropdown-item ${active('post')}" @click=${() => onExpand('post')}>
-                <div class="icon"><i class="far fa-comment"></i></div>
-                <div class="label">Post</div>
-              </div>
-              <div class="dropdown-item ${active('page')}" @click=${() => onExpand('page')}>
-                <div class="icon"><i class="far fa-file-alt"></i></div>
-                <div class="label">Page</div>
-              </div>
-            </div>
-            ${expandedItem === 'website' ? html`
-              <div class="expanded-menu">
-                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickNewSite() }}>
-                  <div class="label"><i class="far fa-fw fa-file-alt"></i> New Website (empty)</div>
-                </div>
-                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickNewSiteFromFolder() }}>
-                  <div class="label"><i class="fa-fw fas fa-file-upload"></i> New Website From Folder</div>
-                </div>
-              </div>
-            ` : ''}
-            ${expandedItem === 'bookmark' ? html`
-              <div class="expanded-menu">
-                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickEditBookmark(undefined) }}>
-                  <div class="label"><i class="far fa-fw fa-star"></i> New Bookmark</div>
-                </div>
-              </div>
-            ` : ''}
-            ${expandedItem === 'page' ? html`
-              <div class="expanded-menu">
-                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickNewPage({type: 'beaker/page'}) }}>
-                  <div class="label"><i class="far fa-fw fa-file-alt"></i> New Page</div>
-                </div>
-                <div class="dropdown-item" @click=${() => { contextMenu.destroy(); self.onClickNewPage({type: 'beaker/blogpost'}) }}>
-                  <div class="label"><i class="fas fa-fw fa-blog"></i> New Blogpost</div>
-                </div>
-              </div>
-            ` : ''}
-            ${expandedItem === 'post' ? html`
-              <div class="expanded-menu">
-                <div class="dropdown-item" @click=${() => alert('todo')}>
-                  <div class="label"><i class="far fa-fw fa-comment"></i> New Text Post</div>
-                </div>
-              </div>
-            ` : ''}
-          </div>
-        `
-      }
-    })
-  }
-
   onClickNavMore (e) {
     var rect = e.currentTarget.getClientRects()[0]
     e.preventDefault()
@@ -701,20 +603,16 @@ class DesktopApp extends LitElement {
     beaker.browser.openUrl(drive.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
   }
 
-  async onClickNewSiteFromFolder (e) {
-    var folder = await beaker.browser.showOpenDialog({
-      title: 'Select folder',
-      buttonLabel: 'Use folder',
-      properties: ['openDirectory']
-    })
-    if (!folder || !folder.length) return
-
-    var drive = await beaker.hyperdrive.createDrive({
-      title: folder[0].split('/').pop(),
-      prompt: false
-    })
-    await beaker.hyperdrive.importFromFilesystem({src: folder[0], dst: drive.url})
-    window.open(drive.url)
+  async onClickNewPost (e) {
+    try {
+      await AddPostPopup.create({driveUrl: this.profile.url})
+      toast.create('Post created', '', 10e3)
+    } catch (e) {
+      // ignore, user probably cancelled
+      console.log(e)
+      return
+    }
+    this.load()
   }
 
   async onClickNewBookmark (e, pinned) {
@@ -761,7 +659,7 @@ class DesktopApp extends LitElement {
     if (fns[choice]) fns[choice]()
   }
 
-  async onClickNewPage (opts) {
+  async onClickNewPage (opts = {}) {
     try {
       var res = await NewPagePopup.create(opts)
       beaker.browser.openUrl(res.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})

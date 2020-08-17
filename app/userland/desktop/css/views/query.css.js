@@ -580,7 +580,7 @@ h2 a:hover {
   align-items: baseline;
   font-size: 13px;
   max-width: 562px;
-  padding: 8px 12px 4px;
+  padding: 8px 12px 6px;
 }
 
 .result.card .header > * {
@@ -650,7 +650,7 @@ h2 a:hover {
   color: var(--text-color--default);
   line-height: 1.3125;
   font-size: 14px;
-  padding: 0px 12px 10px;
+  padding: 0px 12px;
 }
 
 .result.card .content > :first-child { margin-top: 0; }
@@ -664,18 +664,8 @@ h2 a:hover {
 .result.card .content :-webkit-any(video, audio, img) { max-width: 100%; }
 .result.card .content a { color: var(--text-color--content-link); }
 
-/** image hack - if it's the last element, try to fill the card **/
-.result.card .content > p:last-child > img:last-child {
-  width: calc(100% + 28px);
-  margin: 6px -14px -14px -14px;
-  object-fit: cover;
-  max-width: none;
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
-}
-
 .result.card .ctrls {
-  padding: 10px 12px;
+  padding: 6px 12px 8px;
 }
 
 .result.card .ctrls a {
@@ -689,9 +679,15 @@ h2 a:hover {
   color: var(--text-color--default);
 }
 
+.result.card .ctrls a :-webkit-any(.far, .fas) {
+  color: var(--text-color--very-light);
+}
+
 .result.card .ctrls a small {
   position: relative;
   top: -1px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 /** INTERACTIONS BTWN TYPES */
