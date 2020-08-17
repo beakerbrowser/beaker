@@ -248,7 +248,7 @@ export class QueryView extends LitElement {
           ${this.renderResultThumb(result)}
         </a>
         <div class="info">
-          <div class="title"><a href=${href}>${renderMatchText(result, 'title') || title}</a></div>
+          <div class="title"><a href=${href} @click=${e => this.onOpenActivity(e, href)}>${renderMatchText(result, 'title') || title}</a></div>
           <div class="origin">
             ${isBookmark ? html`
               <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
@@ -270,10 +270,6 @@ export class QueryView extends LitElement {
             }
             <span>|</span>
             <a class="date" href=${href}>${niceDate(result.ctime)}</a>
-            <span>|</span>
-            <a class="ctrl" @click=${e => this.onOpenActivity(e, href)} data-tooltip="View Thread">
-              comments
-            </a>
           </div>
           ${result.content ? html`
             <div class="excerpt">
@@ -374,7 +370,7 @@ export class QueryView extends LitElement {
         </a>
         <div class="container">
           <div class="title">
-            <a class="link-title" href=${href}>${title}</a>
+            <a class="link-title" href=${href} @click=${e => this.onOpenActivity(e, href)}>${title}</a>
             ${hrefp ? html`
               <a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a>
             ` : ''}
@@ -519,9 +515,14 @@ export class QueryView extends LitElement {
   // events
   // =
 
-  onOpenActivity (e, url) {
+  async onOpenActivity (e, url) {
     e.preventDefault()
-    beaker.browser.newPane(`beaker://activity/?url=${url}`, {replaceSameOrigin: true})
+    var pane = beaker.panes.getAttachedPane()
+    if (pane) {
+      await beaker.panes.navigate(pane.id, url)
+    } else {
+      await beaker.panes.create(url, {attach: true})
+    }
     // beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: [`beaker://activity/?url=${url}`]})
   }
 
