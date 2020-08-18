@@ -566,6 +566,11 @@ a[href]:hover {
   font-weight: 500;
 }
 
+.resource.card beaker-post-composer {
+  display: block;
+  padding: 10px;
+}
+
 :host([noborders]) .resource.card {
   grid-template-columns: 34px 1fr;
 }
@@ -583,5 +588,10 @@ a[href]:hover {
 :host([noborders]) .resource.card .container {
   border-color: transparent !important;
 }
+
+:host([noborders]) .resource.card beaker-post-composer {
+  margin-left: -36px;
+}
+
 `
 export default cssStr

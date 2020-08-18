@@ -2,6 +2,7 @@ import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
 import css from '../../css/com/resource-thread.css.js'
 import { emit } from '../dom.js'
+import * as toast from './toast.js'
 
 import './resource.js'
 
@@ -103,7 +104,7 @@ export class ResourceThread extends LitElement {
             .resource=${parentResource}
             render-mode="card"
             profile-url=${this.profileUrl}
-            @reply=${this.onReply}
+            @publish-reply=${this.onPublishReply}
           ></beaker-resource>
         `)}
         <beaker-resource
@@ -112,14 +113,14 @@ export class ResourceThread extends LitElement {
           render-mode="card"
           noborders
           profile-url=${this.profileUrl}
-          @reply=${this.onReply}
+          @publish-reply=${this.onPublishReply}
         ></beaker-resource>
         ${repeat(this.threadReplies, r => r.url, replyResource => html`
           <beaker-resource
             .resource=${replyResource}
             render-mode="card"
             profile-url=${this.profileUrl}
-            @reply=${this.onReply}
+            @publish-reply=${this.onPublishReply}
           ></beaker-resource>
         `)}
       </div>
@@ -129,7 +130,7 @@ export class ResourceThread extends LitElement {
             .resource=${replyResource}
             render-mode="card"
             profile-url=${this.profileUrl}
-            @reply=${this.onReply}
+            @publish-reply=${this.onPublishReply}
           ></beaker-resource>
           `)}
       </div>
@@ -139,8 +140,9 @@ export class ResourceThread extends LitElement {
   // events
   // =
 
-  onReply (e) {
-    // TODO
+  onPublishReply (e) {
+    toast.create('Reply published', '', 10e3)
+    this.load()
   }
 }
 

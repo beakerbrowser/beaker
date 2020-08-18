@@ -221,7 +221,6 @@ export class ResourceFeed extends LitElement {
         .resource=${result}
         render-mode=${renderMode}
         profile-url=${this.profileUrl}
-        @reply=${this.onReply}
       ></beaker-resource>
     `
   }
@@ -235,25 +234,12 @@ export class ResourceFeed extends LitElement {
         .resource=${result}
         render-mode=${renderMode}
         profile-url=${this.profileUrl}
-        @reply=${this.onReply}
       ></beaker-resource>
     `
   }
 
   // events
   // =
-
-  onClickReply (e) {
-    e.preventDefault()
-    beaker.panes.create(`${e.detail.resource.url}?reply`, {attach: false})
-    // var pane = beaker.panes.getAttachedPane()
-    // if (pane) {
-    //   await beaker.panes.navigate(pane.id, url)
-    // } else {
-    //   await beaker.panes.create(url, {attach: true})
-    // }
-    // beaker.browser.openUrl(url, {setActive: true, addedPaneUrls: [`beaker://activity/?url=${url}`]})
-  }
 }
 
 customElements.define('beaker-resource-feed', ResourceFeed)

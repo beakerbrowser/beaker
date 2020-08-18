@@ -55,7 +55,7 @@ beaker-resource {
 .main-thread beaker-resource.highlighted {
   padding: 0 10px;
   background: var(--bg-color--default);
-  border: 1px solid var(--border-color--light);
+  border: 1px solid var(--border-color--dark);
   border-radius: 4px;
 }
 

@@ -243,6 +243,7 @@ class DesktopApp extends LitElement {
       <div class="sidebar">
         <div>
           <section class="create-box">
+            <h3>Create New</h3>
             <div class="btn-group">
               <button data-tooltip="New Bookmark" @click=${e => this.onClickEditBookmark(undefined)}>
                 <span class="icon"><i class="far fa-star"></i></span>
@@ -348,7 +349,7 @@ class DesktopApp extends LitElement {
                 limit="50"
                 @load-state-updated=${e => this.requestUpdate()}
                 @view-thread=${this.onViewThread}
-                @reply=${this.onReply}
+                @publish-reply=${this.onPublishReply}
                 profile-url=${this.profile ? this.profile.url : ''}
               ></beaker-resource-feed>
             </div>
@@ -371,7 +372,7 @@ class DesktopApp extends LitElement {
                 limit="50"
                 @load-state-updated=${e => this.requestUpdate()}
                 @view-thread=${this.onViewThread}
-                @reply=${this.onReply}
+                @publish-reply=${this.onPublishReply}
                 profile-url=${this.profile ? this.profile.url : ''}
               ></beaker-resource-feed>
             </div>
@@ -683,8 +684,9 @@ class DesktopApp extends LitElement {
     })
   }
 
-  onReply (e) {
-    console.log(e)
+  onPublishReply (e) {
+    toast.create('Reply published', '', 10e3)
+    this.load()
   }
 
   async onClickRemoveLegacyArchive (e, archive) {

@@ -347,12 +347,12 @@ main {
 
 .twocol .sidebar h3 {
   box-sizing: border-box;
-  letter-spacing: 0.7px;
+  letter-spacing: 1px;
   margin: 3px 0;
   font-weight: bold;
   text-transform: uppercase;
   font-size: 11px;
-  color: var(--text-color--very-light);
+  color: var(--text-color--pretty-light);
 }
 
 .twocol .sidebar section {
@@ -575,24 +575,11 @@ main {
 }
 
 .create-box {
-  position: relative;
-  padding: 30px 0px 0;
-  margin: 10px 0 30px;
-  border-top: 1px solid var(--border-color--light);
-  text-align: center;
+  margin: 0 0 30px;
 }
 
-.create-box:before {
-  content: 'Create New';
-  background: var(--bg-color--default);
-  color: var(--text-color--light);
-  position: absolute;
-  top: -9px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 0 5px;
-  font-weight: 500;
-  letter-spacing: 0.7px;
+.create-box .btn-group {
+  margin-top: 8px;
 }
 
 .create-box button {
@@ -603,6 +590,7 @@ main {
   font-size: 13px;
   color: var(--text-color--default);
   border-color: var(--border-color--light);
+  text-align: center;
 }
 
 .create-box button:before {

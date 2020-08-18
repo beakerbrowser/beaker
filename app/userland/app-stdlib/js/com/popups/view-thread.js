@@ -24,11 +24,11 @@ export class ViewThreadPopup extends BasePopup {
     return [popupsCSS, css`
     .popup-inner {
       width: 640px;
-      border-radius: 8px;
+      border-radius: 6px;
     }
     .popup-inner .body {
       background: var(--bg-color--light);
-      padding: 8px 10px 5px;
+      padding: 8px 10px 10px;
     }
     `]
   }

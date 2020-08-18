@@ -7,13 +7,15 @@ import css from '../../css/com/resource.css.js'
 import { removeMarkdown } from '../../vendor/remove-markdown.js'
 import { shorten, makeSafe, toNiceDomain, pluralize, joinPath } from '../strings.js'
 import { emit } from '../dom.js'
+import './post-composer.js'
 
 export class Resource extends LitElement {
   static get properties () {
     return {
       resource: {type: Object},
       renderMode: {type: String, attribute: 'render-mode'},
-      profileUrl: {type: String, attribute: 'profile-url'}
+      profileUrl: {type: String, attribute: 'profile-url'},
+      isReplyOpen: {type: Boolean}
     }
   }
 
@@ -26,6 +28,7 @@ export class Resource extends LitElement {
     this.resource = undefined
     this.renderMode = 'card'
     this.profileUrl = undefined
+    this.isReplyOpen = false
 
     // helper state
     this.isMouseDown = false
@@ -99,6 +102,14 @@ export class Resource extends LitElement {
           <div class="ctrls">
             <a @click=${this.onClickReply}><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
           </div>
+          ${this.isReplyOpen ? html`
+            <beaker-post-composer
+              drive-url=${this.profileUrl}
+              draft-text="[@${this.resource.site.title.replace(/]/g, '')}](${this.resource.url.replace(/\)/, '')}) "
+              @publish=${this.onPublishReply}
+              @cancel=${this.onCancelReply}
+            ></beaker-post-composer>
+          ` : ''}
         </div>
       </div>
     `
@@ -321,12 +332,23 @@ export class Resource extends LitElement {
 
   onClickReply (e) {
     e.preventDefault()
-    emit(this, 'reply', {detail: {resource: this.resource}})
+    this.isReplyOpen = true
+  }
+
+  onPublishReply (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    this.isReplyOpen = false
+    emit(this, 'publish-reply')
+  }
+
+  onCancelReply (e) {
+    this.isReplyOpen = false
   }
 
   onMousedownCard (e) {
     for (let el of e.path) {
-      if (el.tagName === 'A') return
+      if (el.tagName === 'A' || el.tagName === 'BEAKER-POST-COMPOSER') return
     }
     this.isMouseDown = true
     this.isMouseDragging = false

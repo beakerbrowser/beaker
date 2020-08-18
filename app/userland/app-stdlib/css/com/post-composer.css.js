@@ -77,8 +77,13 @@ textarea::placeholder {
   font-size: 14px;
 }
 
+textarea.hidden {
+  display: none;
+}
+
 .preview {
   font-size: 14px;
+  background: var(--bg-color--default);
   border: 1px solid var(--border-color--light);
   border-radius: 4px;
   padding: 14px;

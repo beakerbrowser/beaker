@@ -9,7 +9,7 @@ class PostComposer extends LitElement {
     return {
       driveUrl: {type: String, attribute: 'drive-url'},
       currentView: {type: String},
-      draftText: {type: String}
+      draftText: {type: String, attribute: 'draft-text'}
     }
   }
 
@@ -45,15 +45,14 @@ class PostComposer extends LitElement {
         </nav>
 
         <div class="view">
-          ${this.currentView === 'edit' ? html`
-            <textarea
-              required
-              id="body-input"
-              name="body"
-              placeholder="What's new?"
-              @keyup=${this.onKeyupTextarea}
-            >${this.draftText}</textarea>
-          ` : ''}
+          <textarea
+            class=${this.currentView === 'edit' ? '' : 'hidden'}
+            required
+            id="body-input"
+            name="body"
+            placeholder="What's new?"
+            @keyup=${this.onKeyupTextarea}
+          >${this.draftText}</textarea>
           ${this.currentView === 'preview' ? this.renderPreview() : ''}
         </div>
 
@@ -97,6 +96,13 @@ class PostComposer extends LitElement {
       textarea.focus()
       textarea.style.height = 'auto'
       textarea.style.height = textarea.scrollHeight + 5 + 'px'
+    } catch {}
+  }
+
+  firstUpdated () {
+    try {
+      let textarea = this.shadowRoot.querySelector('textarea')
+      textarea.setSelectionRange(textarea.value.length, textarea.value.length)
     } catch {}
   }
 
@@ -182,4 +188,4 @@ class PostComposer extends LitElement {
   }
 }
 
-customElements.define('post-composer', PostComposer)
+customElements.define('beaker-post-composer', PostComposer)

@@ -40,11 +40,11 @@ export class NewPostPopup extends BasePopup {
       border-radius: 50%;
       object-fit: cover;
     }
-    post-composer {
+    beaker-post-composer {
       display: block;
       position: relative;
     }
-    post-composer:before {
+    beaker-post-composer:before {
       content: '';
       display: block;
       position: absolute;
@@ -91,11 +91,11 @@ export class NewPostPopup extends BasePopup {
     return html`
       <main>
         <img src=${joinPath(this.driveUrl, 'thumb')}>
-        <post-composer
+        <beaker-post-composer
           drive-url=${this.driveUrl}
           @publish=${this.onPublish}
           @cancel=${this.onCancel}
-        ></post-composer>
+        ></beaker-post-composer>
       </main>
     `
   }
