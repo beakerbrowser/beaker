@@ -1,19 +1,14 @@
-import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import buttonsCSS from 'beaker://app-stdlib/css/buttons2.css.js'
-import inputsCSS from 'beaker://app-stdlib/css/inputs.css.js'
-import tooltipCSS from 'beaker://app-stdlib/css/tooltip.css.js'
-import spinnerCSS from 'beaker://app-stdlib/css/com/spinner.css.js'
+import {css} from '../../vendor/lit-element/lit-element.js'
+import buttonsCSS from '../buttons2.css.js'
+import inputsCSS from '../inputs.css.js'
+import tooltipCSS from '../tooltip.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
 ${inputsCSS}
 ${tooltipCSS}
-${spinnerCSS}
 
-:host {
-  display: block;
-  position: relative;
-}
+/** COMMON RESOURCE STYLES **/
 
 a {
   text-decoration: none;
@@ -25,97 +20,17 @@ a[href]:hover {
   cursor: pointer;
 }
 
-h2.results-header {
-  margin: 0 0 30px;
-  padding: 0 4px 4px;
-  text-align: center;
-  color: var(--text-color--default);
-  box-sizing: border-box;
-  font-weight: 500;
-  color: var(--text-color--light);
-  letter-spacing: 0.7px;
-  font-size: 13px;
-  border-bottom: 1px solid var(--border-color--light);
-}
-
-h2.results-header:not(:first-child) {
-  margin-top: 10px;
-}
-
-h2.results-header span {
-  position: relative;
-  top: 11px;
-  background: var(--bg-color--default);
-  padding: 5px;
-}
-
-h2 a:hover {
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.result + h2 {
-  margin-top: 20px;
-}
-
-.bragging {
-  color: var(--text-color--pretty-light);
-  margin: 0 5px 20px;
-}
-
-.bragging .search-engine {
-  display: inline-block;
-  margin: 0 3px;
-  position: relative;
-  top: 5px;
-}
-
-.bragging .search-engine:first-of-type {
-  margin-left: 4px;
-}
-
-.bragging .search-engine:hover {
-  text-decoration: none;
-}
-
-.bragging .search-engine img {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  object-fit: cover;
-}
-
-.results {
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-:host(:not(.full-size)) .results {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.empty {
-  font-size: 16px;
-  letter-spacing: 0.7px;
-  color: var(--text-color--light);
-  padding: 120px 0px;
-  background: var(--bg-color--light);
-  text-align: center;
-}
-
-/** COMMON RESULT STYLES **/
-
-.result .favicon {
+.resource .favicon {
   display: block;
   width: 16px;
   height: 16px;
   object-fit: cover;
   border-radius: 50%;
   margin-right: 8px;
+  font-size: 14px;
 }
 
-.result .sysicon {
+.resource .sysicon {
   display: inline-block;
   height: 16px;
   width: 16px;
@@ -126,7 +41,7 @@ h2 a:hover {
   border-radius: 50%;
 }
 
-.result .title a {
+.resource .title a {
   color: var(--color-text--default);
 }
 
@@ -145,20 +60,20 @@ h2 a:hover {
   color: var(--text-color--light);
 }
 
-/** ROW STYLES **/
+/** EXPANDED LINK STYLES **/
 
-.result.row {
+.resource.expanded-link {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
   margin: 28px 6px;
 }
 
-.results > .result.row:first-child {
+.resource.expanded-link:first-child {
   margin-top: 0;
 }
 
-.result.row .thumb {
+.resource.expanded-link .thumb {
   display: block;
   width: 100px;
   flex: 0 0 100px;
@@ -169,14 +84,14 @@ h2 a:hover {
   display: none;
 }
 
-.result.row .thumb img {
+.resource.expanded-link .thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
 
-.result.row .thumb .icon {
+.resource.expanded-link .thumb .icon {
   display: block;
   height: 100%;
   text-align: center;
@@ -185,63 +100,63 @@ h2 a:hover {
   font-size: 32px;
 }
 
-.result.row .info {
+.resource.expanded-link .info {
   flex: 1;
   overflow: hidden;
 }
 
-.result.row .info > * {
+.resource.expanded-link .info > * {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.result.row .title {
+.resource.expanded-link .title {
   letter-spacing: 1px;
   margin-bottom: 6px;
   font-weight: 500;
   font-size: 19px;
 }
 
-.result.row .title a {
+.resource.expanded-link .title a {
   color: var(--text-color--result-link);
 }
 
-.result.row .href {
+.resource.expanded-link .href {
   font-size: 14px;
   margin-bottom: 4px;
 }
 
-.result.row .href a {
+.resource.expanded-link .href a {
   color: var(--text-color--light);
 }
 
-.result.row .href .fa-angle-right {
+.resource.expanded-link .href .fa-angle-right {
   font-size: 11px;
 }
 
-.result.row .origin {
+.resource.expanded-link .origin {
   display: flex;
   align-items: center;
   font-size: 13px;
 }
 
-.result.row .origin-note {
+.resource.expanded-link .origin-note {
   margin-right: 5px;
 }
 
-.result.row .author {
+.resource.expanded-link .author {
   color: var(--text-color--lightish);
   font-weight: 500;
   margin-right: 6px;
 }
 
-.result.row .date {
+.resource.expanded-link .date {
   color: var(--text-color--light);
   margin: 0 6px;
 }
 
-.result.row .excerpt {
+.resource.expanded-link .excerpt {
   white-space: initial;
   color: var(--text-color--light);
   margin-top: 10px;
@@ -250,55 +165,55 @@ h2 a:hover {
   letter-spacing: 0.4px;
 }
 
-.result.row .ctrl {
+.resource.expanded-link .ctrl {
   margin-left: 6px;
   font-size: 12px;
   color: var(--text-color--light);
   cursor: pointer;
 }
 
-.result.row .ctrl:hover {
+.resource.expanded-link .ctrl:hover {
   text-decoration: underline;
 }
 
-.result.row .tags {
+.resource.expanded-link .tags {
   margin: 5px 0 0;
   line-height: 1.3;
   font-size: 12px;
 }
   
-.result.row .tags a {
+.resource.expanded-link .tags a {
   letter-spacing: 0.3px;
   margin-right: 3px;
 }
 
-.result.row.as-card {
+.resource.expanded-link.as-card {
 }
 
-.result.row.as-card:hover {
+.resource.expanded-link.as-card:hover {
   cursor: pointer;
 
 }
 
 /** ACTION STYLES **/
 
-.result.action {
+.resource.action {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
   margin: 20px 24px 20px 4px;
 }
 
-.result.action.unread {
+.resource.action.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
 }
 
-.result.action > * {
+.resource.action > * {
   margin-right: 5px;
 }
 
-.result.action .thumb {
+.resource.action .thumb {
   display: block;
   width: 30px;
   flex: 0 0 30px;
@@ -310,14 +225,14 @@ h2 a:hover {
   top: 1px;
 }
 
-.result.action .thumb img {
+.resource.action .thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
 
-.result.action .thumb .icon {
+.resource.action .thumb .icon {
   display: block;
   width: 100%;
   height: 100%;
@@ -327,33 +242,33 @@ h2 a:hover {
   font-size: 12px;
 }
 
-.result.action .thumb .icon .fa-lock {
+.resource.action .thumb .icon .fa-lock {
   font-size: 8px;
   position: absolute;
   right: 3px;
   bottom: 27px;
 }
 
-.result.action .author {
+.resource.action .author {
   color: var(--text-color--lightish);
   font-weight: 600;
 }
 
 /** LINK STYLES **/
 
-.result.link {
+.resource.link {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
   margin: 24px 24px 24px 4px;
 }
 
-.result.link.unread {
+.resource.link.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
 }
 
-.result.link .thumb {
+.resource.link .thumb {
   display: block;
   width: 30px;
   flex: 0 0 30px;
@@ -365,14 +280,14 @@ h2 a:hover {
   top: 1px;
 }
 
-.result.link .thumb img {
+.resource.link .thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
 
-.result.link .thumb .icon {
+.resource.link .thumb .icon {
   display: block;
   width: 100%;
   height: 100%;
@@ -382,14 +297,14 @@ h2 a:hover {
   font-size: 12px;
 }
 
-.result.link .thumb .icon .fa-lock {
+.resource.link .thumb .icon .fa-lock {
   position: absolute;
   font-size: 8px;
   right: 0px;
   bottom: 24px;
 }
 
-.result.link .thumb .icon .small-thumb {
+.resource.link .thumb .icon .small-thumb {
   position: absolute;
   width: 14px;
   height: 14px;
@@ -400,11 +315,11 @@ h2 a:hover {
   border: 2px solid var(--bg-color--default);
 }
 
-.result.link .container {
+.resource.link .container {
   flex: 1;
 }
 
-.result.link .action-description {
+.resource.link .action-description {
   display: flex;
   align-items: center;
   font-size: 13px;
@@ -414,12 +329,12 @@ h2 a:hover {
   text-overflow: ellipsis;
 }
 
-.result.link .origin .author {
+.resource.link .origin .author {
   color: var(--text-color--lightish);
   font-weight: 600;
 }
 
-.result.link .title {
+.resource.link .title {
   max-width: 590px;
   white-space: nowrap;
   overflow: hidden;
@@ -428,26 +343,26 @@ h2 a:hover {
   
 }
 
-.result.link .title .link-title {
+.resource.link .title .link-title {
   letter-spacing: 0.5px;
   font-size: 17px;
   font-weight: 500;
   color: var(--text-color--result-link);
 }
 
-.result.link .title .link-origin {
+.resource.link .title .link-origin {
   color: var(--text-color--pretty-light);
 }
 
-.result.link .date a {
+.resource.link .date a {
   color: var(--text-color--light);
 }
 
-.result.link .tags {
+.resource.link .tags {
   padding: 0 0 4px;
 }
 
-.result.link .tags a {
+.resource.link .tags a {
   display: inline-block;
   color: var(--text-color--light);
   background: var(--bg-color--semi-light);
@@ -458,30 +373,30 @@ h2 a:hover {
   margin-right: 3px;
 }
 
-.result.link .ctrls {
+.resource.link .ctrls {
   font-size: 13px;
   color: var(--text-color--light);
 }
 
-.result.link .ctrls :-webkit-any(.fas, .far) {
+.resource.link .ctrls :-webkit-any(.fas, .far) {
   font-size: 11px;
   position: relative;
   top: -1px;
 }
 
-.result.link .ctrls a.ctrl {
+.resource.link .ctrls a.ctrl {
   display: inline-block;
   color: var(--text-color--light);
   font-weight: 500;
   margin-left: 2px;
 }
 
-.result.link .ctrls a:hover {
+.resource.link .ctrls a:hover {
   cursor: pointer;
   color: var(--text-color--default);
 }
 
-.result.link .ctrls a .fa-comment-alt {
+.resource.link .ctrls a .fa-comment-alt {
   position: relative;
   top: 1px;
   font-size: 12px;
@@ -489,7 +404,7 @@ h2 a:hover {
 
 /** CARD STYLES **/
 
-.result.card {
+.resource.card {
   position: relative;
   display: grid;
   grid-template-columns: 45px 1fr;
@@ -497,18 +412,18 @@ h2 a:hover {
   color: var(--text-color--lightish);
 }
 
-.result.card.unread {
+.resource.card.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
   margin-bottom: 5px;
 }
 
-.result.card .info {
+.resource.card .info {
   display: flex;
   align-items: center;
 }
 
-.result.card .thumb {
+.resource.card .thumb {
   display: block;
   width: 30px;
   height: 30px;
@@ -519,14 +434,14 @@ h2 a:hover {
   top: 8px;
 }
 
-.result.card .thumb img {
+.resource.card .thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
 
-.result.card .thumb .icon {
+.resource.card .thumb .icon {
   display: block;
   width: 100%;
   height: 100%;
@@ -536,7 +451,7 @@ h2 a:hover {
   font-size: 8px;
 }
 
-.result.card .arrow {
+.resource.card .arrow {
   content: '';
   display: block;
   position: absolute;
@@ -551,31 +466,26 @@ h2 a:hover {
   transform: rotate(-45deg);
 }
 
-.result.card.is-notification .arrow {
+.resource.card.is-notification .arrow {
   background: var(--bg-color--light);
 }
 
-.result.card.unread .arrow {
+.resource.card.unread .arrow {
   border-color: var(--border-color--unread);
 }
 
-.result.card .container {
+.resource.card .container {
   border: 1px solid var(--border-color--light);
   border-radius: 4px;
   background: var(--bg-color--default);
   padding: 2px;
 }
 
-.result.card .container:hover {
-  cursor: pointer;
-  border: 1px solid var(--border-color--dark);
-}
-
-.result.card.unread .container {
+.resource.card.unread .container {
   border-color: var(--border-color--unread);
 }
 
-.result.card .header {
+.resource.card .header {
   display: flex;
   align-items: baseline;
   font-size: 13px;
@@ -583,39 +493,39 @@ h2 a:hover {
   padding: 8px 12px 6px;
 }
 
-.result.card .header > * {
+.resource.card .header > * {
   margin-right: 5px;
   white-space: nowrap;
 }
 
-.result.card .origin .icon {
+.resource.card .origin .icon {
   margin-right: 5px;
 }
 
-.result.card .header a {
+.resource.card .header a {
   color: var(--text-color--light);
 }
 
-.result.card .origin .author {
+.resource.card .origin .author {
   font-weight: 600;
   font-size: 14px;
   color: var(--text-color--default);
 }
 
-.result.card .title {
+.resource.card .title {
   font-weight: normal;
   letter-spacing: 0.5px;
 }
 
-.result.card .title a {
+.resource.card .title a {
   color: var(--text-color--result-link);
 }
 
-.result.card .tags {
+.resource.card .tags {
   padding: 8px 12px 0;
 }
 
-.result.card .tags a {
+.resource.card .tags a {
   display: inline-block;
   color: var(--text-color--light);
   background: var(--bg-color--semi-light);
@@ -626,26 +536,26 @@ h2 a:hover {
   margin-right: 3px;
 }
 
-.result.card .context {
+.resource.card .context {
   font-size: 12px;
   color: var(--text-color--light);
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.result.card .context .fa-reply {
+.resource.card .context .fa-reply {
   color: var(--text-color--very-light);
 }
 
-.result.card .context a {
+.resource.card .context a {
   color: var(--text-color--light);
 }
 
-.result.card .context + .header {
+.resource.card .context + .header {
   padding-top: 0;
 }
 
-.result.card .content {
+.resource.card .content {
   white-space: initial;
   color: var(--text-color--default);
   line-height: 1.3125;
@@ -653,50 +563,42 @@ h2 a:hover {
   padding: 0px 12px;
 }
 
-.result.card .content > :first-child { margin-top: 0; }
-.result.card .content > :last-child { margin-bottom: 0; }
-.result.card .content h1 { font-family: arial; font-size: 21px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--border-color--semi-light); }
-.result.card .content h2 { font-family: arial; font-size: 19px; font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border-color--semi-light); }
-.result.card .content h3 { font-family: arial; font-size: 19px; font-weight: 500; }
-.result.card .content h4 { font-family: arial; font-size: 16px; font-weight: 600; }
-.result.card .content h5 { font-family: arial; font-size: 16px; font-weight: 500; }
-.result.card .content pre { font-size: 13px; }
-.result.card .content :-webkit-any(video, audio, img) { max-width: 100%; }
-.result.card .content a { color: var(--text-color--content-link); }
+.resource.card .content > :first-child { margin-top: 0; }
+.resource.card .content > :last-child { margin-bottom: 0; }
+.resource.card .content h1 { font-family: arial; font-size: 21px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--border-color--semi-light); }
+.resource.card .content h2 { font-family: arial; font-size: 19px; font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border-color--semi-light); }
+.resource.card .content h3 { font-family: arial; font-size: 19px; font-weight: 500; }
+.resource.card .content h4 { font-family: arial; font-size: 16px; font-weight: 600; }
+.resource.card .content h5 { font-family: arial; font-size: 16px; font-weight: 500; }
+.resource.card .content pre { font-size: 13px; }
+.resource.card .content :-webkit-any(video, audio, img) { max-width: 100%; }
+.resource.card .content a { color: var(--text-color--content-link); }
 
-.result.card .ctrls {
-  padding: 6px 12px 8px;
+.resource.card .ctrls {
+  padding: 6px 12px 6px;
 }
 
-.result.card .ctrls a {
+.resource.card .ctrls a {
   display: inline-block;
   margin-right: 16px;
   color: var(--text-color--light);
+  font-size: 13px;
 }
 
-.result.card .ctrls a:hover {
+.resource.card .ctrls a:hover {
   cursor: pointer;
   color: var(--text-color--default);
 }
 
-.result.card .ctrls a :-webkit-any(.far, .fas) {
+.resource.card .ctrls a :-webkit-any(.far, .fas) {
   color: var(--text-color--very-light);
 }
 
-.result.card .ctrls a small {
+.resource.card .ctrls a small {
   position: relative;
   top: -1px;
   letter-spacing: 0.5px;
   font-weight: 500;
-}
-
-/** INTERACTIONS BTWN TYPES */
-
-.notification + .result {
-  margin-top: 0;
-}
-.result + .notification {
-  margin-top: 15px;
 }
 `
 export default cssStr

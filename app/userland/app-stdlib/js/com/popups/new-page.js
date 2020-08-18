@@ -93,7 +93,7 @@ export class NewPagePopup extends BasePopup {
     }
 
     form {
-      padding: 16px 16px 14px;
+      padding: 16px 18px 14px 16px;
     }
 
     .where {

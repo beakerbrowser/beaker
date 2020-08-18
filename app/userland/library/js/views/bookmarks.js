@@ -3,8 +3,7 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
-import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import { EditBookmarkPopup } from '../com/edit-bookmark-popup.js'
+import { EditBookmarkPopup } from 'beaker://app-stdlib/js/com/popups/edit-bookmark.js'
 import bookmarksCSS from '../../css/views/bookmarks.css.js'
 
 export class BookmarksView extends LitElement {

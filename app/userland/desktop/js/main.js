@@ -1,20 +1,18 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import { EditBookmarkPopup } from 'beaker://library/js/com/edit-bookmark-popup.js'
-import { AddContactPopup } from 'beaker://library/js/com/add-contact-popup.js'
-import { NewPagePopup } from 'beaker://library/js/com/new-page-popup.js'
+import { EditBookmarkPopup } from 'beaker://app-stdlib/js/com/popups/edit-bookmark.js'
+import { NewPagePopup } from 'beaker://app-stdlib/js/com/popups/new-page.js'
+import { NewPostPopup } from 'beaker://app-stdlib/js/com/popups/new-post.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
-import { AddPostPopup } from './com/add-post-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import { shorten, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
-
-import './views/query.js'
 import css from '../css/main.css.js'
+import 'beaker://app-stdlib/js/com/resource-feed.js'
 
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
 const CURRENT_VERSION = VERSION_ID(1, 0, 0, 7)
@@ -89,8 +87,8 @@ class DesktopApp extends LitElement {
       beaker.subscriptions.list(),
       beaker.indexer.countNotifications({filter: {isRead: false}})
     ])
-    if (this.shadowRoot.querySelector('query-view')) {
-      this.shadowRoot.querySelector('query-view').load()
+    if (this.shadowRoot.querySelector('beaker-resource-feed')) {
+      this.shadowRoot.querySelector('beaker-resource-feed').load()
     }
     this.sourceOptions = [{href: 'hyper://private/', title: 'My Private Data'}, {href: this.profile.url, title: this.profile.title}].concat(sourceOptions)
     console.log(this.pins)
@@ -128,7 +126,7 @@ class DesktopApp extends LitElement {
   get currentNavAsIndex () {
     switch (this.currentNav) {
       case 'bookmarks': return ['beaker/index/bookmarks']
-      case 'posts': return ['beaker/index/microblogposts', 'beaker/index/comments']
+      case 'posts': return ['beaker/index/microblogposts']
       case 'pages': return ['beaker/index/pages', 'beaker/index/blogposts']
       case 'sites': return ['beaker/index/subscriptions']
       case 'notifications': return ['notifications']
@@ -136,7 +134,6 @@ class DesktopApp extends LitElement {
         return [
           'beaker/index/blogposts',
           'beaker/index/bookmarks',
-          'beaker/index/comments',
           'beaker/index/microblogposts',
           'beaker/index/pages'
         ]
@@ -163,7 +160,7 @@ class DesktopApp extends LitElement {
   }
 
   get isLoading () {
-    let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('query-view'))
+    let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('beaker-resource-feed'))
     return !!queryViewEls.find(el => el.isLoading)
   }
 
@@ -342,7 +339,7 @@ class DesktopApp extends LitElement {
         <div class="all-view">
           <div class="twocol">
             <div>
-              <query-view
+              <beaker-resource-feed
                 class="subview"
                 .index=${this.currentNavAsIndex}
                 .filter=${this.searchQuery}
@@ -350,7 +347,7 @@ class DesktopApp extends LitElement {
                 limit="50"
                 @load-state-updated=${e => this.requestUpdate()}
                 .profileUrl=${this.profile ? this.profile.url : ''}
-              ></query-view>
+              ></beaker-resource-feed>
             </div>
             ${this.renderSidebar()}
           </div>
@@ -362,7 +359,7 @@ class DesktopApp extends LitElement {
           ${this.currentNav === 'all' ? this.renderPins() : ''}
           <div class="twocol">
             <div>
-              <query-view
+              <beaker-resource-feed
                 content-type="all"
                 show-date-titles
                 date-title-range=${this.currentNavDateTitleRange}
@@ -371,7 +368,7 @@ class DesktopApp extends LitElement {
                 limit="50"
                 @load-state-updated=${e => this.requestUpdate()}
                 .profileUrl=${this.profile ? this.profile.url : ''}
-              ></query-view>
+              ></beaker-resource-feed>
             </div>
             ${this.renderSidebar()}
           </div>
@@ -605,7 +602,7 @@ class DesktopApp extends LitElement {
 
   async onClickNewPost (e) {
     try {
-      await AddPostPopup.create({driveUrl: this.profile.url})
+      await NewPostPopup.create({driveUrl: this.profile.url})
       toast.create('Post created', '', 10e3)
     } catch (e) {
       // ignore, user probably cancelled
@@ -623,17 +620,6 @@ class DesktopApp extends LitElement {
       // ignore, user probably cancelled
       console.log(e)
       return
-    }
-    this.load()
-  }
-
-  async onClickNewContact (e) {
-    try {
-      await AddContactPopup.create()
-      toast.create('Contact added', '', 10e3)
-    } catch (e) {
-      // ignore
-      console.log(e)
     }
     this.load()
   }

@@ -1,10 +1,10 @@
 /* globals beaker */
-import { html, css } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import { BasePopup } from 'beaker://app-stdlib/js/com/popups/base.js'
-import buttonsCSS from 'beaker://app-stdlib/css/buttons2.css.js'
-import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
-import { toNiceUrl, normalizeUrl } from 'beaker://app-stdlib/js/strings.js'
+import { html, css } from '../../../vendor/lit-element/lit-element.js'
+import { repeat } from '../../../vendor/lit-element/lit-html/directives/repeat.js'
+import { BasePopup } from './base.js'
+import buttonsCSS from '../../../css/buttons2.css.js'
+import popupsCSS from '../../../css/com/popups.css.js'
+import { toNiceUrl } from '../../strings.js'
 
 // exported api
 // =

@@ -7,6 +7,7 @@ body {
   --border-color--semi-light: #dde;
   --border-color--very-light: #eef;
   --border-color--focused: #7599ff;
+  --border-color--nav-highlighted: #2864dc;
   --text-color--default: #333;
   --text-color--lightish: #555;
   --text-color--light: #667;
@@ -31,6 +32,7 @@ body {
     --border-color--semi-light: #447;
     --border-color--very-light: #334;
     --border-color--focused: #7599ff;
+    --border-color--nav-highlighted: #2864dc;
     --text-color--default: #ccd;
     --text-color--lightish: #bbc;
     --text-color--light: #aab;
