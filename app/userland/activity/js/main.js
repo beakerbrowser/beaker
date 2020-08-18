@@ -161,7 +161,7 @@ class ActivityApp extends LitElement {
   async loadAnnotations () {
     var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
     this.profileUrl = `hyper://${addressBook.profiles[0].key}/`
-    this.annotations = await beaker.indexer.list({filter: {linksTo: this.url}, reverse: false})
+    this.annotations = await beaker.indexer.list({filter: {linksTo: this.url}, sort: 'ctime', reverse: true})
     console.log(this.annotations)
   }
 
@@ -188,7 +188,7 @@ class ActivityApp extends LitElement {
         <a
           class="nav-item ${!this.privateMode ? 'active' : ''}"
           @click=${() => this.setPrivateMode(false)}
-        >Posts About This</a>
+        >Mentions</a>
         <a
           class="nav-item ${this.privateMode ? 'active' : ''}"
           @click=${() => this.setPrivateMode(true)}

@@ -145,7 +145,7 @@ input.inline:focus {
   padding: 3px;
   border-radius: 2px;
   border: 1px solid #d9d9d9;
-  color: var(--color-text--muted);
+  color: var(--text-color--pretty-light);
 }
 
 .input-file-picker span {
@@ -255,7 +255,7 @@ label.required:after {
 }
 
 .toggle.disabled {
-  color: var(--color-text--light);
+  color: var(--text-color--pretty-light);
 }
 
 label.checkbox-container {

@@ -1,9 +1,10 @@
 @import "./reset.css";
+@import "./colors.css";
 @import "./typography.css";
 @import "./buttons.css";
 @import "./inputs.css";
 
 body {
-  background: #f5f5f7;
-  color: #333;
+  background: var(--bg-color--default);
+  color: var(--text-color--default);
 }

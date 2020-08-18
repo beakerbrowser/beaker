@@ -9,7 +9,7 @@ ${colorscss}
 
 button {
   background: #fff;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color--semi-light);
   border-radius: 3px;
   box-shadow: 0 1px 1px rgba(0,0,0,.05);
   padding: 5px 10px;
@@ -63,7 +63,7 @@ button.gray:hover {
 }
 
 button[disabled] {
-  border-color: var(--border-color);
+  border-color: var(--border-color--semi-light);
   background: #fff;
   color: #999;
   cursor: default;

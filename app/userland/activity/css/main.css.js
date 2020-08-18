@@ -57,17 +57,26 @@ header .title a {
 }
 
 nav {
+  display: grid;
+  justify-content: center;
+  grid-template-columns: auto auto;
+  gap: 12px;
   background: var(--bg-color--default);
   font-size: 12px;
   padding: 10px;
   border-bottom: 1px solid var(--border-color--light);
+  text-align: center;
 }
 
 nav a.nav-item {
+  display: inline-block;
   padding: 2px 10px;
   color: var(--text-color--default);
+  background: var(--bg-color--light);
+  border: 1px solid var(--border-color--light);
   border-radius: 4px;
   cursor: pointer;
+  width: 100px;
 }
 
 nav a.nav-item:hover {
@@ -78,6 +87,7 @@ nav a.nav-item:hover {
 nav a.nav-item.active {
   background: var(--bg-color--nav-highlighted);
   color: var(--text-color--nav-highlighted);
+  border-color: var(--border-color--nav-highlighted);
 }
 
 .empty {
@@ -92,6 +102,8 @@ nav a.nav-item.active {
 
 .activity-feed {
   padding: 0 15px;
+  max-width: 630px;
+  margin: 0 auto;
 }
 
 `

@@ -1,5 +1,5 @@
 import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import markdownCSS from './markdown.css.js'
+import markdownCSS from 'beaker://app-stdlib/css/markdown.css.js'
 import tooltipCSS from 'beaker://app-stdlib/css/tooltip.css.js'
 
 const cssStr = css`

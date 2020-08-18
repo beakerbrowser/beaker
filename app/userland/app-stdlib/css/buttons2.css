@@ -26,7 +26,7 @@ button {
   --box-shadow-color--transparent-button: rgba(0,0,0,.25);
 
   background: var(--bg-color--button);
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color--semi-light);
   border-radius: 3px;
   box-shadow: 0 1px 1px var(--box-shadow-color--button);
   padding: 5px 10px;
@@ -106,7 +106,7 @@ button.gray:hover {
 }
 
 button[disabled] {
-  border-color: var(--border-color) !important;
+  border-color: var(--border-color--semi-light) !important;
   background: var(--bg-color--button--disabled) !important;
   color: var(--text-color--button--disabled) !important;
   cursor: default !important;

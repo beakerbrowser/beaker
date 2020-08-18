@@ -28,7 +28,7 @@ input[type="checkbox"] {
 
 header {
   padding: 10px 12px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color--semi-light);
 }
 
 header .toolbar {
@@ -92,7 +92,7 @@ nav {
   width: 300px;
   padding-bottom: 10px;
   background: #fff;
-  border-right: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color--semi-light);
   overflow: auto;
 }
 
@@ -125,8 +125,8 @@ nav h4 {
   padding: 5px 10px;
   margin: 0;
   user-select: none;
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color--semi-light);
+  border-bottom: 1px solid var(--border-color--semi-light);
 }
 
 nav h4:first-child {
@@ -312,7 +312,7 @@ compare-diff-item-content .info {
   height: 36px;
   line-height: 35px;
   padding: 0 12px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color--semi-light);
   color: #445;
 }
 

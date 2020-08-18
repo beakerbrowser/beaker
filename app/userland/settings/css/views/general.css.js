@@ -49,7 +49,7 @@ a:hover {
 }
 
 .form-group {
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color--semi-light);
   border-radius: 4px;
   padding: 10px 12px;
   margin-bottom: 16px;
@@ -63,7 +63,7 @@ a:hover {
 .form-group .section:not(:last-child) {
   margin-bottom: 0;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color--semi-light);
 }
 
 .form-group .section > :first-child {
@@ -73,7 +73,7 @@ a:hover {
 .form-group h2 {
   margin: 0;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color--semi-light);
 }
 
 .message {

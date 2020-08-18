@@ -2,11 +2,25 @@ import {css} from '../../vendor/lit-element/lit-element.js'
 import buttonsCSS from '../buttons2.css.js'
 import inputsCSS from '../inputs.css.js'
 import tooltipCSS from '../tooltip.css.js'
+import markdownCSS from '../markdown.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
 ${inputsCSS}
 ${tooltipCSS}
+${markdownCSS}
+
+:host {
+  --text-color--result-link: blue;
+  --bg-color--unread: #f2f7ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --text-color--result-link: #1043da;
+    --bg-color--unread: #f2f7ff;
+  }
+}
 
 /** COMMON RESOURCE STYLES **/
 
@@ -565,14 +579,6 @@ a[href]:hover {
 
 .resource.card .content > :first-child { margin-top: 0; }
 .resource.card .content > :last-child { margin-bottom: 0; }
-.resource.card .content h1 { font-family: arial; font-size: 21px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--border-color--semi-light); }
-.resource.card .content h2 { font-family: arial; font-size: 19px; font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border-color--semi-light); }
-.resource.card .content h3 { font-family: arial; font-size: 19px; font-weight: 500; }
-.resource.card .content h4 { font-family: arial; font-size: 16px; font-weight: 600; }
-.resource.card .content h5 { font-family: arial; font-size: 16px; font-weight: 500; }
-.resource.card .content pre { font-size: 13px; }
-.resource.card .content :-webkit-any(video, audio, img) { max-width: 100%; }
-.resource.card .content a { color: var(--text-color--content-link); }
 
 .resource.card .ctrls {
   padding: 6px 12px 6px;

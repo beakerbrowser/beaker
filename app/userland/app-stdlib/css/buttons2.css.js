@@ -108,7 +108,7 @@ button.gray:hover {
 }
 
 button[disabled] {
-  border-color: var(--border-color) !important;
+  border-color: var(--border-color--semi-light) !important;
   background: var(--bg-color--button--disabled) !important;
   color: var(--text-color--button--disabled) !important;
   cursor: default !important;

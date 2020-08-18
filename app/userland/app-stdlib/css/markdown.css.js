@@ -12,7 +12,7 @@ const cssStr = css`
 .markdown h5 { font-size: 16px; font-weight: 500; }
 .markdown pre { font-size: 13px; }
 .markdown :-webkit-any(video, audio, img) { max-width: 100%; }
-.markdown a { color: var(--text-color--link); }
+.markdown a { color: var(--text-color--markdown-link); }
 .markdown hr { border: 0; border-bottom: 1px solid var(--border-color--semi-light); }
 `
 export default cssStr

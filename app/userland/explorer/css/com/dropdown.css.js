@@ -46,7 +46,7 @@ const cssStr = css`
 }
 
 .dropdown-items .section-header.light {
-  color: var(--color-text--light);
+  color: var(--text-color--pretty-light);
   font-weight: 500;
 }
 
@@ -216,7 +216,7 @@ const cssStr = css`
 }
 
 .dropdown-item .description {
-  color: var(--color-text--muted);
+  color: var(--text-color--pretty-light);
   margin: 0;
   margin-left: 23px;
   margin-bottom: 3px;

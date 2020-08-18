@@ -28,7 +28,7 @@ ${colorscss}
   border: 1px solid #ddd;
   background: #fafafa;
   border-radius: 2px;
-  color: var(--color-text);
+  color: var(--text-color--default);
   font-size: 13px;
   line-height: 26px;
   letter-spacing: 0.25px;
@@ -50,7 +50,7 @@ ${colorscss}
 .btn.plain {
   background: none;
   border: none;
-  color: var(--color-text--muted);
+  color: var(--text-color--pretty-light);
   line-height: 28px;
   padding: 0 3px;
 }
@@ -87,7 +87,6 @@ ${colorscss}
 
 .btn:focus {
   outline: none;
-  box-shadow: 1px solid var(--color-focus-box-shadow);
 }
 
 .btn.full-width {

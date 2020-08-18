@@ -417,7 +417,7 @@ main {
 }
 
 .suggested-sites .site .title a {
-  color: var(--text-color--result-link);
+  color: var(--text-color--link);
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.5px;
