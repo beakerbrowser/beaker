@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
+import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import { EditBookmarkPopup } from 'beaker://app-stdlib/js/com/popups/edit-bookmark.js'
 import { NewPagePopup } from 'beaker://app-stdlib/js/com/popups/new-page.js'
 import { NewPostPopup } from 'beaker://app-stdlib/js/com/popups/new-post.js'
@@ -346,7 +347,9 @@ class DesktopApp extends LitElement {
                 .sources=${this.sources}
                 limit="50"
                 @load-state-updated=${e => this.requestUpdate()}
-                .profileUrl=${this.profile ? this.profile.url : ''}
+                @view-thread=${this.onViewThread}
+                @reply=${this.onReply}
+                profile-url=${this.profile ? this.profile.url : ''}
               ></beaker-resource-feed>
             </div>
             ${this.renderSidebar()}
@@ -367,7 +370,9 @@ class DesktopApp extends LitElement {
                 .sources=${this.sources}
                 limit="50"
                 @load-state-updated=${e => this.requestUpdate()}
-                .profileUrl=${this.profile ? this.profile.url : ''}
+                @view-thread=${this.onViewThread}
+                @reply=${this.onReply}
+                profile-url=${this.profile ? this.profile.url : ''}
               ></beaker-resource-feed>
             </div>
             ${this.renderSidebar()}
@@ -669,6 +674,17 @@ class DesktopApp extends LitElement {
     await beaker.bookmarks.add(Object.assign({}, bookmark, {pinned: false}))
     toast.create('Bookmark unpinned', '', 10e3)
     this.load()
+  }
+
+  onViewThread (e) {
+    ViewThreadPopup.create({
+      resourceUrl: e.detail.resource.url,
+      profileUrl: this.profile.url
+    })
+  }
+
+  onReply (e) {
+    console.log(e)
   }
 
   async onClickRemoveLegacyArchive (e, archive) {

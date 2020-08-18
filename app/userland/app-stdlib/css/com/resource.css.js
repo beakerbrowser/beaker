@@ -80,7 +80,6 @@ a[href]:hover {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
-  margin: 28px 6px;
 }
 
 .resource.expanded-link:first-child {
@@ -190,17 +189,6 @@ a[href]:hover {
   text-decoration: underline;
 }
 
-.resource.expanded-link .tags {
-  margin: 5px 0 0;
-  line-height: 1.3;
-  font-size: 12px;
-}
-  
-.resource.expanded-link .tags a {
-  letter-spacing: 0.3px;
-  margin-right: 3px;
-}
-
 .resource.expanded-link.as-card {
 }
 
@@ -215,7 +203,6 @@ a[href]:hover {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
-  margin: 20px 24px 20px 4px;
 }
 
 .resource.action.unread {
@@ -274,7 +261,6 @@ a[href]:hover {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
-  margin: 24px 24px 24px 4px;
 }
 
 .resource.link.unread {
@@ -372,21 +358,6 @@ a[href]:hover {
   color: var(--text-color--light);
 }
 
-.resource.link .tags {
-  padding: 0 0 4px;
-}
-
-.resource.link .tags a {
-  display: inline-block;
-  color: var(--text-color--light);
-  background: var(--bg-color--semi-light);
-  padding: 0 6px 1px;
-  font-size: 12px;
-  border-radius: 4px;
-  letter-spacing: 0.3px;
-  margin-right: 3px;
-}
-
 .resource.link .ctrls {
   font-size: 13px;
   color: var(--text-color--light);
@@ -422,7 +393,6 @@ a[href]:hover {
   position: relative;
   display: grid;
   grid-template-columns: 45px 1fr;
-  margin: 10px 24px 10px 4px;
   color: var(--text-color--lightish);
 }
 
@@ -443,7 +413,6 @@ a[href]:hover {
   height: 30px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
-  margin-right: 10px;
   position: relative;
   top: 8px;
 }
@@ -495,6 +464,11 @@ a[href]:hover {
   padding: 2px;
 }
 
+.resource.card .container:hover {
+  cursor: pointer;
+  border: 1px solid var(--border-color--dark);
+}
+
 .resource.card.unread .container {
   border-color: var(--border-color--unread);
 }
@@ -533,21 +507,6 @@ a[href]:hover {
 
 .resource.card .title a {
   color: var(--text-color--result-link);
-}
-
-.resource.card .tags {
-  padding: 8px 12px 0;
-}
-
-.resource.card .tags a {
-  display: inline-block;
-  color: var(--text-color--light);
-  background: var(--bg-color--semi-light);
-  padding: 0 6px 1px;
-  font-size: 12px;
-  border-radius: 4px;
-  letter-spacing: 0.3px;
-  margin-right: 3px;
 }
 
 .resource.card .context {
@@ -605,6 +564,24 @@ a[href]:hover {
   top: -1px;
   letter-spacing: 0.5px;
   font-weight: 500;
+}
+
+:host([noborders]) .resource.card {
+  grid-template-columns: 34px 1fr;
+}
+
+:host([noborders]) .resource.card .thumb {
+  margin: 5px 0 0;
+  width: 36px;
+  height: 36px;
+}
+
+:host([noborders]) .resource.card .arrow {
+  display: none;
+}
+
+:host([noborders]) .resource.card .container {
+  border-color: transparent !important;
 }
 `
 export default cssStr

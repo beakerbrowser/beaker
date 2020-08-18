@@ -234,7 +234,7 @@ export class NewPagePopup extends BasePopup {
 
         <section class="tip">
           <span class="fas fa-fw fa-info"></span>
-          You can make a ${this.type} to "public" after working on it privately first.
+          You can make a ${this.type} "public" after working on it privately first.
         </section>
 
         <div class="actions">

@@ -26,12 +26,17 @@ export class Resource extends LitElement {
     this.resource = undefined
     this.renderMode = 'card'
     this.profileUrl = undefined
+
+    // helper state
+    this.isMouseDown = false
+    this.isMouseDragging = false
   }
 
   // rendering
   // =
 
   render () {
+    if (!this.resource) return html``
     switch (this.renderMode) {
       case 'card': return this.renderAsCard()
       case 'action': return this.renderAsAction()
@@ -46,6 +51,7 @@ export class Resource extends LitElement {
     const res = this.resource
 
     return html`
+      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       ${res.notification ? this.renderNotification() : ''}
       <div
         class=${classMap({
@@ -59,7 +65,12 @@ export class Resource extends LitElement {
           <img class="favicon" src="${joinPath(res.site.url, 'thumb')}">
         </a>
         <span class="arrow"></span>
-        <div class="container">
+        <div
+          class="container"
+          @mousedown=${this.onMousedownCard}
+          @mouseup=${this.onMouseupCard}
+          @mousemove=${this.onMousemoveCard}
+        >
           <div class="header">
             <div class="origin">
               ${res.site.url === 'hyper://private/' ? html`
@@ -308,9 +319,32 @@ export class Resource extends LitElement {
   // events
   // =
 
-  onClickReply (e, url) {
+  onClickReply (e) {
     e.preventDefault()
     emit(this, 'reply', {detail: {resource: this.resource}})
+  }
+
+  onMousedownCard (e) {
+    for (let el of e.path) {
+      if (el.tagName === 'A') return
+    }
+    this.isMouseDown = true
+    this.isMouseDragging = false
+  }
+
+  onMousemoveCard (e) {
+    if (this.isMouseDown) {
+      this.isMouseDragging = true
+    }
+  }
+
+  onMouseupCard (e) {
+    if (!this.isMouseDown) return
+    if (!this.isMouseDragging) {
+      emit(this, 'view-thread', {detail: {resource: this.resource}})
+    }
+    this.isMouseDown = false
+    this.isMouseDragging = false
   }
 
   onClickShowSites (e, results) {

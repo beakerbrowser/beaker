@@ -90,6 +90,23 @@ h2 a:hover {
   box-sizing: border-box;
 }
 
+.results beaker-resource {
+  display: block;
+  margin: 10px 0;
+}
+
+.results beaker-resource[render-mode="link"] {
+  margin: 18px 0;
+}
+
+.results beaker-resource[render-mode="expanded-link"] {
+  margin: 20px 0;
+}
+
+.results beaker-resource[render-mode="action"] {
+  margin: 16px 0;
+}
+
 .empty {
   font-size: 16px;
   letter-spacing: 0.7px;

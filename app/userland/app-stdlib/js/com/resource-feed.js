@@ -25,7 +25,7 @@ export class ResourceFeed extends LitElement {
       sources: {type: Array},
       results: {type: Array},
       hideEmpty: {type: Boolean, attribute: 'hide-empty'},
-      profileUrl: {type: String}
+      profileUrl: {type: String, attribute: 'profile-url'}
     }
   }
 
