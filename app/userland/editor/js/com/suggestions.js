@@ -6,8 +6,11 @@ export default function registerSuggestions () {
 
 export class MarkdownSuggestions {
   constructor () {
-    this.mdQueryRegex = /\[\[(.*?)\]\]/
+    this.mdQueryRegex = /\[(.*?)\]/
     this.searchDebouncer = debouncer(100)
+    beaker.browser.getProfile().then(p => {
+      this.profile = p
+    })
   }
 
   static register () {
@@ -26,42 +29,57 @@ export class MarkdownSuggestions {
       return null
     }
     const queryResults = await this.searchDebouncer(() => beaker.indexer.search(term, {
+      filter: {index: ['beaker/index/pages', 'beaker/index/blogposts']},
       limit: 10,
       sort: 'rank',
       reverse: true
     }))
     const suggestions = queryResults.map(s => {
-      const type = s.metadata.type ? s.metadata.type.slice(7) : 'unknown'
-      const title = s.metadata.title || ''
-      const detail = s.content ? s.content.slice(0, 250) + '...' : ''
-      const prefix = title ? `(${type}) - ${title}` : `(${type})`
-      // Render the detail in the label because Intellisense rendering adds too much spacing.
-      const label = `${prefix}: ${detail}`
+      const type = ({
+        'beaker/index/blogposts': 'blogpost',
+        'beaker/index/pages': 'page'
+      })[s.index]
+      const title = s.metadata.title || s.url.split('/').pop()
+      const detail = s.site.title
       return {
-        label,
+        label: title ? `(${type}) - ${title}` : `(${type})`,
         detail,
         range: match.range,
         filterText: value,
-        insertText: `[${title || s.url}](${s.url})`
+        insertText: `[${title}](${s.url})`
       }
     })
     return { suggestions }
   }
 
   async completePeopleSuggestions (term, match, value) {
-    term = term.toLowerCase()
-    const contacts = await this.searchDebouncer(() => beaker.contacts.list())
-    // No fuzzy searching here for now.
-    const matches = contacts.filter(c => c.title.toLowerCase().startsWith(term.slice(1)))
-    const suggestions = matches.map(m => {
+    const queryResults = await this.searchDebouncer(() => beaker.indexer.search(term.slice(1), {
+      filter: {index: ['beaker/index/subscriptions'], site: `hyper://${this.profile?.key}`},
+      limit: 10,
+      sort: 'rank',
+      reverse: true
+    }))
+    const suggestions = queryResults.map(s => {
       return {
-        label: `${m.title} - ${m.description}`,
-        detail: m.description,
+        label: s.metadata.title,
         range: match.range,
         filterText: value,
-        insertText: `[${m.title}](${m.url})`
+        insertText: `[@${s.metadata.title}](${s.metadata.href})`
       }
     })
+
+    {
+      let title = this.profile?.title.toLowerCase() || ''
+      if (title.includes(term.slice(1).toLowerCase())) {
+        suggestions.unshift({
+          label: this.profile.title,
+          range: match.range,
+          filterText: value,
+          insertText: `[@${this.profile.title}](hyper://${this.profile.key})`
+        })
+      }
+    }
+
     return { suggestions }
   }
 
