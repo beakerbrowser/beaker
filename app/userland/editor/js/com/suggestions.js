@@ -6,7 +6,8 @@ export default function registerSuggestions () {
 
 export class MarkdownSuggestions {
   constructor () {
-    this.mdQueryRegex = /\[(.*?)\]/
+    this.mdLinkQueryRegex = /\[(.*?)\]/
+    this.mdMentionQueryRegex = /@(\w*)/
     this.searchDebouncer = debouncer(100)
     beaker.browser.getProfile().then(p => {
       this.profile = p
@@ -53,7 +54,7 @@ export class MarkdownSuggestions {
   }
 
   async completePeopleSuggestions (term, match, value) {
-    const queryResults = await this.searchDebouncer(() => beaker.indexer.search(term.slice(1), {
+    const queryResults = await this.searchDebouncer(() => beaker.indexer.search(term, {
       filter: {index: ['beaker/index/subscriptions'], site: `hyper://${this.profile?.key}`},
       limit: 10,
       sort: 'rank',
@@ -70,7 +71,7 @@ export class MarkdownSuggestions {
 
     {
       let title = this.profile?.title.toLowerCase() || ''
-      if (title.includes(term.slice(1).toLowerCase())) {
+      if (title.includes(term.toLowerCase())) {
         suggestions.unshift({
           label: this.profile.title,
           range: match.range,
@@ -84,18 +85,36 @@ export class MarkdownSuggestions {
   }
 
   async provideCompletionItems (model, position) {
-    const matches = model.findMatches(this.mdQueryRegex, {
+    // link match
+    var matches = model.findMatches(this.mdLinkQueryRegex, {
       startColumn: 1,
       endColumn: model.getLineMaxColumn(position.lineNumber),
       startLineNumber: position.lineNumber,
       endLineNumber: position.lineNumber
     }, true, false, null, true)
-    const match = matches.length && matches.find(m => m.range.containsPosition(position))
-    if (!match) return null
-    const term = match.matches[1]
-    const value = model.getValueInRange(match.range) 
-    if (term.startsWith('@')) return this.completePeopleSuggestions(term, match, value)
-    return this.completeLinkSuggestions(term, match, value)
+    var match = matches.length && matches.find(m => m.range.containsPosition(position))
+    if (match) {
+      let term = match.matches[1]
+      let value = model.getValueInRange(match.range) 
+      if (term.startsWith('@')) return this.completePeopleSuggestions(term.slice(1), match, value)
+      return this.completeLinkSuggestions(term, match, value)
+    }
+
+    // mention match
+    var matches = model.findMatches(this.mdMentionQueryRegex, {
+      startColumn: 1,
+      endColumn: model.getLineMaxColumn(position.lineNumber),
+      startLineNumber: position.lineNumber,
+      endLineNumber: position.lineNumber
+    }, true, false, null, true)
+    var match = matches.length && matches.find(m => m.range.containsPosition(position))
+    if (match) {
+      let term = match.matches[1]
+      let value = model.getValueInRange(match.range) 
+      return this.completePeopleSuggestions(term, match, value)
+    }
+
+    return null
   }
 }
 
