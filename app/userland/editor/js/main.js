@@ -66,8 +66,13 @@ class EditorApp extends LitElement {
     return path.split('/').pop().includes('.')
   }
 
-  get isDraft () {
-    return this.stat && !!this.stat.metadata['beaker/draft']
+  get isPrivate () {
+    return this.url.startsWith('hyper://private/')
+  }
+
+  get isPage () {
+    var type = this.stat?.metadata?.type
+    return type === 'beaker/page' || 'beaker/blogpost'
   }
 
   get hasChanges () {
@@ -598,12 +603,15 @@ class EditorApp extends LitElement {
           <span class="fas fa-fw fa-columns"></span>
         </button>
         <span class="divider"></span>
-        <button title="Open..." @click=${this.onClickOpen}>
-          <span class="far fa-fw fa-folder-open"></span> Open...
-        </button>
         ${!this.readOnly ? html`
           <button id="save-btn" title="Save" @click=${this.onClickSave} ?disabled=${this.dne || !this.hasChanges}>
             <span class="fas fa-fw fa-save"></span> Save
+          </button>
+          <button title="Rename" @click=${e => this.onClickRename(this.resolvedPath)} ?disabled=${this.dne}>
+            <span class="fas fa-fw fa-i-cursor"></span> Rename
+          </button>
+          <button title="Delete" @click=${e => this.onClickDelete(this.resolvedPath)} ?disabled=${this.dne}>
+            <span class="far fa-fw fa-trash-alt"></span> Delete
           </button>
         ` : ''}
         <button title="Actions" @click=${this.onClickActions}>
@@ -633,9 +641,9 @@ class EditorApp extends LitElement {
           </button>
           <span class="divider"></span>
         `}
-        ${!this.readOnly && this.isDraft ? html`
+        ${!this.readOnly && this.isPrivate && this.isPage ? html`
           <button class="primary" title="Publish" @click=${this.onClickPublish}>
-            Publish Draft
+            <span class="fas fa-fw fa-globe-africa"></span> Publish
           </button>
         ` : ''}
       </div>
@@ -683,19 +691,6 @@ class EditorApp extends LitElement {
       rounded: true,
       style: 'padding: 4px 0',
       items: [
-        {
-          icon: 'fa fa-fw fa-i-cursor',
-          label: 'Rename',
-          disabled: this.dne || this.readOnly,
-          click: () => this.onClickRename(this.resolvedPath)
-        },
-        {
-          icon: 'fa fa-fw fa-trash',
-          label: 'Delete',
-          disabled: this.dne || this.readOnly,
-          click: () => this.onClickDelete(this.resolvedPath)
-        },
-        '-',
         {
           icon: 'fas fa-fw fa-file-export',
           label: 'Export',
@@ -878,16 +873,18 @@ class EditorApp extends LitElement {
     e.preventDefault()
     var model = this.editor.getModel(this.url)
     var {url} = await PublishPopup.create({
+      url: this.url,
       type: this.stat.metadata.type,
       title: this.stat.metadata.title,
       content: model.getValue()
     })
-    window.open(url)
-  }
-
-  async onClickOpen () {
-    var url = await beaker.shell.selectDriveDialog()
-    if (url) this.load(url)
+    this.lastSavedVersionId = model.getAlternativeVersionId() // clear changes
+    this.attachedPane = beaker.panes.getAttachedPane()
+    if (this.attachedPane) {
+      beaker.panes.navigate(this.attachedPane.id, url)
+    } else {
+      this.load(url)
+    }
   }
 
   async onClickSave () {

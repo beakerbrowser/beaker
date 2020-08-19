@@ -1,54 +1,80 @@
 import { html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import { BasePopup } from '../../../app-stdlib/js/com/popups/base.js'
 import { getAvailableName } from '../../../app-stdlib/js/fs.js'
-import * as contextMenu from '../../../app-stdlib/js/com/context-menu.js'
+import { joinPath } from '../../../app-stdlib/js/strings.js'
 import popupsCSS from '../../../app-stdlib/css/com/popups.css.js'
 
 // exported api
 // =
 
 export class PublishPopup extends BasePopup {
-  constructor ({type, title, content, path, siteOptions}) {
+  constructor ({url, type, title, content, profile}) {
     super()
-    this.siteOptions = siteOptions
-    this.site = siteOptions[0]
+    this.url = url
     this.type = type || 'beaker/page'
     this.title = title
     this.content = content
-    this.path = path
+    this.profile = profile
     this.error = undefined
   }
 
   get typeLabel () {
     return ({
-      'beaker/blogpost': 'Blog post',
-      'beaker/microblogpost': 'Microblog post',
-      'beaker/page': 'Page'
-    })[this.type]
+      'beaker/blogpost': 'blog post'
+    })[this.type] || 'page'
   }
 
   static get styles () {
     return [popupsCSS, css`
-    .inline {
-      display: flex;
+
+    .where {
+      display: grid;
+      grid-template-columns: 50px 1fr;
+      grid-gap: 10px;
       align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .where img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .where .title {
+      font-size: 15px;
       margin-bottom: 5px;
+      font-weight: 500;
     }
-    .inline label {
-      flex: 0 0 40px;
-      margin: 0;
-    }
-    .inline input,
-    .inline button {
-      margin: 0;
-      letter-spacing: 0.5px;
-    }
-    button.small {
+
+    .where .visibility {
+      display: inline-block;
+      background: var(--bg-color--semi-light);
+      border-radius: 4px;
+      padding: 5px;
       font-size: 11px;
+      font-weight: 500;
     }
-    input.small {
-      height: 25px;
-      font-size: 12px;
+
+    section {
+      margin-left: 60px;
+    }
+
+    label {
+      font-size: 11px;
+      color: var(--text-color--light);
+    }
+
+    .popup-inner input[name="title"] {
+      font-size: 17px;
+      height: auto;
+      padding: 8px 10px 6px;
+      letter-spacing: 0.7px;
+    }
+
+    input[name="title"]::placeholder {
+      font-size: 17px;
     }
     `]
   }
@@ -60,50 +86,51 @@ export class PublishPopup extends BasePopup {
   // management
   //
 
-  static async create ({type, title, content}) {
-    var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
-    var siteOptions = await Promise.all(addressBook.profiles.map(({key}) => beaker.hyperdrive.getInfo(key)))
-    var path = getDefaultPath(type)
-    var name = await getAvailableName(path, title.toLowerCase(), beaker.hyperdrive.drive(siteOptions[0].url), 'md')
-    return BasePopup.create(PublishPopup, {type, title, content, siteOptions, path: path + name})
+  static async create ({url, type, title, content}) {
+    var profile = await beaker.browser.getProfile()
+    profile.url = `hyper://${profile.key}`
+    return BasePopup.create(PublishPopup, {url, type, title, content, profile})
   }
 
   static destroy () {
-    return BasePopup.destroy('beaker-edit-thumb')
+    return BasePopup.destroy('beaker-publish-popup')
   }
 
   // rendering
   // =
 
   renderTitle () {
-    return `Publish draft`
+    return 'Publish'
   }
 
   renderBody () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <form @submit=${this.onSubmit}>
-        <div class="inline">
-          <label>Site</label>
-          <button class="btn small" @click=${this.onClickSite}>${this.site.title} <span class="fas fa-angle-down"></span>
+        <div class="where">
+          <img src=${joinPath(this.profile.url, 'thumb')}>
+          <div>
+            <div class="title">${this.profile.title}</div>
+            <div>
+              <span class="visibility">
+                <span class="fas fa-fw fa-globe-africa"></span> Everybody
+              </span>
+            </div>
+          </div>
         </div>
-        <div class="inline">
-          <label>Title</label> <input value=${this.title}>
-        </div>
-        <div class="inline">
-          <label>Type</label>
-          <button class="btn small" @click=${this.onClickType}>${this.typeLabel} <span class="fas fa-angle-down"></span>
-        </div>
-        <div class="inline">
-          <label>Path</label>
-          <input name="path" class="small" value=${this.path} @keyup=${this.onKeyupPath}>
-        </div>
+
+        <section>
+          <label>Title</label>
+          <input name="title" value=${this.title}>
+        </section>
 
         ${this.error ? html`<div class="error">${this.error}</div>` : ''}
 
         <div class="actions">
           <button type="button" class="btn" @click=${this.onReject} tabindex="3">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="2">Save</button>
+          <button type="submit" class="btn primary" tabindex="2">
+            <span class="fas fa-fw fa-globe-africa"></span> Publish ${this.typeLabel}
+          </button>
         </div>
       </form>
     `
@@ -112,83 +139,35 @@ export class PublishPopup extends BasePopup {
   // events
   // =
 
-  onKeyupPath (e) {
-    this.path = e.currentTarget.value.trim()
-  }
-
-  onClickSite (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    const opt = (site) => ({
-      label: site.title,
-      click: () => {
-        this.site = site
-        this.requestUpdate()
-      }
-    })
-    let rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({
-      x: rect.left,
-      y: rect.bottom,
-      noBorders: true,
-      style: 'padding: 4px 0',
-      items: this.siteOptions.map(opt)
-    })
-  }
-
-  onClickType (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    const opt = (icon, type, label) => ({
-      icon,
-      label,
-      click: () => this.onSetType(type)
-    })
-    let rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({
-      x: rect.left,
-      y: rect.bottom,
-      noBorders: true,
-      style: 'padding: 4px 0',
-      items: [
-        opt('far fa-fw fa-file-alt', 'beaker/page', 'Page'),
-        opt('fas fa-fw fa-blog', 'beaker/blogpost', 'Blog post'),
-        opt('fas fa-fw fa-stream', 'beaker/microblogpost', 'Microblog Post')
-      ]
-    })
-  }
-
-  onSetType (type) {
-    this.type = type
-    this.path = getDefaultPath(type) + this.path.split('/').pop()
-    this.shadowRoot.querySelector('[name="path"]').value = this.path
-    this.requestUpdate()
-  }
-
   async onSubmit (e) {
     e.preventDefault()
     e.stopPropagation()
 
+    var title = this.shadowRoot.querySelector('input[name="title"]').value
+    var path = getDefaultPath(this.type)
+    var name = await getAvailableName(path, title.toLowerCase(), beaker.hyperdrive.drive(this.profile.url), 'md')
+    var newUrl = joinPath(this.profile.url, path, name)
+    var oldUrl = this.url
+
     this.error = undefined
     try {
-      var drive = beaker.hyperdrive.drive(this.site.url)
-      await drive.writeFile(this.path, this.content, {metadata: {title: this.title, type: this.type}})
+      await beaker.hyperdrive.writeFile(newUrl, this.content, {metadata: {title, type: this.type}})
+      await beaker.hyperdrive.unlink(oldUrl)
     } catch (e) {
       this.error = e.toString()
       this.requestUpdate()
       return
     }
 
-    this.dispatchEvent(new CustomEvent('resolve', {detail: {url: drive.url + this.path}}))
+    this.dispatchEvent(new CustomEvent('resolve', {detail: {url: newUrl}}))
   }
 }
 
-customElements.define('publish-popup', PublishPopup)
+customElements.define('beaker-publish-popup', PublishPopup)
 
 function getDefaultPath (type) {
   return ({
     'beaker/blogpost': '/blog/',
-    'beaker/microblogpost': '/microblog/',
     'beaker/page': '/pages/'
-  })[type] || '/'
+  })[type] || '/pages/'
 }
