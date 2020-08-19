@@ -555,14 +555,8 @@ export async function setNotificationIsRead (rowid, isRead) {
 }
 
 export async function triggerSiteIndex (origin) {
-  try {
-    if (tickController) tickController.abort() // pre-empt the indexer
-    var release = await lock('beaker-indexer')
-    var myOrigins = await listMyOrigins()
-    await indexSite(origin, myOrigins)
-  } finally {
-    release()
-  }
+  var myOrigins = await listMyOrigins()
+  await indexSite(origin, myOrigins)
 }
 
 // internal methods
@@ -573,7 +567,6 @@ export async function triggerSiteIndex (origin) {
  */
 async function tick () {
   try {
-    var release = await lock('beaker-indexer')
     tickController = new AbortController()
     var myOrigins = await listMyOrigins()
 
@@ -585,19 +578,7 @@ async function tick () {
 
     var originsToDeindex = await listOriginsToDeindex(originsToIndex)
     for (let origin of originsToDeindex) {
-      try {
-        let siteRecord = (await db('sites').select('rowid', 'origin').where({origin}))[0]
-        let resourceRecords = await db('resources').select('rowid').where({site_rowid: siteRecord.rowid})
-        for (let resource of resourceRecords) {
-          await db('resources_data').del().where({resource_rowid: resource.rowid})
-        }
-        await db('resources').del().where({site_rowid: siteRecord.rowid})
-        await db('notifications').del().where({site_rowid: siteRecord.rowid})
-        await db('site_indexes').del().where({site_rowid: siteRecord.rowid})
-        logger.debug(`Deindexed ${siteRecord.origin}/*`, {site: siteRecord.origin})
-      } catch (e) {
-        logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
-      }
+      await deindexSite(origin)
       if (tickController.signal.aborted) return
     }
   } finally {
@@ -605,13 +586,13 @@ async function tick () {
       logger.debug('Aborted regular indexing to pre-empt a triggered index')
     }
     tickController = undefined
-    release()
     setTimeout(tick, TICK_INTERVAL)
   }
 }
 
 async function indexSite (origin, myOrigins) {
   origin = normalizeOrigin(origin)
+  var release = await lock(`beaker-indexer:${origin}`)
   try {
     let site = await loadSite(origin)
     for (let indexer of INDEXES) {
@@ -645,6 +626,28 @@ async function indexSite (origin, myOrigins) {
     }
   } catch (e) {
     logger.error(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+  } finally {
+    release()
+  }
+}
+
+async function deindexSite (origin) {
+  origin = normalizeOrigin(origin)
+  var release = await lock(`beaker-indexer:${origin}`)
+  try {
+    let siteRecord = (await db('sites').select('rowid', 'origin').where({origin}))[0]
+    let resourceRecords = await db('resources').select('rowid').where({site_rowid: siteRecord.rowid})
+    for (let resource of resourceRecords) {
+      await db('resources_data').del().where({resource_rowid: resource.rowid})
+    }
+    await db('resources').del().where({site_rowid: siteRecord.rowid})
+    await db('notifications').del().where({site_rowid: siteRecord.rowid})
+    await db('site_indexes').del().where({site_rowid: siteRecord.rowid})
+    logger.debug(`Deindexed ${siteRecord.origin}/*`, {site: siteRecord.origin})
+  } catch (e) {
+    logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+  } finally {
+    release()
   }
 }
 
