@@ -12,6 +12,7 @@ quillFormatsHackfix(Quill, ['bold', 'italic', 'strike', 'link', 'code', 'list', 
 class PostComposer extends LitElement {
   static get properties () {
     return {
+      placeholder: {type: String},
       isEmpty: {type: Boolean},
       driveUrl: {type: String, attribute: 'drive-url'},
       subject: {type: String},
@@ -21,6 +22,7 @@ class PostComposer extends LitElement {
 
   constructor () {
     super()
+    this.placeholder = 'What\'s new?'
     this.isEmpty = true
     this.driveUrl = undefined
     this.subject = undefined
@@ -73,7 +75,7 @@ class PostComposer extends LitElement {
   firstUpdated () {
     var bodyInput = this.shadowRoot.querySelector('#quill-editor')
     this.quill = new Quill(bodyInput, {
-      placeholder: 'What\'s new?',
+      placeholder: this.placeholder,
       bounds: bodyInput.parentElement,
       modules: {
         toolbar: [
@@ -99,6 +101,7 @@ class PostComposer extends LitElement {
   onCancel (e) {
     e.preventDefault()
     e.stopPropagation()
+    this.quill.setText('')
     this.dispatchEvent(new CustomEvent('cancel'))
   }
 

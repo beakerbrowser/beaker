@@ -29,7 +29,7 @@ a {
   cursor: initial;
 }
 
-a[href]:hover {
+a:hover {
   text-decoration: underline;
   cursor: pointer;
 }
@@ -187,14 +187,6 @@ a[href]:hover {
 
 .resource.expanded-link .ctrl:hover {
   text-decoration: underline;
-}
-
-.resource.expanded-link.as-card {
-}
-
-.resource.expanded-link.as-card:hover {
-  cursor: pointer;
-
 }
 
 /** ACTION STYLES **/
@@ -462,6 +454,7 @@ a[href]:hover {
   border-radius: 4px;
   background: var(--bg-color--default);
   padding: 2px;
+  min-width: 0; /* this is a hack to make the overflow: hidden work */
 }
 
 .resource.card .container:hover {
@@ -477,7 +470,6 @@ a[href]:hover {
   display: flex;
   align-items: baseline;
   font-size: 13px;
-  max-width: 562px;
   padding: 8px 12px 6px;
 }
 
@@ -510,22 +502,15 @@ a[href]:hover {
 }
 
 .resource.card .context {
+  box-sizing: border-box;
   font-size: 12px;
-  color: var(--text-color--light);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.resource.card .context .fa-reply {
-  color: var(--text-color--very-light);
-}
-
 .resource.card .context a {
   color: var(--text-color--light);
-}
-
-.resource.card .context + .header {
-  padding-top: 0;
 }
 
 .resource.card .content {
@@ -533,7 +518,7 @@ a[href]:hover {
   color: var(--text-color--default);
   line-height: 1.3125;
   font-size: 14px;
-  padding: 0px 12px;
+  padding: 0px 12px 10px;
 }
 
 .resource.card .content > :first-child { margin-top: 0; }
@@ -591,6 +576,112 @@ a[href]:hover {
 
 :host([noborders]) .resource.card beaker-post-composer {
   margin-left: -36px;
+}
+
+/** COMMENT STYLES **/
+
+.resource.comment {
+  background: var(--bg-color--light);
+  padding: 10px 14px 8px;
+  border-radius: 4px;
+}
+
+.resource.comment:hover {
+  cursor: pointer;
+  background: var(--bg-color--semi-light);
+}
+
+.resource.comment .header {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  padding: 0 0 6px;
+}
+
+.resource.comment .header > * {
+  margin-right: 5px;
+  white-space: nowrap;
+}
+.resource.comment .header a {
+  color: var(--text-color--light);
+}
+
+.resource.comment .thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--bg-color--semi-light);
+  border-radius: 50%;
+}
+
+.resource.comment .thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: scale-down;
+}
+
+.resource.comment .origin .author {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-color--default);
+}
+
+.resource.comment .title {
+  font-weight: normal;
+  letter-spacing: 0.5px;
+}
+
+.resource.comment .title a {
+  color: var(--text-color--result-link);
+}
+
+.resource.comment .context {
+  box-sizing: border-box;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resource.comment .content {
+  white-space: initial;
+  color: var(--text-color--default);
+  line-height: 1.3125;
+  font-size: 14px;
+}
+
+.resource.comment .content > :first-child { margin-top: 0; }
+.resource.comment .content > :last-child { margin-bottom: 0; }
+
+.resource.comment .ctrls {
+  padding: 6px 0 0;
+}
+
+.resource.comment .ctrls a {
+  display: inline-block;
+  color: var(--text-color--light);
+  font-size: 13px;
+}
+
+.resource.comment .ctrls a:hover {
+  cursor: pointer;
+  color: var(--text-color--default);
+}
+
+.resource.comment .ctrls a :-webkit-any(.far, .fas) {
+  color: var(--text-color--very-light);
+}
+
+.resource.comment .ctrls a small {
+  position: relative;
+  top: -1px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.resource.comment beaker-post-composer {
+  display: block;
+  padding: 10px 0;
 }
 
 `

@@ -5,6 +5,7 @@ const cssStr = css`
 ${buttonsCSS}
 
 .quill-container {
+  background: var(--bg-color--default);
   margin-bottom: 6px;
 }
 

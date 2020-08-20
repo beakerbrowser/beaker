@@ -1,11 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
-import { toNiceUrl, joinPath } from 'beaker://app-stdlib/js/strings.js'
 import css from '../css/main.css.js'
-import './com/res-summary.js'
-import './com/action-item.js'
-import './com/comment-box.js'
+import 'beaker://app-stdlib/js/com/resource-thread.js'
 
 class ActivityApp extends LitElement {
   static get styles () {
@@ -14,23 +10,15 @@ class ActivityApp extends LitElement {
 
   static get properties () {
     return {
-      isLoading: {type: Boolean},
-      currentView: {type: String}
+      url: {type: String}
     }
   }
 
   constructor () {
     super()
     beaker.panes.setAttachable()
-    this.isLoading = true
-    this.currentView = 'summary'
     this.url = undefined
     this.profileUrl = undefined
-    this.siteInfo = undefined
-    this.fileInfo = undefined
-    this.fileContent = undefined
-    this.privateMode = false
-    this.annotations = []
 
     var ignoreNextAttachEvent = false
     beaker.panes.addEventListener('pane-attached', e => {
@@ -81,93 +69,8 @@ class ActivityApp extends LitElement {
     })()
   }
 
-  get pathname () {
-    try {
-      return (new URL(this.url)).pathname
-    } catch (e) {
-      return this.url
-    }
-  }
-
-  get isRoot () {
-    return ['', '/', '/index.md', '/index.html', '/index.htm'].includes(this.pathname)
-  }
-
-  get fileTitle () {
-    return this.fileInfo?.metadata?.title
-  }
-
-  get typeLabel () {
-    if (!this.fileInfo || this.fileInfo.isDirectory()) {
-      if (this.isRoot) return 'site'
-      return 'page'
-    }
-    switch (this.fileInfo.metadata.type) {
-      case 'beaker/blogpost': return 'blog post'
-      case 'beaker/comment': return 'comment'
-      case 'beaker/page': return 'webpage'
-      case 'beaker/microblogpost': return 'microblog post'
-      default: return 'page'
-    }
-  }
-
-  get typeIcon () {
-    if (!this.fileInfo) return undefined
-    if (this.fileInfo.isDirectory()) return undefined
-    switch (this.fileInfo.metadata.type) {
-      case 'beaker/blogpost': return 'fas fa-blog'
-      case 'beaker/comment': return 'far fa-comment-alt'
-      case 'beaker/page': return 'far fa-file-alt'
-      case 'beaker/microblogpost': return 'fas fa-stream'
-      default: return 'far fa-file'
-    }
-  }
-
   async load (url) {
-    this.isLoading = true
     this.url = url
-    this.fileInfo = undefined
-    this.fileContent = undefined
-    this.siteInfo = undefined
-    this.annotations = []
-    this.requestUpdate()
-
-    if (url) {
-      await Promise.all([
-        this.loadResource(),
-        this.loadAnnotations()
-      ])
-    }
-    
-    this.isLoading = false
-    this.requestUpdate()
-  }
-
-  async loadResource () {
-    if (this.url.startsWith('hyper://')) {
-      this.siteInfo = await beaker.hyperdrive.getInfo(this.url).catch(e => undefined)
-      this.fileInfo = await beaker.hyperdrive.stat(this.url).catch(e => undefined)
-      if (this.url.endsWith('.md') && !this.fileTitle) {
-        this.fileContent = await beaker.hyperdrive.readFile(this.url, 'utf8')
-      }
-    } else {
-      this.siteInfo = {
-        url: (new URL(this.url)).origin,
-        title: (new URL(this.url)).hostname
-      }
-    }
-  }
-
-  async loadAnnotations () {
-    var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
-    this.profileUrl = `hyper://${addressBook.profiles[0].key}/`
-    this.annotations = await beaker.indexer.list({filter: {linksTo: this.url}, sort: 'ctime', reverse: true})
-    console.log(this.annotations)
-  }
-
-  setPrivateMode (isPrivate) {
-    this.privateMode = isPrivate
-    this.requestUpdate()
   }
 
   // rendering
@@ -177,138 +80,17 @@ class ActivityApp extends LitElement {
     if (!this.url) {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-        ${this.renderLoading()}
         todo: detached mode
       `
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${this.renderLoading()}
-      <nav>
-        <a
-          class="nav-item ${!this.privateMode ? 'active' : ''}"
-          @click=${() => this.setPrivateMode(false)}
-        >Mentions</a>
-        <a
-          class="nav-item ${this.privateMode ? 'active' : ''}"
-          @click=${() => this.setPrivateMode(true)}
-        >Private Notes</a>
-      </nav>
-      <div class="activity-feed">
-        ${this.renderAnnotations()}
-        <comment-box
-          @create-comment=${this.onCreateComment}
-          profile-url=${this.privateMode ? 'hyper://private/' : this.profileUrl}
-        ></comment-box>
-      </div>
+      <beaker-resource-thread
+        resource-url=${this.url}
+        profile-url=${this.profileUrl}
+      ></beaker-resource-thread>
     `
-  }
-
-  renderFileTitle () {
-    if (!this.siteInfo) return 'Loading...'
-    var site = this.siteInfo?.title || toNiceUrl(this.siteInfo.url)
-    var parts = []
-    parts.push(html`<a href=${this.siteInfo.url}>${site}</a>`)
-    var acc = ''
-    for (let part of this.pathname.split('/').filter(Boolean)) {
-      parts.push(' › ')
-      acc += part
-      parts.push(html`<a href=${joinPath(this.siteInfo.url, acc)}>${part}</a>`)
-      acc += '/'
-    }
-    return parts
-  }
-
-  renderAnnotations () {
-    const visibleAnnotations = this.annotations.filter(a => {
-      const isPrivate = a.site.url.startsWith('hyper://private')
-      return (this.privateMode && isPrivate) || (!this.privateMode && !isPrivate)
-    })
-    if (visibleAnnotations.length === 0) {
-      if (this.privateMode) {
-        return html`
-          <div class="empty"><span class="fas fa-info"></span> Put whatever you want here, it's totally private.</div>
-        `
-      } else {
-        return html`
-          <div class="empty"><span class="fas fa-info"></span> Create a post about this ${this.typeLabel} for your subscribers to see.</div>
-        `
-      }
-    }
-    return html`
-      ${repeat(visibleAnnotations, a => a.url, a => this.renderAnnotation(a))}
-    `
-  }
-
-  renderAnnotation (annotation) {
-    var authorTitle = annotation.site.url.startsWith('hyper://private') ? 'I (privately)' : annotation.site.title
-    var action = ({
-      'beaker/index/bookmarks': `bookmarked this ${this.typeLabel}`,
-      'beaker/index/blogposts': `mentioned this ${this.typeLabel} in`,
-      'beaker/index/microblogposts': `mentioned this ${this.typeLabel} in`,
-      'beaker/index/pages': `mentioned this ${this.typeLabel} in`,
-      'beaker/index/comments': 'commented'
-    })[annotation.index]
-    var title = ({
-      'beaker/index/bookmarks': annotation.metadata.title,
-      'beaker/index/blogposts': annotation.metadata.title || 'a blogpost',
-      'beaker/index/microblogposts': 'a microblog post',
-      'beaker/index/pages': annotation.metadata.title || 'a web page'
-    })[annotation.index]
-
-    return html`
-      <action-item
-        author-url=${annotation.site.url}
-        author-title=${authorTitle}
-        .action=${action}
-        .title=${title}
-        href=${annotation.url}
-        .date=${new Date(annotation.ctime)}
-        .content=${annotation.content ? beaker.markdown.toHTML(annotation.content) : undefined}
-      ></action-item>
-    `
-  }
-
-  renderLoading () {
-    return ''
-  }
-
-  // events
-  // =
-
-  async onCreateComment (e) {
-    this.isLoading = true
-    var drive = null
-    if (this.privateMode) {
-      drive = beaker.hyperdrive.drive('hyper://private')
-    } else {
-      var addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json')
-      drive = beaker.hyperdrive.drive(addressBook.profiles[0].key)
-    }
-    await drive.mkdir('/comments').catch(e => undefined)
-    await drive.writeFile(`/comments/${Date.now()}.md`, e.detail.text, {
-      metadata: {
-        type: 'beaker/comment',
-        'beaker/subject': normalizeUrl(this.url)
-      }
-    })
-    this.load(this.url)
-  }
-
-  onClickClose (e) {
-    window.close()
   }
 }
 
 customElements.define('activity-app', ActivityApp)
-
-// helpers
-// =
-
-function normalizeUrl (originURL) {
-  try {
-    var urlp = new URL(originURL)
-    return (urlp.protocol + '//' + urlp.hostname + (urlp.port ? `:${urlp.port}` : '') + urlp.pathname).replace(/([/]$)/g, '')
-  } catch (e) {}
-  return originURL
-}

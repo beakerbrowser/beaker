@@ -169,7 +169,10 @@ export class ResourceFeed extends LitElement {
     if (!this.filter) {
       return html`
         <div class="results">
-          ${repeat(this.results, result => result.url, result => this.renderNormalResult(result))}
+          ${repeat(this.results, result => result.url, result => html`
+            ${this.renderDateTitle(result)}
+            ${this.renderNormalResult(result)}
+          `)}
         </div>
       `
     }
@@ -213,6 +216,7 @@ export class ResourceFeed extends LitElement {
   
   renderNormalResult (result) {
     var renderMode = ({
+      'beaker/index/comments': 'comment',
       'beaker/index/microblogposts': 'card',
       'beaker/index/subscriptions': 'action',
     })[result.index] || 'link'
@@ -220,6 +224,7 @@ export class ResourceFeed extends LitElement {
       <beaker-resource
         .resource=${result}
         render-mode=${renderMode}
+        show-context
         profile-url=${this.profileUrl}
       ></beaker-resource>
     `

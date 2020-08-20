@@ -34,7 +34,7 @@ export class NewPostPopup extends BasePopup {
       grid-gap: 10px;
     }
     img {
-      margin-top: 36px;
+      margin-top: 48px;
       width: 30px;
       height: 30px;
       border-radius: 50%;
@@ -48,7 +48,7 @@ export class NewPostPopup extends BasePopup {
       content: '';
       display: block;
       position: absolute;
-      top: 47px;
+      top: 59px;
       left: -4px;
       width: 8px;
       height: 8px;

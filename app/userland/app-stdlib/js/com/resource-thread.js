@@ -2,19 +2,24 @@ import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
 import css from '../../css/com/resource-thread.css.js'
 import { emit } from '../dom.js'
+import { toNiceDomain } from '../strings.js'
 import * as toast from './toast.js'
-
 import './resource.js'
+import './post-composer.js'
+
+const INDEXES = [
+  'beaker/index/comments',
+  'beaker/index/microblogposts'
+]
 
 export class ResourceThread extends LitElement {
   static get properties () {
     return {
       resourceUrl: {type: String, attribute: 'resource-url'},
-      resource: {type: Object},
-      parents: {type: Array},
-      immediateReplies: {type: Array},
-      threadReplies: {type: Array},
-      profileUrl: {type: String, attribute: 'profile-url'}
+      profileUrl: {type: String, attribute: 'profile-url'},
+      subject: {type: Object},
+      replies: {type: Array},
+      isCommenting: {type: Boolean}
     }
   }
 
@@ -25,59 +30,38 @@ export class ResourceThread extends LitElement {
   constructor () {
     super()
     this.resourceUrl = ''
-    this.resource = undefined
-    this.parents = undefined
-    this.immediateReplies = undefined
-    this.threadReplies = undefined
+    this.subject = undefined
+    this.replies = undefined
     this.profileUrl = ''
+    this.isCommenting = false
   }
 
   async load () {
     var resource = await beaker.indexer.get(this.resourceUrl)
-    var [parents, [immediateReplies, threadReplies]] = await Promise.all([
-      this.loadParents(resource),
-      this.loadReplies(resource)
-    ])
-    this.resource = resource
-    this.parents = parents
-    this.immediateReplies = immediateReplies
-    this.threadReplies = threadReplies
+    var subjectUrl = resource?.metadata?.['beaker/subject']
+    var subject
+    if (subjectUrl) {
+      subject = await beaker.indexer.get(subjectUrl)
+    } else {
+      subject = resource
+    }
+    if (!subject) subject = {url: subjectUrl || this.resourceUrl, notFound: true}
+    var replies = await beaker.indexer.list({
+      filter: {
+        linksTo: subject.url,
+        index: INDEXES
+      },
+      sort: 'ctime',
+      reverse: false
+    })
+    this.subject = subject
+    this.replies = toThreadTree(replies)
     await this.updateComplete
     emit(this, 'load')
   }
 
-  async loadParents (resource) {
-    // ascend parents until we run out
-    var node = resource
-    var parents = []
-    do {
-      let linkedResources = await Promise.all(node.links.filter(link => link.startsWith('hyper://')).map(beaker.indexer.get))
-      node = linkedResources.find(r => r?.index === 'beaker/index/microblogposts')
-      if (node) parents.unshift(node)
-    } while (node)
-    return parents
-  }
-
-  async loadReplies (resource) {
-    // get the immediate replies
-    var immediateReplies = await beaker.indexer.list({index: 'beaker/index/microblogposts', filter: {linksTo: resource.url}, sort: 'ctime', reverse: false})
-
-    var threadReplies = []
-    if (immediateReplies[0]) {
-      // take the first reply and descend first replies until we run out
-      threadReplies.push(immediateReplies.shift())
-      var node = threadReplies[0]
-      while (node) {
-        let replies = await beaker.indexer.list({index: 'beaker/index/microblogposts', filter: {linksTo: node.url}, sort: 'ctime', reverse: false, limit: 1})
-        node = replies[0]
-        if (node) threadReplies.push(node)
-      }
-    }
-    return [immediateReplies, threadReplies]
-  }
-
   updated (changedProperties) {
-    if (typeof this.resource === 'undefined') {
+    if (typeof this.subject === 'undefined') {
       this.load()
     } else if (changedProperties.has('resourceUrl') && changedProperties.get('resourceUrl') != this.resourceUrl) {
       this.load()
@@ -94,51 +78,79 @@ export class ResourceThread extends LitElement {
   // =
 
   render () {
-    if (!this.resource) {
+    if (!this.subject) {
       return html``
     }
+    var mode = 'link'
+    if (['beaker/index/comments', 'beaker/index/microblogposts'].includes(this.subject.index)) {
+      mode = 'card'
+    }
     return html`
-      <div class="main-thread">
-        ${repeat(this.parents, r => r.url, parentResource => html`
+      <div class="subject">
+        ${this.subject.notFound ? html`
+          <a class="not-found" href="${this.subject.url}">${fancyUrl(this.subject.url)}</a>
+        ` : html`
           <beaker-resource
-            .resource=${parentResource}
-            render-mode="card"
+            .resource=${this.subject}
+            render-mode=${mode}
+            noborders
             profile-url=${this.profileUrl}
             @publish-reply=${this.onPublishReply}
           ></beaker-resource>
-        `)}
-        <beaker-resource
-          class="highlighted"
-          .resource=${this.resource}
-          render-mode="card"
-          noborders
-          profile-url=${this.profileUrl}
-          @publish-reply=${this.onPublishReply}
-        ></beaker-resource>
-        ${repeat(this.threadReplies, r => r.url, replyResource => html`
-          <beaker-resource
-            .resource=${replyResource}
-            render-mode="card"
-            profile-url=${this.profileUrl}
-            @publish-reply=${this.onPublishReply}
-          ></beaker-resource>
-        `)}
+        `}
       </div>
-      <div class="other-replies">
-        ${repeat(this.immediateReplies, r => r.url, replyResource => html`
+      ${this.isCommenting ? html`
+        <beaker-post-composer
+          drive-url=${this.profileUrl}
+          subject=${this.subject.metadata?.['beaker/subject'] || this.subject.url}
+          parent=${this.subject.url}
+          placeholder="Write your comment"
+          @publish=${this.onPublishComment}
+          @cancel=${this.onCancelComment}
+        ></beaker-post-composer>
+      ` : html`
+        <div class="comment-prompt" @click=${this.onStartComment}>
+          Write your comment
+        </div>
+      `}
+      ${this.renderReplies(this.replies)}
+    `
+  }
+
+  renderReplies (replies) {
+    if (!replies?.length) return ''
+    return html`
+      <div class="replies">
+        ${repeat(replies, r => r.url, reply => html`
           <beaker-resource
-            .resource=${replyResource}
-            render-mode="card"
+            .resource=${reply}
+            render-mode="comment"
             profile-url=${this.profileUrl}
             @publish-reply=${this.onPublishReply}
           ></beaker-resource>
-          `)}
+          ${reply.replies?.length ? this.renderReplies(reply.replies) : ''}
+        `)}
       </div>
     `
   }
 
   // events
   // =
+
+  onStartComment (e) {
+    this.isCommenting = true
+  }
+
+  onPublishComment (e) {
+    toast.create('Comment published', '', 10e3)
+    this.load()
+    this.isCommenting = false
+  }
+
+  onCancelComment (e) {
+    this.isCommenting = false
+  }
+  
 
   onPublishReply (e) {
     toast.create('Reply published', '', 10e3)
@@ -147,3 +159,38 @@ export class ResourceThread extends LitElement {
 }
 
 customElements.define('beaker-resource-thread', ResourceThread)
+
+function toThreadTree (replies) {
+  var repliesByUrl = {}
+  replies.forEach(reply => { repliesByUrl[reply.url] = reply })
+
+  var rootReplies = []
+  replies.forEach(reply => {
+    if (reply.metadata['beaker/parent']) {
+      let parent = repliesByUrl[reply.metadata['beaker/parent']]
+      if (!parent) {
+        reply.isMissingParent = true
+        rootReplies.push(reply)
+        return
+      }
+      if (!parent.replies) {
+        parent.replies = []
+        parent.replyCount = 0
+      }
+      parent.replies.push(reply)
+    } else {
+      rootReplies.push(reply)
+    }
+  })
+  return rootReplies
+}
+
+function fancyUrl (str) {
+  try {
+    let url = new URL(str)
+    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
+    return parts.join(' › ')
+  } catch (e) {
+    return str
+  }
+}

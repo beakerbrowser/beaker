@@ -98,6 +98,12 @@ h2 a:hover {
 .results beaker-resource[render-mode="link"] {
   margin: 18px 0;
 }
+.results beaker-resource:not([render-mode="link"]) + beaker-resource[render-mode="link"] {
+  margin-top: 24px;
+}
+.results beaker-resource[render-mode="link"] + beaker-resource:not([render-mode="link"]) {
+  margin-top: 24px;
+}
 
 .results beaker-resource[render-mode="expanded-link"] {
   margin: 20px 0;
@@ -105,6 +111,16 @@ h2 a:hover {
 
 .results beaker-resource[render-mode="action"] {
   margin: 16px 0;
+}
+
+.results beaker-resource[render-mode="comment"] {
+  margin: 10px 0 10px 45px;
+}
+.results beaker-resource:not([render-mode="comment"]) + beaker-resource[render-mode="comment"] {
+  margin-top: 24px;
+}
+.results beaker-resource:[render-mode="comment"] + beaker-resource:not([render-mode="comment"]) {
+  margin-top: 24px;
 }
 
 .empty {

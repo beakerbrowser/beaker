@@ -14,6 +14,7 @@ export class Resource extends LitElement {
     return {
       resource: {type: Object},
       renderMode: {type: String, attribute: 'render-mode'},
+      showContext: {type: Boolean, attribute: 'show-context'},
       profileUrl: {type: String, attribute: 'profile-url'},
       isReplyOpen: {type: Boolean}
     }
@@ -27,6 +28,7 @@ export class Resource extends LitElement {
     super()
     this.resource = undefined
     this.renderMode = 'card'
+    this.showContext = false
     this.profileUrl = undefined
     this.isReplyOpen = false
 
@@ -42,6 +44,7 @@ export class Resource extends LitElement {
     if (!this.resource) return html``
     switch (this.renderMode) {
       case 'card': return this.renderAsCard()
+      case 'comment': return this.renderAsComment()
       case 'action': return this.renderAsAction()
       case 'expanded-link': return this.renderAsExpandedLink()
       case 'link':
@@ -52,6 +55,13 @@ export class Resource extends LitElement {
 
   renderAsCard () {
     const res = this.resource
+
+    var context = undefined
+    switch (res.index) {
+      case 'beaker/index/comments':
+        context = res.metadata['beaker/subject'] || res.metadata['beaker/parent']
+        break
+    }
 
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
@@ -90,6 +100,14 @@ export class Resource extends LitElement {
                 ${relativeDate(res.ctime)}
               </a>
             </div>
+            ${this.showContext && context ? html`
+              <span>&middot;</span>
+              <div class="context">
+                <a href=${context}>
+                  ${fancyUrl(context)}
+                </a>
+              </div>
+            ` : ''}
           </div>
           <div class="content">
             ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
@@ -99,19 +117,79 @@ export class Resource extends LitElement {
             <a href="#">hyperspace</a>
             <a href="#">p2p</a>
           </div>*/}
-          <div class="ctrls">
-            <a @click=${this.onClickReply}><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
+        </div>
+      </div>
+    `
+  }
+
+  renderAsComment () {
+    const res = this.resource
+
+    var context = undefined
+    switch (res.index) {
+      case 'beaker/index/comments':
+        context = res.metadata['beaker/subject'] || res.metadata['beaker/parent']
+        break
+    }
+
+    return html`
+      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+      ${res.notification ? this.renderNotification() : ''}
+      <div
+        class=${classMap({
+          resource: true,
+          comment: true,
+          'is-notification': !!res.notification,
+          unread: !!res.notification && !res?.notification?.isRead
+        })}
+        @mousedown=${this.onMousedownCard}
+        @mouseup=${this.onMouseupCard}
+        @mousemove=${this.onMousemoveCard}
+      >
+        <div class="header">
+          <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
+            <img class="favicon" src="${joinPath(res.site.url, 'thumb')}">
+          </a>
+          <div class="origin">
+            ${res.site.url === 'hyper://private/' ? html`
+              <a class="author" href=${res.site.url} title=${res.site.title}>I privately</a>
+            ` : html`
+              <a class="author" href=${res.site.url} title=${res.site.title}>
+                ${res.site.title}
+              </a>
+            `}
           </div>
-          ${this.isReplyOpen ? html`
-            <beaker-post-composer
-              drive-url=${this.profileUrl}
-              subject=${this.resource.metadata['beaker/subject'] || this.resource.url}
-              parent=${this.resource.url}
-              @publish=${this.onPublishReply}
-              @cancel=${this.onCancelReply}
-            ></beaker-post-composer>
+          <span>&middot;</span>
+          <div class="date">
+            <a href=${res.url} data-tooltip=${(new Date(res.ctime)).toLocaleString()}>
+              ${relativeDate(res.ctime)}
+            </a>
+          </div>
+          ${this.showContext && context ? html`
+            <span>&middot;</span>
+            <div class="context">
+              <a href=${context}>
+                ${fancyUrl(context)}
+              </a>
+            </div>
           ` : ''}
         </div>
+        <div class="content">
+          ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
+        </div>
+        <div class="ctrls">
+          <a @click=${this.onClickReply}><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
+        </div>
+        ${this.isReplyOpen ? html`
+          <beaker-post-composer
+            drive-url=${this.profileUrl}
+            subject=${this.resource.metadata['beaker/subject'] || this.resource.url}
+            parent=${this.resource.url}
+            placeholder="Write your comment"
+            @publish=${this.onPublishReply}
+            @cancel=${this.onCancelReply}
+          ></beaker-post-composer>
+        ` : ''}
       </div>
     `
   }
@@ -234,14 +312,8 @@ export class Resource extends LitElement {
       'beaker/index/comments': niceDate(res.ctime)
     })[res.index] || res.url.split('/').pop() || niceDate(res.ctime)
 
-    var action = ({
-      'beaker/index/bookmarks': 'Bookmark',
-      'beaker/index/blogposts': 'Blogpost',
-      'beaker/index/comments': 'Comment',
-      'beaker/index/pages': 'Page'
-    })[res.index] || 'File created'
-
     return html`
+      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       ${res.notification ? this.renderNotification() : ''}
       <div
         class=${classMap({
@@ -265,19 +337,22 @@ export class Resource extends LitElement {
             ${res.index === 'beaker/index/bookmarks' ? html`<span class="far fa-star"></span>` : ''}
             ${res.index === 'beaker/index/pages' ? html`<span class="far fa-file"></span>` : ''}
             ${res.index === 'beaker/index/blogposts' ? html`<span class="fas fa-blog"></span>` : ''}
-            <span class="action">${action}</span>
             by
             <span class="origin">
               <a class="author" href=${res.site.url} title=${res.site.title}>
                 ${res.site.url === 'hyper://private' ? 'Me (Privately)' : res.site.title}
               </a>
             </span>
-            &middot;
+            <span class="divider">|</span>
             <span class="date">
               <a href=${res.url} data-tooltip=${(new Date(res.ctime)).toLocaleString()}>
                 ${relativeDate(res.ctime)}
               </a>
             </span>
+            <span class="divider">|</span>
+            <a @click=${e => this.onViewThread(e, res)}>
+              comments
+            </a>
           </div>
         </div>
       </div>
@@ -345,6 +420,10 @@ export class Resource extends LitElement {
 
   onCancelReply (e) {
     this.isReplyOpen = false
+  }
+
+  onViewThread (e, resource) {
+    emit(this, 'view-thread', {detail: {resource: this.resource}})
   }
 
   onMousedownCard (e) {
@@ -426,6 +505,16 @@ function isRootUrl (url) {
     return (new URL(url)).pathname === '/'
   } catch {
     return false
+  }
+}
+
+function fancyUrl (str) {
+  try {
+    let url = new URL(str)
+    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
+    return parts.join(' › ')
+  } catch (e) {
+    return str
   }
 }
 

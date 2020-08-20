@@ -127,7 +127,7 @@ class DesktopApp extends LitElement {
   get currentNavAsIndex () {
     switch (this.currentNav) {
       case 'bookmarks': return ['beaker/index/bookmarks']
-      case 'posts': return ['beaker/index/microblogposts']
+      case 'posts': return ['beaker/index/microblogposts', 'beaker/index/comments']
       case 'pages': return ['beaker/index/pages', 'beaker/index/blogposts']
       case 'sites': return ['beaker/index/subscriptions']
       case 'notifications': return ['notifications']
@@ -136,7 +136,9 @@ class DesktopApp extends LitElement {
           'beaker/index/blogposts',
           'beaker/index/bookmarks',
           'beaker/index/microblogposts',
-          'beaker/index/pages'
+          'beaker/index/comments',
+          'beaker/index/pages',
+          'beaker/index/subscriptions'
         ]
     }
   }

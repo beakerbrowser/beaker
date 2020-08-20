@@ -18,55 +18,52 @@ ${spinnerCSS}
 
 beaker-resource {
   display: block;
-  position: relative;
-  margin: 0 0 6px;
-  padding: 0 0 0 14px;
-  border: 1px solid transparent;
 }
 
-.main-thread beaker-resource::before,
-.main-thread beaker-resource::after {
-  content: '';
-  position: absolute;
-  z-index: 1;
-  left: 27px;
-  width: 3px;
-  background: var(--border-color--light);
-}
-
-.main-thread beaker-resource::before {
-  top: -8px;
-  height: 8px;
-}
-
-.main-thread beaker-resource::after {
-  top: 46px;
-  height: calc(100% - 46px);
-}
-
-.main-thread beaker-resource:first-of-type::before {
-  display: none;
-}
-
-.main-thread beaker-resource:last-of-type::after {
-  display: none;
-}
-
-.main-thread beaker-resource.highlighted {
-  padding: 0 10px;
+.subject {
   background: var(--bg-color--default);
-  border: 1px solid var(--border-color--dark);
+  border: 1px solid var(--border-color--light);
   border-radius: 4px;
+  padding: 0 10px;
+  margin-bottom: 10px;
 }
 
-.main-thread beaker-resource.highlighted::before,
-.main-thread beaker-resource.highlighted::after {
-  display: none;
+.subject beaker-resource[render-mode="link"] {
+  margin: 10px 6px;
 }
 
-.main-thread beaker-resource.highlighted + beaker-resource::before {
-  top: -4px;
-  height: 8px;
+.subject .not-found {
+  display: inline-block;
+  margin: 10px 2px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--text-color--link);
 }
+
+.subject .not-found:hover {
+  text-decoration: underline;
+}
+
+.comment-prompt {
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color--light);
+  font-style: italic;
+  background: var(--bg-color--default);
+  color: var(--text-color--light);
+}
+
+.replies {
+  margin: 0 0 0 15px;
+  border-left: 1px solid var(--border-color--semi-light);
+}
+
+.replies beaker-resource {
+  display: block;
+}
+
+
 `
 export default cssStr
