@@ -1,84 +1,50 @@
 import {css} from '../../vendor/lit-element/lit-element.js'
-import inputsCSS from '../inputs.css.js'
 import buttonsCSS from '../buttons2.css.js'
-import tooltipCSS from '../tooltip.css.js'
-import markdownCSS from '../markdown.css.js'
 
 const cssStr = css`
-${inputsCSS}
 ${buttonsCSS}
-${tooltipCSS}
-${markdownCSS}
 
-nav {
-  display: flex;
-  border-top-left-radius: 3px;
-  border-top-right-radius: 3px;
+.quill-container {
+  margin-bottom: 6px;
 }
 
-nav a {
-  border: 1px solid transparent;
-  padding: 5px 14px;
-}
-
-nav a.current {
-  position: relative;
-  background: var(--bg-color--default);
+.quill-container .ql-toolbar {
+  padding: 3px 8px;
   border: 1px solid var(--border-color--light);
-  border-bottom: 1px solid transparent;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
 }
 
-nav a.current:after {
-  content: '';
-  background: var(--bg-color--default);
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -2px;
-  height: 2px;
+.quill-container .ql-container {
+  border: 1px solid var(--border-color--light);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
-nav a:hover:not(.current) {
-  text-decoration: none;
-  cursor: pointer;
-  background: var(--bg-color--light);
-}
-
-.view {
-  margin-bottom: 6px;
-}
-
-label {
-  font-size: 11px;
-}
-
-textarea {
-  width: 100%;
-  box-sizing: border-box;
+.quill-container .ql-container .ql-editor {
   min-height: 100px;
-  max-height: 50vh;
-  resize: vertical;
-  font-family: system-ui;
-  font-size: 14px;
-  padding: 14px;
-  border-color: var(--border-color--light);
-  border-top-left-radius: 0;
 }
 
-textarea:focus {
+.quill-container .ql-editor {
+  font-size: 14px;
+}
+
+.quill-container .ql-editor a {
+  color: var(--text-color--markdown-link);
+}
+
+.ql-editor ol, .ql-editor ul {
+  padding-left: 0;
+}
+
+.quill-container .ql-toolbar .ql-formats {
+  margin-right: 10px;
+}
+
+.quill-container .ql-toolbar button {
+  width: 24px;
+  height: 20px;
   box-shadow: none;
-  border-color: var(--border-color--light);
-}
-
-textarea::placeholder {
-  font-family: system-ui;
-  font-size: 14px;
-}
-
-textarea.hidden {
-  display: none;
 }
 
 .preview {

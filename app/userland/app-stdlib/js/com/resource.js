@@ -105,7 +105,8 @@ export class Resource extends LitElement {
           ${this.isReplyOpen ? html`
             <beaker-post-composer
               drive-url=${this.profileUrl}
-              draft-text="[@${this.resource.site.title.replace(/]/g, '')}](${this.resource.url.replace(/\)/, '')}) "
+              subject=${this.resource.metadata['beaker/subject'] || this.resource.url}
+              parent=${this.resource.url}
               @publish=${this.onPublishReply}
               @cancel=${this.onCancelReply}
             ></beaker-post-composer>

@@ -1,24 +1,30 @@
 /* globals beaker */
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
+import { Quill } from '../../vendor/quill/quill.js'
+import { deltaToMarkdown, quillFormatsHackfix } from '../quill.js'
 import { joinPath } from '../strings.js'
 import css from '../../css/com/post-composer.css.js'
+
+Quill.import('formats/link').PROTOCOL_WHITELIST.push('hyper')
+quillFormatsHackfix(Quill, ['bold', 'italic', 'strike', 'link', 'code', 'list', 'image', 'blockquote'])
 
 class PostComposer extends LitElement {
   static get properties () {
     return {
+      isEmpty: {type: Boolean},
       driveUrl: {type: String, attribute: 'drive-url'},
-      currentView: {type: String},
-      draftText: {type: String, attribute: 'draft-text'}
+      subject: {type: String},
+      parent: {type: String}
     }
   }
 
   constructor () {
     super()
+    this.isEmpty = true
     this.driveUrl = undefined
-    this.currentView = 'edit'
-    this.draftText = ''
-    this.blobs = []
+    this.subject = undefined
+    this.parent = undefined
   }
 
   static get styles () {
@@ -29,48 +35,21 @@ class PostComposer extends LitElement {
   // =
 
   render () {
-    const navItem = (id, label) => html`
-      <a
-        class=${this.currentView === id ? 'current' : ''}
-        @click=${e => { this.currentView = id }}
-      >${label}</a>
-    `
-
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill/quill.snow.css">
+      <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill/editor-style-fixes.css">
       <form @submit=${this.onSubmit}>
-        <nav>
-          ${navItem('edit', 'Write')}
-          ${navItem('preview', 'Preview')}
-        </nav>
-
-        <div class="view">
-          <textarea
-            class=${this.currentView === 'edit' ? '' : 'hidden'}
-            required
-            id="body-input"
-            name="body"
-            placeholder="What's new?"
-            @keyup=${this.onKeyupTextarea}
-          >${this.draftText}</textarea>
-          ${this.currentView === 'preview' ? this.renderPreview() : ''}
+        <div class="quill-container">
+          <div id="quill-editor"></div>
         </div>
 
         <div class="actions">
           <div class="ctrls">
-            <input type="file" class="image-select" accept=".png,.gif,.jpg,.jpeg" @change=${this.onChangeImage}>
-            <button class="transparent tooltip-right" @click=${this.onClickAddImage} data-tooltip="Add Image">
-              <span class="far fa-fw fa-image"></span>
-            </button>
           </div>
           <div>            
             <button @click=${this.onCancel} tabindex="4">Cancel</button>
-            <button
-              type="submit"
-              class="primary"
-              tabindex="3"
-              ?disabled=${!this.draftText}
-            >
+            <button type="submit" class="primary" tabindex="3" ?disabled=${this.isEmpty}>
               Publish
             </button>
           </div>
@@ -80,63 +59,42 @@ class PostComposer extends LitElement {
   }
 
   renderPreview () {
-    if (!this.draftText) { 
-      return html`<div class="preview"><small><span class="fas fa-fw fa-info"></span> You can use Markdown to format your post.</small></div>`
+    var draftText = deltaToMarkdown(this.quill.getContents().ops)
+    if (!draftText) { 
+      return html`<div class="preview"></div>`
     }
     return html`
       <div class="preview markdown">
-        ${unsafeHTML(beaker.markdown.toHTML(this.draftText))}
+        ${unsafeHTML(beaker.markdown.toHTML(draftText))}
       </div>
     `
   }
 
-  updated () {
-    try {
-      let textarea = this.shadowRoot.querySelector('textarea')
-      textarea.focus()
-      textarea.style.height = 'auto'
-      textarea.style.height = textarea.scrollHeight + 5 + 'px'
-    } catch {}
-  }
-
   firstUpdated () {
-    try {
-      let textarea = this.shadowRoot.querySelector('textarea')
-      textarea.setSelectionRange(textarea.value.length, textarea.value.length)
-    } catch {}
+    var bodyInput = this.shadowRoot.querySelector('#quill-editor')
+    this.quill = new Quill(bodyInput, {
+      placeholder: 'What\'s new?',
+      bounds: bodyInput.parentElement,
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'strike', 'code'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['blockquote'],
+          ['link', 'image'],
+          ['clean']              
+        ]
+      },
+      theme: 'snow'
+    })
+    this.quill.focus()
+    this.quill.setSelection(this.quill.getLength())
+    this.quill.on('text-change', () => {
+      this.isEmpty = this.quill.getLength() <= 1
+    })
   }
 
   // events
   // =
-
-  onKeyupTextarea (e) {
-    this.draftText = e.currentTarget.value
-  }
-
-  onClickAddImage (e) {
-    e.preventDefault()
-    this.currentView = 'edit'
-    this.shadowRoot.querySelector('.image-select').click()
-  }
-
-  onChangeImage (e) {
-    var file = e.currentTarget.files[0]
-    if (!file) return
-    var url = URL.createObjectURL(file)
-    this.blobs.push({file, url})
-
-    var newlines = '\n\n'
-    if (!this.draftText || this.draftText.endsWith('\n\n')) {
-      newlines = ''
-    } else if (this.draftText.endsWith('\n')) {
-      newlines = '\n'
-    }
-    this.draftText += `${newlines}![${file.name.replace(/]/g, '')}](${url})\n`
-    
-    this.requestUpdate().then(() => {
-      this.shadowRoot.querySelector('textarea').value = this.draftText
-    })
-  }
 
   onCancel (e) {
     e.preventDefault()
@@ -148,43 +106,40 @@ class PostComposer extends LitElement {
     e.preventDefault()
     e.stopPropagation()
 
-    if (!this.draftText) {
+    var draftText = deltaToMarkdown(this.quill.getContents().ops)
+    if (!draftText) {
       return
     }
+
     if (!this.driveUrl) {
       throw new Error('.driveUrl is missing')
     }
 
     var drive = beaker.hyperdrive.drive(this.driveUrl)
-    var postName = ''+Date.now()
-    var postPath = `/microblog/${postName}.md`
-    var postUrl = joinPath(this.driveUrl, postPath)
-    var postBody = this.draftText
-
-    // write all images to the drive and replace their URLs in the post
-    var i = 1
-    var blobsToWrite = this.blobs.filter(b => this.draftText.includes(b.url))
-    for (let blob of blobsToWrite) {
-      let ext = blob.file.name.split('.').pop()
-      let path = `/microblog/${postName}-${i++}.${ext}`
-
-      let buf = await blob.file.arrayBuffer()
-      await drive.writeFile(path, buf)
-
-      let url = joinPath(this.driveUrl, path)
-      while (postBody.includes(blob.url)) {
-        postBody = postBody.replace(blob.url, url)
-      }
+    var filepath
+    if (this.subject || this.parent) {
+      filepath = `/comments/${''+Date.now()}.md`
+      let subject = this.subject
+      let parent = this.parent
+      if (subject === parent) parent = undefined // not needed
+      await drive.writeFile(filepath, draftText, {
+        metadata: {
+          type: 'beaker/comment',
+          'beaker/subject': subject,
+          'beaker/parent': parent
+        }
+      })
+    } else {
+      filepath = `/microblog/${''+Date.now()}.md`
+      await drive.writeFile(filepath, draftText, {
+        metadata: {
+          type: 'beaker/microblogpost'
+        }
+      })
     }
+    var url = joinPath(this.driveUrl, filepath)
 
-    // write the post
-    await drive.writeFile(postPath, postBody, {
-      metadata: {type: 'beaker/microblogpost'}
-    })
-
-    this.draftText = ''
-    this.currentView = 'edit'
-    this.dispatchEvent(new CustomEvent('publish', {detail: {url: postUrl}}))
+    this.dispatchEvent(new CustomEvent('publish', {detail: {url}}))
   }
 }
 
