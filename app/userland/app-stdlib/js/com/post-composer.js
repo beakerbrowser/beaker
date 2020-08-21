@@ -2,9 +2,11 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { Quill } from '../../vendor/quill/quill.js'
+import '../../vendor/quill-mention/quill.mention.js'
 import { deltaToMarkdown, quillFormatsHackfix } from '../quill.js'
-import { joinPath } from '../strings.js'
-import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
+import { joinPath, toNiceUrl } from '../strings.js'
+import { debouncer } from '../functions.js'
+import * as contextMenu from './context-menu.js'
 import css from '../../css/com/post-composer.css.js'
 
 Quill.import('formats/link').PROTOCOL_WHITELIST.push('hyper')
@@ -15,7 +17,6 @@ class PostComposer extends LitElement {
     return {
       placeholder: {type: String},
       isEmpty: {type: Boolean},
-      driveUrl: {type: String, attribute: 'drive-url'},
       subject: {type: String},
       parent: {type: String},
       _visibility: {type: String}
@@ -27,9 +28,14 @@ class PostComposer extends LitElement {
     this.placeholder = 'What\'s new?'
     this.isEmpty = true
     this._visibility = 'public'
-    this.driveUrl = undefined
     this.subject = undefined
     this.parent = undefined
+    beaker.browser.getProfile().then(p => {
+      this.profile = p
+      this.profile.url = `hyper://${this.profile.key}/`
+    })
+    this.searchQueryId = 0
+    this.searchDebouncer = debouncer(100)
   }
 
   static get styles () {
@@ -62,6 +68,7 @@ class PostComposer extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill/quill.snow.css">
       <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill/editor-style-fixes.css">
+      <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill-mention/quill.mention.css">
       <form @submit=${this.onSubmit}>
         <div class="quill-container">
           <div id="quill-editor"></div>
@@ -117,7 +124,12 @@ class PostComposer extends LitElement {
           ['blockquote'],
           ['link', 'image'],
           ['clean']              
-        ]
+        ],
+        mention: {
+          allowedChars: /^[A-Za-z\sÅÄÖåäö]*$/,
+          mentionDenotationChars: ["@"],
+          source: this.autocompleteOptions.bind(this)
+        }
       },
       theme: 'snow'
     })
@@ -128,6 +140,28 @@ class PostComposer extends LitElement {
     })
   }
 
+  async autocompleteOptions (searchTerm, renderList, mentionChar) {
+    if (!searchTerm) return renderList([], searchTerm)
+    var searchId = ++this.searchQueryId
+    var queryResults = await this.searchDebouncer(() => beaker.indexer.search(searchTerm, {
+      filter: {index: ['beaker/index/subscriptions'], site: this.profile.url},
+      limit: 10,
+      sort: 'rank',
+      reverse: true
+    }))
+    if (!queryResults || searchId !== this.searchQueryId) return
+    var suggestions = queryResults.map(s => {
+      return {id: s.metadata.href, value: s.metadata.title || toNiceUrl(s.metadata.href)}
+    })
+    {
+      let title = this.profile?.title.toLowerCase() || ''
+      if (title.includes(searchTerm.toLowerCase())) {
+        suggestions.unshift({id: this.profile.url, value: this.profile.title})
+      }
+    }
+    renderList(suggestions, searchTerm)
+  }
+  
   // events
   // =
 
@@ -168,11 +202,11 @@ class PostComposer extends LitElement {
       return
     }
 
-    if (!this.driveUrl) {
-      throw new Error('.driveUrl is missing')
+    if (!this.profile) {
+      throw new Error('.profile is missing')
     }
 
-    var driveUrl = this.visibility === 'private' ? 'hyper://private' : this.driveUrl
+    var driveUrl = this.visibility === 'private' ? 'hyper://private' : this.profile.url
     var drive = beaker.hyperdrive.drive(driveUrl)
     var filepath
     if (this.subject || this.parent) {

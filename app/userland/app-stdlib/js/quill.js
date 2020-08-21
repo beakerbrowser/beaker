@@ -55,6 +55,9 @@ const converters = {
   embed: {
     image: function(src) {
       this.append('![image](' + encodeLink(src) + ')');
+    },
+    mention: function(mention) {
+      this.append(`[${mention.denotationChar}${mention.value}](${mention.id})`);
     }
   },
 

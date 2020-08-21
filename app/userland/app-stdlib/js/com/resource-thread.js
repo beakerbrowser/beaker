@@ -101,7 +101,6 @@ export class ResourceThread extends LitElement {
       </div>
       ${this.isCommenting ? html`
         <beaker-post-composer
-          drive-url=${this.profileUrl}
           subject=${this.subject.metadata?.['beaker/subject'] || this.subject.url}
           parent=${this.subject.url}
           placeholder="Write your comment"

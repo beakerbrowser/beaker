@@ -10,7 +10,7 @@ export class BasePopup extends LitElement {
 
     const onGlobalKeyUp = e => {
       // listen for the escape key
-      if (e.keyCode === 27) {
+      if (this.shouldCloseOnEscape && e.keyCode === 27) {
         this.onReject()
       }
     }
@@ -27,6 +27,10 @@ export class BasePopup extends LitElement {
   }
 
   get shouldCloseOnOuterClick () {
+    return true
+  }
+
+  get shouldCloseOnEscape () {
     return true
   }
 

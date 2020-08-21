@@ -39,6 +39,10 @@ export class NewPostPopup extends BasePopup {
     return false
   }
 
+  get shouldCloseOnEscape () {
+    return false
+  }
+
   // management
   //
 
@@ -60,7 +64,6 @@ export class NewPostPopup extends BasePopup {
   renderBody () {
     return html`
       <beaker-post-composer
-        drive-url=${this.driveUrl}
         @publish=${this.onPublish}
         @cancel=${this.onCancel}
       ></beaker-post-composer>

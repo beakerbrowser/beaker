@@ -182,7 +182,6 @@ export class Resource extends LitElement {
         </div>
         ${this.isReplyOpen ? html`
           <beaker-post-composer
-            drive-url=${this.profileUrl}
             subject=${this.resource.metadata['beaker/subject'] || this.resource.url}
             parent=${this.resource.url}
             placeholder="Write your comment"
