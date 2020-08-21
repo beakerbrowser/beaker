@@ -78,6 +78,11 @@ class AboutApp extends LitElement {
     url = (new URL(url)).origin
     if (this.url === url) return
 
+    // TEMP just give up if not hyper
+    if (!url.startsWith('hyper://')) {
+      return window.close()
+    }
+
     this.isLoading = true
     this.url = url
     this.siteInfo = undefined
@@ -130,11 +135,7 @@ class AboutApp extends LitElement {
 
   render () {
     if (!this.url) {
-      return html`
-        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-        ${this.renderLoading()}
-        todo: detached mode
-      `
+      return html``
     }
     const navItem = (id, label) => html`
       <a

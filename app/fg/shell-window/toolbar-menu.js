@@ -8,13 +8,13 @@ import * as bg from './bg-process-rpc'
 const WINDOW_MENU_ENABLED = false
 
 const BASIC_BUILTINS = [
-  {builtin: true, url: 'beaker://about/'},
+  {builtin: true, url: 'beaker://about/', hyperOnly: true},
   {builtin: true, url: 'beaker://activity/'},
   {builtin: true, url: 'beaker://library/'}
 ]
 const ADVANCED_BUILTINS = [
   {builtin: true, url: 'beaker://editor/'},
-  {builtin: true, url: 'beaker://explorer/'},
+  {builtin: true, url: 'beaker://explorer/', hyperOnly: true},
   {builtin: true, url: 'beaker://webterm/'}
 ]
 
@@ -90,6 +90,10 @@ class ShellWindowToolbarMenu extends LitElement {
       background: var(--bg-color--toolbar--pressed);
       color: var(--text-color--toolbar--pressed);
     }
+    a.disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
     a .far,
     a .fas {
       font-size: 12px;
@@ -122,10 +126,14 @@ class ShellWindowToolbarMenu extends LitElement {
     this.addEventListener('contextmenu', this.onMainContextmenu.bind(this))
   }
 
-  isPaneActive (url) {
+  isPaneActive (item) {
     if (!this.activeTab || this.activeTab?.paneLayout?.length === 1) return false
-    let origin = (new URL(url)).origin
+    let origin = (new URL(item.url)).origin
     return !!this.activeTab.paneLayout.find(pane => pane.url.startsWith(origin))
+  }
+
+  isPaneDisabled (item) {
+    return item.hyperOnly && (!this.activeTab || !this.activeTab.url.startsWith('hyper://'))
   }
 
   get visibleToolbar () {
@@ -143,12 +151,14 @@ class ShellWindowToolbarMenu extends LitElement {
       if (item.type === 'separator') {
         return html`<hr>`
       }
-      return html`
+      return this.isPaneDisabled(item) ? html`
+        <a class="disabled"><img class="favicon" src="asset:favicon:${item.url}"></a>
+      ` : html`
         <a
           @mousedown=${e => this.onMousedownLink(e, item)}
           @mouseover=${e => this.onMouseoverLink(e, item)}
           @mouseleave=${e => this.onMouseleaveLink(e, item)}
-          class=${this.isPaneActive(item.url) ? 'pressed' : ''}
+          class=${this.isPaneActive(item) ? 'pressed' : ''}
         >
           <img class="favicon" src="asset:favicon:${item.url}">
         </a>

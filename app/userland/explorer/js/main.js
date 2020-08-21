@@ -184,11 +184,18 @@ export class ExplorerApp extends LitElement {
   async load () {
     if (this.attachedPane) {
       if (!loc.getUrl() || !loc.getUrl().startsWith('hyper://')) {
+        // TEMP just give up if not hyper
+        return window.close()
         this.errorState = {task: 'Attempting to load', error: new Error('Failed to load this address: not a hyperdrive')}
         return
       }
     } else if (!loc.getUrl()) {
       return loc.setUrl('hyper://private/')
+    }
+
+    // TEMP just give up if not hyper
+    if (!loc.getUrl().startsWith('hyper://')) {
+      return window.close()
     }
 
     // read helper state
