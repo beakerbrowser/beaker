@@ -1,3 +1,6 @@
+import * as os from 'os'
+import * as p from 'path'
+import { promises as fs } from 'fs'
 import * as childProcess from 'child_process'
 import HyperdriveClient from 'hyperdrive-daemon-client'
 import datEncoding from 'dat-encoding'
@@ -11,7 +14,8 @@ const SETUP_RETRIES = 100
 const GARBAGE_COLLECT_SESSIONS_INTERVAL = 30e3
 const MAX_SESSION_AGE = 300e3 // 5min
 const HYPERSPACE_BIN_PATH = require.resolve('hyperspace/bin.js')
-
+const HYPERSPACE_STORAGE_DIR = p.join(os.homedir(), '.hyperspace', 'storage')
+const HYPERDRIVE_STORAGE_DIR = p.join(os.homedir(), '.hyperdrive', 'storage', 'cores')
 
 // typedefs
 // =
@@ -140,8 +144,12 @@ export async function setup () {
   isControllingDaemonProcess = true
   logger.info('Starting daemon process, assuming process control')
 
+  // Check which storage directory to use.
+  // If .hyperspace/storage exists, use that. Otherwise use .hyperdrive/storage/cores
+  const storageDir = await getDaemonStorageDir()
+
   // TODO: Enable migration before release.
-  var daemonProcessArgs = ['--no-migrate']
+  var daemonProcessArgs = ['-s', storageDir, '--no-migrate']
 
   daemonProcess = childProcess.spawn(HYPERSPACE_BIN_PATH, daemonProcessArgs, {
     stdio: [process.stdin, process.stdout, process.stderr], // DEBUG
@@ -271,6 +279,15 @@ export async function listPeerAddresses (key) {
 
 // internal methods
 // =
+
+async function getDaemonStorageDir () {
+  try {
+    await fs.access(HYPERDRIVE_STORAGE_DIR)
+    return HYPERDRIVE_STORAGE_DIR
+  } catch (err) {
+    return HYPERSPACE_STORAGE_DIR
+  }
+}
 
 async function onInvalidAuthToken () {
   // TODO replaceme
