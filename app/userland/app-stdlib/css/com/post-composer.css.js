@@ -1,8 +1,10 @@
 import {css} from '../../vendor/lit-element/lit-element.js'
 import buttonsCSS from '../buttons2.css.js'
+import tooltipCSS from '../tooltip.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
+${tooltipCSS}
 
 .quill-container {
   background: var(--bg-color--default);
@@ -68,13 +70,18 @@ ${buttonsCSS}
   justify-content: space-between;
 }
 
-.actions input[type="file"] {
-  display: none;
+.visibility {
+  display: inline-block;
+  background: var(--bg-color--semi-light);
+  border-radius: 4px;
+  padding: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
 }
 
-.actions .ctrls :-webkit-any(.far, .fas) {
-  font-size: 16px;
-  color: var(--text-color--light);
+.visibility.disabled {
+  cursor: default;
 }
 `
 export default cssStr

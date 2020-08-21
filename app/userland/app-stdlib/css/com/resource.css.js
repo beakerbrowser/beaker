@@ -74,6 +74,10 @@ a:hover {
   color: var(--text-color--light);
 }
 
+:host([render-mode="comment"]) .notification {
+  padding: 0 12px 5px;
+}
+
 /** EXPANDED LINK STYLES **/
 
 .resource.expanded-link {

@@ -119,7 +119,7 @@ h2 a:hover {
 .results beaker-resource:not([render-mode="comment"]) + beaker-resource[render-mode="comment"] {
   margin-top: 24px;
 }
-.results beaker-resource:[render-mode="comment"] + beaker-resource:not([render-mode="comment"]) {
+.results beaker-resource[render-mode="comment"] + beaker-resource:not([render-mode="comment"]) {
   margin-top: 24px;
 }
 

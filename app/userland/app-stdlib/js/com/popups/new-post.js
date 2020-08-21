@@ -28,36 +28,6 @@ export class NewPostPopup extends BasePopup {
     .popup-inner .body {
       padding: 14px 14px 10px 12px;
     }
-    main {
-      display: grid;
-      grid-template-columns: 30px 1fr;
-      grid-gap: 10px;
-    }
-    img {
-      margin-top: 48px;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    beaker-post-composer {
-      display: block;
-      position: relative;
-    }
-    beaker-post-composer:before {
-      content: '';
-      display: block;
-      position: absolute;
-      top: 59px;
-      left: -4px;
-      width: 8px;
-      height: 8px;
-      z-index: 1;
-      background: var(--bg-color--default);
-      border-top: 1px solid var(--border-color--light);
-      border-left: 1px solid var(--border-color--light);
-      transform: rotate(-45deg);
-    }
     `]
   }
 
@@ -89,14 +59,11 @@ export class NewPostPopup extends BasePopup {
 
   renderBody () {
     return html`
-      <main>
-        <img src=${joinPath(this.driveUrl, 'thumb')}>
-        <beaker-post-composer
-          drive-url=${this.driveUrl}
-          @publish=${this.onPublish}
-          @cancel=${this.onCancel}
-        ></beaker-post-composer>
-      </main>
+      <beaker-post-composer
+        drive-url=${this.driveUrl}
+        @publish=${this.onPublish}
+        @cancel=${this.onCancel}
+      ></beaker-post-composer>
     `
   }
 

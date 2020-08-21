@@ -230,7 +230,7 @@ class ShellWindowToolbarMenu extends LitElement {
     } else if (menuChoice === 'remove') {
       bg.toolbar.remove(this.toolbar.indexOf(item))
     } else if (e.button === 0) {
-      if (this.isPaneActive(item.url)) {
+      if (this.isPaneActive(item)) {
         el.classList.remove('pressed')
       } else {
         el.classList.add('pressed')

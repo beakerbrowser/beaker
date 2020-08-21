@@ -98,5 +98,19 @@ const cssStr = css`
   border-bottom: 6px solid transparent;
   border-left: 6px solid rgba(17, 17, 17, 0.95);
 }
+
+.tooltip-top[data-tooltip]:before {
+  top: unset;
+  bottom: 33px;
+}
+
+.tooltip-top[data-tooltip]:after {
+  top: unset;
+  bottom: 28px;
+  border: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid rgba(17, 17, 17, 0.95);
+}
 `
 export default cssStr

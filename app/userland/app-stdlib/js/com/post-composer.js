@@ -4,6 +4,7 @@ import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-
 import { Quill } from '../../vendor/quill/quill.js'
 import { deltaToMarkdown, quillFormatsHackfix } from '../quill.js'
 import { joinPath } from '../strings.js'
+import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import css from '../../css/com/post-composer.css.js'
 
 Quill.import('formats/link').PROTOCOL_WHITELIST.push('hyper')
@@ -16,7 +17,8 @@ class PostComposer extends LitElement {
       isEmpty: {type: Boolean},
       driveUrl: {type: String, attribute: 'drive-url'},
       subject: {type: String},
-      parent: {type: String}
+      parent: {type: String},
+      _visibility: {type: String}
     }
   }
 
@@ -24,6 +26,7 @@ class PostComposer extends LitElement {
     super()
     this.placeholder = 'What\'s new?'
     this.isEmpty = true
+    this._visibility = 'public'
     this.driveUrl = undefined
     this.subject = undefined
     this.parent = undefined
@@ -33,10 +36,28 @@ class PostComposer extends LitElement {
     return css
   }
 
+  get mustBePrivate () {
+    if (this.subject && this.subject.startsWith('hyper://private')) return true
+    if (this.parent && this.parent.startsWith('hyper://private')) return true
+    return false
+  }
+
+  get visibility () {
+    if (this.mustBePrivate) {
+      return 'private'
+    }
+    return this._visibility
+  }
+
+  set visibility (v) {
+    this._visibility = v
+  }
+
   // rendering
   // =
 
   render () {
+    const mustBePrivate = this.mustBePrivate
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill/quill.snow.css">
@@ -49,10 +70,22 @@ class PostComposer extends LitElement {
         <div class="actions">
           <div class="ctrls">
           </div>
-          <div>            
+          <div>      
+            <a
+              class="visibility ${mustBePrivate ? 'disabled' : ''} tooltip-top"
+              data-tooltip=${mustBePrivate ? 'Must be private as you are commenting on private content' : 'Choose who can see this content'}
+              @click=${this.onClickVisibility}
+            >
+              ${this.visibility === 'private' ? html`
+                <span class="fas fa-fw fa-lock"></span> Only Me
+              ` : html`
+                <span class="fas fa-fw fa-globe-africa"></span> Everybody
+              `}
+              ${mustBePrivate ? '' : html`<span class="fas fa-fw fa-caret-down"></span>`}
+            </a>      
             <button @click=${this.onCancel} tabindex="4">Cancel</button>
             <button type="submit" class="primary" tabindex="3" ?disabled=${this.isEmpty}>
-              Publish
+              ${this.visibility === 'private' ? 'Save privately' : 'Publish publicly'}
             </button>
           </div>
         </div>
@@ -98,6 +131,27 @@ class PostComposer extends LitElement {
   // events
   // =
 
+  onClickVisibility (e) {
+    if (this.mustBePrivate) return
+    var rect = e.currentTarget.getClientRects()[0]
+    e.preventDefault()
+    e.stopPropagation()
+    const items = [
+      {icon: 'fas fa-lock', label: 'Only Me (Private)', click: () => { this.visibility = 'private' } },
+      {icon: 'fas fa-globe-africa', label: 'Everybody (Public)', click: () => { this.visibility = 'public' } }
+    ]
+    contextMenu.create({
+      x: rect.left,
+      y: rect.bottom,
+      noBorders: true,
+      roomy: true,
+      rounded: true,
+      style: `padding: 6px 0`,
+      items,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
+    })
+  }
+
   onCancel (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -118,7 +172,8 @@ class PostComposer extends LitElement {
       throw new Error('.driveUrl is missing')
     }
 
-    var drive = beaker.hyperdrive.drive(this.driveUrl)
+    var driveUrl = this.visibility === 'private' ? 'hyper://private' : this.driveUrl
+    var drive = beaker.hyperdrive.drive(driveUrl)
     var filepath
     if (this.subject || this.parent) {
       filepath = `/comments/${''+Date.now()}.md`
@@ -140,7 +195,7 @@ class PostComposer extends LitElement {
         }
       })
     }
-    var url = joinPath(this.driveUrl, filepath)
+    var url = joinPath(driveUrl, filepath)
 
     this.dispatchEvent(new CustomEvent('publish', {detail: {url}}))
   }
