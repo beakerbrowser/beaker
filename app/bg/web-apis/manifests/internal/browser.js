@@ -10,6 +10,7 @@ export default {
   getSettings: 'promise',
   getSetting: 'promise',
   setSetting: 'promise',
+  updateAdblocker: 'promise',
   updateSetupState: 'promise',
   setupDefaultProfile: 'promise',
   migrate08to09: 'promise',

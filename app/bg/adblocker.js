@@ -1,13 +1,20 @@
 import { session } from 'electron'
 import { FiltersEngine, Request } from '@cliqz/adblocker'
 import fetch from 'cross-fetch';
+import * as settingsDb from '../bg/dbs/settings';
 
 // exported API
 
 export async function setup () {
-  const blocker = await FiltersEngine.fromLists(fetch, [
-    'https://easylist.to/easylist/easylist.txt'
-  ])
+  const adblockLists = await settingsDb.get('adblock_lists')
+  const activeLists = adblockLists.filter(list => list.selected)
+
+  if (activeLists.length < 1) {
+    session.defaultSession.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => callback({ cancel: false }))
+    return
+  }
+
+  const blocker = await FiltersEngine.fromLists(fetch, activeLists.map(list => list.url))
 
   const beakerUrls = /^(beaker|blob)/
   session.defaultSession.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => {

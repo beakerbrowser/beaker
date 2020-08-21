@@ -3,6 +3,7 @@ import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directive
 import * as QP from './lib/query-params.js'
 import css from '../css/main.css.js'
 import './views/general.js'
+import './views/adblock.js'
 import './views/devices.js'
 import './views/info.js'
 import './views/network.js'
@@ -62,6 +63,7 @@ class SettingsApp extends LitElement {
     }
     return html`
       ${item('general', 'fas fa-cog', 'General')}
+      ${item('adblock', 'fas fa-ban', 'Ad Blocking')}
       ${item('devices', 'fas fa-sync', 'Sync Devices')}
       <hr>
       ${item('general-logs', 'fas fa-clipboard-list', 'General Logs')}
@@ -77,6 +79,8 @@ class SettingsApp extends LitElement {
     switch (this.currentSubview) {
       case 'general':
         return html`<general-settings-view loadable></general-settings-view>`
+      case 'adblock':
+        return html`<adblock-settings-view loadable></adblock-settings-view>`
       case 'devices':
         return html`<devices-view loadable></devices-view>`
       case 'info':

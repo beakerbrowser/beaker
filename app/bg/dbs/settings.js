@@ -6,7 +6,7 @@ import { setupSqliteDB } from '../lib/db'
 import { getEnvVar } from '../lib/env'
 
 const CACHED_VALUES = ['new_tabs_in_foreground']
-const JSON_ENCODED_SETTINGS = ['search_engines']
+const JSON_ENCODED_SETTINGS = ['search_engines', 'adblock_lists']
 
 // globals
 // =
@@ -46,6 +46,14 @@ export const setup = async function (opts) {
     search_engines: [
       {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/', selected: true},
       {name: 'Google', url: 'https://www.google.com/search'}
+    ],
+    adblock_lists: [
+      {name: 'EasyList', url: 'https://easylist.to/easylist/easylist.txt', selected: true},
+      {name: 'EasyPrivacy', url: 'https://easylist.to/easylist/easyprivacy.txt'},
+      {name: 'EasyList Cookie List', url: 'https://easylist-downloads.adblockplus.org/easylist-cookie.txt'},
+      {name: 'Fanboy\'s Social Blocking List', url: 'https://easylist.to/easylist/fanboy-social.txt'},
+      {name: 'Fanboy\'s Annoyance List', url: 'https://easylist.to/easylist/fanboy-annoyance.txt'},
+      {name: 'Adblock Warning Removal List', url: 'https://easylist-downloads.adblockplus.org/antiadblockfilters.txt'},
     ]
   }
 
