@@ -1,0 +1,16 @@
+@import "beaker://app-stdlib/css/common.css";
+@import "beaker://assets/font-awesome.css";
+
+body {
+  --border-color--nav-highlighted: #2864dc;
+
+  font-size: 14px;
+  background: var(--bg-color--default);
+  color: var(--text-color--default);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --border-color--nav-highlighted: #2864dc;
+  }
+}

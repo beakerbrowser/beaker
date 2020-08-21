@@ -451,7 +451,10 @@ export class Resource extends LitElement {
 
   onClickShowSites (e, results) {
     e.preventDefault()
-    SitesListPopup.create(results)
+    SitesListPopup.create('Subscribed Sites', results.map(r => ({
+      url: r.metadata.href,
+      title: r.metadata.title || 'Untitled'
+    })))
   }
 }
 

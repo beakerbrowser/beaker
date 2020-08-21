@@ -555,7 +555,7 @@ export function buildWindowMenu (opts = {}) {
       {type: 'separator'},
       {
         id: 'driveProperties',
-        label: 'Drive Properties',
+        label: 'Site Properties',
         enabled: !!isDriveSite,
         async click (item) {
           if (win) runDrivePropertiesFlow(win, hyper.drives.fromURLToKey(url))

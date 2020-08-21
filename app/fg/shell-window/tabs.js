@@ -450,7 +450,6 @@ ${spinnerCSS}
 .tab-favicon {
   width: 16px;
   height: 23px;
-  image-rendering: -webkit-optimize-contrast;
   text-align: center;
   position: absolute;
   left: 10px;

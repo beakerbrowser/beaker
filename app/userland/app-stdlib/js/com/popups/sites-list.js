@@ -41,16 +41,17 @@ export class SitesListPopup extends BasePopup {
     `]
   }
 
-  constructor ({results}) {
+  constructor ({title, sites}) {
     super()
-    this.results = results
+    this.title = title
+    this.sites = sites
   }
 
   // management
   //
 
-  static async create (results) {
-    return BasePopup.create(SitesListPopup, {results})
+  static async create (title, sites) {
+    return BasePopup.create(SitesListPopup, {title, sites})
   }
 
   static destroy () {
@@ -61,26 +62,26 @@ export class SitesListPopup extends BasePopup {
   // =
 
   renderTitle () {
-    return 'Followed Sites'
+    return this.title || 'Sites'
   }
 
   renderBody () {
     return html`  
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="sites">
-        ${repeat(this.results, result => this.renderSite(result))}
+        ${repeat(this.sites, site => this.renderSite(site))}
       </div>
     `
   }
 
-  renderSite (result) {
-    const title = result.metadata.title || 'Untitled'
+  renderSite (site) {
+    const title = site.title || 'Untitled'
     return html`
-      <a href=${result.metadata.href} class="site" title=${title} target="_blank">
-        <img class="thumb" src="asset:thumb:${result.metadata.href}"/>
+      <a href=${site.url} class="site" title=${title} target="_blank">
+        <img class="thumb" src="asset:thumb:${site.url}"/>
         <span class="details">
           <span class="title">${title}</span>
-          <span class="url">${toNiceUrl(result.metadata.href)}</span>
+          <span class="url">${toNiceUrl(site.url)}</span>
         </span>
       </a>
     `

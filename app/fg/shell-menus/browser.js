@@ -350,10 +350,6 @@ BrowserMenu.styles = [commonCSS, css`
   font-size: 12px;
   -webkit-font-smoothing: antialiased;
 }
-
-.favicon {
-  image-rendering: -webkit-optimize-contrast;
-}
 `]
 
 customElements.define('browser-menu', BrowserMenu)

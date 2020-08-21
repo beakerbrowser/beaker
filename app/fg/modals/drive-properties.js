@@ -135,7 +135,7 @@ class DrivePropertiesModal extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">
-          Drive Properties
+          Site Properties
         </h1>
 
         <form @submit=${this.onSubmit}>

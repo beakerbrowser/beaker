@@ -8,11 +8,12 @@ import * as bg from './bg-process-rpc'
 const WINDOW_MENU_ENABLED = false
 
 const BASIC_BUILTINS = [
-  {builtin: true, url: 'beaker://library/'},
+  {builtin: true, url: 'beaker://about/'},
   {builtin: true, url: 'beaker://activity/'},
-  {builtin: true, url: 'beaker://editor/'}
+  {builtin: true, url: 'beaker://library/'}
 ]
 const ADVANCED_BUILTINS = [
+  {builtin: true, url: 'beaker://editor/'},
   {builtin: true, url: 'beaker://explorer/'},
   {builtin: true, url: 'beaker://webterm/'}
 ]
@@ -101,7 +102,6 @@ class ShellWindowToolbarMenu extends LitElement {
       height: 16px;
       position: relative;
       top: 2px;
-      image-rendering: -webkit-optimize-contrast;
     }
     hr {
       border: 0;
@@ -232,6 +232,7 @@ class ShellWindowToolbarMenu extends LitElement {
   onMouseoverLink (e, item) {
     let rect = e.currentTarget.getClientRects()[0]
     let label = ({
+      'beaker://about': 'Site Profile',
       'beaker://activity': 'Comments',
       'beaker://editor': 'Editor',
       'beaker://explorer': 'Files Explorer',

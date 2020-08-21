@@ -615,8 +615,8 @@ a:hover {
 
 .resource.comment .thumb img {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 14px;
+  height: 14px;
   object-fit: scale-down;
 }
 

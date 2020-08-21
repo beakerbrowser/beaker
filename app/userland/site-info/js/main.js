@@ -364,7 +364,7 @@ class SiteInfoApp extends LitElement {
         } : undefined,
         {
           icon: 'far fa-fw fa-list-alt',
-          label: 'Drive Properties',
+          label: 'Site Properties',
           click: () => this.onDriveProps()
         }
       ].filter(Boolean)
