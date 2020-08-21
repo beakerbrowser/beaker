@@ -1,24 +1,33 @@
 import { session } from 'electron'
-// import { initialize, containsAds } from 'contains-ads'
+import { FiltersEngine, Request } from '@cliqz/adblocker'
+import fetch from 'cross-fetch';
 
 // exported API
 
-export function setup () {
-  /*
-  temporarily disabled due to https://github.com/bbondy/bloom-filter-cpp/issues/7
-    "contains-ads": "^0.2.5",
-
-  initialize() // contains-ads
+export async function setup () {
+  const blocker = await FiltersEngine.fromLists(fetch, [
+    'https://easylist.to/easylist/easylist.txt'
+  ])
 
   const beakerUrls = /^(beaker|blob)/
-  session.defaultSession.webRequest.onBeforeRequest(['*://*./*'], (details, callback) => {
-    const shouldBeBlocked = !details.url.match(beakerUrls) && containsAds(details.url)
+  session.defaultSession.webRequest.onBeforeRequest({ urls: ['*://*/*'] }, (details, callback) => {
+    // Matching network filters
+    const {
+      match, // `true` if there is a match
+      redirect, // data url to redirect to if any
+      // exception, // instance of NetworkFilter exception if any
+      // filter, // instance of NetworkFilter which matched
+    } = blocker.match(Request.fromRawDetails({ url: details.url }))
 
-    if (shouldBeBlocked) {
-      callback({cancel: true})
-    } else {
-      callback({cancel: false})
+    const shouldBeBlocked = !details.url.match(beakerUrls) && match
+
+    let response = {
+      cancel: shouldBeBlocked,
     }
+    if (redirect) {
+      response.redirectURL = redirect
+    }
+
+    callback(response);
   })
-  */
 }
