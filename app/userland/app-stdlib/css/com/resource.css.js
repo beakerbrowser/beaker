@@ -201,6 +201,11 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
+:host([thread-view]) .resource.action {
+  padding: 8px 14px;
+  align-items: baseline;
+}
+
 .resource.action.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
@@ -220,6 +225,14 @@ a:hover {
   margin-right: 18px;
   position: relative;
   top: 1px;
+}
+
+:host([thread-view]) .resource.action .thumb {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  margin: 0 5px 0 0;
+  top: 2px;
 }
 
 .resource.action .thumb img {
@@ -247,7 +260,7 @@ a:hover {
 }
 
 .resource.action .author {
-  color: var(--text-color--lightish);
+  color: var(--text-color--default);
   font-weight: 600;
 }
 

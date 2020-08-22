@@ -16,6 +16,7 @@ export class Resource extends LitElement {
       renderMode: {type: String, attribute: 'render-mode'},
       showContext: {type: Boolean, attribute: 'show-context'},
       profileUrl: {type: String, attribute: 'profile-url'},
+      actionTarget: {type: String, attribute: 'action-target'},
       isReplyOpen: {type: Boolean}
     }
   }
@@ -30,6 +31,7 @@ export class Resource extends LitElement {
     this.renderMode = 'card'
     this.showContext = false
     this.profileUrl = undefined
+    this.actionTarget = undefined
     this.isReplyOpen = false
 
     // helper state
@@ -109,7 +111,7 @@ export class Resource extends LitElement {
               </div>
             ` : ''}
           </div>
-          <div class="content">
+          <div class="content markdown">
             ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
           </div>
           ${''/*TODO <div class="tags">
@@ -174,7 +176,7 @@ export class Resource extends LitElement {
             </div>
           ` : ''}
         </div>
-        <div class="content">
+        <div class="content markdown">
           ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
         </div>
         <div class="ctrls">
@@ -196,9 +198,14 @@ export class Resource extends LitElement {
   renderAsAction () {
     const res = this.resource
 
-    var action = ({
-      'beaker/index/subscriptions': 'subscribed to'
-    })[res.index] || 'did something? to'
+    var subject
+    if (res.index === 'beaker/index/subscriptions') {
+      subject = res.metadata.href === this.profileUrl ? 'you' : res.metadata.title || res.metadata.href
+    } else {
+      if (res.metadata.title) subject = res.metadata.title
+      else if (res.content) subject = shorten(removeMarkdown(res.content), 40)
+      else subject = fancyUrl(res.url)
+    }
 
     return html`
       <div
@@ -212,22 +219,30 @@ export class Resource extends LitElement {
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
           <img class="favicon" src="${joinPath(res.site.url, 'thumb')}">
         </a>
-        <a class="author" href=${res.site.url} title=${res.site.title}>
-          ${res.site.url === 'hyper://private' ? 'I (privately)' : res.site.title}
-        </a>
-        <span class="action">${action}</span>
-        <a class="subject" href=${res.metadata.href} title=${res.metadata.title || res.metadata.href}>
-          ${res.metadata.href === this.profileUrl ? 'you' : res.metadata.title || res.metadata.href}
-        </a>
-        ${res.mergedItems ? html`
-          <span>and</span>
-          <a
-            class="others"
-            href="#"
-            data-tooltip=${shorten(res.mergedItems.map(r => r.metadata.title || 'Untitled').join(', '), 100)}
-            @click=${e => this.onClickShowSites(e, res.mergedItems)}
-          >${res.mergedItems.length} other ${pluralize(res.mergedItems.length, 'site')}</a>
-        ` : ''}
+        <div>
+          <a class="author" href=${res.site.url} title=${res.site.title}>
+            ${res.site.url === 'hyper://private' ? 'I (privately)' : res.site.title}
+          </a>
+          ${res.index === 'beaker/index/subscriptions' ? html`
+            <span class="action">subscribed to</span>
+            <a class="subject" href=${res.metadata.href} title=${subject}>${subject}</a>
+          ` : res.index === 'beaker/index/bookmarks' ? html`
+            <span class="action">bookmarked ${this.actionTarget}</span>
+          ` : html`
+            <span class="action">mentioned ${this.actionTarget} in</span>
+            <a class="subject" href=${res.url} title=${subject}>${subject}</a>
+          `}
+          ${res.mergedItems ? html`
+            <span>and</span>
+            <a
+              class="others"
+              href="#"
+              data-tooltip=${shorten(res.mergedItems.map(r => r.metadata.title || 'Untitled').join(', '), 100)}
+              @click=${e => this.onClickShowSites(e, res.mergedItems)}
+            >${res.mergedItems.length} other ${pluralize(res.mergedItems.length, 'site')}</a>
+          ` : ''}
+          <span class="date">${relativeDate(res.ctime)}</span>
+        </div>
       </div>
     `
   }

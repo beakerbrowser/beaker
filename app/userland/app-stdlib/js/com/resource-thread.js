@@ -7,11 +7,6 @@ import * as toast from './toast.js'
 import './resource.js'
 import './post-composer.js'
 
-const INDEXES = [
-  'beaker/index/comments',
-  'beaker/index/microblogposts'
-]
-
 export class ResourceThread extends LitElement {
   static get properties () {
     return {
@@ -48,11 +43,10 @@ export class ResourceThread extends LitElement {
     if (!subject) subject = {url: subjectUrl || this.resourceUrl, notFound: true}
     var replies = await beaker.indexer.list({
       filter: {
-        linksTo: subject.url,
-        index: INDEXES
+        linksTo: subject.url
       },
       sort: 'ctime',
-      reverse: false
+      reverse: true
     })
     this.subject = subject
     this.replies = toThreadTree(replies)
@@ -72,6 +66,14 @@ export class ResourceThread extends LitElement {
     try {
       this.shadowRoot.querySelector('.highlighted').scrollIntoView()
     } catch {}
+  }
+
+  get actionTarget () {
+    let urlp = new URL(this.subject.url)
+    return ({
+      'beaker/index/microblogposts': 'this post',
+      'beaker/index/blogposts': 'this blogpost',
+    })[this.subject.index] || `this ${urlp.pathname === '/' ? 'site' : 'page'}`
   }
 
   // rendering
@@ -120,15 +122,22 @@ export class ResourceThread extends LitElement {
     if (!replies?.length) return ''
     return html`
       <div class="replies">
-        ${repeat(replies, r => r.url, reply => html`
-          <beaker-resource
-            .resource=${reply}
-            render-mode="comment"
-            profile-url=${this.profileUrl}
-            @publish-reply=${this.onPublishReply}
-          ></beaker-resource>
-          ${reply.replies?.length ? this.renderReplies(reply.replies) : ''}
-        `)}
+        ${repeat(replies, r => r.url, reply => {
+          var mode = ({
+            'beaker/index/comments': 'comment'
+          })[reply.index] || 'action'
+          return html`
+            <beaker-resource
+              .resource=${reply}
+              render-mode=${mode}
+              thread-view
+              action-target=${this.actionTarget}
+              profile-url=${this.profileUrl}
+              @publish-reply=${this.onPublishReply}
+            ></beaker-resource>
+            ${reply.replies?.length ? this.renderReplies(reply.replies) : ''}
+          `
+        })}
       </div>
     `
   }
