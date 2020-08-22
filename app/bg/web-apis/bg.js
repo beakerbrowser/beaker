@@ -27,7 +27,6 @@ import datLegacyManifest from './manifests/internal/dat-legacy'
 import downloadsManifest from './manifests/internal/downloads'
 import folderSyncManifest from './manifests/internal/folder-sync'
 import historyManifest from './manifests/internal/history'
-import indexerManifest from './manifests/internal/indexer'
 import sitedataManifest from './manifests/internal/sitedata'
 import subscriptionsManifest from './manifests/internal/subscriptions'
 import watchlistManifest from './manifests/internal/watchlist'
@@ -41,7 +40,6 @@ import beakerFilesystemAPI from './bg/beaker-filesystem'
 import datLegacyAPI from './bg/dat-legacy'
 import folderSyncAPI from './bg/folder-sync'
 import historyAPI from './bg/history'
-import indexerAPI from './bg/indexer'
 import { WEBAPI as sitedataAPI } from '../dbs/sitedata'
 import * as subscriptionsAPI from '../filesystem/subscriptions'
 import watchlistAPI from './bg/watchlist'
@@ -52,6 +50,7 @@ import { WEBAPI as beakerBrowserAPI } from '../browser'
 import capabilitiesManifest from './manifests/external/capabilities'
 import contactsManifest from './manifests/external/contacts'
 import hyperdriveManifest from './manifests/external/hyperdrive'
+import indexerManifest from './manifests/external/indexer'
 import markdownManifest from './manifests/external/markdown'
 import panesManifest from './manifests/external/panes'
 import peersocketsManifest from './manifests/external/peersockets'
@@ -61,6 +60,7 @@ import shellManifest from './manifests/external/shell'
 import capabilitiesAPI from './bg/capabilities'
 import contactsAPI from './bg/contacts'
 import hyperdriveAPI from './bg/hyperdrive'
+import indexerAPI from './bg/indexer'
 import markdownAPI from './bg/markdown'
 import panesAPI from './bg/panes'
 import peersocketsAPI from './bg/peersockets'
@@ -90,7 +90,6 @@ export const setup = function () {
   rpc.exportAPI('drives', drivesManifest, drivesAPI, internalOnly)
   rpc.exportAPI('folder-sync', folderSyncManifest, folderSyncAPI, internalOnly)
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)
-  rpc.exportAPI('indexer', indexerManifest, indexerAPI, internalOnly)
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
   rpc.exportAPI('subscriptions', subscriptionsManifest, subscriptionsAPI, internalOnly)
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
@@ -99,6 +98,7 @@ export const setup = function () {
   rpc.exportAPI('capabilities', capabilitiesManifest, capabilitiesAPI, secureOnly('capabilities'))
   rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
+  rpc.exportAPI('indexer', indexerManifest, indexerAPI, secureOnly('indexer'))
   rpc.exportAPI('markdown', markdownManifest, markdownAPI)
   rpc.exportAPI('panes', panesManifest, panesAPI, secureOnly('panes'))
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
