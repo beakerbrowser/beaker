@@ -66,7 +66,6 @@ nav a.nav-item.active {
   margin: 0 auto;
   padding: 10px;
   max-width: 720px;
-  background: var(--bg-color--light);
 }
 
 `

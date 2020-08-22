@@ -14,6 +14,7 @@ import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
 import css from '../css/main.css.js'
 import 'beaker://app-stdlib/js/com/resource-feed.js'
+import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
 const CURRENT_VERSION = VERSION_ID(1, 0, 0, 7)
