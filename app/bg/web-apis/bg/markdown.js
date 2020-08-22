@@ -1,7 +1,14 @@
 import markdown from '../../../lib/markdown'
 
-const md = markdown({
+const mdNoHTML = markdown({
   allowHTML: false,
+  useHeadingIds: false,
+  useHeadingAnchors: false,
+  hrefMassager: undefined,
+  highlight: undefined
+})
+const mdWithHTML = markdown({
+  allowHTML: true,
   useHeadingIds: false,
   useHeadingAnchors: false,
   hrefMassager: undefined,
@@ -9,7 +16,8 @@ const md = markdown({
 })
 
 export default {
-  toHTML (str) {
-    return md.render(str)
+  toHTML (str, {allowHTML} = {}) {
+    if (allowHTML) return mdWithHTML.render(str)
+    return mdNoHTML.render(str)
   }
 }
