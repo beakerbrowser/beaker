@@ -1,5 +1,6 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
+import { ifDefined } from '../../vendor/lit-element/lit-html/directives/if-defined.js'
 import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/sites-list.css.js'
 import { emit } from '../dom.js'
@@ -116,10 +117,10 @@ export class SitesList extends LitElement {
         .sort((a, b) => a.title.localeCompare(b.title))
     } else if (this.listing === 'suggested') {
       this.sites = sites
-        .concat(unknownSites)
+        .concat(unknownSites) // include unknown sites
         .filter(site => !this.isSubscribed(site))
         .sort((a, b) => (b.subscriptions?.length || 0) - (a.subscriptions?.length || 0))
-      /* dont await */this.loadUnkownSites()
+      /* dont await */this.loadUnkownSites() // try to get their meta in the background
     } else {
       this.sites = sites.sort((a, b) => a.title.localeCompare(b.title))
     }
@@ -217,7 +218,11 @@ export class SitesList extends LitElement {
                 href="#" 
                 class="tooltip-top"
                 @click=${e => this.onClickShowSubscribers(e, site.subscriptions)}
-                data-tooltip=${shorten(site.subscriptions?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)}
+                data-tooltip=${
+                  ifDefined(site.subscriptions?.length > 0
+                    ? shorten(site.subscriptions?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)
+                    : undefined)
+                }
               >
                 <strong>${site.subscriptions?.length || 0}</strong>
                 ${pluralize(site.subscriptions?.length || 0, 'subscriber')} you know
