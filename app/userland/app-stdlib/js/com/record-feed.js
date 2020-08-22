@@ -1,9 +1,9 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
-import css from '../../css/com/resource-feed.css.js'
+import css from '../../css/com/record-feed.css.js'
 import { emit } from '../dom.js'
 
-import './resource.js'
+import './record.js'
 
 const DEFAULT_SEARCH_INDEXES = [
   'beaker/index/blogposts',
@@ -12,7 +12,7 @@ const DEFAULT_SEARCH_INDEXES = [
   'beaker/index/pages'
 ]
 
-export class ResourceFeed extends LitElement {
+export class RecordFeed extends LitElement {
   static get properties () {
     return {
       index: {type: Array},
@@ -98,14 +98,14 @@ export class ResourceFeed extends LitElement {
     var startTs = Date.now()
     var results = []
     if (this.index?.[0] === 'notifications') {
-      results = await beaker.indexer.listNotifications({
+      results = await beaker.database.listNotifications({
         filter: {search: this.filter},
         limit: this.limit,
         sort: 'ctime',
         reverse: true
       })
     } else if (this.filter) {
-      results = await beaker.indexer.search(this.filter, {
+      results = await beaker.database.searchRecords(this.filter, {
         filter: {index: this.index || DEFAULT_SEARCH_INDEXES, site: this.sources},
         limit: this.limit,
         sort: 'ctime',
@@ -115,7 +115,7 @@ export class ResourceFeed extends LitElement {
       // because we collapse results, we need to run the query until the limit is fulfilled
       let offset = 0
       do {
-        let subresults = await beaker.indexer.list({
+        let subresults = await beaker.database.listRecords({
           filter: {index: this.index, site: this.sources},
           limit: this.limit,
           offset,
@@ -221,12 +221,12 @@ export class ResourceFeed extends LitElement {
       'beaker/index/subscriptions': 'action',
     })[result.index] || 'link'
     return html`
-      <beaker-resource
-        .resource=${result}
+      <beaker-record
+        .record=${result}
         render-mode=${renderMode}
         show-context
         profile-url=${this.profileUrl}
-      ></beaker-resource>
+      ></beaker-record>
     `
   }
 
@@ -235,11 +235,11 @@ export class ResourceFeed extends LitElement {
       'beaker/index/microblogposts': 'card'
     })[result.index] || 'expanded-link'
     return html`
-      <beaker-resource
-        .resource=${result}
+      <beaker-record
+        .record=${result}
         render-mode=${renderMode}
         profile-url=${this.profileUrl}
-      ></beaker-resource>
+      ></beaker-record>
     `
   }
 
@@ -247,7 +247,7 @@ export class ResourceFeed extends LitElement {
   // =
 }
 
-customElements.define('beaker-resource-feed', ResourceFeed)
+customElements.define('beaker-record-feed', RecordFeed)
 
 function isArrayEq (a, b) {
   if (!a && !!b) return false

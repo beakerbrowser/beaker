@@ -2,9 +2,9 @@
  * The indexer creates the following datasets:
  * 
  *  - List of sites that have been indexed
- *  - List of resources that have been indexed
- *  - Metadata & file content for all indexed resources (including FTS index)
- *  - Notifications for resources which are relevant to the user
+ *  - List of records that have been indexed
+ *  - Metadata & file content for all indexed records (including FTS index)
+ *  - Notifications for records which are relevant to the user
  * 
  * The indexer works by periodically listing all sites that we're interested in and
  * fetching a list of file updates since the last time the site was indexed. Those
@@ -39,9 +39,9 @@ import { timer } from '../../lib/time'
 
 /**
  * @typedef {import('./const').SubscribedSite} SubscribedSite
- * @typedef {import('./const').ResourceUpdate} ResourceUpdate
+ * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
- * @typedef {import('./const').ResourceDescription} ResourceDescription
+ * @typedef {import('./const').RecordDescription} RecordDescription
  */
 
 // globals
@@ -83,13 +83,13 @@ export async function clearAllData () {
 
 /**
  * @param {String} url 
- * @returns {Promise<ResourceDescription>}
+ * @returns {Promise<RecordDescription>}
  */
-export async function get (url) {
+export async function getRecord (url) {
   let urlp = parseUrl(url)
   var rows = await db('sites')
-    .leftJoin('resources', 'sites.rowid', 'resources.site_rowid')
-    .select('*', 'resources.rowid as resource_rowid')
+    .leftJoin('records', 'sites.rowid', 'records.site_rowid')
+    .select('*', 'records.rowid as record_rowid')
     .where({
       'origin': urlp.origin,
       'path': urlp.path
@@ -97,7 +97,7 @@ export async function get (url) {
     .limit(1)
   if (!rows[0]) return undefined
 
-  var resource_rowid = rows[0].resource_rowid
+  var record_rowid = rows[0].record_rowid
   var result = {
     url,
     index: rows[0].index,
@@ -112,7 +112,7 @@ export async function get (url) {
     content: undefined
   }
 
-  rows = await db('resources_data').select('*').where({resource_rowid})
+  rows = await db('records_data').select('*').where({record_rowid})
   for (let row of rows) {
     if (row.key === METADATA_KEYS.content) {
       result.content = row.value
@@ -139,13 +139,13 @@ export async function get (url) {
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
- * @returns {Promise<ResourceDescription[]>}
+ * @returns {Promise<RecordDescription[]>}
  */
-export async function list (opts) {
+export async function listRecords (opts) {
   var sep = `[>${Math.random()}<]`
   var query = db('sites')
-    .innerJoin('resources', 'sites.rowid', 'resources.site_rowid')
-    .leftJoin('resources_data', 'resources.rowid', 'resources_data.resource_rowid')
+    .innerJoin('records', 'sites.rowid', 'records.site_rowid')
+    .leftJoin('records_data', 'records.rowid', 'records_data.record_rowid')
     .select(
       'origin',
       'path',
@@ -153,10 +153,10 @@ export async function list (opts) {
       'ctime',
       'mtime',
       'title as siteTitle',
-      db.raw(`group_concat(resources_data.key, '${sep}') as data_keys`),
-      db.raw(`group_concat(resources_data.value, '${sep}') as data_values`),
+      db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
+      db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
     )
-    .groupBy('resources.rowid')
+    .groupBy('records.rowid')
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)
 
@@ -182,7 +182,7 @@ export async function list (opts) {
   }
   if (opts?.filter?.linksTo) {
     query = query.joinRaw(
-      `INNER JOIN resources_data as link ON link.resource_rowid = resources.rowid AND link.value = ?`,
+      `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
       [opts.filter.linksTo]
     )
   }
@@ -238,9 +238,9 @@ export async function list (opts) {
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
- * @returns {Promise<ResourceDescription[]>}
+ * @returns {Promise<RecordDescription[]>}
  */
-export async function search (q = '', opts) {
+export async function searchRecords (q = '', opts) {
   // prep search terms
   q = q
     .toLowerCase()
@@ -248,7 +248,7 @@ export async function search (q = '', opts) {
     .replace(/[-]/g, ' ') // strip symbols that sqlite interprets
     + '*' // allow partial matches
 
-  var query = db('resources_data_fts')
+  var query = db('records_data_fts')
     .select(
       'origin',
       'path',
@@ -256,16 +256,16 @@ export async function search (q = '', opts) {
       'ctime',
       'mtime',
       'title as siteTitle',
-      'resource_rowid',
+      'record_rowid',
       'key',
       'rank',
-      db.raw(`snippet(resources_data_fts, 0, '<b>', '</b>', '...', 30) as matchingText`)
+      db.raw(`snippet(records_data_fts, 0, '<b>', '</b>', '...', 30) as matchingText`)
     )
-    .innerJoin('resources_data', 'resources_data.rowid', 'resources_data_fts.rowid')
-    .innerJoin('resources', 'resources.rowid', 'resources_data.resource_rowid')
-    .innerJoin('sites', 'sites.rowid', 'resources.site_rowid')
-    .whereIn('resources_data.key', ['content', 'title'])
-    .whereRaw(`resources_data_fts.value MATCH ?`, [q])
+    .innerJoin('records_data', 'records_data.rowid', 'records_data_fts.rowid')
+    .innerJoin('records', 'records.rowid', 'records_data.record_rowid')
+    .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
+    .whereIn('records_data.key', ['content', 'title'])
+    .whereRaw(`records_data_fts.value MATCH ?`, [q])
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)
 
@@ -301,8 +301,8 @@ export async function search (q = '', opts) {
   // merge hits on the same record
   var mergedHits = {}
   for (let hit of hits) {
-    mergedHits[hit.resource_rowid] = mergedHits[hit.resource_rowid] || []
-    mergedHits[hit.resource_rowid].push(hit)
+    mergedHits[hit.record_rowid] = mergedHits[hit.record_rowid] || []
+    mergedHits[hit.record_rowid].push(hit)
   }
 
   var results = await Promise.all(Object.values(mergedHits).map(async mergedHits => {
@@ -325,7 +325,7 @@ export async function search (q = '', opts) {
       rank: Math.max(...mergedHits.map(h => h.rank))
     }
 
-    var rows = await db('resources_data').select('*').where({resource_rowid: mergedHits[0].resource_rowid})
+    var rows = await db('records_data').select('*').where({record_rowid: mergedHits[0].record_rowid})
     for (let row of rows) {
       if (row.key === METADATA_KEYS.content) {
         record.content = row.value
@@ -370,14 +370,14 @@ export async function search (q = '', opts) {
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
- * @returns {Promise<ResourceDescription[]>}
+ * @returns {Promise<RecordDescription[]>}
  */
 export async function listNotifications (opts) {
   var sep = `[>${Math.random()}<]`
   var query = db('notifications')
     .leftJoin('sites', 'sites.rowid', 'notifications.site_rowid')
-    .leftJoin('resources', 'resources.rowid', 'notifications.resource_rowid')
-    .leftJoin('resources_data', 'resources.rowid', 'resources_data.resource_rowid')
+    .leftJoin('records', 'records.rowid', 'notifications.record_rowid')
+    .leftJoin('records_data', 'records.rowid', 'records_data.record_rowid')
     .select(
       'notifications.rowid as rowid',
       'origin',
@@ -390,10 +390,10 @@ export async function listNotifications (opts) {
       'subject_origin',
       'subject_path',
       'is_read',
-      db.raw(`group_concat(resources_data.key, '${sep}') as data_keys`),
-      db.raw(`group_concat(resources_data.value, '${sep}') as data_values`),
+      db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
+      db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
     )
-    .groupBy('notifications.resource_rowid')
+    .groupBy('notifications.record_rowid')
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)
 
@@ -426,7 +426,7 @@ export async function listNotifications (opts) {
     }
   }
   if (opts?.filter?.search) {
-    query = query.whereRaw(`resources_data.value LIKE ?`, [`%${opts.filter.search}%`])
+    query = query.whereRaw(`records_data.value LIKE ?`, [`%${opts.filter.search}%`])
   }
   if (typeof opts?.filter?.isRead !== 'undefined') {
     query = query.where({is_read: opts.filter.isRead ? 1 : 0})
@@ -607,12 +607,12 @@ async function indexSite (origin, myOrigins) {
       if (updates.length === 0) continue
       for (let update of updates) {
         if (update.remove) {
-          let res = await db('resources').select('rowid').where({
+          let res = await db('records').select('rowid').where({
             site_rowid: site.rowid,
             path: update.path
           })
-          if (res[0]) await db('resources_data').del().where({resource_rowid: res[0].rowid})
-          res = await db('resources').del().where({site_rowid: site.rowid, path: update.path})
+          if (res[0]) await db('records_data').del().where({record_rowid: res[0].rowid})
+          res = await db('records').del().where({site_rowid: site.rowid, path: update.path})
           if (+res > 0) {
             logger.silly(`Deindexed ${site.origin}${update.path} [${indexer.id}]`, {site: site.origin, path: update.path})
           }
@@ -635,15 +635,15 @@ async function deindexSite (origin) {
   origin = normalizeOrigin(origin)
   var release = await lock(`beaker-indexer:${origin}`)
   try {
-    let siteRecord = (await db('sites').select('rowid', 'origin').where({origin}))[0]
-    let resourceRecords = await db('resources').select('rowid').where({site_rowid: siteRecord.rowid})
-    for (let resource of resourceRecords) {
-      await db('resources_data').del().where({resource_rowid: resource.rowid})
+    let site = (await db('sites').select('rowid', 'origin').where({origin}))[0]
+    let records = await db('records').select('rowid').where({site_rowid: site.rowid})
+    for (let record of records) {
+      await db('records_data').del().where({record_rowid: record.rowid})
     }
-    await db('resources').del().where({site_rowid: siteRecord.rowid})
-    await db('notifications').del().where({site_rowid: siteRecord.rowid})
-    await db('site_indexes').del().where({site_rowid: siteRecord.rowid})
-    logger.debug(`Deindexed ${siteRecord.origin}/*`, {site: siteRecord.origin})
+    await db('records').del().where({site_rowid: site.rowid})
+    await db('notifications').del().where({site_rowid: site.rowid})
+    await db('site_indexes').del().where({site_rowid: site.rowid})
+    logger.debug(`Deindexed ${site.origin}/*`, {site: site.origin})
   } catch (e) {
     logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   } finally {
@@ -668,7 +668,7 @@ async function listOriginsToIndex () {
     {},//TODO wanted? fs.pda.readFile('/drives.json', 'json'),
     fs.pda.readFile('/address-book.json', 'json')
   ])
-  var subscriptions = await list({
+  var subscriptions = await listRecords({
     filter: {
       index: INDEX_IDS.subscriptions,
       site: ['hyper://private', ...addressBookJson.profiles.map(item => 'hyper://' + item.key)]
@@ -729,7 +729,7 @@ async function loadSite (origin) {
     }
   }
 
-  var siteRecord = {
+  var site = {
     origin,
     rowid: record.rowid,
     indexes: record.indexes,
@@ -747,7 +747,7 @@ async function loadSite (origin) {
         // let changes = await drive.pda.diff(+record.last_indexed_version || 0)
         let changes = []
         for (let i = 0; i < 10; i++) {
-          let c = await drive.pda.diff(+siteRecord.indexes[indexId].last_indexed_version || 0)
+          let c = await drive.pda.diff(+site.indexes[indexId].last_indexed_version || 0)
           if (c.length > changes.length) changes = c
         }
         return changes.filter(change => ['put', 'del'].includes(change.type)).map(change => ({
@@ -760,7 +760,7 @@ async function loadSite (origin) {
       })
     }
   }
-  return siteRecord
+  return site
 }
 
 /**

@@ -143,7 +143,7 @@ class PostComposer extends LitElement {
   async autocompleteOptions (searchTerm, renderList, mentionChar) {
     if (!searchTerm) return renderList([], searchTerm)
     var searchId = ++this.searchQueryId
-    var queryResults = await this.searchDebouncer(() => beaker.indexer.search(searchTerm, {
+    var queryResults = await this.searchDebouncer(() => beaker.database.searchRecords(searchTerm, {
       filter: {index: ['beaker/index/subscriptions'], site: this.profile.url},
       limit: 10,
       sort: 'rank',

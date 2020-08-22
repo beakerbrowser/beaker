@@ -8,16 +8,16 @@ export default {
     return indexer.clearAllData()
   },
   
-  get (url) {
-    return indexer.get(url)
+  getRecord (url) {
+    return indexer.getRecord(url)
   },
   
-  list (opts) {
-    return indexer.list(opts)
+  listRecords (opts) {
+    return indexer.listRecords(opts)
   },
   
-  search (q, opts) {
-    return indexer.search(q, opts)
+  searchRecords (q, opts) {
+    return indexer.searchRecords(q, opts)
   },
   
   listNotifications (opts) {

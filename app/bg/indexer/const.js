@@ -48,7 +48,7 @@ export const NOTIFICATION_TYPES = {
  * @prop {Number} current_version
  * @prop {String} title
  * @prop {function(String): Promise<String>} fetch
- * @prop {function(String): Promise<ResourceUpdate[]>} listUpdates
+ * @prop {function(String): Promise<RecordUpdate[]>} listUpdates
  * 
  * @typedef {Object} IndexerState
  * @prop {String} index
@@ -58,7 +58,7 @@ export const NOTIFICATION_TYPES = {
  * @prop {String} origin
  * @prop {String} path
  * 
- * @typedef {Object} ResourceUpdate
+ * @typedef {Object} RecordUpdate
  * @prop {Boolean} remove
  * @prop {String} path
  * @prop {Object} metadata
@@ -68,11 +68,11 @@ export const NOTIFICATION_TYPES = {
  * @typedef {Object} IndexerDefinition
  * @prop {String} id
  * @prop {String} title
- * @prop {function(ResourceUpdate): Boolean} filter
- * @prop {function(SubscribedSite, ResourceUpdate): Promise<any[][]>} getData
+ * @prop {function(RecordUpdate): Boolean} filter
+ * @prop {function(SubscribedSite, RecordUpdate): Promise<any[][]>} getData
  * @prop {string[][]} notifications
  * 
- * @typedef {Object} ResourceDescription
+ * @typedef {Object} RecordDescription
  * @prop {String} url
  * @prop {String} index
  * @prop {Number} ctime

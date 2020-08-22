@@ -1,16 +1,16 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
-import css from '../../css/com/resource-thread.css.js'
+import css from '../../css/com/record-thread.css.js'
 import { emit } from '../dom.js'
 import { toNiceDomain } from '../strings.js'
 import * as toast from './toast.js'
-import './resource.js'
+import './record.js'
 import './post-composer.js'
 
-export class ResourceThread extends LitElement {
+export class RecordThread extends LitElement {
   static get properties () {
     return {
-      resourceUrl: {type: String, attribute: 'resource-url'},
+      recordUrl: {type: String, attribute: 'record-url'},
       profileUrl: {type: String, attribute: 'profile-url'},
       subject: {type: Object},
       replies: {type: Array},
@@ -24,7 +24,7 @@ export class ResourceThread extends LitElement {
 
   constructor () {
     super()
-    this.resourceUrl = ''
+    this.recordUrl = ''
     this.subject = undefined
     this.replies = undefined
     this.profileUrl = ''
@@ -32,16 +32,16 @@ export class ResourceThread extends LitElement {
   }
 
   async load () {
-    var resource = await beaker.indexer.get(this.resourceUrl)
-    var subjectUrl = resource?.metadata?.['beaker/subject']
+    var record = await beaker.database.getRecord(this.recordUrl)
+    var subjectUrl = record?.metadata?.['beaker/subject']
     var subject
     if (subjectUrl) {
-      subject = await beaker.indexer.get(subjectUrl)
+      subject = await beaker.database.getRecord(subjectUrl)
     } else {
-      subject = resource
+      subject = record
     }
-    if (!subject) subject = {url: subjectUrl || this.resourceUrl, notFound: true}
-    var replies = await beaker.indexer.list({
+    if (!subject) subject = {url: subjectUrl || this.recordUrl, notFound: true}
+    var replies = await beaker.database.listRecords({
       filter: {
         linksTo: subject.url
       },
@@ -57,7 +57,7 @@ export class ResourceThread extends LitElement {
   updated (changedProperties) {
     if (typeof this.subject === 'undefined') {
       this.load()
-    } else if (changedProperties.has('resourceUrl') && changedProperties.get('resourceUrl') != this.resourceUrl) {
+    } else if (changedProperties.has('recordUrl') && changedProperties.get('recordUrl') != this.recordUrl) {
       this.load()
     }
   }
@@ -92,13 +92,13 @@ export class ResourceThread extends LitElement {
         ${this.subject.notFound ? html`
           <a class="not-found" href="${this.subject.url}">${fancyUrl(this.subject.url)}</a>
         ` : html`
-          <beaker-resource
-            .resource=${this.subject}
+          <beaker-record
+            .record=${this.subject}
             render-mode=${mode}
             noborders
             profile-url=${this.profileUrl}
             @publish-reply=${this.onPublishReply}
-          ></beaker-resource>
+          ></beaker-record>
         `}
       </div>
       ${this.isCommenting ? html`
@@ -127,14 +127,14 @@ export class ResourceThread extends LitElement {
             'beaker/index/comments': 'comment'
           })[reply.index] || 'action'
           return html`
-            <beaker-resource
-              .resource=${reply}
+            <beaker-record
+              .record=${reply}
               render-mode=${mode}
               thread-view
               action-target=${this.actionTarget}
               profile-url=${this.profileUrl}
               @publish-reply=${this.onPublishReply}
-            ></beaker-resource>
+            ></beaker-record>
             ${reply.replies?.length ? this.renderReplies(reply.replies) : ''}
           `
         })}
@@ -166,7 +166,7 @@ export class ResourceThread extends LitElement {
   }
 }
 
-customElements.define('beaker-resource-thread', ResourceThread)
+customElements.define('beaker-record-thread', RecordThread)
 
 function toThreadTree (replies) {
   var repliesByUrl = {}

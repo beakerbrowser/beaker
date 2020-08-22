@@ -13,7 +13,7 @@ import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
 import css from '../css/main.css.js'
-import 'beaker://app-stdlib/js/com/resource-feed.js'
+import 'beaker://app-stdlib/js/com/record-feed.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
@@ -87,10 +87,10 @@ class DesktopApp extends LitElement {
       addressBook.loadProfile(),
       desktop.load(),
       beaker.subscriptions.list(),
-      beaker.indexer.countNotifications({filter: {isRead: false}})
+      beaker.database.countNotifications({filter: {isRead: false}})
     ])
-    if (this.shadowRoot.querySelector('beaker-resource-feed')) {
-      this.shadowRoot.querySelector('beaker-resource-feed').load()
+    if (this.shadowRoot.querySelector('beaker-record-feed')) {
+      this.shadowRoot.querySelector('beaker-record-feed').load()
     }
     this.sourceOptions = [{href: 'hyper://private/', title: 'My Private Data'}, {href: this.profile.url, title: this.profile.title}].concat(sourceOptions)
     console.log(this.pins)
@@ -98,7 +98,7 @@ class DesktopApp extends LitElement {
   }
 
   async loadSuggestions () {
-    let allSubscriptions = await beaker.indexer.list({
+    let allSubscriptions = await beaker.database.listRecords({
       filter: {index: 'beaker/index/subscriptions'},
       limit: 100,
       sort: 'ctime',
@@ -166,7 +166,7 @@ class DesktopApp extends LitElement {
   }
 
   get isLoading () {
-    let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('beaker-resource-feed'))
+    let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('beaker-record-feed'))
     return !!queryViewEls.find(el => el.isLoading)
   }
 
@@ -178,7 +178,7 @@ class DesktopApp extends LitElement {
 
   markAllNotificationsRead () {
     setTimeout(async () => {
-      await beaker.indexer.setNotificationIsRead('all', true)
+      await beaker.database.setNotificationIsRead('all', true)
       this.unreadNotificationsCount = 0
     }, 3e3)
   }
@@ -345,7 +345,7 @@ class DesktopApp extends LitElement {
         <div class="all-view">
           <div class="twocol">
             <div>
-              <beaker-resource-feed
+              <beaker-record-feed
                 class="subview"
                 .index=${this.currentNavAsIndex}
                 .filter=${this.searchQuery}
@@ -355,7 +355,7 @@ class DesktopApp extends LitElement {
                 @view-thread=${this.onViewThread}
                 @publish-reply=${this.onPublishReply}
                 profile-url=${this.profile ? this.profile.url : ''}
-              ></beaker-resource-feed>
+              ></beaker-record-feed>
             </div>
             ${this.renderSidebar()}
           </div>
@@ -367,7 +367,7 @@ class DesktopApp extends LitElement {
           ${this.currentNav === 'all' ? this.renderPins() : ''}
           <div class="twocol">
             <div>
-              <beaker-resource-feed
+              <beaker-record-feed
                 content-type="all"
                 show-date-titles
                 date-title-range=${this.currentNavDateTitleRange}
@@ -378,7 +378,7 @@ class DesktopApp extends LitElement {
                 @view-thread=${this.onViewThread}
                 @publish-reply=${this.onPublishReply}
                 profile-url=${this.profile ? this.profile.url : ''}
-              ></beaker-resource-feed>
+              ></beaker-record-feed>
             </div>
             ${this.renderSidebar()}
           </div>
@@ -684,7 +684,7 @@ class DesktopApp extends LitElement {
 
   onViewThread (e) {
     ViewThreadPopup.create({
-      resourceUrl: e.detail.resource.url,
+      recordUrl: e.detail.record.url,
       profileUrl: this.profile.url
     })
   }

@@ -2,7 +2,7 @@
 import { html, css } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { BasePopup } from 'beaker://app-stdlib/js/com/popups/base.js'
 import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
-import '../resource-thread.js'
+import '../record-thread.js'
 
 // exported api
 // =
@@ -10,13 +10,13 @@ import '../resource-thread.js'
 export class ViewThreadPopup extends BasePopup {
   constructor (opts) {
     super()
-    this.resourceUrl = opts.resourceUrl
+    this.recordUrl = opts.recordUrl
     this.profileUrl = opts.profileUrl
   }
 
   static get properties () {
     return {
-      resourceUrl: {type: String}
+      recordUrl: {type: String}
     }
   }
 
@@ -54,12 +54,12 @@ export class ViewThreadPopup extends BasePopup {
 
   renderBody () {
     return html`
-      <beaker-resource-thread
-        resource-url=${this.resourceUrl}
+      <beaker-record-thread
+        record-url=${this.recordUrl}
         profile-url=${this.profileUrl}
         @load=${this.onLoadThread}
         @view-thread=${this.onViewThread}
-      ></beaker-resource-thread>
+      ></beaker-record-thread>
     `
   }
 
@@ -67,11 +67,11 @@ export class ViewThreadPopup extends BasePopup {
   // =
 
   onLoadThread () {
-    this.shadowRoot.querySelector('beaker-resource-thread').scrollHighlightedPostIntoView()
+    this.shadowRoot.querySelector('beaker-record-thread').scrollHighlightedPostIntoView()
   }
 
   onViewThread (e) {
-    this.resourceUrl = e.detail.resource.url
+    this.recordUrl = e.detail.record.url
   }
 }
 

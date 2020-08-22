@@ -90,36 +90,36 @@ h2 a:hover {
   box-sizing: border-box;
 }
 
-.results beaker-resource {
+.results beaker-record {
   display: block;
   margin: 10px 0;
 }
 
-.results beaker-resource[render-mode="link"] {
+.results beaker-record[render-mode="link"] {
   margin: 18px 0;
 }
-.results beaker-resource:not([render-mode="link"]) + beaker-resource[render-mode="link"] {
+.results beaker-record:not([render-mode="link"]) + beaker-record[render-mode="link"] {
   margin-top: 24px;
 }
-.results beaker-resource[render-mode="link"] + beaker-resource:not([render-mode="link"]) {
+.results beaker-record[render-mode="link"] + beaker-record:not([render-mode="link"]) {
   margin-top: 24px;
 }
 
-.results beaker-resource[render-mode="expanded-link"] {
+.results beaker-record[render-mode="expanded-link"] {
   margin: 20px 0;
 }
 
-.results beaker-resource[render-mode="action"] {
+.results beaker-record[render-mode="action"] {
   margin: 16px 0;
 }
 
-.results beaker-resource[render-mode="comment"] {
+.results beaker-record[render-mode="comment"] {
   margin: 10px 0 10px 45px;
 }
-.results beaker-resource:not([render-mode="comment"]) + beaker-resource[render-mode="comment"] {
+.results beaker-record:not([render-mode="comment"]) + beaker-record[render-mode="comment"] {
   margin-top: 24px;
 }
-.results beaker-resource[render-mode="comment"] + beaker-resource:not([render-mode="comment"]) {
+.results beaker-record[render-mode="comment"] + beaker-record:not([render-mode="comment"]) {
   margin-top: 24px;
 }
 

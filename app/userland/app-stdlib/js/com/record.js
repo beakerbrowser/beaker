@@ -3,16 +3,16 @@ import { classMap } from '../../vendor/lit-element/lit-html/directives/class-map
 import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { asyncReplace } from '../../vendor/lit-element/lit-html/directives/async-replace.js'
 import { SitesListPopup } from './popups/sites-list.js'
-import css from '../../css/com/resource.css.js'
+import css from '../../css/com/record.css.js'
 import { removeMarkdown } from '../../vendor/remove-markdown.js'
 import { shorten, makeSafe, toNiceDomain, pluralize, joinPath } from '../strings.js'
 import { emit } from '../dom.js'
 import './post-composer.js'
 
-export class Resource extends LitElement {
+export class Record extends LitElement {
   static get properties () {
     return {
-      resource: {type: Object},
+      record: {type: Object},
       renderMode: {type: String, attribute: 'render-mode'},
       showContext: {type: Boolean, attribute: 'show-context'},
       profileUrl: {type: String, attribute: 'profile-url'},
@@ -27,7 +27,7 @@ export class Resource extends LitElement {
 
   constructor () {
     super()
-    this.resource = undefined
+    this.record = undefined
     this.renderMode = 'card'
     this.showContext = false
     this.profileUrl = undefined
@@ -43,7 +43,7 @@ export class Resource extends LitElement {
   // =
 
   render () {
-    if (!this.resource) return html``
+    if (!this.record) return html``
     switch (this.renderMode) {
       case 'card': return this.renderAsCard()
       case 'comment': return this.renderAsComment()
@@ -56,7 +56,7 @@ export class Resource extends LitElement {
   }
 
   renderAsCard () {
-    const res = this.resource
+    const res = this.record
 
     var context = undefined
     switch (res.index) {
@@ -70,7 +70,7 @@ export class Resource extends LitElement {
       ${res.notification ? this.renderNotification() : ''}
       <div
         class=${classMap({
-          resource: true,
+          record: true,
           card: true,
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
@@ -125,7 +125,7 @@ export class Resource extends LitElement {
   }
 
   renderAsComment () {
-    const res = this.resource
+    const res = this.record
 
     var context = undefined
     switch (res.index) {
@@ -139,7 +139,7 @@ export class Resource extends LitElement {
       ${res.notification ? this.renderNotification() : ''}
       <div
         class=${classMap({
-          resource: true,
+          record: true,
           comment: true,
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
@@ -184,8 +184,8 @@ export class Resource extends LitElement {
         </div>
         ${this.isReplyOpen ? html`
           <beaker-post-composer
-            subject=${this.resource.metadata['beaker/subject'] || this.resource.url}
-            parent=${this.resource.url}
+            subject=${this.record.metadata['beaker/subject'] || this.record.url}
+            parent=${this.record.url}
             placeholder="Write your comment"
             @publish=${this.onPublishReply}
             @cancel=${this.onCancelReply}
@@ -196,7 +196,7 @@ export class Resource extends LitElement {
   }
 
   renderAsAction () {
-    const res = this.resource
+    const res = this.record
 
     var subject
     if (res.index === 'beaker/index/subscriptions') {
@@ -210,7 +210,7 @@ export class Resource extends LitElement {
     return html`
       <div
         class=${classMap({
-          resource: true,
+          record: true,
           action: true,
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
@@ -248,7 +248,7 @@ export class Resource extends LitElement {
   }
 
   renderAsExpandedLink () {
-    const res = this.resource
+    const res = this.record
 
     var isBookmark = res.index === 'beaker/index/bookmarks'
     var href = undefined
@@ -258,7 +258,7 @@ export class Resource extends LitElement {
     href = href || res.url
     var title = res.metadata.title || res.url.split('/').pop()
     return html`
-      <div class="resource expanded-link">
+      <div class="record expanded-link">
         <a class="thumb" href=${href} title=${res.site.title}>
           ${this.renderThumb(res)}
         </a>
@@ -302,7 +302,7 @@ export class Resource extends LitElement {
   }
 
   renderResultAsLink () {
-    const res = this.resource
+    const res = this.record
 
     var href = undefined
     switch (res.index) {
@@ -331,7 +331,7 @@ export class Resource extends LitElement {
       ${res.notification ? this.renderNotification() : ''}
       <div
         class=${classMap({
-          resource: true,
+          record: true,
           link: true,
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
@@ -374,12 +374,12 @@ export class Resource extends LitElement {
   }
 
   renderThumb (url = undefined) {
-    url = url || this.resource.url
+    url = url || this.record.url
     if (url && /\.(png|jpe?g|gif)$/.test(url)) {
       return html`<img src=${url}>`
     }
     var icon = 'far fa-file-alt'
-    switch (this.resource.index) {
+    switch (this.record.index) {
       case 'beaker/index/blogposts': icon = 'fas fa-blog'; break
       case 'beaker/index/pages': icon = 'far fa-file-alt'; break
       case 'beaker/index/bookmarks': icon = 'fas fa-star'; break
@@ -394,7 +394,7 @@ export class Resource extends LitElement {
   }
 
   renderNotification () {
-    const res = this.resource
+    const res = this.record
     var description = ({
       'beaker/notification/bookmark': 'bookmarked',
       'beaker/notification/comment': 'commented on',
@@ -436,8 +436,8 @@ export class Resource extends LitElement {
     this.isReplyOpen = false
   }
 
-  onViewThread (e, resource) {
-    emit(this, 'view-thread', {detail: {resource: this.resource}})
+  onViewThread (e, record) {
+    emit(this, 'view-thread', {detail: {record: this.record}})
   }
 
   onMousedownCard (e) {
@@ -457,7 +457,7 @@ export class Resource extends LitElement {
   onMouseupCard (e) {
     if (!this.isMouseDown) return
     if (!this.isMouseDragging) {
-      emit(this, 'view-thread', {detail: {resource: this.resource}})
+      emit(this, 'view-thread', {detail: {record: this.record}})
     }
     this.isMouseDown = false
     this.isMouseDragging = false
@@ -472,7 +472,7 @@ export class Resource extends LitElement {
   }
 }
 
-customElements.define('beaker-resource', Resource)
+customElements.define('beaker-record', Record)
 
 function renderMatchText (result, key) {
   if (!result.matches) return undefined
@@ -491,7 +491,7 @@ async function getNotificationSubject (url) {
     return _notificationSubjectCache[url]
   }
   try {
-    let item = await beaker.indexer.get(url)
+    let item = await beaker.database.getRecord(url)
     if (item.metadata.title) {
       return `"${item.metadata.title}"`
     }

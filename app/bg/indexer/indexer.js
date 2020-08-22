@@ -5,7 +5,7 @@ import { parseUrl } from './const'
 
 /**
  * @typedef {import('./const').SubscribedSite} SubscribedSite
- * @typedef {import('./const').ResourceUpdate} ResourceUpdate
+ * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').IndexerDefinition} IndexerDefinition
  */
 
@@ -24,7 +24,7 @@ export class Indexer {
   /**
    * @param {Object} db 
    * @param {SubscribedSite} site 
-   * @param {ResourceUpdate} update 
+   * @param {RecordUpdate} update 
    * @param {String[]} myOrigins
    * @returns {Promise<Boolean>} - was the update indexed?
    */
@@ -40,19 +40,19 @@ export class Indexer {
   /**
    * @param {Object} db 
    * @param {SubscribedSite} site 
-   * @param {ResourceUpdate} update 
+   * @param {RecordUpdate} update 
    * @param {String[]} myOrigins
    * @returns {Promise<void>}
    */
   async put (db, site, update, myOrigins) {
-    // extract data pairs ([key, value]) from the resource
+    // extract data pairs ([key, value]) from the record
     var dataEntries = await this.getData(site, update)
 
     // index the base record
     var rowid
     var isNew = true
     try {
-      let res = await db('resources').insert({
+      let res = await db('records').insert({
         site_rowid: site.rowid,
         path: update.path,
         index: this.id,
@@ -63,24 +63,24 @@ export class Indexer {
     } catch (e) {
       // TODO can we check the error type for constraint violation?
       isNew = false
-      let res = await db('resources').select('rowid').where({
+      let res = await db('records').select('rowid').where({
         site_rowid: site.rowid,
         path: update.path
       })
       rowid = res[0].rowid
-      await db('resources').update({
+      await db('records').update({
         index: this.id,
         mtime: update.mtime,
         ctime: update.ctime
       }).where({rowid})
     }
 
-    // index the resource's data
+    // index the record's data
     if (!isNew) {
-      await db('resources_data').del().where({resource_rowid: rowid})
+      await db('records_data').del().where({record_rowid: rowid})
     }
     await Promise.all(dataEntries.map(([key, value]) => (
-      db('resources_data').insert({resource_rowid: rowid, key, value})
+      db('records_data').insert({record_rowid: rowid, key, value})
     )))
 
     // index notifications
@@ -98,7 +98,7 @@ export class Indexer {
             }
             await db('notifications').insert({
               site_rowid: site.rowid,
-              resource_rowid: rowid,
+              record_rowid: rowid,
               type: notificationType,
               subject_origin: subjectp.origin,
               subject_path: subjectp.path,

@@ -22,7 +22,7 @@ ${markdownCSS}
   }
 }
 
-/** COMMON RESOURCE STYLES **/
+/** COMMON RECORD STYLES **/
 
 a {
   text-decoration: none;
@@ -34,7 +34,7 @@ a:hover {
   cursor: pointer;
 }
 
-.resource .favicon {
+.record .favicon {
   display: block;
   width: 16px;
   height: 16px;
@@ -44,7 +44,7 @@ a:hover {
   font-size: 14px;
 }
 
-.resource .sysicon {
+.record .sysicon {
   display: inline-block;
   height: 16px;
   width: 16px;
@@ -55,7 +55,7 @@ a:hover {
   border-radius: 50%;
 }
 
-.resource .title a {
+.record .title a {
   color: var(--color-text--default);
 }
 
@@ -80,17 +80,17 @@ a:hover {
 
 /** EXPANDED LINK STYLES **/
 
-.resource.expanded-link {
+.record.expanded-link {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
 }
 
-.resource.expanded-link:first-child {
+.record.expanded-link:first-child {
   margin-top: 0;
 }
 
-.resource.expanded-link .thumb {
+.record.expanded-link .thumb {
   display: block;
   width: 100px;
   flex: 0 0 100px;
@@ -101,14 +101,14 @@ a:hover {
   display: none;
 }
 
-.resource.expanded-link .thumb img {
+.record.expanded-link .thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
 
-.resource.expanded-link .thumb .icon {
+.record.expanded-link .thumb .icon {
   display: block;
   height: 100%;
   text-align: center;
@@ -117,63 +117,63 @@ a:hover {
   font-size: 32px;
 }
 
-.resource.expanded-link .info {
+.record.expanded-link .info {
   flex: 1;
   overflow: hidden;
 }
 
-.resource.expanded-link .info > * {
+.record.expanded-link .info > * {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.resource.expanded-link .title {
+.record.expanded-link .title {
   letter-spacing: 1px;
   margin-bottom: 6px;
   font-weight: 500;
   font-size: 19px;
 }
 
-.resource.expanded-link .title a {
+.record.expanded-link .title a {
   color: var(--text-color--result-link);
 }
 
-.resource.expanded-link .href {
+.record.expanded-link .href {
   font-size: 14px;
   margin-bottom: 4px;
 }
 
-.resource.expanded-link .href a {
+.record.expanded-link .href a {
   color: var(--text-color--light);
 }
 
-.resource.expanded-link .href .fa-angle-right {
+.record.expanded-link .href .fa-angle-right {
   font-size: 11px;
 }
 
-.resource.expanded-link .origin {
+.record.expanded-link .origin {
   display: flex;
   align-items: center;
   font-size: 13px;
 }
 
-.resource.expanded-link .origin-note {
+.record.expanded-link .origin-note {
   margin-right: 5px;
 }
 
-.resource.expanded-link .author {
+.record.expanded-link .author {
   color: var(--text-color--lightish);
   font-weight: 500;
   margin-right: 6px;
 }
 
-.resource.expanded-link .date {
+.record.expanded-link .date {
   color: var(--text-color--light);
   margin: 0 6px;
 }
 
-.resource.expanded-link .excerpt {
+.record.expanded-link .excerpt {
   white-space: initial;
   color: var(--text-color--light);
   margin-top: 10px;
@@ -182,40 +182,40 @@ a:hover {
   letter-spacing: 0.4px;
 }
 
-.resource.expanded-link .ctrl {
+.record.expanded-link .ctrl {
   margin-left: 6px;
   font-size: 12px;
   color: var(--text-color--light);
   cursor: pointer;
 }
 
-.resource.expanded-link .ctrl:hover {
+.record.expanded-link .ctrl:hover {
   text-decoration: underline;
 }
 
 /** ACTION STYLES **/
 
-.resource.action {
+.record.action {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
 }
 
-:host([thread-view]) .resource.action {
+:host([thread-view]) .record.action {
   padding: 8px 14px;
   align-items: baseline;
 }
 
-.resource.action.unread {
+.record.action.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
 }
 
-.resource.action > * {
+.record.action > * {
   margin-right: 5px;
 }
 
-.resource.action .thumb {
+.record.action .thumb {
   display: block;
   width: 30px;
   flex: 0 0 30px;
@@ -227,7 +227,7 @@ a:hover {
   top: 1px;
 }
 
-:host([thread-view]) .resource.action .thumb {
+:host([thread-view]) .record.action .thumb {
   width: 14px;
   height: 14px;
   flex: 0 0 14px;
@@ -235,14 +235,14 @@ a:hover {
   top: 2px;
 }
 
-.resource.action .thumb img {
+.record.action .thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
 
-.resource.action .thumb .icon {
+.record.action .thumb .icon {
   display: block;
   width: 100%;
   height: 100%;
@@ -252,32 +252,32 @@ a:hover {
   font-size: 12px;
 }
 
-.resource.action .thumb .icon .fa-lock {
+.record.action .thumb .icon .fa-lock {
   font-size: 8px;
   position: absolute;
   right: 3px;
   bottom: 27px;
 }
 
-.resource.action .author {
+.record.action .author {
   color: var(--text-color--default);
   font-weight: 600;
 }
 
 /** LINK STYLES **/
 
-.resource.link {
+.record.link {
   display: flex;
   align-items: center;
   color: var(--text-color--lightish);
 }
 
-.resource.link.unread {
+.record.link.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
 }
 
-.resource.link .thumb {
+.record.link .thumb {
   display: block;
   width: 30px;
   flex: 0 0 30px;
@@ -289,14 +289,14 @@ a:hover {
   top: 1px;
 }
 
-.resource.link .thumb img {
+.record.link .thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
 
-.resource.link .thumb .icon {
+.record.link .thumb .icon {
   display: block;
   width: 100%;
   height: 100%;
@@ -306,14 +306,14 @@ a:hover {
   font-size: 12px;
 }
 
-.resource.link .thumb .icon .fa-lock {
+.record.link .thumb .icon .fa-lock {
   position: absolute;
   font-size: 8px;
   right: 0px;
   bottom: 24px;
 }
 
-.resource.link .thumb .icon .small-thumb {
+.record.link .thumb .icon .small-thumb {
   position: absolute;
   width: 14px;
   height: 14px;
@@ -324,11 +324,11 @@ a:hover {
   border: 2px solid var(--bg-color--default);
 }
 
-.resource.link .container {
+.record.link .container {
   flex: 1;
 }
 
-.resource.link .action-description {
+.record.link .action-description {
   display: flex;
   align-items: center;
   font-size: 13px;
@@ -338,12 +338,12 @@ a:hover {
   text-overflow: ellipsis;
 }
 
-.resource.link .origin .author {
+.record.link .origin .author {
   color: var(--text-color--lightish);
   font-weight: 600;
 }
 
-.resource.link .title {
+.record.link .title {
   max-width: 590px;
   white-space: nowrap;
   overflow: hidden;
@@ -352,45 +352,45 @@ a:hover {
   
 }
 
-.resource.link .title .link-title {
+.record.link .title .link-title {
   letter-spacing: 0.5px;
   font-size: 17px;
   font-weight: 500;
   color: var(--text-color--result-link);
 }
 
-.resource.link .title .link-origin {
+.record.link .title .link-origin {
   color: var(--text-color--pretty-light);
 }
 
-.resource.link .date a {
+.record.link .date a {
   color: var(--text-color--light);
 }
 
-.resource.link .ctrls {
+.record.link .ctrls {
   font-size: 13px;
   color: var(--text-color--light);
 }
 
-.resource.link .ctrls :-webkit-any(.fas, .far) {
+.record.link .ctrls :-webkit-any(.fas, .far) {
   font-size: 11px;
   position: relative;
   top: -1px;
 }
 
-.resource.link .ctrls a.ctrl {
+.record.link .ctrls a.ctrl {
   display: inline-block;
   color: var(--text-color--light);
   font-weight: 500;
   margin-left: 2px;
 }
 
-.resource.link .ctrls a:hover {
+.record.link .ctrls a:hover {
   cursor: pointer;
   color: var(--text-color--default);
 }
 
-.resource.link .ctrls a .fa-comment-alt {
+.record.link .ctrls a .fa-comment-alt {
   position: relative;
   top: 1px;
   font-size: 12px;
@@ -398,25 +398,25 @@ a:hover {
 
 /** CARD STYLES **/
 
-.resource.card {
+.record.card {
   position: relative;
   display: grid;
   grid-template-columns: 45px 1fr;
   color: var(--text-color--lightish);
 }
 
-.resource.card.unread {
+.record.card.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
   margin-bottom: 5px;
 }
 
-.resource.card .info {
+.record.card .info {
   display: flex;
   align-items: center;
 }
 
-.resource.card .thumb {
+.record.card .thumb {
   display: block;
   width: 30px;
   height: 30px;
@@ -426,14 +426,14 @@ a:hover {
   top: 8px;
 }
 
-.resource.card .thumb img {
+.record.card .thumb img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: scale-down;
 }
 
-.resource.card .thumb .icon {
+.record.card .thumb .icon {
   display: block;
   width: 100%;
   height: 100%;
@@ -443,7 +443,7 @@ a:hover {
   font-size: 8px;
 }
 
-.resource.card .arrow {
+.record.card .arrow {
   content: '';
   display: block;
   position: absolute;
@@ -458,15 +458,15 @@ a:hover {
   transform: rotate(-45deg);
 }
 
-.resource.card.is-notification .arrow {
+.record.card.is-notification .arrow {
   background: var(--bg-color--light);
 }
 
-.resource.card.unread .arrow {
+.record.card.unread .arrow {
   border-color: var(--border-color--unread);
 }
 
-.resource.card .container {
+.record.card .container {
   border: 1px solid var(--border-color--light);
   border-radius: 4px;
   background: var(--bg-color--default);
@@ -474,52 +474,52 @@ a:hover {
   min-width: 0; /* this is a hack to make the overflow: hidden work */
 }
 
-.resource.card .container:hover {
+.record.card .container:hover {
   cursor: pointer;
   border: 1px solid var(--border-color--dark);
 }
 
-.resource.card.unread .container {
+.record.card.unread .container {
   background: transparent;
   border-color: var(--border-color--unread);
 }
 
-.resource.card .header {
+.record.card .header {
   display: flex;
   align-items: baseline;
   font-size: 13px;
   padding: 8px 12px 6px;
 }
 
-.resource.card .header > * {
+.record.card .header > * {
   margin-right: 5px;
   white-space: nowrap;
 }
 
-.resource.card .origin .icon {
+.record.card .origin .icon {
   margin-right: 5px;
 }
 
-.resource.card .header a {
+.record.card .header a {
   color: var(--text-color--light);
 }
 
-.resource.card .origin .author {
+.record.card .origin .author {
   font-weight: 600;
   font-size: 14px;
   color: var(--text-color--default);
 }
 
-.resource.card .title {
+.record.card .title {
   font-weight: normal;
   letter-spacing: 0.5px;
 }
 
-.resource.card .title a {
+.record.card .title a {
   color: var(--text-color--result-link);
 }
 
-.resource.card .context {
+.record.card .context {
   box-sizing: border-box;
   font-size: 12px;
   white-space: nowrap;
@@ -527,11 +527,11 @@ a:hover {
   text-overflow: ellipsis;
 }
 
-.resource.card .context a {
+.record.card .context a {
   color: var(--text-color--light);
 }
 
-.resource.card .content {
+.record.card .content {
   white-space: initial;
   color: var(--text-color--default);
   line-height: 1.3125;
@@ -539,127 +539,127 @@ a:hover {
   padding: 0px 12px 10px;
 }
 
-.resource.card .content > :first-child { margin-top: 0; }
-.resource.card .content > :last-child { margin-bottom: 0; }
+.record.card .content > :first-child { margin-top: 0; }
+.record.card .content > :last-child { margin-bottom: 0; }
 
-.resource.card .ctrls {
+.record.card .ctrls {
   padding: 6px 12px 6px;
 }
 
-.resource.card .ctrls a {
+.record.card .ctrls a {
   display: inline-block;
   margin-right: 16px;
   color: var(--text-color--light);
   font-size: 13px;
 }
 
-.resource.card .ctrls a:hover {
+.record.card .ctrls a:hover {
   cursor: pointer;
   color: var(--text-color--default);
 }
 
-.resource.card .ctrls a :-webkit-any(.far, .fas) {
+.record.card .ctrls a :-webkit-any(.far, .fas) {
   color: var(--text-color--very-light);
 }
 
-.resource.card .ctrls a small {
+.record.card .ctrls a small {
   position: relative;
   top: -1px;
   letter-spacing: 0.5px;
   font-weight: 500;
 }
 
-.resource.card beaker-post-composer {
+.record.card beaker-post-composer {
   display: block;
   padding: 10px;
 }
 
-:host([noborders]) .resource.card {
+:host([noborders]) .record.card {
   grid-template-columns: 34px 1fr;
 }
 
-:host([noborders]) .resource.card .thumb {
+:host([noborders]) .record.card .thumb {
   margin: 5px 0 0;
   width: 36px;
   height: 36px;
 }
 
-:host([noborders]) .resource.card .arrow {
+:host([noborders]) .record.card .arrow {
   display: none;
 }
 
-:host([noborders]) .resource.card .container {
+:host([noborders]) .record.card .container {
   border-color: transparent !important;
 }
 
-:host([noborders]) .resource.card beaker-post-composer {
+:host([noborders]) .record.card beaker-post-composer {
   margin-left: -36px;
 }
 
 /** COMMENT STYLES **/
 
-.resource.comment {
+.record.comment {
   background: var(--bg-color--light);
   padding: 10px 14px 8px;
   border-radius: 4px;
 }
 
-.resource.comment:hover {
+.record.comment:hover {
   cursor: pointer;
   background: var(--bg-color--semi-light);
 }
 
-.resource.comment.unread {
+.record.comment.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
   border: 1px solid var(--border-color--unread);
 }
 
-.resource.comment .header {
+.record.comment .header {
   display: flex;
   align-items: center;
   font-size: 13px;
   padding: 0 0 6px;
 }
 
-.resource.comment .header > * {
+.record.comment .header > * {
   margin-right: 5px;
   white-space: nowrap;
 }
-.resource.comment .header a {
+.record.comment .header a {
   color: var(--text-color--light);
 }
 
-.resource.comment .thumb {
+.record.comment .thumb {
   width: 14px;
   height: 14px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
 }
 
-.resource.comment .thumb img {
+.record.comment .thumb img {
   display: block;
   width: 14px;
   height: 14px;
   object-fit: scale-down;
 }
 
-.resource.comment .origin .author {
+.record.comment .origin .author {
   font-weight: 600;
   font-size: 14px;
   color: var(--text-color--default);
 }
 
-.resource.comment .title {
+.record.comment .title {
   font-weight: normal;
   letter-spacing: 0.5px;
 }
 
-.resource.comment .title a {
+.record.comment .title a {
   color: var(--text-color--result-link);
 }
 
-.resource.comment .context {
+.record.comment .context {
   box-sizing: border-box;
   font-size: 12px;
   white-space: nowrap;
@@ -667,43 +667,43 @@ a:hover {
   text-overflow: ellipsis;
 }
 
-.resource.comment .content {
+.record.comment .content {
   white-space: initial;
   color: var(--text-color--default);
   line-height: 1.3125;
   font-size: 14px;
 }
 
-.resource.comment .content > :first-child { margin-top: 0; }
-.resource.comment .content > :last-child { margin-bottom: 0; }
+.record.comment .content > :first-child { margin-top: 0; }
+.record.comment .content > :last-child { margin-bottom: 0; }
 
-.resource.comment .ctrls {
+.record.comment .ctrls {
   padding: 6px 0 0;
 }
 
-.resource.comment .ctrls a {
+.record.comment .ctrls a {
   display: inline-block;
   color: var(--text-color--light);
   font-size: 13px;
 }
 
-.resource.comment .ctrls a:hover {
+.record.comment .ctrls a:hover {
   cursor: pointer;
   color: var(--text-color--default);
 }
 
-.resource.comment .ctrls a :-webkit-any(.far, .fas) {
+.record.comment .ctrls a :-webkit-any(.far, .fas) {
   color: var(--text-color--very-light);
 }
 
-.resource.comment .ctrls a small {
+.record.comment .ctrls a small {
   position: relative;
   top: -1px;
   letter-spacing: 0.5px;
   font-weight: 500;
 }
 
-.resource.comment beaker-post-composer {
+.record.comment beaker-post-composer {
   display: block;
   padding: 10px 0;
 }

@@ -16,7 +16,7 @@ ${spinnerCSS}
   background: var(--bg-color--light);
 }
 
-beaker-resource {
+beaker-record {
   display: block;
 }
 
@@ -28,7 +28,7 @@ beaker-resource {
   margin-bottom: 10px;
 }
 
-.subject beaker-resource[render-mode="link"] {
+.subject beaker-record[render-mode="link"] {
   margin: 10px 6px;
 }
 
@@ -60,7 +60,7 @@ beaker-resource {
   border-left: 1px solid var(--border-color--semi-light);
 }
 
-.replies beaker-resource {
+.replies beaker-record {
   display: block;
 }
 

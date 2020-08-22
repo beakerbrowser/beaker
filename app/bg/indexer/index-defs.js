@@ -20,7 +20,7 @@ export const INDEXES = [
       let content = await site.fetch(update.path)
       let contentLinks = markdownLinkExtractor(content)
       return [
-        /* resources_data.key, resources_data.value */
+        /* records_data.key, records_data.value */
         [METADATA_KEYS.content, content],
         ...contentLinks.map(url => ([METADATA_KEYS.link, url])),
         ...Object.entries(update.metadata).map(([key, value]) => {
@@ -30,7 +30,7 @@ export const INDEXES = [
       ]
     },
     notifications: [
-      /* resources_data.key, notification type */
+      /* records_data.key, notification type */
       [METADATA_KEYS.link, NOTIFICATION_TYPES.mention]
     ]
   }),
@@ -46,7 +46,7 @@ export const INDEXES = [
     },
     async getData (site, update) {
       return [
-        /* resources_data.key, resources_data.value */
+        /* records_data.key, records_data.value */
         ...Object.entries(update.metadata).map(([key, value]) => {
           if (key === 'pinned') key = METADATA_KEYS.pinned
           return [key, value]
@@ -54,7 +54,7 @@ export const INDEXES = [
       ]
     },
     notifications: [
-      /* resources_data.key, notification type */
+      /* records_data.key, notification type */
       [METADATA_KEYS.href, NOTIFICATION_TYPES.bookmark]
     ]
   }),
@@ -69,14 +69,14 @@ export const INDEXES = [
       let content = await site.fetch(update.path)
       let contentLinks = markdownLinkExtractor(content)
       return [
-        /* resources_data.key, resources_data.value */
+        /* records_data.key, records_data.value */
         [METADATA_KEYS.content, content],
         ...contentLinks.map(url => ([METADATA_KEYS.link, url])),
         ...Object.entries(update.metadata)
       ]
     },
     notifications: [
-      /* resources_data.key, notification type */
+      /* records_data.key, notification type */
       [METADATA_KEYS.subject, NOTIFICATION_TYPES.comment],
       [METADATA_KEYS.parent, NOTIFICATION_TYPES.reply],
       [METADATA_KEYS.link, NOTIFICATION_TYPES.mention]
@@ -96,14 +96,14 @@ export const INDEXES = [
       let content = await site.fetch(update.path)
       let contentLinks = markdownLinkExtractor(content)
       return [
-        /* resources_data.key, resources_data.value */
+        /* records_data.key, records_data.value */
         [METADATA_KEYS.content, content],
         ...contentLinks.map(url => ([METADATA_KEYS.link, url])),
         ...Object.entries(update.metadata)
       ]
     },
     notifications: [
-      /* resources_data.key, notification type */
+      /* records_data.key, notification type */
       [METADATA_KEYS.link, NOTIFICATION_TYPES.mention]
     ]
   }),
@@ -118,7 +118,7 @@ export const INDEXES = [
       let content = await site.fetch(update.path)
       let contentLinks = markdownLinkExtractor(content)
       return [
-        /* resources_data.key, resources_data.value */
+        /* records_data.key, records_data.value */
         [METADATA_KEYS.content, content],
         ...contentLinks.map(url => ([METADATA_KEYS.link, url])),
         ...Object.entries(update.metadata).map(([key, value]) => {
@@ -128,7 +128,7 @@ export const INDEXES = [
       ]
     },
     notifications: [
-      /* resources_data.key, notification type */
+      /* records_data.key, notification type */
       [METADATA_KEYS.link, NOTIFICATION_TYPES.mention]
     ]
   }),
@@ -141,7 +141,7 @@ export const INDEXES = [
     },
     async getData (site, update) {
       return [
-        /* resources_data.key, resources_data.value */
+        /* records_data.key, records_data.value */
         ...Object.entries(update.metadata).map(([key, value]) => {
           if (key === 'title') key = METADATA_KEYS.title
           return [key, value]
@@ -149,7 +149,7 @@ export const INDEXES = [
       ]
     },
     notifications: [
-      /* resources_data.key, notification type */
+      /* records_data.key, notification type */
       [METADATA_KEYS.href, NOTIFICATION_TYPES.subscribe]
     ]
   }),

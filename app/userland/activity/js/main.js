@@ -1,7 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import css from '../css/main.css.js'
-import 'beaker://app-stdlib/js/com/resource-thread.js'
+import 'beaker://app-stdlib/js/com/record-thread.js'
 
 class ActivityApp extends LitElement {
   static get styles () {
@@ -85,10 +85,10 @@ class ActivityApp extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <beaker-resource-thread
-        resource-url=${this.url}
+      <beaker-record-thread
+        record-url=${this.url}
         profile-url=${this.profileUrl}
-      ></beaker-resource-thread>
+      ></beaker-record-thread>
     `
   }
 }

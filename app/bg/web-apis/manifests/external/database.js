@@ -1,8 +1,8 @@
 export default {
   clearAllData: 'promise',
-  get: 'promise',
-  list: 'promise',
-  search: 'promise',
+  getRecord: 'promise',
+  listRecords: 'promise',
+  searchRecords: 'promise',
   listNotifications: 'promise',
   countNotifications: 'promise',
   setNotificationIsRead: 'promise'

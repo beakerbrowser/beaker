@@ -3,7 +3,7 @@ import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import css from '../css/main.css.js'
 import './com/site-info.js'
-import 'beaker://app-stdlib/js/com/resource-feed.js'
+import 'beaker://app-stdlib/js/com/record-feed.js'
 
 class AboutApp extends LitElement {
   static get styles () {
@@ -167,14 +167,14 @@ class AboutApp extends LitElement {
       </header>
       <div class="feed">
         ${this.siteInfo ? html`
-          <beaker-resource-feed
+          <beaker-record-feed
             .index=${this.currentViewAsIndex}
             .sources=${[this.siteInfo.url]}
             show-date-titles
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
-          ></beaker-resource-feed>
+          ></beaker-record-feed>
         ` : ''}
       </div>
     `
@@ -189,7 +189,7 @@ class AboutApp extends LitElement {
 
   onViewThread (e) {
     ViewThreadPopup.create({
-      resourceUrl: e.detail.resource.url,
+      recordUrl: e.detail.record.url,
       profileUrl: this.profile.url
     })
   }
