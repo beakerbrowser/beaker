@@ -429,7 +429,7 @@ class DesktopApp extends LitElement {
           listing="all"
           filter=${this.searchQuery}
           single-row
-          profile-url=${this.profile ? this.profile.url : ''}
+          .profile=${this.profile}
         ></beaker-sites-list>
       `
     }
@@ -437,17 +437,17 @@ class DesktopApp extends LitElement {
       <beaker-sites-list
         listing="mine"
         single-row
-        profile-url=${this.profile ? this.profile.url : ''}
+        .profile=${this.profile}
       ></beaker-sites-list>
       <beaker-sites-list
         listing="subscribed"
         single-row
-        profile-url=${this.profile ? this.profile.url : ''}
+        .profile=${this.profile}
       ></beaker-sites-list>
       <beaker-sites-list
         listing="suggested"
         single-row
-        profile-url=${this.profile ? this.profile.url : ''}
+        .profile=${this.profile}
       ></beaker-sites-list>
     `
   }

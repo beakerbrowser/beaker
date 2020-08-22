@@ -11,7 +11,7 @@ export class SitesList extends LitElement {
       listing: {type: String},
       singleRow: {type: Boolean, attribute: 'single-row'},
       filter: {type: String},
-      profileUrl: {type: String, attribute: 'profile-url'},
+      profile: {type: Object},
       sites: {type: Array}
     }
   }
@@ -25,11 +25,15 @@ export class SitesList extends LitElement {
     this.listing = undefined
     this.singleRow = false
     this.filter = undefined
-    this.profileUrl = undefined
+    this.profile = undefined
     this.sites = undefined
 
     // query state
     this.activeQuery = undefined
+  }
+
+  get profileUrl () {
+    return this.profile?.url
   }
 
   get isLoading () {
@@ -187,15 +191,15 @@ export class SitesList extends LitElement {
         <div class="thumb">
           <a href=${site.origin} title=${site.title}><img src="asset:thumb:${site.origin}"></a>
           ${isSameOrigin(site.origin, this.profileUrl) ? html`
-            <button class="transparent">
-              Edit Profile
-            </button>
+            <span class="writable">
+              My Profile
+            </span>
           ` : site.writable ? html`
             <span class="writable">
               Mine
             </span>
           ` : html`
-            <button class="transparent">
+            <button class="transparent" @click=${e => this.onToggleSubscribe(e, site)}>
               ${this.isSubscribed(site) ? html`
                 <span class="fas fa-fw fa-check"></span> Subscribed
               ` : html`
@@ -232,6 +236,22 @@ export class SitesList extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     SitesListPopup.create('Subscribers', subscriptions.map(s => s.site))
+  }
+
+  async onToggleSubscribe (e, site) {
+    if (this.isSubscribed(site)) {
+      site.subscriptions = site.subscriptions.filter(s => !isSameOrigin(s.site.url, this.profileUrl))
+      this.requestUpdate()
+      await beaker.subscriptions.remove(site.url)
+    } else {
+      site.subscriptions = site.subscriptions.concat([{site: this.profile}])
+      this.requestUpdate()
+      await beaker.subscriptions.add({
+        href: site.origin,
+        title: site.title,
+        site: this.profileUrl
+      })
+    }
   }
 }
 
