@@ -41,14 +41,22 @@ export const NOTIFICATION_TYPES = {
 // =
 
 /**
- * @typedef {Object} SubscribedSite
+ * @typedef {Object} Site
  * @prop {String} origin
  * @prop {Number} rowid
  * @prop {Object<String, IndexerState>} indexes
  * @prop {Number} current_version
  * @prop {String} title
+ * @prop {String} description
+ * @prop {Boolean} writable
  * @prop {function(String): Promise<String>} fetch
  * @prop {function(String): Promise<RecordUpdate[]>} listUpdates
+ * 
+ * @typedef {Object} SiteDescription
+ * @prop {String} origin
+ * @prop {String} title
+ * @prop {String} description
+ * @prop {Boolean} writable
  * 
  * @typedef {Object} IndexerState
  * @prop {String} index
@@ -69,7 +77,7 @@ export const NOTIFICATION_TYPES = {
  * @prop {String} id
  * @prop {String} title
  * @prop {function(RecordUpdate): Boolean} filter
- * @prop {function(SubscribedSite, RecordUpdate): Promise<any[][]>} getData
+ * @prop {function(Site, RecordUpdate): Promise<any[][]>} getData
  * @prop {string[][]} notifications
  * 
  * @typedef {Object} RecordDescription

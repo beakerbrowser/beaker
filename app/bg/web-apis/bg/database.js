@@ -7,6 +7,14 @@ export default {
   clearAllData () {
     return indexer.clearAllData()
   },
+
+  getSite (url) {
+    return indexer.getSite(url)
+  },
+
+  listSites (opts) {
+    return indexer.listSites(opts)
+  },
   
   getRecord (url) {
     return indexer.getRecord(url)

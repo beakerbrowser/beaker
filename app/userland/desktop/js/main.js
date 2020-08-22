@@ -14,6 +14,7 @@ import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
 import css from '../css/main.css.js'
 import 'beaker://app-stdlib/js/com/record-feed.js'
+import 'beaker://app-stdlib/js/com/sites-list.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
@@ -132,9 +133,17 @@ class DesktopApp extends LitElement {
       case 'comments': return ['beaker/index/comments']
       case 'pages': return ['beaker/index/pages']
       case 'posts': return ['beaker/index/microblogposts']
-      case 'sites': return ['beaker/index/subscriptions']
       case 'notifications': return ['notifications']
       default:
+        if (this.searchQuery) {
+          return [
+            'beaker/index/blogposts',
+            'beaker/index/bookmarks',
+            'beaker/index/microblogposts',
+            'beaker/index/comments',
+            'beaker/index/pages'
+          ]
+        }
         return [
           'beaker/index/blogposts',
           'beaker/index/bookmarks',
@@ -341,21 +350,43 @@ class DesktopApp extends LitElement {
   renderCurrentView () {
     let hasSearchQuery = !!this.searchQuery
     if (hasSearchQuery) {
+      const searchLink = (label, url) => {
+        return html`
+          <a class="search-engine" title=${label} href=${url} data-tooltip=${label}>
+            <img src="beaker://assets/search-engines/${label.toLowerCase()}.png">
+          </a>
+        `
+      }
       return html`
         <div class="all-view">
           <div class="twocol">
             <div>
-              <beaker-record-feed
-                class="subview"
-                .index=${this.currentNavAsIndex}
-                .filter=${this.searchQuery}
-                .sources=${this.sources}
-                limit="50"
-                @load-state-updated=${e => this.requestUpdate()}
-                @view-thread=${this.onViewThread}
-                @publish-reply=${this.onPublishReply}
-                profile-url=${this.profile ? this.profile.url : ''}
-              ></beaker-record-feed>
+              <div class="alternatives">
+                Try your search on:
+                ${searchLink('DuckDuckGo', `https://duckduckgo.com?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('Google', `https://google.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.searchQuery)}`)}
+              </div>
+              ${this.currentNav === 'all' || this.currentNav === 'sites' ? html`
+                ${this.renderSites()}
+              ` : ''}
+              ${this.currentNav !== 'sites' ? html`
+                <beaker-record-feed
+                  class="subview"
+                  .index=${this.currentNavAsIndex}
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  limit="50"
+                  @load-state-updated=${e => this.requestUpdate()}
+                  @view-thread=${this.onViewThread}
+                  @publish-reply=${this.onPublishReply}
+                  profile-url=${this.profile ? this.profile.url : ''}
+                ></beaker-record-feed>
+              ` : ''}
             </div>
             ${this.renderSidebar()}
           </div>
@@ -367,24 +398,58 @@ class DesktopApp extends LitElement {
           ${this.currentNav === 'all' ? this.renderPins() : ''}
           <div class="twocol">
             <div>
-              <beaker-record-feed
-                content-type="all"
-                show-date-titles
-                date-title-range=${this.currentNavDateTitleRange}
-                .index=${this.currentNavAsIndex}
-                .sources=${this.sources}
-                limit="50"
-                @load-state-updated=${e => this.requestUpdate()}
-                @view-thread=${this.onViewThread}
-                @publish-reply=${this.onPublishReply}
-                profile-url=${this.profile ? this.profile.url : ''}
-              ></beaker-record-feed>
+              ${this.currentNav === 'sites' ? html`
+                ${this.renderSites()}
+              ` : html`
+                <beaker-record-feed
+                  content-type="all"
+                  show-date-titles
+                  date-title-range=${this.currentNavDateTitleRange}
+                  .index=${this.currentNavAsIndex}
+                  .sources=${this.sources}
+                  limit="50"
+                  @load-state-updated=${e => this.requestUpdate()}
+                  @view-thread=${this.onViewThread}
+                  @publish-reply=${this.onPublishReply}
+                  profile-url=${this.profile ? this.profile.url : ''}
+                ></beaker-record-feed>
+              `}
             </div>
             ${this.renderSidebar()}
           </div>
         </div>
       `
     }
+  }
+
+  renderSites () {
+    if (this.searchQuery) {
+      return html`
+        <beaker-sites-list
+          listing="all"
+          filter=${this.searchQuery}
+          single-row
+          profile-url=${this.profile ? this.profile.url : ''}
+        ></beaker-sites-list>
+      `
+    }
+    return html`
+      <beaker-sites-list
+        listing="mine"
+        single-row
+        profile-url=${this.profile ? this.profile.url : ''}
+      ></beaker-sites-list>
+      <beaker-sites-list
+        listing="subscribed"
+        single-row
+        profile-url=${this.profile ? this.profile.url : ''}
+      ></beaker-sites-list>
+      <beaker-sites-list
+        listing="suggested"
+        single-row
+        profile-url=${this.profile ? this.profile.url : ''}
+      ></beaker-sites-list>
+    `
   }
 
   renderSourcesCtrl () {

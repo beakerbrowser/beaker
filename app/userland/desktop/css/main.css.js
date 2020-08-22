@@ -447,6 +447,37 @@ main {
   margin-bottom: 4px;
 }
 
+.alternatives {
+  color: var(--text-color--pretty-light);
+  margin: 0 5px 20px;
+}
+
+.alternatives .search-engine {
+  display: inline-block;
+  margin: 0 3px;
+  position: relative;
+  top: 5px;
+}
+
+.alternatives .search-engine:first-of-type {
+  margin-left: 4px;
+}
+
+.alternatives .search-engine:hover {
+  text-decoration: none;
+}
+
+.alternatives .search-engine img {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  object-fit: cover;
+}
+
+
+beaker-sites-list {
+  margin-bottom: 20px;
+}
 
 .intro {
   position: relative;

@@ -50,9 +50,6 @@ export class RecordFeed extends LitElement {
     // query state
     this.activeQuery = undefined
     this.abortController = undefined
-
-    // helper state
-    this.lastQueryTime = undefined
   }
 
   get isLoading () {
@@ -95,7 +92,6 @@ export class RecordFeed extends LitElement {
   async query () {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
-    var startTs = Date.now()
     var results = []
     if (this.index?.[0] === 'notifications') {
       results = await beaker.database.listNotifications({
@@ -130,7 +126,6 @@ export class RecordFeed extends LitElement {
       } while (results.length < this.limit)
     }
     console.log(results)
-    this.lastQueryTime = Date.now() - startTs
     this.results = results
     this.activeQuery = undefined
     emit(this, 'load-state-updated')
@@ -176,28 +171,7 @@ export class RecordFeed extends LitElement {
         </div>
       `
     }
-    const searchLink = (label, url) => {
-      return html`
-        <a class="search-engine" title=${label} href=${url} data-tooltip=${label}>
-          <img src="beaker://assets/search-engines/${label.toLowerCase()}.png">
-        </a>
-      `
-    }
     return html`
-      ${this.lastQueryTime ? html`
-        <div class="bragging">
-          Query executed in ${this.lastQueryTime / 1e3} seconds
-          &nbsp;|&nbsp;
-          Try your search on:
-          ${searchLink('DuckDuckGo', `https://duckduckgo.com?q=${encodeURIComponent(this.filter)}`)}
-          ${searchLink('Google', `https://google.com/search?q=${encodeURIComponent(this.filter)}`)}
-          ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.filter)}`)}
-          ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.filter)}`)}
-          ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.filter)}`)}
-          ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.filter)}`)}
-          ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.filter)}`)}
-        </div>
-      ` : ''}
       <div class="results">
         ${repeat(this.results, result => result.url, result => this.renderSearchResult(result))}
       </div>

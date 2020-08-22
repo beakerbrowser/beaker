@@ -3,6 +3,7 @@ exports.up = async function (knex) {
     table.string('origin')
     table.string('title')
     table.string('description')
+    table.integer('writable')
 
     table.index('origin')
   })

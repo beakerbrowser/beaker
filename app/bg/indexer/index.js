@@ -38,7 +38,8 @@ import lock from '../../lib/lock'
 import { timer } from '../../lib/time'
 
 /**
- * @typedef {import('./const').SubscribedSite} SubscribedSite
+ * @typedef {import('./const').Site} Site
+ * @typedef {import('./const').SiteDescription} SiteDescription
  * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
@@ -79,6 +80,62 @@ export async function clearAllData () {
   } finally {
     release()
   }
+}
+
+/**
+ * @param {String} url 
+ * @returns {Promise<SiteDescription>}
+ */
+export async function getSite (url) {
+  var origin = normalizeOrigin(url)
+  var siteRows = await db('sites').select('*').where({origin}).limit(1)
+  if (siteRows[0]) {
+    return {
+      origin: siteRows[0].origin,
+      title: siteRows[0].title,
+      description: siteRows[0].description,
+      writable: Boolean(siteRows[0].writable)
+    }
+  }
+  var site = await loadSite(origin)
+  return {
+    origin: site.origin,
+    title: site.title,
+    description: site.description,
+    writable: site.writable
+  }
+}
+
+/**
+ * @param {Object} [opts]
+ * @param {Object} [opts.filter]
+ * @param {String} [opts.filter.search]
+ * @param {Boolean} [opts.filter.writable]
+ * @param {Number} [opts.offset]
+ * @param {Number} [opts.limit]
+ * @returns {Promise<SiteDescription[]>}
+ */
+export async function listSites (opts) {
+  var query = db('sites')
+    .select('*')
+    .offset(opts?.offset || 0)
+    .limit(opts?.limit || 25)
+  if (opts?.filter?.search) {
+    query = query.whereRaw(
+      `sites.title LIKE ? OR sites.description LIKE ?`,
+      [`%${opts.filter.search}%`, `%${opts.filter.search}%`]
+    )
+  }
+  if (typeof opts?.filter?.writable === 'boolean') {
+    query = query.where('sites.writable', opts.filter.writable ? 1 : 0)
+  }
+  var siteRows = await query
+  return siteRows.map(row => ({
+    origin: row.origin,
+    title: row.title,
+    description: row.description,
+    writable: Boolean(row.writable)
+  }))
 }
 
 /**
@@ -576,6 +633,14 @@ async function tick () {
       if (tickController.signal.aborted) return
     }
 
+    var originsToCapture = await listOriginsToCapture()
+    for (let origin of originsToCapture) {
+      try {
+        await loadSite(origin) // this will capture the metadata of the site
+      } catch {}
+      if (tickController.signal.aborted) return
+    }
+
     var originsToDeindex = await listOriginsToDeindex(originsToIndex)
     for (let origin of originsToDeindex) {
       await deindexSite(origin)
@@ -664,10 +729,7 @@ async function listMyOrigins () {
  */
 async function listOriginsToIndex () {
   var fs = filesystem.get()
-  var [drivesJson, addressBookJson] = await Promise.all([
-    {},//TODO wanted? fs.pda.readFile('/drives.json', 'json'),
-    fs.pda.readFile('/address-book.json', 'json')
-  ])
+  var addressBookJson = await fs.pda.readFile('/address-book.json', 'json')
   var subscriptions = await listRecords({
     filter: {
       index: INDEX_IDS.subscriptions,
@@ -678,15 +740,23 @@ async function listOriginsToIndex () {
   var origins = new Set([
     'hyper://private',
     ...addressBookJson.profiles.map(item => 'hyper://' + item.key),
-    ...subscriptions.map(sub => normalizeOrigin(sub.metadata[METADATA_KEYS.href])),
-    // ...drivesJson.drives.map(item => 'hyper://' + item.key) TODO wanted?
+    ...subscriptions.map(sub => normalizeOrigin(sub.metadata[METADATA_KEYS.href]))
   ])
   return Array.from(origins)
 }
 
 /**
+ * @returns {Promise<String[]>}
+ */
+async function listOriginsToCapture () {
+  var fs = filesystem.get()
+  var drivesJson = await fs.pda.readFile('/drives.json', 'json')
+  return drivesJson.drives.map(item => 'hyper://' + item.key)
+}
+
+/**
  * @param {String} origin
- * @returns {Promise<SubscribedSite>}
+ * @returns {Promise<Site>}
  */
 async function loadSite (origin) {
   var drive = await drives.getOrLoadDrive(origin)
@@ -704,7 +774,9 @@ async function loadSite (origin) {
   if (!res[0]) {
     res = await db('sites').insert({
       origin,
-      title: driveInfo.title
+      title: driveInfo.title,
+      description: driveInfo.description,
+      writable: driveInfo.writable ? 1 : 0
     })
     record = {rowid: res[0], indexes: {}}
   } else {
@@ -718,6 +790,11 @@ async function loadSite (origin) {
         last_indexed_version: row.last_indexed_version
       }
     }
+    /*dont await*/ db('sites').update({
+      title: driveInfo.title,
+      description: driveInfo.description,
+      writable: driveInfo.writable ? 1 : 0
+    }).where({origin})
   }
 
   for (let indexer of INDEXES) {
@@ -735,6 +812,8 @@ async function loadSite (origin) {
     indexes: record.indexes,
     current_version: driveInfo.version,
     title: driveInfo.title,
+    description: driveInfo.description,
+    writable: driveInfo.writable,
 
     async fetch (path) {
       return drive.pda.readFile(path, 'utf8')
@@ -777,7 +856,7 @@ async function listOriginsToDeindex (originsToIndex) {
 }
 
 /**
- * @param {SubscribedSite} site 
+ * @param {Site} site 
  * @param {String} index
  * @returns {Promise<void>}
  */

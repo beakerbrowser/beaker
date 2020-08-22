@@ -4,7 +4,7 @@ const logger = logLib.get().child({category: 'indexer', subcategory: 'sub-indexe
 import { parseUrl } from './const'
 
 /**
- * @typedef {import('./const').SubscribedSite} SubscribedSite
+ * @typedef {import('./const').Site} Site
  * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').IndexerDefinition} IndexerDefinition
  */
@@ -23,7 +23,7 @@ export class Indexer {
 
   /**
    * @param {Object} db 
-   * @param {SubscribedSite} site 
+   * @param {Site} site 
    * @param {RecordUpdate} update 
    * @param {String[]} myOrigins
    * @returns {Promise<Boolean>} - was the update indexed?
@@ -39,7 +39,7 @@ export class Indexer {
 
   /**
    * @param {Object} db 
-   * @param {SubscribedSite} site 
+   * @param {Site} site 
    * @param {RecordUpdate} update 
    * @param {String[]} myOrigins
    * @returns {Promise<void>}
