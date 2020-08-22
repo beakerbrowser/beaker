@@ -79,7 +79,7 @@ h2 a:hover {
 }
 
 .results beaker-record[render-mode="expanded-link"] {
-  margin: 20px 0;
+  margin: 30px 0;
 }
 
 .results beaker-record[render-mode="action"] {

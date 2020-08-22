@@ -17,7 +17,8 @@ export class Record extends LitElement {
       showContext: {type: Boolean, attribute: 'show-context'},
       profileUrl: {type: String, attribute: 'profile-url'},
       actionTarget: {type: String, attribute: 'action-target'},
-      isReplyOpen: {type: Boolean}
+      isReplyOpen: {type: Boolean},
+      viewContentOnClick: {type: Boolean, attribute: 'view-content-on-click'}
     }
   }
 
@@ -33,6 +34,7 @@ export class Record extends LitElement {
     this.profileUrl = undefined
     this.actionTarget = undefined
     this.isReplyOpen = false
+    this.viewContentOnClick = false
 
     // helper state
     this.isMouseDown = false
@@ -250,20 +252,30 @@ export class Record extends LitElement {
   renderAsExpandedLink () {
     const res = this.record
 
+    var title = res.metadata.title || res.url.split('/').pop()
+    var content = res.content
     var isBookmark = res.index === 'beaker/index/bookmarks'
     var href = undefined
     switch (res.index) {
-      case 'beaker/index/bookmarks': href = res.metadata.href; break
+      case 'beaker/index/bookmarks':
+        href = res.metadata.href
+        break
+      case 'beaker/index/comments':
+      case 'beaker/index/microblogposts':
+        title = removeMarkdown(removeFirstMdHeader(res.content))
+        break
     }
     href = href || res.url
-    var title = res.metadata.title || res.url.split('/').pop()
+
+
     return html`
+    <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <div class="record expanded-link">
         <a class="thumb" href=${href} title=${res.site.title}>
           ${this.renderThumb(res)}
         </a>
         <div class="info">
-          <div class="title"><a href=${href}>${renderMatchText(res, 'title') || title}</a></div>
+          <div class="title"><a href=${href} @click=${this.onViewThread}>${renderMatchText(res, 'title') || title}</a></div>
           <div class="origin">
             ${isBookmark ? html`
               <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
@@ -284,11 +296,17 @@ export class Record extends LitElement {
               `)
             }
             <span>|</span>
+            ${res.index === 'beaker/index/bookmarks' ? html`<span class="type"><span class="far fa-star"></span> Bookmark</span>` : ''}
+            ${res.index === 'beaker/index/pages' ? html`<span class="type"><span class="far fa-file"></span> Page</span>` : ''}
+            ${res.index === 'beaker/index/blogposts' ? html`<span class="type"><span class="fas fa-blog"></span> Blogpost</span>` : ''}
+            ${res.index === 'beaker/index/comments' ? html`<span class="type"><span class="far fa-comments"></span> Comment</span>` : ''}
+            ${res.index === 'beaker/index/microblogposts' ? html`<span class="type"><span class="far fa-comment-alt"></span> Post</span>` : ''}
+            <span>|</span>
             <a class="date" href=${href}>${niceDate(res.ctime)}</a>
           </div>
-          ${res.content ? html`
+          ${content ? html`
             <div class="excerpt">
-              ${renderMatchText(res, 'content') || shorten(removeMarkdown(removeFirstMdHeader(res.content)), 300)}
+              ${renderMatchText(res, 'content') || shorten(removeMarkdown(removeFirstMdHeader(content)), 300)}
             </div>
           ` : ''}
           ${''/*TODO<div class="tags">
@@ -342,7 +360,7 @@ export class Record extends LitElement {
         </a>
         <div class="container">
           <div class="title">
-            <a class="link-title" href=${href}>${title}</a>
+            <a class="link-title" href=${href} @click=${this.onViewThread}>${title}</a>
             ${hrefp ? html`
               <a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a>
             ` : ''}
@@ -363,10 +381,6 @@ export class Record extends LitElement {
                 ${relativeDate(res.ctime)}
               </a>
             </span>
-            <span class="divider">|</span>
-            <a @click=${e => this.onViewThread(e, res)}>
-              comments
-            </a>
           </div>
         </div>
       </div>
@@ -437,7 +451,11 @@ export class Record extends LitElement {
   }
 
   onViewThread (e, record) {
-    emit(this, 'view-thread', {detail: {record: this.record}})
+    if (!this.viewContentOnClick && e.button === 0 && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault()
+      e.stopPropagation()
+      emit(this, 'view-thread', {detail: {record: this.record}})
+    }
   }
 
   onMousedownCard (e) {

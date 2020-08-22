@@ -402,7 +402,6 @@ class DesktopApp extends LitElement {
                 ${this.renderSites()}
               ` : html`
                 <beaker-record-feed
-                  content-type="all"
                   show-date-titles
                   date-title-range=${this.currentNavDateTitleRange}
                   .index=${this.currentNavAsIndex}

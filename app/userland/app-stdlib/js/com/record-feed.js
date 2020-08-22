@@ -205,13 +205,10 @@ export class RecordFeed extends LitElement {
   }
 
   renderSearchResult (result) {
-    var renderMode = ({
-      'beaker/index/microblogposts': 'card'
-    })[result.index] || 'expanded-link'
     return html`
       <beaker-record
         .record=${result}
-        render-mode=${renderMode}
+        render-mode="expanded-link"
         profile-url=${this.profileUrl}
       ></beaker-record>
     `

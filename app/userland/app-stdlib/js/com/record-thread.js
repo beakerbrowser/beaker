@@ -96,6 +96,7 @@ export class RecordThread extends LitElement {
             .record=${this.subject}
             render-mode=${mode}
             noborders
+            view-content-on-click
             profile-url=${this.profileUrl}
             @publish-reply=${this.onPublishReply}
           ></beaker-record>

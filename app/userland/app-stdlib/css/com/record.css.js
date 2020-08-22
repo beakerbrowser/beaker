@@ -129,10 +129,9 @@ a:hover {
 }
 
 .record.expanded-link .title {
-  letter-spacing: 1px;
   margin-bottom: 6px;
   font-weight: 500;
-  font-size: 19px;
+  font-size: 18px;
 }
 
 .record.expanded-link .title a {
@@ -166,6 +165,10 @@ a:hover {
   color: var(--text-color--lightish);
   font-weight: 500;
   margin-right: 6px;
+}
+
+.record.expanded-link .type {
+  margin: 0 6px;
 }
 
 .record.expanded-link .date {
