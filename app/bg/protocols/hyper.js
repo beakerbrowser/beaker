@@ -352,6 +352,18 @@ export const protocolHandler = async function (request, respond) {
 <html>
   <head>
     <meta charset="utf8">
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 10px;
+        line-height: 1.4;
+      }
+      body * {
+        max-width: 100%;
+      }
+    </style>
   </head>
   <body>
     ${md.render(content)}
