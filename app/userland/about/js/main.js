@@ -115,7 +115,7 @@ class AboutApp extends LitElement {
       case 'bookmarks': return ['beaker/index/bookmarks']
       case 'comments': return ['beaker/index/comments']
       case 'pages': return ['beaker/index/pages']
-      case 'posts': return ['beaker/index/comments']
+      case 'posts': return ['beaker/index/microblogposts']
       case 'sites': return ['beaker/index/subscriptions']
       case 'notifications': return ['notifications']
       default:
@@ -159,8 +159,9 @@ class AboutApp extends LitElement {
           ${navItem('all', 'All')}
           ${navItem('bookmarks', 'Bookmarks')}
           ${navItem('blogposts', 'Blogposts')}
-          ${navItem('pages', 'Pages')}
           ${navItem('comments', 'Comments')}
+          ${navItem('pages', 'Pages')}
+          ${navItem('posts', 'Posts')}
           ${navItem('sites', 'Sites')}
         </nav>
       </header>

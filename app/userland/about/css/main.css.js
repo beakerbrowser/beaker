@@ -64,7 +64,7 @@ nav a.nav-item.active {
 
 .feed {
   margin: 0 auto;
-  padding: 10px;
+  padding: 10px 20px;
   max-width: 720px;
 }
 

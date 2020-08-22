@@ -127,9 +127,11 @@ class DesktopApp extends LitElement {
 
   get currentNavAsIndex () {
     switch (this.currentNav) {
+      case 'blogposts': return ['beaker/index/blogposts']
       case 'bookmarks': return ['beaker/index/bookmarks']
-      case 'posts': return ['beaker/index/microblogposts', 'beaker/index/comments']
-      case 'pages': return ['beaker/index/pages', 'beaker/index/blogposts']
+      case 'comments': return ['beaker/index/comments']
+      case 'pages': return ['beaker/index/pages']
+      case 'posts': return ['beaker/index/microblogposts']
       case 'sites': return ['beaker/index/subscriptions']
       case 'notifications': return ['notifications']
       default:
@@ -212,11 +214,10 @@ class DesktopApp extends LitElement {
         </div>
         <nav>
           ${navItem('all', html`<span class="fas fa-fw fa-search"></span> <span class="label">All</span>`)}
+          ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blogposts</span>`)}
           ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
-          ${navItem('posts', html`<span class="far fa-fw fa-comment"></span> <span class="label">Posts</span>`)}
-          ${navItem('pages', html`<span class="far fa-fw fa-file"></span> <span class="label">Pages</span>`)}
           ${navItem('sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Sites</span>`)}
-          ${''/*<a class="nav-item" @click=${this.onClickNavMore} title="More">More <span class="fas fa-fw fa-caret-down"></span></a>*/}
+          <a class="nav-item" @click=${this.onClickNavMore} title="More">More <span class="fas fa-fw fa-caret-down"></span></a>
           <hr>
           ${this.renderSourcesCtrl()}
           <hr>
@@ -588,7 +589,8 @@ class DesktopApp extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     const items = [
-      {icon: 'fas fa-stream', label: 'Micro Blog Posts', click: () => this.setCurrentNav('microblogposts') },
+      {icon: 'far fa-comment-alt', label: 'Posts', click: () => this.setCurrentNav('posts') },
+      {icon: 'far fa-file', label: 'Pages', click: () => this.setCurrentNav('pages') },
       {icon: 'far fa-comments', label: 'Comments', click: () => this.setCurrentNav('comments') }
     ]
     contextMenu.create({
