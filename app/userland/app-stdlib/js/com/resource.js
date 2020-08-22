@@ -200,7 +200,7 @@ export class Resource extends LitElement {
 
     var subject
     if (res.index === 'beaker/index/subscriptions') {
-      subject = res.metadata.href === this.profileUrl ? 'you' : res.metadata.title || res.metadata.href
+      subject = isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : res.metadata.title || res.metadata.href
     } else {
       if (res.metadata.title) subject = res.metadata.title
       else if (res.content) subject = shorten(removeMarkdown(res.content), 40)
@@ -564,3 +564,10 @@ function relativeDate (d) {
   return rtf.format(Math.floor(dayDiff / 365) * -1, 'year')
 }
 
+function isSameOrigin (a, b) {
+  try {
+    return (new URL(a)).origin === (new URL(b)).origin
+  } catch {
+    return a === b
+  }
+}

@@ -480,6 +480,7 @@ a:hover {
 }
 
 .resource.card.unread .container {
+  background: transparent;
   border-color: var(--border-color--unread);
 }
 
@@ -606,6 +607,12 @@ a:hover {
 .resource.comment:hover {
   cursor: pointer;
   background: var(--bg-color--semi-light);
+}
+
+.resource.comment.unread {
+  background: var(--bg-color--unread);
+  outline: 5px solid var(--bg-color--unread);
+  border: 1px solid var(--border-color--unread);
 }
 
 .resource.comment .header {
