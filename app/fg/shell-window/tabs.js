@@ -397,6 +397,7 @@ ${spinnerCSS}
 }
 
 .background-tray-btn {
+  flex: 0 0 38px;
   width: 38px;
   height: 30px;
   background: transparent;
