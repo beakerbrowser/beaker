@@ -29,6 +29,7 @@ import * as bookmarks from './filesystem/bookmarks'
 import * as subscriptions from './filesystem/subscriptions'
 import * as toolbar from './filesystem/toolbar'
 import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
+import * as wcTrust from './wc-trust'
 
 // constants
 // =
@@ -79,6 +80,8 @@ process.on('uncaughtException', (err) => {
 // =
 
 export async function setup () {
+  wcTrust.setup()
+
   // setup auto-updater
   if (isBrowserUpdatesSupported) {
     try {
@@ -878,6 +881,7 @@ function onWillPreventUnload (e) {
 }
 
 function onCompleted (details) {
+  wcTrust.onWebRequestCompleted(details)
   function set (v) {
     resourceContentTypes.set(details.url, Array.isArray(v) ? v[0] : v)
   }

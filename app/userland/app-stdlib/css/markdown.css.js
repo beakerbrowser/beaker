@@ -3,7 +3,6 @@ import {css} from '../vendor/lit-element/lit-element.js'
 const cssStr = css`
 .markdown :-webkit-any(h1, h2, h3, h4, h5) {
   font-family: arial;
-  color: var(--text-color--light);
 }
 .markdown h1 { font-size: 21px; font-weight: 600; padding-bottom: 5px; border-bottom: 1px solid var(--border-color--semi-light); }
 .markdown h2 { font-size: 19px; font-weight: 600; padding-bottom: 4px; border-bottom: 1px solid var(--border-color--semi-light); }

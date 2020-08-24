@@ -367,7 +367,14 @@ export async function ensureAddressBook (profileKey) {
 export async function getProfile () {
   try {
     var addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse)
-    return addressBook.profiles ? addressBook.profiles[0] : undefined
+    var profile = addressBook?.profiles?.[0]
+    if (profile) {
+      let info = await hyper.drives.getDriveInfo(profile.key)
+      profile.url = info.url
+      profile.title = info.title
+      profile.description = info.description
+      return profile
+    }
   } catch (e) {
     return undefined
   }

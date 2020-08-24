@@ -54,6 +54,7 @@ export const NOTIFICATION_TYPES = {
  * 
  * @typedef {Object} SiteDescription
  * @prop {String} origin
+ * @prop {String} url
  * @prop {String} title
  * @prop {String} description
  * @prop {Boolean} writable

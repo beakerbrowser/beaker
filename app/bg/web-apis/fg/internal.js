@@ -9,7 +9,6 @@ import drivesManifest from '../manifests/internal/drives'
 import folderSyncManifest from '../manifests/internal/folder-sync'
 import historyManifest from '../manifests/internal/history'
 import sitedataManifest from '../manifests/internal/sitedata'
-import subscriptionsManifest from '../manifests/internal/subscriptions'
 import watchlistManifest from '../manifests/internal/watchlist'
 
 export const setup = function (rpc) {
@@ -25,7 +24,6 @@ export const setup = function (rpc) {
   const folderSyncRPC = rpc.importAPI('folder-sync', folderSyncManifest, opts)
   const historyRPC = rpc.importAPI('history', historyManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
-  const subscriptionsRPC = rpc.importAPI('subscriptions', subscriptionsManifest, opts)
   const watchlistRPC = rpc.importAPI('watchlist', watchlistManifest, opts)
 
   // attach APIs
@@ -41,7 +39,6 @@ export const setup = function (rpc) {
   internal.logger.stream = (opts) => fromEventStream(loggerRPC.stream(opts))
   internal.logger.streamAuditLog = () => fromEventStream(loggerRPC.streamAuditLog())
   internal.sitedata = Object.assign({}, sitedataRPC)
-  internal.subscriptions = Object.assign({}, subscriptionsRPC)
   internal.watchlist = Object.assign({}, watchlistRPC)
   internal.watchlist.createEventsStream = () => fromEventStream(watchlistRPC.createEventsStream())
   

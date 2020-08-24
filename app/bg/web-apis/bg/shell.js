@@ -10,6 +10,7 @@ import { findTab } from '../../ui/tabs/manager'
 import assert from 'assert'
 import { UserDeniedError, ArchiveNotWritableError } from 'beaker-error-constants'
 import _pick from 'lodash.pick'
+import * as wcTrust from '../../wc-trust'
 
 // typedefs
 // =
@@ -155,12 +156,12 @@ export default {
   },
 
   async importFilesAndFolders (url, filePaths) {
-    if (!(await isBeakerApp(this.sender))) return
+    if (!wcTrust.isWcTrusted(this.sender)) return
     return doImport(this.sender, url, filePaths)
   },
 
   async importFilesDialog (url) {
-    if (!(await isBeakerApp(this.sender))) return
+    if (!wcTrust.isWcTrusted(this.sender)) return
 
     var res = await dialog.showOpenDialog({
       title: 'Import files',
@@ -174,7 +175,7 @@ export default {
   },
 
   async importFoldersDialog (url) {
-    if (!(await isBeakerApp(this.sender))) return
+    if (!wcTrust.isWcTrusted(this.sender)) return
 
     var res = await dialog.showOpenDialog({
       title: 'Import folders',
@@ -188,7 +189,7 @@ export default {
   },
 
   async exportFilesDialog (urls) {
-    if (!(await isBeakerApp(this.sender))) return
+    if (!wcTrust.isWcTrusted(this.sender)) return
 
     var res = await dialog.showOpenDialog({
       title: 'Export files',
@@ -214,13 +215,6 @@ export default {
     }
     return {numExported: 0}
   }
-}
-
-async function isBeakerApp (sender) {
-  if (/^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/.test(sender.getURL())) {
-    return true
-  }
-  return false
 }
 
 function isStrArray (v) {

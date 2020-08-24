@@ -1,4 +1,6 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
+import { asyncReplace } from '../../vendor/lit-element/lit-html/directives/async-replace.js'
+import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
 import css from '../../css/com/record-thread.css.js'
 import { emit } from '../dom.js'
@@ -12,6 +14,7 @@ export class RecordThread extends LitElement {
     return {
       recordUrl: {type: String, attribute: 'record-url'},
       profileUrl: {type: String, attribute: 'profile-url'},
+      renderSubjectAlways: {type: Boolean, attribute: 'render-subject-always'},
       subject: {type: Object},
       replies: {type: Array},
       isCommenting: {type: Boolean}
@@ -25,6 +28,7 @@ export class RecordThread extends LitElement {
   constructor () {
     super()
     this.recordUrl = ''
+    this.renderSubjectAlways = false
     this.subject = undefined
     this.replies = undefined
     this.profileUrl = ''
@@ -102,6 +106,9 @@ export class RecordThread extends LitElement {
           ></beaker-record>
         `}
       </div>
+      ${this.renderSubjectAlways && mode === 'link' ? html`
+        <div class="subject-content">${this.renderSubjectContent()}</div>
+      ` : ''}
       ${this.isCommenting ? html`
         <beaker-post-composer
           subject=${this.subject.metadata?.['beaker/subject'] || this.subject.url}
@@ -117,6 +124,35 @@ export class RecordThread extends LitElement {
       `}
       ${this.renderReplies(this.replies)}
     `
+  }
+
+  renderSubjectContent () {
+    if (/\.(png|jpe?g|gif|svg|webp)$/i.test(this.subject.url)) {
+      return html`<img src=${this.subject.url} title=${this.subject.url}>`
+    } else if (/\.(mp4|webm|mov)$/i.test(this.subject.url)) {
+      return html`<video controls><source src=${this.subject.url}></video>`
+    } else if (/\.(mp3|ogg)$/i.test(this.subject.url)) {
+      return html`<audio controls><source src=${this.subject.url}></audio>`
+    } else if (/\.(pdf|doc|zip|docx|rar|gz|tar)$/i.test(this.subject.url)) {
+      let filename = this.subject.url.split('/').pop()
+      return html`
+        <p>Download: <a href=${this.subject.url} download=${filename} title=${`Download ${filename}`}>${filename}</a></p>
+      `
+    } else {
+      let self = this
+      const loadFile = async function* () {
+        yield ''
+        let content = await beaker.hyperdrive.readFile(self.subject.url)
+        if (self.subject.url.endsWith('.md')) {
+          yield html`<div class="markdown">${unsafeHTML(beaker.markdown.toHTML(content))}</div>`
+        } else {
+          yield html`<pre>${content}</pre>`
+        }
+      }
+      return html`
+        ${asyncReplace(loadFile())}
+      `
+    }
   }
 
   renderReplies (replies) {

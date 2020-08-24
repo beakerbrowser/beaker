@@ -17,11 +17,10 @@ import { query } from '../../filesystem/query'
 import drivesAPI from './drives'
 import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DRIVE_VALID_PATH_REGEX, DEFAULT_DRIVE_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
+import * as wcTrust from '../../wc-trust'
 
 // exported api
 // =
-
-const isSenderBeaker = (sender) => /^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/.test(sender.getURL())
 
 const to = (opts) =>
   (opts && typeof opts.timeout !== 'undefined')
@@ -33,7 +32,7 @@ export default {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
-    if (!isSenderBeaker(this.sender)) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
       visibility = undefined
       author = undefined // TODO _get(windows.getUserSessionFor(this.sender), 'url')
     }
@@ -71,7 +70,7 @@ export default {
     }
     let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
 
-    if (!isSenderBeaker(this.sender)) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
       // grant write permissions to the creating app
       permissions.grantPermission('modifyDrive:' + newDriveKey, this.sender.getURL())
     }
@@ -82,7 +81,7 @@ export default {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
-    if (!isSenderBeaker(this.sender)) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
       label = undefined
     }
 
@@ -143,7 +142,7 @@ export default {
         var isCap = urlp.hostname.endsWith('.cap')
 
         // request from beaker internal sites: give all data
-        if (isSenderBeaker(this.sender)) {
+        if (wcTrust.isWcTrusted(this.sender)) {
           return info
         }
 
@@ -182,12 +181,12 @@ export default {
 
         // handle 'visibility' specially
         // also, only allow beaker to set 'visibility' for now
-        if (('visibility' in settings) && isSenderBeaker(this.sender)) {
+        if (('visibility' in settings) && wcTrust.isWcTrusted(this.sender)) {
           // TODO uwg await datLibrary.configureDrive(drive, {visibility: settings.visibility})
         }
 
         // only allow beaker to set these manifest updates for now
-        if (!isSenderBeaker(this.sender)) {
+        if (!wcTrust.isWcTrusted(this.sender)) {
           delete settings.author
         }
 
@@ -701,7 +700,7 @@ export default {
 
 // helper to check if filepath refers to a file that userland is not allowed to edit directly
 function assertUnprotectedFilePath (filepath, sender) {
-  if (isSenderBeaker(sender)) {
+  if (wcTrust.isWcTrusted(sender)) {
     return // can write any file
   }
   if (filepath === '/' + DRIVE_MANIFEST_FILENAME) {
@@ -711,14 +710,14 @@ function assertUnprotectedFilePath (filepath, sender) {
 
 // temporary helper to make sure the call is made by a beaker: page
 function assertBeakerOnly (sender) {
-  if (!isSenderBeaker(sender)) {
+  if (!wcTrust.isWcTrusted(sender)) {
     throw new PermissionsError()
   }
 }
 
 async function assertCreateDrivePermission (sender) {
   // beaker: always allowed
-  if (isSenderBeaker(sender)) {
+  if (wcTrust.isWcTrusted(sender)) {
     return true
   }
 
@@ -739,7 +738,7 @@ async function assertReadPermission (drive, sender) {
 
   if (filesystem.isRootUrl(driveUrl)) {
     let origin = archivesDb.extractOrigin(sender.getURL()) + '/'
-    if (isSenderBeaker(sender) || filesystem.isRootUrl(origin)) {
+    if (wcTrust.isWcTrusted(sender) || filesystem.isRootUrl(origin)) {
       return true
     }
     throw new PermissionsError('Cannot read the hyper://private/ drive')
@@ -754,7 +753,7 @@ async function assertWritePermission (drive, sender) {
   const perm = ('modifyDrive:' + newDriveKey)
 
   // beaker: always allowed
-  if (isSenderBeaker(sender)) {
+  if (wcTrust.isWcTrusted(sender)) {
     return true
   }
 
@@ -779,7 +778,7 @@ async function assertDeleteDrivePermission (drive, sender) {
   const perm = ('deleteDrive:' + driveKey)
 
   // beaker: always allowed
-  if (isSenderBeaker(sender)) {
+  if (wcTrust.isWcTrusted(sender)) {
     return true
   }
 

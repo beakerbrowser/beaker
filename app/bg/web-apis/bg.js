@@ -2,8 +2,7 @@ import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { findTab } from '../ui/tabs/manager'
 
-// TEMPORARY: hyperdrive.network is trusted
-const INTERNAL_ORIGIN_REGEX = /^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/i
+const INTERNAL_ORIGIN_REGEX = /^(beaker:)/i
 const SITE_ORIGIN_REGEX = /^(beaker:|hyper:|https?:|data:)/i
 const IFRAME_WHITELIST = [
   'hyperdrive.loadDrive',
@@ -28,7 +27,6 @@ import downloadsManifest from './manifests/internal/downloads'
 import folderSyncManifest from './manifests/internal/folder-sync'
 import historyManifest from './manifests/internal/history'
 import sitedataManifest from './manifests/internal/sitedata'
-import subscriptionsManifest from './manifests/internal/subscriptions'
 import watchlistManifest from './manifests/internal/watchlist'
 
 // internal apis
@@ -41,7 +39,6 @@ import datLegacyAPI from './bg/dat-legacy'
 import folderSyncAPI from './bg/folder-sync'
 import historyAPI from './bg/history'
 import { WEBAPI as sitedataAPI } from '../dbs/sitedata'
-import * as subscriptionsAPI from '../filesystem/subscriptions'
 import watchlistAPI from './bg/watchlist'
 import { WEBAPI as downloadsAPI } from '../ui/downloads'
 import { WEBAPI as beakerBrowserAPI } from '../browser'
@@ -55,6 +52,7 @@ import markdownManifest from './manifests/external/markdown'
 import panesManifest from './manifests/external/panes'
 import peersocketsManifest from './manifests/external/peersockets'
 import shellManifest from './manifests/external/shell'
+import subscriptionsManifest from './manifests/external/subscriptions'
 
 // external apis
 import capabilitiesAPI from './bg/capabilities'
@@ -65,6 +63,7 @@ import markdownAPI from './bg/markdown'
 import panesAPI from './bg/panes'
 import peersocketsAPI from './bg/peersockets'
 import shellAPI from './bg/shell'
+import subscriptionsAPI from './bg/subscriptions'
 
 // experimental manifests
 import experimentalCapturePageManifest from './manifests/external/experimental/capture-page'
@@ -91,7 +90,6 @@ export const setup = function () {
   rpc.exportAPI('folder-sync', folderSyncManifest, folderSyncAPI, internalOnly)
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
-  rpc.exportAPI('subscriptions', subscriptionsManifest, subscriptionsAPI, internalOnly)
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
 
   // external apis
@@ -103,6 +101,7 @@ export const setup = function () {
   rpc.exportAPI('panes', panesManifest, panesAPI, secureOnly('panes'))
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
   rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
+  rpc.exportAPI('subscriptions', subscriptionsManifest, subscriptionsAPI, secureOnly('subscriptions'))
 
   // experimental apis
   rpc.exportAPI('experimental-capture-page', experimentalCapturePageManifest, experimentalCapturePageAPI, secureOnly)

@@ -4,7 +4,7 @@ import { ifDefined } from '../../vendor/lit-element/lit-html/directives/if-defin
 import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/sites-list.css.js'
 import { emit } from '../dom.js'
-import { shorten, pluralize } from '../strings.js'
+import { shorten, pluralize, isSameOrigin } from '../strings.js'
 
 export class SitesList extends LitElement {
   static get properties () {
@@ -261,13 +261,3 @@ export class SitesList extends LitElement {
 }
 
 customElements.define('beaker-sites-list', SitesList)
-
-function isSameOrigin (a, b) {
-	return getOrigin(a) === getOrigin(b)
-}
-
-function getOrigin (str) {
-	let i = str.indexOf('://')
-	let j = str.indexOf('/', i + 3)
-	return str.slice(0, j === -1 ? undefined : j)
-}

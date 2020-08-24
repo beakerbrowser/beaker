@@ -4,6 +4,7 @@ import * as filesystem from '../../filesystem/index'
 import * as permissions from '../../ui/permissions'
 import { UserDeniedError, PermissionsError } from 'beaker-error-constants'
 import { HYPERDRIVE_HASH_REGEX } from '../../../lib/const'
+import * as wcTrust from '../../wc-trust'
 
 // typedefs
 // =
@@ -118,7 +119,7 @@ export default {
   },
 
   async remove (url) {
-    if (!isBeakerApp(this.sender)) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
       throw new PermissionsError()
     }
     var key = await drives.fromURLToKey(url, true)
@@ -156,11 +157,4 @@ async function assembleRecords (contactsList) {
     })
   }
   return records
-}
-
-function isBeakerApp (sender) {
-  if (/^(beaker:|https?:\/\/(.*\.)?hyperdrive\.network(:|\/))/.test(sender.getURL())) {
-    return true
-  }
-  return false
 }

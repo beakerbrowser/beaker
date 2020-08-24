@@ -92,6 +92,7 @@ export async function getSite (url) {
   if (siteRows[0]) {
     return {
       origin: siteRows[0].origin,
+      url: siteRows[0].origin,
       title: siteRows[0].title,
       description: siteRows[0].description,
       writable: Boolean(siteRows[0].writable)
@@ -100,6 +101,7 @@ export async function getSite (url) {
   var site = await loadSite(origin)
   return {
     origin: site.origin,
+    url: site.origin,
     title: site.title,
     description: site.description,
     writable: site.writable

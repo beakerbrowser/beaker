@@ -5,7 +5,7 @@ import folderSyncManifest from '../../bg/web-apis/manifests/internal/folder-sync
 import historyManifest from '../../bg/web-apis/manifests/internal/history'
 import hyperdriveManifest from '../../bg/web-apis/manifests/external/hyperdrive'
 import overlayManifest from '../../bg/rpc-manifests/overlay'
-import subscriptionsManifest from '../../bg/web-apis/manifests/internal/subscriptions'
+import subscriptionsManifest from '../../bg/web-apis/manifests/external/subscriptions'
 import toolbarManifest from '../../bg/rpc-manifests/toolbar'
 import viewsManifest from '../../bg/rpc-manifests/views'
 import watchlistManifest from '../../bg/web-apis/manifests/internal/watchlist'

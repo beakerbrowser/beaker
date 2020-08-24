@@ -7,6 +7,7 @@ import { parseDriveUrl } from '../../lib/urls'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as tabManager from './tabs/manager'
 import {PermissionsError, UserDeniedError} from 'beaker-error-constants'
+import * as wcTrust from '../wc-trust'
 
 // globals
 // =
@@ -101,8 +102,8 @@ export async function checkLabsPerm ({perm, labApi, apiDocsUrl, sender}) {
 async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   const url = webContents.getURL()
 
-  // always allow beaker:// origins
-  if (url.startsWith('beaker://')) {
+  // always allow trusted interfaces
+  if (wcTrust.isWcTrusted(webContents)) {
     return cb(true)
   }
 

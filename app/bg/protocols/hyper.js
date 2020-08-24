@@ -95,9 +95,44 @@ export const protocolHandler = async function (request, respond) {
   var drive
   var cspHeader = undefined
   var corsHeader = '*'
+  var customFrontend = false
+  var wantsHTML = mime.acceptHeaderWantsHTML(request.headers.Accept)
   const logUrl = toNiceUrl(request.url)
 
   respond = once(respond)
+  const respondBuiltinFrontend = async () => {
+    return respond({
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': corsHeader,
+        'Allow-CSP-From': '*',
+        'Cache-Control': 'no-cache',
+        'Content-Security-Policy': `default-src beaker:; img-src beaker: 'self'; media-src beaker: 'self';`,
+        'Beaker-Trusted-Interface': '1' // see wc-trust.js
+      },
+      data: intoStream(`<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="beaker://drive-view/css/main.css">
+  <script type="module" src="beaker://drive-view/js/main.js"></script>
+</head>
+</html>`)
+    })
+  }
+  const respondCustomFrontend = async (checkoutFS) => {
+    return respond({
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/html',
+        'Access-Control-Allow-Origin': corsHeader,
+        'Allow-CSP-From': '*',
+        'Content-Security-Policy': cspHeader
+      },
+      data: intoStream(await checkoutFS.pda.readFile('/.ui/ui.html')) // TODO use stream
+    })
+  }
   const respondRedirect = (url) => {
     respond({
       statusCode: 200,
@@ -216,21 +251,8 @@ export const protocolHandler = async function (request, respond) {
     }
 
     // check for the presence of a frontend
-    var frontend = false
     if (await checkoutFS.pda.stat('/.ui/ui.html').catch(e => false)) {
-      frontend = true
-    }
-    const serveFrontendHTML = async () => {
-      return respond({
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': corsHeader,
-          'Allow-CSP-From': '*',
-          'Content-Security-Policy': cspHeader
-        },
-        data: intoStream(await checkoutFS.pda.readFile('/.ui/ui.html')) // TODO use stream
-      })
+      customFrontend = true
     }
 
     // lookup entry
@@ -239,7 +261,7 @@ export const protocolHandler = async function (request, respond) {
     var entry = await datServeResolvePath(checkoutFS.pda, manifest, urlp, request.headers.Accept)
 
     var canExecuteHTML = true
-    if (entry && !frontend) {
+    if (entry && !customFrontend) {
       // dont execute HTML if in a mount and no frontend is running
       let pathParts = entry.path.split('/').filter(Boolean)
       pathParts.pop() // skip target, just need to check parent dirs
@@ -256,50 +278,32 @@ export const protocolHandler = async function (request, respond) {
 
     // handle folder
     if (entry && entry.isDirectory()) {
-
-      // make sure there's a trailing slash
       if (!hasTrailingSlash) {
+        // make sure there's a trailing slash
         logger.silly(`Redirecting to trailing slash ${logUrl}`, {url: request.url})
         return respondRedirect(`hyper://${urlp.host}${urlp.version ? ('+' + urlp.version) : ''}${urlp.pathname || ''}/${urlp.search || ''}`)
       }
-
-      // frontend
-      if (frontend) {
-        logger.silly(`Serving frontend ${logUrl}`, {url: request.url})
-        return serveFrontendHTML()
+      if (customFrontend) {
+        logger.silly(`Serving custom frontend ${logUrl}`, {url: request.url})
+        return respondCustomFrontend(checkoutFS)
       }
-
-      // directory listing
-      logger.silly(`Serving directory ${logUrl}`, {url: request.url})
-      return respond({
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'text/html',
-          'Access-Control-Allow-Origin': corsHeader,
-          'Allow-CSP-From': '*',
-          'Cache-Control': 'no-cache',
-          'Content-Security-Policy': `default-src 'self' beaker:`
-        },
-        data: intoStream(`<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-    <script type="module" src="beaker://drive-view/index.js"></script>
-  </head>
-</html>`)
-      })
+      logger.silly(`Serving builtin frontend ${logUrl}`, {url: request.url})
+      return respondBuiltinFrontend()
     }
 
-    // frontend
-    if (mime.acceptHeaderWantsHTML(request.headers.Accept) && frontend) {
-      logger.silly(`Serving frontend ${logUrl}`, {url: request.url})
-      return serveFrontendHTML()
+    // custom frontend
+    if (customFrontend && wantsHTML) {
+      logger.silly(`Serving custom frontend ${logUrl}`, {url: request.url})
+      return respondCustomFrontend(checkoutFS)
     }
 
-    // handle not found
+    // 404
     if (!entry) {
       logger.silly('Not found', {url: request.url})
+      if (wantsHTML) { 
+        logger.silly(`Serving builtin frontend ${logUrl}`, {url: request.url})
+        return respondBuiltinFrontend()
+      }
       return respondError(404, 'File Not Found', {
         errorDescription: 'File Not Found',
         errorInfo: `Beaker could not find the file ${urlp.path}`,
@@ -316,6 +320,21 @@ export const protocolHandler = async function (request, respond) {
       } catch (e) {
         // pass through
       }
+    }
+
+    // detect mimetype
+    var mimeType = entry.metadata.mimetype || entry.metadata.mimeType
+    if (!mimeType) {
+      mimeType = mime.identify(entry.path)
+    }
+    if (!canExecuteHTML && mimeType.includes('text/html')) {
+      mimeType = 'text/plain'
+    }
+
+    if (wantsHTML && !mimeType.includes('text/html')) {
+      // builtin frontend when not viewing an html file
+      logger.silly(`Serving builtin frontend ${logUrl}`, {url: request.url})
+      return respondBuiltinFrontend()
     }
 
     // handle range
@@ -343,45 +362,6 @@ export const protocolHandler = async function (request, respond) {
       'Cache-Control': 'no-cache'
     })
 
-    // markdown rendering
-    if (!range && entry.path.endsWith('.md') && mime.acceptHeaderWantsHTML(request.headers.Accept)) {
-      let content = await checkoutFS.pda.readFile(entry.path, 'utf8')
-      let contentType = canExecuteHTML ? 'text/html' : 'text/plain'
-      content = canExecuteHTML
-        ? `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf8">
-    <style>
-      body {
-        font-family: sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 10px;
-        line-height: 1.4;
-      }
-      body * {
-        max-width: 100%;
-      }
-    </style>
-  </head>
-  <body>
-    ${md.render(content)}
-  </body>
-</html>`
-        : content
-      logger.silly(`Serving markdown ${logUrl}`, {url: request.url})
-      return respond({
-        statusCode: 200,
-        headers: Object.assign(headers, {'Content-Type': contentType}),
-        data: intoStream(content)
-      })
-    }
-
-    var mimeType = mime.identify(entry.path)
-    if (!canExecuteHTML && mimeType.includes('text/html')) {
-      mimeType = 'text/plain'
-    }
     headers['Content-Type'] = mimeType
     logger.silly(`Serving file ${logUrl}`, {url: request.url})
     if (request.method === 'HEAD') {

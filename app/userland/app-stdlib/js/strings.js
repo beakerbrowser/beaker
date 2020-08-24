@@ -169,3 +169,13 @@ export function hashFnv32a (str, asString, seed) {
   }
   return hval >>> 0
 }
+
+export function isSameOrigin (a, b) {
+	return getOrigin(a) === getOrigin(b)
+}
+
+export function getOrigin (str) {
+	let i = str.indexOf('://')
+	let j = str.indexOf('/', i + 3)
+	return str.slice(0, j === -1 ? undefined : j)
+}
