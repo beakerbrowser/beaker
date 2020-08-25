@@ -79,9 +79,12 @@ export class Indexer {
     if (!isNew) {
       await db('records_data').del().where({record_rowid: rowid})
     }
-    await Promise.all(dataEntries.map(([key, value]) => (
-      db('records_data').insert({record_rowid: rowid, key, value})
-    )))
+    await Promise.all(dataEntries
+      .filter(([key, value]) => value !== null && typeof value !== 'undefined')
+      .map(([key, value]) => (
+        db('records_data').insert({record_rowid: rowid, key, value})
+      ))
+    )
 
     // index notifications
     if (this.notifications) {
