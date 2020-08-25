@@ -90,6 +90,7 @@ class DesktopApp extends LitElement {
       beaker.subscriptions.list(),
       beaker.database.countNotifications({filter: {isRead: false}})
     ])
+    document.title = this.unreadNotificationsCount > 0 ? `New Tab (${this.unreadNotificationsCount})`: `New Tab`
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
       this.shadowRoot.querySelector('beaker-record-feed').load()
     }
