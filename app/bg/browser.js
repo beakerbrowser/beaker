@@ -122,22 +122,36 @@ export async function setup () {
     }
   })
 
-  session.defaultSession.webRequest.onBeforeRequest({urls: ['hyper://private/*']}, (details, cb) => {
-    if (!details.webContentsId) {
+  // request blocking for security purposes
+  session.defaultSession.webRequest.onBeforeRequest({urls: ['asset:*', 'hyper://private/*']}, (details, cb) => {
+    if (details.url.startsWith('asset:')) {
       if (details.resourceType === 'mainFrame') {
         // allow toplevel navigation
         return cb({cancel: false})
+      } else if (details.webContentsId && wcTrust.isWcTrusted(details.webContentsId)) {
+        // allow trusted WCs
+        return cb({cancel: false})
       } else {
-        // not enough info, cancel
+        // disallow all other requesters
         return cb({cancel: true})
       }
-    }
-    var wc = webContents.fromId(details.webContentsId)
-    if (/^(beaker:\/\/|hyper:\/\/private\/)/.test(wc.getURL())) {
-      // allow access from self and from beaker
-      cb({cancel: false})
     } else {
-      cb({cancel: true})
+      if (!details.webContentsId) {
+        if (details.resourceType === 'mainFrame') {
+          // allow toplevel navigation
+          return cb({cancel: false})
+        } else {
+          // not enough info, cancel
+          return cb({cancel: true})
+        }
+      }
+      let wc = webContents.fromId(details.webContentsId)
+      if (/^(beaker:\/\/|hyper:\/\/private\/)/.test(wc.getURL())) {
+        // allow access from self and from beaker
+        cb({cancel: false})
+      } else {
+        cb({cancel: true})
+      }
     }
   })
 

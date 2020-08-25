@@ -48,7 +48,8 @@ export function setup () {
 }
 
 export function isWcTrusted (wc) {
-  return wcInfos[wc.id]?.trust === TRUST.TRUSTED
+  var wcid = (typeof wc === 'number') ? wc : wc.id
+  return wcInfos[wcid]?.trust === TRUST.TRUSTED
 }
 
 export function onWebRequestCompleted (details) {
