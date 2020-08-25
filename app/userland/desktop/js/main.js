@@ -190,6 +190,7 @@ class DesktopApp extends LitElement {
     setTimeout(async () => {
       await beaker.database.setNotificationIsRead('all', true)
       this.unreadNotificationsCount = 0
+      document.title = 'New Tab'
     }, 3e3)
   }
 
