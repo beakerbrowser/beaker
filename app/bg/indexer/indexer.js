@@ -106,7 +106,7 @@ export class Indexer {
               subject_origin: subjectp.origin,
               subject_path: subjectp.path,
               is_read: 0,
-              ctime: update.ctime
+              rtime: Date.now()
             }).onConflictDoNothing()
           }
         }

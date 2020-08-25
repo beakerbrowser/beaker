@@ -61,7 +61,7 @@ exports.up = async function (knex) {
     table.string('subject_origin')
     table.string('subject_path')
     table.integer('is_read')
-    table.integer('ctime')
+    table.integer('rtime')
 
     table.unique(['site_rowid', 'record_rowid'])
     table.foreign('site_rowid').references('rowid').inTable('sites').onDelete('CASCADE')

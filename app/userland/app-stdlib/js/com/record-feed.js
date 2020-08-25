@@ -99,7 +99,7 @@ export class RecordFeed extends LitElement {
       results = await beaker.database.listNotifications({
         filter: {search: this.filter},
         limit: this.limit,
-        sort: 'ctime',
+        sort: 'rtime',
         reverse: true
       })
     } else if (this.filter) {

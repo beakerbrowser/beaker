@@ -445,7 +445,8 @@ export async function listNotifications (opts) {
       'origin',
       'path',
       'index',
-      'notifications.ctime as ctime',
+      'notifications.rtime',
+      'ctime',
       'mtime',
       'title as siteTitle',
       'type',
@@ -500,11 +501,11 @@ export async function listNotifications (opts) {
     query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
   }
 
-  if (opts?.sort && ['ctime', 'mtime'].includes(opts.sort)) {
+  if (opts?.sort && ['ctime', 'mtime', 'rtime'].includes(opts.sort)) {
     query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
   } else {
     let reverse = (typeof opts?.reverse === 'boolean') ? opts.reverse : true
-    query = query.orderBy('ctime', reverse ? 'desc' : 'asc')
+    query = query.orderBy('rtime', reverse ? 'desc' : 'asc')
   }
 
   var rows = await query
@@ -518,7 +519,8 @@ export async function listNotifications (opts) {
         id: row.rowid,
         type: row.type,
         subject: row.subject_origin + row.subject_path,
-        isRead: !!row.is_read
+        isRead: !!row.is_read,
+        rtime: row.rtime
       },
       site: {
         url: row.origin,

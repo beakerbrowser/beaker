@@ -97,6 +97,7 @@ export const NOTIFICATION_TYPES = {
  * @prop {String} [notification.type]
  * @prop {String} [notification.subject]
  * @prop {Boolean} [notification.isRead]
+ * @prop {Number} [notification.rtime]
  */
 
  // util funcs
