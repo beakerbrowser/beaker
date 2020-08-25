@@ -30,9 +30,8 @@ class PostComposer extends LitElement {
     this._visibility = 'public'
     this.subject = undefined
     this.parent = undefined
-    beaker.browser.getProfile().then(p => {
-      this.profile = p
-      this.profile.url = `hyper://${this.profile.key}/`
+    beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').then(async (addr) => {
+      this.profile = await beaker.hyperdrive.getInfo(addr?.profiles?.[0]?.key)
     })
     this.searchQueryId = 0
     this.searchDebouncer = debouncer(100)
