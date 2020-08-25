@@ -81,7 +81,7 @@ function trackWc (wc) {
   const id = wc.id
   wcInfos[id] = {id, url: undefined, trust: TRUST.UNKNOWN}
   wc.on('did-start-navigation', (e, url, isInPlace, isMainFrame) => {
-    if (isMainFrame) {
+    if (isMainFrame && !isInPlace) {
       // reset trust info
       wcInfos[id].url = url
       wcInfos[id].trust = TRUST.UNKNOWN
