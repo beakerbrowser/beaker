@@ -384,8 +384,6 @@ a:hover {
 .record.link .ctrls a.ctrl {
   display: inline-block;
   color: var(--text-color--light);
-  font-weight: 500;
-  margin-left: 2px;
 }
 
 .record.link .ctrls a:hover {

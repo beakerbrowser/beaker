@@ -275,7 +275,7 @@ export class Record extends LitElement {
           ${this.renderThumb(res)}
         </a>
         <div class="info">
-          <div class="title"><a href=${href} @click=${this.onViewThread}>${renderMatchText(res, 'title') || title}</a></div>
+          <div class="title"><a href=${href}>${renderMatchText(res, 'title') || title}</a></div>
           <div class="origin">
             ${isBookmark ? html`
               <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
@@ -303,6 +303,8 @@ export class Record extends LitElement {
             ${res.index === 'beaker/index/microblogposts' ? html`<span class="type"><span class="far fa-comment-alt"></span> Post</span>` : ''}
             <span>|</span>
             <a class="date" href=${href}>${niceDate(res.ctime)}</a>
+            <span>|</span>
+            <a class="ctrl" href="#" @click=${this.onViewThread}>comments</a>
           </div>
           ${content ? html`
             <div class="excerpt">
@@ -360,7 +362,7 @@ export class Record extends LitElement {
         </a>
         <div class="container">
           <div class="title">
-            <a class="link-title" href=${href} @click=${this.onViewThread}>${title}</a>
+            <a class="link-title" href=${href}>${title}</a>
             ${hrefp ? html`
               <a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a>
             ` : ''}
@@ -381,6 +383,8 @@ export class Record extends LitElement {
                 ${relativeDate(res.ctime)}
               </a>
             </span>
+            <span class="divider">|</span>
+            <a class="ctrl" href="#" @click=${this.onViewThread}>comments</a>
           </div>
         </div>
       </div>
