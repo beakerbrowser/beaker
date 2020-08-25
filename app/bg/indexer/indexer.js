@@ -16,6 +16,7 @@ export class Indexer {
   constructor (opts) {
     this.id = opts.id
     this.title = opts.title
+    this.liveQuery = opts.liveQuery
     this.filter = opts.filter
     this.getData = opts.getData
     this.notifications = opts.notifications

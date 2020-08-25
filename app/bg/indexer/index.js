@@ -29,6 +29,7 @@ import * as path from 'path'
 import mkdirp from 'mkdirp'
 import * as filesystem from '../filesystem/index'
 import * as drives from '../hyper/drives'
+import { query } from '../filesystem/query'
 import * as logLib from '../logger'
 const logger = logLib.get().child({category: 'indexer'})
 import { TICK_INTERVAL, READ_TIMEOUT, METADATA_KEYS, INDEX_IDS, parseUrl } from './const'
@@ -43,6 +44,7 @@ import { chunkMapAsync } from '../../lib/functions'
  * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
+ * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
  */
 
 // globals
@@ -153,7 +155,9 @@ export async function getRecord (url) {
       'path': urlp.path
     })
     .limit(1)
-  if (!rows[0]) return undefined
+  if (!rows[0]) {
+    return getLiveRecord(urlp.origin, urlp.path)
+  }
 
   var record_rowid = rows[0].record_rowid
   var result = {
@@ -189,9 +193,6 @@ export async function getRecord (url) {
  * @param {Object} [opts.filter]
  * @param {String|Array<String>} [opts.filter.site]
  * @param {String|Array<String>} [opts.filter.index]
- * @param {Object} [opts.filter.ctime]
- * @param {Number} [opts.filter.ctime.before]
- * @param {Number} [opts.filter.ctime.after]
  * @param {String} [opts.filter.linksTo]
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
@@ -200,6 +201,13 @@ export async function getRecord (url) {
  * @returns {Promise<RecordDescription[]>}
  */
 export async function listRecords (opts) {
+  var sort = 'ctime'
+  var reverse = (typeof opts?.reverse === 'boolean') ? opts.reverse : true
+  if (opts?.sort && ['ctime', 'mtime', 'site'].includes(opts.sort)) {
+    sort = opts.sort
+  }
+  var offset = opts?.offset || 0
+  var limit = opts?.limit || 25
   var sep = `[>${Math.random()}<]`
   var query = db('sites')
     .innerJoin('records', 'sites.rowid', 'records.site_rowid')
@@ -217,8 +225,9 @@ export async function listRecords (opts) {
       db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
     )
     .groupBy('records.rowid')
-    .offset(opts?.offset || 0)
-    .limit(opts?.limit || 25)
+    .offset(offset)
+    .limit(limit)
+    .orderBy(sort, reverse ? 'desc' : 'asc')
 
   if (opts?.filter?.site) {
     if (Array.isArray(opts.filter.site)) {
@@ -234,12 +243,6 @@ export async function listRecords (opts) {
       query = query.where({index: opts.filter.index})
     }
   }
-  if (opts?.filter?.ctime?.before) {
-    query = query.whereRaw(`ctime < ?`, [opts.filter.ctime.before])
-  }
-  if (opts?.filter?.ctime?.after) {
-    query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
-  }
   if (opts?.filter?.linksTo) {
     query = query.joinRaw(
       `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
@@ -247,15 +250,26 @@ export async function listRecords (opts) {
     )
   }
 
-  if (opts?.sort && ['ctime', 'mtime', 'site'].includes(opts.sort)) {
-    query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
-  } else {
-    let reverse = (typeof opts?.reverse === 'boolean') ? opts.reverse : true
-    query = query.orderBy('ctime', reverse ? 'desc' : 'asc')
+  var indexStatesQuery
+  if (opts?.filter?.site && !opts?.filter?.linksTo) {
+    // fetch info on whether each given site has been indexed
+    indexStatesQuery = db('sites')
+      .select('origin')
+      .innerJoin('site_indexes', 'site_indexes.site_rowid', 'sites.rowid')
+      .groupBy('sites.rowid')
+    if (Array.isArray(opts.filter.site)) {
+      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
+    } else {
+      indexStatesQuery = indexStatesQuery.where({origin: parseUrl(opts.filter.site).origin})
+    }
   }
 
-  var rows = await query
-  return rows.map(row => {
+  var [rows, indexStates] = await Promise.all([
+    query,
+    indexStatesQuery
+  ])
+
+  var records = rows.map(row => {
     var record = {
       url: row.origin + row.path,
       index: row.index,
@@ -283,6 +297,45 @@ export async function listRecords (opts) {
     }
     return record
   })
+
+  // fetch live data for each site not present in the db
+  if (indexStates) {
+    // fetch the live records
+    var addedRecords
+    for (let site of toArray(opts.filter.site)) {
+      let origin = parseUrl(site).origin
+      if (indexStates.find(state => state.origin === origin)) {
+        continue
+      }
+      addedRecords = (addedRecords || []).concat(
+        await listLiveRecords(origin, {filter: opts?.filter})
+      )
+    }
+    if (addedRecords) {
+      // merge and sort
+      records = records.concat(addedRecords)
+      records.sort((a, b) => {
+        if (sort === 'ctime') {
+          return reverse ? (b.ctime - a.ctime) : (a.ctime - b.ctime)
+        } else if (sort === 'mtime') {
+          return reverse ? (b.mtime - a.mtime) : (a.mtime - b.mtime)
+        } else if (sort === 'site') {
+          return b.site.url.localeCompare(a.site.url) * (reverse ? -1 : 1)
+        }
+      })
+      records = records.slice(offset, offset + limit)
+
+      // load data as needed
+      for (let record of records) {
+        if (record.fetchData) {
+          await record.fetchData()
+          delete record.fetchData
+        }
+      }
+    }
+  }
+
+  return records
 }
 
 /**
@@ -291,9 +344,6 @@ export async function listRecords (opts) {
  * @param {Object} [opts.filter]
  * @param {String|Array<String>} [opts.filter.site]
  * @param {String|Array<String>} [opts.filter.index]
- * @param {Object} [opts.filter.ctime]
- * @param {Number} [opts.filter.ctime.before]
- * @param {Number} [opts.filter.ctime.after]
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
@@ -342,12 +392,6 @@ export async function searchRecords (q = '', opts) {
     } else {
       query = query.where({index: opts.filter.index})
     }
-  }
-  if (opts?.filter?.ctime?.before) {
-    query = query.whereRaw(`ctime < ?`, [opts.filter.ctime.before])
-  }
-  if (opts?.filter?.ctime?.after) {
-    query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
   }
 
   if (opts?.sort && ['ctime', 'mtime'].includes(opts.sort)) {
@@ -421,9 +465,6 @@ export async function searchRecords (q = '', opts) {
  * @param {String|Array<String>} [opts.filter.subject]
  * @param {String|Array<String>} [opts.filter.index]
  * @param {String|Array<String>} [opts.filter.type]
- * @param {Object} [opts.filter.ctime]
- * @param {Number} [opts.filter.ctime.before]
- * @param {Number} [opts.filter.ctime.after]
  * @param {String} [opts.filter.search]
  * @param {Boolean} [opts.filter.isRead]
  * @param {String} [opts.sort]
@@ -494,12 +535,6 @@ export async function listNotifications (opts) {
   if (typeof opts?.filter?.isRead !== 'undefined') {
     query = query.where({is_read: opts.filter.isRead ? 1 : 0})
   }
-  if (opts?.filter?.ctime?.before) {
-    query = query.whereRaw(`ctime < ?`, [opts.filter.ctime.before])
-  }
-  if (opts?.filter?.ctime?.after) {
-    query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
-  }
 
   if (opts?.sort && ['ctime', 'mtime', 'rtime'].includes(opts.sort)) {
     query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
@@ -553,9 +588,6 @@ export async function listNotifications (opts) {
  * @param {String|Array<String>} [opts.filter.subject]
  * @param {String|Array<String>} [opts.filter.index]
  * @param {String|Array<String>} [opts.filter.type]
- * @param {Object} [opts.filter.ctime]
- * @param {Number} [opts.filter.ctime.before]
- * @param {Number} [opts.filter.ctime.after]
  * @param {Boolean} [opts.filter.isRead]
  * @returns {Promise<Number>}
  */
@@ -593,12 +625,6 @@ export async function countNotifications (opts) {
   }
   if (typeof opts?.filter?.isRead !== 'undefined') {
     query = query.where({is_read: opts.filter.isRead ? 1 : 0})
-  }
-  if (opts?.filter?.ctime?.before) {
-    query = query.whereRaw(`ctime < ?`, [opts.filter.ctime.before])
-  }
-  if (opts?.filter?.ctime?.after) {
-    query = query.whereRaw(`ctime > ?`, [opts.filter.ctime.after])
   }
 
   var rows = await query
@@ -722,6 +748,117 @@ async function deindexSite (origin) {
 }
 
 /**
+ * @param {String} [origin]
+ * @param {String} [path]
+ * @returns {Promise<RecordDescription>}
+ */
+async function getLiveRecord (origin, path) {
+  let url = origin + path
+  try {
+    let site = await loadSite(origin)
+    let stat = await site.stat(path)
+    let update = {
+      remove: false,
+      path,
+      metadata: stat.metadata,
+      ctime: stat.ctime,
+      mtime: stat.mtime
+    }
+    for (let indexer of INDEXES) {
+      if (!indexer.filter(update)) {
+        continue
+      }
+      logger.silly(`Live-fetching ${url} [ ${indexer.id} ]`)
+      var record = {
+        url,
+        index: indexer.id,
+        ctime: +stat.ctime,
+        mtime: +stat.mtime,
+        site: {
+          url: site.origin,
+          title: site.title
+        },
+        metadata: {},
+        links: [],
+        content: undefined
+      }
+      for (let [key, value] of await indexer.getData(site, update)) {
+        if (key === METADATA_KEYS.content) {
+          record.content = value
+        } if (key === METADATA_KEYS.link) {
+          record.links.push(value)
+        } else {
+          record.metadata[key] = value
+        }
+      }
+      return record
+    }
+  } catch (e) {
+    logger.error(`Failed to live-fetch file ${url}. ${e.toString()}`, {site: origin, error: e.toString()})
+  }  
+  return undefined
+}
+
+/**
+ * @param {Object} [opts]
+ * @param {Object} [opts.filter]
+ * @param {String|Array<String>} [opts.filter.index]
+ * @returns {Promise<RecordDescription[]>}
+ */
+async function listLiveRecords (origin, opts) {
+  var records = []
+  var indexFilter = opts?.filter?.index ? toArray(opts.filter.index) : undefined
+  try {
+    let site = await loadSite(origin)
+    await Promise.all(INDEXES.map(async (indexer) => {
+      if (indexFilter && !indexFilter.includes(indexer.id)) {
+        return
+      }
+      logger.silly(`Live-querying ${origin} [ ${indexer.id} ]`)
+      let files = await site.listMatchingFiles(indexer)
+      records = records.concat(files.map(file => {
+        return {
+          url: file.url,
+          index: indexer.id,
+          ctime: +file.stat.ctime,
+          mtime: +file.stat.mtime,
+          site: {
+            url: site.origin,
+            title: site.title
+          },
+          metadata: file.stat.metadata,
+          links: [],
+          content: undefined,
+
+          // helper to fetch the rest of the data if in the results set
+          fetchData: async function () {
+            let update = {
+              remove: false,
+              path: file.path,
+              metadata: file.stat.metadata,
+              ctime: file.stat.ctime,
+              mtime: file.stat.mtime
+            }
+            for (let [key, value] of await indexer.getData(site, update)) {
+              if (key === METADATA_KEYS.content) {
+                this.content = value
+              } if (key === METADATA_KEYS.link) {
+                this.links.push(value)
+              } else {
+                this.metadata[key] = value
+              }
+            }
+          }
+        }
+      }))
+    }))
+  } catch (e) {
+    logger.error(`Failed to live-query site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+  }  
+  return records
+}
+
+/**
  * @returns {Promise<Boolean>}
  */
 async function getIsFirstRun () {
@@ -828,6 +965,10 @@ async function loadSite (origin) {
     description: driveInfo.description,
     writable: driveInfo.writable,
 
+    async stat (path) {
+      return drive.pda.stat(path)
+    },
+
     async fetch (path) {
       return drive.pda.readFile(path, 'utf8')
     },
@@ -850,6 +991,10 @@ async function loadSite (origin) {
           mtime: Number(change?.value?.stat?.mtime || 0)
         }))
       })
+    },
+
+    async listMatchingFiles (index) {
+      return query(drive, {path: index.liveQuery})
     }
   }
   return site
@@ -898,4 +1043,8 @@ function normalizeOrigin (str) {
     let urlp = new URL('hyper://' + str)
     return urlp.protocol + '//' + urlp.hostname
   }
+}
+
+function toArray (v) {
+  return Array.isArray(v) ? v : [v]
 }

@@ -2,7 +2,7 @@
 // =
 
 export const TICK_INTERVAL = 15e3
-export const READ_TIMEOUT = 15e3
+export const READ_TIMEOUT = 5e3
 export const INDEX_IDS = {
   blogposts: 'beaker/index/blogposts',
   bookmarks: 'beaker/index/bookmarks',
@@ -41,8 +41,10 @@ export const NOTIFICATION_TYPES = {
  * @prop {String} title
  * @prop {String} description
  * @prop {Boolean} writable
+ * @prop {function(String): Promise<Object>} stat
  * @prop {function(String): Promise<String>} fetch
  * @prop {function(String): Promise<RecordUpdate[]>} listUpdates
+ * @prop {function(Indexer): Promise<Object>} listMatchingFiles
  * 
  * @typedef {Object} SiteDescription
  * @prop {String} origin
@@ -69,6 +71,7 @@ export const NOTIFICATION_TYPES = {
  * @typedef {Object} IndexerDefinition
  * @prop {String} id
  * @prop {String} title
+ * @prop {String[]} liveQuery
  * @prop {function(RecordUpdate): Boolean} filter
  * @prop {function(Site, RecordUpdate): Promise<any[][]>} getData
  * @prop {string[][]} notifications
