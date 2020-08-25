@@ -25,6 +25,7 @@ export class RecordFeed extends LitElement {
       sources: {type: Array},
       results: {type: Array},
       hideEmpty: {type: Boolean, attribute: 'hide-empty'},
+      noMerge: {type: Boolean, attribute: 'no-merge'},
       profileUrl: {type: String, attribute: 'profile-url'}
     }
   }
@@ -45,6 +46,7 @@ export class RecordFeed extends LitElement {
     this.sources = undefined
     this.results = undefined
     this.hideEmpty = false
+    this.noMerge = false
     this.profileUrl = ''
 
     // query state
@@ -121,7 +123,9 @@ export class RecordFeed extends LitElement {
         if (subresults.length === 0) break
         
         offset += subresults.length
-        subresults = subresults.reduce(reduceMultipleActions, [])
+        if (!this.noMerge) {
+          subresults = subresults.reduce(reduceMultipleActions, [])
+        }
         results = results.concat(subresults)
       } while (results.length < this.limit)
     }

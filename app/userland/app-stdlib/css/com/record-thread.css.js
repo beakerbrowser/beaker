@@ -16,7 +16,7 @@ ${spinnerCSS}
   background: var(--bg-color--light);
 }
 
-:host(.no-bg) {
+:host([full-page]) {
   background: transparent;
 }
 
@@ -30,6 +30,15 @@ beaker-record {
   border-radius: 4px;
   padding: 0 10px;
   margin-bottom: 10px;
+}
+
+:host([full-page]) .subject.link {
+  position: sticky;
+  top: 0;
+  padding-bottom: 10px;
+  border: 0;
+  margin-bottom: -10px;
+  padding-top: 1px;
 }
 
 .subject beaker-record[render-mode="link"] {
@@ -53,8 +62,6 @@ beaker-record {
   background: var(--bg-color--default);
   padding: 0 16px;
   margin-bottom: 10px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color--light);
 }
 
 .subject-content > :-webkit-any(img, video, audio) {
@@ -70,6 +77,8 @@ beaker-record {
 
 .subject-content .markdown {
   line-height: 1.4;
+  margin-bottom: 30px;
+  font-size: 15px;
 }
 
 .subject-content .markdown :-webkit-any(h1, h2, h3, h4, h5) {

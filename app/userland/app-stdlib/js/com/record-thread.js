@@ -14,7 +14,7 @@ export class RecordThread extends LitElement {
     return {
       recordUrl: {type: String, attribute: 'record-url'},
       profileUrl: {type: String, attribute: 'profile-url'},
-      renderSubjectAlways: {type: Boolean, attribute: 'render-subject-always'},
+      isFullPage: {type: Boolean, attribute: 'full-page'},
       subject: {type: Object},
       replies: {type: Array},
       isCommenting: {type: Boolean}
@@ -28,7 +28,7 @@ export class RecordThread extends LitElement {
   constructor () {
     super()
     this.recordUrl = ''
-    this.renderSubjectAlways = false
+    this.isFullPage = false
     this.subject = undefined
     this.replies = undefined
     this.profileUrl = ''
@@ -92,7 +92,7 @@ export class RecordThread extends LitElement {
       mode = 'card'
     }
     return html`
-      <div class="subject">
+      <div class="subject ${mode}">
         ${this.subject.notFound ? html`
           <a class="not-found" href="${this.subject.url}">${fancyUrl(this.subject.url)}</a>
         ` : html`
@@ -106,7 +106,7 @@ export class RecordThread extends LitElement {
           ></beaker-record>
         `}
       </div>
-      ${this.renderSubjectAlways && mode === 'link' ? html`
+      ${this.isFullPage && mode === 'link' ? html`
         <div class="subject-content">${this.renderSubjectContent()}</div>
       ` : ''}
       ${this.isCommenting ? html`

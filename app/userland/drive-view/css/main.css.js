@@ -32,8 +32,6 @@ a:hover {
 }
 
 .sidebar-inner {
-  position: sticky;
-  top: 20px;
 }
 
 .header {
@@ -41,14 +39,13 @@ a:hover {
 }
 
 .header button {
-  position: absolute;
-  font-size: 12px;
-  top: 18px;
-  left: 72px;
-  box-shadow: none;
-  border-radius: 16px;
-  border: 1px solid #4472f3;
-  color: #3867ef;
+  display: block;
+  width: 100%;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--text-color--markdown-link);
+  color: var(--text-color--markdown-link);
+  padding-right: 20px; /* offsets the icon a little */
 }
 
 .header .thumb {
@@ -57,22 +54,20 @@ a:hover {
 
 .header img {
   object-fit: cover;
-  border-radius: 50%;
-  height: 60px;
-  width: 60px;
+  border-radius: 4px;
+  height: 220px;
+  width: 220px;
 }
 
 .header .info {
+  margin-bottom: 10px;
 }
 
 .header .title {
   font-family: arial;
-  font-size: 21px;
+  font-size: 32px;
   font-weight: bold;
   margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .header .title a {
@@ -92,19 +87,30 @@ a:hover {
   color: var(--text-color--default);
 }
 
+.nav {
+  position: sticky;
+  top: 20px;
+}
+
 .nav .nav-item {
   display: block;
   padding: 6px 0;
   color: var(--text-color--default);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.7px;
 }
 
 .nav .fa-fw {
-  position: relative;
-  top: -1px;
-  font-size: 11px;
+  display: inline-block;
+  font-size: 12px;
   margin-right: 4px;
-  color: var(--text-color--light);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  line-height: 28px;
+  color: var(--text-color--default);
+  background: var(--bg-color--semi-light);
 }
 
 .nav .nav-item.current,
@@ -114,10 +120,23 @@ a:hover {
 
 .nav .nav-item.current {
   font-weight: 500;
+  color: var(--text-color--markdown-link);
+}
+
+.nav .nav-item.current .fa-fw {
+  color: #fff;
+  background: var(--text-color--markdown-link);
 }
 
 beaker-record-thread {
-  margin: 20px 0;
+  margin: 20px 0 100px;
+}
+
+@media(min-width: 980px) {
+  .nav .nav-item:before,
+  .nav .nav-item:after {
+    display: none !important;
+  }
 }
 
 @media(max-width: 980px) {
@@ -127,7 +146,7 @@ beaker-record-thread {
 
   .content {
     max-width: 800px;
-    margin: 130px auto 0;
+    margin: 156px auto 0;
   }
 
   .sidebar {
@@ -135,18 +154,10 @@ beaker-record-thread {
     left: 0;
     top: 0;
     width: 100%;
-    height: 112px;
+    height: 136px;
     z-index: 20;
     background: var(--bg-color--default);
     border-bottom: 1px solid var(--border-color--light);
-  }
-
-  .sidebar-inner {
-    position: relative;
-    top: 0;
-    display: block;
-    max-width: 800px;
-    margin: 0 auto;
   }
 
   .header {
@@ -160,32 +171,44 @@ beaker-record-thread {
   }
 
   .header .thumb img {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
   }
 
   .header button {
+    position: fixed;
     top: 10px;
-    left: unset;
     right: 10px;
+    width: auto;
+    padding: 5px 15px;
   }
 
   .header .info {
     padding: 8px;
+    margin: 0;
   }
 
   .nav {
+    position: relative;
+    top: 0;
     display: flex;
+    padding-left: 8px;
   }
   
   .nav .nav-item {
-    border-bottom: 2px solid transparent;
     margin-right: 5px;
-    padding: 6px;
+    padding: 0 6px;
   }
-  
-  .nav .nav-item.current {
-    border-bottom: 2px solid var(--border-color--nav-highlight);
+
+  .nav .nav-item .fa-fw {
+    font-size: 11px;
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+  }
+
+  .nav .nav-item .label {
+    display: none;
   }
 }
 `

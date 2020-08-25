@@ -13,8 +13,9 @@ const NAV_ITEMS = [
   {path: '/bookmarks/', icon: 'far fa-star', label: 'Bookmarks'},
   {path: '/blog/', icon: 'fas fa-blog', label: 'Blog'},
   {path: '/pages/', icon: 'far fa-file', label: 'Pages'},
-  {path: '/microblog/', icon: 'far fa-comment-alt', label: 'Microblog'},
-  {path: '/comments/', icon: 'far fa-comments', label: 'Comments'}
+  {path: '/microblog/', icon: 'far fa-comment-alt', label: 'Posts'},
+  {path: '/comments/', icon: 'far fa-comments', label: 'Comments'},
+  {path: '/subscriptions/', icon: 'fas fa-rss', label: 'Subscriptions'}
 ]
 
 class DriveViewApp extends LitElement {
@@ -57,9 +58,9 @@ class DriveViewApp extends LitElement {
   render () {
     if (!this.info) return html``
     const navItem = ({path, icon, label}) => html`
-      <a class="nav-item ${location.pathname === path ? 'current' : ''}" href=${path}>
+      <a class="nav-item ${location.pathname === path ? 'current' : ''}" href=${path} data-tooltip=${label}>
         <span class="fa-fw ${icon}"></span>
-        ${label}
+        <span class="label">${label}</span>
       </a>
     `
     return html`
@@ -69,9 +70,7 @@ class DriveViewApp extends LitElement {
         ${this.isDirectory ? this.renderDirectory() : this.renderFile()}
       </div>
       <div class="sidebar">
-        <div class="sidebar-inner">
           <div class="header">
-            ${this.renderHeaderButtons()}
             <div class="thumb">
               <a href="/"><img src="/thumb" @error=${e => {e.currentTarget.style.display = 'none'}}></a>
             </div>
@@ -91,11 +90,11 @@ class DriveViewApp extends LitElement {
                 </div>
               `}
             </div>
+            ${this.renderHeaderButtons()}
           </div>
           <div class="nav">
             ${NAV_ITEMS.map(navItem)}
           </div>
-        </div>
       </div>
     `
   }
@@ -193,6 +192,7 @@ class DriveViewApp extends LitElement {
             .index=${['beaker/index/subscriptions']}
             .sources=${[this.info.origin]}
             show-date-titles
+            no-merge
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
@@ -206,9 +206,8 @@ class DriveViewApp extends LitElement {
   renderFile () {
     return html`
       <beaker-record-thread
-        class="no-bg"
         record-url=${window.location.toString()}
-        render-subject-always
+        full-page
         profile-url=${this.profile?.url}
       ></beaker-record-thread>
     `

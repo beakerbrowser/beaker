@@ -4,6 +4,10 @@ import markdownCSS from 'beaker://app-stdlib/css/markdown.css.js'
 const cssStr = css`
 ${markdownCSS}
 
+:host {
+  display: block;
+}
+
 a {
   text-decoration: none;
   color: #2864dc;
@@ -15,7 +19,9 @@ a:hover {
 
 .markdown {
   display: block;
-  margin: 20px 0 10px;
+  font-size: 15px;
+  line-height: 1.4;
+  padding: 50px 20px 40px 0;
 }
 
 .markdown > :first-child {

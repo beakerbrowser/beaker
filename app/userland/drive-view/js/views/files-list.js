@@ -20,7 +20,7 @@ class FilesList extends LitElement {
 
     a {
       text-decoration: none;
-      color: #2864dc;
+      color: var(--text-color--markdown-link);
     }
 
     a:hover {
@@ -28,6 +28,8 @@ class FilesList extends LitElement {
     }
 
     .entries {
+      border: 1px solid var(--border-color--light);
+      border-radius: 4px;
       margin: 20px 0;
       font-size: 14px;
       letter-spacing: 0.75px;
@@ -40,18 +42,24 @@ class FilesList extends LitElement {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--border-color--light);
     }
 
     .entries > div:hover {
-      background: #fafafd;
+      background: var(--bg-color--light);
+    }
+
+    .entries > div:last-child {
+      border: 0;
     }
 
     .entries .size {
-      color: #556;
+      color: var(--text-color--light);
     }
 
     .entries .fa-fw {
-      color: #556;
+      color: var(--text-color--light);
     }
 
     .prompt {
