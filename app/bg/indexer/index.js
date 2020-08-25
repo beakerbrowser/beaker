@@ -629,12 +629,23 @@ export async function triggerSiteIndex (origin) {
 /**
  * @returns {Promise<void>}
  */
+var _isFirstRun = undefined
 async function tick () {
   try {
     var myOrigins = await listMyOrigins()
+    if (typeof _isFirstRun === 'undefined') {
+      _isFirstRun = await getIsFirstRun()
+    }
 
     var originsToIndex = await listOriginsToIndex()
     await chunkMapAsync(originsToIndex, 10, origin => indexSite(origin, myOrigins))
+
+    if (_isFirstRun) {
+      // immediately re-run now that we've populated with subscription records
+      _isFirstRun = false
+      originsToIndex = await listOriginsToIndex()
+      await chunkMapAsync(originsToIndex, 10, origin => indexSite(origin, myOrigins))
+    }
 
     var originsToCapture = await listOriginsToCapture()
     await chunkMapAsync(originsToCapture, 10, async (origin) => {
@@ -708,6 +719,14 @@ async function deindexSite (origin) {
   } finally {
     release()
   }
+}
+
+/**
+ * @returns {Promise<Boolean>}
+ */
+async function getIsFirstRun () {
+  var res = await db('site_indexes').select(db.raw(`count(site_indexes.rowid) as count`))
+  return !res || !res[0] || !res[0].count
 }
 
 /**
