@@ -203,7 +203,9 @@ export async function listRecords (opts) {
   var sep = `[>${Math.random()}<]`
   var query = db('sites')
     .innerJoin('records', 'sites.rowid', 'records.site_rowid')
-    .leftJoin('records_data', 'records.rowid', 'records_data.record_rowid')
+    .leftJoin('records_data', function() {
+      this.on('records.rowid', '=', 'records_data.record_rowid').onNotNull('records_data.value')
+    })
     .select(
       'origin',
       'path',
@@ -435,7 +437,9 @@ export async function listNotifications (opts) {
   var query = db('notifications')
     .leftJoin('sites', 'sites.rowid', 'notifications.site_rowid')
     .leftJoin('records', 'records.rowid', 'notifications.record_rowid')
-    .leftJoin('records_data', 'records.rowid', 'records_data.record_rowid')
+    .leftJoin('records_data', function() {
+      this.on('records.rowid', '=', 'records_data.record_rowid').onNotNull('records_data.value')
+    })
     .select(
       'notifications.rowid as rowid',
       'origin',
