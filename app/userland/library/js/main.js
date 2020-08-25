@@ -174,7 +174,7 @@ export class LibraryApp extends LitElement {
       }
     }
     const items = [
-      {icon: 'fa-fw far fa-file-alt', label: 'New Page Draft', click: () => doNewPage({type: 'beaker/page', draft: true})},
+      {icon: 'fa-fw far fa-file-alt', label: 'New Page Draft', click: () => doNewPage({type: 'page', draft: true})},
       {
 
         icon: html`
@@ -184,7 +184,7 @@ export class LibraryApp extends LitElement {
           </span>
         `,
         label: 'New Private Page',
-        click: () => doNewPage({type: 'beaker/page', private: true})
+        click: () => doNewPage({type: 'page', private: true})
       }
     ]
     contextMenu.create({

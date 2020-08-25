@@ -291,7 +291,6 @@ export class NewPagePopup extends BasePopup {
     var path = (this.type === 'blogpost') ? '/blog/' : '/pages/'
     var name = await getAvailableName(path, this.title.toLowerCase(), this.drive, 'md')
     var metadata = {
-      type: this.type === 'blogpost' ? 'beaker/blogpost' : 'beaker/page',
       title: this.title
     }
     await this.drive.writeFile(joinPath(path, name), `# ${this.title}`, {metadata})

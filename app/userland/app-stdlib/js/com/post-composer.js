@@ -215,18 +215,13 @@ class PostComposer extends LitElement {
       if (subject === parent) parent = undefined // not needed
       await drive.writeFile(filepath, draftText, {
         metadata: {
-          type: 'beaker/comment',
           'beaker/subject': subject,
           'beaker/parent': parent
         }
       })
     } else {
       filepath = `/microblog/${''+Date.now()}.md`
-      await drive.writeFile(filepath, draftText, {
-        metadata: {
-          type: 'beaker/microblogpost'
-        }
-      })
+      await drive.writeFile(filepath, draftText)
     }
     var url = joinPath(driveUrl, filepath)
 

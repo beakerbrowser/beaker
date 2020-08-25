@@ -3,14 +3,6 @@
 
 export const TICK_INTERVAL = 15e3
 export const READ_TIMEOUT = 15e3
-export const FILE_TYPES = {
-  blogpost: 'beaker/blogpost',
-  bookmark: 'beaker/bookmark',
-  comment: 'beaker/comment',
-  microblogpost: 'beaker/microblogpost',
-  page: 'beaker/page',
-  subscription: 'beaker/subscription'
-}
 export const INDEX_IDS = {
   blogposts: 'beaker/index/blogposts',
   bookmarks: 'beaker/index/bookmarks',

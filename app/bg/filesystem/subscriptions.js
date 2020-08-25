@@ -2,7 +2,7 @@ import { joinPath } from '../../lib/strings.js'
 import { createResourceSlug } from '../../lib/urls'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
-import { INDEX_IDS, METADATA_KEYS, FILE_TYPES } from '../indexer/const'
+import { INDEX_IDS, METADATA_KEYS } from '../indexer/const'
 import * as filesystem from './index'
 import { URL } from 'url'
 
@@ -85,7 +85,6 @@ export async function add ({href, title, site}) {
   var path = joinPath('/subscriptions', filename)
   await filesystem.ensureDir('/subscriptions', drive)
   await drive.pda.writeFile(path, '', {metadata: {
-    type: FILE_TYPES.subscription,
     [METADATA_KEYS.href]: href,
     [METADATA_KEYS.title]: title
   }})

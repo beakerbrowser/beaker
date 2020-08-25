@@ -71,8 +71,10 @@ class EditorApp extends LitElement {
   }
 
   get isPage () {
-    var type = this.stat?.metadata?.type
-    return type === 'beaker/page' || 'beaker/blogpost'
+    return (
+      /^\/blog\/([^\/]+).md$/i.test(this.resolvedPath) ||
+      /^\/pages\/([^\/]+).md$/i.test(this.resolvedPath)
+    )
   }
 
   get hasChanges () {
@@ -725,7 +727,6 @@ class EditorApp extends LitElement {
         const onClickSaveMetadata = async (e) => {
           var metadataEl = e.currentTarget.parentNode
           var newMetadata = {}
-          newMetadata.type = metadataEl.querySelector('select').value
           for (let entryEl of Array.from(metadataEl.querySelectorAll('.entry'))) {
             let k = entryEl.querySelector('[name="key"]').value.trim()
             let v = entryEl.querySelector('[name="value"]').value.trim()
@@ -742,9 +743,6 @@ class EditorApp extends LitElement {
           this.stat.metadata = newMetadata
           contextMenu.destroy()
         }
-        const fileTypeOpt = (value, label) => html`
-          <option value=${value} ?selected=${this.stat.metadata.type === value}>File Type: ${label}</option>
-        `
         const onChange = e => {
           e.target.getRootNode().querySelector('button').removeAttribute('disabled')
         }
@@ -758,25 +756,6 @@ class EditorApp extends LitElement {
           .metadata {
             position: relative;
             width: 100%;
-          }
-          .metadata .fa-angle-down {
-            position: absolute;
-            top: 7px;
-            right: 9px;
-            z-index: 1;
-          }
-          .metadata select {
-            width: 100%;
-            border-color: #ccd;
-            border-bottom: 0;
-            padding: 5px 6px 3px;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-            outline: 0;
-            font-size: 12px;
-            font-weight: bold;
-            letter-spacing: 0.3px;
-            -webkit-appearance: none;
           }
           .metadata .entry {
             display: flex;
@@ -828,14 +807,6 @@ class EditorApp extends LitElement {
           </style>
           <div class="dropdown-items center rounded">
             <div class="metadata ${this.readOnly ? 'readonly' : ''}">
-              <span class="fas fa-angle-down"></span>
-              <select name="type" ?disabled=${this.readOnly} @change=${onChange}>
-                ${fileTypeOpt('', 'None')}
-                ${fileTypeOpt('beaker/page', 'Page')}
-                ${fileTypeOpt('beaker/blogpost', 'Blog Post')}
-                ${fileTypeOpt('beaker/microblogpost', 'Micro Blog Post')}
-                ${fileTypeOpt('beaker/comment', 'Comment')}
-              </select>
               ${repeat(entries, entry => `meta-${entry[0]}`, ([k, v]) => html`
                 <div class="entry">
                   <input type="text" name="key" value=${k} ?disabled=${this.readOnly} placeholder="Key" @change=${onChange}>

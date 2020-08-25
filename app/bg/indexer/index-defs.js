@@ -1,20 +1,20 @@
 import { Indexer } from './indexer'
-import { FILE_TYPES, INDEX_IDS, METADATA_KEYS, NOTIFICATION_TYPES } from './const'
+import { INDEX_IDS, METADATA_KEYS, NOTIFICATION_TYPES } from './const'
 import markdownLinkExtractor from 'markdown-link-extractor'
 
 const IS_BLOG_PATH_RE = /^\/blog\/([^\/]+).md$/i
 const IS_BOOKMARKS_PATH_RE = /^\/bookmarks\/([^\/]+).goto$/i
+const IS_COMMENTS_PATH_RE = /^\/comments\/([^\/]+).md$/i
 const IS_MICROBLOG_PATH_RE = /^\/microblog\/([^\/]+).md$/i
+const IS_PAGES_PATH_RE = /^\/pages\/([^\/]+).md$/i
+const IS_SUBSCRIPTIONS_PATH_RE = /^\/subscriptions\/([^\/]+).goto$/i
 
 export const INDEXES = [
   new Indexer({
     id: INDEX_IDS.blogposts,
     title: 'Blogposts',
     filter (update) {
-      return (
-        (update.path.endsWith('.md') && update.metadata.type === FILE_TYPES.blogpost)
-        || (!update.metadata.type && IS_BLOG_PATH_RE.test(update.path))
-      )
+      return IS_BLOG_PATH_RE.test(update.path)
     },
     async getData (site, update) {
       let content = await site.fetch(update.path)
@@ -39,10 +39,7 @@ export const INDEXES = [
     id: INDEX_IDS.bookmarks,
     title: 'Bookmarks',
     filter (update) {
-      return (
-        (update.path.endsWith('.goto') && update.metadata.type === FILE_TYPES.bookmark)
-        || (!update.metadata.type && IS_BOOKMARKS_PATH_RE.test(update.path))
-      )
+      return IS_BOOKMARKS_PATH_RE.test(update.path)
     },
     async getData (site, update) {
       return [
@@ -63,7 +60,7 @@ export const INDEXES = [
     id: INDEX_IDS.comments,
     title: 'Comments',
     filter (update) {
-      return update.path.endsWith('.md') && update.metadata.type === FILE_TYPES.comment
+      return IS_COMMENTS_PATH_RE.test(update.path)
     },
     async getData (site, update) {
       let content = await site.fetch(update.path)
@@ -87,10 +84,7 @@ export const INDEXES = [
     id: INDEX_IDS.microblogposts,
     title: 'Microblog Posts',
     filter (update) {
-      return (
-        (update.path.endsWith('.md') && update.metadata.type === FILE_TYPES.microblogpost)
-        || (!update.metadata.type && IS_MICROBLOG_PATH_RE.test(update.path))
-      )
+      return IS_MICROBLOG_PATH_RE.test(update.path)
     },
     async getData (site, update) {
       let content = await site.fetch(update.path)
@@ -112,7 +106,7 @@ export const INDEXES = [
     id: INDEX_IDS.pages,
     title: 'Pages',
     filter (update) {
-      return update.path.endsWith('.md') && update.metadata.type === FILE_TYPES.page
+      return IS_PAGES_PATH_RE.test(update.path)
     },
     async getData (site, update) {
       let content = await site.fetch(update.path)
@@ -137,7 +131,7 @@ export const INDEXES = [
     id: INDEX_IDS.subscriptions,
     title: 'Subscriptions',
     filter (update) {
-      return update.path.endsWith('.goto') && update.metadata.type === FILE_TYPES.subscription
+      return IS_SUBSCRIPTIONS_PATH_RE.test(update.path)
     },
     async getData (site, update) {
       return [

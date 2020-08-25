@@ -11,7 +11,7 @@ export class PublishPopup extends BasePopup {
   constructor ({url, type, title, content, profile}) {
     super()
     this.url = url
-    this.type = type || 'beaker/page'
+    this.type = type || 'page'
     this.title = title
     this.content = content
     this.profile = profile
@@ -20,7 +20,7 @@ export class PublishPopup extends BasePopup {
 
   get typeLabel () {
     return ({
-      'beaker/blogpost': 'blog post'
+      'blogpost': 'blog post'
     })[this.type] || 'page'
   }
 
@@ -167,7 +167,7 @@ customElements.define('beaker-publish-popup', PublishPopup)
 
 function getDefaultPath (type) {
   return ({
-    'beaker/blogpost': '/blog/',
-    'beaker/page': '/pages/'
+    'blogpost': '/blog/',
+    'page': '/pages/'
   })[type] || '/pages/'
 }

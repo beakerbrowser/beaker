@@ -8,10 +8,6 @@ function _title (page) {
   return page?.metadata?.title || 'Untitled'
 }
 
-function _draft (page) {
-  return !!page?.metadata?.['beaker/draft']
-}
-
 export class PagesView extends LitElement {
   static get properties () {
     return {
@@ -110,7 +106,6 @@ export class PagesView extends LitElement {
         <div class="title">${title}</div>
         <div class="info">
           ${isPrivate ? 'Private' : 'Public'}
-          ${_draft(page) ? 'Draft' : ''}</div>
         </div>
         <div class="ctrls">
           <button class="transparent" @click=${e => this.onClickPageMenuBtn(e, page)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
