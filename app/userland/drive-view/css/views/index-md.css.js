@@ -21,7 +21,7 @@ a:hover {
   display: block;
   font-size: 15px;
   line-height: 1.4;
-  padding: 50px 20px 40px 0;
+  padding: 40px 20px 40px 0;
 }
 
 .markdown > :first-child {
