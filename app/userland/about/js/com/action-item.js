@@ -42,7 +42,7 @@ export class ActionItem extends LitElement {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div class="summary with-content">
-          <a class="thumb" href=${this.authorUrl} title=${this.authorTitle}><img src=${joinPath(this.authorUrl, 'thumb')}></a>
+          <a class="thumb" href=${this.authorUrl} title=${this.authorTitle}><img src="asset:thumb:${this.authorUrl}></a>
           <div class="container">
             <div class="header summary">
               ${this.icon ? html`<span class="fa-fw ${this.icon}"></span>` : ''}
@@ -70,7 +70,7 @@ export class ActionItem extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="summary">
-        <a class="thumb" href=${this.authorUrl} title=${this.authorTitle}><img src=${joinPath(this.authorUrl, 'thumb')}></a>
+        <a class="thumb" href=${this.authorUrl} title=${this.authorTitle}><img src="asset:thumb:${this.authorUrl}></a>
         ${this.icon ? html`<span class="fa-fw ${this.icon}"></span>` : ''}
         <a class="author" href=${this.authorUrl} title=${this.authorTitle}>${this.authorTitle}</a>
         <span class="action">${this.action}</span>

@@ -108,7 +108,7 @@ export const protocolHandler = async function (request, respond) {
         'Access-Control-Allow-Origin': corsHeader,
         'Allow-CSP-From': '*',
         'Cache-Control': 'no-cache',
-        'Content-Security-Policy': `default-src beaker:; img-src beaker: 'self'; media-src beaker: 'self';`,
+        'Content-Security-Policy': `default-src beaker:; img-src * data: asset: blob:; media-src * data: asset: blob:;`,
         'Beaker-Trusted-Interface': '1' // see wc-trust.js
       },
       data: intoStream(`<!doctype html>

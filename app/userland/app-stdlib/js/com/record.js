@@ -79,7 +79,7 @@ export class Record extends LitElement {
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
-          <img class="favicon" src="${joinPath(res.site.url, 'thumb')}">
+          <img class="favicon" src="asset:thumb:${res.site.url}">
         </a>
         <span class="arrow"></span>
         <div
@@ -152,7 +152,7 @@ export class Record extends LitElement {
       >
         <div class="header">
           <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
-            <img class="favicon" src="${joinPath(res.site.url, 'thumb')}">
+            <img class="favicon" src="asset:thumb:${res.site.url}">
           </a>
           <div class="origin">
             ${res.site.url === 'hyper://private/' ? html`
@@ -219,7 +219,7 @@ export class Record extends LitElement {
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
-          <img class="favicon" src="${joinPath(res.site.url, 'thumb')}">
+          <img class="favicon" src="asset:thumb:${res.site.url}">
         </a>
         <div>
           <a class="author" href=${res.site.url} title=${res.site.title}>
@@ -289,7 +289,7 @@ export class Record extends LitElement {
                   Me (Private)
                 </a>
               ` : html`
-                <img class="favicon" src="${joinPath(res.site.url, 'thumb')}">
+                <img class="favicon" src="asset:thumb:${res.site.url}">
                 <a class="author" href=${res.site.url} title=${res.site.title}>
                   ${res.site.title}
                 </a>
@@ -358,7 +358,7 @@ export class Record extends LitElement {
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
-          <img class="favicon" src="${joinPath(res.site.url, 'thumb')}">
+          <img class="favicon" src="asset:thumb:${res.site.url}">
         </a>
         <div class="container">
           <div class="title">

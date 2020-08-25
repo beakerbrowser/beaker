@@ -196,7 +196,7 @@ export class NewPagePopup extends BasePopup {
       </nav>
       <form @submit=${this.onSubmit}>
         <div class="where">
-          <img src=${joinPath(this.profile.url, 'thumb')}>
+          <img src="asset:thumb:${this.profile.url}">
           <div>
             <div class="title">${this.profile.title}</div>
             <div>

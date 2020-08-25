@@ -51,7 +51,7 @@ export class SiteInfo extends LitElement {
       <div class="full">
         <a href=${this.siteInfo.url}>
           <beaker-img-fallbacks>
-            <img class="thumb" src="${joinPath(this.siteInfo.url, 'thumb')}" slot="img1">
+            <img class="thumb" src="asset:thumb:${this.siteInfo.url}" slot="img1">
             <img class="thumb" src="asset:favicon-100:${this.url}" slot="img2">
           </beaker-img-fallbacks>
         </a>
