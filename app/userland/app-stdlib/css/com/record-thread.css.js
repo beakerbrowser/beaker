@@ -13,7 +13,7 @@ ${spinnerCSS}
 :host {
   display: block;
   position: relative;
-  background: var(--bg-color--light);
+  background: var(--bg-color--default);
 }
 
 :host([full-page]) {
@@ -116,20 +116,12 @@ beaker-record {
   max-width: 100%;
 }
 
-.comments {
-  border-radius: 4px;
-}
-
 .comments-header {
   background: var(--bg-color--light);
-  padding: 10px 0;
+  padding: 10px;
   margin-bottom: 2px;
   font-size: 13px;
   color: var(--text-color--light);
-}
-
-:host([full-page]) .comments-header {
-  padding: 10px;
 }
 
 .comments-header strong {

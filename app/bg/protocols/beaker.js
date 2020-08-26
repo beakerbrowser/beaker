@@ -243,7 +243,7 @@ async function beakerProtocol (request, respond) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'init'), cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://editor' || requestUrl.startsWith('beaker://editor/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'editor'), cb, {fallbackToIndexHTML: true})
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'editor'), cb)
   }
   if (requestUrl === 'beaker://explorer' || requestUrl.startsWith('beaker://explorer/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'explorer'), cb, {fallbackToIndexHTML: true})
@@ -315,6 +315,10 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/vs/') && requestUrl.endsWith('.css')) {
     let filePath = requestUrl.slice('beaker://assets/vs/'.length)
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
+  }
+  if (requestUrl.startsWith('beaker://assets/vs/') && requestUrl.endsWith('.ttf')) {
+    let filePath = requestUrl.slice('beaker://assets/vs/'.length)
+    return cb(200, 'OK', 'font/ttf', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
   }
   if (requestUrl.startsWith('beaker://editor/')) {
     return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/editor.html'))

@@ -707,7 +707,7 @@ a:hover {
 
 .record.comment beaker-post-composer {
   display: block;
-  padding: 10px 0;
+  padding: 10px 20px;
 }
 
 `

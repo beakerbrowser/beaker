@@ -83,6 +83,7 @@ export class RecordThread extends LitElement {
     this.relatedItemCount = replies.length - this.commentCount
     this.replies = toThreadTree(replies)
     await this.requestUpdate()
+    this.scrollHighlightedPostIntoView()
     emit(this, 'load')
   }
 
@@ -96,7 +97,7 @@ export class RecordThread extends LitElement {
 
   scrollHighlightedPostIntoView () {
     try {
-      this.shadowRoot.querySelector('.highlighted').scrollIntoView()
+      this.shadowRoot.querySelector('.highlight').scrollIntoView()
     } catch {}
   }
 

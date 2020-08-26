@@ -1,61 +1,86 @@
 import {css} from '../../vendor/lit-element/lit-element.js'
 import buttonsCSS from '../buttons2.css.js'
 import tooltipCSS from '../tooltip.css.js'
+import markdownCSS from '../markdown.css.js'
 
 const cssStr = css`
 ${buttonsCSS}
 ${tooltipCSS}
+${markdownCSS}
 
-.quill-container {
-  background: var(--bg-color--default);
-  margin-bottom: 6px;
+nav {
+  display: flex;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
 }
 
-.quill-container .ql-toolbar {
-  padding: 3px 8px;
+nav a {
+  border: 1px solid transparent;
+  padding: 5px 14px;
+}
+
+nav a.current {
+  position: relative;
+  background: var(--bg-color--default);
   border: 1px solid var(--border-color--light);
+  border-bottom: 1px solid transparent;
   border-top-left-radius: 4px;
   border-top-right-radius: 4px;
 }
 
-.quill-container .ql-container {
+nav a.current:after {
+  content: '';
+  background: var(--bg-color--default);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  z-index: 1;
+}
+
+nav a:hover:not(.current) {
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--bg-color--light);
+}
+
+.view {
+  position: relative;
+  background: var(--bg-color--default);
   border: 1px solid var(--border-color--light);
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-radius: 4px;
+  border-top-left-radius: 0;
+  padding: 14px 0 2px;
+  margin-bottom: 10px;
 }
 
-.quill-container .ql-container .ql-editor {
-  min-height: 100px;
+.placeholder {
+  position: absolute;
+  top: 15px;
+  left: 13px;
+  color: var(--text-color--pretty-light);
+  z-index: 1;
 }
 
-.quill-container .ql-editor {
-  font-size: 14px;
+.editor {
+  height: 150px;
+  position: relative;
 }
 
-.quill-container .ql-editor a {
-  color: var(--text-color--markdown-link);
+.editor.hidden {
+  display: none;
 }
 
-.ql-editor ol, .ql-editor ul {
-  padding-left: 0;
-}
-
-.quill-container .ql-toolbar .ql-formats {
-  margin-right: 10px;
-}
-
-.quill-container .ql-toolbar button {
-  width: 24px;
-  height: 20px;
-  box-shadow: none;
+textarea.hidden {
+  display: none;
 }
 
 .preview {
   font-size: 14px;
   background: var(--bg-color--default);
-  border: 1px solid var(--border-color--light);
-  border-radius: 4px;
-  padding: 14px;
+  color: var(--text-color--default);
+  padding: 0px 14px 14px;
 }
 .preview > :first-child {
   margin-top: 0;
@@ -82,6 +107,10 @@ ${tooltipCSS}
 
 .visibility.disabled {
   cursor: default;
+}
+
+input[type="file"] {
+  display: none;
 }
 `
 export default cssStr

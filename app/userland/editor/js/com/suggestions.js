@@ -1,5 +1,4 @@
 /* globals monaco */
-import { debouncer } from '../../../app-stdlib/js/functions.js'
 
 export default function registerSuggestions () {
   MarkdownSuggestions.register()
@@ -10,8 +9,8 @@ export class MarkdownSuggestions {
     this.mdLinkQueryRegex = /\[(.*?)\]/
     this.mdMentionQueryRegex = /@(\w*)/
     this.searchDebouncer = debouncer(100)
-    beaker.browser.getProfile().then(p => {
-      this.profile = p
+    beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').then(async (addrs) => {
+      this.profile = await beaker.hyperdrive.getInfo(addrs?.profiles?.[0]?.key)
     })
   }
 
@@ -44,6 +43,7 @@ export class MarkdownSuggestions {
       const title = s.metadata.title || s.url.split('/').pop()
       const detail = s.site.title
       return {
+        kind: 7, // "Interface"
         label: title ? `(${type}) - ${title}` : `(${type})`,
         detail,
         range: match.range,
@@ -63,6 +63,7 @@ export class MarkdownSuggestions {
     }))
     const suggestions = queryResults.map(s => {
       return {
+        kind: 7, // "Interface"
         label: s.metadata.title,
         range: match.range,
         filterText: value,
@@ -74,6 +75,7 @@ export class MarkdownSuggestions {
       let title = this.profile?.title.toLowerCase() || ''
       if (title.includes(term.toLowerCase())) {
         suggestions.unshift({
+          kind: 7, // "Interface"
           label: this.profile.title,
           range: match.range,
           filterText: value,
@@ -116,5 +118,41 @@ export class MarkdownSuggestions {
     }
 
     return null
+  }
+}
+
+function debouncer (ms, fallback) {
+  let stack = []
+  let running = false
+
+  async function pop () {
+    if (!stack.length) {
+      running = false
+      return
+    }
+    running = true
+    const startTime = Date.now()
+    const { run, cancel } = stack.pop()
+    for (let i = 0; i < stack.length; i++) {
+      stack.pop().cancel()
+    }
+    try {
+      await run()
+    } finally {
+      const diff = ms - (Date.now() - startTime)
+      if (diff < 0) return pop()
+      else setTimeout(pop, diff)
+    }
+  }
+
+  return async function push (task) {
+    return new Promise((resolve, reject) => {
+      stack.push({
+        run: () => task().then(resolve, reject),
+        // Resolve with empty search results if cancelled.
+        cancel: () => resolve(fallback)
+      })
+      if (!running) pop()
+    })
   }
 }

@@ -1,22 +1,18 @@
-/* globals beaker */
+/* globals beaker monaco */
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
-import { Quill } from '../../vendor/quill/quill.js'
-import '../../vendor/quill-mention/quill.mention.js'
-import { deltaToMarkdown, quillFormatsHackfix } from '../quill.js'
 import { joinPath, toNiceUrl } from '../strings.js'
 import { debouncer } from '../functions.js'
 import * as contextMenu from './context-menu.js'
+import registerSuggestions from 'beaker://editor/js/com/suggestions.js'
 import css from '../../css/com/post-composer.css.js'
-
-Quill.import('formats/link').PROTOCOL_WHITELIST.push('hyper')
-quillFormatsHackfix(Quill, ['bold', 'italic', 'strike', 'link', 'code', 'list', 'image', 'blockquote'])
 
 class PostComposer extends LitElement {
   static get properties () {
     return {
       placeholder: {type: String},
-      isEmpty: {type: Boolean},
+      currentView: {type: String},
+      draftText: {type: String, attribute: 'draft-text'},
       subject: {type: String},
       parent: {type: String},
       _visibility: {type: String}
@@ -26,10 +22,13 @@ class PostComposer extends LitElement {
   constructor () {
     super()
     this.placeholder = 'What\'s new?'
-    this.isEmpty = true
+    this.currentView = 'edit'
+    this.draftText = ''
     this._visibility = 'public'
     this.subject = undefined
     this.parent = undefined
+    this.editor = undefined
+    this.blobs = []
     beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').then(async (addr) => {
       this.profile = await beaker.hyperdrive.getInfo(addr?.profiles?.[0]?.key)
     })
@@ -39,6 +38,10 @@ class PostComposer extends LitElement {
 
   static get styles () {
     return css
+  }
+
+  get isEmpty () {
+    return !this.draftText
   }
 
   get mustBePrivate () {
@@ -58,23 +61,62 @@ class PostComposer extends LitElement {
     this._visibility = v
   }
 
+  async createEditor () {
+    return new Promise((resolve, reject) => {
+      window.require.config({ baseUrl: 'beaker://assets/' })
+      window.require(['vs/editor/editor.main'], () => {
+        registerSuggestions()
+        this.editor = monaco.editor.create(this.shadowRoot.querySelector('.editor'), {
+          automaticLayout: true,
+          contextmenu: false,
+          dragAndDrop: true,
+          fixedOverflowWidgets: true,
+          folding: false,
+          lineNumbers: false,
+          links: true,
+          minimap: {enabled: false},
+          model: monaco.editor.createModel(this.draftText, 'markdown'),
+          renderLineHighlight: 'none',
+          roundedSelection: false,
+          wordWrap: 'on'
+        })
+        resolve()
+      })
+    })
+  }
+
   // rendering
   // =
 
   render () {
     const mustBePrivate = this.mustBePrivate
+    const navItem = (id, label) => html`
+      <a
+        class=${this.currentView === id ? 'current' : ''}
+        @click=${e => { this.currentView = id }}
+      >${label}</a>
+    `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill/quill.snow.css">
-      <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill/editor-style-fixes.css">
-      <link rel="stylesheet" href="beaker://app-stdlib/vendor/quill-mention/quill.mention.css">
+      <link rel="stylesheet" href="beaker://assets/vs/editor/editor.main.css">
       <form @submit=${this.onSubmit}>
-        <div class="quill-container">
-          <div id="quill-editor"></div>
+        <nav>
+          ${navItem('edit', 'Write')}
+          ${navItem('preview', 'Preview')}
+        </nav>
+
+        <div class="view">
+          ${this.isEmpty ? html`<div class="placeholder">${this.placeholder}</div>` : ''}
+          <div class="editor ${this.currentView === 'edit' ? '' : 'hidden'}"></div>
+          ${this.currentView === 'preview' ? this.renderPreview() : ''}
         </div>
 
         <div class="actions">
           <div class="ctrls">
+            <input type="file" class="image-select" accept=".png,.gif,.jpg,.jpeg" @change=${this.onChangeImage}>
+            <button class="transparent tooltip-right" @click=${this.onClickAddImage} data-tooltip="Add Image">
+              <span class="far fa-fw fa-image"></span>
+            </button>
           </div>
           <div>      
             <a
@@ -100,69 +142,65 @@ class PostComposer extends LitElement {
   }
 
   renderPreview () {
-    var draftText = deltaToMarkdown(this.quill.getContents().ops)
-    if (!draftText) { 
-      return html`<div class="preview"></div>`
+    if (!this.draftText) { 
+      return html`<div class="preview"><small><span class="fas fa-fw fa-info"></span> You can use Markdown to format your post.</small></div>`
     }
     return html`
       <div class="preview markdown">
-        ${unsafeHTML(beaker.markdown.toHTML(draftText))}
+        ${unsafeHTML(beaker.markdown.toHTML(this.draftText))}
       </div>
     `
   }
 
-  firstUpdated () {
-    var bodyInput = this.shadowRoot.querySelector('#quill-editor')
-    this.quill = new Quill(bodyInput, {
-      placeholder: this.placeholder,
-      bounds: bodyInput.parentElement,
-      modules: {
-        toolbar: [
-          ['bold', 'italic', 'strike', 'code'],
-          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-          ['blockquote'],
-          ['link', 'image'],
-          ['clean']              
-        ],
-        mention: {
-          allowedChars: /^[A-Za-z\sÅÄÖåäö]*$/,
-          mentionDenotationChars: ["@"],
-          source: this.autocompleteOptions.bind(this)
-        }
-      },
-      theme: 'snow'
-    })
-    this.quill.focus()
-    this.quill.setSelection(this.quill.getLength())
-    this.quill.on('text-change', () => {
-      this.isEmpty = this.quill.getLength() <= 1
+  async firstUpdated () {
+    await this.createEditor()
+    this.editor.focus()
+    this.editor.onDidChangeModelContent(e => {
+      this.draftText = this.editor.getValue()
     })
   }
 
-  async autocompleteOptions (searchTerm, renderList, mentionChar) {
-    if (!searchTerm) return renderList([], searchTerm)
-    var searchId = ++this.searchQueryId
-    var queryResults = await this.searchDebouncer(() => beaker.database.searchRecords(searchTerm, {
-      filter: {index: ['beaker/index/subscriptions'], site: this.profile.url},
-      limit: 10,
-      sort: 'rank',
-      reverse: true
-    }))
-    if (!queryResults || searchId !== this.searchQueryId) return
-    var suggestions = queryResults.map(s => {
-      return {id: s.metadata.href, value: s.metadata.title || toNiceUrl(s.metadata.href)}
-    })
-    {
-      let title = this.profile?.title.toLowerCase() || ''
-      if (title.includes(searchTerm.toLowerCase())) {
-        suggestions.unshift({id: this.profile.url, value: this.profile.title})
-      }
-    }
-    renderList(suggestions, searchTerm)
+  updated () {
+    try {
+      let textarea = this.shadowRoot.querySelector('textarea')
+      textarea.focus()
+      textarea.style.height = 'auto'
+      textarea.style.height = textarea.scrollHeight + 5 + 'px'
+    } catch {}
   }
   
   // events
   // =
+
+  onKeyupTextarea (e) {
+    this.draftText = e.currentTarget.value
+  }
+
+  onClickAddImage (e) {
+    e.preventDefault()
+    this.currentView = 'edit'
+    this.shadowRoot.querySelector('.image-select').click()
+  }
+
+  onChangeImage (e) {
+    var file = e.currentTarget.files[0]
+    if (!file) return
+    var url = URL.createObjectURL(file)
+    this.blobs.push({file, url})
+
+    var newlines = '\n\n'
+    if (!this.draftText || this.draftText.endsWith('\n\n')) {
+      newlines = ''
+    } else if (this.draftText.endsWith('\n')) {
+      newlines = '\n'
+    }
+    this.draftText += `${newlines}![${file.name.replace(/]/g, '')}](${url})\n`
+    this.editor.setValue(this.draftText)
+
+    this.requestUpdate().then(() => {
+      this.shadowRoot.querySelector('textarea').value = this.draftText
+    })
+  }
 
   onClickVisibility (e) {
     if (this.mustBePrivate) return
@@ -188,7 +226,8 @@ class PostComposer extends LitElement {
   onCancel (e) {
     e.preventDefault()
     e.stopPropagation()
-    this.quill.setText('')
+    this.draftText = ''
+    this.currentView = 'edit'
     this.dispatchEvent(new CustomEvent('cancel'))
   }
 
@@ -196,8 +235,7 @@ class PostComposer extends LitElement {
     e.preventDefault()
     e.stopPropagation()
 
-    var draftText = deltaToMarkdown(this.quill.getContents().ops)
-    if (!draftText) {
+    if (!this.draftText) {
       return
     }
 
@@ -207,24 +245,48 @@ class PostComposer extends LitElement {
 
     var driveUrl = this.visibility === 'private' ? 'hyper://private' : this.profile.url
     var drive = beaker.hyperdrive.drive(driveUrl)
-    var filepath
+    var filename = '' + Date.now()
+    var folder = ''
+    var postBody = this.draftText
     if (this.subject || this.parent) {
-      filepath = `/comments/${''+Date.now()}.md`
+      folder = '/comments/'
+    } else {
+      folder = '/microblog/'
+    }
+
+    // write all images to the drive and replace their URLs in the post
+    var i = 1
+    var blobsToWrite = this.blobs.filter(b => this.draftText.includes(b.url))
+    for (let blob of blobsToWrite) {
+      let ext = blob.file.name.split('.').pop()
+      let path = `${folder}${filename}-${i++}.${ext}`
+
+      let buf = await blob.file.arrayBuffer()
+      await drive.writeFile(path, buf)
+
+      let url = joinPath(driveUrl, path)
+      while (postBody.includes(blob.url)) {
+        postBody = postBody.replace(blob.url, url)
+      }
+    }
+
+    if (this.subject || this.parent) {
       let subject = this.subject
       let parent = this.parent
       if (subject === parent) parent = undefined // not needed
-      await drive.writeFile(filepath, draftText, {
+      await drive.writeFile(`${folder}${filename}.md`, postBody, {
         metadata: {
           'beaker/subject': subject,
           'beaker/parent': parent
         }
       })
     } else {
-      filepath = `/microblog/${''+Date.now()}.md`
-      await drive.writeFile(filepath, draftText)
+      await drive.writeFile(`${folder}${filename}.md`, postBody)
     }
-    var url = joinPath(driveUrl, filepath)
-
+    
+    this.draftText = ''
+    this.currentView = 'edit'
+    var url = joinPath(driveUrl, `${folder}${filename}.md`)
     this.dispatchEvent(new CustomEvent('publish', {detail: {url}}))
   }
 }
