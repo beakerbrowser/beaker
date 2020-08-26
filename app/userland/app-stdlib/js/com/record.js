@@ -74,12 +74,17 @@ export class Record extends LitElement {
         class=${classMap({
           record: true,
           card: true,
+          'private': res.url.startsWith('hyper://private'),
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
-          <img class="favicon" src="asset:thumb:${res.site.url}">
+          ${res.url.startsWith('hyper://private') ? html`
+            <span class="sysicon fas fa-lock"></span>
+          ` : html`
+            <img class="favicon" src="asset:thumb:${res.site.url}">
+          `}
         </a>
         <span class="arrow"></span>
         <div
@@ -91,7 +96,7 @@ export class Record extends LitElement {
           <div class="header">
             <div class="origin">
               ${res.site.url === 'hyper://private/' ? html`
-                <a class="author" href=${res.site.url} title=${res.site.title}>I privately</a>
+                <a class="author" href=${res.site.url} title=${res.site.title}>I private</a>
               ` : html`
                 <a class="author" href=${res.site.url} title=${res.site.title}>
                   ${res.site.title}
@@ -143,6 +148,7 @@ export class Record extends LitElement {
         class=${classMap({
           record: true,
           comment: true,
+          'private': res.url.startsWith('hyper://private'),
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
         })}
@@ -153,7 +159,7 @@ export class Record extends LitElement {
           </a>
           <div class="origin">
             ${res.site.url === 'hyper://private/' ? html`
-              <a class="author" href=${res.site.url} title=${res.site.title}>I privately</a>
+              <a class="author" href=${res.site.url} title=${res.site.title}>I private</a>
             ` : html`
               <a class="author" href=${res.site.url} title=${res.site.title}>
                 ${res.site.title}
@@ -211,6 +217,7 @@ export class Record extends LitElement {
         class=${classMap({
           record: true,
           action: true,
+          'private': res.url.startsWith('hyper://private'),
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
         })}
@@ -220,7 +227,7 @@ export class Record extends LitElement {
         </a>
         <div>
           <a class="author" href=${res.site.url} title=${res.site.title}>
-            ${res.site.url === 'hyper://private' ? 'I (privately)' : res.site.title}
+            ${res.site.url === 'hyper://private' ? 'I (private)' : res.site.title}
           </a>
           ${res.index === 'beaker/index/subscriptions' ? html`
             <span class="action">subscribed to</span>
@@ -274,7 +281,7 @@ export class Record extends LitElement {
 
     return html`
     <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      <div class="record expanded-link">
+      <div class="record expanded-link ${res.url.startsWith('hyper://private') ? 'private' : ''}">
         <a class="thumb" href=${href} title=${res.site.title}>
           ${this.renderThumb(res)}
         </a>
@@ -357,12 +364,17 @@ export class Record extends LitElement {
         class=${classMap({
           record: true,
           link: true,
+          'private': res.url.startsWith('hyper://private'),
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
-          <img class="favicon" src="asset:thumb:${res.site.url}">
+          ${res.url.startsWith('hyper://private') ? html`
+            <span class="sysicon fas fa-lock"></span>
+          ` : html`
+            <img class="favicon" src="asset:thumb:${res.site.url}">
+          `}
         </a>
         <div class="container">
           <div class="title">
@@ -378,7 +390,7 @@ export class Record extends LitElement {
             by
             <span class="origin">
               <a class="author" href=${res.site.url} title=${res.site.title}>
-                ${res.site.url === 'hyper://private' ? 'Me (Privately)' : res.site.title}
+                ${res.site.url === 'hyper://private' ? 'Me (Private)' : res.site.title}
               </a>
             </span>
             <span class="divider">|</span>

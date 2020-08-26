@@ -158,7 +158,11 @@ class DesktopApp extends LitElement {
 
   get currentNavDateTitleRange () {
     switch (this.currentNav) {
-      case 'pages': return 'month'
+      case 'pages':
+      case 'bookmarks':
+      case 'blogposts':
+      case 'pages':
+        return 'month'
     }
   }
 

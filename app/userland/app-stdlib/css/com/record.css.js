@@ -46,13 +46,11 @@ a:hover {
 
 .record .sysicon {
   display: inline-block;
-  height: 16px;
-  width: 16px;
-  font-size: 9px;
-  line-height: 16px;
-  background: var(--bg-color--semi-light);
-  margin-right: 8px;
-  border-radius: 50%;
+  width: 100%;
+  font-size: 12px;
+  line-height: 30px;
+  color: var(--text-color--private-link);
+  text-align: center;
 }
 
 .record .title a {
@@ -86,8 +84,11 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
-.record.expanded-link:first-child {
-  margin-top: 0;
+.record.expanded-link.private {
+  background: var(--bg-color--private-light);
+  padding: 10px 14px;
+  margin: -10px -14px;
+  border-radius: 4px;
 }
 
 .record.expanded-link .thumb {
@@ -106,15 +107,6 @@ a:hover {
   width: 100%;
   height: 100%;
   object-fit: scale-down;
-}
-
-.record.expanded-link .thumb .icon {
-  display: block;
-  height: 100%;
-  text-align: center;
-  color: var(--text-color--light);
-  line-height: 100px;
-  font-size: 32px;
 }
 
 .record.expanded-link .info {
@@ -165,6 +157,10 @@ a:hover {
   color: var(--text-color--lightish);
   font-weight: 500;
   margin-right: 6px;
+}
+
+.record.expanded-link.private .author {
+  color: var(--text-color--private-default);
 }
 
 .record.expanded-link .type {
@@ -247,23 +243,6 @@ a:hover {
   object-fit: scale-down;
 }
 
-.record.action .thumb .icon {
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  color: var(--text-color--light);
-  line-height: 30px;
-  font-size: 12px;
-}
-
-.record.action .thumb .icon .fa-lock {
-  font-size: 8px;
-  position: absolute;
-  right: 3px;
-  bottom: 27px;
-}
-
 .record.action .author {
   color: var(--text-color--default);
   font-weight: 600;
@@ -293,6 +272,13 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
+.record.link.private {
+  background: var(--bg-color--private-light);
+  padding: 10px 14px;
+  margin: -10px -14px;
+  border-radius: 4px;
+}
+
 .record.link.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
@@ -317,34 +303,6 @@ a:hover {
   object-fit: scale-down;
 }
 
-.record.link .thumb .icon {
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  color: var(--text-color--light);
-  line-height: 30px;
-  font-size: 12px;
-}
-
-.record.link .thumb .icon .fa-lock {
-  position: absolute;
-  font-size: 8px;
-  right: 0px;
-  bottom: 24px;
-}
-
-.record.link .thumb .icon .small-thumb {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  object-fit: cover;
-  right: -6px;
-  bottom: 20px;
-  border: 2px solid var(--bg-color--default);
-}
-
 .record.link .container {
   flex: 1;
 }
@@ -364,13 +322,16 @@ a:hover {
   font-weight: 600;
 }
 
+.record.link.private .origin .author {
+  color: var(--text-color--private-default);
+}
+
 .record.link .title {
   max-width: 590px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text-color--light);
-  
+  color: var(--text-color--light); 
 }
 
 .record.link .title .link-title {
@@ -380,8 +341,12 @@ a:hover {
   color: var(--text-color--result-link);
 }
 
+.record.link.private .title .link-title {
+  color: var(--text-color--private-link);
+}
+
 .record.link .title .link-origin {
-  color: var(--text-color--pretty-light);
+  color: inherit;
 }
 
 .record.link .date a {
@@ -424,6 +389,13 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
+:host(:not([noborders])) .record.card.private {
+  background: var(--bg-color--private-light);
+  padding: 10px 14px;
+  margin: -10px -14px;
+  border-radius: 4px;
+}
+
 .record.card.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
@@ -452,14 +424,8 @@ a:hover {
   object-fit: scale-down;
 }
 
-.record.card .thumb .icon {
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  color: var(--text-color--light);
-  line-height: 20px;
-  font-size: 8px;
+:host([noborders]) .record.card .thumb .sysicon {
+  line-height: 33px;
 }
 
 .record.card .arrow {
@@ -475,6 +441,12 @@ a:hover {
   border-top: 1px solid var(--border-color--light);
   border-left: 1px solid var(--border-color--light);
   transform: rotate(-45deg);
+}
+
+.record.card.private .arrow {
+  /* correct against the margin/padding mods of .private */
+  top: 30px;
+  left: 55px;
 }
 
 .record.card.is-notification .arrow {
@@ -508,6 +480,7 @@ a:hover {
   align-items: baseline;
   font-size: 13px;
   padding: 8px 12px 6px;
+  color: var(--text-color--light);
 }
 
 .record.card .header > * {
@@ -520,13 +493,17 @@ a:hover {
 }
 
 .record.card .header a {
-  color: var(--text-color--light);
+  color: inherit;
 }
 
 .record.card .origin .author {
   font-weight: 600;
   font-size: 14px;
   color: var(--text-color--default);
+}
+
+.record.card.private .origin .author {
+  color: var(--text-color--private-default);
 }
 
 .record.card .title {
@@ -547,7 +524,7 @@ a:hover {
 }
 
 .record.card .context a {
-  color: var(--text-color--light);
+  color: inherit;
 }
 
 .record.card .content {
@@ -624,6 +601,10 @@ a:hover {
   border-radius: 4px;
 }
 
+.record.comment.private {
+  background: var(--bg-color--private-light);
+}
+
 .record.comment::before {
   content: "";
   display: block;
@@ -673,6 +654,10 @@ a:hover {
 
 .record.comment .origin .author {
   color: var(--text-color--default);
+}
+
+.record.comment.private .origin .author {
+  color: var(--text-color--private-default);
 }
 
 .record.comment .title {

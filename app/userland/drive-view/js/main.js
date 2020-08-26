@@ -136,6 +136,7 @@ class DriveViewApp extends LitElement {
           <beaker-record-feed
             .sources=${[this.info.origin]}
             show-date-titles
+            date-title-range="month"
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
@@ -147,6 +148,7 @@ class DriveViewApp extends LitElement {
             .index=${['beaker/index/microblogposts']}
             .sources=${[this.info.origin]}
             show-date-titles
+            date-title-range="month"
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
@@ -157,8 +159,8 @@ class DriveViewApp extends LitElement {
           <beaker-record-feed
             .index=${['beaker/index/blogposts']}
             .sources=${[this.info.origin]}
-            date-title-range="month"
             show-date-titles
+            date-title-range="month"
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
@@ -182,6 +184,7 @@ class DriveViewApp extends LitElement {
             .index=${['beaker/index/bookmarks']}
             .sources=${[this.info.origin]}
             show-date-titles
+            date-title-range="month"
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
@@ -193,6 +196,7 @@ class DriveViewApp extends LitElement {
             .index=${['beaker/index/comments']}
             .sources=${[this.info.origin]}
             show-date-titles
+            date-title-range="month"
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
@@ -204,6 +208,7 @@ class DriveViewApp extends LitElement {
             .index=${['beaker/index/subscriptions']}
             .sources=${[this.info.origin]}
             show-date-titles
+            date-title-range="month"
             no-merge
             limit="50"
             profile-url=${this.profile.url}
