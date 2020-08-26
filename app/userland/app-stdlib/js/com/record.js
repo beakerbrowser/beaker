@@ -146,9 +146,6 @@ export class Record extends LitElement {
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
         })}
-        @mousedown=${this.onMousedownCard}
-        @mouseup=${this.onMouseupCard}
-        @mousemove=${this.onMousemoveCard}
       >
         <div class="header">
           <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
@@ -163,7 +160,6 @@ export class Record extends LitElement {
               </a>
             `}
           </div>
-          <span>&middot;</span>
           <div class="date">
             <a href=${res.url} data-tooltip=${(new Date(res.ctime)).toLocaleString()}>
               ${relativeDate(res.ctime)}
@@ -205,9 +201,10 @@ export class Record extends LitElement {
       subject = isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : res.metadata.title || res.metadata.href
     } else {
       if (res.metadata.title) subject = res.metadata.title
-      else if (res.content) subject = shorten(removeMarkdown(res.content), 40)
+      else if (res.content) subject = shorten(removeMarkdown(res.content), 150)
       else subject = fancyUrlAsync(res.url)
     }
+    var showContentAfter = ['beaker/index/microblogposts', 'beaker/index/comments'].includes(res.index)
 
     return html`
       <div
@@ -230,6 +227,8 @@ export class Record extends LitElement {
             <a class="subject" href=${res.metadata.href} title=${subject}>${subject}</a>
           ` : res.index === 'beaker/index/bookmarks' ? html`
             <span class="action">bookmarked ${this.actionTarget}</span>
+          ` : showContentAfter ? html`
+            <span class="action">mentioned ${this.actionTarget}</span>
           ` : html`
             <span class="action">mentioned ${this.actionTarget} in</span>
             <a class="subject" href=${res.url} title=${subject}>${subject}</a>
@@ -246,6 +245,11 @@ export class Record extends LitElement {
           <span class="date">${relativeDate(res.ctime)}</span>
         </div>
       </div>
+      ${showContentAfter ? html`
+        <div class="action-content">
+          <a href=${res.url} title=${subject}>${subject}</a>
+        </div>
+      ` : ''}
     `
   }
 

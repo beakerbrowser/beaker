@@ -194,7 +194,7 @@ export class RecordFeed extends LitElement {
   
   renderNormalResult (result) {
     var renderMode = ({
-      'beaker/index/comments': 'comment',
+      'beaker/index/comments': 'card',
       'beaker/index/microblogposts': 'card',
       'beaker/index/subscriptions': 'action',
     })[result.index] || 'link'

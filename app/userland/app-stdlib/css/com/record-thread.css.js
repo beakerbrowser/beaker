@@ -83,6 +83,7 @@ beaker-record {
 
 .subject-content .markdown {
   line-height: 1.4;
+  letter-spacing: 0.1px;
   margin-bottom: 30px;
   font-size: 15px;
 }
@@ -116,23 +117,26 @@ beaker-record {
 }
 
 .comments {
-  background: var(--bg-color--light);
-  padding: 10px 0;
   border-radius: 4px;
 }
 
-:host([full-page]) .comments {
-  padding: 10px;
-}
-
 .comments-header {
-  margin: 0 4px 10px;
+  background: var(--bg-color--light);
+  padding: 10px 0;
   font-size: 13px;
   color: var(--text-color--light);
 }
 
+:host([full-page]) .comments-header {
+  padding: 10px;
+}
+
 .comments-header strong {
   color: var(--text-color--default);
+}
+
+.comments-header > div:first-child {
+  margin: 0 4px 10px;
 }
 
 .comment-prompt {
@@ -148,8 +152,8 @@ beaker-record {
   margin-top: 10px;
 }
 
-.replies {
-  margin: 0 0 0 15px;
+.replies .replies {
+  margin: 0 0 0 19px;
   border-left: 1px solid var(--border-color--semi-light);
 }
 

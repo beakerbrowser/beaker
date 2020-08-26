@@ -207,6 +207,8 @@ a:hover {
 :host([thread-view]) .record.action {
   padding: 8px 14px;
   align-items: baseline;
+  color: var(--text-color--light);
+  font-size: 13px;
 }
 
 .record.action.unread {
@@ -265,6 +267,22 @@ a:hover {
 .record.action .author {
   color: var(--text-color--default);
   font-weight: 600;
+}
+
+:host([thread-view]) .record.action .author {
+  font-weight: normal;
+}
+
+.action-content {
+  margin-top: -3px;
+  padding: 0 30px 10px;
+  letter-spacing: 0.1px;
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+.action-content a {
+  color: var(--text-color--default);
 }
 
 /** LINK STYLES **/
@@ -537,6 +555,7 @@ a:hover {
   color: var(--text-color--default);
   line-height: 1.3125;
   font-size: 14px;
+  letter-spacing: 0.1px;
   padding: 0px 12px 10px;
 }
 
@@ -600,14 +619,20 @@ a:hover {
 /** COMMENT STYLES **/
 
 .record.comment {
-  background: var(--bg-color--light);
+  position: relative;
   padding: 10px 14px 8px;
   border-radius: 4px;
 }
 
-.record.comment:hover {
-  cursor: pointer;
-  background: var(--bg-color--semi-light);
+.record.comment::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 19px;
+  top: 32px;
+  width: 1px;
+  height: calc(100% - 32px);
+  background: var(--border-color--semi-light);
 }
 
 .record.comment.unread {
@@ -620,13 +645,14 @@ a:hover {
   display: flex;
   align-items: center;
   font-size: 13px;
-  padding: 0 0 6px;
+  padding: 0 0 4px;
 }
 
 .record.comment .header > * {
   margin-right: 5px;
   white-space: nowrap;
 }
+
 .record.comment .header a {
   color: var(--text-color--light);
 }
@@ -642,12 +668,10 @@ a:hover {
   display: block;
   width: 14px;
   height: 14px;
-  object-fit: scale-down;
+  object-fit: cover;
 }
 
 .record.comment .origin .author {
-  font-weight: 600;
-  font-size: 14px;
   color: var(--text-color--default);
 }
 
@@ -673,13 +697,15 @@ a:hover {
   color: var(--text-color--default);
   line-height: 1.3125;
   font-size: 14px;
+  letter-spacing: 0.1px;
+  padding-left: 18px;
 }
 
 .record.comment .content > :first-child { margin-top: 0; }
 .record.comment .content > :last-child { margin-bottom: 0; }
 
 .record.comment .ctrls {
-  padding: 6px 0 0;
+  padding: 6px 0 0 18px;
 }
 
 .record.comment .ctrls a {

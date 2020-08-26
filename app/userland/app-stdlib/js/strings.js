@@ -180,24 +180,29 @@ export function getOrigin (str) {
 	return str.slice(0, j === -1 ? undefined : j)
 }
 
-export function fancyUrl (str) {
+export function fancyUrl (str, siteTitle) {
   try {
     let url = new URL(str)
-    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
+    let parts = [siteTitle || toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
     return parts.join(' › ') + (url.search ? ` ? ${url.search.slice(1)}` : '')
   } catch (e) {
     return str
   }
 }
+
+var _fancyUrlAsyncCache = {}
 export async function* fancyUrlAsync (str) {
   try {
     let url = new URL(str)
-    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
-    yield parts.join(' › ') + (url.search ? ` ? ${url.search.slice(1)}` : '')
+    if (_fancyUrlAsyncCache[url.origin]) {
+      yield fancyUrl(str, _fancyUrlAsyncCache[url.origin])
+      return
+    }
+    yield fancyUrl(str)
     if (url.protocol === 'hyper:') {
       let site = await beaker.database.getSite(url.origin)
-      parts = [site.title].concat(url.pathname.split('/').filter(Boolean))
-      yield parts.join(' › ') + (url.search ? ` ? ${url.search.slice(1)}` : '')
+      _fancyUrlAsyncCache[url.origin] = site.title
+      yield fancyUrl(str, site.title)
     }
   } catch (e) {
     return str

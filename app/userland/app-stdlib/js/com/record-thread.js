@@ -40,7 +40,7 @@ export class RecordThread extends LitElement {
 
   async load () {
     var record = await beaker.database.getRecord(this.recordUrl)
-    this.subjectUrl = record?.metadata?.['beaker/subject'] || record.url
+    this.subjectUrl = record?.metadata?.['beaker/subject'] || record?.url || this.recordUrl
     /* dont await */ this.loadSubject(record)
     /* dont await */ this.loadComments(record)
   }
@@ -54,12 +54,14 @@ export class RecordThread extends LitElement {
         let urlp = new URL(subjectUrl)
         isSubjectSite = urlp.pathname === '/' && !urlp.search
       } catch {}
-      if (isSubjectSite) {
-        subject = await beaker.database.getSite(subjectUrl)
-        subject.isSite = true
-      } else {
-        subject = await beaker.database.getRecord(subjectUrl)
-      }
+      try {
+        if (isSubjectSite) {
+          subject = await beaker.database.getSite(subjectUrl)
+          subject.isSite = true
+        } else {
+          subject = await beaker.database.getRecord(subjectUrl)
+        }
+      } catch {}
     } else {
       subject = record
     }
@@ -152,22 +154,24 @@ export class RecordThread extends LitElement {
       ${this.replies ? html`
         <div class="comments">
           <div class="comments-header">
-            <strong>Comments (${this.commentCount})</strong>
-            and related items (${this.relatedItemCount}) from your network
-          </div>
-          ${this.isCommenting ? html`
-            <beaker-post-composer
-              subject=${this.subject.metadata?.['beaker/subject'] || this.subject.url}
-              parent=${this.subject.url}
-              placeholder="Write your comment"
-              @publish=${this.onPublishComment}
-              @cancel=${this.onCancelComment}
-            ></beaker-post-composer>
-          ` : html`
-            <div class="comment-prompt" @click=${this.onStartComment}>
-              Write your comment
+            <div>
+              <strong>Comments (${this.commentCount})</strong>
+              and related items (${this.relatedItemCount}) from your network
             </div>
-          `}
+            ${this.isCommenting ? html`
+              <beaker-post-composer
+                subject=${this.subject.metadata?.['beaker/subject'] || this.subject.url}
+                parent=${this.subject.url}
+                placeholder="Write your comment"
+                @publish=${this.onPublishComment}
+                @cancel=${this.onCancelComment}
+              ></beaker-post-composer>
+            ` : html`
+              <div class="comment-prompt" @click=${this.onStartComment}>
+                Write your comment
+              </div>
+            `}
+          </div>
           ${this.renderReplies(this.replies)}
         </div>
       ` : ''}
