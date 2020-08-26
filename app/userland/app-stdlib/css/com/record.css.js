@@ -296,6 +296,10 @@ a:hover {
   top: 1px;
 }
 
+.record.link.private .thumb {
+  background: var(--bg-color--private-semi-light);
+}
+
 .record.link .thumb img {
   display: block;
   width: 100%;
@@ -415,6 +419,10 @@ a:hover {
   border-radius: 50%;
   position: relative;
   top: 8px;
+}
+
+.record.card.private .thumb {
+  background: var(--bg-color--private-semi-light);
 }
 
 .record.card .thumb img {

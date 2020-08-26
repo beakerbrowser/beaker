@@ -15,11 +15,12 @@ body {
   --text-color--very-light: #bbc;
   --text-color--markdown-link: #4040e7;
   --text-color--private-default: #4c6f3f;
-  --text-color--private-link: #206d01;
+  --text-color--private-link: #1f6303;
   --bg-color--default: #fff;
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;
   --bg-color--private-light: #f7fbf7;
+  --bg-color--private-semi-light: #dee8d9;
   --bg-color--light-highlight: #f7faff;
 }
 
@@ -37,11 +38,12 @@ body {
     --text-color--very-light: #557;
     --text-color--markdown-link: #4040e7;
     --text-color--private-default: #4c6f3f;
-    --text-color--private-link: #206d01;
+    --text-color--private-link: #1f6303;
     --bg-color--default: #223;
     --bg-color--light: #334;
     --bg-color--semi-light: #445;
     --bg-color--private-light: #f7fbf7;
+    --bg-color--private-semi-light: #dee8d9;
     --bg-color--light-highlight: #f7faff;
   }
 }
