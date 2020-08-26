@@ -84,13 +84,6 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
-.record.expanded-link.private {
-  background: var(--bg-color--private-light);
-  padding: 10px 14px;
-  margin: -10px -14px;
-  border-radius: 4px;
-}
-
 .record.expanded-link .thumb {
   display: block;
   width: 100px;
@@ -128,6 +121,10 @@ a:hover {
 
 .record.expanded-link .title a {
   color: var(--text-color--result-link);
+}
+
+.record.expanded-link.private .title a {
+  color: var(--text-color--private-link);
 }
 
 .record.expanded-link .href {
@@ -272,13 +269,6 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
-.record.link.private {
-  background: var(--bg-color--private-light);
-  padding: 10px 14px;
-  margin: -10px -14px;
-  border-radius: 4px;
-}
-
 .record.link.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
@@ -297,7 +287,7 @@ a:hover {
 }
 
 .record.link.private .thumb {
-  background: var(--bg-color--private-semi-light);
+  background: var(--bg-color--private-light);
 }
 
 .record.link .thumb img {
@@ -393,13 +383,6 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
-:host(:not([noborders])) .record.card.private {
-  background: var(--bg-color--private-light);
-  padding: 10px 14px;
-  margin: -10px -14px;
-  border-radius: 4px;
-}
-
 .record.card.unread {
   background: var(--bg-color--unread);
   outline: 5px solid var(--bg-color--unread);
@@ -422,7 +405,7 @@ a:hover {
 }
 
 .record.card.private .thumb {
-  background: var(--bg-color--private-semi-light);
+  background: var(--bg-color--private-light);
 }
 
 .record.card .thumb img {
@@ -452,9 +435,8 @@ a:hover {
 }
 
 .record.card.private .arrow {
-  /* correct against the margin/padding mods of .private */
-  top: 30px;
-  left: 55px;
+  border-left-style: dashed;
+  border-top-style: dashed;
 }
 
 .record.card.is-notification .arrow {
@@ -473,9 +455,13 @@ a:hover {
   min-width: 0; /* this is a hack to make the overflow: hidden work */
 }
 
+.record.card.private .container {
+  border-style: dashed;
+}
+
 .record.card .container:hover {
   cursor: pointer;
-  border: 1px solid var(--border-color--dark);
+  border-color: var(--border-color--dark);
 }
 
 .record.card.unread .container {
@@ -607,10 +593,6 @@ a:hover {
   position: relative;
   padding: 10px 14px 8px;
   border-radius: 4px;
-}
-
-.record.comment.private {
-  background: var(--bg-color--private-light);
 }
 
 .record.comment::before {

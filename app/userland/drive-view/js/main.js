@@ -34,6 +34,10 @@ class DriveViewApp extends LitElement {
   }
 
   async load () {
+    if (location.origin.startsWith('hyper://private')) {
+      this.classList.add('private')
+    }
+
     let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
     this.profile = await beaker.database.getSite(addressBook?.profiles?.[0]?.key)
 
@@ -84,7 +88,13 @@ class DriveViewApp extends LitElement {
       <div class="sidebar">
           <div class="header">
             <div class="thumb">
-              <a href="/"><img src="/thumb" @error=${e => {e.currentTarget.style.display = 'none'}}></a>
+              <a href="/">
+                ${location.origin.startsWith('hyper://private') ? html`
+                  <span class="sysicon"><span class="fas fa-lock"></span></span>
+                ` : html`
+                  <img src="/thumb" @error=${e => {e.currentTarget.style.display = 'none'}}>
+                `}
+              </a>
             </div>
             <div class="info">
               <div class="title"><a href="/">${this.info.title}</a></div>

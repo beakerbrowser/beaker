@@ -63,6 +63,10 @@ header {
   background: var(--text-color--markdown-link);
 }
 
+.nav.private .nav-item.current .fa-fw {
+  background: var(--text-color--private-link);
+}
+
 .empty {
   color: var(--text-color--light);
   margin: 15px 5px 20px;

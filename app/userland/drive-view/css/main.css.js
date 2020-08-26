@@ -59,6 +59,17 @@ a:hover {
   width: 220px;
 }
 
+.header .sysicon {
+  display: block;
+  background: var(--bg-color--private-light);
+  text-align: center;
+  font-size: 66px;
+  height: 180px;
+  line-height: 170px;
+  color: var(--text-color--private-default);
+  border-radius: 4px;
+}
+
 .header .info {
   margin-bottom: 10px;
 }
@@ -128,6 +139,14 @@ a:hover {
   background: var(--text-color--markdown-link);
 }
 
+:host(.private) .nav .nav-item.current {
+  color: var(--text-color--private-link);
+}
+
+:host(.private) .nav .nav-item.current .fa-fw {
+  background: var(--text-color--private-link);
+}
+
 beaker-record-thread {
   margin: 20px 0 100px;
 }
@@ -173,6 +192,13 @@ beaker-record-thread {
   .header .thumb img {
     width: 80px;
     height: 80px;
+  }
+  
+  .header .sysicon {
+    font-size: 36px;
+    height: 80px;
+    width: 80px;
+    line-height: 73px;
   }
 
   .header button {

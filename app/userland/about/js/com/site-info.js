@@ -35,6 +35,10 @@ export class SiteInfo extends LitElement {
     }
   }
 
+  get isPrivate () {
+    return this.url.startsWith('hyper://private')
+  }
+
   get isSubscribed () {
     return this.subscribers.find(s => s.site.url === this.profileUrl)
   }
@@ -77,6 +81,9 @@ export class SiteInfo extends LitElement {
   }
 
   renderSubscribeButton () {
+    if (this.isPrivate) {
+      return ''
+    }
     if (this.siteInfo.writable) {
       return html`
         <button @click=${this.onEditProperties}>Edit Profile</button>

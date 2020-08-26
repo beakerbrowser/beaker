@@ -95,8 +95,12 @@ export class Record extends LitElement {
         >
           <div class="header">
             <div class="origin">
-              ${res.site.url === 'hyper://private/' ? html`
-                <a class="author" href=${res.site.url} title=${res.site.title}>I private</a>
+              ${res.url.startsWith('hyper://private/') ? html`
+                <a class="author" href=${res.site.url} title=${res.site.title}>
+                  Private
+                  ${res.index === 'beaker/index/comments' ? 'comment' : ''}
+                  ${res.index === 'beaker/index/microblogposts' ? 'post' : ''}
+                </a>
               ` : html`
                 <a class="author" href=${res.site.url} title=${res.site.title}>
                   ${res.site.title}
@@ -158,8 +162,8 @@ export class Record extends LitElement {
             <img class="favicon" src="asset:thumb:${res.site.url}">
           </a>
           <div class="origin">
-            ${res.site.url === 'hyper://private/' ? html`
-              <a class="author" href=${res.site.url} title=${res.site.title}>I private</a>
+            ${res.url.startsWith('hyper://private/') ? html`
+              <a class="author" href=${res.site.url} title=${res.site.title}>Private comment</a>
             ` : html`
               <a class="author" href=${res.site.url} title=${res.site.title}>
                 ${res.site.title}

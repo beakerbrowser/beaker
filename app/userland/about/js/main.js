@@ -180,7 +180,7 @@ class AboutApp extends LitElement {
           @toggle-subscribe=${this.onToggleSubscribe}
           @edit-properties=${this.onEditProperties}
         ></site-info>
-        <div class="nav">
+        <div class="nav ${this.url.startsWith('hyper://private') ? 'private' : ''}">
           ${NAV_ITEMS.map(navItem)}
         </div>
       </header>
