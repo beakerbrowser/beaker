@@ -62,7 +62,6 @@ export const INDEXES = [
     title: 'Comments',
     liveQuery: ['/comments/*.md'],
     filter (update) {
-      console.log(IS_COMMENTS_PATH_RE.test(update.path))
       return IS_COMMENTS_PATH_RE.test(update.path)
     },
     async getData (site, update) {

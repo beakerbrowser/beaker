@@ -5,6 +5,10 @@ import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/sites-list.css.js'
 import { emit } from '../dom.js'
 import { shorten, pluralize, isSameOrigin } from '../strings.js'
+import { writeToClipboard } from '../clipboard.js'
+import * as toast from './toast.js'
+
+const EXPLORER_URL = site => `beaker://explorer/${site.url.slice('hyper://'.length)}`
 
 export class SitesList extends LitElement {
   static get properties () {
@@ -60,6 +64,16 @@ export class SitesList extends LitElement {
     }
   }
 
+  getSiteIdent (site) {
+    if (isSameOrigin(site.origin, this.profileUrl)) {
+      return 'profile'
+    }
+    if (isSameOrigin(site.origin, 'hyper://private')) {
+      return 'private'
+    }
+    return undefined
+  }
+
   queueQuery () {
     if (!this.activeQuery) {
       this.activeQuery = this.query()
@@ -80,7 +94,7 @@ export class SitesList extends LitElement {
           search: this.filter,
           writable: this.listing === 'mine'
         },
-        limit: this.singleRow ? 8 : 1e9
+        limit: this.singleRow ? 3 : 1e9
       }),
       beaker.database.listRecords({
         filter: {index: 'beaker/index/subscriptions'},
@@ -191,14 +205,10 @@ export class SitesList extends LitElement {
       <div class="site">
         <div class="thumb">
           <a href=${site.origin} title=${site.title}><img src="asset:thumb:${site.origin}"></a>
-          ${isSameOrigin(site.origin, this.profileUrl) ? html`
-            <span class="writable">
-              My Profile
-            </span>
-          ` : site.writable ? html`
-            <span class="writable">
-              Mine
-            </span>
+          ${site.writable ? html`
+            <button class="transparent" @click=${e => this.onClickMenu(e, site)}>
+              <span class="fas fa-fw fa-ellipsis-h"></span>
+            </button>
           ` : html`
             <button class="transparent" @click=${e => this.onToggleSubscribe(e, site)}>
               ${this.isSubscribed(site) ? html`
@@ -212,7 +222,7 @@ export class SitesList extends LitElement {
         <div class="info">
           <div class="title"><a href=${site.origin} title=${site.title}>${site.title}</a></div>
           <div class="description">${shorten(site.description, 200)}</div>
-          ${!isSameOrigin(site.origin, 'hyper://private') ? html`
+          ${!isSameOrigin(site.origin, 'hyper://private') && (!site.writable || site.subscriptions?.length > 0) ? html`
             <div class="known-subscribers">
               <a
                 href="#" 
@@ -257,6 +267,78 @@ export class SitesList extends LitElement {
         site: this.profileUrl
       })
     }
+  }
+
+  async onClickMenu (e, site) {
+    var items = [
+      {
+        label: 'Open in a New Tab',
+        click: () => window.open(site.url)
+      },
+      {
+        label: 'Copy Site Link',
+        click: () => {
+          writeToClipboard(site.url)
+          toast.create('Copied to clipboard')
+        }
+      },
+      {type: 'separator'},
+      {
+        label: 'Explore Files',
+        click: () => window.open(EXPLORER_URL(site))
+      },
+      {
+        label: 'Fork this Site',
+        click: () => this.onForkSite(site)
+      },
+      {type: 'separator'},
+      {
+        label: 'Edit Properties',
+        click: () => this.onEditProps(site)
+      },
+      {
+        label: site.writable ? 'Remove from My Library' : 'Stop hosting',
+        disabled: !!this.getSiteIdent(site),
+        click: () => this.onRemoveSite(site)
+      }
+    ]
+    var fns = {}
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].id) continue
+      let id = `item=${i}`
+      items[i].id = id
+      fns[id] = items[i].click
+      delete items[i].click
+    }
+
+    var choice = await beaker.browser.showContextMenu(items)
+    if (fns[choice]) fns[choice]()
+  }
+
+  async onForkSite (site) {
+    site = await beaker.hyperdrive.forkDrive(site.url)
+    toast.create('Site created')
+    window.open(site.url)
+    // TRIGGER INDEX TODO
+    this.load()
+  }
+
+  async onEditProps (site) {
+    await beaker.shell.drivePropertiesDialog(site.url)
+    // TRIGGER INDEX TODO
+    this.load()
+  }
+
+  async onRemoveSite (site) {
+    await beaker.drives.remove(site.url)
+    const undo = async () => {
+      await beaker.drives.configure(site.url)
+      this.load()
+      this.requestUpdate()
+    }
+    toast.create('Site removed', '', 10e3, {label: 'Undo', click: undo})
+    // TRIGGER INDEX TODO
+    this.load()
   }
 }
 

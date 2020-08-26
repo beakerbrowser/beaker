@@ -136,6 +136,7 @@ export async function listSites (opts) {
   var siteRows = await query
   return siteRows.map(row => ({
     origin: row.origin,
+    url: row.origin,
     title: row.title,
     description: row.description,
     writable: Boolean(row.writable)
