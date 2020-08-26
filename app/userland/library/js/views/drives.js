@@ -165,7 +165,7 @@ export class DrivesView extends LitElement {
           ` : ''}
         </div>
       ` : html`
-        ${''/*<div class="loading"><span class="spinner"></span></div>*/}
+        <div class="loading"><span class="spinner"></span></div>
       `}
     `
   }

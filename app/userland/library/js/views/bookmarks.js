@@ -92,7 +92,7 @@ export class BookmarksView extends LitElement {
     var isPrivate = bookmark.site.url.startsWith('hyper://private')
     return html`
       <a
-        class="bookmark"
+        class="bookmark ${isPrivate ? 'private' : 'public'}"
         href=${href}
         title=${title || ''}
         @contextmenu=${e => this.onContextmenuBookmark(e, bookmark)}

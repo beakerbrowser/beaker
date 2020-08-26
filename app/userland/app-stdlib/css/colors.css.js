@@ -8,6 +8,7 @@ body {
   --border-color--dark: #99a;
   --border-color--semi-light: #dde;
   --border-color--very-light: #eef;
+  --border-color--private-light: #b7c7b0;
   --text-color--default: #333;
   --text-color--lightish: #555;
   --text-color--light: #667;
@@ -20,7 +21,7 @@ body {
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;
   --bg-color--private-light: #f7fbf7;
-  --bg-color--private-semi-light: #dee8d9;
+  --bg-color--private-semi-light: #eef5eb;
   --bg-color--light-highlight: #f7faff;
 }
 
@@ -31,6 +32,7 @@ body {
     --border-color--dark: #88a;
     --border-color--semi-light: #447;
     --border-color--very-light: #334;
+    --border-color--private-light: #b7c7b0;
     --text-color--default: #ccd;
     --text-color--lightish: #bbc;
     --text-color--light: #aab;
@@ -43,7 +45,7 @@ body {
     --bg-color--light: #334;
     --bg-color--semi-light: #445;
     --bg-color--private-light: #f7fbf7;
-    --bg-color--private-semi-light: #dee8d9;
+    --bg-color--private-semi-light: #eef5eb;
     --bg-color--light-highlight: #f7faff;
   }
 }

@@ -126,7 +126,7 @@ history-view {
   padding-bottom: 100px;
 }
 
-@media (max-width: 840px) {
+@media (max-width: 960px) {
   header {
     grid-template-columns: 120px 1fr auto;
     padding: 5px;
