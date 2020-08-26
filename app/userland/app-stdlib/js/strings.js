@@ -179,3 +179,27 @@ export function getOrigin (str) {
 	let j = str.indexOf('/', i + 3)
 	return str.slice(0, j === -1 ? undefined : j)
 }
+
+export function fancyUrl (str) {
+  try {
+    let url = new URL(str)
+    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
+    return parts.join(' › ') + (url.search ? ` ? ${url.search.slice(1)}` : '')
+  } catch (e) {
+    return str
+  }
+}
+export async function* fancyUrlAsync (str) {
+  try {
+    let url = new URL(str)
+    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
+    yield parts.join(' › ') + (url.search ? ` ? ${url.search.slice(1)}` : '')
+    if (url.protocol === 'hyper:') {
+      let site = await beaker.database.getSite(url.origin)
+      parts = [site.title].concat(url.pathname.split('/').filter(Boolean))
+      yield parts.join(' › ') + (url.search ? ` ? ${url.search.slice(1)}` : '')
+    }
+  } catch (e) {
+    return str
+  }
+}

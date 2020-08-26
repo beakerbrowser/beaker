@@ -5,7 +5,7 @@ import { asyncReplace } from '../../vendor/lit-element/lit-html/directives/async
 import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/record.css.js'
 import { removeMarkdown } from '../../vendor/remove-markdown.js'
-import { shorten, makeSafe, toNiceDomain, pluralize, joinPath } from '../strings.js'
+import { shorten, makeSafe, toNiceDomain, pluralize, fancyUrlAsync } from '../strings.js'
 import { emit } from '../dom.js'
 import './post-composer.js'
 
@@ -108,7 +108,7 @@ export class Record extends LitElement {
               <span>&middot;</span>
               <div class="context">
                 <a href=${context}>
-                  ${fancyUrl(context)}
+                  ${asyncReplace(fancyUrlAsync(context))}
                 </a>
               </div>
             ` : ''}
@@ -173,7 +173,7 @@ export class Record extends LitElement {
             <span>&middot;</span>
             <div class="context">
               <a href=${context}>
-                ${fancyUrl(context)}
+                ${asyncReplace(fancyUrlAsync(context))}
               </a>
             </div>
           ` : ''}
@@ -206,7 +206,7 @@ export class Record extends LitElement {
     } else {
       if (res.metadata.title) subject = res.metadata.title
       else if (res.content) subject = shorten(removeMarkdown(res.content), 40)
-      else subject = fancyUrl(res.url)
+      else subject = fancyUrlAsync(res.url)
     }
 
     return html`
@@ -544,16 +544,6 @@ function isRootUrl (url) {
     return (new URL(url)).pathname === '/'
   } catch {
     return false
-  }
-}
-
-function fancyUrl (str) {
-  try {
-    let url = new URL(str)
-    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
-    return parts.join(' › ')
-  } catch (e) {
-    return str
   }
 }
 

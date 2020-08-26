@@ -4,7 +4,7 @@ import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
 import css from '../../css/com/record-thread.css.js'
 import { emit } from '../dom.js'
-import { toNiceDomain } from '../strings.js'
+import { fancyUrlAsync } from '../strings.js'
 import * as toast from './toast.js'
 import './record.js'
 import './post-composer.js'
@@ -29,7 +29,10 @@ export class RecordThread extends LitElement {
     super()
     this.recordUrl = ''
     this.isFullPage = false
+    this.subjectUrl = undefined
     this.subject = undefined
+    this.commentCount = 0
+    this.relatedItemCount = 0
     this.replies = undefined
     this.profileUrl = ''
     this.isCommenting = false
@@ -37,24 +40,47 @@ export class RecordThread extends LitElement {
 
   async load () {
     var record = await beaker.database.getRecord(this.recordUrl)
+    this.subjectUrl = record?.metadata?.['beaker/subject'] || record.url
+    /* dont await */ this.loadSubject(record)
+    /* dont await */ this.loadComments(record)
+  }
+
+  async loadSubject (record) {
     var subjectUrl = record?.metadata?.['beaker/subject']
     var subject
     if (subjectUrl) {
-      subject = await beaker.database.getRecord(subjectUrl)
+      let isSubjectSite = false
+      try {
+        let urlp = new URL(subjectUrl)
+        isSubjectSite = urlp.pathname === '/' && !urlp.search
+      } catch {}
+      if (isSubjectSite) {
+        subject = await beaker.database.getSite(subjectUrl)
+        subject.isSite = true
+      } else {
+        subject = await beaker.database.getRecord(subjectUrl)
+      }
     } else {
       subject = record
     }
     if (!subject) subject = {url: subjectUrl || this.recordUrl, notFound: true}
+    this.subject = subject
+    await this.requestUpdate()
+    emit(this, 'load')
+  }
+
+  async loadComments (record) {
     var replies = await beaker.database.listRecords({
       filter: {
-        linksTo: subject.url
+        linksTo: this.subjectUrl
       },
       sort: 'ctime',
       reverse: true
     })
-    this.subject = subject
+    this.commentCount = replies.filter(r => r.index === 'beaker/index/comments').length
+    this.relatedItemCount = replies.length - this.commentCount
     this.replies = toThreadTree(replies)
-    await this.updateComplete
+    await this.requestUpdate()
     emit(this, 'load')
   }
 
@@ -73,56 +99,78 @@ export class RecordThread extends LitElement {
   }
 
   get actionTarget () {
-    let urlp = new URL(this.subject.url)
+    let urlp = new URL(this.subjectUrl)
     return ({
       'beaker/index/microblogposts': 'this post',
       'beaker/index/blogposts': 'this blogpost',
-    })[this.subject.index] || `this ${urlp.pathname === '/' ? 'site' : 'page'}`
+    })[this.subject?.index] || `this ${urlp.pathname === '/' ? 'site' : 'page'}`
   }
 
   // rendering
   // =
 
   render () {
-    if (!this.subject) {
-      return html``
-    }
     var mode = 'link'
-    if (['beaker/index/comments', 'beaker/index/microblogposts'].includes(this.subject.index)) {
+    if (['beaker/index/comments', 'beaker/index/microblogposts'].includes(this.subject?.index)) {
       mode = 'card'
     }
+    console.log(this.subject)
     return html`
-      <div class="subject ${mode}">
-        ${this.subject.notFound ? html`
-          <a class="not-found" href="${this.subject.url}">${fancyUrl(this.subject.url)}</a>
+      ${this.subject ? html`
+        ${this.subject.isSite ? html`
+          <a class="simple-link" href="${this.subject.url}">
+            ${this.subject.title || asyncReplace(fancyUrlAsync(this.subject.url))}
+          </a>
+        ` : this.isFullPage && mode === 'link' ? html`
+          <div class="subject-content">${this.renderSubjectContent()}</div>
         ` : html`
-          <beaker-record
-            .record=${this.subject}
-            render-mode=${mode}
-            noborders
-            view-content-on-click
-            profile-url=${this.profileUrl}
-            @publish-reply=${this.onPublishReply}
-          ></beaker-record>
+          <div class="subject ${mode}">
+            ${this.subject.notFound ? html`
+              <a class="simple-link" href="${this.subject.url}">
+                ${asyncReplace(fancyUrlAsync(this.subject.url))}
+              </a>
+            ` : html`
+              <beaker-record
+                .record=${this.subject}
+                render-mode=${mode}
+                noborders
+                view-content-on-click
+                profile-url=${this.profileUrl}
+                @publish-reply=${this.onPublishReply}
+              ></beaker-record>
+            `}
+          </div>
         `}
-      </div>
-      ${this.isFullPage && mode === 'link' ? html`
-        <div class="subject-content">${this.renderSubjectContent()}</div>
-      ` : ''}
-      ${this.isCommenting ? html`
-        <beaker-post-composer
-          subject=${this.subject.metadata?.['beaker/subject'] || this.subject.url}
-          parent=${this.subject.url}
-          placeholder="Write your comment"
-          @publish=${this.onPublishComment}
-          @cancel=${this.onCancelComment}
-        ></beaker-post-composer>
       ` : html`
-        <div class="comment-prompt" @click=${this.onStartComment}>
-          Write your comment
+        <div class="subject link">
+          <a class="simple-link" href="${this.subjectUrl}">
+            <span class="spinner"></span>
+            ${asyncReplace(fancyUrlAsync(this.subjectUrl))}
+          </a>
         </div>
       `}
-      ${this.renderReplies(this.replies)}
+      ${this.replies ? html`
+        <div class="comments">
+          <div class="comments-header">
+            <strong>Comments (${this.commentCount})</strong>
+            and related items (${this.relatedItemCount}) from your network
+          </div>
+          ${this.isCommenting ? html`
+            <beaker-post-composer
+              subject=${this.subject.metadata?.['beaker/subject'] || this.subject.url}
+              parent=${this.subject.url}
+              placeholder="Write your comment"
+              @publish=${this.onPublishComment}
+              @cancel=${this.onCancelComment}
+            ></beaker-post-composer>
+          ` : html`
+            <div class="comment-prompt" @click=${this.onStartComment}>
+              Write your comment
+            </div>
+          `}
+          ${this.renderReplies(this.replies)}
+        </div>
+      ` : ''}
     `
   }
 
@@ -228,14 +276,4 @@ function toThreadTree (replies) {
     }
   })
   return rootReplies
-}
-
-function fancyUrl (str) {
-  try {
-    let url = new URL(str)
-    let parts = [toNiceDomain(url.hostname)].concat(url.pathname.split('/').filter(Boolean))
-    return parts.join(' › ')
-  } catch (e) {
-    return str
-  }
 }

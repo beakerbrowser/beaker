@@ -29,29 +29,35 @@ beaker-record {
   border: 1px solid var(--border-color--light);
   border-radius: 4px;
   padding: 0 10px;
-  margin-bottom: 10px;
-}
-
-:host([full-page]) .subject.link {
-  position: sticky;
-  top: 0;
-  padding-bottom: 10px;
-  border: 0;
-  margin-bottom: -10px;
-  padding-top: 1px;
 }
 
 .subject beaker-record[render-mode="link"] {
   margin: 10px 6px;
 }
 
-.subject .not-found {
+:host([full-page]) .subject.card {
+  margin-bottom: 10px;
+}
+
+.subject .simple-link {
   display: inline-block;
   margin: 10px 2px;
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
   color: var(--text-color--link);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.subject .simple-link .spinner {
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  position: relative;
+  top: 2px;
 }
 
 .subject .not-found:hover {
@@ -109,14 +115,37 @@ beaker-record {
   max-width: 100%;
 }
 
+.comments {
+  background: var(--bg-color--light);
+  padding: 10px 0;
+  border-radius: 4px;
+}
+
+:host([full-page]) .comments {
+  padding: 10px;
+}
+
+.comments-header {
+  margin: 0 4px 10px;
+  font-size: 13px;
+  color: var(--text-color--light);
+}
+
+.comments-header strong {
+  color: var(--text-color--default);
+}
+
 .comment-prompt {
   padding: 10px 14px;
-  margin-bottom: 10px;
   border-radius: 4px;
   border: 1px solid var(--border-color--light);
   font-style: italic;
   background: var(--bg-color--default);
   color: var(--text-color--light);
+}
+
+.comment-prompt + .replies {
+  margin-top: 10px;
 }
 
 .replies {
