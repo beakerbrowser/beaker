@@ -107,6 +107,6 @@ export function parseUrl (url, base = undefined) {
   let urlp = new URL(url, base)
   return {
     origin: urlp.protocol + '//' + urlp.hostname,
-    path: urlp.pathname + urlp.search + urlp.hash
+    path: urlp.pathname + urlp.search
   }
 }
