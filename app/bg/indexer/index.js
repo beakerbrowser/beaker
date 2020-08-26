@@ -89,6 +89,7 @@ export async function clearAllData () {
  */
 export async function getSite (url) {
   var origin = normalizeOrigin(url)
+  if (!origin.startsWith('hyper://')) return undefined // hyper only for now
   var siteRows = await db('sites').select('*').where({origin}).limit(1)
   if (siteRows[0]) {
     return {
@@ -161,7 +162,7 @@ export async function getRecord (url) {
 
   var record_rowid = rows[0].record_rowid
   var result = {
-    url,
+    url: urlp.origin + urlp.path,
     index: rows[0].index,
     ctime: rows[0].ctime,
     mtime: rows[0].mtime,
@@ -830,6 +831,9 @@ async function deindexSite (origin) {
  * @returns {Promise<RecordDescription>}
  */
 async function getLiveRecord (origin, path) {
+  if (!origin.startsWith('hyper://')) {
+    return undefined // hyper only for now
+  }
   let url = origin + path
   try {
     let site = await loadSite(origin)
