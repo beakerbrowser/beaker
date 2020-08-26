@@ -6,9 +6,7 @@ import hyper from '../hyper/index'
 import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
 import * as bookmarks from './bookmarks'
-import * as subscriptions from './subscriptions'
 import * as trash from './trash'
-import * as setupFlow from '../ui/setup-flow'
 import * as modals from '../ui/subwindows/modals'
 import { PATHS } from '../../lib/const'
 import lock from '../../lib/lock'
@@ -124,12 +122,6 @@ export async function setup () {
     }
   }
   hyper.drives.ensureHosting(hostKeys)
-
-  if (!setupFlow.migratedContactsToFollows) {
-    logger.info('Copying any existing contacts to subscriptions')
-    subscriptions.migrateSubscriptionsFromContacts()
-    setupFlow.setHasMigratedContactsToFollows()
-  }
 }
 
 /**

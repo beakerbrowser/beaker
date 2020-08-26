@@ -4,6 +4,7 @@ import { BrowserWindow } from 'electron'
 import { ICON_PATH } from './windows'
 import * as profileDb from '../dbs/profile-data-db'
 import * as filesystem from '../filesystem/index'
+import * as subscriptions from '../filesystem/subscriptions'
 import knex from '../lib/knex'
 
 // globals
@@ -30,6 +31,11 @@ export async function runSetupFlow () {
   }
   hasVisitedProfile = setupState.hasVisitedProfile === 1
   migratedContactsToFollows = setupState.migratedContactsToFollows === 1
+
+  if (!migratedContactsToFollows) {
+    subscriptions.migrateSubscriptionsFromContacts()
+    setHasMigratedContactsToFollows()
+  }
 
   // TODO
   // do we even need to track profileSetup in setup_state?
