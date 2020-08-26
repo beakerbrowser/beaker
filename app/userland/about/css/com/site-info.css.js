@@ -14,68 +14,34 @@ a:hover {
   text-decoration: underline;
 }
 
-.compact {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-}
-
-.compact a {
-  color: var(--text-color--lightish);
-}
-
 .info {
   padding: 6px 10px;
 }
 
-.compact h1 {
-  font-weight: 500;
-  font-size: 15px;
-  margin: 0;
-  line-height: 1;
-}
-
-.compact .known-followers {
-  color: var(--text-color--pretty-light);
-  font-size: 12px;
-}
-
-.compact .ctrls {
-  padding-right: 10px;
-}
-
-.compact button {
-  font-size: 11px;
-}
-
-.compact button .fa-fw {
-  font-size: 9px;
-}
-
 .full {
   display: grid;
-  grid-template-columns: 70px 1fr auto;
+  grid-template-columns: 80px 1fr auto;
   padding: 10px 12px;
 }
 
 .full .thumb {
   display: block;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
   object-fit: cover;
 }
 
 .full .info {
-  padding: 6px 12px 0;
+  padding: 0 12px 0;
 }
 
 .full .title {
   font-family: arial;
-  font-size: 18px;
+  font-size: 32px;
   font-weight: bold;
   line-height: 1;
-  margin: 0 0 6px;
+  margin: 0 0 4px;
 }
 
 .full .title a {
@@ -98,18 +64,13 @@ a:hover {
 }
 
 .full .ctrls button {
-  border-radius: 16px;
-  padding: 7px 15px 6px;
-  box-shadow: none;
-}
-
-.full .ctrls button.subscribe {
-  border-color: #4472f3;
-  color: #3867ef;
-}
-
-.full .ctrls button.subscribe .fa-fw {
-  font-size: 12px;
+  display: block;
+  width: 100%;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--text-color--markdown-link);
+  color: var(--text-color--markdown-link);
+  padding: 5px 15px;
 }
 
 .my-site {

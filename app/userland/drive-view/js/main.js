@@ -9,13 +9,13 @@ import 'beaker://app-stdlib/js/com/record-feed.js'
 import 'beaker://app-stdlib/js/com/record-thread.js'
 
 const NAV_ITEMS = [
-  {path: '/', icon: 'fas fa-home', label: 'Home'},
-  {path: '/bookmarks/', icon: 'far fa-star', label: 'Bookmarks'},
-  {path: '/blog/', icon: 'fas fa-blog', label: 'Blog'},
-  {path: '/pages/', icon: 'far fa-file', label: 'Pages'},
-  {path: '/microblog/', icon: 'far fa-comment-alt', label: 'Posts'},
-  {path: '/comments/', icon: 'far fa-comments', label: 'Comments'},
-  {path: '/subscriptions/', icon: 'fas fa-rss', label: 'Subscriptions'}
+  {index: undefined, path: '/', icon: 'fas fa-home', label: 'Home'},
+  {index: 'beaker/index/bookmarks', path: '/bookmarks/', icon: 'far fa-star', label: 'Bookmarks'},
+  {index: 'beaker/index/blogposts', path: '/blog/', icon: 'fas fa-blog', label: 'Blog'},
+  {index: 'beaker/index/pages', path: '/pages/', icon: 'far fa-file', label: 'Pages'},
+  {index: 'beaker/index/microblogposts', path: '/microblog/', icon: 'far fa-comment-alt', label: 'Posts'},
+  {index: 'beaker/index/comments', path: '/comments/', icon: 'far fa-comments', label: 'Comments'},
+  {index: 'beaker/index/subscriptions', path: '/subscriptions/', icon: 'fas fa-rss', label: 'Subscriptions'}
 ]
 
 class DriveViewApp extends LitElement {
@@ -28,6 +28,7 @@ class DriveViewApp extends LitElement {
     this.drive = beaker.hyperdrive.drive(location)
     this.info = undefined
     this.profile = undefined
+    this.contentCounts = undefined
     this.subscribers = []
     this.load()
   }
@@ -45,6 +46,12 @@ class DriveViewApp extends LitElement {
       this.subscribers = subs
       this.requestUpdate()
     })
+    beaker.database.countRecords({
+      filter: {site: location.origin}
+    }).then(counts => {
+      this.contentCounts = counts
+      this.requestUpdate()
+    })
   }
 
   get isDirectory () {
@@ -57,12 +64,17 @@ class DriveViewApp extends LitElement {
 
   render () {
     if (!this.info) return html``
-    const navItem = ({path, icon, label}) => html`
-      <a class="nav-item ${location.pathname === path ? 'current' : ''}" href=${path} data-tooltip=${label}>
-        <span class="fa-fw ${icon}"></span>
-        <span class="label">${label}</span>
-      </a>
-    `
+    const navItem = ({index, path, icon, label}) => {
+      let count = this.contentCounts?.[index]
+      if (index && !count) return ''
+      else if (count > 0) label += ` (${count})`
+      return html`
+        <a class="nav-item ${location.pathname === path ? 'current' : ''}" href=${path} data-tooltip=${label}>
+          <span class="fa-fw ${icon}"></span>
+          <span class="label">${label}</span>
+        </a>
+      `
+    }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <div class="content">

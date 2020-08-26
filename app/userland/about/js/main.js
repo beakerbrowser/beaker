@@ -5,6 +5,16 @@ import css from '../css/main.css.js'
 import './com/site-info.js'
 import 'beaker://app-stdlib/js/com/record-feed.js'
 
+const NAV_ITEMS = [
+  {index: undefined, id: 'home', icon: 'fas fa-home', label: 'Home'},
+  {index: 'beaker/index/bookmarks', id: 'bookmarks', icon: 'far fa-star', label: 'Bookmarks'},
+  {index: 'beaker/index/blogposts', id: 'blogposts', icon: 'fas fa-blog', label: 'Blog'},
+  {index: 'beaker/index/pages', id: 'pages', icon: 'far fa-file', label: 'Pages'},
+  {index: 'beaker/index/microblogposts', id: 'posts', icon: 'far fa-comment-alt', label: 'Posts'},
+  {index: 'beaker/index/comments', id: 'comments', icon: 'far fa-comments', label: 'Comments'},
+  {index: 'beaker/index/subscriptions', id: 'subscriptions', icon: 'fas fa-rss', label: 'Subscriptions'}
+]
+
 class AboutApp extends LitElement {
   static get styles () {
     return [css]
@@ -21,10 +31,11 @@ class AboutApp extends LitElement {
     super()
     beaker.panes.setAttachable()
     this.isLoading = true
-    this.currentView = 'all'
+    this.currentView = 'home'
     this.url = undefined
     this.profile = undefined
     this.siteInfo = undefined
+    this.contentCounts = undefined
     this.subscribers = []
 
     var ignoreNextAttachEvent = false
@@ -98,7 +109,14 @@ class AboutApp extends LitElement {
         }
       }
       this.requestUpdate()
-      this.subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
+      let [subscribers, counts] = await Promise.all([
+        beaker.subscriptions.listNetworkFor(this.siteInfo.url),
+        beaker.database.countRecords({
+          filter: {site: this.siteInfo.url}
+        })
+      ])
+      this.subscribers = subscribers
+      this.contentCounts = counts
     }
     
     this.isLoading = false
@@ -116,8 +134,7 @@ class AboutApp extends LitElement {
       case 'comments': return ['beaker/index/comments']
       case 'pages': return ['beaker/index/pages']
       case 'posts': return ['beaker/index/microblogposts']
-      case 'sites': return ['beaker/index/subscriptions']
-      case 'notifications': return ['notifications']
+      case 'subscriptions': return ['beaker/index/subscriptions']
       default:
         return [
           'beaker/index/blogposts',
@@ -137,12 +154,20 @@ class AboutApp extends LitElement {
     if (!this.url) {
       return html``
     }
-    const navItem = (id, label) => html`
-      <a
-        class="nav-item ${this.currentView === id ? 'active' : ''}"
-        @click=${() => this.setView(id)}
-      >${label}</a>
-    `
+    const navItem = ({index, id, icon, label}) => {
+      let count = this.contentCounts?.[index]
+      if (index && !count) return ''
+      else if (count > 0) label += ` (${count})`
+      return html`
+        <a
+          class="nav-item ${this.currentView === id ? 'current' : ''}"
+          @click=${() => this.setView(id)}
+          data-tooltip=${label}
+        >
+          <span class="fa-fw ${icon}"></span>
+        </a>
+      `
+    }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       ${this.renderLoading()}
@@ -155,15 +180,9 @@ class AboutApp extends LitElement {
           @toggle-subscribe=${this.onToggleSubscribe}
           @edit-properties=${this.onEditProperties}
         ></site-info>
-        <nav>
-          ${navItem('all', 'All')}
-          ${navItem('bookmarks', 'Bookmarks')}
-          ${navItem('blogposts', 'Blogposts')}
-          ${navItem('comments', 'Comments')}
-          ${navItem('pages', 'Pages')}
-          ${navItem('posts', 'Posts')}
-          ${navItem('sites', 'Sites')}
-        </nav>
+        <div class="nav">
+          ${NAV_ITEMS.map(navItem)}
+        </div>
       </header>
       <div class="feed">
         ${this.siteInfo ? html`
@@ -171,6 +190,7 @@ class AboutApp extends LitElement {
             .index=${this.currentViewAsIndex}
             .sources=${[this.siteInfo.url]}
             show-date-titles
+            ?no-merge=${this.currentView === 'subscriptions'}
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}

@@ -1,11 +1,13 @@
 import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import inputsCSS from 'beaker://app-stdlib/css/inputs.css.js'
 import buttons2CSS from 'beaker://app-stdlib/css/buttons2.css.js'
+import tooltipCSS from 'beaker://app-stdlib/css/tooltip.css.js'
 import spinnerCSS from 'beaker://app-stdlib/css/com/spinner.css.js'
 
 const cssStr = css`
 ${inputsCSS}
 ${buttons2CSS}
+${tooltipCSS}
 ${spinnerCSS}
 
 :host {
@@ -28,28 +30,37 @@ header {
   border-bottom: 1px solid var(--border-color--light);
 }
 
-nav {
+.nav {
   display: flex;
-  align-items: center;
-  padding-left: 6px;
+  padding: 0 8px 10px;
 }
 
-nav a.nav-item {
-  padding: 4px 8px;
-  margin-left: 6px;
-  color: var(--text-color--light);
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
+.nav .nav-item {
+  display: block;
+  margin-right: 5px;
+  padding: 0 6px;
 }
 
-nav a.nav-item:hover {
-  border-bottom: 2px solid var(--border-color--light);
+.nav .fa-fw {
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 11px;
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+  border-radius: 50%;
+  color: var(--text-color--default);
+  background: var(--bg-color--semi-light);
+}
+
+.nav .nav-item.current,
+.nav .nav-item:hover {
   text-decoration: none;
 }
 
-nav a.nav-item.active {
-  color: var(--text-color--default);
-  border-bottom: 2px solid var(--border-color--nav-highlighted);
+.nav .nav-item.current .fa-fw {
+  color: #fff;
+  background: var(--text-color--markdown-link);
 }
 
 .empty {

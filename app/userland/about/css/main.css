@@ -2,7 +2,6 @@
 @import "beaker://assets/font-awesome.css";
 
 body {
-  --border-color--nav-highlighted: #2864dc;
 
   font-size: 14px;
   background: var(--bg-color--default);
@@ -11,6 +10,6 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    --border-color--nav-highlighted: #2864dc;
+
   }
 }
