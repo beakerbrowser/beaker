@@ -20,6 +20,7 @@ body {
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;
   --bg-color--private-light: #f7fbf7;
+  --bg-color--light-highlight: #f7faff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -41,6 +42,7 @@ body {
     --bg-color--light: #334;
     --bg-color--semi-light: #445;
     --bg-color--private-light: #f7fbf7;
+    --bg-color--light-highlight: #f7faff;
   }
 }
 `

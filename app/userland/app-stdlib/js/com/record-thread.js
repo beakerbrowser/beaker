@@ -217,6 +217,7 @@ export class RecordThread extends LitElement {
           })[reply.index] || 'action'
           return html`
             <beaker-record
+              class=${this.recordUrl === reply.url ? 'highlight' : ''}
               .record=${reply}
               render-mode=${mode}
               thread-view

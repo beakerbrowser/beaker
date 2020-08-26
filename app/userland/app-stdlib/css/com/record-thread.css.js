@@ -123,6 +123,7 @@ beaker-record {
 .comments-header {
   background: var(--bg-color--light);
   padding: 10px 0;
+  margin-bottom: 2px;
   font-size: 13px;
   color: var(--text-color--light);
 }
@@ -161,6 +162,9 @@ beaker-record {
   display: block;
 }
 
+.replies beaker-record.highlight {
+  background: var(--bg-color--light-highlight);
+}
 
 `
 export default cssStr
