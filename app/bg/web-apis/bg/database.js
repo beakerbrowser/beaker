@@ -24,6 +24,10 @@ export default {
     return indexer.listRecords(opts)
   },
   
+  countRecords (opts) {
+    return indexer.countRecords(opts)
+  },
+  
   searchRecords (q, opts) {
     return indexer.searchRecords(q, opts)
   },

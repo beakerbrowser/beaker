@@ -4,6 +4,7 @@ export default {
   listSites: 'promise',
   getRecord: 'promise',
   listRecords: 'promise',
+  countRecords: 'promise',
   searchRecords: 'promise',
   listNotifications: 'promise',
   countNotifications: 'promise',

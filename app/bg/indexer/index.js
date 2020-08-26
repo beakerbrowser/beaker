@@ -338,6 +338,83 @@ export async function listRecords (opts) {
   return records
 }
 
+
+/**
+ * @param {Object} [opts]
+ * @param {Object} [opts.filter]
+ * @param {String|Array<String>} [opts.filter.site]
+ * @param {String|Array<String>} [opts.filter.index]
+ * @param {String} [opts.filter.linksTo]
+ * @returns {Promise<Object<String, Number>>}
+ */
+export async function countRecords (opts) {
+  var query = db('records')
+    .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
+    .select('index', db.raw(`count(records.rowid) as count`))
+    .groupBy('records.index')
+
+  if (opts?.filter?.site) {
+    if (Array.isArray(opts.filter.site)) {
+      query = query.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
+    } else {
+      query = query.where({origin: parseUrl(opts.filter.site).origin})
+    }
+  }
+  if (opts?.filter?.index) {
+    if (Array.isArray(opts.filter.index)) {
+      query = query.whereIn('index', opts.filter.index)
+    } else {
+      query = query.where({index: opts.filter.index})
+    }
+  }
+  if (opts?.filter?.linksTo) {
+    query = query.joinRaw(
+      `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
+      [opts.filter.linksTo]
+    )
+  }
+
+  var indexStatesQuery
+  if (opts?.filter?.site && !opts?.filter?.linksTo) {
+    // fetch info on whether each given site has been indexed
+    indexStatesQuery = db('sites')
+      .select('origin')
+      .innerJoin('site_indexes', 'site_indexes.site_rowid', 'sites.rowid')
+      .groupBy('sites.rowid')
+    if (Array.isArray(opts.filter.site)) {
+      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
+    } else {
+      indexStatesQuery = indexStatesQuery.where({origin: parseUrl(opts.filter.site).origin})
+    }
+  }
+
+  var [rows, indexStates] = await Promise.all([
+    query,
+    indexStatesQuery
+  ])
+
+  var counts = {}
+  for (let row of rows) {
+    counts[row.index] = row.count
+  }
+
+  // fetch live data for each site not present in the db
+  if (indexStates) {
+    for (let site of toArray(opts.filter.site)) {
+      let origin = parseUrl(site).origin
+      if (indexStates.find(state => state.origin === origin)) {
+        continue
+      }
+      let files = await listLiveRecords(origin, {filter: opts?.filter})
+      for (let file of files) {
+        counts[file.index] = (counts[file.index] || 0) + 1
+      }
+    }
+  }
+
+  return counts
+}
+
 /**
  * @param {String} [q]
  * @param {Object} [opts]
