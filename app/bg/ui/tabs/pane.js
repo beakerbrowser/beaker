@@ -19,6 +19,7 @@ import * as folderSyncDb from '../../dbs/folder-sync'
 import * as filesystem from '../../filesystem/index'
 import * as bookmarks from '../../filesystem/bookmarks'
 import * as subscriptions from '../../filesystem/subscriptions'
+import * as indexer from '../../indexer/index'
 import hyper from '../../hyper/index'
 
 const ERR_ABORTED = -3
@@ -77,6 +78,7 @@ const STATE_VARS = [
   // 'isPinned', tab sends this
   'isBookmarked',
   'isSubscribed',
+  'backlinkCount',
   'isLoading',
   'isReceivingAssets',
   'canGoBack',
@@ -87,8 +89,7 @@ const STATE_VARS = [
   'currentInpageFindString',
   'currentInpageFindResults',
   'donateLinkHref',
-  'isLiveReloading',
-  'tabCreationTime'
+  'isLiveReloading'
 ]
 
 // classes
@@ -615,6 +616,7 @@ export class Pane extends EventEmitter {
     await Promise.all([
       this.fetchIsBookmarked(true),
       this.fetchIsSubscribed(true),
+      this.fetchBacklinkCount(true),
       this.fetchDriveInfo(true)
     ])
     this.emitUpdateState()
@@ -637,6 +639,24 @@ export class Pane extends EventEmitter {
     } else {
       this.isSubscribed = false
     }
+    if (!noEmit) {
+      this.emitUpdateState()
+    }
+  }
+
+  async fetchBacklinkCount (noEmit = false) {
+    var counts = await indexer.countRecords({
+      filter: {
+        index: [
+          'beaker/index/comments',
+          'beaker/index/microblogposts',
+          'beaker/index/pages',
+          'beaker/index/blogposts'
+        ],
+        linksTo: normalizeCommentsUrl(this.url)
+      }
+    })
+    this.backlinkCount = Object.values(counts).reduce((acc, v) => v + acc, 0)
     if (!noEmit) {
       this.emitUpdateState()
     }
@@ -738,6 +758,7 @@ export class Pane extends EventEmitter {
     this.frameUrls = {[this.mainFrameId]: url} // drop all non-main-frame URLs
     await Promise.all([
       this.fetchIsBookmarked(),
+      this.fetchBacklinkCount(),
       this.fetchIsSubscribed(),
       this.fetchDriveInfo()
     ])
@@ -930,4 +951,12 @@ async function fireBeforeUnloadEvent (wc) {
     } catch (e) {
       // ignore
     }
+}
+
+function normalizeCommentsUrl (url) {
+  try {
+    var urlp = new URL(url)
+    return (urlp.protocol + '//' + urlp.hostname + (urlp.port ? `:${urlp.port}` : '') + urlp.pathname).replace(/([/]$)/g, '')
+  } catch (e) {}
+  return url
 }

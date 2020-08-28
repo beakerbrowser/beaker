@@ -71,6 +71,7 @@ class ShellWindowToolbarMenu extends LitElement {
       line-height: 22px;
     }
     a {
+      position: relative;
       width: 39px;
       height: 34px;
       padding: 6px 0;
@@ -107,6 +108,19 @@ class ShellWindowToolbarMenu extends LitElement {
       height: 16px;
       position: relative;
       top: 2px;
+    }
+    .count {
+      position: absolute;
+      background: var(--bg-color--toolbar);
+      border-radius: 2px;
+      top: 3px;
+      right: 5px;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: -0.7px;
+    }
+    a.pressed .count {
+      background: var(--bg-color--toolbar--pressed);
     }
     hr {
       border: 0;
@@ -162,6 +176,9 @@ class ShellWindowToolbarMenu extends LitElement {
           class=${this.isPaneActive(item) ? 'pressed' : ''}
         >
           <img class="favicon" src="asset:favicon:${item.url}">
+          ${item.url === 'beaker://activity/' && this.activeTab?.backlinkCount ? html`
+            <span class="count">${this.activeTab.backlinkCount}</span>
+          ` : ''}
         </a>
       `
     }
