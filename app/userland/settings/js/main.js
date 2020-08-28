@@ -5,6 +5,7 @@ import css from '../css/main.css.js'
 import './views/general.js'
 import './views/devices.js'
 import './views/info.js'
+import './views/indexer.js'
 import './views/network.js'
 import './views/fs-audit-log.js'
 import './views/daemon-log.js'
@@ -65,6 +66,7 @@ class SettingsApp extends LitElement {
       ${item('devices', 'fas fa-sync', 'Sync Devices')}
       <hr>
       ${item('general-logs', 'fas fa-clipboard-list', 'General Logs')}
+      ${item('indexer', 'fas fa-spider', 'Indexer')}
       ${item('network', 'fas fa-share-alt', 'Network Stats')}
       ${item('fs-audit-log', 'fas fa-clipboard-check', 'Filesystem Audit Log')}
       ${''/*DISABLEDitem('daemon-log', 'fas fa-clipboard-list', 'Daemon Log')*/}
@@ -85,6 +87,8 @@ class SettingsApp extends LitElement {
         return html`<network-view loadable></network-view>`
       case 'general-logs':
         return html`<log-settings-view loadable></log-settings-view>`
+      case 'indexer':
+        return html`<indexer-view loadable></indexer-view>`
       case 'fs-audit-log':
         return html`<fs-audit-log-view loadable></fs-audit-log-view>`
       case 'daemon-log':

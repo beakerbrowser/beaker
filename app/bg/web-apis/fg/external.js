@@ -41,6 +41,10 @@ export const setup = function (rpc) {
     }
   }
 
+  index.events = () => {
+    return fromEventStream(index.createEventStream())
+  }
+
   var panesRPC = rpc.importAPI('panes', panesManifest, RPC_OPTS)
   var panes = new EventTargetFromStream(panesRPC.createEventStream, ['pane-attached', 'pane-detached', 'pane-navigated'])
   panes.setAttachable = panesRPC.setAttachable

@@ -42,5 +42,13 @@ export default {
 
   setNotificationIsRead (rowid, isRead) {
     return indexer.setNotificationIsRead(rowid, isRead)
+  },
+
+  getState () {
+    return indexer.getState()
+  },
+
+  createEventStream () {
+    return indexer.createEventStream()
   }
 }

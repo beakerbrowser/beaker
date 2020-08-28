@@ -23,6 +23,8 @@
 
 import { app } from 'electron'
 import knex from 'knex'
+import { EventEmitter } from 'events'
+import emitStream from 'emit-stream'
 import { attachOnConflictDoNothing } from 'knex-on-conflict-do-nothing'
 import { attachOnConflictDoUpdate } from '../lib/db'
 import * as path from 'path'
@@ -51,6 +53,16 @@ import { chunkMapAsync } from '../../lib/functions'
 // =
 
 var db
+var state = {
+  status: {
+    task: '',
+    nextRun: undefined
+  },
+  sites: {},
+  queue: [],
+  targets: []
+}
+var events = new EventEmitter()
 
 // exported api
 // =
@@ -728,14 +740,57 @@ export async function triggerSiteIndex (origin) {
   await indexSite(origin, myOrigins)
 }
 
+export function getState () {
+  return state
+}
+
+export function createEventStream () {
+  return emitStream(events)
+}
+
 // internal methods
 // =
+
+const DEBUGGING = {
+  setStatus (task, nextRun) {
+    state.status = {task, nextRun}
+    events.emit('status-change', {task, nextRun})
+  },
+  
+  setSiteState ({url, last_indexed_version, last_indexed_ts, error}) {
+    const siteState = {url, last_indexed_version, last_indexed_ts, error}
+    state.sites[url] = siteState
+    events.emit('site-state-change', siteState)
+  },
+  
+  setQueue (queue) {
+    state.queue = queue
+    events.emit('queue-change', {queue})
+  },
+  
+  moveToTargets (origin) {
+    let i = state.queue.indexOf(origin)
+    if (i === -1) return
+    state.queue.splice(i, 1)
+    state.targets.push(origin)
+    events.emit('queue-change', {queue: state.queue})
+    events.emit('targets-change', {targets: state.targets})
+  },
+  
+  removeTarget (origin) {
+    let i = state.targets.indexOf(origin)
+    if (i === -1) return
+    state.targets.splice(i, 1)
+    events.emit('targets-change', {targets: state.targets})
+  },
+}
 
 /**
  * @returns {Promise<void>}
  */
 var _isFirstRun = undefined
 async function tick () {
+  DEBUGGING.setStatus('indexing')
   try {
     var myOrigins = await listMyOrigins()
     if (typeof _isFirstRun === 'undefined') {
@@ -743,6 +798,7 @@ async function tick () {
     }
 
     var originsToIndex = await listOriginsToIndex()
+    DEBUGGING.setQueue(originsToIndex)
     await chunkMapAsync(originsToIndex, 10, origin => indexSite(origin, myOrigins))
 
     if (_isFirstRun) {
@@ -752,25 +808,36 @@ async function tick () {
       await chunkMapAsync(originsToIndex, 10, origin => indexSite(origin, myOrigins))
     }
 
+    DEBUGGING.setStatus('capturing metadata')
     var originsToCapture = await listOriginsToCapture()
+    DEBUGGING.setQueue(originsToCapture)
     await chunkMapAsync(originsToCapture, 10, async (origin) => {
       try {
+        DEBUGGING.moveToTargets(origin)
         await loadSite(origin) // this will capture the metadata of the site
       } catch {}
+      DEBUGGING.removeTarget(origin)
     })
 
+    DEBUGGING.setStatus('cleaning up')
     var originsToDeindex = await listOriginsToDeindex(originsToIndex)
+    DEBUGGING.setQueue(originsToDeindex)
     await chunkMapAsync(originsToDeindex, 10, (origin) => deindexSite(origin))
   } finally {
+    DEBUGGING.setStatus('waiting', Date.now() + TICK_INTERVAL)
     setTimeout(tick, TICK_INTERVAL)
   }
 }
 
 async function indexSite (origin, myOrigins) {
   origin = normalizeOrigin(origin)
+  DEBUGGING.moveToTargets(origin)
   var release = await lock(`beaker-indexer:${origin}`)
+  var current_version
   try {
+    current_version = undefined
     let site = await loadSite(origin)
+    current_version = site.current_version
     for (let indexer of INDEXES) {
       let idxState = site.indexes[indexer.id]
       if (site.current_version === idxState.last_indexed_version) {
@@ -800,14 +867,22 @@ async function indexSite (origin, myOrigins) {
       logger.debug(`Indexed ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
     }
   } catch (e) {
+    DEBUGGING.setSiteState({
+      url: origin,
+      last_indexed_version: current_version,
+      last_indexed_ts: Date.now(),
+      error: e.toString()
+    })
     logger.error(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   } finally {
+    DEBUGGING.removeTarget(origin)
     release()
   }
 }
 
 async function deindexSite (origin) {
   origin = normalizeOrigin(origin)
+  DEBUGGING.moveToTargets(origin)
   var release = await lock(`beaker-indexer:${origin}`)
   try {
     let site = (await db('sites').select('rowid', 'origin').where({origin}))[0]
@@ -822,6 +897,7 @@ async function deindexSite (origin) {
   } catch (e) {
     logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   } finally {
+    DEBUGGING.removeTarget(origin)
     release()
   }
 }
@@ -1108,6 +1184,12 @@ async function listOriginsToDeindex (originsToIndex) {
  * @returns {Promise<void>}
  */
 async function updateIndexState (site, index) {
+  DEBUGGING.setSiteState({
+    url: site.origin,
+    last_indexed_version: site.current_version,
+    last_indexed_ts: Date.now(),
+    error: undefined
+  })
   await db('site_indexes').insert({
     site_rowid: site.rowid,
     index,

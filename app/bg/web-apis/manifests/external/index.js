@@ -8,5 +8,8 @@ export default {
   searchRecords: 'promise',
   listNotifications: 'promise',
   countNotifications: 'promise',
-  setNotificationIsRead: 'promise'
+  setNotificationIsRead: 'promise',
+
+  getState: 'promise',
+  createEventStream: 'readable'
 }
