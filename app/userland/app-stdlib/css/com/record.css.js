@@ -107,12 +107,6 @@ a:hover {
   overflow: hidden;
 }
 
-.record.expanded-link .info > * {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .record.expanded-link .title {
   margin-bottom: 6px;
   font-weight: 500;
@@ -322,9 +316,6 @@ a:hover {
 
 .record.link .title {
   max-width: 590px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   color: var(--text-color--light); 
 }
 

@@ -307,7 +307,7 @@ export class Record extends LitElement {
           ${this.renderThumb(res)}
         </a>
         <div class="info">
-          <div class="title"><a href=${href}>${renderMatchText(res, 'title') || title}</a></div>
+          <div class="title"><a href=${href}>${renderMatchText(res, 'title') || shorten(title, 150)}</a></div>
           <div class="origin">
             ${isBookmark ? html`
               <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
@@ -399,7 +399,7 @@ export class Record extends LitElement {
         </a>
         <div class="container">
           <div class="title">
-            <a class="link-title" href=${href}>${title}</a>
+            <a class="link-title" href=${href}>${shorten(title, 500)}</a>
             ${hrefp ? html`
               <a class="link-origin" href=${hrefp.origin}>${toNiceDomain(hrefp.hostname)}</a>
             ` : ''}
