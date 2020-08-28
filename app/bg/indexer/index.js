@@ -1095,9 +1095,11 @@ async function listOriginsToDeindex (originsToIndex) {
   var indexedSites = await db('sites')
     .select('sites.origin')
     .innerJoin('site_indexes', 'sites.rowid', 'site_indexes.site_rowid')
+    .where('site_indexes.last_indexed_version', '>', 0)
     .groupBy('sites.origin')
-  // ^ we use the inner join to only get sites with indexing state
-  return indexedSites.filter(row => !originsToIndex.includes(row.origin)).map(row => row.origin)
+  return indexedSites
+    .map(row => normalizeOrigin(row.origin))
+    .filter(origin => !originsToIndex.includes(origin))
 }
 
 /**
