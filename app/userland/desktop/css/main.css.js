@@ -210,7 +210,7 @@ nav hr {
   margin: 10px 12px 10px 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 800px) {
   nav .label {
     display: none;
   }
