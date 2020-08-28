@@ -207,13 +207,6 @@ class DesktopApp extends LitElement {
       this.markAllNotificationsRead()
     }
 
-    const navItem = (id, label, notice) => html`
-      <a
-        class="nav-item ${id === this.currentNav ? 'active' : ''} ${notice ? 'notice' : ''}"
-        @click=${e => this.setCurrentNav(id)}
-      >${label}</a>
-    `
-    const ncount = this.unreadNotificationsCount
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div id="topright">
@@ -226,25 +219,8 @@ class DesktopApp extends LitElement {
             <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
           ` : ''}
           <input @keyup=${this.onKeyupSearch}>
-        </div>
-        <nav>
-          ${navItem('all', html`<span class="fas fa-fw fa-search"></span> <span class="label">All</span>`)}
-          ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blogposts</span>`)}
-          ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
-          ${navItem('sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Sites</span>`)}
-          <a class="nav-item" @click=${this.onClickNavMore} title="More">More <span class="fas fa-fw fa-caret-down"></span></a>
-          <hr>
           ${this.renderSourcesCtrl()}
-          <hr>
-          ${navItem(
-            'notifications',
-            html`
-              <span class="fa${ncount > 0 ? 's' : 'r'} fa-fw fa-bell"></span>
-              <span class="label">Notifications${ncount > 0 ? ` (${ncount})` : ''}</span>
-            `,
-            ncount > 0
-          )}
-        </nav>
+        </div>
       </header>
       ${this.renderReleaseNotice()}
       <main>
@@ -257,50 +233,38 @@ class DesktopApp extends LitElement {
     `
   }
 
-  renderSidebar () {
+  renderLeftSidebar () {
+    const navItem = (id, label) => html`
+      <a
+        class="content-nav-item ${id === this.currentNav ? 'current' : ''}"
+        @click=${e => this.setCurrentNav(id)}
+      >${label}</a>
+    `
+    const ncount = this.unreadNotificationsCount
     return html`
-      <div class="sidebar">
+      <div class="sidebar sticky">
         <div>
-          <section class="create-box">
-            <h3>Create New</h3>
-            <div class="btn-group">
-              <button data-tooltip="New Bookmark" @click=${e => this.onClickEditBookmark(undefined)}>
-                <span class="icon"><i class="far fa-star"></i></span>
-              </button>
-              <button data-tooltip="New Post" @click=${this.onClickNewPost}>
-                <span class="icon"><i class="far fa-comment"></i></span>
-              </button>
-              <button data-tooltip="New Page" @click=${e => this.onClickNewPage()}>
-                <span class="icon"><i class="far fa-file"></i></span>
-              </button>
-              <button data-tooltip="New Website" @click=${this.onClickNewSite}>
-                <span class="icon"><i class="fas fa-sitemap"></i></span>
-              </button>
-            </div>
+          <section class="content-nav">
+            <h3>News</h3>
+            ${navItem('all', html`<span class="fas fa-fw fa-stream"></span> Feed`)}
+            ${navItem(
+              'notifications',
+              html`
+                <span class="fas fa-fw fa-bell"></span>
+                Notifications
+                ${ncount > 0 ? html`<span class="count">${ncount}</span>` : ''}
+              `
+            )}
           </section>
-          ${this.renderTagsList()}
-          ${this.suggestedSites?.length > 0 ? html`
-            <section class="suggested-sites">
-              <h3>Suggested Sites</h3>
-              ${repeat(this.suggestedSites, site => html`
-                <div class="site">
-                  ${site.subscribed ? html`
-                    <button class="transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
-                  ` : html`
-                    <button @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
-                  `}
-                  <div class="title">
-                    <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
-                  </div>
-                  <div class="subscribers">
-                    <a href="#" data-tooltip=${shorten(site.subscribers.map(s => s.title).join(', '), 100)}>
-                      ${site.subscribers.length} known ${pluralize(site.subscribers.length, 'subscriber')}
-                    </a>
-                  </div>
-                </div>
-              `)}
-            </section>
-          ` : ''}
+          <section class="content-nav">
+            <h3>Content</h3>
+            ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
+            ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blogposts</span>`)}
+            ${navItem('posts', html`<span class="far fa-fw fa-comment-alt"></span> <span class="label">Posts</span>`)}
+            ${navItem('pages', html`<span class="far fa-fw fa-file"></span> <span class="label">Pages</span>`)}
+            ${navItem('comments', html`<span class="far fa-fw fa-comments"></span> <span class="label">Comments</span>`)}
+            ${navItem('sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Sites</span>`)}
+          </section>
           <section class="quick-links">
             <h3>Quick Links</h3>
             <div>
@@ -311,17 +275,20 @@ class DesktopApp extends LitElement {
             </div>
             <div>
               <a href=${this.profile?.url}>
-                <beaker-img-fallbacks>
-                  <img src="asset:favicon-32:${this.profile?.url}" slot="img1">
-                  <img src="beaker://assets/default-user-thumb" slot="img2">
-                </beaker-img-fallbacks>
-                <span>${this.profile?.title}</span>
+                <img src="asset:thumb:${this.profile?.url}">
+                <span>My Profile</span>
               </a>
             </div>
             <div>
               <a href="beaker://library/">
                 <img class="favicon" src="asset:favicon-32:beaker://library/">
                 <span>My Library</span>
+              </a>
+            </div>
+            <div>
+              <a href="beaker://explorer/">
+                <img class="favicon" src="asset:favicon-32:beaker://explorer/">
+                <span>My Files</span>
               </a>
             </div>
             <div>
@@ -336,20 +303,51 @@ class DesktopApp extends LitElement {
     `
   }
 
-  renderTagsList () {
-    return ''
+  renderRightSidebar () {
     return html`
-      <section>
-        <h3>Popular Tags</h3>
-        <div class="tags">
-          <a href="#">beaker</a>
-          <a href="#">hyperspace</a>
-          <a href="#">p2p</a>
-          <a href="#">web</a>
-          <a href="#">news</a>
-          <a href="#">politics</a>
+      <div class="sidebar">
+        <div class="sticky">
+          <section class="create-box">
+            <h3>Create New</h3>
+            <div class="btn-group">
+              <button @click=${e => this.onClickEditBookmark(undefined)}>
+                <i class="far fa-fw fa-star"></i> New Bookmark
+              </button>
+              <button @click=${this.onClickNewPost}>
+                <i class="far fa-fw fa-comment"></i> New Post
+              </button>
+              <button @click=${e => this.onClickNewPage()}>
+                <i class="far fa-fw fa-file"></i> New Page
+              </button>
+              <button @click=${this.onClickNewSite}>
+                <i class="fas fa-fw fa-sitemap"></i> New Website
+              </button>
+            </div>
+          </section>
+          ${this.suggestedSites?.length > 0 ? html`
+            <section class="suggested-sites">
+              <h3>Suggested Sites</h3>
+              ${repeat(this.suggestedSites, site => html`
+                <div class="site">
+                  <div class="title">
+                    <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
+                  </div>
+                  <div class="subscribers">
+                    <a href="#" data-tooltip=${shorten(site.subscribers.map(s => s.title).join(', '), 100)}>
+                      ${site.subscribers.length} known ${pluralize(site.subscribers.length, 'subscriber')}
+                    </a>
+                  </div>
+                  ${site.subscribed ? html`
+                    <button class="transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
+                  ` : html`
+                    <button @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
+                  `}
+                </div>
+              `)}
+            </section>
+          ` : ''}
         </div>
-      </section>
+      </div>
     `
   }
 
@@ -365,7 +363,10 @@ class DesktopApp extends LitElement {
       }
       return html`
         <div class="all-view">
-          <div class="twocol">
+          <div class="threecol">
+            <div>
+              ${this.renderLeftSidebar()}
+            </div>
             <div>
               <div class="alternatives">
                 Try your search on:
@@ -394,7 +395,7 @@ class DesktopApp extends LitElement {
                 ></beaker-record-feed>
               ` : ''}
             </div>
-            ${this.renderSidebar()}
+            ${this.renderRightSidebar()}
           </div>
         </div>
       `
@@ -402,7 +403,10 @@ class DesktopApp extends LitElement {
       return html`
         <div class="all-view">
           ${this.currentNav === 'all' ? this.renderPins() : ''}
-          <div class="twocol">
+          <div class="threecol">
+            <div>
+              ${this.renderLeftSidebar()}
+            </div>
             <div>
               ${this.currentNav === 'sites' ? html`
                 ${this.renderSites()}
@@ -420,7 +424,7 @@ class DesktopApp extends LitElement {
                 ></beaker-record-feed>
               `}
             </div>
-            ${this.renderSidebar()}
+            ${this.renderRightSidebar()}
           </div>
         </div>
       `
@@ -466,7 +470,7 @@ class DesktopApp extends LitElement {
       default: label = this.sourceOptions.find(opt => opt.href === this.currentSource)?.title
     }
     return html`
-      <a class="nav-item" @click=${this.onClickSources}>
+      <a class="search-mod-btn" @click=${this.onClickSources}>
         <span class="label">Source: </span>${label} <span class="fas fa-fw fa-caret-down"></span>
       </a>
     `
