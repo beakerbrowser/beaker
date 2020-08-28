@@ -651,7 +651,8 @@ export class Pane extends EventEmitter {
           'beaker/index/comments',
           'beaker/index/microblogposts',
           'beaker/index/pages',
-          'beaker/index/blogposts'
+          'beaker/index/blogposts',
+          'beaker/index/bookmarks'
         ],
         linksTo: normalizeCommentsUrl(this.url)
       }
