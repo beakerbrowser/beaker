@@ -7,6 +7,9 @@ import * as contextMenu from './context-menu.js'
 import registerSuggestions from 'beaker://editor/js/com/suggestions.js'
 import css from '../../css/com/post-composer.css.js'
 
+var _currentComposer = undefined
+window.addEventListener('paste', onGlobalPaste)
+
 class PostComposer extends LitElement {
   static get properties () {
     return {
@@ -21,6 +24,7 @@ class PostComposer extends LitElement {
 
   constructor () {
     super()
+    _currentComposer = this
     this.placeholder = 'What\'s new?'
     this.currentView = 'edit'
     this.draftText = ''
@@ -83,6 +87,21 @@ class PostComposer extends LitElement {
         resolve()
       })
     })
+  }
+
+  insertImage (file) {
+    var url = URL.createObjectURL(file)
+    this.blobs.push({file, url})
+
+    var newlines = '\n\n'
+    if (!this.draftText || this.draftText.endsWith('\n\n')) {
+      newlines = ''
+    } else if (this.draftText.endsWith('\n')) {
+      newlines = '\n'
+    }
+    this.draftText += `${newlines}![${file.name.replace(/]/g, '')}](${url})\n`
+    this.editor.setValue(this.draftText)
+    this.editor.setPosition({column: 0, lineNumber: this.editor.getModel().getLineCount()})
   }
 
   // rendering
@@ -185,21 +204,7 @@ class PostComposer extends LitElement {
   onChangeImage (e) {
     var file = e.currentTarget.files[0]
     if (!file) return
-    var url = URL.createObjectURL(file)
-    this.blobs.push({file, url})
-
-    var newlines = '\n\n'
-    if (!this.draftText || this.draftText.endsWith('\n\n')) {
-      newlines = ''
-    } else if (this.draftText.endsWith('\n')) {
-      newlines = '\n'
-    }
-    this.draftText += `${newlines}![${file.name.replace(/]/g, '')}](${url})\n`
-    this.editor.setValue(this.draftText)
-
-    this.requestUpdate().then(() => {
-      this.shadowRoot.querySelector('textarea').value = this.draftText
-    })
+    this.insertImage(file)
   }
 
   onClickVisibility (e) {
@@ -229,6 +234,7 @@ class PostComposer extends LitElement {
     this.draftText = ''
     this.currentView = 'edit'
     this.dispatchEvent(new CustomEvent('cancel'))
+    _currentComposer = undefined
   }
 
   async onSubmit (e) {
@@ -288,7 +294,25 @@ class PostComposer extends LitElement {
     this.currentView = 'edit'
     var url = joinPath(driveUrl, `${folder}${filename}.md`)
     this.dispatchEvent(new CustomEvent('publish', {detail: {url}}))
+    _currentComposer = undefined
   }
 }
 
 customElements.define('beaker-post-composer', PostComposer)
+
+// handles image-pasting
+function onGlobalPaste (e) {
+  if (!_currentComposer || !_currentComposer.editor) {
+    return
+  }
+  var editor = _currentComposer.editor
+  if (editor.hasTextFocus()) {
+    let items = e.clipboardData.items
+    for (let i = 0; i < items.length; i++) {
+      let matches = items[i].type.match(/^image\/(png|jpg|jpeg|gif)$/i)
+      if (matches) {
+        _currentComposer.insertImage(items[i].getAsFile())
+      }
+    }
+  }
+}
