@@ -29,6 +29,7 @@ import { attachOnConflictDoNothing } from 'knex-on-conflict-do-nothing'
 import { attachOnConflictDoUpdate } from '../lib/db'
 import * as path from 'path'
 import mkdirp from 'mkdirp'
+import promisePool from 'tiny-promise-pool'
 import * as filesystem from '../filesystem/index'
 import * as drives from '../hyper/drives'
 import { query } from '../filesystem/query'
@@ -38,7 +39,6 @@ import { TICK_INTERVAL, READ_TIMEOUT, METADATA_KEYS, INDEX_IDS, parseUrl } from 
 import { INDEXES } from './index-defs'
 import lock from '../../lib/lock'
 import { timer } from '../../lib/time'
-import { chunkMapAsync } from '../../lib/functions'
 
 /**
  * @typedef {import('./const').Site} Site
@@ -84,7 +84,7 @@ export async function setup (opts) {
   })
   await db.migrate.latest({directory: path.join(app.getAppPath(), 'bg', 'indexer', 'migrations')})
   tick()
-  
+
   // fetch current sites states for debugging
   {
     let states = await db('sites')
@@ -814,19 +814,19 @@ async function tick () {
 
     var originsToIndex = await listOriginsToIndex()
     DEBUGGING.setQueue(originsToIndex)
-    await chunkMapAsync(originsToIndex, 10, origin => indexSite(origin, myOrigins))
+    await parallel(originsToIndex, indexSite, myOrigins)
 
     if (_isFirstRun) {
       // immediately re-run now that we've populated with subscription records
       _isFirstRun = false
       originsToIndex = await listOriginsToIndex()
-      await chunkMapAsync(originsToIndex, 10, origin => indexSite(origin, myOrigins))
+      await parallel(originsToIndex, indexSite, myOrigins)
     }
 
     DEBUGGING.setStatus('capturing metadata')
     var originsToCapture = await listOriginsToCapture()
     DEBUGGING.setQueue(originsToCapture)
-    await chunkMapAsync(originsToCapture, 10, async (origin) => {
+    await parallel(originsToCapture, async (origin) => {
       try {
         DEBUGGING.moveToTargets(origin)
         await loadSite(origin) // this will capture the metadata of the site
@@ -837,7 +837,7 @@ async function tick () {
     DEBUGGING.setStatus('cleaning up')
     var originsToDeindex = await listOriginsToDeindex(originsToIndex)
     DEBUGGING.setQueue(originsToDeindex)
-    await chunkMapAsync(originsToDeindex, 10, (origin) => deindexSite(origin))
+    await parallel(originsToDeindex, deindexSite)
   } finally {
     DEBUGGING.setStatus('waiting', Date.now() + TICK_INTERVAL)
     setTimeout(tick, TICK_INTERVAL)
@@ -1233,4 +1233,11 @@ function normalizeOrigin (str) {
 
 function toArray (v) {
   return Array.isArray(v) ? v : [v]
+}
+
+function parallel (arr, fn, ...args) {
+  return promisePool({
+    threads: 10,
+    promises: ({index}) => index < arr.length ? fn(arr[index], ...args) : null
+  })
 }
