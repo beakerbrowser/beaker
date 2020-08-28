@@ -22,6 +22,10 @@ class NotificationsApp extends LitElement {
       this.profile = p
     })
 
+    window.addEventListener('focus', e => {
+      this.shadowRoot.querySelector('beaker-record-feed').queueQuery()
+    })
+
     document.body.addEventListener('click', e => {
       // route navigations to the attached pane if present
       var attachedPane = beaker.panes.getAttachedPane()
@@ -47,6 +51,7 @@ class NotificationsApp extends LitElement {
         .index=${['notifications']}
         limit="50"
         show-date-titles
+        @load-state-updated=${this.onLoad}
         @view-thread=${this.onViewThread}
         profile-url=${this.profile?.url}
       ></beaker-record-feed>
@@ -55,6 +60,12 @@ class NotificationsApp extends LitElement {
 
   // events
   // =
+
+  onLoad () {
+    setTimeout(async () => {
+      await beaker.database.setNotificationIsRead('all', true)
+    }, 3e3)
+  }
 
   onViewThread (e) {
     ViewThreadPopup.create({

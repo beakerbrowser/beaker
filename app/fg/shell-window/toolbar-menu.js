@@ -26,7 +26,8 @@ class ShellWindowToolbarMenu extends LitElement {
       activeTab: {type: Object},
       toolbar: {type: Object},
       openMenu: {type: String},
-      isExpanded: {type: Boolean}
+      isExpanded: {type: Boolean},
+      notificationsCount: {type: Number}
     }
   }
 
@@ -114,7 +115,7 @@ class ShellWindowToolbarMenu extends LitElement {
       background: var(--bg-color--toolbar);
       border-radius: 2px;
       top: 3px;
-      right: 5px;
+      right: 6px;
       font-size: 9px;
       font-weight: bold;
       letter-spacing: -0.7px;
@@ -139,6 +140,10 @@ class ShellWindowToolbarMenu extends LitElement {
     this.openMenu = undefined
     this.isExpanded = false
     this.addEventListener('contextmenu', this.onMainContextmenu.bind(this))
+    this.notificationsCount = 0
+    setInterval(async () => {
+      this.notificationsCount = await bg.database.countNotifications({filter: {isRead: false}})
+    }, 15e3)
   }
 
   isPaneActive (item) {
@@ -178,6 +183,9 @@ class ShellWindowToolbarMenu extends LitElement {
           <img class="favicon" src="asset:favicon:${item.url}">
           ${item.url === 'beaker://activity/' && this.activeTab?.backlinkCount ? html`
             <span class="count">${this.activeTab.backlinkCount}</span>
+          ` : ''}
+          ${item.url === 'beaker://notifications/' && this.notificationsCount ? html`
+            <span class="count">${this.notificationsCount}</span>
           ` : ''}
         </a>
       `
