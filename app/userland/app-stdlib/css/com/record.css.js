@@ -469,6 +469,15 @@ a:hover {
   border-color: var(--border-color--unread);
 }
 
+.record.card .container.readmore:after {
+  content: "Read More \\00bb";
+  display: block;
+  padding: 4px 7px;
+  margin: 0 6px;
+  color: var(--text-color--light);
+  font-size: 12px;
+}
+
 .record.card .header {
   display: flex;
   align-items: baseline;
@@ -528,6 +537,11 @@ a:hover {
   font-size: 14px;
   letter-spacing: 0.1px;
   padding: 0px 12px 10px;
+}
+
+.record.card.constrain-height .content {
+  max-height: 70px;
+  overflow: hidden;
 }
 
 .record.card .content > :first-child { margin-top: 0; }

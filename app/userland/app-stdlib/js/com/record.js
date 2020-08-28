@@ -15,6 +15,7 @@ export class Record extends LitElement {
       record: {type: Object},
       renderMode: {type: String, attribute: 'render-mode'},
       showContext: {type: Boolean, attribute: 'show-context'},
+      constrainHeight: {type: Boolean, attribute: 'constrain-height'},
       profileUrl: {type: String, attribute: 'profile-url'},
       actionTarget: {type: String, attribute: 'action-target'},
       isReplyOpen: {type: Boolean},
@@ -31,6 +32,7 @@ export class Record extends LitElement {
     this.record = undefined
     this.renderMode = 'card'
     this.showContext = false
+    this.constrainHeight = false
     this.profileUrl = undefined
     this.actionTarget = undefined
     this.isReplyOpen = false
@@ -39,6 +41,20 @@ export class Record extends LitElement {
     // helper state
     this.isMouseDown = false
     this.isMouseDragging = false
+  }
+
+  updated () {
+    if (this.constrainHeight && this.renderMode === 'card' && this.isContentOverflowing) {
+      this.shadowRoot.querySelector('.container').classList.add('readmore')
+    }
+  }
+
+  get isContentOverflowing () {
+    try {
+      let content = this.shadowRoot.querySelector('.content')
+      return content.scrollHeight > content.clientHeight
+    } catch {}
+    return false
   }
 
   // rendering
@@ -75,6 +91,7 @@ export class Record extends LitElement {
           record: true,
           card: true,
           'private': res.url.startsWith('hyper://private'),
+          'constrain-height': this.constrainHeight,
           'is-notification': !!res.notification,
           unread: !!res.notification && !res?.notification?.isRead
         })}
