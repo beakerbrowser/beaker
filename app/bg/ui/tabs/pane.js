@@ -956,7 +956,13 @@ async function fireBeforeUnloadEvent (wc) {
 function normalizeCommentsUrl (url) {
   try {
     var urlp = new URL(url)
-    return (urlp.protocol + '//' + urlp.hostname + (urlp.port ? `:${urlp.port}` : '') + urlp.pathname).replace(/([/]$)/g, '')
+    return (
+      urlp.protocol + '//' +
+      urlp.hostname +
+      (urlp.port ? `:${urlp.port}` : '') + 
+      urlp.pathname.replace(/([/]$)/g, '') +
+       urlp.search
+    )
   } catch (e) {}
   return url
 }
