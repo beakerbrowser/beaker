@@ -37,8 +37,7 @@ h2 {
 
 .container {
   background: var(--bg-color--light);
-  padding: 14px 10px 10px;
-  box-shadow: rgba(0, 0, 0, 0.133) 0px 2px 4px inset;
+  padding: 10px;
   border-radius: 5px;
   border: 1px solid var(--border-color--semi-light);
 }

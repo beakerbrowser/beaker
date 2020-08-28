@@ -14,6 +14,7 @@ import * as auditLog from '../../dbs/audit-log'
 import { timer } from '../../../lib/time'
 import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
+import { triggerSiteIndex } from '../../indexer/index'
 import drivesAPI from './drives'
 import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DRIVE_VALID_PATH_REGEX, DEFAULT_DRIVE_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
@@ -205,7 +206,10 @@ export default {
 
         checkin('updating drive')
         await checkoutFS.pda.updateManifest(manifestUpdates)
-        await drives.pullLatestDriveMeta(drive)
+        await Promise.all([
+          drives.pullLatestDriveMeta(drive),
+          triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        ])
       })
     ))
   },
@@ -288,7 +292,9 @@ export default {
         resume()
 
         checkin('writing file')
-        return checkoutFS.pda.writeFile(filepath, data, opts)
+        var res = await checkoutFS.pda.writeFile(filepath, data, opts)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -309,7 +315,9 @@ export default {
         resume()
 
         checkin('deleting file')
-        return checkoutFS.pda.unlink(filepath)
+        var res = await checkoutFS.pda.unlink(filepath)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -338,7 +346,9 @@ export default {
         resume()
 
         checkin('copying')
-        return src.checkoutFS.pda.copy(srcpath, dst.checkoutFS.session.drive, dstpath)
+        var res = await src.checkoutFS.pda.copy(srcpath, dst.checkoutFS.session.drive, dstpath)
+        await triggerSiteIndex(dst.drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -366,7 +376,16 @@ export default {
         resume()
 
         checkin('renaming file')
-        return src.checkoutFS.pda.rename(srcpath, dst.checkoutFS.session.drive, dstpath)
+        var res = await src.checkoutFS.pda.rename(srcpath, dst.checkoutFS.session.drive, dstpath)
+        if (src.url !== dst.url) {
+          await Promise.all([
+            triggerSiteIndex(src.drive.url, {ifIndexingSite: true}),
+            triggerSiteIndex(dst.drive.url, {ifIndexingSite: true})
+          ])
+        } else {
+          await triggerSiteIndex(src.drive.url, {ifIndexingSite: true})
+        }
+        return res
       })
     ))
   },
@@ -387,7 +406,9 @@ export default {
         resume()
 
         checkin('updating metadata')
-        return checkoutFS.pda.updateMetadata(filepath, metadata)
+        var res = await checkoutFS.pda.updateMetadata(filepath, metadata)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -408,7 +429,9 @@ export default {
         resume()
 
         checkin('updating metadata')
-        return checkoutFS.pda.deleteMetadata(filepath, keys)
+        var res = await checkoutFS.pda.deleteMetadata(filepath, keys)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -453,7 +476,9 @@ export default {
         resume()
 
         checkin('making directory')
-        return checkoutFS.pda.mkdir(filepath, opts)
+        var res = await checkoutFS.pda.mkdir(filepath, opts)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -474,7 +499,9 @@ export default {
         resume()
 
         checkin('removing directory')
-        return checkoutFS.pda.rmdir(filepath, opts)
+        var res = await checkoutFS.pda.rmdir(filepath, opts)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -497,7 +524,9 @@ export default {
         resume()
 
         checkin('symlinking')
-        return checkoutFS.pda.symlink(target, linkname)
+        var res = await checkoutFS.pda.symlink(target, linkname)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -521,7 +550,9 @@ export default {
         resume()
 
         checkin('mounting drive')
-        return checkoutFS.pda.mount(filepath, mount)
+        var res = await checkoutFS.pda.mount(filepath, mount)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -542,7 +573,9 @@ export default {
         resume()
 
         checkin('unmounting drive')
-        return checkoutFS.pda.unmount(filepath)
+        var res = await checkoutFS.pda.unmount(filepath)
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        return res
       })
     ))
   },
@@ -643,14 +676,16 @@ export default {
     var [src, dst] = await Promise.all([lookupDrive(this.sender, srcUrl), lookupDrive(this.sender, dstUrl)])
     if (!dst.drive.writable) throw new ArchiveNotWritableError('The destination drive is not writable')
     if (dst.isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    return pda.merge(src.checkoutFS.pda, src.filepath, dst.checkoutFS.pda, dst.filepath, opts)
+    var res = await pda.merge(src.checkoutFS.pda, src.filepath, dst.checkoutFS.pda, dst.filepath, opts)
+    await triggerSiteIndex(dst.drive.url, {ifIndexingSite: true})
+    return res
   },
 
   async importFromFilesystem (opts) {
     assertBeakerOnly(this.sender)
     var {checkoutFS, filepath, isHistoric} = await lookupDrive(this.sender, opts.dst)
     if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    return pda.exportFilesystemToArchive({
+    var res = await pda.exportFilesystemToArchive({
       srcPath: opts.src,
       dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
       dstPath: filepath,
@@ -658,6 +693,8 @@ export default {
       inplaceImport: opts.inplaceImport !== false,
       dryRun: opts.dryRun
     })
+    await triggerSiteIndex(opts.dst, {ifIndexingSite: true})
+    return res
   },
 
   async exportToFilesystem (opts) {
@@ -684,7 +721,7 @@ export default {
     var src = await lookupDrive(this.sender, opts.src)
     var dst = await lookupDrive(this.sender, opts.dst)
     if (dst.isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    return pda.exportArchiveToArchive({
+    var res = await pda.exportArchiveToArchive({
       srcArchive: src.checkoutFS.session ? src.checkoutFS.session.drive : src.checkoutFS,
       srcPath: src.filepath,
       dstArchive: dst.checkoutFS.session ? dst.checkoutFS.session.drive : dst.checkoutFS,
@@ -692,6 +729,8 @@ export default {
       ignore: opts.ignore,
       skipUndownloadedFiles: opts.skipUndownloadedFiles
     })
+    await triggerSiteIndex(opts.dst, {ifIndexingSite: true})
+    return res
   }
 }
 

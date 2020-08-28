@@ -750,8 +750,13 @@ export async function setNotificationIsRead (rowid, isRead) {
   }
 }
 
-export async function triggerSiteIndex (origin) {
+export async function triggerSiteIndex (origin, {ifIndexingSite} = {ifIndexingSite: false}) {
+  origin = normalizeOrigin(origin)
   var myOrigins = await listMyOrigins()
+  if (ifIndexingSite) {
+    let indexState = await getIndexState(origin)
+    if (!indexState?.length) return
+  }
   await indexSite(origin, myOrigins)
 }
 
@@ -1214,6 +1219,18 @@ async function updateIndexState (site, index) {
     last_indexed_version: site.current_version,
     last_indexed_ts: Date.now()
   })
+}
+
+/**
+ * @param {String} origin 
+ * @returns {Promise<Object[]>}
+ */
+async function getIndexState (origin) {
+  return await db('sites')
+    .select('origin', 'index', 'last_indexed_version', 'last_indexed_ts')
+    .innerJoin('site_indexes', 'site_indexes.site_rowid', 'sites.rowid')
+    .where({origin})
+    .andWhere('last_indexed_version', '>', 0)
 }
 
 /**
