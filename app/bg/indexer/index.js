@@ -764,7 +764,7 @@ const DEBUGGING = {
   },
   
   setQueue (queue) {
-    state.queue = queue
+    state.queue = queue.slice() // must slice because we're going to mutate this queue
     events.emit('queue-change', {queue})
   },
   
