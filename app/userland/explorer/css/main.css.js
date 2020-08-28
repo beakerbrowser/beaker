@@ -355,9 +355,9 @@ nav h4 code {
 
 nav img {
   display: inline-block;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
   object-fit: cover;
   margin-right: 10px;
 }
@@ -419,19 +419,28 @@ nav section.drives-list {
 
 nav section.drives-list h5 {
   margin: 16px 10px 4px;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 nav section.drives-list a {
-  display: block;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  overflow: hidden;
   padding: 6px 10px;
   margin-bottom: 4px;
   border-radius: 4px;
 }
 
+nav section.drives-list img {
+  flex: 0 0 30px;
+  margin-right: 10px;
+}
+
 nav section.drives-list span {
-  display: block;
-  padding: 8px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 nav section.drives-list a.current {

@@ -585,7 +585,7 @@ export class ExplorerApp extends LitElement {
         class=${classMap({current: url.startsWith(this.currentDriveInfo.url)})}
         href="/${url.slice('hyper://'.length)}"
         title=${title}
-      >${title}</a>
+      ><img src="asset:thumb:${url}"><span>${title}</span></a>
     `
     return html`
       <nav class="left">
@@ -595,7 +595,7 @@ export class ExplorerApp extends LitElement {
             ${repeat(this.profiles, profile => navItem(profile.url, profile.title))}
           `}
           ${!this.drives ? html`<span>Loading...</span>` : html`
-            <h5>My Drives</h4>
+            <h5>My Sites</h4>
             ${repeat(this.drives.filter(d => d.info.writable), drive => navItem(drive.url, drive.info.title))}
             <h5>Cohosting</h4>
             ${repeat(this.drives.filter(d => !d.info.writable), drive => navItem(drive.url, drive.info.title))}
