@@ -475,7 +475,7 @@ export async function searchRecords (q = '', opts) {
       'record_rowid',
       'key',
       'rank',
-      db.raw(`snippet(records_data_fts, 0, '<b>', '</b>', '...', 30) as matchingText`)
+      db.raw(`snippet(records_data_fts, 0, '<b>', '</b>', '...', 70) as matchingText`)
     )
     .innerJoin('records_data', 'records_data.rowid', 'records_data_fts.rowid')
     .innerJoin('records', 'records.rowid', 'records_data.record_rowid')
