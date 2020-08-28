@@ -542,46 +542,36 @@ beaker-sites-list {
   margin: 0; 
 }
 
-.legacy-archives-notice {
-  max-width: 1000px;
-  margin: 16px auto;
-  padding: 18px 22px;
-  font-size: 15px;
-  border: 1px solid var(--border-color--default);
-  border-radius: 4px;
+.legacy-archives {
+  font-size: 14px;
 }
 
-.legacy-archives-notice summary {
-  cursor: pointer;
-  outline: 0;
-}
-
-.legacy-archives-notice a {
-  color: var(--blue);
+.legacy-archives a {
+  color: var(--text-color--link);
   cursor: pointer;
 }
 
-.legacy-archives-notice a:hover {
-  text-decoration: underline;
-}
-
-.legacy-archives-notice .archives {
+.legacy-archives .archives {
   margin-top: 10px;
 }
 
-.legacy-archives-notice .archive {
-  display: flex;
-  align-items: center;
-  padding: 5px 0;
-  border-top: 1px solid #ccd;
+.legacy-archives .archive {
+  padding: 10px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  background: var(--bg-color--light);
 }
 
-.legacy-archives-notice .archive:hover {
+.legacy-archives .archive:hover {
   background: #fafafd;
 }
 
-.legacy-archives-notice .archive a {
-  margin-right: auto;
+.legacy-archives .archive a {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
 }
 
 .content-nav .content-nav-item {

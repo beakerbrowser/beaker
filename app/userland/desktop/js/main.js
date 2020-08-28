@@ -229,7 +229,6 @@ class DesktopApp extends LitElement {
         </div>
       </main>
       ${this.renderIntro()}
-      ${this.renderLegacyArchivesNotice()}
     `
   }
 
@@ -324,6 +323,7 @@ class DesktopApp extends LitElement {
               </button>
             </div>
           </section>
+          ${this.renderLegacyArchivesNotice()}
           ${this.suggestedSites?.length > 0 ? html`
             <section class="suggested-sites">
               <h3>Suggested Sites</h3>
@@ -410,6 +410,8 @@ class DesktopApp extends LitElement {
             <div>
               ${this.currentNav === 'sites' ? html`
                 ${this.renderSites()}
+              ` : this.currentNav === 'legacy-archives' ? html`
+                ${this.renderLegacyArchivesView()}
               ` : html`
                 <beaker-record-feed
                   show-date-titles
@@ -581,20 +583,47 @@ class DesktopApp extends LitElement {
       return ''
     }
     return html`
-      <div class="legacy-archives-notice">
-        <details>
-          <summary>You have ${this.legacyArchives.length} legacy Dat ${pluralize(this.legacyArchives.length, 'archive')} which can be converted to Hyperdrive.</summary>
-          <div class="archives">
+      <section class="legacy-archives notice">
+        <h3>Legacy Dats</h3>
+        <p>You have ${this.legacyArchives.length} legacy Dat ${pluralize(this.legacyArchives.length, 'archive')} which can be converted to Hyperdrive.</p>
+        <div class="archives">
+          ${this.legacyArchives.slice(0, 3).map(archive => html`
+            <div class="archive">
+              <a href="dat://${archive.key}" title=${archive.title} target="_blank">${archive.title || archive.key}</a>
+              <div class="btn-group">
+                <button @click=${e => {window.location = `dat://${archive.key}`}}>View</button>
+                <button @click=${e => this.onClickRemoveLegacyArchive(e, archive)}>Remove</button>
+              </div>
+            </div>
+          `)}
+          ${this.legacyArchives.length > 3 ? html`
+            <a @click=${e => { this.currentNav = 'legacy-archives' }}>View All &raquo;</a>
+          ` : ''}
+        </div>
+      </section>
+    `
+  }
+
+  renderLegacyArchivesView () {
+    if (this.legacyArchives.length === 0) {
+      return ''
+    }
+    return html`
+      <section class="legacy-archives view">
+        <h3>Legacy Dats</h3>
+        <p>You have ${this.legacyArchives.length} legacy Dat ${pluralize(this.legacyArchives.length, 'archive')} which can be converted to Hyperdrive.</p>
+        <div class="archives">
           ${this.legacyArchives.map(archive => html`
             <div class="archive">
               <a href="dat://${archive.key}" title=${archive.title} target="_blank">${archive.title || archive.key}</a>
-              <button @click=${e => {window.location = `dat://${archive.key}`}}>View</button>
-              <button @click=${e => this.onClickRemoveLegacyArchive(e, archive)}>Remove</button>
+              <div class="btn-group">
+                <button @click=${e => {window.location = `dat://${archive.key}`}}>View</button>
+                <button @click=${e => this.onClickRemoveLegacyArchive(e, archive)}>Remove</button>
+              </div>
             </div>
           `)}
-          </div>
-        </details>
-      </div>
+        </div>
+      </section>
     `
   }
 
