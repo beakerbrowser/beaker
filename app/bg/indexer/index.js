@@ -84,6 +84,21 @@ export async function setup (opts) {
   })
   await db.migrate.latest({directory: path.join(app.getAppPath(), 'bg', 'indexer', 'migrations')})
   tick()
+  
+  // fetch current sites states for debugging
+  {
+    let states = await db('sites')
+      .select('origin', 'last_indexed_version', 'last_indexed_ts')
+      .innerJoin('site_indexes', 'site_indexes.site_rowid', 'sites.rowid')
+    for (let state of states) {
+      DEBUGGING.setSiteState({
+        url: state.origin,
+        last_indexed_version: state.last_indexed_version,
+        last_indexed_ts: state.last_indexed_ts,
+        error: undefined
+      })
+    }
+  }
 }
 
 export async function clearAllData () {
