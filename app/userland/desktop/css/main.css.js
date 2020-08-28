@@ -60,7 +60,7 @@ input:focus {
   position: relative;
   width: 100%;
   max-width: 1000px;
-  margin: 0 auto 60px;
+  margin: 0 auto 10px;
   padding: 12px 18px;
   border: 1px solid var(--border-color--default);
   font-size: 14px;

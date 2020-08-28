@@ -20,13 +20,13 @@ import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
 const CURRENT_VERSION = VERSION_ID(1, 0, 0, 7)
 const RELEASES = [
-  { label: '1.0, Beta 7', url: 'https://beakerbrowser.com/2020/07/15/beaker-1-0-beta-7.html' },
-  { label: '1.0, Beta 6', url: 'https://beakerbrowser.com/2020/07/10/beaker-1-0-beta-6.html' },
-  { label: '1.0, Beta 5', url: 'https://beakerbrowser.com/2020/06/19/beaker-1-0-beta-5.html' },
-  { label: '1.0, Beta 4', url: 'https://beakerbrowser.com/2020/06/04/beaker-1-0-beta-4.html' },
-  { label: '1.0, Beta 3', url: 'https://beakerbrowser.com/2020/05/28/beaker-1-0-beta-3.html' },
-  { label: '1.0, Beta 2', url: 'https://beakerbrowser.com/2020/05/20/beaker-1-0-beta-2.html' },
-  { label: '1.0, Beta 1', url: 'https://beakerbrowser.com/2020/05/14/beaker-1-0-beta.html' }
+  { label: '1.0 - Beta 7', url: 'https://beakerbrowser.com/2020/07/15/beaker-1-0-beta-7.html' },
+  { label: '1.0 - Beta 6', url: 'https://beakerbrowser.com/2020/07/10/beaker-1-0-beta-6.html' },
+  { label: '1.0 - Beta 5', url: 'https://beakerbrowser.com/2020/06/19/beaker-1-0-beta-5.html' },
+  { label: '1.0 - Beta 4', url: 'https://beakerbrowser.com/2020/06/04/beaker-1-0-beta-4.html' },
+  { label: '1.0 - Beta 3', url: 'https://beakerbrowser.com/2020/05/28/beaker-1-0-beta-3.html' },
+  { label: '1.0 - Beta 2', url: 'https://beakerbrowser.com/2020/05/20/beaker-1-0-beta-2.html' },
+  { label: '1.0 - Beta 1', url: 'https://beakerbrowser.com/2020/05/14/beaker-1-0-beta.html' }
 ]
 const DOCS_URL = 'https://docs.beakerbrowser.com'
 const USERLIST_URL = 'https://userlist.beakerbrowser.com'
@@ -288,6 +288,15 @@ class DesktopApp extends LitElement {
               <a href="beaker://explorer/">
                 <img class="favicon" src="asset:favicon-32:beaker://explorer/">
                 <span>My Files</span>
+              </a>
+            </div>
+          </section>
+          <section class="quick-links">
+            <h3>Beaker</h3>
+            <div>
+              <a href="#" @click=${this.onClickReleaseNotes}>
+                <span class="fas fa-fw fa-rocket"></span>
+                <span>Release Notes</span>
               </a>
             </div>
             <div>
@@ -638,13 +647,21 @@ class DesktopApp extends LitElement {
   onClickReleaseNotes (e) {
     e.preventDefault()
     e.stopPropagation()
-    const items = RELEASES.map(({label, url}) => ({
+    const items = RELEASES.slice().reverse().map(({label, url}) => ({
       icon: false,
       label: `Beaker ${label}`,
       click: () => window.open(url)
     }))
     var rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({x: rect.left, y: rect.bottom + 10, noBorders: true, roomy: true, items, fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'})
+    contextMenu.create({
+      x: rect.right + 5,
+      y: rect.bottom + 15,
+      noBorders: true,
+      roomy: true,
+      top: true,
+      items,
+      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
+    })
   }
 
   onClickSources (e) {
