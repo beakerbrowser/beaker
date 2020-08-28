@@ -300,7 +300,7 @@ main {
 
 .threecol {
   margin: 10px auto 20px;
-  max-width: 1000px;
+  max-width: 1040px;
   display: grid;
   grid-template-columns: 130px minmax(0, 1fr) 170px;
   gap: 30px;
