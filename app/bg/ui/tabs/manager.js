@@ -842,7 +842,6 @@ export async function restoreBgTabByIndex (win, index) {
   } else {
     tabs.push(tab)
   }
-  tab.tabCreationTime = Date.now()
   tab.isHidden = false
   tab.browserWindow = win
   setActive(win, tab)
