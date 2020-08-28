@@ -80,7 +80,7 @@ export class BaseFilesView extends LitElement {
   }
 
   getInlineMdItem () {
-    var md = this.items.find(item => item.name.toLowerCase() === 'readme.md')
+    var md = this.items.find(item => item.name.toLowerCase() === 'index.md')
     if (md) return md
   }
 
@@ -117,7 +117,7 @@ export class BaseFilesView extends LitElement {
           <div class="empty">This folder is empty</div>
         ` : ''}
         ${inlineMdItem ? html`
-          <h4>Readme</h4>
+          <h4>Index.md</h4>
           <div class="readme">
             <file-display
               drive-url=${inlineMdItem.drive.url}
