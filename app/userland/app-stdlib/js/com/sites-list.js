@@ -89,14 +89,14 @@ export class SitesList extends LitElement {
   async query () {
     emit(this, 'load-state-updated')
     var [sites, subs] = await Promise.all([
-      beaker.database.listSites({
+      beaker.index.listSites({
         filter: {
           search: this.filter,
           writable: this.listing === 'mine'
         },
         limit: this.singleRow ? 3 : 1e9
       }),
-      beaker.database.listRecords({
+      beaker.index.listRecords({
         filter: {index: 'beaker/index/subscriptions'},
         limit: 1e9
       })
@@ -147,7 +147,7 @@ export class SitesList extends LitElement {
     for (let site of this.sites) {
       if (!site.unknown) continue
       try {
-        let info = await beaker.database.getSite(site.origin)
+        let info = await beaker.index.getSite(site.origin)
         site.title = info.title
         site.description = info.description
         this.sites = this.sites.slice()

@@ -29,7 +29,7 @@ export class MarkdownSuggestions {
     if (term.length === 1) {
       return null
     }
-    const queryResults = await this.searchDebouncer(() => beaker.database.searchRecords(term, {
+    const queryResults = await this.searchDebouncer(() => beaker.index.searchRecords(term, {
       filter: {index: ['beaker/index/pages', 'beaker/index/blogposts']},
       limit: 10,
       sort: 'rank',
@@ -55,7 +55,7 @@ export class MarkdownSuggestions {
   }
 
   async completePeopleSuggestions (term, match, value) {
-    const queryResults = await this.searchDebouncer(() => beaker.database.searchRecords(term, {
+    const queryResults = await this.searchDebouncer(() => beaker.index.searchRecords(term, {
       filter: {index: ['beaker/index/subscriptions'], site: `hyper://${this.profile?.key}`},
       limit: 10,
       sort: 'rank',

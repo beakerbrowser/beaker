@@ -39,7 +39,7 @@ export class RecordThread extends LitElement {
   }
 
   async load () {
-    var record = await beaker.database.getRecord(this.recordUrl)
+    var record = await beaker.index.getRecord(this.recordUrl)
     this.subjectUrl = record?.metadata?.['beaker/subject'] || record?.url || this.recordUrl
     /* dont await */ this.loadSubject(record)
     /* dont await */ this.loadComments(record)
@@ -56,10 +56,10 @@ export class RecordThread extends LitElement {
       } catch {}
       try {
         if (isSubjectSite) {
-          subject = await beaker.database.getSite(subjectUrl)
+          subject = await beaker.index.getSite(subjectUrl)
           subject.isSite = true
         } else {
-          subject = await beaker.database.getRecord(subjectUrl)
+          subject = await beaker.index.getRecord(subjectUrl)
         }
       } catch {}
     } else {
@@ -72,7 +72,7 @@ export class RecordThread extends LitElement {
   }
 
   async loadComments (record) {
-    var replies = await beaker.database.listRecords({
+    var replies = await beaker.index.listRecords({
       filter: {
         linksTo: this.subjectUrl
       },

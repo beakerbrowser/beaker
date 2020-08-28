@@ -39,9 +39,9 @@ class DriveViewApp extends LitElement {
     }
 
     let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
-    this.profile = await beaker.database.getSite(addressBook?.profiles?.[0]?.key)
+    this.profile = await beaker.index.getSite(addressBook?.profiles?.[0]?.key)
 
-    beaker.database.getSite(window.location.origin).then(info => {
+    beaker.index.getSite(window.location.origin).then(info => {
       this.info = info
       console.log(this.info)
       this.requestUpdate()
@@ -50,7 +50,7 @@ class DriveViewApp extends LitElement {
       this.subscribers = subs
       this.requestUpdate()
     })
-    beaker.database.countRecords({
+    beaker.index.countRecords({
       filter: {site: location.origin}
     }).then(counts => {
       this.contentCounts = counts

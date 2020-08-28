@@ -46,8 +46,8 @@ import { WEBAPI as beakerBrowserAPI } from '../browser'
 // external manifests
 import capabilitiesManifest from './manifests/external/capabilities'
 import contactsManifest from './manifests/external/contacts'
-import databaseManifest from './manifests/external/database'
 import hyperdriveManifest from './manifests/external/hyperdrive'
+import indexManifest from './manifests/external/index'
 import markdownManifest from './manifests/external/markdown'
 import panesManifest from './manifests/external/panes'
 import peersocketsManifest from './manifests/external/peersockets'
@@ -57,8 +57,8 @@ import subscriptionsManifest from './manifests/external/subscriptions'
 // external apis
 import capabilitiesAPI from './bg/capabilities'
 import contactsAPI from './bg/contacts'
-import databaseAPI from './bg/database'
 import hyperdriveAPI from './bg/hyperdrive'
+import indexAPI from './bg/index'
 import markdownAPI from './bg/markdown'
 import panesAPI from './bg/panes'
 import peersocketsAPI from './bg/peersockets'
@@ -95,8 +95,8 @@ export const setup = function () {
   // external apis
   rpc.exportAPI('capabilities', capabilitiesManifest, capabilitiesAPI, secureOnly('capabilities'))
   rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
-  rpc.exportAPI('database', databaseManifest, databaseAPI, secureOnly('database'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
+  rpc.exportAPI('index', indexManifest, indexAPI, secureOnly('index'))
   rpc.exportAPI('markdown', markdownManifest, markdownAPI)
   rpc.exportAPI('panes', panesManifest, panesAPI, secureOnly('panes'))
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))

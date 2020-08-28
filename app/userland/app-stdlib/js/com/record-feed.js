@@ -96,14 +96,14 @@ export class RecordFeed extends LitElement {
     this.abortController = new AbortController()
     var results = []
     if (this.index?.[0] === 'notifications') {
-      results = await beaker.database.listNotifications({
+      results = await beaker.index.listNotifications({
         filter: {search: this.filter},
         limit: this.limit,
         sort: 'rtime',
         reverse: true
       })
     } else if (this.filter) {
-      results = await beaker.database.searchRecords(this.filter, {
+      results = await beaker.index.searchRecords(this.filter, {
         filter: {index: this.index || DEFAULT_SEARCH_INDEXES, site: this.sources},
         limit: this.limit,
         sort: 'ctime',
@@ -113,7 +113,7 @@ export class RecordFeed extends LitElement {
       // because we collapse results, we need to run the query until the limit is fulfilled
       let offset = 0
       do {
-        let subresults = await beaker.database.listRecords({
+        let subresults = await beaker.index.listRecords({
           filter: {index: this.index, site: this.sources},
           limit: this.limit,
           offset,

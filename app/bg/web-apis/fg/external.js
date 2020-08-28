@@ -2,7 +2,7 @@ import { fromEventStream, EventTargetFromStream } from './event-target'
 import errors from 'beaker-error-constants'
 import capabilitiesManifest from '../manifests/external/capabilities'
 import contactsManifest from '../manifests/external/contacts'
-import databaseManifest from '../manifests/external/database'
+import indexManifest from '../manifests/external/index'
 import markdownManifest from '../manifests/external/markdown'
 import panesManifest from '../manifests/external/panes'
 import peersocketsManifest from '../manifests/external/peersockets'
@@ -14,7 +14,7 @@ const RPC_OPTS = { timeout: false, errors }
 export const setup = function (rpc) {
   var capabilities = rpc.importAPI('capabilities', capabilitiesManifest, RPC_OPTS)
   var contacts = rpc.importAPI('contacts', contactsManifest, RPC_OPTS)
-  var database = rpc.importAPI('database', databaseManifest, RPC_OPTS)
+  var index = rpc.importAPI('index', indexManifest, RPC_OPTS)
   var markdown = rpc.importAPI('markdown', markdownManifest, RPC_OPTS)
   var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
   const subscriptions = rpc.importAPI('subscriptions', subscriptionsManifest, RPC_OPTS)
@@ -82,5 +82,5 @@ export const setup = function (rpc) {
     }
   }
 
-  return {capabilities, contacts, database, markdown, panes, peersockets, shell, subscriptions, terminal}
+  return {capabilities, contacts, index, markdown, panes, peersockets, shell, subscriptions, terminal}
 }

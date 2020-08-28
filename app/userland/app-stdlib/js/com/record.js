@@ -550,7 +550,7 @@ async function getNotificationSubject (url) {
     return _notificationSubjectCache[url]
   }
   try {
-    let item = await beaker.database.getRecord(url)
+    let item = await beaker.index.getRecord(url)
     if (item.metadata.title) {
       return `"${item.metadata.title}"`
     }

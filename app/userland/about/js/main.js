@@ -111,7 +111,7 @@ class AboutApp extends LitElement {
       this.requestUpdate()
       let [subscribers, counts] = await Promise.all([
         beaker.subscriptions.listNetworkFor(this.siteInfo.url),
-        beaker.database.countRecords({
+        beaker.index.countRecords({
           filter: {site: this.siteInfo.url}
         })
       ])

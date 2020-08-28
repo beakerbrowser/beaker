@@ -88,7 +88,7 @@ class DesktopApp extends LitElement {
       addressBook.loadProfile(),
       desktop.load(),
       beaker.subscriptions.list(),
-      beaker.database.countNotifications({filter: {isRead: false}})
+      beaker.index.countNotifications({filter: {isRead: false}})
     ])
     document.title = this.unreadNotificationsCount > 0 ? `New Tab (${this.unreadNotificationsCount})`: `New Tab`
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
@@ -100,7 +100,7 @@ class DesktopApp extends LitElement {
   }
 
   async loadSuggestions () {
-    let allSubscriptions = await beaker.database.listRecords({
+    let allSubscriptions = await beaker.index.listRecords({
       filter: {index: 'beaker/index/subscriptions'},
       limit: 100,
       sort: 'ctime',
@@ -192,7 +192,7 @@ class DesktopApp extends LitElement {
 
   markAllNotificationsRead () {
     setTimeout(async () => {
-      await beaker.database.setNotificationIsRead('all', true)
+      await beaker.index.setNotificationIsRead('all', true)
       this.unreadNotificationsCount = 0
       document.title = 'New Tab'
     }, 3e3)

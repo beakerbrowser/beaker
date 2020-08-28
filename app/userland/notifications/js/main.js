@@ -63,7 +63,7 @@ class NotificationsApp extends LitElement {
 
   onLoad () {
     setTimeout(async () => {
-      await beaker.database.setNotificationIsRead('all', true)
+      await beaker.index.setNotificationIsRead('all', true)
     }, 3e3)
   }
 
