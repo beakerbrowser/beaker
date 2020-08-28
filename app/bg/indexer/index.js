@@ -991,11 +991,16 @@ async function listOriginsToCapture () {
  * @returns {Promise<Site>}
  */
 async function loadSite (origin) {
-  var drive = await drives.getOrLoadDrive(origin)
-  var driveInfo = await drives.getDriveInfo(origin)
+  var drive, driveInfo
+  await timer(READ_TIMEOUT, async (checkin) => {
+    checkin('Loading hyperdrive from the network')
+    drive = await drives.getOrLoadDrive(origin)
+    checkin('Reading hyperdrive information from the network')
+    driveInfo = await drives.getDriveInfo(origin)
+  })
 
   if (!driveInfo || driveInfo.version === 0) {
-    throw new Error('Failed to load drive from the network')
+    throw new Error('Failed to load hyperdrive from the network')
   }
 
   var record = undefined
