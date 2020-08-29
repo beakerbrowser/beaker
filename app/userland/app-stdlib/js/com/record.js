@@ -6,6 +6,7 @@ import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/record.css.js'
 import { removeMarkdown } from '../../vendor/remove-markdown.js'
 import { shorten, makeSafe, toNiceDomain, pluralize, fancyUrlAsync } from '../strings.js'
+import { getRecordType } from '../records.js'
 import { emit } from '../dom.js'
 import './post-composer.js'
 
@@ -77,8 +78,8 @@ export class Record extends LitElement {
     const res = this.record
 
     var context = undefined
-    switch (res.index) {
-      case 'beaker/index/comments':
+    switch (getRecordType(res)) {
+      case 'comment':
         context = res.metadata['beaker/subject'] || res.metadata['beaker/parent']
         break
     }
@@ -93,7 +94,7 @@ export class Record extends LitElement {
           'private': res.url.startsWith('hyper://private'),
           'constrain-height': this.constrainHeight,
           'is-notification': !!res.notification,
-          unread: !!res.notification && !res?.notification?.isRead
+          unread: res?.notification?.unread
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
@@ -115,8 +116,7 @@ export class Record extends LitElement {
               ${res.url.startsWith('hyper://private/') ? html`
                 <a class="author" href=${res.site.url} title=${res.site.title}>
                   Private
-                  ${res.index === 'beaker/index/comments' ? 'comment' : ''}
-                  ${res.index === 'beaker/index/microblogposts' ? 'post' : ''}
+                  ${getRecordType(res)}
                 </a>
               ` : html`
                 <a class="author" href=${res.site.url} title=${res.site.title}>
@@ -156,8 +156,8 @@ export class Record extends LitElement {
     const res = this.record
 
     var context = undefined
-    switch (res.index) {
-      case 'beaker/index/comments':
+    switch (getRecordType(res)) {
+      case 'comment':
         context = res.metadata['beaker/subject'] || res.metadata['beaker/parent']
         break
     }
@@ -171,7 +171,7 @@ export class Record extends LitElement {
           comment: true,
           'private': res.url.startsWith('hyper://private'),
           'is-notification': !!res.notification,
-          unread: !!res.notification && !res?.notification?.isRead
+          unread: res?.notification?.unread
         })}
       >
         <div class="header">
@@ -224,14 +224,14 @@ export class Record extends LitElement {
     const res = this.record
 
     var subject
-    if (res.index === 'beaker/index/subscriptions') {
+    if (getRecordType(res) === 'subscription') {
       subject = isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : res.metadata.title || res.metadata.href
     } else {
       if (res.metadata.title) subject = res.metadata.title
       else if (res.content) subject = shorten(removeMarkdown(res.content), 150)
       else subject = fancyUrlAsync(res.url)
     }
-    var showContentAfter = ['beaker/index/microblogposts', 'beaker/index/comments'].includes(res.index)
+    var showContentAfter = ['microblogpost', 'comment'].includes(getRecordType(res))
 
     return html`
       <div
@@ -240,7 +240,7 @@ export class Record extends LitElement {
           action: true,
           'private': res.url.startsWith('hyper://private'),
           'is-notification': !!res.notification,
-          unread: !!res.notification && !res?.notification?.isRead
+          unread: res?.notification?.unread
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
@@ -250,10 +250,10 @@ export class Record extends LitElement {
           <a class="author" href=${res.site.url} title=${res.site.title}>
             ${res.site.url === 'hyper://private' ? 'I (private)' : res.site.title}
           </a>
-          ${res.index === 'beaker/index/subscriptions' ? html`
+          ${getRecordType(res) === 'subscription' ? html`
             <span class="action">subscribed to</span>
             <a class="subject" href=${res.metadata.href} title=${subject}>${subject}</a>
-          ` : res.index === 'beaker/index/bookmarks' ? html`
+          ` : getRecordType(res) === 'bookmark' ? html`
             <span class="action">bookmarked ${this.actionTarget}</span>
           ` : showContentAfter ? html`
             <span class="action">mentioned ${this.actionTarget}</span>
@@ -286,19 +286,20 @@ export class Record extends LitElement {
 
     var title = res.metadata.title || res.url.split('/').pop()
     var content = res.content
-    var isBookmark = res.index === 'beaker/index/bookmarks'
+    var isBookmark = false
     var href = undefined
-    switch (res.index) {
-      case 'beaker/index/bookmarks':
+    var recordType = getRecordType(res)
+    switch (recordType) {
+      case 'bookmark':
+        isBookmark = true
         href = res.metadata.href
         break
-      case 'beaker/index/comments':
-      case 'beaker/index/microblogposts':
+      case 'comment':
+      case 'microblogpost':
         title = removeMarkdown(removeFirstMdHeader(res.content))
         break
     }
     href = href || res.url
-
 
     return html`
     <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
@@ -328,11 +329,11 @@ export class Record extends LitElement {
               `)
             }
             <span>|</span>
-            ${res.index === 'beaker/index/bookmarks' ? html`<span class="type"><span class="far fa-star"></span> Bookmark</span>` : ''}
-            ${res.index === 'beaker/index/pages' ? html`<span class="type"><span class="far fa-file"></span> Page</span>` : ''}
-            ${res.index === 'beaker/index/blogposts' ? html`<span class="type"><span class="fas fa-blog"></span> Blogpost</span>` : ''}
-            ${res.index === 'beaker/index/comments' ? html`<span class="type"><span class="far fa-comments"></span> Comment</span>` : ''}
-            ${res.index === 'beaker/index/microblogposts' ? html`<span class="type"><span class="far fa-comment-alt"></span> Post</span>` : ''}
+            ${recordType === 'bookmark' ? html`<span class="type"><span class="far fa-star"></span> Bookmark</span>` : ''}
+            ${recordType === 'page' ? html`<span class="type"><span class="far fa-file"></span> Page</span>` : ''}
+            ${recordType === 'blogpost' ? html`<span class="type"><span class="fas fa-blog"></span> Blogpost</span>` : ''}
+            ${recordType === 'comment' ? html`<span class="type"><span class="far fa-comments"></span> Comment</span>` : ''}
+            ${recordType === 'microblogpost' ? html`<span class="type"><span class="far fa-comment-alt"></span> Post</span>` : ''}
             <span>|</span>
             <a class="date" href=${href}>${niceDate(res.ctime)}</a>
             <span>|</span>
@@ -355,28 +356,29 @@ export class Record extends LitElement {
 
   renderResultAsLink () {
     const res = this.record
+    var recordType = getRecordType(res)
 
     var href = undefined
-    switch (res.index) {
-      case 'beaker/index/comments': href = res.metadata['beaker/subject']; break
-      case 'beaker/index/bookmarks': href = res.metadata.href; break
+    switch (recordType) {
+      case 'comment': href = res.metadata['beaker/subject']; break
+      case 'bookmark': href = res.metadata.href; break
     }
     href = href || res.url
 
     var hrefp
-    if (res.index === 'beaker/index/bookmarks' && href) {
+    if (recordType === 'bookmark' && href) {
       try {
         hrefp = new URL(href)
       } catch {}
     }
 
     var title = res.metadata['title'] || ({
-      'beaker/index/bookmarks': niceDate(res.ctime),
-      'beaker/index/blogposts': niceDate(res.ctime),
-      'beaker/index/microblogposts': niceDate(res.ctime),
-      'beaker/index/pages': niceDate(res.ctime),
-      'beaker/index/comments': niceDate(res.ctime)
-    })[res.index] || res.url.split('/').pop() || niceDate(res.ctime)
+      'bookmark': niceDate(res.ctime),
+      'blogpost': niceDate(res.ctime),
+      'microblogpost': niceDate(res.ctime),
+      'page': niceDate(res.ctime),
+      'comment': niceDate(res.ctime)
+    })[recordType] || res.url.split('/').pop() || niceDate(res.ctime)
 
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
@@ -387,7 +389,7 @@ export class Record extends LitElement {
           link: true,
           'private': res.url.startsWith('hyper://private'),
           'is-notification': !!res.notification,
-          unread: !!res.notification && !res?.notification?.isRead
+          unread: res?.notification?.unread
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
@@ -405,9 +407,9 @@ export class Record extends LitElement {
             ` : ''}
           </div>
           <div class="ctrls">
-            ${res.index === 'beaker/index/bookmarks' ? html`<span class="far fa-star"></span>` : ''}
-            ${res.index === 'beaker/index/pages' ? html`<span class="far fa-file"></span>` : ''}
-            ${res.index === 'beaker/index/blogposts' ? html`<span class="fas fa-blog"></span>` : ''}
+            ${recordType === 'bookmark' ? html`<span class="far fa-star"></span>` : ''}
+            ${recordType === 'page' ? html`<span class="far fa-file"></span>` : ''}
+            ${recordType === 'blogpost' ? html`<span class="fas fa-blog"></span>` : ''}
             by
             <span class="origin">
               <a class="author" href=${res.site.url} title=${res.site.title}>
@@ -434,12 +436,12 @@ export class Record extends LitElement {
       return html`<img src=${url}>`
     }
     var icon = 'far fa-file-alt'
-    switch (this.record.index) {
-      case 'beaker/index/blogposts': icon = 'fas fa-blog'; break
-      case 'beaker/index/pages': icon = 'far fa-file-alt'; break
-      case 'beaker/index/bookmarks': icon = 'fas fa-star'; break
-      case 'beaker/index/microblogposts': icon = 'fas fa-stream'; break
-      case 'beaker/index/comments': icon = 'far fa-comment'; break
+    switch (getRecordType(this.record)) {
+      case 'blogpost': icon = 'fas fa-blog'; break
+      case 'page': icon = 'far fa-file-alt'; break
+      case 'bookmark': icon = 'fas fa-star'; break
+      case 'microblogpost': icon = 'fas fa-stream'; break
+      case 'comment': icon = 'far fa-comment'; break
     }
     return html`
       <span class="icon">
@@ -450,16 +452,27 @@ export class Record extends LitElement {
 
   renderNotification () {
     const res = this.record
-    var description = ({
-      'beaker/notification/bookmark': 'bookmarked',
-      'beaker/notification/comment': 'commented on',
-      'beaker/notification/mention': 'mentioned',
-      'beaker/notification/reply': 'replied to'
-    })[res.notification.type] || 'linked to'
+    var type = getRecordType(res)
+    var description = 'linked to'
+    if (res.notification.key === '_link') {
+      if (type === 'microblogpost' || type === 'comment') {
+        description = 'mentioned'
+      }
+    } else if (res.notification.key === 'href') {
+      if (type === 'bookmark') {
+        description = 'bookmarked'
+      } else if (type === 'subscription') {
+        description = 'subscribed to'
+      }
+    } else if (res.notification.key === 'beaker/subject') {
+      description = 'commented on'
+    } else if (res.notification.key === 'beaker/parent') {
+      description = 'replied to'
+    }
     var where = ({
-      'beaker/index/pages': 'in',
-      'beaker/index/blogpostss': 'in'
-    })[res.index] || ''
+      'page': 'in',
+      'blogpost': 'in'
+    })[type] || ''
     return html`
       <div class="notification">
         ${res.site.title}
@@ -554,11 +567,11 @@ async function getNotificationSubject (url) {
     if (item.metadata.title) {
       return `"${item.metadata.title}"`
     }
-    switch (item.index) {
-      case 'beaker/index/comments': return 'your comment'
-      case 'beaker/index/pages': return 'your page'
-      case 'beaker/index/blogposts': return 'your blog post'
-      case 'beaker/index/microblogposts': return 'your post'
+    switch (getRecordType(item)) {
+      case 'comment': return 'your comment'
+      case 'page': return 'your page'
+      case 'blogpost': return 'your blog post'
+      case 'microblogpost': return 'your post'
     }
   } catch {}
   return 'your page'

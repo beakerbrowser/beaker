@@ -2,7 +2,7 @@ import { joinPath } from '../../lib/strings.js'
 import { createResourceSlug } from '../../lib/urls'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
-import { INDEX_IDS, METADATA_KEYS } from '../indexer/const'
+import { METADATA_KEYS } from '../indexer/const'
 import * as filesystem from './index'
 import { URL } from 'url'
 
@@ -14,10 +14,8 @@ import { URL } from 'url'
  */
 export async function list () {
   var results = await indexer.listRecords({
-    filter: {
-      index: INDEX_IDS.subscriptions,
-      site: ['hyper://private', filesystem.getProfileUrl()]
-    },
+    file: {mimetype: 'application/goto', prefix: '/subscriptions'},
+    site: ['hyper://private', filesystem.getProfileUrl()],
     limit: 1e9
   })
   return results.map(massageSubscription)
@@ -30,11 +28,9 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var results = await indexer.listRecords({
-    filter: {
-      index: INDEX_IDS.subscriptions,
-      site: ['hyper://private', filesystem.getProfileUrl()],
-      linksTo: href
-    },
+    file: {mimetype: 'application/goto', prefix: '/subscriptions'},
+    site: ['hyper://private', filesystem.getProfileUrl()],
+    links: href,
     limit: 1
   })
   if (results[0]) {
@@ -49,10 +45,8 @@ export async function get (href) {
 export async function listNetworkFor (href) {
   href = normalizeUrl(href)
   var results = await indexer.listRecords({
-    filter: {
-      index: INDEX_IDS.subscriptions,
-      linksTo: href
-    },
+    file: {mimetype: 'application/goto', prefix: '/subscriptions'},
+    links: href,
     limit: 1e9
   })
   return results.map(massageSubscription)

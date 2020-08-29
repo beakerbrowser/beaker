@@ -30,16 +30,19 @@ export class MarkdownSuggestions {
       return null
     }
     const queryResults = await this.searchDebouncer(() => beaker.index.searchRecords(term, {
-      filter: {index: ['beaker/index/pages', 'beaker/index/blogposts']},
+      file: [
+        {prefix: '/blog', mimetype: 'text/markdown'},
+        {prefix: '/pages', mimetype: 'text/markdown'}
+      ],
       limit: 10,
       sort: 'rank',
       reverse: true
     }))
     const suggestions = queryResults.map(s => {
       const type = ({
-        'beaker/index/blogposts': 'blogpost',
-        'beaker/index/pages': 'page'
-      })[s.index]
+        '/blog': 'blogpost',
+        '/pages': 'page'
+      })[s.prefix]
       const title = s.metadata.title || s.url.split('/').pop()
       const detail = s.site.title
       return {
@@ -56,7 +59,8 @@ export class MarkdownSuggestions {
 
   async completePeopleSuggestions (term, match, value) {
     const queryResults = await this.searchDebouncer(() => beaker.index.searchRecords(term, {
-      filter: {index: ['beaker/index/subscriptions'], site: `hyper://${this.profile?.key}`},
+      file: {prefix: '/subscriptions', mimetype: 'application/goto'},
+      site: `hyper://${this.profile?.key}`,
       limit: 10,
       sort: 'rank',
       reverse: true

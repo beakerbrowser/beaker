@@ -1,21 +1,23 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
+import { getRecordType, typeToQuery } from '../records.js'
 import css from '../../css/com/record-feed.css.js'
 import { emit } from '../dom.js'
 
 import './record.js'
 
-const DEFAULT_SEARCH_INDEXES = [
-  'beaker/index/blogposts',
-  'beaker/index/bookmarks',
-  'beaker/index/microblogposts',
-  'beaker/index/pages'
+const DEFAULT_SEARCH_FILE_QUERIES = [
+  typeToQuery('blogpost'),
+  typeToQuery('bookmark'),
+  typeToQuery('microblogpost'),
+  typeToQuery('comment'),
+  typeToQuery('page')
 ]
 
 export class RecordFeed extends LitElement {
   static get properties () {
     return {
-      index: {type: Array},
+      fileQuery: {type: Array},
       title: {type: String},
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       dateTitleRange: {type: String, attribute: 'date-title-range'},
@@ -36,7 +38,7 @@ export class RecordFeed extends LitElement {
 
   constructor () {
     super()
-    this.index = undefined
+    this.fileQuery = undefined
     this.title = ''
     this.showDateTitles = false
     this.dateTitleRange = undefined
@@ -70,7 +72,8 @@ export class RecordFeed extends LitElement {
       return
     } else if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
       this.queueQuery()
-    } else if (changedProperties.has('index') && !isArrayEq(this.index, changedProperties.get('index'))) {
+    } else if (changedProperties.has('fileQuery') && changedProperties.get('fileQuery') != this.fileQuery) {
+      // NOTE ^ to correctly track this, the query arrays must be reused
       this.results = undefined // clear results while loading
       this.queueQuery()
     } else if (changedProperties.has('sources') && !isArrayEq(this.sources, changedProperties.get('sources'))) {
@@ -95,39 +98,52 @@ export class RecordFeed extends LitElement {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
     var results = []
-    if (this.index?.[0] === 'notifications') {
-      results = await beaker.index.listNotifications({
-        filter: {search: this.filter},
-        limit: this.limit,
-        sort: 'rtime',
-        reverse: true
-      })
-    } else if (this.filter) {
-      results = await beaker.index.searchRecords(this.filter, {
-        filter: {index: this.index || DEFAULT_SEARCH_INDEXES, site: this.sources},
-        limit: this.limit,
-        sort: 'ctime',
-        reverse: true
-      })
-    } else {
-      // because we collapse results, we need to run the query until the limit is fulfilled
-      let offset = 0
-      do {
-        let subresults = await beaker.index.listRecords({
-          filter: {index: this.index, site: this.sources},
+    if (this.fileQuery?.[0] === 'notifications') {
+      if (this.filter) {
+        results = await beaker.index.searchRecords(this.filter, {
+          notification: true,
           limit: this.limit,
-          offset,
+          sort: 'rtime',
+          reverse: true
+        })
+      } else {
+        results = await beaker.index.listRecords({
+          notification: true,
+          limit: this.limit,
+          sort: 'rtime',
+          reverse: true
+        })
+      }
+    } else {
+      if (this.filter) {
+        results = await beaker.index.searchRecords(this.filter, {
+          file: this.fileQuery || DEFAULT_SEARCH_FILE_QUERIES,
+          site: this.sources,
+          limit: this.limit,
           sort: 'ctime',
           reverse: true
         })
-        if (subresults.length === 0) break
-        
-        offset += subresults.length
-        if (!this.noMerge) {
-          subresults = subresults.reduce(reduceMultipleActions, [])
-        }
-        results = results.concat(subresults)
-      } while (results.length < this.limit)
+      } else {
+        // because we collapse results, we need to run the query until the limit is fulfilled
+        let offset = 0
+        do {
+          let subresults = await beaker.index.listRecords({
+            file: this.fileQuery,
+            site: this.sources,
+            limit: this.limit,
+            offset,
+            sort: 'ctime',
+            reverse: true
+          })
+          if (subresults.length === 0) break
+          
+          offset += subresults.length
+          if (!this.noMerge) {
+            subresults = subresults.reduce(reduceMultipleActions, [])
+          }
+          results = results.concat(subresults)
+        } while (results.length < this.limit)
+      }
     }
     console.log(results)
     this.results = results
@@ -194,10 +210,10 @@ export class RecordFeed extends LitElement {
   
   renderNormalResult (result) {
     var renderMode = ({
-      'beaker/index/comments': 'card',
-      'beaker/index/microblogposts': 'card',
-      'beaker/index/subscriptions': 'action',
-    })[result.index] || 'link'
+      'comment': 'card',
+      'microblogpost': 'card',
+      'subscription': 'action',
+    })[getRecordType(result)] || 'link'
     return html`
       <beaker-record
         .record=${result}
@@ -245,7 +261,7 @@ function dateHeader (ts, range) {
 function reduceMultipleActions (acc, result) {
   let last = acc[acc.length - 1]
   if (last) {
-    if (last.site.url === result.site.url && result.index === 'beaker/index/subscriptions') {
+    if (last.site.url === result.site.url && getRecordType(result) === 'subscription') {
       last.mergedItems = last.mergedItems || []
       last.mergedItems.push(result)
       return acc

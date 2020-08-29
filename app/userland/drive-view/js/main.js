@@ -2,6 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import { SitesListPopup } from 'beaker://app-stdlib/js/com/popups/sites-list.js'
 import { shorten, pluralize, isSameOrigin } from 'beaker://app-stdlib/js/strings.js'
+import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
 import css from '../css/main.css.js'
 import './views/files-list.js'
 import './views/index-md.js'
@@ -9,14 +10,23 @@ import 'beaker://app-stdlib/js/com/record-feed.js'
 import 'beaker://app-stdlib/js/com/record-thread.js'
 
 const NAV_ITEMS = [
-  {index: undefined, path: '/', icon: 'fas fa-home', label: 'Home'},
-  {index: 'beaker/index/bookmarks', path: '/bookmarks/', icon: 'far fa-star', label: 'Bookmarks'},
-  {index: 'beaker/index/blogposts', path: '/blog/', icon: 'fas fa-blog', label: 'Blog'},
-  {index: 'beaker/index/pages', path: '/pages/', icon: 'far fa-file', label: 'Pages'},
-  {index: 'beaker/index/microblogposts', path: '/microblog/', icon: 'far fa-comment-alt', label: 'Posts'},
-  {index: 'beaker/index/comments', path: '/comments/', icon: 'far fa-comments', label: 'Comments'},
-  {index: 'beaker/index/subscriptions', path: '/subscriptions/', icon: 'fas fa-rss', label: 'Subscriptions'}
+  {type: undefined, path: '/', icon: 'fas fa-home', label: 'Home'},
+  {type: 'bookmark', path: '/bookmarks/', icon: 'far fa-star', label: 'Bookmarks'},
+  {type: 'blogpost', path: '/blog/', icon: 'fas fa-blog', label: 'Blog'},
+  {type: 'page', path: '/pages/', icon: 'far fa-file', label: 'Pages'},
+  {type: 'microblogpost', path: '/microblog/', icon: 'far fa-comment-alt', label: 'Posts'},
+  {type: 'comment', path: '/comments/', icon: 'far fa-comments', label: 'Comments'},
+  {type: 'subscription', path: '/subscriptions/', icon: 'fas fa-rss', label: 'Subscriptions'}
 ]
+const FILE_QUERIES = {
+  bookmarks: [typeToQuery('bookmark')],
+  blogposts: [typeToQuery('blogpost')],
+  pages: [typeToQuery('page')],
+  microblogposts: [typeToQuery('microblogpost')],
+  comments: [typeToQuery('comment')],
+  subscriptions: [typeToQuery('subscription')]
+}
+FILE_QUERIES.all = Object.values(FILE_QUERIES).flat()
 
 class DriveViewApp extends LitElement {
   static get styles () {
@@ -50,12 +60,24 @@ class DriveViewApp extends LitElement {
       this.subscribers = subs
       this.requestUpdate()
     })
-    beaker.index.countRecords({
-      filter: {site: location.origin}
-    }).then(counts => {
-      this.contentCounts = counts
-      this.requestUpdate()
-    })
+    this.contentCounts = Object.fromEntries(
+      await Promise.all(
+        Object.entries({
+          bookmark: FILE_QUERIES.bookmarks,
+          blogpost: FILE_QUERIES.blogposts,
+          page: FILE_QUERIES.pages,
+          microblogpost: FILE_QUERIES.microblogposts,
+          comment: FILE_QUERIES.comments,
+          subscription: FILE_QUERIES.subscriptions
+        }).map(([key, file]) => (
+          beaker.index.countRecords({
+            file,
+            site: window.location.origin
+          }).then(count => ([key, count]))
+        ))
+      )
+    )
+    this.requestUpdate()
   }
 
   get isDirectory () {
@@ -68,10 +90,13 @@ class DriveViewApp extends LitElement {
 
   render () {
     if (!this.info) return html``
-    const navItem = ({index, path, icon, label}) => {
-      let count = this.contentCounts?.[index]
-      if (index && !count) return ''
-      else if (count > 0) label += ` (${count})`
+    const navItem = ({type, path, icon, label}) => {
+      let count = 0
+      if (type) {
+        count = this.contentCounts?.[type]
+        if (!count) return ''
+      }
+      if (count > 0) label += ` (${count})`
       return html`
         <a class="nav-item ${location.pathname === path ? 'current' : ''}" href=${path} data-tooltip=${label}>
           <span class="fa-fw ${icon}"></span>
@@ -144,6 +169,7 @@ class DriveViewApp extends LitElement {
       case '/':
         return html`
           <beaker-record-feed
+            .fileQuery=${FILE_QUERIES.all}
             .sources=${[this.info.origin]}
             show-date-titles
             date-title-range="month"
@@ -155,7 +181,7 @@ class DriveViewApp extends LitElement {
       case '/microblog/':
         return html`
           <beaker-record-feed
-            .index=${['beaker/index/microblogposts']}
+            .fileQuery=${FILE_QUERIES.microblogposts}
             .sources=${[this.info.origin]}
             show-date-titles
             date-title-range="month"
@@ -167,7 +193,7 @@ class DriveViewApp extends LitElement {
       case '/blog/':
         return html`
           <beaker-record-feed
-            .index=${['beaker/index/blogposts']}
+            .fileQuery=${FILE_QUERIES.blogposts}
             .sources=${[this.info.origin]}
             show-date-titles
             date-title-range="month"
@@ -179,7 +205,7 @@ class DriveViewApp extends LitElement {
       case '/pages/':
         return html`
           <beaker-record-feed
-            .index=${['beaker/index/pages']}
+            .fileQuery=${FILE_QUERIES.pages}
             .sources=${[this.info.origin]}
             show-date-titles
             date-title-range="month"
@@ -191,7 +217,7 @@ class DriveViewApp extends LitElement {
       case '/bookmarks/':
         return html`
           <beaker-record-feed
-            .index=${['beaker/index/bookmarks']}
+            .fileQuery=${FILE_QUERIES.bookmarks}
             .sources=${[this.info.origin]}
             show-date-titles
             date-title-range="month"
@@ -203,7 +229,7 @@ class DriveViewApp extends LitElement {
       case '/comments/':
         return html`
           <beaker-record-feed
-            .index=${['beaker/index/comments']}
+            .fileQuery=${FILE_QUERIES.comments}
             .sources=${[this.info.origin]}
             show-date-titles
             date-title-range="month"
@@ -215,7 +241,7 @@ class DriveViewApp extends LitElement {
       case '/subscriptions/':
         return html`
           <beaker-record-feed
-            .index=${['beaker/index/subscriptions']}
+            .fileQuery=${FILE_QUERIES.subscriptions}
             .sources=${[this.info.origin]}
             show-date-titles
             date-title-range="month"

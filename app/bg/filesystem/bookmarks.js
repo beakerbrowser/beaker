@@ -2,7 +2,7 @@ import { joinPath } from '../../lib/strings.js'
 import { createResourceSlug } from '../../lib/urls'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
-import { INDEX_IDS, METADATA_KEYS } from '../indexer/const'
+import { METADATA_KEYS } from '../indexer/const'
 import * as filesystem from './index'
 import { URL } from 'url'
 import * as profileDb from '../dbs/profile-data-db'
@@ -15,10 +15,8 @@ import * as profileDb from '../dbs/profile-data-db'
  */
 export async function list () {
   var results = await indexer.listRecords({
-    filter: {
-      index: INDEX_IDS.bookmarks,
-      site: ['hyper://private', filesystem.getProfileUrl()]
-    },
+    file: {mimetype: 'application/goto', prefix: '/bookmarks'},
+    site: ['hyper://private', filesystem.getProfileUrl()],
     limit: 1e9
   })
   return results.map(massageBookmark)
@@ -31,11 +29,9 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var results = await indexer.listRecords({
-    filter: {
-      index: INDEX_IDS.bookmarks,
-      site: ['hyper://private', filesystem.getProfileUrl()],
-      linksTo: href
-    },
+    file: {mimetype: 'application/goto', prefix: '/bookmarks'},
+    site: ['hyper://private', filesystem.getProfileUrl()],
+    links: href,
     limit: 1
   })
   if (results[0]) {

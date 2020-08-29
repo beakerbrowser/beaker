@@ -31,17 +31,9 @@ export default {
   searchRecords (q, opts) {
     return indexer.searchRecords(q, opts)
   },
-  
-  listNotifications (opts) {
-    return indexer.listNotifications(opts)
-  },
-  
-  countNotifications (opts) {
-    return indexer.countNotifications(opts)
-  },
 
-  setNotificationIsRead (rowid, isRead) {
-    return indexer.setNotificationIsRead(rowid, isRead)
+  clearNotifications () {
+    return indexer.clearNotifications()
   },
 
   getState () {

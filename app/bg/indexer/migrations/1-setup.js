@@ -4,28 +4,24 @@ exports.up = async function (knex) {
     table.string('title')
     table.string('description')
     table.integer('writable')
-
-    table.index('origin')
-  })
-  await knex.schema.createTable('site_indexes', table => {
-    table.integer('site_rowid').unsigned().notNullable()
-    table.string('index')
     table.integer('last_indexed_version')
     table.integer('last_indexed_ts')
 
-    table.foreign('site_rowid').references('rowid').inTable('sites').onDelete('CASCADE')
-    table.unique(['site_rowid', 'index'])
+    table.index('origin')
   })
   await knex.schema.createTable('records', table => {
     table.integer('site_rowid').unsigned().notNullable()
+    table.string('prefix').notNullable()
     table.string('path').notNullable()
-    table.string('index')
+    table.string('mimetype')
     table.integer('mtime')
     table.integer('ctime')
+    table.integer('rtime')
 
     table.foreign('site_rowid').references('rowid').inTable('sites').onDelete('CASCADE')
+    table.index('prefix')
     table.index('path')
-    table.index('index')
+    table.index('mimetype')
     table.unique(['site_rowid', 'path'])
   })
   await knex.schema.createTable('records_data', table => {
@@ -33,6 +29,16 @@ exports.up = async function (knex) {
     table.string('key').notNullable()
     table.string('value')
 
+    table.foreign('record_rowid').references('rowid').inTable('records').onDelete('CASCADE')
+  })
+  await knex.schema.createTable('records_notification', table => {
+    table.integer('record_rowid').unsigned().notNullable()
+    table.string('notification_key').notNullable()
+    table.string('notification_subject_origin').notNullable()
+    table.string('notification_subject_path').notNullable()
+    table.integer('notification_read')
+
+    table.index('notification_subject_origin')
     table.foreign('record_rowid').references('rowid').inTable('records').onDelete('CASCADE')
   })
   await knex.schema.raw(`
@@ -54,29 +60,15 @@ exports.up = async function (knex) {
       INSERT INTO records_data_fts(rowid, value) VALUES (new.rowid, new.value);
     END;
   `)
-  await knex.schema.createTable('notifications', table => {
-    table.integer('site_rowid').unsigned().notNullable()
-    table.integer('record_rowid').unsigned().notNullable()
-    table.string('type')
-    table.string('subject_origin')
-    table.string('subject_path')
-    table.integer('is_read')
-    table.integer('rtime')
-
-    table.unique(['site_rowid', 'record_rowid'])
-    table.foreign('site_rowid').references('rowid').inTable('sites').onDelete('CASCADE')
-    table.foreign('record_rowid').references('rowid').inTable('records').onDelete('CASCADE')
-  })
 }
 
 exports.down = async function (knex) {
-  await knex.schema.dropTableIfExists('notifications')
   await knex.schema.raw(`DROP TRIGGER IF EXISTS records_data_au`)
   await knex.schema.raw(`DROP TRIGGER IF EXISTS records_data_ad`)
   await knex.schema.raw(`DROP TRIGGER IF EXISTS records_data_ai`)
   await knex.schema.dropTableIfExists('records_data_fts')
+  await knex.schema.dropTableIfExists('records_notification')
   await knex.schema.dropTableIfExists('records_data')
   await knex.schema.dropTableIfExists('records')
-  await knex.schema.dropTableIfExists('site_indexess')
   await knex.schema.dropTableIfExists('sites')
 }

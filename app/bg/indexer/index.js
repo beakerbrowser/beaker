@@ -23,22 +23,36 @@
 
 import { app } from 'electron'
 import knex from 'knex'
+import { dirname } from 'path'
 import { EventEmitter } from 'events'
 import emitStream from 'emit-stream'
+import markdownLinkExtractor from 'markdown-link-extractor'
 import { attachOnConflictDoNothing } from 'knex-on-conflict-do-nothing'
 import { attachOnConflictDoUpdate } from '../lib/db'
 import * as path from 'path'
 import mkdirp from 'mkdirp'
-import promisePool from 'tiny-promise-pool'
-import * as filesystem from '../filesystem/index'
-import * as drives from '../hyper/drives'
-import { query } from '../filesystem/query'
 import * as logLib from '../logger'
 const logger = logLib.get().child({category: 'indexer'})
-import { TICK_INTERVAL, READ_TIMEOUT, METADATA_KEYS, INDEX_IDS, parseUrl } from './const'
-import { INDEXES } from './index-defs'
+import { TICK_INTERVAL, METADATA_KEYS } from './const'
 import lock from '../../lib/lock'
-import { timer } from '../../lib/time'
+import { joinPath } from '../../lib/strings'
+import {
+  getIsFirstRun,
+  getIndexState,
+  updateIndexState,
+  listMyOrigins,
+  listOriginsToIndex,
+  listOriginsToCapture,
+  listOriginsToDeindex,
+  loadSite,
+  parseUrl,
+  normalizeOrigin,
+  toArray,
+  parallel,
+  getMimetype,
+  toFileQuery,
+  toNotificationQuery
+} from './util'
 
 /**
  * @typedef {import('./const').Site} Site
@@ -47,6 +61,8 @@ import { timer } from '../../lib/time'
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
+ * @typedef {import('./const').FileQuery} FileQuery
+ * @typedef {import('./const').NotificationQuery} NotificationQuery
  */
 
 // globals
@@ -89,7 +105,6 @@ export async function setup (opts) {
   {
     let states = await db('sites')
       .select('origin', 'last_indexed_version', 'last_indexed_ts')
-      .innerJoin('site_indexes', 'site_indexes.site_rowid', 'sites.rowid')
     for (let state of states) {
       DEBUGGING.setSiteState({
         url: state.origin,
@@ -127,7 +142,7 @@ export async function getSite (url) {
       writable: Boolean(siteRows[0].writable)
     }
   }
-  var site = await loadSite(origin)
+  var site = await loadSite(db, origin)
   return {
     origin: site.origin,
     url: site.origin,
@@ -191,9 +206,11 @@ export async function getRecord (url) {
   var record_rowid = rows[0].record_rowid
   var result = {
     url: urlp.origin + urlp.path,
-    index: rows[0].index,
+    prefix: rows[0].prefix,
+    mimetype: rows[0].mimetype,
     ctime: rows[0].ctime,
     mtime: rows[0].mtime,
+    rtime: rows[0].rtime,
     site: {
       url: urlp.origin,
       title: rows[0].title
@@ -219,10 +236,10 @@ export async function getRecord (url) {
 
 /**
  * @param {Object} [opts]
- * @param {Object} [opts.filter]
- * @param {String|Array<String>} [opts.filter.site]
- * @param {String|Array<String>} [opts.filter.index]
- * @param {String} [opts.filter.linksTo]
+ * @param {String|Array<String>} [opts.site]
+ * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {String} [opts.links]
+ * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
@@ -232,7 +249,7 @@ export async function getRecord (url) {
 export async function listRecords (opts) {
   var sort = 'ctime'
   var reverse = (typeof opts?.reverse === 'boolean') ? opts.reverse : true
-  if (opts?.sort && ['ctime', 'mtime', 'site'].includes(opts.sort)) {
+  if (opts?.sort && ['ctime', 'mtime', 'rtime', 'site'].includes(opts.sort)) {
     sort = opts.sort
   }
   var offset = opts?.offset || 0
@@ -246,9 +263,11 @@ export async function listRecords (opts) {
     .select(
       'origin',
       'path',
-      'index',
+      'prefix',
+      'mimetype',
       'ctime',
       'mtime',
+      'rtime',
       'title as siteTitle',
       db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
       db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
@@ -258,38 +277,56 @@ export async function listRecords (opts) {
     .limit(limit)
     .orderBy(sort, reverse ? 'desc' : 'asc')
 
-  if (opts?.filter?.site) {
-    if (Array.isArray(opts.filter.site)) {
-      query = query.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
+  if (opts?.site) {
+    if (Array.isArray(opts.site)) {
+      query = query.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
     } else {
-      query = query.where({origin: parseUrl(opts.filter.site).origin})
+      query = query.where({origin: parseUrl(opts.site).origin})
     }
   }
-  if (opts?.filter?.index) {
-    if (Array.isArray(opts.filter.index)) {
-      query = query.whereIn('index', opts.filter.index)
+  if (opts?.file) {
+    if (Array.isArray(opts.file)) {
+      query = query.where(function () {
+        let chain = this.where(toFileQuery(opts.file[0]))
+        for (let i = 1; i < opts.file.length; i++) {
+          chain = chain.orWhere(toFileQuery(opts.file[i]))
+        }
+      })
     } else {
-      query = query.where({index: opts.filter.index})
+      query = query.where(toFileQuery(opts.file))
     }
   }
-  if (opts?.filter?.linksTo) {
+  if (typeof opts?.links === 'string') {
     query = query.joinRaw(
       `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
-      [opts.filter.linksTo]
+      [opts.links]
     )
+  }
+  if (opts?.notification) {
+    let notification = toNotificationQuery(opts.notification)
+    query = query
+      .select(
+        'notification_key',
+        'notification_subject_origin',
+        'notification_subject_path',
+        'notification_read'
+      )
+      .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
+    if (typeof notification !== 'boolean') {
+      query = query.where(notification)
+    }
   }
 
   var indexStatesQuery
-  if (opts?.filter?.site && !opts?.filter?.linksTo) {
+  if (opts?.site && !opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
     indexStatesQuery = db('sites')
       .select('origin')
-      .innerJoin('site_indexes', 'site_indexes.site_rowid', 'sites.rowid')
-      .groupBy('sites.rowid')
-    if (Array.isArray(opts.filter.site)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
+      .where('last_indexed_version', '>', 0)
+    if (Array.isArray(opts.site)) {
+      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
     } else {
-      indexStatesQuery = indexStatesQuery.where({origin: parseUrl(opts.filter.site).origin})
+      indexStatesQuery = indexStatesQuery.where({origin: parseUrl(opts.site).origin})
     }
   }
 
@@ -301,16 +338,19 @@ export async function listRecords (opts) {
   var records = rows.map(row => {
     var record = {
       url: row.origin + row.path,
-      index: row.index,
+      prefix: row.prefix,
+      mimetype: row.mimetype,
       ctime: row.ctime,
       mtime: row.mtime,
+      rtime: row.rtime,
       site: {
         url: row.origin,
         title: row.siteTitle
       },
       metadata: {},
       links: [],
-      content: undefined
+      content: undefined,
+      notification: undefined
     }
     var dataKeys = (row.data_keys || '').split(sep)
     var dataValues = (row.data_values || '').split(sep)
@@ -324,6 +364,13 @@ export async function listRecords (opts) {
         record.metadata[key] = dataValues[i]
       }
     }
+    if (opts?.notification) {
+      record.notification = {
+        key: row.notification_key,
+        subject: joinPath(row.notification_subject_origin, row.notification_subject_path),
+        unread: !row.notification_read
+      }
+    }
     return record
   })
 
@@ -331,13 +378,13 @@ export async function listRecords (opts) {
   if (indexStates) {
     // fetch the live records
     var addedRecords
-    for (let site of toArray(opts.filter.site)) {
+    for (let site of toArray(opts.site)) {
       let origin = parseUrl(site).origin
       if (indexStates.find(state => state.origin === origin)) {
         continue
       }
       addedRecords = (addedRecords || []).concat(
-        await listLiveRecords(origin, {filter: opts?.filter})
+        await listLiveRecords(origin, opts)
       )
     }
     if (addedRecords) {
@@ -370,50 +417,61 @@ export async function listRecords (opts) {
 
 /**
  * @param {Object} [opts]
- * @param {Object} [opts.filter]
- * @param {String|Array<String>} [opts.filter.site]
- * @param {String|Array<String>} [opts.filter.index]
- * @param {String} [opts.filter.linksTo]
- * @returns {Promise<Object<String, Number>>}
+ * @param {String|Array<String>} [opts.site]
+ * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {String} [opts.links]
+ * @param {Boolean|NotificationQuery} [opts.notification]
+ * @returns {Promise<Number>}
  */
 export async function countRecords (opts) {
   var query = db('records')
     .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
-    .select('index', db.raw(`count(records.rowid) as count`))
-    .groupBy('records.index')
+    .select('prefix', db.raw(`count(records.rowid) as count`))
 
-  if (opts?.filter?.site) {
-    if (Array.isArray(opts.filter.site)) {
-      query = query.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
+  if (opts?.site) {
+    if (Array.isArray(opts.site)) {
+      query = query.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
     } else {
-      query = query.where({origin: parseUrl(opts.filter.site).origin})
+      query = query.where({origin: parseUrl(opts.site).origin})
     }
   }
-  if (opts?.filter?.index) {
-    if (Array.isArray(opts.filter.index)) {
-      query = query.whereIn('index', opts.filter.index)
+  if (opts?.file) {
+    if (Array.isArray(opts.file)) {
+      query = query.where(function () {
+        let chain = this.where(toFileQuery(opts.file[0]))
+        for (let i = 1; i < opts.file.length; i++) {
+          chain = chain.orWhere(toFileQuery(opts.file[i]))
+        }
+      })
     } else {
-      query = query.where({index: opts.filter.index})
+      query = query.where(toFileQuery(opts.file))
     }
   }
-  if (opts?.filter?.linksTo) {
+  if (typeof opts?.links === 'string') {
     query = query.joinRaw(
       `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
-      [opts.filter.linksTo]
+      [opts.links]
     )
+  }
+  if (opts?.notification) {
+    let notification = toNotificationQuery(opts.notification)
+    query = query
+      .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
+    if (typeof notification !== 'boolean') {
+      query = query.where(notification)
+    }
   }
 
   var indexStatesQuery
-  if (opts?.filter?.site && !opts?.filter?.linksTo) {
+  if (opts?.site && !opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
     indexStatesQuery = db('sites')
       .select('origin')
-      .innerJoin('site_indexes', 'site_indexes.site_rowid', 'sites.rowid')
-      .groupBy('sites.rowid')
-    if (Array.isArray(opts.filter.site)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
+      .where('last_indexed_version', '>', 0)
+    if (Array.isArray(opts.site)) {
+      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
     } else {
-      indexStatesQuery = indexStatesQuery.where({origin: parseUrl(opts.filter.site).origin})
+      indexStatesQuery = indexStatesQuery.where({origin: parseUrl(opts.site).origin})
     }
   }
 
@@ -422,34 +480,29 @@ export async function countRecords (opts) {
     indexStatesQuery
   ])
 
-  var counts = {}
-  for (let row of rows) {
-    counts[row.index] = row.count
-  }
+  var count = rows[0]?.count || 0
 
   // fetch live data for each site not present in the db
   if (indexStates) {
-    for (let site of toArray(opts.filter.site)) {
+    for (let site of toArray(opts.site)) {
       let origin = parseUrl(site).origin
       if (indexStates.find(state => state.origin === origin)) {
         continue
       }
-      let files = await listLiveRecords(origin, {filter: opts?.filter})
-      for (let file of files) {
-        counts[file.index] = (counts[file.index] || 0) + 1
-      }
+      let files = await listLiveRecords(origin, opts)
+      rows.count += files.length
     }
   }
 
-  return counts
+  return count
 }
 
 /**
  * @param {String} [q]
  * @param {Object} [opts]
- * @param {Object} [opts.filter]
- * @param {String|Array<String>} [opts.filter.site]
- * @param {String|Array<String>} [opts.filter.index]
+ * @param {String|Array<String>} [opts.site]
+ * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
@@ -468,11 +521,13 @@ export async function searchRecords (q = '', opts) {
     .select(
       'origin',
       'path',
-      'index',
+      'prefix',
+      'mimetype',
       'ctime',
       'mtime',
+      'rtime',
       'title as siteTitle',
-      'record_rowid',
+      'records_data.record_rowid as record_rowid',
       'key',
       'rank',
       db.raw(`snippet(records_data_fts, 0, '<b>', '</b>', '...', 70) as matchingText`)
@@ -480,27 +535,47 @@ export async function searchRecords (q = '', opts) {
     .innerJoin('records_data', 'records_data.rowid', 'records_data_fts.rowid')
     .innerJoin('records', 'records.rowid', 'records_data.record_rowid')
     .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
-    .whereIn('records_data.key', ['content', 'title'])
+    .whereIn('records_data.key', ['_content', 'title'])
     .whereRaw(`records_data_fts.value MATCH ?`, [q])
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)
 
-  if (opts?.filter?.site) {
-    if (Array.isArray(opts.filter.site)) {
-      query = query.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
-    } else {
-      query = query.where({origin: parseUrl(opts.filter.site).origin})
+  
+    if (opts?.site) {
+      if (Array.isArray(opts.site)) {
+        query = query.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
+      } else {
+        query = query.where({origin: parseUrl(opts.site).origin})
+      }
     }
-  }
-  if (opts?.filter?.index) {
-    if (Array.isArray(opts.filter.index)) {
-      query = query.whereIn('index', opts.filter.index)
-    } else {
-      query = query.where({index: opts.filter.index})
+    if (opts?.file) {
+      if (Array.isArray(opts.file)) {
+        query = query.where(function () {
+          let chain = this.where(toFileQuery(opts.file[0]))
+          for (let i = 1; i < opts.file.length; i++) {
+            chain = chain.orWhere(toFileQuery(opts.file[i]))
+          }
+        })
+      } else {
+        query = query.where(toFileQuery(opts.file))
+      }
     }
-  }
+    if (opts?.notification) {
+      let notification = toNotificationQuery(opts.notification)
+      query = query
+        .select(
+          'notification_key',
+          'notification_subject_origin',
+          'notification_subject_path',
+          'notification_read'
+        )
+        .innerJoin('records_notification', 'records_data_fts.rowid', 'records_notification.record_rowid')
+      if (typeof notification !== 'boolean') {
+        query = query.where(notification)
+      }
+    }
 
-  if (opts?.sort && ['ctime', 'mtime'].includes(opts.sort)) {
+  if (opts?.sort && ['ctime', 'mtime', 'rtime'].includes(opts.sort)) {
     query = query.orderBy(opts.sort, opts.reverse ? 'desc' : 'asc')
   } else {
     query = query.orderBy('rank', 'desc')
@@ -518,9 +593,11 @@ export async function searchRecords (q = '', opts) {
   var results = await Promise.all(Object.values(mergedHits).map(async mergedHits => {
     var record = {
       url: mergedHits[0].origin + mergedHits[0].path,
-      index: mergedHits[0].index,
+      prefix: mergedHits[0].prefix,
+      mimetype: mergedHits[0].mimetype,
       ctime: mergedHits[0].ctime,
       mtime: mergedHits[0].mtime,
+      rtime: mergedHits[0].rtime,
       site: {
         url: mergedHits[0].origin,
         title: mergedHits[0].siteTitle
@@ -528,7 +605,11 @@ export async function searchRecords (q = '', opts) {
       metadata: {},
       links: [],
       content: undefined,
-      matches: mergedHits.map(hit => ({key: hit.key, value: hit.matchingText})),
+      notification: undefined,
+      matches: mergedHits.map(hit => ({
+        key: hit.key === '_content' ? 'content' : hit.key,
+        value: hit.matchingText
+      })),
       // with multiple hits, we just take the best bm25() rank
       // this basically ignores multiple matching attrs as a signal
       // which is fine for now -prf
@@ -546,6 +627,14 @@ export async function searchRecords (q = '', opts) {
       }
     }
 
+    if (opts?.notification) {
+      record.notification = {
+        key: mergedHits[0].notification_key,
+        subject: joinPath(mergedHits[0].notification_subject_origin, mergedHits[0].notification_subject_path),
+        unread: !mergedHits[0].notification_read
+      }
+    }
+
     return record
   }))
 
@@ -554,6 +643,8 @@ export async function searchRecords (q = '', opts) {
     results.sort((a, b) => a.ctime - b.ctime)
   } else if (opts?.sort === 'mtime') {
     results.sort((a, b) => a.mtime - b.mtime)
+  } else if (opts?.sort === 'rtime') {
+    results.sort((a, b) => a.rtime - b.rtime)
   } else {
     results.sort((a, b) => a.rank > b.rank ? -1 : 1)
   }
@@ -565,196 +656,17 @@ export async function searchRecords (q = '', opts) {
 }
 
 /**
- * @param {Object} [opts]
- * @param {Object} [opts.filter]
- * @param {String|Array<String>} [opts.filter.site]
- * @param {String|Array<String>} [opts.filter.subject]
- * @param {String|Array<String>} [opts.filter.index]
- * @param {String|Array<String>} [opts.filter.type]
- * @param {String} [opts.filter.search]
- * @param {Boolean} [opts.filter.isRead]
- * @param {String} [opts.sort]
- * @param {Number} [opts.offset]
- * @param {Number} [opts.limit]
- * @param {Boolean} [opts.reverse]
- * @returns {Promise<RecordDescription[]>}
- */
-export async function listNotifications (opts) {
-  var sep = `[>${Math.random()}<]`
-  var query = db('notifications')
-    .leftJoin('sites', 'sites.rowid', 'notifications.site_rowid')
-    .leftJoin('records', 'records.rowid', 'notifications.record_rowid')
-    .leftJoin('records_data', function() {
-      this.on('records.rowid', '=', 'records_data.record_rowid').onNotNull('records_data.value')
-    })
-    .select(
-      'notifications.rowid as rowid',
-      'origin',
-      'path',
-      'index',
-      'notifications.rtime',
-      'ctime',
-      'mtime',
-      'title as siteTitle',
-      'type',
-      'subject_origin',
-      'subject_path',
-      'is_read',
-      db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
-      db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
-    )
-    .groupBy('notifications.record_rowid')
-    .offset(opts?.offset || 0)
-    .limit(opts?.limit || 25)
-
-  if (opts?.filter?.site) {
-    if (Array.isArray(opts.filter.site)) {
-      query = query.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
-    } else {
-      query = query.where({origin: parseUrl(opts.filter.site).origin})
-    }
-  }
-  if (opts?.filter?.subject) {
-    if (Array.isArray(opts.filter.subject)) {
-      query = query.whereIn('subject_origin', opts.filter.subject.map(subject => parseUrl(subject).origin))
-    } else {
-      query = query.where({subject_origin: parseUrl(opts.filter.subject).origin})
-    }
-  }
-  if (opts?.filter?.index) {
-    if (Array.isArray(opts.filter.index)) {
-      query = query.whereIn('index', opts.filter.index)
-    } else {
-      query = query.where({index: opts.filter.index})
-    }
-  }
-  if (opts?.filter?.type) {
-    if (Array.isArray(opts.filter.type)) {
-      query = query.whereIn('type', opts.filter.type)
-    } else {
-      query = query.where({type: opts.filter.type})
-    }
-  }
-  if (opts?.filter?.search) {
-    query = query.whereRaw(`records_data.value LIKE ?`, [`%${opts.filter.search}%`])
-  }
-  if (typeof opts?.filter?.isRead !== 'undefined') {
-    query = query.where({is_read: opts.filter.isRead ? 1 : 0})
-  }
-
-  if (opts?.sort && ['ctime', 'mtime', 'rtime'].includes(opts.sort)) {
-    query = query.orderBy(opts.sort, opts?.reverse ? 'desc' : 'asc')
-  } else {
-    let reverse = (typeof opts?.reverse === 'boolean') ? opts.reverse : true
-    query = query.orderBy('rtime', reverse ? 'desc' : 'asc')
-  }
-
-  var rows = await query
-  return rows.map(row => {
-    var record = {
-      url: row.origin + row.path,
-      index: row.index,
-      ctime: row.ctime,
-      mtime: row.mtime,
-      notification: {
-        id: row.rowid,
-        type: row.type,
-        subject: row.subject_origin + row.subject_path,
-        isRead: !!row.is_read,
-        rtime: row.rtime
-      },
-      site: {
-        url: row.origin,
-        title: row.siteTitle
-      },
-      metadata: {},
-      links: [],
-      content: undefined
-    }
-    var dataKeys = row?.data_keys?.split(sep) || []
-    var dataValues = row?.data_values?.split(sep) || []
-    for (let i = 0; i < dataKeys.length; i++) {
-      let key = dataKeys[i]
-      if (key === METADATA_KEYS.content) {
-        record.content = dataValues[i]
-      } else if (key === METADATA_KEYS.link) {
-        record.links.push(dataValues[i])
-      } else {
-        record.metadata[key] = dataValues[i]
-      }
-    }
-    return record
-  })
-}
-
-/**
- * @param {Object} [opts]
- * @param {Object} [opts.filter]
- * @param {String|Array<String>} [opts.filter.site]
- * @param {String|Array<String>} [opts.filter.subject]
- * @param {String|Array<String>} [opts.filter.index]
- * @param {String|Array<String>} [opts.filter.type]
- * @param {Boolean} [opts.filter.isRead]
- * @returns {Promise<Number>}
- */
-export async function countNotifications (opts) {
-  var query = db('notifications')
-    .select(db.raw(`count(notifications.rowid) as count`))
-
-  if (opts?.filter?.site) {
-    if (Array.isArray(opts.filter.site)) {
-      query = query.whereIn('origin', opts.filter.site.map(site => parseUrl(site).origin))
-    } else {
-      query = query.where({origin: parseUrl(opts.filter.site).origin})
-    }
-  }
-  if (opts?.filter?.subject) {
-    if (Array.isArray(opts.filter.subject)) {
-      query = query.whereIn('subject_origin', opts.filter.subject.map(subject => parseUrl(subject).origin))
-    } else {
-      query = query.where({subject_origin: parseUrl(opts.filter.subject).origin})
-    }
-  }
-  if (opts?.filter?.index) {
-    if (Array.isArray(opts.filter.index)) {
-      query = query.whereIn('index', opts.filter.index)
-    } else {
-      query = query.where({index: opts.filter.index})
-    }
-  }
-  if (opts?.filter?.type) {
-    if (Array.isArray(opts.filter.type)) {
-      query = query.whereIn('type', opts.filter.type)
-    } else {
-      query = query.where({type: opts.filter.type})
-    }
-  }
-  if (typeof opts?.filter?.isRead !== 'undefined') {
-    query = query.where({is_read: opts.filter.isRead ? 1 : 0})
-  }
-
-  var rows = await query
-  return rows[0].count
-}
-
-/**
- * @param {Number|String} rowid
- * @param {Boolean} isRead
  * @returns {Promise<void>}
  */
-export async function setNotificationIsRead (rowid, isRead) {
-  if (rowid === 'all') {
-    await db('notifications').update({is_read: isRead ? 1 : 0})
-  } else {
-    await db('notifications').update({is_read: isRead ? 1 : 0}).where({rowid})
-  }
+export async function clearNotifications () {
+  await db('records_notification').update({notification_read: 1})
 }
 
 export async function triggerSiteIndex (origin, {ifIndexingSite} = {ifIndexingSite: false}) {
   origin = normalizeOrigin(origin)
   var myOrigins = await listMyOrigins()
   if (ifIndexingSite) {
-    let indexState = await getIndexState(origin)
+    let indexState = await getIndexState(db, origin)
     if (!indexState?.length) return
   }
   await indexSite(origin, myOrigins)
@@ -814,17 +726,17 @@ async function tick () {
   try {
     var myOrigins = await listMyOrigins()
     if (typeof _isFirstRun === 'undefined') {
-      _isFirstRun = await getIsFirstRun()
+      _isFirstRun = await getIsFirstRun(db)
     }
 
-    var originsToIndex = await listOriginsToIndex()
+    var originsToIndex = await listOriginsToIndex(db)
     DEBUGGING.setQueue(originsToIndex)
     await parallel(originsToIndex, indexSite, myOrigins)
 
     if (_isFirstRun) {
       // immediately re-run now that we've populated with subscription records
       _isFirstRun = false
-      originsToIndex = await listOriginsToIndex()
+      originsToIndex = await listOriginsToIndex(db)
       await parallel(originsToIndex, indexSite, myOrigins)
     }
 
@@ -834,13 +746,13 @@ async function tick () {
     await parallel(originsToCapture, async (origin) => {
       try {
         DEBUGGING.moveToTargets(origin)
-        await loadSite(origin) // this will capture the metadata of the site
+        await loadSite(db, origin) // this will capture the metadata of the site
       } catch {}
       DEBUGGING.removeTarget(origin)
     })
 
     DEBUGGING.setStatus('cleaning up')
-    var originsToDeindex = await listOriginsToDeindex(originsToIndex)
+    var originsToDeindex = await listOriginsToDeindex(db, originsToIndex)
     DEBUGGING.setQueue(originsToDeindex)
     await parallel(originsToDeindex, deindexSite)
   } finally {
@@ -856,36 +768,120 @@ async function indexSite (origin, myOrigins) {
   var current_version
   try {
     current_version = undefined
-    let site = await loadSite(origin)
+    let site = await loadSite(db, origin)
     current_version = site.current_version
-    for (let indexer of INDEXES) {
-      let idxState = site.indexes[indexer.id]
-      if (site.current_version === idxState.last_indexed_version) {
-        continue
-      }
+    if (site.current_version === site.last_indexed_version) {
+      return
+    }
 
-      logger.silly(`Indexing ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
-      let updates = await site.listUpdates(indexer.id)
-      logger.silly(`${updates.length} updates found for ${origin} [ ${indexer.id} ]`)
-      if (updates.length === 0) continue
-      for (let update of updates) {
-        if (update.remove) {
+    logger.silly(`Indexing ${origin} [ v${site.last_indexed_version} -> v${site.current_version} ]`)
+    let updates = await site.listUpdates()
+    logger.silly(`${updates.length} updates found for ${origin}`)
+    if (updates.length === 0) return
+
+    for (let update of updates) {
+      if (update.remove) {
+        // file deletion
+        let res = await db('records').select('rowid').where({
+          site_rowid: site.rowid,
+          path: update.path
+        })
+        if (res[0]) await db('records_data').del().where({record_rowid: res[0].rowid})
+        res = await db('records').del().where({site_rowid: site.rowid, path: update.path})
+        if (+res > 0) {
+          logger.silly(`Deindexed ${site.origin}${update.path}`, {site: site.origin, path: update.path})
+        }
+      } else {
+        // file write
+        let mimetype = getMimetype(update.metadata, update.path)
+        let prefix = dirname(update.path)
+        let dataEntries = [
+          /* records_data.key, records_data.value */
+          ...Object.entries(update.metadata).map(([key, value]) => {
+            return [key, value]
+          })
+        ]
+
+        // read content if markdown
+        let content, contentLinks
+        if (mimetype === 'text/markdown') {
+          content = await site.fetch(update.path)
+          contentLinks = markdownLinkExtractor(content)
+          dataEntries.push([METADATA_KEYS.content, content])
+          dataEntries = dataEntries.concat(contentLinks.map(url => ([METADATA_KEYS.link, url])))
+        }
+
+        // index the base record
+        let rowid
+        let isNew = true
+        try {
+          let res = await db('records').insert({
+            site_rowid: site.rowid,
+            path: update.path,
+            prefix,
+            mimetype,
+            mtime: update.mtime,
+            ctime: update.ctime,
+            rtime: Date.now()
+          })
+          rowid = res[0]
+        } catch (e) {
+          // TODO can we check the error type for constraint violation?
+          isNew = false
           let res = await db('records').select('rowid').where({
             site_rowid: site.rowid,
             path: update.path
           })
-          if (res[0]) await db('records_data').del().where({record_rowid: res[0].rowid})
-          res = await db('records').del().where({site_rowid: site.rowid, path: update.path})
-          if (+res > 0) {
-            logger.silly(`Deindexed ${site.origin}${update.path} [${indexer.id}]`, {site: site.origin, path: update.path})
+          rowid = res[0].rowid
+          await db('records').update({
+            mtime: update.mtime,
+            ctime: update.ctime
+          }).where({rowid})
+        }
+
+        // index the record's data
+        if (!isNew) {
+          await db('records_data').del().where({record_rowid: rowid})
+        }
+        await Promise.all(dataEntries
+          .filter(([key, value]) => value !== null && typeof value !== 'undefined')
+          .map(([key, value]) => (
+            db('records_data').insert({record_rowid: rowid, key, value})
+          ))
+        )
+
+        // detect "notifications"
+        for (let [key, value] of dataEntries) {
+          if (key === METADATA_KEYS.content) {
+            continue
           }
-        } else {
-          await indexer.index(db, site, update, myOrigins)
+          let subjectp = parseUrl(value, site.origin)
+          if (!myOrigins.includes(site.origin) && myOrigins.includes(subjectp.origin)) {
+            if (subjectp.origin === 'hyper://private') {
+              // special case- if somebody publishes something linking to hyper://private,
+              // it's a mistake which should be ingored
+              // -prf
+              continue
+            }
+            await db('records_notification').insert({
+              record_rowid: rowid,
+              notification_key: key,
+              notification_subject_origin: subjectp.origin,
+              notification_subject_path: subjectp.path,
+              notification_read: 0
+            }).onConflictDoNothing()
+          }
         }
       }
-      await updateIndexState(site, indexer.id)
-      logger.debug(`Indexed ${origin} [ v${idxState.last_indexed_version} -> v${site.current_version} ] [ ${indexer.id} ]`)
     }
+    DEBUGGING.setSiteState({
+      url: site.origin,
+      last_indexed_version: site.current_version,
+      last_indexed_ts: Date.now(),
+      error: undefined
+    })
+    logger.debug(`Indexed ${origin} [ v${site.last_indexed_version} -> v${site.current_version} ]`)
+    await updateIndexState(db, site)
   } catch (e) {
     DEBUGGING.setSiteState({
       url: origin,
@@ -908,11 +904,10 @@ async function deindexSite (origin) {
     let site = (await db('sites').select('rowid', 'origin').where({origin}))[0]
     let records = await db('records').select('rowid').where({site_rowid: site.rowid})
     for (let record of records) {
+      await db('records_notification').del().where({record_rowid: record.rowid})
       await db('records_data').del().where({record_rowid: record.rowid})
     }
     await db('records').del().where({site_rowid: site.rowid})
-    await db('notifications').del().where({site_rowid: site.rowid})
-    await db('site_indexes').del().where({site_rowid: site.rowid})
     logger.debug(`Deindexed ${site.origin}/*`, {site: site.origin})
   } catch (e) {
     logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
@@ -933,7 +928,7 @@ async function getLiveRecord (origin, path) {
   }
   let url = origin + path
   try {
-    let site = await loadSite(origin)
+    let site = await loadSite(db, origin)
     let stat = await site.stat(path)
     let update = {
       remove: false,
@@ -942,35 +937,31 @@ async function getLiveRecord (origin, path) {
       ctime: stat.ctime,
       mtime: stat.mtime
     }
-    for (let indexer of INDEXES) {
-      if (!indexer.filter(update)) {
-        continue
-      }
-      logger.silly(`Live-fetching ${url} [ ${indexer.id} ]`)
-      var record = {
-        url,
-        index: indexer.id,
-        ctime: +stat.ctime,
-        mtime: +stat.mtime,
-        site: {
-          url: site.origin,
-          title: site.title
-        },
-        metadata: {},
-        links: [],
-        content: undefined
-      }
-      for (let [key, value] of await indexer.getData(site, update)) {
-        if (key === METADATA_KEYS.content) {
-          record.content = value
-        } if (key === METADATA_KEYS.link) {
-          record.links.push(value)
-        } else {
-          record.metadata[key] = value
-        }
-      }
-      return record
+    logger.silly(`Live-fetching ${url}`)
+    var record = {
+      url,
+      prefix: dirname(path),
+      mimetype: getMimetype(stat.metadata, path),
+      ctime: +stat.ctime,
+      mtime: +stat.mtime,
+      rtime: Date.now(),
+      site: {
+        url: site.origin,
+        title: site.title
+      },
+      metadata: {},
+      links: [],
+      content: undefined,
+      notification: undefined
     }
+    for (let k in stat.metadata) {
+      record.metadata[k] = stat.metadata[k]
+    }
+    if (record.mimetype === 'text/markdown') {
+      record.content = await site.fetch(update.path)
+      record.links = markdownLinkExtractor(record.content)
+    }
+    return record
   } catch (e) {
     logger.error(`Failed to live-fetch file ${url}. ${e.toString()}`, {site: origin, error: e.toString()})
   }  
@@ -979,282 +970,43 @@ async function getLiveRecord (origin, path) {
 
 /**
  * @param {Object} [opts]
- * @param {Object} [opts.filter]
- * @param {String|Array<String>} [opts.filter.index]
+ * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @returns {Promise<RecordDescription[]>}
  */
 async function listLiveRecords (origin, opts) {
   var records = []
-  var indexFilter = opts?.filter?.index ? toArray(opts.filter.index) : undefined
   try {
-    let site = await loadSite(origin)
-    await Promise.all(INDEXES.map(async (indexer) => {
-      if (indexFilter && !indexFilter.includes(indexer.id)) {
-        return
-      }
-      logger.silly(`Live-querying ${origin} [ ${indexer.id} ]`)
-      let files = await site.listMatchingFiles(indexer)
-      records = records.concat(files.map(file => {
-        return {
-          url: file.url,
-          index: indexer.id,
-          ctime: +file.stat.ctime,
-          mtime: +file.stat.mtime,
-          site: {
-            url: site.origin,
-            title: site.title
-          },
-          metadata: file.stat.metadata,
-          links: [],
-          content: undefined,
+    let site = await loadSite(db, origin)
+    logger.silly(`Live-querying ${origin}`)
+    let files = await site.listMatchingFiles(opts.file)
+    records = records.concat(files.map(file => {
+      return {
+        url: file.url,
+        prefix: dirname(file.path),
+        mimetype: getMimetype(file.stat.metadata, file.path),
+        ctime: +file.stat.ctime,
+        mtime: +file.stat.mtime,
+        rtime: Date.now(),
+        site: {
+          url: site.origin,
+          title: site.title
+        },
+        metadata: file.stat.metadata,
+        links: [],
+        content: undefined,
+        notification: undefined,
 
-          // helper to fetch the rest of the data if in the results set
-          fetchData: async function () {
-            let update = {
-              remove: false,
-              path: file.path,
-              metadata: file.stat.metadata,
-              ctime: file.stat.ctime,
-              mtime: file.stat.mtime
-            }
-            for (let [key, value] of await indexer.getData(site, update)) {
-              if (key === METADATA_KEYS.content) {
-                this.content = value
-              } if (key === METADATA_KEYS.link) {
-                this.links.push(value)
-              } else {
-                this.metadata[key] = value
-              }
-            }
+        // helper to fetch the rest of the data if in the results set
+        fetchData: async function () {
+          if (this.mimetype === 'text/markdown') {
+            this.content = await site.fetch(file.path)
+            this.links = markdownLinkExtractor(this.content)
           }
         }
-      }))
+      }
     }))
   } catch (e) {
     logger.error(`Failed to live-query site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   }  
   return records
-}
-
-/**
- * @returns {Promise<Boolean>}
- */
-async function getIsFirstRun () {
-  var res = await db('site_indexes').select(db.raw(`count(site_indexes.rowid) as count`))
-  return !res || !res[0] || !res[0].count
-}
-
-/**
- * @returns {Promise<String[]>}
- */
-async function listMyOrigins () {
-  let driveMetas = await filesystem.listDriveMetas()
-  return ['hyper://private'].concat(driveMetas.filter(dm => dm.writable).map(dm => parseUrl(dm.url).origin))
-}
-
-/**
- * @returns {Promise<String[]>}
- */
-async function listOriginsToIndex () {
-  var fs = filesystem.get()
-  var addressBookJson = await fs.pda.readFile('/address-book.json', 'json')
-  var subscriptions = await listRecords({
-    filter: {
-      index: INDEX_IDS.subscriptions,
-      site: ['hyper://private', ...addressBookJson.profiles.map(item => 'hyper://' + item.key)]
-    },
-    limit: 1e9
-  })
-  var origins = new Set([
-    'hyper://private',
-    ...addressBookJson.profiles.map(item => 'hyper://' + item.key),
-    ...subscriptions.map(sub => normalizeOrigin(sub.metadata[METADATA_KEYS.href]))
-  ])
-  return Array.from(origins)
-}
-
-/**
- * @returns {Promise<String[]>}
- */
-async function listOriginsToCapture () {
-  var fs = filesystem.get()
-  var drivesJson = await fs.pda.readFile('/drives.json', 'json')
-  return drivesJson.drives.map(item => 'hyper://' + item.key)
-}
-
-/**
- * @param {String} origin
- * @returns {Promise<Site>}
- */
-async function loadSite (origin) {
-  var drive, driveInfo
-  await timer(READ_TIMEOUT, async (checkin) => {
-    checkin('Loading hyperdrive from the network')
-    drive = await drives.getOrLoadDrive(origin)
-    checkin('Reading hyperdrive information from the network')
-    driveInfo = await drives.getDriveInfo(origin)
-  })
-
-  if (!driveInfo || driveInfo.version === 0) {
-    throw new Error('Failed to load hyperdrive from the network')
-  }
-
-  var record = undefined
-  var res = await db('sites')
-    .select('sites.rowid as rowid', 'site_indexes.index', 'site_indexes.last_indexed_version as last_indexed_version')
-    .leftJoin('site_indexes', 'sites.rowid', 'site_indexes.site_rowid')
-    .where({origin})
-  if (!res[0]) {
-    res = await db('sites').insert({
-      origin,
-      title: driveInfo.title,
-      description: driveInfo.description,
-      writable: driveInfo.writable ? 1 : 0
-    })
-    record = {rowid: res[0], indexes: {}}
-  } else {
-    record = {
-      rowid: res[0].rowid,
-      indexes: {}
-    }
-    for (let row of res) {
-      record.indexes[row.index] = {
-        index: row.index,
-        last_indexed_version: row.last_indexed_version
-      }
-    }
-    /*dont await*/ db('sites').update({
-      title: driveInfo.title,
-      description: driveInfo.description,
-      writable: driveInfo.writable ? 1 : 0
-    }).where({origin})
-  }
-
-  for (let indexer of INDEXES) {
-    if (!record.indexes[indexer.id]) {
-      record.indexes[indexer.id] = {
-        index: indexer.id,
-        last_indexed_version: 0
-      }
-    }
-  }
-
-  var site = {
-    origin,
-    rowid: record.rowid,
-    indexes: record.indexes,
-    current_version: driveInfo.version,
-    title: driveInfo.title,
-    description: driveInfo.description,
-    writable: driveInfo.writable,
-
-    async stat (path) {
-      return drive.pda.stat(path)
-    },
-
-    async fetch (path) {
-      return drive.pda.readFile(path, 'utf8')
-    },
-
-    async listUpdates (indexId) {
-      return timer(READ_TIMEOUT, async (checkin) => {
-        checkin('fetching recent updates')
-        // HACK work around the diff stream issue -prf
-        // let changes = await drive.pda.diff(+record.last_indexed_version || 0)
-        let changes = []
-        for (let i = 0; i < 10; i++) {
-          let c = await drive.pda.diff(+site.indexes[indexId].last_indexed_version || 0)
-          if (c.length > changes.length) changes = c
-        }
-        return changes.filter(change => ['put', 'del'].includes(change.type)).map(change => ({
-          path: '/' + change.name,
-          remove: change.type === 'del',
-          metadata: change?.value?.stat?.metadata,
-          ctime: Number(change?.value?.stat?.ctime || 0),
-          mtime: Number(change?.value?.stat?.mtime || 0)
-        }))
-      })
-    },
-
-    async listMatchingFiles (index) {
-      return query(drive, {path: index.liveQuery})
-    }
-  }
-  return site
-}
-
-/**
- * @param {String[]} originsToIndex
- * @returns {Promise<String[]>}
- */
-async function listOriginsToDeindex (originsToIndex) {
-  var indexedSites = await db('sites')
-    .select('sites.origin')
-    .innerJoin('site_indexes', 'sites.rowid', 'site_indexes.site_rowid')
-    .where('site_indexes.last_indexed_version', '>', 0)
-    .groupBy('sites.origin')
-  return indexedSites
-    .map(row => normalizeOrigin(row.origin))
-    .filter(origin => !originsToIndex.includes(origin))
-}
-
-/**
- * @param {Site} site 
- * @param {String} index
- * @returns {Promise<void>}
- */
-async function updateIndexState (site, index) {
-  DEBUGGING.setSiteState({
-    url: site.origin,
-    last_indexed_version: site.current_version,
-    last_indexed_ts: Date.now(),
-    error: undefined
-  })
-  await db('site_indexes').insert({
-    site_rowid: site.rowid,
-    index,
-    last_indexed_version: site.current_version,
-    last_indexed_ts: Date.now()
-  }).onConflictDoUpdate('`site_rowid`, `index`', {
-    last_indexed_version: site.current_version,
-    last_indexed_ts: Date.now()
-  })
-}
-
-/**
- * @param {String} origin 
- * @returns {Promise<Object[]>}
- */
-async function getIndexState (origin) {
-  return await db('sites')
-    .select('origin', 'index', 'last_indexed_version', 'last_indexed_ts')
-    .innerJoin('site_indexes', 'site_indexes.site_rowid', 'sites.rowid')
-    .where({origin})
-    .andWhere('last_indexed_version', '>', 0)
-}
-
-/**
- * @param {String} str 
- * @returns {String}
- */
-function normalizeOrigin (str) {
-  try {
-    let urlp = new URL(str)
-    return urlp.protocol + '//' + urlp.hostname
-  } catch {
-    // assume hyper, if this fails then bomb out
-    let urlp = new URL('hyper://' + str)
-    return urlp.protocol + '//' + urlp.hostname
-  }
-}
-
-function toArray (v) {
-  return Array.isArray(v) ? v : [v]
-}
-
-function parallel (arr, fn, ...args) {
-  return promisePool({
-    threads: 10,
-    promises: ({index}) => index < arr.length ? fn(arr[index], ...args) : null
-  })
 }

@@ -97,7 +97,7 @@ export class SitesList extends LitElement {
         limit: this.singleRow ? 3 : 1e9
       }),
       beaker.index.listRecords({
-        filter: {index: 'beaker/index/subscriptions'},
+        file: {mimetype: 'application/goto', prefix: '/subscriptions'},
         limit: 1e9
       })
     ])

@@ -200,7 +200,8 @@ a:hover {
 
 .record.action.unread {
   background: var(--bg-color--unread);
-  outline: 5px solid var(--bg-color--unread);
+  box-shadow: 0 0 0 5px var(--bg-color--unread);
+  border-radius: 1px;
 }
 
 .record.action > * {
@@ -265,7 +266,8 @@ a:hover {
 
 .record.link.unread {
   background: var(--bg-color--unread);
-  outline: 5px solid var(--bg-color--unread);
+  box-shadow: 0 0 0 5px var(--bg-color--unread);
+  border-radius: 1px;
 }
 
 .record.link .thumb {
@@ -376,8 +378,9 @@ a:hover {
 
 .record.card.unread {
   background: var(--bg-color--unread);
-  outline: 5px solid var(--bg-color--unread);
+  box-shadow: 0 0 0 5px var(--bg-color--unread);
   margin-bottom: 5px;
+  border-radius: 1px;
 }
 
 .record.card .info {
@@ -613,7 +616,8 @@ a:hover {
 
 .record.comment.unread {
   background: var(--bg-color--unread);
-  outline: 5px solid var(--bg-color--unread);
+  box-shadow: 0 0 0 5px var(--bg-color--unread);
+  border-radius: 1px;
   border: 1px solid var(--border-color--unread);
 }
 

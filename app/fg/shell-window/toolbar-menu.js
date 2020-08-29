@@ -142,7 +142,7 @@ class ShellWindowToolbarMenu extends LitElement {
     this.addEventListener('contextmenu', this.onMainContextmenu.bind(this))
     this.notificationsCount = 0
     setInterval(async () => {
-      this.notificationsCount = await bg.index.countNotifications({filter: {isRead: false}})
+      this.notificationsCount = await bg.index.countRecords({notification: {unread: true}})
     }, 15e3)
   }
 

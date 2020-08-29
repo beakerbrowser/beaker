@@ -48,7 +48,7 @@ class NotificationsApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <beaker-record-feed
-        .index=${['notifications']}
+        .fileQuery=${['notifications']}
         limit="50"
         show-date-titles
         @load-state-updated=${this.onLoad}
@@ -63,7 +63,7 @@ class NotificationsApp extends LitElement {
 
   onLoad () {
     setTimeout(async () => {
-      await beaker.index.setNotificationIsRead('all', true)
+      await beaker.index.clearNotifications()
     }, 3e3)
   }
 

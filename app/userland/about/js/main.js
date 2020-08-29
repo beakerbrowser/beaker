@@ -1,19 +1,29 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
+import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import css from '../css/main.css.js'
 import './com/site-info.js'
 import 'beaker://app-stdlib/js/com/record-feed.js'
 
 const NAV_ITEMS = [
-  {index: undefined, id: 'home', icon: 'fas fa-home', label: 'Home'},
-  {index: 'beaker/index/bookmarks', id: 'bookmarks', icon: 'far fa-star', label: 'Bookmarks'},
-  {index: 'beaker/index/blogposts', id: 'blogposts', icon: 'fas fa-blog', label: 'Blog'},
-  {index: 'beaker/index/pages', id: 'pages', icon: 'far fa-file', label: 'Pages'},
-  {index: 'beaker/index/microblogposts', id: 'posts', icon: 'far fa-comment-alt', label: 'Posts'},
-  {index: 'beaker/index/comments', id: 'comments', icon: 'far fa-comments', label: 'Comments'},
-  {index: 'beaker/index/subscriptions', id: 'subscriptions', icon: 'fas fa-rss', label: 'Subscriptions'}
+  {type: undefined, id: 'home', icon: 'fas fa-home', label: 'Home'},
+  {type: 'bookmark', id: 'bookmarks', icon: 'far fa-star', label: 'Bookmarks'},
+  {type: 'blogpost', id: 'blogposts', icon: 'fas fa-blog', label: 'Blog'},
+  {type: 'page', id: 'pages', icon: 'far fa-file', label: 'Pages'},
+  {type: 'microblogpost', id: 'posts', icon: 'far fa-comment-alt', label: 'Posts'},
+  {type: 'comment', id: 'comments', icon: 'far fa-comments', label: 'Comments'},
+  {type: 'subscription', id: 'subscriptions', icon: 'fas fa-rss', label: 'Subscriptions'}
 ]
+const FILE_QUERIES = {
+  bookmarks: [typeToQuery('bookmark')],
+  blogposts: [typeToQuery('blogpost')],
+  pages: [typeToQuery('page')],
+  microblogposts: [typeToQuery('microblogpost')],
+  comments: [typeToQuery('comment')],
+  subscriptions: [typeToQuery('subscription')]
+}
+FILE_QUERIES.home = Object.values(FILE_QUERIES).flat()
 
 class AboutApp extends LitElement {
   static get styles () {
@@ -109,12 +119,26 @@ class AboutApp extends LitElement {
         }
       }
       this.requestUpdate()
-      let [subscribers, counts] = await Promise.all([
-        beaker.subscriptions.listNetworkFor(this.siteInfo.url),
-        beaker.index.countRecords({
-          filter: {site: this.siteInfo.url}
-        })
-      ])
+
+      let subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
+      let counts = Object.fromEntries(
+        await Promise.all(
+          Object.entries({
+            bookmark: FILE_QUERIES.bookmarks,
+            blogpost: FILE_QUERIES.blogposts,
+            page: FILE_QUERIES.pages,
+            microblogpost: FILE_QUERIES.microblogposts,
+            comment: FILE_QUERIES.comments,
+            subscription: FILE_QUERIES.subscriptions
+          }).map(([key, file]) => (
+            beaker.index.countRecords({
+              file,
+              site: this.siteInfo.url
+            }).then(count => ([key, count]))
+          ))
+        )        
+      )
+      
       this.subscribers = subscribers
       this.contentCounts = counts
     }
@@ -127,26 +151,6 @@ class AboutApp extends LitElement {
     this.currentView = view
   }
 
-  get currentViewAsIndex () {
-    switch (this.currentView) {
-      case 'blogposts': return ['beaker/index/blogposts']
-      case 'bookmarks': return ['beaker/index/bookmarks']
-      case 'comments': return ['beaker/index/comments']
-      case 'pages': return ['beaker/index/pages']
-      case 'posts': return ['beaker/index/microblogposts']
-      case 'subscriptions': return ['beaker/index/subscriptions']
-      default:
-        return [
-          'beaker/index/blogposts',
-          'beaker/index/bookmarks',
-          'beaker/index/microblogposts',
-          'beaker/index/comments',
-          'beaker/index/pages',
-          'beaker/index/subscriptions'
-        ]
-    }
-  }
-
   // rendering
   // =
 
@@ -154,9 +158,10 @@ class AboutApp extends LitElement {
     if (!this.url) {
       return html``
     }
-    const navItem = ({index, id, icon, label}) => {
-      let count = this.contentCounts?.[index]
-      if (index && !count) return ''
+    console.log(this.contentCounts)
+    const navItem = ({type, id, icon, label}) => {
+      let count = this.contentCounts?.[type]
+      if (type && !count) return ''
       else if (count > 0) label += ` (${count})`
       return html`
         <a
@@ -187,7 +192,7 @@ class AboutApp extends LitElement {
       <div class="feed">
         ${this.siteInfo ? html`
           <beaker-record-feed
-            .index=${this.currentViewAsIndex}
+            .fileQuery=${FILE_QUERIES[this.currentView]}
             .sources=${[this.siteInfo.url]}
             show-date-titles
             ?no-merge=${this.currentView === 'subscriptions'}

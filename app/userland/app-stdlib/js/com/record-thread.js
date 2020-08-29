@@ -6,6 +6,7 @@ import css from '../../css/com/record-thread.css.js'
 import { emit } from '../dom.js'
 import { fancyUrlAsync } from '../strings.js'
 import * as toast from './toast.js'
+import { getRecordType } from '../records.js'
 import './record.js'
 import './post-composer.js'
 
@@ -73,13 +74,11 @@ export class RecordThread extends LitElement {
 
   async loadComments (record) {
     var replies = await beaker.index.listRecords({
-      filter: {
-        linksTo: this.subjectUrl
-      },
+      links: {url: this.subjectUrl},
       sort: 'ctime',
       reverse: true
     })
-    this.commentCount = replies.filter(r => r.index === 'beaker/index/comments').length
+    this.commentCount = replies.filter(r => getRecordType(r) === 'comment').length
     this.relatedItemCount = replies.length - this.commentCount
     this.replies = toThreadTree(replies)
     await this.requestUpdate()
@@ -103,10 +102,14 @@ export class RecordThread extends LitElement {
 
   get actionTarget () {
     let urlp = new URL(this.subjectUrl)
-    return ({
-      'beaker/index/microblogposts': 'this post',
-      'beaker/index/blogposts': 'this blogpost',
-    })[this.subject?.index] || `this ${urlp.pathname === '/' ? 'site' : 'page'}`
+    if (this.subject) {
+      let desc = ({
+        'microblogpost': 'this post',
+        'blogpost': 'this blogpost',
+      })[getRecordType(this.subject)]
+      if (desc) return desc
+    }
+    return `this ${urlp.pathname === '/' ? 'site' : 'page'}`
   }
 
   // rendering
@@ -114,10 +117,9 @@ export class RecordThread extends LitElement {
 
   render () {
     var mode = 'link'
-    if (['beaker/index/comments', 'beaker/index/microblogposts'].includes(this.subject?.index)) {
+    if (this.subject && ['comment', 'microblogpost'].includes(getRecordType(this.subject))) {
       mode = 'card'
     }
-    console.log(this.subject)
     return html`
       ${this.subject ? html`
         ${this.subject.isSite ? html`
@@ -213,9 +215,10 @@ export class RecordThread extends LitElement {
     return html`
       <div class="replies">
         ${repeat(replies, r => r.url, reply => {
-          var mode = ({
-            'beaker/index/comments': 'comment'
-          })[reply.index] || 'action'
+          var mode = 'action'
+          if (getRecordType(reply) === 'comment') {
+            mode = 'comment'
+          }
           return html`
             <beaker-record
               class=${this.recordUrl === reply.url ? 'highlight' : ''}

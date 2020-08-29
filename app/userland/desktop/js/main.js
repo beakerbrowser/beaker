@@ -9,6 +9,7 @@ import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import { shorten, pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
 import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
@@ -31,6 +32,29 @@ const RELEASES = [
 const DOCS_URL = 'https://docs.beakerbrowser.com'
 const USERLIST_URL = 'https://userlist.beakerbrowser.com'
 const BLAHBITY_BLOG_URL = 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/'
+const FILE_QUERIES = {
+  blogposts: [typeToQuery('blogpost')],
+  bookmarks: [typeToQuery('bookmark')],
+  comments: [typeToQuery('comment')],
+  pages: [typeToQuery('page')],
+  posts: [typeToQuery('microblogpost')],
+  notifications: ['notifications'],
+  search: [
+    typeToQuery('blogpost'),
+    typeToQuery('bookmark'),
+    typeToQuery('microblogpost'),
+    typeToQuery('comment'),
+    typeToQuery('page')
+  ],
+  all: [
+    typeToQuery('blogpost'),
+    typeToQuery('bookmark'),
+    typeToQuery('microblogpost'),
+    typeToQuery('comment'),
+    typeToQuery('page'),
+    typeToQuery('subscription')
+  ]
+}
 
 var cacheBuster = Date.now()
 
@@ -88,7 +112,7 @@ class DesktopApp extends LitElement {
       addressBook.loadProfile(),
       desktop.load(),
       beaker.subscriptions.list(),
-      beaker.index.countNotifications({filter: {isRead: false}})
+      beaker.index.countRecords({notification: {unread: true}})
     ])
     document.title = this.unreadNotificationsCount > 0 ? `New Tab (${this.unreadNotificationsCount})`: `New Tab`
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
@@ -101,7 +125,7 @@ class DesktopApp extends LitElement {
 
   async loadSuggestions () {
     let allSubscriptions = await beaker.index.listRecords({
-      filter: {index: 'beaker/index/subscriptions'},
+      file: {mimetype: 'application/goto', prefix: '/subscriptions'},
       limit: 100,
       sort: 'ctime',
       reverse: true
@@ -127,33 +151,11 @@ class DesktopApp extends LitElement {
     this.suggestedSites = suggestedSites.slice(0, 3)
   }
 
-  get currentNavAsIndex () {
-    switch (this.currentNav) {
-      case 'blogposts': return ['beaker/index/blogposts']
-      case 'bookmarks': return ['beaker/index/bookmarks']
-      case 'comments': return ['beaker/index/comments']
-      case 'pages': return ['beaker/index/pages']
-      case 'posts': return ['beaker/index/microblogposts']
-      case 'notifications': return ['notifications']
-      default:
-        if (this.searchQuery) {
-          return [
-            'beaker/index/blogposts',
-            'beaker/index/bookmarks',
-            'beaker/index/microblogposts',
-            'beaker/index/comments',
-            'beaker/index/pages'
-          ]
-        }
-        return [
-          'beaker/index/blogposts',
-          'beaker/index/bookmarks',
-          'beaker/index/microblogposts',
-          'beaker/index/comments',
-          'beaker/index/pages',
-          'beaker/index/subscriptions'
-        ]
+  get currentNavAsFileQuery () {
+    if (this.searchQuery && this.currentNav === 'all') {
+      return FILE_QUERIES.search
     }
+    return FILE_QUERIES[this.currentNav]
   }
 
   get currentNavDateTitleRange () {
@@ -192,7 +194,7 @@ class DesktopApp extends LitElement {
 
   markAllNotificationsRead () {
     setTimeout(async () => {
-      await beaker.index.setNotificationIsRead('all', true)
+      await beaker.index.clearNotifications()
       this.unreadNotificationsCount = 0
       document.title = 'New Tab'
     }, 3e3)
@@ -393,7 +395,7 @@ class DesktopApp extends LitElement {
               ${this.currentNav !== 'sites' ? html`
                 <beaker-record-feed
                   class="subview"
-                  .index=${this.currentNavAsIndex}
+                  .fileQuery=${this.currentNavAsFileQuery}
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   limit="50"
@@ -425,7 +427,7 @@ class DesktopApp extends LitElement {
                 <beaker-record-feed
                   show-date-titles
                   date-title-range=${this.currentNavDateTitleRange}
-                  .index=${this.currentNavAsIndex}
+                  .fileQuery=${this.currentNavAsFileQuery}
                   .sources=${this.sources}
                   limit="50"
                   @load-state-updated=${e => this.requestUpdate()}

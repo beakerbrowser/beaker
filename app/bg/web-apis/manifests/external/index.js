@@ -6,9 +6,7 @@ export default {
   listRecords: 'promise',
   countRecords: 'promise',
   searchRecords: 'promise',
-  listNotifications: 'promise',
-  countNotifications: 'promise',
-  setNotificationIsRead: 'promise',
+  clearNotifications: 'promise',
 
   getState: 'promise',
   createEventStream: 'readable'

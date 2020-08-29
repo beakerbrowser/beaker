@@ -645,19 +645,16 @@ export class Pane extends EventEmitter {
   }
 
   async fetchBacklinkCount (noEmit = false) {
-    var counts = await indexer.countRecords({
-      filter: {
-        index: [
-          'beaker/index/comments',
-          'beaker/index/microblogposts',
-          'beaker/index/pages',
-          'beaker/index/blogposts',
-          'beaker/index/bookmarks'
-        ],
-        linksTo: normalizeCommentsUrl(this.url)
-      }
+    this.backlinkCount = await indexer.countRecords({
+      file: [
+        {mimetype: 'application/goto', prefix: '/bookmarks'},
+        {mimetype: 'text/markdown', prefix: '/blogposts'},
+        {mimetype: 'text/markdown', prefix: '/comments'},
+        {mimetype: 'text/markdown', prefix: '/microblog'},
+        {mimetype: 'text/markdown', prefix: '/pages'}
+      ],
+      links: normalizeCommentsUrl(this.url)
     })
-    this.backlinkCount = Object.values(counts).reduce((acc, v) => v + acc, 0)
     if (!noEmit) {
       this.emitUpdateState()
     }
