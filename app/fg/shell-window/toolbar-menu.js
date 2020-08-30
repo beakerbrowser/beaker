@@ -64,6 +64,11 @@ class ShellWindowToolbarMenu extends LitElement {
       0%    { background-position: 0% 0%; }
       100%  { background-position: 100% 0%; }
     }
+    @media (prefers-color-scheme: dark) {
+      .loading-bar {
+        background: linear-gradient(to right, rgb(33, 39, 243) 0%, rgb(14 20 43) 50%, rgb(33, 39, 243) 100%) 0% 0% / 50% 50%;
+      }
+    }
     .spacer {
       flex: 1;
     }
