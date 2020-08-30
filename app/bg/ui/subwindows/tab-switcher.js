@@ -37,7 +37,7 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).destroy()
+    get(parentWindow).webContents.destroy()
     delete views[parentWindow.id]
   }
 }

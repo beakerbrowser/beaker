@@ -10,9 +10,8 @@
 
 import path from 'path'
 import Events from 'events'
-import { BrowserWindow, BrowserView } from 'electron'
+import { BrowserView } from 'electron'
 import * as tabManager from '../tabs/manager'
-import { getAddedWindowSettings } from '../windows'
 
 // globals
 // =
@@ -48,7 +47,7 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).destroy()
+    get(parentWindow).webContents.destroy()
     delete views[parentWindow.id]
   }
 }
@@ -66,7 +65,7 @@ export function reposition (parentWindow) {
         b = view.currentBounds // use existing bounds
       }
       view.currentBounds = b // store new bounds
-      view.setBounds(adjustBounds(view, parentWindow, b))
+      view.setBounds(adjustBounds(b))
     }
     setBounds({
       x: view.boundsOpt ? view.boundsOpt.left : 170,
@@ -82,7 +81,7 @@ export function resize (parentWindow, bounds = {}) {
   if (view && view.currentBounds) {
     view.currentBounds.width = bounds.width || view.currentBounds.width
     view.currentBounds.height = bounds.height || view.currentBounds.height
-    view.setBounds(adjustBounds(view, parentWindow, view.currentBounds))
+    view.setBounds(adjustBounds(view.currentBounds))
   }
 }
 
@@ -135,22 +134,11 @@ export function hide (parentWindow) {
  * @description
  * Ajust the bounds for margin
  */
-function adjustBounds (view, parentWindow, bounds) {
-  let parentBounds = parentWindow.getContentBounds()
+function adjustBounds (bounds) {
   return {
     x: bounds.x - MARGIN_SIZE,
     y: bounds.y,
     width: bounds.width + (MARGIN_SIZE * 2),
     height: bounds.height + MARGIN_SIZE
   }
-}
-
-function getParentWindow (sender) {
-  var view = BrowserView.fromWebContents(sender)
-  for (let id in views) {
-    if (views[id] === view) {
-      return BrowserWindow.fromId(+id)
-    }
-  }
-  throw new Error('Parent window not found')
 }

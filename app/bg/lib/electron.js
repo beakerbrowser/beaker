@@ -1,27 +1,19 @@
-import { BrowserWindow, BrowserView } from 'electron'
+import { BrowserWindow } from 'electron'
 
 export function findWebContentsParentWindow (wc) {
-  var win
-  var view = BrowserView.fromWebContents(wc)
-  if (view) {
-    // find the window that the view is attached to
-    outer:
-    for (let win2 of BrowserWindow.getAllWindows()) {
-      for (let view2 of win2.getBrowserViews()) {
-        if (view === view2) {
-          win = win2
-          break outer
-        }
+  for (let win of BrowserWindow.getAllWindows()) {
+    for (let view of win.getBrowserViews()) {
+      if (view.webContents === wc) {
+        return win
       }
     }
-    // it might not be attached because it was a shell menu that has closed
-    // in that case, just go with the focused window
-    if (!win) win = BrowserWindow.getFocusedWindow()
-  } else {
-    win = BrowserWindow.fromWebContents(wc)
-    while (win && win.getParentWindow()) {
-      win = win.getParentWindow()
-    }
   }
+  let win = BrowserWindow.fromWebContents(wc)
+  while (win && win.getParentWindow()) {
+    win = win.getParentWindow()
+  }
+  // it might not be attached because it was a shell menu that has closed
+  // in that case, just go with the focused window
+  if (!win) win = BrowserWindow.getFocusedWindow()
   return win
 }

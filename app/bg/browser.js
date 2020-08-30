@@ -1,4 +1,4 @@
-import { app, dialog, BrowserWindow, BrowserView, webContents, ipcMain, shell, Menu, screen, session, nativeImage } from 'electron'
+import { app, dialog, BrowserWindow, webContents, ipcMain, shell, Menu, screen, session, nativeImage } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import os from 'os'
 import path from 'path'
@@ -691,7 +691,7 @@ async function showOpenDialog (opts = {}) {
 
 function showContextMenu (menuDefinition) {
   var webContents = this.sender
-  var tab = tabManager.findTab(BrowserView.fromWebContents(webContents))
+  var tab = tabManager.findTab(webContents)
   return new Promise(resolve => {
     var cursorPos = screen.getCursorScreenPoint()
 
@@ -735,9 +735,8 @@ async function newWindow (state = {}) {
 }
 
 async function newPane (url, opts = {}) {
-  var senderView = BrowserView.fromWebContents(this.sender)
-  var tab = tabManager.findContainingTab(senderView)
-  var pane = tab && tab.findPane(senderView)
+  var tab = tabManager.findTab(this.sender)
+  var pane = tab && tab.findPane(this.sender)
   if (tab && pane) {
     if (opts.replaceSameOrigin) {
       let existingPane = tab.findPaneByOrigin(url)
@@ -801,11 +800,8 @@ async function doTest (test) {
 // =
 
 function getSenderTab (sender) {
-  var view = BrowserView.fromWebContents(sender)
-  if (view) {
-    let tab = tabManager.findTab(view)
-    if (tab) return tab
-  }
+  let tab = tabManager.findTab(sender)
+  if (tab) return tab
   var win = findWebContentsParentWindow(sender)
   return tabManager.getActive(win)
 }

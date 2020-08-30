@@ -1,4 +1,4 @@
-import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, screen } from 'electron'
+import { app, dialog, BrowserWindow, Menu, clipboard, ipcMain, screen } from 'electron'
 import { EventEmitter } from 'events'
 import _throttle from 'lodash.throttle'
 import emitStream from 'emit-stream'
@@ -380,8 +380,8 @@ class Tab extends EventEmitter {
     return this.lastActivePane
   }
 
-  findPane (browserView) {
-    return this.panes.find(p => p.browserView === browserView)
+  findPane (webContents) {
+    return this.panes.find(p => p.webContents === webContents)
   }
 
   findPaneByOrigin (url) {
@@ -579,24 +579,19 @@ export async function setup () {
 
   // listen for webContents messages
   ipcMain.on('BEAKER_SCRIPTCLOSE_SELF', e => {
-    var browserView = BrowserView.fromWebContents(e.sender)
-    if (browserView) {
-      var tab = findTab(browserView)
-      if (tab) {
-        var pane = tab.findPane(browserView)
-        if (pane) tab.removePane(pane)
-      }
+    var tab = findTab(e.sender)
+    if (tab) {
+      var pane = tab.findPane(e.sender)
+      if (pane) tab.removePane(pane)
     }
     e.returnValue = false
   })
   ipcMain.on('BEAKER_WC_FOCUSED', e => {
     // when a pane is focused, we want to set it as the
     // active pane of its tab
-    var browserView = BrowserView.fromWebContents(e.sender)
-    if (!browserView) return
     for (let winId in activeTabs) {
       for (let tab of activeTabs[winId]) {
-        var pane = tab.findPane(browserView)
+        var pane = tab.findPane(e.sender)
         if (pane) {
           if (tab.activePane !== pane) {
             tab.setActivePane(pane)
@@ -658,42 +653,32 @@ export function getActive (win) {
   return getAll(win).find(tab => tab.isActive)
 }
 
-export function findTab (browserView) {
+export function findTab (webContents) {
   for (let winId in activeTabs) {
     for (let tab of activeTabs[winId]) {
-      if (tab.findPane(browserView)) {
+      if (tab.findPane(webContents)) {
         return tab
       }
     }
   }
   for (let tab of backgroundTabs) {
-    if (tab.findPane(browserView)) {
+    if (tab.findPane(webContents)) {
       return tab
     }
   }
 }
 
-export function findContainingWindow (browserView) {
+export function findContainingWindow (webContents) {
   for (let winId in activeTabs) {
     for (let v of activeTabs[winId]) {
-      if (v.browserView === browserView) {
+      if (v.findPane(webContents)) {
         return v.browserWindow
       }
     }
   }
   for (let winId in preloadedNewTabs) {
-    if (preloadedNewTabs[winId].browserView === browserView) {
+    if (preloadedNewTabs[winId].findPane(webContents)) {
       return preloadedNewTabs[winId].browserWindow
-    }
-  }
-}
-
-export function findContainingTab (browserView) {
-  for (let winId in activeTabs) {
-    for (let tab of activeTabs[winId]) {
-      if (tab.findPane(browserView)) {
-        return tab
-      }
     }
   }
 }

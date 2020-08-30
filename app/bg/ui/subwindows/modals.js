@@ -37,7 +37,7 @@ export function destroy (parentWindow) {
   // destroy all under this window
   for (let tab of tabManager.getAll(parentWindow)) {
     if (tab.id in views) {
-      views[tab.id].destroy()
+      views[tab.id].webContents.destroy()
       delete views[tab.id]
     }
   }
@@ -55,20 +55,18 @@ export function reposition (parentWindow) {
 export async function create (webContents, modalName, params = {}) {
   // find parent window
   var parentWindow = BrowserWindow.fromWebContents(webContents)
-  var parentView = BrowserView.fromWebContents(webContents)
   var tab
-  if (parentView && !parentWindow) {
+  if (!parentWindow) {
     // if there's no window, then a web page or "sub-window" created the prompt
     // use its containing window
-    tab = tabManager.findTab(parentView)
-    parentWindow = findWebContentsParentWindow(parentView.webContents)
+    tab = tabManager.findTab(webContents)
+    parentWindow = findWebContentsParentWindow(webContents)
     if (!tab) {
       // this can happen when the passed `webContents` is a shell-menu or similar sub-window
       tab = tabManager.getActive(parentWindow)
     }
-  } else if (!parentView) {
-    // if there's no view, then the shell window created the prompt
-    // attach it to the active view
+  } else {
+    // shell window created the prompt
     tab = tabManager.getActive(parentWindow)
     parentWindow = tab.browserWindow
   }
@@ -110,7 +108,7 @@ export async function create (webContents, modalName, params = {}) {
 
   // destroy the window
   parentWindow.removeBrowserView(view)
-  view.destroy()
+  view.webContents.destroy()
   delete views[tab.id]
 
   // return/throw
@@ -124,26 +122,25 @@ export function get (tab) {
 
 export function show (tab) {
   if (tab.id in views) {
-    var win = tabManager.findContainingWindow(tab)
-    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
-    if (win) win.addBrowserView(views[tab.id])
+    if (tab.browserWindow) {
+      tab.browserWindow.addBrowserView(views[tab.id])
+    }
   }
 }
 
 export function hide (tab) {
   if (tab.id in views) {
-    var win = tabManager.findContainingWindow(tab)
-    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
-    if (win) win.removeBrowserView(views[tab.id])
+    if (tab.browserWindow) {
+      tab.browserWindow.removeBrowserView(views[tab.id])
+    }
   }
 }
 
 export function close (tab) {
   if (tab.id in views) {
     var view = views[tab.id]
-    var win = tabManager.findContainingWindow(tab)
-    if (win) win.removeBrowserView(view)
-    view.destroy()
+    if (tab.browserWindow) tab.browserWindow.removeBrowserView(view)
+    view.webContents.destroy()
     delete views[tab.id]
   }
 }
@@ -182,7 +179,8 @@ rpc.exportAPI('background-process-modals', modalsRPCManifest, {
   },
 
   async resizeSelf (dimensions) {
-    var view = BrowserView.fromWebContents(this.sender)
+    var view = Object.values(views).find(view => view.webContents === this.sender)
+    if (!view) return
     var parentWindow = findWebContentsParentWindow(this.sender)
     setBounds(view, parentWindow, dimensions)
   }

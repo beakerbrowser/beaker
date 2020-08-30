@@ -1,4 +1,4 @@
-import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'electron'
+import {app, BrowserWindow, ipcMain, webContents, dialog} from 'electron'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher, { getLastRecordedPositioning } from './session-watcher'
 import jetpack from 'fs-jetpack'
@@ -115,11 +115,9 @@ export async function setup () {
     }
 
     // handle tab webcontents
-    var parentView = BrowserView.fromWebContents(wc)
-    if (!parentView) return
-    var parentWindow = findWebContentsParentWindow(parentView)
+    var parentWindow = findWebContentsParentWindow(wc)
     if (!parentWindow) {
-      parentWindow = tabManager.findContainingWindow(parentView)
+      parentWindow = tabManager.findContainingWindow(wc)
       if (!parentWindow) {
         return
       }

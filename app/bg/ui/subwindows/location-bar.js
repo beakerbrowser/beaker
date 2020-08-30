@@ -39,7 +39,7 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).destroy()
+    get(parentWindow).webContents.destroy()
     delete views[parentWindow.id]
   }
 }
@@ -146,10 +146,10 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
 // =
 
 function getParentWindow (sender) {
-  var view = BrowserView.fromWebContents(sender)
-  for (let id in views) {
-    if (views[id] === view) {
-      return BrowserWindow.fromId(+id)
+  for (let win of BrowserWindow.getAllWindows()) {
+    if (win.webContents === sender) return win
+    for (let view of win.getBrowserViews()) {
+      if (view.webContents === sender) return win
     }
   }
   throw new Error('Parent window not found')

@@ -10,13 +10,14 @@
 
 import path from 'path'
 import Events from 'events'
-import { BrowserWindow, BrowserView } from 'electron'
+import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { createShellWindow } from '../windows'
 import * as tabManager from '../tabs/manager'
 import * as modals from './modals'
 import { getToolbarMenu, triggerMenuItemById } from '../window-menu'
 import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
+import { findWebContentsParentWindow } from '../../lib/electron'
 
 // globals
 // =
@@ -45,7 +46,7 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).destroy()
+    get(parentWindow).webContents.destroy()
     delete views[parentWindow.id]
   }
 }
@@ -197,7 +198,7 @@ export function hide (parentWindow) {
 
 rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   async close () {
-    hide(getParentWindow(this.sender))
+    hide(findWebContentsParentWindow(this.sender))
   },
 
   async createWindow (opts) {
@@ -205,7 +206,7 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   },
 
   async createTab (url) {
-    var win = getParentWindow(this.sender)
+    var win = findWebContentsParentWindow(this.sender)
     hide(win) // always close the menu
     tabManager.create(win, url, {setActive: true})
   },
@@ -215,21 +216,22 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   },
 
   async loadURL (url) {
-    var win = getParentWindow(this.sender)
+    var win = findWebContentsParentWindow(this.sender)
     hide(win) // always close the menu
     tabManager.getActive(win).loadURL(url)
   },
 
   async resizeSelf (dimensions) {
-    var view = BrowserView.fromWebContents(this.sender)
-    if (!view.isVisible) return
+    var win = findWebContentsParentWindow(this.sender)
+    var view = win ? views[win.id] : undefined
+    if (!view || !view.isVisible) return
     adjustDimensions(dimensions)
     view.currentDimensions = dimensions
-    reposition(getParentWindow(this.sender))
+    reposition(findWebContentsParentWindow(this.sender))
   },
 
   async showInpageFind () {
-    var win = getParentWindow(this.sender)
+    var win = findWebContentsParentWindow(this.sender)
     var tab = tabManager.getActive(win)
     if (tab) tab.showInpageFind()
   },
@@ -258,14 +260,4 @@ function adjustPosition (bounds, view, parentWindow) {
 function adjustDimensions (bounds) {
   bounds.width = bounds.width + (MARGIN_SIZE * 2),
   bounds.height = bounds.height + MARGIN_SIZE
-}
-
-function getParentWindow (sender) {
-  var view = BrowserView.fromWebContents(sender)
-  for (let id in views) {
-    if (views[id] === view) {
-      return BrowserWindow.fromId(+id)
-    }
-  }
-  throw new Error('Parent window not found')
 }

@@ -1,4 +1,3 @@
-import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { findTab } from '../ui/tabs/manager'
 
@@ -132,8 +131,7 @@ const secureOnly = apiName => (event, methodName, args) => {
 }
 
 function getSenderInfo (event) {
-  var view = BrowserView.fromWebContents(event.sender)
-  var tab = (view) ? findTab(view) : undefined
+  var tab = findTab(event.sender)
   if (tab) return tab.getIPCSenderInfo(event)
   return {isMainFrame: true, url: event.sender.getURL()}
 }

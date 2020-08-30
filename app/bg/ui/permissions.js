@@ -1,4 +1,4 @@
-import { session, BrowserView } from 'electron'
+import { session } from 'electron'
 import { PERMS, getPermId } from '../../lib/permissions'
 import hyper from '../hyper/index'
 import * as sitedata from '../dbs/sitedata'
@@ -124,14 +124,14 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   if (res === 0) return cb(false)
 
   // look up the containing window
-  var {win, tab, view} = getContaining(webContents)
-  if (!win || !view) {
+  var {win, tab} = getContaining(webContents)
+  if (!win) {
     console.error('Warning: failed to find containing window of permission request, ' + permission)
     return cb(false)
   }
 
   // if we're already tracking this kind of permission request, and the perm is idempotent, then bundle them
-  var req = PERM.idempotent ? activeRequests.find(req => req.view === view && req.permission === permission) : false
+  var req = PERM.idempotent ? activeRequests.find(req => req.webContents === webContents && req.permission === permission) : false
   if (req) {
     req.cbs.push(cb)
     return
@@ -141,12 +141,12 @@ async function onPermissionRequestHandler (webContents, permission, cb, opts) {
   await waitForPendingTabRequests(tab)
   
   // track the new cb
-  req = { id: ++idCounter, view, tab, win, url, permission, cbs: [cb] }
+  req = { id: ++idCounter, webContents, tab, win, url, permission, cbs: [cb] }
   activeRequests.push(req)
 
   // run the UI flow
-  tab.setActivePane(tab.findPane(view))
-  var decision = await permPromptSubwindow.create(win, view, {permission, url, opts})
+  tab.setActivePane(tab.findPane(webContents))
+  var decision = await permPromptSubwindow.create(win, tab, {permission, url, opts})
 
   // persist decisions
   if (PERM && PERM.persist) {
@@ -179,10 +179,9 @@ async function waitForPendingTabRequests (tab) {
 }
 
 function getContaining (webContents) {
-  var view = BrowserView.fromWebContents(webContents)
-  if (view) {
-    var tab = tabManager.findContainingTab(view)
-    return {win: tab.browserWindow, tab, view}
+  var tab = tabManager.findTab(webContents)
+  if (tab) {
+    return {win: tab.browserWindow, tab}
   }
   return {}
 }

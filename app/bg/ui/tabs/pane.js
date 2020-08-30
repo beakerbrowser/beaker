@@ -180,7 +180,7 @@ export class Pane extends EventEmitter {
   }
 
   get id () {
-    return this.browserView.id
+    return this.webContents.id
   }
 
   get webContents () {
@@ -387,7 +387,7 @@ export class Pane extends EventEmitter {
   destroy () {
     this.hide()
     this.stopLiveReloading()
-    this.browserView.destroy()
+    this.browserView.webContents.destroy()
     this.emit('destroyed')
   }
 
@@ -743,7 +743,7 @@ export class Pane extends EventEmitter {
 
   async onDidNavigate (e, url, httpResponseCode) {
     // remove any active subwindows
-    modals.close(this.browserView)
+    modals.close(this.tab)
 
     // read zoom
     zoom.setZoomFromSitedata(this)
