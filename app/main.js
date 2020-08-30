@@ -72,7 +72,7 @@ app.allowRendererProcessReuse = true
 // configure the protocols
 protocol.registerSchemesAsPrivileged([
   {scheme: 'dat', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
-  {scheme: 'hyper', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}},
+  {scheme: 'hyper', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true, stream: true}},
   {scheme: 'beaker', privileges: {standard: true, secure: true, allowServiceWorkers: true, supportFetchAPI: true, corsEnabled: true}}
 ])
 
