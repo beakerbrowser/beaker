@@ -74,7 +74,7 @@ export class RecordThread extends LitElement {
 
   async loadComments (record) {
     var replies = await beaker.index.listRecords({
-      links: {url: this.subjectUrl},
+      links: this.subjectUrl,
       sort: 'ctime',
       reverse: true
     })
