@@ -12,13 +12,11 @@ ${markdownCSS}
 
 :host {
   --text-color--result-link: blue;
-  --bg-color--unread: #f2f7ff;
 }
 
 @media (prefers-color-scheme: dark) {
   :host {
     --text-color--result-link: #1043da;
-    --bg-color--unread: #f2f7ff;
   }
 }
 
