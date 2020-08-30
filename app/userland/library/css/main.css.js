@@ -105,7 +105,7 @@ nav .page-nav a:hover {
 
 nav .page-nav a.current {
   background: var(--bg-color--nav--highlight);
-  color: #2187f3;
+  color: var(--text-color--link);
   font-weight: bold;
 }
 
