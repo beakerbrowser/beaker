@@ -667,6 +667,15 @@ beaker-sites-list {
   margin-right: 5px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .create-box button {
+    background: var(--bg-color--default);
+  }
+  .create-box button:hover {
+    background: var(--bg-color--light);
+  }
+}
+
 .empty {
   font-size: 16px;
   letter-spacing: 0.7px;

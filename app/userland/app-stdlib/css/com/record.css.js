@@ -10,16 +10,6 @@ ${inputsCSS}
 ${tooltipCSS}
 ${markdownCSS}
 
-:host {
-  --text-color--result-link: blue;
-}
-
-@media (prefers-color-scheme: dark) {
-  :host {
-    --text-color--result-link: #1043da;
-  }
-}
-
 /** COMMON RECORD STYLES **/
 
 a {
@@ -60,6 +50,9 @@ a:hover {
   margin-right: 19px;
   font-size: 14px;
   color: var(--text-color--light);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .notification.unread {
@@ -236,6 +229,11 @@ a:hover {
 .record.action .author {
   color: var(--text-color--default);
   font-weight: 600;
+}
+
+.record.action .subject,
+.record.action .others {
+  color: var(--text-color--result-link);
 }
 
 :host([thread-view]) .record.action .author {
