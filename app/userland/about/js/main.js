@@ -197,6 +197,7 @@ class AboutApp extends LitElement {
             show-date-titles
             ?no-merge=${this.currentView === 'subscriptions'}
             limit="50"
+            empty-message="This site hasn't posted anything yet."
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
           ></beaker-record-feed>

@@ -69,7 +69,8 @@ class DesktopApp extends LitElement {
       sourceOptions: {type: Array},
       currentSource: {type: String},
       isIntroActive: {type: Boolean},
-      legacyArchives: {type: Array}
+      legacyArchives: {type: Array},
+      isEmpty: {type: Boolean},
     }
   }
 
@@ -89,6 +90,7 @@ class DesktopApp extends LitElement {
     this.currentSource = 'all'
     this.isIntroActive = false
     this.legacyArchives = []
+    this.isEmpty = false
     this.load().then(() => {
       this.loadSuggestions()
     })
@@ -399,7 +401,7 @@ class DesktopApp extends LitElement {
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   limit="50"
-                  @load-state-updated=${e => this.requestUpdate()}
+                  @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
                   @publish-reply=${this.onPublishReply}
                   profile-url=${this.profile ? this.profile.url : ''}
@@ -424,13 +426,14 @@ class DesktopApp extends LitElement {
               ` : this.currentNav === 'legacy-archives' ? html`
                 ${this.renderLegacyArchivesView()}
               ` : html`
+                ${this.isEmpty ? this.renderEmptyMessage() : ''}
                 <beaker-record-feed
                   show-date-titles
                   date-title-range=${this.currentNavDateTitleRange}
                   .fileQuery=${this.currentNavAsFileQuery}
                   .sources=${this.sources}
                   limit="50"
-                  @load-state-updated=${e => this.requestUpdate()}
+                  @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
                   @publish-reply=${this.onPublishReply}
                   profile-url=${this.profile ? this.profile.url : ''}
@@ -471,6 +474,33 @@ class DesktopApp extends LitElement {
         single-row
         .profile=${this.profile}
       ></beaker-sites-list>
+    `
+  }
+
+  renderEmptyMessage () {
+    if (this.currentNav === 'notifications') {
+      return html`
+        <div class="empty">
+          <div class="fas fa-bell"></div>
+          <div>You have no notifications.</div>
+        </div>
+        `
+    }
+    let thing = this.currentNav
+    if (this.currentNav === 'all') thing = 'news'
+    var icon = ({
+      bookmarks: 'far fa-star',
+      blogposts: 'fas fa-blog',
+      posts: 'far fa-comment-alt',
+      pages: 'far fa-file',
+      comments: 'far fa-comments',
+      sites: 'fas fa-sitemap'
+    })[this.currentNav] || 'fas fa-stream'
+    return html`
+      <div class="empty">
+          <div class=${icon}></div>
+        <div>No ${thing}... yet!</div>
+      </div>
     `
   }
 
@@ -640,6 +670,13 @@ class DesktopApp extends LitElement {
 
   // events
   // =
+
+  onFeedLoadStateUpdated (e) {
+    if (typeof e.detail?.isEmpty !== 'undefined') {
+      this.isEmpty = e.detail.isEmpty
+    }
+    this.requestUpdate()
+  }
 
   onClickCloseIntro (e) {
     this.isIntroActive = false

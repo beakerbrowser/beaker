@@ -667,5 +667,20 @@ beaker-sites-list {
   margin-right: 5px;
 }
 
+.empty {
+  font-size: 16px;
+  letter-spacing: 0.7px;
+  color: var(--text-color--light);
+  padding: 120px 0px 150px;
+  background: var(--bg-color--light);
+  text-align: center;
+}
+
+.empty :-webkit-any(.fas, .far) {
+  font-size: 58px;
+  color: var(--text-color--very-light);
+  margin: 0 0 30px;
+}
+
 `
 export default cssStr

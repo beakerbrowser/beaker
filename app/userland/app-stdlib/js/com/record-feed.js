@@ -18,7 +18,6 @@ export class RecordFeed extends LitElement {
   static get properties () {
     return {
       fileQuery: {type: Array},
-      title: {type: String},
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       dateTitleRange: {type: String, attribute: 'date-title-range'},
       sort: {type: String},
@@ -26,7 +25,7 @@ export class RecordFeed extends LitElement {
       filter: {type: String},
       sources: {type: Array},
       results: {type: Array},
-      hideEmpty: {type: Boolean, attribute: 'hide-empty'},
+      emptyMessage: {type: String, attribute: 'empty-message'},
       noMerge: {type: Boolean, attribute: 'no-merge'},
       profileUrl: {type: String, attribute: 'profile-url'}
     }
@@ -39,7 +38,6 @@ export class RecordFeed extends LitElement {
   constructor () {
     super()
     this.fileQuery = undefined
-    this.title = ''
     this.showDateTitles = false
     this.dateTitleRange = undefined
     this.sort = 'ctime'
@@ -47,7 +45,7 @@ export class RecordFeed extends LitElement {
     this.filter = undefined
     this.sources = undefined
     this.results = undefined
-    this.hideEmpty = false
+    this.emptyMessage = undefined
     this.noMerge = false
     this.profileUrl = ''
 
@@ -148,7 +146,7 @@ export class RecordFeed extends LitElement {
     console.log(results)
     this.results = results
     this.activeQuery = undefined
-    emit(this, 'load-state-updated')
+    emit(this, 'load-state-updated', {detail: {isEmpty: this.results.length === 0}})
   }
 
   // rendering
@@ -159,22 +157,20 @@ export class RecordFeed extends LitElement {
       return html``
     }
     if (!this.results.length) {
-      if (this.hideEmpty) return html``
+      if (!this.filter && !this.emptyMessage) return html``
       return html`
         <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-        ${this.title ? html`<h2 class="results-header"><span>${this.title}</span></h2>` : ''}
         <div class="results empty">
           ${this.filter ? html`
             <span>No matches found for "${this.filter}".</div></span>
           ` : html`
-            <span>Click "${this.createLabel}" to get started</div></span>
+            <span>${this.emptyMessage}</div></span>
           `}
         </div>
       `
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${this.title ? html`<h2 class="results-header"><span>${this.title}</span></h2>` : ''}
       ${this.renderResults()}
     `
   }
