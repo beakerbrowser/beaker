@@ -259,7 +259,7 @@ export class Record extends LitElement {
             <span class="action">mentioned ${this.actionTarget}</span>
           ` : html`
             <span class="action">mentioned ${this.actionTarget} in</span>
-            <a class="subject" href=${res.url} title=${subject}>${subject}</a>
+            <a class="subject" href=${res.url}>${typeof subject === 'string' ? subject : asyncReplace(subject)}</a>
           `}
           ${res.mergedItems ? html`
             <span>and</span>
