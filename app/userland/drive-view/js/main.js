@@ -39,6 +39,7 @@ class DriveViewApp extends LitElement {
     this.info = undefined
     this.profile = undefined
     this.contentCounts = undefined
+    this.showFilesOverride = false
     this.subscribers = []
     this.load()
   }
@@ -122,7 +123,7 @@ class DriveViewApp extends LitElement {
               </a>
             </div>
             <div class="info">
-              <div class="title"><a href="/">${this.info.title}</a></div>
+              <div class="title"><a href="/">${this.info.title || 'Untitled'}</a></div>
               <div class="description">${this.info.description || ''}</div>
               ${isSameOrigin(this.info.origin, 'hyper://private') ? '' : html`
                 <div class="known-subscribers">
@@ -165,6 +166,9 @@ class DriveViewApp extends LitElement {
   }
 
   renderDirectory () {
+    if (this.showFilesOverride) {
+      return html`<beaker-files-list .info=${this.info}></beaker-files-list>`
+    }
     switch (location.pathname) {
       case '/':
         return html`
@@ -176,6 +180,7 @@ class DriveViewApp extends LitElement {
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
+            @load-state-updated=${this.onFeedLoadStateUpdated}
           ></beaker-record-feed>
         `
       case '/microblog/':
@@ -188,6 +193,7 @@ class DriveViewApp extends LitElement {
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
+            @load-state-updated=${this.onFeedLoadStateUpdated}
           ></beaker-record-feed>
         `
       case '/blog/':
@@ -200,6 +206,7 @@ class DriveViewApp extends LitElement {
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
+            @load-state-updated=${this.onFeedLoadStateUpdated}
           ></beaker-record-feed>
         `
       case '/pages/':
@@ -212,6 +219,7 @@ class DriveViewApp extends LitElement {
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
+            @load-state-updated=${this.onFeedLoadStateUpdated}
           ></beaker-record-feed>
         `
       case '/bookmarks/':
@@ -224,6 +232,7 @@ class DriveViewApp extends LitElement {
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
+            @load-state-updated=${this.onFeedLoadStateUpdated}
           ></beaker-record-feed>
         `
       case '/comments/':
@@ -236,6 +245,7 @@ class DriveViewApp extends LitElement {
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
+            @load-state-updated=${this.onFeedLoadStateUpdated}
           ></beaker-record-feed>
         `
       case '/subscriptions/':
@@ -249,6 +259,7 @@ class DriveViewApp extends LitElement {
             limit="50"
             profile-url=${this.profile.url}
             @view-thread=${this.onViewThread}
+            @load-state-updated=${this.onFeedLoadStateUpdated}
           ></beaker-record-feed>
         `
       default:
@@ -265,6 +276,19 @@ class DriveViewApp extends LitElement {
       ></beaker-record-thread>
     `
   }
+
+  // events
+  // =
+
+
+  onFeedLoadStateUpdated (e) {
+    if (e.detail?.isEmpty === true) {
+      // on empty feeds, fallback to the files list view
+      this.showFilesOverride = true
+      this.requestUpdate()
+    }
+  }
+
 
   onViewThread (e) {
     ViewThreadPopup.create({

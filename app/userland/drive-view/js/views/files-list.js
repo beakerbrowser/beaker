@@ -72,6 +72,20 @@ class FilesList extends LitElement {
       border-radius: 0;
       color: #778;
     }
+
+    .error {
+      background: var(--bg-color--light);
+      color: var(--text-color--light);
+      padding: 20px;
+      margin: 10px 0;
+      font-size: 18px;
+      border-radius: 4px;
+    }
+
+    h2 {
+      margin-top: 0;
+      color: var(--text-color--default);
+    }
     `
   }
 
@@ -80,20 +94,47 @@ class FilesList extends LitElement {
     this.drive = beaker.hyperdrive.drive(location)
     this.info = undefined
     this.entries = []
+    this.error = undefined
     this.load()
   }
 
   async load () {
-    var entries = await this.drive.readdir(location.pathname, {includeStats: true})
-    entries.sort((a, b) => {
-      return a.name.localeCompare(b.name)
-    })
-    this.directories = entries.filter(entry => entry.stat.isDirectory())
-    this.files = entries.filter(entry => !entry.stat.isDirectory())
+    try {
+      var entries = await this.drive.readdir(location.pathname, {includeStats: true})
+      entries.sort((a, b) => {
+        return a.name.localeCompare(b.name)
+      })
+      this.directories = entries.filter(entry => entry.stat.isDirectory())
+      this.files = entries.filter(entry => !entry.stat.isDirectory())
+    } catch (e) {
+      console.log('Error while loading', e)
+      this.error = e.message
+    }
     this.requestUpdate()
   }
 
   render () {
+    if (this.error) {
+      return html`
+        <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+        <main>
+          <div class="error">
+            <h2>Uhoh!</h2>
+            <p>This site wasn't able to load. <span class="far fa-frown"></span></p>
+            <p>Possible causes:</p>
+            <ul>
+              <li>Nobody hosting the site is online.</li>
+              <li>Connections to online peers failed.</li>
+              <li>Your Internet is down.</li>
+            </ul>
+            <details>
+              <summary>Error Details</summary>
+              ${this.error}
+            </details>
+          </div>
+        </main>
+      `
+    }
     if (!this.directories || !this.files) return html``
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">

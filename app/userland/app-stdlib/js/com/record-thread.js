@@ -196,12 +196,32 @@ export class RecordThread extends LitElement {
     } else {
       let self = this
       const loadFile = async function* () {
-        yield ''
-        let content = await beaker.hyperdrive.readFile(self.subject.url)
-        if (self.subject.url.endsWith('.md')) {
-          yield html`<div class="markdown">${unsafeHTML(beaker.markdown.toHTML(content))}</div>`
-        } else {
-          yield html`<pre>${content}</pre>`
+        yield html`<div class="loading"><span class="spinner"></span> Loading...</div>`
+        try {
+          let content = await beaker.hyperdrive.readFile(self.subject.url)
+          if (self.subject.url.endsWith('.md')) {
+            yield html`<div class="markdown">${unsafeHTML(beaker.markdown.toHTML(content))}</div>`
+          } else {
+            yield html`<pre>${content}</pre>`
+          }
+        } catch (e) {
+          yield html`
+            <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+            <div class="error">
+              <h2>Uhoh!</h2>
+              <p>This file wasn't able to load. <span class="far fa-frown"></span></p>
+              <p>Possible causes:</p>
+              <ul>
+                <li>Nobody hosting the file is online.</li>
+                <li>Connections to online peers failed.</li>
+                <li>Your Internet is down.</li>
+              </ul>
+              <details>
+                <summary>Error Details</summary>
+                ${e.toString()}
+              </details>
+            </div>
+          `
         }
       }
       return html`

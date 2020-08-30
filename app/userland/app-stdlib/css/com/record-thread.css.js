@@ -24,6 +24,16 @@ beaker-record {
   display: block;
 }
 
+.loading {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.loading .spinner {
+  margin-right: 10px;
+}
+
 .subject {
   background: var(--bg-color--default);
   border: 1px solid var(--border-color--light);
@@ -157,6 +167,19 @@ beaker-record {
 
 .replies beaker-record.highlight {
   background: var(--bg-color--light-highlight);
+}
+
+.error {
+  border: 1px solid var(--border-color--light);
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin: 0 -15px;
+  color: var(--text-color--light);
+}
+
+.error h2 {
+  margin-top: 0;
+  color: var(--text-color--default);
 }
 
 `
