@@ -1,6 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import css from '../../css/com/site-info.css.js'
-import { joinPath, pluralize, shorten } from 'beaker://app-stdlib/js/strings.js'
+import { toNiceUrl, pluralize, shorten } from 'beaker://app-stdlib/js/strings.js'
 import { emit } from 'beaker://app-stdlib/js/dom.js'
 import { SitesListPopup } from 'beaker://app-stdlib/js/com/popups/sites-list.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
@@ -48,7 +48,14 @@ export class SiteInfo extends LitElement {
 
   render () {
     if (!this.siteInfo) {
-      return html``
+      return html`
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <div class="full">
+          <div class="info">
+            <div class="title"><span class="spinner"></span> Loading...</div>
+          </div>
+        </div>
+      `
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -60,7 +67,7 @@ export class SiteInfo extends LitElement {
           </beaker-img-fallbacks>
         </a>
         <div class="info">
-          <div class="title"><a href=${this.siteInfo.url}>${this.siteInfo.title || this.origin}</a></div>
+          <div class="title"><a href=${this.siteInfo.url}>${this.siteInfo.title || toNiceUrl(this.origin)}</a></div>
           ${this.siteInfo.description ? html`<div class="description">${this.siteInfo.description}</div>` : ''}
           <div class="known-subscribers">
             <a

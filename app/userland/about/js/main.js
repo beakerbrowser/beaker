@@ -151,6 +151,11 @@ class AboutApp extends LitElement {
     this.currentView = view
   }
 
+  get hasContent () {
+    if (!this.contentCounts) return false
+    return this.contentCounts && Object.values(this.contentCounts).reduce((acc, v) => acc + v, 0) > 0
+  }
+
   // rendering
   // =
 
@@ -185,9 +190,11 @@ class AboutApp extends LitElement {
           @toggle-subscribe=${this.onToggleSubscribe}
           @edit-properties=${this.onEditProperties}
         ></site-info>
-        <div class="nav ${this.url.startsWith('hyper://private') ? 'private' : ''}">
-          ${NAV_ITEMS.map(navItem)}
-        </div>
+        ${this.hasContent ? html`
+          <div class="nav ${this.url.startsWith('hyper://private') ? 'private' : ''}">
+            ${NAV_ITEMS.map(navItem)}
+          </div>
+        ` : ''}
       </header>
       <div class="feed">
         ${this.siteInfo ? html`
