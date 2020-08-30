@@ -61,7 +61,7 @@ section.twocol {
 
 .sites-list > div .url { flex: 0 0 120px; }
 .sites-list > div .version { flex: 0 0 50px; }
-.sites-list > div .last-index { flex: 0 0 220px; }
+.sites-list > div .last-index { flex: 0 0 230px; }
 
 .sites-list > div > :last-child {
   flex: 1;
