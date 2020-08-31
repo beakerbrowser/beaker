@@ -51,22 +51,22 @@ class Tab extends EventEmitter {
     this.layout = new PaneLayout()
     this.layout.on('changed', this.resize.bind(this))
 
-    defineActivePanePassthroughGetter(this, 'url')
-    defineActivePanePassthroughGetter(this, 'loadingURL')
-    defineActivePanePassthroughGetter(this, 'origin')
-    defineActivePanePassthroughGetter(this, 'title')
-    defineActivePanePassthroughGetter(this, 'webContents')
-    defineActivePanePassthroughGetter(this, 'browserView')
-    defineActivePanePassthroughFn(this, 'loadURL')
-    defineActivePanePassthroughFn(this, 'reload')
-    defineActivePanePassthroughFn(this, 'focus')
-    defineActivePanePassthroughFn(this, 'captureScreenshot')
-    defineActivePanePassthroughFn(this, 'showInpageFind')
-    defineActivePanePassthroughFn(this, 'hideInpageFind')
-    defineActivePanePassthroughFn(this, 'setInpageFindString')
-    defineActivePanePassthroughFn(this, 'moveInpageFind')
-    defineActivePanePassthroughFn(this, 'toggleLiveReloading')
-    defineActivePanePassthroughFn(this, 'stopLiveReloading')
+    definePrimaryPanePassthroughGetter(this, 'url')
+    definePrimaryPanePassthroughGetter(this, 'loadingURL')
+    definePrimaryPanePassthroughGetter(this, 'origin')
+    definePrimaryPanePassthroughGetter(this, 'title')
+    definePrimaryPanePassthroughGetter(this, 'webContents')
+    definePrimaryPanePassthroughGetter(this, 'browserView')
+    definePrimaryPanePassthroughFn(this, 'loadURL')
+    definePrimaryPanePassthroughFn(this, 'reload')
+    definePrimaryPanePassthroughFn(this, 'focus')
+    definePrimaryPanePassthroughFn(this, 'captureScreenshot')
+    definePrimaryPanePassthroughFn(this, 'showInpageFind')
+    definePrimaryPanePassthroughFn(this, 'hideInpageFind')
+    definePrimaryPanePassthroughFn(this, 'setInpageFindString')
+    definePrimaryPanePassthroughFn(this, 'moveInpageFind')
+    definePrimaryPanePassthroughFn(this, 'toggleLiveReloading')
+    definePrimaryPanePassthroughFn(this, 'stopLiveReloading')
 
     // browser state
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab and background tabs
@@ -1438,22 +1438,22 @@ function indexOfLastPinnedTab (win) {
   return index
 }
 
-function defineActivePanePassthroughGetter (obj, name) {
+function definePrimaryPanePassthroughGetter (obj, name) {
   Object.defineProperty(obj, name, {
     enumerable: true,
     get () {
-      var pane = obj.activePane
+      var pane = obj.primaryPane
       return pane ? pane[name] : undefined
     }
   })
 }
 
-function defineActivePanePassthroughFn (obj, name) {
+function definePrimaryPanePassthroughFn (obj, name) {
   obj[name] = (function (...args) {
-    if (!this.activePane) {
+    if (!this.primaryPane) {
       throw new Error('No active pane')
     }
-    return this.activePane[name](...args)
+    return this.primaryPane[name](...args)
   }).bind(obj)
 }
 
