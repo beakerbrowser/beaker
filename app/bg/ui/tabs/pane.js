@@ -764,6 +764,7 @@ export class Pane extends EventEmitter {
 
   onDidNavigateInPage (e) {
     this.fetchIsBookmarked()
+    this.fetchBacklinkCount()
     this.updateHistory()
   }
 
