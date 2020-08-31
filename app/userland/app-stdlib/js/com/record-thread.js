@@ -126,7 +126,7 @@ export class RecordThread extends LitElement {
           <a class="simple-link" href="${this.subject.url}">
             ${this.subject.title || asyncReplace(fancyUrlAsync(this.subject.url))}
           </a>
-        ` : this.isFullPage && mode === 'link' ? html`
+        ` : this.isFullPage && mode === 'link' && this.subject.url.startsWith('hyper') ? html`
           <div class="subject-content">${this.renderSubjectContent()}</div>
         ` : html`
           <div class="subject ${mode}">
