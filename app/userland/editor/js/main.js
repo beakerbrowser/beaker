@@ -155,6 +155,33 @@ class EditorApp extends LitElement {
     if (!this.editorEl) {
       this.editorEl = document.createElement('div')
       this.editorEl.id = 'monaco-editor'
+      this.editorEl.addEventListener('contextmenu', async e => {
+        var choice = await beaker.browser.showContextMenu([
+          {id: 'cut', label: 'Cut'},
+          {id: 'copy', label: 'Copy'},
+          {id: 'paste', label: 'Paste'},
+          {type: 'separator'},
+          {id: 'selectAll', label: 'Select All'},
+          {type: 'separator'},
+          {id: 'undo', label: 'Undo'},
+          {id: 'redo', label: 'Redo'},
+        ])
+        switch (choice) {
+          case 'cut':
+          case 'copy':
+          case 'paste':
+            this.editor.focus()
+            document.execCommand(choice)
+            break
+          case 'selectAll':
+            this.editor.setSelection(this.editor.getModel().getFullModelRange())
+            break
+          case 'undo':
+          case 'redo':
+            this.editor.trigger('contextmenu', choice)
+            break
+        }
+      })
     }
     this.append(this.editorEl)
   }
@@ -184,14 +211,15 @@ class EditorApp extends LitElement {
           }
         })
         let opts = {
-          folding: false,
-          renderLineHighlight: 'all',
-          lineNumbersMinChars: 4,
           automaticLayout: true,
+          contextmenu: false,
           fixedOverflowWidgets: true,
-          roundedSelection: false,
+          folding: false,
+          lineNumbersMinChars: 4,
           links: false,
           minimap: {enabled: false},
+          renderLineHighlight: 'all',
+          roundedSelection: false,
           theme: 'custom-dark',
           value: ''
         }

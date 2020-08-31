@@ -126,7 +126,7 @@ class PostComposer extends LitElement {
 
         <div class="view">
           ${this.isEmpty ? html`<div class="placeholder">${this.placeholder}</div>` : ''}
-          <div class="editor ${this.currentView === 'edit' ? '' : 'hidden'}"></div>
+          <div class="editor ${this.currentView === 'edit' ? '' : 'hidden'}" @contextmenu=${this.onContextmenu}></div>
           ${this.currentView === 'preview' ? this.renderPreview() : ''}
         </div>
 
@@ -191,8 +191,32 @@ class PostComposer extends LitElement {
   // events
   // =
 
-  onKeyupTextarea (e) {
-    this.draftText = e.currentTarget.value
+  async onContextmenu (e) {
+    var choice = await beaker.browser.showContextMenu([
+      {id: 'cut', label: 'Cut'},
+      {id: 'copy', label: 'Copy'},
+      {id: 'paste', label: 'Paste'},
+      {type: 'separator'},
+      {id: 'selectAll', label: 'Select All'},
+      {type: 'separator'},
+      {id: 'undo', label: 'Undo'},
+      {id: 'redo', label: 'Redo'},
+    ])
+    switch (choice) {
+      case 'cut':
+      case 'copy':
+      case 'paste':
+        this.editor.focus()
+        document.execCommand(choice)
+        break
+      case 'selectAll':
+        this.editor.setSelection(this.editor.getModel().getFullModelRange())
+        break
+      case 'undo':
+      case 'redo':
+        this.editor.trigger('contextmenu', choice)
+        break
+    }
   }
 
   onClickAddImage (e) {

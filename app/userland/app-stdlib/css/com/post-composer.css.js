@@ -61,6 +61,7 @@ nav a:hover:not(.current) {
   left: 13px;
   color: var(--text-color--pretty-light);
   z-index: 1;
+  pointer-events: none;
 }
 
 .editor {
