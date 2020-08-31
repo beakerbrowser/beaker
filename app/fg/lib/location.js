@@ -75,8 +75,11 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   ctx.urlGuess = undefined
   if (ctx.lastInputValue !== ctx.inputValue) {
     for (let res of finalResults) {
-      let start = res.url.indexOf('://') + 3 // skip the scheme
-      if (res.url.slice(start).startsWith('www.')) {
+      let start = 0
+      if (!ctx.inputValue.includes('://')) {
+        start = res.url.indexOf('://') + 3 // skip the scheme
+      }
+      if (!ctx.inputValue.includes('www.') && res.url.slice(start).startsWith('www.')) {
         start += 4 // skip the www.
       }
       let index = res.url.indexOf(ctx.inputValue, start)
