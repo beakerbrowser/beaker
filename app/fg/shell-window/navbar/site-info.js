@@ -90,14 +90,20 @@ class NavbarSiteInfo extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <button class=${classMap({[this.siteTrust]: true, pressed: this.isPressed, 'hide-origin': this.hideOrigin, rounded: this.rounded})} @click=${this.onClickButton}>
         ${innerHTML}
-        ${this.renderSubscribeBtn()}
+        ${this.renderHyperCtrls()}
       </button>
     `
   }
 
-  renderSubscribeBtn () {
-    if (!this.isHyperdrive || ['system', 'profile'].includes(this.driveIdent)) {
+  renderHyperCtrls () {
+    if (!this.isHyperdrive) {
       return ''
+    }
+    if (this.writable) {
+      if (['system', 'profile'].includes(this.driveIdent)) {
+        return ''
+      }
+      return html`<span class="fas fa-fw fa-pen"></span>`
     }
     return html`
       <span class="subscribe-btn" @click=${this.onClickSubscribe}>

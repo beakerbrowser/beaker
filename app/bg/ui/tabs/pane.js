@@ -201,9 +201,9 @@ export class Pane extends EventEmitter {
 
   get title () {
     var title = this.webContents.getTitle()
-    if (this.driveInfo && (!title || toOrigin(title) === this.origin)) {
+    if ((!title || toOrigin(title) === this.origin) && this.driveInfo?.title) {
       // fallback to the index.json title field if the page doesnt provide a title
-      title = this.siteTitle
+      title = this.driveInfo.title
     }
     return title
   }
@@ -219,12 +219,11 @@ export class Pane extends EventEmitter {
         hostname = hostname.replace(/\+[\d]+/, '')
       }
       if (this.driveInfo) {
-        var ident = _get(this.driveInfo, 'ident', {})
-        if (ident.system) {
+        if (this.driveInfo.ident?.system) {
           return 'My Private Site'
         }
-        if (this.driveInfo.title) {
-          return this.driveInfo.title
+        if (this.driveInfo.ident?.profile) {
+          return 'My Profile'
         }
       }
       if (urlp.protocol === 'beaker:') {
@@ -254,12 +253,11 @@ export class Pane extends EventEmitter {
 
   get siteIcon () {
     if (this.driveInfo) {
-      var ident = this.driveInfo.ident || {}
-      if (ident.profile) {
+      if (this.driveInfo.ident?.profile) {
         return 'fas fa-user-circle'
       }
-      if (this.driveInfo.writable || this.isSubscribed) {
-        return 'fas fa-check-circle'
+      if (this.driveInfo.ident?.system) {
+        return 'fas fa-lock'
       }
     }
     var url = this.loadingURL || this.url
@@ -285,7 +283,7 @@ export class Pane extends EventEmitter {
         return 'untrusted'
       }
       if (urlp.protocol === 'hyper:' && this.driveInfo) {
-        if (this.driveInfo.writable || this.isSubscribed) {
+        if (this.driveInfo.ident?.internal) {
           return 'trusted'
         }
       }
