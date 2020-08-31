@@ -4,7 +4,7 @@ import path from 'path'
 import { promises as fs } from 'fs'
 import { EventEmitter } from 'events'
 import _throttle from 'lodash.throttle'
-import { parseDriveUrl } from '../../../lib/urls'
+import { parseDriveUrl, stripUrlHash } from '../../../lib/urls'
 import { toNiceUrl } from '../../../lib/strings'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
@@ -647,7 +647,7 @@ export class Pane extends EventEmitter {
 
   async fetchBacklinkCount (noEmit = false) {
     this.backlinkCount = await indexer.countRecords({
-      links: this.url
+      links: stripUrlHash(this.url)
     })
     if (!noEmit) {
       this.emitUpdateState()

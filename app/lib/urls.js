@@ -117,3 +117,17 @@ export function normalizeUrl (url, base = undefined) {
     return url
   }
 }
+
+/**
+ * @param {String} url 
+ * @returns {String}
+ */
+export function stripUrlHash (url) {
+  try {
+    let i = url.indexOf('#')
+    if (i !== -1) return url.slice(0, i)
+    return url
+  } catch (e) {
+    return url
+  }
+}

@@ -74,7 +74,7 @@ export class RecordThread extends LitElement {
 
   async loadComments (record) {
     var replies = await beaker.index.listRecords({
-      links: this.subjectUrl,
+      links: stripUrlHash(this.subjectUrl),
       sort: 'ctime',
       reverse: true
     })
@@ -305,4 +305,14 @@ function toThreadTree (replies) {
     }
   })
   return rootReplies
+}
+
+function stripUrlHash (url) {
+  try {
+    let i = url.indexOf('#')
+    if (i !== -1) return url.slice(0, i)
+    return url
+  } catch (e) {
+    return url
+  }
 }
