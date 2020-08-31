@@ -131,9 +131,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://assets/syntax-highlight.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/css/syntax-highlight.css'))
   }
-  if (requestUrl === 'beaker://assets/icons.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/icons.css'))
-  }
   if (requestUrl === 'beaker://assets/font-awesome.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/css/fa-all.min.css'))
   }
@@ -275,38 +272,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://settings' || requestUrl.startsWith('beaker://settings/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'settings'), cb)
   }
-
-  // builtin pages
-  if (requestUrl === 'beaker://assets/builtin-pages.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages.css'))
-  }
   if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
-  }
-  if (requestUrl === 'beaker://swarm-debugger/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/swarm-debugger.css'))
-  }
-  if (requestUrl === 'beaker://swarm-debugger/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/swarm-debugger.build.js'))
-  }
-  if (requestUrl === 'beaker://swarm-debugger/' || requestUrl.startsWith('beaker://swarm-debugger/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/swarm-debugger.html'))
-  }
-  if (requestUrl === 'beaker://watchlist/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/watchlist.css'))
-  }
-  if (requestUrl === 'beaker://watchlist/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/watchlist.build.js'))
-  }
-  if (requestUrl === 'beaker://watchlist/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/watchlist.html'))
-  }
-  if (requestUrl === 'beaker://editor/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/editor.css'))
-  }
-  if (requestUrl === 'beaker://editor/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/editor.build.js'))
   }
   if (requestUrl === 'beaker://assets/monaco.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/editor/monaco.js'))
@@ -322,9 +290,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/vs/') && requestUrl.endsWith('.ttf')) {
     let filePath = requestUrl.slice('beaker://assets/vs/'.length)
     return cb(200, 'OK', 'font/ttf', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
-  }
-  if (requestUrl.startsWith('beaker://editor/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/editor.html'))
   }
 
   // debugging

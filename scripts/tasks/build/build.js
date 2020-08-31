@@ -3,7 +3,6 @@
 var pathUtil = require('path');
 var Q = require('q');
 var gulp = require('gulp');
-var less = require('gulp-less');
 var watch = require('gulp-watch');
 var batch = require('gulp-batch');
 var childProcess = require('child_process')
@@ -46,8 +45,6 @@ gulp.task('burnthemall-maybe', gulp.series(burnthemallMaybeTask))
 var bundleApplication = function () {
   var fgDir = srcDir.cwd('fg')
   var userlandDir = srcDir.cwd('userland')
-  var bpViewsDir = srcDir.cwd('fg/builtin-pages/views')
-  var bpBuildDir = srcDir.cwd('fg/builtin-pages/build')
   return Q.all([
     bundle(srcDir.path('main.js'),                     srcDir.path('main.build.js')),
     bundle(fgDir.path('webview-preload/index.js'),     fgDir.path('webview-preload/index.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
@@ -61,13 +58,7 @@ var bundleApplication = function () {
     bundle(userlandDir.path('site-info/js/main.js'),   userlandDir.path('site-info/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(userlandDir.path('editor/js/main.js'),      userlandDir.path('editor/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
     bundle(userlandDir.path('settings/js/main.js'),    userlandDir.path('settings/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(userlandDir.path('history/js/main.js'),     userlandDir.path('history/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true }),
-    bundle(bpViewsDir.path('downloads.js'),            bpBuildDir.path('downloads.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('history.js'),              bpBuildDir.path('history.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('settings.js'),             bpBuildDir.path('settings.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('swarm-debugger.js'),       bpBuildDir.path('swarm-debugger.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('watchlist.js'),            bpBuildDir.path('watchlist.build.js'), { browserify: true, basedir: bpViewsDir.cwd() }),
-    bundle(bpViewsDir.path('editor.js'),               bpBuildDir.path('editor.build.js'), { browserify: true, basedir: bpViewsDir.cwd() })
+    bundle(userlandDir.path('history/js/main.js'),     userlandDir.path('history/js/main.build.js'), { browserify: true, basedir: srcDir.cwd(), browserifyBuiltins: true })
   ]);
 };
 
@@ -86,28 +77,9 @@ var bundleTask = function () {
 gulp.task('bundle', gulp.series(['burnthemall-maybe'], bundleTask));
 gulp.task('bundle-watch', gulp.series(bundleTask));
 
-
-var buildLess = function (src, dest) {
-  return gulp.src(src)
-    .pipe(plumber())
-    .pipe(less())
-    .pipe(gulp.dest(dest));
-}
-var lessTask = function () {
-  return  Q.all([
-    buildLess('../app/fg/builtin-pages/stylesheets/*.less', srcDir.path('fg/builtin-pages/stylesheets')),
-    buildLess('../app/fg/builtin-pages/stylesheets/builtin-pages/*.less', srcDir.path('fg/builtin-pages/stylesheets/builtin-pages')),
-    buildLess('../app/fg/builtin-pages/stylesheets/builtin-pages.less', srcDir.path('fg/builtin-pages/stylesheets')),
-    buildLess('../app/fg/builtin-pages/stylesheets/icons.less', srcDir.path('fg/builtin-pages/stylesheets'))
-  ])
-};
-gulp.task('less', gulp.series(['burnthemall-maybe'], lessTask));
-gulp.task('less-watch', gulp.series(lessTask));
-
-gulp.task('build', gulp.series(['bundle', 'less']));
+gulp.task('build', gulp.series(['bundle']));
 
 gulp.task('watch', gulp.series(['build', function () {
   gulp.watch(['app/**/*.js', '!app/**/*.build.js'], gulp.series('bundle-watch'))
-  gulp.watch('app/**/*.less', gulp.series('less-watch'))
   return Promise.resolve(true)
 }]));
