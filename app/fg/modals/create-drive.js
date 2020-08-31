@@ -9,10 +9,13 @@ import spinnerCSS from './spinner.css'
 class CreateDriveModal extends LitElement {
   static get properties () {
     return {
+      isProcessing: {type: Boolean},
       title: {type: String},
       description: {type: String},
       fromFolderPath: {type: String},
-      errors: {type: Object}
+      errors: {type: Object},
+      fromGit: {type: Boolean},
+      gitUrl: {type: String},
     }
   }
 
@@ -63,12 +66,32 @@ class CreateDriveModal extends LitElement {
       font-size: 12px;
     }
 
-    .form-actions button:first-child {
-      margin-right: 5px;
+    .form-actions button {
+      margin-left: 5px;
     }
 
-    .form-actions button:last-child {
+    .form-actions button:first-child {
+      margin-left: 0;
+    }
+
+    .form-actions button:nth-child(3) {
       margin-left: auto;
+    }
+
+    .git-repo {
+      position: relative;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-top: 16px;
+      padding: 16px 10px 0;
+    }
+
+    .git-repo-label {
+      position: absolute;
+      top: -8px;
+      left: 8px;
+      padding: 0px 4px;
+      background: #fff;
     }
 
     .tip {
@@ -92,10 +115,13 @@ class CreateDriveModal extends LitElement {
   constructor () {
     super()
     this.cbs = undefined
+    this.isProcessing = false
     this.title = ''
     this.description = ''
     this.author = undefined
     this.fromFolderPath = undefined
+    this.fromGit = false
+    this.gitUrl = undefined
     this.errors = {}
   }
 
@@ -139,10 +165,40 @@ class CreateDriveModal extends LitElement {
           </div>
 
           <div class="form-actions">
-            <button type="button" @click=${this.onClickCancel} class="cancel" tabindex="6">Cancel</button>
-            <button type="button" @click=${this.onClickFromFolder} class="cancel" tabindex="5">From Folder</button>
-            <button type="submit" class="primary" tabindex="4">Create</button>
+            <button
+              type="button"
+              @click=${this.onClickFromFolder}
+              tabindex="7"
+              ?disabled=${this.isProcessing || this.fromGit}
+            >From Folder</button>
+            <button
+              type="button"
+              @click=${this.onClickFromGit}
+              tabindex="6"
+              ?disabled=${this.isProcessing || !!this.fromFolderPath}
+            >From Git Repo ${this.fromGit ? html`<span class="fas fa-times"></span>` : ''}</button>
+            <button
+              type="button"
+              @click=${this.onClickCancel}
+              class="cancel"
+              tabindex="5"
+              ?disabled=${this.isProcessing}
+            >Cancel</button>
+            <button
+              type="submit"
+              class="primary"
+              tabindex="4"
+              ?disabled=${this.isProcessing}
+            >${this.isProcessing ? html`<div class="spinner"></div>` : 'Create'}</button>
           </div>
+
+          ${this.fromGit ? html`
+            <div class="git-repo">
+              <span class="git-repo-label">From Git Repo</span>
+              <input name="git-url" placeholder="Repo URL" value=${this.gitUrl || ''} @change=${this.onChangeGitUrl} class="${this.errors.gitUrl ? 'has-error' : ''}">
+              ${this.errors.gitUrl ? html`<div class="error">${this.errors.gitUrl}</div>` : ''}
+            </div>
+          ` : ''}
 
           <div class="tip">
             <span class="fas fa-fw fa-info"></span>
@@ -166,6 +222,10 @@ class CreateDriveModal extends LitElement {
     this.description = e.target.value.trim()
   }
 
+  onChangeGitUrl (e) {
+    this.gitUrl = e.target.value.trim()
+  }
+
   onClickCancel (e) {
     e.preventDefault()
     this.cbs.reject(new Error('Canceled'))
@@ -179,14 +239,31 @@ class CreateDriveModal extends LitElement {
       return
     }
 
-    this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div>`
-    Array.from(this.shadowRoot.querySelectorAll('button'), b => b.setAttribute('disabled', 'disabled'))
+    if (this.fromGit) {
+      if (!this.gitUrl) {
+        this.errors = {gitUrl: 'Required'}
+        return
+      }
+      let urlp
+      try {
+        urlp = new URL(this.gitUrl)
+        if (!['http:', 'https:'].includes(urlp.protocol)) {
+          throw new Error()
+        }
+      } catch {
+        this.errors = {gitUrl: 'Must be a valid HTTP/S URL'}
+        return
+      }
+    }
+
+    this.isProcessing = true
 
     try {
       var url = await bg.hyperdrive.createDrive({
         title: this.title,
         description: this.description,
         author: this.author,
+        fromGitUrl: this.fromGit ? this.gitUrl : undefined,
         prompt: false
       })
       if (this.fromFolderPath) {
@@ -194,12 +271,16 @@ class CreateDriveModal extends LitElement {
       }
       this.cbs.resolve({url, gotoSync: !!this.fromFolderPath})
     } catch (e) {
+      if (e.message.includes('git')) {
+        this.isProcessing = false
+        this.errors = {gitUrl: e.message}
+        return
+      }
       this.cbs.reject(e.message || e.toString())
     }
   }
 
   async onClickFromFolder (e) {
-    let btn = e.currentTarget
     e.preventDefault()
 
     var folder = await bg.beakerBrowser.showOpenDialog({
@@ -209,6 +290,10 @@ class CreateDriveModal extends LitElement {
     })
     if (!folder || !folder.length) return
     this.fromFolderPath = folder[0]
+  }
+
+  onClickFromGit (e) {
+    this.fromGit = !this.fromGit
   }
 
   onClickCancelFromFolder (e) {

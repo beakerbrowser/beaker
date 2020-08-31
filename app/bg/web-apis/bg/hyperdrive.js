@@ -9,6 +9,7 @@ import * as permissions from '../../ui/permissions'
 import * as hyperDns from '../../hyper/dns'
 import * as capabilities from '../../hyper/capabilities'
 import * as drives from '../../hyper/drives'
+import { gitCloneToTmp } from '../../lib/git'
 import * as archivesDb from '../../dbs/archives'
 import * as auditLog from '../../dbs/audit-log'
 import { timer } from '../../../lib/time'
@@ -29,11 +30,12 @@ const to = (opts) =>
     : DEFAULT_DRIVE_API_TIMEOUT
 
 export default {
-  async createDrive ({title, description, author, visibility, prompt} = {}) {
+  async createDrive ({title, description, author, visibility, fromGitUrl, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
     if (!wcTrust.isWcTrusted(this.sender)) {
+      fromGitUrl = undefined
       visibility = undefined
       author = undefined // TODO _get(windows.getUserSessionFor(this.sender), 'url')
     }
@@ -57,6 +59,15 @@ export default {
       // no modal, ask for permission
       await assertCreateDrivePermission(this.sender)
 
+      let importFolder = undefined
+      if (fromGitUrl) {
+        try {
+          importFolder = await gitCloneToTmp(fromGitUrl)
+        } catch (e) {
+          throw new Error('Failed to clone git repo: ' + e.toString())
+        }
+      }
+
       // create
       let newDrive
       try {
@@ -68,6 +79,18 @@ export default {
         throw e
       }
       newDriveUrl = newDrive.url
+
+      // git clone if needed
+      if (importFolder) {
+        await pda.exportFilesystemToArchive({
+          srcPath: importFolder,
+          dstArchive: newDrive.session.drive,
+          dstPath: '/',
+          ignore: ['.git', '**/.git', 'index.json'],
+          inplaceImport: true,
+          dryRun: false
+        })
+      }
     }
     let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
 
