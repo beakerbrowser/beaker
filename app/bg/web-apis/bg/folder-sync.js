@@ -9,7 +9,7 @@ import { UserDeniedError } from 'beaker-error-constants'
 import bytes from 'bytes'
 import { globToRegex } from '../../../lib/strings'
 
-const DEFAULT_IGNORED_FILES = '/index.json'
+const DEFAULT_IGNORED_FILES = '/index.json\n/.git\n/node_modules\n.DS_Store'
 const COMPARE_SIZE_LIMIT = {maxSize: bytes('5mb'), assumeEq: false}
 
 // globals
