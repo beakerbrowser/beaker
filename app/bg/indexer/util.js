@@ -53,7 +53,7 @@ export async function updateIndexState (db, site) {
   await db('sites').update({
     last_indexed_version: site.current_version,
     last_indexed_ts: Date.now()
-  })
+  }).where({origin: site.origin})
 }
 
 /**
