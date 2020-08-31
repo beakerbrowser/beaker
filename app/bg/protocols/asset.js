@@ -117,7 +117,7 @@ export function setup () {
           let mimeType = /data:([^;]+);base64/.exec(parts[0])[1]
           data = parts[1]
           if (data) {
-            return cb({ mimeType, data: Buffer.from(data, 'base64') })
+            return cb({ mimeType, data: Buffer.from(data, 'base64'), headers: {'Cache-Control': 'no-cache'} })
           }
         }
       }
@@ -153,14 +153,14 @@ function parseAssetUrl (str) {
 
 function servePng (p, fallback, cb) {
   return fs.readFile(p, (err, buf) => {
-    if (buf) cb({mimeType: 'image/png', data: buf})
+    if (buf) cb({mimeType: 'image/png', data: buf, headers: {'Cache-Control': 'no-cache'}})
     else cb(fallback)
   })
 }
 
 function serveJpg (p, fallback, cb) {
   return fs.readFile(p, (err, buf) => {
-    if (buf) cb({mimeType: 'image/jpeg', data: buf})
+    if (buf) cb({mimeType: 'image/jpeg', data: buf, headers: {'Cache-Control': 'no-cache'}})
     else cb(fallback)
   })
 }
