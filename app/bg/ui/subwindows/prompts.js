@@ -153,7 +153,7 @@ function setBounds (view, tab, {width, height} = {}) {
   var parentBounds = tab.browserWindow.getContentBounds()
   width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
-  var y = getAddedWindowSettings(tab.browserWindow).isShellInterfaceHidden ? 10 : 105
+  var y = getAddedWindowSettings(tab.browserWindow).isShellInterfaceHidden ? 10 : 95
   view.setBounds({
     x: parentBounds.width - width - (MARGIN_SIZE * 2),
     y,

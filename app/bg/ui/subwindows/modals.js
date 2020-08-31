@@ -211,7 +211,7 @@ function setBounds (view, parentWindow, {width, height} = {}) {
   view.currentBounds.height = Math.min(height || view.currentBounds.height || getDefaultHeight(view), parentBounds.height - 20)
   view.setBounds({
     x: Math.round(parentBounds.width / 2) - Math.round(view.currentBounds.width / 2) - MARGIN_SIZE, // centered
-    y: 72,
+    y: 70,
     width: view.currentBounds.width + (MARGIN_SIZE * 2),
     height: view.currentBounds.height + MARGIN_SIZE
   })
