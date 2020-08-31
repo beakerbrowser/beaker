@@ -55,27 +55,11 @@ If you're doing development, `npm run watch` to have assets build automatically.
 
 ### Debugging
 
-To debug the background process start electron with the `--inspect` argument pointing to the `app` directory, e.g. `node_modules/.bin/electron --inspect app`.  You can then attach an external debugger (e.g. Chrome devtools).
+To debug the background process start electron with the `--inspect` argument pointing to the `app` directory, e.g. `script/node_modules/.bin/electron --inspect app`.  You can then attach an external debugger (e.g. Chrome devtools).
 
 To debug the shell window itself (i.e. the beaker browser chrome), press `CmdOrCtrl+alt+shift+I` to open the devtools.
 
 To debug a built-in pages (e.g. the Settings or Library pages), press `CmdOrCtrl+shift+I` to open the devtools.
-
-## Running the tests
-
-Tests use their own package.json:
-
-```
-cd tests
-npm install
-```
-
-To run:
-
-```
-cd tests
-npm test
-```
 
 ## Submitting code
 
