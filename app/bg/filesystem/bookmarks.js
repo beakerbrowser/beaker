@@ -72,7 +72,7 @@ export async function add ({href, title, pinned, site}) {
       [METADATA_KEYS.title]: title,
       [METADATA_KEYS.pinned]: pinned ? '1' : undefined
     })
-    let keysToDelete = ['href', 'title', 'pinned'] // delete legacy
+    let keysToDelete = ['pinned'] // delete legacy
     if (!pinned) keysToDelete.push(METADATA_KEYS.pinned) // delete pinned to remove
     await drive.pda.deleteMetadata(urlp.pathname, keysToDelete)
     await indexer.triggerSiteIndex(site)
