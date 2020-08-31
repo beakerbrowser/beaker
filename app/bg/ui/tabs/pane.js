@@ -345,6 +345,9 @@ export class Pane extends EventEmitter {
 
   setTab (tab) {
     this.tab = tab
+    if (this.tab !== tab) {
+      this.setAttachedPane(undefined)
+    }
   }
 
   // management
