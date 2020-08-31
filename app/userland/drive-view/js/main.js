@@ -39,6 +39,7 @@ class DriveViewApp extends LitElement {
     this.info = undefined
     this.profile = undefined
     this.contentCounts = undefined
+    this.hasContent = false
     this.showFilesOverride = false
     this.subscribers = []
     this.load()
@@ -78,6 +79,7 @@ class DriveViewApp extends LitElement {
         ))
       )
     )
+    this.hasContent = !!Object.values(this.contentCounts).find(v => v > 0)
     this.requestUpdate()
   }
 
@@ -105,6 +107,7 @@ class DriveViewApp extends LitElement {
         </a>
       `
     }
+    const showSubs = !(isSameOrigin(this.info.origin, 'hyper://private') || this.info.writable && !this.subscribers?.length)
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <div class="content">
@@ -125,7 +128,7 @@ class DriveViewApp extends LitElement {
             <div class="info">
               <div class="title"><a href="/">${this.info.title || 'Untitled'}</a></div>
               <div class="description">${this.info.description || ''}</div>
-              ${isSameOrigin(this.info.origin, 'hyper://private') ? '' : html`
+              ${!showSubs ? '' : html`
                 <div class="known-subscribers">
                   <a
                     href="#" 
@@ -140,9 +143,11 @@ class DriveViewApp extends LitElement {
             </div>
             ${this.renderHeaderButtons()}
           </div>
-          <div class="nav">
-            ${NAV_ITEMS.map(navItem)}
-          </div>
+          ${this.hasContent ? html`
+            <div class="nav">
+              ${NAV_ITEMS.map(navItem)}
+            </div>
+          ` : ''}
       </div>
     `
   }

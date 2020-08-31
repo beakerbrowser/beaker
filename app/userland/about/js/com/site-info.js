@@ -57,6 +57,7 @@ export class SiteInfo extends LitElement {
         </div>
       `
     }
+    const showSubs = !(this.isPrivate || this.siteInfo.writable && !this.subscribers?.length)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="full">
@@ -69,16 +70,18 @@ export class SiteInfo extends LitElement {
         <div class="info">
           <div class="title"><a href=${this.siteInfo.url}>${this.siteInfo.title || toNiceUrl(this.origin)}</a></div>
           ${this.siteInfo.description ? html`<div class="description">${this.siteInfo.description}</div>` : ''}
-          <div class="known-subscribers">
-            <a
-              href="#" 
-              @click=${this.onClickShowSites}
-              data-tooltip=${shorten(this.subscribers?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)}
-            >
-              <strong>${this.subscribers?.length}</strong>
-              ${pluralize(this.subscribers?.length || 0, 'subscriber')} you know
-            </a>
-          </div>
+          ${showSubs ? html`
+            <div class="known-subscribers">
+              <a
+                href="#" 
+                @click=${this.onClickShowSites}
+                data-tooltip=${shorten(this.subscribers?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)}
+              >
+                <strong>${this.subscribers?.length}</strong>
+                ${pluralize(this.subscribers?.length || 0, 'subscriber')} you know
+              </a>
+            </div>
+          ` : ''}
         </div>
         <div class="ctrls">
           ${this.renderSubscribeButton()}

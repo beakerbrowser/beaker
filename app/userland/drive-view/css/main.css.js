@@ -40,12 +40,10 @@ a:hover {
 
 .header button {
   display: block;
-  width: 100%;
   font-size: 14px;
   border-radius: 4px;
   border: 1px solid var(--text-color--markdown-link);
   color: var(--text-color--markdown-link);
-  padding-right: 20px; /* offsets the icon a little */
 }
 
 .header .thumb {
@@ -173,7 +171,6 @@ beaker-record-thread {
     left: 0;
     top: 0;
     width: 100%;
-    height: 136px;
     z-index: 20;
     background: var(--bg-color--default);
     border-bottom: 1px solid var(--border-color--light);
@@ -207,6 +204,7 @@ beaker-record-thread {
     right: 10px;
     width: auto;
     padding: 5px 15px;
+    padding-right: 20px; /* offsets the icon a little */
   }
 
   .header .info {
@@ -219,6 +217,7 @@ beaker-record-thread {
     top: 0;
     display: flex;
     padding-left: 8px;
+    padding-bottom: 11px;
   }
   
   .nav .nav-item {

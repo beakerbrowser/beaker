@@ -163,7 +163,6 @@ class AboutApp extends LitElement {
     if (!this.url) {
       return html``
     }
-    console.log(this.contentCounts)
     const navItem = ({type, id, icon, label}) => {
       let count = this.contentCounts?.[type]
       if (type && !count) return ''
