@@ -125,9 +125,11 @@ class Tab extends EventEmitter {
         pane.setTab(this)
 
         if (stack) {
-          this.layout.addPaneToStack(stack, pane, {layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
+          let after = stack.panes[stack.panes.length - 1]
+          this.layout.addPaneToStack(stack, pane, {after, layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
         } else {
-          this.layout.addPane(pane, {layoutWidth: stackSnapshot.layoutWidth, layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
+          let after = this.layout.stacks[this.layout.stacks.length - 1]
+          this.layout.addPane(pane, {after, layoutWidth: stackSnapshot.layoutWidth, layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
           stack = this.layout.stacks[this.layout.stacks.length - 1]
         }
 
