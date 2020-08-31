@@ -157,15 +157,11 @@ export class RecordFeed extends LitElement {
       return html``
     }
     if (!this.results.length) {
-      if (!this.filter && !this.emptyMessage) return html``
+      if (!this.emptyMessage) return html``
       return html`
         <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
         <div class="results empty">
-          ${this.filter ? html`
-            <span>No matches found for "${this.filter}".</div></span>
-          ` : html`
-            <span>${this.emptyMessage}</div></span>
-          `}
+          <span>${this.emptyMessage}</div></span>
         </div>
       `
     }
@@ -222,10 +218,16 @@ export class RecordFeed extends LitElement {
   }
 
   renderSearchResult (result) {
+    var renderMode = ({
+      'comment': 'card',
+      'microblogpost': 'card',
+      'subscription': 'action',
+    })[getRecordType(result)] || 'expanded-link'
     return html`
       <beaker-record
         .record=${result}
-        render-mode="expanded-link"
+        render-mode=${renderMode}
+        show-context
         profile-url=${this.profileUrl}
       ></beaker-record>
     `

@@ -39,13 +39,17 @@ const FILE_QUERIES = {
   pages: [typeToQuery('page')],
   posts: [typeToQuery('microblogpost')],
   notifications: ['notifications'],
-  search: [
-    typeToQuery('blogpost'),
-    typeToQuery('bookmark'),
-    typeToQuery('microblogpost'),
-    typeToQuery('comment'),
-    typeToQuery('page')
-  ],
+  search: {
+    links: [
+      typeToQuery('blogpost'),
+      typeToQuery('bookmark'),
+      typeToQuery('page')
+    ],
+    discussion: [
+      typeToQuery('microblogpost'),
+      typeToQuery('comment')
+    ]
+  },
   all: [
     typeToQuery('blogpost'),
     typeToQuery('bookmark'),
@@ -154,9 +158,6 @@ class DesktopApp extends LitElement {
   }
 
   get currentNavAsFileQuery () {
-    if (this.searchQuery && this.currentNav === 'all') {
-      return FILE_QUERIES.search
-    }
     return FILE_QUERIES[this.currentNav]
   }
 
@@ -391,13 +392,34 @@ class DesktopApp extends LitElement {
                 ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.searchQuery)}`)}
                 ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.searchQuery)}`)}
               </div>
+              ${this.isEmpty ? this.renderEmptyMessage() : ''}
               ${this.currentNav === 'all' || this.currentNav === 'sites' ? html`
                 ${this.renderSites()}
-              ` : ''}
-              ${this.currentNav !== 'sites' ? html`
+              ` : html`
                 <beaker-record-feed
-                  class="subview"
                   .fileQuery=${this.currentNavAsFileQuery}
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  limit="50"
+                  @load-state-updated=${this.onFeedLoadStateUpdated}
+                  @view-thread=${this.onViewThread}
+                  @publish-reply=${this.onPublishReply}
+                  profile-url=${this.profile ? this.profile.url : ''}
+                ></beaker-record-feed>
+              `}
+              ${this.currentNav === 'all' ? html`
+                <beaker-record-feed
+                  .fileQuery=${FILE_QUERIES.search.links}
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  limit="50"
+                  @load-state-updated=${this.onFeedLoadStateUpdated}
+                  @view-thread=${this.onViewThread}
+                  @publish-reply=${this.onPublishReply}
+                  profile-url=${this.profile ? this.profile.url : ''}
+                ></beaker-record-feed>
+                <beaker-record-feed
+                  .fileQuery=${FILE_QUERIES.search.discussion}
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   limit="50"
@@ -485,6 +507,14 @@ class DesktopApp extends LitElement {
           <div>You have no notifications.</div>
         </div>
         `
+    }
+    if (this.searchQuery) {
+      return html`
+        <div class="empty">
+            <div class="fas fa-search"></div>
+          <div>No results found for "${this.searchQuery}"</div>
+        </div>
+      `
     }
     let thing = this.currentNav
     if (this.currentNav === 'all') thing = 'news'
