@@ -36,6 +36,7 @@ const logger = logLib.get().child({category: 'indexer'})
 import { TICK_INTERVAL, METADATA_KEYS } from './const'
 import lock from '../../lib/lock'
 import { joinPath } from '../../lib/strings'
+import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
 import {
   getIsFirstRun,
   getIndexState,
@@ -46,7 +47,7 @@ import {
   listOriginsToDeindex,
   loadSite,
   parseUrl,
-  normalizeOrigin,
+  isUrl,
   toArray,
   parallel,
   getMimetype,
@@ -200,7 +201,7 @@ export async function getRecord (url) {
     })
     .limit(1)
   if (!rows[0]) {
-    return getLiveRecord(urlp.origin, urlp.path)
+    return getLiveRecord(url)
   }
 
   var record_rowid = rows[0].record_rowid
@@ -279,9 +280,9 @@ export async function listRecords (opts) {
 
   if (opts?.site) {
     if (Array.isArray(opts.site)) {
-      query = query.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
+      query = query.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
     } else {
-      query = query.where({origin: parseUrl(opts.site).origin})
+      query = query.where({origin: normalizeOrigin(opts.site)})
     }
   }
   if (opts?.file) {
@@ -299,7 +300,7 @@ export async function listRecords (opts) {
   if (typeof opts?.links === 'string') {
     query = query.joinRaw(
       `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
-      [opts.links]
+      [normalizeUrl(opts.links)]
     )
   }
   if (opts?.notification) {
@@ -324,9 +325,9 @@ export async function listRecords (opts) {
       .select('origin')
       .where('last_indexed_version', '>', 0)
     if (Array.isArray(opts.site)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
+      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
     } else {
-      indexStatesQuery = indexStatesQuery.where({origin: parseUrl(opts.site).origin})
+      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.site)})
     }
   }
 
@@ -379,7 +380,7 @@ export async function listRecords (opts) {
     // fetch the live records
     var addedRecords
     for (let site of toArray(opts.site)) {
-      let origin = parseUrl(site).origin
+      let origin = normalizeOrigin(site)
       if (indexStates.find(state => state.origin === origin)) {
         continue
       }
@@ -430,9 +431,9 @@ export async function countRecords (opts) {
 
   if (opts?.site) {
     if (Array.isArray(opts.site)) {
-      query = query.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
+      query = query.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
     } else {
-      query = query.where({origin: parseUrl(opts.site).origin})
+      query = query.where({origin: normalizeOrigin(opts.site)})
     }
   }
   if (opts?.file) {
@@ -450,7 +451,7 @@ export async function countRecords (opts) {
   if (typeof opts?.links === 'string') {
     query = query.joinRaw(
       `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
-      [opts.links]
+      [normalizeUrl(opts.links)]
     )
   }
   if (opts?.notification) {
@@ -469,9 +470,9 @@ export async function countRecords (opts) {
       .select('origin')
       .where('last_indexed_version', '>', 0)
     if (Array.isArray(opts.site)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
+      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
     } else {
-      indexStatesQuery = indexStatesQuery.where({origin: parseUrl(opts.site).origin})
+      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.site)})
     }
   }
 
@@ -485,7 +486,7 @@ export async function countRecords (opts) {
   // fetch live data for each site not present in the db
   if (indexStates) {
     for (let site of toArray(opts.site)) {
-      let origin = parseUrl(site).origin
+      let origin = normalizeOrigin(site)
       if (indexStates.find(state => state.origin === origin)) {
         continue
       }
@@ -540,40 +541,39 @@ export async function searchRecords (q = '', opts) {
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)
 
-  
-    if (opts?.site) {
-      if (Array.isArray(opts.site)) {
-        query = query.whereIn('origin', opts.site.map(site => parseUrl(site).origin))
-      } else {
-        query = query.where({origin: parseUrl(opts.site).origin})
-      }
+  if (opts?.site) {
+    if (Array.isArray(opts.site)) {
+      query = query.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
+    } else {
+      query = query.where({origin: normalizeOrigin(opts.site)})
     }
-    if (opts?.file) {
-      if (Array.isArray(opts.file)) {
-        query = query.where(function () {
-          let chain = this.where(toFileQuery(opts.file[0]))
-          for (let i = 1; i < opts.file.length; i++) {
-            chain = chain.orWhere(toFileQuery(opts.file[i]))
-          }
-        })
-      } else {
-        query = query.where(toFileQuery(opts.file))
-      }
+  }
+  if (opts?.file) {
+    if (Array.isArray(opts.file)) {
+      query = query.where(function () {
+        let chain = this.where(toFileQuery(opts.file[0]))
+        for (let i = 1; i < opts.file.length; i++) {
+          chain = chain.orWhere(toFileQuery(opts.file[i]))
+        }
+      })
+    } else {
+      query = query.where(toFileQuery(opts.file))
     }
-    if (opts?.notification) {
-      let notification = toNotificationQuery(opts.notification)
-      query = query
-        .select(
-          'notification_key',
-          'notification_subject_origin',
-          'notification_subject_path',
-          'notification_read'
-        )
-        .innerJoin('records_notification', 'records_data_fts.rowid', 'records_notification.record_rowid')
-      if (typeof notification !== 'boolean') {
-        query = query.where(notification)
-      }
+  }
+  if (opts?.notification) {
+    let notification = toNotificationQuery(opts.notification)
+    query = query
+      .select(
+        'notification_key',
+        'notification_subject_origin',
+        'notification_subject_path',
+        'notification_read'
+      )
+      .innerJoin('records_notification', 'records_data_fts.rowid', 'records_notification.record_rowid')
+    if (typeof notification !== 'boolean') {
+      query = query.where(notification)
     }
+  }
 
   if (opts?.sort && ['ctime', 'mtime', 'rtime'].includes(opts.sort)) {
     query = query.orderBy(opts.sort, opts.reverse ? 'desc' : 'asc')
@@ -845,14 +845,15 @@ async function indexSite (origin, myOrigins) {
         }
         await Promise.all(dataEntries
           .filter(([key, value]) => value !== null && typeof value !== 'undefined')
-          .map(([key, value]) => (
-            db('records_data').insert({record_rowid: rowid, key, value})
-          ))
+          .map(([key, value]) => {
+            if (key !== METADATA_KEYS.content && isUrl(value)) value = normalizeUrl(value)
+            return db('records_data').insert({record_rowid: rowid, key, value})
+          })
         )
 
         // detect "notifications"
         for (let [key, value] of dataEntries) {
-          if (key === METADATA_KEYS.content) {
+          if (key === METADATA_KEYS.content || !isUrl(value)) {
             continue
           }
           let subjectp = parseUrl(value, site.origin)
@@ -918,21 +919,20 @@ async function deindexSite (origin) {
 }
 
 /**
- * @param {String} [origin]
- * @param {String} [path]
+ * @param {String} [url]
  * @returns {Promise<RecordDescription>}
  */
-async function getLiveRecord (origin, path) {
-  if (!origin.startsWith('hyper://')) {
+async function getLiveRecord (url) {
+  let urlp = new URL(url)
+  if (urlp.protocol !== 'hyper:') {
     return undefined // hyper only for now
   }
-  let url = origin + path
   try {
-    let site = await loadSite(db, origin)
-    let stat = await site.stat(path)
+    let site = await loadSite(db, urlp.origin)
+    let stat = await site.stat(urlp.pathname)
     let update = {
       remove: false,
-      path,
+      path: urlp.pathname,
       metadata: stat.metadata,
       ctime: stat.ctime,
       mtime: stat.mtime
@@ -940,8 +940,8 @@ async function getLiveRecord (origin, path) {
     logger.silly(`Live-fetching ${url}`)
     var record = {
       url,
-      prefix: dirname(path),
-      mimetype: getMimetype(stat.metadata, path),
+      prefix: dirname(urlp.pathname),
+      mimetype: getMimetype(stat.metadata, urlp.pathname),
       ctime: +stat.ctime,
       mtime: +stat.mtime,
       rtime: Date.now(),
@@ -963,7 +963,7 @@ async function getLiveRecord (origin, path) {
     }
     return record
   } catch (e) {
-    logger.error(`Failed to live-fetch file ${url}. ${e.toString()}`, {site: origin, error: e.toString()})
+    logger.error(`Failed to live-fetch file ${url}. ${e.toString()}`, {site: urlp.origin, error: e.toString()})
   }  
   return undefined
 }

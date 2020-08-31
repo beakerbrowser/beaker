@@ -306,8 +306,8 @@ class PostComposer extends LitElement {
       if (subject === parent) parent = undefined // not needed
       await drive.writeFile(`${folder}${filename}.md`, postBody, {
         metadata: {
-          'beaker/subject': subject,
-          'beaker/parent': parent
+          'beaker/subject': subject ? normalizeUrl(subject) : undefined,
+          'beaker/parent': parent ? normalizeUrl(parent) : undefined
         }
       })
     } else {
@@ -338,5 +338,15 @@ function onGlobalPaste (e) {
         _currentComposer.insertImage(items[i].getAsFile())
       }
     }
+  }
+}
+
+function normalizeUrl (url) {
+  try {
+    // strips the hash segment
+    let {protocol, hostname, port, pathname, search} = new URL(url)
+    return `${protocol}//${hostname}${(port ? `:${port}` : '')}${pathname || '/'}${search}`
+  } catch (e) {
+    return url
   }
 }

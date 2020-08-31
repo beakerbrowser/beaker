@@ -88,3 +88,32 @@ export function createResourceSlug (href, title) {
   }
   return slug.toLowerCase()
 }
+
+/**
+ * @param {String} str 
+ * @returns {String}
+ */
+export function normalizeOrigin (str) {
+  try {
+    let {protocol, hostname, port} = new URL(str)
+    return `${protocol}//${hostname}${(port ? `:${port}` : '')}`
+  } catch {
+    // assume hyper, if this fails then bomb out
+    let {protocol, hostname, port} = new URL(`hyper://${str}`)
+    return `${protocol}//${hostname}${(port ? `:${port}` : '')}`
+  }
+}
+
+/**
+ * @param {String} url
+ * @param {String} [base]
+ * @returns {String}
+ */
+export function normalizeUrl (url, base = undefined) {
+  try {
+    let {protocol, hostname, port, pathname, search, hash} = new URL(url, base)
+    return `${protocol}//${hostname}${(port ? `:${port}` : '')}${pathname || '/'}${search}${hash}`
+  } catch {
+    return url
+  }
+}

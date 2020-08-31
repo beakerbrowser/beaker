@@ -647,14 +647,7 @@ export class Pane extends EventEmitter {
 
   async fetchBacklinkCount (noEmit = false) {
     this.backlinkCount = await indexer.countRecords({
-      file: [
-        {mimetype: 'application/goto', prefix: '/bookmarks'},
-        {mimetype: 'text/markdown', prefix: '/blogposts'},
-        {mimetype: 'text/markdown', prefix: '/comments'},
-        {mimetype: 'text/markdown', prefix: '/microblog'},
-        {mimetype: 'text/markdown', prefix: '/pages'}
-      ],
-      links: normalizeCommentsUrl(this.url)
+      links: this.url
     })
     if (!noEmit) {
       this.emitUpdateState()
@@ -950,18 +943,4 @@ async function fireBeforeUnloadEvent (wc) {
     } catch (e) {
       // ignore
     }
-}
-
-function normalizeCommentsUrl (url) {
-  try {
-    var urlp = new URL(url)
-    return (
-      urlp.protocol + '//' +
-      urlp.hostname +
-      (urlp.port ? `:${urlp.port}` : '') + 
-      urlp.pathname.replace(/([/]$)/g, '') +
-       urlp.search
-    )
-  } catch (e) {}
-  return url
 }

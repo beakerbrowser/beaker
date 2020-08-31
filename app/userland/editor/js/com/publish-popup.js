@@ -151,7 +151,7 @@ export class PublishPopup extends BasePopup {
 
     this.error = undefined
     try {
-      await beaker.hyperdrive.writeFile(newUrl, this.content, {metadata: {title, type: this.type}})
+      await beaker.hyperdrive.writeFile(newUrl, this.content, {metadata: {title}})
       await beaker.hyperdrive.unlink(oldUrl)
     } catch (e) {
       this.error = e.toString()

@@ -1,5 +1,5 @@
 import { joinPath } from '../../lib/strings.js'
-import { createResourceSlug } from '../../lib/urls'
+import { normalizeUrl, createResourceSlug } from '../../lib/urls'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
 import { METADATA_KEYS } from '../indexer/const'
@@ -129,24 +129,4 @@ function massageBookmark (result) {
     pinned: result.metadata[METADATA_KEYS.pinned] === '1',
     site: result.site
   }
-}
-
-function normalizeUrl (url) {
-  try {
-    var urlp = new URL(url)
-    return (
-      urlp.protocol + '//' +
-      urlp.hostname +
-      (urlp.port ? `:${urlp.port}` : '') + 
-      urlp.pathname.replace(/([/]$)/g, '') +
-       urlp.search
-    )
-  } catch (e) {}
-  return url
-}
-
-var indexFileRe = /\/(index\.(htm|html|md))?$/i
-function isSameUrl (a, b) {
-  if (a === b) return true
-  return a.replace(indexFileRe, '') === b.replace(indexFileRe, '')
 }

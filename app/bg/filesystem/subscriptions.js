@@ -1,5 +1,5 @@
 import { joinPath } from '../../lib/strings.js'
-import { createResourceSlug } from '../../lib/urls'
+import { createResourceSlug, normalizeUrl } from '../../lib/urls'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
 import { METADATA_KEYS } from '../indexer/const'
@@ -128,12 +128,4 @@ function massageSubscription (result) {
     title: result.metadata[METADATA_KEYS.title] || result.metadata[METADATA_KEYS.href],
     site: result.site
   }
-}
-
-function normalizeUrl (url) {
-  try {
-    var urlp = new URL(url)
-    return (urlp.protocol + '//' + urlp.hostname + (urlp.port ? `:${urlp.port}` : '') + urlp.pathname).replace(/([/]$)/g, '')
-  } catch (e) {}
-  return url
 }

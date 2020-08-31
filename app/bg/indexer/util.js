@@ -1,6 +1,7 @@
 import promisePool from 'tiny-promise-pool'
 import { timer } from '../../lib/time'
 import { joinPath } from '../../lib/strings'
+import { normalizeOrigin } from '../../lib/urls'
 import * as filesystem from '../filesystem/index'
 import * as drives from '../hyper/drives'
 import { query } from '../filesystem/query'
@@ -60,7 +61,7 @@ export async function updateIndexState (db, site) {
  */
 export async function listMyOrigins () {
   let driveMetas = await filesystem.listDriveMetas()
-  return ['hyper://private'].concat(driveMetas.filter(dm => dm.writable).map(dm => parseUrl(dm.url).origin))
+  return ['hyper://private'].concat(driveMetas.filter(dm => dm.writable).map(dm => normalizeOrigin(dm.url)))
 }
 
 
@@ -215,30 +216,24 @@ export async function loadSite (db, origin) {
 
 /**
  * @param {String} url
- * @param {String?} base
+ * @param {String} [base]
  * @returns {ParsedUrl}
  */
 export function parseUrl (url, base = undefined) {
-  let urlp = new URL(url, base)
+  let {protocol, hostname, port, pathname, search, hash} = new URL(url, base)
   return {
-    origin: urlp.protocol + '//' + urlp.hostname,
-    path: urlp.pathname + urlp.search
+    origin: `${protocol}//${hostname}${(port ? `:${port}` : '')}`,
+    path: pathname + search + hash
   }
 }
 
+const IS_URL_RE = /^[\S]*:\/\/[\S]*$/
 /**
- * @param {String} str 
- * @returns {String}
+ * @param {String} v 
+ * @returns {Boolean}
  */
-export function normalizeOrigin (str) {
-  try {
-    let urlp = new URL(str)
-    return urlp.protocol + '//' + urlp.hostname
-  } catch {
-    // assume hyper, if this fails then bomb out
-    let urlp = new URL('hyper://' + str)
-    return urlp.protocol + '//' + urlp.hostname
-  }
+export function isUrl (v) {
+  return IS_URL_RE.test(v)
 }
 
 export function toArray (v) {
