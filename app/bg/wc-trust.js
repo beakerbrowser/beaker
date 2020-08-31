@@ -29,7 +29,7 @@
 
 import { app } from 'electron'
 
-const TRUST = {
+export const TRUST = {
   UNKNOWN: -1,
   UNTRUSTED: 0,
   TRUSTED: 1
@@ -50,6 +50,11 @@ export function setup () {
 export function isWcTrusted (wc) {
   var wcid = (typeof wc === 'number') ? wc : wc.id
   return wcInfos[wcid]?.trust === TRUST.TRUSTED
+}
+
+export function setWcTrust (wc, trust) {
+  var wcid = (typeof wc === 'number') ? wc : wc.id
+  wcInfos[wcid] = {id: wcid, url: wc.getURL(), trust}
 }
 
 export function onWebRequestCompleted (details) {
