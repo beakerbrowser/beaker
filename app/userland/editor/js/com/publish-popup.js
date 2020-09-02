@@ -11,7 +11,7 @@ export class PublishPopup extends BasePopup {
   constructor ({url, type, title, content, profile}) {
     super()
     this.url = url
-    this.type = type || 'page'
+    this.type = (new URL(url)).pathname.startsWith('/blog/') ? 'blogpost' : 'page'
     this.title = title
     this.content = content
     this.profile = profile

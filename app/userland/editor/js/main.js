@@ -873,7 +873,6 @@ class EditorApp extends LitElement {
     var model = this.editor.getModel(this.url)
     var {url} = await PublishPopup.create({
       url: this.url,
-      type: this.stat.metadata.type,
       title: this.stat.metadata.title,
       content: model.getValue()
     })
