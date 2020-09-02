@@ -26,7 +26,6 @@ class ShellWindowToolbarMenu extends LitElement {
       activeTab: {type: Object},
       toolbar: {type: Object},
       openMenu: {type: String},
-      isExpanded: {type: Boolean},
       notificationsCount: {type: Number}
     }
   }
@@ -143,7 +142,6 @@ class ShellWindowToolbarMenu extends LitElement {
     this.activeTab = undefined
     this.toolbar = undefined
     this.openMenu = undefined
-    this.isExpanded = false
     this.addEventListener('contextmenu', this.onMainContextmenu.bind(this))
     this.notificationsCount = 0
     setInterval(async () => {
@@ -159,6 +157,16 @@ class ShellWindowToolbarMenu extends LitElement {
 
   isPaneDisabled (item) {
     return item.hyperOnly && (!this.activeTab || !this.activeTab.url.startsWith('hyper://'))
+  }
+
+  get isExpanded () {
+    return Boolean(localStorage.getItem('expand-toolbar'))
+  }
+
+  set isExpanded (v) {
+    if (v) localStorage.setItem('expand-toolbar', '1')
+    else localStorage.removeItem('expand-toolbar')
+    this.requestUpdate()
   }
 
   get visibleToolbar () {
