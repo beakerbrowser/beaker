@@ -101,8 +101,9 @@ export function slugifyUrl (str = '') {
 
 const reservedChars = /[^\w]/g
 const endingDashes = /([-]+$)/g
+const extraDashes = /(-[-]+)/g
 export function slugify (str = '') {
-  return str.replace(reservedChars, '-').replace(endingDashes, '')
+  return str.replace(reservedChars, '-').replace(endingDashes, '').replace(extraDashes, '-')
 }
 
 export function normalizeUrl (str = '') {
