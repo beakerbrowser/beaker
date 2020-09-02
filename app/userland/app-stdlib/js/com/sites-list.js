@@ -173,31 +173,12 @@ export class SitesList extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${this.renderHeader()}
       <div class="container">
-        <div class="sites ${this.singleRow ? 'single-row' : 'grid'}">
+        <div class="sites ${this.singleRow ? 'single-row' : 'full'}">
           ${repeat(this.sites, site => site.origin, site => this.renderSite(site))}
         </div>
-        ${this.singleRow && this.sites.length >= 3 ? html`
-          <div class="show-more" @click=${e => { this.singleRow = false }}>
-            <span class="fas fa-chevron-circle-down"></span>
-            <span>Show more</span>
-          </div>
-        ` : ''}
       </div>
     `
-  }
-
-  renderHeader () {
-    if (this.listing === 'mine') {
-      return html`<h2><span>My Sites</span></h2>`
-    }
-    if (this.listing === 'subscribed') {
-      return html`<h2><span>Subscribed Sites</span></h2>`
-    }
-    if (this.listing === 'suggested') {
-      return html`<h2><span>Suggested Sites</span></h2>`
-    }
   }
 
   renderSite (site) {
@@ -205,19 +186,6 @@ export class SitesList extends LitElement {
       <div class="site">
         <div class="thumb">
           <a href=${site.origin} title=${site.title}><img src="asset:thumb:${site.origin}"></a>
-          ${site.writable ? html`
-            <button class="transparent" @click=${e => this.onClickMenu(e, site)}>
-              <span class="fas fa-fw fa-ellipsis-h"></span>
-            </button>
-          ` : html`
-            <button class="transparent" @click=${e => this.onToggleSubscribe(e, site)}>
-              ${this.isSubscribed(site) ? html`
-                <span class="fas fa-fw fa-check"></span> Subscribed
-              ` : html`
-                <span class="fas fa-fw fa-rss"></span> Subscribe
-              `}
-            </button>
-          `}
         </div>
         <div class="info">
           <div class="title"><a href=${site.origin} title=${site.title}>${site.title}</a></div>
@@ -240,6 +208,19 @@ export class SitesList extends LitElement {
             </div>
           ` : ''}
         </div>
+        ${site.writable ? html`
+          <button class="transparent" @click=${e => this.onClickMenu(e, site)}>
+            <span class="fas fa-fw fa-ellipsis-h"></span>
+          </button>
+        ` : html`
+          <button class="transparent" @click=${e => this.onToggleSubscribe(e, site)}>
+            ${this.isSubscribed(site) ? html`
+              <span class="fas fa-fw fa-check"></span> Subscribed
+            ` : html`
+              <span class="fas fa-fw fa-rss"></span> Subscribe
+            `}
+          </button>
+        `}
       </div>
     `
   }

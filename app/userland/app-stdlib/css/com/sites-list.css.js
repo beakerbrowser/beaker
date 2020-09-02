@@ -36,13 +36,9 @@ h2 {
 }
 
 .container {
-  background: var(--bg-color--light);
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid var(--border-color--semi-light);
 }
 
-.sites {
+.sites.single-row {
   display: grid;
   justify-content: flex-start;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -50,13 +46,23 @@ h2 {
 }
 
 .site {
+  position: relative;
   border: 1px solid var(--border-color--light);
   background: var(--bg-color--default);
   border-radius: 4px;
 }
 
+.sites.full .site {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .site .thumb {
-  position: relative;
+  padding: 8px 10px 4px;
+}
+
+.sites.single-row .site .thumb {
   border-bottom: 1px solid var(--border-color--very-light);
   padding: 8px 10px 4px;
 }
@@ -67,37 +73,31 @@ h2 {
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid var(--border-color--light);s
+  border: 1px solid var(--border-color--light);
 }
 
-.site .thumb button,
-.site .thumb .writable {
+.sites.single-row .site button {
   position: absolute;
   font-size: 12px;
-}
-
-.site .thumb button {
   top: 6px;
   right: 4px;
   box-shadow: none;
   border-radius: 16px;
 }
 
-.site .thumb .writable {
-  top: 10px;
-  right: 12px;
-  color: var(--text-color--very-light);
-  font-weight: 500;
+.sites.full .site button {
+  align-self: normal;
+  white-space: nowrap;
 }
 
 .site .info {
+  flex: 1;
   font-size: 13px;
-  line-height: 1.2;
+  line-height: 1;
   padding: 8px 12px 10px;
 }
 
 .site .title {
-  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -110,7 +110,7 @@ h2 {
 }
 
 .site .description {
-  margin-bottom: 4px;
+  margin-top: 4px;
   word-break: break-word;
 }
 
@@ -120,29 +120,16 @@ h2 {
   text-overflow: ellipsis;
 }
 
+.site .known-subscribers {
+  margin-top: 4px;
+}
+
 .site .known-subscribers a {
   color: var(--text-color--light);
 }
 
 .site .known-subscribers a strong {
   color: var(--text-color--default);
-}
-
-.show-more {
-  font-size: 14px;
-  color: var(--text-color--light);
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: center;
-  margin-top: 8px;
-}
-
-.show-more:hover {
-  background: var(--bg-color--light);
-}
-
-.show-more .fas {
-  font-size: 12px;
 }
 `
 export default cssStr

@@ -92,7 +92,7 @@ header {
   display: flex;
   position: relative;
   height: 34px;
-  margin: 7px 0 8px;
+  margin: 7px 0 7px;
   z-index: 5;
 }
 
@@ -428,7 +428,7 @@ main {
 
 .alternatives {
   color: var(--text-color--pretty-light);
-  margin: 0 5px 20px;
+  margin: 0 0 20px;
 }
 
 .alternatives .search-engine {

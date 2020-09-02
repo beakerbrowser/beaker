@@ -104,7 +104,9 @@ class DesktopApp extends LitElement {
     }
 
     window.addEventListener('focus', e => {
-      this.load()
+      if (!this.searchQuery) {
+        this.load()
+      }
     })
     this.addEventListener('update-pins', async (e) => {
       this.pins = await desktop.load()
@@ -267,49 +269,12 @@ class DesktopApp extends LitElement {
             ${navItem('posts', html`<span class="far fa-fw fa-comment-alt"></span> <span class="label">Posts</span>`)}
             ${navItem('pages', html`<span class="far fa-fw fa-file"></span> <span class="label">Pages</span>`)}
             ${navItem('comments', html`<span class="far fa-fw fa-comments"></span> <span class="label">Comments</span>`)}
-            ${navItem('sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Sites</span>`)}
           </section>
-          <section class="quick-links">
-            <h3>Quick Links</h3>
-            <div>
-              <a href="hyper://private/">
-                <img src="asset:favicon-32:hyper://private/">
-                <span>My Private Site</span>
-              </a>
-            </div>
-            <div>
-              <a href=${this.profile?.url}>
-                <img src="asset:thumb:${this.profile?.url}">
-                <span>My Profile</span>
-              </a>
-            </div>
-            <div>
-              <a href="beaker://library/">
-                <img class="favicon" src="asset:favicon-32:beaker://library/">
-                <span>My Library</span>
-              </a>
-            </div>
-            <div>
-              <a href="beaker://explorer/">
-                <img class="favicon" src="asset:favicon-32:beaker://explorer/">
-                <span>My Files</span>
-              </a>
-            </div>
-          </section>
-          <section class="quick-links">
-            <h3>Beaker</h3>
-            <div>
-              <a href="#" @click=${this.onClickReleaseNotes}>
-                <span class="fas fa-fw fa-rocket"></span>
-                <span>Release Notes</span>
-              </a>
-            </div>
-            <div>
-              <a href="https://docs.beakerbrowser.com/">
-                <span class="far fa-fw fa-life-ring"></span>
-                <span>Help</span>
-              </a>
-            </div>
+          <section class="content-nav">
+            <h3>Sites</h3>
+            ${navItem('my-sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Mine</span>`)}
+            ${navItem('subscriptions', html`<span class="fas fa-fw fa-rss"></span> <span class="label">Subscribed</span>`)}
+            ${navItem('network', html`<span class="fas fa-fw fa-users"></span> <span class="label">Network</span>`)}
           </section>
         </div>
       </div>
@@ -360,13 +325,29 @@ class DesktopApp extends LitElement {
               `)}
             </section>
           ` : ''}
+          <section class="quick-links">
+            <h3>Beaker</h3>
+            <div>
+              <a href="#" @click=${this.onClickReleaseNotes}>
+                <span class="fas fa-fw fa-rocket"></span>
+                <span>Release Notes</span>
+              </a>
+            </div>
+            <div>
+              <a href="https://docs.beakerbrowser.com/">
+                <span class="far fa-fw fa-life-ring"></span>
+                <span>Help</span>
+              </a>
+            </div>
+          </section>
         </div>
       </div>
     `
   }
 
   renderCurrentView () {
-    let hasSearchQuery = !!this.searchQuery
+    var hasSearchQuery = !!this.searchQuery
+    var isSitesView = ['my-sites', 'subscriptions', 'network'].includes(this.currentNav)
     if (hasSearchQuery) {
       const searchLink = (label, url) => {
         return html`
@@ -393,7 +374,7 @@ class DesktopApp extends LitElement {
                 ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.searchQuery)}`)}
               </div>
               ${this.isEmpty ? this.renderEmptyMessage() : ''}
-              ${this.currentNav === 'all' || this.currentNav === 'sites' ? html`
+              ${this.currentNav === 'all' || isSitesView ? html`
                 ${this.renderSites()}
               ` : html`
                 <beaker-record-feed
@@ -443,7 +424,7 @@ class DesktopApp extends LitElement {
               ${this.renderLeftSidebar()}
             </div>
             <div>
-              ${this.currentNav === 'sites' ? html`
+              ${isSitesView ? html`
                 ${this.renderSites()}
               ` : this.currentNav === 'legacy-archives' ? html`
                 ${this.renderLegacyArchivesView()}
@@ -470,30 +451,17 @@ class DesktopApp extends LitElement {
   }
 
   renderSites () {
-    if (this.searchQuery) {
-      return html`
-        <beaker-sites-list
-          listing="all"
-          filter=${this.searchQuery}
-          single-row
-          .profile=${this.profile}
-        ></beaker-sites-list>
-      `
-    }
+    var listing = ({
+      all: 'all',
+      'my-sites': 'mine',
+      subscriptions: 'subscribed',
+      network: 'suggested'
+    })[this.currentNav]
     return html`
       <beaker-sites-list
-        listing="mine"
-        single-row
-        .profile=${this.profile}
-      ></beaker-sites-list>
-      <beaker-sites-list
-        listing="subscribed"
-        single-row
-        .profile=${this.profile}
-      ></beaker-sites-list>
-      <beaker-sites-list
-        listing="suggested"
-        single-row
+        listing=${listing}
+        filter=${this.searchQuery}
+        ?single-row=${!!this.searchQuery && this.currentNav === 'all'}
         .profile=${this.profile}
       ></beaker-sites-list>
     `
@@ -723,11 +691,12 @@ class DesktopApp extends LitElement {
     }))
     var rect = e.currentTarget.getClientRects()[0]
     contextMenu.create({
-      x: rect.right + 5,
+      x: rect.left - 5,
       y: rect.bottom + 15,
       noBorders: true,
       roomy: true,
       top: true,
+      right: true,
       items,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
     })
