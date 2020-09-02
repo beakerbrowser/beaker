@@ -49,6 +49,7 @@ class NetworkView extends LitElement {
       this.networkStatus = networkStatus
       console.log(this.networkStatus)
     } catch (e) {
+      console.error(e)
       this.error = e
     }
   }
@@ -79,7 +80,7 @@ class NetworkView extends LitElement {
   renderDriveStatus (stats) {
     var key = stats[0].metadata.key
     var peers = stats[0].metadata.peers
-    var peerAddresses = stats[0].peerAddresses
+    var peerAddresses = stats[0].peers
     var drive = stats[0].drive
     var uploadedBytes = stats.reduce((acc, v) => acc + v.metadata.uploadedBytes + v.content.uploadedBytes, 0)
     var downloadedBytes = stats.reduce((acc, v) => acc + v.metadata.downloadedBytes + v.content.downloadedBytes, 0)
@@ -97,7 +98,7 @@ class NetworkView extends LitElement {
         <td>
           <details>
             <summary>${peers} ${pluralize(peers, 'peer')}</summary>
-            ${peerAddresses.map(addr => html`<div>${addr}</div>`)}
+            ${peerAddresses.map(p => html`<div>${p.remoteAddress} (${p.type})</div>`)}
           </details>
         </td>
         <td>

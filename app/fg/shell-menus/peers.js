@@ -38,8 +38,8 @@ class PeersMenu extends LitElement {
     this.driveInfo = (await bg.views.getTabState('active', {driveInfo: true})).driveInfo
     this.driveCfg = await bg.drives.get(this.url)
     const getPeers = async () => {
-      var state = await bg.views.getNetworkState('active', {includeAddresses: true})
-      this.peers = state ? state.peerAddresses : 0
+      var state = await bg.views.getNetworkState('active')
+      this.peers = state?.peers || []
       this.isLoading = false
       return this.requestUpdate()
     }
@@ -68,13 +68,6 @@ class PeersMenu extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <div class="header">
-          <div class="header-info">
-            <img class="favicon" src="asset:favicon:${this.url}"/>
-            <h1 class="page-title">
-              ${_get(this, 'driveInfo.title', html`<em>Untitled</em>`)}
-            </h1>
-          </div>
-
           <div class="peer-count">
             ${peers.length} ${pluralize(peers.length, 'peer')} connected.
           </div>
@@ -102,7 +95,7 @@ class PeersMenu extends LitElement {
           `}
 
         <div class="addresses">
-          ${peers.map(p => html`<div>${p}</div>`)}
+          ${peers.map(p => html`<div>${p.remoteAddress} (${p.type})</div>`)}
           ${peers.length === 0 ? html`<em>No peers connected</em>` : ''}
         </div>
 
@@ -154,30 +147,10 @@ PeersMenu.styles = [inputsCSS, spinnerCSS, css`
   border-bottom: 1px solid var(--border-color--light);
 }
 
-.header-info {
-  display: flex;
-  align-items: center;
-  line-height: 16px;
-  margin-bottom: 2px;
-}
-
-h1.page-title {
-  font-size: 0.825rem;
-  font-weight: 500;
-  margin: 0;
-}
-
-.favicon {
-  width: 16px;
-  height: 16px;
-  margin-right: 5px;
-}
-
 .peer-count,
 .net-stats {
   color: var(--text-color--menus-wrapper--light);
   font-weight: 300;
-  margin-top: 8px
 }
 
 .net-stats {

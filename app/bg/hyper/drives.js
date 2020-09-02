@@ -440,7 +440,7 @@ export async function getDriveInfo (key, {ignoreCache, onlyCache} = {ignoreCache
     meta.links = manifest.links || {}
     meta.manifest = manifest
     meta.version = driveInfo.version
-    meta.peers = await daemon.getPeerCount(drive ? drive.key : new Buffer(key, 'hex'))    
+    meta.peers = drive?.session?.drive?.metadata?.peers?.length || 0
   } catch (e) {
     meta = {
       key,

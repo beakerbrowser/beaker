@@ -270,16 +270,9 @@ export function closeHyperdriveSession (opts) {
   }
 }
 
-export async function getPeerCount (key) {
-  if (!client) return 0
-  var res = await client.drive.peerCounts([key])
-  return res[0]
-}
-
-export async function listPeerAddresses (key) {
-  if (!client) return []
-  var peers = await client.peers.listPeers(key)
-  return peers.map(p => p.remoteAddress)
+export function listPeerAddresses (key) {
+  let peers = getHyperdriveSession({key})?.session?.drive?.metadata?.peers
+  if (peers) return peers.map(p => ({type: p.type, remoteAddress: p.remoteAddress}))
 }
 
 // internal methods

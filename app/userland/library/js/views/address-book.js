@@ -42,9 +42,9 @@ export class AddressBookView extends LitElement {
     this.contacts.sort((a, b) => a.title.localeCompare(b.title))
     console.log(this.contacts)
 
-    await Promise.all(this.contacts.map(async c => {
-      c.peers = await beaker.drives.getPeerCount(c.url)
-    }))
+    // await Promise.all(this.contacts.map(async c => {
+    //   c.peers = await beaker.drives.getPeerCount(c.url)
+    // }))
     this.requestUpdate()
   }
 

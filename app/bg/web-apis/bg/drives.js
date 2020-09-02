@@ -28,11 +28,6 @@ export default {
     return assembleRecords(listDrives(opts))
   },
 
-  async getPeerCount (url) {
-    var key = hyper.drives.fromURLToKey(url)
-    return hyper.daemon.getPeerCount(Buffer.from(key, 'hex'))
-  },
-
   async getForks (key) {
     key = await drives.fromURLToKey(key, true)
     var drivesList = listDrives()

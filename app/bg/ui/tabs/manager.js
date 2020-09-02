@@ -1153,16 +1153,16 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   },
 
   async getNetworkState (tab, opts) {
+
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
-    if (tab && tab.driveInfo) {
-      const keyBuf = Buffer.from(tab.driveInfo.key)
-      let peers = await hyper.daemon.getPeerCount(keyBuf)
-      let peerAddresses = undefined
-      if (opts && opts.includeAddresses) {
-        peerAddresses = await hyper.daemon.listPeerAddresses(keyBuf)
+    if (tab && tab.primaryPane && tab.primaryPane.driveInfo) {
+      let drive = hyper.drives.getDrive(tab.primaryPane.driveInfo.key)
+      if (drive) {
+        return {
+          peers: drive.session.drive.metadata.peers.map(p => ({type: p.type, remoteAddress: p.remoteAddress}))
+        }
       }
-      return {peers, peerAddresses}
     }
   },
 
