@@ -147,10 +147,7 @@ export async function setup () {
   // Check which storage directory to use.
   // If .hyperspace/storage exists, use that. Otherwise use .hyperdrive/storage/cores
   const storageDir = await getDaemonStorageDir()
-
-  // TODO: Enable migration before release.
   var daemonProcessArgs = ['-s', storageDir, '--no-migrate']
-
   daemonProcess = childProcess.spawn(HYPERSPACE_BIN_PATH, daemonProcessArgs, {
     stdio: [process.stdin, process.stdout, process.stderr], // DEBUG
     env: Object.assign({}, process.env, {
@@ -180,6 +177,14 @@ export async function shutdown () {
   if (isControllingDaemonProcess) {
     isShuttingDown = true
     daemonProcess.kill()
+    // HACK: the daemon has a bug that causes it to stay open sometimes, give it the double tap -prf
+    let i = setInterval(() => {
+      if (!isDaemonActive) {
+        clearInterval(i)
+      } else {
+        daemonProcess.kill()
+      }
+    }, 5)
   }
 }
 
