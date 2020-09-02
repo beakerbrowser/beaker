@@ -45,8 +45,19 @@ a:hover {
   color: var(--color-text--default);
 }
 
+.unknown-link {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-color--result-link);
+}
+
 .notification {
-  padding: 5px 4px 4px 58px;
+  padding: 5px 4px 4px 48px;
   margin-right: 19px;
   font-size: 14px;
   color: var(--text-color--light);
@@ -509,15 +520,27 @@ a:hover {
 }
 
 .record.card .context {
+  position: relative;
+  display: block;
+  opacity: 0.8;
+  background: var(--bg-color--secondary);
   box-sizing: border-box;
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  border-top: 1px solid var(--border-color--light);
+  margin: 8px -2px -2px;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  padding-top: 5px;
 }
 
-.record.card .context a {
-  color: inherit;
+.record.card .context::before {
+  content: attr(data-action);
+  position: absolute;
+  left: 12px;
+  top: -10px;
+  background: var(--bg-color--default);
+  padding: 0px 4px 2px;
+  border: 1px solid var(--border-color--light);
+  font-size: 11px;
 }
 
 .record.card .content {
@@ -579,12 +602,22 @@ a:hover {
   height: 36px;
 }
 
-:host([noborders]) .record.card .arrow {
+:host([noborders]) .record.card .arrow,
+:host([nothumb]) .record.card .arrow {
   display: none;
 }
 
 :host([noborders]) .record.card .container {
   border-color: transparent !important;
+  background: none;
+}
+
+:host([nothumb]) .record.card {
+  display: block;
+}
+
+:host([nothumb]) .record.card .thumb {
+  display: none;
 }
 
 :host([noborders]) .record.card beaker-post-composer {

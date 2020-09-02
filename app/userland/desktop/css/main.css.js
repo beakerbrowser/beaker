@@ -403,7 +403,7 @@ main {
   margin: 10px 0;
   padding: 10px;
   border-radius: 4px;
-  background: var(--bg-color--light);
+  background: var(--bg-color--secondary);
 }
 
 .suggested-sites .site .title a {

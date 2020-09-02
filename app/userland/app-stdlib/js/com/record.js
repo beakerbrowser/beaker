@@ -14,6 +14,7 @@ export class Record extends LitElement {
   static get properties () {
     return {
       record: {type: Object},
+      loadRecordUrl: {type: String, attribute: 'record-url'},
       renderMode: {type: String, attribute: 'render-mode'},
       showContext: {type: Boolean, attribute: 'show-context'},
       constrainHeight: {type: Boolean, attribute: 'constrain-height'},
@@ -31,6 +32,7 @@ export class Record extends LitElement {
   constructor () {
     super()
     this.record = undefined
+    this.loadRecordUrl = undefined
     this.renderMode = 'card'
     this.showContext = false
     this.constrainHeight = false
@@ -44,10 +46,17 @@ export class Record extends LitElement {
     this.isMouseDragging = false
   }
 
-  updated () {
+  updated (changedProperties) {
     if (this.constrainHeight && this.renderMode === 'card' && this.isContentOverflowing) {
       this.shadowRoot.querySelector('.container').classList.add('readmore')
     }
+    if ((!this.record && this.loadRecordUrl) || changedProperties.has('loadRecordUrl') && changedProperties.get('loadRecordUrl') != this.recordUrl) {
+      this.load()
+    }
+  }
+
+  async load () {
+    this.record = await beaker.index.getRecord(this.loadRecordUrl)
   }
 
   get isContentOverflowing () {
@@ -62,7 +71,16 @@ export class Record extends LitElement {
   // =
 
   render () {
-    if (!this.record) return html``
+    if (!this.record) {
+      if (this.loadRecordUrl) {
+        return html`
+          <a class="unknown-link" href=${this.loadRecordUrl}>
+            ${asyncReplace(fancyUrlAsync(this.loadRecordUrl))}
+          </a>
+        `
+      }
+      return html``
+    }
     switch (this.renderMode) {
       case 'card': return this.renderAsCard()
       case 'comment': return this.renderAsComment()
@@ -78,9 +96,11 @@ export class Record extends LitElement {
     const res = this.record
 
     var context = undefined
+    var contextAction
     switch (getRecordType(res)) {
       case 'comment':
-        context = res.metadata['beaker/subject'] || res.metadata['beaker/parent']
+        context = res.metadata['beaker/parent'] || res.metadata['beaker/subject']
+        contextAction = res.metadata['beaker/parent'] ? 'reply to' : 'comment on'
         break
     }
 
@@ -130,23 +150,22 @@ export class Record extends LitElement {
                 ${relativeDate(res.ctime)}
               </a>
             </div>
-            ${this.showContext && context ? html`
-              <span>&middot;</span>
-              <div class="context">
-                <a href=${context}>
-                  ${asyncReplace(fancyUrlAsync(context))}
-                </a>
-              </div>
-            ` : ''}
           </div>
           <div class="content markdown">
             ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
           </div>
-          ${''/*TODO <div class="tags">
-            <a href="#">beaker</a>
-            <a href="#">hyperspace</a>
-            <a href="#">p2p</a>
-          </div>*/}
+          ${this.showContext && context ? html`
+            <div class="context" data-action=${contextAction}>
+              <beaker-record
+                record-url=${context}
+                constrain-height
+                noborders
+                nothumb
+                render-mode="card"
+                profile-url=${this.profileUrl}
+              ></beaker-record>
+            </div>
+          ` : ''}
         </div>
       </div>
     `
@@ -529,6 +548,8 @@ export class Record extends LitElement {
   onMouseupCard (e) {
     if (!this.isMouseDown) return
     if (!this.isMouseDragging) {
+      e.preventDefault()
+      e.stopPropagation()
       emit(this, 'view-thread', {detail: {record: this.record}})
     }
     this.isMouseDown = false

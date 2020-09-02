@@ -21,6 +21,7 @@ body {
   --text-color--private-default: #4c6f3f;
   --text-color--private-link: #1f6303;
   --bg-color--default: #fff;
+  --bg-color--secondary: #fafafd;
   --bg-color--light: #fafafd;
   --bg-color--semi-light: #f0f0f6;
   --bg-color--private-light: #f7fbf7;
@@ -49,6 +50,7 @@ body {
     --text-color--private-default: #6dad56;
     --text-color--private-link: #48c714;
     --bg-color--default: #223;
+    --bg-color--secondary: #1b1b2b;
     --bg-color--light: #334;
     --bg-color--semi-light: #445;
     --bg-color--private-light: #2c2f2c;
