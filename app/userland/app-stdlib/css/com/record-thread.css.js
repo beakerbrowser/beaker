@@ -110,8 +110,9 @@ beaker-record {
 
 .subject-content .markdown blockquote {
   border-left: 10px solid var(--bg-color--semi-light);
-  margin-left: 0;
-  padding: 10px 30px;
+  margin: 0 0 0.6em;
+  padding: 10px 0px 10px 20px;
+  color: var(--text-color--light);
 }
 
 .subject-content .markdown blockquote + blockquote {
