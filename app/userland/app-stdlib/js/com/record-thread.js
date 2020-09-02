@@ -41,13 +41,13 @@ export class RecordThread extends LitElement {
 
   async load () {
     var record = await beaker.index.getRecord(this.recordUrl)
-    this.subjectUrl = record?.metadata?.['beaker/subject'] || record?.url || this.recordUrl
+    this.subjectUrl = record?.metadata?.['comment/subject'] || record?.url || this.recordUrl
     /* dont await */ this.loadSubject(record)
     /* dont await */ this.loadComments(record)
   }
 
   async loadSubject (record) {
-    var subjectUrl = record?.metadata?.['beaker/subject']
+    var subjectUrl = record?.metadata?.['comment/subject']
     var subject
     if (subjectUrl) {
       let isSubjectSite = false
@@ -163,7 +163,7 @@ export class RecordThread extends LitElement {
             </div>
             ${this.isCommenting ? html`
               <beaker-post-composer
-                subject=${this.subject.metadata?.['beaker/subject'] || this.subject.url}
+                subject=${this.subject.metadata?.['comment/subject'] || this.subject.url}
                 parent=${this.subject.url}
                 placeholder="Write your comment"
                 @publish=${this.onPublishComment}
@@ -288,8 +288,8 @@ function toThreadTree (replies) {
 
   var rootReplies = []
   replies.forEach(reply => {
-    if (reply.metadata['beaker/parent']) {
-      let parent = repliesByUrl[reply.metadata['beaker/parent']]
+    if (reply.metadata['comment/parent']) {
+      let parent = repliesByUrl[reply.metadata['comment/parent']]
       if (!parent) {
         reply.isMissingParent = true
         rootReplies.push(reply)

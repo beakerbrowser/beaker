@@ -306,8 +306,8 @@ class PostComposer extends LitElement {
       if (subject === parent) parent = undefined // not needed
       await drive.writeFile(`${folder}${filename}.md`, postBody, {
         metadata: {
-          'beaker/subject': subject ? normalizeUrl(subject) : undefined,
-          'beaker/parent': parent ? normalizeUrl(parent) : undefined
+          'comment/subject': subject ? normalizeUrl(subject) : undefined,
+          'comment/parent': parent ? normalizeUrl(parent) : undefined
         }
       })
     } else {

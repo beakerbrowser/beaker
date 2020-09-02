@@ -8,9 +8,9 @@ export const METADATA_KEYS = {
   link: '_link',
   draft: 'beaker/draft',
   href: 'href',
-  parent: 'beaker/parent',
+  parent: 'comment/parent',
   pinned: 'beaker/pinned',
-  subject: 'beaker/subject',
+  subject: 'comment/subject',
   title: 'title'
 }
 

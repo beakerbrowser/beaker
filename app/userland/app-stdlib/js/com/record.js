@@ -99,8 +99,8 @@ export class Record extends LitElement {
     var contextAction
     switch (getRecordType(res)) {
       case 'comment':
-        context = res.metadata['beaker/parent'] || res.metadata['beaker/subject']
-        contextAction = res.metadata['beaker/parent'] ? 'reply to' : 'comment on'
+        context = res.metadata['comment/parent'] || res.metadata['comment/subject']
+        contextAction = res.metadata['comment/parent'] ? 'reply to' : 'comment on'
         break
     }
 
@@ -177,7 +177,7 @@ export class Record extends LitElement {
     var context = undefined
     switch (getRecordType(res)) {
       case 'comment':
-        context = res.metadata['beaker/subject'] || res.metadata['beaker/parent']
+        context = res.metadata['comment/subject'] || res.metadata['comment/parent']
         break
     }
 
@@ -228,7 +228,7 @@ export class Record extends LitElement {
         </div>
         ${this.isReplyOpen ? html`
           <beaker-post-composer
-            subject=${this.record.metadata['beaker/subject'] || this.record.url}
+            subject=${this.record.metadata['comment/subject'] || this.record.url}
             parent=${this.record.url}
             placeholder="Write your comment"
             @publish=${this.onPublishReply}
@@ -379,7 +379,7 @@ export class Record extends LitElement {
 
     var href = undefined
     switch (recordType) {
-      case 'comment': href = res.metadata['beaker/subject']; break
+      case 'comment': href = res.metadata['comment/subject']; break
       case 'bookmark': href = res.metadata.href; break
     }
     href = href || res.url
@@ -483,9 +483,9 @@ export class Record extends LitElement {
       } else if (type === 'subscription') {
         description = 'subscribed to'
       }
-    } else if (res.notification.key === 'beaker/subject') {
+    } else if (res.notification.key === 'comment/subject') {
       description = 'commented on'
-    } else if (res.notification.key === 'beaker/parent') {
+    } else if (res.notification.key === 'comment/parent') {
       description = 'replied to'
     }
     var where = ({
