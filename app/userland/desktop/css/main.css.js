@@ -56,6 +56,10 @@ input:focus {
   }
 }
 
+.no-feed-view {
+  margin: 30vh 0px 0;
+}
+
 .release-notice {
   position: relative;
   width: 100%;

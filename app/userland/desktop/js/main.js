@@ -191,6 +191,26 @@ class DesktopApp extends LitElement {
     return !!queryViewEls.find(el => el.isLoading)
   }
 
+  get hidePins () {
+    return Boolean(localStorage.getItem('hide-pins'))
+  }
+  
+  set hidePins (v) {
+    if (v) localStorage.setItem('hide-pins', '1')
+    else localStorage.removeItem('hide-pins')
+    this.requestUpdate()
+  }
+
+  get hideFeed () {
+    return Boolean(localStorage.getItem('hide-feed'))
+  }
+  
+  set hideFeed (v) {
+    if (v) localStorage.setItem('hide-feed', '1')
+    else localStorage.removeItem('hide-feed')
+    this.requestUpdate()
+  }
+
   async setCurrentNav (nav) {
     this.currentNav = nav
     await this.requestUpdate()
@@ -214,10 +234,24 @@ class DesktopApp extends LitElement {
       this.markAllNotificationsRead()
     }
 
+    if (this.hideFeed) {
+      return html`
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <div id="topright">
+          ${this.renderSettingsBtn()}
+        </div>
+        <div class="no-feed-view">
+          ${this.renderReleaseNotice()}
+          ${this.renderPins()}
+          ${this.renderIntro()}
+        </div>
+      `
+    }
+
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div id="topright">
-        <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
+        ${this.renderSettingsBtn()}
       </div>
       <header>
         <div class="search-ctrl">
@@ -502,6 +536,12 @@ class DesktopApp extends LitElement {
     `
   }
 
+  renderSettingsBtn () {
+    return html`
+      <a href="#" title="Settings" @click=${this.onClickSettings}><span class="fas fa-fw fa-cog"></span></a>
+    `
+  }
+
   renderSourcesCtrl () {
     var label = ''
     switch (this.currentSource) {
@@ -534,6 +574,7 @@ class DesktopApp extends LitElement {
   }
 
   renderPins () {
+    if (this.hidePins) return ''
     var pins = this.pins || []
     return html`
       <div class="pins">
@@ -679,6 +720,26 @@ class DesktopApp extends LitElement {
   onClickCloseIntro (e) {
     this.isIntroActive = false
     localStorage.isIntroHidden = 1
+  }
+
+  onClickSettings (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    var rect = e.currentTarget.getClientRects()[0]
+    contextMenu.create({
+      x: rect.left,
+      y: rect.bottom,
+      noBorders: true,
+      roomy: true,
+      right: true,
+      style: `padding: 4px 0`,
+      items: [
+        {icon: 'fas fa-cog', label: 'Browser Settings', href: 'beaker://settings/'},
+        '-',
+        {icon: this.hideFeed ? 'far fa-square': 'far fa-check-square', label: 'Show Feed', click: () => { this.hideFeed = !this.hideFeed }},
+        {icon: this.hidePins ? 'far fa-square': 'far fa-check-square', label: 'Show Pinned Bookmarks', click: () => { this.hidePins = !this.hidePins }},
+      ]
+    })
   }
 
   onClickReleaseNotes (e) {
