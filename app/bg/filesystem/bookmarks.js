@@ -4,6 +4,7 @@ import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
 import { METADATA_KEYS } from '../indexer/const'
 import * as filesystem from './index'
+import * as pinsAPI from './pins'
 import { URL } from 'url'
 import * as profileDb from '../dbs/profile-data-db'
 
@@ -19,7 +20,8 @@ export async function list () {
     site: ['hyper://private', filesystem.getProfileUrl()],
     limit: 1e9
   })
-  return results.map(massageBookmark)
+  var pins = await pinsAPI.getCurrent()
+  return results.map(r => massageBookmark(r, pins))
 }
 
 /**
@@ -35,7 +37,8 @@ export async function get (href) {
     limit: 1
   })
   if (results[0]) {
-    return massageBookmark(results[0])
+    var pins = await pinsAPI.getCurrent()
+    return massageBookmark(results[0], pins)
   }
 }
 
@@ -70,12 +73,12 @@ export async function add ({href, title, pinned, site}) {
     await drive.pda.updateMetadata(urlp.pathname, {
       [METADATA_KEYS.href]: href,
       [METADATA_KEYS.title]: title,
-      [METADATA_KEYS.pinned]: pinned ? '1' : undefined
     })
-    let keysToDelete = ['pinned'] // delete legacy
-    if (!pinned) keysToDelete.push(METADATA_KEYS.pinned) // delete pinned to remove
-    await drive.pda.deleteMetadata(urlp.pathname, keysToDelete)
     await indexer.triggerSiteIndex(site)
+    if (pinned !== existing.pinned) {
+      if (pinned) await pinsAPI.add(href)
+      else await pinsAPI.remove(href)
+    }
     return
   }
 
@@ -86,9 +89,9 @@ export async function add ({href, title, pinned, site}) {
   await filesystem.ensureDir('/bookmarks', drive)
   await drive.pda.writeFile(path, '', {metadata: {
     [METADATA_KEYS.href]: href,
-    [METADATA_KEYS.title]: title,
-    [METADATA_KEYS.pinned]: pinned ? '1' : undefined
+    [METADATA_KEYS.title]: title
   }})
+  if (pinned) await pinsAPI.add(href)
   await indexer.triggerSiteIndex(site)
   return path
 }
@@ -103,6 +106,7 @@ export async function remove (href) {
   let urlp = new URL(existing.bookmarkUrl)
   let drive = await drives.getOrLoadDrive(urlp.hostname)
   await drive.pda.unlink(urlp.pathname)
+  if (existing.pinned) await pinsAPI.remove(existing.href)
   await indexer.triggerSiteIndex(urlp.hostname)
 }
 
@@ -121,12 +125,13 @@ export async function migrateBookmarksFromSqlite () {
 // internal
 // =
 
-function massageBookmark (result) {
+function massageBookmark (result, pins) {
+  let href = normalizeUrl(result.metadata[METADATA_KEYS.href]) || ''
   return {
     bookmarkUrl: result.url,
-    href: normalizeUrl(result.metadata[METADATA_KEYS.href]) || '',
+    href,
     title: result.metadata[METADATA_KEYS.title] || result.metadata[METADATA_KEYS.href] || '',
-    pinned: result.metadata[METADATA_KEYS.pinned] === '1',
+    pinned: pins.includes(href),
     site: result.site
   }
 }

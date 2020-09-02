@@ -65,6 +65,13 @@ export function getProfileUrl () {
 }
 
 /**
+ * @returns {Promise<DaemonHyperdrive>}
+ */
+export function getProfileDrive () {
+  return hyper.drives.getOrLoadDrive(profileDriveUrl)
+}
+
+/**
  * @returns {Promise<void>}
  */
 export async function setup () {

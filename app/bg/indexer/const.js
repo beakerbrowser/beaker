@@ -6,10 +6,8 @@ export const READ_TIMEOUT = 5e3
 export const METADATA_KEYS = {
   content: '_content',
   link: '_link',
-  draft: 'beaker/draft',
   href: 'href',
   parent: 'comment/parent',
-  pinned: 'beaker/pinned',
   subject: 'comment/subject',
   title: 'title'
 }

@@ -23,6 +23,7 @@ import dbs from './bg/dbs/index'
 import hyper from './bg/hyper/index'
 import * as filesystem from './bg/filesystem/index'
 import * as indexer from './bg/indexer/index'
+import * as bookmarkPins from './bg/filesystem/pins'
 import * as webapis from './bg/web-apis/bg'
 
 import * as initWindow from './bg/ui/init-window'
@@ -125,6 +126,7 @@ app.on('ready', async function () {
   analytics.setup()
   log.info('Initializing indexer')
   await indexer.setup(commonOpts)
+  await bookmarkPins.setup()
 
   // protocols
   log.info('Registering protocols')
