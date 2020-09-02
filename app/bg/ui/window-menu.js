@@ -679,7 +679,7 @@ export function buildWindowMenu (opts = {}) {
   const gotoTabShortcut = index => ({
     label: `Tab ${index}`,
     enabled: !noWindows,
-    accelerator: `CmdOrCtrl+${index + 1}`,
+    accelerator: `CmdOrCtrl+${index}`,
     click: function (item) {
       if (win) {
         shellMenus.hide(win) // HACK: closes the background tray if it's open
@@ -760,14 +760,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Tab Shortcuts',
         type: 'submenu',
         submenu: [
-          {
-            label: `Background Tabs`,
-            enabled: !noWindows,
-            accelerator: `CmdOrCtrl+1`,
-            click: function (item) {
-              if (win) shellMenus.toggle(win, 'background-tray')
-            }
-          },
           gotoTabShortcut(1),
           gotoTabShortcut(2),
           gotoTabShortcut(3),
@@ -775,6 +767,7 @@ export function buildWindowMenu (opts = {}) {
           gotoTabShortcut(5),
           gotoTabShortcut(6),
           gotoTabShortcut(7),
+          gotoTabShortcut(8),
           {
             label: `Last Tab`,
             enabled: !noWindows,
