@@ -21,6 +21,8 @@ export async function load () {
 }
 
 export async function createLink ({href, title}, pinned) {
+  let bookmark = await beaker.bookmarks.get(href)
+  if (bookmark) title = bookmark.title
   await beaker.bookmarks.add({href, title, pinned})
 }
 

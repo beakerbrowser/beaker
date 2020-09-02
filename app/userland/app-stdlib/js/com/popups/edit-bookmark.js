@@ -114,6 +114,9 @@ export class EditBookmarkPopup extends BasePopup {
       site: e.target.public.checked ? `hyper://${(await beaker.browser.getProfile()).key}` : 'hyper://private'
     }
     console.log(b)
+    if (this.bookmark && b.href !== this.bookmark.href) {
+      await beaker.bookmarks.remove(this.bookmark.href)
+    }
     await beaker.bookmarks.add(b)
 
     this.dispatchEvent(new CustomEvent('resolve'))

@@ -97,6 +97,9 @@ class BookmarkMenu extends LitElement {
 
   async onSaveBookmark (e) {
     e.preventDefault()
+    if (this.existingBookmark && this.href !== this.existingBookmark.href) {
+      await bg.bookmarks.remove(this.existingBookmark.href)
+    }
     await bg.bookmarks.add({
       href: this.href,
       title: this.title,
