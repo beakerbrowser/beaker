@@ -1,10 +1,16 @@
 @import "beaker://app-stdlib/css/common.css";
 @import "beaker://assets/font-awesome.css";
 
-body {
+html {
+  background: transparent !important;
+  overflow: hidden;
+}
 
+body {
   font-size: 14px;
-  background: var(--bg-color--default);
+  background: transparent !important;
+  box-shadow: 0 2px 3px #0004;
+  margin: 0 10px 10px;
   color: var(--text-color--default);
 }
 
@@ -12,4 +18,21 @@ body {
   body {
 
   }
+}
+
+h1 {
+  background: var(--bg-color--light);
+  border: 1px solid var(--border-color--default);
+  border-bottom: 0;
+  font-size: 12px;
+  padding: 10px;
+  margin: 0;
+}
+
+notifications-app {
+  display: block;
+  background: var(--bg-color--default);
+  border: 1px solid var(--border-color--default);
+  height: calc(100vh - 46px);
+  overflow: scroll;
 }

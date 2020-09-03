@@ -20,6 +20,7 @@ export class RecordFeed extends LitElement {
       fileQuery: {type: Array},
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       dateTitleRange: {type: String, attribute: 'date-title-range'},
+      forceRenderMode: {type: String, attribute: 'force-render-mode'},
       sort: {type: String},
       limit: {type: Number},
       filter: {type: String},
@@ -40,6 +41,7 @@ export class RecordFeed extends LitElement {
     this.fileQuery = undefined
     this.showDateTitles = false
     this.dateTitleRange = undefined
+    this.forceRenderMode = undefined
     this.sort = 'ctime'
     this.limit = undefined
     this.filter = undefined
@@ -201,7 +203,7 @@ export class RecordFeed extends LitElement {
   }
   
   renderNormalResult (result) {
-    var renderMode = ({
+    var renderMode = this.forceRenderMode || ({
       'comment': 'card',
       'microblogpost': 'card',
       'subscription': 'action',
@@ -218,7 +220,7 @@ export class RecordFeed extends LitElement {
   }
 
   renderSearchResult (result) {
-    var renderMode = ({
+    var renderMode = this.forceRenderMode || ({
       'comment': 'card',
       'microblogpost': 'card',
       'subscription': 'action',

@@ -15,6 +15,7 @@ import * as prompts from '../subwindows/prompts'
 import * as permPrompt from '../subwindows/perm-prompt'
 import * as modals from '../subwindows/modals'
 import * as siteInfo from '../subwindows/site-info'
+import * as notifications from '../subwindows/notifications'
 import * as contextMenu from '../context-menu'
 import * as windowMenu from '../window-menu'
 import { createShellWindow, getAddedWindowSettings } from '../windows'
@@ -1346,6 +1347,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async toggleSiteInfo (opts) {
     await siteInfo.toggle(getWindow(this.sender), opts)
+  },
+
+  async toggleNotifications (opts) {
+    await notifications.toggle(getWindow(this.sender), opts)
   },
 
   async focusShellWindow () {

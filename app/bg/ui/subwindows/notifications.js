@@ -1,10 +1,10 @@
 /**
- * Site Infos
+ * Notifications
  *
  * NOTES
- * - There can only ever be one Site Info view for a given browser window
- * - Site Info views are created with each browser window and then shown/hidden as needed
- * - When unfocused, the Site Info view is hidden (it's meant to act as a popup menu)
+ * - There can only ever be one Notification view for a given browser window
+ * - Notification views are created with each browser window and then shown/hidden as needed
+ * - When unfocused, the Notification view is hidden (it's meant to act as a popup menu)
  */
 
 import path from 'path'
@@ -15,7 +15,8 @@ import * as tabManager from '../tabs/manager'
 // globals
 // =
 
-const MARGIN_SIZE = 10
+const WIDTH = 500
+const HEIGHT = 350
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -39,9 +40,9 @@ export function setup (parentWindow) {
     }
   })
   view.webContents.on('console-message', (e, level, message) => {
-    console.log('Site-Info window says:', message)
+    console.log('Notifications window says:', message)
   })
-  view.webContents.loadURL('beaker://site-info/')
+  view.webContents.loadURL('beaker://notifications/')
 }
 
 export function destroy (parentWindow) {
@@ -58,30 +59,18 @@ export function get (parentWindow) {
 export function reposition (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    const setBounds = (b) => {
-      // HACK workaround the lack of view.getBounds() -prf
-      if (view.currentBounds) {
-        b = view.currentBounds // use existing bounds
-      }
-      view.currentBounds = b // store new bounds
-      view.setBounds(adjustBounds(b))
-    }
-    setBounds({
-      x: view.boundsOpt ? view.boundsOpt.left : 170,
-      y: (view.boundsOpt ? view.boundsOpt.top : 67) + 5,
-      width: 420,
-      height: 350
+    let parentBounds = parentWindow.getContentBounds()
+    view.setBounds({
+      x: parentBounds.width - WIDTH - 65,
+      y: 70,
+      width: WIDTH,
+      height: HEIGHT
     })
   }
 }
 
 export function resize (parentWindow, bounds = {}) {
-  var view = get(parentWindow)
-  if (view && view.currentBounds) {
-    view.currentBounds.width = bounds.width || view.currentBounds.width
-    view.currentBounds.height = bounds.height || view.currentBounds.height
-    view.setBounds(adjustBounds(view.currentBounds))
-  }
+  return reposition(parentWindow)
 }
 
 export function toggle (parentWindow, opts) {
@@ -98,14 +87,11 @@ export function toggle (parentWindow, opts) {
 export async function show (parentWindow, opts) {
   var view = get(parentWindow)
   if (view) {
-    view.boundsOpt = opts && opts.bounds
     parentWindow.addBrowserView(view)
     reposition(parentWindow)
     view.isVisible = true
 
-    var params = opts && opts.params ? opts.params : {}
-    params.url = tabManager.getActive(parentWindow).url
-    await view.webContents.executeJavaScript(`init(${JSON.stringify(params)}); undefined`)
+    await view.webContents.executeJavaScript(`init(); undefined`)
     view.webContents.focus()
 
     // await till hidden
@@ -123,21 +109,5 @@ export function hide (parentWindow) {
     view.currentBounds = null
     view.isVisible = false
     events.emit('hide')
-  }
-}
-
-// internal methods
-// =
-
-/**
- * @description
- * Ajust the bounds for margin
- */
-function adjustBounds (bounds) {
-  return {
-    x: bounds.x - MARGIN_SIZE,
-    y: bounds.y,
-    width: bounds.width + (MARGIN_SIZE * 2),
-    height: bounds.height + MARGIN_SIZE
   }
 }

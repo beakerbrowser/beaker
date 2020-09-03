@@ -206,6 +206,10 @@ a:hover {
   border-radius: 1px;
 }
 
+:host([thread-view]) .record.action.unread {
+  box-shadow: none;
+}
+
 .record.action > * {
   margin-right: 5px;
 }

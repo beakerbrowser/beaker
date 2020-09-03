@@ -38,6 +38,7 @@ export default {
   executeShellWindowCommand: 'promise',
   updateWindowToolbar: 'promise',
   toggleSiteInfo: 'promise',
+  toggleNotifications: 'promise',
   toggleLiveReloading: 'promise',
   setWindowDimensions: 'promise',
   setWindowDragModeEnabled: 'promise',

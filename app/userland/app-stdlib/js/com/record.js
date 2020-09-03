@@ -241,7 +241,8 @@ export class Record extends LitElement {
 
   renderAsAction () {
     const res = this.record
-
+    const rtype = getRecordType(res)
+   
     var subject
     if (getRecordType(res) === 'subscription') {
       subject = isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : res.metadata.title || res.metadata.href
@@ -269,11 +270,13 @@ export class Record extends LitElement {
           <a class="author" href=${res.site.url} title=${res.site.title}>
             ${res.site.url === 'hyper://private' ? 'I (private)' : res.site.title}
           </a>
-          ${getRecordType(res) === 'subscription' ? html`
+          ${rtype === 'subscription' ? html`
             <span class="action">subscribed to</span>
             <a class="subject" href=${res.metadata.href} title=${subject}>${subject}</a>
-          ` : getRecordType(res) === 'bookmark' ? html`
+          ` : rtype === 'bookmark' ? html`
             <span class="action">bookmarked ${this.actionTarget}</span>
+          ` : rtype === 'comment' ? html`
+            <span class="action">commented on ${this.actionTarget}</span>
           ` : showContentAfter ? html`
             <span class="action">mentioned ${this.actionTarget}</span>
           ` : html`

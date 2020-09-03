@@ -10,8 +10,7 @@ const WINDOW_MENU_ENABLED = false
 const BASIC_BUILTINS = [
   {builtin: true, url: 'beaker://about/', hyperOnly: true},
   {builtin: true, url: 'beaker://activity/'},
-  {builtin: true, url: 'beaker://library/'},
-  {builtin: true, url: 'beaker://notifications/'}
+  {builtin: true, url: 'beaker://library/'}
 ]
 const ADVANCED_BUILTINS = [
   {builtin: true, url: 'beaker://editor/'},
@@ -26,7 +25,6 @@ class ShellWindowToolbarMenu extends LitElement {
       activeTab: {type: Object},
       toolbar: {type: Object},
       openMenu: {type: String},
-      notificationsCount: {type: Number}
     }
   }
 
@@ -143,10 +141,6 @@ class ShellWindowToolbarMenu extends LitElement {
     this.toolbar = undefined
     this.openMenu = undefined
     this.addEventListener('contextmenu', this.onMainContextmenu.bind(this))
-    this.notificationsCount = 0
-    setInterval(async () => {
-      this.notificationsCount = await bg.index.countRecords({notification: {unread: true}})
-    }, 15e3)
   }
 
   isPaneActive (item) {
@@ -196,9 +190,6 @@ class ShellWindowToolbarMenu extends LitElement {
           <img class="favicon" src="asset:favicon:${item.url}">
           ${item.url === 'beaker://activity/' && this.activeTab?.backlinkCount ? html`
             <span class="count">${this.activeTab.backlinkCount}</span>
-          ` : ''}
-          ${item.url === 'beaker://notifications/' && this.notificationsCount ? html`
-            <span class="count">${this.notificationsCount}</span>
           ` : ''}
         </a>
       `
@@ -286,8 +277,7 @@ class ShellWindowToolbarMenu extends LitElement {
       'beaker://editor': 'Editor',
       'beaker://explorer': 'Files Explorer',
       'beaker://library': 'My Library',
-      'beaker://webterm': 'Terminal',
-      'beaker://notifications': 'Notifications'
+      'beaker://webterm': 'Terminal'
     })[(new URL(item.url)).origin] || item.url
     bg.overlay.set({
       value: label,
