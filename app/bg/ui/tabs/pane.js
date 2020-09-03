@@ -839,8 +839,8 @@ export class Pane extends EventEmitter {
 
     if (this.favicons) {
       let url = this.url
-      this.webContents.executeJavaScriptInIsolatedWorld(998, [{code: `
-        (async function () {
+      this.webContents.executeJavaScriptInIsolatedWorld(999, [{code: `
+        new Promise(async (resolve) => {
           var img = await new Promise(resolve => {
             var img = new Image()
             img.crossOrigin = 'Anonymous'
@@ -848,7 +848,7 @@ export class Pane extends EventEmitter {
             img.onerror = () => resolve(false)
             img.src = "${this.favicons[0]}"
           })
-          if (!img) return
+          if (!img) return resolve(undefined)
             
           let {width, height} = img
           var ratio = width / height
@@ -859,11 +859,11 @@ export class Pane extends EventEmitter {
           canvas.height = height
           var ctx = canvas.getContext('2d')
           ctx.drawImage(img, 0, 0, width, height)
-          return canvas.toDataURL('image/png')
-        })()
+          resolve(canvas.toDataURL('image/png'))
+        })
       `}]).then((dataUrl, err) => {
         if (err) console.log(err)
-        else {
+        else if (dataUrl) {
           sitedataDb.set(url, 'favicon', dataUrl)
         }
       })

@@ -151,7 +151,7 @@ export async function update (parentWindow, opts) {
     view.boundsOpt = opts && opts.bounds ? opts.bounds : view.boundsOpt
     reposition(parentWindow)
     var params = opts && opts.params ? opts.params : {}
-    await view.webContents.executeJavaScript(`updateMenu(${JSON.stringify(params)})`)
+    await view.webContents.executeJavaScript(`updateMenu(${JSON.stringify(params)}); undefined`)
   }
 }
 
@@ -165,7 +165,7 @@ export async function show (parentWindow, menuId, opts) {
     view.isVisible = true
 
     var params = opts && opts.params ? opts.params : {}
-    await view.webContents.executeJavaScript(`openMenu('${menuId}', ${JSON.stringify(params)})`)
+    await view.webContents.executeJavaScript(`openMenu('${menuId}', ${JSON.stringify(params)}); undefined`)
     view.webContents.focus()
 
     // await till hidden
@@ -178,7 +178,7 @@ export async function show (parentWindow, menuId, opts) {
 export function hide (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    view.webContents.executeJavaScript(`reset('${view.menuId}')`)
+    view.webContents.executeJavaScript(`reset('${view.menuId}'); undefined`)
     parentWindow.removeBrowserView(view)
     view.currentDimensions = null
     view.isVisible = false

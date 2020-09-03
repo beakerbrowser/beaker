@@ -360,7 +360,6 @@ customElements.define('beaker-sites-list', SitesList)
 
 function moveToTopIfExists (arr, url) {
   var i = arr.findIndex(v => v.url === url)
-  console.log(i, url)
   if (i !== -1) {
     let item = arr[i]
     arr.splice(i, 1)

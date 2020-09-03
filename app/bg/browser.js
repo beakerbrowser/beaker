@@ -118,7 +118,7 @@ export async function setup () {
   ipcMain.on('resize-hackfix', (e, message) => {
     var win = findWebContentsParentWindow(e.sender)
     if (win) {
-      win.webContents.executeJavaScript(`if (window.forceUpdateDragRegions) { window.forceUpdateDragRegions() }`)
+      win.webContents.executeJavaScript(`if (window.forceUpdateDragRegions) { window.forceUpdateDragRegions() }; undefined`)
     }
   })
 

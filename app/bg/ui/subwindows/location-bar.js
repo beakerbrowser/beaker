@@ -77,7 +77,7 @@ export async function show (parentWindow, opts) {
 export function hide (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    view.webContents.executeJavaScript(`invisibilityCloak()`)
+    view.webContents.executeJavaScript(`invisibilityCloak(); undefined`)
     setTimeout(() => {
       parentWindow.removeBrowserView(view)
       view.isVisible = false

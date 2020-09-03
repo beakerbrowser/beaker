@@ -62,10 +62,10 @@ export function set (parentWindow, opts) {
     if (opts) {
       show(parentWindow)
       view.setBounds(opts.bounds)
-      view.webContents.executeJavaScript(`set(${JSON.stringify(opts)})`)
+      view.webContents.executeJavaScript(`set(${JSON.stringify(opts)}); undefined`)
     } else { 
       hide(parentWindow)
-      view.webContents.executeJavaScript(`set({})`)
+      view.webContents.executeJavaScript(`set({}); undefined`)
     }
   }
 } 

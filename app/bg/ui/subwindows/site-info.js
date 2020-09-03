@@ -106,7 +106,7 @@ export async function show (parentWindow, opts) {
 
     var params = opts && opts.params ? opts.params : {}
     params.url = tabManager.getActive(parentWindow).url
-    await view.webContents.executeJavaScript(`init(${JSON.stringify(params)})`)
+    await view.webContents.executeJavaScript(`init(${JSON.stringify(params)}); undefined`)
     view.webContents.focus()
 
     // await till hidden

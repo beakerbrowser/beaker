@@ -116,7 +116,7 @@ export async function moveSelection (parentWindow, dir) {
   var view = get(parentWindow)
   if (view) {
     await view.webContents.executeJavaScript(`
-      window.moveSelection(${dir})
+      window.moveSelection(${dir}); undefined
     `)
   }
 }
