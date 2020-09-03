@@ -116,7 +116,7 @@ async function assembleRecords (drivesList) {
     records.push({
       key: drive.key,
       url,
-      info: await drives.getDriveInfo(drive.key),
+      info: await drives.getDriveInfo(drive.key, {onlyCache: true}),
       saved: true,
       forkOf: drive ? drive.forkOf : undefined,
       ident
