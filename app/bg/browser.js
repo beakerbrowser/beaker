@@ -125,7 +125,7 @@ export async function setup () {
   })
 
   // request blocking for security purposes
-  session.defaultSession.webRequest.onBeforeRequest({urls: ['asset:*', 'hyper://private/*']}, (details, cb) => {
+  session.defaultSession.webRequest.onBeforeRequest({urls: ['*://*/*']}, (details, cb) => {
     if (details.url.startsWith('asset:')) {
       if (details.resourceType === 'mainFrame') {
         // allow toplevel navigation
@@ -137,7 +137,7 @@ export async function setup () {
         // disallow all other requesters
         return cb({cancel: true})
       }
-    } else {
+    } else if (details.url.startsWith('hyper://private')) {
       if (!details.webContentsId) {
         if (details.resourceType === 'mainFrame') {
           // allow toplevel navigation
@@ -154,6 +154,8 @@ export async function setup () {
       } else {
         cb({cancel: true})
       }
+    } else {
+      adblocker.onBeforeRequest(details, cb)
     }
   })
 

@@ -54,20 +54,6 @@ a:hover {
   border-bottom: 1px solid var(--border-color);
 }
 
-.message {
-  margin: 1em 0;
-  background: var(--bg-color--message);
-  padding: 10px;
-  border-radius: 2px;
-}
-
-.message > :first-child {
-  margin-top: 0;
-}
-
-.message > :last-child {
-  margin-bottom: 0;
-}
 
 input[type="text"], input[type="url"] {
   height: 24px;
@@ -95,16 +81,36 @@ textarea:focus {
 }
 
 input[type="checkbox"] {
-  margin: 1px 7px 0 1px;
+  margin: 0px 7px 0px 2px;
 }
 
 .adblock-settings-list {
-  margin-bottom: 10px;
 }
 
 .adblock-settings-list a {
-  color: gray;
+  color: var(--text-color--very-light);
   cursor: pointer;
+  font-size: 12px;
+  margin-right: 3px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.checkbox-item:last-child {
+  margin-bottom: 0;
+}
+
+.checkbox-item small {
+  color: var(--text-color--light);
+}
+
+form {
+  padding: 8px;
+  background: var(--bg-color--light);
 }
 
 `

@@ -1,6 +1,7 @@
 import { LitElement, html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import viewCSS from '../../css/views/adblock.css.js'
 import * as toast from '../../../app-stdlib/js/com/toast.js'
+
 class AdblockSettingsView extends LitElement {
   static get properties () {
     return {
@@ -49,6 +50,11 @@ class AdblockSettingsView extends LitElement {
           ${this.settings.adblock_lists.map((adblockList,i)=>{
             return html`
               <div class="checkbox-item">
+                ${this.settings.adblock_lists.length === 1 ? '' : html`
+                  <a @click="${()=>this.removeAdblockList(i)}" data-tooltip="Remove" title="Remove Adblock List">
+                    <span class="fas fa-fw fa-times"></span>
+                  </a>
+                `}
                 <input type="checkbox"
                   id="adblockList${i}"
                   name="adblock-lists"
@@ -57,23 +63,18 @@ class AdblockSettingsView extends LitElement {
                   @change="${this.onAdblockListChange}"
                 >
                 <label for="adblockList${i}">
-                  ${adblockList.name} (${adblockList.url})
-                  ${this.settings.adblock_lists.length === 1 ? '' : html`
-                    <a @click="${()=>this.removeAdblockList(i)}" data-tooltip="Remove" title="Remove Adblock List">
-                      <span class="fas fa-fw fa-times"></span>
-                    </a>
-                  `}
+                  ${adblockList.name} <small>${adblockList.url}</small>
                 </label>
               </div>`
             })
           }
         </div>
-        <form @submit=${this.onAddAdblockList}>
-          <input type="text" placeholder="Name" id="custom-adblock-list-name" required>
-          <input type="url" placeholder="URL" id="custom-adblock-list-url" required>
-          <button type="submit">Add</button>
-        </form>
       </div>
+      <form @submit=${this.onAddAdblockList}>
+        <input type="text" placeholder="Name" id="custom-adblock-list-name" required>
+        <input type="url" placeholder="URL" id="custom-adblock-list-url" required>
+        <button type="submit">Add</button>
+      </form>
     `
   }
 
