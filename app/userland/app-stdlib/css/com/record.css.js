@@ -545,6 +545,7 @@ a:hover {
 
 .record.card .content {
   white-space: initial;
+  word-break: break-word;
   color: var(--text-color--default);
   line-height: 1.3125;
   font-size: 14px;
