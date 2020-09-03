@@ -157,7 +157,7 @@ export function getDriveIdent (url, includeContacts = false) {
 export function listDrives ({includeSystem} = {includeSystem: false}) {
   var d = drives.slice()
   if (includeSystem) {
-    d.unshift({key: rootDrive.url.slice('hyper://'.length)})
+    d.unshift({key: 'private'})
   }
   return d
 }

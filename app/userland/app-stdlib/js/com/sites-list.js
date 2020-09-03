@@ -91,7 +91,7 @@ export class SitesList extends LitElement {
 
     var sites
     if (this.listing === 'mine') {
-      sites = await beaker.drives.list()
+      sites = await beaker.drives.list({includeSystem: true})
       sites = sites.filter(s => s.info?.writable)
       if (this.filter) {
         sites = sites.filter(s => (
@@ -159,6 +159,9 @@ export class SitesList extends LitElement {
     } else {
       this.sites = sites.sort((a, b) => a.title.localeCompare(b.title))
     }
+    // always put the profile and private site on top
+    moveToTopIfExists(sites, this.profile?.url)
+    moveToTopIfExists(sites, 'hyper://private/')
     console.log(this.sites)
     this.activeQuery = undefined
     emit(this, 'load-state-updated')
@@ -216,6 +219,12 @@ export class SitesList extends LitElement {
               <span class="label">${site.forkOf.label}</span>
               Fork of <a href="hyper://${site.forkOf.key}">${toNiceDomain(`hyper://${site.forkOf.key}`)}</a>
             </div>
+          ` : ''}
+          ${isSameOrigin(site.origin, 'hyper://private') ? html`
+            <div class="fork-of"><span class="label">My Private Site</span></div>
+          ` : ''}
+          ${isSameOrigin(site.origin, this.profileUrl) ? html`
+            <div class="fork-of"><span class="label">My Profile Site</span></div>
           ` : ''}
           ${!isSameOrigin(site.origin, 'hyper://private') && (!site.writable || site.subscriptions?.length > 0) ? html`
             <div class="known-subscribers">
@@ -348,3 +357,13 @@ export class SitesList extends LitElement {
 }
 
 customElements.define('beaker-sites-list', SitesList)
+
+function moveToTopIfExists (arr, url) {
+  var i = arr.findIndex(v => v.url === url)
+  console.log(i, url)
+  if (i !== -1) {
+    let item = arr[i]
+    arr.splice(i, 1)
+    arr.unshift(item)
+  }
+}

@@ -115,7 +115,7 @@ h2 {
 }
 
 .fork-of {
-  margin-top: 5px;
+  margin-top: 6px;
   color: var(--text-color--light);
   font-size: 12px;
 }
@@ -127,8 +127,7 @@ h2 {
 .label {
   position: relative;
   top: -1px;
-  background: var(--text-color--link);
-  color: var(--bg-color--default);
+  background: var(--bg-color--semi-light);
   padding: 1px 4px 2px;
   border-radius: 4px;
   font-size: 10px;
