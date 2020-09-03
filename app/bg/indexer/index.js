@@ -155,9 +155,8 @@ export async function getSite (url) {
 
 /**
  * @param {Object} [opts]
- * @param {Object} [opts.filter]
- * @param {String} [opts.filter.search]
- * @param {Boolean} [opts.filter.writable]
+ * @param {String} [opts.search]
+ * @param {Boolean} [opts.writable]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @returns {Promise<SiteDescription[]>}
@@ -167,14 +166,14 @@ export async function listSites (opts) {
     .select('*')
     .offset(opts?.offset || 0)
     .limit(opts?.limit || 25)
-  if (opts?.filter?.search) {
+  if (opts?.search) {
     query = query.whereRaw(
       `sites.title LIKE ? OR sites.description LIKE ?`,
-      [`%${opts.filter.search}%`, `%${opts.filter.search}%`]
+      [`%${opts.search}%`, `%${opts.search}%`]
     )
   }
-  if (typeof opts?.filter?.writable === 'boolean') {
-    query = query.where('sites.writable', opts.filter.writable ? 1 : 0)
+  if (typeof opts?.writable === 'boolean') {
+    query = query.where('sites.writable', opts.writable ? 1 : 0)
   }
   var siteRows = await query
   return siteRows.map(row => ({

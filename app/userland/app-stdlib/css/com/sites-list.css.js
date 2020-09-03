@@ -114,6 +114,26 @@ h2 {
   word-break: break-word;
 }
 
+.fork-of {
+  margin-top: 5px;
+  color: var(--text-color--light);
+  font-size: 12px;
+}
+
+.fork-of a {
+  color: var(--text-color--link);
+}
+
+.label {
+  position: relative;
+  top: -1px;
+  background: var(--text-color--link);
+  color: var(--bg-color--default);
+  padding: 1px 4px 2px;
+  border-radius: 4px;
+  font-size: 10px;
+}
+
 .sites.single-row .site .description {
   white-space: nowrap;
   overflow: hidden;

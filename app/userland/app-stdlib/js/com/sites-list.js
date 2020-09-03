@@ -4,7 +4,7 @@ import { ifDefined } from '../../vendor/lit-element/lit-html/directives/if-defin
 import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/sites-list.css.js'
 import { emit } from '../dom.js'
-import { shorten, pluralize, isSameOrigin } from '../strings.js'
+import { shorten, pluralize, isSameOrigin, toNiceDomain } from '../strings.js'
 import { writeToClipboard } from '../clipboard.js'
 import * as toast from './toast.js'
 
@@ -88,19 +88,40 @@ export class SitesList extends LitElement {
 
   async query () {
     emit(this, 'load-state-updated')
-    var [sites, subs] = await Promise.all([
-      beaker.index.listSites({
-        filter: {
-          search: this.filter,
-          writable: this.listing === 'mine'
-        },
+
+    var sites
+    if (this.listing === 'mine') {
+      sites = await beaker.drives.list()
+      sites = sites.filter(s => s.info?.writable)
+      if (this.filter) {
+        sites = sites.filter(s => (
+          (s.info?.title || '').toLowerCase().includes(this.filter.toLowerCase())
+          || (s.info?.description || '').toLowerCase().includes(this.filter.toLowerCase())
+        ))
+      }
+      if (this.singleRow) {
+        sites = sites.slice(0, 3)
+      }
+      sites = sites.map(s => ({
+        origin: s.url,
+        url: s.url,
+        title: s.info?.title || 'Untitled',
+        description: s.info?.description,
+        writable: s.info?.writable,
+        forkOf: s.forkOf
+      }))
+    } else {
+      sites = await beaker.index.listSites({
+        writable: this.listing === 'suggested' ? false : undefined,
+        search: this.filter,
         limit: this.singleRow ? 3 : 1e9
-      }),
-      beaker.index.listRecords({
-        file: {mimetype: 'application/goto', prefix: '/subscriptions'},
-        limit: 1e9
       })
-    ])
+    }
+
+    var subs = await beaker.index.listRecords({
+      file: {mimetype: 'application/goto', prefix: '/subscriptions'},
+      limit: 1e9
+    })
 
     var unknownSites = []
     for (let sub of subs) {
@@ -190,6 +211,12 @@ export class SitesList extends LitElement {
         <div class="info">
           <div class="title"><a href=${site.origin} title=${site.title}>${site.title}</a></div>
           <div class="description">${shorten(site.description, 200)}</div>
+          ${site.forkOf ? html`
+            <div class="fork-of">
+              <span class="label">${site.forkOf.label}</span>
+              Fork of <a href="hyper://${site.forkOf.key}">${toNiceDomain(`hyper://${site.forkOf.key}`)}</a>
+            </div>
+          ` : ''}
           ${!isSameOrigin(site.origin, 'hyper://private') && (!site.writable || site.subscriptions?.length > 0) ? html`
             <div class="known-subscribers">
               <a
@@ -300,13 +327,11 @@ export class SitesList extends LitElement {
     site = await beaker.hyperdrive.forkDrive(site.url)
     toast.create('Site created')
     window.open(site.url)
-    // TRIGGER INDEX TODO
     this.load()
   }
 
   async onEditProps (site) {
     await beaker.shell.drivePropertiesDialog(site.url)
-    // TRIGGER INDEX TODO
     this.load()
   }
 
@@ -318,7 +343,6 @@ export class SitesList extends LitElement {
       this.requestUpdate()
     }
     toast.create('Site removed', '', 10e3, {label: 'Undo', click: undo})
-    // TRIGGER INDEX TODO
     this.load()
   }
 }
