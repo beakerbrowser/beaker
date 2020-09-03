@@ -21,6 +21,7 @@ class BrowserMenu extends LitElement {
 
   reset () {
     this.submenu = ''
+    this.daemonStatus = undefined
   }
 
   async init () {
@@ -36,6 +37,8 @@ class BrowserMenu extends LitElement {
     this.windowMenuItems = menuItems
     this.bookmarks = bookmarks 
     await this.requestUpdate()
+    this.daemonStatus = await bg.beakerBrowser.getDaemonStatus()
+    this.requestUpdate()
   }
 
   render () {
@@ -65,21 +68,30 @@ class BrowserMenu extends LitElement {
       <div class="wrapper">
         ${autoUpdaterEl}
 
+        <div class="section gray">
+          <div class="menu-item-group">
+            <div class="menu-item" @click=${e => this.onNewHyperdrive()}>
+              <i class="fas fa-sitemap"></i>
+              <span class="label">New Site...</span>
+            </div>
+
+            <div class="menu-item" @click=${e => this.onNewHyperdriveFromFolder(e)}>
+              <i class="fas fa-file-upload"></i>
+              <span class="label">New Site From Folder...</span>
+            </div>
+          </div>
+        </div>
+
         <div class="section">
-          <div class="menu-item" @click=${e => this.onNewHyperdrive()}>
-            <i class="fas fa-plus"></i>
-            <span class="label">New Site...</span>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
+            <img class="favicon" src="asset:favicon:beaker://library/">
+            <span class="label">My Library</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onNewHyperdriveFromFolder(e)}>
-            <i class="fas fa-file-upload"></i>
-            <span class="label">New Site From Folder...</span>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
+            <img class="favicon" src="asset:favicon:beaker://settings/">
+            <span class="label">Settings</span>
           </div>
-
-          ${''/*<div class="menu-item" @click=${this.onClickSavePage}>
-            <i class="fas fa-file-export"></i>
-            Export page as file
-          </div>*/}
         </div>
 
         <div class="section">
@@ -105,22 +117,30 @@ class BrowserMenu extends LitElement {
           </div>
         </div>
 
-        <div class="section">
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
-            <img class="favicon" src="asset:favicon:beaker://library/">
-            <span class="label">My Library</span>
+        ${this.daemonStatus ? html`
+          <div class="network-status">
+            <div class="network-status-title">Network Status</div>
+            <table>
+              <tr>
+                <td>Hole-punchable:</td>
+                <td>
+                  ${this.daemonStatus.holepunchable
+                    ? html`<span class="fa-fw fas fa-check"></span> Yes`
+                    : html`<span class="fa-fw fas fa-exclamation-triangle"></span> No`
+                  }
+                </td>
+              </tr>
+              <tr><td>Remote Address:</td> <td>${this.daemonStatus.remoteAddress || 'Unknown'}</td></tr>
+            </table>
+            ${!this.daemonStatus.holepunchable ? html`
+              <div class="help">
+                <a @click=${e => this.onOpenPage(e, 'https://docs.beakerbrowser.com/help/hole-punchability')}>
+                  <span class="far fa-fw fa-question-circle"></span> What does this mean?
+                </a>
+            </div>
+            ` : ''}
           </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
-            <i class="fas fa-cog"></i>
-            <span class="label">Settings</span>
-          </div>
-
-          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings/?view=devices')}>
-            <i class="fas fa-sync"></i>
-            <span class="label">Sync Devices</span>
-          </div>
-        </div>
+        ` : ''}
       </div>
     `
   }
@@ -260,7 +280,7 @@ class BrowserMenu extends LitElement {
 }
 BrowserMenu.styles = [commonCSS, css`
 .wrapper {
-  width: 230px;
+  width: 300px;
 }
 
 .wrapper::-webkit-scrollbar {
@@ -292,6 +312,7 @@ BrowserMenu.styles = [commonCSS, css`
 
 .menu-item-group {
   display: flex;
+  padding: 0 2px;
 }
 
 .menu-item-group > .menu-item:first-child {
@@ -349,6 +370,50 @@ BrowserMenu.styles = [commonCSS, css`
 .menu-item .shortcut {
   font-size: 12px;
   -webkit-font-smoothing: antialiased;
+}
+
+.network-status {
+  padding: 8px;
+  background: #fafafd;
+}
+
+.network-status-title {
+ font-size: 11px;
+ font-weight: bold;
+ padding: 0 3px 3px;
+}
+
+.network-status table {
+  font-size: 12px;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.network-status table tr td:first-child {
+  font-weight: 500;
+  padding-right: 5px;
+}
+
+.network-status table tr td:last-child {
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+
+.network-status .fa-exclamation-triangle {
+  color: #FF8F00;
+}
+
+.network-status .help {
+  padding: 2px 3px 0;
+}
+
+.network-status .help a {
+  text-decoration: none;
+  color: gray;
+}
+
+.network-status .help a:hover {
+  text-decoration: underline;
 }
 `]
 

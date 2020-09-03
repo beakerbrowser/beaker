@@ -17,7 +17,6 @@ class ShellWindowNavbar extends LitElement {
       isHolepunchable: {type: Boolean, attribute: 'is-holepunchable'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
       userProfileUrl: {type: String},
-      isNetworkMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -31,7 +30,6 @@ class ShellWindowNavbar extends LitElement {
     this.isHolepunchable = true
     this.isDaemonActive = false
     this.userProfileUrl = undefined
-    this.isNetworkMenuOpen = false
     this.isBrowserMenuOpen = false
   }
 
@@ -108,7 +106,6 @@ class ShellWindowNavbar extends LitElement {
       <div class="buttons" style="padding-left: 6px">
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
-        ${this.networkMenuBtn}
         ${this.profileBtn}
         ${this.browserMenuBtn}
       </div>
@@ -225,16 +222,6 @@ class ShellWindowNavbar extends LitElement {
       </button>
     `
   }
-  
-  get networkMenuBtn () {
-    const cls = classMap({'network-btn': true, pressed: this.isNetworkMenuOpen})
-    return html`
-      <button class=${cls} @click=${this.onClickNetworkMenu} style="margin: 0px 2px">
-        <span class="fas fa-wifi"></span>
-        ${!this.isHolepunchable ? html`<span class="fas fa-circle"></span>` : ''}
-      </button>
-    `
-  }
 
   get profileBtn () {
     if (!this.userProfileUrl) return html``
@@ -246,12 +233,13 @@ class ShellWindowNavbar extends LitElement {
   }
 
   get browserMenuBtn () {
-    const cls = classMap({pressed: this.isBrowserMenuOpen})
+    const cls = classMap({'browser-menu-btn': true, pressed: this.isBrowserMenuOpen})
     return html`
       <button class=${cls} @click=${this.onClickBrowserMenu} style="margin: 0px 2px">
         ${this.isUpdateAvailable
           ? html`<span class="fas fa-arrow-alt-circle-up"></span>`
           : html`<span class="fa fa-bars"></span>`}
+        ${!this.isHolepunchable ? html`<span class="fas fa-circle"></span>` : ''}
       </button>
     `
   }
@@ -303,14 +291,6 @@ class ShellWindowNavbar extends LitElement {
 
   onClickUserProfile (e) {
     bg.views.createTab(this.userProfileUrl, {setActive: true})
-  }
-
-  async onClickNetworkMenu (e) {
-    if (Date.now() - (this.lastMenuClick||0) < 100) return
-    this.isNetworkMenuOpen = true
-    await bg.views.toggleMenu('network')
-    this.isNetworkMenuOpen = false
-    this.lastMenuClick = Date.now()
   }
 
   async onClickBrowserMenu (e) {
@@ -392,7 +372,11 @@ svg.icon.refresh {
   padding: 0 3px;
 }
 
-.network-btn .fa-circle {
+.browser-menu-btn {
+  position: relative;
+}
+
+.browser-menu-btn .fa-circle {
   position: absolute;
   font-size: 8px;
   right: 2px;

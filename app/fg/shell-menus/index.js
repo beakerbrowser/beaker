@@ -8,7 +8,6 @@ import './browser'
 import './toolbar'
 import './bookmark'
 import './donate'
-import './network'
 import './peers'
 import './share'
 import './site'
@@ -106,8 +105,6 @@ class MenusWrapper extends LitElement {
         return html`<bookmark-edit-menu active-menu></bookmark-edit-menu>`
       case 'donate':
         return html`<donate-menu active-menu></donate-menu>`
-      case 'network':
-        return html`<network-menu active-menu></network-menu>`
       case 'peers':
         return html`<peers-menu active-menu></peers-menu>`
       case 'share':
