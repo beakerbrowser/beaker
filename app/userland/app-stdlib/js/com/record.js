@@ -50,6 +50,7 @@ export class Record extends LitElement {
     this.viewContentOnClick = false
 
     // helper state
+    this.hasLoadedSignals = false
     this.isMouseDown = false
     this.isMouseDragging = false
   }
@@ -57,7 +58,7 @@ export class Record extends LitElement {
   updated (changedProperties) {
     if ((!this.record && this.loadRecordUrl) || changedProperties.has('loadRecordUrl') && changedProperties.get('loadRecordUrl') != this.recordUrl) {
       this.load()
-    } else if (this.record && changedProperties.get('record') != this.record) {
+    } else if (this.record && !this.hasLoadedSignals) {
       this.loadSignals()
     }
   }
@@ -67,6 +68,8 @@ export class Record extends LitElement {
   }
 
   async loadSignals () {
+    if (this.hasLoadedSignals) return
+    this.hasLoadedSignals = true
     var [votes, commentCount] = await Promise.all([
       beaker.index.listRecords({
         file: {prefix: '/votes', mimetype: 'application/goto'},
