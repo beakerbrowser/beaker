@@ -167,7 +167,7 @@ beaker-record {
 }
 
 .replies beaker-record.highlight {
-  background: var(--bg-color--light-highlight);
+  outline: 1px solid var(--border-color--focused);
 }
 
 .error {

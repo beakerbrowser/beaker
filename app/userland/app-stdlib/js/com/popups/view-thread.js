@@ -26,9 +26,10 @@ export class ViewThreadPopup extends BasePopup {
       width: 100%;
       max-width: 800px;
       border-radius: 6px;
+      overflow: visible;
     }
     .popup-inner .body {
-      background: var(--bg-color--light);
+      background: var(--bg-color--default);
       padding: 8px 10px 10px;
     }
     `]
