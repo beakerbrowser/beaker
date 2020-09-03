@@ -565,15 +565,14 @@ export async function getDaemonStatus () {
 }
 
 export async function getDaemonNetworkStatus () {
-  var allStats = await hyperDaemon.getClient().drive.allStats()
-  for (let stats of allStats) {
-    stats[0].peers = hyperDaemon.listPeerAddresses(stats[0].metadata.key)
-    for (let stat of stats) {
-      stat.metadata.key = stat.metadata.key.toString('hex')
-      stat.content.key = stat.content.key.toString('hex')
+  // bit of a hack, this
+  return Array.from(hyperDaemon.getClient().drive._drives, drive => {
+    var key = drive.drive.key.toString('hex')
+    return {
+      key,
+      peers: hyperDaemon.listPeerAddresses(key)
     }
-  }
-  return allStats
+  })
 }
 
 export function checkForUpdates (opts = {}) {

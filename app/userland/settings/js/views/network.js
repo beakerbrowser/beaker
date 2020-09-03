@@ -1,7 +1,6 @@
 import { LitElement, html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from '../../../app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { pluralize, toNiceDomain } from '../../../app-stdlib/js/strings.js'
-import bytes from '../../../app-stdlib/vendor/bytes/index.js'
 import viewCSS from '../../css/views/general.css.js'
 
 class NetworkView extends LitElement {
@@ -25,6 +24,11 @@ class NetworkView extends LitElement {
       border-top: 1px solid #dde;
       padding: 12px 16px;
       font-family: monospace;
+      white-space: nowrap;
+    }
+
+    td:last-child {
+      width: 100%;
     }
 
     progress {
@@ -43,9 +47,10 @@ class NetworkView extends LitElement {
     this.error = undefined
     try {
       var networkStatus = await beaker.browser.getDaemonNetworkStatus()
-      for (let stats of networkStatus) {
-        stats[0].drive = await beaker.drives.get(stats[0].metadata.key)
+      for (let item of networkStatus) {
+        item.drive = await beaker.drives.get(item.key)
       }
+      networkStatus.sort((a, b) => b.peers.length - a.peers.length)
       this.networkStatus = networkStatus
       console.log(this.networkStatus)
     } catch (e) {
@@ -71,19 +76,14 @@ class NetworkView extends LitElement {
           <p><em>No active drives</em></p>
         ` : ''}
         <table>
-          ${repeat(this.networkStatus, (v, i) => i, drive => this.renderDriveStatus(drive))}
+          ${repeat(this.networkStatus, (v, i) => i, item => this.renderDriveStatus(item))}
         </table>
       ` : html`<p><span class="spinner"></span></p>`}
     `
   }
 
-  renderDriveStatus (stats) {
-    var key = stats[0].metadata.key
-    var peers = stats[0].metadata.peers
-    var peerAddresses = stats[0].peers
-    var drive = stats[0].drive
-    var uploadedBytes = stats.reduce((acc, v) => acc + v.metadata.uploadedBytes + v.content.uploadedBytes, 0)
-    var downloadedBytes = stats.reduce((acc, v) => acc + v.metadata.downloadedBytes + v.content.downloadedBytes, 0)
+  renderDriveStatus (item) {
+    var {key, peers, drive} = item
     var domain = drive && drive.ident.system ? 'private' : `${key.slice(0, 6)}..${key.slice(-2)}`
     var title = drive && drive.info && drive.info.title ? `${drive.info.title} (${domain})` : domain
     var forkOf = drive.forkOf ? ` ["${drive.forkOf.label}" fork of ${toNiceDomain(drive.forkOf.key)}]` : ''
@@ -97,19 +97,8 @@ class NetworkView extends LitElement {
         </td>
         <td>
           <details>
-            <summary>${peers} ${pluralize(peers, 'peer')}</summary>
-            ${peerAddresses.map(p => html`<div>${p.remoteAddress} (${p.type})</div>`)}
-          </details>
-        </td>
-        <td>
-          ${bytes(uploadedBytes)} uploaded
-        </td>
-        <td>
-          ${bytes(downloadedBytes)} downloaded
-        </td>
-        <td>
-          <details>
-            <pre>${JSON.stringify(stats, null, 2)}</pre>
+            <summary>${peers.length} ${pluralize(peers.length, 'peer')}</summary>
+            ${peers.map(p => html`<div>${p.remoteAddress} (${p.type})</div>`)}
           </details>
         </td>
       </tr>

@@ -11,7 +11,7 @@ export default {
   async get (key) {
     key = await drives.fromURLToKey(key, true)
     var drive = listDrives().find(drive => drive.key === key)
-    var info = await drives.getDriveInfo(key).catch(e => ({}))
+    var info = await drives.getDriveInfo(key, {onlyCache: true}).catch(e => ({}))
     var url = `hyper://${key}/`
     var ident = getDriveIdent(url)
     return {
