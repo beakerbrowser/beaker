@@ -56,6 +56,50 @@ a:hover {
   color: var(--text-color--result-link);
 }
 
+.vote-ctrl :-webkit-any(.far, .fas) {
+  font-size: 12px;
+}
+
+.vote-ctrl a {
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 4px;
+  margin-right: 4px;
+  color: var(--text-color--pretty-light);
+}
+
+.vote-ctrl a.pressed {
+  font-weight: bold;
+  color: var(--text-color--light);
+}
+
+.vote-ctrl a:hover {
+  text-decoration: none;
+  background: var(--bg-color--semi-light);
+}
+
+.vote-ctrl .count {
+  font-size: 12px;
+}
+
+.comment-ctrl {
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 4px;
+  margin-right: 4px;
+  color: var(--text-color--pretty-light);
+}
+
+.comment-ctrl:hover {
+  text-decoration: none;
+  background: var(--bg-color--semi-light);
+}
+
+.comment-ctrl .far {
+  margin-right: 2px;
+  font-size: 12px;
+}
+
 .notification {
   padding: 5px 4px 4px 48px;
   margin-right: 19px;
@@ -183,6 +227,18 @@ a:hover {
 
 .record.expanded-link .ctrl:hover {
   text-decoration: underline;
+}
+
+.record.expanded-link .vote-ctrl {
+  margin: 0 5px;
+}
+
+.record.expanded-link .vote-ctrl a {
+  margin-right: 0px;
+}
+
+.record.expanded-link .comment-ctrl {
+  margin: 0 0 0 2px;
 }
 
 /** ACTION STYLES **/
@@ -354,28 +410,15 @@ a:hover {
 .record.link .ctrls {
   font-size: 13px;
   color: var(--text-color--light);
+  margin-top: 2px;
 }
 
-.record.link .ctrls :-webkit-any(.fas, .far) {
-  font-size: 11px;
-  position: relative;
-  top: -1px;
+.record.link .ctrls .vote-ctrl a {
+  margin-right: 0px;
 }
 
-.record.link .ctrls a.ctrl {
-  display: inline-block;
-  color: var(--text-color--light);
-}
-
-.record.link .ctrls a:hover {
-  cursor: pointer;
-  color: var(--text-color--default);
-}
-
-.record.link .ctrls a .fa-comment-alt {
-  position: relative;
-  top: 1px;
-  font-size: 12px;
+.record.link .ctrls .comment-ctrl {
+  margin: 0 0 0 2px;
 }
 
 /** CARD STYLES **/
@@ -521,7 +564,7 @@ a:hover {
   background: var(--bg-color--secondary);
   box-sizing: border-box;
   border-top: 1px solid var(--border-color--light);
-  margin: 8px -2px -2px;
+  margin: 12px -2px -2px;
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
   padding-top: 5px;
@@ -545,7 +588,7 @@ a:hover {
   line-height: 1.3125;
   font-size: 14px;
   letter-spacing: 0.1px;
-  padding: 0px 12px 10px;
+  padding: 0px 12px;
 }
 
 .record.card.constrain-height .content {
@@ -557,30 +600,8 @@ a:hover {
 .record.card .content > :last-child { margin-bottom: 0; }
 
 .record.card .ctrls {
-  padding: 6px 12px 6px;
-}
-
-.record.card .ctrls a {
-  display: inline-block;
-  margin-right: 16px;
-  color: var(--text-color--light);
-  font-size: 13px;
-}
-
-.record.card .ctrls a:hover {
-  cursor: pointer;
-  color: var(--text-color--default);
-}
-
-.record.card .ctrls a :-webkit-any(.far, .fas) {
-  color: var(--text-color--very-light);
-}
-
-.record.card .ctrls a small {
-  position: relative;
-  top: -1px;
-  letter-spacing: 0.5px;
-  font-weight: 500;
+  padding: 8px 12px;
+  font-size: 12px;
 }
 
 .record.card beaker-post-composer {

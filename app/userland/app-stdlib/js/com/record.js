@@ -5,7 +5,7 @@ import { asyncReplace } from '../../vendor/lit-element/lit-html/directives/async
 import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/record.css.js'
 import { removeMarkdown } from '../../vendor/remove-markdown.js'
-import { shorten, makeSafe, toNiceDomain, pluralize, fancyUrlAsync } from '../strings.js'
+import { shorten, makeSafe, toNiceDomain, pluralize, fancyUrlAsync, isSameOrigin } from '../strings.js'
 import { getRecordType } from '../records.js'
 import { emit } from '../dom.js'
 import './post-composer.js'
@@ -15,6 +15,10 @@ export class Record extends LitElement {
     return {
       record: {type: Object},
       loadRecordUrl: {type: String, attribute: 'record-url'},
+      myVote: {type: Object},
+      upvoteCount: {type: Number},
+      downvoteCount: {type: Number},
+      commentCount: {type: Number},
       renderMode: {type: String, attribute: 'render-mode'},
       showContext: {type: Boolean, attribute: 'show-context'},
       constrainHeight: {type: Boolean, attribute: 'constrain-height'},
@@ -33,6 +37,10 @@ export class Record extends LitElement {
     super()
     this.record = undefined
     this.loadRecordUrl = undefined
+    this.myVote = undefined
+    this.upvoteCount = 0
+    this.downvoteCount = 0
+    this.commentCount = 0
     this.renderMode = 'card'
     this.showContext = false
     this.constrainHeight = false
@@ -49,11 +57,30 @@ export class Record extends LitElement {
   updated (changedProperties) {
     if ((!this.record && this.loadRecordUrl) || changedProperties.has('loadRecordUrl') && changedProperties.get('loadRecordUrl') != this.recordUrl) {
       this.load()
+    } else if (this.record && changedProperties.get('record') != this.record) {
+      this.loadSignals()
     }
   }
 
   async load () {
     this.record = await beaker.index.getRecord(this.loadRecordUrl)
+  }
+
+  async loadSignals () {
+    var [votes, commentCount] = await Promise.all([
+      beaker.index.listRecords({
+        file: {prefix: '/votes', mimetype: 'application/goto'},
+        links: this.loadRecordUrl || this.record.url,
+      }),
+      beaker.index.countRecords({
+        file: {prefix: '/comments', mimetype: 'text/markdown'},
+        links: this.loadRecordUrl || this.record.url,
+      })
+    ])
+    this.myVote = votes.find(v => isSameOrigin(v.site.url, this.profileUrl) || isSameOrigin(v.site.url, 'hyper://private'))
+    this.upvoteCount = (new Set(votes.filter(v => v.metadata['vote/value'] == 1).map(v => v.site.url))).size
+    this.downvoteCount = (new Set(votes.filter(v => v.metadata['vote/value'] == -1).map(v => v.site.url))).size
+    this.commentCount = commentCount
   }
 
   // rendering
@@ -143,6 +170,10 @@ export class Record extends LitElement {
           <div class="content markdown">
             ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
           </div>
+          <div class="ctrls">
+            ${this.renderVoteCtrl()}
+            ${this.renderCommentsCtrl()}
+          </div>
           ${this.showContext && context ? html`
             <div class="context" data-action=${contextAction}>
               <beaker-record
@@ -213,6 +244,7 @@ export class Record extends LitElement {
           ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
         </div>
         <div class="ctrls">
+          ${this.renderVoteCtrl()}
           <a @click=${this.onClickReply}><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
         </div>
         ${this.isReplyOpen ? html`
@@ -233,7 +265,7 @@ export class Record extends LitElement {
     const rtype = getRecordType(res)
    
     var subject
-    if (getRecordType(res) === 'subscription') {
+    if (['subscription', 'vote'].includes(getRecordType(res))) {
       subject = isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : res.metadata.title || res.metadata.href
     } else {
       if (res.metadata.title) subject = res.metadata.title
@@ -262,6 +294,8 @@ export class Record extends LitElement {
           ${rtype === 'subscription' ? html`
             <span class="action">subscribed to</span>
             <a class="subject" href=${res.metadata.href} title=${subject}>${subject}</a>
+          ` : rtype === 'vote' ? html`
+            <span class="action">${res.metadata['vote/value'] == -1 ? 'downvoted' : 'upvoted'} ${this.actionTarget}</span>
           ` : rtype === 'bookmark' ? html`
             <span class="action">bookmarked ${this.actionTarget}</span>
           ` : rtype === 'comment' ? html`
@@ -348,18 +382,14 @@ export class Record extends LitElement {
             <span>|</span>
             <a class="date" href=${href}>${niceDate(res.ctime)}</a>
             <span>|</span>
-            <a class="ctrl" href="#" @click=${this.onViewThread}>comments</a>
+            ${this.renderVoteCtrl()}
+            ${this.renderCommentsCtrl()}
           </div>
           ${content ? html`
             <div class="excerpt">
               ${renderMatchText(res, 'content') || shorten(removeMarkdown(removeFirstMdHeader(content)), 300)}
             </div>
           ` : ''}
-          ${''/*TODO<div class="tags">
-            <a href="#">#beaker</a>
-            <a href="#">#hyperspace</a>
-            <a href="#">#p2p</a>
-          </div>*/}
         </div>
       </a>
     `
@@ -427,14 +457,13 @@ export class Record extends LitElement {
                 ${res.site.url === 'hyper://private' ? 'Me (Private)' : res.site.title}
               </a>
             </span>
-            <span class="divider">|</span>
             <span class="date">
               <a href=${res.url} data-tooltip=${(new Date(res.ctime)).toLocaleString()}>
                 ${relativeDate(res.ctime)}
               </a>
             </span>
-            <span class="divider">|</span>
-            <a class="ctrl" href="#" @click=${this.onViewThread}>comments</a>
+            ${this.renderVoteCtrl()}
+            ${this.renderCommentsCtrl()}
           </div>
         </div>
       </div>
@@ -458,6 +487,31 @@ export class Record extends LitElement {
       <span class="icon">
         <span class="fa-fw ${icon}"></span>
       </span>
+    `
+  }
+
+  renderVoteCtrl () {
+    var myVote = this.myVote?.metadata['vote/value']
+    return html`
+      <span class="vote-ctrl">
+        <a class="up ${myVote == 1 ? 'pressed' : ''}" data-tooltip="Upvote" @click=${e => this.onToggleVote(e, 1)}>
+          <span class="fas fa-chevron-up"></span>
+          <span class="count">${this.upvoteCount}</span>
+        </a>
+        <a class="down ${myVote == -1 ? 'pressed' : ''}" data-tooltip="Downvote" @click=${e => this.onToggleVote(e, -1)}>
+          <span class="fas fa-chevron-down"></span>
+          <span class="count">${this.downvoteCount}</span>
+        </a>
+      </span>
+    `
+  }
+
+  renderCommentsCtrl () {
+    return html`
+      <a class="comment-ctrl" @click=${this.onViewThread}>
+        <span class="far fa-comment"></span>
+        ${this.commentCount}
+      </a>
     `
   }
 
@@ -555,6 +609,27 @@ export class Record extends LitElement {
       title: r.metadata.title || 'Untitled'
     })))
   }
+
+  async onToggleVote (e, value) {
+    if (this.myVote) {
+      if (this.myVote.metadata['vote/value'] == value) {
+        await beaker.hyperdrive.unlink(this.myVote.url)
+      } else {
+        await beaker.hyperdrive.updateMetadata(this.myVote.url, {'vote/value': value})
+      }
+    } else {
+      var drive = this.record.url.startsWith('hyper://private')
+        ? beaker.hyperdrive.drive('hyper://private')
+        : beaker.hyperdrive.drive(this.profileUrl)
+      await drive.writeFile(`/votes/${Date.now()}.goto`, '', {
+        metadata: {
+          href: this.record.url,
+          'vote/value': value
+        }
+      })
+    }
+    this.loadSignals()
+  }
 }
 
 customElements.define('beaker-record', Record)
@@ -637,12 +712,4 @@ function relativeDate (d) {
   if (dayDiff <= 30) return rtf.format(dayDiff * -1, 'day')
   if (dayDiff <= 365) return rtf.format(Math.floor(dayDiff / 30) * -1, 'month')
   return rtf.format(Math.floor(dayDiff / 365) * -1, 'year')
-}
-
-function isSameOrigin (a, b) {
-  try {
-    return (new URL(a)).origin === (new URL(b)).origin
-  } catch {
-    return a === b
-  }
 }
