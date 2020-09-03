@@ -569,7 +569,7 @@ export async function searchRecords (q = '', opts) {
         'notification_subject_path',
         'notification_read'
       )
-      .innerJoin('records_notification', 'records_data_fts.rowid', 'records_notification.record_rowid')
+      .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
     if (typeof notification !== 'boolean') {
       query = query.where(notification)
     }
