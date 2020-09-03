@@ -474,15 +474,6 @@ a:hover {
   border-color: var(--border-color--unread);
 }
 
-.record.card .container.readmore:after {
-  content: "Read More \\00bb";
-  display: block;
-  padding: 4px 7px;
-  margin: 0 6px;
-  color: var(--text-color--light);
-  font-size: 12px;
-}
-
 .record.card .header {
   display: flex;
   align-items: baseline;

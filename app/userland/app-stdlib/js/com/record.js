@@ -47,9 +47,6 @@ export class Record extends LitElement {
   }
 
   updated (changedProperties) {
-    if (this.constrainHeight && this.renderMode === 'card' && this.isContentOverflowing) {
-      this.shadowRoot.querySelector('.container').classList.add('readmore')
-    }
     if ((!this.record && this.loadRecordUrl) || changedProperties.has('loadRecordUrl') && changedProperties.get('loadRecordUrl') != this.recordUrl) {
       this.load()
     }
@@ -57,14 +54,6 @@ export class Record extends LitElement {
 
   async load () {
     this.record = await beaker.index.getRecord(this.loadRecordUrl)
-  }
-
-  get isContentOverflowing () {
-    try {
-      let content = this.shadowRoot.querySelector('.content')
-      return content.scrollHeight > content.clientHeight
-    } catch {}
-    return false
   }
 
   // rendering
