@@ -10,6 +10,7 @@
   "dependencies": {
     "@beaker/dat-serve-resolve-path": "^1.0.0",
     "@beaker/library-tools": "^1.0.0",
+    "@cliqz/adblocker": "^1.17.0",
     "abort-controller": "^3.0.0",
     "ajv": "^6.10.2",
     "anymatch": "^2.0.0",
@@ -21,6 +22,7 @@
     "bytes": "^3.1.0",
     "circular-append-file": "^1.0.1",
     "concat-stream": "^1.6.2",
+    "cross-fetch": "^3.0.5",
     "dat-dns": "^3.2.1",
     "dat-encoding": "^5.0.1",
     "data-urls": "^1.0.0",

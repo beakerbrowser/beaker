@@ -11,6 +11,7 @@ import EventEmitter from 'events'
 import LRU from 'lru'
 const exec = require('util').promisify(require('child_process').exec)
 import * as logLib from './logger'
+import * as adblocker from './adblocker'
 const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
 import { convertDatArchive } from './dat/index'
@@ -184,6 +185,7 @@ export const WEBAPI = {
   getSetting,
   getSettings,
   setSetting,
+  updateAdblocker,
   updateSetupState,
   setupDefaultProfile,
   migrate08to09,
@@ -629,6 +631,10 @@ export function getSettings () {
 
 export function setSetting (key, value) {
   return settingsDb.set(key, value)
+}
+
+export function updateAdblocker () {
+  return adblocker.setup()
 }
 
 export async function migrate08to09 () {
