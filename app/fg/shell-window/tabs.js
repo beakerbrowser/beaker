@@ -476,11 +476,12 @@ ${spinnerCSS}
 }
 
 .tab-title {
+  font-family: system-ui;
   color: var(--text-color--tab--title);
   font-size: 11.5px;
-  letter-spacing: 0.2px;
   padding: 9px 11px 9px 30px;
   height: 13px;
+  line-height: 12px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
