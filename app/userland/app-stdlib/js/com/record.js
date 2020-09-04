@@ -71,8 +71,8 @@ export class Record extends LitElement {
     }
   }
 
-  async loadSignals () {
-    if (this.hasLoadedSignals) return
+  async loadSignals (force = false) {
+    if (this.hasLoadedSignals && !force) return
     this.hasLoadedSignals = true
     var [votes, commentCount] = await Promise.all([
       beaker.index.listRecords({
@@ -634,7 +634,7 @@ export class Record extends LitElement {
         }
       })
     }
-    this.loadSignals()
+    this.loadSignals(true)
   }
 }
 
