@@ -41,8 +41,35 @@ export class RecordThread extends LitElement {
     this.isCommenting = false
   }
 
+  reset () {
+    this.subject = undefined
+    this.commentCount = 0
+    this.relatedItemCount = 0
+    this.replies = undefined
+    this.networkReplies = undefined
+  }
+
+  async fetchRecordOrSite (url) {
+    var v
+    var isSite = false
+    try {
+      let urlp = new URL(url)
+      isSite = urlp.pathname === '/' && !urlp.search
+    } catch {}
+    try {
+      if (isSite) {
+        v = await beaker.index.getSite(url)
+        v.isSite = true
+      } else {
+        v = await beaker.index.getRecord(url)
+      }
+    } catch {}
+    return v
+  }
+
   async load () {
-    var record = await beaker.index.getRecord(this.recordUrl)
+    this.reset()
+    var record = await this.fetchRecordOrSite(this.recordUrl)
     this.subjectUrl = record?.metadata?.['comment/subject'] || record?.url || this.recordUrl
     /* dont await */ this.loadSubject(record)
     /* dont await */ this.loadComments(record)
@@ -52,19 +79,7 @@ export class RecordThread extends LitElement {
     var subjectUrl = record?.metadata?.['comment/subject']
     var subject
     if (subjectUrl) {
-      let isSubjectSite = false
-      try {
-        let urlp = new URL(subjectUrl)
-        isSubjectSite = urlp.pathname === '/' && !urlp.search
-      } catch {}
-      try {
-        if (isSubjectSite) {
-          subject = await beaker.index.getSite(subjectUrl)
-          subject.isSite = true
-        } else {
-          subject = await beaker.index.getRecord(subjectUrl)
-        }
-      } catch {}
+      subject = this.fetchRecordOrSite(subjectUrl)
     } else {
       subject = record
     }
@@ -140,9 +155,11 @@ export class RecordThread extends LitElement {
     return html`
       ${this.subject ? html`
         ${this.subject.isSite ? html`
-          <a class="simple-link" href="${this.subject.url}">
-            ${this.subject.title || asyncReplace(fancyUrlAsync(this.subject.url))}
-          </a>
+          <div class="subject link">
+            <a class="simple-link" href="${this.subject.url}">
+              ${this.subject.title || asyncReplace(fancyUrlAsync(this.subject.url))}
+            </a>
+          </div>
         ` : this.isFullPage && mode === 'link' && this.subject.url.startsWith('hyper') ? html`
           <div class="subject-content">${this.renderSubjectContent()}</div>
         ` : html`

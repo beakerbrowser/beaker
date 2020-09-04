@@ -145,13 +145,14 @@ beaker-record {
 
 .extended-comments-header {
   position: relative;
-  margin: 14px 12px;
+  margin: 20px 12px 14px;
   border-top: 1px solid var(--border-color--light);
 }
 
 .extended-comments-header .label {
   position: absolute;
   font-size: 11px;
+  font-weight: bold;
   color: var(--text-color--light);
   padding: 0 4px;
   top: -8px;
