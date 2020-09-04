@@ -183,7 +183,7 @@ beaker-record {
 }
 
 .replies beaker-record.highlight {
-  outline: 1px solid var(--border-color--focused);
+  background: var(--bg-color--unread);
 }
 
 .error {

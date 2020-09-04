@@ -114,6 +114,7 @@ class NotificationsApp extends LitElement {
         action-target=${this.getActionTarget(result)}
         render-mode="action"
         thread-view
+        noborders
         profile-url=${this.profile?.url}
       ></beaker-record>
     `

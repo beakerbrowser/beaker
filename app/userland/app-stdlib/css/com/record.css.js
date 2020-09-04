@@ -315,15 +315,23 @@ a:hover {
 }
 
 .action-content {
-  margin-top: -3px;
-  padding: 0 30px 10px;
   letter-spacing: 0.1px;
   line-height: 1.4;
   font-size: 14px;
+  padding: 10px;
+  margin: 0px 30px 10px;
+  border: 1px solid var(--border-color--light);
+  border-radius: 4px;
 }
 
 .action-content a {
   color: var(--text-color--default);
+}
+
+:host([noborders]) .action-content {
+  padding: 0 30px 10px;
+  margin: -3px 0 0;
+  border: 0;
 }
 
 /** LINK STYLES **/
