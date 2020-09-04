@@ -863,13 +863,19 @@ async function indexSite (origin, myOrigins) {
               // -prf
               continue
             }
+            await db('records_notification').del().where({
+              record_rowid: rowid,
+              notification_key: key,
+              notification_subject_origin: subjectp.origin,
+              notification_subject_path: subjectp.path
+            })
             await db('records_notification').insert({
               record_rowid: rowid,
               notification_key: key,
               notification_subject_origin: subjectp.origin,
               notification_subject_path: subjectp.path,
               notification_read: 0
-            }).onConflictDoNothing()
+            })
           }
         }
       }
