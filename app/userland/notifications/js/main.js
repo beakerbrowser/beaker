@@ -63,6 +63,9 @@ class NotificationsApp extends LitElement {
       reverse: true
     })
     this.results = results
+    setTimeout(() => {
+      beaker.index.clearNotifications()
+    }, 3e3)
   }
 
   getActionTarget (result) {
@@ -118,12 +121,6 @@ class NotificationsApp extends LitElement {
 
   // events
   // =
-
-  onLoad () {
-    setTimeout(async () => {
-      await beaker.index.clearNotifications()
-    }, 3e3)
-  }
 
   onViewThread (e) {
     ViewThreadPopup.create({
