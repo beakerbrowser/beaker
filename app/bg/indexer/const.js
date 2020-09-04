@@ -40,6 +40,7 @@ export const METADATA_KEYS = {
  * @typedef {Object} ParsedUrl
  * @prop {String} origin
  * @prop {String} path
+ * @prop {String} pathname
  * 
  * @typedef {Object} RecordUpdate
  * @prop {Boolean} remove
@@ -51,7 +52,7 @@ export const METADATA_KEYS = {
  * @typedef {Object} RecordDescription
  * @prop {String} url
  * @prop {String} prefix
- * @prop {String} mimetype
+ * @prop {String} extension
  * @prop {Number} ctime
  * @prop {Number} mtime
  * @prop {Number} rtime
@@ -68,7 +69,7 @@ export const METADATA_KEYS = {
  * 
  * @typedef {Object} FileQuery
  * @prop {String} prefix
- * @prop {String} mimetype
+ * @prop {String} extension
  * 
  * @typedef {Object} NotificationQuery
  * @prop {String} subject

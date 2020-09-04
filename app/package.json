@@ -17,7 +17,7 @@
     "await-lock": "^1.2.1",
     "base32.js": "^0.1.0",
     "beaker-error-constants": "^1.5.0",
-    "beaker-virtual-fs": "git://github.com/beakerbrowser/beaker-virtual-fs.git#a4b3112df5328e99e63e1786823b3705ab031c77",
+    "beaker-index": "github:andrewosh/beaker-index#hyperbee-refactor",
     "binary-extensions": "^1.13.1",
     "bytes": "^3.1.0",
     "circular-append-file": "^1.0.1",

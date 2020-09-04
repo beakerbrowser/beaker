@@ -81,7 +81,7 @@ export async function listOriginsToIndex (db) {
     })
     .where({
       prefix: '/subscriptions',
-      mimetype: 'application/goto'
+      extension: '.goto'
     })
     .whereIn('origin', [
       'hyper://private',
@@ -223,7 +223,8 @@ export function parseUrl (url, base = undefined) {
   let {protocol, hostname, port, pathname, search, hash} = new URL(url, base)
   return {
     origin: `${protocol}//${hostname}${(port ? `:${port}` : '')}`,
-    path: pathname + search + hash
+    path: pathname + search + hash,
+    pathname
   }
 }
 
@@ -247,15 +248,6 @@ export function parallel (arr, fn, ...args) {
   })
 }
 
-export function getMimetype (metadata, path) {
-  var mimetype = metadata.mimetype || metadata.mimeType || mime.identify(path)
-  {
-    let i = mimetype.indexOf(';')
-    if (i !== -1) mimetype = mimetype.slice(0, i)
-  }
-  return mimetype
-}
-
 export function toFileQuery (obj) {
   if (!obj || typeof obj !== 'object') {
     throw new Error('Invalid .file parameter')
@@ -263,12 +255,12 @@ export function toFileQuery (obj) {
   if (obj.prefix && typeof obj.prefix !== 'string') {
     throw new Error('Invalid .file parameter')
   }
-  if (obj.mimetype && typeof obj.mimetype !== 'string') {
+  if (obj.extension && typeof obj.extension !== 'string') {
     throw new Error('Invalid .file parameter')
   }
-  if (obj.prefix && obj.mimetype) return {prefix: obj.prefix, mimetype: obj.mimetype}
+  if (obj.prefix && obj.extension) return {prefix: obj.prefix, extension: obj.extension}
   if (obj.prefix) return {prefix: obj.prefix}
-  if (obj.mimetype) return {mimetype: obj.mimetype}
+  if (obj.extension) return {extension: obj.extension}
   throw new Error('Invalid .file parameter')
 }
 

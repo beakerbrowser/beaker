@@ -143,6 +143,22 @@ beaker-record {
   margin: 0 4px 10px;
 }
 
+.extended-comments-header {
+  position: relative;
+  margin: 14px 12px;
+  border-top: 1px solid var(--border-color--light);
+}
+
+.extended-comments-header .label {
+  position: absolute;
+  font-size: 11px;
+  color: var(--text-color--light);
+  padding: 0 4px;
+  top: -8px;
+  left: 10px;
+  background: var(--bg-color--default);
+}
+
 .comment-prompt {
   padding: 10px 14px;
   border-radius: 4px;

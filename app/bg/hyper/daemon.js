@@ -83,6 +83,10 @@ export function getClient () {
   return client
 }
 
+export function getHyperspaceClient () {
+  return client._client
+}
+
 export function isActive () {
   if (isFirstConnect) {
     // avoid the "inactive daemon" indicator during setup

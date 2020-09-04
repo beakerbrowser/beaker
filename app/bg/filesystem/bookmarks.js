@@ -16,7 +16,7 @@ import * as profileDb from '../dbs/profile-data-db'
  */
 export async function list () {
   var results = await indexer.listRecords({
-    file: {mimetype: 'application/goto', prefix: '/bookmarks'},
+    file: {extension: '.goto', prefix: '/bookmarks'},
     site: ['hyper://private', filesystem.getProfileUrl()],
     limit: 1e9
   })
@@ -31,7 +31,7 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var results = await indexer.listRecords({
-    file: {mimetype: 'application/goto', prefix: '/bookmarks'},
+    file: {extension: '.goto', prefix: '/bookmarks'},
     site: ['hyper://private', filesystem.getProfileUrl()],
     links: href,
     limit: 1

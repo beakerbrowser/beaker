@@ -18,6 +18,7 @@ export class RecordThread extends LitElement {
       isFullPage: {type: Boolean, attribute: 'full-page'},
       subject: {type: Object},
       replies: {type: Array},
+      networkReplies: {type: Array},
       isCommenting: {type: Boolean}
     }
   }
@@ -35,6 +36,7 @@ export class RecordThread extends LitElement {
     this.commentCount = 0
     this.relatedItemCount = 0
     this.replies = undefined
+    this.networkReplies = undefined
     this.profileUrl = ''
     this.isCommenting = false
   }
@@ -73,7 +75,9 @@ export class RecordThread extends LitElement {
   }
 
   async loadComments (record) {
+    // local first
     var replies = await beaker.index.listRecords({
+      index: 'local',
       links: stripUrlHash(this.subjectUrl),
       sort: 'ctime',
       reverse: true
@@ -83,6 +87,19 @@ export class RecordThread extends LitElement {
     this.replies = toThreadTree(replies)
     await this.requestUpdate()
     this.scrollHighlightedPostIntoView()
+    emit(this, 'load')
+
+    // then try network
+    var networkReplies = await beaker.index.listRecords({
+      index: 'network',
+      links: stripUrlHash(this.subjectUrl),
+      sort: 'ctime',
+      reverse: true
+    })
+    networkReplies = networkReplies.filter(reply => !replies.find(reply2 => reply.url === reply2.url)) // filter out in-network items
+    if (networkReplies.length === 0) return
+    this.networkReplies = toThreadTree(networkReplies)
+    await this.requestUpdate()
     emit(this, 'load')
   }
 
@@ -176,6 +193,16 @@ export class RecordThread extends LitElement {
             `}
           </div>
           ${this.renderReplies(this.replies)}
+        </div>
+      ` : ''}
+      ${this.networkReplies ? html`
+        <div class="comments">
+          <div class="extended-comments-header">
+            <div class="label">
+              From your extended network
+            </div>
+          </div>
+          ${this.renderReplies(this.networkReplies)}
         </div>
       ` : ''}
     `

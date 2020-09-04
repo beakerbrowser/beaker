@@ -23,7 +23,7 @@
 
 import { app } from 'electron'
 import knex from 'knex'
-import { dirname } from 'path'
+import { dirname, extname } from 'path'
 import { EventEmitter } from 'events'
 import emitStream from 'emit-stream'
 import markdownLinkExtractor from 'markdown-link-extractor'
@@ -34,6 +34,8 @@ import mkdirp from 'mkdirp'
 import * as logLib from '../logger'
 const logger = logLib.get().child({category: 'indexer'})
 import { TICK_INTERVAL, METADATA_KEYS } from './const'
+import * as hyperbees from './hyperbees'
+import * as local from './local'
 import lock from '../../lib/lock'
 import { joinPath } from '../../lib/strings'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
@@ -50,7 +52,6 @@ import {
   isUrl,
   toArray,
   parallel,
-  getMimetype,
   toFileQuery,
   toNotificationQuery
 } from './util'
@@ -100,6 +101,7 @@ export async function setup (opts) {
     useNullAsDefault: true
   })
   await db.migrate.latest({directory: path.join(app.getAppPath(), 'bg', 'indexer', 'migrations')})
+  await hyperbees.setup()
   tick()
 
   // fetch current sites states for debugging
@@ -207,7 +209,7 @@ export async function getRecord (url) {
   var result = {
     url: urlp.origin + urlp.path,
     prefix: rows[0].prefix,
-    mimetype: rows[0].mimetype,
+    extension: rows[0].extension,
     ctime: rows[0].ctime,
     mtime: rows[0].mtime,
     rtime: rows[0].rtime,
@@ -236,10 +238,11 @@ export async function getRecord (url) {
 
 /**
  * @param {Object} [opts]
- * @param {String|Array<String>} [opts.site]
- * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {String|String[]} [opts.site]
+ * @param {FileQuery|FileQuery[]} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
+ * @param {String|String[]} [opts.index] - 'local' or 'network'
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
@@ -247,173 +250,77 @@ export async function getRecord (url) {
  * @returns {Promise<RecordDescription[]>}
  */
 export async function listRecords (opts) {
-  var sort = 'ctime'
-  var reverse = (typeof opts?.reverse === 'boolean') ? opts.reverse : true
-  if (opts?.sort && ['ctime', 'mtime', 'rtime', 'site'].includes(opts.sort)) {
-    sort = opts.sort
+  opts = opts && typeof opts === 'object' ? opts : {}
+  opts.reverse = (typeof opts.reverse === 'boolean') ? opts.reverse : true
+  if (!opts.sort || !['ctime', 'mtime', 'rtime', 'site'].includes(opts.sort)) {
+    opts.sort = 'ctime'
   }
-  var offset = opts?.offset || 0
-  var limit = opts?.limit || 25
-  var sep = `[>${Math.random()}<]`
-  var query = db('sites')
-    .innerJoin('records', 'sites.rowid', 'records.site_rowid')
-    .leftJoin('records_data', function() {
-      this.on('records.rowid', '=', 'records_data.record_rowid').onNotNull('records_data.value')
-    })
-    .select(
-      'origin',
-      'path',
-      'prefix',
-      'mimetype',
-      'ctime',
-      'mtime',
-      'rtime',
-      'title as siteTitle',
-      db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
-      db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
-    )
-    .groupBy('records.rowid')
-    .offset(offset)
-    .limit(limit)
-    .orderBy(sort, reverse ? 'desc' : 'asc')
+  opts.offset = opts.offset || 0
+  opts.limit = opts.limit || 25
+  opts.index = opts.index ? toArray(opts.index) : ['local']
 
-  if (opts?.site) {
-    if (Array.isArray(opts.site)) {
-      query = query.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
-    } else {
-      query = query.where({origin: normalizeOrigin(opts.site)})
-    }
+  var results = []
+  if (opts.index.includes('local')) {
+    results.push(await local.listRecords(db, opts))
   }
-  if (opts?.file) {
-    if (Array.isArray(opts.file)) {
-      query = query.where(function () {
-        let chain = this.where(toFileQuery(opts.file[0]))
-        for (let i = 1; i < opts.file.length; i++) {
-          chain = chain.orWhere(toFileQuery(opts.file[i]))
-        }
-      })
-    } else {
-      query = query.where(toFileQuery(opts.file))
-    }
+  if (opts.index.includes('network')) {
+    results.push(await hyperbees.listRecords(opts, results[0]?.records))
   }
-  if (typeof opts?.links === 'string') {
-    query = query.joinRaw(
-      `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
-      [normalizeUrl(opts.links)]
-    )
-  }
-  if (opts?.notification) {
-    let notification = toNotificationQuery(opts.notification)
-    query = query
-      .select(
-        'notification_key',
-        'notification_subject_origin',
-        'notification_subject_path',
-        'notification_read'
-      )
-      .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
-    if (typeof notification !== 'boolean') {
-      query = query.where(notification)
-    }
+  
+  // identify origins which we need to live-query
+  var missedOrigins = results[0].missedOrigins || []
+  if (results[1] && results[1].missedOrigins?.length) {
+    missedOrigins = missedOrigins.filter(org => results[1].missedOrigins.includes(org))
   }
 
-  var indexStatesQuery
-  if (opts?.site && !opts?.links && !opts?.notification) {
-    // fetch info on whether each given site has been indexed
-    indexStatesQuery = db('sites')
-      .select('origin')
-      .where('last_indexed_version', '>', 0)
-    if (Array.isArray(opts.site)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
-    } else {
-      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.site)})
-    }
-  }
-
-  var [rows, indexStates] = await Promise.all([
-    query,
-    indexStatesQuery
-  ])
-
-  var records = rows.map(row => {
-    var record = {
-      url: row.origin + row.path,
-      prefix: row.prefix,
-      mimetype: row.mimetype,
-      ctime: row.ctime,
-      mtime: row.mtime,
-      rtime: row.rtime,
-      site: {
-        url: row.origin,
-        title: row.siteTitle
-      },
-      metadata: {},
-      links: [],
-      content: undefined,
-      notification: undefined
-    }
-    var dataKeys = (row.data_keys || '').split(sep)
-    var dataValues = (row.data_values || '').split(sep)
-    for (let i = 0; i < dataKeys.length; i++) {
-      let key = dataKeys[i]
-      if (key === METADATA_KEYS.content) {
-        record.content = dataValues[i]
-      } else if (key === METADATA_KEYS.link) {
-        record.links.push(dataValues[i])
-      } else {
-        record.metadata[key] = dataValues[i]
-      }
-    }
-    if (opts?.notification) {
-      record.notification = {
-        key: row.notification_key,
-        subject: joinPath(row.notification_subject_origin, row.notification_subject_path),
-        unread: !row.notification_read
-      }
-    }
-    return record
-  })
-
-  // fetch live data for each site not present in the db
-  if (indexStates) {
+  if (missedOrigins.length) {
     // fetch the live records
-    var addedRecords
+    let records
     for (let site of toArray(opts.site)) {
       let origin = normalizeOrigin(site)
-      if (indexStates.find(state => state.origin === origin)) {
-        continue
+      if (missedOrigins.includes(origin)) {
+        records = (records || []).concat(
+          await listLiveRecords(origin, opts)
+        )
       }
-      addedRecords = (addedRecords || []).concat(
-        await listLiveRecords(origin, opts)
-      )
     }
-    if (addedRecords) {
-      // merge and sort
-      records = records.concat(addedRecords)
-      records.sort((a, b) => {
-        if (sort === 'ctime') {
-          return reverse ? (b.ctime - a.ctime) : (a.ctime - b.ctime)
-        } else if (sort === 'mtime') {
-          return reverse ? (b.mtime - a.mtime) : (a.mtime - b.mtime)
-        } else if (sort === 'site') {
-          return b.site.url.localeCompare(a.site.url) * (reverse ? -1 : 1)
-        }
-      })
-      records = records.slice(offset, offset + limit)
+    if (records && records?.length) {
+      results.push({records})
+    }
+  }
 
-      // load data as needed
-      for (let record of records) {
-        if (record.fetchData) {
+  var records
+  if (results.length > 0) {
+    // merge and sort
+    records = results.reduce((acc, res) => acc.concat(res.records), [])
+    records.sort((a, b) => {
+      if (opts.sort === 'ctime') {
+        return opts.reverse ? (b.ctime - a.ctime) : (a.ctime - b.ctime)
+      } else if (opts.sort === 'mtime') {
+        return opts.reverse ? (b.mtime - a.mtime) : (a.mtime - b.mtime)
+      } else if (opts.sort === 'site') {
+        return b.site.url.localeCompare(a.site.url) * (opts.reverse ? -1 : 1)
+      }
+    })
+    records = records.slice(opts.offset, opts.offset + opts.limit)
+
+    // load data as needed
+    for (let record of records) {
+      if (record.fetchData) {
+        try {
           await record.fetchData()
-          delete record.fetchData
+        } catch {
+          // ignore
         }
+        delete record.fetchData
       }
     }
+  } else {
+    records = results[0].records
   }
 
   return records
 }
-
 
 /**
  * @param {Object} [opts]
@@ -421,80 +328,41 @@ export async function listRecords (opts) {
  * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
+ * @param {String|String[]} [opts.index] - 'local' or 'network'
  * @returns {Promise<Number>}
  */
 export async function countRecords (opts) {
-  var query = db('records')
-    .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
-    .select('prefix', db.raw(`count(records.rowid) as count`))
+  opts = opts && typeof opts === 'object' ? opts : {}
+  opts.index = opts.index ? toArray(opts.index) : ['local']
 
-  if (opts?.site) {
-    if (Array.isArray(opts.site)) {
-      query = query.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
-    } else {
-      query = query.where({origin: normalizeOrigin(opts.site)})
-    }
+  var results = []
+  if (opts.index.includes('local')) {
+    results.push(await local.countRecords(db, opts))
   }
-  if (opts?.file) {
-    if (Array.isArray(opts.file)) {
-      query = query.where(function () {
-        let chain = this.where(toFileQuery(opts.file[0]))
-        for (let i = 1; i < opts.file.length; i++) {
-          chain = chain.orWhere(toFileQuery(opts.file[i]))
-        }
-      })
-    } else {
-      query = query.where(toFileQuery(opts.file))
-    }
+  if (opts.index.includes('network')) {
+    results.push(await hyperbees.countRecords(opts, results[0]?.includedOrigins))
   }
-  if (typeof opts?.links === 'string') {
-    query = query.joinRaw(
-      `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
-      [normalizeUrl(opts.links)]
-    )
-  }
-  if (opts?.notification) {
-    let notification = toNotificationQuery(opts.notification)
-    query = query
-      .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
-    if (typeof notification !== 'boolean') {
-      query = query.where(notification)
-    }
+  
+  // identify origins which we need to live-query
+  var missedOrigins = results[0].missedOrigins || []
+  if (results[1] && results[1].missedOrigins?.length) {
+    missedOrigins = missedOrigins.filter(org => results[1].missedOrigins.includes(org))
   }
 
-  var indexStatesQuery
-  if (opts?.site && !opts?.links && !opts?.notification) {
-    // fetch info on whether each given site has been indexed
-    indexStatesQuery = db('sites')
-      .select('origin')
-      .where('last_indexed_version', '>', 0)
-    if (Array.isArray(opts.site)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
-    } else {
-      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.site)})
-    }
-  }
-
-  var [rows, indexStates] = await Promise.all([
-    query,
-    indexStatesQuery
-  ])
-
-  var count = rows[0]?.count || 0
-
-  // fetch live data for each site not present in the db
-  if (indexStates) {
+  if (missedOrigins.length) {
+    // fetch the live records
     for (let site of toArray(opts.site)) {
       let origin = normalizeOrigin(site)
-      if (indexStates.find(state => state.origin === origin)) {
-        continue
+      let count = 0
+      if (missedOrigins.includes(origin)) {
+        let files = await listLiveRecords(origin, opts)
+        count += files.length
       }
-      let files = await listLiveRecords(origin, opts)
-      rows.count += files.length
+      results.push({count})
     }
   }
 
-  return count
+  return results.reduce((acc, result) => acc + result.count, 0)
 }
 
 /**
@@ -522,7 +390,7 @@ export async function searchRecords (q = '', opts) {
       'origin',
       'path',
       'prefix',
-      'mimetype',
+      'extension',
       'ctime',
       'mtime',
       'rtime',
@@ -593,7 +461,7 @@ export async function searchRecords (q = '', opts) {
     var record = {
       url: mergedHits[0].origin + mergedHits[0].path,
       prefix: mergedHits[0].prefix,
-      mimetype: mergedHits[0].mimetype,
+      extension: mergedHits[0].extension,
       ctime: mergedHits[0].ctime,
       mtime: mergedHits[0].mtime,
       rtime: mergedHits[0].rtime,
@@ -792,7 +660,7 @@ async function indexSite (origin, myOrigins) {
         }
       } else {
         // file write
-        let mimetype = getMimetype(update.metadata, update.path)
+        let extension = extname(update.path)
         let prefix = dirname(update.path)
         let dataEntries = [
           /* records_data.key, records_data.value */
@@ -803,7 +671,7 @@ async function indexSite (origin, myOrigins) {
 
         // read content if markdown
         let content, contentLinks
-        if (mimetype === 'text/markdown') {
+        if (extension === '.md') {
           content = await site.fetch(update.path)
           contentLinks = markdownLinkExtractor(content)
           dataEntries.push([METADATA_KEYS.content, content])
@@ -818,7 +686,7 @@ async function indexSite (origin, myOrigins) {
             site_rowid: site.rowid,
             path: update.path,
             prefix,
-            mimetype,
+            extension,
             mtime: update.mtime,
             ctime: update.ctime,
             rtime: Date.now()
@@ -928,8 +796,8 @@ async function deindexSite (origin) {
  * @returns {Promise<RecordDescription>}
  */
 async function getLiveRecord (url) {
-  let urlp = new URL(url)
-  if (urlp.protocol !== 'hyper:') {
+  let urlp = parseUrl(url)
+  if (!urlp.origin.startsWith('hyper:')) {
     return undefined // hyper only for now
   }
   try {
@@ -946,7 +814,7 @@ async function getLiveRecord (url) {
     var record = {
       url,
       prefix: dirname(urlp.pathname),
-      mimetype: getMimetype(stat.metadata, urlp.pathname),
+      extension: extname(urlp.pathname),
       ctime: +stat.ctime,
       mtime: +stat.mtime,
       rtime: Date.now(),
@@ -962,7 +830,7 @@ async function getLiveRecord (url) {
     for (let k in stat.metadata) {
       record.metadata[k] = stat.metadata[k]
     }
-    if (record.mimetype === 'text/markdown') {
+    if (record.extension === '.md') {
       record.content = await site.fetch(update.path)
       record.links = markdownLinkExtractor(record.content)
     }
@@ -988,7 +856,7 @@ async function listLiveRecords (origin, opts) {
       return {
         url: file.url,
         prefix: dirname(file.path),
-        mimetype: getMimetype(file.stat.metadata, file.path),
+        extension: extname(file.path),
         ctime: +file.stat.ctime,
         mtime: +file.stat.mtime,
         rtime: Date.now(),
@@ -1003,7 +871,7 @@ async function listLiveRecords (origin, opts) {
 
         // helper to fetch the rest of the data if in the results set
         fetchData: async function () {
-          if (this.mimetype === 'text/markdown') {
+          if (this.extension === '.md') {
             this.content = await site.fetch(file.path)
             this.links = markdownLinkExtractor(this.content)
           }

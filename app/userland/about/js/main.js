@@ -179,7 +179,6 @@ class AboutApp extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${this.renderLoading()}
       <header>
         <site-info
           url=${this.url}
@@ -196,6 +195,7 @@ class AboutApp extends LitElement {
         ` : ''}
       </header>
       <div class="feed">
+        ${this.renderLoading()}
         ${this.siteInfo ? html`
           <beaker-record-feed
             .fileQuery=${FILE_QUERIES[this.currentView]}
@@ -213,7 +213,9 @@ class AboutApp extends LitElement {
   }
 
   renderLoading () {
-    return ''
+    if (this.isLoading) {
+      return html`<div class="loading"><span class="spinner"></span> Loading...</div>`
+    }
   }
 
   // events

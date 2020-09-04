@@ -119,7 +119,7 @@ export class SitesList extends LitElement {
     }
 
     var subs = await beaker.index.listRecords({
-      file: {mimetype: 'application/goto', prefix: '/subscriptions'},
+      file: {extension: '.goto', prefix: '/subscriptions'},
       limit: 1e9
     })
 

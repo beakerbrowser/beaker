@@ -14,7 +14,7 @@ import { URL } from 'url'
  */
 export async function list () {
   var results = await indexer.listRecords({
-    file: {mimetype: 'application/goto', prefix: '/subscriptions'},
+    file: {extension: '.goto', prefix: '/subscriptions'},
     site: ['hyper://private', filesystem.getProfileUrl()],
     limit: 1e9
   })
@@ -28,7 +28,7 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var results = await indexer.listRecords({
-    file: {mimetype: 'application/goto', prefix: '/subscriptions'},
+    file: {extension: '.goto', prefix: '/subscriptions'},
     site: ['hyper://private', filesystem.getProfileUrl()],
     links: href,
     limit: 1
@@ -45,7 +45,7 @@ export async function get (href) {
 export async function listNetworkFor (href) {
   href = normalizeUrl(href)
   var results = await indexer.listRecords({
-    file: {mimetype: 'application/goto', prefix: '/subscriptions'},
+    file: {extension: '.goto', prefix: '/subscriptions'},
     links: href,
     limit: 1e9
   })

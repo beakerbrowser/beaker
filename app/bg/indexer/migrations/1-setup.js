@@ -13,7 +13,7 @@ exports.up = async function (knex) {
     table.integer('site_rowid').unsigned().notNullable()
     table.string('prefix').notNullable()
     table.string('path').notNullable()
-    table.string('mimetype')
+    table.string('extension')
     table.integer('mtime')
     table.integer('ctime')
     table.integer('rtime')
@@ -21,7 +21,7 @@ exports.up = async function (knex) {
     table.foreign('site_rowid').references('rowid').inTable('sites').onDelete('CASCADE')
     table.index('prefix')
     table.index('path')
-    table.index('mimetype')
+    table.index('extension')
     table.unique(['site_rowid', 'path'])
   })
   await knex.schema.createTable('records_data', table => {

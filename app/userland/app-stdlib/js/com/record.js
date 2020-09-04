@@ -76,11 +76,11 @@ export class Record extends LitElement {
     this.hasLoadedSignals = true
     var [votes, commentCount] = await Promise.all([
       beaker.index.listRecords({
-        file: {prefix: '/votes', mimetype: 'application/goto'},
+        file: {prefix: '/votes', extension: '.goto'},
         links: this.loadRecordUrl || this.record.url,
       }),
       beaker.index.countRecords({
-        file: {prefix: '/comments', mimetype: 'text/markdown'},
+        file: {prefix: '/comments', extension: '.md'},
         links: this.loadRecordUrl || this.record.url,
       })
     ])
