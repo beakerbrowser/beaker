@@ -55,7 +55,7 @@ export function toDomain (str) {
 }
 
 export function toNiceDomain (str, len=4) {
-  var domain = toDomain(str)
+  var domain = str.includes('://') ? toDomain(str) : str
   if (DRIVE_KEY_REGEX.test(domain)) {
     domain = `${domain.slice(0, len)}..${domain.slice(-2)}`
   }
