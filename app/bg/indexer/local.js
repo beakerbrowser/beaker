@@ -53,12 +53,18 @@ export async function listRecords (db, opts) {
       'rtime',
       'title as siteTitle',
       db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
-      db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
+      db.raw(`group_concat(records_data.value, '${sep}') as data_values`)
     )
     .groupBy('records.rowid')
     .offset(opts.offset)
     .limit(opts.limit)
     .orderBy(opts.sort, opts.reverse ? 'desc' : 'asc')
+
+  if (opts.sort === 'crtime') {
+    query = query.select(db.raw(`CASE rtime WHEN rtime < ctime THEN rtime ELSE ctime END AS crtime`))
+  } else if (opts.sort === 'mrtime') {
+    query = query.select(db.raw(`CASE rtime WHEN rtime < mtime THEN rtime ELSE mtime END AS mrtime`))
+  }
 
   if (opts?.site) {
     if (Array.isArray(opts.site)) {

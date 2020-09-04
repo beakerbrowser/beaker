@@ -135,7 +135,7 @@ class DesktopApp extends LitElement {
     let allSubscriptions = await beaker.index.listRecords({
       file: {extension: '.goto', prefix: '/subscriptions'},
       limit: 100,
-      sort: 'ctime',
+      sort: 'crtime',
       reverse: true
     })
     var currentSubs = new Set(this.sourceOptions.map(source => (new URL(source.href)).origin))

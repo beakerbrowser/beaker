@@ -120,7 +120,7 @@ export class RecordFeed extends LitElement {
           file: this.fileQuery || DEFAULT_SEARCH_FILE_QUERIES,
           site: this.sources,
           limit: this.limit,
-          sort: 'ctime',
+          sort: 'crtime',
           reverse: true
         })
       } else {
@@ -132,7 +132,7 @@ export class RecordFeed extends LitElement {
             site: this.sources,
             limit: this.limit,
             offset,
-            sort: 'ctime',
+            sort: 'crtime',
             reverse: true
           })
           if (subresults.length === 0) break

@@ -252,8 +252,8 @@ export async function getRecord (url) {
 export async function listRecords (opts) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.reverse = (typeof opts.reverse === 'boolean') ? opts.reverse : true
-  if (!opts.sort || !['ctime', 'mtime', 'rtime', 'site'].includes(opts.sort)) {
-    opts.sort = 'ctime'
+  if (!opts.sort || !['ctime', 'mtime', 'rtime', 'crtime', 'mrtime', 'site'].includes(opts.sort)) {
+    opts.sort = 'crtime'
   }
   opts.offset = opts.offset || 0
   opts.limit = opts.limit || 25
@@ -298,6 +298,14 @@ export async function listRecords (opts) {
         return opts.reverse ? (b.ctime - a.ctime) : (a.ctime - b.ctime)
       } else if (opts.sort === 'mtime') {
         return opts.reverse ? (b.mtime - a.mtime) : (a.mtime - b.mtime)
+      } else if (opts.sort === 'crtime') {
+        let crtimeA = Math.min(a.ctime, a.rtime)
+        let crtimeB = Math.min(b.ctime, b.rtime)
+        return opts.reverse ? (crtimeB - crtimeA) : (crtimeA - crtimeB)
+      } else if (opts.sort === 'mrtime') {
+        let mrtimeA = Math.min(a.mtime, a.rtime)
+        let mrtimeB = Math.min(b.mtime, b.rtime)
+        return opts.reverse ? (mrtimeB - mrtimeA) : (mrtimeA - mrtimeB)
       } else if (opts.sort === 'site') {
         return b.site.url.localeCompare(a.site.url) * (opts.reverse ? -1 : 1)
       }

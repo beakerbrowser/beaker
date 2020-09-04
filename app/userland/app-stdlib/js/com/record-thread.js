@@ -94,7 +94,7 @@ export class RecordThread extends LitElement {
     var replies = await beaker.index.listRecords({
       index: 'local',
       links: stripUrlHash(this.subjectUrl),
-      sort: 'ctime',
+      sort: 'crtime',
       reverse: true
     })
     this.commentCount = replies.filter(r => getRecordType(r) === 'comment').length
@@ -108,7 +108,7 @@ export class RecordThread extends LitElement {
     var networkReplies = await beaker.index.listRecords({
       index: 'network',
       links: stripUrlHash(this.subjectUrl),
-      sort: 'ctime',
+      sort: 'crtime',
       reverse: true
     })
     networkReplies = networkReplies.filter(reply => !replies.find(reply2 => reply.url === reply2.url)) // filter out in-network items
