@@ -6,7 +6,7 @@ import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/record.css.js'
 import { removeMarkdown } from '../../vendor/remove-markdown.js'
 import { shorten, makeSafe, toNiceDomain, pluralize, fancyUrlAsync, isSameOrigin } from '../strings.js'
-import { getRecordType } from '../records.js'
+import { getRecordType, getPreferredRenderMode } from '../records.js'
 import { emit } from '../dom.js'
 import './post-composer.js'
 
@@ -41,7 +41,7 @@ export class Record extends LitElement {
     this.upvoteCount = 0
     this.downvoteCount = 0
     this.commentCount = 0
-    this.renderMode = 'card'
+    this.renderMode = undefined
     this.showContext = false
     this.constrainHeight = false
     this.profileUrl = undefined
@@ -65,6 +65,10 @@ export class Record extends LitElement {
 
   async load () {
     this.record = await beaker.index.getRecord(this.loadRecordUrl)
+    if (!this.renderMode) {
+      this.renderMode = getPreferredRenderMode(this.record)
+      this.setAttribute('render-mode', this.renderMode)
+    }
   }
 
   async loadSignals () {
@@ -171,7 +175,7 @@ export class Record extends LitElement {
             </div>
           </div>
           <div class="content markdown">
-            ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
+            ${res.content ? (renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))) : ''}
           </div>
           <div class="ctrls">
             ${this.renderVoteCtrl()}
@@ -184,7 +188,6 @@ export class Record extends LitElement {
                 constrain-height
                 noborders
                 nothumb
-                render-mode="card"
                 profile-url=${this.profileUrl}
               ></beaker-record>
             </div>

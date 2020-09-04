@@ -13,15 +13,26 @@ export function typeToQuery (type) {
 }
 
 export function getRecordType (record) {
-  if (record.mimetype === 'application/goto') {
+  if (record?.mimetype === 'application/goto') {
     if (record.prefix === '/bookmarks') return 'bookmark'
     if (record.prefix === '/subscriptions') return 'subscription'
     if (record.prefix === '/votes') return 'vote'
-  } else if (record.mimetype === 'text/markdown') {
+  } else if (record?.mimetype === 'text/markdown') {
     if (record.prefix === '/blog') return 'blogpost'
     if (record.prefix === '/comments') return 'comment'
     if (record.prefix === '/microblog') return 'microblogpost'
     if (record.prefix === '/pages') return 'page'
   }
   return 'unknown'
+}
+
+export function getPreferredRenderMode (record) {
+  let type = getRecordType(record)
+  if (['comment', 'microblogpost'].includes(type)) {
+    return 'card'
+  }
+  if (['subscription', 'vote'].includes(type)) {
+    return 'action'
+  }
+  return 'link'
 }

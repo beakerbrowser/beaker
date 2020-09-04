@@ -12,6 +12,10 @@ ${markdownCSS}
 
 /** COMMON RECORD STYLES **/
 
+:host {
+  display: block;
+}
+
 a {
   text-decoration: none;
   cursor: initial;
@@ -49,7 +53,6 @@ a:hover {
   display: inline-block;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 10px 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -349,6 +352,10 @@ a:hover {
   top: 1px;
 }
 
+:host([nothumb]) .record.link .thumb {
+  display: none;
+}
+
 .record.link.private .thumb {
   background: var(--bg-color--private-light);
 }
@@ -579,6 +586,11 @@ a:hover {
   padding: 0px 4px 2px;
   border: 1px solid var(--border-color--light);
   font-size: 11px;
+}
+
+.record.card .context beaker-record[render-mode="link"] {
+  display: block;
+  padding: 10px 13px;
 }
 
 .record.card .content {
