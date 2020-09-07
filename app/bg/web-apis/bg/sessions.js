@@ -57,7 +57,7 @@ export default {
     }
 
     // create the session
-    await siteSessions.create(siteOrigin, user.url, opts.permissions)
+    var session = await siteSessions.create(siteOrigin, user.url, opts.permissions)
     return massageSessionRecord(session, user)
   },
 
