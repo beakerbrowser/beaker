@@ -67,5 +67,8 @@ export default {
   openFolder: 'promise',
   doWebcontentsCmd: 'promise',
   doTest: 'promise',
-  closeModal: 'sync'
+  closeModal: 'sync',
+
+  getSiteSession: 'promise',
+  destroySiteSession: 'promise'
 }

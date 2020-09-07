@@ -6,9 +6,10 @@ import * as contextMenu from '../../app-stdlib/js/com/context-menu.js'
 import * as toast from '../../app-stdlib/js/com/toast.js'
 import _get from 'lodash.get'
 import * as beakerPermissions from '../../../lib/permissions'
+import { enumeratePerms } from '../../../lib/session-permissions'
 import mainCSS from '../css/main.css.js'
 import './com/user-session.js'
-import './com/requested-perms.js'
+import './com/site-perms.js'
 import './com/identity.js'
 import './com/drive-forks.js'
 
@@ -23,6 +24,8 @@ class SiteInfoApp extends LitElement {
       isLoading: {type: Boolean},
       info: {type: Object},
       cert: {type: Object},
+      sessionUser: {type: Object},
+      sessionPerms: {type: Object},
       requestedPerms: {type: Object},
       forks: {type: Array}
     }
@@ -121,6 +124,8 @@ class SiteInfoApp extends LitElement {
     this.info = undefined
     this.cert = undefined
     this.driveCfg = undefined
+    this.sessionUser = undefined
+    this.sessionPerms = undefined
     this.requestedPerms = undefined
     this.forks = undefined
     contextMenu.destroy()
@@ -159,6 +164,13 @@ class SiteInfoApp extends LitElement {
       ])
       if (this.cert && this.cert.type === 'hyperdrive') {
         this.cert.driveInfo = this.info
+      }
+      {
+        let session = await beaker.browser.getSiteSession(this.origin)
+        if (session?.userUrl) {
+          this.sessionPerms = enumeratePerms(session.permissions)
+          this.sessionUser = await beaker.index.getSite(session.userUrl)
+        }
       }
       this.requestedPerms = await Promise.all(Object.entries(perms).map(async ([perm, value]) => {
         var opts = {}
@@ -270,10 +282,12 @@ class SiteInfoApp extends LitElement {
         ` : ''}
 
         ${this.view === 'permissions' ? html`
-          <requested-perms
+          <user-session origin=${this.origin} .sessionUser=${this.sessionUser} @logout=${this.onLogoutSession}></user-session>
+          <site-perms
             origin=${this.origin}
-            .perms=${this.requestedPerms}
-          ></requested-perms>
+            .sessionPerms=${this.sessionPerms}
+            .requestedPerms=${this.requestedPerms}
+          ></site-perms>
         ` : ''}
 
         ${this.view === 'forks' ? html`
@@ -379,6 +393,12 @@ class SiteInfoApp extends LitElement {
   async onDriveProps () {
     await beaker.shell.drivePropertiesDialog(this.url)
     this.load()
+  }
+
+  async onLogoutSession () {
+    await beaker.browser.destroySiteSession(this.origin)
+    this.sessionUser = null
+    this.sessionPerms = null
   }
 }
 

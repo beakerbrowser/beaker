@@ -1,12 +1,13 @@
 import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import { toNiceUrl } from '../../../app-stdlib/js/strings.js'
+import { emit } from '../../../app-stdlib/js/dom.js'
 import userSessionCSS from '../../css/com/user-session.css.js'
 
 class UserSession extends LitElement {
   static get properties () {
     return {
       origin: {type: String},
-      session: {type: Object}
+      sessionUser: {type: Object}
     }
   }
 
@@ -17,29 +18,23 @@ class UserSession extends LitElement {
   constructor () {
     super()
     this.origin = ''
-    this.session = null
+    this.sessionUser = undefined
   }
-
-  async connectedCallback () {
-    this.session = undefined // TODO await navigator.session.get(this.origin)
-    super.connectedCallback()
-  }
-
   // rendering
   // =
 
   render () {
-    if (!this.session) return html`<div></div>`
+    if (!this.sessionUser) return html`<div></div>`
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
 
       <div class="field-group">
         <div class="field-group-title">User session</div>
         <div class="user">
-          <img src="asset:thumb:${this.session.profile.url}">
+          <img src="asset:thumb:${this.sessionUser.url}">
           <div class="details">
-            <div class="title">${this.session.profile.title}</div>
-            <div class="url"><a href="${this.session.profile.url}" @click=${this.onClickLink}>${toNiceUrl(this.session.profile.url)}</a></div>
+            <div class="title">${this.sessionUser.title}</div>
+            <div class="url"><a href="${this.sessionUser.url}" @click=${this.onClickLink}>${toNiceUrl(this.sessionUser.url)}</a></div>
           </div>
           <div style="margin-left: auto" @click=${this.onClickLogout}>
             <button>Logout</button>
@@ -58,8 +53,7 @@ class UserSession extends LitElement {
   }
 
   async onClickLogout (e) {
-    await navigator.session.destroy(this.origin)
-    this.session = null
+    emit(this, 'logout')
   }
 }
 

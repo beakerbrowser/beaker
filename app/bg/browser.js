@@ -14,6 +14,7 @@ import * as logLib from './logger'
 import * as adblocker from './adblocker'
 const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
+import * as siteSessions from './dbs/site-sessions'
 import { convertDatArchive } from './dat/index'
 import datDns from './dat/dns'
 import { open as openUrl } from './open-url'
@@ -25,7 +26,6 @@ import * as modals from './ui/subwindows/modals'
 import * as notifications from './ui/subwindows/notifications'
 import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from './lib/electron'
-import { getEnvVar } from './lib/env'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
 import * as subscriptions from './filesystem/subscriptions'
@@ -248,7 +248,10 @@ export const WEBAPI = {
   openFolder,
   doWebcontentsCmd,
   doTest,
-  closeModal: () => {} // DEPRECATED, probably safe to remove soon
+  closeModal: () => {}, // DEPRECATED, probably safe to remove soon
+
+  getSiteSession: siteSessions.get,
+  destroySiteSession: siteSessions.destroy
 }
 
 export function fetchBody (url) {

@@ -1,6 +1,7 @@
 import * as db from './profile-data-db'
 import knex from '../lib/knex'
 import lock from '../../lib/lock'
+import { normalizeOrigin } from '../../lib/urls'
 
 // typedefs
 // =
@@ -32,6 +33,7 @@ export function setup () {
  * @returns {Promise<UserSiteSession>}
  */
 export async function create (siteOrigin, userUrl, permissions) {
+  siteOrigin = normalizeOrigin(siteOrigin)
   var release = await lock('user-site-sessions')
   try {
     delete sessions[siteOrigin]
@@ -53,10 +55,13 @@ export async function create (siteOrigin, userUrl, permissions) {
  * @returns {Promise<UserSiteSession>}
  */
 export async function get (siteOrigin) {
+  siteOrigin = normalizeOrigin(siteOrigin)
   var sess = sessions[siteOrigin]
   if (sess) return sess
   var record = massageRecord(await db.get(knex('user_site_sessions').where({siteOrigin})))
-  if (record) sessions[siteOrigin] = record
+  if (record) {
+    sessions[siteOrigin] = record
+  }
   return record
 }
 
@@ -65,6 +70,7 @@ export async function get (siteOrigin) {
  * @returns {Promise<void>}
  */
 export async function destroy (siteOrigin) {
+  siteOrigin = normalizeOrigin(siteOrigin)
   var release = await lock('user-site-sessions')
   try {
     delete sessions[siteOrigin]
