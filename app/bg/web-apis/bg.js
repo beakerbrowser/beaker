@@ -50,6 +50,7 @@ import indexManifest from './manifests/external/index'
 import markdownManifest from './manifests/external/markdown'
 import panesManifest from './manifests/external/panes'
 import peersocketsManifest from './manifests/external/peersockets'
+import sessionsManifest from './manifests/external/sessions'
 import shellManifest from './manifests/external/shell'
 import subscriptionsManifest from './manifests/external/subscriptions'
 
@@ -61,6 +62,7 @@ import indexAPI from './bg/index'
 import markdownAPI from './bg/markdown'
 import panesAPI from './bg/panes'
 import peersocketsAPI from './bg/peersockets'
+import sessionsAPI from './bg/sessions'
 import shellAPI from './bg/shell'
 import subscriptionsAPI from './bg/subscriptions'
 
@@ -99,6 +101,7 @@ export const setup = function () {
   rpc.exportAPI('markdown', markdownManifest, markdownAPI)
   rpc.exportAPI('panes', panesManifest, panesAPI, secureOnly('panes'))
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
+  rpc.exportAPI('sessions', sessionsManifest, sessionsAPI, secureOnly('sessions'))
   rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
   rpc.exportAPI('subscriptions', subscriptionsManifest, subscriptionsAPI, secureOnly('subscriptions'))
 

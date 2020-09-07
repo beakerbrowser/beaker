@@ -1,4 +1,4 @@
-import * as db from '../dbs/profile-data-db'
+import * as db from './profile-data-db'
 import knex from '../lib/knex'
 import lock from '../../lib/lock'
 
@@ -21,6 +21,9 @@ var sessions = {} // cache of active sessions
 
 // exported api
 // =
+
+export function setup () {
+}
 
 /**
  * @param {string} siteOrigin
@@ -80,11 +83,14 @@ export async function destroy (siteOrigin) {
  */
 function massageRecord (record) {
   if (!record) return null
+  var permissions
+  try { permissions = JSON.parse(record.permissionsJson) }
+  catch (e) { permissions = {} }
   return {
     id: record.id,
     siteOrigin: record.siteOrigin,
     userUrl: record.userUrl,
-    permissions: JSON.parse(record.permissionsJson),
+    permissions,
     createdAt: new Date(record.createdAt)
   }
 }

@@ -49,6 +49,7 @@ class NetworkView extends LitElement {
       var networkStatus = await beaker.browser.getDaemonNetworkStatus()
       for (let item of networkStatus) {
         item.drive = await beaker.drives.get(item.key)
+        item.peers.sort((a, b) => a.remoteAddress.localeCompare(b.remoteAddress)) // helps spot dupes
       }
       networkStatus.sort((a, b) => b.peers.length - a.peers.length)
       this.networkStatus = networkStatus

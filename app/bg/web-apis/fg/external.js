@@ -6,6 +6,7 @@ import indexManifest from '../manifests/external/index'
 import markdownManifest from '../manifests/external/markdown'
 import panesManifest from '../manifests/external/panes'
 import peersocketsManifest from '../manifests/external/peersockets'
+import sessionsManifest from '../manifests/external/sessions'
 import shellManifest from '../manifests/external/shell'
 import subscriptionsManifest from '../manifests/external/subscriptions'
 
@@ -16,6 +17,7 @@ export const setup = function (rpc) {
   var contacts = rpc.importAPI('contacts', contactsManifest, RPC_OPTS)
   var index = rpc.importAPI('index', indexManifest, RPC_OPTS)
   var markdown = rpc.importAPI('markdown', markdownManifest, RPC_OPTS)
+  var sessions = rpc.importAPI('sessions', sessionsManifest, RPC_OPTS)
   var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
   const subscriptions = rpc.importAPI('subscriptions', subscriptionsManifest, RPC_OPTS)
 
@@ -86,5 +88,5 @@ export const setup = function (rpc) {
     }
   }
 
-  return {capabilities, contacts, index, markdown, panes, peersockets, shell, subscriptions, terminal}
+  return {capabilities, contacts, index, markdown, panes, peersockets, sessions, shell, subscriptions, terminal}
 }
