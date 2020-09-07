@@ -38,7 +38,6 @@ const FILE_QUERIES = {
   comments: [typeToQuery('comment')],
   pages: [typeToQuery('page')],
   posts: [typeToQuery('microblogpost')],
-  notifications: ['notifications'],
   search: {
     links: [
       typeToQuery('blogpost'),
@@ -88,7 +87,6 @@ class DesktopApp extends LitElement {
     this.profile = undefined
     this.pins = []
     this.suggestedSites = undefined
-    this.unreadNotificationsCount = 0
     this.searchQuery = ''
     this.sourceOptions = []
     this.currentSource = 'all'
@@ -116,13 +114,11 @@ class DesktopApp extends LitElement {
   async load () {
     cacheBuster = Date.now()
     let sourceOptions
-    ;[this.profile, this.pins, sourceOptions, this.unreadNotificationsCount] = await Promise.all([
+    ;[this.profile, this.pins, sourceOptions] = await Promise.all([
       addressBook.loadProfile(),
       desktop.load(),
-      beaker.subscriptions.list(),
-      beaker.index.countRecords({notification: {unread: true}})
+      beaker.subscriptions.list()
     ])
-    document.title = this.unreadNotificationsCount > 0 ? `New Tab (${this.unreadNotificationsCount})`: `New Tab`
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
       this.shadowRoot.querySelector('beaker-record-feed').load()
     }
@@ -217,23 +213,10 @@ class DesktopApp extends LitElement {
     this.shadowRoot.querySelector('.all-view').scrollTop = 0
   }
 
-  markAllNotificationsRead () {
-    setTimeout(async () => {
-      await beaker.index.clearNotifications()
-      this.unreadNotificationsCount = 0
-      document.title = 'New Tab'
-    }, 3e3)
-  }
-
   // rendering
   // =
 
   render () {
-    // trigger "mark read" of notifications on view
-    if (this.currentNav === 'notifications' && this.unreadNotificationsCount > 0) {
-      this.markAllNotificationsRead()
-    }
-
     if (this.hideFeed) {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
@@ -280,21 +263,12 @@ class DesktopApp extends LitElement {
         @click=${e => this.setCurrentNav(id)}
       >${label}</a>
     `
-    const ncount = this.unreadNotificationsCount
     return html`
       <div class="sidebar sticky">
         <div>
           <section class="content-nav">
             <h3>News</h3>
             ${navItem('all', html`<span class="fas fa-fw fa-stream"></span> Feed`)}
-            ${navItem(
-              'notifications',
-              html`
-                <span class="fas fa-fw fa-bell"></span>
-                Notifications
-                ${ncount > 0 ? html`<span class="count">${ncount}</span>` : ''}
-              `
-            )}
           </section>
           <section class="content-nav">
             <h3>Content</h3>
@@ -502,14 +476,6 @@ class DesktopApp extends LitElement {
   }
 
   renderEmptyMessage () {
-    if (this.currentNav === 'notifications') {
-      return html`
-        <div class="empty">
-          <div class="fas fa-bell"></div>
-          <div>You have no notifications.</div>
-        </div>
-        `
-    }
     if (this.searchQuery) {
       return html`
         <div class="empty">
