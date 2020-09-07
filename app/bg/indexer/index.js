@@ -27,6 +27,7 @@ import { dirname, extname } from 'path'
 import { EventEmitter } from 'events'
 import emitStream from 'emit-stream'
 import markdownLinkExtractor from 'markdown-link-extractor'
+import { PermissionsError } from 'beaker-error-constants'
 import { attachOnConflictDoNothing } from 'knex-on-conflict-do-nothing'
 import { attachOnConflictDoUpdate } from '../lib/db'
 import * as path from 'path'
@@ -48,6 +49,7 @@ import {
   listOriginsToCapture,
   listOriginsToDeindex,
   loadSite,
+  checkShouldExcludePrivate,
   parseUrl,
   isUrl,
   toArray,
@@ -62,6 +64,7 @@ import {
  * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
+ * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
  * @typedef {import('./const').FileQuery} FileQuery
  * @typedef {import('./const').NotificationQuery} NotificationQuery
@@ -189,10 +192,20 @@ export async function listSites (opts) {
 
 /**
  * @param {String} url 
+ * @param {Object} [permissions]
+ * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<RecordDescription>}
  */
-export async function getRecord (url) {
+export async function getRecord (url, permissions) {
   let urlp = parseUrl(url)
+  if (permissions?.query) {
+    if (urlp.origin === 'hyper://private') {
+      let prefix = dirname(urlp.pathname)
+      let extension = extname(urlp.pathname)
+      let perm = permissions.query.find(perm => perm.prefix === prefix && perm.extension === extension)
+      if (!perm) throw new PermissionsError()
+    }
+  }
   var rows = await db('sites')
     .leftJoin('records', 'sites.rowid', 'records.site_rowid')
     .select('*', 'records.rowid as record_rowid')
@@ -247,9 +260,11 @@ export async function getRecord (url) {
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
+ * @param {Object} [permissions]
+ * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<RecordDescription[]>}
  */
-export async function listRecords (opts) {
+export async function listRecords (opts, permissions) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.reverse = (typeof opts.reverse === 'boolean') ? opts.reverse : true
   if (!opts.sort || !['ctime', 'mtime', 'rtime', 'crtime', 'mrtime', 'site'].includes(opts.sort)) {
@@ -261,7 +276,7 @@ export async function listRecords (opts) {
 
   var results = []
   if (opts.index.includes('local')) {
-    results.push(await local.listRecords(db, opts))
+    results.push(await local.listRecords(db, opts, permissions))
   }
   if (opts.index.includes('network')) {
     results.push(await hyperbees.listRecords(opts, results[0]?.records))
@@ -337,15 +352,17 @@ export async function listRecords (opts) {
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String|String[]} [opts.index] - 'local' or 'network'
+ * @param {Object} [permissions]
+ * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<Number>}
  */
-export async function countRecords (opts) {
+export async function countRecords (opts, permissions) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.index = opts.index ? toArray(opts.index) : ['local']
 
   var results = []
   if (opts.index.includes('local')) {
-    results.push(await local.countRecords(db, opts))
+    results.push(await local.countRecords(db, opts, permissions))
   }
   if (opts.index.includes('network')) {
     results.push(await hyperbees.countRecords(opts, results[0]?.includedOrigins))
@@ -383,9 +400,13 @@ export async function countRecords (opts) {
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
+ * @param {Object} [permissions]
+ * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<RecordDescription[]>}
  */
-export async function searchRecords (q = '', opts) {
+export async function searchRecords (q = '', opts, permissions) {
+  var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
+
   // prep search terms
   q = q
     .toLowerCase()
@@ -418,10 +439,20 @@ export async function searchRecords (q = '', opts) {
 
   if (opts?.site) {
     if (Array.isArray(opts.site)) {
-      query = query.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
+      let origins = opts.site.map(site => normalizeOrigin(site))
+      if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
+        throw new PermissionsError()
+      }
+      query = query.whereIn('origin', origins)
     } else {
+      let origin = normalizeOrigin(opts.site)
+      if (shouldExcludePrivate && origin === 'hyper://private') {
+        throw new PermissionsError()
+      }
       query = query.where({origin: normalizeOrigin(opts.site)})
     }
+  } else if (shouldExcludePrivate) {
+    query = query.whereNot({origin: 'hyper://private'})
   }
   if (opts?.file) {
     if (Array.isArray(opts.file)) {

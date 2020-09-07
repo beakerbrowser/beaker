@@ -1,9 +1,11 @@
+import { PermissionsError } from 'beaker-error-constants'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
 import { joinPath } from '../../lib/strings'
 import {
   toArray,
   toFileQuery,
-  toNotificationQuery
+  toNotificationQuery,
+  checkShouldExcludePrivate
 } from './util'
 import { METADATA_KEYS } from './const'
 
@@ -16,6 +18,7 @@ import { METADATA_KEYS } from './const'
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
  * @typedef {import('./const').FileQuery} FileQuery
  * @typedef {import('./const').NotificationQuery} NotificationQuery
+ * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  */
 
 
@@ -34,9 +37,13 @@ import { METADATA_KEYS } from './const'
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
+ * @param {Object} [permissions]
+ * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
-export async function listRecords (db, opts) {
+export async function listRecords (db, opts, permissions) {
+  var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
+
   var sep = `[>${Math.random()}<]`
   var query = db('sites')
     .innerJoin('records', 'sites.rowid', 'records.site_rowid')
@@ -68,10 +75,20 @@ export async function listRecords (db, opts) {
 
   if (opts?.site) {
     if (Array.isArray(opts.site)) {
-      query = query.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
+      let origins = opts.site.map(site => normalizeOrigin(site))
+      if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
+        throw new PermissionsError()
+      }
+      query = query.whereIn('origin', origins)
     } else {
+      let origin = normalizeOrigin(opts.site)
+      if (shouldExcludePrivate && origin === 'hyper://private') {
+        throw new PermissionsError()
+      }
       query = query.where({origin: normalizeOrigin(opts.site)})
     }
+  } else if (shouldExcludePrivate) {
+    query = query.whereNot({origin: 'hyper://private'})
   }
   if (opts?.file) {
     if (Array.isArray(opts.file)) {
@@ -186,9 +203,13 @@ export async function listRecords (db, opts) {
  * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
+ * @param {Object} [permissions]
+ * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<{count: Number, includedOrigins: String[], missedOrigins: String[]}>}
  */
-export async function countRecords (db, opts) {
+export async function countRecords (db, opts, permissions) {
+  var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
+
   var query = db('records')
     .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
     .select('origin', db.raw(`count(records.rowid) as count`))
@@ -196,10 +217,20 @@ export async function countRecords (db, opts) {
 
   if (opts?.site) {
     if (Array.isArray(opts.site)) {
-      query = query.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
+      let origins = opts.site.map(site => normalizeOrigin(site))
+      if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
+        throw new PermissionsError()
+      }
+      query = query.whereIn('origin', origins)
     } else {
+      let origin = normalizeOrigin(opts.site)
+      if (shouldExcludePrivate && origin === 'hyper://private') {
+        throw new PermissionsError()
+      }
       query = query.where({origin: normalizeOrigin(opts.site)})
     }
+  } else if (shouldExcludePrivate) {
+    query = query.whereNot({origin: 'hyper://private'})
   }
   if (opts?.file) {
     if (Array.isArray(opts.file)) {

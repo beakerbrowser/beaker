@@ -1,3 +1,7 @@
+import { PermissionsError } from 'beaker-error-constants'
+import * as siteSessions from '../../dbs/site-sessions'
+import { enumeratePerms } from '../../../lib/session-permissions'
+import * as wcTrust from '../../wc-trust'
 import * as indexer from '../../indexer/index'
 
 // exported api
@@ -5,6 +9,9 @@ import * as indexer from '../../indexer/index'
 
 export default {
   clearAllData () {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
     return indexer.clearAllData()
   },
 
@@ -13,34 +20,62 @@ export default {
   },
 
   listSites (opts) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
     return indexer.listSites(opts)
   },
   
-  getRecord (url) {
-    return indexer.getRecord(url)
+  async getRecord (url) {
+    var query = await getQueryPerms(this.sender)
+    return indexer.getRecord(url, {query})
   },
   
-  listRecords (opts) {
-    return indexer.listRecords(opts)
+  async listRecords (opts) {
+    var query = await getQueryPerms(this.sender)
+    return indexer.listRecords(opts, {query})
   },
   
-  countRecords (opts) {
-    return indexer.countRecords(opts)
+  async countRecords (opts) {
+    var query = await getQueryPerms(this.sender)
+    return indexer.countRecords(opts, {query})
   },
   
-  searchRecords (q, opts) {
-    return indexer.searchRecords(q, opts)
+  async searchRecords (q, opts) {
+    var query = await getQueryPerms(this.sender)
+    return indexer.searchRecords(q, opts, {query})
   },
 
   clearNotifications () {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
     return indexer.clearNotifications()
   },
 
   getState () {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
     return indexer.getState()
   },
 
   createEventStream () {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
     return indexer.createEventStream()
   }
+}
+
+// internal methods
+// =
+
+async function getQueryPerms (sender) {
+  if (wcTrust.isWcTrusted(sender)) {
+    return undefined // all access allowed
+  }
+  var session = await siteSessions.get(sender.getURL())
+  if (!session) throw new PermissionsError()
+  return enumeratePerms(session.permissions)
 }

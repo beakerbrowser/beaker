@@ -1,5 +1,14 @@
 const VALID_ACCESS = ['read', 'write']
 
+/**
+ * @typedef {Object} EnumeratedSessionPerm
+ * @prop {String} prefix
+ * @prop {String} extension
+ * @prop {String} location
+ * @prop {String} recordType
+ * @prop {String} access
+ */
+
 export function validateAndNormalizePermissions (permissions) {
   if (typeof permissions !== 'object') throw new Error(`Permissions must be an object`)
   for (let key in permissions) {
@@ -21,6 +30,10 @@ export function validateAndNormalizePermissions (permissions) {
   }
 }
 
+/**
+ * @param {Object} permissions 
+ * @returns {EnumeratedSessionPerm[]}
+ */
 export function enumeratePerms (permissions) {
   var perms = []
   for (let k in permissions) {
@@ -32,7 +45,7 @@ export function enumeratePerms (permissions) {
         }
         let location = k === 'publicFiles' ? 'public' : 'private'
         let recordType = getRecordType(v)
-        perms.push({access: v.access, location, recordType})
+        perms.push({access: v.access, location, recordType, prefix: v.prefix, extension: v.extension})
       }
     }
   }

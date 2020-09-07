@@ -18,6 +18,8 @@ import { READ_TIMEOUT } from './const'
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
+ * @typedef {import('./const').FileQuery} FileQuery
+ * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  */
 
 // exported api
@@ -212,6 +214,31 @@ export async function loadSite (db, origin) {
     }
   }
   return site
+}
+
+/**
+ * @param {Object} opts
+ * @param {FileQuery|FileQuery[]} [opts.file]
+ * @param {Object} [permissions]
+ * @param {EnumeratedSessionPerm[]} [permissions.query]
+ */
+export function checkShouldExcludePrivate (opts, permissions) {
+  var shouldExcludePrivate = false
+  if (permissions?.query) {
+    shouldExcludePrivate = true
+    // only include private if the query 100% matches permissions
+    if (opts?.file) {
+      shouldExcludePrivate = false
+      for (let fileQuery of toArray(opts.file)) {
+        let match = permissions.query.find(perm => perm.prefix === fileQuery.prefix && perm.extension === fileQuery.extension)
+        if (!match) {
+          shouldExcludePrivate = true
+          break
+        }
+      }
+    }
+  }
+  return shouldExcludePrivate
 }
 
 /**
