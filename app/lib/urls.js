@@ -105,6 +105,15 @@ export function normalizeOrigin (str) {
 }
 
 /**
+ * @param {String} a 
+ * @param {String} b 
+ * @returns {Boolean}
+ */
+export function isSameOrigin (a, b) {
+	return normalizeOrigin(a) === normalizeOrigin(b)
+}
+
+/**
  * @param {String} url
  * @param {String} [base]
  * @returns {String}

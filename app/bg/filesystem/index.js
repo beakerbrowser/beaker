@@ -10,6 +10,7 @@ import * as trash from './trash'
 import * as modals from '../ui/subwindows/modals'
 import { PATHS } from '../../lib/const'
 import lock from '../../lib/lock'
+import { isSameOrigin } from '../../lib/urls'
 
 // typedefs
 // =
@@ -54,7 +55,7 @@ export function get () {
  * @returns {boolean}
  */
 export function isRootUrl (url) {
-  return url === browsingProfile.url || url === 'hyper://private/'
+  return isSameOrigin(url, browsingProfile.url) || isSameOrigin(url, 'hyper://private/')
 }
 
 /**
@@ -138,7 +139,7 @@ export async function setup () {
  */
 export function getDriveIdent (url, includeContacts = false) {
   var system = isRootUrl(url)
-  var profile = url === profileDriveUrl
+  var profile = isSameOrigin(url, profileDriveUrl)
   if (!system && includeContacts) {
     return getAddressBook().then(addressBook => {
       var key = /[0-9a-f]{64}/.exec(url)[0]

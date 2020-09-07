@@ -1,3 +1,6 @@
+import { dirname, extname } from 'path'
+import { isSameOrigin } from './urls'
+
 const VALID_ACCESS = ['read', 'write']
 
 /**
@@ -50,6 +53,47 @@ export function enumeratePerms (permissions) {
     }
   }
   return perms
+}
+
+/**
+ * @param {String} access
+ * @param {Object} session 
+ * @param {Object} session.permissions
+ * @param {Object} session.userUrl
+ * @param {String} driveUrl
+ * @param {String} filepath
+ * @returns {Boolean}
+ */
+export function sessionCan (access, session, driveUrl, filepath) {
+  var key
+  if (isSameOrigin(driveUrl, 'hyper://private')) {
+    key = 'privateFiles'
+  } else if (isSameOrigin(driveUrl, session.userUrl)) {
+    key = 'publicFiles'
+  } else {
+    return false
+  }
+  
+  var perm 
+  var extension = extname(filepath)
+  if (extension) {
+    // individual file
+    let prefix = dirname(filepath)
+    perm = session.permissions[key]?.find(p => p.prefix === prefix && p.extension === extension)
+  } else {
+    // folder
+    let prefix = filepath
+    while (prefix.endsWith('/')) prefix = prefix.slice(0, -1)
+    if (!prefix) return false
+    perm = session.permissions[key]?.find(p => p.prefix === prefix)
+  }
+
+  if (perm) {
+    if (access === 'read' || (access === 'write' && perm.access === 'write')) {
+      return true
+    }
+  }
+  return false
 }
 
 export function getRecordType ({prefix, extension}) {
