@@ -282,7 +282,7 @@ class DesktopApp extends LitElement {
             <h3>Sites</h3>
             ${navItem('my-sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Mine</span>`)}
             ${navItem('subscriptions', html`<span class="fas fa-fw fa-rss"></span> <span class="label">Subscribed</span>`)}
-            ${navItem('network', html`<span class="fas fa-fw fa-users"></span> <span class="label">Network</span>`)}
+            ${navItem('subscribers', html`<span class="fas fa-fw fa-users"></span> <span class="label">Subscribers</span>`)}
           </section>
         </div>
       </div>
@@ -355,7 +355,7 @@ class DesktopApp extends LitElement {
 
   renderCurrentView () {
     var hasSearchQuery = !!this.searchQuery
-    var isSitesView = ['my-sites', 'subscriptions', 'network'].includes(this.currentNav)
+    var isSitesView = ['my-sites', 'subscriptions', 'subscribers'].includes(this.currentNav)
     if (hasSearchQuery) {
       const searchLink = (label, url) => {
         return html`
@@ -463,7 +463,7 @@ class DesktopApp extends LitElement {
       all: 'all',
       'my-sites': 'mine',
       subscriptions: 'subscribed',
-      network: 'suggested'
+      subscribers: 'subscribers'
     })[this.currentNav]
     return html`
       <beaker-sites-list

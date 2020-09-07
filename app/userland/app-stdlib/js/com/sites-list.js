@@ -89,19 +89,15 @@ export class SitesList extends LitElement {
   async query () {
     emit(this, 'load-state-updated')
 
+    var subs = await beaker.index.listRecords({
+      file: {extension: '.goto', prefix: '/subscriptions'},
+      limit: 1e9
+    })
+
     var sites
     if (this.listing === 'mine') {
       sites = await beaker.drives.list({includeSystem: true})
       sites = sites.filter(s => s.info?.writable)
-      if (this.filter) {
-        sites = sites.filter(s => (
-          (s.info?.title || '').toLowerCase().includes(this.filter.toLowerCase())
-          || (s.info?.description || '').toLowerCase().includes(this.filter.toLowerCase())
-        ))
-      }
-      if (this.singleRow) {
-        sites = sites.slice(0, 3)
-      }
       sites = sites.map(s => ({
         origin: s.url,
         url: s.url,
@@ -110,20 +106,35 @@ export class SitesList extends LitElement {
         writable: s.info?.writable,
         forkOf: s.forkOf
       }))
+    } else if (this.listing === 'subscribed') {
+      sites = await Promise.all(
+        subs
+        .filter(sub => isSameOrigin(sub.site.url, this.profileUrl))
+        .map(sub => beaker.index.getSite(sub.metadata.href))
+      )
+    } else if (this.listing === 'subscribers') {
+      sites = await Promise.all(
+        subs
+        .filter(sub => isSameOrigin(sub.metadata.href, this.profileUrl))
+        .map(sub => beaker.index.getSite(sub.site.url))
+      )
     } else {
       sites = await beaker.index.listSites({
-        writable: this.listing === 'suggested' ? false : undefined,
-        search: this.filter,
-        limit: this.singleRow ? 3 : 1e9
+        search: this.filter
       })
     }
 
-    var subs = await beaker.index.listRecords({
-      file: {extension: '.goto', prefix: '/subscriptions'},
-      limit: 1e9
-    })
+    if (this.filter && this.listing !== 'all') {
+      sites = sites.filter(s => (
+        (s.title || '').toLowerCase().includes(this.filter.toLowerCase())
+        || (s.description || '').toLowerCase().includes(this.filter.toLowerCase())
+      ))
+    }
+    if (this.singleRow) {
+      sites = sites.slice(0, 3)
+    }
+    sites.sort((a, b) => a.title.localeCompare(b.title))
 
-    var unknownSites = []
     for (let sub of subs) {
       try {
         let origin = (new URL(sub.metadata.href)).origin
@@ -131,14 +142,6 @@ export class SitesList extends LitElement {
         if (site) {
           site.subscriptions = site.subscriptions || []
           site.subscriptions.push(sub)
-        } else {
-          if (isSameOrigin(origin, this.profileUrl)) continue
-          let unknownSite = unknownSites.find(s => s.origin === origin)
-          if (!unknownSite) {
-            unknownSite = {origin, title: 'Loading...', description: '', writable: false, subscriptions: [], unknown: true}
-            unknownSites.push(unknownSite)
-          }
-          unknownSite.subscriptions.push(sub)
         }
       } catch (e) {
         console.debug(e)
@@ -146,22 +149,10 @@ export class SitesList extends LitElement {
       }
     }
 
-    if (this.listing === 'subscribed') {
-      this.sites = sites
-        .filter(site => this.isSubscribed(site))
-        .sort((a, b) => a.title.localeCompare(b.title))
-    } else if (this.listing === 'suggested') {
-      this.sites = sites
-        .concat(unknownSites) // include unknown sites
-        .filter(site => !this.isSubscribed(site))
-        .sort((a, b) => (b.subscriptions?.length || 0) - (a.subscriptions?.length || 0))
-      /* dont await */this.loadUnkownSites() // try to get their meta in the background
-    } else {
-      this.sites = sites.sort((a, b) => a.title.localeCompare(b.title))
-    }
     // always put the profile and private site on top
     moveToTopIfExists(sites, this.profile?.url)
     moveToTopIfExists(sites, 'hyper://private/')
+    this.sites = sites
     console.log(this.sites)
     this.activeQuery = undefined
     emit(this, 'load-state-updated')
