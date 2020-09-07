@@ -21,6 +21,7 @@ export class RecordFeed extends LitElement {
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       dateTitleRange: {type: String, attribute: 'date-title-range'},
       forceRenderMode: {type: String, attribute: 'force-render-mode'},
+      title: {type: String},
       sort: {type: String},
       limit: {type: Number},
       filter: {type: String},
@@ -42,6 +43,7 @@ export class RecordFeed extends LitElement {
     this.showDateTitles = false
     this.dateTitleRange = undefined
     this.forceRenderMode = undefined
+    this.title = undefined
     this.sort = 'ctime'
     this.limit = undefined
     this.filter = undefined
@@ -162,6 +164,7 @@ export class RecordFeed extends LitElement {
       if (!this.emptyMessage) return html``
       return html`
         <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+        ${this.title ? html`<h2 class="title">${this.title}</h2>` : ''}
         <div class="results empty">
           <span>${this.emptyMessage}</div></span>
         </div>
@@ -169,6 +172,7 @@ export class RecordFeed extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+      ${this.title ? html`<h2 class="title">${this.title}</h2>` : ''}
       ${this.renderResults()}
     `
   }

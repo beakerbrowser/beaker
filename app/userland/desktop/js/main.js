@@ -401,6 +401,7 @@ class DesktopApp extends LitElement {
                   .fileQuery=${FILE_QUERIES.search.links}
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
+                  title="Links"
                   limit="50"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
@@ -411,6 +412,7 @@ class DesktopApp extends LitElement {
                   .fileQuery=${FILE_QUERIES.search.discussion}
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
+                  title="Discussion"
                   limit="50"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}

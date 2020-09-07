@@ -25,6 +25,13 @@ a[href]:hover {
   cursor: pointer;
 }
 
+h2.title {
+  font-size: 18px;
+  color: var(--text-color--light);
+  border-bottom: 1px solid var(--border-color--light);
+  margin: 20px 0;
+}
+
 h2.results-header {
   margin: 0 0 30px;
   padding: 0 4px 4px;
@@ -79,7 +86,7 @@ h2 a:hover {
 }
 
 .results beaker-record[render-mode="expanded-link"] {
-  margin: 30px 0;
+  margin: 20px 0;
 }
 
 .results beaker-record[render-mode="action"] {
