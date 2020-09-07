@@ -5,6 +5,7 @@ import css from '../css/main.css.js'
 import './views/general.js'
 import './views/adblock.js'
 import './views/devices.js'
+import './views/site-sessions.js'
 import './views/info.js'
 import './views/indexer.js'
 import './views/network.js'
@@ -65,6 +66,7 @@ class SettingsApp extends LitElement {
     return html`
       ${item('general', 'fas fa-cog', 'General')}
       ${item('adblock', 'fas fa-ban', 'Ad Blocking')}
+      ${item('site-sessions', 'fas fa-id-card-alt', 'Site Sessions')}
       ${item('devices', 'fas fa-sync', 'Sync Devices')}
       <hr>
       ${item('general-logs', 'fas fa-clipboard-list', 'General Logs')}
@@ -85,6 +87,8 @@ class SettingsApp extends LitElement {
         return html`<adblock-settings-view loadable></adblock-settings-view>`
       case 'devices':
         return html`<devices-view loadable></devices-view>`
+      case 'site-sessions':
+        return html`<site-sessions-view loadable></site-sessions-view>`
       case 'info':
         return html`<info-settings-view loadable></info-settings-view>`
       case 'network':

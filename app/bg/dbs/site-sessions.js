@@ -66,6 +66,14 @@ export async function get (siteOrigin) {
 }
 
 /**
+ * @returns {Promise<UserSiteSession[]>}
+ */
+export async function list () {
+  var records = await db.all(knex('user_site_sessions'))
+  return records.map(massageRecord)
+}
+
+/**
  * @param {string} siteOrigin
  * @returns {Promise<void>}
  */

@@ -70,5 +70,6 @@ export default {
   closeModal: 'sync',
 
   getSiteSession: 'promise',
+  listSiteSessions: 'promise',
   destroySiteSession: 'promise'
 }

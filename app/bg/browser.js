@@ -251,6 +251,7 @@ export const WEBAPI = {
   closeModal: () => {}, // DEPRECATED, probably safe to remove soon
 
   getSiteSession: siteSessions.get,
+  listSiteSessions: siteSessions.list,
   destroySiteSession: siteSessions.destroy
 }
 
