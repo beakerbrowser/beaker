@@ -55,7 +55,12 @@ h2 {
 .sites.full .site {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  border-bottom-width: 0;
+  border-radius: 0;
+}
+
+.sites.full .site:last-child {
+  border-bottom-width: 1px;
 }
 
 .site .thumb {
@@ -67,6 +72,10 @@ h2 {
   padding: 8px 10px 4px;
 }
 
+.sites.full .site .thumb {
+  padding: 8px 10px 8px;
+}
+
 .site .thumb img {
   display: inline-block;
   width: 50px;
@@ -74,6 +83,10 @@ h2 {
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--border-color--light);
+}
+
+.sites.full .site .thumb img {
+  display: block;
 }
 
 .sites.single-row .site button {
@@ -95,6 +108,10 @@ h2 {
   font-size: 13px;
   line-height: 1;
   padding: 8px 12px 10px;
+}
+
+.sites.full .site .info {
+  padding: 12px 4px; 
 }
 
 .site .title {
