@@ -79,7 +79,7 @@ export class RecordThread extends LitElement {
     var subjectUrl = record?.metadata?.['comment/subject']
     var subject
     if (subjectUrl) {
-      subject = this.fetchRecordOrSite(subjectUrl)
+      subject = await this.fetchRecordOrSite(subjectUrl)
     } else {
       subject = record
     }
