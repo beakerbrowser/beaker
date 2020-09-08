@@ -201,7 +201,7 @@ export async function* fancyUrlAsync (str) {
     }
     yield fancyUrl(str)
     if (url.protocol === 'hyper:') {
-      let site = await beaker.index.getSite(url.origin)
+      let site = await beaker.index.getSite(url.origin, {cacheOnly: true})
       _fancyUrlAsyncCache[url.origin] = site.title
       yield fancyUrl(str, site.title)
     }
