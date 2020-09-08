@@ -163,7 +163,11 @@ beaker-record-thread {
 
   .content {
     max-width: 800px;
-    margin: 156px auto 0;
+    margin: 106px auto 0;
+  }
+
+  .content.has-nav {
+    margin-top: 156px;
   }
 
   .sidebar {

@@ -110,7 +110,7 @@ class DriveViewApp extends LitElement {
     const showSubs = !(isSameOrigin(this.info.origin, 'hyper://private') || this.info.writable && !this.subscribers?.length)
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      <div class="content">
+      <div class="content ${this.hasContent ? 'full-nav' : ''}">
         <beaker-index-md .info=${this.info}></beaker-index-md>
         ${this.isDirectory ? this.renderDirectory() : this.renderFile()}
       </div>
