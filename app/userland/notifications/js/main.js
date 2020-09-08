@@ -66,6 +66,7 @@ class NotificationsApp extends LitElement {
         limit: 100,
         sort: 'crtime',
         reverse: true,
+        index: ['local', 'network']
       })
     } else if (view === 'subscribers') {
       this.results = await beaker.index.listRecords({
@@ -77,7 +78,6 @@ class NotificationsApp extends LitElement {
         index: ['local', 'network']
       })
     }
-    console.log(this.results)
     setTimeout(() => {
       beaker.index.clearNotifications()
     }, 3e3)

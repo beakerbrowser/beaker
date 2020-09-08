@@ -54,8 +54,7 @@ import {
   isUrl,
   toArray,
   parallel,
-  toFileQuery,
-  toNotificationQuery
+  toFileQuery
 } from './util'
 
 /**
@@ -288,12 +287,23 @@ export async function listRecords (opts, permissions) {
   opts.offset = opts.offset || 0
   opts.index = opts.index ? toArray(opts.index) : ['local']
 
+  var notificationRtimes
+  if (opts?.notification) {
+    notificationRtimes = await getNotificationsRtimes()
+  }
+
   var results = []
   if (opts.index.includes('local')) {
-    results.push(await local.listRecords(db, opts, permissions))
+    results.push(await local.listRecords(db, opts, {
+      permissions,
+      notificationRtime: notificationRtimes?.local_notifications_rtime
+    }))
   }
   if (opts.index.includes('network')) {
-    results.push(await hyperbees.listRecords(opts, results[0]?.records))
+    results.push(await hyperbees.listRecords(opts, {
+      existingResults: results[0]?.records,
+      notificationRtime: notificationRtimes?.network_notifications_rtime
+    }))
   }
   
   // identify origins which we need to live-query
@@ -380,12 +390,23 @@ export async function countRecords (opts, permissions) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.index = opts.index ? toArray(opts.index) : ['local']
 
+  var notificationRtimes
+  if (opts?.notification) {
+    notificationRtimes = await getNotificationsRtimes()
+  }
+
   var results = []
   if (opts.index.includes('local')) {
-    results.push(await local.countRecords(db, opts, permissions))
+    results.push(await local.countRecords(db, opts, {
+      permissions,
+      notificationRtime: notificationRtimes?.local_notifications_rtime
+    }))
   }
   if (opts.index.includes('network')) {
-    results.push(await hyperbees.countRecords(opts, results[0]?.includedOrigins))
+    results.push(await hyperbees.countRecords(opts, {
+      existingResultOrigins: results[0]?.includedOrigins,
+      notificationRtime: notificationRtimes?.network_notifications_rtime
+    }))
   }
   
   // identify origins which we need to live-query
@@ -426,6 +447,11 @@ export async function countRecords (opts, permissions) {
  */
 export async function searchRecords (q = '', opts, permissions) {
   var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
+
+  var notificationRtimes
+  if (opts?.notification) {
+    notificationRtimes = await getNotificationsRtimes()
+  }
 
   // prep search terms
   q = q
@@ -488,18 +514,17 @@ export async function searchRecords (q = '', opts, permissions) {
       query = query.where(toFileQuery(opts.file))
     }
   }
+
   if (opts?.notification) {
-    let notification = toNotificationQuery(opts.notification)
     query = query
       .select(
         'notification_key',
         'notification_subject_origin',
         'notification_subject_path',
-        'notification_read'
       )
       .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
-    if (typeof notification !== 'boolean') {
-      query = query.where(notification)
+    if (opts.notification.unread) {
+      query = query.whereRaw(`rtime > ?`, [notificationRtimes.local_notifications_rtime])
     }
   }
 
@@ -559,7 +584,7 @@ export async function searchRecords (q = '', opts, permissions) {
       record.notification = {
         key: mergedHits[0].notification_key,
         subject: joinPath(mergedHits[0].notification_subject_origin, mergedHits[0].notification_subject_path),
-        unread: !mergedHits[0].notification_read
+        unread: mergedHits[0].rtime > notificationRtimes.local_notifications_rtime
       }
     }
 
@@ -587,7 +612,27 @@ export async function searchRecords (q = '', opts, permissions) {
  * @returns {Promise<void>}
  */
 export async function clearNotifications () {
-  await db('records_notification').update({notification_read: 1})
+  var localRes = await local.listRecords(db, {
+    notification: true,
+    limit: 1,
+    sort: 'rtime',
+    reverse: true
+  })
+  var lastLocalTs = localRes.records[0] ? localRes.records[0].rtime : Date.now()
+  await db('indexer_state')
+    .insert({key: 'local_notifications_rtime', value: lastLocalTs})
+    .onConflictDoUpdate('key', {key: 'local_notifications_rtime', value: lastLocalTs})
+
+  var networkRes = await hyperbees.listRecords({
+    notification: true,
+    limit: 1,
+    sort: 'rtime',
+    reverse: true
+  })
+  var lastNetworkTs = networkRes.records[0] ? networkRes.records[0].rtime : Date.now()
+  await db('indexer_state')
+    .insert({key: 'network_notifications_rtime', value: lastNetworkTs})
+    .onConflictDoUpdate('key', {key: 'network_notifications_rtime', value: lastNetworkTs})
 }
 
 export async function triggerSiteIndex (origin, {ifIndexingSite} = {ifIndexingSite: false}) {
@@ -802,8 +847,7 @@ async function indexSite (origin, myOrigins) {
               record_rowid: rowid,
               notification_key: key,
               notification_subject_origin: subjectp.origin,
-              notification_subject_path: subjectp.path,
-              notification_read: 0
+              notification_subject_path: subjectp.path
             })
           }
         }
@@ -943,4 +987,18 @@ async function listLiveRecords (origin, opts) {
     logger.error(`Failed to live-query site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   }  
   return records
+}
+
+/**
+ * @returns {Promise<{local_notifications_rtime: Number, network_notifications_rtime: Number}>}
+ */
+export async function getNotificationsRtimes () {
+  var [localRows, networkRows] = await Promise.all([
+    db('indexer_state').select('value').where({key: 'local_notifications_rtime'}),
+    db('indexer_state').select('value').where({key: 'network_notifications_rtime'})
+  ])
+  return {
+    local_notifications_rtime: localRows[0]?.value ? (+localRows[0]?.value) : 0,
+    network_notifications_rtime: networkRows[0]?.value ? (+networkRows[0]?.value) : 0
+  }
 }

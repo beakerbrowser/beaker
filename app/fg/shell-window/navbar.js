@@ -37,7 +37,7 @@ class ShellWindowNavbar extends LitElement {
 
     this.notificationsCount = 0
     const getNotifications = async () => {
-      this.notificationsCount = await bg.index.countRecords({notification: {unread: true}})
+      this.notificationsCount = await bg.index.countRecords({index: ['local', 'network'], notification: {unread: true}})
     }
     getNotifications()
     setInterval(getNotifications, 15e3)

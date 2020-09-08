@@ -1,4 +1,11 @@
 exports.up = async function (knex) {
+  await knex.schema.createTable('indexer_state', table => {
+    table.string('key')
+    table.string('value')
+
+    table.index('key')
+    table.unique('key')
+  })
   await knex.schema.createTable('sites', table => {
     table.string('origin')
     table.string('title')
@@ -36,7 +43,6 @@ exports.up = async function (knex) {
     table.string('notification_key').notNullable()
     table.string('notification_subject_origin').notNullable()
     table.string('notification_subject_path').notNullable()
-    table.integer('notification_read')
 
     table.index('notification_subject_origin')
     table.foreign('record_rowid').references('rowid').inTable('records').onDelete('CASCADE')
@@ -71,4 +77,5 @@ exports.down = async function (knex) {
   await knex.schema.dropTableIfExists('records_data')
   await knex.schema.dropTableIfExists('records')
   await knex.schema.dropTableIfExists('sites')
+  await knex.schema.dropTableIfExists('indexer_state')
 }

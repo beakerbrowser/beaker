@@ -306,7 +306,8 @@ export class Record extends LitElement {
             <span class="action">subscribed to</span>
             <a class="subject" href=${res.metadata.href}>${typeof subject === 'string' ? subject : asyncReplace(subject)}</a>
           ` : rtype === 'vote' ? html`
-            <span class="action">${res.metadata['vote/value'] == -1 ? 'downvoted' : 'upvoted'} ${this.actionTarget}</span>
+            <span class="action">${res.metadata['vote/value'] == -1 ? 'downvoted' : 'upvoted'}</span>
+            <a class="subject" href=${res.metadata.href}>${this.actionTarget}</a>
           ` : rtype === 'bookmark' ? html`
             <span class="action">bookmarked ${this.actionTarget}</span>
           ` : rtype === 'comment' ? html`

@@ -290,20 +290,3 @@ export function toFileQuery (obj) {
   if (obj.extension) return {extension: obj.extension}
   throw new Error('Invalid .file parameter')
 }
-
-export function toNotificationQuery (obj) {
-  if (typeof obj === 'boolean') return obj
-  if (!obj || typeof obj !== 'object') {
-    throw new Error('Invalid .notification parameter')
-  }
-  if (obj.subject && typeof obj.subject !== 'string') {
-    throw new Error('Invalid .notification parameter')
-  }
-  if (obj.unread && typeof obj.unread !== 'boolean') {
-    throw new Error('Invalid .notification parameter')
-  }
-  if (obj.subject && obj.unread) return {notification_subject: obj.subject, notification_read: obj.unread ? 0 : 1}
-  if (obj.subject) return {notification_subject_origin: obj.subject}
-  if (obj.unread) return {notification_read: obj.unread ? 0 : 1}
-  throw new Error('Invalid .notification parameter')
-}

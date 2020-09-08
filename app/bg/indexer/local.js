@@ -4,7 +4,6 @@ import { joinPath } from '../../lib/strings'
 import {
   toArray,
   toFileQuery,
-  toNotificationQuery,
   checkShouldExcludePrivate
 } from './util'
 import { METADATA_KEYS } from './const'
@@ -37,11 +36,13 @@ import { METADATA_KEYS } from './const'
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
- * @param {Object} [permissions]
+ * @param {Object} [internal]
+ * @param {Object} [internal.permissions]
+ * @param {Number} [internal.notificationRtime]
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
-export async function listRecords (db, opts, permissions) {
+export async function listRecords (db, opts, {permissions, notificationRtime} = {}) {
   var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
 
   var sep = `[>${Math.random()}<]`
@@ -111,17 +112,15 @@ export async function listRecords (db, opts, permissions) {
     )
   }
   if (opts?.notification) {
-    let notification = toNotificationQuery(opts.notification)
     query = query
       .select(
         'notification_key',
         'notification_subject_origin',
         'notification_subject_path',
-        'notification_read'
       )
       .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
-    if (typeof notification !== 'boolean') {
-      query = query.where(notification)
+    if (opts.notification.unread) {
+      query = query.whereRaw(`rtime > ?`, [notificationRtime])
     }
   }
 
@@ -176,7 +175,7 @@ export async function listRecords (db, opts, permissions) {
       record.notification = {
         key: row.notification_key,
         subject: joinPath(row.notification_subject_origin, row.notification_subject_path),
-        unread: !row.notification_read
+        unread: row.rtime > notificationRtime
       }
     }
     return record
@@ -205,16 +204,21 @@ export async function listRecords (db, opts, permissions) {
  * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
- * @param {Object} [permissions]
+ * @param {Object} [internal]
+ * @param {Object} [internal.permissions]
+ * @param {Number} [internal.notificationRtime]
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<{count: Number, includedOrigins: String[], missedOrigins: String[]}>}
  */
-export async function countRecords (db, opts, permissions) {
+export async function countRecords (db, opts, {permissions, notificationRtime} = {}) {
   var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
 
   var query = db('records')
     .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
-    .select('origin', db.raw(`count(records.rowid) as count`))
+    .select(
+      'origin',
+      db.raw(`count(records.rowid) as count`)
+    )
     .groupBy('origin')
 
   if (opts?.site) {
@@ -253,11 +257,10 @@ export async function countRecords (db, opts, permissions) {
     )
   }
   if (opts?.notification) {
-    let notification = toNotificationQuery(opts.notification)
     query = query
       .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
-    if (typeof notification !== 'boolean') {
-      query = query.where(notification)
+    if (opts.notification?.unread) {
+      query = query.whereRaw(`records.rtime > ?`, [notificationRtime])
     }
   }
 

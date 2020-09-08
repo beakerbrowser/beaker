@@ -1,7 +1,7 @@
 import BeakerIndexer from 'beaker-index'
 import { dirname, extname } from 'path'
 import { getHyperspaceClient } from '../hyper/daemon'
-import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
+import { normalizeOrigin, normalizeUrl, isSameOrigin } from '../../lib/urls'
 import {
   toFileQuery,
   toArray,
@@ -68,10 +68,12 @@ export async function getSite (url) {
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
- * @param {RecordDescription[]} [existingResults]
+ * @param {Object} [internal]
+ * @param {RecordDescription[]} [internal.existingResults]
+ * @param {Number} [internal.notificationRtime]
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
-export async function listRecords (opts, existingResults) {
+export async function listRecords (opts, {existingResults, notificationRtime} = {}) {
   var fileQuery = opts.file ? toArray(opts.file).map(toFileQuery) : undefined
   if (opts.site) {
     opts.site = toArray(opts.site).map(origin => normalizeOrigin(origin))
@@ -98,7 +100,10 @@ export async function listRecords (opts, existingResults) {
       backlinksOpts.crtime = true
     }
     if (typeof opts.limit === 'number') {
-      backlinksOpts.limit = opts.limit
+      // custom sorts mean we have to apply the limit after
+      if (opts.sort !== 'rtime' && opts.sort !== 'site') {
+        backlinksOpts.limit = opts.limit
+      }
     }
     if (typeof opts.reverse === 'boolean') {
       backlinksOpts.reverse = opts.reverse
@@ -113,6 +118,16 @@ export async function listRecords (opts, existingResults) {
 
   entries = entries.filter(entry => {
     var url = entry.value.source
+    if (opts.notification) {
+      if (isSameOrigin(getProfileUrl(), entry.value.drive)) {
+        return false
+      }
+      if (opts.notification?.unread) {
+        if (entry.value.rtime <= notificationRtime) {
+          return false
+        }
+      }
+    }
     if (fileQuery) {
       let {pathname} = parseUrl(url)
       let test = q => (
@@ -136,25 +151,23 @@ export async function listRecords (opts, existingResults) {
     return true
   })
 
-  var records = await Promise.all(entries.map(backlinkToRecord))
-  records.sort((a, b) => {
-    if (opts.sort === 'ctime') {
-      return opts.reverse ? (b.ctime - a.ctime) : (a.ctime - b.ctime)
-    } else if (opts.sort === 'mtime') {
-      return opts.reverse ? (b.mtime - a.mtime) : (a.mtime - b.mtime)
-    } else if (opts.sort === 'crtime') {
-      let crtimeA = Math.min(a.ctime, a.rtime)
-      let crtimeB = Math.min(b.ctime, b.rtime)
-      return opts.reverse ? (crtimeB - crtimeA) : (crtimeA - crtimeB)
-    } else if (opts.sort === 'mrtime') {
-      let mrtimeA = Math.min(a.mtime, a.rtime)
-      let mrtimeB = Math.min(b.mtime, b.rtime)
-      return opts.reverse ? (mrtimeB - mrtimeA) : (mrtimeA - mrtimeB)
-    } else if (opts.sort === 'site') {
-      return b.site.url.localeCompare(a.site.url) * (opts.reverse ? -1 : 1)
-    }
-  })
+  if (opts.sort === 'rtime' || opts.sort === 'site') {
+    // custom sorts
+    entries.sort((a, b) => {
+      if (opts.sort === 'rtime') {
+        return opts.reverse ? (b.value.rtime - a.value.rtime) : (a.value.rtime - b.value.rtime)
+      } else if (opts.sort === 'site') {
+        return b.value.drive.localeCompare(a.value.drive) * (opts.reverse ? -1 : 1)
+      }
+    })
 
+    if (opts.limit) {
+      // apply limit after custom sort
+      entries = entries.slice(0, opts.limit)
+    }
+  }
+
+  var records = await Promise.all(entries.map(entry => backlinkToRecord(entry, notificationRtime)))
   return {records, missedOrigins: undefined}
 }
 
@@ -164,9 +177,12 @@ export async function listRecords (opts, existingResults) {
  * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
+ * @param {Object} internal
+ * @param {String[]} internal.existingResultOrigins
+ * @param {Number} internal.notificationRtime
  * @returns {Promise<{count: Number, missedOrigins: String[]}>}
  */
-export async function countRecords (opts, existingResultOrigins) {
+export async function countRecords (opts, {existingResultOrigins, notificationRtime} = {}) {
   var fileQuery = opts.file ? toArray(opts.file).map(toFileQuery) : undefined
   if (opts.site) {
     opts.site = toArray(opts.site).map(origin => normalizeOrigin(origin))
@@ -180,7 +196,8 @@ export async function countRecords (opts, existingResultOrigins) {
     ))
   } else if (opts.notification) {
     entries = /** @type String[]*/(await beakerNetworkIndex.backlinks.get(
-      normalizeOrigin(getProfileUrl())
+      normalizeOrigin(getProfileUrl()),
+      {crtime: true}
     ))
   } else {
     entries = []
@@ -188,6 +205,16 @@ export async function countRecords (opts, existingResultOrigins) {
 
   entries = entries.filter(entry => {
     var url = entry.value.source
+    if (opts.notification) {
+      if (isSameOrigin(getProfileUrl(), entry.value.drive)) {
+        return false
+      }
+      if (opts.notification?.unread) {
+        if (entry.value.rtime <= notificationRtime) {
+          return false
+        }
+      }
+    }
     if (fileQuery) {
       let {pathname} = parseUrl(url)
       let test = q => (
@@ -204,7 +231,7 @@ export async function countRecords (opts, existingResultOrigins) {
       }
     }
     if (existingResultOrigins?.length) {
-      if (existingResultOrigins.find(res => res.url === url)) {
+      if (existingResultOrigins.find(res => res.url === entry.value.drive)) {
         return false
       }
     }
@@ -217,15 +244,33 @@ export async function countRecords (opts, existingResultOrigins) {
 /**
  * 
  * @param {HyperbeeBacklink} backlink 
+ * @param {Number} [notificationRtime]
  * @returns {Promise<RecordDescription>?}
  */
-async function backlinkToRecord (backlink) {
+async function backlinkToRecord (backlink, notificationRtime = undefined) {
   var urlp = parseUrl(backlink.value.source)
   var [site, content] = await Promise.all([
     fullGetSite(backlink.value.drive, {cacheOnly: true}),
     // ^ use fullGetSite() since that'll hit the sqlite first, which is faster than hyperbee
     backlink.value.content ? beakerNetworkIndex.db.get(backlink.value.content) : undefined
   ])
+  var notification = undefined
+  if (notificationRtime) {
+    // try to detect the link
+    notification = {
+      key: undefined,
+      subject: undefined,
+      unread: backlink.value.rtime > notificationRtime
+    }
+    let profileUrl = getProfileUrl()
+    for (let k in backlink.value.metadata) {
+      if (isSameOrigin(profileUrl, backlink.value.metadata[k])) {
+        notification.key = k
+        notification.subject = backlink.value.metadata[k]
+        break
+      }
+    }
+  }
   return {
     url: backlink.value.source,
     prefix: dirname(urlp.pathname),
@@ -239,6 +284,7 @@ async function backlinkToRecord (backlink) {
     },
     metadata: backlink.value.metadata,
     links: [],
-    content: content ? content.value : undefined
+    content: content ? content.value : undefined,
+    notification
   }
 }
