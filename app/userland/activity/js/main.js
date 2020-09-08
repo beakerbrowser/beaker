@@ -70,6 +70,7 @@ class ActivityApp extends LitElement {
   }
 
   async load (url) {
+    this.profileUrl = (await beaker.browser.getProfile()).url
     this.url = url
   }
 
