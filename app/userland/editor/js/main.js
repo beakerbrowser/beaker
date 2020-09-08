@@ -661,12 +661,10 @@ class EditorApp extends LitElement {
           Metadata <span class="fas fa-fw fa-caret-down"></span>
         </button>
         <span class="divider"></span>
-        ${this.attachedPane ? '' : html`
-          <button title="View file" @click=${this.onClickView} ?disabled=${this.dne || this.isUnloaded}>
-            <span class="far fa-fw fa-window-maximize"></span> View file
-          </button>
-          <span class="divider"></span>
-        `}
+        <button title="View file" @click=${this.onClickView} ?disabled=${this.dne || this.isUnloaded}>
+          <span class="far fa-fw fa-window-maximize"></span> View file
+        </button>
+        <span class="divider"></span>
         ${!this.readOnly && this.isPrivate && this.isPage ? html`
           <button class="primary" title="Publish" @click=${this.onClickPublish}>
             <span class="fas fa-fw fa-globe-africa"></span> Publish
