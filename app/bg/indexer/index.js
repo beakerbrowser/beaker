@@ -780,6 +780,7 @@ async function indexSite (origin, myOrigins) {
         if (extension === '.md') {
           content = await site.fetch(update.path)
           contentLinks = markdownLinkExtractor(content)
+          contentLinks = Array.from(new Set(contentLinks)) // remove duplicates
           dataEntries.push([METADATA_KEYS.content, content])
           dataEntries = dataEntries.concat(contentLinks.map(url => ([METADATA_KEYS.link, url])))
         }
