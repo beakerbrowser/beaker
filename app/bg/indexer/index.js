@@ -151,7 +151,7 @@ export async function getSite (url, opts) {
   }
   var hyperbeeResult = await hyperbees.getSite(url)
   if (hyperbeeResult) return hyperbeeResult
-  if (opts.cacheOnly) {
+  if (opts?.cacheOnly) {
     return {
       origin: origin,
       url: origin,
