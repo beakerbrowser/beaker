@@ -33,7 +33,8 @@ export class NewPagePopup extends BasePopup {
     if (this.driveUrl) {
       this.profile = await beaker.hyperdrive.getInfo(this.driveUrl)
     } else {
-      this.profile = await beaker.browser.getProfile()
+      let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
+      this.profile = await beaker.index.getSite(addressBook?.profiles?.[0]?.key)
     }
     this.requestUpdate()
   }

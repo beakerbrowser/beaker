@@ -55,7 +55,7 @@ class DriveViewApp extends LitElement {
 
     let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
     this.profile = await beaker.index.getSite(addressBook?.profiles?.[0]?.key)
-
+    
     beaker.index.getSite(window.location.origin).then(info => {
       this.info = info
       console.log(this.info)
@@ -92,6 +92,10 @@ class DriveViewApp extends LitElement {
 
   get isSubscribed () {
     return this.subscribers.find(s => s.site.url === this.profile.url)
+  }
+
+  get isSystem () {
+    return location.origin.startsWith('hyper://private') || isSameOrigin(location.origin, this.profile?.url)
   }
 
   render () {
@@ -337,13 +341,16 @@ class DriveViewApp extends LitElement {
     e.stopPropagation()
     var rect = e.currentTarget.getClientRects()[0]
     const items = [
-      this.isSubscribed
-        ? {icon: 'fas fa-times', label: 'Unsubscribe', click: this.onToggleSubscribe}
-        : {icon: 'fas fa-rss', label: 'Subscribe', click: this.onToggleSubscribe},
-      '-',
       {icon: 'far fa-comment', label: 'New Post', click: this.onClickNewPost},
       {icon: 'far fa-file', label: 'New Page', click: this.onClickNewPage}
     ]
+    if (!this.isSystem) {
+      items.unshift('-')
+      items.unshift(this.isSubscribed
+        ? {icon: 'fas fa-times', label: 'Unsubscribe', click: this.onToggleSubscribe}
+        : {icon: 'fas fa-rss', label: 'Subscribe', click: this.onToggleSubscribe},
+      )
+    }
     contextMenu.create({
       x: rect.right,
       y: rect.bottom,
