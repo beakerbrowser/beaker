@@ -17,8 +17,7 @@ import * as profileDb from '../dbs/profile-data-db'
 export async function list () {
   var results = await indexer.listRecords({
     file: {extension: '.goto', prefix: '/bookmarks'},
-    site: ['hyper://private', filesystem.getProfileUrl()],
-    limit: 1e9
+    site: ['hyper://private', filesystem.getProfileUrl()]
   })
   var pins = await pinsAPI.getCurrent()
   return results.map(r => massageBookmark(r, pins))
