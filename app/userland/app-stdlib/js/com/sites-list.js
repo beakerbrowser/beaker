@@ -109,15 +109,16 @@ export class SitesList extends LitElement {
     } else if (this.listing === 'subscribed') {
       sites = await Promise.all(
         subs
-        .filter(sub => isSameOrigin(sub.site.url, this.profileUrl))
-        .map(sub => beaker.index.getSite(sub.metadata.href))
+          .filter(sub => isSameOrigin(sub.site.url, this.profileUrl))
+          .map(sub => beaker.index.getSite(sub.metadata.href))
       )
     } else if (this.listing === 'subscribers') {
-      sites = await Promise.all(
-        subs
-        .filter(sub => isSameOrigin(sub.metadata.href, this.profileUrl))
-        .map(sub => beaker.index.getSite(sub.site.url))
-      )
+      let subs2 = await beaker.index.listRecords({
+        links: this.profileUrl,
+        file: {extension: '.goto', prefix: '/subscriptions'},
+        index: ['local', 'network']
+      })
+      sites = await Promise.all(subs2.map(sub => beaker.index.getSite(sub.site.url, {cacheOnly: true})))
     } else {
       sites = await beaker.index.listSites({
         search: this.filter

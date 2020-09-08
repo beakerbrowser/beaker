@@ -35,8 +35,7 @@ export class PagesView extends LitElement {
     var profile = await beaker.browser.getProfile()
     var pages = await beaker.index.listRecords({
       file: {extension: '.md', prefix: '/pages'},
-      site: ['hyper://private', `hyper://${profile.key}`],
-      limit: 1e9
+      site: ['hyper://private', `hyper://${profile.key}`]
     })
     console.log(pages)
     pages.sort((a, b) => _title(a).localeCompare(_title(b)))
