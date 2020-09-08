@@ -1146,7 +1146,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     if (tab) {
       var state = Object.assign({}, tab.state)
       if (opts) {
-        if (opts.driveInfo) state.driveInfo = tab.driveInfo
+        if (opts.driveInfo) state.driveInfo = tab.primaryPane.driveInfo
         if (opts.sitePerms) state.sitePerms = await sitedataDb.getPermissions(tab.url)
       }
       return state

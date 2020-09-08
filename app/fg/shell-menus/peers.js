@@ -1,6 +1,5 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
-import _get from 'lodash.get'
 import { pluralize } from '../../lib/strings'
 import * as bg from './bg-process-rpc'
 import inputsCSS from './inputs.css'
@@ -53,11 +52,9 @@ class PeersMenu extends LitElement {
   // =
 
   render () {
-    var writable = _get(this, 'driveInfo.writable', false)
-    var isSaved = _get(this, 'driveCfg.saved', false)
+    var writable = this.driveInfo?.writable || false
+    var isSaved = this.driveCfg?.saved || false
     var peers = this.peers
-    // var downloadTotal = _get(this, 'driveInfo.networkStats.downloadTotal', 0)
-    // var uploadTotal = _get(this, 'driveInfo.networkStats.uploadTotal', 0)
     if (this.isLoading) {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
