@@ -117,7 +117,7 @@ class EditorApp extends LitElement {
       this.requestUpdate()
     })
     beaker.panes.addEventListener('pane-navigated', e => {
-      if (!this.url) {
+      if (!this.url || this.dne) {
         this.load(e.detail.url)
       }
     })
