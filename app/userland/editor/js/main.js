@@ -905,9 +905,16 @@ class EditorApp extends LitElement {
 
     this.loadExplorer()
     if (this.resolvedPath === oldpath) {
-      var urlp = new URL(this.url)
+      let oldurl = this.url
+      let urlp = new URL(this.url)
       urlp.pathname = newpath
       this.load(urlp.toString())
+      if (this.attachedPane) {
+        this.attachedPane = beaker.panes.getAttachedPane()
+        if (this.attachedPane.url === oldurl) {
+          beaker.panes.navigate(this.attachedPane.id, urlp.toString())
+        }
+      }
     }
   }
 
@@ -924,6 +931,12 @@ class EditorApp extends LitElement {
       }
 
       this.loadExplorer()
+      if (this.attachedPane) {
+        this.attachedPane = beaker.panes.getAttachedPane()
+        if (this.attachedPane.url === this.url) {
+          beaker.panes.navigate(this.attachedPane.id, this.url)
+        }
+      }
       if (this.resolvedPath === path) {
         this.load(this.url)
       }
