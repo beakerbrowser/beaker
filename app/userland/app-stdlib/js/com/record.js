@@ -233,6 +233,9 @@ export class Record extends LitElement {
               </a>
             `}
           </div>
+          ${this.actionTarget ? html`
+            <span class="action">mentioned ${this.actionTarget}</span>
+          ` : ''}
           <div class="date">
             <a href=${res.url} data-tooltip=${(new Date(res.ctime)).toLocaleString()}>
               ${relativeDate(res.ctime)}

@@ -290,7 +290,7 @@ export class RecordThread extends LitElement {
       <div class="replies">
         ${repeat(replies, r => r.url, reply => {
           var mode = 'action'
-          if (reply.content && getRecordType(reply) === 'comment') {
+          if (reply.content && ['comment', 'microblogpost'].includes(getRecordType(reply))) {
             mode = 'comment'
           }
           return html`
@@ -299,6 +299,7 @@ export class RecordThread extends LitElement {
               .record=${reply}
               render-mode=${mode}
               thread-view
+              constrain-height
               action-target=${this.actionTarget}
               profile-url=${this.profileUrl}
               @publish-reply=${this.onPublishReply}

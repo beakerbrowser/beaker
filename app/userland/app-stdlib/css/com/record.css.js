@@ -787,6 +787,10 @@ a:hover {
   color: var(--text-color--result-link);
 }
 
+.record.comment .action {
+  color: var(--text-color--light);
+}
+
 .record.comment .context {
   box-sizing: border-box;
   font-size: 12px;
