@@ -166,7 +166,7 @@ beaker-record-thread {
     margin: 106px auto 0;
   }
 
-  .content.has-nav {
+  .content.full-nav {
     margin-top: 156px;
   }
 
